@@ -11,6 +11,6 @@ export default [
   },
   {
     // Additional ignores specific to this project
-    ignores: ['sqlglot/**'],
+    ignores: ['upstream/**'],
   },
 ];
