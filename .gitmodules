@@ -1,0 +1,3 @@
+[submodule "sqlglot"]
+	path = sqlglot
+	url = https://github.com/tobymao/sqlglot
