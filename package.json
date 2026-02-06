@@ -1,0 +1,60 @@
+{
+  "name": "@hdnax/sqlglot.js",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A JavaScript port of SQLGlot - SQL parser, transpiler, optimizer, and engine",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "build": "tsc && vite build",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "pnpm build && changeset publish && git push --follow-tags"
+  },
+  "keywords": [
+    "sql",
+    "parser",
+    "transpiler",
+    "optimizer",
+    "sqlglot",
+    "sql-parser",
+    "sql-transpiler"
+  ],
+  "author": "Huy DNA",
+  "license": "MIT",
+  "packageManager": "pnpm@10.26.1",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "COPYRIGHT_NOTICE"
+  ],
+  "devDependencies": {
+    "@changesets/cli": "^2.29.8",
+    "@hdnax/nuclint": "^0.5.0",
+    "@types/node": "^25.2.1",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.0.18"
+  }
+}
