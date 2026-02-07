@@ -2,9 +2,26 @@
 
 import { TrieResult, inTrie, newTrie, type TrieNode } from './trie';
 
-// https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/time.py#L9
-// The generic time format is based on python time.strftime
-// https://docs.python.org/3/library/time.html#time.strftime
+/**
+ * Formats a time string by replacing tokens with mapped values.
+ *
+ * Uses a trie-based algorithm to efficiently match and replace format tokens.
+ * The generic time format is based on Python's time.strftime.
+ *
+ * @param string - The format string to process
+ * @param mapping - Record mapping format tokens to their replacements
+ * @param trie - Optional pre-built trie for the mapping keys (built automatically if not provided)
+ * @returns The formatted string, or undefined if input is empty
+ *
+ * @example
+ * ```ts
+ * formatTime("%Y-%m-%d", { "%Y": "2024", "%m": "01", "%d": "15" });
+ * // "2024-01-15"
+ * ```
+ *
+ * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/time.py#L9
+ * @see https://docs.python.org/3/library/time.html#time.strftime
+ */
 export function formatTime (
   string: string,
   mapping: Record<string, string>,
@@ -654,10 +671,25 @@ export const TIMEZONES = new Set([
   'zulu',
 ]);
 
-// https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/time.py#L667
-// Given an ISO-8601 timestamp literal, eg '2023-01-01 12:13:14.123456+00:00'
-// figure out its subsecond precision so we can construct types like DATETIME(6)
-// Note that in practice, this is either 3 or 6 digits (3 = millisecond precision, 6 = microsecond precision)
+/**
+ * Determines the subsecond precision of an ISO-8601 timestamp literal.
+ *
+ * Parses a timestamp string like '2023-01-01 12:13:14.123456+00:00' and returns
+ * the precision level for constructing types like DATETIME(6).
+ *
+ * @param timestampLiteral - An ISO-8601 timestamp string
+ * @returns 0 (no subseconds), 3 (milliseconds), or 6 (microseconds)
+ *
+ * @example
+ * ```ts
+ * subsecondPrecision("2023-01-01 12:13:14"); // 0
+ * subsecondPrecision("2023-01-01 12:13:14.123"); // 3
+ * subsecondPrecision("2023-01-01 12:13:14.123456"); // 6
+ * subsecondPrecision("2023-01-01 12:13:14.1234"); // 6
+ * ```
+ *
+ * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/time.py#L667
+ */
 export function subsecondPrecision (timestampLiteral: string): number {
   try {
     const parsed = new Date(timestampLiteral);
