@@ -19,8 +19,6 @@ import { TrieResult, inTrie, newTrie, type TrieNode } from './trie';
  * // "2024-01-15"
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/time.py#L9
- * @see https://docs.python.org/3/library/time.html#time.strftime
  */
 export function formatTime (
   string: string,
@@ -688,7 +686,6 @@ export const TIMEZONES = new Set([
  * subsecondPrecision("2023-01-01 12:13:14.1234"); // 6
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/time.py#L667
  */
 export function subsecondPrecision (timestampLiteral: string): number {
   try {

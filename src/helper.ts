@@ -21,7 +21,6 @@ const CAMEL_CASE_PATTERN = /(?<!^)(?=[A-Z])/;
  * // Error: Unknown function 'CONT'. Did you mean COUNT?
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L48
  */
 export function suggestClosestMatchAndFail (
   kind: string,
@@ -51,7 +50,6 @@ export function suggestClosestMatchAndFail (
  * seqGet([1, 2, 3], -1); // undefined
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L62
  */
 export function seqGet<T> (seq: T[], index: number): T | undefined {
   return index >= 0 && index < seq.length ? seq[index] : undefined;
@@ -71,7 +69,6 @@ export function seqGet<T> (seq: T[], index: number): T | undefined {
  * ensureList(undefined); // []
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L82
  */
 export function ensureList<T> (value?: T | T[]): T[] {
   if (value === undefined) {
@@ -98,7 +95,6 @@ export function ensureList<T> (value?: T | T[]): T[] {
  * ensureCollection([1, 2]); // [1, 2]
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L108
  */
 export function ensureCollection<T> (value: T | T[]): T[] {
   if (value === undefined) {
@@ -123,7 +119,6 @@ export function ensureCollection<T> (value: T | T[]): T[] {
  * csv("a", "", "b"); // "a, b" (empty strings filtered out)
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L125
  */
 export function csv (...args: string[]): string;
 export function csv (sep: string, ...args: string[]): string;
@@ -201,7 +196,6 @@ function levenshteinDistance (a: string, b: string): number {
  * camelToSnakeCase("getUserById"); // "GET_USER_BY_ID"
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L212
  */
 export function camelToSnakeCase (name: string): string {
   return name.replace(CAMEL_CASE_PATTERN, '_').toUpperCase();
@@ -223,7 +217,6 @@ export function camelToSnakeCase (name: string): string {
  * whileChanging(15, simplify); // 10
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L217
  */
 export function whileChanging<T> (expression: T, func: (expr: T) => T): T {
   let current = expression;
@@ -264,7 +257,6 @@ function hashObject (obj: unknown): string {
  * tsort(graph); // ['a', 'b', 'c']
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L240
  */
 export function tsort<T> (dag: Map<T, Set<T>>): T[] {
   const result: T[] = [];
@@ -322,7 +314,6 @@ export function tsort<T> (dag: Map<T, Set<T>>): T[] {
  * findNewName(['bar'], 'foo'); // "foo"
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L274
  */
 // Modified: accepts string[] instead of Iterable<string>
 export function findNewName (taken: string[], base: string): string {
@@ -354,7 +345,6 @@ export function findNewName (taken: string[], base: string): string {
  * isInt("abc"); // false
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L297
  */
 export function isInt (text: string): boolean {
   return isType(text, (s) => {
@@ -377,7 +367,6 @@ export function isInt (text: string): boolean {
  * isFloat("Infinity"); // false
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L301
  */
 export function isFloat (text: string): boolean {
   return isType(text, (s) => {
@@ -411,7 +400,6 @@ function isType (text: string, validator: (text: string) => boolean): boolean {
  * genName(); // "temp2"
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L313
  */
 export function nameSequence (prefix: string): () => string {
   let counter = 0;
@@ -434,7 +422,6 @@ export function nameSequence (prefix: string): () => string {
  * splitNumWords("a.b.c", ".", 2); // ["a", "b", "c"]
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L327
  */
 // Modified: simplified signature by using default parameters
 export function splitNumWords (
@@ -465,7 +452,6 @@ export function splitNumWords (
  * flatten([[[]]]); // []
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L377
  */
 // Modified: returns array instead of generator, uses Array.isArray instead of is_iterable
 export function flatten (values: unknown[]): unknown[] {
@@ -497,7 +483,6 @@ export function flatten (values: unknown[]): unknown[] {
  * objectDepth({a: {b: {c: 1}}}); // 3
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L401
  */
 // Modified: renamed from dictDepth to objectDepth
 export function objectDepth (d: unknown): number {
@@ -532,7 +517,6 @@ export function objectDepth (d: unknown): number {
  * first([]); // Error: Array is empty
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L427
  */
 // Modified: accepts T[] instead of Iterable<T>
 export function first<T> (it: T[]): T {
@@ -562,7 +546,6 @@ export function first<T> (it: T[]): T {
  * toBool(undefined); // undefined
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L432
  */
 export function toBool (value?: string | boolean): string | boolean | undefined {
   if (typeof value === 'boolean' || value === undefined) {
@@ -596,7 +579,6 @@ export function toBool (value?: string | boolean): string | boolean | undefined 
  * mergeRanges([]); // []
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L446
  */
 export function mergeRanges<T> (ranges: [T, T][]): [T, T][] {
   if (ranges.length === 0) {
@@ -634,7 +616,6 @@ export function mergeRanges<T> (ranges: [T, T][]): [T, T][] {
  * isIsoDate("2024-13-01"); // false (invalid month)
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L473
  */
 // Modified: removed unnecessary try-catch (Date constructor doesn't throw in JS)
 export function isIsoDate (text: string): boolean {
@@ -655,7 +636,6 @@ export function isIsoDate (text: string): boolean {
  * isIsoDatetime("invalid"); // false
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L481
  */
 // Modified: removed unnecessary try-catch (Date constructor doesn't throw in JS)
 export function isIsoDatetime (text: string): boolean {
@@ -685,7 +665,6 @@ export const DATE_UNITS = new Set(['day', 'week', 'month', 'quarter', 'year', 'y
  * mapping.size; // 3
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L501
  */
 // Modified: constructor accepts K[] instead of Collection<K>, doesn't implement Map to avoid MapIterator requirements
 export class SingleValuedMapping<K, V> {

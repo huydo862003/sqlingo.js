@@ -3,7 +3,6 @@
 /**
  * Result of a trie lookup operation.
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/trie.py
  */
 export const enum TrieResult {
   /** The key was not found and is not a prefix of any key */
@@ -41,7 +40,6 @@ export type Key = string[];
  * ]);
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/trie.py
  */
 export function newTrie (keywords: Key[], trie?: TrieNode): TrieNode {
   const result = trie ?? {};
@@ -76,7 +74,6 @@ export function newTrie (keywords: Key[], trie?: TrieNode): TrieNode {
  * inTrie(trie, ['S', 'E', 'L']); // [TrieResult.FAILED, ...]
  * ```
  *
- * @see https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/trie.py
  */
 export function inTrie (trie: TrieNode, key: Key): [TrieResult, TrieNode] {
   const keyArray = Array.from(key);
