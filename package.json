@@ -29,7 +29,7 @@
     "lint:fix": "eslint . --fix",
     "docs": "typedoc",
     "docs:watch": "typedoc --watch",
-    "docs:serve": "pnpm docs && npx http-server docs -o",
+    "docs:serve": "typedoc && npx http-server docs -o",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "pnpm build && changeset publish && git push --follow-tags"
