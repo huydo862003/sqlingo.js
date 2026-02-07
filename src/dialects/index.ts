@@ -1,16 +1,1 @@
-export enum Dialects {
-  BIGQUERY = 'bigquery',
-  CLICKHOUSE = 'clickhouse',
-  DATABRICKS = 'databricks',
-  DUCKDB = 'duckdb',
-  HIVE = 'hive',
-  MYSQL = 'mysql',
-  POSTGRES = 'postgres',
-  PRESTO = 'presto',
-  REDSHIFT = 'redshift',
-  SNOWFLAKE = 'snowflake',
-  SPARK = 'spark',
-  SQLITE = 'sqlite',
-  TRINO = 'trino',
-  TSQL = 'tsql',
-}
+export { Dialect, Dialects, NormalizationStrategy, type DialectType } from './dialect';
