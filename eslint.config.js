@@ -7,6 +7,7 @@ export default [
     files: ['**/*.ts', '**/*.js'],
     rules: {
       // Add any project-specific rule overrides here
+      '@typescript-eslint/no-non-null-assertion': 'warn',
     },
   },
   {
