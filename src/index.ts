@@ -8,7 +8,7 @@
 import packageJson from '../package.json';
 import { ErrorLevel, SqlglotError, ParseError, TokenError, UnsupportedError } from './errors';
 import type { Token } from './tokens';
-import { TokenType, Tokenizer, tokenize } from './tokens';
+import { TokenType, Tokenizer } from './tokens';
 import type { ParseOptions } from './parser';
 import { Parser, parse } from './parser';
 import type { GeneratorOptions, TranspileOptions } from './generator';
@@ -51,7 +51,7 @@ export const version = packageJson.version;
 
 export { ErrorLevel, SqlglotError, ParseError, TokenError, UnsupportedError };
 export type { Token };
-export { TokenType, Tokenizer, tokenize };
+export { TokenType, Tokenizer };
 export type { ParseOptions };
 export { Parser, parse };
 export type { GeneratorOptions, TranspileOptions };

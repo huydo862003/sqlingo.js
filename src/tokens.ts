@@ -1487,7 +1487,7 @@ export class Tokenizer {
 
   private _scanKeywords (): void {
     let size = 0;
-    let word: string | null = null;
+    let word: string | undefined = undefined;
     let chars = this._text;
     let char = chars;
     let prevSpace = false;
@@ -1737,7 +1737,7 @@ export class Tokenizer {
    */
   private _scanString (start: string): boolean {
     const constructor = this._constructor;
-    let base: number | null = null;
+    let base: number | undefined = undefined;
     let tokenType = TokenType.STRING;
 
     let end: string;
@@ -1757,7 +1757,7 @@ export class Tokenizer {
         if (this._char === end) {
           tag = '';
         } else {
-          tag = this._extractString(end, null, true, !constructor.HEREDOC_TAG_IS_IDENTIFIER);
+          tag = this._extractString(end, undefined, true, !constructor.HEREDOC_TAG_IS_IDENTIFIER);
         }
 
         if (
@@ -1833,14 +1833,14 @@ export class Tokenizer {
    */
   private _extractString (
     delimiter: string,
-    escapes: Set<string> | null = null,
+    escapes: Set<string> | undefined = undefined,
     rawString: boolean = false,
     raiseUnmatched: boolean = true,
   ): string {
     const constructor = this._constructor;
     let text = '';
     const delimSize = delimiter.length;
-    escapes = escapes === null ? constructor._STRING_ESCAPES() : escapes;
+    escapes = escapes === undefined ? constructor._STRING_ESCAPES() : escapes;
 
     while (true) {
       if (

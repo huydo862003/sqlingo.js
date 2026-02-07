@@ -1,0 +1,398 @@
+// CacheExpr
+  constructor (args: CacheExprArgs = {})
+
+// UncacheExpr
+  constructor (args: UncacheExprArgs = {})
+
+// RefreshExpr
+  constructor (args: RefreshExprArgs)
+
+// SequencePropertiesExpr
+  constructor (args: SequencePropertiesExprArgs = {})
+
+// TruncateTableExpr
+  constructor (args: TruncateTableExprArgs = {})
+
+// CloneExpr
+  constructor (args: CloneExprArgs = {})
+
+// DescribeExpr
+  constructor (args: DescribeExprArgs = {})
+
+// AttachExpr
+  constructor (args: AttachExprArgs = {})
+
+// DetachExpr
+  constructor (args: DetachExprArgs = {})
+
+// InstallExpr
+  constructor (args: InstallExprArgs = {})
+
+// SummarizeExpr
+  constructor (args: SummarizeExprArgs = {})
+
+// KillExpr
+  constructor (args: KillExprArgs = {})
+
+// DeclareItemExpr
+  constructor (args: DeclareItemExprArgs = {})
+
+// SetExpr
+  constructor (args: SetExprArgs = {})
+
+// HeredocExpr
+  constructor (args: HeredocExprArgs = {})
+
+// SetItemExpr
+  constructor (args: SetItemExprArgs = {})
+
+// QueryBandExpr
+  constructor (args: QueryBandExprArgs = {})
+
+// ShowExpr
+  constructor (args: ShowExprArgs = {})
+
+// UserDefinedFunctionExpr
+  constructor (args: UserDefinedFunctionExprArgs = {})
+
+// CharacterSetExpr
+  constructor (args: CharacterSetExprArgs = {})
+
+// RecursiveWithSearchExpr
+  constructor (args: RecursiveWithSearchExprArgs)
+
+// WithExpr
+  constructor (args: WithExprArgs = {})
+
+// TableAliasExpr
+  constructor (args: TableAliasExprArgs = {})
+
+// ColumnPositionExpr
+  constructor (args: ColumnPositionExprArgs)
+
+// ColumnDefExpr
+  constructor (args: ColumnDefExprArgs = {})
+
+// AlterColumnExpr
+  constructor (args: AlterColumnExprArgs = {})
+
+// AlterIndexExpr
+  constructor (args: AlterIndexExprArgs)
+
+// AlterSortKeyExpr
+  constructor (args: AlterSortKeyExprArgs = {})
+
+// AlterSetExpr
+  constructor (args: AlterSetExprArgs = {})
+
+// RenameColumnExpr
+  constructor (args: RenameColumnExprArgs)
+
+// CommentExpr
+  constructor (args: CommentExprArgs)
+
+// ComprehensionExpr
+  constructor (args: ComprehensionExprArgs)
+
+// MergeTreeTTLActionExpr
+  constructor (args: MergeTreeTTLActionExprArgs = {})
+
+// MergeTreeTTLExpr
+  constructor (args: MergeTreeTTLExprArgs = {})
+
+// IndexConstraintOptionExpr
+  constructor (args: IndexConstraintOptionExprArgs = {})
+
+// ColumnConstraintExpr
+  constructor (args: ColumnConstraintExprArgs)
+
+// WithOperatorExpr
+  constructor (args: WithOperatorExprArgs)
+
+// DropExpr
+  constructor (args: DropExprArgs = {})
+
+// ExportExpr
+  constructor (args: ExportExprArgs)
+
+// ChangesExpr
+  constructor (args: ChangesExprArgs)
+
+// ConnectExpr
+  constructor (args: ConnectExprArgs)
+
+// CredentialsExpr
+  constructor (args: CredentialsExprArgs = {})
+
+// DirectoryExpr
+  constructor (args: DirectoryExprArgs = {})
+
+// ForeignKeyExpr
+  constructor (args: ForeignKeyExprArgs = {})
+
+// PrimaryKeyExpr
+  constructor (args: PrimaryKeyExprArgs = {})
+
+// IntoExpr
+  constructor (args: IntoExprArgs = {})
+
+// IdentifierExpr
+  constructor (args: IdentifierExprArgs = {})
+
+// IndexExpr
+  constructor (args: IndexExprArgs = {})
+
+// IndexParametersExpr
+  constructor (args: IndexParametersExprArgs = {})
+
+// ConditionalInsertExpr
+  constructor (args: ConditionalInsertExprArgs = {})
+
+// MultitableInsertsExpr
+  constructor (args: MultitableInsertsExprArgs)
+
+// OnConflictExpr
+  constructor (args: OnConflictExprArgs = {})
+
+// OnConditionExpr
+  constructor (args: OnConditionExprArgs = {})
+
+// ReturningExpr
+  constructor (args: ReturningExprArgs = {})
+
+// LoadDataExpr
+  constructor (args: LoadDataExprArgs)
+
+// PartitionExpr
+  constructor (args: PartitionExprArgs = {})
+
+// FetchExpr
+  constructor (args: FetchExprArgs = {})
+
+// GrantExpr
+  constructor (args: GrantExprArgs)
+
+// RevokeExpr
+  constructor (args: RevokeExprArgs = {})
+
+// GroupExpr
+  constructor (args: GroupExprArgs = {})
+
+// LambdaExpr
+  constructor (args: LambdaExprArgs = {})
+
+// LimitExpr
+  constructor (args: LimitExprArgs = {})
+
+// LimitOptionsExpr
+  constructor (args: LimitOptionsExprArgs = {})
+
+// JoinExpr
+  constructor (args: JoinExprArgs = {})
+
+// MatchRecognizeMeasureExpr
+  constructor (args: MatchRecognizeMeasureExprArgs = {})
+
+// MatchRecognizeExpr
+  constructor (args: MatchRecognizeExprArgs = {})
+
+// OrderExpr
+  constructor (args: OrderExprArgs = {})
+
+// WithFillExpr
+  constructor (args: WithFillExprArgs = {})
+
+// OrderedExpr
+  constructor (args: OrderedExprArgs)
+
+// PropertyExpr
+  constructor (args: PropertyExprArgs)
+
+// GrantPrincipalExpr
+  constructor (args: GrantPrincipalExprArgs = {})
+
+// PartitionByRangePropertyDynamicExpr
+  constructor (args: PartitionByRangePropertyDynamicExprArgs)
+
+// RollupIndexExpr
+  constructor (args: RollupIndexExprArgs = {})
+
+// PartitionBoundSpecExpr
+  constructor (args: PartitionBoundSpecExprArgs = {})
+
+// QueryTransformExpr
+  constructor (args: QueryTransformExprArgs)
+
+// SemanticViewExpr
+  constructor (args: SemanticViewExprArgs = {})
+
+// InputOutputFormatExpr
+  constructor (args: InputOutputFormatExprArgs = {})
+
+// ReferenceExpr
+  constructor (args: ReferenceExprArgs = {})
+
+// IndexTableHintExpr
+  constructor (args: IndexTableHintExprArgs = {})
+
+// HistoricalDataExpr
+  constructor (args: HistoricalDataExprArgs)
+
+// PutExpr
+  constructor (args: PutExprArgs)
+
+// GetExpr
+  constructor (args: GetExprArgs)
+
+// TableExpr
+  constructor (args: TableExprArgs = {})
+
+// VersionExpr
+  constructor (args: VersionExprArgs)
+
+// LockExpr
+  constructor (args: LockExprArgs)
+
+// TableSampleExpr
+  constructor (args: TableSampleExprArgs = {})
+
+// TagExpr
+  constructor (args: TagExprArgs = {})
+
+// PivotExpr
+  constructor (args: PivotExprArgs = {})
+
+// WindowSpecExpr
+  constructor (args: WindowSpecExprArgs = {})
+
+// StarExpr
+  constructor (args: StarExprArgs = {})
+
+// DataTypeExpr
+  constructor (args: DataTypeExprArgs = {})
+
+// TransactionExpr
+  constructor (args: TransactionExprArgs = {})
+
+// CommitExpr
+  constructor (args: CommitExprArgs = {})
+
+// RollbackExpr
+  constructor (args: RollbackExprArgs = {})
+
+// AlterExpr
+  constructor (args: AlterExprArgs)
+
+// AlterSessionExpr
+  constructor (args: AlterSessionExprArgs = {})
+
+// AnalyzeExpr
+  constructor (args: AnalyzeExprArgs = {})
+
+// AnalyzeStatisticsExpr
+  constructor (args: AnalyzeStatisticsExprArgs)
+
+// AnalyzeHistogramExpr
+  constructor (args: AnalyzeHistogramExprArgs = {})
+
+// AnalyzeSampleExpr
+  constructor (args: AnalyzeSampleExprArgs)
+
+// AnalyzeDeleteExpr
+  constructor (args: AnalyzeDeleteExprArgs = {})
+
+// AnalyzeValidateExpr
+  constructor (args: AnalyzeValidateExprArgs)
+
+// AddPartitionExpr
+  constructor (args: AddPartitionExprArgs = {})
+
+// DropPartitionExpr
+  constructor (args: DropPartitionExprArgs = {})
+
+// ReplacePartitionExpr
+  constructor (args: ReplacePartitionExprArgs)
+
+// AtTimeZoneExpr
+  constructor (args: AtTimeZoneExprArgs)
+
+// FromTimeZoneExpr
+  constructor (args: FromTimeZoneExprArgs)
+
+// FormatPhraseExpr
+  constructor (args: FormatPhraseExprArgs)
+
+// DistinctExpr
+  constructor (args: DistinctExprArgs = {})
+
+// TimeUnitExpr
+  constructor (args: TimeUnitExprArgs = {})
+
+// HavingMaxExpr
+  constructor (args: HavingMaxExprArgs)
+
+// TranslateCharactersExpr
+  constructor (args: TranslateCharactersExprArgs = {})
+
+// OverflowTruncateBehaviorExpr
+  constructor (args: OverflowTruncateBehaviorExprArgs)
+
+// JSONExpr
+  constructor (args: JSONExprArgs = {})
+
+// JSONPathExpr
+  constructor (args: JSONPathExprArgs = {})
+
+// JSONColumnDefExpr
+  constructor (args: JSONColumnDefExprArgs = {})
+
+// JSONValueExpr
+  constructor (args: JSONValueExprArgs)
+
+// OpenJSONColumnDefExpr
+  constructor (args: OpenJSONColumnDefExprArgs)
+
+// JSONExtractQuoteExpr
+  constructor (args: JSONExtractQuoteExprArgs)
+
+// SliceExpr
+  constructor (args: SliceExprArgs = {})
+
+// UseExpr
+  constructor (args: UseExprArgs = {})
+
+// WhenExpr
+  constructor (args: WhenExprArgs)
+
+// PredicateExpr
+  constructor (args: PredicateExprArgs)
+
+// HexStringExpr
+  constructor (args: HexStringExprArgs = {})
+
+// ByteStringExpr
+  constructor (args: ByteStringExprArgs = {})
+
+// UnicodeStringExpr
+  constructor (args: UnicodeStringExprArgs = {})
+
+// ColumnExpr
+  constructor (args: ColumnExprArgs)
+
+// LiteralExpr
+  constructor (args: LiteralExprArgs)
+
+// WindowExpr
+  constructor (args: WindowExprArgs = {})
+
+// SessionParameterExpr
+  constructor (args: SessionParameterExprArgs = {})
+
+// PlaceholderExpr
+  constructor (args: PlaceholderExprArgs = {})
+
+// BracketExpr
+  constructor (args: BracketExprArgs = {})
+
+// FuncExpr
+  constructor (args: FuncExprArgs)
