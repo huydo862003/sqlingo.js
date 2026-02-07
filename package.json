@@ -1,5 +1,10 @@
 {
   "name": "@hdnax/sqlglot.js",
+  "sqlglot": {
+    "commit": "264e95f04d95f2cd7bcf255ee7ae160db36882a7",
+    "version": "28.10.0",
+    "url": "https://github.com/tobymao/sqlglot"
+  },
   "version": "0.1.0",
   "type": "module",
   "description": "A JavaScript port of SQLGlot - SQL parser, transpiler, optimizer, and engine",
@@ -38,6 +43,11 @@
   "author": "Huy DNA",
   "license": "MIT",
   "packageManager": "pnpm@10.26.1",
+  "sqlglot": {
+    "commit": "264e95f04d95f2cd7bcf255ee7ae160db36882a7",
+    "version": "28.10.0",
+    "url": "https://github.com/tobymao/sqlglot"
+  },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
