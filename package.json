@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "@hdnax/sqlglot.js",
   "sqlglot": {
     "commit": "264e95f04d95f2cd7bcf255ee7ae160db36882a7",
