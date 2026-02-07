@@ -27,6 +27,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "docs": "typedoc",
+    "docs:watch": "typedoc --watch",
+    "docs:serve": "pnpm docs && npx http-server docs -o",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "pnpm build && changeset publish && git push --follow-tags"
@@ -42,12 +45,7 @@
   ],
   "author": "Huy DNA",
   "license": "MIT",
-  "packageManager": "pnpm@10.26.1",
-  "sqlglot": {
-    "commit": "264e95f04d95f2cd7bcf255ee7ae160db36882a7",
-    "version": "28.10.0",
-    "url": "https://github.com/tobymao/sqlglot"
-  },
+  "packageManager": "pnpm@10.26.1", 
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
@@ -62,6 +60,7 @@
     "@hdnax/nuclint": "^0.5.0",
     "@types/node": "^25.2.1",
     "eslint": "^9.39.2",
+    "typedoc": "^0.28.16",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-dts": "^4.5.4",
