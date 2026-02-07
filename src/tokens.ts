@@ -1,6 +1,7 @@
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/tokens.py
 
-import type { Dialects } from './dialects';
+import type { DialectType } from './dialects';
+import { Dialect } from './dialects';
 import { TokenError } from './errors';
 import { inTrie, newTrie, TrieResult, type TrieNode } from './trie';
 
@@ -447,11 +448,6 @@ export enum TokenType {
   // sentinel
   HIVE_TOKEN_STREAM = 'HIVE_TOKEN_STREAM',
 }
-
-const ALL_TOKEN_TYPES: TokenType[] = Object.values(TokenType);
-const TOKEN_TYPE_TO_INDEX: Record<TokenType, number> = Object.fromEntries(
-  ALL_TOKEN_TYPES.map((tokenType, index) => [tokenType, index]),
-);
 
 /**
  * Represents a single token in the SQL lexical analysis.
@@ -1271,7 +1267,7 @@ export class Tokenizer {
   size = 0;
   /** Array of tokens produced by tokenization. */
   tokens: Token[] = [];
-  dialect?: Dialects;
+  dialect: Dialect;
   /** Starting position of the current token. */
   private _start = 0;
   /** Current position in the SQL string. */
@@ -1291,9 +1287,8 @@ export class Tokenizer {
   /** Line number of the previously added token. */
   private _prev_token_line = -1;
 
-  constructor (dialect?: Dialects | string) {
-    // TODO: this.dialect = Dialect.getOrRaise(dialect);
-    this.dialect = dialect as Dialects;
+  constructor (dialect?: DialectType) {
+    this.dialect = Dialect.getOrRaise(dialect);
     this.reset();
   }
 
@@ -1672,8 +1667,7 @@ export class Tokenizer {
       } else if (this._peek.toUpperCase() === 'E' && !scientific) {
         scientific += 1;
         this._advance();
-      } else if (this._peek === '_') {
-        // TODO: Check dialect.NUMBERS_CAN_BE_UNDERSCORE_SEPARATED
+      } else if (this._peek === '_' && this.dialect._constructor.NUMBERS_CAN_BE_UNDERSCORE_SEPARATED) {
         this._advance();
       } else if (this._isIdentifierChar(this._peek)) {
         const numberText = this._text;
@@ -1849,7 +1843,19 @@ export class Tokenizer {
     escapes = escapes === null ? constructor._STRING_ESCAPES() : escapes;
 
     while (true) {
-      // TODO: Check dialect.UNESCAPED_SEQUENCES
+      if (
+        !rawString
+        && this.dialect._constructor.UNESCAPED_SEQUENCES
+        && this._peek
+        && escapes.has(this._char)
+      ) {
+        const unescaped_sequence = this.dialect._constructor.UNESCAPED_SEQUENCES[this._char + this._peek];
+        if (unescaped_sequence) {
+          this._advance({ i: 2 });
+          text += unescaped_sequence;
+          continue;
+        }
+      }
 
       const isValidCustomEscape
         = constructor.ESCAPE_FOLLOW_CHARS.length
