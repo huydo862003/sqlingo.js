@@ -4,7 +4,7 @@ import { createHash } from 'crypto';
 import { Dialect, type DialectType } from './dialects/dialect';
 import type { Token } from './tokens';
 import { ensureList } from './helper';
-import { baseclass } from './port/utils';
+import { baseclass } from './port_internals/utils';
 
 export const SQLGLOT_META = 'sqlglot.meta';
 export const SQLGLOT_ANONYMOUS = 'sqlglot.anonymous';
