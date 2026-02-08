@@ -2094,7 +2094,7 @@ export class Expression {
       }
       node._hash = hash;
     }
-    return this._hash || -1;
+    return this._hash || '';
   }
 
   equals (other: unknown): boolean {
