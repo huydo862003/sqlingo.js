@@ -2899,10 +2899,152 @@ export class DDLExpr extends Expression {
 
 export class LockingStatementExpr extends Expression {
   key = ExpressionKey.LOCKING_STATEMENT;
+  static argTypes = {
+    this: true,
+    expression: true,
+  };
 }
 
 export class DMLExpr extends Expression {
   key = ExpressionKey.DML;
+
+  /**
+   * Set the RETURNING expression. Not supported by all dialects.
+   *
+   * Example:
+   *     delete("tbl").returning("*", { dialect: "postgres" }).sql();
+   *     // 'DELETE FROM tbl RETURNING *'
+   *
+   * @param expression - The SQL code string to parse.
+   *                     If an `Expression` instance is passed, it will be used as-is.
+   * @param options - Options object
+   * @param options.dialect - The dialect used to parse the input expression
+   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
+   * @returns The modified expression
+   */
+  returning (
+    expression: string | Expression,
+    options: {
+      dialect?: DialectType;
+      copy?: boolean;
+      [key: string]: unknown;
+    } = {},
+  ): this {
+    return _applyBuilder(expression, {
+      instance: this,
+      arg: 'returning',
+      prefix: 'RETURNING',
+      into: ReturningExpr,
+      ...options,
+      dialect: options.dialect,
+      copy: options.copy ?? true,
+    }) as this;
+  }
+}
+
+/**
+ * Enumeration of valid kind values for Create expressions.
+ * Used to specify the variant or subtype of the expression.
+ */
+export enum CreateExprKind {
+  TABLE = 'TABLE',
+  VIEW = 'VIEW',
+  INDEX = 'INDEX',
+  SCHEMA = 'SCHEMA',
+  DATABASE = 'DATABASE',
+  FUNCTION = 'FUNCTION',
+  PROCEDURE = 'PROCEDURE',
+  TRIGGER = 'TRIGGER',
+  SEQUENCE = 'SEQUENCE',
+}
+
+export type CreateExprArgs = { with?: Expression; kind: CreateExprKind; exists?: Expression; properties?: Expression[]; replace?: boolean; refresh?: Expression; unique?: boolean; indexes?: Expression[]; noSchemaBinding?: Expression; begin?: Expression; end?: Expression; clone?: Expression; concurrently?: Expression; clustered?: Expression; [key: string]: unknown } & BaseExpressionArgs;
+
+export class CreateExpr extends DDLExpr {
+  key = ExpressionKey.CREATE;
+
+  /**
+   * Defines the arguments (properties and child expressions) for Create expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {
+    this: true,
+    expression: false,
+    with: false,
+    kind: true,
+    exists: false,
+    properties: false,
+    replace: false,
+    refresh: false,
+    unique: false,
+    indexes: false,
+    noSchemaBinding: false,
+    begin: false,
+    end: false,
+    clone: false,
+    concurrently: false,
+    clustered: false,
+  };
+
+  constructor (args: CreateExprArgs) {
+    super(args);
+  }
+
+  get with (): Expression {
+    return this.args['with'] as Expression;
+  }
+
+  get kind (): CreateExprKind | undefined {
+    return this.args.kind as CreateExprKind | undefined;
+  }
+
+  get exists (): Expression {
+    return this.args.exists as Expression;
+  }
+
+  get properties (): Expression[] {
+    return (this.args.properties || []) as Expression[];
+  }
+
+  get replace (): boolean {
+    return this.args.replace as boolean;
+  }
+
+  get refresh (): Expression {
+    return this.args.refresh as Expression;
+  }
+
+  get unique (): boolean {
+    return this.args.unique as boolean;
+  }
+
+  get indexes (): Expression[] {
+    return (this.args.indexes || []) as Expression[];
+  }
+
+  get noSchemaBinding (): Expression {
+    return this.args.noSchemaBinding as Expression;
+  }
+
+  get begin (): Expression {
+    return this.args.begin as Expression;
+  }
+
+  get end (): Expression {
+    return this.args.end as Expression;
+  }
+
+  get clone (): Expression {
+    return this.args.clone as Expression;
+  }
+
+  get concurrently (): Expression {
+    return this.args.concurrently as Expression;
+  }
+
+  get clustered (): Expression {
+    return this.args.clustered as Expression;
+  }
 }
 
 export type SequencePropertiesExprArgs = { increment?: Expression; minvalue?: string; maxvalue?: string; cache?: Expression; start?: Expression; owned?: Expression; options?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
@@ -7404,109 +7546,6 @@ export class TableColumnExpr extends Expression {
 
 export class VariadicExpr extends Expression {
   key = ExpressionKey.VARIADIC;
-}
-
-/**
- * Enumeration of valid kind values for Create expressions.
- * Used to specify the variant or subtype of the expression.
- */
-export enum CreateExprKind {
-  TABLE = 'TABLE',
-  VIEW = 'VIEW',
-  INDEX = 'INDEX',
-  SCHEMA = 'SCHEMA',
-  DATABASE = 'DATABASE',
-  FUNCTION = 'FUNCTION',
-  PROCEDURE = 'PROCEDURE',
-  TRIGGER = 'TRIGGER',
-  SEQUENCE = 'SEQUENCE',
-}
-
-export type CreateExprArgs = { with?: Expression; kind: CreateExprKind; exists?: Expression; properties?: Expression[]; replace?: boolean; refresh?: Expression; unique?: boolean; indexes?: Expression[]; noSchemaBinding?: Expression; begin?: Expression; end?: Expression; clone?: Expression; concurrently?: Expression; clustered?: Expression; [key: string]: unknown } & BaseExpressionArgs;
-
-export class CreateExpr extends DDLExpr {
-  key = ExpressionKey.CREATE;
-
-  /**
-   * Defines the arguments (properties and child expressions) for Create expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
-  static argTypes = {
-    with: false,
-    kind: true,
-    exists: false,
-    properties: false,
-    replace: false,
-    refresh: false,
-    unique: false,
-    indexes: false,
-    noSchemaBinding: false,
-    begin: false,
-    end: false,
-    clone: false,
-    concurrently: false,
-    clustered: false,
-  };
-
-  constructor (args: CreateExprArgs) {
-    super(args);
-  }
-
-  get with (): Expression {
-    return this.args['with'] as Expression;
-  }
-
-  get kind (): CreateExprKind | undefined {
-    return this.args.kind as CreateExprKind | undefined;
-  }
-
-  get exists (): Expression {
-    return this.args.exists as Expression;
-  }
-
-  get properties (): Expression[] {
-    return (this.args.properties || []) as Expression[];
-  }
-
-  get replace (): boolean {
-    return this.args.replace as boolean;
-  }
-
-  get refresh (): Expression {
-    return this.args.refresh as Expression;
-  }
-
-  get unique (): boolean {
-    return this.args.unique as boolean;
-  }
-
-  get indexes (): Expression[] {
-    return (this.args.indexes || []) as Expression[];
-  }
-
-  get noSchemaBinding (): Expression {
-    return this.args.noSchemaBinding as Expression;
-  }
-
-  get begin (): Expression {
-    return this.args.begin as Expression;
-  }
-
-  get end (): Expression {
-    return this.args.end as Expression;
-  }
-
-  get clone (): Expression {
-    return this.args.clone as Expression;
-  }
-
-  get concurrently (): Expression {
-    return this.args.concurrently as Expression;
-  }
-
-  get clustered (): Expression {
-    return this.args.clustered as Expression;
-  }
 }
 
 export type CTEExprArgs = { scalar?: boolean; materialized?: boolean; keyExpressions?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
