@@ -4629,6 +4629,16 @@ export class ConnectExpr extends Expression {
 
 export class CopyParameterExpr extends Expression {
   key = ExpressionKey.COPY_PARAMETER;
+
+  /**
+   * Defines the arguments (properties and child expressions) for CopyParameter expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {
+    this: true,
+    expression: false,
+    expressions: false,
+  };
 }
 
 export type CredentialsExprArgs = { credentials?: Expression[]; encryption?: Expression; storage?: Expression; iamRole?: Expression; region?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -4687,6 +4697,7 @@ export class DirectoryExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     local: false,
     rowFormat: false,
   };
@@ -4718,6 +4729,7 @@ export class ForeignKeyExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    expressions: false,
     reference: false,
     delete: false,
     update: false,
@@ -4747,6 +4759,15 @@ export class ForeignKeyExpr extends Expression {
 
 export class ColumnPrefixExpr extends Expression {
   key = ExpressionKey.COLUMN_PREFIX;
+
+  /**
+   * Defines the arguments (properties and child expressions) for ColumnPrefix expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {
+    this: true,
+    expression: true,
+  };
 }
 
 export type PrimaryKeyExprArgs = { options?: Expression[]; include?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -4759,6 +4780,8 @@ export class PrimaryKeyExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
+    expressions: true,
     options: false,
     include: false,
   };
@@ -4786,9 +4809,11 @@ export class IntoExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
     temporary: false,
     unlogged: false,
     bulkCollect: false,
+    expressions: false,
   };
 
   constructor (args: IntoExprArgs = {}) {
@@ -4810,6 +4835,22 @@ export class IntoExpr extends Expression {
 
 export class FromExpr extends Expression {
   key = ExpressionKey.FROM;
+
+  /**
+   * Gets the name of the FROM expression
+   * @returns The name of the expression
+   */
+  get name (): string {
+    return this.this?.name || '';
+  }
+
+  /**
+   * Gets the alias or name of the FROM expression
+   * @returns The alias if it exists, otherwise the name
+   */
+  get aliasOrName (): string {
+    return this.this?.aliasOrName || '';
+  }
 }
 
 export class HavingExpr extends Expression {
@@ -4818,10 +4859,19 @@ export class HavingExpr extends Expression {
 
 export class HintExpr extends Expression {
   key = ExpressionKey.HINT;
+
+  static argTypes = {
+    expressions: true,
+  };
 }
 
 export class JoinHintExpr extends Expression {
   key = ExpressionKey.JOIN_HINT;
+
+  static argTypes = {
+    this: true,
+    expressions: true,
+  };
 }
 
 export type IdentifierExprArgs = { quoted?: boolean; global?: boolean; temporary?: boolean; [key: string]: unknown } & BaseExpressionArgs;
@@ -4834,6 +4884,7 @@ export class IdentifierExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     quoted: false,
     global: false,
     temporary: false,
@@ -4854,10 +4905,19 @@ export class IdentifierExpr extends Expression {
   get temporary (): boolean {
     return this.args.temporary as boolean;
   }
+
+  get outputName (): string {
+    return this.name;
+  }
 }
 
 export class OpclassExpr extends Expression {
   key = ExpressionKey.OPCLASS;
+
+  static argTypes = {
+    this: true,
+    expression: true,
+  };
 }
 
 export type IndexExprArgs = { table?: Expression; unique?: boolean; primary?: boolean; amp?: Expression; params?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
@@ -4870,6 +4930,7 @@ export class IndexExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
     table: false,
     unique: false,
     primary: false,
@@ -8467,6 +8528,7 @@ export class CopyExpr extends DMLExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     kind: true,
     files: false,
     credentials: false,
@@ -8501,7 +8563,7 @@ export class CopyExpr extends DMLExpr {
 
 export type InsertExprArgs = { hint?: Expression; with?: Expression; isFunction?: Expression; conflict?: Expression; returning?: Expression; overwrite?: Expression; exists?: Expression; alternative?: Expression; where?: Expression; ignore?: Expression; byName?: string; stored?: Expression; partition?: Expression; settings?: Expression[]; source?: Expression; default?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
-export class InsertExpr extends DDLExpr {
+export class InsertExpr extends DMLExpr {
   key = ExpressionKey.INSERT;
 
   /**
@@ -8512,6 +8574,8 @@ export class InsertExpr extends DDLExpr {
     hint: false,
     with: false,
     isFunction: false,
+    this: false,
+    expression: false,
     conflict: false,
     returning: false,
     overwrite: false,
@@ -8593,6 +8657,83 @@ export class InsertExpr extends DDLExpr {
 
   get default (): Expression {
     return this.args['default'] as Expression;
+  }
+
+  /**
+   * Returns a list of all the CTEs attached to this statement.
+   * (DDL functionality - added to support Python's multiple inheritance of DDL and DML)
+   *
+   * @returns Array of CTE expressions
+   */
+  get ctes (): CTEExpr[] {
+    const withExpr = this.args['with'] as WithExpr | undefined;
+    return (withExpr?.expressions as CTEExpr[]) || [];
+  }
+
+  /**
+   * If this statement contains a query, this returns the query's projections.
+   * (DDL functionality - added to support Python's multiple inheritance of DDL and DML)
+   *
+   * @returns Array of Expression objects representing the SELECT clause projections
+   */
+  get selects (): Expression[] {
+    const expr = this.args.expression as Expression | undefined;
+    return (expr instanceof QueryExpr) ? expr.selects : [];
+  }
+
+  /**
+   * If this statement contains a query, this returns the output names of the query's projections.
+   * (DDL functionality - added to support Python's multiple inheritance of DDL and DML)
+   *
+   * @returns Array of strings representing the names of the projected columns
+   */
+  get namedSelects (): string[] {
+    const expr = this.args.expression as Expression | undefined;
+    return (expr instanceof QueryExpr) ? expr.namedSelects : [];
+  }
+
+  /**
+   * Append to or set the common table expressions.
+   *
+   * @example
+   * insert("SELECT x FROM cte", "t").with("cte", "SELECT * FROM tbl").sql()
+   * // 'WITH cte AS (SELECT * FROM tbl) INSERT INTO t SELECT x FROM cte'
+   *
+   * @param alias - the SQL code string to parse as the table name.
+   *   If an Expression instance is passed, this is used as-is.
+   * @param as - the SQL code string to parse as the table expression.
+   *   If an Expression instance is passed, it will be used as-is.
+   * @param options - Configuration options
+   * @param options.recursive - set the RECURSIVE part of the expression. Defaults to false.
+   * @param options.materialized - set the MATERIALIZED part of the expression.
+   * @param options.append - if true, add to any existing expressions. Otherwise, this resets the expressions.
+   * @param options.dialect - the dialect used to parse the input expression.
+   * @param options.copy - if false, modify this expression instance in-place.
+   * @returns The modified expression.
+   */
+  withWith (
+    alias: string | Expression,
+    as: string | Expression,
+    options: {
+      recursive?: boolean;
+      materialized?: boolean;
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+      [key: string]: unknown;
+    } = {},
+  ): this {
+    return _applyCteBuilder({
+      instance: this,
+      alias,
+      as,
+      recursive: options.recursive,
+      materialized: options.materialized,
+      append: options.append,
+      dialect: options.dialect,
+      copy: options.copy,
+      ...options,
+    }) as this;
   }
 }
 
