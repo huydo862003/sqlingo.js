@@ -3109,6 +3109,7 @@ export class TruncateTableExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    expressions: true,
     isDatabase: false,
     exists: false,
     only: false,
