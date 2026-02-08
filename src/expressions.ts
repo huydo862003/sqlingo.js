@@ -3287,6 +3287,7 @@ export class InstallExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     from: false,
     force: false,
   };
@@ -3314,6 +3315,7 @@ export class SummarizeExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     table: false,
   };
 
@@ -3343,6 +3345,7 @@ export class KillExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     kind: false,
   };
 
@@ -3361,6 +3364,14 @@ export class PragmaExpr extends Expression {
 
 export class DeclareExpr extends Expression {
   key = ExpressionKey.DECLARE;
+
+  /**
+   * Defines the arguments (properties and child expressions) for Declare expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {
+    expressions: true,
+  };
 }
 
 /**
@@ -3382,6 +3393,7 @@ export class DeclareItemExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     kind: false,
     default: false,
   };
@@ -3409,6 +3421,7 @@ export class SetExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    expressions: false,
     unset: false,
     tag: false,
   };
@@ -3436,6 +3449,7 @@ export class HeredocExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     tag: false,
   };
 
@@ -3468,6 +3482,8 @@ export class SetItemExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
+    expressions: false,
     kind: false,
     collate: false,
     global: false,
@@ -3500,6 +3516,7 @@ export class QueryBandExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     scope: false,
     update: false,
   };
@@ -3527,6 +3544,7 @@ export class ShowExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     history: false,
     terse: false,
     target: false,
@@ -3679,6 +3697,8 @@ export class UserDefinedFunctionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
+    expressions: false,
     wrapped: false,
   };
 
@@ -3701,6 +3721,7 @@ export class CharacterSetExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     default: false,
   };
 
@@ -3733,6 +3754,8 @@ export class RecursiveWithSearchExpr extends Expression {
    */
   static argTypes = {
     kind: true,
+    this: true,
+    expression: true,
     using: false,
   };
 
