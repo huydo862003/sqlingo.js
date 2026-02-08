@@ -995,6 +995,7 @@ export enum ExpressionKey {
 }
 
 export type ExpressionValue = Expression | string | boolean | number | undefined;
+export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T[];
 
 /**
  * Base arguments that all Expression classes can accept.
@@ -1003,7 +1004,7 @@ export interface BaseExpressionArgs {
   this?: ExpressionValue;
   expression?: Expression;
   expressions?: Expression[];
-  [key: string]: unknown;
+  [key: string]: ExpressionValueList | ExpressionValue;
 }
 
 /**
@@ -1042,7 +1043,7 @@ export class Expression {
   key: ExpressionKey = ExpressionKey.EXPRESSION;
 
   /** Arguments/properties of this expression (child nodes, flags, etc.) */
-  args: Record<string, ExpressionValue> = {};
+  args: BaseExpressionArgs = {};
 
   /** Parent expression in the AST tree */
   parent?: Expression;
@@ -1070,7 +1071,7 @@ export class Expression {
 
   /** Set of required argument names */
 
-  constructor (args: Record<string, ExpressionValue> = {}) {
+  constructor (args: BaseExpressionArgs = {}) {
     this.args = args;
     for (const [argKey, value] of Object.entries(args)) {
       this._setParent(argKey, value);
@@ -1078,23 +1079,23 @@ export class Expression {
   }
 
   get this (): ExpressionValue {
-    return this.args.this as ExpressionValue;
+    return this.args.this;
   }
 
   get expression (): Expression | undefined {
-    return this.args.expression as Expression | undefined;
+    return this.args.expression;
   }
 
   get expressions (): Expression[] {
     const exprs = this.args.expressions;
     return Array.isArray(exprs) ? exprs : [];
   }
+
   /**
    * Extract text value from a named argument
    * @param key - The argument key to extract text from
    * @returns The text value, or empty string if not found
    */
-
   text (key: string): string {
     const field = this.args[key];
     if (typeof field === 'string') {
@@ -1129,7 +1130,7 @@ export class Expression {
    * Returns a JavaScript value equivalent of the SQL node
    * @throws Error if the expression cannot be converted
    */
-  toValue (): unknown {
+  toValue (): ExpressionValue {
     if (this instanceof LiteralExpr) {
       const value = this.this;
       if (this.isString) {
@@ -1273,22 +1274,22 @@ export class Expression {
     return this._meta;
   }
 
-  deepCopy (): this {
+  copy (): this {
     const root = new (this.constructor as new () => this)();
     const stack: Array<[Expression, Expression]> = [[this, root]];
 
     while (stack.length > 0) {
       const [node, copy] = stack.pop()!;
-      if (node.comments !== undefined) {
+      if (node.comments) {
         copy.comments = [...node.comments];
       }
-      if (node._type !== undefined) {
-        copy._type = node._type.deepCopy() as DataTypeExpr;
+      if (node._type) {
+        copy._type = node._type.copy() as DataTypeExpr;
       }
-      if (node._meta !== undefined) {
+      if (node._meta) {
         copy._meta = { ...node._meta };
       }
-      if (node._hash !== undefined) {
+      if (node._hash) {
         copy._hash = node._hash;
       }
 
@@ -1314,10 +1315,6 @@ export class Expression {
       }
     }
     return root;
-  }
-
-  copy (): this {
-    return this.deepCopy();
   }
 
   /**
@@ -1370,7 +1367,7 @@ export class Expression {
    * @param argKey - Name of the list expression arg
    * @param value - Value to append to the list
    */
-  append (argKey: string, value: unknown): void {
+  append (argKey: string, value: ExpressionValue): void {
     if (!Array.isArray(this.args[argKey])) {
       this.args[argKey] = [];
     }
@@ -1390,7 +1387,7 @@ export class Expression {
    * @param options
    * @param options.overwrite - If an index is given, determines whether to overwrite the list entry
    */
-  set (argKey: string, value: unknown, index?: number, options?: { overwrite?: boolean }): void {
+  set (argKey: string, value: ExpressionValue | ExpressionValueList, index?: number, options?: { overwrite?: boolean }): void {
     const overwrite = options?.overwrite ?? true;
     // Clear hash cache up the tree
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -1401,7 +1398,7 @@ export class Expression {
     }
 
     if (index !== undefined) {
-      const expressions = (this.args[argKey] || []) as unknown[];
+      const expressions = (this.args[argKey] || []) as ExpressionValueList;
 
       if (expressions[index] === undefined) {
         return;
@@ -17885,7 +17882,7 @@ export function _toS (
 
     // Add object id in verbose mode
     if (verbose) {
-      args._id = `node_${Math.random().toString(36).substr(2, 9)}`;
+      args._id = `node_${Math.random().toString(36).slice(2, 9)}`;
     }
 
     // Inline leaves for more compact representation
