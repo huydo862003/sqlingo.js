@@ -5578,6 +5578,7 @@ export class JoinExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     on: false,
     side: false,
     kind: false,
@@ -5587,6 +5588,7 @@ export class JoinExpr extends Expression {
     hint: false,
     matchCondition: false,
     directed: false,
+    expressions: false,
     pivots: false,
   };
 
@@ -5594,32 +5596,33 @@ export class JoinExpr extends Expression {
     super(args);
   }
 
-  get on (): Expression {
-    return this.args.on as Expression;
-  }
-
-  get side (): Expression {
-    return this.args.side as Expression;
-  }
-
-  get kind (): JoinExprKind | undefined {
-    return this.args.kind as JoinExprKind | undefined;
-  }
-
-  get using (): string {
-    return this.args.using as string;
-  }
-
   get method (): string {
-    return this.args.method as string;
+    return this.text('method').toUpperCase();
+  }
+
+  get kind (): string {
+    return this.text('kind').toUpperCase();
+  }
+
+  get side (): string {
+    return this.text('side').toUpperCase();
+  }
+
+  get hint (): string {
+    return this.text('hint').toUpperCase();
+  }
+
+  get aliasOrName (): string {
+    return (this.args.this as Expression)?.aliasOrName || '';
+  }
+
+  get isSemiOrAntiJoin (): boolean {
+    const kind = this.kind;
+    return kind === 'SEMI' || kind === 'ANTI';
   }
 
   get global (): boolean {
     return this.args['global'] as boolean;
-  }
-
-  get hint (): Expression {
-    return this.args.hint as Expression;
   }
 
   get matchCondition (): Expression {
@@ -5633,6 +5636,87 @@ export class JoinExpr extends Expression {
   get pivots (): Expression[] {
     return (this.args.pivots || []) as Expression[];
   }
+
+  /**
+   * Append to or set the ON expressions.
+   *
+   * @example
+   * sqlglot.parseOne("JOIN x", Join).on("y = 1").sql()
+   * // 'JOIN x ON y = 1'
+   *
+   * @param expressions - the SQL code strings to parse.
+   *   If an Expression instance is passed, it will be used as-is.
+   *   Multiple expressions are combined with an AND operator.
+   * @param options - Configuration options
+   * @param options.append - if true, AND the new expressions to any existing expression. Otherwise, this resets the expression.
+   * @param options.dialect - the dialect used to parse the input expressions.
+   * @param options.copy - if false, modify this expression instance in-place.
+   * @returns The modified Join expression.
+   */
+  on (
+    expressions: Array<string | Expression>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+      [key: string]: unknown;
+    } = {},
+  ): this {
+    const join = _applyConjunctionBuilder(expressions, {
+      instance: this,
+      arg: 'on',
+      append: options.append,
+      dialect: options.dialect,
+      copy: options.copy,
+      ...options,
+    }) as this;
+
+    if (join.kind === 'CROSS') {
+      join.set('kind', null);
+    }
+
+    return join;
+  }
+
+  /**
+   * Append to or set the USING expressions.
+   *
+   * @example
+   * sqlglot.parseOne("JOIN x", Join).using("foo", "bla").sql()
+   * // 'JOIN x USING (foo, bla)'
+   *
+   * @param expressions - the SQL code strings to parse.
+   *   If an Expression instance is passed, it will be used as-is.
+   * @param options - Configuration options
+   * @param options.append - if true, concatenate the new expressions to the existing "using" list. Otherwise, this resets the expression.
+   * @param options.dialect - the dialect used to parse the input expressions.
+   * @param options.copy - if false, modify this expression instance in-place.
+   * @returns The modified Join expression.
+   */
+  using (
+    expressions: Array<string | Expression>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+      [key: string]: unknown;
+    } = {},
+  ): this {
+    const join = _applyListBuilder(expressions, {
+      instance: this,
+      arg: 'using',
+      append: options.append,
+      dialect: options.dialect,
+      copy: options.copy,
+      ...options,
+    }) as this;
+
+    if (join.kind === 'CROSS') {
+      join.set('kind', null);
+    }
+
+    return join;
+  }
 }
 
 export type MatchRecognizeMeasureExprArgs = { windowFrame?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -5645,6 +5729,7 @@ export class MatchRecognizeMeasureExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     windowFrame: false,
   };
 
@@ -5674,6 +5759,7 @@ export class MatchRecognizeExpr extends Expression {
     after: false,
     pattern: false,
     define: false,
+    alias: false,
   };
 
   constructor (args: MatchRecognizeExprArgs = {}) {
@@ -5715,6 +5801,12 @@ export class FinalExpr extends Expression {
 
 export class OffsetExpr extends Expression {
   key = ExpressionKey.OFFSET;
+
+  static argTypes = {
+    this: false,
+    expression: true,
+    expressions: false,
+  };
 }
 
 export type OrderExprArgs = { siblings?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
@@ -5727,6 +5819,8 @@ export class OrderExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
+    expressions: true,
     siblings: false,
   };
 
@@ -5786,6 +5880,7 @@ export class OrderedExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     desc: false,
     nullsFirst: true,
     withFill: false,
@@ -5806,6 +5901,10 @@ export class OrderedExpr extends Expression {
   get withFill (): Expression {
     return this.args.withFill as Expression;
   }
+
+  get name (): string {
+    return (this.args.this as Expression)?.name || '';
+  }
 }
 
 export type PropertyExprArgs = { value: string; [key: string]: unknown } & BaseExpressionArgs;
@@ -5818,6 +5917,7 @@ export class PropertyExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     value: true,
   };
 
@@ -5832,6 +5932,11 @@ export class PropertyExpr extends Expression {
 
 export class GrantPrivilegeExpr extends Expression {
   key = ExpressionKey.GRANT_PRIVILEGE;
+
+  static argTypes = {
+    this: true,
+    expressions: false,
+  };
 }
 
 /**
@@ -5853,6 +5958,7 @@ export class GrantPrincipalExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     kind: false,
   };
 
@@ -5867,6 +5973,10 @@ export class GrantPrincipalExpr extends Expression {
 
 export class AllowedValuesPropertyExpr extends Expression {
   key = ExpressionKey.ALLOWED_VALUES_PROPERTY;
+
+  static argTypes = {
+    expressions: true,
+  };
 }
 
 export type PartitionByRangePropertyDynamicExprArgs = { start: Expression; end: Expression; every: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -5879,6 +5989,7 @@ export class PartitionByRangePropertyDynamicExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
     start: true,
     end: true,
     every: true,
@@ -5911,6 +6022,8 @@ export class RollupIndexExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
+    expressions: true,
     fromIndex: false,
     properties: false,
   };
@@ -5930,6 +6043,11 @@ export class RollupIndexExpr extends Expression {
 
 export class PartitionListExpr extends Expression {
   key = ExpressionKey.PARTITION_LIST;
+
+  static argTypes = {
+    this: true,
+    expressions: true,
+  };
 }
 
 export type PartitionBoundSpecExprArgs = { fromExpressions?: Expression[]; toExpressions?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
@@ -5942,6 +6060,8 @@ export class PartitionBoundSpecExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
+    expression: false,
     fromExpressions: false,
     toExpressions: false,
   };
@@ -8872,22 +8992,42 @@ export class SortExpr extends OrderExpr {
 
 export class AlgorithmPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ALGORITHM_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class AutoIncrementPropertyExpr extends PropertyExpr {
   key = ExpressionKey.AUTO_INCREMENT_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class AutoRefreshPropertyExpr extends PropertyExpr {
   key = ExpressionKey.AUTO_REFRESH_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class BackupPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BACKUP_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class BuildPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BUILD_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export type BlockCompressionPropertyExprArgs = { value?: string; autotemp?: Expression; always?: Expression[]; default?: Expression; manual?: Expression; never?: Expression; [key: string]: unknown } & PropertyExprArgs;
@@ -8947,7 +9087,7 @@ export class CharacterSetPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
-    value: false,
+    this: true,
     default: true,
   };
 
@@ -9006,7 +9146,7 @@ export class CollatePropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
-    value: false,
+    this: true,
     default: false,
   };
 
@@ -9025,6 +9165,8 @@ export class CollatePropertyExpr extends PropertyExpr {
 
 export class CopyGrantsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.COPY_GRANTS_PROPERTY;
+
+  static argTypes = {};
 }
 
 export type DataBlocksizePropertyExprArgs = { value?: string; size?: number | Expression; units?: Expression[]; minimum?: Expression; maximum?: Expression; default?: Expression; [key: string]: unknown } & PropertyExprArgs;
@@ -9113,10 +9255,18 @@ export class DataDeletionPropertyExpr extends PropertyExpr {
 
 export class DefinerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DEFINER_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class DistKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DIST_KEY_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 /**
@@ -9140,7 +9290,7 @@ export class DistributedByPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
-    value: false,
+    expressions: false,
     kind: true,
     buckets: false,
     order: false,
@@ -9169,30 +9319,56 @@ export class DistributedByPropertyExpr extends PropertyExpr {
 
 export class DistStylePropertyExpr extends PropertyExpr {
   key = ExpressionKey.DIST_STYLE_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class DuplicateKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DUPLICATE_KEY_PROPERTY;
+
+  static argTypes = {
+    expressions: true,
+  };
 }
 
 export class EnginePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ENGINE_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class HeapPropertyExpr extends PropertyExpr {
   key = ExpressionKey.HEAP_PROPERTY;
+
+  static argTypes = {};
 }
 
 export class ToTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.TO_TABLE_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class ExecuteAsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXECUTE_AS_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class ExternalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXTERNAL_PROPERTY;
+
+  static argTypes = {
+    this: false,
+  };
 }
 
 export type FallbackPropertyExprArgs = { value?: string; no: Expression; protection?: Expression; [key: string]: unknown } & PropertyExprArgs;
@@ -9237,7 +9413,8 @@ export class FileFormatPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
-    value: false,
+    this: false,
+    expressions: false,
     hiveFormat: false,
   };
 
@@ -9256,6 +9433,10 @@ export class FileFormatPropertyExpr extends PropertyExpr {
 
 export class CredentialsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.CREDENTIALS_PROPERTY;
+
+  static argTypes = {
+    expressions: true,
+  };
 }
 
 export type FreespacePropertyExprArgs = { value?: string; percent?: Expression; [key: string]: unknown } & PropertyExprArgs;
@@ -9489,7 +9670,7 @@ export class DictRangeExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
-    value: false,
+    this: true,
     min: true,
     max: true,
   };
@@ -9513,26 +9694,47 @@ export class DictRangeExpr extends PropertyExpr {
 
 export class DynamicPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DYNAMIC_PROPERTY;
+
+  static argTypes = {};
 }
 
 export class OnClusterExpr extends PropertyExpr {
   key = ExpressionKey.ON_CLUSTER;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class EmptyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EMPTY_PROPERTY;
+
+  static argTypes = {};
 }
 
 export class LikePropertyExpr extends PropertyExpr {
   key = ExpressionKey.LIKE_PROPERTY;
+
+  static argTypes = {
+    this: true,
+    expressions: false,
+  };
 }
 
 export class LocationPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCATION_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class LockPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCK_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 /**
@@ -9556,7 +9758,7 @@ export class LockingPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
-    value: false,
+    this: false,
     kind: true,
     forOrIn: false,
     lockType: true,
@@ -9617,6 +9819,10 @@ export class LogPropertyExpr extends PropertyExpr {
 
 export class MaterializedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.MATERIALIZED_PROPERTY;
+
+  static argTypes = {
+    this: false,
+  };
 }
 
 export type MergeBlockRatioPropertyExprArgs = { value?: string; no?: Expression; default?: Expression; percent?: Expression; [key: string]: unknown } & PropertyExprArgs;
@@ -9629,7 +9835,7 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
-    value: false,
+    this: false,
     no: false,
     default: false,
     percent: false,
@@ -9658,10 +9864,16 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
 
 export class NoPrimaryIndexPropertyExpr extends PropertyExpr {
   key = ExpressionKey.NO_PRIMARY_INDEX_PROPERTY;
+
+  static argTypes = {};
 }
 
 export class OnPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ON_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export type OnCommitPropertyExprArgs = { value?: string; delete?: Expression; [key: string]: unknown } & PropertyExprArgs;
@@ -9693,14 +9905,28 @@ export class OnCommitPropertyExpr extends PropertyExpr {
 
 export class PartitionedByPropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_BY_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class PartitionedByBucketExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_BY_BUCKET;
+
+  static argTypes = {
+    this: true,
+    expression: true,
+  };
 }
 
 export class PartitionByTruncateExpr extends PropertyExpr {
   key = ExpressionKey.PARTITION_BY_TRUNCATE;
+
+  static argTypes = {
+    this: true,
+    expression: true,
+  };
 }
 
 export type PartitionByRangePropertyExprArgs = { value?: string; partitionExpressions: Expression[]; createExpressions: Expression[]; [key: string]: unknown } & PropertyExprArgs;
@@ -9737,6 +9963,10 @@ export class PartitionByRangePropertyExpr extends PropertyExpr {
 
 export class RollupPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROLLUP_PROPERTY;
+
+  static argTypes = {
+    expressions: true,
+  };
 }
 
 export type PartitionByListPropertyExprArgs = { value?: string; partitionExpressions: Expression[]; createExpressions: Expression[]; [key: string]: unknown } & PropertyExprArgs;
@@ -9829,6 +10059,10 @@ export class RefreshTriggerPropertyExpr extends PropertyExpr {
 
 export class UniqueKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNIQUE_KEY_PROPERTY;
+
+  static argTypes = {
+    expressions: true,
+  };
 }
 
 export class PartitionedOfPropertyExpr extends PropertyExpr {
@@ -10878,7 +11112,7 @@ export class MergeExpr extends DMLExpr {
     return this.args['with'] as Expression;
   }
 
-  get withReturning (): Expression {
+  get returning (): Expression {
     return this.args.returning as Expression;
   }
 }
@@ -10893,8 +11127,10 @@ export class LateralExpr extends UDTFExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     view: false,
     outer: false,
+    alias: false,
     crossApply: false,
     ordinality: false,
   };
@@ -10930,6 +11166,8 @@ export class TableFromRowsExpr extends UDTFExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
+    alias: false,
     joins: false,
     pivots: false,
     sample: false,
