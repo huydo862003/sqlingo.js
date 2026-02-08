@@ -5619,7 +5619,7 @@ export class JoinExpr extends Expression {
 
   get isSemiOrAntiJoin (): boolean {
     const kind = this.kind;
-    return kind === 'SEMI' || kind === 'ANTI';
+    return kind === JoinExprKind.SEMI || kind === JoinExprKind.ANTI;
   }
 
   get global (): boolean {
@@ -5672,8 +5672,8 @@ export class JoinExpr extends Expression {
       ...options,
     }) as this;
 
-    if (join.kind === 'CROSS') {
-      join.set('kind', null);
+    if (join.kind === JoinExprKind.CROSS) {
+      join.set('kind', undefined);
     }
 
     return join;
@@ -5712,8 +5712,8 @@ export class JoinExpr extends Expression {
       ...options,
     }) as this;
 
-    if (join.kind === 'CROSS') {
-      join.set('kind', null);
+    if (join.kind === JoinExprKind.CROSS) {
+      join.set('kind', undefined);
     }
 
     return join;
@@ -6197,7 +6197,7 @@ export class PropertiesExpr extends Expression {
     expressions: true,
   };
 
-  static NAME_TO_PROPERTY: Record<string, new (args?: object) => PropertyExpr> = {
+  static NAME_TO_PROPERTY = {
     'ALGORITHM': AlgorithmPropertyExpr,
     'AUTO_INCREMENT': AutoIncrementPropertyExpr,
     'CHARACTER SET': CharacterSetPropertyExpr,
@@ -6221,7 +6221,7 @@ export class PropertiesExpr extends Expression {
     'SORTKEY': SortKeyPropertyExpr,
     'ENCODE': EncodePropertyExpr,
     'INCLUDE': IncludePropertyExpr,
-  };
+  } as const;
 
   static PROPERTY_TO_NAME: Record<string, string> = Object.fromEntries(
     Object.entries(PropertiesExpr.NAME_TO_PROPERTY).map(([k, v]) => [v.name, k]),
@@ -8811,7 +8811,8 @@ export class CopyExpr extends DMLExpr {
 export type InsertExprArgs = { hint?: Expression; with?: Expression; isFunction?: Expression; conflict?: Expression; returning?: Expression; overwrite?: Expression; exists?: Expression; alternative?: Expression; where?: Expression; ignore?: Expression; byName?: string; stored?: Expression; partition?: Expression; settings?: Expression[]; source?: Expression; default?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 @baseclass(DDLExpr)
-export class InsertExpr extends DMLExpr {
+@baseclass(DMLExpr)
+export class InsertExpr {
   key = ExpressionKey.INSERT;
 
   /**
@@ -10389,7 +10390,8 @@ export class SecurePropertyExpr extends PropertyExpr {
 }
 
 @baseclass(PropertyExpr)
-export class TagsExpr extends ColumnConstraintKindExpr {
+@baseclass(ColumnConstraintKindExpr)
+export class TagsExpr {
   key = ExpressionKey.TAGS;
 
   static argTypes = {
@@ -19255,9 +19257,9 @@ export function maybeParse (
   }
 
   // Convert to string and optionally add prefix
-  let sql = String(sqlOrExpression);
+  let _sql = String(sqlOrExpression);
   if (options?.prefix) {
-    sql = `${options.prefix} ${sql}`;
+    _sql = `${options.prefix} ${_sql}`;
   }
 
   // TODO: Implement actual SQL parsing when parser is available
