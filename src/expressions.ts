@@ -3196,6 +3196,8 @@ export class DescribeExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
+    expressions: false,
     style: false,
     kind: false,
     partition: false,
@@ -3238,6 +3240,8 @@ export class AttachExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
+    expressions: false,
     exists: false,
   };
 
@@ -3260,6 +3264,7 @@ export class DetachExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     exists: false,
   };
 
