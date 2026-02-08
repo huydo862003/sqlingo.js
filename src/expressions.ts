@@ -1881,7 +1881,7 @@ export class Expression {
    * @param options.wrap - Whether to wrap operands in Parens to avoid precedence issues (default: true)
    * @returns The new AND condition
    */
-  and (
+  andExpr (
     expressions: (Expression | undefined)[],
     options?: {
       dialect?: DialectType;
@@ -1914,7 +1914,7 @@ export class Expression {
    * @param options.wrap - Whether to wrap operands in Parens to avoid precedence issues (default: true)
    * @returns The new OR condition
    */
-  or (
+  orExpr (
     expressions: (Expression | undefined)[],
     options?: { dialect?: DialectType; copy?: boolean; wrap?: boolean; [key: string]: unknown },
   ): Expression | undefined {
@@ -1940,7 +1940,7 @@ export class Expression {
    * @param options.copy - Whether to copy this object (default: true)
    * @returns The new NOT instance
    */
-  negate (options?: { copy?: boolean }): NotExpr | undefined {
+  notExpr (options?: { copy?: boolean }): NotExpr | undefined {
     const copy = options?.copy ?? true;
     return orExpr([this], { ...options, copy });
   }
@@ -2001,7 +2001,7 @@ export class Expression {
    * @param options.wrap - whether to wrap in parentheses (default: true)
    * @returns The Alias expression
    */
-  as (
+  asExpr (
     alias: string | IdentifierExpr,
     options?: {
       quoted?: boolean;
