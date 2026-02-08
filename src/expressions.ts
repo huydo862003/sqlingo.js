@@ -466,14 +466,14 @@ export enum ExpressionKey {
   JSON_ARRAY_CONTAINS = 'json_array_contains',
   JSON_ARRAY_INSERT = 'json_array_insert',
   JSON_BOOL = 'json_bool',
-  JSON_B_CONTAINS = 'json_b_contains',
-  JSON_B_CONTAINS_ALL_TOP_KEYS = 'json_b_contains_all_top_keys',
-  JSON_B_CONTAINS_ANY_TOP_KEYS = 'json_b_contains_any_top_keys',
-  JSON_B_DELETE_AT_PATH = 'json_b_delete_at_path',
-  JSON_B_EXISTS = 'json_b_exists',
-  JSON_B_EXTRACT = 'json_b_extract',
-  JSON_B_EXTRACT_SCALAR = 'json_b_extract_scalar',
-  JSON_B_OBJECT_AGG = 'json_b_object_agg',
+  JSONB_CONTAINS = 'jsonb_contains',
+  JSONB_CONTAINS_ALL_TOP_KEYS = 'jsonb_contains_all_top_keys',
+  JSONB_CONTAINS_ANY_TOP_KEYS = 'jsonb_contains_any_top_keys',
+  JSONB_DELETE_AT_PATH = 'jsonb_delete_at_path',
+  JSONB_EXISTS = 'jsonb_exists',
+  JSONB_EXTRACT = 'jsonb_extract',
+  JSONB_EXTRACT_SCALAR = 'jsonb_extract_scalar',
+  JSONB_OBJECT_AGG = 'jsonb_object_agg',
   JSON_CAST = 'json_cast',
   JSON_COLUMN_DEF = 'json_column_def',
   JSON_EXISTS = 'json_exists',
@@ -13654,21 +13654,21 @@ export class OpenJSONExpr extends FuncExpr {
 }
 
 export class JSONBContainsExpr extends BinaryExpr {
-  key = ExpressionKey.JSON_B_CONTAINS;
+  key = ExpressionKey.JSONB_CONTAINS;
 }
 
 export class JSONBContainsAnyTopKeysExpr extends BinaryExpr {
-  key = ExpressionKey.JSON_B_CONTAINS_ANY_TOP_KEYS;
+  key = ExpressionKey.JSONB_CONTAINS_ANY_TOP_KEYS;
 }
 
 export class JSONBContainsAllTopKeysExpr extends BinaryExpr {
-  key = ExpressionKey.JSON_B_CONTAINS_ALL_TOP_KEYS;
+  key = ExpressionKey.JSONB_CONTAINS_ALL_TOP_KEYS;
 }
 
 export type JSONBExistsExprArgs = { path: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class JSONBExistsExpr extends FuncExpr {
-  key = ExpressionKey.JSON_B_EXISTS;
+  key = ExpressionKey.JSONB_EXISTS;
 
   /**
    * Defines the arguments (properties and child expressions) for JSONBExists expressions.
@@ -13688,7 +13688,7 @@ export class JSONBExistsExpr extends FuncExpr {
 }
 
 export class JSONBDeleteAtPathExpr extends BinaryExpr {
-  key = ExpressionKey.JSON_B_DELETE_AT_PATH;
+  key = ExpressionKey.JSONB_DELETE_AT_PATH;
 }
 
 export type JSONExtractExprArgs = { onlyJsonTypes?: Expression[]; variantExtract?: string; jsonQuery?: Expression; option?: Expression; quote?: Expression; onCondition?: Expression; requiresJson?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -13780,13 +13780,13 @@ export class JSONExtractScalarExpr extends BinaryExpr {
 }
 
 export class JSONBExtractExpr extends BinaryExpr {
-  key = ExpressionKey.JSON_B_EXTRACT;
+  key = ExpressionKey.JSONB_EXTRACT;
 }
 
 export type JSONBExtractScalarExprArgs = { jsonType?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class JSONBExtractScalarExpr extends BinaryExpr {
-  key = ExpressionKey.JSON_B_EXTRACT_SCALAR;
+  key = ExpressionKey.JSONB_EXTRACT_SCALAR;
 
   /**
    * Defines the arguments (properties and child expressions) for JSONBExtractScalar expressions.
@@ -16930,7 +16930,7 @@ export class JSONObjectAggExpr extends AggFuncExpr {
 }
 
 export class JSONBObjectAggExpr extends AggFuncExpr {
-  key = ExpressionKey.JSON_B_OBJECT_AGG;
+  key = ExpressionKey.JSONB_OBJECT_AGG;
 }
 
 export type JSONArrayAggExprArgs = { order?: Expression; nullHandling?: Expression; returnType?: DataTypeExpr; strict?: Expression; [key: string]: unknown } & BaseExpressionArgs;
