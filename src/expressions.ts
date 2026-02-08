@@ -7632,19 +7632,13 @@ export class CTEExpr extends DerivedTableExpr {
   }
 }
 
-export class BitStringExpr extends Expression {
+export class BitStringExpr extends ConditionExpr {
   key = ExpressionKey.BIT_STRING;
-
-  /**
-   * Defines the arguments (properties and child expressions) for BitString expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
-  static argTypes = {};
 }
 
 export type HexStringExprArgs = { isInteger?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
-export class HexStringExpr extends Expression {
+export class HexStringExpr extends ConditionExpr {
   key = ExpressionKey.HEX_STRING;
 
   /**
@@ -7667,7 +7661,7 @@ export class HexStringExpr extends Expression {
 
 export type ByteStringExprArgs = { isBytes?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
 
-export class ByteStringExpr extends Expression {
+export class ByteStringExpr extends ConditionExpr {
   key = ExpressionKey.BYTE_STRING;
 
   /**
@@ -7688,7 +7682,7 @@ export class ByteStringExpr extends Expression {
   }
 }
 
-export class RawStringExpr extends Expression {
+export class RawStringExpr extends ConditionExpr {
   key = ExpressionKey.RAW_STRING;
 
   /**
@@ -7700,7 +7694,7 @@ export class RawStringExpr extends Expression {
 
 export type UnicodeStringExprArgs = { escape?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
-export class UnicodeStringExpr extends Expression {
+export class UnicodeStringExpr extends ConditionExpr {
   key = ExpressionKey.UNICODE_STRING;
 
   /**
