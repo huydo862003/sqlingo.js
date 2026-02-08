@@ -8,6 +8,8 @@ export default [
     rules: {
       // Add any project-specific rule overrides here
       '@typescript-eslint/no-non-null-assertion': 'warn',
+      '@typescript-eslint/no-use-before-define': 'off',
+      'no-use-before-define': 'off',
     },
   },
   {
