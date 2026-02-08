@@ -3859,6 +3859,7 @@ export class ColumnPositionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
     position: true,
   };
 
@@ -3892,6 +3893,7 @@ export class ColumnDefExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     kind: false,
     constraints: false,
     exists: false,
@@ -3904,12 +3906,20 @@ export class ColumnDefExpr extends Expression {
     super(args);
   }
 
-  get kind (): ColumnDefExprKind | undefined {
-    return this.args.kind as ColumnDefExprKind | undefined;
+  /**
+   * Gets the data type of the column definition
+   * @returns The DataType expression or undefined
+   */
+  get kind (): DataTypeExpr | undefined {
+    return this.args.kind as DataTypeExpr | undefined;
   }
 
-  get constraints (): Expression[] {
-    return (this.args.constraints || []) as Expression[];
+  /**
+   * Gets the column constraints
+   * @returns Array of ColumnConstraint expressions
+   */
+  get constraints (): ColumnConstraintExpr[] {
+    return (this.args.constraints || []) as ColumnConstraintExpr[];
   }
 
   get exists (): Expression {
@@ -3939,6 +3949,7 @@ export class AlterColumnExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     dtype: false,
     collate: false,
     using: false,
@@ -4001,6 +4012,7 @@ export class AlterIndexExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     visible: true,
   };
 
@@ -4027,6 +4039,8 @@ export class AlterSortKeyExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
+    expressions: false,
     compound: false,
   };
 
@@ -4049,6 +4063,7 @@ export class AlterSetExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    expressions: false,
     option: false,
     tablespace: false,
     accessMethod: false,
@@ -4106,6 +4121,7 @@ export class RenameColumnExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     to: true,
     exists: false,
   };
@@ -4151,7 +4167,9 @@ export class CommentExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     kind: true,
+    expression: true,
     exists: false,
     materialized: false,
   };
@@ -4183,6 +4201,8 @@ export class ComprehensionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
+    expression: true,
     position: false,
     iterator: true,
     condition: false,
@@ -4215,6 +4235,7 @@ export class MergeTreeTTLActionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     delete: false,
     recompress: false,
     toDisk: false,
@@ -4252,6 +4273,7 @@ export class MergeTreeTTLExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    expressions: true,
     where: false,
     group: false,
     aggregates: false,
@@ -4349,6 +4371,7 @@ export class ColumnConstraintExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
     kind: true,
   };
 
@@ -4356,8 +4379,12 @@ export class ColumnConstraintExpr extends Expression {
     super(args);
   }
 
-  get kind (): ColumnConstraintExprKind | undefined {
-    return this.args.kind as ColumnConstraintExprKind | undefined;
+  /**
+   * Gets the kind of column constraint
+   * @returns The ColumnConstraintKind expression
+   */
+  get kind (): ColumnConstraintKindExpr {
+    return this.args.kind as ColumnConstraintKindExpr;
   }
 }
 
@@ -7799,6 +7826,10 @@ export class ColumnExpr extends ConditionExpr {
   }
 }
 
+export class PseudocolumnExpr extends ColumnExpr {
+  key = ExpressionKey.PSEUDOCOLUMN;
+}
+
 export class AutoIncrementColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.AUTO_INCREMENT_COLUMN_CONSTRAINT;
 }
@@ -7809,6 +7840,15 @@ export class ZeroFillColumnConstraintExpr extends ColumnConstraintExpr {
 
 export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PERIOD_FOR_SYSTEM_TIME_CONSTRAINT;
+
+  /**
+   * Defines the arguments (properties and child expressions) for PeriodForSystemTimeConstraint expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {
+    this: true,
+    expression: true,
+  };
 }
 
 export type CaseSpecificColumnConstraintExprArgs = { not: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -7835,6 +7875,14 @@ export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CHARACTER_SET_COLUMN_CONSTRAINT;
+
+  /**
+   * Defines the arguments (properties and child expressions) for CharacterSetColumnConstraint expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {
+    this: true,
+  };
 }
 
 export type CheckColumnConstraintExprArgs = { enforced?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -7847,6 +7895,7 @@ export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     enforced: false,
   };
 
@@ -7873,10 +7922,26 @@ export class CommentColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMPRESS_COLUMN_CONSTRAINT;
+
+  /**
+   * Defines the arguments (properties and child expressions) for CompressColumnConstraint expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {
+    this: false,
+  };
 }
 
 export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.DATE_FORMAT_COLUMN_CONSTRAINT;
+
+  /**
+   * Defines the arguments (properties and child expressions) for DateFormatColumnConstraint expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class DefaultColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -10490,10 +10555,6 @@ export class MergeExpr extends DMLExpr {
   get returning (): Expression {
     return this.args.returning as Expression;
   }
-}
-
-export class PseudocolumnExpr extends ColumnExpr {
-  key = ExpressionKey.PSEUDOCOLUMN;
 }
 
 export type LateralExprArgs = { view?: Expression; outer?: Expression; crossApply?: boolean; ordinality?: boolean; [key: string]: unknown } & BaseExpressionArgs;
