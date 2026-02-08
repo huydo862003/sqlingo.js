@@ -1,6 +1,7 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/expressions.py
 
-import type { DialectType } from './dialects/dialect.js';
+import { createHash } from 'crypto';
+import { Dialect, type DialectType } from './dialects/dialect.js';
 import type { Token } from './tokens.js';
 
 export const SQLGLOT_META = 'sqlglot.meta';
@@ -1041,7 +1042,7 @@ export class Expression {
   key: ExpressionKey = ExpressionKey.EXPRESSION;
 
   /** Arguments/properties of this expression (child nodes, flags, etc.) */
-  args: Record<string, unknown> = {};
+  args: Record<string, ExpressionValue> = {};
 
   /** Parent expression in the AST tree */
   parent?: Expression;
@@ -1062,14 +1063,14 @@ export class Expression {
   private _meta?: Record<string, unknown>;
 
   /** Cached hash value for this expression */
-  private _hash?: number;
+  private _hash?: string;
 
   /** Static arg types definition */
   static argTypes: Record<string, boolean> = { this: true };
 
   /** Set of required argument names */
 
-  constructor (args: Record<string, unknown> = {}) {
+  constructor (args: Record<string, ExpressionValue> = {}) {
     this.args = args;
     for (const [argKey, value] of Object.entries(args)) {
       this._setParent(argKey, value);
@@ -1183,14 +1184,12 @@ export class Expression {
    */
   get aliasColumnNames (): string[] {
     const tableAlias = this.args.alias;
-    if (!tableAlias) {
+    if (!(tableAlias instanceof TableAliasExpr)) {
       return [];
     }
-    if (tableAlias instanceof TableAliasExpr) {
-      const columns = tableAlias.args.columns;
-      if (Array.isArray(columns)) {
-        return columns.map((c: unknown) => (c instanceof Expression ? c.name : ''));
-      }
+    const columns = tableAlias.args.columns;
+    if (Array.isArray(columns)) {
+      return columns.map((c: unknown) => (c instanceof Expression ? c.name : ''));
     }
     return [];
   }
@@ -1702,9 +1701,9 @@ export class Expression {
     }
   }
 
-  sql (_dialect?: DialectType, _opts?: Record<string, unknown>): string {
-    // TODO: Implement after generator
-    throw new Error('Unimplemented');
+  sql (dialect?: DialectType, opts?: Record<string, unknown>): string {
+    const dialectInstance = Dialect.getOrRaise(dialect);
+    return dialectInstance.generate(this, opts);
   }
 
   /**
@@ -2054,7 +2053,7 @@ export class Expression {
     return new klass({ this: self, expression: other });
   }
 
-  hash (): number {
+  hash (): string {
     if (this._hash !== undefined) {
       return this._hash;
     }
@@ -2075,30 +2074,29 @@ export class Expression {
     for (let i = nodes.length - 1; i >= 0; i--) {
       const node = nodes[i];
       let hash = this._hashString(node.key);
-      const nodeType = node.constructor;
 
-      if (nodeType === LiteralExpr || nodeType === IdentifierExpr) {
-        const sortedEntries = Object.entries(node.args).sort(([a], [b]) => a.localeCompare(b));
+      if (node instanceof LiteralExpr || node instanceof IdentifierExpr) {
+        const sortedEntries = Object.entries(node.args).sort();
         for (const [k, v] of sortedEntries) {
           if (v) {
-            hash = this._hashCombine(hash, k, v);
+            hash = this._hashString(hash + k + v.toString());
           }
         }
       } else {
-        const sortedEntries = Object.entries(node.args).sort(([a], [b]) => a.localeCompare(b));
+        const sortedEntries = Object.entries(node.args);
         for (const [k, v] of sortedEntries) {
           if (Array.isArray(v)) {
             for (const x of v) {
               if (x !== undefined && x !== false) {
                 const hashValue = typeof x === 'string' ? x.toLowerCase() : x;
-                hash = this._hashCombine(hash, k, hashValue);
+                hash = this._hashString(hash + k + hashValue);
               } else {
-                hash = this._hashCombine(hash, k);
+                hash = this._hashString(hash + k);
               }
             }
           } else if (v !== undefined && v !== false) {
             const hashValue = typeof v === 'string' ? v.toLowerCase() : v;
-            hash = this._hashCombine(hash, k, hashValue);
+            hash = this._hashString(hash + k + hashValue);
           }
         }
       }
@@ -2114,33 +2112,10 @@ export class Expression {
     return this.hash() === other.hash();
   }
 
-  private _hashString (str: string): number {
-    let hash = 5381;
-    for (let i = 0; i < str.length; i++) {
-      hash = ((hash << 5) + hash) + str.charCodeAt(i);
-      hash = hash & hash;
-    }
-    return hash;
-  }
-
-  private _hashCombine (hash: number, key: string, value?: unknown): number {
-    let result = this._hashString(key);
-    result = ((result << 5) + result) ^ hash;
-
-    if (value !== undefined) {
-      if (typeof value === 'string') {
-        result = ((result << 5) + result) ^ this._hashString(value);
-      } else if (typeof value === 'number') {
-        result = ((result << 5) + result) ^ value;
-      } else if (typeof value === 'boolean') {
-        result = ((result << 5) + result) ^ (value ? 1 : 0);
-      } else if (value instanceof Expression) {
-        result = ((result << 5) + result) ^ value.hash();
-      } else if (value !== undefined) {
-        result = ((result << 5) + result) ^ this._hashString(String(value));
-      }
-    }
-    return result & result;
+  private _hashString (str: string): string {
+    const hash = createHash('sha256');
+    hash.update(str);
+    return hash.digest('hex');
   }
 
   toString (): string {

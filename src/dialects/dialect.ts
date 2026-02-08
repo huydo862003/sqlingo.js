@@ -358,7 +358,7 @@ export class Dialect {
   static tokenizer_class: typeof Tokenizer = Tokenizer;
   // TODO: add jsonpath_tokenizer_class
   // TODO: add parser_class
-  // TODO: add generator_class
+  static generator_class: any = null; // Will be set after Generator import
 
   protected static timeTrieCache = new WeakMap<typeof Dialect, TrieNode>();
 
@@ -849,18 +849,36 @@ export class Dialect {
     return new this._constructor.tokenizer_class(this);
   }
 
-  // TODO: Port these methods when Expression classes are available
+  /**
+   * Generate SQL from an expression tree.
+   */
+  generate(expression: Expression, options?: { copy?: boolean; [key: string]: unknown }): string {
+    const copy = options?.copy ?? true;
+    const generator = this.generator(options);
+    return generator.generate(expression, { copy });
+  }
+
+  /**
+   * Get or create a generator instance for this dialect.
+   */
+  generator(options?: Record<string, unknown>): any {
+    const GeneratorClass = this._constructor.generator_class;
+    if (!GeneratorClass) {
+      throw new Error('Generator class not set for dialect');
+    }
+    return new GeneratorClass({ dialect: this, ...options });
+  }
+
+  // TODO: Port these methods when classes are available
   // normalizeIdentifier(expression: E): E
   // canQuote(identifier: Identifier, identify?: string | boolean): boolean
   // quoteIdentifier(expression: E, identify?: boolean): E
   // toJsonPath(path?: Expression): Expression | undefined
   // parse(sql: string, opts?: unknown): Expression[]
   // parseInto(expressionType: unknown, sql: string, opts?: unknown): Expression[]
-  // generate(expression: Expression, copy?: boolean, opts?: unknown): string
   // transpile(sql: string, opts?: unknown): string[]
   // jsonpathTokenizer(opts?: unknown): JSONPathTokenizer
   // parser(opts?: unknown): Parser
-  // generator(opts?: unknown): Generator
   // generateValuesAliases(expression: Values): Identifier[]
 
   get _constructor (): typeof Dialect {
@@ -871,3 +889,11 @@ export class Dialect {
 // Register the base Dialect
 Dialect.register('', Dialect);
 Dialect.register('dialect', Dialect);
+
+/**
+ * Set the generator class for Dialect.
+ * This is called from generator.ts to avoid circular dependencies.
+ */
+export function setGeneratorClass(GeneratorClass: any): void {
+  Dialect.generator_class = GeneratorClass;
+}
