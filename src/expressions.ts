@@ -2395,8 +2395,32 @@ export class ConditionExpr extends Expression {
   key = ExpressionKey.CONDITION;
 }
 
+export class PredicateExpr extends Expression {
+  key = ExpressionKey.PREDICATE;
+}
+
 export class DerivedTableExpr extends Expression {
   key = ExpressionKey.DERIVED_TABLE;
+
+  /**
+   * Gets the select expressions from the derived table.
+   * Returns the select expressions if this is a QueryExpr, otherwise returns an empty array.
+   *
+   * @returns Array of Expression objects representing the SELECT clause expressions
+   */
+  get selects (): Expression[] {
+    return this.this instanceof QueryExpr ? this.this.selects : [];
+  }
+
+  /**
+   * Gets the output names of all select expressions in the derived table.
+   * Maps each select expression to its output name (alias or column name).
+   *
+   * @returns Array of strings representing the names of the selected columns
+   */
+  get namedSelects (): string[] {
+    return this.selects.map((s) => s.outputName);
+  }
 }
 
 export class QueryExpr extends Expression {
@@ -6994,10 +7018,6 @@ export class TableColumnExpr extends Expression {
 
 export class VariadicExpr extends Expression {
   key = ExpressionKey.VARIADIC;
-}
-
-export class PredicateExpr extends Expression {
-  key = ExpressionKey.PREDICATE;
 }
 
 export class UDTFExpr extends DerivedTableExpr {
