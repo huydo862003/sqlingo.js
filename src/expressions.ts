@@ -1004,7 +1004,7 @@ export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T
 export interface BaseExpressionArgs {
   this?: ExpressionValue;
   expression?: Expression;
-  expressions?: Expression[];
+  expressions?: (Expression | string)[];
   [key: string]: ExpressionValueList | ExpressionValue;
 }
 
@@ -1087,7 +1087,7 @@ export class Expression {
     return this.args.expression;
   }
 
-  get expressions (): Expression[] {
+  get expressions (): (string | Expression)[] {
     const exprs = this.args.expressions;
     return Array.isArray(exprs) ? exprs : [];
   }
@@ -2425,6 +2425,347 @@ export class DerivedTableExpr extends Expression {
 
 export class QueryExpr extends Expression {
   key = ExpressionKey.QUERY;
+
+  /**
+   * Returns a `Subquery` that wraps around this query.
+   *
+   * Example:
+   *     const subquery = select().select("x").from("tbl").subquery();
+   *     select().select("x").from(subquery).sql();
+   *     // 'SELECT x FROM (SELECT x FROM tbl)'
+   *
+   * @param alias - An optional alias for the subquery (string or Expression)
+   * @param options - Options object with `copy` property
+   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
+   * @returns A Subquery expression wrapping this query
+   */
+  subquery (alias?: string | Expression, options: { copy?: boolean } = {}): SubqueryExpr {
+    const { copy = true } = options;
+    const instance = maybeCopy(this, copy);
+    let aliasExpr: TableAliasExpr | undefined;
+
+    if (!(alias instanceof Expression)) {
+      aliasExpr = new TableAliasExpr({ this: alias ? toIdentifier(alias) : undefined });
+    }
+
+    return new SubqueryExpr({ this: instance, alias: aliasExpr });
+  }
+
+  /**
+   * Adds a LIMIT clause to this query.
+   *
+   * Example:
+   *     select("1").union(select("1")).limit(1).sql();
+   *     // 'SELECT 1 UNION SELECT 1 LIMIT 1'
+   *
+   * @param expression - The SQL code string to parse.
+   *                     This can also be an integer.
+   *                     If a `Limit` instance is passed, it will be used as-is.
+   *                     If another `Expression` instance is passed, it will be wrapped in a `Limit`.
+   * @param options - Options object
+   * @param options.dialect - The dialect used to parse the input expression
+   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
+   * @returns A limited query expression
+   */
+  limit (expression: string | number | Expression, options: { dialect?: DialectType; copy?: boolean; [key: string]: unknown } = {}): this {
+    return _applyBuilder(expression, {
+      instance: this,
+      arg: 'limit',
+      into: LimitExpr,
+      prefix: 'LIMIT',
+      intoArg: 'expression',
+      ...options,
+      copy: options.copy ?? true,
+    }) as this;
+  }
+
+  /**
+   * Set the OFFSET expression.
+   *
+   * Example:
+   *     select().from("tbl").select("x").offset(10).sql();
+   *     // 'SELECT x FROM tbl OFFSET 10'
+   *
+   * @param expression - The SQL code string to parse.
+   *                     This can also be an integer.
+   *                     If a `Offset` instance is passed, this is used as-is.
+   *                     If another `Expression` instance is passed, it will be wrapped in a `Offset`.
+   * @param options - Options object
+   * @param options.dialect - The dialect used to parse the input expression
+   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
+   * @returns The modified query expression
+   */
+  offset (expression: string | number | Expression, options: { dialect?: DialectType; copy?: boolean; [key: string]: unknown } = {}): this {
+    return _applyBuilder(expression, {
+      instance: this,
+      arg: 'offset',
+      into: OffsetExpr,
+      prefix: 'OFFSET',
+      intoArg: 'expression',
+      ...options,
+      copy: options.copy ?? true,
+    }) as this;
+  }
+
+  /**
+   * Set the ORDER BY expression.
+   *
+   * Example:
+   *     select().from("tbl").select("x").orderBy("x DESC").sql();
+   *     // 'SELECT x FROM tbl ORDER BY x DESC'
+   *
+   * @param expressions - The SQL code strings to parse.
+   *                      If a `Group` instance is passed, this is used as-is.
+   *                      If another `Expression` instance is passed, it will be wrapped in a `Order`.
+   * @param options - Options object
+   * @param options.append - If `true`, add to any existing expressions. Otherwise, this flattens all the `Order` expression into a single expression. Default is `true`.
+   * @param options.dialect - The dialect used to parse the input expression
+   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
+   * @returns The modified query expression
+   */
+  orderBy (
+    expressions: Array<string | Expression>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+      [key: string]: unknown;
+    } = {},
+  ): this {
+    return _applyChildListBuilder(expressions, {
+      instance: this,
+      arg: 'order',
+      prefix: 'ORDER BY',
+      into: OrderExpr,
+      ...options,
+      append: options.append ?? true,
+      copy: options.copy ?? true,
+    }) as this;
+  }
+
+  /**
+   * Returns a list of all the CTEs attached to this query.
+   *
+   * @returns Array of CTE expressions
+   */
+  get ctes (): CTEExpr[] {
+    const withExpr = this.args['with'] as WithExpr | undefined;
+    return (withExpr?.expressions as CTEExpr[]) || [];
+  }
+
+  /**
+   * Returns the query's projections.
+   * Subclasses must implement this property.
+   *
+   * @returns Array of Expression objects representing the SELECT clause projections
+   */
+  get selects (): Expression[] {
+    throw new Error('Query objects must implement `selects`');
+  }
+
+  /**
+   * Returns the output names of the query's projections.
+   * Subclasses must implement this property.
+   *
+   * @returns Array of strings representing the names of the projected columns
+   */
+  get namedSelects (): string[] {
+    throw new Error('Query objects must implement `namedSelects`');
+  }
+
+  /**
+   * Append to or set the SELECT expressions.
+   *
+   * Example:
+   *     select().select(["x", "y"]).sql();
+   *     // 'SELECT x, y'
+   *
+   * @param expressions - The SQL code strings to parse.
+   *                      If an `Expression` instance is passed, it will be used as-is.
+   * @param options - Options object
+   * @param options.append - If `true`, add to any existing expressions. Otherwise, this resets the expressions. Default is `true`.
+   * @param options.dialect - The dialect used to parse the input expressions
+   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
+   * @returns The modified query expression
+   */
+  select (
+    _expressions: Array<string | Expression>,
+    _options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+      [key: string]: unknown;
+    } = {},
+  ): this {
+    throw new Error('Query objects must implement `select`');
+  }
+
+  /**
+   * Append to or set the WHERE expressions.
+   *
+   * Examples:
+   *     select().select(["x"]).from("tbl").where(["x = 'a' OR x < 'b'"]).sql();
+   *     // "SELECT x FROM tbl WHERE x = 'a' OR x < 'b'"
+   *
+   * @param expressions - The SQL code strings to parse.
+   *                      If an `Expression` instance is passed, it will be used as-is.
+   *                      Multiple expressions are combined with an AND operator.
+   * @param options - Options object
+   * @param options.append - If `true`, AND the new expressions to any existing expression. Otherwise, this resets the expression. Default is `true`.
+   * @param options.dialect - The dialect used to parse the input expressions
+   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
+   * @returns The modified expression
+   */
+  where (
+    expressions: Array<string | Expression>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+      [key: string]: unknown;
+    } = {},
+  ): this {
+    const processedExpressions = expressions.map((expr) =>
+      expr instanceof WhereExpr ? expr.this : expr,
+    );
+
+    return _applyConjunctionBuilder(processedExpressions as (string | Expression)[], {
+      instance: this,
+      arg: 'where',
+      into: WhereExpr,
+      ...options,
+      append: options.append ?? true,
+      copy: options.copy ?? true,
+    }) as this;
+  }
+
+  /**
+   * Append to or set the common table expressions.
+   *
+   * Example:
+   *     select().with("tbl2", "SELECT * FROM tbl").select(["x"]).from("tbl2").sql();
+   *     // 'WITH tbl2 AS (SELECT * FROM tbl) SELECT x FROM tbl2'
+   *
+   * @param alias - The SQL code string to parse as the table name.
+   *                If an `Expression` instance is passed, this is used as-is.
+   * @param as - The SQL code string to parse as the table expression.
+   *             If an `Expression` instance is passed, it will be used as-is.
+   * @param options - Options object
+   * @param options.recursive - Set the RECURSIVE part of the expression. Defaults to `false`.
+   * @param options.materialized - Set the MATERIALIZED part of the expression
+   * @param options.append - If `true`, add to any existing expressions. Otherwise, this resets the expressions. Default is `true`.
+   * @param options.dialect - The dialect used to parse the input expression
+   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
+   * @param options.scalar - If `true`, this is a scalar common table expression
+   * @returns The modified expression
+   */
+  with (
+    alias: string | Expression,
+    as: string | Expression,
+    options: {
+      recursive?: boolean;
+      materialized?: boolean;
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+      scalar?: boolean;
+      [key: string]: unknown;
+    } = {},
+  ): this {
+    return _applyCteBuilder({
+      instance: this,
+      alias,
+      as,
+      ...options,
+      recursive: options.recursive ?? false,
+      append: options.append ?? true,
+      copy: options.copy ?? true,
+    });
+  }
+
+  /**
+   * Builds a UNION expression.
+   *
+   * Example:
+   *     select("1").union([select("1")]).sql();
+   *     // 'SELECT 1 UNION SELECT 1'
+   *
+   * @param expressions - The SQL code strings to parse.
+   *                      If an `Expression` instance is passed, it will be used as-is.
+   * @param options - Options object
+   * @param options.distinct - If `true`, uses UNION DISTINCT. Otherwise uses UNION ALL. Default is `true`.
+   * @param options.dialect - The dialect used to parse the input expressions
+   * @returns A Union expression
+   */
+  union (
+    expressions: Array<string | Expression>,
+    options: {
+      distinct?: boolean;
+      dialect?: DialectType;
+      [key: string]: unknown;
+    } = {},
+  ): UnionExpr {
+    return unionExpr([this, ...expressions], {
+      ...options,
+      distinct: options.distinct ?? true,
+    });
+  }
+
+  /**
+   * Builds an INTERSECT expression.
+   *
+   * Example:
+   *     select("1").intersect([select("1")]).sql();
+   *     // 'SELECT 1 INTERSECT SELECT 1'
+   *
+   * @param expressions - The SQL code strings to parse.
+   *                      If an `Expression` instance is passed, it will be used as-is.
+   * @param options - Options object
+   * @param options.distinct - If `true`, uses INTERSECT DISTINCT. Otherwise uses INTERSECT ALL. Default is `true`.
+   * @param options.dialect - The dialect used to parse the input expressions
+   * @returns An Intersect expression
+   */
+  intersect (
+    expressions: Array<string | Expression>,
+    options: {
+      distinct?: boolean;
+      dialect?: DialectType;
+      [key: string]: unknown;
+    } = {},
+  ): IntersectExpr {
+    return intersectExpr([this, ...expressions], {
+      ...options,
+      distinct: options.distinct ?? true,
+    });
+  }
+
+  /**
+   * Builds an EXCEPT expression.
+   *
+   * Example:
+   *     select("1").except([select("2")]).sql();
+   *     // 'SELECT 1 EXCEPT SELECT 2'
+   *
+   * @param expressions - The SQL code strings to parse.
+   *                      If an `Expression` instance is passed, it will be used as-is.
+   * @param options - Options object
+   * @param options.distinct - If `true`, uses EXCEPT DISTINCT. Otherwise uses EXCEPT ALL. Default is `true`.
+   * @param options.dialect - The dialect used to parse the input expressions
+   * @returns An Except expression
+   */
+  except (
+    expressions: Array<string | Expression>,
+    options: {
+      distinct?: boolean;
+      dialect?: DialectType;
+      [key: string]: unknown;
+    } = {},
+  ): ExceptExpr {
+    return exceptExpr([this, ...expressions], {
+      ...options,
+      distinct: options.distinct ?? true,
+    });
+  }
 }
 
 export type CacheExprArgs = { lazy?: Expression; options?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
@@ -7127,7 +7468,7 @@ export class CreateExpr extends DDLExpr {
   }
 }
 
-export type CTEExprArgs = { scalar?: Expression; materialized?: boolean; keyExpressions?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
+export type CTEExprArgs = { scalar?: boolean; materialized?: boolean; keyExpressions?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
 
 export class CTEExpr extends DerivedTableExpr {
   key = ExpressionKey.CTE;
@@ -17809,42 +18150,127 @@ export function subqueryExpr (query: Expression, alias?: string): SubqueryExpr {
  * // SELECT ... UNION DISTINCT SELECT ...
  * const union = unionExpr(query1, query2, true);
  */
-export function unionExpr (left: Expression, right: Expression, distinct = false): UnionExpr {
-  return new UnionExpr({
-    this: left,
-    expression: right,
-    distinct,
-  });
+/**
+ * Helper function to build set operations (UNION, INTERSECT, EXCEPT) by chaining expressions.
+ * @param expressions - The expressions to combine
+ * @param setOperation - The set operation class constructor
+ * @param options - Options including distinct, dialect, copy, etc.
+ * @returns The chained set operation expression
+ */
+function _applySetOperation<S extends Expression> (
+  expressions: Array<string | Expression>,
+  setOperation: typeof SetOperationExpr,
+  options: {
+    distinct?: boolean;
+    dialect?: DialectType;
+    copy?: boolean;
+    [key: string]: unknown;
+  } = {},
+): S {
+  const { distinct = true, dialect, copy = true, ...opts } = options;
+
+  const parsedExpressions = expressions.map((e) =>
+    maybeParse(e, { dialect, copy, ...opts }),
+  );
+
+  return parsedExpressions.reduce((left, right) =>
+    new setOperation({
+      this: left,
+      expression: right,
+      distinct,
+      ...opts,
+    }),
+  ) as S;
 }
 
 /**
- * Create an INTERSECT expression
- * @param left - Left query
- * @param right - Right query
- * @param distinct - Whether to use INTERSECT DISTINCT
- * @returns INTERSECT expression
+ * Initializes a syntax tree for the `UNION` operation.
+ *
+ * Example:
+ *     unionExpr(["SELECT * FROM foo", "SELECT * FROM bla"]).sql();
+ *     // 'SELECT * FROM foo UNION SELECT * FROM bla'
+ *
+ * @param expressions - The SQL code strings, corresponding to the `UNION`'s operands.
+ *                      If `Expression` instances are passed, they will be used as-is.
+ * @param options - Options object
+ * @param options.distinct - Set the DISTINCT flag if and only if this is true. Default is `true`.
+ * @param options.dialect - The dialect used to parse the input expression
+ * @param options.copy - Whether to copy the expression. Default is `true`.
+ * @returns The new Union instance
  */
-export function intersectExpr (left: Expression, right: Expression, distinct = false): IntersectExpr {
-  return new IntersectExpr({
-    this: left,
-    expression: right,
-    distinct,
-  });
+export function unionExpr (
+  expressions: Array<string | Expression>,
+  options: {
+    distinct?: boolean;
+    dialect?: DialectType;
+    copy?: boolean;
+    [key: string]: unknown;
+  } = {},
+): UnionExpr {
+  if (expressions.length < 2) {
+    throw new Error('At least two expressions are required by `unionExpr`.');
+  }
+  return _applySetOperation(expressions, UnionExpr, options);
 }
 
 /**
- * Create an EXCEPT expression
- * @param left - Left query
- * @param right - Right query
- * @param distinct - Whether to use EXCEPT DISTINCT
- * @returns EXCEPT expression
+ * Initializes a syntax tree for the `INTERSECT` operation.
+ *
+ * Example:
+ *     intersectExpr(["SELECT * FROM foo", "SELECT * FROM bla"]).sql();
+ *     // 'SELECT * FROM foo INTERSECT SELECT * FROM bla'
+ *
+ * @param expressions - The SQL code strings, corresponding to the `INTERSECT`'s operands.
+ *                      If `Expression` instances are passed, they will be used as-is.
+ * @param options - Options object
+ * @param options.distinct - Set the DISTINCT flag if and only if this is true. Default is `true`.
+ * @param options.dialect - The dialect used to parse the input expression
+ * @param options.copy - Whether to copy the expression. Default is `true`.
+ * @returns The new Intersect instance
  */
-export function exceptExpr (left: Expression, right: Expression, distinct = false): ExceptExpr {
-  return new ExceptExpr({
-    this: left,
-    expression: right,
-    distinct,
-  });
+export function intersectExpr (
+  expressions: Array<string | Expression>,
+  options: {
+    distinct?: boolean;
+    dialect?: DialectType;
+    copy?: boolean;
+    [key: string]: unknown;
+  } = {},
+): IntersectExpr {
+  if (expressions.length < 2) {
+    throw new Error('At least two expressions are required by `intersectExpr`.');
+  }
+  return _applySetOperation(expressions, IntersectExpr, options);
+}
+
+/**
+ * Initializes a syntax tree for the `EXCEPT` operation.
+ *
+ * Example:
+ *     exceptExpr(["SELECT * FROM foo", "SELECT * FROM bla"]).sql();
+ *     // 'SELECT * FROM foo EXCEPT SELECT * FROM bla'
+ *
+ * @param expressions - The SQL code strings, corresponding to the `EXCEPT`'s operands.
+ *                      If `Expression` instances are passed, they will be used as-is.
+ * @param options - Options object
+ * @param options.distinct - Set the DISTINCT flag if and only if this is true. Default is `true`.
+ * @param options.dialect - The dialect used to parse the input expression
+ * @param options.copy - Whether to copy the expression. Default is `true`.
+ * @returns The new Except instance
+ */
+export function exceptExpr (
+  expressions: Array<string | Expression>,
+  options: {
+    distinct?: boolean;
+    dialect?: DialectType;
+    copy?: boolean;
+    [key: string]: unknown;
+  } = {},
+): ExceptExpr {
+  if (expressions.length < 2) {
+    throw new Error('At least two expressions are required by `exceptExpr`.');
+  }
+  return _applySetOperation(expressions, ExceptExpr, options);
 }
 
 /**
@@ -17906,9 +18332,9 @@ export function conditionExpr (sql: string): Expression {
  * @returns Expression
  */
 export function maybeParse (
-  sqlOrExpression: string | Expression | null | undefined,
+  sqlOrExpression: string | number | boolean | Expression | null | undefined,
   options?: {
-    into?: new (args: Record<string, unknown>) => Expression;
+    into?: typeof Expression;
     dialect?: DialectType;
     prefix?: string;
     copy?: boolean;
@@ -18001,6 +18427,371 @@ export function maybeCopy (instance: Expression | undefined, copy = true): Expre
     return instance.copy();
   }
   return instance;
+}
+
+/**
+ * Generate a textual representation of an Expression tree
+ * @param node - The node to convert to string
+ * @param verbose - Include additional metadata like _id, _comments
+ * @param level - Current indentation level
+ * @param reprStr - Whether to use repr for strings
+ * @returns String representation of the expression tree
+ */
+function _toS (node: unknown, verbose = false, level = 0, reprStr = false): string {
+  const indent = '\n' + ('  '.repeat(level + 1));
+  let delim = `,${indent}`;
+
+  if (node instanceof Expression) {
+    const args: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(node.args)) {
+      if ((v !== null && v !== undefined && (!Array.isArray(v) || v.length > 0)) || verbose) {
+        args[k] = v;
+      }
+    }
+
+    if ((node.type || verbose) && !(node instanceof DataTypeExpr)) {
+      args._type = node.type;
+    }
+    if (node.comments || verbose) {
+      args._comments = node.comments;
+    }
+
+    if (verbose) {
+      args._id = node.hash; // Use _hash as a proxy for id
+    }
+
+    // Inline leaves for a more compact representation
+    if (node.isLeaf) {
+      delim = ', ';
+    }
+
+    const isReprStr = node.isString || (node instanceof IdentifierExpr && node.quoted);
+    const items = Object.entries(args)
+      .map(([k, v]) => `${k}=${_toS(v, verbose, level + 1, isReprStr)}`)
+      .join(delim);
+
+    return `${node.constructor.name}(${items ? indent + items : ''})`;
+  }
+
+  if (Array.isArray(node)) {
+    const items = node.map((i) => _toS(i, verbose, level + 1)).join(delim);
+    return `[${items ? indent + items : ''}]`;
+  }
+
+  // Use JSON.stringify for strings if reprStr is true
+  if (reprStr && typeof node === 'string') {
+    return JSON.stringify(node);
+  }
+
+  // Indent multiline strings to match the current level
+  const str = String(node).trim();
+  return str.split('\n').join(indent);
+}
+
+/**
+ * Check if an expression is the wrong type
+ * @param expression - The expression to check
+ * @param into - The expected expression class
+ * @returns True if the expression is wrong type
+ */
+function _isWrongExpression (expression: unknown, into: typeof Expression): boolean {
+  return expression instanceof Expression && !(expression instanceof into);
+}
+
+/**
+ * Apply a builder function that sets a single argument on an instance
+ * @param options - Options object
+ * @returns The modified instance
+ */
+function _applyBuilder (expression: Expression | string | number, options: {
+  instance: Expression;
+  arg: string;
+  copy?: boolean;
+  prefix?: string;
+  into?: typeof Expression;
+  dialect?: DialectType;
+  intoArg?: string;
+  [key: string]: unknown;
+}): Expression {
+  const {
+    instance,
+    arg,
+    copy = true,
+    prefix,
+    into,
+    dialect,
+    intoArg = 'this',
+    ...opts
+  } = options;
+
+  if (into && _isWrongExpression(expression, into)) {
+    expression = new into({ [intoArg]: expression });
+  }
+
+  const inst = maybeCopy(instance, copy)!;
+  expression = maybeParse(expression, {
+    prefix,
+    into,
+    dialect,
+    ...opts,
+  });
+
+  inst.set(arg, expression);
+  return inst;
+}
+
+/**
+ * Apply a builder function that sets a list of child expressions
+ * @param options - Options object
+ * @returns The modified instance
+ */
+function _applyChildListBuilder (
+  expressions: Array<string | Expression>,
+  options: {
+    instance: Expression;
+    arg: string;
+    append?: boolean;
+    copy?: boolean;
+    prefix?: string;
+    into?: typeof Expression;
+    dialect?: DialectType;
+    properties?: Record<string, ExpressionValue | ExpressionValueList>;
+    [key: string]: unknown;
+  },
+): Expression {
+  const {
+    instance,
+    arg,
+    append = true,
+    copy = true,
+    prefix,
+    into,
+    dialect,
+    properties: initialProperties,
+    ...opts
+  } = options;
+
+  const inst = maybeCopy(instance, copy)!;
+  const parsed: Expression[] = [];
+  const properties: Record<string, unknown> = initialProperties || {};
+
+  for (const expression of expressions) {
+    let expr = expression;
+    if (into && _isWrongExpression(expr, into)) {
+      expr = new into({ expressions: [expr] });
+    }
+
+    const parsedExpr = maybeParse(expr, {
+      into,
+      dialect,
+      prefix,
+      ...opts,
+    });
+
+    for (const [k, v] of Object.entries(parsedExpr.args)) {
+      if (k === 'expressions') {
+        parsed.push(...(v as Expression[]));
+      } else {
+        properties[k] = v;
+      }
+    }
+  }
+
+  const existing = inst.args[arg] as Expression | undefined;
+  let allExpressions = parsed;
+  if (append && existing && existing.args.expressions) {
+    allExpressions = [...(existing.args.expressions as Expression[]), ...parsed];
+  }
+
+  const child = into ? new into({ expressions: allExpressions }) : new Expression({ expressions: allExpressions });
+  for (const [k, v] of Object.entries(properties)) {
+    child.set(k, v as ExpressionValue | ExpressionValueList);
+  }
+  inst.set(arg, child);
+
+  return inst;
+}
+
+/**
+ * Apply a builder function that sets a flat list of expressions
+ * @param expressions - Array of expressions to add
+ * @param options - Options object
+ * @returns The modified instance
+ */
+function _applyListBuilder (
+  expressions: Array<string | Expression>,
+  options: {
+    instance: Expression;
+    arg: string;
+    append?: boolean;
+    copy?: boolean;
+    prefix?: string;
+    into?: typeof Expression;
+    dialect?: DialectType;
+    [key: string]: unknown;
+  },
+): Expression {
+  const {
+    instance,
+    arg,
+    append = true,
+    copy = true,
+    prefix,
+    into,
+    dialect,
+    ...opts
+  } = options;
+
+  const inst = maybeCopy(instance, copy)!;
+
+  const parsedExpressions = expressions
+    .filter((expr) => expr !== null && expr !== undefined)
+    .map((expr) =>
+      maybeParse(expr, {
+        into,
+        prefix,
+        dialect,
+        ...opts,
+      }),
+    );
+
+  const existing = inst.args[arg] as Expression[] | undefined;
+  if (append && existing) {
+    inst.set(arg, [...existing, ...parsedExpressions]);
+  } else {
+    inst.set(arg, parsedExpressions);
+  }
+
+  return inst;
+}
+
+/**
+ * Apply a conjunction builder (combines expressions with AND)
+ * @param expressions - Array of expressions to combine with AND
+ * @param options - Options object
+ * @returns The modified instance
+ */
+function _applyConjunctionBuilder (
+  expressions: Array<string | Expression>,
+  options: {
+    instance: Expression;
+    arg: string;
+    into?: typeof Expression;
+    append?: boolean;
+    copy?: boolean;
+    dialect?: DialectType;
+    [key: string]: unknown;
+  },
+): Expression {
+  const {
+    instance,
+    arg,
+    into,
+    append = true,
+    copy = true,
+    dialect,
+    ...opts
+  } = options;
+
+  const inst = maybeCopy(instance, copy)!;
+
+  // Parse all expressions
+  const parsedExpressions = expressions
+    .filter((expr) => expr !== undefined)
+    .map((expr) =>
+      maybeParse(expr, {
+        into,
+        dialect,
+        ...opts,
+      }),
+    );
+
+  let combined: Expression | undefined;
+  if (parsedExpressions.length > 0) {
+    combined = parsedExpressions.reduce((left, right) =>
+      new AndExpr({ this: left, expression: right }),
+    );
+  }
+
+  const existing = inst.args[arg] as Expression | undefined;
+  if (append && existing && combined) {
+    combined = new AndExpr({ this: existing, expression: combined });
+  }
+
+  if (combined && into) {
+    combined = new into({ this: combined });
+  }
+
+  if (combined) {
+    inst.set(arg, combined);
+  }
+
+  return inst;
+}
+
+/**
+ * Apply a CTE builder
+ * @param options - Options object
+ * @returns The modified instance
+ */
+function _applyCteBuilder (options: {
+  instance: Expression;
+  alias: string | Expression;
+  as: string | Expression;
+  recursive?: boolean;
+  materialized?: boolean;
+  append?: boolean;
+  dialect?: DialectType;
+  copy?: boolean;
+  scalar?: boolean;
+  [key: string]: unknown;
+}): Expression {
+  const {
+    instance,
+    alias,
+    as: asExpr,
+    recursive = false,
+    materialized,
+    append = true,
+    dialect,
+    copy = true,
+    scalar,
+    ...opts
+  } = options;
+
+  const inst = maybeCopy(instance, copy)!;
+
+  // Parse alias
+  const aliasExpression = typeof alias === 'string'
+    ? new TableAliasExpr({ this: toIdentifier(alias) })
+    : alias;
+
+  const asExpression = maybeParse(asExpr, { dialect, ...opts });
+
+  const cte = new CTEExpr({
+    this: asExpression,
+    alias: aliasExpression,
+    scalar,
+    materialized,
+  });
+  // Get or create the WITH expression
+  let withExpr = inst.args['with'] as WithExpr | undefined;
+  if (!withExpr) {
+    withExpr = new WithExpr({ recursive });
+  }
+
+  const existingCtes = (withExpr.expressions || []) as CTEExpr[];
+
+  const ctes = append ? [...existingCtes, cte] : [cte];
+
+  withExpr.set('expressions', ctes);
+  if (recursive !== undefined) {
+    withExpr.set('recursive', recursive);
+  }
+
+  inst.set('with', withExpr);
+
+  return inst;
 }
 
 /**
@@ -18118,106 +18909,6 @@ export function convert (value: unknown, copy = false): Expression {
   }
 
   throw new Error(`Cannot convert ${value}`);
-}
-
-/**
- * Generate a textual representation of an Expression tree for debugging
- * @param node - The node to represent
- * @param options - Formatting options
- * @returns String representation
- * @internal
- */
-export function _toS (
-  node: unknown,
-  options?: {
-    verbose?: boolean;
-    level?: number;
-    reprStr?: boolean;
-  },
-): string {
-  const { verbose = false, level = 0, reprStr = false } = options || {};
-  const indent = '\n' + '  '.repeat(level + 1);
-  const delim = `,${indent}`;
-
-  // Handle Expression nodes
-  if (node instanceof Expression) {
-    // Collect args, filtering out null/empty unless verbose
-    const args: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(node.args)) {
-      if (verbose || (v !== null && v !== undefined && !(Array.isArray(v) && v.length === 0))) {
-        args[k] = v;
-      }
-    }
-
-    // Add type info if present (except for DataType itself)
-    if ((node.type || verbose) && node.key !== ExpressionKey.DATA_TYPE) {
-      args._type = node.type;
-    }
-
-    // Add comments if present
-    if (node.comments || verbose) {
-      args._comments = node.comments;
-    }
-
-    // Add object id in verbose mode
-    if (verbose) {
-      args._id = `node_${Math.random().toString(36).slice(2, 9)}`;
-    }
-
-    // Inline leaves for more compact representation
-    let nodeIndent = indent;
-    let nodeDelim = delim;
-    if (node.isLeaf) {
-      nodeIndent = '';
-      nodeDelim = ', ';
-    }
-
-    // Check if this is a string-like node for proper quoting
-    const nodeReprStr = node.isString || (node instanceof IdentifierExpr && node.quoted);
-
-    const items = Object.entries(args)
-      .map(([k, v]) => `${k}=${_toS(v, { verbose, level: level + 1, reprStr: nodeReprStr })}`)
-      .join(nodeDelim);
-
-    return `${node.constructor.name}(${nodeIndent}${items})`;
-  }
-
-  // Handle arrays
-  if (Array.isArray(node)) {
-    const items = node.map((i) => _toS(i, { verbose, level: level + 1 })).join(delim);
-    const arrayContent = items ? `${indent}${items}` : '';
-    return `[${arrayContent}]`;
-  }
-
-  // Handle strings with proper quoting
-  if (reprStr && typeof node === 'string') {
-    return JSON.stringify(node);
-  }
-
-  // Handle primitives - preserve multiline strings with indentation
-  const nodeStr = String(node);
-  if (nodeStr.includes('\n')) {
-    return nodeStr
-      .trim()
-      .split('\n')
-      .join(indent);
-  }
-
-  return nodeStr;
-}
-
-/**
- * Check if an expression is the wrong type
- * @param expression - The expression to check
- * @param into - The expected expression type
- * @returns True if expression is wrong type
- * @internal
- */
-export function _isWrongExpression (
-  expression: unknown,
-  into: new (args: Record<string, unknown>) => Expression,
-): boolean {
-  return expression instanceof Expression && !(expression instanceof into);
 }
 
 /** Percentile function classes */
