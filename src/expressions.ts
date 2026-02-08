@@ -7724,7 +7724,7 @@ export class UnicodeStringExpr extends ConditionExpr {
  */
 export type ColumnExprArgs = { table?: Expression; db?: string; catalog?: string; joinMark?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
-export class ColumnExpr extends Expression {
+export class ColumnExpr extends ConditionExpr {
   key = ExpressionKey.COLUMN;
 
   /**
@@ -7732,6 +7732,7 @@ export class ColumnExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     table: false,
     db: false,
     catalog: false,
@@ -7742,20 +7743,59 @@ export class ColumnExpr extends Expression {
     super(args);
   }
 
-  get table (): Expression {
-    return this.args.table as Expression;
+  /**
+   * Gets the table name as a string
+   * @returns The table name
+   */
+  get table (): string {
+    return this.text('table');
   }
 
+  /**
+   * Gets the database name as a string
+   * @returns The database name
+   */
   get db (): string {
-    return this.args.db as string;
+    return this.text('db');
   }
 
+  /**
+   * Gets the catalog name as a string
+   * @returns The catalog name
+   */
   get catalog (): string {
-    return this.args.catalog as string;
+    return this.text('catalog');
   }
 
   get joinMark (): Expression {
     return this.args.joinMark as Expression;
+  }
+
+  /**
+   * Gets the output name of the column
+   * @returns The column name
+   */
+  get outputName (): string {
+    return this.name;
+  }
+
+  /**
+   * Return the parts of a column in order catalog, db, table, name.
+   * @returns Array of Identifier expressions for each part that exists
+   */
+  get parts (): IdentifierExpr[] {
+    const result: IdentifierExpr[] = [];
+    for (const part of ['catalog', 'db', 'table', 'this']) {
+      const value = this.args[part];
+      if (value) {
+        result.push(value as IdentifierExpr);
+      }
+    }
+    return result;
+  }
+
+  toDot () {
+    // TODO
   }
 }
 
