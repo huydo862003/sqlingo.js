@@ -2778,8 +2778,10 @@ export class CacheExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     lazy: false,
     options: false,
+    expression: false,
   };
 
   constructor (args: CacheExprArgs = {}) {
