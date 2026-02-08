@@ -2788,7 +2788,7 @@ export class CacheExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Cache expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     lazy: false,
     options: false,
@@ -2817,7 +2817,7 @@ export class UncacheExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Uncache expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     exists: false,
   };
@@ -2849,7 +2849,7 @@ export class RefreshExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Refresh expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     kind: true,
   };
@@ -2900,7 +2900,7 @@ export class DDLExpr extends Expression {
 
 export class LockingStatementExpr extends Expression {
   key = ExpressionKey.LOCKING_STATEMENT;
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
   };
@@ -2968,7 +2968,7 @@ export class CreateExpr extends DDLExpr {
    * Defines the arguments (properties and child expressions) for Create expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: false,
     with: false,
@@ -3057,7 +3057,7 @@ export class SequencePropertiesExpr extends Expression {
    * Defines the arguments (properties and child expressions) for SequenceProperties expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     increment: false,
     minvalue: false,
     maxvalue: false,
@@ -3109,7 +3109,7 @@ export class TruncateTableExpr extends Expression {
    * Defines the arguments (properties and child expressions) for TruncateTable expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
     isDatabase: false,
     exists: false,
@@ -3162,7 +3162,7 @@ export class CloneExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Clone expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     shallow: false,
     copy: false,
@@ -3196,7 +3196,7 @@ export class DescribeExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Describe expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expressions: false,
     style: false,
@@ -3240,7 +3240,7 @@ export class AttachExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Attach expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expressions: false,
     exists: false,
@@ -3264,7 +3264,7 @@ export class DetachExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Detach expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     exists: false,
   };
@@ -3287,7 +3287,7 @@ export class InstallExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Install expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     from: false,
     force: false,
@@ -3315,7 +3315,7 @@ export class SummarizeExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Summarize expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     table: false,
   };
@@ -3345,7 +3345,7 @@ export class KillExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Kill expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     kind: false,
   };
@@ -3370,7 +3370,7 @@ export class DeclareExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Declare expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
   };
 }
@@ -3393,7 +3393,7 @@ export class DeclareItemExpr extends Expression {
    * Defines the arguments (properties and child expressions) for DeclareItem expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     kind: false,
     default: false,
@@ -3421,7 +3421,7 @@ export class SetExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Set expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: false,
     unset: false,
     tag: false,
@@ -3449,7 +3449,7 @@ export class HeredocExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Heredoc expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     tag: false,
   };
@@ -3482,7 +3482,7 @@ export class SetItemExpr extends Expression {
    * Defines the arguments (properties and child expressions) for SetItem expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     expressions: false,
     kind: false,
@@ -3516,7 +3516,7 @@ export class QueryBandExpr extends Expression {
    * Defines the arguments (properties and child expressions) for QueryBand expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     scope: false,
     update: false,
@@ -3544,7 +3544,7 @@ export class ShowExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Show expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     history: false,
     terse: false,
@@ -3697,7 +3697,7 @@ export class UserDefinedFunctionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for UserDefinedFunction expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expressions: false,
     wrapped: false,
@@ -3721,7 +3721,7 @@ export class CharacterSetExpr extends Expression {
    * Defines the arguments (properties and child expressions) for CharacterSet expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     default: false,
   };
@@ -3753,7 +3753,7 @@ export class RecursiveWithSearchExpr extends Expression {
    * Defines the arguments (properties and child expressions) for RecursiveWithSearch expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: true,
     this: true,
     expression: true,
@@ -3782,7 +3782,7 @@ export class WithExpr extends Expression {
    * Defines the arguments (properties and child expressions) for With expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
     recursive: false,
     search: false,
@@ -3808,7 +3808,7 @@ export class WithinGroupExpr extends Expression {
    * Defines the arguments (properties and child expressions) for WithinGroup expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: false,
   };
@@ -3821,7 +3821,7 @@ export class ProjectionDefExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ProjectionDef expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
   };
@@ -3836,7 +3836,7 @@ export class TableAliasExpr extends Expression {
    * Defines the arguments (properties and child expressions) for TableAlias expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     columns: false,
   };
@@ -3859,7 +3859,7 @@ export class ColumnPositionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ColumnPosition expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     position: true,
   };
@@ -3893,7 +3893,7 @@ export class ColumnDefExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ColumnDef expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     kind: false,
     constraints: false,
@@ -3949,7 +3949,7 @@ export class AlterColumnExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AlterColumn expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     dtype: false,
     collate: false,
@@ -4012,7 +4012,7 @@ export class AlterIndexExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AlterIndex expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     visible: true,
   };
@@ -4039,7 +4039,7 @@ export class AlterSortKeyExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AlterSortKey expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     expressions: false,
     compound: false,
@@ -4063,7 +4063,7 @@ export class AlterSetExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AlterSet expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: false,
     option: false,
     tablespace: false,
@@ -4121,7 +4121,7 @@ export class RenameColumnExpr extends Expression {
    * Defines the arguments (properties and child expressions) for RenameColumn expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     to: true,
     exists: false,
@@ -4167,7 +4167,7 @@ export class CommentExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Comment expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     kind: true,
     expression: true,
@@ -4201,7 +4201,7 @@ export class ComprehensionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Comprehension expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
     position: false,
@@ -4235,7 +4235,7 @@ export class MergeTreeTTLActionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for MergeTreeTTLAction expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     delete: false,
     recompress: false,
@@ -4273,7 +4273,7 @@ export class MergeTreeTTLExpr extends Expression {
    * Defines the arguments (properties and child expressions) for MergeTreeTTL expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
     where: false,
     group: false,
@@ -4306,7 +4306,7 @@ export class IndexConstraintOptionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for IndexConstraintOption expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     keyBlockSize: false,
     using: false,
     parser: false,
@@ -4371,7 +4371,7 @@ export class ColumnConstraintExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     kind: true,
   };
@@ -4402,7 +4402,7 @@ export class WithOperatorExpr extends Expression {
    * Defines the arguments (properties and child expressions) for WithOperator expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     op: true,
   };
@@ -4419,7 +4419,7 @@ export class WithOperatorExpr extends Expression {
 export class WatermarkColumnConstraintExpr extends Expression {
   key = ExpressionKey.WATERMARK_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
   };
@@ -4428,7 +4428,7 @@ export class WatermarkColumnConstraintExpr extends Expression {
 export class ConstraintExpr extends Expression {
   key = ExpressionKey.CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expressions: true,
   };
@@ -4459,7 +4459,7 @@ export class DropExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Drop expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     kind: false,
     expressions: false,
@@ -4528,7 +4528,7 @@ export class ExportExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Export expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     connection: false,
     options: true,
@@ -4554,7 +4554,7 @@ export class FilterExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Filter expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
   };
@@ -4573,7 +4573,7 @@ export class ChangesExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Changes expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     information: true,
     atBefore: false,
     end: false,
@@ -4605,7 +4605,7 @@ export class ConnectExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Connect expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     start: false,
     connect: true,
     nocycle: false,
@@ -4635,7 +4635,7 @@ export class CopyParameterExpr extends Expression {
    * Defines the arguments (properties and child expressions) for CopyParameter expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: false,
     expressions: false,
@@ -4651,7 +4651,7 @@ export class CredentialsExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Credentials expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     credentials: false,
     encryption: false,
     storage: false,
@@ -4697,7 +4697,7 @@ export class DirectoryExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Directory expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     local: false,
     rowFormat: false,
@@ -4729,7 +4729,7 @@ export class ForeignKeyExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ForeignKey expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: false,
     reference: false,
     delete: false,
@@ -4765,7 +4765,7 @@ export class ColumnPrefixExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ColumnPrefix expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
   };
@@ -4780,7 +4780,7 @@ export class PrimaryKeyExpr extends Expression {
    * Defines the arguments (properties and child expressions) for PrimaryKey expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     expressions: true,
     options: false,
@@ -4809,7 +4809,7 @@ export class IntoExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Into expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     temporary: false,
     unlogged: false,
@@ -4861,7 +4861,7 @@ export class HavingExpr extends Expression {
 export class HintExpr extends Expression {
   key = ExpressionKey.HINT;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
   };
 }
@@ -4869,7 +4869,7 @@ export class HintExpr extends Expression {
 export class JoinHintExpr extends Expression {
   key = ExpressionKey.JOIN_HINT;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expressions: true,
   };
@@ -4884,7 +4884,7 @@ export class IdentifierExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Identifier expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     quoted: false,
     global: false,
@@ -4915,7 +4915,7 @@ export class IdentifierExpr extends Expression {
 export class OpclassExpr extends Expression {
   key = ExpressionKey.OPCLASS;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
   };
@@ -4930,7 +4930,7 @@ export class IndexExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Index expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     table: false,
     unique: false,
@@ -4973,7 +4973,7 @@ export class IndexParametersExpr extends Expression {
    * Defines the arguments (properties and child expressions) for IndexParameters expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     using: false,
     include: false,
     columns: false,
@@ -5030,7 +5030,7 @@ export class ConditionalInsertExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ConditionalInsert expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: false,
     else: false,
@@ -5063,7 +5063,7 @@ export class MultitableInsertsExpr extends Expression {
    * Defines the arguments (properties and child expressions) for MultitableInserts expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
     kind: true,
     source: true,
@@ -5091,7 +5091,7 @@ export class OnConflictExpr extends Expression {
    * Defines the arguments (properties and child expressions) for OnConflict expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     duplicate: false,
     expressions: false,
     action: false,
@@ -5139,7 +5139,7 @@ export class OnConditionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for OnCondition expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     error: false,
     empty: false,
     null: false,
@@ -5171,7 +5171,7 @@ export class ReturningExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Returning expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
     into: false,
   };
@@ -5188,7 +5188,7 @@ export class ReturningExpr extends Expression {
 export class IntroducerExpr extends Expression {
   key = ExpressionKey.INTRODUCER;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
   };
@@ -5207,7 +5207,7 @@ export class LoadDataExpr extends Expression {
    * Defines the arguments (properties and child expressions) for LoadData expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     local: false,
     overwrite: false,
@@ -5255,7 +5255,7 @@ export class PartitionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Partition expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
     subpartition: false,
   };
@@ -5272,7 +5272,7 @@ export class PartitionExpr extends Expression {
 export class PartitionRangeExpr extends Expression {
   key = ExpressionKey.PARTITION_RANGE;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: false,
     expressions: false,
@@ -5292,7 +5292,7 @@ export class FetchExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Fetch expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     direction: false,
     count: false,
     limitOptions: false,
@@ -5331,7 +5331,7 @@ export class GrantExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Grant expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     privileges: true,
     kind: false,
     securable: true,
@@ -5374,7 +5374,7 @@ export class RevokeExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    * Extends Grant's arg_types with additional cascade field.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     privileges: true,
     kind: false,
     securable: true,
@@ -5401,7 +5401,7 @@ export class GroupExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Group expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: false,
     groupingSets: false,
     cube: false,
@@ -5438,7 +5438,7 @@ export class GroupExpr extends Expression {
 export class CubeExpr extends Expression {
   key = ExpressionKey.CUBE;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: false,
   };
 }
@@ -5446,7 +5446,7 @@ export class CubeExpr extends Expression {
 export class RollupExpr extends Expression {
   key = ExpressionKey.ROLLUP;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: false,
   };
 }
@@ -5454,7 +5454,7 @@ export class RollupExpr extends Expression {
 export class GroupingSetsExpr extends Expression {
   key = ExpressionKey.GROUPING_SETS;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
   };
 }
@@ -5468,7 +5468,7 @@ export class LambdaExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Lambda expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expressions: true,
     colon: false,
@@ -5492,7 +5492,7 @@ export class LimitExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Limit expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     expression: true,
     offset: false,
@@ -5522,7 +5522,7 @@ export class LimitOptionsExpr extends Expression {
    * Defines the arguments (properties and child expressions) for LimitOptions expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     percent: false,
     rows: false,
     withTies: false,
@@ -5578,7 +5578,7 @@ export class JoinExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Join expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     on: false,
     side: false,
@@ -5729,7 +5729,7 @@ export class MatchRecognizeMeasureExpr extends Expression {
    * Defines the arguments (properties and child expressions) for MatchRecognizeMeasure expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     windowFrame: false,
   };
@@ -5752,7 +5752,7 @@ export class MatchRecognizeExpr extends Expression {
    * Defines the arguments (properties and child expressions) for MatchRecognize expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     partitionBy: false,
     order: false,
     measures: false,
@@ -5803,7 +5803,7 @@ export class FinalExpr extends Expression {
 export class OffsetExpr extends Expression {
   key = ExpressionKey.OFFSET;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     expression: true,
     expressions: false,
@@ -5819,7 +5819,7 @@ export class OrderExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Order expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     expressions: true,
     siblings: false,
@@ -5843,7 +5843,7 @@ export class WithFillExpr extends Expression {
    * Defines the arguments (properties and child expressions) for WithFill expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     from: false,
     to: false,
     step: false,
@@ -5880,7 +5880,7 @@ export class OrderedExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Ordered expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     desc: false,
     nullsFirst: true,
@@ -5917,7 +5917,7 @@ export class PropertyExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Property expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     value: true,
   };
@@ -5934,7 +5934,7 @@ export class PropertyExpr extends Expression {
 export class GrantPrivilegeExpr extends Expression {
   key = ExpressionKey.GRANT_PRIVILEGE;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expressions: false,
   };
@@ -5958,7 +5958,7 @@ export class GrantPrincipalExpr extends Expression {
    * Defines the arguments (properties and child expressions) for GrantPrincipal expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     kind: false,
   };
@@ -5975,7 +5975,7 @@ export class GrantPrincipalExpr extends Expression {
 export class AllowedValuesPropertyExpr extends Expression {
   key = ExpressionKey.ALLOWED_VALUES_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
   };
 }
@@ -5989,7 +5989,7 @@ export class PartitionByRangePropertyDynamicExpr extends Expression {
    * Defines the arguments (properties and child expressions) for PartitionByRangePropertyDynamic expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     start: true,
     end: true,
@@ -6022,7 +6022,7 @@ export class RollupIndexExpr extends Expression {
    * Defines the arguments (properties and child expressions) for RollupIndex expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expressions: true,
     fromIndex: false,
@@ -6045,7 +6045,7 @@ export class RollupIndexExpr extends Expression {
 export class PartitionListExpr extends Expression {
   key = ExpressionKey.PARTITION_LIST;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expressions: true,
   };
@@ -6060,7 +6060,7 @@ export class PartitionBoundSpecExpr extends Expression {
    * Defines the arguments (properties and child expressions) for PartitionBoundSpec expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     expression: false,
     fromExpressions: false,
@@ -6089,7 +6089,7 @@ export class QueryTransformExpr extends Expression {
    * Defines the arguments (properties and child expressions) for QueryTransform expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     commandScript: true,
     schema: false,
     rowFormatBefore: false,
@@ -6136,7 +6136,7 @@ export class SemanticViewExpr extends Expression {
    * Defines the arguments (properties and child expressions) for SemanticView expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     metrics: false,
     dimensions: false,
     facts: false,
@@ -6164,94 +6164,6 @@ export class SemanticViewExpr extends Expression {
   }
 }
 
-/**
- * Enumeration of CREATE property locations
- * Form: schema specified
- *   create [POST_CREATE]
- *     table a [POST_NAME]
- *     (b int) [POST_SCHEMA]
- *     with ([POST_WITH])
- *     index (b) [POST_INDEX]
- *
- * Form: alias selection
- *   create [POST_CREATE]
- *     table a [POST_NAME]
- *     as [POST_ALIAS] (select * from b) [POST_EXPRESSION]
- *     index (c) [POST_INDEX]
- */
-export enum PropertiesLocation {
-  POST_CREATE = 'POST_CREATE',
-  POST_NAME = 'POST_NAME',
-  POST_SCHEMA = 'POST_SCHEMA',
-  POST_WITH = 'POST_WITH',
-  POST_ALIAS = 'POST_ALIAS',
-  POST_EXPRESSION = 'POST_EXPRESSION',
-  POST_INDEX = 'POST_INDEX',
-  UNSUPPORTED = 'UNSUPPORTED',
-}
-
-export class PropertiesExpr extends Expression {
-  key = ExpressionKey.PROPERTIES;
-
-  static argTypes = {
-    expressions: true,
-  };
-
-  static NAME_TO_PROPERTY = {
-    'ALGORITHM': AlgorithmPropertyExpr,
-    'AUTO_INCREMENT': AutoIncrementPropertyExpr,
-    'CHARACTER SET': CharacterSetPropertyExpr,
-    'CLUSTERED_BY': ClusteredByPropertyExpr,
-    'COLLATE': CollatePropertyExpr,
-    'COMMENT': SchemaCommentPropertyExpr,
-    'CREDENTIALS': CredentialsPropertyExpr,
-    'DEFINER': DefinerPropertyExpr,
-    'DISTKEY': DistKeyPropertyExpr,
-    'DISTRIBUTED_BY': DistributedByPropertyExpr,
-    'DISTSTYLE': DistStylePropertyExpr,
-    'ENGINE': EnginePropertyExpr,
-    'EXECUTE AS': ExecuteAsPropertyExpr,
-    'FORMAT': FileFormatPropertyExpr,
-    'LANGUAGE': LanguagePropertyExpr,
-    'LOCATION': LocationPropertyExpr,
-    'LOCK': LockPropertyExpr,
-    'PARTITIONED_BY': PartitionedByPropertyExpr,
-    'RETURNS': ReturnsPropertyExpr,
-    'ROW_FORMAT': RowFormatPropertyExpr,
-    'SORTKEY': SortKeyPropertyExpr,
-    'ENCODE': EncodePropertyExpr,
-    'INCLUDE': IncludePropertyExpr,
-  } as const;
-
-  static PROPERTY_TO_NAME: Record<string, string> = Object.fromEntries(
-    Object.entries(PropertiesExpr.NAME_TO_PROPERTY).map(([k, v]) => [v.name, k]),
-  );
-
-  /**
-   * Creates a Properties expression from a dictionary of property key-value pairs.
-   *
-   * @param propertiesDict - Dictionary mapping property names to their values
-   * @returns A Properties expression containing the property expressions
-   */
-  static fromDict (propertiesDict: Record<string, unknown>): PropertiesExpr {
-    const expressions: Expression[] = [];
-
-    for (const [key, value] of Object.entries(propertiesDict)) {
-      const propertyClass = PropertiesExpr.NAME_TO_PROPERTY[key.toUpperCase() as keyof typeof PropertiesExpr.NAME_TO_PROPERTY];
-      if (propertyClass) {
-        expressions.push(new propertyClass({ this: convert(value) }));
-      } else {
-        expressions.push(new PropertyExpr({
-          this: LiteralExpr.string(key),
-          value: convert(value),
-        }));
-      }
-    }
-
-    return new PropertiesExpr({ expressions });
-  }
-}
-
 export class LocationExpr extends Expression {
   key = ExpressionKey.LOCATION;
 }
@@ -6269,7 +6181,7 @@ export class InputOutputFormatExpr extends Expression {
    * Defines the arguments (properties and child expressions) for InputOutputFormat expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     inputFormat: false,
     outputFormat: false,
   };
@@ -6300,7 +6212,7 @@ export class ReferenceExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Reference expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     options: false,
   };
 
@@ -6334,7 +6246,7 @@ export class IndexTableHintExpr extends Expression {
    * Defines the arguments (properties and child expressions) for IndexTableHint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     target: false,
   };
 
@@ -6365,7 +6277,7 @@ export class HistoricalDataExpr extends Expression {
    * Defines the arguments (properties and child expressions) for HistoricalData expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: true,
   };
 
@@ -6387,7 +6299,7 @@ export class PutExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Put expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     target: true,
     properties: false,
   };
@@ -6414,7 +6326,7 @@ export class GetExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Get expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     target: true,
     properties: false,
   };
@@ -6441,7 +6353,7 @@ export class TableExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Table expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     db: false,
     catalog: false,
     laterals: false,
@@ -6562,7 +6474,7 @@ export class VersionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Version expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: true,
   };
 
@@ -6588,7 +6500,7 @@ export class LockExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Lock expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     update: true,
     wait: false,
     key: false,
@@ -6616,7 +6528,7 @@ export class TableSampleExpr extends Expression {
    * Defines the arguments (properties and child expressions) for TableSample expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     method: false,
     bucketNumerator: false,
     bucketDenominator: false,
@@ -6673,7 +6585,7 @@ export class TagExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Tag expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     prefix: false,
     postfix: false,
   };
@@ -6700,7 +6612,7 @@ export class PivotExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Pivot expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     fields: false,
     unpivot: false,
     using: false,
@@ -6774,7 +6686,7 @@ export class WindowSpecExpr extends Expression {
    * Defines the arguments (properties and child expressions) for WindowSpec expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: false,
     start: false,
     startSide: false,
@@ -6829,7 +6741,7 @@ export class StarExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Star expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     except: false,
     replace: false,
     rename: false,
@@ -6887,7 +6799,7 @@ export class DataTypeExpr extends Expression {
    * Defines the arguments (properties and child expressions) for DataType expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     nested: false,
     values: false,
     prefix: false,
@@ -6946,7 +6858,7 @@ export class TransactionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Transaction expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     modes: false,
     mark: false,
   };
@@ -6973,7 +6885,7 @@ export class CommitExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Commit expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     chain: false,
     durability: false,
   };
@@ -7000,7 +6912,7 @@ export class RollbackExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Rollback expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     savepoint: false,
   };
 
@@ -7035,7 +6947,7 @@ export class AlterExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Alter expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: true,
     actions: true,
     exists: false,
@@ -7097,7 +7009,7 @@ export class AlterSessionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AlterSession expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unset: false,
   };
 
@@ -7127,7 +7039,7 @@ export class AnalyzeExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Analyze expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: false,
     options: false,
     mode: false,
@@ -7179,7 +7091,7 @@ export class AnalyzeStatisticsExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AnalyzeStatistics expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: true,
     option: false,
   };
@@ -7206,7 +7118,7 @@ export class AnalyzeHistogramExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AnalyzeHistogram expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     updateOptions: false,
   };
 
@@ -7237,7 +7149,7 @@ export class AnalyzeSampleExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AnalyzeSample expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: true,
     sample: true,
   };
@@ -7274,7 +7186,7 @@ export class AnalyzeDeleteExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AnalyzeDelete expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: false,
   };
 
@@ -7309,7 +7221,7 @@ export class AnalyzeValidateExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AnalyzeValidate expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: true,
   };
 
@@ -7343,7 +7255,7 @@ export class AddPartitionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AddPartition expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     exists: false,
     location: false,
   };
@@ -7374,7 +7286,7 @@ export class DropPartitionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for DropPartition expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     exists: false,
   };
 
@@ -7396,7 +7308,7 @@ export class ReplacePartitionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ReplacePartition expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     source: true,
   };
 
@@ -7434,7 +7346,7 @@ export class AtTimeZoneExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AtTimeZone expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     zone: true,
   };
 
@@ -7456,7 +7368,7 @@ export class FromTimeZoneExpr extends Expression {
    * Defines the arguments (properties and child expressions) for FromTimeZone expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     zone: true,
   };
 
@@ -7478,7 +7390,7 @@ export class FormatPhraseExpr extends Expression {
    * Defines the arguments (properties and child expressions) for FormatPhrase expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: true,
   };
 
@@ -7500,7 +7412,7 @@ export class DistinctExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Distinct expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     on: false,
   };
 
@@ -7526,7 +7438,7 @@ export class TimeUnitExpr extends Expression {
    * Defines the arguments (properties and child expressions) for TimeUnit expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -7556,7 +7468,7 @@ export class HavingMaxExpr extends Expression {
    * Defines the arguments (properties and child expressions) for HavingMax expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     max: true,
   };
 
@@ -7578,7 +7490,7 @@ export class TranslateCharactersExpr extends Expression {
    * Defines the arguments (properties and child expressions) for TranslateCharacters expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     withError: false,
   };
 
@@ -7604,7 +7516,7 @@ export class OverflowTruncateBehaviorExpr extends Expression {
    * Defines the arguments (properties and child expressions) for OverflowTruncateBehavior expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     withCount: true,
   };
 
@@ -7626,7 +7538,7 @@ export class JSONExpr extends Expression {
    * Defines the arguments (properties and child expressions) for JSON expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     with: false,
     unique: false,
   };
@@ -7653,7 +7565,7 @@ export class JSONPathExpr extends Expression {
    * Defines the arguments (properties and child expressions) for JSONPath expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     escape: false,
   };
 
@@ -7696,7 +7608,7 @@ export class JSONColumnDefExpr extends Expression {
    * Defines the arguments (properties and child expressions) for JSONColumnDef expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: false,
     path: false,
     nestedSchema: false,
@@ -7737,7 +7649,7 @@ export class JSONValueExpr extends Expression {
    * Defines the arguments (properties and child expressions) for JSONValue expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     path: true,
     returning: false,
     onCondition: false,
@@ -7780,7 +7692,7 @@ export class OpenJSONColumnDefExpr extends Expression {
    * Defines the arguments (properties and child expressions) for OpenJSONColumnDef expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: true,
     path: false,
     asJson: false,
@@ -7812,7 +7724,7 @@ export class JSONExtractQuoteExpr extends Expression {
    * Defines the arguments (properties and child expressions) for JSONExtractQuote expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     option: true,
     scalar: false,
   };
@@ -7843,7 +7755,7 @@ export class SliceExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Slice expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     step: false,
   };
 
@@ -7895,7 +7807,7 @@ export class UseExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Use expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: false,
   };
 
@@ -7917,7 +7829,7 @@ export class WhenExpr extends Expression {
    * Defines the arguments (properties and child expressions) for When expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     matched: true,
     source: false,
     condition: false,
@@ -7970,7 +7882,7 @@ export class CTEExpr extends DerivedTableExpr {
    * Defines the arguments (properties and child expressions) for CTE expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     alias: true,
     scalar: false,
@@ -8008,7 +7920,7 @@ export class HexStringExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for HexString expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     isInteger: false,
   };
@@ -8031,7 +7943,7 @@ export class ByteStringExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for ByteString expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     isBytes: false,
   };
@@ -8052,7 +7964,7 @@ export class RawStringExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for RawString expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {};
+  static argTypes: Record<string, boolean> = {};
 }
 
 export type UnicodeStringExprArgs = { escape?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -8064,7 +7976,7 @@ export class UnicodeStringExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for UnicodeString expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     escape: false,
   };
@@ -8094,7 +8006,7 @@ export class ColumnExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for Column expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     table: false,
     db: false,
@@ -8181,7 +8093,7 @@ export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr 
    * Defines the arguments (properties and child expressions) for PeriodForSystemTimeConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
   };
@@ -8196,7 +8108,7 @@ export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for CaseSpecificColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     not: true,
   };
 
@@ -8216,7 +8128,7 @@ export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for CharacterSetColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -8230,7 +8142,7 @@ export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for CheckColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     enforced: false,
   };
@@ -8263,7 +8175,7 @@ export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for CompressColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
   };
 }
@@ -8275,7 +8187,7 @@ export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for DateFormatColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -8299,7 +8211,7 @@ export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for EphemeralColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
   };
 }
@@ -8314,7 +8226,7 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
    * Each key represents an argument name, and the boolean indicates if it's required.
    * Note: this: true -> ALWAYS, this: false -> BY DEFAULT
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     expression: false,
     onNull: false,
@@ -8368,7 +8280,7 @@ export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr
    * Defines the arguments (properties and child expressions) for GeneratedAsRowColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     start: false,
     hidden: false,
   };
@@ -8404,7 +8316,7 @@ export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for IndexColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     expressions: false,
     kind: false,
@@ -8446,13 +8358,13 @@ export class NonClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
 export class NotForReplicationColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NOT_FOR_REPLICATION_COLUMN_CONSTRAINT;
 
-  static argTypes = {};
+  static argTypes: Record<string, boolean> = {};
 }
 
 export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.MASKING_POLICY_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expressions: false,
   };
@@ -8467,7 +8379,7 @@ export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for NotNullColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     allowNull: false,
   };
 
@@ -8493,7 +8405,7 @@ export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for PrimaryKeyColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     desc: false,
     options: false,
   };
@@ -8524,7 +8436,7 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for UniqueColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     indexType: false,
     onConflict: false,
@@ -8556,7 +8468,7 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
 export class UppercaseColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.UPPERCASE_COLUMN_CONSTRAINT;
 
-  static argTypes = {};
+  static argTypes: Record<string, boolean> = {};
 }
 
 export class PathColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -8576,7 +8488,7 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for ComputedColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     persisted: false,
     notNull: false,
@@ -8609,7 +8521,7 @@ export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for InOutColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     input: false,
     output: false,
     variadic: false,
@@ -8641,7 +8553,7 @@ export class DeleteExpr extends DMLExpr {
    * Defines the arguments (properties and child expressions) for Delete expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     with: false,
     this: false,
     using: false,
@@ -8774,7 +8686,7 @@ export class CopyExpr extends DMLExpr {
    * Defines the arguments (properties and child expressions) for Copy expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     kind: true,
     files: false,
@@ -8819,7 +8731,7 @@ export class InsertExpr {
    * Defines the arguments (properties and child expressions) for Insert expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     hint: false,
     with: false,
     isFunction: false,
@@ -8969,7 +8881,7 @@ export class LiteralExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for Literal expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     isString: true,
   };
@@ -9047,7 +8959,7 @@ export class SortExpr extends OrderExpr {
 export class AlgorithmPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ALGORITHM_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9055,7 +8967,7 @@ export class AlgorithmPropertyExpr extends PropertyExpr {
 export class AutoIncrementPropertyExpr extends PropertyExpr {
   key = ExpressionKey.AUTO_INCREMENT_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9063,7 +8975,7 @@ export class AutoIncrementPropertyExpr extends PropertyExpr {
 export class AutoRefreshPropertyExpr extends PropertyExpr {
   key = ExpressionKey.AUTO_REFRESH_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9071,7 +8983,7 @@ export class AutoRefreshPropertyExpr extends PropertyExpr {
 export class BackupPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BACKUP_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9079,7 +8991,7 @@ export class BackupPropertyExpr extends PropertyExpr {
 export class BuildPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BUILD_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9093,7 +9005,7 @@ export class BlockCompressionPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for BlockCompressionProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     autotemp: false,
     always: false,
@@ -9140,7 +9052,7 @@ export class CharacterSetPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for CharacterSetProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     default: true,
   };
@@ -9167,7 +9079,7 @@ export class ChecksumPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for ChecksumProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     on: false,
     default: false,
@@ -9199,7 +9111,7 @@ export class CollatePropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for CollateProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     default: false,
   };
@@ -9220,7 +9132,7 @@ export class CollatePropertyExpr extends PropertyExpr {
 export class CopyGrantsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.COPY_GRANTS_PROPERTY;
 
-  static argTypes = {};
+  static argTypes: Record<string, boolean> = {};
 }
 
 export type DataBlocksizePropertyExprArgs = { value?: string; size?: number | Expression; units?: Expression[]; minimum?: Expression; maximum?: Expression; default?: Expression; [key: string]: unknown } & PropertyExprArgs;
@@ -9232,7 +9144,7 @@ export class DataBlocksizePropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for DataBlocksizeProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     size: false,
     units: false,
@@ -9279,7 +9191,7 @@ export class DataDeletionPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for DataDeletionProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     on: true,
     filterColumn: false,
@@ -9310,7 +9222,7 @@ export class DataDeletionPropertyExpr extends PropertyExpr {
 export class DefinerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DEFINER_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9318,7 +9230,7 @@ export class DefinerPropertyExpr extends PropertyExpr {
 export class DistKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DIST_KEY_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9343,7 +9255,7 @@ export class DistributedByPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for DistributedByProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: false,
     kind: true,
     buckets: false,
@@ -9374,7 +9286,7 @@ export class DistributedByPropertyExpr extends PropertyExpr {
 export class DistStylePropertyExpr extends PropertyExpr {
   key = ExpressionKey.DIST_STYLE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9382,7 +9294,7 @@ export class DistStylePropertyExpr extends PropertyExpr {
 export class DuplicateKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DUPLICATE_KEY_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
   };
 }
@@ -9390,7 +9302,7 @@ export class DuplicateKeyPropertyExpr extends PropertyExpr {
 export class EnginePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ENGINE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9398,13 +9310,13 @@ export class EnginePropertyExpr extends PropertyExpr {
 export class HeapPropertyExpr extends PropertyExpr {
   key = ExpressionKey.HEAP_PROPERTY;
 
-  static argTypes = {};
+  static argTypes: Record<string, boolean> = {};
 }
 
 export class ToTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.TO_TABLE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9412,7 +9324,7 @@ export class ToTablePropertyExpr extends PropertyExpr {
 export class ExecuteAsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXECUTE_AS_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9420,7 +9332,7 @@ export class ExecuteAsPropertyExpr extends PropertyExpr {
 export class ExternalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXTERNAL_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
   };
 }
@@ -9434,7 +9346,7 @@ export class FallbackPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for FallbackProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     no: true,
     protection: false,
@@ -9466,7 +9378,7 @@ export class FileFormatPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for FileFormatProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     expressions: false,
     hiveFormat: false,
@@ -9488,7 +9400,7 @@ export class FileFormatPropertyExpr extends PropertyExpr {
 export class CredentialsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.CREDENTIALS_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
   };
 }
@@ -9502,7 +9414,7 @@ export class FreespacePropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for FreespaceProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     percent: false,
   };
@@ -9549,7 +9461,7 @@ export class IsolatedLoadingPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for IsolatedLoadingProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     no: false,
     concurrent: false,
@@ -9586,7 +9498,7 @@ export class JournalPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for JournalProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     no: false,
     dual: false,
@@ -9641,7 +9553,7 @@ export class ClusteredByPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for ClusteredByProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     sortedBy: false,
     buckets: true,
@@ -9687,7 +9599,7 @@ export class DictPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for DictProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     kind: true,
     settings: false,
@@ -9723,7 +9635,7 @@ export class DictRangeExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for DictRange expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     min: true,
     max: true,
@@ -9749,13 +9661,13 @@ export class DictRangeExpr extends PropertyExpr {
 export class DynamicPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DYNAMIC_PROPERTY;
 
-  static argTypes = {};
+  static argTypes: Record<string, boolean> = {};
 }
 
 export class OnClusterExpr extends PropertyExpr {
   key = ExpressionKey.ON_CLUSTER;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9763,13 +9675,13 @@ export class OnClusterExpr extends PropertyExpr {
 export class EmptyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EMPTY_PROPERTY;
 
-  static argTypes = {};
+  static argTypes: Record<string, boolean> = {};
 }
 
 export class LikePropertyExpr extends PropertyExpr {
   key = ExpressionKey.LIKE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expressions: false,
   };
@@ -9778,7 +9690,7 @@ export class LikePropertyExpr extends PropertyExpr {
 export class LocationPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCATION_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9786,7 +9698,7 @@ export class LocationPropertyExpr extends PropertyExpr {
 export class LockPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCK_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9811,7 +9723,7 @@ export class LockingPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for LockingProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     kind: true,
     forOrIn: false,
@@ -9853,7 +9765,7 @@ export class LogPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for LogProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     no: true,
   };
@@ -9874,7 +9786,7 @@ export class LogPropertyExpr extends PropertyExpr {
 export class MaterializedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.MATERIALIZED_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
   };
 }
@@ -9888,7 +9800,7 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for MergeBlockRatioProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
     no: false,
     default: false,
@@ -9919,13 +9831,13 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
 export class NoPrimaryIndexPropertyExpr extends PropertyExpr {
   key = ExpressionKey.NO_PRIMARY_INDEX_PROPERTY;
 
-  static argTypes = {};
+  static argTypes: Record<string, boolean> = {};
 }
 
 export class OnPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ON_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9939,7 +9851,7 @@ export class OnCommitPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for OnCommitProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     delete: false,
   };
@@ -9960,7 +9872,7 @@ export class OnCommitPropertyExpr extends PropertyExpr {
 export class PartitionedByPropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_BY_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -9968,7 +9880,7 @@ export class PartitionedByPropertyExpr extends PropertyExpr {
 export class PartitionedByBucketExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_BY_BUCKET;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
   };
@@ -9977,7 +9889,7 @@ export class PartitionedByBucketExpr extends PropertyExpr {
 export class PartitionByTruncateExpr extends PropertyExpr {
   key = ExpressionKey.PARTITION_BY_TRUNCATE;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
   };
@@ -9992,7 +9904,7 @@ export class PartitionByRangePropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for PartitionByRangeProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     partitionExpressions: true,
     createExpressions: true,
@@ -10018,7 +9930,7 @@ export class PartitionByRangePropertyExpr extends PropertyExpr {
 export class RollupPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROLLUP_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
   };
 }
@@ -10032,7 +9944,7 @@ export class PartitionByListPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for PartitionByListProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     partitionExpressions: true,
     createExpressions: true,
@@ -10073,7 +9985,7 @@ export class RefreshTriggerPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for RefreshTriggerProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     method: false,
     kind: false,
@@ -10114,7 +10026,7 @@ export class RefreshTriggerPropertyExpr extends PropertyExpr {
 export class UniqueKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNIQUE_KEY_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
   };
 }
@@ -10140,7 +10052,7 @@ export class ReturnsPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for ReturnsProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     isTable: false,
     table: false,
@@ -10185,7 +10097,7 @@ export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for RowFormatDelimitedProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     fields: false,
     escaped: false,
@@ -10242,7 +10154,7 @@ export class RowFormatSerdePropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for RowFormatSerdeProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     serdeProperties: false,
   };
@@ -10281,7 +10193,7 @@ export class SerdePropertiesExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for SerdeProperties expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     with: false,
   };
@@ -10308,7 +10220,7 @@ export class SetPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for SetProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     multi: true,
   };
@@ -10347,7 +10259,7 @@ export class SortKeyPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for SortKeyProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     compound: false,
   };
@@ -10394,7 +10306,7 @@ export class SecurePropertyExpr extends PropertyExpr {
 export class TagsExpr {
   key = ExpressionKey.TAGS;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
   };
 }
@@ -10402,7 +10314,7 @@ export class TagsExpr {
 export class TransformModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TRANSFORM_MODEL_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
   };
 }
@@ -10410,7 +10322,7 @@ export class TransformModelPropertyExpr extends PropertyExpr {
 export class TransientPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TRANSIENT_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
   };
 }
@@ -10418,13 +10330,13 @@ export class TransientPropertyExpr extends PropertyExpr {
 export class UnloggedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNLOGGED_PROPERTY;
 
-  static argTypes = {};
+  static argTypes: Record<string, boolean> = {};
 }
 
 export class UsingTemplatePropertyExpr extends PropertyExpr {
   key = ExpressionKey.USING_TEMPLATE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -10432,7 +10344,7 @@ export class UsingTemplatePropertyExpr extends PropertyExpr {
 export class ViewAttributePropertyExpr extends PropertyExpr {
   key = ExpressionKey.VIEW_ATTRIBUTE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -10440,7 +10352,7 @@ export class ViewAttributePropertyExpr extends PropertyExpr {
 export class VolatilePropertyExpr extends PropertyExpr {
   key = ExpressionKey.VOLATILE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: false,
   };
 }
@@ -10454,7 +10366,7 @@ export class WithDataPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for WithDataProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     value: false,
     no: true,
     statistics: false,
@@ -10480,7 +10392,7 @@ export class WithDataPropertyExpr extends PropertyExpr {
 export class WithJournalTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_JOURNAL_TABLE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -10488,7 +10400,7 @@ export class WithJournalTablePropertyExpr extends PropertyExpr {
 export class WithSchemaBindingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_SCHEMA_BINDING_PROPERTY;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
   };
 }
@@ -10502,7 +10414,7 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for WithSystemVersioningProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     on: false,
     this: false,
     dataConsistency: false,
@@ -10538,7 +10450,7 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
 export class WithProcedureOptionsExpr extends PropertyExpr {
   key = ExpressionKey.WITH_PROCEDURE_OPTIONS;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     expressions: true,
   };
 }
@@ -10552,7 +10464,7 @@ export class EncodePropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for EncodeProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     properties: false,
     key: false,
@@ -10580,7 +10492,7 @@ export class IncludePropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for IncludeProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     alias: false,
     columnDef: false,
@@ -10602,7 +10514,95 @@ export class IncludePropertyExpr extends PropertyExpr {
 export class ForcePropertyExpr extends PropertyExpr {
   key = ExpressionKey.FORCE_PROPERTY;
 
-  static argTypes = {};
+  static argTypes: Record<string, boolean> = {};
+}
+
+/**
+ * Enumeration of CREATE property locations
+ * Form: schema specified
+ *   create [POST_CREATE]
+ *     table a [POST_NAME]
+ *     (b int) [POST_SCHEMA]
+ *     with ([POST_WITH])
+ *     index (b) [POST_INDEX]
+ *
+ * Form: alias selection
+ *   create [POST_CREATE]
+ *     table a [POST_NAME]
+ *     as [POST_ALIAS] (select * from b) [POST_EXPRESSION]
+ *     index (c) [POST_INDEX]
+ */
+export enum PropertiesLocation {
+  POST_CREATE = 'POST_CREATE',
+  POST_NAME = 'POST_NAME',
+  POST_SCHEMA = 'POST_SCHEMA',
+  POST_WITH = 'POST_WITH',
+  POST_ALIAS = 'POST_ALIAS',
+  POST_EXPRESSION = 'POST_EXPRESSION',
+  POST_INDEX = 'POST_INDEX',
+  UNSUPPORTED = 'UNSUPPORTED',
+}
+
+export class PropertiesExpr extends Expression {
+  key = ExpressionKey.PROPERTIES;
+
+  static argTypes: Record<string, boolean> = {
+    expressions: true,
+  };
+
+  static NAME_TO_PROPERTY = {
+    'ALGORITHM': AlgorithmPropertyExpr,
+    'AUTO_INCREMENT': AutoIncrementPropertyExpr,
+    'CHARACTER SET': CharacterSetPropertyExpr,
+    'CLUSTERED_BY': ClusteredByPropertyExpr,
+    'COLLATE': CollatePropertyExpr,
+    'COMMENT': SchemaCommentPropertyExpr,
+    'CREDENTIALS': CredentialsPropertyExpr,
+    'DEFINER': DefinerPropertyExpr,
+    'DISTKEY': DistKeyPropertyExpr,
+    'DISTRIBUTED_BY': DistributedByPropertyExpr,
+    'DISTSTYLE': DistStylePropertyExpr,
+    'ENGINE': EnginePropertyExpr,
+    'EXECUTE AS': ExecuteAsPropertyExpr,
+    'FORMAT': FileFormatPropertyExpr,
+    'LANGUAGE': LanguagePropertyExpr,
+    'LOCATION': LocationPropertyExpr,
+    'LOCK': LockPropertyExpr,
+    'PARTITIONED_BY': PartitionedByPropertyExpr,
+    'RETURNS': ReturnsPropertyExpr,
+    'ROW_FORMAT': RowFormatPropertyExpr,
+    'SORTKEY': SortKeyPropertyExpr,
+    'ENCODE': EncodePropertyExpr,
+    'INCLUDE': IncludePropertyExpr,
+  } as const;
+
+  static PROPERTY_TO_NAME: Record<string, string> = Object.fromEntries(
+    Object.entries(PropertiesExpr.NAME_TO_PROPERTY).map(([k, v]) => [v.name, k]),
+  );
+
+  /**
+   * Creates a Properties expression from a dictionary of property key-value pairs.
+   *
+   * @param propertiesDict - Dictionary mapping property names to their values
+   * @returns A Properties expression containing the property expressions
+   */
+  static fromDict (propertiesDict: Record<string, unknown>): PropertiesExpr {
+    const expressions: Expression[] = [];
+
+    for (const [key, value] of Object.entries(propertiesDict)) {
+      const propertyClass = PropertiesExpr.NAME_TO_PROPERTY[key.toUpperCase() as keyof typeof PropertiesExpr.NAME_TO_PROPERTY];
+      if (propertyClass) {
+        expressions.push(new propertyClass({ this: convert(value) }));
+      } else {
+        expressions.push(new PropertyExpr({
+          this: LiteralExpr.string(key),
+          value: convert(value),
+        }));
+      }
+    }
+
+    return new PropertiesExpr({ expressions });
+  }
 }
 
 /**
@@ -10624,7 +10624,7 @@ export class SetOperationExpr extends QueryExpr {
    * Defines the arguments (properties and child expressions) for SetOperation expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     with: false,
     distinct: false,
     byName: false,
@@ -10671,7 +10671,7 @@ export class UpdateExpr extends DMLExpr {
    * Defines the arguments (properties and child expressions) for Update expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     with: false,
     from: false,
     where: false,
@@ -10745,7 +10745,7 @@ export class SelectExpr extends QueryExpr {
    * Defines the arguments (properties and child expressions) for Select expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     with: false,
     kind: false,
     hint: false,
@@ -10797,7 +10797,7 @@ export class SubqueryExpr extends DerivedTableExpr {
    * Defines the arguments (properties and child expressions) for Subquery expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     with: false,
   };
 
@@ -10819,7 +10819,7 @@ export class WindowExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Window expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     partitionBy: false,
     order: false,
     spec: false,
@@ -10874,7 +10874,7 @@ export class SessionParameterExpr extends Expression {
    * Defines the arguments (properties and child expressions) for SessionParameter expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: false,
   };
 
@@ -10906,7 +10906,7 @@ export class PlaceholderExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Placeholder expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     kind: false,
     widget: false,
     jdbc: false,
@@ -10966,7 +10966,7 @@ export class BracketExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Bracket expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     offset: false,
     safe: false,
     returnsListForMaps: false,
@@ -10998,7 +10998,7 @@ export class IntervalOpExpr extends TimeUnitExpr {
    * Defines the arguments (properties and child expressions) for IntervalOp expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -11024,7 +11024,7 @@ export class IntervalExpr extends TimeUnitExpr {
    * Defines the arguments (properties and child expressions) for Interval expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -11128,7 +11128,7 @@ export class JSONPathSliceExpr extends JSONPathPartExpr {
    * Defines the arguments (properties and child expressions) for JSONPathSlice expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     start: false,
     end: false,
     step: false,
@@ -11176,7 +11176,7 @@ export class MergeExpr extends DMLExpr {
    * Defines the arguments (properties and child expressions) for Merge expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     using: true,
     on: false,
     usingCond: false,
@@ -11223,7 +11223,7 @@ export class LateralExpr extends UDTFExpr {
    * Defines the arguments (properties and child expressions) for Lateral expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     view: false,
     outer: false,
@@ -11262,7 +11262,7 @@ export class TableFromRowsExpr extends UDTFExpr {
    * Defines the arguments (properties and child expressions) for TableFromRows expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     this: true,
     alias: false,
     joins: false,
@@ -11308,7 +11308,7 @@ export class ValuesExpr extends UDTFExpr {
    * Defines the arguments (properties and child expressions) for Values expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     order: false,
     limit: false,
     offset: false,
@@ -11352,7 +11352,7 @@ export class BitwiseAndExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for BitwiseAnd expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     padside: false,
   };
 
@@ -11374,7 +11374,7 @@ export class BitwiseLeftShiftExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for BitwiseLeftShift expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     requiresInt128: false,
   };
 
@@ -11396,7 +11396,7 @@ export class BitwiseOrExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for BitwiseOr expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     padside: false,
   };
 
@@ -11418,7 +11418,7 @@ export class BitwiseRightShiftExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for BitwiseRightShift expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     requiresInt128: false,
   };
 
@@ -11440,7 +11440,7 @@ export class BitwiseXorExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for BitwiseXor expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     padside: false,
   };
 
@@ -11462,7 +11462,7 @@ export class DivExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for Div expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     typed: false,
     safe: false,
   };
@@ -11505,7 +11505,7 @@ export class DPipeExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for DPipe expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     safe: false,
   };
 
@@ -11607,7 +11607,7 @@ export class OperatorExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for Operator expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     operator: true,
   };
 
@@ -11657,7 +11657,7 @@ export class BetweenExpr extends PredicateExpr {
    * Defines the arguments (properties and child expressions) for Between expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     low: true,
     high: true,
     symmetric: false,
@@ -11689,7 +11689,7 @@ export class InExpr extends PredicateExpr {
    * Defines the arguments (properties and child expressions) for In expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     query: false,
     unnest: false,
     field: false,
@@ -11858,7 +11858,7 @@ export class BoolnotExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Boolnot expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     roundInput: false,
   };
 
@@ -11880,7 +11880,7 @@ export class BoolandExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Booland expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     roundInput: false,
   };
 
@@ -11902,7 +11902,7 @@ export class BoolorExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Boolor expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     roundInput: false,
   };
 
@@ -11928,7 +11928,7 @@ export class ArrayRemoveExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ArrayRemove expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     nullPropagation: false,
   };
 
@@ -11974,7 +11974,7 @@ export class TranslateExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Translate expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     from: true,
     to: true,
   };
@@ -12009,7 +12009,7 @@ export class ArrayExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Array expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     bracketNotation: false,
     structNameInheritance: false,
   };
@@ -12044,7 +12044,7 @@ export class ToBooleanExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ToBoolean expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     safe: false,
   };
 
@@ -12070,7 +12070,7 @@ export class PadExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Pad expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     fillPattern: false,
     isLeft: true,
   };
@@ -12097,7 +12097,7 @@ export class ToCharExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ToChar expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: false,
     nlsparam: false,
     isNumeric: false,
@@ -12133,7 +12133,7 @@ export class ToNumberExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ToNumber expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: false,
     nlsparam: false,
     precision: false,
@@ -12180,7 +12180,7 @@ export class ToDoubleExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ToDouble expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: false,
     safe: false,
   };
@@ -12207,7 +12207,7 @@ export class ToDecfloatExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ToDecfloat expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: false,
   };
 
@@ -12229,7 +12229,7 @@ export class TryToDecfloatExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TryToDecfloat expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: false,
   };
 
@@ -12251,7 +12251,7 @@ export class ToFileExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ToFile expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     path: false,
     safe: false,
   };
@@ -12282,7 +12282,7 @@ export class ColumnsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Columns expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unpack: false,
   };
 
@@ -12304,7 +12304,7 @@ export class ConvertExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Convert expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     style: false,
     safe: false,
   };
@@ -12331,7 +12331,7 @@ export class ConvertToCharsetExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ConvertToCharset expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     dest: true,
     source: false,
   };
@@ -12358,7 +12358,7 @@ export class ConvertTimezoneExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ConvertTimezone expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     sourceTz: false,
     targetTz: true,
     timestamp: true,
@@ -12399,7 +12399,7 @@ export class GenerateSeriesExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for GenerateSeries expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     start: true,
     end: true,
     step: false,
@@ -12436,7 +12436,7 @@ export class GeneratorExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Generator expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     rowcount: false,
     timelimit: false,
   };
@@ -12463,7 +12463,7 @@ export class AIClassifyExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for AIClassify expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     categories: true,
     config: false,
   };
@@ -12498,7 +12498,7 @@ export class ArrayAppendExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ArrayAppend expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     nullPropagation: false,
   };
 
@@ -12520,7 +12520,7 @@ export class ArrayPrependExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ArrayPrepend expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     nullPropagation: false,
   };
 
@@ -12543,7 +12543,7 @@ export class ArrayConcatExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ArrayConcat expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     nullPropagation: false,
   };
 
@@ -12569,7 +12569,7 @@ export class ArrayInsertExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ArrayInsert expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     position: true,
     offset: false,
   };
@@ -12596,7 +12596,7 @@ export class ArrayRemoveAtExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ArrayRemoveAt expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     position: true,
   };
 
@@ -12623,7 +12623,7 @@ export class ArrayContainsExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for ArrayContains expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     ensureVariant: false,
   };
 
@@ -12667,7 +12667,7 @@ export class ArraySliceExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ArraySlice expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     start: true,
     end: false,
     step: false,
@@ -12700,7 +12700,7 @@ export class ArrayToStringExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ArrayToString expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     null: false,
   };
 
@@ -12726,7 +12726,7 @@ export class StPointExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for StPoint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     null: false,
   };
 
@@ -12748,7 +12748,7 @@ export class StDistanceExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for StDistance expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     useSpheroid: false,
   };
 
@@ -12770,7 +12770,7 @@ export class StringExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for String expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     zone: false,
   };
 
@@ -12792,7 +12792,7 @@ export class StringToArrayExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for StringToArray expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     null: false,
   };
 
@@ -12835,7 +12835,7 @@ export class CaseExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Case expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     ifs: true,
     default: false,
   };
@@ -12862,7 +12862,7 @@ export class CastExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Cast expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     to: true,
     format: false,
     safe: false,
@@ -12920,7 +12920,7 @@ export class CastToStrTypeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for CastToStrType expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     to: true,
   };
 
@@ -12946,7 +12946,7 @@ export class CheckXmlExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for CheckXml expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     disableAutoConvert: false,
   };
 
@@ -12977,7 +12977,7 @@ export class CeilExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Ceil expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     decimals: false,
     to: false,
   };
@@ -13010,7 +13010,7 @@ export class CoalesceExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Coalesce expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     isNvl: false,
     isNull: false,
   };
@@ -13038,7 +13038,7 @@ export class ChrExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Chr expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     charset: false,
   };
 
@@ -13060,7 +13060,7 @@ export class ConcatExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Concat expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     safe: false,
     coalesce: false,
   };
@@ -13087,7 +13087,7 @@ export class ContainsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Contains expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     jsonScope: false,
   };
 
@@ -13193,7 +13193,7 @@ export class CurrentTimestampExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for CurrentTimestamp expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     sysdate: false,
   };
 
@@ -13271,7 +13271,7 @@ export class DateAddExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DateAdd expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -13293,7 +13293,7 @@ export class DateBinExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DateBin expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
     zone: false,
     origin: false,
@@ -13325,7 +13325,7 @@ export class DateSubExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DateSub expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -13348,7 +13348,7 @@ export class DateDiffExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DateDiff expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
     zone: false,
     bigInt: false,
@@ -13385,7 +13385,7 @@ export class DateTruncExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DateTrunc expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: true,
     zone: false,
     inputTypePreserved: false,
@@ -13421,7 +13421,7 @@ export class DatetimeAddExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DatetimeAdd expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -13443,7 +13443,7 @@ export class DatetimeSubExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DatetimeSub expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -13465,7 +13465,7 @@ export class DatetimeDiffExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DatetimeDiff expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -13487,7 +13487,7 @@ export class DatetimeTruncExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DatetimeTrunc expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: true,
     zone: false,
   };
@@ -13546,7 +13546,7 @@ export class DaynameExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Dayname expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     abbreviated: false,
   };
 
@@ -13600,7 +13600,7 @@ export class MonthsBetweenExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for MonthsBetween expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     roundoff: false,
   };
 
@@ -13630,7 +13630,7 @@ export class MakeIntervalExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for MakeInterval expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     year: false,
     month: false,
     week: false,
@@ -13682,7 +13682,7 @@ export class LastDayExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for LastDay expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -13736,7 +13736,7 @@ export class TimestampExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Timestamp expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     zone: false,
     withTz: false,
   };
@@ -13763,7 +13763,7 @@ export class TimestampAddExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimestampAdd expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -13785,7 +13785,7 @@ export class TimestampSubExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimestampSub expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -13807,7 +13807,7 @@ export class TimestampDiffExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimestampDiff expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -13829,7 +13829,7 @@ export class TimestampTruncExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimestampTrunc expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: true,
     zone: false,
     inputTypePreserved: false,
@@ -13868,7 +13868,7 @@ export class TimeSliceExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimeSlice expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: true,
     kind: false,
   };
@@ -13895,7 +13895,7 @@ export class TimeAddExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimeAdd expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -13917,7 +13917,7 @@ export class TimeSubExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimeSub expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -13939,7 +13939,7 @@ export class TimeDiffExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimeDiff expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -13961,7 +13961,7 @@ export class TimeTruncExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimeTrunc expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: true,
     zone: false,
   };
@@ -13988,7 +13988,7 @@ export class DateFromPartsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DateFromParts expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     year: true,
     month: false,
     day: false,
@@ -14025,7 +14025,7 @@ export class TimeFromPartsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimeFromParts expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     hour: true,
     min: true,
     sec: true,
@@ -14089,7 +14089,7 @@ export class DateExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Date expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     zone: false,
   };
 
@@ -14115,7 +14115,7 @@ export class DecodeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Decode expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     charset: true,
     replace: false,
   };
@@ -14146,7 +14146,7 @@ export class DecryptExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Decrypt expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     passphrase: true,
     aad: false,
     encryptionMethod: false,
@@ -14183,7 +14183,7 @@ export class DecryptRawExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DecryptRaw expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     key: true,
     iv: true,
     aad: false,
@@ -14230,7 +14230,7 @@ export class EncodeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Encode expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     charset: true,
   };
 
@@ -14252,7 +14252,7 @@ export class EncryptExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Encrypt expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     passphrase: true,
     aad: false,
     encryptionMethod: false,
@@ -14284,7 +14284,7 @@ export class EncryptRawExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for EncryptRaw expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     key: true,
     iv: true,
     aad: false,
@@ -14337,7 +14337,7 @@ export class UnnestExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Unnest expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     offset: false,
     explodeArray: false,
   };
@@ -14364,7 +14364,7 @@ export class FloorExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Floor expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     decimals: false,
     to: false,
   };
@@ -14407,7 +14407,7 @@ export class ToBinaryExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ToBinary expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: false,
     safe: false,
   };
@@ -14434,7 +14434,7 @@ export class Base64DecodeBinaryExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Base64DecodeBinary expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     alphabet: false,
   };
 
@@ -14456,7 +14456,7 @@ export class Base64DecodeStringExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Base64DecodeString expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     alphabet: false,
   };
 
@@ -14478,7 +14478,7 @@ export class Base64EncodeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Base64Encode expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     maxLineLength: false,
     alphabet: false,
   };
@@ -14505,7 +14505,7 @@ export class TryBase64DecodeBinaryExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TryBase64DecodeBinary expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     alphabet: false,
   };
 
@@ -14527,7 +14527,7 @@ export class TryBase64DecodeStringExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TryBase64DecodeString expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     alphabet: false,
   };
 
@@ -14562,7 +14562,7 @@ export class GapFillExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for GapFill expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     tsColumn: true,
     bucketWidth: true,
     partitioningColumns: false,
@@ -14613,7 +14613,7 @@ export class GenerateDateArrayExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for GenerateDateArray expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     start: true,
     end: true,
     step: false,
@@ -14645,7 +14645,7 @@ export class GenerateTimestampArrayExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for GenerateTimestampArray expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     start: true,
     end: true,
     step: true,
@@ -14681,7 +14681,7 @@ export class GetbitExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Getbit expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     zeroIsMsb: false,
   };
 
@@ -14703,7 +14703,7 @@ export class GreatestExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Greatest expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     ignoreNulls: true,
   };
 
@@ -14733,7 +14733,7 @@ export class HexEncodeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for HexEncode expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     case: false,
   };
 
@@ -14767,7 +14767,7 @@ export class CompressExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Compress expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     method: false,
   };
 
@@ -14789,7 +14789,7 @@ export class DecompressBinaryExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DecompressBinary expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     method: true,
   };
 
@@ -14811,7 +14811,7 @@ export class DecompressStringExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DecompressString expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     method: true,
   };
 
@@ -14834,7 +14834,7 @@ export class IfExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for If expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     true: true,
     false: false,
   };
@@ -14911,7 +14911,7 @@ export class JSONKeysAtDepthExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONKeysAtDepth expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     mode: false,
   };
 
@@ -14933,7 +14933,7 @@ export class JSONObjectExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONObject expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     nullHandling: false,
     uniqueKeys: false,
     returnType: false,
@@ -14970,7 +14970,7 @@ export class JSONArrayExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONArray expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     nullHandling: false,
     returnType: false,
     strict: false,
@@ -15002,7 +15002,7 @@ export class JSONExistsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONExists expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     path: true,
     passing: false,
     onCondition: false,
@@ -15043,7 +15043,7 @@ export class JSONStripNullsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONStripNulls expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     includeArrays: false,
     removeEmpty: false,
   };
@@ -15078,7 +15078,7 @@ export class JSONTableExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONTable expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     schema: true,
     path: false,
     errorHandling: false,
@@ -15119,7 +15119,7 @@ export class ObjectInsertExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ObjectInsert expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     key: true,
     value: true,
     updateFlag: false,
@@ -15147,7 +15147,7 @@ export class OpenJSONExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for OpenJSON expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     path: false,
   };
 
@@ -15181,7 +15181,7 @@ export class JSONBExistsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONBExists expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     path: true,
   };
 
@@ -15207,7 +15207,7 @@ export class JSONExtractExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for JSONExtract expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     onlyJsonTypes: false,
     variantExtract: false,
     jsonQuery: false,
@@ -15263,7 +15263,7 @@ export class JSONExtractScalarExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for JSONExtractScalar expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     onlyJsonTypes: false,
     jsonType: false,
     scalarOnly: false,
@@ -15299,7 +15299,7 @@ export class JSONBExtractScalarExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for JSONBExtractScalar expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     jsonType: false,
   };
 
@@ -15321,7 +15321,7 @@ export class JSONFormatExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONFormat expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     options: false,
     isJson: false,
     toJson: false,
@@ -15357,7 +15357,7 @@ export class JSONArrayContainsExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for JSONArrayContains expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     jsonType: false,
   };
 
@@ -15391,7 +15391,7 @@ export class ParseJSONExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ParseJSON expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     safe: false,
   };
 
@@ -15413,7 +15413,7 @@ export class ParseUrlExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ParseUrl expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     partToExtract: false,
     key: false,
     permissive: false,
@@ -15441,7 +15441,7 @@ export class ParseIpExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ParseIp expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     permissive: false,
   };
 
@@ -15463,7 +15463,7 @@ export class ParseTimeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ParseTime expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: true,
   };
 
@@ -15485,7 +15485,7 @@ export class ParseDatetimeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ParseDatetime expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: false,
     zone: false,
   };
@@ -15512,7 +15512,7 @@ export class LeastExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Least expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     ignoreNulls: true,
   };
 
@@ -15546,7 +15546,7 @@ export class LengthExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Length expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     binary: false,
     encoding: false,
   };
@@ -15581,7 +15581,7 @@ export class LevenshteinExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Levenshtein expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     insCost: false,
     delCost: false,
     subCost: false,
@@ -15631,7 +15631,7 @@ export class MapExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Map expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     keys: false,
     values: false,
   };
@@ -15674,7 +15674,7 @@ export class MapContainsKeyExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for MapContainsKey expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     key: true,
   };
 
@@ -15696,7 +15696,7 @@ export class MapInsertExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for MapInsert expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     key: false,
     value: true,
     updateFlag: false,
@@ -15740,7 +15740,7 @@ export class VarMapExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for VarMap expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     keys: true,
     values: true,
   };
@@ -15767,7 +15767,7 @@ export class MatchAgainstExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for MatchAgainst expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     modifier: false,
   };
 
@@ -15814,7 +15814,7 @@ export class MonthnameExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Monthname expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     abbreviated: false,
   };
 
@@ -15836,7 +15836,7 @@ export class AddMonthsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for AddMonths expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     preserveEndOfMonth: false,
   };
 
@@ -15858,7 +15858,7 @@ export class Nvl2Expr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Nvl2 expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     true: true,
     false: false,
   };
@@ -15885,7 +15885,7 @@ export class NormalizeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Normalize expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     form: false,
     isCasefold: false,
   };
@@ -15912,7 +15912,7 @@ export class NormalExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Normal expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     stddev: true,
     gen: true,
   };
@@ -15951,7 +15951,7 @@ export class OverlayExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Overlay expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     from: true,
     for: false,
   };
@@ -15978,7 +15978,7 @@ export class PredictExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Predict expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     paramsStruct: false,
   };
 
@@ -16000,7 +16000,7 @@ export class MLTranslateExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for MLTranslate expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     paramsStruct: true,
   };
 
@@ -16022,7 +16022,7 @@ export class FeaturesAtTimeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for FeaturesAtTime expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     time: false,
     numRows: false,
     ignoreFeatureNulls: false,
@@ -16054,7 +16054,7 @@ export class GenerateEmbeddingExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for GenerateEmbedding expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     paramsStruct: false,
     isText: false,
   };
@@ -16081,7 +16081,7 @@ export class MLForecastExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for MLForecast expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     paramsStruct: false,
   };
 
@@ -16103,7 +16103,7 @@ export class VectorSearchExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for VectorSearch expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     columnToSearch: true,
     queryTable: true,
     queryColumnToSearch: false,
@@ -16158,7 +16158,7 @@ export class ApproxPercentileEstimateExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ApproxPercentileEstimate expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     percentile: true,
   };
 
@@ -16184,7 +16184,7 @@ export class RandExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Rand expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     lower: false,
     upper: false,
   };
@@ -16215,7 +16215,7 @@ export class RandstrExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Randstr expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     generator: false,
   };
 
@@ -16237,7 +16237,7 @@ export class RangeNExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for RangeN expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     each: false,
   };
 
@@ -16271,7 +16271,7 @@ export class ReduceExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Reduce expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     initial: true,
     merge: true,
     finish: false,
@@ -16303,7 +16303,7 @@ export class RegexpExtractExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for RegexpExtract expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     position: false,
     occurrence: false,
     parameters: false,
@@ -16345,7 +16345,7 @@ export class RegexpExtractAllExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for RegexpExtractAll expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     group: false,
     parameters: false,
     position: false,
@@ -16382,7 +16382,7 @@ export class RegexpReplaceExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for RegexpReplace expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     replacement: false,
     position: false,
     occurrence: false,
@@ -16424,7 +16424,7 @@ export class RegexpLikeExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for RegexpLike expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     flag: false,
   };
 
@@ -16446,7 +16446,7 @@ export class RegexpILikeExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for RegexpILike expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     flag: false,
   };
 
@@ -16468,7 +16468,7 @@ export class RegexpFullMatchExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for RegexpFullMatch expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     options: false,
   };
 
@@ -16490,7 +16490,7 @@ export class RegexpInstrExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for RegexpInstr expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     position: false,
     occurrence: false,
     option: false,
@@ -16532,7 +16532,7 @@ export class RegexpSplitExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for RegexpSplit expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     limit: false,
   };
 
@@ -16554,7 +16554,7 @@ export class RegexpCountExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for RegexpCount expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     position: false,
     parameters: false,
   };
@@ -16581,7 +16581,7 @@ export class RepeatExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Repeat expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     times: true,
   };
 
@@ -16603,7 +16603,7 @@ export class ReplaceExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Replace expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     replacement: false,
   };
 
@@ -16629,7 +16629,7 @@ export class RoundExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Round expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     decimals: false,
     truncate: false,
     castsNonIntegerDecimals: false,
@@ -16661,7 +16661,7 @@ export class TruncExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Trunc expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     decimals: false,
   };
 
@@ -16732,7 +16732,7 @@ export class SHA2Expr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for SHA2 expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     length: false,
   };
 
@@ -16762,7 +16762,7 @@ export class SHA2DigestExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for SHA2Digest expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     length: false,
   };
 
@@ -16789,7 +16789,7 @@ export class SortArrayExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for SortArray expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     asc: false,
     nullsFirst: false,
   };
@@ -16828,7 +16828,7 @@ export class SplitExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Split expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     limit: false,
   };
 
@@ -16850,7 +16850,7 @@ export class SplitPartExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for SplitPart expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     delimiter: false,
     partIndex: false,
   };
@@ -16877,7 +16877,7 @@ export class SubstringExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Substring expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     start: false,
     length: false,
   };
@@ -16904,7 +16904,7 @@ export class SubstringIndexExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for SubstringIndex expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     delimiter: true,
     count: true,
   };
@@ -16943,7 +16943,7 @@ export class StrPositionExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for StrPosition expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     substr: true,
     position: false,
     occurrence: false,
@@ -16975,7 +16975,7 @@ export class SearchExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Search expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     jsonScope: false,
     analyzer: false,
     analyzerOptions: false,
@@ -17016,7 +17016,7 @@ export class StrToDateExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for StrToDate expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: false,
     safe: false,
   };
@@ -17043,7 +17043,7 @@ export class StrToTimeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for StrToTime expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: true,
     zone: false,
     safe: false,
@@ -17080,7 +17080,7 @@ export class StrToUnixExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for StrToUnix expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: false,
   };
 
@@ -17102,7 +17102,7 @@ export class StrToMapExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for StrToMap expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     pairDelim: false,
     keyValueDelim: false,
     duplicateResolutionCallback: false,
@@ -17134,7 +17134,7 @@ export class NumberToStrExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for NumberToStr expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: true,
     culture: false,
   };
@@ -17177,7 +17177,7 @@ export class StuffExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Stuff expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     start: true,
     length: true,
   };
@@ -17208,7 +17208,7 @@ export class TimeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Time expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     zone: false,
   };
 
@@ -17230,7 +17230,7 @@ export class TimeToStrExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimeToStr expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: true,
     culture: false,
     zone: false,
@@ -17274,7 +17274,7 @@ export class TimeStrToTimeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimeStrToTime expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     zone: false,
   };
 
@@ -17300,7 +17300,7 @@ export class TrimExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Trim expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     position: false,
     collation: false,
   };
@@ -17327,7 +17327,7 @@ export class TsOrDsAddExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TsOrDsAdd expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
     returnType: false,
   };
@@ -17354,7 +17354,7 @@ export class TsOrDsDiffExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TsOrDsDiff expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     unit: false,
   };
 
@@ -17380,7 +17380,7 @@ export class TsOrDsToDateExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TsOrDsToDate expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: false,
     safe: false,
   };
@@ -17411,7 +17411,7 @@ export class TsOrDsToTimeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TsOrDsToTime expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: false,
     safe: false,
   };
@@ -17454,7 +17454,7 @@ export class UniformExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Uniform expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     gen: false,
     seed: false,
   };
@@ -17485,7 +17485,7 @@ export class UnixToStrExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for UnixToStr expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     format: false,
   };
 
@@ -17507,7 +17507,7 @@ export class UnixToTimeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for UnixToTime expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     scale: false,
     zone: false,
     hours: false,
@@ -17570,7 +17570,7 @@ export class UuidExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Uuid expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     name: false,
     isString: false,
   };
@@ -17589,7 +17589,7 @@ export class TimestampFromPartsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimestampFromParts expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     zone: false,
     milli: false,
   };
@@ -17617,7 +17617,7 @@ export class TimestampLtzFromPartsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimestampLtzFromParts expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     zone: false,
   };
 
@@ -17643,7 +17643,7 @@ export class TimestampTzFromPartsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimestampTzFromParts expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     zone: false,
   };
 
@@ -17670,7 +17670,7 @@ export class CorrExpr extends BinaryExpr {
    * Defines the arguments (properties and child expressions) for Corr expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     nullOnZeroVariance: false,
   };
 
@@ -17692,7 +17692,7 @@ export class WidthBucketExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for WidthBucket expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     minValue: false,
     maxValue: false,
     numBuckets: false,
@@ -17729,7 +17729,7 @@ export class WeekExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Week expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     mode: false,
   };
 
@@ -17755,7 +17755,7 @@ export class XMLElementExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for XMLElement expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     evalname: false,
   };
 
@@ -17777,7 +17777,7 @@ export class XMLGetExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for XMLGet expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     instance: false,
   };
 
@@ -17799,7 +17799,7 @@ export class XMLTableExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for XMLTable expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     namespaces: false,
     passing: false,
     columns: false,
@@ -17840,7 +17840,7 @@ export class ZipfExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Zipf expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     elementcount: true,
     gen: true,
   };
@@ -17867,7 +17867,7 @@ export class NextValueForExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for NextValueFor expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     order: false,
   };
 
@@ -17921,7 +17921,7 @@ export class ParameterizedAggExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for ParameterizedAgg expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     params: true,
   };
 
@@ -17944,7 +17944,7 @@ export class ArgMaxExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for ArgMax expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     count: false,
   };
 
@@ -17967,7 +17967,7 @@ export class ArgMinExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for ArgMin expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     count: false,
   };
 
@@ -17989,7 +17989,7 @@ export class ApproxTopKExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for ApproxTopK expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     counters: false,
   };
 
@@ -18019,7 +18019,7 @@ export class ApproxTopSumExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for ApproxTopSum expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     count: true,
   };
 
@@ -18087,7 +18087,7 @@ export class ApproxDistinctExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for ApproxDistinct expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     accuracy: false,
   };
 
@@ -18113,7 +18113,7 @@ export class ArrayAggExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for ArrayAgg expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     nullsExcluded: false,
   };
 
@@ -18168,7 +18168,7 @@ export class LagExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for Lag expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     offset: false,
     default: false,
   };
@@ -18195,7 +18195,7 @@ export class LeadExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for Lead expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     offset: false,
     default: false,
   };
@@ -18238,7 +18238,7 @@ export class NthValueExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for NthValue expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     offset: true,
     fromFirst: false,
   };
@@ -18269,7 +18269,7 @@ export class TryCastExpr extends CastExpr {
    * Defines the arguments (properties and child expressions) for TryCast expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     to: false,
     format: false,
     safe: false,
@@ -18304,7 +18304,7 @@ export class CountExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for Count expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     bigInt: false,
   };
 
@@ -18347,7 +18347,7 @@ export class GroupConcatExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for GroupConcat expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     separator: false,
     onOverflow: false,
   };
@@ -18386,7 +18386,7 @@ export class XorExpr extends ConnectorExpr {
    * Defines the arguments (properties and child expressions) for Xor expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     roundInput: false,
   };
 
@@ -18408,7 +18408,7 @@ export class JSONObjectAggExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for JSONObjectAgg expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     nullHandling: false,
     uniqueKeys: false,
     returnType: false,
@@ -18449,7 +18449,7 @@ export class JSONArrayAggExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for JSONArrayAgg expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     order: false,
     nullHandling: false,
     returnType: false,
@@ -18512,7 +18512,7 @@ export class ModeExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for Mode expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     deterministic: false,
   };
 
@@ -18554,7 +18554,7 @@ export class QuantileExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for Quantile expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     quantile: true,
   };
 
@@ -18691,7 +18691,7 @@ export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
    * Defines the arguments (properties and child expressions) for CombinedParameterizedAgg expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     params: true,
   };
 
@@ -18717,7 +18717,7 @@ export class ApproxQuantileExpr extends QuantileExpr {
    * Defines the arguments (properties and child expressions) for ApproxQuantile expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     quantile: true,
     accuracy: false,
     weight: false,
