@@ -4,6 +4,7 @@ import { createHash } from 'crypto';
 import { Dialect, type DialectType } from './dialects/dialect';
 import type { Token } from './tokens';
 import { ensureList } from './helper';
+import { baseclass } from './port/utils';
 
 export const SQLGLOT_META = 'sqlglot.meta';
 export const SQLGLOT_ANONYMOUS = 'sqlglot.anonymous';
@@ -6196,7 +6197,7 @@ export class PropertiesExpr extends Expression {
     expressions: true,
   };
 
-  static NAME_TO_PROPERTY: Record<string, new (args?: {}) => PropertyExpr> = {
+  static NAME_TO_PROPERTY: Record<string, new (args?: object) => PropertyExpr> = {
     'ALGORITHM': AlgorithmPropertyExpr,
     'AUTO_INCREMENT': AutoIncrementPropertyExpr,
     'CHARACTER SET': CharacterSetPropertyExpr,
@@ -8809,6 +8810,7 @@ export class CopyExpr extends DMLExpr {
 
 export type InsertExprArgs = { hint?: Expression; with?: Expression; isFunction?: Expression; conflict?: Expression; returning?: Expression; overwrite?: Expression; exists?: Expression; alternative?: Expression; where?: Expression; ignore?: Expression; byName?: string; stored?: Expression; partition?: Expression; settings?: Expression[]; source?: Expression; default?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
+@baseclass(DDLExpr)
 export class InsertExpr extends DMLExpr {
   key = ExpressionKey.INSERT;
 
@@ -8903,39 +8905,6 @@ export class InsertExpr extends DMLExpr {
 
   get default (): Expression {
     return this.args['default'] as Expression;
-  }
-
-  /**
-   * Returns a list of all the CTEs attached to this statement.
-   * (DDL functionality - added to support Python's multiple inheritance of DDL and DML)
-   *
-   * @returns Array of CTE expressions
-   */
-  get ctes (): CTEExpr[] {
-    const withExpr = this.args['with'] as WithExpr | undefined;
-    return (withExpr?.expressions as CTEExpr[]) || [];
-  }
-
-  /**
-   * If this statement contains a query, this returns the query's projections.
-   * (DDL functionality - added to support Python's multiple inheritance of DDL and DML)
-   *
-   * @returns Array of Expression objects representing the SELECT clause projections
-   */
-  get selects (): Expression[] {
-    const expr = this.args.expression as Expression | undefined;
-    return (expr instanceof QueryExpr) ? expr.selects : [];
-  }
-
-  /**
-   * If this statement contains a query, this returns the output names of the query's projections.
-   * (DDL functionality - added to support Python's multiple inheritance of DDL and DML)
-   *
-   * @returns Array of strings representing the names of the projected columns
-   */
-  get namedSelects (): string[] {
-    const expr = this.args.expression as Expression | undefined;
-    return (expr instanceof QueryExpr) ? expr.namedSelects : [];
   }
 
   /**
@@ -10419,6 +10388,7 @@ export class SecurePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURE_PROPERTY;
 }
 
+@baseclass(PropertyExpr)
 export class TagsExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.TAGS;
 
