@@ -8581,7 +8581,7 @@ export class DeleteExpr extends DMLExpr {
     return this.args.where as Expression;
   }
 
-  get withReturning (): Expression {
+  get returning (): Expression {
     return this.args.returning as Expression;
   }
 
@@ -10638,7 +10638,7 @@ export class SetOperationExpr extends QueryExpr {
     super(args);
   }
 
-  get withWith (): Expression {
+  get with (): Expression {
     return this.args['with'] as Expression;
   }
 
@@ -10698,7 +10698,7 @@ export class UpdateExpr extends DMLExpr {
     return this.args.where as Expression;
   }
 
-  get withReturning (): Expression {
+  get returning (): Expression {
     return this.args.returning as Expression;
   }
 
@@ -10760,7 +10760,7 @@ export class SelectExpr extends QueryExpr {
     super(args);
   }
 
-  get withWith (): Expression {
+  get with (): Expression {
     return this.args['with'] as Expression;
   }
 
