@@ -17914,25 +17914,8 @@ export function maybeParse (
   }
 
   // TODO: Implement actual SQL parsing when parser is available
-  // For now, return a placeholder or throw an error
-  // import { parseOne } from './parser.js';
-  // return parseOne(sql, options?.dialect, options?.into);
 
   throw new Error('SQL parsing not yet implemented. Parser module required.');
-}
-
-/**
- * Deprecated alias for maybeParse - use maybeParse instead
- * @deprecated Use maybeParse instead
- */
-export function maybeParseExpr (sql: string | Expression | undefined, _dialect?: DialectType): Expression | undefined {
-  if (!sql) {
-    return undefined;
-  }
-  if (sql instanceof Expression) {
-    return sql;
-  }
-  return undefined;
 }
 
 /**
