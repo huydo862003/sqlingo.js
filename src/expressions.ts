@@ -5907,7 +5907,7 @@ export class OrderedExpr extends Expression {
   }
 }
 
-export type PropertyExprArgs = { value: string; [key: string]: unknown } & BaseExpressionArgs;
+export type PropertyExprArgs = { value: string | Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class PropertyExpr extends Expression {
   key = ExpressionKey.PROPERTY;
@@ -6163,8 +6163,92 @@ export class SemanticViewExpr extends Expression {
   }
 }
 
+/**
+ * Enumeration of CREATE property locations
+ * Form: schema specified
+ *   create [POST_CREATE]
+ *     table a [POST_NAME]
+ *     (b int) [POST_SCHEMA]
+ *     with ([POST_WITH])
+ *     index (b) [POST_INDEX]
+ *
+ * Form: alias selection
+ *   create [POST_CREATE]
+ *     table a [POST_NAME]
+ *     as [POST_ALIAS] (select * from b) [POST_EXPRESSION]
+ *     index (c) [POST_INDEX]
+ */
+export enum PropertiesLocation {
+  POST_CREATE = 'POST_CREATE',
+  POST_NAME = 'POST_NAME',
+  POST_SCHEMA = 'POST_SCHEMA',
+  POST_WITH = 'POST_WITH',
+  POST_ALIAS = 'POST_ALIAS',
+  POST_EXPRESSION = 'POST_EXPRESSION',
+  POST_INDEX = 'POST_INDEX',
+  UNSUPPORTED = 'UNSUPPORTED',
+}
+
 export class PropertiesExpr extends Expression {
   key = ExpressionKey.PROPERTIES;
+
+  static argTypes = {
+    expressions: true,
+  };
+
+  static NAME_TO_PROPERTY: Record<string, new (args?: {}) => PropertyExpr> = {
+    'ALGORITHM': AlgorithmPropertyExpr,
+    'AUTO_INCREMENT': AutoIncrementPropertyExpr,
+    'CHARACTER SET': CharacterSetPropertyExpr,
+    'CLUSTERED_BY': ClusteredByPropertyExpr,
+    'COLLATE': CollatePropertyExpr,
+    'COMMENT': SchemaCommentPropertyExpr,
+    'CREDENTIALS': CredentialsPropertyExpr,
+    'DEFINER': DefinerPropertyExpr,
+    'DISTKEY': DistKeyPropertyExpr,
+    'DISTRIBUTED_BY': DistributedByPropertyExpr,
+    'DISTSTYLE': DistStylePropertyExpr,
+    'ENGINE': EnginePropertyExpr,
+    'EXECUTE AS': ExecuteAsPropertyExpr,
+    'FORMAT': FileFormatPropertyExpr,
+    'LANGUAGE': LanguagePropertyExpr,
+    'LOCATION': LocationPropertyExpr,
+    'LOCK': LockPropertyExpr,
+    'PARTITIONED_BY': PartitionedByPropertyExpr,
+    'RETURNS': ReturnsPropertyExpr,
+    'ROW_FORMAT': RowFormatPropertyExpr,
+    'SORTKEY': SortKeyPropertyExpr,
+    'ENCODE': EncodePropertyExpr,
+    'INCLUDE': IncludePropertyExpr,
+  };
+
+  static PROPERTY_TO_NAME: Record<string, string> = Object.fromEntries(
+    Object.entries(PropertiesExpr.NAME_TO_PROPERTY).map(([k, v]) => [v.name, k]),
+  );
+
+  /**
+   * Creates a Properties expression from a dictionary of property key-value pairs.
+   *
+   * @param propertiesDict - Dictionary mapping property names to their values
+   * @returns A Properties expression containing the property expressions
+   */
+  static fromDict (propertiesDict: Record<string, unknown>): PropertiesExpr {
+    const expressions: Expression[] = [];
+
+    for (const [key, value] of Object.entries(propertiesDict)) {
+      const propertyClass = PropertiesExpr.NAME_TO_PROPERTY[key.toUpperCase() as keyof typeof PropertiesExpr.NAME_TO_PROPERTY];
+      if (propertyClass) {
+        expressions.push(new propertyClass({ this: convert(value) }));
+      } else {
+        expressions.push(new PropertyExpr({
+          this: LiteralExpr.string(key),
+          value: convert(value),
+        }));
+      }
+    }
+
+    return new PropertiesExpr({ expressions });
+  }
 }
 
 export class LocationExpr extends Expression {
@@ -9030,7 +9114,7 @@ export class BuildPropertyExpr extends PropertyExpr {
   };
 }
 
-export type BlockCompressionPropertyExprArgs = { value?: string; autotemp?: Expression; always?: Expression[]; default?: Expression; manual?: Expression; never?: Expression; [key: string]: unknown } & PropertyExprArgs;
+export type BlockCompressionPropertyExprArgs = { value?: string | Expression; autotemp?: Expression; always?: Expression[]; default?: Expression; manual?: Expression; never?: Expression; [key: string]: unknown } & PropertyExprArgs;
 
 export class BlockCompressionPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BLOCK_COMPRESSION_PROPERTY;
@@ -10337,30 +10421,56 @@ export class SecurePropertyExpr extends PropertyExpr {
 
 export class TagsExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.TAGS;
+
+  static argTypes = {
+    expressions: true,
+  };
 }
 
 export class TransformModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TRANSFORM_MODEL_PROPERTY;
+
+  static argTypes = {
+    expressions: true,
+  };
 }
 
 export class TransientPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TRANSIENT_PROPERTY;
+
+  static argTypes = {
+    this: false,
+  };
 }
 
 export class UnloggedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNLOGGED_PROPERTY;
+
+  static argTypes = {};
 }
 
 export class UsingTemplatePropertyExpr extends PropertyExpr {
   key = ExpressionKey.USING_TEMPLATE_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class ViewAttributePropertyExpr extends PropertyExpr {
   key = ExpressionKey.VIEW_ATTRIBUTE_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class VolatilePropertyExpr extends PropertyExpr {
   key = ExpressionKey.VOLATILE_PROPERTY;
+
+  static argTypes = {
+    this: false,
+  };
 }
 
 export type WithDataPropertyExprArgs = { value?: string; no: Expression; statistics?: Expression[]; [key: string]: unknown } & PropertyExprArgs;
@@ -10397,10 +10507,18 @@ export class WithDataPropertyExpr extends PropertyExpr {
 
 export class WithJournalTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_JOURNAL_TABLE_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export class WithSchemaBindingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_SCHEMA_BINDING_PROPERTY;
+
+  static argTypes = {
+    this: true,
+  };
 }
 
 export type WithSystemVersioningPropertyExprArgs = { value?: string; on?: Expression; dataConsistency?: Expression; retentionPeriod?: Expression; with: Expression; [key: string]: unknown } & PropertyExprArgs;
@@ -10413,8 +10531,8 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
-    value: false,
     on: false,
+    this: false,
     dataConsistency: false,
     retentionPeriod: false,
     with: true,
@@ -10447,6 +10565,10 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
 
 export class WithProcedureOptionsExpr extends PropertyExpr {
   key = ExpressionKey.WITH_PROCEDURE_OPTIONS;
+
+  static argTypes = {
+    expressions: true,
+  };
 }
 
 export type EncodePropertyExprArgs = { value?: string; properties?: Expression[]; key?: unknown; [key: string]: unknown } & PropertyExprArgs;
@@ -10459,7 +10581,7 @@ export class EncodePropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
-    value: false,
+    this: true,
     properties: false,
     key: false,
   };
@@ -10487,7 +10609,8 @@ export class IncludePropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
-    value: false,
+    this: true,
+    alias: false,
     columnDef: false,
   };
 
@@ -10506,6 +10629,8 @@ export class IncludePropertyExpr extends PropertyExpr {
 
 export class ForcePropertyExpr extends PropertyExpr {
   key = ExpressionKey.FORCE_PROPERTY;
+
+  static argTypes = {};
 }
 
 /**
