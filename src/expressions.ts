@@ -5030,6 +5030,8 @@ export class ConditionalInsertExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
+    expression: false,
     else: false,
   };
 
@@ -5061,6 +5063,7 @@ export class MultitableInsertsExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    expressions: true,
     kind: true,
     source: true,
   };
@@ -5089,6 +5092,7 @@ export class OnConflictExpr extends Expression {
    */
   static argTypes = {
     duplicate: false,
+    expressions: false,
     action: false,
     conflictKeys: false,
     indexPredicate: false,
@@ -5167,6 +5171,7 @@ export class ReturningExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    expressions: true,
     into: false,
   };
 
@@ -5181,6 +5186,11 @@ export class ReturningExpr extends Expression {
 
 export class IntroducerExpr extends Expression {
   key = ExpressionKey.INTRODUCER;
+
+  static argTypes = {
+    this: true,
+    expression: true,
+  };
 }
 
 export class NationalExpr extends Expression {
@@ -5197,6 +5207,7 @@ export class LoadDataExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     local: false,
     overwrite: false,
     inpath: true,
@@ -5244,6 +5255,7 @@ export class PartitionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    expressions: true,
     subpartition: false,
   };
 
@@ -5258,6 +5270,12 @@ export class PartitionExpr extends Expression {
 
 export class PartitionRangeExpr extends Expression {
   key = ExpressionKey.PARTITION_RANGE;
+
+  static argTypes = {
+    this: true,
+    expression: false,
+    expressions: false,
+  };
 }
 
 export class PartitionIdExpr extends Expression {
@@ -5353,8 +5371,14 @@ export class RevokeExpr extends Expression {
   /**
    * Defines the arguments (properties and child expressions) for Revoke expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
+   * Extends Grant's arg_types with additional cascade field.
    */
   static argTypes = {
+    privileges: true,
+    kind: false,
+    securable: true,
+    principals: true,
+    grantOption: false,
     cascade: false,
   };
 
@@ -5377,6 +5401,7 @@ export class GroupExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    expressions: false,
     groupingSets: false,
     cube: false,
     rollup: false,
@@ -5411,14 +5436,26 @@ export class GroupExpr extends Expression {
 
 export class CubeExpr extends Expression {
   key = ExpressionKey.CUBE;
+
+  static argTypes = {
+    expressions: false,
+  };
 }
 
 export class RollupExpr extends Expression {
   key = ExpressionKey.ROLLUP;
+
+  static argTypes = {
+    expressions: false,
+  };
 }
 
 export class GroupingSetsExpr extends Expression {
   key = ExpressionKey.GROUPING_SETS;
+
+  static argTypes = {
+    expressions: true,
+  };
 }
 
 export type LambdaExprArgs = { colon?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -5431,6 +5468,8 @@ export class LambdaExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
+    expressions: true,
     colon: false,
   };
 
@@ -5453,8 +5492,11 @@ export class LimitExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
+    expression: true,
     offset: false,
     limitOptions: false,
+    expressions: false,
   };
 
   constructor (args: LimitExprArgs = {}) {
@@ -8746,7 +8788,7 @@ export class InsertExpr extends DMLExpr {
  */
 export type LiteralExprArgs = { isString: unknown; [key: string]: unknown } & BaseExpressionArgs;
 
-export class LiteralExpr extends Expression {
+export class LiteralExpr extends ConditionExpr {
   key = ExpressionKey.LITERAL;
 
   /**
@@ -8754,6 +8796,7 @@ export class LiteralExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     isString: true,
   };
 
@@ -8790,6 +8833,28 @@ export class LiteralExpr extends Expression {
 
   constructor (args: LiteralExprArgs) {
     super(args);
+  }
+
+  get outputName (): string {
+    return this.name;
+  }
+
+  /**
+   * Convert the literal to a Javascript value.
+   * Returns a number (int or float) for numeric literals, or string for string literals.
+   */
+  toValue (): number | string {
+    if (this.isNumber) {
+      const parsed = parseInt(this.this as string, 10);
+      if (!isNaN(parsed)) {
+        return parsed;
+      }
+      const floatParsed = parseFloat(this.this as string);
+      if (!isNaN(floatParsed)) {
+        return floatParsed;
+      }
+    }
+    return this.this as string;
   }
 }
 
