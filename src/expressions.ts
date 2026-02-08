@@ -3802,10 +3802,28 @@ export class WithExpr extends Expression {
 
 export class WithinGroupExpr extends Expression {
   key = ExpressionKey.WITHIN_GROUP;
+
+  /**
+   * Defines the arguments (properties and child expressions) for WithinGroup expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {
+    this: true,
+    expression: false,
+  };
 }
 
 export class ProjectionDefExpr extends Expression {
   key = ExpressionKey.PROJECTION_DEF;
+
+  /**
+   * Defines the arguments (properties and child expressions) for ProjectionDef expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {
+    this: true,
+    expression: true,
+  };
 }
 
 export type TableAliasExprArgs = { columns?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
@@ -3818,6 +3836,7 @@ export class TableAliasExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
     columns: false,
   };
 
@@ -7589,6 +7608,8 @@ export class CTEExpr extends DerivedTableExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
+    alias: true,
     scalar: false,
     materialized: false,
     keyExpressions: false,
@@ -7613,6 +7634,12 @@ export class CTEExpr extends DerivedTableExpr {
 
 export class BitStringExpr extends Expression {
   key = ExpressionKey.BIT_STRING;
+
+  /**
+   * Defines the arguments (properties and child expressions) for BitString expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {};
 }
 
 export type HexStringExprArgs = { isInteger?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -7625,6 +7652,7 @@ export class HexStringExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     isInteger: false,
   };
 
@@ -7647,6 +7675,7 @@ export class ByteStringExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     isBytes: false,
   };
 
@@ -7661,6 +7690,12 @@ export class ByteStringExpr extends Expression {
 
 export class RawStringExpr extends Expression {
   key = ExpressionKey.RAW_STRING;
+
+  /**
+   * Defines the arguments (properties and child expressions) for RawString expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {};
 }
 
 export type UnicodeStringExprArgs = { escape?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -7673,6 +7708,7 @@ export class UnicodeStringExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     escape: false,
   };
 
