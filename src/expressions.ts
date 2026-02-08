@@ -8724,7 +8724,7 @@ export type InsertExprArgs = { hint?: Expression; with?: Expression; isFunction?
 
 @baseclass(DDLExpr)
 @baseclass(DMLExpr)
-export class InsertExpr {
+export class InsertExpr extends Expression {
   key = ExpressionKey.INSERT;
 
   /**
@@ -10303,7 +10303,7 @@ export class SecurePropertyExpr extends PropertyExpr {
 
 @baseclass(PropertyExpr)
 @baseclass(ColumnConstraintKindExpr)
-export class TagsExpr {
+export class TagsExpr extends Expression {
   key = ExpressionKey.TAGS;
 
   static argTypes: Record<string, boolean> = {
