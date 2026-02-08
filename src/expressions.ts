@@ -7,7 +7,7 @@ export const SQLGLOT_META = 'sqlglot.meta';
 export const SQLGLOT_ANONYMOUS = 'sqlglot.anonymous';
 export const TABLE_PARTS = ['this', 'db', 'catalog'] as const;
 export const COLUMN_PARTS = ['this', 'table', 'db', 'catalog'] as const;
-export const POSITION_META_KEYS = ['line', 'col', 'start', 'end'];
+export const POSITION_META_KEYS = ['line', 'col', 'start', 'end'] as const;
 
 /**
  * Convert a value to boolean
