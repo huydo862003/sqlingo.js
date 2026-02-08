@@ -2849,6 +2849,7 @@ export class RefreshExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     kind: true,
   };
 
