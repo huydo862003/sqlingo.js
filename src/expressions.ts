@@ -1,8 +1,9 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/expressions.py
 
 import { createHash } from 'crypto';
-import { Dialect, type DialectType } from './dialects/dialect.js';
-import type { Token } from './tokens.js';
+import { Dialect, type DialectType } from './dialects/dialect';
+import type { Token } from './tokens';
+import { ensureList } from './helper';
 
 export const SQLGLOT_META = 'sqlglot.meta';
 export const SQLGLOT_ANONYMOUS = 'sqlglot.anonymous';
@@ -2112,6 +2113,281 @@ export class Expression {
 
   toString (): string {
     return this.sql();
+  }
+
+  /**
+   * Create an IN expression.
+   *
+   * @param expressions - The values to check against
+   * @param options - Options object
+   * @param options.query - Optional subquery expression
+   * @param options.unnest - Optional unnest expression(s)
+   * @param options.copy - Whether to copy this expression (default: true)
+   * @returns The IN expression
+   */
+  inExpr (
+    expressions: unknown[],
+    options?: {
+      query?: string | Expression;
+      unnest?: string | Expression | Array<string | Expression>;
+      copy?: boolean;
+      [key: string]: unknown;
+    },
+  ): InExpr {
+    const copy = options?.copy ?? true;
+    const unnest = options?.unnest;
+
+    let subquery = options?.query ? maybeParse(options.query as string | Expression) : undefined;
+
+    if (subquery && !(subquery instanceof SubqueryExpr)) {
+      subquery = subquery.subquery({ copy: false });
+    }
+
+    return new InExpr({
+      this: maybeCopy(this, copy),
+      expressions: expressions.map((e) => convert(e, copy)),
+      query: subquery,
+      unnest: unnest
+        ? new UnnestExpr({ expressions: ensureList(unnest).map((e) => maybeParse(e, { ...options, copy })) })
+        : undefined,
+    });
+  }
+
+  /**
+   * Create a BETWEEN expression.
+   *
+   * @param low - The lower bound
+   * @param high - The upper bound
+   * @param options - Options object
+   * @param options.copy - Whether to copy this expression (default: true)
+   * @param options.symmetric - Whether this is a symmetric between (optional)
+   * @returns The BETWEEN expression
+   */
+  betweenExpr (
+    low: unknown,
+    high: unknown,
+    options?: {
+      copy?: boolean;
+      symmetric?: boolean;
+      [key: string]: unknown;
+    },
+  ): BetweenExpr {
+    const copy = options?.copy ?? true;
+
+    const between = new BetweenExpr({
+      this: maybeCopy(this, copy),
+      low: convert(low, copy),
+      high: convert(high, copy),
+    });
+
+    if (options?.symmetric !== undefined) {
+      between.set('symmetric', options.symmetric);
+    }
+
+    return between;
+  }
+
+  /**
+   * Create an IS expression.
+   */
+  isExpr (other: string | Expression): IsExpr {
+    return this.binop(IsExpr, other);
+  }
+
+  /**
+   * Create a LIKE expression.
+   */
+  likeExpr (other: string | Expression): LikeExpr {
+    return this.binop(LikeExpr, other);
+  }
+
+  /**
+   * Create an ILIKE expression.
+   */
+  ilikeExpr (other: string | Expression): ILikeExpr {
+    return this.binop(ILikeExpr, other);
+  }
+
+  /**
+   * Create an EQ (equals) expression.
+   */
+  eqExpr (other: unknown): EQExpr {
+    return this.binop(EQExpr, other);
+  }
+
+  /**
+   * Create a NEQ (not equals) expression.
+   */
+  neqExpr (other: unknown): NEQExpr {
+    return this.binop(NEQExpr, other);
+  }
+
+  /**
+   * Create a REGEXP_LIKE expression.
+   */
+  rlikeExpr (other: string | Expression): RegexpLikeExpr {
+    return this.binop(RegexpLikeExpr, other);
+  }
+
+  /**
+   * Create a DIV expression with optional typed and safe flags.
+   */
+  divExpr (other: string | Expression, typed = false, safe = false): DivExpr {
+    const div = this.binop(DivExpr, other);
+    div.set('typed', typed);
+    div.set('safe', safe);
+    return div;
+  }
+
+  /**
+   * Create an ascending ORDER BY expression.
+   */
+  ascExpr (nullsFirst = true): OrderedExpr {
+    return new OrderedExpr({
+      this: this.copy(),
+      nullsFirst: convert(nullsFirst, false),
+    });
+  }
+
+  /**
+   * Create a descending ORDER BY expression.
+   */
+  descExpr (nullsFirst = false): OrderedExpr {
+    return new OrderedExpr({
+      this: this.copy(),
+      desc: convert(true, false),
+      nullsFirst: convert(nullsFirst, false),
+    });
+  }
+
+  // Comparison operators
+
+  /**
+   * Create an LT (less than) expression.
+   */
+  ltExpr (other: unknown): LTExpr {
+    return this.binop(LTExpr, other);
+  }
+
+  /**
+   * Create an LTE (less than or equal) expression.
+   */
+  lteExpr (other: unknown): LTEExpr {
+    return this.binop(LTEExpr, other);
+  }
+
+  /**
+   * Create a GT (greater than) expression.
+   */
+  gtExpr (other: unknown): GTExpr {
+    return this.binop(GTExpr, other);
+  }
+
+  /**
+   * Create a GTE (greater than or equal) expression.
+   */
+  gteExpr (other: unknown): GTEExpr {
+    return this.binop(GTEExpr, other);
+  }
+
+  // Arithmetic operators
+
+  /**
+   * Create an ADD expression.
+   */
+  addExpr (other: unknown): AddExpr {
+    return this.binop(AddExpr, other);
+  }
+
+  /**
+   * Create an ADD expression (reversed operands).
+   */
+  raddExpr (other: unknown): AddExpr {
+    return this.binop(AddExpr, other, { reverse: true });
+  }
+
+  /**
+   * Create a SUB expression.
+   */
+  subExpr (other: unknown): SubExpr {
+    return this.binop(SubExpr, other);
+  }
+
+  /**
+   * Create a SUB expression (reversed operands).
+   */
+  rsubExpr (other: unknown): SubExpr {
+    return this.binop(SubExpr, other, { reverse: true });
+  }
+
+  /**
+   * Create a MUL expression.
+   */
+  mulExpr (other: unknown): MulExpr {
+    return this.binop(MulExpr, other);
+  }
+
+  /**
+   * Create a MUL expression (reversed operands).
+   */
+  rmulExpr (other: unknown): MulExpr {
+    return this.binop(MulExpr, other, { reverse: true });
+  }
+
+  /**
+   * Create a DIV expression.
+   */
+  truedivExpr (other: unknown): DivExpr {
+    return this.binop(DivExpr, other);
+  }
+
+  /**
+   * Create a DIV expression (reversed operands).
+   */
+  rtruedivExpr (other: unknown): DivExpr {
+    return this.binop(DivExpr, other, { reverse: true });
+  }
+
+  /**
+   * Create an INTDIV expression.
+   */
+  floordivExpr (other: unknown): IntDivExpr {
+    return this.binop(IntDivExpr, other);
+  }
+
+  /**
+   * Create an INTDIV expression (reversed operands).
+   */
+  rfloordivExpr (other: unknown): IntDivExpr {
+    return this.binop(IntDivExpr, other, { reverse: true });
+  }
+
+  /**
+   * Create a MOD expression.
+   */
+  modExpr (other: unknown): ModExpr {
+    return this.binop(ModExpr, other);
+  }
+
+  /**
+   * Create a MOD expression (reversed operands).
+   */
+  rmodExpr (other: unknown): ModExpr {
+    return this.binop(ModExpr, other, { reverse: true });
+  }
+
+  /**
+   * Create a POW expression.
+   */
+  powExpr (other: unknown): PowExpr {
+    return this.binop(PowExpr, other);
+  }
+
+  /**
+   * Create a POW expression (reversed operands).
+   */
+  rpowExpr (other: unknown): PowExpr {
+    return this.binop(PowExpr, other, { reverse: true });
   }
 }
 
@@ -10140,7 +10416,7 @@ export class BetweenExpr extends PredicateExpr {
   }
 }
 
-export type InExprArgs = { query?: Expression; unnest?: boolean; field?: Expression; isGlobal?: Expression; [key: string]: unknown } & BaseExpressionArgs;
+export type InExprArgs = { query?: Expression; unnest?: UnnestExpr; field?: Expression; isGlobal?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class InExpr extends PredicateExpr {
   key = ExpressionKey.IN;
