@@ -10592,6 +10592,7 @@ export class PropertiesExpr extends Expression {
     for (const [key, value] of Object.entries(propertiesDict)) {
       const propertyClass = PropertiesExpr.NAME_TO_PROPERTY[key.toUpperCase() as keyof typeof PropertiesExpr.NAME_TO_PROPERTY];
       if (propertyClass) {
+        // @ts-expect-error "sqlglot is intrinsically type-unsafe here"
         expressions.push(new propertyClass({ this: convert(value) }));
       } else {
         expressions.push(new PropertyExpr({
