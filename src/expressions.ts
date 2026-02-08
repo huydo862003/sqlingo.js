@@ -2864,6 +2864,37 @@ export class RefreshExpr extends Expression {
 
 export class DDLExpr extends Expression {
   key = ExpressionKey.DDL;
+
+  /**
+   * Returns a list of all the CTEs attached to this statement.
+   *
+   * @returns Array of CTE expressions
+   */
+  get ctes (): CTEExpr[] {
+    const withExpr = this.args['with'] as WithExpr | undefined;
+    return (withExpr?.expressions as CTEExpr[]) || [];
+  }
+
+  /**
+   * If this statement contains a query (e.g. a CTAS), this returns the query's projections.
+   *
+   * @returns Array of Expression objects representing the SELECT clause projections
+   */
+  get selects (): Expression[] {
+    const expr = this.expression;
+    return (expr instanceof QueryExpr) ? expr.selects : [];
+  }
+
+  /**
+   * If this statement contains a query (e.g. a CTAS), this returns the output
+   * names of the query's projections.
+   *
+   * @returns Array of strings representing the names of the projected columns
+   */
+  get namedSelects (): string[] {
+    const expr = this.expression;
+    return (expr instanceof QueryExpr) ? expr.namedSelects : [];
+  }
 }
 
 export class LockingStatementExpr extends Expression {
