@@ -1249,12 +1249,7 @@ export class Expression {
     if (!this._type) {
       return false;
     }
-    const thisType = this._type.this;
-    if (typeof thisType !== 'string') {
-      return false;
-    }
-    const upperType = thisType.toUpperCase();
-    return dtypes.some((dtype) => dtype.toUpperCase() === upperType);
+    return this._type.isType(...dtypes);
   }
 
   /**
