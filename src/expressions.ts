@@ -2768,6 +2768,16 @@ export class QueryExpr extends Expression {
   }
 }
 
+export class UDTFExpr extends DerivedTableExpr {
+  key = ExpressionKey.UDTF;
+
+  get selects (): Expression[] {
+    const alias = this.args['alias'];
+    // @ts-expect-error "Alias should contain 'columns'"
+    return alias ? alias.columns : [];
+  }
+}
+
 export type CacheExprArgs = { lazy?: Expression; options?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
 
 export class CacheExpr extends Expression {
@@ -7361,10 +7371,6 @@ export class TableColumnExpr extends Expression {
 
 export class VariadicExpr extends Expression {
   key = ExpressionKey.VARIADIC;
-}
-
-export class UDTFExpr extends DerivedTableExpr {
-  key = ExpressionKey.UDTF;
 }
 
 /**
