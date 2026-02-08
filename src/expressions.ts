@@ -4421,11 +4421,16 @@ export class WatermarkColumnConstraintExpr extends Expression {
   static argTypes = {
     this: true,
     expression: true,
-  }
+  };
 }
 
 export class ConstraintExpr extends Expression {
   key = ExpressionKey.CONSTRAINT;
+
+  static argTypes = {
+    this: true,
+    expressions: true,
+  };
 }
 
 /**
@@ -8247,6 +8252,7 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     persisted: false,
     notNull: false,
     dataType: false,
