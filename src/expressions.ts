@@ -4402,6 +4402,7 @@ export class WithOperatorExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     op: true,
   };
 
@@ -4416,6 +4417,11 @@ export class WithOperatorExpr extends Expression {
 
 export class WatermarkColumnConstraintExpr extends Expression {
   key = ExpressionKey.WATERMARK_COLUMN_CONSTRAINT;
+
+  static argTypes = {
+    this: true,
+    expression: true,
+  }
 }
 
 export class ConstraintExpr extends Expression {
@@ -7958,6 +7964,14 @@ export class ExcludeColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.EPHEMERAL_COLUMN_CONSTRAINT;
+
+  /**
+   * Defines the arguments (properties and child expressions) for EphemeralColumnConstraint expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {
+    this: false,
+  };
 }
 
 export type GeneratedAsIdentityColumnConstraintExprArgs = { onNull?: Expression; start?: Expression; increment?: Expression; minvalue?: string; maxvalue?: string; cycle?: Expression; order?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -7968,8 +7982,11 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
   /**
    * Defines the arguments (properties and child expressions) for GeneratedAsIdentityColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
+   * Note: this: true -> ALWAYS, this: false -> BY DEFAULT
    */
   static argTypes = {
+    this: false,
+    expression: false,
     onNull: false,
     start: false,
     increment: false,
@@ -8058,9 +8075,12 @@ export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
+    expressions: false,
     kind: false,
     indexType: false,
     options: false,
+    expression: false,
     granularity: false,
   };
 
@@ -8095,10 +8115,17 @@ export class NonClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export class NotForReplicationColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NOT_FOR_REPLICATION_COLUMN_CONSTRAINT;
+
+  static argTypes = {};
 }
 
 export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.MASKING_POLICY_COLUMN_CONSTRAINT;
+
+  static argTypes = {
+    this: true,
+    expressions: false,
+  };
 }
 
 export type NotNullColumnConstraintExprArgs = { allowNull?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -8168,6 +8195,7 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
     indexType: false,
     onConflict: false,
     nulls: false,
@@ -8197,6 +8225,8 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export class UppercaseColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.UPPERCASE_COLUMN_CONSTRAINT;
+
+  static argTypes = {};
 }
 
 export class PathColumnConstraintExpr extends ColumnConstraintKindExpr {
