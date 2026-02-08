@@ -4459,7 +4459,9 @@ export class DropExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: false,
     kind: false,
+    expressions: false,
     exists: false,
     temporary: false,
     materialized: false,
@@ -4474,8 +4476,13 @@ export class DropExpr extends Expression {
     super(args);
   }
 
-  get kind (): DropExprKind | undefined {
-    return this.args.kind as DropExprKind | undefined;
+  /**
+   * Gets the kind of DROP statement
+   * @returns The kind as an uppercase string, or undefined
+   */
+  get kind (): string | undefined {
+    const kind = this.args.kind;
+    return kind ? String(kind).toUpperCase() : undefined;
   }
 
   get exists (): Expression {
@@ -4521,6 +4528,7 @@ export class ExportExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    this: true,
     connection: false,
     options: true,
   };
@@ -4540,6 +4548,15 @@ export class ExportExpr extends Expression {
 
 export class FilterExpr extends Expression {
   key = ExpressionKey.FILTER;
+
+  /**
+   * Defines the arguments (properties and child expressions) for Filter expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes = {
+    this: true,
+    expression: true,
+  };
 }
 
 export class CheckExpr extends Expression {
@@ -8258,7 +8275,7 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
     dataType: false,
   };
 
-  constructor (args: ComputedColumnConstraintExprArgs = {}) {
+  constructor (args: ComputedColumnConstraintExprArgs) {
     super(args);
   }
 
@@ -8318,6 +8335,7 @@ export class DeleteExpr extends DMLExpr {
    */
   static argTypes = {
     with: false,
+    this: false,
     using: false,
     where: false,
     returning: false,
@@ -8361,6 +8379,72 @@ export class DeleteExpr extends DMLExpr {
 
   get cluster (): Expression {
     return this.args.cluster as Expression;
+  }
+
+  /**
+   * Create a DELETE expression or replace the table on an existing DELETE expression.
+   *
+   * Example:
+   *     delete("tbl").sql();
+   *     // 'DELETE FROM tbl'
+   *
+   * @param table - The table from which to delete
+   * @param options - Options object
+   * @param options.dialect - The dialect used to parse the input expression
+   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
+   * @returns The modified expression
+   */
+  delete (
+    table: string | Expression,
+    options: {
+      dialect?: DialectType;
+      copy?: boolean;
+      [key: string]: unknown;
+    } = {},
+  ): this {
+    return _applyBuilder(table, {
+      instance: this,
+      arg: 'this',
+      into: TableExpr,
+      ...options,
+      dialect: options.dialect,
+      copy: options.copy ?? true,
+    }) as this;
+  }
+
+  /**
+   * Append to or set the WHERE expressions.
+   *
+   * Example:
+   *     delete("tbl").where(["x = 'a' OR x < 'b'"]).sql();
+   *     // "DELETE FROM tbl WHERE x = 'a' OR x < 'b'"
+   *
+   * @param expressions - The SQL code strings to parse.
+   *                      If an `Expression` instance is passed, it will be used as-is.
+   *                      Multiple expressions are combined with an AND operator.
+   * @param options - Options object
+   * @param options.append - If `true`, AND the new expressions to any existing expression. Otherwise, this resets the expression. Default is `true`.
+   * @param options.dialect - The dialect used to parse the input expressions
+   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
+   * @returns The modified expression
+   */
+  where (
+    expressions: Array<string | Expression>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+      [key: string]: unknown;
+    } = {},
+  ): this {
+    return _applyConjunctionBuilder(expressions, {
+      instance: this,
+      arg: 'where',
+      into: WhereExpr,
+      ...options,
+      append: options.append ?? true,
+      copy: options.copy ?? true,
+    }) as this;
   }
 }
 
