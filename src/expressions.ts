@@ -2467,7 +2467,7 @@ export class QueryExpr extends Expression {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns A limited query expression
    */
-  limit (expression: string | number | Expression, options: { dialect?: DialectType; copy?: boolean; [key: string]: unknown } = {}): this {
+  withLimit (expression: string | number | Expression, options: { dialect?: DialectType; copy?: boolean; [key: string]: unknown } = {}): this {
     return _applyBuilder(expression, {
       instance: this,
       arg: 'limit',
@@ -2495,7 +2495,7 @@ export class QueryExpr extends Expression {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified query expression
    */
-  offset (expression: string | number | Expression, options: { dialect?: DialectType; copy?: boolean; [key: string]: unknown } = {}): this {
+  withOffset (expression: string | number | Expression, options: { dialect?: DialectType; copy?: boolean; [key: string]: unknown } = {}): this {
     return _applyBuilder(expression, {
       instance: this,
       arg: 'offset',
@@ -2523,7 +2523,7 @@ export class QueryExpr extends Expression {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified query expression
    */
-  orderBy (
+  withOrderBy (
     expressions: Array<string | Expression>,
     options: {
       append?: boolean;
@@ -2616,7 +2616,7 @@ export class QueryExpr extends Expression {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified expression
    */
-  where (
+  withWhere (
     expressions: Array<string | Expression>,
     options: {
       append?: boolean;
@@ -2659,7 +2659,7 @@ export class QueryExpr extends Expression {
    * @param options.scalar - If `true`, this is a scalar common table expression
    * @returns The modified expression
    */
-  with (
+  withWith (
     alias: string | Expression,
     as: string | Expression,
     options: {
@@ -2680,7 +2680,7 @@ export class QueryExpr extends Expression {
       recursive: options.recursive ?? false,
       append: options.append ?? true,
       copy: options.copy ?? true,
-    });
+    }) as this;
   }
 
   /**
@@ -2922,7 +2922,7 @@ export class DMLExpr extends Expression {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified expression
    */
-  returning (
+  withReturning (
     expression: string | Expression,
     options: {
       dialect?: DialectType;
@@ -8361,7 +8361,7 @@ export class DeleteExpr extends DMLExpr {
     return this.args.where as Expression;
   }
 
-  get returning (): Expression {
+  get withReturning (): Expression {
     return this.args.returning as Expression;
   }
 
@@ -8394,7 +8394,7 @@ export class DeleteExpr extends DMLExpr {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified expression
    */
-  delete (
+  withDelete (
     table: string | Expression,
     options: {
       dialect?: DialectType;
@@ -8428,7 +8428,7 @@ export class DeleteExpr extends DMLExpr {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified expression
    */
-  where (
+  withWhere (
     expressions: Array<string | Expression>,
     options: {
       append?: boolean;
@@ -10100,7 +10100,7 @@ export class SetOperationExpr extends QueryExpr {
     super(args);
   }
 
-  get with (): Expression {
+  get withWith (): Expression {
     return this.args['with'] as Expression;
   }
 
@@ -10160,7 +10160,7 @@ export class UpdateExpr extends DMLExpr {
     return this.args.where as Expression;
   }
 
-  get returning (): Expression {
+  get withReturning (): Expression {
     return this.args.returning as Expression;
   }
 
@@ -10222,7 +10222,7 @@ export class SelectExpr extends QueryExpr {
     super(args);
   }
 
-  get with (): Expression {
+  get withWith (): Expression {
     return this.args['with'] as Expression;
   }
 
@@ -10672,7 +10672,7 @@ export class MergeExpr extends DMLExpr {
     return this.args['with'] as Expression;
   }
 
-  get returning (): Expression {
+  get withReturning (): Expression {
     return this.args.returning as Expression;
   }
 }
