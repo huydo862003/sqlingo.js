@@ -9826,12 +9826,22 @@ export class DynamicPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {};
 }
 
+export type OnClusterExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
+
 export class OnClusterExpr extends PropertyExpr {
   key = ExpressionKey.ON_CLUSTER;
 
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: OnClusterExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
 
 export class EmptyPropertyExpr extends PropertyExpr {
@@ -9840,6 +9850,8 @@ export class EmptyPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {};
 }
 
+export type LikePropertyExprArgs = { this: Expression; expressions?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
+
 export class LikePropertyExpr extends PropertyExpr {
   key = ExpressionKey.LIKE_PROPERTY;
 
@@ -9847,7 +9859,21 @@ export class LikePropertyExpr extends PropertyExpr {
     this: true,
     expressions: false,
   };
+
+  constructor (args: LikePropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
+  }
 }
+
+export type LocationPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class LocationPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCATION_PROPERTY;
@@ -9855,7 +9881,17 @@ export class LocationPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: LocationPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type LockPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class LockPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCK_PROPERTY;
@@ -9863,6 +9899,14 @@ export class LockPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: LockPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
 
 /**
@@ -9945,12 +9989,22 @@ export class LogPropertyExpr extends PropertyExpr {
   }
 }
 
+export type MaterializedPropertyExprArgs = { this?: Expression; [key: string]: unknown } & BaseExpressionArgs;
+
 export class MaterializedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.MATERIALIZED_PROPERTY;
 
   static argTypes: Record<string, boolean> = {
     this: false,
   };
+
+  constructor (args: MaterializedPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
 }
 
 export type MergeBlockRatioPropertyExprArgs = { value?: string; no?: Expression; default?: Expression; percent?: Expression; [key: string]: unknown } & PropertyExprArgs;
