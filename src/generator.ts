@@ -166,7 +166,7 @@ export class Generator {
   protected dialect: Dialect;
   protected unsupportedMessages: string[];
 
-  constructor(options?: GeneratorOptions) {
+  constructor (options?: GeneratorOptions) {
     const opts = options ?? {};
 
     this.pretty = opts.pretty ?? false;
@@ -192,7 +192,7 @@ export class Generator {
    * Get or create the TRANSFORMS map for this Generator class.
    * Uses WeakMap caching to avoid recreating the map on every instantiation.
    */
-  protected static getTransforms(): Map<typeof Expression, TransformFn> {
+  protected static getTransforms (): Map<typeof Expression, TransformFn> {
     let cache = this.transformsCache.get(this);
     if (cache === undefined) {
       cache = new Map();
@@ -205,7 +205,7 @@ export class Generator {
   /**
    * Main generate method - converts an expression tree to SQL string.
    */
-  generate(expression: Expression, options?: { copy?: boolean }): string {
+  generate (expression: Expression, options?: { copy?: boolean }): string {
     const copy = options?.copy ?? true;
     const expr = copy ? expression.copy() : expression;
 
@@ -242,7 +242,7 @@ export class Generator {
   /**
    * Apply generic preprocessing transformations to an expression.
    */
-  protected preprocess(expression: Expression): Expression {
+  protected preprocess (expression: Expression): Expression {
     // TODO: Add preprocessing logic like moving CTEs to top level
     return expression;
   }
@@ -254,7 +254,7 @@ export class Generator {
    * @param key - Optional key to extract from expression.args
    * @param comment - Whether to include comments (default: true)
    */
-  sql(expression?: Expression | string, key?: string, comment = true): string {
+  sql (expression?: Expression | string, key?: string, comment = true): string {
     // Handle undefined/null early
     if (expression === undefined || expression === null) {
       return '';
@@ -305,7 +305,7 @@ export class Generator {
   /**
    * Record an unsupported expression/feature.
    */
-  unsupported(message: string): void {
+  unsupported (message: string): void {
     if (this.unsupportedLevel === ErrorLevel.IMMEDIATE) {
       throw new UnsupportedError(message);
     }
@@ -315,7 +315,7 @@ export class Generator {
   /**
    * Add comment to SQL if present.
    */
-  protected maybeComment(sql: string, _expression: Expression): string {
+  protected maybeComment (sql: string, _expression: Expression): string {
     // TODO: Implement comment handling
     return sql;
   }
@@ -323,7 +323,7 @@ export class Generator {
   /**
    * Generate a separator (space or newline based on pretty mode).
    */
-  sep(separator = ' '): string {
+  sep (separator = ' '): string {
     if (this.pretty) {
       return `\n${separator}`;
     }
@@ -333,7 +333,7 @@ export class Generator {
   /**
    * Generate a segment with separator.
    */
-  seg(sql: string, separator = ' '): string {
+  seg (sql: string, separator = ' '): string {
     if (!sql) {
       return '';
     }
@@ -343,9 +343,9 @@ export class Generator {
   /**
    * Indent SQL lines.
    */
-  indent(
+  indent (
     sql: string,
-    options?: { level?: number; pad?: number; skipFirst?: boolean; skipLast?: boolean }
+    options?: { level?: number; pad?: number; skipFirst?: boolean; skipLast?: boolean },
   ): string {
     if (!this.pretty || !sql) {
       return sql;
@@ -372,7 +372,7 @@ export class Generator {
   /**
    * Wrap an expression in parentheses.
    */
-  wrap(expression: Expression | string): string {
+  wrap (expression: Expression | string): string {
     const thisSql = typeof expression === 'string' ? expression : this.sql(expression, 'this');
     if (!thisSql) {
       return '()';
@@ -385,7 +385,7 @@ export class Generator {
   /**
    * Normalize a function name based on settings.
    */
-  normalizeFunc(name: string): string {
+  normalizeFunc (name: string): string {
     if (this.normalizeFunctions === 'upper' || this.normalizeFunctions === true) {
       return name.toUpperCase();
     }
@@ -398,7 +398,7 @@ export class Generator {
   /**
    * Generate a function call.
    */
-  func(name: string, ...args: Array<Expression | string | undefined>): string {
+  func (name: string, ...args: Array<Expression | string | undefined>): string {
     const options = {
       prefix: '(',
       suffix: ')',
@@ -411,7 +411,7 @@ export class Generator {
   /**
    * Format function arguments.
    */
-  formatArgs(...args: Array<Expression | string | undefined | boolean>): string {
+  formatArgs (...args: Array<Expression | string | undefined | boolean>): string {
     const sep = ', ';
     const argSqls = args
       .filter((arg) => arg !== undefined && arg !== null && typeof arg !== 'boolean')
@@ -428,14 +428,14 @@ export class Generator {
   /**
    * Check if arguments are too wide for a single line.
    */
-  tooWide(args: string[]): boolean {
+  tooWide (args: string[]): boolean {
     return args.reduce((sum, arg) => sum + arg.length, 0) > this.maxTextWidth;
   }
 
   /**
    * Generate SQL for a list of expressions.
    */
-  expressions(
+  expressions (
     expression?: Expression,
     options?: {
       key?: string;
@@ -448,7 +448,7 @@ export class Generator {
       prefix?: string;
       dynamic?: boolean;
       newLine?: boolean;
-    }
+    },
   ): string {
     const key = options?.key ?? 'expressions';
     const flat = options?.flat ?? false;
@@ -519,7 +519,7 @@ export class Generator {
   /**
    * Generate SQL for a binary operation.
    */
-  binary(expression: Expression, op: string): string {
+  binary (expression: Expression, op: string): string {
     const sqls: string[] = [];
     const stack: Array<string | Expression> = [expression];
     const binaryType = expression.constructor;
@@ -551,7 +551,7 @@ export class Generator {
   /**
    * Generate SQL for a literal value.
    */
-  literal_sql(expression: Expression): string {
+  literal_sql (expression: Expression): string {
     const text = (expression as any).$this ?? '';
     // TODO: Handle string escaping properly
     return String(text);
@@ -560,7 +560,7 @@ export class Generator {
   /**
    * Generate SQL for an identifier.
    */
-  identifier_sql(expression: Expression): string {
+  identifier_sql (expression: Expression): string {
     let text = (expression as any).name ?? (expression as any).$this ?? '';
     const quoted = (expression.args as any).quoted;
 
@@ -578,7 +578,7 @@ export class Generator {
   /**
    * Generate SQL for a column reference.
    */
-  column_sql(expression: Expression): string {
+  column_sql (expression: Expression): string {
     const parts: string[] = [];
 
     const catalog = expression.args.catalog;
@@ -607,7 +607,7 @@ export class Generator {
   /**
    * Generate SQL for a table reference.
    */
-  table_sql(expression: Expression): string {
+  table_sql (expression: Expression): string {
     const parts: string[] = [];
 
     const catalog = expression.args.catalog;
@@ -638,35 +638,35 @@ export class Generator {
   /**
    * Generate SQL for NULL.
    */
-  null_sql(_expression: Expression): string {
+  null_sql (_expression: Expression): string {
     return 'NULL';
   }
 
   /**
    * Generate SQL for a boolean.
    */
-  boolean_sql(expression: Expression): string {
+  boolean_sql (expression: Expression): string {
     return (expression as any).$this ? 'TRUE' : 'FALSE';
   }
 
   /**
    * Generate SQL for a star (SELECT *).
    */
-  star_sql(_expression: Expression): string {
+  star_sql (_expression: Expression): string {
     return '*';
   }
 
   /**
    * Generate SQL for a placeholder.
    */
-  placeholder_sql(expression: Expression): string {
+  placeholder_sql (expression: Expression): string {
     return this.sql(expression, 'this') || '?';
   }
 
   /**
    * Fallback for unsupported function expressions.
    */
-  function_fallback_sql(expression: Expression): string {
+  function_fallback_sql (expression: Expression): string {
     const name = (expression as any).sql_name?.() ?? expression.key;
     const args: Expression[] = [];
 
@@ -683,14 +683,14 @@ export class Generator {
   /**
    * Generate SQL for FROM clause.
    */
-  from_sql(expression: Expression): string {
+  from_sql (expression: Expression): string {
     return `${this.seg('FROM')} ${this.sql(expression, 'this')}`;
   }
 
   /**
    * Generate SQL for WHERE clause.
    */
-  where_sql(expression: Expression): string {
+  where_sql (expression: Expression): string {
     const condition = this.indent(this.sql(expression, 'this'));
     return `${this.seg('WHERE')}${this.sep()}${condition}`;
   }
@@ -698,7 +698,7 @@ export class Generator {
   /**
    * Generate SQL for GROUP BY clause.
    */
-  group_sql(expression: Expression): string {
+  group_sql (expression: Expression): string {
     const groupByAll = expression.args.all;
     let modifier = '';
     if (groupByAll === true) {
@@ -713,7 +713,7 @@ export class Generator {
   /**
    * Generate SQL for HAVING clause.
    */
-  having_sql(expression: Expression): string {
+  having_sql (expression: Expression): string {
     const condition = this.indent(this.sql(expression, 'this'));
     return `${this.seg('HAVING')}${this.sep()}${condition}`;
   }
@@ -721,7 +721,7 @@ export class Generator {
   /**
    * Generate SQL for ORDER BY clause.
    */
-  order_sql(expression: Expression): string {
+  order_sql (expression: Expression): string {
     const thisArg = this.sql(expression, 'this');
     const prefix = thisArg ? `${thisArg} ` : '';
     return this.opExpressions(`${prefix}ORDER BY`, expression);
@@ -730,7 +730,7 @@ export class Generator {
   /**
    * Helper for generating operator expressions like "GROUP BY x, y, z".
    */
-  protected opExpressions(op: string, expression: Expression, options?: { flat?: boolean }): string {
+  protected opExpressions (op: string, expression: Expression, options?: { flat?: boolean }): string {
     const flat = options?.flat ?? false;
     const expressionsSql = this.expressions(expression, { flat });
     if (flat) {
@@ -742,7 +742,7 @@ export class Generator {
   /**
    * Generate SQL for a simple SELECT statement.
    */
-  select_sql(expression: Expression): string {
+  select_sql (expression: Expression): string {
     // Get the projection list
     const projections = this.expressions(expression);
     const expressionsSql = projections ? `${this.sep()}${projections}` : '';
@@ -792,7 +792,7 @@ export class Generator {
   /**
    * Generate SQL for LIMIT clause.
    */
-  limit_sql(expression: Expression): string {
+  limit_sql (expression: Expression): string {
     const limit = this.sql(expression, 'this');
     return `${this.seg('LIMIT')} ${limit}`;
   }
@@ -804,105 +804,105 @@ export class Generator {
   /**
    * Generate SQL for addition (+).
    */
-  add_sql(expression: Expression): string {
+  add_sql (expression: Expression): string {
     return this.binary(expression, '+');
   }
 
   /**
    * Generate SQL for subtraction (-).
    */
-  sub_sql(expression: Expression): string {
+  sub_sql (expression: Expression): string {
     return this.binary(expression, '-');
   }
 
   /**
    * Generate SQL for multiplication (*).
    */
-  mul_sql(expression: Expression): string {
+  mul_sql (expression: Expression): string {
     return this.binary(expression, '*');
   }
 
   /**
    * Generate SQL for division (/).
    */
-  div_sql(expression: Expression): string {
+  div_sql (expression: Expression): string {
     return this.binary(expression, '/');
   }
 
   /**
    * Generate SQL for modulo (%).
    */
-  mod_sql(expression: Expression): string {
+  mod_sql (expression: Expression): string {
     return this.binary(expression, '%');
   }
 
   /**
    * Generate SQL for equality (=).
    */
-  eq_sql(expression: Expression): string {
+  eq_sql (expression: Expression): string {
     return this.binary(expression, '=');
   }
 
   /**
    * Generate SQL for inequality (<>).
    */
-  neq_sql(expression: Expression): string {
+  neq_sql (expression: Expression): string {
     return this.binary(expression, '<>');
   }
 
   /**
    * Generate SQL for greater than (>).
    */
-  gt_sql(expression: Expression): string {
+  gt_sql (expression: Expression): string {
     return this.binary(expression, '>');
   }
 
   /**
    * Generate SQL for greater than or equal (>=).
    */
-  gte_sql(expression: Expression): string {
+  gte_sql (expression: Expression): string {
     return this.binary(expression, '>=');
   }
 
   /**
    * Generate SQL for less than (<).
    */
-  lt_sql(expression: Expression): string {
+  lt_sql (expression: Expression): string {
     return this.binary(expression, '<');
   }
 
   /**
    * Generate SQL for less than or equal (<=).
    */
-  lte_sql(expression: Expression): string {
+  lte_sql (expression: Expression): string {
     return this.binary(expression, '<=');
   }
 
   /**
    * Generate SQL for AND.
    */
-  and_sql(expression: Expression): string {
+  and_sql (expression: Expression): string {
     return this.connectorSql(expression, 'AND');
   }
 
   /**
    * Generate SQL for OR.
    */
-  or_sql(expression: Expression): string {
+  or_sql (expression: Expression): string {
     return this.connectorSql(expression, 'OR');
   }
 
   /**
    * Generate SQL for NOT.
    */
-  not_sql(expression: Expression): string {
+  not_sql (expression: Expression): string {
     return `NOT ${this.sql(expression, 'this')}`;
   }
 
   /**
    * Helper for generating connector SQL (AND/OR).
    */
-  protected connectorSql(expression: Expression, op: string): string {
+  protected connectorSql (expression: Expression, op: string): string {
     // Check if we have a list of expressions
     const exprs = expression.args.expressions as Expression[] | undefined;
     if (exprs && exprs.length > 0) {
@@ -916,21 +916,21 @@ export class Generator {
   /**
    * Generate SQL for IS NULL.
    */
-  isnull_sql(expression: Expression): string {
+  isnull_sql (expression: Expression): string {
     return `${this.sql(expression, 'this')} IS NULL`;
   }
 
   /**
    * Generate SQL for IS NOT NULL.
    */
-  isnotnull_sql(expression: Expression): string {
+  isnotnull_sql (expression: Expression): string {
     return `${this.sql(expression, 'this')} IS NOT NULL`;
   }
 
   /**
    * Generate SQL for IN.
    */
-  in_sql(expression: Expression): string {
+  in_sql (expression: Expression): string {
     const query = this.sql(expression, 'this');
     const expressions = this.sql(expression, 'expressions');
     return `${query} IN ${this.wrap(expressions)}`;
@@ -939,14 +939,14 @@ export class Generator {
   /**
    * Generate SQL for LIKE.
    */
-  like_sql(expression: Expression): string {
+  like_sql (expression: Expression): string {
     return this.binary(expression, 'LIKE');
   }
 
   /**
    * Generate SQL for BETWEEN.
    */
-  between_sql(expression: Expression): string {
+  between_sql (expression: Expression): string {
     const thisSql = this.sql(expression, 'this');
     const low = this.sql(expression, 'low');
     const high = this.sql(expression, 'high');
@@ -960,7 +960,7 @@ export class Generator {
   /**
    * Generate SQL for parenthesized expressions.
    */
-  paren_sql(expression: Expression): string {
+  paren_sql (expression: Expression): string {
     const sql = this.seg(this.indent(this.sql(expression, 'this')), '');
     return `(${sql}${this.seg(')', '')}`;
   }
@@ -968,7 +968,7 @@ export class Generator {
   /**
    * Generate SQL for aliased expressions.
    */
-  alias_sql(expression: Expression): string {
+  alias_sql (expression: Expression): string {
     const alias = this.sql(expression, 'alias');
     const aliasSql = alias ? ` AS ${alias}` : '';
     return `${this.sql(expression, 'this')}${aliasSql}`;
@@ -977,7 +977,7 @@ export class Generator {
   /**
    * Generate SQL for CAST expressions.
    */
-  cast_sql(expression: Expression): string {
+  cast_sql (expression: Expression): string {
     const format = this.sql(expression, 'format');
     const formatSql = format ? ` FORMAT ${format}` : '';
     const to = this.sql(expression, 'to');
@@ -988,7 +988,7 @@ export class Generator {
   /**
    * Generate SQL for CASE expressions.
    */
-  case_sql(expression: Expression): string {
+  case_sql (expression: Expression): string {
     const thisSql = this.sql(expression, 'this');
     const statements: string[] = [];
 
@@ -1022,7 +1022,7 @@ export class Generator {
   /**
    * Generate SQL for JOIN clauses.
    */
-  join_sql(expression: Expression): string {
+  join_sql (expression: Expression): string {
     const kind = expression.args.kind as string | undefined;
     const side = expression.args.side as string | undefined;
     const method = expression.args.method as string | undefined;
@@ -1057,7 +1057,7 @@ export class Generator {
   /**
    * Generate SQL for negative numbers.
    */
-  neg_sql(expression: Expression): string {
+  neg_sql (expression: Expression): string {
     const thisSql = this.sql(expression, 'this');
     // Avoid converting "- -5" to "--5" which is a comment
     const sep = thisSql[0] === '-' ? ' ' : '';
@@ -1067,7 +1067,7 @@ export class Generator {
   /**
    * Generate SQL for data types.
    */
-  datatype_sql(expression: Expression): string {
+  datatype_sql (expression: Expression): string {
     const type = expression.args.this;
     if (!type) {
       return '';
@@ -1093,7 +1093,7 @@ export class Generator {
 /**
  * Standalone generate function for convenience.
  */
-export function generate(expression: Expression, opts?: GeneratorOptions): string {
+export function generate (expression: Expression, opts?: GeneratorOptions): string {
   const generator = new Generator(opts);
   return generator.generate(expression);
 }

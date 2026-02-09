@@ -1639,9 +1639,8 @@ export class Expression {
 
   /**
    * Returns the first non-parenthesis child or self.
-   * Note: Renamed from Python's unnest() to avoid conflict with InExpr.unnest property
    */
-  unnestExpr (): Expression {
+  unnest (): Expression {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let expression: Expression = this;
     while (expression instanceof ParenExpr) {
@@ -1672,7 +1671,7 @@ export class Expression {
    * Returns unnested operands as a tuple.
    */
   unnestOperands (): Expression[] {
-    return Array.from(this.iterExpressions()).map((arg) => arg.unnestExpr());
+    return Array.from(this.iterExpressions()).map((arg) => arg.unnest());
   }
 
   /**
@@ -1687,7 +1686,7 @@ export class Expression {
     for (const node of this.dfs({ prune: (n) => n.parent !== undefined && n.constructor !== this.constructor })) {
       if (node.constructor !== this.constructor) {
         if (unnest && !(node instanceof SubqueryExpr)) {
-          yield node.unnestExpr();
+          yield node.unnest();
         } else {
           yield node;
         }
@@ -1746,7 +1745,6 @@ export class Expression {
 
   /**
    * Swap out this expression with a new expression.
-   * Note: Renamed from Python's replace() to avoid conflict with subclass replace properties
    *
    * For example:
    *   const tree = new SelectExpr(...).select("x").from("tbl");
@@ -1756,9 +1754,9 @@ export class Expression {
    * @param expression - new node (or undefined to remove)
    * @returns The new expression
    */
-  replaceWith<E extends Expression>(expression: E): E;
-  replaceWith (expression: undefined): undefined;
-  replaceWith<E extends Expression>(expression: E | undefined): E | undefined {
+  replace<E extends Expression>(expression: E): E;
+  replace (expression: undefined): undefined;
+  replace<E extends Expression>(expression: E | undefined): E | undefined {
     const parent = this.parent;
 
     if (!parent || parent === expression) {
@@ -1775,7 +1773,7 @@ export class Expression {
     if (Array.isArray(expression) && value instanceof Expression) {
       // We are trying to replace an Expression with a list, so it's assumed that
       // the intention was to really replace the parent of this expression.
-      value.parent?.replaceWith(expression);
+      value.parent?.replace(expression);
     } else {
       parent.set(key, expression, this.index);
     }
@@ -1795,7 +1793,7 @@ export class Expression {
    * @returns The popped expression
    */
   pop (): this {
-    this.replaceWith(undefined);
+    this.replace(undefined);
     return this;
   }
 
@@ -1882,7 +1880,7 @@ export class Expression {
    * @param options.wrap - Whether to wrap operands in Parens to avoid precedence issues (default: true)
    * @returns The new AND condition
    */
-  andExpr (
+  and (
     expressions: (Expression | undefined)[],
     options?: {
       dialect?: DialectType;
@@ -1893,7 +1891,7 @@ export class Expression {
   ): Expression | undefined {
     const copy = options?.copy ?? true;
     const wrap = options?.wrap ?? true;
-    return andExpr(expressions, { ...options, copy, wrap });
+    return and(expressions, { ...options, copy, wrap });
   }
 
   /**
@@ -1915,13 +1913,13 @@ export class Expression {
    * @param options.wrap - Whether to wrap operands in Parens to avoid precedence issues (default: true)
    * @returns The new OR condition
    */
-  orExpr (
+  or (
     expressions: (Expression | undefined)[],
     options?: { dialect?: DialectType; copy?: boolean; wrap?: boolean; [key: string]: unknown },
   ): Expression | undefined {
     const copy = options?.copy ?? true;
     const wrap = options?.wrap ?? true;
-    return orExpr(expressions, { ...options, copy, wrap });
+    return or(expressions, { ...options, copy, wrap });
   }
 
   /**
@@ -1943,7 +1941,7 @@ export class Expression {
    */
   notExpr (options?: { copy?: boolean }): NotExpr | undefined {
     const copy = options?.copy ?? true;
-    return orExpr([this], { ...options, copy });
+    return or([this], { ...options, copy });
   }
 
   /**
@@ -2002,8 +2000,8 @@ export class Expression {
    * @param options.wrap - whether to wrap in parentheses (default: true)
    * @returns The Alias expression
    */
-  asExpr (
-    alias: string | IdentifierExpr,
+  as (
+    _alias: string | IdentifierExpr,
     options?: {
       quoted?: boolean;
       dialect?: DialectType;
@@ -2013,8 +2011,8 @@ export class Expression {
     },
   ): AliasExpr {
     const copy = options?.copy ?? true;
-    const aliasName = typeof alias === 'string' ? alias : alias.name;
-    return aliasExpr(this, aliasName, { ...options, copy });
+    const aliasName = typeof _alias === 'string' ? _alias : _alias.name;
+    return alias(this, aliasName, { ...options, copy });
   }
 
   /**
@@ -2126,7 +2124,7 @@ export class Expression {
    * @param options.copy - Whether to copy this expression (default: true)
    * @returns The IN expression
    */
-  inExpr (
+  in (
     expressions: unknown[],
     options?: {
       query?: string | Expression;
@@ -2164,7 +2162,7 @@ export class Expression {
    * @param options.symmetric - Whether this is a symmetric between (optional)
    * @returns The BETWEEN expression
    */
-  betweenExpr (
+  between (
     low: unknown,
     high: unknown,
     options?: {
@@ -2191,59 +2189,59 @@ export class Expression {
   /**
    * Create an IS expression.
    */
-  isExpr (other: string | Expression): IsExpr {
+  is (other: string | Expression): IsExpr {
     return this.binop(IsExpr, other);
   }
 
   /**
    * Create a LIKE expression.
    */
-  likeExpr (other: string | Expression): LikeExpr {
+  like (other: string | Expression): LikeExpr {
     return this.binop(LikeExpr, other);
   }
 
   /**
    * Create an ILIKE expression.
    */
-  ilikeExpr (other: string | Expression): ILikeExpr {
+  ilike (other: string | Expression): ILikeExpr {
     return this.binop(ILikeExpr, other);
   }
 
   /**
    * Create an EQ (equals) expression.
    */
-  eqExpr (other: unknown): EQExpr {
+  eq (other: unknown): EQExpr {
     return this.binop(EQExpr, other);
   }
 
   /**
    * Create a NEQ (not equals) expression.
    */
-  neqExpr (other: unknown): NEQExpr {
+  neq (other: unknown): NEQExpr {
     return this.binop(NEQExpr, other);
   }
 
   /**
    * Create a REGEXP_LIKE expression.
    */
-  rlikeExpr (other: string | Expression): RegexpLikeExpr {
+  rlike (other: string | Expression): RegexpLikeExpr {
     return this.binop(RegexpLikeExpr, other);
   }
 
   /**
    * Create a DIV expression with optional typed and safe flags.
    */
-  divExpr (other: string | Expression, typed = false, safe = false): DivExpr {
+  div (other: string | Expression, options?: { typed?: boolean; safe?: boolean }): DivExpr {
     const div = this.binop(DivExpr, other);
-    div.set('typed', typed);
-    div.set('safe', safe);
+    div.set('typed', options?.typed ?? false);
+    div.set('safe', options?.safe ?? false);
     return div;
   }
 
   /**
    * Create an ascending ORDER BY expression.
    */
-  ascExpr (nullsFirst = true): OrderedExpr {
+  asc (nullsFirst = true): OrderedExpr {
     return new OrderedExpr({
       this: this.copy(),
       nullsFirst: convert(nullsFirst, false),
@@ -2253,7 +2251,7 @@ export class Expression {
   /**
    * Create a descending ORDER BY expression.
    */
-  descExpr (nullsFirst = false): OrderedExpr {
+  desc (nullsFirst = false): OrderedExpr {
     return new OrderedExpr({
       this: this.copy(),
       desc: convert(true, false),
@@ -2266,28 +2264,28 @@ export class Expression {
   /**
    * Create an LT (less than) expression.
    */
-  ltExpr (other: unknown): LTExpr {
+  lt (other: unknown): LTExpr {
     return this.binop(LTExpr, other);
   }
 
   /**
    * Create an LTE (less than or equal) expression.
    */
-  lteExpr (other: unknown): LTEExpr {
+  lte (other: unknown): LTEExpr {
     return this.binop(LTEExpr, other);
   }
 
   /**
    * Create a GT (greater than) expression.
    */
-  gtExpr (other: unknown): GTExpr {
+  gt (other: unknown): GTExpr {
     return this.binop(GTExpr, other);
   }
 
   /**
    * Create a GTE (greater than or equal) expression.
    */
-  gteExpr (other: unknown): GTEExpr {
+  gte (other: unknown): GTEExpr {
     return this.binop(GTEExpr, other);
   }
 
@@ -2296,98 +2294,91 @@ export class Expression {
   /**
    * Create an ADD expression.
    */
-  addExpr (other: unknown): AddExpr {
+  add (other: unknown): AddExpr {
     return this.binop(AddExpr, other);
   }
 
   /**
    * Create an ADD expression (reversed operands).
    */
-  raddExpr (other: unknown): AddExpr {
+  radd (other: unknown): AddExpr {
     return this.binop(AddExpr, other, { reverse: true });
   }
 
   /**
    * Create a SUB expression.
    */
-  subExpr (other: unknown): SubExpr {
+  sub (other: unknown): SubExpr {
     return this.binop(SubExpr, other);
   }
 
   /**
    * Create a SUB expression (reversed operands).
    */
-  rsubExpr (other: unknown): SubExpr {
+  rsub (other: unknown): SubExpr {
     return this.binop(SubExpr, other, { reverse: true });
   }
 
   /**
    * Create a MUL expression.
    */
-  mulExpr (other: unknown): MulExpr {
+  mul (other: unknown): MulExpr {
     return this.binop(MulExpr, other);
   }
 
   /**
    * Create a MUL expression (reversed operands).
    */
-  rmulExpr (other: unknown): MulExpr {
+  rmul (other: unknown): MulExpr {
     return this.binop(MulExpr, other, { reverse: true });
-  }
-
-  /**
-   * Create a DIV expression.
-   */
-  truedivExpr (other: unknown): DivExpr {
-    return this.binop(DivExpr, other);
   }
 
   /**
    * Create a DIV expression (reversed operands).
    */
-  rtruedivExpr (other: unknown): DivExpr {
+  rdiv (other: unknown): DivExpr {
     return this.binop(DivExpr, other, { reverse: true });
   }
 
   /**
    * Create an INTDIV expression.
    */
-  floordivExpr (other: unknown): IntDivExpr {
+  floorDiv (other: unknown): IntDivExpr {
     return this.binop(IntDivExpr, other);
   }
 
   /**
    * Create an INTDIV expression (reversed operands).
    */
-  rfloordivExpr (other: unknown): IntDivExpr {
+  rfloorDiv (other: unknown): IntDivExpr {
     return this.binop(IntDivExpr, other, { reverse: true });
   }
 
   /**
    * Create a MOD expression.
    */
-  modExpr (other: unknown): ModExpr {
+  mod (other: unknown): ModExpr {
     return this.binop(ModExpr, other);
   }
 
   /**
    * Create a MOD expression (reversed operands).
    */
-  rmodExpr (other: unknown): ModExpr {
+  rmod (other: unknown): ModExpr {
     return this.binop(ModExpr, other, { reverse: true });
   }
 
   /**
    * Create a POW expression.
    */
-  powExpr (other: unknown): PowExpr {
+  pow (other: unknown): PowExpr {
     return this.binop(PowExpr, other);
   }
 
   /**
    * Create a POW expression (reversed operands).
    */
-  rpowExpr (other: unknown): PowExpr {
+  rpow (other: unknown): PowExpr {
     return this.binop(PowExpr, other, { reverse: true });
   }
 }
@@ -2468,7 +2459,7 @@ export class QueryExpr extends Expression {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns A limited query expression
    */
-  withLimit (expression: string | number | Expression, options: { dialect?: DialectType; copy?: boolean; [key: string]: unknown } = {}): this {
+  limit (expression: string | number | Expression, options: { dialect?: DialectType; copy?: boolean; [key: string]: unknown } = {}): this {
     return _applyBuilder(expression, {
       instance: this,
       arg: 'limit',
@@ -2496,7 +2487,7 @@ export class QueryExpr extends Expression {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified query expression
    */
-  withOffset (expression: string | number | Expression, options: { dialect?: DialectType; copy?: boolean; [key: string]: unknown } = {}): this {
+  offset (expression: string | number | Expression, options: { dialect?: DialectType; copy?: boolean; [key: string]: unknown } = {}): this {
     return _applyBuilder(expression, {
       instance: this,
       arg: 'offset',
@@ -2524,7 +2515,7 @@ export class QueryExpr extends Expression {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified query expression
    */
-  withOrderBy (
+  orderBy (
     expressions: Array<string | Expression>,
     options: {
       append?: boolean;
@@ -2617,7 +2608,7 @@ export class QueryExpr extends Expression {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified expression
    */
-  withWhere (
+  where (
     expressions: Array<string | Expression>,
     options: {
       append?: boolean;
@@ -2660,7 +2651,7 @@ export class QueryExpr extends Expression {
    * @param options.scalar - If `true`, this is a scalar common table expression
    * @returns The modified expression
    */
-  withWith (
+  with (
     alias: string | Expression,
     as: string | Expression,
     options: {
@@ -2706,7 +2697,7 @@ export class QueryExpr extends Expression {
       [key: string]: unknown;
     } = {},
   ): UnionExpr {
-    return unionExpr([this, ...expressions], {
+    return union([this, ...expressions], {
       ...options,
       distinct: options.distinct ?? true,
     });
@@ -2734,7 +2725,7 @@ export class QueryExpr extends Expression {
       [key: string]: unknown;
     } = {},
   ): IntersectExpr {
-    return intersectExpr([this, ...expressions], {
+    return intersect([this, ...expressions], {
       ...options,
       distinct: options.distinct ?? true,
     });
@@ -2762,7 +2753,7 @@ export class QueryExpr extends Expression {
       [key: string]: unknown;
     } = {},
   ): ExceptExpr {
-    return exceptExpr([this, ...expressions], {
+    return except([this, ...expressions], {
       ...options,
       distinct: options.distinct ?? true,
     });
@@ -2799,11 +2790,11 @@ export class CacheExpr extends Expression {
     super(args);
   }
 
-  get lazy (): Expression {
+  get $lazy (): Expression {
     return this.args.lazy as Expression;
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 }
@@ -2826,7 +2817,7 @@ export class UncacheExpr extends Expression {
     super(args);
   }
 
-  get exists (): Expression {
+  get $exists (): Expression {
     return this.args.exists as Expression;
   }
 }
@@ -2858,7 +2849,7 @@ export class RefreshExpr extends Expression {
     super(args);
   }
 
-  get kind (): RefreshExprKind | undefined {
+  get $kind (): RefreshExprKind | undefined {
     return this.args.kind as RefreshExprKind | undefined;
   }
 }
@@ -2923,7 +2914,7 @@ export class DMLExpr extends Expression {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified expression
    */
-  withReturning (
+  returning (
     expression: string | Expression,
     options: {
       dialect?: DialectType;
@@ -2995,55 +2986,55 @@ export class CreateExpr extends DDLExpr {
     return this.args['with'] as Expression;
   }
 
-  get kind (): CreateExprKind | undefined {
+  get $kind (): CreateExprKind | undefined {
     return this.args.kind as CreateExprKind | undefined;
   }
 
-  get exists (): Expression {
+  get $exists (): Expression {
     return this.args.exists as Expression;
   }
 
-  get properties (): Expression[] {
+  get $properties (): Expression[] {
     return (this.args.properties || []) as Expression[];
   }
 
-  get replace (): boolean {
+  get $replace (): boolean {
     return this.args.replace as boolean;
   }
 
-  get refresh (): Expression {
+  get $refresh (): Expression {
     return this.args.refresh as Expression;
   }
 
-  get unique (): boolean {
+  get $unique (): boolean {
     return this.args.unique as boolean;
   }
 
-  get indexes (): Expression[] {
+  get $indexes (): Expression[] {
     return (this.args.indexes || []) as Expression[];
   }
 
-  get noSchemaBinding (): Expression {
+  get $noSchemaBinding (): Expression {
     return this.args.noSchemaBinding as Expression;
   }
 
-  get begin (): Expression {
+  get $begin (): Expression {
     return this.args.begin as Expression;
   }
 
-  get end (): Expression {
+  get $end (): Expression {
     return this.args.end as Expression;
   }
 
-  get clone (): Expression {
+  get $clone (): Expression {
     return this.args.clone as Expression;
   }
 
-  get concurrently (): Expression {
+  get $concurrently (): Expression {
     return this.args.concurrently as Expression;
   }
 
-  get clustered (): Expression {
+  get $clustered (): Expression {
     return this.args.clustered as Expression;
   }
 }
@@ -3071,31 +3062,31 @@ export class SequencePropertiesExpr extends Expression {
     super(args);
   }
 
-  get increment (): Expression {
+  get $increment (): Expression {
     return this.args.increment as Expression;
   }
 
-  get minvalue (): string {
+  get $minvalue (): string {
     return this.args.minvalue as string;
   }
 
-  get maxvalue (): string {
+  get $maxvalue (): string {
     return this.args.maxvalue as string;
   }
 
-  get cache (): Expression {
+  get $cache (): Expression {
     return this.args.cache as Expression;
   }
 
-  get start (): Expression {
+  get $start (): Expression {
     return this.args.start as Expression;
   }
 
-  get owned (): Expression {
+  get $owned (): Expression {
     return this.args.owned as Expression;
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 }
@@ -3124,31 +3115,31 @@ export class TruncateTableExpr extends Expression {
     super(args);
   }
 
-  get isDatabase (): string {
+  get $isDatabase (): string {
     return this.args.isDatabase as string;
   }
 
-  get exists (): Expression {
+  get $exists (): Expression {
     return this.args.exists as Expression;
   }
 
-  get only (): Expression {
+  get $only (): Expression {
     return this.args.only as Expression;
   }
 
-  get cluster (): Expression {
+  get $cluster (): Expression {
     return this.args.cluster as Expression;
   }
 
-  get identity (): Expression {
+  get $identity (): Expression {
     return this.args.identity as Expression;
   }
 
-  get option (): Expression {
+  get $option (): Expression {
     return this.args.option as Expression;
   }
 
-  get partition (): Expression {
+  get $partition (): Expression {
     return this.args.partition as Expression;
   }
 }
@@ -3172,7 +3163,7 @@ export class CloneExpr extends Expression {
     super(args);
   }
 
-  get shallow (): Expression {
+  get $shallow (): Expression {
     return this.args.shallow as Expression;
   }
 }
@@ -3210,23 +3201,23 @@ export class DescribeExpr extends Expression {
     super(args);
   }
 
-  get style (): Expression {
+  get $style (): Expression {
     return this.args.style as Expression;
   }
 
-  get kind (): DescribeExprKind | undefined {
+  get $kind (): DescribeExprKind | undefined {
     return this.args.kind as DescribeExprKind | undefined;
   }
 
-  get partition (): Expression {
+  get $partition (): Expression {
     return this.args.partition as Expression;
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get asJson (): Expression {
+  get $asJson (): Expression {
     return this.args.asJson as Expression;
   }
 }
@@ -3250,7 +3241,7 @@ export class AttachExpr extends Expression {
     super(args);
   }
 
-  get exists (): Expression {
+  get $exists (): Expression {
     return this.args.exists as Expression;
   }
 }
@@ -3273,7 +3264,7 @@ export class DetachExpr extends Expression {
     super(args);
   }
 
-  get exists (): Expression {
+  get $exists (): Expression {
     return this.args.exists as Expression;
   }
 }
@@ -3297,11 +3288,11 @@ export class InstallExpr extends Expression {
     super(args);
   }
 
-  get from (): Expression {
+  get $from (): Expression {
     return this.args.from as Expression;
   }
 
-  get force (): Expression {
+  get $force (): Expression {
     return this.args.force as Expression;
   }
 }
@@ -3324,7 +3315,7 @@ export class SummarizeExpr extends Expression {
     super(args);
   }
 
-  get table (): Expression {
+  get $table (): Expression {
     return this.args.table as Expression;
   }
 }
@@ -3354,7 +3345,7 @@ export class KillExpr extends Expression {
     super(args);
   }
 
-  get kind (): KillExprKind | undefined {
+  get $kind (): KillExprKind | undefined {
     return this.args.kind as KillExprKind | undefined;
   }
 }
@@ -3403,11 +3394,11 @@ export class DeclareItemExpr extends Expression {
     super(args);
   }
 
-  get kind (): DeclareItemExprKind | undefined {
+  get $kind (): DeclareItemExprKind | undefined {
     return this.args.kind as DeclareItemExprKind | undefined;
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 }
@@ -3431,11 +3422,11 @@ export class SetExpr extends Expression {
     super(args);
   }
 
-  get unset (): Expression {
+  get $unset (): Expression {
     return this.args.unset as Expression;
   }
 
-  get tag (): Expression {
+  get $tag (): Expression {
     return this.args.tag as Expression;
   }
 }
@@ -3458,7 +3449,7 @@ export class HeredocExpr extends Expression {
     super(args);
   }
 
-  get tag (): Expression {
+  get $tag (): Expression {
     return this.args.tag as Expression;
   }
 }
@@ -3494,15 +3485,15 @@ export class SetItemExpr extends Expression {
     super(args);
   }
 
-  get kind (): SetItemExprKind | undefined {
+  get $kind (): SetItemExprKind | undefined {
     return this.args.kind as SetItemExprKind | undefined;
   }
 
-  get collate (): string {
+  get $collate (): string {
     return this.args.collate as string;
   }
 
-  get global (): boolean {
+  get $global (): boolean {
     return this.args['global'] as boolean;
   }
 }
@@ -3526,11 +3517,11 @@ export class QueryBandExpr extends Expression {
     super(args);
   }
 
-  get scope (): Expression {
+  get $scope (): Expression {
     return this.args.scope as Expression;
   }
 
-  get update (): Expression {
+  get $update (): Expression {
     return this.args.update as Expression;
   }
 }
@@ -3579,111 +3570,111 @@ export class ShowExpr extends Expression {
     super(args);
   }
 
-  get history (): Expression {
+  get $history (): Expression {
     return this.args.history as Expression;
   }
 
-  get terse (): Expression {
+  get $terse (): Expression {
     return this.args.terse as Expression;
   }
 
-  get target (): Expression {
+  get $target (): Expression {
     return this.args.target as Expression;
   }
 
-  get offset (): boolean {
+  get $offset (): boolean {
     return this.args.offset as boolean;
   }
 
-  get startsWith (): Expression {
+  get $startsWith (): Expression {
     return this.args.startsWith as Expression;
   }
 
-  get limit (): number | Expression {
+  get $limit (): number | Expression {
     return this.args.limit as number | Expression;
   }
 
-  get from (): Expression {
+  get $from (): Expression {
     return this.args.from as Expression;
   }
 
-  get like (): Expression {
+  get $like (): Expression {
     return this.args.like as Expression;
   }
 
-  get where (): Expression {
+  get $where (): Expression {
     return this.args.where as Expression;
   }
 
-  get db (): string {
+  get $db (): string {
     return this.args.db as string;
   }
 
-  get scope (): Expression {
+  get $scope (): Expression {
     return this.args.scope as Expression;
   }
 
-  get scopeKind (): string {
+  get $scopeKind (): string {
     return this.args.scopeKind as string;
   }
 
-  get full (): Expression {
+  get $full (): Expression {
     return this.args.full as Expression;
   }
 
-  get mutex (): Expression {
+  get $mutex (): Expression {
     return this.args.mutex as Expression;
   }
 
-  get query (): Expression {
+  get $query (): Expression {
     return this.args.query as Expression;
   }
 
-  get channel (): Expression {
+  get $channel (): Expression {
     return this.args.channel as Expression;
   }
 
-  get global (): boolean {
+  get $global (): boolean {
     return this.args['global'] as boolean;
   }
 
-  get log (): Expression {
+  get $log (): Expression {
     return this.args.log as Expression;
   }
 
-  get position (): Expression {
+  get $position (): Expression {
     return this.args.position as Expression;
   }
 
-  get types (): Expression[] {
+  get $types (): Expression[] {
     return (this.args.types || []) as Expression[];
   }
 
-  get privileges (): Expression[] {
+  get $privileges (): Expression[] {
     return (this.args.privileges || []) as Expression[];
   }
 
-  get forTable (): Expression {
+  get $forTable (): Expression {
     return this.args.forTable as Expression;
   }
 
-  get forGroup (): Expression {
+  get $forGroup (): Expression {
     return this.args.forGroup as Expression;
   }
 
-  get forUser (): Expression {
+  get $forUser (): Expression {
     return this.args.forUser as Expression;
   }
 
-  get forRole (): Expression {
+  get $forRole (): Expression {
     return this.args.forRole as Expression;
   }
 
-  get intoOutfile (): Expression {
+  get $intoOutfile (): Expression {
     return this.args.intoOutfile as Expression;
   }
 
-  get json (): Expression {
+  get $json (): Expression {
     return this.args.json as Expression;
   }
 }
@@ -3707,7 +3698,7 @@ export class UserDefinedFunctionExpr extends Expression {
     super(args);
   }
 
-  get wrapped (): Expression {
+  get $wrapped (): Expression {
     return this.args.wrapped as Expression;
   }
 }
@@ -3730,7 +3721,7 @@ export class CharacterSetExpr extends Expression {
     super(args);
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 }
@@ -3764,11 +3755,11 @@ export class RecursiveWithSearchExpr extends Expression {
     super(args);
   }
 
-  get kind (): RecursiveWithSearchExprKind | undefined {
+  get $kind (): RecursiveWithSearchExprKind | undefined {
     return this.args.kind as RecursiveWithSearchExprKind | undefined;
   }
 
-  get using (): string {
+  get $using (): string {
     return this.args.using as string;
   }
 }
@@ -3792,11 +3783,11 @@ export class WithExpr extends Expression {
     super(args);
   }
 
-  get recursive (): boolean {
+  get $recursive (): boolean {
     return this.args.recursive as boolean;
   }
 
-  get search (): Expression {
+  get $search (): Expression {
     return this.args.search as Expression;
   }
 }
@@ -3845,7 +3836,7 @@ export class TableAliasExpr extends Expression {
     super(args);
   }
 
-  get columns (): Expression[] {
+  get $columns (): Expression[] {
     return (this.args.columns || []) as Expression[];
   }
 }
@@ -3868,7 +3859,7 @@ export class ColumnPositionExpr extends Expression {
     super(args);
   }
 
-  get position (): Expression {
+  get $position (): Expression {
     return this.args.position as Expression;
   }
 }
@@ -3911,7 +3902,7 @@ export class ColumnDefExpr extends Expression {
    * Gets the data type of the column definition
    * @returns The DataType expression or undefined
    */
-  get kind (): DataTypeExpr | undefined {
+  get $kind (): DataTypeExpr | undefined {
     return this.args.kind as DataTypeExpr | undefined;
   }
 
@@ -3919,23 +3910,23 @@ export class ColumnDefExpr extends Expression {
    * Gets the column constraints
    * @returns Array of ColumnConstraint expressions
    */
-  get constraints (): ColumnConstraintExpr[] {
+  get $constraints (): ColumnConstraintExpr[] {
     return (this.args.constraints || []) as ColumnConstraintExpr[];
   }
 
-  get exists (): Expression {
+  get $exists (): Expression {
     return this.args.exists as Expression;
   }
 
-  get position (): Expression {
+  get $position (): Expression {
     return this.args.position as Expression;
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 
-  get output (): Expression {
+  get $output (): Expression {
     return this.args.output as Expression;
   }
 }
@@ -3966,39 +3957,39 @@ export class AlterColumnExpr extends Expression {
     super(args);
   }
 
-  get dtype (): DataTypeExpr {
+  get $dtype (): DataTypeExpr {
     return this.args.dtype as DataTypeExpr;
   }
 
-  get collate (): string {
+  get $collate (): string {
     return this.args.collate as string;
   }
 
-  get using (): string {
+  get $using (): string {
     return this.args.using as string;
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 
-  get drop (): Expression {
+  get $drop (): Expression {
     return this.args.drop as Expression;
   }
 
-  get comment (): string {
+  get $comment (): string {
     return this.args.comment as string;
   }
 
-  get allowNull (): Expression {
+  get $allowNull (): Expression {
     return this.args.allowNull as Expression;
   }
 
-  get visible (): Expression {
+  get $visible (): Expression {
     return this.args.visible as Expression;
   }
 
-  get renameTo (): string {
+  get $renameTo (): string {
     return this.args.renameTo as string;
   }
 }
@@ -4021,7 +4012,7 @@ export class AlterIndexExpr extends Expression {
     super(args);
   }
 
-  get visible (): Expression {
+  get $visible (): Expression {
     return this.args.visible as Expression;
   }
 }
@@ -4049,7 +4040,7 @@ export class AlterSortKeyExpr extends Expression {
     super(args);
   }
 
-  get compound (): Expression {
+  get $compound (): Expression {
     return this.args.compound as Expression;
   }
 }
@@ -4079,35 +4070,35 @@ export class AlterSetExpr extends Expression {
     super(args);
   }
 
-  get option (): Expression {
+  get $option (): Expression {
     return this.args.option as Expression;
   }
 
-  get tablespace (): Expression {
+  get $tablespace (): Expression {
     return this.args.tablespace as Expression;
   }
 
-  get accessMethod (): string {
+  get $accessMethod (): string {
     return this.args.accessMethod as string;
   }
 
-  get fileFormat (): string {
+  get $fileFormat (): string {
     return this.args.fileFormat as string;
   }
 
-  get copyOptions (): Expression[] {
+  get $copyOptions (): Expression[] {
     return (this.args.copyOptions || []) as Expression[];
   }
 
-  get tag (): Expression {
+  get $tag (): Expression {
     return this.args.tag as Expression;
   }
 
-  get location (): Expression {
+  get $location (): Expression {
     return this.args.location as Expression;
   }
 
-  get serde (): Expression {
+  get $serde (): Expression {
     return this.args.serde as Expression;
   }
 }
@@ -4131,11 +4122,11 @@ export class RenameColumnExpr extends Expression {
     super(args);
   }
 
-  get to (): Expression {
+  get $to (): Expression {
     return this.args.to as Expression;
   }
 
-  get exists (): Expression {
+  get $exists (): Expression {
     return this.args.exists as Expression;
   }
 }
@@ -4179,15 +4170,15 @@ export class CommentExpr extends Expression {
     super(args);
   }
 
-  get kind (): CommentExprKind | undefined {
+  get $kind (): CommentExprKind | undefined {
     return this.args.kind as CommentExprKind | undefined;
   }
 
-  get exists (): Expression {
+  get $exists (): Expression {
     return this.args.exists as Expression;
   }
 
-  get materialized (): boolean {
+  get $materialized (): boolean {
     return this.args.materialized as boolean;
   }
 }
@@ -4213,15 +4204,15 @@ export class ComprehensionExpr extends Expression {
     super(args);
   }
 
-  get position (): Expression {
+  get $position (): Expression {
     return this.args.position as Expression;
   }
 
-  get iterator (): Expression {
+  get $iterator (): Expression {
     return this.args.iterator as Expression;
   }
 
-  get condition (): Expression {
+  get $condition (): Expression {
     return this.args.condition as Expression;
   }
 }
@@ -4247,19 +4238,19 @@ export class MergeTreeTTLActionExpr extends Expression {
     super(args);
   }
 
-  get delete (): Expression {
+  get $delete (): Expression {
     return this.args['delete'] as Expression;
   }
 
-  get recompress (): Expression[] {
+  get $recompress (): Expression[] {
     return (this.args.recompress || []) as Expression[];
   }
 
-  get toDisk (): Expression {
+  get $toDisk (): Expression {
     return this.args.toDisk as Expression;
   }
 
-  get toVolume (): Expression {
+  get $toVolume (): Expression {
     return this.args.toVolume as Expression;
   }
 }
@@ -4284,15 +4275,15 @@ export class MergeTreeTTLExpr extends Expression {
     super(args);
   }
 
-  get where (): Expression {
+  get $where (): Expression {
     return this.args.where as Expression;
   }
 
-  get group (): Expression {
+  get $group (): Expression {
     return this.args.group as Expression;
   }
 
-  get aggregates (): Expression[] {
+  get $aggregates (): Expression[] {
     return (this.args.aggregates || []) as Expression[];
   }
 }
@@ -4320,31 +4311,31 @@ export class IndexConstraintOptionExpr extends Expression {
     super(args);
   }
 
-  get keyBlockSize (): number | Expression {
+  get $keyBlockSize (): number | Expression {
     return this.args.keyBlockSize as number | Expression;
   }
 
-  get using (): string {
+  get $using (): string {
     return this.args.using as string;
   }
 
-  get parser (): Expression {
+  get $parser (): Expression {
     return this.args.parser as Expression;
   }
 
-  get comment (): string {
+  get $comment (): string {
     return this.args.comment as string;
   }
 
-  get visible (): Expression {
+  get $visible (): Expression {
     return this.args.visible as Expression;
   }
 
-  get engineAttr (): string {
+  get $engineAttr (): string {
     return this.args.engineAttr as string;
   }
 
-  get secondaryEngineAttr (): string {
+  get $secondaryEngineAttr (): string {
     return this.args.secondaryEngineAttr as string;
   }
 }
@@ -4384,7 +4375,7 @@ export class ColumnConstraintExpr extends Expression {
    * Gets the kind of column constraint
    * @returns The ColumnConstraintKind expression
    */
-  get kind (): ColumnConstraintKindExpr {
+  get $kind (): ColumnConstraintKindExpr {
     return this.args.kind as ColumnConstraintKindExpr;
   }
 }
@@ -4411,7 +4402,7 @@ export class WithOperatorExpr extends Expression {
     super(args);
   }
 
-  get op (): Expression {
+  get $op (): Expression {
     return this.args.op as Expression;
   }
 }
@@ -4481,40 +4472,40 @@ export class DropExpr extends Expression {
    * Gets the kind of DROP statement
    * @returns The kind as an uppercase string, or undefined
    */
-  get kind (): string | undefined {
+  get $kind (): string | undefined {
     const kind = this.args.kind;
     return kind ? String(kind).toUpperCase() : undefined;
   }
 
-  get exists (): Expression {
+  get $exists (): Expression {
     return this.args.exists as Expression;
   }
 
-  get temporary (): boolean {
+  get $temporary (): boolean {
     return this.args.temporary as boolean;
   }
 
-  get materialized (): boolean {
+  get $materialized (): boolean {
     return this.args.materialized as boolean;
   }
 
-  get cascade (): Expression {
+  get $cascade (): Expression {
     return this.args.cascade as Expression;
   }
 
-  get constraints (): Expression[] {
+  get $constraints (): Expression[] {
     return (this.args.constraints || []) as Expression[];
   }
 
-  get purge (): Expression {
+  get $purge (): Expression {
     return this.args.purge as Expression;
   }
 
-  get cluster (): Expression {
+  get $cluster (): Expression {
     return this.args.cluster as Expression;
   }
 
-  get concurrently (): Expression {
+  get $concurrently (): Expression {
     return this.args.concurrently as Expression;
   }
 }
@@ -4538,11 +4529,11 @@ export class ExportExpr extends Expression {
     super(args);
   }
 
-  get connection (): Expression {
+  get $connection (): Expression {
     return this.args.connection as Expression;
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 }
@@ -4583,15 +4574,15 @@ export class ChangesExpr extends Expression {
     super(args);
   }
 
-  get information (): string {
+  get $information (): string {
     return this.args.information as string;
   }
 
-  get atBefore (): Expression {
+  get $atBefore (): Expression {
     return this.args.atBefore as Expression;
   }
 
-  get end (): Expression {
+  get $end (): Expression {
     return this.args.end as Expression;
   }
 }
@@ -4615,15 +4606,15 @@ export class ConnectExpr extends Expression {
     super(args);
   }
 
-  get start (): Expression {
+  get $start (): Expression {
     return this.args.start as Expression;
   }
 
-  get connect (): Expression {
+  get $connect (): Expression {
     return this.args.connect as Expression;
   }
 
-  get nocycle (): Expression {
+  get $nocycle (): Expression {
     return this.args.nocycle as Expression;
   }
 }
@@ -4663,23 +4654,23 @@ export class CredentialsExpr extends Expression {
     super(args);
   }
 
-  get credentials (): Expression[] {
+  get $credentials (): Expression[] {
     return (this.args.credentials || []) as Expression[];
   }
 
-  get encryption (): Expression {
+  get $encryption (): Expression {
     return this.args.encryption as Expression;
   }
 
-  get storage (): Expression {
+  get $storage (): Expression {
     return this.args.storage as Expression;
   }
 
-  get iamRole (): Expression {
+  get $iamRole (): Expression {
     return this.args.iamRole as Expression;
   }
 
-  get region (): Expression {
+  get $region (): Expression {
     return this.args.region as Expression;
   }
 }
@@ -4707,11 +4698,11 @@ export class DirectoryExpr extends Expression {
     super(args);
   }
 
-  get local (): Expression {
+  get $local (): Expression {
     return this.args.local as Expression;
   }
 
-  get rowFormat (): string {
+  get $rowFormat (): string {
     return this.args.rowFormat as string;
   }
 }
@@ -4741,19 +4732,19 @@ export class ForeignKeyExpr extends Expression {
     super(args);
   }
 
-  get reference (): Expression {
+  get $reference (): Expression {
     return this.args.reference as Expression;
   }
 
-  get delete (): Expression {
+  get $delete (): Expression {
     return this.args['delete'] as Expression;
   }
 
-  get update (): Expression {
+  get $update (): Expression {
     return this.args.update as Expression;
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 }
@@ -4791,11 +4782,11 @@ export class PrimaryKeyExpr extends Expression {
     super(args);
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 
-  get include (): Expression {
+  get $include (): Expression {
     return this.args.include as Expression;
   }
 }
@@ -4821,15 +4812,15 @@ export class IntoExpr extends Expression {
     super(args);
   }
 
-  get temporary (): boolean {
+  get $temporary (): boolean {
     return this.args.temporary as boolean;
   }
 
-  get unlogged (): Expression {
+  get $unlogged (): Expression {
     return this.args.unlogged as Expression;
   }
 
-  get bulkCollect (): Expression {
+  get $bulkCollect (): Expression {
     return this.args.bulkCollect as Expression;
   }
 }
@@ -4895,15 +4886,15 @@ export class IdentifierExpr extends Expression {
     super(args);
   }
 
-  get quoted (): boolean {
+  get $quoted (): boolean {
     return this.args.quoted as boolean;
   }
 
-  get global (): boolean {
+  get $global (): boolean {
     return this.args['global'] as boolean;
   }
 
-  get temporary (): boolean {
+  get $temporary (): boolean {
     return this.args.temporary as boolean;
   }
 
@@ -4943,23 +4934,23 @@ export class IndexExpr extends Expression {
     super(args);
   }
 
-  get table (): Expression {
+  get $table (): Expression {
     return this.args.table as Expression;
   }
 
-  get unique (): boolean {
+  get $unique (): boolean {
     return this.args.unique as boolean;
   }
 
-  get primary (): boolean {
+  get $primary (): boolean {
     return this.args.primary as boolean;
   }
 
-  get amp (): Expression {
+  get $amp (): Expression {
     return this.args.amp as Expression;
   }
 
-  get params (): Expression[] {
+  get $params (): Expression[] {
     return (this.args.params || []) as Expression[];
   }
 }
@@ -4988,35 +4979,35 @@ export class IndexParametersExpr extends Expression {
     super(args);
   }
 
-  get using (): string {
+  get $using (): string {
     return this.args.using as string;
   }
 
-  get include (): Expression {
+  get $include (): Expression {
     return this.args.include as Expression;
   }
 
-  get columns (): Expression[] {
+  get $columns (): Expression[] {
     return (this.args.columns || []) as Expression[];
   }
 
-  get withStorage (): Expression {
+  get $withStorage (): Expression {
     return this.args.withStorage as Expression;
   }
 
-  get partitionBy (): Expression {
+  get $partitionBy (): Expression {
     return this.args.partitionBy as Expression;
   }
 
-  get tablespace (): Expression {
+  get $tablespace (): Expression {
     return this.args.tablespace as Expression;
   }
 
-  get where (): Expression {
+  get $where (): Expression {
     return this.args.where as Expression;
   }
 
-  get on (): Expression {
+  get $on (): Expression {
     return this.args.on as Expression;
   }
 }
@@ -5040,7 +5031,7 @@ export class ConditionalInsertExpr extends Expression {
     super(args);
   }
 
-  get else (): Expression {
+  get $else (): Expression {
     return this.args['else'] as Expression;
   }
 }
@@ -5073,11 +5064,11 @@ export class MultitableInsertsExpr extends Expression {
     super(args);
   }
 
-  get kind (): MultitableInsertsExprKind | undefined {
+  get $kind (): MultitableInsertsExprKind | undefined {
     return this.args.kind as MultitableInsertsExprKind | undefined;
   }
 
-  get source (): Expression {
+  get $source (): Expression {
     return this.args.source as Expression;
   }
 }
@@ -5105,27 +5096,27 @@ export class OnConflictExpr extends Expression {
     super(args);
   }
 
-  get duplicate (): Expression {
+  get $duplicate (): Expression {
     return this.args.duplicate as Expression;
   }
 
-  get action (): Expression {
+  get $action (): Expression {
     return this.args.action as Expression;
   }
 
-  get conflictKeys (): Expression[] {
+  get $conflictKeys (): Expression[] {
     return (this.args.conflictKeys || []) as Expression[];
   }
 
-  get indexPredicate (): Expression {
+  get $indexPredicate (): Expression {
     return this.args.indexPredicate as Expression;
   }
 
-  get constraint (): Expression {
+  get $constraint (): Expression {
     return this.args.constraint as Expression;
   }
 
-  get where (): Expression {
+  get $where (): Expression {
     return this.args.where as Expression;
   }
 }
@@ -5149,15 +5140,15 @@ export class OnConditionExpr extends Expression {
     super(args);
   }
 
-  get error (): Expression {
+  get $error (): Expression {
     return this.args.error as Expression;
   }
 
-  get empty (): Expression {
+  get $empty (): Expression {
     return this.args.empty as Expression;
   }
 
-  get null (): Expression {
+  get $null (): Expression {
     return this.args.null as Expression;
   }
 }
@@ -5180,7 +5171,7 @@ export class ReturningExpr extends Expression {
     super(args);
   }
 
-  get into (): Expression {
+  get $into (): Expression {
     return this.args.into as Expression;
   }
 }
@@ -5221,27 +5212,27 @@ export class LoadDataExpr extends Expression {
     super(args);
   }
 
-  get local (): Expression {
+  get $local (): Expression {
     return this.args.local as Expression;
   }
 
-  get overwrite (): Expression {
+  get $overwrite (): Expression {
     return this.args.overwrite as Expression;
   }
 
-  get inpath (): Expression {
+  get $inpath (): Expression {
     return this.args.inpath as Expression;
   }
 
-  get partition (): Expression {
+  get $partition (): Expression {
     return this.args.partition as Expression;
   }
 
-  get inputFormat (): string {
+  get $inputFormat (): string {
     return this.args.inputFormat as string;
   }
 
-  get serde (): Expression {
+  get $serde (): Expression {
     return this.args.serde as Expression;
   }
 }
@@ -5264,7 +5255,7 @@ export class PartitionExpr extends Expression {
     super(args);
   }
 
-  get subpartition (): Expression {
+  get $subpartition (): Expression {
     return this.args.subpartition as Expression;
   }
 }
@@ -5302,15 +5293,15 @@ export class FetchExpr extends Expression {
     super(args);
   }
 
-  get direction (): Expression {
+  get $direction (): Expression {
     return this.args.direction as Expression;
   }
 
-  get count (): Expression {
+  get $count (): Expression {
     return this.args.count as Expression;
   }
 
-  get limitOptions (): Expression[] {
+  get $limitOptions (): Expression[] {
     return (this.args.limitOptions || []) as Expression[];
   }
 }
@@ -5343,23 +5334,23 @@ export class GrantExpr extends Expression {
     super(args);
   }
 
-  get privileges (): Expression[] {
+  get $privileges (): Expression[] {
     return (this.args.privileges || []) as Expression[];
   }
 
-  get kind (): GrantExprKind | undefined {
+  get $kind (): GrantExprKind | undefined {
     return this.args.kind as GrantExprKind | undefined;
   }
 
-  get securable (): Expression {
+  get $securable (): Expression {
     return this.args.securable as Expression;
   }
 
-  get principals (): Expression[] {
+  get $principals (): Expression[] {
     return (this.args.principals || []) as Expression[];
   }
 
-  get grantOption (): Expression {
+  get $grantOption (): Expression {
     return this.args.grantOption as Expression;
   }
 }
@@ -5387,7 +5378,7 @@ export class RevokeExpr extends Expression {
     super(args);
   }
 
-  get cascade (): Expression {
+  get $cascade (): Expression {
     return this.args.cascade as Expression;
   }
 }
@@ -5414,23 +5405,23 @@ export class GroupExpr extends Expression {
     super(args);
   }
 
-  get groupingSets (): Expression[] {
+  get $groupingSets (): Expression[] {
     return (this.args.groupingSets || []) as Expression[];
   }
 
-  get cube (): Expression {
+  get $cube (): Expression {
     return this.args.cube as Expression;
   }
 
-  get rollup (): Expression {
+  get $rollup (): Expression {
     return this.args.rollup as Expression;
   }
 
-  get totals (): Expression[] {
+  get $totals (): Expression[] {
     return (this.args.totals || []) as Expression[];
   }
 
-  get all (): Expression {
+  get $all (): Expression {
     return this.args.all as Expression;
   }
 }
@@ -5478,7 +5469,7 @@ export class LambdaExpr extends Expression {
     super(args);
   }
 
-  get colon (): Expression {
+  get $colon (): Expression {
     return this.args.colon as Expression;
   }
 }
@@ -5504,11 +5495,11 @@ export class LimitExpr extends Expression {
     super(args);
   }
 
-  get offset (): boolean {
+  get $offset (): boolean {
     return this.args.offset as boolean;
   }
 
-  get limitOptions (): Expression[] {
+  get $limitOptions (): Expression[] {
     return (this.args.limitOptions || []) as Expression[];
   }
 }
@@ -5532,15 +5523,15 @@ export class LimitOptionsExpr extends Expression {
     super(args);
   }
 
-  get percent (): Expression {
+  get $percent (): Expression {
     return this.args.percent as Expression;
   }
 
-  get rows (): Expression[] {
+  get $rows (): Expression[] {
     return (this.args.rows || []) as Expression[];
   }
 
-  get withTies (): Expression[] {
+  get $withTies (): Expression[] {
     return (this.args.withTies || []) as Expression[];
   }
 }
@@ -5597,19 +5588,19 @@ export class JoinExpr extends Expression {
     super(args);
   }
 
-  get method (): string {
+  get $method (): string {
     return this.text('method').toUpperCase();
   }
 
-  get kind (): string {
+  get $kind (): string {
     return this.text('kind').toUpperCase();
   }
 
-  get side (): string {
+  get $side (): string {
     return this.text('side').toUpperCase();
   }
 
-  get hint (): string {
+  get $hint (): string {
     return this.text('hint').toUpperCase();
   }
 
@@ -5618,23 +5609,23 @@ export class JoinExpr extends Expression {
   }
 
   get isSemiOrAntiJoin (): boolean {
-    const kind = this.kind;
+    const kind = this.$kind;
     return kind === JoinExprKind.SEMI || kind === JoinExprKind.ANTI;
   }
 
-  get global (): boolean {
+  get $global (): boolean {
     return this.args['global'] as boolean;
   }
 
-  get matchCondition (): Expression {
+  get $matchCondition (): Expression {
     return this.args.matchCondition as Expression;
   }
 
-  get directed (): Expression {
+  get $directed (): Expression {
     return this.args.directed as Expression;
   }
 
-  get pivots (): Expression[] {
+  get $pivots (): Expression[] {
     return (this.args.pivots || []) as Expression[];
   }
 
@@ -5672,7 +5663,7 @@ export class JoinExpr extends Expression {
       ...options,
     }) as this;
 
-    if (join.kind === JoinExprKind.CROSS) {
+    if (join.$kind === JoinExprKind.CROSS) {
       join.set('kind', undefined);
     }
 
@@ -5712,7 +5703,7 @@ export class JoinExpr extends Expression {
       ...options,
     }) as this;
 
-    if (join.kind === JoinExprKind.CROSS) {
+    if (join.$kind === JoinExprKind.CROSS) {
       join.set('kind', undefined);
     }
 
@@ -5738,7 +5729,7 @@ export class MatchRecognizeMeasureExpr extends Expression {
     super(args);
   }
 
-  get windowFrame (): Expression {
+  get $windowFrame (): Expression {
     return this.args.windowFrame as Expression;
   }
 }
@@ -5767,31 +5758,31 @@ export class MatchRecognizeExpr extends Expression {
     super(args);
   }
 
-  get partitionBy (): Expression {
+  get $partitionBy (): Expression {
     return this.args.partitionBy as Expression;
   }
 
-  get order (): Expression {
+  get $order (): Expression {
     return this.args.order as Expression;
   }
 
-  get measures (): Expression[] {
+  get $measures (): Expression[] {
     return (this.args.measures || []) as Expression[];
   }
 
-  get rows (): Expression[] {
+  get $rows (): Expression[] {
     return (this.args.rows || []) as Expression[];
   }
 
-  get after (): Expression {
+  get $after (): Expression {
     return this.args.after as Expression;
   }
 
-  get pattern (): Expression {
+  get $pattern (): Expression {
     return this.args.pattern as Expression;
   }
 
-  get define (): Expression {
+  get $define (): Expression {
     return this.args.define as Expression;
   }
 }
@@ -5829,7 +5820,7 @@ export class OrderExpr extends Expression {
     super(args);
   }
 
-  get siblings (): Expression[] {
+  get $siblings (): Expression[] {
     return (this.args.siblings || []) as Expression[];
   }
 }
@@ -5854,19 +5845,19 @@ export class WithFillExpr extends Expression {
     super(args);
   }
 
-  get from (): Expression {
+  get $from (): Expression {
     return this.args.from as Expression;
   }
 
-  get to (): Expression {
+  get $to (): Expression {
     return this.args.to as Expression;
   }
 
-  get step (): Expression {
+  get $step (): Expression {
     return this.args.step as Expression;
   }
 
-  get interpolate (): Expression {
+  get $interpolate (): Expression {
     return this.args.interpolate as Expression;
   }
 }
@@ -5891,15 +5882,15 @@ export class OrderedExpr extends Expression {
     super(args);
   }
 
-  get desc (): Expression {
+  get $desc (): Expression {
     return this.args.desc as Expression;
   }
 
-  get nullsFirst (): Expression {
+  get $nullsFirst (): Expression {
     return this.args.nullsFirst as Expression;
   }
 
-  get withFill (): Expression {
+  get $withFill (): Expression {
     return this.args.withFill as Expression;
   }
 
@@ -5926,7 +5917,7 @@ export class PropertyExpr extends Expression {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 }
@@ -5967,7 +5958,7 @@ export class GrantPrincipalExpr extends Expression {
     super(args);
   }
 
-  get kind (): GrantPrincipalExprKind | undefined {
+  get $kind (): GrantPrincipalExprKind | undefined {
     return this.args.kind as GrantPrincipalExprKind | undefined;
   }
 }
@@ -6000,15 +5991,15 @@ export class PartitionByRangePropertyDynamicExpr extends Expression {
     super(args);
   }
 
-  get start (): Expression {
+  get $start (): Expression {
     return this.args.start as Expression;
   }
 
-  get end (): Expression {
+  get $end (): Expression {
     return this.args.end as Expression;
   }
 
-  get every (): Expression {
+  get $every (): Expression {
     return this.args.every as Expression;
   }
 }
@@ -6033,11 +6024,11 @@ export class RollupIndexExpr extends Expression {
     super(args);
   }
 
-  get fromIndex (): Expression {
+  get $fromIndex (): Expression {
     return this.args.fromIndex as Expression;
   }
 
-  get properties (): Expression[] {
+  get $properties (): Expression[] {
     return (this.args.properties || []) as Expression[];
   }
 }
@@ -6071,11 +6062,11 @@ export class PartitionBoundSpecExpr extends Expression {
     super(args);
   }
 
-  get fromExpressions (): Expression[] {
+  get $fromExpressions (): Expression[] {
     return (this.args.fromExpressions || []) as Expression[];
   }
 
-  get toExpressions (): Expression[] {
+  get $toExpressions (): Expression[] {
     return (this.args.toExpressions || []) as Expression[];
   }
 }
@@ -6102,27 +6093,27 @@ export class QueryTransformExpr extends Expression {
     super(args);
   }
 
-  get commandScript (): Expression {
+  get $commandScript (): Expression {
     return this.args.commandScript as Expression;
   }
 
-  get schema (): Expression {
+  get $schema (): Expression {
     return this.args.schema as Expression;
   }
 
-  get rowFormatBefore (): string {
+  get $rowFormatBefore (): string {
     return this.args.rowFormatBefore as string;
   }
 
-  get recordWriter (): Expression {
+  get $recordWriter (): Expression {
     return this.args.recordWriter as Expression;
   }
 
-  get rowFormatAfter (): string {
+  get $rowFormatAfter (): string {
     return this.args.rowFormatAfter as string;
   }
 
-  get recordReader (): Expression {
+  get $recordReader (): Expression {
     return this.args.recordReader as Expression;
   }
 }
@@ -6147,19 +6138,19 @@ export class SemanticViewExpr extends Expression {
     super(args);
   }
 
-  get metrics (): Expression[] {
+  get $metrics (): Expression[] {
     return (this.args.metrics || []) as Expression[];
   }
 
-  get dimensions (): Expression[] {
+  get $dimensions (): Expression[] {
     return (this.args.dimensions || []) as Expression[];
   }
 
-  get facts (): Expression[] {
+  get $facts (): Expression[] {
     return (this.args.facts || []) as Expression[];
   }
 
-  get where (): Expression {
+  get $where (): Expression {
     return this.args.where as Expression;
   }
 }
@@ -6190,11 +6181,11 @@ export class InputOutputFormatExpr extends Expression {
     super(args);
   }
 
-  get inputFormat (): string {
+  get $inputFormat (): string {
     return this.args.inputFormat as string;
   }
 
-  get outputFormat (): string {
+  get $outputFormat (): string {
     return this.args.outputFormat as string;
   }
 }
@@ -6220,7 +6211,7 @@ export class ReferenceExpr extends Expression {
     super(args);
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 }
@@ -6254,7 +6245,7 @@ export class IndexTableHintExpr extends Expression {
     super(args);
   }
 
-  get target (): Expression {
+  get $target (): Expression {
     return this.args.target as Expression;
   }
 }
@@ -6285,7 +6276,7 @@ export class HistoricalDataExpr extends Expression {
     super(args);
   }
 
-  get kind (): HistoricalDataExprKind | undefined {
+  get $kind (): HistoricalDataExprKind | undefined {
     return this.args.kind as HistoricalDataExprKind | undefined;
   }
 }
@@ -6308,11 +6299,11 @@ export class PutExpr extends Expression {
     super(args);
   }
 
-  get target (): Expression {
+  get $target (): Expression {
     return this.args.target as Expression;
   }
 
-  get properties (): Expression[] {
+  get $properties (): Expression[] {
     return (this.args.properties || []) as Expression[];
   }
 }
@@ -6335,11 +6326,11 @@ export class GetExpr extends Expression {
     super(args);
   }
 
-  get target (): Expression {
+  get $target (): Expression {
     return this.args.target as Expression;
   }
 
-  get properties (): Expression[] {
+  get $properties (): Expression[] {
     return (this.args.properties || []) as Expression[];
   }
 }
@@ -6378,75 +6369,75 @@ export class TableExpr extends Expression {
     super(args);
   }
 
-  get db (): string {
+  get $db (): string {
     return this.args.db as string;
   }
 
-  get catalog (): string {
+  get $catalog (): string {
     return this.args.catalog as string;
   }
 
-  get laterals (): Expression[] {
+  get $laterals (): Expression[] {
     return (this.args.laterals || []) as Expression[];
   }
 
-  get joins (): Expression[] {
+  get $joins (): Expression[] {
     return (this.args.joins || []) as Expression[];
   }
 
-  get pivots (): Expression[] {
+  get $pivots (): Expression[] {
     return (this.args.pivots || []) as Expression[];
   }
 
-  get hints (): Expression[] {
+  get $hints (): Expression[] {
     return (this.args.hints || []) as Expression[];
   }
 
-  get systemTime (): Expression {
+  get $systemTime (): Expression {
     return this.args.systemTime as Expression;
   }
 
-  get version (): Expression {
+  get $version (): Expression {
     return this.args.version as Expression;
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get pattern (): Expression {
+  get $pattern (): Expression {
     return this.args.pattern as Expression;
   }
 
-  get ordinality (): boolean {
+  get $ordinality (): boolean {
     return this.args.ordinality as boolean;
   }
 
-  get when (): Expression {
+  get $when (): Expression {
     return this.args.when as Expression;
   }
 
-  get only (): Expression {
+  get $only (): Expression {
     return this.args.only as Expression;
   }
 
-  get partition (): Expression {
+  get $partition (): Expression {
     return this.args.partition as Expression;
   }
 
-  get changes (): Expression[] {
+  get $changes (): Expression[] {
     return (this.args.changes || []) as Expression[];
   }
 
-  get rowsFrom (): number | Expression {
+  get $rowsFrom (): number | Expression {
     return this.args.rowsFrom as number | Expression;
   }
 
-  get sample (): number | Expression {
+  get $sample (): number | Expression {
     return this.args.sample as number | Expression;
   }
 
-  get indexed (): Expression {
+  get $indexed (): Expression {
     return this.args.indexed as Expression;
   }
 }
@@ -6482,7 +6473,7 @@ export class VersionExpr extends Expression {
     super(args);
   }
 
-  get kind (): VersionExprKind | undefined {
+  get $kind (): VersionExprKind | undefined {
     return this.args.kind as VersionExprKind | undefined;
   }
 }
@@ -6510,11 +6501,11 @@ export class LockExpr extends Expression {
     super(args);
   }
 
-  get update (): Expression {
+  get $update (): Expression {
     return this.args.update as Expression;
   }
 
-  get wait (): Expression {
+  get $wait (): Expression {
     return this.args.wait as Expression;
   }
 }
@@ -6543,35 +6534,35 @@ export class TableSampleExpr extends Expression {
     super(args);
   }
 
-  get method (): string {
+  get $method (): string {
     return this.args.method as string;
   }
 
-  get bucketNumerator (): Expression {
+  get $bucketNumerator (): Expression {
     return this.args.bucketNumerator as Expression;
   }
 
-  get bucketDenominator (): Expression {
+  get $bucketDenominator (): Expression {
     return this.args.bucketDenominator as Expression;
   }
 
-  get bucketField (): Expression {
+  get $bucketField (): Expression {
     return this.args.bucketField as Expression;
   }
 
-  get percent (): Expression {
+  get $percent (): Expression {
     return this.args.percent as Expression;
   }
 
-  get rows (): Expression[] {
+  get $rows (): Expression[] {
     return (this.args.rows || []) as Expression[];
   }
 
-  get size (): number | Expression {
+  get $size (): number | Expression {
     return this.args.size as number | Expression;
   }
 
-  get seed (): Expression {
+  get $seed (): Expression {
     return this.args.seed as Expression;
   }
 }
@@ -6594,11 +6585,11 @@ export class TagExpr extends Expression {
     super(args);
   }
 
-  get prefix (): Expression {
+  get $prefix (): Expression {
     return this.args.prefix as Expression;
   }
 
-  get postfix (): Expression {
+  get $postfix (): Expression {
     return this.args.postfix as Expression;
   }
 }
@@ -6628,35 +6619,35 @@ export class PivotExpr extends Expression {
     super(args);
   }
 
-  get fields (): Expression[] {
+  get $fields (): Expression[] {
     return (this.args.fields || []) as Expression[];
   }
 
-  get unpivot (): Expression {
+  get $unpivot (): Expression {
     return this.args.unpivot as Expression;
   }
 
-  get using (): string {
+  get $using (): string {
     return this.args.using as string;
   }
 
-  get group (): Expression {
+  get $group (): Expression {
     return this.args.group as Expression;
   }
 
-  get columns (): Expression[] {
+  get $columns (): Expression[] {
     return (this.args.columns || []) as Expression[];
   }
 
-  get includeNulls (): Expression[] {
+  get $includeNulls (): Expression[] {
     return (this.args.includeNulls || []) as Expression[];
   }
 
-  get defaultOnNull (): Expression {
+  get $defaultOnNull (): Expression {
     return this.args.defaultOnNull as Expression;
   }
 
-  get into (): Expression {
+  get $into (): Expression {
     return this.args.into as Expression;
   }
 
@@ -6699,27 +6690,27 @@ export class WindowSpecExpr extends Expression {
     super(args);
   }
 
-  get kind (): WindowSpecExprKind | undefined {
+  get $kind (): WindowSpecExprKind | undefined {
     return this.args.kind as WindowSpecExprKind | undefined;
   }
 
-  get start (): Expression {
+  get $start (): Expression {
     return this.args.start as Expression;
   }
 
-  get startSide (): Expression {
+  get $startSide (): Expression {
     return this.args.startSide as Expression;
   }
 
-  get end (): Expression {
+  get $end (): Expression {
     return this.args.end as Expression;
   }
 
-  get endSide (): Expression {
+  get $endSide (): Expression {
     return this.args.endSide as Expression;
   }
 
-  get exclude (): Expression {
+  get $exclude (): Expression {
     return this.args.exclude as Expression;
   }
 }
@@ -6751,15 +6742,15 @@ export class StarExpr extends Expression {
     super(args);
   }
 
-  get except (): Expression {
+  get $except (): Expression {
     return this.args.except as Expression;
   }
 
-  get replace (): boolean {
+  get $replace (): boolean {
     return this.args.replace as boolean;
   }
 
-  get rename (): string {
+  get $rename (): string {
     return this.args.rename as string;
   }
 }
@@ -6820,23 +6811,23 @@ export class DataTypeExpr extends Expression {
     return new DataTypeExpr({ this: dtype });
   }
 
-  get nested (): Expression {
+  get $nested (): Expression {
     return this.args.nested as Expression;
   }
 
-  get values (): Expression[] {
+  get $values (): Expression[] {
     return (this.args.values || []) as Expression[];
   }
 
-  get prefix (): Expression {
+  get $prefix (): Expression {
     return this.args.prefix as Expression;
   }
 
-  get kind (): DataTypeExprKind | string | undefined {
+  get $kind (): DataTypeExprKind | string | undefined {
     return this.args.kind as DataTypeExprKind | string | undefined;
   }
 
-  get nullable (): Expression {
+  get $nullable (): Expression {
     return this.args.nullable as Expression;
   }
 }
@@ -6867,11 +6858,11 @@ export class TransactionExpr extends Expression {
     super(args);
   }
 
-  get modes (): Expression[] {
+  get $modes (): Expression[] {
     return (this.args.modes || []) as Expression[];
   }
 
-  get mark (): Expression {
+  get $mark (): Expression {
     return this.args.mark as Expression;
   }
 }
@@ -6894,11 +6885,11 @@ export class CommitExpr extends Expression {
     super(args);
   }
 
-  get chain (): Expression {
+  get $chain (): Expression {
     return this.args.chain as Expression;
   }
 
-  get durability (): Expression {
+  get $durability (): Expression {
     return this.args.durability as Expression;
   }
 }
@@ -6920,7 +6911,7 @@ export class RollbackExpr extends Expression {
     super(args);
   }
 
-  get savepoint (): Expression {
+  get $savepoint (): Expression {
     return this.args.savepoint as Expression;
   }
 }
@@ -6963,39 +6954,39 @@ export class AlterExpr extends Expression {
     super(args);
   }
 
-  get kind (): AlterExprKind | undefined {
+  get $kind (): AlterExprKind | undefined {
     return this.args.kind as AlterExprKind | undefined;
   }
 
-  get actions (): Expression[] {
+  get $actions (): Expression[] {
     return (this.args.actions || []) as Expression[];
   }
 
-  get exists (): Expression {
+  get $exists (): Expression {
     return this.args.exists as Expression;
   }
 
-  get only (): Expression {
+  get $only (): Expression {
     return this.args.only as Expression;
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 
-  get cluster (): Expression {
+  get $cluster (): Expression {
     return this.args.cluster as Expression;
   }
 
-  get notValid (): Expression {
+  get $notValid (): Expression {
     return this.args.notValid as Expression;
   }
 
-  get check (): Expression {
+  get $check (): Expression {
     return this.args.check as Expression;
   }
 
-  get cascade (): Expression {
+  get $cascade (): Expression {
     return this.args.cascade as Expression;
   }
 }
@@ -7017,7 +7008,7 @@ export class AlterSessionExpr extends Expression {
     super(args);
   }
 
-  get unset (): Expression {
+  get $unset (): Expression {
     return this.args.unset as Expression;
   }
 }
@@ -7051,23 +7042,23 @@ export class AnalyzeExpr extends Expression {
     super(args);
   }
 
-  get kind (): AnalyzeExprKind | undefined {
+  get $kind (): AnalyzeExprKind | undefined {
     return this.args.kind as AnalyzeExprKind | undefined;
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 
-  get mode (): Expression {
+  get $mode (): Expression {
     return this.args.mode as Expression;
   }
 
-  get partition (): Expression {
+  get $partition (): Expression {
     return this.args.partition as Expression;
   }
 
-  get properties (): Expression[] {
+  get $properties (): Expression[] {
     return (this.args.properties || []) as Expression[];
   }
 }
@@ -7100,11 +7091,11 @@ export class AnalyzeStatisticsExpr extends Expression {
     super(args);
   }
 
-  get kind (): AnalyzeStatisticsExprKind | undefined {
+  get $kind (): AnalyzeStatisticsExprKind | undefined {
     return this.args.kind as AnalyzeStatisticsExprKind | undefined;
   }
 
-  get option (): Expression {
+  get $option (): Expression {
     return this.args.option as Expression;
   }
 }
@@ -7126,7 +7117,7 @@ export class AnalyzeHistogramExpr extends Expression {
     super(args);
   }
 
-  get updateOptions (): Expression[] {
+  get $updateOptions (): Expression[] {
     return (this.args.updateOptions || []) as Expression[];
   }
 }
@@ -7158,11 +7149,11 @@ export class AnalyzeSampleExpr extends Expression {
     super(args);
   }
 
-  get kind (): AnalyzeSampleExprKind | undefined {
+  get $kind (): AnalyzeSampleExprKind | undefined {
     return this.args.kind as AnalyzeSampleExprKind | undefined;
   }
 
-  get sample (): number | Expression {
+  get $sample (): number | Expression {
     return this.args.sample as number | Expression;
   }
 }
@@ -7194,7 +7185,7 @@ export class AnalyzeDeleteExpr extends Expression {
     super(args);
   }
 
-  get kind (): AnalyzeDeleteExprKind | undefined {
+  get $kind (): AnalyzeDeleteExprKind | undefined {
     return this.args.kind as AnalyzeDeleteExprKind | undefined;
   }
 }
@@ -7229,7 +7220,7 @@ export class AnalyzeValidateExpr extends Expression {
     super(args);
   }
 
-  get kind (): AnalyzeValidateExprKind | undefined {
+  get $kind (): AnalyzeValidateExprKind | undefined {
     return this.args.kind as AnalyzeValidateExprKind | undefined;
   }
 }
@@ -7264,11 +7255,11 @@ export class AddPartitionExpr extends Expression {
     super(args);
   }
 
-  get exists (): Expression {
+  get $exists (): Expression {
     return this.args.exists as Expression;
   }
 
-  get location (): Expression {
+  get $location (): Expression {
     return this.args.location as Expression;
   }
 }
@@ -7294,7 +7285,7 @@ export class DropPartitionExpr extends Expression {
     super(args);
   }
 
-  get exists (): Expression {
+  get $exists (): Expression {
     return this.args.exists as Expression;
   }
 }
@@ -7316,7 +7307,7 @@ export class ReplacePartitionExpr extends Expression {
     super(args);
   }
 
-  get source (): Expression {
+  get $source (): Expression {
     return this.args.source as Expression;
   }
 }
@@ -7354,7 +7345,7 @@ export class AtTimeZoneExpr extends Expression {
     super(args);
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 }
@@ -7376,7 +7367,7 @@ export class FromTimeZoneExpr extends Expression {
     super(args);
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 }
@@ -7398,7 +7389,7 @@ export class FormatPhraseExpr extends Expression {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 }
@@ -7420,7 +7411,7 @@ export class DistinctExpr extends Expression {
     super(args);
   }
 
-  get on (): Expression {
+  get $on (): Expression {
     return this.args.on as Expression;
   }
 }
@@ -7446,7 +7437,7 @@ export class TimeUnitExpr extends Expression {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -7476,7 +7467,7 @@ export class HavingMaxExpr extends Expression {
     super(args);
   }
 
-  get max (): Expression {
+  get $max (): Expression {
     return this.args.max as Expression;
   }
 }
@@ -7498,7 +7489,7 @@ export class TranslateCharactersExpr extends Expression {
     super(args);
   }
 
-  get withError (): Expression {
+  get $withError (): Expression {
     return this.args.withError as Expression;
   }
 }
@@ -7524,7 +7515,7 @@ export class OverflowTruncateBehaviorExpr extends Expression {
     super(args);
   }
 
-  get withCount (): Expression {
+  get $withCount (): Expression {
     return this.args.withCount as Expression;
   }
 }
@@ -7551,7 +7542,7 @@ export class JSONExpr extends Expression {
     return this.args['with'] as Expression;
   }
 
-  get unique (): boolean {
+  get $unique (): boolean {
     return this.args.unique as boolean;
   }
 }
@@ -7573,7 +7564,7 @@ export class JSONPathExpr extends Expression {
     super(args);
   }
 
-  get escape (): Expression {
+  get $escape (): Expression {
     return this.args.escape as Expression;
   }
 }
@@ -7619,19 +7610,19 @@ export class JSONColumnDefExpr extends Expression {
     super(args);
   }
 
-  get kind (): JSONColumnDefExprKind | undefined {
+  get $kind (): JSONColumnDefExprKind | undefined {
     return this.args.kind as JSONColumnDefExprKind | undefined;
   }
 
-  get path (): Expression {
+  get $path (): Expression {
     return this.args.path as Expression;
   }
 
-  get nestedSchema (): Expression {
+  get $nestedSchema (): Expression {
     return this.args.nestedSchema as Expression;
   }
 
-  get ordinality (): boolean {
+  get $ordinality (): boolean {
     return this.args.ordinality as boolean;
   }
 }
@@ -7659,15 +7650,15 @@ export class JSONValueExpr extends Expression {
     super(args);
   }
 
-  get path (): Expression {
+  get $path (): Expression {
     return this.args.path as Expression;
   }
 
-  get returning (): Expression {
+  get $returning (): Expression {
     return this.args.returning as Expression;
   }
 
-  get onCondition (): Expression {
+  get $onCondition (): Expression {
     return this.args.onCondition as Expression;
   }
 }
@@ -7702,15 +7693,15 @@ export class OpenJSONColumnDefExpr extends Expression {
     super(args);
   }
 
-  get kind (): OpenJSONColumnDefExprKind | undefined {
+  get $kind (): OpenJSONColumnDefExprKind | undefined {
     return this.args.kind as OpenJSONColumnDefExprKind | undefined;
   }
 
-  get path (): Expression {
+  get $path (): Expression {
     return this.args.path as Expression;
   }
 
-  get asJson (): Expression {
+  get $asJson (): Expression {
     return this.args.asJson as Expression;
   }
 }
@@ -7733,11 +7724,11 @@ export class JSONExtractQuoteExpr extends Expression {
     super(args);
   }
 
-  get option (): Expression {
+  get $option (): Expression {
     return this.args.option as Expression;
   }
 
-  get scalar (): Expression {
+  get $scalar (): Expression {
     return this.args.scalar as Expression;
   }
 }
@@ -7763,7 +7754,7 @@ export class SliceExpr extends Expression {
     super(args);
   }
 
-  get step (): Expression {
+  get $step (): Expression {
     return this.args.step as Expression;
   }
 }
@@ -7815,7 +7806,7 @@ export class UseExpr extends Expression {
     super(args);
   }
 
-  get kind (): UseExprKind | undefined {
+  get $kind (): UseExprKind | undefined {
     return this.args.kind as UseExprKind | undefined;
   }
 }
@@ -7840,19 +7831,19 @@ export class WhenExpr extends Expression {
     super(args);
   }
 
-  get matched (): Expression {
+  get $matched (): Expression {
     return this.args.matched as Expression;
   }
 
-  get source (): Expression {
+  get $source (): Expression {
     return this.args.source as Expression;
   }
 
-  get condition (): Expression {
+  get $condition (): Expression {
     return this.args.condition as Expression;
   }
 
-  get then (): Expression {
+  get $then (): Expression {
     return this.args.then as Expression;
   }
 }
@@ -7894,15 +7885,15 @@ export class CTEExpr extends DerivedTableExpr {
     super(args);
   }
 
-  get scalar (): Expression {
+  get $scalar (): Expression {
     return this.args.scalar as Expression;
   }
 
-  get materialized (): boolean {
+  get $materialized (): boolean {
     return this.args.materialized as boolean;
   }
 
-  get keyExpressions (): Expression[] {
+  get $keyExpressions (): Expression[] {
     return (this.args.keyExpressions || []) as Expression[];
   }
 }
@@ -7929,7 +7920,7 @@ export class HexStringExpr extends ConditionExpr {
     super(args);
   }
 
-  get isInteger (): Expression {
+  get $isInteger (): Expression {
     return this.args.isInteger as Expression;
   }
 }
@@ -7952,7 +7943,7 @@ export class ByteStringExpr extends ConditionExpr {
     super(args);
   }
 
-  get isBytes (): Expression[] {
+  get $isBytes (): Expression[] {
     return (this.args.isBytes || []) as Expression[];
   }
 }
@@ -7985,7 +7976,7 @@ export class UnicodeStringExpr extends ConditionExpr {
     super(args);
   }
 
-  get escape (): Expression {
+  get $escape (): Expression {
     return this.args.escape as Expression;
   }
 }
@@ -8022,7 +8013,7 @@ export class ColumnExpr extends ConditionExpr {
    * Gets the table name as a string
    * @returns The table name
    */
-  get table (): string {
+  get $table (): string {
     return this.text('table');
   }
 
@@ -8030,7 +8021,7 @@ export class ColumnExpr extends ConditionExpr {
    * Gets the database name as a string
    * @returns The database name
    */
-  get db (): string {
+  get $db (): string {
     return this.text('db');
   }
 
@@ -8038,11 +8029,11 @@ export class ColumnExpr extends ConditionExpr {
    * Gets the catalog name as a string
    * @returns The catalog name
    */
-  get catalog (): string {
+  get $catalog (): string {
     return this.text('catalog');
   }
 
-  get joinMark (): Expression {
+  get $joinMark (): Expression {
     return this.args.joinMark as Expression;
   }
 
@@ -8116,7 +8107,7 @@ export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
     super(args);
   }
 
-  get not (): Expression {
+  get $not (): Expression {
     return this.args.not as Expression;
   }
 }
@@ -8151,7 +8142,7 @@ export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
     super(args);
   }
 
-  get enforced (): Expression {
+  get $enforced (): Expression {
     return this.args.enforced as Expression;
   }
 }
@@ -8242,31 +8233,31 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
     super(args);
   }
 
-  get onNull (): Expression {
+  get $onNull (): Expression {
     return this.args.onNull as Expression;
   }
 
-  get start (): Expression {
+  get $start (): Expression {
     return this.args.start as Expression;
   }
 
-  get increment (): Expression {
+  get $increment (): Expression {
     return this.args.increment as Expression;
   }
 
-  get minvalue (): string {
+  get $minvalue (): string {
     return this.args.minvalue as string;
   }
 
-  get maxvalue (): string {
+  get $maxvalue (): string {
     return this.args.maxvalue as string;
   }
 
-  get cycle (): Expression {
+  get $cycle (): Expression {
     return this.args.cycle as Expression;
   }
 
-  get order (): Expression {
+  get $order (): Expression {
     return this.args.order as Expression;
   }
 }
@@ -8289,11 +8280,11 @@ export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr
     super(args);
   }
 
-  get start (): Expression {
+  get $start (): Expression {
     return this.args.start as Expression;
   }
 
-  get hidden (): Expression {
+  get $hidden (): Expression {
     return this.args.hidden as Expression;
   }
 }
@@ -8330,19 +8321,19 @@ export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
     super(args);
   }
 
-  get kind (): IndexColumnConstraintExprKind | undefined {
+  get $kind (): IndexColumnConstraintExprKind | undefined {
     return this.args.kind as IndexColumnConstraintExprKind | undefined;
   }
 
-  get indexType (): DataTypeExpr {
+  get $indexType (): DataTypeExpr {
     return this.args.indexType as DataTypeExpr;
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 
-  get granularity (): Expression {
+  get $granularity (): Expression {
     return this.args.granularity as Expression;
   }
 }
@@ -8387,7 +8378,7 @@ export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
     super(args);
   }
 
-  get allowNull (): Expression {
+  get $allowNull (): Expression {
     return this.args.allowNull as Expression;
   }
 }
@@ -8414,11 +8405,11 @@ export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
     super(args);
   }
 
-  get desc (): Expression {
+  get $desc (): Expression {
     return this.args.desc as Expression;
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 }
@@ -8448,19 +8439,19 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
     super(args);
   }
 
-  get indexType (): DataTypeExpr {
+  get $indexType (): DataTypeExpr {
     return this.args.indexType as DataTypeExpr;
   }
 
-  get onConflict (): Expression {
+  get $onConflict (): Expression {
     return this.args.onConflict as Expression;
   }
 
-  get nulls (): Expression[] {
+  get $nulls (): Expression[] {
     return (this.args.nulls || []) as Expression[];
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 }
@@ -8499,15 +8490,15 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
     super(args);
   }
 
-  get persisted (): Expression {
+  get $persisted (): Expression {
     return this.args.persisted as Expression;
   }
 
-  get notNull (): Expression {
+  get $notNull (): Expression {
     return this.args.notNull as Expression;
   }
 
-  get dataType (): DataTypeExpr {
+  get $dataType (): DataTypeExpr {
     return this.args.dataType as DataTypeExpr;
   }
 }
@@ -8531,15 +8522,15 @@ export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
     super(args);
   }
 
-  get input (): Expression {
+  get $input (): Expression {
     return this.args.input as Expression;
   }
 
-  get output (): Expression {
+  get $output (): Expression {
     return this.args.output as Expression;
   }
 
-  get variadic (): Expression {
+  get $variadic (): Expression {
     return this.args.variadic as Expression;
   }
 }
@@ -8573,31 +8564,31 @@ export class DeleteExpr extends DMLExpr {
     return this.args['with'] as Expression;
   }
 
-  get using (): string {
+  get $using (): string {
     return this.args.using as string;
   }
 
-  get where (): Expression {
+  get $where (): Expression {
     return this.args.where as Expression;
   }
 
-  get returning (): Expression {
+  get $returning (): Expression {
     return this.args.returning as Expression;
   }
 
-  get order (): Expression {
+  get $order (): Expression {
     return this.args.order as Expression;
   }
 
-  get limit (): number | Expression {
+  get $limit (): number | Expression {
     return this.args.limit as number | Expression;
   }
 
-  get tables (): Expression[] {
+  get $tables (): Expression[] {
     return (this.args.tables || []) as Expression[];
   }
 
-  get cluster (): Expression {
+  get $cluster (): Expression {
     return this.args.cluster as Expression;
   }
 
@@ -8699,23 +8690,23 @@ export class CopyExpr extends DMLExpr {
     super(args);
   }
 
-  get kind (): CopyExprKind | undefined {
+  get $kind (): CopyExprKind | undefined {
     return this.args.kind as CopyExprKind | undefined;
   }
 
-  get files (): Expression[] {
+  get $files (): Expression[] {
     return (this.args.files || []) as Expression[];
   }
 
-  get credentials (): Expression[] {
+  get $credentials (): Expression[] {
     return (this.args.credentials || []) as Expression[];
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get params (): Expression[] {
+  get $params (): Expression[] {
     return (this.args.params || []) as Expression[];
   }
 }
@@ -8754,7 +8745,7 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
     super(args);
   }
 
-  get hint (): Expression {
+  get $hint (): Expression {
     return this.args.hint as Expression;
   }
 
@@ -8762,59 +8753,59 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
     return this.args['with'] as Expression;
   }
 
-  get isFunction (): Expression {
+  get $isFunction (): Expression {
     return this.args.isFunction as Expression;
   }
 
-  get conflict (): Expression {
+  get $conflict (): Expression {
     return this.args.conflict as Expression;
   }
 
-  get returning (): Expression {
+  get $returning (): Expression {
     return this.args.returning as Expression;
   }
 
-  get overwrite (): Expression {
+  get $overwrite (): Expression {
     return this.args.overwrite as Expression;
   }
 
-  get exists (): Expression {
+  get $exists (): Expression {
     return this.args.exists as Expression;
   }
 
-  get alternative (): Expression {
+  get $alternative (): Expression {
     return this.args.alternative as Expression;
   }
 
-  get where (): Expression {
+  get $where (): Expression {
     return this.args.where as Expression;
   }
 
-  get ignore (): Expression {
+  get $ignore (): Expression {
     return this.args.ignore as Expression;
   }
 
-  get byName (): string {
+  get $byName (): string {
     return this.args.byName as string;
   }
 
-  get stored (): Expression {
+  get $stored (): Expression {
     return this.args.stored as Expression;
   }
 
-  get partition (): Expression {
+  get $partition (): Expression {
     return this.args.partition as Expression;
   }
 
-  get settings (): Expression[] {
+  get $settings (): Expression[] {
     return (this.args.settings || []) as Expression[];
   }
 
-  get source (): Expression {
+  get $source (): Expression {
     return this.args.source as Expression;
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 
@@ -11056,23 +11047,23 @@ export class SetOperationExpr extends QueryExpr {
     return this.args['with'] as Expression;
   }
 
-  get distinct (): boolean {
+  get $distinct (): boolean {
     return this.args.distinct as boolean;
   }
 
-  get byName (): string {
+  get $byName (): string {
     return this.args.byName as string;
   }
 
-  get side (): Expression {
+  get $side (): Expression {
     return this.args.side as Expression;
   }
 
-  get kind (): SetOperationExprKind | undefined {
+  get $kind (): SetOperationExprKind | undefined {
     return this.args.kind as SetOperationExprKind | undefined;
   }
 
-  get on (): Expression {
+  get $on (): Expression {
     return this.args.on as Expression;
   }
 }
@@ -11104,27 +11095,27 @@ export class UpdateExpr extends DMLExpr {
     return this.args['with'] as Expression;
   }
 
-  get from (): Expression {
+  get $from (): Expression {
     return this.args.from as Expression;
   }
 
-  get where (): Expression {
+  get $where (): Expression {
     return this.args.where as Expression;
   }
 
-  get returning (): Expression {
+  get $returning (): Expression {
     return this.args.returning as Expression;
   }
 
-  get order (): Expression {
+  get $order (): Expression {
     return this.args.order as Expression;
   }
 
-  get limit (): number | Expression {
+  get $limit (): number | Expression {
     return this.args.limit as number | Expression;
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 }
@@ -11178,27 +11169,27 @@ export class SelectExpr extends QueryExpr {
     return this.args['with'] as Expression;
   }
 
-  get kind (): SelectExprKind | undefined {
+  get $kind (): SelectExprKind | undefined {
     return this.args.kind as SelectExprKind | undefined;
   }
 
-  get hint (): Expression {
+  get $hint (): Expression {
     return this.args.hint as Expression;
   }
 
-  get distinct (): boolean {
+  get $distinct (): boolean {
     return this.args.distinct as boolean;
   }
 
-  get into (): Expression {
+  get $into (): Expression {
     return this.args.into as Expression;
   }
 
-  get from (): Expression {
+  get $from (): Expression {
     return this.args.from as Expression;
   }
 
-  get operationModifiers (): Expression[] {
+  get $operationModifiers (): Expression[] {
     return (this.args.operationModifiers || []) as Expression[];
   }
 }
@@ -11246,23 +11237,23 @@ export class WindowExpr extends Expression {
     super(args);
   }
 
-  get partitionBy (): Expression {
+  get $partitionBy (): Expression {
     return this.args.partitionBy as Expression;
   }
 
-  get order (): Expression {
+  get $order (): Expression {
     return this.args.order as Expression;
   }
 
-  get spec (): Expression {
+  get $spec (): Expression {
     return this.args.spec as Expression;
   }
 
-  get over (): Expression {
+  get $over (): Expression {
     return this.args.over as Expression;
   }
 
-  get first (): Expression {
+  get $first (): Expression {
     return this.args.first as Expression;
   }
 }
@@ -11297,7 +11288,7 @@ export class SessionParameterExpr extends Expression {
     super(args);
   }
 
-  get kind (): SessionParameterExprKind | undefined {
+  get $kind (): SessionParameterExprKind | undefined {
     return this.args.kind as SessionParameterExprKind | undefined;
   }
 }
@@ -11331,15 +11322,15 @@ export class PlaceholderExpr extends Expression {
     super(args);
   }
 
-  get kind (): PlaceholderExprKind | undefined {
+  get $kind (): PlaceholderExprKind | undefined {
     return this.args.kind as PlaceholderExprKind | undefined;
   }
 
-  get widget (): Expression {
+  get $widget (): Expression {
     return this.args.widget as Expression;
   }
 
-  get jdbc (): string {
+  get $jdbc (): string {
     return this.args.jdbc as string;
   }
 }
@@ -11391,15 +11382,15 @@ export class BracketExpr extends Expression {
     super(args);
   }
 
-  get offset (): boolean {
+  get $offset (): boolean {
     return this.args.offset as boolean;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 
-  get returnsListForMaps (): Expression[] {
+  get $returnsListForMaps (): Expression[] {
     return (this.args.returnsListForMaps || []) as Expression[];
   }
 }
@@ -11421,7 +11412,7 @@ export class IntervalOpExpr extends TimeUnitExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -11447,7 +11438,7 @@ export class IntervalExpr extends TimeUnitExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -11553,15 +11544,15 @@ export class JSONPathSliceExpr extends JSONPathPartExpr {
     super(args);
   }
 
-  get start (): Expression {
+  get $start (): Expression {
     return this.args.start as Expression;
   }
 
-  get end (): Expression {
+  get $end (): Expression {
     return this.args.end as Expression;
   }
 
-  get step (): Expression {
+  get $step (): Expression {
     return this.args.step as Expression;
   }
 }
@@ -11604,19 +11595,19 @@ export class MergeExpr extends DMLExpr {
     super(args);
   }
 
-  get using (): string {
+  get $using (): string {
     return this.args.using as string;
   }
 
-  get on (): Expression {
+  get $on (): Expression {
     return this.args.on as Expression;
   }
 
-  get usingCond (): string {
+  get $usingCond (): string {
     return this.args.usingCond as string;
   }
 
-  get whens (): Expression[] {
+  get $whens (): Expression[] {
     return (this.args.whens || []) as Expression[];
   }
 
@@ -11624,7 +11615,7 @@ export class MergeExpr extends DMLExpr {
     return this.args['with'] as Expression;
   }
 
-  get returning (): Expression {
+  get $returning (): Expression {
     return this.args.returning as Expression;
   }
 }
@@ -11651,19 +11642,19 @@ export class LateralExpr extends UDTFExpr {
     super(args);
   }
 
-  get view (): Expression {
+  get $view (): Expression {
     return this.args.view as Expression;
   }
 
-  get outer (): Expression {
+  get $outer (): Expression {
     return this.args.outer as Expression;
   }
 
-  get crossApply (): boolean {
+  get $crossApply (): boolean {
     return this.args.crossApply as boolean;
   }
 
-  get ordinality (): boolean {
+  get $ordinality (): boolean {
     return this.args.ordinality as boolean;
   }
 }
@@ -11689,15 +11680,15 @@ export class TableFromRowsExpr extends UDTFExpr {
     super(args);
   }
 
-  get joins (): Expression[] {
+  get $joins (): Expression[] {
     return (this.args.joins || []) as Expression[];
   }
 
-  get pivots (): Expression[] {
+  get $pivots (): Expression[] {
     return (this.args.pivots || []) as Expression[];
   }
 
-  get sample (): number | Expression {
+  get $sample (): number | Expression {
     return this.args.sample as number | Expression;
   }
 }
@@ -11733,15 +11724,15 @@ export class ValuesExpr extends UDTFExpr {
     super(args);
   }
 
-  get order (): Expression {
+  get $order (): Expression {
     return this.args.order as Expression;
   }
 
-  get limit (): number | Expression {
+  get $limit (): number | Expression {
     return this.args.limit as number | Expression;
   }
 
-  get offset (): boolean {
+  get $offset (): boolean {
     return this.args.offset as boolean;
   }
 }
@@ -11775,7 +11766,7 @@ export class BitwiseAndExpr extends BinaryExpr {
     super(args);
   }
 
-  get padside (): Expression {
+  get $padside (): Expression {
     return this.args.padside as Expression;
   }
 }
@@ -11797,7 +11788,7 @@ export class BitwiseLeftShiftExpr extends BinaryExpr {
     super(args);
   }
 
-  get requiresInt128 (): Expression {
+  get $requiresInt128 (): Expression {
     return this.args.requiresInt128 as Expression;
   }
 }
@@ -11819,7 +11810,7 @@ export class BitwiseOrExpr extends BinaryExpr {
     super(args);
   }
 
-  get padside (): Expression {
+  get $padside (): Expression {
     return this.args.padside as Expression;
   }
 }
@@ -11841,7 +11832,7 @@ export class BitwiseRightShiftExpr extends BinaryExpr {
     super(args);
   }
 
-  get requiresInt128 (): Expression {
+  get $requiresInt128 (): Expression {
     return this.args.requiresInt128 as Expression;
   }
 }
@@ -11863,7 +11854,7 @@ export class BitwiseXorExpr extends BinaryExpr {
     super(args);
   }
 
-  get padside (): Expression {
+  get $padside (): Expression {
     return this.args.padside as Expression;
   }
 }
@@ -11886,11 +11877,11 @@ export class DivExpr extends BinaryExpr {
     super(args);
   }
 
-  get typed (): DataTypeExpr {
+  get $typed (): DataTypeExpr {
     return this.args.typed as DataTypeExpr;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 }
@@ -11928,7 +11919,7 @@ export class DPipeExpr extends BinaryExpr {
     super(args);
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 }
@@ -12030,7 +12021,7 @@ export class OperatorExpr extends BinaryExpr {
     super(args);
   }
 
-  get operator (): Expression {
+  get $operator (): Expression {
     return this.args.operator as Expression;
   }
 }
@@ -12082,15 +12073,15 @@ export class BetweenExpr extends PredicateExpr {
     super(args);
   }
 
-  get low (): Expression {
+  get $low (): Expression {
     return this.args.low as Expression;
   }
 
-  get high (): Expression {
+  get $high (): Expression {
     return this.args.high as Expression;
   }
 
-  get symmetric (): Expression {
+  get $symmetric (): Expression {
     return this.args.symmetric as Expression;
   }
 }
@@ -12115,19 +12106,19 @@ export class InExpr extends PredicateExpr {
     super(args);
   }
 
-  get query (): Expression {
+  get $query (): Expression {
     return this.args.query as Expression;
   }
 
-  get unnest (): boolean {
+  get $unnest (): boolean {
     return this.args.unnest as boolean;
   }
 
-  get field (): Expression {
+  get $field (): Expression {
     return this.args.field as Expression;
   }
 
-  get isGlobal (): Expression {
+  get $isGlobal (): Expression {
     return this.args.isGlobal as Expression;
   }
 }
@@ -12281,7 +12272,7 @@ export class BoolnotExpr extends FuncExpr {
     super(args);
   }
 
-  get roundInput (): Expression {
+  get $roundInput (): Expression {
     return this.args.roundInput as Expression;
   }
 }
@@ -12303,7 +12294,7 @@ export class BoolandExpr extends FuncExpr {
     super(args);
   }
 
-  get roundInput (): Expression {
+  get $roundInput (): Expression {
     return this.args.roundInput as Expression;
   }
 }
@@ -12325,7 +12316,7 @@ export class BoolorExpr extends FuncExpr {
     super(args);
   }
 
-  get roundInput (): Expression {
+  get $roundInput (): Expression {
     return this.args.roundInput as Expression;
   }
 }
@@ -12351,7 +12342,7 @@ export class ArrayRemoveExpr extends FuncExpr {
     super(args);
   }
 
-  get nullPropagation (): Expression {
+  get $nullPropagation (): Expression {
     return this.args.nullPropagation as Expression;
   }
 }
@@ -12398,11 +12389,11 @@ export class TranslateExpr extends FuncExpr {
     super(args);
   }
 
-  get from (): Expression {
+  get $from (): Expression {
     return this.args.from as Expression;
   }
 
-  get to (): Expression {
+  get $to (): Expression {
     return this.args.to as Expression;
   }
 }
@@ -12433,11 +12424,11 @@ export class ArrayExpr extends FuncExpr {
     super(args);
   }
 
-  get bracketNotation (): Expression {
+  get $bracketNotation (): Expression {
     return this.args.bracketNotation as Expression;
   }
 
-  get structNameInheritance (): string {
+  get $structNameInheritance (): string {
     return this.args.structNameInheritance as string;
   }
 }
@@ -12467,7 +12458,7 @@ export class ToBooleanExpr extends FuncExpr {
     super(args);
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 }
@@ -12494,11 +12485,11 @@ export class PadExpr extends FuncExpr {
     super(args);
   }
 
-  get fillPattern (): Expression {
+  get $fillPattern (): Expression {
     return this.args.fillPattern as Expression;
   }
 
-  get isLeft (): Expression {
+  get $isLeft (): Expression {
     return this.args.isLeft as Expression;
   }
 }
@@ -12522,15 +12513,15 @@ export class ToCharExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get nlsparam (): Expression {
+  get $nlsparam (): Expression {
     return this.args.nlsparam as Expression;
   }
 
-  get isNumeric (): Expression {
+  get $isNumeric (): Expression {
     return this.args.isNumeric as Expression;
   }
 }
@@ -12561,27 +12552,27 @@ export class ToNumberExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get nlsparam (): Expression {
+  get $nlsparam (): Expression {
     return this.args.nlsparam as Expression;
   }
 
-  get precision (): number | Expression {
+  get $precision (): number | Expression {
     return this.args.precision as number | Expression;
   }
 
-  get scale (): number | Expression {
+  get $scale (): number | Expression {
     return this.args.scale as number | Expression;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 
-  get safeName (): boolean {
+  get $safeName (): boolean {
     return this.args.safeName as boolean;
   }
 }
@@ -12604,11 +12595,11 @@ export class ToDoubleExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 }
@@ -12630,7 +12621,7 @@ export class ToDecfloatExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 }
@@ -12652,7 +12643,7 @@ export class TryToDecfloatExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 }
@@ -12675,11 +12666,11 @@ export class ToFileExpr extends FuncExpr {
     super(args);
   }
 
-  get path (): Expression {
+  get $path (): Expression {
     return this.args.path as Expression;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 }
@@ -12705,7 +12696,7 @@ export class ColumnsExpr extends FuncExpr {
     super(args);
   }
 
-  get unpack (): Expression {
+  get $unpack (): Expression {
     return this.args.unpack as Expression;
   }
 }
@@ -12728,11 +12719,11 @@ export class ConvertExpr extends FuncExpr {
     super(args);
   }
 
-  get style (): Expression {
+  get $style (): Expression {
     return this.args.style as Expression;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 }
@@ -12755,11 +12746,11 @@ export class ConvertToCharsetExpr extends FuncExpr {
     super(args);
   }
 
-  get dest (): Expression {
+  get $dest (): Expression {
     return this.args.dest as Expression;
   }
 
-  get source (): Expression {
+  get $source (): Expression {
     return this.args.source as Expression;
   }
 }
@@ -12784,19 +12775,19 @@ export class ConvertTimezoneExpr extends FuncExpr {
     super(args);
   }
 
-  get sourceTz (): Expression {
+  get $sourceTz (): Expression {
     return this.args.sourceTz as Expression;
   }
 
-  get targetTz (): Expression {
+  get $targetTz (): Expression {
     return this.args.targetTz as Expression;
   }
 
-  get timestamp (): Expression {
+  get $timestamp (): Expression {
     return this.args.timestamp as Expression;
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 }
@@ -12825,19 +12816,19 @@ export class GenerateSeriesExpr extends FuncExpr {
     super(args);
   }
 
-  get start (): Expression {
+  get $start (): Expression {
     return this.args.start as Expression;
   }
 
-  get end (): Expression {
+  get $end (): Expression {
     return this.args.end as Expression;
   }
 
-  get step (): Expression {
+  get $step (): Expression {
     return this.args.step as Expression;
   }
 
-  get isEndExclusive (): Expression {
+  get $isEndExclusive (): Expression {
     return this.args.isEndExclusive as Expression;
   }
 }
@@ -12860,11 +12851,11 @@ export class GeneratorExpr extends FuncExpr {
     super(args);
   }
 
-  get rowcount (): Expression {
+  get $rowcount (): Expression {
     return this.args.rowcount as Expression;
   }
 
-  get timelimit (): number | Expression {
+  get $timelimit (): number | Expression {
     return this.args.timelimit as number | Expression;
   }
 }
@@ -12887,11 +12878,11 @@ export class AIClassifyExpr extends FuncExpr {
     super(args);
   }
 
-  get categories (): Expression[] {
+  get $categories (): Expression[] {
     return (this.args.categories || []) as Expression[];
   }
 
-  get config (): Expression {
+  get $config (): Expression {
     return this.args.config as Expression;
   }
 }
@@ -12921,7 +12912,7 @@ export class ArrayAppendExpr extends FuncExpr {
     super(args);
   }
 
-  get nullPropagation (): Expression {
+  get $nullPropagation (): Expression {
     return this.args.nullPropagation as Expression;
   }
 }
@@ -12943,7 +12934,7 @@ export class ArrayPrependExpr extends FuncExpr {
     super(args);
   }
 
-  get nullPropagation (): Expression {
+  get $nullPropagation (): Expression {
     return this.args.nullPropagation as Expression;
   }
 }
@@ -12966,7 +12957,7 @@ export class ArrayConcatExpr extends FuncExpr {
     super(args);
   }
 
-  get nullPropagation (): Expression {
+  get $nullPropagation (): Expression {
     return this.args.nullPropagation as Expression;
   }
 }
@@ -12993,11 +12984,11 @@ export class ArrayInsertExpr extends FuncExpr {
     super(args);
   }
 
-  get position (): Expression {
+  get $position (): Expression {
     return this.args.position as Expression;
   }
 
-  get offset (): boolean {
+  get $offset (): boolean {
     return this.args.offset as boolean;
   }
 }
@@ -13019,7 +13010,7 @@ export class ArrayRemoveAtExpr extends FuncExpr {
     super(args);
   }
 
-  get position (): Expression {
+  get $position (): Expression {
     return this.args.position as Expression;
   }
 }
@@ -13046,7 +13037,7 @@ export class ArrayContainsExpr extends BinaryExpr {
     super(args);
   }
 
-  get ensureVariant (): Expression {
+  get $ensureVariant (): Expression {
     return this.args.ensureVariant as Expression;
   }
 }
@@ -13092,15 +13083,15 @@ export class ArraySliceExpr extends FuncExpr {
     super(args);
   }
 
-  get start (): Expression {
+  get $start (): Expression {
     return this.args.start as Expression;
   }
 
-  get end (): Expression {
+  get $end (): Expression {
     return this.args.end as Expression;
   }
 
-  get step (): Expression {
+  get $step (): Expression {
     return this.args.step as Expression;
   }
 }
@@ -13123,7 +13114,7 @@ export class ArrayToStringExpr extends FuncExpr {
     super(args);
   }
 
-  get null (): Expression {
+  get $null (): Expression {
     return this.args.null as Expression;
   }
 }
@@ -13149,7 +13140,7 @@ export class StPointExpr extends FuncExpr {
     super(args);
   }
 
-  get null (): Expression {
+  get $null (): Expression {
     return this.args.null as Expression;
   }
 }
@@ -13171,7 +13162,7 @@ export class StDistanceExpr extends FuncExpr {
     super(args);
   }
 
-  get useSpheroid (): Expression {
+  get $useSpheroid (): Expression {
     return this.args.useSpheroid as Expression;
   }
 }
@@ -13193,7 +13184,7 @@ export class StringExpr extends FuncExpr {
     super(args);
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 }
@@ -13215,7 +13206,7 @@ export class StringToArrayExpr extends FuncExpr {
     super(args);
   }
 
-  get null (): Expression {
+  get $null (): Expression {
     return this.args.null as Expression;
   }
 }
@@ -13259,11 +13250,11 @@ export class CaseExpr extends FuncExpr {
     super(args);
   }
 
-  get ifs (): Expression[] {
+  get $ifs (): Expression[] {
     return (this.args.ifs || []) as Expression[];
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 }
@@ -13289,23 +13280,23 @@ export class CastExpr extends FuncExpr {
     super(args);
   }
 
-  get to (): Expression {
+  get $to (): Expression {
     return this.args.to as Expression;
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 
-  get action (): Expression {
+  get $action (): Expression {
     return this.args.action as Expression;
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 }
@@ -13343,7 +13334,7 @@ export class CastToStrTypeExpr extends FuncExpr {
     super(args);
   }
 
-  get to (): Expression {
+  get $to (): Expression {
     return this.args.to as Expression;
   }
 }
@@ -13369,7 +13360,7 @@ export class CheckXmlExpr extends FuncExpr {
     super(args);
   }
 
-  get disableAutoConvert (): Expression {
+  get $disableAutoConvert (): Expression {
     return this.args.disableAutoConvert as Expression;
   }
 }
@@ -13406,11 +13397,11 @@ export class CeilExpr extends FuncExpr {
     super(args);
   }
 
-  get decimals (): Expression[] {
+  get $decimals (): Expression[] {
     return (this.args.decimals || []) as Expression[];
   }
 
-  get to (): Expression {
+  get $to (): Expression {
     return this.args.to as Expression;
   }
 }
@@ -13434,11 +13425,11 @@ export class CoalesceExpr extends FuncExpr {
     super(args);
   }
 
-  get isNvl (): Expression {
+  get $isNvl (): Expression {
     return this.args.isNvl as Expression;
   }
 
-  get isNull (): Expression {
+  get $isNull (): Expression {
     return this.args.isNull as Expression;
   }
 }
@@ -13461,7 +13452,7 @@ export class ChrExpr extends FuncExpr {
     super(args);
   }
 
-  get charset (): string {
+  get $charset (): string {
     return this.args.charset as string;
   }
 }
@@ -13484,11 +13475,11 @@ export class ConcatExpr extends FuncExpr {
     super(args);
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 
-  get coalesce (): Expression {
+  get $coalesce (): Expression {
     return this.args.coalesce as Expression;
   }
 }
@@ -13510,7 +13501,7 @@ export class ContainsExpr extends FuncExpr {
     super(args);
   }
 
-  get jsonScope (): Expression {
+  get $jsonScope (): Expression {
     return this.args.jsonScope as Expression;
   }
 }
@@ -13616,7 +13607,7 @@ export class CurrentTimestampExpr extends FuncExpr {
     super(args);
   }
 
-  get sysdate (): Expression {
+  get $sysdate (): Expression {
     return this.args.sysdate as Expression;
   }
 }
@@ -13694,7 +13685,7 @@ export class DateAddExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -13718,15 +13709,15 @@ export class DateBinExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 
-  get origin (): Expression {
+  get $origin (): Expression {
     return this.args.origin as Expression;
   }
 }
@@ -13748,7 +13739,7 @@ export class DateSubExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -13774,19 +13765,19 @@ export class DateDiffExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 
-  get bigInt (): Expression {
+  get $bigInt (): Expression {
     return this.args.bigInt as Expression;
   }
 
-  get datePartBoundary (): Expression {
+  get $datePartBoundary (): Expression {
     return this.args.datePartBoundary as Expression;
   }
 }
@@ -13810,15 +13801,15 @@ export class DateTruncExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 
-  get inputTypePreserved (): DataTypeExpr {
+  get $inputTypePreserved (): DataTypeExpr {
     return this.args.inputTypePreserved as DataTypeExpr;
   }
 }
@@ -13844,7 +13835,7 @@ export class DatetimeAddExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -13866,7 +13857,7 @@ export class DatetimeSubExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -13888,7 +13879,7 @@ export class DatetimeDiffExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -13911,11 +13902,11 @@ export class DatetimeTruncExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 }
@@ -13977,7 +13968,7 @@ export class DaynameExpr extends FuncExpr {
     super(args);
   }
 
-  get abbreviated (): Expression {
+  get $abbreviated (): Expression {
     return this.args.abbreviated as Expression;
   }
 }
@@ -14031,7 +14022,7 @@ export class MonthsBetweenExpr extends FuncExpr {
     super(args);
   }
 
-  get roundoff (): Expression {
+  get $roundoff (): Expression {
     return this.args.roundoff as Expression;
   }
 }
@@ -14059,31 +14050,31 @@ export class MakeIntervalExpr extends FuncExpr {
     super(args);
   }
 
-  get year (): Expression {
+  get $year (): Expression {
     return this.args.year as Expression;
   }
 
-  get month (): Expression {
+  get $month (): Expression {
     return this.args.month as Expression;
   }
 
-  get week (): Expression {
+  get $week (): Expression {
     return this.args.week as Expression;
   }
 
-  get day (): Expression {
+  get $day (): Expression {
     return this.args.day as Expression;
   }
 
-  get hour (): Expression {
+  get $hour (): Expression {
     return this.args.hour as Expression;
   }
 
-  get minute (): Expression {
+  get $minute (): Expression {
     return this.args.minute as Expression;
   }
 
-  get second (): Expression {
+  get $second (): Expression {
     return this.args.second as Expression;
   }
 }
@@ -14105,7 +14096,7 @@ export class LastDayExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -14160,11 +14151,11 @@ export class TimestampExpr extends FuncExpr {
     super(args);
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 
-  get withTz (): Expression {
+  get $withTz (): Expression {
     return this.args.withTz as Expression;
   }
 }
@@ -14186,7 +14177,7 @@ export class TimestampAddExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -14208,7 +14199,7 @@ export class TimestampSubExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -14230,7 +14221,7 @@ export class TimestampDiffExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -14254,15 +14245,15 @@ export class TimestampTruncExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 
-  get inputTypePreserved (): DataTypeExpr {
+  get $inputTypePreserved (): DataTypeExpr {
     return this.args.inputTypePreserved as DataTypeExpr;
   }
 }
@@ -14292,11 +14283,11 @@ export class TimeSliceExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 
-  get kind (): TimeSliceExprKind | undefined {
+  get $kind (): TimeSliceExprKind | undefined {
     return this.args.kind as TimeSliceExprKind | undefined;
   }
 }
@@ -14318,7 +14309,7 @@ export class TimeAddExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -14340,7 +14331,7 @@ export class TimeSubExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -14362,7 +14353,7 @@ export class TimeDiffExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -14385,11 +14376,11 @@ export class TimeTruncExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 }
@@ -14414,19 +14405,19 @@ export class DateFromPartsExpr extends FuncExpr {
     super(args);
   }
 
-  get year (): Expression {
+  get $year (): Expression {
     return this.args.year as Expression;
   }
 
-  get month (): Expression {
+  get $month (): Expression {
     return this.args.month as Expression;
   }
 
-  get day (): Expression {
+  get $day (): Expression {
     return this.args.day as Expression;
   }
 
-  get allowOverflow (): Expression {
+  get $allowOverflow (): Expression {
     return this.args.allowOverflow as Expression;
   }
 }
@@ -14454,31 +14445,31 @@ export class TimeFromPartsExpr extends FuncExpr {
     super(args);
   }
 
-  get hour (): Expression {
+  get $hour (): Expression {
     return this.args.hour as Expression;
   }
 
-  get min (): Expression {
+  get $min (): Expression {
     return this.args.min as Expression;
   }
 
-  get sec (): Expression {
+  get $sec (): Expression {
     return this.args.sec as Expression;
   }
 
-  get nano (): Expression {
+  get $nano (): Expression {
     return this.args.nano as Expression;
   }
 
-  get fractions (): Expression[] {
+  get $fractions (): Expression[] {
     return (this.args.fractions || []) as Expression[];
   }
 
-  get precision (): number | Expression {
+  get $precision (): number | Expression {
     return this.args.precision as number | Expression;
   }
 
-  get overflow (): Expression {
+  get $overflow (): Expression {
     return this.args.overflow as Expression;
   }
 }
@@ -14512,7 +14503,7 @@ export class DateExpr extends FuncExpr {
     super(args);
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 }
@@ -14539,11 +14530,11 @@ export class DecodeExpr extends FuncExpr {
     super(args);
   }
 
-  get charset (): string {
+  get $charset (): string {
     return this.args.charset as string;
   }
 
-  get replace (): boolean {
+  get $replace (): boolean {
     return this.args.replace as boolean;
   }
 }
@@ -14572,19 +14563,19 @@ export class DecryptExpr extends FuncExpr {
     super(args);
   }
 
-  get passphrase (): Expression {
+  get $passphrase (): Expression {
     return this.args.passphrase as Expression;
   }
 
-  get aad (): Expression {
+  get $aad (): Expression {
     return this.args.aad as Expression;
   }
 
-  get encryptionMethod (): string {
+  get $encryptionMethod (): string {
     return this.args.encryptionMethod as string;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 }
@@ -14611,23 +14602,23 @@ export class DecryptRawExpr extends FuncExpr {
     super(args);
   }
 
-  get iv (): Expression {
+  get $iv (): Expression {
     return this.args.iv as Expression;
   }
 
-  get aad (): Expression {
+  get $aad (): Expression {
     return this.args.aad as Expression;
   }
 
-  get encryptionMethod (): string {
+  get $encryptionMethod (): string {
     return this.args.encryptionMethod as string;
   }
 
-  get aead (): Expression {
+  get $aead (): Expression {
     return this.args.aead as Expression;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 }
@@ -14653,7 +14644,7 @@ export class EncodeExpr extends FuncExpr {
     super(args);
   }
 
-  get charset (): string {
+  get $charset (): string {
     return this.args.charset as string;
   }
 }
@@ -14677,15 +14668,15 @@ export class EncryptExpr extends FuncExpr {
     super(args);
   }
 
-  get passphrase (): Expression {
+  get $passphrase (): Expression {
     return this.args.passphrase as Expression;
   }
 
-  get aad (): Expression {
+  get $aad (): Expression {
     return this.args.aad as Expression;
   }
 
-  get encryptionMethod (): string {
+  get $encryptionMethod (): string {
     return this.args.encryptionMethod as string;
   }
 }
@@ -14710,15 +14701,15 @@ export class EncryptRawExpr extends FuncExpr {
     super(args);
   }
 
-  get iv (): Expression {
+  get $iv (): Expression {
     return this.args.iv as Expression;
   }
 
-  get aad (): Expression {
+  get $aad (): Expression {
     return this.args.aad as Expression;
   }
 
-  get encryptionMethod (): string {
+  get $encryptionMethod (): string {
     return this.args.encryptionMethod as string;
   }
 }
@@ -14761,11 +14752,11 @@ export class UnnestExpr extends FuncExpr {
     super(args);
   }
 
-  get offset (): boolean {
+  get $offset (): boolean {
     return this.args.offset as boolean;
   }
 
-  get explodeArray (): Expression {
+  get $explodeArray (): Expression {
     return this.args.explodeArray as Expression;
   }
 }
@@ -14788,11 +14779,11 @@ export class FloorExpr extends FuncExpr {
     super(args);
   }
 
-  get decimals (): Expression[] {
+  get $decimals (): Expression[] {
     return (this.args.decimals || []) as Expression[];
   }
 
-  get to (): Expression {
+  get $to (): Expression {
     return this.args.to as Expression;
   }
 }
@@ -14831,11 +14822,11 @@ export class ToBinaryExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 }
@@ -14857,7 +14848,7 @@ export class Base64DecodeBinaryExpr extends FuncExpr {
     super(args);
   }
 
-  get alphabet (): Expression {
+  get $alphabet (): Expression {
     return this.args.alphabet as Expression;
   }
 }
@@ -14879,7 +14870,7 @@ export class Base64DecodeStringExpr extends FuncExpr {
     super(args);
   }
 
-  get alphabet (): Expression {
+  get $alphabet (): Expression {
     return this.args.alphabet as Expression;
   }
 }
@@ -14902,11 +14893,11 @@ export class Base64EncodeExpr extends FuncExpr {
     super(args);
   }
 
-  get maxLineLength (): number | Expression {
+  get $maxLineLength (): number | Expression {
     return this.args.maxLineLength as number | Expression;
   }
 
-  get alphabet (): Expression {
+  get $alphabet (): Expression {
     return this.args.alphabet as Expression;
   }
 }
@@ -14928,7 +14919,7 @@ export class TryBase64DecodeBinaryExpr extends FuncExpr {
     super(args);
   }
 
-  get alphabet (): Expression {
+  get $alphabet (): Expression {
     return this.args.alphabet as Expression;
   }
 }
@@ -14950,7 +14941,7 @@ export class TryBase64DecodeStringExpr extends FuncExpr {
     super(args);
   }
 
-  get alphabet (): Expression {
+  get $alphabet (): Expression {
     return this.args.alphabet as Expression;
   }
 }
@@ -14994,27 +14985,27 @@ export class GapFillExpr extends FuncExpr {
     super(args);
   }
 
-  get tsColumn (): Expression {
+  get $tsColumn (): Expression {
     return this.args.tsColumn as Expression;
   }
 
-  get bucketWidth (): Expression {
+  get $bucketWidth (): Expression {
     return this.args.bucketWidth as Expression;
   }
 
-  get partitioningColumns (): Expression[] {
+  get $partitioningColumns (): Expression[] {
     return (this.args.partitioningColumns || []) as Expression[];
   }
 
-  get valueColumns (): Expression[] {
+  get $valueColumns (): Expression[] {
     return (this.args.valueColumns || []) as Expression[];
   }
 
-  get origin (): Expression {
+  get $origin (): Expression {
     return this.args.origin as Expression;
   }
 
-  get ignoreNulls (): Expression[] {
+  get $ignoreNulls (): Expression[] {
     return (this.args.ignoreNulls || []) as Expression[];
   }
 }
@@ -15038,15 +15029,15 @@ export class GenerateDateArrayExpr extends FuncExpr {
     super(args);
   }
 
-  get start (): Expression {
+  get $start (): Expression {
     return this.args.start as Expression;
   }
 
-  get end (): Expression {
+  get $end (): Expression {
     return this.args.end as Expression;
   }
 
-  get step (): Expression {
+  get $step (): Expression {
     return this.args.step as Expression;
   }
 }
@@ -15070,15 +15061,15 @@ export class GenerateTimestampArrayExpr extends FuncExpr {
     super(args);
   }
 
-  get start (): Expression {
+  get $start (): Expression {
     return this.args.start as Expression;
   }
 
-  get end (): Expression {
+  get $end (): Expression {
     return this.args.end as Expression;
   }
 
-  get step (): Expression {
+  get $step (): Expression {
     return this.args.step as Expression;
   }
 }
@@ -15104,7 +15095,7 @@ export class GetbitExpr extends FuncExpr {
     super(args);
   }
 
-  get zeroIsMsb (): Expression {
+  get $zeroIsMsb (): Expression {
     return this.args.zeroIsMsb as Expression;
   }
 }
@@ -15126,7 +15117,7 @@ export class GreatestExpr extends FuncExpr {
     super(args);
   }
 
-  get ignoreNulls (): Expression[] {
+  get $ignoreNulls (): Expression[] {
     return (this.args.ignoreNulls || []) as Expression[];
   }
 }
@@ -15156,7 +15147,7 @@ export class HexEncodeExpr extends FuncExpr {
     super(args);
   }
 
-  get case (): Expression {
+  get $case (): Expression {
     return this.args['case'] as Expression;
   }
 }
@@ -15190,7 +15181,7 @@ export class CompressExpr extends FuncExpr {
     super(args);
   }
 
-  get method (): string {
+  get $method (): string {
     return this.args.method as string;
   }
 }
@@ -15212,7 +15203,7 @@ export class DecompressBinaryExpr extends FuncExpr {
     super(args);
   }
 
-  get method (): string {
+  get $method (): string {
     return this.args.method as string;
   }
 }
@@ -15234,7 +15225,7 @@ export class DecompressStringExpr extends FuncExpr {
     super(args);
   }
 
-  get method (): string {
+  get $method (): string {
     return this.args.method as string;
   }
 }
@@ -15258,11 +15249,11 @@ export class IfExpr extends FuncExpr {
     super(args);
   }
 
-  get true (): Expression {
+  get $true (): Expression {
     return this.args.true as Expression;
   }
 
-  get false (): Expression {
+  get $false (): Expression {
     return this.args.false as Expression;
   }
 }
@@ -15334,7 +15325,7 @@ export class JSONKeysAtDepthExpr extends FuncExpr {
     super(args);
   }
 
-  get mode (): Expression {
+  get $mode (): Expression {
     return this.args.mode as Expression;
   }
 }
@@ -15359,19 +15350,19 @@ export class JSONObjectExpr extends FuncExpr {
     super(args);
   }
 
-  get nullHandling (): Expression {
+  get $nullHandling (): Expression {
     return this.args.nullHandling as Expression;
   }
 
-  get uniqueKeys (): Expression[] {
+  get $uniqueKeys (): Expression[] {
     return (this.args.uniqueKeys || []) as Expression[];
   }
 
-  get returnType (): DataTypeExpr {
+  get $returnType (): DataTypeExpr {
     return this.args.returnType as DataTypeExpr;
   }
 
-  get encoding (): Expression {
+  get $encoding (): Expression {
     return this.args.encoding as Expression;
   }
 }
@@ -15395,15 +15386,15 @@ export class JSONArrayExpr extends FuncExpr {
     super(args);
   }
 
-  get nullHandling (): Expression {
+  get $nullHandling (): Expression {
     return this.args.nullHandling as Expression;
   }
 
-  get returnType (): DataTypeExpr {
+  get $returnType (): DataTypeExpr {
     return this.args.returnType as DataTypeExpr;
   }
 
-  get strict (): Expression {
+  get $strict (): Expression {
     return this.args.strict as Expression;
   }
 }
@@ -15428,19 +15419,19 @@ export class JSONExistsExpr extends FuncExpr {
     super(args);
   }
 
-  get path (): Expression {
+  get $path (): Expression {
     return this.args.path as Expression;
   }
 
-  get passing (): Expression {
+  get $passing (): Expression {
     return this.args.passing as Expression;
   }
 
-  get onCondition (): Expression {
+  get $onCondition (): Expression {
     return this.args.onCondition as Expression;
   }
 
-  get fromDcolonqmark (): Expression {
+  get $fromDcolonqmark (): Expression {
     return this.args.fromDcolonqmark as Expression;
   }
 }
@@ -15467,11 +15458,11 @@ export class JSONStripNullsExpr extends FuncExpr {
     super(args);
   }
 
-  get includeArrays (): Expression[] {
+  get $includeArrays (): Expression[] {
     return (this.args.includeArrays || []) as Expression[];
   }
 
-  get removeEmpty (): Expression {
+  get $removeEmpty (): Expression {
     return this.args.removeEmpty as Expression;
   }
 }
@@ -15504,19 +15495,19 @@ export class JSONTableExpr extends FuncExpr {
     super(args);
   }
 
-  get schema (): Expression {
+  get $schema (): Expression {
     return this.args.schema as Expression;
   }
 
-  get path (): Expression {
+  get $path (): Expression {
     return this.args.path as Expression;
   }
 
-  get errorHandling (): Expression {
+  get $errorHandling (): Expression {
     return this.args.errorHandling as Expression;
   }
 
-  get emptyHandling (): Expression {
+  get $emptyHandling (): Expression {
     return this.args.emptyHandling as Expression;
   }
 }
@@ -15544,11 +15535,11 @@ export class ObjectInsertExpr extends FuncExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get updateFlag (): Expression {
+  get $updateFlag (): Expression {
     return this.args.updateFlag as Expression;
   }
 }
@@ -15570,7 +15561,7 @@ export class OpenJSONExpr extends FuncExpr {
     super(args);
   }
 
-  get path (): Expression {
+  get $path (): Expression {
     return this.args.path as Expression;
   }
 }
@@ -15604,7 +15595,7 @@ export class JSONBExistsExpr extends FuncExpr {
     super(args);
   }
 
-  get path (): Expression {
+  get $path (): Expression {
     return this.args.path as Expression;
   }
 }
@@ -15636,31 +15627,31 @@ export class JSONExtractExpr extends BinaryExpr {
     super(args);
   }
 
-  get onlyJsonTypes (): Expression[] {
+  get $onlyJsonTypes (): Expression[] {
     return (this.args.onlyJsonTypes || []) as Expression[];
   }
 
-  get variantExtract (): string {
+  get $variantExtract (): string {
     return this.args.variantExtract as string;
   }
 
-  get jsonQuery (): Expression {
+  get $jsonQuery (): Expression {
     return this.args.jsonQuery as Expression;
   }
 
-  get option (): Expression {
+  get $option (): Expression {
     return this.args.option as Expression;
   }
 
-  get quote (): Expression {
+  get $quote (): Expression {
     return this.args.quote as Expression;
   }
 
-  get onCondition (): Expression {
+  get $onCondition (): Expression {
     return this.args.onCondition as Expression;
   }
 
-  get requiresJson (): Expression {
+  get $requiresJson (): Expression {
     return this.args.requiresJson as Expression;
   }
 }
@@ -15688,15 +15679,15 @@ export class JSONExtractScalarExpr extends BinaryExpr {
     super(args);
   }
 
-  get onlyJsonTypes (): Expression[] {
+  get $onlyJsonTypes (): Expression[] {
     return (this.args.onlyJsonTypes || []) as Expression[];
   }
 
-  get jsonType (): Expression {
+  get $jsonType (): Expression {
     return this.args.jsonType as Expression;
   }
 
-  get scalarOnly (): Expression {
+  get $scalarOnly (): Expression {
     return this.args.scalarOnly as Expression;
   }
 }
@@ -15722,7 +15713,7 @@ export class JSONBExtractScalarExpr extends BinaryExpr {
     super(args);
   }
 
-  get jsonType (): Expression {
+  get $jsonType (): Expression {
     return this.args.jsonType as Expression;
   }
 }
@@ -15746,15 +15737,15 @@ export class JSONFormatExpr extends FuncExpr {
     super(args);
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 
-  get isJson (): Expression {
+  get $isJson (): Expression {
     return this.args.isJson as Expression;
   }
 
-  get toJson (): Expression {
+  get $toJson (): Expression {
     return this.args.toJson as Expression;
   }
 }
@@ -15780,7 +15771,7 @@ export class JSONArrayContainsExpr extends BinaryExpr {
     super(args);
   }
 
-  get jsonType (): Expression {
+  get $jsonType (): Expression {
     return this.args.jsonType as Expression;
   }
 }
@@ -15814,7 +15805,7 @@ export class ParseJSONExpr extends FuncExpr {
     super(args);
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 }
@@ -15838,11 +15829,11 @@ export class ParseUrlExpr extends FuncExpr {
     super(args);
   }
 
-  get partToExtract (): Expression {
+  get $partToExtract (): Expression {
     return this.args.partToExtract as Expression;
   }
 
-  get permissive (): Expression {
+  get $permissive (): Expression {
     return this.args.permissive as Expression;
   }
 }
@@ -15864,7 +15855,7 @@ export class ParseIpExpr extends FuncExpr {
     super(args);
   }
 
-  get permissive (): Expression {
+  get $permissive (): Expression {
     return this.args.permissive as Expression;
   }
 }
@@ -15886,7 +15877,7 @@ export class ParseTimeExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 }
@@ -15909,11 +15900,11 @@ export class ParseDatetimeExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 }
@@ -15935,7 +15926,7 @@ export class LeastExpr extends FuncExpr {
     super(args);
   }
 
-  get ignoreNulls (): Expression[] {
+  get $ignoreNulls (): Expression[] {
     return (this.args.ignoreNulls || []) as Expression[];
   }
 }
@@ -15970,11 +15961,11 @@ export class LengthExpr extends FuncExpr {
     super(args);
   }
 
-  get binary (): Expression {
+  get $binary (): Expression {
     return this.args.binary as Expression;
   }
 
-  get encoding (): Expression {
+  get $encoding (): Expression {
     return this.args.encoding as Expression;
   }
 }
@@ -16007,19 +15998,19 @@ export class LevenshteinExpr extends FuncExpr {
     super(args);
   }
 
-  get insCost (): Expression {
+  get $insCost (): Expression {
     return this.args.insCost as Expression;
   }
 
-  get delCost (): Expression {
+  get $delCost (): Expression {
     return this.args.delCost as Expression;
   }
 
-  get subCost (): Expression {
+  get $subCost (): Expression {
     return this.args.subCost as Expression;
   }
 
-  get maxDist (): Expression {
+  get $maxDist (): Expression {
     return this.args.maxDist as Expression;
   }
 }
@@ -16059,11 +16050,11 @@ export class MapExpr extends FuncExpr {
     super(args);
   }
 
-  get keys (): Expression[] {
+  get $keys (): Expression[] {
     return (this.args.keys || []) as Expression[];
   }
 
-  get values (): Expression[] {
+  get $values (): Expression[] {
     return (this.args.values || []) as Expression[];
   }
 }
@@ -16121,11 +16112,11 @@ export class MapInsertExpr extends FuncExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get updateFlag (): Expression {
+  get $updateFlag (): Expression {
     return this.args.updateFlag as Expression;
   }
 }
@@ -16164,11 +16155,11 @@ export class VarMapExpr extends FuncExpr {
     super(args);
   }
 
-  get keys (): Expression[] {
+  get $keys (): Expression[] {
     return (this.args.keys || []) as Expression[];
   }
 
-  get values (): Expression[] {
+  get $values (): Expression[] {
     return (this.args.values || []) as Expression[];
   }
 }
@@ -16190,7 +16181,7 @@ export class MatchAgainstExpr extends FuncExpr {
     super(args);
   }
 
-  get modifier (): Expression {
+  get $modifier (): Expression {
     return this.args.modifier as Expression;
   }
 }
@@ -16237,7 +16228,7 @@ export class MonthnameExpr extends FuncExpr {
     super(args);
   }
 
-  get abbreviated (): Expression {
+  get $abbreviated (): Expression {
     return this.args.abbreviated as Expression;
   }
 }
@@ -16259,7 +16250,7 @@ export class AddMonthsExpr extends FuncExpr {
     super(args);
   }
 
-  get preserveEndOfMonth (): Expression {
+  get $preserveEndOfMonth (): Expression {
     return this.args.preserveEndOfMonth as Expression;
   }
 }
@@ -16282,11 +16273,11 @@ export class Nvl2Expr extends FuncExpr {
     super(args);
   }
 
-  get true (): Expression {
+  get $true (): Expression {
     return this.args.true as Expression;
   }
 
-  get false (): Expression {
+  get $false (): Expression {
     return this.args.false as Expression;
   }
 }
@@ -16309,11 +16300,11 @@ export class NormalizeExpr extends FuncExpr {
     super(args);
   }
 
-  get form (): Expression {
+  get $form (): Expression {
     return this.args.form as Expression;
   }
 
-  get isCasefold (): Expression {
+  get $isCasefold (): Expression {
     return this.args.isCasefold as Expression;
   }
 }
@@ -16336,11 +16327,11 @@ export class NormalExpr extends FuncExpr {
     super(args);
   }
 
-  get stddev (): Expression {
+  get $stddev (): Expression {
     return this.args.stddev as Expression;
   }
 
-  get gen (): Expression {
+  get $gen (): Expression {
     return this.args.gen as Expression;
   }
 }
@@ -16375,11 +16366,11 @@ export class OverlayExpr extends FuncExpr {
     super(args);
   }
 
-  get from (): Expression {
+  get $from (): Expression {
     return this.args.from as Expression;
   }
 
-  get for (): Expression {
+  get $for (): Expression {
     return this.args['for'] as Expression;
   }
 }
@@ -16401,7 +16392,7 @@ export class PredictExpr extends FuncExpr {
     super(args);
   }
 
-  get paramsStruct (): Expression {
+  get $paramsStruct (): Expression {
     return this.args.paramsStruct as Expression;
   }
 }
@@ -16423,7 +16414,7 @@ export class MLTranslateExpr extends FuncExpr {
     super(args);
   }
 
-  get paramsStruct (): Expression {
+  get $paramsStruct (): Expression {
     return this.args.paramsStruct as Expression;
   }
 }
@@ -16447,15 +16438,15 @@ export class FeaturesAtTimeExpr extends FuncExpr {
     super(args);
   }
 
-  get time (): Expression {
+  get $time (): Expression {
     return this.args.time as Expression;
   }
 
-  get numRows (): Expression[] {
+  get $numRows (): Expression[] {
     return (this.args.numRows || []) as Expression[];
   }
 
-  get ignoreFeatureNulls (): Expression[] {
+  get $ignoreFeatureNulls (): Expression[] {
     return (this.args.ignoreFeatureNulls || []) as Expression[];
   }
 }
@@ -16478,11 +16469,11 @@ export class GenerateEmbeddingExpr extends FuncExpr {
     super(args);
   }
 
-  get paramsStruct (): Expression {
+  get $paramsStruct (): Expression {
     return this.args.paramsStruct as Expression;
   }
 
-  get isText (): string {
+  get $isText (): string {
     return this.args.isText as string;
   }
 }
@@ -16504,7 +16495,7 @@ export class MLForecastExpr extends FuncExpr {
     super(args);
   }
 
-  get paramsStruct (): Expression {
+  get $paramsStruct (): Expression {
     return this.args.paramsStruct as Expression;
   }
 }
@@ -16531,27 +16522,27 @@ export class VectorSearchExpr extends FuncExpr {
     super(args);
   }
 
-  get columnToSearch (): Expression {
+  get $columnToSearch (): Expression {
     return this.args.columnToSearch as Expression;
   }
 
-  get queryTable (): Expression {
+  get $queryTable (): Expression {
     return this.args.queryTable as Expression;
   }
 
-  get queryColumnToSearch (): Expression {
+  get $queryColumnToSearch (): Expression {
     return this.args.queryColumnToSearch as Expression;
   }
 
-  get topK (): Expression {
+  get $topK (): Expression {
     return this.args.topK as Expression;
   }
 
-  get distanceType (): DataTypeExpr {
+  get $distanceType (): DataTypeExpr {
     return this.args.distanceType as DataTypeExpr;
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 }
@@ -16581,7 +16572,7 @@ export class ApproxPercentileEstimateExpr extends FuncExpr {
     super(args);
   }
 
-  get percentile (): Expression {
+  get $percentile (): Expression {
     return this.args.percentile as Expression;
   }
 }
@@ -16608,11 +16599,11 @@ export class RandExpr extends FuncExpr {
     super(args);
   }
 
-  get lower (): Expression {
+  get $lower (): Expression {
     return this.args.lower as Expression;
   }
 
-  get upper (): Expression {
+  get $upper (): Expression {
     return this.args.upper as Expression;
   }
 }
@@ -16638,7 +16629,7 @@ export class RandstrExpr extends FuncExpr {
     super(args);
   }
 
-  get generator (): Expression {
+  get $generator (): Expression {
     return this.args.generator as Expression;
   }
 }
@@ -16660,7 +16651,7 @@ export class RangeNExpr extends FuncExpr {
     super(args);
   }
 
-  get each (): Expression {
+  get $each (): Expression {
     return this.args.each as Expression;
   }
 }
@@ -16696,15 +16687,15 @@ export class ReduceExpr extends FuncExpr {
     super(args);
   }
 
-  get initial (): Expression {
+  get $initial (): Expression {
     return this.args.initial as Expression;
   }
 
-  get merge (): Expression {
+  get $merge (): Expression {
     return this.args.merge as Expression;
   }
 
-  get finish (): Expression {
+  get $finish (): Expression {
     return this.args.finish as Expression;
   }
 }
@@ -16730,23 +16721,23 @@ export class RegexpExtractExpr extends FuncExpr {
     super(args);
   }
 
-  get position (): Expression {
+  get $position (): Expression {
     return this.args.position as Expression;
   }
 
-  get occurrence (): Expression {
+  get $occurrence (): Expression {
     return this.args.occurrence as Expression;
   }
 
-  get parameters (): Expression[] {
+  get $parameters (): Expression[] {
     return (this.args.parameters || []) as Expression[];
   }
 
-  get group (): Expression {
+  get $group (): Expression {
     return this.args.group as Expression;
   }
 
-  get nullIfPosOverflow (): Expression {
+  get $nullIfPosOverflow (): Expression {
     return this.args.nullIfPosOverflow as Expression;
   }
 }
@@ -16771,19 +16762,19 @@ export class RegexpExtractAllExpr extends FuncExpr {
     super(args);
   }
 
-  get group (): Expression {
+  get $group (): Expression {
     return this.args.group as Expression;
   }
 
-  get parameters (): Expression[] {
+  get $parameters (): Expression[] {
     return (this.args.parameters || []) as Expression[];
   }
 
-  get position (): Expression {
+  get $position (): Expression {
     return this.args.position as Expression;
   }
 
-  get occurrence (): Expression {
+  get $occurrence (): Expression {
     return this.args.occurrence as Expression;
   }
 }
@@ -16809,23 +16800,23 @@ export class RegexpReplaceExpr extends FuncExpr {
     super(args);
   }
 
-  get replacement (): boolean {
+  get $replacement (): boolean {
     return this.args.replacement as boolean;
   }
 
-  get position (): Expression {
+  get $position (): Expression {
     return this.args.position as Expression;
   }
 
-  get occurrence (): Expression {
+  get $occurrence (): Expression {
     return this.args.occurrence as Expression;
   }
 
-  get modifiers (): Expression[] {
+  get $modifiers (): Expression[] {
     return (this.args.modifiers || []) as Expression[];
   }
 
-  get singleReplace (): Expression {
+  get $singleReplace (): Expression {
     return this.args.singleReplace as Expression;
   }
 }
@@ -16847,7 +16838,7 @@ export class RegexpLikeExpr extends BinaryExpr {
     super(args);
   }
 
-  get flag (): Expression {
+  get $flag (): Expression {
     return this.args.flag as Expression;
   }
 }
@@ -16869,7 +16860,7 @@ export class RegexpILikeExpr extends BinaryExpr {
     super(args);
   }
 
-  get flag (): Expression {
+  get $flag (): Expression {
     return this.args.flag as Expression;
   }
 }
@@ -16891,7 +16882,7 @@ export class RegexpFullMatchExpr extends BinaryExpr {
     super(args);
   }
 
-  get options (): Expression[] {
+  get $options (): Expression[] {
     return (this.args.options || []) as Expression[];
   }
 }
@@ -16917,23 +16908,23 @@ export class RegexpInstrExpr extends FuncExpr {
     super(args);
   }
 
-  get position (): Expression {
+  get $position (): Expression {
     return this.args.position as Expression;
   }
 
-  get occurrence (): Expression {
+  get $occurrence (): Expression {
     return this.args.occurrence as Expression;
   }
 
-  get option (): Expression {
+  get $option (): Expression {
     return this.args.option as Expression;
   }
 
-  get parameters (): Expression[] {
+  get $parameters (): Expression[] {
     return (this.args.parameters || []) as Expression[];
   }
 
-  get group (): Expression {
+  get $group (): Expression {
     return this.args.group as Expression;
   }
 }
@@ -16955,7 +16946,7 @@ export class RegexpSplitExpr extends FuncExpr {
     super(args);
   }
 
-  get limit (): number | Expression {
+  get $limit (): number | Expression {
     return this.args.limit as number | Expression;
   }
 }
@@ -16978,11 +16969,11 @@ export class RegexpCountExpr extends FuncExpr {
     super(args);
   }
 
-  get position (): Expression {
+  get $position (): Expression {
     return this.args.position as Expression;
   }
 
-  get parameters (): Expression[] {
+  get $parameters (): Expression[] {
     return (this.args.parameters || []) as Expression[];
   }
 }
@@ -17004,7 +16995,7 @@ export class RepeatExpr extends FuncExpr {
     super(args);
   }
 
-  get times (): Expression[] {
+  get $times (): Expression[] {
     return (this.args.times || []) as Expression[];
   }
 }
@@ -17026,7 +17017,7 @@ export class ReplaceExpr extends FuncExpr {
     super(args);
   }
 
-  get replacement (): boolean {
+  get $replacement (): boolean {
     return this.args.replacement as boolean;
   }
 }
@@ -17054,15 +17045,15 @@ export class RoundExpr extends FuncExpr {
     super(args);
   }
 
-  get decimals (): Expression[] {
+  get $decimals (): Expression[] {
     return (this.args.decimals || []) as Expression[];
   }
 
-  get truncate (): Expression {
+  get $truncate (): Expression {
     return this.args.truncate as Expression;
   }
 
-  get castsNonIntegerDecimals (): Expression[] {
+  get $castsNonIntegerDecimals (): Expression[] {
     return (this.args.castsNonIntegerDecimals || []) as Expression[];
   }
 }
@@ -17084,7 +17075,7 @@ export class TruncExpr extends FuncExpr {
     super(args);
   }
 
-  get decimals (): Expression[] {
+  get $decimals (): Expression[] {
     return (this.args.decimals || []) as Expression[];
   }
 }
@@ -17159,7 +17150,7 @@ export class SHA2Expr extends FuncExpr {
     super(args);
   }
 
-  get length (): number | Expression {
+  get $length (): number | Expression {
     return this.args.length as number | Expression;
   }
 }
@@ -17185,7 +17176,7 @@ export class SHA2DigestExpr extends FuncExpr {
     super(args);
   }
 
-  get length (): number | Expression {
+  get $length (): number | Expression {
     return this.args.length as number | Expression;
   }
 }
@@ -17217,11 +17208,11 @@ export class SortArrayExpr extends FuncExpr {
     super(args);
   }
 
-  get asc (): Expression {
+  get $asc (): Expression {
     return this.args.asc as Expression;
   }
 
-  get nullsFirst (): Expression {
+  get $nullsFirst (): Expression {
     return this.args.nullsFirst as Expression;
   }
 }
@@ -17251,7 +17242,7 @@ export class SplitExpr extends FuncExpr {
     super(args);
   }
 
-  get limit (): number | Expression {
+  get $limit (): number | Expression {
     return this.args.limit as number | Expression;
   }
 }
@@ -17274,11 +17265,11 @@ export class SplitPartExpr extends FuncExpr {
     super(args);
   }
 
-  get delimiter (): number | Expression {
+  get $delimiter (): number | Expression {
     return this.args.delimiter as number | Expression;
   }
 
-  get partIndex (): Expression {
+  get $partIndex (): Expression {
     return this.args.partIndex as Expression;
   }
 }
@@ -17301,11 +17292,11 @@ export class SubstringExpr extends FuncExpr {
     super(args);
   }
 
-  get start (): Expression {
+  get $start (): Expression {
     return this.args.start as Expression;
   }
 
-  get length (): number | Expression {
+  get $length (): number | Expression {
     return this.args.length as number | Expression;
   }
 }
@@ -17328,11 +17319,11 @@ export class SubstringIndexExpr extends FuncExpr {
     super(args);
   }
 
-  get delimiter (): number | Expression {
+  get $delimiter (): number | Expression {
     return this.args.delimiter as number | Expression;
   }
 
-  get count (): Expression {
+  get $count (): Expression {
     return this.args.count as Expression;
   }
 }
@@ -17368,15 +17359,15 @@ export class StrPositionExpr extends FuncExpr {
     super(args);
   }
 
-  get substr (): Expression {
+  get $substr (): Expression {
     return this.args.substr as Expression;
   }
 
-  get position (): Expression {
+  get $position (): Expression {
     return this.args.position as Expression;
   }
 
-  get occurrence (): Expression {
+  get $occurrence (): Expression {
     return this.args.occurrence as Expression;
   }
 }
@@ -17401,19 +17392,19 @@ export class SearchExpr extends FuncExpr {
     super(args);
   }
 
-  get jsonScope (): Expression {
+  get $jsonScope (): Expression {
     return this.args.jsonScope as Expression;
   }
 
-  get analyzer (): Expression {
+  get $analyzer (): Expression {
     return this.args.analyzer as Expression;
   }
 
-  get analyzerOptions (): Expression[] {
+  get $analyzerOptions (): Expression[] {
     return (this.args.analyzerOptions || []) as Expression[];
   }
 
-  get searchMode (): Expression {
+  get $searchMode (): Expression {
     return this.args.searchMode as Expression;
   }
 }
@@ -17440,11 +17431,11 @@ export class StrToDateExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 }
@@ -17469,19 +17460,19 @@ export class StrToTimeExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 
-  get targetType (): DataTypeExpr {
+  get $targetType (): DataTypeExpr {
     return this.args.targetType as DataTypeExpr;
   }
 }
@@ -17503,7 +17494,7 @@ export class StrToUnixExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 }
@@ -17527,15 +17518,15 @@ export class StrToMapExpr extends FuncExpr {
     super(args);
   }
 
-  get pairDelim (): Expression {
+  get $pairDelim (): Expression {
     return this.args.pairDelim as Expression;
   }
 
-  get keyValueDelim (): string {
+  get $keyValueDelim (): string {
     return this.args.keyValueDelim as string;
   }
 
-  get duplicateResolutionCallback (): Expression {
+  get $duplicateResolutionCallback (): Expression {
     return this.args.duplicateResolutionCallback as Expression;
   }
 }
@@ -17558,11 +17549,11 @@ export class NumberToStrExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get culture (): Expression {
+  get $culture (): Expression {
     return this.args.culture as Expression;
   }
 }
@@ -17601,11 +17592,11 @@ export class StuffExpr extends FuncExpr {
     super(args);
   }
 
-  get start (): Expression {
+  get $start (): Expression {
     return this.args.start as Expression;
   }
 
-  get length (): number | Expression {
+  get $length (): number | Expression {
     return this.args.length as number | Expression;
   }
 }
@@ -17631,7 +17622,7 @@ export class TimeExpr extends FuncExpr {
     super(args);
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 }
@@ -17655,15 +17646,15 @@ export class TimeToStrExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get culture (): Expression {
+  get $culture (): Expression {
     return this.args.culture as Expression;
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 }
@@ -17697,7 +17688,7 @@ export class TimeStrToTimeExpr extends FuncExpr {
     super(args);
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 }
@@ -17724,11 +17715,11 @@ export class TrimExpr extends FuncExpr {
     super(args);
   }
 
-  get position (): Expression {
+  get $position (): Expression {
     return this.args.position as Expression;
   }
 
-  get collation (): Expression {
+  get $collation (): Expression {
     return this.args.collation as Expression;
   }
 }
@@ -17751,11 +17742,11 @@ export class TsOrDsAddExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 
-  get returnType (): DataTypeExpr {
+  get $returnType (): DataTypeExpr {
     return this.args.returnType as DataTypeExpr;
   }
 }
@@ -17777,7 +17768,7 @@ export class TsOrDsDiffExpr extends FuncExpr {
     super(args);
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 }
@@ -17804,11 +17795,11 @@ export class TsOrDsToDateExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 }
@@ -17835,11 +17826,11 @@ export class TsOrDsToTimeExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get safe (): boolean {
+  get $safe (): boolean {
     return this.args.safe as boolean;
   }
 }
@@ -17878,11 +17869,11 @@ export class UniformExpr extends FuncExpr {
     super(args);
   }
 
-  get gen (): Expression {
+  get $gen (): Expression {
     return this.args.gen as Expression;
   }
 
-  get seed (): Expression {
+  get $seed (): Expression {
     return this.args.seed as Expression;
   }
 }
@@ -17908,7 +17899,7 @@ export class UnixToStrExpr extends FuncExpr {
     super(args);
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 }
@@ -17935,27 +17926,27 @@ export class UnixToTimeExpr extends FuncExpr {
     super(args);
   }
 
-  get scale (): number | Expression {
+  get $scale (): number | Expression {
     return this.args.scale as number | Expression;
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 
-  get hours (): Expression[] {
+  get $hours (): Expression[] {
     return (this.args.hours || []) as Expression[];
   }
 
-  get minutes (): Expression[] {
+  get $minutes (): Expression[] {
     return (this.args.minutes || []) as Expression[];
   }
 
-  get format (): string {
+  get $format (): string {
     return this.args.format as string;
   }
 
-  get targetType (): DataTypeExpr {
+  get $targetType (): DataTypeExpr {
     return this.args.targetType as DataTypeExpr;
   }
 }
@@ -18013,11 +18004,11 @@ export class TimestampFromPartsExpr extends FuncExpr {
     super(args);
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 
-  get milli (): Expression {
+  get $milli (): Expression {
     return this.args.milli as Expression;
   }
 }
@@ -18044,7 +18035,7 @@ export class TimestampLtzFromPartsExpr extends FuncExpr {
     super(args);
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 }
@@ -18066,7 +18057,7 @@ export class TimestampTzFromPartsExpr extends FuncExpr {
     super(args);
   }
 
-  get zone (): Expression {
+  get $zone (): Expression {
     return this.args.zone as Expression;
   }
 }
@@ -18093,7 +18084,7 @@ export class CorrExpr extends BinaryExpr {
     super(args);
   }
 
-  get nullOnZeroVariance (): Expression {
+  get $nullOnZeroVariance (): Expression {
     return this.args.nullOnZeroVariance as Expression;
   }
 }
@@ -18118,19 +18109,19 @@ export class WidthBucketExpr extends FuncExpr {
     super(args);
   }
 
-  get minValue (): string {
+  get $minValue (): string {
     return this.args.minValue as string;
   }
 
-  get maxValue (): string {
+  get $maxValue (): string {
     return this.args.maxValue as string;
   }
 
-  get numBuckets (): Expression[] {
+  get $numBuckets (): Expression[] {
     return (this.args.numBuckets || []) as Expression[];
   }
 
-  get threshold (): Expression {
+  get $threshold (): Expression {
     return this.args.threshold as Expression;
   }
 }
@@ -18152,7 +18143,7 @@ export class WeekExpr extends FuncExpr {
     super(args);
   }
 
-  get mode (): Expression {
+  get $mode (): Expression {
     return this.args.mode as Expression;
   }
 }
@@ -18178,7 +18169,7 @@ export class XMLElementExpr extends FuncExpr {
     super(args);
   }
 
-  get evalname (): string {
+  get $evalname (): string {
     return this.args.evalname as string;
   }
 }
@@ -18200,7 +18191,7 @@ export class XMLGetExpr extends FuncExpr {
     super(args);
   }
 
-  get instance (): Expression {
+  get $instance (): Expression {
     return this.args.instance as Expression;
   }
 }
@@ -18225,19 +18216,19 @@ export class XMLTableExpr extends FuncExpr {
     super(args);
   }
 
-  get namespaces (): Expression[] {
+  get $namespaces (): Expression[] {
     return (this.args.namespaces || []) as Expression[];
   }
 
-  get passing (): Expression {
+  get $passing (): Expression {
     return this.args.passing as Expression;
   }
 
-  get columns (): Expression[] {
+  get $columns (): Expression[] {
     return (this.args.columns || []) as Expression[];
   }
 
-  get byRef (): Expression {
+  get $byRef (): Expression {
     return this.args.byRef as Expression;
   }
 }
@@ -18264,11 +18255,11 @@ export class ZipfExpr extends FuncExpr {
     super(args);
   }
 
-  get elementcount (): Expression {
+  get $elementcount (): Expression {
     return this.args.elementcount as Expression;
   }
 
-  get gen (): Expression {
+  get $gen (): Expression {
     return this.args.gen as Expression;
   }
 }
@@ -18290,7 +18281,7 @@ export class NextValueForExpr extends FuncExpr {
     super(args);
   }
 
-  get order (): Expression {
+  get $order (): Expression {
     return this.args.order as Expression;
   }
 }
@@ -18344,7 +18335,7 @@ export class ParameterizedAggExpr extends AggFuncExpr {
     super(args);
   }
 
-  get params (): Expression[] {
+  get $params (): Expression[] {
     return (this.args.params || []) as Expression[];
   }
 }
@@ -18367,7 +18358,7 @@ export class ArgMaxExpr extends AggFuncExpr {
     super(args);
   }
 
-  get count (): Expression {
+  get $count (): Expression {
     return this.args.count as Expression;
   }
 }
@@ -18390,7 +18381,7 @@ export class ArgMinExpr extends AggFuncExpr {
     super(args);
   }
 
-  get count (): Expression {
+  get $count (): Expression {
     return this.args.count as Expression;
   }
 }
@@ -18412,7 +18403,7 @@ export class ApproxTopKExpr extends AggFuncExpr {
     super(args);
   }
 
-  get counters (): Expression[] {
+  get $counters (): Expression[] {
     return (this.args.counters || []) as Expression[];
   }
 }
@@ -18442,7 +18433,7 @@ export class ApproxTopSumExpr extends AggFuncExpr {
     super(args);
   }
 
-  get count (): Expression {
+  get $count (): Expression {
     return this.args.count as Expression;
   }
 }
@@ -18510,7 +18501,7 @@ export class ApproxDistinctExpr extends AggFuncExpr {
     super(args);
   }
 
-  get accuracy (): Expression {
+  get $accuracy (): Expression {
     return this.args.accuracy as Expression;
   }
 }
@@ -18536,7 +18527,7 @@ export class ArrayAggExpr extends AggFuncExpr {
     super(args);
   }
 
-  get nullsExcluded (): Expression {
+  get $nullsExcluded (): Expression {
     return this.args.nullsExcluded as Expression;
   }
 }
@@ -18592,11 +18583,11 @@ export class LagExpr extends AggFuncExpr {
     super(args);
   }
 
-  get offset (): boolean {
+  get $offset (): boolean {
     return this.args.offset as boolean;
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 }
@@ -18619,11 +18610,11 @@ export class LeadExpr extends AggFuncExpr {
     super(args);
   }
 
-  get offset (): boolean {
+  get $offset (): boolean {
     return this.args.offset as boolean;
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 }
@@ -18662,11 +18653,11 @@ export class NthValueExpr extends AggFuncExpr {
     super(args);
   }
 
-  get offset (): boolean {
+  get $offset (): boolean {
     return this.args.offset as boolean;
   }
 
-  get fromFirst (): Expression {
+  get $fromFirst (): Expression {
     return this.args.fromFirst as Expression;
   }
 }
@@ -18697,7 +18688,7 @@ export class TryCastExpr extends CastExpr {
     super(args);
   }
 
-  get requiresString (): Expression {
+  get $requiresString (): Expression {
     return this.args.requiresString as Expression;
   }
 }
@@ -18727,7 +18718,7 @@ export class CountExpr extends AggFuncExpr {
     super(args);
   }
 
-  get bigInt (): Expression {
+  get $bigInt (): Expression {
     return this.args.bigInt as Expression;
   }
 }
@@ -18771,11 +18762,11 @@ export class GroupConcatExpr extends AggFuncExpr {
     super(args);
   }
 
-  get separator (): Expression {
+  get $separator (): Expression {
     return this.args.separator as Expression;
   }
 
-  get onOverflow (): Expression {
+  get $onOverflow (): Expression {
     return this.args.onOverflow as Expression;
   }
 }
@@ -18809,7 +18800,7 @@ export class XorExpr extends ConnectorExpr {
     super(args);
   }
 
-  get roundInput (): Expression {
+  get $roundInput (): Expression {
     return this.args.roundInput as Expression;
   }
 }
@@ -18834,19 +18825,19 @@ export class JSONObjectAggExpr extends AggFuncExpr {
     super(args);
   }
 
-  get nullHandling (): Expression {
+  get $nullHandling (): Expression {
     return this.args.nullHandling as Expression;
   }
 
-  get uniqueKeys (): Expression[] {
+  get $uniqueKeys (): Expression[] {
     return (this.args.uniqueKeys || []) as Expression[];
   }
 
-  get returnType (): DataTypeExpr {
+  get $returnType (): DataTypeExpr {
     return this.args.returnType as DataTypeExpr;
   }
 
-  get encoding (): Expression {
+  get $encoding (): Expression {
     return this.args.encoding as Expression;
   }
 }
@@ -18875,19 +18866,19 @@ export class JSONArrayAggExpr extends AggFuncExpr {
     super(args);
   }
 
-  get order (): Expression {
+  get $order (): Expression {
     return this.args.order as Expression;
   }
 
-  get nullHandling (): Expression {
+  get $nullHandling (): Expression {
     return this.args.nullHandling as Expression;
   }
 
-  get returnType (): DataTypeExpr {
+  get $returnType (): DataTypeExpr {
     return this.args.returnType as DataTypeExpr;
   }
 
-  get strict (): Expression {
+  get $strict (): Expression {
     return this.args.strict as Expression;
   }
 }
@@ -18935,7 +18926,7 @@ export class ModeExpr extends AggFuncExpr {
     super(args);
   }
 
-  get deterministic (): Expression {
+  get $deterministic (): Expression {
     return this.args.deterministic as Expression;
   }
 }
@@ -18977,7 +18968,7 @@ export class QuantileExpr extends AggFuncExpr {
     super(args);
   }
 
-  get quantile (): Expression {
+  get $quantile (): Expression {
     return this.args.quantile as Expression;
   }
 }
@@ -19114,7 +19105,7 @@ export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
     super(args);
   }
 
-  get params (): Expression[] {
+  get $params (): Expression[] {
     return (this.args.params || []) as Expression[];
   }
 }
@@ -19143,19 +19134,19 @@ export class ApproxQuantileExpr extends QuantileExpr {
     super(args);
   }
 
-  get quantile (): Expression {
+  get $quantile (): Expression {
     return this.args.quantile as Expression;
   }
 
-  get accuracy (): Expression {
+  get $accuracy (): Expression {
     return this.args.accuracy as Expression;
   }
 
-  get weight (): Expression {
+  get $weight (): Expression {
     return this.args.weight as Expression;
   }
 
-  get errorTolerance (): Expression {
+  get $errorTolerance (): Expression {
     return this.args.errorTolerance as Expression;
   }
 }
@@ -19175,7 +19166,7 @@ export class ApproxQuantileExpr extends QuantileExpr {
  * // Qualified column: users.id
  * const col = columnExpr('id', 'users');
  */
-export function columnExpr (name: string, table?: string): ColumnExpr {
+export function column (name: string, table?: string): ColumnExpr {
   const args: ColumnExprArgs = {
     this: new IdentifierExpr({ this: name }),
   };
@@ -19201,7 +19192,7 @@ export function columnExpr (name: string, table?: string): ColumnExpr {
  * // Fully qualified: catalog.database.table
  * const table = tableExpr('users', 'mydb', 'mycatalog');
  */
-export function tableExpr (name: string, db?: string, catalog?: string): TableExpr {
+export function table (name: string, db?: string, catalog?: string): TableExpr {
   const args: TableExprArgs = {
     this: new IdentifierExpr({ this: name }),
   };
@@ -19236,7 +19227,7 @@ export function tableExpr (name: string, db?: string, catalog?: string): TableEx
  * @param options.wrap - Whether to wrap in parentheses
  * @returns ALIAS expression
  */
-export function aliasExpr (
+export function alias (
   expr: Expression,
   alias: string,
   options?: { quoted?: boolean; dialect?: DialectType; wrap?: boolean; [key: string]: unknown },
@@ -19261,13 +19252,13 @@ export function aliasExpr (
  *
  * @example
  * // WHERE a = 1 AND b = 2 AND c = 3
- * const condition = andExpr([cond1, cond2, cond3]);
+ * const condition = and([cond1, cond2, cond3]);
  *
  * @example
  * // With options
- * const condition = andExpr([cond1, cond2], { wrap: true });
+ * const condition = and([cond1, cond2], { wrap: true });
  */
-export function andExpr (
+export function and (
   conditions: (Expression | undefined)[],
   _options?: { dialect?: DialectType; copy?: boolean; wrap?: boolean; [key: string]: unknown },
 ): Expression | undefined {
@@ -19310,13 +19301,13 @@ export function andExpr (
  *
  * @example
  * // WHERE a = 1 OR b = 2 OR c = 3
- * const condition = orExpr([cond1, cond2, cond3]);
+ * const condition = or([cond1, cond2, cond3]);
  *
  * @example
  * // With options
- * const condition = orExpr([cond1, cond2], { wrap: true });
+ * const condition = or([cond1, cond2], { wrap: true });
  */
-export function orExpr (
+export function or (
   conditions: (Expression | undefined)[],
   _options?: { dialect?: DialectType; copy?: boolean; wrap?: boolean; [key: string]: unknown },
 ): Expression | undefined {
@@ -19372,9 +19363,9 @@ export function notExpr (expr: Expression): NotExpr {
  *   columnExpr('name', 'users')
  * );
  */
-export function selectExpr (...columns: (string | Expression)[]): SelectExpr {
+export function select (...columns: (string | Expression)[]): SelectExpr {
   const expressions = columns.map((col) =>
-    typeof col === 'string' ? columnExpr(col) : col,
+    typeof col === 'string' ? column(col) : col,
   );
   return new SelectExpr({ expressions });
 }
@@ -19384,7 +19375,7 @@ export function selectExpr (...columns: (string | Expression)[]): SelectExpr {
  * @param table - Table or expression
  * @returns FROM expression
  */
-export function fromExpr (table: string | Expression): FromExpr {
+export function from (table: string | Expression): FromExpr {
   const tableExpr = typeof table === 'string' ? new TableExpr({ this: new IdentifierExpr({ this: table }) }) : table;
   return new FromExpr({ expressions: [tableExpr] });
 }
@@ -19395,7 +19386,7 @@ export function fromExpr (table: string | Expression): FromExpr {
  * @param defaultValue - Default value
  * @returns CASE expression
  */
-export function caseExpr (conditions?: Expression[], defaultValue?: Expression): CaseExpr {
+export function case_ (conditions?: Expression[], defaultValue?: Expression): CaseExpr {
   return new CaseExpr({
     ifs: conditions || [],
     default: defaultValue,
@@ -19417,7 +19408,7 @@ export function caseExpr (conditions?: Expression[], defaultValue?: Expression):
  * // CAST(value AS INTEGER)
  * const casted = castExpr(literalExpr('123'), DataTypeExpr.build('INTEGER'));
  */
-export function castExpr (expr: Expression, toType: DataTypeExpr | string): CastExpr {
+export function cast (expr: Expression, toType: DataTypeExpr | string): CastExpr {
   const dataType = typeof toType === 'string' ? DataTypeExpr.build(toType) : toType;
   return new CastExpr({
     this: expr,
@@ -19431,7 +19422,7 @@ export function castExpr (expr: Expression, toType: DataTypeExpr | string): Cast
  * @param args - Function arguments
  * @returns Function expression
  */
-export function funcExpr (name: string, ...args: Expression[]): FuncExpr {
+export function func (name: string, ...args: Expression[]): FuncExpr {
   return new FuncExpr({
     this: name,
     expressions: args,
@@ -19516,7 +19507,7 @@ function _applySetOperation<S extends Expression> (
  * @param options.copy - Whether to copy the expression. Default is `true`.
  * @returns The new Union instance
  */
-export function unionExpr (
+export function union (
   expressions: Array<string | Expression>,
   options: {
     distinct?: boolean;
@@ -19546,7 +19537,7 @@ export function unionExpr (
  * @param options.copy - Whether to copy the expression. Default is `true`.
  * @returns The new Intersect instance
  */
-export function intersectExpr (
+export function intersect (
   expressions: Array<string | Expression>,
   options: {
     distinct?: boolean;
@@ -19576,7 +19567,7 @@ export function intersectExpr (
  * @param options.copy - Whether to copy the expression. Default is `true`.
  * @returns The new Except instance
  */
-export function exceptExpr (
+export function except (
   expressions: Array<string | Expression>,
   options: {
     distinct?: boolean;
@@ -19597,7 +19588,7 @@ export function exceptExpr (
  * @param values - Values to insert
  * @returns INSERT expression
  */
-export function insertExpr (table: Expression, values?: Expression): InsertExpr {
+export function insert (table: Expression, values?: Expression): InsertExpr {
   return new InsertExpr({
     this: table,
     expression: values,
@@ -19610,7 +19601,7 @@ export function insertExpr (table: Expression, values?: Expression): InsertExpr 
  * @param where - Optional WHERE condition
  * @returns DELETE expression
  */
-export function deleteExpr (table: Expression, where?: Expression): DeleteExpr {
+export function delete_ (table: Expression, where?: Expression): DeleteExpr {
   const args: DeleteExprArgs = { this: table };
   if (where) {
     args.where = where;
@@ -19639,7 +19630,7 @@ export function mergeExpr (target: Expression, using: Expression, on: Expression
  * @param sql - SQL condition text
  * @returns Condition expression (placeholder for now)
  */
-export function conditionExpr (sql: string): Expression {
+export function condition (sql: string): Expression {
   return new ConditionExpr({ this: sql });
 }
 
@@ -19689,7 +19680,7 @@ export function maybeParse (
  * @returns Column expression
  */
 export function toColumn (sql: string, _dialect?: DialectType): ColumnExpr {
-  return columnExpr(sql);
+  return column(sql);
 }
 
 /**
@@ -19709,7 +19700,7 @@ export function toIdentifier (name: string, quoted = false): IdentifierExpr {
  * @returns Table expression
  */
 export function toTable (sql: string, _dialect?: DialectType): TableExpr {
-  return tableExpr(sql);
+  return table(sql);
 }
 
 /**
@@ -19783,7 +19774,7 @@ function _toS (node: unknown, verbose = false, level = 0, reprStr = false): stri
       delim = ', ';
     }
 
-    const isReprStr = node.isString || (node instanceof IdentifierExpr && node.quoted);
+    const isReprStr = node.isString || (node instanceof IdentifierExpr && node.$quoted);
     const items = Object.entries(args)
       .map(([k, v]) => `${k}=${_toS(v, verbose, level + 1, isReprStr)}`)
       .join(delim);
@@ -20118,7 +20109,7 @@ function _applyCteBuilder (options: {
  * @param kind - The expression class to check against
  * @returns The expression wrapped in parentheses if it matches the kind, otherwise the original expression
  */
-export function _wrap (expression: Expression | undefined, kind: typeof Expression): Expression | undefined {
+function _wrap (expression: Expression | undefined, kind: typeof Expression): Expression | undefined {
   if (expression instanceof kind) {
     return new ParenExpr({ this: expression });
   }
@@ -20129,7 +20120,7 @@ export function _wrap (expression: Expression | undefined, kind: typeof Expressi
  * Returns a Null expression
  * @returns A Null expression
  */
-export function nullExpr (): NullExpr {
+export function null_ (): NullExpr {
   return new NullExpr({});
 }
 
@@ -20137,7 +20128,7 @@ export function nullExpr (): NullExpr {
  * Returns a true Boolean expression
  * @returns A true Boolean expression
  */
-export function trueExpr (): BooleanExpr {
+export function true_ (): BooleanExpr {
   return new BooleanExpr({ this: true });
 }
 
@@ -20145,7 +20136,7 @@ export function trueExpr (): BooleanExpr {
  * Returns a false Boolean expression
  * @returns A false Boolean expression
  */
-export function falseExpr (): BooleanExpr {
+export function false_ (): BooleanExpr {
   return new BooleanExpr({ this: false });
 }
 
@@ -20178,7 +20169,7 @@ export function convert (value: unknown, copy = false): Expression {
 
   // Handle null, undefined, or NaN
   if (value === undefined || value === null || (typeof value === 'number' && isNaN(value))) {
-    return nullExpr();
+    return null_();
   }
 
   // Handle numbers
