@@ -1,10 +1,11 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/parser.py
 
-import { Expression } from './expressions';
+import type { Expression } from './expressions';
 import * as exp from './expressions';
 import { Dialect, type DialectType } from './dialects/dialect';
 import { ErrorLevel, ParseError, TokenError, concatMessages } from './errors';
-import { Token, Tokenizer, TokenType } from './tokens';
+import type { Token } from './tokens';
+import { Tokenizer, TokenType } from './tokens';
 
 export interface ParseOptions {
   dialect?: DialectType;
@@ -22,12 +23,12 @@ export interface ParseOptions {
  */
 export class Parser {
   // Static configuration - operator precedence mappings
-  static UNARY_PARSERS: Partial<Record<TokenType, (parser: Parser) => Expression | null>> = {};
-  static PRIMARY_PARSERS: Partial<Record<TokenType, (parser: Parser, token: Token) => Expression | null>> = {};
-  static PLACEHOLDER_PARSERS: Partial<Record<TokenType, (parser: Parser) => Expression | null>> = {};
+  static UNARY_PARSERS: Partial<Record<TokenType, (parser: Parser) => Expression>> = {};
+  static PRIMARY_PARSERS: Partial<Record<TokenType, (parser: Parser, token: Token) => Expression>> = {};
+  static PLACEHOLDER_PARSERS: Partial<Record<TokenType, (parser: Parser) => Expression>> = {};
 
-  static RANGE_PARSERS: Partial<Record<TokenType, (parser: Parser, expr: Expression) => Expression | null>> = {};
-  static STATEMENT_PARSERS: Partial<Record<TokenType, (parser: Parser) => Expression | null>> = {};
+  static RANGE_PARSERS: Partial<Record<TokenType, (parser: Parser, expr: Expression) => Expression>> = {};
+  static STATEMENT_PARSERS: Partial<Record<TokenType, (parser: Parser) => Expression>> = {};
 
   // Operator precedence levels
   static EQUALITY: Partial<Record<TokenType, typeof Expression>> = {
@@ -68,11 +69,11 @@ export class Parser {
   protected errors: ParseError[];
   protected _tokens: Token[];
   protected _index: number;
-  protected _curr: Token | null;
-  protected _next: Token | null;
-  protected _prev: Token | null;
+  protected _curr?: Token;
+  protected _next?: Token;
+  protected _prev?: Token;
 
-  constructor(options?: ParseOptions) {
+  constructor (options?: ParseOptions) {
     const opts = options ?? {};
     this.sql = '';
     this.dialect = Dialect.getOrRaise(opts.dialect);
@@ -89,7 +90,7 @@ export class Parser {
   /**
    * Parse SQL string into an array of expressions.
    */
-  parse(sql: string | Token[], opts?: ParseOptions): Array<Expression | null> {
+  parse (sql: string | Token[], opts?: ParseOptions): Expression[] {
     if (typeof sql === 'string') {
       this.sql = sql;
       this.errors = [];
@@ -113,7 +114,7 @@ export class Parser {
     this._index = 0;
     this._reset();
 
-    const expressions: Array<Expression | null> = [];
+    const expressions: Expression[] = [];
 
     while (this._index < this._tokens.length) {
       if (this._curr?.tokenType === TokenType.SEMICOLON) {
@@ -133,7 +134,7 @@ export class Parser {
     }
 
     if (this.errorLevel === ErrorLevel.RAISE && this.errors.length > 0) {
-      throw new ParseError(concatMessages(this.errors.map(e => e.message), this.maxErrors));
+      throw new ParseError(concatMessages(this.errors.map((e) => e.message), this.maxErrors));
     }
 
     return expressions;
@@ -142,15 +143,15 @@ export class Parser {
   /**
    * Parse SQL into a specific expression type.
    */
-  parseInto(_into: typeof Expression, sql: string, opts?: ParseOptions): Expression | null {
+  parseInto (_into: typeof Expression, sql: string, opts?: ParseOptions): Expression | undefined {
     const expressions = this.parse(sql, opts);
-    return expressions[0] ?? null;
+    return expressions[0];
   }
 
   /**
    * Reset the parser state and advance to first token.
    */
-  protected _reset(): void {
+  protected _reset (): void {
     this._index = 0;
     this._curr = null;
     this._next = null;
@@ -161,32 +162,32 @@ export class Parser {
   /**
    * Advance to the next token.
    */
-  protected _advance(times = 1): boolean {
+  protected _advance (times = 1): boolean {
     for (let i = 0; i < times; i++) {
       this._prev = this._curr;
-      this._curr = this._next || (this._index < this._tokens.length ? this._tokens[this._index] : null);
+      this._curr = this._next || (this._index < this._tokens.length ? this._tokens[this._index] : undefined);
       this._index += 1;
-      this._next = this._index < this._tokens.length ? this._tokens[this._index] : null;
+      this._next = this._index < this._tokens.length ? this._tokens[this._index] : undefined;
     }
-    return this._curr !== null;
+    return this._curr !== undefined;
   }
 
   /**
    * Retreat to the previous token.
    */
-  protected _retreat(index: number): void {
+  protected _retreat (index: number): void {
     if (index >= 0 && index < this._tokens.length) {
       this._index = index;
-      this._curr = this._tokens[index] || null;
-      this._next = index + 1 < this._tokens.length ? this._tokens[index + 1] : null;
-      this._prev = index > 0 ? this._tokens[index - 1] : null;
+      this._curr = this._tokens[index];
+      this._next = index + 1 < this._tokens.length ? this._tokens[index + 1] : undefined;
+      this._prev = index > 0 ? this._tokens[index - 1] : undefined;
     }
   }
 
   /**
    * Check if current token matches the given type.
    */
-  protected _match(tokenType: TokenType, advance = true): boolean {
+  protected _match (tokenType: TokenType, advance = true): boolean {
     if (this._curr?.tokenType === tokenType) {
       if (advance) {
         this._advance();
@@ -199,7 +200,7 @@ export class Parser {
   /**
    * Check if current token matches any of the given types.
    */
-  protected _matchSet(tokenTypes: TokenType[] | Set<TokenType>, advance = true): boolean {
+  protected _matchSet (tokenTypes: TokenType[] | Set<TokenType>, advance = true): boolean {
     const types = Array.isArray(tokenTypes) ? tokenTypes : Array.from(tokenTypes);
     for (const tokenType of types) {
       if (this._match(tokenType, advance)) {
@@ -212,7 +213,7 @@ export class Parser {
   /**
    * Check if current token text matches (case-insensitive).
    */
-  protected _matchTextSeq(...texts: string[]): boolean {
+  protected _matchTextSeq (...texts: string[]): boolean {
     const index = this._index - 1;
     for (let i = 0; i < texts.length; i++) {
       const token = this._tokens[index + i];
@@ -229,7 +230,7 @@ export class Parser {
    */
   expression<T extends Expression>(
     expClass: new (args: any) => T,
-    options?: { [key: string]: any }
+    options?: { [key: string]: any },
   ): T {
     return new expClass(options ?? {});
   }
@@ -237,7 +238,7 @@ export class Parser {
   /**
    * Raise a parse error.
    */
-  protected raiseError(message: string, _token?: Token): void {
+  protected raiseError (message: string, _token?: Token): void {
     const err = new ParseError(message);
     this.errors.push(err);
 
@@ -253,7 +254,7 @@ export class Parser {
   /**
    * Parse a SQL statement.
    */
-  protected _parseStatement(): Expression | null {
+  protected _parseStatement (): Expression | undefined {
     if (!this._curr) {
       return null;
     }
@@ -297,7 +298,7 @@ export class Parser {
   /**
    * Parse a SELECT statement.
    */
-  protected _parseSelect(): Expression | null {
+  protected _parseSelect (): Expression | undefined {
     // Check for WITH clause (CTE)
     const withClause = this._parseWith();
 
@@ -323,7 +324,7 @@ export class Parser {
             if (alias) {
               const aliased = this.expression(exp.AliasExpr, {
                 this: expr,
-                alias
+                alias,
               });
               expressions.push(aliased);
               continue;
@@ -390,36 +391,36 @@ export class Parser {
   /**
    * Parse a general expression.
    */
-  protected _parseExpression(): Expression | null {
+  protected _parseExpression (): Expression | undefined {
     return this._parseDisjunction();
   }
 
   /**
    * Parse OR expressions.
    */
-  protected _parseDisjunction(): Expression | null {
+  protected _parseDisjunction (): Expression | undefined {
     return this._parseConjunction();
   }
 
   /**
    * Parse AND expressions.
    */
-  protected _parseConjunction(): Expression | null {
+  protected _parseConjunction (): Expression | undefined {
     return this._parseEquality();
   }
 
   /**
    * Parse equality expressions (=, !=, <>).
    */
-  protected _parseEquality(): Expression | null {
+  protected _parseEquality (): Expression | undefined {
     return this._parseBinary(this._parseComparison.bind(this), Parser.EQUALITY);
   }
 
   /**
    * Parse comparison expressions (<, <=, >, >=).
    */
-  protected _parseComparison(): Expression | null {
-    let expr = this._parseBinary(this._parseBitwise.bind(this), Parser.COMPARISON);
+  protected _parseComparison (): Expression | undefined {
+    const expr = this._parseBinary(this._parseBitwise.bind(this), Parser.COMPARISON);
     if (!expr) {
       return null;
     }
@@ -438,7 +439,7 @@ export class Parser {
 
         return this.expression(exp.InExpr, {
           this: expr,
-          expressions: values
+          expressions: values,
         });
       }
     }
@@ -449,7 +450,7 @@ export class Parser {
       if (pattern) {
         return this.expression(exp.LikeExpr, {
           this: expr,
-          expression: pattern
+          expression: pattern,
         });
       }
     }
@@ -463,7 +464,7 @@ export class Parser {
           return this.expression(exp.BetweenExpr, {
             this: expr,
             low,
-            high
+            high,
           });
         }
       }
@@ -477,13 +478,13 @@ export class Parser {
           return this.expression(exp.IsExpr, {
             this: expr,
             expression: this.expression(exp.NotExpr, {
-              this: this.expression(exp.NullExpr, {})
-            })
+              this: this.expression(exp.NullExpr, {}),
+            }),
           });
         }
         return this.expression(exp.IsExpr, {
           this: expr,
-          expression: this.expression(exp.NullExpr, {})
+          expression: this.expression(exp.NullExpr, {}),
         });
       }
     }
@@ -494,28 +495,28 @@ export class Parser {
   /**
    * Parse bitwise expressions (&, |, ^).
    */
-  protected _parseBitwise(): Expression | null {
+  protected _parseBitwise (): Expression | undefined {
     return this._parseBinary(this._parseTerm.bind(this), Parser.BITWISE);
   }
 
   /**
    * Parse term expressions (+, -).
    */
-  protected _parseTerm(): Expression | null {
+  protected _parseTerm (): Expression | undefined {
     return this._parseBinary(this._parseFactor.bind(this), Parser.TERM);
   }
 
   /**
    * Parse factor expressions (*, /, %).
    */
-  protected _parseFactor(): Expression | null {
+  protected _parseFactor (): Expression | undefined {
     return this._parseBinary(this._parseUnary.bind(this), Parser.FACTOR);
   }
 
   /**
    * Parse unary expressions (-, NOT).
    */
-  protected _parseUnary(): Expression | null {
+  protected _parseUnary (): Expression | undefined {
     if (this._curr?.tokenType && Parser.UNARY_PARSERS[this._curr.tokenType]) {
       const parser = Parser.UNARY_PARSERS[this._curr.tokenType];
       if (parser) {
@@ -529,7 +530,7 @@ export class Parser {
   /**
    * Parse primary expressions (literals, identifiers, etc.).
    */
-  protected _parsePrimary(): Expression | null {
+  protected _parsePrimary (): Expression | undefined {
     if (!this._curr) {
       return null;
     }
@@ -565,7 +566,7 @@ export class Parser {
   /**
    * Parse parenthesized expression or subquery.
    */
-  protected _parseParen(): Expression | null {
+  protected _parseParen (): Expression | undefined {
     if (!this._match(TokenType.L_PAREN)) {
       return null;
     }
@@ -591,7 +592,7 @@ export class Parser {
   /**
    * Parse a function call.
    */
-  protected _parseFunction(): Expression | null {
+  protected _parseFunction (): Expression | undefined {
     if (!this._curr || !this._next) {
       return null;
     }
@@ -631,7 +632,7 @@ export class Parser {
       // For now, treat as anonymous function and handle later
       return this.expression(exp.CastExpr, {
         this: args[0],
-        to: args[1] || null
+        to: args[1] || null,
       });
     }
 
@@ -651,20 +652,20 @@ export class Parser {
     // Default to anonymous function
     return this.expression(exp.AnonymousExpr, {
       this: funcName,
-      expressions: args
+      expressions: args,
     });
   }
 
   /**
    * Parse CASE expression.
    */
-  protected _parseCase(): Expression | null {
+  protected _parseCase (): Expression | undefined {
     if (!this._match(TokenType.CASE)) {
       return null;
     }
 
     // Optional: CASE <expr> WHEN ... (simple case)
-    let caseExpr: Expression | null = null;
+    let caseExpr: Expression | undefined;
     if (!this._match(TokenType.WHEN, false)) {
       caseExpr = this._parseExpression();
     }
@@ -692,12 +693,12 @@ export class Parser {
 
       ifs.push(this.expression(exp.IfExpr, {
         this: condition,
-        true: result
+        true: result,
       }));
     }
 
     // Optional: ELSE clause
-    let defaultExpr: Expression | null = null;
+    let defaultExpr: Expression | undefined;
     if (this._match(TokenType.ELSE)) {
       defaultExpr = this._parseExpression();
     }
@@ -709,18 +710,17 @@ export class Parser {
     return this.expression(exp.CaseExpr, {
       this: caseExpr,
       ifs,
-      default: defaultExpr
+      default: defaultExpr,
     });
   }
-
 
   /**
    * Parse a binary expression with given precedence.
    */
-  protected _parseBinary(
-    parseNext: () => Expression | null,
-    operators: Partial<Record<TokenType, typeof Expression>>
-  ): Expression | null {
+  protected _parseBinary (
+    parseNext: () => Expression | undefined,
+    operators: Partial<Record<TokenType, typeof Expression>>,
+  ): Expression | undefined {
     let left = parseNext();
     if (!left) {
       return null;
@@ -743,7 +743,7 @@ export class Parser {
   /**
    * Parse a column reference.
    */
-  protected _parseColumn(): Expression | null {
+  protected _parseColumn (): Expression | undefined {
     const parts: Expression[] = [];
 
     while (true) {
@@ -751,7 +751,7 @@ export class Parser {
 
       if (this._curr.tokenType === TokenType.VAR || this._curr.tokenType === TokenType.IDENTIFIER) {
         const identifier = this.expression(exp.IdentifierExpr, {
-          this: this._curr.text
+          this: this._curr.text,
         });
         parts.push(identifier);
         this._advance();
@@ -787,7 +787,7 @@ export class Parser {
   /**
    * Parse FROM clause.
    */
-  protected _parseFrom(): Expression | null {
+  protected _parseFrom (): Expression | undefined {
     if (!this._match(TokenType.FROM)) {
       return null;
     }
@@ -803,7 +803,7 @@ export class Parser {
   /**
    * Parse WHERE clause.
    */
-  protected _parseWhere(): Expression | null {
+  protected _parseWhere (): Expression | undefined {
     if (!this._match(TokenType.WHERE)) {
       return null;
     }
@@ -819,7 +819,7 @@ export class Parser {
   /**
    * Parse GROUP BY clause.
    */
-  protected _parseGroup(): Expression | null {
+  protected _parseGroup (): Expression | undefined {
     if (!this._match(TokenType.GROUP_BY)) {
       return null;
     }
@@ -842,7 +842,7 @@ export class Parser {
   /**
    * Parse HAVING clause.
    */
-  protected _parseHaving(): Expression | null {
+  protected _parseHaving (): Expression | undefined {
     if (!this._match(TokenType.HAVING)) {
       return null;
     }
@@ -858,7 +858,7 @@ export class Parser {
   /**
    * Parse ORDER BY clause.
    */
-  protected _parseOrder(): Expression | null {
+  protected _parseOrder (): Expression | undefined {
     if (!this._match(TokenType.ORDER_BY)) {
       return null;
     }
@@ -881,7 +881,7 @@ export class Parser {
   /**
    * Parse an ordered expression (for ORDER BY).
    */
-  protected _parseOrdered(): Expression | null {
+  protected _parseOrdered (): Expression | undefined {
     const expr = this._parseExpression();
     if (!expr) {
       return null;
@@ -908,7 +908,7 @@ export class Parser {
   /**
    * Parse LIMIT clause.
    */
-  protected _parseLimit(): Expression | null {
+  protected _parseLimit (): Expression | undefined {
     if (!this._match(TokenType.LIMIT)) {
       return null;
     }
@@ -934,7 +934,7 @@ export class Parser {
   /**
    * Parse a table reference.
    */
-  protected _parseTable(): Expression | null {
+  protected _parseTable (): Expression | undefined {
     const parts: Expression[] = [];
 
     // Parse table name parts (catalog.db.table)
@@ -943,7 +943,7 @@ export class Parser {
 
       if (this._curr.tokenType === TokenType.VAR || this._curr.tokenType === TokenType.IDENTIFIER) {
         const identifier = this.expression(exp.IdentifierExpr, {
-          this: this._curr.text
+          this: this._curr.text,
         });
         parts.push(identifier);
         this._advance();
@@ -972,15 +972,15 @@ export class Parser {
       if (alias) {
         return this.expression(exp.TableExpr, {
           ...args,
-          alias: this.expression(exp.TableAliasExpr, { this: alias })
+          alias: this.expression(exp.TableAliasExpr, { this: alias }),
         });
       }
     }
 
     // Parse JOINs
     const joins: Expression[] = [];
-    let join: Expression | null;
-    while ((join = this._parseJoin()) !== null) {
+    let join: Expression | undefined;
+    while ((join = this._parseJoin())) {
       joins.push(join);
     }
 
@@ -994,12 +994,12 @@ export class Parser {
   /**
    * Parse a JOIN clause.
    */
-  protected _parseJoin(): Expression | null {
+  protected _parseJoin (): Expression | undefined {
     const index = this._index;
 
     // Parse join type
-    let side: string | null = null;
-    let kind: string | null = null;
+    let side: string | undefined;
+    let kind: string | undefined;
 
     // Parse side (LEFT, RIGHT, FULL)
     if (this._match(TokenType.LEFT)) {
@@ -1062,7 +1062,7 @@ export class Parser {
   /**
    * Parse table name parts (for qualified names).
    */
-  protected _parseTableParts(): Expression | null {
+  protected _parseTableParts (): Expression | undefined {
     const parts: Expression[] = [];
 
     while (true) {
@@ -1070,7 +1070,7 @@ export class Parser {
 
       if (this._curr.tokenType === TokenType.VAR || this._curr.tokenType === TokenType.IDENTIFIER) {
         const identifier = this.expression(exp.IdentifierExpr, {
-          this: this._curr.text
+          this: this._curr.text,
         });
         parts.push(identifier);
         this._advance();
@@ -1096,7 +1096,7 @@ export class Parser {
   /**
    * Parse an identifier variable.
    */
-  protected _parseIdVar(): Expression | null {
+  protected _parseIdVar (): Expression | undefined {
     if (!this._curr) {
       return null;
     }
@@ -1117,7 +1117,7 @@ export class Parser {
   /**
    * Parse INSERT statement.
    */
-  protected _parseInsert(): Expression | null {
+  protected _parseInsert (): Expression | undefined {
     if (!this._match(TokenType.INSERT)) {
       return null;
     }
@@ -1186,7 +1186,7 @@ export class Parser {
   /**
    * Parse UPDATE statement.
    */
-  protected _parseUpdate(): Expression | null {
+  protected _parseUpdate (): Expression | undefined {
     if (!this._match(TokenType.UPDATE)) {
       return null;
     }
@@ -1210,7 +1210,7 @@ export class Parser {
           if (val) {
             expressions.push(this.expression(exp.EQExpr, {
               this: col,
-              expression: val
+              expression: val,
             }));
           }
         }
@@ -1245,7 +1245,7 @@ export class Parser {
   /**
    * Parse DELETE statement.
    */
-  protected _parseDelete(): Expression | null {
+  protected _parseDelete (): Expression | undefined {
     if (!this._match(TokenType.DELETE)) {
       return null;
     }
@@ -1295,7 +1295,7 @@ export class Parser {
   /**
    * Parse WITH clause (Common Table Expressions).
    */
-  protected _parseWith(): Expression | null {
+  protected _parseWith (): Expression | undefined {
     if (!this._match(TokenType.WITH)) {
       return null;
     }
@@ -1347,8 +1347,8 @@ export class Parser {
         this: query,
         alias: this.expression(exp.TableAliasExpr, {
           this: name,
-          columns
-        })
+          columns,
+        }),
       });
 
       ctes.push(cte);
@@ -1366,11 +1366,11 @@ export class Parser {
 Parser.PRIMARY_PARSERS = {
   [TokenType.STRING]: (parser, token) => parser.expression(exp.LiteralExpr, {
     this: token.text,
-    isString: true
+    isString: true,
   }),
   [TokenType.NUMBER]: (parser, token) => parser.expression(exp.LiteralExpr, {
     this: token.text,
-    isString: false
+    isString: false,
   }),
   [TokenType.NULL]: (parser) => parser.expression(exp.NullExpr, {}),
   [TokenType.TRUE]: (parser) => parser.expression(exp.BooleanExpr, { this: true }),
@@ -1381,21 +1381,21 @@ Parser.PRIMARY_PARSERS = {
 
 Parser.UNARY_PARSERS = {
   [TokenType.DASH]: (parser) => parser.expression(exp.NegExpr, {
-    this: parser['_parseUnary']()
+    this: parser['_parseUnary'](),
   }),
   [TokenType.NOT]: (parser) => parser.expression(exp.NotExpr, {
-    this: parser['_parseEquality']()
+    this: parser['_parseEquality'](),
   }),
 };
 
 /**
  * Standalone parse function for convenience.
  */
-export function parse(
+export function parse (
   sql: string | Token[],
   dialect?: DialectType,
-  opts?: ParseOptions
-): Array<Expression | null> {
+  opts?: ParseOptions,
+): Expression[] {
   const parser = new Parser({ dialect, ...opts });
   return parser.parse(sql);
 }
@@ -1403,11 +1403,11 @@ export function parse(
 /**
  * Parse a single expression.
  */
-export function parseOne(
+export function parseOne (
   sql: string,
   dialect?: DialectType,
-  opts?: ParseOptions
-): Expression | null {
+  opts?: ParseOptions,
+): Expression | undefined {
   const expressions = parse(sql, dialect, opts);
-  return expressions[0] ?? null;
+  return expressions[0];
 }

@@ -56,7 +56,7 @@ type TransformFn = (generator: Generator, expression: Expression) => string;
  */
 export class Generator {
   // Static feature flags
-  static NULL_ORDERING_SUPPORTED: boolean | null = true;
+  static NULL_ORDERING_SUPPORTED?: boolean = true;
   static IGNORE_NULLS_IN_FUNC = false;
   static LOCKING_READS_SUPPORTED = false;
   static EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE = true;
@@ -135,14 +135,14 @@ export class Generator {
   static SUPPORTS_UNIX_SECONDS = false;
   static ALTER_SET_WRAPPED = false;
   static NORMALIZE_EXTRACT_DATE_PARTS = false;
-  static PARSE_JSON_NAME: string | null = 'PARSE_JSON';
+  static PARSE_JSON_NAME?: string = 'PARSE_JSON';
   static ARRAY_SIZE_NAME = 'ARRAY_LENGTH';
   static ALTER_SET_TYPE = 'SET DATA TYPE';
-  static ARRAY_SIZE_DIM_REQUIRED: boolean | null = null;
+  static ARRAY_SIZE_DIM_REQUIRED?: boolean;
   static SUPPORTS_DECODE_CASE = true;
   static SUPPORTS_BETWEEN_FLAGS = false;
   static SUPPORTS_LIKE_QUANTIFIERS = true;
-  static MATCH_AGAINST_TABLE_PREFIX: string | null = null;
+  static MATCH_AGAINST_TABLE_PREFIX?: string;
   static SET_ASSIGNMENT_REQUIRES_VARIABLE_KEYWORD = false;
   static UPDATE_STATEMENT_SUPPORTS_FROM = true;
 
