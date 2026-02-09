@@ -8892,15 +8892,11 @@ export class LiteralExpr extends ConditionExpr {
   static number (number: number | string): LiteralExpr | NegExpr {
     let expr: LiteralExpr | NegExpr = new LiteralExpr({ this: String(number), isString: false });
 
-    try {
-      const numValue = typeof number === 'number' ? number : parseFloat(String(number));
+    const numValue = typeof number === 'number' ? number : parseFloat(String(number));
 
-      if (!isNaN(numValue) && numValue < 0) {
-        expr = new LiteralExpr({ this: String(Math.abs(numValue)), isString: false });
-        expr = new NegExpr({ this: expr });
-      }
-    } catch {
-      // Keep original expression if parsing fails
+    if (!isNaN(numValue) && numValue < 0) {
+      expr = new LiteralExpr({ this: String(Math.abs(numValue)), isString: false });
+      expr = new NegExpr({ this: expr });
     }
 
     return expr;
