@@ -5654,7 +5654,7 @@ export class JoinExpr extends Expression {
    * @param options.copy - if false, modify this expression instance in-place.
    * @returns The modified Join expression.
    */
-  on (
+  withOn (
     expressions: Array<string | Expression>,
     options: {
       append?: boolean;
@@ -5694,7 +5694,7 @@ export class JoinExpr extends Expression {
    * @param options.copy - if false, modify this expression instance in-place.
    * @returns The modified Join expression.
    */
-  using (
+  withUsing (
     expressions: Array<string | Expression>,
     options: {
       append?: boolean;
