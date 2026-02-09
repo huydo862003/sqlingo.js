@@ -5904,7 +5904,7 @@ export class OrderedExpr extends Expression {
   }
 
   get name (): string {
-    return (this.args.this as Expression)?.name || '';
+    return (this.this as Expression)?.name || '';
   }
 }
 
