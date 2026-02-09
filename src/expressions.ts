@@ -19023,7 +19023,7 @@ export function funcExpr (name: string, ...args: Expression[]): FuncExpr {
  * @returns Subquery expression
  */
 export function subqueryExpr (query: Expression, alias?: string): SubqueryExpr {
-  const args: Record<string, unknown> = { this: query };
+  const args: SubqueryExprArgs = { this: query };
   if (alias) {
     args.alias = new IdentifierExpr({ this: alias });
   }
