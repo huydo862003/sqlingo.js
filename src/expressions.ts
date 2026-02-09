@@ -7986,7 +7986,7 @@ export class UnicodeStringExpr extends ConditionExpr {
  *
  * @example
  * // users.id
- * const col = columnExpr('id', 'users');
+ * const col = column('id', 'users');
  */
 export type ColumnExprArgs = { table?: Expression; db?: string; catalog?: string; joinMark?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
@@ -19160,11 +19160,11 @@ export class ApproxQuantileExpr extends QuantileExpr {
  *
  * @example
  * // Simple column: name
- * const col = columnExpr('name');
+ * const col = column('name');
  *
  * @example
  * // Qualified column: users.id
- * const col = columnExpr('id', 'users');
+ * const col = column('id', 'users');
  */
 export function column (name: string, table?: string): ColumnExpr {
   const args: ColumnExprArgs = {
@@ -19186,11 +19186,11 @@ export function column (name: string, table?: string): ColumnExpr {
  *
  * @example
  * // Simple table: users
- * const table = tableExpr('users');
+ * const tbl = table('users');
  *
  * @example
  * // Fully qualified: catalog.database.table
- * const table = tableExpr('users', 'mydb', 'mycatalog');
+ * const tbl = table('users', 'mydb', 'mycatalog');
  */
 export function table (name: string, db?: string, catalog?: string): TableExpr {
   const args: TableExprArgs = {
@@ -19214,7 +19214,7 @@ export function table (name: string, db?: string, catalog?: string): TableExpr {
  *
  * @example
  * // SELECT col AS alias
- * const aliased = aliasExpr(columnExpr('col'), 'alias');
+ * const aliased = alias(column('col'), 'alias');
  */
 /**
  * Create an ALIAS expression.
@@ -19354,13 +19354,13 @@ export function notExpr (expr: Expression): NotExpr {
  *
  * @example
  * // SELECT col1, col2
- * const select = selectExpr('col1', 'col2');
+ * const sel = select('col1', 'col2');
  *
  * @example
  * // SELECT users.id, users.name
- * const select = selectExpr(
- *   columnExpr('id', 'users'),
- *   columnExpr('name', 'users')
+ * const sel = select(
+ *   column('id', 'users'),
+ *   column('name', 'users')
  * );
  */
 export function select (...columns: (string | Expression)[]): SelectExpr {
@@ -19402,11 +19402,11 @@ export function case_ (conditions?: Expression[], defaultValue?: Expression): Ca
  *
  * @example
  * // CAST(col AS VARCHAR)
- * const casted = castExpr(columnExpr('col'), 'VARCHAR');
+ * const casted = cast(column('col'), 'VARCHAR');
  *
  * @example
  * // CAST(value AS INTEGER)
- * const casted = castExpr(literalExpr('123'), DataTypeExpr.build('INTEGER'));
+ * const casted = cast(literal('123'), DataTypeExpr.build('INTEGER'));
  */
 export function cast (expr: Expression, toType: DataTypeExpr | string): CastExpr {
   const dataType = typeof toType === 'string' ? DataTypeExpr.build(toType) : toType;
@@ -19453,11 +19453,11 @@ export function subqueryExpr (query: Expression, alias?: string): SubqueryExpr {
  *
  * @example
  * // SELECT ... UNION ALL SELECT ...
- * const union = unionExpr(query1, query2);
+ * const un = union(query1, query2);
  *
  * @example
  * // SELECT ... UNION DISTINCT SELECT ...
- * const union = unionExpr(query1, query2, true);
+ * const un = union(query1, query2, true);
  */
 /**
  * Helper function to build set operations (UNION, INTERSECT, EXCEPT) by chaining expressions.
@@ -19496,7 +19496,7 @@ function _applySetOperation<S extends Expression> (
  * Initializes a syntax tree for the `UNION` operation.
  *
  * Example:
- *     unionExpr(["SELECT * FROM foo", "SELECT * FROM bla"]).sql();
+ *     union(["SELECT * FROM foo", "SELECT * FROM bla"]).sql();
  *     // 'SELECT * FROM foo UNION SELECT * FROM bla'
  *
  * @param expressions - The SQL code strings, corresponding to the `UNION`'s operands.
@@ -19712,7 +19712,7 @@ export function toTable (sql: string, _dialect?: DialectType): TableExpr {
  *
  * @example
  * // Find all tables in a query
- * const tables = findTables(selectExpr);
+ * const tables = findTables(select('*'));
  * // Returns [TableExpr('users'), TableExpr('orders'), ...]
  */
 export function findTables (expr: Expression): TableExpr[] {
