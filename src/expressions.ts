@@ -19189,7 +19189,7 @@ export function insertExpr (table: Expression, values?: Expression): InsertExpr 
  * @returns DELETE expression
  */
 export function deleteExpr (table: Expression, where?: Expression): DeleteExpr {
-  const args: Record<string, unknown> = { this: table };
+  const args: DeleteExprArgs = { this: table };
   if (where) {
     args.where = where;
   }
