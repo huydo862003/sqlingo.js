@@ -9929,7 +9929,7 @@ export class RollupPropertyExpr extends PropertyExpr {
   };
 }
 
-export type PartitionByListPropertyExprArgs = { value?: string; partitionExpressions: Expression[]; createExpressions: Expression[]; [key: string]: unknown } & PropertyExprArgs;
+export type PartitionByListPropertyExprArgs = { partitionExpressions: Expression[]; createExpressions: Expression[]; [key: string]: unknown } & PropertyExprArgs;
 
 export class PartitionByListPropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITION_BY_LIST_PROPERTY;
@@ -9939,17 +9939,12 @@ export class PartitionByListPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
-    value: false,
     partitionExpressions: true,
     createExpressions: true,
   };
 
   constructor (args: PartitionByListPropertyExprArgs) {
     super(args);
-  }
-
-  get value (): string {
-    return this.args.value as string;
   }
 
   get partitionExpressions (): Expression[] {
