@@ -4,7 +4,7 @@ import { createHash } from 'crypto';
 import { Dialect, type DialectType } from './dialects/dialect';
 import type { Token } from './tokens';
 import { ensureList } from './helper';
-import { baseclass } from './port_internals/utils';
+import { multiInherit } from './port_internals';
 
 export const SQLGLOT_META = 'sqlglot.meta';
 export const SQLGLOT_ANONYMOUS = 'sqlglot.anonymous';
@@ -8722,9 +8722,7 @@ export class CopyExpr extends DMLExpr {
 
 export type InsertExprArgs = { hint?: Expression; with?: Expression; isFunction?: Expression; conflict?: Expression; returning?: Expression; overwrite?: Expression; exists?: Expression; alternative?: Expression; where?: Expression; ignore?: Expression; byName?: string; stored?: Expression; partition?: Expression; settings?: Expression[]; source?: Expression; default?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
-@baseclass(DDLExpr)
-@baseclass(DMLExpr)
-export class InsertExpr extends Expression {
+export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
   key = ExpressionKey.INSERT;
 
   /**
@@ -10301,9 +10299,7 @@ export class SecurePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURE_PROPERTY;
 }
 
-@baseclass(PropertyExpr)
-@baseclass(ColumnConstraintKindExpr)
-export class TagsExpr extends Expression {
+export class TagsExpr extends multiInherit(PropertyExpr, ColumnConstraintKindExpr, Expression) {
   key = ExpressionKey.TAGS;
 
   static argTypes: Record<string, boolean> = {

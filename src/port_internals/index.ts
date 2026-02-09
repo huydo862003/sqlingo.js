@@ -1,0 +1,1 @@
+export { multiInherit } from './inheritance';
