@@ -2991,7 +2991,7 @@ export class CreateExpr extends DDLExpr {
     super(args);
   }
 
-  get with (): Expression {
+  get $with (): Expression {
     return this.args['with'] as Expression;
   }
 
@@ -5922,7 +5922,7 @@ export class PropertyExpr extends Expression {
     value: true,
   };
 
-  constructor (args: PropertyExprArgs) {
+  constructor (args: PropertyExprArgs | BaseExpressionArgs) {
     super(args);
   }
 
@@ -6344,7 +6344,7 @@ export class GetExpr extends Expression {
   }
 }
 
-export type TableExprArgs = { db?: string; catalog?: string; laterals?: Expression[]; joins?: Expression[]; pivots?: Expression[]; hints?: Expression[]; systemTime?: Expression; version?: Expression; format?: string; pattern?: Expression; ordinality?: boolean; when?: Expression; only?: Expression; partition?: Expression; changes?: Expression[]; rowsFrom?: number | Expression; sample?: number | Expression; indexed?: Expression; [key: string]: unknown } & BaseExpressionArgs;
+export type TableExprArgs = { db?: string | IdentifierExpr; catalog?: string | IdentifierExpr; laterals?: Expression[]; joins?: Expression[]; pivots?: Expression[]; hints?: Expression[]; systemTime?: Expression; version?: Expression; format?: string; pattern?: Expression; ordinality?: boolean; when?: Expression; only?: Expression; partition?: Expression; changes?: Expression[]; rowsFrom?: number | Expression; sample?: number | Expression; indexed?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class TableExpr extends Expression {
   key = ExpressionKey.TABLE;
@@ -6660,7 +6660,7 @@ export class PivotExpr extends Expression {
     return this.args.into as Expression;
   }
 
-  get with (): Expression {
+  get $with (): Expression {
     return this.args['with'] as Expression;
   }
 }
@@ -7547,7 +7547,7 @@ export class JSONExpr extends Expression {
     super(args);
   }
 
-  get with (): Expression {
+  get $with (): Expression {
     return this.args['with'] as Expression;
   }
 
@@ -8569,7 +8569,7 @@ export class DeleteExpr extends DMLExpr {
     super(args);
   }
 
-  get with (): Expression {
+  get $with (): Expression {
     return this.args['with'] as Expression;
   }
 
@@ -8758,7 +8758,7 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
     return this.args.hint as Expression;
   }
 
-  get with (): Expression {
+  get $with (): Expression {
     return this.args['with'] as Expression;
   }
 
@@ -8950,13 +8950,25 @@ export class SortExpr extends OrderExpr {
   key = ExpressionKey.SORT;
 }
 
+export type AlgorithmPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
+
 export class AlgorithmPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ALGORITHM_PROPERTY;
 
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: AlgorithmPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type AutoIncrementPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class AutoIncrementPropertyExpr extends PropertyExpr {
   key = ExpressionKey.AUTO_INCREMENT_PROPERTY;
@@ -8964,7 +8976,17 @@ export class AutoIncrementPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: AutoIncrementPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type AutoRefreshPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class AutoRefreshPropertyExpr extends PropertyExpr {
   key = ExpressionKey.AUTO_REFRESH_PROPERTY;
@@ -8972,7 +8994,17 @@ export class AutoRefreshPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: AutoRefreshPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type BackupPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class BackupPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BACKUP_PROPERTY;
@@ -8980,7 +9012,17 @@ export class BackupPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: BackupPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type BuildPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class BuildPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BUILD_PROPERTY;
@@ -8988,6 +9030,14 @@ export class BuildPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: BuildPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
 
 export type BlockCompressionPropertyExprArgs = { value?: string | Expression; autotemp?: Expression; always?: Expression[]; default?: Expression; manual?: Expression; never?: Expression; [key: string]: unknown } & PropertyExprArgs;
@@ -9012,27 +9062,27 @@ export class BlockCompressionPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get autotemp (): Expression {
+  get $autotemp (): Expression {
     return this.args.autotemp as Expression;
   }
 
-  get always (): Expression[] {
+  get $always (): Expression[] {
     return (this.args.always || []) as Expression[];
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 
-  get manual (): Expression {
+  get $manual (): Expression {
     return this.args.manual as Expression;
   }
 
-  get never (): Expression {
+  get $never (): Expression {
     return this.args.never as Expression;
   }
 }
@@ -9059,7 +9109,7 @@ export class CharacterSetPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 }
@@ -9083,15 +9133,15 @@ export class ChecksumPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get on (): Expression {
+  get $on (): Expression {
     return this.args.on as Expression;
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 }
@@ -9118,15 +9168,21 @@ export class CollatePropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 }
+
+export type CopyGrantsPropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
 
 export class CopyGrantsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.COPY_GRANTS_PROPERTY;
 
   static argTypes: Record<string, boolean> = {};
+
+  constructor (args: CopyGrantsPropertyExprArgs) {
+    super(args);
+  }
 }
 
 export type DataBlocksizePropertyExprArgs = { value?: string; size?: number | Expression; units?: Expression[]; minimum?: Expression; maximum?: Expression; default?: Expression; [key: string]: unknown } & PropertyExprArgs;
@@ -9151,27 +9207,27 @@ export class DataBlocksizePropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get size (): number | Expression {
+  get $size (): number | Expression {
     return this.args.size as number | Expression;
   }
 
-  get units (): Expression[] {
+  get $units (): Expression[] {
     return (this.args.units || []) as Expression[];
   }
 
-  get minimum (): Expression {
+  get $minimum (): Expression {
     return this.args.minimum as Expression;
   }
 
-  get maximum (): Expression {
+  get $maximum (): Expression {
     return this.args.maximum as Expression;
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 }
@@ -9196,22 +9252,24 @@ export class DataDeletionPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get on (): Expression {
+  get $on (): Expression {
     return this.args.on as Expression;
   }
 
-  get filterColumn (): Expression {
+  get $filterColumn (): Expression {
     return this.args.filterColumn as Expression;
   }
 
-  get retentionPeriod (): Expression {
+  get $retentionPeriod (): Expression {
     return this.args.retentionPeriod as Expression;
   }
 }
+
+export type DefinerPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class DefinerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DEFINER_PROPERTY;
@@ -9219,7 +9277,17 @@ export class DefinerPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: DefinerPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type DistKeyPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class DistKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DIST_KEY_PROPERTY;
@@ -9227,6 +9295,14 @@ export class DistKeyPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: DistKeyPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
 
 /**
@@ -9264,18 +9340,20 @@ export class DistributedByPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get kind (): DistributedByPropertyExprKind | undefined {
+  get $kind (): DistributedByPropertyExprKind | undefined {
     return this.args.kind as DistributedByPropertyExprKind | undefined;
   }
 
-  get buckets (): Expression[] {
+  get $buckets (): Expression[] {
     return (this.args.buckets || []) as Expression[];
   }
 
-  get order (): Expression {
+  get $order (): Expression {
     return this.args.order as Expression;
   }
 }
+
+export type DistStylePropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class DistStylePropertyExpr extends PropertyExpr {
   key = ExpressionKey.DIST_STYLE_PROPERTY;
@@ -9283,7 +9361,17 @@ export class DistStylePropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: DistStylePropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type DuplicateKeyPropertyExprArgs = { expressions: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
 
 export class DuplicateKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DUPLICATE_KEY_PROPERTY;
@@ -9291,7 +9379,17 @@ export class DuplicateKeyPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     expressions: true,
   };
+
+  constructor (args: DuplicateKeyPropertyExprArgs) {
+    super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return (this.args.expressions || []) as Expression[];
+  }
 }
+
+export type EnginePropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class EnginePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ENGINE_PROPERTY;
@@ -9299,13 +9397,29 @@ export class EnginePropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: EnginePropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type HeapPropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
 
 export class HeapPropertyExpr extends PropertyExpr {
   key = ExpressionKey.HEAP_PROPERTY;
 
   static argTypes: Record<string, boolean> = {};
+
+  constructor (args: HeapPropertyExprArgs) {
+    super(args);
+  }
 }
+
+export type ToTablePropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class ToTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.TO_TABLE_PROPERTY;
@@ -9313,7 +9427,17 @@ export class ToTablePropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: ToTablePropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type ExecuteAsPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class ExecuteAsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXECUTE_AS_PROPERTY;
@@ -9321,7 +9445,17 @@ export class ExecuteAsPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: ExecuteAsPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type ExternalPropertyExprArgs = { this?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class ExternalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXTERNAL_PROPERTY;
@@ -9329,6 +9463,14 @@ export class ExternalPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: false,
   };
+
+  constructor (args: ExternalPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
 }
 
 export type FallbackPropertyExprArgs = { value?: string; no: Expression; protection?: Expression; [key: string]: unknown } & PropertyExprArgs;
@@ -9350,15 +9492,15 @@ export class FallbackPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get no (): Expression {
+  get $no (): Expression {
     return this.args.no as Expression;
   }
 
-  get protection (): Expression {
+  get $protection (): Expression {
     return this.args.protection as Expression;
   }
 }
@@ -9386,10 +9528,12 @@ export class FileFormatPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get hiveFormat (): string {
+  get $hiveFormat (): string {
     return this.args.hiveFormat as string;
   }
 }
+
+export type CredentialsPropertyExprArgs = { expressions: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
 
 export class CredentialsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.CREDENTIALS_PROPERTY;
@@ -9397,6 +9541,14 @@ export class CredentialsPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     expressions: true,
   };
+
+  constructor (args: CredentialsPropertyExprArgs) {
+    super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return (this.args.expressions || []) as Expression[];
+  }
 }
 
 export type FreespacePropertyExprArgs = { value?: string; percent?: Expression; [key: string]: unknown } & PropertyExprArgs;
@@ -9417,21 +9569,37 @@ export class FreespacePropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get percent (): Expression {
+  get $percent (): Expression {
     return this.args.percent as Expression;
   }
 }
 
+export type GlobalPropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
+
 export class GlobalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.GLOBAL_PROPERTY;
+
+  static argTypes: Record<string, boolean> = {};
+
+  constructor (args: GlobalPropertyExprArgs) {
+    super(args);
+  }
 }
+
+export type IcebergPropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
 
 export class IcebergPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ICEBERG_PROPERTY;
+
+  static argTypes: Record<string, boolean> = {};
+
+  constructor (args: IcebergPropertyExprArgs) {
+    super(args);
+  }
 }
 
 export class InheritsPropertyExpr extends PropertyExpr {
@@ -9466,19 +9634,19 @@ export class IsolatedLoadingPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get no (): Expression {
+  get $no (): Expression {
     return this.args.no as Expression;
   }
 
-  get concurrent (): Expression {
+  get $concurrent (): Expression {
     return this.args.concurrent as Expression;
   }
 
-  get target (): Expression {
+  get $target (): Expression {
     return this.args.target as Expression;
   }
 }
@@ -9505,27 +9673,27 @@ export class JournalPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get no (): Expression {
+  get $no (): Expression {
     return this.args.no as Expression;
   }
 
-  get dual (): Expression {
+  get $dual (): Expression {
     return this.args.dual as Expression;
   }
 
-  get before (): Expression {
+  get $before (): Expression {
     return this.args.before as Expression;
   }
 
-  get local (): Expression {
+  get $local (): Expression {
     return this.args.local as Expression;
   }
 
-  get after (): Expression {
+  get $after (): Expression {
     return this.args.after as Expression;
   }
 }
@@ -9557,15 +9725,15 @@ export class ClusteredByPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get sortedBy (): string {
+  get $sortedBy (): string {
     return this.args.sortedBy as string;
   }
 
-  get buckets (): Expression[] {
+  get $buckets (): Expression[] {
     return (this.args.buckets || []) as Expression[];
   }
 }
@@ -9603,15 +9771,15 @@ export class DictPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get kind (): DictPropertyExprKind | undefined {
+  get $kind (): DictPropertyExprKind | undefined {
     return this.args.kind as DictPropertyExprKind | undefined;
   }
 
-  get settings (): Expression[] {
+  get $settings (): Expression[] {
     return (this.args.settings || []) as Expression[];
   }
 }
@@ -9643,11 +9811,11 @@ export class DictRangeExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get min (): Expression {
+  get $min (): Expression {
     return this.args.min as Expression;
   }
 
-  get max (): Expression {
+  get $max (): Expression {
     return this.args.max as Expression;
   }
 }
@@ -9733,19 +9901,19 @@ export class LockingPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get kind (): LockingPropertyExprKind | undefined {
+  get $kind (): LockingPropertyExprKind | undefined {
     return this.args.kind as LockingPropertyExprKind | undefined;
   }
 
-  get forOrIn (): Expression {
+  get $forOrIn (): Expression {
     return this.args.forOrIn as Expression;
   }
 
-  get lockType (): DataTypeExpr {
+  get $lockType (): DataTypeExpr {
     return this.args.lockType as DataTypeExpr;
   }
 
-  get override (): Expression {
+  get $override (): Expression {
     return this.args.override as Expression;
   }
 }
@@ -9768,11 +9936,11 @@ export class LogPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get no (): Expression {
+  get $no (): Expression {
     return this.args.no as Expression;
   }
 }
@@ -9809,15 +9977,15 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get no (): Expression {
+  get $no (): Expression {
     return this.args.no as Expression;
   }
 
-  get default (): Expression {
+  get $default (): Expression {
     return this.args['default'] as Expression;
   }
 
-  get percent (): Expression {
+  get $percent (): Expression {
     return this.args.percent as Expression;
   }
 }
@@ -9854,11 +10022,11 @@ export class OnCommitPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get delete (): Expression {
+  get $delete (): Expression {
     return this.args['delete'] as Expression;
   }
 }
@@ -9908,15 +10076,15 @@ export class PartitionByRangePropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get partitionExpressions (): Expression[] {
+  get $partitionExpressions (): Expression[] {
     return (this.args.partitionExpressions || []) as Expression[];
   }
 
-  get createExpressions (): Expression[] {
+  get $createExpressions (): Expression[] {
     return (this.args.createExpressions || []) as Expression[];
   }
 }
@@ -9947,11 +10115,11 @@ export class PartitionByListPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get partitionExpressions (): Expression[] {
+  get $partitionExpressions (): Expression[] {
     return (this.args.partitionExpressions || []) as Expression[];
   }
 
-  get createExpressions (): Expression[] {
+  get $createExpressions (): Expression[] {
     return (this.args.createExpressions || []) as Expression[];
   }
 }
@@ -9987,27 +10155,27 @@ export class RefreshTriggerPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get method (): string {
+  get $method (): string {
     return this.args.method as string;
   }
 
-  get kind (): RefreshTriggerPropertyExprKind | undefined {
+  get $kind (): RefreshTriggerPropertyExprKind | undefined {
     return this.args.kind as RefreshTriggerPropertyExprKind | undefined;
   }
 
-  get every (): Expression {
+  get $every (): Expression {
     return this.args.every as Expression;
   }
 
-  get unit (): Expression {
+  get $unit (): Expression {
     return this.args.unit as Expression;
   }
 
-  get starts (): Expression[] {
+  get $starts (): Expression[] {
     return (this.args.starts || []) as Expression[];
   }
 }
@@ -10052,19 +10220,19 @@ export class ReturnsPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
+  get $value (): string {
     return this.args.value as string;
   }
 
-  get isTable (): Expression {
+  get $isTable (): Expression {
     return this.args.isTable as Expression;
   }
 
-  get table (): Expression {
+  get $table (): Expression {
     return this.args.table as Expression;
   }
 
-  get null (): Expression {
+  get $null (): Expression {
     return this.args.null as Expression;
   }
 }
@@ -10077,7 +10245,7 @@ export class RowFormatPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_PROPERTY;
 }
 
-export type RowFormatDelimitedPropertyExprArgs = { value?: string; fields?: Expression[]; escaped?: Expression; collectionItems?: Expression[]; mapKeys?: Expression[]; lines?: Expression[]; null?: Expression; serde?: Expression; [key: string]: unknown } & PropertyExprArgs;
+export type RowFormatDelimitedPropertyExprArgs = { fields?: Expression[]; escaped?: Expression; collectionItems?: Expression[]; mapKeys?: Expression[]; lines?: Expression[]; null?: Expression; serde?: Expression; [key: string]: unknown } & PropertyExprArgs;
 
 export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_DELIMITED_PROPERTY;
@@ -10087,7 +10255,6 @@ export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
-    value: false,
     fields: false,
     escaped: false,
     collectionItems: false,
@@ -10101,40 +10268,36 @@ export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
-    return this.args.value as string;
-  }
-
-  get fields (): Expression[] {
+  get $fields (): Expression[] {
     return (this.args.fields || []) as Expression[];
   }
 
-  get escaped (): Expression {
+  get $escaped (): Expression {
     return this.args.escaped as Expression;
   }
 
-  get collectionItems (): Expression[] {
+  get $collectionItems (): Expression[] {
     return (this.args.collectionItems || []) as Expression[];
   }
 
-  get mapKeys (): Expression[] {
+  get $mapKeys (): Expression[] {
     return (this.args.mapKeys || []) as Expression[];
   }
 
-  get lines (): Expression[] {
+  get $lines (): Expression[] {
     return (this.args.lines || []) as Expression[];
   }
 
-  get null (): Expression {
+  get $null (): Expression {
     return this.args.null as Expression;
   }
 
-  get serde (): Expression {
+  get $serde (): Expression {
     return this.args.serde as Expression;
   }
 }
 
-export type RowFormatSerdePropertyExprArgs = { value?: string; serdeProperties?: Expression[]; [key: string]: unknown } & PropertyExprArgs;
+export type RowFormatSerdePropertyExprArgs = { this: Expression; serdeProperties?: Expression[]; [key: string]: unknown } & PropertyExprArgs;
 
 export class RowFormatSerdePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_SERDE_PROPERTY;
@@ -10144,7 +10307,7 @@ export class RowFormatSerdePropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
-    value: false,
+    this: true,
     serdeProperties: false,
   };
 
@@ -10152,11 +10315,7 @@ export class RowFormatSerdePropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
-    return this.args.value as string;
-  }
-
-  get serdeProperties (): Expression[] {
+  get $serdeProperties (): Expression[] {
     return (this.args.serdeProperties || []) as Expression[];
   }
 }
@@ -10173,7 +10332,7 @@ export class SchemaCommentPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SCHEMA_COMMENT_PROPERTY;
 }
 
-export type SerdePropertiesExprArgs = { value?: string; with?: Expression; [key: string]: unknown } & PropertyExprArgs;
+export type SerdePropertiesExprArgs = { expressions: (string | Expression)[]; with?: Expression; [key: string]: unknown } & PropertyExprArgs;
 
 export class SerdePropertiesExpr extends PropertyExpr {
   key = ExpressionKey.SERDE_PROPERTIES;
@@ -10183,7 +10342,7 @@ export class SerdePropertiesExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
-    value: false,
+    expressions: true,
     with: false,
   };
 
@@ -10191,16 +10350,16 @@ export class SerdePropertiesExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
-    return this.args.value as string;
+  get $expressions (): (Expression | string)[] {
+    return this.args.expressions as (Expression | string)[];
   }
 
-  get with (): Expression {
+  get $with (): Expression {
     return this.args['with'] as Expression;
   }
 }
 
-export type SetPropertyExprArgs = { value?: string; multi: Expression; [key: string]: unknown } & PropertyExprArgs;
+export type SetPropertyExprArgs = { multi: Expression; [key: string]: unknown } & PropertyExprArgs;
 
 export class SetPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SET_PROPERTY;
@@ -10210,7 +10369,6 @@ export class SetPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
-    value: false,
     multi: true,
   };
 
@@ -10218,28 +10376,66 @@ export class SetPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
-    return this.args.value as string;
-  }
-
-  get multi (): Expression {
+  get $multi (): Expression {
     return this.args.multi as Expression;
   }
 }
 
+export type SharingPropertyExprArgs = { this?: Expression; [key: string]: unknown } & PropertyExprArgs;
+
 export class SharingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SHARING_PROPERTY;
+
+  static argTypes: Record<string, boolean> = {
+    this: false,
+  };
+
+  constructor (args: SetPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type SetConfigPropertyExprArgs = { this?: Expression; [key: string]: unknown } & PropertyExprArgs;
 
 export class SetConfigPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SET_CONFIG_PROPERTY;
+
+  static argTypes: Record<string, boolean> = {
+    this: true,
+  };
+
+  constructor (args: SetConfigPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type SettingsPropertyExprArgs = { expressions: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
 
 export class SettingsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SETTINGS_PROPERTY;
+
+  static argTypes: Record<string, boolean> = {
+    expressions: true,
+  };
+
+  constructor (args: SettingsPropertyExprArgs) {
+    super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
+  }
 }
 
-export type SortKeyPropertyExprArgs = { value?: string; compound?: Expression; [key: string]: unknown } & PropertyExprArgs;
+export type SortKeyPropertyExprArgs = { this: Expression; compound?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class SortKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SORT_KEY_PROPERTY;
@@ -10249,7 +10445,7 @@ export class SortKeyPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
-    value: false,
+    this: true,
     compound: false,
   };
 
@@ -10257,46 +10453,136 @@ export class SortKeyPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
-    return this.args.value as string;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get compound (): Expression {
-    return this.args.compound as Expression;
+  get $compound (): Expression | undefined {
+    return this.args.compound as Expression | undefined;
   }
 }
+
+export type SqlReadWritePropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class SqlReadWritePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SQL_READ_WRITE_PROPERTY;
+
+  static argTypes: Record<string, boolean> = {
+    this: true,
+  };
+
+  constructor (args: SqlReadWritePropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type SqlSecurityPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class SqlSecurityPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SQL_SECURITY_PROPERTY;
+
+  static argTypes: Record<string, boolean> = {
+    this: true,
+  };
+
+  constructor (args: SqlSecurityPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type StabilityPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class StabilityPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STABILITY_PROPERTY;
+
+  static argTypes: Record<string, boolean> = {
+    this: true,
+  };
+
+  constructor (args: StabilityPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type StorageHandlerPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class StorageHandlerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STORAGE_HANDLER_PROPERTY;
+
+  static argTypes: Record<string, boolean> = {
+    this: true,
+  };
+
+  constructor (args: StorageHandlerPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type TemporaryPropertyExprArgs = { this?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class TemporaryPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TEMPORARY_PROPERTY;
+
+  static argTypes: Record<string, boolean> = {
+    this: false,
+  };
+
+  constructor (args: TemporaryPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
 }
+
+export type SecurePropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
 
 export class SecurePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURE_PROPERTY;
+
+  static argTypes: Record<string, boolean> = {};
+
+  constructor (args: SecurePropertyExprArgs) {
+    super(args);
+  }
 }
 
-export class TagsExpr extends multiInherit(PropertyExpr, ColumnConstraintKindExpr, Expression) {
+export type TagsExprArgs = { expressions: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
+
+export class TagsExpr extends multiInherit(Expression, PropertyExpr, ColumnConstraintKindExpr) {
   key = ExpressionKey.TAGS;
 
   static argTypes: Record<string, boolean> = {
     expressions: true,
   };
+
+  constructor (args: TagsExprArgs) {
+    super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
+  }
 }
+
+export type TransformModelPropertyExprArgs = { expressions: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
 
 export class TransformModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TRANSFORM_MODEL_PROPERTY;
@@ -10304,7 +10590,17 @@ export class TransformModelPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     expressions: true,
   };
+
+  constructor (args: TransformModelPropertyExprArgs) {
+    super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
+  }
 }
+
+export type TransientPropertyExprArgs = { this?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class TransientPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TRANSIENT_PROPERTY;
@@ -10312,13 +10608,29 @@ export class TransientPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: false,
   };
+
+  constructor (args: TransientPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
 }
+
+export type UnloggedPropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
 
 export class UnloggedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNLOGGED_PROPERTY;
 
   static argTypes: Record<string, boolean> = {};
+
+  constructor (args: UnloggedPropertyExprArgs) {
+    super(args);
+  }
 }
+
+export type UsingTemplatePropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class UsingTemplatePropertyExpr extends PropertyExpr {
   key = ExpressionKey.USING_TEMPLATE_PROPERTY;
@@ -10326,7 +10638,17 @@ export class UsingTemplatePropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: UsingTemplatePropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type ViewAttributePropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class ViewAttributePropertyExpr extends PropertyExpr {
   key = ExpressionKey.VIEW_ATTRIBUTE_PROPERTY;
@@ -10334,7 +10656,17 @@ export class ViewAttributePropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: ViewAttributePropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type VolatilePropertyExprArgs = { this?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class VolatilePropertyExpr extends PropertyExpr {
   key = ExpressionKey.VOLATILE_PROPERTY;
@@ -10342,9 +10674,17 @@ export class VolatilePropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: false,
   };
+
+  constructor (args: VolatilePropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
 }
 
-export type WithDataPropertyExprArgs = { value?: string; no: Expression; statistics?: Expression[]; [key: string]: unknown } & PropertyExprArgs;
+export type WithDataPropertyExprArgs = { no: Expression; statistics?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
 
 export class WithDataPropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_DATA_PROPERTY;
@@ -10354,7 +10694,6 @@ export class WithDataPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
-    value: false,
     no: true,
     statistics: false,
   };
@@ -10363,18 +10702,16 @@ export class WithDataPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
-    return this.args.value as string;
-  }
-
-  get no (): Expression {
+  get $no (): Expression {
     return this.args.no as Expression;
   }
 
-  get statistics (): Expression[] {
-    return (this.args.statistics || []) as Expression[];
+  get $statistics (): Expression[] | undefined {
+    return this.args.statistics as Expression[] | undefined;
   }
 }
+
+export type WithJournalTablePropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class WithJournalTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_JOURNAL_TABLE_PROPERTY;
@@ -10382,7 +10719,17 @@ export class WithJournalTablePropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: WithJournalTablePropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
+
+export type WithSchemaBindingPropertyExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class WithSchemaBindingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_SCHEMA_BINDING_PROPERTY;
@@ -10390,9 +10737,17 @@ export class WithSchemaBindingPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
   };
+
+  constructor (args: WithSchemaBindingPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
 }
 
-export type WithSystemVersioningPropertyExprArgs = { value?: string; on?: Expression; dataConsistency?: Expression; retentionPeriod?: Expression; with: Expression; [key: string]: unknown } & PropertyExprArgs;
+export type WithSystemVersioningPropertyExprArgs = { on?: Expression; this?: Expression; dataConsistency?: Expression; retentionPeriod?: Expression; with: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class WithSystemVersioningPropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_SYSTEM_VERSIONING_PROPERTY;
@@ -10413,26 +10768,28 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
-    return this.args.value as string;
+  get $on (): Expression | undefined {
+    return this.args.on as Expression | undefined;
   }
 
-  get on (): Expression {
-    return this.args.on as Expression;
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 
-  get dataConsistency (): Expression {
-    return this.args.dataConsistency as Expression;
+  get $dataConsistency (): Expression | undefined {
+    return this.args.dataConsistency as Expression | undefined;
   }
 
-  get retentionPeriod (): Expression {
-    return this.args.retentionPeriod as Expression;
+  get $retentionPeriod (): Expression | undefined {
+    return this.args.retentionPeriod as Expression | undefined;
   }
 
-  get with (): Expression {
+  get $with (): Expression {
     return this.args['with'] as Expression;
   }
 }
+
+export type WithProcedureOptionsExprArgs = { expressions: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
 
 export class WithProcedureOptionsExpr extends PropertyExpr {
   key = ExpressionKey.WITH_PROCEDURE_OPTIONS;
@@ -10440,9 +10797,17 @@ export class WithProcedureOptionsExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     expressions: true,
   };
+
+  constructor (args: WithProcedureOptionsExprArgs) {
+    super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
+  }
 }
 
-export type EncodePropertyExprArgs = { value?: string; properties?: Expression[]; key?: unknown; [key: string]: unknown } & PropertyExprArgs;
+export type EncodePropertyExprArgs = { this: Expression; properties?: Expression[]; key?: unknown; [key: string]: unknown } & BaseExpressionArgs;
 
 export class EncodePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ENCODE_PROPERTY;
@@ -10450,6 +10815,7 @@ export class EncodePropertyExpr extends PropertyExpr {
   /**
    * Defines the arguments (properties and child expressions) for EncodeProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
+   * Note: The 'key' argument can be accessed via this.args.key (no getter to avoid conflict with Expression.key).
    */
   static argTypes: Record<string, boolean> = {
     this: true,
@@ -10461,16 +10827,16 @@ export class EncodePropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
-    return this.args.value as string;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get properties (): Expression[] {
-    return (this.args.properties || []) as Expression[];
+  get $properties (): Expression[] | undefined {
+    return this.args.properties as Expression[] | undefined;
   }
 }
 
-export type IncludePropertyExprArgs = { value?: string; columnDef?: Expression; [key: string]: unknown } & PropertyExprArgs;
+export type IncludePropertyExprArgs = { this: Expression; alias?: Expression; columnDef?: Expression; [key: string]: unknown } & BaseExpressionArgs;
 
 export class IncludePropertyExpr extends PropertyExpr {
   key = ExpressionKey.INCLUDE_PROPERTY;
@@ -10478,6 +10844,7 @@ export class IncludePropertyExpr extends PropertyExpr {
   /**
    * Defines the arguments (properties and child expressions) for IncludeProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
+   * Note: The 'alias' argument can be accessed via this.args.alias (no getter to avoid conflict with Expression.alias).
    */
   static argTypes: Record<string, boolean> = {
     this: true,
@@ -10489,19 +10856,25 @@ export class IncludePropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get value (): string {
-    return this.args.value as string;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get columnDef (): Expression {
-    return this.args.columnDef as Expression;
+  get $columnDef (): Expression | undefined {
+    return this.args.columnDef as Expression | undefined;
   }
 }
+
+export type ForcePropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
 
 export class ForcePropertyExpr extends PropertyExpr {
   key = ExpressionKey.FORCE_PROPERTY;
 
   static argTypes: Record<string, boolean> = {};
+
+  constructor (args: ForcePropertyExprArgs) {
+    super(args);
+  }
 }
 
 /**
@@ -10625,7 +10998,7 @@ export class SetOperationExpr extends QueryExpr {
     super(args);
   }
 
-  get with (): Expression {
+  get $with (): Expression {
     return this.args['with'] as Expression;
   }
 
@@ -10673,7 +11046,7 @@ export class UpdateExpr extends DMLExpr {
     super(args);
   }
 
-  get with (): Expression {
+  get $with (): Expression {
     return this.args['with'] as Expression;
   }
 
@@ -10747,7 +11120,7 @@ export class SelectExpr extends QueryExpr {
     super(args);
   }
 
-  get with (): Expression {
+  get $with (): Expression {
     return this.args['with'] as Expression;
   }
 
@@ -10793,7 +11166,7 @@ export class SubqueryExpr extends DerivedTableExpr {
     super(args);
   }
 
-  get with (): Expression {
+  get $with (): Expression {
     return this.args['with'] as Expression;
   }
 }
@@ -11193,7 +11566,7 @@ export class MergeExpr extends DMLExpr {
     return (this.args.whens || []) as Expression[];
   }
 
-  get with (): Expression {
+  get $with (): Expression {
     return this.args['with'] as Expression;
   }
 
@@ -18749,7 +19122,7 @@ export class ApproxQuantileExpr extends QuantileExpr {
  * const col = columnExpr('id', 'users');
  */
 export function columnExpr (name: string, table?: string): ColumnExpr {
-  const args: Record<string, unknown> = {
+  const args: ColumnExprArgs = {
     this: new IdentifierExpr({ this: name }),
   };
   if (table) {
@@ -18775,7 +19148,7 @@ export function columnExpr (name: string, table?: string): ColumnExpr {
  * const table = tableExpr('users', 'mydb', 'mycatalog');
  */
 export function tableExpr (name: string, db?: string, catalog?: string): TableExpr {
-  const args: Record<string, unknown> = {
+  const args: TableExprArgs = {
     this: new IdentifierExpr({ this: name }),
   };
   if (db) {

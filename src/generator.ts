@@ -552,7 +552,7 @@ export class Generator {
    * Generate SQL for a literal value.
    */
   literal_sql(expression: Expression): string {
-    const text = expression.this ?? '';
+    const text = expression.nodeThis ?? '';
     // TODO: Handle string escaping properly
     return String(text);
   }
@@ -561,7 +561,7 @@ export class Generator {
    * Generate SQL for an identifier.
    */
   identifier_sql(expression: Expression): string {
-    let text = (expression as any).name ?? expression.this ?? '';
+    let text = (expression as any).name ?? expression.nodeThis ?? '';
     const quoted = (expression.args as any).quoted;
 
     // Normalize to lowercase if needed
@@ -646,7 +646,7 @@ export class Generator {
    * Generate SQL for a boolean.
    */
   boolean_sql(expression: Expression): string {
-    return expression.this ? 'TRUE' : 'FALSE';
+    return expression.nodeThis ? 'TRUE' : 'FALSE';
   }
 
   /**
