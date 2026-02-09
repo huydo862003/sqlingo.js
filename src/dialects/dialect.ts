@@ -121,7 +121,7 @@ export class Dialect {
 
   /** Whether the old-style outer join (+) syntax is supported. */
   static get SUPPORTS_COLUMN_JOIN_MARKS (): boolean {
-    return '(+)' in this.tokenizer_class.KEYWORDS;
+    return '(+)' in this.tokenizerClass.KEYWORDS;
   }
 
   /**
@@ -355,10 +355,9 @@ export class Dialect {
   // --- Autofilled by metaclass in Python, set as instance properties in TypeScript ---
 
   // Tokenizer class reference
-  static tokenizer_class: typeof Tokenizer = Tokenizer;
-  // TODO: add jsonpath_tokenizer_class
-  // TODO: add parser_class
-  static generator_class: any = null; // Will be set after Generator import
+  static tokenizerClass: typeof Tokenizer = Tokenizer;
+  // TODO: add jsonpathTokenizerClass
+  // TODO: add parserClass
 
   protected static timeTrieCache = new WeakMap<typeof Dialect, TrieNode>();
 
@@ -510,7 +509,7 @@ export class Dialect {
   protected static QUOTE_DELIMITERS (): [string, string] {
     let cached = this.quoteDelimitersCache.get(this);
     if (!cached) {
-      const quotes = Object.entries(this.tokenizer_class.QUOTES)[0];
+      const quotes = Object.entries(this.tokenizerClass.QUOTES)[0];
       cached = quotes as [string, string];
       this.quoteDelimitersCache.set(this, cached);
     }
@@ -535,7 +534,7 @@ export class Dialect {
   protected static IDENTIFIER_DELIMITERS (): [string, string] {
     let cached = this.identifierDelimitersCache.get(this);
     if (!cached) {
-      const identifiers = Object.entries(this.tokenizer_class.IDENTIFIERS)[0];
+      const identifiers = Object.entries(this.tokenizerClass.IDENTIFIERS)[0];
       cached = identifiers as [string, string];
       this.identifierDelimitersCache.set(this, cached);
     }
@@ -556,38 +555,38 @@ export class Dialect {
 
   /** Delimiters for bit literals. */
   static get BIT_START (): string | undefined {
-    return this.tokenizer_class.BIT_STRINGS[0]?.[0];
+    return this.tokenizerClass.BIT_STRINGS[0]?.[0];
   }
 
   static get BIT_END (): string | undefined {
-    return this.tokenizer_class.BIT_STRINGS[0]?.[1];
+    return this.tokenizerClass.BIT_STRINGS[0]?.[1];
   }
 
   /** Delimiters for hex literals. */
   static get HEX_START (): string | undefined {
-    return this.tokenizer_class.HEX_STRINGS[0]?.[0];
+    return this.tokenizerClass.HEX_STRINGS[0]?.[0];
   }
 
   static get HEX_END (): string | undefined {
-    return this.tokenizer_class.HEX_STRINGS[0]?.[1];
+    return this.tokenizerClass.HEX_STRINGS[0]?.[1];
   }
 
   /** Delimiters for byte literals. */
   static get BYTE_START (): string | undefined {
-    return this.tokenizer_class.BYTE_STRINGS[0]?.[0];
+    return this.tokenizerClass.BYTE_STRINGS[0]?.[0];
   }
 
   static get BYTE_END (): string | undefined {
-    return this.tokenizer_class.BYTE_STRINGS[0]?.[1];
+    return this.tokenizerClass.BYTE_STRINGS[0]?.[1];
   }
 
   /** Delimiters for unicode literals. */
   static get UNICODE_START (): string | undefined {
-    return this.tokenizer_class.UNICODE_STRINGS[0]?.[0];
+    return this.tokenizerClass.UNICODE_STRINGS[0]?.[0];
   }
 
   static get UNICODE_END (): string | undefined {
-    return this.tokenizer_class.UNICODE_STRINGS[0]?.[1];
+    return this.tokenizerClass.UNICODE_STRINGS[0]?.[1];
   }
 
   /** Date part mapping for normalization. */
@@ -697,12 +696,12 @@ export class Dialect {
 
   /** Whether strings support escaped sequences. */
   static get STRINGS_SUPPORT_ESCAPED_SEQUENCES (): boolean {
-    return this.tokenizer_class.STRING_ESCAPES.includes('\\');
+    return this.tokenizerClass.STRING_ESCAPES.includes('\\');
   }
 
   /** Whether byte strings support escaped sequences. */
   static get BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES (): boolean {
-    return this.tokenizer_class.BYTE_STRING_ESCAPES().includes('\\');
+    return this.tokenizerClass.BYTE_STRING_ESCAPES().includes('\\');
   }
 
   /** Inverse mapping of CREATABLE_KIND_MAPPING. */
@@ -783,7 +782,7 @@ export class Dialect {
   }
 
   version: [number, number, number];
-  normalization_strategy: NormalizationStrategy;
+  normalizationStrategy: NormalizationStrategy;
   settings: Record<string, boolean | string>;
 
   constructor (kwargs: Record<string, boolean | string | number> = {}) {
@@ -796,9 +795,9 @@ export class Dialect {
 
     const normalizationStrategy = kwargs.normalization_strategy;
     if (normalizationStrategy === undefined) {
-      this.normalization_strategy = this._constructor.NORMALIZATION_STRATEGY;
+      this.normalizationStrategy = this._constructor.NORMALIZATION_STRATEGY;
     } else {
-      this.normalization_strategy = NormalizationStrategy[String(normalizationStrategy).toUpperCase() as keyof typeof NormalizationStrategy];
+      this.normalizationStrategy = NormalizationStrategy[String(normalizationStrategy).toUpperCase() as keyof typeof NormalizationStrategy];
     }
 
     // Remove version and normalization_strategy from settings
@@ -824,11 +823,11 @@ export class Dialect {
    * Checks if text contains any case sensitive characters, based on the dialect's rules.
    */
   caseSensitive (text: string): boolean {
-    if (this.normalization_strategy === NormalizationStrategy.CASE_INSENSITIVE) {
+    if (this.normalizationStrategy === NormalizationStrategy.CASE_INSENSITIVE) {
       return false;
     }
 
-    const unsafe = this.normalization_strategy === NormalizationStrategy.UPPERCASE
+    const unsafe = this.normalizationStrategy === NormalizationStrategy.UPPERCASE
       ? (char: string) => char === char.toLowerCase() && char !== char.toUpperCase()
       : (char: string) => char === char.toUpperCase() && char !== char.toLowerCase();
 
@@ -846,27 +845,19 @@ export class Dialect {
    * Get a tokenizer instance for this dialect.
    */
   tokenizer (): Tokenizer {
-    return new this._constructor.tokenizer_class(this);
+    return new this._constructor.tokenizerClass(this);
   }
 
   /**
    * Generate SQL from an expression tree.
    */
-  generate(expression: Expression, options?: { copy?: boolean; [key: string]: unknown }): string {
-    const copy = options?.copy ?? true;
-    const generator = this.generator(options);
-    return generator.generate(expression, { copy });
+  generate (expression: Expression, options?: { copy?: boolean; [key: string]: unknown }): string {
   }
 
   /**
    * Get or create a generator instance for this dialect.
    */
-  generator(options?: Record<string, unknown>): any {
-    const GeneratorClass = this._constructor.generator_class;
-    if (!GeneratorClass) {
-      throw new Error('Generator class not set for dialect');
-    }
-    return new GeneratorClass({ dialect: this, ...options });
+  generator (options?: Record<string, unknown>) {
   }
 
   // TODO: Port these methods when classes are available
@@ -889,11 +880,3 @@ export class Dialect {
 // Register the base Dialect
 Dialect.register('', Dialect);
 Dialect.register('dialect', Dialect);
-
-/**
- * Set the generator class for Dialect.
- * This is called from generator.ts to avoid circular dependencies.
- */
-export function setGeneratorClass(GeneratorClass: any): void {
-  Dialect.generator_class = GeneratorClass;
-}
