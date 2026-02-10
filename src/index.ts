@@ -6,30 +6,50 @@
  */
 
 import packageJson from '../package.json';
-import { ErrorLevel, SqlglotError, ParseError, TokenError, UnsupportedError } from './errors';
-import type { Token } from './tokens';
-import { TokenType, Tokenizer } from './tokens';
-import type { ParseOptions } from './parser';
-import { Parser, parse } from './parser';
-import type { GeneratorOptions, TranspileOptions } from './generator';
-import { Generator, generate } from './generator';
 import {
+  ErrorLevel, SqlglotError, ParseError, TokenError, UnsupportedError,
+} from './errors';
+import type { Token } from './tokens';
+import {
+  TokenType, Tokenizer,
+} from './tokens';
+import type { ParseOptions } from './parser';
+import {
+  Parser, parse,
+} from './parser';
+import type {
+  GeneratorOptions, TranspileOptions,
+} from './generator';
+import {
+  Generator, generate,
+} from './generator';
+import {
+  Schema, MappingSchema,
+} from './schema';
+import type { Dialects } from './dialects/index';
+import { diff } from './diff';
+import { lineage } from './lineage';
+import { optimize } from './optimizer/index';
+import { execute } from './executor/index';
+import type { Expression } from './expressions';
+
+export {
   Expression,
   alias,
   and,
-  case,
+  case_,
   cast,
   column,
   condition,
-  delete,
+  delete_,
   except,
   from,
   func,
   insert,
   intersect,
-  maybeParseExpr,
+  maybeParse,
   mergeExpr,
-  notExpr,
+  not,
   or,
   select,
   subqueryExpr,
@@ -40,50 +60,29 @@ import {
   union,
   findTables,
 } from './expressions';
-import { Schema, MappingSchema } from './schema';
-import type { Dialects } from './dialects/index';
-import { diff } from './diff';
-import { lineage } from './lineage';
-import { optimize } from './optimizer/index';
-import { execute } from './executor/index';
 
 export const version = packageJson.version;
 
-export { ErrorLevel, SqlglotError, ParseError, TokenError, UnsupportedError };
-export type { Token };
-export { TokenType, Tokenizer };
-export type { ParseOptions };
-export { Parser, parse };
-export type { GeneratorOptions, TranspileOptions };
-export { Generator, generate };
 export {
-  Expression,
-  alias as aliasExpr,
-  and as andExpr,
-  case as caseExpr,
-  cast as castExpr,
-  column as columnExpr,
-  condition as conditionExpr,
-  delete as deleteExpr,
-  except as exceptExpr,
-  from as fromExpr,
-  func as funcExpr,
-  insert as insertExpr,
-  intersect as intersectExpr,
-  maybeParseExpr,
-  mergeExpr,
-  notExpr,
-  or as orExpr,
-  select as selectExpr,
-  subqueryExpr,
-  table as tableExpr,
-  toColumn,
-  toIdentifier,
-  toTable,
-  union as unionExpr,
-  findTables,
+  ErrorLevel, SqlglotError, ParseError, TokenError, UnsupportedError,
 };
-export { Schema, MappingSchema };
+export type { Token };
+export {
+  TokenType, Tokenizer,
+};
+export type { ParseOptions };
+export {
+  Parser, parse,
+};
+export type {
+  GeneratorOptions, TranspileOptions,
+};
+export {
+  Generator, generate,
+};
+export {
+  Schema, MappingSchema,
+};
 export { diff };
 export { lineage };
 export { optimize };

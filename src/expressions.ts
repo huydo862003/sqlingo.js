@@ -24717,7 +24717,7 @@ export function or (
  * @param expr - Expression to negate
  * @returns NOT expression
  */
-export function notExpr (expr: Expression): NotExpr {
+export function not (expr: Expression): NotExpr {
   return new NotExpr({ this: expr });
 }
 
