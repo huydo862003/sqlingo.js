@@ -3115,11 +3115,11 @@ export class LockingStatementExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression {
-    return this.args.expression as Expression;
+    return this.args.expression;
   }
 }
 
@@ -3668,11 +3668,11 @@ export class SummarizeExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $table (): Expression | undefined {
-    return this.args.table as Expression | undefined;
+    return this.args.table;
   }
 }
 
@@ -3707,7 +3707,7 @@ export class KillExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $kind (): KillExprKind | undefined {
@@ -3747,7 +3747,7 @@ export class DeclareExpr extends Expression {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -4175,7 +4175,7 @@ export class UserDefinedFunctionExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] | undefined {
@@ -4672,15 +4672,15 @@ export class AlterSortKeyExpr extends Expression {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $compound (): Expression | undefined {
-    return this.args.compound as Expression | undefined;
+    return this.args.compound;
   }
 }
 
@@ -4720,39 +4720,39 @@ export class AlterSetExpr extends Expression {
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $option (): Expression | undefined {
-    return this.args.option as Expression | undefined;
+    return this.args.option;
   }
 
   get $tablespace (): Expression | undefined {
-    return this.args.tablespace as Expression | undefined;
+    return this.args.tablespace;
   }
 
   get $accessMethod (): Expression | undefined {
-    return this.args.accessMethod as Expression | undefined;
+    return this.args.accessMethod;
   }
 
   get $fileFormat (): Expression | undefined {
-    return this.args.fileFormat as Expression | undefined;
+    return this.args.fileFormat;
   }
 
   get $copyOptions (): Expression[] | undefined {
-    return this.args.copyOptions as Expression[] | undefined;
+    return this.args.copyOptions;
   }
 
   get $tag (): Expression | undefined {
-    return this.args.tag as Expression | undefined;
+    return this.args.tag;
   }
 
   get $location (): Expression | undefined {
-    return this.args.location as Expression | undefined;
+    return this.args.location;
   }
 
   get $serde (): Expression | undefined {
-    return this.args.serde as Expression | undefined;
+    return this.args.serde;
   }
 }
 
@@ -4780,15 +4780,15 @@ export class RenameColumnExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $to (): Expression {
-    return this.args.to as Expression;
+    return this.args.to;
   }
 
   get $exists (): Expression[] | undefined {
-    return this.args.exists as Expression[] | undefined;
+    return this.args.exists;
   }
 }
 
@@ -4850,23 +4850,23 @@ export class CommentExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 
   get $expression (): Expression {
-    return this.args.expression as Expression;
+    return this.args.expression;
   }
 
   get $exists (): Expression[] | undefined {
-    return this.args.exists as Expression[] | undefined;
+    return this.args.exists;
   }
 
   get $materialized (): Expression | undefined {
-    return this.args.materialized as Expression | undefined;
+    return this.args.materialized;
   }
 }
 
@@ -4898,23 +4898,23 @@ export class ComprehensionExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression {
-    return this.args.expression as Expression;
+    return this.args.expression;
   }
 
   get $position (): Expression | undefined {
-    return this.args.position as Expression | undefined;
+    return this.args.position;
   }
 
   get $iterator (): Expression {
-    return this.args.iterator as Expression;
+    return this.args.iterator;
   }
 
   get $condition (): Expression | undefined {
-    return this.args.condition as Expression | undefined;
+    return this.args.condition;
   }
 }
 
@@ -4946,23 +4946,23 @@ export class MergeTreeTTLActionExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $delete (): Expression | undefined {
-    return this.args.delete as Expression | undefined;
+    return this.args.delete;
   }
 
   get $recompress (): Expression | undefined {
-    return this.args.recompress as Expression | undefined;
+    return this.args.recompress;
   }
 
   get $toDisk (): Expression | undefined {
-    return this.args.toDisk as Expression | undefined;
+    return this.args.toDisk;
   }
 
   get $toVolume (): Expression | undefined {
-    return this.args.toVolume as Expression | undefined;
+    return this.args.toVolume;
   }
 }
 
@@ -4992,19 +4992,19 @@ export class MergeTreeTTLExpr extends Expression {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 
   get $where (): Expression | undefined {
-    return this.args.where as Expression | undefined;
+    return this.args.where;
   }
 
   get $group (): Expression | undefined {
-    return this.args.group as Expression | undefined;
+    return this.args.group;
   }
 
   get $aggregates (): Expression[] | undefined {
-    return this.args.aggregates as Expression[] | undefined;
+    return this.args.aggregates;
   }
 }
 
@@ -5040,31 +5040,31 @@ export class IndexConstraintOptionExpr extends Expression {
   }
 
   get $keyBlockSize (): Expression | undefined {
-    return this.args.keyBlockSize as Expression | undefined;
+    return this.args.keyBlockSize;
   }
 
   get $using (): Expression | undefined {
-    return this.args.using as Expression | undefined;
+    return this.args.using;
   }
 
   get $parser (): Expression | undefined {
-    return this.args.parser as Expression | undefined;
+    return this.args.parser;
   }
 
   get $comment (): Expression | undefined {
-    return this.args.comment as Expression | undefined;
+    return this.args.comment;
   }
 
   get $visible (): Expression | undefined {
-    return this.args.visible as Expression | undefined;
+    return this.args.visible;
   }
 
   get $engineAttr (): Expression | undefined {
-    return this.args.engineAttr as Expression | undefined;
+    return this.args.engineAttr;
   }
 
   get $secondaryEngineAttr (): Expression | undefined {
-    return this.args.secondaryEngineAttr as Expression | undefined;
+    return this.args.secondaryEngineAttr;
   }
 }
 
@@ -5103,11 +5103,11 @@ export class ColumnConstraintExpr extends Expression {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 
   /**
@@ -5149,11 +5149,11 @@ export class WithOperatorExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $op (): Expression {
-    return this.args.op as Expression;
+    return this.args.op;
   }
 }
 
@@ -5175,11 +5175,11 @@ export class WatermarkColumnConstraintExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression {
-    return this.args.expression as Expression;
+    return this.args.expression;
   }
 }
 
@@ -5201,11 +5201,11 @@ export class ConstraintExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -5265,47 +5265,47 @@ export class DropExpr extends Expression {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $exists (): Expression[] | undefined {
-    return this.args.exists as Expression[] | undefined;
+    return this.args.exists;
   }
 
   get $temporary (): Expression | undefined {
-    return this.args.temporary as Expression | undefined;
+    return this.args.temporary;
   }
 
   get $materialized (): Expression | undefined {
-    return this.args.materialized as Expression | undefined;
+    return this.args.materialized;
   }
 
   get $cascade (): Expression | undefined {
-    return this.args.cascade as Expression | undefined;
+    return this.args.cascade;
   }
 
   get $constraints (): Expression[] | undefined {
-    return this.args.constraints as Expression[] | undefined;
+    return this.args.constraints;
   }
 
   get $purge (): Expression | undefined {
-    return this.args.purge as Expression | undefined;
+    return this.args.purge;
   }
 
   get $cluster (): Expression | undefined {
-    return this.args.cluster as Expression | undefined;
+    return this.args.cluster;
   }
 
   get $concurrently (): Expression | undefined {
-    return this.args.concurrently as Expression | undefined;
+    return this.args.concurrently;
   }
 
   /**
@@ -5338,15 +5338,15 @@ export class ExportExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $connection (): Expression | undefined {
-    return this.args.connection as Expression | undefined;
+    return this.args.connection;
   }
 
   get $options (): Expression[] {
-    return this.args.options as Expression[];
+    return this.args.options;
   }
 }
 
@@ -5372,11 +5372,11 @@ export class FilterExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression {
-    return this.args.expression as Expression;
+    return this.args.expression;
   }
 }
 
@@ -5414,15 +5414,15 @@ export class ChangesExpr extends Expression {
   }
 
   get $information (): Expression {
-    return this.args.information as Expression;
+    return this.args.information;
   }
 
   get $atBefore (): Expression | undefined {
-    return this.args.atBefore as Expression | undefined;
+    return this.args.atBefore;
   }
 
   get $end (): Expression | undefined {
-    return this.args.end as Expression | undefined;
+    return this.args.end;
   }
 }
 
@@ -5450,15 +5450,15 @@ export class ConnectExpr extends Expression {
   }
 
   get $start (): Expression | undefined {
-    return this.args.start as Expression | undefined;
+    return this.args.start;
   }
 
   get $connect (): Expression {
-    return this.args.connect as Expression;
+    return this.args.connect;
   }
 
   get $nocycle (): Expression | undefined {
-    return this.args.nocycle as Expression | undefined;
+    return this.args.nocycle;
   }
 }
 
@@ -5486,15 +5486,15 @@ export class CopyParameterExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression | undefined {
-    return this.args.expression as Expression | undefined;
+    return this.args.expression;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 }
 
@@ -5526,23 +5526,23 @@ export class CredentialsExpr extends Expression {
   }
 
   get $credentials (): Expression[] | undefined {
-    return this.args.credentials as Expression[] | undefined;
+    return this.args.credentials;
   }
 
   get $encryption (): Expression | undefined {
-    return this.args.encryption as Expression | undefined;
+    return this.args.encryption;
   }
 
   get $storage (): Expression | undefined {
-    return this.args.storage as Expression | undefined;
+    return this.args.storage;
   }
 
   get $iamRole (): Expression | undefined {
-    return this.args.iamRole as Expression | undefined;
+    return this.args.iamRole;
   }
 
   get $region (): Expression | undefined {
-    return this.args.region as Expression | undefined;
+    return this.args.region;
   }
 }
 
@@ -5580,15 +5580,15 @@ export class DirectoryExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $local (): Expression | undefined {
-    return this.args.local as Expression | undefined;
+    return this.args.local;
   }
 
   get $rowFormat (): Expression | undefined {
-    return this.args.rowFormat as Expression | undefined;
+    return this.args.rowFormat;
   }
 }
 
@@ -5630,23 +5630,23 @@ export class ForeignKeyExpr extends Expression {
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $reference (): Expression | undefined {
-    return this.args.reference as Expression | undefined;
+    return this.args.reference;
   }
 
   get $delete (): Expression | undefined {
-    return this.args.delete as Expression | undefined;
+    return this.args.delete;
   }
 
   get $update (): Expression | undefined {
-    return this.args.update as Expression | undefined;
+    return this.args.update;
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 }
 
@@ -5672,11 +5672,11 @@ export class ColumnPrefixExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression {
-    return this.args.expression as Expression;
+    return this.args.expression;
   }
 }
 
@@ -5706,19 +5706,19 @@ export class PrimaryKeyExpr extends Expression {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 
   get $include (): Expression | undefined {
-    return this.args.include as Expression | undefined;
+    return this.args.include;
   }
 }
 
@@ -5750,23 +5750,23 @@ export class IntoExpr extends Expression {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $temporary (): Expression | undefined {
-    return this.args.temporary as Expression | undefined;
+    return this.args.temporary;
   }
 
   get $unlogged (): Expression | undefined {
-    return this.args.unlogged as Expression | undefined;
+    return this.args.unlogged;
   }
 
   get $bulkCollect (): Expression | undefined {
-    return this.args.bulkCollect as Expression | undefined;
+    return this.args.bulkCollect;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 }
 
@@ -5820,7 +5820,7 @@ export class HintExpr extends Expression {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -5842,11 +5842,11 @@ export class JoinHintExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -5880,19 +5880,19 @@ export class IdentifierExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $quoted (): Expression | undefined {
-    return this.args.quoted as Expression | undefined;
+    return this.args.quoted;
   }
 
   get $global (): Expression | undefined {
-    return this.args.global as Expression | undefined;
+    return this.args.global;
   }
 
   get $temporary (): Expression | undefined {
-    return this.args.temporary as Expression | undefined;
+    return this.args.temporary;
   }
 }
 
@@ -5914,11 +5914,11 @@ export class OpclassExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression {
-    return this.args.expression as Expression;
+    return this.args.expression;
   }
 }
 
@@ -5952,27 +5952,27 @@ export class IndexExpr extends Expression {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $table (): Expression | undefined {
-    return this.args.table as Expression | undefined;
+    return this.args.table;
   }
 
   get $unique (): Expression | undefined {
-    return this.args.unique as Expression | undefined;
+    return this.args.unique;
   }
 
   get $primary (): Expression | undefined {
-    return this.args.primary as Expression | undefined;
+    return this.args.primary;
   }
 
   get $amp (): Expression | undefined {
-    return this.args.amp as Expression | undefined;
+    return this.args.amp;
   }
 
   get $params (): Expression[] | undefined {
-    return this.args.params as Expression[] | undefined;
+    return this.args.params;
   }
 }
 
@@ -6010,35 +6010,35 @@ export class IndexParametersExpr extends Expression {
   }
 
   get $using (): Expression | undefined {
-    return this.args.using as Expression | undefined;
+    return this.args.using;
   }
 
   get $include (): Expression | undefined {
-    return this.args.include as Expression | undefined;
+    return this.args.include;
   }
 
   get $columns (): Expression[] | undefined {
-    return this.args.columns as Expression[] | undefined;
+    return this.args.columns;
   }
 
   get $withStorage (): Expression | undefined {
-    return this.args.withStorage as Expression | undefined;
+    return this.args.withStorage;
   }
 
   get $partitionBy (): Expression | undefined {
-    return this.args.partitionBy as Expression | undefined;
+    return this.args.partitionBy;
   }
 
   get $tablespace (): Expression | undefined {
-    return this.args.tablespace as Expression | undefined;
+    return this.args.tablespace;
   }
 
   get $where (): Expression | undefined {
-    return this.args.where as Expression | undefined;
+    return this.args.where;
   }
 
   get $on (): Expression | undefined {
-    return this.args.on as Expression | undefined;
+    return this.args.on;
   }
 }
 
@@ -6066,15 +6066,15 @@ export class ConditionalInsertExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression | undefined {
-    return this.args.expression as Expression | undefined;
+    return this.args.expression;
   }
 
   get $else (): Expression | undefined {
-    return this.args.else as Expression | undefined;
+    return this.args.else;
   }
 }
 
@@ -6111,15 +6111,15 @@ export class MultitableInsertsExpr extends Expression {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 
   get $source (): Expression {
-    return this.args.source as Expression;
+    return this.args.source;
   }
 }
 
@@ -6155,31 +6155,31 @@ export class OnConflictExpr extends Expression {
   }
 
   get $duplicate (): Expression | undefined {
-    return this.args.duplicate as Expression | undefined;
+    return this.args.duplicate;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $action (): Expression | undefined {
-    return this.args.action as Expression | undefined;
+    return this.args.action;
   }
 
   get $conflictKeys (): Expression[] | undefined {
-    return this.args.conflictKeys as Expression[] | undefined;
+    return this.args.conflictKeys;
   }
 
   get $indexPredicate (): Expression | undefined {
-    return this.args.indexPredicate as Expression | undefined;
+    return this.args.indexPredicate;
   }
 
   get $constraint (): Expression | undefined {
-    return this.args.constraint as Expression | undefined;
+    return this.args.constraint;
   }
 
   get $where (): Expression | undefined {
-    return this.args.where as Expression | undefined;
+    return this.args.where;
   }
 }
 
@@ -6207,15 +6207,15 @@ export class OnConditionExpr extends Expression {
   }
 
   get $error (): Expression | undefined {
-    return this.args.error as Expression | undefined;
+    return this.args.error;
   }
 
   get $empty (): Expression | undefined {
-    return this.args.empty as Expression | undefined;
+    return this.args.empty;
   }
 
   get $null (): Expression | undefined {
-    return this.args.null as Expression | undefined;
+    return this.args.null;
   }
 }
 
@@ -6241,11 +6241,11 @@ export class ReturningExpr extends Expression {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 
   get $into (): Expression | undefined {
-    return this.args.into as Expression | undefined;
+    return this.args.into;
   }
 }
 
@@ -6267,11 +6267,11 @@ export class IntroducerExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression {
-    return this.args.expression as Expression;
+    return this.args.expression;
   }
 }
 
@@ -6317,31 +6317,31 @@ export class LoadDataExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $local (): Expression | undefined {
-    return this.args.local as Expression | undefined;
+    return this.args.local;
   }
 
   get $overwrite (): Expression | undefined {
-    return this.args.overwrite as Expression | undefined;
+    return this.args.overwrite;
   }
 
   get $inpath (): Expression {
-    return this.args.inpath as Expression;
+    return this.args.inpath;
   }
 
   get $partition (): Expression | undefined {
-    return this.args.partition as Expression | undefined;
+    return this.args.partition;
   }
 
   get $inputFormat (): Expression | undefined {
-    return this.args.inputFormat as Expression | undefined;
+    return this.args.inputFormat;
   }
 
   get $serde (): Expression | undefined {
-    return this.args.serde as Expression | undefined;
+    return this.args.serde;
   }
 }
 
@@ -6367,11 +6367,11 @@ export class PartitionExpr extends Expression {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 
   get $subpartition (): Expression | undefined {
-    return this.args.subpartition as Expression | undefined;
+    return this.args.subpartition;
   }
 }
 
@@ -6395,15 +6395,15 @@ export class PartitionRangeExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression | undefined {
-    return this.args.expression as Expression | undefined;
+    return this.args.expression;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 }
 
@@ -6441,15 +6441,15 @@ export class FetchExpr extends Expression {
   }
 
   get $direction (): Expression | undefined {
-    return this.args.direction as Expression | undefined;
+    return this.args.direction;
   }
 
   get $count (): Expression | undefined {
-    return this.args.count as Expression | undefined;
+    return this.args.count;
   }
 
   get $limitOptions (): Expression[] | undefined {
-    return this.args.limitOptions as Expression[] | undefined;
+    return this.args.limitOptions;
   }
 }
 
@@ -6488,23 +6488,23 @@ export class GrantExpr extends Expression {
   }
 
   get $privileges (): Expression[] {
-    return this.args.privileges as Expression[];
+    return this.args.privileges;
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 
   get $securable (): Expression {
-    return this.args.securable as Expression;
+    return this.args.securable;
   }
 
   get $principals (): Expression[] {
-    return this.args.principals as Expression[];
+    return this.args.principals;
   }
 
   get $grantOption (): Expression | undefined {
-    return this.args.grantOption as Expression | undefined;
+    return this.args.grantOption;
   }
 }
 
@@ -6539,27 +6539,27 @@ export class RevokeExpr extends Expression {
   }
 
   get $privileges (): Expression[] {
-    return this.args.privileges as Expression[];
+    return this.args.privileges;
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 
   get $securable (): Expression {
-    return this.args.securable as Expression;
+    return this.args.securable;
   }
 
   get $principals (): Expression[] {
-    return this.args.principals as Expression[];
+    return this.args.principals;
   }
 
   get $grantOption (): Expression | undefined {
-    return this.args.grantOption as Expression | undefined;
+    return this.args.grantOption;
   }
 
   get $cascade (): Expression | undefined {
-    return this.args.cascade as Expression | undefined;
+    return this.args.cascade;
   }
 }
 
@@ -6593,27 +6593,27 @@ export class GroupExpr extends Expression {
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $groupingSets (): Expression[] | undefined {
-    return this.args.groupingSets as Expression[] | undefined;
+    return this.args.groupingSets;
   }
 
   get $cube (): Expression | undefined {
-    return this.args.cube as Expression | undefined;
+    return this.args.cube;
   }
 
   get $rollup (): Expression | undefined {
-    return this.args.rollup as Expression | undefined;
+    return this.args.rollup;
   }
 
   get $totals (): Expression[] | undefined {
-    return this.args.totals as Expression[] | undefined;
+    return this.args.totals;
   }
 
   get $all (): Expression | undefined {
-    return this.args.all as Expression | undefined;
+    return this.args.all;
   }
 }
 
@@ -6631,7 +6631,7 @@ export class CubeExpr extends Expression {
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 }
 
@@ -6649,7 +6649,7 @@ export class RollupExpr extends Expression {
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 }
 
@@ -6667,7 +6667,7 @@ export class GroupingSetsExpr extends Expression {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -6695,15 +6695,15 @@ export class LambdaExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 
   get $colon (): Expression | undefined {
-    return this.args.colon as Expression | undefined;
+    return this.args.colon;
   }
 }
 
@@ -6735,23 +6735,23 @@ export class LimitExpr extends Expression {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $expression (): Expression {
-    return this.args.expression as Expression;
+    return this.args.expression;
   }
 
   get $offset (): Expression | undefined {
-    return this.args.offset as Expression | undefined;
+    return this.args.offset;
   }
 
   get $limitOptions (): Expression[] | undefined {
-    return this.args.limitOptions as Expression[] | undefined;
+    return this.args.limitOptions;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 }
 
@@ -6779,15 +6779,15 @@ export class LimitOptionsExpr extends Expression {
   }
 
   get $percent (): Expression | undefined {
-    return this.args.percent as Expression | undefined;
+    return this.args.percent;
   }
 
   get $rows (): Expression[] | undefined {
-    return this.args.rows as Expression[] | undefined;
+    return this.args.rows;
   }
 
   get $withTies (): Expression[] | undefined {
-    return this.args.withTies as Expression[] | undefined;
+    return this.args.withTies;
   }
 }
 
@@ -6947,51 +6947,51 @@ export class JoinExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $on (): Expression | undefined {
-    return this.args.on as Expression | undefined;
+    return this.args.on;
   }
 
   get $side (): Expression | undefined {
-    return this.args.side as Expression | undefined;
+    return this.args.side;
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 
   get $using (): Expression | undefined {
-    return this.args.using as Expression | undefined;
+    return this.args.using;
   }
 
   get $method (): Expression | undefined {
-    return this.args.method as Expression | undefined;
+    return this.args.method;
   }
 
   get $global (): Expression | undefined {
-    return this.args.global as Expression | undefined;
+    return this.args.global;
   }
 
   get $hint (): Expression | undefined {
-    return this.args.hint as Expression | undefined;
+    return this.args.hint;
   }
 
   get $matchCondition (): Expression | undefined {
-    return this.args.matchCondition as Expression | undefined;
+    return this.args.matchCondition;
   }
 
   get $directed (): Expression | undefined {
-    return this.args.directed as Expression | undefined;
+    return this.args.directed;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $pivots (): Expression[] | undefined {
-    return this.args.pivots as Expression[] | undefined;
+    return this.args.pivots;
   }
 }
 
@@ -7017,11 +7017,11 @@ export class MatchRecognizeMeasureExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $windowFrame (): Expression | undefined {
-    return this.args.windowFrame as Expression | undefined;
+    return this.args.windowFrame;
   }
 }
 
@@ -7059,35 +7059,35 @@ export class MatchRecognizeExpr extends Expression {
   }
 
   get $partitionBy (): Expression | undefined {
-    return this.args.partitionBy as Expression | undefined;
+    return this.args.partitionBy;
   }
 
   get $order (): Expression | undefined {
-    return this.args.order as Expression | undefined;
+    return this.args.order;
   }
 
   get $measures (): Expression[] | undefined {
-    return this.args.measures as Expression[] | undefined;
+    return this.args.measures;
   }
 
   get $rows (): Expression[] | undefined {
-    return this.args.rows as Expression[] | undefined;
+    return this.args.rows;
   }
 
   get $after (): Expression | undefined {
-    return this.args.after as Expression | undefined;
+    return this.args.after;
   }
 
   get $pattern (): Expression | undefined {
-    return this.args.pattern as Expression | undefined;
+    return this.args.pattern;
   }
 
   get $define (): Expression | undefined {
-    return this.args.define as Expression | undefined;
+    return this.args.define;
   }
 
   get $alias (): Expression | undefined {
-    return this.args.alias as Expression | undefined;
+    return this.args.alias;
   }
 }
 
@@ -7121,15 +7121,15 @@ export class OffsetExpr extends Expression {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $expression (): Expression {
-    return this.args.expression as Expression;
+    return this.args.expression;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 }
 
@@ -7157,15 +7157,15 @@ export class OrderExpr extends Expression {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 
   get $siblings (): Expression[] | undefined {
-    return this.args.siblings as Expression[] | undefined;
+    return this.args.siblings;
   }
 }
 
@@ -7195,19 +7195,19 @@ export class WithFillExpr extends Expression {
   }
 
   get $from (): Expression | undefined {
-    return this.args.from as Expression | undefined;
+    return this.args.from;
   }
 
   get $to (): Expression | undefined {
-    return this.args.to as Expression | undefined;
+    return this.args.to;
   }
 
   get $step (): Expression | undefined {
-    return this.args.step as Expression | undefined;
+    return this.args.step;
   }
 
   get $interpolate (): Expression | undefined {
-    return this.args.interpolate as Expression | undefined;
+    return this.args.interpolate;
   }
 }
 
@@ -7241,19 +7241,19 @@ export class OrderedExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $desc (): Expression | undefined {
-    return this.args.desc as Expression | undefined;
+    return this.args.desc;
   }
 
   get $nullsFirst (): Expression {
-    return this.args.nullsFirst as Expression;
+    return this.args.nullsFirst;
   }
 
   get $withFill (): Expression | undefined {
-    return this.args.withFill as Expression | undefined;
+    return this.args.withFill;
   }
 }
 
@@ -7279,11 +7279,11 @@ export class PropertyExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $value (): Expression {
-    return this.args.value as Expression;
+    return this.args.value;
   }
 }
 
@@ -7305,11 +7305,11 @@ export class GrantPrivilegeExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 }
 
@@ -7344,11 +7344,11 @@ export class GrantPrincipalExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 }
 
@@ -7366,7 +7366,7 @@ export class AllowedValuesPropertyExpr extends Expression {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -7397,19 +7397,19 @@ export class PartitionByRangePropertyDynamicExpr extends Expression {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $start (): Expression {
-    return this.args.start as Expression;
+    return this.args.start;
   }
 
   get $end (): Expression {
-    return this.args.end as Expression;
+    return this.args.end;
   }
 
   get $every (): Expression {
-    return this.args.every as Expression;
+    return this.args.every;
   }
 }
 
@@ -7439,19 +7439,19 @@ export class RollupIndexExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 
   get $fromIndex (): Expression | undefined {
-    return this.args.fromIndex as Expression | undefined;
+    return this.args.fromIndex;
   }
 
   get $properties (): Expression[] | undefined {
-    return this.args.properties as Expression[] | undefined;
+    return this.args.properties;
   }
 }
 
@@ -7473,11 +7473,11 @@ export class PartitionListExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -7507,19 +7507,19 @@ export class PartitionBoundSpecExpr extends Expression {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $expression (): Expression | undefined {
-    return this.args.expression as Expression | undefined;
+    return this.args.expression;
   }
 
   get $fromExpressions (): Expression[] | undefined {
-    return this.args.fromExpressions as Expression[] | undefined;
+    return this.args.fromExpressions;
   }
 
   get $toExpressions (): Expression[] | undefined {
-    return this.args.toExpressions as Expression[] | undefined;
+    return this.args.toExpressions;
   }
 }
 
@@ -7553,27 +7553,27 @@ export class QueryTransformExpr extends Expression {
   }
 
   get $commandScript (): Expression {
-    return this.args.commandScript as Expression;
+    return this.args.commandScript;
   }
 
   get $schema (): Expression | undefined {
-    return this.args.schema as Expression | undefined;
+    return this.args.schema;
   }
 
   get $rowFormatBefore (): Expression | undefined {
-    return this.args.rowFormatBefore as Expression | undefined;
+    return this.args.rowFormatBefore;
   }
 
   get $recordWriter (): Expression | undefined {
-    return this.args.recordWriter as Expression | undefined;
+    return this.args.recordWriter;
   }
 
   get $rowFormatAfter (): Expression | undefined {
-    return this.args.rowFormatAfter as Expression | undefined;
+    return this.args.rowFormatAfter;
   }
 
   get $recordReader (): Expression | undefined {
-    return this.args.recordReader as Expression | undefined;
+    return this.args.recordReader;
   }
 }
 
@@ -7603,19 +7603,19 @@ export class SemanticViewExpr extends Expression {
   }
 
   get $metrics (): Expression[] | undefined {
-    return this.args.metrics as Expression[] | undefined;
+    return this.args.metrics;
   }
 
   get $dimensions (): Expression[] | undefined {
-    return this.args.dimensions as Expression[] | undefined;
+    return this.args.dimensions;
   }
 
   get $facts (): Expression[] | undefined {
-    return this.args.facts as Expression[] | undefined;
+    return this.args.facts;
   }
 
   get $where (): Expression | undefined {
-    return this.args.where as Expression | undefined;
+    return this.args.where;
   }
 }
 
@@ -7661,11 +7661,11 @@ export class InputOutputFormatExpr extends Expression {
   }
 
   get $inputFormat (): Expression | undefined {
-    return this.args.inputFormat as Expression | undefined;
+    return this.args.inputFormat;
   }
 
   get $outputFormat (): Expression | undefined {
-    return this.args.outputFormat as Expression | undefined;
+    return this.args.outputFormat;
   }
 }
 
@@ -7697,7 +7697,7 @@ export class ReferenceExpr extends Expression {
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 }
 
@@ -7749,7 +7749,7 @@ export class IndexTableHintExpr extends Expression {
   }
 
   get $target (): Expression | undefined {
-    return this.args.target as Expression | undefined;
+    return this.args.target;
   }
 }
 
@@ -7780,7 +7780,7 @@ export class HistoricalDataExpr extends Expression {
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 }
 
@@ -7806,11 +7806,11 @@ export class PutExpr extends Expression {
   }
 
   get $target (): Expression {
-    return this.args.target as Expression;
+    return this.args.target;
   }
 
   get $properties (): Expression[] | undefined {
-    return this.args.properties as Expression[] | undefined;
+    return this.args.properties;
   }
 }
 
@@ -7836,11 +7836,11 @@ export class GetExpr extends Expression {
   }
 
   get $target (): Expression {
-    return this.args.target as Expression;
+    return this.args.target;
   }
 
   get $properties (): Expression[] | undefined {
-    return this.args.properties as Expression[] | undefined;
+    return this.args.properties;
   }
 }
 
@@ -7898,75 +7898,75 @@ export class TableExpr extends Expression {
   }
 
   get $db (): Expression | undefined {
-    return this.args.db as Expression | undefined;
+    return this.args.db;
   }
 
   get $catalog (): Expression | undefined {
-    return this.args.catalog as Expression | undefined;
+    return this.args.catalog;
   }
 
   get $laterals (): Expression[] | undefined {
-    return this.args.laterals as Expression[] | undefined;
+    return this.args.laterals;
   }
 
   get $joins (): Expression[] | undefined {
-    return this.args.joins as Expression[] | undefined;
+    return this.args.joins;
   }
 
   get $pivots (): Expression[] | undefined {
-    return this.args.pivots as Expression[] | undefined;
+    return this.args.pivots;
   }
 
   get $hints (): Expression[] | undefined {
-    return this.args.hints as Expression[] | undefined;
+    return this.args.hints;
   }
 
   get $systemTime (): Expression | undefined {
-    return this.args.systemTime as Expression | undefined;
+    return this.args.systemTime;
   }
 
   get $version (): Expression | undefined {
-    return this.args.version as Expression | undefined;
+    return this.args.version;
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 
   get $pattern (): Expression | undefined {
-    return this.args.pattern as Expression | undefined;
+    return this.args.pattern;
   }
 
   get $ordinality (): Expression | undefined {
-    return this.args.ordinality as Expression | undefined;
+    return this.args.ordinality;
   }
 
   get $when (): Expression | undefined {
-    return this.args.when as Expression | undefined;
+    return this.args.when;
   }
 
   get $only (): Expression | undefined {
-    return this.args.only as Expression | undefined;
+    return this.args.only;
   }
 
   get $partition (): Expression | undefined {
-    return this.args.partition as Expression | undefined;
+    return this.args.partition;
   }
 
   get $changes (): Expression[] | undefined {
-    return this.args.changes as Expression[] | undefined;
+    return this.args.changes;
   }
 
   get $rowsFrom (): Expression | undefined {
-    return this.args.rowsFrom as Expression | undefined;
+    return this.args.rowsFrom;
   }
 
   get $sample (): Expression | undefined {
-    return this.args.sample as Expression | undefined;
+    return this.args.sample;
   }
 
   get $indexed (): Expression | undefined {
-    return this.args.indexed as Expression | undefined;
+    return this.args.indexed;
   }
 }
 
@@ -8008,7 +8008,7 @@ export class VersionExpr extends Expression {
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 }
 
@@ -8046,15 +8046,15 @@ export class LockExpr extends Expression {
   }
 
   get $update (): Expression {
-    return this.args.update as Expression;
+    return this.args.update;
   }
 
   get $wait (): Expression | undefined {
-    return this.args.wait as Expression | undefined;
+    return this.args.wait;
   }
 
   get $key (): Expression | undefined {
-    return this.args.key as Expression | undefined;
+    return this.args.key;
   }
 }
 
@@ -8092,35 +8092,35 @@ export class TableSampleExpr extends Expression {
   }
 
   get $method (): Expression | undefined {
-    return this.args.method as Expression | undefined;
+    return this.args.method;
   }
 
   get $bucketNumerator (): Expression | undefined {
-    return this.args.bucketNumerator as Expression | undefined;
+    return this.args.bucketNumerator;
   }
 
   get $bucketDenominator (): Expression | undefined {
-    return this.args.bucketDenominator as Expression | undefined;
+    return this.args.bucketDenominator;
   }
 
   get $bucketField (): Expression | undefined {
-    return this.args.bucketField as Expression | undefined;
+    return this.args.bucketField;
   }
 
   get $percent (): Expression | undefined {
-    return this.args.percent as Expression | undefined;
+    return this.args.percent;
   }
 
   get $rows (): Expression[] | undefined {
-    return this.args.rows as Expression[] | undefined;
+    return this.args.rows;
   }
 
   get $size (): Expression | undefined {
-    return this.args.size as Expression | undefined;
+    return this.args.size;
   }
 
   get $seed (): Expression | undefined {
-    return this.args.seed as Expression | undefined;
+    return this.args.seed;
   }
 }
 
@@ -8146,11 +8146,11 @@ export class TagExpr extends Expression {
   }
 
   get $prefix (): Expression | undefined {
-    return this.args.prefix as Expression | undefined;
+    return this.args.prefix;
   }
 
   get $postfix (): Expression | undefined {
-    return this.args.postfix as Expression | undefined;
+    return this.args.postfix;
   }
 }
 
@@ -8190,39 +8190,39 @@ export class PivotExpr extends Expression {
   }
 
   get $fields (): Expression[] | undefined {
-    return this.args.fields as Expression[] | undefined;
+    return this.args.fields;
   }
 
   get $unpivot (): Expression | undefined {
-    return this.args.unpivot as Expression | undefined;
+    return this.args.unpivot;
   }
 
   get $using (): Expression | undefined {
-    return this.args.using as Expression | undefined;
+    return this.args.using;
   }
 
   get $group (): Expression | undefined {
-    return this.args.group as Expression | undefined;
+    return this.args.group;
   }
 
   get $columns (): Expression[] | undefined {
-    return this.args.columns as Expression[] | undefined;
+    return this.args.columns;
   }
 
   get $includeNulls (): Expression[] | undefined {
-    return this.args.includeNulls as Expression[] | undefined;
+    return this.args.includeNulls;
   }
 
   get $defaultOnNull (): Expression | undefined {
-    return this.args.defaultOnNull as Expression | undefined;
+    return this.args.defaultOnNull;
   }
 
   get $into (): Expression | undefined {
-    return this.args.into as Expression | undefined;
+    return this.args.into;
   }
 
   get $with (): Expression | undefined {
-    return this.args.with as Expression | undefined;
+    return this.args.with;
   }
 }
 
@@ -8274,27 +8274,27 @@ export class WindowSpecExpr extends Expression {
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 
   get $start (): Expression | undefined {
-    return this.args.start as Expression | undefined;
+    return this.args.start;
   }
 
   get $startSide (): Expression | undefined {
-    return this.args.startSide as Expression | undefined;
+    return this.args.startSide;
   }
 
   get $end (): Expression | undefined {
-    return this.args.end as Expression | undefined;
+    return this.args.end;
   }
 
   get $endSide (): Expression | undefined {
-    return this.args.endSide as Expression | undefined;
+    return this.args.endSide;
   }
 
   get $exclude (): Expression | undefined {
-    return this.args.exclude as Expression | undefined;
+    return this.args.exclude;
   }
 }
 
@@ -8342,15 +8342,15 @@ export class StarExpr extends Expression {
   }
 
   get $except (): Expression | undefined {
-    return this.args.except as Expression | undefined;
+    return this.args.except;
   }
 
   get $replace (): Expression | undefined {
-    return this.args.replace as Expression | undefined;
+    return this.args.replace;
   }
 
   get $rename (): Expression | undefined {
-    return this.args.rename as Expression | undefined;
+    return this.args.rename;
   }
 }
 
@@ -8423,23 +8423,23 @@ export class DataTypeExpr extends Expression {
   }
 
   get $nested (): Expression | undefined {
-    return this.args.nested as Expression | undefined;
+    return this.args.nested;
   }
 
   get $values (): Expression[] | undefined {
-    return this.args.values as Expression[] | undefined;
+    return this.args.values;
   }
 
   get $prefix (): Expression | undefined {
-    return this.args.prefix as Expression | undefined;
+    return this.args.prefix;
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 
   get $nullable (): Expression | undefined {
-    return this.args.nullable as Expression | undefined;
+    return this.args.nullable;
   }
 }
 
@@ -8485,11 +8485,11 @@ export class TransactionExpr extends Expression {
   }
 
   get $modes (): Expression[] | undefined {
-    return this.args.modes as Expression[] | undefined;
+    return this.args.modes;
   }
 
   get $mark (): Expression | undefined {
-    return this.args.mark as Expression | undefined;
+    return this.args.mark;
   }
 }
 
@@ -8515,11 +8515,11 @@ export class CommitExpr extends Expression {
   }
 
   get $chain (): Expression | undefined {
-    return this.args.chain as Expression | undefined;
+    return this.args.chain;
   }
 
   get $durability (): Expression | undefined {
-    return this.args.durability as Expression | undefined;
+    return this.args.durability;
   }
 }
 
@@ -8541,7 +8541,7 @@ export class RollbackExpr extends Expression {
   }
 
   get $savepoint (): Expression | undefined {
-    return this.args.savepoint as Expression | undefined;
+    return this.args.savepoint;
   }
 }
 
@@ -8594,39 +8594,39 @@ export class AlterExpr extends Expression {
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 
   get $actions (): Expression[] {
-    return this.args.actions as Expression[];
+    return this.args.actions;
   }
 
   get $exists (): Expression[] | undefined {
-    return this.args.exists as Expression[] | undefined;
+    return this.args.exists;
   }
 
   get $only (): Expression | undefined {
-    return this.args.only as Expression | undefined;
+    return this.args.only;
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 
   get $cluster (): Expression | undefined {
-    return this.args.cluster as Expression | undefined;
+    return this.args.cluster;
   }
 
   get $notValid (): Expression | undefined {
-    return this.args.notValid as Expression | undefined;
+    return this.args.notValid;
   }
 
   get $check (): Expression | undefined {
-    return this.args.check as Expression | undefined;
+    return this.args.check;
   }
 
   get $cascade (): Expression | undefined {
-    return this.args.cascade as Expression | undefined;
+    return this.args.cascade;
   }
 }
 
@@ -8648,7 +8648,7 @@ export class AlterSessionExpr extends Expression {
   }
 
   get $unset (): Expression | undefined {
-    return this.args.unset as Expression | undefined;
+    return this.args.unset;
   }
 }
 
@@ -8688,23 +8688,23 @@ export class AnalyzeExpr extends Expression {
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 
   get $mode (): Expression | undefined {
-    return this.args.mode as Expression | undefined;
+    return this.args.mode;
   }
 
   get $partition (): Expression | undefined {
-    return this.args.partition as Expression | undefined;
+    return this.args.partition;
   }
 
   get $properties (): Expression[] | undefined {
-    return this.args.properties as Expression[] | undefined;
+    return this.args.properties;
   }
 }
 
@@ -8740,11 +8740,11 @@ export class AnalyzeStatisticsExpr extends Expression {
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 
   get $option (): Expression | undefined {
-    return this.args.option as Expression | undefined;
+    return this.args.option;
   }
 }
 
@@ -8766,7 +8766,7 @@ export class AnalyzeHistogramExpr extends Expression {
   }
 
   get $updateOptions (): Expression[] | undefined {
-    return this.args.updateOptions as Expression[] | undefined;
+    return this.args.updateOptions;
   }
 }
 
@@ -8801,11 +8801,11 @@ export class AnalyzeSampleExpr extends Expression {
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 
   get $sample (): Expression {
-    return this.args.sample as Expression;
+    return this.args.sample;
   }
 }
 
@@ -8846,7 +8846,7 @@ export class AnalyzeDeleteExpr extends Expression {
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 }
 
@@ -8887,7 +8887,7 @@ export class AnalyzeValidateExpr extends Expression {
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 }
 
@@ -8943,11 +8943,11 @@ export class AddPartitionExpr extends Expression {
   }
 
   get $exists (): Expression[] | undefined {
-    return this.args.exists as Expression[] | undefined;
+    return this.args.exists;
   }
 
   get $location (): Expression | undefined {
-    return this.args.location as Expression | undefined;
+    return this.args.location;
   }
 }
 
@@ -8979,7 +8979,7 @@ export class DropPartitionExpr extends Expression {
   }
 
   get $exists (): Expression[] | undefined {
-    return this.args.exists as Expression[] | undefined;
+    return this.args.exists;
   }
 }
 
@@ -9001,7 +9001,7 @@ export class ReplacePartitionExpr extends Expression {
   }
 
   get $source (): Expression {
-    return this.args.source as Expression;
+    return this.args.source;
   }
 }
 
@@ -9064,7 +9064,7 @@ export class AtTimeZoneExpr extends Expression {
   }
 
   get $zone (): Expression {
-    return this.args.zone as Expression;
+    return this.args.zone;
   }
 }
 
@@ -9086,7 +9086,7 @@ export class FromTimeZoneExpr extends Expression {
   }
 
   get $zone (): Expression {
-    return this.args.zone as Expression;
+    return this.args.zone;
   }
 }
 
@@ -9108,7 +9108,7 @@ export class FormatPhraseExpr extends Expression {
   }
 
   get $format (): Expression {
-    return this.args.format as Expression;
+    return this.args.format;
   }
 }
 
@@ -9130,7 +9130,7 @@ export class DistinctExpr extends Expression {
   }
 
   get $on (): Expression | undefined {
-    return this.args.on as Expression | undefined;
+    return this.args.on;
   }
 }
 
@@ -9162,7 +9162,7 @@ export class TimeUnitExpr extends Expression {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -9204,7 +9204,7 @@ export class HavingMaxExpr extends Expression {
   }
 
   get $max (): Expression {
-    return this.args.max as Expression;
+    return this.args.max;
   }
 }
 
@@ -9226,7 +9226,7 @@ export class TranslateCharactersExpr extends Expression {
   }
 
   get $withError (): Expression | undefined {
-    return this.args.withError as Expression | undefined;
+    return this.args.withError;
   }
 }
 
@@ -9259,7 +9259,7 @@ export class OverflowTruncateBehaviorExpr extends Expression {
   }
 
   get $withCount (): Expression {
-    return this.args.withCount as Expression;
+    return this.args.withCount;
   }
 }
 
@@ -9285,11 +9285,11 @@ export class JSONExpr extends Expression {
   }
 
   get $with (): Expression | undefined {
-    return this.args.with as Expression | undefined;
+    return this.args.with;
   }
 
   get $unique (): Expression | undefined {
-    return this.args.unique as Expression | undefined;
+    return this.args.unique;
   }
 }
 
@@ -9311,7 +9311,7 @@ export class JSONPathExpr extends Expression {
   }
 
   get $escape (): Expression | undefined {
-    return this.args.escape as Expression | undefined;
+    return this.args.escape;
   }
 }
 
@@ -9380,19 +9380,19 @@ export class JSONColumnDefExpr extends Expression {
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 
   get $path (): Expression | undefined {
-    return this.args.path as Expression | undefined;
+    return this.args.path;
   }
 
   get $nestedSchema (): Expression | undefined {
-    return this.args.nestedSchema as Expression | undefined;
+    return this.args.nestedSchema;
   }
 
   get $ordinality (): Expression | undefined {
-    return this.args.ordinality as Expression | undefined;
+    return this.args.ordinality;
   }
 }
 
@@ -9430,15 +9430,15 @@ export class JSONValueExpr extends Expression {
   }
 
   get $path (): Expression {
-    return this.args.path as Expression;
+    return this.args.path;
   }
 
   get $returning (): Expression | undefined {
-    return this.args.returning as Expression | undefined;
+    return this.args.returning;
   }
 
   get $onCondition (): Expression | undefined {
-    return this.args.onCondition as Expression | undefined;
+    return this.args.onCondition;
   }
 }
 
@@ -9477,15 +9477,15 @@ export class OpenJSONColumnDefExpr extends Expression {
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 
   get $path (): Expression | undefined {
-    return this.args.path as Expression | undefined;
+    return this.args.path;
   }
 
   get $asJson (): Expression | undefined {
-    return this.args.asJson as Expression | undefined;
+    return this.args.asJson;
   }
 }
 
@@ -9511,11 +9511,11 @@ export class JSONExtractQuoteExpr extends Expression {
   }
 
   get $option (): Expression {
-    return this.args.option as Expression;
+    return this.args.option;
   }
 
   get $scalar (): boolean | undefined {
-    return this.args.scalar as boolean | undefined;
+    return this.args.scalar;
   }
 }
 
@@ -9547,7 +9547,7 @@ export class SliceExpr extends Expression {
   }
 
   get $step (): Expression | undefined {
-    return this.args.step as Expression | undefined;
+    return this.args.step;
   }
 }
 
@@ -9629,7 +9629,7 @@ export class UseExpr extends Expression {
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 }
 
@@ -9659,19 +9659,19 @@ export class WhenExpr extends Expression {
   }
 
   get $matched (): Expression {
-    return this.args.matched as Expression;
+    return this.args.matched;
   }
 
   get $source (): Expression | undefined {
-    return this.args.source as Expression | undefined;
+    return this.args.source;
   }
 
   get $condition (): Expression | undefined {
-    return this.args.condition as Expression | undefined;
+    return this.args.condition;
   }
 
   get $then (): Expression {
-    return this.args.then as Expression;
+    return this.args.then;
   }
 }
 
@@ -10067,11 +10067,11 @@ export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr 
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression {
-    return this.args.expression as Expression;
+    return this.args.expression;
   }
 }
 
@@ -10094,7 +10094,7 @@ export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 
   get $not (): Expression {
-    return this.args.not as Expression;
+    return this.args.not;
   }
 }
 
@@ -10117,7 +10117,7 @@ export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -10143,11 +10143,11 @@ export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $enforced (): Expression | undefined {
-    return this.args.enforced as Expression | undefined;
+    return this.args.enforced;
   }
 }
 
@@ -10209,7 +10209,7 @@ export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 }
 
@@ -10232,7 +10232,7 @@ export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -10294,7 +10294,7 @@ export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 }
 
@@ -10336,39 +10336,39 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $expression (): Expression | undefined {
-    return this.args.expression as Expression | undefined;
+    return this.args.expression;
   }
 
   get $onNull (): Expression | undefined {
-    return this.args.onNull as Expression | undefined;
+    return this.args.onNull;
   }
 
   get $start (): Expression | undefined {
-    return this.args.start as Expression | undefined;
+    return this.args.start;
   }
 
   get $increment (): Expression | undefined {
-    return this.args.increment as Expression | undefined;
+    return this.args.increment;
   }
 
   get $minvalue (): Expression | undefined {
-    return this.args.minvalue as Expression | undefined;
+    return this.args.minvalue;
   }
 
   get $maxvalue (): Expression | undefined {
-    return this.args.maxvalue as Expression | undefined;
+    return this.args.maxvalue;
   }
 
   get $cycle (): Expression | undefined {
-    return this.args.cycle as Expression | undefined;
+    return this.args.cycle;
   }
 
   get $order (): Expression | undefined {
-    return this.args.order as Expression | undefined;
+    return this.args.order;
   }
 }
 
@@ -10395,11 +10395,11 @@ export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr
   }
 
   get $start (): Expression | undefined {
-    return this.args.start as Expression | undefined;
+    return this.args.start;
   }
 
   get $hidden (): Expression | undefined {
-    return this.args.hidden as Expression | undefined;
+    return this.args.hidden;
   }
 }
 
@@ -10444,31 +10444,31 @@ export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 
   get $indexType (): Expression | undefined {
-    return this.args.indexType as Expression | undefined;
+    return this.args.indexType;
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 
   get $expression (): Expression | undefined {
-    return this.args.expression as Expression | undefined;
+    return this.args.expression;
   }
 
   get $granularity (): Expression | undefined {
-    return this.args.granularity as Expression | undefined;
+    return this.args.granularity;
   }
 }
 
@@ -10527,11 +10527,11 @@ export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr 
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 }
 
@@ -10554,7 +10554,7 @@ export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 
   get $allowNull (): Expression | undefined {
-    return this.args.allowNull as Expression | undefined;
+    return this.args.allowNull;
   }
 }
 
@@ -10594,11 +10594,11 @@ export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 
   get $desc (): Expression | undefined {
-    return this.args.desc as Expression | undefined;
+    return this.args.desc;
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 }
 
@@ -10644,23 +10644,23 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $indexType (): Expression | undefined {
-    return this.args.indexType as Expression | undefined;
+    return this.args.indexType;
   }
 
   get $onConflict (): Expression | undefined {
-    return this.args.onConflict as Expression | undefined;
+    return this.args.onConflict;
   }
 
   get $nulls (): Expression[] | undefined {
-    return this.args.nulls as Expression[] | undefined;
+    return this.args.nulls;
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 }
 
@@ -10725,19 +10725,19 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $persisted (): Expression | undefined {
-    return this.args.persisted as Expression | undefined;
+    return this.args.persisted;
   }
 
   get $notNull (): Expression | undefined {
-    return this.args.notNull as Expression | undefined;
+    return this.args.notNull;
   }
 
   get $dataType (): Expression | undefined {
-    return this.args.dataType as Expression | undefined;
+    return this.args.dataType;
   }
 }
 
@@ -10765,15 +10765,15 @@ export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 
   get $input (): Expression | undefined {
-    return this.args.input as Expression | undefined;
+    return this.args.input;
   }
 
   get $output (): Expression | undefined {
-    return this.args.output as Expression | undefined;
+    return this.args.output;
   }
 
   get $variadic (): Expression | undefined {
-    return this.args.variadic as Expression | undefined;
+    return this.args.variadic;
   }
 }
 
@@ -10878,39 +10878,39 @@ export class DeleteExpr extends DMLExpr {
   }
 
   get $with (): Expression | undefined {
-    return this.args.with as Expression | undefined;
+    return this.args.with;
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $using (): Expression | undefined {
-    return this.args.using as Expression | undefined;
+    return this.args.using;
   }
 
   get $where (): Expression | undefined {
-    return this.args.where as Expression | undefined;
+    return this.args.where;
   }
 
   get $returning (): Expression | undefined {
-    return this.args.returning as Expression | undefined;
+    return this.args.returning;
   }
 
   get $order (): Expression | undefined {
-    return this.args.order as Expression | undefined;
+    return this.args.order;
   }
 
   get $limit (): Expression | undefined {
-    return this.args.limit as Expression | undefined;
+    return this.args.limit;
   }
 
   get $tables (): Expression[] | undefined {
-    return this.args.tables as Expression[] | undefined;
+    return this.args.tables;
   }
 
   get $cluster (): Expression | undefined {
-    return this.args.cluster as Expression | undefined;
+    return this.args.cluster;
   }
 }
 
@@ -10953,27 +10953,27 @@ export class CopyExpr extends DMLExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 
   get $files (): Expression[] | undefined {
-    return this.args.files as Expression[] | undefined;
+    return this.args.files;
   }
 
   get $credentials (): Expression[] | undefined {
-    return this.args.credentials as Expression[] | undefined;
+    return this.args.credentials;
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 
   get $params (): Expression[] | undefined {
-    return this.args.params as Expression[] | undefined;
+    return this.args.params;
   }
 }
 
@@ -11075,75 +11075,75 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
   }
 
   get $hint (): Expression | undefined {
-    return this.args.hint as Expression | undefined;
+    return this.args.hint;
   }
 
   get $with (): Expression | undefined {
-    return this.args.with as Expression | undefined;
+    return this.args.with;
   }
 
   get $isFunction (): Expression | undefined {
-    return this.args.isFunction as Expression | undefined;
+    return this.args.isFunction;
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $expression (): Expression | undefined {
-    return this.args.expression as Expression | undefined;
+    return this.args.expression;
   }
 
   get $conflict (): Expression | undefined {
-    return this.args.conflict as Expression | undefined;
+    return this.args.conflict;
   }
 
   get $returning (): Expression | undefined {
-    return this.args.returning as Expression | undefined;
+    return this.args.returning;
   }
 
   get $overwrite (): Expression | undefined {
-    return this.args.overwrite as Expression | undefined;
+    return this.args.overwrite;
   }
 
   get $exists (): Expression[] | undefined {
-    return this.args.exists as Expression[] | undefined;
+    return this.args.exists;
   }
 
   get $alternative (): Expression | undefined {
-    return this.args.alternative as Expression | undefined;
+    return this.args.alternative;
   }
 
   get $where (): Expression | undefined {
-    return this.args.where as Expression | undefined;
+    return this.args.where;
   }
 
   get $ignore (): Expression | undefined {
-    return this.args.ignore as Expression | undefined;
+    return this.args.ignore;
   }
 
   get $byName (): Expression | undefined {
-    return this.args.byName as Expression | undefined;
+    return this.args.byName;
   }
 
   get $stored (): Expression | undefined {
-    return this.args.stored as Expression | undefined;
+    return this.args.stored;
   }
 
   get $partition (): Expression | undefined {
-    return this.args.partition as Expression | undefined;
+    return this.args.partition;
   }
 
   get $settings (): Expression[] | undefined {
-    return this.args.settings as Expression[] | undefined;
+    return this.args.settings;
   }
 
   get $source (): Expression | undefined {
-    return this.args.source as Expression | undefined;
+    return this.args.source;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 }
 
@@ -11236,11 +11236,11 @@ export class LiteralExpr extends ConditionExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $isString (): Expression {
-    return this.args.isString as Expression;
+    return this.args.isString;
   }
 }
 
@@ -11288,7 +11288,7 @@ export class AlgorithmPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -11306,7 +11306,7 @@ export class AutoIncrementPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -11324,7 +11324,7 @@ export class AutoRefreshPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -11342,7 +11342,7 @@ export class BackupPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -11360,7 +11360,7 @@ export class BuildPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -11395,27 +11395,27 @@ export class BlockCompressionPropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $autotemp (): Expression | undefined {
-    return this.args.autotemp as Expression | undefined;
+    return this.args.autotemp;
   }
 
   get $always (): Expression[] | undefined {
-    return this.args.always as Expression[] | undefined;
+    return this.args.always;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 
   get $manual (): Expression | undefined {
-    return this.args.manual as Expression | undefined;
+    return this.args.manual;
   }
 
   get $never (): Expression | undefined {
-    return this.args.never as Expression | undefined;
+    return this.args.never;
   }
 }
 
@@ -11446,11 +11446,11 @@ export class CharacterSetPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $default (): Expression {
-    return this.args.default as Expression;
+    return this.args.default;
   }
 }
 
@@ -11478,15 +11478,15 @@ export class ChecksumPropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $on (): Expression | undefined {
-    return this.args.on as Expression | undefined;
+    return this.args.on;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 }
 
@@ -11517,11 +11517,11 @@ export class CollatePropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 }
 
@@ -11568,27 +11568,27 @@ export class DataBlocksizePropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $size (): Expression | undefined {
-    return this.args.size as Expression | undefined;
+    return this.args.size;
   }
 
   get $units (): Expression[] | undefined {
-    return this.args.units as Expression[] | undefined;
+    return this.args.units;
   }
 
   get $minimum (): Expression | undefined {
-    return this.args.minimum as Expression | undefined;
+    return this.args.minimum;
   }
 
   get $maximum (): Expression | undefined {
-    return this.args.maximum as Expression | undefined;
+    return this.args.maximum;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 }
 
@@ -11618,19 +11618,19 @@ export class DataDeletionPropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $on (): Expression {
-    return this.args.on as Expression;
+    return this.args.on;
   }
 
   get $filterColumn (): Expression | undefined {
-    return this.args.filterColumn as Expression | undefined;
+    return this.args.filterColumn;
   }
 
   get $retentionPeriod (): Expression | undefined {
-    return this.args.retentionPeriod as Expression | undefined;
+    return this.args.retentionPeriod;
   }
 }
 
@@ -11648,7 +11648,7 @@ export class DefinerPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -11666,7 +11666,7 @@ export class DistKeyPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -11712,19 +11712,19 @@ export class DistributedByPropertyExpr extends PropertyExpr {
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 
   get $buckets (): Expression[] | undefined {
-    return this.args.buckets as Expression[] | undefined;
+    return this.args.buckets;
   }
 
   get $order (): Expression | undefined {
-    return this.args.order as Expression | undefined;
+    return this.args.order;
   }
 }
 
@@ -11742,7 +11742,7 @@ export class DistStylePropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -11760,7 +11760,7 @@ export class DuplicateKeyPropertyExpr extends PropertyExpr {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -11778,7 +11778,7 @@ export class EnginePropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -11809,7 +11809,7 @@ export class ToTablePropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -11827,7 +11827,7 @@ export class ExecuteAsPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -11845,7 +11845,7 @@ export class ExternalPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 }
 
@@ -11873,15 +11873,15 @@ export class FallbackPropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $no (): Expression {
-    return this.args.no as Expression;
+    return this.args.no;
   }
 
   get $protection (): Expression | undefined {
-    return this.args.protection as Expression | undefined;
+    return this.args.protection;
   }
 }
 
@@ -11914,15 +11914,15 @@ export class FileFormatPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $hiveFormat (): Expression | undefined {
-    return this.args.hiveFormat as Expression | undefined;
+    return this.args.hiveFormat;
   }
 }
 
@@ -11940,7 +11940,7 @@ export class CredentialsPropertyExpr extends PropertyExpr {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -11966,11 +11966,11 @@ export class FreespacePropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $percent (): Expression | undefined {
-    return this.args.percent as Expression | undefined;
+    return this.args.percent;
   }
 }
 
@@ -12057,19 +12057,19 @@ export class IsolatedLoadingPropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $no (): Expression | undefined {
-    return this.args.no as Expression | undefined;
+    return this.args.no;
   }
 
   get $concurrent (): Expression | undefined {
-    return this.args.concurrent as Expression | undefined;
+    return this.args.concurrent;
   }
 
   get $target (): Expression | undefined {
-    return this.args.target as Expression | undefined;
+    return this.args.target;
   }
 }
 
@@ -12103,27 +12103,27 @@ export class JournalPropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $no (): Expression | undefined {
-    return this.args.no as Expression | undefined;
+    return this.args.no;
   }
 
   get $dual (): Expression | undefined {
-    return this.args.dual as Expression | undefined;
+    return this.args.dual;
   }
 
   get $before (): Expression | undefined {
-    return this.args.before as Expression | undefined;
+    return this.args.before;
   }
 
   get $local (): Expression | undefined {
-    return this.args.local as Expression | undefined;
+    return this.args.local;
   }
 
   get $after (): Expression | undefined {
-    return this.args.after as Expression | undefined;
+    return this.args.after;
   }
 }
 
@@ -12171,15 +12171,15 @@ export class ClusteredByPropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $sortedBy (): Expression | undefined {
-    return this.args.sortedBy as Expression | undefined;
+    return this.args.sortedBy;
   }
 
   get $buckets (): Expression[] {
-    return this.args.buckets as Expression[];
+    return this.args.buckets;
   }
 }
 
@@ -12221,15 +12221,15 @@ export class DictPropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 
   get $settings (): Expression[] | undefined {
-    return this.args.settings as Expression[] | undefined;
+    return this.args.settings;
   }
 }
 
@@ -12272,15 +12272,15 @@ export class DictRangeExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $min (): Expression {
-    return this.args.min as Expression;
+    return this.args.min;
   }
 
   get $max (): Expression {
-    return this.args.max as Expression;
+    return this.args.max;
   }
 }
 
@@ -12309,7 +12309,7 @@ export class OnClusterExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -12342,11 +12342,11 @@ export class LikePropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 }
 
@@ -12364,7 +12364,7 @@ export class LocationPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -12382,7 +12382,7 @@ export class LockPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -12430,23 +12430,23 @@ export class LockingPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $kind (): string {
-    return this.args.kind as string;
+    return this.args.kind;
   }
 
   get $forOrIn (): Expression | undefined {
-    return this.args.forOrIn as Expression | undefined;
+    return this.args.forOrIn;
   }
 
   get $lockType (): Expression {
-    return this.args.lockType as Expression;
+    return this.args.lockType;
   }
 
   get $override (): Expression | undefined {
-    return this.args.override as Expression | undefined;
+    return this.args.override;
   }
 }
 
@@ -12472,11 +12472,11 @@ export class LogPropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $no (): Expression {
-    return this.args.no as Expression;
+    return this.args.no;
   }
 }
 
@@ -12494,7 +12494,7 @@ export class MaterializedPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 }
 
@@ -12530,19 +12530,19 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $no (): Expression | undefined {
-    return this.args.no as Expression | undefined;
+    return this.args.no;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 
   get $percent (): Expression | undefined {
-    return this.args.percent as Expression | undefined;
+    return this.args.percent;
   }
 }
 
@@ -12571,7 +12571,7 @@ export class OnPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -12597,11 +12597,11 @@ export class OnCommitPropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $delete (): Expression | undefined {
-    return this.args.delete as Expression | undefined;
+    return this.args.delete;
   }
 }
 
@@ -12619,7 +12619,7 @@ export class PartitionedByPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -12641,11 +12641,11 @@ export class PartitionedByBucketExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression {
-    return this.args.expression as Expression;
+    return this.args.expression;
   }
 }
 
@@ -12667,11 +12667,11 @@ export class PartitionByTruncateExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression {
-    return this.args.expression as Expression;
+    return this.args.expression;
   }
 }
 
@@ -12700,15 +12700,15 @@ export class PartitionByRangePropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $partitionExpressions (): Expression[] {
-    return this.args.partitionExpressions as Expression[];
+    return this.args.partitionExpressions;
   }
 
   get $createExpressions (): Expression[] {
-    return this.args.createExpressions as Expression[];
+    return this.args.createExpressions;
   }
 }
 
@@ -12726,7 +12726,7 @@ export class RollupPropertyExpr extends PropertyExpr {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -12753,11 +12753,11 @@ export class PartitionByListPropertyExpr extends PropertyExpr {
   }
 
   get $partitionExpressions (): Expression[] {
-    return this.args.partitionExpressions as Expression[];
+    return this.args.partitionExpressions;
   }
 
   get $createExpressions (): Expression[] {
-    return this.args.createExpressions as Expression[];
+    return this.args.createExpressions;
   }
 }
 
@@ -12801,27 +12801,27 @@ export class RefreshTriggerPropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $method (): Expression | undefined {
-    return this.args.method as Expression | undefined;
+    return this.args.method;
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 
   get $every (): Expression | undefined {
-    return this.args.every as Expression | undefined;
+    return this.args.every;
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 
   get $starts (): Expression[] | undefined {
-    return this.args.starts as Expression[] | undefined;
+    return this.args.starts;
   }
 }
 
@@ -12839,7 +12839,7 @@ export class UniqueKeyPropertyExpr extends PropertyExpr {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -12908,19 +12908,19 @@ export class ReturnsPropertyExpr extends PropertyExpr {
   }
 
   get $value (): Expression | undefined {
-    return this.args.value as Expression | undefined;
+    return this.args.value;
   }
 
   get $isTable (): Expression | undefined {
-    return this.args.isTable as Expression | undefined;
+    return this.args.isTable;
   }
 
   get $table (): Expression | undefined {
-    return this.args.table as Expression | undefined;
+    return this.args.table;
   }
 
   get $null (): Expression | undefined {
-    return this.args.null as Expression | undefined;
+    return this.args.null;
   }
 }
 
@@ -12977,31 +12977,31 @@ export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
   }
 
   get $fields (): Expression[] | undefined {
-    return this.args.fields as Expression[] | undefined;
+    return this.args.fields;
   }
 
   get $escaped (): Expression | undefined {
-    return this.args.escaped as Expression | undefined;
+    return this.args.escaped;
   }
 
   get $collectionItems (): Expression[] | undefined {
-    return this.args.collectionItems as Expression[] | undefined;
+    return this.args.collectionItems;
   }
 
   get $mapKeys (): Expression[] | undefined {
-    return this.args.mapKeys as Expression[] | undefined;
+    return this.args.mapKeys;
   }
 
   get $lines (): Expression[] | undefined {
-    return this.args.lines as Expression[] | undefined;
+    return this.args.lines;
   }
 
   get $null (): Expression | undefined {
-    return this.args.null as Expression | undefined;
+    return this.args.null;
   }
 
   get $serde (): Expression | undefined {
-    return this.args.serde as Expression | undefined;
+    return this.args.serde;
   }
 }
 
@@ -13028,11 +13028,11 @@ export class RowFormatSerdePropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $serdeProperties (): Expression[] | undefined {
-    return this.args.serdeProperties as Expression[] | undefined;
+    return this.args.serdeProperties;
   }
 }
 
@@ -13091,11 +13091,11 @@ export class SerdePropertiesExpr extends PropertyExpr {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 
   get $with (): Expression | undefined {
-    return this.args.with as Expression | undefined;
+    return this.args.with;
   }
 }
 
@@ -13117,7 +13117,7 @@ export class SetPropertyExpr extends PropertyExpr {
   }
 
   get $multi (): Expression {
-    return this.args.multi as Expression;
+    return this.args.multi;
   }
 }
 
@@ -13135,7 +13135,7 @@ export class SharingPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 }
 
@@ -13153,7 +13153,7 @@ export class SetConfigPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -13171,7 +13171,7 @@ export class SettingsPropertyExpr extends PropertyExpr {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -13197,11 +13197,11 @@ export class SortKeyPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $compound (): Expression | undefined {
-    return this.args.compound as Expression | undefined;
+    return this.args.compound;
   }
 }
 
@@ -13219,7 +13219,7 @@ export class SqlReadWritePropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -13237,7 +13237,7 @@ export class SqlSecurityPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -13255,7 +13255,7 @@ export class StabilityPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -13273,7 +13273,7 @@ export class StorageHandlerPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -13291,7 +13291,7 @@ export class TemporaryPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 }
 
@@ -13322,7 +13322,7 @@ export class TagsExpr extends multiInherit(Expression, PropertyExpr, ColumnConst
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -13340,7 +13340,7 @@ export class TransformModelPropertyExpr extends PropertyExpr {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -13358,7 +13358,7 @@ export class TransientPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 }
 
@@ -13389,7 +13389,7 @@ export class UsingTemplatePropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -13407,7 +13407,7 @@ export class ViewAttributePropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -13425,7 +13425,7 @@ export class VolatilePropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 }
 
@@ -13451,11 +13451,11 @@ export class WithDataPropertyExpr extends PropertyExpr {
   }
 
   get $no (): Expression {
-    return this.args.no as Expression;
+    return this.args.no;
   }
 
   get $statistics (): Expression[] | undefined {
-    return this.args.statistics as Expression[] | undefined;
+    return this.args.statistics;
   }
 }
 
@@ -13473,7 +13473,7 @@ export class WithJournalTablePropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -13491,7 +13491,7 @@ export class WithSchemaBindingPropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 }
 
@@ -13524,23 +13524,23 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
   }
 
   get $on (): Expression | undefined {
-    return this.args.on as Expression | undefined;
+    return this.args.on;
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $dataConsistency (): Expression | undefined {
-    return this.args.dataConsistency as Expression | undefined;
+    return this.args.dataConsistency;
   }
 
   get $retentionPeriod (): Expression | undefined {
-    return this.args.retentionPeriod as Expression | undefined;
+    return this.args.retentionPeriod;
   }
 
   get $with (): Expression {
-    return this.args.with as Expression;
+    return this.args.with;
   }
 }
 
@@ -13558,7 +13558,7 @@ export class WithProcedureOptionsExpr extends PropertyExpr {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -13588,15 +13588,15 @@ export class EncodePropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $properties (): Expression[] | undefined {
-    return this.args.properties as Expression[] | undefined;
+    return this.args.properties;
   }
 
   get $key (): Expression | undefined {
-    return this.args.key as Expression | undefined;
+    return this.args.key;
   }
 }
 
@@ -13626,15 +13626,15 @@ export class IncludePropertyExpr extends PropertyExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $alias (): Expression | undefined {
-    return this.args.alias as Expression | undefined;
+    return this.args.alias;
   }
 
   get $columnDef (): Expression | undefined {
-    return this.args.columnDef as Expression | undefined;
+    return this.args.columnDef;
   }
 }
 
@@ -13746,7 +13746,7 @@ export class PropertiesExpr extends Expression {
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 }
 
@@ -13790,27 +13790,27 @@ export class SetOperationExpr extends QueryExpr {
   }
 
   get $with (): Expression | undefined {
-    return this.args.with as Expression | undefined;
+    return this.args.with;
   }
 
   get $distinct (): Expression | undefined {
-    return this.args.distinct as Expression | undefined;
+    return this.args.distinct;
   }
 
   get $byName (): Expression | undefined {
-    return this.args.byName as Expression | undefined;
+    return this.args.byName;
   }
 
   get $side (): Expression | undefined {
-    return this.args.side as Expression | undefined;
+    return this.args.side;
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 
   get $on (): Expression | undefined {
-    return this.args.on as Expression | undefined;
+    return this.args.on;
   }
 }
 
@@ -13846,31 +13846,31 @@ export class UpdateExpr extends DMLExpr {
   }
 
   get $with (): Expression | undefined {
-    return this.args.with as Expression | undefined;
+    return this.args.with;
   }
 
   get $from (): Expression | undefined {
-    return this.args.from as Expression | undefined;
+    return this.args.from;
   }
 
   get $where (): Expression | undefined {
-    return this.args.where as Expression | undefined;
+    return this.args.where;
   }
 
   get $returning (): Expression | undefined {
-    return this.args.returning as Expression | undefined;
+    return this.args.returning;
   }
 
   get $order (): Expression | undefined {
-    return this.args.order as Expression | undefined;
+    return this.args.order;
   }
 
   get $limit (): Expression | undefined {
-    return this.args.limit as Expression | undefined;
+    return this.args.limit;
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 }
 
@@ -13928,31 +13928,31 @@ export class SelectExpr extends QueryExpr {
   }
 
   get $with (): Expression | undefined {
-    return this.args.with as Expression | undefined;
+    return this.args.with;
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 
   get $hint (): Expression | undefined {
-    return this.args.hint as Expression | undefined;
+    return this.args.hint;
   }
 
   get $distinct (): Expression | undefined {
-    return this.args.distinct as Expression | undefined;
+    return this.args.distinct;
   }
 
   get $into (): Expression | undefined {
-    return this.args.into as Expression | undefined;
+    return this.args.into;
   }
 
   get $from (): Expression | undefined {
-    return this.args.from as Expression | undefined;
+    return this.args.from;
   }
 
   get $operationModifiers (): Expression[] | undefined {
-    return this.args.operationModifiers as Expression[] | undefined;
+    return this.args.operationModifiers;
   }
 }
 
@@ -13974,7 +13974,7 @@ export class SubqueryExpr extends DerivedTableExpr {
   }
 
   get $with (): Expression | undefined {
-    return this.args.with as Expression | undefined;
+    return this.args.with;
   }
 }
 
@@ -14006,23 +14006,23 @@ export class WindowExpr extends Expression {
   }
 
   get $partitionBy (): Expression | undefined {
-    return this.args.partitionBy as Expression | undefined;
+    return this.args.partitionBy;
   }
 
   get $order (): Expression | undefined {
-    return this.args.order as Expression | undefined;
+    return this.args.order;
   }
 
   get $spec (): Expression | undefined {
-    return this.args.spec as Expression | undefined;
+    return this.args.spec;
   }
 
   get $over (): Expression | undefined {
-    return this.args.over as Expression | undefined;
+    return this.args.over;
   }
 
   get $first (): Expression | undefined {
-    return this.args.first as Expression | undefined;
+    return this.args.first;
   }
 }
 
@@ -14063,7 +14063,7 @@ export class SessionParameterExpr extends Expression {
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 }
 
@@ -14101,15 +14101,15 @@ export class PlaceholderExpr extends Expression {
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 
   get $widget (): Expression | undefined {
-    return this.args.widget as Expression | undefined;
+    return this.args.widget;
   }
 
   get $jdbc (): Expression | undefined {
-    return this.args.jdbc as Expression | undefined;
+    return this.args.jdbc;
   }
 }
 
@@ -14207,15 +14207,15 @@ export class BracketExpr extends Expression {
   }
 
   get $offset (): Expression | undefined {
-    return this.args.offset as Expression | undefined;
+    return this.args.offset;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 
   get $returnsListForMaps (): Expression[] | undefined {
-    return this.args.returnsListForMaps as Expression[] | undefined;
+    return this.args.returnsListForMaps;
   }
 }
 
@@ -14237,7 +14237,7 @@ export class IntervalOpExpr extends TimeUnitExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -14269,7 +14269,7 @@ export class IntervalExpr extends TimeUnitExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -14415,15 +14415,15 @@ export class JSONPathSliceExpr extends JSONPathPartExpr {
   }
 
   get $start (): Expression | undefined {
-    return this.args.start as Expression | undefined;
+    return this.args.start;
   }
 
   get $end (): Expression | undefined {
-    return this.args.end as Expression | undefined;
+    return this.args.end;
   }
 
   get $step (): Expression | undefined {
-    return this.args.step as Expression | undefined;
+    return this.args.step;
   }
 }
 
@@ -14497,27 +14497,27 @@ export class MergeExpr extends DMLExpr {
   }
 
   get $using (): Expression {
-    return this.args.using as Expression;
+    return this.args.using;
   }
 
   get $on (): Expression | undefined {
-    return this.args.on as Expression | undefined;
+    return this.args.on;
   }
 
   get $usingCond (): Expression | undefined {
-    return this.args.usingCond as Expression | undefined;
+    return this.args.usingCond;
   }
 
   get $whens (): Expression[] {
-    return this.args.whens as Expression[];
+    return this.args.whens;
   }
 
   get $with (): Expression | undefined {
-    return this.args.with as Expression | undefined;
+    return this.args.with;
   }
 
   get $returning (): Expression | undefined {
-    return this.args.returning as Expression | undefined;
+    return this.args.returning;
   }
 }
 
@@ -14551,27 +14551,27 @@ export class LateralExpr extends UDTFExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $view (): Expression | undefined {
-    return this.args.view as Expression | undefined;
+    return this.args.view;
   }
 
   get $outer (): Expression | undefined {
-    return this.args.outer as Expression | undefined;
+    return this.args.outer;
   }
 
   get $alias (): Expression | undefined {
-    return this.args.alias as Expression | undefined;
+    return this.args.alias;
   }
 
   get $crossApply (): Expression | undefined {
-    return this.args.crossApply as Expression | undefined;
+    return this.args.crossApply;
   }
 
   get $ordinality (): Expression | undefined {
-    return this.args.ordinality as Expression | undefined;
+    return this.args.ordinality;
   }
 }
 
@@ -14603,23 +14603,23 @@ export class TableFromRowsExpr extends UDTFExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $alias (): Expression | undefined {
-    return this.args.alias as Expression | undefined;
+    return this.args.alias;
   }
 
   get $joins (): Expression[] | undefined {
-    return this.args.joins as Expression[] | undefined;
+    return this.args.joins;
   }
 
   get $pivots (): Expression[] | undefined {
-    return this.args.pivots as Expression[] | undefined;
+    return this.args.pivots;
   }
 
   get $sample (): Expression | undefined {
-    return this.args.sample as Expression | undefined;
+    return this.args.sample;
   }
 }
 
@@ -14677,15 +14677,15 @@ export class ValuesExpr extends UDTFExpr {
   }
 
   get $order (): Expression | undefined {
-    return this.args.order as Expression | undefined;
+    return this.args.order;
   }
 
   get $limit (): Expression | undefined {
-    return this.args.limit as Expression | undefined;
+    return this.args.limit;
   }
 
   get $offset (): Expression | undefined {
-    return this.args.offset as Expression | undefined;
+    return this.args.offset;
   }
 }
 
@@ -14737,7 +14737,7 @@ export class BitwiseAndExpr extends BinaryExpr {
   }
 
   get $padside (): Expression | undefined {
-    return this.args.padside as Expression | undefined;
+    return this.args.padside;
   }
 }
 
@@ -14759,7 +14759,7 @@ export class BitwiseLeftShiftExpr extends BinaryExpr {
   }
 
   get $requiresInt128 (): Expression | undefined {
-    return this.args.requiresInt128 as Expression | undefined;
+    return this.args.requiresInt128;
   }
 }
 
@@ -14781,7 +14781,7 @@ export class BitwiseOrExpr extends BinaryExpr {
   }
 
   get $padside (): Expression | undefined {
-    return this.args.padside as Expression | undefined;
+    return this.args.padside;
   }
 }
 
@@ -14803,7 +14803,7 @@ export class BitwiseRightShiftExpr extends BinaryExpr {
   }
 
   get $requiresInt128 (): Expression | undefined {
-    return this.args.requiresInt128 as Expression | undefined;
+    return this.args.requiresInt128;
   }
 }
 
@@ -14825,7 +14825,7 @@ export class BitwiseXorExpr extends BinaryExpr {
   }
 
   get $padside (): Expression | undefined {
-    return this.args.padside as Expression | undefined;
+    return this.args.padside;
   }
 }
 
@@ -14851,11 +14851,11 @@ export class DivExpr extends BinaryExpr {
   }
 
   get $typed (): Expression | undefined {
-    return this.args.typed as Expression | undefined;
+    return this.args.typed;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 }
 
@@ -14917,7 +14917,7 @@ export class DPipeExpr extends BinaryExpr {
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 }
 
@@ -15139,7 +15139,7 @@ export class OperatorExpr extends BinaryExpr {
   }
 
   get $operator (): Expression {
-    return this.args.operator as Expression;
+    return this.args.operator;
   }
 }
 
@@ -15237,15 +15237,15 @@ export class BetweenExpr extends PredicateExpr {
   }
 
   get $low (): Expression {
-    return this.args.low as Expression;
+    return this.args.low;
   }
 
   get $high (): Expression {
-    return this.args.high as Expression;
+    return this.args.high;
   }
 
   get $symmetric (): Expression | undefined {
-    return this.args.symmetric as Expression | undefined;
+    return this.args.symmetric;
   }
 }
 
@@ -15275,19 +15275,19 @@ export class InExpr extends PredicateExpr {
   }
 
   get $query (): Expression | undefined {
-    return this.args.query as Expression | undefined;
+    return this.args.query;
   }
 
   get $unnest (): Expression | undefined {
-    return this.args.unnest as Expression | undefined;
+    return this.args.unnest;
   }
 
   get $field (): Expression | undefined {
-    return this.args.field as Expression | undefined;
+    return this.args.field;
   }
 
   get $isGlobal (): Expression | undefined {
-    return this.args.isGlobal as Expression | undefined;
+    return this.args.isGlobal;
   }
 }
 
@@ -15642,7 +15642,7 @@ export class BoolnotExpr extends FuncExpr {
   }
 
   get $roundInput (): Expression | undefined {
-    return this.args.roundInput as Expression | undefined;
+    return this.args.roundInput;
   }
 }
 
@@ -15664,7 +15664,7 @@ export class BoolandExpr extends FuncExpr {
   }
 
   get $roundInput (): Expression | undefined {
-    return this.args.roundInput as Expression | undefined;
+    return this.args.roundInput;
   }
 }
 
@@ -15686,7 +15686,7 @@ export class BoolorExpr extends FuncExpr {
   }
 
   get $roundInput (): Expression | undefined {
-    return this.args.roundInput as Expression | undefined;
+    return this.args.roundInput;
   }
 }
 
@@ -15718,7 +15718,7 @@ export class ArrayRemoveExpr extends FuncExpr {
   }
 
   get $nullPropagation (): Expression | undefined {
-    return this.args.nullPropagation as Expression | undefined;
+    return this.args.nullPropagation;
   }
 }
 
@@ -15804,11 +15804,11 @@ export class TranslateExpr extends FuncExpr {
   }
 
   get $from (): Expression {
-    return this.args.from as Expression;
+    return this.args.from;
   }
 
   get $to (): Expression {
-    return this.args.to as Expression;
+    return this.args.to;
   }
 }
 
@@ -15854,11 +15854,11 @@ export class ArrayExpr extends FuncExpr {
   }
 
   get $bracketNotation (): Expression | undefined {
-    return this.args.bracketNotation as Expression | undefined;
+    return this.args.bracketNotation;
   }
 
   get $structNameInheritance (): Expression | undefined {
-    return this.args.structNameInheritance as Expression | undefined;
+    return this.args.structNameInheritance;
   }
 }
 
@@ -15900,7 +15900,7 @@ export class ToBooleanExpr extends FuncExpr {
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 }
 
@@ -15936,11 +15936,11 @@ export class PadExpr extends FuncExpr {
   }
 
   get $fillPattern (): Expression | undefined {
-    return this.args.fillPattern as Expression | undefined;
+    return this.args.fillPattern;
   }
 
   get $isLeft (): Expression {
-    return this.args.isLeft as Expression;
+    return this.args.isLeft;
   }
 }
 
@@ -15968,15 +15968,15 @@ export class ToCharExpr extends FuncExpr {
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 
   get $nlsparam (): Expression | undefined {
-    return this.args.nlsparam as Expression | undefined;
+    return this.args.nlsparam;
   }
 
   get $isNumeric (): Expression | undefined {
-    return this.args.isNumeric as Expression | undefined;
+    return this.args.isNumeric;
   }
 }
 
@@ -16020,27 +16020,27 @@ export class ToNumberExpr extends FuncExpr {
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 
   get $nlsparam (): Expression | undefined {
-    return this.args.nlsparam as Expression | undefined;
+    return this.args.nlsparam;
   }
 
   get $precision (): Expression | undefined {
-    return this.args.precision as Expression | undefined;
+    return this.args.precision;
   }
 
   get $scale (): Expression | undefined {
-    return this.args.scale as Expression | undefined;
+    return this.args.scale;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 
   get $safeName (): Expression | undefined {
-    return this.args.safeName as Expression | undefined;
+    return this.args.safeName;
   }
 }
 
@@ -16066,11 +16066,11 @@ export class ToDoubleExpr extends FuncExpr {
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 }
 
@@ -16092,7 +16092,7 @@ export class ToDecfloatExpr extends FuncExpr {
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 }
 
@@ -16114,7 +16114,7 @@ export class TryToDecfloatExpr extends FuncExpr {
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 }
 
@@ -16140,11 +16140,11 @@ export class ToFileExpr extends FuncExpr {
   }
 
   get $path (): Expression | undefined {
-    return this.args.path as Expression | undefined;
+    return this.args.path;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 }
 
@@ -16176,7 +16176,7 @@ export class ColumnsExpr extends FuncExpr {
   }
 
   get $unpack (): Expression | undefined {
-    return this.args.unpack as Expression | undefined;
+    return this.args.unpack;
   }
 }
 
@@ -16202,11 +16202,11 @@ export class ConvertExpr extends FuncExpr {
   }
 
   get $style (): Expression | undefined {
-    return this.args.style as Expression | undefined;
+    return this.args.style;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 }
 
@@ -16232,11 +16232,11 @@ export class ConvertToCharsetExpr extends FuncExpr {
   }
 
   get $dest (): Expression {
-    return this.args.dest as Expression;
+    return this.args.dest;
   }
 
   get $source (): Expression | undefined {
-    return this.args.source as Expression | undefined;
+    return this.args.source;
   }
 }
 
@@ -16266,19 +16266,19 @@ export class ConvertTimezoneExpr extends FuncExpr {
   }
 
   get $sourceTz (): Expression | undefined {
-    return this.args.sourceTz as Expression | undefined;
+    return this.args.sourceTz;
   }
 
   get $targetTz (): Expression {
-    return this.args.targetTz as Expression;
+    return this.args.targetTz;
   }
 
   get $timestamp (): Expression {
-    return this.args.timestamp as Expression;
+    return this.args.timestamp;
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 }
 
@@ -16318,19 +16318,19 @@ export class GenerateSeriesExpr extends FuncExpr {
   }
 
   get $start (): Expression {
-    return this.args.start as Expression;
+    return this.args.start;
   }
 
   get $end (): Expression {
-    return this.args.end as Expression;
+    return this.args.end;
   }
 
   get $step (): Expression | undefined {
-    return this.args.step as Expression | undefined;
+    return this.args.step;
   }
 
   get $isEndExclusive (): Expression | undefined {
-    return this.args.isEndExclusive as Expression | undefined;
+    return this.args.isEndExclusive;
   }
 }
 
@@ -16356,11 +16356,11 @@ export class GeneratorExpr extends FuncExpr {
   }
 
   get $rowcount (): Expression | undefined {
-    return this.args.rowcount as Expression | undefined;
+    return this.args.rowcount;
   }
 
   get $timelimit (): Expression | undefined {
-    return this.args.timelimit as Expression | undefined;
+    return this.args.timelimit;
   }
 }
 
@@ -16386,11 +16386,11 @@ export class AIClassifyExpr extends FuncExpr {
   }
 
   get $categories (): Expression[] {
-    return this.args.categories as Expression[];
+    return this.args.categories;
   }
 
   get $config (): Expression | undefined {
-    return this.args.config as Expression | undefined;
+    return this.args.config;
   }
 }
 
@@ -16432,7 +16432,7 @@ export class ArrayAppendExpr extends FuncExpr {
   }
 
   get $nullPropagation (): Expression | undefined {
-    return this.args.nullPropagation as Expression | undefined;
+    return this.args.nullPropagation;
   }
 }
 
@@ -16454,7 +16454,7 @@ export class ArrayPrependExpr extends FuncExpr {
   }
 
   get $nullPropagation (): Expression | undefined {
-    return this.args.nullPropagation as Expression | undefined;
+    return this.args.nullPropagation;
   }
 }
 
@@ -16478,7 +16478,7 @@ export class ArrayConcatExpr extends FuncExpr {
   }
 
   get $nullPropagation (): Expression | undefined {
-    return this.args.nullPropagation as Expression | undefined;
+    return this.args.nullPropagation;
   }
 }
 
@@ -16514,11 +16514,11 @@ export class ArrayInsertExpr extends FuncExpr {
   }
 
   get $position (): Expression {
-    return this.args.position as Expression;
+    return this.args.position;
   }
 
   get $offset (): Expression | undefined {
-    return this.args.offset as Expression | undefined;
+    return this.args.offset;
   }
 }
 
@@ -16540,7 +16540,7 @@ export class ArrayRemoveAtExpr extends FuncExpr {
   }
 
   get $position (): Expression {
-    return this.args.position as Expression;
+    return this.args.position;
   }
 }
 
@@ -16577,7 +16577,7 @@ export class ArrayContainsExpr extends BinaryExpr {
   }
 
   get $ensureVariant (): Expression | undefined {
-    return this.args.ensureVariant as Expression | undefined;
+    return this.args.ensureVariant;
   }
 }
 
@@ -16659,15 +16659,15 @@ export class ArraySliceExpr extends FuncExpr {
   }
 
   get $start (): Expression {
-    return this.args.start as Expression;
+    return this.args.start;
   }
 
   get $end (): Expression | undefined {
-    return this.args.end as Expression | undefined;
+    return this.args.end;
   }
 
   get $step (): Expression | undefined {
-    return this.args.step as Expression | undefined;
+    return this.args.step;
   }
 }
 
@@ -16691,7 +16691,7 @@ export class ArrayToStringExpr extends FuncExpr {
   }
 
   get $null (): Expression | undefined {
-    return this.args.null as Expression | undefined;
+    return this.args.null;
   }
 }
 
@@ -16723,7 +16723,7 @@ export class StPointExpr extends FuncExpr {
   }
 
   get $null (): Expression | undefined {
-    return this.args.null as Expression | undefined;
+    return this.args.null;
   }
 }
 
@@ -16745,7 +16745,7 @@ export class StDistanceExpr extends FuncExpr {
   }
 
   get $useSpheroid (): Expression | undefined {
-    return this.args.useSpheroid as Expression | undefined;
+    return this.args.useSpheroid;
   }
 }
 
@@ -16767,7 +16767,7 @@ export class StringExpr extends FuncExpr {
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 }
 
@@ -16789,7 +16789,7 @@ export class StringToArrayExpr extends FuncExpr {
   }
 
   get $null (): Expression | undefined {
-    return this.args.null as Expression | undefined;
+    return this.args.null;
   }
 }
 
@@ -16867,11 +16867,11 @@ export class CaseExpr extends FuncExpr {
   }
 
   get $ifs (): Expression[] {
-    return this.args.ifs as Expression[];
+    return this.args.ifs;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 }
 
@@ -16903,23 +16903,23 @@ export class CastExpr extends FuncExpr {
   }
 
   get $to (): Expression {
-    return this.args.to as Expression;
+    return this.args.to;
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 
   get $action (): Expression | undefined {
-    return this.args.action as Expression | undefined;
+    return this.args.action;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 }
 
@@ -16981,7 +16981,7 @@ export class CastToStrTypeExpr extends FuncExpr {
   }
 
   get $to (): Expression {
-    return this.args.to as Expression;
+    return this.args.to;
   }
 }
 
@@ -17013,7 +17013,7 @@ export class CheckXmlExpr extends FuncExpr {
   }
 
   get $disableAutoConvert (): Expression | undefined {
-    return this.args.disableAutoConvert as Expression | undefined;
+    return this.args.disableAutoConvert;
   }
 }
 
@@ -17066,11 +17066,11 @@ export class CeilExpr extends FuncExpr {
   }
 
   get $decimals (): Expression[] | undefined {
-    return this.args.decimals as Expression[] | undefined;
+    return this.args.decimals;
   }
 
   get $to (): Expression | undefined {
-    return this.args.to as Expression | undefined;
+    return this.args.to;
   }
 }
 
@@ -17101,11 +17101,11 @@ export class CoalesceExpr extends FuncExpr {
   }
 
   get $isNvl (): Expression | undefined {
-    return this.args.isNvl as Expression | undefined;
+    return this.args.isNvl;
   }
 
   get $isNull (): Expression | undefined {
-    return this.args.isNull as Expression | undefined;
+    return this.args.isNull;
   }
 }
 
@@ -17129,7 +17129,7 @@ export class ChrExpr extends FuncExpr {
   }
 
   get $charset (): Expression | undefined {
-    return this.args.charset as Expression | undefined;
+    return this.args.charset;
   }
 }
 
@@ -17155,11 +17155,11 @@ export class ConcatExpr extends FuncExpr {
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 
   get $coalesce (): Expression | undefined {
-    return this.args.coalesce as Expression | undefined;
+    return this.args.coalesce;
   }
 }
 
@@ -17181,7 +17181,7 @@ export class ContainsExpr extends FuncExpr {
   }
 
   get $jsonScope (): Expression | undefined {
-    return this.args.jsonScope as Expression | undefined;
+    return this.args.jsonScope;
   }
 }
 
@@ -17419,7 +17419,7 @@ export class CurrentTimestampExpr extends FuncExpr {
   }
 
   get $sysdate (): Expression | undefined {
-    return this.args.sysdate as Expression | undefined;
+    return this.args.sysdate;
   }
 }
 
@@ -17587,7 +17587,7 @@ export class DateAddExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -17615,15 +17615,15 @@ export class DateBinExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 
   get $origin (): Expression | undefined {
-    return this.args.origin as Expression | undefined;
+    return this.args.origin;
   }
 }
 
@@ -17645,7 +17645,7 @@ export class DateSubExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -17677,19 +17677,19 @@ export class DateDiffExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 
   get $bigInt (): Expression | undefined {
-    return this.args.bigInt as Expression | undefined;
+    return this.args.bigInt;
   }
 
   get $datePartBoundary (): Expression | undefined {
-    return this.args.datePartBoundary as Expression | undefined;
+    return this.args.datePartBoundary;
   }
 }
 
@@ -17717,15 +17717,15 @@ export class DateTruncExpr extends FuncExpr {
   }
 
   get $unit (): Expression {
-    return this.args.unit as Expression;
+    return this.args.unit;
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 
   get $inputTypePreserved (): Expression | undefined {
-    return this.args.inputTypePreserved as Expression | undefined;
+    return this.args.inputTypePreserved;
   }
 }
 
@@ -17757,7 +17757,7 @@ export class DatetimeAddExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -17779,7 +17779,7 @@ export class DatetimeSubExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -17801,7 +17801,7 @@ export class DatetimeDiffExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -17827,11 +17827,11 @@ export class DatetimeTruncExpr extends FuncExpr {
   }
 
   get $unit (): Expression {
-    return this.args.unit as Expression;
+    return this.args.unit;
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 }
 
@@ -17925,7 +17925,7 @@ export class DaynameExpr extends FuncExpr {
   }
 
   get $abbreviated (): Expression | undefined {
-    return this.args.abbreviated as Expression | undefined;
+    return this.args.abbreviated;
   }
 }
 
@@ -18005,7 +18005,7 @@ export class MonthsBetweenExpr extends FuncExpr {
   }
 
   get $roundoff (): Expression | undefined {
-    return this.args.roundoff as Expression | undefined;
+    return this.args.roundoff;
   }
 }
 
@@ -18041,31 +18041,31 @@ export class MakeIntervalExpr extends FuncExpr {
   }
 
   get $year (): Expression | undefined {
-    return this.args.year as Expression | undefined;
+    return this.args.year;
   }
 
   get $month (): Expression | undefined {
-    return this.args.month as Expression | undefined;
+    return this.args.month;
   }
 
   get $week (): Expression | undefined {
-    return this.args.week as Expression | undefined;
+    return this.args.week;
   }
 
   get $day (): Expression | undefined {
-    return this.args.day as Expression | undefined;
+    return this.args.day;
   }
 
   get $hour (): Expression | undefined {
-    return this.args.hour as Expression | undefined;
+    return this.args.hour;
   }
 
   get $minute (): Expression | undefined {
-    return this.args.minute as Expression | undefined;
+    return this.args.minute;
   }
 
   get $second (): Expression | undefined {
-    return this.args.second as Expression | undefined;
+    return this.args.second;
   }
 }
 
@@ -18087,7 +18087,7 @@ export class LastDayExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -18193,11 +18193,11 @@ export class TimestampExpr extends FuncExpr {
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 
   get $withTz (): Expression | undefined {
-    return this.args.withTz as Expression | undefined;
+    return this.args.withTz;
   }
 }
 
@@ -18219,7 +18219,7 @@ export class TimestampAddExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -18241,7 +18241,7 @@ export class TimestampSubExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -18263,7 +18263,7 @@ export class TimestampDiffExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -18291,15 +18291,15 @@ export class TimestampTruncExpr extends FuncExpr {
   }
 
   get $unit (): Expression {
-    return this.args.unit as Expression;
+    return this.args.unit;
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 
   get $inputTypePreserved (): Expression | undefined {
-    return this.args.inputTypePreserved as Expression | undefined;
+    return this.args.inputTypePreserved;
   }
 }
 
@@ -18332,11 +18332,11 @@ export class TimeSliceExpr extends FuncExpr {
   }
 
   get $unit (): Expression {
-    return this.args.unit as Expression;
+    return this.args.unit;
   }
 
   get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+    return this.args.kind;
   }
 }
 
@@ -18358,7 +18358,7 @@ export class TimeAddExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -18380,7 +18380,7 @@ export class TimeSubExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -18402,7 +18402,7 @@ export class TimeDiffExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -18428,11 +18428,11 @@ export class TimeTruncExpr extends FuncExpr {
   }
 
   get $unit (): Expression {
-    return this.args.unit as Expression;
+    return this.args.unit;
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 }
 
@@ -18462,19 +18462,19 @@ export class DateFromPartsExpr extends FuncExpr {
   }
 
   get $year (): Expression {
-    return this.args.year as Expression;
+    return this.args.year;
   }
 
   get $month (): Expression | undefined {
-    return this.args.month as Expression | undefined;
+    return this.args.month;
   }
 
   get $day (): Expression | undefined {
-    return this.args.day as Expression | undefined;
+    return this.args.day;
   }
 
   get $allowOverflow (): Expression | undefined {
-    return this.args.allowOverflow as Expression | undefined;
+    return this.args.allowOverflow;
   }
 }
 
@@ -18510,31 +18510,31 @@ export class TimeFromPartsExpr extends FuncExpr {
   }
 
   get $hour (): Expression {
-    return this.args.hour as Expression;
+    return this.args.hour;
   }
 
   get $min (): Expression {
-    return this.args.min as Expression;
+    return this.args.min;
   }
 
   get $sec (): Expression {
-    return this.args.sec as Expression;
+    return this.args.sec;
   }
 
   get $nano (): Expression | undefined {
-    return this.args.nano as Expression | undefined;
+    return this.args.nano;
   }
 
   get $fractions (): Expression[] | undefined {
-    return this.args.fractions as Expression[] | undefined;
+    return this.args.fractions;
   }
 
   get $precision (): Expression | undefined {
-    return this.args.precision as Expression | undefined;
+    return this.args.precision;
   }
 
   get $overflow (): Expression | undefined {
-    return this.args.overflow as Expression | undefined;
+    return this.args.overflow;
   }
 }
 
@@ -18586,7 +18586,7 @@ export class DateExpr extends FuncExpr {
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 }
 
@@ -18622,11 +18622,11 @@ export class DecodeExpr extends FuncExpr {
   }
 
   get $charset (): Expression {
-    return this.args.charset as Expression;
+    return this.args.charset;
   }
 
   get $replace (): Expression | undefined {
-    return this.args.replace as Expression | undefined;
+    return this.args.replace;
   }
 }
 
@@ -18666,19 +18666,19 @@ export class DecryptExpr extends FuncExpr {
   }
 
   get $passphrase (): Expression {
-    return this.args.passphrase as Expression;
+    return this.args.passphrase;
   }
 
   get $aad (): Expression | undefined {
-    return this.args.aad as Expression | undefined;
+    return this.args.aad;
   }
 
   get $encryptionMethod (): Expression | undefined {
-    return this.args.encryptionMethod as Expression | undefined;
+    return this.args.encryptionMethod;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 }
 
@@ -18712,27 +18712,27 @@ export class DecryptRawExpr extends FuncExpr {
   }
 
   get $key (): Expression {
-    return this.args.key as Expression;
+    return this.args.key;
   }
 
   get $iv (): Expression {
-    return this.args.iv as Expression;
+    return this.args.iv;
   }
 
   get $aad (): Expression | undefined {
-    return this.args.aad as Expression | undefined;
+    return this.args.aad;
   }
 
   get $encryptionMethod (): Expression | undefined {
-    return this.args.encryptionMethod as Expression | undefined;
+    return this.args.encryptionMethod;
   }
 
   get $aead (): Expression | undefined {
-    return this.args.aead as Expression | undefined;
+    return this.args.aead;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 }
 
@@ -18764,7 +18764,7 @@ export class EncodeExpr extends FuncExpr {
   }
 
   get $charset (): Expression {
-    return this.args.charset as Expression;
+    return this.args.charset;
   }
 }
 
@@ -18792,15 +18792,15 @@ export class EncryptExpr extends FuncExpr {
   }
 
   get $passphrase (): Expression {
-    return this.args.passphrase as Expression;
+    return this.args.passphrase;
   }
 
   get $aad (): Expression | undefined {
-    return this.args.aad as Expression | undefined;
+    return this.args.aad;
   }
 
   get $encryptionMethod (): Expression | undefined {
-    return this.args.encryptionMethod as Expression | undefined;
+    return this.args.encryptionMethod;
   }
 }
 
@@ -18830,19 +18830,19 @@ export class EncryptRawExpr extends FuncExpr {
   }
 
   get $key (): Expression {
-    return this.args.key as Expression;
+    return this.args.key;
   }
 
   get $iv (): Expression {
-    return this.args.iv as Expression;
+    return this.args.iv;
   }
 
   get $aad (): Expression | undefined {
-    return this.args.aad as Expression | undefined;
+    return this.args.aad;
   }
 
   get $encryptionMethod (): Expression | undefined {
-    return this.args.encryptionMethod as Expression | undefined;
+    return this.args.encryptionMethod;
   }
 }
 
@@ -18918,11 +18918,11 @@ export class UnnestExpr extends FuncExpr {
   }
 
   get $offset (): Expression | undefined {
-    return this.args.offset as Expression | undefined;
+    return this.args.offset;
   }
 
   get $explodeArray (): Expression | undefined {
-    return this.args.explodeArray as Expression | undefined;
+    return this.args.explodeArray;
   }
 }
 
@@ -18948,11 +18948,11 @@ export class FloorExpr extends FuncExpr {
   }
 
   get $decimals (): Expression[] | undefined {
-    return this.args.decimals as Expression[] | undefined;
+    return this.args.decimals;
   }
 
   get $to (): Expression | undefined {
-    return this.args.to as Expression | undefined;
+    return this.args.to;
   }
 }
 
@@ -19018,11 +19018,11 @@ export class ToBinaryExpr extends FuncExpr {
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 }
 
@@ -19044,7 +19044,7 @@ export class Base64DecodeBinaryExpr extends FuncExpr {
   }
 
   get $alphabet (): Expression | undefined {
-    return this.args.alphabet as Expression | undefined;
+    return this.args.alphabet;
   }
 }
 
@@ -19066,7 +19066,7 @@ export class Base64DecodeStringExpr extends FuncExpr {
   }
 
   get $alphabet (): Expression | undefined {
-    return this.args.alphabet as Expression | undefined;
+    return this.args.alphabet;
   }
 }
 
@@ -19092,11 +19092,11 @@ export class Base64EncodeExpr extends FuncExpr {
   }
 
   get $maxLineLength (): Expression | undefined {
-    return this.args.maxLineLength as Expression | undefined;
+    return this.args.maxLineLength;
   }
 
   get $alphabet (): Expression | undefined {
-    return this.args.alphabet as Expression | undefined;
+    return this.args.alphabet;
   }
 }
 
@@ -19118,7 +19118,7 @@ export class TryBase64DecodeBinaryExpr extends FuncExpr {
   }
 
   get $alphabet (): Expression | undefined {
-    return this.args.alphabet as Expression | undefined;
+    return this.args.alphabet;
   }
 }
 
@@ -19140,7 +19140,7 @@ export class TryBase64DecodeStringExpr extends FuncExpr {
   }
 
   get $alphabet (): Expression | undefined {
-    return this.args.alphabet as Expression | undefined;
+    return this.args.alphabet;
   }
 }
 
@@ -19210,27 +19210,27 @@ export class GapFillExpr extends FuncExpr {
   }
 
   get $tsColumn (): Expression {
-    return this.args.tsColumn as Expression;
+    return this.args.tsColumn;
   }
 
   get $bucketWidth (): Expression {
-    return this.args.bucketWidth as Expression;
+    return this.args.bucketWidth;
   }
 
   get $partitioningColumns (): Expression[] | undefined {
-    return this.args.partitioningColumns as Expression[] | undefined;
+    return this.args.partitioningColumns;
   }
 
   get $valueColumns (): Expression[] | undefined {
-    return this.args.valueColumns as Expression[] | undefined;
+    return this.args.valueColumns;
   }
 
   get $origin (): Expression | undefined {
-    return this.args.origin as Expression | undefined;
+    return this.args.origin;
   }
 
   get $ignoreNulls (): Expression[] | undefined {
-    return this.args.ignoreNulls as Expression[] | undefined;
+    return this.args.ignoreNulls;
   }
 }
 
@@ -19258,15 +19258,15 @@ export class GenerateDateArrayExpr extends FuncExpr {
   }
 
   get $start (): Expression {
-    return this.args.start as Expression;
+    return this.args.start;
   }
 
   get $end (): Expression {
-    return this.args.end as Expression;
+    return this.args.end;
   }
 
   get $step (): Expression | undefined {
-    return this.args.step as Expression | undefined;
+    return this.args.step;
   }
 }
 
@@ -19295,15 +19295,15 @@ export class GenerateTimestampArrayExpr extends FuncExpr {
   }
 
   get $start (): Expression {
-    return this.args.start as Expression;
+    return this.args.start;
   }
 
   get $end (): Expression {
-    return this.args.end as Expression;
+    return this.args.end;
   }
 
   get $step (): Expression {
-    return this.args.step as Expression;
+    return this.args.step;
   }
 }
 
@@ -19335,7 +19335,7 @@ export class GetbitExpr extends FuncExpr {
   }
 
   get $zeroIsMsb (): Expression | undefined {
-    return this.args.zeroIsMsb as Expression | undefined;
+    return this.args.zeroIsMsb;
   }
 }
 
@@ -19357,7 +19357,7 @@ export class GreatestExpr extends FuncExpr {
   }
 
   get $ignoreNulls (): Expression[] {
-    return this.args.ignoreNulls as Expression[];
+    return this.args.ignoreNulls;
   }
 }
 
@@ -19399,7 +19399,7 @@ export class HexEncodeExpr extends FuncExpr {
   }
 
   get $case (): Expression | undefined {
-    return this.args.case as Expression | undefined;
+    return this.args.case;
   }
 }
 
@@ -19451,7 +19451,7 @@ export class CompressExpr extends FuncExpr {
   }
 
   get $method (): Expression | undefined {
-    return this.args.method as Expression | undefined;
+    return this.args.method;
   }
 }
 
@@ -19473,7 +19473,7 @@ export class DecompressBinaryExpr extends FuncExpr {
   }
 
   get $method (): Expression {
-    return this.args.method as Expression;
+    return this.args.method;
   }
 }
 
@@ -19495,7 +19495,7 @@ export class DecompressStringExpr extends FuncExpr {
   }
 
   get $method (): Expression {
-    return this.args.method as Expression;
+    return this.args.method;
   }
 }
 
@@ -19523,11 +19523,11 @@ export class IfExpr extends FuncExpr {
   }
 
   get $true (): Expression {
-    return this.args.true as Expression;
+    return this.args.true;
   }
 
   get $false (): Expression | undefined {
-    return this.args.false as Expression | undefined;
+    return this.args.false;
   }
 }
 
@@ -19661,7 +19661,7 @@ export class JSONKeysAtDepthExpr extends FuncExpr {
   }
 
   get $mode (): Expression | undefined {
-    return this.args.mode as Expression | undefined;
+    return this.args.mode;
   }
 }
 
@@ -19691,19 +19691,19 @@ export class JSONObjectExpr extends FuncExpr {
   }
 
   get $nullHandling (): Expression | undefined {
-    return this.args.nullHandling as Expression | undefined;
+    return this.args.nullHandling;
   }
 
   get $uniqueKeys (): Expression[] | undefined {
-    return this.args.uniqueKeys as Expression[] | undefined;
+    return this.args.uniqueKeys;
   }
 
   get $returnType (): Expression | undefined {
-    return this.args.returnType as Expression | undefined;
+    return this.args.returnType;
   }
 
   get $encoding (): Expression | undefined {
-    return this.args.encoding as Expression | undefined;
+    return this.args.encoding;
   }
 }
 
@@ -19731,15 +19731,15 @@ export class JSONArrayExpr extends FuncExpr {
   }
 
   get $nullHandling (): Expression | undefined {
-    return this.args.nullHandling as Expression | undefined;
+    return this.args.nullHandling;
   }
 
   get $returnType (): Expression | undefined {
-    return this.args.returnType as Expression | undefined;
+    return this.args.returnType;
   }
 
   get $strict (): Expression | undefined {
-    return this.args.strict as Expression | undefined;
+    return this.args.strict;
   }
 }
 
@@ -19769,19 +19769,19 @@ export class JSONExistsExpr extends FuncExpr {
   }
 
   get $path (): Expression {
-    return this.args.path as Expression;
+    return this.args.path;
   }
 
   get $passing (): Expression | undefined {
-    return this.args.passing as Expression | undefined;
+    return this.args.passing;
   }
 
   get $onCondition (): Expression | undefined {
-    return this.args.onCondition as Expression | undefined;
+    return this.args.onCondition;
   }
 
   get $fromDcolonqmark (): Expression | undefined {
-    return this.args.fromDcolonqmark as Expression | undefined;
+    return this.args.fromDcolonqmark;
   }
 }
 
@@ -19817,11 +19817,11 @@ export class JSONStripNullsExpr extends FuncExpr {
   }
 
   get $includeArrays (): Expression[] | undefined {
-    return this.args.includeArrays as Expression[] | undefined;
+    return this.args.includeArrays;
   }
 
   get $removeEmpty (): Expression | undefined {
-    return this.args.removeEmpty as Expression | undefined;
+    return this.args.removeEmpty;
   }
 }
 
@@ -19871,19 +19871,19 @@ export class JSONTableExpr extends FuncExpr {
   }
 
   get $schema (): Expression {
-    return this.args.schema as Expression;
+    return this.args.schema;
   }
 
   get $path (): Expression | undefined {
-    return this.args.path as Expression | undefined;
+    return this.args.path;
   }
 
   get $errorHandling (): Expression | undefined {
-    return this.args.errorHandling as Expression | undefined;
+    return this.args.errorHandling;
   }
 
   get $emptyHandling (): Expression | undefined {
-    return this.args.emptyHandling as Expression | undefined;
+    return this.args.emptyHandling;
   }
 }
 
@@ -19921,15 +19921,15 @@ export class ObjectInsertExpr extends FuncExpr {
   }
 
   get $key (): Expression {
-    return this.args.key as Expression;
+    return this.args.key;
   }
 
   get $value (): Expression {
-    return this.args.value as Expression;
+    return this.args.value;
   }
 
   get $updateFlag (): Expression | undefined {
-    return this.args.updateFlag as Expression | undefined;
+    return this.args.updateFlag;
   }
 }
 
@@ -19951,7 +19951,7 @@ export class OpenJSONExpr extends FuncExpr {
   }
 
   get $path (): Expression | undefined {
-    return this.args.path as Expression | undefined;
+    return this.args.path;
   }
 }
 
@@ -20009,7 +20009,7 @@ export class JSONBExistsExpr extends FuncExpr {
   }
 
   get $path (): Expression {
-    return this.args.path as Expression;
+    return this.args.path;
   }
 }
 
@@ -20055,31 +20055,31 @@ export class JSONExtractExpr extends BinaryExpr {
   }
 
   get $onlyJsonTypes (): Expression[] | undefined {
-    return this.args.onlyJsonTypes as Expression[] | undefined;
+    return this.args.onlyJsonTypes;
   }
 
   get $variantExtract (): Expression | undefined {
-    return this.args.variantExtract as Expression | undefined;
+    return this.args.variantExtract;
   }
 
   get $jsonQuery (): Expression | undefined {
-    return this.args.jsonQuery as Expression | undefined;
+    return this.args.jsonQuery;
   }
 
   get $option (): Expression | undefined {
-    return this.args.option as Expression | undefined;
+    return this.args.option;
   }
 
   get $quote (): Expression | undefined {
-    return this.args.quote as Expression | undefined;
+    return this.args.quote;
   }
 
   get $onCondition (): Expression | undefined {
-    return this.args.onCondition as Expression | undefined;
+    return this.args.onCondition;
   }
 
   get $requiresJson (): Expression | undefined {
-    return this.args.requiresJson as Expression | undefined;
+    return this.args.requiresJson;
   }
 }
 
@@ -20117,15 +20117,15 @@ export class JSONExtractScalarExpr extends BinaryExpr {
   }
 
   get $onlyJsonTypes (): Expression[] | undefined {
-    return this.args.onlyJsonTypes as Expression[] | undefined;
+    return this.args.onlyJsonTypes;
   }
 
   get $jsonType (): Expression | undefined {
-    return this.args.jsonType as Expression | undefined;
+    return this.args.jsonType;
   }
 
   get $scalarOnly (): boolean | undefined {
-    return this.args.scalarOnly as boolean | undefined;
+    return this.args.scalarOnly;
   }
 }
 
@@ -20157,7 +20157,7 @@ export class JSONBExtractScalarExpr extends BinaryExpr {
   }
 
   get $jsonType (): Expression | undefined {
-    return this.args.jsonType as Expression | undefined;
+    return this.args.jsonType;
   }
 }
 
@@ -20185,15 +20185,15 @@ export class JSONFormatExpr extends FuncExpr {
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 
   get $isJson (): Expression | undefined {
-    return this.args.isJson as Expression | undefined;
+    return this.args.isJson;
   }
 
   get $toJson (): Expression | undefined {
-    return this.args.toJson as Expression | undefined;
+    return this.args.toJson;
   }
 }
 
@@ -20225,7 +20225,7 @@ export class JSONArrayContainsExpr extends BinaryExpr {
   }
 
   get $jsonType (): Expression | undefined {
-    return this.args.jsonType as Expression | undefined;
+    return this.args.jsonType;
   }
 }
 
@@ -20277,7 +20277,7 @@ export class ParseJSONExpr extends FuncExpr {
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 }
 
@@ -20305,15 +20305,15 @@ export class ParseUrlExpr extends FuncExpr {
   }
 
   get $partToExtract (): Expression | undefined {
-    return this.args.partToExtract as Expression | undefined;
+    return this.args.partToExtract;
   }
 
   get $key (): Expression | undefined {
-    return this.args.key as Expression | undefined;
+    return this.args.key;
   }
 
   get $permissive (): Expression | undefined {
-    return this.args.permissive as Expression | undefined;
+    return this.args.permissive;
   }
 }
 
@@ -20335,7 +20335,7 @@ export class ParseIpExpr extends FuncExpr {
   }
 
   get $permissive (): Expression | undefined {
-    return this.args.permissive as Expression | undefined;
+    return this.args.permissive;
   }
 }
 
@@ -20357,7 +20357,7 @@ export class ParseTimeExpr extends FuncExpr {
   }
 
   get $format (): Expression {
-    return this.args.format as Expression;
+    return this.args.format;
   }
 }
 
@@ -20383,11 +20383,11 @@ export class ParseDatetimeExpr extends FuncExpr {
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 }
 
@@ -20409,7 +20409,7 @@ export class LeastExpr extends FuncExpr {
   }
 
   get $ignoreNulls (): Expression[] {
-    return this.args.ignoreNulls as Expression[];
+    return this.args.ignoreNulls;
   }
 }
 
@@ -20465,11 +20465,11 @@ export class LengthExpr extends FuncExpr {
   }
 
   get $binary (): Expression | undefined {
-    return this.args.binary as Expression | undefined;
+    return this.args.binary;
   }
 
   get $encoding (): Expression | undefined {
-    return this.args.encoding as Expression | undefined;
+    return this.args.encoding;
   }
 }
 
@@ -20519,19 +20519,19 @@ export class LevenshteinExpr extends FuncExpr {
   }
 
   get $insCost (): Expression | undefined {
-    return this.args.insCost as Expression | undefined;
+    return this.args.insCost;
   }
 
   get $delCost (): Expression | undefined {
-    return this.args.delCost as Expression | undefined;
+    return this.args.delCost;
   }
 
   get $subCost (): Expression | undefined {
-    return this.args.subCost as Expression | undefined;
+    return this.args.subCost;
   }
 
   get $maxDist (): Expression | undefined {
-    return this.args.maxDist as Expression | undefined;
+    return this.args.maxDist;
   }
 }
 
@@ -20593,11 +20593,11 @@ export class MapExpr extends FuncExpr {
   }
 
   get $keys (): Expression[] | undefined {
-    return this.args.keys as Expression[] | undefined;
+    return this.args.keys;
   }
 
   get $values (): Expression[] | undefined {
-    return this.args.values as Expression[] | undefined;
+    return this.args.values;
   }
 }
 
@@ -20649,7 +20649,7 @@ export class MapContainsKeyExpr extends FuncExpr {
   }
 
   get $key (): Expression {
-    return this.args.key as Expression;
+    return this.args.key;
   }
 }
 
@@ -20687,15 +20687,15 @@ export class MapInsertExpr extends FuncExpr {
   }
 
   get $key (): Expression | undefined {
-    return this.args.key as Expression | undefined;
+    return this.args.key;
   }
 
   get $value (): Expression {
-    return this.args.value as Expression;
+    return this.args.value;
   }
 
   get $updateFlag (): Expression | undefined {
-    return this.args.updateFlag as Expression | undefined;
+    return this.args.updateFlag;
   }
 }
 
@@ -20761,11 +20761,11 @@ export class VarMapExpr extends FuncExpr {
   }
 
   get $keys (): Expression[] {
-    return this.args.keys as Expression[];
+    return this.args.keys;
   }
 
   get $values (): Expression[] {
-    return this.args.values as Expression[];
+    return this.args.values;
   }
 }
 
@@ -20787,7 +20787,7 @@ export class MatchAgainstExpr extends FuncExpr {
   }
 
   get $modifier (): Expression | undefined {
-    return this.args.modifier as Expression | undefined;
+    return this.args.modifier;
   }
 }
 
@@ -20865,7 +20865,7 @@ export class MonthnameExpr extends FuncExpr {
   }
 
   get $abbreviated (): Expression | undefined {
-    return this.args.abbreviated as Expression | undefined;
+    return this.args.abbreviated;
   }
 }
 
@@ -20887,7 +20887,7 @@ export class AddMonthsExpr extends FuncExpr {
   }
 
   get $preserveEndOfMonth (): Expression | undefined {
-    return this.args.preserveEndOfMonth as Expression | undefined;
+    return this.args.preserveEndOfMonth;
   }
 }
 
@@ -20913,11 +20913,11 @@ export class Nvl2Expr extends FuncExpr {
   }
 
   get $true (): Expression {
-    return this.args.true as Expression;
+    return this.args.true;
   }
 
   get $false (): Expression | undefined {
-    return this.args.false as Expression | undefined;
+    return this.args.false;
   }
 }
 
@@ -20943,11 +20943,11 @@ export class NormalizeExpr extends FuncExpr {
   }
 
   get $form (): Expression | undefined {
-    return this.args.form as Expression | undefined;
+    return this.args.form;
   }
 
   get $isCasefold (): Expression | undefined {
-    return this.args.isCasefold as Expression | undefined;
+    return this.args.isCasefold;
   }
 }
 
@@ -20973,11 +20973,11 @@ export class NormalExpr extends FuncExpr {
   }
 
   get $stddev (): Expression {
-    return this.args.stddev as Expression;
+    return this.args.stddev;
   }
 
   get $gen (): Expression {
-    return this.args.gen as Expression;
+    return this.args.gen;
   }
 }
 
@@ -21033,11 +21033,11 @@ export class OverlayExpr extends FuncExpr {
   }
 
   get $from (): Expression {
-    return this.args.from as Expression;
+    return this.args.from;
   }
 
   get $for (): Expression | undefined {
-    return this.args.for as Expression | undefined;
+    return this.args.for;
   }
 }
 
@@ -21059,7 +21059,7 @@ export class PredictExpr extends FuncExpr {
   }
 
   get $paramsStruct (): Expression | undefined {
-    return this.args.paramsStruct as Expression | undefined;
+    return this.args.paramsStruct;
   }
 }
 
@@ -21081,7 +21081,7 @@ export class MLTranslateExpr extends FuncExpr {
   }
 
   get $paramsStruct (): Expression {
-    return this.args.paramsStruct as Expression;
+    return this.args.paramsStruct;
   }
 }
 
@@ -21109,15 +21109,15 @@ export class FeaturesAtTimeExpr extends FuncExpr {
   }
 
   get $time (): Expression | undefined {
-    return this.args.time as Expression | undefined;
+    return this.args.time;
   }
 
   get $numRows (): Expression[] | undefined {
-    return this.args.numRows as Expression[] | undefined;
+    return this.args.numRows;
   }
 
   get $ignoreFeatureNulls (): Expression[] | undefined {
-    return this.args.ignoreFeatureNulls as Expression[] | undefined;
+    return this.args.ignoreFeatureNulls;
   }
 }
 
@@ -21143,11 +21143,11 @@ export class GenerateEmbeddingExpr extends FuncExpr {
   }
 
   get $paramsStruct (): Expression | undefined {
-    return this.args.paramsStruct as Expression | undefined;
+    return this.args.paramsStruct;
   }
 
   get $isText (): Expression | undefined {
-    return this.args.isText as Expression | undefined;
+    return this.args.isText;
   }
 }
 
@@ -21169,7 +21169,7 @@ export class MLForecastExpr extends FuncExpr {
   }
 
   get $paramsStruct (): Expression | undefined {
-    return this.args.paramsStruct as Expression | undefined;
+    return this.args.paramsStruct;
   }
 }
 
@@ -21203,27 +21203,27 @@ export class VectorSearchExpr extends FuncExpr {
   }
 
   get $columnToSearch (): Expression {
-    return this.args.columnToSearch as Expression;
+    return this.args.columnToSearch;
   }
 
   get $queryTable (): Expression {
-    return this.args.queryTable as Expression;
+    return this.args.queryTable;
   }
 
   get $queryColumnToSearch (): Expression | undefined {
-    return this.args.queryColumnToSearch as Expression | undefined;
+    return this.args.queryColumnToSearch;
   }
 
   get $topK (): Expression | undefined {
-    return this.args.topK as Expression | undefined;
+    return this.args.topK;
   }
 
   get $distanceType (): Expression | undefined {
-    return this.args.distanceType as Expression | undefined;
+    return this.args.distanceType;
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 }
 
@@ -21266,7 +21266,7 @@ export class ApproxPercentileEstimateExpr extends FuncExpr {
   }
 
   get $percentile (): Expression {
-    return this.args.percentile as Expression;
+    return this.args.percentile;
   }
 }
 
@@ -21302,11 +21302,11 @@ export class RandExpr extends FuncExpr {
   }
 
   get $lower (): Expression | undefined {
-    return this.args.lower as Expression | undefined;
+    return this.args.lower;
   }
 
   get $upper (): Expression | undefined {
-    return this.args.upper as Expression | undefined;
+    return this.args.upper;
   }
 }
 
@@ -21338,7 +21338,7 @@ export class RandstrExpr extends FuncExpr {
   }
 
   get $generator (): Expression | undefined {
-    return this.args.generator as Expression | undefined;
+    return this.args.generator;
   }
 }
 
@@ -21360,7 +21360,7 @@ export class RangeNExpr extends FuncExpr {
   }
 
   get $each (): Expression | undefined {
-    return this.args.each as Expression | undefined;
+    return this.args.each;
   }
 }
 
@@ -21418,15 +21418,15 @@ export class ReduceExpr extends FuncExpr {
   }
 
   get $initial (): Expression {
-    return this.args.initial as Expression;
+    return this.args.initial;
   }
 
   get $merge (): Expression {
-    return this.args.merge as Expression;
+    return this.args.merge;
   }
 
   get $finish (): Expression | undefined {
-    return this.args.finish as Expression | undefined;
+    return this.args.finish;
   }
 }
 
@@ -21458,23 +21458,23 @@ export class RegexpExtractExpr extends FuncExpr {
   }
 
   get $position (): Expression | undefined {
-    return this.args.position as Expression | undefined;
+    return this.args.position;
   }
 
   get $occurrence (): Expression | undefined {
-    return this.args.occurrence as Expression | undefined;
+    return this.args.occurrence;
   }
 
   get $parameters (): Expression[] | undefined {
-    return this.args.parameters as Expression[] | undefined;
+    return this.args.parameters;
   }
 
   get $group (): Expression | undefined {
-    return this.args.group as Expression | undefined;
+    return this.args.group;
   }
 
   get $nullIfPosOverflow (): Expression | undefined {
-    return this.args.nullIfPosOverflow as Expression | undefined;
+    return this.args.nullIfPosOverflow;
   }
 }
 
@@ -21504,19 +21504,19 @@ export class RegexpExtractAllExpr extends FuncExpr {
   }
 
   get $group (): Expression | undefined {
-    return this.args.group as Expression | undefined;
+    return this.args.group;
   }
 
   get $parameters (): Expression[] | undefined {
-    return this.args.parameters as Expression[] | undefined;
+    return this.args.parameters;
   }
 
   get $position (): Expression | undefined {
-    return this.args.position as Expression | undefined;
+    return this.args.position;
   }
 
   get $occurrence (): Expression | undefined {
-    return this.args.occurrence as Expression | undefined;
+    return this.args.occurrence;
   }
 }
 
@@ -21548,23 +21548,23 @@ export class RegexpReplaceExpr extends FuncExpr {
   }
 
   get $replacement (): Expression | undefined {
-    return this.args.replacement as Expression | undefined;
+    return this.args.replacement;
   }
 
   get $position (): Expression | undefined {
-    return this.args.position as Expression | undefined;
+    return this.args.position;
   }
 
   get $occurrence (): Expression | undefined {
-    return this.args.occurrence as Expression | undefined;
+    return this.args.occurrence;
   }
 
   get $modifiers (): Expression[] | undefined {
-    return this.args.modifiers as Expression[] | undefined;
+    return this.args.modifiers;
   }
 
   get $singleReplace (): Expression | undefined {
-    return this.args.singleReplace as Expression | undefined;
+    return this.args.singleReplace;
   }
 }
 
@@ -21586,7 +21586,7 @@ export class RegexpLikeExpr extends BinaryExpr {
   }
 
   get $flag (): Expression | undefined {
-    return this.args.flag as Expression | undefined;
+    return this.args.flag;
   }
 }
 
@@ -21608,7 +21608,7 @@ export class RegexpILikeExpr extends BinaryExpr {
   }
 
   get $flag (): Expression | undefined {
-    return this.args.flag as Expression | undefined;
+    return this.args.flag;
   }
 }
 
@@ -21630,7 +21630,7 @@ export class RegexpFullMatchExpr extends BinaryExpr {
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 }
 
@@ -21662,23 +21662,23 @@ export class RegexpInstrExpr extends FuncExpr {
   }
 
   get $position (): Expression | undefined {
-    return this.args.position as Expression | undefined;
+    return this.args.position;
   }
 
   get $occurrence (): Expression | undefined {
-    return this.args.occurrence as Expression | undefined;
+    return this.args.occurrence;
   }
 
   get $option (): Expression | undefined {
-    return this.args.option as Expression | undefined;
+    return this.args.option;
   }
 
   get $parameters (): Expression[] | undefined {
-    return this.args.parameters as Expression[] | undefined;
+    return this.args.parameters;
   }
 
   get $group (): Expression | undefined {
-    return this.args.group as Expression | undefined;
+    return this.args.group;
   }
 }
 
@@ -21700,7 +21700,7 @@ export class RegexpSplitExpr extends FuncExpr {
   }
 
   get $limit (): Expression | undefined {
-    return this.args.limit as Expression | undefined;
+    return this.args.limit;
   }
 }
 
@@ -21726,11 +21726,11 @@ export class RegexpCountExpr extends FuncExpr {
   }
 
   get $position (): Expression | undefined {
-    return this.args.position as Expression | undefined;
+    return this.args.position;
   }
 
   get $parameters (): Expression[] | undefined {
-    return this.args.parameters as Expression[] | undefined;
+    return this.args.parameters;
   }
 }
 
@@ -21752,7 +21752,7 @@ export class RepeatExpr extends FuncExpr {
   }
 
   get $times (): Expression[] {
-    return this.args.times as Expression[];
+    return this.args.times;
   }
 }
 
@@ -21774,7 +21774,7 @@ export class ReplaceExpr extends FuncExpr {
   }
 
   get $replacement (): Expression | undefined {
-    return this.args.replacement as Expression | undefined;
+    return this.args.replacement;
   }
 }
 
@@ -21812,15 +21812,15 @@ export class RoundExpr extends FuncExpr {
   }
 
   get $decimals (): Expression[] | undefined {
-    return this.args.decimals as Expression[] | undefined;
+    return this.args.decimals;
   }
 
   get $truncate (): Expression | undefined {
-    return this.args.truncate as Expression | undefined;
+    return this.args.truncate;
   }
 
   get $castsNonIntegerDecimals (): Expression[] | undefined {
-    return this.args.castsNonIntegerDecimals as Expression[] | undefined;
+    return this.args.castsNonIntegerDecimals;
   }
 }
 
@@ -21842,7 +21842,7 @@ export class TruncExpr extends FuncExpr {
   }
 
   get $decimals (): Expression[] | undefined {
-    return this.args.decimals as Expression[] | undefined;
+    return this.args.decimals;
   }
 }
 
@@ -21993,7 +21993,7 @@ export class SHA2Expr extends FuncExpr {
   }
 
   get $length (): Expression | undefined {
-    return this.args.length as Expression | undefined;
+    return this.args.length;
   }
 }
 
@@ -22025,7 +22025,7 @@ export class SHA2DigestExpr extends FuncExpr {
   }
 
   get $length (): Expression | undefined {
-    return this.args.length as Expression | undefined;
+    return this.args.length;
   }
 }
 
@@ -22067,11 +22067,11 @@ export class SortArrayExpr extends FuncExpr {
   }
 
   get $asc (): Expression | undefined {
-    return this.args.asc as Expression | undefined;
+    return this.args.asc;
   }
 
   get $nullsFirst (): Expression | undefined {
-    return this.args.nullsFirst as Expression | undefined;
+    return this.args.nullsFirst;
   }
 }
 
@@ -22113,7 +22113,7 @@ export class SplitExpr extends FuncExpr {
   }
 
   get $limit (): Expression | undefined {
-    return this.args.limit as Expression | undefined;
+    return this.args.limit;
   }
 }
 
@@ -22139,11 +22139,11 @@ export class SplitPartExpr extends FuncExpr {
   }
 
   get $delimiter (): Expression | undefined {
-    return this.args.delimiter as Expression | undefined;
+    return this.args.delimiter;
   }
 
   get $partIndex (): Expression | undefined {
-    return this.args.partIndex as Expression | undefined;
+    return this.args.partIndex;
   }
 }
 
@@ -22169,11 +22169,11 @@ export class SubstringExpr extends FuncExpr {
   }
 
   get $start (): Expression | undefined {
-    return this.args.start as Expression | undefined;
+    return this.args.start;
   }
 
   get $length (): Expression | undefined {
-    return this.args.length as Expression | undefined;
+    return this.args.length;
   }
 }
 
@@ -22199,11 +22199,11 @@ export class SubstringIndexExpr extends FuncExpr {
   }
 
   get $delimiter (): Expression {
-    return this.args.delimiter as Expression;
+    return this.args.delimiter;
   }
 
   get $count (): Expression {
-    return this.args.count as Expression;
+    return this.args.count;
   }
 }
 
@@ -22261,15 +22261,15 @@ export class StrPositionExpr extends FuncExpr {
   }
 
   get $substr (): Expression {
-    return this.args.substr as Expression;
+    return this.args.substr;
   }
 
   get $position (): Expression | undefined {
-    return this.args.position as Expression | undefined;
+    return this.args.position;
   }
 
   get $occurrence (): Expression | undefined {
-    return this.args.occurrence as Expression | undefined;
+    return this.args.occurrence;
   }
 }
 
@@ -22299,19 +22299,19 @@ export class SearchExpr extends FuncExpr {
   }
 
   get $jsonScope (): Expression | undefined {
-    return this.args.jsonScope as Expression | undefined;
+    return this.args.jsonScope;
   }
 
   get $analyzer (): Expression | undefined {
-    return this.args.analyzer as Expression | undefined;
+    return this.args.analyzer;
   }
 
   get $analyzerOptions (): Expression[] | undefined {
-    return this.args.analyzerOptions as Expression[] | undefined;
+    return this.args.analyzerOptions;
   }
 
   get $searchMode (): Expression | undefined {
-    return this.args.searchMode as Expression | undefined;
+    return this.args.searchMode;
   }
 }
 
@@ -22347,11 +22347,11 @@ export class StrToDateExpr extends FuncExpr {
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 }
 
@@ -22381,19 +22381,19 @@ export class StrToTimeExpr extends FuncExpr {
   }
 
   get $format (): Expression {
-    return this.args.format as Expression;
+    return this.args.format;
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 
   get $targetType (): Expression | undefined {
-    return this.args.targetType as Expression | undefined;
+    return this.args.targetType;
   }
 }
 
@@ -22415,7 +22415,7 @@ export class StrToUnixExpr extends FuncExpr {
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 }
 
@@ -22443,15 +22443,15 @@ export class StrToMapExpr extends FuncExpr {
   }
 
   get $pairDelim (): Expression | undefined {
-    return this.args.pairDelim as Expression | undefined;
+    return this.args.pairDelim;
   }
 
   get $keyValueDelim (): Expression | undefined {
-    return this.args.keyValueDelim as Expression | undefined;
+    return this.args.keyValueDelim;
   }
 
   get $duplicateResolutionCallback (): Expression | undefined {
-    return this.args.duplicateResolutionCallback as Expression | undefined;
+    return this.args.duplicateResolutionCallback;
   }
 }
 
@@ -22477,11 +22477,11 @@ export class NumberToStrExpr extends FuncExpr {
   }
 
   get $format (): Expression {
-    return this.args.format as Expression;
+    return this.args.format;
   }
 
   get $culture (): Expression | undefined {
-    return this.args.culture as Expression | undefined;
+    return this.args.culture;
   }
 }
 
@@ -22547,11 +22547,11 @@ export class StuffExpr extends FuncExpr {
   }
 
   get $start (): Expression {
-    return this.args.start as Expression;
+    return this.args.start;
   }
 
   get $length (): Expression {
-    return this.args.length as Expression;
+    return this.args.length;
   }
 }
 
@@ -22583,7 +22583,7 @@ export class TimeExpr extends FuncExpr {
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 }
 
@@ -22611,15 +22611,15 @@ export class TimeToStrExpr extends FuncExpr {
   }
 
   get $format (): Expression {
-    return this.args.format as Expression;
+    return this.args.format;
   }
 
   get $culture (): Expression | undefined {
-    return this.args.culture as Expression | undefined;
+    return this.args.culture;
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 }
 
@@ -22671,7 +22671,7 @@ export class TimeStrToTimeExpr extends FuncExpr {
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 }
 
@@ -22707,11 +22707,11 @@ export class TrimExpr extends FuncExpr {
   }
 
   get $position (): Expression | undefined {
-    return this.args.position as Expression | undefined;
+    return this.args.position;
   }
 
   get $collation (): Expression | undefined {
-    return this.args.collation as Expression | undefined;
+    return this.args.collation;
   }
 }
 
@@ -22737,11 +22737,11 @@ export class TsOrDsAddExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 
   get $returnType (): Expression | undefined {
-    return this.args.returnType as Expression | undefined;
+    return this.args.returnType;
   }
 }
 
@@ -22763,7 +22763,7 @@ export class TsOrDsDiffExpr extends FuncExpr {
   }
 
   get $unit (): Expression | undefined {
-    return this.args.unit as Expression | undefined;
+    return this.args.unit;
   }
 }
 
@@ -22799,11 +22799,11 @@ export class TsOrDsToDateExpr extends FuncExpr {
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 }
 
@@ -22839,11 +22839,11 @@ export class TsOrDsToTimeExpr extends FuncExpr {
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 }
 
@@ -22909,11 +22909,11 @@ export class UniformExpr extends FuncExpr {
   }
 
   get $gen (): Expression | undefined {
-    return this.args.gen as Expression | undefined;
+    return this.args.gen;
   }
 
   get $seed (): Expression | undefined {
-    return this.args.seed as Expression | undefined;
+    return this.args.seed;
   }
 }
 
@@ -22945,7 +22945,7 @@ export class UnixToStrExpr extends FuncExpr {
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 }
 
@@ -22979,27 +22979,27 @@ export class UnixToTimeExpr extends FuncExpr {
   }
 
   get $scale (): Expression | undefined {
-    return this.args.scale as Expression | undefined;
+    return this.args.scale;
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 
   get $hours (): Expression[] | undefined {
-    return this.args.hours as Expression[] | undefined;
+    return this.args.hours;
   }
 
   get $minutes (): Expression[] | undefined {
-    return this.args.minutes as Expression[] | undefined;
+    return this.args.minutes;
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 
   get $targetType (): Expression | undefined {
-    return this.args.targetType as Expression | undefined;
+    return this.args.targetType;
   }
 }
 
@@ -23065,11 +23065,11 @@ export class UuidExpr extends FuncExpr {
   }
 
   get $name (): Expression | undefined {
-    return this.args.name as Expression | undefined;
+    return this.args.name;
   }
 
   get $isString (): Expression | undefined {
-    return this.args.isString as Expression | undefined;
+    return this.args.isString;
   }
 }
 
@@ -23095,11 +23095,11 @@ export class TimestampFromPartsExpr extends FuncExpr {
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 
   get $milli (): Expression | undefined {
-    return this.args.milli as Expression | undefined;
+    return this.args.milli;
   }
 }
 
@@ -23127,7 +23127,7 @@ export class TimestampLtzFromPartsExpr extends FuncExpr {
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 }
 
@@ -23149,7 +23149,7 @@ export class TimestampTzFromPartsExpr extends FuncExpr {
   }
 
   get $zone (): Expression | undefined {
-    return this.args.zone as Expression | undefined;
+    return this.args.zone;
   }
 }
 
@@ -23183,7 +23183,7 @@ export class CorrExpr extends BinaryExpr {
   }
 
   get $nullOnZeroVariance (): Expression | undefined {
-    return this.args.nullOnZeroVariance as Expression | undefined;
+    return this.args.nullOnZeroVariance;
   }
 }
 
@@ -23213,19 +23213,19 @@ export class WidthBucketExpr extends FuncExpr {
   }
 
   get $minValue (): Expression | undefined {
-    return this.args.minValue as Expression | undefined;
+    return this.args.minValue;
   }
 
   get $maxValue (): Expression | undefined {
-    return this.args.maxValue as Expression | undefined;
+    return this.args.maxValue;
   }
 
   get $numBuckets (): Expression[] | undefined {
-    return this.args.numBuckets as Expression[] | undefined;
+    return this.args.numBuckets;
   }
 
   get $threshold (): Expression | undefined {
-    return this.args.threshold as Expression | undefined;
+    return this.args.threshold;
   }
 }
 
@@ -23247,7 +23247,7 @@ export class WeekExpr extends FuncExpr {
   }
 
   get $mode (): Expression | undefined {
-    return this.args.mode as Expression | undefined;
+    return this.args.mode;
   }
 }
 
@@ -23279,7 +23279,7 @@ export class XMLElementExpr extends FuncExpr {
   }
 
   get $evalname (): Expression | undefined {
-    return this.args.evalname as Expression | undefined;
+    return this.args.evalname;
   }
 }
 
@@ -23301,7 +23301,7 @@ export class XMLGetExpr extends FuncExpr {
   }
 
   get $instance (): Expression | undefined {
-    return this.args.instance as Expression | undefined;
+    return this.args.instance;
   }
 }
 
@@ -23331,19 +23331,19 @@ export class XMLTableExpr extends FuncExpr {
   }
 
   get $namespaces (): Expression[] | undefined {
-    return this.args.namespaces as Expression[] | undefined;
+    return this.args.namespaces;
   }
 
   get $passing (): Expression | undefined {
-    return this.args.passing as Expression | undefined;
+    return this.args.passing;
   }
 
   get $columns (): Expression[] | undefined {
-    return this.args.columns as Expression[] | undefined;
+    return this.args.columns;
   }
 
   get $byRef (): Expression | undefined {
-    return this.args.byRef as Expression | undefined;
+    return this.args.byRef;
   }
 }
 
@@ -23379,11 +23379,11 @@ export class ZipfExpr extends FuncExpr {
   }
 
   get $elementcount (): Expression {
-    return this.args.elementcount as Expression;
+    return this.args.elementcount;
   }
 
   get $gen (): Expression {
-    return this.args.gen as Expression;
+    return this.args.gen;
   }
 }
 
@@ -23405,7 +23405,7 @@ export class NextValueForExpr extends FuncExpr {
   }
 
   get $order (): Expression | undefined {
-    return this.args.order as Expression | undefined;
+    return this.args.order;
   }
 }
 
@@ -23507,7 +23507,7 @@ export class ParameterizedAggExpr extends AggFuncExpr {
   }
 
   get $params (): Expression[] {
-    return this.args.params as Expression[];
+    return this.args.params;
   }
 }
 
@@ -23534,7 +23534,7 @@ export class ArgMaxExpr extends AggFuncExpr {
   }
 
   get $count (): Expression | undefined {
-    return this.args.count as Expression | undefined;
+    return this.args.count;
   }
 }
 
@@ -23561,7 +23561,7 @@ export class ArgMinExpr extends AggFuncExpr {
   }
 
   get $count (): Expression | undefined {
-    return this.args.count as Expression | undefined;
+    return this.args.count;
   }
 }
 
@@ -23583,7 +23583,7 @@ export class ApproxTopKExpr extends AggFuncExpr {
   }
 
   get $counters (): Expression[] | undefined {
-    return this.args.counters as Expression[] | undefined;
+    return this.args.counters;
   }
 }
 
@@ -23625,7 +23625,7 @@ export class ApproxTopSumExpr extends AggFuncExpr {
   }
 
   get $count (): Expression {
-    return this.args.count as Expression;
+    return this.args.count;
   }
 }
 
@@ -23761,7 +23761,7 @@ export class ApproxDistinctExpr extends AggFuncExpr {
   }
 
   get $accuracy (): Expression | undefined {
-    return this.args.accuracy as Expression | undefined;
+    return this.args.accuracy;
   }
 }
 
@@ -23796,7 +23796,7 @@ export class ArrayAggExpr extends AggFuncExpr {
   }
 
   get $nullsExcluded (): Expression | undefined {
-    return this.args.nullsExcluded as Expression | undefined;
+    return this.args.nullsExcluded;
   }
 }
 
@@ -23898,11 +23898,11 @@ export class LagExpr extends AggFuncExpr {
   }
 
   get $offset (): Expression | undefined {
-    return this.args.offset as Expression | undefined;
+    return this.args.offset;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 }
 
@@ -23928,11 +23928,11 @@ export class LeadExpr extends AggFuncExpr {
   }
 
   get $offset (): Expression | undefined {
-    return this.args.offset as Expression | undefined;
+    return this.args.offset;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 }
 
@@ -23998,11 +23998,11 @@ export class NthValueExpr extends AggFuncExpr {
   }
 
   get $offset (): Expression {
-    return this.args.offset as Expression;
+    return this.args.offset;
   }
 
   get $fromFirst (): Expression | undefined {
-    return this.args.fromFirst as Expression | undefined;
+    return this.args.fromFirst;
   }
 }
 
@@ -24046,27 +24046,27 @@ export class TryCastExpr extends CastExpr {
   }
 
   get $to (): Expression | undefined {
-    return this.args.to as Expression | undefined;
+    return this.args.to;
   }
 
   get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+    return this.args.format;
   }
 
   get $safe (): Expression | undefined {
-    return this.args.safe as Expression | undefined;
+    return this.args.safe;
   }
 
   get $action (): Expression | undefined {
-    return this.args.action as Expression | undefined;
+    return this.args.action;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 
   get $requiresString (): Expression | undefined {
-    return this.args.requiresString as Expression | undefined;
+    return this.args.requiresString;
   }
 }
 
@@ -24108,7 +24108,7 @@ export class CountExpr extends AggFuncExpr {
   }
 
   get $bigInt (): Expression | undefined {
-    return this.args.bigInt as Expression | undefined;
+    return this.args.bigInt;
   }
 }
 
@@ -24180,11 +24180,11 @@ export class GroupConcatExpr extends AggFuncExpr {
   }
 
   get $separator (): Expression | undefined {
-    return this.args.separator as Expression | undefined;
+    return this.args.separator;
   }
 
   get $onOverflow (): Expression | undefined {
-    return this.args.onOverflow as Expression | undefined;
+    return this.args.onOverflow;
   }
 }
 
@@ -24236,7 +24236,7 @@ export class XorExpr extends ConnectorExpr {
   }
 
   get $roundInput (): Expression | undefined {
-    return this.args.roundInput as Expression | undefined;
+    return this.args.roundInput;
   }
 }
 
@@ -24266,19 +24266,19 @@ export class JSONObjectAggExpr extends AggFuncExpr {
   }
 
   get $nullHandling (): Expression | undefined {
-    return this.args.nullHandling as Expression | undefined;
+    return this.args.nullHandling;
   }
 
   get $uniqueKeys (): Expression[] | undefined {
-    return this.args.uniqueKeys as Expression[] | undefined;
+    return this.args.uniqueKeys;
   }
 
   get $returnType (): Expression | undefined {
-    return this.args.returnType as Expression | undefined;
+    return this.args.returnType;
   }
 
   get $encoding (): Expression | undefined {
-    return this.args.encoding as Expression | undefined;
+    return this.args.encoding;
   }
 }
 
@@ -24318,19 +24318,19 @@ export class JSONArrayAggExpr extends AggFuncExpr {
   }
 
   get $order (): Expression | undefined {
-    return this.args.order as Expression | undefined;
+    return this.args.order;
   }
 
   get $nullHandling (): Expression | undefined {
-    return this.args.nullHandling as Expression | undefined;
+    return this.args.nullHandling;
   }
 
   get $returnType (): Expression | undefined {
-    return this.args.returnType as Expression | undefined;
+    return this.args.returnType;
   }
 
   get $strict (): Expression | undefined {
-    return this.args.strict as Expression | undefined;
+    return this.args.strict;
   }
 }
 
@@ -24412,7 +24412,7 @@ export class ModeExpr extends AggFuncExpr {
   }
 
   get $deterministic (): Expression | undefined {
-    return this.args.deterministic as Expression | undefined;
+    return this.args.deterministic;
   }
 }
 
@@ -24484,7 +24484,7 @@ export class QuantileExpr extends AggFuncExpr {
   }
 
   get $quantile (): Expression {
-    return this.args.quantile as Expression;
+    return this.args.quantile;
   }
 }
 
@@ -24782,7 +24782,7 @@ export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
   }
 
   get $params (): Expression[] {
-    return this.args.params as Expression[];
+    return this.args.params;
   }
 }
 
@@ -24822,19 +24822,19 @@ export class ApproxQuantileExpr extends QuantileExpr {
   }
 
   get $quantile (): Expression {
-    return this.args.quantile as Expression;
+    return this.args.quantile;
   }
 
   get $accuracy (): Expression | undefined {
-    return this.args.accuracy as Expression | undefined;
+    return this.args.accuracy;
   }
 
   get $weight (): Expression | undefined {
-    return this.args.weight as Expression | undefined;
+    return this.args.weight;
   }
 
   get $errorTolerance (): Expression | undefined {
-    return this.args.errorTolerance as Expression | undefined;
+    return this.args.errorTolerance;
   }
 }
 
