@@ -1153,8 +1153,8 @@ export class Expression {
    * @returns True if number literal
    */
   get isNumber (): boolean {
-    return (this instanceof LiteralExpr && !this.args.isString) ||
-      (this instanceof NegExpr && (this.this as Expression).isNumber);
+    return (this instanceof LiteralExpr && !this.args.isString)
+      || (this instanceof NegExpr && (this.this as Expression).isNumber);
   }
 
   /**
@@ -1196,8 +1196,8 @@ export class Expression {
    * @returns True if star expression
    */
   get isStar (): boolean {
-    return this instanceof StarExpr ||
-      (this instanceof ColumnExpr && this.this instanceof StarExpr);
+    return this instanceof StarExpr
+      || (this instanceof ColumnExpr && this.this instanceof StarExpr);
   }
 
   /**
@@ -1726,9 +1726,7 @@ export class Expression {
    */
   * flatten (options?: { unnest?: boolean }): Generator<Expression> {
     const unnest = options?.unnest ?? true;
-    for (const node of this.dfs({
-      prune: (n) => n.parent !== undefined && n.constructor !== this.constructor
-    })) {
+    for (const node of this.dfs({ prune: (n) => n.parent !== undefined && n.constructor !== this.constructor })) {
       if (node.constructor !== this.constructor) {
         if (unnest && !(node instanceof SubqueryExpr)) {
           yield node.unnest();
@@ -2924,6 +2922,10 @@ export class UDTFExpr extends DerivedTableExpr {
       ? alias.columns
       : [];
   }
+
+  get $alias (): TableAliasExpr | undefined {
+    return this.args.alias;
+  }
 }
 
 export type CacheExprArgs = {
@@ -2948,30 +2950,29 @@ export class CacheExpr extends Expression {
   } satisfies RequiredMap<CacheExprArgs>;
 
   declare args: CacheExprArgs;
-
   constructor (args: CacheExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $lazy (): Expression | undefined {
-    return this.args.lazy as Expression | undefined;
+    return this.args.lazy;
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 
   get $expression (): Expression | undefined {
-    return this.args.expression as Expression | undefined;
+    return this.args.expression;
   }
 }
 
 export type UncacheExprArgs = {
-  exists?: Expression;
+  exists?: Expression[];
   this: Expression;
 } & BaseExpressionArgs;
 
@@ -2988,17 +2989,16 @@ export class UncacheExpr extends Expression {
   } satisfies RequiredMap<UncacheExprArgs>;
 
   declare args: UncacheExprArgs;
-
   constructor (args: UncacheExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $exists (): Expression[] | undefined {
-    return this.args.exists as Expression[] | undefined;
+    return this.args.exists;
   }
 }
 
@@ -3011,8 +3011,10 @@ export enum RefreshExprKind {
   FULL = 'FULL',
 }
 
-export type RefreshExprArgs = { kind: RefreshExprKind;
-  this: Expression; } & BaseExpressionArgs;
+export type RefreshExprArgs = {
+  kind: RefreshExprKind;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class RefreshExpr extends Expression {
   key = ExpressionKey.REFRESH;
@@ -3027,24 +3029,28 @@ export class RefreshExpr extends Expression {
   } satisfies RequiredMap<RefreshExprArgs>;
 
   declare args: RefreshExprArgs;
-
   constructor (args: RefreshExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
-  get $kind (): string {
-    return this.args.kind as string;
+  get $kind (): RefreshExprKind {
+    return this.args.kind;
   }
 }
 
-export type DDLExprArgs = BaseExpressionArgs;
+export type DDLExprArgs = {
+  with?: WithExpr;
+} & BaseExpressionArgs;
+
 export class DDLExpr extends Expression {
   key = ExpressionKey.DDL;
+
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DDLExprArgs>;
+
   declare args: DDLExprArgs;
   constructor (args: DDLExprArgs) {
     super(args);
@@ -3056,8 +3062,8 @@ export class DDLExpr extends Expression {
    * @returns Array of CTE expressions
    */
   get ctes (): CTEExpr[] {
-    const withExpr = this.args['with'] as WithExpr | undefined;
-    return (withExpr?.expressions as CTEExpr[]) || [];
+    const withExpr = this.args.with;
+    return withExpr?.$expressions || []; // NOTE: The original sqlglot uses `Expression.expressions`
   }
 
   /**
@@ -3084,14 +3090,20 @@ export class DDLExpr extends Expression {
       ? expr.namedSelects
       : [];
   }
+
+  get $with (): WithExpr | undefined {
+    return this.args.with;
+  }
 }
 
 export type LockingStatementExprArgs = {
   this: Expression;
   expression: Expression;
 } & BaseExpressionArgs;
+
 export class LockingStatementExpr extends Expression {
   key = ExpressionKey.LOCKING_STATEMENT;
+
   static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
@@ -3112,9 +3124,12 @@ export class LockingStatementExpr extends Expression {
 }
 
 export type DMLExprArgs = BaseExpressionArgs;
+
 export class DMLExpr extends Expression {
   key = ExpressionKey.DML;
+
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DMLExprArgs>;
+
   declare args: DMLExprArgs;
   constructor (args: DMLExprArgs) {
     super(args);
@@ -3169,9 +3184,10 @@ export enum CreateExprKind {
   SEQUENCE = 'SEQUENCE',
 }
 
-export type CreateExprArgs = { with?: Expression;
+export type CreateExprArgs = {
+  with?: WithExpr;
   kind: CreateExprKind;
-  exists?: Expression;
+  exists?: Expression[];
   properties?: Expression[];
   replace?: boolean;
   refresh?: Expression;
@@ -3184,7 +3200,8 @@ export type CreateExprArgs = { with?: Expression;
   concurrently?: Expression;
   clustered?: Expression;
   this: Expression;
-  expression?: Expression; } & BaseExpressionArgs;
+  expression?: Expression;
+} & DDLExprArgs;
 
 export class CreateExpr extends DDLExpr {
   key = ExpressionKey.CREATE;
@@ -3219,67 +3236,71 @@ export class CreateExpr extends DDLExpr {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expression (): Expression | undefined {
-    return this.args.expression as Expression | undefined;
+    return this.args.expression;
   }
 
-  get $with (): Expression | undefined {
-    return this.args.with as Expression | undefined;
+  get $with (): WithExpr | undefined {
+    return this.args.with;
   }
 
-  get $kind (): string {
-    return this.args.kind as string;
+  get $kind (): CreateExprKind {
+    return this.args.kind;
+  }
+
+  get kind (): CreateExprKind {
+    return this.args.kind;
   }
 
   get $exists (): Expression[] | undefined {
-    return this.args.exists as Expression[] | undefined;
+    return this.args.exists;
   }
 
   get $properties (): Expression[] | undefined {
-    return this.args.properties as Expression[] | undefined;
+    return this.args.properties;
   }
 
-  get $replace (): Expression | undefined {
-    return this.args.replace as Expression | undefined;
+  get $replace (): boolean | undefined {
+    return this.args.replace;
   }
 
   get $refresh (): Expression | undefined {
-    return this.args.refresh as Expression | undefined;
+    return this.args.refresh;
   }
 
-  get $unique (): Expression | undefined {
-    return this.args.unique as Expression | undefined;
+  get $unique (): boolean | undefined {
+    return this.args.unique;
   }
 
   get $indexes (): Expression[] | undefined {
-    return this.args.indexes as Expression[] | undefined;
+    return this.args.indexes;
   }
 
   get $noSchemaBinding (): Expression | undefined {
-    return this.args.noSchemaBinding as Expression | undefined;
+    return this.args.noSchemaBinding;
   }
 
   get $begin (): Expression | undefined {
-    return this.args.begin as Expression | undefined;
+    return this.args.begin;
   }
 
   get $end (): Expression | undefined {
-    return this.args.end as Expression | undefined;
+    return this.args.end;
   }
 
   get $clone (): Expression | undefined {
-    return this.args.clone as Expression | undefined;
+    return this.args.clone;
   }
 
   get $concurrently (): Expression | undefined {
-    return this.args.concurrently as Expression | undefined;
+    return this.args.concurrently;
   }
 
   get $clustered (): Expression | undefined {
-    return this.args.clustered as Expression | undefined;
+    return this.args.clustered;
   }
 }
 
@@ -3311,48 +3332,49 @@ export class SequencePropertiesExpr extends Expression {
   } satisfies RequiredMap<SequencePropertiesExprArgs>;
 
   declare args: SequencePropertiesExprArgs;
-
   constructor (args: SequencePropertiesExprArgs) {
     super(args);
   }
 
   get $increment (): Expression | undefined {
-    return this.args.increment as Expression | undefined;
+    return this.args.increment;
   }
 
-  get $minvalue (): Expression | undefined {
-    return this.args.minvalue as Expression | undefined;
+  get $minvalue (): string | undefined {
+    return this.args.minvalue;
   }
 
-  get $maxvalue (): Expression | undefined {
-    return this.args.maxvalue as Expression | undefined;
+  get $maxvalue (): string | undefined {
+    return this.args.maxvalue;
   }
 
   get $cache (): Expression | undefined {
-    return this.args.cache as Expression | undefined;
+    return this.args.cache;
   }
 
   get $start (): Expression | undefined {
-    return this.args.start as Expression | undefined;
+    return this.args.start;
   }
 
   get $owned (): Expression | undefined {
-    return this.args.owned as Expression | undefined;
+    return this.args.owned;
   }
 
   get $options (): Expression[] | undefined {
-    return this.args.options as Expression[] | undefined;
+    return this.args.options;
   }
 }
 
-export type TruncateTableExprArgs = { isDatabase?: string;
-  exists?: Expression;
+export type TruncateTableExprArgs = {
+  isDatabase?: string;
+  exists?: Expression[];
   only?: Expression;
   cluster?: Expression;
   identity?: Expression;
   option?: Expression;
   partition?: Expression;
-  expressions: Expression[]; } & BaseExpressionArgs;
+  expressions: Expression[];
+} & BaseExpressionArgs;
 
 export class TruncateTableExpr extends Expression {
   key = ExpressionKey.TRUNCATE_TABLE;
@@ -3373,41 +3395,40 @@ export class TruncateTableExpr extends Expression {
   } satisfies RequiredMap<TruncateTableExprArgs>;
 
   declare args: TruncateTableExprArgs;
-
   constructor (args: TruncateTableExprArgs) {
     super(args);
   }
 
   get $expressions (): Expression[] {
-    return this.args.expressions as Expression[];
+    return this.args.expressions;
   }
 
-  get $isDatabase (): Expression | undefined {
-    return this.args.isDatabase as Expression | undefined;
+  get $isDatabase (): string | undefined {
+    return this.args.isDatabase;
   }
 
   get $exists (): Expression[] | undefined {
-    return this.args.exists as Expression[] | undefined;
+    return this.args.exists;
   }
 
   get $only (): Expression | undefined {
-    return this.args.only as Expression | undefined;
+    return this.args.only;
   }
 
   get $cluster (): Expression | undefined {
-    return this.args.cluster as Expression | undefined;
+    return this.args.cluster;
   }
 
   get $identity (): Expression | undefined {
-    return this.args.identity as Expression | undefined;
+    return this.args.identity;
   }
 
   get $option (): Expression | undefined {
-    return this.args.option as Expression | undefined;
+    return this.args.option;
   }
 
   get $partition (): Expression | undefined {
-    return this.args.partition as Expression | undefined;
+    return this.args.partition;
   }
 }
 
