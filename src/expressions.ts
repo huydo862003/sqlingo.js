@@ -4,7 +4,7 @@ import { createHash } from 'crypto';
 import { Dialect, type DialectType } from './dialects/dialect';
 import type { Token } from './tokens';
 import { ensureList } from './helper';
-import { multiInherit } from './port_internals';
+import { multiInherit, type RequiredMap } from './port_internals';
 
 export const SQLGLOT_META = 'sqlglot.meta';
 export const SQLGLOT_ANONYMOUS = 'sqlglot.anonymous';
@@ -1003,7 +1003,7 @@ export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T
  * Base arguments that all Expression classes can accept.
  */
 export interface BaseExpressionArgs {
-  this?: ExpressionValue;
+  this: ExpressionValue;
   expression?: Expression;
   expressions?: (Expression | string)[];
   [key: string]: ExpressionValueList | ExpressionValue;
@@ -1045,7 +1045,7 @@ export class Expression {
   key: ExpressionKey = ExpressionKey.EXPRESSION;
 
   /** Arguments/properties of this expression (child nodes, flags, etc.) */
-  args: BaseExpressionArgs = {};
+  args: BaseExpressionArgs;
 
   /** Parent expression in the AST tree */
   parent?: Expression;
@@ -1069,11 +1069,11 @@ export class Expression {
   private _hash?: string;
 
   /** Static arg types definition */
-  static argTypes: Record<string, boolean> = { this: true };
+  static argTypes: Record<string, boolean> = { this: true } satisfies RequiredMap<BaseExpressionArgs>;
 
   /** Set of required argument names */
 
-  constructor (args: BaseExpressionArgs = {}) {
+  constructor (args: BaseExpressionArgs) {
     this.args = args;
     for (const [argKey, value] of Object.entries(args)) {
       this._setParent(argKey, value);
@@ -2784,7 +2784,7 @@ export class CacheExpr extends Expression {
     lazy: false,
     options: false,
     expression: false,
-  };
+  } satisfies RequiredMap<CacheExprArgs>;
 
   constructor (args: CacheExprArgs = {}) {
     super(args);
@@ -2811,7 +2811,7 @@ export class UncacheExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     exists: false,
-  };
+  } satisfies RequiredMap<UncacheExprArgs>;
 
   constructor (args: UncacheExprArgs = {}) {
     super(args);
@@ -2843,7 +2843,7 @@ export class RefreshExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     kind: true,
-  };
+  } satisfies RequiredMap<RefreshExprArgs>;
 
   constructor (args: RefreshExprArgs) {
     super(args);
@@ -2894,7 +2894,7 @@ export class LockingStatementExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class DMLExpr extends Expression {
@@ -2976,7 +2976,7 @@ export class CreateExpr extends DDLExpr {
     clone: false,
     concurrently: false,
     clustered: false,
-  };
+  } satisfies RequiredMap<CreateExprArgs>;
 
   constructor (args: CreateExprArgs) {
     super(args);
@@ -3056,7 +3056,7 @@ export class SequencePropertiesExpr extends Expression {
     start: false,
     owned: false,
     options: false,
-  };
+  } satisfies RequiredMap<SequencePropertiesExprArgs>;
 
   constructor (args: SequencePropertiesExprArgs = {}) {
     super(args);
@@ -3109,7 +3109,7 @@ export class TruncateTableExpr extends Expression {
     identity: false,
     option: false,
     partition: false,
-  };
+  } satisfies RequiredMap<TruncateTableExprArgs>;
 
   constructor (args: TruncateTableExprArgs = {}) {
     super(args);
@@ -3157,7 +3157,7 @@ export class CloneExpr extends Expression {
     this: true,
     shallow: false,
     copy: false,
-  };
+  } satisfies RequiredMap<CloneExprArgs>;
 
   constructor (args: CloneExprArgs = {}) {
     super(args);
@@ -3195,7 +3195,7 @@ export class DescribeExpr extends Expression {
     partition: false,
     format: false,
     asJson: false,
-  };
+  } satisfies RequiredMap<DescribeExprArgs>;
 
   constructor (args: DescribeExprArgs = {}) {
     super(args);
@@ -3235,7 +3235,7 @@ export class AttachExpr extends Expression {
     this: true,
     expressions: false,
     exists: false,
-  };
+  } satisfies RequiredMap<AttachExprArgs>;
 
   constructor (args: AttachExprArgs = {}) {
     super(args);
@@ -3258,7 +3258,7 @@ export class DetachExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     exists: false,
-  };
+  } satisfies RequiredMap<DetachExprArgs>;
 
   constructor (args: DetachExprArgs = {}) {
     super(args);
@@ -3282,7 +3282,7 @@ export class InstallExpr extends Expression {
     this: true,
     from: false,
     force: false,
-  };
+  } satisfies RequiredMap<InstallExprArgs>;
 
   constructor (args: InstallExprArgs = {}) {
     super(args);
@@ -3309,7 +3309,7 @@ export class SummarizeExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     table: false,
-  };
+  } satisfies RequiredMap<SummarizeExprArgs>;
 
   constructor (args: SummarizeExprArgs = {}) {
     super(args);
@@ -3339,7 +3339,7 @@ export class KillExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     kind: false,
-  };
+  } satisfies RequiredMap<KillExprArgs>;
 
   constructor (args: KillExprArgs = {}) {
     super(args);
@@ -3363,7 +3363,7 @@ export class DeclareExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     expressions: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 /**
@@ -3388,7 +3388,7 @@ export class DeclareItemExpr extends Expression {
     this: true,
     kind: false,
     default: false,
-  };
+  } satisfies RequiredMap<DeclareItemExprArgs>;
 
   constructor (args: DeclareItemExprArgs = {}) {
     super(args);
@@ -3416,7 +3416,7 @@ export class SetExpr extends Expression {
     expressions: false,
     unset: false,
     tag: false,
-  };
+  } satisfies RequiredMap<SetExprArgs>;
 
   constructor (args: SetExprArgs = {}) {
     super(args);
@@ -3443,7 +3443,7 @@ export class HeredocExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     tag: false,
-  };
+  } satisfies RequiredMap<HeredocExprArgs>;
 
   constructor (args: HeredocExprArgs = {}) {
     super(args);
@@ -3479,7 +3479,7 @@ export class SetItemExpr extends Expression {
     kind: false,
     collate: false,
     global: false,
-  };
+  } satisfies RequiredMap<SetItemExprArgs>;
 
   constructor (args: SetItemExprArgs = {}) {
     super(args);
@@ -3511,7 +3511,7 @@ export class QueryBandExpr extends Expression {
     this: true,
     scope: false,
     update: false,
-  };
+  } satisfies RequiredMap<QueryBandExprArgs>;
 
   constructor (args: QueryBandExprArgs = {}) {
     super(args);
@@ -3564,7 +3564,7 @@ export class ShowExpr extends Expression {
     forRole: false,
     intoOutfile: false,
     json: false,
-  };
+  } satisfies RequiredMap<ShowExprArgs>;
 
   constructor (args: ShowExprArgs = {}) {
     super(args);
@@ -3692,7 +3692,7 @@ export class UserDefinedFunctionExpr extends Expression {
     this: true,
     expressions: false,
     wrapped: false,
-  };
+  } satisfies RequiredMap<UserDefinedFunctionExprArgs>;
 
   constructor (args: UserDefinedFunctionExprArgs = {}) {
     super(args);
@@ -3715,7 +3715,7 @@ export class CharacterSetExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     default: false,
-  };
+  } satisfies RequiredMap<CharacterSetExprArgs>;
 
   constructor (args: CharacterSetExprArgs = {}) {
     super(args);
@@ -3749,7 +3749,7 @@ export class RecursiveWithSearchExpr extends Expression {
     this: true,
     expression: true,
     using: false,
-  };
+  } satisfies RequiredMap<RecursiveWithSearchExprArgs>;
 
   constructor (args: RecursiveWithSearchExprArgs) {
     super(args);
@@ -3777,7 +3777,7 @@ export class WithExpr extends Expression {
     expressions: true,
     recursive: false,
     search: false,
-  };
+  } satisfies RequiredMap<WithExprArgs>;
 
   constructor (args: WithExprArgs = {}) {
     super(args);
@@ -3802,7 +3802,7 @@ export class WithinGroupExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     expression: false,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class ProjectionDefExpr extends Expression {
@@ -3815,7 +3815,7 @@ export class ProjectionDefExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type TableAliasExprArgs = { columns?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
@@ -3830,7 +3830,7 @@ export class TableAliasExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: false,
     columns: false,
-  };
+  } satisfies RequiredMap<TableAliasExprArgs>;
 
   constructor (args: TableAliasExprArgs = {}) {
     super(args);
@@ -3853,7 +3853,7 @@ export class ColumnPositionExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: false,
     position: true,
-  };
+  } satisfies RequiredMap<ColumnPositionExprArgs>;
 
   constructor (args: ColumnPositionExprArgs) {
     super(args);
@@ -3892,7 +3892,7 @@ export class ColumnDefExpr extends Expression {
     position: false,
     default: false,
     output: false,
-  };
+  } satisfies RequiredMap<ColumnDefExprArgs>;
 
   constructor (args: ColumnDefExprArgs = {}) {
     super(args);
@@ -3951,7 +3951,7 @@ export class AlterColumnExpr extends Expression {
     allowNull: false,
     visible: false,
     renameTo: false,
-  };
+  } satisfies RequiredMap<AlterColumnExprArgs>;
 
   constructor (args: AlterColumnExprArgs = {}) {
     super(args);
@@ -4006,7 +4006,7 @@ export class AlterIndexExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     visible: true,
-  };
+  } satisfies RequiredMap<AlterIndexExprArgs>;
 
   constructor (args: AlterIndexExprArgs) {
     super(args);
@@ -4034,7 +4034,7 @@ export class AlterSortKeyExpr extends Expression {
     this: false,
     expressions: false,
     compound: false,
-  };
+  } satisfies RequiredMap<AlterSortKeyExprArgs>;
 
   constructor (args: AlterSortKeyExprArgs = {}) {
     super(args);
@@ -4064,7 +4064,7 @@ export class AlterSetExpr extends Expression {
     tag: false,
     location: false,
     serde: false,
-  };
+  } satisfies RequiredMap<AlterSetExprArgs>;
 
   constructor (args: AlterSetExprArgs = {}) {
     super(args);
@@ -4116,7 +4116,7 @@ export class RenameColumnExpr extends Expression {
     this: true,
     to: true,
     exists: false,
-  };
+  } satisfies RequiredMap<RenameColumnExprArgs>;
 
   constructor (args: RenameColumnExprArgs) {
     super(args);
@@ -4164,7 +4164,7 @@ export class CommentExpr extends Expression {
     expression: true,
     exists: false,
     materialized: false,
-  };
+  } satisfies RequiredMap<CommentExprArgs>;
 
   constructor (args: CommentExprArgs) {
     super(args);
@@ -4198,7 +4198,7 @@ export class ComprehensionExpr extends Expression {
     position: false,
     iterator: true,
     condition: false,
-  };
+  } satisfies RequiredMap<ComprehensionExprArgs>;
 
   constructor (args: ComprehensionExprArgs) {
     super(args);
@@ -4232,7 +4232,7 @@ export class MergeTreeTTLActionExpr extends Expression {
     recompress: false,
     toDisk: false,
     toVolume: false,
-  };
+  } satisfies RequiredMap<MergeTreeTTLActionExprArgs>;
 
   constructor (args: MergeTreeTTLActionExprArgs = {}) {
     super(args);
@@ -4269,7 +4269,7 @@ export class MergeTreeTTLExpr extends Expression {
     where: false,
     group: false,
     aggregates: false,
-  };
+  } satisfies RequiredMap<MergeTreeTTLExprArgs>;
 
   constructor (args: MergeTreeTTLExprArgs = {}) {
     super(args);
@@ -4305,7 +4305,7 @@ export class IndexConstraintOptionExpr extends Expression {
     visible: false,
     engineAttr: false,
     secondaryEngineAttr: false,
-  };
+  } satisfies RequiredMap<IndexConstraintOptionExprArgs>;
 
   constructor (args: IndexConstraintOptionExprArgs = {}) {
     super(args);
@@ -4365,7 +4365,7 @@ export class ColumnConstraintExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: false,
     kind: true,
-  };
+  } satisfies RequiredMap<ColumnConstraintExprArgs>;
 
   constructor (args: ColumnConstraintExprArgs) {
     super(args);
@@ -4396,7 +4396,7 @@ export class WithOperatorExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     op: true,
-  };
+  } satisfies RequiredMap<WithOperatorExprArgs>;
 
   constructor (args: WithOperatorExprArgs) {
     super(args);
@@ -4413,7 +4413,7 @@ export class WatermarkColumnConstraintExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class ConstraintExpr extends Expression {
@@ -4422,7 +4422,7 @@ export class ConstraintExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     expressions: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 /**
@@ -4462,7 +4462,7 @@ export class DropExpr extends Expression {
     purge: false,
     cluster: false,
     concurrently: false,
-  };
+  } satisfies RequiredMap<DropExprArgs>;
 
   constructor (args: DropExprArgs = {}) {
     super(args);
@@ -4523,7 +4523,7 @@ export class ExportExpr extends Expression {
     this: true,
     connection: false,
     options: true,
-  };
+  } satisfies RequiredMap<ExportExprArgs>;
 
   constructor (args: ExportExprArgs) {
     super(args);
@@ -4548,7 +4548,7 @@ export class FilterExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class CheckExpr extends Expression {
@@ -4568,7 +4568,7 @@ export class ChangesExpr extends Expression {
     information: true,
     atBefore: false,
     end: false,
-  };
+  } satisfies RequiredMap<ChangesExprArgs>;
 
   constructor (args: ChangesExprArgs) {
     super(args);
@@ -4600,7 +4600,7 @@ export class ConnectExpr extends Expression {
     start: false,
     connect: true,
     nocycle: false,
-  };
+  } satisfies RequiredMap<ConnectExprArgs>;
 
   constructor (args: ConnectExprArgs) {
     super(args);
@@ -4630,7 +4630,7 @@ export class CopyParameterExpr extends Expression {
     this: true,
     expression: false,
     expressions: false,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type CredentialsExprArgs = { credentials?: Expression[]; encryption?: Expression; storage?: Expression; iamRole?: Expression; region?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -4648,7 +4648,7 @@ export class CredentialsExpr extends Expression {
     storage: false,
     iamRole: false,
     region: false,
-  };
+  } satisfies RequiredMap<CredentialsExprArgs>;
 
   constructor (args: CredentialsExprArgs = {}) {
     super(args);
@@ -4692,7 +4692,7 @@ export class DirectoryExpr extends Expression {
     this: true,
     local: false,
     rowFormat: false,
-  };
+  } satisfies RequiredMap<DirectoryExprArgs>;
 
   constructor (args: DirectoryExprArgs = {}) {
     super(args);
@@ -4726,7 +4726,7 @@ export class ForeignKeyExpr extends Expression {
     delete: false,
     update: false,
     options: false,
-  };
+  } satisfies RequiredMap<ForeignKeyExprArgs>;
 
   constructor (args: ForeignKeyExprArgs = {}) {
     super(args);
@@ -4759,7 +4759,7 @@ export class ColumnPrefixExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type PrimaryKeyExprArgs = { options?: Expression[]; include?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -4776,7 +4776,7 @@ export class PrimaryKeyExpr extends Expression {
     expressions: true,
     options: false,
     include: false,
-  };
+  } satisfies RequiredMap<PrimaryKeyExprArgs>;
 
   constructor (args: PrimaryKeyExprArgs = {}) {
     super(args);
@@ -4806,7 +4806,7 @@ export class IntoExpr extends Expression {
     unlogged: false,
     bulkCollect: false,
     expressions: false,
-  };
+  } satisfies RequiredMap<IntoExprArgs>;
 
   constructor (args: IntoExprArgs = {}) {
     super(args);
@@ -4854,7 +4854,7 @@ export class HintExpr extends Expression {
 
   static argTypes: Record<string, boolean> = {
     expressions: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class JoinHintExpr extends Expression {
@@ -4863,7 +4863,7 @@ export class JoinHintExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     expressions: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type IdentifierExprArgs = { quoted?: boolean; global?: boolean; temporary?: boolean; [key: string]: unknown } & BaseExpressionArgs;
@@ -4880,7 +4880,7 @@ export class IdentifierExpr extends Expression {
     quoted: false,
     global: false,
     temporary: false,
-  };
+  } satisfies RequiredMap<IdentifierExprArgs>;
 
   constructor (args: IdentifierExprArgs = {}) {
     super(args);
@@ -4909,7 +4909,7 @@ export class OpclassExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type IndexExprArgs = { table?: Expression; unique?: boolean; primary?: boolean; amp?: Expression; params?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
@@ -4928,7 +4928,7 @@ export class IndexExpr extends Expression {
     primary: false,
     amp: false,
     params: false,
-  };
+  } satisfies RequiredMap<IndexExprArgs>;
 
   constructor (args: IndexExprArgs = {}) {
     super(args);
@@ -4973,7 +4973,7 @@ export class IndexParametersExpr extends Expression {
     tablespace: false,
     where: false,
     on: false,
-  };
+  } satisfies RequiredMap<IndexParametersExprArgs>;
 
   constructor (args: IndexParametersExprArgs = {}) {
     super(args);
@@ -5025,7 +5025,7 @@ export class ConditionalInsertExpr extends Expression {
     this: true,
     expression: false,
     else: false,
-  };
+  } satisfies RequiredMap<ConditionalInsertExprArgs>;
 
   constructor (args: ConditionalInsertExprArgs = {}) {
     super(args);
@@ -5058,7 +5058,7 @@ export class MultitableInsertsExpr extends Expression {
     expressions: true,
     kind: true,
     source: true,
-  };
+  } satisfies RequiredMap<MultitableInsertsExprArgs>;
 
   constructor (args: MultitableInsertsExprArgs) {
     super(args);
@@ -5090,7 +5090,7 @@ export class OnConflictExpr extends Expression {
     indexPredicate: false,
     constraint: false,
     where: false,
-  };
+  } satisfies RequiredMap<OnConflictExprArgs>;
 
   constructor (args: OnConflictExprArgs = {}) {
     super(args);
@@ -5134,7 +5134,7 @@ export class OnConditionExpr extends Expression {
     error: false,
     empty: false,
     null: false,
-  };
+  } satisfies RequiredMap<OnConditionExprArgs>;
 
   constructor (args: OnConditionExprArgs = {}) {
     super(args);
@@ -5165,7 +5165,7 @@ export class ReturningExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     expressions: true,
     into: false,
-  };
+  } satisfies RequiredMap<ReturningExprArgs>;
 
   constructor (args: ReturningExprArgs = {}) {
     super(args);
@@ -5182,7 +5182,7 @@ export class IntroducerExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class NationalExpr extends Expression {
@@ -5206,7 +5206,7 @@ export class LoadDataExpr extends Expression {
     partition: false,
     inputFormat: false,
     serde: false,
-  };
+  } satisfies RequiredMap<LoadDataExprArgs>;
 
   constructor (args: LoadDataExprArgs) {
     super(args);
@@ -5249,7 +5249,7 @@ export class PartitionExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     expressions: true,
     subpartition: false,
-  };
+  } satisfies RequiredMap<PartitionExprArgs>;
 
   constructor (args: PartitionExprArgs = {}) {
     super(args);
@@ -5267,7 +5267,7 @@ export class PartitionRangeExpr extends Expression {
     this: true,
     expression: false,
     expressions: false,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class PartitionIdExpr extends Expression {
@@ -5287,7 +5287,7 @@ export class FetchExpr extends Expression {
     direction: false,
     count: false,
     limitOptions: false,
-  };
+  } satisfies RequiredMap<FetchExprArgs>;
 
   constructor (args: FetchExprArgs = {}) {
     super(args);
@@ -5328,7 +5328,7 @@ export class GrantExpr extends Expression {
     securable: true,
     principals: true,
     grantOption: false,
-  };
+  } satisfies RequiredMap<GrantExprArgs>;
 
   constructor (args: GrantExprArgs) {
     super(args);
@@ -5372,7 +5372,7 @@ export class RevokeExpr extends Expression {
     principals: true,
     grantOption: false,
     cascade: false,
-  };
+  } satisfies RequiredMap<RevokeExprArgs>;
 
   constructor (args: RevokeExprArgs = {}) {
     super(args);
@@ -5399,7 +5399,7 @@ export class GroupExpr extends Expression {
     rollup: false,
     totals: false,
     all: false,
-  };
+  } satisfies RequiredMap<GroupExprArgs>;
 
   constructor (args: GroupExprArgs = {}) {
     super(args);
@@ -5431,7 +5431,7 @@ export class CubeExpr extends Expression {
 
   static argTypes: Record<string, boolean> = {
     expressions: false,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class RollupExpr extends Expression {
@@ -5439,7 +5439,7 @@ export class RollupExpr extends Expression {
 
   static argTypes: Record<string, boolean> = {
     expressions: false,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class GroupingSetsExpr extends Expression {
@@ -5447,7 +5447,7 @@ export class GroupingSetsExpr extends Expression {
 
   static argTypes: Record<string, boolean> = {
     expressions: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type LambdaExprArgs = { colon?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -5463,7 +5463,7 @@ export class LambdaExpr extends Expression {
     this: true,
     expressions: true,
     colon: false,
-  };
+  } satisfies RequiredMap<LambdaExprArgs>;
 
   constructor (args: LambdaExprArgs = {}) {
     super(args);
@@ -5489,7 +5489,7 @@ export class LimitExpr extends Expression {
     offset: false,
     limitOptions: false,
     expressions: false,
-  };
+  } satisfies RequiredMap<LimitExprArgs>;
 
   constructor (args: LimitExprArgs = {}) {
     super(args);
@@ -5517,7 +5517,7 @@ export class LimitOptionsExpr extends Expression {
     percent: false,
     rows: false,
     withTies: false,
-  };
+  } satisfies RequiredMap<LimitOptionsExprArgs>;
 
   constructor (args: LimitOptionsExprArgs = {}) {
     super(args);
@@ -5582,7 +5582,7 @@ export class JoinExpr extends Expression {
     directed: false,
     expressions: false,
     pivots: false,
-  };
+  } satisfies RequiredMap<JoinExprArgs>;
 
   constructor (args: JoinExprArgs = {}) {
     super(args);
@@ -5723,7 +5723,7 @@ export class MatchRecognizeMeasureExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     windowFrame: false,
-  };
+  } satisfies RequiredMap<MatchRecognizeMeasureExprArgs>;
 
   constructor (args: MatchRecognizeMeasureExprArgs = {}) {
     super(args);
@@ -5752,7 +5752,7 @@ export class MatchRecognizeExpr extends Expression {
     pattern: false,
     define: false,
     alias: false,
-  };
+  } satisfies RequiredMap<MatchRecognizeExprArgs>;
 
   constructor (args: MatchRecognizeExprArgs = {}) {
     super(args);
@@ -5798,7 +5798,7 @@ export class OffsetExpr extends Expression {
     this: false,
     expression: true,
     expressions: false,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type OrderExprArgs = { siblings?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
@@ -5814,7 +5814,7 @@ export class OrderExpr extends Expression {
     this: false,
     expressions: true,
     siblings: false,
-  };
+  } satisfies RequiredMap<OrderExprArgs>;
 
   constructor (args: OrderExprArgs = {}) {
     super(args);
@@ -5839,7 +5839,7 @@ export class WithFillExpr extends Expression {
     to: false,
     step: false,
     interpolate: false,
-  };
+  } satisfies RequiredMap<WithFillExprArgs>;
 
   constructor (args: WithFillExprArgs = {}) {
     super(args);
@@ -5876,7 +5876,7 @@ export class OrderedExpr extends Expression {
     desc: false,
     nullsFirst: true,
     withFill: false,
-  };
+  } satisfies RequiredMap<OrderedExprArgs>;
 
   constructor (args: OrderedExprArgs) {
     super(args);
@@ -5911,7 +5911,7 @@ export class PropertyExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     value: true,
-  };
+  } satisfies RequiredMap<PropertyExprArgs>;
 
   constructor (args: PropertyExprArgs | BaseExpressionArgs) {
     super(args);
@@ -5928,7 +5928,7 @@ export class GrantPrivilegeExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     expressions: false,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 /**
@@ -5952,7 +5952,7 @@ export class GrantPrincipalExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     kind: false,
-  };
+  } satisfies RequiredMap<GrantPrincipalExprArgs>;
 
   constructor (args: GrantPrincipalExprArgs = {}) {
     super(args);
@@ -5968,7 +5968,7 @@ export class AllowedValuesPropertyExpr extends Expression {
 
   static argTypes: Record<string, boolean> = {
     expressions: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type PartitionByRangePropertyDynamicExprArgs = { start: Expression; end: Expression; every: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -5985,7 +5985,7 @@ export class PartitionByRangePropertyDynamicExpr extends Expression {
     start: true,
     end: true,
     every: true,
-  };
+  } satisfies RequiredMap<PartitionByRangePropertyDynamicExprArgs>;
 
   constructor (args: PartitionByRangePropertyDynamicExprArgs) {
     super(args);
@@ -6018,7 +6018,7 @@ export class RollupIndexExpr extends Expression {
     expressions: true,
     fromIndex: false,
     properties: false,
-  };
+  } satisfies RequiredMap<RollupIndexExprArgs>;
 
   constructor (args: RollupIndexExprArgs = {}) {
     super(args);
@@ -6039,7 +6039,7 @@ export class PartitionListExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     expressions: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type PartitionBoundSpecExprArgs = { fromExpressions?: Expression[]; toExpressions?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
@@ -6056,7 +6056,7 @@ export class PartitionBoundSpecExpr extends Expression {
     expression: false,
     fromExpressions: false,
     toExpressions: false,
-  };
+  } satisfies RequiredMap<PartitionBoundSpecExprArgs>;
 
   constructor (args: PartitionBoundSpecExprArgs = {}) {
     super(args);
@@ -6087,7 +6087,7 @@ export class QueryTransformExpr extends Expression {
     recordWriter: false,
     rowFormatAfter: false,
     recordReader: false,
-  };
+  } satisfies RequiredMap<QueryTransformExprArgs>;
 
   constructor (args: QueryTransformExprArgs) {
     super(args);
@@ -6132,7 +6132,7 @@ export class SemanticViewExpr extends Expression {
     dimensions: false,
     facts: false,
     where: false,
-  };
+  } satisfies RequiredMap<SemanticViewExprArgs>;
 
   constructor (args: SemanticViewExprArgs = {}) {
     super(args);
@@ -6175,7 +6175,7 @@ export class InputOutputFormatExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     inputFormat: false,
     outputFormat: false,
-  };
+  } satisfies RequiredMap<InputOutputFormatExprArgs>;
 
   constructor (args: InputOutputFormatExprArgs = {}) {
     super(args);
@@ -6205,7 +6205,7 @@ export class ReferenceExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     options: false,
-  };
+  } satisfies RequiredMap<ReferenceExprArgs>;
 
   constructor (args: ReferenceExprArgs = {}) {
     super(args);
@@ -6239,7 +6239,7 @@ export class IndexTableHintExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     target: false,
-  };
+  } satisfies RequiredMap<IndexTableHintExprArgs>;
 
   constructor (args: IndexTableHintExprArgs = {}) {
     super(args);
@@ -6270,7 +6270,7 @@ export class HistoricalDataExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     kind: true,
-  };
+  } satisfies RequiredMap<HistoricalDataExprArgs>;
 
   constructor (args: HistoricalDataExprArgs) {
     super(args);
@@ -6293,7 +6293,7 @@ export class PutExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     target: true,
     properties: false,
-  };
+  } satisfies RequiredMap<PutExprArgs>;
 
   constructor (args: PutExprArgs) {
     super(args);
@@ -6320,7 +6320,7 @@ export class GetExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     target: true,
     properties: false,
-  };
+  } satisfies RequiredMap<GetExprArgs>;
 
   constructor (args: GetExprArgs) {
     super(args);
@@ -6363,7 +6363,7 @@ export class TableExpr extends Expression {
     rowsFrom: false,
     sample: false,
     indexed: false,
-  };
+  } satisfies RequiredMap<TableExprArgs>;
 
   constructor (args: TableExprArgs = {}) {
     super(args);
@@ -6467,7 +6467,7 @@ export class VersionExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     kind: true,
-  };
+  } satisfies RequiredMap<VersionExprArgs>;
 
   constructor (args: VersionExprArgs) {
     super(args);
@@ -6495,7 +6495,7 @@ export class LockExpr extends Expression {
     update: true,
     wait: false,
     key: false,
-  };
+  } satisfies RequiredMap<LockExprArgs>;
 
   constructor (args: LockExprArgs) {
     super(args);
@@ -6528,7 +6528,7 @@ export class TableSampleExpr extends Expression {
     rows: false,
     size: false,
     seed: false,
-  };
+  } satisfies RequiredMap<TableSampleExprArgs>;
 
   constructor (args: TableSampleExprArgs = {}) {
     super(args);
@@ -6579,7 +6579,7 @@ export class TagExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     prefix: false,
     postfix: false,
-  };
+  } satisfies RequiredMap<TagExprArgs>;
 
   constructor (args: TagExprArgs = {}) {
     super(args);
@@ -6613,7 +6613,7 @@ export class PivotExpr extends Expression {
     defaultOnNull: false,
     into: false,
     with: false,
-  };
+  } satisfies RequiredMap<PivotExprArgs>;
 
   constructor (args: PivotExprArgs = {}) {
     super(args);
@@ -6684,7 +6684,7 @@ export class WindowSpecExpr extends Expression {
     end: false,
     endSide: false,
     exclude: false,
-  };
+  } satisfies RequiredMap<WindowSpecExprArgs>;
 
   constructor (args: WindowSpecExprArgs = {}) {
     super(args);
@@ -6736,7 +6736,7 @@ export class StarExpr extends Expression {
     except: false,
     replace: false,
     rename: false,
-  };
+  } satisfies RequiredMap<StarExprArgs>;
 
   constructor (args: StarExprArgs = {}) {
     super(args);
@@ -6796,7 +6796,7 @@ export class DataTypeExpr extends Expression {
     prefix: false,
     kind: false,
     nullable: false,
-  };
+  } satisfies RequiredMap<DataTypeExprArgs>;
 
   constructor (args: DataTypeExprArgs = {}) {
     super(args);
@@ -6852,7 +6852,7 @@ export class TransactionExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     modes: false,
     mark: false,
-  };
+  } satisfies RequiredMap<TransactionExprArgs>;
 
   constructor (args: TransactionExprArgs = {}) {
     super(args);
@@ -6879,7 +6879,7 @@ export class CommitExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     chain: false,
     durability: false,
-  };
+  } satisfies RequiredMap<CommitExprArgs>;
 
   constructor (args: CommitExprArgs = {}) {
     super(args);
@@ -6905,7 +6905,7 @@ export class RollbackExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     savepoint: false,
-  };
+  } satisfies RequiredMap<RollbackExprArgs>;
 
   constructor (args: RollbackExprArgs = {}) {
     super(args);
@@ -6948,7 +6948,7 @@ export class AlterExpr extends Expression {
     notValid: false,
     check: false,
     cascade: false,
-  };
+  } satisfies RequiredMap<AlterExprArgs>;
 
   constructor (args: AlterExprArgs) {
     super(args);
@@ -7002,7 +7002,7 @@ export class AlterSessionExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     unset: false,
-  };
+  } satisfies RequiredMap<AlterSessionExprArgs>;
 
   constructor (args: AlterSessionExprArgs = {}) {
     super(args);
@@ -7036,7 +7036,7 @@ export class AnalyzeExpr extends Expression {
     mode: false,
     partition: false,
     properties: false,
-  };
+  } satisfies RequiredMap<AnalyzeExprArgs>;
 
   constructor (args: AnalyzeExprArgs = {}) {
     super(args);
@@ -7085,7 +7085,7 @@ export class AnalyzeStatisticsExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     kind: true,
     option: false,
-  };
+  } satisfies RequiredMap<AnalyzeStatisticsExprArgs>;
 
   constructor (args: AnalyzeStatisticsExprArgs) {
     super(args);
@@ -7111,7 +7111,7 @@ export class AnalyzeHistogramExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     updateOptions: false,
-  };
+  } satisfies RequiredMap<AnalyzeHistogramExprArgs>;
 
   constructor (args: AnalyzeHistogramExprArgs = {}) {
     super(args);
@@ -7143,7 +7143,7 @@ export class AnalyzeSampleExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     kind: true,
     sample: true,
-  };
+  } satisfies RequiredMap<AnalyzeSampleExprArgs>;
 
   constructor (args: AnalyzeSampleExprArgs) {
     super(args);
@@ -7179,7 +7179,7 @@ export class AnalyzeDeleteExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     kind: false,
-  };
+  } satisfies RequiredMap<AnalyzeDeleteExprArgs>;
 
   constructor (args: AnalyzeDeleteExprArgs = {}) {
     super(args);
@@ -7214,7 +7214,7 @@ export class AnalyzeValidateExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     kind: true,
-  };
+  } satisfies RequiredMap<AnalyzeValidateExprArgs>;
 
   constructor (args: AnalyzeValidateExprArgs) {
     super(args);
@@ -7249,7 +7249,7 @@ export class AddPartitionExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     exists: false,
     location: false,
-  };
+  } satisfies RequiredMap<AddPartitionExprArgs>;
 
   constructor (args: AddPartitionExprArgs = {}) {
     super(args);
@@ -7279,7 +7279,7 @@ export class DropPartitionExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     exists: false,
-  };
+  } satisfies RequiredMap<DropPartitionExprArgs>;
 
   constructor (args: DropPartitionExprArgs = {}) {
     super(args);
@@ -7301,7 +7301,7 @@ export class ReplacePartitionExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     source: true,
-  };
+  } satisfies RequiredMap<ReplacePartitionExprArgs>;
 
   constructor (args: ReplacePartitionExprArgs) {
     super(args);
@@ -7339,7 +7339,7 @@ export class AtTimeZoneExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     zone: true,
-  };
+  } satisfies RequiredMap<AtTimeZoneExprArgs>;
 
   constructor (args: AtTimeZoneExprArgs) {
     super(args);
@@ -7361,7 +7361,7 @@ export class FromTimeZoneExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     zone: true,
-  };
+  } satisfies RequiredMap<FromTimeZoneExprArgs>;
 
   constructor (args: FromTimeZoneExprArgs) {
     super(args);
@@ -7383,7 +7383,7 @@ export class FormatPhraseExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     format: true,
-  };
+  } satisfies RequiredMap<FormatPhraseExprArgs>;
 
   constructor (args: FormatPhraseExprArgs) {
     super(args);
@@ -7405,7 +7405,7 @@ export class DistinctExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     on: false,
-  };
+  } satisfies RequiredMap<DistinctExprArgs>;
 
   constructor (args: DistinctExprArgs = {}) {
     super(args);
@@ -7431,7 +7431,7 @@ export class TimeUnitExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<TimeUnitExprArgs>;
 
   constructor (args: TimeUnitExprArgs = {}) {
     super(args);
@@ -7461,7 +7461,7 @@ export class HavingMaxExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     max: true,
-  };
+  } satisfies RequiredMap<HavingMaxExprArgs>;
 
   constructor (args: HavingMaxExprArgs) {
     super(args);
@@ -7483,7 +7483,7 @@ export class TranslateCharactersExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     withError: false,
-  };
+  } satisfies RequiredMap<TranslateCharactersExprArgs>;
 
   constructor (args: TranslateCharactersExprArgs = {}) {
     super(args);
@@ -7509,7 +7509,7 @@ export class OverflowTruncateBehaviorExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     withCount: true,
-  };
+  } satisfies RequiredMap<OverflowTruncateBehaviorExprArgs>;
 
   constructor (args: OverflowTruncateBehaviorExprArgs) {
     super(args);
@@ -7532,7 +7532,7 @@ export class JSONExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     with: false,
     unique: false,
-  };
+  } satisfies RequiredMap<JSONExprArgs>;
 
   constructor (args: JSONExprArgs = {}) {
     super(args);
@@ -7558,7 +7558,7 @@ export class JSONPathExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     escape: false,
-  };
+  } satisfies RequiredMap<JSONPathExprArgs>;
 
   constructor (args: JSONPathExprArgs = {}) {
     super(args);
@@ -7604,7 +7604,7 @@ export class JSONColumnDefExpr extends Expression {
     path: false,
     nestedSchema: false,
     ordinality: false,
-  };
+  } satisfies RequiredMap<JSONColumnDefExprArgs>;
 
   constructor (args: JSONColumnDefExprArgs = {}) {
     super(args);
@@ -7644,7 +7644,7 @@ export class JSONValueExpr extends Expression {
     path: true,
     returning: false,
     onCondition: false,
-  };
+  } satisfies RequiredMap<JSONValueExprArgs>;
 
   constructor (args: JSONValueExprArgs) {
     super(args);
@@ -7687,7 +7687,7 @@ export class OpenJSONColumnDefExpr extends Expression {
     kind: true,
     path: false,
     asJson: false,
-  };
+  } satisfies RequiredMap<OpenJSONColumnDefExprArgs>;
 
   constructor (args: OpenJSONColumnDefExprArgs) {
     super(args);
@@ -7718,7 +7718,7 @@ export class JSONExtractQuoteExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     option: true,
     scalar: false,
-  };
+  } satisfies RequiredMap<JSONExtractQuoteExprArgs>;
 
   constructor (args: JSONExtractQuoteExprArgs) {
     super(args);
@@ -7748,7 +7748,7 @@ export class SliceExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     step: false,
-  };
+  } satisfies RequiredMap<SliceExprArgs>;
 
   constructor (args: SliceExprArgs = {}) {
     super(args);
@@ -7800,7 +7800,7 @@ export class UseExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     kind: false,
-  };
+  } satisfies RequiredMap<UseExprArgs>;
 
   constructor (args: UseExprArgs = {}) {
     super(args);
@@ -7825,7 +7825,7 @@ export class WhenExpr extends Expression {
     source: false,
     condition: false,
     then: true,
-  };
+  } satisfies RequiredMap<WhenExprArgs>;
 
   constructor (args: WhenExprArgs) {
     super(args);
@@ -7879,7 +7879,7 @@ export class CTEExpr extends DerivedTableExpr {
     scalar: false,
     materialized: false,
     keyExpressions: false,
-  };
+  } satisfies RequiredMap<CTEExprArgs>;
 
   constructor (args: CTEExprArgs = {}) {
     super(args);
@@ -7914,7 +7914,7 @@ export class HexStringExpr extends ConditionExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
     isInteger: false,
-  };
+  } satisfies RequiredMap<HexStringExprArgs>;
 
   constructor (args: HexStringExprArgs = {}) {
     super(args);
@@ -7937,7 +7937,7 @@ export class ByteStringExpr extends ConditionExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
     isBytes: false,
-  };
+  } satisfies RequiredMap<ByteStringExprArgs>;
 
   constructor (args: ByteStringExprArgs = {}) {
     super(args);
@@ -7955,7 +7955,7 @@ export class RawStringExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for RawString expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type UnicodeStringExprArgs = { escape?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -7970,7 +7970,7 @@ export class UnicodeStringExpr extends ConditionExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
     escape: false,
-  };
+  } satisfies RequiredMap<UnicodeStringExprArgs>;
 
   constructor (args: UnicodeStringExprArgs = {}) {
     super(args);
@@ -8003,7 +8003,7 @@ export class ColumnExpr extends ConditionExpr {
     db: false,
     catalog: false,
     joinMark: false,
-  };
+  } satisfies RequiredMap<ColumnExprArgs>;
 
   constructor (args: ColumnExprArgs = {}) {
     super(args);
@@ -8087,7 +8087,7 @@ export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr 
   static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type CaseSpecificColumnConstraintExprArgs = { not: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -8101,7 +8101,7 @@ export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
    */
   static argTypes: Record<string, boolean> = {
     not: true,
-  };
+  } satisfies RequiredMap<CaseSpecificColumnConstraintExprArgs>;
 
   constructor (args: CaseSpecificColumnConstraintExprArgs) {
     super(args);
@@ -8121,7 +8121,7 @@ export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
    */
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type CheckColumnConstraintExprArgs = { enforced?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -8136,7 +8136,7 @@ export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
     enforced: false,
-  };
+  } satisfies RequiredMap<CheckColumnConstraintExprArgs>;
 
   constructor (args: CheckColumnConstraintExprArgs = {}) {
     super(args);
@@ -8168,7 +8168,7 @@ export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
    */
   static argTypes: Record<string, boolean> = {
     this: false,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -8180,7 +8180,7 @@ export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
    */
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class DefaultColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -8204,7 +8204,7 @@ export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
    */
   static argTypes: Record<string, boolean> = {
     this: false,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type GeneratedAsIdentityColumnConstraintExprArgs = { onNull?: Expression; start?: Expression; increment?: Expression; minvalue?: string; maxvalue?: string; cycle?: Expression; order?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -8227,7 +8227,7 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
     maxvalue: false,
     cycle: false,
     order: false,
-  };
+  } satisfies RequiredMap<GeneratedAsIdentityColumnConstraintExprArgs>;
 
   constructor (args: GeneratedAsIdentityColumnConstraintExprArgs = {}) {
     super(args);
@@ -8274,7 +8274,7 @@ export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr
   static argTypes: Record<string, boolean> = {
     start: false,
     hidden: false,
-  };
+  } satisfies RequiredMap<GeneratedAsRowColumnConstraintExprArgs>;
 
   constructor (args: GeneratedAsRowColumnConstraintExprArgs = {}) {
     super(args);
@@ -8315,7 +8315,7 @@ export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
     options: false,
     expression: false,
     granularity: false,
-  };
+  } satisfies RequiredMap<IndexColumnConstraintExprArgs>;
 
   constructor (args: IndexColumnConstraintExprArgs = {}) {
     super(args);
@@ -8349,7 +8349,7 @@ export class NonClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
 export class NotForReplicationColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NOT_FOR_REPLICATION_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -8358,7 +8358,7 @@ export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr 
   static argTypes: Record<string, boolean> = {
     this: true,
     expressions: false,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type NotNullColumnConstraintExprArgs = { allowNull?: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -8372,7 +8372,7 @@ export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
    */
   static argTypes: Record<string, boolean> = {
     allowNull: false,
-  };
+  } satisfies RequiredMap<NotNullColumnConstraintExprArgs>;
 
   constructor (args: NotNullColumnConstraintExprArgs = {}) {
     super(args);
@@ -8399,7 +8399,7 @@ export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
   static argTypes: Record<string, boolean> = {
     desc: false,
     options: false,
-  };
+  } satisfies RequiredMap<PrimaryKeyColumnConstraintExprArgs>;
 
   constructor (args: PrimaryKeyColumnConstraintExprArgs = {}) {
     super(args);
@@ -8433,7 +8433,7 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
     onConflict: false,
     nulls: false,
     options: false,
-  };
+  } satisfies RequiredMap<UniqueColumnConstraintExprArgs>;
 
   constructor (args: UniqueColumnConstraintExprArgs = {}) {
     super(args);
@@ -8459,7 +8459,7 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
 export class UppercaseColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.UPPERCASE_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class PathColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -8484,7 +8484,7 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
     persisted: false,
     notNull: false,
     dataType: false,
-  };
+  } satisfies RequiredMap<ComputedColumnConstraintExprArgs>;
 
   constructor (args: ComputedColumnConstraintExprArgs) {
     super(args);
@@ -8516,7 +8516,7 @@ export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
     input: false,
     output: false,
     variadic: false,
-  };
+  } satisfies RequiredMap<InOutColumnConstraintExprArgs>;
 
   constructor (args: InOutColumnConstraintExprArgs = {}) {
     super(args);
@@ -8554,7 +8554,7 @@ export class DeleteExpr extends DMLExpr {
     limit: false,
     tables: false,
     cluster: false,
-  };
+  } satisfies RequiredMap<DeleteExprArgs>;
 
   constructor (args: DeleteExprArgs = {}) {
     super(args);
@@ -8684,7 +8684,7 @@ export class CopyExpr extends DMLExpr {
     credentials: false,
     format: false,
     params: false,
-  };
+  } satisfies RequiredMap<CopyExprArgs>;
 
   constructor (args: CopyExprArgs) {
     super(args);
@@ -8739,7 +8739,7 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
     settings: false,
     source: false,
     default: false,
-  };
+  } satisfies RequiredMap<InsertExprArgs>;
 
   constructor (args: InsertExprArgs = {}) {
     super(args);
@@ -8873,7 +8873,7 @@ export class LiteralExpr extends ConditionExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
     isString: true,
-  };
+  } satisfies RequiredMap<LiteralExprArgs>;
 
   /**
    * Create a numeric literal expression
@@ -8948,7 +8948,7 @@ export class AlgorithmPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<AlgorithmPropertyExprArgs>;
 
   constructor (args: AlgorithmPropertyExprArgs) {
     super(args);
@@ -8966,7 +8966,7 @@ export class AutoIncrementPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<AutoIncrementPropertyExprArgs>;
 
   constructor (args: AutoIncrementPropertyExprArgs) {
     super(args);
@@ -8984,7 +8984,7 @@ export class AutoRefreshPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<AutoRefreshPropertyExprArgs>;
 
   constructor (args: AutoRefreshPropertyExprArgs) {
     super(args);
@@ -9002,7 +9002,7 @@ export class BackupPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<BackupPropertyExprArgs>;
 
   constructor (args: BackupPropertyExprArgs) {
     super(args);
@@ -9020,7 +9020,7 @@ export class BuildPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<BuildPropertyExprArgs>;
 
   constructor (args: BuildPropertyExprArgs) {
     super(args);
@@ -9047,7 +9047,7 @@ export class BlockCompressionPropertyExpr extends PropertyExpr {
     default: false,
     manual: false,
     never: false,
-  };
+  } satisfies RequiredMap<BlockCompressionPropertyExprArgs>;
 
   constructor (args: BlockCompressionPropertyExprArgs) {
     super(args);
@@ -9090,7 +9090,7 @@ export class CharacterSetPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
     default: true,
-  };
+  } satisfies RequiredMap<CharacterSetPropertyExprArgs>;
 
   constructor (args: CharacterSetPropertyExprArgs) {
     super(args);
@@ -9118,7 +9118,7 @@ export class ChecksumPropertyExpr extends PropertyExpr {
     value: false,
     on: false,
     default: false,
-  };
+  } satisfies RequiredMap<ChecksumPropertyExprArgs>;
 
   constructor (args: ChecksumPropertyExprArgs) {
     super(args);
@@ -9149,7 +9149,7 @@ export class CollatePropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
     default: false,
-  };
+  } satisfies RequiredMap<CollatePropertyExprArgs>;
 
   constructor (args: CollatePropertyExprArgs) {
     super(args);
@@ -9169,7 +9169,7 @@ export type CopyGrantsPropertyExprArgs = { [key: string]: unknown } & BaseExpres
 export class CopyGrantsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.COPY_GRANTS_PROPERTY;
 
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CopyGrantsPropertyExprArgs>;
 
   constructor (args: CopyGrantsPropertyExprArgs) {
     super(args);
@@ -9192,7 +9192,7 @@ export class DataBlocksizePropertyExpr extends PropertyExpr {
     minimum: false,
     maximum: false,
     default: false,
-  };
+  } satisfies RequiredMap<DataBlocksizePropertyExprArgs>;
 
   constructor (args: DataBlocksizePropertyExprArgs) {
     super(args);
@@ -9237,7 +9237,7 @@ export class DataDeletionPropertyExpr extends PropertyExpr {
     on: true,
     filterColumn: false,
     retentionPeriod: false,
-  };
+  } satisfies RequiredMap<DataDeletionPropertyExprArgs>;
 
   constructor (args: DataDeletionPropertyExprArgs) {
     super(args);
@@ -9267,7 +9267,7 @@ export class DefinerPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<DefinerPropertyExprArgs>;
 
   constructor (args: DefinerPropertyExprArgs) {
     super(args);
@@ -9285,7 +9285,7 @@ export class DistKeyPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<DistKeyPropertyExprArgs>;
 
   constructor (args: DistKeyPropertyExprArgs) {
     super(args);
@@ -9321,7 +9321,7 @@ export class DistributedByPropertyExpr extends PropertyExpr {
     kind: true,
     buckets: false,
     order: false,
-  };
+  } satisfies RequiredMap<DistributedByPropertyExprArgs>;
 
   constructor (args: DistributedByPropertyExprArgs) {
     super(args);
@@ -9351,7 +9351,7 @@ export class DistStylePropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<DistStylePropertyExprArgs>;
 
   constructor (args: DistStylePropertyExprArgs) {
     super(args);
@@ -9369,7 +9369,7 @@ export class DuplicateKeyPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     expressions: true,
-  };
+  } satisfies RequiredMap<DuplicateKeyPropertyExprArgs>;
 
   constructor (args: DuplicateKeyPropertyExprArgs) {
     super(args);
@@ -9387,7 +9387,7 @@ export class EnginePropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<EnginePropertyExprArgs>;
 
   constructor (args: EnginePropertyExprArgs) {
     super(args);
@@ -9403,7 +9403,7 @@ export type HeapPropertyExprArgs = { [key: string]: unknown } & BaseExpressionAr
 export class HeapPropertyExpr extends PropertyExpr {
   key = ExpressionKey.HEAP_PROPERTY;
 
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<HeapPropertyExprArgs>;
 
   constructor (args: HeapPropertyExprArgs) {
     super(args);
@@ -9417,7 +9417,7 @@ export class ToTablePropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<ToTablePropertyExprArgs>;
 
   constructor (args: ToTablePropertyExprArgs) {
     super(args);
@@ -9435,7 +9435,7 @@ export class ExecuteAsPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<ExecuteAsPropertyExprArgs>;
 
   constructor (args: ExecuteAsPropertyExprArgs) {
     super(args);
@@ -9453,7 +9453,7 @@ export class ExternalPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: false,
-  };
+  } satisfies RequiredMap<ExternalPropertyExprArgs>;
 
   constructor (args: ExternalPropertyExprArgs) {
     super(args);
@@ -9477,7 +9477,7 @@ export class FallbackPropertyExpr extends PropertyExpr {
     value: false,
     no: true,
     protection: false,
-  };
+  } satisfies RequiredMap<FallbackPropertyExprArgs>;
 
   constructor (args: FallbackPropertyExprArgs) {
     super(args);
@@ -9509,7 +9509,7 @@ export class FileFormatPropertyExpr extends PropertyExpr {
     this: false,
     expressions: false,
     hiveFormat: false,
-  };
+  } satisfies RequiredMap<FileFormatPropertyExprArgs>;
 
   constructor (args: FileFormatPropertyExprArgs) {
     super(args);
@@ -9531,7 +9531,7 @@ export class CredentialsPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     expressions: true,
-  };
+  } satisfies RequiredMap<CredentialsPropertyExprArgs>;
 
   constructor (args: CredentialsPropertyExprArgs) {
     super(args);
@@ -9554,7 +9554,7 @@ export class FreespacePropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     value: false,
     percent: false,
-  };
+  } satisfies RequiredMap<FreespacePropertyExprArgs>;
 
   constructor (args: FreespacePropertyExprArgs) {
     super(args);
@@ -9574,7 +9574,7 @@ export type GlobalPropertyExprArgs = { [key: string]: unknown } & BaseExpression
 export class GlobalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.GLOBAL_PROPERTY;
 
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<GlobalPropertyExprArgs>;
 
   constructor (args: GlobalPropertyExprArgs) {
     super(args);
@@ -9586,7 +9586,7 @@ export type IcebergPropertyExprArgs = { [key: string]: unknown } & BaseExpressio
 export class IcebergPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ICEBERG_PROPERTY;
 
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<IcebergPropertyExprArgs>;
 
   constructor (args: IcebergPropertyExprArgs) {
     super(args);
@@ -9619,7 +9619,7 @@ export class IsolatedLoadingPropertyExpr extends PropertyExpr {
     no: false,
     concurrent: false,
     target: false,
-  };
+  } satisfies RequiredMap<IsolatedLoadingPropertyExprArgs>;
 
   constructor (args: IsolatedLoadingPropertyExprArgs) {
     super(args);
@@ -9658,7 +9658,7 @@ export class JournalPropertyExpr extends PropertyExpr {
     before: false,
     local: false,
     after: false,
-  };
+  } satisfies RequiredMap<JournalPropertyExprArgs>;
 
   constructor (args: JournalPropertyExprArgs) {
     super(args);
@@ -9710,7 +9710,7 @@ export class ClusteredByPropertyExpr extends PropertyExpr {
     value: false,
     sortedBy: false,
     buckets: true,
-  };
+  } satisfies RequiredMap<ClusteredByPropertyExprArgs>;
 
   constructor (args: ClusteredByPropertyExprArgs) {
     super(args);
@@ -9756,7 +9756,7 @@ export class DictPropertyExpr extends PropertyExpr {
     value: false,
     kind: true,
     settings: false,
-  };
+  } satisfies RequiredMap<DictPropertyExprArgs>;
 
   constructor (args: DictPropertyExprArgs) {
     super(args);
@@ -9792,7 +9792,7 @@ export class DictRangeExpr extends PropertyExpr {
     this: true,
     min: true,
     max: true,
-  };
+  } satisfies RequiredMap<DictRangeExprArgs>;
 
   constructor (args: DictRangeExprArgs) {
     super(args);
@@ -9814,7 +9814,7 @@ export class DictRangeExpr extends PropertyExpr {
 export class DynamicPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DYNAMIC_PROPERTY;
 
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type OnClusterExprArgs = { this: Expression; [key: string]: unknown } & BaseExpressionArgs;
@@ -9824,7 +9824,7 @@ export class OnClusterExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<OnClusterExprArgs>;
 
   constructor (args: OnClusterExprArgs) {
     super(args);
@@ -9838,7 +9838,7 @@ export class OnClusterExpr extends PropertyExpr {
 export class EmptyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EMPTY_PROPERTY;
 
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type LikePropertyExprArgs = { this: Expression; expressions?: Expression[]; [key: string]: unknown } & BaseExpressionArgs;
@@ -9849,7 +9849,7 @@ export class LikePropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
     expressions: false,
-  };
+  } satisfies RequiredMap<LikePropertyExprArgs>;
 
   constructor (args: LikePropertyExprArgs) {
     super(args);
@@ -9871,7 +9871,7 @@ export class LocationPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<LocationPropertyExprArgs>;
 
   constructor (args: LocationPropertyExprArgs) {
     super(args);
@@ -9889,7 +9889,7 @@ export class LockPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<LockPropertyExprArgs>;
 
   constructor (args: LockPropertyExprArgs) {
     super(args);
@@ -9926,7 +9926,7 @@ export class LockingPropertyExpr extends PropertyExpr {
     forOrIn: false,
     lockType: true,
     override: false,
-  };
+  } satisfies RequiredMap<LockingPropertyExprArgs>;
 
   constructor (args: LockingPropertyExprArgs) {
     super(args);
@@ -9965,7 +9965,7 @@ export class LogPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     value: false,
     no: true,
-  };
+  } satisfies RequiredMap<LogPropertyExprArgs>;
 
   constructor (args: LogPropertyExprArgs) {
     super(args);
@@ -9987,7 +9987,7 @@ export class MaterializedPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: false,
-  };
+  } satisfies RequiredMap<MaterializedPropertyExprArgs>;
 
   constructor (args: MaterializedPropertyExprArgs) {
     super(args);
@@ -10012,7 +10012,7 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
     no: false,
     default: false,
     percent: false,
-  };
+  } satisfies RequiredMap<MergeBlockRatioPropertyExprArgs>;
 
   constructor (args: MergeBlockRatioPropertyExprArgs) {
     super(args);
@@ -10038,7 +10038,7 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
 export class NoPrimaryIndexPropertyExpr extends PropertyExpr {
   key = ExpressionKey.NO_PRIMARY_INDEX_PROPERTY;
 
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class OnPropertyExpr extends PropertyExpr {
@@ -10046,7 +10046,7 @@ export class OnPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type OnCommitPropertyExprArgs = { value?: string; delete?: Expression; [key: string]: unknown } & PropertyExprArgs;
@@ -10061,7 +10061,7 @@ export class OnCommitPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     value: false,
     delete: false,
-  };
+  } satisfies RequiredMap<OnCommitPropertyExprArgs>;
 
   constructor (args: OnCommitPropertyExprArgs) {
     super(args);
@@ -10081,7 +10081,7 @@ export class PartitionedByPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class PartitionedByBucketExpr extends PropertyExpr {
@@ -10090,7 +10090,7 @@ export class PartitionedByBucketExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class PartitionByTruncateExpr extends PropertyExpr {
@@ -10099,7 +10099,7 @@ export class PartitionByTruncateExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type PartitionByRangePropertyExprArgs = { value?: string; partitionExpressions: Expression[]; createExpressions: Expression[]; [key: string]: unknown } & PropertyExprArgs;
@@ -10115,7 +10115,7 @@ export class PartitionByRangePropertyExpr extends PropertyExpr {
     value: false,
     partitionExpressions: true,
     createExpressions: true,
-  };
+  } satisfies RequiredMap<PartitionByRangePropertyExprArgs>;
 
   constructor (args: PartitionByRangePropertyExprArgs) {
     super(args);
@@ -10139,7 +10139,7 @@ export class RollupPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     expressions: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export type PartitionByListPropertyExprArgs = { partitionExpressions: Expression[]; createExpressions: Expression[]; [key: string]: unknown } & PropertyExprArgs;
@@ -10154,7 +10154,7 @@ export class PartitionByListPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     partitionExpressions: true,
     createExpressions: true,
-  };
+  } satisfies RequiredMap<PartitionByListPropertyExprArgs>;
 
   constructor (args: PartitionByListPropertyExprArgs) {
     super(args);
@@ -10194,7 +10194,7 @@ export class RefreshTriggerPropertyExpr extends PropertyExpr {
     every: false,
     unit: false,
     starts: false,
-  };
+  } satisfies RequiredMap<RefreshTriggerPropertyExprArgs>;
 
   constructor (args: RefreshTriggerPropertyExprArgs) {
     super(args);
@@ -10230,7 +10230,7 @@ export class UniqueKeyPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     expressions: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 }
 
 export class PartitionedOfPropertyExpr extends PropertyExpr {
@@ -10259,7 +10259,7 @@ export class ReturnsPropertyExpr extends PropertyExpr {
     isTable: false,
     table: false,
     null: false,
-  };
+  } satisfies RequiredMap<ReturnsPropertyExprArgs>;
 
   constructor (args: ReturnsPropertyExprArgs) {
     super(args);
@@ -10307,7 +10307,7 @@ export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
     lines: false,
     null: false,
     serde: false,
-  };
+  } satisfies RequiredMap<RowFormatDelimitedPropertyExprArgs>;
 
   constructor (args: RowFormatDelimitedPropertyExprArgs) {
     super(args);
@@ -10354,7 +10354,7 @@ export class RowFormatSerdePropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
     serdeProperties: false,
-  };
+  } satisfies RequiredMap<RowFormatSerdePropertyExprArgs>;
 
   constructor (args: RowFormatSerdePropertyExprArgs) {
     super(args);
@@ -10389,7 +10389,7 @@ export class SerdePropertiesExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     expressions: true,
     with: false,
-  };
+  } satisfies RequiredMap<SerdePropertiesExprArgs>;
 
   constructor (args: SerdePropertiesExprArgs) {
     super(args);
@@ -10415,7 +10415,7 @@ export class SetPropertyExpr extends PropertyExpr {
    */
   static argTypes: Record<string, boolean> = {
     multi: true,
-  };
+  } satisfies RequiredMap<SetPropertyExprArgs>;
 
   constructor (args: SetPropertyExprArgs) {
     super(args);
@@ -10433,7 +10433,7 @@ export class SharingPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: false,
-  };
+  } satisfies RequiredMap<SharingPropertyExprArgs>;
 
   constructor (args: SetPropertyExprArgs) {
     super(args);
@@ -10451,7 +10451,7 @@ export class SetConfigPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<SetConfigPropertyExprArgs>;
 
   constructor (args: SetConfigPropertyExprArgs) {
     super(args);
@@ -10469,7 +10469,7 @@ export class SettingsPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     expressions: true,
-  };
+  } satisfies RequiredMap<SettingsPropertyExprArgs>;
 
   constructor (args: SettingsPropertyExprArgs) {
     super(args);
@@ -10492,7 +10492,7 @@ export class SortKeyPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     this: true,
     compound: false,
-  };
+  } satisfies RequiredMap<SortKeyPropertyExprArgs>;
 
   constructor (args: SortKeyPropertyExprArgs) {
     super(args);
@@ -10514,7 +10514,7 @@ export class SqlReadWritePropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<SqlReadWritePropertyExprArgs>;
 
   constructor (args: SqlReadWritePropertyExprArgs) {
     super(args);
@@ -10532,7 +10532,7 @@ export class SqlSecurityPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<SqlSecurityPropertyExprArgs>;
 
   constructor (args: SqlSecurityPropertyExprArgs) {
     super(args);
@@ -10550,7 +10550,7 @@ export class StabilityPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<StabilityPropertyExprArgs>;
 
   constructor (args: StabilityPropertyExprArgs) {
     super(args);
@@ -10568,7 +10568,7 @@ export class StorageHandlerPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<StorageHandlerPropertyExprArgs>;
 
   constructor (args: StorageHandlerPropertyExprArgs) {
     super(args);
@@ -10586,7 +10586,7 @@ export class TemporaryPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: false,
-  };
+  } satisfies RequiredMap<TemporaryPropertyExprArgs>;
 
   constructor (args: TemporaryPropertyExprArgs) {
     super(args);
@@ -10602,7 +10602,7 @@ export type SecurePropertyExprArgs = { [key: string]: unknown } & BaseExpression
 export class SecurePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURE_PROPERTY;
 
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SecurePropertyExprArgs>;
 
   constructor (args: SecurePropertyExprArgs) {
     super(args);
@@ -10616,7 +10616,7 @@ export class TagsExpr extends multiInherit(Expression, PropertyExpr, ColumnConst
 
   static argTypes: Record<string, boolean> = {
     expressions: true,
-  };
+  } satisfies RequiredMap<TagsExprArgs>;
 
   constructor (args: TagsExprArgs) {
     super(args);
@@ -10634,7 +10634,7 @@ export class TransformModelPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     expressions: true,
-  };
+  } satisfies RequiredMap<TransformModelPropertyExprArgs>;
 
   constructor (args: TransformModelPropertyExprArgs) {
     super(args);
@@ -10652,7 +10652,7 @@ export class TransientPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: false,
-  };
+  } satisfies RequiredMap<TransientPropertyExprArgs>;
 
   constructor (args: TransientPropertyExprArgs) {
     super(args);
@@ -10668,7 +10668,7 @@ export type UnloggedPropertyExprArgs = { [key: string]: unknown } & BaseExpressi
 export class UnloggedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNLOGGED_PROPERTY;
 
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UnloggedPropertyExprArgs>;
 
   constructor (args: UnloggedPropertyExprArgs) {
     super(args);
@@ -10682,7 +10682,7 @@ export class UsingTemplatePropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<UsingTemplatePropertyExprArgs>;
 
   constructor (args: UsingTemplatePropertyExprArgs) {
     super(args);
@@ -10700,7 +10700,7 @@ export class ViewAttributePropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<ViewAttributePropertyExprArgs>;
 
   constructor (args: ViewAttributePropertyExprArgs) {
     super(args);
@@ -10718,7 +10718,7 @@ export class VolatilePropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: false,
-  };
+  } satisfies RequiredMap<VolatilePropertyExprArgs>;
 
   constructor (args: VolatilePropertyExprArgs) {
     super(args);
@@ -10741,7 +10741,7 @@ export class WithDataPropertyExpr extends PropertyExpr {
   static argTypes: Record<string, boolean> = {
     no: true,
     statistics: false,
-  };
+  } satisfies RequiredMap<WithDataPropertyExprArgs>;
 
   constructor (args: WithDataPropertyExprArgs) {
     super(args);
@@ -10763,7 +10763,7 @@ export class WithJournalTablePropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<WithJournalTablePropertyExprArgs>;
 
   constructor (args: WithJournalTablePropertyExprArgs) {
     super(args);
@@ -10781,7 +10781,7 @@ export class WithSchemaBindingPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     this: true,
-  };
+  } satisfies RequiredMap<WithSchemaBindingPropertyExprArgs>;
 
   constructor (args: WithSchemaBindingPropertyExprArgs) {
     super(args);
@@ -10807,7 +10807,7 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
     dataConsistency: false,
     retentionPeriod: false,
     with: true,
-  };
+  } satisfies RequiredMap<WithSystemVersioningPropertyExprArgs>;
 
   constructor (args: WithSystemVersioningPropertyExprArgs) {
     super(args);
@@ -10841,7 +10841,7 @@ export class WithProcedureOptionsExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {
     expressions: true,
-  };
+  } satisfies RequiredMap<WithProcedureOptionsExprArgs>;
 
   constructor (args: WithProcedureOptionsExprArgs) {
     super(args);
@@ -10866,7 +10866,7 @@ export class EncodePropertyExpr extends PropertyExpr {
     this: true,
     properties: false,
     key: false,
-  };
+  } satisfies RequiredMap<EncodePropertyExprArgs>;
 
   constructor (args: EncodePropertyExprArgs) {
     super(args);
@@ -10895,7 +10895,7 @@ export class IncludePropertyExpr extends PropertyExpr {
     this: true,
     alias: false,
     columnDef: false,
-  };
+  } satisfies RequiredMap<IncludePropertyExprArgs>;
 
   constructor (args: IncludePropertyExprArgs) {
     super(args);
@@ -10915,7 +10915,7 @@ export type ForcePropertyExprArgs = { [key: string]: unknown } & BaseExpressionA
 export class ForcePropertyExpr extends PropertyExpr {
   key = ExpressionKey.FORCE_PROPERTY;
 
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ForcePropertyExprArgs>;
 
   constructor (args: ForcePropertyExprArgs) {
     super(args);
@@ -10953,7 +10953,7 @@ export class PropertiesExpr extends Expression {
 
   static argTypes: Record<string, boolean> = {
     expressions: true,
-  };
+  } satisfies RequiredMap<BaseExpressionArgs>;
 
   static NAME_TO_PROPERTY = {
     'ALGORITHM': AlgorithmPropertyExpr,
@@ -11037,7 +11037,7 @@ export class SetOperationExpr extends QueryExpr {
     side: false,
     kind: false,
     on: false,
-  };
+  } satisfies RequiredMap<SetOperationExprArgs>;
 
   constructor (args: SetOperationExprArgs = {}) {
     super(args);
@@ -11085,7 +11085,7 @@ export class UpdateExpr extends DMLExpr {
     order: false,
     limit: false,
     options: false,
-  };
+  } satisfies RequiredMap<UpdateExprArgs>;
 
   constructor (args: UpdateExprArgs = {}) {
     super(args);
@@ -11159,7 +11159,7 @@ export class SelectExpr extends QueryExpr {
     into: false,
     from: false,
     operationModifiers: false,
-  };
+  } satisfies RequiredMap<SelectExprArgs>;
 
   constructor (args: SelectExprArgs = {}) {
     super(args);
@@ -11205,7 +11205,7 @@ export class SubqueryExpr extends DerivedTableExpr {
    */
   static argTypes: Record<string, boolean> = {
     with: false,
-  };
+  } satisfies RequiredMap<SubqueryExprArgs>;
 
   constructor (args: SubqueryExprArgs = {}) {
     super(args);
@@ -11231,7 +11231,7 @@ export class WindowExpr extends Expression {
     spec: false,
     over: false,
     first: false,
-  };
+  } satisfies RequiredMap<WindowExprArgs>;
 
   constructor (args: WindowExprArgs = {}) {
     super(args);
@@ -11282,7 +11282,7 @@ export class SessionParameterExpr extends Expression {
    */
   static argTypes: Record<string, boolean> = {
     kind: false,
-  };
+  } satisfies RequiredMap<SessionParameterExprArgs>;
 
   constructor (args: SessionParameterExprArgs = {}) {
     super(args);
@@ -11316,7 +11316,7 @@ export class PlaceholderExpr extends Expression {
     kind: false,
     widget: false,
     jdbc: false,
-  };
+  } satisfies RequiredMap<PlaceholderExprArgs>;
 
   constructor (args: PlaceholderExprArgs = {}) {
     super(args);
@@ -11376,7 +11376,7 @@ export class BracketExpr extends Expression {
     offset: false,
     safe: false,
     returnsListForMaps: false,
-  };
+  } satisfies RequiredMap<BracketExprArgs>;
 
   constructor (args: BracketExprArgs = {}) {
     super(args);
@@ -11406,7 +11406,7 @@ export class IntervalOpExpr extends TimeUnitExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<IntervalOpExprArgs>;
 
   constructor (args: IntervalOpExprArgs = {}) {
     super(args);
@@ -11432,7 +11432,7 @@ export class IntervalExpr extends TimeUnitExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<IntervalExprArgs>;
 
   constructor (args: IntervalExprArgs = {}) {
     super(args);
@@ -11538,7 +11538,7 @@ export class JSONPathSliceExpr extends JSONPathPartExpr {
     start: false,
     end: false,
     step: false,
-  };
+  } satisfies RequiredMap<JSONPathSliceExprArgs>;
 
   constructor (args: JSONPathSliceExprArgs = {}) {
     super(args);
@@ -11589,7 +11589,7 @@ export class MergeExpr extends DMLExpr {
     whens: true,
     with: false,
     returning: false,
-  };
+  } satisfies RequiredMap<MergeExprArgs>;
 
   constructor (args: MergeExprArgs) {
     super(args);
@@ -11636,7 +11636,7 @@ export class LateralExpr extends UDTFExpr {
     alias: false,
     crossApply: false,
     ordinality: false,
-  };
+  } satisfies RequiredMap<LateralExprArgs>;
 
   constructor (args: LateralExprArgs = {}) {
     super(args);
@@ -11674,7 +11674,7 @@ export class TableFromRowsExpr extends UDTFExpr {
     joins: false,
     pivots: false,
     sample: false,
-  };
+  } satisfies RequiredMap<TableFromRowsExprArgs>;
 
   constructor (args: TableFromRowsExprArgs = {}) {
     super(args);
@@ -11718,7 +11718,7 @@ export class ValuesExpr extends UDTFExpr {
     order: false,
     limit: false,
     offset: false,
-  };
+  } satisfies RequiredMap<ValuesExprArgs>;
 
   constructor (args: ValuesExprArgs = {}) {
     super(args);
@@ -11760,7 +11760,7 @@ export class BitwiseAndExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     padside: false,
-  };
+  } satisfies RequiredMap<BitwiseAndExprArgs>;
 
   constructor (args: BitwiseAndExprArgs = {}) {
     super(args);
@@ -11782,7 +11782,7 @@ export class BitwiseLeftShiftExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     requiresInt128: false,
-  };
+  } satisfies RequiredMap<BitwiseLeftShiftExprArgs>;
 
   constructor (args: BitwiseLeftShiftExprArgs = {}) {
     super(args);
@@ -11804,7 +11804,7 @@ export class BitwiseOrExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     padside: false,
-  };
+  } satisfies RequiredMap<BitwiseOrExprArgs>;
 
   constructor (args: BitwiseOrExprArgs = {}) {
     super(args);
@@ -11826,7 +11826,7 @@ export class BitwiseRightShiftExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     requiresInt128: false,
-  };
+  } satisfies RequiredMap<BitwiseRightShiftExprArgs>;
 
   constructor (args: BitwiseRightShiftExprArgs = {}) {
     super(args);
@@ -11848,7 +11848,7 @@ export class BitwiseXorExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     padside: false,
-  };
+  } satisfies RequiredMap<BitwiseXorExprArgs>;
 
   constructor (args: BitwiseXorExprArgs = {}) {
     super(args);
@@ -11871,7 +11871,7 @@ export class DivExpr extends BinaryExpr {
   static argTypes: Record<string, boolean> = {
     typed: false,
     safe: false,
-  };
+  } satisfies RequiredMap<DivExprArgs>;
 
   constructor (args: DivExprArgs = {}) {
     super(args);
@@ -11913,7 +11913,7 @@ export class DPipeExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     safe: false,
-  };
+  } satisfies RequiredMap<DPipeExprArgs>;
 
   constructor (args: DPipeExprArgs = {}) {
     super(args);
@@ -12015,7 +12015,7 @@ export class OperatorExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     operator: true,
-  };
+  } satisfies RequiredMap<OperatorExprArgs>;
 
   constructor (args: OperatorExprArgs) {
     super(args);
@@ -12067,7 +12067,7 @@ export class BetweenExpr extends PredicateExpr {
     low: true,
     high: true,
     symmetric: false,
-  };
+  } satisfies RequiredMap<BetweenExprArgs>;
 
   constructor (args: BetweenExprArgs) {
     super(args);
@@ -12100,7 +12100,7 @@ export class InExpr extends PredicateExpr {
     unnest: false,
     field: false,
     isGlobal: false,
-  };
+  } satisfies RequiredMap<InExprArgs>;
 
   constructor (args: InExprArgs = {}) {
     super(args);
@@ -12266,7 +12266,7 @@ export class BoolnotExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     roundInput: false,
-  };
+  } satisfies RequiredMap<BoolnotExprArgs>;
 
   constructor (args: BoolnotExprArgs = {}) {
     super(args);
@@ -12288,7 +12288,7 @@ export class BoolandExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     roundInput: false,
-  };
+  } satisfies RequiredMap<BoolandExprArgs>;
 
   constructor (args: BoolandExprArgs = {}) {
     super(args);
@@ -12310,7 +12310,7 @@ export class BoolorExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     roundInput: false,
-  };
+  } satisfies RequiredMap<BoolorExprArgs>;
 
   constructor (args: BoolorExprArgs = {}) {
     super(args);
@@ -12336,7 +12336,7 @@ export class ArrayRemoveExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     nullPropagation: false,
-  };
+  } satisfies RequiredMap<ArrayRemoveExprArgs>;
 
   constructor (args: ArrayRemoveExprArgs = {}) {
     super(args);
@@ -12383,7 +12383,7 @@ export class TranslateExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     from: true,
     to: true,
-  };
+  } satisfies RequiredMap<TranslateExprArgs>;
 
   constructor (args: TranslateExprArgs) {
     super(args);
@@ -12418,7 +12418,7 @@ export class ArrayExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     bracketNotation: false,
     structNameInheritance: false,
-  };
+  } satisfies RequiredMap<ArrayExprArgs>;
 
   constructor (args: ArrayExprArgs = {}) {
     super(args);
@@ -12452,7 +12452,7 @@ export class ToBooleanExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     safe: false,
-  };
+  } satisfies RequiredMap<ToBooleanExprArgs>;
 
   constructor (args: ToBooleanExprArgs = {}) {
     super(args);
@@ -12479,7 +12479,7 @@ export class PadExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     fillPattern: false,
     isLeft: true,
-  };
+  } satisfies RequiredMap<PadExprArgs>;
 
   constructor (args: PadExprArgs) {
     super(args);
@@ -12507,7 +12507,7 @@ export class ToCharExpr extends FuncExpr {
     format: false,
     nlsparam: false,
     isNumeric: false,
-  };
+  } satisfies RequiredMap<ToCharExprArgs>;
 
   constructor (args: ToCharExprArgs = {}) {
     super(args);
@@ -12546,7 +12546,7 @@ export class ToNumberExpr extends FuncExpr {
     scale: false,
     safe: false,
     safeName: false,
-  };
+  } satisfies RequiredMap<ToNumberExprArgs>;
 
   constructor (args: ToNumberExprArgs = {}) {
     super(args);
@@ -12589,7 +12589,7 @@ export class ToDoubleExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     format: false,
     safe: false,
-  };
+  } satisfies RequiredMap<ToDoubleExprArgs>;
 
   constructor (args: ToDoubleExprArgs = {}) {
     super(args);
@@ -12615,7 +12615,7 @@ export class ToDecfloatExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     format: false,
-  };
+  } satisfies RequiredMap<ToDecfloatExprArgs>;
 
   constructor (args: ToDecfloatExprArgs = {}) {
     super(args);
@@ -12637,7 +12637,7 @@ export class TryToDecfloatExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     format: false,
-  };
+  } satisfies RequiredMap<TryToDecfloatExprArgs>;
 
   constructor (args: TryToDecfloatExprArgs = {}) {
     super(args);
@@ -12660,7 +12660,7 @@ export class ToFileExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     path: false,
     safe: false,
-  };
+  } satisfies RequiredMap<ToFileExprArgs>;
 
   constructor (args: ToFileExprArgs = {}) {
     super(args);
@@ -12690,7 +12690,7 @@ export class ColumnsExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unpack: false,
-  };
+  } satisfies RequiredMap<ColumnsExprArgs>;
 
   constructor (args: ColumnsExprArgs = {}) {
     super(args);
@@ -12713,7 +12713,7 @@ export class ConvertExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     style: false,
     safe: false,
-  };
+  } satisfies RequiredMap<ConvertExprArgs>;
 
   constructor (args: ConvertExprArgs = {}) {
     super(args);
@@ -12740,7 +12740,7 @@ export class ConvertToCharsetExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     dest: true,
     source: false,
-  };
+  } satisfies RequiredMap<ConvertToCharsetExprArgs>;
 
   constructor (args: ConvertToCharsetExprArgs) {
     super(args);
@@ -12769,7 +12769,7 @@ export class ConvertTimezoneExpr extends FuncExpr {
     targetTz: true,
     timestamp: true,
     options: false,
-  };
+  } satisfies RequiredMap<ConvertTimezoneExprArgs>;
 
   constructor (args: ConvertTimezoneExprArgs) {
     super(args);
@@ -12810,7 +12810,7 @@ export class GenerateSeriesExpr extends FuncExpr {
     end: true,
     step: false,
     isEndExclusive: false,
-  };
+  } satisfies RequiredMap<GenerateSeriesExprArgs>;
 
   constructor (args: GenerateSeriesExprArgs) {
     super(args);
@@ -12845,7 +12845,7 @@ export class GeneratorExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     rowcount: false,
     timelimit: false,
-  };
+  } satisfies RequiredMap<GeneratorExprArgs>;
 
   constructor (args: GeneratorExprArgs = {}) {
     super(args);
@@ -12872,7 +12872,7 @@ export class AIClassifyExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     categories: true,
     config: false,
-  };
+  } satisfies RequiredMap<AIClassifyExprArgs>;
 
   constructor (args: AIClassifyExprArgs) {
     super(args);
@@ -12906,7 +12906,7 @@ export class ArrayAppendExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     nullPropagation: false,
-  };
+  } satisfies RequiredMap<ArrayAppendExprArgs>;
 
   constructor (args: ArrayAppendExprArgs = {}) {
     super(args);
@@ -12928,7 +12928,7 @@ export class ArrayPrependExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     nullPropagation: false,
-  };
+  } satisfies RequiredMap<ArrayPrependExprArgs>;
 
   constructor (args: ArrayPrependExprArgs = {}) {
     super(args);
@@ -12951,7 +12951,7 @@ export class ArrayConcatExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     nullPropagation: false,
-  };
+  } satisfies RequiredMap<ArrayConcatExprArgs>;
 
   constructor (args: ArrayConcatExprArgs = {}) {
     super(args);
@@ -12978,7 +12978,7 @@ export class ArrayInsertExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     position: true,
     offset: false,
-  };
+  } satisfies RequiredMap<ArrayInsertExprArgs>;
 
   constructor (args: ArrayInsertExprArgs) {
     super(args);
@@ -13004,7 +13004,7 @@ export class ArrayRemoveAtExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     position: true,
-  };
+  } satisfies RequiredMap<ArrayRemoveAtExprArgs>;
 
   constructor (args: ArrayRemoveAtExprArgs) {
     super(args);
@@ -13031,7 +13031,7 @@ export class ArrayContainsExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     ensureVariant: false,
-  };
+  } satisfies RequiredMap<ArrayContainsExprArgs>;
 
   constructor (args: ArrayContainsExprArgs = {}) {
     super(args);
@@ -13077,7 +13077,7 @@ export class ArraySliceExpr extends FuncExpr {
     start: true,
     end: false,
     step: false,
-  };
+  } satisfies RequiredMap<ArraySliceExprArgs>;
 
   constructor (args: ArraySliceExprArgs) {
     super(args);
@@ -13108,7 +13108,7 @@ export class ArrayToStringExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     null: false,
-  };
+  } satisfies RequiredMap<ArrayToStringExprArgs>;
 
   constructor (args: ArrayToStringExprArgs = {}) {
     super(args);
@@ -13134,7 +13134,7 @@ export class StPointExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     null: false,
-  };
+  } satisfies RequiredMap<StPointExprArgs>;
 
   constructor (args: StPointExprArgs = {}) {
     super(args);
@@ -13156,7 +13156,7 @@ export class StDistanceExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     useSpheroid: false,
-  };
+  } satisfies RequiredMap<StDistanceExprArgs>;
 
   constructor (args: StDistanceExprArgs = {}) {
     super(args);
@@ -13178,7 +13178,7 @@ export class StringExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     zone: false,
-  };
+  } satisfies RequiredMap<StringExprArgs>;
 
   constructor (args: StringExprArgs = {}) {
     super(args);
@@ -13200,7 +13200,7 @@ export class StringToArrayExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     null: false,
-  };
+  } satisfies RequiredMap<StringToArrayExprArgs>;
 
   constructor (args: StringToArrayExprArgs = {}) {
     super(args);
@@ -13244,7 +13244,7 @@ export class CaseExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     ifs: true,
     default: false,
-  };
+  } satisfies RequiredMap<CaseExprArgs>;
 
   constructor (args: CaseExprArgs) {
     super(args);
@@ -13274,7 +13274,7 @@ export class CastExpr extends FuncExpr {
     safe: false,
     action: false,
     default: false,
-  };
+  } satisfies RequiredMap<CastExprArgs>;
 
   constructor (args: CastExprArgs) {
     super(args);
@@ -13328,7 +13328,7 @@ export class CastToStrTypeExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     to: true,
-  };
+  } satisfies RequiredMap<CastToStrTypeExprArgs>;
 
   constructor (args: CastToStrTypeExprArgs) {
     super(args);
@@ -13354,7 +13354,7 @@ export class CheckXmlExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     disableAutoConvert: false,
-  };
+  } satisfies RequiredMap<CheckXmlExprArgs>;
 
   constructor (args: CheckXmlExprArgs = {}) {
     super(args);
@@ -13386,7 +13386,7 @@ export class CeilExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     decimals: false,
     to: false,
-  };
+  } satisfies RequiredMap<CeilExprArgs>;
 
   // Auto-register this class when the module loads
   static {
@@ -13419,7 +13419,7 @@ export class CoalesceExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     isNvl: false,
     isNull: false,
-  };
+  } satisfies RequiredMap<CoalesceExprArgs>;
 
   constructor (args: CoalesceExprArgs = {}) {
     super(args);
@@ -13446,7 +13446,7 @@ export class ChrExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     charset: false,
-  };
+  } satisfies RequiredMap<ChrExprArgs>;
 
   constructor (args: ChrExprArgs = {}) {
     super(args);
@@ -13469,7 +13469,7 @@ export class ConcatExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     safe: false,
     coalesce: false,
-  };
+  } satisfies RequiredMap<ConcatExprArgs>;
 
   constructor (args: ConcatExprArgs = {}) {
     super(args);
@@ -13495,7 +13495,7 @@ export class ContainsExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     jsonScope: false,
-  };
+  } satisfies RequiredMap<ContainsExprArgs>;
 
   constructor (args: ContainsExprArgs = {}) {
     super(args);
@@ -13601,7 +13601,7 @@ export class CurrentTimestampExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     sysdate: false,
-  };
+  } satisfies RequiredMap<CurrentTimestampExprArgs>;
 
   constructor (args: CurrentTimestampExprArgs = {}) {
     super(args);
@@ -13679,7 +13679,7 @@ export class DateAddExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<DateAddExprArgs>;
 
   constructor (args: DateAddExprArgs = {}) {
     super(args);
@@ -13703,7 +13703,7 @@ export class DateBinExpr extends FuncExpr {
     unit: false,
     zone: false,
     origin: false,
-  };
+  } satisfies RequiredMap<DateBinExprArgs>;
 
   constructor (args: DateBinExprArgs = {}) {
     super(args);
@@ -13733,7 +13733,7 @@ export class DateSubExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<DateSubExprArgs>;
 
   constructor (args: DateSubExprArgs = {}) {
     super(args);
@@ -13759,7 +13759,7 @@ export class DateDiffExpr extends FuncExpr {
     zone: false,
     bigInt: false,
     datePartBoundary: false,
-  };
+  } satisfies RequiredMap<DateDiffExprArgs>;
 
   constructor (args: DateDiffExprArgs = {}) {
     super(args);
@@ -13795,7 +13795,7 @@ export class DateTruncExpr extends FuncExpr {
     unit: true,
     zone: false,
     inputTypePreserved: false,
-  };
+  } satisfies RequiredMap<DateTruncExprArgs>;
 
   constructor (args: DateTruncExprArgs) {
     super(args);
@@ -13829,7 +13829,7 @@ export class DatetimeAddExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<DatetimeAddExprArgs>;
 
   constructor (args: DatetimeAddExprArgs = {}) {
     super(args);
@@ -13851,7 +13851,7 @@ export class DatetimeSubExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<DatetimeSubExprArgs>;
 
   constructor (args: DatetimeSubExprArgs = {}) {
     super(args);
@@ -13873,7 +13873,7 @@ export class DatetimeDiffExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<DatetimeDiffExprArgs>;
 
   constructor (args: DatetimeDiffExprArgs = {}) {
     super(args);
@@ -13896,7 +13896,7 @@ export class DatetimeTruncExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     unit: true,
     zone: false,
-  };
+  } satisfies RequiredMap<DatetimeTruncExprArgs>;
 
   constructor (args: DatetimeTruncExprArgs) {
     super(args);
@@ -13954,7 +13954,7 @@ export class DaynameExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     abbreviated: false,
-  };
+  } satisfies RequiredMap<DaynameExprArgs>;
 
   static {
     this.register();
@@ -14008,7 +14008,7 @@ export class MonthsBetweenExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     roundoff: false,
-  };
+  } satisfies RequiredMap<MonthsBetweenExprArgs>;
 
   static {
     this.register();
@@ -14044,7 +14044,7 @@ export class MakeIntervalExpr extends FuncExpr {
     hour: false,
     minute: false,
     second: false,
-  };
+  } satisfies RequiredMap<MakeIntervalExprArgs>;
 
   constructor (args: MakeIntervalExprArgs = {}) {
     super(args);
@@ -14090,7 +14090,7 @@ export class LastDayExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<LastDayExprArgs>;
 
   constructor (args: LastDayExprArgs = {}) {
     super(args);
@@ -14145,7 +14145,7 @@ export class TimestampExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     zone: false,
     withTz: false,
-  };
+  } satisfies RequiredMap<TimestampExprArgs>;
 
   constructor (args: TimestampExprArgs = {}) {
     super(args);
@@ -14171,7 +14171,7 @@ export class TimestampAddExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<TimestampAddExprArgs>;
 
   constructor (args: TimestampAddExprArgs = {}) {
     super(args);
@@ -14193,7 +14193,7 @@ export class TimestampSubExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<TimestampSubExprArgs>;
 
   constructor (args: TimestampSubExprArgs = {}) {
     super(args);
@@ -14215,7 +14215,7 @@ export class TimestampDiffExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<TimestampDiffExprArgs>;
 
   constructor (args: TimestampDiffExprArgs = {}) {
     super(args);
@@ -14239,7 +14239,7 @@ export class TimestampTruncExpr extends FuncExpr {
     unit: true,
     zone: false,
     inputTypePreserved: false,
-  };
+  } satisfies RequiredMap<TimestampTruncExprArgs>;
 
   constructor (args: TimestampTruncExprArgs) {
     super(args);
@@ -14277,7 +14277,7 @@ export class TimeSliceExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     unit: true,
     kind: false,
-  };
+  } satisfies RequiredMap<TimeSliceExprArgs>;
 
   constructor (args: TimeSliceExprArgs) {
     super(args);
@@ -14303,7 +14303,7 @@ export class TimeAddExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<TimeAddExprArgs>;
 
   constructor (args: TimeAddExprArgs = {}) {
     super(args);
@@ -14325,7 +14325,7 @@ export class TimeSubExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<TimeSubExprArgs>;
 
   constructor (args: TimeSubExprArgs = {}) {
     super(args);
@@ -14347,7 +14347,7 @@ export class TimeDiffExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<TimeDiffExprArgs>;
 
   constructor (args: TimeDiffExprArgs = {}) {
     super(args);
@@ -14370,7 +14370,7 @@ export class TimeTruncExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     unit: true,
     zone: false,
-  };
+  } satisfies RequiredMap<TimeTruncExprArgs>;
 
   constructor (args: TimeTruncExprArgs) {
     super(args);
@@ -14399,7 +14399,7 @@ export class DateFromPartsExpr extends FuncExpr {
     month: false,
     day: false,
     allowOverflow: false,
-  };
+  } satisfies RequiredMap<DateFromPartsExprArgs>;
 
   constructor (args: DateFromPartsExprArgs) {
     super(args);
@@ -14439,7 +14439,7 @@ export class TimeFromPartsExpr extends FuncExpr {
     fractions: false,
     precision: false,
     overflow: false,
-  };
+  } satisfies RequiredMap<TimeFromPartsExprArgs>;
 
   constructor (args: TimeFromPartsExprArgs) {
     super(args);
@@ -14497,7 +14497,7 @@ export class DateExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     zone: false,
-  };
+  } satisfies RequiredMap<DateExprArgs>;
 
   constructor (args: DateExprArgs = {}) {
     super(args);
@@ -14524,7 +14524,7 @@ export class DecodeExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     charset: true,
     replace: false,
-  };
+  } satisfies RequiredMap<DecodeExprArgs>;
 
   constructor (args: DecodeExprArgs) {
     super(args);
@@ -14557,7 +14557,7 @@ export class DecryptExpr extends FuncExpr {
     aad: false,
     encryptionMethod: false,
     safe: false,
-  };
+  } satisfies RequiredMap<DecryptExprArgs>;
 
   constructor (args: DecryptExprArgs) {
     super(args);
@@ -14596,7 +14596,7 @@ export class DecryptRawExpr extends FuncExpr {
     encryptionMethod: false,
     aead: false,
     safe: false,
-  };
+  } satisfies RequiredMap<DecryptRawExprArgs>;
 
   constructor (args: DecryptRawExprArgs) {
     super(args);
@@ -14638,7 +14638,7 @@ export class EncodeExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     charset: true,
-  };
+  } satisfies RequiredMap<EncodeExprArgs>;
 
   constructor (args: EncodeExprArgs) {
     super(args);
@@ -14662,7 +14662,7 @@ export class EncryptExpr extends FuncExpr {
     passphrase: true,
     aad: false,
     encryptionMethod: false,
-  };
+  } satisfies RequiredMap<EncryptExprArgs>;
 
   constructor (args: EncryptExprArgs) {
     super(args);
@@ -14695,7 +14695,7 @@ export class EncryptRawExpr extends FuncExpr {
     iv: true,
     aad: false,
     encryptionMethod: false,
-  };
+  } satisfies RequiredMap<EncryptRawExprArgs>;
 
   constructor (args: EncryptRawExprArgs) {
     super(args);
@@ -14746,7 +14746,7 @@ export class UnnestExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     offset: false,
     explodeArray: false,
-  };
+  } satisfies RequiredMap<UnnestExprArgs>;
 
   constructor (args: UnnestExprArgs = {}) {
     super(args);
@@ -14773,7 +14773,7 @@ export class FloorExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     decimals: false,
     to: false,
-  };
+  } satisfies RequiredMap<FloorExprArgs>;
 
   constructor (args: FloorExprArgs = {}) {
     super(args);
@@ -14816,7 +14816,7 @@ export class ToBinaryExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     format: false,
     safe: false,
-  };
+  } satisfies RequiredMap<ToBinaryExprArgs>;
 
   constructor (args: ToBinaryExprArgs = {}) {
     super(args);
@@ -14842,7 +14842,7 @@ export class Base64DecodeBinaryExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     alphabet: false,
-  };
+  } satisfies RequiredMap<Base64DecodeBinaryExprArgs>;
 
   constructor (args: Base64DecodeBinaryExprArgs = {}) {
     super(args);
@@ -14864,7 +14864,7 @@ export class Base64DecodeStringExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     alphabet: false,
-  };
+  } satisfies RequiredMap<Base64DecodeStringExprArgs>;
 
   constructor (args: Base64DecodeStringExprArgs = {}) {
     super(args);
@@ -14887,7 +14887,7 @@ export class Base64EncodeExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     maxLineLength: false,
     alphabet: false,
-  };
+  } satisfies RequiredMap<Base64EncodeExprArgs>;
 
   constructor (args: Base64EncodeExprArgs = {}) {
     super(args);
@@ -14913,7 +14913,7 @@ export class TryBase64DecodeBinaryExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     alphabet: false,
-  };
+  } satisfies RequiredMap<TryBase64DecodeBinaryExprArgs>;
 
   constructor (args: TryBase64DecodeBinaryExprArgs = {}) {
     super(args);
@@ -14935,7 +14935,7 @@ export class TryBase64DecodeStringExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     alphabet: false,
-  };
+  } satisfies RequiredMap<TryBase64DecodeStringExprArgs>;
 
   constructor (args: TryBase64DecodeStringExprArgs = {}) {
     super(args);
@@ -14975,7 +14975,7 @@ export class GapFillExpr extends FuncExpr {
     valueColumns: false,
     origin: false,
     ignoreNulls: false,
-  };
+  } satisfies RequiredMap<GapFillExprArgs>;
 
   static {
     this.register();
@@ -15023,7 +15023,7 @@ export class GenerateDateArrayExpr extends FuncExpr {
     start: true,
     end: true,
     step: false,
-  };
+  } satisfies RequiredMap<GenerateDateArrayExprArgs>;
 
   constructor (args: GenerateDateArrayExprArgs) {
     super(args);
@@ -15055,7 +15055,7 @@ export class GenerateTimestampArrayExpr extends FuncExpr {
     start: true,
     end: true,
     step: true,
-  };
+  } satisfies RequiredMap<GenerateTimestampArrayExprArgs>;
 
   constructor (args: GenerateTimestampArrayExprArgs) {
     super(args);
@@ -15089,7 +15089,7 @@ export class GetbitExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     zeroIsMsb: false,
-  };
+  } satisfies RequiredMap<GetbitExprArgs>;
 
   constructor (args: GetbitExprArgs = {}) {
     super(args);
@@ -15111,7 +15111,7 @@ export class GreatestExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     ignoreNulls: true,
-  };
+  } satisfies RequiredMap<GreatestExprArgs>;
 
   constructor (args: GreatestExprArgs) {
     super(args);
@@ -15141,7 +15141,7 @@ export class HexEncodeExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     case: false,
-  };
+  } satisfies RequiredMap<HexEncodeExprArgs>;
 
   constructor (args: HexEncodeExprArgs = {}) {
     super(args);
@@ -15175,7 +15175,7 @@ export class CompressExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     method: false,
-  };
+  } satisfies RequiredMap<CompressExprArgs>;
 
   constructor (args: CompressExprArgs = {}) {
     super(args);
@@ -15197,7 +15197,7 @@ export class DecompressBinaryExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     method: true,
-  };
+  } satisfies RequiredMap<DecompressBinaryExprArgs>;
 
   constructor (args: DecompressBinaryExprArgs) {
     super(args);
@@ -15219,7 +15219,7 @@ export class DecompressStringExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     method: true,
-  };
+  } satisfies RequiredMap<DecompressStringExprArgs>;
 
   constructor (args: DecompressStringExprArgs) {
     super(args);
@@ -15243,7 +15243,7 @@ export class IfExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     true: true,
     false: false,
-  };
+  } satisfies RequiredMap<IfExprArgs>;
 
   constructor (args: IfExprArgs) {
     super(args);
@@ -15319,7 +15319,7 @@ export class JSONKeysAtDepthExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     mode: false,
-  };
+  } satisfies RequiredMap<JSONKeysAtDepthExprArgs>;
 
   constructor (args: JSONKeysAtDepthExprArgs = {}) {
     super(args);
@@ -15344,7 +15344,7 @@ export class JSONObjectExpr extends FuncExpr {
     uniqueKeys: false,
     returnType: false,
     encoding: false,
-  };
+  } satisfies RequiredMap<JSONObjectExprArgs>;
 
   constructor (args: JSONObjectExprArgs = {}) {
     super(args);
@@ -15380,7 +15380,7 @@ export class JSONArrayExpr extends FuncExpr {
     nullHandling: false,
     returnType: false,
     strict: false,
-  };
+  } satisfies RequiredMap<JSONArrayExprArgs>;
 
   constructor (args: JSONArrayExprArgs = {}) {
     super(args);
@@ -15413,7 +15413,7 @@ export class JSONExistsExpr extends FuncExpr {
     passing: false,
     onCondition: false,
     fromDcolonqmark: false,
-  };
+  } satisfies RequiredMap<JSONExistsExprArgs>;
 
   constructor (args: JSONExistsExprArgs) {
     super(args);
@@ -15452,7 +15452,7 @@ export class JSONStripNullsExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     includeArrays: false,
     removeEmpty: false,
-  };
+  } satisfies RequiredMap<JSONStripNullsExprArgs>;
 
   constructor (args: JSONStripNullsExprArgs = {}) {
     super(args);
@@ -15489,7 +15489,7 @@ export class JSONTableExpr extends FuncExpr {
     path: false,
     errorHandling: false,
     emptyHandling: false,
-  };
+  } satisfies RequiredMap<JSONTableExprArgs>;
 
   constructor (args: JSONTableExprArgs) {
     super(args);
@@ -15529,7 +15529,7 @@ export class ObjectInsertExpr extends FuncExpr {
     key: true,
     value: true,
     updateFlag: false,
-  };
+  } satisfies RequiredMap<ObjectInsertExprArgs>;
 
   constructor (args: ObjectInsertExprArgs) {
     super(args);
@@ -15555,7 +15555,7 @@ export class OpenJSONExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     path: false,
-  };
+  } satisfies RequiredMap<OpenJSONExprArgs>;
 
   constructor (args: OpenJSONExprArgs = {}) {
     super(args);
@@ -15589,7 +15589,7 @@ export class JSONBExistsExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     path: true,
-  };
+  } satisfies RequiredMap<JSONBExistsExprArgs>;
 
   constructor (args: JSONBExistsExprArgs) {
     super(args);
@@ -15621,7 +15621,7 @@ export class JSONExtractExpr extends BinaryExpr {
     quote: false,
     onCondition: false,
     requiresJson: false,
-  };
+  } satisfies RequiredMap<JSONExtractExprArgs>;
 
   constructor (args: JSONExtractExprArgs = {}) {
     super(args);
@@ -15673,7 +15673,7 @@ export class JSONExtractScalarExpr extends BinaryExpr {
     onlyJsonTypes: false,
     jsonType: false,
     scalarOnly: false,
-  };
+  } satisfies RequiredMap<JSONExtractScalarExprArgs>;
 
   constructor (args: JSONExtractScalarExprArgs = {}) {
     super(args);
@@ -15707,7 +15707,7 @@ export class JSONBExtractScalarExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     jsonType: false,
-  };
+  } satisfies RequiredMap<JSONBExtractScalarExprArgs>;
 
   constructor (args: JSONBExtractScalarExprArgs = {}) {
     super(args);
@@ -15731,7 +15731,7 @@ export class JSONFormatExpr extends FuncExpr {
     options: false,
     isJson: false,
     toJson: false,
-  };
+  } satisfies RequiredMap<JSONFormatExprArgs>;
 
   constructor (args: JSONFormatExprArgs = {}) {
     super(args);
@@ -15765,7 +15765,7 @@ export class JSONArrayContainsExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     jsonType: false,
-  };
+  } satisfies RequiredMap<JSONArrayContainsExprArgs>;
 
   constructor (args: JSONArrayContainsExprArgs = {}) {
     super(args);
@@ -15799,7 +15799,7 @@ export class ParseJSONExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     safe: false,
-  };
+  } satisfies RequiredMap<ParseJSONExprArgs>;
 
   constructor (args: ParseJSONExprArgs = {}) {
     super(args);
@@ -15823,7 +15823,7 @@ export class ParseUrlExpr extends FuncExpr {
     partToExtract: false,
     key: false,
     permissive: false,
-  };
+  } satisfies RequiredMap<ParseUrlExprArgs>;
 
   constructor (args: ParseUrlExprArgs = {}) {
     super(args);
@@ -15849,7 +15849,7 @@ export class ParseIpExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     permissive: false,
-  };
+  } satisfies RequiredMap<ParseIpExprArgs>;
 
   constructor (args: ParseIpExprArgs = {}) {
     super(args);
@@ -15871,7 +15871,7 @@ export class ParseTimeExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     format: true,
-  };
+  } satisfies RequiredMap<ParseTimeExprArgs>;
 
   constructor (args: ParseTimeExprArgs) {
     super(args);
@@ -15894,7 +15894,7 @@ export class ParseDatetimeExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     format: false,
     zone: false,
-  };
+  } satisfies RequiredMap<ParseDatetimeExprArgs>;
 
   constructor (args: ParseDatetimeExprArgs = {}) {
     super(args);
@@ -15920,7 +15920,7 @@ export class LeastExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     ignoreNulls: true,
-  };
+  } satisfies RequiredMap<LeastExprArgs>;
 
   constructor (args: LeastExprArgs) {
     super(args);
@@ -15955,7 +15955,7 @@ export class LengthExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     binary: false,
     encoding: false,
-  };
+  } satisfies RequiredMap<LengthExprArgs>;
 
   constructor (args: LengthExprArgs = {}) {
     super(args);
@@ -15992,7 +15992,7 @@ export class LevenshteinExpr extends FuncExpr {
     delCost: false,
     subCost: false,
     maxDist: false,
-  };
+  } satisfies RequiredMap<LevenshteinExprArgs>;
 
   constructor (args: LevenshteinExprArgs = {}) {
     super(args);
@@ -16040,7 +16040,7 @@ export class MapExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     keys: false,
     values: false,
-  };
+  } satisfies RequiredMap<MapExprArgs>;
 
   static {
     this.register();
@@ -16082,7 +16082,7 @@ export class MapContainsKeyExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     key: true,
-  };
+  } satisfies RequiredMap<MapContainsKeyExprArgs>;
 
   constructor (args: MapContainsKeyExprArgs) {
     super(args);
@@ -16106,7 +16106,7 @@ export class MapInsertExpr extends FuncExpr {
     key: false,
     value: true,
     updateFlag: false,
-  };
+  } satisfies RequiredMap<MapInsertExprArgs>;
 
   constructor (args: MapInsertExprArgs) {
     super(args);
@@ -16149,7 +16149,7 @@ export class VarMapExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     keys: true,
     values: true,
-  };
+  } satisfies RequiredMap<VarMapExprArgs>;
 
   constructor (args: VarMapExprArgs) {
     super(args);
@@ -16175,7 +16175,7 @@ export class MatchAgainstExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     modifier: false,
-  };
+  } satisfies RequiredMap<MatchAgainstExprArgs>;
 
   constructor (args: MatchAgainstExprArgs = {}) {
     super(args);
@@ -16222,7 +16222,7 @@ export class MonthnameExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     abbreviated: false,
-  };
+  } satisfies RequiredMap<MonthnameExprArgs>;
 
   constructor (args: MonthnameExprArgs = {}) {
     super(args);
@@ -16244,7 +16244,7 @@ export class AddMonthsExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     preserveEndOfMonth: false,
-  };
+  } satisfies RequiredMap<AddMonthsExprArgs>;
 
   constructor (args: AddMonthsExprArgs = {}) {
     super(args);
@@ -16267,7 +16267,7 @@ export class Nvl2Expr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     true: true,
     false: false,
-  };
+  } satisfies RequiredMap<Nvl2ExprArgs>;
 
   constructor (args: Nvl2ExprArgs) {
     super(args);
@@ -16294,7 +16294,7 @@ export class NormalizeExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     form: false,
     isCasefold: false,
-  };
+  } satisfies RequiredMap<NormalizeExprArgs>;
 
   constructor (args: NormalizeExprArgs = {}) {
     super(args);
@@ -16321,7 +16321,7 @@ export class NormalExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     stddev: true,
     gen: true,
-  };
+  } satisfies RequiredMap<NormalExprArgs>;
 
   constructor (args: NormalExprArgs) {
     super(args);
@@ -16360,7 +16360,7 @@ export class OverlayExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     from: true,
     for: false,
-  };
+  } satisfies RequiredMap<OverlayExprArgs>;
 
   constructor (args: OverlayExprArgs) {
     super(args);
@@ -16386,7 +16386,7 @@ export class PredictExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     paramsStruct: false,
-  };
+  } satisfies RequiredMap<PredictExprArgs>;
 
   constructor (args: PredictExprArgs = {}) {
     super(args);
@@ -16408,7 +16408,7 @@ export class MLTranslateExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     paramsStruct: true,
-  };
+  } satisfies RequiredMap<MLTranslateExprArgs>;
 
   constructor (args: MLTranslateExprArgs) {
     super(args);
@@ -16432,7 +16432,7 @@ export class FeaturesAtTimeExpr extends FuncExpr {
     time: false,
     numRows: false,
     ignoreFeatureNulls: false,
-  };
+  } satisfies RequiredMap<FeaturesAtTimeExprArgs>;
 
   constructor (args: FeaturesAtTimeExprArgs = {}) {
     super(args);
@@ -16463,7 +16463,7 @@ export class GenerateEmbeddingExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     paramsStruct: false,
     isText: false,
-  };
+  } satisfies RequiredMap<GenerateEmbeddingExprArgs>;
 
   constructor (args: GenerateEmbeddingExprArgs = {}) {
     super(args);
@@ -16489,7 +16489,7 @@ export class MLForecastExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     paramsStruct: false,
-  };
+  } satisfies RequiredMap<MLForecastExprArgs>;
 
   constructor (args: MLForecastExprArgs = {}) {
     super(args);
@@ -16516,7 +16516,7 @@ export class VectorSearchExpr extends FuncExpr {
     topK: false,
     distanceType: false,
     options: false,
-  };
+  } satisfies RequiredMap<VectorSearchExprArgs>;
 
   constructor (args: VectorSearchExprArgs) {
     super(args);
@@ -16566,7 +16566,7 @@ export class ApproxPercentileEstimateExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     percentile: true,
-  };
+  } satisfies RequiredMap<ApproxPercentileEstimateExprArgs>;
 
   constructor (args: ApproxPercentileEstimateExprArgs) {
     super(args);
@@ -16593,7 +16593,7 @@ export class RandExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     lower: false,
     upper: false,
-  };
+  } satisfies RequiredMap<RandExprArgs>;
 
   constructor (args: RandExprArgs = {}) {
     super(args);
@@ -16623,7 +16623,7 @@ export class RandstrExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     generator: false,
-  };
+  } satisfies RequiredMap<RandstrExprArgs>;
 
   constructor (args: RandstrExprArgs = {}) {
     super(args);
@@ -16645,7 +16645,7 @@ export class RangeNExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     each: false,
-  };
+  } satisfies RequiredMap<RangeNExprArgs>;
 
   constructor (args: RangeNExprArgs = {}) {
     super(args);
@@ -16681,7 +16681,7 @@ export class ReduceExpr extends FuncExpr {
     initial: true,
     merge: true,
     finish: false,
-  };
+  } satisfies RequiredMap<ReduceExprArgs>;
 
   constructor (args: ReduceExprArgs) {
     super(args);
@@ -16715,7 +16715,7 @@ export class RegexpExtractExpr extends FuncExpr {
     parameters: false,
     group: false,
     nullIfPosOverflow: false,
-  };
+  } satisfies RequiredMap<RegexpExtractExprArgs>;
 
   constructor (args: RegexpExtractExprArgs = {}) {
     super(args);
@@ -16756,7 +16756,7 @@ export class RegexpExtractAllExpr extends FuncExpr {
     parameters: false,
     position: false,
     occurrence: false,
-  };
+  } satisfies RequiredMap<RegexpExtractAllExprArgs>;
 
   constructor (args: RegexpExtractAllExprArgs = {}) {
     super(args);
@@ -16794,7 +16794,7 @@ export class RegexpReplaceExpr extends FuncExpr {
     occurrence: false,
     modifiers: false,
     singleReplace: false,
-  };
+  } satisfies RequiredMap<RegexpReplaceExprArgs>;
 
   constructor (args: RegexpReplaceExprArgs = {}) {
     super(args);
@@ -16832,7 +16832,7 @@ export class RegexpLikeExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     flag: false,
-  };
+  } satisfies RequiredMap<RegexpLikeExprArgs>;
 
   constructor (args: RegexpLikeExprArgs = {}) {
     super(args);
@@ -16854,7 +16854,7 @@ export class RegexpILikeExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     flag: false,
-  };
+  } satisfies RequiredMap<RegexpILikeExprArgs>;
 
   constructor (args: RegexpILikeExprArgs = {}) {
     super(args);
@@ -16876,7 +16876,7 @@ export class RegexpFullMatchExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     options: false,
-  };
+  } satisfies RequiredMap<RegexpFullMatchExprArgs>;
 
   constructor (args: RegexpFullMatchExprArgs = {}) {
     super(args);
@@ -16902,7 +16902,7 @@ export class RegexpInstrExpr extends FuncExpr {
     option: false,
     parameters: false,
     group: false,
-  };
+  } satisfies RequiredMap<RegexpInstrExprArgs>;
 
   constructor (args: RegexpInstrExprArgs = {}) {
     super(args);
@@ -16940,7 +16940,7 @@ export class RegexpSplitExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     limit: false,
-  };
+  } satisfies RequiredMap<RegexpSplitExprArgs>;
 
   constructor (args: RegexpSplitExprArgs = {}) {
     super(args);
@@ -16963,7 +16963,7 @@ export class RegexpCountExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     position: false,
     parameters: false,
-  };
+  } satisfies RequiredMap<RegexpCountExprArgs>;
 
   constructor (args: RegexpCountExprArgs = {}) {
     super(args);
@@ -16989,7 +16989,7 @@ export class RepeatExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     times: true,
-  };
+  } satisfies RequiredMap<RepeatExprArgs>;
 
   constructor (args: RepeatExprArgs) {
     super(args);
@@ -17011,7 +17011,7 @@ export class ReplaceExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     replacement: false,
-  };
+  } satisfies RequiredMap<ReplaceExprArgs>;
 
   constructor (args: ReplaceExprArgs = {}) {
     super(args);
@@ -17039,7 +17039,7 @@ export class RoundExpr extends FuncExpr {
     decimals: false,
     truncate: false,
     castsNonIntegerDecimals: false,
-  };
+  } satisfies RequiredMap<RoundExprArgs>;
 
   constructor (args: RoundExprArgs = {}) {
     super(args);
@@ -17069,7 +17069,7 @@ export class TruncExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     decimals: false,
-  };
+  } satisfies RequiredMap<TruncExprArgs>;
 
   constructor (args: TruncExprArgs = {}) {
     super(args);
@@ -17140,7 +17140,7 @@ export class SHA2Expr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     length: false,
-  };
+  } satisfies RequiredMap<SHA2ExprArgs>;
 
   static {
     this.register();
@@ -17170,7 +17170,7 @@ export class SHA2DigestExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     length: false,
-  };
+  } satisfies RequiredMap<SHA2DigestExprArgs>;
 
   constructor (args: SHA2DigestExprArgs = {}) {
     super(args);
@@ -17198,7 +17198,7 @@ export class SortArrayExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     asc: false,
     nullsFirst: false,
-  };
+  } satisfies RequiredMap<SortArrayExprArgs>;
 
   static {
     this.register();
@@ -17236,7 +17236,7 @@ export class SplitExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     limit: false,
-  };
+  } satisfies RequiredMap<SplitExprArgs>;
 
   constructor (args: SplitExprArgs = {}) {
     super(args);
@@ -17259,7 +17259,7 @@ export class SplitPartExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     delimiter: false,
     partIndex: false,
-  };
+  } satisfies RequiredMap<SplitPartExprArgs>;
 
   constructor (args: SplitPartExprArgs = {}) {
     super(args);
@@ -17286,7 +17286,7 @@ export class SubstringExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     start: false,
     length: false,
-  };
+  } satisfies RequiredMap<SubstringExprArgs>;
 
   constructor (args: SubstringExprArgs = {}) {
     super(args);
@@ -17313,7 +17313,7 @@ export class SubstringIndexExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     delimiter: true,
     count: true,
-  };
+  } satisfies RequiredMap<SubstringIndexExprArgs>;
 
   constructor (args: SubstringIndexExprArgs) {
     super(args);
@@ -17353,7 +17353,7 @@ export class StrPositionExpr extends FuncExpr {
     substr: true,
     position: false,
     occurrence: false,
-  };
+  } satisfies RequiredMap<StrPositionExprArgs>;
 
   constructor (args: StrPositionExprArgs) {
     super(args);
@@ -17386,7 +17386,7 @@ export class SearchExpr extends FuncExpr {
     analyzer: false,
     analyzerOptions: false,
     searchMode: false,
-  };
+  } satisfies RequiredMap<SearchExprArgs>;
 
   constructor (args: SearchExprArgs = {}) {
     super(args);
@@ -17425,7 +17425,7 @@ export class StrToDateExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     format: false,
     safe: false,
-  };
+  } satisfies RequiredMap<StrToDateExprArgs>;
 
   constructor (args: StrToDateExprArgs = {}) {
     super(args);
@@ -17454,7 +17454,7 @@ export class StrToTimeExpr extends FuncExpr {
     zone: false,
     safe: false,
     targetType: false,
-  };
+  } satisfies RequiredMap<StrToTimeExprArgs>;
 
   constructor (args: StrToTimeExprArgs) {
     super(args);
@@ -17488,7 +17488,7 @@ export class StrToUnixExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     format: false,
-  };
+  } satisfies RequiredMap<StrToUnixExprArgs>;
 
   constructor (args: StrToUnixExprArgs = {}) {
     super(args);
@@ -17512,7 +17512,7 @@ export class StrToMapExpr extends FuncExpr {
     pairDelim: false,
     keyValueDelim: false,
     duplicateResolutionCallback: false,
-  };
+  } satisfies RequiredMap<StrToMapExprArgs>;
 
   constructor (args: StrToMapExprArgs = {}) {
     super(args);
@@ -17543,7 +17543,7 @@ export class NumberToStrExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     format: true,
     culture: false,
-  };
+  } satisfies RequiredMap<NumberToStrExprArgs>;
 
   constructor (args: NumberToStrExprArgs) {
     super(args);
@@ -17586,7 +17586,7 @@ export class StuffExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     start: true,
     length: true,
-  };
+  } satisfies RequiredMap<StuffExprArgs>;
 
   constructor (args: StuffExprArgs) {
     super(args);
@@ -17616,7 +17616,7 @@ export class TimeExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     zone: false,
-  };
+  } satisfies RequiredMap<TimeExprArgs>;
 
   constructor (args: TimeExprArgs = {}) {
     super(args);
@@ -17640,7 +17640,7 @@ export class TimeToStrExpr extends FuncExpr {
     format: true,
     culture: false,
     zone: false,
-  };
+  } satisfies RequiredMap<TimeToStrExprArgs>;
 
   constructor (args: TimeToStrExprArgs) {
     super(args);
@@ -17682,7 +17682,7 @@ export class TimeStrToTimeExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     zone: false,
-  };
+  } satisfies RequiredMap<TimeStrToTimeExprArgs>;
 
   constructor (args: TimeStrToTimeExprArgs = {}) {
     super(args);
@@ -17709,7 +17709,7 @@ export class TrimExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     position: false,
     collation: false,
-  };
+  } satisfies RequiredMap<TrimExprArgs>;
 
   constructor (args: TrimExprArgs = {}) {
     super(args);
@@ -17736,7 +17736,7 @@ export class TsOrDsAddExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     unit: false,
     returnType: false,
-  };
+  } satisfies RequiredMap<TsOrDsAddExprArgs>;
 
   constructor (args: TsOrDsAddExprArgs = {}) {
     super(args);
@@ -17762,7 +17762,7 @@ export class TsOrDsDiffExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     unit: false,
-  };
+  } satisfies RequiredMap<TsOrDsDiffExprArgs>;
 
   constructor (args: TsOrDsDiffExprArgs = {}) {
     super(args);
@@ -17789,7 +17789,7 @@ export class TsOrDsToDateExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     format: false,
     safe: false,
-  };
+  } satisfies RequiredMap<TsOrDsToDateExprArgs>;
 
   constructor (args: TsOrDsToDateExprArgs = {}) {
     super(args);
@@ -17820,7 +17820,7 @@ export class TsOrDsToTimeExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     format: false,
     safe: false,
-  };
+  } satisfies RequiredMap<TsOrDsToTimeExprArgs>;
 
   constructor (args: TsOrDsToTimeExprArgs = {}) {
     super(args);
@@ -17863,7 +17863,7 @@ export class UniformExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     gen: false,
     seed: false,
-  };
+  } satisfies RequiredMap<UniformExprArgs>;
 
   constructor (args: UniformExprArgs = {}) {
     super(args);
@@ -17893,7 +17893,7 @@ export class UnixToStrExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     format: false,
-  };
+  } satisfies RequiredMap<UnixToStrExprArgs>;
 
   constructor (args: UnixToStrExprArgs = {}) {
     super(args);
@@ -17920,7 +17920,7 @@ export class UnixToTimeExpr extends FuncExpr {
     minutes: false,
     format: false,
     targetType: false,
-  };
+  } satisfies RequiredMap<UnixToTimeExprArgs>;
 
   constructor (args: UnixToTimeExprArgs = {}) {
     super(args);
@@ -17979,7 +17979,7 @@ export class UuidExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     name: false,
     isString: false,
-  };
+  } satisfies RequiredMap<UuidExprArgs>;
 
   constructor (args: UuidExprArgs = {}) {
     super(args);
@@ -17998,7 +17998,7 @@ export class TimestampFromPartsExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     zone: false,
     milli: false,
-  };
+  } satisfies RequiredMap<TimestampFromPartsExprArgs>;
 
   constructor (args: TimestampFromPartsExprArgs = {}) {
     super(args);
@@ -18025,7 +18025,7 @@ export class TimestampLtzFromPartsExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     zone: false,
-  };
+  } satisfies RequiredMap<TimestampLtzFromPartsExprArgs>;
 
   static {
     this.register();
@@ -18051,7 +18051,7 @@ export class TimestampTzFromPartsExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     zone: false,
-  };
+  } satisfies RequiredMap<TimestampTzFromPartsExprArgs>;
 
   constructor (args: TimestampTzFromPartsExprArgs = {}) {
     super(args);
@@ -18078,7 +18078,7 @@ export class CorrExpr extends BinaryExpr {
    */
   static argTypes: Record<string, boolean> = {
     nullOnZeroVariance: false,
-  };
+  } satisfies RequiredMap<CorrExprArgs>;
 
   constructor (args: CorrExprArgs = {}) {
     super(args);
@@ -18103,7 +18103,7 @@ export class WidthBucketExpr extends FuncExpr {
     maxValue: false,
     numBuckets: false,
     threshold: false,
-  };
+  } satisfies RequiredMap<WidthBucketExprArgs>;
 
   constructor (args: WidthBucketExprArgs = {}) {
     super(args);
@@ -18137,7 +18137,7 @@ export class WeekExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     mode: false,
-  };
+  } satisfies RequiredMap<WeekExprArgs>;
 
   constructor (args: WeekExprArgs = {}) {
     super(args);
@@ -18163,7 +18163,7 @@ export class XMLElementExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     evalname: false,
-  };
+  } satisfies RequiredMap<XMLElementExprArgs>;
 
   constructor (args: XMLElementExprArgs = {}) {
     super(args);
@@ -18185,7 +18185,7 @@ export class XMLGetExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     instance: false,
-  };
+  } satisfies RequiredMap<XMLGetExprArgs>;
 
   constructor (args: XMLGetExprArgs = {}) {
     super(args);
@@ -18210,7 +18210,7 @@ export class XMLTableExpr extends FuncExpr {
     passing: false,
     columns: false,
     byRef: false,
-  };
+  } satisfies RequiredMap<XMLTableExprArgs>;
 
   constructor (args: XMLTableExprArgs = {}) {
     super(args);
@@ -18249,7 +18249,7 @@ export class ZipfExpr extends FuncExpr {
   static argTypes: Record<string, boolean> = {
     elementcount: true,
     gen: true,
-  };
+  } satisfies RequiredMap<ZipfExprArgs>;
 
   constructor (args: ZipfExprArgs) {
     super(args);
@@ -18275,7 +18275,7 @@ export class NextValueForExpr extends FuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     order: false,
-  };
+  } satisfies RequiredMap<NextValueForExprArgs>;
 
   constructor (args: NextValueForExprArgs = {}) {
     super(args);
@@ -18329,7 +18329,7 @@ export class ParameterizedAggExpr extends AggFuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     params: true,
-  };
+  } satisfies RequiredMap<ParameterizedAggExprArgs>;
 
   constructor (args: ParameterizedAggExprArgs) {
     super(args);
@@ -18352,7 +18352,7 @@ export class ArgMaxExpr extends AggFuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     count: false,
-  };
+  } satisfies RequiredMap<ArgMaxExprArgs>;
 
   constructor (args: ArgMaxExprArgs = {}) {
     super(args);
@@ -18375,7 +18375,7 @@ export class ArgMinExpr extends AggFuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     count: false,
-  };
+  } satisfies RequiredMap<ArgMinExprArgs>;
 
   constructor (args: ArgMinExprArgs = {}) {
     super(args);
@@ -18397,7 +18397,7 @@ export class ApproxTopKExpr extends AggFuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     counters: false,
-  };
+  } satisfies RequiredMap<ApproxTopKExprArgs>;
 
   constructor (args: ApproxTopKExprArgs = {}) {
     super(args);
@@ -18427,7 +18427,7 @@ export class ApproxTopSumExpr extends AggFuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     count: true,
-  };
+  } satisfies RequiredMap<ApproxTopSumExprArgs>;
 
   constructor (args: ApproxTopSumExprArgs) {
     super(args);
@@ -18495,7 +18495,7 @@ export class ApproxDistinctExpr extends AggFuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     accuracy: false,
-  };
+  } satisfies RequiredMap<ApproxDistinctExprArgs>;
 
   constructor (args: ApproxDistinctExprArgs = {}) {
     super(args);
@@ -18521,7 +18521,7 @@ export class ArrayAggExpr extends AggFuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     nullsExcluded: false,
-  };
+  } satisfies RequiredMap<ArrayAggExprArgs>;
 
   constructor (args: ArrayAggExprArgs = {}) {
     super(args);
@@ -18577,7 +18577,7 @@ export class LagExpr extends AggFuncExpr {
   static argTypes: Record<string, boolean> = {
     offset: false,
     default: false,
-  };
+  } satisfies RequiredMap<LagExprArgs>;
 
   constructor (args: LagExprArgs = {}) {
     super(args);
@@ -18604,7 +18604,7 @@ export class LeadExpr extends AggFuncExpr {
   static argTypes: Record<string, boolean> = {
     offset: false,
     default: false,
-  };
+  } satisfies RequiredMap<LeadExprArgs>;
 
   constructor (args: LeadExprArgs = {}) {
     super(args);
@@ -18647,7 +18647,7 @@ export class NthValueExpr extends AggFuncExpr {
   static argTypes: Record<string, boolean> = {
     offset: true,
     fromFirst: false,
-  };
+  } satisfies RequiredMap<NthValueExprArgs>;
 
   constructor (args: NthValueExprArgs) {
     super(args);
@@ -18682,7 +18682,7 @@ export class TryCastExpr extends CastExpr {
     action: false,
     default: false,
     requiresString: false,
-  };
+  } satisfies RequiredMap<TryCastExprArgs>;
 
   constructor (args: TryCastExprArgs) {
     super(args);
@@ -18712,7 +18712,7 @@ export class CountExpr extends AggFuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     bigInt: false,
-  };
+  } satisfies RequiredMap<CountExprArgs>;
 
   constructor (args: CountExprArgs = {}) {
     super(args);
@@ -18756,7 +18756,7 @@ export class GroupConcatExpr extends AggFuncExpr {
   static argTypes: Record<string, boolean> = {
     separator: false,
     onOverflow: false,
-  };
+  } satisfies RequiredMap<GroupConcatExprArgs>;
 
   constructor (args: GroupConcatExprArgs = {}) {
     super(args);
@@ -18794,7 +18794,7 @@ export class XorExpr extends ConnectorExpr {
    */
   static argTypes: Record<string, boolean> = {
     roundInput: false,
-  };
+  } satisfies RequiredMap<XorExprArgs>;
 
   constructor (args: XorExprArgs = {}) {
     super(args);
@@ -18819,7 +18819,7 @@ export class JSONObjectAggExpr extends AggFuncExpr {
     uniqueKeys: false,
     returnType: false,
     encoding: false,
-  };
+  } satisfies RequiredMap<JSONObjectAggExprArgs>;
 
   constructor (args: JSONObjectAggExprArgs = {}) {
     super(args);
@@ -18860,7 +18860,7 @@ export class JSONArrayAggExpr extends AggFuncExpr {
     nullHandling: false,
     returnType: false,
     strict: false,
-  };
+  } satisfies RequiredMap<JSONArrayAggExprArgs>;
 
   constructor (args: JSONArrayAggExprArgs = {}) {
     super(args);
@@ -18920,7 +18920,7 @@ export class ModeExpr extends AggFuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     deterministic: false,
-  };
+  } satisfies RequiredMap<ModeExprArgs>;
 
   constructor (args: ModeExprArgs = {}) {
     super(args);
@@ -18962,7 +18962,7 @@ export class QuantileExpr extends AggFuncExpr {
    */
   static argTypes: Record<string, boolean> = {
     quantile: true,
-  };
+  } satisfies RequiredMap<QuantileExprArgs>;
 
   constructor (args: QuantileExprArgs) {
     super(args);
@@ -19099,7 +19099,7 @@ export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
    */
   static argTypes: Record<string, boolean> = {
     params: true,
-  };
+  } satisfies RequiredMap<CombinedParameterizedAggExprArgs>;
 
   constructor (args: CombinedParameterizedAggExprArgs) {
     super(args);
@@ -19128,7 +19128,7 @@ export class ApproxQuantileExpr extends QuantileExpr {
     accuracy: false,
     weight: false,
     errorTolerance: false,
-  };
+  } satisfies RequiredMap<ApproxQuantileExprArgs>;
 
   constructor (args: ApproxQuantileExprArgs) {
     super(args);
