@@ -1,7 +1,7 @@
 /**
  * Maps object properties to boolean values based on whether they are required or optional.
  * - Non-optional keys are mapped to `true`.
- * - Optional keys are mapped to `false`.
+ * - Optional keys are mapped to `boolean` (to allow overriding optionality in subclasses).
  * - Index signatures are filtered out.
  */
 export type RequiredMap<T> = {
@@ -12,5 +12,5 @@ export type RequiredMap<T> = {
       : symbol extends K
         ? never
         // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-        : K]: {} extends Pick<T, K> ? false : true;
+        : K]: {} extends Pick<T, K> ? boolean : true;
 };
