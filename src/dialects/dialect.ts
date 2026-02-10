@@ -382,7 +382,9 @@ export class Dialect {
   protected static FORMAT_TRIE (): TrieNode {
     let cached = this.formatTrieCache.get(this);
     if (!cached) {
-      const mapping = Object.keys(this.FORMAT_MAPPING).length > 0 ? this.FORMAT_MAPPING : this.TIME_MAPPING;
+      const mapping = 0 < Object.keys(this.FORMAT_MAPPING).length
+        ? this.FORMAT_MAPPING
+        : this.TIME_MAPPING;
       cached = newTrie(Object.keys(mapping).map((k) => Array.from(k)));
       this.formatTrieCache.set(this, cached);
     }

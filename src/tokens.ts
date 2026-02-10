@@ -1356,7 +1356,9 @@ export class Tokenizer {
         }
       }
 
-      const offset = current > this._current ? current - this._current : 1;
+      const offset = this._current < current
+        ? current - this._current
+        : 1;
 
       this._start = current;
       this._advance({ i: offset });
@@ -1389,7 +1391,9 @@ export class Tokenizer {
     const start = this._current - 1;
     const end = start + size;
 
-    return end <= this.size ? this.sql.slice(start, end) : '';
+    return end <= this.size
+      ? this.sql.slice(start, end)
+      : '';
   }
 
   /**
@@ -1415,9 +1419,11 @@ export class Tokenizer {
     }
 
     this._current += i;
-    this._end = this._current >= this.size;
+    this._end = this.size <= this._current;
     this._char = this.sql[this._current - 1];
-    this._peek = this._end ? '' : this.sql[this._current];
+    this._peek = this._end
+      ? ''
+      : this.sql[this._current];
 
     if (alnum && this._isAlnum(this._char)) {
       // Here we use local variables instead of attributes for better performance
@@ -1428,8 +1434,10 @@ export class Tokenizer {
       while (this._isAlnum(_peek)) {
         _col += 1;
         _current += 1;
-        _end = _current >= this.size;
-        _peek = _end ? '' : this.sql[_current];
+        _end = this.size <= _current;
+        _peek = _end
+          ? ''
+          : this.sql[_current];
       }
 
       this._col = _col;
@@ -1648,9 +1656,13 @@ export class Tokenizer {
     if (this._char === '0') {
       const peek = this._peek.toUpperCase();
       if (peek === 'B') {
-        return constructor.BIT_STRINGS.length ? this._scanBits() : this._add(TokenType.NUMBER);
+        return constructor.BIT_STRINGS.length
+          ? this._scanBits()
+          : this._add(TokenType.NUMBER);
       } else if (peek === 'X') {
-        return constructor.HEX_STRINGS.length ? this._scanHex() : this._add(TokenType.NUMBER);
+        return constructor.HEX_STRINGS.length
+          ? this._scanHex()
+          : this._add(TokenType.NUMBER);
       }
     }
 
@@ -1796,7 +1808,9 @@ export class Tokenizer {
     this._advance({ i: start.length });
     const text = this._extractString(
       end,
-      tokenType === TokenType.BYTE_STRING ? constructor._BYTE_STRING_ESCAPES() : constructor._STRING_ESCAPES(),
+      tokenType === TokenType.BYTE_STRING
+        ? constructor._BYTE_STRING_ESCAPES()
+        : constructor._STRING_ESCAPES(),
       tokenType === TokenType.RAW_STRING,
     );
 
@@ -1856,7 +1870,9 @@ export class Tokenizer {
     const constructor = this._constructor;
     let text = '';
     const delimSize = delimiter.length;
-    escapes = escapes === undefined ? constructor._STRING_ESCAPES() : escapes;
+    escapes = escapes === undefined
+      ? constructor._STRING_ESCAPES()
+      : escapes;
 
     while (true) {
       if (
@@ -1873,10 +1889,10 @@ export class Tokenizer {
         }
       }
 
-      const isValidCustomEscape
-        = constructor.ESCAPE_FOLLOW_CHARS.length
-          && this._char === '\\'
-          && !constructor.ESCAPE_FOLLOW_CHARS.includes(this._peek);
+      const isValidCustomEscape =
+        constructor.ESCAPE_FOLLOW_CHARS.length
+        && this._char === '\\'
+        && !constructor.ESCAPE_FOLLOW_CHARS.includes(this._peek);
 
       if (
         (constructor.STRING_ESCAPES_ALLOWED_IN_RAW_STRINGS || !rawString)
@@ -1899,7 +1915,7 @@ export class Tokenizer {
         }
       } else {
         if (this._chars(delimSize) === delimiter) {
-          if (delimSize > 1) {
+          if (1 < delimSize) {
             this._advance({ i: delimSize - 1 });
           }
           break;
@@ -1928,8 +1944,12 @@ export class Tokenizer {
   private static _convertQuotes (arr: TokenPair[]): Record<string, string> {
     const res: Record<string, string> = {};
     for (const item of arr) {
-      const key = typeof item === 'string' ? item : item[0];
-      const value = typeof item === 'string' ? item : item[1];
+      const key = typeof item === 'string'
+        ? item
+        : item[0];
+      const value = typeof item === 'string'
+        ? item
+        : item[1];
       res[key] = value;
     }
     return res;

@@ -120,7 +120,7 @@ export function highlightSql (
   let previousPartEnd = 0;
   const sortedPositions = [...positions].sort((a, b) => a[0] - b[0]);
 
-  if (sortedPositions[0][0] > 0) {
+  if (0 < sortedPositions[0][0]) {
     firstHighlightStart = sortedPositions[0][0];
     startContext = sql.slice(
       Math.max(0, firstHighlightStart - contextLength),
@@ -133,10 +133,10 @@ export function highlightSql (
   for (const [start, end] of sortedPositions) {
     const highlightStart = Math.max(start, previousPartEnd);
     const highlightEnd = end + 1;
-    if (highlightStart >= highlightEnd) {
+    if (highlightEnd <= highlightStart) {
       continue;
     }
-    if (highlightStart > previousPartEnd) {
+    if (previousPartEnd < highlightStart) {
       formattedParts.push(sql.slice(previousPartEnd, highlightStart));
     }
     formattedParts.push(
@@ -165,7 +165,7 @@ export function highlightSql (
 export function concatMessages (errors: unknown[], maximum: number): string {
   const msg = errors.slice(0, maximum).map((e) => String(e));
   const remaining = errors.length - maximum;
-  if (remaining > 0) {
+  if (0 < remaining) {
     msg.push(`... and ${remaining} more`);
   }
   return msg.join('\n\n');

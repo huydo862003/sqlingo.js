@@ -63,7 +63,7 @@ export function formatTime (
 
     end += 1;
 
-    if (result !== TrieResult.FAILED && end > size) {
+    if (result !== TrieResult.FAILED && size < end) {
       chunks.push(chars);
     }
   }
@@ -705,9 +705,9 @@ export function subsecondPrecision (timestampLiteral: string): number {
     const fractionalPart = match[1].replace(/0+$/, '');
     const subsecondDigitCount = fractionalPart.length;
 
-    if (subsecondDigitCount > 3) {
+    if (3 < subsecondDigitCount) {
       return 6;
-    } else if (subsecondDigitCount > 0) {
+    } else if (0 < subsecondDigitCount) {
       return 3;
     }
     return 0;

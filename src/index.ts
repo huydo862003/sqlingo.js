@@ -121,7 +121,9 @@ export function transpile (
   errorLevel?: ErrorLevel,
   opts?: TranspileOptions,
 ): string[] {
-  const writeDialect = identity ? (write ?? read) : write;
+  const writeDialect = identity
+    ? (write ?? read)
+    : write;
   throw new UnsupportedError(
     `transpile() not yet implemented (sql: "${sql}", read: "${read}", write: "${writeDialect}", errorLevel: ${errorLevel}, opts: ${JSON.stringify(opts)})`,
   );

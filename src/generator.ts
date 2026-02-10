@@ -211,7 +211,9 @@ export class Generator {
    */
   generate (expression: Expression, options?: { copy?: boolean }): string {
     const copy = options?.copy ?? true;
-    const expr = copy ? expression.copy() : expression;
+    const expr = copy
+      ? expression.copy()
+      : expression;
 
     // Preprocess expression
     const preprocessed = this.preprocess(expr);
@@ -236,7 +238,7 @@ export class Generator {
       for (const msg of this.unsupportedMessages) {
         console.warn(msg);
       }
-    } else if (this.unsupportedLevel === ErrorLevel.RAISE && this.unsupportedMessages.length > 0) {
+    } else if (this.unsupportedLevel === ErrorLevel.RAISE && 0 < this.unsupportedMessages.length) {
       throw new UnsupportedError(concatMessages(this.unsupportedMessages, this.maxUnsupported));
     }
 
@@ -287,7 +289,9 @@ export class Generator {
 
     if (transform !== undefined) {
       const sql = transform(this, expression);
-      return comment ? this.maybeComment(sql, expression) : sql;
+      return comment
+        ? this.maybeComment(sql, expression)
+        : sql;
     }
 
     // Auto-discover method: {expressionKey}_sql()
@@ -296,7 +300,9 @@ export class Generator {
 
     if (typeof method === 'function') {
       const sql = method.call(this, expression);
-      return comment ? this.maybeComment(sql, expression) : sql;
+      return comment
+        ? this.maybeComment(sql, expression)
+        : sql;
     }
 
     // TODO: Add fallbacks for Func and Property expressions
@@ -380,7 +386,9 @@ export class Generator {
    * Wrap an expression in parentheses.
    */
   wrap (expression: Expression | string): string {
-    const thisSql = typeof expression === 'string' ? expression : this.sql(expression, 'this');
+    const thisSql = typeof expression === 'string'
+      ? expression
+      : this.sql(expression, 'this');
     if (!thisSql) {
       return '()';
     }
@@ -414,7 +422,9 @@ export class Generator {
       suffix: ')',
       normalize: true,
     };
-    const normalizedName = options.normalize ? this.normalizeFunc(name) : name;
+    const normalizedName = options.normalize
+      ? this.normalizeFunc(name)
+      : name;
     return `${normalizedName}${options.prefix}${this.formatArgs(...args)}${options.suffix}`;
   }
 
@@ -442,7 +452,7 @@ export class Generator {
    * Check if arguments are too wide for a single line.
    */
   tooWide (args: string[]): boolean {
-    return args.reduce((sum, arg) => sum + arg.length, 0) > this.maxTextWidth;
+    return this.maxTextWidth < args.reduce((sum, arg) => sum + arg.length, 0);
   }
 
   /**
@@ -473,7 +483,9 @@ export class Generator {
     const dynamic = options?.dynamic ?? false;
     const newLine = options?.newLine ?? false;
 
-    const exprs = expression ? (expression.args[key] as Expression[] | undefined) : options?.sqls;
+    const exprs = expression
+      ? (expression.args[key] as Expression[] | undefined)
+      : options?.sqls;
 
     if (!exprs || exprs.length === 0) {
       return '';
@@ -493,24 +505,36 @@ export class Generator {
 
     for (let i = 0; i < exprs.length; i++) {
       const e = exprs[i];
-      const sql = typeof e === 'string' ? e : this.sql(e, undefined, false);
+      const sql = typeof e === 'string'
+        ? e
+        : this.sql(e, undefined, false);
 
       if (!sql) {
         continue;
       }
 
-      const comments = typeof e === 'string' ? '' : this.maybeComment('', e);
+      const comments = typeof e === 'string'
+        ? ''
+        : this.maybeComment('', e);
 
       if (this.pretty) {
         if (this.leadingComma) {
-          resultSqls.push(`${i > 0 ? sep : ''}${prefix}${sql}${comments}`);
+          resultSqls.push(`${0 < i
+            ? sep
+            : ''}${prefix}${sql}${comments}`);
         } else {
-          const sepStr = comments ? sep.trimEnd() : sep;
-          const trailingSep = i + 1 < numExprs ? sepStr : '';
+          const sepStr = comments
+            ? sep.trimEnd()
+            : sep;
+          const trailingSep = i + 1 < numExprs
+            ? sepStr
+            : '';
           resultSqls.push(`${prefix}${sql}${trailingSep}${comments}`);
         }
       } else {
-        const trailingSep = i + 1 < numExprs ? sep : '';
+        const trailingSep = i + 1 < numExprs
+          ? sep
+          : '';
         resultSqls.push(`${prefix}${sql}${comments}${trailingSep}`);
       }
     }
@@ -542,7 +566,7 @@ export class Generator {
     const stack: Array<string | Expression> = [expression];
     const binaryType = expression.constructor;
 
-    while (stack.length > 0) {
+    while (0 < stack.length) {
       const node = stack.pop()!;
 
       if (node.constructor === binaryType) {
@@ -584,7 +608,9 @@ export class Generator {
 
     // Normalize to lowercase if needed
     const lower = text.toLowerCase();
-    text = this.normalize && !quoted ? lower : text;
+    text = this.normalize && !quoted
+      ? lower
+      : text;
 
     // TODO: Handle identifier escaping and quoting
     // TODO: Check reserved keywords
@@ -664,7 +690,9 @@ export class Generator {
    * Generate SQL for a boolean.
    */
   boolean_sql (expression: Expression): string {
-    return (expression as any).$this ? 'TRUE' : 'FALSE';
+    return (expression as any).$this
+      ? 'TRUE'
+      : 'FALSE';
   }
 
   /**
@@ -741,7 +769,9 @@ export class Generator {
    */
   order_sql (expression: Expression): string {
     const thisArg = this.sql(expression, 'this');
-    const prefix = thisArg ? `${thisArg} ` : '';
+    const prefix = thisArg
+      ? `${thisArg} `
+      : '';
     return this.opExpressions(`${prefix}ORDER BY`, expression);
   }
 
@@ -754,7 +784,9 @@ export class Generator {
     if (flat) {
       return `${op} ${expressionsSql}`;
     }
-    return `${this.seg(op)}${expressionsSql ? this.sep() : ''}${expressionsSql}`;
+    return `${this.seg(op)}${expressionsSql
+      ? this.sep()
+      : ''}${expressionsSql}`;
   }
 
   /**
@@ -763,7 +795,9 @@ export class Generator {
   select_sql (expression: Expression): string {
     // Get the projection list
     const projections = this.expressions(expression);
-    const expressionsSql = projections ? `${this.sep()}${projections}` : '';
+    const expressionsSql = projections
+      ? `${this.sep()}${projections}`
+      : '';
 
     // Build the SELECT clause
     let sql = `SELECT${expressionsSql}`;
@@ -923,7 +957,7 @@ export class Generator {
   protected connectorSql (expression: Expression, op: string): string {
     // Check if we have a list of expressions
     const exprs = expression.args.expressions as Expression[] | undefined;
-    if (exprs && exprs.length > 0) {
+    if (exprs && 0 < exprs.length) {
       return this.expressions(expression, { sep: ` ${op} ` });
     }
 
@@ -988,7 +1022,9 @@ export class Generator {
    */
   alias_sql (expression: Expression): string {
     const alias = this.sql(expression, 'alias');
-    const aliasSql = alias ? ` AS ${alias}` : '';
+    const aliasSql = alias
+      ? ` AS ${alias}`
+      : '';
     return `${this.sql(expression, 'this')}${aliasSql}`;
   }
 
@@ -997,9 +1033,13 @@ export class Generator {
    */
   cast_sql (expression: Expression): string {
     const format = this.sql(expression, 'format');
-    const formatSql = format ? ` FORMAT ${format}` : '';
+    const formatSql = format
+      ? ` FORMAT ${format}`
+      : '';
     const to = this.sql(expression, 'to');
-    const toSql = to ? ` ${to}` : '';
+    const toSql = to
+      ? ` ${to}`
+      : '';
     return `CAST(${this.sql(expression, 'this')} AS${toSql}${formatSql})`;
   }
 
@@ -1010,7 +1050,9 @@ export class Generator {
     const thisSql = this.sql(expression, 'this');
     const statements: string[] = [];
 
-    statements.push(thisSql ? `CASE ${thisSql}` : 'CASE');
+    statements.push(thisSql
+      ? `CASE ${thisSql}`
+      : 'CASE');
 
     // Process WHEN...THEN clauses
     const ifs = expression.args.ifs as Expression[] | undefined;
@@ -1068,7 +1110,9 @@ export class Generator {
     let onSql = this.sql(expression, 'on');
     if (onSql) {
       onSql = this.indent(onSql, { skipFirst: true });
-      const space = this.pretty ? this.seg(' '.repeat(this.pad)) : ' ';
+      const space = this.pretty
+        ? this.seg(' '.repeat(this.pad))
+        : ' ';
       onSql = `${space}ON ${onSql}`;
     }
 
@@ -1081,7 +1125,9 @@ export class Generator {
   neg_sql (expression: Expression): string {
     const thisSql = this.sql(expression, 'this');
     // Avoid converting "- -5" to "--5" which is a comment
-    const sep = thisSql[0] === '-' ? ' ' : '';
+    const sep = thisSql[0] === '-'
+      ? ' '
+      : '';
     return `-${sep}${thisSql}`;
   }
 
@@ -1102,7 +1148,7 @@ export class Generator {
 
     // Handle parameterized types (e.g., VARCHAR(255))
     const expressions = expression.args.expressions as Expression[] | undefined;
-    if (expressions && expressions.length > 0) {
+    if (expressions && 0 < expressions.length) {
       const params = expressions.map((e) => this.sql(e)).join(', ');
       return `${type}(${params})`;
     }

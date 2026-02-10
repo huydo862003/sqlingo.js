@@ -100,7 +100,9 @@ export class Parser {
     if (typeof sql === 'string') {
       this.sql = sql;
       this.errors = [];
-      this.dialect = opts?.dialect ? Dialect.getOrRaise(opts.dialect) : this.dialect;
+      this.dialect = opts?.dialect
+        ? Dialect.getOrRaise(opts.dialect)
+        : this.dialect;
 
       // Tokenize the SQL
       const tokenizer = new Tokenizer();
@@ -134,12 +136,12 @@ export class Parser {
       }
 
       // Safety check to prevent infinite loops
-      if (this._index >= this._tokens.length) {
+      if (this._tokens.length <= this._index) {
         break;
       }
     }
 
-    if (this.errorLevel === ErrorLevel.RAISE && this.errors.length > 0) {
+    if (this.errorLevel === ErrorLevel.RAISE && 0 < this.errors.length) {
       throw new ParseError(concatMessages(this.errors.map((e) => e.message), this.maxErrors));
     }
 
@@ -171,9 +173,13 @@ export class Parser {
   protected _advance (times = 1): boolean {
     for (let i = 0; i < times; i++) {
       this._prev = this._curr;
-      this._curr = this._next || (this._index < this._tokens.length ? this._tokens[this._index] : undefined);
+      this._curr = this._next || (this._index < this._tokens.length
+        ? this._tokens[this._index]
+        : undefined);
       this._index += 1;
-      this._next = this._index < this._tokens.length ? this._tokens[this._index] : undefined;
+      this._next = this._index < this._tokens.length
+        ? this._tokens[this._index]
+        : undefined;
     }
     return this._curr !== undefined;
   }
@@ -182,11 +188,15 @@ export class Parser {
    * Retreat to the previous token.
    */
   protected _retreat (index: number): void {
-    if (index >= 0 && index < this._tokens.length) {
+    if (0 <= index && index < this._tokens.length) {
       this._index = index;
       this._curr = this._tokens[index];
-      this._next = index + 1 < this._tokens.length ? this._tokens[index + 1] : undefined;
-      this._prev = index > 0 ? this._tokens[index - 1] : undefined;
+      this._next = index + 1 < this._tokens.length
+        ? this._tokens[index + 1]
+        : undefined;
+      this._prev = 0 < index
+        ? this._tokens[index - 1]
+        : undefined;
     }
   }
 
@@ -207,7 +217,9 @@ export class Parser {
    * Check if current token matches any of the given types.
    */
   protected _matchSet (tokenTypes: TokenType[] | Set<TokenType>, advance = true): boolean {
-    const types = Array.isArray(tokenTypes) ? tokenTypes : Array.from(tokenTypes);
+    const types = Array.isArray(tokenTypes)
+      ? tokenTypes
+      : Array.from(tokenTypes);
     for (const tokenType of types) {
       if (this._match(tokenType, advance)) {
         return true;
@@ -631,7 +643,7 @@ export class Parser {
     const upperName = funcName.toUpperCase();
 
     // Check for CAST function
-    if (upperName === 'CAST' && args.length > 0) {
+    if (upperName === 'CAST' && 0 < args.length) {
       // CAST(expr AS type) - args[0] should be expr, look for AS
       // For now, treat as anonymous function and handle later
       return this.expression(exp.CastExpr, {
@@ -778,9 +790,9 @@ export class Parser {
 
     // Handle qualified names: catalog.db.table.column
     const args: any = { this: parts[parts.length - 1] };
-    if (parts.length >= 2) args.table = parts[parts.length - 2];
-    if (parts.length >= 3) args.db = parts[parts.length - 3];
-    if (parts.length >= 4) args.catalog = parts[parts.length - 4];
+    if (2 <= parts.length) args.table = parts[parts.length - 2];
+    if (3 <= parts.length) args.db = parts[parts.length - 3];
+    if (4 <= parts.length) args.catalog = parts[parts.length - 4];
 
     return this.expression(exp.ColumnExpr, args);
   }
@@ -964,8 +976,8 @@ export class Parser {
 
     // Build table expression
     const args: any = { this: parts[parts.length - 1] };
-    if (parts.length >= 2) args.db = parts[parts.length - 2];
-    if (parts.length >= 3) args.catalog = parts[parts.length - 3];
+    if (2 <= parts.length) args.db = parts[parts.length - 2];
+    if (3 <= parts.length) args.catalog = parts[parts.length - 3];
 
     const table = this.expression(exp.TableExpr, args);
 
@@ -987,7 +999,7 @@ export class Parser {
       joins.push(join);
     }
 
-    if (joins.length > 0) {
+    if (0 < joins.length) {
       table.set('joins', joins);
     }
 
@@ -1088,8 +1100,8 @@ export class Parser {
     }
 
     const args: any = { this: parts[parts.length - 1] };
-    if (parts.length >= 2) args.db = parts[parts.length - 2];
-    if (parts.length >= 3) args.catalog = parts[parts.length - 3];
+    if (2 <= parts.length) args.db = parts[parts.length - 2];
+    if (3 <= parts.length) args.catalog = parts[parts.length - 3];
 
     return this.expression(exp.TableExpr, args);
   }
@@ -1146,7 +1158,7 @@ export class Parser {
       } while (this._match(TokenType.COMMA));
       this._match(TokenType.R_PAREN);
 
-      if (columns.length > 0) {
+      if (0 < columns.length) {
         args.columns = columns;
       }
     }
@@ -1170,7 +1182,7 @@ export class Parser {
         }
       } while (this._match(TokenType.COMMA));
 
-      if (values.length > 0) {
+      if (0 < values.length) {
         args.expression = this.expression(exp.ValuesExpr, { expressions: values });
       }
     } else {
@@ -1217,7 +1229,7 @@ export class Parser {
         }
       } while (this._match(TokenType.COMMA));
 
-      if (expressions.length > 0) {
+      if (0 < expressions.length) {
         args.expressions = expressions;
       }
     }

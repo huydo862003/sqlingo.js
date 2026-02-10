@@ -30,7 +30,9 @@ export function suggestClosestMatchAndFail (
   const closeMatches = getCloseMatches(word, possibilities, 1);
 
   const similar = seqGet(closeMatches, 0);
-  const suggestion = similar ? ` Did you mean ${similar}?` : '';
+  const suggestion = similar
+    ? ` Did you mean ${similar}?`
+    : '';
 
   throw new Error(`Unknown ${kind} '${word}'.${suggestion}`);
 }
@@ -52,7 +54,9 @@ export function suggestClosestMatchAndFail (
  *
  */
 export function seqGet<T> (seq: T[], index: number): T | undefined {
-  return index >= 0 && index < seq.length ? seq[index] : undefined;
+  return 0 <= index && index < seq.length
+    ? seq[index]
+    : undefined;
 }
 
 /**
@@ -123,7 +127,9 @@ export function ensureCollection<T> (value: T | T[]): T[] {
 export function csv (...args: string[]): string;
 export function csv (sep: string, ...args: string[]): string;
 export function csv (...args: string[]): string {
-  const sep = args.length > 0 && args[0].length <= 3 && args[0].includes(',') ? args.shift() : ', ';
+  const sep = 0 < args.length && args[0].length <= 3 && args[0].includes(',')
+    ? args.shift()
+    : ', ';
   return args.filter((arg) => arg).join(sep || ', ');
 }
 
@@ -138,7 +144,7 @@ function getCloseMatches (
 
   for (const possibility of possibilities) {
     const ratio = similarity(word, possibility);
-    if (ratio >= cutoff) {
+    if (cutoff <= ratio) {
       results.push({
         match: possibility,
         ratio,
@@ -151,8 +157,12 @@ function getCloseMatches (
 }
 
 function similarity (a: string, b: string): number {
-  const longer = a.length > b.length ? a : b;
-  const shorter = a.length > b.length ? b : a;
+  const longer = b.length < a.length
+    ? a
+    : b;
+  const shorter = b.length < a.length
+    ? b
+    : a;
 
   if (longer.length === 0) return 1.0;
 
@@ -274,7 +284,7 @@ export function tsort<T> (dag: Map<T, Set<T>>): T[] {
     }
   }
 
-  while (dagCopy.size > 0) {
+  while (0 < dagCopy.size) {
     const current = new Set<T>();
     for (const [node, deps] of Array.from(dagCopy.entries())) {
       if (deps.size === 0) {
@@ -589,7 +599,11 @@ export function mergeRanges<T> (ranges: [T, T][]): [T, T][] {
     return [];
   }
 
-  const sorted = [...ranges].sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  const sorted = [...ranges].sort((a, b) => (a[0] < b[0]
+    ? -1
+    : b[0] < a[0]
+      ? 1
+      : 0));
   const merged: [T, T][] = [sorted[0]];
 
   for (let i = 1; i < sorted.length; i++) {
@@ -597,7 +611,12 @@ export function mergeRanges<T> (ranges: [T, T][]): [T, T][] {
     const [lastStart, lastEnd] = merged[merged.length - 1];
 
     if (start <= lastEnd) {
-      merged[merged.length - 1] = [lastStart, end > lastEnd ? end : lastEnd];
+      merged[merged.length - 1] = [
+        lastStart,
+        lastEnd < end
+          ? end
+          : lastEnd,
+      ];
     } else {
       merged.push([start, end]);
     }
@@ -688,7 +707,9 @@ export class SingleValuedMapping<K, V> {
   }
 
   get (key: K): V | undefined {
-    return this._keys.has(key) ? this._value : undefined;
+    return this._keys.has(key)
+      ? this._value
+      : undefined;
   }
 
   has (key: K): boolean {
