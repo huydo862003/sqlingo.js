@@ -3432,9 +3432,11 @@ export class TruncateTableExpr extends Expression {
   }
 }
 
-export type CloneExprArgs = { shallow?: Expression;
+export type CloneExprArgs = {
+  shallow?: Expression;
   copy?: unknown;
-  this: Expression; } & BaseExpressionArgs;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class CloneExpr extends Expression {
   key = ExpressionKey.CLONE;
@@ -3450,21 +3452,20 @@ export class CloneExpr extends Expression {
   } satisfies RequiredMap<CloneExprArgs>;
 
   declare args: CloneExprArgs;
-
   constructor (args: CloneExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $shallow (): Expression | undefined {
-    return this.args.shallow as Expression | undefined;
+    return this.args.shallow;
   }
 
-  get $copy (): Expression | undefined {
-    return this.args.copy as Expression | undefined;
+  get $copy (): unknown {
+    return this.args.copy;
   }
 }
 
@@ -3478,13 +3479,15 @@ export enum DescribeExprKind {
   FUNCTION = 'FUNCTION',
   PROCEDURE = 'PROCEDURE',
 }
-export type DescribeExprArgs = { style?: Expression;
+export type DescribeExprArgs = {
+  style?: Expression;
   kind?: DescribeExprKind;
   partition?: Expression;
   format?: string;
   asJson?: Expression;
   this: Expression;
-  expressions?: Expression[]; } & BaseExpressionArgs;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 
 export class DescribeExpr extends Expression {
   key = ExpressionKey.DESCRIBE;
@@ -3504,43 +3507,44 @@ export class DescribeExpr extends Expression {
   } satisfies RequiredMap<DescribeExprArgs>;
 
   declare args: DescribeExprArgs;
-
   constructor (args: DescribeExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $style (): Expression | undefined {
-    return this.args.style as Expression | undefined;
+    return this.args.style;
   }
 
-  get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+  get $kind (): DescribeExprKind | undefined {
+    return this.args.kind;
   }
 
   get $partition (): Expression | undefined {
-    return this.args.partition as Expression | undefined;
+    return this.args.partition;
   }
 
-  get $format (): Expression | undefined {
-    return this.args.format as Expression | undefined;
+  get $format (): string | undefined {
+    return this.args.format;
   }
 
   get $asJson (): Expression | undefined {
-    return this.args.asJson as Expression | undefined;
+    return this.args.asJson;
   }
 }
 
-export type AttachExprArgs = { exists?: Expression;
+export type AttachExprArgs = {
+  exists?: Expression[];
   this: Expression;
-  expressions?: Expression[]; } & BaseExpressionArgs;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 
 export class AttachExpr extends Expression {
   key = ExpressionKey.ATTACH;
@@ -3556,26 +3560,27 @@ export class AttachExpr extends Expression {
   } satisfies RequiredMap<AttachExprArgs>;
 
   declare args: AttachExprArgs;
-
   constructor (args: AttachExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $exists (): Expression[] | undefined {
-    return this.args.exists as Expression[] | undefined;
+    return this.args.exists;
   }
 }
 
-export type DetachExprArgs = { exists?: Expression;
-  this: Expression; } & BaseExpressionArgs;
+export type DetachExprArgs = {
+  exists?: Expression[];
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class DetachExpr extends Expression {
   key = ExpressionKey.DETACH;
@@ -3590,23 +3595,24 @@ export class DetachExpr extends Expression {
   } satisfies RequiredMap<DetachExprArgs>;
 
   declare args: DetachExprArgs;
-
   constructor (args: DetachExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $exists (): Expression[] | undefined {
-    return this.args.exists as Expression[] | undefined;
+    return this.args.exists;
   }
 }
 
-export type InstallExprArgs = { from?: Expression;
+export type InstallExprArgs = {
+  from?: Expression;
   force?: Expression;
-  this: Expression; } & BaseExpressionArgs;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class InstallExpr extends Expression {
   key = ExpressionKey.INSTALL;
@@ -3622,26 +3628,27 @@ export class InstallExpr extends Expression {
   } satisfies RequiredMap<InstallExprArgs>;
 
   declare args: InstallExprArgs;
-
   constructor (args: InstallExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $from (): Expression | undefined {
-    return this.args.from as Expression | undefined;
+    return this.args.from;
   }
 
   get $force (): Expression | undefined {
-    return this.args.force as Expression | undefined;
+    return this.args.force;
   }
 }
 
-export type SummarizeExprArgs = { table?: Expression;
-  this: Expression; } & BaseExpressionArgs;
+export type SummarizeExprArgs = {
+  table?: Expression;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class SummarizeExpr extends Expression {
   key = ExpressionKey.SUMMARIZE;
@@ -3656,7 +3663,6 @@ export class SummarizeExpr extends Expression {
   } satisfies RequiredMap<SummarizeExprArgs>;
 
   declare args: SummarizeExprArgs;
-
   constructor (args: SummarizeExprArgs) {
     super(args);
   }
@@ -3677,8 +3683,11 @@ export enum KillExprKind {
   CONNECTION = 'CONNECTION',
   QUERY = 'QUERY',
 }
-export type KillExprArgs = { kind?: KillExprKind;
-  this: Expression; } & BaseExpressionArgs;
+
+export type KillExprArgs = {
+  kind?: KillExprKind;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class KillExpr extends Expression {
   key = ExpressionKey.KILL;
@@ -3693,7 +3702,6 @@ export class KillExpr extends Expression {
   } satisfies RequiredMap<KillExprArgs>;
 
   declare args: KillExprArgs;
-
   constructor (args: KillExprArgs) {
     super(args);
   }
@@ -3702,15 +3710,18 @@ export class KillExpr extends Expression {
     return this.args.this as Expression;
   }
 
-  get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+  get $kind (): KillExprKind | undefined {
+    return this.args.kind;
   }
 }
 
 export type PragmaExprArgs = BaseExpressionArgs;
+
 export class PragmaExpr extends Expression {
   key = ExpressionKey.PRAGMA;
+
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PragmaExprArgs>;
+
   declare args: PragmaExprArgs;
   constructor (args: PragmaExprArgs) {
     super(args);
@@ -3720,6 +3731,7 @@ export class PragmaExpr extends Expression {
 export type DeclareExprArgs = {
   expressions: Expression[];
 } & BaseExpressionArgs;
+
 export class DeclareExpr extends Expression {
   key = ExpressionKey.DECLARE;
 
@@ -3748,9 +3760,12 @@ export enum DeclareItemExprKind {
   TABLE = 'TABLE',
   CONSTANT = 'CONSTANT',
 }
-export type DeclareItemExprArgs = { kind?: DeclareItemExprKind;
+
+export type DeclareItemExprArgs = {
+  kind?: DeclareItemExprKind;
   default?: Expression;
-  this: Expression; } & BaseExpressionArgs;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class DeclareItemExpr extends Expression {
   key = ExpressionKey.DECLARE_ITEM;
@@ -3766,27 +3781,28 @@ export class DeclareItemExpr extends Expression {
   } satisfies RequiredMap<DeclareItemExprArgs>;
 
   declare args: DeclareItemExprArgs;
-
   constructor (args: DeclareItemExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
-  get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+  get $kind (): DeclareItemExprArgs | undefined {
+    return this.args.kind;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 }
 
-export type SetExprArgs = { unset?: Expression;
+export type SetExprArgs = {
+  unset?: Expression;
   tag?: Expression;
-  expressions?: Expression[]; } & BaseExpressionArgs;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 
 export class SetExpr extends Expression {
   key = ExpressionKey.SET;
@@ -3802,26 +3818,27 @@ export class SetExpr extends Expression {
   } satisfies RequiredMap<SetExprArgs>;
 
   declare args: SetExprArgs;
-
   constructor (args: SetExprArgs) {
     super(args);
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $unset (): Expression | undefined {
-    return this.args.unset as Expression | undefined;
+    return this.args.unset;
   }
 
   get $tag (): Expression | undefined {
-    return this.args.tag as Expression | undefined;
+    return this.args.tag;
   }
 }
 
-export type HeredocExprArgs = { tag?: Expression;
-  this: Expression; } & BaseExpressionArgs;
+export type HeredocExprArgs = {
+  tag?: Expression;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class HeredocExpr extends Expression {
   key = ExpressionKey.HEREDOC;
@@ -3836,17 +3853,16 @@ export class HeredocExpr extends Expression {
   } satisfies RequiredMap<HeredocExprArgs>;
 
   declare args: HeredocExprArgs;
-
   constructor (args: HeredocExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $tag (): Expression | undefined {
-    return this.args.tag as Expression | undefined;
+    return this.args.tag;
   }
 }
 
@@ -3860,11 +3876,14 @@ export enum SetItemExprKind {
   PERSIST = 'PERSIST',
   PERSIST_ONLY = 'PERSIST_ONLY',
 }
-export type SetItemExprArgs = { kind?: SetItemExprKind;
+
+export type SetItemExprArgs = {
+  kind?: SetItemExprKind;
   collate?: string;
   global?: boolean;
-  this?: Expression[];
-  expressions?: Expression[]; } & BaseExpressionArgs;
+  this?: Expression;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 
 export class SetItemExpr extends Expression {
   key = ExpressionKey.SET_ITEM;
@@ -3882,35 +3901,36 @@ export class SetItemExpr extends Expression {
   } satisfies RequiredMap<SetItemExprArgs>;
 
   declare args: SetItemExprArgs;
-
   constructor (args: SetItemExprArgs) {
     super(args);
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
-  get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+  get $kind (): SetItemExprKind | undefined {
+    return this.args.kind;
   }
 
-  get $collate (): Expression | undefined {
-    return this.args.collate as Expression | undefined;
+  get $collate (): string | undefined {
+    return this.args.collate;
   }
 
-  get $global (): Expression | undefined {
-    return this.args.global as Expression | undefined;
+  get $global (): boolean | undefined {
+    return this.args.global;
   }
 }
 
-export type QueryBandExprArgs = { scope?: Expression;
+export type QueryBandExprArgs = {
+  scope?: Expression;
   update?: Expression;
-  this: Expression; } & BaseExpressionArgs;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class QueryBandExpr extends Expression {
   key = ExpressionKey.QUERY_BAND;
@@ -3926,25 +3946,25 @@ export class QueryBandExpr extends Expression {
   } satisfies RequiredMap<QueryBandExprArgs>;
 
   declare args: QueryBandExprArgs;
-
   constructor (args: QueryBandExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $scope (): Expression | undefined {
-    return this.args.scope as Expression | undefined;
+    return this.args.scope;
   }
 
   get $update (): Expression | undefined {
-    return this.args.update as Expression | undefined;
+    return this.args.update;
   }
 }
 
-export type ShowExprArgs = { history?: Expression;
+export type ShowExprArgs = {
+  history?: Expression;
   terse?: Expression;
   target?: Expression;
   offset?: boolean;
@@ -3971,7 +3991,8 @@ export type ShowExprArgs = { history?: Expression;
   forRole?: Expression;
   intoOutfile?: Expression;
   json?: Expression;
-  this: Expression; } & BaseExpressionArgs;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class ShowExpr extends Expression {
   key = ExpressionKey.SHOW;
@@ -4012,127 +4033,128 @@ export class ShowExpr extends Expression {
   } satisfies RequiredMap<ShowExprArgs>;
 
   declare args: ShowExprArgs;
-
   constructor (args: ShowExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $history (): Expression | undefined {
-    return this.args.history as Expression | undefined;
+    return this.args.history;
   }
 
   get $terse (): Expression | undefined {
-    return this.args.terse as Expression | undefined;
+    return this.args.terse;
   }
 
   get $target (): Expression | undefined {
-    return this.args.target as Expression | undefined;
+    return this.args.target;
   }
 
-  get $offset (): Expression | undefined {
-    return this.args.offset as Expression | undefined;
+  get $offset (): boolean | undefined {
+    return this.args.offset;
   }
 
   get $startsWith (): Expression | undefined {
-    return this.args.startsWith as Expression | undefined;
+    return this.args.startsWith;
   }
 
-  get $limit (): Expression | undefined {
-    return this.args.limit as Expression | undefined;
+  get $limit (): number | Expression | undefined {
+    return this.args.limit;
   }
 
   get $from (): Expression | undefined {
-    return this.args.from as Expression | undefined;
+    return this.args.from;
   }
 
   get $like (): Expression | undefined {
-    return this.args.like as Expression | undefined;
+    return this.args.like;
   }
 
   get $where (): Expression | undefined {
-    return this.args.where as Expression | undefined;
+    return this.args.where;
   }
 
-  get $db (): Expression | undefined {
-    return this.args.db as Expression | undefined;
+  get $db (): string | undefined {
+    return this.args.db;
   }
 
   get $scope (): Expression | undefined {
-    return this.args.scope as Expression | undefined;
+    return this.args.scope;
   }
 
   get $scopeKind (): string | undefined {
-    return this.args.scopeKind as string | undefined;
+    return this.args.scopeKind;
   }
 
   get $full (): Expression | undefined {
-    return this.args.full as Expression | undefined;
+    return this.args.full;
   }
 
   get $mutex (): Expression | undefined {
-    return this.args.mutex as Expression | undefined;
+    return this.args.mutex;
   }
 
   get $query (): Expression | undefined {
-    return this.args.query as Expression | undefined;
+    return this.args.query;
   }
 
   get $channel (): Expression | undefined {
-    return this.args.channel as Expression | undefined;
+    return this.args.channel;
   }
 
-  get $global (): Expression | undefined {
-    return this.args.global as Expression | undefined;
+  get $global (): boolean | undefined {
+    return this.args.global;
   }
 
   get $log (): Expression | undefined {
-    return this.args.log as Expression | undefined;
+    return this.args.log;
   }
 
   get $position (): Expression | undefined {
-    return this.args.position as Expression | undefined;
+    return this.args.position;
   }
 
   get $types (): Expression[] | undefined {
-    return this.args.types as Expression[] | undefined;
+    return this.args.types;
   }
 
   get $privileges (): Expression[] | undefined {
-    return this.args.privileges as Expression[] | undefined;
+    return this.args.privileges;
   }
 
   get $forTable (): Expression | undefined {
-    return this.args.forTable as Expression | undefined;
+    return this.args.forTable;
   }
 
   get $forGroup (): Expression | undefined {
-    return this.args.forGroup as Expression | undefined;
+    return this.args.forGroup;
   }
 
   get $forUser (): Expression | undefined {
-    return this.args.forUser as Expression | undefined;
+    return this.args.forUser;
   }
 
   get $forRole (): Expression | undefined {
-    return this.args.forRole as Expression | undefined;
+    return this.args.forRole;
   }
 
   get $intoOutfile (): Expression | undefined {
-    return this.args.intoOutfile as Expression | undefined;
+    return this.args.intoOutfile;
   }
 
   get $json (): Expression | undefined {
-    return this.args.json as Expression | undefined;
+    return this.args.json;
   }
 }
 
-export type UserDefinedFunctionExprArgs = { wrapped?: Expression;
+export type UserDefinedFunctionExprArgs = {
+  wrapped?: Expression;
   this: Expression;
-  expressions?: Expression[]; } & BaseExpressionArgs;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 
 export class UserDefinedFunctionExpr extends Expression {
   key = ExpressionKey.USER_DEFINED_FUNCTION;
@@ -4148,7 +4170,6 @@ export class UserDefinedFunctionExpr extends Expression {
   } satisfies RequiredMap<UserDefinedFunctionExprArgs>;
 
   declare args: UserDefinedFunctionExprArgs;
-
   constructor (args: UserDefinedFunctionExprArgs) {
     super(args);
   }
@@ -4158,11 +4179,11 @@ export class UserDefinedFunctionExpr extends Expression {
   }
 
   get $expressions (): Expression[] | undefined {
-    return this.args.expressions as Expression[] | undefined;
+    return this.args.expressions;
   }
 
   get $wrapped (): Expression | undefined {
-    return this.args.wrapped as Expression | undefined;
+    return this.args.wrapped;
   }
 }
 
