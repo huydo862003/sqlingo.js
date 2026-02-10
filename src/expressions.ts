@@ -4407,8 +4407,10 @@ export class TableAliasExpr extends Expression {
   }
 }
 
-export type ColumnPositionExprArgs = { position: Expression;
-  this?: Expression[]; } & BaseExpressionArgs;
+export type ColumnPositionExprArgs = {
+  position: Expression;
+  this?: Expression;
+} & BaseExpressionArgs;
 
 export class ColumnPositionExpr extends Expression {
   key = ExpressionKey.COLUMN_POSITION;
@@ -4423,17 +4425,16 @@ export class ColumnPositionExpr extends Expression {
   } satisfies RequiredMap<ColumnPositionExprArgs>;
 
   declare args: ColumnPositionExprArgs;
-
   constructor (args: ColumnPositionExprArgs) {
     super(args);
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $position (): Expression {
-    return this.args.position as Expression;
+    return this.args.position;
   }
 }
 
@@ -4448,13 +4449,15 @@ export enum ColumnDefExprKind {
   DEFAULT = 'DEFAULT',
 }
 
-export type ColumnDefExprArgs = { kind?: ColumnDefExprKind;
-  constraints?: Expression[];
-  exists?: Expression;
+export type ColumnDefExprArgs = {
+  kind?: ColumnDefExprKind;
+  constraints?: ColumnConstraintExpr[];
+  exists?: Expression[];
   position?: Expression;
   default?: Expression;
   output?: Expression;
-  this: Expression; } & BaseExpressionArgs;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class ColumnDefExpr extends Expression {
   key = ExpressionKey.COLUMN_DEF;
@@ -4474,47 +4477,53 @@ export class ColumnDefExpr extends Expression {
   } satisfies RequiredMap<ColumnDefExprArgs>;
 
   declare args: ColumnDefExprArgs;
-
   constructor (args: ColumnDefExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
-  get $kind (): string | undefined {
-    return this.args.kind as string | undefined;
+  get $kind (): ColumnDefExprKind | undefined {
+    return this.args.kind;
   }
 
   get $constraints (): Expression[] | undefined {
-    return this.args.constraints as Expression[] | undefined;
+    return this.args.constraints;
   }
 
   get $exists (): Expression[] | undefined {
-    return this.args.exists as Expression[] | undefined;
+    return this.args.exists;
   }
 
   get $position (): Expression | undefined {
-    return this.args.position as Expression | undefined;
+    return this.args.position;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 
   get $output (): Expression | undefined {
-    return this.args.output as Expression | undefined;
+    return this.args.output;
   }
 
   /**
    * Gets the data type of the column definition
    * @returns The DataType expression or undefined
    */
+  get kind (): ColumnDefExprKind | undefined {
+    return this.args.kind;
+  }
+
   /**
    * Gets the column constraints
    * @returns Array of ColumnConstraint expressions
    */
+  get constraints (): ColumnConstraintExpr[] {
+    return this.args.constraints || [];
+  }
 }
 
 export type AlterColumnExprArgs = { dtype?: DataTypeExpr;
@@ -5104,6 +5113,7 @@ export class ColumnConstraintExpr extends Expression {
 }
 
 export type ColumnConstraintKindExprArgs = BaseExpressionArgs;
+
 export class ColumnConstraintKindExpr extends Expression {
   key = ExpressionKey.COLUMN_CONSTRAINT_KIND;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ColumnConstraintKindExprArgs>;
@@ -9848,7 +9858,7 @@ export class RawStringExpr extends ConditionExpr {
 export type UnicodeStringExprArgs = {
   escape?: Expression;
   this: Expression;
-} & BaseExpressionArgs;
+} & ConditionExprArgs;
 
 export class UnicodeStringExpr extends ConditionExpr {
   key = ExpressionKey.UNICODE_STRING;
@@ -9883,11 +9893,13 @@ export class UnicodeStringExpr extends ConditionExpr {
  * // users.id
  * const col = column('id', 'users');
  */
-export type ColumnExprArgs = { table?: Expression;
-  db?: string;
-  catalog?: string;
+export type ColumnExprArgs = {
+  table?: IdentifierExpr;
+  db?: IdentifierExpr;
+  catalog?: IdentifierExpr;
+  this: IdentifierExpr;
   joinMark?: Expression;
-  this: Expression; } & BaseExpressionArgs;
+} & ConditionExprArgs;
 
 export class ColumnExpr extends ConditionExpr {
   key = ExpressionKey.COLUMN;
@@ -9905,7 +9917,6 @@ export class ColumnExpr extends ConditionExpr {
   } satisfies RequiredMap<ColumnExprArgs>;
 
   declare args: ColumnExprArgs;
-
   constructor (args: ColumnExprArgs) {
     super(args);
   }
@@ -9914,14 +9925,26 @@ export class ColumnExpr extends ConditionExpr {
    * Gets the table name as a string
    * @returns The table name
    */
+  get table (): string {
+    return this.text('table');
+  }
+
   /**
    * Gets the database name as a string
    * @returns The database name
    */
+  get db (): string {
+    return this.text('db');
+  }
+
   /**
    * Gets the catalog name as a string
    * @returns The catalog name
    */
+  get catalog (): string {
+    return this.text('catalog');
+  }
+
   /**
    * Gets the output name of the column
    * @returns The column name
@@ -9941,10 +9964,10 @@ export class ColumnExpr extends ConditionExpr {
       'db',
       'table',
       'this',
-    ]) {
+    ] as const) {
       const value = this.args[part];
       if (value) {
-        result.push(value as IdentifierExpr);
+        result.push(value);
       }
     }
     return result;
@@ -9954,43 +9977,49 @@ export class ColumnExpr extends ConditionExpr {
     // TODO
   }
 
-  get $this (): Expression {
-    return this.args.this as Expression;
+  get $this (): IdentifierExpr {
+    return this.args.this;
   }
 
-  get $table (): Expression | undefined {
-    return this.args.table as Expression | undefined;
+  get $table (): IdentifierExpr | undefined {
+    return this.args.table;
   }
 
-  get $db (): Expression | undefined {
-    return this.args.db as Expression | undefined;
+  get $db (): IdentifierExpr | undefined {
+    return this.args.db;
   }
 
-  get $catalog (): Expression | undefined {
-    return this.args.catalog as Expression | undefined;
+  get $catalog (): IdentifierExpr | undefined {
+    return this.args.catalog;
   }
 
   get $joinMark (): Expression | undefined {
-    return this.args.joinMark as Expression | undefined;
+    return this.args.joinMark;
   }
 }
 
-export type PseudocolumnExprArgs = BaseExpressionArgs;
+export type PseudocolumnExprArgs = ColumnExprArgs;
+
 export class PseudocolumnExpr extends ColumnExpr {
   key = ExpressionKey.PSEUDOCOLUMN;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PseudocolumnExprArgs>;
+
+  static argTypes: Record<string, boolean> = { this: true } satisfies RequiredMap<PseudocolumnExprArgs>;
+
   declare args: PseudocolumnExprArgs;
   constructor (args: PseudocolumnExprArgs) {
     super(args);
   }
+
+  get $this (): IdentifierExpr {
+    return this.args.this;
+  }
 }
 
-export type AutoIncrementColumnConstraintExprArgs = BaseExpressionArgs;
+export type AutoIncrementColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+
 export class AutoIncrementColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.AUTO_INCREMENT_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
-    AutoIncrementColumnConstraintExprArgs
-  >;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AutoIncrementColumnConstraintExprArgs>;
 
   declare args: AutoIncrementColumnConstraintExprArgs;
   constructor (args: AutoIncrementColumnConstraintExprArgs) {
