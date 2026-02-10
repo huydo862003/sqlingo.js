@@ -1003,12 +1003,12 @@ export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T
  * Base arguments that all Expression classes can accept.
  */
 export interface BaseExpressionArgs {
-  this?: ExpressionValue; // NOTE: In sqlglot, this is required
+  this?: ExpressionValue;
   expression?: Expression;
   expressions?: (Expression | string)[];
-  alias?: Expression | string; // NOTE: In sqlglot, this is not visible
-  isString?: boolean; // NOTE: In sqlglot, this is not visible
-  to?: Expression; // NOTE: In sqlglot, this is not visible
+  alias?: TableAliasExpr | IdentifierExpr | string;
+  isString?: boolean;
+  to?: DataTypeExpr;
   [key: string]: ExpressionValueList | ExpressionValue;
 }
 
@@ -1048,7 +1048,7 @@ export class Expression {
   key: ExpressionKey = ExpressionKey.EXPRESSION;
 
   /** Arguments/properties of this expression (child nodes, flags, etc.) */
-  args: BaseExpressionArgs;
+  args: BaseExpressionArgs = {};
 
   /** Parent expression in the AST tree */
   parent?: Expression;
@@ -1076,7 +1076,7 @@ export class Expression {
 
   /** Set of required argument names */
 
-  constructor (args: BaseExpressionArgs) {
+  constructor (args: BaseExpressionArgs = {}) {
     this.args = args;
     for (const [argKey, value] of Object.entries(args)) {
       this._setParent(argKey, value);
