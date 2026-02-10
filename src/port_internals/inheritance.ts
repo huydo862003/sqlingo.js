@@ -58,7 +58,11 @@ export function multiInherit<
     }
 
     for (const name of Object.getOwnPropertyNames(BaseClass)) {
-      if (['prototype', 'length', 'name'].includes(name)) continue;
+      if ([
+        'prototype',
+        'length',
+        'name',
+      ].includes(name)) continue;
       if (!Object.getOwnPropertyDescriptor(MultiInheritClass, name)) {
         Object.defineProperty(
           MultiInheritClass,

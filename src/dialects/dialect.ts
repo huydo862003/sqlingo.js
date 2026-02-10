@@ -1,9 +1,13 @@
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/dialects/dialect.py
 
 import type { Expression } from '../expressions';
-import { ExceptExpr, IntersectExpr, UnionExpr } from '../expressions';
+import {
+  ExceptExpr, IntersectExpr, UnionExpr,
+} from '../expressions';
 import { Tokenizer } from '../tokens';
-import { newTrie, type TrieNode } from '../trie';
+import {
+  newTrie, type TrieNode,
+} from '../trie';
 
 /**
  * Base unescaped sequences that are common across dialects.
@@ -791,7 +795,11 @@ export class Dialect {
     while (parts.length < 3) {
       parts.push('0');
     }
-    this.version = [parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2])];
+    this.version = [
+      parseInt(parts[0]),
+      parseInt(parts[1]),
+      parseInt(parts[2]),
+    ];
 
     const normalizationStrategy = kwargs.normalization_strategy;
     if (normalizationStrategy === undefined) {
@@ -801,7 +809,9 @@ export class Dialect {
     }
 
     // Remove version and normalization_strategy from settings
-    const { version: _version, normalization_strategy: _ns, ...settings } = kwargs;
+    const {
+      version: _version, normalization_strategy: _ns, ...settings
+    } = kwargs;
     this.settings = settings as Record<string, boolean | string>;
   }
 
@@ -851,7 +861,8 @@ export class Dialect {
   /**
    * Generate SQL from an expression tree.
    */
-  generate (expression: Expression, options?: { copy?: boolean; [key: string]: unknown }): string {
+  generate (expression: Expression, options?: { copy?: boolean;
+    [key: string]: unknown; }): string {
   }
 
   /**

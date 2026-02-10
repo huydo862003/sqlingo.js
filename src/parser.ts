@@ -2,10 +2,16 @@
 
 import type { Expression } from './expressions';
 import * as exp from './expressions';
-import { Dialect, type DialectType } from './dialects/dialect';
-import { ErrorLevel, ParseError, TokenError, concatMessages } from './errors';
+import {
+  Dialect, type DialectType,
+} from './dialects/dialect';
+import {
+  ErrorLevel, ParseError, TokenError, concatMessages,
+} from './errors';
 import type { Token } from './tokens';
-import { Tokenizer, TokenType } from './tokens';
+import {
+  Tokenizer, TokenType,
+} from './tokens';
 
 export interface ParseOptions {
   dialect?: DialectType;
@@ -734,7 +740,10 @@ export class Parser {
         this.raiseError('Expected expression after operator');
         return left;
       }
-      left = this.expression(ExprClass, { left, expression: right });
+      left = this.expression(ExprClass, {
+        left,
+        expression: right,
+      });
     }
 
     return left;
@@ -1396,7 +1405,10 @@ export function parse (
   dialect?: DialectType,
   opts?: ParseOptions,
 ): Expression[] {
-  const parser = new Parser({ dialect, ...opts });
+  const parser = new Parser({
+    dialect,
+    ...opts,
+  });
   return parser.parse(sql);
 }
 

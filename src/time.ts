@@ -1,6 +1,8 @@
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/time.py
 
-import { TrieResult, inTrie, newTrie, type TrieNode } from './trie';
+import {
+  TrieResult, inTrie, newTrie, type TrieNode,
+} from './trie';
 
 /**
  * Formats a time string by replacing tokens with mapped values.

@@ -3,7 +3,9 @@
 import type { DialectType } from './dialects';
 import { Dialect } from './dialects';
 import { TokenError } from './errors';
-import { inTrie, newTrie, TrieResult, type TrieNode } from './trie';
+import {
+  inTrie, newTrie, TrieResult, type TrieNode,
+} from './trie';
 
 /**
  * Represents a syntax token's tag.
@@ -1396,8 +1398,11 @@ export class Tokenizer {
    * @param opts.i - Number of characters to advance
    * @param opts.alnum - If true, fast-forward through alphanumeric characters
    */
-  private _advance (opts: { i?: number; alnum?: boolean } = {}): void {
-    const { i = 1, alnum = false } = opts;
+  private _advance (opts: { i?: number;
+    alnum?: boolean; } = {}): void {
+    const {
+      i = 1, alnum = false,
+    } = opts;
     const constructor = this._constructor;
     if (constructor.WHITE_SPACE[this._char] === TokenType.BREAK) {
       // Ensures we don't count an extra line if we get a \r\n line break sequence
@@ -1416,7 +1421,9 @@ export class Tokenizer {
 
     if (alnum && this._isAlnum(this._char)) {
       // Here we use local variables instead of attributes for better performance
-      let { _col, _current, _end, _peek } = this;
+      let {
+        _col, _current, _end, _peek,
+      } = this;
 
       while (this._isAlnum(_peek)) {
         _col += 1;
@@ -1607,7 +1614,10 @@ export class Tokenizer {
       this._advance({ i: commentEndSize - 1 });
     } else {
       while (!this._end && constructor.WHITE_SPACE[this._peek] !== TokenType.BREAK) {
-        this._advance({ i: 1, alnum: true });
+        this._advance({
+          i: 1,
+          alnum: true,
+        });
       }
       this._comments.push(this._text.slice(commentStartSize));
     }
@@ -1720,7 +1730,10 @@ export class Tokenizer {
     while (true) {
       const char = this._peek.trim();
       if (char && !this._constructor.SINGLE_TOKENS[char]) {
-        this._advance({ i: 1, alnum: true });
+        this._advance({
+          i: 1,
+          alnum: true,
+        });
       } else {
         break;
       }
@@ -1808,7 +1821,10 @@ export class Tokenizer {
     while (true) {
       const char = this._peek.trim();
       if (char && (constructor.VAR_SINGLE_TOKENS.has(char) || !this._constructor.SINGLE_TOKENS[char])) {
-        this._advance({ i: 1, alnum: true });
+        this._advance({
+          i: 1,
+          alnum: true,
+        });
       } else {
         break;
       }
@@ -1898,7 +1914,10 @@ export class Tokenizer {
         }
 
         const current = this._current - 1;
-        this._advance({ i: 1, alnum: true });
+        this._advance({
+          i: 1,
+          alnum: true,
+        });
         text += this.sql.slice(current, this._current - 1);
       }
     }

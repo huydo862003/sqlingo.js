@@ -153,7 +153,12 @@ export function highlightSql (
   const formattedSql = formattedParts.join('');
   const highlight = sql.slice(firstHighlightStart, previousPartEnd);
 
-  return [formattedSql, startContext, highlight, endContext];
+  return [
+    formattedSql,
+    startContext,
+    highlight,
+    endContext,
+  ];
 }
 
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/errors.py#L153-L158

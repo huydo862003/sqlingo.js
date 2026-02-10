@@ -2,8 +2,12 @@
 
 import { Expression } from './expressions';
 import type { ParseOptions } from './parser';
-import { Dialect, type DialectType, setGeneratorClass } from './dialects/dialect';
-import { ErrorLevel, UnsupportedError, concatMessages } from './errors';
+import {
+  Dialect, type DialectType, setGeneratorClass,
+} from './dialects/dialect';
+import {
+  ErrorLevel, UnsupportedError, concatMessages,
+} from './errors';
 
 export interface GeneratorOptions extends ParseOptions {
   pretty?: boolean;
@@ -345,7 +349,10 @@ export class Generator {
    */
   indent (
     sql: string,
-    options?: { level?: number; pad?: number; skipFirst?: boolean; skipLast?: boolean },
+    options?: { level?: number;
+      pad?: number;
+      skipFirst?: boolean;
+      skipLast?: boolean; },
   ): string {
     if (!this.pretty || !sql) {
       return sql;
@@ -378,7 +385,10 @@ export class Generator {
       return '()';
     }
 
-    const indented = this.indent(thisSql, { level: 1, pad: 0 });
+    const indented = this.indent(thisSql, {
+      level: 1,
+      pad: 0,
+    });
     return `(${this.sep('')}${indented}${this.seg(')', '')}`;
   }
 
@@ -419,7 +429,10 @@ export class Generator {
 
     if (this.pretty && this.tooWide(argSqls)) {
       const joined = `\n${argSqls.join(`${sep.trim()}\n`)}\n`;
-      return this.indent(joined, { skipFirst: true, skipLast: true });
+      return this.indent(joined, {
+        skipFirst: true,
+        skipLast: true,
+      });
     }
 
     return argSqls.join(sep);
@@ -513,7 +526,12 @@ export class Generator {
       resultSql = resultSqls.join('');
     }
 
-    return indentOpt ? this.indent(resultSql, { skipFirst, skipLast }) : resultSql;
+    return indentOpt
+      ? this.indent(resultSql, {
+        skipFirst,
+        skipLast,
+      })
+      : resultSql;
   }
 
   /**
@@ -1013,7 +1031,10 @@ export class Generator {
 
     // Check if too wide for single line
     if (this.pretty && this.tooWide(statements)) {
-      return this.indent(statements.join('\n'), { skipFirst: true, skipLast: true });
+      return this.indent(statements.join('\n'), {
+        skipFirst: true,
+        skipLast: true,
+      });
     }
 
     return statements.join(' ');

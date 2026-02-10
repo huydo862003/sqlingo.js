@@ -133,12 +133,16 @@ function getCloseMatches (
   n: number,
   cutoff: number = 0.6,
 ): string[] {
-  const results: { match: string; ratio: number }[] = [];
+  const results: { match: string;
+    ratio: number; }[] = [];
 
   for (const possibility of possibilities) {
     const ratio = similarity(word, possibility);
     if (ratio >= cutoff) {
-      results.push({ match: possibility, ratio });
+      results.push({
+        match: possibility,
+        ratio,
+      });
     }
   }
 
@@ -644,7 +648,14 @@ export function isIsoDatetime (text: string): boolean {
 }
 
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L490
-export const DATE_UNITS = new Set(['day', 'week', 'month', 'quarter', 'year', 'year_month']);
+export const DATE_UNITS = new Set([
+  'day',
+  'week',
+  'month',
+  'quarter',
+  'year',
+  'year_month',
+]);
 
 /**
  * Map-like structure where multiple keys all return the same single value.
