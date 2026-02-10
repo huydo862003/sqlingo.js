@@ -12,8 +12,8 @@ importers:
         specifier: ^2.29.8
         version: 2.29.8(@types/node@25.2.1)
       '@hdnax/nuclint':
-        specifier: ^0.5.0
-        version: 0.5.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.9.3))(eslint@9.39.2)(typescript@5.9.3)
+        specifier: ^0.6.0
+        version: 0.6.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.9.3))(eslint@9.39.2)(typescript@5.9.3)
       '@types/node':
         specifier: ^25.2.1
         version: 25.2.1
@@ -311,8 +311,8 @@ packages:
   '@gerrit0/mini-shiki@3.22.0':
     resolution: {integrity: sha512-jMpciqEVUBKE1QwU64S4saNMzpsSza6diNCk4MWAeCxO2+LFi2FIFmL2S0VDLzEJCxuvCbU783xi8Hp/gkM5CQ==}
 
-  '@hdnax/nuclint@0.5.0':
-    resolution: {integrity: sha512-Cm6uFWM8T6Faa6u08mqjYOEhIrAw7k0LPbBXoClY1Rq6Z6dnzcfenLrl/oDjxKtHZxNEUs47bnOchJpr/vwsFQ==, tarball: https://npm.pkg.github.com/download/@hdnax/nuclint/0.5.0/ce4c2cd2e3520ff0bb879290c2df92f8131f4e2b}
+  '@hdnax/nuclint@0.6.0':
+    resolution: {integrity: sha512-m/zaNYPB2q5t2WOp3NijD800w0sP5tbyKuN0e+LNoxAh2Bq76da+FP/GDznsVt/VAlylqzg7eCCrn9po2ci/ig==, tarball: https://npm.pkg.github.com/download/@hdnax/nuclint/0.6.0/51a56a8d39df82964b0d7d19755d06ef93e5c8de}
     peerDependencies:
       eslint: ^9.39.2
 
@@ -2420,7 +2420,7 @@ snapshots:
       '@shikijs/types': 3.22.0
       '@shikijs/vscode-textmate': 10.0.2
 
-  '@hdnax/nuclint@0.5.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.9.3))(eslint@9.39.2)(typescript@5.9.3)':
+  '@hdnax/nuclint@0.6.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.9.3))(eslint@9.39.2)(typescript@5.9.3)':
     dependencies:
       '@stylistic/eslint-plugin': 5.7.1(eslint@9.39.2)
       eslint: 9.39.2
