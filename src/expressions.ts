@@ -4649,7 +4649,7 @@ export class AlterDistStyleExpr extends Expression {
 }
 
 export type AlterSortKeyExprArgs = { compound?: Expression;
-  this?: Expression[];
+  this?: Expression;
   expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class AlterSortKeyExpr extends Expression {
@@ -5082,7 +5082,7 @@ export enum ColumnConstraintExprKind {
 }
 
 export type ColumnConstraintExprArgs = { kind: ColumnConstraintExprKind;
-  this?: Expression[]; } & BaseExpressionArgs;
+  this?: Expression; } & BaseExpressionArgs;
 
 export class ColumnConstraintExpr extends Expression {
   key = ExpressionKey.COLUMN_CONSTRAINT;
@@ -5234,7 +5234,7 @@ export type DropExprArgs = { kind?: DropExprKind;
   purge?: Expression;
   cluster?: Expression;
   concurrently?: Expression;
-  this?: Expression[];
+  this?: Expression;
   expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class DropExpr extends Expression {
@@ -5682,7 +5682,7 @@ export class ColumnPrefixExpr extends Expression {
 
 export type PrimaryKeyExprArgs = { options?: Expression[];
   include?: Expression;
-  this?: Expression[];
+  this?: Expression;
   expressions: Expression[]; } & BaseExpressionArgs;
 
 export class PrimaryKeyExpr extends Expression {
@@ -5725,7 +5725,7 @@ export class PrimaryKeyExpr extends Expression {
 export type IntoExprArgs = { temporary?: boolean;
   unlogged?: Expression;
   bulkCollect?: Expression;
-  this?: Expression[];
+  this?: Expression;
   expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class IntoExpr extends Expression {
@@ -5927,7 +5927,7 @@ export type IndexExprArgs = { table?: Expression;
   primary?: boolean;
   amp?: Expression;
   params?: Expression[];
-  this?: Expression[]; } & BaseExpressionArgs;
+  this?: Expression; } & BaseExpressionArgs;
 
 export class IndexExpr extends Expression {
   key = ExpressionKey.INDEX;
@@ -6709,7 +6709,7 @@ export class LambdaExpr extends Expression {
 
 export type LimitExprArgs = { offset?: boolean;
   limitOptions?: Expression[];
-  this?: Expression[];
+  this?: Expression;
   expression: Expression;
   expressions?: Expression[]; } & BaseExpressionArgs;
 
@@ -7102,7 +7102,7 @@ export class FinalExpr extends Expression {
 }
 
 export type OffsetExprArgs = {
-  this?: Expression[];
+  this?: Expression;
   expression: Expression;
   expressions?: Expression[];
 } & BaseExpressionArgs;
@@ -7134,7 +7134,7 @@ export class OffsetExpr extends Expression {
 }
 
 export type OrderExprArgs = { siblings?: Expression[];
-  this?: Expression[];
+  this?: Expression;
   expressions: Expression[]; } & BaseExpressionArgs;
 
 export class OrderExpr extends Expression {
@@ -7373,7 +7373,7 @@ export class AllowedValuesPropertyExpr extends Expression {
 export type PartitionByRangePropertyDynamicExprArgs = { start: Expression;
   end: Expression;
   every: Expression;
-  this?: Expression[]; } & BaseExpressionArgs;
+  this?: Expression; } & BaseExpressionArgs;
 
 export class PartitionByRangePropertyDynamicExpr extends Expression {
   key = ExpressionKey.PARTITION_BY_RANGE_PROPERTY_DYNAMIC;
@@ -7483,7 +7483,7 @@ export class PartitionListExpr extends Expression {
 
 export type PartitionBoundSpecExprArgs = { fromExpressions?: Expression[];
   toExpressions?: Expression[];
-  this?: Expression[];
+  this?: Expression;
   expression?: Expression; } & BaseExpressionArgs;
 
 export class PartitionBoundSpecExpr extends Expression {
@@ -10191,7 +10191,7 @@ export class CommentColumnConstraintExpr extends ColumnConstraintKindExpr {
 }
 
 export type CompressColumnConstraintExprArgs = {
-  this?: Expression[];
+  this?: Expression;
 } & BaseExpressionArgs;
 export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMPRESS_COLUMN_CONSTRAINT;
@@ -10276,7 +10276,7 @@ export class ExcludeColumnConstraintExpr extends ColumnConstraintKindExpr {
 }
 
 export type EphemeralColumnConstraintExprArgs = {
-  this?: Expression[];
+  this?: Expression;
 } & BaseExpressionArgs;
 export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.EPHEMERAL_COLUMN_CONSTRAINT;
@@ -10305,7 +10305,7 @@ export type GeneratedAsIdentityColumnConstraintExprArgs = { onNull?: Expression;
   maxvalue?: string;
   cycle?: Expression;
   order?: Expression;
-  this?: Expression[];
+  this?: Expression;
   expression?: Expression; } & BaseExpressionArgs;
 
 export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -10416,7 +10416,7 @@ export type IndexColumnConstraintExprArgs = { kind?: IndexColumnConstraintExprKi
   indexType?: DataTypeExpr;
   options?: Expression[];
   granularity?: Expression;
-  this?: Expression[];
+  this?: Expression;
   expressions?: Expression[];
   expression?: Expression; } & BaseExpressionArgs;
 
@@ -10619,7 +10619,7 @@ export type UniqueColumnConstraintExprArgs = { indexType?: DataTypeExpr;
   onConflict?: Expression;
   nulls?: Expression[];
   options?: Expression[];
-  this?: Expression[]; } & BaseExpressionArgs;
+  this?: Expression; } & BaseExpressionArgs;
 
 export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.UNIQUE_COLUMN_CONSTRAINT;
@@ -10785,7 +10785,7 @@ export type DeleteExprArgs = { with?: Expression;
   limit?: number | Expression;
   tables?: Expression[];
   cluster?: Expression;
-  this?: Expression[]; } & BaseExpressionArgs;
+  this?: Expression; } & BaseExpressionArgs;
 
 export class DeleteExpr extends DMLExpr {
   key = ExpressionKey.DELETE;
@@ -10993,7 +10993,7 @@ export type InsertExprArgs = { hint?: Expression;
   settings?: Expression[];
   source?: Expression;
   default?: Expression;
-  this?: Expression[];
+  this?: Expression;
   expression?: Expression; } & BaseExpressionArgs;
 
 export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
@@ -11887,7 +11887,7 @@ export class FallbackPropertyExpr extends PropertyExpr {
 
 export type FileFormatPropertyExprArgs = { value?: string;
   hiveFormat?: string;
-  this?: Expression[];
+  this?: Expression;
   expressions?: Expression[]; } & PropertyExprArgs;
 
 export class FileFormatPropertyExpr extends PropertyExpr {
@@ -12402,7 +12402,7 @@ export type LockingPropertyExprArgs = { value?: string;
   forOrIn?: Expression;
   lockType: DataTypeExpr;
   override?: Expression;
-  this?: Expression[]; } & PropertyExprArgs;
+  this?: Expression; } & PropertyExprArgs;
 
 export class LockingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCKING_PROPERTY;
@@ -12502,7 +12502,7 @@ export type MergeBlockRatioPropertyExprArgs = { value?: string;
   no?: Expression;
   default?: Expression;
   percent?: Expression;
-  this?: Expression[]; } & PropertyExprArgs;
+  this?: Expression; } & PropertyExprArgs;
 
 export class MergeBlockRatioPropertyExpr extends PropertyExpr {
   key = ExpressionKey.MERGE_BLOCK_RATIO_PROPERTY;
