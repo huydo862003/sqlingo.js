@@ -2499,7 +2499,7 @@ export class DerivedTableExpr extends Expression {
 }
 
 export type QueryExprArgs = {
-  with?: CTEExpr[];
+  with?: WithExpr;
 } & BaseExpressionArgs;
 
 export class QueryExpr extends Expression {
@@ -2870,9 +2870,12 @@ export class QueryExpr extends Expression {
   }
 }
 
-export type UDTFExprArgs = BaseExpressionArgs;
+export type UDTFExprArgs = {
+  alias?: AliasExpr;
+} & DerivedTableExprArgs;
 export class UDTFExpr extends DerivedTableExpr {
   key = ExpressionKey.UDTF;
+
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UDTFExprArgs>;
   declare args: UDTFExprArgs;
   constructor (args: UDTFExprArgs = {}) {
@@ -2881,7 +2884,6 @@ export class UDTFExpr extends DerivedTableExpr {
 
   get selects (): Expression[] {
     const alias = this.args['alias'];
-    // @ts-expect-error "Alias should contain 'columns'"
     return alias ? alias.columns : [];
   }
 }
@@ -4042,9 +4044,11 @@ export class RecursiveWithSearchExpr extends Expression {
   }
 }
 
-export type WithExprArgs = { recursive?: boolean;
+export type WithExprArgs = {
+  recursive?: boolean;
   search?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  [key: string]: unknown;
+} & BaseExpressionArgs;
 
 export class WithExpr extends Expression {
   key = ExpressionKey.WITH;
@@ -8355,6 +8359,7 @@ export class ReplacePartitionExpr extends Expression {
 export type AliasExprArgs = BaseExpressionArgs;
 export class AliasExpr extends Expression {
   key = ExpressionKey.ALIAS;
+
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AliasExprArgs>;
   declare args: AliasExprArgs;
   constructor (args: AliasExprArgs = {}) {
