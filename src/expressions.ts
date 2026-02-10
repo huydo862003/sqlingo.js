@@ -1003,9 +1003,12 @@ export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T
  * Base arguments that all Expression classes can accept.
  */
 export interface BaseExpressionArgs {
-  this: ExpressionValue;
+  this?: ExpressionValue; // NOTE: In sqlglot, this is required
   expression?: Expression;
   expressions?: (Expression | string)[];
+  alias?: Expression | string; // NOTE: In sqlglot, this is not visible
+  isString?: boolean; // NOTE: In sqlglot, this is not visible
+  to?: Expression; // NOTE: In sqlglot, this is not visible
   [key: string]: ExpressionValueList | ExpressionValue;
 }
 
@@ -1069,7 +1072,7 @@ export class Expression {
   private _hash?: string;
 
   /** Static arg types definition */
-  static argTypes: Record<string, boolean> = { this: true } satisfies RequiredMap<BaseExpressionArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BaseExpressionArgs>; // NOTE: In sqlglot, `this` is `true`, but some subclasses of `Expression` does not have `this`, so I set it to false
 
   /** Set of required argument names */
 
