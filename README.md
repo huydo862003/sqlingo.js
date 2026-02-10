@@ -14,12 +14,18 @@ A JavaScript port of [SQLGlot](https://github.com/tobymao/sqlglot), a SQL parser
 ### Prerequisites
 
 Make sure these are installed on your machine:
-- `node`@^18
-- `pnpm`@^10.26.1
+- [`node`](https://nodejs.org/)@^18 - [Installation Guide](https://nodejs.org/en/download/package-manager)
+- [`pnpm`](https://pnpm.io/)@^10.26.1 - [Installation Guide](https://pnpm.io/installation)
 
 ### Step 1: Configuring npm Profile
 
-Create or edit `~/.npmrc`:
+This project uses packages from the [GitHub Package Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry), which requires authentication. You'll need to configure your `~/.npmrc` file with a GitHub personal access token.
+
+1. Generate a Github personal access token (if you don't have one):
+   - Follow the guide: [Creating a personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
+   - Required scope: `read:packages`
+
+2. Configure your `~/.npmrc` file (see [npm config documentation](https://docs.npmjs.com/cli/v10/configuring-npm/npmrc)):
 
 ```bash
 # Replace YOUR_GITHUB_TOKEN with your actual token
@@ -39,7 +45,7 @@ pnpm install
 
 #### Option B: Without Nix
 
-Install node and pnpm manually, then run:
+Install `node` and `pnpm` manually, then run:
 
 ```bash
 pnpm install
