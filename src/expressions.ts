@@ -4526,7 +4526,8 @@ export class ColumnDefExpr extends Expression {
   }
 }
 
-export type AlterColumnExprArgs = { dtype?: DataTypeExpr;
+export type AlterColumnExprArgs = {
+  dtype?: DataTypeExpr;
   collate?: string;
   using?: string;
   default?: Expression;
@@ -4535,7 +4536,8 @@ export type AlterColumnExprArgs = { dtype?: DataTypeExpr;
   allowNull?: Expression;
   visible?: Expression;
   renameTo?: string;
-  this: Expression; } & BaseExpressionArgs;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class AlterColumnExpr extends Expression {
   key = ExpressionKey.ALTER_COLUMN;
@@ -4558,54 +4560,55 @@ export class AlterColumnExpr extends Expression {
   } satisfies RequiredMap<AlterColumnExprArgs>;
 
   declare args: AlterColumnExprArgs;
-
   constructor (args: AlterColumnExprArgs) {
     super(args);
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
-  get $dtype (): Expression | undefined {
-    return this.args.dtype as Expression | undefined;
+  get $dtype (): DataTypeExpr | undefined {
+    return this.args.dtype;
   }
 
-  get $collate (): Expression | undefined {
-    return this.args.collate as Expression | undefined;
+  get $collate (): string | undefined {
+    return this.args.collate;
   }
 
-  get $using (): Expression | undefined {
-    return this.args.using as Expression | undefined;
+  get $using (): string | undefined {
+    return this.args.using;
   }
 
   get $default (): Expression | undefined {
-    return this.args.default as Expression | undefined;
+    return this.args.default;
   }
 
   get $drop (): Expression | undefined {
-    return this.args.drop as Expression | undefined;
+    return this.args.drop;
   }
 
-  get $comment (): Expression | undefined {
-    return this.args.comment as Expression | undefined;
+  get $comment (): string | undefined {
+    return this.args.comment;
   }
 
   get $allowNull (): Expression | undefined {
-    return this.args.allowNull as Expression | undefined;
+    return this.args.allowNull;
   }
 
   get $visible (): Expression | undefined {
-    return this.args.visible as Expression | undefined;
+    return this.args.visible;
   }
 
-  get $renameTo (): Expression | undefined {
-    return this.args.renameTo as Expression | undefined;
+  get $renameTo (): string | undefined {
+    return this.args.renameTo;
   }
 }
 
-export type AlterIndexExprArgs = { visible: Expression;
-  this: Expression; } & BaseExpressionArgs;
+export type AlterIndexExprArgs = {
+  visible: Expression;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class AlterIndexExpr extends Expression {
   key = ExpressionKey.ALTER_INDEX;
@@ -4626,15 +4629,16 @@ export class AlterIndexExpr extends Expression {
   }
 
   get $this (): Expression {
-    return this.args.this as Expression;
+    return this.args.this;
   }
 
   get $visible (): Expression {
-    return this.args.visible as Expression;
+    return this.args.visible;
   }
 }
 
 export type AlterDistStyleExprArgs = BaseExpressionArgs;
+
 export class AlterDistStyleExpr extends Expression {
   key = ExpressionKey.ALTER_DIST_STYLE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AlterDistStyleExprArgs>;
