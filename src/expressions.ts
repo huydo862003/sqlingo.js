@@ -1730,7 +1730,8 @@ export class Expression {
    *
    * @param func - a function which takes a node and kwargs object, and returns a
    *               new transformed node or the same node without modifications. If the function
-   *               returns null/undefined, then the corresponding node will be removed from the syntax tree.
+   *               returns null/undefined, then the corresponding node will be removed from the
+   *               syntax tree.
    * @param options - Options object
    * @param options.copy - if set to true a new tree instance is constructed, otherwise the tree is
    *                       modified in place (default: true)
@@ -1854,7 +1855,8 @@ export class Expression {
    * Checks if this expression is valid (e.g. all mandatory args are set).
    *
    * @param args - a sequence of values that were used to instantiate a Func expression.
-   *               This is used to check that the provided arguments don't exceed the function argument limit.
+   *               This is used to check that the provided arguments don't exceed the function
+   *               argument limit.
    * @returns A list of error messages for all possible errors that were found
    */
   errorMessages (args?: unknown[]): string[] {
@@ -1906,7 +1908,8 @@ export class Expression {
    * @param options - Options object
    * @param options.dialect - The dialect to use for parsing
    * @param options.copy - Whether to copy the involved expressions (default: true)
-   * @param options.wrap - Whether to wrap operands in Parens to avoid precedence issues (default: true)
+   * @param options.wrap - Whether to wrap operands in Parens to avoid precedence issues (default:
+   * true)
    * @returns The new AND condition
    */
   and (
@@ -1943,7 +1946,8 @@ export class Expression {
    * @param options - Options object
    * @param options.dialect - The dialect to use for parsing
    * @param options.copy - Whether to copy the involved expressions (default: true)
-   * @param options.wrap - Whether to wrap operands in Parens to avoid precedence issues (default: true)
+   * @param options.wrap - Whether to wrap operands in Parens to avoid precedence issues (default:
+   * true)
    * @returns The new OR condition
    */
   or (
@@ -2545,7 +2549,8 @@ export class QueryExpr extends Expression {
    * @param expression - The SQL code string to parse.
    *                     This can also be an integer.
    *                     If a `Limit` instance is passed, it will be used as-is.
-   *                     If another `Expression` instance is passed, it will be wrapped in a `Limit`.
+   *                     If another `Expression` instance is passed, it will be wrapped in a
+   *                     `Limit`.
    * @param options - Options object
    * @param options.dialect - The dialect used to parse the input expression
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
@@ -2575,7 +2580,8 @@ export class QueryExpr extends Expression {
    * @param expression - The SQL code string to parse.
    *                     This can also be an integer.
    *                     If a `Offset` instance is passed, this is used as-is.
-   *                     If another `Expression` instance is passed, it will be wrapped in a `Offset`.
+   *                     If another `Expression` instance is passed, it will be wrapped in a
+   *                     `Offset`.
    * @param options - Options object
    * @param options.dialect - The dialect used to parse the input expression
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
@@ -2604,9 +2610,11 @@ export class QueryExpr extends Expression {
    *
    * @param expressions - The SQL code strings to parse.
    *                      If a `Group` instance is passed, this is used as-is.
-   *                      If another `Expression` instance is passed, it will be wrapped in a `Order`.
+   *                      If another `Expression` instance is passed, it will be wrapped in a
+   *                      `Order`.
    * @param options - Options object
-   * @param options.append - If `true`, add to any existing expressions. Otherwise, this flattens all the `Order` expression into a single expression. Default is `true`.
+   * @param options.append - If `true`, add to any existing expressions. Otherwise, this flattens
+   * all the `Order` expression into a single expression. Default is `true`.
    * @param options.dialect - The dialect used to parse the input expression
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified query expression
@@ -2671,7 +2679,8 @@ export class QueryExpr extends Expression {
    * @param expressions - The SQL code strings to parse.
    *                      If an `Expression` instance is passed, it will be used as-is.
    * @param options - Options object
-   * @param options.append - If `true`, add to any existing expressions. Otherwise, this resets the expressions. Default is `true`.
+   * @param options.append - If `true`, add to any existing expressions. Otherwise, this resets the
+   * expressions. Default is `true`.
    * @param options.dialect - The dialect used to parse the input expressions
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified query expression
@@ -2699,7 +2708,8 @@ export class QueryExpr extends Expression {
    *                      If an `Expression` instance is passed, it will be used as-is.
    *                      Multiple expressions are combined with an AND operator.
    * @param options - Options object
-   * @param options.append - If `true`, AND the new expressions to any existing expression. Otherwise, this resets the expression. Default is `true`.
+   * @param options.append - If `true`, AND the new expressions to any existing expression.
+   * Otherwise, this resets the expression. Default is `true`.
    * @param options.dialect - The dialect used to parse the input expressions
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified expression
@@ -2741,7 +2751,8 @@ export class QueryExpr extends Expression {
    * @param options - Options object
    * @param options.recursive - Set the RECURSIVE part of the expression. Defaults to `false`.
    * @param options.materialized - Set the MATERIALIZED part of the expression
-   * @param options.append - If `true`, add to any existing expressions. Otherwise, this resets the expressions. Default is `true`.
+   * @param options.append - If `true`, add to any existing expressions. Otherwise, this resets the
+   * expressions. Default is `true`.
    * @param options.dialect - The dialect used to parse the input expression
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @param options.scalar - If `true`, this is a scalar common table expression
@@ -2781,7 +2792,8 @@ export class QueryExpr extends Expression {
    * @param expressions - The SQL code strings to parse.
    *                      If an `Expression` instance is passed, it will be used as-is.
    * @param options - Options object
-   * @param options.distinct - If `true`, uses UNION DISTINCT. Otherwise uses UNION ALL. Default is `true`.
+   * @param options.distinct - If `true`, uses UNION DISTINCT. Otherwise uses UNION ALL. Default is
+   * `true`.
    * @param options.dialect - The dialect used to parse the input expressions
    * @returns A Union expression
    */
@@ -2809,7 +2821,8 @@ export class QueryExpr extends Expression {
    * @param expressions - The SQL code strings to parse.
    *                      If an `Expression` instance is passed, it will be used as-is.
    * @param options - Options object
-   * @param options.distinct - If `true`, uses INTERSECT DISTINCT. Otherwise uses INTERSECT ALL. Default is `true`.
+   * @param options.distinct - If `true`, uses INTERSECT DISTINCT. Otherwise uses INTERSECT ALL.
+   * Default is `true`.
    * @param options.dialect - The dialect used to parse the input expressions
    * @returns An Intersect expression
    */
@@ -2837,7 +2850,8 @@ export class QueryExpr extends Expression {
    * @param expressions - The SQL code strings to parse.
    *                      If an `Expression` instance is passed, it will be used as-is.
    * @param options - Options object
-   * @param options.distinct - If `true`, uses EXCEPT DISTINCT. Otherwise uses EXCEPT ALL. Default is `true`.
+   * @param options.distinct - If `true`, uses EXCEPT DISTINCT. Otherwise uses EXCEPT ALL. Default
+   * is `true`.
    * @param options.dialect - The dialect used to parse the input expressions
    * @returns An Except expression
    */
@@ -3185,14 +3199,16 @@ export class CreateExpr extends DDLExpr {
   }
 }
 
-export type SequencePropertiesExprArgs = { increment?: Expression;
+export type SequencePropertiesExprArgs = {
+  increment?: Expression;
   minvalue?: string;
   maxvalue?: string;
   cache?: Expression;
   start?: Expression;
   owned?: Expression;
   options?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  [key: string]: unknown;
+} & BaseExpressionArgs;
 
 export class SequencePropertiesExpr extends Expression {
   key = ExpressionKey.SEQUENCE_PROPERTIES;
@@ -6296,7 +6312,8 @@ export class JoinExpr extends Expression {
    *   If an Expression instance is passed, it will be used as-is.
    *   Multiple expressions are combined with an AND operator.
    * @param options - Configuration options
-   * @param options.append - if true, AND the new expressions to any existing expression. Otherwise, this resets the expression.
+   * @param options.append - if true, AND the new expressions to any existing expression. Otherwise,
+   * this resets the expression.
    * @param options.dialect - the dialect used to parse the input expressions.
    * @param options.copy - if false, modify this expression instance in-place.
    * @returns The modified Join expression.
@@ -6336,7 +6353,8 @@ export class JoinExpr extends Expression {
    * @param expressions - the SQL code strings to parse.
    *   If an Expression instance is passed, it will be used as-is.
    * @param options - Configuration options
-   * @param options.append - if true, concatenate the new expressions to the existing "using" list. Otherwise, this resets the expression.
+   * @param options.append - if true, concatenate the new expressions to the existing "using" list.
+   * Otherwise, this resets the expression.
    * @param options.dialect - the dialect used to parse the input expressions.
    * @param options.copy - if false, modify this expression instance in-place.
    * @returns The modified Join expression.
@@ -6692,7 +6710,8 @@ export class PartitionByRangePropertyDynamicExpr extends Expression {
   key = ExpressionKey.PARTITION_BY_RANGE_PROPERTY_DYNAMIC;
 
   /**
-   * Defines the arguments (properties and child expressions) for PartitionByRangePropertyDynamic expressions.
+   * Defines the arguments (properties and child expressions) for PartitionByRangePropertyDynamic
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -8127,7 +8146,10 @@ export class AnalyzeSampleExpr extends Expression {
 export type AnalyzeListChainedRowsExprArgs = BaseExpressionArgs;
 export class AnalyzeListChainedRowsExpr extends Expression {
   key = ExpressionKey.ANALYZE_LIST_CHAINED_ROWS;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AnalyzeListChainedRowsExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    AnalyzeListChainedRowsExprArgs
+  >;
+
   declare args: AnalyzeListChainedRowsExprArgs;
   constructor (args: AnalyzeListChainedRowsExprArgs = {}) {
     super(args);
@@ -8592,7 +8614,8 @@ export class OverflowTruncateBehaviorExpr extends Expression {
   key = ExpressionKey.OVERFLOW_TRUNCATE_BEHAVIOR;
 
   /**
-   * Defines the arguments (properties and child expressions) for OverflowTruncateBehavior expressions.
+   * Defines the arguments (properties and child expressions) for OverflowTruncateBehavior
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -9327,7 +9350,10 @@ export class PseudocolumnExpr extends ColumnExpr {
 export type AutoIncrementColumnConstraintExprArgs = BaseExpressionArgs;
 export class AutoIncrementColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.AUTO_INCREMENT_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AutoIncrementColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    AutoIncrementColumnConstraintExprArgs
+  >;
+
   declare args: AutoIncrementColumnConstraintExprArgs;
   constructor (args: AutoIncrementColumnConstraintExprArgs = {}) {
     super(args);
@@ -9337,7 +9363,10 @@ export class AutoIncrementColumnConstraintExpr extends ColumnConstraintKindExpr 
 export type ZeroFillColumnConstraintExprArgs = BaseExpressionArgs;
 export class ZeroFillColumnConstraintExpr extends ColumnConstraintExpr {
   key = ExpressionKey.ZERO_FILL_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ZeroFillColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    ZeroFillColumnConstraintExprArgs
+  >;
+
   declare args: ZeroFillColumnConstraintExprArgs;
   constructor (args: ZeroFillColumnConstraintExprArgs = {}) {
     super(args);
@@ -9349,7 +9378,8 @@ export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr 
   key = ExpressionKey.PERIOD_FOR_SYSTEM_TIME_CONSTRAINT;
 
   /**
-   * Defines the arguments (properties and child expressions) for PeriodForSystemTimeConstraint expressions.
+   * Defines the arguments (properties and child expressions) for PeriodForSystemTimeConstraint
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -9370,7 +9400,8 @@ export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CASE_SPECIFIC_COLUMN_CONSTRAINT;
 
   /**
-   * Defines the arguments (properties and child expressions) for CaseSpecificColumnConstraint expressions.
+   * Defines the arguments (properties and child expressions) for CaseSpecificColumnConstraint
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -9393,7 +9424,8 @@ export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CHARACTER_SET_COLUMN_CONSTRAINT;
 
   /**
-   * Defines the arguments (properties and child expressions) for CharacterSetColumnConstraint expressions.
+   * Defines the arguments (properties and child expressions) for CharacterSetColumnConstraint
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -9435,7 +9467,10 @@ export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
 export type ClusteredColumnConstraintExprArgs = BaseExpressionArgs;
 export class ClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CLUSTERED_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ClusteredColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    ClusteredColumnConstraintExprArgs
+  >;
+
   declare args: ClusteredColumnConstraintExprArgs;
   constructor (args: ClusteredColumnConstraintExprArgs = {}) {
     super(args);
@@ -9445,7 +9480,10 @@ export class ClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
 export type CollateColumnConstraintExprArgs = BaseExpressionArgs;
 export class CollateColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COLLATE_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CollateColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    CollateColumnConstraintExprArgs
+  >;
+
   declare args: CollateColumnConstraintExprArgs;
   constructor (args: CollateColumnConstraintExprArgs = {}) {
     super(args);
@@ -9455,7 +9493,10 @@ export class CollateColumnConstraintExpr extends ColumnConstraintKindExpr {
 export type CommentColumnConstraintExprArgs = BaseExpressionArgs;
 export class CommentColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMMENT_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CommentColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    CommentColumnConstraintExprArgs
+  >;
+
   declare args: CommentColumnConstraintExprArgs;
   constructor (args: CommentColumnConstraintExprArgs = {}) {
     super(args);
@@ -9467,7 +9508,8 @@ export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMPRESS_COLUMN_CONSTRAINT;
 
   /**
-   * Defines the arguments (properties and child expressions) for CompressColumnConstraint expressions.
+   * Defines the arguments (properties and child expressions) for CompressColumnConstraint
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -9485,7 +9527,8 @@ export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.DATE_FORMAT_COLUMN_CONSTRAINT;
 
   /**
-   * Defines the arguments (properties and child expressions) for DateFormatColumnConstraint expressions.
+   * Defines the arguments (properties and child expressions) for DateFormatColumnConstraint
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -9501,7 +9544,10 @@ export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
 export type DefaultColumnConstraintExprArgs = BaseExpressionArgs;
 export class DefaultColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.DEFAULT_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DefaultColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    DefaultColumnConstraintExprArgs
+  >;
+
   declare args: DefaultColumnConstraintExprArgs;
   constructor (args: DefaultColumnConstraintExprArgs = {}) {
     super(args);
@@ -9511,7 +9557,10 @@ export class DefaultColumnConstraintExpr extends ColumnConstraintKindExpr {
 export type EncodeColumnConstraintExprArgs = BaseExpressionArgs;
 export class EncodeColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.ENCODE_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<EncodeColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    EncodeColumnConstraintExprArgs
+  >;
+
   declare args: EncodeColumnConstraintExprArgs;
   constructor (args: EncodeColumnConstraintExprArgs = {}) {
     super(args);
@@ -9521,7 +9570,10 @@ export class EncodeColumnConstraintExpr extends ColumnConstraintKindExpr {
 export type ExcludeColumnConstraintExprArgs = BaseExpressionArgs;
 export class ExcludeColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.EXCLUDE_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ExcludeColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    ExcludeColumnConstraintExprArgs
+  >;
+
   declare args: ExcludeColumnConstraintExprArgs;
   constructor (args: ExcludeColumnConstraintExprArgs = {}) {
     super(args);
@@ -9533,7 +9585,8 @@ export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.EPHEMERAL_COLUMN_CONSTRAINT;
 
   /**
-   * Defines the arguments (properties and child expressions) for EphemeralColumnConstraint expressions.
+   * Defines the arguments (properties and child expressions) for EphemeralColumnConstraint
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -9559,7 +9612,8 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
   key = ExpressionKey.GENERATED_AS_IDENTITY_COLUMN_CONSTRAINT;
 
   /**
-   * Defines the arguments (properties and child expressions) for GeneratedAsIdentityColumnConstraint expressions.
+   * Defines the arguments (properties and child expressions) for
+   * GeneratedAsIdentityColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    * Note: this: true -> ALWAYS, this: false -> BY DEFAULT
    */
@@ -9618,7 +9672,8 @@ export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr
   key = ExpressionKey.GENERATED_AS_ROW_COLUMN_CONSTRAINT;
 
   /**
-   * Defines the arguments (properties and child expressions) for GeneratedAsRowColumnConstraint expressions.
+   * Defines the arguments (properties and child expressions) for GeneratedAsRowColumnConstraint
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -9699,7 +9754,10 @@ export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
 export type InlineLengthColumnConstraintExprArgs = BaseExpressionArgs;
 export class InlineLengthColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.INLINE_LENGTH_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<InlineLengthColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    InlineLengthColumnConstraintExprArgs
+  >;
+
   declare args: InlineLengthColumnConstraintExprArgs;
   constructor (args: InlineLengthColumnConstraintExprArgs = {}) {
     super(args);
@@ -9709,7 +9767,10 @@ export class InlineLengthColumnConstraintExpr extends ColumnConstraintKindExpr {
 export type NonClusteredColumnConstraintExprArgs = BaseExpressionArgs;
 export class NonClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NON_CLUSTERED_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NonClusteredColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    NonClusteredColumnConstraintExprArgs
+  >;
+
   declare args: NonClusteredColumnConstraintExprArgs;
   constructor (args: NonClusteredColumnConstraintExprArgs = {}) {
     super(args);
@@ -9749,7 +9810,8 @@ export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NOT_NULL_COLUMN_CONSTRAINT;
 
   /**
-   * Defines the arguments (properties and child expressions) for NotNullColumnConstraint expressions.
+   * Defines the arguments (properties and child expressions) for NotNullColumnConstraint
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -9770,7 +9832,10 @@ export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
 export type OnUpdateColumnConstraintExprArgs = BaseExpressionArgs;
 export class OnUpdateColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.ON_UPDATE_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<OnUpdateColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    OnUpdateColumnConstraintExprArgs
+  >;
+
   declare args: OnUpdateColumnConstraintExprArgs;
   constructor (args: OnUpdateColumnConstraintExprArgs = {}) {
     super(args);
@@ -9785,7 +9850,8 @@ export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PRIMARY_KEY_COLUMN_CONSTRAINT;
 
   /**
-   * Defines the arguments (properties and child expressions) for PrimaryKeyColumnConstraint expressions.
+   * Defines the arguments (properties and child expressions) for PrimaryKeyColumnConstraint
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -9811,7 +9877,10 @@ export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
 export type TitleColumnConstraintExprArgs = BaseExpressionArgs;
 export class TitleColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.TITLE_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TitleColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    TitleColumnConstraintExprArgs
+  >;
+
   declare args: TitleColumnConstraintExprArgs;
   constructor (args: TitleColumnConstraintExprArgs = {}) {
     super(args);
@@ -9828,7 +9897,8 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.UNIQUE_COLUMN_CONSTRAINT;
 
   /**
-   * Defines the arguments (properties and child expressions) for UniqueColumnConstraint expressions.
+   * Defines the arguments (properties and child expressions) for UniqueColumnConstraint
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -9886,7 +9956,10 @@ export class PathColumnConstraintExpr extends ColumnConstraintKindExpr {
 export type ProjectionPolicyColumnConstraintExprArgs = BaseExpressionArgs;
 export class ProjectionPolicyColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PROJECTION_POLICY_COLUMN_CONSTRAINT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ProjectionPolicyColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    ProjectionPolicyColumnConstraintExprArgs
+  >;
+
   declare args: ProjectionPolicyColumnConstraintExprArgs;
   constructor (args: ProjectionPolicyColumnConstraintExprArgs = {}) {
     super(args);
@@ -9902,7 +9975,8 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMPUTED_COLUMN_CONSTRAINT;
 
   /**
-   * Defines the arguments (properties and child expressions) for ComputedColumnConstraint expressions.
+   * Defines the arguments (properties and child expressions) for ComputedColumnConstraint
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -10077,7 +10151,8 @@ export class DeleteExpr extends DMLExpr {
    *                      If an `Expression` instance is passed, it will be used as-is.
    *                      Multiple expressions are combined with an AND operator.
    * @param options - Options object
-   * @param options.append - If `true`, AND the new expressions to any existing expression. Otherwise, this resets the expression. Default is `true`.
+   * @param options.append - If `true`, AND the new expressions to any existing expression.
+   * Otherwise, this resets the expression. Default is `true`.
    * @param options.dialect - The dialect used to parse the input expressions
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified expression
@@ -10291,7 +10366,8 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
    * @param options - Configuration options
    * @param options.recursive - set the RECURSIVE part of the expression. Defaults to false.
    * @param options.materialized - set the MATERIALIZED part of the expression.
-   * @param options.append - if true, add to any existing expressions. Otherwise, this resets the expressions.
+   * @param options.append - if true, add to any existing expressions. Otherwise, this resets the
+   * expressions.
    * @param options.dialect - the dialect used to parse the input expression.
    * @param options.copy - if false, modify this expression instance in-place.
    * @returns The modified expression.
@@ -10556,7 +10632,8 @@ export class BlockCompressionPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BLOCK_COMPRESSION_PROPERTY;
 
   /**
-   * Defines the arguments (properties and child expressions) for BlockCompressionProperty expressions.
+   * Defines the arguments (properties and child expressions) for BlockCompressionProperty
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -11231,7 +11308,8 @@ export class IsolatedLoadingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ISOLATED_LOADING_PROPERTY;
 
   /**
-   * Defines the arguments (properties and child expressions) for IsolatedLoadingProperty expressions.
+   * Defines the arguments (properties and child expressions) for IsolatedLoadingProperty
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -11708,7 +11786,8 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
   key = ExpressionKey.MERGE_BLOCK_RATIO_PROPERTY;
 
   /**
-   * Defines the arguments (properties and child expressions) for MergeBlockRatioProperty expressions.
+   * Defines the arguments (properties and child expressions) for MergeBlockRatioProperty
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -11850,7 +11929,8 @@ export class PartitionByRangePropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITION_BY_RANGE_PROPERTY;
 
   /**
-   * Defines the arguments (properties and child expressions) for PartitionByRangeProperty expressions.
+   * Defines the arguments (properties and child expressions) for PartitionByRangeProperty
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -11900,7 +11980,8 @@ export class PartitionByListPropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITION_BY_LIST_PROPERTY;
 
   /**
-   * Defines the arguments (properties and child expressions) for PartitionByListProperty expressions.
+   * Defines the arguments (properties and child expressions) for PartitionByListProperty
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -11944,7 +12025,8 @@ export class RefreshTriggerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.REFRESH_TRIGGER_PROPERTY;
 
   /**
-   * Defines the arguments (properties and child expressions) for RefreshTriggerProperty expressions.
+   * Defines the arguments (properties and child expressions) for RefreshTriggerProperty
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -12004,7 +12086,10 @@ export class UniqueKeyPropertyExpr extends PropertyExpr {
 export type PartitionedOfPropertyExprArgs = BaseExpressionArgs;
 export class PartitionedOfPropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_OF_PROPERTY;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PartitionedOfPropertyExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    PartitionedOfPropertyExprArgs
+  >;
+
   declare args: PartitionedOfPropertyExprArgs;
   constructor (args: PartitionedOfPropertyExprArgs = {}) {
     super(args);
@@ -12014,7 +12099,10 @@ export class PartitionedOfPropertyExpr extends PropertyExpr {
 export type StreamingTablePropertyExprArgs = BaseExpressionArgs;
 export class StreamingTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.STREAMING_TABLE_PROPERTY;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<StreamingTablePropertyExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    StreamingTablePropertyExprArgs
+  >;
+
   declare args: StreamingTablePropertyExprArgs;
   constructor (args: StreamingTablePropertyExprArgs = {}) {
     super(args);
@@ -12024,7 +12112,10 @@ export class StreamingTablePropertyExpr extends PropertyExpr {
 export type RemoteWithConnectionModelPropertyExprArgs = BaseExpressionArgs;
 export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.REMOTE_WITH_CONNECTION_MODEL_PROPERTY;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RemoteWithConnectionModelPropertyExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    RemoteWithConnectionModelPropertyExprArgs
+  >;
+
   declare args: RemoteWithConnectionModelPropertyExprArgs;
   constructor (args: RemoteWithConnectionModelPropertyExprArgs = {}) {
     super(args);
@@ -12107,7 +12198,8 @@ export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_DELIMITED_PROPERTY;
 
   /**
-   * Defines the arguments (properties and child expressions) for RowFormatDelimitedProperty expressions.
+   * Defines the arguments (properties and child expressions) for RowFormatDelimitedProperty
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -12163,7 +12255,8 @@ export class RowFormatSerdePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_SERDE_PROPERTY;
 
   /**
-   * Defines the arguments (properties and child expressions) for RowFormatSerdeProperty expressions.
+   * Defines the arguments (properties and child expressions) for RowFormatSerdeProperty
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -12205,7 +12298,10 @@ export class SecurityPropertyExpr extends PropertyExpr {
 export type SchemaCommentPropertyExprArgs = BaseExpressionArgs;
 export class SchemaCommentPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SCHEMA_COMMENT_PROPERTY;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SchemaCommentPropertyExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    SchemaCommentPropertyExprArgs
+  >;
+
   declare args: SchemaCommentPropertyExprArgs;
   constructor (args: SchemaCommentPropertyExprArgs = {}) {
     super(args);
@@ -12703,7 +12799,8 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_SYSTEM_VERSIONING_PROPERTY;
 
   /**
-   * Defines the arguments (properties and child expressions) for WithSystemVersioningProperty expressions.
+   * Defines the arguments (properties and child expressions) for WithSystemVersioningProperty
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -12773,7 +12870,8 @@ export class EncodePropertyExpr extends PropertyExpr {
   /**
    * Defines the arguments (properties and child expressions) for EncodeProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
-   * Note: The 'key' argument can be accessed via this.args.key (no getter to avoid conflict with Expression.key).
+   * Note: The 'key' argument can be accessed via this.args.key (no getter to avoid conflict with
+   * Expression.key).
    */
   static argTypes: Record<string, boolean> = {
     this: true,
@@ -12807,7 +12905,8 @@ export class IncludePropertyExpr extends PropertyExpr {
   /**
    * Defines the arguments (properties and child expressions) for IncludeProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
-   * Note: The 'alias' argument can be accessed via this.args.alias (no getter to avoid conflict with Expression.alias).
+   * Note: The 'alias' argument can be accessed via this.args.alias (no getter to avoid conflict
+   * with Expression.alias).
    */
   static argTypes: Record<string, boolean> = {
     this: true,
@@ -14769,7 +14868,10 @@ export class ManhattanDistanceExpr extends FuncExpr {
 export type JarowinklerSimilarityExprArgs = BaseExpressionArgs;
 export class JarowinklerSimilarityExpr extends FuncExpr {
   key = ExpressionKey.JAROWINKLER_SIMILARITY;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JarowinklerSimilarityExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    JarowinklerSimilarityExprArgs
+  >;
+
   declare args: JarowinklerSimilarityExprArgs;
   constructor (args: JarowinklerSimilarityExprArgs = {}) {
     super(args);
@@ -15809,7 +15911,10 @@ export class ArrayRemoveAtExpr extends FuncExpr {
 export type ArrayConstructCompactExprArgs = BaseExpressionArgs;
 export class ArrayConstructCompactExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_CONSTRUCT_COMPACT;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayConstructCompactExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    ArrayConstructCompactExprArgs
+  >;
+
   declare args: ArrayConstructCompactExprArgs;
   constructor (args: ArrayConstructCompactExprArgs = {}) {
     super(args);
@@ -16523,7 +16628,10 @@ export class CurrentAccountNameExpr extends FuncExpr {
 export type CurrentAvailableRolesExprArgs = BaseExpressionArgs;
 export class CurrentAvailableRolesExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_AVAILABLE_ROLES;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentAvailableRolesExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    CurrentAvailableRolesExprArgs
+  >;
+
   declare args: CurrentAvailableRolesExprArgs;
   constructor (args: CurrentAvailableRolesExprArgs = {}) {
     super(args);
@@ -16573,7 +16681,10 @@ export class CurrentSchemasExpr extends FuncExpr {
 export type CurrentSecondaryRolesExprArgs = BaseExpressionArgs;
 export class CurrentSecondaryRolesExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SECONDARY_ROLES;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentSecondaryRolesExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    CurrentSecondaryRolesExprArgs
+  >;
+
   declare args: CurrentSecondaryRolesExprArgs;
   constructor (args: CurrentSecondaryRolesExprArgs = {}) {
     super(args);
@@ -16738,7 +16849,10 @@ export class CurrentTimezoneExpr extends FuncExpr {
 export type CurrentOrganizationNameExprArgs = BaseExpressionArgs;
 export class CurrentOrganizationNameExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ORGANIZATION_NAME;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentOrganizationNameExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    CurrentOrganizationNameExprArgs
+  >;
+
   declare args: CurrentOrganizationNameExprArgs;
   constructor (args: CurrentOrganizationNameExprArgs = {}) {
     super(args);
@@ -16808,7 +16922,10 @@ export class CurrentRoleTypeExpr extends FuncExpr {
 export type CurrentOrganizationUserExprArgs = BaseExpressionArgs;
 export class CurrentOrganizationUserExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ORGANIZATION_USER;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentOrganizationUserExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    CurrentOrganizationUserExprArgs
+  >;
+
   declare args: CurrentOrganizationUserExprArgs;
   constructor (args: CurrentOrganizationUserExprArgs = {}) {
     super(args);
@@ -18639,7 +18756,8 @@ export class GenerateTimestampArrayExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_TIMESTAMP_ARRAY;
 
   /**
-   * Defines the arguments (properties and child expressions) for GenerateTimestampArray expressions.
+   * Defines the arguments (properties and child expressions) for GenerateTimestampArray
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -19355,7 +19473,10 @@ export class JSONBContainsExpr extends BinaryExpr {
 export type JSONBContainsAnyTopKeysExprArgs = BaseExpressionArgs;
 export class JSONBContainsAnyTopKeysExpr extends BinaryExpr {
   key = ExpressionKey.JSONB_CONTAINS_ANY_TOP_KEYS;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONBContainsAnyTopKeysExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    JSONBContainsAnyTopKeysExprArgs
+  >;
+
   declare args: JSONBContainsAnyTopKeysExprArgs;
   constructor (args: JSONBContainsAnyTopKeysExprArgs = {}) {
     super(args);
@@ -19365,7 +19486,10 @@ export class JSONBContainsAnyTopKeysExpr extends BinaryExpr {
 export type JSONBContainsAllTopKeysExprArgs = BaseExpressionArgs;
 export class JSONBContainsAllTopKeysExpr extends BinaryExpr {
   key = ExpressionKey.JSONB_CONTAINS_ALL_TOP_KEYS;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONBContainsAllTopKeysExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    JSONBContainsAllTopKeysExprArgs
+  >;
+
   declare args: JSONBContainsAllTopKeysExprArgs;
   constructor (args: JSONBContainsAllTopKeysExprArgs = {}) {
     super(args);
@@ -20682,7 +20806,8 @@ export class ApproxPercentileEstimateExpr extends FuncExpr {
   key = ExpressionKey.APPROX_PERCENTILE_ESTIMATE;
 
   /**
-   * Defines the arguments (properties and child expressions) for ApproxPercentileEstimate expressions.
+   * Defines the arguments (properties and child expressions) for ApproxPercentileEstimate
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -21414,7 +21539,10 @@ export class SafeSubtractExpr extends FuncExpr {
 export type SafeConvertBytesToStringExprArgs = BaseExpressionArgs;
 export class SafeConvertBytesToStringExpr extends FuncExpr {
   key = ExpressionKey.SAFE_CONVERT_BYTES_TO_STRING;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SafeConvertBytesToStringExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    SafeConvertBytesToStringExprArgs
+  >;
+
   declare args: SafeConvertBytesToStringExprArgs;
   constructor (args: SafeConvertBytesToStringExprArgs = {}) {
     super(args);
@@ -23179,7 +23307,10 @@ export class ApproxQuantilesExpr extends AggFuncExpr {
 export type ApproxPercentileCombineExprArgs = BaseExpressionArgs;
 export class ApproxPercentileCombineExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_PERCENTILE_COMBINE;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ApproxPercentileCombineExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    ApproxPercentileCombineExprArgs
+  >;
+
   declare args: ApproxPercentileCombineExprArgs;
   constructor (args: ApproxPercentileCombineExprArgs = {}) {
     super(args);
@@ -23209,7 +23340,10 @@ export class MinhashCombineExpr extends AggFuncExpr {
 export type ApproximateSimilarityExprArgs = BaseExpressionArgs;
 export class ApproximateSimilarityExpr extends AggFuncExpr {
   key = ExpressionKey.APPROXIMATE_SIMILARITY;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ApproximateSimilarityExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    ApproximateSimilarityExprArgs
+  >;
+
   declare args: ApproximateSimilarityExprArgs;
   constructor (args: ApproximateSimilarityExprArgs = {}) {
     super(args);
@@ -23302,7 +23436,10 @@ export class ApproxDistinctExpr extends AggFuncExpr {
 export type ExplodingGenerateSeriesExprArgs = BaseExpressionArgs;
 export class ExplodingGenerateSeriesExpr extends GenerateSeriesExpr {
   key = ExpressionKey.EXPLODING_GENERATE_SERIES;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ExplodingGenerateSeriesExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    ExplodingGenerateSeriesExprArgs
+  >;
+
   declare args: ExplodingGenerateSeriesExprArgs;
   constructor (args: ExplodingGenerateSeriesExprArgs = {}) {
     super(args);
@@ -24024,7 +24161,10 @@ export class QuantileExpr extends AggFuncExpr {
 export type ApproxPercentileAccumulateExprArgs = BaseExpressionArgs;
 export class ApproxPercentileAccumulateExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_PERCENTILE_ACCUMULATE;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ApproxPercentileAccumulateExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    ApproxPercentileAccumulateExprArgs
+  >;
+
   declare args: ApproxPercentileAccumulateExprArgs;
   constructor (args: ApproxPercentileAccumulateExprArgs = {}) {
     super(args);
@@ -24300,7 +24440,8 @@ export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
   key = ExpressionKey.COMBINED_PARAMETERIZED_AGG;
 
   /**
-   * Defines the arguments (properties and child expressions) for CombinedParameterizedAgg expressions.
+   * Defines the arguments (properties and child expressions) for CombinedParameterizedAgg
+   * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
@@ -25354,7 +25495,8 @@ function _applyCteBuilder (options: {
  * Wrap an expression in parentheses if it's of a certain type
  * @param expression - Expression to potentially wrap
  * @param kind - The expression class to check against
- * @returns The expression wrapped in parentheses if it matches the kind, otherwise the original expression
+ * @returns The expression wrapped in parentheses if it matches the kind, otherwise the original
+ * expression
  */
 function _wrap (expression: Expression | undefined, kind: typeof Expression): Expression | undefined {
   if (expression instanceof kind) {
