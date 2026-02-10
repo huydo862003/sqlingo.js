@@ -483,9 +483,7 @@ export class Parser {
         if (not) {
           return this.expression(exp.IsExpr, {
             this: expr,
-            expression: this.expression(exp.NotExpr, {
-              this: this.expression(exp.NullExpr, {}),
-            }),
+            expression: this.expression(exp.NotExpr, { this: this.expression(exp.NullExpr, {}) }),
           });
         }
         return this.expression(exp.IsExpr, {
@@ -759,9 +757,7 @@ export class Parser {
       if (!this._curr) break;
 
       if (this._curr.tokenType === TokenType.VAR || this._curr.tokenType === TokenType.IDENTIFIER) {
-        const identifier = this.expression(exp.IdentifierExpr, {
-          this: this._curr.text,
-        });
+        const identifier = this.expression(exp.IdentifierExpr, { this: this._curr.text });
         parts.push(identifier);
         this._advance();
 
@@ -951,9 +947,7 @@ export class Parser {
       if (!this._curr) break;
 
       if (this._curr.tokenType === TokenType.VAR || this._curr.tokenType === TokenType.IDENTIFIER) {
-        const identifier = this.expression(exp.IdentifierExpr, {
-          this: this._curr.text,
-        });
+        const identifier = this.expression(exp.IdentifierExpr, { this: this._curr.text });
         parts.push(identifier);
         this._advance();
 
@@ -1078,9 +1072,7 @@ export class Parser {
       if (!this._curr) break;
 
       if (this._curr.tokenType === TokenType.VAR || this._curr.tokenType === TokenType.IDENTIFIER) {
-        const identifier = this.expression(exp.IdentifierExpr, {
-          this: this._curr.text,
-        });
+        const identifier = this.expression(exp.IdentifierExpr, { this: this._curr.text });
         parts.push(identifier);
         this._advance();
 
@@ -1389,12 +1381,8 @@ Parser.PRIMARY_PARSERS = {
 };
 
 Parser.UNARY_PARSERS = {
-  [TokenType.DASH]: (parser) => parser.expression(exp.NegExpr, {
-    this: parser['_parseUnary'](),
-  }),
-  [TokenType.NOT]: (parser) => parser.expression(exp.NotExpr, {
-    this: parser['_parseEquality'](),
-  }),
+  [TokenType.DASH]: (parser) => parser.expression(exp.NegExpr, { this: parser['_parseUnary']() }),
+  [TokenType.NOT]: (parser) => parser.expression(exp.NotExpr, { this: parser['_parseEquality']() }),
 };
 
 /**
