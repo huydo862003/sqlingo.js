@@ -1097,7 +1097,7 @@ export class Expression {
 
   /** Set of required argument names */
 
-  constructor (args: BaseExpressionArgs = {}) {
+  constructor (args: BaseExpressionArgs) {
     this.args = args;
     for (const [argKey, value] of Object.entries(args)) {
       this._setParent(argKey, value);
@@ -1933,7 +1933,6 @@ export class Expression {
       dialect?: DialectType;
       copy?: boolean;
       wrap?: boolean;
-      [key: string]: unknown;
     },
   ): Expression | undefined {
     const copy = options?.copy ?? true;
@@ -1969,8 +1968,7 @@ export class Expression {
     expressions: (Expression | undefined)[],
     options?: { dialect?: DialectType;
       copy?: boolean;
-      wrap?: boolean;
-      [key: string]: unknown; },
+      wrap?: boolean; },
   ): Expression | undefined {
     const copy = options?.copy ?? true;
     const wrap = options?.wrap ?? true;
@@ -2069,7 +2067,6 @@ export class Expression {
       dialect?: DialectType;
       copy?: boolean;
       wrap?: boolean;
-      [key: string]: unknown;
     },
   ): AliasExpr {
     const copy = options?.copy ?? true;
@@ -2207,7 +2204,6 @@ export class Expression {
       query?: string | Expression;
       unnest?: string | Expression | Array<string | Expression>;
       copy?: boolean;
-      [key: string]: unknown;
     },
   ): InExpr {
     const copy = options?.copy ?? true;
@@ -2252,7 +2248,6 @@ export class Expression {
     options?: {
       copy?: boolean;
       symmetric?: boolean;
-      [key: string]: unknown;
     },
   ): BetweenExpr {
     const copy = options?.copy ?? true;
@@ -2474,7 +2469,7 @@ export class ConditionExpr extends Expression {
 
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ConditionExprArgs>;
   declare args: ConditionExprArgs;
-  constructor (args: ConditionExprArgs = {}) {
+  constructor (args: ConditionExprArgs) {
     super(args);
   }
 }
@@ -2485,7 +2480,7 @@ export class PredicateExpr extends Expression {
 
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PredicateExprArgs>;
   declare args: PredicateExprArgs;
-  constructor (args: PredicateExprArgs = {}) {
+  constructor (args: PredicateExprArgs) {
     super(args);
   }
 }
@@ -2496,7 +2491,7 @@ export class DerivedTableExpr extends Expression {
 
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DerivedTableExprArgs>;
   declare args: DerivedTableExprArgs;
-  constructor (args: DerivedTableExprArgs = {}) {
+  constructor (args: DerivedTableExprArgs) {
     super(args);
   }
 
@@ -2532,7 +2527,7 @@ export class QueryExpr extends Expression {
 
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<QueryExprArgs>;
   declare args: QueryExprArgs;
-  constructor (args: QueryExprArgs = {}) {
+  constructor (args: QueryExprArgs) {
     super(args);
   }
 
@@ -2586,8 +2581,7 @@ export class QueryExpr extends Expression {
    * @returns A limited query expression
    */
   limit (expression: string | number | Expression, options: { dialect?: DialectType;
-    copy?: boolean;
-    [key: string]: unknown; } = {}): this {
+    copy?: boolean; } = {}): this {
     return _applyBuilder(expression, {
       instance: this,
       arg: 'limit',
@@ -2617,8 +2611,7 @@ export class QueryExpr extends Expression {
    * @returns The modified query expression
    */
   offset (expression: string | number | Expression, options: { dialect?: DialectType;
-    copy?: boolean;
-    [key: string]: unknown; } = {}): this {
+    copy?: boolean; } = {}): this {
     return _applyBuilder(expression, {
       instance: this,
       arg: 'offset',
@@ -2654,7 +2647,6 @@ export class QueryExpr extends Expression {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
-      [key: string]: unknown;
     } = {},
   ): this {
     return _applyChildListBuilder(expressions, {
@@ -2720,7 +2712,6 @@ export class QueryExpr extends Expression {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
-      [key: string]: unknown;
     } = {},
   ): this {
     throw new Error('Query objects must implement `select`');
@@ -2749,7 +2740,6 @@ export class QueryExpr extends Expression {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
-      [key: string]: unknown;
     } = {},
   ): this {
     const processedExpressions = expressions.map((expr) =>
@@ -2798,7 +2788,6 @@ export class QueryExpr extends Expression {
       dialect?: DialectType;
       copy?: boolean;
       scalar?: boolean;
-      [key: string]: unknown;
     } = {},
   ): this {
     return _applyCteBuilder({
@@ -2832,7 +2821,6 @@ export class QueryExpr extends Expression {
     options: {
       distinct?: boolean;
       dialect?: DialectType;
-      [key: string]: unknown;
     } = {},
   ): UnionExpr {
     return union([this, ...expressions], {
@@ -2861,7 +2849,6 @@ export class QueryExpr extends Expression {
     options: {
       distinct?: boolean;
       dialect?: DialectType;
-      [key: string]: unknown;
     } = {},
   ): IntersectExpr {
     return intersect([this, ...expressions], {
@@ -2890,7 +2877,6 @@ export class QueryExpr extends Expression {
     options: {
       distinct?: boolean;
       dialect?: DialectType;
-      [key: string]: unknown;
     } = {},
   ): ExceptExpr {
     return except([this, ...expressions], {
@@ -2909,7 +2895,7 @@ export class UDTFExpr extends DerivedTableExpr {
 
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UDTFExprArgs>;
   declare args: UDTFExprArgs;
-  constructor (args: UDTFExprArgs = {}) {
+  constructor (args: UDTFExprArgs) {
     super(args);
   }
 
@@ -2926,7 +2912,6 @@ export type CacheExprArgs = {
   options?: Expression[];
   this: Expression;
   expression?: ExpressionValue;
-  [key: string]: unknown;
 } & BaseExpressionArgs;
 
 export class CacheExpr extends Expression {
@@ -2949,17 +2934,27 @@ export class CacheExpr extends Expression {
     super(args);
   }
 
-  get $lazy (): Expression {
-    return this.args.lazy as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $lazy (): Expression | undefined {
+    return this.args.lazy as Expression | undefined;
+  }
+
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression as Expression | undefined;
   }
 }
 
-export type UncacheExprArgs = { exists?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type UncacheExprArgs = {
+  exists?: Expression;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class UncacheExpr extends Expression {
   key = ExpressionKey.UNCACHE;
@@ -2975,12 +2970,16 @@ export class UncacheExpr extends Expression {
 
   declare args: UncacheExprArgs;
 
-  constructor (args: UncacheExprArgs = {}) {
+  constructor (args: UncacheExprArgs) {
     super(args);
   }
 
-  get $exists (): Expression {
-    return this.args.exists as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $exists (): Expression[] | undefined {
+    return this.args.exists as Expression[] | undefined;
   }
 }
 
@@ -2994,7 +2993,7 @@ export enum RefreshExprKind {
 }
 
 export type RefreshExprArgs = { kind: RefreshExprKind;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class RefreshExpr extends Expression {
   key = ExpressionKey.REFRESH;
@@ -3014,8 +3013,12 @@ export class RefreshExpr extends Expression {
     super(args);
   }
 
-  get $kind (): RefreshExprKind | undefined {
-    return this.args.kind as RefreshExprKind | undefined;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $kind (): string {
+    return this.args.kind as string;
   }
 }
 
@@ -3024,7 +3027,7 @@ export class DDLExpr extends Expression {
   key = ExpressionKey.DDL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DDLExprArgs>;
   declare args: DDLExprArgs;
-  constructor (args: DDLExprArgs = {}) {
+  constructor (args: DDLExprArgs) {
     super(args);
   }
 
@@ -3064,7 +3067,10 @@ export class DDLExpr extends Expression {
   }
 }
 
-export type LockingStatementExprArgs = BaseExpressionArgs;
+export type LockingStatementExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
 export class LockingStatementExpr extends Expression {
   key = ExpressionKey.LOCKING_STATEMENT;
   static argTypes: Record<string, boolean> = {
@@ -3073,8 +3079,16 @@ export class LockingStatementExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: LockingStatementExprArgs;
-  constructor (args: LockingStatementExprArgs = {}) {
+  constructor (args: LockingStatementExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression as Expression;
   }
 }
 
@@ -3083,7 +3097,7 @@ export class DMLExpr extends Expression {
   key = ExpressionKey.DML;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DMLExprArgs>;
   declare args: DMLExprArgs;
-  constructor (args: DMLExprArgs = {}) {
+  constructor (args: DMLExprArgs) {
     super(args);
   }
 
@@ -3106,7 +3120,6 @@ export class DMLExpr extends Expression {
     options: {
       dialect?: DialectType;
       copy?: boolean;
-      [key: string]: unknown;
     } = {},
   ): this {
     return _applyBuilder(expression, {
@@ -3151,7 +3164,8 @@ export type CreateExprArgs = { with?: Expression;
   clone?: Expression;
   concurrently?: Expression;
   clustered?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression;
+  expression?: Expression; } & BaseExpressionArgs;
 
 export class CreateExpr extends DDLExpr {
   key = ExpressionKey.CREATE;
@@ -3185,60 +3199,68 @@ export class CreateExpr extends DDLExpr {
     super(args);
   }
 
-  get $with (): Expression {
-    return this.args['with'] as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $kind (): CreateExprKind | undefined {
-    return this.args.kind as CreateExprKind | undefined;
+  get $expression (): Expression | undefined {
+    return this.args.expression as Expression | undefined;
   }
 
-  get $exists (): Expression {
-    return this.args.exists as Expression;
+  get $with (): Expression | undefined {
+    return this.args.with as Expression | undefined;
   }
 
-  get $properties (): Expression[] {
-    return (this.args.properties || []) as Expression[];
+  get $kind (): string {
+    return this.args.kind as string;
   }
 
-  get $replace (): boolean {
-    return this.args.replace as boolean;
+  get $exists (): Expression[] | undefined {
+    return this.args.exists as Expression[] | undefined;
   }
 
-  get $refresh (): Expression {
-    return this.args.refresh as Expression;
+  get $properties (): Expression[] | undefined {
+    return this.args.properties as Expression[] | undefined;
   }
 
-  get $unique (): boolean {
-    return this.args.unique as boolean;
+  get $replace (): Expression | undefined {
+    return this.args.replace as Expression | undefined;
   }
 
-  get $indexes (): Expression[] {
-    return (this.args.indexes || []) as Expression[];
+  get $refresh (): Expression | undefined {
+    return this.args.refresh as Expression | undefined;
   }
 
-  get $noSchemaBinding (): Expression {
-    return this.args.noSchemaBinding as Expression;
+  get $unique (): Expression | undefined {
+    return this.args.unique as Expression | undefined;
   }
 
-  get $begin (): Expression {
-    return this.args.begin as Expression;
+  get $indexes (): Expression[] | undefined {
+    return this.args.indexes as Expression[] | undefined;
   }
 
-  get $end (): Expression {
-    return this.args.end as Expression;
+  get $noSchemaBinding (): Expression | undefined {
+    return this.args.noSchemaBinding as Expression | undefined;
   }
 
-  get $clone (): Expression {
-    return this.args.clone as Expression;
+  get $begin (): Expression | undefined {
+    return this.args.begin as Expression | undefined;
   }
 
-  get $concurrently (): Expression {
-    return this.args.concurrently as Expression;
+  get $end (): Expression | undefined {
+    return this.args.end as Expression | undefined;
   }
 
-  get $clustered (): Expression {
-    return this.args.clustered as Expression;
+  get $clone (): Expression | undefined {
+    return this.args.clone as Expression | undefined;
+  }
+
+  get $concurrently (): Expression | undefined {
+    return this.args.concurrently as Expression | undefined;
+  }
+
+  get $clustered (): Expression | undefined {
+    return this.args.clustered as Expression | undefined;
   }
 }
 
@@ -3250,7 +3272,6 @@ export type SequencePropertiesExprArgs = {
   start?: Expression;
   owned?: Expression;
   options?: Expression[];
-  [key: string]: unknown;
 } & BaseExpressionArgs;
 
 export class SequencePropertiesExpr extends Expression {
@@ -3272,36 +3293,36 @@ export class SequencePropertiesExpr extends Expression {
 
   declare args: SequencePropertiesExprArgs;
 
-  constructor (args: SequencePropertiesExprArgs = {}) {
+  constructor (args: SequencePropertiesExprArgs) {
     super(args);
   }
 
-  get $increment (): Expression {
-    return this.args.increment as Expression;
+  get $increment (): Expression | undefined {
+    return this.args.increment as Expression | undefined;
   }
 
-  get $minvalue (): string {
-    return this.args.minvalue as string;
+  get $minvalue (): Expression | undefined {
+    return this.args.minvalue as Expression | undefined;
   }
 
-  get $maxvalue (): string {
-    return this.args.maxvalue as string;
+  get $maxvalue (): Expression | undefined {
+    return this.args.maxvalue as Expression | undefined;
   }
 
-  get $cache (): Expression {
-    return this.args.cache as Expression;
+  get $cache (): Expression | undefined {
+    return this.args.cache as Expression | undefined;
   }
 
-  get $start (): Expression {
-    return this.args.start as Expression;
+  get $start (): Expression | undefined {
+    return this.args.start as Expression | undefined;
   }
 
-  get $owned (): Expression {
-    return this.args.owned as Expression;
+  get $owned (): Expression | undefined {
+    return this.args.owned as Expression | undefined;
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
   }
 }
 
@@ -3312,7 +3333,7 @@ export type TruncateTableExprArgs = { isDatabase?: string;
   identity?: Expression;
   option?: Expression;
   partition?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  expressions: Expression[]; } & BaseExpressionArgs;
 
 export class TruncateTableExpr extends Expression {
   key = ExpressionKey.TRUNCATE_TABLE;
@@ -3334,42 +3355,46 @@ export class TruncateTableExpr extends Expression {
 
   declare args: TruncateTableExprArgs;
 
-  constructor (args: TruncateTableExprArgs = {}) {
+  constructor (args: TruncateTableExprArgs) {
     super(args);
   }
 
-  get $isDatabase (): string {
-    return this.args.isDatabase as string;
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
   }
 
-  get $exists (): Expression {
-    return this.args.exists as Expression;
+  get $isDatabase (): Expression | undefined {
+    return this.args.isDatabase as Expression | undefined;
   }
 
-  get $only (): Expression {
-    return this.args.only as Expression;
+  get $exists (): Expression[] | undefined {
+    return this.args.exists as Expression[] | undefined;
   }
 
-  get $cluster (): Expression {
-    return this.args.cluster as Expression;
+  get $only (): Expression | undefined {
+    return this.args.only as Expression | undefined;
   }
 
-  get $identity (): Expression {
-    return this.args.identity as Expression;
+  get $cluster (): Expression | undefined {
+    return this.args.cluster as Expression | undefined;
   }
 
-  get $option (): Expression {
-    return this.args.option as Expression;
+  get $identity (): Expression | undefined {
+    return this.args.identity as Expression | undefined;
   }
 
-  get $partition (): Expression {
-    return this.args.partition as Expression;
+  get $option (): Expression | undefined {
+    return this.args.option as Expression | undefined;
+  }
+
+  get $partition (): Expression | undefined {
+    return this.args.partition as Expression | undefined;
   }
 }
 
 export type CloneExprArgs = { shallow?: Expression;
   copy?: unknown;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class CloneExpr extends Expression {
   key = ExpressionKey.CLONE;
@@ -3386,12 +3411,16 @@ export class CloneExpr extends Expression {
 
   declare args: CloneExprArgs;
 
-  constructor (args: CloneExprArgs = {}) {
+  constructor (args: CloneExprArgs) {
     super(args);
   }
 
-  get $shallow (): Expression {
-    return this.args.shallow as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $shallow (): Expression | undefined {
+    return this.args.shallow as Expression | undefined;
   }
 
   get $copy (): Expression | undefined {
@@ -3414,7 +3443,8 @@ export type DescribeExprArgs = { style?: Expression;
   partition?: Expression;
   format?: string;
   asJson?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression;
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class DescribeExpr extends Expression {
   key = ExpressionKey.DESCRIBE;
@@ -3435,33 +3465,42 @@ export class DescribeExpr extends Expression {
 
   declare args: DescribeExprArgs;
 
-  constructor (args: DescribeExprArgs = {}) {
+  constructor (args: DescribeExprArgs) {
     super(args);
   }
 
-  get $style (): Expression {
-    return this.args.style as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $kind (): DescribeExprKind | undefined {
-    return this.args.kind as DescribeExprKind | undefined;
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 
-  get $partition (): Expression {
-    return this.args.partition as Expression;
+  get $style (): Expression | undefined {
+    return this.args.style as Expression | undefined;
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 
-  get $asJson (): Expression {
-    return this.args.asJson as Expression;
+  get $partition (): Expression | undefined {
+    return this.args.partition as Expression | undefined;
+  }
+
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
+  }
+
+  get $asJson (): Expression | undefined {
+    return this.args.asJson as Expression | undefined;
   }
 }
 
 export type AttachExprArgs = { exists?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression;
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class AttachExpr extends Expression {
   key = ExpressionKey.ATTACH;
@@ -3478,17 +3517,25 @@ export class AttachExpr extends Expression {
 
   declare args: AttachExprArgs;
 
-  constructor (args: AttachExprArgs = {}) {
+  constructor (args: AttachExprArgs) {
     super(args);
   }
 
-  get $exists (): Expression {
-    return this.args.exists as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
+  }
+
+  get $exists (): Expression[] | undefined {
+    return this.args.exists as Expression[] | undefined;
   }
 }
 
 export type DetachExprArgs = { exists?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class DetachExpr extends Expression {
   key = ExpressionKey.DETACH;
@@ -3504,18 +3551,22 @@ export class DetachExpr extends Expression {
 
   declare args: DetachExprArgs;
 
-  constructor (args: DetachExprArgs = {}) {
+  constructor (args: DetachExprArgs) {
     super(args);
   }
 
-  get $exists (): Expression {
-    return this.args.exists as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $exists (): Expression[] | undefined {
+    return this.args.exists as Expression[] | undefined;
   }
 }
 
 export type InstallExprArgs = { from?: Expression;
   force?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class InstallExpr extends Expression {
   key = ExpressionKey.INSTALL;
@@ -3532,21 +3583,25 @@ export class InstallExpr extends Expression {
 
   declare args: InstallExprArgs;
 
-  constructor (args: InstallExprArgs = {}) {
+  constructor (args: InstallExprArgs) {
     super(args);
   }
 
-  get $from (): Expression {
-    return this.args.from as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $force (): Expression {
-    return this.args.force as Expression;
+  get $from (): Expression | undefined {
+    return this.args.from as Expression | undefined;
+  }
+
+  get $force (): Expression | undefined {
+    return this.args.force as Expression | undefined;
   }
 }
 
 export type SummarizeExprArgs = { table?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class SummarizeExpr extends Expression {
   key = ExpressionKey.SUMMARIZE;
@@ -3562,12 +3617,16 @@ export class SummarizeExpr extends Expression {
 
   declare args: SummarizeExprArgs;
 
-  constructor (args: SummarizeExprArgs = {}) {
+  constructor (args: SummarizeExprArgs) {
     super(args);
   }
 
-  get $table (): Expression {
-    return this.args.table as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $table (): Expression | undefined {
+    return this.args.table as Expression | undefined;
   }
 }
 
@@ -3579,7 +3638,7 @@ export enum KillExprKind {
   QUERY = 'QUERY',
 }
 export type KillExprArgs = { kind?: KillExprKind;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class KillExpr extends Expression {
   key = ExpressionKey.KILL;
@@ -3595,12 +3654,16 @@ export class KillExpr extends Expression {
 
   declare args: KillExprArgs;
 
-  constructor (args: KillExprArgs = {}) {
+  constructor (args: KillExprArgs) {
     super(args);
   }
 
-  get $kind (): KillExprKind | undefined {
-    return this.args.kind as KillExprKind | undefined;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 }
 
@@ -3609,12 +3672,14 @@ export class PragmaExpr extends Expression {
   key = ExpressionKey.PRAGMA;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PragmaExprArgs>;
   declare args: PragmaExprArgs;
-  constructor (args: PragmaExprArgs = {}) {
+  constructor (args: PragmaExprArgs) {
     super(args);
   }
 }
 
-export type DeclareExprArgs = BaseExpressionArgs;
+export type DeclareExprArgs = {
+  expressions: Expression[];
+} & BaseExpressionArgs;
 export class DeclareExpr extends Expression {
   key = ExpressionKey.DECLARE;
 
@@ -3625,8 +3690,12 @@ export class DeclareExpr extends Expression {
   static argTypes: Record<string, boolean> = { expressions: true } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: DeclareExprArgs;
-  constructor (args: DeclareExprArgs = {}) {
+  constructor (args: DeclareExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
   }
 }
 
@@ -3641,7 +3710,7 @@ export enum DeclareItemExprKind {
 }
 export type DeclareItemExprArgs = { kind?: DeclareItemExprKind;
   default?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class DeclareItemExpr extends Expression {
   key = ExpressionKey.DECLARE_ITEM;
@@ -3658,22 +3727,26 @@ export class DeclareItemExpr extends Expression {
 
   declare args: DeclareItemExprArgs;
 
-  constructor (args: DeclareItemExprArgs = {}) {
+  constructor (args: DeclareItemExprArgs) {
     super(args);
   }
 
-  get $kind (): DeclareItemExprKind | undefined {
-    return this.args.kind as DeclareItemExprKind | undefined;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $default (): Expression {
-    return this.args['default'] as Expression;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
+  }
+
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
   }
 }
 
 export type SetExprArgs = { unset?: Expression;
   tag?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class SetExpr extends Expression {
   key = ExpressionKey.SET;
@@ -3690,21 +3763,25 @@ export class SetExpr extends Expression {
 
   declare args: SetExprArgs;
 
-  constructor (args: SetExprArgs = {}) {
+  constructor (args: SetExprArgs) {
     super(args);
   }
 
-  get $unset (): Expression {
-    return this.args.unset as Expression;
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 
-  get $tag (): Expression {
-    return this.args.tag as Expression;
+  get $unset (): Expression | undefined {
+    return this.args.unset as Expression | undefined;
+  }
+
+  get $tag (): Expression | undefined {
+    return this.args.tag as Expression | undefined;
   }
 }
 
 export type HeredocExprArgs = { tag?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class HeredocExpr extends Expression {
   key = ExpressionKey.HEREDOC;
@@ -3720,12 +3797,16 @@ export class HeredocExpr extends Expression {
 
   declare args: HeredocExprArgs;
 
-  constructor (args: HeredocExprArgs = {}) {
+  constructor (args: HeredocExprArgs) {
     super(args);
   }
 
-  get $tag (): Expression {
-    return this.args.tag as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $tag (): Expression | undefined {
+    return this.args.tag as Expression | undefined;
   }
 }
 
@@ -3742,7 +3823,8 @@ export enum SetItemExprKind {
 export type SetItemExprArgs = { kind?: SetItemExprKind;
   collate?: string;
   global?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[];
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class SetItemExpr extends Expression {
   key = ExpressionKey.SET_ITEM;
@@ -3761,26 +3843,34 @@ export class SetItemExpr extends Expression {
 
   declare args: SetItemExprArgs;
 
-  constructor (args: SetItemExprArgs = {}) {
+  constructor (args: SetItemExprArgs) {
     super(args);
   }
 
-  get $kind (): SetItemExprKind | undefined {
-    return this.args.kind as SetItemExprKind | undefined;
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 
-  get $collate (): string {
-    return this.args.collate as string;
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 
-  get $global (): boolean {
-    return this.args['global'] as boolean;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
+  }
+
+  get $collate (): Expression | undefined {
+    return this.args.collate as Expression | undefined;
+  }
+
+  get $global (): Expression | undefined {
+    return this.args.global as Expression | undefined;
   }
 }
 
 export type QueryBandExprArgs = { scope?: Expression;
   update?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class QueryBandExpr extends Expression {
   key = ExpressionKey.QUERY_BAND;
@@ -3797,16 +3887,20 @@ export class QueryBandExpr extends Expression {
 
   declare args: QueryBandExprArgs;
 
-  constructor (args: QueryBandExprArgs = {}) {
+  constructor (args: QueryBandExprArgs) {
     super(args);
   }
 
-  get $scope (): Expression {
-    return this.args.scope as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $update (): Expression {
-    return this.args.update as Expression;
+  get $scope (): Expression | undefined {
+    return this.args.scope as Expression | undefined;
+  }
+
+  get $update (): Expression | undefined {
+    return this.args.update as Expression | undefined;
   }
 }
 
@@ -3837,7 +3931,7 @@ export type ShowExprArgs = { history?: Expression;
   forRole?: Expression;
   intoOutfile?: Expression;
   json?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class ShowExpr extends Expression {
   key = ExpressionKey.SHOW;
@@ -3879,121 +3973,126 @@ export class ShowExpr extends Expression {
 
   declare args: ShowExprArgs;
 
-  constructor (args: ShowExprArgs = {}) {
+  constructor (args: ShowExprArgs) {
     super(args);
   }
 
-  get $history (): Expression {
-    return this.args.history as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $terse (): Expression {
-    return this.args.terse as Expression;
+  get $history (): Expression | undefined {
+    return this.args.history as Expression | undefined;
   }
 
-  get $target (): Expression {
-    return this.args.target as Expression;
+  get $terse (): Expression | undefined {
+    return this.args.terse as Expression | undefined;
   }
 
-  get $offset (): boolean {
-    return this.args.offset as boolean;
+  get $target (): Expression | undefined {
+    return this.args.target as Expression | undefined;
   }
 
-  get $startsWith (): Expression {
-    return this.args.startsWith as Expression;
+  get $offset (): Expression | undefined {
+    return this.args.offset as Expression | undefined;
   }
 
-  get $limit (): number | Expression {
-    return this.args.limit as number | Expression;
+  get $startsWith (): Expression | undefined {
+    return this.args.startsWith as Expression | undefined;
   }
 
-  get $from (): Expression {
-    return this.args.from as Expression;
+  get $limit (): Expression | undefined {
+    return this.args.limit as Expression | undefined;
   }
 
-  get $like (): Expression {
-    return this.args.like as Expression;
+  get $from (): Expression | undefined {
+    return this.args.from as Expression | undefined;
   }
 
-  get $where (): Expression {
-    return this.args.where as Expression;
+  get $like (): Expression | undefined {
+    return this.args.like as Expression | undefined;
   }
 
-  get $db (): string {
-    return this.args.db as string;
+  get $where (): Expression | undefined {
+    return this.args.where as Expression | undefined;
   }
 
-  get $scope (): Expression {
-    return this.args.scope as Expression;
+  get $db (): Expression | undefined {
+    return this.args.db as Expression | undefined;
   }
 
-  get $scopeKind (): string {
-    return this.args.scopeKind as string;
+  get $scope (): Expression | undefined {
+    return this.args.scope as Expression | undefined;
   }
 
-  get $full (): Expression {
-    return this.args.full as Expression;
+  get $scopeKind (): string | undefined {
+    return this.args.scopeKind as string | undefined;
   }
 
-  get $mutex (): Expression {
-    return this.args.mutex as Expression;
+  get $full (): Expression | undefined {
+    return this.args.full as Expression | undefined;
   }
 
-  get $query (): Expression {
-    return this.args.query as Expression;
+  get $mutex (): Expression | undefined {
+    return this.args.mutex as Expression | undefined;
   }
 
-  get $channel (): Expression {
-    return this.args.channel as Expression;
+  get $query (): Expression | undefined {
+    return this.args.query as Expression | undefined;
   }
 
-  get $global (): boolean {
-    return this.args['global'] as boolean;
+  get $channel (): Expression | undefined {
+    return this.args.channel as Expression | undefined;
   }
 
-  get $log (): Expression {
-    return this.args.log as Expression;
+  get $global (): Expression | undefined {
+    return this.args.global as Expression | undefined;
   }
 
-  get $position (): Expression {
-    return this.args.position as Expression;
+  get $log (): Expression | undefined {
+    return this.args.log as Expression | undefined;
   }
 
-  get $types (): Expression[] {
-    return (this.args.types || []) as Expression[];
+  get $position (): Expression | undefined {
+    return this.args.position as Expression | undefined;
   }
 
-  get $privileges (): Expression[] {
-    return (this.args.privileges || []) as Expression[];
+  get $types (): Expression[] | undefined {
+    return this.args.types as Expression[] | undefined;
   }
 
-  get $forTable (): Expression {
-    return this.args.forTable as Expression;
+  get $privileges (): Expression[] | undefined {
+    return this.args.privileges as Expression[] | undefined;
   }
 
-  get $forGroup (): Expression {
-    return this.args.forGroup as Expression;
+  get $forTable (): Expression | undefined {
+    return this.args.forTable as Expression | undefined;
   }
 
-  get $forUser (): Expression {
-    return this.args.forUser as Expression;
+  get $forGroup (): Expression | undefined {
+    return this.args.forGroup as Expression | undefined;
   }
 
-  get $forRole (): Expression {
-    return this.args.forRole as Expression;
+  get $forUser (): Expression | undefined {
+    return this.args.forUser as Expression | undefined;
   }
 
-  get $intoOutfile (): Expression {
-    return this.args.intoOutfile as Expression;
+  get $forRole (): Expression | undefined {
+    return this.args.forRole as Expression | undefined;
   }
 
-  get $json (): Expression {
-    return this.args.json as Expression;
+  get $intoOutfile (): Expression | undefined {
+    return this.args.intoOutfile as Expression | undefined;
+  }
+
+  get $json (): Expression | undefined {
+    return this.args.json as Expression | undefined;
   }
 }
 
 export type UserDefinedFunctionExprArgs = { wrapped?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression;
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class UserDefinedFunctionExpr extends Expression {
   key = ExpressionKey.USER_DEFINED_FUNCTION;
@@ -4010,17 +4109,25 @@ export class UserDefinedFunctionExpr extends Expression {
 
   declare args: UserDefinedFunctionExprArgs;
 
-  constructor (args: UserDefinedFunctionExprArgs = {}) {
+  constructor (args: UserDefinedFunctionExprArgs) {
     super(args);
   }
 
-  get $wrapped (): Expression {
-    return this.args.wrapped as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
+  }
+
+  get $wrapped (): Expression | undefined {
+    return this.args.wrapped as Expression | undefined;
   }
 }
 
 export type CharacterSetExprArgs = { default?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class CharacterSetExpr extends Expression {
   key = ExpressionKey.CHARACTER_SET;
@@ -4036,12 +4143,16 @@ export class CharacterSetExpr extends Expression {
 
   declare args: CharacterSetExprArgs;
 
-  constructor (args: CharacterSetExprArgs = {}) {
+  constructor (args: CharacterSetExprArgs) {
     super(args);
   }
 
-  get $default (): Expression {
-    return this.args['default'] as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
   }
 }
 
@@ -4056,7 +4167,8 @@ export enum RecursiveWithSearchExprKind {
 
 export type RecursiveWithSearchExprArgs = { kind: RecursiveWithSearchExprKind;
   using?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression;
+  expression: Expression; } & BaseExpressionArgs;
 
 export class RecursiveWithSearchExpr extends Expression {
   key = ExpressionKey.RECURSIVE_WITH_SEARCH;
@@ -4078,19 +4190,27 @@ export class RecursiveWithSearchExpr extends Expression {
     super(args);
   }
 
-  get $kind (): RecursiveWithSearchExprKind | undefined {
-    return this.args.kind as RecursiveWithSearchExprKind | undefined;
+  get $kind (): string {
+    return this.args.kind as string;
   }
 
-  get $using (): string {
-    return this.args.using as string;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression as Expression;
+  }
+
+  get $using (): Expression | undefined {
+    return this.args.using as Expression | undefined;
   }
 }
 
 export type WithExprArgs = {
   recursive?: boolean;
   search?: Expression;
-  [key: string]: unknown;
+  expressions: Expression[];
 } & BaseExpressionArgs;
 
 export class WithExpr extends Expression {
@@ -4108,20 +4228,27 @@ export class WithExpr extends Expression {
 
   declare args: WithExprArgs;
 
-  constructor (args: WithExprArgs = {}) {
+  constructor (args: WithExprArgs) {
     super(args);
   }
 
-  get $recursive (): boolean {
-    return this.args.recursive as boolean;
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
   }
 
-  get $search (): Expression {
-    return this.args.search as Expression;
+  get $recursive (): Expression | undefined {
+    return this.args.recursive as Expression | undefined;
+  }
+
+  get $search (): Expression | undefined {
+    return this.args.search as Expression | undefined;
   }
 }
 
-export type WithinGroupExprArgs = BaseExpressionArgs;
+export type WithinGroupExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & BaseExpressionArgs;
 export class WithinGroupExpr extends Expression {
   key = ExpressionKey.WITHIN_GROUP;
 
@@ -4135,12 +4262,23 @@ export class WithinGroupExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: WithinGroupExprArgs;
-  constructor (args: WithinGroupExprArgs = {}) {
+  constructor (args: WithinGroupExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression as Expression | undefined;
   }
 }
 
-export type ProjectionDefExprArgs = BaseExpressionArgs;
+export type ProjectionDefExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
 export class ProjectionDefExpr extends Expression {
   key = ExpressionKey.PROJECTION_DEF;
 
@@ -4154,13 +4292,21 @@ export class ProjectionDefExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: ProjectionDefExprArgs;
-  constructor (args: ProjectionDefExprArgs = {}) {
+  constructor (args: ProjectionDefExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression as Expression;
   }
 }
 
 export type TableAliasExprArgs = { columns?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[]; } & BaseExpressionArgs;
 
 export class TableAliasExpr extends Expression {
   key = ExpressionKey.TABLE_ALIAS;
@@ -4176,17 +4322,21 @@ export class TableAliasExpr extends Expression {
 
   declare args: TableAliasExprArgs;
 
-  constructor (args: TableAliasExprArgs = {}) {
+  constructor (args: TableAliasExprArgs) {
     super(args);
   }
 
-  get $columns (): Expression[] {
-    return (this.args.columns || []) as Expression[];
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
+
+  get $columns (): Expression[] | undefined {
+    return this.args.columns as Expression[] | undefined;
   }
 }
 
 export type ColumnPositionExprArgs = { position: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[]; } & BaseExpressionArgs;
 
 export class ColumnPositionExpr extends Expression {
   key = ExpressionKey.COLUMN_POSITION;
@@ -4204,6 +4354,10 @@ export class ColumnPositionExpr extends Expression {
 
   constructor (args: ColumnPositionExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 
   get $position (): Expression {
@@ -4228,7 +4382,7 @@ export type ColumnDefExprArgs = { kind?: ColumnDefExprKind;
   position?: Expression;
   default?: Expression;
   output?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class ColumnDefExpr extends Expression {
   key = ExpressionKey.COLUMN_DEF;
@@ -4249,41 +4403,46 @@ export class ColumnDefExpr extends Expression {
 
   declare args: ColumnDefExprArgs;
 
-  constructor (args: ColumnDefExprArgs = {}) {
+  constructor (args: ColumnDefExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
+  }
+
+  get $constraints (): Expression[] | undefined {
+    return this.args.constraints as Expression[] | undefined;
+  }
+
+  get $exists (): Expression[] | undefined {
+    return this.args.exists as Expression[] | undefined;
+  }
+
+  get $position (): Expression | undefined {
+    return this.args.position as Expression | undefined;
+  }
+
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
+  }
+
+  get $output (): Expression | undefined {
+    return this.args.output as Expression | undefined;
   }
 
   /**
    * Gets the data type of the column definition
    * @returns The DataType expression or undefined
    */
-  get $kind (): DataTypeExpr | undefined {
-    return this.args.kind as DataTypeExpr | undefined;
-  }
-
   /**
    * Gets the column constraints
    * @returns Array of ColumnConstraint expressions
    */
-  get $constraints (): ColumnConstraintExpr[] {
-    return (this.args.constraints || []) as ColumnConstraintExpr[];
-  }
-
-  get $exists (): Expression {
-    return this.args.exists as Expression;
-  }
-
-  get $position (): Expression {
-    return this.args.position as Expression;
-  }
-
-  get $default (): Expression {
-    return this.args['default'] as Expression;
-  }
-
-  get $output (): Expression {
-    return this.args.output as Expression;
-  }
 }
 
 export type AlterColumnExprArgs = { dtype?: DataTypeExpr;
@@ -4295,7 +4454,7 @@ export type AlterColumnExprArgs = { dtype?: DataTypeExpr;
   allowNull?: Expression;
   visible?: Expression;
   renameTo?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class AlterColumnExpr extends Expression {
   key = ExpressionKey.ALTER_COLUMN;
@@ -4319,49 +4478,53 @@ export class AlterColumnExpr extends Expression {
 
   declare args: AlterColumnExprArgs;
 
-  constructor (args: AlterColumnExprArgs = {}) {
+  constructor (args: AlterColumnExprArgs) {
     super(args);
   }
 
-  get $dtype (): DataTypeExpr {
-    return this.args.dtype as DataTypeExpr;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $collate (): string {
-    return this.args.collate as string;
+  get $dtype (): Expression | undefined {
+    return this.args.dtype as Expression | undefined;
   }
 
-  get $using (): string {
-    return this.args.using as string;
+  get $collate (): Expression | undefined {
+    return this.args.collate as Expression | undefined;
   }
 
-  get $default (): Expression {
-    return this.args['default'] as Expression;
+  get $using (): Expression | undefined {
+    return this.args.using as Expression | undefined;
   }
 
-  get $drop (): Expression {
-    return this.args.drop as Expression;
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
   }
 
-  get $comment (): string {
-    return this.args.comment as string;
+  get $drop (): Expression | undefined {
+    return this.args.drop as Expression | undefined;
   }
 
-  get $allowNull (): Expression {
-    return this.args.allowNull as Expression;
+  get $comment (): Expression | undefined {
+    return this.args.comment as Expression | undefined;
   }
 
-  get $visible (): Expression {
-    return this.args.visible as Expression;
+  get $allowNull (): Expression | undefined {
+    return this.args.allowNull as Expression | undefined;
   }
 
-  get $renameTo (): string {
-    return this.args.renameTo as string;
+  get $visible (): Expression | undefined {
+    return this.args.visible as Expression | undefined;
+  }
+
+  get $renameTo (): Expression | undefined {
+    return this.args.renameTo as Expression | undefined;
   }
 }
 
 export type AlterIndexExprArgs = { visible: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class AlterIndexExpr extends Expression {
   key = ExpressionKey.ALTER_INDEX;
@@ -4381,6 +4544,10 @@ export class AlterIndexExpr extends Expression {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
   get $visible (): Expression {
     return this.args.visible as Expression;
   }
@@ -4391,13 +4558,14 @@ export class AlterDistStyleExpr extends Expression {
   key = ExpressionKey.ALTER_DIST_STYLE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AlterDistStyleExprArgs>;
   declare args: AlterDistStyleExprArgs;
-  constructor (args: AlterDistStyleExprArgs = {}) {
+  constructor (args: AlterDistStyleExprArgs) {
     super(args);
   }
 }
 
 export type AlterSortKeyExprArgs = { compound?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[];
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class AlterSortKeyExpr extends Expression {
   key = ExpressionKey.ALTER_SORT_KEY;
@@ -4414,12 +4582,20 @@ export class AlterSortKeyExpr extends Expression {
 
   declare args: AlterSortKeyExprArgs;
 
-  constructor (args: AlterSortKeyExprArgs = {}) {
+  constructor (args: AlterSortKeyExprArgs) {
     super(args);
   }
 
-  get $compound (): Expression {
-    return this.args.compound as Expression;
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
+  }
+
+  get $compound (): Expression | undefined {
+    return this.args.compound as Expression | undefined;
   }
 }
 
@@ -4431,7 +4607,7 @@ export type AlterSetExprArgs = { option?: Expression;
   tag?: Expression;
   location?: Expression;
   serde?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class AlterSetExpr extends Expression {
   key = ExpressionKey.ALTER_SET;
@@ -4454,46 +4630,50 @@ export class AlterSetExpr extends Expression {
 
   declare args: AlterSetExprArgs;
 
-  constructor (args: AlterSetExprArgs = {}) {
+  constructor (args: AlterSetExprArgs) {
     super(args);
   }
 
-  get $option (): Expression {
-    return this.args.option as Expression;
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 
-  get $tablespace (): Expression {
-    return this.args.tablespace as Expression;
+  get $option (): Expression | undefined {
+    return this.args.option as Expression | undefined;
   }
 
-  get $accessMethod (): string {
-    return this.args.accessMethod as string;
+  get $tablespace (): Expression | undefined {
+    return this.args.tablespace as Expression | undefined;
   }
 
-  get $fileFormat (): string {
-    return this.args.fileFormat as string;
+  get $accessMethod (): Expression | undefined {
+    return this.args.accessMethod as Expression | undefined;
   }
 
-  get $copyOptions (): Expression[] {
-    return (this.args.copyOptions || []) as Expression[];
+  get $fileFormat (): Expression | undefined {
+    return this.args.fileFormat as Expression | undefined;
   }
 
-  get $tag (): Expression {
-    return this.args.tag as Expression;
+  get $copyOptions (): Expression[] | undefined {
+    return this.args.copyOptions as Expression[] | undefined;
   }
 
-  get $location (): Expression {
-    return this.args.location as Expression;
+  get $tag (): Expression | undefined {
+    return this.args.tag as Expression | undefined;
   }
 
-  get $serde (): Expression {
-    return this.args.serde as Expression;
+  get $location (): Expression | undefined {
+    return this.args.location as Expression | undefined;
+  }
+
+  get $serde (): Expression | undefined {
+    return this.args.serde as Expression | undefined;
   }
 }
 
 export type RenameColumnExprArgs = { to: Expression;
   exists?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class RenameColumnExpr extends Expression {
   key = ExpressionKey.RENAME_COLUMN;
@@ -4514,12 +4694,16 @@ export class RenameColumnExpr extends Expression {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
   get $to (): Expression {
     return this.args.to as Expression;
   }
 
-  get $exists (): Expression {
-    return this.args.exists as Expression;
+  get $exists (): Expression[] | undefined {
+    return this.args.exists as Expression[] | undefined;
   }
 }
 
@@ -4528,7 +4712,7 @@ export class AlterRenameExpr extends Expression {
   key = ExpressionKey.ALTER_RENAME;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AlterRenameExprArgs>;
   declare args: AlterRenameExprArgs;
-  constructor (args: AlterRenameExprArgs = {}) {
+  constructor (args: AlterRenameExprArgs) {
     super(args);
   }
 }
@@ -4538,7 +4722,7 @@ export class SwapTableExpr extends Expression {
   key = ExpressionKey.SWAP_TABLE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SwapTableExprArgs>;
   declare args: SwapTableExprArgs;
-  constructor (args: SwapTableExprArgs = {}) {
+  constructor (args: SwapTableExprArgs) {
     super(args);
   }
 }
@@ -4556,7 +4740,8 @@ export enum CommentExprKind {
 export type CommentExprArgs = { kind: CommentExprKind;
   exists?: Expression;
   materialized?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression;
+  expression: Expression; } & BaseExpressionArgs;
 
 export class CommentExpr extends Expression {
   key = ExpressionKey.COMMENT;
@@ -4579,23 +4764,32 @@ export class CommentExpr extends Expression {
     super(args);
   }
 
-  get $kind (): CommentExprKind | undefined {
-    return this.args.kind as CommentExprKind | undefined;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $exists (): Expression {
-    return this.args.exists as Expression;
+  get $kind (): string {
+    return this.args.kind as string;
   }
 
-  get $materialized (): boolean {
-    return this.args.materialized as boolean;
+  get $expression (): Expression {
+    return this.args.expression as Expression;
+  }
+
+  get $exists (): Expression[] | undefined {
+    return this.args.exists as Expression[] | undefined;
+  }
+
+  get $materialized (): Expression | undefined {
+    return this.args.materialized as Expression | undefined;
   }
 }
 
 export type ComprehensionExprArgs = { position?: Expression;
   iterator: Expression;
   condition?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression;
+  expression: Expression; } & BaseExpressionArgs;
 
 export class ComprehensionExpr extends Expression {
   key = ExpressionKey.COMPREHENSION;
@@ -4618,16 +4812,24 @@ export class ComprehensionExpr extends Expression {
     super(args);
   }
 
-  get $position (): Expression {
-    return this.args.position as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression as Expression;
+  }
+
+  get $position (): Expression | undefined {
+    return this.args.position as Expression | undefined;
   }
 
   get $iterator (): Expression {
     return this.args.iterator as Expression;
   }
 
-  get $condition (): Expression {
-    return this.args.condition as Expression;
+  get $condition (): Expression | undefined {
+    return this.args.condition as Expression | undefined;
   }
 }
 
@@ -4635,7 +4837,7 @@ export type MergeTreeTTLActionExprArgs = { delete?: Expression;
   recompress?: Expression[];
   toDisk?: Expression;
   toVolume?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class MergeTreeTTLActionExpr extends Expression {
   key = ExpressionKey.MERGE_TREE_TTL_ACTION;
@@ -4654,31 +4856,35 @@ export class MergeTreeTTLActionExpr extends Expression {
 
   declare args: MergeTreeTTLActionExprArgs;
 
-  constructor (args: MergeTreeTTLActionExprArgs = {}) {
+  constructor (args: MergeTreeTTLActionExprArgs) {
     super(args);
   }
 
-  get $delete (): Expression {
-    return this.args['delete'] as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $recompress (): Expression[] {
-    return (this.args.recompress || []) as Expression[];
+  get $delete (): Expression | undefined {
+    return this.args.delete as Expression | undefined;
   }
 
-  get $toDisk (): Expression {
-    return this.args.toDisk as Expression;
+  get $recompress (): Expression | undefined {
+    return this.args.recompress as Expression | undefined;
   }
 
-  get $toVolume (): Expression {
-    return this.args.toVolume as Expression;
+  get $toDisk (): Expression | undefined {
+    return this.args.toDisk as Expression | undefined;
+  }
+
+  get $toVolume (): Expression | undefined {
+    return this.args.toVolume as Expression | undefined;
   }
 }
 
 export type MergeTreeTTLExprArgs = { where?: Expression;
   group?: Expression;
   aggregates?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  expressions: Expression[]; } & BaseExpressionArgs;
 
 export class MergeTreeTTLExpr extends Expression {
   key = ExpressionKey.MERGE_TREE_TTL;
@@ -4696,20 +4902,24 @@ export class MergeTreeTTLExpr extends Expression {
 
   declare args: MergeTreeTTLExprArgs;
 
-  constructor (args: MergeTreeTTLExprArgs = {}) {
+  constructor (args: MergeTreeTTLExprArgs) {
     super(args);
   }
 
-  get $where (): Expression {
-    return this.args.where as Expression;
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
   }
 
-  get $group (): Expression {
-    return this.args.group as Expression;
+  get $where (): Expression | undefined {
+    return this.args.where as Expression | undefined;
   }
 
-  get $aggregates (): Expression[] {
-    return (this.args.aggregates || []) as Expression[];
+  get $group (): Expression | undefined {
+    return this.args.group as Expression | undefined;
+  }
+
+  get $aggregates (): Expression[] | undefined {
+    return this.args.aggregates as Expression[] | undefined;
   }
 }
 
@@ -4719,8 +4929,7 @@ export type IndexConstraintOptionExprArgs = { keyBlockSize?: number | Expression
   comment?: string;
   visible?: Expression;
   engineAttr?: string;
-  secondaryEngineAttr?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  secondaryEngineAttr?: string; } & BaseExpressionArgs;
 
 export class IndexConstraintOptionExpr extends Expression {
   key = ExpressionKey.INDEX_CONSTRAINT_OPTION;
@@ -4741,36 +4950,36 @@ export class IndexConstraintOptionExpr extends Expression {
 
   declare args: IndexConstraintOptionExprArgs;
 
-  constructor (args: IndexConstraintOptionExprArgs = {}) {
+  constructor (args: IndexConstraintOptionExprArgs) {
     super(args);
   }
 
-  get $keyBlockSize (): number | Expression {
-    return this.args.keyBlockSize as number | Expression;
+  get $keyBlockSize (): Expression | undefined {
+    return this.args.keyBlockSize as Expression | undefined;
   }
 
-  get $using (): string {
-    return this.args.using as string;
+  get $using (): Expression | undefined {
+    return this.args.using as Expression | undefined;
   }
 
-  get $parser (): Expression {
-    return this.args.parser as Expression;
+  get $parser (): Expression | undefined {
+    return this.args.parser as Expression | undefined;
   }
 
-  get $comment (): string {
-    return this.args.comment as string;
+  get $comment (): Expression | undefined {
+    return this.args.comment as Expression | undefined;
   }
 
-  get $visible (): Expression {
-    return this.args.visible as Expression;
+  get $visible (): Expression | undefined {
+    return this.args.visible as Expression | undefined;
   }
 
-  get $engineAttr (): string {
-    return this.args.engineAttr as string;
+  get $engineAttr (): Expression | undefined {
+    return this.args.engineAttr as Expression | undefined;
   }
 
-  get $secondaryEngineAttr (): string {
-    return this.args.secondaryEngineAttr as string;
+  get $secondaryEngineAttr (): Expression | undefined {
+    return this.args.secondaryEngineAttr as Expression | undefined;
   }
 }
 
@@ -4788,7 +4997,7 @@ export enum ColumnConstraintExprKind {
 }
 
 export type ColumnConstraintExprArgs = { kind: ColumnConstraintExprKind;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[]; } & BaseExpressionArgs;
 
 export class ColumnConstraintExpr extends Expression {
   key = ExpressionKey.COLUMN_CONSTRAINT;
@@ -4808,13 +5017,18 @@ export class ColumnConstraintExpr extends Expression {
     super(args);
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
+
+  get $kind (): string {
+    return this.args.kind as string;
+  }
+
   /**
    * Gets the kind of column constraint
    * @returns The ColumnConstraintKind expression
    */
-  get $kind (): ColumnConstraintKindExpr {
-    return this.args.kind as ColumnConstraintKindExpr;
-  }
 }
 
 export type ColumnConstraintKindExprArgs = BaseExpressionArgs;
@@ -4822,13 +5036,13 @@ export class ColumnConstraintKindExpr extends Expression {
   key = ExpressionKey.COLUMN_CONSTRAINT_KIND;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ColumnConstraintKindExprArgs>;
   declare args: ColumnConstraintKindExprArgs;
-  constructor (args: ColumnConstraintKindExprArgs = {}) {
+  constructor (args: ColumnConstraintKindExprArgs) {
     super(args);
   }
 }
 
 export type WithOperatorExprArgs = { op: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class WithOperatorExpr extends Expression {
   key = ExpressionKey.WITH_OPERATOR;
@@ -4848,12 +5062,19 @@ export class WithOperatorExpr extends Expression {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
   get $op (): Expression {
     return this.args.op as Expression;
   }
 }
 
-export type WatermarkColumnConstraintExprArgs = BaseExpressionArgs;
+export type WatermarkColumnConstraintExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
 export class WatermarkColumnConstraintExpr extends Expression {
   key = ExpressionKey.WATERMARK_COLUMN_CONSTRAINT;
 
@@ -4863,12 +5084,23 @@ export class WatermarkColumnConstraintExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: WatermarkColumnConstraintExprArgs;
-  constructor (args: WatermarkColumnConstraintExprArgs = {}) {
+  constructor (args: WatermarkColumnConstraintExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression as Expression;
   }
 }
 
-export type ConstraintExprArgs = BaseExpressionArgs;
+export type ConstraintExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+} & BaseExpressionArgs;
 export class ConstraintExpr extends Expression {
   key = ExpressionKey.CONSTRAINT;
 
@@ -4878,8 +5110,16 @@ export class ConstraintExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: ConstraintExprArgs;
-  constructor (args: ConstraintExprArgs = {}) {
+  constructor (args: ConstraintExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
   }
 }
 
@@ -4908,7 +5148,8 @@ export type DropExprArgs = { kind?: DropExprKind;
   purge?: Expression;
   cluster?: Expression;
   concurrently?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[];
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class DropExpr extends Expression {
   key = ExpressionKey.DROP;
@@ -4933,57 +5174,63 @@ export class DropExpr extends Expression {
 
   declare args: DropExprArgs;
 
-  constructor (args: DropExprArgs = {}) {
+  constructor (args: DropExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
+
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
+  }
+
+  get $exists (): Expression[] | undefined {
+    return this.args.exists as Expression[] | undefined;
+  }
+
+  get $temporary (): Expression | undefined {
+    return this.args.temporary as Expression | undefined;
+  }
+
+  get $materialized (): Expression | undefined {
+    return this.args.materialized as Expression | undefined;
+  }
+
+  get $cascade (): Expression | undefined {
+    return this.args.cascade as Expression | undefined;
+  }
+
+  get $constraints (): Expression[] | undefined {
+    return this.args.constraints as Expression[] | undefined;
+  }
+
+  get $purge (): Expression | undefined {
+    return this.args.purge as Expression | undefined;
+  }
+
+  get $cluster (): Expression | undefined {
+    return this.args.cluster as Expression | undefined;
+  }
+
+  get $concurrently (): Expression | undefined {
+    return this.args.concurrently as Expression | undefined;
   }
 
   /**
    * Gets the kind of DROP statement
    * @returns The kind as an uppercase string, or undefined
    */
-  get $kind (): string | undefined {
-    const kind = this.args.kind;
-    return kind
-      ? String(kind).toUpperCase()
-      : undefined;
-  }
-
-  get $exists (): Expression {
-    return this.args.exists as Expression;
-  }
-
-  get $temporary (): boolean {
-    return this.args.temporary as boolean;
-  }
-
-  get $materialized (): boolean {
-    return this.args.materialized as boolean;
-  }
-
-  get $cascade (): Expression {
-    return this.args.cascade as Expression;
-  }
-
-  get $constraints (): Expression[] {
-    return (this.args.constraints || []) as Expression[];
-  }
-
-  get $purge (): Expression {
-    return this.args.purge as Expression;
-  }
-
-  get $cluster (): Expression {
-    return this.args.cluster as Expression;
-  }
-
-  get $concurrently (): Expression {
-    return this.args.concurrently as Expression;
-  }
 }
 
 export type ExportExprArgs = { connection?: Expression;
   options: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class ExportExpr extends Expression {
   key = ExpressionKey.EXPORT;
@@ -5004,16 +5251,23 @@ export class ExportExpr extends Expression {
     super(args);
   }
 
-  get $connection (): Expression {
-    return this.args.connection as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $connection (): Expression | undefined {
+    return this.args.connection as Expression | undefined;
   }
 
   get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+    return this.args.options as Expression[];
   }
 }
 
-export type FilterExprArgs = BaseExpressionArgs;
+export type FilterExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
 export class FilterExpr extends Expression {
   key = ExpressionKey.FILTER;
 
@@ -5027,8 +5281,16 @@ export class FilterExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: FilterExprArgs;
-  constructor (args: FilterExprArgs = {}) {
+  constructor (args: FilterExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression as Expression;
   }
 }
 
@@ -5037,15 +5299,14 @@ export class CheckExpr extends Expression {
   key = ExpressionKey.CHECK;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CheckExprArgs>;
   declare args: CheckExprArgs;
-  constructor (args: CheckExprArgs = {}) {
+  constructor (args: CheckExprArgs) {
     super(args);
   }
 }
 
 export type ChangesExprArgs = { information: string;
   atBefore?: Expression;
-  end?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  end?: Expression; } & BaseExpressionArgs;
 
 export class ChangesExpr extends Expression {
   key = ExpressionKey.CHANGES;
@@ -5066,23 +5327,22 @@ export class ChangesExpr extends Expression {
     super(args);
   }
 
-  get $information (): string {
-    return this.args.information as string;
+  get $information (): Expression {
+    return this.args.information as Expression;
   }
 
-  get $atBefore (): Expression {
-    return this.args.atBefore as Expression;
+  get $atBefore (): Expression | undefined {
+    return this.args.atBefore as Expression | undefined;
   }
 
-  get $end (): Expression {
-    return this.args.end as Expression;
+  get $end (): Expression | undefined {
+    return this.args.end as Expression | undefined;
   }
 }
 
 export type ConnectExprArgs = { start?: Expression;
   connect: Expression;
-  nocycle?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  nocycle?: Expression; } & BaseExpressionArgs;
 
 export class ConnectExpr extends Expression {
   key = ExpressionKey.CONNECT;
@@ -5103,20 +5363,24 @@ export class ConnectExpr extends Expression {
     super(args);
   }
 
-  get $start (): Expression {
-    return this.args.start as Expression;
+  get $start (): Expression | undefined {
+    return this.args.start as Expression | undefined;
   }
 
   get $connect (): Expression {
     return this.args.connect as Expression;
   }
 
-  get $nocycle (): Expression {
-    return this.args.nocycle as Expression;
+  get $nocycle (): Expression | undefined {
+    return this.args.nocycle as Expression | undefined;
   }
 }
 
-export type CopyParameterExprArgs = BaseExpressionArgs;
+export type CopyParameterExprArgs = {
+  this: Expression;
+  expression?: Expression;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 export class CopyParameterExpr extends Expression {
   key = ExpressionKey.COPY_PARAMETER;
 
@@ -5131,8 +5395,20 @@ export class CopyParameterExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: CopyParameterExprArgs;
-  constructor (args: CopyParameterExprArgs = {}) {
+  constructor (args: CopyParameterExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression as Expression | undefined;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 }
 
@@ -5140,8 +5416,7 @@ export type CredentialsExprArgs = { credentials?: Expression[];
   encryption?: Expression;
   storage?: Expression;
   iamRole?: Expression;
-  region?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  region?: Expression; } & BaseExpressionArgs;
 
 export class CredentialsExpr extends Expression {
   key = ExpressionKey.CREDENTIALS;
@@ -5160,28 +5435,28 @@ export class CredentialsExpr extends Expression {
 
   declare args: CredentialsExprArgs;
 
-  constructor (args: CredentialsExprArgs = {}) {
+  constructor (args: CredentialsExprArgs) {
     super(args);
   }
 
-  get $credentials (): Expression[] {
-    return (this.args.credentials || []) as Expression[];
+  get $credentials (): Expression[] | undefined {
+    return this.args.credentials as Expression[] | undefined;
   }
 
-  get $encryption (): Expression {
-    return this.args.encryption as Expression;
+  get $encryption (): Expression | undefined {
+    return this.args.encryption as Expression | undefined;
   }
 
-  get $storage (): Expression {
-    return this.args.storage as Expression;
+  get $storage (): Expression | undefined {
+    return this.args.storage as Expression | undefined;
   }
 
-  get $iamRole (): Expression {
-    return this.args.iamRole as Expression;
+  get $iamRole (): Expression | undefined {
+    return this.args.iamRole as Expression | undefined;
   }
 
-  get $region (): Expression {
-    return this.args.region as Expression;
+  get $region (): Expression | undefined {
+    return this.args.region as Expression | undefined;
   }
 }
 
@@ -5190,14 +5465,14 @@ export class PriorExpr extends Expression {
   key = ExpressionKey.PRIOR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PriorExprArgs>;
   declare args: PriorExprArgs;
-  constructor (args: PriorExprArgs = {}) {
+  constructor (args: PriorExprArgs) {
     super(args);
   }
 }
 
 export type DirectoryExprArgs = { local?: Expression;
   rowFormat?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class DirectoryExpr extends Expression {
   key = ExpressionKey.DIRECTORY;
@@ -5214,16 +5489,20 @@ export class DirectoryExpr extends Expression {
 
   declare args: DirectoryExprArgs;
 
-  constructor (args: DirectoryExprArgs = {}) {
+  constructor (args: DirectoryExprArgs) {
     super(args);
   }
 
-  get $local (): Expression {
-    return this.args.local as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $rowFormat (): string {
-    return this.args.rowFormat as string;
+  get $local (): Expression | undefined {
+    return this.args.local as Expression | undefined;
+  }
+
+  get $rowFormat (): Expression | undefined {
+    return this.args.rowFormat as Expression | undefined;
   }
 }
 
@@ -5232,7 +5511,7 @@ export class DirectoryStageExpr extends Expression {
   key = ExpressionKey.DIRECTORY_STAGE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DirectoryStageExprArgs>;
   declare args: DirectoryStageExprArgs;
-  constructor (args: DirectoryStageExprArgs = {}) {
+  constructor (args: DirectoryStageExprArgs) {
     super(args);
   }
 }
@@ -5241,7 +5520,7 @@ export type ForeignKeyExprArgs = { reference?: Expression;
   delete?: Expression;
   update?: Expression;
   options?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class ForeignKeyExpr extends Expression {
   key = ExpressionKey.FOREIGN_KEY;
@@ -5260,28 +5539,35 @@ export class ForeignKeyExpr extends Expression {
 
   declare args: ForeignKeyExprArgs;
 
-  constructor (args: ForeignKeyExprArgs = {}) {
+  constructor (args: ForeignKeyExprArgs) {
     super(args);
   }
 
-  get $reference (): Expression {
-    return this.args.reference as Expression;
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 
-  get $delete (): Expression {
-    return this.args['delete'] as Expression;
+  get $reference (): Expression | undefined {
+    return this.args.reference as Expression | undefined;
   }
 
-  get $update (): Expression {
-    return this.args.update as Expression;
+  get $delete (): Expression | undefined {
+    return this.args.delete as Expression | undefined;
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $update (): Expression | undefined {
+    return this.args.update as Expression | undefined;
+  }
+
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
   }
 }
 
-export type ColumnPrefixExprArgs = BaseExpressionArgs;
+export type ColumnPrefixExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
 export class ColumnPrefixExpr extends Expression {
   key = ExpressionKey.COLUMN_PREFIX;
 
@@ -5295,14 +5581,23 @@ export class ColumnPrefixExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: ColumnPrefixExprArgs;
-  constructor (args: ColumnPrefixExprArgs = {}) {
+  constructor (args: ColumnPrefixExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression as Expression;
   }
 }
 
 export type PrimaryKeyExprArgs = { options?: Expression[];
   include?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[];
+  expressions: Expression[]; } & BaseExpressionArgs;
 
 export class PrimaryKeyExpr extends Expression {
   key = ExpressionKey.PRIMARY_KEY;
@@ -5320,23 +5615,32 @@ export class PrimaryKeyExpr extends Expression {
 
   declare args: PrimaryKeyExprArgs;
 
-  constructor (args: PrimaryKeyExprArgs = {}) {
+  constructor (args: PrimaryKeyExprArgs) {
     super(args);
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 
-  get $include (): Expression {
-    return this.args.include as Expression;
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
+  }
+
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
+  }
+
+  get $include (): Expression | undefined {
+    return this.args.include as Expression | undefined;
   }
 }
 
 export type IntoExprArgs = { temporary?: boolean;
   unlogged?: Expression;
   bulkCollect?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[];
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class IntoExpr extends Expression {
   key = ExpressionKey.INTO;
@@ -5355,20 +5659,28 @@ export class IntoExpr extends Expression {
 
   declare args: IntoExprArgs;
 
-  constructor (args: IntoExprArgs = {}) {
+  constructor (args: IntoExprArgs) {
     super(args);
   }
 
-  get $temporary (): boolean {
-    return this.args.temporary as boolean;
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 
-  get $unlogged (): Expression {
-    return this.args.unlogged as Expression;
+  get $temporary (): Expression | undefined {
+    return this.args.temporary as Expression | undefined;
   }
 
-  get $bulkCollect (): Expression {
-    return this.args.bulkCollect as Expression;
+  get $unlogged (): Expression | undefined {
+    return this.args.unlogged as Expression | undefined;
+  }
+
+  get $bulkCollect (): Expression | undefined {
+    return this.args.bulkCollect as Expression | undefined;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 }
 
@@ -5377,7 +5689,7 @@ export class FromExpr extends Expression {
   key = ExpressionKey.FROM;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FromExprArgs>;
   declare args: FromExprArgs;
-  constructor (args: FromExprArgs = {}) {
+  constructor (args: FromExprArgs) {
     super(args);
   }
 
@@ -5403,24 +5715,33 @@ export class HavingExpr extends Expression {
   key = ExpressionKey.HAVING;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<HavingExprArgs>;
   declare args: HavingExprArgs;
-  constructor (args: HavingExprArgs = {}) {
+  constructor (args: HavingExprArgs) {
     super(args);
   }
 }
 
-export type HintExprArgs = BaseExpressionArgs;
+export type HintExprArgs = {
+  expressions: Expression[];
+} & BaseExpressionArgs;
 export class HintExpr extends Expression {
   key = ExpressionKey.HINT;
 
   static argTypes: Record<string, boolean> = { expressions: true } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: HintExprArgs;
-  constructor (args: HintExprArgs = {}) {
+  constructor (args: HintExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
   }
 }
 
-export type JoinHintExprArgs = BaseExpressionArgs;
+export type JoinHintExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+} & BaseExpressionArgs;
 export class JoinHintExpr extends Expression {
   key = ExpressionKey.JOIN_HINT;
 
@@ -5430,15 +5751,23 @@ export class JoinHintExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: JoinHintExprArgs;
-  constructor (args: JoinHintExprArgs = {}) {
+  constructor (args: JoinHintExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
   }
 }
 
 export type IdentifierExprArgs = { quoted?: boolean;
   global?: boolean;
   temporary?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class IdentifierExpr extends Expression {
   key = ExpressionKey.IDENTIFIER;
@@ -5456,28 +5785,35 @@ export class IdentifierExpr extends Expression {
 
   declare args: IdentifierExprArgs;
 
-  constructor (args: IdentifierExprArgs = {}) {
+  constructor (args: IdentifierExprArgs) {
     super(args);
-  }
-
-  get $quoted (): boolean {
-    return this.args.quoted as boolean;
-  }
-
-  get $global (): boolean {
-    return this.args['global'] as boolean;
-  }
-
-  get $temporary (): boolean {
-    return this.args.temporary as boolean;
   }
 
   get outputName (): string {
     return this.name;
   }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $quoted (): Expression | undefined {
+    return this.args.quoted as Expression | undefined;
+  }
+
+  get $global (): Expression | undefined {
+    return this.args.global as Expression | undefined;
+  }
+
+  get $temporary (): Expression | undefined {
+    return this.args.temporary as Expression | undefined;
+  }
 }
 
-export type OpclassExprArgs = BaseExpressionArgs;
+export type OpclassExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
 export class OpclassExpr extends Expression {
   key = ExpressionKey.OPCLASS;
 
@@ -5487,8 +5823,16 @@ export class OpclassExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: OpclassExprArgs;
-  constructor (args: OpclassExprArgs = {}) {
+  constructor (args: OpclassExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression as Expression;
   }
 }
 
@@ -5497,7 +5841,7 @@ export type IndexExprArgs = { table?: Expression;
   primary?: boolean;
   amp?: Expression;
   params?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[]; } & BaseExpressionArgs;
 
 export class IndexExpr extends Expression {
   key = ExpressionKey.INDEX;
@@ -5517,28 +5861,32 @@ export class IndexExpr extends Expression {
 
   declare args: IndexExprArgs;
 
-  constructor (args: IndexExprArgs = {}) {
+  constructor (args: IndexExprArgs) {
     super(args);
   }
 
-  get $table (): Expression {
-    return this.args.table as Expression;
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 
-  get $unique (): boolean {
-    return this.args.unique as boolean;
+  get $table (): Expression | undefined {
+    return this.args.table as Expression | undefined;
   }
 
-  get $primary (): boolean {
-    return this.args.primary as boolean;
+  get $unique (): Expression | undefined {
+    return this.args.unique as Expression | undefined;
   }
 
-  get $amp (): Expression {
-    return this.args.amp as Expression;
+  get $primary (): Expression | undefined {
+    return this.args.primary as Expression | undefined;
   }
 
-  get $params (): Expression[] {
-    return (this.args.params || []) as Expression[];
+  get $amp (): Expression | undefined {
+    return this.args.amp as Expression | undefined;
+  }
+
+  get $params (): Expression[] | undefined {
+    return this.args.params as Expression[] | undefined;
   }
 }
 
@@ -5549,8 +5897,7 @@ export type IndexParametersExprArgs = { using?: string;
   partitionBy?: Expression;
   tablespace?: Expression;
   where?: Expression;
-  on?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  on?: Expression; } & BaseExpressionArgs;
 
 export class IndexParametersExpr extends Expression {
   key = ExpressionKey.INDEX_PARAMETERS;
@@ -5572,45 +5919,46 @@ export class IndexParametersExpr extends Expression {
 
   declare args: IndexParametersExprArgs;
 
-  constructor (args: IndexParametersExprArgs = {}) {
+  constructor (args: IndexParametersExprArgs) {
     super(args);
   }
 
-  get $using (): string {
-    return this.args.using as string;
+  get $using (): Expression | undefined {
+    return this.args.using as Expression | undefined;
   }
 
-  get $include (): Expression {
-    return this.args.include as Expression;
+  get $include (): Expression | undefined {
+    return this.args.include as Expression | undefined;
   }
 
-  get $columns (): Expression[] {
-    return (this.args.columns || []) as Expression[];
+  get $columns (): Expression[] | undefined {
+    return this.args.columns as Expression[] | undefined;
   }
 
-  get $withStorage (): Expression {
-    return this.args.withStorage as Expression;
+  get $withStorage (): Expression | undefined {
+    return this.args.withStorage as Expression | undefined;
   }
 
-  get $partitionBy (): Expression {
-    return this.args.partitionBy as Expression;
+  get $partitionBy (): Expression | undefined {
+    return this.args.partitionBy as Expression | undefined;
   }
 
-  get $tablespace (): Expression {
-    return this.args.tablespace as Expression;
+  get $tablespace (): Expression | undefined {
+    return this.args.tablespace as Expression | undefined;
   }
 
-  get $where (): Expression {
-    return this.args.where as Expression;
+  get $where (): Expression | undefined {
+    return this.args.where as Expression | undefined;
   }
 
-  get $on (): Expression {
-    return this.args.on as Expression;
+  get $on (): Expression | undefined {
+    return this.args.on as Expression | undefined;
   }
 }
 
 export type ConditionalInsertExprArgs = { else?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression;
+  expression?: Expression; } & BaseExpressionArgs;
 
 export class ConditionalInsertExpr extends Expression {
   key = ExpressionKey.CONDITIONAL_INSERT;
@@ -5627,12 +5975,20 @@ export class ConditionalInsertExpr extends Expression {
 
   declare args: ConditionalInsertExprArgs;
 
-  constructor (args: ConditionalInsertExprArgs = {}) {
+  constructor (args: ConditionalInsertExprArgs) {
     super(args);
   }
 
-  get $else (): Expression {
-    return this.args['else'] as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression as Expression | undefined;
+  }
+
+  get $else (): Expression | undefined {
+    return this.args.else as Expression | undefined;
   }
 }
 
@@ -5647,7 +6003,7 @@ export enum MultitableInsertsExprKind {
 
 export type MultitableInsertsExprArgs = { kind: MultitableInsertsExprKind;
   source: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  expressions: Expression[]; } & BaseExpressionArgs;
 
 export class MultitableInsertsExpr extends Expression {
   key = ExpressionKey.MULTITABLE_INSERTS;
@@ -5668,8 +6024,12 @@ export class MultitableInsertsExpr extends Expression {
     super(args);
   }
 
-  get $kind (): MultitableInsertsExprKind | undefined {
-    return this.args.kind as MultitableInsertsExprKind | undefined;
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
+  }
+
+  get $kind (): string {
+    return this.args.kind as string;
   }
 
   get $source (): Expression {
@@ -5683,7 +6043,7 @@ export type OnConflictExprArgs = { duplicate?: Expression;
   indexPredicate?: Expression;
   constraint?: Expression;
   where?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class OnConflictExpr extends Expression {
   key = ExpressionKey.ON_CONFLICT;
@@ -5704,39 +6064,42 @@ export class OnConflictExpr extends Expression {
 
   declare args: OnConflictExprArgs;
 
-  constructor (args: OnConflictExprArgs = {}) {
+  constructor (args: OnConflictExprArgs) {
     super(args);
   }
 
-  get $duplicate (): Expression {
-    return this.args.duplicate as Expression;
+  get $duplicate (): Expression | undefined {
+    return this.args.duplicate as Expression | undefined;
   }
 
-  get $action (): Expression {
-    return this.args.action as Expression;
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 
-  get $conflictKeys (): Expression[] {
-    return (this.args.conflictKeys || []) as Expression[];
+  get $action (): Expression | undefined {
+    return this.args.action as Expression | undefined;
   }
 
-  get $indexPredicate (): Expression {
-    return this.args.indexPredicate as Expression;
+  get $conflictKeys (): Expression[] | undefined {
+    return this.args.conflictKeys as Expression[] | undefined;
   }
 
-  get $constraint (): Expression {
-    return this.args.constraint as Expression;
+  get $indexPredicate (): Expression | undefined {
+    return this.args.indexPredicate as Expression | undefined;
   }
 
-  get $where (): Expression {
-    return this.args.where as Expression;
+  get $constraint (): Expression | undefined {
+    return this.args.constraint as Expression | undefined;
+  }
+
+  get $where (): Expression | undefined {
+    return this.args.where as Expression | undefined;
   }
 }
 
 export type OnConditionExprArgs = { error?: Expression;
   empty?: Expression;
-  null?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  null?: Expression; } & BaseExpressionArgs;
 
 export class OnConditionExpr extends Expression {
   key = ExpressionKey.ON_CONDITION;
@@ -5753,25 +6116,25 @@ export class OnConditionExpr extends Expression {
 
   declare args: OnConditionExprArgs;
 
-  constructor (args: OnConditionExprArgs = {}) {
+  constructor (args: OnConditionExprArgs) {
     super(args);
   }
 
-  get $error (): Expression {
-    return this.args.error as Expression;
+  get $error (): Expression | undefined {
+    return this.args.error as Expression | undefined;
   }
 
-  get $empty (): Expression {
-    return this.args.empty as Expression;
+  get $empty (): Expression | undefined {
+    return this.args.empty as Expression | undefined;
   }
 
-  get $null (): Expression {
-    return this.args.null as Expression;
+  get $null (): Expression | undefined {
+    return this.args.null as Expression | undefined;
   }
 }
 
 export type ReturningExprArgs = { into?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  expressions: Expression[]; } & BaseExpressionArgs;
 
 export class ReturningExpr extends Expression {
   key = ExpressionKey.RETURNING;
@@ -5787,16 +6150,23 @@ export class ReturningExpr extends Expression {
 
   declare args: ReturningExprArgs;
 
-  constructor (args: ReturningExprArgs = {}) {
+  constructor (args: ReturningExprArgs) {
     super(args);
   }
 
-  get $into (): Expression {
-    return this.args.into as Expression;
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
+  }
+
+  get $into (): Expression | undefined {
+    return this.args.into as Expression | undefined;
   }
 }
 
-export type IntroducerExprArgs = BaseExpressionArgs;
+export type IntroducerExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
 export class IntroducerExpr extends Expression {
   key = ExpressionKey.INTRODUCER;
 
@@ -5806,8 +6176,16 @@ export class IntroducerExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: IntroducerExprArgs;
-  constructor (args: IntroducerExprArgs = {}) {
+  constructor (args: IntroducerExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression as Expression;
   }
 }
 
@@ -5816,7 +6194,7 @@ export class NationalExpr extends Expression {
   key = ExpressionKey.NATIONAL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NationalExprArgs>;
   declare args: NationalExprArgs;
-  constructor (args: NationalExprArgs = {}) {
+  constructor (args: NationalExprArgs) {
     super(args);
   }
 }
@@ -5827,7 +6205,7 @@ export type LoadDataExprArgs = { local?: Expression;
   partition?: Expression;
   inputFormat?: string;
   serde?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class LoadDataExpr extends Expression {
   key = ExpressionKey.LOAD_DATA;
@@ -5852,33 +6230,37 @@ export class LoadDataExpr extends Expression {
     super(args);
   }
 
-  get $local (): Expression {
-    return this.args.local as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $overwrite (): Expression {
-    return this.args.overwrite as Expression;
+  get $local (): Expression | undefined {
+    return this.args.local as Expression | undefined;
+  }
+
+  get $overwrite (): Expression | undefined {
+    return this.args.overwrite as Expression | undefined;
   }
 
   get $inpath (): Expression {
     return this.args.inpath as Expression;
   }
 
-  get $partition (): Expression {
-    return this.args.partition as Expression;
+  get $partition (): Expression | undefined {
+    return this.args.partition as Expression | undefined;
   }
 
-  get $inputFormat (): string {
-    return this.args.inputFormat as string;
+  get $inputFormat (): Expression | undefined {
+    return this.args.inputFormat as Expression | undefined;
   }
 
-  get $serde (): Expression {
-    return this.args.serde as Expression;
+  get $serde (): Expression | undefined {
+    return this.args.serde as Expression | undefined;
   }
 }
 
 export type PartitionExprArgs = { subpartition?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  expressions: Expression[]; } & BaseExpressionArgs;
 
 export class PartitionExpr extends Expression {
   key = ExpressionKey.PARTITION;
@@ -5894,16 +6276,24 @@ export class PartitionExpr extends Expression {
 
   declare args: PartitionExprArgs;
 
-  constructor (args: PartitionExprArgs = {}) {
+  constructor (args: PartitionExprArgs) {
     super(args);
   }
 
-  get $subpartition (): Expression {
-    return this.args.subpartition as Expression;
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
+  }
+
+  get $subpartition (): Expression | undefined {
+    return this.args.subpartition as Expression | undefined;
   }
 }
 
-export type PartitionRangeExprArgs = BaseExpressionArgs;
+export type PartitionRangeExprArgs = {
+  this: Expression;
+  expression?: Expression;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 export class PartitionRangeExpr extends Expression {
   key = ExpressionKey.PARTITION_RANGE;
 
@@ -5914,8 +6304,20 @@ export class PartitionRangeExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: PartitionRangeExprArgs;
-  constructor (args: PartitionRangeExprArgs = {}) {
+  constructor (args: PartitionRangeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression as Expression | undefined;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 }
 
@@ -5924,15 +6326,14 @@ export class PartitionIdExpr extends Expression {
   key = ExpressionKey.PARTITION_ID;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PartitionIdExprArgs>;
   declare args: PartitionIdExprArgs;
-  constructor (args: PartitionIdExprArgs = {}) {
+  constructor (args: PartitionIdExprArgs) {
     super(args);
   }
 }
 
 export type FetchExprArgs = { direction?: Expression;
   count?: Expression;
-  limitOptions?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  limitOptions?: Expression[]; } & BaseExpressionArgs;
 
 export class FetchExpr extends Expression {
   key = ExpressionKey.FETCH;
@@ -5949,20 +6350,20 @@ export class FetchExpr extends Expression {
 
   declare args: FetchExprArgs;
 
-  constructor (args: FetchExprArgs = {}) {
+  constructor (args: FetchExprArgs) {
     super(args);
   }
 
-  get $direction (): Expression {
-    return this.args.direction as Expression;
+  get $direction (): Expression | undefined {
+    return this.args.direction as Expression | undefined;
   }
 
-  get $count (): Expression {
-    return this.args.count as Expression;
+  get $count (): Expression | undefined {
+    return this.args.count as Expression | undefined;
   }
 
-  get $limitOptions (): Expression[] {
-    return (this.args.limitOptions || []) as Expression[];
+  get $limitOptions (): Expression[] | undefined {
+    return this.args.limitOptions as Expression[] | undefined;
   }
 }
 
@@ -5977,8 +6378,7 @@ export type GrantExprArgs = { privileges: Expression[];
   kind?: GrantExprKind;
   securable: Expression;
   principals: Expression[];
-  grantOption?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  grantOption?: Expression; } & BaseExpressionArgs;
 
 export class GrantExpr extends Expression {
   key = ExpressionKey.GRANT;
@@ -6002,11 +6402,11 @@ export class GrantExpr extends Expression {
   }
 
   get $privileges (): Expression[] {
-    return (this.args.privileges || []) as Expression[];
+    return this.args.privileges as Expression[];
   }
 
-  get $kind (): GrantExprKind | undefined {
-    return this.args.kind as GrantExprKind | undefined;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 
   get $securable (): Expression {
@@ -6014,11 +6414,11 @@ export class GrantExpr extends Expression {
   }
 
   get $principals (): Expression[] {
-    return (this.args.principals || []) as Expression[];
+    return this.args.principals as Expression[];
   }
 
-  get $grantOption (): Expression {
-    return this.args.grantOption as Expression;
+  get $grantOption (): Expression | undefined {
+    return this.args.grantOption as Expression | undefined;
   }
 }
 
@@ -6027,9 +6427,7 @@ export type RevokeExprArgs = { cascade?: Expression;
   kind?: string;
   securable: Expression;
   principals: Expression[];
-  grantOption?: Expression;
-
-  [key: string]: unknown; } & BaseExpressionArgs;
+  grantOption?: Expression; } & BaseExpressionArgs;
 
 export class RevokeExpr extends Expression {
   key = ExpressionKey.REVOKE;
@@ -6050,12 +6448,8 @@ export class RevokeExpr extends Expression {
 
   declare args: RevokeExprArgs;
 
-  constructor (args: RevokeExprArgs = {}) {
+  constructor (args: RevokeExprArgs) {
     super(args);
-  }
-
-  get $cascade (): Expression {
-    return this.args.cascade as Expression;
   }
 
   get $privileges (): Expression[] {
@@ -6077,6 +6471,10 @@ export class RevokeExpr extends Expression {
   get $grantOption (): Expression | undefined {
     return this.args.grantOption as Expression | undefined;
   }
+
+  get $cascade (): Expression | undefined {
+    return this.args.cascade as Expression | undefined;
+  }
 }
 
 export type GroupExprArgs = { groupingSets?: Expression[];
@@ -6084,7 +6482,7 @@ export type GroupExprArgs = { groupingSets?: Expression[];
   rollup?: Expression;
   totals?: Expression[];
   all?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class GroupExpr extends Expression {
   key = ExpressionKey.GROUP;
@@ -6104,69 +6502,92 @@ export class GroupExpr extends Expression {
 
   declare args: GroupExprArgs;
 
-  constructor (args: GroupExprArgs = {}) {
+  constructor (args: GroupExprArgs) {
     super(args);
   }
 
-  get $groupingSets (): Expression[] {
-    return (this.args.groupingSets || []) as Expression[];
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 
-  get $cube (): Expression {
-    return this.args.cube as Expression;
+  get $groupingSets (): Expression[] | undefined {
+    return this.args.groupingSets as Expression[] | undefined;
   }
 
-  get $rollup (): Expression {
-    return this.args.rollup as Expression;
+  get $cube (): Expression | undefined {
+    return this.args.cube as Expression | undefined;
   }
 
-  get $totals (): Expression[] {
-    return (this.args.totals || []) as Expression[];
+  get $rollup (): Expression | undefined {
+    return this.args.rollup as Expression | undefined;
   }
 
-  get $all (): Expression {
-    return this.args.all as Expression;
+  get $totals (): Expression[] | undefined {
+    return this.args.totals as Expression[] | undefined;
+  }
+
+  get $all (): Expression | undefined {
+    return this.args.all as Expression | undefined;
   }
 }
 
-export type CubeExprArgs = BaseExpressionArgs;
+export type CubeExprArgs = {
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 export class CubeExpr extends Expression {
   key = ExpressionKey.CUBE;
 
   static argTypes: Record<string, boolean> = { expressions: false } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: CubeExprArgs;
-  constructor (args: CubeExprArgs = {}) {
+  constructor (args: CubeExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 }
 
-export type RollupExprArgs = BaseExpressionArgs;
+export type RollupExprArgs = {
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 export class RollupExpr extends Expression {
   key = ExpressionKey.ROLLUP;
 
   static argTypes: Record<string, boolean> = { expressions: false } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: RollupExprArgs;
-  constructor (args: RollupExprArgs = {}) {
+  constructor (args: RollupExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 }
 
-export type GroupingSetsExprArgs = BaseExpressionArgs;
+export type GroupingSetsExprArgs = {
+  expressions: Expression[];
+} & BaseExpressionArgs;
 export class GroupingSetsExpr extends Expression {
   key = ExpressionKey.GROUPING_SETS;
 
   static argTypes: Record<string, boolean> = { expressions: true } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: GroupingSetsExprArgs;
-  constructor (args: GroupingSetsExprArgs = {}) {
+  constructor (args: GroupingSetsExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
   }
 }
 
 export type LambdaExprArgs = { colon?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression;
+  expressions: Expression[]; } & BaseExpressionArgs;
 
 export class LambdaExpr extends Expression {
   key = ExpressionKey.LAMBDA;
@@ -6183,18 +6604,28 @@ export class LambdaExpr extends Expression {
 
   declare args: LambdaExprArgs;
 
-  constructor (args: LambdaExprArgs = {}) {
+  constructor (args: LambdaExprArgs) {
     super(args);
   }
 
-  get $colon (): Expression {
-    return this.args.colon as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
+  }
+
+  get $colon (): Expression | undefined {
+    return this.args.colon as Expression | undefined;
   }
 }
 
 export type LimitExprArgs = { offset?: boolean;
   limitOptions?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[];
+  expression: Expression;
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class LimitExpr extends Expression {
   key = ExpressionKey.LIMIT;
@@ -6213,23 +6644,34 @@ export class LimitExpr extends Expression {
 
   declare args: LimitExprArgs;
 
-  constructor (args: LimitExprArgs = {}) {
+  constructor (args: LimitExprArgs) {
     super(args);
   }
 
-  get $offset (): boolean {
-    return this.args.offset as boolean;
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 
-  get $limitOptions (): Expression[] {
-    return (this.args.limitOptions || []) as Expression[];
+  get $expression (): Expression {
+    return this.args.expression as Expression;
+  }
+
+  get $offset (): Expression | undefined {
+    return this.args.offset as Expression | undefined;
+  }
+
+  get $limitOptions (): Expression[] | undefined {
+    return this.args.limitOptions as Expression[] | undefined;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 }
 
 export type LimitOptionsExprArgs = { percent?: Expression;
   rows?: Expression[];
-  withTies?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  withTies?: Expression[]; } & BaseExpressionArgs;
 
 export class LimitOptionsExpr extends Expression {
   key = ExpressionKey.LIMIT_OPTIONS;
@@ -6246,20 +6688,20 @@ export class LimitOptionsExpr extends Expression {
 
   declare args: LimitOptionsExprArgs;
 
-  constructor (args: LimitOptionsExprArgs = {}) {
+  constructor (args: LimitOptionsExprArgs) {
     super(args);
   }
 
-  get $percent (): Expression {
-    return this.args.percent as Expression;
+  get $percent (): Expression | undefined {
+    return this.args.percent as Expression | undefined;
   }
 
-  get $rows (): Expression[] {
-    return (this.args.rows || []) as Expression[];
+  get $rows (): Expression[] | undefined {
+    return this.args.rows as Expression[] | undefined;
   }
 
-  get $withTies (): Expression[] {
-    return (this.args.withTies || []) as Expression[];
+  get $withTies (): Expression[] | undefined {
+    return this.args.withTies as Expression[] | undefined;
   }
 }
 
@@ -6297,7 +6739,8 @@ export type JoinExprArgs = { on?: Expression;
   matchCondition?: Expression;
   directed?: Expression;
   pivots?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression;
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class JoinExpr extends Expression {
   key = ExpressionKey.JOIN;
@@ -6323,24 +6766,8 @@ export class JoinExpr extends Expression {
 
   declare args: JoinExprArgs;
 
-  constructor (args: JoinExprArgs = {}) {
+  constructor (args: JoinExprArgs) {
     super(args);
-  }
-
-  get $method (): string {
-    return this.text('method').toUpperCase();
-  }
-
-  get $kind (): string {
-    return this.text('kind').toUpperCase();
-  }
-
-  get $side (): string {
-    return this.text('side').toUpperCase();
-  }
-
-  get $hint (): string {
-    return this.text('hint').toUpperCase();
   }
 
   get aliasOrName (): string {
@@ -6350,22 +6777,6 @@ export class JoinExpr extends Expression {
   get isSemiOrAntiJoin (): boolean {
     const kind = this.$kind;
     return kind === JoinExprKind.SEMI || kind === JoinExprKind.ANTI;
-  }
-
-  get $global (): boolean {
-    return this.args['global'] as boolean;
-  }
-
-  get $matchCondition (): Expression {
-    return this.args.matchCondition as Expression;
-  }
-
-  get $directed (): Expression {
-    return this.args.directed as Expression;
-  }
-
-  get $pivots (): Expression[] {
-    return (this.args.pivots || []) as Expression[];
   }
 
   /**
@@ -6391,7 +6802,6 @@ export class JoinExpr extends Expression {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
-      [key: string]: unknown;
     } = {},
   ): this {
     const join = _applyConjunctionBuilder(expressions, {
@@ -6432,7 +6842,6 @@ export class JoinExpr extends Expression {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
-      [key: string]: unknown;
     } = {},
   ): this {
     const join = _applyListBuilder(expressions, {
@@ -6451,17 +6860,57 @@ export class JoinExpr extends Expression {
     return join;
   }
 
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
   get $on (): Expression | undefined {
     return this.args.on as Expression | undefined;
+  }
+
+  get $side (): Expression | undefined {
+    return this.args.side as Expression | undefined;
+  }
+
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 
   get $using (): Expression | undefined {
     return this.args.using as Expression | undefined;
   }
+
+  get $method (): Expression | undefined {
+    return this.args.method as Expression | undefined;
+  }
+
+  get $global (): Expression | undefined {
+    return this.args.global as Expression | undefined;
+  }
+
+  get $hint (): Expression | undefined {
+    return this.args.hint as Expression | undefined;
+  }
+
+  get $matchCondition (): Expression | undefined {
+    return this.args.matchCondition as Expression | undefined;
+  }
+
+  get $directed (): Expression | undefined {
+    return this.args.directed as Expression | undefined;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
+  }
+
+  get $pivots (): Expression[] | undefined {
+    return this.args.pivots as Expression[] | undefined;
+  }
 }
 
 export type MatchRecognizeMeasureExprArgs = { windowFrame?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class MatchRecognizeMeasureExpr extends Expression {
   key = ExpressionKey.MATCH_RECOGNIZE_MEASURE;
@@ -6477,12 +6926,16 @@ export class MatchRecognizeMeasureExpr extends Expression {
 
   declare args: MatchRecognizeMeasureExprArgs;
 
-  constructor (args: MatchRecognizeMeasureExprArgs = {}) {
+  constructor (args: MatchRecognizeMeasureExprArgs) {
     super(args);
   }
 
-  get $windowFrame (): Expression {
-    return this.args.windowFrame as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $windowFrame (): Expression | undefined {
+    return this.args.windowFrame as Expression | undefined;
   }
 }
 
@@ -6493,9 +6946,7 @@ export type MatchRecognizeExprArgs = { partitionBy?: Expression;
   after?: Expression;
   pattern?: Expression;
   define?: Expression;
-  alias?: Expression[];
-
-  [key: string]: unknown; } & BaseExpressionArgs;
+  alias?: Expression[]; } & BaseExpressionArgs;
 
 export class MatchRecognizeExpr extends Expression {
   key = ExpressionKey.MATCH_RECOGNIZE;
@@ -6517,40 +6968,40 @@ export class MatchRecognizeExpr extends Expression {
 
   declare args: MatchRecognizeExprArgs;
 
-  constructor (args: MatchRecognizeExprArgs = {}) {
+  constructor (args: MatchRecognizeExprArgs) {
     super(args);
   }
 
-  get $partitionBy (): Expression {
-    return this.args.partitionBy as Expression;
+  get $partitionBy (): Expression | undefined {
+    return this.args.partitionBy as Expression | undefined;
   }
 
-  get $order (): Expression {
-    return this.args.order as Expression;
+  get $order (): Expression | undefined {
+    return this.args.order as Expression | undefined;
   }
 
-  get $measures (): Expression[] {
-    return (this.args.measures || []) as Expression[];
+  get $measures (): Expression[] | undefined {
+    return this.args.measures as Expression[] | undefined;
   }
 
-  get $rows (): Expression[] {
-    return (this.args.rows || []) as Expression[];
+  get $rows (): Expression[] | undefined {
+    return this.args.rows as Expression[] | undefined;
   }
 
-  get $after (): Expression {
-    return this.args.after as Expression;
+  get $after (): Expression | undefined {
+    return this.args.after as Expression | undefined;
   }
 
-  get $pattern (): Expression {
-    return this.args.pattern as Expression;
+  get $pattern (): Expression | undefined {
+    return this.args.pattern as Expression | undefined;
   }
 
-  get $define (): Expression {
-    return this.args.define as Expression;
+  get $define (): Expression | undefined {
+    return this.args.define as Expression | undefined;
   }
 
-  get $alias (): Expression[] | undefined {
-    return this.args.alias as Expression[] | undefined;
+  get $alias (): Expression | undefined {
+    return this.args.alias as Expression | undefined;
   }
 }
 
@@ -6559,12 +7010,16 @@ export class FinalExpr extends Expression {
   key = ExpressionKey.FINAL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FinalExprArgs>;
   declare args: FinalExprArgs;
-  constructor (args: FinalExprArgs = {}) {
+  constructor (args: FinalExprArgs) {
     super(args);
   }
 }
 
-export type OffsetExprArgs = BaseExpressionArgs;
+export type OffsetExprArgs = {
+  this?: Expression[];
+  expression: Expression;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 export class OffsetExpr extends Expression {
   key = ExpressionKey.OFFSET;
 
@@ -6575,13 +7030,26 @@ export class OffsetExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: OffsetExprArgs;
-  constructor (args: OffsetExprArgs = {}) {
+  constructor (args: OffsetExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression as Expression;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 }
 
 export type OrderExprArgs = { siblings?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[];
+  expressions: Expression[]; } & BaseExpressionArgs;
 
 export class OrderExpr extends Expression {
   key = ExpressionKey.ORDER;
@@ -6598,20 +7066,27 @@ export class OrderExpr extends Expression {
 
   declare args: OrderExprArgs;
 
-  constructor (args: OrderExprArgs = {}) {
+  constructor (args: OrderExprArgs) {
     super(args);
   }
 
-  get $siblings (): Expression[] {
-    return (this.args.siblings || []) as Expression[];
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
+  }
+
+  get $siblings (): Expression[] | undefined {
+    return this.args.siblings as Expression[] | undefined;
   }
 }
 
 export type WithFillExprArgs = { from?: Expression;
   to?: Expression;
   step?: Expression;
-  interpolate?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  interpolate?: Expression; } & BaseExpressionArgs;
 
 export class WithFillExpr extends Expression {
   key = ExpressionKey.WITH_FILL;
@@ -6629,31 +7104,32 @@ export class WithFillExpr extends Expression {
 
   declare args: WithFillExprArgs;
 
-  constructor (args: WithFillExprArgs = {}) {
+  constructor (args: WithFillExprArgs) {
     super(args);
   }
 
-  get $from (): Expression {
-    return this.args.from as Expression;
+  get $from (): Expression | undefined {
+    return this.args.from as Expression | undefined;
   }
 
-  get $to (): Expression {
-    return this.args.to as Expression;
+  get $to (): Expression | undefined {
+    return this.args.to as Expression | undefined;
   }
 
-  get $step (): Expression {
-    return this.args.step as Expression;
+  get $step (): Expression | undefined {
+    return this.args.step as Expression | undefined;
   }
 
-  get $interpolate (): Expression {
-    return this.args.interpolate as Expression;
+  get $interpolate (): Expression | undefined {
+    return this.args.interpolate as Expression | undefined;
   }
 }
 
 export type OrderedExprArgs = { desc?: Expression;
   nullsFirst: Expression;
   withFill?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class OrderedExpr extends Expression {
   key = ExpressionKey.ORDERED;
@@ -6675,25 +7151,29 @@ export class OrderedExpr extends Expression {
     super(args);
   }
 
-  get $desc (): Expression {
-    return this.args.desc as Expression;
+  get name (): string {
+    return (this.this as Expression)?.name || '';
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $desc (): Expression | undefined {
+    return this.args.desc as Expression | undefined;
   }
 
   get $nullsFirst (): Expression {
     return this.args.nullsFirst as Expression;
   }
 
-  get $withFill (): Expression {
-    return this.args.withFill as Expression;
-  }
-
-  get name (): string {
-    return (this.this as Expression)?.name || '';
+  get $withFill (): Expression | undefined {
+    return this.args.withFill as Expression | undefined;
   }
 }
 
 export type PropertyExprArgs = { value: string | Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class PropertyExpr extends Expression {
   key = ExpressionKey.PROPERTY;
@@ -6713,12 +7193,19 @@ export class PropertyExpr extends Expression {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $value (): Expression {
+    return this.args.value as Expression;
   }
 }
 
-export type GrantPrivilegeExprArgs = BaseExpressionArgs;
+export type GrantPrivilegeExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 export class GrantPrivilegeExpr extends Expression {
   key = ExpressionKey.GRANT_PRIVILEGE;
 
@@ -6728,8 +7215,16 @@ export class GrantPrivilegeExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: GrantPrivilegeExprArgs;
-  constructor (args: GrantPrivilegeExprArgs = {}) {
+  constructor (args: GrantPrivilegeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 }
 
@@ -6743,7 +7238,7 @@ export enum GrantPrincipalExprKind {
   PUBLIC = 'PUBLIC',
 }
 export type GrantPrincipalExprArgs = { kind?: GrantPrincipalExprKind;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class GrantPrincipalExpr extends Expression {
   key = ExpressionKey.GRANT_PRINCIPAL;
@@ -6759,31 +7254,41 @@ export class GrantPrincipalExpr extends Expression {
 
   declare args: GrantPrincipalExprArgs;
 
-  constructor (args: GrantPrincipalExprArgs = {}) {
+  constructor (args: GrantPrincipalExprArgs) {
     super(args);
   }
 
-  get $kind (): GrantPrincipalExprKind | undefined {
-    return this.args.kind as GrantPrincipalExprKind | undefined;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 }
 
-export type AllowedValuesPropertyExprArgs = BaseExpressionArgs;
+export type AllowedValuesPropertyExprArgs = {
+  expressions: Expression[];
+} & BaseExpressionArgs;
 export class AllowedValuesPropertyExpr extends Expression {
   key = ExpressionKey.ALLOWED_VALUES_PROPERTY;
 
   static argTypes: Record<string, boolean> = { expressions: true } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: AllowedValuesPropertyExprArgs;
-  constructor (args: AllowedValuesPropertyExprArgs = {}) {
+  constructor (args: AllowedValuesPropertyExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
   }
 }
 
 export type PartitionByRangePropertyDynamicExprArgs = { start: Expression;
   end: Expression;
   every: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[]; } & BaseExpressionArgs;
 
 export class PartitionByRangePropertyDynamicExpr extends Expression {
   key = ExpressionKey.PARTITION_BY_RANGE_PROPERTY_DYNAMIC;
@@ -6806,6 +7311,10 @@ export class PartitionByRangePropertyDynamicExpr extends Expression {
     super(args);
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
+
   get $start (): Expression {
     return this.args.start as Expression;
   }
@@ -6821,7 +7330,8 @@ export class PartitionByRangePropertyDynamicExpr extends Expression {
 
 export type RollupIndexExprArgs = { fromIndex?: Expression;
   properties?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression;
+  expressions: Expression[]; } & BaseExpressionArgs;
 
 export class RollupIndexExpr extends Expression {
   key = ExpressionKey.ROLLUP_INDEX;
@@ -6839,20 +7349,31 @@ export class RollupIndexExpr extends Expression {
 
   declare args: RollupIndexExprArgs;
 
-  constructor (args: RollupIndexExprArgs = {}) {
+  constructor (args: RollupIndexExprArgs) {
     super(args);
   }
 
-  get $fromIndex (): Expression {
-    return this.args.fromIndex as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $properties (): Expression[] {
-    return (this.args.properties || []) as Expression[];
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
+  }
+
+  get $fromIndex (): Expression | undefined {
+    return this.args.fromIndex as Expression | undefined;
+  }
+
+  get $properties (): Expression[] | undefined {
+    return this.args.properties as Expression[] | undefined;
   }
 }
 
-export type PartitionListExprArgs = BaseExpressionArgs;
+export type PartitionListExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+} & BaseExpressionArgs;
 export class PartitionListExpr extends Expression {
   key = ExpressionKey.PARTITION_LIST;
 
@@ -6862,14 +7383,23 @@ export class PartitionListExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: PartitionListExprArgs;
-  constructor (args: PartitionListExprArgs = {}) {
+  constructor (args: PartitionListExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
   }
 }
 
 export type PartitionBoundSpecExprArgs = { fromExpressions?: Expression[];
   toExpressions?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[];
+  expression?: Expression; } & BaseExpressionArgs;
 
 export class PartitionBoundSpecExpr extends Expression {
   key = ExpressionKey.PARTITION_BOUND_SPEC;
@@ -6887,16 +7417,24 @@ export class PartitionBoundSpecExpr extends Expression {
 
   declare args: PartitionBoundSpecExprArgs;
 
-  constructor (args: PartitionBoundSpecExprArgs = {}) {
+  constructor (args: PartitionBoundSpecExprArgs) {
     super(args);
   }
 
-  get $fromExpressions (): Expression[] {
-    return (this.args.fromExpressions || []) as Expression[];
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 
-  get $toExpressions (): Expression[] {
-    return (this.args.toExpressions || []) as Expression[];
+  get $expression (): Expression | undefined {
+    return this.args.expression as Expression | undefined;
+  }
+
+  get $fromExpressions (): Expression[] | undefined {
+    return this.args.fromExpressions as Expression[] | undefined;
+  }
+
+  get $toExpressions (): Expression[] | undefined {
+    return this.args.toExpressions as Expression[] | undefined;
   }
 }
 
@@ -6905,8 +7443,7 @@ export type QueryTransformExprArgs = { commandScript: Expression;
   rowFormatBefore?: string;
   recordWriter?: Expression;
   rowFormatAfter?: string;
-  recordReader?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  recordReader?: Expression; } & BaseExpressionArgs;
 
 export class QueryTransformExpr extends Expression {
   key = ExpressionKey.QUERY_TRANSFORM;
@@ -6934,32 +7471,31 @@ export class QueryTransformExpr extends Expression {
     return this.args.commandScript as Expression;
   }
 
-  get $schema (): Expression {
-    return this.args.schema as Expression;
+  get $schema (): Expression | undefined {
+    return this.args.schema as Expression | undefined;
   }
 
-  get $rowFormatBefore (): string {
-    return this.args.rowFormatBefore as string;
+  get $rowFormatBefore (): Expression | undefined {
+    return this.args.rowFormatBefore as Expression | undefined;
   }
 
-  get $recordWriter (): Expression {
-    return this.args.recordWriter as Expression;
+  get $recordWriter (): Expression | undefined {
+    return this.args.recordWriter as Expression | undefined;
   }
 
-  get $rowFormatAfter (): string {
-    return this.args.rowFormatAfter as string;
+  get $rowFormatAfter (): Expression | undefined {
+    return this.args.rowFormatAfter as Expression | undefined;
   }
 
-  get $recordReader (): Expression {
-    return this.args.recordReader as Expression;
+  get $recordReader (): Expression | undefined {
+    return this.args.recordReader as Expression | undefined;
   }
 }
 
 export type SemanticViewExprArgs = { metrics?: Expression[];
   dimensions?: Expression[];
   facts?: Expression[];
-  where?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  where?: Expression; } & BaseExpressionArgs;
 
 export class SemanticViewExpr extends Expression {
   key = ExpressionKey.SEMANTIC_VIEW;
@@ -6977,24 +7513,24 @@ export class SemanticViewExpr extends Expression {
 
   declare args: SemanticViewExprArgs;
 
-  constructor (args: SemanticViewExprArgs = {}) {
+  constructor (args: SemanticViewExprArgs) {
     super(args);
   }
 
-  get $metrics (): Expression[] {
-    return (this.args.metrics || []) as Expression[];
+  get $metrics (): Expression[] | undefined {
+    return this.args.metrics as Expression[] | undefined;
   }
 
-  get $dimensions (): Expression[] {
-    return (this.args.dimensions || []) as Expression[];
+  get $dimensions (): Expression[] | undefined {
+    return this.args.dimensions as Expression[] | undefined;
   }
 
-  get $facts (): Expression[] {
-    return (this.args.facts || []) as Expression[];
+  get $facts (): Expression[] | undefined {
+    return this.args.facts as Expression[] | undefined;
   }
 
-  get $where (): Expression {
-    return this.args.where as Expression;
+  get $where (): Expression | undefined {
+    return this.args.where as Expression | undefined;
   }
 }
 
@@ -7003,7 +7539,7 @@ export class LocationExpr extends Expression {
   key = ExpressionKey.LOCATION;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LocationExprArgs>;
   declare args: LocationExprArgs;
-  constructor (args: LocationExprArgs = {}) {
+  constructor (args: LocationExprArgs) {
     super(args);
   }
 }
@@ -7013,14 +7549,13 @@ export class QualifyExpr extends Expression {
   key = ExpressionKey.QUALIFY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<QualifyExprArgs>;
   declare args: QualifyExprArgs;
-  constructor (args: QualifyExprArgs = {}) {
+  constructor (args: QualifyExprArgs) {
     super(args);
   }
 }
 
 export type InputOutputFormatExprArgs = { inputFormat?: string;
-  outputFormat?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  outputFormat?: string; } & BaseExpressionArgs;
 
 export class InputOutputFormatExpr extends Expression {
   key = ExpressionKey.INPUT_OUTPUT_FORMAT;
@@ -7036,16 +7571,16 @@ export class InputOutputFormatExpr extends Expression {
 
   declare args: InputOutputFormatExprArgs;
 
-  constructor (args: InputOutputFormatExprArgs = {}) {
+  constructor (args: InputOutputFormatExprArgs) {
     super(args);
   }
 
-  get $inputFormat (): string {
-    return this.args.inputFormat as string;
+  get $inputFormat (): Expression | undefined {
+    return this.args.inputFormat as Expression | undefined;
   }
 
-  get $outputFormat (): string {
-    return this.args.outputFormat as string;
+  get $outputFormat (): Expression | undefined {
+    return this.args.outputFormat as Expression | undefined;
   }
 }
 
@@ -7054,13 +7589,12 @@ export class ReturnExpr extends Expression {
   key = ExpressionKey.RETURN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ReturnExprArgs>;
   declare args: ReturnExprArgs;
-  constructor (args: ReturnExprArgs = {}) {
+  constructor (args: ReturnExprArgs) {
     super(args);
   }
 }
 
-export type ReferenceExprArgs = { options?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ReferenceExprArgs = { options?: Expression[] } & BaseExpressionArgs;
 
 export class ReferenceExpr extends Expression {
   key = ExpressionKey.REFERENCE;
@@ -7073,12 +7607,12 @@ export class ReferenceExpr extends Expression {
 
   declare args: ReferenceExprArgs;
 
-  constructor (args: ReferenceExprArgs = {}) {
+  constructor (args: ReferenceExprArgs) {
     super(args);
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
   }
 }
 
@@ -7087,7 +7621,7 @@ export class TupleExpr extends Expression {
   key = ExpressionKey.TUPLE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TupleExprArgs>;
   declare args: TupleExprArgs;
-  constructor (args: TupleExprArgs = {}) {
+  constructor (args: TupleExprArgs) {
     super(args);
   }
 }
@@ -7097,7 +7631,7 @@ export class QueryOptionExpr extends Expression {
   key = ExpressionKey.QUERY_OPTION;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<QueryOptionExprArgs>;
   declare args: QueryOptionExprArgs;
-  constructor (args: QueryOptionExprArgs = {}) {
+  constructor (args: QueryOptionExprArgs) {
     super(args);
   }
 }
@@ -7107,13 +7641,12 @@ export class WithTableHintExpr extends Expression {
   key = ExpressionKey.WITH_TABLE_HINT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<WithTableHintExprArgs>;
   declare args: WithTableHintExprArgs;
-  constructor (args: WithTableHintExprArgs = {}) {
+  constructor (args: WithTableHintExprArgs) {
     super(args);
   }
 }
 
-export type IndexTableHintExprArgs = { target?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type IndexTableHintExprArgs = { target?: Expression } & BaseExpressionArgs;
 
 export class IndexTableHintExpr extends Expression {
   key = ExpressionKey.INDEX_TABLE_HINT;
@@ -7126,12 +7659,12 @@ export class IndexTableHintExpr extends Expression {
 
   declare args: IndexTableHintExprArgs;
 
-  constructor (args: IndexTableHintExprArgs = {}) {
+  constructor (args: IndexTableHintExprArgs) {
     super(args);
   }
 
-  get $target (): Expression {
-    return this.args.target as Expression;
+  get $target (): Expression | undefined {
+    return this.args.target as Expression | undefined;
   }
 }
 
@@ -7144,8 +7677,7 @@ export enum HistoricalDataExprKind {
   TRANSACTION_TIME = 'TRANSACTION_TIME',
 }
 
-export type HistoricalDataExprArgs = { kind: HistoricalDataExprKind;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type HistoricalDataExprArgs = { kind: HistoricalDataExprKind } & BaseExpressionArgs;
 
 export class HistoricalDataExpr extends Expression {
   key = ExpressionKey.HISTORICAL_DATA;
@@ -7162,14 +7694,13 @@ export class HistoricalDataExpr extends Expression {
     super(args);
   }
 
-  get $kind (): HistoricalDataExprKind | undefined {
-    return this.args.kind as HistoricalDataExprKind | undefined;
+  get $kind (): string {
+    return this.args.kind as string;
   }
 }
 
 export type PutExprArgs = { target: Expression;
-  properties?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  properties?: Expression[]; } & BaseExpressionArgs;
 
 export class PutExpr extends Expression {
   key = ExpressionKey.PUT;
@@ -7193,14 +7724,13 @@ export class PutExpr extends Expression {
     return this.args.target as Expression;
   }
 
-  get $properties (): Expression[] {
-    return (this.args.properties || []) as Expression[];
+  get $properties (): Expression[] | undefined {
+    return this.args.properties as Expression[] | undefined;
   }
 }
 
 export type GetExprArgs = { target: Expression;
-  properties?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  properties?: Expression[]; } & BaseExpressionArgs;
 
 export class GetExpr extends Expression {
   key = ExpressionKey.GET;
@@ -7224,8 +7754,8 @@ export class GetExpr extends Expression {
     return this.args.target as Expression;
   }
 
-  get $properties (): Expression[] {
-    return (this.args.properties || []) as Expression[];
+  get $properties (): Expression[] | undefined {
+    return this.args.properties as Expression[] | undefined;
   }
 }
 
@@ -7246,8 +7776,7 @@ export type TableExprArgs = { db?: string | IdentifierExpr;
   changes?: Expression[];
   rowsFrom?: number | Expression;
   sample?: number | Expression;
-  indexed?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  indexed?: Expression; } & BaseExpressionArgs;
 
 export class TableExpr extends Expression {
   key = ExpressionKey.TABLE;
@@ -7279,80 +7808,80 @@ export class TableExpr extends Expression {
 
   declare args: TableExprArgs;
 
-  constructor (args: TableExprArgs = {}) {
+  constructor (args: TableExprArgs) {
     super(args);
   }
 
-  get $db (): string {
-    return this.args.db as string;
+  get $db (): Expression | undefined {
+    return this.args.db as Expression | undefined;
   }
 
-  get $catalog (): string {
-    return this.args.catalog as string;
+  get $catalog (): Expression | undefined {
+    return this.args.catalog as Expression | undefined;
   }
 
-  get $laterals (): Expression[] {
-    return (this.args.laterals || []) as Expression[];
+  get $laterals (): Expression[] | undefined {
+    return this.args.laterals as Expression[] | undefined;
   }
 
-  get $joins (): Expression[] {
-    return (this.args.joins || []) as Expression[];
+  get $joins (): Expression[] | undefined {
+    return this.args.joins as Expression[] | undefined;
   }
 
-  get $pivots (): Expression[] {
-    return (this.args.pivots || []) as Expression[];
+  get $pivots (): Expression[] | undefined {
+    return this.args.pivots as Expression[] | undefined;
   }
 
-  get $hints (): Expression[] {
-    return (this.args.hints || []) as Expression[];
+  get $hints (): Expression[] | undefined {
+    return this.args.hints as Expression[] | undefined;
   }
 
-  get $systemTime (): Expression {
-    return this.args.systemTime as Expression;
+  get $systemTime (): Expression | undefined {
+    return this.args.systemTime as Expression | undefined;
   }
 
-  get $version (): Expression {
-    return this.args.version as Expression;
+  get $version (): Expression | undefined {
+    return this.args.version as Expression | undefined;
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 
-  get $pattern (): Expression {
-    return this.args.pattern as Expression;
+  get $pattern (): Expression | undefined {
+    return this.args.pattern as Expression | undefined;
   }
 
-  get $ordinality (): boolean {
-    return this.args.ordinality as boolean;
+  get $ordinality (): Expression | undefined {
+    return this.args.ordinality as Expression | undefined;
   }
 
-  get $when (): Expression {
-    return this.args.when as Expression;
+  get $when (): Expression | undefined {
+    return this.args.when as Expression | undefined;
   }
 
-  get $only (): Expression {
-    return this.args.only as Expression;
+  get $only (): Expression | undefined {
+    return this.args.only as Expression | undefined;
   }
 
-  get $partition (): Expression {
-    return this.args.partition as Expression;
+  get $partition (): Expression | undefined {
+    return this.args.partition as Expression | undefined;
   }
 
-  get $changes (): Expression[] {
-    return (this.args.changes || []) as Expression[];
+  get $changes (): Expression[] | undefined {
+    return this.args.changes as Expression[] | undefined;
   }
 
-  get $rowsFrom (): number | Expression {
-    return this.args.rowsFrom as number | Expression;
+  get $rowsFrom (): Expression | undefined {
+    return this.args.rowsFrom as Expression | undefined;
   }
 
-  get $sample (): number | Expression {
-    return this.args.sample as number | Expression;
+  get $sample (): Expression | undefined {
+    return this.args.sample as Expression | undefined;
   }
 
-  get $indexed (): Expression {
-    return this.args.indexed as Expression;
+  get $indexed (): Expression | undefined {
+    return this.args.indexed as Expression | undefined;
   }
 }
 
@@ -7361,7 +7890,7 @@ export class VarExpr extends Expression {
   key = ExpressionKey.VAR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<VarExprArgs>;
   declare args: VarExprArgs;
-  constructor (args: VarExprArgs = {}) {
+  constructor (args: VarExprArgs) {
     super(args);
   }
 }
@@ -7376,8 +7905,7 @@ export enum VersionExprKind {
   VERSION = 'VERSION',
 }
 
-export type VersionExprArgs = { kind: VersionExprKind;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type VersionExprArgs = { kind: VersionExprKind } & BaseExpressionArgs;
 
 export class VersionExpr extends Expression {
   key = ExpressionKey.VERSION;
@@ -7394,8 +7922,8 @@ export class VersionExpr extends Expression {
     super(args);
   }
 
-  get $kind (): VersionExprKind | undefined {
-    return this.args.kind as VersionExprKind | undefined;
+  get $kind (): string {
+    return this.args.kind as string;
   }
 }
 
@@ -7404,15 +7932,14 @@ export class SchemaExpr extends Expression {
   key = ExpressionKey.SCHEMA;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SchemaExprArgs>;
   declare args: SchemaExprArgs;
-  constructor (args: SchemaExprArgs = {}) {
+  constructor (args: SchemaExprArgs) {
     super(args);
   }
 }
 
 export type LockExprArgs = { update: Expression;
   wait?: Expression;
-  key?: unknown;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  key?: unknown; } & BaseExpressionArgs;
 
 export class LockExpr extends Expression {
   key = ExpressionKey.LOCK;
@@ -7437,8 +7964,8 @@ export class LockExpr extends Expression {
     return this.args.update as Expression;
   }
 
-  get $wait (): Expression {
-    return this.args.wait as Expression;
+  get $wait (): Expression | undefined {
+    return this.args.wait as Expression | undefined;
   }
 
   get $key (): Expression | undefined {
@@ -7453,8 +7980,7 @@ export type TableSampleExprArgs = { method?: string;
   percent?: Expression;
   rows?: Expression[];
   size?: number | Expression;
-  seed?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  seed?: Expression; } & BaseExpressionArgs;
 
 export class TableSampleExpr extends Expression {
   key = ExpressionKey.TABLE_SAMPLE;
@@ -7476,46 +8002,45 @@ export class TableSampleExpr extends Expression {
 
   declare args: TableSampleExprArgs;
 
-  constructor (args: TableSampleExprArgs = {}) {
+  constructor (args: TableSampleExprArgs) {
     super(args);
   }
 
-  get $method (): string {
-    return this.args.method as string;
+  get $method (): Expression | undefined {
+    return this.args.method as Expression | undefined;
   }
 
-  get $bucketNumerator (): Expression {
-    return this.args.bucketNumerator as Expression;
+  get $bucketNumerator (): Expression | undefined {
+    return this.args.bucketNumerator as Expression | undefined;
   }
 
-  get $bucketDenominator (): Expression {
-    return this.args.bucketDenominator as Expression;
+  get $bucketDenominator (): Expression | undefined {
+    return this.args.bucketDenominator as Expression | undefined;
   }
 
-  get $bucketField (): Expression {
-    return this.args.bucketField as Expression;
+  get $bucketField (): Expression | undefined {
+    return this.args.bucketField as Expression | undefined;
   }
 
-  get $percent (): Expression {
-    return this.args.percent as Expression;
+  get $percent (): Expression | undefined {
+    return this.args.percent as Expression | undefined;
   }
 
-  get $rows (): Expression[] {
-    return (this.args.rows || []) as Expression[];
+  get $rows (): Expression[] | undefined {
+    return this.args.rows as Expression[] | undefined;
   }
 
-  get $size (): number | Expression {
-    return this.args.size as number | Expression;
+  get $size (): Expression | undefined {
+    return this.args.size as Expression | undefined;
   }
 
-  get $seed (): Expression {
-    return this.args.seed as Expression;
+  get $seed (): Expression | undefined {
+    return this.args.seed as Expression | undefined;
   }
 }
 
 export type TagExprArgs = { prefix?: Expression;
-  postfix?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  postfix?: Expression; } & BaseExpressionArgs;
 
 export class TagExpr extends Expression {
   key = ExpressionKey.TAG;
@@ -7531,16 +8056,16 @@ export class TagExpr extends Expression {
 
   declare args: TagExprArgs;
 
-  constructor (args: TagExprArgs = {}) {
+  constructor (args: TagExprArgs) {
     super(args);
   }
 
-  get $prefix (): Expression {
-    return this.args.prefix as Expression;
+  get $prefix (): Expression | undefined {
+    return this.args.prefix as Expression | undefined;
   }
 
-  get $postfix (): Expression {
-    return this.args.postfix as Expression;
+  get $postfix (): Expression | undefined {
+    return this.args.postfix as Expression | undefined;
   }
 }
 
@@ -7552,8 +8077,7 @@ export type PivotExprArgs = { fields?: Expression[];
   includeNulls?: Expression[];
   defaultOnNull?: Expression;
   into?: Expression;
-  with?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  with?: Expression; } & BaseExpressionArgs;
 
 export class PivotExpr extends Expression {
   key = ExpressionKey.PIVOT;
@@ -7576,44 +8100,44 @@ export class PivotExpr extends Expression {
 
   declare args: PivotExprArgs;
 
-  constructor (args: PivotExprArgs = {}) {
+  constructor (args: PivotExprArgs) {
     super(args);
   }
 
-  get $fields (): Expression[] {
-    return (this.args.fields || []) as Expression[];
+  get $fields (): Expression[] | undefined {
+    return this.args.fields as Expression[] | undefined;
   }
 
-  get $unpivot (): Expression {
-    return this.args.unpivot as Expression;
+  get $unpivot (): Expression | undefined {
+    return this.args.unpivot as Expression | undefined;
   }
 
-  get $using (): string {
-    return this.args.using as string;
+  get $using (): Expression | undefined {
+    return this.args.using as Expression | undefined;
   }
 
-  get $group (): Expression {
-    return this.args.group as Expression;
+  get $group (): Expression | undefined {
+    return this.args.group as Expression | undefined;
   }
 
-  get $columns (): Expression[] {
-    return (this.args.columns || []) as Expression[];
+  get $columns (): Expression[] | undefined {
+    return this.args.columns as Expression[] | undefined;
   }
 
-  get $includeNulls (): Expression[] {
-    return (this.args.includeNulls || []) as Expression[];
+  get $includeNulls (): Expression[] | undefined {
+    return this.args.includeNulls as Expression[] | undefined;
   }
 
-  get $defaultOnNull (): Expression {
-    return this.args.defaultOnNull as Expression;
+  get $defaultOnNull (): Expression | undefined {
+    return this.args.defaultOnNull as Expression | undefined;
   }
 
-  get $into (): Expression {
-    return this.args.into as Expression;
+  get $into (): Expression | undefined {
+    return this.args.into as Expression | undefined;
   }
 
-  get $with (): Expression {
-    return this.args['with'] as Expression;
+  get $with (): Expression | undefined {
+    return this.args.with as Expression | undefined;
   }
 }
 
@@ -7622,7 +8146,7 @@ export class UnpivotColumnsExpr extends Expression {
   key = ExpressionKey.UNPIVOT_COLUMNS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UnpivotColumnsExprArgs>;
   declare args: UnpivotColumnsExprArgs;
-  constructor (args: UnpivotColumnsExprArgs = {}) {
+  constructor (args: UnpivotColumnsExprArgs) {
     super(args);
   }
 }
@@ -7640,8 +8164,7 @@ export type WindowSpecExprArgs = { kind?: WindowSpecExprKind;
   startSide?: Expression;
   end?: Expression;
   endSide?: Expression;
-  exclude?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  exclude?: Expression; } & BaseExpressionArgs;
 
 export class WindowSpecExpr extends Expression {
   key = ExpressionKey.WINDOW_SPEC;
@@ -7661,32 +8184,32 @@ export class WindowSpecExpr extends Expression {
 
   declare args: WindowSpecExprArgs;
 
-  constructor (args: WindowSpecExprArgs = {}) {
+  constructor (args: WindowSpecExprArgs) {
     super(args);
   }
 
-  get $kind (): WindowSpecExprKind | undefined {
-    return this.args.kind as WindowSpecExprKind | undefined;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 
-  get $start (): Expression {
-    return this.args.start as Expression;
+  get $start (): Expression | undefined {
+    return this.args.start as Expression | undefined;
   }
 
-  get $startSide (): Expression {
-    return this.args.startSide as Expression;
+  get $startSide (): Expression | undefined {
+    return this.args.startSide as Expression | undefined;
   }
 
-  get $end (): Expression {
-    return this.args.end as Expression;
+  get $end (): Expression | undefined {
+    return this.args.end as Expression | undefined;
   }
 
-  get $endSide (): Expression {
-    return this.args.endSide as Expression;
+  get $endSide (): Expression | undefined {
+    return this.args.endSide as Expression | undefined;
   }
 
-  get $exclude (): Expression {
-    return this.args.exclude as Expression;
+  get $exclude (): Expression | undefined {
+    return this.args.exclude as Expression | undefined;
   }
 }
 
@@ -7695,7 +8218,7 @@ export class PreWhereExpr extends Expression {
   key = ExpressionKey.PRE_WHERE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PreWhereExprArgs>;
   declare args: PreWhereExprArgs;
-  constructor (args: PreWhereExprArgs = {}) {
+  constructor (args: PreWhereExprArgs) {
     super(args);
   }
 }
@@ -7705,15 +8228,14 @@ export class WhereExpr extends Expression {
   key = ExpressionKey.WHERE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<WhereExprArgs>;
   declare args: WhereExprArgs;
-  constructor (args: WhereExprArgs = {}) {
+  constructor (args: WhereExprArgs) {
     super(args);
   }
 }
 
 export type StarExprArgs = { except?: Expression;
   replace?: boolean;
-  rename?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  rename?: string; } & BaseExpressionArgs;
 
 export class StarExpr extends Expression {
   key = ExpressionKey.STAR;
@@ -7730,20 +8252,20 @@ export class StarExpr extends Expression {
 
   declare args: StarExprArgs;
 
-  constructor (args: StarExprArgs = {}) {
+  constructor (args: StarExprArgs) {
     super(args);
   }
 
-  get $except (): Expression {
-    return this.args.except as Expression;
+  get $except (): Expression | undefined {
+    return this.args.except as Expression | undefined;
   }
 
-  get $replace (): boolean {
-    return this.args.replace as boolean;
+  get $replace (): Expression | undefined {
+    return this.args.replace as Expression | undefined;
   }
 
-  get $rename (): string {
-    return this.args.rename as string;
+  get $rename (): Expression | undefined {
+    return this.args.rename as Expression | undefined;
   }
 }
 
@@ -7752,7 +8274,7 @@ export class DataTypeParamExpr extends Expression {
   key = ExpressionKey.DATA_TYPE_PARAM;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DataTypeParamExprArgs>;
   declare args: DataTypeParamExprArgs;
-  constructor (args: DataTypeParamExprArgs = {}) {
+  constructor (args: DataTypeParamExprArgs) {
     super(args);
   }
 }
@@ -7783,8 +8305,7 @@ export type DataTypeExprArgs = { nested?: Expression;
   values?: Expression[];
   prefix?: Expression;
   kind?: DataTypeExprKind | string;
-  nullable?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  nullable?: Expression; } & BaseExpressionArgs;
 
 export class DataTypeExpr extends Expression {
   key = ExpressionKey.DATA_TYPE;
@@ -7803,7 +8324,7 @@ export class DataTypeExpr extends Expression {
 
   declare args: DataTypeExprArgs;
 
-  constructor (args: DataTypeExprArgs = {}) {
+  constructor (args: DataTypeExprArgs) {
     super(args);
   }
 
@@ -7816,24 +8337,24 @@ export class DataTypeExpr extends Expression {
     return new DataTypeExpr({ this: dtype });
   }
 
-  get $nested (): Expression {
-    return this.args.nested as Expression;
+  get $nested (): Expression | undefined {
+    return this.args.nested as Expression | undefined;
   }
 
-  get $values (): Expression[] {
-    return (this.args.values || []) as Expression[];
+  get $values (): Expression[] | undefined {
+    return this.args.values as Expression[] | undefined;
   }
 
-  get $prefix (): Expression {
-    return this.args.prefix as Expression;
+  get $prefix (): Expression | undefined {
+    return this.args.prefix as Expression | undefined;
   }
 
-  get $kind (): DataTypeExprKind | string | undefined {
-    return this.args.kind as DataTypeExprKind | string | undefined;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 
-  get $nullable (): Expression {
-    return this.args.nullable as Expression;
+  get $nullable (): Expression | undefined {
+    return this.args.nullable as Expression | undefined;
   }
 }
 
@@ -7842,7 +8363,7 @@ export class TypeExpr extends Expression {
   key = ExpressionKey.TYPE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TypeExprArgs>;
   declare args: TypeExprArgs;
-  constructor (args: TypeExprArgs = {}) {
+  constructor (args: TypeExprArgs) {
     super(args);
   }
 }
@@ -7852,14 +8373,13 @@ export class CommandExpr extends Expression {
   key = ExpressionKey.COMMAND;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CommandExprArgs>;
   declare args: CommandExprArgs;
-  constructor (args: CommandExprArgs = {}) {
+  constructor (args: CommandExprArgs) {
     super(args);
   }
 }
 
 export type TransactionExprArgs = { modes?: Expression[];
-  mark?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  mark?: Expression; } & BaseExpressionArgs;
 
 export class TransactionExpr extends Expression {
   key = ExpressionKey.TRANSACTION;
@@ -7875,22 +8395,21 @@ export class TransactionExpr extends Expression {
 
   declare args: TransactionExprArgs;
 
-  constructor (args: TransactionExprArgs = {}) {
+  constructor (args: TransactionExprArgs) {
     super(args);
   }
 
-  get $modes (): Expression[] {
-    return (this.args.modes || []) as Expression[];
+  get $modes (): Expression[] | undefined {
+    return this.args.modes as Expression[] | undefined;
   }
 
-  get $mark (): Expression {
-    return this.args.mark as Expression;
+  get $mark (): Expression | undefined {
+    return this.args.mark as Expression | undefined;
   }
 }
 
 export type CommitExprArgs = { chain?: Expression;
-  durability?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  durability?: Expression; } & BaseExpressionArgs;
 
 export class CommitExpr extends Expression {
   key = ExpressionKey.COMMIT;
@@ -7906,21 +8425,20 @@ export class CommitExpr extends Expression {
 
   declare args: CommitExprArgs;
 
-  constructor (args: CommitExprArgs = {}) {
+  constructor (args: CommitExprArgs) {
     super(args);
   }
 
-  get $chain (): Expression {
-    return this.args.chain as Expression;
+  get $chain (): Expression | undefined {
+    return this.args.chain as Expression | undefined;
   }
 
-  get $durability (): Expression {
-    return this.args.durability as Expression;
+  get $durability (): Expression | undefined {
+    return this.args.durability as Expression | undefined;
   }
 }
 
-export type RollbackExprArgs = { savepoint?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type RollbackExprArgs = { savepoint?: Expression } & BaseExpressionArgs;
 
 export class RollbackExpr extends Expression {
   key = ExpressionKey.ROLLBACK;
@@ -7933,12 +8451,12 @@ export class RollbackExpr extends Expression {
 
   declare args: RollbackExprArgs;
 
-  constructor (args: RollbackExprArgs = {}) {
+  constructor (args: RollbackExprArgs) {
     super(args);
   }
 
-  get $savepoint (): Expression {
-    return this.args.savepoint as Expression;
+  get $savepoint (): Expression | undefined {
+    return this.args.savepoint as Expression | undefined;
   }
 }
 
@@ -7963,8 +8481,7 @@ export type AlterExprArgs = { kind: AlterExprKind;
   cluster?: Expression;
   notValid?: Expression;
   check?: Expression;
-  cascade?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  cascade?: Expression; } & BaseExpressionArgs;
 
 export class AlterExpr extends Expression {
   key = ExpressionKey.ALTER;
@@ -7991,45 +8508,44 @@ export class AlterExpr extends Expression {
     super(args);
   }
 
-  get $kind (): AlterExprKind | undefined {
-    return this.args.kind as AlterExprKind | undefined;
+  get $kind (): string {
+    return this.args.kind as string;
   }
 
   get $actions (): Expression[] {
-    return (this.args.actions || []) as Expression[];
+    return this.args.actions as Expression[];
   }
 
-  get $exists (): Expression {
-    return this.args.exists as Expression;
+  get $exists (): Expression[] | undefined {
+    return this.args.exists as Expression[] | undefined;
   }
 
-  get $only (): Expression {
-    return this.args.only as Expression;
+  get $only (): Expression | undefined {
+    return this.args.only as Expression | undefined;
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
   }
 
-  get $cluster (): Expression {
-    return this.args.cluster as Expression;
+  get $cluster (): Expression | undefined {
+    return this.args.cluster as Expression | undefined;
   }
 
-  get $notValid (): Expression {
-    return this.args.notValid as Expression;
+  get $notValid (): Expression | undefined {
+    return this.args.notValid as Expression | undefined;
   }
 
-  get $check (): Expression {
-    return this.args.check as Expression;
+  get $check (): Expression | undefined {
+    return this.args.check as Expression | undefined;
   }
 
-  get $cascade (): Expression {
-    return this.args.cascade as Expression;
+  get $cascade (): Expression | undefined {
+    return this.args.cascade as Expression | undefined;
   }
 }
 
-export type AlterSessionExprArgs = { unset?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type AlterSessionExprArgs = { unset?: Expression } & BaseExpressionArgs;
 
 export class AlterSessionExpr extends Expression {
   key = ExpressionKey.ALTER_SESSION;
@@ -8042,12 +8558,12 @@ export class AlterSessionExpr extends Expression {
 
   declare args: AlterSessionExprArgs;
 
-  constructor (args: AlterSessionExprArgs = {}) {
+  constructor (args: AlterSessionExprArgs) {
     super(args);
   }
 
-  get $unset (): Expression {
-    return this.args.unset as Expression;
+  get $unset (): Expression | undefined {
+    return this.args.unset as Expression | undefined;
   }
 }
 
@@ -8063,8 +8579,7 @@ export type AnalyzeExprArgs = { kind?: AnalyzeExprKind;
   options?: Expression[];
   mode?: Expression;
   partition?: Expression;
-  properties?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  properties?: Expression[]; } & BaseExpressionArgs;
 
 export class AnalyzeExpr extends Expression {
   key = ExpressionKey.ANALYZE;
@@ -8083,28 +8598,28 @@ export class AnalyzeExpr extends Expression {
 
   declare args: AnalyzeExprArgs;
 
-  constructor (args: AnalyzeExprArgs = {}) {
+  constructor (args: AnalyzeExprArgs) {
     super(args);
   }
 
-  get $kind (): AnalyzeExprKind | undefined {
-    return this.args.kind as AnalyzeExprKind | undefined;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
   }
 
-  get $mode (): Expression {
-    return this.args.mode as Expression;
+  get $mode (): Expression | undefined {
+    return this.args.mode as Expression | undefined;
   }
 
-  get $partition (): Expression {
-    return this.args.partition as Expression;
+  get $partition (): Expression | undefined {
+    return this.args.partition as Expression | undefined;
   }
 
-  get $properties (): Expression[] {
-    return (this.args.properties || []) as Expression[];
+  get $properties (): Expression[] | undefined {
+    return this.args.properties as Expression[] | undefined;
   }
 }
 
@@ -8119,8 +8634,7 @@ export enum AnalyzeStatisticsExprKind {
 }
 
 export type AnalyzeStatisticsExprArgs = { kind: AnalyzeStatisticsExprKind;
-  option?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  option?: Expression; } & BaseExpressionArgs;
 
 export class AnalyzeStatisticsExpr extends Expression {
   key = ExpressionKey.ANALYZE_STATISTICS;
@@ -8140,17 +8654,16 @@ export class AnalyzeStatisticsExpr extends Expression {
     super(args);
   }
 
-  get $kind (): AnalyzeStatisticsExprKind | undefined {
-    return this.args.kind as AnalyzeStatisticsExprKind | undefined;
+  get $kind (): string {
+    return this.args.kind as string;
   }
 
-  get $option (): Expression {
-    return this.args.option as Expression;
+  get $option (): Expression | undefined {
+    return this.args.option as Expression | undefined;
   }
 }
 
-export type AnalyzeHistogramExprArgs = { updateOptions?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type AnalyzeHistogramExprArgs = { updateOptions?: Expression[] } & BaseExpressionArgs;
 
 export class AnalyzeHistogramExpr extends Expression {
   key = ExpressionKey.ANALYZE_HISTOGRAM;
@@ -8163,12 +8676,12 @@ export class AnalyzeHistogramExpr extends Expression {
 
   declare args: AnalyzeHistogramExprArgs;
 
-  constructor (args: AnalyzeHistogramExprArgs = {}) {
+  constructor (args: AnalyzeHistogramExprArgs) {
     super(args);
   }
 
-  get $updateOptions (): Expression[] {
-    return (this.args.updateOptions || []) as Expression[];
+  get $updateOptions (): Expression[] | undefined {
+    return this.args.updateOptions as Expression[] | undefined;
   }
 }
 
@@ -8182,8 +8695,7 @@ export enum AnalyzeSampleExprKind {
 }
 
 export type AnalyzeSampleExprArgs = { kind: AnalyzeSampleExprKind;
-  sample: number | Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  sample: number | Expression; } & BaseExpressionArgs;
 
 export class AnalyzeSampleExpr extends Expression {
   key = ExpressionKey.ANALYZE_SAMPLE;
@@ -8203,12 +8715,12 @@ export class AnalyzeSampleExpr extends Expression {
     super(args);
   }
 
-  get $kind (): AnalyzeSampleExprKind | undefined {
-    return this.args.kind as AnalyzeSampleExprKind | undefined;
+  get $kind (): string {
+    return this.args.kind as string;
   }
 
-  get $sample (): number | Expression {
-    return this.args.sample as number | Expression;
+  get $sample (): Expression {
+    return this.args.sample as Expression;
   }
 }
 
@@ -8220,7 +8732,7 @@ export class AnalyzeListChainedRowsExpr extends Expression {
   >;
 
   declare args: AnalyzeListChainedRowsExprArgs;
-  constructor (args: AnalyzeListChainedRowsExprArgs = {}) {
+  constructor (args: AnalyzeListChainedRowsExprArgs) {
     super(args);
   }
 }
@@ -8231,8 +8743,7 @@ export class AnalyzeListChainedRowsExpr extends Expression {
 export enum AnalyzeDeleteExprKind {
   STATISTICS = 'STATISTICS',
 }
-export type AnalyzeDeleteExprArgs = { kind?: AnalyzeDeleteExprKind;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type AnalyzeDeleteExprArgs = { kind?: AnalyzeDeleteExprKind } & BaseExpressionArgs;
 
 export class AnalyzeDeleteExpr extends Expression {
   key = ExpressionKey.ANALYZE_DELETE;
@@ -8245,12 +8756,12 @@ export class AnalyzeDeleteExpr extends Expression {
 
   declare args: AnalyzeDeleteExprArgs;
 
-  constructor (args: AnalyzeDeleteExprArgs = {}) {
+  constructor (args: AnalyzeDeleteExprArgs) {
     super(args);
   }
 
-  get $kind (): AnalyzeDeleteExprKind | undefined {
-    return this.args.kind as AnalyzeDeleteExprKind | undefined;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 }
 
@@ -8259,7 +8770,7 @@ export class AnalyzeWithExpr extends Expression {
   key = ExpressionKey.ANALYZE_WITH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AnalyzeWithExprArgs>;
   declare args: AnalyzeWithExprArgs;
-  constructor (args: AnalyzeWithExprArgs = {}) {
+  constructor (args: AnalyzeWithExprArgs) {
     super(args);
   }
 }
@@ -8273,8 +8784,7 @@ export enum AnalyzeValidateExprKind {
   STRUCTURE = 'STRUCTURE',
 }
 
-export type AnalyzeValidateExprArgs = { kind: AnalyzeValidateExprKind;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type AnalyzeValidateExprArgs = { kind: AnalyzeValidateExprKind } & BaseExpressionArgs;
 
 export class AnalyzeValidateExpr extends Expression {
   key = ExpressionKey.ANALYZE_VALIDATE;
@@ -8291,8 +8801,8 @@ export class AnalyzeValidateExpr extends Expression {
     super(args);
   }
 
-  get $kind (): AnalyzeValidateExprKind | undefined {
-    return this.args.kind as AnalyzeValidateExprKind | undefined;
+  get $kind (): string {
+    return this.args.kind as string;
   }
 }
 
@@ -8301,7 +8811,7 @@ export class AnalyzeColumnsExpr extends Expression {
   key = ExpressionKey.ANALYZE_COLUMNS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AnalyzeColumnsExprArgs>;
   declare args: AnalyzeColumnsExprArgs;
-  constructor (args: AnalyzeColumnsExprArgs = {}) {
+  constructor (args: AnalyzeColumnsExprArgs) {
     super(args);
   }
 }
@@ -8311,7 +8821,7 @@ export class UsingDataExpr extends Expression {
   key = ExpressionKey.USING_DATA;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UsingDataExprArgs>;
   declare args: UsingDataExprArgs;
-  constructor (args: UsingDataExprArgs = {}) {
+  constructor (args: UsingDataExprArgs) {
     super(args);
   }
 }
@@ -8321,14 +8831,13 @@ export class AddConstraintExpr extends Expression {
   key = ExpressionKey.ADD_CONSTRAINT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AddConstraintExprArgs>;
   declare args: AddConstraintExprArgs;
-  constructor (args: AddConstraintExprArgs = {}) {
+  constructor (args: AddConstraintExprArgs) {
     super(args);
   }
 }
 
 export type AddPartitionExprArgs = { exists?: Expression;
-  location?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  location?: Expression; } & BaseExpressionArgs;
 
 export class AddPartitionExpr extends Expression {
   key = ExpressionKey.ADD_PARTITION;
@@ -8344,16 +8853,16 @@ export class AddPartitionExpr extends Expression {
 
   declare args: AddPartitionExprArgs;
 
-  constructor (args: AddPartitionExprArgs = {}) {
+  constructor (args: AddPartitionExprArgs) {
     super(args);
   }
 
-  get $exists (): Expression {
-    return this.args.exists as Expression;
+  get $exists (): Expression[] | undefined {
+    return this.args.exists as Expression[] | undefined;
   }
 
-  get $location (): Expression {
-    return this.args.location as Expression;
+  get $location (): Expression | undefined {
+    return this.args.location as Expression | undefined;
   }
 }
 
@@ -8362,13 +8871,12 @@ export class AttachOptionExpr extends Expression {
   key = ExpressionKey.ATTACH_OPTION;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AttachOptionExprArgs>;
   declare args: AttachOptionExprArgs;
-  constructor (args: AttachOptionExprArgs = {}) {
+  constructor (args: AttachOptionExprArgs) {
     super(args);
   }
 }
 
-export type DropPartitionExprArgs = { exists?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DropPartitionExprArgs = { exists?: Expression } & BaseExpressionArgs;
 
 export class DropPartitionExpr extends Expression {
   key = ExpressionKey.DROP_PARTITION;
@@ -8381,17 +8889,16 @@ export class DropPartitionExpr extends Expression {
 
   declare args: DropPartitionExprArgs;
 
-  constructor (args: DropPartitionExprArgs = {}) {
+  constructor (args: DropPartitionExprArgs) {
     super(args);
   }
 
-  get $exists (): Expression {
-    return this.args.exists as Expression;
+  get $exists (): Expression[] | undefined {
+    return this.args.exists as Expression[] | undefined;
   }
 }
 
-export type ReplacePartitionExprArgs = { source: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ReplacePartitionExprArgs = { source: Expression } & BaseExpressionArgs;
 
 export class ReplacePartitionExpr extends Expression {
   key = ExpressionKey.REPLACE_PARTITION;
@@ -8419,7 +8926,7 @@ export class AliasExpr extends Expression {
 
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AliasExprArgs>;
   declare args: AliasExprArgs;
-  constructor (args: AliasExprArgs = {}) {
+  constructor (args: AliasExprArgs) {
     super(args);
   }
 }
@@ -8429,7 +8936,7 @@ export class PivotAnyExpr extends Expression {
   key = ExpressionKey.PIVOT_ANY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PivotAnyExprArgs>;
   declare args: PivotAnyExprArgs;
-  constructor (args: PivotAnyExprArgs = {}) {
+  constructor (args: PivotAnyExprArgs) {
     super(args);
   }
 }
@@ -8439,7 +8946,7 @@ export class AliasesExpr extends Expression {
   key = ExpressionKey.ALIASES;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AliasesExprArgs>;
   declare args: AliasesExprArgs;
-  constructor (args: AliasesExprArgs = {}) {
+  constructor (args: AliasesExprArgs) {
     super(args);
   }
 }
@@ -8449,13 +8956,12 @@ export class AtIndexExpr extends Expression {
   key = ExpressionKey.AT_INDEX;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AtIndexExprArgs>;
   declare args: AtIndexExprArgs;
-  constructor (args: AtIndexExprArgs = {}) {
+  constructor (args: AtIndexExprArgs) {
     super(args);
   }
 }
 
-export type AtTimeZoneExprArgs = { zone: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type AtTimeZoneExprArgs = { zone: Expression } & BaseExpressionArgs;
 
 export class AtTimeZoneExpr extends Expression {
   key = ExpressionKey.AT_TIME_ZONE;
@@ -8477,8 +8983,7 @@ export class AtTimeZoneExpr extends Expression {
   }
 }
 
-export type FromTimeZoneExprArgs = { zone: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type FromTimeZoneExprArgs = { zone: Expression } & BaseExpressionArgs;
 
 export class FromTimeZoneExpr extends Expression {
   key = ExpressionKey.FROM_TIME_ZONE;
@@ -8500,8 +9005,7 @@ export class FromTimeZoneExpr extends Expression {
   }
 }
 
-export type FormatPhraseExprArgs = { format: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type FormatPhraseExprArgs = { format: string } & BaseExpressionArgs;
 
 export class FormatPhraseExpr extends Expression {
   key = ExpressionKey.FORMAT_PHRASE;
@@ -8518,13 +9022,12 @@ export class FormatPhraseExpr extends Expression {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression {
+    return this.args.format as Expression;
   }
 }
 
-export type DistinctExprArgs = { on?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DistinctExprArgs = { on?: Expression } & BaseExpressionArgs;
 
 export class DistinctExpr extends Expression {
   key = ExpressionKey.DISTINCT;
@@ -8537,12 +9040,12 @@ export class DistinctExpr extends Expression {
 
   declare args: DistinctExprArgs;
 
-  constructor (args: DistinctExprArgs = {}) {
+  constructor (args: DistinctExprArgs) {
     super(args);
   }
 
-  get $on (): Expression {
-    return this.args.on as Expression;
+  get $on (): Expression | undefined {
+    return this.args.on as Expression | undefined;
   }
 }
 
@@ -8551,13 +9054,12 @@ export class ForInExpr extends Expression {
   key = ExpressionKey.FOR_IN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ForInExprArgs>;
   declare args: ForInExprArgs;
-  constructor (args: ForInExprArgs = {}) {
+  constructor (args: ForInExprArgs) {
     super(args);
   }
 }
 
-export type TimeUnitExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TimeUnitExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class TimeUnitExpr extends Expression {
   key = ExpressionKey.TIME_UNIT;
@@ -8570,12 +9072,12 @@ export class TimeUnitExpr extends Expression {
 
   declare args: TimeUnitExprArgs;
 
-  constructor (args: TimeUnitExprArgs = {}) {
+  constructor (args: TimeUnitExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
@@ -8584,7 +9086,7 @@ export class IgnoreNullsExpr extends Expression {
   key = ExpressionKey.IGNORE_NULLS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<IgnoreNullsExprArgs>;
   declare args: IgnoreNullsExprArgs;
-  constructor (args: IgnoreNullsExprArgs = {}) {
+  constructor (args: IgnoreNullsExprArgs) {
     super(args);
   }
 }
@@ -8594,13 +9096,12 @@ export class RespectNullsExpr extends Expression {
   key = ExpressionKey.RESPECT_NULLS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RespectNullsExprArgs>;
   declare args: RespectNullsExprArgs;
-  constructor (args: RespectNullsExprArgs = {}) {
+  constructor (args: RespectNullsExprArgs) {
     super(args);
   }
 }
 
-export type HavingMaxExprArgs = { max: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type HavingMaxExprArgs = { max: Expression } & BaseExpressionArgs;
 
 export class HavingMaxExpr extends Expression {
   key = ExpressionKey.HAVING_MAX;
@@ -8622,8 +9123,7 @@ export class HavingMaxExpr extends Expression {
   }
 }
 
-export type TranslateCharactersExprArgs = { withError?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TranslateCharactersExprArgs = { withError?: Expression } & BaseExpressionArgs;
 
 export class TranslateCharactersExpr extends Expression {
   key = ExpressionKey.TRANSLATE_CHARACTERS;
@@ -8636,12 +9136,12 @@ export class TranslateCharactersExpr extends Expression {
 
   declare args: TranslateCharactersExprArgs;
 
-  constructor (args: TranslateCharactersExprArgs = {}) {
+  constructor (args: TranslateCharactersExprArgs) {
     super(args);
   }
 
-  get $withError (): Expression {
-    return this.args.withError as Expression;
+  get $withError (): Expression | undefined {
+    return this.args.withError as Expression | undefined;
   }
 }
 
@@ -8650,13 +9150,12 @@ export class PositionalColumnExpr extends Expression {
   key = ExpressionKey.POSITIONAL_COLUMN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PositionalColumnExprArgs>;
   declare args: PositionalColumnExprArgs;
-  constructor (args: PositionalColumnExprArgs = {}) {
+  constructor (args: PositionalColumnExprArgs) {
     super(args);
   }
 }
 
-export type OverflowTruncateBehaviorExprArgs = { withCount: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type OverflowTruncateBehaviorExprArgs = { withCount: Expression } & BaseExpressionArgs;
 
 export class OverflowTruncateBehaviorExpr extends Expression {
   key = ExpressionKey.OVERFLOW_TRUNCATE_BEHAVIOR;
@@ -8680,8 +9179,7 @@ export class OverflowTruncateBehaviorExpr extends Expression {
 }
 
 export type JSONExprArgs = { with?: Expression;
-  unique?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  unique?: boolean; } & BaseExpressionArgs;
 
 export class JSONExpr extends Expression {
   key = ExpressionKey.JSON;
@@ -8697,21 +9195,20 @@ export class JSONExpr extends Expression {
 
   declare args: JSONExprArgs;
 
-  constructor (args: JSONExprArgs = {}) {
+  constructor (args: JSONExprArgs) {
     super(args);
   }
 
-  get $with (): Expression {
-    return this.args['with'] as Expression;
+  get $with (): Expression | undefined {
+    return this.args.with as Expression | undefined;
   }
 
-  get $unique (): boolean {
-    return this.args.unique as boolean;
+  get $unique (): Expression | undefined {
+    return this.args.unique as Expression | undefined;
   }
 }
 
-export type JSONPathExprArgs = { escape?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type JSONPathExprArgs = { escape?: Expression } & BaseExpressionArgs;
 
 export class JSONPathExpr extends Expression {
   key = ExpressionKey.JSON_PATH;
@@ -8724,12 +9221,12 @@ export class JSONPathExpr extends Expression {
 
   declare args: JSONPathExprArgs;
 
-  constructor (args: JSONPathExprArgs = {}) {
+  constructor (args: JSONPathExprArgs) {
     super(args);
   }
 
-  get $escape (): Expression {
-    return this.args.escape as Expression;
+  get $escape (): Expression | undefined {
+    return this.args.escape as Expression | undefined;
   }
 }
 
@@ -8738,7 +9235,7 @@ export class JSONPathPartExpr extends Expression {
   key = ExpressionKey.JSON_PATH_PART;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONPathPartExprArgs>;
   declare args: JSONPathPartExprArgs;
-  constructor (args: JSONPathPartExprArgs = {}) {
+  constructor (args: JSONPathPartExprArgs) {
     super(args);
   }
 }
@@ -8748,7 +9245,7 @@ export class FormatJsonExpr extends Expression {
   key = ExpressionKey.FORMAT_JSON;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FormatJsonExprArgs>;
   declare args: FormatJsonExprArgs;
-  constructor (args: FormatJsonExprArgs = {}) {
+  constructor (args: FormatJsonExprArgs) {
     super(args);
   }
 }
@@ -8758,7 +9255,7 @@ export class JSONKeyValueExpr extends Expression {
   key = ExpressionKey.JSON_KEY_VALUE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONKeyValueExprArgs>;
   declare args: JSONKeyValueExprArgs;
-  constructor (args: JSONKeyValueExprArgs = {}) {
+  constructor (args: JSONKeyValueExprArgs) {
     super(args);
   }
 }
@@ -8775,8 +9272,7 @@ export enum JSONColumnDefExprKind {
 export type JSONColumnDefExprArgs = { kind?: JSONColumnDefExprKind;
   path?: Expression;
   nestedSchema?: Expression;
-  ordinality?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  ordinality?: boolean; } & BaseExpressionArgs;
 
 export class JSONColumnDefExpr extends Expression {
   key = ExpressionKey.JSON_COLUMN_DEF;
@@ -8794,24 +9290,24 @@ export class JSONColumnDefExpr extends Expression {
 
   declare args: JSONColumnDefExprArgs;
 
-  constructor (args: JSONColumnDefExprArgs = {}) {
+  constructor (args: JSONColumnDefExprArgs) {
     super(args);
   }
 
-  get $kind (): JSONColumnDefExprKind | undefined {
-    return this.args.kind as JSONColumnDefExprKind | undefined;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 
-  get $path (): Expression {
-    return this.args.path as Expression;
+  get $path (): Expression | undefined {
+    return this.args.path as Expression | undefined;
   }
 
-  get $nestedSchema (): Expression {
-    return this.args.nestedSchema as Expression;
+  get $nestedSchema (): Expression | undefined {
+    return this.args.nestedSchema as Expression | undefined;
   }
 
-  get $ordinality (): boolean {
-    return this.args.ordinality as boolean;
+  get $ordinality (): Expression | undefined {
+    return this.args.ordinality as Expression | undefined;
   }
 }
 
@@ -8820,15 +9316,14 @@ export class JSONSchemaExpr extends Expression {
   key = ExpressionKey.JSON_SCHEMA;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONSchemaExprArgs>;
   declare args: JSONSchemaExprArgs;
-  constructor (args: JSONSchemaExprArgs = {}) {
+  constructor (args: JSONSchemaExprArgs) {
     super(args);
   }
 }
 
 export type JSONValueExprArgs = { path: Expression;
   returning?: Expression;
-  onCondition?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  onCondition?: Expression; } & BaseExpressionArgs;
 
 export class JSONValueExpr extends Expression {
   key = ExpressionKey.JSON_VALUE;
@@ -8853,12 +9348,12 @@ export class JSONValueExpr extends Expression {
     return this.args.path as Expression;
   }
 
-  get $returning (): Expression {
-    return this.args.returning as Expression;
+  get $returning (): Expression | undefined {
+    return this.args.returning as Expression | undefined;
   }
 
-  get $onCondition (): Expression {
-    return this.args.onCondition as Expression;
+  get $onCondition (): Expression | undefined {
+    return this.args.onCondition as Expression | undefined;
   }
 }
 
@@ -8875,8 +9370,7 @@ export enum OpenJSONColumnDefExprKind {
 
 export type OpenJSONColumnDefExprArgs = { kind: OpenJSONColumnDefExprKind;
   path?: Expression;
-  asJson?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  asJson?: Expression; } & BaseExpressionArgs;
 
 export class OpenJSONColumnDefExpr extends Expression {
   key = ExpressionKey.OPEN_JSON_COLUMN_DEF;
@@ -8897,22 +9391,21 @@ export class OpenJSONColumnDefExpr extends Expression {
     super(args);
   }
 
-  get $kind (): OpenJSONColumnDefExprKind | undefined {
-    return this.args.kind as OpenJSONColumnDefExprKind | undefined;
+  get $kind (): string {
+    return this.args.kind as string;
   }
 
-  get $path (): Expression {
-    return this.args.path as Expression;
+  get $path (): Expression | undefined {
+    return this.args.path as Expression | undefined;
   }
 
-  get $asJson (): Expression {
-    return this.args.asJson as Expression;
+  get $asJson (): Expression | undefined {
+    return this.args.asJson as Expression | undefined;
   }
 }
 
 export type JSONExtractQuoteExprArgs = { option: Expression;
-  scalar?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  scalar?: Expression; } & BaseExpressionArgs;
 
 export class JSONExtractQuoteExpr extends Expression {
   key = ExpressionKey.JSON_EXTRACT_QUOTE;
@@ -8936,8 +9429,8 @@ export class JSONExtractQuoteExpr extends Expression {
     return this.args.option as Expression;
   }
 
-  get $scalar (): Expression {
-    return this.args.scalar as Expression;
+  get $scalar (): boolean | undefined {
+    return this.args.scalar as boolean | undefined;
   }
 }
 
@@ -8946,13 +9439,12 @@ export class ScopeResolutionExpr extends Expression {
   key = ExpressionKey.SCOPE_RESOLUTION;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ScopeResolutionExprArgs>;
   declare args: ScopeResolutionExprArgs;
-  constructor (args: ScopeResolutionExprArgs = {}) {
+  constructor (args: ScopeResolutionExprArgs) {
     super(args);
   }
 }
 
-export type SliceExprArgs = { step?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type SliceExprArgs = { step?: Expression } & BaseExpressionArgs;
 
 export class SliceExpr extends Expression {
   key = ExpressionKey.SLICE;
@@ -8965,12 +9457,12 @@ export class SliceExpr extends Expression {
 
   declare args: SliceExprArgs;
 
-  constructor (args: SliceExprArgs = {}) {
+  constructor (args: SliceExprArgs) {
     super(args);
   }
 
-  get $step (): Expression {
-    return this.args.step as Expression;
+  get $step (): Expression | undefined {
+    return this.args.step as Expression | undefined;
   }
 }
 
@@ -8979,7 +9471,7 @@ export class StreamExpr extends Expression {
   key = ExpressionKey.STREAM;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<StreamExprArgs>;
   declare args: StreamExprArgs;
-  constructor (args: StreamExprArgs = {}) {
+  constructor (args: StreamExprArgs) {
     super(args);
   }
 }
@@ -8989,7 +9481,7 @@ export class ModelAttributeExpr extends Expression {
   key = ExpressionKey.MODEL_ATTRIBUTE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ModelAttributeExprArgs>;
   declare args: ModelAttributeExprArgs;
-  constructor (args: ModelAttributeExprArgs = {}) {
+  constructor (args: ModelAttributeExprArgs) {
     super(args);
   }
 }
@@ -8999,7 +9491,7 @@ export class WeekStartExpr extends Expression {
   key = ExpressionKey.WEEK_START;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<WeekStartExprArgs>;
   declare args: WeekStartExprArgs;
-  constructor (args: WeekStartExprArgs = {}) {
+  constructor (args: WeekStartExprArgs) {
     super(args);
   }
 }
@@ -9009,7 +9501,7 @@ export class XMLNamespaceExpr extends Expression {
   key = ExpressionKey.XML_NAMESPACE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<XMLNamespaceExprArgs>;
   declare args: XMLNamespaceExprArgs;
-  constructor (args: XMLNamespaceExprArgs = {}) {
+  constructor (args: XMLNamespaceExprArgs) {
     super(args);
   }
 }
@@ -9019,7 +9511,7 @@ export class XMLKeyValueOptionExpr extends Expression {
   key = ExpressionKey.XML_KEY_VALUE_OPTION;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<XMLKeyValueOptionExprArgs>;
   declare args: XMLKeyValueOptionExprArgs;
-  constructor (args: XMLKeyValueOptionExprArgs = {}) {
+  constructor (args: XMLKeyValueOptionExprArgs) {
     super(args);
   }
 }
@@ -9034,8 +9526,7 @@ export enum UseExprKind {
   ROLE = 'ROLE',
   CATALOG = 'CATALOG',
 }
-export type UseExprArgs = { kind?: UseExprKind;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type UseExprArgs = { kind?: UseExprKind } & BaseExpressionArgs;
 
 export class UseExpr extends Expression {
   key = ExpressionKey.USE;
@@ -9048,20 +9539,19 @@ export class UseExpr extends Expression {
 
   declare args: UseExprArgs;
 
-  constructor (args: UseExprArgs = {}) {
+  constructor (args: UseExprArgs) {
     super(args);
   }
 
-  get $kind (): UseExprKind | undefined {
-    return this.args.kind as UseExprKind | undefined;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 }
 
 export type WhenExprArgs = { matched: Expression;
   source?: Expression;
   condition?: Expression;
-  then: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  then: Expression; } & BaseExpressionArgs;
 
 export class WhenExpr extends Expression {
   key = ExpressionKey.WHEN;
@@ -9087,12 +9577,12 @@ export class WhenExpr extends Expression {
     return this.args.matched as Expression;
   }
 
-  get $source (): Expression {
-    return this.args.source as Expression;
+  get $source (): Expression | undefined {
+    return this.args.source as Expression | undefined;
   }
 
-  get $condition (): Expression {
-    return this.args.condition as Expression;
+  get $condition (): Expression | undefined {
+    return this.args.condition as Expression | undefined;
   }
 
   get $then (): Expression {
@@ -9105,7 +9595,7 @@ export class WhensExpr extends Expression {
   key = ExpressionKey.WHENS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<WhensExprArgs>;
   declare args: WhensExprArgs;
-  constructor (args: WhensExprArgs = {}) {
+  constructor (args: WhensExprArgs) {
     super(args);
   }
 }
@@ -9115,7 +9605,7 @@ export class SemicolonExpr extends Expression {
   key = ExpressionKey.SEMICOLON;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SemicolonExprArgs>;
   declare args: SemicolonExprArgs;
-  constructor (args: SemicolonExprArgs = {}) {
+  constructor (args: SemicolonExprArgs) {
     super(args);
   }
 }
@@ -9125,7 +9615,7 @@ export class TableColumnExpr extends Expression {
   key = ExpressionKey.TABLE_COLUMN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TableColumnExprArgs>;
   declare args: TableColumnExprArgs;
-  constructor (args: TableColumnExprArgs = {}) {
+  constructor (args: TableColumnExprArgs) {
     super(args);
   }
 }
@@ -9135,7 +9625,7 @@ export class VariadicExpr extends Expression {
   key = ExpressionKey.VARIADIC;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<VariadicExprArgs>;
   declare args: VariadicExprArgs;
-  constructor (args: VariadicExprArgs = {}) {
+  constructor (args: VariadicExprArgs) {
     super(args);
   }
 }
@@ -9144,8 +9634,7 @@ export type CTEExprArgs = { scalar?: boolean;
   materialized?: boolean;
   keyExpressions?: Expression[];
   alias: Expression[];
-
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class CTEExpr extends DerivedTableExpr {
   key = ExpressionKey.CTE;
@@ -9164,24 +9653,28 @@ export class CTEExpr extends DerivedTableExpr {
 
   declare args: CTEExprArgs;
 
-  constructor (args: CTEExprArgs = {}) {
+  constructor (args: CTEExprArgs) {
     super(args);
   }
 
-  get $scalar (): Expression {
-    return this.args.scalar as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $materialized (): boolean {
-    return this.args.materialized as boolean;
+  get $alias (): Expression {
+    return this.args.alias as Expression;
   }
 
-  get $keyExpressions (): Expression[] {
-    return (this.args.keyExpressions || []) as Expression[];
+  get $scalar (): boolean | undefined {
+    return this.args.scalar as boolean | undefined;
   }
 
-  get $alias (): Expression[] {
-    return this.args.alias as Expression[];
+  get $materialized (): Expression | undefined {
+    return this.args.materialized as Expression | undefined;
+  }
+
+  get $keyExpressions (): Expression[] | undefined {
+    return this.args.keyExpressions as Expression[] | undefined;
   }
 }
 
@@ -9190,13 +9683,13 @@ export class BitStringExpr extends ConditionExpr {
   key = ExpressionKey.BIT_STRING;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BitStringExprArgs>;
   declare args: BitStringExprArgs;
-  constructor (args: BitStringExprArgs = {}) {
+  constructor (args: BitStringExprArgs) {
     super(args);
   }
 }
 
 export type HexStringExprArgs = { isInteger?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class HexStringExpr extends ConditionExpr {
   key = ExpressionKey.HEX_STRING;
@@ -9212,17 +9705,21 @@ export class HexStringExpr extends ConditionExpr {
 
   declare args: HexStringExprArgs;
 
-  constructor (args: HexStringExprArgs = {}) {
+  constructor (args: HexStringExprArgs) {
     super(args);
   }
 
-  get $isInteger (): Expression {
-    return this.args.isInteger as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $isInteger (): Expression | undefined {
+    return this.args.isInteger as Expression | undefined;
   }
 }
 
 export type ByteStringExprArgs = { isBytes?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class ByteStringExpr extends ConditionExpr {
   key = ExpressionKey.BYTE_STRING;
@@ -9238,12 +9735,16 @@ export class ByteStringExpr extends ConditionExpr {
 
   declare args: ByteStringExprArgs;
 
-  constructor (args: ByteStringExprArgs = {}) {
+  constructor (args: ByteStringExprArgs) {
     super(args);
   }
 
-  get $isBytes (): Expression[] {
-    return (this.args.isBytes || []) as Expression[];
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $isBytes (): Expression[] | undefined {
+    return this.args.isBytes as Expression[] | undefined;
   }
 }
 
@@ -9257,13 +9758,13 @@ export class RawStringExpr extends ConditionExpr {
    */
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BaseExpressionArgs>;
   declare args: RawStringExprArgs;
-  constructor (args: RawStringExprArgs = {}) {
+  constructor (args: RawStringExprArgs) {
     super(args);
   }
 }
 
 export type UnicodeStringExprArgs = { escape?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class UnicodeStringExpr extends ConditionExpr {
   key = ExpressionKey.UNICODE_STRING;
@@ -9279,12 +9780,16 @@ export class UnicodeStringExpr extends ConditionExpr {
 
   declare args: UnicodeStringExprArgs;
 
-  constructor (args: UnicodeStringExprArgs = {}) {
+  constructor (args: UnicodeStringExprArgs) {
     super(args);
   }
 
-  get $escape (): Expression {
-    return this.args.escape as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $escape (): Expression | undefined {
+    return this.args.escape as Expression | undefined;
   }
 }
 
@@ -9299,7 +9804,7 @@ export type ColumnExprArgs = { table?: Expression;
   db?: string;
   catalog?: string;
   joinMark?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class ColumnExpr extends ConditionExpr {
   key = ExpressionKey.COLUMN;
@@ -9318,7 +9823,7 @@ export class ColumnExpr extends ConditionExpr {
 
   declare args: ColumnExprArgs;
 
-  constructor (args: ColumnExprArgs = {}) {
+  constructor (args: ColumnExprArgs) {
     super(args);
   }
 
@@ -9326,30 +9831,14 @@ export class ColumnExpr extends ConditionExpr {
    * Gets the table name as a string
    * @returns The table name
    */
-  get $table (): string {
-    return this.text('table');
-  }
-
   /**
    * Gets the database name as a string
    * @returns The database name
    */
-  get $db (): string {
-    return this.text('db');
-  }
-
   /**
    * Gets the catalog name as a string
    * @returns The catalog name
    */
-  get $catalog (): string {
-    return this.text('catalog');
-  }
-
-  get $joinMark (): Expression {
-    return this.args.joinMark as Expression;
-  }
-
   /**
    * Gets the output name of the column
    * @returns The column name
@@ -9381,6 +9870,26 @@ export class ColumnExpr extends ConditionExpr {
   toDot () {
     // TODO
   }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $table (): Expression | undefined {
+    return this.args.table as Expression | undefined;
+  }
+
+  get $db (): Expression | undefined {
+    return this.args.db as Expression | undefined;
+  }
+
+  get $catalog (): Expression | undefined {
+    return this.args.catalog as Expression | undefined;
+  }
+
+  get $joinMark (): Expression | undefined {
+    return this.args.joinMark as Expression | undefined;
+  }
 }
 
 export type PseudocolumnExprArgs = BaseExpressionArgs;
@@ -9388,7 +9897,7 @@ export class PseudocolumnExpr extends ColumnExpr {
   key = ExpressionKey.PSEUDOCOLUMN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PseudocolumnExprArgs>;
   declare args: PseudocolumnExprArgs;
-  constructor (args: PseudocolumnExprArgs = {}) {
+  constructor (args: PseudocolumnExprArgs) {
     super(args);
   }
 }
@@ -9401,7 +9910,7 @@ export class AutoIncrementColumnConstraintExpr extends ColumnConstraintKindExpr 
   >;
 
   declare args: AutoIncrementColumnConstraintExprArgs;
-  constructor (args: AutoIncrementColumnConstraintExprArgs = {}) {
+  constructor (args: AutoIncrementColumnConstraintExprArgs) {
     super(args);
   }
 }
@@ -9414,12 +9923,15 @@ export class ZeroFillColumnConstraintExpr extends ColumnConstraintExpr {
   >;
 
   declare args: ZeroFillColumnConstraintExprArgs;
-  constructor (args: ZeroFillColumnConstraintExprArgs = {}) {
+  constructor (args: ZeroFillColumnConstraintExprArgs) {
     super(args);
   }
 }
 
-export type PeriodForSystemTimeConstraintExprArgs = BaseExpressionArgs;
+export type PeriodForSystemTimeConstraintExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
 export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PERIOD_FOR_SYSTEM_TIME_CONSTRAINT;
 
@@ -9434,13 +9946,20 @@ export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr 
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: PeriodForSystemTimeConstraintExprArgs;
-  constructor (args: PeriodForSystemTimeConstraintExprArgs = {}) {
+  constructor (args: PeriodForSystemTimeConstraintExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression as Expression;
   }
 }
 
-export type CaseSpecificColumnConstraintExprArgs = { not: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type CaseSpecificColumnConstraintExprArgs = { not: Expression } & BaseExpressionArgs;
 
 export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CASE_SPECIFIC_COLUMN_CONSTRAINT;
@@ -9463,7 +9982,9 @@ export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type CharacterSetColumnConstraintExprArgs = BaseExpressionArgs;
+export type CharacterSetColumnConstraintExprArgs = {
+  this: Expression;
+} & BaseExpressionArgs;
 export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CHARACTER_SET_COLUMN_CONSTRAINT;
 
@@ -9475,13 +9996,17 @@ export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
   static argTypes: Record<string, boolean> = { this: true } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: CharacterSetColumnConstraintExprArgs;
-  constructor (args: CharacterSetColumnConstraintExprArgs = {}) {
+  constructor (args: CharacterSetColumnConstraintExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 }
 
 export type CheckColumnConstraintExprArgs = { enforced?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CHECK_COLUMN_CONSTRAINT;
@@ -9497,12 +10022,16 @@ export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
 
   declare args: CheckColumnConstraintExprArgs;
 
-  constructor (args: CheckColumnConstraintExprArgs = {}) {
+  constructor (args: CheckColumnConstraintExprArgs) {
     super(args);
   }
 
-  get $enforced (): Expression {
-    return this.args.enforced as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $enforced (): Expression | undefined {
+    return this.args.enforced as Expression | undefined;
   }
 }
 
@@ -9514,7 +10043,7 @@ export class ClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   >;
 
   declare args: ClusteredColumnConstraintExprArgs;
-  constructor (args: ClusteredColumnConstraintExprArgs = {}) {
+  constructor (args: ClusteredColumnConstraintExprArgs) {
     super(args);
   }
 }
@@ -9527,7 +10056,7 @@ export class CollateColumnConstraintExpr extends ColumnConstraintKindExpr {
   >;
 
   declare args: CollateColumnConstraintExprArgs;
-  constructor (args: CollateColumnConstraintExprArgs = {}) {
+  constructor (args: CollateColumnConstraintExprArgs) {
     super(args);
   }
 }
@@ -9540,12 +10069,14 @@ export class CommentColumnConstraintExpr extends ColumnConstraintKindExpr {
   >;
 
   declare args: CommentColumnConstraintExprArgs;
-  constructor (args: CommentColumnConstraintExprArgs = {}) {
+  constructor (args: CommentColumnConstraintExprArgs) {
     super(args);
   }
 }
 
-export type CompressColumnConstraintExprArgs = BaseExpressionArgs;
+export type CompressColumnConstraintExprArgs = {
+  this?: Expression[];
+} & BaseExpressionArgs;
 export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMPRESS_COLUMN_CONSTRAINT;
 
@@ -9557,12 +10088,18 @@ export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
   static argTypes: Record<string, boolean> = { this: false } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: CompressColumnConstraintExprArgs;
-  constructor (args: CompressColumnConstraintExprArgs = {}) {
+  constructor (args: CompressColumnConstraintExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 }
 
-export type DateFormatColumnConstraintExprArgs = BaseExpressionArgs;
+export type DateFormatColumnConstraintExprArgs = {
+  this: Expression;
+} & BaseExpressionArgs;
 export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.DATE_FORMAT_COLUMN_CONSTRAINT;
 
@@ -9574,8 +10111,12 @@ export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
   static argTypes: Record<string, boolean> = { this: true } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: DateFormatColumnConstraintExprArgs;
-  constructor (args: DateFormatColumnConstraintExprArgs = {}) {
+  constructor (args: DateFormatColumnConstraintExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 }
 
@@ -9587,7 +10128,7 @@ export class DefaultColumnConstraintExpr extends ColumnConstraintKindExpr {
   >;
 
   declare args: DefaultColumnConstraintExprArgs;
-  constructor (args: DefaultColumnConstraintExprArgs = {}) {
+  constructor (args: DefaultColumnConstraintExprArgs) {
     super(args);
   }
 }
@@ -9600,7 +10141,7 @@ export class EncodeColumnConstraintExpr extends ColumnConstraintKindExpr {
   >;
 
   declare args: EncodeColumnConstraintExprArgs;
-  constructor (args: EncodeColumnConstraintExprArgs = {}) {
+  constructor (args: EncodeColumnConstraintExprArgs) {
     super(args);
   }
 }
@@ -9613,12 +10154,14 @@ export class ExcludeColumnConstraintExpr extends ColumnConstraintKindExpr {
   >;
 
   declare args: ExcludeColumnConstraintExprArgs;
-  constructor (args: ExcludeColumnConstraintExprArgs = {}) {
+  constructor (args: ExcludeColumnConstraintExprArgs) {
     super(args);
   }
 }
 
-export type EphemeralColumnConstraintExprArgs = BaseExpressionArgs;
+export type EphemeralColumnConstraintExprArgs = {
+  this?: Expression[];
+} & BaseExpressionArgs;
 export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.EPHEMERAL_COLUMN_CONSTRAINT;
 
@@ -9630,8 +10173,12 @@ export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
   static argTypes: Record<string, boolean> = { this: false } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: EphemeralColumnConstraintExprArgs;
-  constructor (args: EphemeralColumnConstraintExprArgs = {}) {
+  constructor (args: EphemeralColumnConstraintExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 }
 
@@ -9642,7 +10189,8 @@ export type GeneratedAsIdentityColumnConstraintExprArgs = { onNull?: Expression;
   maxvalue?: string;
   cycle?: Expression;
   order?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[];
+  expression?: Expression; } & BaseExpressionArgs;
 
 export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.GENERATED_AS_IDENTITY_COLUMN_CONSTRAINT;
@@ -9667,42 +10215,49 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
 
   declare args: GeneratedAsIdentityColumnConstraintExprArgs;
 
-  constructor (args: GeneratedAsIdentityColumnConstraintExprArgs = {}) {
+  constructor (args: GeneratedAsIdentityColumnConstraintExprArgs) {
     super(args);
   }
 
-  get $onNull (): Expression {
-    return this.args.onNull as Expression;
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 
-  get $start (): Expression {
-    return this.args.start as Expression;
+  get $expression (): Expression | undefined {
+    return this.args.expression as Expression | undefined;
   }
 
-  get $increment (): Expression {
-    return this.args.increment as Expression;
+  get $onNull (): Expression | undefined {
+    return this.args.onNull as Expression | undefined;
   }
 
-  get $minvalue (): string {
-    return this.args.minvalue as string;
+  get $start (): Expression | undefined {
+    return this.args.start as Expression | undefined;
   }
 
-  get $maxvalue (): string {
-    return this.args.maxvalue as string;
+  get $increment (): Expression | undefined {
+    return this.args.increment as Expression | undefined;
   }
 
-  get $cycle (): Expression {
-    return this.args.cycle as Expression;
+  get $minvalue (): Expression | undefined {
+    return this.args.minvalue as Expression | undefined;
   }
 
-  get $order (): Expression {
-    return this.args.order as Expression;
+  get $maxvalue (): Expression | undefined {
+    return this.args.maxvalue as Expression | undefined;
+  }
+
+  get $cycle (): Expression | undefined {
+    return this.args.cycle as Expression | undefined;
+  }
+
+  get $order (): Expression | undefined {
+    return this.args.order as Expression | undefined;
   }
 }
 
 export type GeneratedAsRowColumnConstraintExprArgs = { start?: Expression;
-  hidden?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  hidden?: Expression; } & BaseExpressionArgs;
 
 export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.GENERATED_AS_ROW_COLUMN_CONSTRAINT;
@@ -9719,16 +10274,16 @@ export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr
 
   declare args: GeneratedAsRowColumnConstraintExprArgs;
 
-  constructor (args: GeneratedAsRowColumnConstraintExprArgs = {}) {
+  constructor (args: GeneratedAsRowColumnConstraintExprArgs) {
     super(args);
   }
 
-  get $start (): Expression {
-    return this.args.start as Expression;
+  get $start (): Expression | undefined {
+    return this.args.start as Expression | undefined;
   }
 
-  get $hidden (): Expression {
-    return this.args.hidden as Expression;
+  get $hidden (): Expression | undefined {
+    return this.args.hidden as Expression | undefined;
   }
 }
 
@@ -9745,7 +10300,9 @@ export type IndexColumnConstraintExprArgs = { kind?: IndexColumnConstraintExprKi
   indexType?: DataTypeExpr;
   options?: Expression[];
   granularity?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[];
+  expressions?: Expression[];
+  expression?: Expression; } & BaseExpressionArgs;
 
 export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.INDEX_COLUMN_CONSTRAINT;
@@ -9766,24 +10323,36 @@ export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
 
   declare args: IndexColumnConstraintExprArgs;
 
-  constructor (args: IndexColumnConstraintExprArgs = {}) {
+  constructor (args: IndexColumnConstraintExprArgs) {
     super(args);
   }
 
-  get $kind (): IndexColumnConstraintExprKind | undefined {
-    return this.args.kind as IndexColumnConstraintExprKind | undefined;
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 
-  get $indexType (): DataTypeExpr {
-    return this.args.indexType as DataTypeExpr;
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 
-  get $granularity (): Expression {
-    return this.args.granularity as Expression;
+  get $indexType (): Expression | undefined {
+    return this.args.indexType as Expression | undefined;
+  }
+
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression as Expression | undefined;
+  }
+
+  get $granularity (): Expression | undefined {
+    return this.args.granularity as Expression | undefined;
   }
 }
 
@@ -9795,7 +10364,7 @@ export class InlineLengthColumnConstraintExpr extends ColumnConstraintKindExpr {
   >;
 
   declare args: InlineLengthColumnConstraintExprArgs;
-  constructor (args: InlineLengthColumnConstraintExprArgs = {}) {
+  constructor (args: InlineLengthColumnConstraintExprArgs) {
     super(args);
   }
 }
@@ -9808,7 +10377,7 @@ export class NonClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   >;
 
   declare args: NonClusteredColumnConstraintExprArgs;
-  constructor (args: NonClusteredColumnConstraintExprArgs = {}) {
+  constructor (args: NonClusteredColumnConstraintExprArgs) {
     super(args);
   }
 }
@@ -9819,12 +10388,15 @@ export class NotForReplicationColumnConstraintExpr extends ColumnConstraintKindE
 
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BaseExpressionArgs>;
   declare args: NotForReplicationColumnConstraintExprArgs;
-  constructor (args: NotForReplicationColumnConstraintExprArgs = {}) {
+  constructor (args: NotForReplicationColumnConstraintExprArgs) {
     super(args);
   }
 }
 
-export type MaskingPolicyColumnConstraintExprArgs = BaseExpressionArgs;
+export type MaskingPolicyColumnConstraintExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.MASKING_POLICY_COLUMN_CONSTRAINT;
 
@@ -9834,13 +10406,20 @@ export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr 
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: MaskingPolicyColumnConstraintExprArgs;
-  constructor (args: MaskingPolicyColumnConstraintExprArgs = {}) {
+  constructor (args: MaskingPolicyColumnConstraintExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 }
 
-export type NotNullColumnConstraintExprArgs = { allowNull?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type NotNullColumnConstraintExprArgs = { allowNull?: Expression } & BaseExpressionArgs;
 
 export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NOT_NULL_COLUMN_CONSTRAINT;
@@ -9854,12 +10433,12 @@ export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
 
   declare args: NotNullColumnConstraintExprArgs;
 
-  constructor (args: NotNullColumnConstraintExprArgs = {}) {
+  constructor (args: NotNullColumnConstraintExprArgs) {
     super(args);
   }
 
-  get $allowNull (): Expression {
-    return this.args.allowNull as Expression;
+  get $allowNull (): Expression | undefined {
+    return this.args.allowNull as Expression | undefined;
   }
 }
 
@@ -9871,14 +10450,13 @@ export class OnUpdateColumnConstraintExpr extends ColumnConstraintKindExpr {
   >;
 
   declare args: OnUpdateColumnConstraintExprArgs;
-  constructor (args: OnUpdateColumnConstraintExprArgs = {}) {
+  constructor (args: OnUpdateColumnConstraintExprArgs) {
     super(args);
   }
 }
 
 export type PrimaryKeyColumnConstraintExprArgs = { desc?: Expression;
-  options?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  options?: Expression[]; } & BaseExpressionArgs;
 
 export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PRIMARY_KEY_COLUMN_CONSTRAINT;
@@ -9895,16 +10473,16 @@ export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
 
   declare args: PrimaryKeyColumnConstraintExprArgs;
 
-  constructor (args: PrimaryKeyColumnConstraintExprArgs = {}) {
+  constructor (args: PrimaryKeyColumnConstraintExprArgs) {
     super(args);
   }
 
-  get $desc (): Expression {
-    return this.args.desc as Expression;
+  get $desc (): Expression | undefined {
+    return this.args.desc as Expression | undefined;
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
   }
 }
 
@@ -9916,7 +10494,7 @@ export class TitleColumnConstraintExpr extends ColumnConstraintKindExpr {
   >;
 
   declare args: TitleColumnConstraintExprArgs;
-  constructor (args: TitleColumnConstraintExprArgs = {}) {
+  constructor (args: TitleColumnConstraintExprArgs) {
     super(args);
   }
 }
@@ -9925,7 +10503,7 @@ export type UniqueColumnConstraintExprArgs = { indexType?: DataTypeExpr;
   onConflict?: Expression;
   nulls?: Expression[];
   options?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[]; } & BaseExpressionArgs;
 
 export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.UNIQUE_COLUMN_CONSTRAINT;
@@ -9945,24 +10523,28 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
 
   declare args: UniqueColumnConstraintExprArgs;
 
-  constructor (args: UniqueColumnConstraintExprArgs = {}) {
+  constructor (args: UniqueColumnConstraintExprArgs) {
     super(args);
   }
 
-  get $indexType (): DataTypeExpr {
-    return this.args.indexType as DataTypeExpr;
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 
-  get $onConflict (): Expression {
-    return this.args.onConflict as Expression;
+  get $indexType (): Expression | undefined {
+    return this.args.indexType as Expression | undefined;
   }
 
-  get $nulls (): Expression[] {
-    return (this.args.nulls || []) as Expression[];
+  get $onConflict (): Expression | undefined {
+    return this.args.onConflict as Expression | undefined;
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $nulls (): Expression[] | undefined {
+    return this.args.nulls as Expression[] | undefined;
+  }
+
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
   }
 }
 
@@ -9972,7 +10554,7 @@ export class UppercaseColumnConstraintExpr extends ColumnConstraintKindExpr {
 
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BaseExpressionArgs>;
   declare args: UppercaseColumnConstraintExprArgs;
-  constructor (args: UppercaseColumnConstraintExprArgs = {}) {
+  constructor (args: UppercaseColumnConstraintExprArgs) {
     super(args);
   }
 }
@@ -9982,7 +10564,7 @@ export class PathColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PATH_COLUMN_CONSTRAINT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PathColumnConstraintExprArgs>;
   declare args: PathColumnConstraintExprArgs;
-  constructor (args: PathColumnConstraintExprArgs = {}) {
+  constructor (args: PathColumnConstraintExprArgs) {
     super(args);
   }
 }
@@ -9995,7 +10577,7 @@ export class ProjectionPolicyColumnConstraintExpr extends ColumnConstraintKindEx
   >;
 
   declare args: ProjectionPolicyColumnConstraintExprArgs;
-  constructor (args: ProjectionPolicyColumnConstraintExprArgs = {}) {
+  constructor (args: ProjectionPolicyColumnConstraintExprArgs) {
     super(args);
   }
 }
@@ -10003,7 +10585,7 @@ export class ProjectionPolicyColumnConstraintExpr extends ColumnConstraintKindEx
 export type ComputedColumnConstraintExprArgs = { persisted?: Expression;
   notNull?: Expression;
   dataType?: DataTypeExpr;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMPUTED_COLUMN_CONSTRAINT;
@@ -10026,23 +10608,26 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
     super(args);
   }
 
-  get $persisted (): Expression {
-    return this.args.persisted as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $notNull (): Expression {
-    return this.args.notNull as Expression;
+  get $persisted (): Expression | undefined {
+    return this.args.persisted as Expression | undefined;
   }
 
-  get $dataType (): DataTypeExpr {
-    return this.args.dataType as DataTypeExpr;
+  get $notNull (): Expression | undefined {
+    return this.args.notNull as Expression | undefined;
+  }
+
+  get $dataType (): Expression | undefined {
+    return this.args.dataType as Expression | undefined;
   }
 }
 
 export type InOutColumnConstraintExprArgs = { input?: Expression;
   output?: Expression;
-  variadic?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  variadic?: Expression; } & BaseExpressionArgs;
 
 export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.IN_OUT_COLUMN_CONSTRAINT;
@@ -10059,20 +10644,20 @@ export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
 
   declare args: InOutColumnConstraintExprArgs;
 
-  constructor (args: InOutColumnConstraintExprArgs = {}) {
+  constructor (args: InOutColumnConstraintExprArgs) {
     super(args);
   }
 
-  get $input (): Expression {
-    return this.args.input as Expression;
+  get $input (): Expression | undefined {
+    return this.args.input as Expression | undefined;
   }
 
-  get $output (): Expression {
-    return this.args.output as Expression;
+  get $output (): Expression | undefined {
+    return this.args.output as Expression | undefined;
   }
 
-  get $variadic (): Expression {
-    return this.args.variadic as Expression;
+  get $variadic (): Expression | undefined {
+    return this.args.variadic as Expression | undefined;
   }
 }
 
@@ -10084,7 +10669,7 @@ export type DeleteExprArgs = { with?: Expression;
   limit?: number | Expression;
   tables?: Expression[];
   cluster?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[]; } & BaseExpressionArgs;
 
 export class DeleteExpr extends DMLExpr {
   key = ExpressionKey.DELETE;
@@ -10107,40 +10692,8 @@ export class DeleteExpr extends DMLExpr {
 
   declare args: DeleteExprArgs;
 
-  constructor (args: DeleteExprArgs = {}) {
+  constructor (args: DeleteExprArgs) {
     super(args);
-  }
-
-  get $with (): Expression {
-    return this.args['with'] as Expression;
-  }
-
-  get $using (): string {
-    return this.args.using as string;
-  }
-
-  get $where (): Expression {
-    return this.args.where as Expression;
-  }
-
-  get $returning (): Expression {
-    return this.args.returning as Expression;
-  }
-
-  get $order (): Expression {
-    return this.args.order as Expression;
-  }
-
-  get $limit (): number | Expression {
-    return this.args.limit as number | Expression;
-  }
-
-  get $tables (): Expression[] {
-    return (this.args.tables || []) as Expression[];
-  }
-
-  get $cluster (): Expression {
-    return this.args.cluster as Expression;
   }
 
   /**
@@ -10161,7 +10714,6 @@ export class DeleteExpr extends DMLExpr {
     options: {
       dialect?: DialectType;
       copy?: boolean;
-      [key: string]: unknown;
     } = {},
   ): this {
     return _applyBuilder(table, {
@@ -10197,7 +10749,6 @@ export class DeleteExpr extends DMLExpr {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
-      [key: string]: unknown;
     } = {},
   ): this {
     return _applyConjunctionBuilder(expressions, {
@@ -10208,6 +10759,42 @@ export class DeleteExpr extends DMLExpr {
       append: options.append ?? true,
       copy: options.copy ?? true,
     }) as this;
+  }
+
+  get $with (): Expression | undefined {
+    return this.args.with as Expression | undefined;
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
+
+  get $using (): Expression | undefined {
+    return this.args.using as Expression | undefined;
+  }
+
+  get $where (): Expression | undefined {
+    return this.args.where as Expression | undefined;
+  }
+
+  get $returning (): Expression | undefined {
+    return this.args.returning as Expression | undefined;
+  }
+
+  get $order (): Expression | undefined {
+    return this.args.order as Expression | undefined;
+  }
+
+  get $limit (): Expression | undefined {
+    return this.args.limit as Expression | undefined;
+  }
+
+  get $tables (): Expression[] | undefined {
+    return this.args.tables as Expression[] | undefined;
+  }
+
+  get $cluster (): Expression | undefined {
+    return this.args.cluster as Expression | undefined;
   }
 }
 
@@ -10225,7 +10812,7 @@ export type CopyExprArgs = { kind: CopyExprKind;
   credentials?: Expression[];
   format?: string;
   params?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class CopyExpr extends DMLExpr {
   key = ExpressionKey.COPY;
@@ -10249,24 +10836,28 @@ export class CopyExpr extends DMLExpr {
     super(args);
   }
 
-  get $kind (): CopyExprKind | undefined {
-    return this.args.kind as CopyExprKind | undefined;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $files (): Expression[] {
-    return (this.args.files || []) as Expression[];
+  get $kind (): string {
+    return this.args.kind as string;
   }
 
-  get $credentials (): Expression[] {
-    return (this.args.credentials || []) as Expression[];
+  get $files (): Expression[] | undefined {
+    return this.args.files as Expression[] | undefined;
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $credentials (): Expression[] | undefined {
+    return this.args.credentials as Expression[] | undefined;
   }
 
-  get $params (): Expression[] {
-    return (this.args.params || []) as Expression[];
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
+  }
+
+  get $params (): Expression[] | undefined {
+    return this.args.params as Expression[] | undefined;
   }
 }
 
@@ -10286,7 +10877,8 @@ export type InsertExprArgs = { hint?: Expression;
   settings?: Expression[];
   source?: Expression;
   default?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this?: Expression[];
+  expression?: Expression; } & BaseExpressionArgs;
 
 export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
   key = ExpressionKey.INSERT;
@@ -10318,72 +10910,8 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
 
   declare args: InsertExprArgs;
 
-  constructor (args: InsertExprArgs = {}) {
+  constructor (args: InsertExprArgs) {
     super(args);
-  }
-
-  get $hint (): Expression {
-    return this.args.hint as Expression;
-  }
-
-  get $with (): Expression {
-    return this.args['with'] as Expression;
-  }
-
-  get $isFunction (): Expression {
-    return this.args.isFunction as Expression;
-  }
-
-  get $conflict (): Expression {
-    return this.args.conflict as Expression;
-  }
-
-  get $returning (): Expression {
-    return this.args.returning as Expression;
-  }
-
-  get $overwrite (): Expression {
-    return this.args.overwrite as Expression;
-  }
-
-  get $exists (): Expression {
-    return this.args.exists as Expression;
-  }
-
-  get $alternative (): Expression {
-    return this.args.alternative as Expression;
-  }
-
-  get $where (): Expression {
-    return this.args.where as Expression;
-  }
-
-  get $ignore (): Expression {
-    return this.args.ignore as Expression;
-  }
-
-  get $byName (): string {
-    return this.args.byName as string;
-  }
-
-  get $stored (): Expression {
-    return this.args.stored as Expression;
-  }
-
-  get $partition (): Expression {
-    return this.args.partition as Expression;
-  }
-
-  get $settings (): Expression[] {
-    return (this.args.settings || []) as Expression[];
-  }
-
-  get $source (): Expression {
-    return this.args.source as Expression;
-  }
-
-  get $default (): Expression {
-    return this.args['default'] as Expression;
   }
 
   /**
@@ -10415,7 +10943,6 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
-      [key: string]: unknown;
     } = {},
   ): this {
     return _applyCteBuilder({
@@ -10430,6 +10957,78 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
       ...options,
     }) as this;
   }
+
+  get $hint (): Expression | undefined {
+    return this.args.hint as Expression | undefined;
+  }
+
+  get $with (): Expression | undefined {
+    return this.args.with as Expression | undefined;
+  }
+
+  get $isFunction (): Expression | undefined {
+    return this.args.isFunction as Expression | undefined;
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression as Expression | undefined;
+  }
+
+  get $conflict (): Expression | undefined {
+    return this.args.conflict as Expression | undefined;
+  }
+
+  get $returning (): Expression | undefined {
+    return this.args.returning as Expression | undefined;
+  }
+
+  get $overwrite (): Expression | undefined {
+    return this.args.overwrite as Expression | undefined;
+  }
+
+  get $exists (): Expression[] | undefined {
+    return this.args.exists as Expression[] | undefined;
+  }
+
+  get $alternative (): Expression | undefined {
+    return this.args.alternative as Expression | undefined;
+  }
+
+  get $where (): Expression | undefined {
+    return this.args.where as Expression | undefined;
+  }
+
+  get $ignore (): Expression | undefined {
+    return this.args.ignore as Expression | undefined;
+  }
+
+  get $byName (): Expression | undefined {
+    return this.args.byName as Expression | undefined;
+  }
+
+  get $stored (): Expression | undefined {
+    return this.args.stored as Expression | undefined;
+  }
+
+  get $partition (): Expression | undefined {
+    return this.args.partition as Expression | undefined;
+  }
+
+  get $settings (): Expression[] | undefined {
+    return this.args.settings as Expression[] | undefined;
+  }
+
+  get $source (): Expression | undefined {
+    return this.args.source as Expression | undefined;
+  }
+
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
+  }
 }
 
 /**
@@ -10440,7 +11039,7 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
  * const num = new LiteralExpr({ this: '42', isString: false });
  */
 export type LiteralExprArgs = { isString: unknown;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class LiteralExpr extends ConditionExpr {
   key = ExpressionKey.LITERAL;
@@ -10520,6 +11119,10 @@ export class LiteralExpr extends ConditionExpr {
     return this.this as string;
   }
 
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
   get $isString (): Expression {
     return this.args.isString as Expression;
   }
@@ -10530,7 +11133,7 @@ export class ClusterExpr extends OrderExpr {
   key = ExpressionKey.CLUSTER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ClusterExprArgs>;
   declare args: ClusterExprArgs;
-  constructor (args: ClusterExprArgs = {}) {
+  constructor (args: ClusterExprArgs) {
     super(args);
   }
 }
@@ -10540,7 +11143,7 @@ export class DistributeExpr extends OrderExpr {
   key = ExpressionKey.DISTRIBUTE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DistributeExprArgs>;
   declare args: DistributeExprArgs;
-  constructor (args: DistributeExprArgs = {}) {
+  constructor (args: DistributeExprArgs) {
     super(args);
   }
 }
@@ -10550,13 +11153,12 @@ export class SortExpr extends OrderExpr {
   key = ExpressionKey.SORT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SortExprArgs>;
   declare args: SortExprArgs;
-  constructor (args: SortExprArgs = {}) {
+  constructor (args: SortExprArgs) {
     super(args);
   }
 }
 
-export type AlgorithmPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type AlgorithmPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class AlgorithmPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ALGORITHM_PROPERTY;
@@ -10574,8 +11176,7 @@ export class AlgorithmPropertyExpr extends PropertyExpr {
   }
 }
 
-export type AutoIncrementPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type AutoIncrementPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class AutoIncrementPropertyExpr extends PropertyExpr {
   key = ExpressionKey.AUTO_INCREMENT_PROPERTY;
@@ -10593,8 +11194,7 @@ export class AutoIncrementPropertyExpr extends PropertyExpr {
   }
 }
 
-export type AutoRefreshPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type AutoRefreshPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class AutoRefreshPropertyExpr extends PropertyExpr {
   key = ExpressionKey.AUTO_REFRESH_PROPERTY;
@@ -10612,8 +11212,7 @@ export class AutoRefreshPropertyExpr extends PropertyExpr {
   }
 }
 
-export type BackupPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type BackupPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class BackupPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BACKUP_PROPERTY;
@@ -10631,8 +11230,7 @@ export class BackupPropertyExpr extends PropertyExpr {
   }
 }
 
-export type BuildPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type BuildPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class BuildPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BUILD_PROPERTY;
@@ -10655,8 +11253,7 @@ export type BlockCompressionPropertyExprArgs = { value?: string | Expression;
   always?: Expression[];
   default?: Expression;
   manual?: Expression;
-  never?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  never?: Expression; } & PropertyExprArgs;
 
 export class BlockCompressionPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BLOCK_COMPRESSION_PROPERTY;
@@ -10681,34 +11278,34 @@ export class BlockCompressionPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
-  get $autotemp (): Expression {
-    return this.args.autotemp as Expression;
+  get $autotemp (): Expression | undefined {
+    return this.args.autotemp as Expression | undefined;
   }
 
-  get $always (): Expression[] {
-    return (this.args.always || []) as Expression[];
+  get $always (): Expression[] | undefined {
+    return this.args.always as Expression[] | undefined;
   }
 
-  get $default (): Expression {
-    return this.args['default'] as Expression;
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
   }
 
-  get $manual (): Expression {
-    return this.args.manual as Expression;
+  get $manual (): Expression | undefined {
+    return this.args.manual as Expression | undefined;
   }
 
-  get $never (): Expression {
-    return this.args.never as Expression;
+  get $never (): Expression | undefined {
+    return this.args.never as Expression | undefined;
   }
 }
 
 export type CharacterSetPropertyExprArgs = { value?: string;
   default: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  this: Expression; } & PropertyExprArgs;
 
 export class CharacterSetPropertyExpr extends PropertyExpr {
   key = ExpressionKey.CHARACTER_SET_PROPERTY;
@@ -10732,15 +11329,18 @@ export class CharacterSetPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
   get $default (): Expression {
-    return this.args['default'] as Expression;
+    return this.args.default as Expression;
   }
 }
 
 export type ChecksumPropertyExprArgs = { value?: string;
   on?: Expression;
-  default?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  default?: Expression; } & PropertyExprArgs;
 
 export class ChecksumPropertyExpr extends PropertyExpr {
   key = ExpressionKey.CHECKSUM_PROPERTY;
@@ -10761,22 +11361,22 @@ export class ChecksumPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
-  get $on (): Expression {
-    return this.args.on as Expression;
+  get $on (): Expression | undefined {
+    return this.args.on as Expression | undefined;
   }
 
-  get $default (): Expression {
-    return this.args['default'] as Expression;
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
   }
 }
 
 export type CollatePropertyExprArgs = { value?: string;
   default?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  this: Expression; } & PropertyExprArgs;
 
 export class CollatePropertyExpr extends PropertyExpr {
   key = ExpressionKey.COLLATE_PROPERTY;
@@ -10800,12 +11400,16 @@ export class CollatePropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get $default (): Expression {
-    return this.args['default'] as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
   }
 }
 
-export type CopyGrantsPropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
+export type CopyGrantsPropertyExprArgs = BaseExpressionArgs;
 
 export class CopyGrantsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.COPY_GRANTS_PROPERTY;
@@ -10823,8 +11427,7 @@ export type DataBlocksizePropertyExprArgs = { value?: string;
   units?: Expression[];
   minimum?: Expression;
   maximum?: Expression;
-  default?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  default?: Expression; } & PropertyExprArgs;
 
 export class DataBlocksizePropertyExpr extends PropertyExpr {
   key = ExpressionKey.DATA_BLOCKSIZE_PROPERTY;
@@ -10848,36 +11451,35 @@ export class DataBlocksizePropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
-  get $size (): number | Expression {
-    return this.args.size as number | Expression;
+  get $size (): Expression | undefined {
+    return this.args.size as Expression | undefined;
   }
 
-  get $units (): Expression[] {
-    return (this.args.units || []) as Expression[];
+  get $units (): Expression[] | undefined {
+    return this.args.units as Expression[] | undefined;
   }
 
-  get $minimum (): Expression {
-    return this.args.minimum as Expression;
+  get $minimum (): Expression | undefined {
+    return this.args.minimum as Expression | undefined;
   }
 
-  get $maximum (): Expression {
-    return this.args.maximum as Expression;
+  get $maximum (): Expression | undefined {
+    return this.args.maximum as Expression | undefined;
   }
 
-  get $default (): Expression {
-    return this.args['default'] as Expression;
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
   }
 }
 
 export type DataDeletionPropertyExprArgs = { value?: string;
   on: Expression;
   filterColumn?: Expression;
-  retentionPeriod?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  retentionPeriod?: Expression; } & PropertyExprArgs;
 
 export class DataDeletionPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DATA_DELETION_PROPERTY;
@@ -10899,25 +11501,24 @@ export class DataDeletionPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
   get $on (): Expression {
     return this.args.on as Expression;
   }
 
-  get $filterColumn (): Expression {
-    return this.args.filterColumn as Expression;
+  get $filterColumn (): Expression | undefined {
+    return this.args.filterColumn as Expression | undefined;
   }
 
-  get $retentionPeriod (): Expression {
-    return this.args.retentionPeriod as Expression;
+  get $retentionPeriod (): Expression | undefined {
+    return this.args.retentionPeriod as Expression | undefined;
   }
 }
 
-export type DefinerPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DefinerPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class DefinerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DEFINER_PROPERTY;
@@ -10935,8 +11536,7 @@ export class DefinerPropertyExpr extends PropertyExpr {
   }
 }
 
-export type DistKeyPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DistKeyPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class DistKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DIST_KEY_PROPERTY;
@@ -10969,7 +11569,7 @@ export type DistributedByPropertyExprArgs = { value?: string;
   kind: DistributedByPropertyExprKind;
   buckets?: Expression[];
   order?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  expressions?: Expression[]; } & PropertyExprArgs;
 
 export class DistributedByPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DISTRIBUTED_BY_PROPERTY;
@@ -10995,21 +11595,24 @@ export class DistributedByPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get $kind (): DistributedByPropertyExprKind | undefined {
-    return this.args.kind as DistributedByPropertyExprKind | undefined;
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
   }
 
-  get $buckets (): Expression[] {
-    return (this.args.buckets || []) as Expression[];
+  get $kind (): string {
+    return this.args.kind as string;
   }
 
-  get $order (): Expression {
-    return this.args.order as Expression;
+  get $buckets (): Expression[] | undefined {
+    return this.args.buckets as Expression[] | undefined;
+  }
+
+  get $order (): Expression | undefined {
+    return this.args.order as Expression | undefined;
   }
 }
 
-export type DistStylePropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DistStylePropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class DistStylePropertyExpr extends PropertyExpr {
   key = ExpressionKey.DIST_STYLE_PROPERTY;
@@ -11027,8 +11630,7 @@ export class DistStylePropertyExpr extends PropertyExpr {
   }
 }
 
-export type DuplicateKeyPropertyExprArgs = { expressions: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DuplicateKeyPropertyExprArgs = { expressions: Expression[] } & BaseExpressionArgs;
 
 export class DuplicateKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DUPLICATE_KEY_PROPERTY;
@@ -11042,12 +11644,11 @@ export class DuplicateKeyPropertyExpr extends PropertyExpr {
   }
 
   get $expressions (): Expression[] {
-    return (this.args.expressions || []) as Expression[];
+    return this.args.expressions as Expression[];
   }
 }
 
-export type EnginePropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type EnginePropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class EnginePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ENGINE_PROPERTY;
@@ -11065,7 +11666,7 @@ export class EnginePropertyExpr extends PropertyExpr {
   }
 }
 
-export type HeapPropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
+export type HeapPropertyExprArgs = BaseExpressionArgs;
 
 export class HeapPropertyExpr extends PropertyExpr {
   key = ExpressionKey.HEAP_PROPERTY;
@@ -11078,8 +11679,7 @@ export class HeapPropertyExpr extends PropertyExpr {
   }
 }
 
-export type ToTablePropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ToTablePropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class ToTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.TO_TABLE_PROPERTY;
@@ -11097,8 +11697,7 @@ export class ToTablePropertyExpr extends PropertyExpr {
   }
 }
 
-export type ExecuteAsPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ExecuteAsPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class ExecuteAsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXECUTE_AS_PROPERTY;
@@ -11116,8 +11715,7 @@ export class ExecuteAsPropertyExpr extends PropertyExpr {
   }
 }
 
-export type ExternalPropertyExprArgs = { this?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ExternalPropertyExprArgs = { this?: Expression } & BaseExpressionArgs;
 
 export class ExternalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXTERNAL_PROPERTY;
@@ -11137,8 +11735,7 @@ export class ExternalPropertyExpr extends PropertyExpr {
 
 export type FallbackPropertyExprArgs = { value?: string;
   no: Expression;
-  protection?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  protection?: Expression; } & PropertyExprArgs;
 
 export class FallbackPropertyExpr extends PropertyExpr {
   key = ExpressionKey.FALLBACK_PROPERTY;
@@ -11159,22 +11756,23 @@ export class FallbackPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
   get $no (): Expression {
     return this.args.no as Expression;
   }
 
-  get $protection (): Expression {
-    return this.args.protection as Expression;
+  get $protection (): Expression | undefined {
+    return this.args.protection as Expression | undefined;
   }
 }
 
 export type FileFormatPropertyExprArgs = { value?: string;
   hiveFormat?: string;
-  [key: string]: unknown; } & PropertyExprArgs;
+  this?: Expression[];
+  expressions?: Expression[]; } & PropertyExprArgs;
 
 export class FileFormatPropertyExpr extends PropertyExpr {
   key = ExpressionKey.FILE_FORMAT_PROPERTY;
@@ -11199,13 +11797,20 @@ export class FileFormatPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get $hiveFormat (): string {
-    return this.args.hiveFormat as string;
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions as Expression[] | undefined;
+  }
+
+  get $hiveFormat (): Expression | undefined {
+    return this.args.hiveFormat as Expression | undefined;
   }
 }
 
-export type CredentialsPropertyExprArgs = { expressions: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type CredentialsPropertyExprArgs = { expressions: Expression[] } & BaseExpressionArgs;
 
 export class CredentialsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.CREDENTIALS_PROPERTY;
@@ -11219,13 +11824,12 @@ export class CredentialsPropertyExpr extends PropertyExpr {
   }
 
   get $expressions (): Expression[] {
-    return (this.args.expressions || []) as Expression[];
+    return this.args.expressions as Expression[];
   }
 }
 
 export type FreespacePropertyExprArgs = { value?: string;
-  percent?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  percent?: Expression; } & PropertyExprArgs;
 
 export class FreespacePropertyExpr extends PropertyExpr {
   key = ExpressionKey.FREESPACE_PROPERTY;
@@ -11245,16 +11849,16 @@ export class FreespacePropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
-  get $percent (): Expression {
-    return this.args.percent as Expression;
+  get $percent (): Expression | undefined {
+    return this.args.percent as Expression | undefined;
   }
 }
 
-export type GlobalPropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
+export type GlobalPropertyExprArgs = BaseExpressionArgs;
 
 export class GlobalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.GLOBAL_PROPERTY;
@@ -11267,7 +11871,7 @@ export class GlobalPropertyExpr extends PropertyExpr {
   }
 }
 
-export type IcebergPropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
+export type IcebergPropertyExprArgs = BaseExpressionArgs;
 
 export class IcebergPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ICEBERG_PROPERTY;
@@ -11285,7 +11889,7 @@ export class InheritsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.INHERITS_PROPERTY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<InheritsPropertyExprArgs>;
   declare args: InheritsPropertyExprArgs;
-  constructor (args: InheritsPropertyExprArgs = {}) {
+  constructor (args: InheritsPropertyExprArgs) {
     super(args);
   }
 }
@@ -11295,7 +11899,7 @@ export class InputModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.INPUT_MODEL_PROPERTY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<InputModelPropertyExprArgs>;
   declare args: InputModelPropertyExprArgs;
-  constructor (args: InputModelPropertyExprArgs = {}) {
+  constructor (args: InputModelPropertyExprArgs) {
     super(args);
   }
 }
@@ -11305,7 +11909,7 @@ export class OutputModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.OUTPUT_MODEL_PROPERTY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<OutputModelPropertyExprArgs>;
   declare args: OutputModelPropertyExprArgs;
-  constructor (args: OutputModelPropertyExprArgs = {}) {
+  constructor (args: OutputModelPropertyExprArgs) {
     super(args);
   }
 }
@@ -11313,8 +11917,7 @@ export class OutputModelPropertyExpr extends PropertyExpr {
 export type IsolatedLoadingPropertyExprArgs = { value?: string;
   no?: Expression;
   concurrent?: Expression;
-  target?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  target?: Expression; } & PropertyExprArgs;
 
 export class IsolatedLoadingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ISOLATED_LOADING_PROPERTY;
@@ -11337,20 +11940,20 @@ export class IsolatedLoadingPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
-  get $no (): Expression {
-    return this.args.no as Expression;
+  get $no (): Expression | undefined {
+    return this.args.no as Expression | undefined;
   }
 
-  get $concurrent (): Expression {
-    return this.args.concurrent as Expression;
+  get $concurrent (): Expression | undefined {
+    return this.args.concurrent as Expression | undefined;
   }
 
-  get $target (): Expression {
-    return this.args.target as Expression;
+  get $target (): Expression | undefined {
+    return this.args.target as Expression | undefined;
   }
 }
 
@@ -11359,8 +11962,7 @@ export type JournalPropertyExprArgs = { value?: string;
   dual?: Expression;
   before?: Expression;
   local?: Expression;
-  after?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  after?: Expression; } & PropertyExprArgs;
 
 export class JournalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.JOURNAL_PROPERTY;
@@ -11384,28 +11986,28 @@ export class JournalPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
-  get $no (): Expression {
-    return this.args.no as Expression;
+  get $no (): Expression | undefined {
+    return this.args.no as Expression | undefined;
   }
 
-  get $dual (): Expression {
-    return this.args.dual as Expression;
+  get $dual (): Expression | undefined {
+    return this.args.dual as Expression | undefined;
   }
 
-  get $before (): Expression {
-    return this.args.before as Expression;
+  get $before (): Expression | undefined {
+    return this.args.before as Expression | undefined;
   }
 
-  get $local (): Expression {
-    return this.args.local as Expression;
+  get $local (): Expression | undefined {
+    return this.args.local as Expression | undefined;
   }
 
-  get $after (): Expression {
-    return this.args.after as Expression;
+  get $after (): Expression | undefined {
+    return this.args.after as Expression | undefined;
   }
 }
 
@@ -11414,7 +12016,7 @@ export class LanguagePropertyExpr extends PropertyExpr {
   key = ExpressionKey.LANGUAGE_PROPERTY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LanguagePropertyExprArgs>;
   declare args: LanguagePropertyExprArgs;
-  constructor (args: LanguagePropertyExprArgs = {}) {
+  constructor (args: LanguagePropertyExprArgs) {
     super(args);
   }
 }
@@ -11424,15 +12026,14 @@ export class EnviromentPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ENVIROMENT_PROPERTY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<EnviromentPropertyExprArgs>;
   declare args: EnviromentPropertyExprArgs;
-  constructor (args: EnviromentPropertyExprArgs = {}) {
+  constructor (args: EnviromentPropertyExprArgs) {
     super(args);
   }
 }
 
 export type ClusteredByPropertyExprArgs = { value?: string;
   sortedBy?: string;
-  buckets: Expression[];
-  [key: string]: unknown; } & PropertyExprArgs;
+  buckets: Expression[]; } & PropertyExprArgs;
 
 export class ClusteredByPropertyExpr extends PropertyExpr {
   key = ExpressionKey.CLUSTERED_BY_PROPERTY;
@@ -11453,16 +12054,16 @@ export class ClusteredByPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
-  get $sortedBy (): string {
-    return this.args.sortedBy as string;
+  get $sortedBy (): Expression | undefined {
+    return this.args.sortedBy as Expression | undefined;
   }
 
   get $buckets (): Expression[] {
-    return (this.args.buckets || []) as Expression[];
+    return this.args.buckets as Expression[];
   }
 }
 
@@ -11482,8 +12083,7 @@ export enum DictPropertyExprKind {
 
 export type DictPropertyExprArgs = { value?: string;
   kind: DictPropertyExprKind;
-  settings?: Expression[];
-  [key: string]: unknown; } & PropertyExprArgs;
+  settings?: Expression[]; } & PropertyExprArgs;
 
 export class DictPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DICT_PROPERTY;
@@ -11504,16 +12104,16 @@ export class DictPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
-  get $kind (): DictPropertyExprKind | undefined {
-    return this.args.kind as DictPropertyExprKind | undefined;
+  get $kind (): string {
+    return this.args.kind as string;
   }
 
-  get $settings (): Expression[] {
-    return (this.args.settings || []) as Expression[];
+  get $settings (): Expression[] | undefined {
+    return this.args.settings as Expression[] | undefined;
   }
 }
 
@@ -11522,7 +12122,7 @@ export class DictSubPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DICT_SUB_PROPERTY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DictSubPropertyExprArgs>;
   declare args: DictSubPropertyExprArgs;
-  constructor (args: DictSubPropertyExprArgs = {}) {
+  constructor (args: DictSubPropertyExprArgs) {
     super(args);
   }
 }
@@ -11530,7 +12130,7 @@ export class DictSubPropertyExpr extends PropertyExpr {
 export type DictRangeExprArgs = { value?: string;
   min: Expression;
   max: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  this: Expression; } & PropertyExprArgs;
 
 export class DictRangeExpr extends PropertyExpr {
   key = ExpressionKey.DICT_RANGE;
@@ -11555,6 +12155,10 @@ export class DictRangeExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
   get $min (): Expression {
     return this.args.min as Expression;
   }
@@ -11570,13 +12174,12 @@ export class DynamicPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BaseExpressionArgs>;
   declare args: DynamicPropertyExprArgs;
-  constructor (args: DynamicPropertyExprArgs = {}) {
+  constructor (args: DynamicPropertyExprArgs) {
     super(args);
   }
 }
 
-export type OnClusterExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type OnClusterExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class OnClusterExpr extends PropertyExpr {
   key = ExpressionKey.ON_CLUSTER;
@@ -11600,14 +12203,13 @@ export class EmptyPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BaseExpressionArgs>;
   declare args: EmptyPropertyExprArgs;
-  constructor (args: EmptyPropertyExprArgs = {}) {
+  constructor (args: EmptyPropertyExprArgs) {
     super(args);
   }
 }
 
 export type LikePropertyExprArgs = { this: Expression;
-  expressions?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  expressions?: Expression[]; } & BaseExpressionArgs;
 
 export class LikePropertyExpr extends PropertyExpr {
   key = ExpressionKey.LIKE_PROPERTY;
@@ -11632,8 +12234,7 @@ export class LikePropertyExpr extends PropertyExpr {
   }
 }
 
-export type LocationPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type LocationPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class LocationPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCATION_PROPERTY;
@@ -11651,8 +12252,7 @@ export class LocationPropertyExpr extends PropertyExpr {
   }
 }
 
-export type LockPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type LockPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class LockPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCK_PROPERTY;
@@ -11686,7 +12286,7 @@ export type LockingPropertyExprArgs = { value?: string;
   forOrIn?: Expression;
   lockType: DataTypeExpr;
   override?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  this?: Expression[]; } & PropertyExprArgs;
 
 export class LockingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCKING_PROPERTY;
@@ -11713,26 +12313,29 @@ export class LockingPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get $kind (): LockingPropertyExprKind | undefined {
-    return this.args.kind as LockingPropertyExprKind | undefined;
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 
-  get $forOrIn (): Expression {
-    return this.args.forOrIn as Expression;
+  get $kind (): string {
+    return this.args.kind as string;
   }
 
-  get $lockType (): DataTypeExpr {
-    return this.args.lockType as DataTypeExpr;
+  get $forOrIn (): Expression | undefined {
+    return this.args.forOrIn as Expression | undefined;
   }
 
-  get $override (): Expression {
-    return this.args.override as Expression;
+  get $lockType (): Expression {
+    return this.args.lockType as Expression;
+  }
+
+  get $override (): Expression | undefined {
+    return this.args.override as Expression | undefined;
   }
 }
 
 export type LogPropertyExprArgs = { value?: string;
-  no: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  no: Expression; } & PropertyExprArgs;
 
 export class LogPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOG_PROPERTY;
@@ -11752,8 +12355,8 @@ export class LogPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
   get $no (): Expression {
@@ -11761,8 +12364,7 @@ export class LogPropertyExpr extends PropertyExpr {
   }
 }
 
-export type MaterializedPropertyExprArgs = { this?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type MaterializedPropertyExprArgs = { this?: Expression } & BaseExpressionArgs;
 
 export class MaterializedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.MATERIALIZED_PROPERTY;
@@ -11784,7 +12386,7 @@ export type MergeBlockRatioPropertyExprArgs = { value?: string;
   no?: Expression;
   default?: Expression;
   percent?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  this?: Expression[]; } & PropertyExprArgs;
 
 export class MergeBlockRatioPropertyExpr extends PropertyExpr {
   key = ExpressionKey.MERGE_BLOCK_RATIO_PROPERTY;
@@ -11811,16 +12413,20 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get $no (): Expression {
-    return this.args.no as Expression;
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 
-  get $default (): Expression {
-    return this.args['default'] as Expression;
+  get $no (): Expression | undefined {
+    return this.args.no as Expression | undefined;
   }
 
-  get $percent (): Expression {
-    return this.args.percent as Expression;
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
+  }
+
+  get $percent (): Expression | undefined {
+    return this.args.percent as Expression | undefined;
   }
 }
 
@@ -11830,26 +12436,31 @@ export class NoPrimaryIndexPropertyExpr extends PropertyExpr {
 
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BaseExpressionArgs>;
   declare args: NoPrimaryIndexPropertyExprArgs;
-  constructor (args: NoPrimaryIndexPropertyExprArgs = {}) {
+  constructor (args: NoPrimaryIndexPropertyExprArgs) {
     super(args);
   }
 }
 
-export type OnPropertyExprArgs = BaseExpressionArgs;
+export type OnPropertyExprArgs = {
+  this: Expression;
+} & BaseExpressionArgs;
 export class OnPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ON_PROPERTY;
 
   static argTypes: Record<string, boolean> = { this: true } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: OnPropertyExprArgs;
-  constructor (args: OnPropertyExprArgs = {}) {
+  constructor (args: OnPropertyExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 }
 
 export type OnCommitPropertyExprArgs = { value?: string;
-  delete?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  delete?: Expression; } & PropertyExprArgs;
 
 export class OnCommitPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ON_COMMIT_PROPERTY;
@@ -11869,28 +12480,37 @@ export class OnCommitPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
-  get $delete (): Expression {
-    return this.args['delete'] as Expression;
+  get $delete (): Expression | undefined {
+    return this.args.delete as Expression | undefined;
   }
 }
 
-export type PartitionedByPropertyExprArgs = BaseExpressionArgs;
+export type PartitionedByPropertyExprArgs = {
+  this: Expression;
+} & BaseExpressionArgs;
 export class PartitionedByPropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_BY_PROPERTY;
 
   static argTypes: Record<string, boolean> = { this: true } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: PartitionedByPropertyExprArgs;
-  constructor (args: PartitionedByPropertyExprArgs = {}) {
+  constructor (args: PartitionedByPropertyExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 }
 
-export type PartitionedByBucketExprArgs = BaseExpressionArgs;
+export type PartitionedByBucketExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
 export class PartitionedByBucketExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_BY_BUCKET;
 
@@ -11900,12 +12520,23 @@ export class PartitionedByBucketExpr extends PropertyExpr {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: PartitionedByBucketExprArgs;
-  constructor (args: PartitionedByBucketExprArgs = {}) {
+  constructor (args: PartitionedByBucketExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression as Expression;
   }
 }
 
-export type PartitionByTruncateExprArgs = BaseExpressionArgs;
+export type PartitionByTruncateExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
 export class PartitionByTruncateExpr extends PropertyExpr {
   key = ExpressionKey.PARTITION_BY_TRUNCATE;
 
@@ -11915,15 +12546,22 @@ export class PartitionByTruncateExpr extends PropertyExpr {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: PartitionByTruncateExprArgs;
-  constructor (args: PartitionByTruncateExprArgs = {}) {
+  constructor (args: PartitionByTruncateExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression as Expression;
   }
 }
 
 export type PartitionByRangePropertyExprArgs = { value?: string;
   partitionExpressions: Expression[];
-  createExpressions: Expression[];
-  [key: string]: unknown; } & PropertyExprArgs;
+  createExpressions: Expression[]; } & PropertyExprArgs;
 
 export class PartitionByRangePropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITION_BY_RANGE_PROPERTY;
@@ -11945,34 +12583,39 @@ export class PartitionByRangePropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
   get $partitionExpressions (): Expression[] {
-    return (this.args.partitionExpressions || []) as Expression[];
+    return this.args.partitionExpressions as Expression[];
   }
 
   get $createExpressions (): Expression[] {
-    return (this.args.createExpressions || []) as Expression[];
+    return this.args.createExpressions as Expression[];
   }
 }
 
-export type RollupPropertyExprArgs = BaseExpressionArgs;
+export type RollupPropertyExprArgs = {
+  expressions: Expression[];
+} & BaseExpressionArgs;
 export class RollupPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROLLUP_PROPERTY;
 
   static argTypes: Record<string, boolean> = { expressions: true } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: RollupPropertyExprArgs;
-  constructor (args: RollupPropertyExprArgs = {}) {
+  constructor (args: RollupPropertyExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
   }
 }
 
 export type PartitionByListPropertyExprArgs = { partitionExpressions: Expression[];
-  createExpressions: Expression[];
-  [key: string]: unknown; } & PropertyExprArgs;
+  createExpressions: Expression[]; } & PropertyExprArgs;
 
 export class PartitionByListPropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITION_BY_LIST_PROPERTY;
@@ -11994,11 +12637,11 @@ export class PartitionByListPropertyExpr extends PropertyExpr {
   }
 
   get $partitionExpressions (): Expression[] {
-    return (this.args.partitionExpressions || []) as Expression[];
+    return this.args.partitionExpressions as Expression[];
   }
 
   get $createExpressions (): Expression[] {
-    return (this.args.createExpressions || []) as Expression[];
+    return this.args.createExpressions as Expression[];
   }
 }
 
@@ -12016,8 +12659,7 @@ export type RefreshTriggerPropertyExprArgs = { value?: string;
   kind?: RefreshTriggerPropertyExprKind;
   every?: Expression;
   unit?: Expression;
-  starts?: Expression[];
-  [key: string]: unknown; } & PropertyExprArgs;
+  starts?: Expression[]; } & PropertyExprArgs;
 
 export class RefreshTriggerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.REFRESH_TRIGGER_PROPERTY;
@@ -12042,40 +12684,46 @@ export class RefreshTriggerPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
-  get $method (): string {
-    return this.args.method as string;
+  get $method (): Expression | undefined {
+    return this.args.method as Expression | undefined;
   }
 
-  get $kind (): RefreshTriggerPropertyExprKind | undefined {
-    return this.args.kind as RefreshTriggerPropertyExprKind | undefined;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 
-  get $every (): Expression {
-    return this.args.every as Expression;
+  get $every (): Expression | undefined {
+    return this.args.every as Expression | undefined;
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 
-  get $starts (): Expression[] {
-    return (this.args.starts || []) as Expression[];
+  get $starts (): Expression[] | undefined {
+    return this.args.starts as Expression[] | undefined;
   }
 }
 
-export type UniqueKeyPropertyExprArgs = BaseExpressionArgs;
+export type UniqueKeyPropertyExprArgs = {
+  expressions: Expression[];
+} & BaseExpressionArgs;
 export class UniqueKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNIQUE_KEY_PROPERTY;
 
   static argTypes: Record<string, boolean> = { expressions: true } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: UniqueKeyPropertyExprArgs;
-  constructor (args: UniqueKeyPropertyExprArgs = {}) {
+  constructor (args: UniqueKeyPropertyExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
   }
 }
 
@@ -12087,7 +12735,7 @@ export class PartitionedOfPropertyExpr extends PropertyExpr {
   >;
 
   declare args: PartitionedOfPropertyExprArgs;
-  constructor (args: PartitionedOfPropertyExprArgs = {}) {
+  constructor (args: PartitionedOfPropertyExprArgs) {
     super(args);
   }
 }
@@ -12100,7 +12748,7 @@ export class StreamingTablePropertyExpr extends PropertyExpr {
   >;
 
   declare args: StreamingTablePropertyExprArgs;
-  constructor (args: StreamingTablePropertyExprArgs = {}) {
+  constructor (args: StreamingTablePropertyExprArgs) {
     super(args);
   }
 }
@@ -12113,7 +12761,7 @@ export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
   >;
 
   declare args: RemoteWithConnectionModelPropertyExprArgs;
-  constructor (args: RemoteWithConnectionModelPropertyExprArgs = {}) {
+  constructor (args: RemoteWithConnectionModelPropertyExprArgs) {
     super(args);
   }
 }
@@ -12121,8 +12769,7 @@ export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
 export type ReturnsPropertyExprArgs = { value?: string;
   isTable?: Expression;
   table?: Expression;
-  null?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  null?: Expression; } & PropertyExprArgs;
 
 export class ReturnsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.RETURNS_PROPERTY;
@@ -12144,20 +12791,20 @@ export class ReturnsPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
+  get $value (): Expression | undefined {
+    return this.args.value as Expression | undefined;
   }
 
-  get $isTable (): Expression {
-    return this.args.isTable as Expression;
+  get $isTable (): Expression | undefined {
+    return this.args.isTable as Expression | undefined;
   }
 
-  get $table (): Expression {
-    return this.args.table as Expression;
+  get $table (): Expression | undefined {
+    return this.args.table as Expression | undefined;
   }
 
-  get $null (): Expression {
-    return this.args.null as Expression;
+  get $null (): Expression | undefined {
+    return this.args.null as Expression | undefined;
   }
 }
 
@@ -12166,7 +12813,7 @@ export class StrictPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STRICT_PROPERTY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<StrictPropertyExprArgs>;
   declare args: StrictPropertyExprArgs;
-  constructor (args: StrictPropertyExprArgs = {}) {
+  constructor (args: StrictPropertyExprArgs) {
     super(args);
   }
 }
@@ -12176,7 +12823,7 @@ export class RowFormatPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_PROPERTY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RowFormatPropertyExprArgs>;
   declare args: RowFormatPropertyExprArgs;
-  constructor (args: RowFormatPropertyExprArgs = {}) {
+  constructor (args: RowFormatPropertyExprArgs) {
     super(args);
   }
 }
@@ -12187,8 +12834,7 @@ export type RowFormatDelimitedPropertyExprArgs = { fields?: Expression[];
   mapKeys?: Expression[];
   lines?: Expression[];
   null?: Expression;
-  serde?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  serde?: Expression; } & PropertyExprArgs;
 
 export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_DELIMITED_PROPERTY;
@@ -12214,38 +12860,37 @@ export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $fields (): Expression[] {
-    return (this.args.fields || []) as Expression[];
+  get $fields (): Expression[] | undefined {
+    return this.args.fields as Expression[] | undefined;
   }
 
-  get $escaped (): Expression {
-    return this.args.escaped as Expression;
+  get $escaped (): Expression | undefined {
+    return this.args.escaped as Expression | undefined;
   }
 
-  get $collectionItems (): Expression[] {
-    return (this.args.collectionItems || []) as Expression[];
+  get $collectionItems (): Expression[] | undefined {
+    return this.args.collectionItems as Expression[] | undefined;
   }
 
-  get $mapKeys (): Expression[] {
-    return (this.args.mapKeys || []) as Expression[];
+  get $mapKeys (): Expression[] | undefined {
+    return this.args.mapKeys as Expression[] | undefined;
   }
 
-  get $lines (): Expression[] {
-    return (this.args.lines || []) as Expression[];
+  get $lines (): Expression[] | undefined {
+    return this.args.lines as Expression[] | undefined;
   }
 
-  get $null (): Expression {
-    return this.args.null as Expression;
+  get $null (): Expression | undefined {
+    return this.args.null as Expression | undefined;
   }
 
-  get $serde (): Expression {
-    return this.args.serde as Expression;
+  get $serde (): Expression | undefined {
+    return this.args.serde as Expression | undefined;
   }
 }
 
 export type RowFormatSerdePropertyExprArgs = { this: Expression;
-  serdeProperties?: Expression[];
-  [key: string]: unknown; } & PropertyExprArgs;
+  serdeProperties?: Expression[]; } & PropertyExprArgs;
 
 export class RowFormatSerdePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_SERDE_PROPERTY;
@@ -12266,8 +12911,12 @@ export class RowFormatSerdePropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $serdeProperties (): Expression[] {
-    return (this.args.serdeProperties || []) as Expression[];
+  get $this (): Expression {
+    return this.args.this as Expression;
+  }
+
+  get $serdeProperties (): Expression[] | undefined {
+    return this.args.serdeProperties as Expression[] | undefined;
   }
 }
 
@@ -12276,7 +12925,7 @@ export class SamplePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SAMPLE_PROPERTY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SamplePropertyExprArgs>;
   declare args: SamplePropertyExprArgs;
-  constructor (args: SamplePropertyExprArgs = {}) {
+  constructor (args: SamplePropertyExprArgs) {
     super(args);
   }
 }
@@ -12286,7 +12935,7 @@ export class SecurityPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURITY_PROPERTY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SecurityPropertyExprArgs>;
   declare args: SecurityPropertyExprArgs;
-  constructor (args: SecurityPropertyExprArgs = {}) {
+  constructor (args: SecurityPropertyExprArgs) {
     super(args);
   }
 }
@@ -12299,14 +12948,13 @@ export class SchemaCommentPropertyExpr extends PropertyExpr {
   >;
 
   declare args: SchemaCommentPropertyExprArgs;
-  constructor (args: SchemaCommentPropertyExprArgs = {}) {
+  constructor (args: SchemaCommentPropertyExprArgs) {
     super(args);
   }
 }
 
 export type SerdePropertiesExprArgs = { expressions: (string | Expression)[];
-  with?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+  with?: Expression; } & PropertyExprArgs;
 
 export class SerdePropertiesExpr extends PropertyExpr {
   key = ExpressionKey.SERDE_PROPERTIES;
@@ -12326,17 +12974,16 @@ export class SerdePropertiesExpr extends PropertyExpr {
     super(args);
   }
 
-  get $expressions (): (Expression | string)[] {
-    return this.args.expressions as (Expression | string)[];
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
   }
 
-  get $with (): Expression {
-    return this.args['with'] as Expression;
+  get $with (): Expression | undefined {
+    return this.args.with as Expression | undefined;
   }
 }
 
-export type SetPropertyExprArgs = { multi: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+export type SetPropertyExprArgs = { multi: Expression } & PropertyExprArgs;
 
 export class SetPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SET_PROPERTY;
@@ -12358,8 +13005,7 @@ export class SetPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SharingPropertyExprArgs = { this?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+export type SharingPropertyExprArgs = { this?: Expression } & PropertyExprArgs;
 
 export class SharingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SHARING_PROPERTY;
@@ -12372,13 +13018,12 @@ export class SharingPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression {
-    return this.args.this as Expression;
+  get $this (): Expression | undefined {
+    return this.args.this as Expression | undefined;
   }
 }
 
-export type SetConfigPropertyExprArgs = { this?: Expression;
-  [key: string]: unknown; } & PropertyExprArgs;
+export type SetConfigPropertyExprArgs = { this?: Expression } & PropertyExprArgs;
 
 export class SetConfigPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SET_CONFIG_PROPERTY;
@@ -12396,8 +13041,7 @@ export class SetConfigPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SettingsPropertyExprArgs = { expressions: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type SettingsPropertyExprArgs = { expressions: Expression[] } & BaseExpressionArgs;
 
 export class SettingsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SETTINGS_PROPERTY;
@@ -12416,8 +13060,7 @@ export class SettingsPropertyExpr extends PropertyExpr {
 }
 
 export type SortKeyPropertyExprArgs = { this: Expression;
-  compound?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  compound?: Expression; } & BaseExpressionArgs;
 
 export class SortKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SORT_KEY_PROPERTY;
@@ -12446,8 +13089,7 @@ export class SortKeyPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SqlReadWritePropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type SqlReadWritePropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class SqlReadWritePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SQL_READ_WRITE_PROPERTY;
@@ -12465,8 +13107,7 @@ export class SqlReadWritePropertyExpr extends PropertyExpr {
   }
 }
 
-export type SqlSecurityPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type SqlSecurityPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class SqlSecurityPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SQL_SECURITY_PROPERTY;
@@ -12484,8 +13125,7 @@ export class SqlSecurityPropertyExpr extends PropertyExpr {
   }
 }
 
-export type StabilityPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type StabilityPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class StabilityPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STABILITY_PROPERTY;
@@ -12503,8 +13143,7 @@ export class StabilityPropertyExpr extends PropertyExpr {
   }
 }
 
-export type StorageHandlerPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type StorageHandlerPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class StorageHandlerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STORAGE_HANDLER_PROPERTY;
@@ -12522,8 +13161,7 @@ export class StorageHandlerPropertyExpr extends PropertyExpr {
   }
 }
 
-export type TemporaryPropertyExprArgs = { this?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TemporaryPropertyExprArgs = { this?: Expression } & BaseExpressionArgs;
 
 export class TemporaryPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TEMPORARY_PROPERTY;
@@ -12541,7 +13179,7 @@ export class TemporaryPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SecurePropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
+export type SecurePropertyExprArgs = BaseExpressionArgs;
 
 export class SecurePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURE_PROPERTY;
@@ -12554,8 +13192,7 @@ export class SecurePropertyExpr extends PropertyExpr {
   }
 }
 
-export type TagsExprArgs = { expressions: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TagsExprArgs = { expressions: Expression[] } & BaseExpressionArgs;
 
 export class TagsExpr extends multiInherit(Expression, PropertyExpr, ColumnConstraintKindExpr) {
   key = ExpressionKey.TAGS;
@@ -12573,8 +13210,7 @@ export class TagsExpr extends multiInherit(Expression, PropertyExpr, ColumnConst
   }
 }
 
-export type TransformModelPropertyExprArgs = { expressions: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TransformModelPropertyExprArgs = { expressions: Expression[] } & BaseExpressionArgs;
 
 export class TransformModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TRANSFORM_MODEL_PROPERTY;
@@ -12592,8 +13228,7 @@ export class TransformModelPropertyExpr extends PropertyExpr {
   }
 }
 
-export type TransientPropertyExprArgs = { this?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TransientPropertyExprArgs = { this?: Expression } & BaseExpressionArgs;
 
 export class TransientPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TRANSIENT_PROPERTY;
@@ -12611,7 +13246,7 @@ export class TransientPropertyExpr extends PropertyExpr {
   }
 }
 
-export type UnloggedPropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
+export type UnloggedPropertyExprArgs = BaseExpressionArgs;
 
 export class UnloggedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNLOGGED_PROPERTY;
@@ -12624,8 +13259,7 @@ export class UnloggedPropertyExpr extends PropertyExpr {
   }
 }
 
-export type UsingTemplatePropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type UsingTemplatePropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class UsingTemplatePropertyExpr extends PropertyExpr {
   key = ExpressionKey.USING_TEMPLATE_PROPERTY;
@@ -12643,8 +13277,7 @@ export class UsingTemplatePropertyExpr extends PropertyExpr {
   }
 }
 
-export type ViewAttributePropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ViewAttributePropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class ViewAttributePropertyExpr extends PropertyExpr {
   key = ExpressionKey.VIEW_ATTRIBUTE_PROPERTY;
@@ -12662,8 +13295,7 @@ export class ViewAttributePropertyExpr extends PropertyExpr {
   }
 }
 
-export type VolatilePropertyExprArgs = { this?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type VolatilePropertyExprArgs = { this?: Expression } & BaseExpressionArgs;
 
 export class VolatilePropertyExpr extends PropertyExpr {
   key = ExpressionKey.VOLATILE_PROPERTY;
@@ -12682,8 +13314,7 @@ export class VolatilePropertyExpr extends PropertyExpr {
 }
 
 export type WithDataPropertyExprArgs = { no: Expression;
-  statistics?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  statistics?: Expression[]; } & BaseExpressionArgs;
 
 export class WithDataPropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_DATA_PROPERTY;
@@ -12712,8 +13343,7 @@ export class WithDataPropertyExpr extends PropertyExpr {
   }
 }
 
-export type WithJournalTablePropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type WithJournalTablePropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class WithJournalTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_JOURNAL_TABLE_PROPERTY;
@@ -12731,8 +13361,7 @@ export class WithJournalTablePropertyExpr extends PropertyExpr {
   }
 }
 
-export type WithSchemaBindingPropertyExprArgs = { this: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type WithSchemaBindingPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
 
 export class WithSchemaBindingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_SCHEMA_BINDING_PROPERTY;
@@ -12754,8 +13383,7 @@ export type WithSystemVersioningPropertyExprArgs = { on?: Expression;
   this?: Expression;
   dataConsistency?: Expression;
   retentionPeriod?: Expression;
-  with: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  with: Expression; } & BaseExpressionArgs;
 
 export class WithSystemVersioningPropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_SYSTEM_VERSIONING_PROPERTY;
@@ -12796,12 +13424,11 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
   }
 
   get $with (): Expression {
-    return this.args['with'] as Expression;
+    return this.args.with as Expression;
   }
 }
 
-export type WithProcedureOptionsExprArgs = { expressions: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type WithProcedureOptionsExprArgs = { expressions: Expression[] } & BaseExpressionArgs;
 
 export class WithProcedureOptionsExpr extends PropertyExpr {
   key = ExpressionKey.WITH_PROCEDURE_OPTIONS;
@@ -12821,8 +13448,7 @@ export class WithProcedureOptionsExpr extends PropertyExpr {
 
 export type EncodePropertyExprArgs = { this: Expression;
   properties?: Expression[];
-  key?: unknown;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  key?: unknown; } & BaseExpressionArgs;
 
 export class EncodePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ENCODE_PROPERTY;
@@ -12860,8 +13486,7 @@ export class EncodePropertyExpr extends PropertyExpr {
 
 export type IncludePropertyExprArgs = { this: Expression;
   alias?: Expression;
-  columnDef?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  columnDef?: Expression; } & BaseExpressionArgs;
 
 export class IncludePropertyExpr extends PropertyExpr {
   key = ExpressionKey.INCLUDE_PROPERTY;
@@ -12888,16 +13513,16 @@ export class IncludePropertyExpr extends PropertyExpr {
     return this.args.this as Expression;
   }
 
+  get $alias (): Expression | undefined {
+    return this.args.alias as Expression | undefined;
+  }
+
   get $columnDef (): Expression | undefined {
     return this.args.columnDef as Expression | undefined;
   }
-
-  get $alias (): Expression[] | undefined {
-    return this.args.alias as Expression[] | undefined;
-  }
 }
 
-export type ForcePropertyExprArgs = { [key: string]: unknown } & BaseExpressionArgs;
+export type ForcePropertyExprArgs = BaseExpressionArgs;
 
 export class ForcePropertyExpr extends PropertyExpr {
   key = ExpressionKey.FORCE_PROPERTY;
@@ -12936,14 +13561,16 @@ export enum PropertiesLocation {
   UNSUPPORTED = 'UNSUPPORTED',
 }
 
-export type PropertiesExprArgs = BaseExpressionArgs;
+export type PropertiesExprArgs = {
+  expressions: Expression[];
+} & BaseExpressionArgs;
 export class PropertiesExpr extends Expression {
   key = ExpressionKey.PROPERTIES;
 
   static argTypes: Record<string, boolean> = { expressions: true } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: PropertiesExprArgs;
-  constructor (args: PropertiesExprArgs = {}) {
+  constructor (args: PropertiesExprArgs) {
     super(args);
   }
 
@@ -13001,6 +13628,10 @@ export class PropertiesExpr extends Expression {
 
     return new PropertiesExpr({ expressions });
   }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions as Expression[];
+  }
 }
 
 /**
@@ -13018,8 +13649,7 @@ export type SetOperationExprArgs = { with?: Expression;
   byName?: string;
   side?: Expression;
   kind?: SetOperationExprKind;
-  on?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  on?: Expression; } & BaseExpressionArgs;
 
 export class SetOperationExpr extends QueryExpr {
   key = ExpressionKey.SET_OPERATION;
@@ -13039,32 +13669,32 @@ export class SetOperationExpr extends QueryExpr {
 
   declare args: SetOperationExprArgs;
 
-  constructor (args: SetOperationExprArgs = {}) {
+  constructor (args: SetOperationExprArgs) {
     super(args);
   }
 
-  get $with (): Expression {
-    return this.args['with'] as Expression;
+  get $with (): Expression | undefined {
+    return this.args.with as Expression | undefined;
   }
 
-  get $distinct (): boolean {
-    return this.args.distinct as boolean;
+  get $distinct (): Expression | undefined {
+    return this.args.distinct as Expression | undefined;
   }
 
-  get $byName (): string {
-    return this.args.byName as string;
+  get $byName (): Expression | undefined {
+    return this.args.byName as Expression | undefined;
   }
 
-  get $side (): Expression {
-    return this.args.side as Expression;
+  get $side (): Expression | undefined {
+    return this.args.side as Expression | undefined;
   }
 
-  get $kind (): SetOperationExprKind | undefined {
-    return this.args.kind as SetOperationExprKind | undefined;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 
-  get $on (): Expression {
-    return this.args.on as Expression;
+  get $on (): Expression | undefined {
+    return this.args.on as Expression | undefined;
   }
 }
 
@@ -13074,8 +13704,7 @@ export type UpdateExprArgs = { with?: Expression;
   returning?: Expression;
   order?: Expression;
   limit?: number | Expression;
-  options?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  options?: Expression[]; } & BaseExpressionArgs;
 
 export class UpdateExpr extends DMLExpr {
   key = ExpressionKey.UPDATE;
@@ -13096,36 +13725,36 @@ export class UpdateExpr extends DMLExpr {
 
   declare args: UpdateExprArgs;
 
-  constructor (args: UpdateExprArgs = {}) {
+  constructor (args: UpdateExprArgs) {
     super(args);
   }
 
-  get $with (): Expression {
-    return this.args['with'] as Expression;
+  get $with (): Expression | undefined {
+    return this.args.with as Expression | undefined;
   }
 
-  get $from (): Expression {
-    return this.args.from as Expression;
+  get $from (): Expression | undefined {
+    return this.args.from as Expression | undefined;
   }
 
-  get $where (): Expression {
-    return this.args.where as Expression;
+  get $where (): Expression | undefined {
+    return this.args.where as Expression | undefined;
   }
 
-  get $returning (): Expression {
-    return this.args.returning as Expression;
+  get $returning (): Expression | undefined {
+    return this.args.returning as Expression | undefined;
   }
 
-  get $order (): Expression {
-    return this.args.order as Expression;
+  get $order (): Expression | undefined {
+    return this.args.order as Expression | undefined;
   }
 
-  get $limit (): number | Expression {
-    return this.args.limit as number | Expression;
+  get $limit (): Expression | undefined {
+    return this.args.limit as Expression | undefined;
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
   }
 }
 
@@ -13157,8 +13786,7 @@ export type SelectExprArgs = { with?: Expression;
   distinct?: boolean;
   into?: Expression;
   from?: Expression;
-  operationModifiers?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  operationModifiers?: Expression[]; } & BaseExpressionArgs;
 
 export class SelectExpr extends QueryExpr {
   key = ExpressionKey.SELECT;
@@ -13179,41 +13807,40 @@ export class SelectExpr extends QueryExpr {
 
   declare args: SelectExprArgs;
 
-  constructor (args: SelectExprArgs = {}) {
+  constructor (args: SelectExprArgs) {
     super(args);
   }
 
-  get $with (): Expression {
-    return this.args['with'] as Expression;
+  get $with (): Expression | undefined {
+    return this.args.with as Expression | undefined;
   }
 
-  get $kind (): SelectExprKind | undefined {
-    return this.args.kind as SelectExprKind | undefined;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 
-  get $hint (): Expression {
-    return this.args.hint as Expression;
+  get $hint (): Expression | undefined {
+    return this.args.hint as Expression | undefined;
   }
 
-  get $distinct (): boolean {
-    return this.args.distinct as boolean;
+  get $distinct (): Expression | undefined {
+    return this.args.distinct as Expression | undefined;
   }
 
-  get $into (): Expression {
-    return this.args.into as Expression;
+  get $into (): Expression | undefined {
+    return this.args.into as Expression | undefined;
   }
 
-  get $from (): Expression {
-    return this.args.from as Expression;
+  get $from (): Expression | undefined {
+    return this.args.from as Expression | undefined;
   }
 
-  get $operationModifiers (): Expression[] {
-    return (this.args.operationModifiers || []) as Expression[];
+  get $operationModifiers (): Expression[] | undefined {
+    return this.args.operationModifiers as Expression[] | undefined;
   }
 }
 
-export type SubqueryExprArgs = { with?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type SubqueryExprArgs = { with?: Expression } & BaseExpressionArgs;
 
 export class SubqueryExpr extends DerivedTableExpr {
   key = ExpressionKey.SUBQUERY;
@@ -13226,12 +13853,12 @@ export class SubqueryExpr extends DerivedTableExpr {
 
   declare args: SubqueryExprArgs;
 
-  constructor (args: SubqueryExprArgs = {}) {
+  constructor (args: SubqueryExprArgs) {
     super(args);
   }
 
-  get $with (): Expression {
-    return this.args['with'] as Expression;
+  get $with (): Expression | undefined {
+    return this.args.with as Expression | undefined;
   }
 }
 
@@ -13239,8 +13866,7 @@ export type WindowExprArgs = { partitionBy?: Expression;
   order?: Expression;
   spec?: Expression;
   over?: Expression;
-  first?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  first?: Expression; } & BaseExpressionArgs;
 
 export class WindowExpr extends Expression {
   key = ExpressionKey.WINDOW;
@@ -13259,28 +13885,28 @@ export class WindowExpr extends Expression {
 
   declare args: WindowExprArgs;
 
-  constructor (args: WindowExprArgs = {}) {
+  constructor (args: WindowExprArgs) {
     super(args);
   }
 
-  get $partitionBy (): Expression {
-    return this.args.partitionBy as Expression;
+  get $partitionBy (): Expression | undefined {
+    return this.args.partitionBy as Expression | undefined;
   }
 
-  get $order (): Expression {
-    return this.args.order as Expression;
+  get $order (): Expression | undefined {
+    return this.args.order as Expression | undefined;
   }
 
-  get $spec (): Expression {
-    return this.args.spec as Expression;
+  get $spec (): Expression | undefined {
+    return this.args.spec as Expression | undefined;
   }
 
-  get $over (): Expression {
-    return this.args.over as Expression;
+  get $over (): Expression | undefined {
+    return this.args.over as Expression | undefined;
   }
 
-  get $first (): Expression {
-    return this.args.first as Expression;
+  get $first (): Expression | undefined {
+    return this.args.first as Expression | undefined;
   }
 }
 
@@ -13289,7 +13915,7 @@ export class ParameterExpr extends Expression {
   key = ExpressionKey.PARAMETER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ParameterExprArgs>;
   declare args: ParameterExprArgs;
-  constructor (args: ParameterExprArgs = {}) {
+  constructor (args: ParameterExprArgs) {
     super(args);
   }
 }
@@ -13303,8 +13929,7 @@ export enum SessionParameterExprKind {
   LOCAL = 'LOCAL',
   VARIABLE = 'VARIABLE',
 }
-export type SessionParameterExprArgs = { kind?: SessionParameterExprKind;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type SessionParameterExprArgs = { kind?: SessionParameterExprKind } & BaseExpressionArgs;
 
 export class SessionParameterExpr extends Expression {
   key = ExpressionKey.SESSION_PARAMETER;
@@ -13317,12 +13942,12 @@ export class SessionParameterExpr extends Expression {
 
   declare args: SessionParameterExprArgs;
 
-  constructor (args: SessionParameterExprArgs = {}) {
+  constructor (args: SessionParameterExprArgs) {
     super(args);
   }
 
-  get $kind (): SessionParameterExprKind | undefined {
-    return this.args.kind as SessionParameterExprKind | undefined;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 }
 
@@ -13338,8 +13963,7 @@ export enum PlaceholderExprKind {
 }
 export type PlaceholderExprArgs = { kind?: PlaceholderExprKind;
   widget?: Expression;
-  jdbc?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  jdbc?: string; } & BaseExpressionArgs;
 
 export class PlaceholderExpr extends Expression {
   key = ExpressionKey.PLACEHOLDER;
@@ -13356,20 +13980,20 @@ export class PlaceholderExpr extends Expression {
 
   declare args: PlaceholderExprArgs;
 
-  constructor (args: PlaceholderExprArgs = {}) {
+  constructor (args: PlaceholderExprArgs) {
     super(args);
   }
 
-  get $kind (): PlaceholderExprKind | undefined {
-    return this.args.kind as PlaceholderExprKind | undefined;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 
-  get $widget (): Expression {
-    return this.args.widget as Expression;
+  get $widget (): Expression | undefined {
+    return this.args.widget as Expression | undefined;
   }
 
-  get $jdbc (): string {
-    return this.args.jdbc as string;
+  get $jdbc (): Expression | undefined {
+    return this.args.jdbc as Expression | undefined;
   }
 }
 
@@ -13378,7 +14002,7 @@ export class NullExpr extends Expression {
   key = ExpressionKey.NULL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NullExprArgs>;
   declare args: NullExprArgs;
-  constructor (args: NullExprArgs = {}) {
+  constructor (args: NullExprArgs) {
     super(args);
   }
 }
@@ -13388,7 +14012,7 @@ export class BooleanExpr extends Expression {
   key = ExpressionKey.BOOLEAN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BooleanExprArgs>;
   declare args: BooleanExprArgs;
-  constructor (args: BooleanExprArgs = {}) {
+  constructor (args: BooleanExprArgs) {
     super(args);
   }
 }
@@ -13398,7 +14022,7 @@ export class PseudoTypeExpr extends DataTypeExpr {
   key = ExpressionKey.PSEUDO_TYPE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PseudoTypeExprArgs>;
   declare args: PseudoTypeExprArgs;
-  constructor (args: PseudoTypeExprArgs = {}) {
+  constructor (args: PseudoTypeExprArgs) {
     super(args);
   }
 }
@@ -13408,7 +14032,7 @@ export class ObjectIdentifierExpr extends DataTypeExpr {
   key = ExpressionKey.OBJECT_IDENTIFIER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ObjectIdentifierExprArgs>;
   declare args: ObjectIdentifierExprArgs;
-  constructor (args: ObjectIdentifierExprArgs = {}) {
+  constructor (args: ObjectIdentifierExprArgs) {
     super(args);
   }
 }
@@ -13418,7 +14042,7 @@ export class BinaryExpr extends Expression {
   key = ExpressionKey.BINARY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BinaryExprArgs>;
   declare args: BinaryExprArgs;
-  constructor (args: BinaryExprArgs = {}) {
+  constructor (args: BinaryExprArgs) {
     super(args);
   }
 }
@@ -13428,7 +14052,7 @@ export class UnaryExpr extends Expression {
   key = ExpressionKey.UNARY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UnaryExprArgs>;
   declare args: UnaryExprArgs;
-  constructor (args: UnaryExprArgs = {}) {
+  constructor (args: UnaryExprArgs) {
     super(args);
   }
 }
@@ -13438,15 +14062,14 @@ export class PivotAliasExpr extends AliasExpr {
   key = ExpressionKey.PIVOT_ALIAS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PivotAliasExprArgs>;
   declare args: PivotAliasExprArgs;
-  constructor (args: PivotAliasExprArgs = {}) {
+  constructor (args: PivotAliasExprArgs) {
     super(args);
   }
 }
 
 export type BracketExprArgs = { offset?: boolean;
   safe?: boolean;
-  returnsListForMaps?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  returnsListForMaps?: Expression[]; } & BaseExpressionArgs;
 
 export class BracketExpr extends Expression {
   key = ExpressionKey.BRACKET;
@@ -13463,25 +14086,24 @@ export class BracketExpr extends Expression {
 
   declare args: BracketExprArgs;
 
-  constructor (args: BracketExprArgs = {}) {
+  constructor (args: BracketExprArgs) {
     super(args);
   }
 
-  get $offset (): boolean {
-    return this.args.offset as boolean;
+  get $offset (): Expression | undefined {
+    return this.args.offset as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 
-  get $returnsListForMaps (): Expression[] {
-    return (this.args.returnsListForMaps || []) as Expression[];
+  get $returnsListForMaps (): Expression[] | undefined {
+    return this.args.returnsListForMaps as Expression[] | undefined;
   }
 }
 
-export type IntervalOpExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & TimeUnitExprArgs;
+export type IntervalOpExprArgs = { unit?: Expression } & TimeUnitExprArgs;
 
 export class IntervalOpExpr extends TimeUnitExpr {
   key = ExpressionKey.INTERVAL_OP;
@@ -13494,12 +14116,12 @@ export class IntervalOpExpr extends TimeUnitExpr {
 
   declare args: IntervalOpExprArgs;
 
-  constructor (args: IntervalOpExprArgs = {}) {
+  constructor (args: IntervalOpExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
@@ -13508,13 +14130,12 @@ export class IntervalSpanExpr extends DataTypeExpr {
   key = ExpressionKey.INTERVAL_SPAN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<IntervalSpanExprArgs>;
   declare args: IntervalSpanExprArgs;
-  constructor (args: IntervalSpanExprArgs = {}) {
+  constructor (args: IntervalSpanExprArgs) {
     super(args);
   }
 }
 
-export type IntervalExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & TimeUnitExprArgs;
+export type IntervalExprArgs = { unit?: Expression } & TimeUnitExprArgs;
 
 export class IntervalExpr extends TimeUnitExpr {
   key = ExpressionKey.INTERVAL;
@@ -13527,12 +14148,12 @@ export class IntervalExpr extends TimeUnitExpr {
 
   declare args: IntervalExprArgs;
 
-  constructor (args: IntervalExprArgs = {}) {
+  constructor (args: IntervalExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
@@ -13545,7 +14166,7 @@ export class FuncExpr extends Expression {
   key = ExpressionKey.FUNC;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FuncExprArgs>;
   declare args: FuncExprArgs;
-  constructor (args: FuncExprArgs = {}) {
+  constructor (args: FuncExprArgs) {
     super(args);
   }
 
@@ -13609,7 +14230,7 @@ export class JSONPathFilterExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_FILTER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONPathFilterExprArgs>;
   declare args: JSONPathFilterExprArgs;
-  constructor (args: JSONPathFilterExprArgs = {}) {
+  constructor (args: JSONPathFilterExprArgs) {
     super(args);
   }
 }
@@ -13619,7 +14240,7 @@ export class JSONPathKeyExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_KEY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONPathKeyExprArgs>;
   declare args: JSONPathKeyExprArgs;
-  constructor (args: JSONPathKeyExprArgs = {}) {
+  constructor (args: JSONPathKeyExprArgs) {
     super(args);
   }
 }
@@ -13629,7 +14250,7 @@ export class JSONPathRecursiveExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_RECURSIVE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONPathRecursiveExprArgs>;
   declare args: JSONPathRecursiveExprArgs;
-  constructor (args: JSONPathRecursiveExprArgs = {}) {
+  constructor (args: JSONPathRecursiveExprArgs) {
     super(args);
   }
 }
@@ -13639,7 +14260,7 @@ export class JSONPathRootExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_ROOT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONPathRootExprArgs>;
   declare args: JSONPathRootExprArgs;
-  constructor (args: JSONPathRootExprArgs = {}) {
+  constructor (args: JSONPathRootExprArgs) {
     super(args);
   }
 }
@@ -13649,15 +14270,14 @@ export class JSONPathScriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SCRIPT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONPathScriptExprArgs>;
   declare args: JSONPathScriptExprArgs;
-  constructor (args: JSONPathScriptExprArgs = {}) {
+  constructor (args: JSONPathScriptExprArgs) {
     super(args);
   }
 }
 
 export type JSONPathSliceExprArgs = { start?: Expression;
   end?: Expression;
-  step?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  step?: Expression; } & BaseExpressionArgs;
 
 export class JSONPathSliceExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SLICE;
@@ -13674,20 +14294,20 @@ export class JSONPathSliceExpr extends JSONPathPartExpr {
 
   declare args: JSONPathSliceExprArgs;
 
-  constructor (args: JSONPathSliceExprArgs = {}) {
+  constructor (args: JSONPathSliceExprArgs) {
     super(args);
   }
 
-  get $start (): Expression {
-    return this.args.start as Expression;
+  get $start (): Expression | undefined {
+    return this.args.start as Expression | undefined;
   }
 
-  get $end (): Expression {
-    return this.args.end as Expression;
+  get $end (): Expression | undefined {
+    return this.args.end as Expression | undefined;
   }
 
-  get $step (): Expression {
-    return this.args.step as Expression;
+  get $step (): Expression | undefined {
+    return this.args.step as Expression | undefined;
   }
 }
 
@@ -13696,7 +14316,7 @@ export class JSONPathSelectorExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SELECTOR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONPathSelectorExprArgs>;
   declare args: JSONPathSelectorExprArgs;
-  constructor (args: JSONPathSelectorExprArgs = {}) {
+  constructor (args: JSONPathSelectorExprArgs) {
     super(args);
   }
 }
@@ -13706,7 +14326,7 @@ export class JSONPathSubscriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SUBSCRIPT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONPathSubscriptExprArgs>;
   declare args: JSONPathSubscriptExprArgs;
-  constructor (args: JSONPathSubscriptExprArgs = {}) {
+  constructor (args: JSONPathSubscriptExprArgs) {
     super(args);
   }
 }
@@ -13716,7 +14336,7 @@ export class JSONPathUnionExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_UNION;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONPathUnionExprArgs>;
   declare args: JSONPathUnionExprArgs;
-  constructor (args: JSONPathUnionExprArgs = {}) {
+  constructor (args: JSONPathUnionExprArgs) {
     super(args);
   }
 }
@@ -13726,7 +14346,7 @@ export class JSONPathWildcardExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_WILDCARD;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONPathWildcardExprArgs>;
   declare args: JSONPathWildcardExprArgs;
-  constructor (args: JSONPathWildcardExprArgs = {}) {
+  constructor (args: JSONPathWildcardExprArgs) {
     super(args);
   }
 }
@@ -13736,8 +14356,7 @@ export type MergeExprArgs = { using: string;
   usingCond?: string;
   whens: Expression[];
   with?: Expression;
-  returning?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  returning?: Expression; } & BaseExpressionArgs;
 
 export class MergeExpr extends DMLExpr {
   key = ExpressionKey.MERGE;
@@ -13761,28 +14380,28 @@ export class MergeExpr extends DMLExpr {
     super(args);
   }
 
-  get $using (): string {
-    return this.args.using as string;
+  get $using (): Expression {
+    return this.args.using as Expression;
   }
 
-  get $on (): Expression {
-    return this.args.on as Expression;
+  get $on (): Expression | undefined {
+    return this.args.on as Expression | undefined;
   }
 
-  get $usingCond (): string {
-    return this.args.usingCond as string;
+  get $usingCond (): Expression | undefined {
+    return this.args.usingCond as Expression | undefined;
   }
 
   get $whens (): Expression[] {
-    return (this.args.whens || []) as Expression[];
+    return this.args.whens as Expression[];
   }
 
-  get $with (): Expression {
-    return this.args['with'] as Expression;
+  get $with (): Expression | undefined {
+    return this.args.with as Expression | undefined;
   }
 
-  get $returning (): Expression {
-    return this.args.returning as Expression;
+  get $returning (): Expression | undefined {
+    return this.args.returning as Expression | undefined;
   }
 }
 
@@ -13791,8 +14410,7 @@ export type LateralExprArgs = { view?: Expression;
   crossApply?: boolean;
   ordinality?: boolean;
   alias?: Expression[];
-
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class LateralExpr extends UDTFExpr {
   key = ExpressionKey.LATERAL;
@@ -13812,28 +14430,32 @@ export class LateralExpr extends UDTFExpr {
 
   declare args: LateralExprArgs;
 
-  constructor (args: LateralExprArgs = {}) {
+  constructor (args: LateralExprArgs) {
     super(args);
   }
 
-  get $view (): Expression {
-    return this.args.view as Expression;
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $outer (): Expression {
-    return this.args.outer as Expression;
+  get $view (): Expression | undefined {
+    return this.args.view as Expression | undefined;
   }
 
-  get $crossApply (): boolean {
-    return this.args.crossApply as boolean;
+  get $outer (): Expression | undefined {
+    return this.args.outer as Expression | undefined;
   }
 
-  get $ordinality (): boolean {
-    return this.args.ordinality as boolean;
+  get $alias (): Expression | undefined {
+    return this.args.alias as Expression | undefined;
   }
 
-  get $alias (): Expression[] | undefined {
-    return this.args.alias as Expression[] | undefined;
+  get $crossApply (): Expression | undefined {
+    return this.args.crossApply as Expression | undefined;
+  }
+
+  get $ordinality (): Expression | undefined {
+    return this.args.ordinality as Expression | undefined;
   }
 }
 
@@ -13841,8 +14463,7 @@ export type TableFromRowsExprArgs = { joins?: Expression[];
   pivots?: Expression[];
   sample?: number | Expression;
   alias?: Expression[];
-
-  [key: string]: unknown; } & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class TableFromRowsExpr extends UDTFExpr {
   key = ExpressionKey.TABLE_FROM_ROWS;
@@ -13861,24 +14482,28 @@ export class TableFromRowsExpr extends UDTFExpr {
 
   declare args: TableFromRowsExprArgs;
 
-  constructor (args: TableFromRowsExprArgs = {}) {
+  constructor (args: TableFromRowsExprArgs) {
     super(args);
   }
 
-  get $joins (): Expression[] {
-    return (this.args.joins || []) as Expression[];
+  get $this (): Expression {
+    return this.args.this as Expression;
   }
 
-  get $pivots (): Expression[] {
-    return (this.args.pivots || []) as Expression[];
+  get $alias (): Expression | undefined {
+    return this.args.alias as Expression | undefined;
   }
 
-  get $sample (): number | Expression {
-    return this.args.sample as number | Expression;
+  get $joins (): Expression[] | undefined {
+    return this.args.joins as Expression[] | undefined;
   }
 
-  get $alias (): Expression[] | undefined {
-    return this.args.alias as Expression[] | undefined;
+  get $pivots (): Expression[] | undefined {
+    return this.args.pivots as Expression[] | undefined;
+  }
+
+  get $sample (): Expression | undefined {
+    return this.args.sample as Expression | undefined;
   }
 }
 
@@ -13887,7 +14512,7 @@ export class UnionExpr extends SetOperationExpr {
   key = ExpressionKey.UNION;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UnionExprArgs>;
   declare args: UnionExprArgs;
-  constructor (args: UnionExprArgs = {}) {
+  constructor (args: UnionExprArgs) {
     super(args);
   }
 }
@@ -13897,7 +14522,7 @@ export class ExceptExpr extends SetOperationExpr {
   key = ExpressionKey.EXCEPT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ExceptExprArgs>;
   declare args: ExceptExprArgs;
-  constructor (args: ExceptExprArgs = {}) {
+  constructor (args: ExceptExprArgs) {
     super(args);
   }
 }
@@ -13907,15 +14532,14 @@ export class IntersectExpr extends SetOperationExpr {
   key = ExpressionKey.INTERSECT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<IntersectExprArgs>;
   declare args: IntersectExprArgs;
-  constructor (args: IntersectExprArgs = {}) {
+  constructor (args: IntersectExprArgs) {
     super(args);
   }
 }
 
 export type ValuesExprArgs = { order?: Expression;
   limit?: number | Expression;
-  offset?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  offset?: boolean; } & BaseExpressionArgs;
 
 export class ValuesExpr extends UDTFExpr {
   key = ExpressionKey.VALUES;
@@ -13932,20 +14556,20 @@ export class ValuesExpr extends UDTFExpr {
 
   declare args: ValuesExprArgs;
 
-  constructor (args: ValuesExprArgs = {}) {
+  constructor (args: ValuesExprArgs) {
     super(args);
   }
 
-  get $order (): Expression {
-    return this.args.order as Expression;
+  get $order (): Expression | undefined {
+    return this.args.order as Expression | undefined;
   }
 
-  get $limit (): number | Expression {
-    return this.args.limit as number | Expression;
+  get $limit (): Expression | undefined {
+    return this.args.limit as Expression | undefined;
   }
 
-  get $offset (): boolean {
-    return this.args.offset as boolean;
+  get $offset (): Expression | undefined {
+    return this.args.offset as Expression | undefined;
   }
 }
 
@@ -13954,7 +14578,7 @@ export class SubqueryPredicateExpr extends PredicateExpr {
   key = ExpressionKey.SUBQUERY_PREDICATE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SubqueryPredicateExprArgs>;
   declare args: SubqueryPredicateExprArgs;
-  constructor (args: SubqueryPredicateExprArgs = {}) {
+  constructor (args: SubqueryPredicateExprArgs) {
     super(args);
   }
 }
@@ -13964,7 +14588,7 @@ export class AddExpr extends BinaryExpr {
   key = ExpressionKey.ADD;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AddExprArgs>;
   declare args: AddExprArgs;
-  constructor (args: AddExprArgs = {}) {
+  constructor (args: AddExprArgs) {
     super(args);
   }
 }
@@ -13974,13 +14598,12 @@ export class ConnectorExpr extends BinaryExpr {
   key = ExpressionKey.CONNECTOR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ConnectorExprArgs>;
   declare args: ConnectorExprArgs;
-  constructor (args: ConnectorExprArgs = {}) {
+  constructor (args: ConnectorExprArgs) {
     super(args);
   }
 }
 
-export type BitwiseAndExprArgs = { padside?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type BitwiseAndExprArgs = { padside?: Expression } & BaseExpressionArgs;
 
 export class BitwiseAndExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_AND;
@@ -13993,17 +14616,16 @@ export class BitwiseAndExpr extends BinaryExpr {
 
   declare args: BitwiseAndExprArgs;
 
-  constructor (args: BitwiseAndExprArgs = {}) {
+  constructor (args: BitwiseAndExprArgs) {
     super(args);
   }
 
-  get $padside (): Expression {
-    return this.args.padside as Expression;
+  get $padside (): Expression | undefined {
+    return this.args.padside as Expression | undefined;
   }
 }
 
-export type BitwiseLeftShiftExprArgs = { requiresInt128?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type BitwiseLeftShiftExprArgs = { requiresInt128?: Expression } & BaseExpressionArgs;
 
 export class BitwiseLeftShiftExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_LEFT_SHIFT;
@@ -14016,17 +14638,16 @@ export class BitwiseLeftShiftExpr extends BinaryExpr {
 
   declare args: BitwiseLeftShiftExprArgs;
 
-  constructor (args: BitwiseLeftShiftExprArgs = {}) {
+  constructor (args: BitwiseLeftShiftExprArgs) {
     super(args);
   }
 
-  get $requiresInt128 (): Expression {
-    return this.args.requiresInt128 as Expression;
+  get $requiresInt128 (): Expression | undefined {
+    return this.args.requiresInt128 as Expression | undefined;
   }
 }
 
-export type BitwiseOrExprArgs = { padside?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type BitwiseOrExprArgs = { padside?: Expression } & BaseExpressionArgs;
 
 export class BitwiseOrExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_OR;
@@ -14039,17 +14660,16 @@ export class BitwiseOrExpr extends BinaryExpr {
 
   declare args: BitwiseOrExprArgs;
 
-  constructor (args: BitwiseOrExprArgs = {}) {
+  constructor (args: BitwiseOrExprArgs) {
     super(args);
   }
 
-  get $padside (): Expression {
-    return this.args.padside as Expression;
+  get $padside (): Expression | undefined {
+    return this.args.padside as Expression | undefined;
   }
 }
 
-export type BitwiseRightShiftExprArgs = { requiresInt128?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type BitwiseRightShiftExprArgs = { requiresInt128?: Expression } & BaseExpressionArgs;
 
 export class BitwiseRightShiftExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_RIGHT_SHIFT;
@@ -14062,17 +14682,16 @@ export class BitwiseRightShiftExpr extends BinaryExpr {
 
   declare args: BitwiseRightShiftExprArgs;
 
-  constructor (args: BitwiseRightShiftExprArgs = {}) {
+  constructor (args: BitwiseRightShiftExprArgs) {
     super(args);
   }
 
-  get $requiresInt128 (): Expression {
-    return this.args.requiresInt128 as Expression;
+  get $requiresInt128 (): Expression | undefined {
+    return this.args.requiresInt128 as Expression | undefined;
   }
 }
 
-export type BitwiseXorExprArgs = { padside?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type BitwiseXorExprArgs = { padside?: Expression } & BaseExpressionArgs;
 
 export class BitwiseXorExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_XOR;
@@ -14085,18 +14704,17 @@ export class BitwiseXorExpr extends BinaryExpr {
 
   declare args: BitwiseXorExprArgs;
 
-  constructor (args: BitwiseXorExprArgs = {}) {
+  constructor (args: BitwiseXorExprArgs) {
     super(args);
   }
 
-  get $padside (): Expression {
-    return this.args.padside as Expression;
+  get $padside (): Expression | undefined {
+    return this.args.padside as Expression | undefined;
   }
 }
 
 export type DivExprArgs = { typed?: DataTypeExpr;
-  safe?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  safe?: boolean; } & BaseExpressionArgs;
 
 export class DivExpr extends BinaryExpr {
   key = ExpressionKey.DIV;
@@ -14112,16 +14730,16 @@ export class DivExpr extends BinaryExpr {
 
   declare args: DivExprArgs;
 
-  constructor (args: DivExprArgs = {}) {
+  constructor (args: DivExprArgs) {
     super(args);
   }
 
-  get $typed (): DataTypeExpr {
-    return this.args.typed as DataTypeExpr;
+  get $typed (): Expression | undefined {
+    return this.args.typed as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 }
 
@@ -14130,7 +14748,7 @@ export class OverlapsExpr extends BinaryExpr {
   key = ExpressionKey.OVERLAPS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<OverlapsExprArgs>;
   declare args: OverlapsExprArgs;
-  constructor (args: OverlapsExprArgs = {}) {
+  constructor (args: OverlapsExprArgs) {
     super(args);
   }
 }
@@ -14140,7 +14758,7 @@ export class ExtendsLeftExpr extends BinaryExpr {
   key = ExpressionKey.EXTENDS_LEFT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ExtendsLeftExprArgs>;
   declare args: ExtendsLeftExprArgs;
-  constructor (args: ExtendsLeftExprArgs = {}) {
+  constructor (args: ExtendsLeftExprArgs) {
     super(args);
   }
 }
@@ -14150,7 +14768,7 @@ export class ExtendsRightExpr extends BinaryExpr {
   key = ExpressionKey.EXTENDS_RIGHT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ExtendsRightExprArgs>;
   declare args: ExtendsRightExprArgs;
-  constructor (args: ExtendsRightExprArgs = {}) {
+  constructor (args: ExtendsRightExprArgs) {
     super(args);
   }
 }
@@ -14160,13 +14778,12 @@ export class DotExpr extends BinaryExpr {
   key = ExpressionKey.DOT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DotExprArgs>;
   declare args: DotExprArgs;
-  constructor (args: DotExprArgs = {}) {
+  constructor (args: DotExprArgs) {
     super(args);
   }
 }
 
-export type DPipeExprArgs = { safe?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DPipeExprArgs = { safe?: boolean } & BaseExpressionArgs;
 
 export class DPipeExpr extends BinaryExpr {
   key = ExpressionKey.D_PIPE;
@@ -14179,12 +14796,12 @@ export class DPipeExpr extends BinaryExpr {
 
   declare args: DPipeExprArgs;
 
-  constructor (args: DPipeExprArgs = {}) {
+  constructor (args: DPipeExprArgs) {
     super(args);
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 }
 
@@ -14193,7 +14810,7 @@ export class EQExpr extends BinaryExpr {
   key = ExpressionKey.EQ;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<EQExprArgs>;
   declare args: EQExprArgs;
-  constructor (args: EQExprArgs = {}) {
+  constructor (args: EQExprArgs) {
     super(args);
   }
 }
@@ -14203,7 +14820,7 @@ export class NullSafeEQExpr extends BinaryExpr {
   key = ExpressionKey.NULL_SAFE_EQ;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NullSafeEQExprArgs>;
   declare args: NullSafeEQExprArgs;
-  constructor (args: NullSafeEQExprArgs = {}) {
+  constructor (args: NullSafeEQExprArgs) {
     super(args);
   }
 }
@@ -14213,7 +14830,7 @@ export class NullSafeNEQExpr extends BinaryExpr {
   key = ExpressionKey.NULL_SAFE_NEQ;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NullSafeNEQExprArgs>;
   declare args: NullSafeNEQExprArgs;
-  constructor (args: NullSafeNEQExprArgs = {}) {
+  constructor (args: NullSafeNEQExprArgs) {
     super(args);
   }
 }
@@ -14223,7 +14840,7 @@ export class PropertyEQExpr extends BinaryExpr {
   key = ExpressionKey.PROPERTY_EQ;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PropertyEQExprArgs>;
   declare args: PropertyEQExprArgs;
-  constructor (args: PropertyEQExprArgs = {}) {
+  constructor (args: PropertyEQExprArgs) {
     super(args);
   }
 }
@@ -14233,7 +14850,7 @@ export class DistanceExpr extends BinaryExpr {
   key = ExpressionKey.DISTANCE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DistanceExprArgs>;
   declare args: DistanceExprArgs;
-  constructor (args: DistanceExprArgs = {}) {
+  constructor (args: DistanceExprArgs) {
     super(args);
   }
 }
@@ -14243,7 +14860,7 @@ export class EscapeExpr extends BinaryExpr {
   key = ExpressionKey.ESCAPE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<EscapeExprArgs>;
   declare args: EscapeExprArgs;
-  constructor (args: EscapeExprArgs = {}) {
+  constructor (args: EscapeExprArgs) {
     super(args);
   }
 }
@@ -14253,7 +14870,7 @@ export class GlobExpr extends BinaryExpr {
   key = ExpressionKey.GLOB;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<GlobExprArgs>;
   declare args: GlobExprArgs;
-  constructor (args: GlobExprArgs = {}) {
+  constructor (args: GlobExprArgs) {
     super(args);
   }
 }
@@ -14263,7 +14880,7 @@ export class GTExpr extends BinaryExpr {
   key = ExpressionKey.GT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<GTExprArgs>;
   declare args: GTExprArgs;
-  constructor (args: GTExprArgs = {}) {
+  constructor (args: GTExprArgs) {
     super(args);
   }
 }
@@ -14273,7 +14890,7 @@ export class GTEExpr extends BinaryExpr {
   key = ExpressionKey.GTE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<GTEExprArgs>;
   declare args: GTEExprArgs;
-  constructor (args: GTEExprArgs = {}) {
+  constructor (args: GTEExprArgs) {
     super(args);
   }
 }
@@ -14283,7 +14900,7 @@ export class ILikeExpr extends BinaryExpr {
   key = ExpressionKey.ILIKE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ILikeExprArgs>;
   declare args: ILikeExprArgs;
-  constructor (args: ILikeExprArgs = {}) {
+  constructor (args: ILikeExprArgs) {
     super(args);
   }
 }
@@ -14293,7 +14910,7 @@ export class IntDivExpr extends BinaryExpr {
   key = ExpressionKey.INT_DIV;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<IntDivExprArgs>;
   declare args: IntDivExprArgs;
-  constructor (args: IntDivExprArgs = {}) {
+  constructor (args: IntDivExprArgs) {
     super(args);
   }
 }
@@ -14303,7 +14920,7 @@ export class IsExpr extends BinaryExpr {
   key = ExpressionKey.IS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<IsExprArgs>;
   declare args: IsExprArgs;
-  constructor (args: IsExprArgs = {}) {
+  constructor (args: IsExprArgs) {
     super(args);
   }
 }
@@ -14313,7 +14930,7 @@ export class KwargExpr extends BinaryExpr {
   key = ExpressionKey.KWARG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<KwargExprArgs>;
   declare args: KwargExprArgs;
-  constructor (args: KwargExprArgs = {}) {
+  constructor (args: KwargExprArgs) {
     super(args);
   }
 }
@@ -14323,7 +14940,7 @@ export class LikeExpr extends BinaryExpr {
   key = ExpressionKey.LIKE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LikeExprArgs>;
   declare args: LikeExprArgs;
-  constructor (args: LikeExprArgs = {}) {
+  constructor (args: LikeExprArgs) {
     super(args);
   }
 }
@@ -14333,7 +14950,7 @@ export class MatchExpr extends BinaryExpr {
   key = ExpressionKey.MATCH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MatchExprArgs>;
   declare args: MatchExprArgs;
-  constructor (args: MatchExprArgs = {}) {
+  constructor (args: MatchExprArgs) {
     super(args);
   }
 }
@@ -14343,7 +14960,7 @@ export class LTExpr extends BinaryExpr {
   key = ExpressionKey.LT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LTExprArgs>;
   declare args: LTExprArgs;
-  constructor (args: LTExprArgs = {}) {
+  constructor (args: LTExprArgs) {
     super(args);
   }
 }
@@ -14353,7 +14970,7 @@ export class LTEExpr extends BinaryExpr {
   key = ExpressionKey.LTE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LTEExprArgs>;
   declare args: LTEExprArgs;
-  constructor (args: LTEExprArgs = {}) {
+  constructor (args: LTEExprArgs) {
     super(args);
   }
 }
@@ -14363,7 +14980,7 @@ export class ModExpr extends BinaryExpr {
   key = ExpressionKey.MOD;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ModExprArgs>;
   declare args: ModExprArgs;
-  constructor (args: ModExprArgs = {}) {
+  constructor (args: ModExprArgs) {
     super(args);
   }
 }
@@ -14373,7 +14990,7 @@ export class MulExpr extends BinaryExpr {
   key = ExpressionKey.MUL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MulExprArgs>;
   declare args: MulExprArgs;
-  constructor (args: MulExprArgs = {}) {
+  constructor (args: MulExprArgs) {
     super(args);
   }
 }
@@ -14383,13 +15000,12 @@ export class NEQExpr extends BinaryExpr {
   key = ExpressionKey.NEQ;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NEQExprArgs>;
   declare args: NEQExprArgs;
-  constructor (args: NEQExprArgs = {}) {
+  constructor (args: NEQExprArgs) {
     super(args);
   }
 }
 
-export type OperatorExprArgs = { operator: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type OperatorExprArgs = { operator: Expression } & BaseExpressionArgs;
 
 export class OperatorExpr extends BinaryExpr {
   key = ExpressionKey.OPERATOR;
@@ -14416,7 +15032,7 @@ export class SimilarToExpr extends BinaryExpr {
   key = ExpressionKey.SIMILAR_TO;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SimilarToExprArgs>;
   declare args: SimilarToExprArgs;
-  constructor (args: SimilarToExprArgs = {}) {
+  constructor (args: SimilarToExprArgs) {
     super(args);
   }
 }
@@ -14426,7 +15042,7 @@ export class SubExpr extends BinaryExpr {
   key = ExpressionKey.SUB;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SubExprArgs>;
   declare args: SubExprArgs;
-  constructor (args: SubExprArgs = {}) {
+  constructor (args: SubExprArgs) {
     super(args);
   }
 }
@@ -14436,7 +15052,7 @@ export class AdjacentExpr extends BinaryExpr {
   key = ExpressionKey.ADJACENT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AdjacentExprArgs>;
   declare args: AdjacentExprArgs;
-  constructor (args: AdjacentExprArgs = {}) {
+  constructor (args: AdjacentExprArgs) {
     super(args);
   }
 }
@@ -14446,7 +15062,7 @@ export class BitwiseNotExpr extends UnaryExpr {
   key = ExpressionKey.BITWISE_NOT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BitwiseNotExprArgs>;
   declare args: BitwiseNotExprArgs;
-  constructor (args: BitwiseNotExprArgs = {}) {
+  constructor (args: BitwiseNotExprArgs) {
     super(args);
   }
 }
@@ -14456,7 +15072,7 @@ export class NotExpr extends UnaryExpr {
   key = ExpressionKey.NOT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NotExprArgs>;
   declare args: NotExprArgs;
-  constructor (args: NotExprArgs = {}) {
+  constructor (args: NotExprArgs) {
     super(args);
   }
 }
@@ -14466,7 +15082,7 @@ export class ParenExpr extends UnaryExpr {
   key = ExpressionKey.PAREN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ParenExprArgs>;
   declare args: ParenExprArgs;
-  constructor (args: ParenExprArgs = {}) {
+  constructor (args: ParenExprArgs) {
     super(args);
   }
 }
@@ -14476,15 +15092,14 @@ export class NegExpr extends UnaryExpr {
   key = ExpressionKey.NEG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NegExprArgs>;
   declare args: NegExprArgs;
-  constructor (args: NegExprArgs = {}) {
+  constructor (args: NegExprArgs) {
     super(args);
   }
 }
 
 export type BetweenExprArgs = { low: Expression;
   high: Expression;
-  symmetric?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  symmetric?: Expression; } & BaseExpressionArgs;
 
 export class BetweenExpr extends PredicateExpr {
   key = ExpressionKey.BETWEEN;
@@ -14513,16 +15128,15 @@ export class BetweenExpr extends PredicateExpr {
     return this.args.high as Expression;
   }
 
-  get $symmetric (): Expression {
-    return this.args.symmetric as Expression;
+  get $symmetric (): Expression | undefined {
+    return this.args.symmetric as Expression | undefined;
   }
 }
 
 export type InExprArgs = { query?: Expression;
   unnest?: UnnestExpr;
   field?: Expression;
-  isGlobal?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  isGlobal?: Expression; } & BaseExpressionArgs;
 
 export class InExpr extends PredicateExpr {
   key = ExpressionKey.IN;
@@ -14540,24 +15154,24 @@ export class InExpr extends PredicateExpr {
 
   declare args: InExprArgs;
 
-  constructor (args: InExprArgs = {}) {
+  constructor (args: InExprArgs) {
     super(args);
   }
 
-  get $query (): Expression {
-    return this.args.query as Expression;
+  get $query (): Expression | undefined {
+    return this.args.query as Expression | undefined;
   }
 
-  get $unnest (): boolean {
-    return this.args.unnest as boolean;
+  get $unnest (): Expression | undefined {
+    return this.args.unnest as Expression | undefined;
   }
 
-  get $field (): Expression {
-    return this.args.field as Expression;
+  get $field (): Expression | undefined {
+    return this.args.field as Expression | undefined;
   }
 
-  get $isGlobal (): Expression {
-    return this.args.isGlobal as Expression;
+  get $isGlobal (): Expression | undefined {
+    return this.args.isGlobal as Expression | undefined;
   }
 }
 
@@ -14566,7 +15180,7 @@ export class SafeFuncExpr extends FuncExpr {
   key = ExpressionKey.SAFE_FUNC;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SafeFuncExprArgs>;
   declare args: SafeFuncExprArgs;
-  constructor (args: SafeFuncExprArgs = {}) {
+  constructor (args: SafeFuncExprArgs) {
     super(args);
   }
 }
@@ -14576,7 +15190,7 @@ export class TypeofExpr extends FuncExpr {
   key = ExpressionKey.TYPEOF;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TypeofExprArgs>;
   declare args: TypeofExprArgs;
-  constructor (args: TypeofExprArgs = {}) {
+  constructor (args: TypeofExprArgs) {
     super(args);
   }
 }
@@ -14586,7 +15200,7 @@ export class AcosExpr extends FuncExpr {
   key = ExpressionKey.ACOS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AcosExprArgs>;
   declare args: AcosExprArgs;
-  constructor (args: AcosExprArgs = {}) {
+  constructor (args: AcosExprArgs) {
     super(args);
   }
 }
@@ -14596,7 +15210,7 @@ export class AcoshExpr extends FuncExpr {
   key = ExpressionKey.ACOSH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AcoshExprArgs>;
   declare args: AcoshExprArgs;
-  constructor (args: AcoshExprArgs = {}) {
+  constructor (args: AcoshExprArgs) {
     super(args);
   }
 }
@@ -14606,7 +15220,7 @@ export class AsinExpr extends FuncExpr {
   key = ExpressionKey.ASIN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AsinExprArgs>;
   declare args: AsinExprArgs;
-  constructor (args: AsinExprArgs = {}) {
+  constructor (args: AsinExprArgs) {
     super(args);
   }
 }
@@ -14616,7 +15230,7 @@ export class AsinhExpr extends FuncExpr {
   key = ExpressionKey.ASINH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AsinhExprArgs>;
   declare args: AsinhExprArgs;
-  constructor (args: AsinhExprArgs = {}) {
+  constructor (args: AsinhExprArgs) {
     super(args);
   }
 }
@@ -14626,7 +15240,7 @@ export class AtanExpr extends FuncExpr {
   key = ExpressionKey.ATAN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AtanExprArgs>;
   declare args: AtanExprArgs;
-  constructor (args: AtanExprArgs = {}) {
+  constructor (args: AtanExprArgs) {
     super(args);
   }
 }
@@ -14636,7 +15250,7 @@ export class AtanhExpr extends FuncExpr {
   key = ExpressionKey.ATANH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AtanhExprArgs>;
   declare args: AtanhExprArgs;
-  constructor (args: AtanhExprArgs = {}) {
+  constructor (args: AtanhExprArgs) {
     super(args);
   }
 }
@@ -14646,7 +15260,7 @@ export class Atan2Expr extends FuncExpr {
   key = ExpressionKey.ATAN2;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<Atan2ExprArgs>;
   declare args: Atan2ExprArgs;
-  constructor (args: Atan2ExprArgs = {}) {
+  constructor (args: Atan2ExprArgs) {
     super(args);
   }
 }
@@ -14656,7 +15270,7 @@ export class CotExpr extends FuncExpr {
   key = ExpressionKey.COT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CotExprArgs>;
   declare args: CotExprArgs;
-  constructor (args: CotExprArgs = {}) {
+  constructor (args: CotExprArgs) {
     super(args);
   }
 }
@@ -14666,7 +15280,7 @@ export class CothExpr extends FuncExpr {
   key = ExpressionKey.COTH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CothExprArgs>;
   declare args: CothExprArgs;
-  constructor (args: CothExprArgs = {}) {
+  constructor (args: CothExprArgs) {
     super(args);
   }
 }
@@ -14676,7 +15290,7 @@ export class CosExpr extends FuncExpr {
   key = ExpressionKey.COS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CosExprArgs>;
   declare args: CosExprArgs;
-  constructor (args: CosExprArgs = {}) {
+  constructor (args: CosExprArgs) {
     super(args);
   }
 }
@@ -14686,7 +15300,7 @@ export class CscExpr extends FuncExpr {
   key = ExpressionKey.CSC;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CscExprArgs>;
   declare args: CscExprArgs;
-  constructor (args: CscExprArgs = {}) {
+  constructor (args: CscExprArgs) {
     super(args);
   }
 }
@@ -14696,7 +15310,7 @@ export class CschExpr extends FuncExpr {
   key = ExpressionKey.CSCH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CschExprArgs>;
   declare args: CschExprArgs;
-  constructor (args: CschExprArgs = {}) {
+  constructor (args: CschExprArgs) {
     super(args);
   }
 }
@@ -14706,7 +15320,7 @@ export class SecExpr extends FuncExpr {
   key = ExpressionKey.SEC;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SecExprArgs>;
   declare args: SecExprArgs;
-  constructor (args: SecExprArgs = {}) {
+  constructor (args: SecExprArgs) {
     super(args);
   }
 }
@@ -14716,7 +15330,7 @@ export class SechExpr extends FuncExpr {
   key = ExpressionKey.SECH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SechExprArgs>;
   declare args: SechExprArgs;
-  constructor (args: SechExprArgs = {}) {
+  constructor (args: SechExprArgs) {
     super(args);
   }
 }
@@ -14726,7 +15340,7 @@ export class SinExpr extends FuncExpr {
   key = ExpressionKey.SIN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SinExprArgs>;
   declare args: SinExprArgs;
-  constructor (args: SinExprArgs = {}) {
+  constructor (args: SinExprArgs) {
     super(args);
   }
 }
@@ -14736,7 +15350,7 @@ export class SinhExpr extends FuncExpr {
   key = ExpressionKey.SINH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SinhExprArgs>;
   declare args: SinhExprArgs;
-  constructor (args: SinhExprArgs = {}) {
+  constructor (args: SinhExprArgs) {
     super(args);
   }
 }
@@ -14746,7 +15360,7 @@ export class TanExpr extends FuncExpr {
   key = ExpressionKey.TAN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TanExprArgs>;
   declare args: TanExprArgs;
-  constructor (args: TanExprArgs = {}) {
+  constructor (args: TanExprArgs) {
     super(args);
   }
 }
@@ -14756,7 +15370,7 @@ export class TanhExpr extends FuncExpr {
   key = ExpressionKey.TANH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TanhExprArgs>;
   declare args: TanhExprArgs;
-  constructor (args: TanhExprArgs = {}) {
+  constructor (args: TanhExprArgs) {
     super(args);
   }
 }
@@ -14766,7 +15380,7 @@ export class DegreesExpr extends FuncExpr {
   key = ExpressionKey.DEGREES;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DegreesExprArgs>;
   declare args: DegreesExprArgs;
-  constructor (args: DegreesExprArgs = {}) {
+  constructor (args: DegreesExprArgs) {
     super(args);
   }
 }
@@ -14776,7 +15390,7 @@ export class CoshExpr extends FuncExpr {
   key = ExpressionKey.COSH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CoshExprArgs>;
   declare args: CoshExprArgs;
-  constructor (args: CoshExprArgs = {}) {
+  constructor (args: CoshExprArgs) {
     super(args);
   }
 }
@@ -14786,7 +15400,7 @@ export class CosineDistanceExpr extends FuncExpr {
   key = ExpressionKey.COSINE_DISTANCE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CosineDistanceExprArgs>;
   declare args: CosineDistanceExprArgs;
-  constructor (args: CosineDistanceExprArgs = {}) {
+  constructor (args: CosineDistanceExprArgs) {
     super(args);
   }
 }
@@ -14796,7 +15410,7 @@ export class DotProductExpr extends FuncExpr {
   key = ExpressionKey.DOT_PRODUCT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DotProductExprArgs>;
   declare args: DotProductExprArgs;
-  constructor (args: DotProductExprArgs = {}) {
+  constructor (args: DotProductExprArgs) {
     super(args);
   }
 }
@@ -14806,7 +15420,7 @@ export class EuclideanDistanceExpr extends FuncExpr {
   key = ExpressionKey.EUCLIDEAN_DISTANCE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<EuclideanDistanceExprArgs>;
   declare args: EuclideanDistanceExprArgs;
-  constructor (args: EuclideanDistanceExprArgs = {}) {
+  constructor (args: EuclideanDistanceExprArgs) {
     super(args);
   }
 }
@@ -14816,7 +15430,7 @@ export class ManhattanDistanceExpr extends FuncExpr {
   key = ExpressionKey.MANHATTAN_DISTANCE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ManhattanDistanceExprArgs>;
   declare args: ManhattanDistanceExprArgs;
-  constructor (args: ManhattanDistanceExprArgs = {}) {
+  constructor (args: ManhattanDistanceExprArgs) {
     super(args);
   }
 }
@@ -14829,7 +15443,7 @@ export class JarowinklerSimilarityExpr extends FuncExpr {
   >;
 
   declare args: JarowinklerSimilarityExprArgs;
-  constructor (args: JarowinklerSimilarityExprArgs = {}) {
+  constructor (args: JarowinklerSimilarityExprArgs) {
     super(args);
   }
 }
@@ -14839,7 +15453,7 @@ export class AggFuncExpr extends FuncExpr {
   key = ExpressionKey.AGG_FUNC;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AggFuncExprArgs>;
   declare args: AggFuncExprArgs;
-  constructor (args: AggFuncExprArgs = {}) {
+  constructor (args: AggFuncExprArgs) {
     super(args);
   }
 }
@@ -14849,7 +15463,7 @@ export class BitwiseCountExpr extends FuncExpr {
   key = ExpressionKey.BITWISE_COUNT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BitwiseCountExprArgs>;
   declare args: BitwiseCountExprArgs;
-  constructor (args: BitwiseCountExprArgs = {}) {
+  constructor (args: BitwiseCountExprArgs) {
     super(args);
   }
 }
@@ -14859,7 +15473,7 @@ export class BitmapBucketNumberExpr extends FuncExpr {
   key = ExpressionKey.BITMAP_BUCKET_NUMBER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BitmapBucketNumberExprArgs>;
   declare args: BitmapBucketNumberExprArgs;
-  constructor (args: BitmapBucketNumberExprArgs = {}) {
+  constructor (args: BitmapBucketNumberExprArgs) {
     super(args);
   }
 }
@@ -14869,7 +15483,7 @@ export class BitmapCountExpr extends FuncExpr {
   key = ExpressionKey.BITMAP_COUNT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BitmapCountExprArgs>;
   declare args: BitmapCountExprArgs;
-  constructor (args: BitmapCountExprArgs = {}) {
+  constructor (args: BitmapCountExprArgs) {
     super(args);
   }
 }
@@ -14879,7 +15493,7 @@ export class BitmapBitPositionExpr extends FuncExpr {
   key = ExpressionKey.BITMAP_BIT_POSITION;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BitmapBitPositionExprArgs>;
   declare args: BitmapBitPositionExprArgs;
-  constructor (args: BitmapBitPositionExprArgs = {}) {
+  constructor (args: BitmapBitPositionExprArgs) {
     super(args);
   }
 }
@@ -14889,13 +15503,12 @@ export class ByteLengthExpr extends FuncExpr {
   key = ExpressionKey.BYTE_LENGTH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ByteLengthExprArgs>;
   declare args: ByteLengthExprArgs;
-  constructor (args: ByteLengthExprArgs = {}) {
+  constructor (args: ByteLengthExprArgs) {
     super(args);
   }
 }
 
-export type BoolnotExprArgs = { roundInput?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type BoolnotExprArgs = { roundInput?: Expression } & BaseExpressionArgs;
 
 export class BoolnotExpr extends FuncExpr {
   key = ExpressionKey.BOOLNOT;
@@ -14908,17 +15521,16 @@ export class BoolnotExpr extends FuncExpr {
 
   declare args: BoolnotExprArgs;
 
-  constructor (args: BoolnotExprArgs = {}) {
+  constructor (args: BoolnotExprArgs) {
     super(args);
   }
 
-  get $roundInput (): Expression {
-    return this.args.roundInput as Expression;
+  get $roundInput (): Expression | undefined {
+    return this.args.roundInput as Expression | undefined;
   }
 }
 
-export type BoolandExprArgs = { roundInput?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type BoolandExprArgs = { roundInput?: Expression } & BaseExpressionArgs;
 
 export class BoolandExpr extends FuncExpr {
   key = ExpressionKey.BOOLAND;
@@ -14931,17 +15543,16 @@ export class BoolandExpr extends FuncExpr {
 
   declare args: BoolandExprArgs;
 
-  constructor (args: BoolandExprArgs = {}) {
+  constructor (args: BoolandExprArgs) {
     super(args);
   }
 
-  get $roundInput (): Expression {
-    return this.args.roundInput as Expression;
+  get $roundInput (): Expression | undefined {
+    return this.args.roundInput as Expression | undefined;
   }
 }
 
-export type BoolorExprArgs = { roundInput?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type BoolorExprArgs = { roundInput?: Expression } & BaseExpressionArgs;
 
 export class BoolorExpr extends FuncExpr {
   key = ExpressionKey.BOOLOR;
@@ -14954,12 +15565,12 @@ export class BoolorExpr extends FuncExpr {
 
   declare args: BoolorExprArgs;
 
-  constructor (args: BoolorExprArgs = {}) {
+  constructor (args: BoolorExprArgs) {
     super(args);
   }
 
-  get $roundInput (): Expression {
-    return this.args.roundInput as Expression;
+  get $roundInput (): Expression | undefined {
+    return this.args.roundInput as Expression | undefined;
   }
 }
 
@@ -14968,13 +15579,12 @@ export class JSONBoolExpr extends FuncExpr {
   key = ExpressionKey.JSON_BOOL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONBoolExprArgs>;
   declare args: JSONBoolExprArgs;
-  constructor (args: JSONBoolExprArgs = {}) {
+  constructor (args: JSONBoolExprArgs) {
     super(args);
   }
 }
 
-export type ArrayRemoveExprArgs = { nullPropagation?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ArrayRemoveExprArgs = { nullPropagation?: Expression } & BaseExpressionArgs;
 
 export class ArrayRemoveExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_REMOVE;
@@ -14987,12 +15597,12 @@ export class ArrayRemoveExpr extends FuncExpr {
 
   declare args: ArrayRemoveExprArgs;
 
-  constructor (args: ArrayRemoveExprArgs = {}) {
+  constructor (args: ArrayRemoveExprArgs) {
     super(args);
   }
 
-  get $nullPropagation (): Expression {
-    return this.args.nullPropagation as Expression;
+  get $nullPropagation (): Expression | undefined {
+    return this.args.nullPropagation as Expression | undefined;
   }
 }
 
@@ -15001,7 +15611,7 @@ export class AbsExpr extends FuncExpr {
   key = ExpressionKey.ABS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AbsExprArgs>;
   declare args: AbsExprArgs;
-  constructor (args: AbsExprArgs = {}) {
+  constructor (args: AbsExprArgs) {
     super(args);
   }
 }
@@ -15011,7 +15621,7 @@ export class ApproxTopKEstimateExpr extends FuncExpr {
   key = ExpressionKey.APPROX_TOP_K_ESTIMATE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ApproxTopKEstimateExprArgs>;
   declare args: ApproxTopKEstimateExprArgs;
-  constructor (args: ApproxTopKEstimateExprArgs = {}) {
+  constructor (args: ApproxTopKEstimateExprArgs) {
     super(args);
   }
 }
@@ -15021,7 +15631,7 @@ export class FarmFingerprintExpr extends FuncExpr {
   key = ExpressionKey.FARM_FINGERPRINT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FarmFingerprintExprArgs>;
   declare args: FarmFingerprintExprArgs;
-  constructor (args: FarmFingerprintExprArgs = {}) {
+  constructor (args: FarmFingerprintExprArgs) {
     super(args);
   }
 }
@@ -15031,7 +15641,7 @@ export class FlattenExpr extends FuncExpr {
   key = ExpressionKey.FLATTEN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FlattenExprArgs>;
   declare args: FlattenExprArgs;
-  constructor (args: FlattenExprArgs = {}) {
+  constructor (args: FlattenExprArgs) {
     super(args);
   }
 }
@@ -15041,7 +15651,7 @@ export class Float64Expr extends FuncExpr {
   key = ExpressionKey.FLOAT64;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<Float64ExprArgs>;
   declare args: Float64ExprArgs;
-  constructor (args: Float64ExprArgs = {}) {
+  constructor (args: Float64ExprArgs) {
     super(args);
   }
 }
@@ -15051,14 +15661,13 @@ export class TransformExpr extends FuncExpr {
   key = ExpressionKey.TRANSFORM;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TransformExprArgs>;
   declare args: TransformExprArgs;
-  constructor (args: TransformExprArgs = {}) {
+  constructor (args: TransformExprArgs) {
     super(args);
   }
 }
 
 export type TranslateExprArgs = { from: Expression;
-  to: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  to: Expression; } & BaseExpressionArgs;
 
 export class TranslateExpr extends FuncExpr {
   key = ExpressionKey.TRANSLATE;
@@ -15092,7 +15701,7 @@ export class AnonymousExpr extends FuncExpr {
   key = ExpressionKey.ANONYMOUS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AnonymousExprArgs>;
   declare args: AnonymousExprArgs;
-  constructor (args: AnonymousExprArgs = {}) {
+  constructor (args: AnonymousExprArgs) {
     super(args);
   }
 }
@@ -15102,14 +15711,13 @@ export class ApplyExpr extends FuncExpr {
   key = ExpressionKey.APPLY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ApplyExprArgs>;
   declare args: ApplyExprArgs;
-  constructor (args: ApplyExprArgs = {}) {
+  constructor (args: ApplyExprArgs) {
     super(args);
   }
 }
 
 export type ArrayExprArgs = { bracketNotation?: Expression;
-  structNameInheritance?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  structNameInheritance?: string; } & BaseExpressionArgs;
 
 export class ArrayExpr extends FuncExpr {
   key = ExpressionKey.ARRAY;
@@ -15125,16 +15733,16 @@ export class ArrayExpr extends FuncExpr {
 
   declare args: ArrayExprArgs;
 
-  constructor (args: ArrayExprArgs = {}) {
+  constructor (args: ArrayExprArgs) {
     super(args);
   }
 
-  get $bracketNotation (): Expression {
-    return this.args.bracketNotation as Expression;
+  get $bracketNotation (): Expression | undefined {
+    return this.args.bracketNotation as Expression | undefined;
   }
 
-  get $structNameInheritance (): string {
-    return this.args.structNameInheritance as string;
+  get $structNameInheritance (): Expression | undefined {
+    return this.args.structNameInheritance as Expression | undefined;
   }
 }
 
@@ -15143,7 +15751,7 @@ export class AsciiExpr extends FuncExpr {
   key = ExpressionKey.ASCII;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AsciiExprArgs>;
   declare args: AsciiExprArgs;
-  constructor (args: AsciiExprArgs = {}) {
+  constructor (args: AsciiExprArgs) {
     super(args);
   }
 }
@@ -15153,13 +15761,12 @@ export class ToArrayExpr extends FuncExpr {
   key = ExpressionKey.TO_ARRAY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ToArrayExprArgs>;
   declare args: ToArrayExprArgs;
-  constructor (args: ToArrayExprArgs = {}) {
+  constructor (args: ToArrayExprArgs) {
     super(args);
   }
 }
 
-export type ToBooleanExprArgs = { safe?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ToBooleanExprArgs = { safe?: boolean } & BaseExpressionArgs;
 
 export class ToBooleanExpr extends FuncExpr {
   key = ExpressionKey.TO_BOOLEAN;
@@ -15172,12 +15779,12 @@ export class ToBooleanExpr extends FuncExpr {
 
   declare args: ToBooleanExprArgs;
 
-  constructor (args: ToBooleanExprArgs = {}) {
+  constructor (args: ToBooleanExprArgs) {
     super(args);
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 }
 
@@ -15186,14 +15793,13 @@ export class ListExpr extends FuncExpr {
   key = ExpressionKey.LIST;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ListExprArgs>;
   declare args: ListExprArgs;
-  constructor (args: ListExprArgs = {}) {
+  constructor (args: ListExprArgs) {
     super(args);
   }
 }
 
 export type PadExprArgs = { fillPattern?: Expression;
-  isLeft: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  isLeft: Expression; } & BaseExpressionArgs;
 
 export class PadExpr extends FuncExpr {
   key = ExpressionKey.PAD;
@@ -15213,8 +15819,8 @@ export class PadExpr extends FuncExpr {
     super(args);
   }
 
-  get $fillPattern (): Expression {
-    return this.args.fillPattern as Expression;
+  get $fillPattern (): Expression | undefined {
+    return this.args.fillPattern as Expression | undefined;
   }
 
   get $isLeft (): Expression {
@@ -15224,8 +15830,7 @@ export class PadExpr extends FuncExpr {
 
 export type ToCharExprArgs = { format?: string;
   nlsparam?: Expression;
-  isNumeric?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  isNumeric?: Expression; } & BaseExpressionArgs;
 
 export class ToCharExpr extends FuncExpr {
   key = ExpressionKey.TO_CHAR;
@@ -15242,20 +15847,20 @@ export class ToCharExpr extends FuncExpr {
 
   declare args: ToCharExprArgs;
 
-  constructor (args: ToCharExprArgs = {}) {
+  constructor (args: ToCharExprArgs) {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 
-  get $nlsparam (): Expression {
-    return this.args.nlsparam as Expression;
+  get $nlsparam (): Expression | undefined {
+    return this.args.nlsparam as Expression | undefined;
   }
 
-  get $isNumeric (): Expression {
-    return this.args.isNumeric as Expression;
+  get $isNumeric (): Expression | undefined {
+    return this.args.isNumeric as Expression | undefined;
   }
 }
 
@@ -15264,7 +15869,7 @@ export class ToCodePointsExpr extends FuncExpr {
   key = ExpressionKey.TO_CODE_POINTS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ToCodePointsExprArgs>;
   declare args: ToCodePointsExprArgs;
-  constructor (args: ToCodePointsExprArgs = {}) {
+  constructor (args: ToCodePointsExprArgs) {
     super(args);
   }
 }
@@ -15274,8 +15879,7 @@ export type ToNumberExprArgs = { format?: string;
   precision?: number | Expression;
   scale?: number | Expression;
   safe?: boolean;
-  safeName?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  safeName?: boolean; } & BaseExpressionArgs;
 
 export class ToNumberExpr extends FuncExpr {
   key = ExpressionKey.TO_NUMBER;
@@ -15295,38 +15899,37 @@ export class ToNumberExpr extends FuncExpr {
 
   declare args: ToNumberExprArgs;
 
-  constructor (args: ToNumberExprArgs = {}) {
+  constructor (args: ToNumberExprArgs) {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 
-  get $nlsparam (): Expression {
-    return this.args.nlsparam as Expression;
+  get $nlsparam (): Expression | undefined {
+    return this.args.nlsparam as Expression | undefined;
   }
 
-  get $precision (): number | Expression {
-    return this.args.precision as number | Expression;
+  get $precision (): Expression | undefined {
+    return this.args.precision as Expression | undefined;
   }
 
-  get $scale (): number | Expression {
-    return this.args.scale as number | Expression;
+  get $scale (): Expression | undefined {
+    return this.args.scale as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 
-  get $safeName (): boolean {
-    return this.args.safeName as boolean;
+  get $safeName (): Expression | undefined {
+    return this.args.safeName as Expression | undefined;
   }
 }
 
 export type ToDoubleExprArgs = { format?: string;
-  safe?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  safe?: boolean; } & BaseExpressionArgs;
 
 export class ToDoubleExpr extends FuncExpr {
   key = ExpressionKey.TO_DOUBLE;
@@ -15342,21 +15945,20 @@ export class ToDoubleExpr extends FuncExpr {
 
   declare args: ToDoubleExprArgs;
 
-  constructor (args: ToDoubleExprArgs = {}) {
+  constructor (args: ToDoubleExprArgs) {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 }
 
-export type ToDecfloatExprArgs = { format?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ToDecfloatExprArgs = { format?: string } & BaseExpressionArgs;
 
 export class ToDecfloatExpr extends FuncExpr {
   key = ExpressionKey.TO_DECFLOAT;
@@ -15369,17 +15971,16 @@ export class ToDecfloatExpr extends FuncExpr {
 
   declare args: ToDecfloatExprArgs;
 
-  constructor (args: ToDecfloatExprArgs = {}) {
+  constructor (args: ToDecfloatExprArgs) {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 }
 
-export type TryToDecfloatExprArgs = { format?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TryToDecfloatExprArgs = { format?: string } & BaseExpressionArgs;
 
 export class TryToDecfloatExpr extends FuncExpr {
   key = ExpressionKey.TRY_TO_DECFLOAT;
@@ -15392,18 +15993,17 @@ export class TryToDecfloatExpr extends FuncExpr {
 
   declare args: TryToDecfloatExprArgs;
 
-  constructor (args: TryToDecfloatExprArgs = {}) {
+  constructor (args: TryToDecfloatExprArgs) {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 }
 
 export type ToFileExprArgs = { path?: Expression;
-  safe?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  safe?: boolean; } & BaseExpressionArgs;
 
 export class ToFileExpr extends FuncExpr {
   key = ExpressionKey.TO_FILE;
@@ -15419,16 +16019,16 @@ export class ToFileExpr extends FuncExpr {
 
   declare args: ToFileExprArgs;
 
-  constructor (args: ToFileExprArgs = {}) {
+  constructor (args: ToFileExprArgs) {
     super(args);
   }
 
-  get $path (): Expression {
-    return this.args.path as Expression;
+  get $path (): Expression | undefined {
+    return this.args.path as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 }
 
@@ -15437,13 +16037,12 @@ export class CodePointsToBytesExpr extends FuncExpr {
   key = ExpressionKey.CODE_POINTS_TO_BYTES;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CodePointsToBytesExprArgs>;
   declare args: CodePointsToBytesExprArgs;
-  constructor (args: CodePointsToBytesExprArgs = {}) {
+  constructor (args: CodePointsToBytesExprArgs) {
     super(args);
   }
 }
 
-export type ColumnsExprArgs = { unpack?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ColumnsExprArgs = { unpack?: Expression } & BaseExpressionArgs;
 
 export class ColumnsExpr extends FuncExpr {
   key = ExpressionKey.COLUMNS;
@@ -15456,18 +16055,17 @@ export class ColumnsExpr extends FuncExpr {
 
   declare args: ColumnsExprArgs;
 
-  constructor (args: ColumnsExprArgs = {}) {
+  constructor (args: ColumnsExprArgs) {
     super(args);
   }
 
-  get $unpack (): Expression {
-    return this.args.unpack as Expression;
+  get $unpack (): Expression | undefined {
+    return this.args.unpack as Expression | undefined;
   }
 }
 
 export type ConvertExprArgs = { style?: Expression;
-  safe?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  safe?: boolean; } & BaseExpressionArgs;
 
 export class ConvertExpr extends FuncExpr {
   key = ExpressionKey.CONVERT;
@@ -15483,22 +16081,21 @@ export class ConvertExpr extends FuncExpr {
 
   declare args: ConvertExprArgs;
 
-  constructor (args: ConvertExprArgs = {}) {
+  constructor (args: ConvertExprArgs) {
     super(args);
   }
 
-  get $style (): Expression {
-    return this.args.style as Expression;
+  get $style (): Expression | undefined {
+    return this.args.style as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 }
 
 export type ConvertToCharsetExprArgs = { dest: Expression;
-  source?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  source?: Expression; } & BaseExpressionArgs;
 
 export class ConvertToCharsetExpr extends FuncExpr {
   key = ExpressionKey.CONVERT_TO_CHARSET;
@@ -15522,16 +16119,15 @@ export class ConvertToCharsetExpr extends FuncExpr {
     return this.args.dest as Expression;
   }
 
-  get $source (): Expression {
-    return this.args.source as Expression;
+  get $source (): Expression | undefined {
+    return this.args.source as Expression | undefined;
   }
 }
 
 export type ConvertTimezoneExprArgs = { sourceTz?: Expression;
   targetTz: Expression;
   timestamp: Expression;
-  options?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  options?: Expression[]; } & BaseExpressionArgs;
 
 export class ConvertTimezoneExpr extends FuncExpr {
   key = ExpressionKey.CONVERT_TIMEZONE;
@@ -15553,8 +16149,8 @@ export class ConvertTimezoneExpr extends FuncExpr {
     super(args);
   }
 
-  get $sourceTz (): Expression {
-    return this.args.sourceTz as Expression;
+  get $sourceTz (): Expression | undefined {
+    return this.args.sourceTz as Expression | undefined;
   }
 
   get $targetTz (): Expression {
@@ -15565,8 +16161,8 @@ export class ConvertTimezoneExpr extends FuncExpr {
     return this.args.timestamp as Expression;
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
   }
 }
 
@@ -15575,7 +16171,7 @@ export class CodePointsToStringExpr extends FuncExpr {
   key = ExpressionKey.CODE_POINTS_TO_STRING;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CodePointsToStringExprArgs>;
   declare args: CodePointsToStringExprArgs;
-  constructor (args: CodePointsToStringExprArgs = {}) {
+  constructor (args: CodePointsToStringExprArgs) {
     super(args);
   }
 }
@@ -15583,8 +16179,7 @@ export class CodePointsToStringExpr extends FuncExpr {
 export type GenerateSeriesExprArgs = { start: Expression;
   end: Expression;
   step?: Expression;
-  isEndExclusive?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  isEndExclusive?: Expression; } & BaseExpressionArgs;
 
 export class GenerateSeriesExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_SERIES;
@@ -15614,18 +16209,17 @@ export class GenerateSeriesExpr extends FuncExpr {
     return this.args.end as Expression;
   }
 
-  get $step (): Expression {
-    return this.args.step as Expression;
+  get $step (): Expression | undefined {
+    return this.args.step as Expression | undefined;
   }
 
-  get $isEndExclusive (): Expression {
-    return this.args.isEndExclusive as Expression;
+  get $isEndExclusive (): Expression | undefined {
+    return this.args.isEndExclusive as Expression | undefined;
   }
 }
 
 export type GeneratorExprArgs = { rowcount?: Expression;
-  timelimit?: number | Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  timelimit?: number | Expression; } & BaseExpressionArgs;
 
 export class GeneratorExpr extends FuncExpr {
   key = ExpressionKey.GENERATOR;
@@ -15641,22 +16235,21 @@ export class GeneratorExpr extends FuncExpr {
 
   declare args: GeneratorExprArgs;
 
-  constructor (args: GeneratorExprArgs = {}) {
+  constructor (args: GeneratorExprArgs) {
     super(args);
   }
 
-  get $rowcount (): Expression {
-    return this.args.rowcount as Expression;
+  get $rowcount (): Expression | undefined {
+    return this.args.rowcount as Expression | undefined;
   }
 
-  get $timelimit (): number | Expression {
-    return this.args.timelimit as number | Expression;
+  get $timelimit (): Expression | undefined {
+    return this.args.timelimit as Expression | undefined;
   }
 }
 
 export type AIClassifyExprArgs = { categories: Expression[];
-  config?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  config?: Expression; } & BaseExpressionArgs;
 
 export class AIClassifyExpr extends FuncExpr {
   key = ExpressionKey.AI_CLASSIFY;
@@ -15677,11 +16270,11 @@ export class AIClassifyExpr extends FuncExpr {
   }
 
   get $categories (): Expression[] {
-    return (this.args.categories || []) as Expression[];
+    return this.args.categories as Expression[];
   }
 
-  get $config (): Expression {
-    return this.args.config as Expression;
+  get $config (): Expression | undefined {
+    return this.args.config as Expression | undefined;
   }
 }
 
@@ -15690,7 +16283,7 @@ export class ArrayAllExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_ALL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayAllExprArgs>;
   declare args: ArrayAllExprArgs;
-  constructor (args: ArrayAllExprArgs = {}) {
+  constructor (args: ArrayAllExprArgs) {
     super(args);
   }
 }
@@ -15700,13 +16293,12 @@ export class ArrayAnyExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_ANY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayAnyExprArgs>;
   declare args: ArrayAnyExprArgs;
-  constructor (args: ArrayAnyExprArgs = {}) {
+  constructor (args: ArrayAnyExprArgs) {
     super(args);
   }
 }
 
-export type ArrayAppendExprArgs = { nullPropagation?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ArrayAppendExprArgs = { nullPropagation?: Expression } & BaseExpressionArgs;
 
 export class ArrayAppendExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_APPEND;
@@ -15719,17 +16311,16 @@ export class ArrayAppendExpr extends FuncExpr {
 
   declare args: ArrayAppendExprArgs;
 
-  constructor (args: ArrayAppendExprArgs = {}) {
+  constructor (args: ArrayAppendExprArgs) {
     super(args);
   }
 
-  get $nullPropagation (): Expression {
-    return this.args.nullPropagation as Expression;
+  get $nullPropagation (): Expression | undefined {
+    return this.args.nullPropagation as Expression | undefined;
   }
 }
 
-export type ArrayPrependExprArgs = { nullPropagation?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ArrayPrependExprArgs = { nullPropagation?: Expression } & BaseExpressionArgs;
 
 export class ArrayPrependExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_PREPEND;
@@ -15742,17 +16333,16 @@ export class ArrayPrependExpr extends FuncExpr {
 
   declare args: ArrayPrependExprArgs;
 
-  constructor (args: ArrayPrependExprArgs = {}) {
+  constructor (args: ArrayPrependExprArgs) {
     super(args);
   }
 
-  get $nullPropagation (): Expression {
-    return this.args.nullPropagation as Expression;
+  get $nullPropagation (): Expression | undefined {
+    return this.args.nullPropagation as Expression | undefined;
   }
 }
 
-export type ArrayConcatExprArgs = { nullPropagation?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ArrayConcatExprArgs = { nullPropagation?: Expression } & BaseExpressionArgs;
 
 export class ArrayConcatExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_CONCAT;
@@ -15767,12 +16357,12 @@ export class ArrayConcatExpr extends FuncExpr {
 
   declare args: ArrayConcatExprArgs;
 
-  constructor (args: ArrayConcatExprArgs = {}) {
+  constructor (args: ArrayConcatExprArgs) {
     super(args);
   }
 
-  get $nullPropagation (): Expression {
-    return this.args.nullPropagation as Expression;
+  get $nullPropagation (): Expression | undefined {
+    return this.args.nullPropagation as Expression | undefined;
   }
 }
 
@@ -15781,14 +16371,13 @@ export class ArrayCompactExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_COMPACT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayCompactExprArgs>;
   declare args: ArrayCompactExprArgs;
-  constructor (args: ArrayCompactExprArgs = {}) {
+  constructor (args: ArrayCompactExprArgs) {
     super(args);
   }
 }
 
 export type ArrayInsertExprArgs = { position: Expression;
-  offset?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  offset?: boolean; } & BaseExpressionArgs;
 
 export class ArrayInsertExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_INSERT;
@@ -15812,13 +16401,12 @@ export class ArrayInsertExpr extends FuncExpr {
     return this.args.position as Expression;
   }
 
-  get $offset (): boolean {
-    return this.args.offset as boolean;
+  get $offset (): Expression | undefined {
+    return this.args.offset as Expression | undefined;
   }
 }
 
-export type ArrayRemoveAtExprArgs = { position: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ArrayRemoveAtExprArgs = { position: Expression } & BaseExpressionArgs;
 
 export class ArrayRemoveAtExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_REMOVE_AT;
@@ -15848,13 +16436,12 @@ export class ArrayConstructCompactExpr extends FuncExpr {
   >;
 
   declare args: ArrayConstructCompactExprArgs;
-  constructor (args: ArrayConstructCompactExprArgs = {}) {
+  constructor (args: ArrayConstructCompactExprArgs) {
     super(args);
   }
 }
 
-export type ArrayContainsExprArgs = { ensureVariant?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ArrayContainsExprArgs = { ensureVariant?: Expression } & BaseExpressionArgs;
 
 export class ArrayContainsExpr extends BinaryExpr {
   key = ExpressionKey.ARRAY_CONTAINS;
@@ -15869,12 +16456,12 @@ export class ArrayContainsExpr extends BinaryExpr {
 
   declare args: ArrayContainsExprArgs;
 
-  constructor (args: ArrayContainsExprArgs = {}) {
+  constructor (args: ArrayContainsExprArgs) {
     super(args);
   }
 
-  get $ensureVariant (): Expression {
-    return this.args.ensureVariant as Expression;
+  get $ensureVariant (): Expression | undefined {
+    return this.args.ensureVariant as Expression | undefined;
   }
 }
 
@@ -15883,7 +16470,7 @@ export class ArrayContainsAllExpr extends BinaryExpr {
   key = ExpressionKey.ARRAY_CONTAINS_ALL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayContainsAllExprArgs>;
   declare args: ArrayContainsAllExprArgs;
-  constructor (args: ArrayContainsAllExprArgs = {}) {
+  constructor (args: ArrayContainsAllExprArgs) {
     super(args);
   }
 
@@ -15895,7 +16482,7 @@ export class ArrayFilterExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_FILTER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayFilterExprArgs>;
   declare args: ArrayFilterExprArgs;
-  constructor (args: ArrayFilterExprArgs = {}) {
+  constructor (args: ArrayFilterExprArgs) {
     super(args);
   }
 
@@ -15907,7 +16494,7 @@ export class ArrayFirstExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_FIRST;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayFirstExprArgs>;
   declare args: ArrayFirstExprArgs;
-  constructor (args: ArrayFirstExprArgs = {}) {
+  constructor (args: ArrayFirstExprArgs) {
     super(args);
   }
 }
@@ -15917,7 +16504,7 @@ export class ArrayLastExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_LAST;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayLastExprArgs>;
   declare args: ArrayLastExprArgs;
-  constructor (args: ArrayLastExprArgs = {}) {
+  constructor (args: ArrayLastExprArgs) {
     super(args);
   }
 }
@@ -15927,15 +16514,14 @@ export class ArrayReverseExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_REVERSE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayReverseExprArgs>;
   declare args: ArrayReverseExprArgs;
-  constructor (args: ArrayReverseExprArgs = {}) {
+  constructor (args: ArrayReverseExprArgs) {
     super(args);
   }
 }
 
 export type ArraySliceExprArgs = { start: Expression;
   end?: Expression;
-  step?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  step?: Expression; } & BaseExpressionArgs;
 
 export class ArraySliceExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SLICE;
@@ -15960,17 +16546,16 @@ export class ArraySliceExpr extends FuncExpr {
     return this.args.start as Expression;
   }
 
-  get $end (): Expression {
-    return this.args.end as Expression;
+  get $end (): Expression | undefined {
+    return this.args.end as Expression | undefined;
   }
 
-  get $step (): Expression {
-    return this.args.step as Expression;
+  get $step (): Expression | undefined {
+    return this.args.step as Expression | undefined;
   }
 }
 
-export type ArrayToStringExprArgs = { null?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ArrayToStringExprArgs = { null?: Expression } & BaseExpressionArgs;
 
 export class ArrayToStringExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_TO_STRING;
@@ -15985,12 +16570,12 @@ export class ArrayToStringExpr extends FuncExpr {
 
   declare args: ArrayToStringExprArgs;
 
-  constructor (args: ArrayToStringExprArgs = {}) {
+  constructor (args: ArrayToStringExprArgs) {
     super(args);
   }
 
-  get $null (): Expression {
-    return this.args.null as Expression;
+  get $null (): Expression | undefined {
+    return this.args.null as Expression | undefined;
   }
 }
 
@@ -15999,13 +16584,12 @@ export class ArrayIntersectExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_INTERSECT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayIntersectExprArgs>;
   declare args: ArrayIntersectExprArgs;
-  constructor (args: ArrayIntersectExprArgs = {}) {
+  constructor (args: ArrayIntersectExprArgs) {
     super(args);
   }
 }
 
-export type StPointExprArgs = { null?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type StPointExprArgs = { null?: Expression } & BaseExpressionArgs;
 
 export class StPointExpr extends FuncExpr {
   key = ExpressionKey.ST_POINT;
@@ -16018,17 +16602,16 @@ export class StPointExpr extends FuncExpr {
 
   declare args: StPointExprArgs;
 
-  constructor (args: StPointExprArgs = {}) {
+  constructor (args: StPointExprArgs) {
     super(args);
   }
 
-  get $null (): Expression {
-    return this.args.null as Expression;
+  get $null (): Expression | undefined {
+    return this.args.null as Expression | undefined;
   }
 }
 
-export type StDistanceExprArgs = { useSpheroid?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type StDistanceExprArgs = { useSpheroid?: Expression } & BaseExpressionArgs;
 
 export class StDistanceExpr extends FuncExpr {
   key = ExpressionKey.ST_DISTANCE;
@@ -16041,17 +16624,16 @@ export class StDistanceExpr extends FuncExpr {
 
   declare args: StDistanceExprArgs;
 
-  constructor (args: StDistanceExprArgs = {}) {
+  constructor (args: StDistanceExprArgs) {
     super(args);
   }
 
-  get $useSpheroid (): Expression {
-    return this.args.useSpheroid as Expression;
+  get $useSpheroid (): Expression | undefined {
+    return this.args.useSpheroid as Expression | undefined;
   }
 }
 
-export type StringExprArgs = { zone?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type StringExprArgs = { zone?: Expression } & BaseExpressionArgs;
 
 export class StringExpr extends FuncExpr {
   key = ExpressionKey.STRING;
@@ -16064,17 +16646,16 @@ export class StringExpr extends FuncExpr {
 
   declare args: StringExprArgs;
 
-  constructor (args: StringExprArgs = {}) {
+  constructor (args: StringExprArgs) {
     super(args);
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 }
 
-export type StringToArrayExprArgs = { null?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type StringToArrayExprArgs = { null?: Expression } & BaseExpressionArgs;
 
 export class StringToArrayExpr extends FuncExpr {
   key = ExpressionKey.STRING_TO_ARRAY;
@@ -16087,12 +16668,12 @@ export class StringToArrayExpr extends FuncExpr {
 
   declare args: StringToArrayExprArgs;
 
-  constructor (args: StringToArrayExprArgs = {}) {
+  constructor (args: StringToArrayExprArgs) {
     super(args);
   }
 
-  get $null (): Expression {
-    return this.args.null as Expression;
+  get $null (): Expression | undefined {
+    return this.args.null as Expression | undefined;
   }
 }
 
@@ -16101,7 +16682,7 @@ export class ArrayOverlapsExpr extends BinaryExpr {
   key = ExpressionKey.ARRAY_OVERLAPS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayOverlapsExprArgs>;
   declare args: ArrayOverlapsExprArgs;
-  constructor (args: ArrayOverlapsExprArgs = {}) {
+  constructor (args: ArrayOverlapsExprArgs) {
     super(args);
   }
 }
@@ -16111,7 +16692,7 @@ export class ArraySizeExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SIZE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArraySizeExprArgs>;
   declare args: ArraySizeExprArgs;
-  constructor (args: ArraySizeExprArgs = {}) {
+  constructor (args: ArraySizeExprArgs) {
     super(args);
   }
 
@@ -16123,7 +16704,7 @@ export class ArraySortExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SORT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArraySortExprArgs>;
   declare args: ArraySortExprArgs;
-  constructor (args: ArraySortExprArgs = {}) {
+  constructor (args: ArraySortExprArgs) {
     super(args);
   }
 }
@@ -16133,7 +16714,7 @@ export class ArraySumExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SUM;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArraySumExprArgs>;
   declare args: ArraySumExprArgs;
-  constructor (args: ArraySumExprArgs = {}) {
+  constructor (args: ArraySumExprArgs) {
     super(args);
   }
 }
@@ -16143,14 +16724,13 @@ export class ArraysZipExpr extends FuncExpr {
   key = ExpressionKey.ARRAYS_ZIP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArraysZipExprArgs>;
   declare args: ArraysZipExprArgs;
-  constructor (args: ArraysZipExprArgs = {}) {
+  constructor (args: ArraysZipExprArgs) {
     super(args);
   }
 }
 
 export type CaseExprArgs = { ifs: Expression[];
-  default?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  default?: Expression; } & BaseExpressionArgs;
 
 export class CaseExpr extends FuncExpr {
   key = ExpressionKey.CASE;
@@ -16171,11 +16751,11 @@ export class CaseExpr extends FuncExpr {
   }
 
   get $ifs (): Expression[] {
-    return (this.args.ifs || []) as Expression[];
+    return this.args.ifs as Expression[];
   }
 
-  get $default (): Expression {
-    return this.args['default'] as Expression;
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
   }
 }
 
@@ -16183,8 +16763,7 @@ export type CastExprArgs = { to: Expression;
   format?: string;
   safe?: boolean;
   action?: Expression;
-  default?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  default?: Expression; } & BaseExpressionArgs;
 
 export class CastExpr extends FuncExpr {
   key = ExpressionKey.CAST;
@@ -16211,20 +16790,20 @@ export class CastExpr extends FuncExpr {
     return this.args.to as Expression;
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 
-  get $action (): Expression {
-    return this.args.action as Expression;
+  get $action (): Expression | undefined {
+    return this.args.action as Expression | undefined;
   }
 
-  get $default (): Expression {
-    return this.args['default'] as Expression;
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
   }
 }
 
@@ -16233,7 +16812,7 @@ export class JustifyDaysExpr extends FuncExpr {
   key = ExpressionKey.JUSTIFY_DAYS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JustifyDaysExprArgs>;
   declare args: JustifyDaysExprArgs;
-  constructor (args: JustifyDaysExprArgs = {}) {
+  constructor (args: JustifyDaysExprArgs) {
     super(args);
   }
 }
@@ -16243,7 +16822,7 @@ export class JustifyHoursExpr extends FuncExpr {
   key = ExpressionKey.JUSTIFY_HOURS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JustifyHoursExprArgs>;
   declare args: JustifyHoursExprArgs;
-  constructor (args: JustifyHoursExprArgs = {}) {
+  constructor (args: JustifyHoursExprArgs) {
     super(args);
   }
 }
@@ -16253,7 +16832,7 @@ export class JustifyIntervalExpr extends FuncExpr {
   key = ExpressionKey.JUSTIFY_INTERVAL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JustifyIntervalExprArgs>;
   declare args: JustifyIntervalExprArgs;
-  constructor (args: JustifyIntervalExprArgs = {}) {
+  constructor (args: JustifyIntervalExprArgs) {
     super(args);
   }
 }
@@ -16263,13 +16842,12 @@ export class TryExpr extends FuncExpr {
   key = ExpressionKey.TRY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TryExprArgs>;
   declare args: TryExprArgs;
-  constructor (args: TryExprArgs = {}) {
+  constructor (args: TryExprArgs) {
     super(args);
   }
 }
 
-export type CastToStrTypeExprArgs = { to: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type CastToStrTypeExprArgs = { to: Expression } & BaseExpressionArgs;
 
 export class CastToStrTypeExpr extends FuncExpr {
   key = ExpressionKey.CAST_TO_STR_TYPE;
@@ -16296,13 +16874,12 @@ export class CheckJsonExpr extends FuncExpr {
   key = ExpressionKey.CHECK_JSON;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CheckJsonExprArgs>;
   declare args: CheckJsonExprArgs;
-  constructor (args: CheckJsonExprArgs = {}) {
+  constructor (args: CheckJsonExprArgs) {
     super(args);
   }
 }
 
-export type CheckXmlExprArgs = { disableAutoConvert?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type CheckXmlExprArgs = { disableAutoConvert?: Expression } & BaseExpressionArgs;
 
 export class CheckXmlExpr extends FuncExpr {
   key = ExpressionKey.CHECK_XML;
@@ -16315,12 +16892,12 @@ export class CheckXmlExpr extends FuncExpr {
 
   declare args: CheckXmlExprArgs;
 
-  constructor (args: CheckXmlExprArgs = {}) {
+  constructor (args: CheckXmlExprArgs) {
     super(args);
   }
 
-  get $disableAutoConvert (): Expression {
-    return this.args.disableAutoConvert as Expression;
+  get $disableAutoConvert (): Expression | undefined {
+    return this.args.disableAutoConvert as Expression | undefined;
   }
 }
 
@@ -16329,7 +16906,7 @@ export class CollateExpr extends BinaryExpr {
   key = ExpressionKey.COLLATE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CollateExprArgs>;
   declare args: CollateExprArgs;
-  constructor (args: CollateExprArgs = {}) {
+  constructor (args: CollateExprArgs) {
     super(args);
   }
 }
@@ -16339,14 +16916,13 @@ export class CollationExpr extends FuncExpr {
   key = ExpressionKey.COLLATION;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CollationExprArgs>;
   declare args: CollationExprArgs;
-  constructor (args: CollationExprArgs = {}) {
+  constructor (args: CollationExprArgs) {
     super(args);
   }
 }
 
 export type CeilExprArgs = { decimals?: Expression[];
-  to?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  to?: Expression; } & BaseExpressionArgs;
 
 export class CeilExpr extends FuncExpr {
   key = ExpressionKey.CEIL;
@@ -16369,22 +16945,21 @@ export class CeilExpr extends FuncExpr {
     this.register();
   }
 
-  constructor (args: CeilExprArgs = {}) {
+  constructor (args: CeilExprArgs) {
     super(args);
   }
 
-  get $decimals (): Expression[] {
-    return (this.args.decimals || []) as Expression[];
+  get $decimals (): Expression[] | undefined {
+    return this.args.decimals as Expression[] | undefined;
   }
 
-  get $to (): Expression {
-    return this.args.to as Expression;
+  get $to (): Expression | undefined {
+    return this.args.to as Expression | undefined;
   }
 }
 
 export type CoalesceExprArgs = { isNvl?: Expression;
-  isNull?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  isNull?: Expression; } & BaseExpressionArgs;
 
 export class CoalesceExpr extends FuncExpr {
   key = ExpressionKey.COALESCE;
@@ -16405,21 +16980,20 @@ export class CoalesceExpr extends FuncExpr {
 
   declare args: CoalesceExprArgs;
 
-  constructor (args: CoalesceExprArgs = {}) {
+  constructor (args: CoalesceExprArgs) {
     super(args);
   }
 
-  get $isNvl (): Expression {
-    return this.args.isNvl as Expression;
+  get $isNvl (): Expression | undefined {
+    return this.args.isNvl as Expression | undefined;
   }
 
-  get $isNull (): Expression {
-    return this.args.isNull as Expression;
+  get $isNull (): Expression | undefined {
+    return this.args.isNull as Expression | undefined;
   }
 }
 
-export type ChrExprArgs = { charset?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ChrExprArgs = { charset?: string } & BaseExpressionArgs;
 
 export class ChrExpr extends FuncExpr {
   key = ExpressionKey.CHR;
@@ -16434,18 +17008,17 @@ export class ChrExpr extends FuncExpr {
 
   declare args: ChrExprArgs;
 
-  constructor (args: ChrExprArgs = {}) {
+  constructor (args: ChrExprArgs) {
     super(args);
   }
 
-  get $charset (): string {
-    return this.args.charset as string;
+  get $charset (): Expression | undefined {
+    return this.args.charset as Expression | undefined;
   }
 }
 
 export type ConcatExprArgs = { safe?: boolean;
-  coalesce?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  coalesce?: Expression; } & BaseExpressionArgs;
 
 export class ConcatExpr extends FuncExpr {
   key = ExpressionKey.CONCAT;
@@ -16461,21 +17034,20 @@ export class ConcatExpr extends FuncExpr {
 
   declare args: ConcatExprArgs;
 
-  constructor (args: ConcatExprArgs = {}) {
+  constructor (args: ConcatExprArgs) {
     super(args);
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 
-  get $coalesce (): Expression {
-    return this.args.coalesce as Expression;
+  get $coalesce (): Expression | undefined {
+    return this.args.coalesce as Expression | undefined;
   }
 }
 
-export type ContainsExprArgs = { jsonScope?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ContainsExprArgs = { jsonScope?: Expression } & BaseExpressionArgs;
 
 export class ContainsExpr extends FuncExpr {
   key = ExpressionKey.CONTAINS;
@@ -16488,12 +17060,12 @@ export class ContainsExpr extends FuncExpr {
 
   declare args: ContainsExprArgs;
 
-  constructor (args: ContainsExprArgs = {}) {
+  constructor (args: ContainsExprArgs) {
     super(args);
   }
 
-  get $jsonScope (): Expression {
-    return this.args.jsonScope as Expression;
+  get $jsonScope (): Expression | undefined {
+    return this.args.jsonScope as Expression | undefined;
   }
 }
 
@@ -16502,7 +17074,7 @@ export class ConnectByRootExpr extends FuncExpr {
   key = ExpressionKey.CONNECT_BY_ROOT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ConnectByRootExprArgs>;
   declare args: ConnectByRootExprArgs;
-  constructor (args: ConnectByRootExprArgs = {}) {
+  constructor (args: ConnectByRootExprArgs) {
     super(args);
   }
 }
@@ -16512,7 +17084,7 @@ export class CbrtExpr extends FuncExpr {
   key = ExpressionKey.CBRT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CbrtExprArgs>;
   declare args: CbrtExprArgs;
-  constructor (args: CbrtExprArgs = {}) {
+  constructor (args: CbrtExprArgs) {
     super(args);
   }
 }
@@ -16522,7 +17094,7 @@ export class CurrentAccountExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ACCOUNT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentAccountExprArgs>;
   declare args: CurrentAccountExprArgs;
-  constructor (args: CurrentAccountExprArgs = {}) {
+  constructor (args: CurrentAccountExprArgs) {
     super(args);
   }
 }
@@ -16532,7 +17104,7 @@ export class CurrentAccountNameExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ACCOUNT_NAME;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentAccountNameExprArgs>;
   declare args: CurrentAccountNameExprArgs;
-  constructor (args: CurrentAccountNameExprArgs = {}) {
+  constructor (args: CurrentAccountNameExprArgs) {
     super(args);
   }
 }
@@ -16545,7 +17117,7 @@ export class CurrentAvailableRolesExpr extends FuncExpr {
   >;
 
   declare args: CurrentAvailableRolesExprArgs;
-  constructor (args: CurrentAvailableRolesExprArgs = {}) {
+  constructor (args: CurrentAvailableRolesExprArgs) {
     super(args);
   }
 }
@@ -16555,7 +17127,7 @@ export class CurrentClientExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_CLIENT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentClientExprArgs>;
   declare args: CurrentClientExprArgs;
-  constructor (args: CurrentClientExprArgs = {}) {
+  constructor (args: CurrentClientExprArgs) {
     super(args);
   }
 }
@@ -16565,7 +17137,7 @@ export class CurrentIpAddressExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_IP_ADDRESS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentIpAddressExprArgs>;
   declare args: CurrentIpAddressExprArgs;
-  constructor (args: CurrentIpAddressExprArgs = {}) {
+  constructor (args: CurrentIpAddressExprArgs) {
     super(args);
   }
 }
@@ -16575,7 +17147,7 @@ export class CurrentDatabaseExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_DATABASE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentDatabaseExprArgs>;
   declare args: CurrentDatabaseExprArgs;
-  constructor (args: CurrentDatabaseExprArgs = {}) {
+  constructor (args: CurrentDatabaseExprArgs) {
     super(args);
   }
 }
@@ -16585,7 +17157,7 @@ export class CurrentSchemasExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SCHEMAS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentSchemasExprArgs>;
   declare args: CurrentSchemasExprArgs;
-  constructor (args: CurrentSchemasExprArgs = {}) {
+  constructor (args: CurrentSchemasExprArgs) {
     super(args);
   }
 }
@@ -16598,7 +17170,7 @@ export class CurrentSecondaryRolesExpr extends FuncExpr {
   >;
 
   declare args: CurrentSecondaryRolesExprArgs;
-  constructor (args: CurrentSecondaryRolesExprArgs = {}) {
+  constructor (args: CurrentSecondaryRolesExprArgs) {
     super(args);
   }
 }
@@ -16608,7 +17180,7 @@ export class CurrentSessionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SESSION;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentSessionExprArgs>;
   declare args: CurrentSessionExprArgs;
-  constructor (args: CurrentSessionExprArgs = {}) {
+  constructor (args: CurrentSessionExprArgs) {
     super(args);
   }
 }
@@ -16618,7 +17190,7 @@ export class CurrentStatementExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_STATEMENT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentStatementExprArgs>;
   declare args: CurrentStatementExprArgs;
-  constructor (args: CurrentStatementExprArgs = {}) {
+  constructor (args: CurrentStatementExprArgs) {
     super(args);
   }
 }
@@ -16628,7 +17200,7 @@ export class CurrentVersionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_VERSION;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentVersionExprArgs>;
   declare args: CurrentVersionExprArgs;
-  constructor (args: CurrentVersionExprArgs = {}) {
+  constructor (args: CurrentVersionExprArgs) {
     super(args);
   }
 }
@@ -16638,7 +17210,7 @@ export class CurrentTransactionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TRANSACTION;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentTransactionExprArgs>;
   declare args: CurrentTransactionExprArgs;
-  constructor (args: CurrentTransactionExprArgs = {}) {
+  constructor (args: CurrentTransactionExprArgs) {
     super(args);
   }
 }
@@ -16648,7 +17220,7 @@ export class CurrentWarehouseExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_WAREHOUSE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentWarehouseExprArgs>;
   declare args: CurrentWarehouseExprArgs;
-  constructor (args: CurrentWarehouseExprArgs = {}) {
+  constructor (args: CurrentWarehouseExprArgs) {
     super(args);
   }
 }
@@ -16658,7 +17230,7 @@ export class CurrentDateExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_DATE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentDateExprArgs>;
   declare args: CurrentDateExprArgs;
-  constructor (args: CurrentDateExprArgs = {}) {
+  constructor (args: CurrentDateExprArgs) {
     super(args);
   }
 }
@@ -16668,7 +17240,7 @@ export class CurrentDatetimeExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_DATETIME;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentDatetimeExprArgs>;
   declare args: CurrentDatetimeExprArgs;
-  constructor (args: CurrentDatetimeExprArgs = {}) {
+  constructor (args: CurrentDatetimeExprArgs) {
     super(args);
   }
 }
@@ -16678,7 +17250,7 @@ export class CurrentTimeExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIME;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentTimeExprArgs>;
   declare args: CurrentTimeExprArgs;
-  constructor (args: CurrentTimeExprArgs = {}) {
+  constructor (args: CurrentTimeExprArgs) {
     super(args);
   }
 }
@@ -16688,7 +17260,7 @@ export class LocaltimeExpr extends FuncExpr {
   key = ExpressionKey.LOCALTIME;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LocaltimeExprArgs>;
   declare args: LocaltimeExprArgs;
-  constructor (args: LocaltimeExprArgs = {}) {
+  constructor (args: LocaltimeExprArgs) {
     super(args);
   }
 }
@@ -16698,7 +17270,7 @@ export class LocaltimestampExpr extends FuncExpr {
   key = ExpressionKey.LOCALTIMESTAMP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LocaltimestampExprArgs>;
   declare args: LocaltimestampExprArgs;
-  constructor (args: LocaltimestampExprArgs = {}) {
+  constructor (args: LocaltimestampExprArgs) {
     super(args);
   }
 }
@@ -16708,13 +17280,12 @@ export class SystimestampExpr extends FuncExpr {
   key = ExpressionKey.SYSTIMESTAMP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SystimestampExprArgs>;
   declare args: SystimestampExprArgs;
-  constructor (args: SystimestampExprArgs = {}) {
+  constructor (args: SystimestampExprArgs) {
     super(args);
   }
 }
 
-export type CurrentTimestampExprArgs = { sysdate?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type CurrentTimestampExprArgs = { sysdate?: Expression } & BaseExpressionArgs;
 
 export class CurrentTimestampExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMESTAMP;
@@ -16727,12 +17298,12 @@ export class CurrentTimestampExpr extends FuncExpr {
 
   declare args: CurrentTimestampExprArgs;
 
-  constructor (args: CurrentTimestampExprArgs = {}) {
+  constructor (args: CurrentTimestampExprArgs) {
     super(args);
   }
 
-  get $sysdate (): Expression {
-    return this.args.sysdate as Expression;
+  get $sysdate (): Expression | undefined {
+    return this.args.sysdate as Expression | undefined;
   }
 }
 
@@ -16741,7 +17312,7 @@ export class CurrentTimestampLTZExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMESTAMP_LTZ;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentTimestampLTZExprArgs>;
   declare args: CurrentTimestampLTZExprArgs;
-  constructor (args: CurrentTimestampLTZExprArgs = {}) {
+  constructor (args: CurrentTimestampLTZExprArgs) {
     super(args);
   }
 }
@@ -16751,7 +17322,7 @@ export class CurrentTimezoneExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMEZONE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentTimezoneExprArgs>;
   declare args: CurrentTimezoneExprArgs;
-  constructor (args: CurrentTimezoneExprArgs = {}) {
+  constructor (args: CurrentTimezoneExprArgs) {
     super(args);
   }
 }
@@ -16764,7 +17335,7 @@ export class CurrentOrganizationNameExpr extends FuncExpr {
   >;
 
   declare args: CurrentOrganizationNameExprArgs;
-  constructor (args: CurrentOrganizationNameExprArgs = {}) {
+  constructor (args: CurrentOrganizationNameExprArgs) {
     super(args);
   }
 }
@@ -16774,7 +17345,7 @@ export class CurrentSchemaExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SCHEMA;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentSchemaExprArgs>;
   declare args: CurrentSchemaExprArgs;
-  constructor (args: CurrentSchemaExprArgs = {}) {
+  constructor (args: CurrentSchemaExprArgs) {
     super(args);
   }
 }
@@ -16784,7 +17355,7 @@ export class CurrentUserExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_USER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentUserExprArgs>;
   declare args: CurrentUserExprArgs;
-  constructor (args: CurrentUserExprArgs = {}) {
+  constructor (args: CurrentUserExprArgs) {
     super(args);
   }
 }
@@ -16794,7 +17365,7 @@ export class CurrentCatalogExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_CATALOG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentCatalogExprArgs>;
   declare args: CurrentCatalogExprArgs;
-  constructor (args: CurrentCatalogExprArgs = {}) {
+  constructor (args: CurrentCatalogExprArgs) {
     super(args);
   }
 }
@@ -16804,7 +17375,7 @@ export class CurrentRegionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_REGION;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentRegionExprArgs>;
   declare args: CurrentRegionExprArgs;
-  constructor (args: CurrentRegionExprArgs = {}) {
+  constructor (args: CurrentRegionExprArgs) {
     super(args);
   }
 }
@@ -16814,7 +17385,7 @@ export class CurrentRoleExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ROLE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentRoleExprArgs>;
   declare args: CurrentRoleExprArgs;
-  constructor (args: CurrentRoleExprArgs = {}) {
+  constructor (args: CurrentRoleExprArgs) {
     super(args);
   }
 }
@@ -16824,7 +17395,7 @@ export class CurrentRoleTypeExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ROLE_TYPE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CurrentRoleTypeExprArgs>;
   declare args: CurrentRoleTypeExprArgs;
-  constructor (args: CurrentRoleTypeExprArgs = {}) {
+  constructor (args: CurrentRoleTypeExprArgs) {
     super(args);
   }
 }
@@ -16837,7 +17408,7 @@ export class CurrentOrganizationUserExpr extends FuncExpr {
   >;
 
   declare args: CurrentOrganizationUserExprArgs;
-  constructor (args: CurrentOrganizationUserExprArgs = {}) {
+  constructor (args: CurrentOrganizationUserExprArgs) {
     super(args);
   }
 }
@@ -16847,7 +17418,7 @@ export class SessionUserExpr extends FuncExpr {
   key = ExpressionKey.SESSION_USER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SessionUserExprArgs>;
   declare args: SessionUserExprArgs;
-  constructor (args: SessionUserExprArgs = {}) {
+  constructor (args: SessionUserExprArgs) {
     super(args);
   }
 }
@@ -16857,7 +17428,7 @@ export class UtcDateExpr extends FuncExpr {
   key = ExpressionKey.UTC_DATE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UtcDateExprArgs>;
   declare args: UtcDateExprArgs;
-  constructor (args: UtcDateExprArgs = {}) {
+  constructor (args: UtcDateExprArgs) {
     super(args);
   }
 }
@@ -16867,7 +17438,7 @@ export class UtcTimeExpr extends FuncExpr {
   key = ExpressionKey.UTC_TIME;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UtcTimeExprArgs>;
   declare args: UtcTimeExprArgs;
-  constructor (args: UtcTimeExprArgs = {}) {
+  constructor (args: UtcTimeExprArgs) {
     super(args);
   }
 }
@@ -16877,13 +17448,12 @@ export class UtcTimestampExpr extends FuncExpr {
   key = ExpressionKey.UTC_TIMESTAMP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UtcTimestampExprArgs>;
   declare args: UtcTimestampExprArgs;
-  constructor (args: UtcTimestampExprArgs = {}) {
+  constructor (args: UtcTimestampExprArgs) {
     super(args);
   }
 }
 
-export type DateAddExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DateAddExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class DateAddExpr extends FuncExpr {
   key = ExpressionKey.DATE_ADD;
@@ -16896,19 +17466,18 @@ export class DateAddExpr extends FuncExpr {
 
   declare args: DateAddExprArgs;
 
-  constructor (args: DateAddExprArgs = {}) {
+  constructor (args: DateAddExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
 export type DateBinExprArgs = { unit?: Expression;
   zone?: Expression;
-  origin?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  origin?: Expression; } & BaseExpressionArgs;
 
 export class DateBinExpr extends FuncExpr {
   key = ExpressionKey.DATE_BIN;
@@ -16925,25 +17494,24 @@ export class DateBinExpr extends FuncExpr {
 
   declare args: DateBinExprArgs;
 
-  constructor (args: DateBinExprArgs = {}) {
+  constructor (args: DateBinExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 
-  get $origin (): Expression {
-    return this.args.origin as Expression;
+  get $origin (): Expression | undefined {
+    return this.args.origin as Expression | undefined;
   }
 }
 
-export type DateSubExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DateSubExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class DateSubExpr extends FuncExpr {
   key = ExpressionKey.DATE_SUB;
@@ -16956,20 +17524,19 @@ export class DateSubExpr extends FuncExpr {
 
   declare args: DateSubExprArgs;
 
-  constructor (args: DateSubExprArgs = {}) {
+  constructor (args: DateSubExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
 export type DateDiffExprArgs = { unit?: Expression;
   zone?: Expression;
   bigInt?: Expression;
-  datePartBoundary?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  datePartBoundary?: Expression; } & BaseExpressionArgs;
 
 export class DateDiffExpr extends FuncExpr {
   key = ExpressionKey.DATE_DIFF;
@@ -16989,31 +17556,30 @@ export class DateDiffExpr extends FuncExpr {
 
   declare args: DateDiffExprArgs;
 
-  constructor (args: DateDiffExprArgs = {}) {
+  constructor (args: DateDiffExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 
-  get $bigInt (): Expression {
-    return this.args.bigInt as Expression;
+  get $bigInt (): Expression | undefined {
+    return this.args.bigInt as Expression | undefined;
   }
 
-  get $datePartBoundary (): Expression {
-    return this.args.datePartBoundary as Expression;
+  get $datePartBoundary (): Expression | undefined {
+    return this.args.datePartBoundary as Expression | undefined;
   }
 }
 
 export type DateTruncExprArgs = { unit: Expression;
   zone?: Expression;
-  inputTypePreserved?: DataTypeExpr;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  inputTypePreserved?: DataTypeExpr; } & BaseExpressionArgs;
 
 export class DateTruncExpr extends FuncExpr {
   key = ExpressionKey.DATE_TRUNC;
@@ -17038,12 +17604,12 @@ export class DateTruncExpr extends FuncExpr {
     return this.args.unit as Expression;
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 
-  get $inputTypePreserved (): DataTypeExpr {
-    return this.args.inputTypePreserved as DataTypeExpr;
+  get $inputTypePreserved (): Expression | undefined {
+    return this.args.inputTypePreserved as Expression | undefined;
   }
 }
 
@@ -17052,13 +17618,12 @@ export class DatetimeExpr extends FuncExpr {
   key = ExpressionKey.DATETIME;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DatetimeExprArgs>;
   declare args: DatetimeExprArgs;
-  constructor (args: DatetimeExprArgs = {}) {
+  constructor (args: DatetimeExprArgs) {
     super(args);
   }
 }
 
-export type DatetimeAddExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DatetimeAddExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class DatetimeAddExpr extends FuncExpr {
   key = ExpressionKey.DATETIME_ADD;
@@ -17071,17 +17636,16 @@ export class DatetimeAddExpr extends FuncExpr {
 
   declare args: DatetimeAddExprArgs;
 
-  constructor (args: DatetimeAddExprArgs = {}) {
+  constructor (args: DatetimeAddExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
-export type DatetimeSubExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DatetimeSubExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class DatetimeSubExpr extends FuncExpr {
   key = ExpressionKey.DATETIME_SUB;
@@ -17094,17 +17658,16 @@ export class DatetimeSubExpr extends FuncExpr {
 
   declare args: DatetimeSubExprArgs;
 
-  constructor (args: DatetimeSubExprArgs = {}) {
+  constructor (args: DatetimeSubExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
-export type DatetimeDiffExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DatetimeDiffExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class DatetimeDiffExpr extends FuncExpr {
   key = ExpressionKey.DATETIME_DIFF;
@@ -17117,18 +17680,17 @@ export class DatetimeDiffExpr extends FuncExpr {
 
   declare args: DatetimeDiffExprArgs;
 
-  constructor (args: DatetimeDiffExprArgs = {}) {
+  constructor (args: DatetimeDiffExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
 export type DatetimeTruncExprArgs = { unit: Expression;
-  zone?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  zone?: Expression; } & BaseExpressionArgs;
 
 export class DatetimeTruncExpr extends FuncExpr {
   key = ExpressionKey.DATETIME_TRUNC;
@@ -17152,8 +17714,8 @@ export class DatetimeTruncExpr extends FuncExpr {
     return this.args.unit as Expression;
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 }
 
@@ -17162,7 +17724,7 @@ export class DateFromUnixDateExpr extends FuncExpr {
   key = ExpressionKey.DATE_FROM_UNIX_DATE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DateFromUnixDateExprArgs>;
   declare args: DateFromUnixDateExprArgs;
-  constructor (args: DateFromUnixDateExprArgs = {}) {
+  constructor (args: DateFromUnixDateExprArgs) {
     super(args);
   }
 }
@@ -17172,7 +17734,7 @@ export class DayOfWeekExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_WEEK;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DayOfWeekExprArgs>;
   declare args: DayOfWeekExprArgs;
-  constructor (args: DayOfWeekExprArgs = {}) {
+  constructor (args: DayOfWeekExprArgs) {
     super(args);
   }
 
@@ -17188,7 +17750,7 @@ export class DayOfWeekIsoExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_WEEK_ISO;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DayOfWeekIsoExprArgs>;
   declare args: DayOfWeekIsoExprArgs;
-  constructor (args: DayOfWeekIsoExprArgs = {}) {
+  constructor (args: DayOfWeekIsoExprArgs) {
     super(args);
   }
 
@@ -17202,7 +17764,7 @@ export class DayOfMonthExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_MONTH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DayOfMonthExprArgs>;
   declare args: DayOfMonthExprArgs;
-  constructor (args: DayOfMonthExprArgs = {}) {
+  constructor (args: DayOfMonthExprArgs) {
     super(args);
   }
 
@@ -17214,15 +17776,14 @@ export class DayOfYearExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_YEAR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DayOfYearExprArgs>;
   declare args: DayOfYearExprArgs;
-  constructor (args: DayOfYearExprArgs = {}) {
+  constructor (args: DayOfYearExprArgs) {
     super(args);
   }
 
   static sqlNames = ['DAY_OF_YEAR', 'DAYOFYEAR'];
 }
 
-export type DaynameExprArgs = { abbreviated?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DaynameExprArgs = { abbreviated?: Expression } & BaseExpressionArgs;
 
 export class DaynameExpr extends FuncExpr {
   key = ExpressionKey.DAYNAME;
@@ -17243,12 +17804,12 @@ export class DaynameExpr extends FuncExpr {
     this.register();
   }
 
-  constructor (args: DaynameExprArgs = {}) {
+  constructor (args: DaynameExprArgs) {
     super(args);
   }
 
-  get $abbreviated (): Expression {
-    return this.args.abbreviated as Expression;
+  get $abbreviated (): Expression | undefined {
+    return this.args.abbreviated as Expression | undefined;
   }
 }
 
@@ -17257,7 +17818,7 @@ export class ToDaysExpr extends FuncExpr {
   key = ExpressionKey.TO_DAYS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ToDaysExprArgs>;
   declare args: ToDaysExprArgs;
-  constructor (args: ToDaysExprArgs = {}) {
+  constructor (args: ToDaysExprArgs) {
     super(args);
   }
 }
@@ -17267,7 +17828,7 @@ export class WeekOfYearExpr extends FuncExpr {
   key = ExpressionKey.WEEK_OF_YEAR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<WeekOfYearExprArgs>;
   declare args: WeekOfYearExprArgs;
-  constructor (args: WeekOfYearExprArgs = {}) {
+  constructor (args: WeekOfYearExprArgs) {
     super(args);
   }
 
@@ -17283,7 +17844,7 @@ export class YearOfWeekExpr extends FuncExpr {
   key = ExpressionKey.YEAR_OF_WEEK;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<YearOfWeekExprArgs>;
   declare args: YearOfWeekExprArgs;
-  constructor (args: YearOfWeekExprArgs = {}) {
+  constructor (args: YearOfWeekExprArgs) {
     super(args);
   }
 
@@ -17295,15 +17856,14 @@ export class YearOfWeekIsoExpr extends FuncExpr {
   key = ExpressionKey.YEAR_OF_WEEK_ISO;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<YearOfWeekIsoExprArgs>;
   declare args: YearOfWeekIsoExprArgs;
-  constructor (args: YearOfWeekIsoExprArgs = {}) {
+  constructor (args: YearOfWeekIsoExprArgs) {
     super(args);
   }
 
   static sqlNames = ['YEAR_OF_WEEK_ISO', 'YEAROFWEEKISO'];
 }
 
-export type MonthsBetweenExprArgs = { roundoff?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type MonthsBetweenExprArgs = { roundoff?: Expression } & BaseExpressionArgs;
 
 export class MonthsBetweenExpr extends FuncExpr {
   key = ExpressionKey.MONTHS_BETWEEN;
@@ -17324,12 +17884,12 @@ export class MonthsBetweenExpr extends FuncExpr {
     this.register();
   }
 
-  constructor (args: MonthsBetweenExprArgs = {}) {
+  constructor (args: MonthsBetweenExprArgs) {
     super(args);
   }
 
-  get $roundoff (): Expression {
-    return this.args.roundoff as Expression;
+  get $roundoff (): Expression | undefined {
+    return this.args.roundoff as Expression | undefined;
   }
 }
 
@@ -17339,8 +17899,7 @@ export type MakeIntervalExprArgs = { year?: Expression;
   day?: Expression;
   hour?: Expression;
   minute?: Expression;
-  second?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  second?: Expression; } & BaseExpressionArgs;
 
 export class MakeIntervalExpr extends FuncExpr {
   key = ExpressionKey.MAKE_INTERVAL;
@@ -17361,41 +17920,40 @@ export class MakeIntervalExpr extends FuncExpr {
 
   declare args: MakeIntervalExprArgs;
 
-  constructor (args: MakeIntervalExprArgs = {}) {
+  constructor (args: MakeIntervalExprArgs) {
     super(args);
   }
 
-  get $year (): Expression {
-    return this.args.year as Expression;
+  get $year (): Expression | undefined {
+    return this.args.year as Expression | undefined;
   }
 
-  get $month (): Expression {
-    return this.args.month as Expression;
+  get $month (): Expression | undefined {
+    return this.args.month as Expression | undefined;
   }
 
-  get $week (): Expression {
-    return this.args.week as Expression;
+  get $week (): Expression | undefined {
+    return this.args.week as Expression | undefined;
   }
 
-  get $day (): Expression {
-    return this.args.day as Expression;
+  get $day (): Expression | undefined {
+    return this.args.day as Expression | undefined;
   }
 
-  get $hour (): Expression {
-    return this.args.hour as Expression;
+  get $hour (): Expression | undefined {
+    return this.args.hour as Expression | undefined;
   }
 
-  get $minute (): Expression {
-    return this.args.minute as Expression;
+  get $minute (): Expression | undefined {
+    return this.args.minute as Expression | undefined;
   }
 
-  get $second (): Expression {
-    return this.args.second as Expression;
+  get $second (): Expression | undefined {
+    return this.args.second as Expression | undefined;
   }
 }
 
-export type LastDayExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type LastDayExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class LastDayExpr extends FuncExpr {
   key = ExpressionKey.LAST_DAY;
@@ -17408,12 +17966,12 @@ export class LastDayExpr extends FuncExpr {
 
   declare args: LastDayExprArgs;
 
-  constructor (args: LastDayExprArgs = {}) {
+  constructor (args: LastDayExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
@@ -17422,7 +17980,7 @@ export class PreviousDayExpr extends FuncExpr {
   key = ExpressionKey.PREVIOUS_DAY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PreviousDayExprArgs>;
   declare args: PreviousDayExprArgs;
-  constructor (args: PreviousDayExprArgs = {}) {
+  constructor (args: PreviousDayExprArgs) {
     super(args);
   }
 }
@@ -17432,7 +17990,7 @@ export class LaxBoolExpr extends FuncExpr {
   key = ExpressionKey.LAX_BOOL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LaxBoolExprArgs>;
   declare args: LaxBoolExprArgs;
-  constructor (args: LaxBoolExprArgs = {}) {
+  constructor (args: LaxBoolExprArgs) {
     super(args);
   }
 }
@@ -17442,7 +18000,7 @@ export class LaxFloat64Expr extends FuncExpr {
   key = ExpressionKey.LAX_FLOAT64;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LaxFloat64ExprArgs>;
   declare args: LaxFloat64ExprArgs;
-  constructor (args: LaxFloat64ExprArgs = {}) {
+  constructor (args: LaxFloat64ExprArgs) {
     super(args);
   }
 }
@@ -17452,7 +18010,7 @@ export class LaxInt64Expr extends FuncExpr {
   key = ExpressionKey.LAX_INT64;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LaxInt64ExprArgs>;
   declare args: LaxInt64ExprArgs;
-  constructor (args: LaxInt64ExprArgs = {}) {
+  constructor (args: LaxInt64ExprArgs) {
     super(args);
   }
 }
@@ -17462,7 +18020,7 @@ export class LaxStringExpr extends FuncExpr {
   key = ExpressionKey.LAX_STRING;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LaxStringExprArgs>;
   declare args: LaxStringExprArgs;
-  constructor (args: LaxStringExprArgs = {}) {
+  constructor (args: LaxStringExprArgs) {
     super(args);
   }
 }
@@ -17472,7 +18030,7 @@ export class ExtractExpr extends FuncExpr {
   key = ExpressionKey.EXTRACT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ExtractExprArgs>;
   declare args: ExtractExprArgs;
-  constructor (args: ExtractExprArgs = {}) {
+  constructor (args: ExtractExprArgs) {
     super(args);
   }
 }
@@ -17482,7 +18040,7 @@ export class ExistsExpr extends FuncExpr {
   key = ExpressionKey.EXISTS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ExistsExprArgs>;
   declare args: ExistsExprArgs;
-  constructor (args: ExistsExprArgs = {}) {
+  constructor (args: ExistsExprArgs) {
     super(args);
   }
 }
@@ -17492,14 +18050,13 @@ export class EltExpr extends FuncExpr {
   key = ExpressionKey.ELT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<EltExprArgs>;
   declare args: EltExprArgs;
-  constructor (args: EltExprArgs = {}) {
+  constructor (args: EltExprArgs) {
     super(args);
   }
 }
 
 export type TimestampExprArgs = { zone?: Expression;
-  withTz?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  withTz?: Expression; } & BaseExpressionArgs;
 
 export class TimestampExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP;
@@ -17515,21 +18072,20 @@ export class TimestampExpr extends FuncExpr {
 
   declare args: TimestampExprArgs;
 
-  constructor (args: TimestampExprArgs = {}) {
+  constructor (args: TimestampExprArgs) {
     super(args);
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 
-  get $withTz (): Expression {
-    return this.args.withTz as Expression;
+  get $withTz (): Expression | undefined {
+    return this.args.withTz as Expression | undefined;
   }
 }
 
-export type TimestampAddExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TimestampAddExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class TimestampAddExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_ADD;
@@ -17542,17 +18098,16 @@ export class TimestampAddExpr extends FuncExpr {
 
   declare args: TimestampAddExprArgs;
 
-  constructor (args: TimestampAddExprArgs = {}) {
+  constructor (args: TimestampAddExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
-export type TimestampSubExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TimestampSubExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class TimestampSubExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_SUB;
@@ -17565,17 +18120,16 @@ export class TimestampSubExpr extends FuncExpr {
 
   declare args: TimestampSubExprArgs;
 
-  constructor (args: TimestampSubExprArgs = {}) {
+  constructor (args: TimestampSubExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
-export type TimestampDiffExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TimestampDiffExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class TimestampDiffExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_DIFF;
@@ -17588,19 +18142,18 @@ export class TimestampDiffExpr extends FuncExpr {
 
   declare args: TimestampDiffExprArgs;
 
-  constructor (args: TimestampDiffExprArgs = {}) {
+  constructor (args: TimestampDiffExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
 export type TimestampTruncExprArgs = { unit: Expression;
   zone?: Expression;
-  inputTypePreserved?: DataTypeExpr;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  inputTypePreserved?: DataTypeExpr; } & BaseExpressionArgs;
 
 export class TimestampTruncExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_TRUNC;
@@ -17625,12 +18178,12 @@ export class TimestampTruncExpr extends FuncExpr {
     return this.args.unit as Expression;
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 
-  get $inputTypePreserved (): DataTypeExpr {
-    return this.args.inputTypePreserved as DataTypeExpr;
+  get $inputTypePreserved (): Expression | undefined {
+    return this.args.inputTypePreserved as Expression | undefined;
   }
 }
 
@@ -17642,8 +18195,7 @@ export enum TimeSliceExprKind {
   END = 'END',
 }
 export type TimeSliceExprArgs = { unit: Expression;
-  kind?: TimeSliceExprKind;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  kind?: TimeSliceExprKind; } & BaseExpressionArgs;
 
 export class TimeSliceExpr extends FuncExpr {
   key = ExpressionKey.TIME_SLICE;
@@ -17667,13 +18219,12 @@ export class TimeSliceExpr extends FuncExpr {
     return this.args.unit as Expression;
   }
 
-  get $kind (): TimeSliceExprKind | undefined {
-    return this.args.kind as TimeSliceExprKind | undefined;
+  get $kind (): string | undefined {
+    return this.args.kind as string | undefined;
   }
 }
 
-export type TimeAddExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TimeAddExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class TimeAddExpr extends FuncExpr {
   key = ExpressionKey.TIME_ADD;
@@ -17686,17 +18237,16 @@ export class TimeAddExpr extends FuncExpr {
 
   declare args: TimeAddExprArgs;
 
-  constructor (args: TimeAddExprArgs = {}) {
+  constructor (args: TimeAddExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
-export type TimeSubExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TimeSubExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class TimeSubExpr extends FuncExpr {
   key = ExpressionKey.TIME_SUB;
@@ -17709,17 +18259,16 @@ export class TimeSubExpr extends FuncExpr {
 
   declare args: TimeSubExprArgs;
 
-  constructor (args: TimeSubExprArgs = {}) {
+  constructor (args: TimeSubExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
-export type TimeDiffExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TimeDiffExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class TimeDiffExpr extends FuncExpr {
   key = ExpressionKey.TIME_DIFF;
@@ -17732,18 +18281,17 @@ export class TimeDiffExpr extends FuncExpr {
 
   declare args: TimeDiffExprArgs;
 
-  constructor (args: TimeDiffExprArgs = {}) {
+  constructor (args: TimeDiffExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
 export type TimeTruncExprArgs = { unit: Expression;
-  zone?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  zone?: Expression; } & BaseExpressionArgs;
 
 export class TimeTruncExpr extends FuncExpr {
   key = ExpressionKey.TIME_TRUNC;
@@ -17767,16 +18315,15 @@ export class TimeTruncExpr extends FuncExpr {
     return this.args.unit as Expression;
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 }
 
 export type DateFromPartsExprArgs = { year: Expression;
   month?: Expression;
   day?: Expression;
-  allowOverflow?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  allowOverflow?: Expression; } & BaseExpressionArgs;
 
 export class DateFromPartsExpr extends FuncExpr {
   key = ExpressionKey.DATE_FROM_PARTS;
@@ -17802,16 +18349,16 @@ export class DateFromPartsExpr extends FuncExpr {
     return this.args.year as Expression;
   }
 
-  get $month (): Expression {
-    return this.args.month as Expression;
+  get $month (): Expression | undefined {
+    return this.args.month as Expression | undefined;
   }
 
-  get $day (): Expression {
-    return this.args.day as Expression;
+  get $day (): Expression | undefined {
+    return this.args.day as Expression | undefined;
   }
 
-  get $allowOverflow (): Expression {
-    return this.args.allowOverflow as Expression;
+  get $allowOverflow (): Expression | undefined {
+    return this.args.allowOverflow as Expression | undefined;
   }
 }
 
@@ -17821,8 +18368,7 @@ export type TimeFromPartsExprArgs = { hour: Expression;
   nano?: Expression;
   fractions?: Expression[];
   precision?: number | Expression;
-  overflow?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  overflow?: Expression; } & BaseExpressionArgs;
 
 export class TimeFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIME_FROM_PARTS;
@@ -17859,20 +18405,20 @@ export class TimeFromPartsExpr extends FuncExpr {
     return this.args.sec as Expression;
   }
 
-  get $nano (): Expression {
-    return this.args.nano as Expression;
+  get $nano (): Expression | undefined {
+    return this.args.nano as Expression | undefined;
   }
 
-  get $fractions (): Expression[] {
-    return (this.args.fractions || []) as Expression[];
+  get $fractions (): Expression[] | undefined {
+    return this.args.fractions as Expression[] | undefined;
   }
 
-  get $precision (): number | Expression {
-    return this.args.precision as number | Expression;
+  get $precision (): Expression | undefined {
+    return this.args.precision as Expression | undefined;
   }
 
-  get $overflow (): Expression {
-    return this.args.overflow as Expression;
+  get $overflow (): Expression | undefined {
+    return this.args.overflow as Expression | undefined;
   }
 }
 
@@ -17881,7 +18427,7 @@ export class DateStrToDateExpr extends FuncExpr {
   key = ExpressionKey.DATE_STR_TO_DATE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DateStrToDateExprArgs>;
   declare args: DateStrToDateExprArgs;
-  constructor (args: DateStrToDateExprArgs = {}) {
+  constructor (args: DateStrToDateExprArgs) {
     super(args);
   }
 }
@@ -17891,7 +18437,7 @@ export class DateToDateStrExpr extends FuncExpr {
   key = ExpressionKey.DATE_TO_DATE_STR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DateToDateStrExprArgs>;
   declare args: DateToDateStrExprArgs;
-  constructor (args: DateToDateStrExprArgs = {}) {
+  constructor (args: DateToDateStrExprArgs) {
     super(args);
   }
 }
@@ -17901,13 +18447,12 @@ export class DateToDiExpr extends FuncExpr {
   key = ExpressionKey.DATE_TO_DI;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DateToDiExprArgs>;
   declare args: DateToDiExprArgs;
-  constructor (args: DateToDiExprArgs = {}) {
+  constructor (args: DateToDiExprArgs) {
     super(args);
   }
 }
 
-export type DateExprArgs = { zone?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DateExprArgs = { zone?: Expression } & BaseExpressionArgs;
 
 export class DateExpr extends FuncExpr {
   key = ExpressionKey.DATE;
@@ -17920,12 +18465,12 @@ export class DateExpr extends FuncExpr {
 
   declare args: DateExprArgs;
 
-  constructor (args: DateExprArgs = {}) {
+  constructor (args: DateExprArgs) {
     super(args);
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 }
 
@@ -17934,14 +18479,13 @@ export class DayExpr extends FuncExpr {
   key = ExpressionKey.DAY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DayExprArgs>;
   declare args: DayExprArgs;
-  constructor (args: DayExprArgs = {}) {
+  constructor (args: DayExprArgs) {
     super(args);
   }
 }
 
 export type DecodeExprArgs = { charset: string;
-  replace?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  replace?: boolean; } & BaseExpressionArgs;
 
 export class DecodeExpr extends FuncExpr {
   key = ExpressionKey.DECODE;
@@ -17961,12 +18505,12 @@ export class DecodeExpr extends FuncExpr {
     super(args);
   }
 
-  get $charset (): string {
-    return this.args.charset as string;
+  get $charset (): Expression {
+    return this.args.charset as Expression;
   }
 
-  get $replace (): boolean {
-    return this.args.replace as boolean;
+  get $replace (): Expression | undefined {
+    return this.args.replace as Expression | undefined;
   }
 }
 
@@ -17975,7 +18519,7 @@ export class DecodeCaseExpr extends FuncExpr {
   key = ExpressionKey.DECODE_CASE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DecodeCaseExprArgs>;
   declare args: DecodeCaseExprArgs;
-  constructor (args: DecodeCaseExprArgs = {}) {
+  constructor (args: DecodeCaseExprArgs) {
     super(args);
   }
 }
@@ -17983,8 +18527,7 @@ export class DecodeCaseExpr extends FuncExpr {
 export type DecryptExprArgs = { passphrase: Expression;
   aad?: Expression;
   encryptionMethod?: string;
-  safe?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  safe?: boolean; } & BaseExpressionArgs;
 
 export class DecryptExpr extends FuncExpr {
   key = ExpressionKey.DECRYPT;
@@ -18010,16 +18553,16 @@ export class DecryptExpr extends FuncExpr {
     return this.args.passphrase as Expression;
   }
 
-  get $aad (): Expression {
-    return this.args.aad as Expression;
+  get $aad (): Expression | undefined {
+    return this.args.aad as Expression | undefined;
   }
 
-  get $encryptionMethod (): string {
-    return this.args.encryptionMethod as string;
+  get $encryptionMethod (): Expression | undefined {
+    return this.args.encryptionMethod as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 }
 
@@ -18028,8 +18571,7 @@ export type DecryptRawExprArgs = { key: unknown;
   aad?: Expression;
   encryptionMethod?: string;
   aead?: Expression;
-  safe?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  safe?: boolean; } & BaseExpressionArgs;
 
 export class DecryptRawExpr extends FuncExpr {
   key = ExpressionKey.DECRYPT_RAW;
@@ -18053,28 +18595,28 @@ export class DecryptRawExpr extends FuncExpr {
     super(args);
   }
 
+  get $key (): Expression {
+    return this.args.key as Expression;
+  }
+
   get $iv (): Expression {
     return this.args.iv as Expression;
   }
 
-  get $aad (): Expression {
-    return this.args.aad as Expression;
+  get $aad (): Expression | undefined {
+    return this.args.aad as Expression | undefined;
   }
 
-  get $encryptionMethod (): string {
-    return this.args.encryptionMethod as string;
+  get $encryptionMethod (): Expression | undefined {
+    return this.args.encryptionMethod as Expression | undefined;
   }
 
-  get $aead (): Expression {
-    return this.args.aead as Expression;
+  get $aead (): Expression | undefined {
+    return this.args.aead as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
-  }
-
-  get $key (): Expression {
-    return this.args.key as Expression;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 }
 
@@ -18083,13 +18625,12 @@ export class DiToDateExpr extends FuncExpr {
   key = ExpressionKey.DI_TO_DATE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DiToDateExprArgs>;
   declare args: DiToDateExprArgs;
-  constructor (args: DiToDateExprArgs = {}) {
+  constructor (args: DiToDateExprArgs) {
     super(args);
   }
 }
 
-export type EncodeExprArgs = { charset: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type EncodeExprArgs = { charset: string } & BaseExpressionArgs;
 
 export class EncodeExpr extends FuncExpr {
   key = ExpressionKey.ENCODE;
@@ -18106,15 +18647,14 @@ export class EncodeExpr extends FuncExpr {
     super(args);
   }
 
-  get $charset (): string {
-    return this.args.charset as string;
+  get $charset (): Expression {
+    return this.args.charset as Expression;
   }
 }
 
 export type EncryptExprArgs = { passphrase: Expression;
   aad?: Expression;
-  encryptionMethod?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  encryptionMethod?: string; } & BaseExpressionArgs;
 
 export class EncryptExpr extends FuncExpr {
   key = ExpressionKey.ENCRYPT;
@@ -18139,20 +18679,19 @@ export class EncryptExpr extends FuncExpr {
     return this.args.passphrase as Expression;
   }
 
-  get $aad (): Expression {
-    return this.args.aad as Expression;
+  get $aad (): Expression | undefined {
+    return this.args.aad as Expression | undefined;
   }
 
-  get $encryptionMethod (): string {
-    return this.args.encryptionMethod as string;
+  get $encryptionMethod (): Expression | undefined {
+    return this.args.encryptionMethod as Expression | undefined;
   }
 }
 
 export type EncryptRawExprArgs = { key: unknown;
   iv: Expression;
   aad?: Expression;
-  encryptionMethod?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  encryptionMethod?: string; } & BaseExpressionArgs;
 
 export class EncryptRawExpr extends FuncExpr {
   key = ExpressionKey.ENCRYPT_RAW;
@@ -18174,20 +18713,20 @@ export class EncryptRawExpr extends FuncExpr {
     super(args);
   }
 
+  get $key (): Expression {
+    return this.args.key as Expression;
+  }
+
   get $iv (): Expression {
     return this.args.iv as Expression;
   }
 
-  get $aad (): Expression {
-    return this.args.aad as Expression;
+  get $aad (): Expression | undefined {
+    return this.args.aad as Expression | undefined;
   }
 
-  get $encryptionMethod (): string {
-    return this.args.encryptionMethod as string;
-  }
-
-  get $key (): Expression {
-    return this.args.key as Expression;
+  get $encryptionMethod (): Expression | undefined {
+    return this.args.encryptionMethod as Expression | undefined;
   }
 }
 
@@ -18196,7 +18735,7 @@ export class EqualNullExpr extends FuncExpr {
   key = ExpressionKey.EQUAL_NULL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<EqualNullExprArgs>;
   declare args: EqualNullExprArgs;
-  constructor (args: EqualNullExprArgs = {}) {
+  constructor (args: EqualNullExprArgs) {
     super(args);
   }
 }
@@ -18206,7 +18745,7 @@ export class ExpExpr extends FuncExpr {
   key = ExpressionKey.EXP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ExpExprArgs>;
   declare args: ExpExprArgs;
-  constructor (args: ExpExprArgs = {}) {
+  constructor (args: ExpExprArgs) {
     super(args);
   }
 }
@@ -18216,7 +18755,7 @@ export class FactorialExpr extends FuncExpr {
   key = ExpressionKey.FACTORIAL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FactorialExprArgs>;
   declare args: FactorialExprArgs;
-  constructor (args: FactorialExprArgs = {}) {
+  constructor (args: FactorialExprArgs) {
     super(args);
   }
 }
@@ -18226,7 +18765,7 @@ export class ExplodeExpr extends FuncExpr {
   key = ExpressionKey.EXPLODE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ExplodeExprArgs>;
   declare args: ExplodeExprArgs;
-  constructor (args: ExplodeExprArgs = {}) {
+  constructor (args: ExplodeExprArgs) {
     super(args);
   }
 }
@@ -18236,14 +18775,13 @@ export class InlineExpr extends FuncExpr {
   key = ExpressionKey.INLINE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<InlineExprArgs>;
   declare args: InlineExprArgs;
-  constructor (args: InlineExprArgs = {}) {
+  constructor (args: InlineExprArgs) {
     super(args);
   }
 }
 
 export type UnnestExprArgs = { offset?: boolean;
-  explodeArray?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  explodeArray?: Expression; } & BaseExpressionArgs;
 
 export class UnnestExpr extends FuncExpr {
   key = ExpressionKey.UNNEST;
@@ -18259,22 +18797,21 @@ export class UnnestExpr extends FuncExpr {
 
   declare args: UnnestExprArgs;
 
-  constructor (args: UnnestExprArgs = {}) {
+  constructor (args: UnnestExprArgs) {
     super(args);
   }
 
-  get $offset (): boolean {
-    return this.args.offset as boolean;
+  get $offset (): Expression | undefined {
+    return this.args.offset as Expression | undefined;
   }
 
-  get $explodeArray (): Expression {
-    return this.args.explodeArray as Expression;
+  get $explodeArray (): Expression | undefined {
+    return this.args.explodeArray as Expression | undefined;
   }
 }
 
 export type FloorExprArgs = { decimals?: Expression[];
-  to?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  to?: Expression; } & BaseExpressionArgs;
 
 export class FloorExpr extends FuncExpr {
   key = ExpressionKey.FLOOR;
@@ -18290,16 +18827,16 @@ export class FloorExpr extends FuncExpr {
 
   declare args: FloorExprArgs;
 
-  constructor (args: FloorExprArgs = {}) {
+  constructor (args: FloorExprArgs) {
     super(args);
   }
 
-  get $decimals (): Expression[] {
-    return (this.args.decimals || []) as Expression[];
+  get $decimals (): Expression[] | undefined {
+    return this.args.decimals as Expression[] | undefined;
   }
 
-  get $to (): Expression {
-    return this.args.to as Expression;
+  get $to (): Expression | undefined {
+    return this.args.to as Expression | undefined;
   }
 }
 
@@ -18308,7 +18845,7 @@ export class FromBase32Expr extends FuncExpr {
   key = ExpressionKey.FROM_BASE32;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FromBase32ExprArgs>;
   declare args: FromBase32ExprArgs;
-  constructor (args: FromBase32ExprArgs = {}) {
+  constructor (args: FromBase32ExprArgs) {
     super(args);
   }
 }
@@ -18318,7 +18855,7 @@ export class FromBase64Expr extends FuncExpr {
   key = ExpressionKey.FROM_BASE64;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FromBase64ExprArgs>;
   declare args: FromBase64ExprArgs;
-  constructor (args: FromBase64ExprArgs = {}) {
+  constructor (args: FromBase64ExprArgs) {
     super(args);
   }
 }
@@ -18328,7 +18865,7 @@ export class ToBase32Expr extends FuncExpr {
   key = ExpressionKey.TO_BASE32;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ToBase32ExprArgs>;
   declare args: ToBase32ExprArgs;
-  constructor (args: ToBase32ExprArgs = {}) {
+  constructor (args: ToBase32ExprArgs) {
     super(args);
   }
 }
@@ -18338,14 +18875,13 @@ export class ToBase64Expr extends FuncExpr {
   key = ExpressionKey.TO_BASE64;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ToBase64ExprArgs>;
   declare args: ToBase64ExprArgs;
-  constructor (args: ToBase64ExprArgs = {}) {
+  constructor (args: ToBase64ExprArgs) {
     super(args);
   }
 }
 
 export type ToBinaryExprArgs = { format?: string;
-  safe?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  safe?: boolean; } & BaseExpressionArgs;
 
 export class ToBinaryExpr extends FuncExpr {
   key = ExpressionKey.TO_BINARY;
@@ -18361,21 +18897,20 @@ export class ToBinaryExpr extends FuncExpr {
 
   declare args: ToBinaryExprArgs;
 
-  constructor (args: ToBinaryExprArgs = {}) {
+  constructor (args: ToBinaryExprArgs) {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 }
 
-export type Base64DecodeBinaryExprArgs = { alphabet?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type Base64DecodeBinaryExprArgs = { alphabet?: Expression } & BaseExpressionArgs;
 
 export class Base64DecodeBinaryExpr extends FuncExpr {
   key = ExpressionKey.BASE64_DECODE_BINARY;
@@ -18388,17 +18923,16 @@ export class Base64DecodeBinaryExpr extends FuncExpr {
 
   declare args: Base64DecodeBinaryExprArgs;
 
-  constructor (args: Base64DecodeBinaryExprArgs = {}) {
+  constructor (args: Base64DecodeBinaryExprArgs) {
     super(args);
   }
 
-  get $alphabet (): Expression {
-    return this.args.alphabet as Expression;
+  get $alphabet (): Expression | undefined {
+    return this.args.alphabet as Expression | undefined;
   }
 }
 
-export type Base64DecodeStringExprArgs = { alphabet?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type Base64DecodeStringExprArgs = { alphabet?: Expression } & BaseExpressionArgs;
 
 export class Base64DecodeStringExpr extends FuncExpr {
   key = ExpressionKey.BASE64_DECODE_STRING;
@@ -18411,18 +18945,17 @@ export class Base64DecodeStringExpr extends FuncExpr {
 
   declare args: Base64DecodeStringExprArgs;
 
-  constructor (args: Base64DecodeStringExprArgs = {}) {
+  constructor (args: Base64DecodeStringExprArgs) {
     super(args);
   }
 
-  get $alphabet (): Expression {
-    return this.args.alphabet as Expression;
+  get $alphabet (): Expression | undefined {
+    return this.args.alphabet as Expression | undefined;
   }
 }
 
 export type Base64EncodeExprArgs = { maxLineLength?: number | Expression;
-  alphabet?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  alphabet?: Expression; } & BaseExpressionArgs;
 
 export class Base64EncodeExpr extends FuncExpr {
   key = ExpressionKey.BASE64_ENCODE;
@@ -18438,21 +18971,20 @@ export class Base64EncodeExpr extends FuncExpr {
 
   declare args: Base64EncodeExprArgs;
 
-  constructor (args: Base64EncodeExprArgs = {}) {
+  constructor (args: Base64EncodeExprArgs) {
     super(args);
   }
 
-  get $maxLineLength (): number | Expression {
-    return this.args.maxLineLength as number | Expression;
+  get $maxLineLength (): Expression | undefined {
+    return this.args.maxLineLength as Expression | undefined;
   }
 
-  get $alphabet (): Expression {
-    return this.args.alphabet as Expression;
+  get $alphabet (): Expression | undefined {
+    return this.args.alphabet as Expression | undefined;
   }
 }
 
-export type TryBase64DecodeBinaryExprArgs = { alphabet?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TryBase64DecodeBinaryExprArgs = { alphabet?: Expression } & BaseExpressionArgs;
 
 export class TryBase64DecodeBinaryExpr extends FuncExpr {
   key = ExpressionKey.TRY_BASE64_DECODE_BINARY;
@@ -18465,17 +18997,16 @@ export class TryBase64DecodeBinaryExpr extends FuncExpr {
 
   declare args: TryBase64DecodeBinaryExprArgs;
 
-  constructor (args: TryBase64DecodeBinaryExprArgs = {}) {
+  constructor (args: TryBase64DecodeBinaryExprArgs) {
     super(args);
   }
 
-  get $alphabet (): Expression {
-    return this.args.alphabet as Expression;
+  get $alphabet (): Expression | undefined {
+    return this.args.alphabet as Expression | undefined;
   }
 }
 
-export type TryBase64DecodeStringExprArgs = { alphabet?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TryBase64DecodeStringExprArgs = { alphabet?: Expression } & BaseExpressionArgs;
 
 export class TryBase64DecodeStringExpr extends FuncExpr {
   key = ExpressionKey.TRY_BASE64_DECODE_STRING;
@@ -18488,12 +19019,12 @@ export class TryBase64DecodeStringExpr extends FuncExpr {
 
   declare args: TryBase64DecodeStringExprArgs;
 
-  constructor (args: TryBase64DecodeStringExprArgs = {}) {
+  constructor (args: TryBase64DecodeStringExprArgs) {
     super(args);
   }
 
-  get $alphabet (): Expression {
-    return this.args.alphabet as Expression;
+  get $alphabet (): Expression | undefined {
+    return this.args.alphabet as Expression | undefined;
   }
 }
 
@@ -18502,7 +19033,7 @@ export class TryHexDecodeBinaryExpr extends FuncExpr {
   key = ExpressionKey.TRY_HEX_DECODE_BINARY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TryHexDecodeBinaryExprArgs>;
   declare args: TryHexDecodeBinaryExprArgs;
-  constructor (args: TryHexDecodeBinaryExprArgs = {}) {
+  constructor (args: TryHexDecodeBinaryExprArgs) {
     super(args);
   }
 }
@@ -18512,7 +19043,7 @@ export class TryHexDecodeStringExpr extends FuncExpr {
   key = ExpressionKey.TRY_HEX_DECODE_STRING;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TryHexDecodeStringExprArgs>;
   declare args: TryHexDecodeStringExprArgs;
-  constructor (args: TryHexDecodeStringExprArgs = {}) {
+  constructor (args: TryHexDecodeStringExprArgs) {
     super(args);
   }
 }
@@ -18522,7 +19053,7 @@ export class FromISO8601TimestampExpr extends FuncExpr {
   key = ExpressionKey.FROM_ISO8601_TIMESTAMP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FromISO8601TimestampExprArgs>;
   declare args: FromISO8601TimestampExprArgs;
-  constructor (args: FromISO8601TimestampExprArgs = {}) {
+  constructor (args: FromISO8601TimestampExprArgs) {
     super(args);
   }
 
@@ -18534,8 +19065,7 @@ export type GapFillExprArgs = { tsColumn: Expression;
   partitioningColumns?: Expression[];
   valueColumns?: Expression[];
   origin?: Expression;
-  ignoreNulls?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  ignoreNulls?: Expression[]; } & BaseExpressionArgs;
 
 export class GapFillExpr extends FuncExpr {
   key = ExpressionKey.GAP_FILL;
@@ -18571,27 +19101,26 @@ export class GapFillExpr extends FuncExpr {
     return this.args.bucketWidth as Expression;
   }
 
-  get $partitioningColumns (): Expression[] {
-    return (this.args.partitioningColumns || []) as Expression[];
+  get $partitioningColumns (): Expression[] | undefined {
+    return this.args.partitioningColumns as Expression[] | undefined;
   }
 
-  get $valueColumns (): Expression[] {
-    return (this.args.valueColumns || []) as Expression[];
+  get $valueColumns (): Expression[] | undefined {
+    return this.args.valueColumns as Expression[] | undefined;
   }
 
-  get $origin (): Expression {
-    return this.args.origin as Expression;
+  get $origin (): Expression | undefined {
+    return this.args.origin as Expression | undefined;
   }
 
-  get $ignoreNulls (): Expression[] {
-    return (this.args.ignoreNulls || []) as Expression[];
+  get $ignoreNulls (): Expression[] | undefined {
+    return this.args.ignoreNulls as Expression[] | undefined;
   }
 }
 
 export type GenerateDateArrayExprArgs = { start: Expression;
   end: Expression;
-  step?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  step?: Expression; } & BaseExpressionArgs;
 
 export class GenerateDateArrayExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_DATE_ARRAY;
@@ -18620,15 +19149,14 @@ export class GenerateDateArrayExpr extends FuncExpr {
     return this.args.end as Expression;
   }
 
-  get $step (): Expression {
-    return this.args.step as Expression;
+  get $step (): Expression | undefined {
+    return this.args.step as Expression | undefined;
   }
 }
 
 export type GenerateTimestampArrayExprArgs = { start: Expression;
   end: Expression;
-  step: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  step: Expression; } & BaseExpressionArgs;
 
 export class GenerateTimestampArrayExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_TIMESTAMP_ARRAY;
@@ -18668,13 +19196,12 @@ export class GetExtractExpr extends FuncExpr {
   key = ExpressionKey.GET_EXTRACT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<GetExtractExprArgs>;
   declare args: GetExtractExprArgs;
-  constructor (args: GetExtractExprArgs = {}) {
+  constructor (args: GetExtractExprArgs) {
     super(args);
   }
 }
 
-export type GetbitExprArgs = { zeroIsMsb?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type GetbitExprArgs = { zeroIsMsb?: Expression } & BaseExpressionArgs;
 
 export class GetbitExpr extends FuncExpr {
   key = ExpressionKey.GETBIT;
@@ -18687,17 +19214,16 @@ export class GetbitExpr extends FuncExpr {
 
   declare args: GetbitExprArgs;
 
-  constructor (args: GetbitExprArgs = {}) {
+  constructor (args: GetbitExprArgs) {
     super(args);
   }
 
-  get $zeroIsMsb (): Expression {
-    return this.args.zeroIsMsb as Expression;
+  get $zeroIsMsb (): Expression | undefined {
+    return this.args.zeroIsMsb as Expression | undefined;
   }
 }
 
-export type GreatestExprArgs = { ignoreNulls: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type GreatestExprArgs = { ignoreNulls: Expression[] } & BaseExpressionArgs;
 
 export class GreatestExpr extends FuncExpr {
   key = ExpressionKey.GREATEST;
@@ -18715,7 +19241,7 @@ export class GreatestExpr extends FuncExpr {
   }
 
   get $ignoreNulls (): Expression[] {
-    return (this.args.ignoreNulls || []) as Expression[];
+    return this.args.ignoreNulls as Expression[];
   }
 }
 
@@ -18724,7 +19250,7 @@ export class HexExpr extends FuncExpr {
   key = ExpressionKey.HEX;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<HexExprArgs>;
   declare args: HexExprArgs;
-  constructor (args: HexExprArgs = {}) {
+  constructor (args: HexExprArgs) {
     super(args);
   }
 }
@@ -18734,13 +19260,12 @@ export class HexDecodeStringExpr extends FuncExpr {
   key = ExpressionKey.HEX_DECODE_STRING;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<HexDecodeStringExprArgs>;
   declare args: HexDecodeStringExprArgs;
-  constructor (args: HexDecodeStringExprArgs = {}) {
+  constructor (args: HexDecodeStringExprArgs) {
     super(args);
   }
 }
 
-export type HexEncodeExprArgs = { case?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type HexEncodeExprArgs = { case?: Expression } & BaseExpressionArgs;
 
 export class HexEncodeExpr extends FuncExpr {
   key = ExpressionKey.HEX_ENCODE;
@@ -18753,12 +19278,12 @@ export class HexEncodeExpr extends FuncExpr {
 
   declare args: HexEncodeExprArgs;
 
-  constructor (args: HexEncodeExprArgs = {}) {
+  constructor (args: HexEncodeExprArgs) {
     super(args);
   }
 
-  get $case (): Expression {
-    return this.args['case'] as Expression;
+  get $case (): Expression | undefined {
+    return this.args.case as Expression | undefined;
   }
 }
 
@@ -18767,7 +19292,7 @@ export class HourExpr extends FuncExpr {
   key = ExpressionKey.HOUR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<HourExprArgs>;
   declare args: HourExprArgs;
-  constructor (args: HourExprArgs = {}) {
+  constructor (args: HourExprArgs) {
     super(args);
   }
 }
@@ -18777,7 +19302,7 @@ export class MinuteExpr extends FuncExpr {
   key = ExpressionKey.MINUTE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MinuteExprArgs>;
   declare args: MinuteExprArgs;
-  constructor (args: MinuteExprArgs = {}) {
+  constructor (args: MinuteExprArgs) {
     super(args);
   }
 }
@@ -18787,13 +19312,12 @@ export class SecondExpr extends FuncExpr {
   key = ExpressionKey.SECOND;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SecondExprArgs>;
   declare args: SecondExprArgs;
-  constructor (args: SecondExprArgs = {}) {
+  constructor (args: SecondExprArgs) {
     super(args);
   }
 }
 
-export type CompressExprArgs = { method?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type CompressExprArgs = { method?: string } & BaseExpressionArgs;
 
 export class CompressExpr extends FuncExpr {
   key = ExpressionKey.COMPRESS;
@@ -18806,17 +19330,16 @@ export class CompressExpr extends FuncExpr {
 
   declare args: CompressExprArgs;
 
-  constructor (args: CompressExprArgs = {}) {
+  constructor (args: CompressExprArgs) {
     super(args);
   }
 
-  get $method (): string {
-    return this.args.method as string;
+  get $method (): Expression | undefined {
+    return this.args.method as Expression | undefined;
   }
 }
 
-export type DecompressBinaryExprArgs = { method: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DecompressBinaryExprArgs = { method: string } & BaseExpressionArgs;
 
 export class DecompressBinaryExpr extends FuncExpr {
   key = ExpressionKey.DECOMPRESS_BINARY;
@@ -18833,13 +19356,12 @@ export class DecompressBinaryExpr extends FuncExpr {
     super(args);
   }
 
-  get $method (): string {
-    return this.args.method as string;
+  get $method (): Expression {
+    return this.args.method as Expression;
   }
 }
 
-export type DecompressStringExprArgs = { method: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type DecompressStringExprArgs = { method: string } & BaseExpressionArgs;
 
 export class DecompressStringExpr extends FuncExpr {
   key = ExpressionKey.DECOMPRESS_STRING;
@@ -18856,14 +19378,13 @@ export class DecompressStringExpr extends FuncExpr {
     super(args);
   }
 
-  get $method (): string {
-    return this.args.method as string;
+  get $method (): Expression {
+    return this.args.method as Expression;
   }
 }
 
 export type IfExprArgs = { true: Expression;
-  false?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  false?: Expression; } & BaseExpressionArgs;
 
 export class IfExpr extends FuncExpr {
   key = ExpressionKey.IF;
@@ -18889,8 +19410,8 @@ export class IfExpr extends FuncExpr {
     return this.args.true as Expression;
   }
 
-  get $false (): Expression {
-    return this.args.false as Expression;
+  get $false (): Expression | undefined {
+    return this.args.false as Expression | undefined;
   }
 }
 
@@ -18899,7 +19420,7 @@ export class NullifExpr extends FuncExpr {
   key = ExpressionKey.NULLIF;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NullifExprArgs>;
   declare args: NullifExprArgs;
-  constructor (args: NullifExprArgs = {}) {
+  constructor (args: NullifExprArgs) {
     super(args);
   }
 }
@@ -18909,7 +19430,7 @@ export class InitcapExpr extends FuncExpr {
   key = ExpressionKey.INITCAP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<InitcapExprArgs>;
   declare args: InitcapExprArgs;
-  constructor (args: InitcapExprArgs = {}) {
+  constructor (args: InitcapExprArgs) {
     super(args);
   }
 }
@@ -18919,7 +19440,7 @@ export class IsAsciiExpr extends FuncExpr {
   key = ExpressionKey.IS_ASCII;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<IsAsciiExprArgs>;
   declare args: IsAsciiExprArgs;
-  constructor (args: IsAsciiExprArgs = {}) {
+  constructor (args: IsAsciiExprArgs) {
     super(args);
   }
 }
@@ -18929,7 +19450,7 @@ export class IsNanExpr extends FuncExpr {
   key = ExpressionKey.IS_NAN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<IsNanExprArgs>;
   declare args: IsNanExprArgs;
-  constructor (args: IsNanExprArgs = {}) {
+  constructor (args: IsNanExprArgs) {
     super(args);
   }
 
@@ -18945,7 +19466,7 @@ export class Int64Expr extends FuncExpr {
   key = ExpressionKey.INT64;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<Int64ExprArgs>;
   declare args: Int64ExprArgs;
-  constructor (args: Int64ExprArgs = {}) {
+  constructor (args: Int64ExprArgs) {
     super(args);
   }
 }
@@ -18955,7 +19476,7 @@ export class IsInfExpr extends FuncExpr {
   key = ExpressionKey.IS_INF;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<IsInfExprArgs>;
   declare args: IsInfExprArgs;
-  constructor (args: IsInfExprArgs = {}) {
+  constructor (args: IsInfExprArgs) {
     super(args);
   }
 
@@ -18971,7 +19492,7 @@ export class IsNullValueExpr extends FuncExpr {
   key = ExpressionKey.IS_NULL_VALUE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<IsNullValueExprArgs>;
   declare args: IsNullValueExprArgs;
-  constructor (args: IsNullValueExprArgs = {}) {
+  constructor (args: IsNullValueExprArgs) {
     super(args);
   }
 }
@@ -18981,7 +19502,7 @@ export class IsArrayExpr extends FuncExpr {
   key = ExpressionKey.IS_ARRAY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<IsArrayExprArgs>;
   declare args: IsArrayExprArgs;
-  constructor (args: IsArrayExprArgs = {}) {
+  constructor (args: IsArrayExprArgs) {
     super(args);
   }
 }
@@ -18991,7 +19512,7 @@ export class FormatExpr extends FuncExpr {
   key = ExpressionKey.FORMAT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FormatExprArgs>;
   declare args: FormatExprArgs;
-  constructor (args: FormatExprArgs = {}) {
+  constructor (args: FormatExprArgs) {
     super(args);
   }
 }
@@ -19001,13 +19522,12 @@ export class JSONKeysExpr extends FuncExpr {
   key = ExpressionKey.JSON_KEYS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONKeysExprArgs>;
   declare args: JSONKeysExprArgs;
-  constructor (args: JSONKeysExprArgs = {}) {
+  constructor (args: JSONKeysExprArgs) {
     super(args);
   }
 }
 
-export type JSONKeysAtDepthExprArgs = { mode?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type JSONKeysAtDepthExprArgs = { mode?: Expression } & BaseExpressionArgs;
 
 export class JSONKeysAtDepthExpr extends FuncExpr {
   key = ExpressionKey.JSON_KEYS_AT_DEPTH;
@@ -19020,20 +19540,19 @@ export class JSONKeysAtDepthExpr extends FuncExpr {
 
   declare args: JSONKeysAtDepthExprArgs;
 
-  constructor (args: JSONKeysAtDepthExprArgs = {}) {
+  constructor (args: JSONKeysAtDepthExprArgs) {
     super(args);
   }
 
-  get $mode (): Expression {
-    return this.args.mode as Expression;
+  get $mode (): Expression | undefined {
+    return this.args.mode as Expression | undefined;
   }
 }
 
 export type JSONObjectExprArgs = { nullHandling?: Expression;
   uniqueKeys?: Expression[];
   returnType?: DataTypeExpr;
-  encoding?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  encoding?: Expression; } & BaseExpressionArgs;
 
 export class JSONObjectExpr extends FuncExpr {
   key = ExpressionKey.JSON_OBJECT;
@@ -19051,31 +19570,30 @@ export class JSONObjectExpr extends FuncExpr {
 
   declare args: JSONObjectExprArgs;
 
-  constructor (args: JSONObjectExprArgs = {}) {
+  constructor (args: JSONObjectExprArgs) {
     super(args);
   }
 
-  get $nullHandling (): Expression {
-    return this.args.nullHandling as Expression;
+  get $nullHandling (): Expression | undefined {
+    return this.args.nullHandling as Expression | undefined;
   }
 
-  get $uniqueKeys (): Expression[] {
-    return (this.args.uniqueKeys || []) as Expression[];
+  get $uniqueKeys (): Expression[] | undefined {
+    return this.args.uniqueKeys as Expression[] | undefined;
   }
 
-  get $returnType (): DataTypeExpr {
-    return this.args.returnType as DataTypeExpr;
+  get $returnType (): Expression | undefined {
+    return this.args.returnType as Expression | undefined;
   }
 
-  get $encoding (): Expression {
-    return this.args.encoding as Expression;
+  get $encoding (): Expression | undefined {
+    return this.args.encoding as Expression | undefined;
   }
 }
 
 export type JSONArrayExprArgs = { nullHandling?: Expression;
   returnType?: DataTypeExpr;
-  strict?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  strict?: Expression; } & BaseExpressionArgs;
 
 export class JSONArrayExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY;
@@ -19092,28 +19610,27 @@ export class JSONArrayExpr extends FuncExpr {
 
   declare args: JSONArrayExprArgs;
 
-  constructor (args: JSONArrayExprArgs = {}) {
+  constructor (args: JSONArrayExprArgs) {
     super(args);
   }
 
-  get $nullHandling (): Expression {
-    return this.args.nullHandling as Expression;
+  get $nullHandling (): Expression | undefined {
+    return this.args.nullHandling as Expression | undefined;
   }
 
-  get $returnType (): DataTypeExpr {
-    return this.args.returnType as DataTypeExpr;
+  get $returnType (): Expression | undefined {
+    return this.args.returnType as Expression | undefined;
   }
 
-  get $strict (): Expression {
-    return this.args.strict as Expression;
+  get $strict (): Expression | undefined {
+    return this.args.strict as Expression | undefined;
   }
 }
 
 export type JSONExistsExprArgs = { path: Expression;
   passing?: Expression;
   onCondition?: Expression;
-  fromDcolonqmark?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  fromDcolonqmark?: Expression; } & BaseExpressionArgs;
 
 export class JSONExistsExpr extends FuncExpr {
   key = ExpressionKey.JSON_EXISTS;
@@ -19139,16 +19656,16 @@ export class JSONExistsExpr extends FuncExpr {
     return this.args.path as Expression;
   }
 
-  get $passing (): Expression {
-    return this.args.passing as Expression;
+  get $passing (): Expression | undefined {
+    return this.args.passing as Expression | undefined;
   }
 
-  get $onCondition (): Expression {
-    return this.args.onCondition as Expression;
+  get $onCondition (): Expression | undefined {
+    return this.args.onCondition as Expression | undefined;
   }
 
-  get $fromDcolonqmark (): Expression {
-    return this.args.fromDcolonqmark as Expression;
+  get $fromDcolonqmark (): Expression | undefined {
+    return this.args.fromDcolonqmark as Expression | undefined;
   }
 }
 
@@ -19157,14 +19674,13 @@ export class JSONSetExpr extends FuncExpr {
   key = ExpressionKey.JSON_SET;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONSetExprArgs>;
   declare args: JSONSetExprArgs;
-  constructor (args: JSONSetExprArgs = {}) {
+  constructor (args: JSONSetExprArgs) {
     super(args);
   }
 }
 
 export type JSONStripNullsExprArgs = { includeArrays?: Expression[];
-  removeEmpty?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  removeEmpty?: Expression; } & BaseExpressionArgs;
 
 export class JSONStripNullsExpr extends FuncExpr {
   key = ExpressionKey.JSON_STRIP_NULLS;
@@ -19180,16 +19696,16 @@ export class JSONStripNullsExpr extends FuncExpr {
 
   declare args: JSONStripNullsExprArgs;
 
-  constructor (args: JSONStripNullsExprArgs = {}) {
+  constructor (args: JSONStripNullsExprArgs) {
     super(args);
   }
 
-  get $includeArrays (): Expression[] {
-    return (this.args.includeArrays || []) as Expression[];
+  get $includeArrays (): Expression[] | undefined {
+    return this.args.includeArrays as Expression[] | undefined;
   }
 
-  get $removeEmpty (): Expression {
-    return this.args.removeEmpty as Expression;
+  get $removeEmpty (): Expression | undefined {
+    return this.args.removeEmpty as Expression | undefined;
   }
 }
 
@@ -19198,7 +19714,7 @@ export class JSONValueArrayExpr extends FuncExpr {
   key = ExpressionKey.JSON_VALUE_ARRAY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONValueArrayExprArgs>;
   declare args: JSONValueArrayExprArgs;
-  constructor (args: JSONValueArrayExprArgs = {}) {
+  constructor (args: JSONValueArrayExprArgs) {
     super(args);
   }
 }
@@ -19208,7 +19724,7 @@ export class JSONRemoveExpr extends FuncExpr {
   key = ExpressionKey.JSON_REMOVE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONRemoveExprArgs>;
   declare args: JSONRemoveExprArgs;
-  constructor (args: JSONRemoveExprArgs = {}) {
+  constructor (args: JSONRemoveExprArgs) {
     super(args);
   }
 }
@@ -19216,8 +19732,7 @@ export class JSONRemoveExpr extends FuncExpr {
 export type JSONTableExprArgs = { schema: Expression;
   path?: Expression;
   errorHandling?: Expression;
-  emptyHandling?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  emptyHandling?: Expression; } & BaseExpressionArgs;
 
 export class JSONTableExpr extends FuncExpr {
   key = ExpressionKey.JSON_TABLE;
@@ -19243,16 +19758,16 @@ export class JSONTableExpr extends FuncExpr {
     return this.args.schema as Expression;
   }
 
-  get $path (): Expression {
-    return this.args.path as Expression;
+  get $path (): Expression | undefined {
+    return this.args.path as Expression | undefined;
   }
 
-  get $errorHandling (): Expression {
-    return this.args.errorHandling as Expression;
+  get $errorHandling (): Expression | undefined {
+    return this.args.errorHandling as Expression | undefined;
   }
 
-  get $emptyHandling (): Expression {
-    return this.args.emptyHandling as Expression;
+  get $emptyHandling (): Expression | undefined {
+    return this.args.emptyHandling as Expression | undefined;
   }
 }
 
@@ -19261,15 +19776,14 @@ export class JSONTypeExpr extends FuncExpr {
   key = ExpressionKey.JSON_TYPE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONTypeExprArgs>;
   declare args: JSONTypeExprArgs;
-  constructor (args: JSONTypeExprArgs = {}) {
+  constructor (args: JSONTypeExprArgs) {
     super(args);
   }
 }
 
 export type ObjectInsertExprArgs = { key: unknown;
   value: string;
-  updateFlag?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  updateFlag?: Expression; } & BaseExpressionArgs;
 
 export class ObjectInsertExpr extends FuncExpr {
   key = ExpressionKey.OBJECT_INSERT;
@@ -19290,21 +19804,20 @@ export class ObjectInsertExpr extends FuncExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
-  }
-
-  get $updateFlag (): Expression {
-    return this.args.updateFlag as Expression;
-  }
-
   get $key (): Expression {
     return this.args.key as Expression;
   }
+
+  get $value (): Expression {
+    return this.args.value as Expression;
+  }
+
+  get $updateFlag (): Expression | undefined {
+    return this.args.updateFlag as Expression | undefined;
+  }
 }
 
-export type OpenJSONExprArgs = { path?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type OpenJSONExprArgs = { path?: Expression } & BaseExpressionArgs;
 
 export class OpenJSONExpr extends FuncExpr {
   key = ExpressionKey.OPEN_JSON;
@@ -19317,12 +19830,12 @@ export class OpenJSONExpr extends FuncExpr {
 
   declare args: OpenJSONExprArgs;
 
-  constructor (args: OpenJSONExprArgs = {}) {
+  constructor (args: OpenJSONExprArgs) {
     super(args);
   }
 
-  get $path (): Expression {
-    return this.args.path as Expression;
+  get $path (): Expression | undefined {
+    return this.args.path as Expression | undefined;
   }
 }
 
@@ -19331,7 +19844,7 @@ export class JSONBContainsExpr extends BinaryExpr {
   key = ExpressionKey.JSONB_CONTAINS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONBContainsExprArgs>;
   declare args: JSONBContainsExprArgs;
-  constructor (args: JSONBContainsExprArgs = {}) {
+  constructor (args: JSONBContainsExprArgs) {
     super(args);
   }
 }
@@ -19344,7 +19857,7 @@ export class JSONBContainsAnyTopKeysExpr extends BinaryExpr {
   >;
 
   declare args: JSONBContainsAnyTopKeysExprArgs;
-  constructor (args: JSONBContainsAnyTopKeysExprArgs = {}) {
+  constructor (args: JSONBContainsAnyTopKeysExprArgs) {
     super(args);
   }
 }
@@ -19357,13 +19870,12 @@ export class JSONBContainsAllTopKeysExpr extends BinaryExpr {
   >;
 
   declare args: JSONBContainsAllTopKeysExprArgs;
-  constructor (args: JSONBContainsAllTopKeysExprArgs = {}) {
+  constructor (args: JSONBContainsAllTopKeysExprArgs) {
     super(args);
   }
 }
 
-export type JSONBExistsExprArgs = { path: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type JSONBExistsExprArgs = { path: Expression } & BaseExpressionArgs;
 
 export class JSONBExistsExpr extends FuncExpr {
   key = ExpressionKey.JSONB_EXISTS;
@@ -19390,7 +19902,7 @@ export class JSONBDeleteAtPathExpr extends BinaryExpr {
   key = ExpressionKey.JSONB_DELETE_AT_PATH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONBDeleteAtPathExprArgs>;
   declare args: JSONBDeleteAtPathExprArgs;
-  constructor (args: JSONBDeleteAtPathExprArgs = {}) {
+  constructor (args: JSONBDeleteAtPathExprArgs) {
     super(args);
   }
 }
@@ -19401,8 +19913,7 @@ export type JSONExtractExprArgs = { onlyJsonTypes?: Expression[];
   option?: Expression;
   quote?: Expression;
   onCondition?: Expression;
-  requiresJson?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  requiresJson?: Expression; } & BaseExpressionArgs;
 
 export class JSONExtractExpr extends BinaryExpr {
   key = ExpressionKey.JSON_EXTRACT;
@@ -19423,36 +19934,36 @@ export class JSONExtractExpr extends BinaryExpr {
 
   declare args: JSONExtractExprArgs;
 
-  constructor (args: JSONExtractExprArgs = {}) {
+  constructor (args: JSONExtractExprArgs) {
     super(args);
   }
 
-  get $onlyJsonTypes (): Expression[] {
-    return (this.args.onlyJsonTypes || []) as Expression[];
+  get $onlyJsonTypes (): Expression[] | undefined {
+    return this.args.onlyJsonTypes as Expression[] | undefined;
   }
 
-  get $variantExtract (): string {
-    return this.args.variantExtract as string;
+  get $variantExtract (): Expression | undefined {
+    return this.args.variantExtract as Expression | undefined;
   }
 
-  get $jsonQuery (): Expression {
-    return this.args.jsonQuery as Expression;
+  get $jsonQuery (): Expression | undefined {
+    return this.args.jsonQuery as Expression | undefined;
   }
 
-  get $option (): Expression {
-    return this.args.option as Expression;
+  get $option (): Expression | undefined {
+    return this.args.option as Expression | undefined;
   }
 
-  get $quote (): Expression {
-    return this.args.quote as Expression;
+  get $quote (): Expression | undefined {
+    return this.args.quote as Expression | undefined;
   }
 
-  get $onCondition (): Expression {
-    return this.args.onCondition as Expression;
+  get $onCondition (): Expression | undefined {
+    return this.args.onCondition as Expression | undefined;
   }
 
-  get $requiresJson (): Expression {
-    return this.args.requiresJson as Expression;
+  get $requiresJson (): Expression | undefined {
+    return this.args.requiresJson as Expression | undefined;
   }
 }
 
@@ -19461,15 +19972,14 @@ export class JSONExtractArrayExpr extends FuncExpr {
   key = ExpressionKey.JSON_EXTRACT_ARRAY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONExtractArrayExprArgs>;
   declare args: JSONExtractArrayExprArgs;
-  constructor (args: JSONExtractArrayExprArgs = {}) {
+  constructor (args: JSONExtractArrayExprArgs) {
     super(args);
   }
 }
 
 export type JSONExtractScalarExprArgs = { onlyJsonTypes?: Expression[];
   jsonType?: Expression;
-  scalarOnly?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  scalarOnly?: Expression; } & BaseExpressionArgs;
 
 export class JSONExtractScalarExpr extends BinaryExpr {
   key = ExpressionKey.JSON_EXTRACT_SCALAR;
@@ -19486,20 +19996,20 @@ export class JSONExtractScalarExpr extends BinaryExpr {
 
   declare args: JSONExtractScalarExprArgs;
 
-  constructor (args: JSONExtractScalarExprArgs = {}) {
+  constructor (args: JSONExtractScalarExprArgs) {
     super(args);
   }
 
-  get $onlyJsonTypes (): Expression[] {
-    return (this.args.onlyJsonTypes || []) as Expression[];
+  get $onlyJsonTypes (): Expression[] | undefined {
+    return this.args.onlyJsonTypes as Expression[] | undefined;
   }
 
-  get $jsonType (): Expression {
-    return this.args.jsonType as Expression;
+  get $jsonType (): Expression | undefined {
+    return this.args.jsonType as Expression | undefined;
   }
 
-  get $scalarOnly (): Expression {
-    return this.args.scalarOnly as Expression;
+  get $scalarOnly (): boolean | undefined {
+    return this.args.scalarOnly as boolean | undefined;
   }
 }
 
@@ -19508,13 +20018,12 @@ export class JSONBExtractExpr extends BinaryExpr {
   key = ExpressionKey.JSONB_EXTRACT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONBExtractExprArgs>;
   declare args: JSONBExtractExprArgs;
-  constructor (args: JSONBExtractExprArgs = {}) {
+  constructor (args: JSONBExtractExprArgs) {
     super(args);
   }
 }
 
-export type JSONBExtractScalarExprArgs = { jsonType?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type JSONBExtractScalarExprArgs = { jsonType?: Expression } & BaseExpressionArgs;
 
 export class JSONBExtractScalarExpr extends BinaryExpr {
   key = ExpressionKey.JSONB_EXTRACT_SCALAR;
@@ -19527,19 +20036,18 @@ export class JSONBExtractScalarExpr extends BinaryExpr {
 
   declare args: JSONBExtractScalarExprArgs;
 
-  constructor (args: JSONBExtractScalarExprArgs = {}) {
+  constructor (args: JSONBExtractScalarExprArgs) {
     super(args);
   }
 
-  get $jsonType (): Expression {
-    return this.args.jsonType as Expression;
+  get $jsonType (): Expression | undefined {
+    return this.args.jsonType as Expression | undefined;
   }
 }
 
 export type JSONFormatExprArgs = { options?: Expression[];
   isJson?: Expression;
-  toJson?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  toJson?: Expression; } & BaseExpressionArgs;
 
 export class JSONFormatExpr extends FuncExpr {
   key = ExpressionKey.JSON_FORMAT;
@@ -19556,20 +20064,20 @@ export class JSONFormatExpr extends FuncExpr {
 
   declare args: JSONFormatExprArgs;
 
-  constructor (args: JSONFormatExprArgs = {}) {
+  constructor (args: JSONFormatExprArgs) {
     super(args);
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
   }
 
-  get $isJson (): Expression {
-    return this.args.isJson as Expression;
+  get $isJson (): Expression | undefined {
+    return this.args.isJson as Expression | undefined;
   }
 
-  get $toJson (): Expression {
-    return this.args.toJson as Expression;
+  get $toJson (): Expression | undefined {
+    return this.args.toJson as Expression | undefined;
   }
 }
 
@@ -19578,13 +20086,12 @@ export class JSONArrayAppendExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY_APPEND;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONArrayAppendExprArgs>;
   declare args: JSONArrayAppendExprArgs;
-  constructor (args: JSONArrayAppendExprArgs = {}) {
+  constructor (args: JSONArrayAppendExprArgs) {
     super(args);
   }
 }
 
-export type JSONArrayContainsExprArgs = { jsonType?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type JSONArrayContainsExprArgs = { jsonType?: Expression } & BaseExpressionArgs;
 
 export class JSONArrayContainsExpr extends BinaryExpr {
   key = ExpressionKey.JSON_ARRAY_CONTAINS;
@@ -19597,12 +20104,12 @@ export class JSONArrayContainsExpr extends BinaryExpr {
 
   declare args: JSONArrayContainsExprArgs;
 
-  constructor (args: JSONArrayContainsExprArgs = {}) {
+  constructor (args: JSONArrayContainsExprArgs) {
     super(args);
   }
 
-  get $jsonType (): Expression {
-    return this.args.jsonType as Expression;
+  get $jsonType (): Expression | undefined {
+    return this.args.jsonType as Expression | undefined;
   }
 }
 
@@ -19611,7 +20118,7 @@ export class JSONArrayInsertExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY_INSERT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONArrayInsertExprArgs>;
   declare args: JSONArrayInsertExprArgs;
-  constructor (args: JSONArrayInsertExprArgs = {}) {
+  constructor (args: JSONArrayInsertExprArgs) {
     super(args);
   }
 }
@@ -19621,7 +20128,7 @@ export class ParseBignumericExpr extends FuncExpr {
   key = ExpressionKey.PARSE_BIGNUMERIC;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ParseBignumericExprArgs>;
   declare args: ParseBignumericExprArgs;
-  constructor (args: ParseBignumericExprArgs = {}) {
+  constructor (args: ParseBignumericExprArgs) {
     super(args);
   }
 }
@@ -19631,13 +20138,12 @@ export class ParseNumericExpr extends FuncExpr {
   key = ExpressionKey.PARSE_NUMERIC;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ParseNumericExprArgs>;
   declare args: ParseNumericExprArgs;
-  constructor (args: ParseNumericExprArgs = {}) {
+  constructor (args: ParseNumericExprArgs) {
     super(args);
   }
 }
 
-export type ParseJSONExprArgs = { safe?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ParseJSONExprArgs = { safe?: boolean } & BaseExpressionArgs;
 
 export class ParseJSONExpr extends FuncExpr {
   key = ExpressionKey.PARSE_JSON;
@@ -19650,19 +20156,18 @@ export class ParseJSONExpr extends FuncExpr {
 
   declare args: ParseJSONExprArgs;
 
-  constructor (args: ParseJSONExprArgs = {}) {
+  constructor (args: ParseJSONExprArgs) {
     super(args);
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 }
 
 export type ParseUrlExprArgs = { partToExtract?: Expression;
   key?: unknown;
-  permissive?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  permissive?: Expression; } & BaseExpressionArgs;
 
 export class ParseUrlExpr extends FuncExpr {
   key = ExpressionKey.PARSE_URL;
@@ -19679,25 +20184,24 @@ export class ParseUrlExpr extends FuncExpr {
 
   declare args: ParseUrlExprArgs;
 
-  constructor (args: ParseUrlExprArgs = {}) {
+  constructor (args: ParseUrlExprArgs) {
     super(args);
   }
 
-  get $partToExtract (): Expression {
-    return this.args.partToExtract as Expression;
-  }
-
-  get $permissive (): Expression {
-    return this.args.permissive as Expression;
+  get $partToExtract (): Expression | undefined {
+    return this.args.partToExtract as Expression | undefined;
   }
 
   get $key (): Expression | undefined {
     return this.args.key as Expression | undefined;
   }
+
+  get $permissive (): Expression | undefined {
+    return this.args.permissive as Expression | undefined;
+  }
 }
 
-export type ParseIpExprArgs = { permissive?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ParseIpExprArgs = { permissive?: Expression } & BaseExpressionArgs;
 
 export class ParseIpExpr extends FuncExpr {
   key = ExpressionKey.PARSE_IP;
@@ -19710,17 +20214,16 @@ export class ParseIpExpr extends FuncExpr {
 
   declare args: ParseIpExprArgs;
 
-  constructor (args: ParseIpExprArgs = {}) {
+  constructor (args: ParseIpExprArgs) {
     super(args);
   }
 
-  get $permissive (): Expression {
-    return this.args.permissive as Expression;
+  get $permissive (): Expression | undefined {
+    return this.args.permissive as Expression | undefined;
   }
 }
 
-export type ParseTimeExprArgs = { format: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ParseTimeExprArgs = { format: string } & BaseExpressionArgs;
 
 export class ParseTimeExpr extends FuncExpr {
   key = ExpressionKey.PARSE_TIME;
@@ -19737,14 +20240,13 @@ export class ParseTimeExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression {
+    return this.args.format as Expression;
   }
 }
 
 export type ParseDatetimeExprArgs = { format?: string;
-  zone?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  zone?: Expression; } & BaseExpressionArgs;
 
 export class ParseDatetimeExpr extends FuncExpr {
   key = ExpressionKey.PARSE_DATETIME;
@@ -19760,21 +20262,20 @@ export class ParseDatetimeExpr extends FuncExpr {
 
   declare args: ParseDatetimeExprArgs;
 
-  constructor (args: ParseDatetimeExprArgs = {}) {
+  constructor (args: ParseDatetimeExprArgs) {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 }
 
-export type LeastExprArgs = { ignoreNulls: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type LeastExprArgs = { ignoreNulls: Expression[] } & BaseExpressionArgs;
 
 export class LeastExpr extends FuncExpr {
   key = ExpressionKey.LEAST;
@@ -19792,7 +20293,7 @@ export class LeastExpr extends FuncExpr {
   }
 
   get $ignoreNulls (): Expression[] {
-    return (this.args.ignoreNulls || []) as Expression[];
+    return this.args.ignoreNulls as Expression[];
   }
 }
 
@@ -19801,7 +20302,7 @@ export class LeftExpr extends FuncExpr {
   key = ExpressionKey.LEFT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LeftExprArgs>;
   declare args: LeftExprArgs;
-  constructor (args: LeftExprArgs = {}) {
+  constructor (args: LeftExprArgs) {
     super(args);
   }
 }
@@ -19811,7 +20312,7 @@ export class RightExpr extends FuncExpr {
   key = ExpressionKey.RIGHT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RightExprArgs>;
   declare args: RightExprArgs;
-  constructor (args: RightExprArgs = {}) {
+  constructor (args: RightExprArgs) {
     super(args);
   }
 }
@@ -19821,14 +20322,13 @@ export class ReverseExpr extends FuncExpr {
   key = ExpressionKey.REVERSE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ReverseExprArgs>;
   declare args: ReverseExprArgs;
-  constructor (args: ReverseExprArgs = {}) {
+  constructor (args: ReverseExprArgs) {
     super(args);
   }
 }
 
 export type LengthExprArgs = { binary?: Expression;
-  encoding?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  encoding?: Expression; } & BaseExpressionArgs;
 
 export class LengthExpr extends FuncExpr {
   key = ExpressionKey.LENGTH;
@@ -19844,16 +20344,16 @@ export class LengthExpr extends FuncExpr {
 
   declare args: LengthExprArgs;
 
-  constructor (args: LengthExprArgs = {}) {
+  constructor (args: LengthExprArgs) {
     super(args);
   }
 
-  get $binary (): Expression {
-    return this.args.binary as Expression;
+  get $binary (): Expression | undefined {
+    return this.args.binary as Expression | undefined;
   }
 
-  get $encoding (): Expression {
-    return this.args.encoding as Expression;
+  get $encoding (): Expression | undefined {
+    return this.args.encoding as Expression | undefined;
   }
 }
 
@@ -19862,7 +20362,7 @@ export class RtrimmedLengthExpr extends FuncExpr {
   key = ExpressionKey.RTRIMMED_LENGTH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RtrimmedLengthExprArgs>;
   declare args: RtrimmedLengthExprArgs;
-  constructor (args: RtrimmedLengthExprArgs = {}) {
+  constructor (args: RtrimmedLengthExprArgs) {
     super(args);
   }
 }
@@ -19872,7 +20372,7 @@ export class BitLengthExpr extends FuncExpr {
   key = ExpressionKey.BIT_LENGTH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BitLengthExprArgs>;
   declare args: BitLengthExprArgs;
-  constructor (args: BitLengthExprArgs = {}) {
+  constructor (args: BitLengthExprArgs) {
     super(args);
   }
 }
@@ -19880,8 +20380,7 @@ export class BitLengthExpr extends FuncExpr {
 export type LevenshteinExprArgs = { insCost?: Expression;
   delCost?: Expression;
   subCost?: Expression;
-  maxDist?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  maxDist?: Expression; } & BaseExpressionArgs;
 
 export class LevenshteinExpr extends FuncExpr {
   key = ExpressionKey.LEVENSHTEIN;
@@ -19899,24 +20398,24 @@ export class LevenshteinExpr extends FuncExpr {
 
   declare args: LevenshteinExprArgs;
 
-  constructor (args: LevenshteinExprArgs = {}) {
+  constructor (args: LevenshteinExprArgs) {
     super(args);
   }
 
-  get $insCost (): Expression {
-    return this.args.insCost as Expression;
+  get $insCost (): Expression | undefined {
+    return this.args.insCost as Expression | undefined;
   }
 
-  get $delCost (): Expression {
-    return this.args.delCost as Expression;
+  get $delCost (): Expression | undefined {
+    return this.args.delCost as Expression | undefined;
   }
 
-  get $subCost (): Expression {
-    return this.args.subCost as Expression;
+  get $subCost (): Expression | undefined {
+    return this.args.subCost as Expression | undefined;
   }
 
-  get $maxDist (): Expression {
-    return this.args.maxDist as Expression;
+  get $maxDist (): Expression | undefined {
+    return this.args.maxDist as Expression | undefined;
   }
 }
 
@@ -19925,7 +20424,7 @@ export class LnExpr extends FuncExpr {
   key = ExpressionKey.LN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LnExprArgs>;
   declare args: LnExprArgs;
-  constructor (args: LnExprArgs = {}) {
+  constructor (args: LnExprArgs) {
     super(args);
   }
 }
@@ -19935,7 +20434,7 @@ export class LogExpr extends FuncExpr {
   key = ExpressionKey.LOG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LogExprArgs>;
   declare args: LogExprArgs;
-  constructor (args: LogExprArgs = {}) {
+  constructor (args: LogExprArgs) {
     super(args);
   }
 }
@@ -19945,7 +20444,7 @@ export class LowerExpr extends FuncExpr {
   key = ExpressionKey.LOWER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LowerExprArgs>;
   declare args: LowerExprArgs;
-  constructor (args: LowerExprArgs = {}) {
+  constructor (args: LowerExprArgs) {
     super(args);
   }
 
@@ -19953,8 +20452,7 @@ export class LowerExpr extends FuncExpr {
 }
 
 export type MapExprArgs = { keys?: Expression[];
-  values?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  values?: Expression[]; } & BaseExpressionArgs;
 
 export class MapExpr extends FuncExpr {
   key = ExpressionKey.MAP;
@@ -19974,16 +20472,16 @@ export class MapExpr extends FuncExpr {
     this.register();
   }
 
-  constructor (args: MapExprArgs = {}) {
+  constructor (args: MapExprArgs) {
     super(args);
   }
 
-  get $keys (): Expression[] {
-    return (this.args.keys || []) as Expression[];
+  get $keys (): Expression[] | undefined {
+    return this.args.keys as Expression[] | undefined;
   }
 
-  get $values (): Expression[] {
-    return (this.args.values || []) as Expression[];
+  get $values (): Expression[] | undefined {
+    return this.args.values as Expression[] | undefined;
   }
 }
 
@@ -19992,7 +20490,7 @@ export class ToMapExpr extends FuncExpr {
   key = ExpressionKey.TO_MAP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ToMapExprArgs>;
   declare args: ToMapExprArgs;
-  constructor (args: ToMapExprArgs = {}) {
+  constructor (args: ToMapExprArgs) {
     super(args);
   }
 }
@@ -20002,7 +20500,7 @@ export class MapFromEntriesExpr extends FuncExpr {
   key = ExpressionKey.MAP_FROM_ENTRIES;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MapFromEntriesExprArgs>;
   declare args: MapFromEntriesExprArgs;
-  constructor (args: MapFromEntriesExprArgs = {}) {
+  constructor (args: MapFromEntriesExprArgs) {
     super(args);
   }
 }
@@ -20012,13 +20510,12 @@ export class MapCatExpr extends FuncExpr {
   key = ExpressionKey.MAP_CAT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MapCatExprArgs>;
   declare args: MapCatExprArgs;
-  constructor (args: MapCatExprArgs = {}) {
+  constructor (args: MapCatExprArgs) {
     super(args);
   }
 }
 
-export type MapContainsKeyExprArgs = { key: unknown;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type MapContainsKeyExprArgs = { key: unknown } & BaseExpressionArgs;
 
 export class MapContainsKeyExpr extends FuncExpr {
   key = ExpressionKey.MAP_CONTAINS_KEY;
@@ -20045,15 +20542,14 @@ export class MapDeleteExpr extends FuncExpr {
   key = ExpressionKey.MAP_DELETE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MapDeleteExprArgs>;
   declare args: MapDeleteExprArgs;
-  constructor (args: MapDeleteExprArgs = {}) {
+  constructor (args: MapDeleteExprArgs) {
     super(args);
   }
 }
 
 export type MapInsertExprArgs = { key?: unknown;
   value: string;
-  updateFlag?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  updateFlag?: Expression; } & BaseExpressionArgs;
 
 export class MapInsertExpr extends FuncExpr {
   key = ExpressionKey.MAP_INSERT;
@@ -20074,16 +20570,16 @@ export class MapInsertExpr extends FuncExpr {
     super(args);
   }
 
-  get $value (): string {
-    return this.args.value as string;
-  }
-
-  get $updateFlag (): Expression {
-    return this.args.updateFlag as Expression;
-  }
-
   get $key (): Expression | undefined {
     return this.args.key as Expression | undefined;
+  }
+
+  get $value (): Expression {
+    return this.args.value as Expression;
+  }
+
+  get $updateFlag (): Expression | undefined {
+    return this.args.updateFlag as Expression | undefined;
   }
 }
 
@@ -20092,7 +20588,7 @@ export class MapKeysExpr extends FuncExpr {
   key = ExpressionKey.MAP_KEYS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MapKeysExprArgs>;
   declare args: MapKeysExprArgs;
-  constructor (args: MapKeysExprArgs = {}) {
+  constructor (args: MapKeysExprArgs) {
     super(args);
   }
 }
@@ -20102,7 +20598,7 @@ export class MapPickExpr extends FuncExpr {
   key = ExpressionKey.MAP_PICK;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MapPickExprArgs>;
   declare args: MapPickExprArgs;
-  constructor (args: MapPickExprArgs = {}) {
+  constructor (args: MapPickExprArgs) {
     super(args);
   }
 }
@@ -20112,7 +20608,7 @@ export class MapSizeExpr extends FuncExpr {
   key = ExpressionKey.MAP_SIZE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MapSizeExprArgs>;
   declare args: MapSizeExprArgs;
-  constructor (args: MapSizeExprArgs = {}) {
+  constructor (args: MapSizeExprArgs) {
     super(args);
   }
 }
@@ -20122,14 +20618,13 @@ export class StarMapExpr extends FuncExpr {
   key = ExpressionKey.STAR_MAP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<StarMapExprArgs>;
   declare args: StarMapExprArgs;
-  constructor (args: StarMapExprArgs = {}) {
+  constructor (args: StarMapExprArgs) {
     super(args);
   }
 }
 
 export type VarMapExprArgs = { keys: Expression[];
-  values: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  values: Expression[]; } & BaseExpressionArgs;
 
 export class VarMapExpr extends FuncExpr {
   key = ExpressionKey.VAR_MAP;
@@ -20150,16 +20645,15 @@ export class VarMapExpr extends FuncExpr {
   }
 
   get $keys (): Expression[] {
-    return (this.args.keys || []) as Expression[];
+    return this.args.keys as Expression[];
   }
 
   get $values (): Expression[] {
-    return (this.args.values || []) as Expression[];
+    return this.args.values as Expression[];
   }
 }
 
-export type MatchAgainstExprArgs = { modifier?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type MatchAgainstExprArgs = { modifier?: Expression } & BaseExpressionArgs;
 
 export class MatchAgainstExpr extends FuncExpr {
   key = ExpressionKey.MATCH_AGAINST;
@@ -20172,12 +20666,12 @@ export class MatchAgainstExpr extends FuncExpr {
 
   declare args: MatchAgainstExprArgs;
 
-  constructor (args: MatchAgainstExprArgs = {}) {
+  constructor (args: MatchAgainstExprArgs) {
     super(args);
   }
 
-  get $modifier (): Expression {
-    return this.args.modifier as Expression;
+  get $modifier (): Expression | undefined {
+    return this.args.modifier as Expression | undefined;
   }
 }
 
@@ -20186,7 +20680,7 @@ export class MD5Expr extends FuncExpr {
   key = ExpressionKey.MD5;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MD5ExprArgs>;
   declare args: MD5ExprArgs;
-  constructor (args: MD5ExprArgs = {}) {
+  constructor (args: MD5ExprArgs) {
     super(args);
   }
 
@@ -20202,7 +20696,7 @@ export class MD5DigestExpr extends FuncExpr {
   key = ExpressionKey.MD5_DIGEST;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MD5DigestExprArgs>;
   declare args: MD5DigestExprArgs;
-  constructor (args: MD5DigestExprArgs = {}) {
+  constructor (args: MD5DigestExprArgs) {
     super(args);
   }
 }
@@ -20212,7 +20706,7 @@ export class MD5NumberLower64Expr extends FuncExpr {
   key = ExpressionKey.MD5_NUMBER_LOWER64;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MD5NumberLower64ExprArgs>;
   declare args: MD5NumberLower64ExprArgs;
-  constructor (args: MD5NumberLower64ExprArgs = {}) {
+  constructor (args: MD5NumberLower64ExprArgs) {
     super(args);
   }
 }
@@ -20222,7 +20716,7 @@ export class MD5NumberUpper64Expr extends FuncExpr {
   key = ExpressionKey.MD5_NUMBER_UPPER64;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MD5NumberUpper64ExprArgs>;
   declare args: MD5NumberUpper64ExprArgs;
-  constructor (args: MD5NumberUpper64ExprArgs = {}) {
+  constructor (args: MD5NumberUpper64ExprArgs) {
     super(args);
   }
 }
@@ -20232,13 +20726,12 @@ export class MonthExpr extends FuncExpr {
   key = ExpressionKey.MONTH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MonthExprArgs>;
   declare args: MonthExprArgs;
-  constructor (args: MonthExprArgs = {}) {
+  constructor (args: MonthExprArgs) {
     super(args);
   }
 }
 
-export type MonthnameExprArgs = { abbreviated?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type MonthnameExprArgs = { abbreviated?: Expression } & BaseExpressionArgs;
 
 export class MonthnameExpr extends FuncExpr {
   key = ExpressionKey.MONTHNAME;
@@ -20251,17 +20744,16 @@ export class MonthnameExpr extends FuncExpr {
 
   declare args: MonthnameExprArgs;
 
-  constructor (args: MonthnameExprArgs = {}) {
+  constructor (args: MonthnameExprArgs) {
     super(args);
   }
 
-  get $abbreviated (): Expression {
-    return this.args.abbreviated as Expression;
+  get $abbreviated (): Expression | undefined {
+    return this.args.abbreviated as Expression | undefined;
   }
 }
 
-export type AddMonthsExprArgs = { preserveEndOfMonth?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type AddMonthsExprArgs = { preserveEndOfMonth?: Expression } & BaseExpressionArgs;
 
 export class AddMonthsExpr extends FuncExpr {
   key = ExpressionKey.ADD_MONTHS;
@@ -20274,18 +20766,17 @@ export class AddMonthsExpr extends FuncExpr {
 
   declare args: AddMonthsExprArgs;
 
-  constructor (args: AddMonthsExprArgs = {}) {
+  constructor (args: AddMonthsExprArgs) {
     super(args);
   }
 
-  get $preserveEndOfMonth (): Expression {
-    return this.args.preserveEndOfMonth as Expression;
+  get $preserveEndOfMonth (): Expression | undefined {
+    return this.args.preserveEndOfMonth as Expression | undefined;
   }
 }
 
 export type Nvl2ExprArgs = { true: Expression;
-  false?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  false?: Expression; } & BaseExpressionArgs;
 
 export class Nvl2Expr extends FuncExpr {
   key = ExpressionKey.NVL2;
@@ -20309,14 +20800,13 @@ export class Nvl2Expr extends FuncExpr {
     return this.args.true as Expression;
   }
 
-  get $false (): Expression {
-    return this.args.false as Expression;
+  get $false (): Expression | undefined {
+    return this.args.false as Expression | undefined;
   }
 }
 
 export type NormalizeExprArgs = { form?: Expression;
-  isCasefold?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  isCasefold?: Expression; } & BaseExpressionArgs;
 
 export class NormalizeExpr extends FuncExpr {
   key = ExpressionKey.NORMALIZE;
@@ -20332,22 +20822,21 @@ export class NormalizeExpr extends FuncExpr {
 
   declare args: NormalizeExprArgs;
 
-  constructor (args: NormalizeExprArgs = {}) {
+  constructor (args: NormalizeExprArgs) {
     super(args);
   }
 
-  get $form (): Expression {
-    return this.args.form as Expression;
+  get $form (): Expression | undefined {
+    return this.args.form as Expression | undefined;
   }
 
-  get $isCasefold (): Expression {
-    return this.args.isCasefold as Expression;
+  get $isCasefold (): Expression | undefined {
+    return this.args.isCasefold as Expression | undefined;
   }
 }
 
 export type NormalExprArgs = { stddev: Expression;
-  gen: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  gen: Expression; } & BaseExpressionArgs;
 
 export class NormalExpr extends FuncExpr {
   key = ExpressionKey.NORMAL;
@@ -20381,7 +20870,7 @@ export class NetFuncExpr extends FuncExpr {
   key = ExpressionKey.NET_FUNC;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NetFuncExprArgs>;
   declare args: NetFuncExprArgs;
-  constructor (args: NetFuncExprArgs = {}) {
+  constructor (args: NetFuncExprArgs) {
     super(args);
   }
 }
@@ -20391,7 +20880,7 @@ export class HostExpr extends FuncExpr {
   key = ExpressionKey.HOST;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<HostExprArgs>;
   declare args: HostExprArgs;
-  constructor (args: HostExprArgs = {}) {
+  constructor (args: HostExprArgs) {
     super(args);
   }
 }
@@ -20401,14 +20890,13 @@ export class RegDomainExpr extends FuncExpr {
   key = ExpressionKey.REG_DOMAIN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RegDomainExprArgs>;
   declare args: RegDomainExprArgs;
-  constructor (args: RegDomainExprArgs = {}) {
+  constructor (args: RegDomainExprArgs) {
     super(args);
   }
 }
 
 export type OverlayExprArgs = { from: Expression;
-  for?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  for?: Expression; } & BaseExpressionArgs;
 
 export class OverlayExpr extends FuncExpr {
   key = ExpressionKey.OVERLAY;
@@ -20432,13 +20920,12 @@ export class OverlayExpr extends FuncExpr {
     return this.args.from as Expression;
   }
 
-  get $for (): Expression {
-    return this.args['for'] as Expression;
+  get $for (): Expression | undefined {
+    return this.args.for as Expression | undefined;
   }
 }
 
-export type PredictExprArgs = { paramsStruct?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type PredictExprArgs = { paramsStruct?: Expression } & BaseExpressionArgs;
 
 export class PredictExpr extends FuncExpr {
   key = ExpressionKey.PREDICT;
@@ -20451,17 +20938,16 @@ export class PredictExpr extends FuncExpr {
 
   declare args: PredictExprArgs;
 
-  constructor (args: PredictExprArgs = {}) {
+  constructor (args: PredictExprArgs) {
     super(args);
   }
 
-  get $paramsStruct (): Expression {
-    return this.args.paramsStruct as Expression;
+  get $paramsStruct (): Expression | undefined {
+    return this.args.paramsStruct as Expression | undefined;
   }
 }
 
-export type MLTranslateExprArgs = { paramsStruct: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type MLTranslateExprArgs = { paramsStruct: Expression } & BaseExpressionArgs;
 
 export class MLTranslateExpr extends FuncExpr {
   key = ExpressionKey.ML_TRANSLATE;
@@ -20485,8 +20971,7 @@ export class MLTranslateExpr extends FuncExpr {
 
 export type FeaturesAtTimeExprArgs = { time?: Expression;
   numRows?: Expression[];
-  ignoreFeatureNulls?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  ignoreFeatureNulls?: Expression[]; } & BaseExpressionArgs;
 
 export class FeaturesAtTimeExpr extends FuncExpr {
   key = ExpressionKey.FEATURES_AT_TIME;
@@ -20503,26 +20988,25 @@ export class FeaturesAtTimeExpr extends FuncExpr {
 
   declare args: FeaturesAtTimeExprArgs;
 
-  constructor (args: FeaturesAtTimeExprArgs = {}) {
+  constructor (args: FeaturesAtTimeExprArgs) {
     super(args);
   }
 
-  get $time (): Expression {
-    return this.args.time as Expression;
+  get $time (): Expression | undefined {
+    return this.args.time as Expression | undefined;
   }
 
-  get $numRows (): Expression[] {
-    return (this.args.numRows || []) as Expression[];
+  get $numRows (): Expression[] | undefined {
+    return this.args.numRows as Expression[] | undefined;
   }
 
-  get $ignoreFeatureNulls (): Expression[] {
-    return (this.args.ignoreFeatureNulls || []) as Expression[];
+  get $ignoreFeatureNulls (): Expression[] | undefined {
+    return this.args.ignoreFeatureNulls as Expression[] | undefined;
   }
 }
 
 export type GenerateEmbeddingExprArgs = { paramsStruct?: Expression;
-  isText?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  isText?: string; } & BaseExpressionArgs;
 
 export class GenerateEmbeddingExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_EMBEDDING;
@@ -20538,21 +21022,20 @@ export class GenerateEmbeddingExpr extends FuncExpr {
 
   declare args: GenerateEmbeddingExprArgs;
 
-  constructor (args: GenerateEmbeddingExprArgs = {}) {
+  constructor (args: GenerateEmbeddingExprArgs) {
     super(args);
   }
 
-  get $paramsStruct (): Expression {
-    return this.args.paramsStruct as Expression;
+  get $paramsStruct (): Expression | undefined {
+    return this.args.paramsStruct as Expression | undefined;
   }
 
-  get $isText (): string {
-    return this.args.isText as string;
+  get $isText (): Expression | undefined {
+    return this.args.isText as Expression | undefined;
   }
 }
 
-export type MLForecastExprArgs = { paramsStruct?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type MLForecastExprArgs = { paramsStruct?: Expression } & BaseExpressionArgs;
 
 export class MLForecastExpr extends FuncExpr {
   key = ExpressionKey.ML_FORECAST;
@@ -20565,12 +21048,12 @@ export class MLForecastExpr extends FuncExpr {
 
   declare args: MLForecastExprArgs;
 
-  constructor (args: MLForecastExprArgs = {}) {
+  constructor (args: MLForecastExprArgs) {
     super(args);
   }
 
-  get $paramsStruct (): Expression {
-    return this.args.paramsStruct as Expression;
+  get $paramsStruct (): Expression | undefined {
+    return this.args.paramsStruct as Expression | undefined;
   }
 }
 
@@ -20579,8 +21062,7 @@ export type VectorSearchExprArgs = { columnToSearch: Expression;
   queryColumnToSearch?: Expression;
   topK?: Expression;
   distanceType?: DataTypeExpr;
-  options?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  options?: Expression[]; } & BaseExpressionArgs;
 
 export class VectorSearchExpr extends FuncExpr {
   key = ExpressionKey.VECTOR_SEARCH;
@@ -20612,20 +21094,20 @@ export class VectorSearchExpr extends FuncExpr {
     return this.args.queryTable as Expression;
   }
 
-  get $queryColumnToSearch (): Expression {
-    return this.args.queryColumnToSearch as Expression;
+  get $queryColumnToSearch (): Expression | undefined {
+    return this.args.queryColumnToSearch as Expression | undefined;
   }
 
-  get $topK (): Expression {
-    return this.args.topK as Expression;
+  get $topK (): Expression | undefined {
+    return this.args.topK as Expression | undefined;
   }
 
-  get $distanceType (): DataTypeExpr {
-    return this.args.distanceType as DataTypeExpr;
+  get $distanceType (): Expression | undefined {
+    return this.args.distanceType as Expression | undefined;
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
   }
 }
 
@@ -20634,7 +21116,7 @@ export class PiExpr extends FuncExpr {
   key = ExpressionKey.PI;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PiExprArgs>;
   declare args: PiExprArgs;
-  constructor (args: PiExprArgs = {}) {
+  constructor (args: PiExprArgs) {
     super(args);
   }
 }
@@ -20644,13 +21126,12 @@ export class PowExpr extends BinaryExpr {
   key = ExpressionKey.POW;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PowExprArgs>;
   declare args: PowExprArgs;
-  constructor (args: PowExprArgs = {}) {
+  constructor (args: PowExprArgs) {
     super(args);
   }
 }
 
-export type ApproxPercentileEstimateExprArgs = { percentile: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ApproxPercentileEstimateExprArgs = { percentile: Expression } & BaseExpressionArgs;
 
 export class ApproxPercentileEstimateExpr extends FuncExpr {
   key = ExpressionKey.APPROX_PERCENTILE_ESTIMATE;
@@ -20678,14 +21159,13 @@ export class QuarterExpr extends FuncExpr {
   key = ExpressionKey.QUARTER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<QuarterExprArgs>;
   declare args: QuarterExprArgs;
-  constructor (args: QuarterExprArgs = {}) {
+  constructor (args: QuarterExprArgs) {
     super(args);
   }
 }
 
 export type RandExprArgs = { lower?: Expression;
-  upper?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  upper?: Expression; } & BaseExpressionArgs;
 
 export class RandExpr extends FuncExpr {
   key = ExpressionKey.RAND;
@@ -20701,16 +21181,16 @@ export class RandExpr extends FuncExpr {
 
   declare args: RandExprArgs;
 
-  constructor (args: RandExprArgs = {}) {
+  constructor (args: RandExprArgs) {
     super(args);
   }
 
-  get $lower (): Expression {
-    return this.args.lower as Expression;
+  get $lower (): Expression | undefined {
+    return this.args.lower as Expression | undefined;
   }
 
-  get $upper (): Expression {
-    return this.args.upper as Expression;
+  get $upper (): Expression | undefined {
+    return this.args.upper as Expression | undefined;
   }
 }
 
@@ -20719,13 +21199,12 @@ export class RandnExpr extends FuncExpr {
   key = ExpressionKey.RANDN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RandnExprArgs>;
   declare args: RandnExprArgs;
-  constructor (args: RandnExprArgs = {}) {
+  constructor (args: RandnExprArgs) {
     super(args);
   }
 }
 
-export type RandstrExprArgs = { generator?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type RandstrExprArgs = { generator?: Expression } & BaseExpressionArgs;
 
 export class RandstrExpr extends FuncExpr {
   key = ExpressionKey.RANDSTR;
@@ -20738,17 +21217,16 @@ export class RandstrExpr extends FuncExpr {
 
   declare args: RandstrExprArgs;
 
-  constructor (args: RandstrExprArgs = {}) {
+  constructor (args: RandstrExprArgs) {
     super(args);
   }
 
-  get $generator (): Expression {
-    return this.args.generator as Expression;
+  get $generator (): Expression | undefined {
+    return this.args.generator as Expression | undefined;
   }
 }
 
-export type RangeNExprArgs = { each?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type RangeNExprArgs = { each?: Expression } & BaseExpressionArgs;
 
 export class RangeNExpr extends FuncExpr {
   key = ExpressionKey.RANGE_N;
@@ -20761,12 +21239,12 @@ export class RangeNExpr extends FuncExpr {
 
   declare args: RangeNExprArgs;
 
-  constructor (args: RangeNExprArgs = {}) {
+  constructor (args: RangeNExprArgs) {
     super(args);
   }
 
-  get $each (): Expression {
-    return this.args.each as Expression;
+  get $each (): Expression | undefined {
+    return this.args.each as Expression | undefined;
   }
 }
 
@@ -20775,7 +21253,7 @@ export class RangeBucketExpr extends FuncExpr {
   key = ExpressionKey.RANGE_BUCKET;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RangeBucketExprArgs>;
   declare args: RangeBucketExprArgs;
-  constructor (args: RangeBucketExprArgs = {}) {
+  constructor (args: RangeBucketExprArgs) {
     super(args);
   }
 }
@@ -20785,7 +21263,7 @@ export class ReadCSVExpr extends FuncExpr {
   key = ExpressionKey.READ_CSV;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ReadCSVExprArgs>;
   declare args: ReadCSVExprArgs;
-  constructor (args: ReadCSVExprArgs = {}) {
+  constructor (args: ReadCSVExprArgs) {
     super(args);
   }
 }
@@ -20795,15 +21273,14 @@ export class ReadParquetExpr extends FuncExpr {
   key = ExpressionKey.READ_PARQUET;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ReadParquetExprArgs>;
   declare args: ReadParquetExprArgs;
-  constructor (args: ReadParquetExprArgs = {}) {
+  constructor (args: ReadParquetExprArgs) {
     super(args);
   }
 }
 
 export type ReduceExprArgs = { initial: Expression;
   merge: Expression;
-  finish?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  finish?: Expression; } & BaseExpressionArgs;
 
 export class ReduceExpr extends FuncExpr {
   key = ExpressionKey.REDUCE;
@@ -20832,8 +21309,8 @@ export class ReduceExpr extends FuncExpr {
     return this.args.merge as Expression;
   }
 
-  get $finish (): Expression {
-    return this.args.finish as Expression;
+  get $finish (): Expression | undefined {
+    return this.args.finish as Expression | undefined;
   }
 }
 
@@ -20841,8 +21318,7 @@ export type RegexpExtractExprArgs = { position?: Expression;
   occurrence?: Expression;
   parameters?: Expression[];
   group?: Expression;
-  nullIfPosOverflow?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  nullIfPosOverflow?: Expression; } & BaseExpressionArgs;
 
 export class RegexpExtractExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_EXTRACT;
@@ -20861,36 +21337,35 @@ export class RegexpExtractExpr extends FuncExpr {
 
   declare args: RegexpExtractExprArgs;
 
-  constructor (args: RegexpExtractExprArgs = {}) {
+  constructor (args: RegexpExtractExprArgs) {
     super(args);
   }
 
-  get $position (): Expression {
-    return this.args.position as Expression;
+  get $position (): Expression | undefined {
+    return this.args.position as Expression | undefined;
   }
 
-  get $occurrence (): Expression {
-    return this.args.occurrence as Expression;
+  get $occurrence (): Expression | undefined {
+    return this.args.occurrence as Expression | undefined;
   }
 
-  get $parameters (): Expression[] {
-    return (this.args.parameters || []) as Expression[];
+  get $parameters (): Expression[] | undefined {
+    return this.args.parameters as Expression[] | undefined;
   }
 
-  get $group (): Expression {
-    return this.args.group as Expression;
+  get $group (): Expression | undefined {
+    return this.args.group as Expression | undefined;
   }
 
-  get $nullIfPosOverflow (): Expression {
-    return this.args.nullIfPosOverflow as Expression;
+  get $nullIfPosOverflow (): Expression | undefined {
+    return this.args.nullIfPosOverflow as Expression | undefined;
   }
 }
 
 export type RegexpExtractAllExprArgs = { group?: Expression;
   parameters?: Expression[];
   position?: Expression;
-  occurrence?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  occurrence?: Expression; } & BaseExpressionArgs;
 
 export class RegexpExtractAllExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_EXTRACT_ALL;
@@ -20908,24 +21383,24 @@ export class RegexpExtractAllExpr extends FuncExpr {
 
   declare args: RegexpExtractAllExprArgs;
 
-  constructor (args: RegexpExtractAllExprArgs = {}) {
+  constructor (args: RegexpExtractAllExprArgs) {
     super(args);
   }
 
-  get $group (): Expression {
-    return this.args.group as Expression;
+  get $group (): Expression | undefined {
+    return this.args.group as Expression | undefined;
   }
 
-  get $parameters (): Expression[] {
-    return (this.args.parameters || []) as Expression[];
+  get $parameters (): Expression[] | undefined {
+    return this.args.parameters as Expression[] | undefined;
   }
 
-  get $position (): Expression {
-    return this.args.position as Expression;
+  get $position (): Expression | undefined {
+    return this.args.position as Expression | undefined;
   }
 
-  get $occurrence (): Expression {
-    return this.args.occurrence as Expression;
+  get $occurrence (): Expression | undefined {
+    return this.args.occurrence as Expression | undefined;
   }
 }
 
@@ -20933,8 +21408,7 @@ export type RegexpReplaceExprArgs = { replacement?: boolean;
   position?: Expression;
   occurrence?: Expression;
   modifiers?: Expression[];
-  singleReplace?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  singleReplace?: Expression; } & BaseExpressionArgs;
 
 export class RegexpReplaceExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_REPLACE;
@@ -20953,33 +21427,32 @@ export class RegexpReplaceExpr extends FuncExpr {
 
   declare args: RegexpReplaceExprArgs;
 
-  constructor (args: RegexpReplaceExprArgs = {}) {
+  constructor (args: RegexpReplaceExprArgs) {
     super(args);
   }
 
-  get $replacement (): boolean {
-    return this.args.replacement as boolean;
+  get $replacement (): Expression | undefined {
+    return this.args.replacement as Expression | undefined;
   }
 
-  get $position (): Expression {
-    return this.args.position as Expression;
+  get $position (): Expression | undefined {
+    return this.args.position as Expression | undefined;
   }
 
-  get $occurrence (): Expression {
-    return this.args.occurrence as Expression;
+  get $occurrence (): Expression | undefined {
+    return this.args.occurrence as Expression | undefined;
   }
 
-  get $modifiers (): Expression[] {
-    return (this.args.modifiers || []) as Expression[];
+  get $modifiers (): Expression[] | undefined {
+    return this.args.modifiers as Expression[] | undefined;
   }
 
-  get $singleReplace (): Expression {
-    return this.args.singleReplace as Expression;
+  get $singleReplace (): Expression | undefined {
+    return this.args.singleReplace as Expression | undefined;
   }
 }
 
-export type RegexpLikeExprArgs = { flag?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type RegexpLikeExprArgs = { flag?: Expression } & BaseExpressionArgs;
 
 export class RegexpLikeExpr extends BinaryExpr {
   key = ExpressionKey.REGEXP_LIKE;
@@ -20992,17 +21465,16 @@ export class RegexpLikeExpr extends BinaryExpr {
 
   declare args: RegexpLikeExprArgs;
 
-  constructor (args: RegexpLikeExprArgs = {}) {
+  constructor (args: RegexpLikeExprArgs) {
     super(args);
   }
 
-  get $flag (): Expression {
-    return this.args.flag as Expression;
+  get $flag (): Expression | undefined {
+    return this.args.flag as Expression | undefined;
   }
 }
 
-export type RegexpILikeExprArgs = { flag?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type RegexpILikeExprArgs = { flag?: Expression } & BaseExpressionArgs;
 
 export class RegexpILikeExpr extends BinaryExpr {
   key = ExpressionKey.REGEXP_ILIKE;
@@ -21015,17 +21487,16 @@ export class RegexpILikeExpr extends BinaryExpr {
 
   declare args: RegexpILikeExprArgs;
 
-  constructor (args: RegexpILikeExprArgs = {}) {
+  constructor (args: RegexpILikeExprArgs) {
     super(args);
   }
 
-  get $flag (): Expression {
-    return this.args.flag as Expression;
+  get $flag (): Expression | undefined {
+    return this.args.flag as Expression | undefined;
   }
 }
 
-export type RegexpFullMatchExprArgs = { options?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type RegexpFullMatchExprArgs = { options?: Expression[] } & BaseExpressionArgs;
 
 export class RegexpFullMatchExpr extends BinaryExpr {
   key = ExpressionKey.REGEXP_FULL_MATCH;
@@ -21038,12 +21509,12 @@ export class RegexpFullMatchExpr extends BinaryExpr {
 
   declare args: RegexpFullMatchExprArgs;
 
-  constructor (args: RegexpFullMatchExprArgs = {}) {
+  constructor (args: RegexpFullMatchExprArgs) {
     super(args);
   }
 
-  get $options (): Expression[] {
-    return (this.args.options || []) as Expression[];
+  get $options (): Expression[] | undefined {
+    return this.args.options as Expression[] | undefined;
   }
 }
 
@@ -21051,8 +21522,7 @@ export type RegexpInstrExprArgs = { position?: Expression;
   occurrence?: Expression;
   option?: Expression;
   parameters?: Expression[];
-  group?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  group?: Expression; } & BaseExpressionArgs;
 
 export class RegexpInstrExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_INSTR;
@@ -21071,33 +21541,32 @@ export class RegexpInstrExpr extends FuncExpr {
 
   declare args: RegexpInstrExprArgs;
 
-  constructor (args: RegexpInstrExprArgs = {}) {
+  constructor (args: RegexpInstrExprArgs) {
     super(args);
   }
 
-  get $position (): Expression {
-    return this.args.position as Expression;
+  get $position (): Expression | undefined {
+    return this.args.position as Expression | undefined;
   }
 
-  get $occurrence (): Expression {
-    return this.args.occurrence as Expression;
+  get $occurrence (): Expression | undefined {
+    return this.args.occurrence as Expression | undefined;
   }
 
-  get $option (): Expression {
-    return this.args.option as Expression;
+  get $option (): Expression | undefined {
+    return this.args.option as Expression | undefined;
   }
 
-  get $parameters (): Expression[] {
-    return (this.args.parameters || []) as Expression[];
+  get $parameters (): Expression[] | undefined {
+    return this.args.parameters as Expression[] | undefined;
   }
 
-  get $group (): Expression {
-    return this.args.group as Expression;
+  get $group (): Expression | undefined {
+    return this.args.group as Expression | undefined;
   }
 }
 
-export type RegexpSplitExprArgs = { limit?: number | Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type RegexpSplitExprArgs = { limit?: number | Expression } & BaseExpressionArgs;
 
 export class RegexpSplitExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_SPLIT;
@@ -21110,18 +21579,17 @@ export class RegexpSplitExpr extends FuncExpr {
 
   declare args: RegexpSplitExprArgs;
 
-  constructor (args: RegexpSplitExprArgs = {}) {
+  constructor (args: RegexpSplitExprArgs) {
     super(args);
   }
 
-  get $limit (): number | Expression {
-    return this.args.limit as number | Expression;
+  get $limit (): Expression | undefined {
+    return this.args.limit as Expression | undefined;
   }
 }
 
 export type RegexpCountExprArgs = { position?: Expression;
-  parameters?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  parameters?: Expression[]; } & BaseExpressionArgs;
 
 export class RegexpCountExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_COUNT;
@@ -21137,21 +21605,20 @@ export class RegexpCountExpr extends FuncExpr {
 
   declare args: RegexpCountExprArgs;
 
-  constructor (args: RegexpCountExprArgs = {}) {
+  constructor (args: RegexpCountExprArgs) {
     super(args);
   }
 
-  get $position (): Expression {
-    return this.args.position as Expression;
+  get $position (): Expression | undefined {
+    return this.args.position as Expression | undefined;
   }
 
-  get $parameters (): Expression[] {
-    return (this.args.parameters || []) as Expression[];
+  get $parameters (): Expression[] | undefined {
+    return this.args.parameters as Expression[] | undefined;
   }
 }
 
-export type RepeatExprArgs = { times: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type RepeatExprArgs = { times: Expression[] } & BaseExpressionArgs;
 
 export class RepeatExpr extends FuncExpr {
   key = ExpressionKey.REPEAT;
@@ -21169,12 +21636,11 @@ export class RepeatExpr extends FuncExpr {
   }
 
   get $times (): Expression[] {
-    return (this.args.times || []) as Expression[];
+    return this.args.times as Expression[];
   }
 }
 
-export type ReplaceExprArgs = { replacement?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ReplaceExprArgs = { replacement?: boolean } & BaseExpressionArgs;
 
 export class ReplaceExpr extends FuncExpr {
   key = ExpressionKey.REPLACE;
@@ -21187,12 +21653,12 @@ export class ReplaceExpr extends FuncExpr {
 
   declare args: ReplaceExprArgs;
 
-  constructor (args: ReplaceExprArgs = {}) {
+  constructor (args: ReplaceExprArgs) {
     super(args);
   }
 
-  get $replacement (): boolean {
-    return this.args.replacement as boolean;
+  get $replacement (): Expression | undefined {
+    return this.args.replacement as Expression | undefined;
   }
 }
 
@@ -21201,15 +21667,14 @@ export class RadiansExpr extends FuncExpr {
   key = ExpressionKey.RADIANS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RadiansExprArgs>;
   declare args: RadiansExprArgs;
-  constructor (args: RadiansExprArgs = {}) {
+  constructor (args: RadiansExprArgs) {
     super(args);
   }
 }
 
 export type RoundExprArgs = { decimals?: Expression[];
   truncate?: Expression;
-  castsNonIntegerDecimals?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+  castsNonIntegerDecimals?: Expression[]; } & BaseExpressionArgs;
 
 export class RoundExpr extends FuncExpr {
   key = ExpressionKey.ROUND;
@@ -21226,25 +21691,24 @@ export class RoundExpr extends FuncExpr {
 
   declare args: RoundExprArgs;
 
-  constructor (args: RoundExprArgs = {}) {
+  constructor (args: RoundExprArgs) {
     super(args);
   }
 
-  get $decimals (): Expression[] {
-    return (this.args.decimals || []) as Expression[];
+  get $decimals (): Expression[] | undefined {
+    return this.args.decimals as Expression[] | undefined;
   }
 
-  get $truncate (): Expression {
-    return this.args.truncate as Expression;
+  get $truncate (): Expression | undefined {
+    return this.args.truncate as Expression | undefined;
   }
 
-  get $castsNonIntegerDecimals (): Expression[] {
-    return (this.args.castsNonIntegerDecimals || []) as Expression[];
+  get $castsNonIntegerDecimals (): Expression[] | undefined {
+    return this.args.castsNonIntegerDecimals as Expression[] | undefined;
   }
 }
 
-export type TruncExprArgs = { decimals?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TruncExprArgs = { decimals?: Expression[] } & BaseExpressionArgs;
 
 export class TruncExpr extends FuncExpr {
   key = ExpressionKey.TRUNC;
@@ -21257,12 +21721,12 @@ export class TruncExpr extends FuncExpr {
 
   declare args: TruncExprArgs;
 
-  constructor (args: TruncExprArgs = {}) {
+  constructor (args: TruncExprArgs) {
     super(args);
   }
 
-  get $decimals (): Expression[] {
-    return (this.args.decimals || []) as Expression[];
+  get $decimals (): Expression[] | undefined {
+    return this.args.decimals as Expression[] | undefined;
   }
 }
 
@@ -21271,7 +21735,7 @@ export class RowNumberExpr extends FuncExpr {
   key = ExpressionKey.ROW_NUMBER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RowNumberExprArgs>;
   declare args: RowNumberExprArgs;
-  constructor (args: RowNumberExprArgs = {}) {
+  constructor (args: RowNumberExprArgs) {
     super(args);
   }
 }
@@ -21281,7 +21745,7 @@ export class Seq1Expr extends FuncExpr {
   key = ExpressionKey.SEQ1;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<Seq1ExprArgs>;
   declare args: Seq1ExprArgs;
-  constructor (args: Seq1ExprArgs = {}) {
+  constructor (args: Seq1ExprArgs) {
     super(args);
   }
 }
@@ -21291,7 +21755,7 @@ export class Seq2Expr extends FuncExpr {
   key = ExpressionKey.SEQ2;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<Seq2ExprArgs>;
   declare args: Seq2ExprArgs;
-  constructor (args: Seq2ExprArgs = {}) {
+  constructor (args: Seq2ExprArgs) {
     super(args);
   }
 }
@@ -21301,7 +21765,7 @@ export class Seq4Expr extends FuncExpr {
   key = ExpressionKey.SEQ4;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<Seq4ExprArgs>;
   declare args: Seq4ExprArgs;
-  constructor (args: Seq4ExprArgs = {}) {
+  constructor (args: Seq4ExprArgs) {
     super(args);
   }
 }
@@ -21311,7 +21775,7 @@ export class Seq8Expr extends FuncExpr {
   key = ExpressionKey.SEQ8;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<Seq8ExprArgs>;
   declare args: Seq8ExprArgs;
-  constructor (args: Seq8ExprArgs = {}) {
+  constructor (args: Seq8ExprArgs) {
     super(args);
   }
 }
@@ -21321,7 +21785,7 @@ export class SafeAddExpr extends FuncExpr {
   key = ExpressionKey.SAFE_ADD;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SafeAddExprArgs>;
   declare args: SafeAddExprArgs;
-  constructor (args: SafeAddExprArgs = {}) {
+  constructor (args: SafeAddExprArgs) {
     super(args);
   }
 }
@@ -21331,7 +21795,7 @@ export class SafeDivideExpr extends FuncExpr {
   key = ExpressionKey.SAFE_DIVIDE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SafeDivideExprArgs>;
   declare args: SafeDivideExprArgs;
-  constructor (args: SafeDivideExprArgs = {}) {
+  constructor (args: SafeDivideExprArgs) {
     super(args);
   }
 }
@@ -21341,7 +21805,7 @@ export class SafeMultiplyExpr extends FuncExpr {
   key = ExpressionKey.SAFE_MULTIPLY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SafeMultiplyExprArgs>;
   declare args: SafeMultiplyExprArgs;
-  constructor (args: SafeMultiplyExprArgs = {}) {
+  constructor (args: SafeMultiplyExprArgs) {
     super(args);
   }
 }
@@ -21351,7 +21815,7 @@ export class SafeNegateExpr extends FuncExpr {
   key = ExpressionKey.SAFE_NEGATE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SafeNegateExprArgs>;
   declare args: SafeNegateExprArgs;
-  constructor (args: SafeNegateExprArgs = {}) {
+  constructor (args: SafeNegateExprArgs) {
     super(args);
   }
 }
@@ -21361,7 +21825,7 @@ export class SafeSubtractExpr extends FuncExpr {
   key = ExpressionKey.SAFE_SUBTRACT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SafeSubtractExprArgs>;
   declare args: SafeSubtractExprArgs;
-  constructor (args: SafeSubtractExprArgs = {}) {
+  constructor (args: SafeSubtractExprArgs) {
     super(args);
   }
 }
@@ -21374,7 +21838,7 @@ export class SafeConvertBytesToStringExpr extends FuncExpr {
   >;
 
   declare args: SafeConvertBytesToStringExprArgs;
-  constructor (args: SafeConvertBytesToStringExprArgs = {}) {
+  constructor (args: SafeConvertBytesToStringExprArgs) {
     super(args);
   }
 }
@@ -21384,15 +21848,14 @@ export class SHAExpr extends FuncExpr {
   key = ExpressionKey.SHA;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SHAExprArgs>;
   declare args: SHAExprArgs;
-  constructor (args: SHAExprArgs = {}) {
+  constructor (args: SHAExprArgs) {
     super(args);
   }
 
   static sqlNames = ['SHA', 'SHA1'];
 }
 
-export type SHA2ExprArgs = { length?: number | Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type SHA2ExprArgs = { length?: number | Expression } & BaseExpressionArgs;
 
 export class SHA2Expr extends FuncExpr {
   key = ExpressionKey.SHA2;
@@ -21409,12 +21872,12 @@ export class SHA2Expr extends FuncExpr {
     this.register();
   }
 
-  constructor (args: SHA2ExprArgs = {}) {
+  constructor (args: SHA2ExprArgs) {
     super(args);
   }
 
-  get $length (): number | Expression {
-    return this.args.length as number | Expression;
+  get $length (): Expression | undefined {
+    return this.args.length as Expression | undefined;
   }
 }
 
@@ -21423,13 +21886,12 @@ export class SHA1DigestExpr extends FuncExpr {
   key = ExpressionKey.SHA1_DIGEST;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SHA1DigestExprArgs>;
   declare args: SHA1DigestExprArgs;
-  constructor (args: SHA1DigestExprArgs = {}) {
+  constructor (args: SHA1DigestExprArgs) {
     super(args);
   }
 }
 
-export type SHA2DigestExprArgs = { length?: number | Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type SHA2DigestExprArgs = { length?: number | Expression } & BaseExpressionArgs;
 
 export class SHA2DigestExpr extends FuncExpr {
   key = ExpressionKey.SHA2_DIGEST;
@@ -21442,12 +21904,12 @@ export class SHA2DigestExpr extends FuncExpr {
 
   declare args: SHA2DigestExprArgs;
 
-  constructor (args: SHA2DigestExprArgs = {}) {
+  constructor (args: SHA2DigestExprArgs) {
     super(args);
   }
 
-  get $length (): number | Expression {
-    return this.args.length as number | Expression;
+  get $length (): Expression | undefined {
+    return this.args.length as Expression | undefined;
   }
 }
 
@@ -21456,7 +21918,7 @@ export class SignExpr extends FuncExpr {
   key = ExpressionKey.SIGN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SignExprArgs>;
   declare args: SignExprArgs;
-  constructor (args: SignExprArgs = {}) {
+  constructor (args: SignExprArgs) {
     super(args);
   }
 
@@ -21464,8 +21926,7 @@ export class SignExpr extends FuncExpr {
 }
 
 export type SortArrayExprArgs = { asc?: Expression;
-  nullsFirst?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  nullsFirst?: Expression; } & BaseExpressionArgs;
 
 export class SortArrayExpr extends FuncExpr {
   key = ExpressionKey.SORT_ARRAY;
@@ -21485,16 +21946,16 @@ export class SortArrayExpr extends FuncExpr {
     this.register();
   }
 
-  constructor (args: SortArrayExprArgs = {}) {
+  constructor (args: SortArrayExprArgs) {
     super(args);
   }
 
-  get $asc (): Expression {
-    return this.args.asc as Expression;
+  get $asc (): Expression | undefined {
+    return this.args.asc as Expression | undefined;
   }
 
-  get $nullsFirst (): Expression {
-    return this.args.nullsFirst as Expression;
+  get $nullsFirst (): Expression | undefined {
+    return this.args.nullsFirst as Expression | undefined;
   }
 }
 
@@ -21503,7 +21964,7 @@ export class SoundexExpr extends FuncExpr {
   key = ExpressionKey.SOUNDEX;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SoundexExprArgs>;
   declare args: SoundexExprArgs;
-  constructor (args: SoundexExprArgs = {}) {
+  constructor (args: SoundexExprArgs) {
     super(args);
   }
 }
@@ -21513,13 +21974,12 @@ export class SoundexP123Expr extends FuncExpr {
   key = ExpressionKey.SOUNDEX_P123;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SoundexP123ExprArgs>;
   declare args: SoundexP123ExprArgs;
-  constructor (args: SoundexP123ExprArgs = {}) {
+  constructor (args: SoundexP123ExprArgs) {
     super(args);
   }
 }
 
-export type SplitExprArgs = { limit?: number | Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type SplitExprArgs = { limit?: number | Expression } & BaseExpressionArgs;
 
 export class SplitExpr extends FuncExpr {
   key = ExpressionKey.SPLIT;
@@ -21532,18 +21992,17 @@ export class SplitExpr extends FuncExpr {
 
   declare args: SplitExprArgs;
 
-  constructor (args: SplitExprArgs = {}) {
+  constructor (args: SplitExprArgs) {
     super(args);
   }
 
-  get $limit (): number | Expression {
-    return this.args.limit as number | Expression;
+  get $limit (): Expression | undefined {
+    return this.args.limit as Expression | undefined;
   }
 }
 
 export type SplitPartExprArgs = { delimiter?: number | Expression;
-  partIndex?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  partIndex?: Expression; } & BaseExpressionArgs;
 
 export class SplitPartExpr extends FuncExpr {
   key = ExpressionKey.SPLIT_PART;
@@ -21559,22 +22018,21 @@ export class SplitPartExpr extends FuncExpr {
 
   declare args: SplitPartExprArgs;
 
-  constructor (args: SplitPartExprArgs = {}) {
+  constructor (args: SplitPartExprArgs) {
     super(args);
   }
 
-  get $delimiter (): number | Expression {
-    return this.args.delimiter as number | Expression;
+  get $delimiter (): Expression | undefined {
+    return this.args.delimiter as Expression | undefined;
   }
 
-  get $partIndex (): Expression {
-    return this.args.partIndex as Expression;
+  get $partIndex (): Expression | undefined {
+    return this.args.partIndex as Expression | undefined;
   }
 }
 
 export type SubstringExprArgs = { start?: Expression;
-  length?: number | Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  length?: number | Expression; } & BaseExpressionArgs;
 
 export class SubstringExpr extends FuncExpr {
   key = ExpressionKey.SUBSTRING;
@@ -21590,22 +22048,21 @@ export class SubstringExpr extends FuncExpr {
 
   declare args: SubstringExprArgs;
 
-  constructor (args: SubstringExprArgs = {}) {
+  constructor (args: SubstringExprArgs) {
     super(args);
   }
 
-  get $start (): Expression {
-    return this.args.start as Expression;
+  get $start (): Expression | undefined {
+    return this.args.start as Expression | undefined;
   }
 
-  get $length (): number | Expression {
-    return this.args.length as number | Expression;
+  get $length (): Expression | undefined {
+    return this.args.length as Expression | undefined;
   }
 }
 
 export type SubstringIndexExprArgs = { delimiter: number | Expression;
-  count: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  count: Expression; } & BaseExpressionArgs;
 
 export class SubstringIndexExpr extends FuncExpr {
   key = ExpressionKey.SUBSTRING_INDEX;
@@ -21625,8 +22082,8 @@ export class SubstringIndexExpr extends FuncExpr {
     super(args);
   }
 
-  get $delimiter (): number | Expression {
-    return this.args.delimiter as number | Expression;
+  get $delimiter (): Expression {
+    return this.args.delimiter as Expression;
   }
 
   get $count (): Expression {
@@ -21639,7 +22096,7 @@ export class StandardHashExpr extends FuncExpr {
   key = ExpressionKey.STANDARD_HASH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<StandardHashExprArgs>;
   declare args: StandardHashExprArgs;
-  constructor (args: StandardHashExprArgs = {}) {
+  constructor (args: StandardHashExprArgs) {
     super(args);
   }
 }
@@ -21649,7 +22106,7 @@ export class StartsWithExpr extends FuncExpr {
   key = ExpressionKey.STARTS_WITH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<StartsWithExprArgs>;
   declare args: StartsWithExprArgs;
-  constructor (args: StartsWithExprArgs = {}) {
+  constructor (args: StartsWithExprArgs) {
     super(args);
   }
 }
@@ -21659,15 +22116,14 @@ export class EndsWithExpr extends FuncExpr {
   key = ExpressionKey.ENDS_WITH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<EndsWithExprArgs>;
   declare args: EndsWithExprArgs;
-  constructor (args: EndsWithExprArgs = {}) {
+  constructor (args: EndsWithExprArgs) {
     super(args);
   }
 }
 
 export type StrPositionExprArgs = { substr: Expression;
   position?: Expression;
-  occurrence?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  occurrence?: Expression; } & BaseExpressionArgs;
 
 export class StrPositionExpr extends FuncExpr {
   key = ExpressionKey.STR_POSITION;
@@ -21692,20 +22148,19 @@ export class StrPositionExpr extends FuncExpr {
     return this.args.substr as Expression;
   }
 
-  get $position (): Expression {
-    return this.args.position as Expression;
+  get $position (): Expression | undefined {
+    return this.args.position as Expression | undefined;
   }
 
-  get $occurrence (): Expression {
-    return this.args.occurrence as Expression;
+  get $occurrence (): Expression | undefined {
+    return this.args.occurrence as Expression | undefined;
   }
 }
 
 export type SearchExprArgs = { jsonScope?: Expression;
   analyzer?: Expression;
   analyzerOptions?: Expression[];
-  searchMode?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  searchMode?: Expression; } & BaseExpressionArgs;
 
 export class SearchExpr extends FuncExpr {
   key = ExpressionKey.SEARCH;
@@ -21723,24 +22178,24 @@ export class SearchExpr extends FuncExpr {
 
   declare args: SearchExprArgs;
 
-  constructor (args: SearchExprArgs = {}) {
+  constructor (args: SearchExprArgs) {
     super(args);
   }
 
-  get $jsonScope (): Expression {
-    return this.args.jsonScope as Expression;
+  get $jsonScope (): Expression | undefined {
+    return this.args.jsonScope as Expression | undefined;
   }
 
-  get $analyzer (): Expression {
-    return this.args.analyzer as Expression;
+  get $analyzer (): Expression | undefined {
+    return this.args.analyzer as Expression | undefined;
   }
 
-  get $analyzerOptions (): Expression[] {
-    return (this.args.analyzerOptions || []) as Expression[];
+  get $analyzerOptions (): Expression[] | undefined {
+    return this.args.analyzerOptions as Expression[] | undefined;
   }
 
-  get $searchMode (): Expression {
-    return this.args.searchMode as Expression;
+  get $searchMode (): Expression | undefined {
+    return this.args.searchMode as Expression | undefined;
   }
 }
 
@@ -21749,14 +22204,13 @@ export class SearchIpExpr extends FuncExpr {
   key = ExpressionKey.SEARCH_IP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SearchIpExprArgs>;
   declare args: SearchIpExprArgs;
-  constructor (args: SearchIpExprArgs = {}) {
+  constructor (args: SearchIpExprArgs) {
     super(args);
   }
 }
 
 export type StrToDateExprArgs = { format?: string;
-  safe?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  safe?: boolean; } & BaseExpressionArgs;
 
 export class StrToDateExpr extends FuncExpr {
   key = ExpressionKey.STR_TO_DATE;
@@ -21772,24 +22226,23 @@ export class StrToDateExpr extends FuncExpr {
 
   declare args: StrToDateExprArgs;
 
-  constructor (args: StrToDateExprArgs = {}) {
+  constructor (args: StrToDateExprArgs) {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 }
 
 export type StrToTimeExprArgs = { format: string;
   zone?: Expression;
   safe?: boolean;
-  targetType?: DataTypeExpr;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  targetType?: DataTypeExpr; } & BaseExpressionArgs;
 
 export class StrToTimeExpr extends FuncExpr {
   key = ExpressionKey.STR_TO_TIME;
@@ -21811,25 +22264,24 @@ export class StrToTimeExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression {
+    return this.args.format as Expression;
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 
-  get $targetType (): DataTypeExpr {
-    return this.args.targetType as DataTypeExpr;
+  get $targetType (): Expression | undefined {
+    return this.args.targetType as Expression | undefined;
   }
 }
 
-export type StrToUnixExprArgs = { format?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type StrToUnixExprArgs = { format?: string } & BaseExpressionArgs;
 
 export class StrToUnixExpr extends FuncExpr {
   key = ExpressionKey.STR_TO_UNIX;
@@ -21842,19 +22294,18 @@ export class StrToUnixExpr extends FuncExpr {
 
   declare args: StrToUnixExprArgs;
 
-  constructor (args: StrToUnixExprArgs = {}) {
+  constructor (args: StrToUnixExprArgs) {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 }
 
 export type StrToMapExprArgs = { pairDelim?: Expression;
   keyValueDelim?: string;
-  duplicateResolutionCallback?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  duplicateResolutionCallback?: Expression; } & BaseExpressionArgs;
 
 export class StrToMapExpr extends FuncExpr {
   key = ExpressionKey.STR_TO_MAP;
@@ -21871,26 +22322,25 @@ export class StrToMapExpr extends FuncExpr {
 
   declare args: StrToMapExprArgs;
 
-  constructor (args: StrToMapExprArgs = {}) {
+  constructor (args: StrToMapExprArgs) {
     super(args);
   }
 
-  get $pairDelim (): Expression {
-    return this.args.pairDelim as Expression;
+  get $pairDelim (): Expression | undefined {
+    return this.args.pairDelim as Expression | undefined;
   }
 
-  get $keyValueDelim (): string {
-    return this.args.keyValueDelim as string;
+  get $keyValueDelim (): Expression | undefined {
+    return this.args.keyValueDelim as Expression | undefined;
   }
 
-  get $duplicateResolutionCallback (): Expression {
-    return this.args.duplicateResolutionCallback as Expression;
+  get $duplicateResolutionCallback (): Expression | undefined {
+    return this.args.duplicateResolutionCallback as Expression | undefined;
   }
 }
 
 export type NumberToStrExprArgs = { format: string;
-  culture?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  culture?: Expression; } & BaseExpressionArgs;
 
 export class NumberToStrExpr extends FuncExpr {
   key = ExpressionKey.NUMBER_TO_STR;
@@ -21910,12 +22360,12 @@ export class NumberToStrExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression {
+    return this.args.format as Expression;
   }
 
-  get $culture (): Expression {
-    return this.args.culture as Expression;
+  get $culture (): Expression | undefined {
+    return this.args.culture as Expression | undefined;
   }
 }
 
@@ -21924,7 +22374,7 @@ export class FromBaseExpr extends FuncExpr {
   key = ExpressionKey.FROM_BASE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FromBaseExprArgs>;
   declare args: FromBaseExprArgs;
-  constructor (args: FromBaseExprArgs = {}) {
+  constructor (args: FromBaseExprArgs) {
     super(args);
   }
 }
@@ -21934,7 +22384,7 @@ export class SpaceExpr extends FuncExpr {
   key = ExpressionKey.SPACE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SpaceExprArgs>;
   declare args: SpaceExprArgs;
-  constructor (args: SpaceExprArgs = {}) {
+  constructor (args: SpaceExprArgs) {
     super(args);
   }
 }
@@ -21944,7 +22394,7 @@ export class StructExpr extends FuncExpr {
   key = ExpressionKey.STRUCT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<StructExprArgs>;
   declare args: StructExprArgs;
-  constructor (args: StructExprArgs = {}) {
+  constructor (args: StructExprArgs) {
     super(args);
   }
 }
@@ -21954,14 +22404,13 @@ export class StructExtractExpr extends FuncExpr {
   key = ExpressionKey.STRUCT_EXTRACT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<StructExtractExprArgs>;
   declare args: StructExtractExprArgs;
-  constructor (args: StructExtractExprArgs = {}) {
+  constructor (args: StructExtractExprArgs) {
     super(args);
   }
 }
 
 export type StuffExprArgs = { start: Expression;
-  length: number | Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  length: number | Expression; } & BaseExpressionArgs;
 
 export class StuffExpr extends FuncExpr {
   key = ExpressionKey.STUFF;
@@ -21985,8 +22434,8 @@ export class StuffExpr extends FuncExpr {
     return this.args.start as Expression;
   }
 
-  get $length (): number | Expression {
-    return this.args.length as number | Expression;
+  get $length (): Expression {
+    return this.args.length as Expression;
   }
 }
 
@@ -21995,13 +22444,12 @@ export class SqrtExpr extends FuncExpr {
   key = ExpressionKey.SQRT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SqrtExprArgs>;
   declare args: SqrtExprArgs;
-  constructor (args: SqrtExprArgs = {}) {
+  constructor (args: SqrtExprArgs) {
     super(args);
   }
 }
 
-export type TimeExprArgs = { zone?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TimeExprArgs = { zone?: Expression } & BaseExpressionArgs;
 
 export class TimeExpr extends FuncExpr {
   key = ExpressionKey.TIME;
@@ -22014,19 +22462,18 @@ export class TimeExpr extends FuncExpr {
 
   declare args: TimeExprArgs;
 
-  constructor (args: TimeExprArgs = {}) {
+  constructor (args: TimeExprArgs) {
     super(args);
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 }
 
 export type TimeToStrExprArgs = { format: string;
   culture?: Expression;
-  zone?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  zone?: Expression; } & BaseExpressionArgs;
 
 export class TimeToStrExpr extends FuncExpr {
   key = ExpressionKey.TIME_TO_STR;
@@ -22047,16 +22494,16 @@ export class TimeToStrExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression {
+    return this.args.format as Expression;
   }
 
-  get $culture (): Expression {
-    return this.args.culture as Expression;
+  get $culture (): Expression | undefined {
+    return this.args.culture as Expression | undefined;
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 }
 
@@ -22065,7 +22512,7 @@ export class TimeToTimeStrExpr extends FuncExpr {
   key = ExpressionKey.TIME_TO_TIME_STR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TimeToTimeStrExprArgs>;
   declare args: TimeToTimeStrExprArgs;
-  constructor (args: TimeToTimeStrExprArgs = {}) {
+  constructor (args: TimeToTimeStrExprArgs) {
     super(args);
   }
 }
@@ -22075,7 +22522,7 @@ export class TimeToUnixExpr extends FuncExpr {
   key = ExpressionKey.TIME_TO_UNIX;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TimeToUnixExprArgs>;
   declare args: TimeToUnixExprArgs;
-  constructor (args: TimeToUnixExprArgs = {}) {
+  constructor (args: TimeToUnixExprArgs) {
     super(args);
   }
 }
@@ -22085,13 +22532,12 @@ export class TimeStrToDateExpr extends FuncExpr {
   key = ExpressionKey.TIME_STR_TO_DATE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TimeStrToDateExprArgs>;
   declare args: TimeStrToDateExprArgs;
-  constructor (args: TimeStrToDateExprArgs = {}) {
+  constructor (args: TimeStrToDateExprArgs) {
     super(args);
   }
 }
 
-export type TimeStrToTimeExprArgs = { zone?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TimeStrToTimeExprArgs = { zone?: Expression } & BaseExpressionArgs;
 
 export class TimeStrToTimeExpr extends FuncExpr {
   key = ExpressionKey.TIME_STR_TO_TIME;
@@ -22104,12 +22550,12 @@ export class TimeStrToTimeExpr extends FuncExpr {
 
   declare args: TimeStrToTimeExprArgs;
 
-  constructor (args: TimeStrToTimeExprArgs = {}) {
+  constructor (args: TimeStrToTimeExprArgs) {
     super(args);
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 }
 
@@ -22118,14 +22564,13 @@ export class TimeStrToUnixExpr extends FuncExpr {
   key = ExpressionKey.TIME_STR_TO_UNIX;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TimeStrToUnixExprArgs>;
   declare args: TimeStrToUnixExprArgs;
-  constructor (args: TimeStrToUnixExprArgs = {}) {
+  constructor (args: TimeStrToUnixExprArgs) {
     super(args);
   }
 }
 
 export type TrimExprArgs = { position?: Expression;
-  collation?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  collation?: Expression; } & BaseExpressionArgs;
 
 export class TrimExpr extends FuncExpr {
   key = ExpressionKey.TRIM;
@@ -22141,22 +22586,21 @@ export class TrimExpr extends FuncExpr {
 
   declare args: TrimExprArgs;
 
-  constructor (args: TrimExprArgs = {}) {
+  constructor (args: TrimExprArgs) {
     super(args);
   }
 
-  get $position (): Expression {
-    return this.args.position as Expression;
+  get $position (): Expression | undefined {
+    return this.args.position as Expression | undefined;
   }
 
-  get $collation (): Expression {
-    return this.args.collation as Expression;
+  get $collation (): Expression | undefined {
+    return this.args.collation as Expression | undefined;
   }
 }
 
 export type TsOrDsAddExprArgs = { unit?: Expression;
-  returnType?: DataTypeExpr;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  returnType?: DataTypeExpr; } & BaseExpressionArgs;
 
 export class TsOrDsAddExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_ADD;
@@ -22172,21 +22616,20 @@ export class TsOrDsAddExpr extends FuncExpr {
 
   declare args: TsOrDsAddExprArgs;
 
-  constructor (args: TsOrDsAddExprArgs = {}) {
+  constructor (args: TsOrDsAddExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 
-  get $returnType (): DataTypeExpr {
-    return this.args.returnType as DataTypeExpr;
+  get $returnType (): Expression | undefined {
+    return this.args.returnType as Expression | undefined;
   }
 }
 
-export type TsOrDsDiffExprArgs = { unit?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TsOrDsDiffExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
 export class TsOrDsDiffExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_DIFF;
@@ -22199,12 +22642,12 @@ export class TsOrDsDiffExpr extends FuncExpr {
 
   declare args: TsOrDsDiffExprArgs;
 
-  constructor (args: TsOrDsDiffExprArgs = {}) {
+  constructor (args: TsOrDsDiffExprArgs) {
     super(args);
   }
 
-  get $unit (): Expression {
-    return this.args.unit as Expression;
+  get $unit (): Expression | undefined {
+    return this.args.unit as Expression | undefined;
   }
 }
 
@@ -22213,14 +22656,13 @@ export class TsOrDsToDateStrExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_DATE_STR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TsOrDsToDateStrExprArgs>;
   declare args: TsOrDsToDateStrExprArgs;
-  constructor (args: TsOrDsToDateStrExprArgs = {}) {
+  constructor (args: TsOrDsToDateStrExprArgs) {
     super(args);
   }
 }
 
 export type TsOrDsToDateExprArgs = { format?: string;
-  safe?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  safe?: boolean; } & BaseExpressionArgs;
 
 export class TsOrDsToDateExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_DATE;
@@ -22236,16 +22678,16 @@ export class TsOrDsToDateExpr extends FuncExpr {
 
   declare args: TsOrDsToDateExprArgs;
 
-  constructor (args: TsOrDsToDateExprArgs = {}) {
+  constructor (args: TsOrDsToDateExprArgs) {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 }
 
@@ -22254,14 +22696,13 @@ export class TsOrDsToDatetimeExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_DATETIME;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TsOrDsToDatetimeExprArgs>;
   declare args: TsOrDsToDatetimeExprArgs;
-  constructor (args: TsOrDsToDatetimeExprArgs = {}) {
+  constructor (args: TsOrDsToDatetimeExprArgs) {
     super(args);
   }
 }
 
 export type TsOrDsToTimeExprArgs = { format?: string;
-  safe?: boolean;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  safe?: boolean; } & BaseExpressionArgs;
 
 export class TsOrDsToTimeExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_TIME;
@@ -22277,16 +22718,16 @@ export class TsOrDsToTimeExpr extends FuncExpr {
 
   declare args: TsOrDsToTimeExprArgs;
 
-  constructor (args: TsOrDsToTimeExprArgs = {}) {
+  constructor (args: TsOrDsToTimeExprArgs) {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 
-  get $safe (): boolean {
-    return this.args.safe as boolean;
+  get $safe (): Expression | undefined {
+    return this.args.safe as Expression | undefined;
   }
 }
 
@@ -22295,7 +22736,7 @@ export class TsOrDsToTimestampExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_TIMESTAMP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TsOrDsToTimestampExprArgs>;
   declare args: TsOrDsToTimestampExprArgs;
-  constructor (args: TsOrDsToTimestampExprArgs = {}) {
+  constructor (args: TsOrDsToTimestampExprArgs) {
     super(args);
   }
 }
@@ -22305,7 +22746,7 @@ export class TsOrDiToDiExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DI_TO_DI;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TsOrDiToDiExprArgs>;
   declare args: TsOrDiToDiExprArgs;
-  constructor (args: TsOrDiToDiExprArgs = {}) {
+  constructor (args: TsOrDiToDiExprArgs) {
     super(args);
   }
 }
@@ -22315,7 +22756,7 @@ export class UnhexExpr extends FuncExpr {
   key = ExpressionKey.UNHEX;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UnhexExprArgs>;
   declare args: UnhexExprArgs;
-  constructor (args: UnhexExprArgs = {}) {
+  constructor (args: UnhexExprArgs) {
     super(args);
   }
 }
@@ -22325,14 +22766,13 @@ export class UnicodeExpr extends FuncExpr {
   key = ExpressionKey.UNICODE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UnicodeExprArgs>;
   declare args: UnicodeExprArgs;
-  constructor (args: UnicodeExprArgs = {}) {
+  constructor (args: UnicodeExprArgs) {
     super(args);
   }
 }
 
 export type UniformExprArgs = { gen?: Expression;
-  seed?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  seed?: Expression; } & BaseExpressionArgs;
 
 export class UniformExpr extends FuncExpr {
   key = ExpressionKey.UNIFORM;
@@ -22348,16 +22788,16 @@ export class UniformExpr extends FuncExpr {
 
   declare args: UniformExprArgs;
 
-  constructor (args: UniformExprArgs = {}) {
+  constructor (args: UniformExprArgs) {
     super(args);
   }
 
-  get $gen (): Expression {
-    return this.args.gen as Expression;
+  get $gen (): Expression | undefined {
+    return this.args.gen as Expression | undefined;
   }
 
-  get $seed (): Expression {
-    return this.args.seed as Expression;
+  get $seed (): Expression | undefined {
+    return this.args.seed as Expression | undefined;
   }
 }
 
@@ -22366,13 +22806,12 @@ export class UnixDateExpr extends FuncExpr {
   key = ExpressionKey.UNIX_DATE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UnixDateExprArgs>;
   declare args: UnixDateExprArgs;
-  constructor (args: UnixDateExprArgs = {}) {
+  constructor (args: UnixDateExprArgs) {
     super(args);
   }
 }
 
-export type UnixToStrExprArgs = { format?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type UnixToStrExprArgs = { format?: string } & BaseExpressionArgs;
 
 export class UnixToStrExpr extends FuncExpr {
   key = ExpressionKey.UNIX_TO_STR;
@@ -22385,12 +22824,12 @@ export class UnixToStrExpr extends FuncExpr {
 
   declare args: UnixToStrExprArgs;
 
-  constructor (args: UnixToStrExprArgs = {}) {
+  constructor (args: UnixToStrExprArgs) {
     super(args);
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 }
 
@@ -22399,8 +22838,7 @@ export type UnixToTimeExprArgs = { scale?: number | Expression;
   hours?: Expression[];
   minutes?: Expression[];
   format?: string;
-  targetType?: DataTypeExpr;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  targetType?: DataTypeExpr; } & BaseExpressionArgs;
 
 export class UnixToTimeExpr extends FuncExpr {
   key = ExpressionKey.UNIX_TO_TIME;
@@ -22420,32 +22858,32 @@ export class UnixToTimeExpr extends FuncExpr {
 
   declare args: UnixToTimeExprArgs;
 
-  constructor (args: UnixToTimeExprArgs = {}) {
+  constructor (args: UnixToTimeExprArgs) {
     super(args);
   }
 
-  get $scale (): number | Expression {
-    return this.args.scale as number | Expression;
+  get $scale (): Expression | undefined {
+    return this.args.scale as Expression | undefined;
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 
-  get $hours (): Expression[] {
-    return (this.args.hours || []) as Expression[];
+  get $hours (): Expression[] | undefined {
+    return this.args.hours as Expression[] | undefined;
   }
 
-  get $minutes (): Expression[] {
-    return (this.args.minutes || []) as Expression[];
+  get $minutes (): Expression[] | undefined {
+    return this.args.minutes as Expression[] | undefined;
   }
 
-  get $format (): string {
-    return this.args.format as string;
+  get $format (): Expression | undefined {
+    return this.args.format as Expression | undefined;
   }
 
-  get $targetType (): DataTypeExpr {
-    return this.args.targetType as DataTypeExpr;
+  get $targetType (): Expression | undefined {
+    return this.args.targetType as Expression | undefined;
   }
 }
 
@@ -22454,7 +22892,7 @@ export class UnixToTimeStrExpr extends FuncExpr {
   key = ExpressionKey.UNIX_TO_TIME_STR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UnixToTimeStrExprArgs>;
   declare args: UnixToTimeStrExprArgs;
-  constructor (args: UnixToTimeStrExprArgs = {}) {
+  constructor (args: UnixToTimeStrExprArgs) {
     super(args);
   }
 }
@@ -22464,7 +22902,7 @@ export class UnixSecondsExpr extends FuncExpr {
   key = ExpressionKey.UNIX_SECONDS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UnixSecondsExprArgs>;
   declare args: UnixSecondsExprArgs;
-  constructor (args: UnixSecondsExprArgs = {}) {
+  constructor (args: UnixSecondsExprArgs) {
     super(args);
   }
 }
@@ -22474,7 +22912,7 @@ export class UnixMicrosExpr extends FuncExpr {
   key = ExpressionKey.UNIX_MICROS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UnixMicrosExprArgs>;
   declare args: UnixMicrosExprArgs;
-  constructor (args: UnixMicrosExprArgs = {}) {
+  constructor (args: UnixMicrosExprArgs) {
     super(args);
   }
 }
@@ -22484,14 +22922,13 @@ export class UnixMillisExpr extends FuncExpr {
   key = ExpressionKey.UNIX_MILLIS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UnixMillisExprArgs>;
   declare args: UnixMillisExprArgs;
-  constructor (args: UnixMillisExprArgs = {}) {
+  constructor (args: UnixMillisExprArgs) {
     super(args);
   }
 }
 
 export type UuidExprArgs = { name?: unknown;
-  isString?: unknown;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  isString?: unknown; } & BaseExpressionArgs;
 
 export class UuidExpr extends FuncExpr {
   key = ExpressionKey.UUID;
@@ -22507,7 +22944,7 @@ export class UuidExpr extends FuncExpr {
 
   declare args: UuidExprArgs;
 
-  constructor (args: UuidExprArgs = {}) {
+  constructor (args: UuidExprArgs) {
     super(args);
   }
 
@@ -22521,8 +22958,7 @@ export class UuidExpr extends FuncExpr {
 }
 
 export type TimestampFromPartsExprArgs = { zone?: Expression;
-  milli?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  milli?: Expression; } & BaseExpressionArgs;
 
 export class TimestampFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_FROM_PARTS;
@@ -22538,21 +22974,20 @@ export class TimestampFromPartsExpr extends FuncExpr {
 
   declare args: TimestampFromPartsExprArgs;
 
-  constructor (args: TimestampFromPartsExprArgs = {}) {
+  constructor (args: TimestampFromPartsExprArgs) {
     super(args);
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 
-  get $milli (): Expression {
-    return this.args.milli as Expression;
+  get $milli (): Expression | undefined {
+    return this.args.milli as Expression | undefined;
   }
 }
 
-export type TimestampLtzFromPartsExprArgs = { zone?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TimestampLtzFromPartsExprArgs = { zone?: Expression } & BaseExpressionArgs;
 
 export class TimestampLtzFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_LTZ_FROM_PARTS;
@@ -22571,17 +23006,16 @@ export class TimestampLtzFromPartsExpr extends FuncExpr {
     this.register();
   }
 
-  constructor (args: TimestampLtzFromPartsExprArgs = {}) {
+  constructor (args: TimestampLtzFromPartsExprArgs) {
     super(args);
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 }
 
-export type TimestampTzFromPartsExprArgs = { zone?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type TimestampTzFromPartsExprArgs = { zone?: Expression } & BaseExpressionArgs;
 
 export class TimestampTzFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_TZ_FROM_PARTS;
@@ -22594,12 +23028,12 @@ export class TimestampTzFromPartsExpr extends FuncExpr {
 
   declare args: TimestampTzFromPartsExprArgs;
 
-  constructor (args: TimestampTzFromPartsExprArgs = {}) {
+  constructor (args: TimestampTzFromPartsExprArgs) {
     super(args);
   }
 
-  get $zone (): Expression {
-    return this.args.zone as Expression;
+  get $zone (): Expression | undefined {
+    return this.args.zone as Expression | undefined;
   }
 }
 
@@ -22608,15 +23042,14 @@ export class UpperExpr extends FuncExpr {
   key = ExpressionKey.UPPER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UpperExprArgs>;
   declare args: UpperExprArgs;
-  constructor (args: UpperExprArgs = {}) {
+  constructor (args: UpperExprArgs) {
     super(args);
   }
 
   static sqlNames = ['UPPER', 'UCASE'];
 }
 
-export type CorrExprArgs = { nullOnZeroVariance?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type CorrExprArgs = { nullOnZeroVariance?: Expression } & BaseExpressionArgs;
 
 export class CorrExpr extends BinaryExpr {
   key = ExpressionKey.CORR;
@@ -22629,20 +23062,19 @@ export class CorrExpr extends BinaryExpr {
 
   declare args: CorrExprArgs;
 
-  constructor (args: CorrExprArgs = {}) {
+  constructor (args: CorrExprArgs) {
     super(args);
   }
 
-  get $nullOnZeroVariance (): Expression {
-    return this.args.nullOnZeroVariance as Expression;
+  get $nullOnZeroVariance (): Expression | undefined {
+    return this.args.nullOnZeroVariance as Expression | undefined;
   }
 }
 
 export type WidthBucketExprArgs = { minValue?: string;
   maxValue?: string;
   numBuckets?: Expression[];
-  threshold?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  threshold?: Expression; } & BaseExpressionArgs;
 
 export class WidthBucketExpr extends FuncExpr {
   key = ExpressionKey.WIDTH_BUCKET;
@@ -22660,29 +23092,28 @@ export class WidthBucketExpr extends FuncExpr {
 
   declare args: WidthBucketExprArgs;
 
-  constructor (args: WidthBucketExprArgs = {}) {
+  constructor (args: WidthBucketExprArgs) {
     super(args);
   }
 
-  get $minValue (): string {
-    return this.args.minValue as string;
+  get $minValue (): Expression | undefined {
+    return this.args.minValue as Expression | undefined;
   }
 
-  get $maxValue (): string {
-    return this.args.maxValue as string;
+  get $maxValue (): Expression | undefined {
+    return this.args.maxValue as Expression | undefined;
   }
 
-  get $numBuckets (): Expression[] {
-    return (this.args.numBuckets || []) as Expression[];
+  get $numBuckets (): Expression[] | undefined {
+    return this.args.numBuckets as Expression[] | undefined;
   }
 
-  get $threshold (): Expression {
-    return this.args.threshold as Expression;
+  get $threshold (): Expression | undefined {
+    return this.args.threshold as Expression | undefined;
   }
 }
 
-export type WeekExprArgs = { mode?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type WeekExprArgs = { mode?: Expression } & BaseExpressionArgs;
 
 export class WeekExpr extends FuncExpr {
   key = ExpressionKey.WEEK;
@@ -22695,12 +23126,12 @@ export class WeekExpr extends FuncExpr {
 
   declare args: WeekExprArgs;
 
-  constructor (args: WeekExprArgs = {}) {
+  constructor (args: WeekExprArgs) {
     super(args);
   }
 
-  get $mode (): Expression {
-    return this.args.mode as Expression;
+  get $mode (): Expression | undefined {
+    return this.args.mode as Expression | undefined;
   }
 }
 
@@ -22709,13 +23140,12 @@ export class NextDayExpr extends FuncExpr {
   key = ExpressionKey.NEXT_DAY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NextDayExprArgs>;
   declare args: NextDayExprArgs;
-  constructor (args: NextDayExprArgs = {}) {
+  constructor (args: NextDayExprArgs) {
     super(args);
   }
 }
 
-export type XMLElementExprArgs = { evalname?: string;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type XMLElementExprArgs = { evalname?: string } & BaseExpressionArgs;
 
 export class XMLElementExpr extends FuncExpr {
   key = ExpressionKey.XML_ELEMENT;
@@ -22728,17 +23158,16 @@ export class XMLElementExpr extends FuncExpr {
 
   declare args: XMLElementExprArgs;
 
-  constructor (args: XMLElementExprArgs = {}) {
+  constructor (args: XMLElementExprArgs) {
     super(args);
   }
 
-  get $evalname (): string {
-    return this.args.evalname as string;
+  get $evalname (): Expression | undefined {
+    return this.args.evalname as Expression | undefined;
   }
 }
 
-export type XMLGetExprArgs = { instance?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type XMLGetExprArgs = { instance?: Expression } & BaseExpressionArgs;
 
 export class XMLGetExpr extends FuncExpr {
   key = ExpressionKey.XML_GET;
@@ -22751,20 +23180,19 @@ export class XMLGetExpr extends FuncExpr {
 
   declare args: XMLGetExprArgs;
 
-  constructor (args: XMLGetExprArgs = {}) {
+  constructor (args: XMLGetExprArgs) {
     super(args);
   }
 
-  get $instance (): Expression {
-    return this.args.instance as Expression;
+  get $instance (): Expression | undefined {
+    return this.args.instance as Expression | undefined;
   }
 }
 
 export type XMLTableExprArgs = { namespaces?: Expression[];
   passing?: Expression;
   columns?: Expression[];
-  byRef?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  byRef?: Expression; } & BaseExpressionArgs;
 
 export class XMLTableExpr extends FuncExpr {
   key = ExpressionKey.XML_TABLE;
@@ -22782,24 +23210,24 @@ export class XMLTableExpr extends FuncExpr {
 
   declare args: XMLTableExprArgs;
 
-  constructor (args: XMLTableExprArgs = {}) {
+  constructor (args: XMLTableExprArgs) {
     super(args);
   }
 
-  get $namespaces (): Expression[] {
-    return (this.args.namespaces || []) as Expression[];
+  get $namespaces (): Expression[] | undefined {
+    return this.args.namespaces as Expression[] | undefined;
   }
 
-  get $passing (): Expression {
-    return this.args.passing as Expression;
+  get $passing (): Expression | undefined {
+    return this.args.passing as Expression | undefined;
   }
 
-  get $columns (): Expression[] {
-    return (this.args.columns || []) as Expression[];
+  get $columns (): Expression[] | undefined {
+    return this.args.columns as Expression[] | undefined;
   }
 
-  get $byRef (): Expression {
-    return this.args.byRef as Expression;
+  get $byRef (): Expression | undefined {
+    return this.args.byRef as Expression | undefined;
   }
 }
 
@@ -22808,14 +23236,13 @@ export class YearExpr extends FuncExpr {
   key = ExpressionKey.YEAR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<YearExprArgs>;
   declare args: YearExprArgs;
-  constructor (args: YearExprArgs = {}) {
+  constructor (args: YearExprArgs) {
     super(args);
   }
 }
 
 export type ZipfExprArgs = { elementcount: Expression;
-  gen: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  gen: Expression; } & BaseExpressionArgs;
 
 export class ZipfExpr extends FuncExpr {
   key = ExpressionKey.ZIPF;
@@ -22844,8 +23271,7 @@ export class ZipfExpr extends FuncExpr {
   }
 }
 
-export type NextValueForExprArgs = { order?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type NextValueForExprArgs = { order?: Expression } & BaseExpressionArgs;
 
 export class NextValueForExpr extends FuncExpr {
   key = ExpressionKey.NEXT_VALUE_FOR;
@@ -22858,12 +23284,12 @@ export class NextValueForExpr extends FuncExpr {
 
   declare args: NextValueForExprArgs;
 
-  constructor (args: NextValueForExprArgs = {}) {
+  constructor (args: NextValueForExprArgs) {
     super(args);
   }
 
-  get $order (): Expression {
-    return this.args.order as Expression;
+  get $order (): Expression | undefined {
+    return this.args.order as Expression | undefined;
   }
 }
 
@@ -22872,7 +23298,7 @@ export class AllExpr extends SubqueryPredicateExpr {
   key = ExpressionKey.ALL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AllExprArgs>;
   declare args: AllExprArgs;
-  constructor (args: AllExprArgs = {}) {
+  constructor (args: AllExprArgs) {
     super(args);
   }
 }
@@ -22882,7 +23308,7 @@ export class AnyExpr extends SubqueryPredicateExpr {
   key = ExpressionKey.ANY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AnyExprArgs>;
   declare args: AnyExprArgs;
-  constructor (args: AnyExprArgs = {}) {
+  constructor (args: AnyExprArgs) {
     super(args);
   }
 }
@@ -22892,7 +23318,7 @@ export class BitwiseAndAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITWISE_AND_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BitwiseAndAggExprArgs>;
   declare args: BitwiseAndAggExprArgs;
-  constructor (args: BitwiseAndAggExprArgs = {}) {
+  constructor (args: BitwiseAndAggExprArgs) {
     super(args);
   }
 }
@@ -22902,7 +23328,7 @@ export class BitwiseOrAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITWISE_OR_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BitwiseOrAggExprArgs>;
   declare args: BitwiseOrAggExprArgs;
-  constructor (args: BitwiseOrAggExprArgs = {}) {
+  constructor (args: BitwiseOrAggExprArgs) {
     super(args);
   }
 }
@@ -22912,7 +23338,7 @@ export class BitwiseXorAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITWISE_XOR_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BitwiseXorAggExprArgs>;
   declare args: BitwiseXorAggExprArgs;
-  constructor (args: BitwiseXorAggExprArgs = {}) {
+  constructor (args: BitwiseXorAggExprArgs) {
     super(args);
   }
 }
@@ -22922,7 +23348,7 @@ export class BoolxorAggExpr extends AggFuncExpr {
   key = ExpressionKey.BOOLXOR_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BoolxorAggExprArgs>;
   declare args: BoolxorAggExprArgs;
-  constructor (args: BoolxorAggExprArgs = {}) {
+  constructor (args: BoolxorAggExprArgs) {
     super(args);
   }
 }
@@ -22932,7 +23358,7 @@ export class BitmapConstructAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITMAP_CONSTRUCT_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BitmapConstructAggExprArgs>;
   declare args: BitmapConstructAggExprArgs;
-  constructor (args: BitmapConstructAggExprArgs = {}) {
+  constructor (args: BitmapConstructAggExprArgs) {
     super(args);
   }
 }
@@ -22942,13 +23368,12 @@ export class BitmapOrAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITMAP_OR_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BitmapOrAggExprArgs>;
   declare args: BitmapOrAggExprArgs;
-  constructor (args: BitmapOrAggExprArgs = {}) {
+  constructor (args: BitmapOrAggExprArgs) {
     super(args);
   }
 }
 
-export type ParameterizedAggExprArgs = { params: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ParameterizedAggExprArgs = { params: Expression[] } & BaseExpressionArgs;
 
 export class ParameterizedAggExpr extends AggFuncExpr {
   key = ExpressionKey.PARAMETERIZED_AGG;
@@ -22966,12 +23391,11 @@ export class ParameterizedAggExpr extends AggFuncExpr {
   }
 
   get $params (): Expression[] {
-    return (this.args.params || []) as Expression[];
+    return this.args.params as Expression[];
   }
 }
 
-export type ArgMaxExprArgs = { count?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ArgMaxExprArgs = { count?: Expression } & BaseExpressionArgs;
 
 export class ArgMaxExpr extends AggFuncExpr {
   key = ExpressionKey.ARG_MAX;
@@ -22989,17 +23413,16 @@ export class ArgMaxExpr extends AggFuncExpr {
 
   declare args: ArgMaxExprArgs;
 
-  constructor (args: ArgMaxExprArgs = {}) {
+  constructor (args: ArgMaxExprArgs) {
     super(args);
   }
 
-  get $count (): Expression {
-    return this.args.count as Expression;
+  get $count (): Expression | undefined {
+    return this.args.count as Expression | undefined;
   }
 }
 
-export type ArgMinExprArgs = { count?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ArgMinExprArgs = { count?: Expression } & BaseExpressionArgs;
 
 export class ArgMinExpr extends AggFuncExpr {
   key = ExpressionKey.ARG_MIN;
@@ -23017,17 +23440,16 @@ export class ArgMinExpr extends AggFuncExpr {
 
   declare args: ArgMinExprArgs;
 
-  constructor (args: ArgMinExprArgs = {}) {
+  constructor (args: ArgMinExprArgs) {
     super(args);
   }
 
-  get $count (): Expression {
-    return this.args.count as Expression;
+  get $count (): Expression | undefined {
+    return this.args.count as Expression | undefined;
   }
 }
 
-export type ApproxTopKExprArgs = { counters?: Expression[];
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ApproxTopKExprArgs = { counters?: Expression[] } & BaseExpressionArgs;
 
 export class ApproxTopKExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_K;
@@ -23040,12 +23462,12 @@ export class ApproxTopKExpr extends AggFuncExpr {
 
   declare args: ApproxTopKExprArgs;
 
-  constructor (args: ApproxTopKExprArgs = {}) {
+  constructor (args: ApproxTopKExprArgs) {
     super(args);
   }
 
-  get $counters (): Expression[] {
-    return (this.args.counters || []) as Expression[];
+  get $counters (): Expression[] | undefined {
+    return this.args.counters as Expression[] | undefined;
   }
 }
 
@@ -23054,7 +23476,7 @@ export class ApproxTopKAccumulateExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_K_ACCUMULATE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ApproxTopKAccumulateExprArgs>;
   declare args: ApproxTopKAccumulateExprArgs;
-  constructor (args: ApproxTopKAccumulateExprArgs = {}) {
+  constructor (args: ApproxTopKAccumulateExprArgs) {
     super(args);
   }
 }
@@ -23064,13 +23486,12 @@ export class ApproxTopKCombineExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_K_COMBINE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ApproxTopKCombineExprArgs>;
   declare args: ApproxTopKCombineExprArgs;
-  constructor (args: ApproxTopKCombineExprArgs = {}) {
+  constructor (args: ApproxTopKCombineExprArgs) {
     super(args);
   }
 }
 
-export type ApproxTopSumExprArgs = { count: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ApproxTopSumExprArgs = { count: Expression } & BaseExpressionArgs;
 
 export class ApproxTopSumExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_SUM;
@@ -23097,7 +23518,7 @@ export class ApproxQuantilesExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_QUANTILES;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ApproxQuantilesExprArgs>;
   declare args: ApproxQuantilesExprArgs;
-  constructor (args: ApproxQuantilesExprArgs = {}) {
+  constructor (args: ApproxQuantilesExprArgs) {
     super(args);
   }
 }
@@ -23110,7 +23531,7 @@ export class ApproxPercentileCombineExpr extends AggFuncExpr {
   >;
 
   declare args: ApproxPercentileCombineExprArgs;
-  constructor (args: ApproxPercentileCombineExprArgs = {}) {
+  constructor (args: ApproxPercentileCombineExprArgs) {
     super(args);
   }
 }
@@ -23120,7 +23541,7 @@ export class MinhashExpr extends AggFuncExpr {
   key = ExpressionKey.MINHASH;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MinhashExprArgs>;
   declare args: MinhashExprArgs;
-  constructor (args: MinhashExprArgs = {}) {
+  constructor (args: MinhashExprArgs) {
     super(args);
   }
 }
@@ -23130,7 +23551,7 @@ export class MinhashCombineExpr extends AggFuncExpr {
   key = ExpressionKey.MINHASH_COMBINE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MinhashCombineExprArgs>;
   declare args: MinhashCombineExprArgs;
-  constructor (args: MinhashCombineExprArgs = {}) {
+  constructor (args: MinhashCombineExprArgs) {
     super(args);
   }
 }
@@ -23143,7 +23564,7 @@ export class ApproximateSimilarityExpr extends AggFuncExpr {
   >;
 
   declare args: ApproximateSimilarityExprArgs;
-  constructor (args: ApproximateSimilarityExprArgs = {}) {
+  constructor (args: ApproximateSimilarityExprArgs) {
     super(args);
   }
 
@@ -23159,7 +23580,7 @@ export class GroupingExpr extends AggFuncExpr {
   key = ExpressionKey.GROUPING;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<GroupingExprArgs>;
   declare args: GroupingExprArgs;
-  constructor (args: GroupingExprArgs = {}) {
+  constructor (args: GroupingExprArgs) {
     super(args);
   }
 }
@@ -23169,7 +23590,7 @@ export class GroupingIdExpr extends AggFuncExpr {
   key = ExpressionKey.GROUPING_ID;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<GroupingIdExprArgs>;
   declare args: GroupingIdExprArgs;
-  constructor (args: GroupingIdExprArgs = {}) {
+  constructor (args: GroupingIdExprArgs) {
     super(args);
   }
 }
@@ -23179,7 +23600,7 @@ export class AnonymousAggFuncExpr extends AggFuncExpr {
   key = ExpressionKey.ANONYMOUS_AGG_FUNC;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AnonymousAggFuncExprArgs>;
   declare args: AnonymousAggFuncExprArgs;
-  constructor (args: AnonymousAggFuncExprArgs = {}) {
+  constructor (args: AnonymousAggFuncExprArgs) {
     super(args);
   }
 }
@@ -23189,7 +23610,7 @@ export class HashAggExpr extends AggFuncExpr {
   key = ExpressionKey.HASH_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<HashAggExprArgs>;
   declare args: HashAggExprArgs;
-  constructor (args: HashAggExprArgs = {}) {
+  constructor (args: HashAggExprArgs) {
     super(args);
   }
 }
@@ -23199,13 +23620,12 @@ export class HllExpr extends AggFuncExpr {
   key = ExpressionKey.HLL;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<HllExprArgs>;
   declare args: HllExprArgs;
-  constructor (args: HllExprArgs = {}) {
+  constructor (args: HllExprArgs) {
     super(args);
   }
 }
 
-export type ApproxDistinctExprArgs = { accuracy?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ApproxDistinctExprArgs = { accuracy?: Expression } & BaseExpressionArgs;
 
 export class ApproxDistinctExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_DISTINCT;
@@ -23220,12 +23640,12 @@ export class ApproxDistinctExpr extends AggFuncExpr {
 
   declare args: ApproxDistinctExprArgs;
 
-  constructor (args: ApproxDistinctExprArgs = {}) {
+  constructor (args: ApproxDistinctExprArgs) {
     super(args);
   }
 
-  get $accuracy (): Expression {
-    return this.args.accuracy as Expression;
+  get $accuracy (): Expression | undefined {
+    return this.args.accuracy as Expression | undefined;
   }
 }
 
@@ -23237,13 +23657,12 @@ export class ExplodingGenerateSeriesExpr extends GenerateSeriesExpr {
   >;
 
   declare args: ExplodingGenerateSeriesExprArgs;
-  constructor (args: ExplodingGenerateSeriesExprArgs = {}) {
+  constructor (args: ExplodingGenerateSeriesExprArgs) {
     super(args);
   }
 }
 
-export type ArrayAggExprArgs = { nullsExcluded?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ArrayAggExprArgs = { nullsExcluded?: Expression } & BaseExpressionArgs;
 
 export class ArrayAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_AGG;
@@ -23256,12 +23675,12 @@ export class ArrayAggExpr extends AggFuncExpr {
 
   declare args: ArrayAggExprArgs;
 
-  constructor (args: ArrayAggExprArgs = {}) {
+  constructor (args: ArrayAggExprArgs) {
     super(args);
   }
 
-  get $nullsExcluded (): Expression {
-    return this.args.nullsExcluded as Expression;
+  get $nullsExcluded (): Expression | undefined {
+    return this.args.nullsExcluded as Expression | undefined;
   }
 }
 
@@ -23270,7 +23689,7 @@ export class ArrayUniqueAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_UNIQUE_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayUniqueAggExprArgs>;
   declare args: ArrayUniqueAggExprArgs;
-  constructor (args: ArrayUniqueAggExprArgs = {}) {
+  constructor (args: ArrayUniqueAggExprArgs) {
     super(args);
   }
 }
@@ -23280,7 +23699,7 @@ export class AIAggExpr extends AggFuncExpr {
   key = ExpressionKey.AI_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AIAggExprArgs>;
   declare args: AIAggExprArgs;
-  constructor (args: AIAggExprArgs = {}) {
+  constructor (args: AIAggExprArgs) {
     super(args);
   }
 }
@@ -23290,7 +23709,7 @@ export class AISummarizeAggExpr extends AggFuncExpr {
   key = ExpressionKey.AI_SUMMARIZE_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AISummarizeAggExprArgs>;
   declare args: AISummarizeAggExprArgs;
-  constructor (args: AISummarizeAggExprArgs = {}) {
+  constructor (args: AISummarizeAggExprArgs) {
     super(args);
   }
 
@@ -23306,7 +23725,7 @@ export class ArrayConcatAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_CONCAT_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayConcatAggExprArgs>;
   declare args: ArrayConcatAggExprArgs;
-  constructor (args: ArrayConcatAggExprArgs = {}) {
+  constructor (args: ArrayConcatAggExprArgs) {
     super(args);
   }
 }
@@ -23316,7 +23735,7 @@ export class ArrayUnionAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_UNION_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ArrayUnionAggExprArgs>;
   declare args: ArrayUnionAggExprArgs;
-  constructor (args: ArrayUnionAggExprArgs = {}) {
+  constructor (args: ArrayUnionAggExprArgs) {
     super(args);
   }
 }
@@ -23326,7 +23745,7 @@ export class AvgExpr extends AggFuncExpr {
   key = ExpressionKey.AVG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AvgExprArgs>;
   declare args: AvgExprArgs;
-  constructor (args: AvgExprArgs = {}) {
+  constructor (args: AvgExprArgs) {
     super(args);
   }
 }
@@ -23336,14 +23755,13 @@ export class AnyValueExpr extends AggFuncExpr {
   key = ExpressionKey.ANY_VALUE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AnyValueExprArgs>;
   declare args: AnyValueExprArgs;
-  constructor (args: AnyValueExprArgs = {}) {
+  constructor (args: AnyValueExprArgs) {
     super(args);
   }
 }
 
 export type LagExprArgs = { offset?: boolean;
-  default?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  default?: Expression; } & BaseExpressionArgs;
 
 export class LagExpr extends AggFuncExpr {
   key = ExpressionKey.LAG;
@@ -23359,22 +23777,21 @@ export class LagExpr extends AggFuncExpr {
 
   declare args: LagExprArgs;
 
-  constructor (args: LagExprArgs = {}) {
+  constructor (args: LagExprArgs) {
     super(args);
   }
 
-  get $offset (): boolean {
-    return this.args.offset as boolean;
+  get $offset (): Expression | undefined {
+    return this.args.offset as Expression | undefined;
   }
 
-  get $default (): Expression {
-    return this.args['default'] as Expression;
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
   }
 }
 
 export type LeadExprArgs = { offset?: boolean;
-  default?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  default?: Expression; } & BaseExpressionArgs;
 
 export class LeadExpr extends AggFuncExpr {
   key = ExpressionKey.LEAD;
@@ -23390,16 +23807,16 @@ export class LeadExpr extends AggFuncExpr {
 
   declare args: LeadExprArgs;
 
-  constructor (args: LeadExprArgs = {}) {
+  constructor (args: LeadExprArgs) {
     super(args);
   }
 
-  get $offset (): boolean {
-    return this.args.offset as boolean;
+  get $offset (): Expression | undefined {
+    return this.args.offset as Expression | undefined;
   }
 
-  get $default (): Expression {
-    return this.args['default'] as Expression;
+  get $default (): Expression | undefined {
+    return this.args.default as Expression | undefined;
   }
 }
 
@@ -23408,7 +23825,7 @@ export class FirstExpr extends AggFuncExpr {
   key = ExpressionKey.FIRST;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FirstExprArgs>;
   declare args: FirstExprArgs;
-  constructor (args: FirstExprArgs = {}) {
+  constructor (args: FirstExprArgs) {
     super(args);
   }
 }
@@ -23418,7 +23835,7 @@ export class LastExpr extends AggFuncExpr {
   key = ExpressionKey.LAST;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LastExprArgs>;
   declare args: LastExprArgs;
-  constructor (args: LastExprArgs = {}) {
+  constructor (args: LastExprArgs) {
     super(args);
   }
 }
@@ -23428,7 +23845,7 @@ export class FirstValueExpr extends AggFuncExpr {
   key = ExpressionKey.FIRST_VALUE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FirstValueExprArgs>;
   declare args: FirstValueExprArgs;
-  constructor (args: FirstValueExprArgs = {}) {
+  constructor (args: FirstValueExprArgs) {
     super(args);
   }
 }
@@ -23438,14 +23855,13 @@ export class LastValueExpr extends AggFuncExpr {
   key = ExpressionKey.LAST_VALUE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LastValueExprArgs>;
   declare args: LastValueExprArgs;
-  constructor (args: LastValueExprArgs = {}) {
+  constructor (args: LastValueExprArgs) {
     super(args);
   }
 }
 
 export type NthValueExprArgs = { offset: boolean;
-  fromFirst?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  fromFirst?: Expression; } & BaseExpressionArgs;
 
 export class NthValueExpr extends AggFuncExpr {
   key = ExpressionKey.NTH_VALUE;
@@ -23465,12 +23881,12 @@ export class NthValueExpr extends AggFuncExpr {
     super(args);
   }
 
-  get $offset (): boolean {
-    return this.args.offset as boolean;
+  get $offset (): Expression {
+    return this.args.offset as Expression;
   }
 
-  get $fromFirst (): Expression {
-    return this.args.fromFirst as Expression;
+  get $fromFirst (): Expression | undefined {
+    return this.args.fromFirst as Expression | undefined;
   }
 }
 
@@ -23479,7 +23895,7 @@ export class ObjectAggExpr extends AggFuncExpr {
   key = ExpressionKey.OBJECT_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ObjectAggExprArgs>;
   declare args: ObjectAggExprArgs;
-  constructor (args: ObjectAggExprArgs = {}) {
+  constructor (args: ObjectAggExprArgs) {
     super(args);
   }
 }
@@ -23489,8 +23905,7 @@ export type TryCastExprArgs = { to?: unknown;
   safe?: unknown;
   action?: unknown;
   default?: unknown;
-  requiresString?: Expression;
-  [key: string]: unknown; } & CastExprArgs;
+  requiresString?: Expression; } & CastExprArgs;
 
 export class TryCastExpr extends CastExpr {
   key = ExpressionKey.TRY_CAST;
@@ -23514,10 +23929,6 @@ export class TryCastExpr extends CastExpr {
     super(args);
   }
 
-  get $requiresString (): Expression {
-    return this.args.requiresString as Expression;
-  }
-
   get $to (): Expression | undefined {
     return this.args.to as Expression | undefined;
   }
@@ -23537,6 +23948,10 @@ export class TryCastExpr extends CastExpr {
   get $default (): Expression | undefined {
     return this.args.default as Expression | undefined;
   }
+
+  get $requiresString (): Expression | undefined {
+    return this.args.requiresString as Expression | undefined;
+  }
 }
 
 export type JSONCastExprArgs = BaseExpressionArgs;
@@ -23544,7 +23959,7 @@ export class JSONCastExpr extends CastExpr {
   key = ExpressionKey.JSON_CAST;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONCastExprArgs>;
   declare args: JSONCastExprArgs;
-  constructor (args: JSONCastExprArgs = {}) {
+  constructor (args: JSONCastExprArgs) {
     super(args);
   }
 }
@@ -23554,13 +23969,12 @@ export class ConcatWsExpr extends ConcatExpr {
   key = ExpressionKey.CONCAT_WS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ConcatWsExprArgs>;
   declare args: ConcatWsExprArgs;
-  constructor (args: ConcatWsExprArgs = {}) {
+  constructor (args: ConcatWsExprArgs) {
     super(args);
   }
 }
 
-export type CountExprArgs = { bigInt?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type CountExprArgs = { bigInt?: Expression } & BaseExpressionArgs;
 
 export class CountExpr extends AggFuncExpr {
   key = ExpressionKey.COUNT;
@@ -23573,12 +23987,12 @@ export class CountExpr extends AggFuncExpr {
 
   declare args: CountExprArgs;
 
-  constructor (args: CountExprArgs = {}) {
+  constructor (args: CountExprArgs) {
     super(args);
   }
 
-  get $bigInt (): Expression {
-    return this.args.bigInt as Expression;
+  get $bigInt (): Expression | undefined {
+    return this.args.bigInt as Expression | undefined;
   }
 }
 
@@ -23587,7 +24001,7 @@ export class CountIfExpr extends AggFuncExpr {
   key = ExpressionKey.COUNT_IF;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CountIfExprArgs>;
   declare args: CountIfExprArgs;
-  constructor (args: CountIfExprArgs = {}) {
+  constructor (args: CountIfExprArgs) {
     super(args);
   }
 
@@ -23603,7 +24017,7 @@ export class DenseRankExpr extends AggFuncExpr {
   key = ExpressionKey.DENSE_RANK;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DenseRankExprArgs>;
   declare args: DenseRankExprArgs;
-  constructor (args: DenseRankExprArgs = {}) {
+  constructor (args: DenseRankExprArgs) {
     super(args);
   }
 }
@@ -23613,7 +24027,7 @@ export class ExplodeOuterExpr extends ExplodeExpr {
   key = ExpressionKey.EXPLODE_OUTER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ExplodeOuterExprArgs>;
   declare args: ExplodeOuterExprArgs;
-  constructor (args: ExplodeOuterExprArgs = {}) {
+  constructor (args: ExplodeOuterExprArgs) {
     super(args);
   }
 }
@@ -23623,14 +24037,13 @@ export class PosexplodeExpr extends ExplodeExpr {
   key = ExpressionKey.POSEXPLODE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PosexplodeExprArgs>;
   declare args: PosexplodeExprArgs;
-  constructor (args: PosexplodeExprArgs = {}) {
+  constructor (args: PosexplodeExprArgs) {
     super(args);
   }
 }
 
 export type GroupConcatExprArgs = { separator?: Expression;
-  onOverflow?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  onOverflow?: Expression; } & BaseExpressionArgs;
 
 export class GroupConcatExpr extends AggFuncExpr {
   key = ExpressionKey.GROUP_CONCAT;
@@ -23646,16 +24059,16 @@ export class GroupConcatExpr extends AggFuncExpr {
 
   declare args: GroupConcatExprArgs;
 
-  constructor (args: GroupConcatExprArgs = {}) {
+  constructor (args: GroupConcatExprArgs) {
     super(args);
   }
 
-  get $separator (): Expression {
-    return this.args.separator as Expression;
+  get $separator (): Expression | undefined {
+    return this.args.separator as Expression | undefined;
   }
 
-  get $onOverflow (): Expression {
-    return this.args.onOverflow as Expression;
+  get $onOverflow (): Expression | undefined {
+    return this.args.onOverflow as Expression | undefined;
   }
 }
 
@@ -23664,7 +24077,7 @@ export class LowerHexExpr extends HexExpr {
   key = ExpressionKey.LOWER_HEX;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LowerHexExprArgs>;
   declare args: LowerHexExprArgs;
-  constructor (args: LowerHexExprArgs = {}) {
+  constructor (args: LowerHexExprArgs) {
     super(args);
   }
 }
@@ -23674,7 +24087,7 @@ export class AndExpr extends ConnectorExpr {
   key = ExpressionKey.AND;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AndExprArgs>;
   declare args: AndExprArgs;
-  constructor (args: AndExprArgs = {}) {
+  constructor (args: AndExprArgs) {
     super(args);
   }
 }
@@ -23684,13 +24097,12 @@ export class OrExpr extends ConnectorExpr {
   key = ExpressionKey.OR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<OrExprArgs>;
   declare args: OrExprArgs;
-  constructor (args: OrExprArgs = {}) {
+  constructor (args: OrExprArgs) {
     super(args);
   }
 }
 
-export type XorExprArgs = { roundInput?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type XorExprArgs = { roundInput?: Expression } & BaseExpressionArgs;
 
 export class XorExpr extends ConnectorExpr {
   key = ExpressionKey.XOR;
@@ -23703,20 +24115,19 @@ export class XorExpr extends ConnectorExpr {
 
   declare args: XorExprArgs;
 
-  constructor (args: XorExprArgs = {}) {
+  constructor (args: XorExprArgs) {
     super(args);
   }
 
-  get $roundInput (): Expression {
-    return this.args.roundInput as Expression;
+  get $roundInput (): Expression | undefined {
+    return this.args.roundInput as Expression | undefined;
   }
 }
 
 export type JSONObjectAggExprArgs = { nullHandling?: Expression;
   uniqueKeys?: Expression[];
   returnType?: DataTypeExpr;
-  encoding?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  encoding?: Expression; } & BaseExpressionArgs;
 
 export class JSONObjectAggExpr extends AggFuncExpr {
   key = ExpressionKey.JSON_OBJECT_AGG;
@@ -23734,24 +24145,24 @@ export class JSONObjectAggExpr extends AggFuncExpr {
 
   declare args: JSONObjectAggExprArgs;
 
-  constructor (args: JSONObjectAggExprArgs = {}) {
+  constructor (args: JSONObjectAggExprArgs) {
     super(args);
   }
 
-  get $nullHandling (): Expression {
-    return this.args.nullHandling as Expression;
+  get $nullHandling (): Expression | undefined {
+    return this.args.nullHandling as Expression | undefined;
   }
 
-  get $uniqueKeys (): Expression[] {
-    return (this.args.uniqueKeys || []) as Expression[];
+  get $uniqueKeys (): Expression[] | undefined {
+    return this.args.uniqueKeys as Expression[] | undefined;
   }
 
-  get $returnType (): DataTypeExpr {
-    return this.args.returnType as DataTypeExpr;
+  get $returnType (): Expression | undefined {
+    return this.args.returnType as Expression | undefined;
   }
 
-  get $encoding (): Expression {
-    return this.args.encoding as Expression;
+  get $encoding (): Expression | undefined {
+    return this.args.encoding as Expression | undefined;
   }
 }
 
@@ -23760,7 +24171,7 @@ export class JSONBObjectAggExpr extends AggFuncExpr {
   key = ExpressionKey.JSONB_OBJECT_AGG;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<JSONBObjectAggExprArgs>;
   declare args: JSONBObjectAggExprArgs;
-  constructor (args: JSONBObjectAggExprArgs = {}) {
+  constructor (args: JSONBObjectAggExprArgs) {
     super(args);
   }
 }
@@ -23768,8 +24179,7 @@ export class JSONBObjectAggExpr extends AggFuncExpr {
 export type JSONArrayAggExprArgs = { order?: Expression;
   nullHandling?: Expression;
   returnType?: DataTypeExpr;
-  strict?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+  strict?: Expression; } & BaseExpressionArgs;
 
 export class JSONArrayAggExpr extends AggFuncExpr {
   key = ExpressionKey.JSON_ARRAY_AGG;
@@ -23787,24 +24197,24 @@ export class JSONArrayAggExpr extends AggFuncExpr {
 
   declare args: JSONArrayAggExprArgs;
 
-  constructor (args: JSONArrayAggExprArgs = {}) {
+  constructor (args: JSONArrayAggExprArgs) {
     super(args);
   }
 
-  get $order (): Expression {
-    return this.args.order as Expression;
+  get $order (): Expression | undefined {
+    return this.args.order as Expression | undefined;
   }
 
-  get $nullHandling (): Expression {
-    return this.args.nullHandling as Expression;
+  get $nullHandling (): Expression | undefined {
+    return this.args.nullHandling as Expression | undefined;
   }
 
-  get $returnType (): DataTypeExpr {
-    return this.args.returnType as DataTypeExpr;
+  get $returnType (): Expression | undefined {
+    return this.args.returnType as Expression | undefined;
   }
 
-  get $strict (): Expression {
-    return this.args.strict as Expression;
+  get $strict (): Expression | undefined {
+    return this.args.strict as Expression | undefined;
   }
 }
 
@@ -23813,7 +24223,7 @@ export class LogicalOrExpr extends AggFuncExpr {
   key = ExpressionKey.LOGICAL_OR;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LogicalOrExprArgs>;
   declare args: LogicalOrExprArgs;
-  constructor (args: LogicalOrExprArgs = {}) {
+  constructor (args: LogicalOrExprArgs) {
     super(args);
   }
 
@@ -23833,7 +24243,7 @@ export class LogicalAndExpr extends AggFuncExpr {
   key = ExpressionKey.LOGICAL_AND;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<LogicalAndExprArgs>;
   declare args: LogicalAndExprArgs;
-  constructor (args: LogicalAndExprArgs = {}) {
+  constructor (args: LogicalAndExprArgs) {
     super(args);
   }
 
@@ -23853,7 +24263,7 @@ export class MaxExpr extends AggFuncExpr {
   key = ExpressionKey.MAX;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MaxExprArgs>;
   declare args: MaxExprArgs;
-  constructor (args: MaxExprArgs = {}) {
+  constructor (args: MaxExprArgs) {
     super(args);
   }
 }
@@ -23863,13 +24273,12 @@ export class MedianExpr extends AggFuncExpr {
   key = ExpressionKey.MEDIAN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MedianExprArgs>;
   declare args: MedianExprArgs;
-  constructor (args: MedianExprArgs = {}) {
+  constructor (args: MedianExprArgs) {
     super(args);
   }
 }
 
-export type ModeExprArgs = { deterministic?: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type ModeExprArgs = { deterministic?: Expression } & BaseExpressionArgs;
 
 export class ModeExpr extends AggFuncExpr {
   key = ExpressionKey.MODE;
@@ -23882,12 +24291,12 @@ export class ModeExpr extends AggFuncExpr {
 
   declare args: ModeExprArgs;
 
-  constructor (args: ModeExprArgs = {}) {
+  constructor (args: ModeExprArgs) {
     super(args);
   }
 
-  get $deterministic (): Expression {
-    return this.args.deterministic as Expression;
+  get $deterministic (): Expression | undefined {
+    return this.args.deterministic as Expression | undefined;
   }
 }
 
@@ -23896,7 +24305,7 @@ export class MinExpr extends AggFuncExpr {
   key = ExpressionKey.MIN;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<MinExprArgs>;
   declare args: MinExprArgs;
-  constructor (args: MinExprArgs = {}) {
+  constructor (args: MinExprArgs) {
     super(args);
   }
 }
@@ -23906,7 +24315,7 @@ export class NtileExpr extends AggFuncExpr {
   key = ExpressionKey.NTILE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NtileExprArgs>;
   declare args: NtileExprArgs;
-  constructor (args: NtileExprArgs = {}) {
+  constructor (args: NtileExprArgs) {
     super(args);
   }
 }
@@ -23916,7 +24325,7 @@ export class PercentileContExpr extends AggFuncExpr {
   key = ExpressionKey.PERCENTILE_CONT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PercentileContExprArgs>;
   declare args: PercentileContExprArgs;
-  constructor (args: PercentileContExprArgs = {}) {
+  constructor (args: PercentileContExprArgs) {
     super(args);
   }
 }
@@ -23926,7 +24335,7 @@ export class PercentileDiscExpr extends AggFuncExpr {
   key = ExpressionKey.PERCENTILE_DISC;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PercentileDiscExprArgs>;
   declare args: PercentileDiscExprArgs;
-  constructor (args: PercentileDiscExprArgs = {}) {
+  constructor (args: PercentileDiscExprArgs) {
     super(args);
   }
 }
@@ -23936,13 +24345,12 @@ export class PercentRankExpr extends AggFuncExpr {
   key = ExpressionKey.PERCENT_RANK;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PercentRankExprArgs>;
   declare args: PercentRankExprArgs;
-  constructor (args: PercentRankExprArgs = {}) {
+  constructor (args: PercentRankExprArgs) {
     super(args);
   }
 }
 
-export type QuantileExprArgs = { quantile: Expression;
-  [key: string]: unknown; } & BaseExpressionArgs;
+export type QuantileExprArgs = { quantile: Expression } & BaseExpressionArgs;
 
 export class QuantileExpr extends AggFuncExpr {
   key = ExpressionKey.QUANTILE;
@@ -23972,7 +24380,7 @@ export class ApproxPercentileAccumulateExpr extends AggFuncExpr {
   >;
 
   declare args: ApproxPercentileAccumulateExprArgs;
-  constructor (args: ApproxPercentileAccumulateExprArgs = {}) {
+  constructor (args: ApproxPercentileAccumulateExprArgs) {
     super(args);
   }
 }
@@ -23982,7 +24390,7 @@ export class RankExpr extends AggFuncExpr {
   key = ExpressionKey.RANK;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RankExprArgs>;
   declare args: RankExprArgs;
-  constructor (args: RankExprArgs = {}) {
+  constructor (args: RankExprArgs) {
     super(args);
   }
 }
@@ -23992,7 +24400,7 @@ export class RegrValxExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_VALX;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RegrValxExprArgs>;
   declare args: RegrValxExprArgs;
-  constructor (args: RegrValxExprArgs = {}) {
+  constructor (args: RegrValxExprArgs) {
     super(args);
   }
 }
@@ -24002,7 +24410,7 @@ export class RegrValyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_VALY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RegrValyExprArgs>;
   declare args: RegrValyExprArgs;
-  constructor (args: RegrValyExprArgs = {}) {
+  constructor (args: RegrValyExprArgs) {
     super(args);
   }
 }
@@ -24012,7 +24420,7 @@ export class RegrAvgyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_AVGY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RegrAvgyExprArgs>;
   declare args: RegrAvgyExprArgs;
-  constructor (args: RegrAvgyExprArgs = {}) {
+  constructor (args: RegrAvgyExprArgs) {
     super(args);
   }
 }
@@ -24022,7 +24430,7 @@ export class RegrAvgxExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_AVGX;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RegrAvgxExprArgs>;
   declare args: RegrAvgxExprArgs;
-  constructor (args: RegrAvgxExprArgs = {}) {
+  constructor (args: RegrAvgxExprArgs) {
     super(args);
   }
 }
@@ -24032,7 +24440,7 @@ export class RegrCountExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_COUNT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RegrCountExprArgs>;
   declare args: RegrCountExprArgs;
-  constructor (args: RegrCountExprArgs = {}) {
+  constructor (args: RegrCountExprArgs) {
     super(args);
   }
 }
@@ -24042,7 +24450,7 @@ export class RegrInterceptExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_INTERCEPT;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RegrInterceptExprArgs>;
   declare args: RegrInterceptExprArgs;
-  constructor (args: RegrInterceptExprArgs = {}) {
+  constructor (args: RegrInterceptExprArgs) {
     super(args);
   }
 }
@@ -24052,7 +24460,7 @@ export class RegrR2Expr extends AggFuncExpr {
   key = ExpressionKey.REGR_R2;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RegrR2ExprArgs>;
   declare args: RegrR2ExprArgs;
-  constructor (args: RegrR2ExprArgs = {}) {
+  constructor (args: RegrR2ExprArgs) {
     super(args);
   }
 }
@@ -24062,7 +24470,7 @@ export class RegrSxxExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SXX;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RegrSxxExprArgs>;
   declare args: RegrSxxExprArgs;
-  constructor (args: RegrSxxExprArgs = {}) {
+  constructor (args: RegrSxxExprArgs) {
     super(args);
   }
 }
@@ -24072,7 +24480,7 @@ export class RegrSxyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SXY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RegrSxyExprArgs>;
   declare args: RegrSxyExprArgs;
-  constructor (args: RegrSxyExprArgs = {}) {
+  constructor (args: RegrSxyExprArgs) {
     super(args);
   }
 }
@@ -24082,7 +24490,7 @@ export class RegrSyyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SYY;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RegrSyyExprArgs>;
   declare args: RegrSyyExprArgs;
-  constructor (args: RegrSyyExprArgs = {}) {
+  constructor (args: RegrSyyExprArgs) {
     super(args);
   }
 }
@@ -24092,7 +24500,7 @@ export class RegrSlopeExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SLOPE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RegrSlopeExprArgs>;
   declare args: RegrSlopeExprArgs;
-  constructor (args: RegrSlopeExprArgs = {}) {
+  constructor (args: RegrSlopeExprArgs) {
     super(args);
   }
 }
@@ -24102,7 +24510,7 @@ export class SumExpr extends AggFuncExpr {
   key = ExpressionKey.SUM;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SumExprArgs>;
   declare args: SumExprArgs;
-  constructor (args: SumExprArgs = {}) {
+  constructor (args: SumExprArgs) {
     super(args);
   }
 }
@@ -24112,7 +24520,7 @@ export class StddevExpr extends AggFuncExpr {
   key = ExpressionKey.STDDEV;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<StddevExprArgs>;
   declare args: StddevExprArgs;
-  constructor (args: StddevExprArgs = {}) {
+  constructor (args: StddevExprArgs) {
     super(args);
   }
 
@@ -24128,7 +24536,7 @@ export class StddevPopExpr extends AggFuncExpr {
   key = ExpressionKey.STDDEV_POP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<StddevPopExprArgs>;
   declare args: StddevPopExprArgs;
-  constructor (args: StddevPopExprArgs = {}) {
+  constructor (args: StddevPopExprArgs) {
     super(args);
   }
 }
@@ -24138,7 +24546,7 @@ export class StddevSampExpr extends AggFuncExpr {
   key = ExpressionKey.STDDEV_SAMP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<StddevSampExprArgs>;
   declare args: StddevSampExprArgs;
-  constructor (args: StddevSampExprArgs = {}) {
+  constructor (args: StddevSampExprArgs) {
     super(args);
   }
 }
@@ -24148,7 +24556,7 @@ export class CumeDistExpr extends AggFuncExpr {
   key = ExpressionKey.CUME_DIST;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CumeDistExprArgs>;
   declare args: CumeDistExprArgs;
-  constructor (args: CumeDistExprArgs = {}) {
+  constructor (args: CumeDistExprArgs) {
     super(args);
   }
 }
@@ -24158,7 +24566,7 @@ export class VarianceExpr extends AggFuncExpr {
   key = ExpressionKey.VARIANCE;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<VarianceExprArgs>;
   declare args: VarianceExprArgs;
-  constructor (args: VarianceExprArgs = {}) {
+  constructor (args: VarianceExprArgs) {
     super(args);
   }
 
@@ -24178,7 +24586,7 @@ export class VariancePopExpr extends AggFuncExpr {
   key = ExpressionKey.VARIANCE_POP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<VariancePopExprArgs>;
   declare args: VariancePopExprArgs;
-  constructor (args: VariancePopExprArgs = {}) {
+  constructor (args: VariancePopExprArgs) {
     super(args);
   }
 
@@ -24194,7 +24602,7 @@ export class KurtosisExpr extends AggFuncExpr {
   key = ExpressionKey.KURTOSIS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<KurtosisExprArgs>;
   declare args: KurtosisExprArgs;
-  constructor (args: KurtosisExprArgs = {}) {
+  constructor (args: KurtosisExprArgs) {
     super(args);
   }
 }
@@ -24204,7 +24612,7 @@ export class SkewnessExpr extends AggFuncExpr {
   key = ExpressionKey.SKEWNESS;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SkewnessExprArgs>;
   declare args: SkewnessExprArgs;
-  constructor (args: SkewnessExprArgs = {}) {
+  constructor (args: SkewnessExprArgs) {
     super(args);
   }
 }
@@ -24214,7 +24622,7 @@ export class CovarSampExpr extends AggFuncExpr {
   key = ExpressionKey.COVAR_SAMP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CovarSampExprArgs>;
   declare args: CovarSampExprArgs;
-  constructor (args: CovarSampExprArgs = {}) {
+  constructor (args: CovarSampExprArgs) {
     super(args);
   }
 }
@@ -24224,7 +24632,7 @@ export class CovarPopExpr extends AggFuncExpr {
   key = ExpressionKey.COVAR_POP;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CovarPopExprArgs>;
   declare args: CovarPopExprArgs;
-  constructor (args: CovarPopExprArgs = {}) {
+  constructor (args: CovarPopExprArgs) {
     super(args);
   }
 }
@@ -24234,13 +24642,12 @@ export class CombinedAggFuncExpr extends AnonymousAggFuncExpr {
   key = ExpressionKey.COMBINED_AGG_FUNC;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CombinedAggFuncExprArgs>;
   declare args: CombinedAggFuncExprArgs;
-  constructor (args: CombinedAggFuncExprArgs = {}) {
+  constructor (args: CombinedAggFuncExprArgs) {
     super(args);
   }
 }
 
-export type CombinedParameterizedAggExprArgs = { params: Expression[];
-  [key: string]: unknown; } & ParameterizedAggExprArgs;
+export type CombinedParameterizedAggExprArgs = { params: Expression[] } & ParameterizedAggExprArgs;
 
 export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
   key = ExpressionKey.COMBINED_PARAMETERIZED_AGG;
@@ -24259,7 +24666,7 @@ export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
   }
 
   get $params (): Expression[] {
-    return (this.args.params || []) as Expression[];
+    return this.args.params as Expression[];
   }
 }
 
@@ -24268,7 +24675,7 @@ export class PosexplodeOuterExpr extends PosexplodeExpr {
   key = ExpressionKey.POSEXPLODE_OUTER;
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PosexplodeOuterExprArgs>;
   declare args: PosexplodeOuterExprArgs;
-  constructor (args: PosexplodeOuterExprArgs = {}) {
+  constructor (args: PosexplodeOuterExprArgs) {
     super(args);
   }
 }
@@ -24276,8 +24683,7 @@ export class PosexplodeOuterExpr extends PosexplodeExpr {
 export type ApproxQuantileExprArgs = { quantile: Expression;
   accuracy?: Expression;
   weight?: Expression;
-  errorTolerance?: Expression;
-  [key: string]: unknown; } & QuantileExprArgs;
+  errorTolerance?: Expression; } & QuantileExprArgs;
 
 export class ApproxQuantileExpr extends QuantileExpr {
   key = ExpressionKey.APPROX_QUANTILE;
@@ -24303,16 +24709,16 @@ export class ApproxQuantileExpr extends QuantileExpr {
     return this.args.quantile as Expression;
   }
 
-  get $accuracy (): Expression {
-    return this.args.accuracy as Expression;
+  get $accuracy (): Expression | undefined {
+    return this.args.accuracy as Expression | undefined;
   }
 
-  get $weight (): Expression {
-    return this.args.weight as Expression;
+  get $weight (): Expression | undefined {
+    return this.args.weight as Expression | undefined;
   }
 
-  get $errorTolerance (): Expression {
-    return this.args.errorTolerance as Expression;
+  get $errorTolerance (): Expression | undefined {
+    return this.args.errorTolerance as Expression | undefined;
   }
 }
 
@@ -24393,8 +24799,7 @@ export function alias (
   alias: string,
   options?: { quoted?: boolean;
     dialect?: DialectType;
-    wrap?: boolean;
-    [key: string]: unknown; },
+    wrap?: boolean; },
 ): AliasExpr {
   void options; // Mark as intentionally unused until implemented
   return new AliasExpr({
@@ -24426,8 +24831,7 @@ export function and (
   conditions: (Expression | undefined)[],
   _options?: { dialect?: DialectType;
     copy?: boolean;
-    wrap?: boolean;
-    [key: string]: unknown; },
+    wrap?: boolean; },
 ): Expression | undefined {
   const validConditions = conditions.filter((c): c is Expression => c !== undefined);
 
@@ -24478,8 +24882,7 @@ export function or (
   conditions: (Expression | undefined)[],
   _options?: { dialect?: DialectType;
     copy?: boolean;
-    wrap?: boolean;
-    [key: string]: unknown; },
+    wrap?: boolean; },
 ): Expression | undefined {
   const validConditions = conditions.filter((c): c is Expression => c != null);
 
@@ -24648,7 +25051,6 @@ function _applySetOperation<S extends Expression> (
     distinct?: boolean;
     dialect?: DialectType;
     copy?: boolean;
-    [key: string]: unknown;
   } = {},
 ): S {
   const {
@@ -24692,7 +25094,6 @@ export function union (
     distinct?: boolean;
     dialect?: DialectType;
     copy?: boolean;
-    [key: string]: unknown;
   } = {},
 ): UnionExpr {
   if (expressions.length < 2) {
@@ -24722,7 +25123,6 @@ export function intersect (
     distinct?: boolean;
     dialect?: DialectType;
     copy?: boolean;
-    [key: string]: unknown;
   } = {},
 ): IntersectExpr {
   if (expressions.length < 2) {
@@ -24752,7 +25152,6 @@ export function except (
     distinct?: boolean;
     dialect?: DialectType;
     copy?: boolean;
-    [key: string]: unknown;
   } = {},
 ): ExceptExpr {
   if (expressions.length < 2) {
@@ -25006,7 +25405,6 @@ function _applyBuilder (expression: Expression | string | number, options: {
   into?: typeof Expression;
   dialect?: DialectType;
   intoArg?: string;
-  [key: string]: unknown;
 }): Expression {
   const {
     instance,
@@ -25051,7 +25449,6 @@ function _applyChildListBuilder (
     into?: typeof Expression;
     dialect?: DialectType;
     properties?: Record<string, ExpressionValue | ExpressionValueList>;
-    [key: string]: unknown;
   },
 ): Expression {
   const {
@@ -25125,7 +25522,6 @@ function _applyListBuilder (
     prefix?: string;
     into?: typeof Expression;
     dialect?: DialectType;
-    [key: string]: unknown;
   },
 ): Expression {
   const {
@@ -25176,7 +25572,6 @@ function _applyConjunctionBuilder (
     append?: boolean;
     copy?: boolean;
     dialect?: DialectType;
-    [key: string]: unknown;
   },
 ): Expression {
   const {
@@ -25244,7 +25639,6 @@ function _applyCteBuilder (options: {
   dialect?: DialectType;
   copy?: boolean;
   scalar?: boolean;
-  [key: string]: unknown;
 }): Expression {
   const {
     instance,
