@@ -2589,8 +2589,13 @@ export class QueryExpr extends Expression {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns A limited query expression
    */
-  limit (expression: string | number | Expression, options: { dialect?: DialectType;
-    copy?: boolean; } = {}): this {
+  limit (
+    expression: string | number | Expression,
+    options: {
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
     return _applyBuilder(expression, {
       instance: this,
       arg: 'limit',
@@ -2619,8 +2624,13 @@ export class QueryExpr extends Expression {
    * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
    * @returns The modified query expression
    */
-  offset (expression: string | number | Expression, options: { dialect?: DialectType;
-    copy?: boolean; } = {}): this {
+  offset (
+    expression: string | number | Expression,
+    options: {
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
     return _applyBuilder(expression, {
       instance: this,
       arg: 'offset',
@@ -2676,7 +2686,7 @@ export class QueryExpr extends Expression {
    */
   get ctes (): CTEExpr[] {
     const withExpr = this.args.with;
-    return (withExpr?.expressions as CTEExpr[]) || [];
+    return withExpr?.$expressions || []; // sqlglot uses `Expression.expressions`, but I used $expressions for type safety
   }
 
   /**
@@ -2896,7 +2906,7 @@ export class QueryExpr extends Expression {
 }
 
 export type UDTFExprArgs = {
-  alias?: AliasExpr;
+  alias?: TableAliasExpr;
 } & DerivedTableExprArgs;
 
 export class UDTFExpr extends DerivedTableExpr {
@@ -4219,7 +4229,7 @@ export class RecursiveWithSearchExpr extends Expression {
 export type WithExprArgs = {
   recursive?: boolean;
   search?: Expression;
-  expressions: Expression[];
+  expressions: CTEExpr[];
 } & BaseExpressionArgs;
 
 export class WithExpr extends Expression {
@@ -4241,7 +4251,7 @@ export class WithExpr extends Expression {
     super(args);
   }
 
-  get $expressions (): Expression[] {
+  get $expressions (): CTEExpr[] {
     return this.args.expressions as Expression[];
   }
 
@@ -4314,8 +4324,10 @@ export class ProjectionDefExpr extends Expression {
   }
 }
 
-export type TableAliasExprArgs = { columns?: Expression[];
-  this?: Expression[]; } & BaseExpressionArgs;
+export type TableAliasExprArgs = {
+  columns?: Expression[];
+  this?: Expression;
+} & BaseExpressionArgs;
 
 export class TableAliasExpr extends Expression {
   key = ExpressionKey.TABLE_ALIAS;
@@ -4336,11 +4348,15 @@ export class TableAliasExpr extends Expression {
   }
 
   get $this (): Expression | undefined {
-    return this.args.this as Expression | undefined;
+    return this.args.this;
   }
 
   get $columns (): Expression[] | undefined {
-    return this.args.columns as Expression[] | undefined;
+    return this.args.columns;
+  }
+
+  get columns (): Expression[] {
+    return this.args.columns || [];
   }
 }
 
