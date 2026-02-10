@@ -1153,7 +1153,8 @@ export class Expression {
    * @returns True if number literal
    */
   get isNumber (): boolean {
-    return (this instanceof LiteralExpr && !this.args.isString) || (this instanceof NegExpr && (this.this as Expression).isNumber);
+    return (this instanceof LiteralExpr && !this.args.isString) ||
+      (this instanceof NegExpr && (this.this as Expression).isNumber);
   }
 
   /**
@@ -1195,7 +1196,8 @@ export class Expression {
    * @returns True if star expression
    */
   get isStar (): boolean {
-    return this instanceof StarExpr || (this instanceof ColumnExpr && this.this instanceof StarExpr);
+    return this instanceof StarExpr ||
+      (this instanceof ColumnExpr && this.this instanceof StarExpr);
   }
 
   /**
@@ -1420,7 +1422,12 @@ export class Expression {
    * @param options
    * @param options.overwrite - If an index is given, determines whether to overwrite the list entry
    */
-  set (argKey: string, value: ExpressionValue | ExpressionValueList, index?: number, options?: { overwrite?: boolean }): void {
+  set (
+    argKey: string,
+    value: ExpressionValue | ExpressionValueList,
+    index?: number,
+    options?: { overwrite?: boolean },
+  ): void {
     const overwrite = options?.overwrite ?? true;
     // Clear hash cache up the tree
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -1719,7 +1726,9 @@ export class Expression {
    */
   * flatten (options?: { unnest?: boolean }): Generator<Expression> {
     const unnest = options?.unnest ?? true;
-    for (const node of this.dfs({ prune: (n) => n.parent !== undefined && n.constructor !== this.constructor })) {
+    for (const node of this.dfs({
+      prune: (n) => n.parent !== undefined && n.constructor !== this.constructor
+    })) {
       if (node.constructor !== this.constructor) {
         if (unnest && !(node instanceof SubqueryExpr)) {
           yield node.unnest();
@@ -1755,8 +1764,8 @@ export class Expression {
   ): Expression {
     const copy = options?.copy ?? true;
 
-    let root: Expression | undefined = undefined;
-    let newNode: Expression | undefined = undefined;
+    let root: Expression | undefined;
+    let newNode: Expression | undefined;
 
     const startNode = copy
       ? this.copy()
@@ -1981,7 +1990,6 @@ export class Expression {
 
   /**
    * Wrap this condition with NOT.
-   * Note: Renamed from Python's not_() to negate() to avoid conflict with subclass not properties
    *
    * @example
    * ```typescript
@@ -1996,7 +2004,7 @@ export class Expression {
    * @param options.copy - Whether to copy this object (default: true)
    * @returns The new NOT instance
    */
-  notExpr (options?: { copy?: boolean }): NotExpr | undefined {
+  not (options?: { copy?: boolean }): NotExpr | undefined {
     const copy = options?.copy ?? true;
     return or([this], {
       ...options,
@@ -2213,8 +2221,9 @@ export class Expression {
       ? maybeParse(options.query as string | Expression)
       : undefined;
 
-    if (subquery && !(subquery instanceof SubqueryExpr)) {
-      subquery = subquery.subquery({ copy: false });
+    // NOTE: The original sqlglot doesn't check that subquery is a QueryExpr. However, after a quick scan, only QueryExpr has a `subquery` method, so I added this check
+    if (!(subquery instanceof SubqueryExpr) && subquery instanceof QueryExpr) {
+      subquery = subquery.subquery(undefined, { copy: false });
     }
 
     return new InExpr({
@@ -7128,8 +7137,7 @@ export class WithFillExpr extends Expression {
 export type OrderedExprArgs = { desc?: Expression;
   nullsFirst: Expression;
   withFill?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+  this: Expression; } & BaseExpressionArgs;
 
 export class OrderedExpr extends Expression {
   key = ExpressionKey.ORDERED;
@@ -24797,9 +24805,12 @@ export function table (name: string, db?: string, catalog?: string): TableExpr {
 export function alias (
   expr: Expression,
   alias: string,
-  options?: { quoted?: boolean;
+  options?: {
+    quoted?: boolean;
     dialect?: DialectType;
-    wrap?: boolean; },
+    wrap?: boolean;
+    copy?: boolean;
+  },
 ): AliasExpr {
   void options; // Mark as intentionally unused until implemented
   return new AliasExpr({
