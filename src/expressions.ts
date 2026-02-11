@@ -8234,11 +8234,20 @@ export class TupleExpr extends Expression {
     return new InExpr({
       this: maybeCopy(this, copy),
       expressions: expressions.map((e) => convert(e, copy)),
-      query: query ? maybeParse(query, { ...options, copy }) : undefined,
-      unnest: options?.unnest ?
-        new UnnestExpr({
-          expressions: ensureList(options.unnest).map((e) => maybeParse(e, { ...options, copy }))
-        }) : undefined,
+      query: query
+        ? maybeParse(query, {
+          ...options,
+          copy,
+        })
+        : undefined,
+      unnest: options?.unnest
+        ? new UnnestExpr({
+          expressions: ensureList(options.unnest).map((e) => maybeParse(e, {
+            ...options,
+            copy,
+          })),
+        })
+        : undefined,
     });
   }
 }
@@ -8666,7 +8675,11 @@ export class TableExpr extends Expression {
   get parts (): Expression[] {
     const parts: Expression[] = [];
 
-    for (const arg of ['catalog', 'db', 'this'] as const) {
+    for (const arg of [
+      'catalog',
+      'db',
+      'this',
+    ] as const) {
       const part = this.args[arg];
 
       if (part instanceof DotExpr) {
@@ -12811,7 +12824,7 @@ export class InputModelPropertyExpr extends PropertyExpr {
 }
 
 export type OutputModelPropertyExprArgs = {
-  this: Expression
+  this: Expression;
 } & PropertyExprArgs;
 
 export class OutputModelPropertyExpr extends PropertyExpr {
@@ -14804,12 +14817,12 @@ export enum SetOperationExprKind {
 }
 
 export type SetOperationExprArgs = {
-  this: Expression;
-  expression: Expression;
+  this: QueryExpr;
+  expression: QueryExpr;
   distinct?: boolean;
   byName?: string;
   side?: string;
-  kind?: string;
+  kind?: SetOperationExprKind;
   on?: Expression;
   match?: Expression;
   laterals?: Expression[];
@@ -14835,7 +14848,7 @@ export type SetOperationExprArgs = {
 export class SetOperationExpr extends QueryExpr {
   key = ExpressionKey.SET_OPERATION;
 
-  static argTypes: Record<string, boolean> = {
+  static argTypes = {
     ...super.argTypes,
     with: false,
     this: true,
@@ -14858,11 +14871,11 @@ export class SetOperationExpr extends QueryExpr {
     return this.args.with;
   }
 
-  get $this (): Expression {
+  get $this (): QueryExpr {
     return this.args.this;
   }
 
-  get $expression (): Expression {
+  get $expression (): QueryExpr {
     return this.args.expression;
   }
 
@@ -14878,7 +14891,7 @@ export class SetOperationExpr extends QueryExpr {
     return this.args.side;
   }
 
-  get $kind (): string | undefined {
+  get $kind (): SetOperationExprKind | undefined {
     return this.args.kind;
   }
 
@@ -14897,23 +14910,18 @@ export class SetOperationExpr extends QueryExpr {
       copy?: boolean;
     } = {},
   ): this {
-    // Apply select to left side (this)
-    if (this.args.this && 'unnest' in this.args.this && typeof this.args.this.unnest === 'function') {
-      const unnested = this.args.this.unnest();
-      if ('select' in unnested && typeof unnested.select === 'function') {
-        unnested.select(expressions, { ...options, copy: false });
-      }
-    }
+    const self = maybeCopy(this, options.copy ?? true);
+    self.this.unnest().select(expressions, {
+      ...options,
+      copy: false,
+    });
+    self.expression.unnest().select(expressions, {
+      ...options,
+      copy: false,
+      append: options?.append ?? true,
+    });
 
-    // Apply select to right side (expression)
-    if (this.args.expression && 'unnest' in this.args.expression && typeof this.args.expression.unnest === 'function') {
-      const unnested = this.args.expression.unnest();
-      if ('select' in unnested && typeof unnested.select === 'function') {
-        unnested.select(expressions, { ...options, copy: false });
-      }
-    }
-
-    return this;
+    return self;
   }
 
   /**
@@ -14921,23 +14929,21 @@ export class SetOperationExpr extends QueryExpr {
    * Walks up the SetOperation chain to find the base query.
    */
   get namedSelects (): string[] {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let expression: Expression = this;
     while (expression instanceof SetOperationExpr) {
       expression = expression.args.this.unnest();
     }
-    if ('namedSelects' in expression) {
-      return expression.namedSelects as string[];
-    }
-    return [];
+    return expression.namedSelects;
   }
 
   /**
    * Returns true if either side of the set operation is a star select.
    */
   get isStar (): boolean {
-    const leftIsStar = 'isStar' in this.args.this && this.args.this.isStar;
-    const rightIsStar = 'isStar' in this.args.expression && this.args.expression.isStar;
-    return Boolean(leftIsStar || rightIsStar);
+    const leftIsStar = this.args.this.isStar;
+    const rightIsStar = this.args.expression.isStar;
+    return leftIsStar || rightIsStar;
   }
 
   /**
@@ -14945,35 +14951,33 @@ export class SetOperationExpr extends QueryExpr {
    * Walks up the SetOperation chain to find the base query.
    */
   get selects (): Expression[] {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let expression: Expression = this;
     while (expression instanceof SetOperationExpr) {
       expression = expression.args.this.unnest();
     }
-    if ('selects' in expression) {
-      return expression.selects as Expression[];
-    }
-    return [];
+    return expression.selects;
   }
 
   /**
    * Returns the left side of the set operation.
    */
-  get left (): Expression {
+  get left (): QueryExpr {
     return this.args.this;
   }
 
   /**
    * Returns the right side of the set operation.
    */
-  get right (): Expression {
+  get right (): QueryExpr {
     return this.args.expression;
   }
 
   /**
    * Returns the kind of set operation as uppercase string.
    */
-  get kind (): string {
-    return this.text('kind').toUpperCase();
+  get kind (): SetOperationExprKind | undefined {
+    return this.args.kind;
   }
 
   /**
@@ -15814,6 +15818,10 @@ export type UnionExprArgs = SetOperationExprArgs;
 export class UnionExpr extends SetOperationExpr {
   key = ExpressionKey.UNION;
 
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<UnionExprArgs>;
+
   declare args: UnionExprArgs;
 
   constructor (args: UnionExprArgs) {
@@ -15826,6 +15834,10 @@ export type ExceptExprArgs = SetOperationExprArgs;
 export class ExceptExpr extends SetOperationExpr {
   key = ExpressionKey.EXCEPT;
 
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ExceptExprArgs>;
+
   declare args: ExceptExprArgs;
 
   constructor (args: ExceptExprArgs) {
@@ -15837,6 +15849,10 @@ export type IntersectExprArgs = SetOperationExprArgs;
 
 export class IntersectExpr extends SetOperationExpr {
   key = ExpressionKey.INTERSECT;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<IntersectExprArgs>;
 
   declare args: IntersectExprArgs;
 
