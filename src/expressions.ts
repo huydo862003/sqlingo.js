@@ -7988,12 +7988,14 @@ export class PartitionBoundSpecExpr extends Expression {
   }
 }
 
-export type QueryTransformExprArgs = { commandScript: Expression;
+export type QueryTransformExprArgs = {
+  commandScript: Expression;
   schema?: Expression;
   rowFormatBefore?: string;
   recordWriter?: Expression;
   rowFormatAfter?: string;
-  recordReader?: Expression; } & BaseExpressionArgs;
+  recordReader?: Expression;
+} & BaseExpressionArgs;
 
 export class QueryTransformExpr extends Expression {
   key = ExpressionKey.QUERY_TRANSFORM;
@@ -8026,7 +8028,7 @@ export class QueryTransformExpr extends Expression {
     return this.args.schema;
   }
 
-  get $rowFormatBefore (): Expression | undefined {
+  get $rowFormatBefore (): string | undefined {
     return this.args.rowFormatBefore;
   }
 
@@ -8034,7 +8036,7 @@ export class QueryTransformExpr extends Expression {
     return this.args.recordWriter;
   }
 
-  get $rowFormatAfter (): Expression | undefined {
+  get $rowFormatAfter (): string | undefined {
     return this.args.rowFormatAfter;
   }
 
@@ -11407,7 +11409,7 @@ export type InsertExprArgs = {
   default?: Expression;
   this?: Expression;
   expression?: SelectExpr;
-} & BaseExpressionArgs;
+} & DMLExprArgs & DDLExprArgs;
 
 export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
   key = ExpressionKey.INSERT;
@@ -13432,6 +13434,7 @@ export class UniqueKeyPropertyExpr extends PropertyExpr {
   } satisfies RequiredMap<UniqueKeyPropertyExprArgs>;
 
   declare args: UniqueKeyPropertyExprArgs;
+
   constructor (args: UniqueKeyPropertyExprArgs) {
     super(args);
   }
@@ -13441,43 +13444,61 @@ export class UniqueKeyPropertyExpr extends PropertyExpr {
   }
 }
 
-export type PartitionedOfPropertyExprArgs = BaseExpressionArgs;
+export type PartitionedOfPropertyExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & PropertyExprArgs;
+
 export class PartitionedOfPropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_OF_PROPERTY;
-  static argTypes = {};
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<PartitionedOfPropertyExprArgs>;
 
   declare args: PartitionedOfPropertyExprArgs;
+
   constructor (args: PartitionedOfPropertyExprArgs) {
     super(args);
   }
 }
 
-export type StreamingTablePropertyExprArgs = BaseExpressionArgs;
+export type StreamingTablePropertyExprArgs = PropertyExprArgs;
+
 export class StreamingTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.STREAMING_TABLE_PROPERTY;
-  static argTypes = {};
+
+  static argTypes = {} satisfies RequiredMap<StreamingTablePropertyExprArgs>;
 
   declare args: StreamingTablePropertyExprArgs;
+
   constructor (args: StreamingTablePropertyExprArgs) {
     super(args);
   }
 }
 
-export type RemoteWithConnectionModelPropertyExprArgs = BaseExpressionArgs;
+export type RemoteWithConnectionModelPropertyExprArgs = PropertyExprArgs;
+
 export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.REMOTE_WITH_CONNECTION_MODEL_PROPERTY;
-  static argTypes = {};
+
+  static argTypes = {} satisfies RequiredMap<RemoteWithConnectionModelPropertyExprArgs>;
 
   declare args: RemoteWithConnectionModelPropertyExprArgs;
+
   constructor (args: RemoteWithConnectionModelPropertyExprArgs) {
     super(args);
   }
 }
 
-export type ReturnsPropertyExprArgs = { value?: string;
+export type ReturnsPropertyExprArgs = {
+  this?: Expression;
   isTable?: Expression;
   table?: Expression;
-  null?: Expression; } & PropertyExprArgs;
+  null?: Expression;
+} & PropertyExprArgs;
 
 export class ReturnsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.RETURNS_PROPERTY;
@@ -13488,7 +13509,7 @@ export class ReturnsPropertyExpr extends PropertyExpr {
    */
   static argTypes = {
     ...super.argTypes,
-    value: false,
+    this: false,
     isTable: false,
     table: false,
     null: false,
@@ -13500,8 +13521,8 @@ export class ReturnsPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $value (): Expression | undefined {
-    return this.args.value;
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   get $isTable (): Expression | undefined {
@@ -13517,35 +13538,47 @@ export class ReturnsPropertyExpr extends PropertyExpr {
   }
 }
 
-export type StrictPropertyExprArgs = BaseExpressionArgs;
+export type StrictPropertyExprArgs = PropertyExprArgs;
+
 export class StrictPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STRICT_PROPERTY;
+
   static argTypes = {} satisfies RequiredMap<StrictPropertyExprArgs>;
 
   declare args: StrictPropertyExprArgs;
+
   constructor (args: StrictPropertyExprArgs) {
     super(args);
   }
 }
 
-export type RowFormatPropertyExprArgs = BaseExpressionArgs;
+export type RowFormatPropertyExprArgs = {
+  this: Expression;
+} & PropertyExprArgs;
+
 export class RowFormatPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_PROPERTY;
-  static argTypes = {} satisfies RequiredMap<RowFormatPropertyExprArgs>;
+
+  static argTypes = {
+    this: true,
+  } satisfies RequiredMap<RowFormatPropertyExprArgs>;
 
   declare args: RowFormatPropertyExprArgs;
+
   constructor (args: RowFormatPropertyExprArgs) {
     super(args);
   }
 }
 
-export type RowFormatDelimitedPropertyExprArgs = { fields?: Expression[];
+export type RowFormatDelimitedPropertyExprArgs = {
+  fields?: Expression[];
   escaped?: Expression;
   collectionItems?: Expression[];
   mapKeys?: Expression[];
   lines?: Expression[];
   null?: Expression;
-  serde?: Expression; } & PropertyExprArgs;
+  serde?: Expression;
+} & PropertyExprArgs;
 
 export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_DELIMITED_PROPERTY;
@@ -13601,8 +13634,10 @@ export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
   }
 }
 
-export type RowFormatSerdePropertyExprArgs = { this: Expression;
-  serdeProperties?: Expression[]; } & PropertyExprArgs;
+export type RowFormatSerdePropertyExprArgs = {
+  this: Expression;
+  serdeProperties?: Expression[];
+} & PropertyExprArgs;
 
 export class RowFormatSerdePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_SERDE_PROPERTY;
@@ -13633,41 +13668,74 @@ export class RowFormatSerdePropertyExpr extends PropertyExpr {
   }
 }
 
-export type SamplePropertyExprArgs = BaseExpressionArgs;
+export type SamplePropertyExprArgs = {
+  this: Expression;
+} & PropertyExprArgs;
+
 export class SamplePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SAMPLE_PROPERTY;
-  static argTypes = {} satisfies RequiredMap<SamplePropertyExprArgs>;
+
+  static argTypes = {
+    this: true,
+  } satisfies RequiredMap<SamplePropertyExprArgs>;
 
   declare args: SamplePropertyExprArgs;
+
   constructor (args: SamplePropertyExprArgs) {
     super(args);
   }
-}
 
-export type SecurityPropertyExprArgs = BaseExpressionArgs;
-export class SecurityPropertyExpr extends PropertyExpr {
-  key = ExpressionKey.SECURITY_PROPERTY;
-  static argTypes = {} satisfies RequiredMap<SecurityPropertyExprArgs>;
-
-  declare args: SecurityPropertyExprArgs;
-  constructor (args: SecurityPropertyExprArgs) {
-    super(args);
+  get $this (): Expression {
+    return this.args.this;
   }
 }
 
-export type SchemaCommentPropertyExprArgs = BaseExpressionArgs;
+export type SecurityPropertyExprArgs = {
+  this: Expression;
+} & PropertyExprArgs;
+
+export class SecurityPropertyExpr extends PropertyExpr {
+  key = ExpressionKey.SECURITY_PROPERTY;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<SecurityPropertyExprArgs>;
+
+  declare args: SecurityPropertyExprArgs;
+
+  constructor (args: SecurityPropertyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+}
+
+export type SchemaCommentPropertyExprArgs = {
+  this: Expression;
+} & PropertyExprArgs;
+
 export class SchemaCommentPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SCHEMA_COMMENT_PROPERTY;
-  static argTypes = {};
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<SchemaCommentPropertyExprArgs>;
 
   declare args: SchemaCommentPropertyExprArgs;
+
   constructor (args: SchemaCommentPropertyExprArgs) {
     super(args);
   }
 }
 
-export type SerdePropertiesExprArgs = { expressions: (string | Expression)[];
-  with?: Expression; } & PropertyExprArgs;
+export type SerdePropertiesExprArgs = {
+  expressions: Expression[];
+  with?: Expression;
+} & PropertyExprArgs;
 
 export class SerdePropertiesExpr extends PropertyExpr {
   key = ExpressionKey.SERDE_PROPERTIES;
@@ -13697,12 +13765,17 @@ export class SerdePropertiesExpr extends PropertyExpr {
   }
 }
 
-export type SetPropertyExprArgs = { multi: Expression } & PropertyExprArgs;
+export type SetPropertyExprArgs = {
+  multi: Expression;
+} & PropertyExprArgs;
 
 export class SetPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SET_PROPERTY;
 
-  static argTypes = { multi: true } satisfies RequiredMap<SetPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    multi: true,
+  } satisfies RequiredMap<SetPropertyExprArgs>;
 
   declare args: SetPropertyExprArgs;
 
@@ -13715,12 +13788,17 @@ export class SetPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SharingPropertyExprArgs = { this?: Expression } & PropertyExprArgs;
+export type SharingPropertyExprArgs = {
+  this?: Expression;
+} & PropertyExprArgs;
 
 export class SharingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SHARING_PROPERTY;
 
-  static argTypes = { this: false } satisfies RequiredMap<SharingPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<SharingPropertyExprArgs>;
 
   declare args: SharingPropertyExprArgs;
 
@@ -13733,12 +13811,17 @@ export class SharingPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SetConfigPropertyExprArgs = { this?: Expression } & PropertyExprArgs;
+export type SetConfigPropertyExprArgs = {
+  this: Expression;
+} & PropertyExprArgs;
 
 export class SetConfigPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SET_CONFIG_PROPERTY;
 
-  static argTypes = { this: true } satisfies RequiredMap<SetConfigPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<SetConfigPropertyExprArgs>;
 
   declare args: SetConfigPropertyExprArgs;
 
@@ -13751,12 +13834,17 @@ export class SetConfigPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SettingsPropertyExprArgs = { expressions: Expression[] } & BaseExpressionArgs;
+export type SettingsPropertyExprArgs = {
+  expressions: Expression[];
+} & PropertyExprArgs;
 
 export class SettingsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SETTINGS_PROPERTY;
 
-  static argTypes = { expressions: true } satisfies RequiredMap<SettingsPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+  } satisfies RequiredMap<SettingsPropertyExprArgs>;
 
   declare args: SettingsPropertyExprArgs;
 
@@ -13769,8 +13857,10 @@ export class SettingsPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SortKeyPropertyExprArgs = { this: Expression;
-  compound?: Expression; } & BaseExpressionArgs;
+export type SortKeyPropertyExprArgs = {
+  this: Expression;
+  compound?: Expression;
+} & PropertyExprArgs;
 
 export class SortKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SORT_KEY_PROPERTY;
@@ -13800,12 +13890,17 @@ export class SortKeyPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SqlReadWritePropertyExprArgs = { this: Expression } & BaseExpressionArgs;
+export type SqlReadWritePropertyExprArgs = {
+  this: Expression;
+} & PropertyExprArgs;
 
 export class SqlReadWritePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SQL_READ_WRITE_PROPERTY;
 
-  static argTypes = { this: true } satisfies RequiredMap<SqlReadWritePropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<SqlReadWritePropertyExprArgs>;
 
   declare args: SqlReadWritePropertyExprArgs;
 
@@ -13818,12 +13913,17 @@ export class SqlReadWritePropertyExpr extends PropertyExpr {
   }
 }
 
-export type SqlSecurityPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
+export type SqlSecurityPropertyExprArgs = {
+  this: Expression;
+} & PropertyExprArgs;
 
 export class SqlSecurityPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SQL_SECURITY_PROPERTY;
 
-  static argTypes = { this: true } satisfies RequiredMap<SqlSecurityPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<SqlSecurityPropertyExprArgs>;
 
   declare args: SqlSecurityPropertyExprArgs;
 
@@ -13836,12 +13936,17 @@ export class SqlSecurityPropertyExpr extends PropertyExpr {
   }
 }
 
-export type StabilityPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
+export type StabilityPropertyExprArgs = {
+  this: Expression;
+} & PropertyExprArgs;
 
 export class StabilityPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STABILITY_PROPERTY;
 
-  static argTypes = { this: true } satisfies RequiredMap<StabilityPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<StabilityPropertyExprArgs>;
 
   declare args: StabilityPropertyExprArgs;
 
@@ -13854,12 +13959,17 @@ export class StabilityPropertyExpr extends PropertyExpr {
   }
 }
 
-export type StorageHandlerPropertyExprArgs = { this: Expression } & BaseExpressionArgs;
+export type StorageHandlerPropertyExprArgs = {
+  this: Expression;
+} & PropertyExprArgs;
 
 export class StorageHandlerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STORAGE_HANDLER_PROPERTY;
 
-  static argTypes = { this: true } satisfies RequiredMap<StorageHandlerPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<StorageHandlerPropertyExprArgs>;
 
   declare args: StorageHandlerPropertyExprArgs;
 
@@ -13872,12 +13982,17 @@ export class StorageHandlerPropertyExpr extends PropertyExpr {
   }
 }
 
-export type TemporaryPropertyExprArgs = { this?: Expression } & BaseExpressionArgs;
+export type TemporaryPropertyExprArgs = {
+  this?: Expression;
+} & PropertyExprArgs;
 
 export class TemporaryPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TEMPORARY_PROPERTY;
 
-  static argTypes = { this: false } satisfies RequiredMap<TemporaryPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<TemporaryPropertyExprArgs>;
 
   declare args: TemporaryPropertyExprArgs;
 
@@ -13890,7 +14005,7 @@ export class TemporaryPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SecurePropertyExprArgs = BaseExpressionArgs;
+export type SecurePropertyExprArgs = PropertyExprArgs;
 
 export class SecurePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURE_PROPERTY;
@@ -13904,12 +14019,17 @@ export class SecurePropertyExpr extends PropertyExpr {
   }
 }
 
-export type TagsExprArgs = { expressions: Expression[] } & BaseExpressionArgs;
+export type TagsExprArgs = {
+  expressions: Expression[];
+} & PropertyExprArgs & ColumnConstraintKindExprArgs;
 
 export class TagsExpr extends multiInherit(Expression, PropertyExpr, ColumnConstraintKindExpr) {
   key = ExpressionKey.TAGS;
 
-  static argTypes = { expressions: true } satisfies RequiredMap<TagsExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+  } satisfies RequiredMap<TagsExprArgs>;
 
   declare args: TagsExprArgs;
 
