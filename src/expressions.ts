@@ -8243,16 +8243,59 @@ export class TupleExpr extends Expression {
   }
 }
 
-export type QueryOptionExprArgs = BaseExpressionArgs;
+export const QUERY_MODIFIERS = {
+  match: false,
+  laterals: false,
+  joins: false,
+  connect: false,
+  pivots: false,
+  prewhere: false,
+  where: false,
+  group: false,
+  having: false,
+  qualify: false,
+  windows: false,
+  distribute: false,
+  sort: false,
+  cluster: false,
+  order: false,
+  limit: false,
+  offset: false,
+  locks: false,
+  sample: false,
+  settings: false,
+  format: false,
+  options: false,
+} as const;
+
+// https://learn.microsoft.com/en-us/sql/t-sql/queries/option-clause-transact-sql?view=sql-server-ver16
+// https://learn.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-query?view=sql-server-ver16
+export type QueryOptionExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & BaseExpressionArgs;
 
 export class QueryOptionExpr extends Expression {
   key = ExpressionKey.QUERY_OPTION;
 
-  static argTypes = {} satisfies RequiredMap<QueryOptionExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<QueryOptionExprArgs>;
 
   declare args: QueryOptionExprArgs;
+
   constructor (args: QueryOptionExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 }
 
