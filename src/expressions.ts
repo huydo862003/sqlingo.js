@@ -15452,6 +15452,38 @@ export class SelectExpr extends QueryExpr {
   }
 
   /**
+   * Returns a list of output names from the select expressions.
+   */
+  get namedSelects (): string[] {
+    const selects: string[] = [];
+
+    for (const e of this.expressions) {
+      if (e.aliasOrName) {
+        selects.push(e.outputName);
+      } else if (e instanceof AliasesExpr) {
+        const aliases = e.args.expressions || [];
+        selects.push(...aliases.map(a => a instanceof Expression ? a.name : '').filter(n => n));
+      }
+    }
+
+    return selects;
+  }
+
+  /**
+   * Returns true if any expression is a star expression.
+   */
+  get isStar (): boolean {
+    return this.expressions.some(expression => expression.isStar);
+  }
+
+  /**
+   * Returns the SELECT expressions.
+   */
+  get selects (): Expression[] {
+    return this.expressions;
+  }
+
+  /**
    * Set the FROM expression.
    *
    * @example
