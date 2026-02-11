@@ -15927,6 +15927,84 @@ export class SubqueryExpr extends DerivedTableExpr {
   get $with (): Expression | undefined {
     return this.args.with;
   }
+
+  /**
+   * Returns the first non-subquery expression.
+   */
+  unnest (): Expression {
+    let expression: Expression = this;
+    while (expression instanceof SubqueryExpr) {
+      expression = expression.args.this || expression;
+      if (!expression || expression === this) break;
+    }
+    return expression;
+  }
+
+  /**
+   * Returns the outermost wrapper subquery.
+   */
+  unwrap (): SubqueryExpr {
+    let expression: SubqueryExpr = this;
+    while (expression.sameParent && expression.isWrapper) {
+      const parent = expression.parent;
+      if (!(parent instanceof SubqueryExpr)) break;
+      expression = parent;
+    }
+    return expression;
+  }
+
+  /**
+   * Append to or set the SELECT expressions on the unnested query.
+   */
+  select (
+    expressions: Array<string | Expression | undefined>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+      [key: string]: unknown;
+    } = {},
+  ): this {
+    const instance = maybeCopy(this, options.copy ?? true);
+    const unnested = instance.unnest();
+
+    if (unnested instanceof SelectExpr) {
+      unnested.select(expressions, {
+        ...options,
+        copy: false,
+      });
+    }
+
+    return instance as this;
+  }
+
+  /**
+   * Whether this Subquery acts as a simple wrapper around another expression.
+   *
+   * SELECT * FROM (((SELECT * FROM t)))
+   *               ^
+   *               This corresponds to a "wrapper" Subquery node
+   */
+  get isWrapper (): boolean {
+    return Object.entries(this.args).every(
+      ([k, v]) => k === 'this' || v === null || v === undefined,
+    );
+  }
+
+  /**
+   * Returns true if the inner query is a star expression.
+   */
+  get isStar (): boolean {
+    const thisArg = this.args.this;
+    return thisArg ? thisArg.isStar : false;
+  }
+
+  /**
+   * Returns the alias of this subquery.
+   */
+  get outputName (): string {
+    return this.alias;
+  }
 }
 
 export type WindowExprArgs = { partitionBy?: Expression;
@@ -27924,6 +28002,9 @@ export function convert (value: unknown, copy = false): Expression {
 
   throw new Error(`Cannot convert ${value}`);
 }
+
+/** Query expression types that don't need to be wrapped in parentheses */
+export const UNWRAPPED_QUERIES = [SelectExpr, SetOperationExpr] as const;
 
 /** Percentile function classes */
 export const PERCENTILES = [PercentileContExpr, PercentileDiscExpr] as const;
