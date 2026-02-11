@@ -14988,24 +14988,26 @@ export class SetOperationExpr extends QueryExpr {
   }
 }
 
-export type UpdateExprArgs = { with?: Expression;
+export type UpdateExprArgs = {
+  with?: Expression;
+  this?: Expression;
+  expressions?: Expression[];
   from?: Expression;
   where?: Expression;
   returning?: Expression;
   order?: Expression;
   limit?: number | Expression;
-  options?: Expression[]; } & BaseExpressionArgs;
+  options?: Expression[];
+} & BaseExpressionArgs;
 
 export class UpdateExpr extends DMLExpr {
   key = ExpressionKey.UPDATE;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Update expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
     with: false,
+    this: false,
+    expressions: false,
     from: false,
     where: false,
     returning: false,
@@ -15024,6 +15026,14 @@ export class UpdateExpr extends DMLExpr {
     return this.args.with;
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
   get $from (): Expression | undefined {
     return this.args.from;
   }
@@ -15040,12 +15050,151 @@ export class UpdateExpr extends DMLExpr {
     return this.args.order;
   }
 
-  get $limit (): Expression | undefined {
+  get $limit (): number | Expression | undefined {
     return this.args.limit;
   }
 
   get $options (): Expression[] | undefined {
     return this.args.options;
+  }
+
+  /**
+   * Set the table to update.
+   *
+   * @example
+   * update().table("my_table").set("x = 1").sql()
+   * // 'UPDATE my_table SET x = 1'
+   *
+   * @param expression - The SQL code string to parse or Expression instance
+   * @param options - Options for parsing and copying
+   * @returns The modified Update expression
+   */
+  table (
+    expression: string | Expression,
+    options: {
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    return _applyBuilder(expression, {
+      instance: this,
+      arg: 'this',
+      into: TableExpr,
+      prefix: undefined,
+      dialect: options.dialect,
+      copy: options.copy ?? true,
+    }) as this;
+  }
+
+  /**
+   * Append to or set the SET expressions.
+   *
+   * @example
+   * update().table("my_table").setExpressions("x = 1").sql()
+   * // 'UPDATE my_table SET x = 1'
+   *
+   * @param expressions - The SQL code strings to parse or Expression instances
+   * @param options - Options for parsing, appending, and copying
+   * @returns The modified Update expression
+   */
+  setExpressions (
+    ...expressions: Array<string | Expression>
+  ): this;
+  setExpressions (
+    expressions: Array<string | Expression>,
+    options?: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+    },
+  ): this;
+  setExpressions (
+    ...args: any[]
+  ): this {
+    const [first, second] = args;
+    const expressions = Array.isArray(first) ? first : args;
+    const options = Array.isArray(first) ? second : {};
+
+    return _applyListBuilder(expressions, {
+      instance: this,
+      arg: 'expressions',
+      append: options?.append ?? true,
+      into: Expression,
+      prefix: undefined,
+      dialect: options?.dialect,
+      copy: options?.copy ?? true,
+    }) as this;
+  }
+
+  /**
+   * Append to or set the WHERE expressions.
+   *
+   * @example
+   * update().table("tbl").set("x = 1").where("x = 'a' OR x < 'b'").sql()
+   * // "UPDATE tbl SET x = 1 WHERE x = 'a' OR x < 'b'"
+   *
+   * @param expressions - The SQL code strings to parse or Expression instances
+   * @param options - Options for parsing, appending, and copying
+   * @returns The modified Update expression
+   */
+  where (
+    ...expressions: Array<string | Expression | undefined>
+  ): this;
+  where (
+    expressions: Array<string | Expression | undefined>,
+    options?: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+    },
+  ): this;
+  where (
+    ...args: any[]
+  ): this {
+    const [first, second] = args;
+    const expressions = Array.isArray(first) ? first : args;
+    const options = Array.isArray(first) ? second : {};
+
+    return _applyConjunctionBuilder(expressions, {
+      instance: this,
+      arg: 'where',
+      append: options?.append ?? true,
+      into: WhereExpr,
+      dialect: options?.dialect,
+      copy: options?.copy ?? true,
+    }) as this;
+  }
+
+  /**
+   * Set the FROM expression.
+   *
+   * @example
+   * update().table("my_table").set("x = 1").from("baz").sql()
+   * // 'UPDATE my_table SET x = 1 FROM baz'
+   *
+   * @param expression - The SQL code string to parse or Expression instance
+   * @param options - Options for parsing and copying
+   * @returns The modified Update expression
+   */
+  from (
+    expression?: string | Expression,
+    options: {
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    if (!expression) {
+      return this;
+    }
+
+    return _applyBuilder(expression, {
+      instance: this,
+      arg: 'from',
+      into: FromExpr,
+      prefix: undefined,
+      dialect: options.dialect,
+      copy: options.copy ?? true,
+    }) as this;
   }
 }
 
