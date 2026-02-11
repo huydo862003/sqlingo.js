@@ -9,7 +9,9 @@ import { ensureList } from './helper';
 import {
   multiInherit, type RequiredMap,
 } from './port_internals';
-import { ErrorLevel, ParseError, parseOne } from '.';
+import {
+  ErrorLevel, ParseError, parseOne,
+} from '.';
 
 export const SQLGLOT_META = 'sqlglot.meta';
 export const SQLGLOT_ANONYMOUS = 'sqlglot.anonymous';
@@ -9547,13 +9549,15 @@ export class DataTypeExpr extends Expression {
       [key: string]: unknown;
     } = {},
   ): DataTypeExpr {
-    const { udt = false, copy = true, dialect, ...kwargs } = options;
+    const {
+      udt = false, copy = true, dialect, ...kwargs
+    } = options;
 
     let dataTypeExp;
 
     if (typeof dtype === 'string') {
       if (dtype === DataTypeExprKind.UNKNOWN) {
-        return new DataTypeExpr({ 
+        return new DataTypeExpr({
           ...kwargs,
           this: DataTypeExprKind.UNKNOWN,
         });
@@ -9599,6 +9603,51 @@ export class DataTypeExpr extends Expression {
     }
 
     throw new Error(`Invalid data type: ${typeof dtype}. Expected string, DataTypeExprKind, or DataTypeExpr`);
+  }
+
+  /**
+   * Checks whether this DataType matches one of the provided data types. Nested types or precision
+   * will be compared using "structural equivalence" semantics, so e.g. array<int> != array<float>.
+   *
+   * @param dtypes - The data types to compare this DataType to.
+   * @param options - Options for the comparison.
+   * @param options.checkNullable - Whether to take the NULLABLE type constructor into account for the comparison.
+   *                                 If false, it means that NULLABLE<INT> is equivalent to INT.
+   * @returns True, if and only if there is a type in dtypes which is equal to this DataType.
+   */
+  isType (
+    dtypes: Array<DataTypeExprKind | DataTypeExpr | IdentifierExpr | DotExpr>,
+    options?: { checkNullable?: boolean },
+  ): boolean {
+    const checkNullable = options?.checkNullable ?? false;
+    const selfIsNullable = this.args.nullable;
+
+    for (const dtype of dtypes) {
+      const otherType = DataTypeExpr.build(dtype, {
+        copy: false,
+        udt: true,
+      });
+      const otherIsNullable = otherType.args.nullable;
+
+      let matches: boolean;
+
+      if (
+        otherType.args.expressions
+        || (checkNullable && (selfIsNullable || otherIsNullable))
+        || this.args.this === DataTypeExprKind.USERDEFINED
+        || otherType.args.this === DataTypeExprKind.USERDEFINED
+      ) {
+        matches = this.equals(otherType);
+      } else {
+        matches = this.args.this === otherType.args.this;
+      }
+
+      if (matches) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   get $this (): DataTypeExprKind {
