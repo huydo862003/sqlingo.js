@@ -9669,8 +9669,12 @@ export enum AnalyzeStatisticsExprKind {
   COLUMNS = 'COLUMNS',
 }
 
-export type AnalyzeStatisticsExprArgs = { kind: AnalyzeStatisticsExprKind;
-  option?: Expression; } & BaseExpressionArgs;
+export type AnalyzeStatisticsExprArgs = {
+  kind: AnalyzeStatisticsExprKind;
+  option?: Expression;
+  this?: Expression;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 
 export class AnalyzeStatisticsExpr extends Expression {
   key = ExpressionKey.ANALYZE_STATISTICS;
@@ -9683,6 +9687,8 @@ export class AnalyzeStatisticsExpr extends Expression {
     ...super.argTypes,
     kind: true,
     option: false,
+    this: false,
+    expressions: false,
   } satisfies RequiredMap<AnalyzeStatisticsExprArgs>;
 
   declare args: AnalyzeStatisticsExprArgs;
@@ -9691,26 +9697,57 @@ export class AnalyzeStatisticsExpr extends Expression {
     super(args);
   }
 
-  get $kind (): string {
+  get $kind (): AnalyzeStatisticsExprKind {
     return this.args.kind;
   }
 
   get $option (): Expression | undefined {
     return this.args.option;
   }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
 }
 
-export type AnalyzeHistogramExprArgs = { updateOptions?: Expression[] } & BaseExpressionArgs;
+export type AnalyzeHistogramExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+  expression?: Expression;
+  updateOptions?: Expression[];
+} & BaseExpressionArgs;
 
 export class AnalyzeHistogramExpr extends Expression {
   key = ExpressionKey.ANALYZE_HISTOGRAM;
 
-  static argTypes = { updateOptions: false } satisfies RequiredMap<AnalyzeHistogramExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: true,
+    expression: false,
+    updateOptions: false,
+  } satisfies RequiredMap<AnalyzeHistogramExprArgs>;
 
   declare args: AnalyzeHistogramExprArgs;
 
   constructor (args: AnalyzeHistogramExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 
   get $updateOptions (): Expression[] | undefined {
@@ -9753,19 +9790,31 @@ export class AnalyzeSampleExpr extends Expression {
     return this.args.kind;
   }
 
-  get $sample (): Expression {
+  get $sample (): number | Expression {
     return this.args.sample;
   }
 }
 
-export type AnalyzeListChainedRowsExprArgs = BaseExpressionArgs;
+export type AnalyzeListChainedRowsExprArgs = {
+  expression?: Expression;
+} & BaseExpressionArgs;
+
 export class AnalyzeListChainedRowsExpr extends Expression {
   key = ExpressionKey.ANALYZE_LIST_CHAINED_ROWS;
-  static argTypes = {};
+
+  static argTypes = {
+    ...super.argTypes,
+    expression: false,
+  } satisfies RequiredMap<AnalyzeListChainedRowsExprArgs>;
 
   declare args: AnalyzeListChainedRowsExprArgs;
+
   constructor (args: AnalyzeListChainedRowsExprArgs) {
     super(args);
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 }
 
@@ -9780,7 +9829,10 @@ export type AnalyzeDeleteExprArgs = { kind?: AnalyzeDeleteExprKind } & BaseExpre
 export class AnalyzeDeleteExpr extends Expression {
   key = ExpressionKey.ANALYZE_DELETE;
 
-  static argTypes = { kind: false } satisfies RequiredMap<AnalyzeDeleteExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    kind: false,
+  } satisfies RequiredMap<AnalyzeDeleteExprArgs>;
 
   declare args: AnalyzeDeleteExprArgs;
 
@@ -9788,7 +9840,7 @@ export class AnalyzeDeleteExpr extends Expression {
     super(args);
   }
 
-  get $kind (): string | undefined {
+  get $kind (): AnalyzeDeleteExprKind | undefined {
     return this.args.kind;
   }
 }
