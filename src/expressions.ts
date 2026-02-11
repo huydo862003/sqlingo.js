@@ -1021,7 +1021,7 @@ export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T
  * Base arguments that all Expression classes can accept.
  */
 export interface BaseExpressionArgs {
-  this?: ExpressionValue;
+  this?: Expression;
   expression?: Expression;
   expressions?: (Expression | string)[];
   alias?: TableAliasExpr | IdentifierExpr | string;
@@ -1104,7 +1104,7 @@ export class Expression {
     }
   }
 
-  get this (): ExpressionValue {
+  get this (): Expression {
     return this.args.this;
   }
 
@@ -2471,10 +2471,13 @@ export class Expression {
 }
 
 export type ConditionExprArgs = BaseExpressionArgs;
+
 export class ConditionExpr extends Expression {
   key = ExpressionKey.CONDITION;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ConditionExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ConditionExprArgs>;
 
   declare args: ConditionExprArgs;
   constructor (args: ConditionExprArgs) {
@@ -2483,10 +2486,13 @@ export class ConditionExpr extends Expression {
 }
 
 export type PredicateExprArgs = BaseExpressionArgs;
+
 export class PredicateExpr extends Expression {
   key = ExpressionKey.PREDICATE;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PredicateExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<PredicateExprArgs>;
 
   declare args: PredicateExprArgs;
   constructor (args: PredicateExprArgs) {
@@ -2495,10 +2501,13 @@ export class PredicateExpr extends Expression {
 }
 
 export type DerivedTableExprArgs = BaseExpressionArgs;
+
 export class DerivedTableExpr extends Expression {
   key = ExpressionKey.DERIVED_TABLE;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DerivedTableExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<DerivedTableExprArgs>;
 
   declare args: DerivedTableExprArgs;
   constructor (args: DerivedTableExprArgs) {
@@ -2535,7 +2544,9 @@ export type QueryExprArgs = {
 export class QueryExpr extends Expression {
   key = ExpressionKey.QUERY;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<QueryExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<QueryExprArgs>;
 
   declare args: QueryExprArgs;
   constructor (args: QueryExprArgs) {
@@ -3739,7 +3750,9 @@ export type PragmaExprArgs = BaseExpressionArgs;
 export class PragmaExpr extends Expression {
   key = ExpressionKey.PRAGMA;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PragmaExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<PragmaExprArgs>;
 
   declare args: PragmaExprArgs;
   constructor (args: PragmaExprArgs) {
@@ -4673,7 +4686,9 @@ export type AlterDistStyleExprArgs = BaseExpressionArgs;
 export class AlterDistStyleExpr extends Expression {
   key = ExpressionKey.ALTER_DIST_STYLE;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AlterDistStyleExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AlterDistStyleExprArgs>;
 
   declare args: AlterDistStyleExprArgs;
   constructor (args: AlterDistStyleExprArgs) {
@@ -4836,7 +4851,9 @@ export type AlterRenameExprArgs = BaseExpressionArgs;
 export class AlterRenameExpr extends Expression {
   key = ExpressionKey.ALTER_RENAME;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AlterRenameExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AlterRenameExprArgs>;
 
   declare args: AlterRenameExprArgs;
   constructor (args: AlterRenameExprArgs) {
@@ -4849,7 +4866,9 @@ export type SwapTableExprArgs = BaseExpressionArgs;
 export class SwapTableExpr extends Expression {
   key = ExpressionKey.SWAP_TABLE;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SwapTableExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<SwapTableExprArgs>;
 
   declare args: SwapTableExprArgs;
   constructor (args: SwapTableExprArgs) {
@@ -5184,7 +5203,9 @@ export type ColumnConstraintKindExprArgs = BaseExpressionArgs;
 export class ColumnConstraintKindExpr extends Expression {
   key = ExpressionKey.COLUMN_CONSTRAINT_KIND;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ColumnConstraintKindExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ColumnConstraintKindExprArgs>;
 
   declare args: ColumnConstraintKindExprArgs;
   constructor (args: ColumnConstraintKindExprArgs) {
@@ -5192,8 +5213,10 @@ export class ColumnConstraintKindExpr extends Expression {
   }
 }
 
-export type WithOperatorExprArgs = { op: Expression;
-  this: Expression; } & BaseExpressionArgs;
+export type WithOperatorExprArgs = {
+  op: Expression;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class WithOperatorExpr extends Expression {
   key = ExpressionKey.WITH_OPERATOR;
@@ -5227,6 +5250,7 @@ export type WatermarkColumnConstraintExprArgs = {
   this: Expression;
   expression: Expression;
 } & BaseExpressionArgs;
+
 export class WatermarkColumnConstraintExpr extends Expression {
   key = ExpressionKey.WATERMARK_COLUMN_CONSTRAINT;
 
@@ -5237,6 +5261,7 @@ export class WatermarkColumnConstraintExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: WatermarkColumnConstraintExprArgs;
+
   constructor (args: WatermarkColumnConstraintExprArgs) {
     super(args);
   }
@@ -5265,6 +5290,7 @@ export class ConstraintExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: ConstraintExprArgs;
+
   constructor (args: ConstraintExprArgs) {
     super(args);
   }
@@ -5472,6 +5498,7 @@ export class DropExpr extends Expression {
   } satisfies RequiredMap<DropExprArgs>;
 
   declare args: DropExprArgs;
+
   constructor (args: DropExprArgs) {
     super(args);
   }
@@ -5550,6 +5577,7 @@ export class ExportExpr extends Expression {
   } satisfies RequiredMap<ExportExprArgs>;
 
   declare args: ExportExprArgs;
+
   constructor (args: ExportExprArgs) {
     super(args);
   }
@@ -5586,6 +5614,7 @@ export class FilterExpr extends Expression {
   } satisfies RequiredMap<FilterExprArgs>;
 
   declare args: FilterExprArgs;
+
   constructor (args: FilterExprArgs) {
     super(args);
   }
@@ -5600,12 +5629,16 @@ export class FilterExpr extends Expression {
 }
 
 export type CheckExprArgs = BaseExpressionArgs;
+
 export class CheckExpr extends Expression {
   key = ExpressionKey.CHECK;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CheckExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<CheckExprArgs>;
 
   declare args: CheckExprArgs;
+
   constructor (args: CheckExprArgs) {
     super(args);
   }
@@ -5632,6 +5665,7 @@ export class ChangesExpr extends Expression {
   } satisfies RequiredMap<ChangesExprArgs>;
 
   declare args: ChangesExprArgs;
+
   constructor (args: ChangesExprArgs) {
     super(args);
   }
@@ -5670,6 +5704,7 @@ export class ConnectExpr extends Expression {
   } satisfies RequiredMap<ConnectExprArgs>;
 
   declare args: ConnectExprArgs;
+
   constructor (args: ConnectExprArgs) {
     super(args);
   }
@@ -5780,9 +5815,12 @@ export type PriorExprArgs = BaseExpressionArgs;
 export class PriorExpr extends Expression {
   key = ExpressionKey.PRIOR;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PriorExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<PriorExprArgs>;
 
   declare args: PriorExprArgs;
+
   constructor (args: PriorExprArgs) {
     super(args);
   }
@@ -5831,19 +5869,24 @@ export type DirectoryStageExprArgs = BaseExpressionArgs;
 export class DirectoryStageExpr extends Expression {
   key = ExpressionKey.DIRECTORY_STAGE;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DirectoryStageExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<DirectoryStageExprArgs>;
 
   declare args: DirectoryStageExprArgs;
+
   constructor (args: DirectoryStageExprArgs) {
     super(args);
   }
 }
 
-export type ForeignKeyExprArgs = { reference?: Expression;
+export type ForeignKeyExprArgs = {
+  reference?: Expression;
   delete?: Expression;
   update?: Expression;
   options?: Expression[];
-  expressions?: Expression[]; } & BaseExpressionArgs;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 
 export class ForeignKeyExpr extends Expression {
   key = ExpressionKey.FOREIGN_KEY;
@@ -5892,6 +5935,7 @@ export type ColumnPrefixExprArgs = {
   this: Expression;
   expression: Expression;
 } & BaseExpressionArgs;
+
 export class ColumnPrefixExpr extends Expression {
   key = ExpressionKey.COLUMN_PREFIX;
 
@@ -5906,6 +5950,7 @@ export class ColumnPrefixExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: ColumnPrefixExprArgs;
+
   constructor (args: ColumnPrefixExprArgs) {
     super(args);
   }
@@ -5919,10 +5964,12 @@ export class ColumnPrefixExpr extends Expression {
   }
 }
 
-export type PrimaryKeyExprArgs = { options?: Expression[];
+export type PrimaryKeyExprArgs = {
+  options?: Expression[];
   include?: Expression;
   this?: Expression;
-  expressions: Expression[]; } & BaseExpressionArgs;
+  expressions: Expression[];
+} & BaseExpressionArgs;
 
 export class PrimaryKeyExpr extends Expression {
   key = ExpressionKey.PRIMARY_KEY;
@@ -5962,11 +6009,13 @@ export class PrimaryKeyExpr extends Expression {
   }
 }
 
-export type IntoExprArgs = { temporary?: boolean;
+export type IntoExprArgs = {
+  temporary?: boolean;
   unlogged?: Expression;
   bulkCollect?: Expression;
   this?: Expression;
-  expressions?: Expression[]; } & BaseExpressionArgs;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 
 export class IntoExpr extends Expression {
   key = ExpressionKey.INTO;
@@ -5994,7 +6043,7 @@ export class IntoExpr extends Expression {
     return this.args.this;
   }
 
-  get $temporary (): Expression | undefined {
+  get $temporary (): boolean | undefined {
     return this.args.temporary;
   }
 
@@ -6012,11 +6061,16 @@ export class IntoExpr extends Expression {
 }
 
 export type FromExprArgs = BaseExpressionArgs;
+
 export class FromExpr extends Expression {
   key = ExpressionKey.FROM;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<FromExprArgs>;
+
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<FromExprArgs>;
 
   declare args: FromExprArgs;
+
   constructor (args: FromExprArgs) {
     super(args);
   }
@@ -6039,11 +6093,16 @@ export class FromExpr extends Expression {
 }
 
 export type HavingExprArgs = BaseExpressionArgs;
+
 export class HavingExpr extends Expression {
   key = ExpressionKey.HAVING;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<HavingExprArgs>;
+
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<HavingExprArgs>;
 
   declare args: HavingExprArgs;
+
   constructor (args: HavingExprArgs) {
     super(args);
   }
@@ -6055,9 +6114,12 @@ export type HintExprArgs = {
 export class HintExpr extends Expression {
   key = ExpressionKey.HINT;
 
-  static argTypes: Record<string, boolean> = { expressions: true } satisfies RequiredMap<BaseExpressionArgs>;
+  static argTypes: Record<string, boolean> = {
+    expressions: true;
+  } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: HintExprArgs;
+
   constructor (args: HintExprArgs) {
     super(args);
   }
@@ -6071,6 +6133,7 @@ export type JoinHintExprArgs = {
   this: Expression;
   expressions: Expression[];
 } & BaseExpressionArgs;
+
 export class JoinHintExpr extends Expression {
   key = ExpressionKey.JOIN_HINT;
 
@@ -6081,6 +6144,7 @@ export class JoinHintExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: JoinHintExprArgs;
+
   constructor (args: JoinHintExprArgs) {
     super(args);
   }
@@ -6094,10 +6158,12 @@ export class JoinHintExpr extends Expression {
   }
 }
 
-export type IdentifierExprArgs = { quoted?: boolean;
+export type IdentifierExprArgs = {
+  quoted?: boolean;
   global?: boolean;
   temporary?: boolean;
-  this: Expression; } & BaseExpressionArgs;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class IdentifierExpr extends Expression {
   key = ExpressionKey.IDENTIFIER;
@@ -6128,15 +6194,15 @@ export class IdentifierExpr extends Expression {
     return this.args.this;
   }
 
-  get $quoted (): Expression | undefined {
+  get $quoted (): boolean | undefined {
     return this.args.quoted;
   }
 
-  get $global (): Expression | undefined {
+  get $global (): boolean | undefined {
     return this.args.global;
   }
 
-  get $temporary (): Expression | undefined {
+  get $temporary (): boolean | undefined {
     return this.args.temporary;
   }
 }
@@ -6145,6 +6211,7 @@ export type OpclassExprArgs = {
   this: Expression;
   expression: Expression;
 } & BaseExpressionArgs;
+
 export class OpclassExpr extends Expression {
   key = ExpressionKey.OPCLASS;
 
@@ -6155,6 +6222,7 @@ export class OpclassExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: OpclassExprArgs;
+
   constructor (args: OpclassExprArgs) {
     super(args);
   }
@@ -6168,12 +6236,14 @@ export class OpclassExpr extends Expression {
   }
 }
 
-export type IndexExprArgs = { table?: Expression;
+export type IndexExprArgs = {
+  table?: Expression;
   unique?: boolean;
   primary?: boolean;
   amp?: Expression;
   params?: Expression[];
-  this?: Expression; } & BaseExpressionArgs;
+  this?: Expression;
+} & BaseExpressionArgs;
 
 export class IndexExpr extends Expression {
   key = ExpressionKey.INDEX;
@@ -6206,11 +6276,11 @@ export class IndexExpr extends Expression {
     return this.args.table;
   }
 
-  get $unique (): Expression | undefined {
+  get $unique (): boolean | undefined {
     return this.args.unique;
   }
 
-  get $primary (): Expression | undefined {
+  get $primary (): boolean | undefined {
     return this.args.primary;
   }
 
@@ -6223,14 +6293,16 @@ export class IndexExpr extends Expression {
   }
 }
 
-export type IndexParametersExprArgs = { using?: string;
+export type IndexParametersExprArgs = {
+  using?: string;
   include?: Expression;
   columns?: Expression[];
   withStorage?: Expression;
   partitionBy?: Expression;
   tablespace?: Expression;
   where?: Expression;
-  on?: Expression; } & BaseExpressionArgs;
+  on?: Expression;
+} & BaseExpressionArgs;
 
 export class IndexParametersExpr extends Expression {
   key = ExpressionKey.INDEX_PARAMETERS;
@@ -6257,7 +6329,7 @@ export class IndexParametersExpr extends Expression {
     super(args);
   }
 
-  get $using (): Expression | undefined {
+  get $using (): string | undefined {
     return this.args.using;
   }
 
@@ -10033,7 +10105,9 @@ export type BitStringExprArgs = ConditionExprArgs;
 export class BitStringExpr extends ConditionExpr {
   key = ExpressionKey.BIT_STRING;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<BitStringExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<BitStringExprArgs>;
 
   declare args: BitStringExprArgs;
   constructor (args: BitStringExprArgs) {
@@ -10110,7 +10184,9 @@ export type RawStringExprArgs = ConditionExprArgs;
 export class RawStringExpr extends ConditionExpr {
   key = ExpressionKey.RAW_STRING;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<RawStringExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<RawStringExprArgs>;
 
   declare args: RawStringExprArgs;
   constructor (args: RawStringExprArgs) {
@@ -10268,7 +10344,9 @@ export type PseudocolumnExprArgs = ColumnExprArgs;
 export class PseudocolumnExpr extends ColumnExpr {
   key = ExpressionKey.PSEUDOCOLUMN;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PseudocolumnExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<PseudocolumnExprArgs>;
 
   declare args: PseudocolumnExprArgs;
   constructor (args: PseudocolumnExprArgs) {
@@ -10285,7 +10363,9 @@ export type AutoIncrementColumnConstraintExprArgs = ColumnConstraintKindExprArgs
 export class AutoIncrementColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.AUTO_INCREMENT_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AutoIncrementColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AutoIncrementColumnConstraintExprArgs>;
 
   declare args: AutoIncrementColumnConstraintExprArgs;
   constructor (args: AutoIncrementColumnConstraintExprArgs) {
@@ -10298,9 +10378,14 @@ export type ZeroFillColumnConstraintExprArgs = ColumnConstraintExprArgs;
 export class ZeroFillColumnConstraintExpr extends ColumnConstraintExpr {
   key = ExpressionKey.ZERO_FILL_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {};
+  static argTypes: Record<string, boolean> = {
+    kind: true, // sqlglot does not have this, but i thought it was a mistake
+  } satisfies RequiredMap<
+    ZeroFillColumnConstraintExprArgs
+  >;
 
   declare args: ZeroFillColumnConstraintExprArgs;
+
   constructor (args: ZeroFillColumnConstraintExprArgs) {
     super(args);
   }
@@ -10326,6 +10411,7 @@ export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr 
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: PeriodForSystemTimeConstraintExprArgs;
+
   constructor (args: PeriodForSystemTimeConstraintExprArgs) {
     super(args);
   }
@@ -10357,6 +10443,7 @@ export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<CaseSpecificColumnConstraintExprArgs>;
 
   declare args: CaseSpecificColumnConstraintExprArgs;
+
   constructor (args: CaseSpecificColumnConstraintExprArgs) {
     super(args);
   }
@@ -10372,7 +10459,9 @@ export type CharacterSetColumnConstraintExprArgs = {
 export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CHARACTER_SET_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = { this: true } satisfies RequiredMap<BaseExpressionArgs>;
+  static argTypes: Record<string, boolean> = {
+    this: true;
+  } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: CharacterSetColumnConstraintExprArgs;
   constructor (args: CharacterSetColumnConstraintExprArgs) {
@@ -10403,6 +10492,7 @@ export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<CheckColumnConstraintExprArgs>;
 
   declare args: CheckColumnConstraintExprArgs;
+
   constructor (args: CheckColumnConstraintExprArgs) {
     super(args);
   }
@@ -10421,9 +10511,12 @@ export type ClusteredColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class ClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CLUSTERED_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ClusteredColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ClusteredColumnConstraintExprArgs>;
 
   declare args: ClusteredColumnConstraintExprArgs;
+
   constructor (args: ClusteredColumnConstraintExprArgs) {
     super(args);
   }
@@ -10434,9 +10527,12 @@ export type CollateColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class CollateColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COLLATE_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CollateColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<CollateColumnConstraintExprArgs>;
 
   declare args: CollateColumnConstraintExprArgs;
+
   constructor (args: CollateColumnConstraintExprArgs) {
     super(args);
   }
@@ -10447,9 +10543,12 @@ export type CommentColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class CommentColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMMENT_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CommentColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<CommentColumnConstraintExprArgs>;
 
   declare args: CommentColumnConstraintExprArgs;
+
   constructor (args: CommentColumnConstraintExprArgs) {
     super(args);
   }
@@ -10462,9 +10561,12 @@ export type CompressColumnConstraintExprArgs = {
 export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMPRESS_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = { this: false } satisfies RequiredMap<BaseExpressionArgs>;
+  static argTypes: Record<string, boolean> = {
+    this: false;
+  } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: CompressColumnConstraintExprArgs;
+
   constructor (args: CompressColumnConstraintExprArgs) {
     super(args);
   }
@@ -10506,9 +10608,12 @@ export type DefaultColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class DefaultColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.DEFAULT_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DefaultColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<DefaultColumnConstraintExprArgs>;
 
   declare args: DefaultColumnConstraintExprArgs;
+
   constructor (args: DefaultColumnConstraintExprArgs) {
     super(args);
   }
@@ -10519,9 +10624,12 @@ export type EncodeColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class EncodeColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.ENCODE_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<EncodeColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<EncodeColumnConstraintExprArgs>;
 
   declare args: EncodeColumnConstraintExprArgs;
+
   constructor (args: EncodeColumnConstraintExprArgs) {
     super(args);
   }
@@ -10532,9 +10640,12 @@ export type ExcludeColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class ExcludeColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.EXCLUDE_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ExcludeColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ExcludeColumnConstraintExprArgs>;
 
   declare args: ExcludeColumnConstraintExprArgs;
+
   constructor (args: ExcludeColumnConstraintExprArgs) {
     super(args);
   }
@@ -10745,7 +10856,9 @@ export type InlineLengthColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class InlineLengthColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.INLINE_LENGTH_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<InlineLengthColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<InlineLengthColumnConstraintExprArgs>;
 
   declare args: InlineLengthColumnConstraintExprArgs;
   constructor (args: InlineLengthColumnConstraintExprArgs) {
@@ -10758,7 +10871,9 @@ export type NonClusteredColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class NonClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NON_CLUSTERED_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NonClusteredColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<NonClusteredColumnConstraintExprArgs>;
 
   declare args: NonClusteredColumnConstraintExprArgs;
   constructor (args: NonClusteredColumnConstraintExprArgs) {
@@ -10806,7 +10921,9 @@ export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr 
   }
 }
 
-export type NotNullColumnConstraintExprArgs = { allowNull?: Expression } & ColumnConstraintKindExprArgs;
+export type NotNullColumnConstraintExprArgs = {
+  allowNull?: Expression;
+} & ColumnConstraintKindExprArgs;
 
 export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NOT_NULL_COLUMN_CONSTRAINT;
@@ -10836,7 +10953,9 @@ export type OnUpdateColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class OnUpdateColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.ON_UPDATE_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<OnUpdateColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<OnUpdateColumnConstraintExprArgs>;
 
   declare args: OnUpdateColumnConstraintExprArgs;
   constructor (args: OnUpdateColumnConstraintExprArgs) {
@@ -10882,7 +11001,9 @@ export type TitleColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class TitleColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.TITLE_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TitleColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<TitleColumnConstraintExprArgs>;
 
   declare args: TitleColumnConstraintExprArgs;
   constructor (args: TitleColumnConstraintExprArgs) {
@@ -10946,7 +11067,9 @@ export type UppercaseColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class UppercaseColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.UPPERCASE_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<UppercaseColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<
+    UppercaseColumnConstraintExprArgs
+  >;
 
   declare args: UppercaseColumnConstraintExprArgs;
   constructor (args: UppercaseColumnConstraintExprArgs) {
@@ -10959,9 +11082,12 @@ export type PathColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class PathColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PATH_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PathColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<PathColumnConstraintExprArgs>;
 
   declare args: PathColumnConstraintExprArgs;
+
   constructor (args: PathColumnConstraintExprArgs) {
     super(args);
   }
@@ -10972,7 +11098,9 @@ export type ProjectionPolicyColumnConstraintExprArgs = ColumnConstraintKindExprA
 export class ProjectionPolicyColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PROJECTION_POLICY_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ProjectionPolicyColumnConstraintExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ProjectionPolicyColumnConstraintExprArgs>;
 
   declare args: ProjectionPolicyColumnConstraintExprArgs;
   constructor (args: ProjectionPolicyColumnConstraintExprArgs) {
