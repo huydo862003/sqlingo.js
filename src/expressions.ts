@@ -14998,7 +14998,7 @@ export type UpdateExprArgs = {
   order?: Expression;
   limit?: number | Expression;
   options?: Expression[];
-} & BaseExpressionArgs;
+} & DMLExprArgs;
 
 export class UpdateExpr extends DMLExpr {
   key = ExpressionKey.UPDATE;
@@ -15083,7 +15083,7 @@ export class UpdateExpr extends DMLExpr {
       prefix: undefined,
       dialect: options.dialect,
       copy: options.copy ?? true,
-    }) as this;
+    });
   }
 
   /**
@@ -15097,24 +15097,14 @@ export class UpdateExpr extends DMLExpr {
    * @param options - Options for parsing, appending, and copying
    * @returns The modified Update expression
    */
-  setExpressions (
-    ...expressions: Array<string | Expression>
-  ): this;
-  setExpressions (
+  set (
     expressions: Array<string | Expression>,
     options?: {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
     },
-  ): this;
-  setExpressions (
-    ...args: any[]
   ): this {
-    const [first, second] = args;
-    const expressions = Array.isArray(first) ? first : args;
-    const options = Array.isArray(first) ? second : {};
-
     return _applyListBuilder(expressions, {
       instance: this,
       arg: 'expressions',
@@ -15123,7 +15113,7 @@ export class UpdateExpr extends DMLExpr {
       prefix: undefined,
       dialect: options?.dialect,
       copy: options?.copy ?? true,
-    }) as this;
+    });
   }
 
   /**
@@ -15138,23 +15128,13 @@ export class UpdateExpr extends DMLExpr {
    * @returns The modified Update expression
    */
   where (
-    ...expressions: Array<string | Expression | undefined>
-  ): this;
-  where (
     expressions: Array<string | Expression | undefined>,
     options?: {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
     },
-  ): this;
-  where (
-    ...args: any[]
   ): this {
-    const [first, second] = args;
-    const expressions = Array.isArray(first) ? first : args;
-    const options = Array.isArray(first) ? second : {};
-
     return _applyConjunctionBuilder(expressions, {
       instance: this,
       arg: 'where',
@@ -15162,7 +15142,7 @@ export class UpdateExpr extends DMLExpr {
       into: WhereExpr,
       dialect: options?.dialect,
       copy: options?.copy ?? true,
-    }) as this;
+    });
   }
 
   /**
@@ -15194,7 +15174,42 @@ export class UpdateExpr extends DMLExpr {
       prefix: undefined,
       dialect: options.dialect,
       copy: options.copy ?? true,
-    }) as this;
+    });
+  }
+
+  /**
+   * Append to or set the common table expressions.
+   *
+   * @example
+   * update().table("my_table").set(["x = 1"]).from("baz").with("baz", "SELECT id FROM foo").sql()
+   * // 'WITH baz AS (SELECT id FROM foo) UPDATE my_table SET x = 1 FROM baz'
+   *
+   * @param alias - The SQL code string to parse as the table name
+   * @param as - The SQL code string to parse as the table expression
+   * @param options - Options object
+   * @returns The modified Update expression
+   */
+  with (
+    alias: string | Expression,
+    as: string | Expression,
+    options: {
+      recursive?: boolean;
+      materialized?: boolean;
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+      scalar?: boolean;
+    } = {},
+  ): this {
+    return _applyCteBuilder({
+      instance: this,
+      alias,
+      as,
+      ...options,
+      recursive: options.recursive ?? false,
+      append: options.append ?? true,
+      copy: options.copy ?? true,
+    });
   }
 }
 
