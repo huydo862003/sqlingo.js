@@ -9294,11 +9294,15 @@ export enum DataTypeExprKind {
   JSON = 'JSON',
 }
 
-export type DataTypeExprArgs = { nested?: Expression;
+export type DataTypeExprArgs = {
+  this: DataTypeExprKind;
+  expressions?: Expression[];
+  nested?: Expression;
   values?: Expression[];
   prefix?: Expression;
   kind?: DataTypeExprKind | string;
-  nullable?: Expression; } & BaseExpressionArgs;
+  nullable?: Expression;
+} & BaseExpressionArgs;
 
 export class DataTypeExpr extends Expression {
   key = ExpressionKey.DATA_TYPE;
@@ -9309,6 +9313,8 @@ export class DataTypeExpr extends Expression {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
+    expressions: false,
     nested: false,
     values: false,
     prefix: false,
@@ -9328,7 +9334,15 @@ export class DataTypeExpr extends Expression {
    * @returns DataTypeExpr instance
    */
   static build (dtype: string): DataTypeExpr {
-    return new DataTypeExpr({ this: dtype });
+    return new DataTypeExpr({ this: dtype as any });
+  }
+
+  get $this (): DataTypeExprKind {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   get $nested (): Expression | undefined {
