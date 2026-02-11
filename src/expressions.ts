@@ -8909,7 +8909,7 @@ export class TableSampleExpr extends Expression {
     return this.args.expressions;
   }
 
-  get $method (): Expression | undefined {
+  get $method (): string | undefined {
     return this.args.method;
   }
 
@@ -8933,7 +8933,7 @@ export class TableSampleExpr extends Expression {
     return this.args.rows;
   }
 
-  get $size (): Expression | undefined {
+  get $size (): number | Expression | undefined {
     return this.args.size;
   }
 
@@ -8942,8 +8942,11 @@ export class TableSampleExpr extends Expression {
   }
 }
 
-export type TagExprArgs = { prefix?: Expression;
-  postfix?: Expression; } & BaseExpressionArgs;
+export type TagExprArgs = {
+  this?: Expression;
+  prefix?: Expression;
+  postfix?: Expression;
+} & BaseExpressionArgs;
 
 export class TagExpr extends Expression {
   key = ExpressionKey.TAG;
@@ -8954,6 +8957,7 @@ export class TagExpr extends Expression {
    */
   static argTypes = {
     ...super.argTypes,
+    this: false,
     prefix: false,
     postfix: false,
   } satisfies RequiredMap<TagExprArgs>;
@@ -8962,6 +8966,10 @@ export class TagExpr extends Expression {
 
   constructor (args: TagExprArgs) {
     super(args);
+  }
+
+  get this (): Expression | undefined {
+    return this.args.this;
   }
 
   get $prefix (): Expression | undefined {
@@ -8973,15 +8981,17 @@ export class TagExpr extends Expression {
   }
 }
 
-export type PivotExprArgs = { fields?: Expression[];
-  unpivot?: Expression;
+export type PivotExprArgs = {
+  fields?: Expression[];
+  unpivot?: boolean;
   using?: string;
   group?: Expression;
   columns?: Expression[];
   includeNulls?: Expression[];
   defaultOnNull?: Expression;
   into?: Expression;
-  with?: Expression; } & BaseExpressionArgs;
+  with?: WithExpr;
+} & BaseExpressionArgs;
 
 export class PivotExpr extends Expression {
   key = ExpressionKey.PIVOT;
@@ -9013,11 +9023,11 @@ export class PivotExpr extends Expression {
     return this.args.fields;
   }
 
-  get $unpivot (): Expression | undefined {
+  get $unpivot (): boolean | undefined {
     return this.args.unpivot;
   }
 
-  get $using (): Expression | undefined {
+  get $using (): string | undefined {
     return this.args.using;
   }
 
@@ -9041,7 +9051,7 @@ export class PivotExpr extends Expression {
     return this.args.into;
   }
 
-  get $with (): Expression | undefined {
+  get $with (): WithExpr | undefined {
     return this.args.with;
   }
 
@@ -9049,7 +9059,7 @@ export class PivotExpr extends Expression {
    * Returns true if this is an UNPIVOT operation.
    */
   get unpivot (): boolean {
-    return Boolean(this.args.unpivot);
+    return !!this.args.unpivot;
   }
 
   /**
@@ -9060,12 +9070,20 @@ export class PivotExpr extends Expression {
   }
 }
 
-export type UnpivotColumnsExprArgs = BaseExpressionArgs;
+export type UnpivotColumnsExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+} & BaseExpressionArgs;
+
 export class UnpivotColumnsExpr extends Expression {
   key = ExpressionKey.UNPIVOT_COLUMNS;
-  static argTypes = {} satisfies RequiredMap<UnpivotColumnsExprArgs>;
+  static argTypes = {
+    this: true,
+    expressions: true,
+  } satisfies RequiredMap<UnpivotColumnsExprArgs>;
 
   declare args: UnpivotColumnsExprArgs;
+
   constructor (args: UnpivotColumnsExprArgs) {
     super(args);
   }
@@ -9079,12 +9097,15 @@ export enum WindowSpecExprKind {
   RANGE = 'RANGE',
   GROUPS = 'GROUPS',
 }
-export type WindowSpecExprArgs = { kind?: WindowSpecExprKind;
+
+export type WindowSpecExprArgs = {
+  kind?: WindowSpecExprKind;
   start?: Expression;
   startSide?: Expression;
   end?: Expression;
   endSide?: Expression;
-  exclude?: Expression; } & BaseExpressionArgs;
+  exclude?: Expression;
+} & BaseExpressionArgs;
 
 export class WindowSpecExpr extends Expression {
   key = ExpressionKey.WINDOW_SPEC;
@@ -9109,7 +9130,7 @@ export class WindowSpecExpr extends Expression {
     super(args);
   }
 
-  get $kind (): string | undefined {
+  get $kind (): WindowSpecExprKind | undefined {
     return this.args.kind;
   }
 
@@ -9135,22 +9156,30 @@ export class WindowSpecExpr extends Expression {
 }
 
 export type PreWhereExprArgs = BaseExpressionArgs;
+
 export class PreWhereExpr extends Expression {
   key = ExpressionKey.PRE_WHERE;
-  static argTypes = {} satisfies RequiredMap<PreWhereExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<PreWhereExprArgs>;
 
   declare args: PreWhereExprArgs;
+
   constructor (args: PreWhereExprArgs) {
     super(args);
   }
 }
 
 export type WhereExprArgs = BaseExpressionArgs;
+
 export class WhereExpr extends Expression {
   key = ExpressionKey.WHERE;
-  static argTypes = {} satisfies RequiredMap<WhereExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<WhereExprArgs>;
 
   declare args: WhereExprArgs;
+
   constructor (args: WhereExprArgs) {
     super(args);
   }
@@ -16054,10 +16083,10 @@ export type WindowExprArgs = {
   partitionBy?: Expression;
   order?: Expression;
   spec?: Expression;
-  alias?: Expression;
+  alias?: TableAliasExpr;
   over?: Expression;
   first?: Expression;
-} & BaseExpressionArgs;
+} & ConditionExprArgs;
 
 export class WindowExpr extends ConditionExpr {
   key = ExpressionKey.WINDOW;
@@ -16091,7 +16120,7 @@ export class WindowExpr extends ConditionExpr {
     return this.args.partitionBy;
   }
 
-  get $alias (): Expression | undefined {
+  get $alias (): TableAliasExpr | undefined {
     return this.args.alias;
   }
 
