@@ -1021,7 +1021,7 @@ export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T
  * Base arguments that all Expression classes can accept.
  */
 export interface BaseExpressionArgs {
-  this?: Expression;
+  this?: ExpressionValue;
   expression?: Expression;
   expressions?: (Expression | string)[];
   alias?: TableAliasExpr | IdentifierExpr | string;
@@ -1104,7 +1104,7 @@ export class Expression {
     }
   }
 
-  get this (): Expression {
+  get this (): ExpressionValue {
     return this.args.this;
   }
 
@@ -2549,6 +2549,7 @@ export class QueryExpr extends Expression {
   } satisfies RequiredMap<QueryExprArgs>;
 
   declare args: QueryExprArgs;
+
   constructor (args: QueryExprArgs) {
     super(args);
   }
@@ -6413,9 +6414,11 @@ export enum MultitableInsertsExprKind {
   UNCONDITIONAL = 'UNCONDITIONAL',
 }
 
-export type MultitableInsertsExprArgs = { kind: MultitableInsertsExprKind;
+export type MultitableInsertsExprArgs = {
+  kind: MultitableInsertsExprKind;
   source: Expression;
-  expressions: Expression[]; } & BaseExpressionArgs;
+  expressions: Expression[];
+} & BaseExpressionArgs;
 
 export class MultitableInsertsExpr extends Expression {
   key = ExpressionKey.MULTITABLE_INSERTS;
@@ -6441,7 +6444,7 @@ export class MultitableInsertsExpr extends Expression {
     return this.args.expressions;
   }
 
-  get $kind (): string {
+  get $kind (): MultitableInsertsExprKind {
     return this.args.kind;
   }
 
@@ -6450,13 +6453,15 @@ export class MultitableInsertsExpr extends Expression {
   }
 }
 
-export type OnConflictExprArgs = { duplicate?: Expression;
+export type OnConflictExprArgs = {
+  duplicate?: Expression;
   action?: Expression;
   conflictKeys?: Expression[];
   indexPredicate?: Expression;
   constraint?: Expression;
   where?: Expression;
-  expressions?: Expression[]; } & BaseExpressionArgs;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 
 export class OnConflictExpr extends Expression {
   key = ExpressionKey.ON_CONFLICT;
@@ -6511,9 +6516,11 @@ export class OnConflictExpr extends Expression {
   }
 }
 
-export type OnConditionExprArgs = { error?: Expression;
+export type OnConditionExprArgs = {
+  error?: Expression;
   empty?: Expression;
-  null?: Expression; } & BaseExpressionArgs;
+  null?: Expression;
+} & BaseExpressionArgs;
 
 export class OnConditionExpr extends Expression {
   key = ExpressionKey.ON_CONDITION;
@@ -6548,8 +6555,10 @@ export class OnConditionExpr extends Expression {
   }
 }
 
-export type ReturningExprArgs = { into?: Expression;
-  expressions: Expression[]; } & BaseExpressionArgs;
+export type ReturningExprArgs = {
+  into?: Expression;
+  expressions: Expression[];
+} & BaseExpressionArgs;
 
 export class ReturningExpr extends Expression {
   key = ExpressionKey.RETURNING;
@@ -6583,6 +6592,7 @@ export type IntroducerExprArgs = {
   this: Expression;
   expression: Expression;
 } & BaseExpressionArgs;
+
 export class IntroducerExpr extends Expression {
   key = ExpressionKey.INTRODUCER;
 
@@ -6593,6 +6603,7 @@ export class IntroducerExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: IntroducerExprArgs;
+
   constructor (args: IntroducerExprArgs) {
     super(args);
   }
@@ -6607,23 +6618,30 @@ export class IntroducerExpr extends Expression {
 }
 
 export type NationalExprArgs = BaseExpressionArgs;
+
 export class NationalExpr extends Expression {
   key = ExpressionKey.NATIONAL;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NationalExprArgs>;
+
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<NationalExprArgs>;
 
   declare args: NationalExprArgs;
+
   constructor (args: NationalExprArgs) {
     super(args);
   }
 }
 
-export type LoadDataExprArgs = { local?: Expression;
+export type LoadDataExprArgs = {
+  local?: Expression;
   overwrite?: Expression;
   inpath: Expression;
   partition?: Expression;
   inputFormat?: string;
   serde?: Expression;
-  this: Expression; } & BaseExpressionArgs;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class LoadDataExpr extends Expression {
   key = ExpressionKey.LOAD_DATA;
@@ -6669,7 +6687,7 @@ export class LoadDataExpr extends Expression {
     return this.args.partition;
   }
 
-  get $inputFormat (): Expression | undefined {
+  get $inputFormat (): string | undefined {
     return this.args.inputFormat;
   }
 
@@ -6678,8 +6696,10 @@ export class LoadDataExpr extends Expression {
   }
 }
 
-export type PartitionExprArgs = { subpartition?: Expression;
-  expressions: Expression[]; } & BaseExpressionArgs;
+export type PartitionExprArgs = {
+  subpartition?: Expression;
+  expressions: Expression[];
+} & BaseExpressionArgs;
 
 export class PartitionExpr extends Expression {
   key = ExpressionKey.PARTITION;
@@ -6714,6 +6734,7 @@ export type PartitionRangeExprArgs = {
   expression?: Expression;
   expressions?: Expression[];
 } & BaseExpressionArgs;
+
 export class PartitionRangeExpr extends Expression {
   key = ExpressionKey.PARTITION_RANGE;
 
@@ -6722,9 +6743,10 @@ export class PartitionRangeExpr extends Expression {
     this: true,
     expression: false,
     expressions: false,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  } satisfies RequiredMap<PartitionRangeExprArgs>;
 
   declare args: PartitionRangeExprArgs;
+
   constructor (args: PartitionRangeExprArgs) {
     super(args);
   }
@@ -6743,19 +6765,25 @@ export class PartitionRangeExpr extends Expression {
 }
 
 export type PartitionIdExprArgs = BaseExpressionArgs;
+
 export class PartitionIdExpr extends Expression {
   key = ExpressionKey.PARTITION_ID;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PartitionIdExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+  } satisfies RequiredMap<PartitionIdExprArgs>;
 
   declare args: PartitionIdExprArgs;
+
   constructor (args: PartitionIdExprArgs) {
     super(args);
   }
 }
 
-export type FetchExprArgs = { direction?: Expression;
+export type FetchExprArgs = {
+  direction?: Expression;
   count?: Expression;
-  limitOptions?: Expression[]; } & BaseExpressionArgs;
+  limitOptions?: Expression[];
+} & BaseExpressionArgs;
 
 export class FetchExpr extends Expression {
   key = ExpressionKey.FETCH;
@@ -6797,11 +6825,14 @@ export enum GrantExprKind {
   GRANT = 'GRANT',
   REVOKE = 'REVOKE',
 }
-export type GrantExprArgs = { privileges: Expression[];
+
+export type GrantExprArgs = {
+  privileges: Expression[];
   kind?: GrantExprKind;
   securable: Expression;
   principals: Expression[];
-  grantOption?: Expression; } & BaseExpressionArgs;
+  grantOption?: Expression;
+} & BaseExpressionArgs;
 
 export class GrantExpr extends Expression {
   key = ExpressionKey.GRANT;
@@ -6846,12 +6877,14 @@ export class GrantExpr extends Expression {
   }
 }
 
-export type RevokeExprArgs = { cascade?: Expression;
+export type RevokeExprArgs = {
+  cascade?: Expression;
   privileges: Expression[];
   kind?: string;
   securable: Expression;
   principals: Expression[];
-  grantOption?: Expression; } & BaseExpressionArgs;
+  grantOption?: Expression;
+} & BaseExpressionArgs;
 
 export class RevokeExpr extends Expression {
   key = ExpressionKey.REVOKE;
@@ -6902,12 +6935,14 @@ export class RevokeExpr extends Expression {
   }
 }
 
-export type GroupExprArgs = { groupingSets?: Expression[];
+export type GroupExprArgs = {
+  groupingSets?: Expression[];
   cube?: Expression;
   rollup?: Expression;
   totals?: Expression[];
   all?: Expression;
-  expressions?: Expression[]; } & BaseExpressionArgs;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 
 export class GroupExpr extends Expression {
   key = ExpressionKey.GROUP;
@@ -6960,10 +6995,14 @@ export class GroupExpr extends Expression {
 export type CubeExprArgs = {
   expressions?: Expression[];
 } & BaseExpressionArgs;
+
 export class CubeExpr extends Expression {
   key = ExpressionKey.CUBE;
 
-  static argTypes: Record<string, boolean> = { expressions: false } satisfies RequiredMap<BaseExpressionArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+    expressions: false,
+  } satisfies RequiredMap<CubeExprArgs>;
 
   declare args: CubeExprArgs;
   constructor (args: CubeExprArgs) {
@@ -6978,12 +7017,17 @@ export class CubeExpr extends Expression {
 export type RollupExprArgs = {
   expressions?: Expression[];
 } & BaseExpressionArgs;
+
 export class RollupExpr extends Expression {
   key = ExpressionKey.ROLLUP;
 
-  static argTypes: Record<string, boolean> = { expressions: false } satisfies RequiredMap<BaseExpressionArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+    expressions: false,
+  } satisfies RequiredMap<RollupExprArgs>;
 
   declare args: RollupExprArgs;
+
   constructor (args: RollupExprArgs) {
     super(args);
   }
@@ -6996,10 +7040,14 @@ export class RollupExpr extends Expression {
 export type GroupingSetsExprArgs = {
   expressions: Expression[];
 } & BaseExpressionArgs;
+
 export class GroupingSetsExpr extends Expression {
   key = ExpressionKey.GROUPING_SETS;
 
-  static argTypes: Record<string, boolean> = { expressions: true } satisfies RequiredMap<BaseExpressionArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+    expressions: true,
+  } satisfies RequiredMap<GroupingSetsExprArgs>;
 
   declare args: GroupingSetsExprArgs;
   constructor (args: GroupingSetsExprArgs) {
@@ -7011,9 +7059,11 @@ export class GroupingSetsExpr extends Expression {
   }
 }
 
-export type LambdaExprArgs = { colon?: Expression;
+export type LambdaExprArgs = {
+  colon?: Expression;
   this: Expression;
-  expressions: Expression[]; } & BaseExpressionArgs;
+  expressions: Expression[];
+} & BaseExpressionArgs;
 
 export class LambdaExpr extends Expression {
   key = ExpressionKey.LAMBDA;
@@ -7048,11 +7098,13 @@ export class LambdaExpr extends Expression {
   }
 }
 
-export type LimitExprArgs = { offset?: boolean;
+export type LimitExprArgs = {
+  offset?: boolean;
   limitOptions?: Expression[];
   this?: Expression;
   expression: Expression;
-  expressions?: Expression[]; } & BaseExpressionArgs;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 
 export class LimitExpr extends Expression {
   key = ExpressionKey.LIMIT;
@@ -7084,7 +7136,7 @@ export class LimitExpr extends Expression {
     return this.args.expression;
   }
 
-  get $offset (): Expression | undefined {
+  get $offset (): boolean | undefined {
     return this.args.offset;
   }
 
@@ -7097,9 +7149,11 @@ export class LimitExpr extends Expression {
   }
 }
 
-export type LimitOptionsExprArgs = { percent?: Expression;
+export type LimitOptionsExprArgs = {
+  percent?: Expression;
   rows?: Expression[];
-  withTies?: Expression[]; } & BaseExpressionArgs;
+  withTies?: Expression[];
+} & BaseExpressionArgs;
 
 export class LimitOptionsExpr extends Expression {
   key = ExpressionKey.LIMIT_OPTIONS;
@@ -10465,7 +10519,7 @@ export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CHARACTER_SET_COLUMN_CONSTRAINT;
 
   static argTypes: Record<string, boolean> = {
-    this: true;
+    this: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: CharacterSetColumnConstraintExprArgs;
@@ -10567,7 +10621,7 @@ export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMPRESS_COLUMN_CONSTRAINT;
 
   static argTypes: Record<string, boolean> = {
-    this: false;
+    this: false,
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: CompressColumnConstraintExprArgs;
@@ -11272,7 +11326,7 @@ export class CopyExpr extends DMLExpr {
     return this.args.credentials;
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 
@@ -11284,11 +11338,11 @@ export class CopyExpr extends DMLExpr {
 export type InsertExprArgs = {
   hint?: Expression;
   with?: WithExpr;
-  isFunction?: Expression;
+  isFunction?: boolean;
   conflict?: Expression;
   returning?: Expression;
   overwrite?: Expression;
-  exists?: Expression;
+  exists?: Expression[];
   alternative?: Expression;
   where?: Expression;
   ignore?: Expression;
@@ -11310,6 +11364,7 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     hint: false,
     with: false,
@@ -11385,11 +11440,11 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
     return this.args.hint;
   }
 
-  get $with (): Expression | undefined {
+  get $with (): WithExpr | undefined {
     return this.args.with;
   }
 
-  get $isFunction (): Expression | undefined {
+  get $isFunction (): boolean | undefined {
     return this.args.isFunction;
   }
 
@@ -11429,7 +11484,7 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
     return this.args.ignore;
   }
 
-  get $byName (): Expression | undefined {
+  get $byName (): string | undefined {
     return this.args.byName;
   }
 
@@ -11461,8 +11516,10 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
  * const str = new LiteralExpr({ this: 'hello', isString: true });
  * const num = new LiteralExpr({ this: '42', isString: false });
  */
-export type LiteralExprArgs = { isString: unknown;
-  this: Expression; } & BaseExpressionArgs;
+export type LiteralExprArgs = {
+  isString: boolean;
+  this: string;
+} & BaseExpressionArgs;
 
 export class LiteralExpr extends ConditionExpr {
   key = ExpressionKey.LITERAL;
@@ -11543,11 +11600,11 @@ export class LiteralExpr extends ConditionExpr {
     return this.this as string;
   }
 
-  get $this (): Expression {
+  get $this (): string {
     return this.args.this;
   }
 
-  get $isString (): Expression {
+  get $isString (): boolean {
     return this.args.isString;
   }
 }
