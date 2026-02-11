@@ -8691,7 +8691,7 @@ export class TableExpr extends Expression {
       // Build column from parts (reversed for catalog.db.table order)
       const columnParts = parts.slice(0, 4).reverse();
       const fields = parts.slice(4);
-      col = column(...columnParts as any, fields, copy);
+      col = column(...columnParts, fields, copy);
     } else {
       // If last part is a function or array wrapped in Table
       col = lastPart;
@@ -8704,7 +8704,7 @@ export class TableExpr extends Expression {
         : aliasArg instanceof TableAliasExpr || aliasArg instanceof IdentifierExpr
           ? aliasArg.this
           : aliasArg;
-      col = alias(col, aliasName as any, { copy });
+      col = alias(col, aliasName, { copy });
     }
 
     return col;
