@@ -2943,6 +2943,7 @@ export class CacheExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     lazy: false,
     options: false,
@@ -2984,6 +2985,7 @@ export class UncacheExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     exists: false,
   } satisfies RequiredMap<UncacheExprArgs>;
@@ -3024,6 +3026,7 @@ export class RefreshExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     kind: true,
   } satisfies RequiredMap<RefreshExprArgs>;
@@ -3106,6 +3109,7 @@ export class LockingStatementExpr extends Expression {
   key = ExpressionKey.LOCKING_STATEMENT;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -3212,6 +3216,7 @@ export class CreateExpr extends DDLExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: false,
     with: false,
@@ -3322,6 +3327,7 @@ export class SequencePropertiesExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     increment: false,
     minvalue: false,
     maxvalue: false,
@@ -3384,6 +3390,7 @@ export class TruncateTableExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     expressions: true,
     isDatabase: false,
     exists: false,
@@ -3446,6 +3453,7 @@ export class CloneExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     shallow: false,
     copy: false,
@@ -3497,6 +3505,7 @@ export class DescribeExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expressions: false,
     style: false,
@@ -3554,6 +3563,7 @@ export class AttachExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expressions: false,
     exists: false,
@@ -3590,6 +3600,7 @@ export class DetachExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     exists: false,
   } satisfies RequiredMap<DetachExprArgs>;
@@ -3622,6 +3633,7 @@ export class InstallExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     from: false,
     force: false,
@@ -3658,6 +3670,7 @@ export class SummarizeExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     table: false,
   } satisfies RequiredMap<SummarizeExprArgs>;
@@ -3697,6 +3710,7 @@ export class KillExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     kind: false,
   } satisfies RequiredMap<KillExprArgs>;
@@ -3720,6 +3734,7 @@ export type PragmaExprArgs = BaseExpressionArgs;
 export class PragmaExpr extends Expression {
   key = ExpressionKey.PRAGMA;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PragmaExprArgs>;
   declare args: PragmaExprArgs;
   constructor (args: PragmaExprArgs) {
     super(args);
@@ -3773,6 +3788,7 @@ export class DeclareItemExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     kind: false,
     default: false,
@@ -3810,6 +3826,7 @@ export class SetExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     expressions: false,
     unset: false,
     tag: false,
@@ -3846,6 +3863,7 @@ export class HeredocExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     tag: false,
   } satisfies RequiredMap<HeredocExprArgs>;
@@ -3891,6 +3909,7 @@ export class SetItemExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     expressions: false,
     kind: false,
@@ -3938,6 +3957,7 @@ export class QueryBandExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     scope: false,
     update: false,
@@ -4000,6 +4020,7 @@ export class ShowExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     history: false,
     terse: false,
@@ -4162,6 +4183,7 @@ export class UserDefinedFunctionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expressions: false,
     wrapped: false,
@@ -4198,6 +4220,7 @@ export class CharacterSetExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     default: false,
   } satisfies RequiredMap<CharacterSetExprArgs>;
@@ -4240,6 +4263,7 @@ export class RecursiveWithSearchExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     kind: true,
     this: true,
     expression: true,
@@ -4282,6 +4306,7 @@ export class WithExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     expressions: true,
     recursive: false,
     search: false,
@@ -4321,6 +4346,7 @@ export class WithinGroupExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: false,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -4351,6 +4377,7 @@ export class ProjectionDefExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -4382,6 +4409,7 @@ export class TableAliasExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     columns: false,
   } satisfies RequiredMap<TableAliasExprArgs>;
@@ -4418,6 +4446,7 @@ export class ColumnPositionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     position: true,
   } satisfies RequiredMap<ColumnPositionExprArgs>;
@@ -4465,6 +4494,7 @@ export class ColumnDefExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     kind: false,
     constraints: false,
@@ -4545,6 +4575,7 @@ export class AlterColumnExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     dtype: false,
     collate: false,
@@ -4616,6 +4647,7 @@ export class AlterIndexExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     visible: true,
   } satisfies RequiredMap<AlterIndexExprArgs>;
@@ -4639,6 +4671,7 @@ export type AlterDistStyleExprArgs = BaseExpressionArgs;
 export class AlterDistStyleExpr extends Expression {
   key = ExpressionKey.ALTER_DIST_STYLE;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AlterDistStyleExprArgs>;
   declare args: AlterDistStyleExprArgs;
   constructor (args: AlterDistStyleExprArgs) {
     super(args);
@@ -4659,6 +4692,7 @@ export class AlterSortKeyExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     expressions: false,
     compound: false,
@@ -4702,6 +4736,7 @@ export class AlterSetExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     expressions: false,
     option: false,
     tablespace: false,
@@ -4769,6 +4804,7 @@ export class RenameColumnExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     to: true,
     exists: false,
@@ -4797,6 +4833,7 @@ export type AlterRenameExprArgs = BaseExpressionArgs;
 export class AlterRenameExpr extends Expression {
   key = ExpressionKey.ALTER_RENAME;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AlterRenameExprArgs>;
   declare args: AlterRenameExprArgs;
   constructor (args: AlterRenameExprArgs) {
     super(args);
@@ -4808,6 +4845,7 @@ export type SwapTableExprArgs = BaseExpressionArgs;
 export class SwapTableExpr extends Expression {
   key = ExpressionKey.SWAP_TABLE;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<SwapTableExprArgs>;
   declare args: SwapTableExprArgs;
   constructor (args: SwapTableExprArgs) {
     super(args);
@@ -4840,6 +4878,7 @@ export class CommentExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     kind: true,
     expression: true,
@@ -4889,6 +4928,7 @@ export class ComprehensionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: true,
     position: false,
@@ -4938,6 +4978,7 @@ export class MergeTreeTTLActionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     delete: false,
     recompress: false,
@@ -4987,6 +5028,7 @@ export class MergeTreeTTLExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     expressions: true,
     where: false,
     group: false,
@@ -5033,6 +5075,7 @@ export class IndexConstraintOptionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     keyBlockSize: false,
     using: false,
     parser: false,
@@ -5103,6 +5146,7 @@ export class ColumnConstraintExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     kind: true,
   } satisfies RequiredMap<ColumnConstraintExprArgs>;
@@ -5135,6 +5179,7 @@ export type ColumnConstraintKindExprArgs = BaseExpressionArgs;
 export class ColumnConstraintKindExpr extends Expression {
   key = ExpressionKey.COLUMN_CONSTRAINT_KIND;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ColumnConstraintKindExprArgs>;
   declare args: ColumnConstraintKindExprArgs;
   constructor (args: ColumnConstraintKindExprArgs) {
     super(args);
@@ -5152,6 +5197,7 @@ export class WithOperatorExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     op: true,
   } satisfies RequiredMap<WithOperatorExprArgs>;
@@ -5179,6 +5225,7 @@ export class WatermarkColumnConstraintExpr extends Expression {
   key = ExpressionKey.WATERMARK_COLUMN_CONSTRAINT;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -5206,6 +5253,7 @@ export class ConstraintExpr extends Expression {
   key = ExpressionKey.CONSTRAINT;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expressions: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -5244,6 +5292,7 @@ export class DeleteExpr extends DMLExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     with: false,
     this: false,
     using: false,
@@ -5402,6 +5451,7 @@ export class DropExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     kind: false,
     expressions: false,
@@ -5487,6 +5537,7 @@ export class ExportExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     connection: false,
     options: true,
@@ -5523,6 +5574,7 @@ export class FilterExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<FilterExprArgs>;
@@ -5545,6 +5597,7 @@ export type CheckExprArgs = BaseExpressionArgs;
 export class CheckExpr extends Expression {
   key = ExpressionKey.CHECK;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CheckExprArgs>;
   declare args: CheckExprArgs;
   constructor (args: CheckExprArgs) {
     super(args);
@@ -5565,6 +5618,7 @@ export class ChangesExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     information: true,
     atBefore: false,
     end: false,
@@ -5602,6 +5656,7 @@ export class ConnectExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     start: false,
     connect: true,
     nocycle: false,
@@ -5639,6 +5694,7 @@ export class CopyParameterExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: false,
     expressions: false,
@@ -5678,6 +5734,7 @@ export class CredentialsExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     credentials: false,
     encryption: false,
     storage: false,
@@ -5716,6 +5773,7 @@ export type PriorExprArgs = BaseExpressionArgs;
 export class PriorExpr extends Expression {
   key = ExpressionKey.PRIOR;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PriorExprArgs>;
   declare args: PriorExprArgs;
   constructor (args: PriorExprArgs) {
     super(args);
@@ -5736,6 +5794,7 @@ export class DirectoryExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     local: false,
     rowFormat: false,
@@ -5764,6 +5823,7 @@ export type DirectoryStageExprArgs = BaseExpressionArgs;
 export class DirectoryStageExpr extends Expression {
   key = ExpressionKey.DIRECTORY_STAGE;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DirectoryStageExprArgs>;
   declare args: DirectoryStageExprArgs;
   constructor (args: DirectoryStageExprArgs) {
     super(args);
@@ -5784,6 +5844,7 @@ export class ForeignKeyExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     expressions: false,
     reference: false,
     delete: false,
@@ -5830,6 +5891,7 @@ export class ColumnPrefixExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -5861,6 +5923,7 @@ export class PrimaryKeyExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     expressions: true,
     options: false,
@@ -5904,6 +5967,7 @@ export class IntoExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     temporary: false,
     unlogged: false,
@@ -6000,6 +6064,7 @@ export class JoinHintExpr extends Expression {
   key = ExpressionKey.JOIN_HINT;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expressions: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -6031,6 +6096,7 @@ export class IdentifierExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     quoted: false,
     global: false,
@@ -6072,6 +6138,7 @@ export class OpclassExpr extends Expression {
   key = ExpressionKey.OPCLASS;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -6105,6 +6172,7 @@ export class IndexExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     table: false,
     unique: false,
@@ -6161,6 +6229,7 @@ export class IndexParametersExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     using: false,
     include: false,
     columns: false,
@@ -6222,6 +6291,7 @@ export class ConditionalInsertExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: false,
     else: false,
@@ -6267,6 +6337,7 @@ export class MultitableInsertsExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     expressions: true,
     kind: true,
     source: true,
@@ -6307,6 +6378,7 @@ export class OnConflictExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     duplicate: false,
     expressions: false,
     action: false,
@@ -6363,6 +6435,7 @@ export class OnConditionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     error: false,
     empty: false,
     null: false,
@@ -6398,6 +6471,7 @@ export class ReturningExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     expressions: true,
     into: false,
   } satisfies RequiredMap<ReturningExprArgs>;
@@ -6425,6 +6499,7 @@ export class IntroducerExpr extends Expression {
   key = ExpressionKey.INTRODUCER;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -6469,6 +6544,7 @@ export class LoadDataExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     local: false,
     overwrite: false,
@@ -6524,6 +6600,7 @@ export class PartitionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     expressions: true,
     subpartition: false,
   } satisfies RequiredMap<PartitionExprArgs>;
@@ -6552,6 +6629,7 @@ export class PartitionRangeExpr extends Expression {
   key = ExpressionKey.PARTITION_RANGE;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: false,
     expressions: false,
@@ -6597,6 +6675,7 @@ export class FetchExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     direction: false,
     count: false,
     limitOptions: false,
@@ -6642,6 +6721,7 @@ export class GrantExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     privileges: true,
     kind: false,
     securable: true,
@@ -6692,6 +6772,7 @@ export class RevokeExpr extends Expression {
    * Extends Grant's arg_types with additional cascade field.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     privileges: true,
     kind: false,
     securable: true,
@@ -6746,6 +6827,7 @@ export class GroupExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     expressions: false,
     groupingSets: false,
     cube: false,
@@ -6851,6 +6933,7 @@ export class LambdaExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expressions: true,
     colon: false,
@@ -6889,6 +6972,7 @@ export class LimitExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     expression: true,
     offset: false,
@@ -6935,6 +7019,7 @@ export class LimitOptionsExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     percent: false,
     rows: false,
     withTies: false,
@@ -7004,6 +7089,7 @@ export class JoinExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     on: false,
     side: false,
@@ -7174,6 +7260,7 @@ export class MatchRecognizeMeasureExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     windowFrame: false,
   } satisfies RequiredMap<MatchRecognizeMeasureExprArgs>;
@@ -7210,6 +7297,7 @@ export class MatchRecognizeExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     partitionBy: false,
     order: false,
     measures: false,
@@ -7278,6 +7366,7 @@ export class OffsetExpr extends Expression {
   key = ExpressionKey.OFFSET;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     expression: true,
     expressions: false,
@@ -7313,6 +7402,7 @@ export class OrderExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     expressions: true,
     siblings: false,
@@ -7350,6 +7440,7 @@ export class WithFillExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     from: false,
     to: false,
     step: false,
@@ -7392,6 +7483,7 @@ export class OrderedExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     desc: false,
     nullsFirst: true,
@@ -7436,6 +7528,7 @@ export class PropertyExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     value: true,
   } satisfies RequiredMap<PropertyExprArgs>;
@@ -7463,6 +7556,7 @@ export class GrantPrivilegeExpr extends Expression {
   key = ExpressionKey.GRANT_PRIVILEGE;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expressions: false,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -7501,6 +7595,7 @@ export class GrantPrincipalExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     kind: false,
   } satisfies RequiredMap<GrantPrincipalExprArgs>;
@@ -7552,6 +7647,7 @@ export class PartitionByRangePropertyDynamicExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     start: true,
     end: true,
@@ -7594,6 +7690,7 @@ export class RollupIndexExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expressions: true,
     fromIndex: false,
@@ -7631,6 +7728,7 @@ export class PartitionListExpr extends Expression {
   key = ExpressionKey.PARTITION_LIST;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expressions: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -7662,6 +7760,7 @@ export class PartitionBoundSpecExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     expression: false,
     fromExpressions: false,
@@ -7706,6 +7805,7 @@ export class QueryTransformExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     commandScript: true,
     schema: false,
     rowFormatBefore: false,
@@ -7758,6 +7858,7 @@ export class SemanticViewExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     metrics: false,
     dimensions: false,
     facts: false,
@@ -7818,6 +7919,7 @@ export class InputOutputFormatExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     inputFormat: false,
     outputFormat: false,
   } satisfies RequiredMap<InputOutputFormatExprArgs>;
@@ -7963,6 +8065,7 @@ export class PutExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     target: true,
     properties: false,
   } satisfies RequiredMap<PutExprArgs>;
@@ -7993,6 +8096,7 @@ export class GetExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     target: true,
     properties: false,
   } satisfies RequiredMap<GetExprArgs>;
@@ -8039,6 +8143,7 @@ export class TableExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     db: false,
     catalog: false,
     laterals: false,
@@ -8202,6 +8307,7 @@ export class LockExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     update: true,
     wait: false,
     key: false,
@@ -8243,6 +8349,7 @@ export class TableSampleExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     method: false,
     bucketNumerator: false,
     bucketDenominator: false,
@@ -8303,6 +8410,7 @@ export class TagExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     prefix: false,
     postfix: false,
   } satisfies RequiredMap<TagExprArgs>;
@@ -8340,6 +8448,7 @@ export class PivotExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     fields: false,
     unpivot: false,
     using: false,
@@ -8427,6 +8536,7 @@ export class WindowSpecExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     kind: false,
     start: false,
     startSide: false,
@@ -8498,6 +8608,7 @@ export class StarExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     except: false,
     replace: false,
     rename: false,
@@ -8568,6 +8679,7 @@ export class DataTypeExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     nested: false,
     values: false,
     prefix: false,
@@ -8642,6 +8754,7 @@ export class TransactionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     modes: false,
     mark: false,
   } satisfies RequiredMap<TransactionExprArgs>;
@@ -8672,6 +8785,7 @@ export class CommitExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     chain: false,
     durability: false,
   } satisfies RequiredMap<CommitExprArgs>;
@@ -8744,6 +8858,7 @@ export class AlterExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     kind: true,
     actions: true,
     exists: false,
@@ -8842,6 +8957,7 @@ export class AnalyzeExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     kind: false,
     options: false,
     mode: false,
@@ -8897,6 +9013,7 @@ export class AnalyzeStatisticsExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     kind: true,
     option: false,
   } satisfies RequiredMap<AnalyzeStatisticsExprArgs>;
@@ -8958,6 +9075,7 @@ export class AnalyzeSampleExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     kind: true,
     sample: true,
   } satisfies RequiredMap<AnalyzeSampleExprArgs>;
@@ -9100,6 +9218,7 @@ export class AddPartitionExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     exists: false,
     location: false,
   } satisfies RequiredMap<AddPartitionExprArgs>;
@@ -9442,6 +9561,7 @@ export class JSONExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     with: false,
     unique: false,
   } satisfies RequiredMap<JSONExprArgs>;
@@ -9535,6 +9655,7 @@ export class JSONColumnDefExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     kind: false,
     path: false,
     nestedSchema: false,
@@ -9586,6 +9707,7 @@ export class JSONValueExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     path: true,
     returning: false,
     onCondition: false,
@@ -9633,6 +9755,7 @@ export class OpenJSONColumnDefExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     kind: true,
     path: false,
     asJson: false,
@@ -9668,6 +9791,7 @@ export class JSONExtractQuoteExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     option: true,
     scalar: false,
   } satisfies RequiredMap<JSONExtractQuoteExprArgs>;
@@ -9814,6 +9938,7 @@ export class WhenExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     matched: true,
     source: false,
     condition: false,
@@ -9902,6 +10027,7 @@ export class CTEExpr extends DerivedTableExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     alias: true,
     scalar: false,
@@ -9961,6 +10087,7 @@ export class HexStringExpr extends ConditionExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     isInteger: false,
   } satisfies RequiredMap<HexStringExprArgs>;
@@ -9992,6 +10119,7 @@ export class ByteStringExpr extends ConditionExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     isBytes: false,
   } satisfies RequiredMap<ByteStringExprArgs>;
@@ -10040,6 +10168,7 @@ export class UnicodeStringExpr extends ConditionExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     escape: false,
   } satisfies RequiredMap<UnicodeStringExprArgs>;
@@ -10081,6 +10210,7 @@ export class ColumnExpr extends ConditionExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     table: false,
     db: false,
@@ -10175,6 +10305,7 @@ export type PseudocolumnExprArgs = ColumnExprArgs;
 export class PseudocolumnExpr extends ColumnExpr {
   key = ExpressionKey.PSEUDOCOLUMN;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PseudocolumnExprArgs>;
   declare args: PseudocolumnExprArgs;
   constructor (args: PseudocolumnExprArgs) {
     super(args);
@@ -10190,6 +10321,7 @@ export type AutoIncrementColumnConstraintExprArgs = ColumnConstraintKindExprArgs
 export class AutoIncrementColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.AUTO_INCREMENT_COLUMN_CONSTRAINT;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AutoIncrementColumnConstraintExprArgs>;
   declare args: AutoIncrementColumnConstraintExprArgs;
   constructor (args: AutoIncrementColumnConstraintExprArgs) {
     super(args);
@@ -10201,7 +10333,7 @@ export type ZeroFillColumnConstraintExprArgs = ColumnConstraintExprArgs;
 export class ZeroFillColumnConstraintExpr extends ColumnConstraintExpr {
   key = ExpressionKey.ZERO_FILL_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = { kind: true } satisfies RequiredMap<
+  static argTypes: Record<string, boolean> = { } satisfies RequiredMap<
     ZeroFillColumnConstraintExprArgs
   >;
 
@@ -10225,6 +10357,7 @@ export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr 
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -10244,7 +10377,7 @@ export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr 
 }
 
 export type CaseSpecificColumnConstraintExprArgs = {
-  not: Expression
+  not: Expression;
 } & ColumnConstraintKindExprArgs;
 
 export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -10256,6 +10389,7 @@ export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     not: true,
   } satisfies RequiredMap<CaseSpecificColumnConstraintExprArgs>;
 
@@ -10305,6 +10439,7 @@ export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     enforced: false,
   } satisfies RequiredMap<CheckColumnConstraintExprArgs>;
@@ -10328,6 +10463,7 @@ export type ClusteredColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class ClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CLUSTERED_COLUMN_CONSTRAINT;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ClusteredColumnConstraintExprArgs>;
   declare args: ClusteredColumnConstraintExprArgs;
   constructor (args: ClusteredColumnConstraintExprArgs) {
     super(args);
@@ -10339,6 +10475,7 @@ export type CollateColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class CollateColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COLLATE_COLUMN_CONSTRAINT;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CollateColumnConstraintExprArgs>;
   declare args: CollateColumnConstraintExprArgs;
   constructor (args: CollateColumnConstraintExprArgs) {
     super(args);
@@ -10350,6 +10487,7 @@ export type CommentColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class CommentColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMMENT_COLUMN_CONSTRAINT;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<CommentColumnConstraintExprArgs>;
   declare args: CommentColumnConstraintExprArgs;
   constructor (args: CommentColumnConstraintExprArgs) {
     super(args);
@@ -10393,6 +10531,7 @@ export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
 
@@ -10411,6 +10550,7 @@ export type DefaultColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class DefaultColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.DEFAULT_COLUMN_CONSTRAINT;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<DefaultColumnConstraintExprArgs>;
   declare args: DefaultColumnConstraintExprArgs;
   constructor (args: DefaultColumnConstraintExprArgs) {
     super(args);
@@ -10422,6 +10562,7 @@ export type EncodeColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class EncodeColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.ENCODE_COLUMN_CONSTRAINT;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<EncodeColumnConstraintExprArgs>;
   declare args: EncodeColumnConstraintExprArgs;
   constructor (args: EncodeColumnConstraintExprArgs) {
     super(args);
@@ -10433,6 +10574,7 @@ export type ExcludeColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class ExcludeColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.EXCLUDE_COLUMN_CONSTRAINT;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ExcludeColumnConstraintExprArgs>;
   declare args: ExcludeColumnConstraintExprArgs;
   constructor (args: ExcludeColumnConstraintExprArgs) {
     super(args);
@@ -10485,6 +10627,7 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
    * Note: this: true -> ALWAYS, this: false -> BY DEFAULT
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     expression: false,
     onNull: false,
@@ -10552,6 +10695,7 @@ export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     start: false,
     hidden: false,
   } satisfies RequiredMap<GeneratedAsRowColumnConstraintExprArgs>;
@@ -10598,6 +10742,7 @@ export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     expressions: false,
     kind: false,
@@ -10646,6 +10791,7 @@ export type InlineLengthColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class InlineLengthColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.INLINE_LENGTH_COLUMN_CONSTRAINT;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<InlineLengthColumnConstraintExprArgs>;
   declare args: InlineLengthColumnConstraintExprArgs;
   constructor (args: InlineLengthColumnConstraintExprArgs) {
     super(args);
@@ -10657,6 +10803,7 @@ export type NonClusteredColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class NonClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NON_CLUSTERED_COLUMN_CONSTRAINT;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NonClusteredColumnConstraintExprArgs>;
   declare args: NonClusteredColumnConstraintExprArgs;
   constructor (args: NonClusteredColumnConstraintExprArgs) {
     super(args);
@@ -10683,6 +10830,7 @@ export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr 
   key = ExpressionKey.MASKING_POLICY_COLUMN_CONSTRAINT;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expressions: false,
   } satisfies RequiredMap<MaskingPolicyColumnConstraintExprArgs>;
@@ -10712,6 +10860,7 @@ export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     allowNull: false,
   } satisfies RequiredMap<NotNullColumnConstraintExprArgs>;
 
@@ -10730,6 +10879,7 @@ export type OnUpdateColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class OnUpdateColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.ON_UPDATE_COLUMN_CONSTRAINT;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<OnUpdateColumnConstraintExprArgs>;
   declare args: OnUpdateColumnConstraintExprArgs;
   constructor (args: OnUpdateColumnConstraintExprArgs) {
     super(args);
@@ -10750,6 +10900,7 @@ export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     desc: false,
     options: false,
   } satisfies RequiredMap<PrimaryKeyColumnConstraintExprArgs>;
@@ -10773,6 +10924,7 @@ export type TitleColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class TitleColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.TITLE_COLUMN_CONSTRAINT;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<TitleColumnConstraintExprArgs>;
   declare args: TitleColumnConstraintExprArgs;
   constructor (args: TitleColumnConstraintExprArgs) {
     super(args);
@@ -10796,6 +10948,7 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     indexType: false,
     onConflict: false,
@@ -10847,6 +11000,7 @@ export type PathColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
 export class PathColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PATH_COLUMN_CONSTRAINT;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PathColumnConstraintExprArgs>;
   declare args: PathColumnConstraintExprArgs;
   constructor (args: PathColumnConstraintExprArgs) {
     super(args);
@@ -10858,6 +11012,7 @@ export type ProjectionPolicyColumnConstraintExprArgs = ColumnConstraintKindExprA
 export class ProjectionPolicyColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PROJECTION_POLICY_COLUMN_CONSTRAINT;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<ProjectionPolicyColumnConstraintExprArgs>;
   declare args: ProjectionPolicyColumnConstraintExprArgs;
   constructor (args: ProjectionPolicyColumnConstraintExprArgs) {
     super(args);
@@ -10880,6 +11035,7 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     persisted: false,
     notNull: false,
@@ -10922,6 +11078,7 @@ export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     input: false,
     output: false,
     variadic: false,
@@ -10969,6 +11126,7 @@ export class CopyExpr extends DMLExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     kind: true,
     files: false,
@@ -11035,6 +11193,7 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     hint: false,
     with: false,
     isFunction: false,
@@ -11196,6 +11355,7 @@ export class LiteralExpr extends ConditionExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     isString: true,
   } satisfies RequiredMap<LiteralExprArgs>;
@@ -11328,6 +11488,7 @@ export type AutoIncrementPropertyExprArgs = { this: Expression } & PropertyExprA
 export class AutoIncrementPropertyExpr extends PropertyExpr {
   key = ExpressionKey.AUTO_INCREMENT_PROPERTY;
 
+  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<AutoIncrementPropertyExprArgs>;
   declare args: AutoIncrementPropertyExprArgs;
 
   constructor (args: AutoIncrementPropertyExprArgs) {
@@ -11409,6 +11570,7 @@ export class BlockCompressionPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     autotemp: false,
     always: false,
@@ -11460,6 +11622,7 @@ export class CharacterSetPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     default: true,
   } satisfies RequiredMap<CharacterSetPropertyExprArgs>;
@@ -11495,6 +11658,7 @@ export class ChecksumPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     on: false,
     default: false,
@@ -11531,6 +11695,7 @@ export class CollatePropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     default: false,
   } satisfies RequiredMap<CollatePropertyExprArgs>;
@@ -11582,6 +11747,7 @@ export class DataBlocksizePropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     size: false,
     units: false,
@@ -11634,6 +11800,7 @@ export class DataDeletionPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     on: true,
     filterColumn: false,
@@ -11724,6 +11891,7 @@ export class DistributedByPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     expressions: false,
     kind: true,
     buckets: false,
@@ -11890,6 +12058,7 @@ export class FallbackPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     no: true,
     protection: false,
@@ -11927,6 +12096,7 @@ export class FileFormatPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     expressions: false,
     hiveFormat: false,
@@ -11984,6 +12154,7 @@ export class FreespacePropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     percent: false,
   } satisfies RequiredMap<FreespacePropertyExprArgs>;
@@ -12073,6 +12244,7 @@ export class IsolatedLoadingPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     no: false,
     concurrent: false,
@@ -12117,6 +12289,7 @@ export class JournalPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     no: false,
     dual: false,
@@ -12188,6 +12361,7 @@ export class ClusteredByPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     sortedBy: false,
     buckets: true,
@@ -12238,6 +12412,7 @@ export class DictPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     kind: true,
     settings: false,
@@ -12285,6 +12460,7 @@ export class DictRangeExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     min: true,
     max: true,
@@ -12360,6 +12536,7 @@ export class LikePropertyExpr extends PropertyExpr {
   key = ExpressionKey.LIKE_PROPERTY;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expressions: false,
   } satisfies RequiredMap<LikePropertyExprArgs>;
@@ -12441,6 +12618,7 @@ export class LockingPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     kind: true,
     forOrIn: false,
@@ -12490,6 +12668,7 @@ export class LogPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     no: true,
   } satisfies RequiredMap<LogPropertyExprArgs>;
@@ -12542,6 +12721,7 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: false,
     no: false,
     default: false,
@@ -12615,6 +12795,7 @@ export class OnCommitPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     delete: false,
   } satisfies RequiredMap<OnCommitPropertyExprArgs>;
@@ -12660,6 +12841,7 @@ export class PartitionedByBucketExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_BY_BUCKET;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -12686,6 +12868,7 @@ export class PartitionByTruncateExpr extends PropertyExpr {
   key = ExpressionKey.PARTITION_BY_TRUNCATE;
 
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
@@ -12717,6 +12900,7 @@ export class PartitionByRangePropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     partitionExpressions: true,
     createExpressions: true,
@@ -12771,6 +12955,7 @@ export class PartitionByListPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     partitionExpressions: true,
     createExpressions: true,
   } satisfies RequiredMap<PartitionByListPropertyExprArgs>;
@@ -12815,6 +13000,7 @@ export class RefreshTriggerPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     method: false,
     kind: false,
@@ -12924,6 +13110,7 @@ export class ReturnsPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     value: false,
     isTable: false,
     table: false,
@@ -12990,6 +13177,7 @@ export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     fields: false,
     escaped: false,
     collectionItems: false,
@@ -13046,6 +13234,7 @@ export class RowFormatSerdePropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     serdeProperties: false,
   } satisfies RequiredMap<RowFormatSerdePropertyExprArgs>;
@@ -13109,6 +13298,7 @@ export class SerdePropertiesExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     expressions: true,
     with: false,
   } satisfies RequiredMap<SerdePropertiesExprArgs>;
@@ -13215,6 +13405,7 @@ export class SortKeyPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     compound: false,
   } satisfies RequiredMap<SortKeyPropertyExprArgs>;
@@ -13469,6 +13660,7 @@ export class WithDataPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     no: true,
     statistics: false,
   } satisfies RequiredMap<WithDataPropertyExprArgs>;
@@ -13539,6 +13731,7 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     on: false,
     this: false,
     dataConsistency: false,
@@ -13605,6 +13798,7 @@ export class EncodePropertyExpr extends PropertyExpr {
    * Expression.key).
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     properties: false,
     key: false,
@@ -13643,6 +13837,7 @@ export class IncludePropertyExpr extends PropertyExpr {
    * with Expression.alias).
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     alias: false,
     columnDef: false,
@@ -13804,6 +13999,7 @@ export class SetOperationExpr extends QueryExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     with: false,
     distinct: false,
     byName: false,
@@ -13859,6 +14055,7 @@ export class UpdateExpr extends DMLExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     with: false,
     from: false,
     where: false,
@@ -13941,6 +14138,7 @@ export class SelectExpr extends QueryExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     with: false,
     kind: false,
     hint: false,
@@ -14021,6 +14219,7 @@ export class WindowExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     partitionBy: false,
     order: false,
     spec: false,
@@ -14118,6 +14317,7 @@ export class PlaceholderExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     kind: false,
     widget: false,
     jdbc: false,
@@ -14224,6 +14424,7 @@ export class BracketExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     offset: false,
     safe: false,
     returnsListForMaps: false,
@@ -14432,6 +14633,7 @@ export class JSONPathSliceExpr extends JSONPathPartExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     start: false,
     end: false,
     step: false,
@@ -14511,6 +14713,7 @@ export class MergeExpr extends DMLExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     using: true,
     on: false,
     usingCond: false,
@@ -14565,6 +14768,7 @@ export class LateralExpr extends UDTFExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     view: false,
     outer: false,
@@ -14618,6 +14822,7 @@ export class TableFromRowsExpr extends UDTFExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     this: true,
     alias: false,
     joins: false,
@@ -14694,6 +14899,7 @@ export class ValuesExpr extends UDTFExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     order: false,
     limit: false,
     offset: false,
@@ -14869,6 +15075,7 @@ export class DivExpr extends BinaryExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     typed: false,
     safe: false,
   } satisfies RequiredMap<DivExprArgs>;
@@ -15254,6 +15461,7 @@ export class BetweenExpr extends PredicateExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     low: true,
     high: true,
     symmetric: false,
@@ -15291,6 +15499,7 @@ export class InExpr extends PredicateExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     query: false,
     unnest: false,
     field: false,
@@ -15822,6 +16031,7 @@ export class TranslateExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     from: true,
     to: true,
   } satisfies RequiredMap<TranslateExprArgs>;
@@ -15872,6 +16082,7 @@ export class ArrayExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     bracketNotation: false,
     structNameInheritance: false,
   } satisfies RequiredMap<ArrayExprArgs>;
@@ -15954,6 +16165,7 @@ export class PadExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     fillPattern: false,
     isLeft: true,
   } satisfies RequiredMap<PadExprArgs>;
@@ -15985,6 +16197,7 @@ export class ToCharExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     format: false,
     nlsparam: false,
     isNumeric: false,
@@ -16034,6 +16247,7 @@ export class ToNumberExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     format: false,
     nlsparam: false,
     precision: false,
@@ -16084,6 +16298,7 @@ export class ToDoubleExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     format: false,
     safe: false,
   } satisfies RequiredMap<ToDoubleExprArgs>;
@@ -16158,6 +16373,7 @@ export class ToFileExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     path: false,
     safe: false,
   } satisfies RequiredMap<ToFileExprArgs>;
@@ -16220,6 +16436,7 @@ export class ConvertExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     style: false,
     safe: false,
   } satisfies RequiredMap<ConvertExprArgs>;
@@ -16250,6 +16467,7 @@ export class ConvertToCharsetExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     dest: true,
     source: false,
   } satisfies RequiredMap<ConvertToCharsetExprArgs>;
@@ -16282,6 +16500,7 @@ export class ConvertTimezoneExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     sourceTz: false,
     targetTz: true,
     timestamp: true,
@@ -16334,6 +16553,7 @@ export class GenerateSeriesExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     start: true,
     end: true,
     step: false,
@@ -16374,6 +16594,7 @@ export class GeneratorExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     rowcount: false,
     timelimit: false,
   } satisfies RequiredMap<GeneratorExprArgs>;
@@ -16404,6 +16625,7 @@ export class AIClassifyExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     categories: true,
     config: false,
   } satisfies RequiredMap<AIClassifyExprArgs>;
@@ -16532,6 +16754,7 @@ export class ArrayInsertExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     position: true,
     offset: false,
   } satisfies RequiredMap<ArrayInsertExprArgs>;
@@ -16676,6 +16899,7 @@ export class ArraySliceExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     start: true,
     end: false,
     step: false,
@@ -16885,6 +17109,7 @@ export class CaseExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     ifs: true,
     default: false,
   } satisfies RequiredMap<CaseExprArgs>;
@@ -16918,6 +17143,7 @@ export class CastExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     to: true,
     format: false,
     safe: false,
@@ -17079,6 +17305,7 @@ export class CeilExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     decimals: false,
     to: false,
   } satisfies RequiredMap<CeilExprArgs>;
@@ -17119,6 +17346,7 @@ export class CoalesceExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     isNvl: false,
     isNull: false,
   } satisfies RequiredMap<CoalesceExprArgs>;
@@ -17173,6 +17401,7 @@ export class ConcatExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     safe: false,
     coalesce: false,
   } satisfies RequiredMap<ConcatExprArgs>;
@@ -17632,6 +17861,7 @@ export class DateBinExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     unit: false,
     zone: false,
     origin: false,
@@ -17693,6 +17923,7 @@ export class DateDiffExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     unit: false,
     zone: false,
     bigInt: false,
@@ -17734,6 +17965,7 @@ export class DateTruncExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     unit: true,
     zone: false,
     inputTypePreserved: false,
@@ -17845,6 +18077,7 @@ export class DatetimeTruncExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     unit: true,
     zone: false,
   } satisfies RequiredMap<DatetimeTruncExprArgs>;
@@ -18054,6 +18287,7 @@ export class MakeIntervalExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     year: false,
     month: false,
     week: false,
@@ -18211,6 +18445,7 @@ export class TimestampExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     zone: false,
     withTz: false,
   } satisfies RequiredMap<TimestampExprArgs>;
@@ -18308,6 +18543,7 @@ export class TimestampTruncExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     unit: true,
     zone: false,
     inputTypePreserved: false,
@@ -18350,6 +18586,7 @@ export class TimeSliceExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     unit: true,
     kind: false,
   } satisfies RequiredMap<TimeSliceExprArgs>;
@@ -18446,6 +18683,7 @@ export class TimeTruncExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     unit: true,
     zone: false,
   } satisfies RequiredMap<TimeTruncExprArgs>;
@@ -18478,6 +18716,7 @@ export class DateFromPartsExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     year: true,
     month: false,
     day: false,
@@ -18523,6 +18762,7 @@ export class TimeFromPartsExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     hour: true,
     min: true,
     sec: true,
@@ -18640,6 +18880,7 @@ export class DecodeExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     charset: true,
     replace: false,
   } satisfies RequiredMap<DecodeExprArgs>;
@@ -18682,6 +18923,7 @@ export class DecryptExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     passphrase: true,
     aad: false,
     encryptionMethod: false,
@@ -18726,6 +18968,7 @@ export class DecryptRawExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     key: true,
     iv: true,
     aad: false,
@@ -18809,6 +19052,7 @@ export class EncryptExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     passphrase: true,
     aad: false,
     encryptionMethod: false,
@@ -18846,6 +19090,7 @@ export class EncryptRawExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     key: true,
     iv: true,
     aad: false,
@@ -18936,6 +19181,7 @@ export class UnnestExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     offset: false,
     explodeArray: false,
   } satisfies RequiredMap<UnnestExprArgs>;
@@ -18966,6 +19212,7 @@ export class FloorExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     decimals: false,
     to: false,
   } satisfies RequiredMap<FloorExprArgs>;
@@ -19036,6 +19283,7 @@ export class ToBinaryExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     format: false,
     safe: false,
   } satisfies RequiredMap<ToBinaryExprArgs>;
@@ -19110,6 +19358,7 @@ export class Base64EncodeExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     maxLineLength: false,
     alphabet: false,
   } satisfies RequiredMap<Base64EncodeExprArgs>;
@@ -19220,6 +19469,7 @@ export class GapFillExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     tsColumn: true,
     bucketWidth: true,
     partitioningColumns: false,
@@ -19275,6 +19525,7 @@ export class GenerateDateArrayExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     start: true,
     end: true,
     step: false,
@@ -19312,6 +19563,7 @@ export class GenerateTimestampArrayExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     start: true,
     end: true,
     step: true,
@@ -19541,6 +19793,7 @@ export class IfExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     true: true,
     false: false,
   } satisfies RequiredMap<IfExprArgs>;
@@ -19707,6 +19960,7 @@ export class JSONObjectExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     nullHandling: false,
     uniqueKeys: false,
     returnType: false,
@@ -19748,6 +20002,7 @@ export class JSONArrayExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     nullHandling: false,
     returnType: false,
     strict: false,
@@ -19785,6 +20040,7 @@ export class JSONExistsExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     path: true,
     passing: false,
     onCondition: false,
@@ -19835,6 +20091,7 @@ export class JSONStripNullsExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     includeArrays: false,
     removeEmpty: false,
   } satisfies RequiredMap<JSONStripNullsExprArgs>;
@@ -19887,6 +20144,7 @@ export class JSONTableExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     schema: true,
     path: false,
     errorHandling: false,
@@ -19938,6 +20196,7 @@ export class ObjectInsertExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     key: true,
     value: true,
     updateFlag: false,
@@ -20068,6 +20327,7 @@ export class JSONExtractExpr extends BinaryExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     onlyJsonTypes: false,
     variantExtract: false,
     jsonQuery: false,
@@ -20134,6 +20394,7 @@ export class JSONExtractScalarExpr extends BinaryExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     onlyJsonTypes: false,
     jsonType: false,
     scalarOnly: false,
@@ -20202,6 +20463,7 @@ export class JSONFormatExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     options: false,
     isJson: false,
     toJson: false,
@@ -20322,6 +20584,7 @@ export class ParseUrlExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     partToExtract: false,
     key: false,
     permissive: false,
@@ -20401,6 +20664,7 @@ export class ParseDatetimeExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     format: false,
     zone: false,
   } satisfies RequiredMap<ParseDatetimeExprArgs>;
@@ -20483,6 +20747,7 @@ export class LengthExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     binary: false,
     encoding: false,
   } satisfies RequiredMap<LengthExprArgs>;
@@ -20535,6 +20800,7 @@ export class LevenshteinExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     insCost: false,
     delCost: false,
     subCost: false,
@@ -20607,6 +20873,7 @@ export class MapExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     keys: false,
     values: false,
   } satisfies RequiredMap<MapExprArgs>;
@@ -20704,6 +20971,7 @@ export class MapInsertExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     key: false,
     value: true,
     updateFlag: false,
@@ -20779,6 +21047,7 @@ export class VarMapExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     keys: true,
     values: true,
   } satisfies RequiredMap<VarMapExprArgs>;
@@ -20931,6 +21200,7 @@ export class Nvl2Expr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     true: true,
     false: false,
   } satisfies RequiredMap<Nvl2ExprArgs>;
@@ -20961,6 +21231,7 @@ export class NormalizeExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     form: false,
     isCasefold: false,
   } satisfies RequiredMap<NormalizeExprArgs>;
@@ -20991,6 +21262,7 @@ export class NormalExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     stddev: true,
     gen: true,
   } satisfies RequiredMap<NormalExprArgs>;
@@ -21051,6 +21323,7 @@ export class OverlayExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     from: true,
     for: false,
   } satisfies RequiredMap<OverlayExprArgs>;
@@ -21126,6 +21399,7 @@ export class FeaturesAtTimeExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     time: false,
     numRows: false,
     ignoreFeatureNulls: false,
@@ -21161,6 +21435,7 @@ export class GenerateEmbeddingExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     paramsStruct: false,
     isText: false,
   } satisfies RequiredMap<GenerateEmbeddingExprArgs>;
@@ -21217,6 +21492,7 @@ export class VectorSearchExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     columnToSearch: true,
     queryTable: true,
     queryColumnToSearch: false,
@@ -21320,6 +21596,7 @@ export class RandExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     lower: false,
     upper: false,
   } satisfies RequiredMap<RandExprArgs>;
@@ -21435,6 +21712,7 @@ export class ReduceExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     initial: true,
     merge: true,
     finish: false,
@@ -21473,6 +21751,7 @@ export class RegexpExtractExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     position: false,
     occurrence: false,
     parameters: false,
@@ -21520,6 +21799,7 @@ export class RegexpExtractAllExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     group: false,
     parameters: false,
     position: false,
@@ -21563,6 +21843,7 @@ export class RegexpReplaceExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     replacement: false,
     position: false,
     occurrence: false,
@@ -21677,6 +21958,7 @@ export class RegexpInstrExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     position: false,
     occurrence: false,
     option: false,
@@ -21744,6 +22026,7 @@ export class RegexpCountExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     position: false,
     parameters: false,
   } satisfies RequiredMap<RegexpCountExprArgs>;
@@ -21829,6 +22112,7 @@ export class RoundExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     decimals: false,
     truncate: false,
     castsNonIntegerDecimals: false,
@@ -22081,6 +22365,7 @@ export class SortArrayExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     asc: false,
     nullsFirst: false,
   } satisfies RequiredMap<SortArrayExprArgs>;
@@ -22157,6 +22442,7 @@ export class SplitPartExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     delimiter: false,
     partIndex: false,
   } satisfies RequiredMap<SplitPartExprArgs>;
@@ -22187,6 +22473,7 @@ export class SubstringExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     start: false,
     length: false,
   } satisfies RequiredMap<SubstringExprArgs>;
@@ -22217,6 +22504,7 @@ export class SubstringIndexExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     delimiter: true,
     count: true,
   } satisfies RequiredMap<SubstringIndexExprArgs>;
@@ -22278,6 +22566,7 @@ export class StrPositionExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     substr: true,
     position: false,
     occurrence: false,
@@ -22315,6 +22604,7 @@ export class SearchExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     jsonScope: false,
     analyzer: false,
     analyzerOptions: false,
@@ -22365,6 +22655,7 @@ export class StrToDateExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     format: false,
     safe: false,
   } satisfies RequiredMap<StrToDateExprArgs>;
@@ -22397,6 +22688,7 @@ export class StrToTimeExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     format: true,
     zone: false,
     safe: false,
@@ -22460,6 +22752,7 @@ export class StrToMapExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     pairDelim: false,
     keyValueDelim: false,
     duplicateResolutionCallback: false,
@@ -22495,6 +22788,7 @@ export class NumberToStrExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     format: true,
     culture: false,
   } satisfies RequiredMap<NumberToStrExprArgs>;
@@ -22565,6 +22859,7 @@ export class StuffExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     start: true,
     length: true,
   } satisfies RequiredMap<StuffExprArgs>;
@@ -22628,6 +22923,7 @@ export class TimeToStrExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     format: true,
     culture: false,
     zone: false,
@@ -22725,6 +23021,7 @@ export class TrimExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     position: false,
     collation: false,
   } satisfies RequiredMap<TrimExprArgs>;
@@ -22755,6 +23052,7 @@ export class TsOrDsAddExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     unit: false,
     returnType: false,
   } satisfies RequiredMap<TsOrDsAddExprArgs>;
@@ -22817,6 +23115,7 @@ export class TsOrDsToDateExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     format: false,
     safe: false,
   } satisfies RequiredMap<TsOrDsToDateExprArgs>;
@@ -22857,6 +23156,7 @@ export class TsOrDsToTimeExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     format: false,
     safe: false,
   } satisfies RequiredMap<TsOrDsToTimeExprArgs>;
@@ -22927,6 +23227,7 @@ export class UniformExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     gen: false,
     seed: false,
   } satisfies RequiredMap<UniformExprArgs>;
@@ -22993,6 +23294,7 @@ export class UnixToTimeExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     scale: false,
     zone: false,
     hours: false,
@@ -23083,6 +23385,7 @@ export class UuidExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     name: false,
     isString: false,
   } satisfies RequiredMap<UuidExprArgs>;
@@ -23113,6 +23416,7 @@ export class TimestampFromPartsExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     zone: false,
     milli: false,
   } satisfies RequiredMap<TimestampFromPartsExprArgs>;
@@ -23229,6 +23533,7 @@ export class WidthBucketExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     minValue: false,
     maxValue: false,
     numBuckets: false,
@@ -23347,6 +23652,7 @@ export class XMLTableExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     namespaces: false,
     passing: false,
     columns: false,
@@ -23397,6 +23703,7 @@ export class ZipfExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     elementcount: true,
     gen: true,
   } satisfies RequiredMap<ZipfExprArgs>;
@@ -23916,6 +24223,7 @@ export class LagExpr extends AggFuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     offset: false,
     default: false,
   } satisfies RequiredMap<LagExprArgs>;
@@ -23946,6 +24254,7 @@ export class LeadExpr extends AggFuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     offset: false,
     default: false,
   } satisfies RequiredMap<LeadExprArgs>;
@@ -24016,6 +24325,7 @@ export class NthValueExpr extends AggFuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     offset: true,
     fromFirst: false,
   } satisfies RequiredMap<NthValueExprArgs>;
@@ -24060,6 +24370,7 @@ export class TryCastExpr extends CastExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     to: false,
     format: false,
     safe: false,
@@ -24198,6 +24509,7 @@ export class GroupConcatExpr extends AggFuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     separator: false,
     onOverflow: false,
   } satisfies RequiredMap<GroupConcatExprArgs>;
@@ -24282,6 +24594,7 @@ export class JSONObjectAggExpr extends AggFuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     nullHandling: false,
     uniqueKeys: false,
     returnType: false,
@@ -24334,6 +24647,7 @@ export class JSONArrayAggExpr extends AggFuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     order: false,
     nullHandling: false,
     returnType: false,
@@ -24838,6 +25152,7 @@ export class ApproxQuantileExpr extends QuantileExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
     quantile: true,
     accuracy: false,
     weight: false,
