@@ -9559,17 +9559,28 @@ export class AlterExpr extends Expression {
   }
 }
 
-export type AlterSessionExprArgs = { unset?: Expression } & BaseExpressionArgs;
+export type AlterSessionExprArgs = {
+  expressions: Expression[];
+  unset?: Expression;
+} & BaseExpressionArgs;
 
 export class AlterSessionExpr extends Expression {
   key = ExpressionKey.ALTER_SESSION;
 
-  static argTypes = { unset: false } satisfies RequiredMap<AlterSessionExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+    unset: false,
+  } satisfies RequiredMap<AlterSessionExprArgs>;
 
   declare args: AlterSessionExprArgs;
 
   constructor (args: AlterSessionExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
   }
 
   get $unset (): Expression | undefined {
@@ -9585,11 +9596,15 @@ export enum AnalyzeExprKind {
   COMPUTE = 'COMPUTE',
   TABLE = 'TABLE',
 }
-export type AnalyzeExprArgs = { kind?: AnalyzeExprKind;
+export type AnalyzeExprArgs = {
+  kind?: AnalyzeExprKind;
+  this?: Expression;
   options?: Expression[];
   mode?: Expression;
   partition?: Expression;
-  properties?: Expression[]; } & BaseExpressionArgs;
+  expression?: Expression;
+  properties?: Expression[];
+} & BaseExpressionArgs;
 
 export class AnalyzeExpr extends Expression {
   key = ExpressionKey.ANALYZE;
@@ -9601,9 +9616,11 @@ export class AnalyzeExpr extends Expression {
   static argTypes = {
     ...super.argTypes,
     kind: false,
+    this: false,
     options: false,
     mode: false,
     partition: false,
+    expression: false,
     properties: false,
   } satisfies RequiredMap<AnalyzeExprArgs>;
 
@@ -9613,8 +9630,12 @@ export class AnalyzeExpr extends Expression {
     super(args);
   }
 
-  get $kind (): string | undefined {
+  get $kind (): AnalyzeExprKind | undefined {
     return this.args.kind;
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   get $options (): Expression[] | undefined {
@@ -9627,6 +9648,10 @@ export class AnalyzeExpr extends Expression {
 
   get $partition (): Expression | undefined {
     return this.args.partition;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 
   get $properties (): Expression[] | undefined {
