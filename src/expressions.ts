@@ -5224,6 +5224,145 @@ export class ConstraintExpr extends Expression {
   }
 }
 
+export type DeleteExprArgs = {
+  with?: Expression;
+  using?: string;
+  where?: Expression;
+  returning?: Expression;
+  order?: Expression;
+  limit?: number | Expression;
+  tables?: Expression[];
+  cluster?: Expression;
+  this?: Expression;
+} & DMLExprArgs;
+
+export class DeleteExpr extends DMLExpr {
+  key = ExpressionKey.DELETE;
+
+  /**
+   * Defines the arguments (properties and child expressions) for Delete expressions.
+   * Each key represents an argument name, and the boolean indicates if it's required.
+   */
+  static argTypes: Record<string, boolean> = {
+    with: false,
+    this: false,
+    using: false,
+    where: false,
+    returning: false,
+    order: false,
+    limit: false,
+    tables: false,
+    cluster: false,
+  } satisfies RequiredMap<DeleteExprArgs>;
+
+  declare args: DeleteExprArgs;
+
+  constructor (args: DeleteExprArgs) {
+    super(args);
+  }
+
+  /**
+   * Create a DELETE expression or replace the table on an existing DELETE expression.
+   *
+   * Example:
+   *     delete("tbl").sql();
+   *     // 'DELETE FROM tbl'
+   *
+   * @param table - The table from which to delete
+   * @param options - Options object
+   * @param options.dialect - The dialect used to parse the input expression
+   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
+   * @returns The modified expression
+   */
+  delete (
+    table: string | Expression,
+    options: {
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    return _applyBuilder(table, {
+      instance: this,
+      arg: 'this',
+      into: TableExpr,
+      ...options,
+      dialect: options.dialect,
+      copy: options.copy ?? true,
+    }) as this;
+  }
+
+  /**
+   * Append to or set the WHERE expressions.
+   *
+   * Example:
+   *     delete("tbl").where(["x = 'a' OR x < 'b'"]).sql();
+   *     // "DELETE FROM tbl WHERE x = 'a' OR x < 'b'"
+   *
+   * @param expressions - The SQL code strings to parse.
+   *                      If an `Expression` instance is passed, it will be used as-is.
+   *                      Multiple expressions are combined with an AND operator.
+   * @param options - Options object
+   * @param options.append - If `true`, AND the new expressions to any existing expression.
+   * Otherwise, this resets the expression. Default is `true`.
+   * @param options.dialect - The dialect used to parse the input expressions
+   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
+   * @returns The modified expression
+   */
+  where (
+    expressions: Array<string | Expression>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    return _applyConjunctionBuilder(expressions, {
+      instance: this,
+      arg: 'where',
+      into: WhereExpr,
+      ...options,
+      append: options.append ?? true,
+      copy: options.copy ?? true,
+    }) as this;
+  }
+
+  get $with (): Expression | undefined {
+    return this.args.with;
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
+  get $using (): string | undefined {
+    return this.args.using;
+  }
+
+  get $where (): Expression | undefined {
+    return this.args.where;
+  }
+
+  get $returning (): Expression | undefined {
+    return this.args.returning;
+  }
+
+  get $order (): Expression | undefined {
+    return this.args.order;
+  }
+
+  get $limit (): number | Expression | undefined {
+    return this.args.limit;
+  }
+
+  get $tables (): Expression[] | undefined {
+    return this.args.tables;
+  }
+
+  get $cluster (): Expression | undefined {
+    return this.args.cluster;
+  }
+}
+
 /**
  * Valid kind values for DROP statements
  */
@@ -5240,8 +5379,10 @@ export enum DropExprKind {
   CONSTRAINT = 'CONSTRAINT',
   COLUMN = 'COLUMN',
 }
-export type DropExprArgs = { kind?: DropExprKind;
-  exists?: Expression;
+
+export type DropExprArgs = {
+  kind?: DropExprKind;
+  exists?: Expression[];
   temporary?: boolean;
   materialized?: boolean;
   cascade?: Expression;
@@ -5250,7 +5391,8 @@ export type DropExprArgs = { kind?: DropExprKind;
   cluster?: Expression;
   concurrently?: Expression;
   this?: Expression;
-  expressions?: Expression[]; } & BaseExpressionArgs;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
 
 export class DropExpr extends Expression {
   key = ExpressionKey.DROP;
@@ -5274,7 +5416,6 @@ export class DropExpr extends Expression {
   } satisfies RequiredMap<DropExprArgs>;
 
   declare args: DropExprArgs;
-
   constructor (args: DropExprArgs) {
     super(args);
   }
@@ -5283,7 +5424,15 @@ export class DropExpr extends Expression {
     return this.args.this;
   }
 
-  get $kind (): string | undefined {
+  get $kind (): DropExprKind | undefined {
+    return this.args.kind;
+  }
+
+  /**
+   * Gets the kind of DROP statement
+   * @returns The kind as an uppercase string, or undefined
+   */
+  get kind (): DropExprKind | undefined {
     return this.args.kind;
   }
 
@@ -5295,11 +5444,11 @@ export class DropExpr extends Expression {
     return this.args.exists;
   }
 
-  get $temporary (): Expression | undefined {
+  get $temporary (): boolean | undefined {
     return this.args.temporary;
   }
 
-  get $materialized (): Expression | undefined {
+  get $materialized (): boolean | undefined {
     return this.args.materialized;
   }
 
@@ -5322,16 +5471,13 @@ export class DropExpr extends Expression {
   get $concurrently (): Expression | undefined {
     return this.args.concurrently;
   }
-
-  /**
-   * Gets the kind of DROP statement
-   * @returns The kind as an uppercase string, or undefined
-   */
 }
 
-export type ExportExprArgs = { connection?: Expression;
+export type ExportExprArgs = {
+  connection?: Expression;
   options: Expression[];
-  this: Expression; } & BaseExpressionArgs;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class ExportExpr extends Expression {
   key = ExpressionKey.EXPORT;
@@ -5347,7 +5493,6 @@ export class ExportExpr extends Expression {
   } satisfies RequiredMap<ExportExprArgs>;
 
   declare args: ExportExprArgs;
-
   constructor (args: ExportExprArgs) {
     super(args);
   }
@@ -5369,6 +5514,7 @@ export type FilterExprArgs = {
   this: Expression;
   expression: Expression;
 } & BaseExpressionArgs;
+
 export class FilterExpr extends Expression {
   key = ExpressionKey.FILTER;
 
@@ -5379,7 +5525,7 @@ export class FilterExpr extends Expression {
   static argTypes: Record<string, boolean> = {
     this: true,
     expression: true,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  } satisfies RequiredMap<FilterExprArgs>;
 
   declare args: FilterExprArgs;
   constructor (args: FilterExprArgs) {
@@ -5405,9 +5551,11 @@ export class CheckExpr extends Expression {
   }
 }
 
-export type ChangesExprArgs = { information: string;
+export type ChangesExprArgs = {
+  information: string;
   atBefore?: Expression;
-  end?: Expression; } & BaseExpressionArgs;
+  end?: Expression;
+} & BaseExpressionArgs;
 
 export class ChangesExpr extends Expression {
   key = ExpressionKey.CHANGES;
@@ -5423,12 +5571,11 @@ export class ChangesExpr extends Expression {
   } satisfies RequiredMap<ChangesExprArgs>;
 
   declare args: ChangesExprArgs;
-
   constructor (args: ChangesExprArgs) {
     super(args);
   }
 
-  get $information (): Expression {
+  get $information (): string {
     return this.args.information;
   }
 
@@ -5441,9 +5588,11 @@ export class ChangesExpr extends Expression {
   }
 }
 
-export type ConnectExprArgs = { start?: Expression;
+export type ConnectExprArgs = {
+  start?: Expression;
   connect: Expression;
-  nocycle?: Expression; } & BaseExpressionArgs;
+  nocycle?: Expression;
+} & BaseExpressionArgs;
 
 export class ConnectExpr extends Expression {
   key = ExpressionKey.CONNECT;
@@ -5459,7 +5608,6 @@ export class ConnectExpr extends Expression {
   } satisfies RequiredMap<ConnectExprArgs>;
 
   declare args: ConnectExprArgs;
-
   constructor (args: ConnectExprArgs) {
     super(args);
   }
@@ -5482,6 +5630,7 @@ export type CopyParameterExprArgs = {
   expression?: Expression;
   expressions?: Expression[];
 } & BaseExpressionArgs;
+
 export class CopyParameterExpr extends Expression {
   key = ExpressionKey.COPY_PARAMETER;
 
@@ -5493,7 +5642,7 @@ export class CopyParameterExpr extends Expression {
     this: true,
     expression: false,
     expressions: false,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  } satisfies RequiredMap<CopyParameterExprArgs>;
 
   declare args: CopyParameterExprArgs;
   constructor (args: CopyParameterExprArgs) {
@@ -5513,11 +5662,13 @@ export class CopyParameterExpr extends Expression {
   }
 }
 
-export type CredentialsExprArgs = { credentials?: Expression[];
+export type CredentialsExprArgs = {
+  credentials?: Expression[];
   encryption?: Expression;
   storage?: Expression;
   iamRole?: Expression;
-  region?: Expression; } & BaseExpressionArgs;
+  region?: Expression;
+} & BaseExpressionArgs;
 
 export class CredentialsExpr extends Expression {
   key = ExpressionKey.CREDENTIALS;
@@ -5535,7 +5686,6 @@ export class CredentialsExpr extends Expression {
   } satisfies RequiredMap<CredentialsExprArgs>;
 
   declare args: CredentialsExprArgs;
-
   constructor (args: CredentialsExprArgs) {
     super(args);
   }
@@ -5562,18 +5712,21 @@ export class CredentialsExpr extends Expression {
 }
 
 export type PriorExprArgs = BaseExpressionArgs;
+
 export class PriorExpr extends Expression {
   key = ExpressionKey.PRIOR;
-  static argTypes: Record<string, boolean> = {} satisfies RequiredMap<PriorExprArgs>;
+
   declare args: PriorExprArgs;
   constructor (args: PriorExprArgs) {
     super(args);
   }
 }
 
-export type DirectoryExprArgs = { local?: Expression;
+export type DirectoryExprArgs = {
+  local?: Expression;
   rowFormat?: string;
-  this: Expression; } & BaseExpressionArgs;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class DirectoryExpr extends Expression {
   key = ExpressionKey.DIRECTORY;
@@ -10789,145 +10942,6 @@ export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
 
   get $variadic (): Expression | undefined {
     return this.args.variadic;
-  }
-}
-
-export type DeleteExprArgs = {
-  with?: Expression;
-  using?: string;
-  where?: Expression;
-  returning?: Expression;
-  order?: Expression;
-  limit?: number | Expression;
-  tables?: Expression[];
-  cluster?: Expression;
-  this?: Expression;
-} & BaseExpressionArgs;
-
-export class DeleteExpr extends DMLExpr {
-  key = ExpressionKey.DELETE;
-
-  /**
-   * Defines the arguments (properties and child expressions) for Delete expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
-  static argTypes: Record<string, boolean> = {
-    with: false,
-    this: false,
-    using: false,
-    where: false,
-    returning: false,
-    order: false,
-    limit: false,
-    tables: false,
-    cluster: false,
-  } satisfies RequiredMap<DeleteExprArgs>;
-
-  declare args: DeleteExprArgs;
-
-  constructor (args: DeleteExprArgs) {
-    super(args);
-  }
-
-  /**
-   * Create a DELETE expression or replace the table on an existing DELETE expression.
-   *
-   * Example:
-   *     delete("tbl").sql();
-   *     // 'DELETE FROM tbl'
-   *
-   * @param table - The table from which to delete
-   * @param options - Options object
-   * @param options.dialect - The dialect used to parse the input expression
-   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
-   * @returns The modified expression
-   */
-  withDelete (
-    table: string | Expression,
-    options: {
-      dialect?: DialectType;
-      copy?: boolean;
-    } = {},
-  ): this {
-    return _applyBuilder(table, {
-      instance: this,
-      arg: 'this',
-      into: TableExpr,
-      ...options,
-      dialect: options.dialect,
-      copy: options.copy ?? true,
-    }) as this;
-  }
-
-  /**
-   * Append to or set the WHERE expressions.
-   *
-   * Example:
-   *     delete("tbl").where(["x = 'a' OR x < 'b'"]).sql();
-   *     // "DELETE FROM tbl WHERE x = 'a' OR x < 'b'"
-   *
-   * @param expressions - The SQL code strings to parse.
-   *                      If an `Expression` instance is passed, it will be used as-is.
-   *                      Multiple expressions are combined with an AND operator.
-   * @param options - Options object
-   * @param options.append - If `true`, AND the new expressions to any existing expression.
-   * Otherwise, this resets the expression. Default is `true`.
-   * @param options.dialect - The dialect used to parse the input expressions
-   * @param options.copy - If `false`, modify this expression instance in-place. Default is `true`.
-   * @returns The modified expression
-   */
-  withWhere (
-    expressions: Array<string | Expression>,
-    options: {
-      append?: boolean;
-      dialect?: DialectType;
-      copy?: boolean;
-    } = {},
-  ): this {
-    return _applyConjunctionBuilder(expressions, {
-      instance: this,
-      arg: 'where',
-      into: WhereExpr,
-      ...options,
-      append: options.append ?? true,
-      copy: options.copy ?? true,
-    }) as this;
-  }
-
-  get $with (): Expression | undefined {
-    return this.args.with;
-  }
-
-  get $this (): Expression | undefined {
-    return this.args.this;
-  }
-
-  get $using (): Expression | undefined {
-    return this.args.using;
-  }
-
-  get $where (): Expression | undefined {
-    return this.args.where;
-  }
-
-  get $returning (): Expression | undefined {
-    return this.args.returning;
-  }
-
-  get $order (): Expression | undefined {
-    return this.args.order;
-  }
-
-  get $limit (): Expression | undefined {
-    return this.args.limit;
-  }
-
-  get $tables (): Expression[] | undefined {
-    return this.args.tables;
-  }
-
-  get $cluster (): Expression | undefined {
-    return this.args.cluster;
   }
 }
 
