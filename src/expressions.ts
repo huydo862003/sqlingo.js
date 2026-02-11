@@ -9845,14 +9845,26 @@ export class AnalyzeDeleteExpr extends Expression {
   }
 }
 
-export type AnalyzeWithExprArgs = BaseExpressionArgs;
+export type AnalyzeWithExprArgs = {
+  expressions: Expression[];
+} & BaseExpressionArgs;
+
 export class AnalyzeWithExpr extends Expression {
   key = ExpressionKey.ANALYZE_WITH;
-  static argTypes = {} satisfies RequiredMap<AnalyzeWithExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+  } satisfies RequiredMap<AnalyzeWithExprArgs>;
 
   declare args: AnalyzeWithExprArgs;
+
   constructor (args: AnalyzeWithExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
   }
 }
 
@@ -9865,12 +9877,21 @@ export enum AnalyzeValidateExprKind {
   STRUCTURE = 'STRUCTURE',
 }
 
-export type AnalyzeValidateExprArgs = { kind: AnalyzeValidateExprKind } & BaseExpressionArgs;
+export type AnalyzeValidateExprArgs = {
+  kind: AnalyzeValidateExprKind;
+  this?: Expression;
+  expression?: Expression;
+} & BaseExpressionArgs;
 
 export class AnalyzeValidateExpr extends Expression {
   key = ExpressionKey.ANALYZE_VALIDATE;
 
-  static argTypes = { kind: true } satisfies RequiredMap<AnalyzeValidateExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    kind: true,
+    this: false,
+    expression: false,
+  } satisfies RequiredMap<AnalyzeValidateExprArgs>;
 
   declare args: AnalyzeValidateExprArgs;
 
@@ -9878,8 +9899,16 @@ export class AnalyzeValidateExpr extends Expression {
     super(args);
   }
 
-  get $kind (): string {
+  get $kind (): AnalyzeValidateExprKind {
     return this.args.kind;
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 }
 
