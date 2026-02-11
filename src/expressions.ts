@@ -8725,11 +8725,16 @@ export class TableExpr extends Expression {
 }
 
 export type VarExprArgs = BaseExpressionArgs;
+
 export class VarExpr extends Expression {
   key = ExpressionKey.VAR;
-  static argTypes = {} satisfies RequiredMap<VarExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<VarExprArgs>;
 
   declare args: VarExprArgs;
+
   constructor (args: VarExprArgs) {
     super(args);
   }
