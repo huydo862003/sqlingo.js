@@ -9690,29 +9690,47 @@ export class TypeExpr extends Expression {
   }
 }
 
-export type CommandExprArgs = BaseExpressionArgs;
+export type CommandExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & BaseExpressionArgs;
+
 export class CommandExpr extends Expression {
   key = ExpressionKey.COMMAND;
-  static argTypes = {} satisfies RequiredMap<CommandExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<CommandExprArgs>;
 
   declare args: CommandExprArgs;
+
   constructor (args: CommandExprArgs) {
     super(args);
   }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
 }
 
-export type TransactionExprArgs = { modes?: Expression[];
-  mark?: Expression; } & BaseExpressionArgs;
+export type TransactionExprArgs = {
+  this?: Expression;
+  modes?: Expression[];
+  mark?: Expression;
+} & BaseExpressionArgs;
 
 export class TransactionExpr extends Expression {
   key = ExpressionKey.TRANSACTION;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Transaction expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: false,
     modes: false,
     mark: false,
   } satisfies RequiredMap<TransactionExprArgs>;
@@ -9721,6 +9739,10 @@ export class TransactionExpr extends Expression {
 
   constructor (args: TransactionExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   get $modes (): Expression[] | undefined {
@@ -9732,19 +9754,19 @@ export class TransactionExpr extends Expression {
   }
 }
 
-export type CommitExprArgs = { chain?: Expression;
-  durability?: Expression; } & BaseExpressionArgs;
+export type CommitExprArgs = {
+  chain?: Expression;
+  this?: Expression;
+  durability?: Expression;
+} & BaseExpressionArgs;
 
 export class CommitExpr extends Expression {
   key = ExpressionKey.COMMIT;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Commit expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
     chain: false,
+    this: false,
     durability: false,
   } satisfies RequiredMap<CommitExprArgs>;
 
@@ -9758,17 +9780,28 @@ export class CommitExpr extends Expression {
     return this.args.chain;
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
   get $durability (): Expression | undefined {
     return this.args.durability;
   }
 }
 
-export type RollbackExprArgs = { savepoint?: Expression } & BaseExpressionArgs;
+export type RollbackExprArgs = {
+  savepoint?: Expression;
+  this?: Expression;
+} & BaseExpressionArgs;
 
 export class RollbackExpr extends Expression {
   key = ExpressionKey.ROLLBACK;
 
-  static argTypes = { savepoint: false } satisfies RequiredMap<RollbackExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    savepoint: false,
+    this: false,
+  } satisfies RequiredMap<RollbackExprArgs>;
 
   declare args: RollbackExprArgs;
 
@@ -9778,6 +9811,10 @@ export class RollbackExpr extends Expression {
 
   get $savepoint (): Expression | undefined {
     return this.args.savepoint;
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 }
 
@@ -16820,25 +16857,49 @@ export class BooleanExpr extends ConditionExpr {
   }
 }
 
-export type PseudoTypeExprArgs = BaseExpressionArgs;
+export type PseudoTypeExprArgs = {
+  this: DataTypeExprKind;
+} & DataTypeExprArgs;
+
 export class PseudoTypeExpr extends DataTypeExpr {
   key = ExpressionKey.PSEUDO_TYPE;
-  static argTypes = {} satisfies RequiredMap<PseudoTypeExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<PseudoTypeExprArgs>;
 
   declare args: PseudoTypeExprArgs;
+
   constructor (args: PseudoTypeExprArgs) {
     super(args);
   }
+
+  get $this (): DataTypeExprKind {
+    return this.args.this;
+  }
 }
 
-export type ObjectIdentifierExprArgs = BaseExpressionArgs;
+export type ObjectIdentifierExprArgs = {
+  this: DataTypeExprKind;
+} & DataTypeExprArgs;
+
 export class ObjectIdentifierExpr extends DataTypeExpr {
   key = ExpressionKey.OBJECT_IDENTIFIER;
-  static argTypes = {} satisfies RequiredMap<ObjectIdentifierExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<ObjectIdentifierExprArgs>;
 
   declare args: ObjectIdentifierExprArgs;
+
   constructor (args: ObjectIdentifierExprArgs) {
     super(args);
+  }
+
+  get $this (): DataTypeExprKind {
+    return this.args.this;
   }
 }
 
