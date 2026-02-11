@@ -15291,30 +15291,50 @@ export enum SelectExprKind {
  *   where: whereCondition
  * });
  */
-export type SelectExprArgs = { with?: Expression;
+export type SelectExprArgs = {
+  with?: Expression;
   kind?: SelectExprKind;
+  expressions?: Expression[];
   hint?: Expression;
   distinct?: boolean;
   into?: Expression;
   from?: Expression;
-  operationModifiers?: Expression[]; } & BaseExpressionArgs;
+  operationModifiers?: Expression[];
+  match?: Expression;
+  laterals?: Expression[];
+  joins?: Expression[];
+  connect?: Expression;
+  pivots?: Expression[];
+  prewhere?: Expression;
+  where?: Expression;
+  group?: Expression;
+  having?: Expression;
+  qualify?: Expression;
+  windows?: Expression[];
+  distribute?: Expression;
+  sort?: Expression;
+  cluster?: Expression;
+  order?: Expression;
+  limit?: number | Expression;
+  offset?: number | Expression;
+  locks?: Expression[];
+  sample?: number | Expression;
+} & QueryExprArgs;
 
 export class SelectExpr extends QueryExpr {
   key = ExpressionKey.SELECT;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Select expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
     with: false,
     kind: false,
+    expressions: false,
     hint: false,
     distinct: false,
     into: false,
     from: false,
     operationModifiers: false,
+    ...QUERY_MODIFIERS,
   } satisfies RequiredMap<SelectExprArgs>;
 
   declare args: SelectExprArgs;
@@ -15327,15 +15347,19 @@ export class SelectExpr extends QueryExpr {
     return this.args.with;
   }
 
-  get $kind (): string | undefined {
+  get $kind (): SelectExprKind | undefined {
     return this.args.kind;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   get $hint (): Expression | undefined {
     return this.args.hint;
   }
 
-  get $distinct (): Expression | undefined {
+  get $distinct (): boolean | undefined {
     return this.args.distinct;
   }
 
@@ -15349,6 +15373,112 @@ export class SelectExpr extends QueryExpr {
 
   get $operationModifiers (): Expression[] | undefined {
     return this.args.operationModifiers;
+  }
+
+  /**
+   * Set the FROM expression.
+   *
+   * @example
+   * select().from("tbl").select(["x"]).sql()
+   * // 'SELECT x FROM tbl'
+   */
+  from (
+    expression: string | Expression,
+    options: {
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    return _applyBuilder(expression, {
+      instance: this,
+      arg: 'from',
+      into: FromExpr,
+      prefix: 'FROM',
+      dialect: options.dialect,
+      copy: options.copy ?? true,
+    });
+  }
+
+  /**
+   * Set the GROUP BY expression.
+   *
+   * @example
+   * select().from("tbl").select(["x", "COUNT(1)"]).groupBy(["x"]).sql()
+   * // 'SELECT x, COUNT(1) FROM tbl GROUP BY x'
+   */
+  groupBy (
+    expressions: Array<string | Expression | undefined>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    if (expressions.length === 0) {
+      return options.copy ?? true ? (this.copy() as this) : this;
+    }
+
+    return _applyChildListBuilder(expressions, {
+      instance: this,
+      arg: 'group',
+      append: options.append ?? true,
+      copy: options.copy ?? true,
+      prefix: 'GROUP BY',
+      into: GroupExpr,
+      dialect: options.dialect,
+    });
+  }
+
+  /**
+   * Set the SORT BY expression.
+   *
+   * @example
+   * select().from("tbl").select(["x"]).sortBy(["x DESC"]).sql({ dialect: "hive" })
+   * // 'SELECT x FROM tbl SORT BY x DESC'
+   */
+  sortBy (
+    expressions: Array<string | Expression | undefined>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    return _applyChildListBuilder(expressions, {
+      instance: this,
+      arg: 'sort',
+      append: options.append ?? true,
+      copy: options.copy ?? true,
+      prefix: 'SORT BY',
+      into: SortExpr,
+      dialect: options.dialect,
+    });
+  }
+
+  /**
+   * Set the CLUSTER BY expression.
+   *
+   * @example
+   * select().from("tbl").select(["x"]).clusterBy(["x"]).sql({ dialect: "hive" })
+   * // 'SELECT x FROM tbl CLUSTER BY x'
+   */
+  clusterBy (
+    expressions: Array<string | Expression | undefined>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    return _applyChildListBuilder(expressions, {
+      instance: this,
+      arg: 'cluster',
+      append: options.append ?? true,
+      copy: options.copy ?? true,
+      prefix: 'CLUSTER BY',
+      into: ClusterExpr,
+      dialect: options.dialect,
+    });
   }
 }
 
