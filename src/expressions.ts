@@ -15911,12 +15911,22 @@ export class SelectExpr extends QueryExpr {
   }
 }
 
-export type SubqueryExprArgs = { with?: Expression } & BaseExpressionArgs;
+export type SubqueryExprArgs = {
+  with?: WithExpr;
+  alias?: TableAliasExpr;
+  this: Expression;
+} & DerivedTableExprArgs & QueryExprArgs;
 
-export class SubqueryExpr extends DerivedTableExpr {
+export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
   key = ExpressionKey.SUBQUERY;
 
-  static argTypes = { with: false } satisfies RequiredMap<SubqueryExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    this: true,
+    alias: false,
+    with: false,
+  } satisfies RequiredMap<SubqueryExprArgs>;
 
   declare args: SubqueryExprArgs;
 
@@ -15924,7 +15934,15 @@ export class SubqueryExpr extends DerivedTableExpr {
     super(args);
   }
 
-  get $with (): Expression | undefined {
+  get $alias (): TableAliasExpr | undefined {
+    return this.args.alias;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $with (): WithExpr | undefined {
     return this.args.with;
   }
 
@@ -15932,6 +15950,7 @@ export class SubqueryExpr extends DerivedTableExpr {
    * Returns the first non-subquery expression.
    */
   unnest (): Expression {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let expression: Expression = this;
     while (expression instanceof SubqueryExpr) {
       expression = expression.args.this || expression;
@@ -15944,6 +15963,7 @@ export class SubqueryExpr extends DerivedTableExpr {
    * Returns the outermost wrapper subquery.
    */
   unwrap (): SubqueryExpr {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let expression: SubqueryExpr = this;
     while (expression.sameParent && expression.isWrapper) {
       const parent = expression.parent;
@@ -15966,7 +15986,7 @@ export class SubqueryExpr extends DerivedTableExpr {
     } = {},
   ): this {
     const instance = maybeCopy(this, options.copy ?? true);
-    const unnested = instance.unnest();
+    const unnested = instance?.unnest();
 
     if (unnested instanceof SelectExpr) {
       unnested.select(expressions, {
@@ -15975,7 +15995,7 @@ export class SubqueryExpr extends DerivedTableExpr {
       });
     }
 
-    return instance as this;
+    return instance;
   }
 
   /**
