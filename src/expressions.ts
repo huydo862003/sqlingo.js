@@ -15375,6 +15375,82 @@ export class SelectExpr extends QueryExpr {
     return this.args.operationModifiers;
   }
 
+  get $match (): Expression | undefined {
+    return this.args.match;
+  }
+
+  get $laterals (): Expression[] | undefined {
+    return this.args.laterals;
+  }
+
+  get $joins (): Expression[] | undefined {
+    return this.args.joins;
+  }
+
+  get $connect (): Expression | undefined {
+    return this.args.connect;
+  }
+
+  get $pivots (): Expression[] | undefined {
+    return this.args.pivots;
+  }
+
+  get $prewhere (): Expression | undefined {
+    return this.args.prewhere;
+  }
+
+  get $where (): Expression | undefined {
+    return this.args.where;
+  }
+
+  get $group (): Expression | undefined {
+    return this.args.group;
+  }
+
+  get $having (): Expression | undefined {
+    return this.args.having;
+  }
+
+  get $qualify (): Expression | undefined {
+    return this.args.qualify;
+  }
+
+  get $windows (): Expression[] | undefined {
+    return this.args.windows;
+  }
+
+  get $distribute (): Expression | undefined {
+    return this.args.distribute;
+  }
+
+  get $sort (): Expression | undefined {
+    return this.args.sort;
+  }
+
+  get $cluster (): Expression | undefined {
+    return this.args.cluster;
+  }
+
+  get $order (): Expression | undefined {
+    return this.args.order;
+  }
+
+  get $limit (): number | Expression | undefined {
+    return this.args.limit;
+  }
+
+  get $offset (): number | Expression | undefined {
+    return this.args.offset;
+  }
+
+  get $locks (): Expression[] | undefined {
+    return this.args.locks;
+  }
+
+  get $sample (): number | Expression | undefined {
+    return this.args.sample;
+  }
+
   /**
    * Set the FROM expression.
    *
