@@ -8501,9 +8501,13 @@ export class TableExpr extends Expression {
   /**
    * Defines the arguments (properties and child expressions) for Table expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
+   *
+   * @see {@link https://docs.sqlglot.com/sqlglot/expressions.html#Table | SQLGlot Table Documentation}
    */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     ...super.argTypes,
+    this: false,
+    alias: false,
     db: false,
     catalog: false,
     laterals: false,
@@ -8528,6 +8532,14 @@ export class TableExpr extends Expression {
 
   constructor (args: TableExprArgs) {
     super(args);
+  }
+
+  get $this (): ExpressionValue {
+    return this.args.this;
+  }
+
+  get $alias (): TableAliasExpr | IdentifierExpr | string | undefined {
+    return this.args.alias;
   }
 
   get $db (): Expression | undefined {
