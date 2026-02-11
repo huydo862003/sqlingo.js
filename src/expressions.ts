@@ -2206,8 +2206,8 @@ export class Expression {
    */
   in (
     expressions: unknown[],
+    query?: string | Expression;
     options?: {
-      query?: string | Expression;
       unnest?: string | Expression | Array<string | Expression>;
       copy?: boolean;
     },
@@ -2215,8 +2215,8 @@ export class Expression {
     const copy = options?.copy ?? true;
     const unnest = options?.unnest;
 
-    let subquery = options?.query
-      ? maybeParse(options.query as string | Expression)
+    let subquery = query
+      ? maybeParse(query)
       : undefined;
 
     // NOTE: The original sqlglot doesn't check that subquery is a QueryExpr. However, after a quick scan, only QueryExpr has a `subquery` method, so I added this check
@@ -8216,11 +8216,38 @@ export class TupleExpr extends Expression {
   constructor (args: TupleExprArgs) {
     super(args);
   }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
+  in (
+    expressions: unknown[],
+    query?: Expression | string,
+    options?: {
+      unnest: Expression | string | (Expression | string)[];
+      copy: boolean;
+      [key: string]: unknown;
+    },
+  ): InExpr {
+    const copy = options?.copy ?? true;
+    return new InExpr({
+      this: maybeCopy(this, copy),
+      expressions: expressions.map((e) => convert(e, copy)),
+      query: query ? maybeParse(query, { ...options, copy }) : undefined,
+      unnest: options?.unnest ?
+        new UnnestExpr({
+          expressions: ensureList(options.unnest).map((e) => maybeParse(e, { ...options, copy }))
+        }) : undefined,
+    });
+  }
 }
 
 export type QueryOptionExprArgs = BaseExpressionArgs;
+
 export class QueryOptionExpr extends Expression {
   key = ExpressionKey.QUERY_OPTION;
+
   static argTypes = {} satisfies RequiredMap<QueryOptionExprArgs>;
 
   declare args: QueryOptionExprArgs;
