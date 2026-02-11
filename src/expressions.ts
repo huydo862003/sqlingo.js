@@ -2206,7 +2206,7 @@ export class Expression {
    */
   in (
     expressions: unknown[],
-    query?: string | Expression;
+    query?: string | Expression,
     options?: {
       unnest?: string | Expression | Array<string | Expression>;
       copy?: boolean;
@@ -8476,7 +8476,8 @@ export class GetExpr extends Expression {
   }
 }
 
-export type TableExprArgs = { db?: string | IdentifierExpr;
+export type TableExprArgs = {
+  db?: string | IdentifierExpr;
   catalog?: string | IdentifierExpr;
   laterals?: Expression[];
   joins?: Expression[];
@@ -8493,7 +8494,8 @@ export type TableExprArgs = { db?: string | IdentifierExpr;
   changes?: Expression[];
   rowsFrom?: number | Expression;
   sample?: number | Expression;
-  indexed?: Expression; } & BaseExpressionArgs;
+  indexed?: Expression;
+} & BaseExpressionArgs;
 
 export class TableExpr extends Expression {
   key = ExpressionKey.TABLE;
@@ -8542,11 +8544,11 @@ export class TableExpr extends Expression {
     return this.args.alias;
   }
 
-  get $db (): Expression | undefined {
+  get $db (): string | IdentifierExpr | undefined {
     return this.args.db;
   }
 
-  get $catalog (): Expression | undefined {
+  get $catalog (): string | IdentifierExpr | undefined {
     return this.args.catalog;
   }
 
@@ -8574,7 +8576,7 @@ export class TableExpr extends Expression {
     return this.args.version;
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 
@@ -8582,7 +8584,7 @@ export class TableExpr extends Expression {
     return this.args.pattern;
   }
 
-  get $ordinality (): Expression | undefined {
+  get $ordinality (): boolean | undefined {
     return this.args.ordinality;
   }
 
@@ -8602,16 +8604,110 @@ export class TableExpr extends Expression {
     return this.args.changes;
   }
 
-  get $rowsFrom (): Expression | undefined {
+  get $rowsFrom (): number | Expression | undefined {
     return this.args.rowsFrom;
   }
 
-  get $sample (): Expression | undefined {
+  get $sample (): number | Expression | undefined {
     return this.args.sample;
   }
 
   get $indexed (): Expression | undefined {
     return this.args.indexed;
+  }
+
+  /**
+   * Returns the name of the table.
+   * If `this` is missing or is a Func, returns empty string.
+   */
+  get name (): string {
+    const thisArg = this.args.this;
+    if (!thisArg || thisArg instanceof FuncExpr) {
+      return '';
+    }
+    if (thisArg instanceof IdentifierExpr || thisArg instanceof TableExpr) {
+      return thisArg.name || '';
+    }
+    return '';
+  }
+
+  /**
+   * Returns the database name as a string.
+   */
+  get db (): string {
+    return this.text('db');
+  }
+
+  /**
+   * Returns the catalog name as a string.
+   */
+  get catalog (): string {
+    return this.text('catalog');
+  }
+
+  /**
+   * Returns all Select expressions that reference this table.
+   */
+  get selects (): Expression[] {
+    return [];
+  }
+
+  /**
+   * Returns a list of named selects.
+   */
+  get namedSelects (): string[] {
+    return [];
+  }
+
+  /**
+   * Returns the parts of a table in order: [catalog, db, this].
+   * Flattens Dot expressions into their constituent parts.
+   */
+  get parts (): Expression[] {
+    const parts: Expression[] = [];
+
+    for (const arg of ['catalog', 'db', 'this'] as const) {
+      const part = this.args[arg];
+
+      if (part instanceof DotExpr) {
+        parts.push(...part.flatten());
+      } else if (part instanceof Expression) {
+        parts.push(part);
+      }
+    }
+
+    return parts;
+  }
+
+  /**
+   * Converts this table to a Column expression.
+   */
+  toColumn (copy: boolean = true): Expression {
+    const parts = this.parts;
+    const lastPart = parts[parts.length - 1];
+
+    let col: Expression;
+    if (lastPart instanceof IdentifierExpr) {
+      // Build column from parts (reversed for catalog.db.table order)
+      const columnParts = parts.slice(0, 4).reverse();
+      const fields = parts.slice(4);
+      col = column(...columnParts as any, fields, copy);
+    } else {
+      // If last part is a function or array wrapped in Table
+      col = lastPart;
+    }
+
+    const aliasArg = this.args.alias;
+    if (aliasArg) {
+      const aliasName = typeof aliasArg === 'string'
+        ? aliasArg
+        : aliasArg instanceof TableAliasExpr || aliasArg instanceof IdentifierExpr
+          ? aliasArg.this
+          : aliasArg;
+      col = alias(col, aliasName as any, { copy });
+    }
+
+    return col;
   }
 }
 
