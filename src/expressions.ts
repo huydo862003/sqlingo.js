@@ -14803,28 +14803,49 @@ export enum SetOperationExprKind {
   EXCEPT = 'EXCEPT',
 }
 
-export type SetOperationExprArgs = { with?: Expression;
+export type SetOperationExprArgs = {
+  this: Expression;
+  expression: Expression;
   distinct?: boolean;
   byName?: string;
-  side?: Expression;
-  kind?: SetOperationExprKind;
-  on?: Expression; } & BaseExpressionArgs;
+  side?: string;
+  kind?: string;
+  on?: Expression;
+  match?: Expression;
+  laterals?: Expression[];
+  joins?: Expression[];
+  connect?: Expression;
+  pivots?: Expression[];
+  prewhere?: Expression;
+  where?: Expression;
+  group?: Expression;
+  having?: Expression;
+  qualify?: Expression;
+  windows?: Expression[];
+  distribute?: Expression;
+  sort?: Expression;
+  cluster?: Expression;
+  order?: Expression;
+  limit?: number | Expression;
+  offset?: number | Expression;
+  locks?: Expression[];
+  sample?: number | Expression;
+} & QueryExprArgs;
 
 export class SetOperationExpr extends QueryExpr {
   key = ExpressionKey.SET_OPERATION;
 
-  /**
-   * Defines the arguments (properties and child expressions) for SetOperation expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     ...super.argTypes,
     with: false,
+    this: true,
+    expression: true,
     distinct: false,
     byName: false,
     side: false,
     kind: false,
     on: false,
+    ...QUERY_MODIFIERS,
   } satisfies RequiredMap<SetOperationExprArgs>;
 
   declare args: SetOperationExprArgs;
@@ -14837,15 +14858,23 @@ export class SetOperationExpr extends QueryExpr {
     return this.args.with;
   }
 
-  get $distinct (): Expression | undefined {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  get $distinct (): boolean | undefined {
     return this.args.distinct;
   }
 
-  get $byName (): Expression | undefined {
+  get $byName (): string | undefined {
     return this.args.byName;
   }
 
-  get $side (): Expression | undefined {
+  get $side (): string | undefined {
     return this.args.side;
   }
 
@@ -14855,6 +14884,103 @@ export class SetOperationExpr extends QueryExpr {
 
   get $on (): Expression | undefined {
     return this.args.on;
+  }
+
+  /**
+   * Applies select expressions to both sides of the set operation.
+   */
+  select (
+    expressions: Array<string | Expression>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    // Apply select to left side (this)
+    if (this.args.this && 'unnest' in this.args.this && typeof this.args.this.unnest === 'function') {
+      const unnested = this.args.this.unnest();
+      if ('select' in unnested && typeof unnested.select === 'function') {
+        unnested.select(expressions, { ...options, copy: false });
+      }
+    }
+
+    // Apply select to right side (expression)
+    if (this.args.expression && 'unnest' in this.args.expression && typeof this.args.expression.unnest === 'function') {
+      const unnested = this.args.expression.unnest();
+      if ('select' in unnested && typeof unnested.select === 'function') {
+        unnested.select(expressions, { ...options, copy: false });
+      }
+    }
+
+    return this;
+  }
+
+  /**
+   * Returns named selects from the underlying query.
+   * Walks up the SetOperation chain to find the base query.
+   */
+  get namedSelects (): string[] {
+    let expression: Expression = this;
+    while (expression instanceof SetOperationExpr) {
+      expression = expression.args.this.unnest();
+    }
+    if ('namedSelects' in expression) {
+      return expression.namedSelects as string[];
+    }
+    return [];
+  }
+
+  /**
+   * Returns true if either side of the set operation is a star select.
+   */
+  get isStar (): boolean {
+    const leftIsStar = 'isStar' in this.args.this && this.args.this.isStar;
+    const rightIsStar = 'isStar' in this.args.expression && this.args.expression.isStar;
+    return Boolean(leftIsStar || rightIsStar);
+  }
+
+  /**
+   * Returns selects from the underlying query.
+   * Walks up the SetOperation chain to find the base query.
+   */
+  get selects (): Expression[] {
+    let expression: Expression = this;
+    while (expression instanceof SetOperationExpr) {
+      expression = expression.args.this.unnest();
+    }
+    if ('selects' in expression) {
+      return expression.selects as Expression[];
+    }
+    return [];
+  }
+
+  /**
+   * Returns the left side of the set operation.
+   */
+  get left (): Expression {
+    return this.args.this;
+  }
+
+  /**
+   * Returns the right side of the set operation.
+   */
+  get right (): Expression {
+    return this.args.expression;
+  }
+
+  /**
+   * Returns the kind of set operation as uppercase string.
+   */
+  get kind (): string {
+    return this.text('kind').toUpperCase();
+  }
+
+  /**
+   * Returns the side as uppercase string.
+   */
+  get side (): string {
+    return this.text('side').toUpperCase();
   }
 }
 
@@ -15688,10 +15814,6 @@ export type UnionExprArgs = SetOperationExprArgs;
 export class UnionExpr extends SetOperationExpr {
   key = ExpressionKey.UNION;
 
-  static argTypes = {
-    ...super.argTypes,
-  } satisfies RequiredMap<UnionExprArgs>;
-
   declare args: UnionExprArgs;
 
   constructor (args: UnionExprArgs) {
@@ -15703,9 +15825,6 @@ export type ExceptExprArgs = SetOperationExprArgs;
 
 export class ExceptExpr extends SetOperationExpr {
   key = ExpressionKey.EXCEPT;
-  static argTypes = {
-    ...super.argTypes,
-  } satisfies RequiredMap<ExceptExprArgs>;
 
   declare args: ExceptExprArgs;
 
@@ -15718,10 +15837,6 @@ export type IntersectExprArgs = SetOperationExprArgs;
 
 export class IntersectExpr extends SetOperationExpr {
   key = ExpressionKey.INTERSECT;
-
-  static argTypes = {
-    ...super.argTypes,
-  } satisfies RequiredMap<IntersectExprArgs>;
 
   declare args: IntersectExprArgs;
 
