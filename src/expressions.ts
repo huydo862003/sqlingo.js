@@ -5743,6 +5743,7 @@ export class CopyParameterExpr extends Expression {
   } satisfies RequiredMap<CopyParameterExprArgs>;
 
   declare args: CopyParameterExprArgs;
+
   constructor (args: CopyParameterExprArgs) {
     super(args);
   }
@@ -5785,6 +5786,7 @@ export class CredentialsExpr extends Expression {
   } satisfies RequiredMap<CredentialsExprArgs>;
 
   declare args: CredentialsExprArgs;
+
   constructor (args: CredentialsExprArgs) {
     super(args);
   }
@@ -6115,7 +6117,8 @@ export class HintExpr extends Expression {
   key = ExpressionKey.HINT;
 
   static argTypes: Record<string, boolean> = {
-    expressions: true;
+    ...super.argTypes,
+    expressions: true,
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: HintExprArgs;
@@ -6362,9 +6365,11 @@ export class IndexParametersExpr extends Expression {
   }
 }
 
-export type ConditionalInsertExprArgs = { else?: Expression;
+export type ConditionalInsertExprArgs = {
+  else?: Expression;
   this: Expression;
-  expression?: Expression; } & BaseExpressionArgs;
+  expression?: Expression;
+} & BaseExpressionArgs;
 
 export class ConditionalInsertExpr extends Expression {
   key = ExpressionKey.CONDITIONAL_INSERT;
@@ -10658,7 +10663,9 @@ export type EphemeralColumnConstraintExprArgs = {
 export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.EPHEMERAL_COLUMN_CONSTRAINT;
 
-  static argTypes: Record<string, boolean> = { this: false } satisfies RequiredMap<BaseExpressionArgs>;
+  static argTypes: Record<string, boolean> = {
+    this: false,
+  } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: EphemeralColumnConstraintExprArgs;
   constructor (args: EphemeralColumnConstraintExprArgs) {
@@ -10705,6 +10712,7 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
   } satisfies RequiredMap<GeneratedAsIdentityColumnConstraintExprArgs>;
 
   declare args: GeneratedAsIdentityColumnConstraintExprArgs;
+
   constructor (args: GeneratedAsIdentityColumnConstraintExprArgs) {
     super(args);
   }
@@ -10766,6 +10774,7 @@ export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr
   } satisfies RequiredMap<GeneratedAsRowColumnConstraintExprArgs>;
 
   declare args: GeneratedAsRowColumnConstraintExprArgs;
+
   constructor (args: GeneratedAsRowColumnConstraintExprArgs) {
     super(args);
   }
@@ -10818,6 +10827,7 @@ export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<IndexColumnConstraintExprArgs>;
 
   declare args: IndexColumnConstraintExprArgs;
+
   constructor (args: IndexColumnConstraintExprArgs) {
     super(args);
   }
@@ -10861,6 +10871,7 @@ export class InlineLengthColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<InlineLengthColumnConstraintExprArgs>;
 
   declare args: InlineLengthColumnConstraintExprArgs;
+
   constructor (args: InlineLengthColumnConstraintExprArgs) {
     super(args);
   }
@@ -10876,18 +10887,21 @@ export class NonClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<NonClusteredColumnConstraintExprArgs>;
 
   declare args: NonClusteredColumnConstraintExprArgs;
+
   constructor (args: NonClusteredColumnConstraintExprArgs) {
     super(args);
   }
 }
 
 export type NotForReplicationColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+
 export class NotForReplicationColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NOT_FOR_REPLICATION_COLUMN_CONSTRAINT;
 
   static argTypes: Record<string, boolean> = {} satisfies RequiredMap<NotForReplicationColumnConstraintExprArgs>;
 
   declare args: NotForReplicationColumnConstraintExprArgs;
+
   constructor (args: NotForReplicationColumnConstraintExprArgs) {
     super(args);
   }
@@ -10908,6 +10922,7 @@ export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr 
   } satisfies RequiredMap<MaskingPolicyColumnConstraintExprArgs>;
 
   declare args: MaskingPolicyColumnConstraintExprArgs;
+
   constructor (args: MaskingPolicyColumnConstraintExprArgs) {
     super(args);
   }
@@ -10939,6 +10954,7 @@ export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<NotNullColumnConstraintExprArgs>;
 
   declare args: NotNullColumnConstraintExprArgs;
+
   constructor (args: NotNullColumnConstraintExprArgs) {
     super(args);
   }
@@ -10958,6 +10974,7 @@ export class OnUpdateColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<OnUpdateColumnConstraintExprArgs>;
 
   declare args: OnUpdateColumnConstraintExprArgs;
+
   constructor (args: OnUpdateColumnConstraintExprArgs) {
     super(args);
   }
@@ -10983,6 +11000,7 @@ export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<PrimaryKeyColumnConstraintExprArgs>;
 
   declare args: PrimaryKeyColumnConstraintExprArgs;
+
   constructor (args: PrimaryKeyColumnConstraintExprArgs) {
     super(args);
   }
@@ -11006,6 +11024,7 @@ export class TitleColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<TitleColumnConstraintExprArgs>;
 
   declare args: TitleColumnConstraintExprArgs;
+
   constructor (args: TitleColumnConstraintExprArgs) {
     super(args);
   }
@@ -11037,6 +11056,7 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<UniqueColumnConstraintExprArgs>;
 
   declare args: UniqueColumnConstraintExprArgs;
+
   constructor (args: UniqueColumnConstraintExprArgs) {
     super(args);
   }
@@ -11072,6 +11092,7 @@ export class UppercaseColumnConstraintExpr extends ColumnConstraintKindExpr {
   >;
 
   declare args: UppercaseColumnConstraintExprArgs;
+
   constructor (args: UppercaseColumnConstraintExprArgs) {
     super(args);
   }
@@ -11103,6 +11124,7 @@ export class ProjectionPolicyColumnConstraintExpr extends ColumnConstraintKindEx
   } satisfies RequiredMap<ProjectionPolicyColumnConstraintExprArgs>;
 
   declare args: ProjectionPolicyColumnConstraintExprArgs;
+
   constructor (args: ProjectionPolicyColumnConstraintExprArgs) {
     super(args);
   }
@@ -11132,6 +11154,7 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<ComputedColumnConstraintExprArgs>;
 
   declare args: ComputedColumnConstraintExprArgs;
+
   constructor (args: ComputedColumnConstraintExprArgs) {
     super(args);
   }
@@ -11174,6 +11197,7 @@ export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<InOutColumnConstraintExprArgs>;
 
   declare args: InOutColumnConstraintExprArgs;
+
   constructor (args: InOutColumnConstraintExprArgs) {
     super(args);
   }
@@ -11200,12 +11224,14 @@ export enum CopyExprKind {
   REMOTE = 'REMOTE',
 }
 
-export type CopyExprArgs = { kind: CopyExprKind;
+export type CopyExprArgs = {
+  kind: CopyExprKind;
   files?: Expression[];
   credentials?: Expression[];
   format?: string;
   params?: Expression[];
-  this: Expression; } & BaseExpressionArgs;
+  this: Expression;
+} & BaseExpressionArgs;
 
 export class CopyExpr extends DMLExpr {
   key = ExpressionKey.COPY;
@@ -11255,8 +11281,9 @@ export class CopyExpr extends DMLExpr {
   }
 }
 
-export type InsertExprArgs = { hint?: Expression;
-  with?: Expression;
+export type InsertExprArgs = {
+  hint?: Expression;
+  with?: WithExpr;
   isFunction?: Expression;
   conflict?: Expression;
   returning?: Expression;
@@ -11272,7 +11299,8 @@ export type InsertExprArgs = { hint?: Expression;
   source?: Expression;
   default?: Expression;
   this?: Expression;
-  expression?: Expression; } & BaseExpressionArgs;
+  expression?: SelectExpr;
+} & BaseExpressionArgs;
 
 export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
   key = ExpressionKey.INSERT;
