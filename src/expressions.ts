@@ -15463,9 +15463,11 @@ export class SelectExpr extends QueryExpr {
     options: {
       dialect?: DialectType;
       copy?: boolean;
+      [key: string]: unknown;
     } = {},
   ): this {
     return _applyBuilder(expression, {
+      ...options,
       instance: this,
       arg: 'from',
       into: FromExpr,
@@ -15488,6 +15490,7 @@ export class SelectExpr extends QueryExpr {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
+      [key: string]: unknown;
     } = {},
   ): this {
     if (expressions.length === 0) {
@@ -15495,6 +15498,7 @@ export class SelectExpr extends QueryExpr {
     }
 
     return _applyChildListBuilder(expressions, {
+      ...options,
       instance: this,
       arg: 'group',
       append: options.append ?? true,
@@ -15518,9 +15522,11 @@ export class SelectExpr extends QueryExpr {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
+      [key: string]: unknown;
     } = {},
   ): this {
     return _applyChildListBuilder(expressions, {
+      ...options,
       instance: this,
       arg: 'sort',
       append: options.append ?? true,
@@ -15544,9 +15550,11 @@ export class SelectExpr extends QueryExpr {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
+      [key: string]: unknown;
     } = {},
   ): this {
     return _applyChildListBuilder(expressions, {
+      ...options,
       instance: this,
       arg: 'cluster',
       append: options.append ?? true,
@@ -15570,9 +15578,11 @@ export class SelectExpr extends QueryExpr {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
+      [key: string]: unknown;
     } = {},
   ): this {
     return _applyListBuilder(expressions, {
+      ...options,
       instance: this,
       arg: 'expressions',
       append: options.append ?? true,
@@ -15595,9 +15605,11 @@ export class SelectExpr extends QueryExpr {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
+      [key: string]: unknown;
     } = {},
   ): this {
     return _applyListBuilder(expressions, {
+      ...options,
       instance: this,
       arg: 'laterals',
       append: options.append ?? true,
@@ -15625,7 +15637,7 @@ export class SelectExpr extends QueryExpr {
    */
   join (
     expression: string | Expression,
-    options?: {
+    options: {
       on?: string | Expression | Array<string | Expression>;
       using?: string | Expression | Array<string | Expression>;
       append?: boolean;
@@ -15633,6 +15645,7 @@ export class SelectExpr extends QueryExpr {
       joinAlias?: string | Expression;
       dialect?: DialectType;
       copy?: boolean;
+      [key: string]: unknown;
     } = {},
   ): this {
     const parseArgs = {
@@ -15716,9 +15729,11 @@ export class SelectExpr extends QueryExpr {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
+      [key: string]: unknown;
     } = {},
   ): this {
     return _applyListBuilder(expressions, {
+      ...options,
       instance: this,
       arg: 'windows',
       append: options.append ?? true,
@@ -15741,9 +15756,11 @@ export class SelectExpr extends QueryExpr {
       append?: boolean;
       dialect?: DialectType;
       copy?: boolean;
+      [key: string]: unknown;
     } = {},
   ): this {
     return _applyConjunctionBuilder(expressions, {
+      ...options,
       instance: this,
       arg: 'qualify',
       append: options.append ?? true,
