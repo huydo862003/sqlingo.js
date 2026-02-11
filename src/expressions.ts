@@ -15625,7 +15625,7 @@ export class SelectExpr extends QueryExpr {
    */
   join (
     expression: string | Expression,
-    options: {
+    options?: {
       on?: string | Expression | Array<string | Expression>;
       using?: string | Expression | Array<string | Expression>;
       append?: boolean;
@@ -15657,8 +15657,8 @@ export class SelectExpr extends QueryExpr {
     }
 
     // Set join type (method, side, kind)
-    if (options.joinType) {
-      const [method, side, kind] = maybeParse(options.joinType, 'JOIN_TYPE', parseArgs) as any;
+    if (options?.joinType) {
+      const [method, side, kind] = maybeParse(options.joinType, { ...parseArgs, into: 'JOIN_TYPE' });
       if (method) {
         join.set('method', method.text);
       }
@@ -15671,7 +15671,7 @@ export class SelectExpr extends QueryExpr {
     }
 
     // Set ON condition
-    if (options.on) {
+    if (options?.on) {
       const onExpr = and(...ensureList(options.on), {
         dialect: options.dialect,
         copy: options.copy ?? true,
@@ -15680,7 +15680,7 @@ export class SelectExpr extends QueryExpr {
     }
 
     // Set USING
-    if (options.using) {
+    if (options?.using) {
       join = _applyListBuilder(ensureList(options.using), {
         instance: join,
         arg: 'using',
@@ -15691,8 +15691,8 @@ export class SelectExpr extends QueryExpr {
     }
 
     // Set join alias
-    if (options.joinAlias) {
-      join.set('this', alias(join.args.this, options.joinAlias as any, { table: true }));
+    if (options?.joinAlias) {
+      join.set('this', alias(join.args.this, options?.joinAlias, { table: true }));
     }
 
     return _applyListBuilder([join], {
