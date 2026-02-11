@@ -9220,16 +9220,55 @@ export class StarExpr extends Expression {
   get $rename (): Expression | undefined {
     return this.args.rename;
   }
+
+  /**
+   * Returns the name of this star expression.
+   */
+  get name (): string {
+    return '*';
+  }
+
+  /**
+   * Returns the output name of this star expression.
+   */
+  get outputName (): string {
+    return this.name;
+  }
 }
 
-export type DataTypeParamExprArgs = BaseExpressionArgs;
+export type DataTypeParamExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & BaseExpressionArgs;
+
 export class DataTypeParamExpr extends Expression {
   key = ExpressionKey.DATA_TYPE_PARAM;
-  static argTypes = {} satisfies RequiredMap<DataTypeParamExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<DataTypeParamExprArgs>;
 
   declare args: DataTypeParamExprArgs;
+
   constructor (args: DataTypeParamExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  /**
+   * Returns the name from the 'this' expression.
+   */
+  get name (): string {
+    return this.args.this.name;
   }
 }
 
@@ -16141,14 +16180,32 @@ export class WindowExpr extends ConditionExpr {
   }
 }
 
-export type ParameterExprArgs = BaseExpressionArgs;
-export class ParameterExpr extends Expression {
+export type ParameterExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & ConditionExprArgs;
+
+export class ParameterExpr extends ConditionExpr {
   key = ExpressionKey.PARAMETER;
-  static argTypes = {} satisfies RequiredMap<ParameterExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<ParameterExprArgs>;
 
   declare args: ParameterExprArgs;
+
   constructor (args: ParameterExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 }
 
@@ -16161,12 +16218,19 @@ export enum SessionParameterExprKind {
   LOCAL = 'LOCAL',
   VARIABLE = 'VARIABLE',
 }
-export type SessionParameterExprArgs = { kind?: SessionParameterExprKind } & BaseExpressionArgs;
+export type SessionParameterExprArgs = {
+  this: Expression;
+  kind?: SessionParameterExprKind;
+} & ConditionExprArgs;
 
-export class SessionParameterExpr extends Expression {
+export class SessionParameterExpr extends ConditionExpr {
   key = ExpressionKey.SESSION_PARAMETER;
 
-  static argTypes = { kind: false } satisfies RequiredMap<SessionParameterExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    kind: false,
+  } satisfies RequiredMap<SessionParameterExprArgs>;
 
   declare args: SessionParameterExprArgs;
 
@@ -16174,7 +16238,11 @@ export class SessionParameterExpr extends Expression {
     super(args);
   }
 
-  get $kind (): string | undefined {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $kind (): SessionParameterExprKind | undefined {
     return this.args.kind;
   }
 }
@@ -16189,11 +16257,14 @@ export enum PlaceholderExprKind {
   NUMERIC = 'NUMERIC',
   DOLLAR = 'DOLLAR',
 }
-export type PlaceholderExprArgs = { kind?: PlaceholderExprKind;
+export type PlaceholderExprArgs = {
+  this?: Expression;
+  kind?: PlaceholderExprKind;
   widget?: Expression;
-  jdbc?: string; } & BaseExpressionArgs;
+  jdbc?: boolean;
+} & ConditionExprArgs;
 
-export class PlaceholderExpr extends Expression {
+export class PlaceholderExpr extends ConditionExpr {
   key = ExpressionKey.PLACEHOLDER;
 
   /**
@@ -16202,6 +16273,7 @@ export class PlaceholderExpr extends Expression {
    */
   static argTypes = {
     ...super.argTypes,
+    this: false,
     kind: false,
     widget: false,
     jdbc: false,
@@ -16213,7 +16285,11 @@ export class PlaceholderExpr extends Expression {
     super(args);
   }
 
-  get $kind (): string | undefined {
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
+  get $kind (): PlaceholderExprKind | undefined {
     return this.args.kind;
   }
 
@@ -16221,30 +16297,68 @@ export class PlaceholderExpr extends Expression {
     return this.args.widget;
   }
 
-  get $jdbc (): Expression | undefined {
+  get $jdbc (): boolean | undefined {
     return this.args.jdbc;
+  }
+
+  /**
+   * Returns the name of this placeholder.
+   */
+  get name (): string {
+    return this.args.this?.name || '?';
   }
 }
 
-export type NullExprArgs = BaseExpressionArgs;
-export class NullExpr extends Expression {
+export type NullExprArgs = ConditionExprArgs;
+
+export class NullExpr extends ConditionExpr {
   key = ExpressionKey.NULL;
-  static argTypes = {} satisfies RequiredMap<NullExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<NullExprArgs>;
 
   declare args: NullExprArgs;
+
   constructor (args: NullExprArgs) {
     super(args);
   }
+
+  /**
+   * Returns the name of this null expression.
+   */
+  get name (): string {
+    return 'NULL';
+  }
+
+  /**
+   * Converts this to a Python null value.
+   */
+  toPy (): null {
+    return null;
+  }
 }
 
-export type BooleanExprArgs = BaseExpressionArgs;
-export class BooleanExpr extends Expression {
+export type BooleanExprArgs = ConditionExprArgs;
+
+export class BooleanExpr extends ConditionExpr {
   key = ExpressionKey.BOOLEAN;
-  static argTypes = {} satisfies RequiredMap<BooleanExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<BooleanExprArgs>;
 
   declare args: BooleanExprArgs;
+
   constructor (args: BooleanExprArgs) {
     super(args);
+  }
+
+  /**
+   * Converts this to a Python boolean value.
+   */
+  toPy (): boolean {
+    return Boolean(this.args.this);
   }
 }
 
