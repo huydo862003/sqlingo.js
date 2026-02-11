@@ -9,6 +9,7 @@ import { ensureList } from './helper';
 import {
   multiInherit, type RequiredMap,
 } from './port_internals';
+import { ErrorLevel, ParseError, parseOne } from '.';
 
 export const SQLGLOT_META = 'sqlglot.meta';
 export const SQLGLOT_ANONYMOUS = 'sqlglot.anonymous';
@@ -9276,22 +9277,133 @@ export class DataTypeParamExpr extends Expression {
  * Valid kind values for DataType expressions (SQL data types)
  */
 export enum DataTypeExprKind {
-  CHAR = 'CHAR',
-  VARCHAR = 'VARCHAR',
-  TEXT = 'TEXT',
-  INT = 'INT',
-  BIGINT = 'BIGINT',
-  FLOAT = 'FLOAT',
-  DOUBLE = 'DOUBLE',
-  DECIMAL = 'DECIMAL',
-  BOOLEAN = 'BOOLEAN',
-  DATE = 'DATE',
-  DATETIME = 'DATETIME',
-  TIMESTAMP = 'TIMESTAMP',
   ARRAY = 'ARRAY',
-  MAP = 'MAP',
-  STRUCT = 'STRUCT',
+  AGGREGATEFUNCTION = 'AGGREGATEFUNCTION',
+  SIMPLEAGGREGATEFUNCTION = 'SIMPLEAGGREGATEFUNCTION',
+  BIGDECIMAL = 'BIGDECIMAL',
+  BIGINT = 'BIGINT',
+  BIGNUM = 'BIGNUM',
+  BIGSERIAL = 'BIGSERIAL',
+  BINARY = 'BINARY',
+  BIT = 'BIT',
+  BLOB = 'BLOB',
+  BOOLEAN = 'BOOLEAN',
+  BPCHAR = 'BPCHAR',
+  CHAR = 'CHAR',
+  DATE = 'DATE',
+  DATE32 = 'DATE32',
+  DATEMULTIRANGE = 'DATEMULTIRANGE',
+  DATERANGE = 'DATERANGE',
+  DATETIME = 'DATETIME',
+  DATETIME2 = 'DATETIME2',
+  DATETIME64 = 'DATETIME64',
+  DECIMAL = 'DECIMAL',
+  DECIMAL32 = 'DECIMAL32',
+  DECIMAL64 = 'DECIMAL64',
+  DECIMAL128 = 'DECIMAL128',
+  DECIMAL256 = 'DECIMAL256',
+  DECFLOAT = 'DECFLOAT',
+  DOUBLE = 'DOUBLE',
+  DYNAMIC = 'DYNAMIC',
+  ENUM = 'ENUM',
+  ENUM8 = 'ENUM8',
+  ENUM16 = 'ENUM16',
+  FILE = 'FILE',
+  FIXEDSTRING = 'FIXEDSTRING',
+  FLOAT = 'FLOAT',
+  GEOGRAPHY = 'GEOGRAPHY',
+  GEOGRAPHYPOINT = 'GEOGRAPHYPOINT',
+  GEOMETRY = 'GEOMETRY',
+  POINT = 'POINT',
+  RING = 'RING',
+  LINESTRING = 'LINESTRING',
+  MULTILINESTRING = 'MULTILINESTRING',
+  POLYGON = 'POLYGON',
+  MULTIPOLYGON = 'MULTIPOLYGON',
+  HLLSKETCH = 'HLLSKETCH',
+  HSTORE = 'HSTORE',
+  IMAGE = 'IMAGE',
+  INET = 'INET',
+  INT = 'INT',
+  INT128 = 'INT128',
+  INT256 = 'INT256',
+  INT4MULTIRANGE = 'INT4MULTIRANGE',
+  INT4RANGE = 'INT4RANGE',
+  INT8MULTIRANGE = 'INT8MULTIRANGE',
+  INT8RANGE = 'INT8RANGE',
+  INTERVAL = 'INTERVAL',
+  IPADDRESS = 'IPADDRESS',
+  IPPREFIX = 'IPPREFIX',
+  IPV4 = 'IPV4',
+  IPV6 = 'IPV6',
   JSON = 'JSON',
+  JSONB = 'JSONB',
+  LIST = 'LIST',
+  LONGBLOB = 'LONGBLOB',
+  LONGTEXT = 'LONGTEXT',
+  LOWCARDINALITY = 'LOWCARDINALITY',
+  MAP = 'MAP',
+  MEDIUMBLOB = 'MEDIUMBLOB',
+  MEDIUMINT = 'MEDIUMINT',
+  MEDIUMTEXT = 'MEDIUMTEXT',
+  MONEY = 'MONEY',
+  NAME = 'NAME',
+  NCHAR = 'NCHAR',
+  NESTED = 'NESTED',
+  NOTHING = 'NOTHING',
+  NULL = 'NULL',
+  NUMMULTIRANGE = 'NUMMULTIRANGE',
+  NUMRANGE = 'NUMRANGE',
+  NVARCHAR = 'NVARCHAR',
+  OBJECT = 'OBJECT',
+  RANGE = 'RANGE',
+  ROWVERSION = 'ROWVERSION',
+  SERIAL = 'SERIAL',
+  SET = 'SET',
+  SMALLDATETIME = 'SMALLDATETIME',
+  SMALLINT = 'SMALLINT',
+  SMALLMONEY = 'SMALLMONEY',
+  SMALLSERIAL = 'SMALLSERIAL',
+  STRUCT = 'STRUCT',
+  SUPER = 'SUPER',
+  TEXT = 'TEXT',
+  TINYBLOB = 'TINYBLOB',
+  TINYTEXT = 'TINYTEXT',
+  TIME = 'TIME',
+  TIMETZ = 'TIMETZ',
+  TIME_NS = 'TIME_NS',
+  TIMESTAMP = 'TIMESTAMP',
+  TIMESTAMPNTZ = 'TIMESTAMPNTZ',
+  TIMESTAMPLTZ = 'TIMESTAMPLTZ',
+  TIMESTAMPTZ = 'TIMESTAMPTZ',
+  TIMESTAMP_S = 'TIMESTAMP_S',
+  TIMESTAMP_MS = 'TIMESTAMP_MS',
+  TIMESTAMP_NS = 'TIMESTAMP_NS',
+  TINYINT = 'TINYINT',
+  TSMULTIRANGE = 'TSMULTIRANGE',
+  TSRANGE = 'TSRANGE',
+  TSTZMULTIRANGE = 'TSTZMULTIRANGE',
+  TSTZRANGE = 'TSTZRANGE',
+  UBIGINT = 'UBIGINT',
+  UINT = 'UINT',
+  UINT128 = 'UINT128',
+  UINT256 = 'UINT256',
+  UMEDIUMINT = 'UMEDIUMINT',
+  UDECIMAL = 'UDECIMAL',
+  UDOUBLE = 'UDOUBLE',
+  UNION = 'UNION',
+  UNKNOWN = 'UNKNOWN',
+  USERDEFINED = 'USER-DEFINED',
+  USMALLINT = 'USMALLINT',
+  UTINYINT = 'UTINYINT',
+  UUID = 'UUID',
+  VARBINARY = 'VARBINARY',
+  VARCHAR = 'VARCHAR',
+  VARIANT = 'VARIANT',
+  VECTOR = 'VECTOR',
+  XML = 'XML',
+  YEAR = 'YEAR',
+  TDIGEST = 'TDIGEST',
 }
 
 export type DataTypeExprArgs = {
@@ -9300,7 +9412,7 @@ export type DataTypeExprArgs = {
   nested?: Expression;
   values?: Expression[];
   prefix?: Expression;
-  kind?: DataTypeExprKind | string;
+  kind?: DataTypeExprKind;
   nullable?: Expression;
 } & BaseExpressionArgs;
 
@@ -9322,6 +9434,94 @@ export class DataTypeExpr extends Expression {
     nullable: false,
   } satisfies RequiredMap<DataTypeExprArgs>;
 
+  static STRUCT_TYPES = new Set<DataTypeExprKind>([
+    DataTypeExprKind.FILE,
+    DataTypeExprKind.NESTED,
+    DataTypeExprKind.OBJECT,
+    DataTypeExprKind.STRUCT,
+    DataTypeExprKind.UNION,
+  ]);
+
+  static ARRAY_TYPES = new Set<DataTypeExprKind>([DataTypeExprKind.ARRAY, DataTypeExprKind.LIST]);
+
+  static NESTED_TYPES = new Set<DataTypeExprKind>([
+    ...DataTypeExpr.STRUCT_TYPES,
+    ...DataTypeExpr.ARRAY_TYPES,
+    DataTypeExprKind.MAP,
+  ]);
+
+  static TEXT_TYPES = new Set<DataTypeExprKind>([
+    DataTypeExprKind.CHAR,
+    DataTypeExprKind.NCHAR,
+    DataTypeExprKind.NVARCHAR,
+    DataTypeExprKind.TEXT,
+    DataTypeExprKind.VARCHAR,
+    DataTypeExprKind.NAME,
+  ]);
+
+  static SIGNED_INTEGER_TYPES = new Set<DataTypeExprKind>([
+    DataTypeExprKind.BIGINT,
+    DataTypeExprKind.INT,
+    DataTypeExprKind.INT128,
+    DataTypeExprKind.INT256,
+    DataTypeExprKind.MEDIUMINT,
+    DataTypeExprKind.SMALLINT,
+    DataTypeExprKind.TINYINT,
+  ]);
+
+  static UNSIGNED_INTEGER_TYPES = new Set<DataTypeExprKind>([
+    DataTypeExprKind.UBIGINT,
+    DataTypeExprKind.UINT,
+    DataTypeExprKind.UINT128,
+    DataTypeExprKind.UINT256,
+    DataTypeExprKind.UMEDIUMINT,
+    DataTypeExprKind.USMALLINT,
+    DataTypeExprKind.UTINYINT,
+  ]);
+
+  static INTEGER_TYPES = new Set<DataTypeExprKind>([
+    ...DataTypeExpr.SIGNED_INTEGER_TYPES,
+    ...DataTypeExpr.UNSIGNED_INTEGER_TYPES,
+    DataTypeExprKind.BIT,
+  ]);
+
+  static FLOAT_TYPES = new Set<DataTypeExprKind>([DataTypeExprKind.DOUBLE, DataTypeExprKind.FLOAT]);
+
+  static REAL_TYPES = new Set<DataTypeExprKind>([
+    ...DataTypeExpr.FLOAT_TYPES,
+    DataTypeExprKind.BIGDECIMAL,
+    DataTypeExprKind.DECIMAL,
+    DataTypeExprKind.DECIMAL32,
+    DataTypeExprKind.DECIMAL64,
+    DataTypeExprKind.DECIMAL128,
+    DataTypeExprKind.DECIMAL256,
+    DataTypeExprKind.DECFLOAT,
+    DataTypeExprKind.MONEY,
+    DataTypeExprKind.SMALLMONEY,
+    DataTypeExprKind.UDECIMAL,
+    DataTypeExprKind.UDOUBLE,
+  ]);
+
+  static NUMERIC_TYPES = new Set<DataTypeExprKind>([...DataTypeExpr.INTEGER_TYPES, ...DataTypeExpr.REAL_TYPES]);
+
+  static TEMPORAL_TYPES = new Set<DataTypeExprKind>([
+    DataTypeExprKind.DATE,
+    DataTypeExprKind.DATE32,
+    DataTypeExprKind.DATETIME,
+    DataTypeExprKind.DATETIME2,
+    DataTypeExprKind.DATETIME64,
+    DataTypeExprKind.SMALLDATETIME,
+    DataTypeExprKind.TIME,
+    DataTypeExprKind.TIMESTAMP,
+    DataTypeExprKind.TIMESTAMPNTZ,
+    DataTypeExprKind.TIMESTAMPLTZ,
+    DataTypeExprKind.TIMESTAMPTZ,
+    DataTypeExprKind.TIMESTAMP_MS,
+    DataTypeExprKind.TIMESTAMP_NS,
+    DataTypeExprKind.TIMESTAMP_S,
+    DataTypeExprKind.TIMETZ,
+  ]);
+
   declare args: DataTypeExprArgs;
 
   constructor (args: DataTypeExprArgs) {
@@ -9329,12 +9529,76 @@ export class DataTypeExpr extends Expression {
   }
 
   /**
-   * Build a DataTypeExpr from a string type name
-   * @param dtype - Data type name
-   * @returns DataTypeExpr instance
+   * Constructs a DataTypeExpr object.
+   *
+   * @param dtype - The data type of interest.
+   * @param dialect - The dialect to use for parsing dtype, in case it's a string.
+   * @param udt - When set to true, dtype will be used as-is if it can't be parsed into a DataTypeExpr, thus creating a user-defined type.
+   * @param copy - Whether to copy the data type.
+   * @param kwargs - Additional arguments to pass in the constructor of DataTypeExpr.
+   * @returns The constructed DataTypeExpr object.
    */
-  static build (dtype: string): DataTypeExpr {
-    return new DataTypeExpr({ this: dtype as any });
+  static build (
+    dtype: DataTypeExprKind | DataTypeExpr | IdentifierExpr | DotExpr,
+    options: {
+      dialect?: string;
+      udt?: boolean;
+      copy?: boolean;
+      [key: string]: unknown;
+    } = {},
+  ): DataTypeExpr {
+    const { udt = false, copy = true, dialect, ...kwargs } = options;
+
+    let dataTypeExp;
+
+    if (typeof dtype === 'string') {
+      if (dtype === DataTypeExprKind.UNKNOWN) {
+        return new DataTypeExpr({ 
+          ...kwargs,
+          this: DataTypeExprKind.UNKNOWN,
+        });
+      }
+
+      try {
+        dataTypeExp = parseOne(dtype, {
+          read: dialect,
+          into: DataTypeExpr,
+          errorLevel: ErrorLevel.IGNORE,
+        });
+      } catch (e) {
+        if (!(e instanceof ParseError)) {
+          throw e;
+        }
+        if (udt) {
+          return new DataTypeExpr({
+            ...options,
+            this: DataTypeExprKind.USERDEFINED,
+            kind: dtype,
+          });
+        }
+      }
+    }
+
+    if ((dtype instanceof IdentifierExpr || dtype instanceof DotExpr) && udt) {
+      return new DataTypeExpr({
+        ...kwargs,
+        this: DataTypeExprKind.USERDEFINED,
+        kind: dtype,
+      });
+    }
+
+    if (typeof dtype === 'string' && Object.values(DataTypeExprKind).includes(dtype as DataTypeExprKind)) {
+      return new DataTypeExpr({
+        ...kwargs,
+        this: dtype,
+      });
+    }
+
+    if (dtype instanceof DataTypeExpr) {
+      return maybeCopy(dtype, copy);
+    }
+
+    throw new Error(`Invalid data type: ${typeof dtype}. Expected string, DataTypeExprKind, or DataTypeExpr`);
   }
 
   get $this (): DataTypeExprKind {
@@ -9357,7 +9621,7 @@ export class DataTypeExpr extends Expression {
     return this.args.prefix;
   }
 
-  get $kind (): string | undefined {
+  get $kind (): DataTypeExprKind | undefined {
     return this.args.kind;
   }
 
@@ -15691,7 +15955,7 @@ export class SelectExpr extends QueryExpr {
         selects.push(e.outputName);
       } else if (e instanceof AliasesExpr) {
         const aliases = e.args.expressions || [];
-        selects.push(...aliases.map(a => a instanceof Expression ? a.name : '').filter(n => n));
+        selects.push(...aliases.map((a) => a instanceof Expression ? a.name : '').filter((n) => n));
       }
     }
 
@@ -15702,7 +15966,7 @@ export class SelectExpr extends QueryExpr {
    * Returns true if any expression is a star expression.
    */
   get isStar (): boolean {
-    return this.expressions.some(expression => expression.isStar);
+    return this.expressions.some((expression) => expression.isStar);
   }
 
   /**
@@ -15932,7 +16196,14 @@ export class SelectExpr extends QueryExpr {
 
     // Set join type (method, side, kind)
     if (options?.joinType) {
-      const [method, side, kind] = maybeParse(options.joinType, { ...parseArgs, into: 'JOIN_TYPE' });
+      const [
+        method,
+        side,
+        kind,
+      ] = maybeParse(options.joinType, {
+        ...parseArgs,
+        into: 'JOIN_TYPE',
+      });
       if (method) {
         join.set('method', method.text);
       }
@@ -16049,9 +16320,9 @@ export class SelectExpr extends QueryExpr {
     const instance = maybeCopy(this, options.copy ?? true);
     const distinctValue = options.distinct ?? true;
 
-    if (ons && ons.length > 0) {
+    if (ons && 0 < ons.length) {
       const onExprs = ons.filter((on): on is string | Expression => on !== undefined)
-        .map(on => maybeParse(on, Expression, { copy: options.copy ?? true }));
+        .map((on) => maybeParse(on, Expression, { copy: options.copy ?? true }));
       const tupleExpr = new TupleExpr({ expressions: onExprs });
       instance.set('distinct', distinctValue ? new DistinctExpr({ on: tupleExpr }) : undefined);
     } else {
@@ -16131,9 +16402,8 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): this {
-    const hintExprs = hints.map(h =>
-      maybeParse(h, Expression, { dialect: options.dialect }),
-    );
+    const hintExprs = hints.map((h) =>
+      maybeParse(h, Expression, { dialect: options.dialect }));
     const inst = maybeCopy(this, options.copy ?? true);
     inst.set('hint', new HintExpr({ expressions: hintExprs }));
     return inst as this;
