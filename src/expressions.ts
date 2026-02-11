@@ -8299,23 +8299,44 @@ export class QueryOptionExpr extends Expression {
   }
 }
 
-export type WithTableHintExprArgs = BaseExpressionArgs;
+// https://learn.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-table?view=sql-server-ver16
+export type WithTableHintExprArgs = {
+  expressions: Expression[];
+} & BaseExpressionArgs;
+
 export class WithTableHintExpr extends Expression {
   key = ExpressionKey.WITH_TABLE_HINT;
-  static argTypes = {} satisfies RequiredMap<WithTableHintExprArgs>;
+
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+    expressions: true,
+  } satisfies RequiredMap<WithTableHintExprArgs>;
 
   declare args: WithTableHintExprArgs;
+
   constructor (args: WithTableHintExprArgs) {
     super(args);
   }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
 }
 
-export type IndexTableHintExprArgs = { target?: Expression } & BaseExpressionArgs;
+// https://dev.mysql.com/doc/refman/8.0/en/index-hints.html
+export type IndexTableHintExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+  target?: Expression;
+} & BaseExpressionArgs;
 
 export class IndexTableHintExpr extends Expression {
   key = ExpressionKey.INDEX_TABLE_HINT;
 
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+    this: true,
+    expressions: false,
     target: false,
   } satisfies RequiredMap<IndexTableHintExprArgs>;
 
@@ -8323,6 +8344,14 @@ export class IndexTableHintExpr extends Expression {
 
   constructor (args: IndexTableHintExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   get $target (): Expression | undefined {
@@ -8339,12 +8368,22 @@ export enum HistoricalDataExprKind {
   TRANSACTION_TIME = 'TRANSACTION_TIME',
 }
 
-export type HistoricalDataExprArgs = { kind: HistoricalDataExprKind } & BaseExpressionArgs;
+// https://docs.snowflake.com/en/sql-reference/constructs/at-before
+export type HistoricalDataExprArgs = {
+  this: Expression;
+  kind: HistoricalDataExprKind;
+  expression: Expression;
+} & BaseExpressionArgs;
 
 export class HistoricalDataExpr extends Expression {
   key = ExpressionKey.HISTORICAL_DATA;
 
-  static argTypes = { kind: true } satisfies RequiredMap<HistoricalDataExprArgs>;
+  static argTypes: Record<string, boolean> = {
+    ...super.argTypes,
+    this: true,
+    kind: true,
+    expression: true,
+  } satisfies RequiredMap<HistoricalDataExprArgs>;
 
   declare args: HistoricalDataExprArgs;
 
@@ -8352,23 +8391,32 @@ export class HistoricalDataExpr extends Expression {
     super(args);
   }
 
-  get $kind (): string {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $kind (): HistoricalDataExprKind {
     return this.args.kind;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 }
 
-export type PutExprArgs = { target: Expression;
-  properties?: Expression[]; } & BaseExpressionArgs;
+// https://docs.snowflake.com/en/sql-reference/sql/put
+export type PutExprArgs = {
+  this: Expression;
+  target: Expression;
+  properties?: Expression[];
+} & BaseExpressionArgs;
 
 export class PutExpr extends Expression {
   key = ExpressionKey.PUT;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Put expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     ...super.argTypes,
+    this: true,
     target: true,
     properties: false,
   } satisfies RequiredMap<PutExprArgs>;
@@ -8377,6 +8425,10 @@ export class PutExpr extends Expression {
 
   constructor (args: PutExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $target (): Expression {
@@ -8388,18 +8440,19 @@ export class PutExpr extends Expression {
   }
 }
 
-export type GetExprArgs = { target: Expression;
-  properties?: Expression[]; } & BaseExpressionArgs;
+// https://docs.snowflake.com/en/sql-reference/sql/get
+export type GetExprArgs = {
+  this: Expression;
+  target: Expression;
+  properties?: Expression[];
+} & BaseExpressionArgs;
 
 export class GetExpr extends Expression {
   key = ExpressionKey.GET;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Get expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
-  static argTypes = {
+  static argTypes: Record<string, boolean> = {
     ...super.argTypes,
+    this: true,
     target: true,
     properties: false,
   } satisfies RequiredMap<GetExprArgs>;
@@ -8408,6 +8461,10 @@ export class GetExpr extends Expression {
 
   constructor (args: GetExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $target (): Expression {
