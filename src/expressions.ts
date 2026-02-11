@@ -8745,12 +8745,28 @@ export enum VersionExprKind {
   VERSION = 'VERSION',
 }
 
-export type VersionExprArgs = { kind: VersionExprKind } & BaseExpressionArgs;
+/**
+ * Time travel expressions for Iceberg, BigQuery, DuckDB, etc.
+ * @see {@link https://trino.io/docs/current/connector/iceberg.html | Trino Iceberg}
+ * @see {@link https://www.databricks.com/blog/2019/02/04/introducing-delta-time-travel-for-large-scale-data-lakes.html | Delta Time Travel}
+ * @see {@link https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax#for_system_time_as_of | BigQuery System Time}
+ * @see {@link https://learn.microsoft.com/en-us/sql/relational-databases/tables/querying-data-in-a-system-versioned-temporal-table | SQL Server Temporal Tables}
+ */
+export type VersionExprArgs = {
+  this: Expression;
+  kind: VersionExprKind;
+  expression?: Expression;
+} & BaseExpressionArgs;
 
 export class VersionExpr extends Expression {
   key = ExpressionKey.VERSION;
 
-  static argTypes = { kind: true } satisfies RequiredMap<VersionExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    kind: true,
+    expression: false,
+  } satisfies RequiredMap<VersionExprArgs>;
 
   declare args: VersionExprArgs;
 
@@ -8758,36 +8774,67 @@ export class VersionExpr extends Expression {
     super(args);
   }
 
-  get $kind (): string {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $kind (): VersionExprKind {
     return this.args.kind;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 }
 
-export type SchemaExprArgs = BaseExpressionArgs;
+export type SchemaExprArgs = {
+  this?: Expression;
+  expressions?: Expression[];
+} & BaseExpressionArgs;
+
 export class SchemaExpr extends Expression {
   key = ExpressionKey.SCHEMA;
-  static argTypes = {} satisfies RequiredMap<SchemaExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+    expressions: false,
+  } satisfies RequiredMap<SchemaExprArgs>;
 
   declare args: SchemaExprArgs;
+
   constructor (args: SchemaExprArgs) {
     super(args);
   }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
 }
 
-export type LockExprArgs = { update: Expression;
+/**
+ * Lock expressions for SELECT ... FOR UPDATE
+ * @see {@link https://dev.mysql.com/doc/refman/8.0/en/select.html | MySQL SELECT}
+ * @see {@link https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/SELECT.html | Oracle SELECT}
+ */
+export type LockExprArgs = {
+  update: Expression;
+  expressions?: Expression[];
   wait?: Expression;
-  key?: unknown; } & BaseExpressionArgs;
+  key?: Expression;
+} & BaseExpressionArgs;
 
 export class LockExpr extends Expression {
   key = ExpressionKey.LOCK;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Lock expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
     update: true,
+    expressions: false,
     wait: false,
     key: false,
   } satisfies RequiredMap<LockExprArgs>;
@@ -8800,6 +8847,10 @@ export class LockExpr extends Expression {
 
   get $update (): Expression {
     return this.args.update;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   get $wait (): Expression | undefined {
@@ -16025,21 +16076,25 @@ export class IntersectExpr extends SetOperationExpr {
   }
 }
 
+/**
+ * VALUES clause with DuckDB support for ORDER BY, LIMIT, OFFSET
+ * @see {@link https://duckdb.org/docs/stable/sql/query_syntax/limit | DuckDB LIMIT}
+ */
 export type ValuesExprArgs = {
+  expressions: Expression[];
+  alias?: TableAliasExpr;
   order?: Expression;
   limit?: number | Expression;
-  offset?: boolean;
-} & BaseExpressionArgs;
+  offset?: number | Expression;
+} & UDTFExprArgs;
 
 export class ValuesExpr extends UDTFExpr {
   key = ExpressionKey.VALUES;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Values expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    expressions: true,
+    alias: false,
     order: false,
     limit: false,
     offset: false,
@@ -16051,15 +16106,23 @@ export class ValuesExpr extends UDTFExpr {
     super(args);
   }
 
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
+  get $alias (): TableAliasExpr | undefined {
+    return this.args.alias;
+  }
+
   get $order (): Expression | undefined {
     return this.args.order;
   }
 
-  get $limit (): Expression | undefined {
+  get $limit (): number | Expression | undefined {
     return this.args.limit;
   }
 
-  get $offset (): Expression | undefined {
+  get $offset (): number | Expression | undefined {
     return this.args.offset;
   }
 }
