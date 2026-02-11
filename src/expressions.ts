@@ -15556,6 +15556,156 @@ export class SelectExpr extends QueryExpr {
       dialect: options.dialect,
     });
   }
+
+  /**
+   * Append to or set the SELECT expressions.
+   *
+   * @example
+   * select().select(["x", "y"]).from("tbl").sql()
+   * // 'SELECT x, y FROM tbl'
+   */
+  select (
+    expressions: Array<string | Expression | undefined>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    return _applyListBuilder(expressions, {
+      instance: this,
+      arg: 'expressions',
+      append: options.append ?? true,
+      dialect: options.dialect,
+      into: Expression,
+      copy: options.copy ?? true,
+    });
+  }
+
+  /**
+   * Append to or set the LATERAL expressions.
+   *
+   * @example
+   * select().select(["x"]).lateral(["OUTER explode(y) tbl2 AS z"]).from("tbl").sql()
+   * // 'SELECT x FROM tbl LATERAL VIEW OUTER EXPLODE(y) tbl2 AS z'
+   */
+  lateral (
+    expressions: Array<string | Expression | undefined>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    return _applyListBuilder(expressions, {
+      instance: this,
+      arg: 'laterals',
+      append: options.append ?? true,
+      into: LateralExpr,
+      prefix: 'LATERAL VIEW',
+      dialect: options.dialect,
+      copy: options.copy ?? true,
+    });
+  }
+
+  /**
+   * Append to or set the JOIN expressions.
+   *
+   * @example
+   * select().select(["*"]).from("tbl").join("tbl2", { on: "tbl1.y = tbl2.y" }).sql()
+   * // 'SELECT * FROM tbl JOIN tbl2 ON tbl1.y = tbl2.y'
+   *
+   * @example
+   * select().select(["1"]).from("a").join("b", { using: ["x", "y", "z"] }).sql()
+   * // 'SELECT 1 FROM a JOIN b USING (x, y, z)'
+   *
+   * @example
+   * select().select(["*"]).from("tbl").join("tbl2", { on: "tbl1.y = tbl2.y", joinType: "left outer" }).sql()
+   * // 'SELECT * FROM tbl LEFT OUTER JOIN tbl2 ON tbl1.y = tbl2.y'
+   */
+  join (
+    expression: string | Expression,
+    options: {
+      on?: string | Expression | Array<string | Expression>;
+      using?: string | Expression | Array<string | Expression>;
+      append?: boolean;
+      joinType?: string;
+      joinAlias?: string | Expression;
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    const parseArgs = {
+      dialect: options.dialect,
+    };
+
+    let joinExpr: Expression;
+    try {
+      joinExpr = maybeParse(expression, JoinExpr, {
+        ...parseArgs,
+        prefix: 'JOIN',
+      });
+    } catch {
+      joinExpr = maybeParse(expression, Expression, parseArgs);
+    }
+
+    const join = joinExpr instanceof JoinExpr ? joinExpr : new JoinExpr({ this: joinExpr });
+
+    // If joining a Select, wrap it in a subquery
+    if (join.args.this instanceof SelectExpr) {
+      join.args.this = join.args.this.subquery();
+    }
+
+    // Set join type (method, side, kind)
+    if (options.joinType) {
+      const parsed = maybeParse(options.joinType, 'JOIN_TYPE', parseArgs) as any;
+      if (parsed?.method) {
+        join.set('method', parsed.method.text);
+      }
+      if (parsed?.side) {
+        join.set('side', parsed.side.text);
+      }
+      if (parsed?.kind) {
+        join.set('kind', parsed.kind.text);
+      }
+    }
+
+    // Set ON condition
+    if (options.on) {
+      const onExprs = ensureList(options.on);
+      const onExpr = and(...onExprs, {
+        dialect: options.dialect,
+        copy: options.copy ?? true,
+      });
+      join.set('on', onExpr);
+    }
+
+    // Set USING
+    if (options.using) {
+      const usingExprs = ensureList(options.using).map(e =>
+        typeof e === 'string' ? new IdentifierExpr({ this: e }) : e,
+      );
+      join.set('using', usingExprs);
+    }
+
+    // Set join alias
+    if (options.joinAlias) {
+      const alias = typeof options.joinAlias === 'string'
+        ? new IdentifierExpr({ this: options.joinAlias })
+        : options.joinAlias;
+      join.set('this', new AliasExpr({
+        this: join.args.this,
+        alias,
+      }));
+    }
+
+    return _applyListBuilder([join], {
+      instance: this,
+      arg: 'joins',
+      append: options.append ?? true,
+      copy: options.copy ?? true,
+    });
+  }
 }
 
 export type SubqueryExprArgs = { with?: Expression } & BaseExpressionArgs;
