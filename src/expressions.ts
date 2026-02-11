@@ -15782,6 +15782,7 @@ export class SelectExpr extends QueryExpr {
     options: {
       distinct?: boolean;
       copy?: boolean;
+      [key: string]: unknown;
     } = {},
   ): this {
     const instance = maybeCopy(this, options.copy ?? true);
@@ -15812,6 +15813,7 @@ export class SelectExpr extends QueryExpr {
       properties?: Record<string, unknown>;
       dialect?: DialectType;
       copy?: boolean;
+      [key: string]: unknown;
     } = {},
   ): CreateExpr {
     const instance = maybeCopy(this, options.copy ?? true);
@@ -15845,6 +15847,7 @@ export class SelectExpr extends QueryExpr {
     options: {
       update?: boolean;
       copy?: boolean;
+      [key: string]: unknown;
     } = {},
   ): this {
     const inst = maybeCopy(this, options.copy ?? true);
@@ -15864,6 +15867,7 @@ export class SelectExpr extends QueryExpr {
     options: {
       dialect?: DialectType;
       copy?: boolean;
+      [key: string]: unknown;
     } = {},
   ): this {
     const hintExprs = hints.map(h =>
