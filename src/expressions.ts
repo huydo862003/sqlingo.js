@@ -9467,7 +9467,9 @@ export enum AlterExprKind {
   COLUMN = 'COLUMN',
 }
 
-export type AlterExprArgs = { kind: AlterExprKind;
+export type AlterExprArgs = {
+  this?: Expression;
+  kind: AlterExprKind;
   actions: Expression[];
   exists?: Expression;
   only?: Expression;
@@ -9475,7 +9477,8 @@ export type AlterExprArgs = { kind: AlterExprKind;
   cluster?: Expression;
   notValid?: Expression;
   check?: Expression;
-  cascade?: Expression; } & BaseExpressionArgs;
+  cascade?: Expression;
+} & BaseExpressionArgs;
 
 export class AlterExpr extends Expression {
   key = ExpressionKey.ALTER;
@@ -9486,6 +9489,7 @@ export class AlterExpr extends Expression {
    */
   static argTypes = {
     ...super.argTypes,
+    this: false,
     kind: true,
     actions: true,
     exists: false,
@@ -9537,6 +9541,21 @@ export class AlterExpr extends Expression {
 
   get $cascade (): Expression | undefined {
     return this.args.cascade;
+  }
+
+  /**
+   * Returns the kind in uppercase.
+   */
+  get kind (): string | undefined {
+    const kind = this.args.kind;
+    return kind ? kind.toUpperCase() : undefined;
+  }
+
+  /**
+   * Returns the actions array.
+   */
+  get actions (): Expression[] {
+    return this.args.actions || [];
   }
 }
 
