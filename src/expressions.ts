@@ -15706,6 +15706,160 @@ export class SelectExpr extends QueryExpr {
       copy: options.copy ?? true,
     });
   }
+
+  /**
+   * Append to or set the WINDOW expressions.
+   *
+   * @example
+   * select().select(["x"]).from("tbl").window(["w AS (PARTITION BY x)"]).sql()
+   * // 'SELECT x FROM tbl WINDOW w AS (PARTITION BY x)'
+   */
+  window (
+    expressions: Array<string | Expression | undefined>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    return _applyListBuilder(expressions, {
+      instance: this,
+      arg: 'windows',
+      append: options.append ?? true,
+      into: WindowExpr,
+      dialect: options.dialect,
+      copy: options.copy ?? true,
+    });
+  }
+
+  /**
+   * Append to or set the QUALIFY expressions.
+   *
+   * @example
+   * select().select(["x"]).from("tbl").qualify(["ROW_NUMBER() OVER (PARTITION BY x) = 1"]).sql()
+   * // 'SELECT x FROM tbl QUALIFY ROW_NUMBER() OVER (PARTITION BY x) = 1'
+   */
+  qualify (
+    expressions: Array<string | Expression | undefined>,
+    options: {
+      append?: boolean;
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    return _applyConjunctionBuilder(expressions, {
+      instance: this,
+      arg: 'qualify',
+      append: options.append ?? true,
+      into: QualifyExpr,
+      dialect: options.dialect,
+      copy: options.copy ?? true,
+    });
+  }
+
+  /**
+   * Set the DISTINCT clause.
+   *
+   * @example
+   * select().from("tbl").select(["x"]).distinct().sql()
+   * // 'SELECT DISTINCT x FROM tbl'
+   */
+  distinct (
+    ons?: Array<string | Expression | undefined>,
+    options: {
+      distinct?: boolean;
+      copy?: boolean;
+    } = {},
+  ): this {
+    const instance = maybeCopy(this, options.copy ?? true);
+    const distinctValue = options.distinct ?? true;
+
+    if (ons && ons.length > 0) {
+      const onExprs = ons.filter((on): on is string | Expression => on !== undefined)
+        .map(on => maybeParse(on, Expression, { copy: options.copy ?? true }));
+      const tupleExpr = new TupleExpr({ expressions: onExprs });
+      instance.set('distinct', distinctValue ? new DistinctExpr({ on: tupleExpr }) : undefined);
+    } else {
+      instance.set('distinct', distinctValue ? new DistinctExpr({}) : undefined);
+    }
+
+    return instance as this;
+  }
+
+  /**
+   * Convert this expression to a CREATE TABLE AS statement.
+   *
+   * @example
+   * select().select(["*"]).from("tbl").ctas("x").sql()
+   * // 'CREATE TABLE x AS SELECT * FROM tbl'
+   */
+  ctas (
+    table: string | Expression,
+    options: {
+      properties?: Record<string, unknown>;
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): CreateExpr {
+    const instance = maybeCopy(this, options.copy ?? true);
+    const tableExpr = maybeParse(table, TableExpr, { dialect: options.dialect });
+
+    let propertiesExpr: PropertiesExpr | undefined;
+    if (options.properties) {
+      propertiesExpr = PropertiesExpr.fromDict(options.properties);
+    }
+
+    return new CreateExpr({
+      this: tableExpr,
+      kind: 'TABLE',
+      expression: instance,
+      properties: propertiesExpr,
+    });
+  }
+
+  /**
+   * Set the locking read mode for this expression.
+   *
+   * @example
+   * select().select(["x"]).from("tbl").where(["x = 'a'"]).lock().sql({ dialect: "mysql" })
+   * // "SELECT x FROM tbl WHERE x = 'a' FOR UPDATE"
+   *
+   * @example
+   * select().select(["x"]).from("tbl").where(["x = 'a'"]).lock({ update: false }).sql({ dialect: "mysql" })
+   * // "SELECT x FROM tbl WHERE x = 'a' FOR SHARE"
+   */
+  lock (
+    options: {
+      update?: boolean;
+      copy?: boolean;
+    } = {},
+  ): this {
+    const inst = maybeCopy(this, options.copy ?? true);
+    inst.set('locks', [new LockExpr({ update: new LiteralExpr({ this: options.update ?? true }) })]);
+    return inst as this;
+  }
+
+  /**
+   * Set hints for this expression.
+   *
+   * @example
+   * select().select(["x"]).from("tbl").hint(["BROADCAST(y)"]).sql({ dialect: "spark" })
+   * // 'SELECT /*+ BROADCAST(y) *\/ x FROM tbl'
+   */
+  hint (
+    hints: Array<string | Expression>,
+    options: {
+      dialect?: DialectType;
+      copy?: boolean;
+    } = {},
+  ): this {
+    const hintExprs = hints.map(h =>
+      maybeParse(h, Expression, { dialect: options.dialect }),
+    );
+    const inst = maybeCopy(this, options.copy ?? true);
+    inst.set('hint', new HintExpr({ expressions: hintExprs }));
+    return inst as this;
+  }
 }
 
 export type SubqueryExprArgs = { with?: Expression } & BaseExpressionArgs;
