@@ -15639,41 +15639,40 @@ export class SelectExpr extends QueryExpr {
       dialect: options.dialect,
     };
 
-    let joinExpr: Expression;
+    let expr: Expression;
     try {
-      joinExpr = maybeParse(expression, JoinExpr, {
+      expr = maybeParse(expression, JoinExpr, {
         ...parseArgs,
         prefix: 'JOIN',
       });
     } catch {
-      joinExpr = maybeParse(expression, Expression, parseArgs);
+      expr = maybeParse(expression, Expression, parseArgs);
     }
 
-    const join = joinExpr instanceof JoinExpr ? joinExpr : new JoinExpr({ this: joinExpr });
+    let join = expr instanceof JoinExpr ? expr : new JoinExpr({ this: expr });
 
     // If joining a Select, wrap it in a subquery
     if (join.args.this instanceof SelectExpr) {
-      join.args.this = join.args.this.subquery();
+      join.args.this.replace(join.args.this.subquery());
     }
 
     // Set join type (method, side, kind)
     if (options.joinType) {
-      const parsed = maybeParse(options.joinType, 'JOIN_TYPE', parseArgs) as any;
-      if (parsed?.method) {
-        join.set('method', parsed.method.text);
+      const [method, side, kind] = maybeParse(options.joinType, 'JOIN_TYPE', parseArgs) as any;
+      if (method) {
+        join.set('method', method.text);
       }
-      if (parsed?.side) {
-        join.set('side', parsed.side.text);
+      if (side) {
+        join.set('side', side.text);
       }
-      if (parsed?.kind) {
-        join.set('kind', parsed.kind.text);
+      if (kind) {
+        join.set('kind', kind.text);
       }
     }
 
     // Set ON condition
     if (options.on) {
-      const onExprs = ensureList(options.on);
-      const onExpr = and(...onExprs, {
+      const onExpr = and(...ensureList(options.on), {
         dialect: options.dialect,
         copy: options.copy ?? true,
       });
@@ -15682,21 +15681,18 @@ export class SelectExpr extends QueryExpr {
 
     // Set USING
     if (options.using) {
-      const usingExprs = ensureList(options.using).map(e =>
-        typeof e === 'string' ? new IdentifierExpr({ this: e }) : e,
-      );
-      join.set('using', usingExprs);
+      join = _applyListBuilder(ensureList(options.using), {
+        instance: join,
+        arg: 'using',
+        append: options.append ?? true,
+        copy: options.copy ?? true,
+        into: IdentifierExpr,
+      }) as JoinExpr;
     }
 
     // Set join alias
     if (options.joinAlias) {
-      const alias = typeof options.joinAlias === 'string'
-        ? new IdentifierExpr({ this: options.joinAlias })
-        : options.joinAlias;
-      join.set('this', new AliasExpr({
-        this: join.args.this,
-        alias,
-      }));
+      join.set('this', alias(join.args.this, options.joinAlias as any, { table: true }));
     }
 
     return _applyListBuilder([join], {
