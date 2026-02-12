@@ -2320,8 +2320,7 @@ export class Expression {
   /**
    * Create a DIV expression with optional typed and safe flags.
    */
-  div (other: string | Expression, options?: { typed?: boolean;
-    safe?: boolean; }): DivExpr {
+  div (other: string | Expression, options?: { typed?: boolean; safe?: boolean; }): DivExpr {
     const div = this.binop(DivExpr, other);
     div.set('typed', options?.typed ?? false);
     div.set('safe', options?.safe ?? false);
@@ -20123,7 +20122,7 @@ export class FarmFingerprintExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['FARM_FINGERPRINT', 'FARMFINGERPRINT64'];
+  static _sqlNames = ['FARM_FINGERPRINT', 'FARMFINGERPRINT64'];
 }
 
 export type FlattenExprArgs = FuncExprArgs;
@@ -21145,7 +21144,7 @@ export class AIClassifyExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['AI_CLASSIFY'];
+  static _sqlNames = ['AI_CLASSIFY'];
 }
 
 export type ArrayAllExprArgs = {
@@ -21337,7 +21336,7 @@ export class ArrayConcatExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['ARRAY_CONCAT', 'ARRAY_CAT'];
+  static _sqlNames = ['ARRAY_CONCAT', 'ARRAY_CAT'];
 }
 
 export type ArrayCompactExprArgs = FuncExprArgs;
@@ -21579,7 +21578,7 @@ export class ArrayFilterExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['FILTER', 'ARRAY_FILTER'];
+  static _sqlNames = ['FILTER', 'ARRAY_FILTER'];
 }
 
 export type ArrayFirstExprArgs = FuncExprArgs;
@@ -21727,7 +21726,7 @@ export class ArrayToStringExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['ARRAY_TO_STRING', 'ARRAY_JOIN'];
+  static _sqlNames = ['ARRAY_TO_STRING', 'ARRAY_JOIN'];
 }
 
 export type ArrayIntersectExprArgs = {
@@ -21760,7 +21759,7 @@ export class ArrayIntersectExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['ARRAY_INTERSECT', 'ARRAY_INTERSECTION'];
+  static _sqlNames = ['ARRAY_INTERSECT', 'ARRAY_INTERSECTION'];
 }
 
 export type StPointExprArgs = {
@@ -21803,7 +21802,7 @@ export class StPointExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['ST_POINT', 'ST_MAKEPOINT'];
+  static _sqlNames = ['ST_POINT', 'ST_MAKEPOINT'];
 }
 
 export type StDistanceExprArgs = {
@@ -21925,7 +21924,7 @@ export class StringToArrayExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = [
+  static _sqlNames = [
     'STRING_TO_ARRAY',
     'SPLIT_BY_STRING',
     'STRTOK_TO_ARRAY',
@@ -22000,7 +21999,7 @@ export class ArraySizeExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['ARRAY_SIZE', 'ARRAY_LENGTH'];
+  static _sqlNames = ['ARRAY_SIZE', 'ARRAY_LENGTH'];
 }
 
 export type ArraySortExprArgs = {
@@ -22475,7 +22474,7 @@ export type CeilExprArgs = {
 export class CeilExpr extends FuncExpr {
   key = ExpressionKey.CEIL;
 
-  static sqlNames = ['CEIL', 'CEILING'];
+  static _sqlNames = ['CEIL', 'CEILING'];
 
   static argTypes = {
     ...super.argTypes,
@@ -22518,7 +22517,7 @@ export type CoalesceExprArgs = {
 export class CoalesceExpr extends FuncExpr {
   key = ExpressionKey.COALESCE;
 
-  static sqlNames = [
+  static _sqlNames = [
     'COALESCE',
     'IFNULL',
     'NVL',
@@ -22569,7 +22568,7 @@ export type ChrExprArgs = {
 export class ChrExpr extends FuncExpr {
   key = ExpressionKey.CHR;
 
-  static sqlNames = ['CHR', 'CHAR'];
+  static _sqlNames = ['CHR', 'CHAR'];
 
   static isVarLenArgs = true;
 
@@ -23632,7 +23631,7 @@ export type DateDiffExprArgs = {
 export class DateDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.DATE_DIFF;
 
-  static sqlNames = ['DATEDIFF', 'DATE_DIFF'];
+  static _sqlNames = ['DATEDIFF', 'DATE_DIFF'];
 
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
@@ -23977,7 +23976,7 @@ export class DayOfWeekExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['DAY_OF_WEEK', 'DAYOFWEEK'];
+  static _sqlNames = ['DAY_OF_WEEK', 'DAYOFWEEK'];
 }
 
 export type DayOfWeekIsoExprArgs = FuncExprArgs;
@@ -23999,7 +23998,7 @@ export class DayOfWeekIsoExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['DAYOFWEEK_ISO', 'ISODOW'];
+  static _sqlNames = ['DAYOFWEEK_ISO', 'ISODOW'];
 }
 
 export type DayOfMonthExprArgs = FuncExprArgs;
@@ -24017,7 +24016,7 @@ export class DayOfMonthExpr extends FuncExpr {
     super(args);
   }
 
-  static sqlNames = ['DAY_OF_MONTH', 'DAYOFMONTH'];
+  static _sqlNames = ['DAY_OF_MONTH', 'DAYOFMONTH'];
 
   static {
     this.register();
@@ -24039,7 +24038,7 @@ export class DayOfYearExpr extends FuncExpr {
     super(args);
   }
 
-  static sqlNames = ['DAY_OF_YEAR', 'DAYOFYEAR'];
+  static _sqlNames = ['DAY_OF_YEAR', 'DAYOFYEAR'];
 
   static {
     this.register();
@@ -24118,7 +24117,7 @@ export class WeekOfYearExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['WEEK_OF_YEAR', 'WEEKOFYEAR'];
+  static _sqlNames = ['WEEK_OF_YEAR', 'WEEKOFYEAR'];
 }
 
 export type YearOfWeekExprArgs = FuncExprArgs;
@@ -24136,7 +24135,7 @@ export class YearOfWeekExpr extends FuncExpr {
     super(args);
   }
 
-  static sqlNames = ['YEAR_OF_WEEK', 'YEAROFWEEK'];
+  static _sqlNames = ['YEAR_OF_WEEK', 'YEAROFWEEK'];
 
   static {
     this.register();
@@ -24158,7 +24157,7 @@ export class YearOfWeekIsoExpr extends FuncExpr {
     super(args);
   }
 
-  static sqlNames = ['YEAR_OF_WEEK_ISO', 'YEAROFWEEKISO'];
+  static _sqlNames = ['YEAR_OF_WEEK_ISO', 'YEAROFWEEKISO'];
 
   static {
     this.register();
@@ -24302,7 +24301,7 @@ export class LastDayExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     this.register();
   }
 
-  static sqlNames = ['LAST_DAY', 'LAST_DAY_OF_MONTH'];
+  static _sqlNames = ['LAST_DAY', 'LAST_DAY_OF_MONTH'];
 }
 
 export type PreviousDayExprArgs = {
@@ -24677,7 +24676,7 @@ export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     this.register();
   }
 
-  static sqlNames = ['TIMESTAMPDIFF', 'TIMESTAMP_DIFF'];
+  static _sqlNames = ['TIMESTAMPDIFF', 'TIMESTAMP_DIFF'];
 }
 
 export type TimestampTruncExprArgs = {
@@ -24997,7 +24996,7 @@ export class DateFromPartsExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['DATE_FROM_PARTS', 'DATEFROMPARTS'];
+  static _sqlNames = ['DATE_FROM_PARTS', 'DATEFROMPARTS'];
 }
 
 export type TimeFromPartsExprArgs = { hour: Expression;
@@ -25064,7 +25063,7 @@ export class TimeFromPartsExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['TIME_FROM_PARTS', 'TIMEFROMPARTS'];
+  static _sqlNames = ['TIME_FROM_PARTS', 'TIMEFROMPARTS'];
 }
 
 export type DateStrToDateExprArgs = FuncExprArgs;
@@ -25263,7 +25262,7 @@ export type DecryptExprArgs = {
   aad?: Expression;
   encryptionMethod?: string;
   safe?: boolean;
-} & FuncExpr;
+} & FuncExprArgs;
 
 export class DecryptExpr extends FuncExpr {
   key = ExpressionKey.DECRYPT;
@@ -25294,11 +25293,11 @@ export class DecryptExpr extends FuncExpr {
     return this.args.aad;
   }
 
-  get $encryptionMethod (): Expression | undefined {
+  get $encryptionMethod (): string | undefined {
     return this.args.encryptionMethod;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 
@@ -25412,7 +25411,7 @@ export class EncodeExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $charset (): Expression {
+  get $charset (): string {
     return this.args.charset;
   }
 
@@ -25504,7 +25503,7 @@ export class EncryptRawExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $key (): Expression {
+  get $key (): unknown {
     return this.args.key;
   }
 
@@ -25516,7 +25515,7 @@ export class EncryptRawExpr extends FuncExpr {
     return this.args.aad;
   }
 
-  get $encryptionMethod (): Expression | undefined {
+  get $encryptionMethod (): string | undefined {
     return this.args.encryptionMethod;
   }
 
@@ -25863,11 +25862,11 @@ export class ToBinaryExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 
@@ -25972,7 +25971,7 @@ export class Base64EncodeExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $maxLineLength (): Expression | undefined {
+  get $maxLineLength (): number | Expression | undefined {
     return this.args.maxLineLength;
   }
 
@@ -26106,7 +26105,7 @@ export class FromISO8601TimestampExpr extends FuncExpr {
     super(args);
   }
 
-  static sqlNames = ['FROM_ISO8601_TIMESTAMP'];
+  static _sqlNames = ['FROM_ISO8601_TIMESTAMP'];
 
   static {
     this.register();
@@ -26328,7 +26327,7 @@ export class GetbitExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['GETBIT', 'GET_BIT'];
+  static _sqlNames = ['GETBIT', 'GET_BIT'];
 }
 
 export type GreatestExprArgs = {
@@ -26612,7 +26611,7 @@ export type IfExprArgs = {
 export class IfExpr extends FuncExpr {
   key = ExpressionKey.IF;
 
-  static sqlNames = ['IF', 'IIF'];
+  static _sqlNames = ['IF', 'IIF'];
 
   /**
    * Defines the arguments (properties and child expressions) for If expressions.
@@ -26749,7 +26748,7 @@ export class IsNanExpr extends FuncExpr {
     super(args);
   }
 
-  static sqlNames = ['IS_NAN', 'ISNAN'];
+  static _sqlNames = ['IS_NAN', 'ISNAN'];
 
   static {
     this.register();
@@ -26791,7 +26790,7 @@ export class IsInfExpr extends FuncExpr {
     super(args);
   }
 
-  static sqlNames = ['IS_INF', 'ISINF'];
+  static _sqlNames = ['IS_INF', 'ISINF'];
 
   static {
     this.register();
@@ -26911,7 +26910,7 @@ export class JSONKeysExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['JSON_KEYS'];
+  static _sqlNames = ['JSON_KEYS'];
 }
 
 export type JSONKeysAtDepthExprArgs = {
@@ -27121,7 +27120,7 @@ export class JSONSetExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['JSON_SET'];
+  static _sqlNames = ['JSON_SET'];
 }
 
 export type JSONStripNullsExprArgs = { includeArrays?: Expression[];
@@ -27158,7 +27157,7 @@ export class JSONStripNullsExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['JSON_STRIP_NULLS'];
+  static _sqlNames = ['JSON_STRIP_NULLS'];
 }
 
 export type JSONValueArrayExprArgs = {
@@ -27227,7 +27226,7 @@ export class JSONRemoveExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['JSON_REMOVE'];
+  static _sqlNames = ['JSON_REMOVE'];
 }
 
 export type JSONTableExprArgs = { schema: Expression;
@@ -27309,7 +27308,7 @@ export class JSONTypeExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['JSON_TYPE'];
+  static _sqlNames = ['JSON_TYPE'];
 }
 
 export type ObjectInsertExprArgs = { key: unknown;
@@ -27466,7 +27465,7 @@ export class JSONBExistsExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['JSONB_EXISTS'];
+  static _sqlNames = ['JSONB_EXISTS'];
 }
 
 export type JSONBDeleteAtPathExprArgs = BinaryExprArgs;
@@ -27581,7 +27580,7 @@ export class JSONExtractArrayExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['JSON_EXTRACT_ARRAY'];
+  static _sqlNames = ['JSON_EXTRACT_ARRAY'];
 }
 
 export type JSONExtractScalarExprArgs = { onlyJsonTypes?: Expression[];
@@ -27720,7 +27719,7 @@ export class JSONFormatExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['JSON_FORMAT'];
+  static _sqlNames = ['JSON_FORMAT'];
 }
 
 export type JSONArrayAppendExprArgs = {
@@ -27756,7 +27755,7 @@ export class JSONArrayAppendExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['JSON_ARRAY_APPEND'];
+  static _sqlNames = ['JSON_ARRAY_APPEND'];
 }
 
 export type JSONArrayContainsExprArgs = { jsonType?: Expression } & BinaryExprArgs;
@@ -27824,7 +27823,7 @@ export class JSONArrayInsertExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['JSON_ARRAY_INSERT'];
+  static _sqlNames = ['JSON_ARRAY_INSERT'];
 }
 
 export type ParseBignumericExprArgs = FuncExprArgs;
@@ -27905,7 +27904,7 @@ export class ParseJSONExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['PARSE_JSON', 'JSON_PARSE'];
+  static _sqlNames = ['PARSE_JSON', 'JSON_PARSE'];
 }
 
 export type ParseUrlExprArgs = {
@@ -28240,7 +28239,7 @@ export class LengthExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = [
+  static _sqlNames = [
     'LENGTH',
     'LEN',
     'CHAR_LENGTH',
@@ -28403,7 +28402,7 @@ export class LowerExpr extends FuncExpr {
     super(args);
   }
 
-  static sqlNames = ['LOWER', 'LCASE'];
+  static _sqlNames = ['LOWER', 'LCASE'];
 
   static {
     this.register();
@@ -28837,7 +28836,7 @@ export class MD5Expr extends FuncExpr {
     super(args);
   }
 
-  static sqlNames = ['MD5'];
+  static _sqlNames = ['MD5'];
 
   static {
     this.register();
@@ -28877,7 +28876,7 @@ export class MD5DigestExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['MD5_DIGEST'];
+  static _sqlNames = ['MD5_DIGEST'];
 }
 
 export type MD5NumberLower64ExprArgs = FuncExprArgs;
@@ -29653,7 +29652,7 @@ export class RandExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['RAND', 'RANDOM'];
+  static _sqlNames = ['RAND', 'RANDOM'];
 }
 
 export type RandnExprArgs = {
@@ -29821,7 +29820,7 @@ export class ReadCSVExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['READ_CSV'];
+  static _sqlNames = ['READ_CSV'];
 }
 
 export type ReadParquetExprArgs = {
@@ -30444,7 +30443,7 @@ export class TruncExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['TRUNC', 'TRUNCATE'];
+  static _sqlNames = ['TRUNC', 'TRUNCATE'];
 }
 
 export type RowNumberExprArgs = {
@@ -30769,7 +30768,7 @@ export class SHAExpr extends FuncExpr {
     super(args);
   }
 
-  static sqlNames = ['SHA', 'SHA1'];
+  static _sqlNames = ['SHA', 'SHA1'];
 
   static {
     this.register();
@@ -30796,7 +30795,7 @@ export class SHA2Expr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['SHA2'];
+  static _sqlNames = ['SHA2'];
   constructor (args: SHA2ExprArgs) {
     super(args);
   }
@@ -30878,7 +30877,7 @@ export class SignExpr extends FuncExpr {
     super(args);
   }
 
-  static sqlNames = ['SIGN', 'SIGNUM'];
+  static _sqlNames = ['SIGN', 'SIGNUM'];
 
   static {
     this.register();
@@ -31092,7 +31091,7 @@ export class SubstringExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['SUBSTRING', 'SUBSTR'];
+  static _sqlNames = ['SUBSTRING', 'SUBSTR'];
 }
 
 export type SubstringIndexExprArgs = {
@@ -31203,7 +31202,7 @@ export class StartsWithExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['STARTS_WITH', 'STARTSWITH'];
+  static _sqlNames = ['STARTS_WITH', 'STARTSWITH'];
 }
 
 export type EndsWithExprArgs = {
@@ -31238,7 +31237,7 @@ export class EndsWithExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['ENDS_WITH', 'ENDSWITH'];
+  static _sqlNames = ['ENDS_WITH', 'ENDSWITH'];
 }
 
 export type StrPositionExprArgs = { substr: Expression;
@@ -31730,7 +31729,7 @@ export class StuffExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['STUFF', 'INSERT'];
+  static _sqlNames = ['STUFF', 'INSERT'];
 }
 
 export type SqrtExprArgs = FuncExprArgs;
@@ -32574,7 +32573,7 @@ export class UuidExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = [
+  static _sqlNames = [
     'UUID',
     'GEN_RANDOM_UUID',
     'GENERATE_UUID',
@@ -32616,7 +32615,7 @@ export class TimestampFromPartsExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['TIMESTAMP_FROM_PARTS', 'TIMESTAMPFROMPARTS'];
+  static _sqlNames = ['TIMESTAMP_FROM_PARTS', 'TIMESTAMPFROMPARTS'];
 }
 
 export type TimestampLtzFromPartsExprArgs = { zone?: Expression } & FuncExprArgs;
@@ -32624,7 +32623,7 @@ export type TimestampLtzFromPartsExprArgs = { zone?: Expression } & FuncExprArgs
 export class TimestampLtzFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_LTZ_FROM_PARTS;
 
-  static sqlNames = ['TIMESTAMP_LTZ_FROM_PARTS', 'TIMESTAMPLTZFROMPARTS'];
+  static _sqlNames = ['TIMESTAMP_LTZ_FROM_PARTS', 'TIMESTAMPLTZFROMPARTS'];
 
   static argTypes = {
     ...super.argTypes,
@@ -32668,7 +32667,7 @@ export class TimestampTzFromPartsExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['TIMESTAMP_TZ_FROM_PARTS', 'TIMESTAMPTZFROMPARTS'];
+  static _sqlNames = ['TIMESTAMP_TZ_FROM_PARTS', 'TIMESTAMPTZFROMPARTS'];
 }
 
 export type UpperExprArgs = FuncExprArgs;
@@ -32686,7 +32685,7 @@ export class UpperExpr extends FuncExpr {
     super(args);
   }
 
-  static sqlNames = ['UPPER', 'UCASE'];
+  static _sqlNames = ['UPPER', 'UCASE'];
 
   static {
     this.register();
@@ -32873,7 +32872,7 @@ export class XMLElementExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['XMLELEMENT'];
+  static _sqlNames = ['XMLELEMENT'];
 }
 
 export type XMLGetExprArgs = {
@@ -32913,7 +32912,7 @@ export class XMLGetExpr extends FuncExpr {
     this.register();
   }
 
-  static sqlNames = ['XMLGET'];
+  static _sqlNames = ['XMLGET'];
 }
 
 export type XMLTableExprArgs = { namespaces?: Expression[];
@@ -33293,7 +33292,7 @@ export class ArgMaxExpr extends AggFuncExpr {
     this.register();
   }
 
-  static sqlNames = [
+  static _sqlNames = [
     'ARG_MAX',
     'ARGMAX',
     'MAX_BY',
@@ -33344,7 +33343,7 @@ export class ArgMinExpr extends AggFuncExpr {
     this.register();
   }
 
-  static sqlNames = [
+  static _sqlNames = [
     'ARG_MIN',
     'ARGMIN',
     'MIN_BY',
@@ -33643,7 +33642,7 @@ export class ApproximateSimilarityExpr extends AggFuncExpr {
     this.register();
   }
 
-  static sqlNames = ['APPROXIMATE_SIMILARITY', 'APPROXIMATE_JACCARD_INDEX'];
+  static _sqlNames = ['APPROXIMATE_SIMILARITY', 'APPROXIMATE_JACCARD_INDEX'];
 }
 
 export type GroupingExprArgs = {
@@ -33850,7 +33849,7 @@ export class ApproxDistinctExpr extends AggFuncExpr {
     this.register();
   }
 
-  static sqlNames = ['APPROX_DISTINCT', 'APPROX_COUNT_DISTINCT'];
+  static _sqlNames = ['APPROX_DISTINCT', 'APPROX_COUNT_DISTINCT'];
 }
 
 /**
@@ -33955,7 +33954,7 @@ export class AIAggExpr extends AggFuncExpr {
     this.register();
   }
 
-  static sqlNames = ['AI_AGG'];
+  static _sqlNames = ['AI_AGG'];
 }
 
 export type AISummarizeAggExprArgs = AggFuncExprArgs;
@@ -33979,7 +33978,7 @@ export class AISummarizeAggExpr extends AggFuncExpr {
     this.register();
   }
 
-  static sqlNames = ['AI_SUMMARIZE_AGG'];
+  static _sqlNames = ['AI_SUMMARIZE_AGG'];
 }
 
 export type ArrayConcatAggExprArgs = AggFuncExprArgs;
@@ -34358,7 +34357,7 @@ export type ConcatWsExprArgs = ConcatExprArgs;
 export class ConcatWsExpr extends ConcatExpr {
   key = ExpressionKey.CONCAT_WS;
 
-  static sqlNames = ['CONCAT_WS'];
+  static _sqlNames = ['CONCAT_WS'];
 
   static argTypes = {
     ...super.argTypes,
@@ -34427,7 +34426,7 @@ export class CountIfExpr extends AggFuncExpr {
     super(args);
   }
 
-  static sqlNames = ['COUNT_IF', 'COUNTIF'];
+  static _sqlNames = ['COUNT_IF', 'COUNTIF'];
 
   static {
     this.register();
@@ -34755,7 +34754,7 @@ export class LogicalOrExpr extends AggFuncExpr {
     super(args);
   }
 
-  static sqlNames = [
+  static _sqlNames = [
     'LOGICAL_OR',
     'BOOL_OR',
     'BOOLOR_AGG',
@@ -34781,7 +34780,7 @@ export class LogicalAndExpr extends AggFuncExpr {
     super(args);
   }
 
-  static sqlNames = [
+  static _sqlNames = [
     'LOGICAL_AND',
     'BOOL_AND',
     'BOOLAND_AGG',
@@ -35513,7 +35512,7 @@ export class StddevExpr extends AggFuncExpr {
     super(args);
   }
 
-  static sqlNames = ['STDDEV', 'STDEV'];
+  static _sqlNames = ['STDDEV', 'STDEV'];
 
   static {
     this.register();
@@ -35599,7 +35598,7 @@ export class VarianceExpr extends AggFuncExpr {
     super(args);
   }
 
-  static sqlNames = [
+  static _sqlNames = [
     'VARIANCE',
     'VARIANCE_SAMP',
     'VAR_SAMP',
@@ -35625,7 +35624,7 @@ export class VariancePopExpr extends AggFuncExpr {
     super(args);
   }
 
-  static sqlNames = ['VARIANCE_POP', 'VAR_POP'];
+  static _sqlNames = ['VARIANCE_POP', 'VAR_POP'];
 
   static {
     this.register();
