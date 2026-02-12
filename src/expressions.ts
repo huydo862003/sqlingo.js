@@ -11339,14 +11339,31 @@ export class StreamExpr extends Expression {
   }
 }
 
-export type ModelAttributeExprArgs = BaseExpressionArgs;
+export type ModelAttributeExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
+
 export class ModelAttributeExpr extends Expression {
   key = ExpressionKey.MODEL_ATTRIBUTE;
-  static argTypes = {} satisfies RequiredMap<ModelAttributeExprArgs>;
+
+  static argTypes = {
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<ModelAttributeExprArgs>;
 
   declare args: ModelAttributeExprArgs;
+
   constructor (args: ModelAttributeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 }
 
@@ -29342,17 +29359,34 @@ export class GenerateEmbeddingExpr extends FuncExpr {
   }
 }
 
-export type MLForecastExprArgs = { paramsStruct?: Expression } & FuncExprArgs;
+export type MLForecastExprArgs = {
+  this: Expression;
+  expression?: Expression;
+  paramsStruct?: Expression;
+} & FuncExprArgs;
 
 export class MLForecastExpr extends FuncExpr {
   key = ExpressionKey.ML_FORECAST;
 
-  static argTypes = { paramsStruct: false } satisfies RequiredMap<MLForecastExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+    paramsStruct: false,
+  } satisfies RequiredMap<MLForecastExprArgs>;
 
   declare args: MLForecastExprArgs;
 
   constructor (args: MLForecastExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 
   get $paramsStruct (): Expression | undefined {
@@ -34131,12 +34165,19 @@ export class NtileExpr extends AggFuncExpr {
   }
 }
 
-export type PercentileContExprArgs = AggFuncExprArgs;
+export type PercentileContExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & AggFuncExprArgs;
 
 export class PercentileContExpr extends AggFuncExpr {
   key = ExpressionKey.PERCENTILE_CONT;
 
-  static argTypes = {} satisfies RequiredMap<PercentileContExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<PercentileContExprArgs>;
 
   declare args: PercentileContExprArgs;
 
@@ -34144,17 +34185,32 @@ export class PercentileContExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type PercentileDiscExprArgs = AggFuncExprArgs;
+export type PercentileDiscExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & AggFuncExprArgs;
 
 export class PercentileDiscExpr extends AggFuncExpr {
   key = ExpressionKey.PERCENTILE_DISC;
 
-  static argTypes = {} satisfies RequiredMap<PercentileDiscExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<PercentileDiscExprArgs>;
 
   declare args: PercentileDiscExprArgs;
 
@@ -34162,17 +34218,31 @@ export class PercentileDiscExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type PercentRankExprArgs = AggFuncExprArgs;
+export type PercentRankExprArgs = {
+  expressions?: Expression[];
+} & AggFuncExprArgs;
 
 export class PercentRankExpr extends AggFuncExpr {
   key = ExpressionKey.PERCENT_RANK;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<PercentRankExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: false,
+  } satisfies RequiredMap<PercentRankExprArgs>;
 
   declare args: PercentRankExprArgs;
 
@@ -34180,22 +34250,37 @@ export class PercentRankExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
   static {
     this.register();
   }
 }
 
-export type QuantileExprArgs = { quantile: Expression } & AggFuncExprArgs;
+export type QuantileExprArgs = {
+  this: Expression;
+  quantile: Expression;
+} & AggFuncExprArgs;
 
 export class QuantileExpr extends AggFuncExpr {
   key = ExpressionKey.QUANTILE;
 
-  static argTypes = { quantile: true } satisfies RequiredMap<QuantileExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    quantile: true,
+  } satisfies RequiredMap<QuantileExprArgs>;
 
   declare args: QuantileExprArgs;
 
   constructor (args: QuantileExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $quantile (): Expression {
