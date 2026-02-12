@@ -10978,7 +10978,7 @@ export class JSONExpr extends Expression {
     return this.args.with;
   }
 
-  get $unique (): Expression | undefined {
+  get $unique (): boolean | undefined {
     return this.args.unique;
   }
 }
@@ -30662,12 +30662,19 @@ export class SHAExpr extends FuncExpr {
   }
 }
 
-export type SHA2ExprArgs = { length?: number | Expression } & FuncExprArgs;
+export type SHA2ExprArgs = {
+  this: Expression;
+  length?: number | Expression;
+} & FuncExprArgs;
 
 export class SHA2Expr extends FuncExpr {
   key = ExpressionKey.SHA2;
 
-  static argTypes = { length: false } satisfies RequiredMap<SHA2ExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    length: false,
+  } satisfies RequiredMap<SHA2ExprArgs>;
 
   declare args: SHA2ExprArgs;
 
@@ -30678,6 +30685,10 @@ export class SHA2Expr extends FuncExpr {
   static sqlNames = ['SHA2'];
   constructor (args: SHA2ExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $length (): Expression | undefined {
@@ -30705,17 +30716,28 @@ export class SHA1DigestExpr extends FuncExpr {
   }
 }
 
-export type SHA2DigestExprArgs = { length?: number | Expression } & FuncExprArgs;
+export type SHA2DigestExprArgs = {
+  this: Expression;
+  length?: number | Expression;
+} & FuncExprArgs;
 
 export class SHA2DigestExpr extends FuncExpr {
   key = ExpressionKey.SHA2_DIGEST;
 
-  static argTypes = { length: false } satisfies RequiredMap<SHA2DigestExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    length: false,
+  } satisfies RequiredMap<SHA2DigestExprArgs>;
 
   declare args: SHA2DigestExprArgs;
 
   constructor (args: SHA2DigestExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $length (): Expression | undefined {
@@ -30749,8 +30771,11 @@ export class SignExpr extends FuncExpr {
   }
 }
 
-export type SortArrayExprArgs = { asc?: Expression;
-  nullsFirst?: Expression; } & FuncExprArgs;
+export type SortArrayExprArgs = {
+  this: Expression;
+  asc?: Expression;
+  nullsFirst?: Expression;
+} & FuncExprArgs;
 
 export class SortArrayExpr extends FuncExpr {
   key = ExpressionKey.SORT_ARRAY;
@@ -30761,6 +30786,7 @@ export class SortArrayExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     asc: false,
     nullsFirst: false,
   } satisfies RequiredMap<SortArrayExprArgs>;
@@ -30773,6 +30799,10 @@ export class SortArrayExpr extends FuncExpr {
 
   constructor (args: SortArrayExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $asc (): Expression | undefined {
@@ -30846,8 +30876,11 @@ export class SplitExpr extends FuncExpr {
   }
 }
 
-export type SplitPartExprArgs = { delimiter?: number | Expression;
-  partIndex?: Expression; } & FuncExprArgs;
+export type SplitPartExprArgs = {
+  this: Expression;
+  delimiter?: number | Expression;
+  partIndex?: Expression;
+} & FuncExprArgs;
 
 export class SplitPartExpr extends FuncExpr {
   key = ExpressionKey.SPLIT_PART;
@@ -30858,6 +30891,7 @@ export class SplitPartExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     delimiter: false,
     partIndex: false,
   } satisfies RequiredMap<SplitPartExprArgs>;
@@ -30866,6 +30900,10 @@ export class SplitPartExpr extends FuncExpr {
 
   constructor (args: SplitPartExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $delimiter (): Expression | undefined {
@@ -30881,8 +30919,11 @@ export class SplitPartExpr extends FuncExpr {
   }
 }
 
-export type SubstringExprArgs = { start?: Expression;
-  length?: number | Expression; } & FuncExprArgs;
+export type SubstringExprArgs = {
+  this: Expression;
+  start?: Expression;
+  length?: number | Expression;
+} & FuncExprArgs;
 
 export class SubstringExpr extends FuncExpr {
   key = ExpressionKey.SUBSTRING;
@@ -30893,6 +30934,7 @@ export class SubstringExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     start: false,
     length: false,
   } satisfies RequiredMap<SubstringExprArgs>;
@@ -30901,6 +30943,10 @@ export class SubstringExpr extends FuncExpr {
 
   constructor (args: SubstringExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $start (): Expression | undefined {
@@ -30918,8 +30964,11 @@ export class SubstringExpr extends FuncExpr {
   static sqlNames = ['SUBSTRING', 'SUBSTR'];
 }
 
-export type SubstringIndexExprArgs = { delimiter: number | Expression;
-  count: Expression; } & FuncExprArgs;
+export type SubstringIndexExprArgs = {
+  this: Expression;
+  delimiter: number | Expression;
+  count: Expression;
+} & FuncExprArgs;
 
 export class SubstringIndexExpr extends FuncExpr {
   key = ExpressionKey.SUBSTRING_INDEX;
@@ -30930,6 +30979,7 @@ export class SubstringIndexExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     delimiter: true,
     count: true,
   } satisfies RequiredMap<SubstringIndexExprArgs>;
@@ -30938,6 +30988,10 @@ export class SubstringIndexExpr extends FuncExpr {
 
   constructor (args: SubstringIndexExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $delimiter (): Expression {
