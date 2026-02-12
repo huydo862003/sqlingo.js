@@ -11592,11 +11592,15 @@ export class WhenExpr extends Expression {
   }
 }
 
-export type WhensExprArgs = BaseExpressionArgs;
+export type WhensExprArgs = {
+  expressions: Expression;
+} & BaseExpressionArgs;
+
 export class WhensExpr extends Expression {
   key = ExpressionKey.WHENS;
 
   static argTypes = {
+    ...super.argTypes,
     expressions: true,
   } satisfies RequiredMap<WhensExprArgs>;
 
@@ -33348,6 +33352,7 @@ export class NextValueForExpr extends FuncExpr {
   key = ExpressionKey.NEXT_VALUE_FOR;
 
   static argTypes = {
+    ...super.argTypes,
     order: false,
     this: true,
   } satisfies RequiredMap<NextValueForExprArgs>;
