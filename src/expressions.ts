@@ -27553,7 +27553,7 @@ export class OpenJSONExpr extends FuncExpr {
   }
 }
 
-export type JSONBContainsExprArgs = BinaryExprArgs;
+export type JSONBContainsExprArgs = BinaryExprArgs & FuncExprArgs;
 
 export class JSONBContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS;
@@ -27572,7 +27572,7 @@ export class JSONBContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type JSONBContainsAnyTopKeysExprArgs = BinaryExprArgs;
+export type JSONBContainsAnyTopKeysExprArgs = BinaryExprArgs & FuncExprArgs;
 
 export class JSONBContainsAnyTopKeysExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS_ANY_TOP_KEYS;
@@ -27589,7 +27589,7 @@ export class JSONBContainsAnyTopKeysExpr extends multiInherit(BinaryExpr, FuncEx
   }
 }
 
-export type JSONBContainsAllTopKeysExprArgs = BinaryExprArgs;
+export type JSONBContainsAllTopKeysExprArgs = BinaryExprArgs & FuncExprArgs;
 
 export class JSONBContainsAllTopKeysExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS_ALL_TOP_KEYS;
@@ -27641,7 +27641,7 @@ export class JSONBExistsExpr extends FuncExpr {
   }
 }
 
-export type JSONBDeleteAtPathExprArgs = BinaryExprArgs;
+export type JSONBDeleteAtPathExprArgs = BinaryExprArgs & FuncExprArgs;
 
 export class JSONBDeleteAtPathExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_DELETE_AT_PATH;
@@ -27667,7 +27667,7 @@ export type JSONExtractExprArgs = {
   quote?: Expression;
   onCondition?: Expression;
   requiresJson?: Expression;
-} & BinaryExprArgs;
+} & BinaryExprArgs & FuncExprArgs;
 
 export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSON_EXTRACT;
@@ -27777,7 +27777,7 @@ export type JSONExtractScalarExprArgs = {
   expressions?: Expression[];
   jsonType?: Expression;
   scalarOnly?: boolean;
-} & BinaryExprArgs;
+} & BinaryExprArgs & FuncExprArgs;
 
 export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSON_EXTRACT_SCALAR;
@@ -27825,7 +27825,8 @@ export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type JSONBExtractExprArgs = BinaryExprArgs;
+export type JSONBExtractExprArgs = BinaryExprArgs & FuncExprArgs;
+
 export class JSONBExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_EXTRACT;
 
@@ -27847,7 +27848,7 @@ export type JSONBExtractScalarExprArgs = {
   this: Expression;
   expression: Expression;
   jsonType?: Expression;
-} & BinaryExprArgs;
+} & BinaryExprArgs & FuncExprArgs;
 
 export class JSONBExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_EXTRACT_SCALAR;
