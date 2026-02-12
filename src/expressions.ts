@@ -24156,7 +24156,7 @@ export type EltExprArgs = FuncExprArgs;
 
 export class EltExpr extends FuncExpr {
   key = ExpressionKey.ELT;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<EltExprArgs>;
 
   declare args: EltExprArgs;
@@ -24637,7 +24637,7 @@ export type DateExprArgs = { zone?: Expression } & FuncExprArgs;
 
 export class DateExpr extends FuncExpr {
   key = ExpressionKey.DATE;
-
+    static isVarLenArgs = true;
   static argTypes = { zone: false } satisfies RequiredMap<DateExprArgs>;
 
   declare args: DateExprArgs;
@@ -24714,7 +24714,7 @@ export type DecodeCaseExprArgs = FuncExprArgs;
 
 export class DecodeCaseExpr extends FuncExpr {
   key = ExpressionKey.DECODE_CASE;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<DecodeCaseExprArgs>;
 
   declare args: DecodeCaseExprArgs;
@@ -25027,6 +25027,7 @@ export class FactorialExpr extends FuncExpr {
 export type ExplodeExprArgs = FuncExprArgs;
 export class ExplodeExpr extends FuncExpr {
   key = ExpressionKey.EXPLODE;
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<ExplodeExprArgs>;
 
   declare args: ExplodeExprArgs;
@@ -25640,7 +25641,7 @@ export type GreatestExprArgs = { ignoreNulls: Expression[] } & FuncExprArgs;
 
 export class GreatestExpr extends FuncExpr {
   key = ExpressionKey.GREATEST;
-
+    static isVarLenArgs = true;
   static argTypes = { ignoreNulls: true } satisfies RequiredMap<GreatestExprArgs>;
 
   declare args: GreatestExprArgs;
@@ -26047,7 +26048,7 @@ export type FormatExprArgs = FuncExprArgs;
 
 export class FormatExpr extends FuncExpr {
   key = ExpressionKey.FORMAT;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<FormatExprArgs>;
 
   declare args: FormatExprArgs;
@@ -26065,7 +26066,7 @@ export type JSONKeysExprArgs = FuncExprArgs;
 
 export class JSONKeysExpr extends FuncExpr {
   key = ExpressionKey.JSON_KEYS;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<JSONKeysExprArgs>;
 
   declare args: JSONKeysExprArgs;
@@ -26242,7 +26243,7 @@ export type JSONSetExprArgs = FuncExprArgs;
 
 export class JSONSetExpr extends FuncExpr {
   key = ExpressionKey.JSON_SET;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<JSONSetExprArgs>;
 
   declare args: JSONSetExprArgs;
@@ -26317,7 +26318,7 @@ export type JSONRemoveExprArgs = FuncExprArgs;
 
 export class JSONRemoveExpr extends FuncExpr {
   key = ExpressionKey.JSON_REMOVE;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<JSONRemoveExprArgs>;
 
   declare args: JSONRemoveExprArgs;
@@ -26541,7 +26542,7 @@ export type JSONExtractExprArgs = { onlyJsonTypes?: Expression[];
 
 export class JSONExtractExpr extends BinaryExpr {
   key = ExpressionKey.JSON_EXTRACT;
-
+    static isVarLenArgs = true;
   /**
    * Defines the arguments (properties and child expressions) for JSONExtract expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
@@ -26618,7 +26619,7 @@ export type JSONExtractScalarExprArgs = { onlyJsonTypes?: Expression[];
 
 export class JSONExtractScalarExpr extends BinaryExpr {
   key = ExpressionKey.JSON_EXTRACT_SCALAR;
-
+    static isVarLenArgs = true;
   /**
    * Defines the arguments (properties and child expressions) for JSONExtractScalar expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
@@ -26725,7 +26726,7 @@ export type JSONArrayAppendExprArgs = FuncExprArgs;
 
 export class JSONArrayAppendExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY_APPEND;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<JSONArrayAppendExprArgs>;
 
   declare args: JSONArrayAppendExprArgs;
@@ -26763,7 +26764,7 @@ export type JSONArrayInsertExprArgs = FuncExprArgs;
 
 export class JSONArrayInsertExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY_INSERT;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<JSONArrayInsertExprArgs>;
 
   declare args: JSONArrayInsertExprArgs;
@@ -26967,7 +26968,7 @@ export type LeastExprArgs = { ignoreNulls: Expression[] } & FuncExprArgs;
 
 export class LeastExpr extends FuncExpr {
   key = ExpressionKey.LEAST;
-
+    static isVarLenArgs = true;
   static argTypes = { ignoreNulls: true } satisfies RequiredMap<LeastExprArgs>;
 
   declare args: LeastExprArgs;
@@ -27349,7 +27350,7 @@ export type MapDeleteExprArgs = FuncExprArgs;
 
 export class MapDeleteExpr extends FuncExpr {
   key = ExpressionKey.MAP_DELETE;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<MapDeleteExprArgs>;
 
   declare args: MapDeleteExprArgs;
@@ -27428,7 +27429,7 @@ export type MapPickExprArgs = FuncExprArgs;
 
 export class MapPickExpr extends FuncExpr {
   key = ExpressionKey.MAP_PICK;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<MapPickExprArgs>;
 
   declare args: MapPickExprArgs;
@@ -27487,7 +27488,7 @@ export type VarMapExprArgs = { keys: Expression[];
 
 export class VarMapExpr extends FuncExpr {
   key = ExpressionKey.VAR_MAP;
-
+    static isVarLenArgs = true;
   /**
    * Defines the arguments (properties and child expressions) for VarMap expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
@@ -27565,7 +27566,7 @@ export type MD5DigestExprArgs = FuncExprArgs;
 
 export class MD5DigestExpr extends FuncExpr {
   key = ExpressionKey.MD5_DIGEST;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<MD5DigestExprArgs>;
 
   declare args: MD5DigestExprArgs;
@@ -28280,7 +28281,7 @@ export type ReadCSVExprArgs = FuncExprArgs;
 
 export class ReadCSVExpr extends FuncExpr {
   key = ExpressionKey.READ_CSV;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<ReadCSVExprArgs>;
 
   declare args: ReadCSVExprArgs;
@@ -28300,7 +28301,7 @@ export type ReadParquetExprArgs = FuncExprArgs;
 
 export class ReadParquetExpr extends FuncExpr {
   key = ExpressionKey.READ_PARQUET;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<ReadParquetExprArgs>;
 
   declare args: ReadParquetExprArgs;
@@ -29704,7 +29705,7 @@ export type StructExprArgs = FuncExprArgs;
 
 export class StructExpr extends FuncExpr {
   key = ExpressionKey.STRUCT;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<StructExprArgs>;
 
   declare args: StructExprArgs;
@@ -32264,7 +32265,7 @@ export type DenseRankExprArgs = AggFuncExprArgs;
 
 export class DenseRankExpr extends AggFuncExpr {
   key = ExpressionKey.DENSE_RANK;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<DenseRankExprArgs>;
 
   declare args: DenseRankExprArgs;
@@ -32372,7 +32373,7 @@ export type XorExprArgs = { roundInput?: Expression } & BaseExpressionArgs;
 
 export class XorExpr extends ConnectorExpr {
   key = ExpressionKey.XOR;
-
+    static isVarLenArgs = true;
   static argTypes = { roundInput: false } satisfies RequiredMap<XorExprArgs>;
 
   declare args: XorExprArgs;
@@ -32554,7 +32555,7 @@ export type MaxExprArgs = AggFuncExprArgs;
 
 export class MaxExpr extends AggFuncExpr {
   key = ExpressionKey.MAX;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<MaxExprArgs>;
 
   declare args: MaxExprArgs;
@@ -32614,7 +32615,7 @@ export type MinExprArgs = AggFuncExprArgs;
 
 export class MinExpr extends AggFuncExpr {
   key = ExpressionKey.MIN;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<MinExprArgs>;
 
   declare args: MinExprArgs;
@@ -32686,7 +32687,7 @@ export type PercentRankExprArgs = AggFuncExprArgs;
 
 export class PercentRankExpr extends AggFuncExpr {
   key = ExpressionKey.PERCENT_RANK;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<PercentRankExprArgs>;
 
   declare args: PercentRankExprArgs;
@@ -32746,7 +32747,7 @@ export type RankExprArgs = AggFuncExprArgs;
 
 export class RankExpr extends AggFuncExpr {
   key = ExpressionKey.RANK;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<RankExprArgs>;
 
   declare args: RankExprArgs;
@@ -33044,7 +33045,7 @@ export type CumeDistExprArgs = AggFuncExprArgs;
 
 export class CumeDistExpr extends AggFuncExpr {
   key = ExpressionKey.CUME_DIST;
-
+    static isVarLenArgs = true;
   static argTypes = {} satisfies RequiredMap<CumeDistExprArgs>;
 
   declare args: CumeDistExprArgs;
