@@ -10456,15 +10456,39 @@ export class ReplacePartitionExpr extends Expression {
   }
 }
 
-export type AliasExprArgs = BaseExpressionArgs;
+export type AliasExprArgs = {
+  this: Expression;
+  alias?: string | IdentifierExpr;
+} & BaseExpressionArgs;
+
 export class AliasExpr extends Expression {
   key = ExpressionKey.ALIAS;
 
-  static argTypes = {} satisfies RequiredMap<AliasExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    alias: false,
+  } satisfies RequiredMap<AliasExprArgs>;
 
   declare args: AliasExprArgs;
+
   constructor (args: AliasExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $alias (): string | IdentifierExpr | undefined {
+    return this.args.alias;
+  }
+
+  get outputName (): string {
+    if (typeof this.args.alias === 'string') {
+      return this.args.alias;
+    }
+    return this.args.alias?.name || '';
   }
 }
 
@@ -17020,9 +17044,11 @@ export class UnaryExpr extends Expression {
   }
 }
 
-export type PivotAliasExprArgs = BaseExpressionArgs;
+export type PivotAliasExprArgs = AliasExprArgs;
+
 export class PivotAliasExpr extends AliasExpr {
   key = ExpressionKey.PIVOT_ALIAS;
+
   static argTypes = {} satisfies RequiredMap<PivotAliasExprArgs>;
 
   declare args: PivotAliasExprArgs;
@@ -18333,47 +18359,78 @@ export class AdjacentExpr extends BinaryExpr {
   }
 }
 
-export type BitwiseNotExprArgs = BaseExpressionArgs;
+export type BitwiseNotExprArgs = UnaryExprArgs;
+
 export class BitwiseNotExpr extends UnaryExpr {
   key = ExpressionKey.BITWISE_NOT;
-  static argTypes = {} satisfies RequiredMap<BitwiseNotExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<BitwiseNotExprArgs>;
 
   declare args: BitwiseNotExprArgs;
+
   constructor (args: BitwiseNotExprArgs) {
     super(args);
   }
 }
 
-export type NotExprArgs = BaseExpressionArgs;
+export type NotExprArgs = UnaryExprArgs;
+
 export class NotExpr extends UnaryExpr {
   key = ExpressionKey.NOT;
-  static argTypes = {} satisfies RequiredMap<NotExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<NotExprArgs>;
 
   declare args: NotExprArgs;
+
   constructor (args: NotExprArgs) {
     super(args);
   }
 }
 
-export type ParenExprArgs = BaseExpressionArgs;
+export type ParenExprArgs = UnaryExprArgs;
+
 export class ParenExpr extends UnaryExpr {
   key = ExpressionKey.PAREN;
-  static argTypes = {} satisfies RequiredMap<ParenExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ParenExprArgs>;
 
   declare args: ParenExprArgs;
+
   constructor (args: ParenExprArgs) {
     super(args);
   }
+
+  get outputName (): string {
+    return this.args.this.name;
+  }
 }
 
-export type NegExprArgs = BaseExpressionArgs;
+export type NegExprArgs = UnaryExprArgs;
+
 export class NegExpr extends UnaryExpr {
   key = ExpressionKey.NEG;
-  static argTypes = {} satisfies RequiredMap<NegExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<NegExprArgs>;
 
   declare args: NegExprArgs;
+
   constructor (args: NegExprArgs) {
     super(args);
+  }
+
+  toValue (): number {
+    if (this.isNumber) {
+      return (this.args.this as any).toValue() * -1;
+    }
+    return super.toValue();
   }
 }
 
