@@ -22053,10 +22053,6 @@ export class StringToArrayExpr extends FuncExpr {
   static {
     this.register();
   }
-    'STRING_TO_ARRAY',
-    'SPLIT_BY_STRING',
-    'STRTOK_TO_ARRAY',
-  ];
 }
 
 export type ArrayOverlapsExprArgs = {
@@ -30562,7 +30558,7 @@ export class ReplaceExpr extends FuncExpr {
     return this.args.expression;
   }
 
-  get $replacement (): Expression | undefined {
+  get $replacement (): boolean | undefined {
     return this.args.replacement;
   }
 
@@ -30634,11 +30630,13 @@ export class RoundExpr extends FuncExpr {
 
 export type TruncExprArgs = {
   this: Expression;
-  decimals?: Expression[];
+  decimals?: Expression;
 } & FuncExprArgs;
 
 export class TruncExpr extends FuncExpr {
   key = ExpressionKey.TRUNC;
+
+  static _sqlNames = ['TRUNC', 'TRUNCATE'];
 
   static argTypes = {
     ...super.argTypes,
@@ -30656,7 +30654,7 @@ export class TruncExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $decimals (): Expression[] | undefined {
+  get $decimals (): Expression | undefined {
     return this.args.decimals;
   }
 
@@ -31001,6 +30999,8 @@ export type SHA2ExprArgs = {
 
 export class SHA2Expr extends FuncExpr {
   key = ExpressionKey.SHA2;
+
+  static _sqlNames = ['SHA2'];
 
   static argTypes = {
     ...super.argTypes,
