@@ -32891,12 +32891,22 @@ const TIMESTAMP_PARTS = {
 } as const;
 
 export type TimestampFromPartsExprArgs = {
+  year?: Expression;
+  month?: Expression;
+  day?: Expression;
+  hour?: Expression;
+  min?: Expression;
+  sec?: Expression;
+  nano?: Expression;
   zone?: Expression;
   milli?: Expression;
+  this?: Expression;
+  expression?: Expression;
 } & FuncExprArgs;
 
 export class TimestampFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_FROM_PARTS;
+  static _sqlNames = ['TIMESTAMP_FROM_PARTS', 'TIMESTAMPFROMPARTS'];
 
   /**
    * Defines the arguments (properties and child expressions) for TimestampFromParts expressions.
@@ -32904,14 +32914,45 @@ export class TimestampFromPartsExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    ...TIMESTAMP_PARTS,
     zone: false,
     milli: false,
+    this: false,
+    expression: false,
   } satisfies RequiredMap<TimestampFromPartsExprArgs>;
 
   declare args: TimestampFromPartsExprArgs;
 
   constructor (args: TimestampFromPartsExprArgs) {
     super(args);
+  }
+
+  get $year (): Expression | undefined {
+    return this.args.year;
+  }
+
+  get $month (): Expression | undefined {
+    return this.args.month;
+  }
+
+  get $day (): Expression | undefined {
+    return this.args.day;
+  }
+
+  get $hour (): Expression | undefined {
+    return this.args.hour;
+  }
+
+  get $min (): Expression | undefined {
+    return this.args.min;
+  }
+
+  get $sec (): Expression | undefined {
+    return this.args.sec;
+  }
+
+  get $nano (): Expression | undefined {
+    return this.args.nano;
   }
 
   get $zone (): Expression | undefined {
@@ -32922,12 +32963,28 @@ export class TimestampFromPartsExpr extends FuncExpr {
     return this.args.milli;
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type TimestampLtzFromPartsExprArgs = { zone?: Expression } & FuncExprArgs;
+export type TimestampLtzFromPartsExprArgs = {
+  year?: Expression;
+  month?: Expression;
+  day?: Expression;
+  hour?: Expression;
+  min?: Expression;
+  sec?: Expression;
+  nano?: Expression;
+} & FuncExprArgs;
 
 export class TimestampLtzFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_LTZ_FROM_PARTS;
@@ -32936,6 +32993,7 @@ export class TimestampLtzFromPartsExpr extends FuncExpr {
 
   static argTypes = {
     ...super.argTypes,
+    ...TIMESTAMP_PARTS,
   } satisfies RequiredMap<TimestampLtzFromPartsExprArgs>;
 
   declare args: TimestampLtzFromPartsExprArgs;
@@ -32948,24 +33006,88 @@ export class TimestampLtzFromPartsExpr extends FuncExpr {
     super(args);
   }
 
-  get $zone (): Expression | undefined {
-    return this.args.zone;
+  get $year (): Expression | undefined {
+    return this.args.year;
+  }
+
+  get $month (): Expression | undefined {
+    return this.args.month;
+  }
+
+  get $day (): Expression | undefined {
+    return this.args.day;
+  }
+
+  get $hour (): Expression | undefined {
+    return this.args.hour;
+  }
+
+  get $min (): Expression | undefined {
+    return this.args.min;
+  }
+
+  get $sec (): Expression | undefined {
+    return this.args.sec;
+  }
+
+  get $nano (): Expression | undefined {
+    return this.args.nano;
   }
 }
 
-export type TimestampTzFromPartsExprArgs = { zone?: Expression } & FuncExprArgs;
+export type TimestampTzFromPartsExprArgs = {
+  year?: Expression;
+  month?: Expression;
+  day?: Expression;
+  hour?: Expression;
+  min?: Expression;
+  sec?: Expression;
+  nano?: Expression;
+  zone?: Expression;
+} & FuncExprArgs;
 
 export class TimestampTzFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_TZ_FROM_PARTS;
+  static _sqlNames = ['TIMESTAMP_TZ_FROM_PARTS', 'TIMESTAMPTZFROMPARTS'];
 
   static argTypes = {
     ...super.argTypes,
+    ...TIMESTAMP_PARTS,
+    zone: false,
   } satisfies RequiredMap<TimestampTzFromPartsExprArgs>;
 
   declare args: TimestampTzFromPartsExprArgs;
 
   constructor (args: TimestampTzFromPartsExprArgs) {
     super(args);
+  }
+
+  get $year (): Expression | undefined {
+    return this.args.year;
+  }
+
+  get $month (): Expression | undefined {
+    return this.args.month;
+  }
+
+  get $day (): Expression | undefined {
+    return this.args.day;
+  }
+
+  get $hour (): Expression | undefined {
+    return this.args.hour;
+  }
+
+  get $min (): Expression | undefined {
+    return this.args.min;
+  }
+
+  get $sec (): Expression | undefined {
+    return this.args.sec;
+  }
+
+  get $nano (): Expression | undefined {
+    return this.args.nano;
   }
 
   get $zone (): Expression | undefined {
