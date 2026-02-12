@@ -26012,12 +26012,19 @@ export class GenerateTimestampArrayExpr extends FuncExpr {
   }
 }
 
-export type GetExtractExprArgs = FuncExprArgs;
+export type GetExtractExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class GetExtractExpr extends FuncExpr {
   key = ExpressionKey.GET_EXTRACT;
 
-  static argTypes = {} satisfies RequiredMap<GetExtractExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<GetExtractExprArgs>;
 
   declare args: GetExtractExprArgs;
 
@@ -26025,22 +26032,47 @@ export class GetExtractExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type GetbitExprArgs = { zeroIsMsb?: Expression } & FuncExprArgs;
+export type GetbitExprArgs = {
+  this: Expression;
+  expression: Expression;
+  zeroIsMsb?: Expression;
+} & FuncExprArgs;
 
 export class GetbitExpr extends FuncExpr {
   key = ExpressionKey.GETBIT;
 
-  static argTypes = { zeroIsMsb: false } satisfies RequiredMap<GetbitExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    zeroIsMsb: false,
+  } satisfies RequiredMap<GetbitExprArgs>;
 
   declare args: GetbitExprArgs;
 
   constructor (args: GetbitExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $zeroIsMsb (): Expression | undefined {
@@ -26345,12 +26377,19 @@ export class IfExpr extends FuncExpr {
   }
 }
 
-export type NullifExprArgs = FuncExprArgs;
+export type NullifExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class NullifExpr extends FuncExpr {
   key = ExpressionKey.NULLIF;
 
-  static argTypes = {} satisfies RequiredMap<NullifExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<NullifExprArgs>;
 
   declare args: NullifExprArgs;
 
@@ -26358,22 +26397,45 @@ export class NullifExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type InitcapExprArgs = FuncExprArgs;
+export type InitcapExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & FuncExprArgs;
 
 export class InitcapExpr extends FuncExpr {
   key = ExpressionKey.INITCAP;
 
-  static argTypes = {} satisfies RequiredMap<InitcapExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<InitcapExprArgs>;
 
   declare args: InitcapExprArgs;
 
   constructor (args: InitcapExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 
   static {
