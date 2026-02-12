@@ -17483,19 +17483,17 @@ export class FuncExpr extends ConditionExpr {
       throw new Error('SQL name is only supported by concrete function implementations');
     }
 
-    if (this.sqlNames) {
-      return this.sqlNames;
+    if (!Object.hasOwn(this, '_sqlNames')) {
+      const className = this.name.replace(/Expr$/, '');
+      const snakeCase = className
+        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+        .replace(/([a-z\d])([A-Z])/g, '$1_$2')
+        .toLowerCase();
+
+      (this as any)._sqlNames = [snakeCase];
     }
 
-    // Auto-generate from class name: convert camelCase to snake_case
-    // e.g., CoalesceExpr -> coalesce, ArraySizeExpr -> array_size
-    const className = this.name.replace(/Expr$/, '');
-    const snakeCase = className
-      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
-      .replace(/([a-z\d])([A-Z])/g, '$1_$2')
-      .toLowerCase();
-
-    return [snakeCase];
+    return (this as any)._sqlNames;
   }
 
   /**
