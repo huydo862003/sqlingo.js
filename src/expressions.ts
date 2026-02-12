@@ -28238,17 +28238,32 @@ export class LnExpr extends FuncExpr {
   }
 }
 
-export type LogExprArgs = FuncExprArgs;
+export type LogExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & FuncExprArgs;
 
 export class LogExpr extends FuncExpr {
   key = ExpressionKey.LOG;
 
-  static argTypes = {} satisfies RequiredMap<LogExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<LogExprArgs>;
 
   declare args: LogExprArgs;
 
   constructor (args: LogExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 
   static {
@@ -28363,12 +28378,19 @@ export class MapFromEntriesExpr extends FuncExpr {
   }
 }
 
-export type MapCatExprArgs = FuncExprArgs;
+export type MapCatExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class MapCatExpr extends FuncExpr {
   key = ExpressionKey.MAP_CAT;
 
-  static argTypes = {} satisfies RequiredMap<MapCatExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<MapCatExprArgs>;
 
   declare args: MapCatExprArgs;
 
@@ -28376,22 +28398,41 @@ export class MapCatExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type MapContainsKeyExprArgs = { key: unknown } & FuncExprArgs;
+export type MapContainsKeyExprArgs = {
+  this: Expression;
+  key: unknown;
+} & FuncExprArgs;
 
 export class MapContainsKeyExpr extends FuncExpr {
   key = ExpressionKey.MAP_CONTAINS_KEY;
 
-  static argTypes = { key: true } satisfies RequiredMap<MapContainsKeyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    key: true,
+  } satisfies RequiredMap<MapContainsKeyExprArgs>;
 
   declare args: MapContainsKeyExprArgs;
 
   constructor (args: MapContainsKeyExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $key (): Expression {
@@ -28403,12 +28444,20 @@ export class MapContainsKeyExpr extends FuncExpr {
   }
 }
 
-export type MapDeleteExprArgs = FuncExprArgs;
+export type MapDeleteExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+} & FuncExprArgs;
 
 export class MapDeleteExpr extends FuncExpr {
   key = ExpressionKey.MAP_DELETE;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<MapDeleteExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: true,
+  } satisfies RequiredMap<MapDeleteExprArgs>;
 
   declare args: MapDeleteExprArgs;
 
@@ -28416,14 +28465,25 @@ export class MapDeleteExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
   static {
     this.register();
   }
 }
 
-export type MapInsertExprArgs = { key?: unknown;
+export type MapInsertExprArgs = {
+  this: Expression;
+  key?: unknown;
   value: string;
-  updateFlag?: Expression; } & FuncExprArgs;
+  updateFlag?: Expression;
+} & FuncExprArgs;
 
 export class MapInsertExpr extends FuncExpr {
   key = ExpressionKey.MAP_INSERT;
@@ -28434,6 +28494,7 @@ export class MapInsertExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     key: false,
     value: true,
     updateFlag: false,
@@ -28443,6 +28504,10 @@ export class MapInsertExpr extends FuncExpr {
 
   constructor (args: MapInsertExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $key (): Expression | undefined {
@@ -28482,17 +28547,33 @@ export class MapKeysExpr extends FuncExpr {
   }
 }
 
-export type MapPickExprArgs = FuncExprArgs;
+export type MapPickExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+} & FuncExprArgs;
 
 export class MapPickExpr extends FuncExpr {
   key = ExpressionKey.MAP_PICK;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<MapPickExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: true,
+  } satisfies RequiredMap<MapPickExprArgs>;
 
   declare args: MapPickExprArgs;
 
   constructor (args: MapPickExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
   }
 
   static {
