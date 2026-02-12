@@ -9964,6 +9964,7 @@ export enum AnalyzeExprKind {
   COMPUTE = 'COMPUTE',
   TABLE = 'TABLE',
 }
+
 export type AnalyzeExprArgs = {
   kind?: AnalyzeExprKind;
   this?: Expression;
@@ -10281,9 +10282,13 @@ export class AnalyzeValidateExpr extends Expression {
 }
 
 export type AnalyzeColumnsExprArgs = BaseExpressionArgs;
+
 export class AnalyzeColumnsExpr extends Expression {
   key = ExpressionKey.ANALYZE_COLUMNS;
-  static argTypes = {} satisfies RequiredMap<AnalyzeColumnsExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AnalyzeColumnsExprArgs>;
 
   declare args: AnalyzeColumnsExprArgs;
   constructor (args: AnalyzeColumnsExprArgs) {
@@ -10292,11 +10297,15 @@ export class AnalyzeColumnsExpr extends Expression {
 }
 
 export type UsingDataExprArgs = BaseExpressionArgs;
+
 export class UsingDataExpr extends Expression {
   key = ExpressionKey.USING_DATA;
-  static argTypes = {} satisfies RequiredMap<UsingDataExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<UsingDataExprArgs>;
 
   declare args: UsingDataExprArgs;
+
   constructor (args: UsingDataExprArgs) {
     super(args);
   }
