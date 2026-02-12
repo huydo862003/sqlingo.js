@@ -21823,8 +21823,9 @@ export class ArraysZipExpr extends FuncExpr {
   }
 }
 
-export type CaseExprArgs = { ifs: Expression[];
-  default?: Expression; } & BaseExpressionArgs;
+export type CaseExprArgs = { this?: Expression;
+  ifs: Expression[];
+  default?: Expression; } & FuncExprArgs;
 
 export class CaseExpr extends FuncExpr {
   key = ExpressionKey.CASE;
@@ -21835,6 +21836,7 @@ export class CaseExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: false,
     ifs: true,
     default: false,
   } satisfies RequiredMap<CaseExprArgs>;
@@ -21843,6 +21845,10 @@ export class CaseExpr extends FuncExpr {
 
   constructor (args: CaseExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   get $ifs (): Expression[] {
@@ -21858,11 +21864,12 @@ export class CaseExpr extends FuncExpr {
   }
 }
 
-export type CastExprArgs = { to: Expression;
+export type CastExprArgs = { this: Expression;
+  to: Expression;
   format?: string;
   safe?: boolean;
   action?: Expression;
-  default?: Expression; } & BaseExpressionArgs;
+  default?: Expression; } & FuncExprArgs;
 
 export class CastExpr extends FuncExpr {
   key = ExpressionKey.CAST;
@@ -21873,6 +21880,7 @@ export class CastExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     to: true,
     format: false,
     safe: false,
@@ -21886,15 +21894,19 @@ export class CastExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $to (): Expression {
     return this.args.to;
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 
@@ -21904,6 +21916,25 @@ export class CastExpr extends FuncExpr {
 
   get $default (): Expression | undefined {
     return this.args.default;
+  }
+
+  get name (): string {
+    return (this.$this as any).name || '';
+  }
+
+  get to (): Expression {
+    return this.$to;
+  }
+
+  get outputName (): string {
+    return this.name;
+  }
+
+  isType (...dtypes: string[]): boolean {
+    const toExpr = this.$to;
+    if (!toExpr) return false;
+    const toType = toExpr.sql().toLowerCase();
+    return dtypes.some(dtype => toType.includes(dtype.toLowerCase()));
   }
 
   static {
