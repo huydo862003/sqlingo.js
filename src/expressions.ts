@@ -17798,34 +17798,49 @@ export class DivExpr extends BinaryExpr {
   }
 }
 
-export type OverlapsExprArgs = BaseExpressionArgs;
+export type OverlapsExprArgs = BinaryExprArgs;
+
 export class OverlapsExpr extends BinaryExpr {
   key = ExpressionKey.OVERLAPS;
-  static argTypes = {} satisfies RequiredMap<OverlapsExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<OverlapsExprArgs>;
 
   declare args: OverlapsExprArgs;
+
   constructor (args: OverlapsExprArgs) {
     super(args);
   }
 }
 
-export type ExtendsLeftExprArgs = BaseExpressionArgs;
+export type ExtendsLeftExprArgs = BinaryExprArgs;
+
 export class ExtendsLeftExpr extends BinaryExpr {
   key = ExpressionKey.EXTENDS_LEFT;
-  static argTypes = {} satisfies RequiredMap<ExtendsLeftExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ExtendsLeftExprArgs>;
 
   declare args: ExtendsLeftExprArgs;
+
   constructor (args: ExtendsLeftExprArgs) {
     super(args);
   }
 }
 
-export type ExtendsRightExprArgs = BaseExpressionArgs;
+export type ExtendsRightExprArgs = BinaryExprArgs;
+
 export class ExtendsRightExpr extends BinaryExpr {
   key = ExpressionKey.EXTENDS_RIGHT;
-  static argTypes = {} satisfies RequiredMap<ExtendsRightExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ExtendsRightExprArgs>;
 
   declare args: ExtendsRightExprArgs;
+
   constructor (args: ExtendsRightExprArgs) {
     super(args);
   }
