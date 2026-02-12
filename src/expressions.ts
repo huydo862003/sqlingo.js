@@ -25170,7 +25170,7 @@ export class FromBase32Expr extends FuncExpr {
   }
 }
 
-export type FromBase64ExprArgs = BaseExpressionArgs;
+export type FromBase64ExprArgs = FuncExprArgs;
 
 export class FromBase64Expr extends FuncExpr {
   key = ExpressionKey.FROM_BASE64;
