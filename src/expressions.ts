@@ -20039,13 +20039,18 @@ export class AnonymousExpr extends FuncExpr {
   }
 }
 
-export type ApplyExprArgs = FuncExprArgs;
+export type ApplyExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class ApplyExpr extends FuncExpr {
   key = ExpressionKey.APPLY;
 
   static argTypes = {
     ...super.argTypes,
+    this: true,
+    expression: true,
   } satisfies RequiredMap<ApplyExprArgs>;
 
   declare args: ApplyExprArgs;
@@ -20054,16 +20059,29 @@ export class ApplyExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type ArrayExprArgs = { bracketNotation?: Expression;
-  structNameInheritance?: string; } & BaseExpressionArgs;
+export type ArrayExprArgs = {
+  expressions?: Expression[];
+  bracketNotation?: Expression;
+  structNameInheritance?: string;
+} & FuncExprArgs;
 
 export class ArrayExpr extends FuncExpr {
   key = ExpressionKey.ARRAY;
+
+  static isVarLenArgs = true;
 
   /**
    * Defines the arguments (properties and child expressions) for Array expressions.
@@ -20071,6 +20089,7 @@ export class ArrayExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    expressions: false,
     bracketNotation: false,
     structNameInheritance: false,
   } satisfies RequiredMap<ArrayExprArgs>;
@@ -20079,6 +20098,10 @@ export class ArrayExpr extends FuncExpr {
 
   constructor (args: ArrayExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   get $bracketNotation (): Expression | undefined {
@@ -20173,6 +20196,8 @@ export type ListExprArgs = {
 
 export class ListExpr extends FuncExpr {
   key = ExpressionKey.LIST;
+
+  static isVarLenArgs = true;
 
   static argTypes = {
     ...super.argTypes,
