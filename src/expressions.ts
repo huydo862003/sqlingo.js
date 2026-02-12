@@ -10492,45 +10492,111 @@ export class AliasExpr extends Expression {
   }
 }
 
-export type PivotAnyExprArgs = BaseExpressionArgs;
+export type PivotAnyExprArgs = {
+  this?: Expression;
+} & BaseExpressionArgs;
+
+/**
+ * Represents Snowflake's ANY [ ORDER BY ... ] syntax
+ * https://docs.snowflake.com/en/sql-reference/constructs/pivot
+ */
 export class PivotAnyExpr extends Expression {
   key = ExpressionKey.PIVOT_ANY;
-  static argTypes = {} satisfies RequiredMap<PivotAnyExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<PivotAnyExprArgs>;
 
   declare args: PivotAnyExprArgs;
+
   constructor (args: PivotAnyExprArgs) {
     super(args);
   }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
 }
 
-export type AliasesExprArgs = BaseExpressionArgs;
+export type AliasesExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+} & BaseExpressionArgs;
+
 export class AliasesExpr extends Expression {
   key = ExpressionKey.ALIASES;
-  static argTypes = {} satisfies RequiredMap<AliasesExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: true,
+  } satisfies RequiredMap<AliasesExprArgs>;
 
   declare args: AliasesExprArgs;
+
   constructor (args: AliasesExprArgs) {
     super(args);
   }
-}
 
-export type AtIndexExprArgs = BaseExpressionArgs;
-export class AtIndexExpr extends Expression {
-  key = ExpressionKey.AT_INDEX;
-  static argTypes = {} satisfies RequiredMap<AtIndexExprArgs>;
+  get $this (): Expression {
+    return this.args.this;
+  }
 
-  declare args: AtIndexExprArgs;
-  constructor (args: AtIndexExprArgs) {
-    super(args);
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
+  get aliases (): Expression[] {
+    return this.args.expressions;
   }
 }
 
-export type AtTimeZoneExprArgs = { zone: Expression } & BaseExpressionArgs;
+export type AtIndexExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
+
+/**
+ * https://docs.aws.amazon.com/redshift/latest/dg/query-super.html
+ */
+export class AtIndexExpr extends Expression {
+  key = ExpressionKey.AT_INDEX;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<AtIndexExprArgs>;
+
+  declare args: AtIndexExprArgs;
+
+  constructor (args: AtIndexExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+}
+
+export type AtTimeZoneExprArgs = {
+  this: Expression;
+  zone: Expression;
+} & BaseExpressionArgs;
 
 export class AtTimeZoneExpr extends Expression {
   key = ExpressionKey.AT_TIME_ZONE;
 
-  static argTypes = { zone: true } satisfies RequiredMap<AtTimeZoneExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    zone: true,
+  } satisfies RequiredMap<AtTimeZoneExprArgs>;
 
   declare args: AtTimeZoneExprArgs;
 
@@ -10538,17 +10604,28 @@ export class AtTimeZoneExpr extends Expression {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $zone (): Expression {
     return this.args.zone;
   }
 }
 
-export type FromTimeZoneExprArgs = { zone: Expression } & BaseExpressionArgs;
+export type FromTimeZoneExprArgs = {
+  this: Expression;
+  zone: Expression;
+} & BaseExpressionArgs;
 
 export class FromTimeZoneExpr extends Expression {
   key = ExpressionKey.FROM_TIME_ZONE;
 
-  static argTypes = { zone: true } satisfies RequiredMap<FromTimeZoneExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    zone: true,
+  } satisfies RequiredMap<FromTimeZoneExprArgs>;
 
   declare args: FromTimeZoneExprArgs;
 
@@ -10556,22 +10633,43 @@ export class FromTimeZoneExpr extends Expression {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $zone (): Expression {
     return this.args.zone;
   }
 }
 
-export type FormatPhraseExprArgs = { format: string } & BaseExpressionArgs;
+export type FormatPhraseExprArgs = {
+  this: Expression;
+  format: Expression;
+} & BaseExpressionArgs;
 
+/**
+ * Format override for a column in Teradata.
+ * Can be expanded to additional dialects as needed.
+ *
+ * https://docs.teradata.com/r/Enterprise_IntelliFlex_VMware/SQL-Data-Types-and-Literals/Data-Type-Formats-and-Format-Phrases/FORMAT
+ */
 export class FormatPhraseExpr extends Expression {
   key = ExpressionKey.FORMAT_PHRASE;
 
-  static argTypes = { format: true } satisfies RequiredMap<FormatPhraseExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    format: true,
+  } satisfies RequiredMap<FormatPhraseExprArgs>;
 
   declare args: FormatPhraseExprArgs;
 
   constructor (args: FormatPhraseExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $format (): Expression {
@@ -17049,7 +17147,9 @@ export type PivotAliasExprArgs = AliasExprArgs;
 export class PivotAliasExpr extends AliasExpr {
   key = ExpressionKey.PIVOT_ALIAS;
 
-  static argTypes = {} satisfies RequiredMap<PivotAliasExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<PivotAliasExprArgs>;
 
   declare args: PivotAliasExprArgs;
   constructor (args: PivotAliasExprArgs) {
@@ -17057,19 +17157,24 @@ export class PivotAliasExpr extends AliasExpr {
   }
 }
 
-export type BracketExprArgs = { offset?: boolean;
+export type BracketExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+  offset?: boolean;
   safe?: boolean;
-  returnsListForMaps?: Expression[]; } & BaseExpressionArgs;
+  returnsListForMaps?: Expression[];
+} & ConditionExprArgs;
 
-export class BracketExpr extends Expression {
+/**
+ * https://cloud.google.com/bigquery/docs/reference/standard-sql/operators#array_subscript_operator
+ */
+export class BracketExpr extends ConditionExpr {
   key = ExpressionKey.BRACKET;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Bracket expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
+    expressions: true,
     offset: false,
     safe: false,
     returnsListForMaps: false,
@@ -17081,16 +17186,31 @@ export class BracketExpr extends Expression {
     super(args);
   }
 
-  get $offset (): Expression | undefined {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
+  get $offset (): boolean | undefined {
     return this.args.offset;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 
   get $returnsListForMaps (): Expression[] | undefined {
     return this.args.returnsListForMaps;
+  }
+
+  get outputName (): string {
+    if (this.args.expressions.length === 1) {
+      return this.args.expressions[0].outputName;
+    }
+    return super.outputName;
   }
 }
 
@@ -18428,25 +18548,25 @@ export class NegExpr extends UnaryExpr {
 
   toValue (): number {
     if (this.isNumber) {
-      return (this.args.this as any).toValue() * -1;
+      return this.args.this.toValue() * -1;
     }
     return super.toValue();
   }
 }
 
-export type BetweenExprArgs = { low: Expression;
+export type BetweenExprArgs = {
+  this: Expression;
+  low: Expression;
   high: Expression;
-  symmetric?: Expression; } & BaseExpressionArgs;
+  symmetric?: Expression;
+} & PredicateExprArgs;
 
 export class BetweenExpr extends PredicateExpr {
   key = ExpressionKey.BETWEEN;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Between expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     low: true,
     high: true,
     symmetric: false,
@@ -18456,6 +18576,10 @@ export class BetweenExpr extends PredicateExpr {
 
   constructor (args: BetweenExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $low (): Expression {
