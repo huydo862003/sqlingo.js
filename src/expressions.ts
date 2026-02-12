@@ -23346,14 +23346,32 @@ export class DateTruncExpr extends FuncExpr {
   }
 }
 
-export type DatetimeExprArgs = BaseExpressionArgs;
+export type DatetimeExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & FuncExprArgs;
+
 export class DatetimeExpr extends FuncExpr {
   key = ExpressionKey.DATETIME;
-  static argTypes = {} satisfies RequiredMap<DatetimeExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<DatetimeExprArgs>;
 
   declare args: DatetimeExprArgs;
+
   constructor (args: DatetimeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 
   static {
@@ -23361,12 +23379,22 @@ export class DatetimeExpr extends FuncExpr {
   }
 }
 
-export type DatetimeAddExprArgs = { unit?: Expression } & BaseExpressionArgs;
+export type DatetimeAddExprArgs = {
+  this: Expression;
+  expression: Expression;
+  unit?: Expression;
+} & FuncExprArgs & IntervalOpExprArgs;
 
-export class DatetimeAddExpr extends FuncExpr {
+export class DatetimeAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   key = ExpressionKey.DATETIME_ADD;
 
-  static argTypes = { unit: false } satisfies RequiredMap<DatetimeAddExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    unit: false,
+  } satisfies RequiredMap<DatetimeAddExprArgs>;
 
   declare args: DatetimeAddExprArgs;
 
@@ -23374,6 +23402,14 @@ export class DatetimeAddExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
@@ -23383,12 +23419,22 @@ export class DatetimeAddExpr extends FuncExpr {
   }
 }
 
-export type DatetimeSubExprArgs = { unit?: Expression } & BaseExpressionArgs;
+export type DatetimeSubExprArgs = {
+  this: Expression;
+  expression: Expression;
+  unit?: Expression;
+} & FuncExprArgs & IntervalOpExprArgs;
 
-export class DatetimeSubExpr extends FuncExpr {
+export class DatetimeSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   key = ExpressionKey.DATETIME_SUB;
 
-  static argTypes = { unit: false } satisfies RequiredMap<DatetimeSubExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    unit: false,
+  } satisfies RequiredMap<DatetimeSubExprArgs>;
 
   declare args: DatetimeSubExprArgs;
 
@@ -23396,6 +23442,14 @@ export class DatetimeSubExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
@@ -23405,12 +23459,22 @@ export class DatetimeSubExpr extends FuncExpr {
   }
 }
 
-export type DatetimeDiffExprArgs = { unit?: Expression } & BaseExpressionArgs;
+export type DatetimeDiffExprArgs = {
+  this: Expression;
+  expression: Expression;
+  unit?: Expression;
+} & FuncExprArgs & TimeUnitExprArgs;
 
-export class DatetimeDiffExpr extends FuncExpr {
+export class DatetimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.DATETIME_DIFF;
 
-  static argTypes = { unit: false } satisfies RequiredMap<DatetimeDiffExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    unit: false,
+  } satisfies RequiredMap<DatetimeDiffExprArgs>;
 
   declare args: DatetimeDiffExprArgs;
 
@@ -23418,6 +23482,14 @@ export class DatetimeDiffExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
@@ -23427,18 +23499,19 @@ export class DatetimeDiffExpr extends FuncExpr {
   }
 }
 
-export type DatetimeTruncExprArgs = { unit: Expression;
-  zone?: Expression; } & BaseExpressionArgs;
+export type DatetimeTruncExprArgs = {
+  this: Expression;
+  unit: Expression;
+  zone?: Expression;
+} & FuncExprArgs & TimeUnitExprArgs;
 
-export class DatetimeTruncExpr extends FuncExpr {
+export class DatetimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.DATETIME_TRUNC;
 
-  /**
-   * Defines the arguments (properties and child expressions) for DatetimeTrunc expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
     unit: true,
     zone: false,
   } satisfies RequiredMap<DatetimeTruncExprArgs>;
@@ -23447,6 +23520,10 @@ export class DatetimeTruncExpr extends FuncExpr {
 
   constructor (args: DatetimeTruncExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $unit (): Expression {
@@ -23462,7 +23539,7 @@ export class DatetimeTruncExpr extends FuncExpr {
   }
 }
 
-export type DateFromUnixDateExprArgs = BaseExpressionArgs;
+export type DateFromUnixDateExprArgs = FuncExprArgs;
 export class DateFromUnixDateExpr extends FuncExpr {
   key = ExpressionKey.DATE_FROM_UNIX_DATE;
   static argTypes = {} satisfies RequiredMap<DateFromUnixDateExprArgs>;
