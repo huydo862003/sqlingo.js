@@ -20819,13 +20819,13 @@ export class GenerateSeriesExpr extends FuncExpr {
 export type GeneratorExprArgs = {
   rowcount?: Expression;
   timelimit?: Expression;
-} & FuncExprArgs;
+} & FuncExprArgs & UDTFExprArgs;
 
-export class GeneratorExpr extends FuncExpr {
+export class GeneratorExpr extends multiInherit(FuncExpr, UDTFExpr) {
   key = ExpressionKey.GENERATOR;
 
+  // @ts-expect-error - super.argTypes not accessible in multiInherit classes
   static argTypes = {
-    ...super.argTypes,
     rowcount: false,
     timelimit: false,
   } satisfies RequiredMap<GeneratorExprArgs>;
