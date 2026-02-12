@@ -20826,6 +20826,7 @@ export class GeneratorExpr extends multiInherit(FuncExpr, UDTFExpr) {
 
   // @ts-expect-error - super.argTypes not accessible in multiInherit classes
   static argTypes = {
+    ...super.argTypes,
     rowcount: false,
     timelimit: false,
   } satisfies RequiredMap<GeneratorExprArgs>;
@@ -21220,6 +21221,7 @@ export class ArrayContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   // @ts-expect-error - super.argTypes not accessible in multiInherit classes
   static argTypes = {
+    ...super.argTypes,
     this: true,
     expression: true,
     ensureVariant: false,
@@ -21260,6 +21262,7 @@ export class ArrayContainsAllExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   // @ts-expect-error - super.argTypes not accessible in multiInherit classes
   static argTypes = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<ArrayContainsAllExprArgs>;
@@ -21666,6 +21669,7 @@ export class ArrayOverlapsExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   // @ts-expect-error - super.argTypes not accessible in multiInherit classes
   static argTypes = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<ArrayOverlapsExprArgs>;
