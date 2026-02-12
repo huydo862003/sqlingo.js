@@ -17430,7 +17430,7 @@ const _allFunctions = new Set<typeof FuncExpr>();
  *     well as to provide the function's name during SQL string generation. By default the SQL
  *     name is set to the expression's class name transformed to snake case.
  */
-export type FuncExprArgs = BaseExpressionArgs;
+export type FuncExprArgs = ConditionExprArgs;
 
 export class FuncExpr extends ConditionExpr {
   key = ExpressionKey.FUNC;
