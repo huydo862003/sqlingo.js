@@ -12047,7 +12047,7 @@ export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export type CharacterSetColumnConstraintExprArgs = {
   this: Expression;
-} & BaseExpressionArgs;
+} & ColumnConstraintKindExprArgs;
 export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CHARACTER_SET_COLUMN_CONSTRAINT;
 
@@ -17827,7 +17827,7 @@ export class FuncExpr extends ConditionExpr {
 
 export type JSONPathFilterExprArgs = {
   this: Expression;
-} & BaseExpressionArgs;
+} & JSONPathPartExprArgs;
 export class JSONPathFilterExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_FILTER;
 
@@ -17849,7 +17849,7 @@ export class JSONPathFilterExpr extends JSONPathPartExpr {
 
 export type JSONPathKeyExprArgs = {
   this: Expression;
-} & BaseExpressionArgs;
+} & JSONPathPartExprArgs;
 export class JSONPathKeyExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_KEY;
 
@@ -17892,7 +17892,8 @@ export class JSONPathRecursiveExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathRootExprArgs = BaseExpressionArgs;
+export type JSONPathRootExprArgs = JSONPathPartExprArgs;
+
 export class JSONPathRootExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_ROOT;
 
@@ -17907,7 +17908,7 @@ export class JSONPathRootExpr extends JSONPathPartExpr {
 
 export type JSONPathScriptExprArgs = {
   this: Expression;
-} & BaseExpressionArgs;
+} & JSONPathPartExprArgs;
 export class JSONPathScriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SCRIPT;
 
@@ -17966,7 +17967,7 @@ export class JSONPathSliceExpr extends JSONPathPartExpr {
 
 export type JSONPathSelectorExprArgs = {
   this: Expression;
-} & BaseExpressionArgs;
+} & JSONPathPartExprArgs;
 export class JSONPathSelectorExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SELECTOR;
 
@@ -17988,7 +17989,7 @@ export class JSONPathSelectorExpr extends JSONPathPartExpr {
 
 export type JSONPathSubscriptExprArgs = {
   this: Expression;
-} & BaseExpressionArgs;
+} & JSONPathPartExprArgs;
 export class JSONPathSubscriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SUBSCRIPT;
 
@@ -18031,7 +18032,7 @@ export class JSONPathUnionExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathWildcardExprArgs = BaseExpressionArgs;
+export type JSONPathWildcardExprArgs = JSONPathPartExprArgs;
 export class JSONPathWildcardExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_WILDCARD;
 
@@ -34592,7 +34593,7 @@ export class GroupConcatExpr extends AggFuncExpr {
   }
 }
 
-export type LowerHexExprArgs = BaseExpressionArgs;
+export type LowerHexExprArgs = HexExprArgs;
 export class LowerHexExpr extends HexExpr {
   key = ExpressionKey.LOWER_HEX;
 
