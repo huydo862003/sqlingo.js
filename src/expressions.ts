@@ -2320,7 +2320,8 @@ export class Expression {
   /**
    * Create a DIV expression with optional typed and safe flags.
    */
-  div (other: string | Expression, options?: { typed?: boolean; safe?: boolean; }): DivExpr {
+  div (other: string | Expression, options?: { typed?: boolean;
+    safe?: boolean; }): DivExpr {
     const div = this.binop(DivExpr, other);
     div.set('typed', options?.typed ?? false);
     div.set('safe', options?.safe ?? false);
@@ -22611,6 +22612,7 @@ export class CeilExpr extends FuncExpr {
   static {
     this.register();
   }
+
   constructor (args: CeilExprArgs) {
     super(args);
   }
@@ -24300,6 +24302,7 @@ export class MonthsBetweenExpr extends FuncExpr {
   static {
     this.register();
   }
+
   constructor (args: MonthsBetweenExprArgs) {
     super(args);
   }
@@ -26254,6 +26257,7 @@ export class GapFillExpr extends FuncExpr {
   static {
     this.register();
   }
+
   constructor (args: GapFillExprArgs) {
     super(args);
   }
@@ -28404,7 +28408,12 @@ export type LengthExprArgs = {
 export class LengthExpr extends FuncExpr {
   key = ExpressionKey.LENGTH;
 
-  static _sqlNames = ['LENGTH', 'LEN', 'CHAR_LENGTH', 'CHARACTER_LENGTH'];
+  static _sqlNames = [
+    'LENGTH',
+    'LEN',
+    'CHAR_LENGTH',
+    'CHARACTER_LENGTH',
+  ];
 
   /**
    * Defines the arguments (properties and child expressions) for Length expressions.
@@ -28623,6 +28632,7 @@ export class MapExpr extends FuncExpr {
   static {
     this.register();
   }
+
   constructor (args: MapExprArgs) {
     super(args);
   }
@@ -31008,6 +31018,7 @@ export class SHA2Expr extends FuncExpr {
   static {
     this.register();
   }
+
   constructor (args: SHA2ExprArgs) {
     super(args);
   }
@@ -31121,6 +31132,7 @@ export class SortArrayExpr extends FuncExpr {
   static {
     this.register();
   }
+
   constructor (args: SortArrayExprArgs) {
     super(args);
   }
@@ -32643,7 +32655,7 @@ export class UnixToStrExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 
@@ -32694,7 +32706,7 @@ export class UnixToTimeExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $scale (): Expression | undefined {
+  get $scale (): number | Expression | undefined {
     return this.args.scale;
   }
 
@@ -32710,13 +32722,24 @@ export class UnixToTimeExpr extends FuncExpr {
     return this.args.minutes;
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 
-  get $targetType (): Expression | undefined {
+  get $targetType (): DataTypeExpr | undefined {
     return this.args.targetType;
   }
+
+  static SECONDS = LiteralExpr.number(0);
+  static DECIS = LiteralExpr.number(1);
+  static CENTIS = LiteralExpr.number(2);
+  static MILLIS = LiteralExpr.number(3);
+  static DECIMILLIS = LiteralExpr.number(4);
+  static CENTIMILLIS = LiteralExpr.number(5);
+  static MICROS = LiteralExpr.number(6);
+  static DECIMICROS = LiteralExpr.number(7);
+  static CENTIMICROS = LiteralExpr.number(8);
+  static NANOS = LiteralExpr.number(9);
 
   static {
     this.register();
@@ -32811,7 +32834,13 @@ export type UuidExprArgs = {
 
 export class UuidExpr extends FuncExpr {
   key = ExpressionKey.UUID;
-  static _sqlNames = ['UUID', 'GEN_RANDOM_UUID', 'GENERATE_UUID', 'UUID_STRING'];
+
+  static _sqlNames = [
+    'UUID',
+    'GEN_RANDOM_UUID',
+    'GENERATE_UUID',
+    'UUID_STRING',
+  ];
 
   /**
    * Defines the arguments (properties and child expressions) for Uuid expressions.
@@ -33017,11 +33046,11 @@ export class WidthBucketExpr extends FuncExpr {
     super(args);
   }
 
-  get $minValue (): Expression | undefined {
+  get $minValue (): string | undefined {
     return this.args.minValue;
   }
 
-  get $maxValue (): Expression | undefined {
+  get $maxValue (): string | undefined {
     return this.args.maxValue;
   }
 
@@ -33086,11 +33115,11 @@ export class NextDayExpr extends FuncExpr {
     super(args);
   }
 
-  get $expression (): Expression {
+  get $expression (): Expression | undefined {
     return this.args.expression;
   }
 
-  get $this (): Expression {
+  get $this (): ExpressionValue {
     return this.args.this;
   }
 
@@ -33120,7 +33149,7 @@ export class XMLElementExpr extends FuncExpr {
     super(args);
   }
 
-  get $evalname (): Expression | undefined {
+  get $evalname (): string | undefined {
     return this.args.evalname;
   }
 
