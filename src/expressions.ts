@@ -11266,28 +11266,61 @@ export class JSONExtractQuoteExpr extends Expression {
   }
 }
 
-export type ScopeResolutionExprArgs = BaseExpressionArgs;
+export type ScopeResolutionExprArgs = {
+  this?: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
+
 export class ScopeResolutionExpr extends Expression {
   key = ExpressionKey.SCOPE_RESOLUTION;
-  static argTypes = {} satisfies RequiredMap<ScopeResolutionExprArgs>;
+
+  static argTypes = {
+    this: false,
+    expression: true,
+  } satisfies RequiredMap<ScopeResolutionExprArgs>;
 
   declare args: ScopeResolutionExprArgs;
+
   constructor (args: ScopeResolutionExprArgs) {
     super(args);
   }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
 }
 
-export type SliceExprArgs = { step?: Expression } & BaseExpressionArgs;
+export type SliceExprArgs = {
+  this?: Expression;
+  expression?: Expression;
+  step?: Expression;
+} & BaseExpressionArgs;
 
 export class SliceExpr extends Expression {
   key = ExpressionKey.SLICE;
 
-  static argTypes = { step: false } satisfies RequiredMap<SliceExprArgs>;
+  static argTypes = {
+    this: false,
+    expression: false,
+    step: false,
+  } satisfies RequiredMap<SliceExprArgs>;
 
   declare args: SliceExprArgs;
 
   constructor (args: SliceExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 
   get $step (): Expression | undefined {
@@ -28666,17 +28699,34 @@ export class VarMapExpr extends FuncExpr {
   }
 }
 
-export type MatchAgainstExprArgs = { modifier?: Expression } & FuncExprArgs;
+export type MatchAgainstExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+  modifier?: Expression;
+} & FuncExprArgs;
 
 export class MatchAgainstExpr extends FuncExpr {
   key = ExpressionKey.MATCH_AGAINST;
 
-  static argTypes = { modifier: false } satisfies RequiredMap<MatchAgainstExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: true,
+    modifier: false,
+  } satisfies RequiredMap<MatchAgainstExprArgs>;
 
   declare args: MatchAgainstExprArgs;
 
   constructor (args: MatchAgainstExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
   }
 
   get $modifier (): Expression | undefined {
@@ -28710,17 +28760,33 @@ export class MD5Expr extends FuncExpr {
   }
 }
 
-export type MD5DigestExprArgs = FuncExprArgs;
+export type MD5DigestExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+} & FuncExprArgs;
 
 export class MD5DigestExpr extends FuncExpr {
   key = ExpressionKey.MD5_DIGEST;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<MD5DigestExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: false,
+  } satisfies RequiredMap<MD5DigestExprArgs>;
 
   declare args: MD5DigestExprArgs;
 
   constructor (args: MD5DigestExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   static {
@@ -33795,17 +33861,33 @@ export class LogicalAndExpr extends AggFuncExpr {
   }
 }
 
-export type MaxExprArgs = AggFuncExprArgs;
+export type MaxExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+} & AggFuncExprArgs;
 
 export class MaxExpr extends AggFuncExpr {
   key = ExpressionKey.MAX;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<MaxExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: false,
+  } satisfies RequiredMap<MaxExprArgs>;
 
   declare args: MaxExprArgs;
 
   constructor (args: MaxExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   static {
@@ -33855,17 +33937,33 @@ export class ModeExpr extends AggFuncExpr {
   }
 }
 
-export type MinExprArgs = AggFuncExprArgs;
+export type MinExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+} & AggFuncExprArgs;
 
 export class MinExpr extends AggFuncExpr {
   key = ExpressionKey.MIN;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<MinExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: false,
+  } satisfies RequiredMap<MinExprArgs>;
 
   declare args: MinExprArgs;
 
   constructor (args: MinExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   static {
