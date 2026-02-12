@@ -25229,10 +25229,13 @@ export class EncryptExpr extends FuncExpr {
   }
 }
 
-export type EncryptRawExprArgs = { key: unknown;
+export type EncryptRawExprArgs = {
+  this: Expression;
+  key: unknown;
   iv: Expression;
   aad?: Expression;
-  encryptionMethod?: string; } & FuncExprArgs;
+  encryptionMethod?: string;
+} & FuncExprArgs;
 
 export class EncryptRawExpr extends FuncExpr {
   key = ExpressionKey.ENCRYPT_RAW;
@@ -25243,6 +25246,7 @@ export class EncryptRawExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     key: true,
     iv: true,
     aad: false,
@@ -25253,6 +25257,10 @@ export class EncryptRawExpr extends FuncExpr {
 
   constructor (args: EncryptRawExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $key (): Expression {
@@ -25276,17 +25284,32 @@ export class EncryptRawExpr extends FuncExpr {
   }
 }
 
-export type EqualNullExprArgs = FuncExprArgs;
+export type EqualNullExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class EqualNullExpr extends FuncExpr {
   key = ExpressionKey.EQUAL_NULL;
 
-  static argTypes = {} satisfies RequiredMap<EqualNullExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<EqualNullExprArgs>;
 
   declare args: EqualNullExprArgs;
 
   constructor (args: EqualNullExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   static {
@@ -25565,8 +25588,11 @@ export class ToBase64Expr extends FuncExpr {
   }
 }
 
-export type ToBinaryExprArgs = { format?: string;
-  safe?: boolean; } & FuncExprArgs;
+export type ToBinaryExprArgs = {
+  this: Expression;
+  format?: string;
+  safe?: boolean;
+} & FuncExprArgs;
 
 export class ToBinaryExpr extends FuncExpr {
   key = ExpressionKey.TO_BINARY;
@@ -25577,6 +25603,7 @@ export class ToBinaryExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     format: false,
     safe: false,
   } satisfies RequiredMap<ToBinaryExprArgs>;
@@ -25585,6 +25612,10 @@ export class ToBinaryExpr extends FuncExpr {
 
   constructor (args: ToBinaryExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $format (): Expression | undefined {
