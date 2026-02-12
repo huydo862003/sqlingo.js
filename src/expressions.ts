@@ -33076,6 +33076,7 @@ export class WeekExpr extends FuncExpr {
   key = ExpressionKey.WEEK;
 
   static argTypes = {
+    ...super.argTypes,
     mode: false,
     this: true,
   } satisfies RequiredMap<WeekExprArgs>;
@@ -33136,8 +33137,10 @@ export type XMLElementExprArgs = {
 
 export class XMLElementExpr extends FuncExpr {
   key = ExpressionKey.XML_ELEMENT;
+  static _sqlNames = ['XMLELEMENT'];
 
   static argTypes = {
+    ...super.argTypes,
     evalname: false,
     this: true,
     expressions: false,
@@ -33174,8 +33177,10 @@ export type XMLGetExprArgs = {
 
 export class XMLGetExpr extends FuncExpr {
   key = ExpressionKey.XML_GET;
+  static _sqlNames = ['XMLGET'];
 
   static argTypes = {
+    ...super.argTypes,
     instance: false,
     this: true,
     expression: true,
