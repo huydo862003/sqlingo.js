@@ -262,7 +262,7 @@ export class Generator {
    */
   sql (expression?: Expression | string, key?: string, comment = true): string {
     // Handle undefined/null early
-    if (expression === undefined || expression === null) {
+    if (expression === undefined) {
       return '';
     }
 
@@ -274,7 +274,7 @@ export class Generator {
     // Handle key extraction
     if (key !== undefined) {
       const value = expression.args[key];
-      if (value !== undefined && value !== null) {
+      if (value !== undefined) {
         if (typeof value === 'string' || value instanceof Expression) {
           return this.sql(value);
         }
@@ -434,7 +434,7 @@ export class Generator {
   formatArgs (...args: Array<Expression | string | undefined | boolean>): string {
     const sep = ', ';
     const argSqls = args
-      .filter((arg) => arg !== undefined && arg !== null && typeof arg !== 'boolean')
+      .filter((arg) => arg !== undefined && typeof arg !== 'boolean')
       .map((arg) => this.sql(arg as Expression | string));
 
     if (this.pretty && this.tooWide(argSqls)) {

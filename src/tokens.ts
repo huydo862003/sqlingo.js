@@ -703,7 +703,7 @@ export class Tokenizer {
    *
    * Includes Jinja comments ({# #}) by default.
    *
-   * @example { '--': null, '{#': '#}' }
+   * @example { '--': undefined, '{#': '#}' }
    */
   static _COMMENTS (): Record<string, string | undefined> {
     let cached = this.commentsCache.get(this);

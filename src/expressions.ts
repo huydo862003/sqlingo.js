@@ -1,16 +1,20 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/expressions.py
 
 import { createHash } from 'crypto';
+import { DateTime } from 'luxon';
 import {
   Dialect, type DialectType,
 } from './dialects/dialect';
 import type { Token } from './tokens';
-import { ensureList } from './helper';
+import {
+  ensureList, splitNumWords,
+} from './helper';
 import {
   multiInherit, type RequiredMap,
 } from './port_internals';
+import { traverseScope } from './optimizer/scope';
 import {
-  ErrorLevel, ParseError, parseOne,
+  ErrorLevel, ParseError, parseOne, type ParseOptions,
 } from '.';
 
 export const SQLGLOT_META = 'sqlglot.meta';
@@ -1017,7 +1021,7 @@ export enum ExpressionKey {
   ZIPF = 'zipf',
 }
 
-export type ExpressionValue = Expression | string | boolean | number | undefined | null;
+export type ExpressionValue = Expression | string | boolean | number | undefined;
 export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T[];
 
 /**
@@ -1751,7 +1755,7 @@ export class Expression {
    *
    * @param func - a function which takes a node and kwargs object, and returns a
    *               new transformed node or the same node without modifications. If the function
-   *               returns null/undefined, then the corresponding node will be removed from the
+   *               returns undefined, then the corresponding node will be removed from the
    *               syntax tree.
    * @param options - Options object
    * @param options.copy - if set to true a new tree instance is constructed, otherwise the tree is
@@ -7878,7 +7882,6 @@ export class AllowedValuesPropertyExpr extends Expression {
 }
 
 export type PartitionByRangePropertyDynamicExprArgs = {
-
   start: Expression;
   end: Expression;
   every: Expression;
@@ -8100,10 +8103,12 @@ export class QueryTransformExpr extends Expression {
   }
 }
 
-export type SemanticViewExprArgs = { metrics?: Expression[];
+export type SemanticViewExprArgs = {
+  metrics?: Expression[];
   dimensions?: Expression[];
   facts?: Expression[];
-  where?: Expression; } & BaseExpressionArgs;
+  where?: Expression;
+} & BaseExpressionArgs;
 
 export class SemanticViewExpr extends Expression {
   key = ExpressionKey.SEMANTIC_VIEW;
@@ -9245,9 +9250,11 @@ export class WhereExpr extends Expression {
   }
 }
 
-export type StarExprArgs = { except?: Expression;
+export type StarExprArgs = {
+  except?: Expression;
   replace?: boolean;
-  rename?: string; } & BaseExpressionArgs;
+  rename?: string;
+} & BaseExpressionArgs;
 
 export class StarExpr extends Expression {
   key = ExpressionKey.STAR;
@@ -10192,8 +10199,10 @@ export enum AnalyzeSampleExprKind {
   ROWS = 'ROWS',
 }
 
-export type AnalyzeSampleExprArgs = { kind: AnalyzeSampleExprKind;
-  sample: number | Expression; } & BaseExpressionArgs;
+export type AnalyzeSampleExprArgs = {
+  kind: AnalyzeSampleExprKind;
+  sample: number | Expression;
+} & BaseExpressionArgs;
 
 export class AnalyzeSampleExpr extends Expression {
   key = ExpressionKey.ANALYZE_SAMPLE;
@@ -10252,7 +10261,9 @@ export class AnalyzeListChainedRowsExpr extends Expression {
 export enum AnalyzeDeleteExprKind {
   STATISTICS = 'STATISTICS',
 }
-export type AnalyzeDeleteExprArgs = { kind?: AnalyzeDeleteExprKind } & BaseExpressionArgs;
+export type AnalyzeDeleteExprArgs = {
+  kind?: AnalyzeDeleteExprKind;
+} & BaseExpressionArgs;
 
 export class AnalyzeDeleteExpr extends Expression {
   key = ExpressionKey.ANALYZE_DELETE;
@@ -10799,7 +10810,9 @@ export class ForInExpr extends Expression {
   }
 }
 
-export type TimeUnitExprArgs = { unit?: VarExpr | IntervalSpanExpr } & BaseExpressionArgs;
+export type TimeUnitExprArgs = {
+  unit?: VarExpr | IntervalSpanExpr;
+} & BaseExpressionArgs;
 
 /**
  * Automatically converts unit arg into a var.
@@ -11321,8 +11334,10 @@ export class OpenJSONColumnDefExpr extends Expression {
   }
 }
 
-export type JSONExtractQuoteExprArgs = { option: Expression;
-  scalar?: Expression; } & BaseExpressionArgs;
+export type JSONExtractQuoteExprArgs = {
+  option: Expression;
+  scalar?: Expression;
+} & BaseExpressionArgs;
 
 export class JSONExtractQuoteExpr extends Expression {
   key = ExpressionKey.JSON_EXTRACT_QUOTE;
@@ -13079,7 +13094,7 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
 }
 
 /**
- * Represents a literal value (string, number, boolean, null).
+ * Represents a literal value (string, number, boolean).
  *
  * @example
  * const str = new LiteralExpr({ this: 'hello', isString: true });
@@ -13317,7 +13332,9 @@ export class BackupPropertyExpr extends PropertyExpr {
   }
 }
 
-export type BuildPropertyExprArgs = { this: Expression } & PropertyExprArgs;
+export type BuildPropertyExprArgs = {
+  this: Expression;
+} & PropertyExprArgs;
 
 export class BuildPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BUILD_PROPERTY;
@@ -17198,7 +17215,7 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
    */
   get isWrapper (): boolean {
     return Object.entries(this.args).every(
-      ([k, v]) => k === 'this' || v === null || v === undefined,
+      ([k, v]) => k === 'this' || v === undefined,
     );
   }
 
@@ -17426,17 +17443,17 @@ export class NullExpr extends ConditionExpr {
   }
 
   /**
-   * Returns the name of this null expression.
+   * Returns the name of this undefined expression.
    */
   get name (): string {
     return 'NULL';
   }
 
   /**
-   * Converts this to a Python null value.
+   * Converts this to a Python undefined value.
    */
-  toValue (): null {
-    return null;
+  toValue (): undefined {
+    return undefined;
   }
 }
 
@@ -24335,13 +24352,15 @@ export class MonthsBetweenExpr extends FuncExpr {
   }
 }
 
-export type MakeIntervalExprArgs = { year?: Expression;
+export type MakeIntervalExprArgs = {
+  year?: Expression;
   month?: Expression;
   week?: Expression;
   day?: Expression;
   hour?: Expression;
   minute?: Expression;
-  second?: Expression; } & FuncExprArgs;
+  second?: Expression;
+} & FuncExprArgs;
 
 export class MakeIntervalExpr extends FuncExpr {
   key = ExpressionKey.MAKE_INTERVAL;
@@ -25081,10 +25100,12 @@ export class TimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type DateFromPartsExprArgs = { year: Expression;
+export type DateFromPartsExprArgs = {
+  year: Expression;
   month?: Expression;
   day?: Expression;
-  allowOverflow?: Expression; } & FuncExprArgs;
+  allowOverflow?: Expression;
+} & FuncExprArgs;
 
 export class DateFromPartsExpr extends FuncExpr {
   key = ExpressionKey.DATE_FROM_PARTS;
@@ -25128,13 +25149,15 @@ export class DateFromPartsExpr extends FuncExpr {
   }
 }
 
-export type TimeFromPartsExprArgs = { hour: Expression;
+export type TimeFromPartsExprArgs = {
+  hour: Expression;
   min: Expression;
   sec: Expression;
   nano?: Expression;
   fractions?: Expression[];
   precision?: number | Expression;
-  overflow?: Expression; } & FuncExprArgs;
+  overflow?: Expression;
+} & FuncExprArgs;
 
 export class TimeFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIME_FROM_PARTS;
@@ -26302,9 +26325,11 @@ export class GapFillExpr extends FuncExpr {
   }
 }
 
-export type GenerateDateArrayExprArgs = { start: Expression;
+export type GenerateDateArrayExprArgs = {
+  start: Expression;
   end: Expression;
-  step?: Expression; } & FuncExprArgs;
+  step?: Expression;
+} & FuncExprArgs;
 
 export class GenerateDateArrayExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_DATE_ARRAY;
@@ -26343,9 +26368,11 @@ export class GenerateDateArrayExpr extends FuncExpr {
   }
 }
 
-export type GenerateTimestampArrayExprArgs = { start: Expression;
+export type GenerateTimestampArrayExprArgs = {
+  start: Expression;
   end: Expression;
-  step: Expression; } & FuncExprArgs;
+  step: Expression;
+} & FuncExprArgs;
 
 export class GenerateTimestampArrayExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_TIMESTAMP_ARRAY;
@@ -27080,10 +27107,12 @@ export class JSONKeysAtDepthExpr extends FuncExpr {
   }
 }
 
-export type JSONObjectExprArgs = { nullHandling?: Expression;
+export type JSONObjectExprArgs = {
+  nullHandling?: Expression;
   uniqueKeys?: Expression[];
   returnType?: DataTypeExpr;
-  encoding?: Expression; } & FuncExprArgs;
+  encoding?: Expression;
+} & FuncExprArgs;
 
 export class JSONObjectExpr extends FuncExpr {
   key = ExpressionKey.JSON_OBJECT;
@@ -28505,10 +28534,12 @@ export class BitLengthExpr extends FuncExpr {
   }
 }
 
-export type LevenshteinExprArgs = { insCost?: Expression;
+export type LevenshteinExprArgs = {
+  insCost?: Expression;
   delCost?: Expression;
   subCost?: Expression;
-  maxDist?: Expression; } & FuncExprArgs;
+  maxDist?: Expression;
+} & FuncExprArgs;
 
 export class LevenshteinExpr extends FuncExpr {
   key = ExpressionKey.LEVENSHTEIN;
@@ -28627,8 +28658,10 @@ export class LowerExpr extends FuncExpr {
   }
 }
 
-export type MapExprArgs = { keys?: Expression[];
-  values?: Expression[]; } & FuncExprArgs;
+export type MapExprArgs = {
+  keys?: Expression[];
+  values?: Expression[];
+} & FuncExprArgs;
 
 export class MapExpr extends FuncExpr {
   key = ExpressionKey.MAP;
@@ -28957,8 +28990,10 @@ export class StarMapExpr extends FuncExpr {
   }
 }
 
-export type VarMapExprArgs = { keys: Expression[];
-  values: Expression[]; } & FuncExprArgs;
+export type VarMapExprArgs = {
+  keys: Expression[];
+  values: Expression[];
+} & FuncExprArgs;
 
 export class VarMapExpr extends FuncExpr {
   key = ExpressionKey.VAR_MAP;
@@ -29685,12 +29720,14 @@ export class MLForecastExpr extends FuncExpr {
   }
 }
 
-export type VectorSearchExprArgs = { columnToSearch: Expression;
+export type VectorSearchExprArgs = {
+  columnToSearch: Expression;
   queryTable: Expression;
   queryColumnToSearch?: Expression;
   topK?: Expression;
   distanceType?: DataTypeExpr;
-  options?: Expression[]; } & FuncExprArgs;
+  options?: Expression[];
+} & FuncExprArgs;
 
 export class VectorSearchExpr extends FuncExpr {
   key = ExpressionKey.VECTOR_SEARCH;
@@ -30126,11 +30163,13 @@ export class ReduceExpr extends FuncExpr {
   }
 }
 
-export type RegexpExtractExprArgs = { position?: Expression;
+export type RegexpExtractExprArgs = {
+  position?: Expression;
   occurrence?: Expression;
   parameters?: Expression[];
   group?: Expression;
-  nullIfPosOverflow?: Expression; } & FuncExprArgs;
+  nullIfPosOverflow?: Expression;
+} & FuncExprArgs;
 
 export class RegexpExtractExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_EXTRACT;
@@ -30179,10 +30218,12 @@ export class RegexpExtractExpr extends FuncExpr {
   }
 }
 
-export type RegexpExtractAllExprArgs = { group?: Expression;
+export type RegexpExtractAllExprArgs = {
+  group?: Expression;
   parameters?: Expression[];
   position?: Expression;
-  occurrence?: Expression; } & FuncExprArgs;
+  occurrence?: Expression;
+} & FuncExprArgs;
 
 export class RegexpExtractAllExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_EXTRACT_ALL;
@@ -30226,11 +30267,13 @@ export class RegexpExtractAllExpr extends FuncExpr {
   }
 }
 
-export type RegexpReplaceExprArgs = { replacement?: boolean;
+export type RegexpReplaceExprArgs = {
+  replacement?: boolean;
   position?: Expression;
   occurrence?: Expression;
   modifiers?: Expression[];
-  singleReplace?: Expression; } & FuncExprArgs;
+  singleReplace?: Expression;
+} & FuncExprArgs;
 
 export class RegexpReplaceExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_REPLACE;
@@ -30387,11 +30430,13 @@ export class RegexpFullMatchExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type RegexpInstrExprArgs = { position?: Expression;
+export type RegexpInstrExprArgs = {
+  position?: Expression;
   occurrence?: Expression;
   option?: Expression;
   parameters?: Expression[];
-  group?: Expression; } & FuncExprArgs;
+  group?: Expression;
+} & FuncExprArgs;
 
 export class RegexpInstrExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_INSTR;
@@ -30608,9 +30653,11 @@ export class RadiansExpr extends FuncExpr {
   }
 }
 
-export type RoundExprArgs = { decimals?: Expression[];
+export type RoundExprArgs = {
+  decimals?: Expression[];
   truncate?: Expression;
-  castsNonIntegerDecimals?: Expression[]; } & FuncExprArgs;
+  castsNonIntegerDecimals?: Expression[];
+} & FuncExprArgs;
 
 export class RoundExpr extends FuncExpr {
   key = ExpressionKey.ROUND;
@@ -35068,10 +35115,12 @@ export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   }
 }
 
-export type JSONObjectAggExprArgs = { nullHandling?: Expression;
+export type JSONObjectAggExprArgs = {
+  nullHandling?: Expression;
   uniqueKeys?: Expression[];
   returnType?: DataTypeExpr;
-  encoding?: Expression; } & AggFuncExprArgs;
+  encoding?: Expression;
+} & AggFuncExprArgs;
 
 export class JSONObjectAggExpr extends AggFuncExpr {
   key = ExpressionKey.JSON_OBJECT_AGG;
@@ -35148,10 +35197,12 @@ export class JSONBObjectAggExpr extends AggFuncExpr {
   }
 }
 
-export type JSONArrayAggExprArgs = { order?: Expression;
+export type JSONArrayAggExprArgs = {
+  order?: Expression;
   nullHandling?: Expression;
   returnType?: DataTypeExpr;
-  strict?: Expression; } & AggFuncExprArgs;
+  strict?: Expression;
+} & AggFuncExprArgs;
 
 export class JSONArrayAggExpr extends AggFuncExpr {
   key = ExpressionKey.JSON_ARRAY_AGG;
@@ -36290,10 +36341,12 @@ export class PosexplodeOuterExpr extends multiInherit(PosexplodeExpr, ExplodeOut
   }
 }
 
-export type ApproxQuantileExprArgs = { quantile: Expression;
+export type ApproxQuantileExprArgs = {
+  quantile: Expression;
   accuracy?: Expression;
   weight?: Expression;
-  errorTolerance?: Expression; } & QuantileExprArgs;
+  errorTolerance?: Expression;
+} & QuantileExprArgs;
 
 export class ApproxQuantileExpr extends QuantileExpr {
   key = ExpressionKey.APPROX_QUANTILE;
@@ -36348,12 +36401,76 @@ export class ApproxQuantileExpr extends QuantileExpr {
  * // Qualified column: users.id
  * const col = column('id', 'users');
  */
-export function column (name: string, table?: string): ColumnExpr {
-  const args: ColumnExprArgs = { this: new IdentifierExpr({ this: name }) };
-  if (table) {
-    args.table = new IdentifierExpr({ this: table });
+/**
+ * Build a Column.
+ *
+ * Example:
+ *     column('col', 'table').sql()
+ *     // 'table.col'
+ *
+ *     column('col', 'table', { fields: ['field1', 'field2'] }).sql()
+ *     // 'table.col.field1.field2'
+ *
+ * @param col - Column name (can be string, Identifier, or Star)
+ * @param table - Table name
+ * @param options - Options object
+ * @param options.db - Database name
+ * @param options.catalog - Catalog name
+ * @param options.fields - Additional fields using dots
+ * @param options.quoted - Whether to force quotes on the column's identifiers
+ * @param options.copy - Whether to copy identifiers if passed in
+ * @returns The new Column or Dot instance
+ */
+export function column (
+  col: string | IdentifierExpr | StarExpr,
+  table?: string | IdentifierExpr,
+  options: {
+    db?: string | IdentifierExpr;
+    catalog?: string | IdentifierExpr;
+    fields?: Array<string | IdentifierExpr>;
+    quoted?: boolean;
+    copy?: boolean;
+  } = {},
+): ColumnExpr | DotExpr {
+  const {
+    db, catalog, fields, quoted, copy = true,
+  } = options;
+
+  let colIdent: IdentifierExpr | StarExpr;
+  if (col instanceof StarExpr) {
+    colIdent = col;
+  } else {
+    colIdent = toIdentifier(col, {
+      quoted,
+      copy,
+    }) as IdentifierExpr;
   }
-  return new ColumnExpr(args);
+
+  const columnExpr: ColumnExpr = new ColumnExpr({
+    this: colIdent,
+    table: toIdentifier(table, {
+      quoted,
+      copy,
+    }),
+    db: toIdentifier(db, {
+      quoted,
+      copy,
+    }),
+    catalog: toIdentifier(catalog, {
+      quoted,
+      copy,
+    }),
+  });
+
+  if (fields && 0 < fields.length) {
+    const fieldIdents = fields.map((field) => toIdentifier(field, {
+      quoted,
+      copy,
+    })).filter((f): f is IdentifierExpr => f !== undefined);
+    return DotExpr.build([columnExpr, ...fieldIdents]);
+  }
+
+  return columnExpr;
 }
 
 /**
@@ -36372,6 +36489,45 @@ export function column (name: string, table?: string): ColumnExpr {
  * // Fully qualified: catalog.database.table
  * const tbl = table('users', 'mydb', 'mycatalog');
  */
+/**
+ * Build a Table.
+ *
+ * Example:
+ *     table_('users', { quoted: true }).sql()
+ *     // '"users"'
+ *
+ *     table_('users', { db: 'mydb', catalog: 'mycatalog' }).sql()
+ *     // 'mycatalog.mydb.users'
+ *
+ * @param tableName - Table name
+ * @param options - Options object
+ * @param options.db - Database name
+ * @param options.catalog - Catalog name
+ * @param options.quoted - Whether to force quotes on the table's identifiers
+ * @param options.alias - Table's alias
+ * @returns The new Table instance
+ */
+export function table_ (
+  tableName: string | IdentifierExpr,
+  options: {
+    db?: string | IdentifierExpr;
+    catalog?: string | IdentifierExpr;
+    quoted?: boolean;
+    alias?: string | IdentifierExpr;
+  } = {},
+): TableExpr {
+  const {
+    db, catalog, quoted, alias: aliasName,
+  } = options;
+
+  return new TableExpr({
+    this: tableName ? toIdentifier(tableName, { quoted }) : undefined,
+    db: db ? toIdentifier(db, { quoted }) : undefined,
+    catalog: catalog ? toIdentifier(catalog, { quoted }) : undefined,
+    alias: aliasName ? new TableAliasExpr({ this: toIdentifier(aliasName) }) : undefined,
+  });
+}
+
 export function table (name: string, db?: string, catalog?: string): TableExpr {
   const args: TableExprArgs = { this: new IdentifierExpr({ this: name }) };
   if (db) {
@@ -36381,45 +36537,6 @@ export function table (name: string, db?: string, catalog?: string): TableExpr {
     args.catalog = new IdentifierExpr({ this: catalog });
   }
   return new TableExpr(args);
-}
-
-/**
- * Create an alias expression.
- *
- * @param expr - Expression to alias
- * @param alias - Alias name
- * @returns Alias expression
- *
- * @example
- * // SELECT col AS alias
- * const aliased = alias(column('col'), 'alias');
- */
-/**
- * Create an ALIAS expression.
- *
- * @param expr - The expression to alias
- * @param alias - The alias name
- * @param options - Options object
- * @param options.quoted - Whether to quote the alias
- * @param options.dialect - The dialect to use for parsing
- * @param options.wrap - Whether to wrap in parentheses
- * @returns ALIAS expression
- */
-export function alias (
-  expr: Expression,
-  alias: string,
-  options?: {
-    quoted?: boolean;
-    dialect?: DialectType;
-    wrap?: boolean;
-    copy?: boolean;
-  },
-): AliasExpr {
-  void options; // Mark as intentionally unused until implemented
-  return new AliasExpr({
-    this: expr,
-    alias: new IdentifierExpr({ this: alias }),
-  });
 }
 
 /**
@@ -36441,96 +36558,448 @@ export function alias (
  * // With options
  * const condition = and([cond1, cond2], { wrap: true });
  */
-export function and (
-  conditions: (Expression | undefined)[],
-  _options?: { dialect?: DialectType;
+/**
+ * Combine multiple conditions with an AND logical operator.
+ *
+ * Example:
+ *     and_(["x=1", and_(["y=1", "z=1"])]).sql()
+ *     // 'x = 1 AND (y = 1 AND z = 1)'
+ *
+ * @param expressions - The SQL code strings to parse. If an Expression instance is passed, this is used as-is.
+ * @param options - Options object
+ * @param options.dialect - The dialect used to parse the input expression
+ * @param options.copy - Whether to copy expressions (only applies to Expressions)
+ * @param options.wrap - Whether to wrap the operands in Parens
+ * @returns The new condition
+ */
+export function and_ (
+  expressions: Array<string | Expression>,
+  options: {
+    dialect?: DialectType;
     copy?: boolean;
-    wrap?: boolean; },
-): Expression | undefined {
-  const validConditions = conditions.filter((c): c is Expression => c !== undefined);
-
-  if (validConditions.length === 0) {
-    return undefined;
-  }
-
-  if (validConditions.length === 1) {
-    return validConditions[0];
-  }
-
-  // Chain: a AND b AND c becomes And(And(a, b), c)
-  let result: Expression = new AndExpr({
-    this: validConditions[0],
-    expression: validConditions[1],
-  });
-
-  for (let i = 2; i < validConditions.length; i++) {
-    result = new AndExpr({
-      this: result,
-      expression: validConditions[i],
-    });
-  }
-
-  return result;
+    wrap?: boolean;
+    [key: string]: unknown;
+  } = {},
+): ConditionExpr {
+  const {
+    dialect, copy = true, wrap = true, ...opts
+  } = options;
+  return _combine(expressions, AndExpr, {
+    dialect,
+    copy,
+    wrap,
+    ...opts,
+  }) as ConditionExpr;
 }
 
 /**
- * Create an OR expression from multiple conditions.
- * Automatically chains multiple conditions with OR.
+ * Legacy and function that accepts arrays
+ */
+export function and (
+  expressions: Array<string | Expression>,
+  options: {
+    dialect?: DialectType;
+    copy?: boolean;
+    wrap?: boolean;
+    [key: string]: unknown;
+  } = {},
+): ConditionExpr {
+  const {
+    dialect, copy = true, wrap = true, ...opts
+  } = options;
+  return _combine(expressions, AndExpr, {
+    dialect,
+    copy,
+    wrap,
+    ...opts,
+  }) as ConditionExpr;
+}
+
+/**
+ * Combine multiple conditions with an OR logical operator.
  *
- * @param conditions - Conditions to OR together (nulls are filtered out)
+ * Example:
+ *     or_(["x=1", or_(["y=1", "z=1"])]).sql()
+ *     // 'x = 1 OR (y = 1 OR z = 1)'
+ *
+ * @param expressions - The SQL code strings to parse. If an Expression instance is passed, this is used as-is.
  * @param options - Options object
- * @param options.dialect - The dialect to use for parsing
- * @param options.copy - Whether to copy expressions (handled by caller)
- * @param options.wrap - Whether to wrap in Parens
- * @returns OR expression or single condition if only one provided
- *
- * @example
- * // WHERE a = 1 OR b = 2 OR c = 3
- * const condition = or([cond1, cond2, cond3]);
- *
- * @example
- * // With options
- * const condition = or([cond1, cond2], { wrap: true });
+ * @param options.dialect - The dialect used to parse the input expression
+ * @param options.copy - Whether to copy expressions (only applies to Expressions)
+ * @param options.wrap - Whether to wrap the operands in Parens
+ * @returns The new condition
+ */
+export function or_ (
+  expressions: Array<string | Expression>,
+  options: {
+    dialect?: DialectType;
+    copy?: boolean;
+    wrap?: boolean;
+    [key: string]: unknown;
+  } = {},
+): ConditionExpr {
+  const {
+    dialect, copy = true, wrap = true, ...opts
+  } = options;
+  return _combine(expressions, OrExpr, {
+    dialect,
+    copy,
+    wrap,
+    ...opts,
+  }) as ConditionExpr;
+}
+
+/**
+ * Legacy or function that accepts arrays
  */
 export function or (
-  conditions: (Expression | undefined)[],
-  _options?: { dialect?: DialectType;
+  expressions: Array<string | Expression>,
+  options: {
+    dialect?: DialectType;
     copy?: boolean;
-    wrap?: boolean; },
-): Expression | undefined {
-  const validConditions = conditions.filter((c): c is Expression => c != null);
-
-  if (validConditions.length === 0) {
-    return undefined;
-  }
-
-  if (validConditions.length === 1) {
-    return validConditions[0];
-  }
-
-  // Chain: a OR b OR c becomes Or(Or(a, b), c)
-  let result: Expression = new OrExpr({
-    this: validConditions[0],
-    expression: validConditions[1],
-  });
-
-  for (let i = 2; i < validConditions.length; i++) {
-    result = new OrExpr({
-      this: result,
-      expression: validConditions[i],
-    });
-  }
-
-  return result;
+    wrap?: boolean;
+    [key: string]: unknown;
+  } = {},
+): ConditionExpr {
+  const {
+    dialect, copy = true, wrap = true, ...opts
+  } = options;
+  return _combine(expressions, OrExpr, {
+    dialect,
+    copy,
+    wrap,
+    ...opts,
+  }) as ConditionExpr;
 }
 
 /**
- * Create a NOT expression
- * @param expr - Expression to negate
- * @returns NOT expression
+ * Combine multiple conditions with an XOR logical operator.
+ *
+ * Example:
+ *     xor(["x=1", xor(["y=1", "z=1"])]).sql()
+ *     // 'x = 1 XOR (y = 1 XOR z = 1)'
+ *
+ * @param expressions - The SQL code strings to parse. If an Expression instance is passed, this is used as-is.
+ * @param options - Options object
+ * @param options.dialect - The dialect used to parse the input expression
+ * @param options.copy - Whether to copy expressions (only applies to Expressions)
+ * @param options.wrap - Whether to wrap the operands in Parens
+ * @returns The new condition
  */
-export function not (expr: Expression): NotExpr {
-  return new NotExpr({ this: expr });
+export function xor (
+  expressions: Array<string | Expression>,
+  options: {
+    dialect?: DialectType;
+    copy?: boolean;
+    wrap?: boolean;
+    [key: string]: unknown;
+  } = {},
+): ConditionExpr {
+  const {
+    dialect, copy = true, wrap = true, ...opts
+  } = options;
+  return _combine(expressions, XorExpr, {
+    dialect,
+    copy,
+    wrap,
+    ...opts,
+  }) as ConditionExpr;
+}
+
+/**
+ * Wrap a condition with a NOT operator.
+ *
+ * Example:
+ *     not_("this_suit='black'").sql()
+ *     // "NOT this_suit = 'black'"
+ *
+ * @param expression - The SQL code string to parse. If an Expression instance is passed, this is used as-is.
+ * @param options - Options object
+ * @param options.dialect - The dialect used to parse the input expression
+ * @param options.copy - Whether to copy the expression
+ * @returns The new condition
+ */
+export function not (
+  expression: string | Expression,
+  options: {
+    dialect?: DialectType;
+    copy?: boolean;
+    [key: string]: unknown;
+  } = {},
+): NotExpr {
+  const thisExpr = condition(expression, options);
+  return new NotExpr({ this: _wrap(thisExpr, ConnectorExpr) || thisExpr });
+}
+
+/**
+ * Wrap an expression in parentheses.
+ *
+ * Example:
+ *     paren("5 + 3").sql()
+ *     // '(5 + 3)'
+ *
+ * @param expression - The SQL code string to parse.
+ *                     If an Expression instance is passed, this is used as-is.
+ * @param options - Options object
+ * @param options.copy - Whether to copy the expression or not
+ * @returns The wrapped expression
+ */
+export function paren (
+  expression: string | Expression,
+  options: {
+    copy?: boolean;
+    [key: string]: unknown;
+  } = {},
+): ParenExpr {
+  const {
+    copy = true, ...opts
+  } = options;
+  return new ParenExpr({
+    this: maybeParse(expression, {
+      copy,
+      ...opts,
+    }),
+  });
+}
+
+const SAFE_IDENTIFIER_RE = /^[_a-zA-Z][\w]*$/;
+
+/**
+ * Builds an identifier.
+ *
+ * Example:
+ *     toIdentifier("my_column").sql()
+ *     // 'my_column'
+ *     toIdentifier("column name", { quoted: true }).sql()
+ *     // '"column name"'
+ *
+ * @param name - The name to turn into an identifier
+ * @param options - Options object
+ * @param options.quoted - Whether to force quote the identifier
+ * @param options.copy - Whether to copy name if it's an Identifier
+ * @returns The identifier ast node or undefined if name is undefined
+ */
+export function toIdentifier (
+  name: string | IdentifierExpr | undefined,
+  options: {
+    quoted?: boolean;
+    copy?: boolean;
+  } = {},
+): IdentifierExpr | undefined {
+  const {
+    quoted, copy = true,
+  } = options;
+
+  if (name === undefined) {
+    return undefined;
+  }
+
+  if (name instanceof IdentifierExpr) {
+    return maybeCopy(name, copy) as IdentifierExpr;
+  }
+
+  if (typeof name === 'string') {
+    return new IdentifierExpr({
+      this: name,
+      quoted: quoted !== undefined ? quoted : !SAFE_IDENTIFIER_RE.test(name),
+    });
+  }
+
+  throw new Error(`Name needs to be a string or an Identifier, got: ${name?.constructor?.name}`);
+}
+
+/**
+ * Parses a given string into an identifier.
+ *
+ * Example:
+ *     parseIdentifier("my_table").sql()
+ *     // 'my_table'
+ *
+ * @param name - The name to parse into an identifier
+ * @param options - Options object
+ * @param options.dialect - The dialect to parse against
+ * @returns The identifier ast node
+ */
+export function parseIdentifier (
+  name: string | IdentifierExpr,
+  options: {
+    dialect?: DialectType;
+    [key: string]: unknown;
+  } = {},
+): IdentifierExpr {
+  const {
+    dialect, ...opts
+  } = options;
+  try {
+    return maybeParse(name, {
+      dialect,
+      into: IdentifierExpr,
+      ...opts,
+    }) as IdentifierExpr;
+  } catch {
+    return toIdentifier(name) as IdentifierExpr;
+  }
+}
+
+/**
+ * Matches interval strings like "1 day" or "5.5 months"
+ * Captures: (number, unit)
+ */
+const INTERVAL_STRING_RE = /\s*(-?[0-9]+(?:\.[0-9]+)?)\s*([a-zA-Z]+)\s*/;
+
+/**
+ * Matches day-time interval strings that contain:
+ * - A number of days (possibly negative or with decimals)
+ * - At least one space
+ * - Portions of a time-like signature, potentially negative
+ *   - Standard format                   [-]h+:m+:s+[.f+]
+ *   - Just minutes/seconds/frac seconds [-]m+:s+.f+
+ *   - Just hours, minutes, maybe colon  [-]h+:m+[:]
+ *   - Just hours, maybe colon           [-]h+[:]
+ *   - Just colon                        :
+ */
+const INTERVAL_DAY_TIME_RE = /\s*-?\s*\d+(?:\.\d+)?\s+(?:-?(?:\d+:)?\d+:\d+(?:\.\d+)?|-?(?:\d+:){1,2}|:)\s*/;
+
+/**
+ * Builds an interval expression from a string like '1 day' or '5 months'.
+ *
+ * Example:
+ *     toInterval("1 day").sql()
+ *     // 'INTERVAL 1 DAY'
+ *
+ * @param interval - The interval string or Literal expression
+ * @returns The interval expression
+ */
+export function toInterval (
+  interval: string | LiteralExpr,
+): IntervalExpr {
+  let intervalStr: string;
+
+  if (interval instanceof LiteralExpr) {
+    if (!interval.args.isString) {
+      throw new Error('Invalid interval string.');
+    }
+    intervalStr = interval.args.this;
+  } else {
+    intervalStr = interval;
+  }
+
+  const parsed = maybeParse(`INTERVAL ${intervalStr}`);
+  if (!(parsed instanceof IntervalExpr)) {
+    throw new Error('Failed to parse interval expression');
+  }
+  return parsed;
+}
+
+/**
+ * Create an Alias expression.
+ *
+ * Example:
+ *     alias_('foo', 'bar').sql()
+ *     // 'foo AS bar'
+ *
+ *     alias_('(select 1, 2)', 'bar', { table: ['a', 'b'] }).sql()
+ *     // '(SELECT 1, 2) AS bar(a, b)'
+ *
+ * @param expression - The SQL code string to parse.
+ *                     If an Expression instance is passed, this is used as-is.
+ * @param aliasName - The alias name to use. If the name has special characters it is quoted.
+ * @param options - Options object
+ * @param options.table - Whether to create a table alias, can also be a list of columns
+ * @param options.quoted - Whether to quote the alias
+ * @param options.dialect - The dialect used to parse the input expression
+ * @param options.copy - Whether to copy the expression
+ * @returns The aliased expression
+ */
+export function alias (
+  expression: string | Expression,
+  aliasName: string | IdentifierExpr | undefined,
+  options: {
+    table?: boolean | Array<string | IdentifierExpr>;
+    quoted?: boolean;
+    dialect?: DialectType;
+    copy?: boolean;
+    [key: string]: unknown;
+  } = {},
+): Expression {
+  const {
+    table: tableOpt, quoted, dialect, copy = true, ...opts
+  } = options;
+
+  const exp = maybeParse(expression, {
+    dialect,
+    copy,
+    ...opts,
+  });
+  const aliasIdent = toIdentifier(aliasName, { quoted });
+
+  if (tableOpt) {
+    const tableAlias = new TableAliasExpr({ this: aliasIdent });
+    exp.set('alias', tableAlias);
+
+    if (Array.isArray(tableOpt)) {
+      for (const column of tableOpt) {
+        const columnIdent = toIdentifier(column, { quoted });
+        if (columnIdent) {
+          tableAlias.append('columns', columnIdent);
+        }
+      }
+    }
+
+    return exp;
+  }
+
+  // We don't set the "alias" arg for Window expressions, because that would add an IDENTIFIER node in
+  // the AST, representing a "named_window" construct (eg. bigquery). What we want is an ALIAS node
+  // for the complete Window expression.
+
+  if (exp.argTypes['alias'] !== undefined && !(exp instanceof WindowExpr)) {
+    if (aliasIdent) {
+      exp.set('alias', aliasIdent);
+    }
+    return exp;
+  }
+
+  return new AliasExpr({
+    this: exp,
+    alias: aliasIdent,
+  });
+}
+
+/**
+ * Build a subquery expression that's selected from.
+ *
+ * Example:
+ *     subquery('select x from tbl', 'bar').select(['x']).sql()
+ *     // 'SELECT x FROM (SELECT x FROM tbl) AS bar'
+ *
+ * @param expression - The SQL code string to parse.
+ *                     If an Expression instance is passed, this is used as-is.
+ * @param aliasName - The alias name to use
+ * @param options - Options object
+ * @param options.dialect - The dialect used to parse the input expression
+ * @returns A new Select instance with the subquery expression included
+ */
+export function subquery (
+  expression: string | Expression,
+  aliasName?: string | IdentifierExpr,
+  options: {
+    dialect?: DialectType;
+    [key: string]: unknown;
+  } = {},
+): SelectExpr {
+  const {
+    dialect, ...opts
+  } = options;
+  const parsed = maybeParse(expression, {
+    dialect,
+    ...opts,
+  });
+  const subqueryExpr = parsed.subquery(aliasName, opts);
+  return new SelectExpr().from([subqueryExpr], {
+    dialect,
+    ...opts,
+  });
 }
 
 /**
@@ -36550,24 +37019,37 @@ export function not (expr: Expression): NotExpr {
  *   column('name', 'users')
  * );
  */
-export function select (...columns: (string | Expression)[]): SelectExpr {
-  const expressions = columns.map((col) =>
-    typeof col === 'string'
-      ? column(col)
-      : col);
-  return new SelectExpr({ expressions });
+export function select (
+  expressions: Array<string | Expression>,
+  options: {
+    dialect?: DialectType;
+    [key: string]: unknown;
+  } = {},
+): SelectExpr {
+  return new SelectExpr().select(expressions, options);
 }
 
 /**
- * Create a FROM expression
- * @param table - Table or expression
- * @returns FROM expression
+ * Initializes a syntax tree from a FROM expression.
+ *
+ * Example:
+ *     from("tbl").select("col1", "col2").sql()
+ *     // 'SELECT col1, col2 FROM tbl'
+ *
+ * @param expression - The SQL code string to parse as the FROM expression of a
+ *                     SELECT statement. If an Expression instance is passed, this is used as-is.
+ * @param options - Options object
+ * @param options.dialect - The dialect used to parse the input expression
+ * @returns The syntax tree for the SELECT statement
  */
-export function from (table: string | Expression): FromExpr {
-  const tableExpr = typeof table === 'string'
-    ? new TableExpr({ this: new IdentifierExpr({ this: table }) })
-    : table;
-  return new FromExpr({ expressions: [tableExpr] });
+export function from (
+  expression: string | Expression,
+  options: {
+    dialect?: DialectType;
+    [key: string]: unknown;
+  } = {},
+): SelectExpr {
+  return new SelectExpr().from(expression, options);
 }
 
 /**
@@ -36576,10 +37058,29 @@ export function from (table: string | Expression): FromExpr {
  * @param defaultValue - Default value
  * @returns CASE expression
  */
-export function case_ (conditions?: Expression[], defaultValue?: Expression): CaseExpr {
+/**
+ * Initialize a CASE statement.
+ *
+ * Example:
+ *     case_().when("a = 1", "foo").else_("bar")
+ *
+ * @param expression - Optionally, the input expression (not all dialects support this)
+ * @param options - Extra options for parsing expression
+ * @returns A Case expression
+ */
+export function case_ (
+  expression?: string | Expression,
+  options: {
+    [key: string]: unknown;
+  } = {},
+): CaseExpr {
+  let thisExpr: Expression | undefined;
+  if (expression !== undefined) {
+    thisExpr = maybeParse(expression, options);
+  }
   return new CaseExpr({
-    ifs: conditions || [],
-    default: defaultValue,
+    this: thisExpr,
+    ifs: [],
   });
 }
 
@@ -36598,13 +37099,127 @@ export function case_ (conditions?: Expression[], defaultValue?: Expression): Ca
  * // CAST(value AS INTEGER)
  * const casted = cast(literal('123'), DataTypeExpr.build('INTEGER'));
  */
-export function cast (expr: Expression, toType: DataTypeExpr | string): CastExpr {
-  const dataType = typeof toType === 'string'
-    ? DataTypeExpr.build(toType)
-    : toType;
-  return new CastExpr({
+/**
+ * Cast an expression to a data type.
+ *
+ * Example:
+ *     cast('x + 1', 'int').sql()
+ *     // 'CAST(x + 1 AS INT)'
+ *
+ * @param expression - The expression to cast
+ * @param to - The datatype to cast to
+ * @param options - Options object
+ * @param options.copy - Whether to copy the supplied expressions
+ * @param options.dialect - The target dialect. This is used to prevent a re-cast in the following scenario:
+ *                          - The expression to be cast is already a Cast expression
+ *                          - The existing cast is to a type that is logically equivalent to new type
+ *
+ *                          For example, if expression='CAST(x as DATETIME)' and to=Type.TIMESTAMP,
+ *                          but in the target dialect DATETIME is mapped to TIMESTAMP, then we will NOT return
+ *                          CAST(x (as DATETIME) as TIMESTAMP) and instead just return the original expression
+ *                          CAST(x as DATETIME).
+ *
+ *                          This is to prevent it being output as a double cast CAST(x (as TIMESTAMP) as TIMESTAMP)
+ *                          once the DATETIME -> TIMESTAMP mapping is applied in the target dialect generator.
+ * @returns The new Cast instance
+ */
+export function cast (
+  expression: string | Expression,
+  to: string | DataTypeExpr,
+  options: {
+    copy?: boolean;
+    dialect?: DialectType;
+    [key: string]: unknown;
+  } = {},
+): CastExpr {
+  const {
+    copy = true, dialect, ...opts
+  } = options;
+
+  const expr = maybeParse(expression, {
+    copy,
+    dialect,
+    ...opts,
+  });
+  const dataType = DataTypeExpr.build(to, {
+    copy,
+    dialect,
+    ...opts,
+  });
+
+  // Don't re-cast if the expression is already a cast to the correct type
+  if (expr instanceof CastExpr) {
+    // TODO: In Python, this uses dialect-specific type mapping:
+    // target_dialect = Dialect.get_or_raise(dialect)
+    // type_mapping = target_dialect.generator_class.TYPE_MAPPING
+    // types_are_equivalent = type_mapping.get(existing_cast_type, existing_cast_type.value) == type_mapping.get(new_cast_type, new_cast_type.value)
+    //
+    // For now, we use a simpler check until TYPE_MAPPING is available in TypeScript
+
+    if (expr.isType(dataType)) {
+      return expr;
+    }
+
+    const existingCastType = expr.args.to?.args.this;
+    const newCastType = dataType.args.this;
+
+    if (existingCastType === newCastType) {
+      return expr;
+    }
+  }
+
+  const castExpr = new CastExpr({
     this: expr,
     to: dataType,
+  });
+  castExpr.type = dataType;
+
+  return castExpr;
+}
+
+/**
+ * Build VALUES statement.
+ *
+ * Example:
+ *     values([[1, '2']]).sql()
+ *     // "VALUES (1, '2')"
+ *
+ * @param valuesList - Values statements that will be converted to SQL (array of tuples/arrays)
+ * @param options - Options object
+ * @param options.alias - Optional alias
+ * @param options.columns - Optional list of ordered column names. If provided then an alias is also required.
+ * @returns The Values expression object
+ */
+export function values (
+  valuesList: Array<Array<unknown>>,
+  options: {
+    alias?: string;
+    columns?: Array<string | IdentifierExpr>;
+  } = {},
+): ValuesExpr {
+  const {
+    alias: aliasName, columns,
+  } = options;
+
+  if (columns && !aliasName) {
+    throw new Error('Alias is required when providing columns');
+  }
+
+  const expressions = valuesList.map((tup) => convert(tup));
+
+  let alias: TableAliasExpr | undefined;
+  if (columns) {
+    alias = new TableAliasExpr({
+      this: toIdentifier(aliasName),
+      columns: columns.map((col) => toIdentifier(col)).filter((c): c is IdentifierExpr => c !== undefined),
+    });
+  } else if (aliasName) {
+    alias = new TableAliasExpr({ this: toIdentifier(aliasName) });
+  }
+
+  return new ValuesExpr({
+    expressions,
+    alias,
   });
 }
 
@@ -36619,20 +37234,6 @@ export function func (name: string, ...args: Expression[]): FuncExpr {
     this: name,
     expressions: args,
   });
-}
-
-/**
- * Create a subquery expression
- * @param query - Query expression
- * @param alias - Optional alias
- * @returns Subquery expression
- */
-export function subqueryExpr (query: Expression, alias?: string): SubqueryExpr {
-  const args: SubqueryExprArgs = { this: query };
-  if (alias) {
-    args.alias = new IdentifierExpr({ this: alias });
-  }
-  return new SubqueryExpr(args);
 }
 
 /**
@@ -36665,6 +37266,7 @@ function _applySetOperation<S extends Expression> (
     distinct?: boolean;
     dialect?: DialectType;
     copy?: boolean;
+    [key: string]: unknown;
   } = {},
 ): S {
   const {
@@ -36708,10 +37310,11 @@ export function union (
     distinct?: boolean;
     dialect?: DialectType;
     copy?: boolean;
+    [key: string]: unknown;
   } = {},
 ): UnionExpr {
   if (expressions.length < 2) {
-    throw new Error('At least two expressions are required by `unionExpr`.');
+    throw new Error('At least two expressions are required by `union`.');
   }
   return _applySetOperation(expressions, UnionExpr, options);
 }
@@ -36737,10 +37340,11 @@ export function intersect (
     distinct?: boolean;
     dialect?: DialectType;
     copy?: boolean;
+    [key: string]: unknown;
   } = {},
 ): IntersectExpr {
   if (expressions.length < 2) {
-    throw new Error('At least two expressions are required by `intersectExpr`.');
+    throw new Error('At least two expressions are required by `intersect`.');
   }
   return _applySetOperation(expressions, IntersectExpr, options);
 }
@@ -36766,64 +37370,340 @@ export function except (
     distinct?: boolean;
     dialect?: DialectType;
     copy?: boolean;
+    [key: string]: unknown;
   } = {},
 ): ExceptExpr {
   if (expressions.length < 2) {
-    throw new Error('At least two expressions are required by `exceptExpr`.');
+    throw new Error('At least two expressions are required by `except`.');
   }
   return _applySetOperation(expressions, ExceptExpr, options);
 }
 
 /**
- * Create an INSERT expression
- * @param table - Target table
- * @param values - Values to insert
- * @returns INSERT expression
+ * Builds an INSERT statement.
+ *
+ * Example:
+ *     insert("VALUES (1, 2, 3)", "tbl").sql()
+ *     // 'INSERT INTO tbl VALUES (1, 2, 3)'
+ *
+ * @param expression - The SQL string or expression of the INSERT statement
+ * @param into - The table to insert data to
+ * @param options - Options object
+ * @param options.columns - Optionally the table's column names
+ * @param options.overwrite - Whether to INSERT OVERWRITE or not
+ * @param options.returning - SQL conditional parsed into a RETURNING statement
+ * @param options.dialect - The dialect used to parse the input expressions
+ * @param options.copy - Whether to copy the expression
+ * @returns The syntax tree for the INSERT statement
  */
-export function insert (table: Expression, values?: Expression): InsertExpr {
-  return new InsertExpr({
-    this: table,
-    expression: values,
-  });
-}
+export function insert (
+  expression: string | Expression,
+  into: string | Expression,
+  options: {
+    columns?: Array<string | IdentifierExpr>;
+    overwrite?: boolean;
+    returning?: string | Expression;
+    dialect?: DialectType;
+    copy?: boolean;
+    [key: string]: unknown;
+  } = {},
+): InsertExpr {
+  const {
+    columns, overwrite, returning, dialect, copy = true, ...opts
+  } = options;
 
-/**
- * Create a DELETE expression
- * @param table - Target table
- * @param where - Optional WHERE condition
- * @returns DELETE expression
- */
-export function delete_ (table: Expression, where?: Expression): DeleteExpr {
-  const args: DeleteExprArgs = { this: table };
-  if (where) {
-    args.where = where;
+  const expr = maybeParse(expression, {
+    dialect,
+    copy,
+    ...opts,
+  });
+  let thisExpr: TableExpr | SchemaExpr = maybeParse(into, {
+    into: TableExpr,
+    dialect,
+    copy,
+    ...opts,
+  }) as TableExpr;
+
+  if (columns) {
+    thisExpr = new SchemaExpr({
+      this: thisExpr,
+      expressions: columns.map((c) =>
+        typeof c === 'string' ? toIdentifier(c) : c),
+    });
   }
-  return new DeleteExpr(args);
-}
 
-/**
- * Create a MERGE expression
- * @param target - Target table
- * @param using - Source table
- * @param on - Join condition
- * @returns MERGE expression
- */
-export function mergeExpr (target: Expression, using: Expression, on: Expression): MergeExpr {
-  return new MergeExpr({
-    this: target,
-    using: using.name || '',
-    on,
-    whens: [],
+  let insertExpr = new InsertExpr({
+    this: thisExpr,
+    expression: expr,
+    overwrite,
   });
+
+  if (returning) {
+    insertExpr = insertExpr.returning(returning, {
+      dialect,
+      copy: false,
+      ...opts,
+    }) as InsertExpr;
+  }
+
+  return insertExpr;
 }
 
 /**
- * Create a condition expression from SQL text
- * @param sql - SQL condition text
- * @returns Condition expression (placeholder for now)
+ * Builds a DELETE statement.
+ *
+ * Example:
+ *     delete_("my_table", { where: "id > 1" }).sql()
+ *     // 'DELETE FROM my_table WHERE id > 1'
+ *
+ * @param table - The table to delete from
+ * @param options - Options object
+ * @param options.where - SQL conditional parsed into a WHERE statement
+ * @param options.returning - SQL conditional parsed into a RETURNING statement
+ * @param options.dialect - The dialect used to parse the input expressions
+ * @returns The syntax tree for the DELETE statement
  */
-export function condition (sql: string): Expression {
-  return new ConditionExpr({ this: sql });
+export function delete_ (
+  table: string | Expression,
+  options: {
+    where?: string | Expression;
+    returning?: string | Expression;
+    dialect?: DialectType;
+    [key: string]: unknown;
+  } = {},
+): DeleteExpr {
+  const {
+    where, returning, dialect, ...opts
+  } = options;
+
+  let deleteExpr = new DeleteExpr().delete(table, {
+    dialect,
+    copy: false,
+    ...opts,
+  }) as DeleteExpr;
+
+  if (where) {
+    deleteExpr = deleteExpr.where(where, {
+      dialect,
+      copy: false,
+      ...opts,
+    }) as DeleteExpr;
+  }
+
+  if (returning) {
+    deleteExpr = deleteExpr.returning(returning, {
+      dialect,
+      copy: false,
+      ...opts,
+    }) as DeleteExpr;
+  }
+
+  return deleteExpr;
+}
+
+/**
+ * Creates an UPDATE statement.
+ *
+ * Example:
+ *     update("my_table", { properties: { x: 1, y: "2" }, where: "id > 1" }).sql()
+ *     // "UPDATE my_table SET x = 1, y = '2' WHERE id > 1"
+ *
+ * @param table - The table to update
+ * @param options - Options object
+ * @param options.properties - Dictionary of properties to SET
+ * @param options.where - SQL conditional parsed into a WHERE statement
+ * @param options.from - SQL statement parsed into a FROM statement
+ * @param options.with - Dictionary of CTE aliases / select statements
+ * @param options.dialect - The dialect used to parse the input expressions
+ * @returns The syntax tree for the UPDATE statement
+ */
+export function update (
+  table: string | TableExpr,
+  options: {
+    properties?: Record<string, unknown>;
+    where?: string | Expression;
+    from?: string | Expression;
+    with?: Record<string, string | Expression>;
+    dialect?: DialectType;
+    [key: string]: unknown;
+  } = {},
+): UpdateExpr {
+  const {
+    properties, where, from: fromExpr, with: withCtes, dialect, ...opts
+  } = options;
+
+  const updateExpr = new UpdateExpr({
+    this: maybeParse(table, {
+      into: TableExpr,
+      dialect,
+    }),
+  });
+
+  if (properties) {
+    updateExpr.set('expressions', Object.entries(properties).map(([k, v]) =>
+      new EQExpr({
+        this: maybeParse(k, {
+          dialect,
+          ...opts,
+        }),
+        expression: convert(v),
+      })));
+  }
+
+  if (fromExpr) {
+    updateExpr.set('from', maybeParse(fromExpr, {
+      into: FromExpr,
+      dialect,
+      prefix: 'FROM',
+      ...opts,
+    }));
+  }
+
+  if (where) {
+    let whereExpr: Expression | WhereExpr = where;
+    if (where instanceof ConditionExpr) {
+      whereExpr = new WhereExpr({ this: where });
+    }
+    updateExpr.set('where', maybeParse(whereExpr, {
+      into: WhereExpr,
+      dialect,
+      prefix: 'WHERE',
+      ...opts,
+    }));
+  }
+
+  if (withCtes) {
+    const cteList = Object.entries(withCtes).map(([aliasName, qry]) =>
+      alias(new CTEExpr({
+        this: maybeParse(qry, {
+          dialect,
+          ...opts,
+        }),
+      }), aliasName, { table: true }));
+
+    updateExpr.set('with', new WithExpr({ expressions: cteList }));
+  }
+
+  return updateExpr;
+}
+
+/**
+ * Builds a MERGE statement.
+ *
+ * Example:
+ *     merge(["WHEN MATCHED THEN UPDATE..."], {
+ *       into: "my_table",
+ *       using: "source_table",
+ *       on: "my_table.id = source_table.id"
+ *     }).sql()
+ *
+ * @param whenExprs - The WHEN clauses specifying actions for matched and unmatched rows
+ * @param options - Options object
+ * @param options.into - The target table to merge data into
+ * @param options.using - The source table to merge data from
+ * @param options.on - The join condition for the merge
+ * @param options.returning - The columns to return from the merge
+ * @param options.dialect - The dialect used to parse the input expressions
+ * @param options.copy - Whether to copy the expression
+ * @returns The syntax tree for the MERGE statement
+ */
+export function merge (
+  whenExprs: Array<string | Expression>,
+  options: {
+    into: string | Expression;
+    using: string | Expression;
+    on: string | Expression;
+    returning?: string | Expression;
+    dialect?: DialectType;
+    copy?: boolean;
+    [key: string]: unknown;
+  },
+): MergeExpr {
+  const {
+    into, using: usingExpr, on, returning, dialect, copy = true, ...opts
+  } = options;
+
+  const expressions: Expression[] = [];
+  for (const whenExpr of whenExprs) {
+    const expr = maybeParse(whenExpr, {
+      dialect,
+      copy,
+      into: WhensExpr,
+      ...opts,
+    });
+    if (expr instanceof WhenExpr) {
+      expressions.push(expr);
+    } else if ('expressions' in expr.args) {
+      expressions.push(...(expr.args.expressions as Expression[]));
+    }
+  }
+
+  let mergeExpr = new MergeExpr({
+    this: maybeParse(into, {
+      dialect,
+      copy,
+      ...opts,
+    }),
+    using: maybeParse(usingExpr, {
+      dialect,
+      copy,
+      ...opts,
+    }),
+    on: maybeParse(on, {
+      dialect,
+      copy,
+      ...opts,
+    }),
+    whens: new WhensExpr({ expressions }),
+  });
+
+  if (returning) {
+    mergeExpr = mergeExpr.returning(returning, {
+      dialect,
+      copy: false,
+      ...opts,
+    }) as MergeExpr;
+  }
+
+  const usingClause = mergeExpr.args.using;
+  if (usingClause instanceof AliasExpr) {
+    usingClause.replace(alias(usingClause.$this!, usingClause.args.alias as string, { table: true }));
+  }
+
+  return mergeExpr;
+}
+
+/**
+ * Initialize a logical condition expression.
+ *
+ * Example:
+ *     condition("x=1").sql()
+ *     // 'x = 1'
+ *
+ * This is helpful for composing larger logical syntax trees:
+ *     const where = condition("x=1")
+ *     where = where.and_("y=1")
+ *     Select().from_("tbl").select("*").where(where).sql()
+ *     // 'SELECT * FROM tbl WHERE x = 1 AND y = 1'
+ *
+ * @param expression - The SQL code string to parse. If an Expression instance is passed, this is used as-is.
+ * @param options - Options object
+ * @param options.dialect - The dialect used to parse the input expression
+ * @param options.copy - Whether to copy the expression
+ * @returns The new Condition instance
+ */
+export function condition (
+  expression: string | Expression,
+  options: {
+    dialect?: DialectType;
+    copy?: boolean;
+    [key: string]: unknown;
+  } = {},
+): ConditionExpr {
+  return maybeParse(expression, {
+    into: ConditionExpr,
+    ...options,
+  }) as ConditionExpr;
 }
 
 /**
@@ -36833,10 +37713,8 @@ export function condition (sql: string): Expression {
  * @returns Expression
  */
 export function maybeParse (
-  sqlOrExpression: string | number | boolean | Expression | null | undefined,
-  options?: {
-    into?: typeof Expression;
-    dialect?: DialectType;
+  sqlOrExpression: string | number | boolean | Expression | undefined,
+  options?: ParseOptions & {
     prefix?: string;
     copy?: boolean;
   },
@@ -36850,8 +37728,8 @@ export function maybeParse (
   }
 
   // SQL cannot be None/null
-  if (sqlOrExpression === null || sqlOrExpression === undefined) {
-    throw new Error('SQL cannot be null or undefined');
+  if (sqlOrExpression === undefined) {
+    throw new ParseError('SQL cannot be null or undefined');
   }
 
   // Convert to string and optionally add prefix
@@ -36860,9 +37738,16 @@ export function maybeParse (
     _sql = `${options.prefix} ${_sql}`;
   }
 
-  // TODO: Implement actual SQL parsing when parser is available
+  // Extract prefix and copy from options, pass the rest to parseOne
+  const {
+    dialect, ...parseOptions
+  } = options || {};
 
-  throw new Error('SQL parsing not yet implemented. Parser module required.');
+  // Parse the SQL string
+  return parseOne(_sql, {
+    ...parseOptions,
+    read: dialect || parseOptions.read,
+  });
 }
 
 /**
@@ -36871,31 +37756,129 @@ export function maybeParse (
  * @param dialect - SQL dialect
  * @returns Column expression
  */
-export function toColumn (sql: string, _dialect?: DialectType): ColumnExpr {
-  return column(sql);
+/**
+ * Create a table expression from a `[catalog].[schema].[table]` sql path.
+ * Catalog and schema are optional. If a table is passed in then that table is returned.
+ *
+ * Example:
+ *     to_table("catalog.schema.table").sql()
+ *     // 'catalog.schema.table'
+ *
+ * @param sqlPath - A `[catalog].[schema].[table]` string or TableExpr instance
+ * @param options - Options object
+ * @param options.dialect - The source dialect according to which the table name will be parsed
+ * @param options.copy - Whether to copy a table if it is passed in
+ * @returns A table expression
+ */
+export function toTable (
+  sqlPath: string | TableExpr,
+  options: {
+    dialect?: DialectType;
+    copy?: boolean;
+    [key: string]: unknown;
+  } = {},
+): TableExpr {
+  const {
+    dialect, copy = true, ...opts
+  } = options;
+
+  if (sqlPath instanceof TableExpr) {
+    return maybeCopy(sqlPath, copy) as TableExpr;
+  }
+
+  try {
+    const parsed = maybeParse(sqlPath, {
+      into: TableExpr,
+      dialect,
+      ...opts,
+    });
+    for (const [k, v] of Object.entries(opts)) {
+      parsed.set(k, v);
+    }
+    return parsed as TableExpr;
+  } catch {
+    const [
+      catalog,
+      db,
+      name,
+    ] = splitNumWords(sqlPath, '.', 3);
+
+    if (!name) {
+      throw new Error(`Invalid table path: ${sqlPath}`);
+    }
+
+    const tableExpr = table(name, db, catalog);
+    for (const [k, v] of Object.entries(opts)) {
+      tableExpr.set(k, v);
+    }
+    return tableExpr;
+  }
 }
 
 /**
- * Convert SQL text to an identifier expression
- * @param name - Identifier name
- * @param quoted - Whether to quote the identifier
- * @returns Identifier expression
+ * Create a column from a `[table].[column]` sql path. Table is optional.
+ * If a column is passed in then that column is returned.
+ *
+ * Example:
+ *     to_column("table.column").sql()
+ *     // 'table.column'
+ *
+ * @param sqlPath - A `[table].[column]` string or ColumnExpr instance
+ * @param options - Options object
+ * @param options.quoted - Whether or not to force quote identifiers
+ * @param options.dialect - The source dialect according to which the column name will be parsed
+ * @param options.copy - Whether to copy a column if it is passed in
+ * @returns A column expression
  */
-export function toIdentifier (name: string, quoted = false): IdentifierExpr {
-  return new IdentifierExpr({
-    this: name,
-    quoted,
-  });
-}
+export function toColumn (
+  sqlPath: string | ColumnExpr,
+  options: {
+    quoted?: boolean;
+    dialect?: DialectType;
+    copy?: boolean;
+    [key: string]: unknown;
+  } = {},
+): ColumnExpr {
+  const {
+    quoted, dialect, copy = true, ...opts
+  } = options;
 
-/**
- * Convert SQL text to a table expression
- * @param sql - SQL text
- * @param dialect - SQL dialect
- * @returns Table expression
- */
-export function toTable (sql: string, _dialect?: DialectType): TableExpr {
-  return table(sql);
+  if (sqlPath instanceof ColumnExpr) {
+    return maybeCopy(sqlPath, copy) as ColumnExpr;
+  }
+
+  try {
+    const col = maybeParse(sqlPath, {
+      into: ColumnExpr,
+      dialect,
+      ...opts,
+    }) as ColumnExpr;
+    for (const [k, v] of Object.entries(opts)) {
+      col.set(k, v);
+    }
+
+    if (quoted) {
+      for (const identifier of col.findAll(IdentifierExpr)) {
+        identifier.set('quoted', true);
+      }
+    }
+
+    return col;
+  } catch {
+    const parts = sqlPath.split('.').reverse();
+    const [name, tableName] = parts;
+    const args: ColumnExprArgs = {
+      this: toIdentifier(name, { quoted }) as IdentifierExpr,
+    };
+    if (tableName) {
+      args.table = toIdentifier(tableName, { quoted }) as IdentifierExpr;
+    }
+    const col = new ColumnExpr(args);
+    for (const [k, v] of Object.entries(opts)) {
+      col.set(k, v);
+    }
+    return col;
+  }
 }
 
 /**
@@ -36910,11 +37893,19 @@ export function toTable (sql: string, _dialect?: DialectType): TableExpr {
  * const tables = findTables(select('*'));
  * // Returns [TableExpr('users'), TableExpr('orders'), ...]
  */
-export function findTables (expr: Expression): TableExpr[] {
-  const tables: TableExpr[] = [];
-  for (const node of expr.walk()) {
-    if (node instanceof TableExpr) {
-      tables.push(node);
+/**
+ * Find all tables referenced in a query.
+ *
+ * @param expression - The query to find the tables in
+ * @returns A set of all the tables
+ */
+export function findTables (expression: Expression): Set<TableExpr> {
+  const tables = new Set<TableExpr>();
+  for (const scope of traverseScope(expression)) {
+    for (const table of scope.tables) {
+      if (table.name && !scope.cteSources.has(table.name)) {
+        tables.add(table);
+      }
     }
   }
   return tables;
@@ -36942,13 +37933,13 @@ export function maybeCopy (instance: Expression | undefined, copy = true): Expre
  * @returns String representation of the expression tree
  */
 function _toS (node: unknown, verbose = false, level = 0, reprStr = false): string {
-  const indent = '\n' + ('  '.repeat(level + 1));
+  let indent = '\n' + ('  '.repeat(level + 1));
   let delim = `,${indent}`;
 
   if (node instanceof Expression) {
     const args: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(node.args)) {
-      if ((v !== null && v !== undefined && (!Array.isArray(v) || 0 < v.length)) || verbose) {
+      if ((v !== undefined && (!Array.isArray(v) || 0 < v.length)) || verbose) {
         args[k] = v;
       }
     }
@@ -36966,6 +37957,7 @@ function _toS (node: unknown, verbose = false, level = 0, reprStr = false): stri
 
     // Inline leaves for a more compact representation
     if (node.isLeaf) {
+      indent = '';
       delim = ', ';
     }
 
@@ -36974,25 +37966,21 @@ function _toS (node: unknown, verbose = false, level = 0, reprStr = false): stri
       .map(([k, v]) => `${k}=${_toS(v, verbose, level + 1, isReprStr)}`)
       .join(delim);
 
-    return `${node.constructor.name}(${items
-      ? indent + items
-      : ''})`;
+    return `${node.constructor.name}(${indent}${items})`;
   }
 
   if (Array.isArray(node)) {
     const items = node.map((i) => _toS(i, verbose, level + 1)).join(delim);
-    return `[${items
-      ? indent + items
-      : ''}]`;
+    return `[${indent}${items}]`;
   }
 
-  // Use JSON.stringify for strings if reprStr is true
+  // We use the representation of the string to avoid stripping out important whitespace
   if (reprStr && typeof node === 'string') {
-    return JSON.stringify(node);
+    node = JSON.stringify(node);
   }
 
   // Indent multiline strings to match the current level
-  const str = String(node).trim();
+  const str = String(node).replace(/^\n+|\n+$/g, '');
   return str.split('\n').join(indent);
 }
 
@@ -37019,6 +38007,7 @@ function _applyBuilder (expression: Expression | string | number, options: {
   into?: typeof Expression;
   dialect?: DialectType;
   intoArg?: string;
+  [key: string]: unknown;
 }): Expression {
   const {
     instance,
@@ -37063,6 +38052,7 @@ function _applyChildListBuilder (
     into?: typeof Expression;
     dialect?: DialectType;
     properties?: Record<string, ExpressionValue | ExpressionValueList>;
+    [key: string]: unknown;
   },
 ): Expression {
   const {
@@ -37082,6 +38072,10 @@ function _applyChildListBuilder (
   const properties: Record<string, unknown> = initialProperties || {};
 
   for (const expression of expressions) {
+    if (expression === undefined) {
+      continue;
+    }
+
     let expr = expression;
     if (into && _isWrongExpression(expr, into)) {
       expr = new into({ expressions: [expr] });
@@ -37136,6 +38130,7 @@ function _applyListBuilder (
     prefix?: string;
     into?: typeof Expression;
     dialect?: DialectType;
+    [key: string]: unknown;
   },
 ): Expression {
   const {
@@ -37152,7 +38147,7 @@ function _applyListBuilder (
   const inst = maybeCopy(instance, copy)!;
 
   const parsedExpressions = expressions
-    .filter((expr) => expr !== null && expr !== undefined)
+    .filter((expr) => expr !== undefined)
     .map((expr) =>
       maybeParse(expr, {
         into,
@@ -37186,6 +38181,7 @@ function _applyConjunctionBuilder (
     append?: boolean;
     copy?: boolean;
     dialect?: DialectType;
+    [key: string]: unknown;
   },
 ): Expression {
   const {
@@ -37198,41 +38194,45 @@ function _applyConjunctionBuilder (
     ...opts
   } = options;
 
+  // Filter out undefined and empty strings
+  const filteredExpressions = expressions.filter(
+    (expr) => expr !== undefined && expr !== '',
+  );
+
+  if (filteredExpressions.length === 0) {
+    return instance;
+  }
+
   const inst = maybeCopy(instance, copy)!;
 
-  // Parse all expressions
-  const parsedExpressions = expressions
-    .filter((expr) => expr !== undefined)
-    .map((expr) =>
-      maybeParse(expr, {
-        into,
-        dialect,
-        ...opts,
-      }));
-
-  let combined: Expression | undefined;
-  if (0 < parsedExpressions.length) {
-    combined = parsedExpressions.reduce((left, right) =>
-      new AndExpr({
-        this: left,
-        expression: right,
-      }));
-  }
-
   const existing = inst.args[arg] as Expression | undefined;
-  if (append && existing && combined) {
-    combined = new AndExpr({
-      this: existing,
-      expression: combined,
-    });
+  let allExpressions = [...filteredExpressions];
+
+  if (append && existing !== undefined) {
+    const existingExpr = into && 'this' in existing.args ? existing.args.this as Expression : existing;
+    allExpressions = [existingExpr, ...filteredExpressions];
   }
 
-  if (combined && into) {
-    combined = new into({ this: combined });
+  // Create AND conjunction of all expressions
+  let combined: Expression | undefined;
+  if (0 < allExpressions.length) {
+    combined = allExpressions
+      .map((expr) => maybeParse(expr, {
+        dialect,
+        copy,
+        ...opts,
+      }))
+      .reduce((left, right) =>
+        new AndExpr({
+          this: left,
+          expression: right,
+        }));
   }
 
-  if (combined) {
-    inst.set(arg, combined);
+  const node = into && combined ? new into({ this: combined }) : combined;
+
+  if (node) {
+    inst.set(arg, node);
   }
 
   return inst;
@@ -37253,12 +38253,13 @@ function _applyCteBuilder (options: {
   dialect?: DialectType;
   copy?: boolean;
   scalar?: boolean;
+  [key: string]: unknown;
 }): Expression {
   const {
     instance,
     alias,
     as: asExpr,
-    recursive = false,
+    recursive,
     materialized,
     append = true,
     dialect,
@@ -37267,44 +38268,84 @@ function _applyCteBuilder (options: {
     ...opts
   } = options;
 
-  const inst = maybeCopy(instance, copy)!;
-
-  // Parse alias
-  const aliasExpression = typeof alias === 'string'
-    ? new TableAliasExpr({ this: toIdentifier(alias) })
-    : alias;
-
-  const asExpression = maybeParse(asExpr, {
+  const aliasExpression = maybeParse(alias, {
     dialect,
+    into: TableAliasExpr,
     ...opts,
   });
+
+  let asExpression = maybeParse(asExpr, {
+    dialect,
+    copy,
+    ...opts,
+  });
+
+  // Scalar CTE must be wrapped in a subquery
+  if (scalar && !(asExpression instanceof SubqueryExpr)) {
+    asExpression = new SubqueryExpr({ this: asExpression });
+  }
 
   const cte = new CTEExpr({
     this: asExpression,
     alias: aliasExpression,
-    scalar,
     materialized,
+    scalar,
   });
-  // Get or create the WITH expression
-  let withExpr = inst.args['with'] as WithExpr | undefined;
-  if (!withExpr) {
-    withExpr = new WithExpr({ recursive });
+
+  return _applyChildListBuilder([cte], {
+    instance,
+    arg: 'with',
+    append,
+    copy,
+    into: WithExpr,
+    properties: recursive ? { recursive } : {},
+  });
+}
+
+/**
+ * Combine expressions with a connector operator
+ * @param expressions - Expressions to combine
+ * @param operator - The connector operator class (AndExpr, OrExpr, etc.)
+ * @param options - Options object
+ * @returns Combined expression
+ */
+function _combine (
+  expressions: Array<string | Expression>,
+  operator: typeof ConnectorExpr,
+  options: {
+    dialect?: DialectType;
+    copy?: boolean;
+    wrap?: boolean;
+    [key: string]: unknown;
+  } = {},
+): Expression {
+  const {
+    dialect, copy = true, wrap = true, ...opts
+  } = options;
+
+  const conditions = expressions
+    .filter((expr) => expr !== undefined && expr !== '')
+    .map((expr) => maybeParse(expr, {
+      dialect,
+      copy,
+      ...opts,
+    }));
+
+  const [first, ...rest] = conditions;
+
+  let result = first;
+  if (0 < rest.length && wrap) {
+    result = _wrap(result, ConnectorExpr) || result;
   }
 
-  const existingCtes = (withExpr.expressions || []) as CTEExpr[];
-
-  const ctes = append
-    ? [...existingCtes, cte]
-    : [cte];
-
-  withExpr.set('expressions', ctes);
-  if (recursive !== undefined) {
-    withExpr.set('recursive', recursive);
+  for (const expr of rest) {
+    result = new operator({
+      this: result,
+      expression: wrap ? _wrap(expr, ConnectorExpr) || expr : expr,
+    });
   }
 
-  inst.set('with', withExpr);
-
-  return inst;
+  return result;
 }
 
 /**
@@ -37314,7 +38355,7 @@ function _applyCteBuilder (options: {
  * @returns The expression wrapped in parentheses if it matches the kind, otherwise the original
  * expression
  */
-function _wrap (expression: Expression | undefined, kind: typeof Expression): Expression | undefined {
+function _wrap (expression: Expression | undefined, kind: typeof Expression): Expression | ParenExpr | undefined {
   if (expression instanceof kind) {
     return new ParenExpr({ this: expression });
   }
@@ -37373,7 +38414,7 @@ export function convert (value: unknown, copy = false): Expression {
   }
 
   // Handle null, undefined, or NaN
-  if (value === undefined || value === null || (typeof value === 'number' && isNaN(value))) {
+  if (value === undefined || (typeof value === 'number' && isNaN(value))) {
     return null_();
   }
 
@@ -37382,29 +38423,37 @@ export function convert (value: unknown, copy = false): Expression {
     return LiteralExpr.number(value);
   }
 
-  // Handle Date objects (datetime.datetime)
-  if (value instanceof Date) {
-    const datetimeLiteral = LiteralExpr.string(
-      value.toISOString().replace('T', ' ')
-        .replace(/\.\d{3}Z$/, ''),
-    );
+  // Handle Luxon DateTime objects (datetime.datetime in Python)
+  // Luxon provides proper timezone support similar to Python's datetime with tzinfo
+  if (DateTime.isDateTime(value)) {
+    // Format datetime similar to Python's isoformat(sep=" ")
+    // Python: "2024-01-15 10:30:45" (no milliseconds)
+    const datetimeStr = value.toFormat('yyyy-MM-dd HH:mm:ss');
+    const datetimeLiteral = LiteralExpr.string(datetimeStr);
 
+    // Extract timezone similar to Python's str(value.tzinfo)
+    // This returns IANA timezone names like "America/Los_Angeles"
     let tz: LiteralExpr | undefined;
-    const timezoneOffset = value.getTimezoneOffset();
-    if (timezoneOffset !== 0) {
-      const hours = Math.floor(Math.abs(timezoneOffset) / 60);
-      const minutes = Math.abs(timezoneOffset) % 60;
-      const sign = 0 < timezoneOffset
-        ? '-'
-        : '+';
-      tz = LiteralExpr.string(
-        `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`,
-      );
+    if (value.zoneName && value.zoneName !== 'UTC') {
+      tz = LiteralExpr.string(value.zoneName);
     }
 
     return new TimeStrToTimeExpr({
       this: datetimeLiteral,
       zone: tz,
+    });
+  }
+
+  // Handle native JavaScript Date objects (fallback)
+  if (value instanceof Date) {
+    // Convert to Luxon DateTime for consistent handling
+    const dt = DateTime.fromJSDate(value);
+    const datetimeStr = dt.toFormat('yyyy-MM-dd HH:mm:ss');
+    const datetimeLiteral = LiteralExpr.string(datetimeStr);
+
+    return new TimeStrToTimeExpr({
+      this: datetimeLiteral,
+      zone: undefined, // Native Date doesn't have timezone info
     });
   }
 
@@ -37414,7 +38463,7 @@ export function convert (value: unknown, copy = false): Expression {
   }
 
   // Handle objects as structs
-  if (value !== null && typeof value === 'object') {
+  if (value !== undefined && typeof value === 'object') {
     const entries = Object.entries(value);
     return new StructExpr({
       expressions: entries.map(([k, v]) =>
@@ -37426,6 +38475,512 @@ export function convert (value: unknown, copy = false): Expression {
   }
 
   throw new Error(`Cannot convert ${value}`);
+}
+
+/**
+ * Build a SQL variable.
+ *
+ * Example:
+ *     var_('x').sql()
+ *     // 'x'
+ *
+ * @param name - The name of the var or an expression whose name will become the var
+ * @returns The new variable node
+ */
+export function var_ (name: string | Expression | undefined): VarExpr {
+  if (!name) {
+    throw new Error('Cannot convert empty name into var.');
+  }
+
+  if (name instanceof Expression) {
+    name = name.name;
+  }
+
+  return new VarExpr({ this: name });
+}
+
+/**
+ * Returns an array.
+ *
+ * Example:
+ *     array([1, 'x']).sql()
+ *     // 'ARRAY(1, x)'
+ *
+ * @param expressions - The expressions to add to the array
+ * @param options - Options object
+ * @param options.copy - Whether to copy the argument expressions
+ * @param options.dialect - The source dialect
+ * @returns An array expression
+ */
+export function array (
+  expressions: Array<string | Expression>,
+  options: {
+    copy?: boolean;
+    dialect?: DialectType;
+    [key: string]: unknown;
+  } = {},
+): ArrayExpr {
+  const {
+    copy = true, dialect, ...opts
+  } = options;
+
+  return new ArrayExpr({
+    expressions: expressions.map((expr) => maybeParse(expr, {
+      copy,
+      dialect,
+      ...opts,
+    })),
+  });
+}
+
+/**
+ * Returns a tuple.
+ *
+ * Example:
+ *     tuple_([1, 'x']).sql()
+ *     // '(1, x)'
+ *
+ * @param expressions - The expressions to add to the tuple
+ * @param options - Options object
+ * @param options.copy - Whether to copy the argument expressions
+ * @param options.dialect - The source dialect
+ * @returns A tuple expression
+ */
+export function tuple (
+  expressions: Array<string | Expression>,
+  options: {
+    copy?: boolean;
+    dialect?: DialectType;
+    [key: string]: unknown;
+  } = {},
+): TupleExpr {
+  const {
+    copy = true, dialect, ...opts
+  } = options;
+
+  return new TupleExpr({
+    expressions: expressions.map((expr) => maybeParse(expr, {
+      copy,
+      dialect,
+      ...opts,
+    })),
+  });
+}
+
+/**
+ * Build ALTER TABLE... RENAME... expression
+ *
+ * Example:
+ *     renameTable('old_table', 'new_table').sql()
+ *     // 'ALTER TABLE old_table RENAME TO new_table'
+ *
+ * @param oldName - The old name of the table
+ * @param newName - The new name of the table
+ * @param options - Options object
+ * @param options.dialect - The dialect to parse the table
+ * @returns Alter table expression
+ */
+export function renameTable (
+  oldName: string | TableExpr,
+  newName: string | TableExpr,
+  options: {
+    dialect?: DialectType;
+  } = {},
+): AlterExpr {
+  const { dialect } = options;
+
+  const oldTable = toTable(oldName, { dialect });
+  const newTable = toTable(newName, { dialect });
+
+  return new AlterExpr({
+    this: oldTable,
+    kind: 'TABLE',
+    actions: [new AlterRenameExpr({ this: newTable })],
+  });
+}
+
+/**
+ * Build ALTER TABLE... RENAME COLUMN... expression
+ *
+ * Example:
+ *     renameColumn('my_table', 'old_col', 'new_col').sql()
+ *     // 'ALTER TABLE my_table RENAME COLUMN old_col TO new_col'
+ *
+ * @param tableName - Name of the table
+ * @param oldColumnName - The old name of the column
+ * @param newColumnName - The new name of the column
+ * @param options - Options object
+ * @param options.exists - Whether to add the IF EXISTS clause
+ * @param options.dialect - The dialect to parse the table/column
+ * @returns Alter table expression
+ */
+export function renameColumn (
+  tableName: string | TableExpr,
+  oldColumnName: string | ColumnExpr,
+  newColumnName: string | ColumnExpr,
+  options: {
+    exists?: boolean;
+    dialect?: DialectType;
+  } = {},
+): AlterExpr {
+  const {
+    exists, dialect,
+  } = options;
+
+  const tableExpr = toTable(tableName, { dialect });
+  const oldColumn = toColumn(oldColumnName, { dialect });
+  const newColumn = toColumn(newColumnName, { dialect });
+
+  return new AlterExpr({
+    this: tableExpr,
+    kind: 'TABLE',
+    actions: [
+      new RenameColumnExpr({
+        this: oldColumn,
+        to: newColumn,
+        exists,
+      }),
+    ],
+  });
+}
+
+/**
+ * Return all table names referenced through columns in an expression.
+ *
+ * Example:
+ *     columnTableNames(parse('a.b AND c.d AND c.e'))
+ *     // Set(['a', 'c'])
+ *
+ * @param expression - Expression to find table names
+ * @param exclude - A table name to exclude
+ * @returns A set of unique table names
+ */
+export function columnTableNames (
+  expression: Expression,
+  exclude = '',
+): Set<string> {
+  const tableNames = new Set<string>();
+
+  for (const col of expression.findAll(ColumnExpr)) {
+    const tableName = col.table;
+    if (tableName && tableName !== exclude) {
+      tableNames.add(tableName);
+    }
+  }
+
+  return tableNames;
+}
+
+/**
+ * Get the full name of a table as a string.
+ *
+ * Example:
+ *     tableName(parse('select * from a.b.c').find(TableExpr))
+ *     // 'a.b.c'
+ *
+ * @param tableExpr - Table expression node or string
+ * @param options - Options object
+ * @param options.dialect - The dialect to generate the table name for
+ * @param options.identify - Whether to always quote identifiers
+ * @returns The table name
+ */
+export function tableName (
+  tableExpr: TableExpr | string,
+  options: {
+    dialect?: DialectType;
+    identify?: boolean;
+  } = {},
+): string {
+  const {
+    dialect, identify = false,
+  } = options;
+
+  const table = maybeParse(tableExpr, {
+    into: TableExpr,
+    dialect,
+  });
+
+  if (!table) {
+    throw new Error(`Cannot parse ${tableExpr}`);
+  }
+
+  return (table as TableExpr).parts
+    .map((part) => {
+      if (identify || !SAFE_IDENTIFIER_RE.test(part.name)) {
+        return part.sql({
+          dialect,
+          identify: true,
+          copy: false,
+          comments: false,
+        });
+      }
+      return part.name;
+    })
+    .join('.');
+}
+
+/**
+ * Replace children of an expression with the result of a function.
+ *
+ * @param expression - The expression whose children to replace
+ * @param fun - Function to apply to each child node
+ * @param args - Additional arguments to pass to the function
+ * @param kwargs - Additional keyword arguments to pass to the function
+ */
+export function replaceChildren (
+  expression: Expression,
+  fun: (child: Expression, ...args: unknown[]) => Expression | Expression[],
+  ...args: unknown[]
+): void {
+  for (const [key, value] of Object.entries(expression.args)) {
+    const isListArg = Array.isArray(value);
+    const childNodes = isListArg ? value : [value];
+    const newChildNodes: Expression[] = [];
+
+    for (const childNode of childNodes) {
+      if (childNode instanceof Expression) {
+        const result = fun(childNode, ...args);
+        const resultArray = Array.isArray(result) ? result : [result];
+        newChildNodes.push(...resultArray);
+      } else {
+        newChildNodes.push(childNode);
+      }
+    }
+
+    if (isListArg) {
+      expression.set(key, newChildNodes);
+    } else {
+      expression.set(key, newChildNodes[0]);
+    }
+  }
+}
+
+/**
+ * Replace an entire tree with the result of function calls on each node.
+ *
+ * This will be traversed in reverse DFS, so leaves first.
+ * If new nodes are created as a result of function calls, they will also be traversed.
+ *
+ * @param expression - The root expression
+ * @param fun - Function to apply to each node
+ * @param prune - Optional function to determine if a subtree should be pruned
+ * @returns The transformed expression
+ */
+export function replaceTree (
+  expression: Expression,
+  fun: (node: Expression) => Expression,
+  prune?: (node: Expression) => boolean,
+): Expression {
+  const stack = Array.from(expression.dfs({ prune }));
+  let newNode = expression;
+
+  while (0 < stack.length) {
+    const node = stack.pop()!;
+    newNode = fun(node);
+
+    if (newNode !== node) {
+      node.replace(newNode);
+
+      if (newNode instanceof Expression) {
+        stack.push(newNode);
+      }
+    }
+  }
+
+  return newNode;
+}
+
+/**
+ * Returns a case normalized table name without quotes.
+ *
+ * Example:
+ *     normalizeTableName('`A-B`.c', { dialect: 'bigquery' })
+ *     // 'A-B.c'
+ *
+ * @param tableExpr - The table to normalize
+ * @param options - Options object
+ * @param options.dialect - The dialect to use for normalization rules
+ * @param options.copy - Whether to copy the expression
+ * @returns Normalized table name
+ */
+export function normalizeTableName (
+  tableExpr: string | TableExpr,
+  options: {
+    dialect?: DialectType;
+    copy?: boolean;
+  } = {},
+): string {
+  const {
+    dialect, copy = true,
+  } = options;
+
+  // TODO: Import normalizeIdentifiers from optimizer when available
+  // For now, use simple normalization
+  const table = toTable(tableExpr, {
+    dialect,
+    copy,
+  });
+
+  return table.parts.map((p) => p.name).join('.');
+}
+
+/**
+ * Replace all tables in expression according to the mapping.
+ *
+ * Example:
+ *     replaceTables(parse('select * from a.b'), { 'a.b': 'c' }).sql()
+ *     // 'SELECT * FROM c'
+ *
+ * @param expression - Expression node to be transformed and replaced
+ * @param mapping - Mapping of table names
+ * @param options - Options object
+ * @param options.dialect - The dialect of the mapping table
+ * @param options.copy - Whether to copy the expression
+ * @returns The mapped expression
+ */
+export function replaceTables<T extends Expression> (
+  expression: T,
+  mapping: Record<string, string>,
+  options: {
+    dialect?: DialectType;
+    copy?: boolean;
+  } = {},
+): T {
+  const {
+    dialect, copy = true,
+  } = options;
+
+  const normalizedMapping: Record<string, string> = {};
+  for (const [key, value] of Object.entries(mapping)) {
+    normalizedMapping[normalizeTableName(key, { dialect })] = value;
+  }
+
+  function replaceTablesTransform (node: Expression): Expression {
+    if (node instanceof TableExpr && node.meta.get('replace') !== false) {
+      const original = normalizeTableName(node, { dialect });
+      const newName = normalizedMapping[original];
+
+      if (newName) {
+        const newTable = toTable(newName, { dialect });
+        // Copy over other args except table parts
+        for (const [key, value] of Object.entries(node.args)) {
+          if (![
+            'this',
+            'db',
+            'catalog',
+          ].includes(key)) {
+            newTable.set(key, value);
+          }
+        }
+        newTable.addComments([original]);
+        return newTable;
+      }
+    }
+    return node;
+  }
+
+  return expression.transform(replaceTablesTransform, { copy }) as T;
+}
+
+/**
+ * Replace placeholders in an expression.
+ *
+ * Example:
+ *     replacePlaceholders(
+ *       parse('select * from :tbl where ? = ?'),
+ *       toIdentifier('str_col'), 'b', { tbl: toIdentifier('foo') }
+ *     ).sql()
+ *     // "SELECT * FROM foo WHERE str_col = 'b'"
+ *
+ * @param expression - Expression node to be transformed and replaced
+ * @param args - Positional values that will substitute unnamed placeholders in order
+ * @returns The mapped expression
+ */
+export function replacePlaceholders (
+  expression: Expression,
+  ...args: unknown[]
+): Expression {
+  // Separate positional args from the last arg if it's an object (kwargs)
+  let positionalArgs: unknown[];
+  let kwargs: Record<string, unknown> = {};
+
+  if (0 < args.length && typeof args[args.length - 1] === 'object' && args[args.length - 1] != undefined && !Array.isArray(args[args.length - 1]) && !(args[args.length - 1] instanceof Expression)) {
+    kwargs = args[args.length - 1] as Record<string, unknown>;
+    positionalArgs = args.slice(0, -1);
+  } else {
+    positionalArgs = args;
+  }
+
+  let argIndex = 0;
+
+  function replacePlaceholder (node: Expression): Expression {
+    if (node instanceof PlaceholderExpr) {
+      if (node.args.this) {
+        const newName = kwargs[node.args.this];
+        if (newName !== undefined) {
+          return convert(newName);
+        }
+      } else {
+        if (argIndex < positionalArgs.length) {
+          return convert(positionalArgs[argIndex++]);
+        }
+      }
+    }
+    return node;
+  }
+
+  return expression.transform(replacePlaceholder);
+}
+
+/**
+ * Transforms an expression by expanding all referenced sources into subqueries.
+ *
+ * Example:
+ *     expand(parse('select * from x AS z'), { x: parse('select * from y') }).sql()
+ *     // 'SELECT * FROM (SELECT * FROM y) AS z'
+ *
+ * @param expression - The expression to expand
+ * @param sources - A dict of name to query or a callable that provides a query on demand
+ * @param options - Options object
+ * @param options.dialect - The dialect of the sources dict or the callable
+ * @param options.copy - Whether to copy the expression during transformation
+ * @returns The transformed expression
+ */
+export function expand (
+  expression: Expression,
+  sources: Record<string, Expression | (() => Expression)>,
+  options: {
+    dialect?: DialectType;
+    copy?: boolean;
+  } = {},
+): Expression {
+  const {
+    dialect, copy = true,
+  } = options;
+
+  const normalizedSources: Record<string, Expression | (() => Expression)> = {};
+  for (const [key, value] of Object.entries(sources)) {
+    normalizedSources[normalizeTableName(key, { dialect })] = value;
+  }
+
+  function expandTransform (node: Expression): Expression {
+    if (node instanceof TableExpr) {
+      const name = normalizeTableName(node, { dialect });
+      const source = normalizedSources[name];
+
+      if (source) {
+        const parsedSource = typeof source === 'function' ? source() : source;
+        const aliasName = node.args.alias || name;
+        const subqueryExpr = parsedSource.subquery(aliasName);
+        subqueryExpr.comments = [`source: ${name}`];
+
+        return subqueryExpr.transform(expandTransform, { copy: false });
+      }
+    }
+    return node;
+  }
+
+  return expression.transform(expandTransform, { copy });
 }
 
 /** Query expression types that don't need to be wrapped in parentheses */
