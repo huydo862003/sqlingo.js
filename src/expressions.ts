@@ -11392,11 +11392,22 @@ export class XMLNamespaceExpr extends Expression {
 export type XMLKeyValueOptionExprArgs = BaseExpressionArgs;
 export class XMLKeyValueOptionExpr extends Expression {
   key = ExpressionKey.XML_KEY_VALUE_OPTION;
-  static argTypes = {} satisfies RequiredMap<XMLKeyValueOptionExprArgs>;
+  static argTypes = {
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<XMLKeyValueOptionExprArgs>;
 
   declare args: XMLKeyValueOptionExprArgs;
   constructor (args: XMLKeyValueOptionExprArgs) {
     super(args);
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 }
 
@@ -11410,12 +11421,20 @@ export enum UseExprKind {
   ROLE = 'ROLE',
   CATALOG = 'CATALOG',
 }
-export type UseExprArgs = { kind?: UseExprKind } & BaseExpressionArgs;
+export type UseExprArgs = {
+  kind?: UseExprKind;
+  this?: Expression;
+  expressions?: Expression;
+} & BaseExpressionArgs;
 
 export class UseExpr extends Expression {
   key = ExpressionKey.USE;
 
-  static argTypes = { kind: false } satisfies RequiredMap<UseExprArgs>;
+  static argTypes = {
+    kind: false,
+    this: false,
+    expressions: false,
+  } satisfies RequiredMap<UseExprArgs>;
 
   declare args: UseExprArgs;
 
@@ -11425,6 +11444,14 @@ export class UseExpr extends Expression {
 
   get $kind (): string | undefined {
     return this.args.kind;
+  }
+
+  get $expressions (): Expression | undefined {
+    return this.args.expressions;
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 }
 
@@ -11474,11 +11501,17 @@ export class WhenExpr extends Expression {
 export type WhensExprArgs = BaseExpressionArgs;
 export class WhensExpr extends Expression {
   key = ExpressionKey.WHENS;
-  static argTypes = {} satisfies RequiredMap<WhensExprArgs>;
+  static argTypes = {
+    expressions: true,
+  } satisfies RequiredMap<WhensExprArgs>;
 
   declare args: WhensExprArgs;
   constructor (args: WhensExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression {
+    return this.args.expressions;
   }
 }
 
@@ -13097,6 +13130,7 @@ export class AutoIncrementPropertyExpr extends PropertyExpr {
 
   static argTypes = {
     ...super.argTypes,
+    this: true,
   } satisfies RequiredMap<AutoIncrementPropertyExprArgs>;
 
   declare args: AutoIncrementPropertyExprArgs;
@@ -13749,6 +13783,7 @@ export class FileFormatPropertyExpr extends PropertyExpr {
     ...super.argTypes,
     expressions: false,
     hiveFormat: false,
+    this: false,
   } satisfies RequiredMap<FileFormatPropertyExprArgs>;
 
   declare args: FileFormatPropertyExprArgs;
@@ -14837,12 +14872,18 @@ export type RemoteWithConnectionModelPropertyExprArgs = PropertyExprArgs;
 export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.REMOTE_WITH_CONNECTION_MODEL_PROPERTY;
 
-  static argTypes = {} satisfies RequiredMap<RemoteWithConnectionModelPropertyExprArgs>;
+  static argTypes = {
+    this: true,
+  } satisfies RequiredMap<RemoteWithConnectionModelPropertyExprArgs>;
 
   declare args: RemoteWithConnectionModelPropertyExprArgs;
 
   constructor (args: RemoteWithConnectionModelPropertyExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 }
 
@@ -24448,7 +24489,7 @@ export type EltExprArgs = {
 
 export class EltExpr extends FuncExpr {
   key = ExpressionKey.ELT;
-    static isVarLenArgs = true;
+  static isVarLenArgs = true;
   static argTypes = {
     ...super.argTypes,
     this: true,
@@ -25561,7 +25602,7 @@ export type ExplodeExprArgs = {
 } & FuncExprArgs;
 export class ExplodeExpr extends multiInherit(FuncExpr, UDTFExpr) {
   key = ExpressionKey.EXPLODE;
-    static isVarLenArgs = true;
+  static isVarLenArgs = true;
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
@@ -27446,7 +27487,7 @@ export type JSONExtractExprArgs = { onlyJsonTypes?: Expression[];
 
 export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSON_EXTRACT;
-    static isVarLenArgs = true;
+  static isVarLenArgs = true;
   /**
    * Defines the arguments (properties and child expressions) for JSONExtract expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
@@ -27543,7 +27584,7 @@ export type JSONExtractScalarExprArgs = { onlyJsonTypes?: Expression[];
 
 export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSON_EXTRACT_SCALAR;
-    static isVarLenArgs = true;
+  static isVarLenArgs = true;
   /**
    * Defines the arguments (properties and child expressions) for JSONExtractScalar expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
@@ -28696,7 +28737,7 @@ export type VarMapExprArgs = { keys: Expression[];
 
 export class VarMapExpr extends FuncExpr {
   key = ExpressionKey.VAR_MAP;
-    static isVarLenArgs = true;
+  static isVarLenArgs = true;
   /**
    * Defines the arguments (properties and child expressions) for VarMap expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
@@ -31315,8 +31356,11 @@ export class SearchIpExpr extends FuncExpr {
   }
 }
 
-export type StrToDateExprArgs = { format?: string;
-  safe?: boolean; } & FuncExprArgs;
+export type StrToDateExprArgs = {
+  format?: string;
+  safe?: boolean;
+  this: Expression;
+} & FuncExprArgs;
 
 export class StrToDateExpr extends FuncExpr {
   key = ExpressionKey.STR_TO_DATE;
@@ -31329,6 +31373,7 @@ export class StrToDateExpr extends FuncExpr {
     ...super.argTypes,
     format: false,
     safe: false,
+    this: true,
   } satisfies RequiredMap<StrToDateExprArgs>;
 
   declare args: StrToDateExprArgs;
@@ -31345,15 +31390,22 @@ export class StrToDateExpr extends FuncExpr {
     return this.args.safe;
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type StrToTimeExprArgs = { format: string;
+export type StrToTimeExprArgs = {
+  format: string;
   zone?: Expression;
   safe?: boolean;
-  targetType?: DataTypeExpr; } & FuncExprArgs;
+  targetType?: DataTypeExpr;
+  this: Expression;
+} & FuncExprArgs;
 
 export class StrToTimeExpr extends FuncExpr {
   key = ExpressionKey.STR_TO_TIME;
@@ -31368,6 +31420,7 @@ export class StrToTimeExpr extends FuncExpr {
     zone: false,
     safe: false,
     targetType: false,
+    this: true,
   } satisfies RequiredMap<StrToTimeExprArgs>;
 
   declare args: StrToTimeExprArgs;
@@ -31392,17 +31445,27 @@ export class StrToTimeExpr extends FuncExpr {
     return this.args.targetType;
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type StrToUnixExprArgs = { format?: string } & FuncExprArgs;
+export type StrToUnixExprArgs = {
+  format?: string;
+  this?: Expression;
+} & FuncExprArgs;
 
 export class StrToUnixExpr extends FuncExpr {
   key = ExpressionKey.STR_TO_UNIX;
 
-  static argTypes = { format: false } satisfies RequiredMap<StrToUnixExprArgs>;
+  static argTypes = {
+    format: false,
+    this: false,
+  } satisfies RequiredMap<StrToUnixExprArgs>;
 
   declare args: StrToUnixExprArgs;
 
@@ -31412,6 +31475,10 @@ export class StrToUnixExpr extends FuncExpr {
 
   get $format (): Expression | undefined {
     return this.args.format;
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   static {
@@ -31460,8 +31527,11 @@ export class StrToMapExpr extends FuncExpr {
   }
 }
 
-export type NumberToStrExprArgs = { format: string;
-  culture?: Expression; } & FuncExprArgs;
+export type NumberToStrExprArgs = {
+  format: string;
+  culture?: Expression;
+  this: Expression;
+} & FuncExprArgs;
 
 export class NumberToStrExpr extends FuncExpr {
   key = ExpressionKey.NUMBER_TO_STR;
@@ -31474,6 +31544,7 @@ export class NumberToStrExpr extends FuncExpr {
     ...super.argTypes,
     format: true,
     culture: false,
+    this: true,
   } satisfies RequiredMap<NumberToStrExprArgs>;
 
   declare args: NumberToStrExprArgs;
@@ -31488,6 +31559,10 @@ export class NumberToStrExpr extends FuncExpr {
 
   get $culture (): Expression | undefined {
     return this.args.culture;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -31552,13 +31627,19 @@ export type StructExprArgs = FuncExprArgs;
 
 export class StructExpr extends FuncExpr {
   key = ExpressionKey.STRUCT;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<StructExprArgs>;
+  static isVarLenArgs = true;
+  static argTypes = {
+    expressions: false,
+  } satisfies RequiredMap<StructExprArgs>;
 
   declare args: StructExprArgs;
 
   constructor (args: StructExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression | undefined {
+    return this.args.expressions;
   }
 
   static {
@@ -31571,7 +31652,10 @@ export type StructExtractExprArgs = FuncExprArgs;
 export class StructExtractExpr extends FuncExpr {
   key = ExpressionKey.STRUCT_EXTRACT;
 
-  static argTypes = {} satisfies RequiredMap<StructExtractExprArgs>;
+  static argTypes = {
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<StructExtractExprArgs>;
 
   declare args: StructExtractExprArgs;
 
@@ -31579,13 +31663,25 @@ export class StructExtractExpr extends FuncExpr {
     super(args);
   }
 
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type StuffExprArgs = { start: Expression;
-  length: number | Expression; } & FuncExprArgs;
+export type StuffExprArgs = {
+  start: Expression;
+  length: number | Expression;
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class StuffExpr extends FuncExpr {
   key = ExpressionKey.STUFF;
@@ -31598,6 +31694,8 @@ export class StuffExpr extends FuncExpr {
     ...super.argTypes,
     start: true,
     length: true,
+    this: true,
+    expression: true,
   } satisfies RequiredMap<StuffExprArgs>;
 
   declare args: StuffExprArgs;
@@ -31612,6 +31710,14 @@ export class StuffExpr extends FuncExpr {
 
   get $length (): Expression {
     return this.args.length;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -31641,12 +31747,18 @@ export class SqrtExpr extends FuncExpr {
   }
 }
 
-export type TimeExprArgs = { zone?: Expression } & FuncExprArgs;
+export type TimeExprArgs = {
+  zone?: Expression;
+  this?: Expression;
+} & FuncExprArgs;
 
 export class TimeExpr extends FuncExpr {
   key = ExpressionKey.TIME;
 
-  static argTypes = { zone: false } satisfies RequiredMap<TimeExprArgs>;
+  static argTypes = {
+    zone: false,
+    this: false,
+  } satisfies RequiredMap<TimeExprArgs>;
 
   declare args: TimeExprArgs;
 
@@ -31658,14 +31770,21 @@ export class TimeExpr extends FuncExpr {
     return this.args.zone;
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type TimeToStrExprArgs = { format: string;
+export type TimeToStrExprArgs = {
+  format: string;
   culture?: Expression;
-  zone?: Expression; } & FuncExprArgs;
+  zone?: Expression;
+  this: Expression;
+} & FuncExprArgs;
 
 export class TimeToStrExpr extends FuncExpr {
   key = ExpressionKey.TIME_TO_STR;
@@ -31679,6 +31798,7 @@ export class TimeToStrExpr extends FuncExpr {
     format: true,
     culture: false,
     zone: false,
+    this: true,
   } satisfies RequiredMap<TimeToStrExprArgs>;
 
   declare args: TimeToStrExprArgs;
@@ -31697,6 +31817,10 @@ export class TimeToStrExpr extends FuncExpr {
 
   get $zone (): Expression | undefined {
     return this.args.zone;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -31764,12 +31888,18 @@ export class TimeStrToDateExpr extends FuncExpr {
   }
 }
 
-export type TimeStrToTimeExprArgs = { zone?: Expression } & FuncExprArgs;
+export type TimeStrToTimeExprArgs = {
+  zone?: Expression;
+  this: Expression;
+} & FuncExprArgs;
 
 export class TimeStrToTimeExpr extends FuncExpr {
   key = ExpressionKey.TIME_STR_TO_TIME;
 
-  static argTypes = { zone: false } satisfies RequiredMap<TimeStrToTimeExprArgs>;
+  static argTypes = {
+    zone: false,
+    this: true,
+  } satisfies RequiredMap<TimeStrToTimeExprArgs>;
 
   declare args: TimeStrToTimeExprArgs;
 
@@ -31779,6 +31909,10 @@ export class TimeStrToTimeExpr extends FuncExpr {
 
   get $zone (): Expression | undefined {
     return this.args.zone;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -31841,8 +31975,12 @@ export class TrimExpr extends FuncExpr {
   }
 }
 
-export type TsOrDsAddExprArgs = { unit?: Expression;
-  returnType?: DataTypeExpr; } & FuncExprArgs;
+export type TsOrDsAddExprArgs = {
+  unit?: Expression;
+  returnType?: DataTypeExpr;
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TS_OR_DS_ADD;
@@ -31852,10 +31990,11 @@ export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
-    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     unit: false,
     returnType: false,
+    this: true,
+    expression: true,
   } satisfies RequiredMap<TsOrDsAddExprArgs>;
 
   declare args: TsOrDsAddExprArgs;
@@ -31880,20 +32019,33 @@ export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     return DataTypeExpr.build(DataTypeExprKind.DATE);
   }
 
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type TsOrDsDiffExprArgs = { unit?: Expression } & FuncExprArgs;
+export type TsOrDsDiffExprArgs = {
+  unit?: Expression;
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class TsOrDsDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TS_OR_DS_DIFF;
 
   static argTypes = {
-    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     unit: false,
+    this: true,
+    expression: true,
   } satisfies RequiredMap<TsOrDsDiffExprArgs>;
 
   declare args: TsOrDsDiffExprArgs;
@@ -31904,6 +32056,14 @@ export class TsOrDsDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
   get $unit (): Expression | undefined {
     return this.args.unit;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -31931,8 +32091,11 @@ export class TsOrDsToDateStrExpr extends FuncExpr {
   }
 }
 
-export type TsOrDsToDateExprArgs = { format?: string;
-  safe?: boolean; } & FuncExprArgs;
+export type TsOrDsToDateExprArgs = {
+  format?: string;
+  safe?: boolean;
+  this: Expression;
+} & FuncExprArgs;
 
 export class TsOrDsToDateExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_DATE;
@@ -31945,6 +32108,7 @@ export class TsOrDsToDateExpr extends FuncExpr {
     ...super.argTypes,
     format: false,
     safe: false,
+    this: true,
   } satisfies RequiredMap<TsOrDsToDateExprArgs>;
 
   declare args: TsOrDsToDateExprArgs;
@@ -31959,6 +32123,10 @@ export class TsOrDsToDateExpr extends FuncExpr {
 
   get $safe (): Expression | undefined {
     return this.args.safe;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -31986,8 +32154,11 @@ export class TsOrDsToDatetimeExpr extends FuncExpr {
   }
 }
 
-export type TsOrDsToTimeExprArgs = { format?: string;
-  safe?: boolean; } & FuncExprArgs;
+export type TsOrDsToTimeExprArgs = {
+  format?: string;
+  safe?: boolean;
+  this: Expression;
+} & FuncExprArgs;
 
 export class TsOrDsToTimeExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_TIME;
@@ -32000,6 +32171,7 @@ export class TsOrDsToTimeExpr extends FuncExpr {
     ...super.argTypes,
     format: false,
     safe: false,
+    this: true,
   } satisfies RequiredMap<TsOrDsToTimeExprArgs>;
 
   declare args: TsOrDsToTimeExprArgs;
@@ -32014,6 +32186,10 @@ export class TsOrDsToTimeExpr extends FuncExpr {
 
   get $safe (): Expression | undefined {
     return this.args.safe;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -32066,12 +32242,23 @@ export type UnhexExprArgs = FuncExprArgs;
 export class UnhexExpr extends FuncExpr {
   key = ExpressionKey.UNHEX;
 
-  static argTypes = {} satisfies RequiredMap<UnhexExprArgs>;
+  static argTypes = {
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<UnhexExprArgs>;
 
   declare args: UnhexExprArgs;
 
   constructor (args: UnhexExprArgs) {
     super(args);
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -32099,8 +32286,12 @@ export class UnicodeExpr extends FuncExpr {
   }
 }
 
-export type UniformExprArgs = { gen?: Expression;
-  seed?: Expression; } & FuncExprArgs;
+export type UniformExprArgs = {
+  gen?: Expression;
+  seed?: Expression;
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class UniformExpr extends FuncExpr {
   key = ExpressionKey.UNIFORM;
@@ -32113,6 +32304,8 @@ export class UniformExpr extends FuncExpr {
     ...super.argTypes,
     gen: false,
     seed: false,
+    this: true,
+    expression: true,
   } satisfies RequiredMap<UniformExprArgs>;
 
   declare args: UniformExprArgs;
@@ -32127,6 +32320,14 @@ export class UniformExpr extends FuncExpr {
 
   get $seed (): Expression | undefined {
     return this.args.seed;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -32154,12 +32355,18 @@ export class UnixDateExpr extends FuncExpr {
   }
 }
 
-export type UnixToStrExprArgs = { format?: string } & FuncExprArgs;
+export type UnixToStrExprArgs = {
+  format?: string;
+  this: Expression;
+} & FuncExprArgs;
 
 export class UnixToStrExpr extends FuncExpr {
   key = ExpressionKey.UNIX_TO_STR;
 
-  static argTypes = { format: false } satisfies RequiredMap<UnixToStrExprArgs>;
+  static argTypes = {
+    format: false,
+    this: true,
+  } satisfies RequiredMap<UnixToStrExprArgs>;
 
   declare args: UnixToStrExprArgs;
 
@@ -32169,6 +32376,10 @@ export class UnixToStrExpr extends FuncExpr {
 
   get $format (): Expression | undefined {
     return this.args.format;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -32315,8 +32526,11 @@ export class UnixMillisExpr extends FuncExpr {
   }
 }
 
-export type UuidExprArgs = { name?: unknown;
-  isString?: unknown; } & FuncExprArgs;
+export type UuidExprArgs = {
+  name?: unknown;
+  isString?: unknown;
+  this?: Expression;
+} & FuncExprArgs;
 
 export class UuidExpr extends FuncExpr {
   key = ExpressionKey.UUID;
@@ -32329,6 +32543,7 @@ export class UuidExpr extends FuncExpr {
     ...super.argTypes,
     name: false,
     isString: false,
+    this: false,
   } satisfies RequiredMap<UuidExprArgs>;
 
   declare args: UuidExprArgs;
@@ -32343,6 +32558,10 @@ export class UuidExpr extends FuncExpr {
 
   get $isString (): Expression | undefined {
     return this.args.isString;
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   static {
@@ -32468,15 +32687,20 @@ export class UpperExpr extends FuncExpr {
   }
 }
 
-export type CorrExprArgs = { nullOnZeroVariance?: Expression } & BinaryExprArgs;
+export type CorrExprArgs = {
+  nullOnZeroVariance?: Expression;
+  this: Expression;
+  expression: Expression;
+} & BinaryExprArgs;
 
 export class CorrExpr extends multiInherit(BinaryExpr, AggFuncExpr) {
   key = ExpressionKey.CORR;
 
   static argTypes = {
-    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     nullOnZeroVariance: false,
+    this: true,
+    expression: true,
   } satisfies RequiredMap<CorrExprArgs>;
 
   declare args: CorrExprArgs;
@@ -32487,6 +32711,14 @@ export class CorrExpr extends multiInherit(BinaryExpr, AggFuncExpr) {
 
   get $nullOnZeroVariance (): Expression | undefined {
     return this.args.nullOnZeroVariance;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 }
 
@@ -32537,12 +32769,18 @@ export class WidthBucketExpr extends FuncExpr {
   }
 }
 
-export type WeekExprArgs = { mode?: Expression } & FuncExprArgs;
+export type WeekExprArgs = {
+  mode?: Expression;
+  this: Expression;
+} & FuncExprArgs;
 
 export class WeekExpr extends FuncExpr {
   key = ExpressionKey.WEEK;
 
-  static argTypes = { mode: false } satisfies RequiredMap<WeekExprArgs>;
+  static argTypes = {
+    mode: false,
+    this: true,
+  } satisfies RequiredMap<WeekExprArgs>;
 
   declare args: WeekExprArgs;
 
@@ -32552,6 +32790,10 @@ export class WeekExpr extends FuncExpr {
 
   get $mode (): Expression | undefined {
     return this.args.mode;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -32564,7 +32806,10 @@ export type NextDayExprArgs = FuncExprArgs;
 export class NextDayExpr extends FuncExpr {
   key = ExpressionKey.NEXT_DAY;
 
-  static argTypes = {} satisfies RequiredMap<NextDayExprArgs>;
+  static argTypes = {
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<NextDayExprArgs>;
 
   declare args: NextDayExprArgs;
 
@@ -32572,17 +32817,33 @@ export class NextDayExpr extends FuncExpr {
     super(args);
   }
 
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type XMLElementExprArgs = { evalname?: string } & FuncExprArgs;
+export type XMLElementExprArgs = {
+  evalname?: string;
+  this: Expression;
+  expressions?: Expression;
+} & FuncExprArgs;
 
 export class XMLElementExpr extends FuncExpr {
   key = ExpressionKey.XML_ELEMENT;
 
-  static argTypes = { evalname: false } satisfies RequiredMap<XMLElementExprArgs>;
+  static argTypes = {
+    evalname: false,
+    this: true,
+    expressions: false,
+  } satisfies RequiredMap<XMLElementExprArgs>;
 
   declare args: XMLElementExprArgs;
 
@@ -32594,6 +32855,14 @@ export class XMLElementExpr extends FuncExpr {
     return this.args.evalname;
   }
 
+  get $expressions (): Expression | undefined {
+    return this.args.expressions;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
@@ -32601,12 +32870,20 @@ export class XMLElementExpr extends FuncExpr {
   static sqlNames = ['XMLELEMENT'];
 }
 
-export type XMLGetExprArgs = { instance?: Expression } & FuncExprArgs;
+export type XMLGetExprArgs = {
+  instance?: Expression;
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class XMLGetExpr extends FuncExpr {
   key = ExpressionKey.XML_GET;
 
-  static argTypes = { instance: false } satisfies RequiredMap<XMLGetExprArgs>;
+  static argTypes = {
+    instance: false,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<XMLGetExprArgs>;
 
   declare args: XMLGetExprArgs;
 
@@ -32616,6 +32893,14 @@ export class XMLGetExpr extends FuncExpr {
 
   get $instance (): Expression | undefined {
     return this.args.instance;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -32692,8 +32977,11 @@ export class YearExpr extends FuncExpr {
   }
 }
 
-export type ZipfExprArgs = { elementcount: Expression;
-  gen: Expression; } & FuncExprArgs;
+export type ZipfExprArgs = {
+  elementcount: Expression;
+  gen: Expression;
+  this: Expression;
+} & FuncExprArgs;
 
 export class ZipfExpr extends FuncExpr {
   key = ExpressionKey.ZIPF;
@@ -32706,6 +32994,7 @@ export class ZipfExpr extends FuncExpr {
     ...super.argTypes,
     elementcount: true,
     gen: true,
+    this: true,
   } satisfies RequiredMap<ZipfExprArgs>;
 
   declare args: ZipfExprArgs;
@@ -32722,17 +33011,27 @@ export class ZipfExpr extends FuncExpr {
     return this.args.gen;
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type NextValueForExprArgs = { order?: Expression } & FuncExprArgs;
+export type NextValueForExprArgs = {
+  order?: Expression;
+  this: Expression;
+} & FuncExprArgs;
 
 export class NextValueForExpr extends FuncExpr {
   key = ExpressionKey.NEXT_VALUE_FOR;
 
-  static argTypes = { order: false } satisfies RequiredMap<NextValueForExprArgs>;
+  static argTypes = {
+    order: false,
+    this: true,
+  } satisfies RequiredMap<NextValueForExprArgs>;
 
   declare args: NextValueForExprArgs;
 
@@ -32742,6 +33041,10 @@ export class NextValueForExpr extends FuncExpr {
 
   get $order (): Expression | undefined {
     return this.args.order;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -35251,13 +35554,19 @@ export type CumeDistExprArgs = AggFuncExprArgs;
 
 export class CumeDistExpr extends AggFuncExpr {
   key = ExpressionKey.CUME_DIST;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<CumeDistExprArgs>;
+  static isVarLenArgs = true;
+  static argTypes = {
+    expressions: false,
+  } satisfies RequiredMap<CumeDistExprArgs>;
 
   declare args: CumeDistExprArgs;
 
   constructor (args: CumeDistExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression | undefined {
+    return this.args.expressions;
   }
 
   static {
@@ -35358,12 +35667,23 @@ export type CovarSampExprArgs = AggFuncExprArgs;
 export class CovarSampExpr extends AggFuncExpr {
   key = ExpressionKey.COVAR_SAMP;
 
-  static argTypes = {} satisfies RequiredMap<CovarSampExprArgs>;
+  static argTypes = {
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<CovarSampExprArgs>;
 
   declare args: CovarSampExprArgs;
 
   constructor (args: CovarSampExprArgs) {
     super(args);
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
@@ -35376,12 +35696,23 @@ export type CovarPopExprArgs = AggFuncExprArgs;
 export class CovarPopExpr extends AggFuncExpr {
   key = ExpressionKey.COVAR_POP;
 
-  static argTypes = {} satisfies RequiredMap<CovarPopExprArgs>;
+  static argTypes = {
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<CovarPopExprArgs>;
 
   declare args: CovarPopExprArgs;
 
   constructor (args: CovarPopExprArgs) {
     super(args);
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   static {
