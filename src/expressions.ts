@@ -17580,36 +17580,63 @@ export class FuncExpr extends ConditionExpr {
   }
 }
 
-export type JSONPathFilterExprArgs = BaseExpressionArgs;
+export type JSONPathFilterExprArgs = {
+  this: Expression;
+} & BaseExpressionArgs;
 export class JSONPathFilterExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_FILTER;
-  static argTypes = {} satisfies RequiredMap<JSONPathFilterExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<JSONPathFilterExprArgs>;
 
   declare args: JSONPathFilterExprArgs;
   constructor (args: JSONPathFilterExprArgs) {
     super(args);
   }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
 }
 
-export type JSONPathKeyExprArgs = BaseExpressionArgs;
+export type JSONPathKeyExprArgs = {
+  this: Expression;
+} & BaseExpressionArgs;
 export class JSONPathKeyExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_KEY;
-  static argTypes = {} satisfies RequiredMap<JSONPathKeyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<JSONPathKeyExprArgs>;
 
   declare args: JSONPathKeyExprArgs;
   constructor (args: JSONPathKeyExprArgs) {
     super(args);
   }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
 }
 
-export type JSONPathRecursiveExprArgs = BaseExpressionArgs;
+export type JSONPathRecursiveExprArgs = {
+  this?: Expression;
+} & BaseExpressionArgs;
 export class JSONPathRecursiveExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_RECURSIVE;
-  static argTypes = {} satisfies RequiredMap<JSONPathRecursiveExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<JSONPathRecursiveExprArgs>;
 
   declare args: JSONPathRecursiveExprArgs;
   constructor (args: JSONPathRecursiveExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 }
 
@@ -17624,14 +17651,23 @@ export class JSONPathRootExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathScriptExprArgs = BaseExpressionArgs;
+export type JSONPathScriptExprArgs = {
+  this: Expression;
+} & BaseExpressionArgs;
 export class JSONPathScriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SCRIPT;
-  static argTypes = {} satisfies RequiredMap<JSONPathScriptExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<JSONPathScriptExprArgs>;
 
   declare args: JSONPathScriptExprArgs;
   constructor (args: JSONPathScriptExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 }
 
@@ -17672,25 +17708,43 @@ export class JSONPathSliceExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathSelectorExprArgs = BaseExpressionArgs;
+export type JSONPathSelectorExprArgs = {
+  this: Expression;
+} & BaseExpressionArgs;
 export class JSONPathSelectorExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SELECTOR;
-  static argTypes = {} satisfies RequiredMap<JSONPathSelectorExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<JSONPathSelectorExprArgs>;
 
   declare args: JSONPathSelectorExprArgs;
   constructor (args: JSONPathSelectorExprArgs) {
     super(args);
   }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
 }
 
-export type JSONPathSubscriptExprArgs = BaseExpressionArgs;
+export type JSONPathSubscriptExprArgs = {
+  this: Expression;
+} & BaseExpressionArgs;
 export class JSONPathSubscriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SUBSCRIPT;
-  static argTypes = {} satisfies RequiredMap<JSONPathSubscriptExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+  } satisfies RequiredMap<JSONPathSubscriptExprArgs>;
 
   declare args: JSONPathSubscriptExprArgs;
   constructor (args: JSONPathSubscriptExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 }
 
