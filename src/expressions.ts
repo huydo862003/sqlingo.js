@@ -11018,22 +11018,28 @@ export class JSONPathExpr extends Expression {
 }
 
 export type JSONPathPartExprArgs = BaseExpressionArgs;
+
 export class JSONPathPartExpr extends Expression {
   key = ExpressionKey.JSON_PATH_PART;
+
   static argTypes = {} satisfies RequiredMap<JSONPathPartExprArgs>;
 
   declare args: JSONPathPartExprArgs;
+
   constructor (args: JSONPathPartExprArgs) {
     super(args);
   }
 }
 
 export type FormatJsonExprArgs = BaseExpressionArgs;
+
 export class FormatJsonExpr extends Expression {
   key = ExpressionKey.FORMAT_JSON;
+
   static argTypes = {} satisfies RequiredMap<FormatJsonExprArgs>;
 
   declare args: FormatJsonExprArgs;
+
   constructor (args: FormatJsonExprArgs) {
     super(args);
   }
@@ -17767,14 +17773,17 @@ export class JSONPathKeyExpr extends JSONPathPartExpr {
 export type JSONPathRecursiveExprArgs = {
   this?: Expression;
 } & BaseExpressionArgs;
+
 export class JSONPathRecursiveExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_RECURSIVE;
+
   static argTypes = {
     ...super.argTypes,
     this: false,
   } satisfies RequiredMap<JSONPathRecursiveExprArgs>;
 
   declare args: JSONPathRecursiveExprArgs;
+
   constructor (args: JSONPathRecursiveExprArgs) {
     super(args);
   }
@@ -26947,7 +26956,7 @@ export class JSONObjectExpr extends FuncExpr {
     return this.args.uniqueKeys;
   }
 
-  get $returnType (): Expression | undefined {
+  get $returnType (): DataTypeExpr | undefined {
     return this.args.returnType;
   }
 
@@ -26960,9 +26969,11 @@ export class JSONObjectExpr extends FuncExpr {
   }
 }
 
-export type JSONArrayExprArgs = { nullHandling?: Expression;
+export type JSONArrayExprArgs = {
+  nullHandling?: Expression;
   returnType?: DataTypeExpr;
-  strict?: Expression; } & FuncExprArgs;
+  strict?: Expression;
+} & FuncExprArgs;
 
 export class JSONArrayExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY;
@@ -26988,7 +26999,7 @@ export class JSONArrayExpr extends FuncExpr {
     return this.args.nullHandling;
   }
 
-  get $returnType (): Expression | undefined {
+  get $returnType (): DataTypeExpr | undefined {
     return this.args.returnType;
   }
 
@@ -27001,10 +27012,12 @@ export class JSONArrayExpr extends FuncExpr {
   }
 }
 
-export type JSONExistsExprArgs = { path: Expression;
+export type JSONExistsExprArgs = {
+  path: Expression;
   passing?: Expression;
   onCondition?: Expression;
-  fromDcolonqmark?: Expression; } & FuncExprArgs;
+  fromDcolonqmark?: Expression;
+} & FuncExprArgs;
 
 export class JSONExistsExpr extends FuncExpr {
   key = ExpressionKey.JSON_EXISTS;
@@ -31936,7 +31949,7 @@ export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     return this.args.unit;
   }
 
-  get $returnType (): Expression | undefined {
+  get $returnType (): DataTypeExpr | undefined {
     return this.args.returnType;
   }
 
@@ -34547,7 +34560,7 @@ export class JSONObjectAggExpr extends AggFuncExpr {
     return this.args.uniqueKeys;
   }
 
-  get $returnType (): Expression | undefined {
+  get $returnType (): DataTypeExpr | undefined {
     return this.args.returnType;
   }
 
@@ -34627,7 +34640,7 @@ export class JSONArrayAggExpr extends AggFuncExpr {
     return this.args.nullHandling;
   }
 
-  get $returnType (): Expression | undefined {
+  get $returnType (): DataTypeExpr | undefined {
     return this.args.returnType;
   }
 
