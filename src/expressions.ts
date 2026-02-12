@@ -34456,10 +34456,12 @@ export class DenseRankExpr extends AggFuncExpr {
   }
 }
 
-export type ExplodeOuterExprArgs = BaseExpressionArgs;
+export type ExplodeOuterExprArgs = ExplodeExprArgs;
 export class ExplodeOuterExpr extends ExplodeExpr {
   key = ExpressionKey.EXPLODE_OUTER;
-  static argTypes = {} satisfies RequiredMap<ExplodeOuterExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ExplodeOuterExprArgs>;
 
   declare args: ExplodeOuterExprArgs;
   constructor (args: ExplodeOuterExprArgs) {
@@ -34467,10 +34469,12 @@ export class ExplodeOuterExpr extends ExplodeExpr {
   }
 }
 
-export type PosexplodeExprArgs = BaseExpressionArgs;
+export type PosexplodeExprArgs = ExplodeExprArgs;
 export class PosexplodeExpr extends ExplodeExpr {
   key = ExpressionKey.POSEXPLODE;
-  static argTypes = {} satisfies RequiredMap<PosexplodeExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<PosexplodeExprArgs>;
 
   declare args: PosexplodeExprArgs;
   constructor (args: PosexplodeExprArgs) {
@@ -35795,10 +35799,12 @@ export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
   }
 }
 
-export type PosexplodeOuterExprArgs = BaseExpressionArgs;
-export class PosexplodeOuterExpr extends PosexplodeExpr {
+export type PosexplodeOuterExprArgs = ExplodeExprArgs;
+export class PosexplodeOuterExpr extends multiInherit(PosexplodeExpr, ExplodeOuterExpr) {
   key = ExpressionKey.POSEXPLODE_OUTER;
-  static argTypes = {} satisfies RequiredMap<PosexplodeOuterExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<PosexplodeOuterExprArgs>;
 
   declare args: PosexplodeOuterExprArgs;
   constructor (args: PosexplodeOuterExprArgs) {
