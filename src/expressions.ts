@@ -9871,7 +9871,11 @@ export class AlterExpr extends Expression {
     super(args);
   }
 
-  get $kind (): string {
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
+  get $kind (): AlterExprKind {
     return this.args.kind;
   }
 
@@ -9879,7 +9883,7 @@ export class AlterExpr extends Expression {
     return this.args.actions;
   }
 
-  get $exists (): Expression[] | undefined {
+  get $exists (): Expression | undefined {
     return this.args.exists;
   }
 
