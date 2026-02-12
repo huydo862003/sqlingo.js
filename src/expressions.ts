@@ -32632,6 +32632,7 @@ export class UnixToStrExpr extends FuncExpr {
   key = ExpressionKey.UNIX_TO_STR;
 
   static argTypes = {
+    ...super.argTypes,
     format: false,
     this: true,
   } satisfies RequiredMap<UnixToStrExprArgs>;
@@ -32655,12 +32656,15 @@ export class UnixToStrExpr extends FuncExpr {
   }
 }
 
-export type UnixToTimeExprArgs = { scale?: number | Expression;
+export type UnixToTimeExprArgs = {
+  this: Expression;
+  scale?: number | Expression;
   zone?: Expression;
   hours?: Expression[];
   minutes?: Expression[];
   format?: string;
-  targetType?: DataTypeExpr; } & FuncExprArgs;
+  targetType?: DataTypeExpr;
+} & FuncExprArgs;
 
 export class UnixToTimeExpr extends FuncExpr {
   key = ExpressionKey.UNIX_TO_TIME;
@@ -32671,6 +32675,7 @@ export class UnixToTimeExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     scale: false,
     zone: false,
     hours: false,
@@ -32683,6 +32688,10 @@ export class UnixToTimeExpr extends FuncExpr {
 
   constructor (args: UnixToTimeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $scale (): Expression | undefined {
@@ -32802,6 +32811,7 @@ export type UuidExprArgs = {
 
 export class UuidExpr extends FuncExpr {
   key = ExpressionKey.UUID;
+  static _sqlNames = ['UUID', 'GEN_RANDOM_UUID', 'GENERATE_UUID', 'UUID_STRING'];
 
   /**
    * Defines the arguments (properties and child expressions) for Uuid expressions.
