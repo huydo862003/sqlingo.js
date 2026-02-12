@@ -17317,7 +17317,7 @@ export class BracketExpr extends ConditionExpr {
 }
 
 export type IntervalOpExprArgs = {
-  unit?: Expression;
+  unit?: VarExpr | IntervalSpanExpr;
   expression: Expression;
 } & TimeUnitExprArgs;
 
@@ -17343,7 +17343,7 @@ export class IntervalOpExpr extends TimeUnitExpr {
     });
   }
 
-  get $unit (): Expression | undefined {
+  get $unit (): VarExpr | IntervalSpanExpr | undefined {
     return this.args.unit;
   }
 
@@ -17388,7 +17388,7 @@ export class IntervalSpanExpr extends DataTypeExpr {
 
 export type IntervalExprArgs = {
   this?: Expression;
-  unit?: Expression;
+  unit?: VarExpr | IntervalSpanExpr;
 } & TimeUnitExprArgs;
 
 export class IntervalExpr extends TimeUnitExpr {
@@ -17410,7 +17410,7 @@ export class IntervalExpr extends TimeUnitExpr {
     return this.args.this;
   }
 
-  get $unit (): Expression | undefined {
+  get $unit (): VarExpr | IntervalSpanExpr | undefined {
     return this.args.unit;
   }
 }
@@ -17419,48 +17419,109 @@ export class IntervalExpr extends TimeUnitExpr {
 const _functionRegistry = new Map<string, typeof FuncExpr>();
 const _allFunctions = new Set<typeof FuncExpr>();
 
+/**
+ * The base class for all function expressions.
+ *
+ * Attributes:
+ *   isVarLenArgs: if set to true the last argument defined in argTypes will be
+ *     treated as a variable length argument and the argument's value will be stored as a list.
+ *   sqlNames: the SQL name (1st item in the list) and aliases (subsequent items) for this
+ *     function expression. These values are used to map this node to a name during parsing as
+ *     well as to provide the function's name during SQL string generation. By default the SQL
+ *     name is set to the expression's class name transformed to snake case.
+ */
 export type FuncExprArgs = BaseExpressionArgs;
-export class FuncExpr extends Expression {
+
+export class FuncExpr extends ConditionExpr {
   key = ExpressionKey.FUNC;
-  static argTypes = {} satisfies RequiredMap<FuncExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<FuncExprArgs>;
 
   declare args: FuncExprArgs;
+
   constructor (args: FuncExprArgs) {
     super(args);
   }
 
-  /**
-   * If set to true, the last argument defined in argTypes will be treated as a
-   * variable length argument and the argument's value will be stored as a list.
-   * This is used for functions like CONCAT, COALESCE that can accept any number of arguments.
-   */
   static isVarLenArgs = false;
 
-  /**
-   * SQL names for this function (first is primary, rest are aliases)
-   * Override this in subclasses to specify custom SQL names
-   * If not specified, defaults to snake_case version of class name
-   */
   static sqlNames?: string[];
+
+  /**
+   * Create a function instance from a list of arguments
+   */
+  static fromArgList (args: Expression[]): FuncExpr {
+    const allArgKeys = Object.keys(this.argTypes);
+
+    if (this.isVarLenArgs) {
+      const nonVarLenArgKeys = allArgKeys.slice(0, -1);
+      const numNonVar = nonVarLenArgKeys.length;
+
+      const argsDict: Record<string, Expression | Expression[]> = {};
+      for (let i = 0; i < nonVarLenArgKeys.length; i++) {
+        argsDict[nonVarLenArgKeys[i]] = args[i];
+      }
+      argsDict[allArgKeys[allArgKeys.length - 1]] = args.slice(numNonVar);
+
+      return new this(argsDict as FuncExprArgs);
+    } else {
+      const argsDict: Record<string, Expression> = {};
+      for (let i = 0; i < allArgKeys.length; i++) {
+        argsDict[allArgKeys[i]] = args[i];
+      }
+
+      return new this(argsDict as FuncExprArgs);
+    }
+  }
 
   /**
    * Get the SQL names for this function class
    * @returns Array of SQL names (primary name first, then aliases)
    */
-  static getSqlNames (): string[] {
+  static sqlNames (): string[] {
+    if (this === FuncExpr) {
+      throw new Error('SQL name is only supported by concrete function implementations');
+    }
+
     if (this.sqlNames) {
       return this.sqlNames;
     }
 
-    // Auto-generate from class name: convert camelCase to SNAKE_CASE
-    // e.g., CoalesceExpr -> COALESCE, ArraySizeExpr -> ARRAY_SIZE
-    const className = this.name.replace(/Expr$/, ''); // Remove Expr suffix
+    // Auto-generate from class name: convert camelCase to snake_case
+    // e.g., CoalesceExpr -> coalesce, ArraySizeExpr -> array_size
+    const className = this.name.replace(/Expr$/, '');
     const snakeCase = className
       .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
       .replace(/([a-z\d])([A-Z])/g, '$1_$2')
-      .toUpperCase();
+      .toLowerCase();
 
     return [snakeCase];
+  }
+
+  /**
+   * Get the primary SQL name for this function
+   * @returns The primary SQL name (first item from sqlNames)
+   */
+  static sqlName (): string {
+    const names = this.sqlNames();
+    if (names.length === 0) {
+      throw new Error(`Expected non-empty 'sqlNames' for Func: ${this.name}`);
+    }
+    return names[0];
+  }
+
+  /**
+   * Get default parser mappings for this function
+   * @returns Object mapping SQL names to the fromArgList parser
+   */
+  static defaultParserMappings (): Record<string, (args: Expression[]) => FuncExpr> {
+    const mappings: Record<string, (args: Expression[]) => FuncExpr> = {};
+    for (const name of this.sqlNames()) {
+      mappings[name] = this.fromArgList.bind(this);
+    }
+    return mappings;
   }
 
   /**
@@ -17477,7 +17538,7 @@ export class FuncExpr extends Expression {
     _allFunctions.add(this);
 
     // Register by all SQL names
-    const sqlNames = this.getSqlNames();
+    const sqlNames = this.sqlNames();
     for (const name of sqlNames) {
       _functionRegistry.set(name.toUpperCase(), this);
     }
@@ -19103,11 +19164,16 @@ export class JarowinklerSimilarityExpr extends FuncExpr {
 }
 
 export type AggFuncExprArgs = BaseExpressionArgs;
+
 export class AggFuncExpr extends FuncExpr {
   key = ExpressionKey.AGG_FUNC;
-  static argTypes = {} satisfies RequiredMap<AggFuncExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AggFuncExprArgs>;
 
   declare args: AggFuncExprArgs;
+
   constructor (args: AggFuncExprArgs) {
     super(args);
   }
