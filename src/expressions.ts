@@ -17883,7 +17883,7 @@ export class DotExpr extends BinaryExpr {
 
     return expressions.reduce(
       (x, y) => new DotExpr({ this: x, expression: y }),
-    ) as DotExpr;
+    );
   }
 
   /**
@@ -17908,12 +17908,21 @@ export class DotExpr extends BinaryExpr {
   }
 }
 
-export type DPipeExprArgs = { safe?: boolean } & BaseExpressionArgs;
+export type DPipeExprArgs = {
+  this: Expression;
+  expression: Expression;
+  safe?: boolean;
+} & BinaryExprArgs;
 
 export class DPipeExpr extends BinaryExpr {
   key = ExpressionKey.D_PIPE;
 
-  static argTypes = { safe: false } satisfies RequiredMap<DPipeExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    safe: false,
+  } satisfies RequiredMap<DPipeExprArgs>;
 
   declare args: DPipeExprArgs;
 
@@ -17921,83 +17930,118 @@ export class DPipeExpr extends BinaryExpr {
     super(args);
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 }
 
-export type EQExprArgs = BaseExpressionArgs;
+export type EQExprArgs = BinaryExprArgs;
+
 export class EQExpr extends BinaryExpr {
   key = ExpressionKey.EQ;
-  static argTypes = {} satisfies RequiredMap<EQExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<EQExprArgs>;
 
   declare args: EQExprArgs;
+
   constructor (args: EQExprArgs) {
     super(args);
   }
 }
 
-export type NullSafeEQExprArgs = BaseExpressionArgs;
+export type NullSafeEQExprArgs = BinaryExprArgs;
+
 export class NullSafeEQExpr extends BinaryExpr {
   key = ExpressionKey.NULL_SAFE_EQ;
-  static argTypes = {} satisfies RequiredMap<NullSafeEQExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<NullSafeEQExprArgs>;
 
   declare args: NullSafeEQExprArgs;
+
   constructor (args: NullSafeEQExprArgs) {
     super(args);
   }
 }
 
-export type NullSafeNEQExprArgs = BaseExpressionArgs;
+export type NullSafeNEQExprArgs = BinaryExprArgs;
+
 export class NullSafeNEQExpr extends BinaryExpr {
   key = ExpressionKey.NULL_SAFE_NEQ;
-  static argTypes = {} satisfies RequiredMap<NullSafeNEQExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<NullSafeNEQExprArgs>;
 
   declare args: NullSafeNEQExprArgs;
+
   constructor (args: NullSafeNEQExprArgs) {
     super(args);
   }
 }
 
-export type PropertyEQExprArgs = BaseExpressionArgs;
+export type PropertyEQExprArgs = BinaryExprArgs;
+
 export class PropertyEQExpr extends BinaryExpr {
   key = ExpressionKey.PROPERTY_EQ;
-  static argTypes = {} satisfies RequiredMap<PropertyEQExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<PropertyEQExprArgs>;
 
   declare args: PropertyEQExprArgs;
+
   constructor (args: PropertyEQExprArgs) {
     super(args);
   }
 }
 
-export type DistanceExprArgs = BaseExpressionArgs;
+export type DistanceExprArgs = BinaryExprArgs;
+
 export class DistanceExpr extends BinaryExpr {
   key = ExpressionKey.DISTANCE;
-  static argTypes = {} satisfies RequiredMap<DistanceExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<DistanceExprArgs>;
 
   declare args: DistanceExprArgs;
+
   constructor (args: DistanceExprArgs) {
     super(args);
   }
 }
 
-export type EscapeExprArgs = BaseExpressionArgs;
+export type EscapeExprArgs = BinaryExprArgs;
+
 export class EscapeExpr extends BinaryExpr {
   key = ExpressionKey.ESCAPE;
-  static argTypes = {} satisfies RequiredMap<EscapeExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<EscapeExprArgs>;
 
   declare args: EscapeExprArgs;
+
   constructor (args: EscapeExprArgs) {
     super(args);
   }
 }
 
-export type GlobExprArgs = BaseExpressionArgs;
+export type GlobExprArgs = BinaryExprArgs;
+
 export class GlobExpr extends BinaryExpr {
   key = ExpressionKey.GLOB;
-  static argTypes = {} satisfies RequiredMap<GlobExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<GlobExprArgs>;
 
   declare args: GlobExprArgs;
+
   constructor (args: GlobExprArgs) {
     super(args);
   }
