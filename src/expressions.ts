@@ -17935,9 +17935,9 @@ export class DPipeExpr extends BinaryExpr {
   }
 }
 
-export type EQExprArgs = BinaryExprArgs;
+export type EQExprArgs = BinaryExprArgs & PredicateExprArgs;
 
-export class EQExpr extends BinaryExpr {
+export class EQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.EQ;
 
   static argTypes = {
@@ -17951,9 +17951,9 @@ export class EQExpr extends BinaryExpr {
   }
 }
 
-export type NullSafeEQExprArgs = BinaryExprArgs;
+export type NullSafeEQExprArgs = BinaryExprArgs & PredicateExprArgs;
 
-export class NullSafeEQExpr extends BinaryExpr {
+export class NullSafeEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.NULL_SAFE_EQ;
 
   static argTypes = {
@@ -17967,9 +17967,9 @@ export class NullSafeEQExpr extends BinaryExpr {
   }
 }
 
-export type NullSafeNEQExprArgs = BinaryExprArgs;
+export type NullSafeNEQExprArgs = BinaryExprArgs & PredicateExprArgs;
 
-export class NullSafeNEQExpr extends BinaryExpr {
+export class NullSafeNEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.NULL_SAFE_NEQ;
 
   static argTypes = {
@@ -18031,9 +18031,9 @@ export class EscapeExpr extends BinaryExpr {
   }
 }
 
-export type GlobExprArgs = BinaryExprArgs;
+export type GlobExprArgs = BinaryExprArgs & PredicateExprArgs;
 
-export class GlobExpr extends BinaryExpr {
+export class GlobExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.GLOB;
 
   static argTypes = {
