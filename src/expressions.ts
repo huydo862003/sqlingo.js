@@ -24016,10 +24016,14 @@ export class MakeIntervalExpr extends FuncExpr {
 
 export type LastDayExprArgs = { unit?: Expression } & FuncExprArgs;
 
-export class LastDayExpr extends FuncExpr {
+export class LastDayExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.LAST_DAY;
 
-  static argTypes = { unit: false } satisfies RequiredMap<LastDayExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    unit: false,
+  } satisfies RequiredMap<LastDayExprArgs>;
 
   declare args: LastDayExprArgs;
 
@@ -24155,9 +24159,12 @@ export class ExtractExpr extends FuncExpr {
 }
 
 export type ExistsExprArgs = FuncExprArgs;
-export class ExistsExpr extends FuncExpr {
+export class ExistsExpr extends multiInherit(FuncExpr, SubqueryPredicateExpr) {
   key = ExpressionKey.EXISTS;
-  static argTypes = {} satisfies RequiredMap<ExistsExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+  } satisfies RequiredMap<ExistsExprArgs>;
 
   declare args: ExistsExprArgs;
   constructor (args: ExistsExprArgs) {
@@ -24224,10 +24231,14 @@ export class TimestampExpr extends FuncExpr {
 
 export type TimestampAddExprArgs = { unit?: Expression } & FuncExprArgs;
 
-export class TimestampAddExpr extends FuncExpr {
+export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_ADD;
 
-  static argTypes = { unit: false } satisfies RequiredMap<TimestampAddExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    unit: false,
+  } satisfies RequiredMap<TimestampAddExprArgs>;
 
   declare args: TimestampAddExprArgs;
 
@@ -24246,10 +24257,14 @@ export class TimestampAddExpr extends FuncExpr {
 
 export type TimestampSubExprArgs = { unit?: Expression } & FuncExprArgs;
 
-export class TimestampSubExpr extends FuncExpr {
+export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_SUB;
 
-  static argTypes = { unit: false } satisfies RequiredMap<TimestampSubExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    unit: false,
+  } satisfies RequiredMap<TimestampSubExprArgs>;
 
   declare args: TimestampSubExprArgs;
 
@@ -24268,10 +24283,14 @@ export class TimestampSubExpr extends FuncExpr {
 
 export type TimestampDiffExprArgs = { unit?: Expression } & FuncExprArgs;
 
-export class TimestampDiffExpr extends FuncExpr {
+export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_DIFF;
 
-  static argTypes = { unit: false } satisfies RequiredMap<TimestampDiffExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    unit: false,
+  } satisfies RequiredMap<TimestampDiffExprArgs>;
 
   declare args: TimestampDiffExprArgs;
 
@@ -24294,7 +24313,7 @@ export type TimestampTruncExprArgs = { unit: Expression;
   zone?: Expression;
   inputTypePreserved?: DataTypeExpr; } & FuncExprArgs;
 
-export class TimestampTruncExpr extends FuncExpr {
+export class TimestampTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_TRUNC;
 
   /**
@@ -24302,6 +24321,7 @@ export class TimestampTruncExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     unit: true,
     zone: false,
@@ -24341,7 +24361,7 @@ export enum TimeSliceExprKind {
 export type TimeSliceExprArgs = { unit: Expression;
   kind?: TimeSliceExprKind; } & FuncExprArgs;
 
-export class TimeSliceExpr extends FuncExpr {
+export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_SLICE;
 
   /**
@@ -24349,6 +24369,7 @@ export class TimeSliceExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     unit: true,
     kind: false,
@@ -24375,10 +24396,14 @@ export class TimeSliceExpr extends FuncExpr {
 
 export type TimeAddExprArgs = { unit?: Expression } & FuncExprArgs;
 
-export class TimeAddExpr extends FuncExpr {
+export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_ADD;
 
-  static argTypes = { unit: false } satisfies RequiredMap<TimeAddExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    unit: false,
+  } satisfies RequiredMap<TimeAddExprArgs>;
 
   declare args: TimeAddExprArgs;
 
@@ -24397,10 +24422,14 @@ export class TimeAddExpr extends FuncExpr {
 
 export type TimeSubExprArgs = { unit?: Expression } & FuncExprArgs;
 
-export class TimeSubExpr extends FuncExpr {
+export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_SUB;
 
-  static argTypes = { unit: false } satisfies RequiredMap<TimeSubExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    unit: false,
+  } satisfies RequiredMap<TimeSubExprArgs>;
 
   declare args: TimeSubExprArgs;
 
@@ -24419,10 +24448,14 @@ export class TimeSubExpr extends FuncExpr {
 
 export type TimeDiffExprArgs = { unit?: Expression } & FuncExprArgs;
 
-export class TimeDiffExpr extends FuncExpr {
+export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_DIFF;
 
-  static argTypes = { unit: false } satisfies RequiredMap<TimeDiffExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    unit: false,
+  } satisfies RequiredMap<TimeDiffExprArgs>;
 
   declare args: TimeDiffExprArgs;
 
@@ -24442,7 +24475,7 @@ export class TimeDiffExpr extends FuncExpr {
 export type TimeTruncExprArgs = { unit: Expression;
   zone?: Expression; } & FuncExprArgs;
 
-export class TimeTruncExpr extends FuncExpr {
+export class TimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_TRUNC;
 
   /**
@@ -24450,6 +24483,7 @@ export class TimeTruncExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     unit: true,
     zone: false,
@@ -25042,10 +25076,13 @@ export class FactorialExpr extends FuncExpr {
 }
 
 export type ExplodeExprArgs = FuncExprArgs;
-export class ExplodeExpr extends FuncExpr {
+export class ExplodeExpr extends multiInherit(FuncExpr, UDTFExpr) {
   key = ExpressionKey.EXPLODE;
     static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<ExplodeExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+  } satisfies RequiredMap<ExplodeExprArgs>;
 
   declare args: ExplodeExprArgs;
   constructor (args: ExplodeExprArgs) {
@@ -26481,10 +26518,13 @@ export class OpenJSONExpr extends FuncExpr {
   }
 }
 
-export type JSONBContainsExprArgs = BaseExpressionArgs;
-export class JSONBContainsExpr extends BinaryExpr {
+export type JSONBContainsExprArgs = BinaryExprArgs;
+export class JSONBContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS;
-  static argTypes = {} satisfies RequiredMap<JSONBContainsExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+  } satisfies RequiredMap<JSONBContainsExprArgs>;
 
   declare args: JSONBContainsExprArgs;
   constructor (args: JSONBContainsExprArgs) {
@@ -26492,10 +26532,13 @@ export class JSONBContainsExpr extends BinaryExpr {
   }
 }
 
-export type JSONBContainsAnyTopKeysExprArgs = BaseExpressionArgs;
-export class JSONBContainsAnyTopKeysExpr extends BinaryExpr {
+export type JSONBContainsAnyTopKeysExprArgs = BinaryExprArgs;
+export class JSONBContainsAnyTopKeysExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS_ANY_TOP_KEYS;
-  static argTypes = {};
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+  } satisfies RequiredMap<JSONBContainsAnyTopKeysExprArgs>;
 
   declare args: JSONBContainsAnyTopKeysExprArgs;
   constructor (args: JSONBContainsAnyTopKeysExprArgs) {
@@ -26503,10 +26546,13 @@ export class JSONBContainsAnyTopKeysExpr extends BinaryExpr {
   }
 }
 
-export type JSONBContainsAllTopKeysExprArgs = BaseExpressionArgs;
-export class JSONBContainsAllTopKeysExpr extends BinaryExpr {
+export type JSONBContainsAllTopKeysExprArgs = BinaryExprArgs;
+export class JSONBContainsAllTopKeysExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS_ALL_TOP_KEYS;
-  static argTypes = {};
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+  } satisfies RequiredMap<JSONBContainsAllTopKeysExprArgs>;
 
   declare args: JSONBContainsAllTopKeysExprArgs;
   constructor (args: JSONBContainsAllTopKeysExprArgs) {
@@ -26538,10 +26584,13 @@ export class JSONBExistsExpr extends FuncExpr {
   static sqlNames = ['JSONB_EXISTS'];
 }
 
-export type JSONBDeleteAtPathExprArgs = BaseExpressionArgs;
-export class JSONBDeleteAtPathExpr extends BinaryExpr {
+export type JSONBDeleteAtPathExprArgs = BinaryExprArgs;
+export class JSONBDeleteAtPathExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_DELETE_AT_PATH;
-  static argTypes = {} satisfies RequiredMap<JSONBDeleteAtPathExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+  } satisfies RequiredMap<JSONBDeleteAtPathExprArgs>;
 
   declare args: JSONBDeleteAtPathExprArgs;
   constructor (args: JSONBDeleteAtPathExprArgs) {
@@ -26555,9 +26604,9 @@ export type JSONExtractExprArgs = { onlyJsonTypes?: Expression[];
   option?: Expression;
   quote?: Expression;
   onCondition?: Expression;
-  requiresJson?: Expression; } & BaseExpressionArgs;
+  requiresJson?: Expression; } & BinaryExprArgs;
 
-export class JSONExtractExpr extends BinaryExpr {
+export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSON_EXTRACT;
     static isVarLenArgs = true;
   /**
@@ -26565,6 +26614,7 @@ export class JSONExtractExpr extends BinaryExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     onlyJsonTypes: false,
     variantExtract: false,
@@ -26636,9 +26686,9 @@ export class JSONExtractArrayExpr extends FuncExpr {
 
 export type JSONExtractScalarExprArgs = { onlyJsonTypes?: Expression[];
   jsonType?: Expression;
-  scalarOnly?: Expression; } & BaseExpressionArgs;
+  scalarOnly?: Expression; } & BinaryExprArgs;
 
-export class JSONExtractScalarExpr extends BinaryExpr {
+export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSON_EXTRACT_SCALAR;
     static isVarLenArgs = true;
   /**
@@ -26646,6 +26696,7 @@ export class JSONExtractScalarExpr extends BinaryExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     onlyJsonTypes: false,
     jsonType: false,
@@ -26675,10 +26726,13 @@ export class JSONExtractScalarExpr extends BinaryExpr {
   }
 }
 
-export type JSONBExtractExprArgs = BaseExpressionArgs;
-export class JSONBExtractExpr extends BinaryExpr {
+export type JSONBExtractExprArgs = BinaryExprArgs;
+export class JSONBExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_EXTRACT;
-  static argTypes = {} satisfies RequiredMap<JSONBExtractExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+  } satisfies RequiredMap<JSONBExtractExprArgs>;
 
   declare args: JSONBExtractExprArgs;
   constructor (args: JSONBExtractExprArgs) {
@@ -26686,12 +26740,16 @@ export class JSONBExtractExpr extends BinaryExpr {
   }
 }
 
-export type JSONBExtractScalarExprArgs = { jsonType?: Expression } & BaseExpressionArgs;
+export type JSONBExtractScalarExprArgs = { jsonType?: Expression } & BinaryExprArgs;
 
-export class JSONBExtractScalarExpr extends BinaryExpr {
+export class JSONBExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_EXTRACT_SCALAR;
 
-  static argTypes = { jsonType: false } satisfies RequiredMap<JSONBExtractScalarExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    jsonType: false,
+  } satisfies RequiredMap<JSONBExtractScalarExprArgs>;
 
   declare args: JSONBExtractScalarExprArgs;
 
@@ -26767,12 +26825,16 @@ export class JSONArrayAppendExpr extends FuncExpr {
   static sqlNames = ['JSON_ARRAY_APPEND'];
 }
 
-export type JSONArrayContainsExprArgs = { jsonType?: Expression } & BaseExpressionArgs;
+export type JSONArrayContainsExprArgs = { jsonType?: Expression } & BinaryExprArgs;
 
-export class JSONArrayContainsExpr extends BinaryExpr {
+export class JSONArrayContainsExpr extends multiInherit(BinaryExpr, PredicateExpr, FuncExpr) {
   key = ExpressionKey.JSON_ARRAY_CONTAINS;
 
-  static argTypes = { jsonType: false } satisfies RequiredMap<JSONArrayContainsExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    jsonType: false,
+  } satisfies RequiredMap<JSONArrayContainsExprArgs>;
 
   declare args: JSONArrayContainsExprArgs;
 
@@ -28152,10 +28214,13 @@ export class PiExpr extends FuncExpr {
   }
 }
 
-export type PowExprArgs = BaseExpressionArgs;
-export class PowExpr extends BinaryExpr {
+export type PowExprArgs = BinaryExprArgs;
+export class PowExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.POW;
-  static argTypes = {} satisfies RequiredMap<PowExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+  } satisfies RequiredMap<PowExprArgs>;
 
   declare args: PowExprArgs;
   constructor (args: PowExprArgs) {
@@ -28554,12 +28619,16 @@ export class RegexpReplaceExpr extends FuncExpr {
   }
 }
 
-export type RegexpLikeExprArgs = { flag?: Expression } & BaseExpressionArgs;
+export type RegexpLikeExprArgs = { flag?: Expression } & BinaryExprArgs;
 
-export class RegexpLikeExpr extends BinaryExpr {
+export class RegexpLikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.REGEXP_LIKE;
 
-  static argTypes = { flag: false } satisfies RequiredMap<RegexpLikeExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    flag: false,
+  } satisfies RequiredMap<RegexpLikeExprArgs>;
 
   declare args: RegexpLikeExprArgs;
 
@@ -28572,12 +28641,16 @@ export class RegexpLikeExpr extends BinaryExpr {
   }
 }
 
-export type RegexpILikeExprArgs = { flag?: Expression } & BaseExpressionArgs;
+export type RegexpILikeExprArgs = { flag?: Expression } & BinaryExprArgs;
 
-export class RegexpILikeExpr extends BinaryExpr {
+export class RegexpILikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.REGEXP_ILIKE;
 
-  static argTypes = { flag: false } satisfies RequiredMap<RegexpILikeExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    flag: false,
+  } satisfies RequiredMap<RegexpILikeExprArgs>;
 
   declare args: RegexpILikeExprArgs;
 
@@ -28590,12 +28663,16 @@ export class RegexpILikeExpr extends BinaryExpr {
   }
 }
 
-export type RegexpFullMatchExprArgs = { options?: Expression[] } & BaseExpressionArgs;
+export type RegexpFullMatchExprArgs = { options?: Expression[] } & BinaryExprArgs;
 
-export class RegexpFullMatchExpr extends BinaryExpr {
+export class RegexpFullMatchExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.REGEXP_FULL_MATCH;
 
-  static argTypes = { options: false } satisfies RequiredMap<RegexpFullMatchExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    options: false,
+  } satisfies RequiredMap<RegexpFullMatchExprArgs>;
 
   declare args: RegexpFullMatchExprArgs;
 
@@ -30042,7 +30119,7 @@ export class TrimExpr extends FuncExpr {
 export type TsOrDsAddExprArgs = { unit?: Expression;
   returnType?: DataTypeExpr; } & FuncExprArgs;
 
-export class TsOrDsAddExpr extends FuncExpr {
+export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TS_OR_DS_ADD;
 
   /**
@@ -30050,6 +30127,7 @@ export class TsOrDsAddExpr extends FuncExpr {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     unit: false,
     returnType: false,
@@ -30084,10 +30162,14 @@ export class TsOrDsAddExpr extends FuncExpr {
 
 export type TsOrDsDiffExprArgs = { unit?: Expression } & FuncExprArgs;
 
-export class TsOrDsDiffExpr extends FuncExpr {
+export class TsOrDsDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TS_OR_DS_DIFF;
 
-  static argTypes = { unit: false } satisfies RequiredMap<TsOrDsDiffExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    unit: false,
+  } satisfies RequiredMap<TsOrDsDiffExprArgs>;
 
   declare args: TsOrDsDiffExprArgs;
 
@@ -30661,12 +30743,16 @@ export class UpperExpr extends FuncExpr {
   }
 }
 
-export type CorrExprArgs = { nullOnZeroVariance?: Expression } & BaseExpressionArgs;
+export type CorrExprArgs = { nullOnZeroVariance?: Expression } & BinaryExprArgs;
 
-export class CorrExpr extends BinaryExpr {
+export class CorrExpr extends multiInherit(BinaryExpr, AggFuncExpr) {
   key = ExpressionKey.CORR;
 
-  static argTypes = { nullOnZeroVariance: false } satisfies RequiredMap<CorrExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    nullOnZeroVariance: false,
+  } satisfies RequiredMap<CorrExprArgs>;
 
   declare args: CorrExprArgs;
 
@@ -32400,10 +32486,13 @@ export class LowerHexExpr extends HexExpr {
   }
 }
 
-export type AndExprArgs = BaseExpressionArgs;
-export class AndExpr extends ConnectorExpr {
+export type AndExprArgs = ConnectorExprArgs;
+export class AndExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   key = ExpressionKey.AND;
-  static argTypes = {} satisfies RequiredMap<AndExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+  } satisfies RequiredMap<AndExprArgs>;
 
   declare args: AndExprArgs;
   constructor (args: AndExprArgs) {
@@ -32411,10 +32500,13 @@ export class AndExpr extends ConnectorExpr {
   }
 }
 
-export type OrExprArgs = BaseExpressionArgs;
-export class OrExpr extends ConnectorExpr {
+export type OrExprArgs = ConnectorExprArgs;
+export class OrExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   key = ExpressionKey.OR;
-  static argTypes = {} satisfies RequiredMap<OrExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+  } satisfies RequiredMap<OrExprArgs>;
 
   declare args: OrExprArgs;
   constructor (args: OrExprArgs) {
@@ -32422,12 +32514,16 @@ export class OrExpr extends ConnectorExpr {
   }
 }
 
-export type XorExprArgs = { roundInput?: Expression } & BaseExpressionArgs;
+export type XorExprArgs = { roundInput?: Expression } & ConnectorExprArgs;
 
-export class XorExpr extends ConnectorExpr {
+export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   key = ExpressionKey.XOR;
     static isVarLenArgs = true;
-  static argTypes = { roundInput: false } satisfies RequiredMap<XorExprArgs>;
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+    roundInput: false,
+  } satisfies RequiredMap<XorExprArgs>;
 
   declare args: XorExprArgs;
 
