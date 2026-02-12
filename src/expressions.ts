@@ -17846,14 +17846,65 @@ export class ExtendsRightExpr extends BinaryExpr {
   }
 }
 
-export type DotExprArgs = BaseExpressionArgs;
+export type DotExprArgs = BinaryExprArgs;
+
 export class DotExpr extends BinaryExpr {
   key = ExpressionKey.DOT;
-  static argTypes = {} satisfies RequiredMap<DotExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<DotExprArgs>;
 
   declare args: DotExprArgs;
+
   constructor (args: DotExprArgs) {
     super(args);
+  }
+
+  get isStar (): boolean {
+    return this.args.expression.isStar;
+  }
+
+  get name (): string {
+    return this.args.expression.name;
+  }
+
+  get outputName (): string {
+    return this.name;
+  }
+
+  /**
+   * Build a Dot object with a sequence of expressions.
+   */
+  static build (expressions: Expression[]): DotExpr {
+    if (expressions.length < 2) {
+      throw new Error('Dot requires >= 2 expressions.');
+    }
+
+    return expressions.reduce(
+      (x, y) => new DotExpr({ this: x, expression: y }),
+    ) as DotExpr;
+  }
+
+  /**
+   * Return the parts of a table / column in order catalog, db, table.
+   */
+  get parts (): Expression[] {
+    const [thisExpr, ...restParts] = this.flatten();
+    const parts = [...restParts];
+
+    parts.reverse();
+
+    for (const arg of COLUMN_PARTS) {
+      const part = thisExpr.args[arg];
+
+      if (part instanceof Expression) {
+        parts.push(part);
+      }
+    }
+
+    parts.reverse();
+    return parts;
   }
 }
 
