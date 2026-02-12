@@ -25018,17 +25018,35 @@ export class DateToDiExpr extends FuncExpr {
   }
 }
 
-export type DateExprArgs = { zone?: Expression } & FuncExprArgs;
+export type DateExprArgs = {
+  this?: Expression;
+  expressions?: Expression[];
+  zone?: Expression;
+} & FuncExprArgs;
 
 export class DateExpr extends FuncExpr {
   key = ExpressionKey.DATE;
-    static isVarLenArgs = true;
-  static argTypes = { zone: false } satisfies RequiredMap<DateExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+    expressions: false,
+    zone: false,
+  } satisfies RequiredMap<DateExprArgs>;
 
   declare args: DateExprArgs;
 
   constructor (args: DateExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   get $zone (): Expression | undefined {
@@ -25103,17 +25121,27 @@ export class DecodeExpr extends FuncExpr {
   }
 }
 
-export type DecodeCaseExprArgs = FuncExprArgs;
+export type DecodeCaseExprArgs = {
+  expressions: Expression[];
+} & FuncExprArgs;
 
 export class DecodeCaseExpr extends FuncExpr {
   key = ExpressionKey.DECODE_CASE;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<DecodeCaseExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+  } satisfies RequiredMap<DecodeCaseExprArgs>;
 
   declare args: DecodeCaseExprArgs;
 
   constructor (args: DecodeCaseExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
   }
 
   static {
@@ -26188,17 +26216,35 @@ export class GetbitExpr extends FuncExpr {
   static sqlNames = ['GETBIT', 'GET_BIT'];
 }
 
-export type GreatestExprArgs = { ignoreNulls: Expression[] } & FuncExprArgs;
+export type GreatestExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+  ignoreNulls: Expression[];
+} & FuncExprArgs;
 
 export class GreatestExpr extends FuncExpr {
   key = ExpressionKey.GREATEST;
-    static isVarLenArgs = true;
-  static argTypes = { ignoreNulls: true } satisfies RequiredMap<GreatestExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: false,
+    ignoreNulls: true,
+  } satisfies RequiredMap<GreatestExprArgs>;
 
   declare args: GreatestExprArgs;
 
   constructor (args: GreatestExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   get $ignoreNulls (): Expression[] {
@@ -26677,17 +26723,33 @@ export class IsArrayExpr extends FuncExpr {
   }
 }
 
-export type FormatExprArgs = FuncExprArgs;
+export type FormatExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+} & FuncExprArgs;
 
 export class FormatExpr extends FuncExpr {
   key = ExpressionKey.FORMAT;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<FormatExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: false,
+  } satisfies RequiredMap<FormatExprArgs>;
 
   declare args: FormatExprArgs;
 
   constructor (args: FormatExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   static {
@@ -33065,17 +33127,27 @@ export class CountIfExpr extends AggFuncExpr {
   }
 }
 
-export type DenseRankExprArgs = AggFuncExprArgs;
+export type DenseRankExprArgs = {
+  expressions?: Expression[];
+} & AggFuncExprArgs;
 
 export class DenseRankExpr extends AggFuncExpr {
   key = ExpressionKey.DENSE_RANK;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<DenseRankExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: false,
+  } satisfies RequiredMap<DenseRankExprArgs>;
 
   declare args: DenseRankExprArgs;
 
   constructor (args: DenseRankExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   static {
