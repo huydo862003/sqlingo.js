@@ -17447,8 +17447,6 @@ export class FuncExpr extends ConditionExpr {
 
   static isVarLenArgs = false;
 
-  static sqlNames?: string[];
-
   /**
    * Create a function instance from a list of arguments
    */
@@ -17505,11 +17503,11 @@ export class FuncExpr extends ConditionExpr {
    * @returns The primary SQL name (first item from sqlNames)
    */
   static sqlName (): string {
-    const names = this.sqlNames();
-    if (names.length === 0) {
-      throw new Error(`Expected non-empty 'sqlNames' for Func: ${this.name}`);
+    const sqlNames = this.sqlNames();
+    if (!sqlNames.length) {
+      throw new Error(`Expected non-empty 'sql_names' for Func: ${this.name}.`);
     }
-    return names[0];
+    return sqlNames[0];
   }
 
   /**
