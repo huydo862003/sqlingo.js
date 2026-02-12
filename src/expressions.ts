@@ -18047,111 +18047,164 @@ export class GlobExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type GTExprArgs = BaseExpressionArgs;
-export class GTExpr extends BinaryExpr {
+export type GTExprArgs = BinaryExprArgs & PredicateExprArgs;
+
+export class GTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.GT;
-  static argTypes = {} satisfies RequiredMap<GTExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<GTExprArgs>;
 
   declare args: GTExprArgs;
+
   constructor (args: GTExprArgs) {
     super(args);
   }
 }
 
-export type GTEExprArgs = BaseExpressionArgs;
-export class GTEExpr extends BinaryExpr {
+export type GTEExprArgs = BinaryExprArgs & PredicateExprArgs;
+
+export class GTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.GTE;
-  static argTypes = {} satisfies RequiredMap<GTEExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<GTEExprArgs>;
 
   declare args: GTEExprArgs;
+
   constructor (args: GTEExprArgs) {
     super(args);
   }
 }
 
-export type ILikeExprArgs = BaseExpressionArgs;
-export class ILikeExpr extends BinaryExpr {
+export type ILikeExprArgs = BinaryExprArgs & PredicateExprArgs;
+
+export class ILikeExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.ILIKE;
-  static argTypes = {} satisfies RequiredMap<ILikeExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ILikeExprArgs>;
 
   declare args: ILikeExprArgs;
+
   constructor (args: ILikeExprArgs) {
     super(args);
   }
 }
 
-export type IntDivExprArgs = BaseExpressionArgs;
+export type IntDivExprArgs = BinaryExprArgs;
+
 export class IntDivExpr extends BinaryExpr {
   key = ExpressionKey.INT_DIV;
-  static argTypes = {} satisfies RequiredMap<IntDivExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<IntDivExprArgs>;
 
   declare args: IntDivExprArgs;
+
   constructor (args: IntDivExprArgs) {
     super(args);
   }
 }
 
-export type IsExprArgs = BaseExpressionArgs;
-export class IsExpr extends BinaryExpr {
+export type IsExprArgs = BinaryExprArgs & PredicateExprArgs;
+
+export class IsExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.IS;
-  static argTypes = {} satisfies RequiredMap<IsExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<IsExprArgs>;
 
   declare args: IsExprArgs;
+
   constructor (args: IsExprArgs) {
     super(args);
   }
 }
 
-export type KwargExprArgs = BaseExpressionArgs;
+export type KwargExprArgs = BinaryExprArgs;
+
+/**
+ * Kwarg in special functions like func(kwarg => y).
+ */
 export class KwargExpr extends BinaryExpr {
   key = ExpressionKey.KWARG;
-  static argTypes = {} satisfies RequiredMap<KwargExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<KwargExprArgs>;
 
   declare args: KwargExprArgs;
+
   constructor (args: KwargExprArgs) {
     super(args);
   }
 }
 
-export type LikeExprArgs = BaseExpressionArgs;
-export class LikeExpr extends BinaryExpr {
+export type LikeExprArgs = BinaryExprArgs & PredicateExprArgs;
+
+export class LikeExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.LIKE;
-  static argTypes = {} satisfies RequiredMap<LikeExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<LikeExprArgs>;
 
   declare args: LikeExprArgs;
+
   constructor (args: LikeExprArgs) {
     super(args);
   }
 }
 
-export type MatchExprArgs = BaseExpressionArgs;
-export class MatchExpr extends BinaryExpr {
+export type MatchExprArgs = BinaryExprArgs & PredicateExprArgs;
+
+export class MatchExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.MATCH;
-  static argTypes = {} satisfies RequiredMap<MatchExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<MatchExprArgs>;
 
   declare args: MatchExprArgs;
+
   constructor (args: MatchExprArgs) {
     super(args);
   }
 }
 
-export type LTExprArgs = BaseExpressionArgs;
-export class LTExpr extends BinaryExpr {
+export type LTExprArgs = BinaryExprArgs & PredicateExprArgs;
+
+export class LTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.LT;
-  static argTypes = {} satisfies RequiredMap<LTExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<LTExprArgs>;
 
   declare args: LTExprArgs;
+
   constructor (args: LTExprArgs) {
     super(args);
   }
 }
 
-export type LTEExprArgs = BaseExpressionArgs;
-export class LTEExpr extends BinaryExpr {
+export type LTEExprArgs = BinaryExprArgs & PredicateExprArgs;
+
+export class LTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.LTE;
-  static argTypes = {} satisfies RequiredMap<LTEExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<LTEExprArgs>;
 
   declare args: LTEExprArgs;
+
   constructor (args: LTEExprArgs) {
     super(args);
   }
