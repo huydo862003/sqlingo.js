@@ -28076,6 +28076,8 @@ export type ParseJSONExprArgs = {
 export class ParseJSONExpr extends FuncExpr {
   key = ExpressionKey.PARSE_JSON;
 
+  static _sqlNames = ['PARSE_JSON', 'JSON_PARSE'];
+
   static argTypes = {
     ...super.argTypes,
     this: true,
@@ -28405,6 +28407,8 @@ export type LengthExprArgs = {
 
 export class LengthExpr extends FuncExpr {
   key = ExpressionKey.LENGTH;
+
+  static _sqlNames = ['LENGTH', 'LEN', 'CHAR_LENGTH', 'CHARACTER_LENGTH'];
 
   /**
    * Defines the arguments (properties and child expressions) for Length expressions.
@@ -29026,6 +29030,8 @@ export type MD5ExprArgs = FuncExprArgs;
 export class MD5Expr extends FuncExpr {
   key = ExpressionKey.MD5;
 
+  static _sqlNames = ['MD5'];
+
   static argTypes = {
     ...super.argTypes,
   } satisfies RequiredMap<MD5ExprArgs>;
@@ -29035,8 +29041,6 @@ export class MD5Expr extends FuncExpr {
   constructor (args: MD5ExprArgs) {
     super(args);
   }
-
-  static _sqlNames = ['MD5'];
 
   static {
     this.register();
@@ -29052,6 +29056,7 @@ export class MD5DigestExpr extends FuncExpr {
   key = ExpressionKey.MD5_DIGEST;
 
   static isVarLenArgs = true;
+  static _sqlNames = ['MD5_DIGEST'];
 
   static argTypes = {
     ...super.argTypes,
@@ -29745,6 +29750,8 @@ export class PiExpr extends FuncExpr {
 export type PowExprArgs = BinaryExprArgs;
 export class PowExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.POW;
+
+  static _sqlNames = ['POWER', 'POW'];
 
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
