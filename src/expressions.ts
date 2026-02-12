@@ -11145,10 +11145,13 @@ export enum JSONColumnDefExprKind {
   VALUE = 'VALUE',
   QUERY = 'QUERY',
 }
-export type JSONColumnDefExprArgs = { kind?: JSONColumnDefExprKind;
+export type JSONColumnDefExprArgs = {
+  this?: Expression;
+  kind?: JSONColumnDefExprKind;
   path?: Expression;
   nestedSchema?: Expression;
-  ordinality?: boolean; } & BaseExpressionArgs;
+  ordinality?: boolean;
+} & BaseExpressionArgs;
 
 export class JSONColumnDefExpr extends Expression {
   key = ExpressionKey.JSON_COLUMN_DEF;
@@ -11159,6 +11162,7 @@ export class JSONColumnDefExpr extends Expression {
    */
   static argTypes = {
     ...super.argTypes,
+    this: false,
     kind: false,
     path: false,
     nestedSchema: false,
@@ -11169,6 +11173,10 @@ export class JSONColumnDefExpr extends Expression {
 
   constructor (args: JSONColumnDefExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   get $kind (): string | undefined {
@@ -11210,9 +11218,12 @@ export class JSONSchemaExpr extends Expression {
   }
 }
 
-export type JSONValueExprArgs = { path: Expression;
+export type JSONValueExprArgs = {
+  this: Expression;
+  path: Expression;
   returning?: Expression;
-  onCondition?: Expression; } & BaseExpressionArgs;
+  onCondition?: Expression;
+} & BaseExpressionArgs;
 
 export class JSONValueExpr extends Expression {
   key = ExpressionKey.JSON_VALUE;
@@ -11223,6 +11234,7 @@ export class JSONValueExpr extends Expression {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     path: true,
     returning: false,
     onCondition: false,
@@ -11232,6 +11244,10 @@ export class JSONValueExpr extends Expression {
 
   constructor (args: JSONValueExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $path (): Expression {
@@ -18083,7 +18099,7 @@ export class MergeExpr extends DMLExpr {
     super(args);
   }
 
-  get $using (): Expression {
+  get $using (): string {
     return this.args.using;
   }
 
@@ -18091,7 +18107,7 @@ export class MergeExpr extends DMLExpr {
     return this.args.on;
   }
 
-  get $usingCond (): Expression | undefined {
+  get $usingCond (): string | undefined {
     return this.args.usingCond;
   }
 
@@ -27196,6 +27212,7 @@ export class JSONSetExpr extends FuncExpr {
   key = ExpressionKey.JSON_SET;
 
   static isVarLenArgs = true;
+  static _sqlNames = ['JSON_SET'];
 
   static argTypes = {
     ...super.argTypes,
@@ -27222,11 +27239,17 @@ export class JSONSetExpr extends FuncExpr {
   }
 }
 
-export type JSONStripNullsExprArgs = { includeArrays?: Expression[];
-  removeEmpty?: Expression; } & FuncExprArgs;
+export type JSONStripNullsExprArgs = {
+  this: Expression;
+  expression?: Expression;
+  includeArrays?: Expression;
+  removeEmpty?: Expression;
+} & FuncExprArgs;
 
 export class JSONStripNullsExpr extends FuncExpr {
   key = ExpressionKey.JSON_STRIP_NULLS;
+
+  static _sqlNames = ['JSON_STRIP_NULLS'];
 
   /**
    * Defines the arguments (properties and child expressions) for JSONStripNulls expressions.
@@ -27234,6 +27257,8 @@ export class JSONStripNullsExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
+    expression: false,
     includeArrays: false,
     removeEmpty: false,
   } satisfies RequiredMap<JSONStripNullsExprArgs>;
@@ -27244,7 +27269,15 @@ export class JSONStripNullsExpr extends FuncExpr {
     super(args);
   }
 
-  get $includeArrays (): Expression[] | undefined {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  get $includeArrays (): Expression | undefined {
     return this.args.includeArrays;
   }
 
@@ -27299,6 +27332,7 @@ export class JSONRemoveExpr extends FuncExpr {
   key = ExpressionKey.JSON_REMOVE;
 
   static isVarLenArgs = true;
+  static _sqlNames = ['JSON_REMOVE'];
 
   static argTypes = {
     ...super.argTypes,
@@ -27325,10 +27359,13 @@ export class JSONRemoveExpr extends FuncExpr {
   }
 }
 
-export type JSONTableExprArgs = { schema: Expression;
+export type JSONTableExprArgs = {
+  this: Expression;
+  schema: Expression;
   path?: Expression;
   errorHandling?: Expression;
-  emptyHandling?: Expression; } & FuncExprArgs;
+  emptyHandling?: Expression;
+} & FuncExprArgs;
 
 export class JSONTableExpr extends FuncExpr {
   key = ExpressionKey.JSON_TABLE;
@@ -27339,6 +27376,7 @@ export class JSONTableExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     schema: true,
     path: false,
     errorHandling: false,
@@ -27349,6 +27387,10 @@ export class JSONTableExpr extends FuncExpr {
 
   constructor (args: JSONTableExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $schema (): Expression {
@@ -27380,6 +27422,8 @@ export type JSONTypeExprArgs = {
 export class JSONTypeExpr extends FuncExpr {
   key = ExpressionKey.JSON_TYPE;
 
+  static _sqlNames = ['JSON_TYPE'];
+
   static argTypes = {
     ...super.argTypes,
     this: true,
@@ -27405,9 +27449,12 @@ export class JSONTypeExpr extends FuncExpr {
   }
 }
 
-export type ObjectInsertExprArgs = { key: unknown;
-  value: string;
-  updateFlag?: Expression; } & FuncExprArgs;
+export type ObjectInsertExprArgs = {
+  this: Expression;
+  key: Expression;
+  value: Expression;
+  updateFlag?: Expression;
+} & FuncExprArgs;
 
 export class ObjectInsertExpr extends FuncExpr {
   key = ExpressionKey.OBJECT_INSERT;
@@ -27418,6 +27465,7 @@ export class ObjectInsertExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     key: true,
     value: true,
     updateFlag: false,
@@ -27429,11 +27477,15 @@ export class ObjectInsertExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $key (): Expression {
     return this.args.key;
   }
 
-  get $value (): string {
+  get $value (): Expression {
     return this.args.value;
   }
 
@@ -27490,6 +27542,8 @@ export type JSONBContainsExprArgs = BinaryExprArgs;
 export class JSONBContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS;
 
+  static _sqlNames = ['JSONB_CONTAINS'];
+
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
@@ -27543,6 +27597,8 @@ export type JSONBExistsExprArgs = {
 export class JSONBExistsExpr extends FuncExpr {
   key = ExpressionKey.JSONB_EXISTS;
 
+  static _sqlNames = ['JSONB_EXISTS'];
+
   static argTypes = {
     ...super.argTypes,
     this: true,
@@ -27586,8 +27642,9 @@ export class JSONBDeleteAtPathExpr extends multiInherit(BinaryExpr, FuncExpr) {
 }
 
 export type JSONExtractExprArgs = {
-  onlyJsonTypes?: Expression[];
-  variantExtract?: string;
+  onlyJsonTypes?: Expression;
+  expressions?: Expression[];
+  variantExtract?: Expression;
   jsonQuery?: Expression;
   option?: Expression;
   quote?: Expression;
@@ -27599,6 +27656,8 @@ export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSON_EXTRACT;
 
   static isVarLenArgs = true;
+  static _sqlNames = ['JSON_EXTRACT'];
+
   /**
    * Defines the arguments (properties and child expressions) for JSONExtract expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
@@ -27607,6 +27666,7 @@ export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     onlyJsonTypes: false,
+    expressions: false,
     variantExtract: false,
     jsonQuery: false,
     option: false,
@@ -27621,8 +27681,12 @@ export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
     super(args);
   }
 
-  get $onlyJsonTypes (): Expression[] | undefined {
+  get $onlyJsonTypes (): Expression | undefined {
     return this.args.onlyJsonTypes;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   get $variantExtract (): Expression | undefined {
