@@ -23717,6 +23717,8 @@ export class DayOfWeekIsoExpr extends FuncExpr {
   static {
     this.register();
   }
+
+  static sqlNames = ['DAYOFWEEK_ISO', 'ISODOW'];
 }
 
 export type DayOfMonthExprArgs = FuncExprArgs;
@@ -23993,6 +23995,8 @@ export class LastDayExpr extends FuncExpr {
   static {
     this.register();
   }
+
+  static sqlNames = ['LAST_DAY', 'LAST_DAY_OF_MONTH'];
 }
 
 export type PreviousDayExprArgs = BaseExpressionArgs;
@@ -24243,6 +24247,8 @@ export class TimestampDiffExpr extends FuncExpr {
   static {
     this.register();
   }
+
+  static sqlNames = ['TIMESTAMPDIFF', 'TIMESTAMP_DIFF'];
 }
 
 export type TimestampTruncExprArgs = { unit: Expression;
@@ -24474,6 +24480,8 @@ export class DateFromPartsExpr extends FuncExpr {
   static {
     this.register();
   }
+
+  static sqlNames = ['DATE_FROM_PARTS', 'DATEFROMPARTS'];
 }
 
 export type TimeFromPartsExprArgs = { hour: Expression;
@@ -24539,6 +24547,8 @@ export class TimeFromPartsExpr extends FuncExpr {
   static {
     this.register();
   }
+
+  static sqlNames = ['TIME_FROM_PARTS', 'TIMEFROMPARTS'];
 }
 
 export type DateStrToDateExprArgs = BaseExpressionArgs;
