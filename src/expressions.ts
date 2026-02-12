@@ -1017,7 +1017,7 @@ export enum ExpressionKey {
   ZIPF = 'zipf',
 }
 
-export type ExpressionValue = Expression | string | boolean | number | undefined;
+export type ExpressionValue = Expression | string | boolean | number | undefined | null;
 export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T[];
 
 /**
@@ -1030,7 +1030,7 @@ export interface BaseExpressionArgs {
   alias?: TableAliasExpr | IdentifierExpr | string;
   isString?: boolean;
   to?: DataTypeExpr;
-  [key: string]: ExpressionValueList | ExpressionValue;
+  [key: string]: ExpressionValueList | ExpressionValue | undefined;
 }
 
 /**
@@ -16829,7 +16829,7 @@ export class NullExpr extends ConditionExpr {
   /**
    * Converts this to a Python null value.
    */
-  toPy (): null {
+  toValue (): null {
     return null;
   }
 }
@@ -17487,12 +17487,17 @@ export class ValuesExpr extends UDTFExpr {
   }
 }
 
-export type SubqueryPredicateExprArgs = BaseExpressionArgs;
+export type SubqueryPredicateExprArgs = PredicateExprArgs;
+
 export class SubqueryPredicateExpr extends PredicateExpr {
   key = ExpressionKey.SUBQUERY_PREDICATE;
-  static argTypes = {} satisfies RequiredMap<SubqueryPredicateExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<SubqueryPredicateExprArgs>;
 
   declare args: SubqueryPredicateExprArgs;
+
   constructor (args: SubqueryPredicateExprArgs) {
     super(args);
   }
@@ -26172,23 +26177,33 @@ export class NextValueForExpr extends FuncExpr {
   }
 }
 
-export type AllExprArgs = BaseExpressionArgs;
+export type AllExprArgs = SubqueryPredicateExprArgs;
+
 export class AllExpr extends SubqueryPredicateExpr {
   key = ExpressionKey.ALL;
-  static argTypes = {} satisfies RequiredMap<AllExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AllExprArgs>;
 
   declare args: AllExprArgs;
+
   constructor (args: AllExprArgs) {
     super(args);
   }
 }
 
-export type AnyExprArgs = BaseExpressionArgs;
+export type AnyExprArgs = SubqueryPredicateExprArgs;
+
 export class AnyExpr extends SubqueryPredicateExpr {
   key = ExpressionKey.ANY;
-  static argTypes = {} satisfies RequiredMap<AnyExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AnyExprArgs>;
 
   declare args: AnyExprArgs;
+
   constructor (args: AnyExprArgs) {
     super(args);
   }
