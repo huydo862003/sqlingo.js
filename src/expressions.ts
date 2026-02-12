@@ -24297,7 +24297,9 @@ export class TimestampExpr extends FuncExpr {
   }
 }
 
-export type TimestampAddExprArgs = { unit?: Expression } & FuncExprArgs;
+export type TimestampAddExprArgs = { this: Expression;
+  expression: Expression;
+  unit?: Expression; } & FuncExprArgs;
 
 export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_ADD;
@@ -24305,6 +24307,8 @@ export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
+    expression: true,
     unit: false,
   } satisfies RequiredMap<TimestampAddExprArgs>;
 
@@ -24314,6 +24318,14 @@ export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
@@ -24323,7 +24335,9 @@ export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TimestampSubExprArgs = { unit?: Expression } & FuncExprArgs;
+export type TimestampSubExprArgs = { this: Expression;
+  expression: Expression;
+  unit?: Expression; } & FuncExprArgs;
 
 export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_SUB;
@@ -24331,6 +24345,8 @@ export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
+    expression: true,
     unit: false,
   } satisfies RequiredMap<TimestampSubExprArgs>;
 
@@ -24340,6 +24356,14 @@ export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
@@ -24349,7 +24373,9 @@ export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TimestampDiffExprArgs = { unit?: Expression } & FuncExprArgs;
+export type TimestampDiffExprArgs = { this: Expression;
+  expression: Expression;
+  unit?: Expression; } & FuncExprArgs;
 
 export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_DIFF;
@@ -24357,6 +24383,8 @@ export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
+    expression: true,
     unit: false,
   } satisfies RequiredMap<TimestampDiffExprArgs>;
 
@@ -24364,6 +24392,14 @@ export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
   constructor (args: TimestampDiffExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $unit (): Expression | undefined {
@@ -24377,7 +24413,8 @@ export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static sqlNames = ['TIMESTAMPDIFF', 'TIMESTAMP_DIFF'];
 }
 
-export type TimestampTruncExprArgs = { unit: Expression;
+export type TimestampTruncExprArgs = { this: Expression;
+  unit: Expression;
   zone?: Expression;
   inputTypePreserved?: DataTypeExpr; } & FuncExprArgs;
 
@@ -24391,6 +24428,7 @@ export class TimestampTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
     unit: true,
     zone: false,
     inputTypePreserved: false,
@@ -24400,6 +24438,10 @@ export class TimestampTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
   constructor (args: TimestampTruncExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $unit (): Expression {
