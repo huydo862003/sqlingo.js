@@ -10934,8 +10934,11 @@ export class OverflowTruncateBehaviorExpr extends Expression {
   }
 }
 
-export type JSONExprArgs = { with?: Expression;
-  unique?: boolean; } & BaseExpressionArgs;
+export type JSONExprArgs = {
+  this?: Expression;
+  with?: Expression;
+  unique?: boolean;
+} & BaseExpressionArgs;
 
 export class JSONExpr extends Expression {
   key = ExpressionKey.JSON;
@@ -10946,6 +10949,7 @@ export class JSONExpr extends Expression {
    */
   static argTypes = {
     ...super.argTypes,
+    this: false,
     with: false,
     unique: false,
   } satisfies RequiredMap<JSONExprArgs>;
@@ -10954,6 +10958,10 @@ export class JSONExpr extends Expression {
 
   constructor (args: JSONExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   get $with (): Expression | undefined {
@@ -11102,14 +11110,25 @@ export class JSONColumnDefExpr extends Expression {
   }
 }
 
-export type JSONSchemaExprArgs = BaseExpressionArgs;
+export type JSONSchemaExprArgs = {
+  expressions: Expression[];
+} & BaseExpressionArgs;
+
 export class JSONSchemaExpr extends Expression {
   key = ExpressionKey.JSON_SCHEMA;
-  static argTypes = {} satisfies RequiredMap<JSONSchemaExprArgs>;
+
+  static argTypes = {
+    expressions: true,
+  } satisfies RequiredMap<JSONSchemaExprArgs>;
 
   declare args: JSONSchemaExprArgs;
+
   constructor (args: JSONSchemaExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
   }
 }
 
@@ -26892,17 +26911,33 @@ export class JSONExistsExpr extends FuncExpr {
   }
 }
 
-export type JSONSetExprArgs = FuncExprArgs;
+export type JSONSetExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+} & FuncExprArgs;
 
 export class JSONSetExpr extends FuncExpr {
   key = ExpressionKey.JSON_SET;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<JSONSetExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: true,
+  } satisfies RequiredMap<JSONSetExprArgs>;
 
   declare args: JSONSetExprArgs;
 
   constructor (args: JSONSetExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
   }
 
   static {
@@ -26949,12 +26984,19 @@ export class JSONStripNullsExpr extends FuncExpr {
   static sqlNames = ['JSON_STRIP_NULLS'];
 }
 
-export type JSONValueArrayExprArgs = FuncExprArgs;
+export type JSONValueArrayExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & FuncExprArgs;
 
 export class JSONValueArrayExpr extends FuncExpr {
   key = ExpressionKey.JSON_VALUE_ARRAY;
 
-  static argTypes = {} satisfies RequiredMap<JSONValueArrayExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<JSONValueArrayExprArgs>;
 
   declare args: JSONValueArrayExprArgs;
 
@@ -26962,22 +27004,46 @@ export class JSONValueArrayExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type JSONRemoveExprArgs = FuncExprArgs;
+export type JSONRemoveExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+} & FuncExprArgs;
 
 export class JSONRemoveExpr extends FuncExpr {
   key = ExpressionKey.JSON_REMOVE;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<JSONRemoveExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: true,
+  } satisfies RequiredMap<JSONRemoveExprArgs>;
 
   declare args: JSONRemoveExprArgs;
 
   constructor (args: JSONRemoveExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
   }
 
   static {
