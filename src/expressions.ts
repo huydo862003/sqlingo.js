@@ -10311,29 +10311,41 @@ export class UsingDataExpr extends Expression {
   }
 }
 
-export type AddConstraintExprArgs = BaseExpressionArgs;
+export type AddConstraintExprArgs = {
+  expressions: Expression[];
+} & BaseExpressionArgs;
+
 export class AddConstraintExpr extends Expression {
   key = ExpressionKey.ADD_CONSTRAINT;
-  static argTypes = {} satisfies RequiredMap<AddConstraintExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+  } satisfies RequiredMap<AddConstraintExprArgs>;
 
   declare args: AddConstraintExprArgs;
+
   constructor (args: AddConstraintExprArgs) {
     super(args);
   }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
 }
 
-export type AddPartitionExprArgs = { exists?: Expression;
-  location?: Expression; } & BaseExpressionArgs;
+export type AddPartitionExprArgs = {
+  this: Expression;
+  exists?: Expression;
+  location?: Expression;
+} & BaseExpressionArgs;
 
 export class AddPartitionExpr extends Expression {
   key = ExpressionKey.ADD_PARTITION;
 
-  /**
-   * Defines the arguments (properties and child expressions) for AddPartition expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     exists: false,
     location: false,
   } satisfies RequiredMap<AddPartitionExprArgs>;
@@ -10344,7 +10356,11 @@ export class AddPartitionExpr extends Expression {
     super(args);
   }
 
-  get $exists (): Expression[] | undefined {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $exists (): Expression | undefined {
     return this.args.exists;
   }
 
@@ -10353,23 +10369,48 @@ export class AddPartitionExpr extends Expression {
   }
 }
 
-export type AttachOptionExprArgs = BaseExpressionArgs;
+export type AttachOptionExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & BaseExpressionArgs;
+
 export class AttachOptionExpr extends Expression {
   key = ExpressionKey.ATTACH_OPTION;
-  static argTypes = {} satisfies RequiredMap<AttachOptionExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<AttachOptionExprArgs>;
 
   declare args: AttachOptionExprArgs;
+
   constructor (args: AttachOptionExprArgs) {
     super(args);
   }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
 }
 
-export type DropPartitionExprArgs = { exists?: Expression } & BaseExpressionArgs;
+export type DropPartitionExprArgs = {
+  expressions: Expression[];
+  exists?: Expression;
+} & BaseExpressionArgs;
 
 export class DropPartitionExpr extends Expression {
   key = ExpressionKey.DROP_PARTITION;
 
-  static argTypes = { exists: false } satisfies RequiredMap<DropPartitionExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+    exists: false,
+  } satisfies RequiredMap<DropPartitionExprArgs>;
 
   declare args: DropPartitionExprArgs;
 
@@ -10377,7 +10418,11 @@ export class DropPartitionExpr extends Expression {
     super(args);
   }
 
-  get $exists (): Expression[] | undefined {
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
+  get $exists (): Expression | undefined {
     return this.args.exists;
   }
 }
