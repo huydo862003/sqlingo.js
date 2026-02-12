@@ -22134,12 +22134,17 @@ export class CollateExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type CollationExprArgs = BaseExpressionArgs;
+export type CollationExprArgs = FuncExprArgs;
+
 export class CollationExpr extends FuncExpr {
   key = ExpressionKey.COLLATION;
-  static argTypes = {} satisfies RequiredMap<CollationExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<CollationExprArgs>;
 
   declare args: CollationExprArgs;
+
   constructor (args: CollationExprArgs) {
     super(args);
   }
@@ -22361,12 +22366,17 @@ export class ContainsExpr extends FuncExpr {
   }
 }
 
-export type ConnectByRootExprArgs = BaseExpressionArgs;
+export type ConnectByRootExprArgs = FuncExprArgs;
+
 export class ConnectByRootExpr extends FuncExpr {
   key = ExpressionKey.CONNECT_BY_ROOT;
-  static argTypes = {} satisfies RequiredMap<ConnectByRootExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ConnectByRootExprArgs>;
 
   declare args: ConnectByRootExprArgs;
+
   constructor (args: ConnectByRootExprArgs) {
     super(args);
   }
@@ -22376,10 +22386,14 @@ export class ConnectByRootExpr extends FuncExpr {
   }
 }
 
-export type CbrtExprArgs = BaseExpressionArgs;
+export type CbrtExprArgs = FuncExprArgs;
+
 export class CbrtExpr extends FuncExpr {
   key = ExpressionKey.CBRT;
-  static argTypes = {} satisfies RequiredMap<CbrtExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<CbrtExprArgs>;
 
   declare args: CbrtExprArgs;
   constructor (args: CbrtExprArgs) {
@@ -22391,7 +22405,7 @@ export class CbrtExpr extends FuncExpr {
   }
 }
 
-export type CurrentAccountExprArgs = BaseExpressionArgs;
+export type CurrentAccountExprArgs = FuncExprArgs;
 export class CurrentAccountExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ACCOUNT;
   static argTypes = {} satisfies RequiredMap<CurrentAccountExprArgs>;
@@ -22406,7 +22420,7 @@ export class CurrentAccountExpr extends FuncExpr {
   }
 }
 
-export type CurrentAccountNameExprArgs = BaseExpressionArgs;
+export type CurrentAccountNameExprArgs = FuncExprArgs;
 export class CurrentAccountNameExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ACCOUNT_NAME;
   static argTypes = {} satisfies RequiredMap<CurrentAccountNameExprArgs>;
@@ -22421,7 +22435,7 @@ export class CurrentAccountNameExpr extends FuncExpr {
   }
 }
 
-export type CurrentAvailableRolesExprArgs = BaseExpressionArgs;
+export type CurrentAvailableRolesExprArgs = FuncExprArgs;
 export class CurrentAvailableRolesExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_AVAILABLE_ROLES;
   static argTypes = {};
@@ -22436,7 +22450,7 @@ export class CurrentAvailableRolesExpr extends FuncExpr {
   }
 }
 
-export type CurrentClientExprArgs = BaseExpressionArgs;
+export type CurrentClientExprArgs = FuncExprArgs;
 export class CurrentClientExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_CLIENT;
   static argTypes = {} satisfies RequiredMap<CurrentClientExprArgs>;
@@ -22451,7 +22465,7 @@ export class CurrentClientExpr extends FuncExpr {
   }
 }
 
-export type CurrentIpAddressExprArgs = BaseExpressionArgs;
+export type CurrentIpAddressExprArgs = FuncExprArgs;
 export class CurrentIpAddressExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_IP_ADDRESS;
   static argTypes = {} satisfies RequiredMap<CurrentIpAddressExprArgs>;
@@ -22466,12 +22480,15 @@ export class CurrentIpAddressExpr extends FuncExpr {
   }
 }
 
-export type CurrentDatabaseExprArgs = BaseExpressionArgs;
+export type CurrentDatabaseExprArgs = FuncExprArgs;
+
 export class CurrentDatabaseExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_DATABASE;
+
   static argTypes = {} satisfies RequiredMap<CurrentDatabaseExprArgs>;
 
   declare args: CurrentDatabaseExprArgs;
+
   constructor (args: CurrentDatabaseExprArgs) {
     super(args);
   }
@@ -22507,7 +22524,7 @@ export class CurrentSchemasExpr extends FuncExpr {
   }
 }
 
-export type CurrentSecondaryRolesExprArgs = BaseExpressionArgs;
+export type CurrentSecondaryRolesExprArgs = FuncExprArgs;
 export class CurrentSecondaryRolesExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SECONDARY_ROLES;
   static argTypes = {};
@@ -22522,7 +22539,7 @@ export class CurrentSecondaryRolesExpr extends FuncExpr {
   }
 }
 
-export type CurrentSessionExprArgs = BaseExpressionArgs;
+export type CurrentSessionExprArgs = FuncExprArgs;
 export class CurrentSessionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SESSION;
   static argTypes = {} satisfies RequiredMap<CurrentSessionExprArgs>;
@@ -22537,7 +22554,7 @@ export class CurrentSessionExpr extends FuncExpr {
   }
 }
 
-export type CurrentStatementExprArgs = BaseExpressionArgs;
+export type CurrentStatementExprArgs = FuncExprArgs;
 export class CurrentStatementExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_STATEMENT;
   static argTypes = {} satisfies RequiredMap<CurrentStatementExprArgs>;
@@ -22552,7 +22569,7 @@ export class CurrentStatementExpr extends FuncExpr {
   }
 }
 
-export type CurrentVersionExprArgs = BaseExpressionArgs;
+export type CurrentVersionExprArgs = FuncExprArgs;
 export class CurrentVersionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_VERSION;
   static argTypes = {} satisfies RequiredMap<CurrentVersionExprArgs>;
@@ -22567,7 +22584,7 @@ export class CurrentVersionExpr extends FuncExpr {
   }
 }
 
-export type CurrentTransactionExprArgs = BaseExpressionArgs;
+export type CurrentTransactionExprArgs = FuncExprArgs;
 export class CurrentTransactionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TRANSACTION;
   static argTypes = {} satisfies RequiredMap<CurrentTransactionExprArgs>;
@@ -22582,7 +22599,7 @@ export class CurrentTransactionExpr extends FuncExpr {
   }
 }
 
-export type CurrentWarehouseExprArgs = BaseExpressionArgs;
+export type CurrentWarehouseExprArgs = FuncExprArgs;
 export class CurrentWarehouseExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_WAREHOUSE;
   static argTypes = {} satisfies RequiredMap<CurrentWarehouseExprArgs>;
@@ -27745,7 +27762,7 @@ export class RegexpInstrExpr extends FuncExpr {
   }
 }
 
-export type RegexpSplitExprArgs = { limit?: number | Expression } & BaseExpressionArgs;
+export type RegexpSplitExprArgs = { limit?: number | Expression } & FuncExprArgs;
 
 export class RegexpSplitExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_SPLIT;
@@ -27758,7 +27775,7 @@ export class RegexpSplitExpr extends FuncExpr {
     super(args);
   }
 
-  get $limit (): Expression | undefined {
+  get $limit (): number | Expression | undefined {
     return this.args.limit;
   }
 
@@ -27767,8 +27784,10 @@ export class RegexpSplitExpr extends FuncExpr {
   }
 }
 
-export type RegexpCountExprArgs = { position?: Expression;
-  parameters?: Expression[]; } & BaseExpressionArgs;
+export type RegexpCountExprArgs = {
+  position?: Expression;
+  parameters?: Expression[];
+} & BaseExpressionArgs;
 
 export class RegexpCountExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_COUNT;
@@ -31073,12 +31092,19 @@ export class JSONCastExpr extends CastExpr {
   }
 }
 
-export type ConcatWsExprArgs = BaseExpressionArgs;
+export type ConcatWsExprArgs = ConcatExprArgs;
+
 export class ConcatWsExpr extends ConcatExpr {
   key = ExpressionKey.CONCAT_WS;
-  static argTypes = {} satisfies RequiredMap<ConcatWsExprArgs>;
+
+  static sqlNames = ['CONCAT_WS'];
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ConcatWsExprArgs>;
 
   declare args: ConcatWsExprArgs;
+
   constructor (args: ConcatWsExprArgs) {
     super(args);
   }
