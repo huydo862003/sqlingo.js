@@ -16907,14 +16907,40 @@ export class ObjectIdentifierExpr extends DataTypeExpr {
   }
 }
 
-export type BinaryExprArgs = BaseExpressionArgs;
-export class BinaryExpr extends Expression {
+export type BinaryExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & ConditionExprArgs;
+
+export class BinaryExpr extends ConditionExpr {
   key = ExpressionKey.BINARY;
-  static argTypes = {} satisfies RequiredMap<BinaryExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<BinaryExprArgs>;
 
   declare args: BinaryExprArgs;
+
   constructor (args: BinaryExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  get left (): Expression {
+    return this.args.this;
+  }
+
+  get right (): Expression {
+    return this.args.expression;
   }
 }
 
@@ -17529,12 +17555,21 @@ export class ConnectorExpr extends BinaryExpr {
   }
 }
 
-export type BitwiseAndExprArgs = { padside?: Expression } & BaseExpressionArgs;
+export type BitwiseAndExprArgs = {
+  this: Expression;
+  expression: Expression;
+  padside?: Expression;
+} & BinaryExprArgs;
 
 export class BitwiseAndExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_AND;
 
-  static argTypes = { padside: false } satisfies RequiredMap<BitwiseAndExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    padside: false,
+  } satisfies RequiredMap<BitwiseAndExprArgs>;
 
   declare args: BitwiseAndExprArgs;
 
@@ -17547,12 +17582,21 @@ export class BitwiseAndExpr extends BinaryExpr {
   }
 }
 
-export type BitwiseLeftShiftExprArgs = { requiresInt128?: Expression } & BaseExpressionArgs;
+export type BitwiseLeftShiftExprArgs = {
+  this: Expression;
+  expression: Expression;
+  requiresInt128?: Expression;
+} & BinaryExprArgs;
 
 export class BitwiseLeftShiftExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_LEFT_SHIFT;
 
-  static argTypes = { requiresInt128: false } satisfies RequiredMap<BitwiseLeftShiftExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    requiresInt128: false,
+  } satisfies RequiredMap<BitwiseLeftShiftExprArgs>;
 
   declare args: BitwiseLeftShiftExprArgs;
 
@@ -17565,12 +17609,21 @@ export class BitwiseLeftShiftExpr extends BinaryExpr {
   }
 }
 
-export type BitwiseOrExprArgs = { padside?: Expression } & BaseExpressionArgs;
+export type BitwiseOrExprArgs = {
+  this: Expression;
+  expression: Expression;
+  padside?: Expression;
+} & BinaryExprArgs;
 
 export class BitwiseOrExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_OR;
 
-  static argTypes = { padside: false } satisfies RequiredMap<BitwiseOrExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    padside: false,
+  } satisfies RequiredMap<BitwiseOrExprArgs>;
 
   declare args: BitwiseOrExprArgs;
 
@@ -17583,12 +17636,21 @@ export class BitwiseOrExpr extends BinaryExpr {
   }
 }
 
-export type BitwiseRightShiftExprArgs = { requiresInt128?: Expression } & BaseExpressionArgs;
+export type BitwiseRightShiftExprArgs = {
+  this: Expression;
+  expression: Expression;
+  requiresInt128?: Expression;
+} & BinaryExprArgs;
 
 export class BitwiseRightShiftExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_RIGHT_SHIFT;
 
-  static argTypes = { requiresInt128: false } satisfies RequiredMap<BitwiseRightShiftExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    requiresInt128: false,
+  } satisfies RequiredMap<BitwiseRightShiftExprArgs>;
 
   declare args: BitwiseRightShiftExprArgs;
 
@@ -17601,12 +17663,21 @@ export class BitwiseRightShiftExpr extends BinaryExpr {
   }
 }
 
-export type BitwiseXorExprArgs = { padside?: Expression } & BaseExpressionArgs;
+export type BitwiseXorExprArgs = {
+  this: Expression;
+  expression: Expression;
+  padside?: Expression;
+} & BinaryExprArgs;
 
 export class BitwiseXorExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_XOR;
 
-  static argTypes = { padside: false } satisfies RequiredMap<BitwiseXorExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    padside: false,
+  } satisfies RequiredMap<BitwiseXorExprArgs>;
 
   declare args: BitwiseXorExprArgs;
 
@@ -17619,18 +17690,20 @@ export class BitwiseXorExpr extends BinaryExpr {
   }
 }
 
-export type DivExprArgs = { typed?: DataTypeExpr;
-  safe?: boolean; } & BaseExpressionArgs;
+export type DivExprArgs = {
+  this: Expression;
+  expression: Expression;
+  typed?: DataTypeExpr;
+  safe?: boolean;
+} & BinaryExprArgs;
 
 export class DivExpr extends BinaryExpr {
   key = ExpressionKey.DIV;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Div expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
+    expression: true,
     typed: false,
     safe: false,
   } satisfies RequiredMap<DivExprArgs>;
