@@ -26116,17 +26116,28 @@ export class HexDecodeStringExpr extends FuncExpr {
   }
 }
 
-export type HexEncodeExprArgs = { case?: Expression } & FuncExprArgs;
+export type HexEncodeExprArgs = {
+  this: Expression;
+  case?: Expression;
+} & FuncExprArgs;
 
 export class HexEncodeExpr extends FuncExpr {
   key = ExpressionKey.HEX_ENCODE;
 
-  static argTypes = { case: false } satisfies RequiredMap<HexEncodeExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    case: false,
+  } satisfies RequiredMap<HexEncodeExprArgs>;
 
   declare args: HexEncodeExprArgs;
 
   constructor (args: HexEncodeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $case (): Expression | undefined {
@@ -26198,17 +26209,28 @@ export class SecondExpr extends FuncExpr {
   }
 }
 
-export type CompressExprArgs = { method?: string } & FuncExprArgs;
+export type CompressExprArgs = {
+  this: Expression;
+  method?: string;
+} & FuncExprArgs;
 
 export class CompressExpr extends FuncExpr {
   key = ExpressionKey.COMPRESS;
 
-  static argTypes = { method: false } satisfies RequiredMap<CompressExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    method: false,
+  } satisfies RequiredMap<CompressExprArgs>;
 
   declare args: CompressExprArgs;
 
   constructor (args: CompressExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $method (): Expression | undefined {
@@ -26220,17 +26242,28 @@ export class CompressExpr extends FuncExpr {
   }
 }
 
-export type DecompressBinaryExprArgs = { method: string } & FuncExprArgs;
+export type DecompressBinaryExprArgs = {
+  this: Expression;
+  method: string;
+} & FuncExprArgs;
 
 export class DecompressBinaryExpr extends FuncExpr {
   key = ExpressionKey.DECOMPRESS_BINARY;
 
-  static argTypes = { method: true } satisfies RequiredMap<DecompressBinaryExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    method: true,
+  } satisfies RequiredMap<DecompressBinaryExprArgs>;
 
   declare args: DecompressBinaryExprArgs;
 
   constructor (args: DecompressBinaryExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $method (): Expression {
@@ -26242,17 +26275,28 @@ export class DecompressBinaryExpr extends FuncExpr {
   }
 }
 
-export type DecompressStringExprArgs = { method: string } & FuncExprArgs;
+export type DecompressStringExprArgs = {
+  this: Expression;
+  method: string;
+} & FuncExprArgs;
 
 export class DecompressStringExpr extends FuncExpr {
   key = ExpressionKey.DECOMPRESS_STRING;
 
-  static argTypes = { method: true } satisfies RequiredMap<DecompressStringExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    method: true,
+  } satisfies RequiredMap<DecompressStringExprArgs>;
 
   declare args: DecompressStringExprArgs;
 
   constructor (args: DecompressStringExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $method (): Expression {
@@ -32803,8 +32847,11 @@ export class PosexplodeExpr extends ExplodeExpr {
   }
 }
 
-export type GroupConcatExprArgs = { separator?: Expression;
-  onOverflow?: Expression; } & AggFuncExprArgs;
+export type GroupConcatExprArgs = {
+  this: Expression;
+  separator?: Expression;
+  onOverflow?: Expression;
+} & AggFuncExprArgs;
 
 export class GroupConcatExpr extends AggFuncExpr {
   key = ExpressionKey.GROUP_CONCAT;
@@ -32815,6 +32862,7 @@ export class GroupConcatExpr extends AggFuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     separator: false,
     onOverflow: false,
   } satisfies RequiredMap<GroupConcatExprArgs>;
@@ -32823,6 +32871,10 @@ export class GroupConcatExpr extends AggFuncExpr {
 
   constructor (args: GroupConcatExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $separator (): Expression | undefined {
