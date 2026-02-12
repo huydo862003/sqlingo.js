@@ -10427,17 +10427,28 @@ export class DropPartitionExpr extends Expression {
   }
 }
 
-export type ReplacePartitionExprArgs = { source: Expression } & BaseExpressionArgs;
+export type ReplacePartitionExprArgs = {
+  expression: Expression;
+  source: Expression;
+} & BaseExpressionArgs;
 
 export class ReplacePartitionExpr extends Expression {
   key = ExpressionKey.REPLACE_PARTITION;
 
-  static argTypes = { source: true } satisfies RequiredMap<ReplacePartitionExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    expression: true,
+    source: true,
+  } satisfies RequiredMap<ReplacePartitionExprArgs>;
 
   declare args: ReplacePartitionExprArgs;
 
   constructor (args: ReplacePartitionExprArgs) {
     super(args);
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $source (): Expression {
@@ -17587,23 +17598,33 @@ export class SubqueryPredicateExpr extends PredicateExpr {
   }
 }
 
-export type AddExprArgs = BaseExpressionArgs;
+export type AddExprArgs = BinaryExprArgs;
+
 export class AddExpr extends BinaryExpr {
   key = ExpressionKey.ADD;
-  static argTypes = {} satisfies RequiredMap<AddExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AddExprArgs>;
 
   declare args: AddExprArgs;
+
   constructor (args: AddExprArgs) {
     super(args);
   }
 }
 
-export type ConnectorExprArgs = BaseExpressionArgs;
+export type ConnectorExprArgs = BinaryExprArgs;
+
 export class ConnectorExpr extends BinaryExpr {
   key = ExpressionKey.CONNECTOR;
-  static argTypes = {} satisfies RequiredMap<ConnectorExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ConnectorExprArgs>;
 
   declare args: ConnectorExprArgs;
+
   constructor (args: ConnectorExprArgs) {
     super(args);
   }
