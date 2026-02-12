@@ -10677,12 +10677,19 @@ export class FormatPhraseExpr extends Expression {
   }
 }
 
-export type DistinctExprArgs = { on?: Expression } & BaseExpressionArgs;
+export type DistinctExprArgs = {
+  expressions?: Expression[];
+  on?: Expression;
+} & BaseExpressionArgs;
 
 export class DistinctExpr extends Expression {
   key = ExpressionKey.DISTINCT;
 
-  static argTypes = { on: false } satisfies RequiredMap<DistinctExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    expressions: false,
+    on: false,
+  } satisfies RequiredMap<DistinctExprArgs>;
 
   declare args: DistinctExprArgs;
 
@@ -10690,33 +10697,102 @@ export class DistinctExpr extends Expression {
     super(args);
   }
 
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
   get $on (): Expression | undefined {
     return this.args.on;
   }
 }
 
-export type ForInExprArgs = BaseExpressionArgs;
+export type ForInExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
+
+/**
+ * https://cloud.google.com/bigquery/docs/reference/standard-sql/procedural-language#for-in
+ */
 export class ForInExpr extends Expression {
   key = ExpressionKey.FOR_IN;
-  static argTypes = {} satisfies RequiredMap<ForInExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<ForInExprArgs>;
 
   declare args: ForInExprArgs;
+
   constructor (args: ForInExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 }
 
 export type TimeUnitExprArgs = { unit?: Expression } & BaseExpressionArgs;
 
+/**
+ * Automatically converts unit arg into a var.
+ */
 export class TimeUnitExpr extends Expression {
   key = ExpressionKey.TIME_UNIT;
 
-  static argTypes = { unit: false } satisfies RequiredMap<TimeUnitExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    unit: false,
+  } satisfies RequiredMap<TimeUnitExprArgs>;
+
+  static UNABBREVIATED_UNIT_NAME: Record<string, string> = {
+    D: 'DAY',
+    H: 'HOUR',
+    M: 'MINUTE',
+    MS: 'MILLISECOND',
+    NS: 'NANOSECOND',
+    Q: 'QUARTER',
+    S: 'SECOND',
+    US: 'MICROSECOND',
+    W: 'WEEK',
+    Y: 'YEAR',
+  };
 
   declare args: TimeUnitExprArgs;
 
   constructor (args: TimeUnitExprArgs) {
+    const unit = args.unit;
+
+    if (
+      unit
+      && (unit instanceof VarExpr || unit instanceof ColumnExpr || unit instanceof LiteralExpr)
+      && !(unit instanceof ColumnExpr && unit.parts.length !== 1)
+    ) {
+      args.unit = new VarExpr({
+        this: (TimeUnitExpr.UNABBREVIATED_UNIT_NAME[unit.name] || unit.name).toUpperCase(),
+      });
+    } else if (unit instanceof WeekExpr) {
+      const thisArg = unit.args.this;
+      if (thisArg) {
+        unit.set('this', new VarExpr({ this: thisArg.name.toUpperCase() }));
+      }
+    }
+
     super(args);
+  }
+
+  get unit (): VarExpr | IntervalSpanExpr | undefined {
+    const unit = this.args.unit;
+    if (unit instanceof VarExpr || unit instanceof IntervalSpanExpr) {
+      return unit;
+    }
+    return undefined;
   }
 
   get $unit (): Expression | undefined {
@@ -18595,20 +18671,22 @@ export class BetweenExpr extends PredicateExpr {
   }
 }
 
-export type InExprArgs = { query?: Expression;
+export type InExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+  query?: Expression;
   unnest?: UnnestExpr;
   field?: Expression;
-  isGlobal?: Expression; } & BaseExpressionArgs;
+  isGlobal?: Expression;
+} & PredicateExprArgs;
 
 export class InExpr extends PredicateExpr {
   key = ExpressionKey.IN;
 
-  /**
-   * Defines the arguments (properties and child expressions) for In expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
+    expressions: false,
     query: false,
     unnest: false,
     field: false,
@@ -18621,11 +18699,19 @@ export class InExpr extends PredicateExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
   get $query (): Expression | undefined {
     return this.args.query;
   }
 
-  get $unnest (): Expression | undefined {
+  get $unnest (): UnnestExpr | undefined {
     return this.args.unnest;
   }
 
