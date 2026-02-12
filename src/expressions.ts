@@ -20824,8 +20824,8 @@ export type GeneratorExprArgs = {
 export class GeneratorExpr extends multiInherit(FuncExpr, UDTFExpr) {
   key = ExpressionKey.GENERATOR;
 
-  // @ts-expect-error - super.argTypes not accessible in multiInherit classes
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     rowcount: false,
     timelimit: false,
@@ -21219,8 +21219,8 @@ export class ArrayContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   static _sqlNames = ['ARRAY_CONTAINS', 'ARRAY_HAS'];
 
-  // @ts-expect-error - super.argTypes not accessible in multiInherit classes
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
@@ -21260,8 +21260,8 @@ export class ArrayContainsAllExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   static _sqlNames = ['ARRAY_CONTAINS_ALL', 'ARRAY_HAS_ALL'];
 
-  // @ts-expect-error - super.argTypes not accessible in multiInherit classes
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
@@ -21667,8 +21667,8 @@ export type ArrayOverlapsExprArgs = {
 export class ArrayOverlapsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.ARRAY_OVERLAPS;
 
-  // @ts-expect-error - super.argTypes not accessible in multiInherit classes
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
