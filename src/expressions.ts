@@ -27756,6 +27756,8 @@ export class JSONExtractArrayExpr extends FuncExpr {
 }
 
 export type JSONExtractScalarExprArgs = {
+  this: Expression;
+  expression: Expression;
   onlyJsonTypes?: Expression;
   expressions?: Expression[];
   jsonType?: Expression;
@@ -27826,7 +27828,11 @@ export class JSONBExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type JSONBExtractScalarExprArgs = { jsonType?: Expression } & BinaryExprArgs;
+export type JSONBExtractScalarExprArgs = {
+  this: Expression;
+  expression: Expression;
+  jsonType?: Expression;
+} & BinaryExprArgs;
 
 export class JSONBExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_EXTRACT_SCALAR;
@@ -27947,7 +27953,11 @@ export class JSONArrayAppendExpr extends FuncExpr {
   }
 }
 
-export type JSONArrayContainsExprArgs = { jsonType?: Expression } & BinaryExprArgs;
+export type JSONArrayContainsExprArgs = {
+  this: Expression;
+  jsonType?: Expression;
+  expression: Expression;
+} & BinaryExprArgs;
 
 export class JSONArrayContainsExpr extends multiInherit(BinaryExpr, PredicateExpr, FuncExpr) {
   key = ExpressionKey.JSON_ARRAY_CONTAINS;
@@ -28087,7 +28097,7 @@ export class ParseJSONExpr extends FuncExpr {
     return this.args.expression;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 
@@ -28132,7 +28142,7 @@ export class ParseUrlExpr extends FuncExpr {
     return this.args.partToExtract;
   }
 
-  get $key (): Expression | undefined {
+  get $key (): unknown {
     return this.args.key;
   }
 
@@ -30242,7 +30252,11 @@ export class RegexpReplaceExpr extends FuncExpr {
   }
 }
 
-export type RegexpLikeExprArgs = { flag?: Expression } & BinaryExprArgs;
+export type RegexpLikeExprArgs = {
+  this: Expression;
+  expression: Expression;
+  flag?: Expression;
+} & BinaryExprArgs;
 
 export class RegexpLikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.REGEXP_LIKE;
@@ -30274,7 +30288,11 @@ export class RegexpLikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type RegexpILikeExprArgs = { flag?: Expression } & BinaryExprArgs;
+export type RegexpILikeExprArgs = {
+  this: Expression;
+  expression: Expression;
+  flag?: Expression;
+} & BinaryExprArgs;
 
 export class RegexpILikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.REGEXP_ILIKE;
@@ -30306,7 +30324,11 @@ export class RegexpILikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type RegexpFullMatchExprArgs = { options?: Expression[] } & BinaryExprArgs;
+export type RegexpFullMatchExprArgs = {
+  this: Expression;
+  expression: Expression;
+  options?: Expression[];
+} & BinaryExprArgs;
 
 export class RegexpFullMatchExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.REGEXP_FULL_MATCH;
