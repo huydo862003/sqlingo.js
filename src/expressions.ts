@@ -27558,6 +27558,7 @@ export class JSONBContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
 }
 
 export type JSONBContainsAnyTopKeysExprArgs = BinaryExprArgs;
+
 export class JSONBContainsAnyTopKeysExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS_ANY_TOP_KEYS;
 
@@ -27715,7 +27716,7 @@ export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 
   get outputName (): string {
-    return !this.args.expressions ? this.expression.outputName : '';
+    return !this.args.expressions ? this.expression?.outputName || '' : '';
   }
 }
 
@@ -27726,6 +27727,8 @@ export type JSONExtractArrayExprArgs = {
 
 export class JSONExtractArrayExpr extends FuncExpr {
   key = ExpressionKey.JSON_EXTRACT_ARRAY;
+
+  static _sqlNames = ['JSON_EXTRACT_ARRAY'];
 
   static argTypes = {
     ...super.argTypes,
@@ -27752,14 +27755,19 @@ export class JSONExtractArrayExpr extends FuncExpr {
   }
 }
 
-export type JSONExtractScalarExprArgs = { onlyJsonTypes?: Expression[];
+export type JSONExtractScalarExprArgs = {
+  onlyJsonTypes?: Expression;
+  expressions?: Expression[];
   jsonType?: Expression;
-  scalarOnly?: Expression; } & BinaryExprArgs;
+  scalarOnly?: boolean;
+} & BinaryExprArgs;
 
 export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSON_EXTRACT_SCALAR;
 
   static isVarLenArgs = true;
+  static _sqlNames = ['JSON_EXTRACT_SCALAR'];
+
   /**
    * Defines the arguments (properties and child expressions) for JSONExtractScalar expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
@@ -27768,6 +27776,7 @@ export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     onlyJsonTypes: false,
+    expressions: false,
     jsonType: false,
     scalarOnly: false,
   } satisfies RequiredMap<JSONExtractScalarExprArgs>;
@@ -27778,8 +27787,12 @@ export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
     super(args);
   }
 
-  get $onlyJsonTypes (): Expression[] | undefined {
+  get $onlyJsonTypes (): Expression | undefined {
     return this.args.onlyJsonTypes;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   get $jsonType (): Expression | undefined {
@@ -27799,6 +27812,8 @@ export type JSONBExtractExprArgs = BinaryExprArgs;
 export class JSONBExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_EXTRACT;
 
+  static _sqlNames = ['JSONB_EXTRACT'];
+
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
@@ -27815,6 +27830,8 @@ export type JSONBExtractScalarExprArgs = { jsonType?: Expression } & BinaryExprA
 
 export class JSONBExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_EXTRACT_SCALAR;
+
+  static _sqlNames = ['JSONB_EXTRACT_SCALAR'];
 
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
@@ -27852,6 +27869,8 @@ export type JSONFormatExprArgs = {
 
 export class JSONFormatExpr extends FuncExpr {
   key = ExpressionKey.JSON_FORMAT;
+
+  static _sqlNames = ['JSON_FORMAT'];
 
   /**
    * Defines the arguments (properties and child expressions) for JSONFormat expressions.
@@ -27901,6 +27920,7 @@ export class JSONArrayAppendExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY_APPEND;
 
   static isVarLenArgs = true;
+  static _sqlNames = ['JSON_ARRAY_APPEND'];
 
   static argTypes = {
     ...super.argTypes,
@@ -27931,6 +27951,8 @@ export type JSONArrayContainsExprArgs = { jsonType?: Expression } & BinaryExprAr
 
 export class JSONArrayContainsExpr extends multiInherit(BinaryExpr, PredicateExpr, FuncExpr) {
   key = ExpressionKey.JSON_ARRAY_CONTAINS;
+
+  static _sqlNames = ['JSON_ARRAY_CONTAINS'];
 
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
@@ -27968,6 +27990,7 @@ export class JSONArrayInsertExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY_INSERT;
 
   static isVarLenArgs = true;
+  static _sqlNames = ['JSON_ARRAY_INSERT'];
 
   static argTypes = {
     ...super.argTypes,
