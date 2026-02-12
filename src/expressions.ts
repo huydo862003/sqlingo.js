@@ -22782,14 +22782,26 @@ export class LocaltimestampExpr extends FuncExpr {
   }
 }
 
-export type SystimestampExprArgs = BaseExpressionArgs;
+export type SystimestampExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
+
 export class SystimestampExpr extends FuncExpr {
   key = ExpressionKey.SYSTIMESTAMP;
-  static argTypes = {} satisfies RequiredMap<SystimestampExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<SystimestampExprArgs>;
 
   declare args: SystimestampExprArgs;
+
   constructor (args: SystimestampExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   static {
@@ -22797,17 +22809,28 @@ export class SystimestampExpr extends FuncExpr {
   }
 }
 
-export type CurrentTimestampExprArgs = { sysdate?: Expression } & BaseExpressionArgs;
+export type CurrentTimestampExprArgs = {
+  this?: Expression;
+  sysdate?: Expression;
+} & FuncExprArgs;
 
 export class CurrentTimestampExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMESTAMP;
 
-  static argTypes = { sysdate: false } satisfies RequiredMap<CurrentTimestampExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+    sysdate: false,
+  } satisfies RequiredMap<CurrentTimestampExprArgs>;
 
   declare args: CurrentTimestampExprArgs;
 
   constructor (args: CurrentTimestampExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   get $sysdate (): Expression | undefined {
@@ -22819,12 +22842,15 @@ export class CurrentTimestampExpr extends FuncExpr {
   }
 }
 
-export type CurrentTimestampLTZExprArgs = BaseExpressionArgs;
+export type CurrentTimestampLTZExprArgs = FuncExprArgs;
+
 export class CurrentTimestampLTZExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMESTAMP_LTZ;
+
   static argTypes = {} satisfies RequiredMap<CurrentTimestampLTZExprArgs>;
 
   declare args: CurrentTimestampLTZExprArgs;
+
   constructor (args: CurrentTimestampLTZExprArgs) {
     super(args);
   }
@@ -22834,9 +22860,11 @@ export class CurrentTimestampLTZExpr extends FuncExpr {
   }
 }
 
-export type CurrentTimezoneExprArgs = BaseExpressionArgs;
+export type CurrentTimezoneExprArgs = FuncExprArgs;
+
 export class CurrentTimezoneExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMEZONE;
+
   static argTypes = {} satisfies RequiredMap<CurrentTimezoneExprArgs>;
 
   declare args: CurrentTimezoneExprArgs;
