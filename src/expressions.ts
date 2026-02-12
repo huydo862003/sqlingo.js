@@ -4967,7 +4967,7 @@ export class CommentExpr extends Expression {
     return this.args.this;
   }
 
-  get $kind (): string {
+  get $kind (): CommentExprKind {
     return this.args.kind;
   }
 
@@ -6911,7 +6911,7 @@ export class GrantExpr extends Expression {
     return this.args.privileges;
   }
 
-  get $kind (): string | undefined {
+  get $kind (): GrantExprKind | undefined {
     return this.args.kind;
   }
 
@@ -7849,7 +7849,7 @@ export class GrantPrincipalExpr extends Expression {
     return this.args.this;
   }
 
-  get $kind (): string | undefined {
+  get $kind (): GrantPrincipalExprKind | undefined {
     return this.args.kind;
   }
 }
@@ -10213,7 +10213,7 @@ export class AnalyzeSampleExpr extends Expression {
     super(args);
   }
 
-  get $kind (): string {
+  get $kind (): AnalyzeSampleExprKind {
     return this.args.kind;
   }
 
@@ -11145,6 +11145,7 @@ export enum JSONColumnDefExprKind {
   VALUE = 'VALUE',
   QUERY = 'QUERY',
 }
+
 export type JSONColumnDefExprArgs = {
   this?: Expression;
   kind?: JSONColumnDefExprKind;
@@ -11179,7 +11180,7 @@ export class JSONColumnDefExpr extends Expression {
     return this.args.this;
   }
 
-  get $kind (): string | undefined {
+  get $kind (): JSONColumnDefExprKind | undefined {
     return this.args.kind;
   }
 
@@ -11191,7 +11192,7 @@ export class JSONColumnDefExpr extends Expression {
     return this.args.nestedSchema;
   }
 
-  get $ordinality (): Expression | undefined {
+  get $ordinality (): boolean | undefined {
     return this.args.ordinality;
   }
 }
@@ -11306,7 +11307,7 @@ export class OpenJSONColumnDefExpr extends Expression {
     return this.args.this;
   }
 
-  get $kind (): string {
+  get $kind (): OpenJSONColumnDefExprKind {
     return this.args.kind;
   }
 
@@ -11534,7 +11535,7 @@ export class UseExpr extends Expression {
     super(args);
   }
 
-  get $kind (): string | undefined {
+  get $kind (): UseExprKind | undefined {
     return this.args.kind;
   }
 
@@ -12866,7 +12867,7 @@ export class CopyExpr extends DMLExpr {
     return this.args.this;
   }
 
-  get $kind (): string {
+  get $kind (): CopyExprKind {
     return this.args.kind;
   }
 
@@ -13678,7 +13679,7 @@ export class DistributedByPropertyExpr extends PropertyExpr {
     return this.args.expressions;
   }
 
-  get $kind (): string {
+  get $kind (): DistributedByPropertyExprKind {
     return this.args.kind;
   }
 
@@ -24893,7 +24894,7 @@ export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     return this.args.unit;
   }
 
-  get $kind (): string | undefined {
+  get $kind (): TimeSliceExprKind | undefined {
     return this.args.kind;
   }
 
