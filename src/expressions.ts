@@ -25600,12 +25600,19 @@ export class ToBinaryExpr extends FuncExpr {
   }
 }
 
-export type Base64DecodeBinaryExprArgs = { alphabet?: Expression } & FuncExprArgs;
+export type Base64DecodeBinaryExprArgs = {
+  this: Expression;
+  alphabet?: Expression;
+} & FuncExprArgs;
 
 export class Base64DecodeBinaryExpr extends FuncExpr {
   key = ExpressionKey.BASE64_DECODE_BINARY;
 
-  static argTypes = { alphabet: false } satisfies RequiredMap<Base64DecodeBinaryExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    alphabet: false,
+  } satisfies RequiredMap<Base64DecodeBinaryExprArgs>;
 
   declare args: Base64DecodeBinaryExprArgs;
 
@@ -25613,6 +25620,10 @@ export class Base64DecodeBinaryExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $alphabet (): Expression | undefined {
     return this.args.alphabet;
   }
@@ -25622,12 +25633,19 @@ export class Base64DecodeBinaryExpr extends FuncExpr {
   }
 }
 
-export type Base64DecodeStringExprArgs = { alphabet?: Expression } & FuncExprArgs;
+export type Base64DecodeStringExprArgs = {
+  this: Expression;
+  alphabet?: Expression;
+} & FuncExprArgs;
 
 export class Base64DecodeStringExpr extends FuncExpr {
   key = ExpressionKey.BASE64_DECODE_STRING;
 
-  static argTypes = { alphabet: false } satisfies RequiredMap<Base64DecodeStringExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    alphabet: false,
+  } satisfies RequiredMap<Base64DecodeStringExprArgs>;
 
   declare args: Base64DecodeStringExprArgs;
 
@@ -25635,6 +25653,10 @@ export class Base64DecodeStringExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $alphabet (): Expression | undefined {
     return this.args.alphabet;
   }
@@ -25644,8 +25666,11 @@ export class Base64DecodeStringExpr extends FuncExpr {
   }
 }
 
-export type Base64EncodeExprArgs = { maxLineLength?: number | Expression;
-  alphabet?: Expression; } & FuncExprArgs;
+export type Base64EncodeExprArgs = {
+  this: Expression;
+  maxLineLength?: number | Expression;
+  alphabet?: Expression;
+} & FuncExprArgs;
 
 export class Base64EncodeExpr extends FuncExpr {
   key = ExpressionKey.BASE64_ENCODE;
@@ -25656,6 +25681,7 @@ export class Base64EncodeExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     maxLineLength: false,
     alphabet: false,
   } satisfies RequiredMap<Base64EncodeExprArgs>;
@@ -25664,6 +25690,10 @@ export class Base64EncodeExpr extends FuncExpr {
 
   constructor (args: Base64EncodeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $maxLineLength (): Expression | undefined {
@@ -25679,17 +25709,28 @@ export class Base64EncodeExpr extends FuncExpr {
   }
 }
 
-export type TryBase64DecodeBinaryExprArgs = { alphabet?: Expression } & FuncExprArgs;
+export type TryBase64DecodeBinaryExprArgs = {
+  this: Expression;
+  alphabet?: Expression;
+} & FuncExprArgs;
 
 export class TryBase64DecodeBinaryExpr extends FuncExpr {
   key = ExpressionKey.TRY_BASE64_DECODE_BINARY;
 
-  static argTypes = { alphabet: false } satisfies RequiredMap<TryBase64DecodeBinaryExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    alphabet: false,
+  } satisfies RequiredMap<TryBase64DecodeBinaryExprArgs>;
 
   declare args: TryBase64DecodeBinaryExprArgs;
 
   constructor (args: TryBase64DecodeBinaryExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $alphabet (): Expression | undefined {
@@ -25701,17 +25742,28 @@ export class TryBase64DecodeBinaryExpr extends FuncExpr {
   }
 }
 
-export type TryBase64DecodeStringExprArgs = { alphabet?: Expression } & FuncExprArgs;
+export type TryBase64DecodeStringExprArgs = {
+  this: Expression;
+  alphabet?: Expression;
+} & FuncExprArgs;
 
 export class TryBase64DecodeStringExpr extends FuncExpr {
   key = ExpressionKey.TRY_BASE64_DECODE_STRING;
 
-  static argTypes = { alphabet: false } satisfies RequiredMap<TryBase64DecodeStringExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    alphabet: false,
+  } satisfies RequiredMap<TryBase64DecodeStringExprArgs>;
 
   declare args: TryBase64DecodeStringExprArgs;
 
   constructor (args: TryBase64DecodeStringExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $alphabet (): Expression | undefined {
