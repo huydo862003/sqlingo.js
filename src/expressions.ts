@@ -23431,7 +23431,7 @@ export class DateTruncExpr extends FuncExpr {
     return this.args.zone;
   }
 
-  get $inputTypePreserved (): Expression | undefined {
+  get $inputTypePreserved (): DataTypeExpr | undefined {
     return this.args.inputTypePreserved;
   }
 
