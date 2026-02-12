@@ -27674,17 +27674,33 @@ export class JSONArrayContainsExpr extends multiInherit(BinaryExpr, PredicateExp
   }
 }
 
-export type JSONArrayInsertExprArgs = FuncExprArgs;
+export type JSONArrayInsertExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+} & FuncExprArgs;
 
 export class JSONArrayInsertExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY_INSERT;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<JSONArrayInsertExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: true,
+  } satisfies RequiredMap<JSONArrayInsertExprArgs>;
 
   declare args: JSONArrayInsertExprArgs;
 
   constructor (args: JSONArrayInsertExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
   }
 
   static {
@@ -27734,17 +27750,34 @@ export class ParseNumericExpr extends FuncExpr {
   }
 }
 
-export type ParseJSONExprArgs = { safe?: boolean } & FuncExprArgs;
+export type ParseJSONExprArgs = {
+  this: Expression;
+  expression?: Expression;
+  safe?: boolean;
+} & FuncExprArgs;
 
 export class ParseJSONExpr extends FuncExpr {
   key = ExpressionKey.PARSE_JSON;
 
-  static argTypes = { safe: false } satisfies RequiredMap<ParseJSONExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+    safe: false,
+  } satisfies RequiredMap<ParseJSONExprArgs>;
 
   declare args: ParseJSONExprArgs;
 
   constructor (args: ParseJSONExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 
   get $safe (): Expression | undefined {
@@ -27758,9 +27791,12 @@ export class ParseJSONExpr extends FuncExpr {
   static sqlNames = ['PARSE_JSON', 'JSON_PARSE'];
 }
 
-export type ParseUrlExprArgs = { partToExtract?: Expression;
+export type ParseUrlExprArgs = {
+  this: Expression;
+  partToExtract?: Expression;
   key?: unknown;
-  permissive?: Expression; } & FuncExprArgs;
+  permissive?: Expression;
+} & FuncExprArgs;
 
 export class ParseUrlExpr extends FuncExpr {
   key = ExpressionKey.PARSE_URL;
@@ -27771,6 +27807,7 @@ export class ParseUrlExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     partToExtract: false,
     key: false,
     permissive: false,
@@ -27780,6 +27817,10 @@ export class ParseUrlExpr extends FuncExpr {
 
   constructor (args: ParseUrlExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $partToExtract (): Expression | undefined {
@@ -27799,17 +27840,34 @@ export class ParseUrlExpr extends FuncExpr {
   }
 }
 
-export type ParseIpExprArgs = { permissive?: Expression } & FuncExprArgs;
+export type ParseIpExprArgs = {
+  this: Expression;
+  type: Expression;
+  permissive?: Expression;
+} & FuncExprArgs;
 
 export class ParseIpExpr extends FuncExpr {
   key = ExpressionKey.PARSE_IP;
 
-  static argTypes = { permissive: false } satisfies RequiredMap<ParseIpExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    type: true,
+    permissive: false,
+  } satisfies RequiredMap<ParseIpExprArgs>;
 
   declare args: ParseIpExprArgs;
 
   constructor (args: ParseIpExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $type (): Expression {
+    return this.args.type;
   }
 
   get $permissive (): Expression | undefined {
