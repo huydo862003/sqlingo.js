@@ -10738,7 +10738,7 @@ export class ForInExpr extends Expression {
   }
 }
 
-export type TimeUnitExprArgs = { unit?: Expression } & BaseExpressionArgs;
+export type TimeUnitExprArgs = { unit?: VarExpr | IntervalSpanExpr } & BaseExpressionArgs;
 
 /**
  * Automatically converts unit arg into a var.
@@ -10788,51 +10788,77 @@ export class TimeUnitExpr extends Expression {
   }
 
   get unit (): VarExpr | IntervalSpanExpr | undefined {
-    const unit = this.args.unit;
-    if (unit instanceof VarExpr || unit instanceof IntervalSpanExpr) {
-      return unit;
-    }
-    return undefined;
+    return this.$unit;
   }
 
-  get $unit (): Expression | undefined {
+  get $unit (): VarExpr | IntervalSpanExpr | undefined {
     return this.args.unit;
   }
 }
 
 export type IgnoreNullsExprArgs = BaseExpressionArgs;
+
 export class IgnoreNullsExpr extends Expression {
   key = ExpressionKey.IGNORE_NULLS;
-  static argTypes = {} satisfies RequiredMap<IgnoreNullsExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<IgnoreNullsExprArgs>;
 
   declare args: IgnoreNullsExprArgs;
+
   constructor (args: IgnoreNullsExprArgs) {
     super(args);
   }
 }
 
 export type RespectNullsExprArgs = BaseExpressionArgs;
+
 export class RespectNullsExpr extends Expression {
   key = ExpressionKey.RESPECT_NULLS;
-  static argTypes = {} satisfies RequiredMap<RespectNullsExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<RespectNullsExprArgs>;
 
   declare args: RespectNullsExprArgs;
+
   constructor (args: RespectNullsExprArgs) {
     super(args);
   }
 }
 
-export type HavingMaxExprArgs = { max: Expression } & BaseExpressionArgs;
+/**
+ * https://cloud.google.com/bigquery/docs/reference/standard-sql/aggregate-function-calls#max_min_clause
+ */
+export type HavingMaxExprArgs = {
+  this: Expression;
+  expression: Expression;
+  max: Expression;
+} & BaseExpressionArgs;
 
 export class HavingMaxExpr extends Expression {
   key = ExpressionKey.HAVING_MAX;
 
-  static argTypes = { max: true } satisfies RequiredMap<HavingMaxExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    max: true,
+  } satisfies RequiredMap<HavingMaxExprArgs>;
 
   declare args: HavingMaxExprArgs;
 
   constructor (args: HavingMaxExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $max (): Expression {
@@ -17290,12 +17316,19 @@ export class BracketExpr extends ConditionExpr {
   }
 }
 
-export type IntervalOpExprArgs = { unit?: Expression } & TimeUnitExprArgs;
+export type IntervalOpExprArgs = {
+  unit?: Expression;
+  expression: Expression;
+} & TimeUnitExprArgs;
 
 export class IntervalOpExpr extends TimeUnitExpr {
   key = ExpressionKey.INTERVAL_OP;
 
-  static argTypes = { unit: false } satisfies RequiredMap<IntervalOpExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    unit: false,
+    expression: true,
+  } satisfies RequiredMap<IntervalOpExprArgs>;
 
   declare args: IntervalOpExprArgs;
 
@@ -17303,33 +17336,78 @@ export class IntervalOpExpr extends TimeUnitExpr {
     super(args);
   }
 
+  interval (): IntervalExpr {
+    return new IntervalExpr({
+      this: this.args.expression.copy(),
+      unit: this.unit?.copy(),
+    });
+  }
+
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
-}
 
-export type IntervalSpanExprArgs = BaseExpressionArgs;
-export class IntervalSpanExpr extends DataTypeExpr {
-  key = ExpressionKey.INTERVAL_SPAN;
-  static argTypes = {} satisfies RequiredMap<IntervalSpanExprArgs>;
-
-  declare args: IntervalSpanExprArgs;
-  constructor (args: IntervalSpanExprArgs) {
-    super(args);
+  get $expression (): Expression {
+    return this.args.expression;
   }
 }
 
-export type IntervalExprArgs = { unit?: Expression } & TimeUnitExprArgs;
+/**
+ * https://www.oracletutorial.com/oracle-basics/oracle-interval/
+ * https://trino.io/docs/current/language/types.html#interval-day-to-second
+ * https://docs.databricks.com/en/sql/language-manual/data-types/interval-type.html
+ */
+export type IntervalSpanExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
+
+export class IntervalSpanExpr extends DataTypeExpr {
+  key = ExpressionKey.INTERVAL_SPAN;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<IntervalSpanExprArgs>;
+
+  declare args: IntervalSpanExprArgs;
+
+  constructor (args: IntervalSpanExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+}
+
+export type IntervalExprArgs = {
+  this?: Expression;
+  unit?: Expression;
+} & TimeUnitExprArgs;
 
 export class IntervalExpr extends TimeUnitExpr {
   key = ExpressionKey.INTERVAL;
 
-  static argTypes = { unit: false } satisfies RequiredMap<IntervalExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+    unit: false,
+  } satisfies RequiredMap<IntervalExprArgs>;
 
   declare args: IntervalExprArgs;
 
   constructor (args: IntervalExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   get $unit (): Expression | undefined {
@@ -18104,7 +18182,10 @@ export class DotExpr extends BinaryExpr {
     }
 
     return expressions.reduce(
-      (x, y) => new DotExpr({ this: x, expression: y }),
+      (x, y) => new DotExpr({
+        this: x,
+        expression: y,
+      }),
     );
   }
 
@@ -18677,7 +18758,7 @@ export type InExprArgs = {
   query?: Expression;
   unnest?: UnnestExpr;
   field?: Expression;
-  isGlobal?: Expression;
+  isGlobal?: boolean;
 } & PredicateExprArgs;
 
 export class InExpr extends PredicateExpr {
@@ -18719,7 +18800,7 @@ export class InExpr extends PredicateExpr {
     return this.args.field;
   }
 
-  get $isGlobal (): Expression | undefined {
+  get $isGlobal (): boolean | undefined {
     return this.args.isGlobal;
   }
 }
