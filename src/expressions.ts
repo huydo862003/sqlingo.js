@@ -23237,22 +23237,25 @@ export class DateSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   }
 }
 
-export type DateDiffExprArgs = { unit?: Expression;
+export type DateDiffExprArgs = {
+  this: Expression;
+  expression: Expression;
+  unit?: Expression;
   zone?: Expression;
   bigInt?: Expression;
-  datePartBoundary?: Expression; } & BaseExpressionArgs;
+  datePartBoundary?: Expression;
+} & FuncExprArgs & TimeUnitExprArgs;
 
-export class DateDiffExpr extends FuncExpr {
+export class DateDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.DATE_DIFF;
 
   static sqlNames = ['DATEDIFF', 'DATE_DIFF'];
 
-  /**
-   * Defines the arguments (properties and child expressions) for DateDiff expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
+    expression: true,
     unit: false,
     zone: false,
     bigInt: false,
@@ -23263,6 +23266,14 @@ export class DateDiffExpr extends FuncExpr {
 
   constructor (args: DateDiffExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $unit (): Expression | undefined {
@@ -23286,20 +23297,20 @@ export class DateDiffExpr extends FuncExpr {
   }
 }
 
-export type DateTruncExprArgs = { unit: Expression;
+export type DateTruncExprArgs = {
+  unit: Expression;
+  this: Expression;
   zone?: Expression;
-  inputTypePreserved?: DataTypeExpr; } & BaseExpressionArgs;
+  inputTypePreserved?: DataTypeExpr;
+} & FuncExprArgs;
 
 export class DateTruncExpr extends FuncExpr {
   key = ExpressionKey.DATE_TRUNC;
 
-  /**
-   * Defines the arguments (properties and child expressions) for DateTrunc expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
     unit: true,
+    this: true,
     zone: false,
     inputTypePreserved: false,
   } satisfies RequiredMap<DateTruncExprArgs>;
@@ -23314,12 +23325,20 @@ export class DateTruncExpr extends FuncExpr {
     return this.args.unit;
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $zone (): Expression | undefined {
     return this.args.zone;
   }
 
   get $inputTypePreserved (): Expression | undefined {
     return this.args.inputTypePreserved;
+  }
+
+  get unit (): Expression {
+    return this.$unit;
   }
 
   static {
