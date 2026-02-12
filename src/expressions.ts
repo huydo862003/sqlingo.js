@@ -31021,7 +31021,7 @@ export class SHA2Expr extends FuncExpr {
     return this.args.this;
   }
 
-  get $length (): Expression | undefined {
+  get $length (): number | Expression | undefined {
     return this.args.length;
   }
 }
@@ -31070,7 +31070,7 @@ export class SHA2DigestExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $length (): Expression | undefined {
+  get $length (): number | Expression | undefined {
     return this.args.length;
   }
 
@@ -31273,6 +31273,7 @@ export type SubstringExprArgs = {
 
 export class SubstringExpr extends FuncExpr {
   key = ExpressionKey.SUBSTRING;
+  static _sqlNames = ['SUBSTRING', 'SUBSTR'];
 
   /**
    * Defines the arguments (properties and child expressions) for Substring expressions.
@@ -31391,6 +31392,7 @@ export type StartsWithExprArgs = {
 
 export class StartsWithExpr extends FuncExpr {
   key = ExpressionKey.STARTS_WITH;
+  static _sqlNames = ['STARTS_WITH', 'STARTSWITH'];
 
   static argTypes = {
     ...super.argTypes,
@@ -31424,6 +31426,7 @@ export type EndsWithExprArgs = {
 
 export class EndsWithExpr extends FuncExpr {
   key = ExpressionKey.ENDS_WITH;
+  static _sqlNames = ['ENDS_WITH', 'ENDSWITH'];
 
   static argTypes = {
     ...super.argTypes,
