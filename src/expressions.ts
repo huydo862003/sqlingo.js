@@ -27337,17 +27337,28 @@ export class JSONBContainsAllTopKeysExpr extends multiInherit(BinaryExpr, FuncEx
   }
 }
 
-export type JSONBExistsExprArgs = { path: Expression } & FuncExprArgs;
+export type JSONBExistsExprArgs = {
+  this: Expression;
+  path: Expression;
+} & FuncExprArgs;
 
 export class JSONBExistsExpr extends FuncExpr {
   key = ExpressionKey.JSONB_EXISTS;
 
-  static argTypes = { path: true } satisfies RequiredMap<JSONBExistsExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    path: true,
+  } satisfies RequiredMap<JSONBExistsExprArgs>;
 
   declare args: JSONBExistsExprArgs;
 
   constructor (args: JSONBExistsExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $path (): Expression {
@@ -27441,17 +27452,32 @@ export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type JSONExtractArrayExprArgs = FuncExprArgs;
+export type JSONExtractArrayExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & FuncExprArgs;
 
 export class JSONExtractArrayExpr extends FuncExpr {
   key = ExpressionKey.JSON_EXTRACT_ARRAY;
 
-  static argTypes = {} satisfies RequiredMap<JSONExtractArrayExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<JSONExtractArrayExprArgs>;
 
   declare args: JSONExtractArrayExprArgs;
 
   constructor (args: JSONExtractArrayExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 
   static {
@@ -27539,9 +27565,12 @@ export class JSONBExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type JSONFormatExprArgs = { options?: Expression[];
+export type JSONFormatExprArgs = {
+  this?: Expression;
+  options?: Expression[];
   isJson?: Expression;
-  toJson?: Expression; } & FuncExprArgs;
+  toJson?: Expression;
+} & FuncExprArgs;
 
 export class JSONFormatExpr extends FuncExpr {
   key = ExpressionKey.JSON_FORMAT;
@@ -27552,6 +27581,7 @@ export class JSONFormatExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: false,
     options: false,
     isJson: false,
     toJson: false,
@@ -27561,6 +27591,10 @@ export class JSONFormatExpr extends FuncExpr {
 
   constructor (args: JSONFormatExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   get $options (): Expression[] | undefined {
@@ -27582,17 +27616,33 @@ export class JSONFormatExpr extends FuncExpr {
   static sqlNames = ['JSON_FORMAT'];
 }
 
-export type JSONArrayAppendExprArgs = FuncExprArgs;
+export type JSONArrayAppendExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+} & FuncExprArgs;
 
 export class JSONArrayAppendExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY_APPEND;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<JSONArrayAppendExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: true,
+  } satisfies RequiredMap<JSONArrayAppendExprArgs>;
 
   declare args: JSONArrayAppendExprArgs;
 
   constructor (args: JSONArrayAppendExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
   }
 
   static {
