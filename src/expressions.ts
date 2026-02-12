@@ -1283,11 +1283,11 @@ export class Expression {
    * @param dtypes - Data type names to check
    * @returns True if expression has one of the specified types
    */
-  isType (...dtypes: string[]): boolean {
+  isType (...dtypes: Array<DataTypeExprKind | DataTypeExpr>): boolean {
     if (!this._type) {
       return false;
     }
-    return this._type.isType(...dtypes);
+    return this._type.isType(dtypes);
   }
 
   /**
@@ -21823,9 +21823,11 @@ export class ArraysZipExpr extends FuncExpr {
   }
 }
 
-export type CaseExprArgs = { this?: Expression;
+export type CaseExprArgs = {
+  this?: Expression;
   ifs: Expression[];
-  default?: Expression; } & FuncExprArgs;
+  default?: Expression;
+} & FuncExprArgs;
 
 export class CaseExpr extends FuncExpr {
   key = ExpressionKey.CASE;
@@ -21859,12 +21861,40 @@ export class CaseExpr extends FuncExpr {
     return this.args.default;
   }
 
+  when (
+    condition: string | Expression,
+    then: string | Expression,
+    copy = true,
+    options?: { dialect?: DialectType; prefix?: string }
+  ): CaseExpr {
+    const instance = maybeCopy(this, copy);
+    instance.append(
+      'ifs',
+      new IfExpr({
+        this: maybeParse(condition, options),
+        true: maybeParse(then, options),
+      })
+    );
+    return instance;
+  }
+
+  else (
+    condition: string | Expression,
+    copy = true,
+    options?: { dialect?: DialectType; prefix?: string }
+  ): CaseExpr {
+    const instance = maybeCopy(this, copy);
+    instance.set('default', maybeParse(condition, options));
+    return instance;
+  }
+
   static {
     this.register();
   }
 }
 
-export type CastExprArgs = { this: Expression;
+export type CastExprArgs = {
+  this: Expression;
   to: Expression;
   format?: string;
   safe?: boolean;
@@ -21919,7 +21949,7 @@ export class CastExpr extends FuncExpr {
   }
 
   get name (): string {
-    return (this.$this as any).name || '';
+    return this.$this.name || '';
   }
 
   get to (): Expression {
@@ -21930,11 +21960,13 @@ export class CastExpr extends FuncExpr {
     return this.name;
   }
 
-  isType (...dtypes: string[]): boolean {
+  isType (...dtypes: Array<DataTypeExprKind | DataTypeExpr>): boolean {
     const toExpr = this.$to;
     if (!toExpr) return false;
-    const toType = toExpr.sql().toLowerCase();
-    return dtypes.some(dtype => toType.includes(dtype.toLowerCase()));
+    if (toExpr instanceof DataTypeExpr) {
+      return toExpr.isType(dtypes);
+    }
+    return false;
   }
 
   static {
