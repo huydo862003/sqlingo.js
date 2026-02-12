@@ -32880,6 +32880,16 @@ export class UuidExpr extends FuncExpr {
   }
 }
 
+const TIMESTAMP_PARTS = {
+  year: false,
+  month: false,
+  day: false,
+  hour: false,
+  min: false,
+  sec: false,
+  nano: false,
+} as const;
+
 export type TimestampFromPartsExprArgs = {
   zone?: Expression;
   milli?: Expression;
