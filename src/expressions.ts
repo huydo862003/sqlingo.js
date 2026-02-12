@@ -29491,17 +29491,28 @@ export class PowExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type ApproxPercentileEstimateExprArgs = { percentile: Expression } & FuncExprArgs;
+export type ApproxPercentileEstimateExprArgs = {
+  this: Expression;
+  percentile: Expression;
+} & FuncExprArgs;
 
 export class ApproxPercentileEstimateExpr extends FuncExpr {
   key = ExpressionKey.APPROX_PERCENTILE_ESTIMATE;
 
-  static argTypes = { percentile: true } satisfies RequiredMap<ApproxPercentileEstimateExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    percentile: true,
+  } satisfies RequiredMap<ApproxPercentileEstimateExprArgs>;
 
   declare args: ApproxPercentileEstimateExprArgs;
 
   constructor (args: ApproxPercentileEstimateExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $percentile (): Expression {
@@ -29533,8 +29544,11 @@ export class QuarterExpr extends FuncExpr {
   }
 }
 
-export type RandExprArgs = { lower?: Expression;
-  upper?: Expression; } & FuncExprArgs;
+export type RandExprArgs = {
+  this?: Expression;
+  lower?: Expression;
+  upper?: Expression;
+} & FuncExprArgs;
 
 export class RandExpr extends FuncExpr {
   key = ExpressionKey.RAND;
@@ -29545,6 +29559,7 @@ export class RandExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: false,
     lower: false,
     upper: false,
   } satisfies RequiredMap<RandExprArgs>;
@@ -29553,6 +29568,10 @@ export class RandExpr extends FuncExpr {
 
   constructor (args: RandExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   get $lower (): Expression | undefined {
@@ -29570,12 +29589,17 @@ export class RandExpr extends FuncExpr {
   static sqlNames = ['RAND', 'RANDOM'];
 }
 
-export type RandnExprArgs = FuncExprArgs;
+export type RandnExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
 
 export class RandnExpr extends FuncExpr {
   key = ExpressionKey.RANDN;
 
-  static argTypes = {} satisfies RequiredMap<RandnExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<RandnExprArgs>;
 
   declare args: RandnExprArgs;
 
@@ -29583,22 +29607,37 @@ export class RandnExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type RandstrExprArgs = { generator?: Expression } & FuncExprArgs;
+export type RandstrExprArgs = {
+  this: Expression;
+  generator?: Expression;
+} & FuncExprArgs;
 
 export class RandstrExpr extends FuncExpr {
   key = ExpressionKey.RANDSTR;
 
-  static argTypes = { generator: false } satisfies RequiredMap<RandstrExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    generator: false,
+  } satisfies RequiredMap<RandstrExprArgs>;
 
   declare args: RandstrExprArgs;
 
   constructor (args: RandstrExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $generator (): Expression | undefined {
@@ -29610,17 +29649,34 @@ export class RandstrExpr extends FuncExpr {
   }
 }
 
-export type RangeNExprArgs = { each?: Expression } & FuncExprArgs;
+export type RangeNExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+  each?: Expression;
+} & FuncExprArgs;
 
 export class RangeNExpr extends FuncExpr {
   key = ExpressionKey.RANGE_N;
 
-  static argTypes = { each: false } satisfies RequiredMap<RangeNExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: true,
+    each: false,
+  } satisfies RequiredMap<RangeNExprArgs>;
 
   declare args: RangeNExprArgs;
 
   constructor (args: RangeNExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
   }
 
   get $each (): Expression | undefined {
@@ -29632,17 +29688,32 @@ export class RangeNExpr extends FuncExpr {
   }
 }
 
-export type RangeBucketExprArgs = FuncExprArgs;
+export type RangeBucketExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class RangeBucketExpr extends FuncExpr {
   key = ExpressionKey.RANGE_BUCKET;
 
-  static argTypes = {} satisfies RequiredMap<RangeBucketExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<RangeBucketExprArgs>;
 
   declare args: RangeBucketExprArgs;
 
   constructor (args: RangeBucketExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   static {
