@@ -22877,7 +22877,7 @@ export class CurrentTimezoneExpr extends FuncExpr {
   }
 }
 
-export type CurrentOrganizationNameExprArgs = BaseExpressionArgs;
+export type CurrentOrganizationNameExprArgs = FuncExprArgs;
 export class CurrentOrganizationNameExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ORGANIZATION_NAME;
   static argTypes = {};
@@ -22892,37 +22892,61 @@ export class CurrentOrganizationNameExpr extends FuncExpr {
   }
 }
 
-export type CurrentSchemaExprArgs = BaseExpressionArgs;
+export type CurrentSchemaExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
+
 export class CurrentSchemaExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SCHEMA;
-  static argTypes = {} satisfies RequiredMap<CurrentSchemaExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<CurrentSchemaExprArgs>;
 
   declare args: CurrentSchemaExprArgs;
+
   constructor (args: CurrentSchemaExprArgs) {
     super(args);
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type CurrentUserExprArgs = BaseExpressionArgs;
+export type CurrentUserExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
+
 export class CurrentUserExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_USER;
-  static argTypes = {} satisfies RequiredMap<CurrentUserExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<CurrentUserExprArgs>;
 
   declare args: CurrentUserExprArgs;
+
   constructor (args: CurrentUserExprArgs) {
     super(args);
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type CurrentCatalogExprArgs = BaseExpressionArgs;
+export type CurrentCatalogExprArgs = FuncExprArgs;
 export class CurrentCatalogExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_CATALOG;
   static argTypes = {} satisfies RequiredMap<CurrentCatalogExprArgs>;
@@ -22937,7 +22961,7 @@ export class CurrentCatalogExpr extends FuncExpr {
   }
 }
 
-export type CurrentRegionExprArgs = BaseExpressionArgs;
+export type CurrentRegionExprArgs = FuncExprArgs;
 export class CurrentRegionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_REGION;
   static argTypes = {} satisfies RequiredMap<CurrentRegionExprArgs>;
@@ -22952,7 +22976,7 @@ export class CurrentRegionExpr extends FuncExpr {
   }
 }
 
-export type CurrentRoleExprArgs = BaseExpressionArgs;
+export type CurrentRoleExprArgs = FuncExprArgs;
 export class CurrentRoleExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ROLE;
   static argTypes = {} satisfies RequiredMap<CurrentRoleExprArgs>;
@@ -22967,7 +22991,7 @@ export class CurrentRoleExpr extends FuncExpr {
   }
 }
 
-export type CurrentRoleTypeExprArgs = BaseExpressionArgs;
+export type CurrentRoleTypeExprArgs = FuncExprArgs;
 export class CurrentRoleTypeExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ROLE_TYPE;
   static argTypes = {} satisfies RequiredMap<CurrentRoleTypeExprArgs>;
@@ -22982,7 +23006,7 @@ export class CurrentRoleTypeExpr extends FuncExpr {
   }
 }
 
-export type CurrentOrganizationUserExprArgs = BaseExpressionArgs;
+export type CurrentOrganizationUserExprArgs = FuncExprArgs;
 export class CurrentOrganizationUserExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ORGANIZATION_USER;
   static argTypes = {};
@@ -22997,7 +23021,7 @@ export class CurrentOrganizationUserExpr extends FuncExpr {
   }
 }
 
-export type SessionUserExprArgs = BaseExpressionArgs;
+export type SessionUserExprArgs = FuncExprArgs;
 export class SessionUserExpr extends FuncExpr {
   key = ExpressionKey.SESSION_USER;
   static argTypes = {} satisfies RequiredMap<SessionUserExprArgs>;
@@ -23012,7 +23036,7 @@ export class SessionUserExpr extends FuncExpr {
   }
 }
 
-export type UtcDateExprArgs = BaseExpressionArgs;
+export type UtcDateExprArgs = FuncExprArgs;
 export class UtcDateExpr extends FuncExpr {
   key = ExpressionKey.UTC_DATE;
   static argTypes = {} satisfies RequiredMap<UtcDateExprArgs>;
@@ -23027,14 +23051,26 @@ export class UtcDateExpr extends FuncExpr {
   }
 }
 
-export type UtcTimeExprArgs = BaseExpressionArgs;
+export type UtcTimeExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
+
 export class UtcTimeExpr extends FuncExpr {
   key = ExpressionKey.UTC_TIME;
-  static argTypes = {} satisfies RequiredMap<UtcTimeExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<UtcTimeExprArgs>;
 
   declare args: UtcTimeExprArgs;
+
   constructor (args: UtcTimeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   static {
@@ -23042,14 +23078,26 @@ export class UtcTimeExpr extends FuncExpr {
   }
 }
 
-export type UtcTimestampExprArgs = BaseExpressionArgs;
+export type UtcTimestampExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
+
 export class UtcTimestampExpr extends FuncExpr {
   key = ExpressionKey.UTC_TIMESTAMP;
-  static argTypes = {} satisfies RequiredMap<UtcTimestampExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<UtcTimestampExprArgs>;
 
   declare args: UtcTimestampExprArgs;
+
   constructor (args: UtcTimestampExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   static {
