@@ -21882,7 +21882,8 @@ export class CaseExpr extends FuncExpr {
     condition: string | Expression,
     then: string | Expression,
     copy = true,
-    options?: { dialect?: DialectType; prefix?: string }
+    options?: { dialect?: DialectType;
+      prefix?: string; },
   ): CaseExpr {
     const instance = maybeCopy(this, copy);
     instance.append(
@@ -21890,7 +21891,7 @@ export class CaseExpr extends FuncExpr {
       new IfExpr({
         this: maybeParse(condition, options),
         true: maybeParse(then, options),
-      })
+      }),
     );
     return instance;
   }
@@ -21898,7 +21899,8 @@ export class CaseExpr extends FuncExpr {
   else (
     condition: string | Expression,
     copy = true,
-    options?: { dialect?: DialectType; prefix?: string }
+    options?: { dialect?: DialectType;
+      prefix?: string; },
   ): CaseExpr {
     const instance = maybeCopy(this, copy);
     instance.set('default', maybeParse(condition, options));
@@ -22111,7 +22113,7 @@ export class CheckXmlExpr extends FuncExpr {
   }
 }
 
-export type CollateExprArgs = BinaryExprArgs;
+export type CollateExprArgs = BinaryExprArgs & FuncExprArgs;
 
 export class CollateExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.COLLATE;
@@ -22199,7 +22201,11 @@ export type CoalesceExprArgs = {
 export class CoalesceExpr extends FuncExpr {
   key = ExpressionKey.COALESCE;
 
-  static sqlNames = ['COALESCE', 'IFNULL', 'NVL'];
+  static sqlNames = [
+    'COALESCE',
+    'IFNULL',
+    'NVL',
+  ];
 
   static isVarLenArgs = true;
 
@@ -22475,14 +22481,25 @@ export class CurrentDatabaseExpr extends FuncExpr {
   }
 }
 
-export type CurrentSchemasExprArgs = BaseExpressionArgs;
+export type CurrentSchemasExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
+
 export class CurrentSchemasExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SCHEMAS;
-  static argTypes = {} satisfies RequiredMap<CurrentSchemasExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<CurrentSchemasExprArgs>;
 
   declare args: CurrentSchemasExprArgs;
   constructor (args: CurrentSchemasExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   static {
@@ -22580,74 +22597,134 @@ export class CurrentWarehouseExpr extends FuncExpr {
   }
 }
 
-export type CurrentDateExprArgs = BaseExpressionArgs;
+export type CurrentDateExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
+
 export class CurrentDateExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_DATE;
-  static argTypes = {} satisfies RequiredMap<CurrentDateExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<CurrentDateExprArgs>;
 
   declare args: CurrentDateExprArgs;
+
   constructor (args: CurrentDateExprArgs) {
     super(args);
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type CurrentDatetimeExprArgs = BaseExpressionArgs;
+export type CurrentDatetimeExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
+
 export class CurrentDatetimeExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_DATETIME;
-  static argTypes = {} satisfies RequiredMap<CurrentDatetimeExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<CurrentDatetimeExprArgs>;
 
   declare args: CurrentDatetimeExprArgs;
+
   constructor (args: CurrentDatetimeExprArgs) {
     super(args);
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type CurrentTimeExprArgs = BaseExpressionArgs;
+export type CurrentTimeExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
+
 export class CurrentTimeExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIME;
-  static argTypes = {} satisfies RequiredMap<CurrentTimeExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<CurrentTimeExprArgs>;
 
   declare args: CurrentTimeExprArgs;
+
   constructor (args: CurrentTimeExprArgs) {
     super(args);
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type LocaltimeExprArgs = BaseExpressionArgs;
+export type LocaltimeExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
+
 export class LocaltimeExpr extends FuncExpr {
   key = ExpressionKey.LOCALTIME;
-  static argTypes = {} satisfies RequiredMap<LocaltimeExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<LocaltimeExprArgs>;
 
   declare args: LocaltimeExprArgs;
+
   constructor (args: LocaltimeExprArgs) {
     super(args);
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type LocaltimestampExprArgs = BaseExpressionArgs;
+export type LocaltimestampExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
+
 export class LocaltimestampExpr extends FuncExpr {
   key = ExpressionKey.LOCALTIMESTAMP;
-  static argTypes = {} satisfies RequiredMap<LocaltimestampExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<LocaltimestampExprArgs>;
 
   declare args: LocaltimestampExprArgs;
+
   constructor (args: LocaltimestampExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   static {
@@ -24100,11 +24177,11 @@ export class DecodeExpr extends FuncExpr {
     super(args);
   }
 
-  get $charset (): Expression {
+  get $charset (): string {
     return this.args.charset;
   }
 
-  get $replace (): Expression | undefined {
+  get $replace (): boolean | undefined | undefined {
     return this.args.replace;
   }
 
@@ -24128,10 +24205,12 @@ export class DecodeCaseExpr extends FuncExpr {
   }
 }
 
-export type DecryptExprArgs = { passphrase: Expression;
+export type DecryptExprArgs = {
+  passphrase: Expression;
   aad?: Expression;
   encryptionMethod?: string;
-  safe?: boolean; } & BaseExpressionArgs;
+  safe?: boolean;
+} & FuncExpr;
 
 export class DecryptExpr extends FuncExpr {
   key = ExpressionKey.DECRYPT;
