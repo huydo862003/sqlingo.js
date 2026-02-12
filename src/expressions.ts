@@ -2081,7 +2081,7 @@ export class Expression {
       copy?: boolean;
       wrap?: boolean;
     },
-  ): AliasExpr {
+  ): Expression {
     const copy = options?.copy ?? true;
     const aliasName = typeof _alias === 'string'
       ? _alias
@@ -9280,11 +9280,11 @@ export class StarExpr extends Expression {
     return this.args.except;
   }
 
-  get $replace (): Expression | undefined {
+  get $replace (): boolean | undefined {
     return this.args.replace;
   }
 
-  get $rename (): Expression | undefined {
+  get $rename (): string | undefined {
     return this.args.rename;
   }
 
@@ -11336,7 +11336,7 @@ export class OpenJSONColumnDefExpr extends Expression {
 
 export type JSONExtractQuoteExprArgs = {
   option: Expression;
-  scalar?: Expression;
+  scalar?: boolean;
 } & BaseExpressionArgs;
 
 export class JSONExtractQuoteExpr extends Expression {
@@ -12703,7 +12703,7 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
     return this.args.this;
   }
 
-  get $indexType (): Expression | undefined {
+  get $indexType (): DataTypeExpr | undefined {
     return this.args.indexType;
   }
 
@@ -12809,7 +12809,7 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
     return this.args.notNull;
   }
 
-  get $dataType (): Expression | undefined {
+  get $dataType (): DataTypeExpr | undefined {
     return this.args.dataType;
   }
 }
@@ -13855,9 +13855,9 @@ export class ExecuteAsPropertyExpr extends PropertyExpr {
   }
 }
 
-export type ExternalPropertyExprArgs = {
+export type ExternalPropertyExprArgs = Omit<PropertyExprArgs, 'this'> & {
   this?: Expression;
-} & PropertyExprArgs;
+};
 
 export class ExternalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXTERNAL_PROPERTY;
@@ -18572,11 +18572,11 @@ export class DivExpr extends BinaryExpr {
     super(args);
   }
 
-  get $typed (): Expression | undefined {
+  get $typed (): DataTypeExpr | undefined {
     return this.args.typed;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 }
@@ -18664,7 +18664,7 @@ export class DotExpr extends BinaryExpr {
       throw new Error('Dot requires >= 2 expressions.');
     }
 
-    return expressions.reduce(
+    return expressions.reduce<DotExpr>(
       (x, y) => new DotExpr({
         this: x,
         expression: y,
@@ -24870,7 +24870,7 @@ export class TimestampTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     return this.args.zone;
   }
 
-  get $inputTypePreserved (): Expression | undefined {
+  get $inputTypePreserved (): DataTypeExpr | undefined {
     return this.args.inputTypePreserved;
   }
 
@@ -28304,7 +28304,7 @@ export class ParseDatetimeExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 
@@ -29672,7 +29672,7 @@ export class GenerateEmbeddingExpr extends FuncExpr {
     return this.args.paramsStruct;
   }
 
-  get $isText (): Expression | undefined {
+  get $isText (): string | undefined {
     return this.args.isText;
   }
 
@@ -29768,7 +29768,7 @@ export class VectorSearchExpr extends FuncExpr {
     return this.args.topK;
   }
 
-  get $distanceType (): Expression | undefined {
+  get $distanceType (): DataTypeExpr | undefined {
     return this.args.distanceType;
   }
 
@@ -31692,11 +31692,11 @@ export class StrToDateExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 
@@ -32456,11 +32456,11 @@ export class TsOrDsToDateExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 
@@ -32519,11 +32519,11 @@ export class TsOrDsToTimeExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 
