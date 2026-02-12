@@ -30921,17 +30921,34 @@ export class SoundexP123Expr extends FuncExpr {
   }
 }
 
-export type SplitExprArgs = { limit?: number | Expression } & FuncExprArgs;
+export type SplitExprArgs = {
+  this: Expression;
+  expression: Expression;
+  limit?: number | Expression;
+} & FuncExprArgs;
 
 export class SplitExpr extends FuncExpr {
   key = ExpressionKey.SPLIT;
 
-  static argTypes = { limit: false } satisfies RequiredMap<SplitExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    limit: false,
+  } satisfies RequiredMap<SplitExprArgs>;
 
   declare args: SplitExprArgs;
 
   constructor (args: SplitExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $limit (): Expression | undefined {
@@ -31074,12 +31091,19 @@ export class SubstringIndexExpr extends FuncExpr {
   }
 }
 
-export type StandardHashExprArgs = FuncExprArgs;
+export type StandardHashExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & FuncExprArgs;
 
 export class StandardHashExpr extends FuncExpr {
   key = ExpressionKey.STANDARD_HASH;
 
-  static argTypes = {} satisfies RequiredMap<StandardHashExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<StandardHashExprArgs>;
 
   declare args: StandardHashExprArgs;
 
@@ -31087,22 +31111,45 @@ export class StandardHashExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type StartsWithExprArgs = FuncExprArgs;
+export type StartsWithExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class StartsWithExpr extends FuncExpr {
   key = ExpressionKey.STARTS_WITH;
 
-  static argTypes = {} satisfies RequiredMap<StartsWithExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<StartsWithExprArgs>;
 
   declare args: StartsWithExprArgs;
 
   constructor (args: StartsWithExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   static {
@@ -31112,17 +31159,32 @@ export class StartsWithExpr extends FuncExpr {
   static sqlNames = ['STARTS_WITH', 'STARTSWITH'];
 }
 
-export type EndsWithExprArgs = FuncExprArgs;
+export type EndsWithExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class EndsWithExpr extends FuncExpr {
   key = ExpressionKey.ENDS_WITH;
 
-  static argTypes = {} satisfies RequiredMap<EndsWithExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<EndsWithExprArgs>;
 
   declare args: EndsWithExprArgs;
 
   constructor (args: EndsWithExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   static {
@@ -31220,17 +31282,32 @@ export class SearchExpr extends FuncExpr {
   }
 }
 
-export type SearchIpExprArgs = FuncExprArgs;
+export type SearchIpExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class SearchIpExpr extends FuncExpr {
   key = ExpressionKey.SEARCH_IP;
 
-  static argTypes = {} satisfies RequiredMap<SearchIpExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<SearchIpExprArgs>;
 
   declare args: SearchIpExprArgs;
 
   constructor (args: SearchIpExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   static {
@@ -31418,17 +31495,32 @@ export class NumberToStrExpr extends FuncExpr {
   }
 }
 
-export type FromBaseExprArgs = FuncExprArgs;
+export type FromBaseExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class FromBaseExpr extends FuncExpr {
   key = ExpressionKey.FROM_BASE;
 
-  static argTypes = {} satisfies RequiredMap<FromBaseExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<FromBaseExprArgs>;
 
   declare args: FromBaseExprArgs;
 
   constructor (args: FromBaseExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   static {
