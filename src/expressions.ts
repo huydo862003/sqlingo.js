@@ -10764,11 +10764,8 @@ export class TimeUnitExpr extends Expression {
     Y: 'YEAR',
   };
 
-  static isVarLike(expr: Expression): boolean {
-    return (
-      (expr instanceof VarExpr || expr instanceof ColumnExpr || expr instanceof LiteralExpr)
-      && !(expr instanceof ColumnExpr && expr.parts.length !== 1)
-    );
+  static isVarLike (expr: Expression): boolean {
+    return expr instanceof VarExpr || expr instanceof ColumnExpr || expr instanceof LiteralExpr;
   }
 
   declare args: TimeUnitExprArgs;
@@ -10776,7 +10773,11 @@ export class TimeUnitExpr extends Expression {
   constructor (args: TimeUnitExprArgs) {
     const unit = args.unit;
 
-    if (unit && TimeUnitExpr.isVarLike(unit)) {
+    if (
+      unit
+      && TimeUnitExpr.isVarLike(unit)
+      && !(unit instanceof ColumnExpr && unit.parts.length !== 1)
+    ) {
       args.unit = new VarExpr({
         this: (TimeUnitExpr.UNABBREVIATED_UNIT_NAME[unit.name] || unit.name).toUpperCase(),
       });
@@ -23423,7 +23424,10 @@ export class DateTruncExpr extends FuncExpr {
     const unabbreviate = args.unabbreviate ?? true;
     const unit = args.unit;
 
-    if (TimeUnitExpr.isVarLike(unit)) {
+    if (
+      TimeUnitExpr.isVarLike(unit)
+      && !(unit instanceof ColumnExpr && unit.parts.length !== 1)
+    ) {
       let unitName = unit.name.toUpperCase();
       if (unabbreviate && unitName in TimeUnitExpr.UNABBREVIATED_UNIT_NAME) {
         unitName = TimeUnitExpr.UNABBREVIATED_UNIT_NAME[unitName];
