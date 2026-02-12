@@ -17474,6 +17474,7 @@ export class FuncExpr extends ConditionExpr {
     }
   }
 
+  static _sqlNames: string[] = [];
   /**
    * Get the SQL names for this function class
    * @returns Array of SQL names (primary name first, then aliases)
@@ -17490,10 +17491,10 @@ export class FuncExpr extends ConditionExpr {
         .replace(/([a-z\d])([A-Z])/g, '$1_$2')
         .toLowerCase();
 
-      (this as any)._sqlNames = [snakeCase];
+      this._sqlNames = [snakeCase];
     }
 
-    return (this as any)._sqlNames;
+    return this._sqlNames;
   }
 
   /**
@@ -18862,12 +18863,21 @@ export class InExpr extends PredicateExpr {
   }
 }
 
+/**
+ * Function returns NULL instead of error
+ * https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/functions-reference#safe_prefix
+ */
 export type SafeFuncExprArgs = BaseExpressionArgs;
+
 export class SafeFuncExpr extends FuncExpr {
   key = ExpressionKey.SAFE_FUNC;
-  static argTypes = {} satisfies RequiredMap<SafeFuncExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<SafeFuncExprArgs>;
 
   declare args: SafeFuncExprArgs;
+
   constructor (args: SafeFuncExprArgs) {
     super(args);
   }
@@ -18928,14 +18938,32 @@ export class AsinhExpr extends FuncExpr {
   }
 }
 
-export type AtanExprArgs = BaseExpressionArgs;
+export type AtanExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & BaseExpressionArgs;
+
 export class AtanExpr extends FuncExpr {
   key = ExpressionKey.ATAN;
-  static argTypes = {} satisfies RequiredMap<AtanExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<AtanExprArgs>;
 
   declare args: AtanExprArgs;
+
   constructor (args: AtanExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 }
 
@@ -18950,14 +18978,32 @@ export class AtanhExpr extends FuncExpr {
   }
 }
 
-export type Atan2ExprArgs = BaseExpressionArgs;
+export type Atan2ExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
+
 export class Atan2Expr extends FuncExpr {
   key = ExpressionKey.ATAN2;
-  static argTypes = {} satisfies RequiredMap<Atan2ExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<Atan2ExprArgs>;
 
   declare args: Atan2ExprArgs;
+
   constructor (args: Atan2ExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 }
 
@@ -19104,58 +19150,148 @@ export class CoshExpr extends FuncExpr {
   }
 }
 
-export type CosineDistanceExprArgs = BaseExpressionArgs;
+export type CosineDistanceExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
+
 export class CosineDistanceExpr extends FuncExpr {
   key = ExpressionKey.COSINE_DISTANCE;
-  static argTypes = {} satisfies RequiredMap<CosineDistanceExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<CosineDistanceExprArgs>;
 
   declare args: CosineDistanceExprArgs;
+
   constructor (args: CosineDistanceExprArgs) {
     super(args);
   }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
 }
 
-export type DotProductExprArgs = BaseExpressionArgs;
+export type DotProductExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
+
 export class DotProductExpr extends FuncExpr {
   key = ExpressionKey.DOT_PRODUCT;
-  static argTypes = {} satisfies RequiredMap<DotProductExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<DotProductExprArgs>;
 
   declare args: DotProductExprArgs;
+
   constructor (args: DotProductExprArgs) {
     super(args);
   }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
 }
 
-export type EuclideanDistanceExprArgs = BaseExpressionArgs;
+export type EuclideanDistanceExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
+
 export class EuclideanDistanceExpr extends FuncExpr {
   key = ExpressionKey.EUCLIDEAN_DISTANCE;
-  static argTypes = {} satisfies RequiredMap<EuclideanDistanceExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<EuclideanDistanceExprArgs>;
 
   declare args: EuclideanDistanceExprArgs;
+
   constructor (args: EuclideanDistanceExprArgs) {
     super(args);
   }
-}
 
-export type ManhattanDistanceExprArgs = BaseExpressionArgs;
-export class ManhattanDistanceExpr extends FuncExpr {
-  key = ExpressionKey.MANHATTAN_DISTANCE;
-  static argTypes = {} satisfies RequiredMap<ManhattanDistanceExprArgs>;
+  get $this (): Expression {
+    return this.args.this;
+  }
 
-  declare args: ManhattanDistanceExprArgs;
-  constructor (args: ManhattanDistanceExprArgs) {
-    super(args);
+  get $expression (): Expression {
+    return this.args.expression;
   }
 }
 
-export type JarowinklerSimilarityExprArgs = BaseExpressionArgs;
+export type ManhattanDistanceExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
+
+export class ManhattanDistanceExpr extends FuncExpr {
+  key = ExpressionKey.MANHATTAN_DISTANCE;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<ManhattanDistanceExprArgs>;
+
+  declare args: ManhattanDistanceExprArgs;
+
+  constructor (args: ManhattanDistanceExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+}
+
+export type JarowinklerSimilarityExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
+
 export class JarowinklerSimilarityExpr extends FuncExpr {
   key = ExpressionKey.JAROWINKLER_SIMILARITY;
-  static argTypes = {};
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<JarowinklerSimilarityExprArgs>;
 
   declare args: JarowinklerSimilarityExprArgs;
+
   constructor (args: JarowinklerSimilarityExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 }
 
