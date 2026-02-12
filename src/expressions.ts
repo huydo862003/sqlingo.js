@@ -23554,7 +23554,7 @@ export class DateFromUnixDateExpr extends FuncExpr {
   }
 }
 
-export type DayOfWeekExprArgs = BaseExpressionArgs;
+export type DayOfWeekExprArgs = FuncExprArgs;
 export class DayOfWeekExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_WEEK;
   static argTypes = {} satisfies RequiredMap<DayOfWeekExprArgs>;
@@ -23571,7 +23571,7 @@ export class DayOfWeekExpr extends FuncExpr {
   static sqlNames = ['DAY_OF_WEEK', 'DAYOFWEEK'];
 }
 
-export type DayOfWeekIsoExprArgs = BaseExpressionArgs;
+export type DayOfWeekIsoExprArgs = FuncExprArgs;
 export class DayOfWeekIsoExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_WEEK_ISO;
   static argTypes = {} satisfies RequiredMap<DayOfWeekIsoExprArgs>;
@@ -23586,7 +23586,7 @@ export class DayOfWeekIsoExpr extends FuncExpr {
   }
 }
 
-export type DayOfMonthExprArgs = BaseExpressionArgs;
+export type DayOfMonthExprArgs = FuncExprArgs;
 export class DayOfMonthExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_MONTH;
   static argTypes = {} satisfies RequiredMap<DayOfMonthExprArgs>;
@@ -23603,7 +23603,7 @@ export class DayOfMonthExpr extends FuncExpr {
   }
 }
 
-export type DayOfYearExprArgs = BaseExpressionArgs;
+export type DayOfYearExprArgs = FuncExprArgs;
 export class DayOfYearExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_YEAR;
   static argTypes = {} satisfies RequiredMap<DayOfYearExprArgs>;
@@ -23620,33 +23620,40 @@ export class DayOfYearExpr extends FuncExpr {
   }
 }
 
-export type DaynameExprArgs = { abbreviated?: Expression } & BaseExpressionArgs;
+export type DaynameExprArgs = {
+  this: Expression;
+  abbreviated?: Expression;
+} & FuncExprArgs;
 
 export class DaynameExpr extends FuncExpr {
   key = ExpressionKey.DAYNAME;
 
-  static argTypes = { abbreviated: false } satisfies RequiredMap<DaynameExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    abbreviated: false,
+  } satisfies RequiredMap<DaynameExprArgs>;
 
   declare args: DaynameExprArgs;
-
-  static {
-    this.register();
-  }
-
-  static {
-    this.register();
-  }
 
   constructor (args: DaynameExprArgs) {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $abbreviated (): Expression | undefined {
     return this.args.abbreviated;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ToDaysExprArgs = BaseExpressionArgs;
+export type ToDaysExprArgs = FuncExprArgs;
 export class ToDaysExpr extends FuncExpr {
   key = ExpressionKey.TO_DAYS;
   static argTypes = {} satisfies RequiredMap<ToDaysExprArgs>;
