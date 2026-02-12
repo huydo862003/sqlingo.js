@@ -10916,17 +10916,27 @@ export class PositionalColumnExpr extends Expression {
   }
 }
 
-export type OverflowTruncateBehaviorExprArgs = { withCount: Expression } & BaseExpressionArgs;
+export type OverflowTruncateBehaviorExprArgs = {
+  this?: Expression;
+  withCount: Expression;
+} & BaseExpressionArgs;
 
 export class OverflowTruncateBehaviorExpr extends Expression {
   key = ExpressionKey.OVERFLOW_TRUNCATE_BEHAVIOR;
 
-  static argTypes = { withCount: true } satisfies RequiredMap<OverflowTruncateBehaviorExprArgs>;
+  static argTypes = {
+    this: false,
+    withCount: true,
+  } satisfies RequiredMap<OverflowTruncateBehaviorExprArgs>;
 
   declare args: OverflowTruncateBehaviorExprArgs;
 
   constructor (args: OverflowTruncateBehaviorExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   get $withCount (): Expression {
@@ -11180,9 +11190,12 @@ export enum OpenJSONColumnDefExprKind {
   QUERY = 'QUERY',
 }
 
-export type OpenJSONColumnDefExprArgs = { kind: OpenJSONColumnDefExprKind;
+export type OpenJSONColumnDefExprArgs = {
+  this: Expression;
+  kind: OpenJSONColumnDefExprKind;
   path?: Expression;
-  asJson?: Expression; } & BaseExpressionArgs;
+  asJson?: Expression;
+} & BaseExpressionArgs;
 
 export class OpenJSONColumnDefExpr extends Expression {
   key = ExpressionKey.OPEN_JSON_COLUMN_DEF;
@@ -11193,6 +11206,7 @@ export class OpenJSONColumnDefExpr extends Expression {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     kind: true,
     path: false,
     asJson: false,
@@ -11202,6 +11216,10 @@ export class OpenJSONColumnDefExpr extends Expression {
 
   constructor (args: OpenJSONColumnDefExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $kind (): string {
@@ -27162,17 +27180,32 @@ export class JSONTableExpr extends FuncExpr {
   }
 }
 
-export type JSONTypeExprArgs = FuncExprArgs;
+export type JSONTypeExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & FuncExprArgs;
 
 export class JSONTypeExpr extends FuncExpr {
   key = ExpressionKey.JSON_TYPE;
 
-  static argTypes = {} satisfies RequiredMap<JSONTypeExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<JSONTypeExprArgs>;
 
   declare args: JSONTypeExprArgs;
 
   constructor (args: JSONTypeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 
   static {
@@ -27223,12 +27256,21 @@ export class ObjectInsertExpr extends FuncExpr {
   }
 }
 
-export type OpenJSONExprArgs = { path?: Expression } & FuncExprArgs;
+export type OpenJSONExprArgs = {
+  this: Expression;
+  path?: Expression;
+  expressions?: Expression[];
+} & FuncExprArgs;
 
 export class OpenJSONExpr extends FuncExpr {
   key = ExpressionKey.OPEN_JSON;
 
-  static argTypes = { path: false } satisfies RequiredMap<OpenJSONExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    path: false,
+    expressions: false,
+  } satisfies RequiredMap<OpenJSONExprArgs>;
 
   declare args: OpenJSONExprArgs;
 
@@ -27236,8 +27278,16 @@ export class OpenJSONExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $path (): Expression | undefined {
     return this.args.path;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   static {
@@ -33259,14 +33309,23 @@ export class OrExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   }
 }
 
-export type XorExprArgs = { roundInput?: Expression } & ConnectorExprArgs;
+export type XorExprArgs = {
+  this?: Expression;
+  expression?: Expression;
+  expressions?: Expression[];
+  roundInput?: Expression;
+} & ConnectorExprArgs;
 
 export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   key = ExpressionKey.XOR;
-    static isVarLenArgs = true;
+  static isVarLenArgs = true;
+
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: false,
+    expression: false,
+    expressions: false,
     roundInput: false,
   } satisfies RequiredMap<XorExprArgs>;
 
@@ -33274,6 +33333,18 @@ export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
 
   constructor (args: XorExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   get $roundInput (): Expression | undefined {
