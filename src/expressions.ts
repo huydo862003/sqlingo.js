@@ -21211,15 +21211,15 @@ export type ArrayContainsExprArgs = {
   this: Expression;
   expression: Expression;
   ensureVariant?: Expression;
-} & BinaryExprArgs;
+} & BinaryExprArgs & FuncExprArgs;
 
-export class ArrayContainsExpr extends BinaryExpr {
+export class ArrayContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.ARRAY_CONTAINS;
 
   static _sqlNames = ['ARRAY_CONTAINS', 'ARRAY_HAS'];
 
+  // @ts-expect-error - super.argTypes not accessible in multiInherit classes
   static argTypes = {
-    ...super.argTypes,
     this: true,
     expression: true,
     ensureVariant: false,
@@ -21251,15 +21251,15 @@ export class ArrayContainsExpr extends BinaryExpr {
 export type ArrayContainsAllExprArgs = {
   this: Expression;
   expression: Expression;
-} & BinaryExprArgs;
+} & BinaryExprArgs & FuncExprArgs;
 
-export class ArrayContainsAllExpr extends BinaryExpr {
+export class ArrayContainsAllExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.ARRAY_CONTAINS_ALL;
 
   static _sqlNames = ['ARRAY_CONTAINS_ALL', 'ARRAY_HAS_ALL'];
 
+  // @ts-expect-error - super.argTypes not accessible in multiInherit classes
   static argTypes = {
-    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<ArrayContainsAllExprArgs>;
@@ -21659,13 +21659,13 @@ export class StringToArrayExpr extends FuncExpr {
 export type ArrayOverlapsExprArgs = {
   this: Expression;
   expression: Expression;
-} & BinaryExprArgs;
+} & BinaryExprArgs & FuncExprArgs;
 
-export class ArrayOverlapsExpr extends BinaryExpr {
+export class ArrayOverlapsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.ARRAY_OVERLAPS;
 
+  // @ts-expect-error - super.argTypes not accessible in multiInherit classes
   static argTypes = {
-    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<ArrayOverlapsExprArgs>;
