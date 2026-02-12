@@ -96,12 +96,13 @@ export function setPretty (value: boolean): void {
 
 export function parseOne (
   sql: string,
-  read?: Dialects,
-  dialect?: Dialects,
   opts?: ParseOptions,
 ): Expression {
-  const activeDialect = read ?? dialect;
-  const result = parse(sql, activeDialect, undefined, opts);
+  const activeDialect = opts?.read ?? opts?.dialect;
+  const result = parse(sql, {
+    ...opts,
+    dialect: activeDialect,
+  });
 
   for (const expression of result) {
     if (!expression) {

@@ -39,3 +39,7 @@ coverage/
 # Temporary files
 *.tmp
 .cache/
+scripts/add-is-var-len-args.ts
+scripts/add-static-initializers.ts
+scripts/update-func-classes-simple.ts
+scripts/update-func-classes.ts

@@ -18867,7 +18867,7 @@ export class InExpr extends PredicateExpr {
  * Function returns NULL instead of error
  * https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/functions-reference#safe_prefix
  */
-export type SafeFuncExprArgs = BaseExpressionArgs;
+export type SafeFuncExprArgs = FuncExprArgs;
 
 export class SafeFuncExpr extends FuncExpr {
   key = ExpressionKey.SAFE_FUNC;
@@ -18883,56 +18883,81 @@ export class SafeFuncExpr extends FuncExpr {
   }
 }
 
-export type TypeofExprArgs = BaseExpressionArgs;
+export type TypeofExprArgs = FuncExprArgs;
+
 export class TypeofExpr extends FuncExpr {
   key = ExpressionKey.TYPEOF;
-  static argTypes = {} satisfies RequiredMap<TypeofExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<TypeofExprArgs>;
 
   declare args: TypeofExprArgs;
+
   constructor (args: TypeofExprArgs) {
     super(args);
   }
 }
 
-export type AcosExprArgs = BaseExpressionArgs;
+export type AcosExprArgs = FuncExprArgs;
+
 export class AcosExpr extends FuncExpr {
   key = ExpressionKey.ACOS;
-  static argTypes = {} satisfies RequiredMap<AcosExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AcosExprArgs>;
 
   declare args: AcosExprArgs;
+
   constructor (args: AcosExprArgs) {
     super(args);
   }
 }
 
-export type AcoshExprArgs = BaseExpressionArgs;
+export type AcoshExprArgs = FuncExprArgs;
+
 export class AcoshExpr extends FuncExpr {
   key = ExpressionKey.ACOSH;
-  static argTypes = {} satisfies RequiredMap<AcoshExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AcoshExprArgs>;
 
   declare args: AcoshExprArgs;
+
   constructor (args: AcoshExprArgs) {
     super(args);
   }
 }
 
-export type AsinExprArgs = BaseExpressionArgs;
+export type AsinExprArgs = FuncExprArgs;
+
 export class AsinExpr extends FuncExpr {
   key = ExpressionKey.ASIN;
-  static argTypes = {} satisfies RequiredMap<AsinExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AsinExprArgs>;
 
   declare args: AsinExprArgs;
+
   constructor (args: AsinExprArgs) {
     super(args);
   }
 }
 
-export type AsinhExprArgs = BaseExpressionArgs;
+export type AsinhExprArgs = FuncExprArgs;
+
 export class AsinhExpr extends FuncExpr {
   key = ExpressionKey.ASINH;
-  static argTypes = {} satisfies RequiredMap<AsinhExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AsinhExprArgs>;
 
   declare args: AsinhExprArgs;
+
   constructor (args: AsinhExprArgs) {
     super(args);
   }
@@ -18941,7 +18966,7 @@ export class AsinhExpr extends FuncExpr {
 export type AtanExprArgs = {
   this: Expression;
   expression?: Expression;
-} & BaseExpressionArgs;
+} & FuncExprArgs;
 
 export class AtanExpr extends FuncExpr {
   key = ExpressionKey.ATAN;
@@ -18967,12 +18992,17 @@ export class AtanExpr extends FuncExpr {
   }
 }
 
-export type AtanhExprArgs = BaseExpressionArgs;
+export type AtanhExprArgs = FuncExprArgs;
+
 export class AtanhExpr extends FuncExpr {
   key = ExpressionKey.ATANH;
-  static argTypes = {} satisfies RequiredMap<AtanhExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AtanhExprArgs>;
 
   declare args: AtanhExprArgs;
+
   constructor (args: AtanhExprArgs) {
     super(args);
   }
@@ -18981,7 +19011,7 @@ export class AtanhExpr extends FuncExpr {
 export type Atan2ExprArgs = {
   this: Expression;
   expression: Expression;
-} & BaseExpressionArgs;
+} & FuncExprArgs;
 
 export class Atan2Expr extends FuncExpr {
   key = ExpressionKey.ATAN2;
@@ -19007,142 +19037,205 @@ export class Atan2Expr extends FuncExpr {
   }
 }
 
-export type CotExprArgs = BaseExpressionArgs;
+export type CotExprArgs = FuncExprArgs;
+
 export class CotExpr extends FuncExpr {
   key = ExpressionKey.COT;
-  static argTypes = {} satisfies RequiredMap<CotExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<CotExprArgs>;
 
   declare args: CotExprArgs;
+
   constructor (args: CotExprArgs) {
     super(args);
   }
 }
 
-export type CothExprArgs = BaseExpressionArgs;
+export type CothExprArgs = FuncExprArgs;
+
 export class CothExpr extends FuncExpr {
   key = ExpressionKey.COTH;
-  static argTypes = {} satisfies RequiredMap<CothExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<CothExprArgs>;
 
   declare args: CothExprArgs;
+
   constructor (args: CothExprArgs) {
     super(args);
   }
 }
 
-export type CosExprArgs = BaseExpressionArgs;
+export type CosExprArgs = FuncExprArgs;
+
 export class CosExpr extends FuncExpr {
   key = ExpressionKey.COS;
-  static argTypes = {} satisfies RequiredMap<CosExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<CosExprArgs>;
 
   declare args: CosExprArgs;
+
   constructor (args: CosExprArgs) {
     super(args);
   }
 }
 
-export type CscExprArgs = BaseExpressionArgs;
+export type CscExprArgs = FuncExprArgs;
+
 export class CscExpr extends FuncExpr {
   key = ExpressionKey.CSC;
-  static argTypes = {} satisfies RequiredMap<CscExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<CscExprArgs>;
 
   declare args: CscExprArgs;
+
   constructor (args: CscExprArgs) {
     super(args);
   }
 }
 
-export type CschExprArgs = BaseExpressionArgs;
+export type CschExprArgs = FuncExprArgs;
+
 export class CschExpr extends FuncExpr {
   key = ExpressionKey.CSCH;
-  static argTypes = {} satisfies RequiredMap<CschExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<CschExprArgs>;
 
   declare args: CschExprArgs;
+
   constructor (args: CschExprArgs) {
     super(args);
   }
 }
 
-export type SecExprArgs = BaseExpressionArgs;
+export type SecExprArgs = FuncExprArgs;
+
 export class SecExpr extends FuncExpr {
   key = ExpressionKey.SEC;
-  static argTypes = {} satisfies RequiredMap<SecExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<SecExprArgs>;
 
   declare args: SecExprArgs;
+
   constructor (args: SecExprArgs) {
     super(args);
   }
 }
 
-export type SechExprArgs = BaseExpressionArgs;
+export type SechExprArgs = FuncExprArgs;
+
 export class SechExpr extends FuncExpr {
   key = ExpressionKey.SECH;
-  static argTypes = {} satisfies RequiredMap<SechExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<SechExprArgs>;
 
   declare args: SechExprArgs;
+
   constructor (args: SechExprArgs) {
     super(args);
   }
 }
 
-export type SinExprArgs = BaseExpressionArgs;
+export type SinExprArgs = FuncExprArgs;
+
 export class SinExpr extends FuncExpr {
   key = ExpressionKey.SIN;
-  static argTypes = {} satisfies RequiredMap<SinExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<SinExprArgs>;
 
   declare args: SinExprArgs;
+
   constructor (args: SinExprArgs) {
     super(args);
   }
 }
 
-export type SinhExprArgs = BaseExpressionArgs;
+export type SinhExprArgs = FuncExprArgs;
+
 export class SinhExpr extends FuncExpr {
   key = ExpressionKey.SINH;
-  static argTypes = {} satisfies RequiredMap<SinhExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<SinhExprArgs>;
 
   declare args: SinhExprArgs;
+
   constructor (args: SinhExprArgs) {
     super(args);
   }
 }
 
-export type TanExprArgs = BaseExpressionArgs;
+export type TanExprArgs = FuncExprArgs;
+
 export class TanExpr extends FuncExpr {
   key = ExpressionKey.TAN;
-  static argTypes = {} satisfies RequiredMap<TanExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<TanExprArgs>;
 
   declare args: TanExprArgs;
+
   constructor (args: TanExprArgs) {
     super(args);
   }
 }
 
-export type TanhExprArgs = BaseExpressionArgs;
+export type TanhExprArgs = FuncExprArgs;
+
 export class TanhExpr extends FuncExpr {
   key = ExpressionKey.TANH;
-  static argTypes = {} satisfies RequiredMap<TanhExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<TanhExprArgs>;
 
   declare args: TanhExprArgs;
+
   constructor (args: TanhExprArgs) {
     super(args);
   }
 }
 
-export type DegreesExprArgs = BaseExpressionArgs;
+export type DegreesExprArgs = FuncExprArgs;
+
 export class DegreesExpr extends FuncExpr {
   key = ExpressionKey.DEGREES;
-  static argTypes = {} satisfies RequiredMap<DegreesExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<DegreesExprArgs>;
 
   declare args: DegreesExprArgs;
+
   constructor (args: DegreesExprArgs) {
     super(args);
   }
 }
 
-export type CoshExprArgs = BaseExpressionArgs;
+export type CoshExprArgs = FuncExprArgs;
+
 export class CoshExpr extends FuncExpr {
   key = ExpressionKey.COSH;
-  static argTypes = {} satisfies RequiredMap<CoshExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<CoshExprArgs>;
 
   declare args: CoshExprArgs;
   constructor (args: CoshExprArgs) {
@@ -19153,7 +19246,7 @@ export class CoshExpr extends FuncExpr {
 export type CosineDistanceExprArgs = {
   this: Expression;
   expression: Expression;
-} & BaseExpressionArgs;
+} & FuncExprArgs;
 
 export class CosineDistanceExpr extends FuncExpr {
   key = ExpressionKey.COSINE_DISTANCE;
@@ -19182,7 +19275,7 @@ export class CosineDistanceExpr extends FuncExpr {
 export type DotProductExprArgs = {
   this: Expression;
   expression: Expression;
-} & BaseExpressionArgs;
+} & FuncExprArgs;
 
 export class DotProductExpr extends FuncExpr {
   key = ExpressionKey.DOT_PRODUCT;
@@ -19211,7 +19304,7 @@ export class DotProductExpr extends FuncExpr {
 export type EuclideanDistanceExprArgs = {
   this: Expression;
   expression: Expression;
-} & BaseExpressionArgs;
+} & FuncExprArgs;
 
 export class EuclideanDistanceExpr extends FuncExpr {
   key = ExpressionKey.EUCLIDEAN_DISTANCE;
@@ -19240,7 +19333,7 @@ export class EuclideanDistanceExpr extends FuncExpr {
 export type ManhattanDistanceExprArgs = {
   this: Expression;
   expression: Expression;
-} & BaseExpressionArgs;
+} & FuncExprArgs;
 
 export class ManhattanDistanceExpr extends FuncExpr {
   key = ExpressionKey.MANHATTAN_DISTANCE;
@@ -19269,7 +19362,7 @@ export class ManhattanDistanceExpr extends FuncExpr {
 export type JarowinklerSimilarityExprArgs = {
   this: Expression;
   expression: Expression;
-} & BaseExpressionArgs;
+} & FuncExprArgs;
 
 export class JarowinklerSimilarityExpr extends FuncExpr {
   key = ExpressionKey.JAROWINKLER_SIMILARITY;
@@ -19311,67 +19404,99 @@ export class AggFuncExpr extends FuncExpr {
   }
 }
 
-export type BitwiseCountExprArgs = BaseExpressionArgs;
+export type BitwiseCountExprArgs = FuncExprArgs;
+
 export class BitwiseCountExpr extends FuncExpr {
   key = ExpressionKey.BITWISE_COUNT;
-  static argTypes = {} satisfies RequiredMap<BitwiseCountExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<BitwiseCountExprArgs>;
 
   declare args: BitwiseCountExprArgs;
+
   constructor (args: BitwiseCountExprArgs) {
     super(args);
   }
 }
 
-export type BitmapBucketNumberExprArgs = BaseExpressionArgs;
+export type BitmapBucketNumberExprArgs = FuncExprArgs;
+
 export class BitmapBucketNumberExpr extends FuncExpr {
   key = ExpressionKey.BITMAP_BUCKET_NUMBER;
-  static argTypes = {} satisfies RequiredMap<BitmapBucketNumberExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<BitmapBucketNumberExprArgs>;
 
   declare args: BitmapBucketNumberExprArgs;
+
   constructor (args: BitmapBucketNumberExprArgs) {
     super(args);
   }
 }
 
-export type BitmapCountExprArgs = BaseExpressionArgs;
+export type BitmapCountExprArgs = FuncExprArgs;
+
 export class BitmapCountExpr extends FuncExpr {
   key = ExpressionKey.BITMAP_COUNT;
-  static argTypes = {} satisfies RequiredMap<BitmapCountExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<BitmapCountExprArgs>;
 
   declare args: BitmapCountExprArgs;
+
   constructor (args: BitmapCountExprArgs) {
     super(args);
   }
 }
 
-export type BitmapBitPositionExprArgs = BaseExpressionArgs;
+export type BitmapBitPositionExprArgs = FuncExprArgs;
+
 export class BitmapBitPositionExpr extends FuncExpr {
   key = ExpressionKey.BITMAP_BIT_POSITION;
-  static argTypes = {} satisfies RequiredMap<BitmapBitPositionExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<BitmapBitPositionExprArgs>;
 
   declare args: BitmapBitPositionExprArgs;
+
   constructor (args: BitmapBitPositionExprArgs) {
     super(args);
   }
 }
 
-export type ByteLengthExprArgs = BaseExpressionArgs;
+export type ByteLengthExprArgs = FuncExprArgs;
+
 export class ByteLengthExpr extends FuncExpr {
   key = ExpressionKey.BYTE_LENGTH;
-  static argTypes = {} satisfies RequiredMap<ByteLengthExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ByteLengthExprArgs>;
 
   declare args: ByteLengthExprArgs;
+
   constructor (args: ByteLengthExprArgs) {
     super(args);
   }
 }
 
-export type BoolnotExprArgs = { roundInput?: Expression } & BaseExpressionArgs;
+export type BoolnotExprArgs = {
+  this: Expression;
+  roundInput?: Expression;
+} & FuncExprArgs;
 
 export class BoolnotExpr extends FuncExpr {
   key = ExpressionKey.BOOLNOT;
 
-  static argTypes = { roundInput: false } satisfies RequiredMap<BoolnotExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    roundInput: false,
+  } satisfies RequiredMap<BoolnotExprArgs>;
 
   declare args: BoolnotExprArgs;
 
@@ -19379,17 +19504,30 @@ export class BoolnotExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $roundInput (): Expression | undefined {
     return this.args.roundInput;
   }
 }
 
-export type BoolandExprArgs = { roundInput?: Expression } & BaseExpressionArgs;
+export type BoolandExprArgs = {
+  this: Expression;
+  expression: Expression;
+  roundInput?: Expression;
+} & FuncExprArgs;
 
 export class BoolandExpr extends FuncExpr {
   key = ExpressionKey.BOOLAND;
 
-  static argTypes = { roundInput: false } satisfies RequiredMap<BoolandExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    roundInput: false,
+  } satisfies RequiredMap<BoolandExprArgs>;
 
   declare args: BoolandExprArgs;
 
@@ -19397,17 +19535,34 @@ export class BoolandExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $roundInput (): Expression | undefined {
     return this.args.roundInput;
   }
 }
 
-export type BoolorExprArgs = { roundInput?: Expression } & BaseExpressionArgs;
+export type BoolorExprArgs = {
+  this: Expression;
+  expression: Expression;
+  roundInput?: Expression;
+} & FuncExprArgs;
 
 export class BoolorExpr extends FuncExpr {
   key = ExpressionKey.BOOLOR;
 
-  static argTypes = { roundInput: false } satisfies RequiredMap<BoolorExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    roundInput: false,
+  } satisfies RequiredMap<BoolorExprArgs>;
 
   declare args: BoolorExprArgs;
 
@@ -19415,28 +19570,53 @@ export class BoolorExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $roundInput (): Expression | undefined {
     return this.args.roundInput;
   }
 }
 
-export type JSONBoolExprArgs = BaseExpressionArgs;
+/**
+ * https://cloud.google.com/bigquery/docs/reference/standard-sql/json_functions#bool_for_json
+ */
+export type JSONBoolExprArgs = FuncExprArgs;
+
 export class JSONBoolExpr extends FuncExpr {
   key = ExpressionKey.JSON_BOOL;
-  static argTypes = {} satisfies RequiredMap<JSONBoolExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<JSONBoolExprArgs>;
 
   declare args: JSONBoolExprArgs;
+
   constructor (args: JSONBoolExprArgs) {
     super(args);
   }
 }
 
-export type ArrayRemoveExprArgs = { nullPropagation?: Expression } & BaseExpressionArgs;
+export type ArrayRemoveExprArgs = {
+  this: Expression;
+  expression: Expression;
+  nullPropagation?: Expression;
+} & FuncExprArgs;
 
 export class ArrayRemoveExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_REMOVE;
 
-  static argTypes = { nullPropagation: false } satisfies RequiredMap<ArrayRemoveExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    nullPropagation: false,
+  } satisfies RequiredMap<ArrayRemoveExprArgs>;
 
   declare args: ArrayRemoveExprArgs;
 
@@ -19444,89 +19624,207 @@ export class ArrayRemoveExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $nullPropagation (): Expression | undefined {
     return this.args.nullPropagation;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type AbsExprArgs = BaseExpressionArgs;
+export type AbsExprArgs = FuncExprArgs;
+
 export class AbsExpr extends FuncExpr {
   key = ExpressionKey.ABS;
-  static argTypes = {} satisfies RequiredMap<AbsExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AbsExprArgs>;
 
   declare args: AbsExprArgs;
+
   constructor (args: AbsExprArgs) {
     super(args);
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ApproxTopKEstimateExprArgs = BaseExpressionArgs;
+export type ApproxTopKEstimateExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & FuncExprArgs;
+
 export class ApproxTopKEstimateExpr extends FuncExpr {
   key = ExpressionKey.APPROX_TOP_K_ESTIMATE;
-  static argTypes = {} satisfies RequiredMap<ApproxTopKEstimateExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<ApproxTopKEstimateExprArgs>;
 
   declare args: ApproxTopKEstimateExprArgs;
+
   constructor (args: ApproxTopKEstimateExprArgs) {
     super(args);
   }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
+  }
 }
 
-export type FarmFingerprintExprArgs = BaseExpressionArgs;
+export type FarmFingerprintExprArgs = {
+  expressions: Expression[];
+} & FuncExprArgs;
+
 export class FarmFingerprintExpr extends FuncExpr {
   key = ExpressionKey.FARM_FINGERPRINT;
-  static argTypes = {} satisfies RequiredMap<FarmFingerprintExprArgs>;
+
+  static isVarLenArgs = true;
+
+  static _sqlNames = ['FARM_FINGERPRINT', 'FARMFINGERPRINT64'];
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+  } satisfies RequiredMap<FarmFingerprintExprArgs>;
 
   declare args: FarmFingerprintExprArgs;
+
   constructor (args: FarmFingerprintExprArgs) {
     super(args);
   }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
+  static {
+    this.register();
+  }
 }
 
-export type FlattenExprArgs = BaseExpressionArgs;
+export type FlattenExprArgs = FuncExprArgs;
+
 export class FlattenExpr extends FuncExpr {
   key = ExpressionKey.FLATTEN;
-  static argTypes = {} satisfies RequiredMap<FlattenExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<FlattenExprArgs>;
 
   declare args: FlattenExprArgs;
+
   constructor (args: FlattenExprArgs) {
     super(args);
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type Float64ExprArgs = BaseExpressionArgs;
+export type Float64ExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & FuncExprArgs;
+
 export class Float64Expr extends FuncExpr {
   key = ExpressionKey.FLOAT64;
-  static argTypes = {} satisfies RequiredMap<Float64ExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<Float64ExprArgs>;
 
   declare args: Float64ExprArgs;
+
   constructor (args: Float64ExprArgs) {
     super(args);
   }
-}
 
-export type TransformExprArgs = BaseExpressionArgs;
-export class TransformExpr extends FuncExpr {
-  key = ExpressionKey.TRANSFORM;
-  static argTypes = {} satisfies RequiredMap<TransformExprArgs>;
+  get $this (): Expression {
+    return this.args.this;
+  }
 
-  declare args: TransformExprArgs;
-  constructor (args: TransformExprArgs) {
-    super(args);
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
   }
 }
 
-export type TranslateExprArgs = { from: Expression;
-  to: Expression; } & BaseExpressionArgs;
+/**
+ * https://spark.apache.org/docs/latest/api/sql/index.html#transform
+ */
+export type TransformExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
+
+export class TransformExpr extends FuncExpr {
+  key = ExpressionKey.TRANSFORM;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<TransformExprArgs>;
+
+  declare args: TransformExprArgs;
+
+  constructor (args: TransformExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type TranslateExprArgs = {
+  this: Expression;
+  from: Expression;
+  to: Expression;
+} & FuncExprArgs;
 
 export class TranslateExpr extends FuncExpr {
   key = ExpressionKey.TRANSLATE;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Translate expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     from: true,
     to: true,
   } satisfies RequiredMap<TranslateExprArgs>;
@@ -19537,6 +19835,10 @@ export class TranslateExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $from (): Expression {
     return this.args.from;
   }
@@ -19544,25 +19846,62 @@ export class TranslateExpr extends FuncExpr {
   get $to (): Expression {
     return this.args.to;
   }
-}
 
-export type AnonymousExprArgs = BaseExpressionArgs;
-export class AnonymousExpr extends FuncExpr {
-  key = ExpressionKey.ANONYMOUS;
-  static argTypes = {} satisfies RequiredMap<AnonymousExprArgs>;
-
-  declare args: AnonymousExprArgs;
-  constructor (args: AnonymousExprArgs) {
-    super(args);
+  static {
+    this.register();
   }
 }
 
-export type ApplyExprArgs = BaseExpressionArgs;
+export type AnonymousExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+} & FuncExprArgs;
+
+export class AnonymousExpr extends FuncExpr {
+  key = ExpressionKey.ANONYMOUS;
+
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: false,
+  } satisfies RequiredMap<AnonymousExprArgs>;
+
+  declare args: AnonymousExprArgs;
+
+  constructor (args: AnonymousExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
+  get name (): string {
+    return typeof this.args.this === 'string' ? this.args.this : this.args.this.name;
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type ApplyExprArgs = FuncExprArgs;
+
 export class ApplyExpr extends FuncExpr {
   key = ExpressionKey.APPLY;
-  static argTypes = {} satisfies RequiredMap<ApplyExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ApplyExprArgs>;
 
   declare args: ApplyExprArgs;
+
   constructor (args: ApplyExprArgs) {
     super(args);
   }
@@ -19594,39 +19933,60 @@ export class ArrayExpr extends FuncExpr {
     return this.args.bracketNotation;
   }
 
-  get $structNameInheritance (): Expression | undefined {
+  get $structNameInheritance (): string | undefined {
     return this.args.structNameInheritance;
   }
 }
 
-export type AsciiExprArgs = BaseExpressionArgs;
+export type AsciiExprArgs = FuncExprArgs;
+
 export class AsciiExpr extends FuncExpr {
   key = ExpressionKey.ASCII;
-  static argTypes = {} satisfies RequiredMap<AsciiExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AsciiExprArgs>;
 
   declare args: AsciiExprArgs;
+
   constructor (args: AsciiExprArgs) {
     super(args);
   }
 }
 
-export type ToArrayExprArgs = BaseExpressionArgs;
+export type ToArrayExprArgs = FuncExprArgs;
+
 export class ToArrayExpr extends FuncExpr {
   key = ExpressionKey.TO_ARRAY;
-  static argTypes = {} satisfies RequiredMap<ToArrayExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ToArrayExprArgs>;
 
   declare args: ToArrayExprArgs;
+
   constructor (args: ToArrayExprArgs) {
     super(args);
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ToBooleanExprArgs = { safe?: boolean } & BaseExpressionArgs;
+export type ToBooleanExprArgs = {
+  this: Expression;
+  safe?: boolean;
+} & FuncExprArgs;
 
 export class ToBooleanExpr extends FuncExpr {
   key = ExpressionKey.TO_BOOLEAN;
 
-  static argTypes = { safe: false } satisfies RequiredMap<ToBooleanExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    safe: false,
+  } satisfies RequiredMap<ToBooleanExprArgs>;
 
   declare args: ToBooleanExprArgs;
 
@@ -19634,34 +19994,63 @@ export class ToBooleanExpr extends FuncExpr {
     super(args);
   }
 
-  get $safe (): Expression | undefined {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $safe (): boolean | undefined {
     return this.args.safe;
+  }
+
+  static {
+    this.register();
   }
 }
 
-export type ListExprArgs = BaseExpressionArgs;
+export type ListExprArgs = {
+  expressions?: Expression[];
+} & FuncExprArgs;
+
 export class ListExpr extends FuncExpr {
   key = ExpressionKey.LIST;
-  static argTypes = {} satisfies RequiredMap<ListExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: false,
+  } satisfies RequiredMap<ListExprArgs>;
 
   declare args: ListExprArgs;
+
   constructor (args: ListExprArgs) {
     super(args);
   }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
+  static {
+    this.register();
+  }
 }
 
-export type PadExprArgs = { fillPattern?: Expression;
-  isLeft: Expression; } & BaseExpressionArgs;
+/**
+ * String pad, kind True -> LPAD, False -> RPAD
+ */
+export type PadExprArgs = {
+  this: Expression;
+  expression: Expression;
+  fillPattern?: Expression;
+  isLeft: boolean;
+} & FuncExprArgs;
 
 export class PadExpr extends FuncExpr {
   key = ExpressionKey.PAD;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Pad expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
+    expression: true,
     fillPattern: false,
     isLeft: true,
   } satisfies RequiredMap<PadExprArgs>;
@@ -19672,28 +20061,44 @@ export class PadExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $fillPattern (): Expression | undefined {
     return this.args.fillPattern;
   }
 
-  get $isLeft (): Expression {
+  get $isLeft (): boolean {
     return this.args.isLeft;
+  }
+
+  static {
+    this.register();
   }
 }
 
-export type ToCharExprArgs = { format?: string;
+/**
+ * https://docs.snowflake.com/en/sql-reference/functions/to_char
+ * https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/TO_CHAR-number.html
+ */
+export type ToCharExprArgs = {
+  this: Expression;
+  format?: Expression;
   nlsparam?: Expression;
-  isNumeric?: Expression; } & BaseExpressionArgs;
+  isNumeric?: Expression;
+} & FuncExprArgs;
 
 export class ToCharExpr extends FuncExpr {
   key = ExpressionKey.TO_CHAR;
 
-  /**
-   * Defines the arguments (properties and child expressions) for ToChar expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     format: false,
     nlsparam: false,
     isNumeric: false,
@@ -19703,6 +20108,10 @@ export class ToCharExpr extends FuncExpr {
 
   constructor (args: ToCharExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $format (): Expression | undefined {
@@ -19716,35 +20125,52 @@ export class ToCharExpr extends FuncExpr {
   get $isNumeric (): Expression | undefined {
     return this.args.isNumeric;
   }
-}
 
-export type ToCodePointsExprArgs = BaseExpressionArgs;
-export class ToCodePointsExpr extends FuncExpr {
-  key = ExpressionKey.TO_CODE_POINTS;
-  static argTypes = {} satisfies RequiredMap<ToCodePointsExprArgs>;
-
-  declare args: ToCodePointsExprArgs;
-  constructor (args: ToCodePointsExprArgs) {
-    super(args);
+  static {
+    this.register();
   }
 }
 
-export type ToNumberExprArgs = { format?: string;
+export type ToCodePointsExprArgs = FuncExprArgs;
+
+export class ToCodePointsExpr extends FuncExpr {
+  key = ExpressionKey.TO_CODE_POINTS;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ToCodePointsExprArgs>;
+
+  declare args: ToCodePointsExprArgs;
+
+  constructor (args: ToCodePointsExprArgs) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+/**
+ * https://docs.snowflake.com/en/sql-reference/functions/to_decimal
+ * https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/TO_NUMBER.html
+ */
+export type ToNumberExprArgs = {
+  this: Expression;
+  format?: Expression;
   nlsparam?: Expression;
-  precision?: number | Expression;
-  scale?: number | Expression;
+  precision?: Expression;
+  scale?: Expression;
   safe?: boolean;
-  safeName?: boolean; } & BaseExpressionArgs;
+  safeName?: string;
+} & FuncExprArgs;
 
 export class ToNumberExpr extends FuncExpr {
   key = ExpressionKey.TO_NUMBER;
 
-  /**
-   * Defines the arguments (properties and child expressions) for ToNumber expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     format: false,
     nlsparam: false,
     precision: false,
@@ -19757,6 +20183,10 @@ export class ToNumberExpr extends FuncExpr {
 
   constructor (args: ToNumberExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $format (): Expression | undefined {
@@ -19775,12 +20205,16 @@ export class ToNumberExpr extends FuncExpr {
     return this.args.scale;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 
-  get $safeName (): Expression | undefined {
+  get $safeName (): string | undefined {
     return this.args.safeName;
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -19806,21 +20240,26 @@ export class ToDoubleExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 }
 
-export type ToDecfloatExprArgs = { format?: string } & BaseExpressionArgs;
+export type ToDecfloatExprArgs = {
+  format?: string;
+} & FuncExprArgs;
 
 export class ToDecfloatExpr extends FuncExpr {
   key = ExpressionKey.TO_DECFLOAT;
 
-  static argTypes = { format: false } satisfies RequiredMap<ToDecfloatExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    format: false,
+  } satisfies RequiredMap<ToDecfloatExprArgs>;
 
   declare args: ToDecfloatExprArgs;
 
@@ -19828,17 +20267,22 @@ export class ToDecfloatExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 }
 
-export type TryToDecfloatExprArgs = { format?: string } & BaseExpressionArgs;
+export type TryToDecfloatExprArgs = {
+  format?: string;
+} & FuncExprArgs;
 
 export class TryToDecfloatExpr extends FuncExpr {
   key = ExpressionKey.TRY_TO_DECFLOAT;
 
-  static argTypes = { format: false } satisfies RequiredMap<TryToDecfloatExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    format: false,
+  } satisfies RequiredMap<TryToDecfloatExprArgs>;
 
   declare args: TryToDecfloatExprArgs;
 
@@ -19846,13 +20290,15 @@ export class TryToDecfloatExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 }
 
-export type ToFileExprArgs = { path?: Expression;
-  safe?: boolean; } & BaseExpressionArgs;
+export type ToFileExprArgs = {
+  path?: Expression;
+  safe?: boolean;
+} & FuncExprArgs;
 
 export class ToFileExpr extends FuncExpr {
   key = ExpressionKey.TO_FILE;
@@ -19877,15 +20323,19 @@ export class ToFileExpr extends FuncExpr {
     return this.args.path;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 }
 
-export type CodePointsToBytesExprArgs = BaseExpressionArgs;
+export type CodePointsToBytesExprArgs = FuncExprArgs;
+
 export class CodePointsToBytesExpr extends FuncExpr {
   key = ExpressionKey.CODE_POINTS_TO_BYTES;
-  static argTypes = {} satisfies RequiredMap<CodePointsToBytesExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<CodePointsToBytesExprArgs>;
 
   declare args: CodePointsToBytesExprArgs;
   constructor (args: CodePointsToBytesExprArgs) {
@@ -20027,18 +20477,16 @@ export class CodePointsToStringExpr extends FuncExpr {
   }
 }
 
-export type GenerateSeriesExprArgs = { start: Expression;
+export type GenerateSeriesExprArgs = {
+  start: Expression;
   end: Expression;
   step?: Expression;
-  isEndExclusive?: Expression; } & BaseExpressionArgs;
+  isEndExclusive?: Expression;
+} & FuncExprArgs;
 
 export class GenerateSeriesExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_SERIES;
 
-  /**
-   * Defines the arguments (properties and child expressions) for GenerateSeries expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
     start: true,
@@ -20068,18 +20516,23 @@ export class GenerateSeriesExpr extends FuncExpr {
   get $isEndExclusive (): Expression | undefined {
     return this.args.isEndExclusive;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type GeneratorExprArgs = { rowcount?: Expression;
-  timelimit?: number | Expression; } & BaseExpressionArgs;
+/**
+ * https://docs.snowflake.com/en/sql-reference/functions/generator
+ */
+export type GeneratorExprArgs = {
+  rowcount?: Expression;
+  timelimit?: Expression;
+} & FuncExprArgs;
 
 export class GeneratorExpr extends FuncExpr {
   key = ExpressionKey.GENERATOR;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Generator expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
     rowcount: false,
@@ -20099,20 +20552,26 @@ export class GeneratorExpr extends FuncExpr {
   get $timelimit (): Expression | undefined {
     return this.args.timelimit;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type AIClassifyExprArgs = { categories: Expression[];
-  config?: Expression; } & BaseExpressionArgs;
+export type AIClassifyExprArgs = {
+  this: Expression;
+  categories: Expression;
+  config?: Expression;
+} & FuncExprArgs;
 
 export class AIClassifyExpr extends FuncExpr {
   key = ExpressionKey.AI_CLASSIFY;
 
-  /**
-   * Defines the arguments (properties and child expressions) for AIClassify expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
+  static _sqlNames = ["AI_CLASSIFY"];
+
   static argTypes = {
     ...super.argTypes,
+    this: true,
     categories: true,
     config: false,
   } satisfies RequiredMap<AIClassifyExprArgs>;
@@ -20123,43 +20582,107 @@ export class AIClassifyExpr extends FuncExpr {
     super(args);
   }
 
-  get $categories (): Expression[] {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $categories (): Expression {
     return this.args.categories;
   }
 
   get $config (): Expression | undefined {
     return this.args.config;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ArrayAllExprArgs = BaseExpressionArgs;
+export type ArrayAllExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
+
 export class ArrayAllExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_ALL;
-  static argTypes = {} satisfies RequiredMap<ArrayAllExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<ArrayAllExprArgs>;
 
   declare args: ArrayAllExprArgs;
+
   constructor (args: ArrayAllExprArgs) {
     super(args);
   }
-}
 
-export type ArrayAnyExprArgs = BaseExpressionArgs;
-export class ArrayAnyExpr extends FuncExpr {
-  key = ExpressionKey.ARRAY_ANY;
-  static argTypes = {} satisfies RequiredMap<ArrayAnyExprArgs>;
+  get $this (): Expression {
+    return this.args.this;
+  }
 
-  declare args: ArrayAnyExprArgs;
-  constructor (args: ArrayAnyExprArgs) {
-    super(args);
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
   }
 }
 
-export type ArrayAppendExprArgs = { nullPropagation?: Expression } & BaseExpressionArgs;
+/**
+ * Represents Python's `any(f(x) for x in array)`, where `array` is `this` and `f` is `expression`
+ */
+export type ArrayAnyExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
+
+export class ArrayAnyExpr extends FuncExpr {
+  key = ExpressionKey.ARRAY_ANY;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<ArrayAnyExprArgs>;
+
+  declare args: ArrayAnyExprArgs;
+
+  constructor (args: ArrayAnyExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type ArrayAppendExprArgs = {
+  this: Expression;
+  expression: Expression;
+  nullPropagation?: Expression;
+} & FuncExprArgs;
 
 export class ArrayAppendExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_APPEND;
 
-  static argTypes = { nullPropagation: false } satisfies RequiredMap<ArrayAppendExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    nullPropagation: false,
+  } satisfies RequiredMap<ArrayAppendExprArgs>;
 
   declare args: ArrayAppendExprArgs;
 
@@ -20167,17 +20690,38 @@ export class ArrayAppendExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $nullPropagation (): Expression | undefined {
     return this.args.nullPropagation;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ArrayPrependExprArgs = { nullPropagation?: Expression } & BaseExpressionArgs;
+export type ArrayPrependExprArgs = {
+  this: Expression;
+  expression: Expression;
+  nullPropagation?: Expression;
+} & FuncExprArgs;
 
 export class ArrayPrependExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_PREPEND;
 
-  static argTypes = { nullPropagation: false } satisfies RequiredMap<ArrayPrependExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    nullPropagation: false,
+  } satisfies RequiredMap<ArrayPrependExprArgs>;
 
   declare args: ArrayPrependExprArgs;
 
@@ -20185,19 +20729,42 @@ export class ArrayPrependExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $nullPropagation (): Expression | undefined {
     return this.args.nullPropagation;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ArrayConcatExprArgs = { nullPropagation?: Expression } & BaseExpressionArgs;
+export type ArrayConcatExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+  nullPropagation?: Expression;
+} & FuncExprArgs;
 
 export class ArrayConcatExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_CONCAT;
 
-  static sqlNames = ['ARRAY_CONCAT', 'ARRAY_CAT'];
+  static _sqlNames = ["ARRAY_CONCAT", "ARRAY_CAT"];
 
-  static argTypes = { nullPropagation: false } satisfies RequiredMap<ArrayConcatExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: false,
+    nullPropagation: false,
+  } satisfies RequiredMap<ArrayConcatExprArgs>;
 
   declare args: ArrayConcatExprArgs;
 
@@ -20205,35 +20772,58 @@ export class ArrayConcatExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
   get $nullPropagation (): Expression | undefined {
     return this.args.nullPropagation;
   }
-}
 
-export type ArrayCompactExprArgs = BaseExpressionArgs;
-export class ArrayCompactExpr extends FuncExpr {
-  key = ExpressionKey.ARRAY_COMPACT;
-  static argTypes = {} satisfies RequiredMap<ArrayCompactExprArgs>;
-
-  declare args: ArrayCompactExprArgs;
-  constructor (args: ArrayCompactExprArgs) {
-    super(args);
+  static {
+    this.register();
   }
 }
 
-export type ArrayInsertExprArgs = { position: Expression;
-  offset?: boolean; } & BaseExpressionArgs;
+export type ArrayCompactExprArgs = FuncExprArgs;
+
+export class ArrayCompactExpr extends FuncExpr {
+  key = ExpressionKey.ARRAY_COMPACT;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ArrayCompactExprArgs>;
+
+  declare args: ArrayCompactExprArgs;
+
+  constructor (args: ArrayCompactExprArgs) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type ArrayInsertExprArgs = {
+  this: Expression;
+  position: Expression;
+  expression: Expression;
+  offset?: Expression;
+} & FuncExprArgs;
 
 export class ArrayInsertExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_INSERT;
 
-  /**
-   * Defines the arguments (properties and child expressions) for ArrayInsert expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     position: true,
+    expression: true,
     offset: false,
   } satisfies RequiredMap<ArrayInsertExprArgs>;
 
@@ -20243,21 +20833,40 @@ export class ArrayInsertExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $position (): Expression {
     return this.args.position;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $offset (): Expression | undefined {
     return this.args.offset;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ArrayRemoveAtExprArgs = { position: Expression } & BaseExpressionArgs;
+export type ArrayRemoveAtExprArgs = {
+  this: Expression;
+  position: Expression;
+} & FuncExprArgs;
 
 export class ArrayRemoveAtExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_REMOVE_AT;
 
-  static argTypes = { position: true } satisfies RequiredMap<ArrayRemoveAtExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    position: true,
+  } satisfies RequiredMap<ArrayRemoveAtExprArgs>;
 
   declare args: ArrayRemoveAtExprArgs;
 
@@ -20265,30 +20874,65 @@ export class ArrayRemoveAtExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $position (): Expression {
     return this.args.position;
   }
-}
 
-export type ArrayConstructCompactExprArgs = BaseExpressionArgs;
-export class ArrayConstructCompactExpr extends FuncExpr {
-  key = ExpressionKey.ARRAY_CONSTRUCT_COMPACT;
-  static argTypes = {};
-
-  declare args: ArrayConstructCompactExprArgs;
-  constructor (args: ArrayConstructCompactExprArgs) {
-    super(args);
+  static {
+    this.register();
   }
 }
 
-export type ArrayContainsExprArgs = { ensureVariant?: Expression } & BaseExpressionArgs;
+export type ArrayConstructCompactExprArgs = {
+  expressions?: Expression[];
+} & FuncExprArgs;
+
+export class ArrayConstructCompactExpr extends FuncExpr {
+  key = ExpressionKey.ARRAY_CONSTRUCT_COMPACT;
+
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: false,
+  } satisfies RequiredMap<ArrayConstructCompactExprArgs>;
+
+  declare args: ArrayConstructCompactExprArgs;
+
+  constructor (args: ArrayConstructCompactExprArgs) {
+    super(args);
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type ArrayContainsExprArgs = {
+  this: Expression;
+  expression: Expression;
+  ensureVariant?: Expression;
+} & BinaryExprArgs;
 
 export class ArrayContainsExpr extends BinaryExpr {
   key = ExpressionKey.ARRAY_CONTAINS;
 
-  static sqlNames = ['ARRAY_CONTAINS', 'ARRAY_HAS'];
+  static _sqlNames = ["ARRAY_CONTAINS", "ARRAY_HAS"];
 
-  static argTypes = { ensureVariant: false } satisfies RequiredMap<ArrayContainsExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    ensureVariant: false,
+  } satisfies RequiredMap<ArrayContainsExprArgs>;
 
   declare args: ArrayContainsExprArgs;
 
@@ -20296,83 +20940,166 @@ export class ArrayContainsExpr extends BinaryExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $ensureVariant (): Expression | undefined {
     return this.args.ensureVariant;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ArrayContainsAllExprArgs = BaseExpressionArgs;
+export type ArrayContainsAllExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BinaryExprArgs;
+
 export class ArrayContainsAllExpr extends BinaryExpr {
   key = ExpressionKey.ARRAY_CONTAINS_ALL;
-  static argTypes = {} satisfies RequiredMap<ArrayContainsAllExprArgs>;
+
+  static _sqlNames = ["ARRAY_CONTAINS_ALL", "ARRAY_HAS_ALL"];
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<ArrayContainsAllExprArgs>;
 
   declare args: ArrayContainsAllExprArgs;
+
   constructor (args: ArrayContainsAllExprArgs) {
     super(args);
   }
 
-  static sqlNames = ['ARRAY_CONTAINS_ALL', 'ARRAY_HAS_ALL'];
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
+  }
 }
 
-export type ArrayFilterExprArgs = BaseExpressionArgs;
+export type ArrayFilterExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
+
 export class ArrayFilterExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_FILTER;
-  static argTypes = {} satisfies RequiredMap<ArrayFilterExprArgs>;
+
+  static _sqlNames = ["FILTER", "ARRAY_FILTER"];
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<ArrayFilterExprArgs>;
 
   declare args: ArrayFilterExprArgs;
+
   constructor (args: ArrayFilterExprArgs) {
     super(args);
   }
 
-  static sqlNames = ['FILTER', 'ARRAY_FILTER'];
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
+  }
 }
 
-export type ArrayFirstExprArgs = BaseExpressionArgs;
+export type ArrayFirstExprArgs = FuncExprArgs;
+
 export class ArrayFirstExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_FIRST;
-  static argTypes = {} satisfies RequiredMap<ArrayFirstExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ArrayFirstExprArgs>;
 
   declare args: ArrayFirstExprArgs;
+
   constructor (args: ArrayFirstExprArgs) {
     super(args);
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ArrayLastExprArgs = BaseExpressionArgs;
+export type ArrayLastExprArgs = FuncExprArgs;
+
 export class ArrayLastExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_LAST;
-  static argTypes = {} satisfies RequiredMap<ArrayLastExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ArrayLastExprArgs>;
 
   declare args: ArrayLastExprArgs;
+
   constructor (args: ArrayLastExprArgs) {
     super(args);
   }
-}
 
-export type ArrayReverseExprArgs = BaseExpressionArgs;
-export class ArrayReverseExpr extends FuncExpr {
-  key = ExpressionKey.ARRAY_REVERSE;
-  static argTypes = {} satisfies RequiredMap<ArrayReverseExprArgs>;
-
-  declare args: ArrayReverseExprArgs;
-  constructor (args: ArrayReverseExprArgs) {
-    super(args);
+  static {
+    this.register();
   }
 }
 
-export type ArraySliceExprArgs = { start: Expression;
+export type ArrayReverseExprArgs = FuncExprArgs;
+
+export class ArrayReverseExpr extends FuncExpr {
+  key = ExpressionKey.ARRAY_REVERSE;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ArrayReverseExprArgs>;
+
+  declare args: ArrayReverseExprArgs;
+
+  constructor (args: ArrayReverseExprArgs) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type ArraySliceExprArgs = {
+  this: Expression;
+  start: Expression;
   end?: Expression;
-  step?: Expression; } & BaseExpressionArgs;
+  step?: Expression;
+} & FuncExprArgs;
 
 export class ArraySliceExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SLICE;
 
-  /**
-   * Defines the arguments (properties and child expressions) for ArraySlice expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     start: true,
     end: false,
     step: false,
@@ -20382,6 +21109,10 @@ export class ArraySliceExpr extends FuncExpr {
 
   constructor (args: ArraySliceExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $start (): Expression {
@@ -20395,16 +21126,29 @@ export class ArraySliceExpr extends FuncExpr {
   get $step (): Expression | undefined {
     return this.args.step;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ArrayToStringExprArgs = { null?: Expression } & BaseExpressionArgs;
+export type ArrayToStringExprArgs = {
+  this: Expression;
+  expression: Expression;
+  null?: Expression;
+} & FuncExprArgs;
 
 export class ArrayToStringExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_TO_STRING;
 
-  static sqlNames = ['ARRAY_TO_STRING', 'ARRAY_JOIN'];
+  static _sqlNames = ["ARRAY_TO_STRING", "ARRAY_JOIN"];
 
-  static argTypes = { null: false } satisfies RequiredMap<ArrayToStringExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    null: false,
+  } satisfies RequiredMap<ArrayToStringExprArgs>;
 
   declare args: ArrayToStringExprArgs;
 
@@ -20412,28 +21156,71 @@ export class ArrayToStringExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $null (): Expression | undefined {
     return this.args.null;
   }
-}
 
-export type ArrayIntersectExprArgs = BaseExpressionArgs;
-export class ArrayIntersectExpr extends FuncExpr {
-  key = ExpressionKey.ARRAY_INTERSECT;
-  static argTypes = {} satisfies RequiredMap<ArrayIntersectExprArgs>;
-
-  declare args: ArrayIntersectExprArgs;
-  constructor (args: ArrayIntersectExprArgs) {
-    super(args);
+  static {
+    this.register();
   }
 }
 
-export type StPointExprArgs = { null?: Expression } & BaseExpressionArgs;
+export type ArrayIntersectExprArgs = {
+  expressions: Expression[];
+} & FuncExprArgs;
+
+export class ArrayIntersectExpr extends FuncExpr {
+  key = ExpressionKey.ARRAY_INTERSECT;
+
+  static isVarLenArgs = true;
+
+  static _sqlNames = ["ARRAY_INTERSECT", "ARRAY_INTERSECTION"];
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+  } satisfies RequiredMap<ArrayIntersectExprArgs>;
+
+  declare args: ArrayIntersectExprArgs;
+
+  constructor (args: ArrayIntersectExprArgs) {
+    super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type StPointExprArgs = {
+  this: Expression;
+  expression: Expression;
+  null?: Expression;
+} & FuncExprArgs;
 
 export class StPointExpr extends FuncExpr {
   key = ExpressionKey.ST_POINT;
 
-  static argTypes = { null: false } satisfies RequiredMap<StPointExprArgs>;
+  static _sqlNames = ["ST_POINT", "ST_MAKEPOINT"];
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    null: false,
+  } satisfies RequiredMap<StPointExprArgs>;
 
   declare args: StPointExprArgs;
 
@@ -20441,17 +21228,38 @@ export class StPointExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $null (): Expression | undefined {
     return this.args.null;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type StDistanceExprArgs = { useSpheroid?: Expression } & BaseExpressionArgs;
+export type StDistanceExprArgs = {
+  this: Expression;
+  expression: Expression;
+  useSpheroid?: Expression;
+} & FuncExprArgs;
 
 export class StDistanceExpr extends FuncExpr {
   key = ExpressionKey.ST_DISTANCE;
 
-  static argTypes = { useSpheroid: false } satisfies RequiredMap<StDistanceExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    useSpheroid: false,
+  } satisfies RequiredMap<StDistanceExprArgs>;
 
   declare args: StDistanceExprArgs;
 
@@ -20459,17 +21267,39 @@ export class StDistanceExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $useSpheroid (): Expression | undefined {
     return this.args.useSpheroid;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type StringExprArgs = { zone?: Expression } & BaseExpressionArgs;
+/**
+ * https://cloud.google.com/bigquery/docs/reference/standard-sql/timestamp_functions#string
+ */
+export type StringExprArgs = {
+  this: Expression;
+  zone?: Expression;
+} & FuncExprArgs;
 
 export class StringExpr extends FuncExpr {
   key = ExpressionKey.STRING;
 
-  static argTypes = { zone: false } satisfies RequiredMap<StringExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    zone: false,
+  } satisfies RequiredMap<StringExprArgs>;
 
   declare args: StringExprArgs;
 
@@ -20477,17 +21307,36 @@ export class StringExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $zone (): Expression | undefined {
     return this.args.zone;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type StringToArrayExprArgs = { null?: Expression } & BaseExpressionArgs;
+export type StringToArrayExprArgs = {
+  this: Expression;
+  expression?: Expression;
+  null?: Expression;
+} & FuncExprArgs;
 
 export class StringToArrayExpr extends FuncExpr {
   key = ExpressionKey.STRING_TO_ARRAY;
 
-  static argTypes = { null: false } satisfies RequiredMap<StringToArrayExprArgs>;
+  static _sqlNames = ["STRING_TO_ARRAY", "SPLIT_BY_STRING", "STRTOK_TO_ARRAY"];
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+    null: false,
+  } satisfies RequiredMap<StringToArrayExprArgs>;
 
   declare args: StringToArrayExprArgs;
 
@@ -20495,65 +21344,183 @@ export class StringToArrayExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
   get $null (): Expression | undefined {
     return this.args.null;
   }
-}
 
-export type ArrayOverlapsExprArgs = BaseExpressionArgs;
-export class ArrayOverlapsExpr extends BinaryExpr {
-  key = ExpressionKey.ARRAY_OVERLAPS;
-  static argTypes = {} satisfies RequiredMap<ArrayOverlapsExprArgs>;
-
-  declare args: ArrayOverlapsExprArgs;
-  constructor (args: ArrayOverlapsExprArgs) {
-    super(args);
+  static {
+    this.register();
   }
 }
 
-export type ArraySizeExprArgs = BaseExpressionArgs;
+export type ArrayOverlapsExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BinaryExprArgs;
+
+export class ArrayOverlapsExpr extends BinaryExpr {
+  key = ExpressionKey.ARRAY_OVERLAPS;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<ArrayOverlapsExprArgs>;
+
+  declare args: ArrayOverlapsExprArgs;
+
+  constructor (args: ArrayOverlapsExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type ArraySizeExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & FuncExprArgs;
+
 export class ArraySizeExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SIZE;
-  static argTypes = {} satisfies RequiredMap<ArraySizeExprArgs>;
+
+  static _sqlNames = ["ARRAY_SIZE", "ARRAY_LENGTH"];
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<ArraySizeExprArgs>;
 
   declare args: ArraySizeExprArgs;
+
   constructor (args: ArraySizeExprArgs) {
     super(args);
   }
 
-  static sqlNames = ['ARRAY_SIZE', 'ARRAY_LENGTH'];
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
+  }
 }
 
-export type ArraySortExprArgs = BaseExpressionArgs;
+export type ArraySortExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & FuncExprArgs;
+
 export class ArraySortExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SORT;
-  static argTypes = {} satisfies RequiredMap<ArraySortExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<ArraySortExprArgs>;
 
   declare args: ArraySortExprArgs;
+
   constructor (args: ArraySortExprArgs) {
     super(args);
   }
-}
 
-export type ArraySumExprArgs = BaseExpressionArgs;
-export class ArraySumExpr extends FuncExpr {
-  key = ExpressionKey.ARRAY_SUM;
-  static argTypes = {} satisfies RequiredMap<ArraySumExprArgs>;
+  get $this (): Expression {
+    return this.args.this;
+  }
 
-  declare args: ArraySumExprArgs;
-  constructor (args: ArraySumExprArgs) {
-    super(args);
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
   }
 }
 
-export type ArraysZipExprArgs = BaseExpressionArgs;
+export type ArraySumExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & FuncExprArgs;
+
+export class ArraySumExpr extends FuncExpr {
+  key = ExpressionKey.ARRAY_SUM;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<ArraySumExprArgs>;
+
+  declare args: ArraySumExprArgs;
+
+  constructor (args: ArraySumExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type ArraysZipExprArgs = {
+  expressions?: Expression[];
+} & FuncExprArgs;
+
 export class ArraysZipExpr extends FuncExpr {
   key = ExpressionKey.ARRAYS_ZIP;
-  static argTypes = {} satisfies RequiredMap<ArraysZipExprArgs>;
+
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: false,
+  } satisfies RequiredMap<ArraysZipExprArgs>;
 
   declare args: ArraysZipExprArgs;
+
   constructor (args: ArraysZipExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -27109,78 +28076,117 @@ export class AnyExpr extends SubqueryPredicateExpr {
   }
 }
 
-export type BitwiseAndAggExprArgs = BaseExpressionArgs;
+export type BitwiseAndAggExprArgs = AggFuncExprArgs;
+
 export class BitwiseAndAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITWISE_AND_AGG;
-  static argTypes = {} satisfies RequiredMap<BitwiseAndAggExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<BitwiseAndAggExprArgs>;
 
   declare args: BitwiseAndAggExprArgs;
+
   constructor (args: BitwiseAndAggExprArgs) {
     super(args);
   }
 }
 
-export type BitwiseOrAggExprArgs = BaseExpressionArgs;
+export type BitwiseOrAggExprArgs = AggFuncExprArgs;
+
 export class BitwiseOrAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITWISE_OR_AGG;
-  static argTypes = {} satisfies RequiredMap<BitwiseOrAggExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<BitwiseOrAggExprArgs>;
 
   declare args: BitwiseOrAggExprArgs;
+
   constructor (args: BitwiseOrAggExprArgs) {
     super(args);
   }
 }
 
-export type BitwiseXorAggExprArgs = BaseExpressionArgs;
+export type BitwiseXorAggExprArgs = AggFuncExprArgs;
+
 export class BitwiseXorAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITWISE_XOR_AGG;
-  static argTypes = {} satisfies RequiredMap<BitwiseXorAggExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<BitwiseXorAggExprArgs>;
 
   declare args: BitwiseXorAggExprArgs;
+
   constructor (args: BitwiseXorAggExprArgs) {
     super(args);
   }
 }
 
-export type BoolxorAggExprArgs = BaseExpressionArgs;
+export type BoolxorAggExprArgs = AggFuncExprArgs;
+
 export class BoolxorAggExpr extends AggFuncExpr {
   key = ExpressionKey.BOOLXOR_AGG;
-  static argTypes = {} satisfies RequiredMap<BoolxorAggExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<BoolxorAggExprArgs>;
 
   declare args: BoolxorAggExprArgs;
+
   constructor (args: BoolxorAggExprArgs) {
     super(args);
   }
 }
 
-export type BitmapConstructAggExprArgs = BaseExpressionArgs;
+export type BitmapConstructAggExprArgs = AggFuncExprArgs;
+
 export class BitmapConstructAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITMAP_CONSTRUCT_AGG;
-  static argTypes = {} satisfies RequiredMap<BitmapConstructAggExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<BitmapConstructAggExprArgs>;
 
   declare args: BitmapConstructAggExprArgs;
+
   constructor (args: BitmapConstructAggExprArgs) {
     super(args);
   }
 }
 
-export type BitmapOrAggExprArgs = BaseExpressionArgs;
+export type BitmapOrAggExprArgs = AggFuncExprArgs;
+
 export class BitmapOrAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITMAP_OR_AGG;
-  static argTypes = {} satisfies RequiredMap<BitmapOrAggExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<BitmapOrAggExprArgs>;
 
   declare args: BitmapOrAggExprArgs;
+
   constructor (args: BitmapOrAggExprArgs) {
     super(args);
   }
 }
 
-export type ParameterizedAggExprArgs = { params: Expression[] } & BaseExpressionArgs;
+export type ParameterizedAggExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+  params: Expression[];
+} & AggFuncExprArgs;
 
 export class ParameterizedAggExpr extends AggFuncExpr {
   key = ExpressionKey.PARAMETERIZED_AGG;
 
-  static argTypes = { params: true } satisfies RequiredMap<ParameterizedAggExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: true,
+    params: true,
+  } satisfies RequiredMap<ParameterizedAggExprArgs>;
 
   declare args: ParameterizedAggExprArgs;
 
@@ -27188,22 +28194,40 @@ export class ParameterizedAggExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
   get $params (): Expression[] {
     return this.args.params;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ArgMaxExprArgs = { count?: Expression } & BaseExpressionArgs;
+export type ArgMaxExprArgs = {
+  this: Expression;
+  expression: Expression;
+  count?: Expression;
+} & AggFuncExprArgs;
 
 export class ArgMaxExpr extends AggFuncExpr {
   key = ExpressionKey.ARG_MAX;
-  static sqlNames = [
-    'ARG_MAX',
-    'ARGMAX',
-    'MAX_BY',
-  ];
 
-  static argTypes = { count: false } satisfies RequiredMap<ArgMaxExprArgs>;
+  static _sqlNames = ['ARG_MAX', 'ARGMAX', 'MAX_BY'];
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    count: false,
+  } satisfies RequiredMap<ArgMaxExprArgs>;
 
   declare args: ArgMaxExprArgs;
 
@@ -27211,22 +28235,40 @@ export class ArgMaxExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $count (): Expression | undefined {
     return this.args.count;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ArgMinExprArgs = { count?: Expression } & BaseExpressionArgs;
+export type ArgMinExprArgs = {
+  this: Expression;
+  expression: Expression;
+  count?: Expression;
+} & AggFuncExprArgs;
 
 export class ArgMinExpr extends AggFuncExpr {
   key = ExpressionKey.ARG_MIN;
-  static sqlNames = [
-    'ARG_MIN',
-    'ARGMIN',
-    'MIN_BY',
-  ];
 
-  static argTypes = { count: false } satisfies RequiredMap<ArgMinExprArgs>;
+  static _sqlNames = ['ARG_MIN', 'ARGMIN', 'MIN_BY'];
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    count: false,
+  } satisfies RequiredMap<ArgMinExprArgs>;
 
   declare args: ArgMinExprArgs;
 
@@ -27234,17 +28276,38 @@ export class ArgMinExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $count (): Expression | undefined {
     return this.args.count;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ApproxTopKExprArgs = { counters?: Expression[] } & BaseExpressionArgs;
+export type ApproxTopKExprArgs = {
+  this: Expression;
+  expression?: Expression;
+  counters?: Expression;
+} & AggFuncExprArgs;
 
 export class ApproxTopKExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_K;
 
-  static argTypes = { counters: false } satisfies RequiredMap<ApproxTopKExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+    counters: false,
+  } satisfies RequiredMap<ApproxTopKExprArgs>;
 
   declare args: ApproxTopKExprArgs;
 
@@ -27252,39 +28315,111 @@ export class ApproxTopKExpr extends AggFuncExpr {
     super(args);
   }
 
-  get $counters (): Expression[] | undefined {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  get $counters (): Expression | undefined {
     return this.args.counters;
+  }
+
+  static {
+    this.register();
   }
 }
 
-export type ApproxTopKAccumulateExprArgs = BaseExpressionArgs;
+/**
+ * https://docs.snowflake.com/en/sql-reference/functions/approx_top_k_accumulate
+ * https://spark.apache.org/docs/preview/api/sql/index.html#approx_top_k_accumulate
+ */
+export type ApproxTopKAccumulateExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & AggFuncExprArgs;
+
 export class ApproxTopKAccumulateExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_K_ACCUMULATE;
-  static argTypes = {} satisfies RequiredMap<ApproxTopKAccumulateExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<ApproxTopKAccumulateExprArgs>;
 
   declare args: ApproxTopKAccumulateExprArgs;
+
   constructor (args: ApproxTopKAccumulateExprArgs) {
     super(args);
   }
-}
 
-export type ApproxTopKCombineExprArgs = BaseExpressionArgs;
-export class ApproxTopKCombineExpr extends AggFuncExpr {
-  key = ExpressionKey.APPROX_TOP_K_COMBINE;
-  static argTypes = {} satisfies RequiredMap<ApproxTopKCombineExprArgs>;
+  get $this (): Expression {
+    return this.args.this;
+  }
 
-  declare args: ApproxTopKCombineExprArgs;
-  constructor (args: ApproxTopKCombineExprArgs) {
-    super(args);
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
   }
 }
 
-export type ApproxTopSumExprArgs = { count: Expression } & BaseExpressionArgs;
+/**
+ * https://docs.snowflake.com/en/sql-reference/functions/approx_top_k_combine
+ */
+export type ApproxTopKCombineExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & AggFuncExprArgs;
+
+export class ApproxTopKCombineExpr extends AggFuncExpr {
+  key = ExpressionKey.APPROX_TOP_K_COMBINE;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<ApproxTopKCombineExprArgs>;
+
+  declare args: ApproxTopKCombineExprArgs;
+
+  constructor (args: ApproxTopKCombineExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type ApproxTopSumExprArgs = {
+  this: Expression;
+  expression: Expression;
+  count: Expression;
+} & AggFuncExprArgs;
 
 export class ApproxTopSumExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_SUM;
 
-  static argTypes = { count: true } satisfies RequiredMap<ApproxTopSumExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    count: true,
+  } satisfies RequiredMap<ApproxTopSumExprArgs>;
 
   declare args: ApproxTopSumExprArgs;
 
@@ -27292,135 +28427,350 @@ export class ApproxTopSumExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $count (): Expression {
     return this.args.count;
   }
-}
-
-export type ApproxQuantilesExprArgs = BaseExpressionArgs;
-export class ApproxQuantilesExpr extends AggFuncExpr {
-  key = ExpressionKey.APPROX_QUANTILES;
-  static argTypes = {} satisfies RequiredMap<ApproxQuantilesExprArgs>;
-
-  declare args: ApproxQuantilesExprArgs;
-  constructor (args: ApproxQuantilesExprArgs) {
-    super(args);
-  }
-}
-
-export type ApproxPercentileCombineExprArgs = BaseExpressionArgs;
-export class ApproxPercentileCombineExpr extends AggFuncExpr {
-  key = ExpressionKey.APPROX_PERCENTILE_COMBINE;
-  static argTypes = {};
-
-  declare args: ApproxPercentileCombineExprArgs;
-  constructor (args: ApproxPercentileCombineExprArgs) {
-    super(args);
-  }
-}
-
-export type MinhashExprArgs = BaseExpressionArgs;
-export class MinhashExpr extends AggFuncExpr {
-  key = ExpressionKey.MINHASH;
-  static argTypes = {} satisfies RequiredMap<MinhashExprArgs>;
-
-  declare args: MinhashExprArgs;
-  constructor (args: MinhashExprArgs) {
-    super(args);
-  }
-}
-
-export type MinhashCombineExprArgs = BaseExpressionArgs;
-export class MinhashCombineExpr extends AggFuncExpr {
-  key = ExpressionKey.MINHASH_COMBINE;
-  static argTypes = {} satisfies RequiredMap<MinhashCombineExprArgs>;
-
-  declare args: MinhashCombineExprArgs;
-  constructor (args: MinhashCombineExprArgs) {
-    super(args);
-  }
-}
-
-export type ApproximateSimilarityExprArgs = BaseExpressionArgs;
-export class ApproximateSimilarityExpr extends AggFuncExpr {
-  key = ExpressionKey.APPROXIMATE_SIMILARITY;
-  static argTypes = {};
-
-  declare args: ApproximateSimilarityExprArgs;
-  constructor (args: ApproximateSimilarityExprArgs) {
-    super(args);
-  }
-
-  static sqlNames = ['APPROXIMATE_SIMILARITY', 'APPROXIMATE_JACCARD_INDEX'];
 
   static {
     this.register();
   }
 }
 
-export type GroupingExprArgs = BaseExpressionArgs;
+export type ApproxQuantilesExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & AggFuncExprArgs;
+
+export class ApproxQuantilesExpr extends AggFuncExpr {
+  key = ExpressionKey.APPROX_QUANTILES;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<ApproxQuantilesExprArgs>;
+
+  declare args: ApproxQuantilesExprArgs;
+
+  constructor (args: ApproxQuantilesExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
+  }
+}
+
+/**
+ * https://docs.snowflake.com/en/sql-reference/functions/approx_percentile_combine
+ */
+export type ApproxPercentileCombineExprArgs = AggFuncExprArgs;
+
+export class ApproxPercentileCombineExpr extends AggFuncExpr {
+  key = ExpressionKey.APPROX_PERCENTILE_COMBINE;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ApproxPercentileCombineExprArgs>;
+
+  declare args: ApproxPercentileCombineExprArgs;
+
+  constructor (args: ApproxPercentileCombineExprArgs) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+/**
+ * https://docs.snowflake.com/en/sql-reference/functions/minhash
+ */
+export type MinhashExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+} & AggFuncExprArgs;
+
+export class MinhashExpr extends AggFuncExpr {
+  key = ExpressionKey.MINHASH;
+
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: true,
+  } satisfies RequiredMap<MinhashExprArgs>;
+
+  declare args: MinhashExprArgs;
+
+  constructor (args: MinhashExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
+  static {
+    this.register();
+  }
+}
+
+/**
+ * https://docs.snowflake.com/en/sql-reference/functions/minhash_combine
+ */
+export type MinhashCombineExprArgs = AggFuncExprArgs;
+
+export class MinhashCombineExpr extends AggFuncExpr {
+  key = ExpressionKey.MINHASH_COMBINE;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<MinhashCombineExprArgs>;
+
+  declare args: MinhashCombineExprArgs;
+
+  constructor (args: MinhashCombineExprArgs) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+/**
+ * https://docs.snowflake.com/en/sql-reference/functions/approximate_similarity
+ */
+export type ApproximateSimilarityExprArgs = AggFuncExprArgs;
+
+export class ApproximateSimilarityExpr extends AggFuncExpr {
+  key = ExpressionKey.APPROXIMATE_SIMILARITY;
+
+  static _sqlNames = ['APPROXIMATE_SIMILARITY', 'APPROXIMATE_JACCARD_INDEX'];
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ApproximateSimilarityExprArgs>;
+
+  declare args: ApproximateSimilarityExprArgs;
+
+  constructor (args: ApproximateSimilarityExprArgs) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type GroupingExprArgs = {
+  expressions: Expression[];
+} & AggFuncExprArgs;
+
 export class GroupingExpr extends AggFuncExpr {
   key = ExpressionKey.GROUPING;
-  static argTypes = {} satisfies RequiredMap<GroupingExprArgs>;
+
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+  } satisfies RequiredMap<GroupingExprArgs>;
 
   declare args: GroupingExprArgs;
+
   constructor (args: GroupingExprArgs) {
     super(args);
   }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
+  static {
+    this.register();
+  }
 }
 
-export type GroupingIdExprArgs = BaseExpressionArgs;
+export type GroupingIdExprArgs = {
+  expressions?: Expression[];
+} & AggFuncExprArgs;
+
 export class GroupingIdExpr extends AggFuncExpr {
   key = ExpressionKey.GROUPING_ID;
-  static argTypes = {} satisfies RequiredMap<GroupingIdExprArgs>;
+
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: false,
+  } satisfies RequiredMap<GroupingIdExprArgs>;
 
   declare args: GroupingIdExprArgs;
+
   constructor (args: GroupingIdExprArgs) {
     super(args);
   }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
+  static {
+    this.register();
+  }
 }
 
-export type AnonymousAggFuncExprArgs = BaseExpressionArgs;
+export type AnonymousAggFuncExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+} & AggFuncExprArgs;
+
 export class AnonymousAggFuncExpr extends AggFuncExpr {
   key = ExpressionKey.ANONYMOUS_AGG_FUNC;
-  static argTypes = {} satisfies RequiredMap<AnonymousAggFuncExprArgs>;
+
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: false,
+  } satisfies RequiredMap<AnonymousAggFuncExprArgs>;
 
   declare args: AnonymousAggFuncExprArgs;
+
   constructor (args: AnonymousAggFuncExprArgs) {
     super(args);
   }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
+  static {
+    this.register();
+  }
 }
 
-export type HashAggExprArgs = BaseExpressionArgs;
+/**
+ * https://docs.snowflake.com/en/sql-reference/functions/hash_agg
+ */
+export type HashAggExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+} & AggFuncExprArgs;
+
 export class HashAggExpr extends AggFuncExpr {
   key = ExpressionKey.HASH_AGG;
-  static argTypes = {} satisfies RequiredMap<HashAggExprArgs>;
+
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: false,
+  } satisfies RequiredMap<HashAggExprArgs>;
 
   declare args: HashAggExprArgs;
+
   constructor (args: HashAggExprArgs) {
     super(args);
   }
-}
 
-export type HllExprArgs = BaseExpressionArgs;
-export class HllExpr extends AggFuncExpr {
-  key = ExpressionKey.HLL;
-  static argTypes = {} satisfies RequiredMap<HllExprArgs>;
+  get $this (): Expression {
+    return this.args.this;
+  }
 
-  declare args: HllExprArgs;
-  constructor (args: HllExprArgs) {
-    super(args);
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
+  static {
+    this.register();
   }
 }
 
-export type ApproxDistinctExprArgs = { accuracy?: Expression } & BaseExpressionArgs;
+/**
+ * https://docs.snowflake.com/en/sql-reference/functions/hll
+ * https://docs.aws.amazon.com/redshift/latest/dg/r_HLL_function.html
+ */
+export type HllExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+} & AggFuncExprArgs;
+
+export class HllExpr extends AggFuncExpr {
+  key = ExpressionKey.HLL;
+
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: false,
+  } satisfies RequiredMap<HllExprArgs>;
+
+  declare args: HllExprArgs;
+
+  constructor (args: HllExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type ApproxDistinctExprArgs = {
+  this: Expression;
+  accuracy?: Expression;
+} & AggFuncExprArgs;
 
 export class ApproxDistinctExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_DISTINCT;
 
-  static sqlNames = ['APPROX_DISTINCT', 'APPROX_COUNT_DISTINCT'];
+  static _sqlNames = ["APPROX_DISTINCT", "APPROX_COUNT_DISTINCT"];
 
-  static argTypes = { accuracy: false } satisfies RequiredMap<ApproxDistinctExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    accuracy: false,
+  } satisfies RequiredMap<ApproxDistinctExprArgs>;
 
   declare args: ApproxDistinctExprArgs;
 
@@ -27428,28 +28778,43 @@ export class ApproxDistinctExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $accuracy (): Expression | undefined {
     return this.args.accuracy;
   }
 }
 
-export type ExplodingGenerateSeriesExprArgs = BaseExpressionArgs;
+/**
+ * Postgres' GENERATE_SERIES function returns a row set, i.e. it implicitly explodes when it's
+ * used in a projection, so this expression is a helper that facilitates transpilation to other
+ * dialects. For example, we'd generate UNNEST(GENERATE_SERIES(...)) in DuckDB
+ */
+export type ExplodingGenerateSeriesExprArgs = GenerateSeriesExprArgs;
+
 export class ExplodingGenerateSeriesExpr extends GenerateSeriesExpr {
   key = ExpressionKey.EXPLODING_GENERATE_SERIES;
-  static argTypes = {};
 
-  declare args: ExplodingGenerateSeriesExprArgs;
-  constructor (args: ExplodingGenerateSeriesExprArgs) {
-    super(args);
+  static {
+    this.register();
   }
 }
 
-export type ArrayAggExprArgs = { nullsExcluded?: Expression } & BaseExpressionArgs;
+export type ArrayAggExprArgs = {
+  this: Expression;
+  nullsExcluded?: Expression;
+} & AggFuncExprArgs;
 
 export class ArrayAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_AGG;
 
-  static argTypes = { nullsExcluded: false } satisfies RequiredMap<ArrayAggExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    nullsExcluded: false,
+  } satisfies RequiredMap<ArrayAggExprArgs>;
 
   declare args: ArrayAggExprArgs;
 
@@ -27457,106 +28822,188 @@ export class ArrayAggExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $nullsExcluded (): Expression | undefined {
     return this.args.nullsExcluded;
   }
-}
-
-export type ArrayUniqueAggExprArgs = BaseExpressionArgs;
-export class ArrayUniqueAggExpr extends AggFuncExpr {
-  key = ExpressionKey.ARRAY_UNIQUE_AGG;
-  static argTypes = {} satisfies RequiredMap<ArrayUniqueAggExprArgs>;
-
-  declare args: ArrayUniqueAggExprArgs;
-  constructor (args: ArrayUniqueAggExprArgs) {
-    super(args);
-  }
-}
-
-export type AIAggExprArgs = BaseExpressionArgs;
-export class AIAggExpr extends AggFuncExpr {
-  key = ExpressionKey.AI_AGG;
-  static argTypes = {} satisfies RequiredMap<AIAggExprArgs>;
-
-  declare args: AIAggExprArgs;
-  constructor (args: AIAggExprArgs) {
-    super(args);
-  }
-}
-
-export type AISummarizeAggExprArgs = BaseExpressionArgs;
-export class AISummarizeAggExpr extends AggFuncExpr {
-  key = ExpressionKey.AI_SUMMARIZE_AGG;
-  static argTypes = {} satisfies RequiredMap<AISummarizeAggExprArgs>;
-
-  declare args: AISummarizeAggExprArgs;
-  constructor (args: AISummarizeAggExprArgs) {
-    super(args);
-  }
-
-  static sqlNames = ['AI_SUMMARIZE_AGG'];
 
   static {
     this.register();
   }
 }
 
-export type ArrayConcatAggExprArgs = BaseExpressionArgs;
+export type ArrayUniqueAggExprArgs = AggFuncExprArgs;
+
+export class ArrayUniqueAggExpr extends AggFuncExpr {
+  key = ExpressionKey.ARRAY_UNIQUE_AGG;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ArrayUniqueAggExprArgs>;
+
+  declare args: ArrayUniqueAggExprArgs;
+
+  constructor (args: ArrayUniqueAggExprArgs) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type AIAggExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & AggFuncExprArgs;
+
+export class AIAggExpr extends AggFuncExpr {
+  key = ExpressionKey.AI_AGG;
+
+  static _sqlNames = ["AI_AGG"];
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<AIAggExprArgs>;
+
+  declare args: AIAggExprArgs;
+
+  constructor (args: AIAggExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type AISummarizeAggExprArgs = AggFuncExprArgs;
+
+export class AISummarizeAggExpr extends AggFuncExpr {
+  key = ExpressionKey.AI_SUMMARIZE_AGG;
+
+  static _sqlNames = ["AI_SUMMARIZE_AGG"];
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AISummarizeAggExprArgs>;
+
+  declare args: AISummarizeAggExprArgs;
+
+  constructor (args: AISummarizeAggExprArgs) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type ArrayConcatAggExprArgs = AggFuncExprArgs;
+
 export class ArrayConcatAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_CONCAT_AGG;
-  static argTypes = {} satisfies RequiredMap<ArrayConcatAggExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ArrayConcatAggExprArgs>;
 
   declare args: ArrayConcatAggExprArgs;
+
   constructor (args: ArrayConcatAggExprArgs) {
     super(args);
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ArrayUnionAggExprArgs = BaseExpressionArgs;
+export type ArrayUnionAggExprArgs = AggFuncExprArgs;
+
 export class ArrayUnionAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_UNION_AGG;
-  static argTypes = {} satisfies RequiredMap<ArrayUnionAggExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ArrayUnionAggExprArgs>;
 
   declare args: ArrayUnionAggExprArgs;
+
   constructor (args: ArrayUnionAggExprArgs) {
     super(args);
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type AvgExprArgs = BaseExpressionArgs;
+export type AvgExprArgs = AggFuncExprArgs;
+
 export class AvgExpr extends AggFuncExpr {
   key = ExpressionKey.AVG;
-  static argTypes = {} satisfies RequiredMap<AvgExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AvgExprArgs>;
 
   declare args: AvgExprArgs;
+
   constructor (args: AvgExprArgs) {
     super(args);
   }
-}
 
-export type AnyValueExprArgs = BaseExpressionArgs;
-export class AnyValueExpr extends AggFuncExpr {
-  key = ExpressionKey.ANY_VALUE;
-  static argTypes = {} satisfies RequiredMap<AnyValueExprArgs>;
-
-  declare args: AnyValueExprArgs;
-  constructor (args: AnyValueExprArgs) {
-    super(args);
+  static {
+    this.register();
   }
 }
 
-export type LagExprArgs = { offset?: boolean;
-  default?: Expression; } & BaseExpressionArgs;
+export type AnyValueExprArgs = AggFuncExprArgs;
+
+export class AnyValueExpr extends AggFuncExpr {
+  key = ExpressionKey.ANY_VALUE;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AnyValueExprArgs>;
+
+  declare args: AnyValueExprArgs;
+
+  constructor (args: AnyValueExprArgs) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type LagExprArgs = {
+  this: Expression;
+  offset?: Expression;
+  default?: Expression;
+} & AggFuncExprArgs;
 
 export class LagExpr extends AggFuncExpr {
   key = ExpressionKey.LAG;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Lag expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     offset: false,
     default: false,
   } satisfies RequiredMap<LagExprArgs>;
@@ -27567,6 +29014,10 @@ export class LagExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $offset (): Expression | undefined {
     return this.args.offset;
   }
@@ -27574,20 +29025,24 @@ export class LagExpr extends AggFuncExpr {
   get $default (): Expression | undefined {
     return this.args.default;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type LeadExprArgs = { offset?: boolean;
-  default?: Expression; } & BaseExpressionArgs;
+export type LeadExprArgs = {
+  this: Expression;
+  offset?: Expression;
+  default?: Expression;
+} & AggFuncExprArgs;
 
 export class LeadExpr extends AggFuncExpr {
   key = ExpressionKey.LEAD;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Lead expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     offset: false,
     default: false,
   } satisfies RequiredMap<LeadExprArgs>;
@@ -27598,6 +29053,10 @@ export class LeadExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $offset (): Expression | undefined {
     return this.args.offset;
   }
@@ -27605,64 +29064,130 @@ export class LeadExpr extends AggFuncExpr {
   get $default (): Expression | undefined {
     return this.args.default;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type FirstExprArgs = BaseExpressionArgs;
+export type FirstExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & AggFuncExprArgs;
+
 export class FirstExpr extends AggFuncExpr {
   key = ExpressionKey.FIRST;
-  static argTypes = {} satisfies RequiredMap<FirstExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<FirstExprArgs>;
 
   declare args: FirstExprArgs;
+
   constructor (args: FirstExprArgs) {
     super(args);
   }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
+  }
 }
 
-export type LastExprArgs = BaseExpressionArgs;
+export type LastExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & AggFuncExprArgs;
+
 export class LastExpr extends AggFuncExpr {
   key = ExpressionKey.LAST;
-  static argTypes = {} satisfies RequiredMap<LastExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+  } satisfies RequiredMap<LastExprArgs>;
 
   declare args: LastExprArgs;
+
   constructor (args: LastExprArgs) {
     super(args);
   }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
+  }
 }
 
-export type FirstValueExprArgs = BaseExpressionArgs;
+export type FirstValueExprArgs = AggFuncExprArgs;
+
 export class FirstValueExpr extends AggFuncExpr {
   key = ExpressionKey.FIRST_VALUE;
-  static argTypes = {} satisfies RequiredMap<FirstValueExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<FirstValueExprArgs>;
 
   declare args: FirstValueExprArgs;
+
   constructor (args: FirstValueExprArgs) {
     super(args);
   }
-}
 
-export type LastValueExprArgs = BaseExpressionArgs;
-export class LastValueExpr extends AggFuncExpr {
-  key = ExpressionKey.LAST_VALUE;
-  static argTypes = {} satisfies RequiredMap<LastValueExprArgs>;
-
-  declare args: LastValueExprArgs;
-  constructor (args: LastValueExprArgs) {
-    super(args);
+  static {
+    this.register();
   }
 }
 
-export type NthValueExprArgs = { offset: boolean;
-  fromFirst?: Expression; } & BaseExpressionArgs;
+export type LastValueExprArgs = AggFuncExprArgs;
+
+export class LastValueExpr extends AggFuncExpr {
+  key = ExpressionKey.LAST_VALUE;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<LastValueExprArgs>;
+
+  declare args: LastValueExprArgs;
+
+  constructor (args: LastValueExprArgs) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type NthValueExprArgs = {
+  this: Expression;
+  offset: Expression;
+  fromFirst?: Expression;
+} & AggFuncExprArgs;
 
 export class NthValueExpr extends AggFuncExpr {
   key = ExpressionKey.NTH_VALUE;
 
-  /**
-   * Defines the arguments (properties and child expressions) for NthValue expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     offset: true,
     fromFirst: false,
   } satisfies RequiredMap<NthValueExprArgs>;
@@ -27673,6 +29198,10 @@ export class NthValueExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $offset (): Expression {
     return this.args.offset;
   }
@@ -27680,16 +29209,42 @@ export class NthValueExpr extends AggFuncExpr {
   get $fromFirst (): Expression | undefined {
     return this.args.fromFirst;
   }
+
+  static {
+    this.register();
+  }
 }
 
-export type ObjectAggExprArgs = BaseExpressionArgs;
+export type ObjectAggExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & AggFuncExprArgs;
+
 export class ObjectAggExpr extends AggFuncExpr {
   key = ExpressionKey.OBJECT_AGG;
-  static argTypes = {} satisfies RequiredMap<ObjectAggExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<ObjectAggExprArgs>;
 
   declare args: ObjectAggExprArgs;
+
   constructor (args: ObjectAggExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -28458,23 +30013,34 @@ export class CovarPopExpr extends AggFuncExpr {
   }
 }
 
-export type CombinedAggFuncExprArgs = BaseExpressionArgs;
+/**
+ * https://clickhouse.com/docs/en/sql-reference/aggregate-functions/combinators
+ */
+export type CombinedAggFuncExprArgs = AnonymousAggFuncExprArgs;
+
 export class CombinedAggFuncExpr extends AnonymousAggFuncExpr {
   key = ExpressionKey.COMBINED_AGG_FUNC;
-  static argTypes = {} satisfies RequiredMap<CombinedAggFuncExprArgs>;
 
-  declare args: CombinedAggFuncExprArgs;
-  constructor (args: CombinedAggFuncExprArgs) {
-    super(args);
+  static {
+    this.register();
   }
 }
 
-export type CombinedParameterizedAggExprArgs = { params: Expression[] } & ParameterizedAggExprArgs;
+export type CombinedParameterizedAggExprArgs = {
+  this: Expression;
+  expressions: Expression[];
+  params: Expression[];
+} & ParameterizedAggExprArgs;
 
 export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
   key = ExpressionKey.COMBINED_PARAMETERIZED_AGG;
 
-  static argTypes = { params: true } satisfies RequiredMap<CombinedParameterizedAggExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: true,
+    params: true,
+  } satisfies RequiredMap<CombinedParameterizedAggExprArgs>;
 
   declare args: CombinedParameterizedAggExprArgs;
 
@@ -28482,8 +30048,20 @@ export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
   get $params (): Expression[] {
     return this.args.params;
+  }
+
+  static {
+    this.register();
   }
 }
 

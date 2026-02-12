@@ -14,6 +14,7 @@ import {
 } from './tokens';
 
 export interface ParseOptions {
+  read?: DialectType;
   dialect?: DialectType;
   errorLevel?: ErrorLevel;
   maxErrors?: number;
@@ -1402,11 +1403,9 @@ Parser.UNARY_PARSERS = {
  */
 export function parse (
   sql: string | Token[],
-  dialect?: DialectType,
   opts?: ParseOptions,
 ): Expression[] {
   const parser = new Parser({
-    dialect,
     ...opts,
   });
   return parser.parse(sql);
@@ -1417,9 +1416,8 @@ export function parse (
  */
 export function parseOne (
   sql: string,
-  dialect?: DialectType,
   opts?: ParseOptions,
 ): Expression | undefined {
-  const expressions = parse(sql, dialect, opts);
+  const expressions = parse(sql, opts);
   return expressions[0];
 }
