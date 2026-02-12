@@ -17358,9 +17358,9 @@ export class IntervalOpExpr extends TimeUnitExpr {
  * https://docs.databricks.com/en/sql/language-manual/data-types/interval-type.html
  */
 export type IntervalSpanExprArgs = {
-  this: Expression;
+  this: DataTypeExprKind;
   expression: Expression;
-} & BaseExpressionArgs;
+} & DataTypeExprArgs;
 
 export class IntervalSpanExpr extends DataTypeExpr {
   key = ExpressionKey.INTERVAL_SPAN;
@@ -17377,7 +17377,7 @@ export class IntervalSpanExpr extends DataTypeExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): DataTypeExprKind {
     return this.args.this;
   }
 
