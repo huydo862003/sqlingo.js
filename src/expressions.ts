@@ -31636,10 +31636,33 @@ export class CovarPopExpr extends AggFuncExpr {
 /**
  * https://clickhouse.com/docs/en/sql-reference/aggregate-functions/combinators
  */
-export type CombinedAggFuncExprArgs = AnonymousAggFuncExprArgs;
+export type CombinedAggFuncExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+} & AnonymousAggFuncExprArgs;
 
 export class CombinedAggFuncExpr extends AnonymousAggFuncExpr {
   key = ExpressionKey.COMBINED_AGG_FUNC;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: false,
+  } satisfies RequiredMap<CombinedAggFuncExprArgs>;
+
+  declare args: CombinedAggFuncExprArgs;
+
+  constructor (args: CombinedAggFuncExprArgs) {
+    super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
+  }
 
   static {
     this.register();
