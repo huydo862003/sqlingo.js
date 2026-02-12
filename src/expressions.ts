@@ -22406,11 +22406,14 @@ export class CbrtExpr extends FuncExpr {
 }
 
 export type CurrentAccountExprArgs = FuncExprArgs;
+
 export class CurrentAccountExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ACCOUNT;
+
   static argTypes = {} satisfies RequiredMap<CurrentAccountExprArgs>;
 
   declare args: CurrentAccountExprArgs;
+
   constructor (args: CurrentAccountExprArgs) {
     super(args);
   }
@@ -22421,11 +22424,14 @@ export class CurrentAccountExpr extends FuncExpr {
 }
 
 export type CurrentAccountNameExprArgs = FuncExprArgs;
+
 export class CurrentAccountNameExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ACCOUNT_NAME;
+
   static argTypes = {} satisfies RequiredMap<CurrentAccountNameExprArgs>;
 
   declare args: CurrentAccountNameExprArgs;
+
   constructor (args: CurrentAccountNameExprArgs) {
     super(args);
   }
@@ -22436,11 +22442,14 @@ export class CurrentAccountNameExpr extends FuncExpr {
 }
 
 export type CurrentAvailableRolesExprArgs = FuncExprArgs;
+
 export class CurrentAvailableRolesExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_AVAILABLE_ROLES;
-  static argTypes = {};
+
+  static argTypes = {} satisfies RequiredMap<CurrentAvailableRolesExprArgs>;
 
   declare args: CurrentAvailableRolesExprArgs;
+
   constructor (args: CurrentAvailableRolesExprArgs) {
     super(args);
   }
@@ -22451,11 +22460,14 @@ export class CurrentAvailableRolesExpr extends FuncExpr {
 }
 
 export type CurrentClientExprArgs = FuncExprArgs;
+
 export class CurrentClientExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_CLIENT;
+
   static argTypes = {} satisfies RequiredMap<CurrentClientExprArgs>;
 
   declare args: CurrentClientExprArgs;
+
   constructor (args: CurrentClientExprArgs) {
     super(args);
   }
@@ -22466,11 +22478,14 @@ export class CurrentClientExpr extends FuncExpr {
 }
 
 export type CurrentIpAddressExprArgs = FuncExprArgs;
+
 export class CurrentIpAddressExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_IP_ADDRESS;
+
   static argTypes = {} satisfies RequiredMap<CurrentIpAddressExprArgs>;
 
   declare args: CurrentIpAddressExprArgs;
+
   constructor (args: CurrentIpAddressExprArgs) {
     super(args);
   }
@@ -22525,11 +22540,14 @@ export class CurrentSchemasExpr extends FuncExpr {
 }
 
 export type CurrentSecondaryRolesExprArgs = FuncExprArgs;
+
 export class CurrentSecondaryRolesExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SECONDARY_ROLES;
-  static argTypes = {};
+
+  static argTypes = {} satisfies RequiredMap<CurrentSecondaryRolesExprArgs>;
 
   declare args: CurrentSecondaryRolesExprArgs;
+
   constructor (args: CurrentSecondaryRolesExprArgs) {
     super(args);
   }
@@ -22540,11 +22558,14 @@ export class CurrentSecondaryRolesExpr extends FuncExpr {
 }
 
 export type CurrentSessionExprArgs = FuncExprArgs;
+
 export class CurrentSessionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SESSION;
+
   static argTypes = {} satisfies RequiredMap<CurrentSessionExprArgs>;
 
   declare args: CurrentSessionExprArgs;
+
   constructor (args: CurrentSessionExprArgs) {
     super(args);
   }
@@ -22555,11 +22576,14 @@ export class CurrentSessionExpr extends FuncExpr {
 }
 
 export type CurrentStatementExprArgs = FuncExprArgs;
+
 export class CurrentStatementExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_STATEMENT;
+
   static argTypes = {} satisfies RequiredMap<CurrentStatementExprArgs>;
 
   declare args: CurrentStatementExprArgs;
+
   constructor (args: CurrentStatementExprArgs) {
     super(args);
   }
@@ -22570,11 +22594,14 @@ export class CurrentStatementExpr extends FuncExpr {
 }
 
 export type CurrentVersionExprArgs = FuncExprArgs;
+
 export class CurrentVersionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_VERSION;
+
   static argTypes = {} satisfies RequiredMap<CurrentVersionExprArgs>;
 
   declare args: CurrentVersionExprArgs;
+
   constructor (args: CurrentVersionExprArgs) {
     super(args);
   }
@@ -22585,11 +22612,14 @@ export class CurrentVersionExpr extends FuncExpr {
 }
 
 export type CurrentTransactionExprArgs = FuncExprArgs;
+
 export class CurrentTransactionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TRANSACTION;
+
   static argTypes = {} satisfies RequiredMap<CurrentTransactionExprArgs>;
 
   declare args: CurrentTransactionExprArgs;
+
   constructor (args: CurrentTransactionExprArgs) {
     super(args);
   }
@@ -22600,11 +22630,14 @@ export class CurrentTransactionExpr extends FuncExpr {
 }
 
 export type CurrentWarehouseExprArgs = FuncExprArgs;
+
 export class CurrentWarehouseExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_WAREHOUSE;
+
   static argTypes = {} satisfies RequiredMap<CurrentWarehouseExprArgs>;
 
   declare args: CurrentWarehouseExprArgs;
+
   constructor (args: CurrentWarehouseExprArgs) {
     super(args);
   }
