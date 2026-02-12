@@ -28856,17 +28856,28 @@ export class MonthExpr extends FuncExpr {
   }
 }
 
-export type MonthnameExprArgs = { abbreviated?: Expression } & FuncExprArgs;
+export type MonthnameExprArgs = {
+  this: Expression;
+  abbreviated?: Expression;
+} & FuncExprArgs;
 
 export class MonthnameExpr extends FuncExpr {
   key = ExpressionKey.MONTHNAME;
 
-  static argTypes = { abbreviated: false } satisfies RequiredMap<MonthnameExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    abbreviated: false,
+  } satisfies RequiredMap<MonthnameExprArgs>;
 
   declare args: MonthnameExprArgs;
 
   constructor (args: MonthnameExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $abbreviated (): Expression | undefined {
@@ -28878,17 +28889,34 @@ export class MonthnameExpr extends FuncExpr {
   }
 }
 
-export type AddMonthsExprArgs = { preserveEndOfMonth?: Expression } & FuncExprArgs;
+export type AddMonthsExprArgs = {
+  this: Expression;
+  expression: Expression;
+  preserveEndOfMonth?: Expression;
+} & FuncExprArgs;
 
 export class AddMonthsExpr extends FuncExpr {
   key = ExpressionKey.ADD_MONTHS;
 
-  static argTypes = { preserveEndOfMonth: false } satisfies RequiredMap<AddMonthsExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    preserveEndOfMonth: false,
+  } satisfies RequiredMap<AddMonthsExprArgs>;
 
   declare args: AddMonthsExprArgs;
 
   constructor (args: AddMonthsExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $preserveEndOfMonth (): Expression | undefined {
@@ -28900,8 +28928,11 @@ export class AddMonthsExpr extends FuncExpr {
   }
 }
 
-export type Nvl2ExprArgs = { true: Expression;
-  false?: Expression; } & FuncExprArgs;
+export type Nvl2ExprArgs = {
+  this: Expression;
+  true: Expression;
+  false?: Expression;
+} & FuncExprArgs;
 
 export class Nvl2Expr extends FuncExpr {
   key = ExpressionKey.NVL2;
@@ -28912,6 +28943,7 @@ export class Nvl2Expr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     true: true,
     false: false,
   } satisfies RequiredMap<Nvl2ExprArgs>;
@@ -28920,6 +28952,10 @@ export class Nvl2Expr extends FuncExpr {
 
   constructor (args: Nvl2ExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $true (): Expression {
@@ -28935,8 +28971,11 @@ export class Nvl2Expr extends FuncExpr {
   }
 }
 
-export type NormalizeExprArgs = { form?: Expression;
-  isCasefold?: Expression; } & FuncExprArgs;
+export type NormalizeExprArgs = {
+  this: Expression;
+  form?: Expression;
+  isCasefold?: Expression;
+} & FuncExprArgs;
 
 export class NormalizeExpr extends FuncExpr {
   key = ExpressionKey.NORMALIZE;
@@ -28947,6 +28986,7 @@ export class NormalizeExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     form: false,
     isCasefold: false,
   } satisfies RequiredMap<NormalizeExprArgs>;
@@ -28955,6 +28995,10 @@ export class NormalizeExpr extends FuncExpr {
 
   constructor (args: NormalizeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $form (): Expression | undefined {
@@ -33915,17 +33959,28 @@ export class MedianExpr extends AggFuncExpr {
   }
 }
 
-export type ModeExprArgs = { deterministic?: Expression } & AggFuncExprArgs;
+export type ModeExprArgs = {
+  this?: Expression;
+  deterministic?: Expression;
+} & AggFuncExprArgs;
 
 export class ModeExpr extends AggFuncExpr {
   key = ExpressionKey.MODE;
 
-  static argTypes = { deterministic: false } satisfies RequiredMap<ModeExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+    deterministic: false,
+  } satisfies RequiredMap<ModeExprArgs>;
 
   declare args: ModeExprArgs;
 
   constructor (args: ModeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   get $deterministic (): Expression | undefined {
@@ -33971,17 +34026,26 @@ export class MinExpr extends AggFuncExpr {
   }
 }
 
-export type NtileExprArgs = AggFuncExprArgs;
+export type NtileExprArgs = {
+  this?: Expression;
+} & AggFuncExprArgs;
 
 export class NtileExpr extends AggFuncExpr {
   key = ExpressionKey.NTILE;
 
-  static argTypes = {} satisfies RequiredMap<NtileExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<NtileExprArgs>;
 
   declare args: NtileExprArgs;
 
   constructor (args: NtileExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   static {
