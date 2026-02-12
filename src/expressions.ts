@@ -29827,6 +29827,8 @@ export type RandExprArgs = {
 export class RandExpr extends FuncExpr {
   key = ExpressionKey.RAND;
 
+  static _sqlNames = ['RAND', 'RANDOM'];
+
   /**
    * Defines the arguments (properties and child expressions) for Rand expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
@@ -30002,6 +30004,7 @@ export class ReadCSVExpr extends FuncExpr {
   key = ExpressionKey.READ_CSV;
 
   static isVarLenArgs = true;
+  static _sqlNames = ['READ_CSV'];
 
   static argTypes = {
     ...super.argTypes,
@@ -33486,10 +33489,6 @@ export class ArgMaxExpr extends AggFuncExpr {
   static {
     this.register();
   }
-    'ARG_MAX',
-    'ARGMAX',
-    'MAX_BY',
-  ];
 }
 
 export type ArgMinExprArgs = {
@@ -33535,10 +33534,6 @@ export class ArgMinExpr extends AggFuncExpr {
   static {
     this.register();
   }
-    'ARG_MIN',
-    'ARGMIN',
-    'MIN_BY',
-  ];
 }
 
 export type ApproxTopKExprArgs = {
