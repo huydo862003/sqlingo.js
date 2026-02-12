@@ -24468,7 +24468,9 @@ export enum TimeSliceExprKind {
   START = 'START',
   END = 'END',
 }
-export type TimeSliceExprArgs = { unit: Expression;
+export type TimeSliceExprArgs = { this: Expression;
+  expression: Expression;
+  unit: Expression;
   kind?: TimeSliceExprKind; } & FuncExprArgs;
 
 export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -24481,6 +24483,8 @@ export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
+    expression: true,
     unit: true,
     kind: false,
   } satisfies RequiredMap<TimeSliceExprArgs>;
@@ -24489,6 +24493,14 @@ export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
   constructor (args: TimeSliceExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $unit (): Expression {
@@ -24504,7 +24516,9 @@ export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TimeAddExprArgs = { unit?: Expression } & FuncExprArgs;
+export type TimeAddExprArgs = { this: Expression;
+  expression: Expression;
+  unit?: Expression; } & FuncExprArgs;
 
 export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_ADD;
@@ -24512,6 +24526,8 @@ export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
+    expression: true,
     unit: false,
   } satisfies RequiredMap<TimeAddExprArgs>;
 
@@ -24521,6 +24537,14 @@ export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
@@ -24530,7 +24554,9 @@ export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TimeSubExprArgs = { unit?: Expression } & FuncExprArgs;
+export type TimeSubExprArgs = { this: Expression;
+  expression: Expression;
+  unit?: Expression; } & FuncExprArgs;
 
 export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_SUB;
@@ -24538,6 +24564,8 @@ export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
+    expression: true,
     unit: false,
   } satisfies RequiredMap<TimeSubExprArgs>;
 
@@ -24547,6 +24575,14 @@ export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
@@ -24556,7 +24592,9 @@ export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TimeDiffExprArgs = { unit?: Expression } & FuncExprArgs;
+export type TimeDiffExprArgs = { this: Expression;
+  expression: Expression;
+  unit?: Expression; } & FuncExprArgs;
 
 export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_DIFF;
@@ -24564,6 +24602,8 @@ export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
+    expression: true,
     unit: false,
   } satisfies RequiredMap<TimeDiffExprArgs>;
 
@@ -24573,6 +24613,14 @@ export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
@@ -24582,7 +24630,8 @@ export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TimeTruncExprArgs = { unit: Expression;
+export type TimeTruncExprArgs = { this: Expression;
+  unit: Expression;
   zone?: Expression; } & FuncExprArgs;
 
 export class TimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -24595,6 +24644,7 @@ export class TimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
     unit: true,
     zone: false,
   } satisfies RequiredMap<TimeTruncExprArgs>;
@@ -24603,6 +24653,10 @@ export class TimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
   constructor (args: TimeTruncExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $unit (): Expression {
