@@ -34643,12 +34643,19 @@ export class RegrInterceptExpr extends AggFuncExpr {
   }
 }
 
-export type RegrR2ExprArgs = AggFuncExprArgs;
+export type RegrR2ExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & AggFuncExprArgs;
 
 export class RegrR2Expr extends AggFuncExpr {
   key = ExpressionKey.REGR_R2;
 
-  static argTypes = {} satisfies RequiredMap<RegrR2ExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<RegrR2ExprArgs>;
 
   declare args: RegrR2ExprArgs;
 
@@ -34656,17 +34663,32 @@ export class RegrR2Expr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type RegrSxxExprArgs = AggFuncExprArgs;
+export type RegrSxxExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & AggFuncExprArgs;
 
 export class RegrSxxExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SXX;
 
-  static argTypes = {} satisfies RequiredMap<RegrSxxExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<RegrSxxExprArgs>;
 
   declare args: RegrSxxExprArgs;
 
@@ -34674,17 +34696,32 @@ export class RegrSxxExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type RegrSxyExprArgs = AggFuncExprArgs;
+export type RegrSxyExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & AggFuncExprArgs;
 
 export class RegrSxyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SXY;
 
-  static argTypes = {} satisfies RequiredMap<RegrSxyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<RegrSxyExprArgs>;
 
   declare args: RegrSxyExprArgs;
 
@@ -34692,17 +34729,32 @@ export class RegrSxyExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type RegrSyyExprArgs = AggFuncExprArgs;
+export type RegrSyyExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & AggFuncExprArgs;
 
 export class RegrSyyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SYY;
 
-  static argTypes = {} satisfies RequiredMap<RegrSyyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<RegrSyyExprArgs>;
 
   declare args: RegrSyyExprArgs;
 
@@ -34710,22 +34762,45 @@ export class RegrSyyExpr extends AggFuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type RegrSlopeExprArgs = AggFuncExprArgs;
+export type RegrSlopeExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & AggFuncExprArgs;
 
 export class RegrSlopeExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SLOPE;
 
-  static argTypes = {} satisfies RequiredMap<RegrSlopeExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<RegrSlopeExprArgs>;
 
   declare args: RegrSlopeExprArgs;
 
   constructor (args: RegrSlopeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   static {
