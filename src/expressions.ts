@@ -31866,13 +31866,16 @@ export class SpaceExpr extends FuncExpr {
   }
 }
 
-export type StructExprArgs = FuncExprArgs;
+export type StructExprArgs = {
+  expressions?: Expression[];
+} & FuncExprArgs;
 
 export class StructExpr extends FuncExpr {
   key = ExpressionKey.STRUCT;
 
   static isVarLenArgs = true;
   static argTypes = {
+    ...super.argTypes,
     expressions: false,
   } satisfies RequiredMap<StructExprArgs>;
 
@@ -31882,7 +31885,7 @@ export class StructExpr extends FuncExpr {
     super(args);
   }
 
-  get $expressions (): Expression | undefined {
+  get $expressions (): Expression[] | undefined {
     return this.args.expressions;
   }
 
