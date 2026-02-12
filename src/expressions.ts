@@ -20403,8 +20403,11 @@ export class ToNumberExpr extends FuncExpr {
   }
 }
 
-export type ToDoubleExprArgs = { format?: string;
-  safe?: boolean; } & BaseExpressionArgs;
+export type ToDoubleExprArgs = {
+  this: Expression;
+  format?: Expression;
+  safe?: boolean;
+} & FuncExprArgs;
 
 export class ToDoubleExpr extends FuncExpr {
   key = ExpressionKey.TO_DOUBLE;
@@ -20415,6 +20418,7 @@ export class ToDoubleExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     format: false,
     safe: false,
   } satisfies RequiredMap<ToDoubleExprArgs>;
@@ -20425,7 +20429,11 @@ export class ToDoubleExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): string | undefined {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $format (): Expression | undefined {
     return this.args.format;
   }
 
@@ -20439,7 +20447,8 @@ export class ToDoubleExpr extends FuncExpr {
 }
 
 export type ToDecfloatExprArgs = {
-  format?: string;
+  this: Expression;
+  format?: Expression;
 } & FuncExprArgs;
 
 export class ToDecfloatExpr extends FuncExpr {
@@ -20447,6 +20456,7 @@ export class ToDecfloatExpr extends FuncExpr {
 
   static argTypes = {
     ...super.argTypes,
+    this: true,
     format: false,
   } satisfies RequiredMap<ToDecfloatExprArgs>;
 
@@ -20456,7 +20466,11 @@ export class ToDecfloatExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): string | undefined {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $format (): Expression | undefined {
     return this.args.format;
   }
 
@@ -20466,7 +20480,8 @@ export class ToDecfloatExpr extends FuncExpr {
 }
 
 export type TryToDecfloatExprArgs = {
-  format?: string;
+  this: Expression;
+  format?: Expression;
 } & FuncExprArgs;
 
 export class TryToDecfloatExpr extends FuncExpr {
@@ -20474,6 +20489,7 @@ export class TryToDecfloatExpr extends FuncExpr {
 
   static argTypes = {
     ...super.argTypes,
+    this: true,
     format: false,
   } satisfies RequiredMap<TryToDecfloatExprArgs>;
 
@@ -20483,7 +20499,11 @@ export class TryToDecfloatExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): string | undefined {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $format (): Expression | undefined {
     return this.args.format;
   }
 
@@ -20493,6 +20513,7 @@ export class TryToDecfloatExpr extends FuncExpr {
 }
 
 export type ToFileExprArgs = {
+  this: Expression;
   path?: Expression;
   safe?: boolean;
 } & FuncExprArgs;
@@ -20506,6 +20527,7 @@ export class ToFileExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     path: false,
     safe: false,
   } satisfies RequiredMap<ToFileExprArgs>;
@@ -20514,6 +20536,10 @@ export class ToFileExpr extends FuncExpr {
 
   constructor (args: ToFileExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $path (): Expression | undefined {
@@ -20548,17 +20574,28 @@ export class CodePointsToBytesExpr extends FuncExpr {
   }
 }
 
-export type ColumnsExprArgs = { unpack?: Expression } & BaseExpressionArgs;
+export type ColumnsExprArgs = {
+  this: Expression;
+  unpack?: Expression;
+} & FuncExprArgs;
 
 export class ColumnsExpr extends FuncExpr {
   key = ExpressionKey.COLUMNS;
 
-  static argTypes = { unpack: false } satisfies RequiredMap<ColumnsExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    unpack: false,
+  } satisfies RequiredMap<ColumnsExprArgs>;
 
   declare args: ColumnsExprArgs;
 
   constructor (args: ColumnsExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $unpack (): Expression | undefined {
@@ -20570,8 +20607,12 @@ export class ColumnsExpr extends FuncExpr {
   }
 }
 
-export type ConvertExprArgs = { style?: Expression;
-  safe?: boolean; } & BaseExpressionArgs;
+export type ConvertExprArgs = {
+  this: Expression;
+  expression: Expression;
+  style?: Expression;
+  safe?: boolean;
+} & FuncExprArgs;
 
 export class ConvertExpr extends FuncExpr {
   key = ExpressionKey.CONVERT;
@@ -20582,6 +20623,8 @@ export class ConvertExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
+    expression: true,
     style: false,
     safe: false,
   } satisfies RequiredMap<ConvertExprArgs>;
@@ -20592,11 +20635,19 @@ export class ConvertExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   get $style (): Expression | undefined {
     return this.args.style;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 
@@ -20605,8 +20656,11 @@ export class ConvertExpr extends FuncExpr {
   }
 }
 
-export type ConvertToCharsetExprArgs = { dest: Expression;
-  source?: Expression; } & BaseExpressionArgs;
+export type ConvertToCharsetExprArgs = {
+  this: Expression;
+  dest: Expression;
+  source?: Expression;
+} & FuncExprArgs;
 
 export class ConvertToCharsetExpr extends FuncExpr {
   key = ExpressionKey.CONVERT_TO_CHARSET;
@@ -20617,6 +20671,7 @@ export class ConvertToCharsetExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     dest: true,
     source: false,
   } satisfies RequiredMap<ConvertToCharsetExprArgs>;
@@ -20625,6 +20680,10 @@ export class ConvertToCharsetExpr extends FuncExpr {
 
   constructor (args: ConvertToCharsetExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $dest (): Expression {
@@ -20640,10 +20699,12 @@ export class ConvertToCharsetExpr extends FuncExpr {
   }
 }
 
-export type ConvertTimezoneExprArgs = { sourceTz?: Expression;
+export type ConvertTimezoneExprArgs = {
+  sourceTz?: Expression;
   targetTz: Expression;
   timestamp: Expression;
-  options?: Expression[]; } & BaseExpressionArgs;
+  options?: Expression[];
+} & FuncExprArgs;
 
 export class ConvertTimezoneExpr extends FuncExpr {
   key = ExpressionKey.CONVERT_TIMEZONE;
@@ -20687,12 +20748,17 @@ export class ConvertTimezoneExpr extends FuncExpr {
   }
 }
 
-export type CodePointsToStringExprArgs = BaseExpressionArgs;
+export type CodePointsToStringExprArgs = FuncExprArgs;
+
 export class CodePointsToStringExpr extends FuncExpr {
   key = ExpressionKey.CODE_POINTS_TO_STRING;
-  static argTypes = {} satisfies RequiredMap<CodePointsToStringExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<CodePointsToStringExprArgs>;
 
   declare args: CodePointsToStringExprArgs;
+
   constructor (args: CodePointsToStringExprArgs) {
     super(args);
   }
