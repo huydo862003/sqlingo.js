@@ -10965,12 +10965,19 @@ export class JSONExpr extends Expression {
   }
 }
 
-export type JSONPathExprArgs = { escape?: Expression } & BaseExpressionArgs;
+export type JSONPathExprArgs = {
+  expressions: Expression[];
+  escape?: Expression;
+} & BaseExpressionArgs;
 
 export class JSONPathExpr extends Expression {
   key = ExpressionKey.JSON_PATH;
 
-  static argTypes = { escape: false } satisfies RequiredMap<JSONPathExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+    escape: false,
+  } satisfies RequiredMap<JSONPathExprArgs>;
 
   declare args: JSONPathExprArgs;
 
@@ -10978,8 +10985,18 @@ export class JSONPathExpr extends Expression {
     super(args);
   }
 
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
   get $escape (): Expression | undefined {
     return this.args.escape;
+  }
+
+  get outputName (): string {
+    const lastSegment = this.args.expressions[this.args.expressions.length - 1];
+    const thisValue = lastSegment.args.this;
+    return typeof thisValue === 'string' ? thisValue : '';
   }
 }
 
@@ -26591,6 +26608,10 @@ export class JSONExtractExpr extends BinaryExpr {
   get $requiresJson (): Expression | undefined {
     return this.args.requiresJson;
   }
+
+  get outputName (): string {
+    return !this.args.expressions ? this.expression.outputName : '';
+  }
 }
 
 export type JSONExtractArrayExprArgs = FuncExprArgs;
@@ -26647,6 +26668,10 @@ export class JSONExtractScalarExpr extends BinaryExpr {
 
   get $scalarOnly (): boolean | undefined {
     return this.args.scalarOnly;
+  }
+
+  get outputName (): string {
+    return this.expression.outputName;
   }
 }
 
@@ -27264,6 +27289,16 @@ export class MapExpr extends FuncExpr {
   get $values (): Expression[] | undefined {
     return this.args.values;
   }
+
+  get keys (): Expression[] {
+    const keysArg = this.args.keys;
+    return keysArg?.[0]?.args?.expressions || [];
+  }
+
+  get values (): Expression[] {
+    const valuesArg = this.args.values;
+    return valuesArg?.[0]?.args?.expressions || [];
+  }
 }
 
 export type ToMapExprArgs = FuncExprArgs;
@@ -27511,6 +27546,16 @@ export class VarMapExpr extends FuncExpr {
 
   get $values (): Expression[] {
     return this.args.values;
+  }
+
+  get keys (): Expression[] {
+    const keysArg = this.args.keys;
+    return keysArg?.[0]?.args?.expressions || [];
+  }
+
+  get values (): Expression[] {
+    const valuesArg = this.args.values;
+    return valuesArg?.[0]?.args?.expressions || [];
   }
 
   static {
@@ -30022,6 +30067,14 @@ export class TsOrDsAddExpr extends FuncExpr {
 
   get $returnType (): Expression | undefined {
     return this.args.returnType;
+  }
+
+  get returnType (): DataTypeExpr {
+    const returnTypeArg = this.args.returnType;
+    if (returnTypeArg instanceof DataTypeExpr) {
+      return returnTypeArg;
+    }
+    return DataTypeExpr.build(DataTypeExprKind.DATE);
   }
 
   static {
