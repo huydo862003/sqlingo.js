@@ -29014,8 +29014,11 @@ export class NormalizeExpr extends FuncExpr {
   }
 }
 
-export type NormalExprArgs = { stddev: Expression;
-  gen: Expression; } & FuncExprArgs;
+export type NormalExprArgs = {
+  this: Expression;
+  stddev: Expression;
+  gen: Expression;
+} & FuncExprArgs;
 
 export class NormalExpr extends FuncExpr {
   key = ExpressionKey.NORMAL;
@@ -29026,6 +29029,7 @@ export class NormalExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     stddev: true,
     gen: true,
   } satisfies RequiredMap<NormalExprArgs>;
@@ -29034,6 +29038,10 @@ export class NormalExpr extends FuncExpr {
 
   constructor (args: NormalExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $stddev (): Expression {
@@ -29109,8 +29117,12 @@ export class RegDomainExpr extends FuncExpr {
   }
 }
 
-export type OverlayExprArgs = { from: Expression;
-  for?: Expression; } & FuncExprArgs;
+export type OverlayExprArgs = {
+  this: Expression;
+  expression: Expression;
+  from: Expression;
+  for?: Expression;
+} & FuncExprArgs;
 
 export class OverlayExpr extends FuncExpr {
   key = ExpressionKey.OVERLAY;
@@ -29121,6 +29133,8 @@ export class OverlayExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
+    expression: true,
     from: true,
     for: false,
   } satisfies RequiredMap<OverlayExprArgs>;
@@ -29129,6 +29143,14 @@ export class OverlayExpr extends FuncExpr {
 
   constructor (args: OverlayExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $from (): Expression {
@@ -29144,17 +29166,34 @@ export class OverlayExpr extends FuncExpr {
   }
 }
 
-export type PredictExprArgs = { paramsStruct?: Expression } & FuncExprArgs;
+export type PredictExprArgs = {
+  this: Expression;
+  expression: Expression;
+  paramsStruct?: Expression;
+} & FuncExprArgs;
 
 export class PredictExpr extends FuncExpr {
   key = ExpressionKey.PREDICT;
 
-  static argTypes = { paramsStruct: false } satisfies RequiredMap<PredictExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    paramsStruct: false,
+  } satisfies RequiredMap<PredictExprArgs>;
 
   declare args: PredictExprArgs;
 
   constructor (args: PredictExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $paramsStruct (): Expression | undefined {
@@ -29166,17 +29205,34 @@ export class PredictExpr extends FuncExpr {
   }
 }
 
-export type MLTranslateExprArgs = { paramsStruct: Expression } & FuncExprArgs;
+export type MLTranslateExprArgs = {
+  this: Expression;
+  expression: Expression;
+  paramsStruct: Expression;
+} & FuncExprArgs;
 
 export class MLTranslateExpr extends FuncExpr {
   key = ExpressionKey.ML_TRANSLATE;
 
-  static argTypes = { paramsStruct: true } satisfies RequiredMap<MLTranslateExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    paramsStruct: true,
+  } satisfies RequiredMap<MLTranslateExprArgs>;
 
   declare args: MLTranslateExprArgs;
 
   constructor (args: MLTranslateExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $paramsStruct (): Expression {
@@ -29188,9 +29244,12 @@ export class MLTranslateExpr extends FuncExpr {
   }
 }
 
-export type FeaturesAtTimeExprArgs = { time?: Expression;
+export type FeaturesAtTimeExprArgs = {
+  this: Expression;
+  time?: Expression;
   numRows?: Expression[];
-  ignoreFeatureNulls?: Expression[]; } & FuncExprArgs;
+  ignoreFeatureNulls?: Expression[];
+} & FuncExprArgs;
 
 export class FeaturesAtTimeExpr extends FuncExpr {
   key = ExpressionKey.FEATURES_AT_TIME;
@@ -29201,6 +29260,7 @@ export class FeaturesAtTimeExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     time: false,
     numRows: false,
     ignoreFeatureNulls: false,
@@ -29210,6 +29270,10 @@ export class FeaturesAtTimeExpr extends FuncExpr {
 
   constructor (args: FeaturesAtTimeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $time (): Expression | undefined {
@@ -29229,8 +29293,12 @@ export class FeaturesAtTimeExpr extends FuncExpr {
   }
 }
 
-export type GenerateEmbeddingExprArgs = { paramsStruct?: Expression;
-  isText?: string; } & FuncExprArgs;
+export type GenerateEmbeddingExprArgs = {
+  this: Expression;
+  expression: Expression;
+  paramsStruct?: Expression;
+  isText?: string;
+} & FuncExprArgs;
 
 export class GenerateEmbeddingExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_EMBEDDING;
@@ -29241,6 +29309,8 @@ export class GenerateEmbeddingExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
+    expression: true,
     paramsStruct: false,
     isText: false,
   } satisfies RequiredMap<GenerateEmbeddingExprArgs>;
@@ -29249,6 +29319,14 @@ export class GenerateEmbeddingExpr extends FuncExpr {
 
   constructor (args: GenerateEmbeddingExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $paramsStruct (): Expression | undefined {
