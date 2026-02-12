@@ -18210,45 +18210,69 @@ export class LTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type ModExprArgs = BaseExpressionArgs;
+export type ModExprArgs = BinaryExprArgs;
+
 export class ModExpr extends BinaryExpr {
   key = ExpressionKey.MOD;
-  static argTypes = {} satisfies RequiredMap<ModExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<ModExprArgs>;
 
   declare args: ModExprArgs;
+
   constructor (args: ModExprArgs) {
     super(args);
   }
 }
 
-export type MulExprArgs = BaseExpressionArgs;
+export type MulExprArgs = BinaryExprArgs;
+
 export class MulExpr extends BinaryExpr {
   key = ExpressionKey.MUL;
-  static argTypes = {} satisfies RequiredMap<MulExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<MulExprArgs>;
 
   declare args: MulExprArgs;
+
   constructor (args: MulExprArgs) {
     super(args);
   }
 }
 
-export type NEQExprArgs = BaseExpressionArgs;
-export class NEQExpr extends BinaryExpr {
+export type NEQExprArgs = BinaryExprArgs & PredicateExprArgs;
+
+export class NEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.NEQ;
-  static argTypes = {} satisfies RequiredMap<NEQExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<NEQExprArgs>;
 
   declare args: NEQExprArgs;
+
   constructor (args: NEQExprArgs) {
     super(args);
   }
 }
 
-export type OperatorExprArgs = { operator: Expression } & BaseExpressionArgs;
+export type OperatorExprArgs = {
+  this: Expression;
+  operator: Expression;
+  expression: Expression;
+} & BinaryExprArgs;
 
 export class OperatorExpr extends BinaryExpr {
   key = ExpressionKey.OPERATOR;
 
-  static argTypes = { operator: true } satisfies RequiredMap<OperatorExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    operator: true,
+    expression: true,
+  } satisfies RequiredMap<OperatorExprArgs>;
 
   declare args: OperatorExprArgs;
 
@@ -18261,34 +18285,49 @@ export class OperatorExpr extends BinaryExpr {
   }
 }
 
-export type SimilarToExprArgs = BaseExpressionArgs;
-export class SimilarToExpr extends BinaryExpr {
+export type SimilarToExprArgs = BinaryExprArgs & PredicateExprArgs;
+
+export class SimilarToExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.SIMILAR_TO;
-  static argTypes = {} satisfies RequiredMap<SimilarToExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<SimilarToExprArgs>;
 
   declare args: SimilarToExprArgs;
+
   constructor (args: SimilarToExprArgs) {
     super(args);
   }
 }
 
-export type SubExprArgs = BaseExpressionArgs;
+export type SubExprArgs = BinaryExprArgs;
+
 export class SubExpr extends BinaryExpr {
   key = ExpressionKey.SUB;
-  static argTypes = {} satisfies RequiredMap<SubExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<SubExprArgs>;
 
   declare args: SubExprArgs;
+
   constructor (args: SubExprArgs) {
     super(args);
   }
 }
 
-export type AdjacentExprArgs = BaseExpressionArgs;
+export type AdjacentExprArgs = BinaryExprArgs;
+
 export class AdjacentExpr extends BinaryExpr {
   key = ExpressionKey.ADJACENT;
-  static argTypes = {} satisfies RequiredMap<AdjacentExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<AdjacentExprArgs>;
 
   declare args: AdjacentExprArgs;
+
   constructor (args: AdjacentExprArgs) {
     super(args);
   }
