@@ -27601,6 +27601,8 @@ export class JSONBExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
+    expression: true,
     jsonType: false,
   } satisfies RequiredMap<JSONBExtractScalarExprArgs>;
 
@@ -27608,6 +27610,14 @@ export class JSONBExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   constructor (args: JSONBExtractScalarExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $jsonType (): Expression | undefined {
@@ -27710,6 +27720,8 @@ export class JSONArrayContainsExpr extends multiInherit(BinaryExpr, PredicateExp
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
+    expression: true,
     jsonType: false,
   } satisfies RequiredMap<JSONArrayContainsExprArgs>;
 
@@ -27717,6 +27729,14 @@ export class JSONArrayContainsExpr extends multiInherit(BinaryExpr, PredicateExp
 
   constructor (args: JSONArrayContainsExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $jsonType (): Expression | undefined {
@@ -29995,6 +30015,8 @@ export class RegexpLikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
+    expression: true,
     flag: false,
   } satisfies RequiredMap<RegexpLikeExprArgs>;
 
@@ -30002,6 +30024,14 @@ export class RegexpLikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   constructor (args: RegexpLikeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $flag (): Expression | undefined {
@@ -30017,6 +30047,8 @@ export class RegexpILikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
+    expression: true,
     flag: false,
   } satisfies RequiredMap<RegexpILikeExprArgs>;
 
@@ -30024,6 +30056,14 @@ export class RegexpILikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   constructor (args: RegexpILikeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $flag (): Expression | undefined {
@@ -30039,6 +30079,8 @@ export class RegexpFullMatchExpr extends multiInherit(BinaryExpr, FuncExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    this: true,
+    expression: true,
     options: false,
   } satisfies RequiredMap<RegexpFullMatchExprArgs>;
 
@@ -30046,6 +30088,14 @@ export class RegexpFullMatchExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   constructor (args: RegexpFullMatchExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $options (): Expression[] | undefined {
@@ -30106,17 +30156,34 @@ export class RegexpInstrExpr extends FuncExpr {
   }
 }
 
-export type RegexpSplitExprArgs = { limit?: number | Expression } & FuncExprArgs;
+export type RegexpSplitExprArgs = {
+  this: Expression;
+  expression: Expression;
+  limit?: number | Expression;
+} & FuncExprArgs;
 
 export class RegexpSplitExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_SPLIT;
 
-  static argTypes = { limit: false } satisfies RequiredMap<RegexpSplitExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    limit: false,
+  } satisfies RequiredMap<RegexpSplitExprArgs>;
 
   declare args: RegexpSplitExprArgs;
 
   constructor (args: RegexpSplitExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $limit (): number | Expression | undefined {
