@@ -2482,6 +2482,7 @@ export class ConditionExpr extends Expression {
   } satisfies RequiredMap<ConditionExprArgs>;
 
   declare args: ConditionExprArgs;
+
   constructor (args: ConditionExprArgs) {
     super(args);
   }
@@ -2497,6 +2498,7 @@ export class PredicateExpr extends Expression {
   } satisfies RequiredMap<PredicateExprArgs>;
 
   declare args: PredicateExprArgs;
+
   constructor (args: PredicateExprArgs) {
     super(args);
   }
@@ -2512,6 +2514,7 @@ export class DerivedTableExpr extends Expression {
   } satisfies RequiredMap<DerivedTableExprArgs>;
 
   declare args: DerivedTableExprArgs;
+
   constructor (args: DerivedTableExprArgs) {
     super(args);
   }
@@ -2931,6 +2934,7 @@ export class UDTFExpr extends DerivedTableExpr {
   static argTypes = {} satisfies RequiredMap<UDTFExprArgs>;
 
   declare args: UDTFExprArgs;
+
   constructor (args: UDTFExprArgs) {
     super(args);
   }
@@ -2970,6 +2974,7 @@ export class CacheExpr extends Expression {
   } satisfies RequiredMap<CacheExprArgs>;
 
   declare args: CacheExprArgs;
+
   constructor (args: CacheExprArgs) {
     super(args);
   }
@@ -3010,6 +3015,7 @@ export class UncacheExpr extends Expression {
   } satisfies RequiredMap<UncacheExprArgs>;
 
   declare args: UncacheExprArgs;
+
   constructor (args: UncacheExprArgs) {
     super(args);
   }
@@ -3051,6 +3057,7 @@ export class RefreshExpr extends Expression {
   } satisfies RequiredMap<RefreshExprArgs>;
 
   declare args: RefreshExprArgs;
+
   constructor (args: RefreshExprArgs) {
     super(args);
   }
@@ -3075,6 +3082,7 @@ export class DDLExpr extends Expression {
   static argTypes = {} satisfies RequiredMap<DDLExprArgs>;
 
   declare args: DDLExprArgs;
+
   constructor (args: DDLExprArgs) {
     super(args);
   }
@@ -3134,6 +3142,7 @@ export class LockingStatementExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: LockingStatementExprArgs;
+
   constructor (args: LockingStatementExprArgs) {
     super(args);
   }
@@ -3155,6 +3164,7 @@ export class DMLExpr extends Expression {
   static argTypes = {} satisfies RequiredMap<DMLExprArgs>;
 
   declare args: DMLExprArgs;
+
   constructor (args: DMLExprArgs) {
     super(args);
   }
@@ -3255,6 +3265,7 @@ export class CreateExpr extends DDLExpr {
   } satisfies RequiredMap<CreateExprArgs>;
 
   declare args: CreateExprArgs;
+
   constructor (args: CreateExprArgs) {
     super(args);
   }
@@ -3357,6 +3368,7 @@ export class SequencePropertiesExpr extends Expression {
   } satisfies RequiredMap<SequencePropertiesExprArgs>;
 
   declare args: SequencePropertiesExprArgs;
+
   constructor (args: SequencePropertiesExprArgs) {
     super(args);
   }
@@ -3421,6 +3433,7 @@ export class TruncateTableExpr extends Expression {
   } satisfies RequiredMap<TruncateTableExprArgs>;
 
   declare args: TruncateTableExprArgs;
+
   constructor (args: TruncateTableExprArgs) {
     super(args);
   }
@@ -3479,6 +3492,7 @@ export class CloneExpr extends Expression {
   } satisfies RequiredMap<CloneExprArgs>;
 
   declare args: CloneExprArgs;
+
   constructor (args: CloneExprArgs) {
     super(args);
   }
@@ -3535,6 +3549,7 @@ export class DescribeExpr extends Expression {
   } satisfies RequiredMap<DescribeExprArgs>;
 
   declare args: DescribeExprArgs;
+
   constructor (args: DescribeExprArgs) {
     super(args);
   }
@@ -3589,6 +3604,7 @@ export class AttachExpr extends Expression {
   } satisfies RequiredMap<AttachExprArgs>;
 
   declare args: AttachExprArgs;
+
   constructor (args: AttachExprArgs) {
     super(args);
   }
@@ -3625,6 +3641,7 @@ export class DetachExpr extends Expression {
   } satisfies RequiredMap<DetachExprArgs>;
 
   declare args: DetachExprArgs;
+
   constructor (args: DetachExprArgs) {
     super(args);
   }
@@ -3659,6 +3676,7 @@ export class InstallExpr extends Expression {
   } satisfies RequiredMap<InstallExprArgs>;
 
   declare args: InstallExprArgs;
+
   constructor (args: InstallExprArgs) {
     super(args);
   }
@@ -3695,6 +3713,7 @@ export class SummarizeExpr extends Expression {
   } satisfies RequiredMap<SummarizeExprArgs>;
 
   declare args: SummarizeExprArgs;
+
   constructor (args: SummarizeExprArgs) {
     super(args);
   }
@@ -3735,6 +3754,7 @@ export class KillExpr extends Expression {
   } satisfies RequiredMap<KillExprArgs>;
 
   declare args: KillExprArgs;
+
   constructor (args: KillExprArgs) {
     super(args);
   }
@@ -3758,6 +3778,7 @@ export class PragmaExpr extends Expression {
   } satisfies RequiredMap<PragmaExprArgs>;
 
   declare args: PragmaExprArgs;
+
   constructor (args: PragmaExprArgs) {
     super(args);
   }
@@ -3773,6 +3794,7 @@ export class DeclareExpr extends Expression {
   static argTypes = { expressions: true } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: DeclareExprArgs;
+
   constructor (args: DeclareExprArgs) {
     super(args);
   }
@@ -3813,6 +3835,7 @@ export class DeclareItemExpr extends Expression {
   } satisfies RequiredMap<DeclareItemExprArgs>;
 
   declare args: DeclareItemExprArgs;
+
   constructor (args: DeclareItemExprArgs) {
     super(args);
   }
@@ -3851,6 +3874,7 @@ export class SetExpr extends Expression {
   } satisfies RequiredMap<SetExprArgs>;
 
   declare args: SetExprArgs;
+
   constructor (args: SetExprArgs) {
     super(args);
   }
@@ -3887,6 +3911,7 @@ export class HeredocExpr extends Expression {
   } satisfies RequiredMap<HeredocExprArgs>;
 
   declare args: HeredocExprArgs;
+
   constructor (args: HeredocExprArgs) {
     super(args);
   }
@@ -3936,6 +3961,7 @@ export class SetItemExpr extends Expression {
   } satisfies RequiredMap<SetItemExprArgs>;
 
   declare args: SetItemExprArgs;
+
   constructor (args: SetItemExprArgs) {
     super(args);
   }
@@ -3982,6 +4008,7 @@ export class QueryBandExpr extends Expression {
   } satisfies RequiredMap<QueryBandExprArgs>;
 
   declare args: QueryBandExprArgs;
+
   constructor (args: QueryBandExprArgs) {
     super(args);
   }
@@ -4070,6 +4097,7 @@ export class ShowExpr extends Expression {
   } satisfies RequiredMap<ShowExprArgs>;
 
   declare args: ShowExprArgs;
+
   constructor (args: ShowExprArgs) {
     super(args);
   }
@@ -4208,6 +4236,7 @@ export class UserDefinedFunctionExpr extends Expression {
   } satisfies RequiredMap<UserDefinedFunctionExprArgs>;
 
   declare args: UserDefinedFunctionExprArgs;
+
   constructor (args: UserDefinedFunctionExprArgs) {
     super(args);
   }
@@ -4244,6 +4273,7 @@ export class CharacterSetExpr extends Expression {
   } satisfies RequiredMap<CharacterSetExprArgs>;
 
   declare args: CharacterSetExprArgs;
+
   constructor (args: CharacterSetExprArgs) {
     super(args);
   }
@@ -4289,6 +4319,7 @@ export class RecursiveWithSearchExpr extends Expression {
   } satisfies RequiredMap<RecursiveWithSearchExprArgs>;
 
   declare args: RecursiveWithSearchExprArgs;
+
   constructor (args: RecursiveWithSearchExprArgs) {
     super(args);
   }
@@ -4331,6 +4362,7 @@ export class WithExpr extends Expression {
   } satisfies RequiredMap<WithExprArgs>;
 
   declare args: WithExprArgs;
+
   constructor (args: WithExprArgs) {
     super(args);
   }
@@ -4370,6 +4402,7 @@ export class WithinGroupExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: WithinGroupExprArgs;
+
   constructor (args: WithinGroupExprArgs) {
     super(args);
   }
@@ -4401,6 +4434,7 @@ export class ProjectionDefExpr extends Expression {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: ProjectionDefExprArgs;
+
   constructor (args: ProjectionDefExprArgs) {
     super(args);
   }
@@ -4470,6 +4504,7 @@ export class ColumnPositionExpr extends Expression {
   } satisfies RequiredMap<ColumnPositionExprArgs>;
 
   declare args: ColumnPositionExprArgs;
+
   constructor (args: ColumnPositionExprArgs) {
     super(args);
   }
@@ -4523,6 +4558,7 @@ export class ColumnDefExpr extends Expression {
   } satisfies RequiredMap<ColumnDefExprArgs>;
 
   declare args: ColumnDefExprArgs;
+
   constructor (args: ColumnDefExprArgs) {
     super(args);
   }
@@ -4607,6 +4643,7 @@ export class AlterColumnExpr extends Expression {
   } satisfies RequiredMap<AlterColumnExprArgs>;
 
   declare args: AlterColumnExprArgs;
+
   constructor (args: AlterColumnExprArgs) {
     super(args);
   }
@@ -4671,6 +4708,7 @@ export class AlterIndexExpr extends Expression {
   } satisfies RequiredMap<AlterIndexExprArgs>;
 
   declare args: AlterIndexExprArgs;
+
   constructor (args: AlterIndexExprArgs) {
     super(args);
   }
@@ -4694,6 +4732,7 @@ export class AlterDistStyleExpr extends Expression {
   } satisfies RequiredMap<AlterDistStyleExprArgs>;
 
   declare args: AlterDistStyleExprArgs;
+
   constructor (args: AlterDistStyleExprArgs) {
     super(args);
   }
@@ -4720,6 +4759,7 @@ export class AlterSortKeyExpr extends Expression {
   } satisfies RequiredMap<AlterSortKeyExprArgs>;
 
   declare args: AlterSortKeyExprArgs;
+
   constructor (args: AlterSortKeyExprArgs) {
     super(args);
   }
@@ -4770,6 +4810,7 @@ export class AlterSetExpr extends Expression {
   } satisfies RequiredMap<AlterSetExprArgs>;
 
   declare args: AlterSetExprArgs;
+
   constructor (args: AlterSetExprArgs) {
     super(args);
   }
@@ -4832,6 +4873,7 @@ export class RenameColumnExpr extends Expression {
   } satisfies RequiredMap<RenameColumnExprArgs>;
 
   declare args: RenameColumnExprArgs;
+
   constructor (args: RenameColumnExprArgs) {
     super(args);
   }
@@ -4859,6 +4901,7 @@ export class AlterRenameExpr extends Expression {
   } satisfies RequiredMap<AlterRenameExprArgs>;
 
   declare args: AlterRenameExprArgs;
+
   constructor (args: AlterRenameExprArgs) {
     super(args);
   }
@@ -4874,6 +4917,7 @@ export class SwapTableExpr extends Expression {
   } satisfies RequiredMap<SwapTableExprArgs>;
 
   declare args: SwapTableExprArgs;
+
   constructor (args: SwapTableExprArgs) {
     super(args);
   }
@@ -4914,6 +4958,7 @@ export class CommentExpr extends Expression {
   } satisfies RequiredMap<CommentExprArgs>;
 
   declare args: CommentExprArgs;
+
   constructor (args: CommentExprArgs) {
     super(args);
   }
@@ -4964,6 +5009,7 @@ export class ComprehensionExpr extends Expression {
   } satisfies RequiredMap<ComprehensionExprArgs>;
 
   declare args: ComprehensionExprArgs;
+
   constructor (args: ComprehensionExprArgs) {
     super(args);
   }
@@ -5063,6 +5109,7 @@ export class MergeTreeTTLExpr extends Expression {
   } satisfies RequiredMap<MergeTreeTTLExprArgs>;
 
   declare args: MergeTreeTTLExprArgs;
+
   constructor (args: MergeTreeTTLExprArgs) {
     super(args);
   }
@@ -5211,6 +5258,7 @@ export class ColumnConstraintKindExpr extends Expression {
   } satisfies RequiredMap<ColumnConstraintKindExprArgs>;
 
   declare args: ColumnConstraintKindExprArgs;
+
   constructor (args: ColumnConstraintKindExprArgs) {
     super(args);
   }
@@ -6770,6 +6818,7 @@ export type PartitionIdExprArgs = BaseExpressionArgs;
 
 export class PartitionIdExpr extends Expression {
   key = ExpressionKey.PARTITION_ID;
+
   static argTypes = {
     ...super.argTypes,
   } satisfies RequiredMap<PartitionIdExprArgs>;
@@ -7007,6 +7056,7 @@ export class CubeExpr extends Expression {
   } satisfies RequiredMap<CubeExprArgs>;
 
   declare args: CubeExprArgs;
+
   constructor (args: CubeExprArgs) {
     super(args);
   }
@@ -7052,6 +7102,7 @@ export class GroupingSetsExpr extends Expression {
   } satisfies RequiredMap<GroupingSetsExprArgs>;
 
   declare args: GroupingSetsExprArgs;
+
   constructor (args: GroupingSetsExprArgs) {
     super(args);
   }
@@ -7932,6 +7983,7 @@ export class PartitionListExpr extends Expression {
   } satisfies RequiredMap<PartitionListExprArgs>;
 
   declare args: PartitionListExprArgs;
+
   constructor (args: PartitionListExprArgs) {
     super(args);
   }
@@ -8093,9 +8145,11 @@ export class SemanticViewExpr extends Expression {
 export type LocationExprArgs = BaseExpressionArgs;
 export class LocationExpr extends Expression {
   key = ExpressionKey.LOCATION;
+
   static argTypes = {} satisfies RequiredMap<LocationExprArgs>;
 
   declare args: LocationExprArgs;
+
   constructor (args: LocationExprArgs) {
     super(args);
   }
@@ -9079,6 +9133,7 @@ export type UnpivotColumnsExprArgs = {
 
 export class UnpivotColumnsExpr extends Expression {
   key = ExpressionKey.UNPIVOT_COLUMNS;
+
   static argTypes = {
     this: true,
     expressions: true,
@@ -9161,6 +9216,7 @@ export type PreWhereExprArgs = BaseExpressionArgs;
 
 export class PreWhereExpr extends Expression {
   key = ExpressionKey.PRE_WHERE;
+
   static argTypes = {
     ...super.argTypes,
   } satisfies RequiredMap<PreWhereExprArgs>;
@@ -9176,6 +9232,7 @@ export type WhereExprArgs = BaseExpressionArgs;
 
 export class WhereExpr extends Expression {
   key = ExpressionKey.WHERE;
+
   static argTypes = {
     ...super.argTypes,
   } satisfies RequiredMap<WhereExprArgs>;
@@ -9681,9 +9738,11 @@ export class DataTypeExpr extends Expression {
 export type TypeExprArgs = BaseExpressionArgs;
 export class TypeExpr extends Expression {
   key = ExpressionKey.TYPE;
+
   static argTypes = {} satisfies RequiredMap<TypeExprArgs>;
 
   declare args: TypeExprArgs;
+
   constructor (args: TypeExprArgs) {
     super(args);
   }
@@ -10290,6 +10349,7 @@ export class AnalyzeColumnsExpr extends Expression {
   } satisfies RequiredMap<AnalyzeColumnsExprArgs>;
 
   declare args: AnalyzeColumnsExprArgs;
+
   constructor (args: AnalyzeColumnsExprArgs) {
     super(args);
   }
@@ -10299,6 +10359,7 @@ export type UsingDataExprArgs = BaseExpressionArgs;
 
 export class UsingDataExpr extends Expression {
   key = ExpressionKey.USING_DATA;
+
   static argTypes = {
     ...super.argTypes,
   } satisfies RequiredMap<UsingDataExprArgs>;
@@ -10907,9 +10968,11 @@ export class TranslateCharactersExpr extends Expression {
 export type PositionalColumnExprArgs = BaseExpressionArgs;
 export class PositionalColumnExpr extends Expression {
   key = ExpressionKey.POSITIONAL_COLUMN;
+
   static argTypes = {} satisfies RequiredMap<PositionalColumnExprArgs>;
 
   declare args: PositionalColumnExprArgs;
+
   constructor (args: PositionalColumnExprArgs) {
     super(args);
   }
@@ -11336,9 +11399,11 @@ export class SliceExpr extends Expression {
 export type StreamExprArgs = BaseExpressionArgs;
 export class StreamExpr extends Expression {
   key = ExpressionKey.STREAM;
+
   static argTypes = {} satisfies RequiredMap<StreamExprArgs>;
 
   declare args: StreamExprArgs;
+
   constructor (args: StreamExprArgs) {
     super(args);
   }
@@ -11375,9 +11440,11 @@ export class ModelAttributeExpr extends Expression {
 export type WeekStartExprArgs = BaseExpressionArgs;
 export class WeekStartExpr extends Expression {
   key = ExpressionKey.WEEK_START;
+
   static argTypes = {} satisfies RequiredMap<WeekStartExprArgs>;
 
   declare args: WeekStartExprArgs;
+
   constructor (args: WeekStartExprArgs) {
     super(args);
   }
@@ -11386,9 +11453,11 @@ export class WeekStartExpr extends Expression {
 export type XMLNamespaceExprArgs = BaseExpressionArgs;
 export class XMLNamespaceExpr extends Expression {
   key = ExpressionKey.XML_NAMESPACE;
+
   static argTypes = {} satisfies RequiredMap<XMLNamespaceExprArgs>;
 
   declare args: XMLNamespaceExprArgs;
+
   constructor (args: XMLNamespaceExprArgs) {
     super(args);
   }
@@ -11397,12 +11466,14 @@ export class XMLNamespaceExpr extends Expression {
 export type XMLKeyValueOptionExprArgs = BaseExpressionArgs;
 export class XMLKeyValueOptionExpr extends Expression {
   key = ExpressionKey.XML_KEY_VALUE_OPTION;
+
   static argTypes = {
     this: true,
     expression: false,
   } satisfies RequiredMap<XMLKeyValueOptionExprArgs>;
 
   declare args: XMLKeyValueOptionExprArgs;
+
   constructor (args: XMLKeyValueOptionExprArgs) {
     super(args);
   }
@@ -11506,11 +11577,13 @@ export class WhenExpr extends Expression {
 export type WhensExprArgs = BaseExpressionArgs;
 export class WhensExpr extends Expression {
   key = ExpressionKey.WHENS;
+
   static argTypes = {
     expressions: true,
   } satisfies RequiredMap<WhensExprArgs>;
 
   declare args: WhensExprArgs;
+
   constructor (args: WhensExprArgs) {
     super(args);
   }
@@ -11523,9 +11596,11 @@ export class WhensExpr extends Expression {
 export type SemicolonExprArgs = BaseExpressionArgs;
 export class SemicolonExpr extends Expression {
   key = ExpressionKey.SEMICOLON;
+
   static argTypes = {} satisfies RequiredMap<SemicolonExprArgs>;
 
   declare args: SemicolonExprArgs;
+
   constructor (args: SemicolonExprArgs) {
     super(args);
   }
@@ -11534,9 +11609,11 @@ export class SemicolonExpr extends Expression {
 export type TableColumnExprArgs = BaseExpressionArgs;
 export class TableColumnExpr extends Expression {
   key = ExpressionKey.TABLE_COLUMN;
+
   static argTypes = {} satisfies RequiredMap<TableColumnExprArgs>;
 
   declare args: TableColumnExprArgs;
+
   constructor (args: TableColumnExprArgs) {
     super(args);
   }
@@ -11550,6 +11627,7 @@ export class VariadicExpr extends Expression {
   static argTypes = {} satisfies RequiredMap<VariadicExprArgs>;
 
   declare args: VariadicExprArgs;
+
   constructor (args: VariadicExprArgs) {
     super(args);
   }
@@ -11580,6 +11658,7 @@ export class CTEExpr extends DerivedTableExpr {
   } satisfies RequiredMap<CTEExprArgs>;
 
   declare args: CTEExprArgs;
+
   constructor (args: CTEExprArgs) {
     super(args);
   }
@@ -11615,6 +11694,7 @@ export class BitStringExpr extends ConditionExpr {
   } satisfies RequiredMap<BitStringExprArgs>;
 
   declare args: BitStringExprArgs;
+
   constructor (args: BitStringExprArgs) {
     super(args);
   }
@@ -11639,6 +11719,7 @@ export class HexStringExpr extends ConditionExpr {
   } satisfies RequiredMap<HexStringExprArgs>;
 
   declare args: HexStringExprArgs;
+
   constructor (args: HexStringExprArgs) {
     super(args);
   }
@@ -11671,6 +11752,7 @@ export class ByteStringExpr extends ConditionExpr {
   } satisfies RequiredMap<ByteStringExprArgs>;
 
   declare args: ByteStringExprArgs;
+
   constructor (args: ByteStringExprArgs) {
     super(args);
   }
@@ -11694,6 +11776,7 @@ export class RawStringExpr extends ConditionExpr {
   } satisfies RequiredMap<RawStringExprArgs>;
 
   declare args: RawStringExprArgs;
+
   constructor (args: RawStringExprArgs) {
     super(args);
   }
@@ -11718,6 +11801,7 @@ export class UnicodeStringExpr extends ConditionExpr {
   } satisfies RequiredMap<UnicodeStringExprArgs>;
 
   declare args: UnicodeStringExprArgs;
+
   constructor (args: UnicodeStringExprArgs) {
     super(args);
   }
@@ -11763,6 +11847,7 @@ export class ColumnExpr extends ConditionExpr {
   } satisfies RequiredMap<ColumnExprArgs>;
 
   declare args: ColumnExprArgs;
+
   constructor (args: ColumnExprArgs) {
     super(args);
   }
@@ -11854,6 +11939,7 @@ export class PseudocolumnExpr extends ColumnExpr {
   } satisfies RequiredMap<PseudocolumnExprArgs>;
 
   declare args: PseudocolumnExprArgs;
+
   constructor (args: PseudocolumnExprArgs) {
     super(args);
   }
@@ -11873,6 +11959,7 @@ export class AutoIncrementColumnConstraintExpr extends ColumnConstraintKindExpr 
   } satisfies RequiredMap<AutoIncrementColumnConstraintExprArgs>;
 
   declare args: AutoIncrementColumnConstraintExprArgs;
+
   constructor (args: AutoIncrementColumnConstraintExprArgs) {
     super(args);
   }
@@ -11969,6 +12056,7 @@ export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: CharacterSetColumnConstraintExprArgs;
+
   constructor (args: CharacterSetColumnConstraintExprArgs) {
     super(args);
   }
@@ -12099,6 +12187,7 @@ export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: DateFormatColumnConstraintExprArgs;
+
   constructor (args: DateFormatColumnConstraintExprArgs) {
     super(args);
   }
@@ -12168,6 +12257,7 @@ export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
   } satisfies RequiredMap<BaseExpressionArgs>;
 
   declare args: EphemeralColumnConstraintExprArgs;
+
   constructor (args: EphemeralColumnConstraintExprArgs) {
     super(args);
   }
@@ -13904,6 +13994,7 @@ export type InheritsPropertyExprArgs = {
 
 export class InheritsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.INHERITS_PROPERTY;
+
   static argTypes = {
     expressions: true,
   } satisfies RequiredMap<InheritsPropertyExprArgs>;
@@ -14048,6 +14139,7 @@ export type LanguagePropertyExprArgs = {
 
 export class LanguagePropertyExpr extends PropertyExpr {
   key = ExpressionKey.LANGUAGE_PROPERTY;
+
   static argTypes = {
     this: true,
   } satisfies RequiredMap<LanguagePropertyExprArgs>;
@@ -17424,9 +17516,11 @@ export class BinaryExpr extends ConditionExpr {
 export type UnaryExprArgs = BaseExpressionArgs;
 export class UnaryExpr extends Expression {
   key = ExpressionKey.UNARY;
+
   static argTypes = {} satisfies RequiredMap<UnaryExprArgs>;
 
   declare args: UnaryExprArgs;
+
   constructor (args: UnaryExprArgs) {
     super(args);
   }
@@ -17442,6 +17536,7 @@ export class PivotAliasExpr extends AliasExpr {
   } satisfies RequiredMap<PivotAliasExprArgs>;
 
   declare args: PivotAliasExprArgs;
+
   constructor (args: PivotAliasExprArgs) {
     super(args);
   }
@@ -17735,12 +17830,14 @@ export type JSONPathFilterExprArgs = {
 } & BaseExpressionArgs;
 export class JSONPathFilterExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_FILTER;
+
   static argTypes = {
     ...super.argTypes,
     this: true,
   } satisfies RequiredMap<JSONPathFilterExprArgs>;
 
   declare args: JSONPathFilterExprArgs;
+
   constructor (args: JSONPathFilterExprArgs) {
     super(args);
   }
@@ -17755,12 +17852,14 @@ export type JSONPathKeyExprArgs = {
 } & BaseExpressionArgs;
 export class JSONPathKeyExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_KEY;
+
   static argTypes = {
     ...super.argTypes,
     this: true,
   } satisfies RequiredMap<JSONPathKeyExprArgs>;
 
   declare args: JSONPathKeyExprArgs;
+
   constructor (args: JSONPathKeyExprArgs) {
     super(args);
   }
@@ -17796,9 +17895,11 @@ export class JSONPathRecursiveExpr extends JSONPathPartExpr {
 export type JSONPathRootExprArgs = BaseExpressionArgs;
 export class JSONPathRootExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_ROOT;
+
   static argTypes = {} satisfies RequiredMap<JSONPathRootExprArgs>;
 
   declare args: JSONPathRootExprArgs;
+
   constructor (args: JSONPathRootExprArgs) {
     super(args);
   }
@@ -17809,12 +17910,14 @@ export type JSONPathScriptExprArgs = {
 } & BaseExpressionArgs;
 export class JSONPathScriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SCRIPT;
+
   static argTypes = {
     ...super.argTypes,
     this: true,
   } satisfies RequiredMap<JSONPathScriptExprArgs>;
 
   declare args: JSONPathScriptExprArgs;
+
   constructor (args: JSONPathScriptExprArgs) {
     super(args);
   }
@@ -17866,12 +17969,14 @@ export type JSONPathSelectorExprArgs = {
 } & BaseExpressionArgs;
 export class JSONPathSelectorExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SELECTOR;
+
   static argTypes = {
     ...super.argTypes,
     this: true,
   } satisfies RequiredMap<JSONPathSelectorExprArgs>;
 
   declare args: JSONPathSelectorExprArgs;
+
   constructor (args: JSONPathSelectorExprArgs) {
     super(args);
   }
@@ -17886,12 +17991,14 @@ export type JSONPathSubscriptExprArgs = {
 } & BaseExpressionArgs;
 export class JSONPathSubscriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SUBSCRIPT;
+
   static argTypes = {
     ...super.argTypes,
     this: true,
   } satisfies RequiredMap<JSONPathSubscriptExprArgs>;
 
   declare args: JSONPathSubscriptExprArgs;
+
   constructor (args: JSONPathSubscriptExprArgs) {
     super(args);
   }
@@ -17927,9 +18034,11 @@ export class JSONPathUnionExpr extends JSONPathPartExpr {
 export type JSONPathWildcardExprArgs = BaseExpressionArgs;
 export class JSONPathWildcardExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_WILDCARD;
+
   static argTypes = {} satisfies RequiredMap<JSONPathWildcardExprArgs>;
 
   declare args: JSONPathWildcardExprArgs;
+
   constructor (args: JSONPathWildcardExprArgs) {
     super(args);
   }
@@ -24437,6 +24546,7 @@ export type ExistsExprArgs = {
 } & FuncExprArgs;
 export class ExistsExpr extends multiInherit(FuncExpr, SubqueryPredicateExpr) {
   key = ExpressionKey.EXISTS;
+
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
@@ -24445,6 +24555,7 @@ export class ExistsExpr extends multiInherit(FuncExpr, SubqueryPredicateExpr) {
   } satisfies RequiredMap<ExistsExprArgs>;
 
   declare args: ExistsExprArgs;
+
   constructor (args: ExistsExprArgs) {
     super(args);
   }
@@ -24469,6 +24580,7 @@ export type EltExprArgs = {
 
 export class EltExpr extends FuncExpr {
   key = ExpressionKey.ELT;
+
   static isVarLenArgs = true;
   static argTypes = {
     ...super.argTypes,
@@ -25109,6 +25221,7 @@ export type DateExprArgs = {
 
 export class DateExpr extends FuncExpr {
   key = ExpressionKey.DATE;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -25210,6 +25323,7 @@ export type DecodeCaseExprArgs = {
 
 export class DecodeCaseExpr extends FuncExpr {
   key = ExpressionKey.DECODE_CASE;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -26310,6 +26424,7 @@ export type GreatestExprArgs = {
 
 export class GreatestExpr extends FuncExpr {
   key = ExpressionKey.GREATEST;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -26816,6 +26931,7 @@ export type FormatExprArgs = {
 
 export class FormatExpr extends FuncExpr {
   key = ExpressionKey.FORMAT;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -26851,6 +26967,7 @@ export type JSONKeysExprArgs = {
 
 export class JSONKeysExpr extends FuncExpr {
   key = ExpressionKey.JSON_KEYS;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -27068,6 +27185,7 @@ export type JSONSetExprArgs = {
 
 export class JSONSetExpr extends FuncExpr {
   key = ExpressionKey.JSON_SET;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -27170,6 +27288,7 @@ export type JSONRemoveExprArgs = {
 
 export class JSONRemoveExpr extends FuncExpr {
   key = ExpressionKey.JSON_REMOVE;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -27361,12 +27480,14 @@ export type JSONBContainsExprArgs = BinaryExprArgs;
 
 export class JSONBContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS;
+
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<JSONBContainsExprArgs>;
 
   declare args: JSONBContainsExprArgs;
+
   constructor (args: JSONBContainsExprArgs) {
     super(args);
   }
@@ -27375,12 +27496,14 @@ export class JSONBContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
 export type JSONBContainsAnyTopKeysExprArgs = BinaryExprArgs;
 export class JSONBContainsAnyTopKeysExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS_ANY_TOP_KEYS;
+
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<JSONBContainsAnyTopKeysExprArgs>;
 
   declare args: JSONBContainsAnyTopKeysExprArgs;
+
   constructor (args: JSONBContainsAnyTopKeysExprArgs) {
     super(args);
   }
@@ -27390,12 +27513,14 @@ export type JSONBContainsAllTopKeysExprArgs = BinaryExprArgs;
 
 export class JSONBContainsAllTopKeysExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS_ALL_TOP_KEYS;
+
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<JSONBContainsAllTopKeysExprArgs>;
 
   declare args: JSONBContainsAllTopKeysExprArgs;
+
   constructor (args: JSONBContainsAllTopKeysExprArgs) {
     super(args);
   }
@@ -27438,12 +27563,14 @@ export type JSONBDeleteAtPathExprArgs = BinaryExprArgs;
 
 export class JSONBDeleteAtPathExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_DELETE_AT_PATH;
+
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<JSONBDeleteAtPathExprArgs>;
 
   declare args: JSONBDeleteAtPathExprArgs;
+
   constructor (args: JSONBDeleteAtPathExprArgs) {
     super(args);
   }
@@ -27461,6 +27588,7 @@ export type JSONExtractExprArgs = {
 
 export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSON_EXTRACT;
+
   static isVarLenArgs = true;
   /**
    * Defines the arguments (properties and child expressions) for JSONExtract expressions.
@@ -27556,6 +27684,7 @@ export type JSONExtractScalarExprArgs = { onlyJsonTypes?: Expression[];
 
 export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSON_EXTRACT_SCALAR;
+
   static isVarLenArgs = true;
   /**
    * Defines the arguments (properties and child expressions) for JSONExtractScalar expressions.
@@ -27595,12 +27724,14 @@ export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
 export type JSONBExtractExprArgs = BinaryExprArgs;
 export class JSONBExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_EXTRACT;
+
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<JSONBExtractExprArgs>;
 
   declare args: JSONBExtractExprArgs;
+
   constructor (args: JSONBExtractExprArgs) {
     super(args);
   }
@@ -27694,6 +27825,7 @@ export type JSONArrayAppendExprArgs = {
 
 export class JSONArrayAppendExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY_APPEND;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -27760,6 +27892,7 @@ export type JSONArrayInsertExprArgs = {
 
 export class JSONArrayInsertExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY_INSERT;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -28038,6 +28171,7 @@ export type LeastExprArgs = {
 
 export class LeastExpr extends FuncExpr {
   key = ExpressionKey.LEAST;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -28523,6 +28657,7 @@ export type MapDeleteExprArgs = {
 
 export class MapDeleteExpr extends FuncExpr {
   key = ExpressionKey.MAP_DELETE;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -28626,6 +28761,7 @@ export type MapPickExprArgs = {
 
 export class MapPickExpr extends FuncExpr {
   key = ExpressionKey.MAP_PICK;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -28698,6 +28834,7 @@ export type VarMapExprArgs = { keys: Expression[];
 
 export class VarMapExpr extends FuncExpr {
   key = ExpressionKey.VAR_MAP;
+
   static isVarLenArgs = true;
   /**
    * Defines the arguments (properties and child expressions) for VarMap expressions.
@@ -28806,6 +28943,7 @@ export type MD5DigestExprArgs = {
 
 export class MD5DigestExpr extends FuncExpr {
   key = ExpressionKey.MD5_DIGEST;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -29500,12 +29638,14 @@ export class PiExpr extends FuncExpr {
 export type PowExprArgs = BinaryExprArgs;
 export class PowExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.POW;
+
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<PowExprArgs>;
 
   declare args: PowExprArgs;
+
   constructor (args: PowExprArgs) {
     super(args);
   }
@@ -29746,6 +29886,7 @@ export type ReadCSVExprArgs = {
 
 export class ReadCSVExpr extends FuncExpr {
   key = ExpressionKey.READ_CSV;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -29779,6 +29920,7 @@ export type ReadParquetExprArgs = {
 
 export class ReadParquetExpr extends FuncExpr {
   key = ExpressionKey.READ_PARQUET;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -31571,6 +31713,7 @@ export type StructExprArgs = FuncExprArgs;
 
 export class StructExpr extends FuncExpr {
   key = ExpressionKey.STRUCT;
+
   static isVarLenArgs = true;
   static argTypes = {
     expressions: false,
@@ -34353,6 +34496,7 @@ export type DenseRankExprArgs = {
 
 export class DenseRankExpr extends AggFuncExpr {
   key = ExpressionKey.DENSE_RANK;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -34378,11 +34522,13 @@ export class DenseRankExpr extends AggFuncExpr {
 export type ExplodeOuterExprArgs = ExplodeExprArgs;
 export class ExplodeOuterExpr extends ExplodeExpr {
   key = ExpressionKey.EXPLODE_OUTER;
+
   static argTypes = {
     ...super.argTypes,
   } satisfies RequiredMap<ExplodeOuterExprArgs>;
 
   declare args: ExplodeOuterExprArgs;
+
   constructor (args: ExplodeOuterExprArgs) {
     super(args);
   }
@@ -34391,11 +34537,13 @@ export class ExplodeOuterExpr extends ExplodeExpr {
 export type PosexplodeExprArgs = ExplodeExprArgs;
 export class PosexplodeExpr extends ExplodeExpr {
   key = ExpressionKey.POSEXPLODE;
+
   static argTypes = {
     ...super.argTypes,
   } satisfies RequiredMap<PosexplodeExprArgs>;
 
   declare args: PosexplodeExprArgs;
+
   constructor (args: PosexplodeExprArgs) {
     super(args);
   }
@@ -34447,9 +34595,11 @@ export class GroupConcatExpr extends AggFuncExpr {
 export type LowerHexExprArgs = BaseExpressionArgs;
 export class LowerHexExpr extends HexExpr {
   key = ExpressionKey.LOWER_HEX;
+
   static argTypes = {} satisfies RequiredMap<LowerHexExprArgs>;
 
   declare args: LowerHexExprArgs;
+
   constructor (args: LowerHexExprArgs) {
     super(args);
   }
@@ -34458,12 +34608,14 @@ export class LowerHexExpr extends HexExpr {
 export type AndExprArgs = ConnectorExprArgs;
 export class AndExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   key = ExpressionKey.AND;
+
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<AndExprArgs>;
 
   declare args: AndExprArgs;
+
   constructor (args: AndExprArgs) {
     super(args);
   }
@@ -34472,12 +34624,14 @@ export class AndExpr extends multiInherit(ConnectorExpr, FuncExpr) {
 export type OrExprArgs = ConnectorExprArgs;
 export class OrExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   key = ExpressionKey.OR;
+
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<OrExprArgs>;
 
   declare args: OrExprArgs;
+
   constructor (args: OrExprArgs) {
     super(args);
   }
@@ -34492,6 +34646,7 @@ export type XorExprArgs = {
 
 export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   key = ExpressionKey.XOR;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -34712,6 +34867,7 @@ export type MaxExprArgs = {
 
 export class MaxExpr extends AggFuncExpr {
   key = ExpressionKey.MAX;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -34799,6 +34955,7 @@ export type MinExprArgs = {
 
 export class MinExpr extends AggFuncExpr {
   key = ExpressionKey.MIN;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -34925,6 +35082,7 @@ export type PercentRankExprArgs = {
 
 export class PercentRankExpr extends AggFuncExpr {
   key = ExpressionKey.PERCENT_RANK;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -35006,6 +35164,7 @@ export type RankExprArgs = {
 
 export class RankExpr extends AggFuncExpr {
   key = ExpressionKey.RANK;
+
   static isVarLenArgs = true;
 
   static argTypes = {
@@ -35477,6 +35636,7 @@ export type CumeDistExprArgs = AggFuncExprArgs;
 
 export class CumeDistExpr extends AggFuncExpr {
   key = ExpressionKey.CUME_DIST;
+
   static isVarLenArgs = true;
   static argTypes = {
     expressions: false,
@@ -35721,11 +35881,13 @@ export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
 export type PosexplodeOuterExprArgs = ExplodeExprArgs;
 export class PosexplodeOuterExpr extends multiInherit(PosexplodeExpr, ExplodeOuterExpr) {
   key = ExpressionKey.POSEXPLODE_OUTER;
+
   static argTypes = {
     ...super.argTypes,
   } satisfies RequiredMap<PosexplodeOuterExprArgs>;
 
   declare args: PosexplodeOuterExprArgs;
+
   constructor (args: PosexplodeOuterExprArgs) {
     super(args);
   }
