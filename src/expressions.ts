@@ -11469,10 +11469,13 @@ export class WeekStartExpr extends Expression {
 }
 
 export type XMLNamespaceExprArgs = BaseExpressionArgs;
+
 export class XMLNamespaceExpr extends Expression {
   key = ExpressionKey.XML_NAMESPACE;
 
-  static argTypes = {} satisfies RequiredMap<XMLNamespaceExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<XMLNamespaceExprArgs>;
 
   declare args: XMLNamespaceExprArgs;
 
@@ -11549,10 +11552,12 @@ export class UseExpr extends Expression {
   }
 }
 
-export type WhenExprArgs = { matched: Expression;
+export type WhenExprArgs = {
+  matched: Expression;
   source?: Expression;
   condition?: Expression;
-  then: Expression; } & BaseExpressionArgs;
+  then: Expression;
+} & BaseExpressionArgs;
 
 export class WhenExpr extends Expression {
   key = ExpressionKey.WHEN;
@@ -11616,6 +11621,7 @@ export class WhensExpr extends Expression {
 }
 
 export type SemicolonExprArgs = BaseExpressionArgs;
+
 export class SemicolonExpr extends Expression {
   key = ExpressionKey.SEMICOLON;
 
@@ -11629,10 +11635,13 @@ export class SemicolonExpr extends Expression {
 }
 
 export type TableColumnExprArgs = BaseExpressionArgs;
+
 export class TableColumnExpr extends Expression {
   key = ExpressionKey.TABLE_COLUMN;
 
-  static argTypes = {} satisfies RequiredMap<TableColumnExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<TableColumnExprArgs>;
 
   declare args: TableColumnExprArgs;
 
@@ -11646,7 +11655,9 @@ export type VariadicExprArgs = BaseExpressionArgs;
 export class VariadicExpr extends Expression {
   key = ExpressionKey.VARIADIC;
 
-  static argTypes = {} satisfies RequiredMap<VariadicExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+  } satisfies RequiredMap<VariadicExprArgs>;
 
   declare args: VariadicExprArgs;
 
@@ -33125,7 +33136,7 @@ export type CorrExprArgs = {
   nullOnZeroVariance?: Expression;
   this: Expression;
   expression: Expression;
-} & BinaryExprArgs;
+} & BinaryExprArgs & AggFuncExprArgs;
 
 export class CorrExpr extends multiInherit(BinaryExpr, AggFuncExpr) {
   key = ExpressionKey.CORR;
@@ -33285,6 +33296,7 @@ export type XMLElementExprArgs = {
 
 export class XMLElementExpr extends FuncExpr {
   key = ExpressionKey.XML_ELEMENT;
+
   static _sqlNames = ['XMLELEMENT'];
 
   static argTypes = {
