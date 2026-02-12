@@ -25055,18 +25055,21 @@ export class InlineExpr extends FuncExpr {
   }
 }
 
-export type UnnestExprArgs = { offset?: boolean;
-  explodeArray?: Expression; } & BaseExpressionArgs;
+export type UnnestExprArgs = {
+  expressions: Expression[];
+  alias?: TableAliasExpr;
+  offset?: boolean | Expression;
+  explodeArray?: Expression;
+} & FuncExprArgs & UDTFExprArgs;
 
-export class UnnestExpr extends FuncExpr {
+export class UnnestExpr extends multiInherit(FuncExpr, UDTFExpr) {
   key = ExpressionKey.UNNEST;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Unnest expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    expressions: true,
+    alias: false,
     offset: false,
     explodeArray: false,
   } satisfies RequiredMap<UnnestExprArgs>;
@@ -25077,7 +25080,25 @@ export class UnnestExpr extends FuncExpr {
     super(args);
   }
 
-  get $offset (): Expression | undefined {
+  get selects (): Expression[] {
+    const columns = super.selects;
+    const offset = this.args.offset;
+    if (offset) {
+      const offsetCol = offset === true ? IdentifierExpr.build('offset') : offset;
+      return [...columns, offsetCol];
+    }
+    return columns;
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
+  get $alias (): TableAliasExpr | undefined {
+    return this.args.alias;
+  }
+
+  get $offset (): boolean | Expression | undefined {
     return this.args.offset;
   }
 
