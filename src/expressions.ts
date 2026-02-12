@@ -28020,7 +28020,7 @@ export class ParseTimeExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $format (): Expression {
+  get $format (): string {
     return this.args.format;
   }
 
@@ -31435,7 +31435,7 @@ export class StrToTimeExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): Expression {
+  get $format (): string {
     return this.args.format;
   }
 
@@ -31443,11 +31443,11 @@ export class StrToTimeExpr extends FuncExpr {
     return this.args.zone;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 
-  get $targetType (): Expression | undefined {
+  get $targetType (): DataTypeExpr | undefined {
     return this.args.targetType;
   }
 
@@ -31559,7 +31559,7 @@ export class NumberToStrExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): Expression {
+  get $format (): string {
     return this.args.format;
   }
 
@@ -31813,7 +31813,7 @@ export class TimeToStrExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): Expression {
+  get $format (): string {
     return this.args.format;
   }
 
