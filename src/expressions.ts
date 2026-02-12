@@ -11022,14 +11022,31 @@ export class FormatJsonExpr extends Expression {
   }
 }
 
-export type JSONKeyValueExprArgs = BaseExpressionArgs;
+export type JSONKeyValueExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & BaseExpressionArgs;
+
 export class JSONKeyValueExpr extends Expression {
   key = ExpressionKey.JSON_KEY_VALUE;
-  static argTypes = {} satisfies RequiredMap<JSONKeyValueExprArgs>;
+
+  static argTypes = {
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<JSONKeyValueExprArgs>;
 
   declare args: JSONKeyValueExprArgs;
+
   constructor (args: JSONKeyValueExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 }
 
@@ -17748,14 +17765,26 @@ export class JSONPathSubscriptExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathUnionExprArgs = BaseExpressionArgs;
+export type JSONPathUnionExprArgs = {
+  expressions: Expression[];
+} & BaseExpressionArgs;
+
 export class JSONPathUnionExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_UNION;
-  static argTypes = {} satisfies RequiredMap<JSONPathUnionExprArgs>;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+  } satisfies RequiredMap<JSONPathUnionExprArgs>;
 
   declare args: JSONPathUnionExprArgs;
+
   constructor (args: JSONPathUnionExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] {
+    return this.args.expressions;
   }
 }
 
@@ -26647,17 +26676,39 @@ export class FormatExpr extends FuncExpr {
   }
 }
 
-export type JSONKeysExprArgs = FuncExprArgs;
+export type JSONKeysExprArgs = {
+  this: Expression;
+  expression?: Expression;
+  expressions?: Expression[];
+} & FuncExprArgs;
 
 export class JSONKeysExpr extends FuncExpr {
   key = ExpressionKey.JSON_KEYS;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<JSONKeysExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+    expressions: false,
+  } satisfies RequiredMap<JSONKeysExprArgs>;
 
   declare args: JSONKeysExprArgs;
 
   constructor (args: JSONKeysExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   static {
@@ -26667,17 +26718,34 @@ export class JSONKeysExpr extends FuncExpr {
   static sqlNames = ['JSON_KEYS'];
 }
 
-export type JSONKeysAtDepthExprArgs = { mode?: Expression } & FuncExprArgs;
+export type JSONKeysAtDepthExprArgs = {
+  this: Expression;
+  expression?: Expression;
+  mode?: Expression;
+} & FuncExprArgs;
 
 export class JSONKeysAtDepthExpr extends FuncExpr {
   key = ExpressionKey.JSON_KEYS_AT_DEPTH;
 
-  static argTypes = { mode: false } satisfies RequiredMap<JSONKeysAtDepthExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: false,
+    mode: false,
+  } satisfies RequiredMap<JSONKeysAtDepthExprArgs>;
 
   declare args: JSONKeysAtDepthExprArgs;
 
   constructor (args: JSONKeysAtDepthExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 
   get $mode (): Expression | undefined {
@@ -33122,17 +33190,32 @@ export class JSONObjectAggExpr extends AggFuncExpr {
   }
 }
 
-export type JSONBObjectAggExprArgs = AggFuncExprArgs;
+export type JSONBObjectAggExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & AggFuncExprArgs;
 
 export class JSONBObjectAggExpr extends AggFuncExpr {
   key = ExpressionKey.JSONB_OBJECT_AGG;
 
-  static argTypes = {} satisfies RequiredMap<JSONBObjectAggExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<JSONBObjectAggExprArgs>;
 
   declare args: JSONBObjectAggExprArgs;
 
   constructor (args: JSONBObjectAggExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   static {
