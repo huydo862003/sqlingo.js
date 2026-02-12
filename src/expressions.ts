@@ -25599,10 +25599,13 @@ export class FactorialExpr extends FuncExpr {
 export type ExplodeExprArgs = {
   this: Expression;
   expressions?: Expression[];
-} & FuncExprArgs;
+} & FuncExprArgs & UDTFExprArgs;
+
 export class ExplodeExpr extends multiInherit(FuncExpr, UDTFExpr) {
   key = ExpressionKey.EXPLODE;
+
   static isVarLenArgs = true;
+
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
@@ -25611,6 +25614,7 @@ export class ExplodeExpr extends multiInherit(FuncExpr, UDTFExpr) {
   } satisfies RequiredMap<ExplodeExprArgs>;
 
   declare args: ExplodeExprArgs;
+
   constructor (args: ExplodeExprArgs) {
     super(args);
   }
