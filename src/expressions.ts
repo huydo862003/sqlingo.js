@@ -17871,7 +17871,7 @@ export class JSONPathKeyExpr extends JSONPathPartExpr {
 
 export type JSONPathRecursiveExprArgs = {
   this?: Expression;
-} & BaseExpressionArgs;
+} & JSONPathPartExprArgs;
 
 export class JSONPathRecursiveExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_RECURSIVE;
@@ -17909,6 +17909,7 @@ export class JSONPathRootExpr extends JSONPathPartExpr {
 export type JSONPathScriptExprArgs = {
   this: Expression;
 } & JSONPathPartExprArgs;
+
 export class JSONPathScriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SCRIPT;
 
@@ -17928,9 +17929,11 @@ export class JSONPathScriptExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathSliceExprArgs = { start?: Expression;
+export type JSONPathSliceExprArgs = {
+  start?: Expression;
   end?: Expression;
-  step?: Expression; } & BaseExpressionArgs;
+  step?: Expression;
+} & JSONPathPartExprArgs;
 
 export class JSONPathSliceExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SLICE;
@@ -17968,6 +17971,7 @@ export class JSONPathSliceExpr extends JSONPathPartExpr {
 export type JSONPathSelectorExprArgs = {
   this: Expression;
 } & JSONPathPartExprArgs;
+
 export class JSONPathSelectorExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SELECTOR;
 
@@ -17990,6 +17994,7 @@ export class JSONPathSelectorExpr extends JSONPathPartExpr {
 export type JSONPathSubscriptExprArgs = {
   this: Expression;
 } & JSONPathPartExprArgs;
+
 export class JSONPathSubscriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SUBSCRIPT;
 
@@ -18011,7 +18016,7 @@ export class JSONPathSubscriptExpr extends JSONPathPartExpr {
 
 export type JSONPathUnionExprArgs = {
   expressions: Expression[];
-} & BaseExpressionArgs;
+} & JSONPathPartExprArgs;
 
 export class JSONPathUnionExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_UNION;
@@ -18033,6 +18038,7 @@ export class JSONPathUnionExpr extends JSONPathPartExpr {
 }
 
 export type JSONPathWildcardExprArgs = JSONPathPartExprArgs;
+
 export class JSONPathWildcardExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_WILDCARD;
 
@@ -18045,12 +18051,14 @@ export class JSONPathWildcardExpr extends JSONPathPartExpr {
   }
 }
 
-export type MergeExprArgs = { using: string;
+export type MergeExprArgs = {
+  using: string;
   on?: Expression;
   usingCond?: string;
   whens: Expression[];
   with?: Expression;
-  returning?: Expression; } & BaseExpressionArgs;
+  returning?: Expression;
+} & DMLExprArgs;
 
 export class MergeExpr extends DMLExpr {
   key = ExpressionKey.MERGE;
