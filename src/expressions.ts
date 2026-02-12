@@ -33020,10 +33020,13 @@ export class CorrExpr extends multiInherit(BinaryExpr, AggFuncExpr) {
   }
 }
 
-export type WidthBucketExprArgs = { minValue?: string;
+export type WidthBucketExprArgs = {
+  this: Expression;
+  minValue?: string;
   maxValue?: string;
   numBuckets?: Expression[];
-  threshold?: Expression; } & FuncExprArgs;
+  threshold?: Expression;
+} & FuncExprArgs;
 
 export class WidthBucketExpr extends FuncExpr {
   key = ExpressionKey.WIDTH_BUCKET;
@@ -33034,6 +33037,7 @@ export class WidthBucketExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     minValue: false,
     maxValue: false,
     numBuckets: false,
@@ -33044,6 +33048,10 @@ export class WidthBucketExpr extends FuncExpr {
 
   constructor (args: WidthBucketExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $minValue (): string | undefined {
@@ -33100,12 +33108,16 @@ export class WeekExpr extends FuncExpr {
   }
 }
 
-export type NextDayExprArgs = FuncExprArgs;
+export type NextDayExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class NextDayExpr extends FuncExpr {
   key = ExpressionKey.NEXT_DAY;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<NextDayExprArgs>;
@@ -33209,10 +33221,13 @@ export class XMLGetExpr extends FuncExpr {
   }
 }
 
-export type XMLTableExprArgs = { namespaces?: Expression[];
+export type XMLTableExprArgs = {
+  this: Expression;
+  namespaces?: Expression[];
   passing?: Expression;
   columns?: Expression[];
-  byRef?: Expression; } & FuncExprArgs;
+  byRef?: Expression;
+} & FuncExprArgs;
 
 export class XMLTableExpr extends FuncExpr {
   key = ExpressionKey.XML_TABLE;
@@ -33223,6 +33238,7 @@ export class XMLTableExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     namespaces: false,
     passing: false,
     columns: false,
@@ -33233,6 +33249,10 @@ export class XMLTableExpr extends FuncExpr {
 
   constructor (args: XMLTableExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $namespaces (): Expression[] | undefined {
@@ -35964,12 +35984,16 @@ export class SkewnessExpr extends AggFuncExpr {
   }
 }
 
-export type CovarSampExprArgs = AggFuncExprArgs;
+export type CovarSampExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & AggFuncExprArgs;
 
 export class CovarSampExpr extends AggFuncExpr {
   key = ExpressionKey.COVAR_SAMP;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<CovarSampExprArgs>;
@@ -35993,12 +36017,16 @@ export class CovarSampExpr extends AggFuncExpr {
   }
 }
 
-export type CovarPopExprArgs = AggFuncExprArgs;
+export type CovarPopExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & AggFuncExprArgs;
 
 export class CovarPopExpr extends AggFuncExpr {
   key = ExpressionKey.COVAR_POP;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<CovarPopExprArgs>;
