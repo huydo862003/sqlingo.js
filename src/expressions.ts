@@ -10866,17 +10866,34 @@ export class HavingMaxExpr extends Expression {
   }
 }
 
-export type TranslateCharactersExprArgs = { withError?: Expression } & BaseExpressionArgs;
+export type TranslateCharactersExprArgs = {
+  this: Expression;
+  expression: Expression;
+  withError?: Expression;
+} & BaseExpressionArgs;
 
 export class TranslateCharactersExpr extends Expression {
   key = ExpressionKey.TRANSLATE_CHARACTERS;
 
-  static argTypes = { withError: false } satisfies RequiredMap<TranslateCharactersExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    withError: false,
+  } satisfies RequiredMap<TranslateCharactersExprArgs>;
 
   declare args: TranslateCharactersExprArgs;
 
   constructor (args: TranslateCharactersExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $withError (): Expression | undefined {
@@ -21899,7 +21916,8 @@ export type CastExprArgs = {
   format?: string;
   safe?: boolean;
   action?: Expression;
-  default?: Expression; } & FuncExprArgs;
+  default?: Expression;
+} & FuncExprArgs;
 
 export class CastExpr extends FuncExpr {
   key = ExpressionKey.CAST;
@@ -22093,14 +22111,24 @@ export class CheckXmlExpr extends FuncExpr {
   }
 }
 
-export type CollateExprArgs = BaseExpressionArgs;
-export class CollateExpr extends BinaryExpr {
+export type CollateExprArgs = BinaryExprArgs;
+
+export class CollateExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.COLLATE;
-  static argTypes = {} satisfies RequiredMap<CollateExprArgs>;
+
+  static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
+    ...super.argTypes,
+  } satisfies RequiredMap<CollateExprArgs>;
 
   declare args: CollateExprArgs;
+
   constructor (args: CollateExprArgs) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -22119,20 +22147,20 @@ export class CollationExpr extends FuncExpr {
   }
 }
 
-export type CeilExprArgs = { decimals?: Expression[];
-  to?: Expression; } & BaseExpressionArgs;
+export type CeilExprArgs = {
+  this: Expression;
+  decimals?: Expression;
+  to?: Expression;
+} & FuncExprArgs;
 
 export class CeilExpr extends FuncExpr {
   key = ExpressionKey.CEIL;
 
   static sqlNames = ['CEIL', 'CEILING'];
 
-  /**
-   * Defines the arguments (properties and child expressions) for Ceil expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     decimals: false,
     to: false,
   } satisfies RequiredMap<CeilExprArgs>;
@@ -22148,7 +22176,11 @@ export class CeilExpr extends FuncExpr {
     super(args);
   }
 
-  get $decimals (): Expression[] | undefined {
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $decimals (): Expression | undefined {
     return this.args.decimals;
   }
 
@@ -22157,23 +22189,24 @@ export class CeilExpr extends FuncExpr {
   }
 }
 
-export type CoalesceExprArgs = { isNvl?: Expression;
-  isNull?: Expression; } & BaseExpressionArgs;
+export type CoalesceExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+  isNvl?: Expression;
+  isNull?: Expression;
+} & FuncExprArgs;
 
 export class CoalesceExpr extends FuncExpr {
   key = ExpressionKey.COALESCE;
-  static sqlNames = [
-    'COALESCE',
-    'IFNULL',
-    'NVL',
-  ];
 
-  /**
-   * Defines the arguments (properties and child expressions) for Coalesce expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
+  static sqlNames = ['COALESCE', 'IFNULL', 'NVL'];
+
+  static isVarLenArgs = true;
+
   static argTypes = {
     ...super.argTypes,
+    this: true,
+    expressions: false,
     isNvl: false,
     isNull: false,
   } satisfies RequiredMap<CoalesceExprArgs>;
@@ -22182,6 +22215,14 @@ export class CoalesceExpr extends FuncExpr {
 
   constructor (args: CoalesceExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   get $isNvl (): Expression | undefined {
@@ -22197,14 +22238,23 @@ export class CoalesceExpr extends FuncExpr {
   }
 }
 
-export type ChrExprArgs = { charset?: string } & BaseExpressionArgs;
+export type ChrExprArgs = {
+  expressions: Expression[];
+  charset?: string;
+} & FuncExprArgs;
 
 export class ChrExpr extends FuncExpr {
   key = ExpressionKey.CHR;
 
   static sqlNames = ['CHR', 'CHAR'];
 
-  static argTypes = { charset: false } satisfies RequiredMap<ChrExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+    charset: false,
+  } satisfies RequiredMap<ChrExprArgs>;
 
   declare args: ChrExprArgs;
 
@@ -22212,7 +22262,11 @@ export class ChrExpr extends FuncExpr {
     super(args);
   }
 
-  get $charset (): Expression | undefined {
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
+  get $charset (): string | undefined {
     return this.args.charset;
   }
 
@@ -22221,18 +22275,20 @@ export class ChrExpr extends FuncExpr {
   }
 }
 
-export type ConcatExprArgs = { safe?: boolean;
-  coalesce?: Expression; } & BaseExpressionArgs;
+export type ConcatExprArgs = {
+  expressions: Expression[];
+  safe?: boolean;
+  coalesce?: Expression;
+} & FuncExprArgs;
 
 export class ConcatExpr extends FuncExpr {
   key = ExpressionKey.CONCAT;
 
-  /**
-   * Defines the arguments (properties and child expressions) for Concat expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
+  static isVarLenArgs = true;
+
   static argTypes = {
     ...super.argTypes,
+    expressions: true,
     safe: false,
     coalesce: false,
   } satisfies RequiredMap<ConcatExprArgs>;
@@ -22243,7 +22299,11 @@ export class ConcatExpr extends FuncExpr {
     super(args);
   }
 
-  get $safe (): Expression | undefined {
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 
@@ -22256,17 +22316,34 @@ export class ConcatExpr extends FuncExpr {
   }
 }
 
-export type ContainsExprArgs = { jsonScope?: Expression } & BaseExpressionArgs;
+export type ContainsExprArgs = {
+  this: Expression;
+  expression: Expression;
+  jsonScope?: Expression;
+} & FuncExprArgs;
 
 export class ContainsExpr extends FuncExpr {
   key = ExpressionKey.CONTAINS;
 
-  static argTypes = { jsonScope: false } satisfies RequiredMap<ContainsExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    jsonScope: false,
+  } satisfies RequiredMap<ContainsExprArgs>;
 
   declare args: ContainsExprArgs;
 
   constructor (args: ContainsExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $jsonScope (): Expression | undefined {
@@ -30882,27 +30959,15 @@ export class ObjectAggExpr extends AggFuncExpr {
   }
 }
 
-export type TryCastExprArgs = { to?: unknown;
-  format?: unknown;
-  safe?: unknown;
-  action?: unknown;
-  default?: unknown;
-  requiresString?: Expression; } & CastExprArgs;
+export type TryCastExprArgs = {
+  requiresString?: Expression;
+} & CastExprArgs;
 
 export class TryCastExpr extends CastExpr {
   key = ExpressionKey.TRY_CAST;
 
-  /**
-   * Defines the arguments (properties and child expressions) for TryCast expressions.
-   * Each key represents an argument name, and the boolean indicates if it's required.
-   */
   static argTypes = {
     ...super.argTypes,
-    to: false,
-    format: false,
-    safe: false,
-    action: false,
-    default: false,
     requiresString: false,
   } satisfies RequiredMap<TryCastExprArgs>;
 
@@ -30912,37 +30977,18 @@ export class TryCastExpr extends CastExpr {
     super(args);
   }
 
-  get $to (): Expression | undefined {
-    return this.args.to;
-  }
-
-  get $format (): Expression | undefined {
-    return this.args.format;
-  }
-
-  get $safe (): Expression | undefined {
-    return this.args.safe;
-  }
-
-  get $action (): Expression | undefined {
-    return this.args.action;
-  }
-
-  get $default (): Expression | undefined {
-    return this.args.default;
-  }
-
   get $requiresString (): Expression | undefined {
     return this.args.requiresString;
   }
 }
 
-export type JSONCastExprArgs = BaseExpressionArgs;
+export type JSONCastExprArgs = CastExprArgs;
+
 export class JSONCastExpr extends CastExpr {
   key = ExpressionKey.JSON_CAST;
-  static argTypes = {} satisfies RequiredMap<JSONCastExprArgs>;
 
   declare args: JSONCastExprArgs;
+
   constructor (args: JSONCastExprArgs) {
     super(args);
   }
@@ -30959,17 +31005,36 @@ export class ConcatWsExpr extends ConcatExpr {
   }
 }
 
-export type CountExprArgs = { bigInt?: Expression } & BaseExpressionArgs;
+export type CountExprArgs = {
+  this?: Expression;
+  expressions?: Expression[];
+  bigInt?: Expression;
+} & AggFuncExprArgs;
 
 export class CountExpr extends AggFuncExpr {
   key = ExpressionKey.COUNT;
 
-  static argTypes = { bigInt: false } satisfies RequiredMap<CountExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+    expressions: false,
+    bigInt: false,
+  } satisfies RequiredMap<CountExprArgs>;
 
   declare args: CountExprArgs;
 
   constructor (args: CountExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   get $bigInt (): Expression | undefined {
@@ -30981,7 +31046,7 @@ export class CountExpr extends AggFuncExpr {
   }
 }
 
-export type CountIfExprArgs = BaseExpressionArgs;
+export type CountIfExprArgs = AggFuncExprArgs;
 export class CountIfExpr extends AggFuncExpr {
   key = ExpressionKey.COUNT_IF;
   static argTypes = {} satisfies RequiredMap<CountIfExprArgs>;
