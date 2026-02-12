@@ -31960,7 +31960,7 @@ export class StuffExpr extends FuncExpr {
     return this.args.start;
   }
 
-  get $length (): Expression {
+  get $length (): number | Expression {
     return this.args.length;
   }
 
@@ -32501,12 +32501,16 @@ export class TsOrDiToDiExpr extends FuncExpr {
   }
 }
 
-export type UnhexExprArgs = FuncExprArgs;
+export type UnhexExprArgs = {
+  this: Expression;
+  expression?: Expression;
+} & FuncExprArgs;
 
 export class UnhexExpr extends FuncExpr {
   key = ExpressionKey.UNHEX;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
     expression: false,
   } satisfies RequiredMap<UnhexExprArgs>;
@@ -35801,7 +35805,9 @@ export class StddevSampExpr extends AggFuncExpr {
   }
 }
 
-export type CumeDistExprArgs = AggFuncExprArgs;
+export type CumeDistExprArgs = {
+  expressions?: Expression[];
+} & AggFuncExprArgs;
 
 export class CumeDistExpr extends AggFuncExpr {
   key = ExpressionKey.CUME_DIST;
@@ -35817,7 +35823,7 @@ export class CumeDistExpr extends AggFuncExpr {
     super(args);
   }
 
-  get $expressions (): Expression | undefined {
+  get $expressions (): Expression[] | undefined {
     return this.args.expressions;
   }
 
