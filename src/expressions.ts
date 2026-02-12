@@ -10764,7 +10764,7 @@ export class TimeUnitExpr extends Expression {
     Y: 'YEAR',
   };
 
-  static isVarLike (expr: Expression): boolean {
+  static isVarLike (expr: Expression): expr is VarExpr | ColumnExpr | LiteralExpr {
     return expr instanceof VarExpr || expr instanceof ColumnExpr || expr instanceof LiteralExpr;
   }
 
