@@ -26340,8 +26340,11 @@ export class DecompressStringExpr extends FuncExpr {
   }
 }
 
-export type IfExprArgs = { true: Expression;
-  false?: Expression; } & FuncExprArgs;
+export type IfExprArgs = {
+  this: Expression;
+  true: Expression;
+  false?: Expression;
+} & FuncExprArgs;
 
 export class IfExpr extends FuncExpr {
   key = ExpressionKey.IF;
@@ -26354,6 +26357,7 @@ export class IfExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     true: true,
     false: false,
   } satisfies RequiredMap<IfExprArgs>;
@@ -26362,6 +26366,10 @@ export class IfExpr extends FuncExpr {
 
   constructor (args: IfExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $true (): Expression {
