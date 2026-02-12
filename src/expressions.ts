@@ -29721,17 +29721,33 @@ export class RangeBucketExpr extends FuncExpr {
   }
 }
 
-export type ReadCSVExprArgs = FuncExprArgs;
+export type ReadCSVExprArgs = {
+  this: Expression;
+  expressions?: Expression[];
+} & FuncExprArgs;
 
 export class ReadCSVExpr extends FuncExpr {
   key = ExpressionKey.READ_CSV;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<ReadCSVExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expressions: false,
+  } satisfies RequiredMap<ReadCSVExprArgs>;
 
   declare args: ReadCSVExprArgs;
 
   constructor (args: ReadCSVExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   static {
@@ -29741,12 +29757,18 @@ export class ReadCSVExpr extends FuncExpr {
   static sqlNames = ['READ_CSV'];
 }
 
-export type ReadParquetExprArgs = FuncExprArgs;
+export type ReadParquetExprArgs = {
+  expressions: Expression[];
+} & FuncExprArgs;
 
 export class ReadParquetExpr extends FuncExpr {
   key = ExpressionKey.READ_PARQUET;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<ReadParquetExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: true,
+  } satisfies RequiredMap<ReadParquetExprArgs>;
 
   declare args: ReadParquetExprArgs;
 
@@ -29754,14 +29776,21 @@ export class ReadParquetExpr extends FuncExpr {
     super(args);
   }
 
+  get $expressions (): Expression[] {
+    return this.args.expressions;
+  }
+
   static {
     this.register();
   }
 }
 
-export type ReduceExprArgs = { initial: Expression;
+export type ReduceExprArgs = {
+  this: Expression;
+  initial: Expression;
   merge: Expression;
-  finish?: Expression; } & FuncExprArgs;
+  finish?: Expression;
+} & FuncExprArgs;
 
 export class ReduceExpr extends FuncExpr {
   key = ExpressionKey.REDUCE;
@@ -29772,6 +29801,7 @@ export class ReduceExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     initial: true,
     merge: true,
     finish: false,
@@ -29781,6 +29811,10 @@ export class ReduceExpr extends FuncExpr {
 
   constructor (args: ReduceExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $initial (): Expression {
@@ -34383,17 +34417,27 @@ export class ApproxPercentileAccumulateExpr extends AggFuncExpr {
   }
 }
 
-export type RankExprArgs = AggFuncExprArgs;
+export type RankExprArgs = {
+  expressions?: Expression[];
+} & AggFuncExprArgs;
 
 export class RankExpr extends AggFuncExpr {
   key = ExpressionKey.RANK;
-    static isVarLenArgs = true;
-  static argTypes = {} satisfies RequiredMap<RankExprArgs>;
+  static isVarLenArgs = true;
+
+  static argTypes = {
+    ...super.argTypes,
+    expressions: false,
+  } satisfies RequiredMap<RankExprArgs>;
 
   declare args: RankExprArgs;
 
   constructor (args: RankExprArgs) {
     super(args);
+  }
+
+  get $expressions (): Expression[] | undefined {
+    return this.args.expressions;
   }
 
   static {
