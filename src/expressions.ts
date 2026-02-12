@@ -25162,7 +25162,7 @@ export class TimeFromPartsExpr extends FuncExpr {
     return this.args.fractions;
   }
 
-  get $precision (): Expression | undefined {
+  get $precision (): number | Expression | undefined {
     return this.args.precision;
   }
 
@@ -31891,12 +31891,16 @@ export class StructExpr extends FuncExpr {
   }
 }
 
-export type StructExtractExprArgs = FuncExprArgs;
+export type StructExtractExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class StructExtractExpr extends FuncExpr {
   key = ExpressionKey.STRUCT_EXTRACT;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
     expression: true,
   } satisfies RequiredMap<StructExtractExprArgs>;
@@ -31929,6 +31933,7 @@ export type StuffExprArgs = {
 
 export class StuffExpr extends FuncExpr {
   key = ExpressionKey.STUFF;
+  static _sqlNames = ['STUFF', 'INSERT'];
 
   /**
    * Defines the arguments (properties and child expressions) for Stuff expressions.
@@ -32182,8 +32187,12 @@ export class TimeStrToUnixExpr extends FuncExpr {
   }
 }
 
-export type TrimExprArgs = { position?: Expression;
-  collation?: Expression; } & FuncExprArgs;
+export type TrimExprArgs = {
+  this: Expression;
+  expression?: Expression;
+  position?: Expression;
+  collation?: Expression;
+} & FuncExprArgs;
 
 export class TrimExpr extends FuncExpr {
   key = ExpressionKey.TRIM;
@@ -32194,6 +32203,8 @@ export class TrimExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
+    expression: false,
     position: false,
     collation: false,
   } satisfies RequiredMap<TrimExprArgs>;
@@ -32202,6 +32213,14 @@ export class TrimExpr extends FuncExpr {
 
   constructor (args: TrimExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression | undefined {
+    return this.args.expression;
   }
 
   get $position (): Expression | undefined {
@@ -32769,8 +32788,8 @@ export class UnixMillisExpr extends FuncExpr {
 }
 
 export type UuidExprArgs = {
-  name?: unknown;
-  isString?: unknown;
+  name?: Expression;
+  isString?: boolean;
   this?: Expression;
 } & FuncExprArgs;
 
@@ -32798,7 +32817,7 @@ export class UuidExpr extends FuncExpr {
     return this.args.name;
   }
 
-  get $isString (): Expression | undefined {
+  get $isString (): boolean | undefined {
     return this.args.isString;
   }
 
@@ -32809,15 +32828,12 @@ export class UuidExpr extends FuncExpr {
   static {
     this.register();
   }
-    'UUID',
-    'GEN_RANDOM_UUID',
-    'GENERATE_UUID',
-    'UUID_STRING',
-  ];
 }
 
-export type TimestampFromPartsExprArgs = { zone?: Expression;
-  milli?: Expression; } & FuncExprArgs;
+export type TimestampFromPartsExprArgs = {
+  zone?: Expression;
+  milli?: Expression;
+} & FuncExprArgs;
 
 export class TimestampFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_FROM_PARTS;
@@ -32867,6 +32883,7 @@ export class TimestampLtzFromPartsExpr extends FuncExpr {
   static {
     this.register();
   }
+
   constructor (args: TimestampLtzFromPartsExprArgs) {
     super(args);
   }
