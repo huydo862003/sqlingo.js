@@ -30414,12 +30414,17 @@ export class Seq2Expr extends FuncExpr {
   }
 }
 
-export type Seq4ExprArgs = FuncExprArgs;
+export type Seq4ExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
 
 export class Seq4Expr extends FuncExpr {
   key = ExpressionKey.SEQ4;
 
-  static argTypes = {} satisfies RequiredMap<Seq4ExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<Seq4ExprArgs>;
 
   declare args: Seq4ExprArgs;
 
@@ -30427,17 +30432,26 @@ export class Seq4Expr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type Seq8ExprArgs = FuncExprArgs;
+export type Seq8ExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
 
 export class Seq8Expr extends FuncExpr {
   key = ExpressionKey.SEQ8;
 
-  static argTypes = {} satisfies RequiredMap<Seq8ExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<Seq8ExprArgs>;
 
   declare args: Seq8ExprArgs;
 
@@ -30445,17 +30459,28 @@ export class Seq8Expr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type SafeAddExprArgs = FuncExprArgs;
+export type SafeAddExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class SafeAddExpr extends FuncExpr {
   key = ExpressionKey.SAFE_ADD;
 
-  static argTypes = {} satisfies RequiredMap<SafeAddExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<SafeAddExprArgs>;
 
   declare args: SafeAddExprArgs;
 
@@ -30463,17 +30488,32 @@ export class SafeAddExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type SafeDivideExprArgs = FuncExprArgs;
+export type SafeDivideExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class SafeDivideExpr extends FuncExpr {
   key = ExpressionKey.SAFE_DIVIDE;
 
-  static argTypes = {} satisfies RequiredMap<SafeDivideExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<SafeDivideExprArgs>;
 
   declare args: SafeDivideExprArgs;
 
@@ -30481,22 +30521,45 @@ export class SafeDivideExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
+  }
+
   static {
     this.register();
   }
 }
 
-export type SafeMultiplyExprArgs = FuncExprArgs;
+export type SafeMultiplyExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class SafeMultiplyExpr extends FuncExpr {
   key = ExpressionKey.SAFE_MULTIPLY;
 
-  static argTypes = {} satisfies RequiredMap<SafeMultiplyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<SafeMultiplyExprArgs>;
 
   declare args: SafeMultiplyExprArgs;
 
   constructor (args: SafeMultiplyExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   static {
@@ -30524,17 +30587,32 @@ export class SafeNegateExpr extends FuncExpr {
   }
 }
 
-export type SafeSubtractExprArgs = FuncExprArgs;
+export type SafeSubtractExprArgs = {
+  this: Expression;
+  expression: Expression;
+} & FuncExprArgs;
 
 export class SafeSubtractExpr extends FuncExpr {
   key = ExpressionKey.SAFE_SUBTRACT;
 
-  static argTypes = {} satisfies RequiredMap<SafeSubtractExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+  } satisfies RequiredMap<SafeSubtractExprArgs>;
 
   declare args: SafeSubtractExprArgs;
 
   constructor (args: SafeSubtractExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   static {
