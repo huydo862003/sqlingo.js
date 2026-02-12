@@ -18881,6 +18881,10 @@ export class SafeFuncExpr extends FuncExpr {
   constructor (args: SafeFuncExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TypeofExprArgs = FuncExprArgs;
@@ -18897,6 +18901,10 @@ export class TypeofExpr extends FuncExpr {
   constructor (args: TypeofExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type AcosExprArgs = FuncExprArgs;
@@ -18913,6 +18921,10 @@ export class AcosExpr extends FuncExpr {
   constructor (args: AcosExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type AcoshExprArgs = FuncExprArgs;
@@ -18929,6 +18941,10 @@ export class AcoshExpr extends FuncExpr {
   constructor (args: AcoshExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type AsinExprArgs = FuncExprArgs;
@@ -18945,6 +18961,10 @@ export class AsinExpr extends FuncExpr {
   constructor (args: AsinExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type AsinhExprArgs = FuncExprArgs;
@@ -18961,6 +18981,10 @@ export class AsinhExpr extends FuncExpr {
   constructor (args: AsinhExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type AtanExprArgs = {
@@ -18990,6 +19014,10 @@ export class AtanExpr extends FuncExpr {
   get $expression (): Expression | undefined {
     return this.args.expression;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type AtanhExprArgs = FuncExprArgs;
@@ -19006,6 +19034,10 @@ export class AtanhExpr extends FuncExpr {
   constructor (args: AtanhExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type Atan2ExprArgs = {
@@ -19035,6 +19067,10 @@ export class Atan2Expr extends FuncExpr {
   get $expression (): Expression {
     return this.args.expression;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CotExprArgs = FuncExprArgs;
@@ -19051,6 +19087,10 @@ export class CotExpr extends FuncExpr {
   constructor (args: CotExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CothExprArgs = FuncExprArgs;
@@ -19067,6 +19107,10 @@ export class CothExpr extends FuncExpr {
   constructor (args: CothExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CosExprArgs = FuncExprArgs;
@@ -19083,6 +19127,10 @@ export class CosExpr extends FuncExpr {
   constructor (args: CosExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CscExprArgs = FuncExprArgs;
@@ -19099,6 +19147,10 @@ export class CscExpr extends FuncExpr {
   constructor (args: CscExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CschExprArgs = FuncExprArgs;
@@ -19115,6 +19167,10 @@ export class CschExpr extends FuncExpr {
   constructor (args: CschExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SecExprArgs = FuncExprArgs;
@@ -19131,6 +19187,10 @@ export class SecExpr extends FuncExpr {
   constructor (args: SecExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SechExprArgs = FuncExprArgs;
@@ -19147,6 +19207,10 @@ export class SechExpr extends FuncExpr {
   constructor (args: SechExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SinExprArgs = FuncExprArgs;
@@ -19163,6 +19227,10 @@ export class SinExpr extends FuncExpr {
   constructor (args: SinExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SinhExprArgs = FuncExprArgs;
@@ -19179,6 +19247,10 @@ export class SinhExpr extends FuncExpr {
   constructor (args: SinhExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TanExprArgs = FuncExprArgs;
@@ -19195,6 +19267,10 @@ export class TanExpr extends FuncExpr {
   constructor (args: TanExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TanhExprArgs = FuncExprArgs;
@@ -19211,6 +19287,10 @@ export class TanhExpr extends FuncExpr {
   constructor (args: TanhExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DegreesExprArgs = FuncExprArgs;
@@ -19227,6 +19307,10 @@ export class DegreesExpr extends FuncExpr {
   constructor (args: DegreesExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CoshExprArgs = FuncExprArgs;
@@ -19241,6 +19325,10 @@ export class CoshExpr extends FuncExpr {
   constructor (args: CoshExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CosineDistanceExprArgs = {
@@ -19270,6 +19358,10 @@ export class CosineDistanceExpr extends FuncExpr {
   get $expression (): Expression {
     return this.args.expression;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DotProductExprArgs = {
@@ -19299,6 +19391,10 @@ export class DotProductExpr extends FuncExpr {
   get $expression (): Expression {
     return this.args.expression;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type EuclideanDistanceExprArgs = {
@@ -19328,6 +19424,10 @@ export class EuclideanDistanceExpr extends FuncExpr {
   get $expression (): Expression {
     return this.args.expression;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ManhattanDistanceExprArgs = {
@@ -19357,6 +19457,10 @@ export class ManhattanDistanceExpr extends FuncExpr {
   get $expression (): Expression {
     return this.args.expression;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JarowinklerSimilarityExprArgs = {
@@ -19386,6 +19490,10 @@ export class JarowinklerSimilarityExpr extends FuncExpr {
   get $expression (): Expression {
     return this.args.expression;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type AggFuncExprArgs = BaseExpressionArgs;
@@ -19402,6 +19510,10 @@ export class AggFuncExpr extends FuncExpr {
   constructor (args: AggFuncExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type BitwiseCountExprArgs = FuncExprArgs;
@@ -19418,6 +19530,10 @@ export class BitwiseCountExpr extends FuncExpr {
   constructor (args: BitwiseCountExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type BitmapBucketNumberExprArgs = FuncExprArgs;
@@ -19434,6 +19550,10 @@ export class BitmapBucketNumberExpr extends FuncExpr {
   constructor (args: BitmapBucketNumberExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type BitmapCountExprArgs = FuncExprArgs;
@@ -19450,6 +19570,10 @@ export class BitmapCountExpr extends FuncExpr {
   constructor (args: BitmapCountExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type BitmapBitPositionExprArgs = FuncExprArgs;
@@ -19466,6 +19590,10 @@ export class BitmapBitPositionExpr extends FuncExpr {
   constructor (args: BitmapBitPositionExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ByteLengthExprArgs = FuncExprArgs;
@@ -19482,6 +19610,10 @@ export class ByteLengthExpr extends FuncExpr {
   constructor (args: ByteLengthExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type BoolnotExprArgs = {
@@ -19511,6 +19643,10 @@ export class BoolnotExpr extends FuncExpr {
   get $roundInput (): Expression | undefined {
     return this.args.roundInput;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type BoolandExprArgs = {
@@ -19546,6 +19682,10 @@ export class BoolandExpr extends FuncExpr {
   get $roundInput (): Expression | undefined {
     return this.args.roundInput;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type BoolorExprArgs = {
@@ -19581,6 +19721,10 @@ export class BoolorExpr extends FuncExpr {
   get $roundInput (): Expression | undefined {
     return this.args.roundInput;
   }
+
+    static {
+        this.register();
+    }
 }
 
 /**
@@ -19600,6 +19744,10 @@ export class JSONBoolExpr extends FuncExpr {
   constructor (args: JSONBoolExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ArrayRemoveExprArgs = {
@@ -19905,6 +20053,10 @@ export class ApplyExpr extends FuncExpr {
   constructor (args: ApplyExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ArrayExprArgs = { bracketNotation?: Expression;
@@ -19936,6 +20088,10 @@ export class ArrayExpr extends FuncExpr {
   get $structNameInheritance (): string | undefined {
     return this.args.structNameInheritance;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type AsciiExprArgs = FuncExprArgs;
@@ -19952,6 +20108,10 @@ export class AsciiExpr extends FuncExpr {
   constructor (args: AsciiExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ToArrayExprArgs = FuncExprArgs;
@@ -20247,6 +20407,10 @@ export class ToDoubleExpr extends FuncExpr {
   get $safe (): boolean | undefined {
     return this.args.safe;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ToDecfloatExprArgs = {
@@ -20270,6 +20434,10 @@ export class ToDecfloatExpr extends FuncExpr {
   get $format (): string | undefined {
     return this.args.format;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TryToDecfloatExprArgs = {
@@ -20293,6 +20461,10 @@ export class TryToDecfloatExpr extends FuncExpr {
   get $format (): string | undefined {
     return this.args.format;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ToFileExprArgs = {
@@ -20326,6 +20498,10 @@ export class ToFileExpr extends FuncExpr {
   get $safe (): boolean | undefined {
     return this.args.safe;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CodePointsToBytesExprArgs = FuncExprArgs;
@@ -20341,6 +20517,10 @@ export class CodePointsToBytesExpr extends FuncExpr {
   constructor (args: CodePointsToBytesExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ColumnsExprArgs = { unpack?: Expression } & BaseExpressionArgs;
@@ -20359,6 +20539,10 @@ export class ColumnsExpr extends FuncExpr {
   get $unpack (): Expression | undefined {
     return this.args.unpack;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ConvertExprArgs = { style?: Expression;
@@ -20390,6 +20574,10 @@ export class ConvertExpr extends FuncExpr {
   get $safe (): Expression | undefined {
     return this.args.safe;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ConvertToCharsetExprArgs = { dest: Expression;
@@ -20421,6 +20609,10 @@ export class ConvertToCharsetExpr extends FuncExpr {
   get $source (): Expression | undefined {
     return this.args.source;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ConvertTimezoneExprArgs = { sourceTz?: Expression;
@@ -20464,6 +20656,10 @@ export class ConvertTimezoneExpr extends FuncExpr {
   get $options (): Expression[] | undefined {
     return this.args.options;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CodePointsToStringExprArgs = BaseExpressionArgs;
@@ -20475,6 +20671,10 @@ export class CodePointsToStringExpr extends FuncExpr {
   constructor (args: CodePointsToStringExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type GenerateSeriesExprArgs = {
@@ -21553,6 +21753,10 @@ export class CaseExpr extends FuncExpr {
   get $default (): Expression | undefined {
     return this.args.default;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CastExprArgs = { to: Expression;
@@ -21602,6 +21806,10 @@ export class CastExpr extends FuncExpr {
   get $default (): Expression | undefined {
     return this.args.default;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JustifyDaysExprArgs = BaseExpressionArgs;
@@ -21613,6 +21821,10 @@ export class JustifyDaysExpr extends FuncExpr {
   constructor (args: JustifyDaysExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JustifyHoursExprArgs = BaseExpressionArgs;
@@ -21624,6 +21836,10 @@ export class JustifyHoursExpr extends FuncExpr {
   constructor (args: JustifyHoursExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JustifyIntervalExprArgs = BaseExpressionArgs;
@@ -21635,6 +21851,10 @@ export class JustifyIntervalExpr extends FuncExpr {
   constructor (args: JustifyIntervalExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TryExprArgs = BaseExpressionArgs;
@@ -21646,6 +21866,10 @@ export class TryExpr extends FuncExpr {
   constructor (args: TryExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CastToStrTypeExprArgs = { to: Expression } & BaseExpressionArgs;
@@ -21664,6 +21888,10 @@ export class CastToStrTypeExpr extends FuncExpr {
   get $to (): Expression {
     return this.args.to;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CheckJsonExprArgs = BaseExpressionArgs;
@@ -21675,6 +21903,10 @@ export class CheckJsonExpr extends FuncExpr {
   constructor (args: CheckJsonExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CheckXmlExprArgs = { disableAutoConvert?: Expression } & BaseExpressionArgs;
@@ -21693,6 +21925,10 @@ export class CheckXmlExpr extends FuncExpr {
   get $disableAutoConvert (): Expression | undefined {
     return this.args.disableAutoConvert;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CollateExprArgs = BaseExpressionArgs;
@@ -21715,6 +21951,10 @@ export class CollationExpr extends FuncExpr {
   constructor (args: CollationExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CeilExprArgs = { decimals?: Expression[];
@@ -21789,6 +22029,10 @@ export class CoalesceExpr extends FuncExpr {
   get $isNull (): Expression | undefined {
     return this.args.isNull;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ChrExprArgs = { charset?: string } & BaseExpressionArgs;
@@ -21809,6 +22053,10 @@ export class ChrExpr extends FuncExpr {
   get $charset (): Expression | undefined {
     return this.args.charset;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ConcatExprArgs = { safe?: boolean;
@@ -21840,6 +22088,10 @@ export class ConcatExpr extends FuncExpr {
   get $coalesce (): Expression | undefined {
     return this.args.coalesce;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ContainsExprArgs = { jsonScope?: Expression } & BaseExpressionArgs;
@@ -21858,6 +22110,10 @@ export class ContainsExpr extends FuncExpr {
   get $jsonScope (): Expression | undefined {
     return this.args.jsonScope;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ConnectByRootExprArgs = BaseExpressionArgs;
@@ -21869,6 +22125,10 @@ export class ConnectByRootExpr extends FuncExpr {
   constructor (args: ConnectByRootExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CbrtExprArgs = BaseExpressionArgs;
@@ -21880,6 +22140,10 @@ export class CbrtExpr extends FuncExpr {
   constructor (args: CbrtExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentAccountExprArgs = BaseExpressionArgs;
@@ -21891,6 +22155,10 @@ export class CurrentAccountExpr extends FuncExpr {
   constructor (args: CurrentAccountExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentAccountNameExprArgs = BaseExpressionArgs;
@@ -21902,6 +22170,10 @@ export class CurrentAccountNameExpr extends FuncExpr {
   constructor (args: CurrentAccountNameExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentAvailableRolesExprArgs = BaseExpressionArgs;
@@ -21913,6 +22185,10 @@ export class CurrentAvailableRolesExpr extends FuncExpr {
   constructor (args: CurrentAvailableRolesExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentClientExprArgs = BaseExpressionArgs;
@@ -21924,6 +22200,10 @@ export class CurrentClientExpr extends FuncExpr {
   constructor (args: CurrentClientExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentIpAddressExprArgs = BaseExpressionArgs;
@@ -21935,6 +22215,10 @@ export class CurrentIpAddressExpr extends FuncExpr {
   constructor (args: CurrentIpAddressExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentDatabaseExprArgs = BaseExpressionArgs;
@@ -21946,6 +22230,10 @@ export class CurrentDatabaseExpr extends FuncExpr {
   constructor (args: CurrentDatabaseExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentSchemasExprArgs = BaseExpressionArgs;
@@ -21957,6 +22245,10 @@ export class CurrentSchemasExpr extends FuncExpr {
   constructor (args: CurrentSchemasExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentSecondaryRolesExprArgs = BaseExpressionArgs;
@@ -21968,6 +22260,10 @@ export class CurrentSecondaryRolesExpr extends FuncExpr {
   constructor (args: CurrentSecondaryRolesExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentSessionExprArgs = BaseExpressionArgs;
@@ -21979,6 +22275,10 @@ export class CurrentSessionExpr extends FuncExpr {
   constructor (args: CurrentSessionExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentStatementExprArgs = BaseExpressionArgs;
@@ -21990,6 +22290,10 @@ export class CurrentStatementExpr extends FuncExpr {
   constructor (args: CurrentStatementExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentVersionExprArgs = BaseExpressionArgs;
@@ -22001,6 +22305,10 @@ export class CurrentVersionExpr extends FuncExpr {
   constructor (args: CurrentVersionExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentTransactionExprArgs = BaseExpressionArgs;
@@ -22012,6 +22320,10 @@ export class CurrentTransactionExpr extends FuncExpr {
   constructor (args: CurrentTransactionExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentWarehouseExprArgs = BaseExpressionArgs;
@@ -22023,6 +22335,10 @@ export class CurrentWarehouseExpr extends FuncExpr {
   constructor (args: CurrentWarehouseExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentDateExprArgs = BaseExpressionArgs;
@@ -22034,6 +22350,10 @@ export class CurrentDateExpr extends FuncExpr {
   constructor (args: CurrentDateExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentDatetimeExprArgs = BaseExpressionArgs;
@@ -22045,6 +22365,10 @@ export class CurrentDatetimeExpr extends FuncExpr {
   constructor (args: CurrentDatetimeExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentTimeExprArgs = BaseExpressionArgs;
@@ -22056,6 +22380,10 @@ export class CurrentTimeExpr extends FuncExpr {
   constructor (args: CurrentTimeExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LocaltimeExprArgs = BaseExpressionArgs;
@@ -22067,6 +22395,10 @@ export class LocaltimeExpr extends FuncExpr {
   constructor (args: LocaltimeExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LocaltimestampExprArgs = BaseExpressionArgs;
@@ -22078,6 +22410,10 @@ export class LocaltimestampExpr extends FuncExpr {
   constructor (args: LocaltimestampExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SystimestampExprArgs = BaseExpressionArgs;
@@ -22089,6 +22425,10 @@ export class SystimestampExpr extends FuncExpr {
   constructor (args: SystimestampExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentTimestampExprArgs = { sysdate?: Expression } & BaseExpressionArgs;
@@ -22107,6 +22447,10 @@ export class CurrentTimestampExpr extends FuncExpr {
   get $sysdate (): Expression | undefined {
     return this.args.sysdate;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentTimestampLTZExprArgs = BaseExpressionArgs;
@@ -22118,6 +22462,10 @@ export class CurrentTimestampLTZExpr extends FuncExpr {
   constructor (args: CurrentTimestampLTZExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentTimezoneExprArgs = BaseExpressionArgs;
@@ -22129,6 +22477,10 @@ export class CurrentTimezoneExpr extends FuncExpr {
   constructor (args: CurrentTimezoneExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentOrganizationNameExprArgs = BaseExpressionArgs;
@@ -22140,6 +22492,10 @@ export class CurrentOrganizationNameExpr extends FuncExpr {
   constructor (args: CurrentOrganizationNameExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentSchemaExprArgs = BaseExpressionArgs;
@@ -22151,6 +22507,10 @@ export class CurrentSchemaExpr extends FuncExpr {
   constructor (args: CurrentSchemaExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentUserExprArgs = BaseExpressionArgs;
@@ -22162,6 +22522,10 @@ export class CurrentUserExpr extends FuncExpr {
   constructor (args: CurrentUserExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentCatalogExprArgs = BaseExpressionArgs;
@@ -22173,6 +22537,10 @@ export class CurrentCatalogExpr extends FuncExpr {
   constructor (args: CurrentCatalogExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentRegionExprArgs = BaseExpressionArgs;
@@ -22184,6 +22552,10 @@ export class CurrentRegionExpr extends FuncExpr {
   constructor (args: CurrentRegionExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentRoleExprArgs = BaseExpressionArgs;
@@ -22195,6 +22567,10 @@ export class CurrentRoleExpr extends FuncExpr {
   constructor (args: CurrentRoleExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentRoleTypeExprArgs = BaseExpressionArgs;
@@ -22206,6 +22582,10 @@ export class CurrentRoleTypeExpr extends FuncExpr {
   constructor (args: CurrentRoleTypeExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CurrentOrganizationUserExprArgs = BaseExpressionArgs;
@@ -22217,6 +22597,10 @@ export class CurrentOrganizationUserExpr extends FuncExpr {
   constructor (args: CurrentOrganizationUserExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SessionUserExprArgs = BaseExpressionArgs;
@@ -22228,6 +22612,10 @@ export class SessionUserExpr extends FuncExpr {
   constructor (args: SessionUserExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UtcDateExprArgs = BaseExpressionArgs;
@@ -22239,6 +22627,10 @@ export class UtcDateExpr extends FuncExpr {
   constructor (args: UtcDateExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UtcTimeExprArgs = BaseExpressionArgs;
@@ -22250,6 +22642,10 @@ export class UtcTimeExpr extends FuncExpr {
   constructor (args: UtcTimeExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UtcTimestampExprArgs = BaseExpressionArgs;
@@ -22261,6 +22657,10 @@ export class UtcTimestampExpr extends FuncExpr {
   constructor (args: UtcTimestampExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DateAddExprArgs = { unit?: Expression } & BaseExpressionArgs;
@@ -22279,6 +22679,10 @@ export class DateAddExpr extends FuncExpr {
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DateBinExprArgs = { unit?: Expression;
@@ -22316,6 +22720,10 @@ export class DateBinExpr extends FuncExpr {
   get $origin (): Expression | undefined {
     return this.args.origin;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DateSubExprArgs = { unit?: Expression } & BaseExpressionArgs;
@@ -22334,6 +22742,10 @@ export class DateSubExpr extends FuncExpr {
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DateDiffExprArgs = { unit?: Expression;
@@ -22379,6 +22791,10 @@ export class DateDiffExpr extends FuncExpr {
   get $datePartBoundary (): Expression | undefined {
     return this.args.datePartBoundary;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DateTruncExprArgs = { unit: Expression;
@@ -22416,6 +22832,10 @@ export class DateTruncExpr extends FuncExpr {
   get $inputTypePreserved (): Expression | undefined {
     return this.args.inputTypePreserved;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DatetimeExprArgs = BaseExpressionArgs;
@@ -22427,6 +22847,10 @@ export class DatetimeExpr extends FuncExpr {
   constructor (args: DatetimeExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DatetimeAddExprArgs = { unit?: Expression } & BaseExpressionArgs;
@@ -22445,6 +22869,10 @@ export class DatetimeAddExpr extends FuncExpr {
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DatetimeSubExprArgs = { unit?: Expression } & BaseExpressionArgs;
@@ -22463,6 +22891,10 @@ export class DatetimeSubExpr extends FuncExpr {
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DatetimeDiffExprArgs = { unit?: Expression } & BaseExpressionArgs;
@@ -22481,6 +22913,10 @@ export class DatetimeDiffExpr extends FuncExpr {
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DatetimeTruncExprArgs = { unit: Expression;
@@ -22512,6 +22948,10 @@ export class DatetimeTruncExpr extends FuncExpr {
   get $zone (): Expression | undefined {
     return this.args.zone;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DateFromUnixDateExprArgs = BaseExpressionArgs;
@@ -22523,6 +22963,10 @@ export class DateFromUnixDateExpr extends FuncExpr {
   constructor (args: DateFromUnixDateExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DayOfWeekExprArgs = BaseExpressionArgs;
@@ -22568,6 +23012,10 @@ export class DayOfMonthExpr extends FuncExpr {
   }
 
   static sqlNames = ['DAY_OF_MONTH', 'DAYOFMONTH'];
+
+    static {
+        this.register();
+    }
 }
 
 export type DayOfYearExprArgs = BaseExpressionArgs;
@@ -22581,6 +23029,10 @@ export class DayOfYearExpr extends FuncExpr {
   }
 
   static sqlNames = ['DAY_OF_YEAR', 'DAYOFYEAR'];
+
+    static {
+        this.register();
+    }
 }
 
 export type DaynameExprArgs = { abbreviated?: Expression } & BaseExpressionArgs;
@@ -22618,6 +23070,10 @@ export class ToDaysExpr extends FuncExpr {
   constructor (args: ToDaysExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type WeekOfYearExprArgs = BaseExpressionArgs;
@@ -22648,6 +23104,10 @@ export class YearOfWeekExpr extends FuncExpr {
   }
 
   static sqlNames = ['YEAR_OF_WEEK', 'YEAROFWEEK'];
+
+    static {
+        this.register();
+    }
 }
 
 export type YearOfWeekIsoExprArgs = BaseExpressionArgs;
@@ -22661,6 +23121,10 @@ export class YearOfWeekIsoExpr extends FuncExpr {
   }
 
   static sqlNames = ['YEAR_OF_WEEK_ISO', 'YEAROFWEEKISO'];
+
+    static {
+        this.register();
+    }
 }
 
 export type MonthsBetweenExprArgs = { roundoff?: Expression } & BaseExpressionArgs;
@@ -22748,6 +23212,10 @@ export class MakeIntervalExpr extends FuncExpr {
   get $second (): Expression | undefined {
     return this.args.second;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LastDayExprArgs = { unit?: Expression } & BaseExpressionArgs;
@@ -22766,6 +23234,10 @@ export class LastDayExpr extends FuncExpr {
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type PreviousDayExprArgs = BaseExpressionArgs;
@@ -22777,6 +23249,10 @@ export class PreviousDayExpr extends FuncExpr {
   constructor (args: PreviousDayExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LaxBoolExprArgs = BaseExpressionArgs;
@@ -22788,6 +23264,10 @@ export class LaxBoolExpr extends FuncExpr {
   constructor (args: LaxBoolExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LaxFloat64ExprArgs = BaseExpressionArgs;
@@ -22799,6 +23279,10 @@ export class LaxFloat64Expr extends FuncExpr {
   constructor (args: LaxFloat64ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LaxInt64ExprArgs = BaseExpressionArgs;
@@ -22810,6 +23294,10 @@ export class LaxInt64Expr extends FuncExpr {
   constructor (args: LaxInt64ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LaxStringExprArgs = BaseExpressionArgs;
@@ -22821,6 +23309,10 @@ export class LaxStringExpr extends FuncExpr {
   constructor (args: LaxStringExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ExtractExprArgs = BaseExpressionArgs;
@@ -22832,6 +23324,10 @@ export class ExtractExpr extends FuncExpr {
   constructor (args: ExtractExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ExistsExprArgs = BaseExpressionArgs;
@@ -22843,6 +23339,10 @@ export class ExistsExpr extends FuncExpr {
   constructor (args: ExistsExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type EltExprArgs = BaseExpressionArgs;
@@ -22854,6 +23354,10 @@ export class EltExpr extends FuncExpr {
   constructor (args: EltExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimestampExprArgs = { zone?: Expression;
@@ -22885,6 +23389,10 @@ export class TimestampExpr extends FuncExpr {
   get $withTz (): Expression | undefined {
     return this.args.withTz;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimestampAddExprArgs = { unit?: Expression } & BaseExpressionArgs;
@@ -22903,6 +23411,10 @@ export class TimestampAddExpr extends FuncExpr {
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimestampSubExprArgs = { unit?: Expression } & BaseExpressionArgs;
@@ -22921,6 +23433,10 @@ export class TimestampSubExpr extends FuncExpr {
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimestampDiffExprArgs = { unit?: Expression } & BaseExpressionArgs;
@@ -22939,6 +23455,10 @@ export class TimestampDiffExpr extends FuncExpr {
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimestampTruncExprArgs = { unit: Expression;
@@ -22976,6 +23496,10 @@ export class TimestampTruncExpr extends FuncExpr {
   get $inputTypePreserved (): Expression | undefined {
     return this.args.inputTypePreserved;
   }
+
+    static {
+        this.register();
+    }
 }
 
 /**
@@ -23014,6 +23538,10 @@ export class TimeSliceExpr extends FuncExpr {
   get $kind (): string | undefined {
     return this.args.kind;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimeAddExprArgs = { unit?: Expression } & BaseExpressionArgs;
@@ -23032,6 +23560,10 @@ export class TimeAddExpr extends FuncExpr {
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimeSubExprArgs = { unit?: Expression } & BaseExpressionArgs;
@@ -23050,6 +23582,10 @@ export class TimeSubExpr extends FuncExpr {
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimeDiffExprArgs = { unit?: Expression } & BaseExpressionArgs;
@@ -23068,6 +23604,10 @@ export class TimeDiffExpr extends FuncExpr {
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimeTruncExprArgs = { unit: Expression;
@@ -23099,6 +23639,10 @@ export class TimeTruncExpr extends FuncExpr {
   get $zone (): Expression | undefined {
     return this.args.zone;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DateFromPartsExprArgs = { year: Expression;
@@ -23142,6 +23686,10 @@ export class DateFromPartsExpr extends FuncExpr {
   get $allowOverflow (): Expression | undefined {
     return this.args.allowOverflow;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimeFromPartsExprArgs = { hour: Expression;
@@ -23203,6 +23751,10 @@ export class TimeFromPartsExpr extends FuncExpr {
   get $overflow (): Expression | undefined {
     return this.args.overflow;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DateStrToDateExprArgs = BaseExpressionArgs;
@@ -23214,6 +23766,10 @@ export class DateStrToDateExpr extends FuncExpr {
   constructor (args: DateStrToDateExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DateToDateStrExprArgs = BaseExpressionArgs;
@@ -23225,6 +23781,10 @@ export class DateToDateStrExpr extends FuncExpr {
   constructor (args: DateToDateStrExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DateToDiExprArgs = BaseExpressionArgs;
@@ -23236,6 +23796,10 @@ export class DateToDiExpr extends FuncExpr {
   constructor (args: DateToDiExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DateExprArgs = { zone?: Expression } & BaseExpressionArgs;
@@ -23254,6 +23818,10 @@ export class DateExpr extends FuncExpr {
   get $zone (): Expression | undefined {
     return this.args.zone;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DayExprArgs = BaseExpressionArgs;
@@ -23265,6 +23833,10 @@ export class DayExpr extends FuncExpr {
   constructor (args: DayExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DecodeExprArgs = { charset: string;
@@ -23296,6 +23868,10 @@ export class DecodeExpr extends FuncExpr {
   get $replace (): Expression | undefined {
     return this.args.replace;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DecodeCaseExprArgs = BaseExpressionArgs;
@@ -23307,6 +23883,10 @@ export class DecodeCaseExpr extends FuncExpr {
   constructor (args: DecodeCaseExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DecryptExprArgs = { passphrase: Expression;
@@ -23350,6 +23930,10 @@ export class DecryptExpr extends FuncExpr {
   get $safe (): Expression | undefined {
     return this.args.safe;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DecryptRawExprArgs = { key: unknown;
@@ -23405,6 +23989,10 @@ export class DecryptRawExpr extends FuncExpr {
   get $safe (): Expression | undefined {
     return this.args.safe;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DiToDateExprArgs = BaseExpressionArgs;
@@ -23416,6 +24004,10 @@ export class DiToDateExpr extends FuncExpr {
   constructor (args: DiToDateExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type EncodeExprArgs = { charset: string } & BaseExpressionArgs;
@@ -23434,6 +24026,10 @@ export class EncodeExpr extends FuncExpr {
   get $charset (): Expression {
     return this.args.charset;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type EncryptExprArgs = { passphrase: Expression;
@@ -23471,6 +24067,10 @@ export class EncryptExpr extends FuncExpr {
   get $encryptionMethod (): Expression | undefined {
     return this.args.encryptionMethod;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type EncryptRawExprArgs = { key: unknown;
@@ -23514,6 +24114,10 @@ export class EncryptRawExpr extends FuncExpr {
   get $encryptionMethod (): Expression | undefined {
     return this.args.encryptionMethod;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type EqualNullExprArgs = BaseExpressionArgs;
@@ -23525,6 +24129,10 @@ export class EqualNullExpr extends FuncExpr {
   constructor (args: EqualNullExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ExpExprArgs = BaseExpressionArgs;
@@ -23536,6 +24144,10 @@ export class ExpExpr extends FuncExpr {
   constructor (args: ExpExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type FactorialExprArgs = BaseExpressionArgs;
@@ -23547,6 +24159,10 @@ export class FactorialExpr extends FuncExpr {
   constructor (args: FactorialExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ExplodeExprArgs = BaseExpressionArgs;
@@ -23558,6 +24174,10 @@ export class ExplodeExpr extends FuncExpr {
   constructor (args: ExplodeExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type InlineExprArgs = BaseExpressionArgs;
@@ -23569,6 +24189,10 @@ export class InlineExpr extends FuncExpr {
   constructor (args: InlineExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UnnestExprArgs = { offset?: boolean;
@@ -23600,6 +24224,10 @@ export class UnnestExpr extends FuncExpr {
   get $explodeArray (): Expression | undefined {
     return this.args.explodeArray;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type FloorExprArgs = { decimals?: Expression[];
@@ -23631,6 +24259,10 @@ export class FloorExpr extends FuncExpr {
   get $to (): Expression | undefined {
     return this.args.to;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type FromBase32ExprArgs = BaseExpressionArgs;
@@ -23642,6 +24274,10 @@ export class FromBase32Expr extends FuncExpr {
   constructor (args: FromBase32ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type FromBase64ExprArgs = BaseExpressionArgs;
@@ -23653,6 +24289,10 @@ export class FromBase64Expr extends FuncExpr {
   constructor (args: FromBase64ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ToBase32ExprArgs = BaseExpressionArgs;
@@ -23664,6 +24304,10 @@ export class ToBase32Expr extends FuncExpr {
   constructor (args: ToBase32ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ToBase64ExprArgs = BaseExpressionArgs;
@@ -23675,6 +24319,10 @@ export class ToBase64Expr extends FuncExpr {
   constructor (args: ToBase64ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ToBinaryExprArgs = { format?: string;
@@ -23706,6 +24354,10 @@ export class ToBinaryExpr extends FuncExpr {
   get $safe (): Expression | undefined {
     return this.args.safe;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type Base64DecodeBinaryExprArgs = { alphabet?: Expression } & BaseExpressionArgs;
@@ -23724,6 +24376,10 @@ export class Base64DecodeBinaryExpr extends FuncExpr {
   get $alphabet (): Expression | undefined {
     return this.args.alphabet;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type Base64DecodeStringExprArgs = { alphabet?: Expression } & BaseExpressionArgs;
@@ -23742,6 +24398,10 @@ export class Base64DecodeStringExpr extends FuncExpr {
   get $alphabet (): Expression | undefined {
     return this.args.alphabet;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type Base64EncodeExprArgs = { maxLineLength?: number | Expression;
@@ -23773,6 +24433,10 @@ export class Base64EncodeExpr extends FuncExpr {
   get $alphabet (): Expression | undefined {
     return this.args.alphabet;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TryBase64DecodeBinaryExprArgs = { alphabet?: Expression } & BaseExpressionArgs;
@@ -23791,6 +24455,10 @@ export class TryBase64DecodeBinaryExpr extends FuncExpr {
   get $alphabet (): Expression | undefined {
     return this.args.alphabet;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TryBase64DecodeStringExprArgs = { alphabet?: Expression } & BaseExpressionArgs;
@@ -23809,6 +24477,10 @@ export class TryBase64DecodeStringExpr extends FuncExpr {
   get $alphabet (): Expression | undefined {
     return this.args.alphabet;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TryHexDecodeBinaryExprArgs = BaseExpressionArgs;
@@ -23820,6 +24492,10 @@ export class TryHexDecodeBinaryExpr extends FuncExpr {
   constructor (args: TryHexDecodeBinaryExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TryHexDecodeStringExprArgs = BaseExpressionArgs;
@@ -23831,6 +24507,10 @@ export class TryHexDecodeStringExpr extends FuncExpr {
   constructor (args: TryHexDecodeStringExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type FromISO8601TimestampExprArgs = BaseExpressionArgs;
@@ -23844,6 +24524,10 @@ export class FromISO8601TimestampExpr extends FuncExpr {
   }
 
   static sqlNames = ['FROM_ISO8601_TIMESTAMP'];
+
+    static {
+        this.register();
+    }
 }
 
 export type GapFillExprArgs = { tsColumn: Expression;
@@ -23940,6 +24624,10 @@ export class GenerateDateArrayExpr extends FuncExpr {
   get $step (): Expression | undefined {
     return this.args.step;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type GenerateTimestampArrayExprArgs = { start: Expression;
@@ -23978,6 +24666,10 @@ export class GenerateTimestampArrayExpr extends FuncExpr {
   get $step (): Expression {
     return this.args.step;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type GetExtractExprArgs = BaseExpressionArgs;
@@ -23989,6 +24681,10 @@ export class GetExtractExpr extends FuncExpr {
   constructor (args: GetExtractExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type GetbitExprArgs = { zeroIsMsb?: Expression } & BaseExpressionArgs;
@@ -24007,6 +24703,10 @@ export class GetbitExpr extends FuncExpr {
   get $zeroIsMsb (): Expression | undefined {
     return this.args.zeroIsMsb;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type GreatestExprArgs = { ignoreNulls: Expression[] } & BaseExpressionArgs;
@@ -24025,6 +24725,10 @@ export class GreatestExpr extends FuncExpr {
   get $ignoreNulls (): Expression[] {
     return this.args.ignoreNulls;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type HexExprArgs = BaseExpressionArgs;
@@ -24036,6 +24740,10 @@ export class HexExpr extends FuncExpr {
   constructor (args: HexExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type HexDecodeStringExprArgs = BaseExpressionArgs;
@@ -24047,6 +24755,10 @@ export class HexDecodeStringExpr extends FuncExpr {
   constructor (args: HexDecodeStringExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type HexEncodeExprArgs = { case?: Expression } & BaseExpressionArgs;
@@ -24065,6 +24777,10 @@ export class HexEncodeExpr extends FuncExpr {
   get $case (): Expression | undefined {
     return this.args.case;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type HourExprArgs = BaseExpressionArgs;
@@ -24076,6 +24792,10 @@ export class HourExpr extends FuncExpr {
   constructor (args: HourExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MinuteExprArgs = BaseExpressionArgs;
@@ -24087,6 +24807,10 @@ export class MinuteExpr extends FuncExpr {
   constructor (args: MinuteExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SecondExprArgs = BaseExpressionArgs;
@@ -24098,6 +24822,10 @@ export class SecondExpr extends FuncExpr {
   constructor (args: SecondExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CompressExprArgs = { method?: string } & BaseExpressionArgs;
@@ -24116,6 +24844,10 @@ export class CompressExpr extends FuncExpr {
   get $method (): Expression | undefined {
     return this.args.method;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DecompressBinaryExprArgs = { method: string } & BaseExpressionArgs;
@@ -24134,6 +24866,10 @@ export class DecompressBinaryExpr extends FuncExpr {
   get $method (): Expression {
     return this.args.method;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type DecompressStringExprArgs = { method: string } & BaseExpressionArgs;
@@ -24152,6 +24888,10 @@ export class DecompressStringExpr extends FuncExpr {
   get $method (): Expression {
     return this.args.method;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type IfExprArgs = { true: Expression;
@@ -24185,6 +24925,10 @@ export class IfExpr extends FuncExpr {
   get $false (): Expression | undefined {
     return this.args.false;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type NullifExprArgs = BaseExpressionArgs;
@@ -24196,6 +24940,10 @@ export class NullifExpr extends FuncExpr {
   constructor (args: NullifExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type InitcapExprArgs = BaseExpressionArgs;
@@ -24207,6 +24955,10 @@ export class InitcapExpr extends FuncExpr {
   constructor (args: InitcapExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type IsAsciiExprArgs = BaseExpressionArgs;
@@ -24218,6 +24970,10 @@ export class IsAsciiExpr extends FuncExpr {
   constructor (args: IsAsciiExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type IsNanExprArgs = BaseExpressionArgs;
@@ -24246,6 +25002,10 @@ export class Int64Expr extends FuncExpr {
   constructor (args: Int64ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type IsInfExprArgs = BaseExpressionArgs;
@@ -24274,6 +25034,10 @@ export class IsNullValueExpr extends FuncExpr {
   constructor (args: IsNullValueExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type IsArrayExprArgs = BaseExpressionArgs;
@@ -24285,6 +25049,10 @@ export class IsArrayExpr extends FuncExpr {
   constructor (args: IsArrayExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type FormatExprArgs = BaseExpressionArgs;
@@ -24296,6 +25064,10 @@ export class FormatExpr extends FuncExpr {
   constructor (args: FormatExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONKeysExprArgs = BaseExpressionArgs;
@@ -24307,6 +25079,10 @@ export class JSONKeysExpr extends FuncExpr {
   constructor (args: JSONKeysExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONKeysAtDepthExprArgs = { mode?: Expression } & BaseExpressionArgs;
@@ -24325,6 +25101,10 @@ export class JSONKeysAtDepthExpr extends FuncExpr {
   get $mode (): Expression | undefined {
     return this.args.mode;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONObjectExprArgs = { nullHandling?: Expression;
@@ -24368,6 +25148,10 @@ export class JSONObjectExpr extends FuncExpr {
   get $encoding (): Expression | undefined {
     return this.args.encoding;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONArrayExprArgs = { nullHandling?: Expression;
@@ -24405,6 +25189,10 @@ export class JSONArrayExpr extends FuncExpr {
   get $strict (): Expression | undefined {
     return this.args.strict;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONExistsExprArgs = { path: Expression;
@@ -24448,6 +25236,10 @@ export class JSONExistsExpr extends FuncExpr {
   get $fromDcolonqmark (): Expression | undefined {
     return this.args.fromDcolonqmark;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONSetExprArgs = BaseExpressionArgs;
@@ -24459,6 +25251,10 @@ export class JSONSetExpr extends FuncExpr {
   constructor (args: JSONSetExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONStripNullsExprArgs = { includeArrays?: Expression[];
@@ -24490,6 +25286,10 @@ export class JSONStripNullsExpr extends FuncExpr {
   get $removeEmpty (): Expression | undefined {
     return this.args.removeEmpty;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONValueArrayExprArgs = BaseExpressionArgs;
@@ -24501,6 +25301,10 @@ export class JSONValueArrayExpr extends FuncExpr {
   constructor (args: JSONValueArrayExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONRemoveExprArgs = BaseExpressionArgs;
@@ -24512,6 +25316,10 @@ export class JSONRemoveExpr extends FuncExpr {
   constructor (args: JSONRemoveExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONTableExprArgs = { schema: Expression;
@@ -24555,6 +25363,10 @@ export class JSONTableExpr extends FuncExpr {
   get $emptyHandling (): Expression | undefined {
     return this.args.emptyHandling;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONTypeExprArgs = BaseExpressionArgs;
@@ -24566,6 +25378,10 @@ export class JSONTypeExpr extends FuncExpr {
   constructor (args: JSONTypeExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ObjectInsertExprArgs = { key: unknown;
@@ -24603,6 +25419,10 @@ export class ObjectInsertExpr extends FuncExpr {
   get $updateFlag (): Expression | undefined {
     return this.args.updateFlag;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type OpenJSONExprArgs = { path?: Expression } & BaseExpressionArgs;
@@ -24621,6 +25441,10 @@ export class OpenJSONExpr extends FuncExpr {
   get $path (): Expression | undefined {
     return this.args.path;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONBContainsExprArgs = BaseExpressionArgs;
@@ -24672,6 +25496,10 @@ export class JSONBExistsExpr extends FuncExpr {
   get $path (): Expression {
     return this.args.path;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONBDeleteAtPathExprArgs = BaseExpressionArgs;
@@ -24755,6 +25583,10 @@ export class JSONExtractArrayExpr extends FuncExpr {
   constructor (args: JSONExtractArrayExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONExtractScalarExprArgs = { onlyJsonTypes?: Expression[];
@@ -24858,6 +25690,10 @@ export class JSONFormatExpr extends FuncExpr {
   get $toJson (): Expression | undefined {
     return this.args.toJson;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONArrayAppendExprArgs = BaseExpressionArgs;
@@ -24869,6 +25705,10 @@ export class JSONArrayAppendExpr extends FuncExpr {
   constructor (args: JSONArrayAppendExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONArrayContainsExprArgs = { jsonType?: Expression } & BaseExpressionArgs;
@@ -24898,6 +25738,10 @@ export class JSONArrayInsertExpr extends FuncExpr {
   constructor (args: JSONArrayInsertExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ParseBignumericExprArgs = BaseExpressionArgs;
@@ -24909,6 +25753,10 @@ export class ParseBignumericExpr extends FuncExpr {
   constructor (args: ParseBignumericExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ParseNumericExprArgs = BaseExpressionArgs;
@@ -24920,6 +25768,10 @@ export class ParseNumericExpr extends FuncExpr {
   constructor (args: ParseNumericExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ParseJSONExprArgs = { safe?: boolean } & BaseExpressionArgs;
@@ -24938,6 +25790,10 @@ export class ParseJSONExpr extends FuncExpr {
   get $safe (): Expression | undefined {
     return this.args.safe;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ParseUrlExprArgs = { partToExtract?: Expression;
@@ -24975,6 +25831,10 @@ export class ParseUrlExpr extends FuncExpr {
   get $permissive (): Expression | undefined {
     return this.args.permissive;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ParseIpExprArgs = { permissive?: Expression } & BaseExpressionArgs;
@@ -24993,6 +25853,10 @@ export class ParseIpExpr extends FuncExpr {
   get $permissive (): Expression | undefined {
     return this.args.permissive;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ParseTimeExprArgs = { format: string } & BaseExpressionArgs;
@@ -25011,6 +25875,10 @@ export class ParseTimeExpr extends FuncExpr {
   get $format (): Expression {
     return this.args.format;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ParseDatetimeExprArgs = { format?: string;
@@ -25042,6 +25910,10 @@ export class ParseDatetimeExpr extends FuncExpr {
   get $zone (): Expression | undefined {
     return this.args.zone;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LeastExprArgs = { ignoreNulls: Expression[] } & BaseExpressionArgs;
@@ -25060,6 +25932,10 @@ export class LeastExpr extends FuncExpr {
   get $ignoreNulls (): Expression[] {
     return this.args.ignoreNulls;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LeftExprArgs = BaseExpressionArgs;
@@ -25071,6 +25947,10 @@ export class LeftExpr extends FuncExpr {
   constructor (args: LeftExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RightExprArgs = BaseExpressionArgs;
@@ -25082,6 +25962,10 @@ export class RightExpr extends FuncExpr {
   constructor (args: RightExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ReverseExprArgs = BaseExpressionArgs;
@@ -25093,6 +25977,10 @@ export class ReverseExpr extends FuncExpr {
   constructor (args: ReverseExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LengthExprArgs = { binary?: Expression;
@@ -25124,6 +26012,10 @@ export class LengthExpr extends FuncExpr {
   get $encoding (): Expression | undefined {
     return this.args.encoding;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RtrimmedLengthExprArgs = BaseExpressionArgs;
@@ -25135,6 +26027,10 @@ export class RtrimmedLengthExpr extends FuncExpr {
   constructor (args: RtrimmedLengthExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type BitLengthExprArgs = BaseExpressionArgs;
@@ -25146,6 +26042,10 @@ export class BitLengthExpr extends FuncExpr {
   constructor (args: BitLengthExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LevenshteinExprArgs = { insCost?: Expression;
@@ -25189,6 +26089,10 @@ export class LevenshteinExpr extends FuncExpr {
   get $maxDist (): Expression | undefined {
     return this.args.maxDist;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LnExprArgs = BaseExpressionArgs;
@@ -25200,6 +26104,10 @@ export class LnExpr extends FuncExpr {
   constructor (args: LnExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LogExprArgs = BaseExpressionArgs;
@@ -25211,6 +26119,10 @@ export class LogExpr extends FuncExpr {
   constructor (args: LogExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LowerExprArgs = BaseExpressionArgs;
@@ -25224,6 +26136,10 @@ export class LowerExpr extends FuncExpr {
   }
 
   static sqlNames = ['LOWER', 'LCASE'];
+
+    static {
+        this.register();
+    }
 }
 
 export type MapExprArgs = { keys?: Expression[];
@@ -25270,6 +26186,10 @@ export class ToMapExpr extends FuncExpr {
   constructor (args: ToMapExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MapFromEntriesExprArgs = BaseExpressionArgs;
@@ -25281,6 +26201,10 @@ export class MapFromEntriesExpr extends FuncExpr {
   constructor (args: MapFromEntriesExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MapCatExprArgs = BaseExpressionArgs;
@@ -25292,6 +26216,10 @@ export class MapCatExpr extends FuncExpr {
   constructor (args: MapCatExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MapContainsKeyExprArgs = { key: unknown } & BaseExpressionArgs;
@@ -25310,6 +26238,10 @@ export class MapContainsKeyExpr extends FuncExpr {
   get $key (): Expression {
     return this.args.key;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MapDeleteExprArgs = BaseExpressionArgs;
@@ -25321,6 +26253,10 @@ export class MapDeleteExpr extends FuncExpr {
   constructor (args: MapDeleteExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MapInsertExprArgs = { key?: unknown;
@@ -25358,6 +26294,10 @@ export class MapInsertExpr extends FuncExpr {
   get $updateFlag (): Expression | undefined {
     return this.args.updateFlag;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MapKeysExprArgs = BaseExpressionArgs;
@@ -25369,6 +26309,10 @@ export class MapKeysExpr extends FuncExpr {
   constructor (args: MapKeysExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MapPickExprArgs = BaseExpressionArgs;
@@ -25380,6 +26324,10 @@ export class MapPickExpr extends FuncExpr {
   constructor (args: MapPickExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MapSizeExprArgs = BaseExpressionArgs;
@@ -25391,6 +26339,10 @@ export class MapSizeExpr extends FuncExpr {
   constructor (args: MapSizeExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type StarMapExprArgs = BaseExpressionArgs;
@@ -25402,6 +26354,10 @@ export class StarMapExpr extends FuncExpr {
   constructor (args: StarMapExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type VarMapExprArgs = { keys: Expression[];
@@ -25433,6 +26389,10 @@ export class VarMapExpr extends FuncExpr {
   get $values (): Expression[] {
     return this.args.values;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MatchAgainstExprArgs = { modifier?: Expression } & BaseExpressionArgs;
@@ -25451,6 +26411,10 @@ export class MatchAgainstExpr extends FuncExpr {
   get $modifier (): Expression | undefined {
     return this.args.modifier;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MD5ExprArgs = BaseExpressionArgs;
@@ -25479,6 +26443,10 @@ export class MD5DigestExpr extends FuncExpr {
   constructor (args: MD5DigestExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MD5NumberLower64ExprArgs = BaseExpressionArgs;
@@ -25490,6 +26458,10 @@ export class MD5NumberLower64Expr extends FuncExpr {
   constructor (args: MD5NumberLower64ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MD5NumberUpper64ExprArgs = BaseExpressionArgs;
@@ -25501,6 +26473,10 @@ export class MD5NumberUpper64Expr extends FuncExpr {
   constructor (args: MD5NumberUpper64ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MonthExprArgs = BaseExpressionArgs;
@@ -25512,6 +26488,10 @@ export class MonthExpr extends FuncExpr {
   constructor (args: MonthExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MonthnameExprArgs = { abbreviated?: Expression } & BaseExpressionArgs;
@@ -25530,6 +26510,10 @@ export class MonthnameExpr extends FuncExpr {
   get $abbreviated (): Expression | undefined {
     return this.args.abbreviated;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type AddMonthsExprArgs = { preserveEndOfMonth?: Expression } & BaseExpressionArgs;
@@ -25548,6 +26532,10 @@ export class AddMonthsExpr extends FuncExpr {
   get $preserveEndOfMonth (): Expression | undefined {
     return this.args.preserveEndOfMonth;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type Nvl2ExprArgs = { true: Expression;
@@ -25579,6 +26567,10 @@ export class Nvl2Expr extends FuncExpr {
   get $false (): Expression | undefined {
     return this.args.false;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type NormalizeExprArgs = { form?: Expression;
@@ -25610,6 +26602,10 @@ export class NormalizeExpr extends FuncExpr {
   get $isCasefold (): Expression | undefined {
     return this.args.isCasefold;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type NormalExprArgs = { stddev: Expression;
@@ -25641,6 +26637,10 @@ export class NormalExpr extends FuncExpr {
   get $gen (): Expression {
     return this.args.gen;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type NetFuncExprArgs = BaseExpressionArgs;
@@ -25652,6 +26652,10 @@ export class NetFuncExpr extends FuncExpr {
   constructor (args: NetFuncExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type HostExprArgs = BaseExpressionArgs;
@@ -25663,6 +26667,10 @@ export class HostExpr extends FuncExpr {
   constructor (args: HostExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegDomainExprArgs = BaseExpressionArgs;
@@ -25674,6 +26682,10 @@ export class RegDomainExpr extends FuncExpr {
   constructor (args: RegDomainExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type OverlayExprArgs = { from: Expression;
@@ -25705,6 +26717,10 @@ export class OverlayExpr extends FuncExpr {
   get $for (): Expression | undefined {
     return this.args.for;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type PredictExprArgs = { paramsStruct?: Expression } & BaseExpressionArgs;
@@ -25723,6 +26739,10 @@ export class PredictExpr extends FuncExpr {
   get $paramsStruct (): Expression | undefined {
     return this.args.paramsStruct;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MLTranslateExprArgs = { paramsStruct: Expression } & BaseExpressionArgs;
@@ -25741,6 +26761,10 @@ export class MLTranslateExpr extends FuncExpr {
   get $paramsStruct (): Expression {
     return this.args.paramsStruct;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type FeaturesAtTimeExprArgs = { time?: Expression;
@@ -25778,6 +26802,10 @@ export class FeaturesAtTimeExpr extends FuncExpr {
   get $ignoreFeatureNulls (): Expression[] | undefined {
     return this.args.ignoreFeatureNulls;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type GenerateEmbeddingExprArgs = { paramsStruct?: Expression;
@@ -25809,6 +26837,10 @@ export class GenerateEmbeddingExpr extends FuncExpr {
   get $isText (): Expression | undefined {
     return this.args.isText;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MLForecastExprArgs = { paramsStruct?: Expression } & BaseExpressionArgs;
@@ -25827,6 +26859,10 @@ export class MLForecastExpr extends FuncExpr {
   get $paramsStruct (): Expression | undefined {
     return this.args.paramsStruct;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type VectorSearchExprArgs = { columnToSearch: Expression;
@@ -25882,6 +26918,10 @@ export class VectorSearchExpr extends FuncExpr {
   get $options (): Expression[] | undefined {
     return this.args.options;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type PiExprArgs = BaseExpressionArgs;
@@ -25893,6 +26933,10 @@ export class PiExpr extends FuncExpr {
   constructor (args: PiExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type PowExprArgs = BaseExpressionArgs;
@@ -25922,6 +26966,10 @@ export class ApproxPercentileEstimateExpr extends FuncExpr {
   get $percentile (): Expression {
     return this.args.percentile;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type QuarterExprArgs = BaseExpressionArgs;
@@ -25933,6 +26981,10 @@ export class QuarterExpr extends FuncExpr {
   constructor (args: QuarterExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RandExprArgs = { lower?: Expression;
@@ -25964,6 +27016,10 @@ export class RandExpr extends FuncExpr {
   get $upper (): Expression | undefined {
     return this.args.upper;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RandnExprArgs = BaseExpressionArgs;
@@ -25975,6 +27031,10 @@ export class RandnExpr extends FuncExpr {
   constructor (args: RandnExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RandstrExprArgs = { generator?: Expression } & BaseExpressionArgs;
@@ -25993,6 +27053,10 @@ export class RandstrExpr extends FuncExpr {
   get $generator (): Expression | undefined {
     return this.args.generator;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RangeNExprArgs = { each?: Expression } & BaseExpressionArgs;
@@ -26011,6 +27075,10 @@ export class RangeNExpr extends FuncExpr {
   get $each (): Expression | undefined {
     return this.args.each;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RangeBucketExprArgs = BaseExpressionArgs;
@@ -26022,6 +27090,10 @@ export class RangeBucketExpr extends FuncExpr {
   constructor (args: RangeBucketExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ReadCSVExprArgs = BaseExpressionArgs;
@@ -26033,6 +27105,10 @@ export class ReadCSVExpr extends FuncExpr {
   constructor (args: ReadCSVExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ReadParquetExprArgs = BaseExpressionArgs;
@@ -26044,6 +27120,10 @@ export class ReadParquetExpr extends FuncExpr {
   constructor (args: ReadParquetExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ReduceExprArgs = { initial: Expression;
@@ -26081,6 +27161,10 @@ export class ReduceExpr extends FuncExpr {
   get $finish (): Expression | undefined {
     return this.args.finish;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegexpExtractExprArgs = { position?: Expression;
@@ -26130,6 +27214,10 @@ export class RegexpExtractExpr extends FuncExpr {
   get $nullIfPosOverflow (): Expression | undefined {
     return this.args.nullIfPosOverflow;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegexpExtractAllExprArgs = { group?: Expression;
@@ -26173,6 +27261,10 @@ export class RegexpExtractAllExpr extends FuncExpr {
   get $occurrence (): Expression | undefined {
     return this.args.occurrence;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegexpReplaceExprArgs = { replacement?: boolean;
@@ -26222,6 +27314,10 @@ export class RegexpReplaceExpr extends FuncExpr {
   get $singleReplace (): Expression | undefined {
     return this.args.singleReplace;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegexpLikeExprArgs = { flag?: Expression } & BaseExpressionArgs;
@@ -26325,6 +27421,10 @@ export class RegexpInstrExpr extends FuncExpr {
   get $group (): Expression | undefined {
     return this.args.group;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegexpSplitExprArgs = { limit?: number | Expression } & BaseExpressionArgs;
@@ -26343,6 +27443,10 @@ export class RegexpSplitExpr extends FuncExpr {
   get $limit (): Expression | undefined {
     return this.args.limit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegexpCountExprArgs = { position?: Expression;
@@ -26374,6 +27478,10 @@ export class RegexpCountExpr extends FuncExpr {
   get $parameters (): Expression[] | undefined {
     return this.args.parameters;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RepeatExprArgs = { times: Expression[] } & BaseExpressionArgs;
@@ -26392,6 +27500,10 @@ export class RepeatExpr extends FuncExpr {
   get $times (): Expression[] {
     return this.args.times;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ReplaceExprArgs = { replacement?: boolean } & BaseExpressionArgs;
@@ -26410,6 +27522,10 @@ export class ReplaceExpr extends FuncExpr {
   get $replacement (): Expression | undefined {
     return this.args.replacement;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RadiansExprArgs = BaseExpressionArgs;
@@ -26421,6 +27537,10 @@ export class RadiansExpr extends FuncExpr {
   constructor (args: RadiansExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RoundExprArgs = { decimals?: Expression[];
@@ -26458,6 +27578,10 @@ export class RoundExpr extends FuncExpr {
   get $castsNonIntegerDecimals (): Expression[] | undefined {
     return this.args.castsNonIntegerDecimals;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TruncExprArgs = { decimals?: Expression[] } & BaseExpressionArgs;
@@ -26476,6 +27600,10 @@ export class TruncExpr extends FuncExpr {
   get $decimals (): Expression[] | undefined {
     return this.args.decimals;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RowNumberExprArgs = BaseExpressionArgs;
@@ -26487,6 +27615,10 @@ export class RowNumberExpr extends FuncExpr {
   constructor (args: RowNumberExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type Seq1ExprArgs = BaseExpressionArgs;
@@ -26498,6 +27630,10 @@ export class Seq1Expr extends FuncExpr {
   constructor (args: Seq1ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type Seq2ExprArgs = BaseExpressionArgs;
@@ -26509,6 +27645,10 @@ export class Seq2Expr extends FuncExpr {
   constructor (args: Seq2ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type Seq4ExprArgs = BaseExpressionArgs;
@@ -26520,6 +27660,10 @@ export class Seq4Expr extends FuncExpr {
   constructor (args: Seq4ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type Seq8ExprArgs = BaseExpressionArgs;
@@ -26531,6 +27675,10 @@ export class Seq8Expr extends FuncExpr {
   constructor (args: Seq8ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SafeAddExprArgs = BaseExpressionArgs;
@@ -26542,6 +27690,10 @@ export class SafeAddExpr extends FuncExpr {
   constructor (args: SafeAddExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SafeDivideExprArgs = BaseExpressionArgs;
@@ -26553,6 +27705,10 @@ export class SafeDivideExpr extends FuncExpr {
   constructor (args: SafeDivideExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SafeMultiplyExprArgs = BaseExpressionArgs;
@@ -26564,6 +27720,10 @@ export class SafeMultiplyExpr extends FuncExpr {
   constructor (args: SafeMultiplyExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SafeNegateExprArgs = BaseExpressionArgs;
@@ -26575,6 +27735,10 @@ export class SafeNegateExpr extends FuncExpr {
   constructor (args: SafeNegateExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SafeSubtractExprArgs = BaseExpressionArgs;
@@ -26586,6 +27750,10 @@ export class SafeSubtractExpr extends FuncExpr {
   constructor (args: SafeSubtractExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SafeConvertBytesToStringExprArgs = BaseExpressionArgs;
@@ -26597,6 +27765,10 @@ export class SafeConvertBytesToStringExpr extends FuncExpr {
   constructor (args: SafeConvertBytesToStringExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SHAExprArgs = BaseExpressionArgs;
@@ -26610,6 +27782,10 @@ export class SHAExpr extends FuncExpr {
   }
 
   static sqlNames = ['SHA', 'SHA1'];
+
+    static {
+        this.register();
+    }
 }
 
 export type SHA2ExprArgs = { length?: number | Expression } & BaseExpressionArgs;
@@ -26643,6 +27819,10 @@ export class SHA1DigestExpr extends FuncExpr {
   constructor (args: SHA1DigestExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SHA2DigestExprArgs = { length?: number | Expression } & BaseExpressionArgs;
@@ -26661,6 +27841,10 @@ export class SHA2DigestExpr extends FuncExpr {
   get $length (): Expression | undefined {
     return this.args.length;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SignExprArgs = BaseExpressionArgs;
@@ -26674,6 +27858,10 @@ export class SignExpr extends FuncExpr {
   }
 
   static sqlNames = ['SIGN', 'SIGNUM'];
+
+    static {
+        this.register();
+    }
 }
 
 export type SortArrayExprArgs = { asc?: Expression;
@@ -26720,6 +27908,10 @@ export class SoundexExpr extends FuncExpr {
   constructor (args: SoundexExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SoundexP123ExprArgs = BaseExpressionArgs;
@@ -26731,6 +27923,10 @@ export class SoundexP123Expr extends FuncExpr {
   constructor (args: SoundexP123ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SplitExprArgs = { limit?: number | Expression } & BaseExpressionArgs;
@@ -26749,6 +27945,10 @@ export class SplitExpr extends FuncExpr {
   get $limit (): Expression | undefined {
     return this.args.limit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SplitPartExprArgs = { delimiter?: number | Expression;
@@ -26780,6 +27980,10 @@ export class SplitPartExpr extends FuncExpr {
   get $partIndex (): Expression | undefined {
     return this.args.partIndex;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SubstringExprArgs = { start?: Expression;
@@ -26811,6 +28015,10 @@ export class SubstringExpr extends FuncExpr {
   get $length (): Expression | undefined {
     return this.args.length;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SubstringIndexExprArgs = { delimiter: number | Expression;
@@ -26842,6 +28050,10 @@ export class SubstringIndexExpr extends FuncExpr {
   get $count (): Expression {
     return this.args.count;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type StandardHashExprArgs = BaseExpressionArgs;
@@ -26853,6 +28065,10 @@ export class StandardHashExpr extends FuncExpr {
   constructor (args: StandardHashExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type StartsWithExprArgs = BaseExpressionArgs;
@@ -26864,6 +28080,10 @@ export class StartsWithExpr extends FuncExpr {
   constructor (args: StartsWithExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type EndsWithExprArgs = BaseExpressionArgs;
@@ -26875,6 +28095,10 @@ export class EndsWithExpr extends FuncExpr {
   constructor (args: EndsWithExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type StrPositionExprArgs = { substr: Expression;
@@ -26912,6 +28136,10 @@ export class StrPositionExpr extends FuncExpr {
   get $occurrence (): Expression | undefined {
     return this.args.occurrence;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SearchExprArgs = { jsonScope?: Expression;
@@ -26955,6 +28183,10 @@ export class SearchExpr extends FuncExpr {
   get $searchMode (): Expression | undefined {
     return this.args.searchMode;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SearchIpExprArgs = BaseExpressionArgs;
@@ -26966,6 +28198,10 @@ export class SearchIpExpr extends FuncExpr {
   constructor (args: SearchIpExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type StrToDateExprArgs = { format?: string;
@@ -26997,6 +28233,10 @@ export class StrToDateExpr extends FuncExpr {
   get $safe (): Expression | undefined {
     return this.args.safe;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type StrToTimeExprArgs = { format: string;
@@ -27040,6 +28280,10 @@ export class StrToTimeExpr extends FuncExpr {
   get $targetType (): Expression | undefined {
     return this.args.targetType;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type StrToUnixExprArgs = { format?: string } & BaseExpressionArgs;
@@ -27058,6 +28302,10 @@ export class StrToUnixExpr extends FuncExpr {
   get $format (): Expression | undefined {
     return this.args.format;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type StrToMapExprArgs = { pairDelim?: Expression;
@@ -27095,6 +28343,10 @@ export class StrToMapExpr extends FuncExpr {
   get $duplicateResolutionCallback (): Expression | undefined {
     return this.args.duplicateResolutionCallback;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type NumberToStrExprArgs = { format: string;
@@ -27126,6 +28378,10 @@ export class NumberToStrExpr extends FuncExpr {
   get $culture (): Expression | undefined {
     return this.args.culture;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type FromBaseExprArgs = BaseExpressionArgs;
@@ -27137,6 +28393,10 @@ export class FromBaseExpr extends FuncExpr {
   constructor (args: FromBaseExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SpaceExprArgs = BaseExpressionArgs;
@@ -27148,6 +28408,10 @@ export class SpaceExpr extends FuncExpr {
   constructor (args: SpaceExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type StructExprArgs = BaseExpressionArgs;
@@ -27159,6 +28423,10 @@ export class StructExpr extends FuncExpr {
   constructor (args: StructExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type StructExtractExprArgs = BaseExpressionArgs;
@@ -27170,6 +28438,10 @@ export class StructExtractExpr extends FuncExpr {
   constructor (args: StructExtractExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type StuffExprArgs = { start: Expression;
@@ -27201,6 +28473,10 @@ export class StuffExpr extends FuncExpr {
   get $length (): Expression {
     return this.args.length;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SqrtExprArgs = BaseExpressionArgs;
@@ -27212,6 +28488,10 @@ export class SqrtExpr extends FuncExpr {
   constructor (args: SqrtExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimeExprArgs = { zone?: Expression } & BaseExpressionArgs;
@@ -27230,6 +28510,10 @@ export class TimeExpr extends FuncExpr {
   get $zone (): Expression | undefined {
     return this.args.zone;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimeToStrExprArgs = { format: string;
@@ -27267,6 +28551,10 @@ export class TimeToStrExpr extends FuncExpr {
   get $zone (): Expression | undefined {
     return this.args.zone;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimeToTimeStrExprArgs = BaseExpressionArgs;
@@ -27278,6 +28566,10 @@ export class TimeToTimeStrExpr extends FuncExpr {
   constructor (args: TimeToTimeStrExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimeToUnixExprArgs = BaseExpressionArgs;
@@ -27289,6 +28581,10 @@ export class TimeToUnixExpr extends FuncExpr {
   constructor (args: TimeToUnixExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimeStrToDateExprArgs = BaseExpressionArgs;
@@ -27300,6 +28596,10 @@ export class TimeStrToDateExpr extends FuncExpr {
   constructor (args: TimeStrToDateExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimeStrToTimeExprArgs = { zone?: Expression } & BaseExpressionArgs;
@@ -27318,6 +28618,10 @@ export class TimeStrToTimeExpr extends FuncExpr {
   get $zone (): Expression | undefined {
     return this.args.zone;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimeStrToUnixExprArgs = BaseExpressionArgs;
@@ -27329,6 +28633,10 @@ export class TimeStrToUnixExpr extends FuncExpr {
   constructor (args: TimeStrToUnixExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TrimExprArgs = { position?: Expression;
@@ -27360,6 +28668,10 @@ export class TrimExpr extends FuncExpr {
   get $collation (): Expression | undefined {
     return this.args.collation;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TsOrDsAddExprArgs = { unit?: Expression;
@@ -27391,6 +28703,10 @@ export class TsOrDsAddExpr extends FuncExpr {
   get $returnType (): Expression | undefined {
     return this.args.returnType;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TsOrDsDiffExprArgs = { unit?: Expression } & BaseExpressionArgs;
@@ -27409,6 +28725,10 @@ export class TsOrDsDiffExpr extends FuncExpr {
   get $unit (): Expression | undefined {
     return this.args.unit;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TsOrDsToDateStrExprArgs = BaseExpressionArgs;
@@ -27420,6 +28740,10 @@ export class TsOrDsToDateStrExpr extends FuncExpr {
   constructor (args: TsOrDsToDateStrExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TsOrDsToDateExprArgs = { format?: string;
@@ -27451,6 +28775,10 @@ export class TsOrDsToDateExpr extends FuncExpr {
   get $safe (): Expression | undefined {
     return this.args.safe;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TsOrDsToDatetimeExprArgs = BaseExpressionArgs;
@@ -27462,6 +28790,10 @@ export class TsOrDsToDatetimeExpr extends FuncExpr {
   constructor (args: TsOrDsToDatetimeExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TsOrDsToTimeExprArgs = { format?: string;
@@ -27493,6 +28825,10 @@ export class TsOrDsToTimeExpr extends FuncExpr {
   get $safe (): Expression | undefined {
     return this.args.safe;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TsOrDsToTimestampExprArgs = BaseExpressionArgs;
@@ -27504,6 +28840,10 @@ export class TsOrDsToTimestampExpr extends FuncExpr {
   constructor (args: TsOrDsToTimestampExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TsOrDiToDiExprArgs = BaseExpressionArgs;
@@ -27515,6 +28855,10 @@ export class TsOrDiToDiExpr extends FuncExpr {
   constructor (args: TsOrDiToDiExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UnhexExprArgs = BaseExpressionArgs;
@@ -27526,6 +28870,10 @@ export class UnhexExpr extends FuncExpr {
   constructor (args: UnhexExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UnicodeExprArgs = BaseExpressionArgs;
@@ -27537,6 +28885,10 @@ export class UnicodeExpr extends FuncExpr {
   constructor (args: UnicodeExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UniformExprArgs = { gen?: Expression;
@@ -27568,6 +28920,10 @@ export class UniformExpr extends FuncExpr {
   get $seed (): Expression | undefined {
     return this.args.seed;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UnixDateExprArgs = BaseExpressionArgs;
@@ -27579,6 +28935,10 @@ export class UnixDateExpr extends FuncExpr {
   constructor (args: UnixDateExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UnixToStrExprArgs = { format?: string } & BaseExpressionArgs;
@@ -27597,6 +28957,10 @@ export class UnixToStrExpr extends FuncExpr {
   get $format (): Expression | undefined {
     return this.args.format;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UnixToTimeExprArgs = { scale?: number | Expression;
@@ -27652,6 +29016,10 @@ export class UnixToTimeExpr extends FuncExpr {
   get $targetType (): Expression | undefined {
     return this.args.targetType;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UnixToTimeStrExprArgs = BaseExpressionArgs;
@@ -27663,6 +29031,10 @@ export class UnixToTimeStrExpr extends FuncExpr {
   constructor (args: UnixToTimeStrExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UnixSecondsExprArgs = BaseExpressionArgs;
@@ -27674,6 +29046,10 @@ export class UnixSecondsExpr extends FuncExpr {
   constructor (args: UnixSecondsExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UnixMicrosExprArgs = BaseExpressionArgs;
@@ -27685,6 +29061,10 @@ export class UnixMicrosExpr extends FuncExpr {
   constructor (args: UnixMicrosExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UnixMillisExprArgs = BaseExpressionArgs;
@@ -27696,6 +29076,10 @@ export class UnixMillisExpr extends FuncExpr {
   constructor (args: UnixMillisExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UuidExprArgs = { name?: unknown;
@@ -27727,6 +29111,10 @@ export class UuidExpr extends FuncExpr {
   get $isString (): Expression | undefined {
     return this.args.isString;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimestampFromPartsExprArgs = { zone?: Expression;
@@ -27758,6 +29146,10 @@ export class TimestampFromPartsExpr extends FuncExpr {
   get $milli (): Expression | undefined {
     return this.args.milli;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type TimestampLtzFromPartsExprArgs = { zone?: Expression } & BaseExpressionArgs;
@@ -27800,6 +29192,10 @@ export class TimestampTzFromPartsExpr extends FuncExpr {
   get $zone (): Expression | undefined {
     return this.args.zone;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type UpperExprArgs = BaseExpressionArgs;
@@ -27813,6 +29209,10 @@ export class UpperExpr extends FuncExpr {
   }
 
   static sqlNames = ['UPPER', 'UCASE'];
+
+    static {
+        this.register();
+    }
 }
 
 export type CorrExprArgs = { nullOnZeroVariance?: Expression } & BaseExpressionArgs;
@@ -27874,6 +29274,10 @@ export class WidthBucketExpr extends FuncExpr {
   get $threshold (): Expression | undefined {
     return this.args.threshold;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type WeekExprArgs = { mode?: Expression } & BaseExpressionArgs;
@@ -27892,6 +29296,10 @@ export class WeekExpr extends FuncExpr {
   get $mode (): Expression | undefined {
     return this.args.mode;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type NextDayExprArgs = BaseExpressionArgs;
@@ -27903,6 +29311,10 @@ export class NextDayExpr extends FuncExpr {
   constructor (args: NextDayExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type XMLElementExprArgs = { evalname?: string } & BaseExpressionArgs;
@@ -27921,6 +29333,10 @@ export class XMLElementExpr extends FuncExpr {
   get $evalname (): Expression | undefined {
     return this.args.evalname;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type XMLGetExprArgs = { instance?: Expression } & BaseExpressionArgs;
@@ -27939,6 +29355,10 @@ export class XMLGetExpr extends FuncExpr {
   get $instance (): Expression | undefined {
     return this.args.instance;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type XMLTableExprArgs = { namespaces?: Expression[];
@@ -27982,6 +29402,10 @@ export class XMLTableExpr extends FuncExpr {
   get $byRef (): Expression | undefined {
     return this.args.byRef;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type YearExprArgs = BaseExpressionArgs;
@@ -27993,6 +29417,10 @@ export class YearExpr extends FuncExpr {
   constructor (args: YearExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ZipfExprArgs = { elementcount: Expression;
@@ -28024,6 +29452,10 @@ export class ZipfExpr extends FuncExpr {
   get $gen (): Expression {
     return this.args.gen;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type NextValueForExprArgs = { order?: Expression } & BaseExpressionArgs;
@@ -28042,6 +29474,10 @@ export class NextValueForExpr extends FuncExpr {
   get $order (): Expression | undefined {
     return this.args.order;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type AllExprArgs = SubqueryPredicateExprArgs;
@@ -28090,6 +29526,10 @@ export class BitwiseAndAggExpr extends AggFuncExpr {
   constructor (args: BitwiseAndAggExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type BitwiseOrAggExprArgs = AggFuncExprArgs;
@@ -28106,6 +29546,10 @@ export class BitwiseOrAggExpr extends AggFuncExpr {
   constructor (args: BitwiseOrAggExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type BitwiseXorAggExprArgs = AggFuncExprArgs;
@@ -28122,6 +29566,10 @@ export class BitwiseXorAggExpr extends AggFuncExpr {
   constructor (args: BitwiseXorAggExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type BoolxorAggExprArgs = AggFuncExprArgs;
@@ -28138,6 +29586,10 @@ export class BoolxorAggExpr extends AggFuncExpr {
   constructor (args: BoolxorAggExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type BitmapConstructAggExprArgs = AggFuncExprArgs;
@@ -28154,6 +29606,10 @@ export class BitmapConstructAggExpr extends AggFuncExpr {
   constructor (args: BitmapConstructAggExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type BitmapOrAggExprArgs = AggFuncExprArgs;
@@ -28170,6 +29626,10 @@ export class BitmapOrAggExpr extends AggFuncExpr {
   constructor (args: BitmapOrAggExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ParameterizedAggExprArgs = {
@@ -28785,6 +30245,10 @@ export class ApproxDistinctExpr extends AggFuncExpr {
   get $accuracy (): Expression | undefined {
     return this.args.accuracy;
   }
+
+    static {
+        this.register();
+    }
 }
 
 /**
@@ -29341,6 +30805,10 @@ export class CountExpr extends AggFuncExpr {
   get $bigInt (): Expression | undefined {
     return this.args.bigInt;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CountIfExprArgs = BaseExpressionArgs;
@@ -29369,6 +30837,10 @@ export class DenseRankExpr extends AggFuncExpr {
   constructor (args: DenseRankExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ExplodeOuterExprArgs = BaseExpressionArgs;
@@ -29422,6 +30894,10 @@ export class GroupConcatExpr extends AggFuncExpr {
   get $onOverflow (): Expression | undefined {
     return this.args.onOverflow;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LowerHexExprArgs = BaseExpressionArgs;
@@ -29516,6 +30992,10 @@ export class JSONObjectAggExpr extends AggFuncExpr {
   get $encoding (): Expression | undefined {
     return this.args.encoding;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONBObjectAggExprArgs = BaseExpressionArgs;
@@ -29527,6 +31007,10 @@ export class JSONBObjectAggExpr extends AggFuncExpr {
   constructor (args: JSONBObjectAggExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type JSONArrayAggExprArgs = { order?: Expression;
@@ -29570,6 +31054,10 @@ export class JSONArrayAggExpr extends AggFuncExpr {
   get $strict (): Expression | undefined {
     return this.args.strict;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type LogicalOrExprArgs = BaseExpressionArgs;
@@ -29623,6 +31111,10 @@ export class MaxExpr extends AggFuncExpr {
   constructor (args: MaxExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MedianExprArgs = BaseExpressionArgs;
@@ -29634,6 +31126,10 @@ export class MedianExpr extends AggFuncExpr {
   constructor (args: MedianExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ModeExprArgs = { deterministic?: Expression } & BaseExpressionArgs;
@@ -29652,6 +31148,10 @@ export class ModeExpr extends AggFuncExpr {
   get $deterministic (): Expression | undefined {
     return this.args.deterministic;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type MinExprArgs = BaseExpressionArgs;
@@ -29663,6 +31163,10 @@ export class MinExpr extends AggFuncExpr {
   constructor (args: MinExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type NtileExprArgs = BaseExpressionArgs;
@@ -29674,6 +31178,10 @@ export class NtileExpr extends AggFuncExpr {
   constructor (args: NtileExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type PercentileContExprArgs = BaseExpressionArgs;
@@ -29685,6 +31193,10 @@ export class PercentileContExpr extends AggFuncExpr {
   constructor (args: PercentileContExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type PercentileDiscExprArgs = BaseExpressionArgs;
@@ -29696,6 +31208,10 @@ export class PercentileDiscExpr extends AggFuncExpr {
   constructor (args: PercentileDiscExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type PercentRankExprArgs = BaseExpressionArgs;
@@ -29707,6 +31223,10 @@ export class PercentRankExpr extends AggFuncExpr {
   constructor (args: PercentRankExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type QuantileExprArgs = { quantile: Expression } & BaseExpressionArgs;
@@ -29725,6 +31245,10 @@ export class QuantileExpr extends AggFuncExpr {
   get $quantile (): Expression {
     return this.args.quantile;
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type ApproxPercentileAccumulateExprArgs = BaseExpressionArgs;
@@ -29736,6 +31260,10 @@ export class ApproxPercentileAccumulateExpr extends AggFuncExpr {
   constructor (args: ApproxPercentileAccumulateExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RankExprArgs = BaseExpressionArgs;
@@ -29747,6 +31275,10 @@ export class RankExpr extends AggFuncExpr {
   constructor (args: RankExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegrValxExprArgs = BaseExpressionArgs;
@@ -29758,6 +31290,10 @@ export class RegrValxExpr extends AggFuncExpr {
   constructor (args: RegrValxExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegrValyExprArgs = BaseExpressionArgs;
@@ -29769,6 +31305,10 @@ export class RegrValyExpr extends AggFuncExpr {
   constructor (args: RegrValyExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegrAvgyExprArgs = BaseExpressionArgs;
@@ -29780,6 +31320,10 @@ export class RegrAvgyExpr extends AggFuncExpr {
   constructor (args: RegrAvgyExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegrAvgxExprArgs = BaseExpressionArgs;
@@ -29791,6 +31335,10 @@ export class RegrAvgxExpr extends AggFuncExpr {
   constructor (args: RegrAvgxExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegrCountExprArgs = BaseExpressionArgs;
@@ -29802,6 +31350,10 @@ export class RegrCountExpr extends AggFuncExpr {
   constructor (args: RegrCountExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegrInterceptExprArgs = BaseExpressionArgs;
@@ -29813,6 +31365,10 @@ export class RegrInterceptExpr extends AggFuncExpr {
   constructor (args: RegrInterceptExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegrR2ExprArgs = BaseExpressionArgs;
@@ -29824,6 +31380,10 @@ export class RegrR2Expr extends AggFuncExpr {
   constructor (args: RegrR2ExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegrSxxExprArgs = BaseExpressionArgs;
@@ -29835,6 +31395,10 @@ export class RegrSxxExpr extends AggFuncExpr {
   constructor (args: RegrSxxExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegrSxyExprArgs = BaseExpressionArgs;
@@ -29846,6 +31410,10 @@ export class RegrSxyExpr extends AggFuncExpr {
   constructor (args: RegrSxyExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegrSyyExprArgs = BaseExpressionArgs;
@@ -29857,6 +31425,10 @@ export class RegrSyyExpr extends AggFuncExpr {
   constructor (args: RegrSyyExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type RegrSlopeExprArgs = BaseExpressionArgs;
@@ -29868,6 +31440,10 @@ export class RegrSlopeExpr extends AggFuncExpr {
   constructor (args: RegrSlopeExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SumExprArgs = BaseExpressionArgs;
@@ -29879,6 +31455,10 @@ export class SumExpr extends AggFuncExpr {
   constructor (args: SumExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type StddevExprArgs = BaseExpressionArgs;
@@ -29907,6 +31487,10 @@ export class StddevPopExpr extends AggFuncExpr {
   constructor (args: StddevPopExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type StddevSampExprArgs = BaseExpressionArgs;
@@ -29918,6 +31502,10 @@ export class StddevSampExpr extends AggFuncExpr {
   constructor (args: StddevSampExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CumeDistExprArgs = BaseExpressionArgs;
@@ -29929,6 +31517,10 @@ export class CumeDistExpr extends AggFuncExpr {
   constructor (args: CumeDistExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type VarianceExprArgs = BaseExpressionArgs;
@@ -29978,6 +31570,10 @@ export class KurtosisExpr extends AggFuncExpr {
   constructor (args: KurtosisExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type SkewnessExprArgs = BaseExpressionArgs;
@@ -29989,6 +31585,10 @@ export class SkewnessExpr extends AggFuncExpr {
   constructor (args: SkewnessExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CovarSampExprArgs = BaseExpressionArgs;
@@ -30000,6 +31600,10 @@ export class CovarSampExpr extends AggFuncExpr {
   constructor (args: CovarSampExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 export type CovarPopExprArgs = BaseExpressionArgs;
@@ -30011,6 +31615,10 @@ export class CovarPopExpr extends AggFuncExpr {
   constructor (args: CovarPopExprArgs) {
     super(args);
   }
+
+    static {
+        this.register();
+    }
 }
 
 /**
