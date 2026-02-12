@@ -25307,12 +25307,14 @@ export class DecryptExpr extends FuncExpr {
   }
 }
 
-export type DecryptRawExprArgs = { key: unknown;
+export type DecryptRawExprArgs = {
+  key: unknown;
   iv: Expression;
   aad?: Expression;
   encryptionMethod?: string;
   aead?: Expression;
-  safe?: boolean; } & FuncExprArgs;
+  safe?: boolean;
+} & FuncExprArgs;
 
 export class DecryptRawExpr extends FuncExpr {
   key = ExpressionKey.DECRYPT_RAW;
@@ -25337,7 +25339,7 @@ export class DecryptRawExpr extends FuncExpr {
     super(args);
   }
 
-  get $key (): Expression {
+  get $key (): unknown {
     return this.args.key;
   }
 
@@ -25349,7 +25351,7 @@ export class DecryptRawExpr extends FuncExpr {
     return this.args.aad;
   }
 
-  get $encryptionMethod (): Expression | undefined {
+  get $encryptionMethod (): string | undefined {
     return this.args.encryptionMethod;
   }
 
@@ -25357,7 +25359,7 @@ export class DecryptRawExpr extends FuncExpr {
     return this.args.aead;
   }
 
-  get $safe (): Expression | undefined {
+  get $safe (): boolean | undefined {
     return this.args.safe;
   }
 
@@ -25459,7 +25461,7 @@ export class EncryptExpr extends FuncExpr {
     return this.args.aad;
   }
 
-  get $encryptionMethod (): Expression | undefined {
+  get $encryptionMethod (): string | undefined {
     return this.args.encryptionMethod;
   }
 
