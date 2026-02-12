@@ -28438,11 +28438,6 @@ export class LengthExpr extends FuncExpr {
   static {
     this.register();
   }
-    'LENGTH',
-    'LEN',
-    'CHAR_LENGTH',
-    'CHARACTER_LENGTH',
-  ];
 }
 
 export type RtrimmedLengthExprArgs = FuncExprArgs;
@@ -31453,9 +31448,12 @@ export class EndsWithExpr extends FuncExpr {
   }
 }
 
-export type StrPositionExprArgs = { substr: Expression;
+export type StrPositionExprArgs = {
+  this: Expression;
+  substr: Expression;
   position?: Expression;
-  occurrence?: Expression; } & FuncExprArgs;
+  occurrence?: Expression;
+} & FuncExprArgs;
 
 export class StrPositionExpr extends FuncExpr {
   key = ExpressionKey.STR_POSITION;
@@ -31466,6 +31464,7 @@ export class StrPositionExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     substr: true,
     position: false,
     occurrence: false,
@@ -31475,6 +31474,10 @@ export class StrPositionExpr extends FuncExpr {
 
   constructor (args: StrPositionExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $substr (): Expression {
@@ -31494,10 +31497,14 @@ export class StrPositionExpr extends FuncExpr {
   }
 }
 
-export type SearchExprArgs = { jsonScope?: Expression;
+export type SearchExprArgs = {
+  this: Expression;
+  expression: Expression;
+  jsonScope?: Expression;
   analyzer?: Expression;
   analyzerOptions?: Expression[];
-  searchMode?: Expression; } & FuncExprArgs;
+  searchMode?: Expression;
+} & FuncExprArgs;
 
 export class SearchExpr extends FuncExpr {
   key = ExpressionKey.SEARCH;
@@ -31508,6 +31515,8 @@ export class SearchExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
+    expression: true,
     jsonScope: false,
     analyzer: false,
     analyzerOptions: false,
@@ -31518,6 +31527,14 @@ export class SearchExpr extends FuncExpr {
 
   constructor (args: SearchExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $jsonScope (): Expression | undefined {
@@ -31691,7 +31708,7 @@ export class StrToUnixExpr extends FuncExpr {
     super(args);
   }
 
-  get $format (): Expression | undefined {
+  get $format (): string | undefined {
     return this.args.format;
   }
 
@@ -31704,9 +31721,12 @@ export class StrToUnixExpr extends FuncExpr {
   }
 }
 
-export type StrToMapExprArgs = { pairDelim?: Expression;
+export type StrToMapExprArgs = {
+  this: Expression;
+  pairDelim?: Expression;
   keyValueDelim?: string;
-  duplicateResolutionCallback?: Expression; } & FuncExprArgs;
+  duplicateResolutionCallback?: Expression;
+} & FuncExprArgs;
 
 export class StrToMapExpr extends FuncExpr {
   key = ExpressionKey.STR_TO_MAP;
@@ -31717,6 +31737,7 @@ export class StrToMapExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     pairDelim: false,
     keyValueDelim: false,
     duplicateResolutionCallback: false,
@@ -31728,11 +31749,15 @@ export class StrToMapExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression {
+    return this.args.this;
+  }
+
   get $pairDelim (): Expression | undefined {
     return this.args.pairDelim;
   }
 
-  get $keyValueDelim (): Expression | undefined {
+  get $keyValueDelim (): string | undefined {
     return this.args.keyValueDelim;
   }
 
