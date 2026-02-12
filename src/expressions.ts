@@ -23400,6 +23400,7 @@ export type DateTruncExprArgs = {
   this: Expression;
   zone?: Expression;
   inputTypePreserved?: DataTypeExpr;
+  unabbreviate?: boolean;
 } & FuncExprArgs;
 
 export class DateTruncExpr extends FuncExpr {
@@ -23416,6 +23417,21 @@ export class DateTruncExpr extends FuncExpr {
   declare args: DateTruncExprArgs;
 
   constructor (args: DateTruncExprArgs) {
+    const unabbreviate = args.unabbreviate ?? true;
+    const unit = args.unit;
+
+    if (
+      (unit instanceof VarExpr || unit instanceof ColumnExpr || unit instanceof LiteralExpr)
+      && !(unit instanceof ColumnExpr && unit.parts.length !== 1)
+    ) {
+      let unitName = unit.name.toUpperCase();
+      if (unabbreviate && unitName in TimeUnitExpr.UNABBREVIATED_UNIT_NAME) {
+        unitName = TimeUnitExpr.UNABBREVIATED_UNIT_NAME[unitName];
+      }
+      args.unit = LiteralExpr.string(unitName);
+    }
+
+    delete args.unabbreviate;
     super(args);
   }
 
