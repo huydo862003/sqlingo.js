@@ -24958,8 +24958,11 @@ export class DayExpr extends FuncExpr {
   }
 }
 
-export type DecodeExprArgs = { charset: string;
-  replace?: boolean; } & FuncExprArgs;
+export type DecodeExprArgs = {
+  this: Expression;
+  charset: string;
+  replace?: boolean;
+} & FuncExprArgs;
 
 export class DecodeExpr extends FuncExpr {
   key = ExpressionKey.DECODE;
@@ -24970,6 +24973,7 @@ export class DecodeExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     charset: true,
     replace: false,
   } satisfies RequiredMap<DecodeExprArgs>;
@@ -24978,6 +24982,10 @@ export class DecodeExpr extends FuncExpr {
 
   constructor (args: DecodeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $charset (): string {
@@ -25139,17 +25147,28 @@ export class DiToDateExpr extends FuncExpr {
   }
 }
 
-export type EncodeExprArgs = { charset: string } & FuncExprArgs;
+export type EncodeExprArgs = {
+  this: Expression;
+  charset: string;
+} & FuncExprArgs;
 
 export class EncodeExpr extends FuncExpr {
   key = ExpressionKey.ENCODE;
 
-  static argTypes = { charset: true } satisfies RequiredMap<EncodeExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    charset: true,
+  } satisfies RequiredMap<EncodeExprArgs>;
 
   declare args: EncodeExprArgs;
 
   constructor (args: EncodeExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $charset (): Expression {
@@ -25161,9 +25180,12 @@ export class EncodeExpr extends FuncExpr {
   }
 }
 
-export type EncryptExprArgs = { passphrase: Expression;
+export type EncryptExprArgs = {
+  this: Expression;
+  passphrase: Expression;
   aad?: Expression;
-  encryptionMethod?: string; } & FuncExprArgs;
+  encryptionMethod?: string;
+} & FuncExprArgs;
 
 export class EncryptExpr extends FuncExpr {
   key = ExpressionKey.ENCRYPT;
@@ -25174,6 +25196,7 @@ export class EncryptExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     passphrase: true,
     aad: false,
     encryptionMethod: false,
@@ -25183,6 +25206,10 @@ export class EncryptExpr extends FuncExpr {
 
   constructor (args: EncryptExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $passphrase (): Expression {
@@ -25415,8 +25442,11 @@ export class UnnestExpr extends multiInherit(FuncExpr, UDTFExpr) {
   }
 }
 
-export type FloorExprArgs = { decimals?: Expression[];
-  to?: Expression; } & FuncExprArgs;
+export type FloorExprArgs = {
+  this: Expression;
+  decimals?: Expression[];
+  to?: Expression;
+} & FuncExprArgs;
 
 export class FloorExpr extends FuncExpr {
   key = ExpressionKey.FLOOR;
@@ -25427,6 +25457,7 @@ export class FloorExpr extends FuncExpr {
    */
   static argTypes = {
     ...super.argTypes,
+    this: true,
     decimals: false,
     to: false,
   } satisfies RequiredMap<FloorExprArgs>;
@@ -25435,6 +25466,10 @@ export class FloorExpr extends FuncExpr {
 
   constructor (args: FloorExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $decimals (): Expression[] | undefined {
