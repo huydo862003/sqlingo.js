@@ -30165,17 +30165,28 @@ export class RegexpCountExpr extends FuncExpr {
   }
 }
 
-export type RepeatExprArgs = { times: Expression[] } & FuncExprArgs;
+export type RepeatExprArgs = {
+  this: Expression;
+  times: Expression[];
+} & FuncExprArgs;
 
 export class RepeatExpr extends FuncExpr {
   key = ExpressionKey.REPEAT;
 
-  static argTypes = { times: true } satisfies RequiredMap<RepeatExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    times: true,
+  } satisfies RequiredMap<RepeatExprArgs>;
 
   declare args: RepeatExprArgs;
 
   constructor (args: RepeatExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $times (): Expression[] {
@@ -30187,17 +30198,34 @@ export class RepeatExpr extends FuncExpr {
   }
 }
 
-export type ReplaceExprArgs = { replacement?: boolean } & FuncExprArgs;
+export type ReplaceExprArgs = {
+  this: Expression;
+  expression: Expression;
+  replacement?: boolean;
+} & FuncExprArgs;
 
 export class ReplaceExpr extends FuncExpr {
   key = ExpressionKey.REPLACE;
 
-  static argTypes = { replacement: false } satisfies RequiredMap<ReplaceExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    expression: true,
+    replacement: false,
+  } satisfies RequiredMap<ReplaceExprArgs>;
 
   declare args: ReplaceExprArgs;
 
   constructor (args: ReplaceExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $replacement (): Expression | undefined {
@@ -30270,17 +30298,28 @@ export class RoundExpr extends FuncExpr {
   }
 }
 
-export type TruncExprArgs = { decimals?: Expression[] } & FuncExprArgs;
+export type TruncExprArgs = {
+  this: Expression;
+  decimals?: Expression[];
+} & FuncExprArgs;
 
 export class TruncExpr extends FuncExpr {
   key = ExpressionKey.TRUNC;
 
-  static argTypes = { decimals: false } satisfies RequiredMap<TruncExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: true,
+    decimals: false,
+  } satisfies RequiredMap<TruncExprArgs>;
 
   declare args: TruncExprArgs;
 
   constructor (args: TruncExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression {
+    return this.args.this;
   }
 
   get $decimals (): Expression[] | undefined {
@@ -30294,12 +30333,17 @@ export class TruncExpr extends FuncExpr {
   static sqlNames = ['TRUNC', 'TRUNCATE'];
 }
 
-export type RowNumberExprArgs = FuncExprArgs;
+export type RowNumberExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
 
 export class RowNumberExpr extends FuncExpr {
   key = ExpressionKey.ROW_NUMBER;
 
-  static argTypes = {} satisfies RequiredMap<RowNumberExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<RowNumberExprArgs>;
 
   declare args: RowNumberExprArgs;
 
@@ -30307,17 +30351,26 @@ export class RowNumberExpr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type Seq1ExprArgs = FuncExprArgs;
+export type Seq1ExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
 
 export class Seq1Expr extends FuncExpr {
   key = ExpressionKey.SEQ1;
 
-  static argTypes = {} satisfies RequiredMap<Seq1ExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<Seq1ExprArgs>;
 
   declare args: Seq1ExprArgs;
 
@@ -30325,22 +30378,35 @@ export class Seq1Expr extends FuncExpr {
     super(args);
   }
 
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
+
   static {
     this.register();
   }
 }
 
-export type Seq2ExprArgs = FuncExprArgs;
+export type Seq2ExprArgs = {
+  this?: Expression;
+} & FuncExprArgs;
 
 export class Seq2Expr extends FuncExpr {
   key = ExpressionKey.SEQ2;
 
-  static argTypes = {} satisfies RequiredMap<Seq2ExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    this: false,
+  } satisfies RequiredMap<Seq2ExprArgs>;
 
   declare args: Seq2ExprArgs;
 
   constructor (args: Seq2ExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 
   static {
