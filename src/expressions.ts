@@ -1278,7 +1278,7 @@ export class Expression {
    * Set the data type for this expression
    * @param dtype - Data type (string or DataTypeExpr)
    */
-  set type (dtype: DataTypeExpr | string | undefined) {
+  set type (dtype: DataTypeExpr | DataTypeExprKind | undefined) {
     if (dtype && !(dtype instanceof DataTypeExpr)) {
       dtype = DataTypeExpr.build(dtype);
     }
@@ -9848,6 +9848,7 @@ export class DataTypeExpr extends Expression {
 }
 
 export type TypeExprArgs = BaseExpressionArgs;
+
 export class TypeExpr extends Expression {
   key = ExpressionKey.TYPE;
 
