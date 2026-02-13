@@ -9838,7 +9838,7 @@ export class DataTypeExpr extends Expression {
     return this.args.prefix;
   }
 
-  get $kind (): DataTypeExprKind | undefined {
+  get $kind (): DataTypeExprKind | DotExpr | IdentifierExpr | undefined {
     return this.args.kind;
   }
 
