@@ -7416,7 +7416,7 @@ export class JoinExpr extends Expression {
    * @returns The modified Join expression.
    */
   on (
-    expressions: Array<string | Expression>,
+    expressions: string | Expression | (string | Expression)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -7426,7 +7426,8 @@ export class JoinExpr extends Expression {
     const {
       append, dialect, copy, ...restOptions
     } = options;
-    const join = _applyConjunctionBuilder(expressions, {
+    const expressionList = ensureList(expressions);
+    const join = _applyConjunctionBuilder(expressionList, {
       instance: this,
       arg: 'on',
       append,
@@ -7459,7 +7460,7 @@ export class JoinExpr extends Expression {
    * @returns The modified Join expression.
    */
   using (
-    expressions: Array<string | Expression>,
+    expressions: string | Expression | (string | Expression)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -7469,7 +7470,8 @@ export class JoinExpr extends Expression {
     const {
       append, dialect, copy, ...restOptions
     } = options;
-    const join = _applyListBuilder(expressions, {
+    const expressionList = ensureList(expressions);
+    const join = _applyListBuilder(expressionList, {
       instance: this,
       arg: 'using',
       append,
@@ -16475,7 +16477,7 @@ export class UpdateExpr extends DMLExpr {
    * @returns The modified Update expression
    */
   set (
-    expressions: Array<string | Expression>,
+    expressions: string | Expression | (string | Expression)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -16485,7 +16487,8 @@ export class UpdateExpr extends DMLExpr {
     const {
       append = true, dialect, copy = true,
     } = options;
-    return _applyListBuilder(expressions, {
+    const expressionList = ensureList(expressions);
+    return _applyListBuilder(expressionList, {
       instance: this,
       arg: 'expressions',
       append,
@@ -16508,7 +16511,7 @@ export class UpdateExpr extends DMLExpr {
    * @returns The modified Update expression
    */
   where (
-    expressions: Array<string | Expression | undefined>,
+    expressions: string | Expression | undefined | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -16853,7 +16856,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x, COUNT(1) FROM tbl GROUP BY x'
    */
   groupBy (
-    expressions: Array<string | Expression | undefined>,
+    expressions: string | Expression | undefined | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -16864,11 +16867,12 @@ export class SelectExpr extends QueryExpr {
     const {
       append = true, dialect, copy = true, ...restOptions
     } = options;
-    if (expressions.length === 0) {
+    const expressionList = ensureList(expressions);
+    if (expressionList.length === 0) {
       return copy ? (this.copy() as this) : this;
     }
 
-    return _applyChildListBuilder(expressions, {
+    return _applyChildListBuilder(expressionList, {
       ...restOptions,
       instance: this,
       arg: 'group',
@@ -16888,7 +16892,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x FROM tbl SORT BY x DESC'
    */
   sortBy (
-    expressions: Array<string | Expression | undefined>,
+    expressions: string | Expression | undefined | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -16919,7 +16923,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x FROM tbl CLUSTER BY x'
    */
   clusterBy (
-    expressions: Array<string | Expression | undefined>,
+    expressions: string | Expression | undefined | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -16950,7 +16954,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x, y FROM tbl'
    */
   select (
-    expressions: Array<string | Expression | undefined>,
+    expressions: string | Expression | undefined | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -16980,7 +16984,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x FROM tbl LATERAL VIEW OUTER EXPLODE(y) tbl2 AS z'
    */
   lateral (
-    expressions: Array<string | Expression | undefined>,
+    expressions: string | Expression | undefined | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -17117,7 +17121,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x FROM tbl WINDOW w AS (PARTITION BY x)'
    */
   window (
-    expressions: Array<string | Expression | undefined>,
+    expressions: string | Expression | undefined | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -17147,7 +17151,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x FROM tbl QUALIFY ROW_NUMBER() OVER (PARTITION BY x) = 1'
    */
   qualify (
-    expressions: Array<string | Expression | undefined>,
+    expressions: string | Expression | undefined | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -17354,7 +17358,7 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
    * Append to or set the SELECT expressions on the unnested query.
    */
   select (
-    expressions: Array<string | Expression | undefined>,
+    expressions: string | Expression | undefined | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -36751,7 +36755,7 @@ export function table (name: string, db?: string, catalog?: string): TableExpr {
  * @returns The new condition
  */
 export function and_ (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   options: {
     dialect?: DialectType;
     copy?: boolean;
@@ -36774,7 +36778,7 @@ export function and_ (
  * Legacy and function that accepts arrays
  */
 export function and (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   options: {
     dialect?: DialectType;
     copy?: boolean;
@@ -36808,7 +36812,7 @@ export function and (
  * @returns The new condition
  */
 export function or_ (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   options: {
     dialect?: DialectType;
     copy?: boolean;
@@ -36866,7 +36870,7 @@ export function or (
  * @returns The new condition
  */
 export function xor (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   options: {
     dialect?: DialectType;
     copy?: boolean;
@@ -37199,7 +37203,7 @@ export function subquery (
  * );
  */
 export function select (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   options: {
     dialect?: DialectType;
     [key: string]: unknown;
@@ -37439,7 +37443,7 @@ export function func (name: string, ...args: Expression[]): FuncExpr {
  * @returns The chained set operation expression
  */
 function _applySetOperation<S extends Expression> (
-  expressions: Array<string | Expression>,
+  expressions: (string | Expression)[],
   setOperation: typeof SetOperationExpr,
   options: {
     distinct?: boolean;
@@ -37484,7 +37488,7 @@ function _applySetOperation<S extends Expression> (
  * @returns The new Union instance
  */
 export function union (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   options: {
     distinct?: boolean;
     dialect?: DialectType;
@@ -37492,10 +37496,11 @@ export function union (
     [key: string]: unknown;
   } = {},
 ): UnionExpr {
-  if (expressions.length < 2) {
+  const expressionList = ensureList(expressions);
+  if (expressionList.length < 2) {
     throw new Error('At least two expressions are required by `union`.');
   }
-  return _applySetOperation(expressions, UnionExpr, options);
+  return _applySetOperation(expressionList, UnionExpr, options);
 }
 
 /**
@@ -37514,7 +37519,7 @@ export function union (
  * @returns The new Intersect instance
  */
 export function intersect (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   options: {
     distinct?: boolean;
     dialect?: DialectType;
@@ -37522,10 +37527,11 @@ export function intersect (
     [key: string]: unknown;
   } = {},
 ): IntersectExpr {
-  if (expressions.length < 2) {
+  const expressionList = ensureList(expressions);
+  if (expressionList.length < 2) {
     throw new Error('At least two expressions are required by `intersect`.');
   }
-  return _applySetOperation(expressions, IntersectExpr, options);
+  return _applySetOperation(expressionList, IntersectExpr, options);
 }
 
 /**
@@ -37544,7 +37550,7 @@ export function intersect (
  * @returns The new Except instance
  */
 export function except (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   options: {
     distinct?: boolean;
     dialect?: DialectType;
@@ -37552,10 +37558,11 @@ export function except (
     [key: string]: unknown;
   } = {},
 ): ExceptExpr {
-  if (expressions.length < 2) {
+  const expressionList = ensureList(expressions);
+  if (expressionList.length < 2) {
     throw new Error('At least two expressions are required by `except`.');
   }
-  return _applySetOperation(expressions, ExceptExpr, options);
+  return _applySetOperation(expressionList, ExceptExpr, options);
 }
 
 /**
@@ -38221,7 +38228,7 @@ function _applyBuilder (expression: Expression | string | number, options: {
  * @returns The modified instance
  */
 function _applyChildListBuilder (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   options: {
     instance: Expression;
     arg: string;
@@ -38250,7 +38257,8 @@ function _applyChildListBuilder (
   const parsed: Expression[] = [];
   const properties: Record<string, unknown> = initialProperties || {};
 
-  for (const expression of expressions) {
+  const expressionList = ensureList(expressions);
+  for (const expression of expressionList) {
     if (expression === undefined) {
       continue;
     }
@@ -38300,7 +38308,7 @@ function _applyChildListBuilder (
  * @returns The modified instance
  */
 function _applyListBuilder (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   options: {
     instance: Expression;
     arg: string;
@@ -38325,7 +38333,8 @@ function _applyListBuilder (
 
   const inst = maybeCopy(instance, copy)!;
 
-  const parsedExpressions = expressions
+  const expressionList = ensureList(expressions);
+  const parsedExpressions = expressionList
     .filter((expr) => expr !== undefined)
     .map((expr) =>
       maybeParse(expr, {
@@ -38352,7 +38361,7 @@ function _applyListBuilder (
  * @returns The modified instance
  */
 function _applyConjunctionBuilder (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   options: {
     instance: Expression;
     arg: string;
@@ -38374,7 +38383,8 @@ function _applyConjunctionBuilder (
   } = options;
 
   // Filter out undefined and empty strings
-  const filteredExpressions = expressions.filter(
+  const expressionList = ensureList(expressions);
+  const filteredExpressions = expressionList.filter(
     (expr) => expr !== undefined && expr !== '',
   );
 
@@ -38489,7 +38499,7 @@ function _applyCteBuilder (options: {
  * @returns Combined expression
  */
 function _combine (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   operator: typeof ConnectorExpr,
   options: {
     dialect?: DialectType;
@@ -38502,7 +38512,8 @@ function _combine (
     dialect, copy = true, wrap = true, ...opts
   } = options;
 
-  const conditions = expressions
+  const expressionList = ensureList(expressions);
+  const conditions = expressionList
     .filter((expr) => expr !== undefined && expr !== '')
     .map((expr) => maybeParse(expr, {
       dialect,
@@ -38692,7 +38703,7 @@ export function var_ (name: string | Expression | undefined): VarExpr {
  * @returns An array expression
  */
 export function array (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   options: {
     copy?: boolean;
     dialect?: DialectType;
@@ -38703,8 +38714,9 @@ export function array (
     copy = true, dialect, ...opts
   } = options;
 
+  const expressionList = ensureList(expressions);
   return new ArrayExpr({
-    expressions: expressions.map((expr) => maybeParse(expr, {
+    expressions: expressionList.map((expr) => maybeParse(expr, {
       copy,
       dialect,
       ...opts,
@@ -38726,7 +38738,7 @@ export function array (
  * @returns A tuple expression
  */
 export function tuple (
-  expressions: Array<string | Expression>,
+  expressions: string | Expression | (string | Expression)[],
   options: {
     copy?: boolean;
     dialect?: DialectType;
@@ -38737,8 +38749,9 @@ export function tuple (
     copy = true, dialect, ...opts
   } = options;
 
+  const expressionList = ensureList(expressions);
   return new TupleExpr({
-    expressions: expressions.map((expr) => maybeParse(expr, {
+    expressions: expressionList.map((expr) => maybeParse(expr, {
       copy,
       dialect,
       ...opts,
