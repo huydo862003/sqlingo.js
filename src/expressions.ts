@@ -2590,7 +2590,8 @@ export class DerivedTableExpr extends Expression {
 
 export type QueryExprArgs = Merge<[
   BaseExpressionArgs,
-  { with?: WithExpr },
+  { 
+    with?: WithExpr },
 ]>;
 
 export class QueryExpr extends Expression {
@@ -3008,7 +3009,8 @@ export class QueryExpr extends Expression {
 
 export type UDTFExprArgs = Merge<[
   DerivedTableExprArgs,
-  { alias?: TableAliasExpr },
+  { 
+    alias?: TableAliasExpr },
 ]>;
 
 export class UDTFExpr extends DerivedTableExpr {
@@ -3036,10 +3038,12 @@ export class UDTFExpr extends DerivedTableExpr {
 
 export type CacheExprArgs = Merge<[
   BaseExpressionArgs,
-  { lazy?: Expression;
+  { 
+    lazy?: Expression;
     options?: Expression[];
     this: Expression;
-    expression?: ExpressionValue; },
+    expression?: ExpressionValue;
+  },
 ]>;
 
 export class CacheExpr extends Expression {
@@ -3127,8 +3131,10 @@ export enum RefreshExprKind {
 
 export type RefreshExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind: RefreshExprKind;
-    this: Expression; },
+  { 
+    kind: RefreshExprKind;
+    this: Expression;
+  },
 ]>;
 
 export class RefreshExpr extends Expression {
@@ -3224,8 +3230,10 @@ export class DDLExpr extends Expression {
 
 export type LockingStatementExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class LockingStatementExpr extends Expression {
@@ -3322,7 +3330,8 @@ export enum CreateExprKind {
 
 export type CreateExprArgs = Merge<[
   DDLExprArgs,
-  { with?: WithExpr;
+  { 
+    with?: WithExpr;
     kind: CreateExprKind;
     exists?: boolean;
     properties?: Expression[];
@@ -3337,7 +3346,8 @@ export type CreateExprArgs = Merge<[
     concurrently?: Expression;
     clustered?: Expression;
     this: Expression;
-    expression?: Expression; },
+    expression?: Expression;
+  },
 ]>;
 
 export class CreateExpr extends DDLExpr {
@@ -3444,13 +3454,15 @@ export class CreateExpr extends DDLExpr {
 
 export type SequencePropertiesExprArgs = Merge<[
   BaseExpressionArgs,
-  { increment?: Expression;
+  { 
+    increment?: Expression;
     minvalue?: string;
     maxvalue?: string;
     cache?: Expression;
     start?: Expression;
     owned?: Expression;
-    options?: Expression[]; },
+    options?: Expression[];
+  },
 ]>;
 
 export class SequencePropertiesExpr extends Expression {
@@ -3508,14 +3520,16 @@ export class SequencePropertiesExpr extends Expression {
 
 export type TruncateTableExprArgs = Merge<[
   BaseExpressionArgs,
-  { isDatabase?: string;
+  { 
+    isDatabase?: string;
     exists?: boolean;
     only?: boolean;
     cluster?: Expression;
     identity?: Expression;
     option?: Expression;
     partition?: Expression;
-    expressions: Expression[]; },
+    expressions: Expression[];
+  },
 ]>;
 
 export class TruncateTableExpr extends Expression {
@@ -3578,9 +3592,11 @@ export class TruncateTableExpr extends Expression {
 
 export type CloneExprArgs = Merge<[
   BaseExpressionArgs,
-  { shallow?: Expression;
+  { 
+    shallow?: Expression;
     copy?: unknown;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class CloneExpr extends Expression {
@@ -3628,13 +3644,15 @@ export enum DescribeExprKind {
 }
 export type DescribeExprArgs = Merge<[
   BaseExpressionArgs,
-  { style?: Expression;
+  { 
+    style?: Expression;
     kind?: DescribeExprKind;
     partition?: Expression;
     format?: string;
     asJson?: Expression;
     this: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class DescribeExpr extends Expression {
@@ -3692,9 +3710,11 @@ export class DescribeExpr extends Expression {
 
 export type AttachExprArgs = Merge<[
   BaseExpressionArgs,
-  { exists?: boolean;
+  { 
+    exists?: boolean;
     this: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class AttachExpr extends Expression {
@@ -3732,8 +3752,10 @@ export class AttachExpr extends Expression {
 
 export type DetachExprArgs = Merge<[
   BaseExpressionArgs,
-  { exists?: boolean;
-    this: Expression; },
+  { 
+    exists?: boolean;
+    this: Expression;
+  },
 ]>;
 
 export class DetachExpr extends Expression {
@@ -3766,9 +3788,11 @@ export class DetachExpr extends Expression {
 
 export type InstallExprArgs = Merge<[
   BaseExpressionArgs,
-  { from?: Expression;
+  { 
+    from?: Expression;
     force?: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class InstallExpr extends Expression {
@@ -3806,8 +3830,10 @@ export class InstallExpr extends Expression {
 
 export type SummarizeExprArgs = Merge<[
   BaseExpressionArgs,
-  { table?: Expression;
-    this: Expression; },
+  { 
+    table?: Expression;
+    this: Expression;
+  },
 ]>;
 
 export class SummarizeExpr extends Expression {
@@ -3848,8 +3874,10 @@ export enum KillExprKind {
 
 export type KillExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind?: KillExprKind;
-    this: Expression; },
+  { 
+    kind?: KillExprKind;
+    this: Expression;
+  },
 ]>;
 
 export class KillExpr extends Expression {
@@ -3900,7 +3928,8 @@ export class PragmaExpr extends Expression {
 
 export type DeclareExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class DeclareExpr extends Expression {
@@ -3934,9 +3963,11 @@ export enum DeclareItemExprKind {
 
 export type DeclareItemExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind?: DeclareItemExprKind;
+  { 
+    kind?: DeclareItemExprKind;
     default?: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class DeclareItemExpr extends Expression {
@@ -3974,9 +4005,11 @@ export class DeclareItemExpr extends Expression {
 
 export type SetExprArgs = Merge<[
   BaseExpressionArgs,
-  { unset?: Expression;
+  { 
+    unset?: Expression;
     tag?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class SetExpr extends Expression {
@@ -4014,8 +4047,10 @@ export class SetExpr extends Expression {
 
 export type HeredocExprArgs = Merge<[
   BaseExpressionArgs,
-  { tag?: Expression;
-    this: Expression; },
+  { 
+    tag?: Expression;
+    this: Expression;
+  },
 ]>;
 
 export class HeredocExpr extends Expression {
@@ -4059,11 +4094,13 @@ export enum SetItemExprKind {
 
 export type SetItemExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind?: SetItemExprKind;
+  { 
+    kind?: SetItemExprKind;
     collate?: string;
     global?: boolean;
     this?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class SetItemExpr extends Expression {
@@ -4111,9 +4148,11 @@ export class SetItemExpr extends Expression {
 
 export type QueryBandExprArgs = Merge<[
   BaseExpressionArgs,
-  { scope?: Expression;
+  { 
+    scope?: Expression;
     update?: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class QueryBandExpr extends Expression {
@@ -4151,7 +4190,8 @@ export class QueryBandExpr extends Expression {
 
 export type ShowExprArgs = Merge<[
   BaseExpressionArgs,
-  { history?: Expression;
+  { 
+    history?: Expression;
     terse?: Expression;
     target?: Expression;
     offset?: boolean;
@@ -4178,7 +4218,8 @@ export type ShowExprArgs = Merge<[
     forRole?: Expression;
     intoOutfile?: Expression;
     json?: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class ShowExpr extends Expression {
@@ -4341,9 +4382,11 @@ export class ShowExpr extends Expression {
 
 export type UserDefinedFunctionExprArgs = Merge<[
   BaseExpressionArgs,
-  { wrapped?: Expression;
+  { 
+    wrapped?: Expression;
     this: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class UserDefinedFunctionExpr extends Expression {
@@ -4381,8 +4424,10 @@ export class UserDefinedFunctionExpr extends Expression {
 
 export type CharacterSetExprArgs = Merge<[
   BaseExpressionArgs,
-  { default?: Expression;
-    this: Expression; },
+  { 
+    default?: Expression;
+    this: Expression;
+  },
 ]>;
 
 export class CharacterSetExpr extends Expression {
@@ -4424,10 +4469,12 @@ export enum RecursiveWithSearchExprKind {
 
 export type RecursiveWithSearchExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind: RecursiveWithSearchExprKind;
+  { 
+    kind: RecursiveWithSearchExprKind;
     using?: string;
     this: Expression;
-    expression: Expression; },
+    expression: Expression;
+  },
 ]>;
 
 export class RecursiveWithSearchExpr extends Expression {
@@ -4470,9 +4517,11 @@ export class RecursiveWithSearchExpr extends Expression {
 
 export type WithExprArgs = Merge<[
   BaseExpressionArgs,
-  { recursive?: boolean;
+  { 
+    recursive?: boolean;
     search?: Expression;
-    expressions: CTEExpr[]; },
+    expressions: CTEExpr[];
+  },
 ]>;
 
 export class WithExpr extends Expression {
@@ -4514,8 +4563,10 @@ export class WithExpr extends Expression {
 
 export type WithinGroupExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 export class WithinGroupExpr extends Expression {
   key = ExpressionKey.WITHIN_GROUP;
@@ -4547,8 +4598,10 @@ export class WithinGroupExpr extends Expression {
 
 export type ProjectionDefExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 export class ProjectionDefExpr extends Expression {
   key = ExpressionKey.PROJECTION_DEF;
@@ -4580,8 +4633,10 @@ export class ProjectionDefExpr extends Expression {
 
 export type TableAliasExprArgs = Merge<[
   BaseExpressionArgs,
-  { columns?: Expression[];
-    this?: IdentifierExpr; },
+  { 
+    columns?: Expression[];
+    this?: IdentifierExpr;
+  },
 ]>;
 
 export class TableAliasExpr extends Expression {
@@ -4618,8 +4673,10 @@ export class TableAliasExpr extends Expression {
 
 export type ColumnPositionExprArgs = Merge<[
   BaseExpressionArgs,
-  { position: Expression;
-    this?: Expression; },
+  { 
+    position: Expression;
+    this?: Expression;
+  },
 ]>;
 
 export class ColumnPositionExpr extends Expression {
@@ -4663,13 +4720,15 @@ export enum ColumnDefExprKind {
 
 export type ColumnDefExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind?: ColumnDefExprKind;
+  { 
+    kind?: ColumnDefExprKind;
     constraints?: ColumnConstraintExpr[];
     exists?: boolean;
     position?: Expression;
     default?: Expression;
     output?: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class ColumnDefExpr extends Expression {
@@ -4743,7 +4802,8 @@ export class ColumnDefExpr extends Expression {
 
 export type AlterColumnExprArgs = Merge<[
   BaseExpressionArgs,
-  { dtype?: DataTypeExpr;
+  { 
+    dtype?: DataTypeExpr;
     collate?: string;
     using?: string;
     default?: Expression;
@@ -4752,7 +4812,8 @@ export type AlterColumnExprArgs = Merge<[
     allowNull?: Expression;
     visible?: Expression;
     renameTo?: string;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class AlterColumnExpr extends Expression {
@@ -4825,8 +4886,10 @@ export class AlterColumnExpr extends Expression {
 
 export type AlterIndexExprArgs = Merge<[
   BaseExpressionArgs,
-  { visible: Expression;
-    this: Expression; },
+  { 
+    visible: Expression;
+    this: Expression;
+  },
 ]>;
 
 export class AlterIndexExpr extends Expression {
@@ -4877,9 +4940,11 @@ export class AlterDistStyleExpr extends Expression {
 
 export type AlterSortKeyExprArgs = Merge<[
   BaseExpressionArgs,
-  { compound?: Expression;
+  { 
+    compound?: Expression;
     this?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class AlterSortKeyExpr extends Expression {
@@ -4917,7 +4982,8 @@ export class AlterSortKeyExpr extends Expression {
 
 export type AlterSetExprArgs = Merge<[
   BaseExpressionArgs,
-  { option?: Expression;
+  { 
+    option?: Expression;
     tablespace?: Expression;
     accessMethod?: string;
     fileFormat?: string;
@@ -4925,7 +4991,8 @@ export type AlterSetExprArgs = Merge<[
     tag?: Expression;
     location?: Expression;
     serde?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class AlterSetExpr extends Expression {
@@ -4993,9 +5060,11 @@ export class AlterSetExpr extends Expression {
 
 export type RenameColumnExprArgs = Merge<[
   BaseExpressionArgs,
-  { to: Expression;
+  { 
+    to: Expression;
     exists?: boolean;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class RenameColumnExpr extends Expression {
@@ -5079,11 +5148,13 @@ export enum CommentExprKind {
 
 export type CommentExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind: CommentExprKind;
+  { 
+    kind: CommentExprKind;
     exists?: boolean;
     materialized?: boolean;
     this: Expression;
-    expression: Expression; },
+    expression: Expression;
+  },
 ]>;
 
 export class CommentExpr extends Expression {
@@ -5131,11 +5202,13 @@ export class CommentExpr extends Expression {
 
 export type ComprehensionExprArgs = Merge<[
   BaseExpressionArgs,
-  { position?: Expression;
+  { 
+    position?: Expression;
     iterator: Expression;
     condition?: Expression;
     this: Expression;
-    expression: Expression; },
+    expression: Expression;
+  },
 ]>;
 
 export class ComprehensionExpr extends Expression {
@@ -5183,11 +5256,13 @@ export class ComprehensionExpr extends Expression {
 
 export type MergeTreeTTLActionExprArgs = Merge<[
   BaseExpressionArgs,
-  { delete?: Expression;
+  { 
+    delete?: Expression;
     recompress?: Expression[];
     toDisk?: Expression;
     toVolume?: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class MergeTreeTTLActionExpr extends Expression {
@@ -5235,10 +5310,12 @@ export class MergeTreeTTLActionExpr extends Expression {
 
 export type MergeTreeTTLExprArgs = Merge<[
   BaseExpressionArgs,
-  { where?: Expression;
+  { 
+    where?: Expression;
     group?: Expression;
     aggregates?: Expression[];
-    expressions: Expression[]; },
+    expressions: Expression[];
+  },
 ]>;
 
 export class MergeTreeTTLExpr extends Expression {
@@ -5281,13 +5358,15 @@ export class MergeTreeTTLExpr extends Expression {
 
 export type IndexConstraintOptionExprArgs = Merge<[
   BaseExpressionArgs,
-  { keyBlockSize?: number | Expression;
+  { 
+    keyBlockSize?: number | Expression;
     using?: string;
     parser?: Expression;
     comment?: string;
     visible?: Expression;
     engineAttr?: string;
-    secondaryEngineAttr?: string; },
+    secondaryEngineAttr?: string;
+  },
 ]>;
 
 export class IndexConstraintOptionExpr extends Expression {
@@ -5358,8 +5437,10 @@ export enum ColumnConstraintExprKind {
 
 export type ColumnConstraintExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind: ColumnConstraintExprKind;
-    this?: Expression; },
+  { 
+    kind: ColumnConstraintExprKind;
+    this?: Expression;
+  },
 ]>;
 
 export class ColumnConstraintExpr extends Expression {
@@ -5418,8 +5499,10 @@ export class ColumnConstraintKindExpr extends Expression {
 
 export type WithOperatorExprArgs = Merge<[
   BaseExpressionArgs,
-  { op: Expression;
-    this: Expression; },
+  { 
+    op: Expression;
+    this: Expression;
+  },
 ]>;
 
 export class WithOperatorExpr extends Expression {
@@ -5452,8 +5535,10 @@ export class WithOperatorExpr extends Expression {
 
 export type WatermarkColumnConstraintExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class WatermarkColumnConstraintExpr extends Expression {
@@ -5482,8 +5567,10 @@ export class WatermarkColumnConstraintExpr extends Expression {
 
 export type ConstraintExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expressions: Expression[]; },
+  { 
+    this: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class ConstraintExpr extends Expression {
@@ -5512,7 +5599,8 @@ export class ConstraintExpr extends Expression {
 
 export type DeleteExprArgs = Merge<[
   DMLExprArgs,
-  { with?: Expression;
+  { 
+    with?: Expression;
     using?: string;
     where?: Expression;
     returning?: Expression;
@@ -5520,7 +5608,8 @@ export type DeleteExprArgs = Merge<[
     limit?: number | Expression;
     tables?: Expression[];
     cluster?: Expression;
-    this?: Expression; },
+    this?: Expression;
+  },
 ]>;
 
 export class DeleteExpr extends DMLExpr {
@@ -5676,7 +5765,8 @@ export enum DropExprKind {
 
 export type DropExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind?: DropExprKind;
+  { 
+    kind?: DropExprKind;
     exists?: boolean;
     temporary?: boolean;
     materialized?: boolean;
@@ -5686,7 +5776,8 @@ export type DropExprArgs = Merge<[
     cluster?: Expression;
     concurrently?: Expression;
     this?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class DropExpr extends Expression {
@@ -5772,9 +5863,11 @@ export class DropExpr extends Expression {
 
 export type ExportExprArgs = Merge<[
   BaseExpressionArgs,
-  { connection?: Expression;
+  { 
+    connection?: Expression;
     options: Expression[];
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class ExportExpr extends Expression {
@@ -5812,8 +5905,10 @@ export class ExportExpr extends Expression {
 
 export type FilterExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class FilterExpr extends Expression {
@@ -5864,9 +5959,11 @@ export class CheckExpr extends Expression {
 
 export type ChangesExprArgs = Merge<[
   BaseExpressionArgs,
-  { information: string;
+  { 
+    information: string;
     atBefore?: Expression;
-    end?: Expression; },
+    end?: Expression;
+  },
 ]>;
 
 export class ChangesExpr extends Expression {
@@ -5904,9 +6001,11 @@ export class ChangesExpr extends Expression {
 
 export type ConnectExprArgs = Merge<[
   BaseExpressionArgs,
-  { start?: Expression;
+  { 
+    start?: Expression;
     connect: Expression;
-    nocycle?: Expression; },
+    nocycle?: Expression;
+  },
 ]>;
 
 export class ConnectExpr extends Expression {
@@ -5944,9 +6043,11 @@ export class ConnectExpr extends Expression {
 
 export type CopyParameterExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class CopyParameterExpr extends Expression {
@@ -5984,11 +6085,13 @@ export class CopyParameterExpr extends Expression {
 
 export type CredentialsExprArgs = Merge<[
   BaseExpressionArgs,
-  { credentials?: Expression[];
+  { 
+    credentials?: Expression[];
     encryption?: Expression;
     storage?: Expression;
     iamRole?: Expression;
-    region?: Expression; },
+    region?: Expression;
+  },
 ]>;
 
 export class CredentialsExpr extends Expression {
@@ -6054,9 +6157,11 @@ export class PriorExpr extends Expression {
 
 export type DirectoryExprArgs = Merge<[
   BaseExpressionArgs,
-  { local?: Expression;
+  { 
+    local?: Expression;
     rowFormat?: string;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class DirectoryExpr extends Expression {
@@ -6111,11 +6216,13 @@ export class DirectoryStageExpr extends Expression {
 
 export type ForeignKeyExprArgs = Merge<[
   BaseExpressionArgs,
-  { reference?: Expression;
+  { 
+    reference?: Expression;
     delete?: Expression;
     update?: Expression;
     options?: Expression[];
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class ForeignKeyExpr extends Expression {
@@ -6163,8 +6270,10 @@ export class ForeignKeyExpr extends Expression {
 
 export type ColumnPrefixExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class ColumnPrefixExpr extends Expression {
@@ -6197,10 +6306,12 @@ export class ColumnPrefixExpr extends Expression {
 
 export type PrimaryKeyExprArgs = Merge<[
   BaseExpressionArgs,
-  { options?: Expression[];
+  { 
+    options?: Expression[];
     include?: Expression;
     this?: Expression;
-    expressions: Expression[]; },
+    expressions: Expression[];
+  },
 ]>;
 
 export class PrimaryKeyExpr extends Expression {
@@ -6243,11 +6354,13 @@ export class PrimaryKeyExpr extends Expression {
 
 export type IntoExprArgs = Merge<[
   BaseExpressionArgs,
-  { temporary?: boolean;
+  { 
+    temporary?: boolean;
     unlogged?: Expression;
     bulkCollect?: Expression;
     this?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class IntoExpr extends Expression {
@@ -6355,7 +6468,8 @@ export class HavingExpr extends Expression {
 
 export type HintExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 export class HintExpr extends Expression {
   key = ExpressionKey.HINT;
@@ -6378,8 +6492,10 @@ export class HintExpr extends Expression {
 
 export type JoinHintExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expressions: Expression[]; },
+  { 
+    this: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class JoinHintExpr extends Expression {
@@ -6408,10 +6524,12 @@ export class JoinHintExpr extends Expression {
 
 export type IdentifierExprArgs = Merge<[
   BaseExpressionArgs,
-  { quoted?: boolean;
+  { 
+    quoted?: boolean;
     global?: boolean;
     temporary?: boolean;
-    this: string; },
+    this: string;
+  },
 ]>;
 
 export class IdentifierExpr extends Expression {
@@ -6458,8 +6576,10 @@ export class IdentifierExpr extends Expression {
 
 export type OpclassExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class OpclassExpr extends Expression {
@@ -6488,12 +6608,14 @@ export class OpclassExpr extends Expression {
 
 export type IndexExprArgs = Merge<[
   BaseExpressionArgs,
-  { table?: Expression;
+  { 
+    table?: Expression;
     unique?: boolean;
     primary?: boolean;
     amp?: Expression;
     params?: Expression[];
-    this?: Expression; },
+    this?: Expression;
+  },
 ]>;
 
 export class IndexExpr extends Expression {
@@ -6546,14 +6668,16 @@ export class IndexExpr extends Expression {
 
 export type IndexParametersExprArgs = Merge<[
   BaseExpressionArgs,
-  { using?: string;
+  { 
+    using?: string;
     include?: Expression;
     columns?: Expression[];
     withStorage?: Expression;
     partitionBy?: Expression;
     tablespace?: Expression;
     where?: Expression;
-    on?: Expression; },
+    on?: Expression;
+  },
 ]>;
 
 export class IndexParametersExpr extends Expression {
@@ -6616,9 +6740,11 @@ export class IndexParametersExpr extends Expression {
 
 export type ConditionalInsertExprArgs = Merge<[
   BaseExpressionArgs,
-  { else?: Expression;
+  { 
+    else?: Expression;
     this: Expression;
-    expression?: Expression; },
+    expression?: Expression;
+  },
 ]>;
 
 export class ConditionalInsertExpr extends Expression {
@@ -6665,9 +6791,11 @@ export enum MultitableInsertsExprKind {
 
 export type MultitableInsertsExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind: MultitableInsertsExprKind;
+  { 
+    kind: MultitableInsertsExprKind;
     source: Expression;
-    expressions: Expression[]; },
+    expressions: Expression[];
+  },
 ]>;
 
 export class MultitableInsertsExpr extends Expression {
@@ -6705,13 +6833,15 @@ export class MultitableInsertsExpr extends Expression {
 
 export type OnConflictExprArgs = Merge<[
   BaseExpressionArgs,
-  { duplicate?: Expression;
+  { 
+    duplicate?: Expression;
     action?: Expression;
     conflictKeys?: Expression[];
     indexPredicate?: Expression;
     constraint?: Expression;
     where?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class OnConflictExpr extends Expression {
@@ -6769,9 +6899,11 @@ export class OnConflictExpr extends Expression {
 
 export type OnConditionExprArgs = Merge<[
   BaseExpressionArgs,
-  { error?: Expression;
+  { 
+    error?: Expression;
     empty?: Expression;
-    null?: Expression; },
+    null?: Expression;
+  },
 ]>;
 
 export class OnConditionExpr extends Expression {
@@ -6809,8 +6941,10 @@ export class OnConditionExpr extends Expression {
 
 export type ReturningExprArgs = Merge<[
   BaseExpressionArgs,
-  { into?: Expression;
-    expressions: Expression[]; },
+  { 
+    into?: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class ReturningExpr extends Expression {
@@ -6843,8 +6977,10 @@ export class ReturningExpr extends Expression {
 
 export type IntroducerExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class IntroducerExpr extends Expression {
@@ -6891,13 +7027,15 @@ export class NationalExpr extends Expression {
 
 export type LoadDataExprArgs = Merge<[
   BaseExpressionArgs,
-  { local?: Expression;
+  { 
+    local?: Expression;
     overwrite?: Expression;
     inpath: Expression;
     partition?: Expression;
     inputFormat?: string;
     serde?: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class LoadDataExpr extends Expression {
@@ -6955,8 +7093,10 @@ export class LoadDataExpr extends Expression {
 
 export type PartitionExprArgs = Merge<[
   BaseExpressionArgs,
-  { subpartition?: Expression;
-    expressions: Expression[]; },
+  { 
+    subpartition?: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class PartitionExpr extends Expression {
@@ -6989,9 +7129,11 @@ export class PartitionExpr extends Expression {
 
 export type PartitionRangeExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class PartitionRangeExpr extends Expression {
@@ -7043,9 +7185,11 @@ export class PartitionIdExpr extends Expression {
 
 export type FetchExprArgs = Merge<[
   BaseExpressionArgs,
-  { direction?: Expression;
+  { 
+    direction?: Expression;
     count?: Expression;
-    limitOptions?: Expression[]; },
+    limitOptions?: Expression[];
+  },
 ]>;
 
 export class FetchExpr extends Expression {
@@ -7091,11 +7235,13 @@ export enum GrantExprKind {
 
 export type GrantExprArgs = Merge<[
   BaseExpressionArgs,
-  { privileges: Expression[];
+  { 
+    privileges: Expression[];
     kind?: GrantExprKind;
     securable: Expression;
     principals: Expression[];
-    grantOption?: Expression; },
+    grantOption?: Expression;
+  },
 ]>;
 
 export class GrantExpr extends Expression {
@@ -7143,12 +7289,14 @@ export class GrantExpr extends Expression {
 
 export type RevokeExprArgs = Merge<[
   BaseExpressionArgs,
-  { cascade?: Expression;
+  { 
+    cascade?: Expression;
     privileges: Expression[];
     kind?: string;
     securable: Expression;
     principals: Expression[];
-    grantOption?: Expression; },
+    grantOption?: Expression;
+  },
 ]>;
 
 export class RevokeExpr extends Expression {
@@ -7202,12 +7350,14 @@ export class RevokeExpr extends Expression {
 
 export type GroupExprArgs = Merge<[
   BaseExpressionArgs,
-  { groupingSets?: Expression[];
+  { 
+    groupingSets?: Expression[];
     cube?: Expression;
     rollup?: Expression;
     totals?: Expression[];
     all?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class GroupExpr extends Expression {
@@ -7260,7 +7410,8 @@ export class GroupExpr extends Expression {
 
 export type CubeExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions?: Expression[] },
+  { 
+    expressions?: Expression[] },
 ]>;
 
 export class CubeExpr extends Expression {
@@ -7284,7 +7435,8 @@ export class CubeExpr extends Expression {
 
 export type RollupExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions?: Expression[] },
+  { 
+    expressions?: Expression[] },
 ]>;
 
 export class RollupExpr extends Expression {
@@ -7308,7 +7460,8 @@ export class RollupExpr extends Expression {
 
 export type GroupingSetsExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class GroupingSetsExpr extends Expression {
@@ -7332,9 +7485,11 @@ export class GroupingSetsExpr extends Expression {
 
 export type LambdaExprArgs = Merge<[
   BaseExpressionArgs,
-  { colon?: Expression;
+  { 
+    colon?: Expression;
     this: Expression;
-    expressions: Expression[]; },
+    expressions: Expression[];
+  },
 ]>;
 
 export class LambdaExpr extends Expression {
@@ -7372,11 +7527,13 @@ export class LambdaExpr extends Expression {
 
 export type LimitExprArgs = Merge<[
   BaseExpressionArgs,
-  { offset?: boolean;
+  { 
+    offset?: boolean;
     limitOptions?: Expression[];
     this?: Expression;
     expression: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class LimitExpr extends Expression {
@@ -7424,9 +7581,11 @@ export class LimitExpr extends Expression {
 
 export type LimitOptionsExprArgs = Merge<[
   BaseExpressionArgs,
-  { percent?: Expression;
+  { 
+    percent?: Expression;
     rows?: Expression[];
-    withTies?: Expression[]; },
+    withTies?: Expression[];
+  },
 ]>;
 
 export class LimitOptionsExpr extends Expression {
@@ -7489,7 +7648,8 @@ export enum JoinExprKind {
  */
 export type JoinExprArgs = Merge<[
   BaseExpressionArgs,
-  { on?: Expression;
+  { 
+    on?: Expression;
     side?: Expression;
     kind?: JoinExprKind;
     using?: string;
@@ -7500,7 +7660,8 @@ export type JoinExprArgs = Merge<[
     directed?: Expression;
     pivots?: Expression[];
     this: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class JoinExpr extends Expression {
@@ -7696,8 +7857,10 @@ export class JoinExpr extends Expression {
 
 export type MatchRecognizeMeasureExprArgs = Merge<[
   BaseExpressionArgs,
-  { windowFrame?: Expression;
-    this: Expression; },
+  { 
+    windowFrame?: Expression;
+    this: Expression;
+  },
 ]>;
 
 export class MatchRecognizeMeasureExpr extends Expression {
@@ -7730,14 +7893,16 @@ export class MatchRecognizeMeasureExpr extends Expression {
 
 export type MatchRecognizeExprArgs = Merge<[
   BaseExpressionArgs,
-  { partitionBy?: Expression;
+  { 
+    partitionBy?: Expression;
     order?: Expression;
     measures?: Expression[];
     rows?: Expression[];
     after?: Expression;
     pattern?: Expression;
     define?: Expression;
-    alias?: TableAliasExpr; },
+    alias?: TableAliasExpr;
+  },
 ]>;
 
 export class MatchRecognizeExpr extends Expression {
@@ -7818,9 +7983,11 @@ export class FinalExpr extends Expression {
 
 export type OffsetExprArgs = Merge<[
   BaseExpressionArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     expression: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class OffsetExpr extends Expression {
@@ -7854,9 +8021,11 @@ export class OffsetExpr extends Expression {
 
 export type OrderExprArgs = Merge<[
   BaseExpressionArgs,
-  { siblings?: Expression[];
+  { 
+    siblings?: Expression[];
     this?: Expression;
-    expressions: Expression[]; },
+    expressions: Expression[];
+  },
 ]>;
 
 export class OrderExpr extends Expression {
@@ -7894,10 +8063,12 @@ export class OrderExpr extends Expression {
 
 export type WithFillExprArgs = Merge<[
   BaseExpressionArgs,
-  { from?: Expression;
+  { 
+    from?: Expression;
     to?: Expression;
     step?: Expression;
-    interpolate?: Expression; },
+    interpolate?: Expression;
+  },
 ]>;
 
 export class WithFillExpr extends Expression {
@@ -7940,10 +8111,12 @@ export class WithFillExpr extends Expression {
 
 export type OrderedExprArgs = Merge<[
   BaseExpressionArgs,
-  { desc?: Expression;
+  { 
+    desc?: Expression;
     nullsFirst: Expression;
     withFill?: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class OrderedExpr extends Expression {
@@ -7990,8 +8163,10 @@ export class OrderedExpr extends Expression {
 
 export type PropertyExprArgs = Merge<[
   BaseExpressionArgs,
-  { value: string | Expression;
-    this: Expression; },
+  { 
+    value: string | Expression;
+    this: Expression;
+  },
 ]>;
 
 export class PropertyExpr extends Expression {
@@ -8024,8 +8199,10 @@ export class PropertyExpr extends Expression {
 
 export type GrantPrivilegeExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class GrantPrivilegeExpr extends Expression {
@@ -8063,8 +8240,10 @@ export enum GrantPrincipalExprKind {
 }
 export type GrantPrincipalExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind?: GrantPrincipalExprKind;
-    this: Expression; },
+  { 
+    kind?: GrantPrincipalExprKind;
+    this: Expression;
+  },
 ]>;
 
 export class GrantPrincipalExpr extends Expression {
@@ -8097,7 +8276,8 @@ export class GrantPrincipalExpr extends Expression {
 
 export type AllowedValuesPropertyExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class AllowedValuesPropertyExpr extends Expression {
@@ -8120,10 +8300,12 @@ export class AllowedValuesPropertyExpr extends Expression {
 
 export type PartitionByRangePropertyDynamicExprArgs = Merge<[
   BaseExpressionArgs,
-  { start: Expression;
+  { 
+    start: Expression;
     end: Expression;
     every: Expression;
-    this?: Expression; },
+    this?: Expression;
+  },
 ]>;
 
 export class PartitionByRangePropertyDynamicExpr extends Expression {
@@ -8167,10 +8349,12 @@ export class PartitionByRangePropertyDynamicExpr extends Expression {
 
 export type RollupIndexExprArgs = Merge<[
   BaseExpressionArgs,
-  { fromIndex?: Expression;
+  { 
+    fromIndex?: Expression;
     properties?: Expression[];
     this: Expression;
-    expressions: Expression[]; },
+    expressions: Expression[];
+  },
 ]>;
 
 export class RollupIndexExpr extends Expression {
@@ -8213,8 +8397,10 @@ export class RollupIndexExpr extends Expression {
 
 export type PartitionListExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expressions: Expression[]; },
+  { 
+    this: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class PartitionListExpr extends Expression {
@@ -8243,10 +8429,12 @@ export class PartitionListExpr extends Expression {
 
 export type PartitionBoundSpecExprArgs = Merge<[
   BaseExpressionArgs,
-  { fromExpressions?: Expression[];
+  { 
+    fromExpressions?: Expression[];
     toExpressions?: Expression[];
     this?: Expression;
-    expression?: Expression; },
+    expression?: Expression;
+  },
 ]>;
 
 export class PartitionBoundSpecExpr extends Expression {
@@ -8289,12 +8477,14 @@ export class PartitionBoundSpecExpr extends Expression {
 
 export type QueryTransformExprArgs = Merge<[
   BaseExpressionArgs,
-  { commandScript: Expression;
+  { 
+    commandScript: Expression;
     schema?: Expression;
     rowFormatBefore?: string;
     recordWriter?: Expression;
     rowFormatAfter?: string;
-    recordReader?: Expression; },
+    recordReader?: Expression;
+  },
 ]>;
 
 export class QueryTransformExpr extends Expression {
@@ -8347,10 +8537,12 @@ export class QueryTransformExpr extends Expression {
 
 export type SemanticViewExprArgs = Merge<[
   BaseExpressionArgs,
-  { metrics?: Expression[];
+  { 
+    metrics?: Expression[];
     dimensions?: Expression[];
     facts?: Expression[];
-    where?: Expression; },
+    where?: Expression;
+  },
 ]>;
 
 export class SemanticViewExpr extends Expression {
@@ -8426,8 +8618,10 @@ export class QualifyExpr extends Expression {
 
 export type InputOutputFormatExprArgs = Merge<[
   BaseExpressionArgs,
-  { inputFormat?: string;
-    outputFormat?: string; },
+  { 
+    inputFormat?: string;
+    outputFormat?: string;
+  },
 ]>;
 
 export class InputOutputFormatExpr extends Expression {
@@ -8478,9 +8672,11 @@ export class ReturnExpr extends Expression {
 
 export type ReferenceExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expressions?: Expression[];
-    options?: Expression[]; },
+    options?: Expression[];
+  },
 ]>;
 
 export class ReferenceExpr extends Expression {
@@ -8514,7 +8710,8 @@ export class ReferenceExpr extends Expression {
 
 export type TupleExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions?: Expression[] },
+  { 
+    expressions?: Expression[] },
 ]>;
 
 export class TupleExpr extends Expression {
@@ -8597,8 +8794,10 @@ export const QUERY_MODIFIERS = {
 // https://learn.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-query?view=sql-server-ver16
 export type QueryOptionExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class QueryOptionExpr extends Expression {
@@ -8628,7 +8827,8 @@ export class QueryOptionExpr extends Expression {
 // https://learn.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-table?view=sql-server-ver16
 export type WithTableHintExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class WithTableHintExpr extends Expression {
@@ -8653,9 +8853,11 @@ export class WithTableHintExpr extends Expression {
 // https://dev.mysql.com/doc/refman/8.0/en/index-hints.html
 export type IndexTableHintExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expressions?: Expression[];
-    target?: Expression; },
+    target?: Expression;
+  },
 ]>;
 
 export class IndexTableHintExpr extends Expression {
@@ -8699,9 +8901,11 @@ export enum HistoricalDataExprKind {
 // https://docs.snowflake.com/en/sql-reference/constructs/at-before
 export type HistoricalDataExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     kind: HistoricalDataExprKind;
-    expression: Expression; },
+    expression: Expression;
+  },
 ]>;
 
 export class HistoricalDataExpr extends Expression {
@@ -8736,9 +8940,11 @@ export class HistoricalDataExpr extends Expression {
 // https://docs.snowflake.com/en/sql-reference/sql/put
 export type PutExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     target: Expression;
-    properties?: Expression[]; },
+    properties?: Expression[];
+  },
 ]>;
 
 export class PutExpr extends Expression {
@@ -8773,9 +8979,11 @@ export class PutExpr extends Expression {
 // https://docs.snowflake.com/en/sql-reference/sql/get
 export type GetExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     target: Expression;
-    properties?: Expression[]; },
+    properties?: Expression[];
+  },
 ]>;
 
 export class GetExpr extends Expression {
@@ -8809,7 +9017,8 @@ export class GetExpr extends Expression {
 
 export type TableExprArgs = Merge<[
   BaseExpressionArgs,
-  { this?: IdentifierExpr | DotExpr;
+  { 
+    this?: IdentifierExpr | DotExpr;
     db?: IdentifierExpr;
     catalog?: IdentifierExpr;
     alias?: TableAliasExpr | IdentifierExpr;
@@ -8828,7 +9037,8 @@ export type TableExprArgs = Merge<[
     changes?: Expression[];
     rowsFrom?: number | Expression;
     sample?: number | Expression;
-    indexed?: Expression; },
+    indexed?: Expression;
+  },
 ]>;
 
 export class TableExpr extends Expression {
@@ -9088,9 +9298,11 @@ export enum VersionExprKind {
  */
 export type VersionExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     kind: VersionExprKind;
-    expression?: Expression; },
+    expression?: Expression;
+  },
 ]>;
 
 export class VersionExpr extends Expression {
@@ -9124,8 +9336,10 @@ export class VersionExpr extends Expression {
 
 export type SchemaExprArgs = Merge<[
   BaseExpressionArgs,
-  { this?: Expression;
-    expressions?: Expression[]; },
+  { 
+    this?: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class SchemaExpr extends Expression {
@@ -9159,10 +9373,12 @@ export class SchemaExpr extends Expression {
  */
 export type LockExprArgs = Merge<[
   BaseExpressionArgs,
-  { update: Expression;
+  { 
+    update: Expression;
     expressions?: Expression[];
     wait?: Expression;
-    key?: Expression; },
+    key?: Expression;
+  },
 ]>;
 
 export class LockExpr extends Expression {
@@ -9201,7 +9417,8 @@ export class LockExpr extends Expression {
 
 export type TableSampleExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions?: Expression[];
+  { 
+    expressions?: Expression[];
     method?: string;
     bucketNumerator?: Expression;
     bucketDenominator?: Expression;
@@ -9209,7 +9426,8 @@ export type TableSampleExprArgs = Merge<[
     percent?: Expression;
     rows?: Expression[];
     size?: number | Expression;
-    seed?: Expression; },
+    seed?: Expression;
+  },
 ]>;
 
 export class TableSampleExpr extends Expression {
@@ -9277,9 +9495,11 @@ export class TableSampleExpr extends Expression {
 
 export type TagExprArgs = Merge<[
   BaseExpressionArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     prefix?: Expression;
-    postfix?: Expression; },
+    postfix?: Expression;
+  },
 ]>;
 
 export class TagExpr extends Expression {
@@ -9317,7 +9537,8 @@ export class TagExpr extends Expression {
 
 export type PivotExprArgs = Merge<[
   BaseExpressionArgs,
-  { fields?: Expression[];
+  { 
+    fields?: Expression[];
     unpivot?: boolean;
     using?: string;
     group?: Expression;
@@ -9325,7 +9546,8 @@ export type PivotExprArgs = Merge<[
     includeNulls?: Expression[];
     defaultOnNull?: Expression;
     into?: Expression;
-    with?: WithExpr; },
+    with?: WithExpr;
+  },
 ]>;
 
 export class PivotExpr extends Expression {
@@ -9407,8 +9629,10 @@ export class PivotExpr extends Expression {
 
 export type UnpivotColumnsExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expressions: Expression[]; },
+  { 
+    this: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class UnpivotColumnsExpr extends Expression {
@@ -9437,12 +9661,14 @@ export enum WindowSpecExprKind {
 
 export type WindowSpecExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind?: WindowSpecExprKind;
+  { 
+    kind?: WindowSpecExprKind;
     start?: Expression;
     startSide?: Expression;
     end?: Expression;
     endSide?: Expression;
-    exclude?: Expression; },
+    exclude?: Expression;
+  },
 ]>;
 
 export class WindowSpecExpr extends Expression {
@@ -9539,9 +9765,11 @@ export class WhereExpr extends Expression {
 
 export type StarExprArgs = Merge<[
   BaseExpressionArgs,
-  { except?: Expression;
+  { 
+    except?: Expression;
     replace?: boolean;
-    rename?: string; },
+    rename?: string;
+  },
 ]>;
 
 export class StarExpr extends Expression {
@@ -9593,8 +9821,10 @@ export class StarExpr extends Expression {
 
 export type DataTypeParamExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class DataTypeParamExpr extends Expression {
@@ -9763,13 +9993,15 @@ export enum DataTypeExprKind {
 
 export type DataTypeExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: DataTypeExprKind;
+  { 
+    this: DataTypeExprKind;
     expressions?: Expression[];
     nested?: Expression;
     values?: Expression[];
     prefix?: Expression;
     kind?: DataTypeExprKind | DotExpr | IdentifierExpr;
-    nullable?: Expression; },
+    nullable?: Expression;
+  },
 ]>;
 
 export class DataTypeExpr extends Expression {
@@ -10053,8 +10285,10 @@ export class TypeExpr extends Expression {
 
 export type CommandExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class CommandExpr extends Expression {
@@ -10083,9 +10317,11 @@ export class CommandExpr extends Expression {
 
 export type TransactionExprArgs = Merge<[
   BaseExpressionArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     modes?: Expression[];
-    mark?: Expression; },
+    mark?: Expression;
+  },
 ]>;
 
 export class TransactionExpr extends Expression {
@@ -10119,9 +10355,11 @@ export class TransactionExpr extends Expression {
 
 export type CommitExprArgs = Merge<[
   BaseExpressionArgs,
-  { chain?: Expression;
+  { 
+    chain?: Expression;
     this?: Expression;
-    durability?: Expression; },
+    durability?: Expression;
+  },
 ]>;
 
 export class CommitExpr extends Expression {
@@ -10155,8 +10393,10 @@ export class CommitExpr extends Expression {
 
 export type RollbackExprArgs = Merge<[
   BaseExpressionArgs,
-  { savepoint?: Expression;
-    this?: Expression; },
+  { 
+    savepoint?: Expression;
+    this?: Expression;
+  },
 ]>;
 
 export class RollbackExpr extends Expression {
@@ -10198,7 +10438,8 @@ export enum AlterExprKind {
 
 export type AlterExprArgs = Merge<[
   BaseExpressionArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     kind: AlterExprKind;
     actions: Expression[];
     exists?: boolean;
@@ -10207,7 +10448,8 @@ export type AlterExprArgs = Merge<[
     cluster?: Expression;
     notValid?: Expression;
     check?: Expression;
-    cascade?: Expression; },
+    cascade?: Expression;
+  },
 ]>;
 
 export class AlterExpr extends Expression {
@@ -10295,8 +10537,10 @@ export class AlterExpr extends Expression {
 
 export type AlterSessionExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression[];
-    unset?: Expression; },
+  { 
+    expressions: Expression[];
+    unset?: Expression;
+  },
 ]>;
 
 export class AlterSessionExpr extends Expression {
@@ -10334,13 +10578,15 @@ export enum AnalyzeExprKind {
 
 export type AnalyzeExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind?: AnalyzeExprKind;
+  { 
+    kind?: AnalyzeExprKind;
     this?: Expression;
     options?: Expression[];
     mode?: Expression;
     partition?: Expression;
     expression?: Expression;
-    properties?: Expression[]; },
+    properties?: Expression[];
+  },
 ]>;
 
 export class AnalyzeExpr extends Expression {
@@ -10408,10 +10654,12 @@ export enum AnalyzeStatisticsExprKind {
 
 export type AnalyzeStatisticsExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind: AnalyzeStatisticsExprKind;
+  { 
+    kind: AnalyzeStatisticsExprKind;
     option?: Expression;
     this?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class AnalyzeStatisticsExpr extends Expression {
@@ -10454,10 +10702,12 @@ export class AnalyzeStatisticsExpr extends Expression {
 
 export type AnalyzeHistogramExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expressions: Expression[];
     expression?: Expression;
-    updateOptions?: Expression[]; },
+    updateOptions?: Expression[];
+  },
 ]>;
 
 export class AnalyzeHistogramExpr extends Expression {
@@ -10505,8 +10755,10 @@ export enum AnalyzeSampleExprKind {
 
 export type AnalyzeSampleExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind: AnalyzeSampleExprKind;
-    sample: number | Expression; },
+  { 
+    kind: AnalyzeSampleExprKind;
+    sample: number | Expression;
+  },
 ]>;
 
 export class AnalyzeSampleExpr extends Expression {
@@ -10539,7 +10791,8 @@ export class AnalyzeSampleExpr extends Expression {
 
 export type AnalyzeListChainedRowsExprArgs = Merge<[
   BaseExpressionArgs,
-  { expression?: Expression },
+  { 
+    expression?: Expression },
 ]>;
 
 export class AnalyzeListChainedRowsExpr extends Expression {
@@ -10569,7 +10822,8 @@ export enum AnalyzeDeleteExprKind {
 }
 export type AnalyzeDeleteExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind?: AnalyzeDeleteExprKind },
+  { 
+    kind?: AnalyzeDeleteExprKind },
 ]>;
 
 export class AnalyzeDeleteExpr extends Expression {
@@ -10593,7 +10847,8 @@ export class AnalyzeDeleteExpr extends Expression {
 
 export type AnalyzeWithExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class AnalyzeWithExpr extends Expression {
@@ -10626,9 +10881,11 @@ export enum AnalyzeValidateExprKind {
 
 export type AnalyzeValidateExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind: AnalyzeValidateExprKind;
+  { 
+    kind: AnalyzeValidateExprKind;
     this?: Expression;
-    expression?: Expression; },
+    expression?: Expression;
+  },
 ]>;
 
 export class AnalyzeValidateExpr extends Expression {
@@ -10698,7 +10955,8 @@ export class UsingDataExpr extends Expression {
 
 export type AddConstraintExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class AddConstraintExpr extends Expression {
@@ -10722,9 +10980,11 @@ export class AddConstraintExpr extends Expression {
 
 export type AddPartitionExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     exists?: boolean;
-    location?: Expression; },
+    location?: Expression;
+  },
 ]>;
 
 export class AddPartitionExpr extends Expression {
@@ -10758,8 +11018,10 @@ export class AddPartitionExpr extends Expression {
 
 export type AttachOptionExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class AttachOptionExpr extends Expression {
@@ -10788,8 +11050,10 @@ export class AttachOptionExpr extends Expression {
 
 export type DropPartitionExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression[];
-    exists?: boolean; },
+  { 
+    expressions: Expression[];
+    exists?: boolean;
+  },
 ]>;
 
 export class DropPartitionExpr extends Expression {
@@ -10818,8 +11082,10 @@ export class DropPartitionExpr extends Expression {
 
 export type ReplacePartitionExprArgs = Merge<[
   BaseExpressionArgs,
-  { expression: Expression;
-    source: Expression; },
+  { 
+    expression: Expression;
+    source: Expression;
+  },
 ]>;
 
 export class ReplacePartitionExpr extends Expression {
@@ -10848,8 +11114,10 @@ export class ReplacePartitionExpr extends Expression {
 
 export type AliasExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    alias?: string | IdentifierExpr; },
+  { 
+    this: Expression;
+    alias?: string | IdentifierExpr;
+  },
 ]>;
 
 export class AliasExpr extends Expression {
@@ -10885,7 +11153,8 @@ export class AliasExpr extends Expression {
 
 export type PivotAnyExprArgs = Merge<[
   BaseExpressionArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 /**
@@ -10913,8 +11182,10 @@ export class PivotAnyExpr extends Expression {
 
 export type AliasesExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expressions: Expression[]; },
+  { 
+    this: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class AliasesExpr extends Expression {
@@ -10947,8 +11218,10 @@ export class AliasesExpr extends Expression {
 
 export type AtIndexExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 /**
@@ -10980,8 +11253,10 @@ export class AtIndexExpr extends Expression {
 
 export type AtTimeZoneExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    zone: Expression; },
+  { 
+    this: Expression;
+    zone: Expression;
+  },
 ]>;
 
 export class AtTimeZoneExpr extends Expression {
@@ -11010,8 +11285,10 @@ export class AtTimeZoneExpr extends Expression {
 
 export type FromTimeZoneExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    zone: Expression; },
+  { 
+    this: Expression;
+    zone: Expression;
+  },
 ]>;
 
 export class FromTimeZoneExpr extends Expression {
@@ -11040,8 +11317,10 @@ export class FromTimeZoneExpr extends Expression {
 
 export type FormatPhraseExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    format: Expression; },
+  { 
+    this: Expression;
+    format: Expression;
+  },
 ]>;
 
 /**
@@ -11076,8 +11355,10 @@ export class FormatPhraseExpr extends Expression {
 
 export type DistinctExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions?: Expression[];
-    on?: Expression; },
+  { 
+    expressions?: Expression[];
+    on?: Expression;
+  },
 ]>;
 
 export class DistinctExpr extends Expression {
@@ -11106,8 +11387,10 @@ export class DistinctExpr extends Expression {
 
 export type ForInExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 /**
@@ -11139,7 +11422,8 @@ export class ForInExpr extends Expression {
 
 export type TimeUnitExprArgs = Merge<[
   BaseExpressionArgs,
-  { unit?: VarExpr | IntervalSpanExpr },
+  { 
+    unit?: VarExpr | IntervalSpanExpr },
 ]>;
 
 /**
@@ -11243,9 +11527,11 @@ export class RespectNullsExpr extends Expression {
  */
 export type HavingMaxExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    max: Expression; },
+    max: Expression;
+  },
 ]>;
 
 export class HavingMaxExpr extends Expression {
@@ -11279,9 +11565,11 @@ export class HavingMaxExpr extends Expression {
 
 export type TranslateCharactersExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    withError?: Expression; },
+    withError?: Expression;
+  },
 ]>;
 
 export class TranslateCharactersExpr extends Expression {
@@ -11330,8 +11618,10 @@ export class PositionalColumnExpr extends Expression {
 
 export type OverflowTruncateBehaviorExprArgs = Merge<[
   BaseExpressionArgs,
-  { this?: Expression;
-    withCount: Expression; },
+  { 
+    this?: Expression;
+    withCount: Expression;
+  },
 ]>;
 
 export class OverflowTruncateBehaviorExpr extends Expression {
@@ -11359,9 +11649,11 @@ export class OverflowTruncateBehaviorExpr extends Expression {
 
 export type JSONExprArgs = Merge<[
   BaseExpressionArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     with?: Expression;
-    unique?: boolean; },
+    unique?: boolean;
+  },
 ]>;
 
 export class JSONExpr extends Expression {
@@ -11399,8 +11691,10 @@ export class JSONExpr extends Expression {
 
 export type JSONPathExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression[];
-    escape?: Expression; },
+  { 
+    expressions: Expression[];
+    escape?: Expression;
+  },
 ]>;
 
 export class JSONPathExpr extends Expression {
@@ -11467,8 +11761,10 @@ export class FormatJsonExpr extends Expression {
 
 export type JSONKeyValueExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class JSONKeyValueExpr extends Expression {
@@ -11506,11 +11802,13 @@ export enum JSONColumnDefExprKind {
 
 export type JSONColumnDefExprArgs = Merge<[
   BaseExpressionArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     kind?: JSONColumnDefExprKind;
     path?: Expression;
     nestedSchema?: Expression;
-    ordinality?: boolean; },
+    ordinality?: boolean;
+  },
 ]>;
 
 export class JSONColumnDefExpr extends Expression {
@@ -11558,7 +11856,8 @@ export class JSONColumnDefExpr extends Expression {
 
 export type JSONSchemaExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class JSONSchemaExpr extends Expression {
@@ -11581,10 +11880,12 @@ export class JSONSchemaExpr extends Expression {
 
 export type JSONValueExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     path: Expression;
     returning?: Expression;
-    onCondition?: Expression; },
+    onCondition?: Expression;
+  },
 ]>;
 
 export class JSONValueExpr extends Expression {
@@ -11638,10 +11939,12 @@ export enum OpenJSONColumnDefExprKind {
 
 export type OpenJSONColumnDefExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     kind: OpenJSONColumnDefExprKind;
     path?: Expression;
-    asJson?: Expression; },
+    asJson?: Expression;
+  },
 ]>;
 
 export class OpenJSONColumnDefExpr extends Expression {
@@ -11684,8 +11987,10 @@ export class OpenJSONColumnDefExpr extends Expression {
 
 export type JSONExtractQuoteExprArgs = Merge<[
   BaseExpressionArgs,
-  { option: Expression;
-    scalar?: boolean; },
+  { 
+    option: Expression;
+    scalar?: boolean;
+  },
 ]>;
 
 export class JSONExtractQuoteExpr extends Expression {
@@ -11718,8 +12023,10 @@ export class JSONExtractQuoteExpr extends Expression {
 
 export type ScopeResolutionExprArgs = Merge<[
   BaseExpressionArgs,
-  { this?: Expression;
-    expression: Expression; },
+  { 
+    this?: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class ScopeResolutionExpr extends Expression {
@@ -11747,9 +12054,11 @@ export class ScopeResolutionExpr extends Expression {
 
 export type SliceExprArgs = Merge<[
   BaseExpressionArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     expression?: Expression;
-    step?: Expression; },
+    step?: Expression;
+  },
 ]>;
 
 export class SliceExpr extends Expression {
@@ -11797,8 +12106,10 @@ export class StreamExpr extends Expression {
 
 export type ModelAttributeExprArgs = Merge<[
   BaseExpressionArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class ModelAttributeExpr extends Expression {
@@ -11896,9 +12207,11 @@ export enum UseExprKind {
 }
 export type UseExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind?: UseExprKind;
+  { 
+    kind?: UseExprKind;
     this?: Expression;
-    expressions?: Expression; },
+    expressions?: Expression;
+  },
 ]>;
 
 export class UseExpr extends Expression {
@@ -11931,10 +12244,12 @@ export class UseExpr extends Expression {
 
 export type WhenExprArgs = Merge<[
   BaseExpressionArgs,
-  { matched: Expression;
+  { 
+    matched: Expression;
     source?: Expression;
     condition?: Expression;
-    then: Expression; },
+    then: Expression;
+  },
 ]>;
 
 export class WhenExpr extends Expression {
@@ -11977,7 +12292,8 @@ export class WhenExpr extends Expression {
 
 export type WhensExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression },
+  { 
+    expressions: Expression },
 ]>;
 
 export class WhensExpr extends Expression {
@@ -12053,11 +12369,13 @@ export class VariadicExpr extends Expression {
 
 export type CTEExprArgs = Merge<[
   BaseExpressionArgs,
-  { scalar?: boolean;
+  { 
+    scalar?: boolean;
     materialized?: boolean;
     keyExpressions?: Expression[];
     alias: Expression[];
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class CTEExpr extends DerivedTableExpr {
@@ -12123,8 +12441,10 @@ export class BitStringExpr extends ConditionExpr {
 
 export type HexStringExprArgs = Merge<[
   BaseExpressionArgs,
-  { isInteger?: boolean;
-    this: Expression; },
+  { 
+    isInteger?: boolean;
+    this: Expression;
+  },
 ]>;
 
 export class HexStringExpr extends ConditionExpr {
@@ -12157,8 +12477,10 @@ export class HexStringExpr extends ConditionExpr {
 
 export type ByteStringExprArgs = Merge<[
   ConditionExprArgs,
-  { isBytes?: boolean;
-    this: Expression; },
+  { 
+    isBytes?: boolean;
+    this: Expression;
+  },
 ]>;
 
 export class ByteStringExpr extends ConditionExpr {
@@ -12209,8 +12531,10 @@ export class RawStringExpr extends ConditionExpr {
 
 export type UnicodeStringExprArgs = Merge<[
   ConditionExprArgs,
-  { escape?: Expression;
-    this: Expression; },
+  { 
+    escape?: Expression;
+    this: Expression;
+  },
 ]>;
 
 export class UnicodeStringExpr extends ConditionExpr {
@@ -12250,11 +12574,13 @@ export class UnicodeStringExpr extends ConditionExpr {
  */
 export type ColumnExprArgs = Merge<[
   ConditionExprArgs,
-  { table?: IdentifierExpr;
+  { 
+    table?: IdentifierExpr;
     db?: IdentifierExpr;
     catalog?: IdentifierExpr;
     this: IdentifierExpr;
-    joinMark?: Expression; },
+    joinMark?: Expression;
+  },
 ]>;
 
 export class ColumnExpr extends ConditionExpr {
@@ -12418,8 +12744,10 @@ export class ZeroFillColumnConstraintExpr extends ColumnConstraintExpr {
 
 export type PeriodForSystemTimeConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr {
@@ -12453,7 +12781,8 @@ export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr 
 
 export type CaseSpecificColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { not: Expression },
+  { 
+    not: Expression },
 ]>;
 
 export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -12482,7 +12811,8 @@ export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export type CharacterSetColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CHARACTER_SET_COLUMN_CONSTRAINT;
@@ -12504,8 +12834,10 @@ export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export type CheckColumnConstraintExprArgs = Merge<[
   BaseExpressionArgs,
-  { enforced?: Expression;
-    this: Expression; },
+  { 
+    enforced?: Expression;
+    this: Expression;
+  },
 ]>;
 
 export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -12592,7 +12924,8 @@ export class CommentColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export type CompressColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -12615,7 +12948,8 @@ export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export type DateFormatColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -12698,7 +13032,8 @@ export class ExcludeColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export type EphemeralColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -12721,7 +13056,8 @@ export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export type GeneratedAsIdentityColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { onNull?: Expression;
+  { 
+    onNull?: Expression;
     start?: Expression;
     increment?: Expression;
     minvalue?: string;
@@ -12729,7 +13065,8 @@ export type GeneratedAsIdentityColumnConstraintExprArgs = Merge<[
     cycle?: Expression;
     order?: Expression;
     this?: Expression;
-    expression?: Expression; },
+    expression?: Expression;
+  },
 ]>;
 
 export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -12799,8 +13136,10 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
 
 export type GeneratedAsRowColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { start?: Expression;
-    hidden?: Expression; },
+  { 
+    start?: Expression;
+    hidden?: Expression;
+  },
 ]>;
 
 export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -12844,13 +13183,15 @@ export enum IndexColumnConstraintExprKind {
 
 export type IndexColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { kind?: IndexColumnConstraintExprKind;
+  { 
+    kind?: IndexColumnConstraintExprKind;
     indexType?: DataTypeExpr;
     options?: Expression[];
     granularity?: Expression;
     this?: Expression;
     expressions?: Expression[];
-    expression?: Expression; },
+    expression?: Expression;
+  },
 ]>;
 
 export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -12960,8 +13301,10 @@ export class NotForReplicationColumnConstraintExpr extends ColumnConstraintKindE
 
 export type MaskingPolicyColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -13037,8 +13380,10 @@ export class OnUpdateColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export type PrimaryKeyColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { desc?: Expression;
-    options?: Expression[]; },
+  { 
+    desc?: Expression;
+    options?: Expression[];
+  },
 ]>;
 
 export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -13090,11 +13435,13 @@ export class TitleColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export type UniqueColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { indexType?: DataTypeExpr;
+  { 
+    indexType?: DataTypeExpr;
     onConflict?: Expression;
     nulls?: Expression[];
     options?: Expression[];
-    this?: Expression; },
+    this?: Expression;
+  },
 ]>;
 
 export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -13197,10 +13544,12 @@ export class ProjectionPolicyColumnConstraintExpr extends ColumnConstraintKindEx
 
 export type ComputedColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { persisted?: Expression;
+  { 
+    persisted?: Expression;
     notNull?: Expression;
     dataType?: DataTypeExpr;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -13244,9 +13593,11 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
 
 export type InOutColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
-  { input?: Expression;
+  { 
+    input?: Expression;
     output?: Expression;
-    variadic?: Expression; },
+    variadic?: Expression;
+  },
 ]>;
 
 export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
@@ -13293,12 +13644,14 @@ export enum CopyExprKind {
 
 export type CopyExprArgs = Merge<[
   BaseExpressionArgs,
-  { kind: CopyExprKind;
+  { 
+    kind: CopyExprKind;
     files?: Expression[];
     credentials?: Expression[];
     format?: string;
     params?: Expression[];
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class CopyExpr extends DMLExpr {
@@ -13352,7 +13705,8 @@ export class CopyExpr extends DMLExpr {
 export type InsertExprArgs = Merge<[
   DMLExprArgs,
   DDLExprArgs,
-  { hint?: Expression;
+  { 
+    hint?: Expression;
     with?: WithExpr;
     isFunction?: boolean;
     conflict?: Expression;
@@ -13369,7 +13723,8 @@ export type InsertExprArgs = Merge<[
     source?: Expression;
     default?: Expression;
     this?: Expression;
-    expression?: SelectExpr; },
+    expression?: SelectExpr;
+  },
 ]>;
 
 export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
@@ -13537,8 +13892,10 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
  */
 export type LiteralExprArgs = Merge<[
   BaseExpressionArgs,
-  { isString: boolean;
-    this: string; },
+  { 
+    isString: boolean;
+    this: string;
+  },
 ]>;
 
 export class LiteralExpr extends ConditionExpr {
@@ -13685,7 +14042,8 @@ export class SortExpr extends OrderExpr {
 
 export type AlgorithmPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class AlgorithmPropertyExpr extends PropertyExpr {
@@ -13709,7 +14067,8 @@ export class AlgorithmPropertyExpr extends PropertyExpr {
 
 export type AutoIncrementPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class AutoIncrementPropertyExpr extends PropertyExpr {
@@ -13733,7 +14092,8 @@ export class AutoIncrementPropertyExpr extends PropertyExpr {
 
 export type AutoRefreshPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class AutoRefreshPropertyExpr extends PropertyExpr {
@@ -13757,7 +14117,8 @@ export class AutoRefreshPropertyExpr extends PropertyExpr {
 
 export type BackupPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class BackupPropertyExpr extends PropertyExpr {
@@ -13781,7 +14142,8 @@ export class BackupPropertyExpr extends PropertyExpr {
 
 export type BuildPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class BuildPropertyExpr extends PropertyExpr {
@@ -13805,11 +14167,13 @@ export class BuildPropertyExpr extends PropertyExpr {
 
 export type BlockCompressionPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { autotemp?: Expression;
+  { 
+    autotemp?: Expression;
     always?: Expression[];
     default?: Expression;
     manual?: Expression;
-    never?: Expression; },
+    never?: Expression;
+  },
 ]>;
 
 export class BlockCompressionPropertyExpr extends PropertyExpr {
@@ -13858,9 +14222,11 @@ export class BlockCompressionPropertyExpr extends PropertyExpr {
 
 export type CharacterSetPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { value?: string;
+  { 
+    value?: string;
     default: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class CharacterSetPropertyExpr extends PropertyExpr {
@@ -13897,8 +14263,10 @@ export class CharacterSetPropertyExpr extends PropertyExpr {
 
 export type ChecksumPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { on?: Expression;
-    default?: Expression; },
+  { 
+    on?: Expression;
+    default?: Expression;
+  },
 ]>;
 
 export class ChecksumPropertyExpr extends PropertyExpr {
@@ -13931,9 +14299,11 @@ export class ChecksumPropertyExpr extends PropertyExpr {
 
 export type CollatePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { value?: string;
+  { 
+    value?: string;
     default?: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class CollatePropertyExpr extends PropertyExpr {
@@ -13987,11 +14357,13 @@ export class CopyGrantsPropertyExpr extends PropertyExpr {
 
 export type DataBlocksizePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { size?: number | Expression;
+  { 
+    size?: number | Expression;
     units?: Expression[];
     minimum?: Expression;
     maximum?: Expression;
-    default?: Expression; },
+    default?: Expression;
+  },
 ]>;
 
 export class DataBlocksizePropertyExpr extends PropertyExpr {
@@ -14039,9 +14411,11 @@ export class DataBlocksizePropertyExpr extends PropertyExpr {
 
 export type DataDeletionPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { on: Expression;
+  { 
+    on: Expression;
     filterColumn?: Expression;
-    retentionPeriod?: Expression; },
+    retentionPeriod?: Expression;
+  },
 ]>;
 
 export class DataDeletionPropertyExpr extends PropertyExpr {
@@ -14079,7 +14453,8 @@ export class DataDeletionPropertyExpr extends PropertyExpr {
 
 export type DefinerPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class DefinerPropertyExpr extends PropertyExpr {
@@ -14103,7 +14478,8 @@ export class DefinerPropertyExpr extends PropertyExpr {
 
 export type DistKeyPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class DistKeyPropertyExpr extends PropertyExpr {
@@ -14138,10 +14514,12 @@ export enum DistributedByPropertyExprKind {
 
 export type DistributedByPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { kind: DistributedByPropertyExprKind;
+  { 
+    kind: DistributedByPropertyExprKind;
     buckets?: Expression[];
     order?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class DistributedByPropertyExpr extends PropertyExpr {
@@ -14188,7 +14566,8 @@ export class DistributedByPropertyExpr extends PropertyExpr {
 
 export type DistStylePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class DistStylePropertyExpr extends PropertyExpr {
@@ -14212,7 +14591,8 @@ export class DistStylePropertyExpr extends PropertyExpr {
 
 export type DuplicateKeyPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class DuplicateKeyPropertyExpr extends PropertyExpr {
@@ -14236,7 +14616,8 @@ export class DuplicateKeyPropertyExpr extends PropertyExpr {
 
 export type EnginePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class EnginePropertyExpr extends PropertyExpr {
@@ -14279,7 +14660,8 @@ export class HeapPropertyExpr extends PropertyExpr {
 
 export type ToTablePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class ToTablePropertyExpr extends PropertyExpr {
@@ -14303,7 +14685,8 @@ export class ToTablePropertyExpr extends PropertyExpr {
 
 export type ExecuteAsPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class ExecuteAsPropertyExpr extends PropertyExpr {
@@ -14327,7 +14710,8 @@ export class ExecuteAsPropertyExpr extends PropertyExpr {
 
 export type ExternalPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class ExternalPropertyExpr extends PropertyExpr {
@@ -14351,8 +14735,10 @@ export class ExternalPropertyExpr extends PropertyExpr {
 
 export type FallbackPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { no: Expression;
-    protection?: Expression; },
+  { 
+    no: Expression;
+    protection?: Expression;
+  },
 ]>;
 
 export class FallbackPropertyExpr extends PropertyExpr {
@@ -14385,9 +14771,11 @@ export class FallbackPropertyExpr extends PropertyExpr {
 
 export type FileFormatPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { hiveFormat?: string;
+  { 
+    hiveFormat?: string;
     this?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class FileFormatPropertyExpr extends PropertyExpr {
@@ -14429,7 +14817,8 @@ export class FileFormatPropertyExpr extends PropertyExpr {
 
 export type CredentialsPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class CredentialsPropertyExpr extends PropertyExpr {
@@ -14453,8 +14842,10 @@ export class CredentialsPropertyExpr extends PropertyExpr {
 
 export type FreespacePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression;
-    percent?: Expression; },
+  { 
+    this: Expression;
+    percent?: Expression;
+  },
 ]>;
 
 export class FreespacePropertyExpr extends PropertyExpr {
@@ -14521,7 +14912,8 @@ export class IcebergPropertyExpr extends PropertyExpr {
 
 export type InheritsPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { expressions?: Expression[] },
+  { 
+    expressions?: Expression[] },
 ]>;
 
 export class InheritsPropertyExpr extends PropertyExpr {
@@ -14540,7 +14932,8 @@ export class InheritsPropertyExpr extends PropertyExpr {
 
 export type InputModelPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class InputModelPropertyExpr extends PropertyExpr {
@@ -14559,7 +14952,8 @@ export class InputModelPropertyExpr extends PropertyExpr {
 
 export type OutputModelPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class OutputModelPropertyExpr extends PropertyExpr {
@@ -14578,9 +14972,11 @@ export class OutputModelPropertyExpr extends PropertyExpr {
 
 export type IsolatedLoadingPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { no?: Expression;
+  { 
+    no?: Expression;
     concurrent?: Expression;
-    target?: Expression; },
+    target?: Expression;
+  },
 ]>;
 
 export class IsolatedLoadingPropertyExpr extends PropertyExpr {
@@ -14619,11 +15015,13 @@ export class IsolatedLoadingPropertyExpr extends PropertyExpr {
 
 export type JournalPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { no?: Expression;
+  { 
+    no?: Expression;
     dual?: Expression;
     before?: Expression;
     local?: Expression;
-    after?: Expression; },
+    after?: Expression;
+  },
 ]>;
 
 export class JournalPropertyExpr extends PropertyExpr {
@@ -14671,7 +15069,8 @@ export class JournalPropertyExpr extends PropertyExpr {
 
 export type LanguagePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class LanguagePropertyExpr extends PropertyExpr {
@@ -14694,7 +15093,8 @@ export class LanguagePropertyExpr extends PropertyExpr {
 
 export type EnviromentPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class EnviromentPropertyExpr extends PropertyExpr {
@@ -14717,9 +15117,11 @@ export class EnviromentPropertyExpr extends PropertyExpr {
 
 export type ClusteredByPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { expressions: Expression[];
+  { 
+    expressions: Expression[];
     sortedBy?: string;
-    buckets: Expression[]; },
+    buckets: Expression[];
+  },
 ]>;
 
 export class ClusteredByPropertyExpr extends PropertyExpr {
@@ -14771,9 +15173,11 @@ export enum DictPropertyExprKind {
 
 export type DictPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     kind: DictPropertyExprKind;
-    settings?: Expression[]; },
+    settings?: Expression[];
+  },
 ]>;
 
 export class DictPropertyExpr extends PropertyExpr {
@@ -14830,9 +15234,11 @@ export class DictSubPropertyExpr extends PropertyExpr {
 
 export type DictRangeExprArgs = Merge<[
   PropertyExprArgs,
-  { min: Expression;
+  { 
+    min: Expression;
     max: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class DictRangeExpr extends PropertyExpr {
@@ -14887,7 +15293,8 @@ export class DynamicPropertyExpr extends PropertyExpr {
 
 export type OnClusterExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class OnClusterExpr extends PropertyExpr {
@@ -14928,8 +15335,10 @@ export class EmptyPropertyExpr extends PropertyExpr {
 
 export type LikePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class LikePropertyExpr extends PropertyExpr {
@@ -14958,7 +15367,8 @@ export class LikePropertyExpr extends PropertyExpr {
 
 export type LocationPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class LocationPropertyExpr extends PropertyExpr {
@@ -14981,7 +15391,8 @@ export class LocationPropertyExpr extends PropertyExpr {
 
 export type LockPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class LockPropertyExpr extends PropertyExpr {
@@ -15016,11 +15427,13 @@ export enum LockingPropertyExprKind {
 
 export type LockingPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { kind: LockingPropertyExprKind;
+  { 
+    kind: LockingPropertyExprKind;
     forOrIn?: Expression;
     lockType: DataTypeExpr;
     override?: Expression;
-    this?: Expression; },
+    this?: Expression;
+  },
 ]>;
 
 export class LockingPropertyExpr extends PropertyExpr {
@@ -15067,7 +15480,8 @@ export class LockingPropertyExpr extends PropertyExpr {
 
 export type LogPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { no: Expression },
+  { 
+    no: Expression },
 ]>;
 
 export class LogPropertyExpr extends PropertyExpr {
@@ -15095,7 +15509,8 @@ export class LogPropertyExpr extends PropertyExpr {
 
 export type MaterializedPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class MaterializedPropertyExpr extends PropertyExpr {
@@ -15118,11 +15533,13 @@ export class MaterializedPropertyExpr extends PropertyExpr {
 
 export type MergeBlockRatioPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { value?: string;
+  { 
+    value?: string;
     no?: Expression;
     default?: Expression;
     percent?: Expression;
-    this?: Expression; },
+    this?: Expression;
+  },
 ]>;
 
 export class MergeBlockRatioPropertyExpr extends PropertyExpr {
@@ -15187,7 +15604,8 @@ export class NoPrimaryIndexPropertyExpr extends PropertyExpr {
 
 export type OnPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 export class OnPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ON_PROPERTY;
@@ -15210,7 +15628,8 @@ export class OnPropertyExpr extends PropertyExpr {
 
 export type OnCommitPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { delete?: Expression },
+  { 
+    delete?: Expression },
 ]>;
 
 export class OnCommitPropertyExpr extends PropertyExpr {
@@ -15238,7 +15657,8 @@ export class OnCommitPropertyExpr extends PropertyExpr {
 
 export type PartitionedByPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class PartitionedByPropertyExpr extends PropertyExpr {
@@ -15262,8 +15682,10 @@ export class PartitionedByPropertyExpr extends PropertyExpr {
 
 export type PartitionedByBucketExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class PartitionedByBucketExpr extends PropertyExpr {
@@ -15292,8 +15714,10 @@ export class PartitionedByBucketExpr extends PropertyExpr {
 
 export type PartitionByTruncateExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class PartitionByTruncateExpr extends PropertyExpr {
@@ -15322,8 +15746,10 @@ export class PartitionByTruncateExpr extends PropertyExpr {
 
 export type PartitionByRangePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { partitionExpressions: Expression[];
-    createExpressions: Expression[]; },
+  { 
+    partitionExpressions: Expression[];
+    createExpressions: Expression[];
+  },
 ]>;
 
 export class PartitionByRangePropertyExpr extends PropertyExpr {
@@ -15357,7 +15783,8 @@ export class PartitionByRangePropertyExpr extends PropertyExpr {
 
 export type RollupPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class RollupPropertyExpr extends PropertyExpr {
@@ -15381,8 +15808,10 @@ export class RollupPropertyExpr extends PropertyExpr {
 
 export type PartitionByListPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { partitionExpressions: Expression[];
-    createExpressions: Expression[]; },
+  { 
+    partitionExpressions: Expression[];
+    createExpressions: Expression[];
+  },
 ]>;
 
 export class PartitionByListPropertyExpr extends PropertyExpr {
@@ -15425,11 +15854,13 @@ export enum RefreshTriggerPropertyExprKind {
 }
 export type RefreshTriggerPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { method?: string;
+  { 
+    method?: string;
     kind?: RefreshTriggerPropertyExprKind;
     every?: Expression;
     unit?: Expression;
-    starts?: Expression[]; },
+    starts?: Expression[];
+  },
 ]>;
 
 export class RefreshTriggerPropertyExpr extends PropertyExpr {
@@ -15478,7 +15909,8 @@ export class RefreshTriggerPropertyExpr extends PropertyExpr {
 
 export type UniqueKeyPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class UniqueKeyPropertyExpr extends PropertyExpr {
@@ -15502,8 +15934,10 @@ export class UniqueKeyPropertyExpr extends PropertyExpr {
 
 export type PartitionedOfPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class PartitionedOfPropertyExpr extends PropertyExpr {
@@ -15564,10 +15998,12 @@ export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
 
 export type ReturnsPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     isTable?: Expression;
     table?: Expression;
-    null?: Expression; },
+    null?: Expression;
+  },
 ]>;
 
 export class ReturnsPropertyExpr extends PropertyExpr {
@@ -15627,7 +16063,8 @@ export class StrictPropertyExpr extends PropertyExpr {
 
 export type RowFormatPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class RowFormatPropertyExpr extends PropertyExpr {
@@ -15646,13 +16083,15 @@ export class RowFormatPropertyExpr extends PropertyExpr {
 
 export type RowFormatDelimitedPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { fields?: Expression[];
+  { 
+    fields?: Expression[];
     escaped?: Expression;
     collectionItems?: Expression[];
     mapKeys?: Expression[];
     lines?: Expression[];
     null?: Expression;
-    serde?: Expression; },
+    serde?: Expression;
+  },
 ]>;
 
 export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
@@ -15711,8 +16150,10 @@ export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
 
 export type RowFormatSerdePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression;
-    serdeProperties?: Expression[]; },
+  { 
+    this: Expression;
+    serdeProperties?: Expression[];
+  },
 ]>;
 
 export class RowFormatSerdePropertyExpr extends PropertyExpr {
@@ -15746,7 +16187,8 @@ export class RowFormatSerdePropertyExpr extends PropertyExpr {
 
 export type SamplePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class SamplePropertyExpr extends PropertyExpr {
@@ -15769,7 +16211,8 @@ export class SamplePropertyExpr extends PropertyExpr {
 
 export type SecurityPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class SecurityPropertyExpr extends PropertyExpr {
@@ -15793,7 +16236,8 @@ export class SecurityPropertyExpr extends PropertyExpr {
 
 export type SchemaCommentPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class SchemaCommentPropertyExpr extends PropertyExpr {
@@ -15813,8 +16257,10 @@ export class SchemaCommentPropertyExpr extends PropertyExpr {
 
 export type SerdePropertiesExprArgs = Merge<[
   PropertyExprArgs,
-  { expressions: Expression[];
-    with?: Expression; },
+  { 
+    expressions: Expression[];
+    with?: Expression;
+  },
 ]>;
 
 export class SerdePropertiesExpr extends PropertyExpr {
@@ -15847,7 +16293,8 @@ export class SerdePropertiesExpr extends PropertyExpr {
 
 export type SetPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { multi: Expression },
+  { 
+    multi: Expression },
 ]>;
 
 export class SetPropertyExpr extends PropertyExpr {
@@ -15871,7 +16318,8 @@ export class SetPropertyExpr extends PropertyExpr {
 
 export type SharingPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class SharingPropertyExpr extends PropertyExpr {
@@ -15895,7 +16343,8 @@ export class SharingPropertyExpr extends PropertyExpr {
 
 export type SetConfigPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class SetConfigPropertyExpr extends PropertyExpr {
@@ -15919,7 +16368,8 @@ export class SetConfigPropertyExpr extends PropertyExpr {
 
 export type SettingsPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class SettingsPropertyExpr extends PropertyExpr {
@@ -15943,8 +16393,10 @@ export class SettingsPropertyExpr extends PropertyExpr {
 
 export type SortKeyPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression;
-    compound?: Expression; },
+  { 
+    this: Expression;
+    compound?: Expression;
+  },
 ]>;
 
 export class SortKeyPropertyExpr extends PropertyExpr {
@@ -15977,7 +16429,8 @@ export class SortKeyPropertyExpr extends PropertyExpr {
 
 export type SqlReadWritePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class SqlReadWritePropertyExpr extends PropertyExpr {
@@ -16001,7 +16454,8 @@ export class SqlReadWritePropertyExpr extends PropertyExpr {
 
 export type SqlSecurityPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class SqlSecurityPropertyExpr extends PropertyExpr {
@@ -16025,7 +16479,8 @@ export class SqlSecurityPropertyExpr extends PropertyExpr {
 
 export type StabilityPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class StabilityPropertyExpr extends PropertyExpr {
@@ -16049,7 +16504,8 @@ export class StabilityPropertyExpr extends PropertyExpr {
 
 export type StorageHandlerPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class StorageHandlerPropertyExpr extends PropertyExpr {
@@ -16073,7 +16529,8 @@ export class StorageHandlerPropertyExpr extends PropertyExpr {
 
 export type TemporaryPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class TemporaryPropertyExpr extends PropertyExpr {
@@ -16139,7 +16596,8 @@ export class TagsExpr extends multiInherit(Expression, PropertyExpr, ColumnConst
 
 export type TransformModelPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class TransformModelPropertyExpr extends PropertyExpr {
@@ -16163,7 +16621,8 @@ export class TransformModelPropertyExpr extends PropertyExpr {
 
 export type TransientPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class TransientPropertyExpr extends PropertyExpr {
@@ -16204,7 +16663,8 @@ export class UnloggedPropertyExpr extends PropertyExpr {
 
 export type UsingTemplatePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class UsingTemplatePropertyExpr extends PropertyExpr {
@@ -16228,7 +16688,8 @@ export class UsingTemplatePropertyExpr extends PropertyExpr {
 
 export type ViewAttributePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class ViewAttributePropertyExpr extends PropertyExpr {
@@ -16252,7 +16713,8 @@ export class ViewAttributePropertyExpr extends PropertyExpr {
 
 export type VolatilePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class VolatilePropertyExpr extends PropertyExpr {
@@ -16276,8 +16738,10 @@ export class VolatilePropertyExpr extends PropertyExpr {
 
 export type WithDataPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { no: Expression;
-    statistics?: Expression[]; },
+  { 
+    no: Expression;
+    statistics?: Expression[];
+  },
 ]>;
 
 export class WithDataPropertyExpr extends PropertyExpr {
@@ -16310,7 +16774,8 @@ export class WithDataPropertyExpr extends PropertyExpr {
 
 export type WithJournalTablePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class WithJournalTablePropertyExpr extends PropertyExpr {
@@ -16334,7 +16799,8 @@ export class WithJournalTablePropertyExpr extends PropertyExpr {
 
 export type WithSchemaBindingPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class WithSchemaBindingPropertyExpr extends PropertyExpr {
@@ -16358,10 +16824,12 @@ export class WithSchemaBindingPropertyExpr extends PropertyExpr {
 
 export type WithSystemVersioningPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { on?: Expression;
+  { 
+    on?: Expression;
     dataConsistency?: Expression;
     retentionPeriod?: Expression;
-    with: Expression; },
+    with: Expression;
+  },
 ]>;
 
 export class WithSystemVersioningPropertyExpr extends PropertyExpr {
@@ -16409,7 +16877,8 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
 
 export type WithProcedureOptionsExprArgs = Merge<[
   PropertyExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class WithProcedureOptionsExpr extends PropertyExpr {
@@ -16433,9 +16902,11 @@ export class WithProcedureOptionsExpr extends PropertyExpr {
 
 export type EncodePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     properties?: Expression[];
-    key?: Expression; },
+    key?: Expression;
+  },
 ]>;
 
 export class EncodePropertyExpr extends PropertyExpr {
@@ -16475,9 +16946,11 @@ export class EncodePropertyExpr extends PropertyExpr {
 
 export type IncludePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     alias?: Expression;
-    columnDef?: Expression; },
+    columnDef?: Expression;
+  },
 ]>;
 
 export class IncludePropertyExpr extends PropertyExpr {
@@ -16560,7 +17033,8 @@ export enum PropertiesLocation {
 
 export type PropertiesExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class PropertiesExpr extends Expression {
@@ -16649,7 +17123,8 @@ export enum SetOperationExprKind {
 
 export type SetOperationExprArgs = Merge<[
   QueryExprArgs,
-  { this: QueryExpr;
+  { 
+    this: QueryExpr;
     expression: QueryExpr;
     distinct?: boolean;
     byName?: string;
@@ -16674,7 +17149,8 @@ export type SetOperationExprArgs = Merge<[
     limit?: number | Expression;
     offset?: number | Expression;
     locks?: Expression[];
-    sample?: number | Expression; },
+    sample?: number | Expression;
+  },
 ]>;
 
 export class SetOperationExpr extends QueryExpr {
@@ -16826,7 +17302,8 @@ export class SetOperationExpr extends QueryExpr {
 
 export type UpdateExprArgs = Merge<[
   DMLExprArgs,
-  { with?: Expression;
+  { 
+    with?: Expression;
     this?: Expression;
     expressions?: Expression[];
     from?: Expression;
@@ -16834,7 +17311,8 @@ export type UpdateExprArgs = Merge<[
     returning?: Expression;
     order?: Expression;
     limit?: number | Expression;
-    options?: Expression[]; },
+    options?: Expression[];
+  },
 ]>;
 
 export class UpdateExpr extends DMLExpr {
@@ -17090,7 +17568,8 @@ export enum SelectExprKind {
  */
 export type SelectExprArgs = Merge<[
   QueryExprArgs,
-  { with?: Expression;
+  { 
+    with?: Expression;
     kind?: SelectExprKind;
     expressions?: Expression[];
     hint?: Expression;
@@ -17116,7 +17595,8 @@ export type SelectExprArgs = Merge<[
     limit?: number | Expression;
     offset?: number | Expression;
     locks?: Expression[];
-    sample?: number | Expression; },
+    sample?: number | Expression;
+  },
 ]>;
 
 export class SelectExpr extends QueryExpr {
@@ -17757,9 +18237,11 @@ export class SelectExpr extends QueryExpr {
 export type SubqueryExprArgs = Merge<[
   DerivedTableExprArgs,
   QueryExprArgs,
-  { with?: WithExpr;
+  { 
+    with?: WithExpr;
     alias?: TableAliasExpr;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
@@ -17877,13 +18359,15 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
 
 export type WindowExprArgs = Merge<[
   ConditionExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     partitionBy?: Expression;
     order?: Expression;
     spec?: Expression;
     alias?: TableAliasExpr;
     over?: Expression;
-    first?: Expression; },
+    first?: Expression;
+  },
 ]>;
 
 export class WindowExpr extends ConditionExpr {
@@ -17941,8 +18425,10 @@ export class WindowExpr extends ConditionExpr {
 
 export type ParameterExprArgs = Merge<[
   ConditionExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class ParameterExpr extends ConditionExpr {
@@ -17980,8 +18466,10 @@ export enum SessionParameterExprKind {
 }
 export type SessionParameterExprArgs = Merge<[
   ConditionExprArgs,
-  { this: Expression;
-    kind?: SessionParameterExprKind; },
+  { 
+    this: Expression;
+    kind?: SessionParameterExprKind;
+  },
 ]>;
 
 export class SessionParameterExpr extends ConditionExpr {
@@ -18020,10 +18508,12 @@ export enum PlaceholderExprKind {
 }
 export type PlaceholderExprArgs = Merge<[
   ConditionExprArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     kind?: PlaceholderExprKind;
     widget?: Expression;
-    jdbc?: boolean; },
+    jdbc?: boolean;
+  },
 ]>;
 
 export class PlaceholderExpr extends ConditionExpr {
@@ -18130,7 +18620,8 @@ export class BooleanExpr extends ConditionExpr {
 
 export type PseudoTypeExprArgs = Merge<[
   DataTypeExprArgs,
-  { this: DataTypeExprKind },
+  { 
+    this: DataTypeExprKind },
 ]>;
 
 export class PseudoTypeExpr extends DataTypeExpr {
@@ -18154,7 +18645,8 @@ export class PseudoTypeExpr extends DataTypeExpr {
 
 export type ObjectIdentifierExprArgs = Merge<[
   DataTypeExprArgs,
-  { this: DataTypeExprKind },
+  { 
+    this: DataTypeExprKind },
 ]>;
 
 export class ObjectIdentifierExpr extends DataTypeExpr {
@@ -18178,8 +18670,10 @@ export class ObjectIdentifierExpr extends DataTypeExpr {
 
 export type BinaryExprArgs = Merge<[
   ConditionExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class BinaryExpr extends ConditionExpr {
@@ -18249,11 +18743,13 @@ export class PivotAliasExpr extends AliasExpr {
 
 export type BracketExprArgs = Merge<[
   ConditionExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expressions: Expression[];
     offset?: boolean;
     safe?: boolean;
-    returnsListForMaps?: Expression[]; },
+    returnsListForMaps?: Expression[];
+  },
 ]>;
 
 /**
@@ -18307,8 +18803,10 @@ export class BracketExpr extends ConditionExpr {
 
 export type IntervalOpExprArgs = Merge<[
   TimeUnitExprArgs,
-  { unit?: VarExpr | IntervalSpanExpr;
-    expression: Expression; },
+  { 
+    unit?: VarExpr | IntervalSpanExpr;
+    expression: Expression;
+  },
 ]>;
 
 export class IntervalOpExpr extends TimeUnitExpr {
@@ -18349,8 +18847,10 @@ export class IntervalOpExpr extends TimeUnitExpr {
  */
 export type IntervalSpanExprArgs = Merge<[
   DataTypeExprArgs,
-  { this: DataTypeExprKind;
-    expression: Expression; },
+  { 
+    this: DataTypeExprKind;
+    expression: Expression;
+  },
 ]>;
 
 export class IntervalSpanExpr extends DataTypeExpr {
@@ -18379,8 +18879,10 @@ export class IntervalSpanExpr extends DataTypeExpr {
 
 export type IntervalExprArgs = Merge<[
   TimeUnitExprArgs,
-  { this?: Expression;
-    unit?: VarExpr | IntervalSpanExpr; },
+  { 
+    this?: Expression;
+    unit?: VarExpr | IntervalSpanExpr;
+  },
 ]>;
 
 export class IntervalExpr extends TimeUnitExpr {
@@ -18538,7 +19040,8 @@ export class FuncExpr extends ConditionExpr {
 
 export type JSONPathFilterExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 export class JSONPathFilterExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_FILTER;
@@ -18561,7 +19064,8 @@ export class JSONPathFilterExpr extends JSONPathPartExpr {
 
 export type JSONPathKeyExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 export class JSONPathKeyExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_KEY;
@@ -18584,7 +19088,8 @@ export class JSONPathKeyExpr extends JSONPathPartExpr {
 
 export type JSONPathRecursiveExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class JSONPathRecursiveExpr extends JSONPathPartExpr {
@@ -18624,7 +19129,8 @@ export class JSONPathRootExpr extends JSONPathPartExpr {
 
 export type JSONPathScriptExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class JSONPathScriptExpr extends JSONPathPartExpr {
@@ -18648,9 +19154,11 @@ export class JSONPathScriptExpr extends JSONPathPartExpr {
 
 export type JSONPathSliceExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { start?: Expression;
+  { 
+    start?: Expression;
     end?: Expression;
-    step?: Expression; },
+    step?: Expression;
+  },
 ]>;
 
 export class JSONPathSliceExpr extends JSONPathPartExpr {
@@ -18688,7 +19196,8 @@ export class JSONPathSliceExpr extends JSONPathPartExpr {
 
 export type JSONPathSelectorExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class JSONPathSelectorExpr extends JSONPathPartExpr {
@@ -18712,7 +19221,8 @@ export class JSONPathSelectorExpr extends JSONPathPartExpr {
 
 export type JSONPathSubscriptExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class JSONPathSubscriptExpr extends JSONPathPartExpr {
@@ -18736,7 +19246,8 @@ export class JSONPathSubscriptExpr extends JSONPathPartExpr {
 
 export type JSONPathUnionExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class JSONPathUnionExpr extends JSONPathPartExpr {
@@ -18776,12 +19287,14 @@ export class JSONPathWildcardExpr extends JSONPathPartExpr {
 
 export type MergeExprArgs = Merge<[
   DMLExprArgs,
-  { using: string;
+  { 
+    using: string;
     on?: Expression;
     usingCond?: string;
     whens: Expression[];
     with?: Expression;
-    returning?: Expression; },
+    returning?: Expression;
+  },
 ]>;
 
 export class MergeExpr extends DMLExpr {
@@ -18834,12 +19347,14 @@ export class MergeExpr extends DMLExpr {
 
 export type LateralExprArgs = Merge<[
   BaseExpressionArgs,
-  { view?: Expression;
+  { 
+    view?: Expression;
     outer?: Expression;
     crossApply?: boolean;
     ordinality?: boolean;
     alias?: TableAliasExpr;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class LateralExpr extends UDTFExpr {
@@ -18892,11 +19407,13 @@ export class LateralExpr extends UDTFExpr {
 
 export type TableFromRowsExprArgs = Merge<[
   UDTFExprArgs,
-  { joins?: Expression[];
+  { 
+    joins?: Expression[];
     pivots?: Expression[];
     sample?: number | Expression;
     alias?: TableAliasExpr;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class TableFromRowsExpr extends UDTFExpr {
@@ -19002,11 +19519,13 @@ export class IntersectExpr extends SetOperationExpr {
  */
 export type ValuesExprArgs = Merge<[
   UDTFExprArgs,
-  { expressions: Expression[];
+  { 
+    expressions: Expression[];
     alias?: TableAliasExpr;
     order?: Expression;
     limit?: number | Expression;
-    offset?: number | Expression; },
+    offset?: number | Expression;
+  },
 ]>;
 
 export class ValuesExpr extends UDTFExpr {
@@ -19104,9 +19623,11 @@ export class ConnectorExpr extends BinaryExpr {
 
 export type BitwiseAndExprArgs = Merge<[
   BinaryExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    padside?: Expression; },
+    padside?: Expression;
+  },
 ]>;
 
 export class BitwiseAndExpr extends BinaryExpr {
@@ -19132,9 +19653,11 @@ export class BitwiseAndExpr extends BinaryExpr {
 
 export type BitwiseLeftShiftExprArgs = Merge<[
   BinaryExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    requiresInt128?: Expression; },
+    requiresInt128?: Expression;
+  },
 ]>;
 
 export class BitwiseLeftShiftExpr extends BinaryExpr {
@@ -19160,9 +19683,11 @@ export class BitwiseLeftShiftExpr extends BinaryExpr {
 
 export type BitwiseOrExprArgs = Merge<[
   BinaryExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    padside?: Expression; },
+    padside?: Expression;
+  },
 ]>;
 
 export class BitwiseOrExpr extends BinaryExpr {
@@ -19188,9 +19713,11 @@ export class BitwiseOrExpr extends BinaryExpr {
 
 export type BitwiseRightShiftExprArgs = Merge<[
   BinaryExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    requiresInt128?: Expression; },
+    requiresInt128?: Expression;
+  },
 ]>;
 
 export class BitwiseRightShiftExpr extends BinaryExpr {
@@ -19216,9 +19743,11 @@ export class BitwiseRightShiftExpr extends BinaryExpr {
 
 export type BitwiseXorExprArgs = Merge<[
   BinaryExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    padside?: Expression; },
+    padside?: Expression;
+  },
 ]>;
 
 export class BitwiseXorExpr extends BinaryExpr {
@@ -19244,10 +19773,12 @@ export class BitwiseXorExpr extends BinaryExpr {
 
 export type DivExprArgs = Merge<[
   BinaryExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
     typed?: DataTypeExpr;
-    safe?: boolean; },
+    safe?: boolean;
+  },
 ]>;
 
 export class DivExpr extends BinaryExpr {
@@ -19399,9 +19930,11 @@ export class DotExpr extends BinaryExpr {
 
 export type DPipeExprArgs = Merge<[
   BinaryExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    safe?: boolean; },
+    safe?: boolean;
+  },
 ]>;
 
 export class DPipeExpr extends BinaryExpr {
@@ -19803,9 +20336,11 @@ export class NEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
 
 export type OperatorExprArgs = Merge<[
   BinaryExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     operator: Expression;
-    expression: Expression; },
+    expression: Expression;
+  },
 ]>;
 
 export class OperatorExpr extends BinaryExpr {
@@ -19969,10 +20504,12 @@ export class NegExpr extends UnaryExpr {
 
 export type BetweenExprArgs = Merge<[
   PredicateExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     low: Expression;
     high: Expression;
-    symmetric?: Expression; },
+    symmetric?: Expression;
+  },
 ]>;
 
 export class BetweenExpr extends PredicateExpr {
@@ -20011,12 +20548,14 @@ export class BetweenExpr extends PredicateExpr {
 
 export type InExprArgs = Merge<[
   PredicateExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expressions?: Expression[];
     query?: Expression;
     unnest?: UnnestExpr;
     field?: Expression;
-    isGlobal?: boolean; },
+    isGlobal?: boolean;
+  },
 ]>;
 
 export class InExpr extends PredicateExpr {
@@ -20201,8 +20740,10 @@ export class AsinhExpr extends FuncExpr {
 
 export type AtanExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class AtanExpr extends FuncExpr {
@@ -20257,8 +20798,10 @@ export class AtanhExpr extends FuncExpr {
 
 export type Atan2ExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class Atan2Expr extends FuncExpr {
@@ -20577,8 +21120,10 @@ export class CoshExpr extends FuncExpr {
 
 export type CosineDistanceExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class CosineDistanceExpr extends FuncExpr {
@@ -20611,8 +21156,10 @@ export class CosineDistanceExpr extends FuncExpr {
 
 export type DotProductExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class DotProductExpr extends FuncExpr {
@@ -20645,8 +21192,10 @@ export class DotProductExpr extends FuncExpr {
 
 export type EuclideanDistanceExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class EuclideanDistanceExpr extends FuncExpr {
@@ -20679,8 +21228,10 @@ export class EuclideanDistanceExpr extends FuncExpr {
 
 export type ManhattanDistanceExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class ManhattanDistanceExpr extends FuncExpr {
@@ -20713,8 +21264,10 @@ export class ManhattanDistanceExpr extends FuncExpr {
 
 export type JarowinklerSimilarityExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class JarowinklerSimilarityExpr extends FuncExpr {
@@ -20879,8 +21432,10 @@ export class ByteLengthExpr extends FuncExpr {
 
 export type BoolnotExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    roundInput?: Expression; },
+  { 
+    this: Expression;
+    roundInput?: Expression;
+  },
 ]>;
 
 export class BoolnotExpr extends FuncExpr {
@@ -20913,9 +21468,11 @@ export class BoolnotExpr extends FuncExpr {
 
 export type BoolandExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    roundInput?: Expression; },
+    roundInput?: Expression;
+  },
 ]>;
 
 export class BoolandExpr extends FuncExpr {
@@ -20953,9 +21510,11 @@ export class BoolandExpr extends FuncExpr {
 
 export type BoolorExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    roundInput?: Expression; },
+    roundInput?: Expression;
+  },
 ]>;
 
 export class BoolorExpr extends FuncExpr {
@@ -21018,9 +21577,11 @@ export class JSONBoolExpr extends FuncExpr {
 
 export type ArrayRemoveExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    nullPropagation?: Expression; },
+    nullPropagation?: Expression;
+  },
 ]>;
 
 export class ArrayRemoveExpr extends FuncExpr {
@@ -21080,8 +21641,10 @@ export class AbsExpr extends FuncExpr {
 
 export type ApproxTopKEstimateExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class ApproxTopKEstimateExpr extends FuncExpr {
@@ -21114,7 +21677,8 @@ export class ApproxTopKEstimateExpr extends FuncExpr {
 
 export type FarmFingerprintExprArgs = Merge<[
   FuncExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class FarmFingerprintExpr extends FuncExpr {
@@ -21168,8 +21732,10 @@ export class FlattenExpr extends FuncExpr {
 
 export type Float64ExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class Float64Expr extends FuncExpr {
@@ -21205,8 +21771,10 @@ export class Float64Expr extends FuncExpr {
  */
 export type TransformExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class TransformExpr extends FuncExpr {
@@ -21239,9 +21807,11 @@ export class TransformExpr extends FuncExpr {
 
 export type TranslateExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     from: Expression;
-    to: Expression; },
+    to: Expression;
+  },
 ]>;
 
 export class TranslateExpr extends FuncExpr {
@@ -21279,8 +21849,10 @@ export class TranslateExpr extends FuncExpr {
 
 export type AnonymousExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class AnonymousExpr extends FuncExpr {
@@ -21319,8 +21891,10 @@ export class AnonymousExpr extends FuncExpr {
 
 export type ApplyExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class ApplyExpr extends FuncExpr {
@@ -21353,9 +21927,11 @@ export class ApplyExpr extends FuncExpr {
 
 export type ArrayExprArgs = Merge<[
   FuncExprArgs,
-  { expressions?: Expression[];
+  { 
+    expressions?: Expression[];
     bracketNotation?: Expression;
-    structNameInheritance?: string; },
+    structNameInheritance?: string;
+  },
 ]>;
 
 export class ArrayExpr extends FuncExpr {
@@ -21443,8 +22019,10 @@ export class ToArrayExpr extends FuncExpr {
 
 export type ToBooleanExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    safe?: boolean; },
+  { 
+    this: Expression;
+    safe?: boolean;
+  },
 ]>;
 
 export class ToBooleanExpr extends FuncExpr {
@@ -21477,7 +22055,8 @@ export class ToBooleanExpr extends FuncExpr {
 
 export type ListExprArgs = Merge<[
   FuncExprArgs,
-  { expressions?: Expression[] },
+  { 
+    expressions?: Expression[] },
 ]>;
 
 export class ListExpr extends FuncExpr {
@@ -21510,10 +22089,12 @@ export class ListExpr extends FuncExpr {
  */
 export type PadExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
     fillPattern?: Expression;
-    isLeft: boolean; },
+    isLeft: boolean;
+  },
 ]>;
 
 export class PadExpr extends FuncExpr {
@@ -21560,10 +22141,12 @@ export class PadExpr extends FuncExpr {
  */
 export type ToCharExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     format?: Expression;
     nlsparam?: Expression;
-    isNumeric?: Expression; },
+    isNumeric?: Expression;
+  },
 ]>;
 
 export class ToCharExpr extends FuncExpr {
@@ -21632,13 +22215,15 @@ export class ToCodePointsExpr extends FuncExpr {
  */
 export type ToNumberExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     format?: Expression;
     nlsparam?: Expression;
     precision?: Expression;
     scale?: Expression;
     safe?: boolean;
-    safeName?: string; },
+    safeName?: string;
+  },
 ]>;
 
 export class ToNumberExpr extends FuncExpr {
@@ -21696,9 +22281,11 @@ export class ToNumberExpr extends FuncExpr {
 
 export type ToDoubleExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     format?: Expression;
-    safe?: boolean; },
+    safe?: boolean;
+  },
 ]>;
 
 export class ToDoubleExpr extends FuncExpr {
@@ -21740,8 +22327,10 @@ export class ToDoubleExpr extends FuncExpr {
 
 export type ToDecfloatExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    format?: Expression; },
+  { 
+    this: Expression;
+    format?: Expression;
+  },
 ]>;
 
 export class ToDecfloatExpr extends FuncExpr {
@@ -21774,8 +22363,10 @@ export class ToDecfloatExpr extends FuncExpr {
 
 export type TryToDecfloatExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    format?: Expression; },
+  { 
+    this: Expression;
+    format?: Expression;
+  },
 ]>;
 
 export class TryToDecfloatExpr extends FuncExpr {
@@ -21808,9 +22399,11 @@ export class TryToDecfloatExpr extends FuncExpr {
 
 export type ToFileExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     path?: Expression;
-    safe?: boolean; },
+    safe?: boolean;
+  },
 ]>;
 
 export class ToFileExpr extends FuncExpr {
@@ -21874,8 +22467,10 @@ export class CodePointsToBytesExpr extends FuncExpr {
 
 export type ColumnsExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    unpack?: Expression; },
+  { 
+    this: Expression;
+    unpack?: Expression;
+  },
 ]>;
 
 export class ColumnsExpr extends FuncExpr {
@@ -21908,10 +22503,12 @@ export class ColumnsExpr extends FuncExpr {
 
 export type ConvertExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
     style?: Expression;
-    safe?: boolean; },
+    safe?: boolean;
+  },
 ]>;
 
 export class ConvertExpr extends FuncExpr {
@@ -21958,9 +22555,11 @@ export class ConvertExpr extends FuncExpr {
 
 export type ConvertToCharsetExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     dest: Expression;
-    source?: Expression; },
+    source?: Expression;
+  },
 ]>;
 
 export class ConvertToCharsetExpr extends FuncExpr {
@@ -22002,10 +22601,12 @@ export class ConvertToCharsetExpr extends FuncExpr {
 
 export type ConvertTimezoneExprArgs = Merge<[
   FuncExprArgs,
-  { sourceTz?: Expression;
+  { 
+    sourceTz?: Expression;
     targetTz: Expression;
     timestamp: Expression;
-    options?: Expression[]; },
+    options?: Expression[];
+  },
 ]>;
 
 export class ConvertTimezoneExpr extends FuncExpr {
@@ -22074,10 +22675,12 @@ export class CodePointsToStringExpr extends FuncExpr {
 
 export type GenerateSeriesExprArgs = Merge<[
   FuncExprArgs,
-  { start: Expression;
+  { 
+    start: Expression;
     end: Expression;
     step?: Expression;
-    isEndExclusive?: Expression; },
+    isEndExclusive?: Expression;
+  },
 ]>;
 
 export class GenerateSeriesExpr extends FuncExpr {
@@ -22124,8 +22727,10 @@ export class GenerateSeriesExpr extends FuncExpr {
 export type GeneratorExprArgs = Merge<[
   FuncExprArgs,
   UDTFExprArgs,
-  { rowcount?: Expression;
-    timelimit?: Expression; },
+  { 
+    rowcount?: Expression;
+    timelimit?: Expression;
+  },
 ]>;
 
 export class GeneratorExpr extends multiInherit(FuncExpr, UDTFExpr) {
@@ -22159,9 +22764,11 @@ export class GeneratorExpr extends multiInherit(FuncExpr, UDTFExpr) {
 
 export type AIClassifyExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     categories: Expression;
-    config?: Expression; },
+    config?: Expression;
+  },
 ]>;
 
 export class AIClassifyExpr extends FuncExpr {
@@ -22201,8 +22808,10 @@ export class AIClassifyExpr extends FuncExpr {
 
 export type ArrayAllExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class ArrayAllExpr extends FuncExpr {
@@ -22238,8 +22847,10 @@ export class ArrayAllExpr extends FuncExpr {
  */
 export type ArrayAnyExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class ArrayAnyExpr extends FuncExpr {
@@ -22272,9 +22883,11 @@ export class ArrayAnyExpr extends FuncExpr {
 
 export type ArrayAppendExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    nullPropagation?: Expression; },
+    nullPropagation?: Expression;
+  },
 ]>;
 
 export class ArrayAppendExpr extends FuncExpr {
@@ -22312,9 +22925,11 @@ export class ArrayAppendExpr extends FuncExpr {
 
 export type ArrayPrependExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    nullPropagation?: Expression; },
+    nullPropagation?: Expression;
+  },
 ]>;
 
 export class ArrayPrependExpr extends FuncExpr {
@@ -22352,9 +22967,11 @@ export class ArrayPrependExpr extends FuncExpr {
 
 export type ArrayConcatExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expressions?: Expression[];
-    nullPropagation?: Expression; },
+    nullPropagation?: Expression;
+  },
 ]>;
 
 export class ArrayConcatExpr extends FuncExpr {
@@ -22418,10 +23035,12 @@ export class ArrayCompactExpr extends FuncExpr {
 
 export type ArrayInsertExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     position: Expression;
     expression: Expression;
-    offset?: Expression; },
+    offset?: Expression;
+  },
 ]>;
 
 export class ArrayInsertExpr extends FuncExpr {
@@ -22464,8 +23083,10 @@ export class ArrayInsertExpr extends FuncExpr {
 
 export type ArrayRemoveAtExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    position: Expression; },
+  { 
+    this: Expression;
+    position: Expression;
+  },
 ]>;
 
 export class ArrayRemoveAtExpr extends FuncExpr {
@@ -22498,7 +23119,8 @@ export class ArrayRemoveAtExpr extends FuncExpr {
 
 export type ArrayConstructCompactExprArgs = Merge<[
   FuncExprArgs,
-  { expressions?: Expression[] },
+  { 
+    expressions?: Expression[] },
 ]>;
 
 export class ArrayConstructCompactExpr extends FuncExpr {
@@ -22529,9 +23151,11 @@ export class ArrayConstructCompactExpr extends FuncExpr {
 export type ArrayContainsExprArgs = Merge<[
   BinaryExprArgs,
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    ensureVariant?: Expression; },
+    ensureVariant?: Expression;
+  },
 ]>;
 
 export class ArrayContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -22573,8 +23197,10 @@ export class ArrayContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
 export type ArrayContainsAllExprArgs = Merge<[
   BinaryExprArgs,
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class ArrayContainsAllExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -22610,8 +23236,10 @@ export class ArrayContainsAllExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
 export type ArrayFilterExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class ArrayFilterExpr extends FuncExpr {
@@ -22712,10 +23340,12 @@ export class ArrayReverseExpr extends FuncExpr {
 
 export type ArraySliceExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     start: Expression;
     end?: Expression;
-    step?: Expression; },
+    step?: Expression;
+  },
 ]>;
 
 export class ArraySliceExpr extends FuncExpr {
@@ -22758,9 +23388,11 @@ export class ArraySliceExpr extends FuncExpr {
 
 export type ArrayToStringExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    null?: Expression; },
+    null?: Expression;
+  },
 ]>;
 
 export class ArrayToStringExpr extends FuncExpr {
@@ -22800,7 +23432,8 @@ export class ArrayToStringExpr extends FuncExpr {
 
 export type ArrayIntersectExprArgs = Merge<[
   FuncExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class ArrayIntersectExpr extends FuncExpr {
@@ -22832,9 +23465,11 @@ export class ArrayIntersectExpr extends FuncExpr {
 
 export type StPointExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    null?: Expression; },
+    null?: Expression;
+  },
 ]>;
 
 export class StPointExpr extends FuncExpr {
@@ -22874,9 +23509,11 @@ export class StPointExpr extends FuncExpr {
 
 export type StDistanceExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    useSpheroid?: Expression; },
+    useSpheroid?: Expression;
+  },
 ]>;
 
 export class StDistanceExpr extends FuncExpr {
@@ -22917,8 +23554,10 @@ export class StDistanceExpr extends FuncExpr {
  */
 export type StringExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    zone?: Expression; },
+  { 
+    this: Expression;
+    zone?: Expression;
+  },
 ]>;
 
 export class StringExpr extends FuncExpr {
@@ -22951,9 +23590,11 @@ export class StringExpr extends FuncExpr {
 
 export type StringToArrayExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression?: Expression;
-    null?: Expression; },
+    null?: Expression;
+  },
 ]>;
 
 export class StringToArrayExpr extends FuncExpr {
@@ -22998,8 +23639,10 @@ export class StringToArrayExpr extends FuncExpr {
 export type ArrayOverlapsExprArgs = Merge<[
   BinaryExprArgs,
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class ArrayOverlapsExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -23033,8 +23676,10 @@ export class ArrayOverlapsExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
 export type ArraySizeExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class ArraySizeExpr extends FuncExpr {
@@ -23069,8 +23714,10 @@ export class ArraySizeExpr extends FuncExpr {
 
 export type ArraySortExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class ArraySortExpr extends FuncExpr {
@@ -23103,8 +23750,10 @@ export class ArraySortExpr extends FuncExpr {
 
 export type ArraySumExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class ArraySumExpr extends FuncExpr {
@@ -23137,7 +23786,8 @@ export class ArraySumExpr extends FuncExpr {
 
 export type ArraysZipExprArgs = Merge<[
   FuncExprArgs,
-  { expressions?: Expression[] },
+  { 
+    expressions?: Expression[] },
 ]>;
 
 export class ArraysZipExpr extends FuncExpr {
@@ -23167,9 +23817,11 @@ export class ArraysZipExpr extends FuncExpr {
 
 export type CaseExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     ifs: Expression[];
-    default?: Expression; },
+    default?: Expression;
+  },
 ]>;
 
 export class CaseExpr extends FuncExpr {
@@ -23209,7 +23861,8 @@ export class CaseExpr extends FuncExpr {
     then: string | Expression,
     copy = true,
     options?: { dialect?: DialectType;
-      prefix?: string; },
+      prefix?: string;
+  },
   ): CaseExpr {
     const instance = maybeCopy(this, copy);
     instance.append(
@@ -23226,7 +23879,8 @@ export class CaseExpr extends FuncExpr {
     condition: string | Expression,
     copy = true,
     options?: { dialect?: DialectType;
-      prefix?: string; },
+      prefix?: string;
+  },
   ): CaseExpr {
     const instance = maybeCopy(this, copy);
     instance.set('default', maybeParse(condition, options));
@@ -23240,12 +23894,14 @@ export class CaseExpr extends FuncExpr {
 
 export type CastExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    to: Expression;
+  { 
+    this: Expression;
+    to: DataTypeExpr;
     format?: string;
     safe?: boolean;
     action?: Expression;
-    default?: Expression; },
+    default?: Expression;
+  },
 ]>;
 
 export class CastExpr extends FuncExpr {
@@ -23275,7 +23931,7 @@ export class CastExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $to (): Expression {
+  get $to (): DataTypeExpr {
     return this.args.to;
   }
 
@@ -23411,8 +24067,10 @@ export class TryExpr extends FuncExpr {
 
 export type CastToStrTypeExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    to: Expression; },
+  { 
+    this: Expression;
+    to: DataTypeExpr;
+  },
 ]>;
 
 export class CastToStrTypeExpr extends FuncExpr {
@@ -23434,7 +24092,7 @@ export class CastToStrTypeExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $to (): Expression {
+  get $to (): DataTypeExpr {
     return this.args.to;
   }
 
@@ -23445,7 +24103,8 @@ export class CastToStrTypeExpr extends FuncExpr {
 
 export type CheckJsonExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression },
+  { 
+    this: Expression },
 ]>;
 
 export class CheckJsonExpr extends FuncExpr {
@@ -23473,8 +24132,10 @@ export class CheckJsonExpr extends FuncExpr {
 
 export type CheckXmlExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    disableAutoConvert?: Expression; },
+  { 
+    this: Expression;
+    disableAutoConvert?: Expression;
+  },
 ]>;
 
 export class CheckXmlExpr extends FuncExpr {
@@ -23553,9 +24214,11 @@ export class CollationExpr extends FuncExpr {
 
 export type CeilExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     decimals?: Expression;
-    to?: Expression; },
+    to?: Expression;
+  },
 ]>;
 
 export class CeilExpr extends FuncExpr {
@@ -23596,10 +24259,12 @@ export class CeilExpr extends FuncExpr {
 
 export type CoalesceExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expressions?: Expression[];
     isNvl?: Expression;
-    isNull?: Expression; },
+    isNull?: Expression;
+  },
 ]>;
 
 export class CoalesceExpr extends FuncExpr {
@@ -23650,8 +24315,10 @@ export class CoalesceExpr extends FuncExpr {
 
 export type ChrExprArgs = Merge<[
   FuncExprArgs,
-  { expressions: Expression[];
-    charset?: string; },
+  { 
+    expressions: Expression[];
+    charset?: string;
+  },
 ]>;
 
 export class ChrExpr extends FuncExpr {
@@ -23688,9 +24355,11 @@ export class ChrExpr extends FuncExpr {
 
 export type ConcatExprArgs = Merge<[
   FuncExprArgs,
-  { expressions: Expression[];
+  { 
+    expressions: Expression[];
     safe?: boolean;
-    coalesce?: Expression; },
+    coalesce?: Expression;
+  },
 ]>;
 
 export class ConcatExpr extends FuncExpr {
@@ -23730,9 +24399,11 @@ export class ConcatExpr extends FuncExpr {
 
 export type ContainsExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    jsonScope?: Expression; },
+    jsonScope?: Expression;
+  },
 ]>;
 
 export class ContainsExpr extends FuncExpr {
@@ -23946,7 +24617,8 @@ export class CurrentDatabaseExpr extends FuncExpr {
 
 export type CurrentSchemasExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class CurrentSchemasExpr extends FuncExpr {
@@ -24106,7 +24778,8 @@ export class CurrentWarehouseExpr extends FuncExpr {
 
 export type CurrentDateExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class CurrentDateExpr extends FuncExpr {
@@ -24134,7 +24807,8 @@ export class CurrentDateExpr extends FuncExpr {
 
 export type CurrentDatetimeExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class CurrentDatetimeExpr extends FuncExpr {
@@ -24162,7 +24836,8 @@ export class CurrentDatetimeExpr extends FuncExpr {
 
 export type CurrentTimeExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class CurrentTimeExpr extends FuncExpr {
@@ -24190,7 +24865,8 @@ export class CurrentTimeExpr extends FuncExpr {
 
 export type LocaltimeExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class LocaltimeExpr extends FuncExpr {
@@ -24218,7 +24894,8 @@ export class LocaltimeExpr extends FuncExpr {
 
 export type LocaltimestampExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class LocaltimestampExpr extends FuncExpr {
@@ -24246,7 +24923,8 @@ export class LocaltimestampExpr extends FuncExpr {
 
 export type SystimestampExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class SystimestampExpr extends FuncExpr {
@@ -24274,8 +24952,10 @@ export class SystimestampExpr extends FuncExpr {
 
 export type CurrentTimestampExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression;
-    sysdate?: Expression; },
+  { 
+    this?: Expression;
+    sysdate?: Expression;
+  },
 ]>;
 
 export class CurrentTimestampExpr extends FuncExpr {
@@ -24374,7 +25054,8 @@ export class CurrentOrganizationNameExpr extends FuncExpr {
 
 export type CurrentSchemaExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class CurrentSchemaExpr extends FuncExpr {
@@ -24402,7 +25083,8 @@ export class CurrentSchemaExpr extends FuncExpr {
 
 export type CurrentUserExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class CurrentUserExpr extends FuncExpr {
@@ -24584,7 +25266,8 @@ export class UtcDateExpr extends FuncExpr {
 
 export type UtcTimeExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class UtcTimeExpr extends FuncExpr {
@@ -24612,7 +25295,8 @@ export class UtcTimeExpr extends FuncExpr {
 
 export type UtcTimestampExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class UtcTimestampExpr extends FuncExpr {
@@ -24641,9 +25325,11 @@ export class UtcTimestampExpr extends FuncExpr {
 export type DateAddExprArgs = Merge<[
   FuncExprArgs,
   IntervalOpExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    unit?: Expression; },
+    unit?: Expression;
+  },
 ]>;
 
 export class DateAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
@@ -24683,11 +25369,13 @@ export class DateAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
 export type DateBinExprArgs = Merge<[
   FuncExprArgs,
   IntervalOpExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
     unit?: Expression;
     zone?: Expression;
-    origin?: Expression; },
+    origin?: Expression;
+  },
 ]>;
 
 export class DateBinExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
@@ -24737,9 +25425,11 @@ export class DateBinExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
 export type DateSubExprArgs = Merge<[
   FuncExprArgs,
   IntervalOpExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    unit?: Expression; },
+    unit?: Expression;
+  },
 ]>;
 
 export class DateSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
@@ -24779,12 +25469,14 @@ export class DateSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
 export type DateDiffExprArgs = Merge<[
   FuncExprArgs,
   TimeUnitExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
     unit?: Expression;
     zone?: Expression;
     bigInt?: Expression;
-    datePartBoundary?: Expression; },
+    datePartBoundary?: Expression;
+  },
 ]>;
 
 export class DateDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -24840,11 +25532,13 @@ export class DateDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
 export type DateTruncExprArgs = Merge<[
   FuncExprArgs,
-  { unit: Expression;
+  { 
+    unit: Expression;
     this: Expression;
     zone?: Expression;
     inputTypePreserved?: DataTypeExpr;
-    unabbreviate?: boolean; },
+    unabbreviate?: boolean;
+  },
 ]>;
 
 export class DateTruncExpr extends FuncExpr {
@@ -24906,8 +25600,10 @@ export class DateTruncExpr extends FuncExpr {
 
 export type DatetimeExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class DatetimeExpr extends FuncExpr {
@@ -24941,9 +25637,11 @@ export class DatetimeExpr extends FuncExpr {
 export type DatetimeAddExprArgs = Merge<[
   FuncExprArgs,
   IntervalOpExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    unit?: Expression; },
+    unit?: Expression;
+  },
 ]>;
 
 export class DatetimeAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
@@ -24983,9 +25681,11 @@ export class DatetimeAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
 export type DatetimeSubExprArgs = Merge<[
   FuncExprArgs,
   IntervalOpExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    unit?: Expression; },
+    unit?: Expression;
+  },
 ]>;
 
 export class DatetimeSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
@@ -25025,9 +25725,11 @@ export class DatetimeSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
 export type DatetimeDiffExprArgs = Merge<[
   FuncExprArgs,
   TimeUnitExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    unit?: Expression; },
+    unit?: Expression;
+  },
 ]>;
 
 export class DatetimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -25067,9 +25769,11 @@ export class DatetimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 export type DatetimeTruncExprArgs = Merge<[
   FuncExprArgs,
   TimeUnitExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     unit: Expression;
-    zone?: Expression; },
+    zone?: Expression;
+  },
 ]>;
 
 export class DatetimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -25222,8 +25926,10 @@ export class DayOfYearExpr extends FuncExpr {
 
 export type DaynameExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    abbreviated?: Expression; },
+  { 
+    this: Expression;
+    abbreviated?: Expression;
+  },
 ]>;
 
 export class DaynameExpr extends FuncExpr {
@@ -25348,9 +26054,11 @@ export class YearOfWeekIsoExpr extends FuncExpr {
 
 export type MonthsBetweenExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    roundoff?: Expression; },
+    roundoff?: Expression;
+  },
 ]>;
 
 export class MonthsBetweenExpr extends FuncExpr {
@@ -25388,13 +26096,15 @@ export class MonthsBetweenExpr extends FuncExpr {
 
 export type MakeIntervalExprArgs = Merge<[
   FuncExprArgs,
-  { year?: Expression;
+  { 
+    year?: Expression;
     month?: Expression;
     week?: Expression;
     day?: Expression;
     hour?: Expression;
     minute?: Expression;
-    second?: Expression; },
+    second?: Expression;
+  },
 ]>;
 
 export class MakeIntervalExpr extends FuncExpr {
@@ -25456,8 +26166,10 @@ export class MakeIntervalExpr extends FuncExpr {
 
 export type LastDayExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    unit?: Expression; },
+  { 
+    this: Expression;
+    unit?: Expression;
+  },
 ]>;
 
 export class LastDayExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -25491,8 +26203,10 @@ export class LastDayExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
 export type PreviousDayExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class PreviousDayExpr extends FuncExpr {
@@ -25613,8 +26327,10 @@ export class LaxStringExpr extends FuncExpr {
 
 export type ExtractExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class ExtractExpr extends FuncExpr {
@@ -25647,8 +26363,10 @@ export class ExtractExpr extends FuncExpr {
 
 export type ExistsExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 export class ExistsExpr extends multiInherit(FuncExpr, SubqueryPredicateExpr) {
   key = ExpressionKey.EXISTS;
@@ -25681,8 +26399,10 @@ export class ExistsExpr extends multiInherit(FuncExpr, SubqueryPredicateExpr) {
 
 export type EltExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expressions: Expression[]; },
+  { 
+    this: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class EltExpr extends FuncExpr {
@@ -25716,9 +26436,11 @@ export class EltExpr extends FuncExpr {
 
 export type TimestampExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     zone?: Expression;
-    withTz?: Expression; },
+    withTz?: Expression;
+  },
 ]>;
 
 export class TimestampExpr extends FuncExpr {
@@ -25760,9 +26482,11 @@ export class TimestampExpr extends FuncExpr {
 
 export type TimestampAddExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    unit?: Expression; },
+    unit?: Expression;
+  },
 ]>;
 
 export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -25801,9 +26525,11 @@ export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
 export type TimestampSubExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    unit?: Expression; },
+    unit?: Expression;
+  },
 ]>;
 
 export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -25842,9 +26568,11 @@ export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
 export type TimestampDiffExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    unit?: Expression; },
+    unit?: Expression;
+  },
 ]>;
 
 export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -25883,10 +26611,12 @@ export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
 export type TimestampTruncExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     unit: Expression;
     zone?: Expression;
-    inputTypePreserved?: DataTypeExpr; },
+    inputTypePreserved?: DataTypeExpr;
+  },
 ]>;
 
 export class TimestampTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -25941,10 +26671,12 @@ export enum TimeSliceExprKind {
 }
 export type TimeSliceExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
     unit: Expression;
-    kind?: TimeSliceExprKind; },
+    kind?: TimeSliceExprKind;
+  },
 ]>;
 
 export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -25992,9 +26724,11 @@ export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
 export type TimeAddExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    unit?: Expression; },
+    unit?: Expression;
+  },
 ]>;
 
 export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -26033,9 +26767,11 @@ export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
 export type TimeSubExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    unit?: Expression; },
+    unit?: Expression;
+  },
 ]>;
 
 export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -26074,9 +26810,11 @@ export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
 export type TimeDiffExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    unit?: Expression; },
+    unit?: Expression;
+  },
 ]>;
 
 export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -26115,9 +26853,11 @@ export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
 export type TimeTruncExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     unit: Expression;
-    zone?: Expression; },
+    zone?: Expression;
+  },
 ]>;
 
 export class TimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -26160,10 +26900,12 @@ export class TimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
 export type DateFromPartsExprArgs = Merge<[
   FuncExprArgs,
-  { year: Expression;
+  { 
+    year: Expression;
     month?: Expression;
     day?: Expression;
-    allowOverflow?: Expression; },
+    allowOverflow?: Expression;
+  },
 ]>;
 
 export class DateFromPartsExpr extends FuncExpr {
@@ -26210,13 +26952,15 @@ export class DateFromPartsExpr extends FuncExpr {
 
 export type TimeFromPartsExprArgs = Merge<[
   FuncExprArgs,
-  { hour: Expression;
+  { 
+    hour: Expression;
     min: Expression;
     sec: Expression;
     nano?: Expression;
     fractions?: Expression[];
     precision?: number | Expression;
-    overflow?: Expression; },
+    overflow?: Expression;
+  },
 ]>;
 
 export class TimeFromPartsExpr extends FuncExpr {
@@ -26344,9 +27088,11 @@ export class DateToDiExpr extends FuncExpr {
 
 export type DateExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     expressions?: Expression[];
-    zone?: Expression; },
+    zone?: Expression;
+  },
 ]>;
 
 export class DateExpr extends FuncExpr {
@@ -26408,9 +27154,11 @@ export class DayExpr extends FuncExpr {
 
 export type DecodeExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     charset: string;
-    replace?: boolean; },
+    replace?: boolean;
+  },
 ]>;
 
 export class DecodeExpr extends FuncExpr {
@@ -26452,7 +27200,8 @@ export class DecodeExpr extends FuncExpr {
 
 export type DecodeCaseExprArgs = Merge<[
   FuncExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class DecodeCaseExpr extends FuncExpr {
@@ -26482,10 +27231,12 @@ export class DecodeCaseExpr extends FuncExpr {
 
 export type DecryptExprArgs = Merge<[
   FuncExprArgs,
-  { passphrase: Expression;
+  { 
+    passphrase: Expression;
     aad?: Expression;
     encryptionMethod?: string;
-    safe?: boolean; },
+    safe?: boolean;
+  },
 ]>;
 
 export class DecryptExpr extends FuncExpr {
@@ -26532,12 +27283,14 @@ export class DecryptExpr extends FuncExpr {
 
 export type DecryptRawExprArgs = Merge<[
   FuncExprArgs,
-  { key: unknown;
+  { 
+    key: unknown;
     iv: Expression;
     aad?: Expression;
     encryptionMethod?: string;
     aead?: Expression;
-    safe?: boolean; },
+    safe?: boolean;
+  },
 ]>;
 
 export class DecryptRawExpr extends FuncExpr {
@@ -26616,8 +27369,10 @@ export class DiToDateExpr extends FuncExpr {
 
 export type EncodeExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    charset: string; },
+  { 
+    this: Expression;
+    charset: string;
+  },
 ]>;
 
 export class EncodeExpr extends FuncExpr {
@@ -26650,10 +27405,12 @@ export class EncodeExpr extends FuncExpr {
 
 export type EncryptExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     passphrase: Expression;
     aad?: Expression;
-    encryptionMethod?: string; },
+    encryptionMethod?: string;
+  },
 ]>;
 
 export class EncryptExpr extends FuncExpr {
@@ -26700,11 +27457,13 @@ export class EncryptExpr extends FuncExpr {
 
 export type EncryptRawExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     key: unknown;
     iv: Expression;
     aad?: Expression;
-    encryptionMethod?: string; },
+    encryptionMethod?: string;
+  },
 ]>;
 
 export class EncryptRawExpr extends FuncExpr {
@@ -26756,8 +27515,10 @@ export class EncryptRawExpr extends FuncExpr {
 
 export type EqualNullExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class EqualNullExpr extends FuncExpr {
@@ -26835,8 +27596,10 @@ export class FactorialExpr extends FuncExpr {
 export type ExplodeExprArgs = Merge<[
   FuncExprArgs,
   UDTFExprArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class ExplodeExpr extends multiInherit(FuncExpr, UDTFExpr) {
@@ -26895,10 +27658,12 @@ export class InlineExpr extends FuncExpr {
 export type UnnestExprArgs = Merge<[
   FuncExprArgs,
   UDTFExprArgs,
-  { expressions: Expression[];
+  { 
+    expressions: Expression[];
     alias?: TableAliasExpr;
     offset?: boolean | Expression;
-    explodeArray?: Expression; },
+    explodeArray?: Expression;
+  },
 ]>;
 
 export class UnnestExpr extends multiInherit(FuncExpr, UDTFExpr) {
@@ -26952,9 +27717,11 @@ export class UnnestExpr extends multiInherit(FuncExpr, UDTFExpr) {
 
 export type FloorExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     decimals?: Expression[];
-    to?: Expression; },
+    to?: Expression;
+  },
 ]>;
 
 export class FloorExpr extends FuncExpr {
@@ -27084,9 +27851,11 @@ export class ToBase64Expr extends FuncExpr {
 
 export type ToBinaryExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     format?: string;
-    safe?: boolean; },
+    safe?: boolean;
+  },
 ]>;
 
 export class ToBinaryExpr extends FuncExpr {
@@ -27128,8 +27897,10 @@ export class ToBinaryExpr extends FuncExpr {
 
 export type Base64DecodeBinaryExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    alphabet?: Expression; },
+  { 
+    this: Expression;
+    alphabet?: Expression;
+  },
 ]>;
 
 export class Base64DecodeBinaryExpr extends FuncExpr {
@@ -27162,8 +27933,10 @@ export class Base64DecodeBinaryExpr extends FuncExpr {
 
 export type Base64DecodeStringExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    alphabet?: Expression; },
+  { 
+    this: Expression;
+    alphabet?: Expression;
+  },
 ]>;
 
 export class Base64DecodeStringExpr extends FuncExpr {
@@ -27196,9 +27969,11 @@ export class Base64DecodeStringExpr extends FuncExpr {
 
 export type Base64EncodeExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     maxLineLength?: number | Expression;
-    alphabet?: Expression; },
+    alphabet?: Expression;
+  },
 ]>;
 
 export class Base64EncodeExpr extends FuncExpr {
@@ -27240,8 +28015,10 @@ export class Base64EncodeExpr extends FuncExpr {
 
 export type TryBase64DecodeBinaryExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    alphabet?: Expression; },
+  { 
+    this: Expression;
+    alphabet?: Expression;
+  },
 ]>;
 
 export class TryBase64DecodeBinaryExpr extends FuncExpr {
@@ -27274,8 +28051,10 @@ export class TryBase64DecodeBinaryExpr extends FuncExpr {
 
 export type TryBase64DecodeStringExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    alphabet?: Expression; },
+  { 
+    this: Expression;
+    alphabet?: Expression;
+  },
 ]>;
 
 export class TryBase64DecodeStringExpr extends FuncExpr {
@@ -27376,12 +28155,14 @@ export class FromISO8601TimestampExpr extends FuncExpr {
 
 export type GapFillExprArgs = Merge<[
   FuncExprArgs,
-  { tsColumn: Expression;
+  { 
+    tsColumn: Expression;
     bucketWidth: Expression;
     partitioningColumns?: Expression[];
     valueColumns?: Expression[];
     origin?: Expression;
-    ignoreNulls?: Expression[]; },
+    ignoreNulls?: Expression[];
+  },
 ]>;
 
 export class GapFillExpr extends FuncExpr {
@@ -27438,9 +28219,11 @@ export class GapFillExpr extends FuncExpr {
 
 export type GenerateDateArrayExprArgs = Merge<[
   FuncExprArgs,
-  { start: Expression;
+  { 
+    start: Expression;
     end: Expression;
-    step?: Expression; },
+    step?: Expression;
+  },
 ]>;
 
 export class GenerateDateArrayExpr extends FuncExpr {
@@ -27482,9 +28265,11 @@ export class GenerateDateArrayExpr extends FuncExpr {
 
 export type GenerateTimestampArrayExprArgs = Merge<[
   FuncExprArgs,
-  { start: Expression;
+  { 
+    start: Expression;
     end: Expression;
-    step: Expression; },
+    step: Expression;
+  },
 ]>;
 
 export class GenerateTimestampArrayExpr extends FuncExpr {
@@ -27527,8 +28312,10 @@ export class GenerateTimestampArrayExpr extends FuncExpr {
 
 export type GetExtractExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class GetExtractExpr extends FuncExpr {
@@ -27561,9 +28348,11 @@ export class GetExtractExpr extends FuncExpr {
 
 export type GetbitExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    zeroIsMsb?: Expression; },
+    zeroIsMsb?: Expression;
+  },
 ]>;
 
 export class GetbitExpr extends FuncExpr {
@@ -27601,9 +28390,11 @@ export class GetbitExpr extends FuncExpr {
 
 export type GreatestExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expressions?: Expression[];
-    ignoreNulls: Expression[]; },
+    ignoreNulls: Expression[];
+  },
 ]>;
 
 export class GreatestExpr extends FuncExpr {
@@ -27687,8 +28478,10 @@ export class HexDecodeStringExpr extends FuncExpr {
 
 export type HexEncodeExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    case?: Expression; },
+  { 
+    this: Expression;
+    case?: Expression;
+  },
 ]>;
 
 export class HexEncodeExpr extends FuncExpr {
@@ -27787,8 +28580,10 @@ export class SecondExpr extends FuncExpr {
 
 export type CompressExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    method?: string; },
+  { 
+    this: Expression;
+    method?: string;
+  },
 ]>;
 
 export class CompressExpr extends FuncExpr {
@@ -27821,8 +28616,10 @@ export class CompressExpr extends FuncExpr {
 
 export type DecompressBinaryExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    method: string; },
+  { 
+    this: Expression;
+    method: string;
+  },
 ]>;
 
 export class DecompressBinaryExpr extends FuncExpr {
@@ -27855,8 +28652,10 @@ export class DecompressBinaryExpr extends FuncExpr {
 
 export type DecompressStringExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    method: string; },
+  { 
+    this: Expression;
+    method: string;
+  },
 ]>;
 
 export class DecompressStringExpr extends FuncExpr {
@@ -27889,9 +28688,11 @@ export class DecompressStringExpr extends FuncExpr {
 
 export type IfExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     true: Expression;
-    false?: Expression; },
+    false?: Expression;
+  },
 ]>;
 
 export class IfExpr extends FuncExpr {
@@ -27935,8 +28736,10 @@ export class IfExpr extends FuncExpr {
 
 export type NullifExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class NullifExpr extends FuncExpr {
@@ -27969,8 +28772,10 @@ export class NullifExpr extends FuncExpr {
 
 export type InitcapExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class InitcapExpr extends FuncExpr {
@@ -28139,8 +28944,10 @@ export class IsArrayExpr extends FuncExpr {
 
 export type FormatExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class FormatExpr extends FuncExpr {
@@ -28175,9 +28982,11 @@ export class FormatExpr extends FuncExpr {
 
 export type JSONKeysExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class JSONKeysExpr extends FuncExpr {
@@ -28217,9 +29026,11 @@ export class JSONKeysExpr extends FuncExpr {
 
 export type JSONKeysAtDepthExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression?: Expression;
-    mode?: Expression; },
+    mode?: Expression;
+  },
 ]>;
 
 export class JSONKeysAtDepthExpr extends FuncExpr {
@@ -28257,10 +29068,12 @@ export class JSONKeysAtDepthExpr extends FuncExpr {
 
 export type JSONObjectExprArgs = Merge<[
   FuncExprArgs,
-  { nullHandling?: Expression;
+  { 
+    nullHandling?: Expression;
     uniqueKeys?: Expression[];
     returnType?: DataTypeExpr;
-    encoding?: Expression; },
+    encoding?: Expression;
+  },
 ]>;
 
 export class JSONObjectExpr extends FuncExpr {
@@ -28307,9 +29120,11 @@ export class JSONObjectExpr extends FuncExpr {
 
 export type JSONArrayExprArgs = Merge<[
   FuncExprArgs,
-  { nullHandling?: Expression;
+  { 
+    nullHandling?: Expression;
     returnType?: DataTypeExpr;
-    strict?: Expression; },
+    strict?: Expression;
+  },
 ]>;
 
 export class JSONArrayExpr extends FuncExpr {
@@ -28351,10 +29166,12 @@ export class JSONArrayExpr extends FuncExpr {
 
 export type JSONExistsExprArgs = Merge<[
   FuncExprArgs,
-  { path: Expression;
+  { 
+    path: Expression;
     passing?: Expression;
     onCondition?: Expression;
-    fromDcolonqmark?: Expression; },
+    fromDcolonqmark?: Expression;
+  },
 ]>;
 
 export class JSONExistsExpr extends FuncExpr {
@@ -28401,8 +29218,10 @@ export class JSONExistsExpr extends FuncExpr {
 
 export type JSONSetExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expressions: Expression[]; },
+  { 
+    this: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class JSONSetExpr extends FuncExpr {
@@ -28438,10 +29257,12 @@ export class JSONSetExpr extends FuncExpr {
 
 export type JSONStripNullsExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression?: Expression;
     includeArrays?: Expression;
-    removeEmpty?: Expression; },
+    removeEmpty?: Expression;
+  },
 ]>;
 
 export class JSONStripNullsExpr extends FuncExpr {
@@ -28490,8 +29311,10 @@ export class JSONStripNullsExpr extends FuncExpr {
 
 export type JSONValueArrayExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class JSONValueArrayExpr extends FuncExpr {
@@ -28524,8 +29347,10 @@ export class JSONValueArrayExpr extends FuncExpr {
 
 export type JSONRemoveExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expressions: Expression[]; },
+  { 
+    this: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class JSONRemoveExpr extends FuncExpr {
@@ -28561,11 +29386,13 @@ export class JSONRemoveExpr extends FuncExpr {
 
 export type JSONTableExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     schema: Expression;
     path?: Expression;
     errorHandling?: Expression;
-    emptyHandling?: Expression; },
+    emptyHandling?: Expression;
+  },
 ]>;
 
 export class JSONTableExpr extends FuncExpr {
@@ -28617,8 +29444,10 @@ export class JSONTableExpr extends FuncExpr {
 
 export type JSONTypeExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class JSONTypeExpr extends FuncExpr {
@@ -28653,10 +29482,12 @@ export class JSONTypeExpr extends FuncExpr {
 
 export type ObjectInsertExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     key: Expression;
     value: Expression;
-    updateFlag?: Expression; },
+    updateFlag?: Expression;
+  },
 ]>;
 
 export class ObjectInsertExpr extends FuncExpr {
@@ -28703,9 +29534,11 @@ export class ObjectInsertExpr extends FuncExpr {
 
 export type OpenJSONExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     path?: Expression;
-    expressions?: Expression[]; },
+    expressions?: Expression[];
+  },
 ]>;
 
 export class OpenJSONExpr extends FuncExpr {
@@ -28805,8 +29638,10 @@ export class JSONBContainsAllTopKeysExpr extends multiInherit(BinaryExpr, FuncEx
 
 export type JSONBExistsExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    path: Expression; },
+  { 
+    this: Expression;
+    path: Expression;
+  },
 ]>;
 
 export class JSONBExistsExpr extends FuncExpr {
@@ -28862,14 +29697,16 @@ export class JSONBDeleteAtPathExpr extends multiInherit(BinaryExpr, FuncExpr) {
 export type JSONExtractExprArgs = Merge<[
   BinaryExprArgs,
   FuncExprArgs,
-  { onlyJsonTypes?: Expression;
+  { 
+    onlyJsonTypes?: Expression;
     expressions?: Expression[];
     variantExtract?: Expression;
     jsonQuery?: Expression;
     option?: Expression;
     quote?: Expression;
     onCondition?: Expression;
-    requiresJson?: Expression; },
+    requiresJson?: Expression;
+  },
 ]>;
 
 export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -28940,8 +29777,10 @@ export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
 export type JSONExtractArrayExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class JSONExtractArrayExpr extends FuncExpr {
@@ -28977,12 +29816,14 @@ export class JSONExtractArrayExpr extends FuncExpr {
 export type JSONExtractScalarExprArgs = Merge<[
   BinaryExprArgs,
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
     onlyJsonTypes?: Expression;
     expressions?: Expression[];
     jsonType?: Expression;
-    scalarOnly?: boolean; },
+    scalarOnly?: boolean;
+  },
 ]>;
 
 export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -29056,9 +29897,11 @@ export class JSONBExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
 export type JSONBExtractScalarExprArgs = Merge<[
   BinaryExprArgs,
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    jsonType?: Expression; },
+    jsonType?: Expression;
+  },
 ]>;
 
 export class JSONBExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -29095,10 +29938,12 @@ export class JSONBExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
 export type JSONFormatExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     options?: Expression[];
     isJson?: Expression;
-    toJson?: Expression; },
+    toJson?: Expression;
+  },
 ]>;
 
 export class JSONFormatExpr extends FuncExpr {
@@ -29147,8 +29992,10 @@ export class JSONFormatExpr extends FuncExpr {
 
 export type JSONArrayAppendExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expressions: Expression[]; },
+  { 
+    this: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class JSONArrayAppendExpr extends FuncExpr {
@@ -29184,9 +30031,11 @@ export class JSONArrayAppendExpr extends FuncExpr {
 
 export type JSONArrayContainsExprArgs = Merge<[
   BinaryExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     jsonType?: Expression;
-    expression: Expression; },
+    expression: Expression;
+  },
 ]>;
 
 export class JSONArrayContainsExpr extends multiInherit(BinaryExpr, PredicateExpr, FuncExpr) {
@@ -29223,8 +30072,10 @@ export class JSONArrayContainsExpr extends multiInherit(BinaryExpr, PredicateExp
 
 export type JSONArrayInsertExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expressions: Expression[]; },
+  { 
+    this: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class JSONArrayInsertExpr extends FuncExpr {
@@ -29304,9 +30155,11 @@ export class ParseNumericExpr extends FuncExpr {
 
 export type ParseJSONExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression?: Expression;
-    safe?: boolean; },
+    safe?: boolean;
+  },
 ]>;
 
 export class ParseJSONExpr extends FuncExpr {
@@ -29346,10 +30199,12 @@ export class ParseJSONExpr extends FuncExpr {
 
 export type ParseUrlExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     partToExtract?: Expression;
     key?: unknown;
-    permissive?: Expression; },
+    permissive?: Expression;
+  },
 ]>;
 
 export class ParseUrlExpr extends FuncExpr {
@@ -29396,9 +30251,11 @@ export class ParseUrlExpr extends FuncExpr {
 
 export type ParseIpExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     type: Expression;
-    permissive?: Expression; },
+    permissive?: Expression;
+  },
 ]>;
 
 export class ParseIpExpr extends FuncExpr {
@@ -29436,8 +30293,10 @@ export class ParseIpExpr extends FuncExpr {
 
 export type ParseTimeExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    format: string; },
+  { 
+    this: Expression;
+    format: string;
+  },
 ]>;
 
 export class ParseTimeExpr extends FuncExpr {
@@ -29470,9 +30329,11 @@ export class ParseTimeExpr extends FuncExpr {
 
 export type ParseDatetimeExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     format?: string;
-    zone?: Expression; },
+    zone?: Expression;
+  },
 ]>;
 
 export class ParseDatetimeExpr extends FuncExpr {
@@ -29514,9 +30375,11 @@ export class ParseDatetimeExpr extends FuncExpr {
 
 export type LeastExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expressions?: Expression[];
-    ignoreNulls: Expression[]; },
+    ignoreNulls: Expression[];
+  },
 ]>;
 
 export class LeastExpr extends FuncExpr {
@@ -29556,8 +30419,10 @@ export class LeastExpr extends FuncExpr {
 
 export type LeftExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class LeftExpr extends FuncExpr {
@@ -29590,8 +30455,10 @@ export class LeftExpr extends FuncExpr {
 
 export type RightExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class RightExpr extends FuncExpr {
@@ -29646,9 +30513,11 @@ export class ReverseExpr extends FuncExpr {
 
 export type LengthExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     binary?: Expression;
-    encoding?: Expression; },
+    encoding?: Expression;
+  },
 ]>;
 
 export class LengthExpr extends FuncExpr {
@@ -29741,10 +30610,12 @@ export class BitLengthExpr extends FuncExpr {
 
 export type LevenshteinExprArgs = Merge<[
   FuncExprArgs,
-  { insCost?: Expression;
+  { 
+    insCost?: Expression;
     delCost?: Expression;
     subCost?: Expression;
-    maxDist?: Expression; },
+    maxDist?: Expression;
+  },
 ]>;
 
 export class LevenshteinExpr extends FuncExpr {
@@ -29813,8 +30684,10 @@ export class LnExpr extends FuncExpr {
 
 export type LogExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class LogExpr extends FuncExpr {
@@ -29871,8 +30744,10 @@ export class LowerExpr extends FuncExpr {
 
 export type MapExprArgs = Merge<[
   FuncExprArgs,
-  { keys?: Expression[];
-    values?: Expression[]; },
+  { 
+    keys?: Expression[];
+    values?: Expression[];
+  },
 ]>;
 
 export class MapExpr extends FuncExpr {
@@ -29963,8 +30838,10 @@ export class MapFromEntriesExpr extends FuncExpr {
 
 export type MapCatExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class MapCatExpr extends FuncExpr {
@@ -29997,8 +30874,10 @@ export class MapCatExpr extends FuncExpr {
 
 export type MapContainsKeyExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    key: unknown; },
+  { 
+    this: Expression;
+    key: unknown;
+  },
 ]>;
 
 export class MapContainsKeyExpr extends FuncExpr {
@@ -30031,8 +30910,10 @@ export class MapContainsKeyExpr extends FuncExpr {
 
 export type MapDeleteExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expressions: Expression[]; },
+  { 
+    this: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class MapDeleteExpr extends FuncExpr {
@@ -30067,10 +30948,12 @@ export class MapDeleteExpr extends FuncExpr {
 
 export type MapInsertExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     key?: unknown;
     value: string;
-    updateFlag?: Expression; },
+    updateFlag?: Expression;
+  },
 ]>;
 
 export class MapInsertExpr extends FuncExpr {
@@ -30139,8 +31022,10 @@ export class MapKeysExpr extends FuncExpr {
 
 export type MapPickExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expressions: Expression[]; },
+  { 
+    this: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class MapPickExpr extends FuncExpr {
@@ -30219,8 +31104,10 @@ export class StarMapExpr extends FuncExpr {
 
 export type VarMapExprArgs = Merge<[
   FuncExprArgs,
-  { keys: Expression[];
-    values: Expression[]; },
+  { 
+    keys: Expression[];
+    values: Expression[];
+  },
 ]>;
 
 export class VarMapExpr extends FuncExpr {
@@ -30268,9 +31155,11 @@ export class VarMapExpr extends FuncExpr {
 
 export type MatchAgainstExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expressions: Expression[];
-    modifier?: Expression; },
+    modifier?: Expression;
+  },
 ]>;
 
 export class MatchAgainstExpr extends FuncExpr {
@@ -30332,8 +31221,10 @@ export class MD5Expr extends FuncExpr {
 
 export type MD5DigestExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class MD5DigestExpr extends FuncExpr {
@@ -30435,8 +31326,10 @@ export class MonthExpr extends FuncExpr {
 
 export type MonthnameExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    abbreviated?: Expression; },
+  { 
+    this: Expression;
+    abbreviated?: Expression;
+  },
 ]>;
 
 export class MonthnameExpr extends FuncExpr {
@@ -30469,9 +31362,11 @@ export class MonthnameExpr extends FuncExpr {
 
 export type AddMonthsExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    preserveEndOfMonth?: Expression; },
+    preserveEndOfMonth?: Expression;
+  },
 ]>;
 
 export class AddMonthsExpr extends FuncExpr {
@@ -30509,9 +31404,11 @@ export class AddMonthsExpr extends FuncExpr {
 
 export type Nvl2ExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     true: Expression;
-    false?: Expression; },
+    false?: Expression;
+  },
 ]>;
 
 export class Nvl2Expr extends FuncExpr {
@@ -30553,9 +31450,11 @@ export class Nvl2Expr extends FuncExpr {
 
 export type NormalizeExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     form?: Expression;
-    isCasefold?: Expression; },
+    isCasefold?: Expression;
+  },
 ]>;
 
 export class NormalizeExpr extends FuncExpr {
@@ -30597,9 +31496,11 @@ export class NormalizeExpr extends FuncExpr {
 
 export type NormalExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     stddev: Expression;
-    gen: Expression; },
+    gen: Expression;
+  },
 ]>;
 
 export class NormalExpr extends FuncExpr {
@@ -30707,10 +31608,12 @@ export class RegDomainExpr extends FuncExpr {
 
 export type OverlayExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
     from: Expression;
-    for?: Expression; },
+    for?: Expression;
+  },
 ]>;
 
 export class OverlayExpr extends FuncExpr {
@@ -30757,9 +31660,11 @@ export class OverlayExpr extends FuncExpr {
 
 export type PredictExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    paramsStruct?: Expression; },
+    paramsStruct?: Expression;
+  },
 ]>;
 
 export class PredictExpr extends FuncExpr {
@@ -30797,9 +31702,11 @@ export class PredictExpr extends FuncExpr {
 
 export type MLTranslateExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    paramsStruct: Expression; },
+    paramsStruct: Expression;
+  },
 ]>;
 
 export class MLTranslateExpr extends FuncExpr {
@@ -30837,10 +31744,12 @@ export class MLTranslateExpr extends FuncExpr {
 
 export type FeaturesAtTimeExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     time?: Expression;
     numRows?: Expression[];
-    ignoreFeatureNulls?: Expression[]; },
+    ignoreFeatureNulls?: Expression[];
+  },
 ]>;
 
 export class FeaturesAtTimeExpr extends FuncExpr {
@@ -30887,10 +31796,12 @@ export class FeaturesAtTimeExpr extends FuncExpr {
 
 export type GenerateEmbeddingExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
     paramsStruct?: Expression;
-    isText?: string; },
+    isText?: string;
+  },
 ]>;
 
 export class GenerateEmbeddingExpr extends FuncExpr {
@@ -30937,9 +31848,11 @@ export class GenerateEmbeddingExpr extends FuncExpr {
 
 export type MLForecastExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression?: Expression;
-    paramsStruct?: Expression; },
+    paramsStruct?: Expression;
+  },
 ]>;
 
 export class MLForecastExpr extends FuncExpr {
@@ -30977,12 +31890,14 @@ export class MLForecastExpr extends FuncExpr {
 
 export type VectorSearchExprArgs = Merge<[
   FuncExprArgs,
-  { columnToSearch: Expression;
+  { 
+    columnToSearch: Expression;
     queryTable: Expression;
     queryColumnToSearch?: Expression;
     topK?: Expression;
     distanceType?: DataTypeExpr;
-    options?: Expression[]; },
+    options?: Expression[];
+  },
 ]>;
 
 export class VectorSearchExpr extends FuncExpr {
@@ -31081,8 +31996,10 @@ export class PowExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
 export type ApproxPercentileEstimateExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    percentile: Expression; },
+  { 
+    this: Expression;
+    percentile: Expression;
+  },
 ]>;
 
 export class ApproxPercentileEstimateExpr extends FuncExpr {
@@ -31137,9 +32054,11 @@ export class QuarterExpr extends FuncExpr {
 
 export type RandExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     lower?: Expression;
-    upper?: Expression; },
+    upper?: Expression;
+  },
 ]>;
 
 export class RandExpr extends FuncExpr {
@@ -31183,7 +32102,8 @@ export class RandExpr extends FuncExpr {
 
 export type RandnExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class RandnExpr extends FuncExpr {
@@ -31211,8 +32131,10 @@ export class RandnExpr extends FuncExpr {
 
 export type RandstrExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    generator?: Expression; },
+  { 
+    this: Expression;
+    generator?: Expression;
+  },
 ]>;
 
 export class RandstrExpr extends FuncExpr {
@@ -31245,9 +32167,11 @@ export class RandstrExpr extends FuncExpr {
 
 export type RangeNExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expressions: Expression[];
-    each?: Expression; },
+    each?: Expression;
+  },
 ]>;
 
 export class RangeNExpr extends FuncExpr {
@@ -31285,8 +32209,10 @@ export class RangeNExpr extends FuncExpr {
 
 export type RangeBucketExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class RangeBucketExpr extends FuncExpr {
@@ -31319,8 +32245,10 @@ export class RangeBucketExpr extends FuncExpr {
 
 export type ReadCSVExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class ReadCSVExpr extends FuncExpr {
@@ -31356,7 +32284,8 @@ export class ReadCSVExpr extends FuncExpr {
 
 export type ReadParquetExprArgs = Merge<[
   FuncExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class ReadParquetExpr extends FuncExpr {
@@ -31386,10 +32315,12 @@ export class ReadParquetExpr extends FuncExpr {
 
 export type ReduceExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     initial: Expression;
     merge: Expression;
-    finish?: Expression; },
+    finish?: Expression;
+  },
 ]>;
 
 export class ReduceExpr extends FuncExpr {
@@ -31436,11 +32367,13 @@ export class ReduceExpr extends FuncExpr {
 
 export type RegexpExtractExprArgs = Merge<[
   FuncExprArgs,
-  { position?: Expression;
+  { 
+    position?: Expression;
     occurrence?: Expression;
     parameters?: Expression[];
     group?: Expression;
-    nullIfPosOverflow?: Expression; },
+    nullIfPosOverflow?: Expression;
+  },
 ]>;
 
 export class RegexpExtractExpr extends FuncExpr {
@@ -31492,10 +32425,12 @@ export class RegexpExtractExpr extends FuncExpr {
 
 export type RegexpExtractAllExprArgs = Merge<[
   FuncExprArgs,
-  { group?: Expression;
+  { 
+    group?: Expression;
     parameters?: Expression[];
     position?: Expression;
-    occurrence?: Expression; },
+    occurrence?: Expression;
+  },
 ]>;
 
 export class RegexpExtractAllExpr extends FuncExpr {
@@ -31542,11 +32477,13 @@ export class RegexpExtractAllExpr extends FuncExpr {
 
 export type RegexpReplaceExprArgs = Merge<[
   FuncExprArgs,
-  { replacement?: boolean;
+  { 
+    replacement?: boolean;
     position?: Expression;
     occurrence?: Expression;
     modifiers?: Expression[];
-    singleReplace?: Expression; },
+    singleReplace?: Expression;
+  },
 ]>;
 
 export class RegexpReplaceExpr extends FuncExpr {
@@ -31598,9 +32535,11 @@ export class RegexpReplaceExpr extends FuncExpr {
 
 export type RegexpLikeExprArgs = Merge<[
   BinaryExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    flag?: Expression; },
+    flag?: Expression;
+  },
 ]>;
 
 export class RegexpLikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -31635,9 +32574,11 @@ export class RegexpLikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
 export type RegexpILikeExprArgs = Merge<[
   BinaryExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    flag?: Expression; },
+    flag?: Expression;
+  },
 ]>;
 
 export class RegexpILikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -31672,9 +32613,11 @@ export class RegexpILikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
 export type RegexpFullMatchExprArgs = Merge<[
   BinaryExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    options?: Expression[]; },
+    options?: Expression[];
+  },
 ]>;
 
 export class RegexpFullMatchExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -31709,11 +32652,13 @@ export class RegexpFullMatchExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
 export type RegexpInstrExprArgs = Merge<[
   FuncExprArgs,
-  { position?: Expression;
+  { 
+    position?: Expression;
     occurrence?: Expression;
     option?: Expression;
     parameters?: Expression[];
-    group?: Expression; },
+    group?: Expression;
+  },
 ]>;
 
 export class RegexpInstrExpr extends FuncExpr {
@@ -31765,9 +32710,11 @@ export class RegexpInstrExpr extends FuncExpr {
 
 export type RegexpSplitExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    limit?: number | Expression; },
+    limit?: number | Expression;
+  },
 ]>;
 
 export class RegexpSplitExpr extends FuncExpr {
@@ -31805,8 +32752,10 @@ export class RegexpSplitExpr extends FuncExpr {
 
 export type RegexpCountExprArgs = Merge<[
   FuncExprArgs,
-  { position?: Expression;
-    parameters?: Expression[]; },
+  { 
+    position?: Expression;
+    parameters?: Expression[];
+  },
 ]>;
 
 export class RegexpCountExpr extends FuncExpr {
@@ -31843,8 +32792,10 @@ export class RegexpCountExpr extends FuncExpr {
 
 export type RepeatExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    times: Expression[]; },
+  { 
+    this: Expression;
+    times: Expression[];
+  },
 ]>;
 
 export class RepeatExpr extends FuncExpr {
@@ -31877,9 +32828,11 @@ export class RepeatExpr extends FuncExpr {
 
 export type ReplaceExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    replacement?: boolean; },
+    replacement?: boolean;
+  },
 ]>;
 
 export class ReplaceExpr extends FuncExpr {
@@ -31939,9 +32892,11 @@ export class RadiansExpr extends FuncExpr {
 
 export type RoundExprArgs = Merge<[
   FuncExprArgs,
-  { decimals?: Expression[];
+  { 
+    decimals?: Expression[];
     truncate?: Expression;
-    castsNonIntegerDecimals?: Expression[]; },
+    castsNonIntegerDecimals?: Expression[];
+  },
 ]>;
 
 export class RoundExpr extends FuncExpr {
@@ -31983,8 +32938,10 @@ export class RoundExpr extends FuncExpr {
 
 export type TruncExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    decimals?: Expression; },
+  { 
+    this: Expression;
+    decimals?: Expression;
+  },
 ]>;
 
 export class TruncExpr extends FuncExpr {
@@ -32019,7 +32976,8 @@ export class TruncExpr extends FuncExpr {
 
 export type RowNumberExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class RowNumberExpr extends FuncExpr {
@@ -32047,7 +33005,8 @@ export class RowNumberExpr extends FuncExpr {
 
 export type Seq1ExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class Seq1Expr extends FuncExpr {
@@ -32075,7 +33034,8 @@ export class Seq1Expr extends FuncExpr {
 
 export type Seq2ExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class Seq2Expr extends FuncExpr {
@@ -32103,7 +33063,8 @@ export class Seq2Expr extends FuncExpr {
 
 export type Seq4ExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class Seq4Expr extends FuncExpr {
@@ -32131,7 +33092,8 @@ export class Seq4Expr extends FuncExpr {
 
 export type Seq8ExprArgs = Merge<[
   FuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class Seq8Expr extends FuncExpr {
@@ -32159,8 +33121,10 @@ export class Seq8Expr extends FuncExpr {
 
 export type SafeAddExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class SafeAddExpr extends FuncExpr {
@@ -32193,8 +33157,10 @@ export class SafeAddExpr extends FuncExpr {
 
 export type SafeDivideExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class SafeDivideExpr extends FuncExpr {
@@ -32227,8 +33193,10 @@ export class SafeDivideExpr extends FuncExpr {
 
 export type SafeMultiplyExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class SafeMultiplyExpr extends FuncExpr {
@@ -32283,8 +33251,10 @@ export class SafeNegateExpr extends FuncExpr {
 
 export type SafeSubtractExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class SafeSubtractExpr extends FuncExpr {
@@ -32363,8 +33333,10 @@ export class SHAExpr extends FuncExpr {
 
 export type SHA2ExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    length?: number | Expression; },
+  { 
+    this: Expression;
+    length?: number | Expression;
+  },
 ]>;
 
 export class SHA2Expr extends FuncExpr {
@@ -32421,8 +33393,10 @@ export class SHA1DigestExpr extends FuncExpr {
 
 export type SHA2DigestExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    length?: number | Expression; },
+  { 
+    this: Expression;
+    length?: number | Expression;
+  },
 ]>;
 
 export class SHA2DigestExpr extends FuncExpr {
@@ -32479,9 +33453,11 @@ export class SignExpr extends FuncExpr {
 
 export type SortArrayExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     asc?: Expression;
-    nullsFirst?: Expression; },
+    nullsFirst?: Expression;
+  },
 ]>;
 
 export class SortArrayExpr extends FuncExpr {
@@ -32567,9 +33543,11 @@ export class SoundexP123Expr extends FuncExpr {
 
 export type SplitExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    limit?: number | Expression; },
+    limit?: number | Expression;
+  },
 ]>;
 
 export class SplitExpr extends FuncExpr {
@@ -32607,9 +33585,11 @@ export class SplitExpr extends FuncExpr {
 
 export type SplitPartExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     delimiter?: number | Expression;
-    partIndex?: Expression; },
+    partIndex?: Expression;
+  },
 ]>;
 
 export class SplitPartExpr extends FuncExpr {
@@ -32651,9 +33631,11 @@ export class SplitPartExpr extends FuncExpr {
 
 export type SubstringExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     start?: Expression;
-    length?: number | Expression; },
+    length?: number | Expression;
+  },
 ]>;
 
 export class SubstringExpr extends FuncExpr {
@@ -32696,9 +33678,11 @@ export class SubstringExpr extends FuncExpr {
 
 export type SubstringIndexExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     delimiter: number | Expression;
-    count: Expression; },
+    count: Expression;
+  },
 ]>;
 
 export class SubstringIndexExpr extends FuncExpr {
@@ -32740,8 +33724,10 @@ export class SubstringIndexExpr extends FuncExpr {
 
 export type StandardHashExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class StandardHashExpr extends FuncExpr {
@@ -32774,8 +33760,10 @@ export class StandardHashExpr extends FuncExpr {
 
 export type StartsWithExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class StartsWithExpr extends FuncExpr {
@@ -32809,8 +33797,10 @@ export class StartsWithExpr extends FuncExpr {
 
 export type EndsWithExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class EndsWithExpr extends FuncExpr {
@@ -32844,10 +33834,12 @@ export class EndsWithExpr extends FuncExpr {
 
 export type StrPositionExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     substr: Expression;
     position?: Expression;
-    occurrence?: Expression; },
+    occurrence?: Expression;
+  },
 ]>;
 
 export class StrPositionExpr extends FuncExpr {
@@ -32894,12 +33886,14 @@ export class StrPositionExpr extends FuncExpr {
 
 export type SearchExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
     jsonScope?: Expression;
     analyzer?: Expression;
     analyzerOptions?: Expression[];
-    searchMode?: Expression; },
+    searchMode?: Expression;
+  },
 ]>;
 
 export class SearchExpr extends FuncExpr {
@@ -32956,8 +33950,10 @@ export class SearchExpr extends FuncExpr {
 
 export type SearchIpExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class SearchIpExpr extends FuncExpr {
@@ -32990,9 +33986,11 @@ export class SearchIpExpr extends FuncExpr {
 
 export type StrToDateExprArgs = Merge<[
   FuncExprArgs,
-  { format?: string;
+  { 
+    format?: string;
     safe?: boolean;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class StrToDateExpr extends FuncExpr {
@@ -33034,11 +34032,13 @@ export class StrToDateExpr extends FuncExpr {
 
 export type StrToTimeExprArgs = Merge<[
   FuncExprArgs,
-  { format: string;
+  { 
+    format: string;
     zone?: Expression;
     safe?: boolean;
     targetType?: DataTypeExpr;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class StrToTimeExpr extends FuncExpr {
@@ -33090,8 +34090,10 @@ export class StrToTimeExpr extends FuncExpr {
 
 export type StrToUnixExprArgs = Merge<[
   FuncExprArgs,
-  { format?: string;
-    this?: Expression; },
+  { 
+    format?: string;
+    this?: Expression;
+  },
 ]>;
 
 export class StrToUnixExpr extends FuncExpr {
@@ -33123,10 +34125,12 @@ export class StrToUnixExpr extends FuncExpr {
 
 export type StrToMapExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     pairDelim?: Expression;
     keyValueDelim?: string;
-    duplicateResolutionCallback?: Expression; },
+    duplicateResolutionCallback?: Expression;
+  },
 ]>;
 
 export class StrToMapExpr extends FuncExpr {
@@ -33173,9 +34177,11 @@ export class StrToMapExpr extends FuncExpr {
 
 export type NumberToStrExprArgs = Merge<[
   FuncExprArgs,
-  { format: string;
+  { 
+    format: string;
     culture?: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class NumberToStrExpr extends FuncExpr {
@@ -33217,8 +34223,10 @@ export class NumberToStrExpr extends FuncExpr {
 
 export type FromBaseExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class FromBaseExpr extends FuncExpr {
@@ -33273,7 +34281,8 @@ export class SpaceExpr extends FuncExpr {
 
 export type StructExprArgs = Merge<[
   FuncExprArgs,
-  { expressions?: Expression[] },
+  { 
+    expressions?: Expression[] },
 ]>;
 
 export class StructExpr extends FuncExpr {
@@ -33302,8 +34311,10 @@ export class StructExpr extends FuncExpr {
 
 export type StructExtractExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class StructExtractExpr extends FuncExpr {
@@ -33336,10 +34347,12 @@ export class StructExtractExpr extends FuncExpr {
 
 export type StuffExprArgs = Merge<[
   FuncExprArgs,
-  { start: Expression;
+  { 
+    start: Expression;
     length: number | Expression;
     this: Expression;
-    expression: Expression; },
+    expression: Expression;
+  },
 ]>;
 
 export class StuffExpr extends FuncExpr {
@@ -33409,8 +34422,10 @@ export class SqrtExpr extends FuncExpr {
 
 export type TimeExprArgs = Merge<[
   FuncExprArgs,
-  { zone?: Expression;
-    this?: Expression; },
+  { 
+    zone?: Expression;
+    this?: Expression;
+  },
 ]>;
 
 export class TimeExpr extends FuncExpr {
@@ -33442,10 +34457,12 @@ export class TimeExpr extends FuncExpr {
 
 export type TimeToStrExprArgs = Merge<[
   FuncExprArgs,
-  { format: string;
+  { 
+    format: string;
     culture?: Expression;
     zone?: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class TimeToStrExpr extends FuncExpr {
@@ -33558,8 +34575,10 @@ export class TimeStrToDateExpr extends FuncExpr {
 
 export type TimeStrToTimeExprArgs = Merge<[
   FuncExprArgs,
-  { zone?: Expression;
-    this: Expression; },
+  { 
+    zone?: Expression;
+    this: Expression;
+  },
 ]>;
 
 export class TimeStrToTimeExpr extends FuncExpr {
@@ -33613,10 +34632,12 @@ export class TimeStrToUnixExpr extends FuncExpr {
 
 export type TrimExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression?: Expression;
     position?: Expression;
-    collation?: Expression; },
+    collation?: Expression;
+  },
 ]>;
 
 export class TrimExpr extends FuncExpr {
@@ -33663,10 +34684,12 @@ export class TrimExpr extends FuncExpr {
 
 export type TsOrDsAddExprArgs = Merge<[
   FuncExprArgs,
-  { unit?: Expression;
+  { 
+    unit?: Expression;
     returnType?: DataTypeExpr;
     this: Expression;
-    expression: Expression; },
+    expression: Expression;
+  },
 ]>;
 
 export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -33721,9 +34744,11 @@ export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
 export type TsOrDsDiffExprArgs = Merge<[
   FuncExprArgs,
-  { unit?: Expression;
+  { 
+    unit?: Expression;
     this: Expression;
-    expression: Expression; },
+    expression: Expression;
+  },
 ]>;
 
 export class TsOrDsDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
@@ -33783,9 +34808,11 @@ export class TsOrDsToDateStrExpr extends FuncExpr {
 
 export type TsOrDsToDateExprArgs = Merge<[
   FuncExprArgs,
-  { format?: string;
+  { 
+    format?: string;
     safe?: boolean;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class TsOrDsToDateExpr extends FuncExpr {
@@ -33849,9 +34876,11 @@ export class TsOrDsToDatetimeExpr extends FuncExpr {
 
 export type TsOrDsToTimeExprArgs = Merge<[
   FuncExprArgs,
-  { format?: string;
+  { 
+    format?: string;
     safe?: boolean;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class TsOrDsToTimeExpr extends FuncExpr {
@@ -33937,8 +34966,10 @@ export class TsOrDiToDiExpr extends FuncExpr {
 
 export type UnhexExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class UnhexExpr extends FuncExpr {
@@ -33993,10 +35024,12 @@ export class UnicodeExpr extends FuncExpr {
 
 export type UniformExprArgs = Merge<[
   FuncExprArgs,
-  { gen?: Expression;
+  { 
+    gen?: Expression;
     seed?: Expression;
     this: Expression;
-    expression: Expression; },
+    expression: Expression;
+  },
 ]>;
 
 export class UniformExpr extends FuncExpr {
@@ -34065,8 +35098,10 @@ export class UnixDateExpr extends FuncExpr {
 
 export type UnixToStrExprArgs = Merge<[
   FuncExprArgs,
-  { format?: string;
-    this: Expression; },
+  { 
+    format?: string;
+    this: Expression;
+  },
 ]>;
 
 export class UnixToStrExpr extends FuncExpr {
@@ -34099,13 +35134,15 @@ export class UnixToStrExpr extends FuncExpr {
 
 export type UnixToTimeExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     scale?: number | Expression;
     zone?: Expression;
     hours?: Expression[];
     minutes?: Expression[];
     format?: string;
-    targetType?: DataTypeExpr; },
+    targetType?: DataTypeExpr;
+  },
 ]>;
 
 export class UnixToTimeExpr extends FuncExpr {
@@ -34266,9 +35303,11 @@ export class UnixMillisExpr extends FuncExpr {
 
 export type UuidExprArgs = Merge<[
   FuncExprArgs,
-  { name?: Expression;
+  { 
+    name?: Expression;
     isString?: boolean;
-    this?: Expression; },
+    this?: Expression;
+  },
 ]>;
 
 export class UuidExpr extends FuncExpr {
@@ -34327,7 +35366,8 @@ const TIMESTAMP_PARTS = {
 
 export type TimestampFromPartsExprArgs = Merge<[
   FuncExprArgs,
-  { year?: Expression;
+  { 
+    year?: Expression;
     month?: Expression;
     day?: Expression;
     hour?: Expression;
@@ -34337,7 +35377,8 @@ export type TimestampFromPartsExprArgs = Merge<[
     zone?: Expression;
     milli?: Expression;
     this?: Expression;
-    expression?: Expression; },
+    expression?: Expression;
+  },
 ]>;
 
 export class TimestampFromPartsExpr extends FuncExpr {
@@ -34414,13 +35455,15 @@ export class TimestampFromPartsExpr extends FuncExpr {
 
 export type TimestampLtzFromPartsExprArgs = Merge<[
   FuncExprArgs,
-  { year?: Expression;
+  { 
+    year?: Expression;
     month?: Expression;
     day?: Expression;
     hour?: Expression;
     min?: Expression;
     sec?: Expression;
-    nano?: Expression; },
+    nano?: Expression;
+  },
 ]>;
 
 export class TimestampLtzFromPartsExpr extends FuncExpr {
@@ -34474,14 +35517,16 @@ export class TimestampLtzFromPartsExpr extends FuncExpr {
 
 export type TimestampTzFromPartsExprArgs = Merge<[
   FuncExprArgs,
-  { year?: Expression;
+  { 
+    year?: Expression;
     month?: Expression;
     day?: Expression;
     hour?: Expression;
     min?: Expression;
     sec?: Expression;
     nano?: Expression;
-    zone?: Expression; },
+    zone?: Expression;
+  },
 ]>;
 
 export class TimestampTzFromPartsExpr extends FuncExpr {
@@ -34564,9 +35609,11 @@ export class UpperExpr extends FuncExpr {
 export type CorrExprArgs = Merge<[
   BinaryExprArgs,
   AggFuncExprArgs,
-  { nullOnZeroVariance?: Expression;
+  { 
+    nullOnZeroVariance?: Expression;
     this: Expression;
-    expression: Expression; },
+    expression: Expression;
+  },
 ]>;
 
 export class CorrExpr extends multiInherit(BinaryExpr, AggFuncExpr) {
@@ -34600,11 +35647,13 @@ export class CorrExpr extends multiInherit(BinaryExpr, AggFuncExpr) {
 
 export type WidthBucketExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     minValue?: string;
     maxValue?: string;
     numBuckets?: Expression[];
-    threshold?: Expression; },
+    threshold?: Expression;
+  },
 ]>;
 
 export class WidthBucketExpr extends FuncExpr {
@@ -34656,8 +35705,10 @@ export class WidthBucketExpr extends FuncExpr {
 
 export type WeekExprArgs = Merge<[
   FuncExprArgs,
-  { mode?: Expression;
-    this: Expression; },
+  { 
+    mode?: Expression;
+    this: Expression;
+  },
 ]>;
 
 export class WeekExpr extends FuncExpr {
@@ -34690,8 +35741,10 @@ export class WeekExpr extends FuncExpr {
 
 export type NextDayExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class NextDayExpr extends FuncExpr {
@@ -34724,9 +35777,11 @@ export class NextDayExpr extends FuncExpr {
 
 export type XMLElementExprArgs = Merge<[
   FuncExprArgs,
-  { evalname?: string;
+  { 
+    evalname?: string;
     this: Expression;
-    expressions?: Expression; },
+    expressions?: Expression;
+  },
 ]>;
 
 export class XMLElementExpr extends FuncExpr {
@@ -34766,9 +35821,11 @@ export class XMLElementExpr extends FuncExpr {
 
 export type XMLGetExprArgs = Merge<[
   FuncExprArgs,
-  { instance?: Expression;
+  { 
+    instance?: Expression;
     this: Expression;
-    expression: Expression; },
+    expression: Expression;
+  },
 ]>;
 
 export class XMLGetExpr extends FuncExpr {
@@ -34807,11 +35864,13 @@ export class XMLGetExpr extends FuncExpr {
 
 export type XMLTableExprArgs = Merge<[
   FuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     namespaces?: Expression[];
     passing?: Expression;
     columns?: Expression[];
-    byRef?: Expression; },
+    byRef?: Expression;
+  },
 ]>;
 
 export class XMLTableExpr extends FuncExpr {
@@ -34885,9 +35944,11 @@ export class YearExpr extends FuncExpr {
 
 export type ZipfExprArgs = Merge<[
   FuncExprArgs,
-  { elementcount: Expression;
+  { 
+    elementcount: Expression;
     gen: Expression;
-    this: Expression; },
+    this: Expression;
+  },
 ]>;
 
 export class ZipfExpr extends FuncExpr {
@@ -34929,8 +35990,10 @@ export class ZipfExpr extends FuncExpr {
 
 export type NextValueForExprArgs = Merge<[
   FuncExprArgs,
-  { order?: Expression;
-    this: Expression; },
+  { 
+    order?: Expression;
+    this: Expression;
+  },
 ]>;
 
 export class NextValueForExpr extends FuncExpr {
@@ -35131,9 +36194,11 @@ export class BitmapOrAggExpr extends AggFuncExpr {
 
 export type ParameterizedAggExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expressions: Expression[];
-    params: Expression[]; },
+    params: Expression[];
+  },
 ]>;
 
 export class ParameterizedAggExpr extends AggFuncExpr {
@@ -35171,9 +36236,11 @@ export class ParameterizedAggExpr extends AggFuncExpr {
 
 export type ArgMaxExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    count?: Expression; },
+    count?: Expression;
+  },
 ]>;
 
 export class ArgMaxExpr extends AggFuncExpr {
@@ -35217,9 +36284,11 @@ export class ArgMaxExpr extends AggFuncExpr {
 
 export type ArgMinExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    count?: Expression; },
+    count?: Expression;
+  },
 ]>;
 
 export class ArgMinExpr extends AggFuncExpr {
@@ -35263,9 +36332,11 @@ export class ArgMinExpr extends AggFuncExpr {
 
 export type ApproxTopKExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression?: Expression;
-    counters?: Expression; },
+    counters?: Expression;
+  },
 ]>;
 
 export class ApproxTopKExpr extends AggFuncExpr {
@@ -35307,8 +36378,10 @@ export class ApproxTopKExpr extends AggFuncExpr {
  */
 export type ApproxTopKAccumulateExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class ApproxTopKAccumulateExpr extends AggFuncExpr {
@@ -35344,8 +36417,10 @@ export class ApproxTopKAccumulateExpr extends AggFuncExpr {
  */
 export type ApproxTopKCombineExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class ApproxTopKCombineExpr extends AggFuncExpr {
@@ -35378,9 +36453,11 @@ export class ApproxTopKCombineExpr extends AggFuncExpr {
 
 export type ApproxTopSumExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expression: Expression;
-    count: Expression; },
+    count: Expression;
+  },
 ]>;
 
 export class ApproxTopSumExpr extends AggFuncExpr {
@@ -35418,8 +36495,10 @@ export class ApproxTopSumExpr extends AggFuncExpr {
 
 export type ApproxQuantilesExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class ApproxQuantilesExpr extends AggFuncExpr {
@@ -35480,8 +36559,10 @@ export class ApproxPercentileCombineExpr extends AggFuncExpr {
  */
 export type MinhashExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expressions: Expression[]; },
+  { 
+    this: Expression;
+    expressions: Expression[];
+  },
 ]>;
 
 export class MinhashExpr extends AggFuncExpr {
@@ -35568,7 +36649,8 @@ export class ApproximateSimilarityExpr extends AggFuncExpr {
 
 export type GroupingExprArgs = Merge<[
   AggFuncExprArgs,
-  { expressions: Expression[] },
+  { 
+    expressions: Expression[] },
 ]>;
 
 export class GroupingExpr extends AggFuncExpr {
@@ -35598,7 +36680,8 @@ export class GroupingExpr extends AggFuncExpr {
 
 export type GroupingIdExprArgs = Merge<[
   AggFuncExprArgs,
-  { expressions?: Expression[] },
+  { 
+    expressions?: Expression[] },
 ]>;
 
 export class GroupingIdExpr extends AggFuncExpr {
@@ -35628,8 +36711,10 @@ export class GroupingIdExpr extends AggFuncExpr {
 
 export type AnonymousAggFuncExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class AnonymousAggFuncExpr extends AggFuncExpr {
@@ -35667,8 +36752,10 @@ export class AnonymousAggFuncExpr extends AggFuncExpr {
  */
 export type HashAggExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class HashAggExpr extends AggFuncExpr {
@@ -35707,8 +36794,10 @@ export class HashAggExpr extends AggFuncExpr {
  */
 export type HllExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class HllExpr extends AggFuncExpr {
@@ -35743,8 +36832,10 @@ export class HllExpr extends AggFuncExpr {
 
 export type ApproxDistinctExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    accuracy?: Expression; },
+  { 
+    this: Expression;
+    accuracy?: Expression;
+  },
 ]>;
 
 export class ApproxDistinctExpr extends AggFuncExpr {
@@ -35796,8 +36887,10 @@ export class ExplodingGenerateSeriesExpr extends GenerateSeriesExpr {
 
 export type ArrayAggExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    nullsExcluded?: Expression; },
+  { 
+    this: Expression;
+    nullsExcluded?: Expression;
+  },
 ]>;
 
 export class ArrayAggExpr extends AggFuncExpr {
@@ -35852,8 +36945,10 @@ export class ArrayUniqueAggExpr extends AggFuncExpr {
 
 export type AIAggExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class AIAggExpr extends AggFuncExpr {
@@ -36000,9 +37095,11 @@ export class AnyValueExpr extends AggFuncExpr {
 
 export type LagExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     offset?: Expression;
-    default?: Expression; },
+    default?: Expression;
+  },
 ]>;
 
 export class LagExpr extends AggFuncExpr {
@@ -36040,9 +37137,11 @@ export class LagExpr extends AggFuncExpr {
 
 export type LeadExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     offset?: Expression;
-    default?: Expression; },
+    default?: Expression;
+  },
 ]>;
 
 export class LeadExpr extends AggFuncExpr {
@@ -36080,8 +37179,10 @@ export class LeadExpr extends AggFuncExpr {
 
 export type FirstExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class FirstExpr extends AggFuncExpr {
@@ -36114,8 +37215,10 @@ export class FirstExpr extends AggFuncExpr {
 
 export type LastExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class LastExpr extends AggFuncExpr {
@@ -36192,9 +37295,11 @@ export class LastValueExpr extends AggFuncExpr {
 
 export type NthValueExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     offset: Expression;
-    fromFirst?: Expression; },
+    fromFirst?: Expression;
+  },
 ]>;
 
 export class NthValueExpr extends AggFuncExpr {
@@ -36232,8 +37337,10 @@ export class NthValueExpr extends AggFuncExpr {
 
 export type ObjectAggExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class ObjectAggExpr extends AggFuncExpr {
@@ -36324,9 +37431,11 @@ export class ConcatWsExpr extends ConcatExpr {
 
 export type CountExprArgs = Merge<[
   AggFuncExprArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     expressions?: Expression[];
-    bigInt?: Expression; },
+    bigInt?: Expression;
+  },
 ]>;
 
 export class CountExpr extends AggFuncExpr {
@@ -36390,7 +37499,8 @@ export class CountIfExpr extends AggFuncExpr {
 
 export type DenseRankExprArgs = Merge<[
   AggFuncExprArgs,
-  { expressions?: Expression[] },
+  { 
+    expressions?: Expression[] },
 ]>;
 
 export class DenseRankExpr extends AggFuncExpr {
@@ -36454,9 +37564,11 @@ export class PosexplodeExpr extends ExplodeExpr {
 
 export type GroupConcatExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     separator?: Expression;
-    onOverflow?: Expression; },
+    onOverflow?: Expression;
+  },
 ]>;
 
 export class GroupConcatExpr extends AggFuncExpr {
@@ -36549,10 +37661,12 @@ export class OrExpr extends multiInherit(ConnectorExpr, FuncExpr) {
 
 export type XorExprArgs = Merge<[
   ConnectorExprArgs,
-  { this?: Expression;
+  { 
+    this?: Expression;
     expression?: Expression;
     expressions?: Expression[];
-    roundInput?: Expression; },
+    roundInput?: Expression;
+  },
 ]>;
 
 export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
@@ -36594,10 +37708,12 @@ export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
 
 export type JSONObjectAggExprArgs = Merge<[
   AggFuncExprArgs,
-  { nullHandling?: Expression;
+  { 
+    nullHandling?: Expression;
     uniqueKeys?: Expression[];
     returnType?: DataTypeExpr;
-    encoding?: Expression; },
+    encoding?: Expression;
+  },
 ]>;
 
 export class JSONObjectAggExpr extends AggFuncExpr {
@@ -36644,8 +37760,10 @@ export class JSONObjectAggExpr extends AggFuncExpr {
 
 export type JSONBObjectAggExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class JSONBObjectAggExpr extends AggFuncExpr {
@@ -36678,10 +37796,12 @@ export class JSONBObjectAggExpr extends AggFuncExpr {
 
 export type JSONArrayAggExprArgs = Merge<[
   AggFuncExprArgs,
-  { order?: Expression;
+  { 
+    order?: Expression;
     nullHandling?: Expression;
     returnType?: DataTypeExpr;
-    strict?: Expression; },
+    strict?: Expression;
+  },
 ]>;
 
 export class JSONArrayAggExpr extends AggFuncExpr {
@@ -36784,8 +37904,10 @@ export class LogicalAndExpr extends AggFuncExpr {
 
 export type MaxExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class MaxExpr extends AggFuncExpr {
@@ -36842,8 +37964,10 @@ export class MedianExpr extends AggFuncExpr {
 
 export type ModeExprArgs = Merge<[
   AggFuncExprArgs,
-  { this?: Expression;
-    deterministic?: Expression; },
+  { 
+    this?: Expression;
+    deterministic?: Expression;
+  },
 ]>;
 
 export class ModeExpr extends AggFuncExpr {
@@ -36876,8 +38000,10 @@ export class ModeExpr extends AggFuncExpr {
 
 export type MinExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class MinExpr extends AggFuncExpr {
@@ -36912,7 +38038,8 @@ export class MinExpr extends AggFuncExpr {
 
 export type NtileExprArgs = Merge<[
   AggFuncExprArgs,
-  { this?: Expression },
+  { 
+    this?: Expression },
 ]>;
 
 export class NtileExpr extends AggFuncExpr {
@@ -36940,8 +38067,10 @@ export class NtileExpr extends AggFuncExpr {
 
 export type PercentileContExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class PercentileContExpr extends AggFuncExpr {
@@ -36974,8 +38103,10 @@ export class PercentileContExpr extends AggFuncExpr {
 
 export type PercentileDiscExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression?: Expression; },
+  { 
+    this: Expression;
+    expression?: Expression;
+  },
 ]>;
 
 export class PercentileDiscExpr extends AggFuncExpr {
@@ -37008,7 +38139,8 @@ export class PercentileDiscExpr extends AggFuncExpr {
 
 export type PercentRankExprArgs = Merge<[
   AggFuncExprArgs,
-  { expressions?: Expression[] },
+  { 
+    expressions?: Expression[] },
 ]>;
 
 export class PercentRankExpr extends AggFuncExpr {
@@ -37038,8 +38170,10 @@ export class PercentRankExpr extends AggFuncExpr {
 
 export type QuantileExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    quantile: Expression; },
+  { 
+    this: Expression;
+    quantile: Expression;
+  },
 ]>;
 
 export class QuantileExpr extends AggFuncExpr {
@@ -37094,7 +38228,8 @@ export class ApproxPercentileAccumulateExpr extends AggFuncExpr {
 
 export type RankExprArgs = Merge<[
   AggFuncExprArgs,
-  { expressions?: Expression[] },
+  { 
+    expressions?: Expression[] },
 ]>;
 
 export class RankExpr extends AggFuncExpr {
@@ -37124,8 +38259,10 @@ export class RankExpr extends AggFuncExpr {
 
 export type RegrValxExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class RegrValxExpr extends AggFuncExpr {
@@ -37158,8 +38295,10 @@ export class RegrValxExpr extends AggFuncExpr {
 
 export type RegrValyExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class RegrValyExpr extends AggFuncExpr {
@@ -37192,8 +38331,10 @@ export class RegrValyExpr extends AggFuncExpr {
 
 export type RegrAvgyExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class RegrAvgyExpr extends AggFuncExpr {
@@ -37226,8 +38367,10 @@ export class RegrAvgyExpr extends AggFuncExpr {
 
 export type RegrAvgxExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class RegrAvgxExpr extends AggFuncExpr {
@@ -37260,8 +38403,10 @@ export class RegrAvgxExpr extends AggFuncExpr {
 
 export type RegrCountExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class RegrCountExpr extends AggFuncExpr {
@@ -37294,8 +38439,10 @@ export class RegrCountExpr extends AggFuncExpr {
 
 export type RegrInterceptExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class RegrInterceptExpr extends AggFuncExpr {
@@ -37328,8 +38475,10 @@ export class RegrInterceptExpr extends AggFuncExpr {
 
 export type RegrR2ExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class RegrR2Expr extends AggFuncExpr {
@@ -37362,8 +38511,10 @@ export class RegrR2Expr extends AggFuncExpr {
 
 export type RegrSxxExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class RegrSxxExpr extends AggFuncExpr {
@@ -37396,8 +38547,10 @@ export class RegrSxxExpr extends AggFuncExpr {
 
 export type RegrSxyExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class RegrSxyExpr extends AggFuncExpr {
@@ -37430,8 +38583,10 @@ export class RegrSxyExpr extends AggFuncExpr {
 
 export type RegrSyyExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class RegrSyyExpr extends AggFuncExpr {
@@ -37464,8 +38619,10 @@ export class RegrSyyExpr extends AggFuncExpr {
 
 export type RegrSlopeExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class RegrSlopeExpr extends AggFuncExpr {
@@ -37588,7 +38745,8 @@ export class StddevSampExpr extends AggFuncExpr {
 
 export type CumeDistExprArgs = Merge<[
   AggFuncExprArgs,
-  { expressions?: Expression[] },
+  { 
+    expressions?: Expression[] },
 ]>;
 
 export class CumeDistExpr extends AggFuncExpr {
@@ -37712,8 +38870,10 @@ export class SkewnessExpr extends AggFuncExpr {
 
 export type CovarSampExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class CovarSampExpr extends AggFuncExpr {
@@ -37746,8 +38906,10 @@ export class CovarSampExpr extends AggFuncExpr {
 
 export type CovarPopExprArgs = Merge<[
   AggFuncExprArgs,
-  { this: Expression;
-    expression: Expression; },
+  { 
+    this: Expression;
+    expression: Expression;
+  },
 ]>;
 
 export class CovarPopExpr extends AggFuncExpr {
@@ -37783,8 +38945,10 @@ export class CovarPopExpr extends AggFuncExpr {
  */
 export type CombinedAggFuncExprArgs = Merge<[
   AnonymousAggFuncExprArgs,
-  { this: Expression;
-    expressions?: Expression[]; },
+  { 
+    this: Expression;
+    expressions?: Expression[];
+  },
 ]>;
 
 export class CombinedAggFuncExpr extends AnonymousAggFuncExpr {
@@ -37817,9 +38981,11 @@ export class CombinedAggFuncExpr extends AnonymousAggFuncExpr {
 
 export type CombinedParameterizedAggExprArgs = Merge<[
   ParameterizedAggExprArgs,
-  { this: Expression;
+  { 
+    this: Expression;
     expressions: Expression[];
-    params: Expression[]; },
+    params: Expression[];
+  },
 ]>;
 
 export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
@@ -37874,10 +39040,12 @@ export class PosexplodeOuterExpr extends multiInherit(PosexplodeExpr, ExplodeOut
 
 export type ApproxQuantileExprArgs = Merge<[
   QuantileExprArgs,
-  { quantile: Expression;
+  { 
+    quantile: Expression;
     accuracy?: Expression;
     weight?: Expression;
-    errorTolerance?: Expression; },
+    errorTolerance?: Expression;
+  },
 ]>;
 
 export class ApproxQuantileExpr extends QuantileExpr {
