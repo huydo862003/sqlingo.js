@@ -1034,7 +1034,7 @@ export interface BaseExpressionArgs {
   this?: ExpressionValue;
   expression?: Expression;
   expressions?: (Expression | string)[];
-  alias?: TableAliasExpr | IdentifierExpr | string;
+  alias?: TableAliasExpr | IdentifierExpr;
   isString?: boolean;
   to?: DataTypeExpr;
   [key: string]: ExpressionValueList | ExpressionValue | undefined;
@@ -4522,7 +4522,7 @@ export class ProjectionDefExpr extends Expression {
 
 export type TableAliasExprArgs = {
   columns?: Expression[];
-  this?: Expression;
+  this?: IdentifierExpr;
 } & BaseExpressionArgs;
 
 export class TableAliasExpr extends Expression {
@@ -4544,7 +4544,7 @@ export class TableAliasExpr extends Expression {
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): IdentifierExpr | undefined {
     return this.args.this;
   }
 
@@ -6301,7 +6301,7 @@ export type IdentifierExprArgs = {
   quoted?: boolean;
   global?: boolean;
   temporary?: boolean;
-  this: Expression;
+  this: string;
 } & BaseExpressionArgs;
 
 export class IdentifierExpr extends Expression {
@@ -6329,7 +6329,7 @@ export class IdentifierExpr extends Expression {
     return this.name;
   }
 
-  get $this (): Expression {
+  get $this (): string {
     return this.args.this;
   }
 
@@ -8636,9 +8636,10 @@ export class GetExpr extends Expression {
 }
 
 export type TableExprArgs = {
-  this?: string | IdentifierExpr;
-  db?: string | IdentifierExpr;
-  catalog?: string | IdentifierExpr;
+  this?: IdentifierExpr | DotExpr;
+  db?: IdentifierExpr;
+  catalog?: IdentifierExpr;
+  alias?: TableAliasExpr | IdentifierExpr | string;
   laterals?: Expression[];
   joins?: Expression[];
   pivots?: Expression[];
@@ -8696,19 +8697,19 @@ export class TableExpr extends Expression {
     super(args);
   }
 
-  get $this (): ExpressionValue {
+  get $this (): IdentifierExpr | DotExpr | undefined {
     return this.args.this;
   }
 
-  get $alias (): TableAliasExpr | IdentifierExpr | string | undefined {
+  get $alias (): TableAliasExpr | IdentifierExpr | undefined {
     return this.args.alias;
   }
 
-  get $db (): string | IdentifierExpr | undefined {
+  get $db (): IdentifierExpr | undefined {
     return this.args.db;
   }
 
-  get $catalog (): string | IdentifierExpr | undefined {
+  get $catalog (): IdentifierExpr | undefined {
     return this.args.catalog;
   }
 
@@ -8785,10 +8786,7 @@ export class TableExpr extends Expression {
     if (!thisArg || thisArg instanceof FuncExpr) {
       return '';
     }
-    if (thisArg instanceof IdentifierExpr || thisArg instanceof TableExpr) {
-      return thisArg.name || '';
-    }
-    return '';
+    return thisArg.name || '';
   }
 
   /**
@@ -8823,8 +8821,8 @@ export class TableExpr extends Expression {
    * Returns the parts of a table in order: [catalog, db, this].
    * Flattens Dot expressions into their constituent parts.
    */
-  get parts (): (string | IdentifierExpr)[] {
-    const parts: (string | IdentifierExpr)[] = [];
+  get parts (): IdentifierExpr[] | [...Expression[], ColumnExpr] {
+    const parts: Expression[] = [];
 
     for (const arg of [
       'catalog',
@@ -8840,45 +8838,40 @@ export class TableExpr extends Expression {
       }
     }
 
-    return parts;
+    return parts as IdentifierExpr[] | [...Expression[], ColumnExpr];
   }
 
   /**
    * Converts this table to a Column expression.
    */
-  toColumn (options: { copy?: boolean } = {}): Expression {
+  toColumn (options: { copy?: boolean } = {}): ColumnExpr | DotExpr | AliasExpr {
     const { copy = true } = options;
 
     const parts = this.parts;
     const lastPart = parts[parts.length - 1];
 
-    let col: string | IdentifierExpr;
+    let col: ColumnExpr | DotExpr | AliasExpr;
     if (lastPart instanceof IdentifierExpr) {
       // Build column from parts (reversed for catalog.db.table order)
       const columnParts = parts.slice(0, 4).reverse();
       const fields = parts.slice(4);
       col = column({
-        col: columnParts[0],
-        table: columnParts[1],
-        db: columnParts[2],
-        catalog: columnParts[3],
+        col: columnParts[0] as IdentifierExpr,
+        table: columnParts[1] as IdentifierExpr | undefined,
+        db: columnParts[2] as IdentifierExpr | undefined,
+        catalog: columnParts[3] as IdentifierExpr | undefined,
       }, {
-        fields,
+        fields: fields as IdentifierExpr[],
         copy,
       });
     } else {
       // If last part is a function or array wrapped in Table
-      col = lastPart;
+      col = lastPart as ColumnExpr;
     }
 
     const aliasArg = this.args.alias;
     if (aliasArg) {
-      const aliasName = typeof aliasArg === 'string'
-        ? aliasArg
-        : aliasArg instanceof TableAliasExpr || aliasArg instanceof IdentifierExpr
-          ? aliasArg.this
-          : aliasArg;
-      col = alias(col, aliasName, { copy });
+      col = alias(col, aliasArg.$this, { copy });
     }
 
     return col;
@@ -36591,13 +36584,13 @@ export class ApproxQuantileExpr extends QuantileExpr {
  */
 export function column (
   columnRef: {
-    col: string | IdentifierExpr | StarExpr;
+    col: string | IdentifierExpr;
     table?: string | IdentifierExpr;
     db?: string | IdentifierExpr;
     catalog?: string | IdentifierExpr;
   },
   options: {
-    fields?: Array<string | IdentifierExpr>;
+    fields?: (string | IdentifierExpr)[];
     quoted?: boolean;
     copy?: boolean;
   } = {},
@@ -37090,7 +37083,7 @@ export function alias (
   expression: string | Expression,
   aliasName: string | IdentifierExpr | undefined,
   options: {
-    table?: boolean | Array<string | IdentifierExpr>;
+    table?: boolean | (string | IdentifierExpr)[];
     quoted?: boolean;
     dialect?: DialectType;
     copy?: boolean;
