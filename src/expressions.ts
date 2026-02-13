@@ -1037,7 +1037,7 @@ export interface BaseExpressionArgs {
   this?: ExpressionValue;
   expression?: ExpressionValue;
   expressions?: Expression[];
-  alias?: TableAliasExpr | IdentifierExpr;
+  alias?: TableAliasExpr | IdentifierExpr | string;
   isString?: boolean;
   to?: DataTypeExpr;
   [key: string]: ExpressionValueList | ExpressionValue | undefined;
