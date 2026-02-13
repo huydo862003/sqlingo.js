@@ -14259,6 +14259,7 @@ export class EnginePropertyExpr extends PropertyExpr {
 
 export type HeapPropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class HeapPropertyExpr extends PropertyExpr {
@@ -14485,6 +14486,7 @@ export class FreespacePropertyExpr extends PropertyExpr {
 
 export type GlobalPropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class GlobalPropertyExpr extends PropertyExpr {
@@ -14501,6 +14503,7 @@ export class GlobalPropertyExpr extends PropertyExpr {
 
 export type IcebergPropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class IcebergPropertyExpr extends PropertyExpr {
@@ -14807,6 +14810,7 @@ export class DictPropertyExpr extends PropertyExpr {
 
 export type DictSubPropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class DictSubPropertyExpr extends PropertyExpr {
@@ -14865,6 +14869,7 @@ export class DictRangeExpr extends PropertyExpr {
 
 export type DynamicPropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class DynamicPropertyExpr extends PropertyExpr {
@@ -14905,6 +14910,7 @@ export class OnClusterExpr extends PropertyExpr {
 
 export type EmptyPropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class EmptyPropertyExpr extends PropertyExpr {
@@ -15163,6 +15169,7 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
 
 export type NoPrimaryIndexPropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class NoPrimaryIndexPropertyExpr extends PropertyExpr {
@@ -15516,6 +15523,7 @@ export class PartitionedOfPropertyExpr extends PropertyExpr {
 
 export type StreamingTablePropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class StreamingTablePropertyExpr extends PropertyExpr {
@@ -15532,6 +15540,7 @@ export class StreamingTablePropertyExpr extends PropertyExpr {
 
 export type RemoteWithConnectionModelPropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
@@ -15600,6 +15609,7 @@ export class ReturnsPropertyExpr extends PropertyExpr {
 
 export type StrictPropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class StrictPropertyExpr extends PropertyExpr {
@@ -16086,6 +16096,7 @@ export class TemporaryPropertyExpr extends PropertyExpr {
 
 export type SecurePropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class SecurePropertyExpr extends PropertyExpr {
@@ -16175,6 +16186,7 @@ export class TransientPropertyExpr extends PropertyExpr {
 
 export type UnloggedPropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class UnloggedPropertyExpr extends PropertyExpr {
@@ -16504,6 +16516,7 @@ export class IncludePropertyExpr extends PropertyExpr {
 
 export type ForcePropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class ForcePropertyExpr extends PropertyExpr {
