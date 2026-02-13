@@ -36761,6 +36761,24 @@ export function table (name: string, db?: string, catalog?: string): TableExpr {
  * @param options.wrap - Whether to wrap the operands in Parens
  * @returns The new condition
  */
+export function and<E extends Expression | string> (
+  expressions: E | [E],
+  options?: {
+    dialect?: DialectType;
+    copy?: boolean;
+    wrap?: boolean;
+    [key: string]: unknown;
+  },
+): E;
+export function and (
+  expressions: [string | Expression, ...(string | Expression)[]],
+  options?: {
+    dialect?: DialectType;
+    copy?: boolean;
+    wrap?: boolean;
+    [key: string]: unknown;
+  },
+): AndExpr;
 export function and (
   expressions: string | Expression | (string | Expression)[],
   options: {
@@ -36795,6 +36813,24 @@ export function and (
  * @param options.wrap - Whether to wrap the operands in Parens
  * @returns The new condition
  */
+export function or<E extends Expression | string> (
+  expressions: E | [E],
+  options?: {
+    dialect?: DialectType;
+    copy?: boolean;
+    wrap?: boolean;
+    [key: string]: unknown;
+  },
+): E;
+export function or (
+  expressions: [string | Expression, ...(string | Expression)[]],
+  options?: {
+    dialect?: DialectType;
+    copy?: boolean;
+    wrap?: boolean;
+    [key: string]: unknown;
+  },
+): OrExpr;
 export function or (
   expressions: string | Expression | (string | Expression)[],
   options: {
@@ -36829,6 +36865,24 @@ export function or (
  * @param options.wrap - Whether to wrap the operands in Parens
  * @returns The new condition
  */
+export function xor<E extends Expression | string> (
+  expressions: E | [E],
+  options?: {
+    dialect?: DialectType;
+    copy?: boolean;
+    wrap?: boolean;
+    [key: string]: unknown;
+  },
+): E;
+export function xor (
+  expressions: [string | Expression, ...(string | Expression)[]],
+  options?: {
+    dialect?: DialectType;
+    copy?: boolean;
+    wrap?: boolean;
+    [key: string]: unknown;
+  },
+): XorExpr;
 export function xor (
   expressions: string | Expression | (string | Expression)[],
   options: {
@@ -38465,9 +38519,32 @@ function _applyCteBuilder (options: {
  * @param options - Options object
  * @returns Combined expression
  */
-function _combine (
+function _combine<E extends Expression | string, T extends ConnectorExpr> (
+  expressions: E | [E],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  operator: new (args: any) => T,
+  options: {
+    dialect?: DialectType;
+    copy?: boolean;
+    wrap?: boolean;
+    [key: string]: unknown;
+  },
+): E;
+function _combine<T extends ConnectorExpr> (
+  expressions: [string | Expression, ...(string | Expression)[]],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  operator: new (args: any) => T,
+  options: {
+    dialect?: DialectType;
+    copy?: boolean;
+    wrap?: boolean;
+    [key: string]: unknown;
+  },
+): T;
+function _combine<T extends ConnectorExpr> (
   expressions: string | Expression | (string | Expression)[],
-  operator: typeof ConnectorExpr,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  operator: new (args: any) => T,
   options: {
     dialect?: DialectType;
     copy?: boolean;
