@@ -10,7 +10,9 @@ import {
   ensureList, splitNumWords,
 } from './helper';
 import {
-  multiInherit, type RequiredMap,
+  type Merge,
+  multiInherit,
+  type RequiredMap,
 } from './port_internals';
 import { traverseScope } from './optimizer/scope';
 import {
@@ -2508,7 +2510,9 @@ export class Expression {
   }
 }
 
-export type ConditionExprArgs = BaseExpressionArgs;
+export type ConditionExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class ConditionExpr extends Expression {
   key = ExpressionKey.CONDITION;
@@ -2524,7 +2528,9 @@ export class ConditionExpr extends Expression {
   }
 }
 
-export type PredicateExprArgs = BaseExpressionArgs;
+export type PredicateExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class PredicateExpr extends Expression {
   key = ExpressionKey.PREDICATE;
@@ -2540,7 +2546,9 @@ export class PredicateExpr extends Expression {
   }
 }
 
-export type DerivedTableExprArgs = BaseExpressionArgs;
+export type DerivedTableExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class DerivedTableExpr extends Expression {
   key = ExpressionKey.DERIVED_TABLE;
@@ -2578,9 +2586,10 @@ export class DerivedTableExpr extends Expression {
   }
 }
 
-export type QueryExprArgs = {
-  with?: WithExpr;
-} & BaseExpressionArgs;
+export type QueryExprArgs = Merge<[
+  BaseExpressionArgs,
+  { with?: WithExpr },
+]>;
 
 export class QueryExpr extends Expression {
   key = ExpressionKey.QUERY;
@@ -2995,9 +3004,10 @@ export class QueryExpr extends Expression {
   declare unnest: () => QueryExpr;
 }
 
-export type UDTFExprArgs = {
-  alias?: TableAliasExpr;
-} & DerivedTableExprArgs;
+export type UDTFExprArgs = Merge<[
+  DerivedTableExprArgs,
+  { alias?: TableAliasExpr },
+]>;
 
 export class UDTFExpr extends DerivedTableExpr {
   key = ExpressionKey.UDTF;
@@ -3022,12 +3032,13 @@ export class UDTFExpr extends DerivedTableExpr {
   }
 }
 
-export type CacheExprArgs = {
-  lazy?: Expression;
-  options?: Expression[];
-  this: Expression;
-  expression?: ExpressionValue;
-} & BaseExpressionArgs;
+export type CacheExprArgs = Merge<[
+  BaseExpressionArgs,
+  { lazy?: Expression;
+    options?: Expression[];
+    this: Expression;
+    expression?: ExpressionValue; },
+]>;
 
 export class CacheExpr extends Expression {
   key = ExpressionKey.CACHE;
@@ -3067,10 +3078,11 @@ export class CacheExpr extends Expression {
   }
 }
 
-export type UncacheExprArgs = {
-  exists?: boolean;
-  this: Expression;
-} & BaseExpressionArgs;
+export type UncacheExprArgs = Merge<[
+  BaseExpressionArgs,
+  { exists?: boolean;
+    this: Expression; },
+]>;
 
 export class UncacheExpr extends Expression {
   key = ExpressionKey.UNCACHE;
@@ -3109,10 +3121,11 @@ export enum RefreshExprKind {
   FULL = 'FULL',
 }
 
-export type RefreshExprArgs = {
-  kind: RefreshExprKind;
-  this: Expression;
-} & BaseExpressionArgs;
+export type RefreshExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind: RefreshExprKind;
+    this: Expression; },
+]>;
 
 export class RefreshExpr extends Expression {
   key = ExpressionKey.REFRESH;
@@ -3142,10 +3155,12 @@ export class RefreshExpr extends Expression {
   }
 }
 
-export type DDLExprArgs = {
-  with?: WithExpr; // NOTE: sqlglot does not have this, but based on usage, I added this
-  expression?: SelectExpr; // NOTE: sqlglot does not have this, but based on usage, I added this
-} & BaseExpressionArgs;
+export type DDLExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    with?: WithExpr; // NOTE: sqlglot does not have this, but based on usage, I added this expression?: SelectExpr; // NOTE: sqlglot does not have this, but based on usage, I added this;
+  },
+]>;
 
 export class DDLExpr extends Expression {
   key = ExpressionKey.DDL;
@@ -3202,10 +3217,11 @@ export class DDLExpr extends Expression {
   }
 }
 
-export type LockingStatementExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type LockingStatementExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class LockingStatementExpr extends Expression {
   key = ExpressionKey.LOCKING_STATEMENT;
@@ -3231,7 +3247,9 @@ export class LockingStatementExpr extends Expression {
   }
 }
 
-export type DMLExprArgs = BaseExpressionArgs;
+export type DMLExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class DMLExpr extends Expression {
   key = ExpressionKey.DML;
@@ -3297,24 +3315,25 @@ export enum CreateExprKind {
   SEQUENCE = 'SEQUENCE',
 }
 
-export type CreateExprArgs = {
-  with?: WithExpr;
-  kind: CreateExprKind;
-  exists?: boolean;
-  properties?: Expression[];
-  replace?: boolean;
-  refresh?: Expression;
-  unique?: boolean;
-  indexes?: Expression[];
-  noSchemaBinding?: Expression;
-  begin?: Expression;
-  end?: Expression;
-  clone?: Expression;
-  concurrently?: Expression;
-  clustered?: Expression;
-  this: Expression;
-  expression?: Expression;
-} & DDLExprArgs;
+export type CreateExprArgs = Merge<[
+  DDLExprArgs,
+  { with?: WithExpr;
+    kind: CreateExprKind;
+    exists?: boolean;
+    properties?: Expression[];
+    replace?: boolean;
+    refresh?: Expression;
+    unique?: boolean;
+    indexes?: Expression[];
+    noSchemaBinding?: Expression;
+    begin?: Expression;
+    end?: Expression;
+    clone?: Expression;
+    concurrently?: Expression;
+    clustered?: Expression;
+    this: Expression;
+    expression?: Expression; },
+]>;
 
 export class CreateExpr extends DDLExpr {
   key = ExpressionKey.CREATE;
@@ -3418,15 +3437,16 @@ export class CreateExpr extends DDLExpr {
   }
 }
 
-export type SequencePropertiesExprArgs = {
-  increment?: Expression;
-  minvalue?: string;
-  maxvalue?: string;
-  cache?: Expression;
-  start?: Expression;
-  owned?: Expression;
-  options?: Expression[];
-} & BaseExpressionArgs;
+export type SequencePropertiesExprArgs = Merge<[
+  BaseExpressionArgs,
+  { increment?: Expression;
+    minvalue?: string;
+    maxvalue?: string;
+    cache?: Expression;
+    start?: Expression;
+    owned?: Expression;
+    options?: Expression[]; },
+]>;
 
 export class SequencePropertiesExpr extends Expression {
   key = ExpressionKey.SEQUENCE_PROPERTIES;
@@ -3481,16 +3501,17 @@ export class SequencePropertiesExpr extends Expression {
   }
 }
 
-export type TruncateTableExprArgs = {
-  isDatabase?: string;
-  exists?: boolean;
-  only?: Expression;
-  cluster?: Expression;
-  identity?: Expression;
-  option?: Expression;
-  partition?: Expression;
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type TruncateTableExprArgs = Merge<[
+  BaseExpressionArgs,
+  { isDatabase?: string;
+    exists?: boolean;
+    only?: Expression;
+    cluster?: Expression;
+    identity?: Expression;
+    option?: Expression;
+    partition?: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class TruncateTableExpr extends Expression {
   key = ExpressionKey.TRUNCATE_TABLE;
@@ -3550,11 +3571,12 @@ export class TruncateTableExpr extends Expression {
   }
 }
 
-export type CloneExprArgs = {
-  shallow?: Expression;
-  copy?: unknown;
-  this: Expression;
-} & BaseExpressionArgs;
+export type CloneExprArgs = Merge<[
+  BaseExpressionArgs,
+  { shallow?: Expression;
+    copy?: unknown;
+    this: Expression; },
+]>;
 
 export class CloneExpr extends Expression {
   key = ExpressionKey.CLONE;
@@ -3599,15 +3621,16 @@ export enum DescribeExprKind {
   FUNCTION = 'FUNCTION',
   PROCEDURE = 'PROCEDURE',
 }
-export type DescribeExprArgs = {
-  style?: Expression;
-  kind?: DescribeExprKind;
-  partition?: Expression;
-  format?: string;
-  asJson?: Expression;
-  this: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type DescribeExprArgs = Merge<[
+  BaseExpressionArgs,
+  { style?: Expression;
+    kind?: DescribeExprKind;
+    partition?: Expression;
+    format?: string;
+    asJson?: Expression;
+    this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class DescribeExpr extends Expression {
   key = ExpressionKey.DESCRIBE;
@@ -3662,11 +3685,12 @@ export class DescribeExpr extends Expression {
   }
 }
 
-export type AttachExprArgs = {
-  exists?: boolean;
-  this: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type AttachExprArgs = Merge<[
+  BaseExpressionArgs,
+  { exists?: boolean;
+    this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class AttachExpr extends Expression {
   key = ExpressionKey.ATTACH;
@@ -3701,10 +3725,11 @@ export class AttachExpr extends Expression {
   }
 }
 
-export type DetachExprArgs = {
-  exists?: boolean;
-  this: Expression;
-} & BaseExpressionArgs;
+export type DetachExprArgs = Merge<[
+  BaseExpressionArgs,
+  { exists?: boolean;
+    this: Expression; },
+]>;
 
 export class DetachExpr extends Expression {
   key = ExpressionKey.DETACH;
@@ -3734,11 +3759,12 @@ export class DetachExpr extends Expression {
   }
 }
 
-export type InstallExprArgs = {
-  from?: Expression;
-  force?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type InstallExprArgs = Merge<[
+  BaseExpressionArgs,
+  { from?: Expression;
+    force?: Expression;
+    this: Expression; },
+]>;
 
 export class InstallExpr extends Expression {
   key = ExpressionKey.INSTALL;
@@ -3773,10 +3799,11 @@ export class InstallExpr extends Expression {
   }
 }
 
-export type SummarizeExprArgs = {
-  table?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type SummarizeExprArgs = Merge<[
+  BaseExpressionArgs,
+  { table?: Expression;
+    this: Expression; },
+]>;
 
 export class SummarizeExpr extends Expression {
   key = ExpressionKey.SUMMARIZE;
@@ -3814,10 +3841,11 @@ export enum KillExprKind {
   QUERY = 'QUERY',
 }
 
-export type KillExprArgs = {
-  kind?: KillExprKind;
-  this: Expression;
-} & BaseExpressionArgs;
+export type KillExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind?: KillExprKind;
+    this: Expression; },
+]>;
 
 export class KillExpr extends Expression {
   key = ExpressionKey.KILL;
@@ -3847,7 +3875,9 @@ export class KillExpr extends Expression {
   }
 }
 
-export type PragmaExprArgs = BaseExpressionArgs;
+export type PragmaExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class PragmaExpr extends Expression {
   key = ExpressionKey.PRAGMA;
@@ -3863,9 +3893,10 @@ export class PragmaExpr extends Expression {
   }
 }
 
-export type DeclareExprArgs = {
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type DeclareExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions: Expression[] },
+]>;
 
 export class DeclareExpr extends Expression {
   key = ExpressionKey.DECLARE;
@@ -3896,11 +3927,12 @@ export enum DeclareItemExprKind {
   CONSTANT = 'CONSTANT',
 }
 
-export type DeclareItemExprArgs = {
-  kind?: DeclareItemExprKind;
-  default?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type DeclareItemExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind?: DeclareItemExprKind;
+    default?: Expression;
+    this: Expression; },
+]>;
 
 export class DeclareItemExpr extends Expression {
   key = ExpressionKey.DECLARE_ITEM;
@@ -3935,11 +3967,12 @@ export class DeclareItemExpr extends Expression {
   }
 }
 
-export type SetExprArgs = {
-  unset?: Expression;
-  tag?: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type SetExprArgs = Merge<[
+  BaseExpressionArgs,
+  { unset?: Expression;
+    tag?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class SetExpr extends Expression {
   key = ExpressionKey.SET;
@@ -3974,10 +4007,11 @@ export class SetExpr extends Expression {
   }
 }
 
-export type HeredocExprArgs = {
-  tag?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type HeredocExprArgs = Merge<[
+  BaseExpressionArgs,
+  { tag?: Expression;
+    this: Expression; },
+]>;
 
 export class HeredocExpr extends Expression {
   key = ExpressionKey.HEREDOC;
@@ -4018,13 +4052,14 @@ export enum SetItemExprKind {
   PERSIST_ONLY = 'PERSIST_ONLY',
 }
 
-export type SetItemExprArgs = {
-  kind?: SetItemExprKind;
-  collate?: string;
-  global?: boolean;
-  this?: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type SetItemExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind?: SetItemExprKind;
+    collate?: string;
+    global?: boolean;
+    this?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class SetItemExpr extends Expression {
   key = ExpressionKey.SET_ITEM;
@@ -4069,11 +4104,12 @@ export class SetItemExpr extends Expression {
   }
 }
 
-export type QueryBandExprArgs = {
-  scope?: Expression;
-  update?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type QueryBandExprArgs = Merge<[
+  BaseExpressionArgs,
+  { scope?: Expression;
+    update?: Expression;
+    this: Expression; },
+]>;
 
 export class QueryBandExpr extends Expression {
   key = ExpressionKey.QUERY_BAND;
@@ -4108,36 +4144,37 @@ export class QueryBandExpr extends Expression {
   }
 }
 
-export type ShowExprArgs = {
-  history?: Expression;
-  terse?: Expression;
-  target?: Expression;
-  offset?: boolean;
-  startsWith?: Expression;
-  limit?: number | Expression;
-  from?: Expression;
-  like?: Expression;
-  where?: Expression;
-  db?: string;
-  scope?: Expression;
-  scopeKind?: string;
-  full?: Expression;
-  mutex?: Expression;
-  query?: Expression;
-  channel?: Expression;
-  global?: boolean;
-  log?: Expression;
-  position?: Expression;
-  types?: Expression[];
-  privileges?: Expression[];
-  forTable?: Expression;
-  forGroup?: Expression;
-  forUser?: Expression;
-  forRole?: Expression;
-  intoOutfile?: Expression;
-  json?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type ShowExprArgs = Merge<[
+  BaseExpressionArgs,
+  { history?: Expression;
+    terse?: Expression;
+    target?: Expression;
+    offset?: boolean;
+    startsWith?: Expression;
+    limit?: number | Expression;
+    from?: Expression;
+    like?: Expression;
+    where?: Expression;
+    db?: string;
+    scope?: Expression;
+    scopeKind?: string;
+    full?: Expression;
+    mutex?: Expression;
+    query?: Expression;
+    channel?: Expression;
+    global?: boolean;
+    log?: Expression;
+    position?: Expression;
+    types?: Expression[];
+    privileges?: Expression[];
+    forTable?: Expression;
+    forGroup?: Expression;
+    forUser?: Expression;
+    forRole?: Expression;
+    intoOutfile?: Expression;
+    json?: Expression;
+    this: Expression; },
+]>;
 
 export class ShowExpr extends Expression {
   key = ExpressionKey.SHOW;
@@ -4297,11 +4334,12 @@ export class ShowExpr extends Expression {
   }
 }
 
-export type UserDefinedFunctionExprArgs = {
-  wrapped?: Expression;
-  this: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type UserDefinedFunctionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { wrapped?: Expression;
+    this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class UserDefinedFunctionExpr extends Expression {
   key = ExpressionKey.USER_DEFINED_FUNCTION;
@@ -4336,10 +4374,11 @@ export class UserDefinedFunctionExpr extends Expression {
   }
 }
 
-export type CharacterSetExprArgs = {
-  default?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type CharacterSetExprArgs = Merge<[
+  BaseExpressionArgs,
+  { default?: Expression;
+    this: Expression; },
+]>;
 
 export class CharacterSetExpr extends Expression {
   key = ExpressionKey.CHARACTER_SET;
@@ -4378,12 +4417,13 @@ export enum RecursiveWithSearchExprKind {
   DEPTH = 'DEPTH',
 }
 
-export type RecursiveWithSearchExprArgs = {
-  kind: RecursiveWithSearchExprKind;
-  using?: string;
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type RecursiveWithSearchExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind: RecursiveWithSearchExprKind;
+    using?: string;
+    this: Expression;
+    expression: Expression; },
+]>;
 
 export class RecursiveWithSearchExpr extends Expression {
   key = ExpressionKey.RECURSIVE_WITH_SEARCH;
@@ -4423,11 +4463,12 @@ export class RecursiveWithSearchExpr extends Expression {
   }
 }
 
-export type WithExprArgs = {
-  recursive?: boolean;
-  search?: Expression;
-  expressions: CTEExpr[];
-} & BaseExpressionArgs;
+export type WithExprArgs = Merge<[
+  BaseExpressionArgs,
+  { recursive?: boolean;
+    search?: Expression;
+    expressions: CTEExpr[]; },
+]>;
 
 export class WithExpr extends Expression {
   key = ExpressionKey.WITH;
@@ -4466,10 +4507,11 @@ export class WithExpr extends Expression {
   }
 }
 
-export type WithinGroupExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & BaseExpressionArgs;
+export type WithinGroupExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 export class WithinGroupExpr extends Expression {
   key = ExpressionKey.WITHIN_GROUP;
 
@@ -4498,10 +4540,11 @@ export class WithinGroupExpr extends Expression {
   }
 }
 
-export type ProjectionDefExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type ProjectionDefExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 export class ProjectionDefExpr extends Expression {
   key = ExpressionKey.PROJECTION_DEF;
 
@@ -4530,10 +4573,11 @@ export class ProjectionDefExpr extends Expression {
   }
 }
 
-export type TableAliasExprArgs = {
-  columns?: Expression[];
-  this?: IdentifierExpr;
-} & BaseExpressionArgs;
+export type TableAliasExprArgs = Merge<[
+  BaseExpressionArgs,
+  { columns?: Expression[];
+    this?: IdentifierExpr; },
+]>;
 
 export class TableAliasExpr extends Expression {
   key = ExpressionKey.TABLE_ALIAS;
@@ -4567,10 +4611,11 @@ export class TableAliasExpr extends Expression {
   }
 }
 
-export type ColumnPositionExprArgs = {
-  position: Expression;
-  this?: Expression;
-} & BaseExpressionArgs;
+export type ColumnPositionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { position: Expression;
+    this?: Expression; },
+]>;
 
 export class ColumnPositionExpr extends Expression {
   key = ExpressionKey.COLUMN_POSITION;
@@ -4611,15 +4656,16 @@ export enum ColumnDefExprKind {
   DEFAULT = 'DEFAULT',
 }
 
-export type ColumnDefExprArgs = {
-  kind?: ColumnDefExprKind;
-  constraints?: ColumnConstraintExpr[];
-  exists?: boolean;
-  position?: Expression;
-  default?: Expression;
-  output?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type ColumnDefExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind?: ColumnDefExprKind;
+    constraints?: ColumnConstraintExpr[];
+    exists?: boolean;
+    position?: Expression;
+    default?: Expression;
+    output?: Expression;
+    this: Expression; },
+]>;
 
 export class ColumnDefExpr extends Expression {
   key = ExpressionKey.COLUMN_DEF;
@@ -4690,18 +4736,19 @@ export class ColumnDefExpr extends Expression {
   }
 }
 
-export type AlterColumnExprArgs = {
-  dtype?: DataTypeExpr;
-  collate?: string;
-  using?: string;
-  default?: Expression;
-  drop?: Expression;
-  comment?: string;
-  allowNull?: Expression;
-  visible?: Expression;
-  renameTo?: string;
-  this: Expression;
-} & BaseExpressionArgs;
+export type AlterColumnExprArgs = Merge<[
+  BaseExpressionArgs,
+  { dtype?: DataTypeExpr;
+    collate?: string;
+    using?: string;
+    default?: Expression;
+    drop?: Expression;
+    comment?: string;
+    allowNull?: Expression;
+    visible?: Expression;
+    renameTo?: string;
+    this: Expression; },
+]>;
 
 export class AlterColumnExpr extends Expression {
   key = ExpressionKey.ALTER_COLUMN;
@@ -4771,10 +4818,11 @@ export class AlterColumnExpr extends Expression {
   }
 }
 
-export type AlterIndexExprArgs = {
-  visible: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type AlterIndexExprArgs = Merge<[
+  BaseExpressionArgs,
+  { visible: Expression;
+    this: Expression; },
+]>;
 
 export class AlterIndexExpr extends Expression {
   key = ExpressionKey.ALTER_INDEX;
@@ -4804,7 +4852,9 @@ export class AlterIndexExpr extends Expression {
   }
 }
 
-export type AlterDistStyleExprArgs = BaseExpressionArgs;
+export type AlterDistStyleExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class AlterDistStyleExpr extends Expression {
   key = ExpressionKey.ALTER_DIST_STYLE;
@@ -4820,11 +4870,12 @@ export class AlterDistStyleExpr extends Expression {
   }
 }
 
-export type AlterSortKeyExprArgs = {
-  compound?: Expression;
-  this?: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type AlterSortKeyExprArgs = Merge<[
+  BaseExpressionArgs,
+  { compound?: Expression;
+    this?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class AlterSortKeyExpr extends Expression {
   key = ExpressionKey.ALTER_SORT_KEY;
@@ -4859,17 +4910,18 @@ export class AlterSortKeyExpr extends Expression {
   }
 }
 
-export type AlterSetExprArgs = {
-  option?: Expression;
-  tablespace?: Expression;
-  accessMethod?: string;
-  fileFormat?: string;
-  copyOptions?: Expression[];
-  tag?: Expression;
-  location?: Expression;
-  serde?: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type AlterSetExprArgs = Merge<[
+  BaseExpressionArgs,
+  { option?: Expression;
+    tablespace?: Expression;
+    accessMethod?: string;
+    fileFormat?: string;
+    copyOptions?: Expression[];
+    tag?: Expression;
+    location?: Expression;
+    serde?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class AlterSetExpr extends Expression {
   key = ExpressionKey.ALTER_SET;
@@ -4934,11 +4986,12 @@ export class AlterSetExpr extends Expression {
   }
 }
 
-export type RenameColumnExprArgs = {
-  to: Expression;
-  exists?: boolean;
-  this: Expression;
-} & BaseExpressionArgs;
+export type RenameColumnExprArgs = Merge<[
+  BaseExpressionArgs,
+  { to: Expression;
+    exists?: boolean;
+    this: Expression; },
+]>;
 
 export class RenameColumnExpr extends Expression {
   key = ExpressionKey.RENAME_COLUMN;
@@ -4973,7 +5026,9 @@ export class RenameColumnExpr extends Expression {
   }
 }
 
-export type AlterRenameExprArgs = BaseExpressionArgs;
+export type AlterRenameExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class AlterRenameExpr extends Expression {
   key = ExpressionKey.ALTER_RENAME;
@@ -4989,7 +5044,9 @@ export class AlterRenameExpr extends Expression {
   }
 }
 
-export type SwapTableExprArgs = BaseExpressionArgs;
+export type SwapTableExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class SwapTableExpr extends Expression {
   key = ExpressionKey.SWAP_TABLE;
@@ -5015,13 +5072,14 @@ export enum CommentExprKind {
   VIEW = 'VIEW',
 }
 
-export type CommentExprArgs = {
-  kind: CommentExprKind;
-  exists?: boolean;
-  materialized?: boolean;
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type CommentExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind: CommentExprKind;
+    exists?: boolean;
+    materialized?: boolean;
+    this: Expression;
+    expression: Expression; },
+]>;
 
 export class CommentExpr extends Expression {
   key = ExpressionKey.COMMENT;
@@ -5066,13 +5124,14 @@ export class CommentExpr extends Expression {
   }
 }
 
-export type ComprehensionExprArgs = {
-  position?: Expression;
-  iterator: Expression;
-  condition?: Expression;
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type ComprehensionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { position?: Expression;
+    iterator: Expression;
+    condition?: Expression;
+    this: Expression;
+    expression: Expression; },
+]>;
 
 export class ComprehensionExpr extends Expression {
   key = ExpressionKey.COMPREHENSION;
@@ -5117,13 +5176,14 @@ export class ComprehensionExpr extends Expression {
   }
 }
 
-export type MergeTreeTTLActionExprArgs = {
-  delete?: Expression;
-  recompress?: Expression[];
-  toDisk?: Expression;
-  toVolume?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type MergeTreeTTLActionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { delete?: Expression;
+    recompress?: Expression[];
+    toDisk?: Expression;
+    toVolume?: Expression;
+    this: Expression; },
+]>;
 
 export class MergeTreeTTLActionExpr extends Expression {
   key = ExpressionKey.MERGE_TREE_TTL_ACTION;
@@ -5168,12 +5228,13 @@ export class MergeTreeTTLActionExpr extends Expression {
   }
 }
 
-export type MergeTreeTTLExprArgs = {
-  where?: Expression;
-  group?: Expression;
-  aggregates?: Expression[];
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type MergeTreeTTLExprArgs = Merge<[
+  BaseExpressionArgs,
+  { where?: Expression;
+    group?: Expression;
+    aggregates?: Expression[];
+    expressions: Expression[]; },
+]>;
 
 export class MergeTreeTTLExpr extends Expression {
   key = ExpressionKey.MERGE_TREE_TTL;
@@ -5213,15 +5274,16 @@ export class MergeTreeTTLExpr extends Expression {
   }
 }
 
-export type IndexConstraintOptionExprArgs = {
-  keyBlockSize?: number | Expression;
-  using?: string;
-  parser?: Expression;
-  comment?: string;
-  visible?: Expression;
-  engineAttr?: string;
-  secondaryEngineAttr?: string;
-} & BaseExpressionArgs;
+export type IndexConstraintOptionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { keyBlockSize?: number | Expression;
+    using?: string;
+    parser?: Expression;
+    comment?: string;
+    visible?: Expression;
+    engineAttr?: string;
+    secondaryEngineAttr?: string; },
+]>;
 
 export class IndexConstraintOptionExpr extends Expression {
   key = ExpressionKey.INDEX_CONSTRAINT_OPTION;
@@ -5289,10 +5351,11 @@ export enum ColumnConstraintExprKind {
   FOREIGN_KEY = 'FOREIGN_KEY',
 }
 
-export type ColumnConstraintExprArgs = {
-  kind: ColumnConstraintExprKind;
-  this?: Expression;
-} & BaseExpressionArgs;
+export type ColumnConstraintExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind: ColumnConstraintExprKind;
+    this?: Expression; },
+]>;
 
 export class ColumnConstraintExpr extends Expression {
   key = ExpressionKey.COLUMN_CONSTRAINT;
@@ -5330,7 +5393,9 @@ export class ColumnConstraintExpr extends Expression {
   }
 }
 
-export type ColumnConstraintKindExprArgs = BaseExpressionArgs;
+export type ColumnConstraintKindExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class ColumnConstraintKindExpr extends Expression {
   key = ExpressionKey.COLUMN_CONSTRAINT_KIND;
@@ -5346,10 +5411,11 @@ export class ColumnConstraintKindExpr extends Expression {
   }
 }
 
-export type WithOperatorExprArgs = {
-  op: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type WithOperatorExprArgs = Merge<[
+  BaseExpressionArgs,
+  { op: Expression;
+    this: Expression; },
+]>;
 
 export class WithOperatorExpr extends Expression {
   key = ExpressionKey.WITH_OPERATOR;
@@ -5379,10 +5445,11 @@ export class WithOperatorExpr extends Expression {
   }
 }
 
-export type WatermarkColumnConstraintExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type WatermarkColumnConstraintExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class WatermarkColumnConstraintExpr extends Expression {
   key = ExpressionKey.WATERMARK_COLUMN_CONSTRAINT;
@@ -5408,10 +5475,11 @@ export class WatermarkColumnConstraintExpr extends Expression {
   }
 }
 
-export type ConstraintExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type ConstraintExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class ConstraintExpr extends Expression {
   key = ExpressionKey.CONSTRAINT;
@@ -5437,17 +5505,18 @@ export class ConstraintExpr extends Expression {
   }
 }
 
-export type DeleteExprArgs = {
-  with?: Expression;
-  using?: string;
-  where?: Expression;
-  returning?: Expression;
-  order?: Expression;
-  limit?: number | Expression;
-  tables?: Expression[];
-  cluster?: Expression;
-  this?: Expression;
-} & DMLExprArgs;
+export type DeleteExprArgs = Merge<[
+  DMLExprArgs,
+  { with?: Expression;
+    using?: string;
+    where?: Expression;
+    returning?: Expression;
+    order?: Expression;
+    limit?: number | Expression;
+    tables?: Expression[];
+    cluster?: Expression;
+    this?: Expression; },
+]>;
 
 export class DeleteExpr extends DMLExpr {
   key = ExpressionKey.DELETE;
@@ -5600,19 +5669,20 @@ export enum DropExprKind {
   COLUMN = 'COLUMN',
 }
 
-export type DropExprArgs = {
-  kind?: DropExprKind;
-  exists?: boolean;
-  temporary?: boolean;
-  materialized?: boolean;
-  cascade?: Expression;
-  constraints?: Expression[];
-  purge?: Expression;
-  cluster?: Expression;
-  concurrently?: Expression;
-  this?: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type DropExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind?: DropExprKind;
+    exists?: boolean;
+    temporary?: boolean;
+    materialized?: boolean;
+    cascade?: Expression;
+    constraints?: Expression[];
+    purge?: Expression;
+    cluster?: Expression;
+    concurrently?: Expression;
+    this?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class DropExpr extends Expression {
   key = ExpressionKey.DROP;
@@ -5695,11 +5765,12 @@ export class DropExpr extends Expression {
   }
 }
 
-export type ExportExprArgs = {
-  connection?: Expression;
-  options: Expression[];
-  this: Expression;
-} & BaseExpressionArgs;
+export type ExportExprArgs = Merge<[
+  BaseExpressionArgs,
+  { connection?: Expression;
+    options: Expression[];
+    this: Expression; },
+]>;
 
 export class ExportExpr extends Expression {
   key = ExpressionKey.EXPORT;
@@ -5734,10 +5805,11 @@ export class ExportExpr extends Expression {
   }
 }
 
-export type FilterExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type FilterExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class FilterExpr extends Expression {
   key = ExpressionKey.FILTER;
@@ -5767,7 +5839,9 @@ export class FilterExpr extends Expression {
   }
 }
 
-export type CheckExprArgs = BaseExpressionArgs;
+export type CheckExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class CheckExpr extends Expression {
   key = ExpressionKey.CHECK;
@@ -5783,11 +5857,12 @@ export class CheckExpr extends Expression {
   }
 }
 
-export type ChangesExprArgs = {
-  information: string;
-  atBefore?: Expression;
-  end?: Expression;
-} & BaseExpressionArgs;
+export type ChangesExprArgs = Merge<[
+  BaseExpressionArgs,
+  { information: string;
+    atBefore?: Expression;
+    end?: Expression; },
+]>;
 
 export class ChangesExpr extends Expression {
   key = ExpressionKey.CHANGES;
@@ -5822,11 +5897,12 @@ export class ChangesExpr extends Expression {
   }
 }
 
-export type ConnectExprArgs = {
-  start?: Expression;
-  connect: Expression;
-  nocycle?: Expression;
-} & BaseExpressionArgs;
+export type ConnectExprArgs = Merge<[
+  BaseExpressionArgs,
+  { start?: Expression;
+    connect: Expression;
+    nocycle?: Expression; },
+]>;
 
 export class ConnectExpr extends Expression {
   key = ExpressionKey.CONNECT;
@@ -5861,11 +5937,12 @@ export class ConnectExpr extends Expression {
   }
 }
 
-export type CopyParameterExprArgs = {
-  this: Expression;
-  expression?: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type CopyParameterExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class CopyParameterExpr extends Expression {
   key = ExpressionKey.COPY_PARAMETER;
@@ -5900,13 +5977,14 @@ export class CopyParameterExpr extends Expression {
   }
 }
 
-export type CredentialsExprArgs = {
-  credentials?: Expression[];
-  encryption?: Expression;
-  storage?: Expression;
-  iamRole?: Expression;
-  region?: Expression;
-} & BaseExpressionArgs;
+export type CredentialsExprArgs = Merge<[
+  BaseExpressionArgs,
+  { credentials?: Expression[];
+    encryption?: Expression;
+    storage?: Expression;
+    iamRole?: Expression;
+    region?: Expression; },
+]>;
 
 export class CredentialsExpr extends Expression {
   key = ExpressionKey.CREDENTIALS;
@@ -5951,7 +6029,9 @@ export class CredentialsExpr extends Expression {
   }
 }
 
-export type PriorExprArgs = BaseExpressionArgs;
+export type PriorExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class PriorExpr extends Expression {
   key = ExpressionKey.PRIOR;
@@ -5967,11 +6047,12 @@ export class PriorExpr extends Expression {
   }
 }
 
-export type DirectoryExprArgs = {
-  local?: Expression;
-  rowFormat?: string;
-  this: Expression;
-} & BaseExpressionArgs;
+export type DirectoryExprArgs = Merge<[
+  BaseExpressionArgs,
+  { local?: Expression;
+    rowFormat?: string;
+    this: Expression; },
+]>;
 
 export class DirectoryExpr extends Expression {
   key = ExpressionKey.DIRECTORY;
@@ -6006,7 +6087,9 @@ export class DirectoryExpr extends Expression {
   }
 }
 
-export type DirectoryStageExprArgs = BaseExpressionArgs;
+export type DirectoryStageExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 export class DirectoryStageExpr extends Expression {
   key = ExpressionKey.DIRECTORY_STAGE;
 
@@ -6021,13 +6104,14 @@ export class DirectoryStageExpr extends Expression {
   }
 }
 
-export type ForeignKeyExprArgs = {
-  reference?: Expression;
-  delete?: Expression;
-  update?: Expression;
-  options?: Expression[];
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type ForeignKeyExprArgs = Merge<[
+  BaseExpressionArgs,
+  { reference?: Expression;
+    delete?: Expression;
+    update?: Expression;
+    options?: Expression[];
+    expressions?: Expression[]; },
+]>;
 
 export class ForeignKeyExpr extends Expression {
   key = ExpressionKey.FOREIGN_KEY;
@@ -6072,10 +6156,11 @@ export class ForeignKeyExpr extends Expression {
   }
 }
 
-export type ColumnPrefixExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type ColumnPrefixExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class ColumnPrefixExpr extends Expression {
   key = ExpressionKey.COLUMN_PREFIX;
@@ -6105,12 +6190,13 @@ export class ColumnPrefixExpr extends Expression {
   }
 }
 
-export type PrimaryKeyExprArgs = {
-  options?: Expression[];
-  include?: Expression;
-  this?: Expression;
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type PrimaryKeyExprArgs = Merge<[
+  BaseExpressionArgs,
+  { options?: Expression[];
+    include?: Expression;
+    this?: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class PrimaryKeyExpr extends Expression {
   key = ExpressionKey.PRIMARY_KEY;
@@ -6150,13 +6236,14 @@ export class PrimaryKeyExpr extends Expression {
   }
 }
 
-export type IntoExprArgs = {
-  temporary?: boolean;
-  unlogged?: Expression;
-  bulkCollect?: Expression;
-  this?: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type IntoExprArgs = Merge<[
+  BaseExpressionArgs,
+  { temporary?: boolean;
+    unlogged?: Expression;
+    bulkCollect?: Expression;
+    this?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class IntoExpr extends Expression {
   key = ExpressionKey.INTO;
@@ -6201,9 +6288,12 @@ export class IntoExpr extends Expression {
   }
 }
 
-export type FromExprArgs = {
-  this?: Expression; // NOTE: sqlglot does not have this, but based on usage, I added it
-} & BaseExpressionArgs;
+export type FromExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    this?: Expression; // NOTE: sqlglot does not have this, but based on usage, I added it;
+  },
+]>;
 
 export class FromExpr extends Expression {
   key = ExpressionKey.FROM;
@@ -6240,7 +6330,9 @@ export class FromExpr extends Expression {
   }
 }
 
-export type HavingExprArgs = BaseExpressionArgs;
+export type HavingExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class HavingExpr extends Expression {
   key = ExpressionKey.HAVING;
@@ -6256,9 +6348,10 @@ export class HavingExpr extends Expression {
   }
 }
 
-export type HintExprArgs = {
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type HintExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions: Expression[] },
+]>;
 export class HintExpr extends Expression {
   key = ExpressionKey.HINT;
 
@@ -6278,10 +6371,11 @@ export class HintExpr extends Expression {
   }
 }
 
-export type JoinHintExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type JoinHintExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class JoinHintExpr extends Expression {
   key = ExpressionKey.JOIN_HINT;
@@ -6307,12 +6401,13 @@ export class JoinHintExpr extends Expression {
   }
 }
 
-export type IdentifierExprArgs = {
-  quoted?: boolean;
-  global?: boolean;
-  temporary?: boolean;
-  this: string;
-} & BaseExpressionArgs;
+export type IdentifierExprArgs = Merge<[
+  BaseExpressionArgs,
+  { quoted?: boolean;
+    global?: boolean;
+    temporary?: boolean;
+    this: string; },
+]>;
 
 export class IdentifierExpr extends Expression {
   key = ExpressionKey.IDENTIFIER;
@@ -6356,10 +6451,11 @@ export class IdentifierExpr extends Expression {
   }
 }
 
-export type OpclassExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type OpclassExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class OpclassExpr extends Expression {
   key = ExpressionKey.OPCLASS;
@@ -6385,14 +6481,15 @@ export class OpclassExpr extends Expression {
   }
 }
 
-export type IndexExprArgs = {
-  table?: Expression;
-  unique?: boolean;
-  primary?: boolean;
-  amp?: Expression;
-  params?: Expression[];
-  this?: Expression;
-} & BaseExpressionArgs;
+export type IndexExprArgs = Merge<[
+  BaseExpressionArgs,
+  { table?: Expression;
+    unique?: boolean;
+    primary?: boolean;
+    amp?: Expression;
+    params?: Expression[];
+    this?: Expression; },
+]>;
 
 export class IndexExpr extends Expression {
   key = ExpressionKey.INDEX;
@@ -6442,16 +6539,17 @@ export class IndexExpr extends Expression {
   }
 }
 
-export type IndexParametersExprArgs = {
-  using?: string;
-  include?: Expression;
-  columns?: Expression[];
-  withStorage?: Expression;
-  partitionBy?: Expression;
-  tablespace?: Expression;
-  where?: Expression;
-  on?: Expression;
-} & BaseExpressionArgs;
+export type IndexParametersExprArgs = Merge<[
+  BaseExpressionArgs,
+  { using?: string;
+    include?: Expression;
+    columns?: Expression[];
+    withStorage?: Expression;
+    partitionBy?: Expression;
+    tablespace?: Expression;
+    where?: Expression;
+    on?: Expression; },
+]>;
 
 export class IndexParametersExpr extends Expression {
   key = ExpressionKey.INDEX_PARAMETERS;
@@ -6511,11 +6609,12 @@ export class IndexParametersExpr extends Expression {
   }
 }
 
-export type ConditionalInsertExprArgs = {
-  else?: Expression;
-  this: Expression;
-  expression?: Expression;
-} & BaseExpressionArgs;
+export type ConditionalInsertExprArgs = Merge<[
+  BaseExpressionArgs,
+  { else?: Expression;
+    this: Expression;
+    expression?: Expression; },
+]>;
 
 export class ConditionalInsertExpr extends Expression {
   key = ExpressionKey.CONDITIONAL_INSERT;
@@ -6559,11 +6658,12 @@ export enum MultitableInsertsExprKind {
   UNCONDITIONAL = 'UNCONDITIONAL',
 }
 
-export type MultitableInsertsExprArgs = {
-  kind: MultitableInsertsExprKind;
-  source: Expression;
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type MultitableInsertsExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind: MultitableInsertsExprKind;
+    source: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class MultitableInsertsExpr extends Expression {
   key = ExpressionKey.MULTITABLE_INSERTS;
@@ -6598,15 +6698,16 @@ export class MultitableInsertsExpr extends Expression {
   }
 }
 
-export type OnConflictExprArgs = {
-  duplicate?: Expression;
-  action?: Expression;
-  conflictKeys?: Expression[];
-  indexPredicate?: Expression;
-  constraint?: Expression;
-  where?: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type OnConflictExprArgs = Merge<[
+  BaseExpressionArgs,
+  { duplicate?: Expression;
+    action?: Expression;
+    conflictKeys?: Expression[];
+    indexPredicate?: Expression;
+    constraint?: Expression;
+    where?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class OnConflictExpr extends Expression {
   key = ExpressionKey.ON_CONFLICT;
@@ -6661,11 +6762,12 @@ export class OnConflictExpr extends Expression {
   }
 }
 
-export type OnConditionExprArgs = {
-  error?: Expression;
-  empty?: Expression;
-  null?: Expression;
-} & BaseExpressionArgs;
+export type OnConditionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { error?: Expression;
+    empty?: Expression;
+    null?: Expression; },
+]>;
 
 export class OnConditionExpr extends Expression {
   key = ExpressionKey.ON_CONDITION;
@@ -6700,10 +6802,11 @@ export class OnConditionExpr extends Expression {
   }
 }
 
-export type ReturningExprArgs = {
-  into?: Expression;
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type ReturningExprArgs = Merge<[
+  BaseExpressionArgs,
+  { into?: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class ReturningExpr extends Expression {
   key = ExpressionKey.RETURNING;
@@ -6733,10 +6836,11 @@ export class ReturningExpr extends Expression {
   }
 }
 
-export type IntroducerExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type IntroducerExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class IntroducerExpr extends Expression {
   key = ExpressionKey.INTRODUCER;
@@ -6762,7 +6866,9 @@ export class IntroducerExpr extends Expression {
   }
 }
 
-export type NationalExprArgs = BaseExpressionArgs;
+export type NationalExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class NationalExpr extends Expression {
   key = ExpressionKey.NATIONAL;
@@ -6778,15 +6884,16 @@ export class NationalExpr extends Expression {
   }
 }
 
-export type LoadDataExprArgs = {
-  local?: Expression;
-  overwrite?: Expression;
-  inpath: Expression;
-  partition?: Expression;
-  inputFormat?: string;
-  serde?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type LoadDataExprArgs = Merge<[
+  BaseExpressionArgs,
+  { local?: Expression;
+    overwrite?: Expression;
+    inpath: Expression;
+    partition?: Expression;
+    inputFormat?: string;
+    serde?: Expression;
+    this: Expression; },
+]>;
 
 export class LoadDataExpr extends Expression {
   key = ExpressionKey.LOAD_DATA;
@@ -6841,10 +6948,11 @@ export class LoadDataExpr extends Expression {
   }
 }
 
-export type PartitionExprArgs = {
-  subpartition?: Expression;
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type PartitionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { subpartition?: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class PartitionExpr extends Expression {
   key = ExpressionKey.PARTITION;
@@ -6874,11 +6982,12 @@ export class PartitionExpr extends Expression {
   }
 }
 
-export type PartitionRangeExprArgs = {
-  this: Expression;
-  expression?: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type PartitionRangeExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class PartitionRangeExpr extends Expression {
   key = ExpressionKey.PARTITION_RANGE;
@@ -6909,7 +7018,9 @@ export class PartitionRangeExpr extends Expression {
   }
 }
 
-export type PartitionIdExprArgs = BaseExpressionArgs;
+export type PartitionIdExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class PartitionIdExpr extends Expression {
   key = ExpressionKey.PARTITION_ID;
@@ -6925,11 +7036,12 @@ export class PartitionIdExpr extends Expression {
   }
 }
 
-export type FetchExprArgs = {
-  direction?: Expression;
-  count?: Expression;
-  limitOptions?: Expression[];
-} & BaseExpressionArgs;
+export type FetchExprArgs = Merge<[
+  BaseExpressionArgs,
+  { direction?: Expression;
+    count?: Expression;
+    limitOptions?: Expression[]; },
+]>;
 
 export class FetchExpr extends Expression {
   key = ExpressionKey.FETCH;
@@ -6972,13 +7084,14 @@ export enum GrantExprKind {
   REVOKE = 'REVOKE',
 }
 
-export type GrantExprArgs = {
-  privileges: Expression[];
-  kind?: GrantExprKind;
-  securable: Expression;
-  principals: Expression[];
-  grantOption?: Expression;
-} & BaseExpressionArgs;
+export type GrantExprArgs = Merge<[
+  BaseExpressionArgs,
+  { privileges: Expression[];
+    kind?: GrantExprKind;
+    securable: Expression;
+    principals: Expression[];
+    grantOption?: Expression; },
+]>;
 
 export class GrantExpr extends Expression {
   key = ExpressionKey.GRANT;
@@ -7023,14 +7136,15 @@ export class GrantExpr extends Expression {
   }
 }
 
-export type RevokeExprArgs = {
-  cascade?: Expression;
-  privileges: Expression[];
-  kind?: string;
-  securable: Expression;
-  principals: Expression[];
-  grantOption?: Expression;
-} & BaseExpressionArgs;
+export type RevokeExprArgs = Merge<[
+  BaseExpressionArgs,
+  { cascade?: Expression;
+    privileges: Expression[];
+    kind?: string;
+    securable: Expression;
+    principals: Expression[];
+    grantOption?: Expression; },
+]>;
 
 export class RevokeExpr extends Expression {
   key = ExpressionKey.REVOKE;
@@ -7081,14 +7195,15 @@ export class RevokeExpr extends Expression {
   }
 }
 
-export type GroupExprArgs = {
-  groupingSets?: Expression[];
-  cube?: Expression;
-  rollup?: Expression;
-  totals?: Expression[];
-  all?: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type GroupExprArgs = Merge<[
+  BaseExpressionArgs,
+  { groupingSets?: Expression[];
+    cube?: Expression;
+    rollup?: Expression;
+    totals?: Expression[];
+    all?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class GroupExpr extends Expression {
   key = ExpressionKey.GROUP;
@@ -7138,9 +7253,10 @@ export class GroupExpr extends Expression {
   }
 }
 
-export type CubeExprArgs = {
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type CubeExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions?: Expression[] },
+]>;
 
 export class CubeExpr extends Expression {
   key = ExpressionKey.CUBE;
@@ -7161,9 +7277,10 @@ export class CubeExpr extends Expression {
   }
 }
 
-export type RollupExprArgs = {
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type RollupExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions?: Expression[] },
+]>;
 
 export class RollupExpr extends Expression {
   key = ExpressionKey.ROLLUP;
@@ -7184,9 +7301,10 @@ export class RollupExpr extends Expression {
   }
 }
 
-export type GroupingSetsExprArgs = {
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type GroupingSetsExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions: Expression[] },
+]>;
 
 export class GroupingSetsExpr extends Expression {
   key = ExpressionKey.GROUPING_SETS;
@@ -7207,11 +7325,12 @@ export class GroupingSetsExpr extends Expression {
   }
 }
 
-export type LambdaExprArgs = {
-  colon?: Expression;
-  this: Expression;
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type LambdaExprArgs = Merge<[
+  BaseExpressionArgs,
+  { colon?: Expression;
+    this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class LambdaExpr extends Expression {
   key = ExpressionKey.LAMBDA;
@@ -7246,13 +7365,14 @@ export class LambdaExpr extends Expression {
   }
 }
 
-export type LimitExprArgs = {
-  offset?: boolean;
-  limitOptions?: Expression[];
-  this?: Expression;
-  expression: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type LimitExprArgs = Merge<[
+  BaseExpressionArgs,
+  { offset?: boolean;
+    limitOptions?: Expression[];
+    this?: Expression;
+    expression: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class LimitExpr extends Expression {
   key = ExpressionKey.LIMIT;
@@ -7297,11 +7417,12 @@ export class LimitExpr extends Expression {
   }
 }
 
-export type LimitOptionsExprArgs = {
-  percent?: Expression;
-  rows?: Expression[];
-  withTies?: Expression[];
-} & BaseExpressionArgs;
+export type LimitOptionsExprArgs = Merge<[
+  BaseExpressionArgs,
+  { percent?: Expression;
+    rows?: Expression[];
+    withTies?: Expression[]; },
+]>;
 
 export class LimitOptionsExpr extends Expression {
   key = ExpressionKey.LIMIT_OPTIONS;
@@ -7361,20 +7482,21 @@ export enum JoinExprKind {
  *   kind: JoinExprKind.INNER
  * });
  */
-export type JoinExprArgs = {
-  on?: Expression;
-  side?: Expression;
-  kind?: JoinExprKind;
-  using?: string;
-  method?: string;
-  global?: boolean;
-  hint?: Expression;
-  matchCondition?: Expression;
-  directed?: Expression;
-  pivots?: Expression[];
-  this: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type JoinExprArgs = Merge<[
+  BaseExpressionArgs,
+  { on?: Expression;
+    side?: Expression;
+    kind?: JoinExprKind;
+    using?: string;
+    method?: string;
+    global?: boolean;
+    hint?: Expression;
+    matchCondition?: Expression;
+    directed?: Expression;
+    pivots?: Expression[];
+    this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class JoinExpr extends Expression {
   key = ExpressionKey.JOIN;
@@ -7567,10 +7689,11 @@ export class JoinExpr extends Expression {
   }
 }
 
-export type MatchRecognizeMeasureExprArgs = {
-  windowFrame?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type MatchRecognizeMeasureExprArgs = Merge<[
+  BaseExpressionArgs,
+  { windowFrame?: Expression;
+    this: Expression; },
+]>;
 
 export class MatchRecognizeMeasureExpr extends Expression {
   key = ExpressionKey.MATCH_RECOGNIZE_MEASURE;
@@ -7600,16 +7723,17 @@ export class MatchRecognizeMeasureExpr extends Expression {
   }
 }
 
-export type MatchRecognizeExprArgs = {
-  partitionBy?: Expression;
-  order?: Expression;
-  measures?: Expression[];
-  rows?: Expression[];
-  after?: Expression;
-  pattern?: Expression;
-  define?: Expression;
-  alias?: TableAliasExpr;
-} & BaseExpressionArgs;
+export type MatchRecognizeExprArgs = Merge<[
+  BaseExpressionArgs,
+  { partitionBy?: Expression;
+    order?: Expression;
+    measures?: Expression[];
+    rows?: Expression[];
+    after?: Expression;
+    pattern?: Expression;
+    define?: Expression;
+    alias?: TableAliasExpr; },
+]>;
 
 export class MatchRecognizeExpr extends Expression {
   key = ExpressionKey.MATCH_RECOGNIZE;
@@ -7669,7 +7793,9 @@ export class MatchRecognizeExpr extends Expression {
   }
 }
 
-export type FinalExprArgs = BaseExpressionArgs;
+export type FinalExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class FinalExpr extends Expression {
   key = ExpressionKey.FINAL;
@@ -7685,11 +7811,12 @@ export class FinalExpr extends Expression {
   }
 }
 
-export type OffsetExprArgs = {
-  this?: Expression;
-  expression: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type OffsetExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this?: Expression;
+    expression: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class OffsetExpr extends Expression {
   key = ExpressionKey.OFFSET;
@@ -7720,11 +7847,12 @@ export class OffsetExpr extends Expression {
   }
 }
 
-export type OrderExprArgs = {
-  siblings?: Expression[];
-  this?: Expression;
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type OrderExprArgs = Merge<[
+  BaseExpressionArgs,
+  { siblings?: Expression[];
+    this?: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class OrderExpr extends Expression {
   key = ExpressionKey.ORDER;
@@ -7759,12 +7887,13 @@ export class OrderExpr extends Expression {
   }
 }
 
-export type WithFillExprArgs = {
-  from?: Expression;
-  to?: Expression;
-  step?: Expression;
-  interpolate?: Expression;
-} & BaseExpressionArgs;
+export type WithFillExprArgs = Merge<[
+  BaseExpressionArgs,
+  { from?: Expression;
+    to?: Expression;
+    step?: Expression;
+    interpolate?: Expression; },
+]>;
 
 export class WithFillExpr extends Expression {
   key = ExpressionKey.WITH_FILL;
@@ -7804,12 +7933,13 @@ export class WithFillExpr extends Expression {
   }
 }
 
-export type OrderedExprArgs = {
-  desc?: Expression;
-  nullsFirst: Expression;
-  withFill?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type OrderedExprArgs = Merge<[
+  BaseExpressionArgs,
+  { desc?: Expression;
+    nullsFirst: Expression;
+    withFill?: Expression;
+    this: Expression; },
+]>;
 
 export class OrderedExpr extends Expression {
   key = ExpressionKey.ORDERED;
@@ -7853,10 +7983,11 @@ export class OrderedExpr extends Expression {
   }
 }
 
-export type PropertyExprArgs = {
-  value: string | Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type PropertyExprArgs = Merge<[
+  BaseExpressionArgs,
+  { value: string | Expression;
+    this: Expression; },
+]>;
 
 export class PropertyExpr extends Expression {
   key = ExpressionKey.PROPERTY;
@@ -7886,10 +8017,11 @@ export class PropertyExpr extends Expression {
   }
 }
 
-export type GrantPrivilegeExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type GrantPrivilegeExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class GrantPrivilegeExpr extends Expression {
   key = ExpressionKey.GRANT_PRIVILEGE;
@@ -7924,10 +8056,11 @@ export enum GrantPrincipalExprKind {
   GROUP = 'GROUP',
   PUBLIC = 'PUBLIC',
 }
-export type GrantPrincipalExprArgs = {
-  kind?: GrantPrincipalExprKind;
-  this: Expression;
-} & BaseExpressionArgs;
+export type GrantPrincipalExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind?: GrantPrincipalExprKind;
+    this: Expression; },
+]>;
 
 export class GrantPrincipalExpr extends Expression {
   key = ExpressionKey.GRANT_PRINCIPAL;
@@ -7957,9 +8090,10 @@ export class GrantPrincipalExpr extends Expression {
   }
 }
 
-export type AllowedValuesPropertyExprArgs = {
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type AllowedValuesPropertyExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions: Expression[] },
+]>;
 
 export class AllowedValuesPropertyExpr extends Expression {
   key = ExpressionKey.ALLOWED_VALUES_PROPERTY;
@@ -7979,12 +8113,13 @@ export class AllowedValuesPropertyExpr extends Expression {
   }
 }
 
-export type PartitionByRangePropertyDynamicExprArgs = {
-  start: Expression;
-  end: Expression;
-  every: Expression;
-  this?: Expression;
-} & BaseExpressionArgs;
+export type PartitionByRangePropertyDynamicExprArgs = Merge<[
+  BaseExpressionArgs,
+  { start: Expression;
+    end: Expression;
+    every: Expression;
+    this?: Expression; },
+]>;
 
 export class PartitionByRangePropertyDynamicExpr extends Expression {
   key = ExpressionKey.PARTITION_BY_RANGE_PROPERTY_DYNAMIC;
@@ -8025,12 +8160,13 @@ export class PartitionByRangePropertyDynamicExpr extends Expression {
   }
 }
 
-export type RollupIndexExprArgs = {
-  fromIndex?: Expression;
-  properties?: Expression[];
-  this: Expression;
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type RollupIndexExprArgs = Merge<[
+  BaseExpressionArgs,
+  { fromIndex?: Expression;
+    properties?: Expression[];
+    this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class RollupIndexExpr extends Expression {
   key = ExpressionKey.ROLLUP_INDEX;
@@ -8070,10 +8206,11 @@ export class RollupIndexExpr extends Expression {
   }
 }
 
-export type PartitionListExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type PartitionListExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class PartitionListExpr extends Expression {
   key = ExpressionKey.PARTITION_LIST;
@@ -8099,12 +8236,13 @@ export class PartitionListExpr extends Expression {
   }
 }
 
-export type PartitionBoundSpecExprArgs = {
-  fromExpressions?: Expression[];
-  toExpressions?: Expression[];
-  this?: Expression;
-  expression?: Expression;
-} & BaseExpressionArgs;
+export type PartitionBoundSpecExprArgs = Merge<[
+  BaseExpressionArgs,
+  { fromExpressions?: Expression[];
+    toExpressions?: Expression[];
+    this?: Expression;
+    expression?: Expression; },
+]>;
 
 export class PartitionBoundSpecExpr extends Expression {
   key = ExpressionKey.PARTITION_BOUND_SPEC;
@@ -8144,14 +8282,15 @@ export class PartitionBoundSpecExpr extends Expression {
   }
 }
 
-export type QueryTransformExprArgs = {
-  commandScript: Expression;
-  schema?: Expression;
-  rowFormatBefore?: string;
-  recordWriter?: Expression;
-  rowFormatAfter?: string;
-  recordReader?: Expression;
-} & BaseExpressionArgs;
+export type QueryTransformExprArgs = Merge<[
+  BaseExpressionArgs,
+  { commandScript: Expression;
+    schema?: Expression;
+    rowFormatBefore?: string;
+    recordWriter?: Expression;
+    rowFormatAfter?: string;
+    recordReader?: Expression; },
+]>;
 
 export class QueryTransformExpr extends Expression {
   key = ExpressionKey.QUERY_TRANSFORM;
@@ -8201,12 +8340,13 @@ export class QueryTransformExpr extends Expression {
   }
 }
 
-export type SemanticViewExprArgs = {
-  metrics?: Expression[];
-  dimensions?: Expression[];
-  facts?: Expression[];
-  where?: Expression;
-} & BaseExpressionArgs;
+export type SemanticViewExprArgs = Merge<[
+  BaseExpressionArgs,
+  { metrics?: Expression[];
+    dimensions?: Expression[];
+    facts?: Expression[];
+    where?: Expression; },
+]>;
 
 export class SemanticViewExpr extends Expression {
   key = ExpressionKey.SEMANTIC_VIEW;
@@ -8246,7 +8386,9 @@ export class SemanticViewExpr extends Expression {
   }
 }
 
-export type LocationExprArgs = BaseExpressionArgs;
+export type LocationExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 export class LocationExpr extends Expression {
   key = ExpressionKey.LOCATION;
 
@@ -8259,7 +8401,9 @@ export class LocationExpr extends Expression {
   }
 }
 
-export type QualifyExprArgs = BaseExpressionArgs;
+export type QualifyExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class QualifyExpr extends Expression {
   key = ExpressionKey.QUALIFY;
@@ -8275,10 +8419,11 @@ export class QualifyExpr extends Expression {
   }
 }
 
-export type InputOutputFormatExprArgs = {
-  inputFormat?: string;
-  outputFormat?: string;
-} & BaseExpressionArgs;
+export type InputOutputFormatExprArgs = Merge<[
+  BaseExpressionArgs,
+  { inputFormat?: string;
+    outputFormat?: string; },
+]>;
 
 export class InputOutputFormatExpr extends Expression {
   key = ExpressionKey.INPUT_OUTPUT_FORMAT;
@@ -8308,7 +8453,9 @@ export class InputOutputFormatExpr extends Expression {
   }
 }
 
-export type ReturnExprArgs = BaseExpressionArgs;
+export type ReturnExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class ReturnExpr extends Expression {
   key = ExpressionKey.RETURN;
@@ -8324,11 +8471,12 @@ export class ReturnExpr extends Expression {
   }
 }
 
-export type ReferenceExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-  options?: Expression[];
-} & BaseExpressionArgs;
+export type ReferenceExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expressions?: Expression[];
+    options?: Expression[]; },
+]>;
 
 export class ReferenceExpr extends Expression {
   key = ExpressionKey.REFERENCE;
@@ -8359,9 +8507,10 @@ export class ReferenceExpr extends Expression {
   }
 }
 
-export type TupleExprArgs = {
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type TupleExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions?: Expression[] },
+]>;
 
 export class TupleExpr extends Expression {
   key = ExpressionKey.TUPLE;
@@ -8441,10 +8590,11 @@ export const QUERY_MODIFIERS = {
 
 // https://learn.microsoft.com/en-us/sql/t-sql/queries/option-clause-transact-sql?view=sql-server-ver16
 // https://learn.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-query?view=sql-server-ver16
-export type QueryOptionExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & BaseExpressionArgs;
+export type QueryOptionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class QueryOptionExpr extends Expression {
   key = ExpressionKey.QUERY_OPTION;
@@ -8471,9 +8621,10 @@ export class QueryOptionExpr extends Expression {
 }
 
 // https://learn.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-table?view=sql-server-ver16
-export type WithTableHintExprArgs = {
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type WithTableHintExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions: Expression[] },
+]>;
 
 export class WithTableHintExpr extends Expression {
   key = ExpressionKey.WITH_TABLE_HINT;
@@ -8495,11 +8646,12 @@ export class WithTableHintExpr extends Expression {
 }
 
 // https://dev.mysql.com/doc/refman/8.0/en/index-hints.html
-export type IndexTableHintExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-  target?: Expression;
-} & BaseExpressionArgs;
+export type IndexTableHintExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expressions?: Expression[];
+    target?: Expression; },
+]>;
 
 export class IndexTableHintExpr extends Expression {
   key = ExpressionKey.INDEX_TABLE_HINT;
@@ -8540,11 +8692,12 @@ export enum HistoricalDataExprKind {
 }
 
 // https://docs.snowflake.com/en/sql-reference/constructs/at-before
-export type HistoricalDataExprArgs = {
-  this: Expression;
-  kind: HistoricalDataExprKind;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type HistoricalDataExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    kind: HistoricalDataExprKind;
+    expression: Expression; },
+]>;
 
 export class HistoricalDataExpr extends Expression {
   key = ExpressionKey.HISTORICAL_DATA;
@@ -8576,11 +8729,12 @@ export class HistoricalDataExpr extends Expression {
 }
 
 // https://docs.snowflake.com/en/sql-reference/sql/put
-export type PutExprArgs = {
-  this: Expression;
-  target: Expression;
-  properties?: Expression[];
-} & BaseExpressionArgs;
+export type PutExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    target: Expression;
+    properties?: Expression[]; },
+]>;
 
 export class PutExpr extends Expression {
   key = ExpressionKey.PUT;
@@ -8612,11 +8766,12 @@ export class PutExpr extends Expression {
 }
 
 // https://docs.snowflake.com/en/sql-reference/sql/get
-export type GetExprArgs = {
-  this: Expression;
-  target: Expression;
-  properties?: Expression[];
-} & BaseExpressionArgs;
+export type GetExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    target: Expression;
+    properties?: Expression[]; },
+]>;
 
 export class GetExpr extends Expression {
   key = ExpressionKey.GET;
@@ -8647,28 +8802,29 @@ export class GetExpr extends Expression {
   }
 }
 
-export type TableExprArgs = {
-  this?: IdentifierExpr | DotExpr;
-  db?: IdentifierExpr;
-  catalog?: IdentifierExpr;
-  alias?: TableAliasExpr | IdentifierExpr | string;
-  laterals?: Expression[];
-  joins?: Expression[];
-  pivots?: Expression[];
-  hints?: Expression[];
-  systemTime?: Expression;
-  version?: Expression;
-  format?: string;
-  pattern?: Expression;
-  ordinality?: boolean;
-  when?: Expression;
-  only?: Expression;
-  partition?: Expression;
-  changes?: Expression[];
-  rowsFrom?: number | Expression;
-  sample?: number | Expression;
-  indexed?: Expression;
-} & BaseExpressionArgs;
+export type TableExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this?: IdentifierExpr | DotExpr;
+    db?: IdentifierExpr;
+    catalog?: IdentifierExpr;
+    alias?: TableAliasExpr | IdentifierExpr | string;
+    laterals?: Expression[];
+    joins?: Expression[];
+    pivots?: Expression[];
+    hints?: Expression[];
+    systemTime?: Expression;
+    version?: Expression;
+    format?: string;
+    pattern?: Expression;
+    ordinality?: boolean;
+    when?: Expression;
+    only?: Expression;
+    partition?: Expression;
+    changes?: Expression[];
+    rowsFrom?: number | Expression;
+    sample?: number | Expression;
+    indexed?: Expression; },
+]>;
 
 export class TableExpr extends Expression {
   key = ExpressionKey.TABLE;
@@ -8890,7 +9046,9 @@ export class TableExpr extends Expression {
   }
 }
 
-export type VarExprArgs = BaseExpressionArgs;
+export type VarExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class VarExpr extends Expression {
   key = ExpressionKey.VAR;
@@ -8923,11 +9081,12 @@ export enum VersionExprKind {
  * @see {@link https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax#for_system_time_as_of | BigQuery System Time}
  * @see {@link https://learn.microsoft.com/en-us/sql/relational-databases/tables/querying-data-in-a-system-versioned-temporal-table | SQL Server Temporal Tables}
  */
-export type VersionExprArgs = {
-  this: Expression;
-  kind: VersionExprKind;
-  expression?: Expression;
-} & BaseExpressionArgs;
+export type VersionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    kind: VersionExprKind;
+    expression?: Expression; },
+]>;
 
 export class VersionExpr extends Expression {
   key = ExpressionKey.VERSION;
@@ -8958,10 +9117,11 @@ export class VersionExpr extends Expression {
   }
 }
 
-export type SchemaExprArgs = {
-  this?: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type SchemaExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class SchemaExpr extends Expression {
   key = ExpressionKey.SCHEMA;
@@ -8992,12 +9152,13 @@ export class SchemaExpr extends Expression {
  * @see {@link https://dev.mysql.com/doc/refman/8.0/en/select.html | MySQL SELECT}
  * @see {@link https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/SELECT.html | Oracle SELECT}
  */
-export type LockExprArgs = {
-  update: Expression;
-  expressions?: Expression[];
-  wait?: Expression;
-  key?: Expression;
-} & BaseExpressionArgs;
+export type LockExprArgs = Merge<[
+  BaseExpressionArgs,
+  { update: Expression;
+    expressions?: Expression[];
+    wait?: Expression;
+    key?: Expression; },
+]>;
 
 export class LockExpr extends Expression {
   key = ExpressionKey.LOCK;
@@ -9033,17 +9194,18 @@ export class LockExpr extends Expression {
   }
 }
 
-export type TableSampleExprArgs = {
-  expressions?: Expression[];
-  method?: string;
-  bucketNumerator?: Expression;
-  bucketDenominator?: Expression;
-  bucketField?: Expression;
-  percent?: Expression;
-  rows?: Expression[];
-  size?: number | Expression;
-  seed?: Expression;
-} & BaseExpressionArgs;
+export type TableSampleExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions?: Expression[];
+    method?: string;
+    bucketNumerator?: Expression;
+    bucketDenominator?: Expression;
+    bucketField?: Expression;
+    percent?: Expression;
+    rows?: Expression[];
+    size?: number | Expression;
+    seed?: Expression; },
+]>;
 
 export class TableSampleExpr extends Expression {
   key = ExpressionKey.TABLE_SAMPLE;
@@ -9108,11 +9270,12 @@ export class TableSampleExpr extends Expression {
   }
 }
 
-export type TagExprArgs = {
-  this?: Expression;
-  prefix?: Expression;
-  postfix?: Expression;
-} & BaseExpressionArgs;
+export type TagExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this?: Expression;
+    prefix?: Expression;
+    postfix?: Expression; },
+]>;
 
 export class TagExpr extends Expression {
   key = ExpressionKey.TAG;
@@ -9147,17 +9310,18 @@ export class TagExpr extends Expression {
   }
 }
 
-export type PivotExprArgs = {
-  fields?: Expression[];
-  unpivot?: boolean;
-  using?: string;
-  group?: Expression;
-  columns?: Expression[];
-  includeNulls?: Expression[];
-  defaultOnNull?: Expression;
-  into?: Expression;
-  with?: WithExpr;
-} & BaseExpressionArgs;
+export type PivotExprArgs = Merge<[
+  BaseExpressionArgs,
+  { fields?: Expression[];
+    unpivot?: boolean;
+    using?: string;
+    group?: Expression;
+    columns?: Expression[];
+    includeNulls?: Expression[];
+    defaultOnNull?: Expression;
+    into?: Expression;
+    with?: WithExpr; },
+]>;
 
 export class PivotExpr extends Expression {
   key = ExpressionKey.PIVOT;
@@ -9236,10 +9400,11 @@ export class PivotExpr extends Expression {
   }
 }
 
-export type UnpivotColumnsExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type UnpivotColumnsExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class UnpivotColumnsExpr extends Expression {
   key = ExpressionKey.UNPIVOT_COLUMNS;
@@ -9265,14 +9430,15 @@ export enum WindowSpecExprKind {
   GROUPS = 'GROUPS',
 }
 
-export type WindowSpecExprArgs = {
-  kind?: WindowSpecExprKind;
-  start?: Expression;
-  startSide?: Expression;
-  end?: Expression;
-  endSide?: Expression;
-  exclude?: Expression;
-} & BaseExpressionArgs;
+export type WindowSpecExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind?: WindowSpecExprKind;
+    start?: Expression;
+    startSide?: Expression;
+    end?: Expression;
+    endSide?: Expression;
+    exclude?: Expression; },
+]>;
 
 export class WindowSpecExpr extends Expression {
   key = ExpressionKey.WINDOW_SPEC;
@@ -9322,7 +9488,9 @@ export class WindowSpecExpr extends Expression {
   }
 }
 
-export type PreWhereExprArgs = BaseExpressionArgs;
+export type PreWhereExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class PreWhereExpr extends Expression {
   key = ExpressionKey.PRE_WHERE;
@@ -9338,9 +9506,12 @@ export class PreWhereExpr extends Expression {
   }
 }
 
-export type WhereExprArgs = {
-  this: string | Expression; // NOTE: sqlglot does not have this, but based on Subquery.where(), I added this
-} & BaseExpressionArgs;
+export type WhereExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    this: string | Expression; // NOTE: sqlglot does not have this, but based on Subquery.where(), I added this;
+  },
+]>;
 
 export class WhereExpr extends Expression {
   key = ExpressionKey.WHERE;
@@ -9361,11 +9532,12 @@ export class WhereExpr extends Expression {
   }
 }
 
-export type StarExprArgs = {
-  except?: Expression;
-  replace?: boolean;
-  rename?: string;
-} & BaseExpressionArgs;
+export type StarExprArgs = Merge<[
+  BaseExpressionArgs,
+  { except?: Expression;
+    replace?: boolean;
+    rename?: string; },
+]>;
 
 export class StarExpr extends Expression {
   key = ExpressionKey.STAR;
@@ -9414,10 +9586,11 @@ export class StarExpr extends Expression {
   }
 }
 
-export type DataTypeParamExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & BaseExpressionArgs;
+export type DataTypeParamExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class DataTypeParamExpr extends Expression {
   key = ExpressionKey.DATA_TYPE_PARAM;
@@ -9583,15 +9756,16 @@ export enum DataTypeExprKind {
   TDIGEST = 'TDIGEST',
 }
 
-export type DataTypeExprArgs = {
-  this: DataTypeExprKind;
-  expressions?: Expression[];
-  nested?: Expression;
-  values?: Expression[];
-  prefix?: Expression;
-  kind?: DataTypeExprKind | DotExpr | IdentifierExpr;
-  nullable?: Expression;
-} & BaseExpressionArgs;
+export type DataTypeExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: DataTypeExprKind;
+    expressions?: Expression[];
+    nested?: Expression;
+    values?: Expression[];
+    prefix?: Expression;
+    kind?: DataTypeExprKind | DotExpr | IdentifierExpr;
+    nullable?: Expression; },
+]>;
 
 export class DataTypeExpr extends Expression {
   key = ExpressionKey.DATA_TYPE;
@@ -9856,7 +10030,9 @@ export class DataTypeExpr extends Expression {
   }
 }
 
-export type TypeExprArgs = BaseExpressionArgs;
+export type TypeExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class TypeExpr extends Expression {
   key = ExpressionKey.TYPE;
@@ -9870,10 +10046,11 @@ export class TypeExpr extends Expression {
   }
 }
 
-export type CommandExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & BaseExpressionArgs;
+export type CommandExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class CommandExpr extends Expression {
   key = ExpressionKey.COMMAND;
@@ -9899,11 +10076,12 @@ export class CommandExpr extends Expression {
   }
 }
 
-export type TransactionExprArgs = {
-  this?: Expression;
-  modes?: Expression[];
-  mark?: Expression;
-} & BaseExpressionArgs;
+export type TransactionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this?: Expression;
+    modes?: Expression[];
+    mark?: Expression; },
+]>;
 
 export class TransactionExpr extends Expression {
   key = ExpressionKey.TRANSACTION;
@@ -9934,11 +10112,12 @@ export class TransactionExpr extends Expression {
   }
 }
 
-export type CommitExprArgs = {
-  chain?: Expression;
-  this?: Expression;
-  durability?: Expression;
-} & BaseExpressionArgs;
+export type CommitExprArgs = Merge<[
+  BaseExpressionArgs,
+  { chain?: Expression;
+    this?: Expression;
+    durability?: Expression; },
+]>;
 
 export class CommitExpr extends Expression {
   key = ExpressionKey.COMMIT;
@@ -9969,10 +10148,11 @@ export class CommitExpr extends Expression {
   }
 }
 
-export type RollbackExprArgs = {
-  savepoint?: Expression;
-  this?: Expression;
-} & BaseExpressionArgs;
+export type RollbackExprArgs = Merge<[
+  BaseExpressionArgs,
+  { savepoint?: Expression;
+    this?: Expression; },
+]>;
 
 export class RollbackExpr extends Expression {
   key = ExpressionKey.ROLLBACK;
@@ -10011,18 +10191,19 @@ export enum AlterExprKind {
   COLUMN = 'COLUMN',
 }
 
-export type AlterExprArgs = {
-  this?: Expression;
-  kind: AlterExprKind;
-  actions: Expression[];
-  exists?: boolean;
-  only?: Expression;
-  options?: Expression[];
-  cluster?: Expression;
-  notValid?: Expression;
-  check?: Expression;
-  cascade?: Expression;
-} & BaseExpressionArgs;
+export type AlterExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this?: Expression;
+    kind: AlterExprKind;
+    actions: Expression[];
+    exists?: boolean;
+    only?: Expression;
+    options?: Expression[];
+    cluster?: Expression;
+    notValid?: Expression;
+    check?: Expression;
+    cascade?: Expression; },
+]>;
 
 export class AlterExpr extends Expression {
   key = ExpressionKey.ALTER;
@@ -10107,10 +10288,11 @@ export class AlterExpr extends Expression {
   }
 }
 
-export type AlterSessionExprArgs = {
-  expressions: Expression[];
-  unset?: Expression;
-} & BaseExpressionArgs;
+export type AlterSessionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions: Expression[];
+    unset?: Expression; },
+]>;
 
 export class AlterSessionExpr extends Expression {
   key = ExpressionKey.ALTER_SESSION;
@@ -10145,15 +10327,16 @@ export enum AnalyzeExprKind {
   TABLE = 'TABLE',
 }
 
-export type AnalyzeExprArgs = {
-  kind?: AnalyzeExprKind;
-  this?: Expression;
-  options?: Expression[];
-  mode?: Expression;
-  partition?: Expression;
-  expression?: Expression;
-  properties?: Expression[];
-} & BaseExpressionArgs;
+export type AnalyzeExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind?: AnalyzeExprKind;
+    this?: Expression;
+    options?: Expression[];
+    mode?: Expression;
+    partition?: Expression;
+    expression?: Expression;
+    properties?: Expression[]; },
+]>;
 
 export class AnalyzeExpr extends Expression {
   key = ExpressionKey.ANALYZE;
@@ -10218,12 +10401,13 @@ export enum AnalyzeStatisticsExprKind {
   COLUMNS = 'COLUMNS',
 }
 
-export type AnalyzeStatisticsExprArgs = {
-  kind: AnalyzeStatisticsExprKind;
-  option?: Expression;
-  this?: Expression;
-  expressions?: Expression[];
-} & BaseExpressionArgs;
+export type AnalyzeStatisticsExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind: AnalyzeStatisticsExprKind;
+    option?: Expression;
+    this?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class AnalyzeStatisticsExpr extends Expression {
   key = ExpressionKey.ANALYZE_STATISTICS;
@@ -10263,12 +10447,13 @@ export class AnalyzeStatisticsExpr extends Expression {
   }
 }
 
-export type AnalyzeHistogramExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-  expression?: Expression;
-  updateOptions?: Expression[];
-} & BaseExpressionArgs;
+export type AnalyzeHistogramExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expressions: Expression[];
+    expression?: Expression;
+    updateOptions?: Expression[]; },
+]>;
 
 export class AnalyzeHistogramExpr extends Expression {
   key = ExpressionKey.ANALYZE_HISTOGRAM;
@@ -10313,10 +10498,11 @@ export enum AnalyzeSampleExprKind {
   ROWS = 'ROWS',
 }
 
-export type AnalyzeSampleExprArgs = {
-  kind: AnalyzeSampleExprKind;
-  sample: number | Expression;
-} & BaseExpressionArgs;
+export type AnalyzeSampleExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind: AnalyzeSampleExprKind;
+    sample: number | Expression; },
+]>;
 
 export class AnalyzeSampleExpr extends Expression {
   key = ExpressionKey.ANALYZE_SAMPLE;
@@ -10346,9 +10532,10 @@ export class AnalyzeSampleExpr extends Expression {
   }
 }
 
-export type AnalyzeListChainedRowsExprArgs = {
-  expression?: Expression;
-} & BaseExpressionArgs;
+export type AnalyzeListChainedRowsExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expression?: Expression },
+]>;
 
 export class AnalyzeListChainedRowsExpr extends Expression {
   key = ExpressionKey.ANALYZE_LIST_CHAINED_ROWS;
@@ -10375,9 +10562,10 @@ export class AnalyzeListChainedRowsExpr extends Expression {
 export enum AnalyzeDeleteExprKind {
   STATISTICS = 'STATISTICS',
 }
-export type AnalyzeDeleteExprArgs = {
-  kind?: AnalyzeDeleteExprKind;
-} & BaseExpressionArgs;
+export type AnalyzeDeleteExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind?: AnalyzeDeleteExprKind },
+]>;
 
 export class AnalyzeDeleteExpr extends Expression {
   key = ExpressionKey.ANALYZE_DELETE;
@@ -10398,9 +10586,10 @@ export class AnalyzeDeleteExpr extends Expression {
   }
 }
 
-export type AnalyzeWithExprArgs = {
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type AnalyzeWithExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions: Expression[] },
+]>;
 
 export class AnalyzeWithExpr extends Expression {
   key = ExpressionKey.ANALYZE_WITH;
@@ -10430,11 +10619,12 @@ export enum AnalyzeValidateExprKind {
   STRUCTURE = 'STRUCTURE',
 }
 
-export type AnalyzeValidateExprArgs = {
-  kind: AnalyzeValidateExprKind;
-  this?: Expression;
-  expression?: Expression;
-} & BaseExpressionArgs;
+export type AnalyzeValidateExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind: AnalyzeValidateExprKind;
+    this?: Expression;
+    expression?: Expression; },
+]>;
 
 export class AnalyzeValidateExpr extends Expression {
   key = ExpressionKey.ANALYZE_VALIDATE;
@@ -10465,7 +10655,9 @@ export class AnalyzeValidateExpr extends Expression {
   }
 }
 
-export type AnalyzeColumnsExprArgs = BaseExpressionArgs;
+export type AnalyzeColumnsExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class AnalyzeColumnsExpr extends Expression {
   key = ExpressionKey.ANALYZE_COLUMNS;
@@ -10481,7 +10673,9 @@ export class AnalyzeColumnsExpr extends Expression {
   }
 }
 
-export type UsingDataExprArgs = BaseExpressionArgs;
+export type UsingDataExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class UsingDataExpr extends Expression {
   key = ExpressionKey.USING_DATA;
@@ -10497,9 +10691,10 @@ export class UsingDataExpr extends Expression {
   }
 }
 
-export type AddConstraintExprArgs = {
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type AddConstraintExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions: Expression[] },
+]>;
 
 export class AddConstraintExpr extends Expression {
   key = ExpressionKey.ADD_CONSTRAINT;
@@ -10520,11 +10715,12 @@ export class AddConstraintExpr extends Expression {
   }
 }
 
-export type AddPartitionExprArgs = {
-  this: Expression;
-  exists?: boolean;
-  location?: Expression;
-} & BaseExpressionArgs;
+export type AddPartitionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    exists?: boolean;
+    location?: Expression; },
+]>;
 
 export class AddPartitionExpr extends Expression {
   key = ExpressionKey.ADD_PARTITION;
@@ -10555,10 +10751,11 @@ export class AddPartitionExpr extends Expression {
   }
 }
 
-export type AttachOptionExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & BaseExpressionArgs;
+export type AttachOptionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class AttachOptionExpr extends Expression {
   key = ExpressionKey.ATTACH_OPTION;
@@ -10584,10 +10781,11 @@ export class AttachOptionExpr extends Expression {
   }
 }
 
-export type DropPartitionExprArgs = {
-  expressions: Expression[];
-  exists?: boolean;
-} & BaseExpressionArgs;
+export type DropPartitionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions: Expression[];
+    exists?: boolean; },
+]>;
 
 export class DropPartitionExpr extends Expression {
   key = ExpressionKey.DROP_PARTITION;
@@ -10613,10 +10811,11 @@ export class DropPartitionExpr extends Expression {
   }
 }
 
-export type ReplacePartitionExprArgs = {
-  expression: Expression;
-  source: Expression;
-} & BaseExpressionArgs;
+export type ReplacePartitionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expression: Expression;
+    source: Expression; },
+]>;
 
 export class ReplacePartitionExpr extends Expression {
   key = ExpressionKey.REPLACE_PARTITION;
@@ -10642,10 +10841,11 @@ export class ReplacePartitionExpr extends Expression {
   }
 }
 
-export type AliasExprArgs = {
-  this: Expression;
-  alias?: string | IdentifierExpr;
-} & BaseExpressionArgs;
+export type AliasExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    alias?: string | IdentifierExpr; },
+]>;
 
 export class AliasExpr extends Expression {
   key = ExpressionKey.ALIAS;
@@ -10678,9 +10878,10 @@ export class AliasExpr extends Expression {
   }
 }
 
-export type PivotAnyExprArgs = {
-  this?: Expression;
-} & BaseExpressionArgs;
+export type PivotAnyExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this?: Expression },
+]>;
 
 /**
  * Represents Snowflake's ANY [ ORDER BY ... ] syntax
@@ -10705,10 +10906,11 @@ export class PivotAnyExpr extends Expression {
   }
 }
 
-export type AliasesExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type AliasesExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class AliasesExpr extends Expression {
   key = ExpressionKey.ALIASES;
@@ -10738,10 +10940,11 @@ export class AliasesExpr extends Expression {
   }
 }
 
-export type AtIndexExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type AtIndexExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 /**
  * https://docs.aws.amazon.com/redshift/latest/dg/query-super.html
@@ -10770,10 +10973,11 @@ export class AtIndexExpr extends Expression {
   }
 }
 
-export type AtTimeZoneExprArgs = {
-  this: Expression;
-  zone: Expression;
-} & BaseExpressionArgs;
+export type AtTimeZoneExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    zone: Expression; },
+]>;
 
 export class AtTimeZoneExpr extends Expression {
   key = ExpressionKey.AT_TIME_ZONE;
@@ -10799,10 +11003,11 @@ export class AtTimeZoneExpr extends Expression {
   }
 }
 
-export type FromTimeZoneExprArgs = {
-  this: Expression;
-  zone: Expression;
-} & BaseExpressionArgs;
+export type FromTimeZoneExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    zone: Expression; },
+]>;
 
 export class FromTimeZoneExpr extends Expression {
   key = ExpressionKey.FROM_TIME_ZONE;
@@ -10828,10 +11033,11 @@ export class FromTimeZoneExpr extends Expression {
   }
 }
 
-export type FormatPhraseExprArgs = {
-  this: Expression;
-  format: Expression;
-} & BaseExpressionArgs;
+export type FormatPhraseExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    format: Expression; },
+]>;
 
 /**
  * Format override for a column in Teradata.
@@ -10863,10 +11069,11 @@ export class FormatPhraseExpr extends Expression {
   }
 }
 
-export type DistinctExprArgs = {
-  expressions?: Expression[];
-  on?: Expression;
-} & BaseExpressionArgs;
+export type DistinctExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions?: Expression[];
+    on?: Expression; },
+]>;
 
 export class DistinctExpr extends Expression {
   key = ExpressionKey.DISTINCT;
@@ -10892,10 +11099,11 @@ export class DistinctExpr extends Expression {
   }
 }
 
-export type ForInExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type ForInExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 /**
  * https://cloud.google.com/bigquery/docs/reference/standard-sql/procedural-language#for-in
@@ -10924,9 +11132,10 @@ export class ForInExpr extends Expression {
   }
 }
 
-export type TimeUnitExprArgs = {
-  unit?: VarExpr | IntervalSpanExpr;
-} & BaseExpressionArgs;
+export type TimeUnitExprArgs = Merge<[
+  BaseExpressionArgs,
+  { unit?: VarExpr | IntervalSpanExpr },
+]>;
 
 /**
  * Automatically converts unit arg into a var.
@@ -10988,7 +11197,9 @@ export class TimeUnitExpr extends Expression {
   }
 }
 
-export type IgnoreNullsExprArgs = BaseExpressionArgs;
+export type IgnoreNullsExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class IgnoreNullsExpr extends Expression {
   key = ExpressionKey.IGNORE_NULLS;
@@ -11004,7 +11215,9 @@ export class IgnoreNullsExpr extends Expression {
   }
 }
 
-export type RespectNullsExprArgs = BaseExpressionArgs;
+export type RespectNullsExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class RespectNullsExpr extends Expression {
   key = ExpressionKey.RESPECT_NULLS;
@@ -11023,11 +11236,12 @@ export class RespectNullsExpr extends Expression {
 /**
  * https://cloud.google.com/bigquery/docs/reference/standard-sql/aggregate-function-calls#max_min_clause
  */
-export type HavingMaxExprArgs = {
-  this: Expression;
-  expression: Expression;
-  max: Expression;
-} & BaseExpressionArgs;
+export type HavingMaxExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression: Expression;
+    max: Expression; },
+]>;
 
 export class HavingMaxExpr extends Expression {
   key = ExpressionKey.HAVING_MAX;
@@ -11058,11 +11272,12 @@ export class HavingMaxExpr extends Expression {
   }
 }
 
-export type TranslateCharactersExprArgs = {
-  this: Expression;
-  expression: Expression;
-  withError?: Expression;
-} & BaseExpressionArgs;
+export type TranslateCharactersExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression: Expression;
+    withError?: Expression; },
+]>;
 
 export class TranslateCharactersExpr extends Expression {
   key = ExpressionKey.TRANSLATE_CHARACTERS;
@@ -11093,7 +11308,9 @@ export class TranslateCharactersExpr extends Expression {
   }
 }
 
-export type PositionalColumnExprArgs = BaseExpressionArgs;
+export type PositionalColumnExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 export class PositionalColumnExpr extends Expression {
   key = ExpressionKey.POSITIONAL_COLUMN;
 
@@ -11106,10 +11323,11 @@ export class PositionalColumnExpr extends Expression {
   }
 }
 
-export type OverflowTruncateBehaviorExprArgs = {
-  this?: Expression;
-  withCount: Expression;
-} & BaseExpressionArgs;
+export type OverflowTruncateBehaviorExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this?: Expression;
+    withCount: Expression; },
+]>;
 
 export class OverflowTruncateBehaviorExpr extends Expression {
   key = ExpressionKey.OVERFLOW_TRUNCATE_BEHAVIOR;
@@ -11134,11 +11352,12 @@ export class OverflowTruncateBehaviorExpr extends Expression {
   }
 }
 
-export type JSONExprArgs = {
-  this?: Expression;
-  with?: Expression;
-  unique?: boolean;
-} & BaseExpressionArgs;
+export type JSONExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this?: Expression;
+    with?: Expression;
+    unique?: boolean; },
+]>;
 
 export class JSONExpr extends Expression {
   key = ExpressionKey.JSON;
@@ -11173,10 +11392,11 @@ export class JSONExpr extends Expression {
   }
 }
 
-export type JSONPathExprArgs = {
-  expressions: Expression[];
-  escape?: Expression;
-} & BaseExpressionArgs;
+export type JSONPathExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions: Expression[];
+    escape?: Expression; },
+]>;
 
 export class JSONPathExpr extends Expression {
   key = ExpressionKey.JSON_PATH;
@@ -11208,7 +11428,9 @@ export class JSONPathExpr extends Expression {
   }
 }
 
-export type JSONPathPartExprArgs = BaseExpressionArgs;
+export type JSONPathPartExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class JSONPathPartExpr extends Expression {
   key = ExpressionKey.JSON_PATH_PART;
@@ -11222,7 +11444,9 @@ export class JSONPathPartExpr extends Expression {
   }
 }
 
-export type FormatJsonExprArgs = BaseExpressionArgs;
+export type FormatJsonExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class FormatJsonExpr extends Expression {
   key = ExpressionKey.FORMAT_JSON;
@@ -11236,10 +11460,11 @@ export class FormatJsonExpr extends Expression {
   }
 }
 
-export type JSONKeyValueExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type JSONKeyValueExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class JSONKeyValueExpr extends Expression {
   key = ExpressionKey.JSON_KEY_VALUE;
@@ -11274,13 +11499,14 @@ export enum JSONColumnDefExprKind {
   QUERY = 'QUERY',
 }
 
-export type JSONColumnDefExprArgs = {
-  this?: Expression;
-  kind?: JSONColumnDefExprKind;
-  path?: Expression;
-  nestedSchema?: Expression;
-  ordinality?: boolean;
-} & BaseExpressionArgs;
+export type JSONColumnDefExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this?: Expression;
+    kind?: JSONColumnDefExprKind;
+    path?: Expression;
+    nestedSchema?: Expression;
+    ordinality?: boolean; },
+]>;
 
 export class JSONColumnDefExpr extends Expression {
   key = ExpressionKey.JSON_COLUMN_DEF;
@@ -11325,9 +11551,10 @@ export class JSONColumnDefExpr extends Expression {
   }
 }
 
-export type JSONSchemaExprArgs = {
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type JSONSchemaExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions: Expression[] },
+]>;
 
 export class JSONSchemaExpr extends Expression {
   key = ExpressionKey.JSON_SCHEMA;
@@ -11347,12 +11574,13 @@ export class JSONSchemaExpr extends Expression {
   }
 }
 
-export type JSONValueExprArgs = {
-  this: Expression;
-  path: Expression;
-  returning?: Expression;
-  onCondition?: Expression;
-} & BaseExpressionArgs;
+export type JSONValueExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    path: Expression;
+    returning?: Expression;
+    onCondition?: Expression; },
+]>;
 
 export class JSONValueExpr extends Expression {
   key = ExpressionKey.JSON_VALUE;
@@ -11403,12 +11631,13 @@ export enum OpenJSONColumnDefExprKind {
   QUERY = 'QUERY',
 }
 
-export type OpenJSONColumnDefExprArgs = {
-  this: Expression;
-  kind: OpenJSONColumnDefExprKind;
-  path?: Expression;
-  asJson?: Expression;
-} & BaseExpressionArgs;
+export type OpenJSONColumnDefExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    kind: OpenJSONColumnDefExprKind;
+    path?: Expression;
+    asJson?: Expression; },
+]>;
 
 export class OpenJSONColumnDefExpr extends Expression {
   key = ExpressionKey.OPEN_JSON_COLUMN_DEF;
@@ -11448,10 +11677,11 @@ export class OpenJSONColumnDefExpr extends Expression {
   }
 }
 
-export type JSONExtractQuoteExprArgs = {
-  option: Expression;
-  scalar?: boolean;
-} & BaseExpressionArgs;
+export type JSONExtractQuoteExprArgs = Merge<[
+  BaseExpressionArgs,
+  { option: Expression;
+    scalar?: boolean; },
+]>;
 
 export class JSONExtractQuoteExpr extends Expression {
   key = ExpressionKey.JSON_EXTRACT_QUOTE;
@@ -11481,10 +11711,11 @@ export class JSONExtractQuoteExpr extends Expression {
   }
 }
 
-export type ScopeResolutionExprArgs = {
-  this?: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type ScopeResolutionExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this?: Expression;
+    expression: Expression; },
+]>;
 
 export class ScopeResolutionExpr extends Expression {
   key = ExpressionKey.SCOPE_RESOLUTION;
@@ -11509,11 +11740,12 @@ export class ScopeResolutionExpr extends Expression {
   }
 }
 
-export type SliceExprArgs = {
-  this?: Expression;
-  expression?: Expression;
-  step?: Expression;
-} & BaseExpressionArgs;
+export type SliceExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this?: Expression;
+    expression?: Expression;
+    step?: Expression; },
+]>;
 
 export class SliceExpr extends Expression {
   key = ExpressionKey.SLICE;
@@ -11543,7 +11775,9 @@ export class SliceExpr extends Expression {
   }
 }
 
-export type StreamExprArgs = BaseExpressionArgs;
+export type StreamExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 export class StreamExpr extends Expression {
   key = ExpressionKey.STREAM;
 
@@ -11556,10 +11790,11 @@ export class StreamExpr extends Expression {
   }
 }
 
-export type ModelAttributeExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & BaseExpressionArgs;
+export type ModelAttributeExprArgs = Merge<[
+  BaseExpressionArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class ModelAttributeExpr extends Expression {
   key = ExpressionKey.MODEL_ATTRIBUTE;
@@ -11584,7 +11819,9 @@ export class ModelAttributeExpr extends Expression {
   }
 }
 
-export type WeekStartExprArgs = BaseExpressionArgs;
+export type WeekStartExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 export class WeekStartExpr extends Expression {
   key = ExpressionKey.WEEK_START;
 
@@ -11597,7 +11834,9 @@ export class WeekStartExpr extends Expression {
   }
 }
 
-export type XMLNamespaceExprArgs = BaseExpressionArgs;
+export type XMLNamespaceExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class XMLNamespaceExpr extends Expression {
   key = ExpressionKey.XML_NAMESPACE;
@@ -11613,7 +11852,9 @@ export class XMLNamespaceExpr extends Expression {
   }
 }
 
-export type XMLKeyValueOptionExprArgs = BaseExpressionArgs;
+export type XMLKeyValueOptionExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class XMLKeyValueOptionExpr extends Expression {
   key = ExpressionKey.XML_KEY_VALUE_OPTION;
@@ -11648,11 +11889,12 @@ export enum UseExprKind {
   ROLE = 'ROLE',
   CATALOG = 'CATALOG',
 }
-export type UseExprArgs = {
-  kind?: UseExprKind;
-  this?: Expression;
-  expressions?: Expression;
-} & BaseExpressionArgs;
+export type UseExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind?: UseExprKind;
+    this?: Expression;
+    expressions?: Expression; },
+]>;
 
 export class UseExpr extends Expression {
   key = ExpressionKey.USE;
@@ -11682,12 +11924,13 @@ export class UseExpr extends Expression {
   }
 }
 
-export type WhenExprArgs = {
-  matched: Expression;
-  source?: Expression;
-  condition?: Expression;
-  then: Expression;
-} & BaseExpressionArgs;
+export type WhenExprArgs = Merge<[
+  BaseExpressionArgs,
+  { matched: Expression;
+    source?: Expression;
+    condition?: Expression;
+    then: Expression; },
+]>;
 
 export class WhenExpr extends Expression {
   key = ExpressionKey.WHEN;
@@ -11727,9 +11970,10 @@ export class WhenExpr extends Expression {
   }
 }
 
-export type WhensExprArgs = {
-  expressions: Expression;
-} & BaseExpressionArgs;
+export type WhensExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions: Expression },
+]>;
 
 export class WhensExpr extends Expression {
   key = ExpressionKey.WHENS;
@@ -11750,7 +11994,9 @@ export class WhensExpr extends Expression {
   }
 }
 
-export type SemicolonExprArgs = BaseExpressionArgs;
+export type SemicolonExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class SemicolonExpr extends Expression {
   key = ExpressionKey.SEMICOLON;
@@ -11764,7 +12010,9 @@ export class SemicolonExpr extends Expression {
   }
 }
 
-export type TableColumnExprArgs = BaseExpressionArgs;
+export type TableColumnExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class TableColumnExpr extends Expression {
   key = ExpressionKey.TABLE_COLUMN;
@@ -11780,7 +12028,9 @@ export class TableColumnExpr extends Expression {
   }
 }
 
-export type VariadicExprArgs = BaseExpressionArgs;
+export type VariadicExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class VariadicExpr extends Expression {
   key = ExpressionKey.VARIADIC;
@@ -11796,13 +12046,14 @@ export class VariadicExpr extends Expression {
   }
 }
 
-export type CTEExprArgs = {
-  scalar?: boolean;
-  materialized?: boolean;
-  keyExpressions?: Expression[];
-  alias: Expression[];
-  this: Expression;
-} & BaseExpressionArgs;
+export type CTEExprArgs = Merge<[
+  BaseExpressionArgs,
+  { scalar?: boolean;
+    materialized?: boolean;
+    keyExpressions?: Expression[];
+    alias: Expression[];
+    this: Expression; },
+]>;
 
 export class CTEExpr extends DerivedTableExpr {
   key = ExpressionKey.CTE;
@@ -11847,7 +12098,9 @@ export class CTEExpr extends DerivedTableExpr {
   }
 }
 
-export type BitStringExprArgs = ConditionExprArgs;
+export type BitStringExprArgs = Merge<[
+  ConditionExprArgs,
+]>;
 
 export class BitStringExpr extends ConditionExpr {
   key = ExpressionKey.BIT_STRING;
@@ -11863,10 +12116,11 @@ export class BitStringExpr extends ConditionExpr {
   }
 }
 
-export type HexStringExprArgs = {
-  isInteger?: boolean;
-  this: Expression;
-} & BaseExpressionArgs;
+export type HexStringExprArgs = Merge<[
+  BaseExpressionArgs,
+  { isInteger?: boolean;
+    this: Expression; },
+]>;
 
 export class HexStringExpr extends ConditionExpr {
   key = ExpressionKey.HEX_STRING;
@@ -11896,10 +12150,11 @@ export class HexStringExpr extends ConditionExpr {
   }
 }
 
-export type ByteStringExprArgs = {
-  isBytes?: boolean;
-  this: Expression;
-} & ConditionExprArgs;
+export type ByteStringExprArgs = Merge<[
+  ConditionExprArgs,
+  { isBytes?: boolean;
+    this: Expression; },
+]>;
 
 export class ByteStringExpr extends ConditionExpr {
   key = ExpressionKey.BYTE_STRING;
@@ -11929,7 +12184,9 @@ export class ByteStringExpr extends ConditionExpr {
   }
 }
 
-export type RawStringExprArgs = ConditionExprArgs;
+export type RawStringExprArgs = Merge<[
+  ConditionExprArgs,
+]>;
 
 export class RawStringExpr extends ConditionExpr {
   key = ExpressionKey.RAW_STRING;
@@ -11945,10 +12202,11 @@ export class RawStringExpr extends ConditionExpr {
   }
 }
 
-export type UnicodeStringExprArgs = {
-  escape?: Expression;
-  this: Expression;
-} & ConditionExprArgs;
+export type UnicodeStringExprArgs = Merge<[
+  ConditionExprArgs,
+  { escape?: Expression;
+    this: Expression; },
+]>;
 
 export class UnicodeStringExpr extends ConditionExpr {
   key = ExpressionKey.UNICODE_STRING;
@@ -11985,13 +12243,14 @@ export class UnicodeStringExpr extends ConditionExpr {
  * // users.id
  * const col = column('id', 'users');
  */
-export type ColumnExprArgs = {
-  table?: IdentifierExpr;
-  db?: IdentifierExpr;
-  catalog?: IdentifierExpr;
-  this: IdentifierExpr;
-  joinMark?: Expression;
-} & ConditionExprArgs;
+export type ColumnExprArgs = Merge<[
+  ConditionExprArgs,
+  { table?: IdentifierExpr;
+    db?: IdentifierExpr;
+    catalog?: IdentifierExpr;
+    this: IdentifierExpr;
+    joinMark?: Expression; },
+]>;
 
 export class ColumnExpr extends ConditionExpr {
   key = ExpressionKey.COLUMN;
@@ -12092,7 +12351,9 @@ export class ColumnExpr extends ConditionExpr {
   }
 }
 
-export type PseudocolumnExprArgs = ColumnExprArgs;
+export type PseudocolumnExprArgs = Merge<[
+  ColumnExprArgs,
+]>;
 
 export class PseudocolumnExpr extends ColumnExpr {
   key = ExpressionKey.PSEUDOCOLUMN;
@@ -12112,7 +12373,9 @@ export class PseudocolumnExpr extends ColumnExpr {
   }
 }
 
-export type AutoIncrementColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type AutoIncrementColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class AutoIncrementColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.AUTO_INCREMENT_COLUMN_CONSTRAINT;
@@ -12128,7 +12391,9 @@ export class AutoIncrementColumnConstraintExpr extends ColumnConstraintKindExpr 
   }
 }
 
-export type ZeroFillColumnConstraintExprArgs = ColumnConstraintExprArgs;
+export type ZeroFillColumnConstraintExprArgs = Merge<[
+  ColumnConstraintExprArgs,
+]>;
 
 export class ZeroFillColumnConstraintExpr extends ColumnConstraintExpr {
   key = ExpressionKey.ZERO_FILL_COLUMN_CONSTRAINT;
@@ -12146,10 +12411,11 @@ export class ZeroFillColumnConstraintExpr extends ColumnConstraintExpr {
   }
 }
 
-export type PeriodForSystemTimeConstraintExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & ColumnConstraintKindExprArgs;
+export type PeriodForSystemTimeConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PERIOD_FOR_SYSTEM_TIME_CONSTRAINT;
@@ -12180,9 +12446,10 @@ export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr 
   }
 }
 
-export type CaseSpecificColumnConstraintExprArgs = {
-  not: Expression;
-} & ColumnConstraintKindExprArgs;
+export type CaseSpecificColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { not: Expression },
+]>;
 
 export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CASE_SPECIFIC_COLUMN_CONSTRAINT;
@@ -12208,9 +12475,10 @@ export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type CharacterSetColumnConstraintExprArgs = {
-  this: Expression;
-} & ColumnConstraintKindExprArgs;
+export type CharacterSetColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { this: Expression },
+]>;
 export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CHARACTER_SET_COLUMN_CONSTRAINT;
 
@@ -12229,10 +12497,11 @@ export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type CheckColumnConstraintExprArgs = {
-  enforced?: Expression;
-  this: Expression;
-} & BaseExpressionArgs;
+export type CheckColumnConstraintExprArgs = Merge<[
+  BaseExpressionArgs,
+  { enforced?: Expression;
+    this: Expression; },
+]>;
 
 export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CHECK_COLUMN_CONSTRAINT;
@@ -12262,7 +12531,9 @@ export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type ClusteredColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type ClusteredColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class ClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CLUSTERED_COLUMN_CONSTRAINT;
@@ -12278,7 +12549,9 @@ export class ClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type CollateColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type CollateColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class CollateColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COLLATE_COLUMN_CONSTRAINT;
@@ -12294,7 +12567,9 @@ export class CollateColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type CommentColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type CommentColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class CommentColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMMENT_COLUMN_CONSTRAINT;
@@ -12310,9 +12585,10 @@ export class CommentColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type CompressColumnConstraintExprArgs = {
-  this?: Expression;
-} & ColumnConstraintKindExprArgs;
+export type CompressColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { this?: Expression },
+]>;
 
 export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMPRESS_COLUMN_CONSTRAINT;
@@ -12332,9 +12608,10 @@ export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type DateFormatColumnConstraintExprArgs = {
-  this: Expression;
-} & ColumnConstraintKindExprArgs;
+export type DateFormatColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { this: Expression },
+]>;
 
 export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.DATE_FORMAT_COLUMN_CONSTRAINT;
@@ -12360,7 +12637,9 @@ export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type DefaultColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type DefaultColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class DefaultColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.DEFAULT_COLUMN_CONSTRAINT;
@@ -12376,7 +12655,9 @@ export class DefaultColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type EncodeColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type EncodeColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class EncodeColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.ENCODE_COLUMN_CONSTRAINT;
@@ -12392,7 +12673,9 @@ export class EncodeColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type ExcludeColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type ExcludeColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class ExcludeColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.EXCLUDE_COLUMN_CONSTRAINT;
@@ -12408,9 +12691,10 @@ export class ExcludeColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type EphemeralColumnConstraintExprArgs = {
-  this?: Expression;
-} & ColumnConstraintKindExprArgs;
+export type EphemeralColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { this?: Expression },
+]>;
 
 export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.EPHEMERAL_COLUMN_CONSTRAINT;
@@ -12430,17 +12714,18 @@ export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type GeneratedAsIdentityColumnConstraintExprArgs = {
-  onNull?: Expression;
-  start?: Expression;
-  increment?: Expression;
-  minvalue?: string;
-  maxvalue?: string;
-  cycle?: Expression;
-  order?: Expression;
-  this?: Expression;
-  expression?: Expression;
-} & ColumnConstraintKindExprArgs;
+export type GeneratedAsIdentityColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { onNull?: Expression;
+    start?: Expression;
+    increment?: Expression;
+    minvalue?: string;
+    maxvalue?: string;
+    cycle?: Expression;
+    order?: Expression;
+    this?: Expression;
+    expression?: Expression; },
+]>;
 
 export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.GENERATED_AS_IDENTITY_COLUMN_CONSTRAINT;
@@ -12507,10 +12792,11 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
   }
 }
 
-export type GeneratedAsRowColumnConstraintExprArgs = {
-  start?: Expression;
-  hidden?: Expression;
-} & ColumnConstraintKindExprArgs;
+export type GeneratedAsRowColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { start?: Expression;
+    hidden?: Expression; },
+]>;
 
 export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.GENERATED_AS_ROW_COLUMN_CONSTRAINT;
@@ -12551,15 +12837,16 @@ export enum IndexColumnConstraintExprKind {
   SPATIAL = 'SPATIAL',
 }
 
-export type IndexColumnConstraintExprArgs = {
-  kind?: IndexColumnConstraintExprKind;
-  indexType?: DataTypeExpr;
-  options?: Expression[];
-  granularity?: Expression;
-  this?: Expression;
-  expressions?: Expression[];
-  expression?: Expression;
-} & ColumnConstraintKindExprArgs;
+export type IndexColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { kind?: IndexColumnConstraintExprKind;
+    indexType?: DataTypeExpr;
+    options?: Expression[];
+    granularity?: Expression;
+    this?: Expression;
+    expressions?: Expression[];
+    expression?: Expression; },
+]>;
 
 export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.INDEX_COLUMN_CONSTRAINT;
@@ -12614,7 +12901,9 @@ export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type InlineLengthColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type InlineLengthColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class InlineLengthColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.INLINE_LENGTH_COLUMN_CONSTRAINT;
@@ -12630,7 +12919,9 @@ export class InlineLengthColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type NonClusteredColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type NonClusteredColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class NonClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NON_CLUSTERED_COLUMN_CONSTRAINT;
@@ -12646,7 +12937,9 @@ export class NonClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type NotForReplicationColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type NotForReplicationColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class NotForReplicationColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NOT_FOR_REPLICATION_COLUMN_CONSTRAINT;
@@ -12660,10 +12953,11 @@ export class NotForReplicationColumnConstraintExpr extends ColumnConstraintKindE
   }
 }
 
-export type MaskingPolicyColumnConstraintExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & ColumnConstraintKindExprArgs;
+export type MaskingPolicyColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.MASKING_POLICY_COLUMN_CONSTRAINT;
@@ -12689,9 +12983,10 @@ export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr 
   }
 }
 
-export type NotNullColumnConstraintExprArgs = {
-  allowNull?: Expression;
-} & ColumnConstraintKindExprArgs;
+export type NotNullColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { allowNull?: Expression },
+]>;
 
 export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NOT_NULL_COLUMN_CONSTRAINT;
@@ -12717,7 +13012,9 @@ export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type OnUpdateColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type OnUpdateColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class OnUpdateColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.ON_UPDATE_COLUMN_CONSTRAINT;
@@ -12733,10 +13030,11 @@ export class OnUpdateColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type PrimaryKeyColumnConstraintExprArgs = {
-  desc?: Expression;
-  options?: Expression[];
-} & ColumnConstraintKindExprArgs;
+export type PrimaryKeyColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { desc?: Expression;
+    options?: Expression[]; },
+]>;
 
 export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PRIMARY_KEY_COLUMN_CONSTRAINT;
@@ -12767,7 +13065,9 @@ export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type TitleColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type TitleColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class TitleColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.TITLE_COLUMN_CONSTRAINT;
@@ -12783,13 +13083,14 @@ export class TitleColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type UniqueColumnConstraintExprArgs = {
-  indexType?: DataTypeExpr;
-  onConflict?: Expression;
-  nulls?: Expression[];
-  options?: Expression[];
-  this?: Expression;
-} & ColumnConstraintKindExprArgs;
+export type UniqueColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { indexType?: DataTypeExpr;
+    onConflict?: Expression;
+    nulls?: Expression[];
+    options?: Expression[];
+    this?: Expression; },
+]>;
 
 export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.UNIQUE_COLUMN_CONSTRAINT;
@@ -12835,7 +13136,9 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type UppercaseColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type UppercaseColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class UppercaseColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.UPPERCASE_COLUMN_CONSTRAINT;
@@ -12851,7 +13154,9 @@ export class UppercaseColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type PathColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type PathColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class PathColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PATH_COLUMN_CONSTRAINT;
@@ -12867,7 +13172,9 @@ export class PathColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type ProjectionPolicyColumnConstraintExprArgs = ColumnConstraintKindExprArgs;
+export type ProjectionPolicyColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+]>;
 
 export class ProjectionPolicyColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PROJECTION_POLICY_COLUMN_CONSTRAINT;
@@ -12883,12 +13190,13 @@ export class ProjectionPolicyColumnConstraintExpr extends ColumnConstraintKindEx
   }
 }
 
-export type ComputedColumnConstraintExprArgs = {
-  persisted?: Expression;
-  notNull?: Expression;
-  dataType?: DataTypeExpr;
-  this: Expression;
-} & ColumnConstraintKindExprArgs;
+export type ComputedColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { persisted?: Expression;
+    notNull?: Expression;
+    dataType?: DataTypeExpr;
+    this: Expression; },
+]>;
 
 export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMPUTED_COLUMN_CONSTRAINT;
@@ -12929,11 +13237,12 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
   }
 }
 
-export type InOutColumnConstraintExprArgs = {
-  input?: Expression;
-  output?: Expression;
-  variadic?: Expression;
-} & ColumnConstraintKindExprArgs;
+export type InOutColumnConstraintExprArgs = Merge<[
+  ColumnConstraintKindExprArgs,
+  { input?: Expression;
+    output?: Expression;
+    variadic?: Expression; },
+]>;
 
 export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.IN_OUT_COLUMN_CONSTRAINT;
@@ -12977,14 +13286,15 @@ export enum CopyExprKind {
   REMOTE = 'REMOTE',
 }
 
-export type CopyExprArgs = {
-  kind: CopyExprKind;
-  files?: Expression[];
-  credentials?: Expression[];
-  format?: string;
-  params?: Expression[];
-  this: Expression;
-} & BaseExpressionArgs;
+export type CopyExprArgs = Merge<[
+  BaseExpressionArgs,
+  { kind: CopyExprKind;
+    files?: Expression[];
+    credentials?: Expression[];
+    format?: string;
+    params?: Expression[];
+    this: Expression; },
+]>;
 
 export class CopyExpr extends DMLExpr {
   key = ExpressionKey.COPY;
@@ -13034,26 +13344,28 @@ export class CopyExpr extends DMLExpr {
   }
 }
 
-export type InsertExprArgs = {
-  hint?: Expression;
-  with?: WithExpr;
-  isFunction?: boolean;
-  conflict?: Expression;
-  returning?: Expression;
-  overwrite?: Expression;
-  exists?: boolean;
-  alternative?: Expression;
-  where?: Expression;
-  ignore?: Expression;
-  byName?: string;
-  stored?: Expression;
-  partition?: Expression;
-  settings?: Expression[];
-  source?: Expression;
-  default?: Expression;
-  this?: Expression;
-  expression?: SelectExpr;
-} & DMLExprArgs & DDLExprArgs;
+export type InsertExprArgs = Merge<[
+  DMLExprArgs,
+  DDLExprArgs,
+  { hint?: Expression;
+    with?: WithExpr;
+    isFunction?: boolean;
+    conflict?: Expression;
+    returning?: Expression;
+    overwrite?: Expression;
+    exists?: boolean;
+    alternative?: Expression;
+    where?: Expression;
+    ignore?: Expression;
+    byName?: string;
+    stored?: Expression;
+    partition?: Expression;
+    settings?: Expression[];
+    source?: Expression;
+    default?: Expression;
+    this?: Expression;
+    expression?: SelectExpr; },
+]>;
 
 export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
   key = ExpressionKey.INSERT;
@@ -13218,10 +13530,11 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
  * const str = new LiteralExpr({ this: 'hello', isString: true });
  * const num = new LiteralExpr({ this: '42', isString: false });
  */
-export type LiteralExprArgs = {
-  isString: boolean;
-  this: string;
-} & BaseExpressionArgs;
+export type LiteralExprArgs = Merge<[
+  BaseExpressionArgs,
+  { isString: boolean;
+    this: string; },
+]>;
 
 export class LiteralExpr extends ConditionExpr {
   key = ExpressionKey.LITERAL;
@@ -13311,7 +13624,9 @@ export class LiteralExpr extends ConditionExpr {
   }
 }
 
-export type ClusterExprArgs = OrderExprArgs;
+export type ClusterExprArgs = Merge<[
+  OrderExprArgs,
+]>;
 
 export class ClusterExpr extends OrderExpr {
   key = ExpressionKey.CLUSTER;
@@ -13327,7 +13642,9 @@ export class ClusterExpr extends OrderExpr {
   }
 }
 
-export type DistributeExprArgs = OrderExprArgs;
+export type DistributeExprArgs = Merge<[
+  OrderExprArgs,
+]>;
 
 export class DistributeExpr extends OrderExpr {
   key = ExpressionKey.DISTRIBUTE;
@@ -13343,7 +13660,9 @@ export class DistributeExpr extends OrderExpr {
   }
 }
 
-export type SortExprArgs = OrderExprArgs;
+export type SortExprArgs = Merge<[
+  OrderExprArgs,
+]>;
 
 export class SortExpr extends OrderExpr {
   key = ExpressionKey.SORT;
@@ -13359,9 +13678,10 @@ export class SortExpr extends OrderExpr {
   }
 }
 
-export type AlgorithmPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type AlgorithmPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class AlgorithmPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ALGORITHM_PROPERTY;
@@ -13382,9 +13702,10 @@ export class AlgorithmPropertyExpr extends PropertyExpr {
   }
 }
 
-export type AutoIncrementPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type AutoIncrementPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class AutoIncrementPropertyExpr extends PropertyExpr {
   key = ExpressionKey.AUTO_INCREMENT_PROPERTY;
@@ -13405,9 +13726,10 @@ export class AutoIncrementPropertyExpr extends PropertyExpr {
   }
 }
 
-export type AutoRefreshPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type AutoRefreshPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class AutoRefreshPropertyExpr extends PropertyExpr {
   key = ExpressionKey.AUTO_REFRESH_PROPERTY;
@@ -13428,9 +13750,10 @@ export class AutoRefreshPropertyExpr extends PropertyExpr {
   }
 }
 
-export type BackupPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type BackupPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class BackupPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BACKUP_PROPERTY;
@@ -13451,9 +13774,10 @@ export class BackupPropertyExpr extends PropertyExpr {
   }
 }
 
-export type BuildPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type BuildPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class BuildPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BUILD_PROPERTY;
@@ -13474,13 +13798,14 @@ export class BuildPropertyExpr extends PropertyExpr {
   }
 }
 
-export type BlockCompressionPropertyExprArgs = {
-  autotemp?: Expression;
-  always?: Expression[];
-  default?: Expression;
-  manual?: Expression;
-  never?: Expression;
-} & PropertyExprArgs;
+export type BlockCompressionPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { autotemp?: Expression;
+    always?: Expression[];
+    default?: Expression;
+    manual?: Expression;
+    never?: Expression; },
+]>;
 
 export class BlockCompressionPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BLOCK_COMPRESSION_PROPERTY;
@@ -13526,11 +13851,12 @@ export class BlockCompressionPropertyExpr extends PropertyExpr {
   }
 }
 
-export type CharacterSetPropertyExprArgs = {
-  value?: string;
-  default: Expression;
-  this: Expression;
-} & PropertyExprArgs;
+export type CharacterSetPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { value?: string;
+    default: Expression;
+    this: Expression; },
+]>;
 
 export class CharacterSetPropertyExpr extends PropertyExpr {
   key = ExpressionKey.CHARACTER_SET_PROPERTY;
@@ -13564,10 +13890,11 @@ export class CharacterSetPropertyExpr extends PropertyExpr {
   }
 }
 
-export type ChecksumPropertyExprArgs = {
-  on?: Expression;
-  default?: Expression;
-} & PropertyExprArgs;
+export type ChecksumPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { on?: Expression;
+    default?: Expression; },
+]>;
 
 export class ChecksumPropertyExpr extends PropertyExpr {
   key = ExpressionKey.CHECKSUM_PROPERTY;
@@ -13597,11 +13924,12 @@ export class ChecksumPropertyExpr extends PropertyExpr {
   }
 }
 
-export type CollatePropertyExprArgs = {
-  value?: string;
-  default?: Expression;
-  this: Expression;
-} & PropertyExprArgs;
+export type CollatePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { value?: string;
+    default?: Expression;
+    this: Expression; },
+]>;
 
 export class CollatePropertyExpr extends PropertyExpr {
   key = ExpressionKey.COLLATE_PROPERTY;
@@ -13635,7 +13963,9 @@ export class CollatePropertyExpr extends PropertyExpr {
   }
 }
 
-export type CopyGrantsPropertyExprArgs = PropertyExprArgs;
+export type CopyGrantsPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class CopyGrantsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.COPY_GRANTS_PROPERTY;
@@ -13649,13 +13979,14 @@ export class CopyGrantsPropertyExpr extends PropertyExpr {
   }
 }
 
-export type DataBlocksizePropertyExprArgs = {
-  size?: number | Expression;
-  units?: Expression[];
-  minimum?: Expression;
-  maximum?: Expression;
-  default?: Expression;
-} & PropertyExprArgs;
+export type DataBlocksizePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { size?: number | Expression;
+    units?: Expression[];
+    minimum?: Expression;
+    maximum?: Expression;
+    default?: Expression; },
+]>;
 
 export class DataBlocksizePropertyExpr extends PropertyExpr {
   key = ExpressionKey.DATA_BLOCKSIZE_PROPERTY;
@@ -13700,11 +14031,12 @@ export class DataBlocksizePropertyExpr extends PropertyExpr {
   }
 }
 
-export type DataDeletionPropertyExprArgs = {
-  on: Expression;
-  filterColumn?: Expression;
-  retentionPeriod?: Expression;
-} & PropertyExprArgs;
+export type DataDeletionPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { on: Expression;
+    filterColumn?: Expression;
+    retentionPeriod?: Expression; },
+]>;
 
 export class DataDeletionPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DATA_DELETION_PROPERTY;
@@ -13739,9 +14071,10 @@ export class DataDeletionPropertyExpr extends PropertyExpr {
   }
 }
 
-export type DefinerPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type DefinerPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class DefinerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DEFINER_PROPERTY;
@@ -13762,9 +14095,10 @@ export class DefinerPropertyExpr extends PropertyExpr {
   }
 }
 
-export type DistKeyPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type DistKeyPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class DistKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DIST_KEY_PROPERTY;
@@ -13796,12 +14130,13 @@ export enum DistributedByPropertyExprKind {
   REPLICATE = 'REPLICATE',
 }
 
-export type DistributedByPropertyExprArgs = {
-  kind: DistributedByPropertyExprKind;
-  buckets?: Expression[];
-  order?: Expression;
-  expressions?: Expression[];
-} & PropertyExprArgs;
+export type DistributedByPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { kind: DistributedByPropertyExprKind;
+    buckets?: Expression[];
+    order?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class DistributedByPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DISTRIBUTED_BY_PROPERTY;
@@ -13845,9 +14180,10 @@ export class DistributedByPropertyExpr extends PropertyExpr {
   }
 }
 
-export type DistStylePropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type DistStylePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class DistStylePropertyExpr extends PropertyExpr {
   key = ExpressionKey.DIST_STYLE_PROPERTY;
@@ -13868,9 +14204,10 @@ export class DistStylePropertyExpr extends PropertyExpr {
   }
 }
 
-export type DuplicateKeyPropertyExprArgs = {
-  expressions: Expression[];
-} & PropertyExprArgs;
+export type DuplicateKeyPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class DuplicateKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DUPLICATE_KEY_PROPERTY;
@@ -13891,9 +14228,10 @@ export class DuplicateKeyPropertyExpr extends PropertyExpr {
   }
 }
 
-export type EnginePropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type EnginePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class EnginePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ENGINE_PROPERTY;
@@ -13914,7 +14252,9 @@ export class EnginePropertyExpr extends PropertyExpr {
   }
 }
 
-export type HeapPropertyExprArgs = PropertyExprArgs;
+export type HeapPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class HeapPropertyExpr extends PropertyExpr {
   key = ExpressionKey.HEAP_PROPERTY;
@@ -13930,9 +14270,10 @@ export class HeapPropertyExpr extends PropertyExpr {
   }
 }
 
-export type ToTablePropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type ToTablePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class ToTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.TO_TABLE_PROPERTY;
@@ -13953,9 +14294,10 @@ export class ToTablePropertyExpr extends PropertyExpr {
   }
 }
 
-export type ExecuteAsPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type ExecuteAsPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class ExecuteAsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXECUTE_AS_PROPERTY;
@@ -13976,9 +14318,10 @@ export class ExecuteAsPropertyExpr extends PropertyExpr {
   }
 }
 
-export type ExternalPropertyExprArgs = {
-  this?: Expression;
-} & PropertyExprArgs;
+export type ExternalPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this?: Expression },
+]>;
 
 export class ExternalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXTERNAL_PROPERTY;
@@ -13999,10 +14342,11 @@ export class ExternalPropertyExpr extends PropertyExpr {
   }
 }
 
-export type FallbackPropertyExprArgs = {
-  no: Expression;
-  protection?: Expression;
-} & PropertyExprArgs;
+export type FallbackPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { no: Expression;
+    protection?: Expression; },
+]>;
 
 export class FallbackPropertyExpr extends PropertyExpr {
   key = ExpressionKey.FALLBACK_PROPERTY;
@@ -14032,11 +14376,12 @@ export class FallbackPropertyExpr extends PropertyExpr {
   }
 }
 
-export type FileFormatPropertyExprArgs = {
-  hiveFormat?: string;
-  this?: Expression;
-  expressions?: Expression[];
-} & PropertyExprArgs;
+export type FileFormatPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { hiveFormat?: string;
+    this?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class FileFormatPropertyExpr extends PropertyExpr {
   key = ExpressionKey.FILE_FORMAT_PROPERTY;
@@ -14075,9 +14420,10 @@ export class FileFormatPropertyExpr extends PropertyExpr {
   }
 }
 
-export type CredentialsPropertyExprArgs = {
-  expressions: Expression[];
-} & PropertyExprArgs;
+export type CredentialsPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class CredentialsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.CREDENTIALS_PROPERTY;
@@ -14098,10 +14444,11 @@ export class CredentialsPropertyExpr extends PropertyExpr {
   }
 }
 
-export type FreespacePropertyExprArgs = {
-  this: Expression;
-  percent?: Expression;
-} & PropertyExprArgs;
+export type FreespacePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression;
+    percent?: Expression; },
+]>;
 
 export class FreespacePropertyExpr extends PropertyExpr {
   key = ExpressionKey.FREESPACE_PROPERTY;
@@ -14131,7 +14478,9 @@ export class FreespacePropertyExpr extends PropertyExpr {
   }
 }
 
-export type GlobalPropertyExprArgs = PropertyExprArgs;
+export type GlobalPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class GlobalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.GLOBAL_PROPERTY;
@@ -14145,7 +14494,9 @@ export class GlobalPropertyExpr extends PropertyExpr {
   }
 }
 
-export type IcebergPropertyExprArgs = PropertyExprArgs;
+export type IcebergPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class IcebergPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ICEBERG_PROPERTY;
@@ -14159,9 +14510,10 @@ export class IcebergPropertyExpr extends PropertyExpr {
   }
 }
 
-export type InheritsPropertyExprArgs = {
-  expressions?: Expression[];
-} & PropertyExprArgs;
+export type InheritsPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { expressions?: Expression[] },
+]>;
 
 export class InheritsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.INHERITS_PROPERTY;
@@ -14177,9 +14529,10 @@ export class InheritsPropertyExpr extends PropertyExpr {
   }
 }
 
-export type InputModelPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type InputModelPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class InputModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.INPUT_MODEL_PROPERTY;
@@ -14195,9 +14548,10 @@ export class InputModelPropertyExpr extends PropertyExpr {
   }
 }
 
-export type OutputModelPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type OutputModelPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class OutputModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.OUTPUT_MODEL_PROPERTY;
@@ -14213,11 +14567,12 @@ export class OutputModelPropertyExpr extends PropertyExpr {
   }
 }
 
-export type IsolatedLoadingPropertyExprArgs = {
-  no?: Expression;
-  concurrent?: Expression;
-  target?: Expression;
-} & PropertyExprArgs;
+export type IsolatedLoadingPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { no?: Expression;
+    concurrent?: Expression;
+    target?: Expression; },
+]>;
 
 export class IsolatedLoadingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ISOLATED_LOADING_PROPERTY;
@@ -14253,13 +14608,14 @@ export class IsolatedLoadingPropertyExpr extends PropertyExpr {
   }
 }
 
-export type JournalPropertyExprArgs = {
-  no?: Expression;
-  dual?: Expression;
-  before?: Expression;
-  local?: Expression;
-  after?: Expression;
-} & PropertyExprArgs;
+export type JournalPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { no?: Expression;
+    dual?: Expression;
+    before?: Expression;
+    local?: Expression;
+    after?: Expression; },
+]>;
 
 export class JournalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.JOURNAL_PROPERTY;
@@ -14304,9 +14660,10 @@ export class JournalPropertyExpr extends PropertyExpr {
   }
 }
 
-export type LanguagePropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type LanguagePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class LanguagePropertyExpr extends PropertyExpr {
   key = ExpressionKey.LANGUAGE_PROPERTY;
@@ -14326,9 +14683,10 @@ export class LanguagePropertyExpr extends PropertyExpr {
   }
 }
 
-export type EnviromentPropertyExprArgs = {
-  expressions: Expression[];
-} & PropertyExprArgs;
+export type EnviromentPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class EnviromentPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ENVIROMENT_PROPERTY;
@@ -14348,11 +14706,12 @@ export class EnviromentPropertyExpr extends PropertyExpr {
   }
 }
 
-export type ClusteredByPropertyExprArgs = {
-  expressions: Expression[];
-  sortedBy?: string;
-  buckets: Expression[];
-} & PropertyExprArgs;
+export type ClusteredByPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { expressions: Expression[];
+    sortedBy?: string;
+    buckets: Expression[]; },
+]>;
 
 export class ClusteredByPropertyExpr extends PropertyExpr {
   key = ExpressionKey.CLUSTERED_BY_PROPERTY;
@@ -14401,11 +14760,12 @@ export enum DictPropertyExprKind {
   POLYGON = 'POLYGON',
 }
 
-export type DictPropertyExprArgs = {
-  this: Expression;
-  kind: DictPropertyExprKind;
-  settings?: Expression[];
-} & PropertyExprArgs;
+export type DictPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression;
+    kind: DictPropertyExprKind;
+    settings?: Expression[]; },
+]>;
 
 export class DictPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DICT_PROPERTY;
@@ -14440,7 +14800,9 @@ export class DictPropertyExpr extends PropertyExpr {
   }
 }
 
-export type DictSubPropertyExprArgs = PropertyExprArgs;
+export type DictSubPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class DictSubPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DICT_SUB_PROPERTY;
@@ -14456,11 +14818,12 @@ export class DictSubPropertyExpr extends PropertyExpr {
   }
 }
 
-export type DictRangeExprArgs = {
-  min: Expression;
-  max: Expression;
-  this: Expression;
-} & PropertyExprArgs;
+export type DictRangeExprArgs = Merge<[
+  PropertyExprArgs,
+  { min: Expression;
+    max: Expression;
+    this: Expression; },
+]>;
 
 export class DictRangeExpr extends PropertyExpr {
   key = ExpressionKey.DICT_RANGE;
@@ -14495,7 +14858,9 @@ export class DictRangeExpr extends PropertyExpr {
   }
 }
 
-export type DynamicPropertyExprArgs = PropertyExprArgs;
+export type DynamicPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class DynamicPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DYNAMIC_PROPERTY;
@@ -14509,9 +14874,10 @@ export class DynamicPropertyExpr extends PropertyExpr {
   }
 }
 
-export type OnClusterExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type OnClusterExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class OnClusterExpr extends PropertyExpr {
   key = ExpressionKey.ON_CLUSTER;
@@ -14532,7 +14898,9 @@ export class OnClusterExpr extends PropertyExpr {
   }
 }
 
-export type EmptyPropertyExprArgs = PropertyExprArgs;
+export type EmptyPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class EmptyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EMPTY_PROPERTY;
@@ -14546,10 +14914,11 @@ export class EmptyPropertyExpr extends PropertyExpr {
   }
 }
 
-export type LikePropertyExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & PropertyExprArgs;
+export type LikePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class LikePropertyExpr extends PropertyExpr {
   key = ExpressionKey.LIKE_PROPERTY;
@@ -14575,9 +14944,10 @@ export class LikePropertyExpr extends PropertyExpr {
   }
 }
 
-export type LocationPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type LocationPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class LocationPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCATION_PROPERTY;
@@ -14597,9 +14967,10 @@ export class LocationPropertyExpr extends PropertyExpr {
   }
 }
 
-export type LockPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type LockPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class LockPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCK_PROPERTY;
@@ -14631,13 +15002,14 @@ export enum LockingPropertyExprKind {
   LOCKING = 'LOCKING',
 }
 
-export type LockingPropertyExprArgs = {
-  kind: LockingPropertyExprKind;
-  forOrIn?: Expression;
-  lockType: DataTypeExpr;
-  override?: Expression;
-  this?: Expression;
-} & PropertyExprArgs;
+export type LockingPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { kind: LockingPropertyExprKind;
+    forOrIn?: Expression;
+    lockType: DataTypeExpr;
+    override?: Expression;
+    this?: Expression; },
+]>;
 
 export class LockingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCKING_PROPERTY;
@@ -14681,9 +15053,10 @@ export class LockingPropertyExpr extends PropertyExpr {
   }
 }
 
-export type LogPropertyExprArgs = {
-  no: Expression;
-} & PropertyExprArgs;
+export type LogPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { no: Expression },
+]>;
 
 export class LogPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOG_PROPERTY;
@@ -14708,9 +15081,10 @@ export class LogPropertyExpr extends PropertyExpr {
   }
 }
 
-export type MaterializedPropertyExprArgs = {
-  this?: Expression;
-} & PropertyExprArgs;
+export type MaterializedPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this?: Expression },
+]>;
 
 export class MaterializedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.MATERIALIZED_PROPERTY;
@@ -14730,13 +15104,14 @@ export class MaterializedPropertyExpr extends PropertyExpr {
   }
 }
 
-export type MergeBlockRatioPropertyExprArgs = {
-  value?: string;
-  no?: Expression;
-  default?: Expression;
-  percent?: Expression;
-  this?: Expression;
-} & PropertyExprArgs;
+export type MergeBlockRatioPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { value?: string;
+    no?: Expression;
+    default?: Expression;
+    percent?: Expression;
+    this?: Expression; },
+]>;
 
 export class MergeBlockRatioPropertyExpr extends PropertyExpr {
   key = ExpressionKey.MERGE_BLOCK_RATIO_PROPERTY;
@@ -14781,7 +15156,9 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
   }
 }
 
-export type NoPrimaryIndexPropertyExprArgs = PropertyExprArgs;
+export type NoPrimaryIndexPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class NoPrimaryIndexPropertyExpr extends PropertyExpr {
   key = ExpressionKey.NO_PRIMARY_INDEX_PROPERTY;
@@ -14795,9 +15172,10 @@ export class NoPrimaryIndexPropertyExpr extends PropertyExpr {
   }
 }
 
-export type OnPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type OnPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 export class OnPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ON_PROPERTY;
 
@@ -14817,9 +15195,10 @@ export class OnPropertyExpr extends PropertyExpr {
   }
 }
 
-export type OnCommitPropertyExprArgs = {
-  delete?: Expression;
-} & PropertyExprArgs;
+export type OnCommitPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { delete?: Expression },
+]>;
 
 export class OnCommitPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ON_COMMIT_PROPERTY;
@@ -14844,9 +15223,10 @@ export class OnCommitPropertyExpr extends PropertyExpr {
   }
 }
 
-export type PartitionedByPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type PartitionedByPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class PartitionedByPropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_BY_PROPERTY;
@@ -14867,10 +15247,11 @@ export class PartitionedByPropertyExpr extends PropertyExpr {
   }
 }
 
-export type PartitionedByBucketExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & PropertyExprArgs;
+export type PartitionedByBucketExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class PartitionedByBucketExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_BY_BUCKET;
@@ -14896,10 +15277,11 @@ export class PartitionedByBucketExpr extends PropertyExpr {
   }
 }
 
-export type PartitionByTruncateExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & PropertyExprArgs;
+export type PartitionByTruncateExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class PartitionByTruncateExpr extends PropertyExpr {
   key = ExpressionKey.PARTITION_BY_TRUNCATE;
@@ -14925,10 +15307,11 @@ export class PartitionByTruncateExpr extends PropertyExpr {
   }
 }
 
-export type PartitionByRangePropertyExprArgs = {
-  partitionExpressions: Expression[];
-  createExpressions: Expression[];
-} & PropertyExprArgs;
+export type PartitionByRangePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { partitionExpressions: Expression[];
+    createExpressions: Expression[]; },
+]>;
 
 export class PartitionByRangePropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITION_BY_RANGE_PROPERTY;
@@ -14959,9 +15342,10 @@ export class PartitionByRangePropertyExpr extends PropertyExpr {
   }
 }
 
-export type RollupPropertyExprArgs = {
-  expressions: Expression[];
-} & PropertyExprArgs;
+export type RollupPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class RollupPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROLLUP_PROPERTY;
@@ -14982,10 +15366,11 @@ export class RollupPropertyExpr extends PropertyExpr {
   }
 }
 
-export type PartitionByListPropertyExprArgs = {
-  partitionExpressions: Expression[];
-  createExpressions: Expression[];
-} & PropertyExprArgs;
+export type PartitionByListPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { partitionExpressions: Expression[];
+    createExpressions: Expression[]; },
+]>;
 
 export class PartitionByListPropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITION_BY_LIST_PROPERTY;
@@ -15025,13 +15410,14 @@ export enum RefreshTriggerPropertyExprKind {
   START_WITH = 'START_WITH',
   NEXT = 'NEXT',
 }
-export type RefreshTriggerPropertyExprArgs = {
-  method?: string;
-  kind?: RefreshTriggerPropertyExprKind;
-  every?: Expression;
-  unit?: Expression;
-  starts?: Expression[];
-} & PropertyExprArgs;
+export type RefreshTriggerPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { method?: string;
+    kind?: RefreshTriggerPropertyExprKind;
+    every?: Expression;
+    unit?: Expression;
+    starts?: Expression[]; },
+]>;
 
 export class RefreshTriggerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.REFRESH_TRIGGER_PROPERTY;
@@ -15077,9 +15463,10 @@ export class RefreshTriggerPropertyExpr extends PropertyExpr {
   }
 }
 
-export type UniqueKeyPropertyExprArgs = {
-  expressions: Expression[];
-} & PropertyExprArgs;
+export type UniqueKeyPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class UniqueKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNIQUE_KEY_PROPERTY;
@@ -15100,10 +15487,11 @@ export class UniqueKeyPropertyExpr extends PropertyExpr {
   }
 }
 
-export type PartitionedOfPropertyExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & PropertyExprArgs;
+export type PartitionedOfPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class PartitionedOfPropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_OF_PROPERTY;
@@ -15121,7 +15509,9 @@ export class PartitionedOfPropertyExpr extends PropertyExpr {
   }
 }
 
-export type StreamingTablePropertyExprArgs = PropertyExprArgs;
+export type StreamingTablePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class StreamingTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.STREAMING_TABLE_PROPERTY;
@@ -15135,7 +15525,9 @@ export class StreamingTablePropertyExpr extends PropertyExpr {
   }
 }
 
-export type RemoteWithConnectionModelPropertyExprArgs = PropertyExprArgs;
+export type RemoteWithConnectionModelPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.REMOTE_WITH_CONNECTION_MODEL_PROPERTY;
@@ -15155,12 +15547,13 @@ export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
   }
 }
 
-export type ReturnsPropertyExprArgs = {
-  this?: Expression;
-  isTable?: Expression;
-  table?: Expression;
-  null?: Expression;
-} & PropertyExprArgs;
+export type ReturnsPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this?: Expression;
+    isTable?: Expression;
+    table?: Expression;
+    null?: Expression; },
+]>;
 
 export class ReturnsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.RETURNS_PROPERTY;
@@ -15200,7 +15593,9 @@ export class ReturnsPropertyExpr extends PropertyExpr {
   }
 }
 
-export type StrictPropertyExprArgs = PropertyExprArgs;
+export type StrictPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class StrictPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STRICT_PROPERTY;
@@ -15214,9 +15609,10 @@ export class StrictPropertyExpr extends PropertyExpr {
   }
 }
 
-export type RowFormatPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type RowFormatPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class RowFormatPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_PROPERTY;
@@ -15232,15 +15628,16 @@ export class RowFormatPropertyExpr extends PropertyExpr {
   }
 }
 
-export type RowFormatDelimitedPropertyExprArgs = {
-  fields?: Expression[];
-  escaped?: Expression;
-  collectionItems?: Expression[];
-  mapKeys?: Expression[];
-  lines?: Expression[];
-  null?: Expression;
-  serde?: Expression;
-} & PropertyExprArgs;
+export type RowFormatDelimitedPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { fields?: Expression[];
+    escaped?: Expression;
+    collectionItems?: Expression[];
+    mapKeys?: Expression[];
+    lines?: Expression[];
+    null?: Expression;
+    serde?: Expression; },
+]>;
 
 export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_DELIMITED_PROPERTY;
@@ -15296,10 +15693,11 @@ export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
   }
 }
 
-export type RowFormatSerdePropertyExprArgs = {
-  this: Expression;
-  serdeProperties?: Expression[];
-} & PropertyExprArgs;
+export type RowFormatSerdePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression;
+    serdeProperties?: Expression[]; },
+]>;
 
 export class RowFormatSerdePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_SERDE_PROPERTY;
@@ -15330,9 +15728,10 @@ export class RowFormatSerdePropertyExpr extends PropertyExpr {
   }
 }
 
-export type SamplePropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type SamplePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class SamplePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SAMPLE_PROPERTY;
@@ -15352,9 +15751,10 @@ export class SamplePropertyExpr extends PropertyExpr {
   }
 }
 
-export type SecurityPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type SecurityPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class SecurityPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURITY_PROPERTY;
@@ -15375,9 +15775,10 @@ export class SecurityPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SchemaCommentPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type SchemaCommentPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class SchemaCommentPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SCHEMA_COMMENT_PROPERTY;
@@ -15394,10 +15795,11 @@ export class SchemaCommentPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SerdePropertiesExprArgs = {
-  expressions: Expression[];
-  with?: Expression;
-} & PropertyExprArgs;
+export type SerdePropertiesExprArgs = Merge<[
+  PropertyExprArgs,
+  { expressions: Expression[];
+    with?: Expression; },
+]>;
 
 export class SerdePropertiesExpr extends PropertyExpr {
   key = ExpressionKey.SERDE_PROPERTIES;
@@ -15427,9 +15829,10 @@ export class SerdePropertiesExpr extends PropertyExpr {
   }
 }
 
-export type SetPropertyExprArgs = {
-  multi: Expression;
-} & PropertyExprArgs;
+export type SetPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { multi: Expression },
+]>;
 
 export class SetPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SET_PROPERTY;
@@ -15450,9 +15853,10 @@ export class SetPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SharingPropertyExprArgs = {
-  this?: Expression;
-} & PropertyExprArgs;
+export type SharingPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this?: Expression },
+]>;
 
 export class SharingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SHARING_PROPERTY;
@@ -15473,9 +15877,10 @@ export class SharingPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SetConfigPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type SetConfigPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class SetConfigPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SET_CONFIG_PROPERTY;
@@ -15496,9 +15901,10 @@ export class SetConfigPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SettingsPropertyExprArgs = {
-  expressions: Expression[];
-} & PropertyExprArgs;
+export type SettingsPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class SettingsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SETTINGS_PROPERTY;
@@ -15519,10 +15925,11 @@ export class SettingsPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SortKeyPropertyExprArgs = {
-  this: Expression;
-  compound?: Expression;
-} & PropertyExprArgs;
+export type SortKeyPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression;
+    compound?: Expression; },
+]>;
 
 export class SortKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SORT_KEY_PROPERTY;
@@ -15552,9 +15959,10 @@ export class SortKeyPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SqlReadWritePropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type SqlReadWritePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class SqlReadWritePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SQL_READ_WRITE_PROPERTY;
@@ -15575,9 +15983,10 @@ export class SqlReadWritePropertyExpr extends PropertyExpr {
   }
 }
 
-export type SqlSecurityPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type SqlSecurityPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class SqlSecurityPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SQL_SECURITY_PROPERTY;
@@ -15598,9 +16007,10 @@ export class SqlSecurityPropertyExpr extends PropertyExpr {
   }
 }
 
-export type StabilityPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type StabilityPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class StabilityPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STABILITY_PROPERTY;
@@ -15621,9 +16031,10 @@ export class StabilityPropertyExpr extends PropertyExpr {
   }
 }
 
-export type StorageHandlerPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type StorageHandlerPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class StorageHandlerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STORAGE_HANDLER_PROPERTY;
@@ -15644,9 +16055,10 @@ export class StorageHandlerPropertyExpr extends PropertyExpr {
   }
 }
 
-export type TemporaryPropertyExprArgs = {
-  this?: Expression;
-} & PropertyExprArgs;
+export type TemporaryPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this?: Expression },
+]>;
 
 export class TemporaryPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TEMPORARY_PROPERTY;
@@ -15667,7 +16079,9 @@ export class TemporaryPropertyExpr extends PropertyExpr {
   }
 }
 
-export type SecurePropertyExprArgs = PropertyExprArgs;
+export type SecurePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class SecurePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURE_PROPERTY;
@@ -15681,9 +16095,11 @@ export class SecurePropertyExpr extends PropertyExpr {
   }
 }
 
-export type TagsExprArgs = {
-  expressions: Expression[];
-} & PropertyExprArgs & ColumnConstraintKindExprArgs;
+export type TagsExprArgs = Merge<[
+  PropertyExprArgs,
+  ColumnConstraintKindExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class TagsExpr extends multiInherit(Expression, PropertyExpr, ColumnConstraintKindExpr) {
   key = ExpressionKey.TAGS;
@@ -15704,9 +16120,10 @@ export class TagsExpr extends multiInherit(Expression, PropertyExpr, ColumnConst
   }
 }
 
-export type TransformModelPropertyExprArgs = {
-  expressions: Expression[];
-} & PropertyExprArgs;
+export type TransformModelPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class TransformModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TRANSFORM_MODEL_PROPERTY;
@@ -15727,9 +16144,10 @@ export class TransformModelPropertyExpr extends PropertyExpr {
   }
 }
 
-export type TransientPropertyExprArgs = {
-  this?: Expression;
-} & PropertyExprArgs;
+export type TransientPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this?: Expression },
+]>;
 
 export class TransientPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TRANSIENT_PROPERTY;
@@ -15750,7 +16168,9 @@ export class TransientPropertyExpr extends PropertyExpr {
   }
 }
 
-export type UnloggedPropertyExprArgs = PropertyExprArgs;
+export type UnloggedPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class UnloggedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNLOGGED_PROPERTY;
@@ -15764,9 +16184,10 @@ export class UnloggedPropertyExpr extends PropertyExpr {
   }
 }
 
-export type UsingTemplatePropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type UsingTemplatePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class UsingTemplatePropertyExpr extends PropertyExpr {
   key = ExpressionKey.USING_TEMPLATE_PROPERTY;
@@ -15787,9 +16208,10 @@ export class UsingTemplatePropertyExpr extends PropertyExpr {
   }
 }
 
-export type ViewAttributePropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type ViewAttributePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class ViewAttributePropertyExpr extends PropertyExpr {
   key = ExpressionKey.VIEW_ATTRIBUTE_PROPERTY;
@@ -15810,9 +16232,10 @@ export class ViewAttributePropertyExpr extends PropertyExpr {
   }
 }
 
-export type VolatilePropertyExprArgs = {
-  this?: Expression;
-} & PropertyExprArgs;
+export type VolatilePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this?: Expression },
+]>;
 
 export class VolatilePropertyExpr extends PropertyExpr {
   key = ExpressionKey.VOLATILE_PROPERTY;
@@ -15833,10 +16256,11 @@ export class VolatilePropertyExpr extends PropertyExpr {
   }
 }
 
-export type WithDataPropertyExprArgs = {
-  no: Expression;
-  statistics?: Expression[];
-} & PropertyExprArgs;
+export type WithDataPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { no: Expression;
+    statistics?: Expression[]; },
+]>;
 
 export class WithDataPropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_DATA_PROPERTY;
@@ -15866,9 +16290,10 @@ export class WithDataPropertyExpr extends PropertyExpr {
   }
 }
 
-export type WithJournalTablePropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type WithJournalTablePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class WithJournalTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_JOURNAL_TABLE_PROPERTY;
@@ -15889,9 +16314,10 @@ export class WithJournalTablePropertyExpr extends PropertyExpr {
   }
 }
 
-export type WithSchemaBindingPropertyExprArgs = {
-  this: Expression;
-} & PropertyExprArgs;
+export type WithSchemaBindingPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression },
+]>;
 
 export class WithSchemaBindingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_SCHEMA_BINDING_PROPERTY;
@@ -15912,12 +16338,13 @@ export class WithSchemaBindingPropertyExpr extends PropertyExpr {
   }
 }
 
-export type WithSystemVersioningPropertyExprArgs = {
-  on?: Expression;
-  dataConsistency?: Expression;
-  retentionPeriod?: Expression;
-  with: Expression;
-} & PropertyExprArgs;
+export type WithSystemVersioningPropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { on?: Expression;
+    dataConsistency?: Expression;
+    retentionPeriod?: Expression;
+    with: Expression; },
+]>;
 
 export class WithSystemVersioningPropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_SYSTEM_VERSIONING_PROPERTY;
@@ -15962,9 +16389,10 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
   }
 }
 
-export type WithProcedureOptionsExprArgs = {
-  expressions: Expression[];
-} & PropertyExprArgs;
+export type WithProcedureOptionsExprArgs = Merge<[
+  PropertyExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class WithProcedureOptionsExpr extends PropertyExpr {
   key = ExpressionKey.WITH_PROCEDURE_OPTIONS;
@@ -15985,11 +16413,12 @@ export class WithProcedureOptionsExpr extends PropertyExpr {
   }
 }
 
-export type EncodePropertyExprArgs = {
-  this: Expression;
-  properties?: Expression[];
-  key?: Expression;
-} & PropertyExprArgs;
+export type EncodePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression;
+    properties?: Expression[];
+    key?: Expression; },
+]>;
 
 export class EncodePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ENCODE_PROPERTY;
@@ -16026,11 +16455,12 @@ export class EncodePropertyExpr extends PropertyExpr {
   }
 }
 
-export type IncludePropertyExprArgs = {
-  this: Expression;
-  alias?: Expression;
-  columnDef?: Expression;
-} & PropertyExprArgs;
+export type IncludePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+  { this: Expression;
+    alias?: Expression;
+    columnDef?: Expression; },
+]>;
 
 export class IncludePropertyExpr extends PropertyExpr {
   key = ExpressionKey.INCLUDE_PROPERTY;
@@ -16067,7 +16497,9 @@ export class IncludePropertyExpr extends PropertyExpr {
   }
 }
 
-export type ForcePropertyExprArgs = PropertyExprArgs;
+export type ForcePropertyExprArgs = Merge<[
+  PropertyExprArgs,
+]>;
 
 export class ForcePropertyExpr extends PropertyExpr {
   key = ExpressionKey.FORCE_PROPERTY;
@@ -16107,9 +16539,10 @@ export enum PropertiesLocation {
   UNSUPPORTED = 'UNSUPPORTED',
 }
 
-export type PropertiesExprArgs = {
-  expressions: Expression[];
-} & BaseExpressionArgs;
+export type PropertiesExprArgs = Merge<[
+  BaseExpressionArgs,
+  { expressions: Expression[] },
+]>;
 
 export class PropertiesExpr extends Expression {
   key = ExpressionKey.PROPERTIES;
@@ -16195,34 +16628,35 @@ export enum SetOperationExprKind {
   EXCEPT = 'EXCEPT',
 }
 
-export type SetOperationExprArgs = {
-  this: QueryExpr;
-  expression: QueryExpr;
-  distinct?: boolean;
-  byName?: string;
-  side?: string;
-  kind?: SetOperationExprKind;
-  on?: Expression;
-  match?: Expression;
-  laterals?: Expression[];
-  joins?: Expression[];
-  connect?: Expression;
-  pivots?: Expression[];
-  prewhere?: Expression;
-  where?: Expression;
-  group?: Expression;
-  having?: Expression;
-  qualify?: Expression;
-  windows?: Expression[];
-  distribute?: Expression;
-  sort?: Expression;
-  cluster?: Expression;
-  order?: Expression;
-  limit?: number | Expression;
-  offset?: number | Expression;
-  locks?: Expression[];
-  sample?: number | Expression;
-} & QueryExprArgs;
+export type SetOperationExprArgs = Merge<[
+  QueryExprArgs,
+  { this: QueryExpr;
+    expression: QueryExpr;
+    distinct?: boolean;
+    byName?: string;
+    side?: string;
+    kind?: SetOperationExprKind;
+    on?: Expression;
+    match?: Expression;
+    laterals?: Expression[];
+    joins?: Expression[];
+    connect?: Expression;
+    pivots?: Expression[];
+    prewhere?: Expression;
+    where?: Expression;
+    group?: Expression;
+    having?: Expression;
+    qualify?: Expression;
+    windows?: Expression[];
+    distribute?: Expression;
+    sort?: Expression;
+    cluster?: Expression;
+    order?: Expression;
+    limit?: number | Expression;
+    offset?: number | Expression;
+    locks?: Expression[];
+    sample?: number | Expression; },
+]>;
 
 export class SetOperationExpr extends QueryExpr {
   key = ExpressionKey.SET_OPERATION;
@@ -16371,17 +16805,18 @@ export class SetOperationExpr extends QueryExpr {
   }
 }
 
-export type UpdateExprArgs = {
-  with?: Expression;
-  this?: Expression;
-  expressions?: Expression[];
-  from?: Expression;
-  where?: Expression;
-  returning?: Expression;
-  order?: Expression;
-  limit?: number | Expression;
-  options?: Expression[];
-} & DMLExprArgs;
+export type UpdateExprArgs = Merge<[
+  DMLExprArgs,
+  { with?: Expression;
+    this?: Expression;
+    expressions?: Expression[];
+    from?: Expression;
+    where?: Expression;
+    returning?: Expression;
+    order?: Expression;
+    limit?: number | Expression;
+    options?: Expression[]; },
+]>;
 
 export class UpdateExpr extends DMLExpr {
   key = ExpressionKey.UPDATE;
@@ -16634,35 +17069,36 @@ export enum SelectExprKind {
  *   where: whereCondition
  * });
  */
-export type SelectExprArgs = {
-  with?: Expression;
-  kind?: SelectExprKind;
-  expressions?: Expression[];
-  hint?: Expression;
-  distinct?: boolean;
-  into?: Expression;
-  from?: Expression;
-  operationModifiers?: Expression[];
-  match?: Expression;
-  laterals?: Expression[];
-  joins?: Expression[];
-  connect?: Expression;
-  pivots?: Expression[];
-  prewhere?: Expression;
-  where?: Expression;
-  group?: Expression;
-  having?: Expression;
-  qualify?: Expression;
-  windows?: Expression[];
-  distribute?: Expression;
-  sort?: Expression;
-  cluster?: Expression;
-  order?: Expression;
-  limit?: number | Expression;
-  offset?: number | Expression;
-  locks?: Expression[];
-  sample?: number | Expression;
-} & QueryExprArgs;
+export type SelectExprArgs = Merge<[
+  QueryExprArgs,
+  { with?: Expression;
+    kind?: SelectExprKind;
+    expressions?: Expression[];
+    hint?: Expression;
+    distinct?: boolean;
+    into?: Expression;
+    from?: Expression;
+    operationModifiers?: Expression[];
+    match?: Expression;
+    laterals?: Expression[];
+    joins?: Expression[];
+    connect?: Expression;
+    pivots?: Expression[];
+    prewhere?: Expression;
+    where?: Expression;
+    group?: Expression;
+    having?: Expression;
+    qualify?: Expression;
+    windows?: Expression[];
+    distribute?: Expression;
+    sort?: Expression;
+    cluster?: Expression;
+    order?: Expression;
+    limit?: number | Expression;
+    offset?: number | Expression;
+    locks?: Expression[];
+    sample?: number | Expression; },
+]>;
 
 export class SelectExpr extends QueryExpr {
   key = ExpressionKey.SELECT;
@@ -17299,11 +17735,13 @@ export class SelectExpr extends QueryExpr {
   }
 }
 
-export type SubqueryExprArgs = {
-  with?: WithExpr;
-  alias?: TableAliasExpr;
-  this: Expression;
-} & DerivedTableExprArgs & QueryExprArgs;
+export type SubqueryExprArgs = Merge<[
+  DerivedTableExprArgs,
+  QueryExprArgs,
+  { with?: WithExpr;
+    alias?: TableAliasExpr;
+    this: Expression; },
+]>;
 
 export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
   key = ExpressionKey.SUBQUERY;
@@ -17418,15 +17856,16 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
   }
 }
 
-export type WindowExprArgs = {
-  this: Expression;
-  partitionBy?: Expression;
-  order?: Expression;
-  spec?: Expression;
-  alias?: TableAliasExpr;
-  over?: Expression;
-  first?: Expression;
-} & ConditionExprArgs;
+export type WindowExprArgs = Merge<[
+  ConditionExprArgs,
+  { this: Expression;
+    partitionBy?: Expression;
+    order?: Expression;
+    spec?: Expression;
+    alias?: TableAliasExpr;
+    over?: Expression;
+    first?: Expression; },
+]>;
 
 export class WindowExpr extends ConditionExpr {
   key = ExpressionKey.WINDOW;
@@ -17481,10 +17920,11 @@ export class WindowExpr extends ConditionExpr {
   }
 }
 
-export type ParameterExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & ConditionExprArgs;
+export type ParameterExprArgs = Merge<[
+  ConditionExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class ParameterExpr extends ConditionExpr {
   key = ExpressionKey.PARAMETER;
@@ -17519,10 +17959,11 @@ export enum SessionParameterExprKind {
   LOCAL = 'LOCAL',
   VARIABLE = 'VARIABLE',
 }
-export type SessionParameterExprArgs = {
-  this: Expression;
-  kind?: SessionParameterExprKind;
-} & ConditionExprArgs;
+export type SessionParameterExprArgs = Merge<[
+  ConditionExprArgs,
+  { this: Expression;
+    kind?: SessionParameterExprKind; },
+]>;
 
 export class SessionParameterExpr extends ConditionExpr {
   key = ExpressionKey.SESSION_PARAMETER;
@@ -17558,12 +17999,13 @@ export enum PlaceholderExprKind {
   NUMERIC = 'NUMERIC',
   DOLLAR = 'DOLLAR',
 }
-export type PlaceholderExprArgs = {
-  this?: Expression;
-  kind?: PlaceholderExprKind;
-  widget?: Expression;
-  jdbc?: boolean;
-} & ConditionExprArgs;
+export type PlaceholderExprArgs = Merge<[
+  ConditionExprArgs,
+  { this?: Expression;
+    kind?: PlaceholderExprKind;
+    widget?: Expression;
+    jdbc?: boolean; },
+]>;
 
 export class PlaceholderExpr extends ConditionExpr {
   key = ExpressionKey.PLACEHOLDER;
@@ -17610,7 +18052,9 @@ export class PlaceholderExpr extends ConditionExpr {
   }
 }
 
-export type NullExprArgs = ConditionExprArgs;
+export type NullExprArgs = Merge<[
+  ConditionExprArgs,
+]>;
 
 export class NullExpr extends ConditionExpr {
   key = ExpressionKey.NULL;
@@ -17640,7 +18084,9 @@ export class NullExpr extends ConditionExpr {
   }
 }
 
-export type BooleanExprArgs = ConditionExprArgs;
+export type BooleanExprArgs = Merge<[
+  ConditionExprArgs,
+]>;
 
 export class BooleanExpr extends ConditionExpr {
   key = ExpressionKey.BOOLEAN;
@@ -17663,9 +18109,10 @@ export class BooleanExpr extends ConditionExpr {
   }
 }
 
-export type PseudoTypeExprArgs = {
-  this: DataTypeExprKind;
-} & DataTypeExprArgs;
+export type PseudoTypeExprArgs = Merge<[
+  DataTypeExprArgs,
+  { this: DataTypeExprKind },
+]>;
 
 export class PseudoTypeExpr extends DataTypeExpr {
   key = ExpressionKey.PSEUDO_TYPE;
@@ -17686,9 +18133,10 @@ export class PseudoTypeExpr extends DataTypeExpr {
   }
 }
 
-export type ObjectIdentifierExprArgs = {
-  this: DataTypeExprKind;
-} & DataTypeExprArgs;
+export type ObjectIdentifierExprArgs = Merge<[
+  DataTypeExprArgs,
+  { this: DataTypeExprKind },
+]>;
 
 export class ObjectIdentifierExpr extends DataTypeExpr {
   key = ExpressionKey.OBJECT_IDENTIFIER;
@@ -17709,10 +18157,11 @@ export class ObjectIdentifierExpr extends DataTypeExpr {
   }
 }
 
-export type BinaryExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & ConditionExprArgs;
+export type BinaryExprArgs = Merge<[
+  ConditionExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class BinaryExpr extends ConditionExpr {
   key = ExpressionKey.BINARY;
@@ -17746,7 +18195,9 @@ export class BinaryExpr extends ConditionExpr {
   }
 }
 
-export type UnaryExprArgs = BaseExpressionArgs;
+export type UnaryExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 export class UnaryExpr extends Expression {
   key = ExpressionKey.UNARY;
 
@@ -17759,7 +18210,9 @@ export class UnaryExpr extends Expression {
   }
 }
 
-export type PivotAliasExprArgs = AliasExprArgs;
+export type PivotAliasExprArgs = Merge<[
+  AliasExprArgs,
+]>;
 
 export class PivotAliasExpr extends AliasExpr {
   key = ExpressionKey.PIVOT_ALIAS;
@@ -17775,13 +18228,14 @@ export class PivotAliasExpr extends AliasExpr {
   }
 }
 
-export type BracketExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-  offset?: boolean;
-  safe?: boolean;
-  returnsListForMaps?: Expression[];
-} & ConditionExprArgs;
+export type BracketExprArgs = Merge<[
+  ConditionExprArgs,
+  { this: Expression;
+    expressions: Expression[];
+    offset?: boolean;
+    safe?: boolean;
+    returnsListForMaps?: Expression[]; },
+]>;
 
 /**
  * https://cloud.google.com/bigquery/docs/reference/standard-sql/operators#array_subscript_operator
@@ -17832,10 +18286,11 @@ export class BracketExpr extends ConditionExpr {
   }
 }
 
-export type IntervalOpExprArgs = {
-  unit?: VarExpr | IntervalSpanExpr;
-  expression: Expression;
-} & TimeUnitExprArgs;
+export type IntervalOpExprArgs = Merge<[
+  TimeUnitExprArgs,
+  { unit?: VarExpr | IntervalSpanExpr;
+    expression: Expression; },
+]>;
 
 export class IntervalOpExpr extends TimeUnitExpr {
   key = ExpressionKey.INTERVAL_OP;
@@ -17873,10 +18328,11 @@ export class IntervalOpExpr extends TimeUnitExpr {
  * https://trino.io/docs/current/language/types.html#interval-day-to-second
  * https://docs.databricks.com/en/sql/language-manual/data-types/interval-type.html
  */
-export type IntervalSpanExprArgs = {
-  this: DataTypeExprKind;
-  expression: Expression;
-} & DataTypeExprArgs;
+export type IntervalSpanExprArgs = Merge<[
+  DataTypeExprArgs,
+  { this: DataTypeExprKind;
+    expression: Expression; },
+]>;
 
 export class IntervalSpanExpr extends DataTypeExpr {
   key = ExpressionKey.INTERVAL_SPAN;
@@ -17902,10 +18358,11 @@ export class IntervalSpanExpr extends DataTypeExpr {
   }
 }
 
-export type IntervalExprArgs = {
-  this?: Expression;
-  unit?: VarExpr | IntervalSpanExpr;
-} & TimeUnitExprArgs;
+export type IntervalExprArgs = Merge<[
+  TimeUnitExprArgs,
+  { this?: Expression;
+    unit?: VarExpr | IntervalSpanExpr; },
+]>;
 
 export class IntervalExpr extends TimeUnitExpr {
   key = ExpressionKey.INTERVAL;
@@ -17946,7 +18403,9 @@ const _allFunctions = new Set<typeof FuncExpr>();
  *     well as to provide the function's name during SQL string generation. By default the SQL
  *     name is set to the expression's class name transformed to snake case.
  */
-export type FuncExprArgs = ConditionExprArgs;
+export type FuncExprArgs = Merge<[
+  ConditionExprArgs,
+]>;
 
 export class FuncExpr extends ConditionExpr {
   key = ExpressionKey.FUNC;
@@ -18058,9 +18517,10 @@ export class FuncExpr extends ConditionExpr {
   }
 }
 
-export type JSONPathFilterExprArgs = {
-  this: Expression;
-} & JSONPathPartExprArgs;
+export type JSONPathFilterExprArgs = Merge<[
+  JSONPathPartExprArgs,
+  { this: Expression },
+]>;
 export class JSONPathFilterExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_FILTER;
 
@@ -18080,9 +18540,10 @@ export class JSONPathFilterExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathKeyExprArgs = {
-  this: Expression;
-} & JSONPathPartExprArgs;
+export type JSONPathKeyExprArgs = Merge<[
+  JSONPathPartExprArgs,
+  { this: Expression },
+]>;
 export class JSONPathKeyExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_KEY;
 
@@ -18102,9 +18563,10 @@ export class JSONPathKeyExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathRecursiveExprArgs = {
-  this?: Expression;
-} & JSONPathPartExprArgs;
+export type JSONPathRecursiveExprArgs = Merge<[
+  JSONPathPartExprArgs,
+  { this?: Expression },
+]>;
 
 export class JSONPathRecursiveExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_RECURSIVE;
@@ -18125,7 +18587,9 @@ export class JSONPathRecursiveExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathRootExprArgs = JSONPathPartExprArgs;
+export type JSONPathRootExprArgs = Merge<[
+  JSONPathPartExprArgs,
+]>;
 
 export class JSONPathRootExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_ROOT;
@@ -18139,9 +18603,10 @@ export class JSONPathRootExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathScriptExprArgs = {
-  this: Expression;
-} & JSONPathPartExprArgs;
+export type JSONPathScriptExprArgs = Merge<[
+  JSONPathPartExprArgs,
+  { this: Expression },
+]>;
 
 export class JSONPathScriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SCRIPT;
@@ -18162,11 +18627,12 @@ export class JSONPathScriptExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathSliceExprArgs = {
-  start?: Expression;
-  end?: Expression;
-  step?: Expression;
-} & JSONPathPartExprArgs;
+export type JSONPathSliceExprArgs = Merge<[
+  JSONPathPartExprArgs,
+  { start?: Expression;
+    end?: Expression;
+    step?: Expression; },
+]>;
 
 export class JSONPathSliceExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SLICE;
@@ -18201,9 +18667,10 @@ export class JSONPathSliceExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathSelectorExprArgs = {
-  this: Expression;
-} & JSONPathPartExprArgs;
+export type JSONPathSelectorExprArgs = Merge<[
+  JSONPathPartExprArgs,
+  { this: Expression },
+]>;
 
 export class JSONPathSelectorExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SELECTOR;
@@ -18224,9 +18691,10 @@ export class JSONPathSelectorExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathSubscriptExprArgs = {
-  this: Expression;
-} & JSONPathPartExprArgs;
+export type JSONPathSubscriptExprArgs = Merge<[
+  JSONPathPartExprArgs,
+  { this: Expression },
+]>;
 
 export class JSONPathSubscriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SUBSCRIPT;
@@ -18247,9 +18715,10 @@ export class JSONPathSubscriptExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathUnionExprArgs = {
-  expressions: Expression[];
-} & JSONPathPartExprArgs;
+export type JSONPathUnionExprArgs = Merge<[
+  JSONPathPartExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class JSONPathUnionExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_UNION;
@@ -18270,7 +18739,9 @@ export class JSONPathUnionExpr extends JSONPathPartExpr {
   }
 }
 
-export type JSONPathWildcardExprArgs = JSONPathPartExprArgs;
+export type JSONPathWildcardExprArgs = Merge<[
+  JSONPathPartExprArgs,
+]>;
 
 export class JSONPathWildcardExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_WILDCARD;
@@ -18284,14 +18755,15 @@ export class JSONPathWildcardExpr extends JSONPathPartExpr {
   }
 }
 
-export type MergeExprArgs = {
-  using: string;
-  on?: Expression;
-  usingCond?: string;
-  whens: Expression[];
-  with?: Expression;
-  returning?: Expression;
-} & DMLExprArgs;
+export type MergeExprArgs = Merge<[
+  DMLExprArgs,
+  { using: string;
+    on?: Expression;
+    usingCond?: string;
+    whens: Expression[];
+    with?: Expression;
+    returning?: Expression; },
+]>;
 
 export class MergeExpr extends DMLExpr {
   key = ExpressionKey.MERGE;
@@ -18341,14 +18813,15 @@ export class MergeExpr extends DMLExpr {
   }
 }
 
-export type LateralExprArgs = {
-  view?: Expression;
-  outer?: Expression;
-  crossApply?: boolean;
-  ordinality?: boolean;
-  alias?: TableAliasExpr;
-  this: Expression;
-} & BaseExpressionArgs;
+export type LateralExprArgs = Merge<[
+  BaseExpressionArgs,
+  { view?: Expression;
+    outer?: Expression;
+    crossApply?: boolean;
+    ordinality?: boolean;
+    alias?: TableAliasExpr;
+    this: Expression; },
+]>;
 
 export class LateralExpr extends UDTFExpr {
   key = ExpressionKey.LATERAL;
@@ -18398,13 +18871,14 @@ export class LateralExpr extends UDTFExpr {
   }
 }
 
-export type TableFromRowsExprArgs = {
-  joins?: Expression[];
-  pivots?: Expression[];
-  sample?: number | Expression;
-  alias?: TableAliasExpr;
-  this: Expression;
-} & UDTFExprArgs;
+export type TableFromRowsExprArgs = Merge<[
+  UDTFExprArgs,
+  { joins?: Expression[];
+    pivots?: Expression[];
+    sample?: number | Expression;
+    alias?: TableAliasExpr;
+    this: Expression; },
+]>;
 
 export class TableFromRowsExpr extends UDTFExpr {
   key = ExpressionKey.TABLE_FROM_ROWS;
@@ -18449,7 +18923,9 @@ export class TableFromRowsExpr extends UDTFExpr {
   }
 }
 
-export type UnionExprArgs = SetOperationExprArgs;
+export type UnionExprArgs = Merge<[
+  SetOperationExprArgs,
+]>;
 
 export class UnionExpr extends SetOperationExpr {
   key = ExpressionKey.UNION;
@@ -18465,7 +18941,9 @@ export class UnionExpr extends SetOperationExpr {
   }
 }
 
-export type ExceptExprArgs = SetOperationExprArgs;
+export type ExceptExprArgs = Merge<[
+  SetOperationExprArgs,
+]>;
 
 export class ExceptExpr extends SetOperationExpr {
   key = ExpressionKey.EXCEPT;
@@ -18481,7 +18959,9 @@ export class ExceptExpr extends SetOperationExpr {
   }
 }
 
-export type IntersectExprArgs = SetOperationExprArgs;
+export type IntersectExprArgs = Merge<[
+  SetOperationExprArgs,
+]>;
 
 export class IntersectExpr extends SetOperationExpr {
   key = ExpressionKey.INTERSECT;
@@ -18501,13 +18981,14 @@ export class IntersectExpr extends SetOperationExpr {
  * VALUES clause with DuckDB support for ORDER BY, LIMIT, OFFSET
  * @see {@link https://duckdb.org/docs/stable/sql/query_syntax/limit | DuckDB LIMIT}
  */
-export type ValuesExprArgs = {
-  expressions: Expression[];
-  alias?: TableAliasExpr;
-  order?: Expression;
-  limit?: number | Expression;
-  offset?: number | Expression;
-} & UDTFExprArgs;
+export type ValuesExprArgs = Merge<[
+  UDTFExprArgs,
+  { expressions: Expression[];
+    alias?: TableAliasExpr;
+    order?: Expression;
+    limit?: number | Expression;
+    offset?: number | Expression; },
+]>;
 
 export class ValuesExpr extends UDTFExpr {
   key = ExpressionKey.VALUES;
@@ -18548,7 +19029,9 @@ export class ValuesExpr extends UDTFExpr {
   }
 }
 
-export type SubqueryPredicateExprArgs = PredicateExprArgs;
+export type SubqueryPredicateExprArgs = Merge<[
+  PredicateExprArgs,
+]>;
 
 export class SubqueryPredicateExpr extends PredicateExpr {
   key = ExpressionKey.SUBQUERY_PREDICATE;
@@ -18564,7 +19047,9 @@ export class SubqueryPredicateExpr extends PredicateExpr {
   }
 }
 
-export type AddExprArgs = BinaryExprArgs;
+export type AddExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class AddExpr extends BinaryExpr {
   key = ExpressionKey.ADD;
@@ -18580,7 +19065,9 @@ export class AddExpr extends BinaryExpr {
   }
 }
 
-export type ConnectorExprArgs = BinaryExprArgs;
+export type ConnectorExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class ConnectorExpr extends BinaryExpr {
   key = ExpressionKey.CONNECTOR;
@@ -18596,11 +19083,12 @@ export class ConnectorExpr extends BinaryExpr {
   }
 }
 
-export type BitwiseAndExprArgs = {
-  this: Expression;
-  expression: Expression;
-  padside?: Expression;
-} & BinaryExprArgs;
+export type BitwiseAndExprArgs = Merge<[
+  BinaryExprArgs,
+  { this: Expression;
+    expression: Expression;
+    padside?: Expression; },
+]>;
 
 export class BitwiseAndExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_AND;
@@ -18623,11 +19111,12 @@ export class BitwiseAndExpr extends BinaryExpr {
   }
 }
 
-export type BitwiseLeftShiftExprArgs = {
-  this: Expression;
-  expression: Expression;
-  requiresInt128?: Expression;
-} & BinaryExprArgs;
+export type BitwiseLeftShiftExprArgs = Merge<[
+  BinaryExprArgs,
+  { this: Expression;
+    expression: Expression;
+    requiresInt128?: Expression; },
+]>;
 
 export class BitwiseLeftShiftExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_LEFT_SHIFT;
@@ -18650,11 +19139,12 @@ export class BitwiseLeftShiftExpr extends BinaryExpr {
   }
 }
 
-export type BitwiseOrExprArgs = {
-  this: Expression;
-  expression: Expression;
-  padside?: Expression;
-} & BinaryExprArgs;
+export type BitwiseOrExprArgs = Merge<[
+  BinaryExprArgs,
+  { this: Expression;
+    expression: Expression;
+    padside?: Expression; },
+]>;
 
 export class BitwiseOrExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_OR;
@@ -18677,11 +19167,12 @@ export class BitwiseOrExpr extends BinaryExpr {
   }
 }
 
-export type BitwiseRightShiftExprArgs = {
-  this: Expression;
-  expression: Expression;
-  requiresInt128?: Expression;
-} & BinaryExprArgs;
+export type BitwiseRightShiftExprArgs = Merge<[
+  BinaryExprArgs,
+  { this: Expression;
+    expression: Expression;
+    requiresInt128?: Expression; },
+]>;
 
 export class BitwiseRightShiftExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_RIGHT_SHIFT;
@@ -18704,11 +19195,12 @@ export class BitwiseRightShiftExpr extends BinaryExpr {
   }
 }
 
-export type BitwiseXorExprArgs = {
-  this: Expression;
-  expression: Expression;
-  padside?: Expression;
-} & BinaryExprArgs;
+export type BitwiseXorExprArgs = Merge<[
+  BinaryExprArgs,
+  { this: Expression;
+    expression: Expression;
+    padside?: Expression; },
+]>;
 
 export class BitwiseXorExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_XOR;
@@ -18731,12 +19223,13 @@ export class BitwiseXorExpr extends BinaryExpr {
   }
 }
 
-export type DivExprArgs = {
-  this: Expression;
-  expression: Expression;
-  typed?: DataTypeExpr;
-  safe?: boolean;
-} & BinaryExprArgs;
+export type DivExprArgs = Merge<[
+  BinaryExprArgs,
+  { this: Expression;
+    expression: Expression;
+    typed?: DataTypeExpr;
+    safe?: boolean; },
+]>;
 
 export class DivExpr extends BinaryExpr {
   key = ExpressionKey.DIV;
@@ -18764,7 +19257,9 @@ export class DivExpr extends BinaryExpr {
   }
 }
 
-export type OverlapsExprArgs = BinaryExprArgs;
+export type OverlapsExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class OverlapsExpr extends BinaryExpr {
   key = ExpressionKey.OVERLAPS;
@@ -18780,7 +19275,9 @@ export class OverlapsExpr extends BinaryExpr {
   }
 }
 
-export type ExtendsLeftExprArgs = BinaryExprArgs;
+export type ExtendsLeftExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class ExtendsLeftExpr extends BinaryExpr {
   key = ExpressionKey.EXTENDS_LEFT;
@@ -18796,7 +19293,9 @@ export class ExtendsLeftExpr extends BinaryExpr {
   }
 }
 
-export type ExtendsRightExprArgs = BinaryExprArgs;
+export type ExtendsRightExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class ExtendsRightExpr extends BinaryExpr {
   key = ExpressionKey.EXTENDS_RIGHT;
@@ -18812,7 +19311,9 @@ export class ExtendsRightExpr extends BinaryExpr {
   }
 }
 
-export type DotExprArgs = BinaryExprArgs;
+export type DotExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class DotExpr extends BinaryExpr {
   key = ExpressionKey.DOT;
@@ -18877,11 +19378,12 @@ export class DotExpr extends BinaryExpr {
   }
 }
 
-export type DPipeExprArgs = {
-  this: Expression;
-  expression: Expression;
-  safe?: boolean;
-} & BinaryExprArgs;
+export type DPipeExprArgs = Merge<[
+  BinaryExprArgs,
+  { this: Expression;
+    expression: Expression;
+    safe?: boolean; },
+]>;
 
 export class DPipeExpr extends BinaryExpr {
   key = ExpressionKey.D_PIPE;
@@ -18904,7 +19406,10 @@ export class DPipeExpr extends BinaryExpr {
   }
 }
 
-export type EQExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type EQExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class EQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.EQ;
@@ -18920,7 +19425,10 @@ export class EQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type NullSafeEQExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type NullSafeEQExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class NullSafeEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.NULL_SAFE_EQ;
@@ -18936,7 +19444,10 @@ export class NullSafeEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type NullSafeNEQExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type NullSafeNEQExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class NullSafeNEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.NULL_SAFE_NEQ;
@@ -18952,7 +19463,9 @@ export class NullSafeNEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type PropertyEQExprArgs = BinaryExprArgs;
+export type PropertyEQExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class PropertyEQExpr extends BinaryExpr {
   key = ExpressionKey.PROPERTY_EQ;
@@ -18968,7 +19481,9 @@ export class PropertyEQExpr extends BinaryExpr {
   }
 }
 
-export type DistanceExprArgs = BinaryExprArgs;
+export type DistanceExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class DistanceExpr extends BinaryExpr {
   key = ExpressionKey.DISTANCE;
@@ -18984,7 +19499,9 @@ export class DistanceExpr extends BinaryExpr {
   }
 }
 
-export type EscapeExprArgs = BinaryExprArgs;
+export type EscapeExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class EscapeExpr extends BinaryExpr {
   key = ExpressionKey.ESCAPE;
@@ -19000,7 +19517,10 @@ export class EscapeExpr extends BinaryExpr {
   }
 }
 
-export type GlobExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type GlobExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class GlobExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.GLOB;
@@ -19016,7 +19536,10 @@ export class GlobExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type GTExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type GTExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class GTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.GT;
@@ -19032,7 +19555,10 @@ export class GTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type GTEExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type GTEExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class GTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.GTE;
@@ -19048,7 +19574,10 @@ export class GTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type ILikeExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type ILikeExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class ILikeExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.ILIKE;
@@ -19064,7 +19593,9 @@ export class ILikeExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type IntDivExprArgs = BinaryExprArgs;
+export type IntDivExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class IntDivExpr extends BinaryExpr {
   key = ExpressionKey.INT_DIV;
@@ -19080,7 +19611,10 @@ export class IntDivExpr extends BinaryExpr {
   }
 }
 
-export type IsExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type IsExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class IsExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.IS;
@@ -19096,7 +19630,9 @@ export class IsExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type KwargExprArgs = BinaryExprArgs;
+export type KwargExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 /**
  * Kwarg in special functions like func(kwarg => y).
@@ -19115,7 +19651,10 @@ export class KwargExpr extends BinaryExpr {
   }
 }
 
-export type LikeExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type LikeExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class LikeExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.LIKE;
@@ -19131,7 +19670,10 @@ export class LikeExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type MatchExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type MatchExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class MatchExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.MATCH;
@@ -19147,7 +19689,10 @@ export class MatchExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type LTExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type LTExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class LTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.LT;
@@ -19163,7 +19708,10 @@ export class LTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type LTEExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type LTEExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class LTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.LTE;
@@ -19179,7 +19727,9 @@ export class LTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type ModExprArgs = BinaryExprArgs;
+export type ModExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class ModExpr extends BinaryExpr {
   key = ExpressionKey.MOD;
@@ -19195,7 +19745,9 @@ export class ModExpr extends BinaryExpr {
   }
 }
 
-export type MulExprArgs = BinaryExprArgs;
+export type MulExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class MulExpr extends BinaryExpr {
   key = ExpressionKey.MUL;
@@ -19211,7 +19763,10 @@ export class MulExpr extends BinaryExpr {
   }
 }
 
-export type NEQExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type NEQExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class NEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.NEQ;
@@ -19227,11 +19782,12 @@ export class NEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type OperatorExprArgs = {
-  this: Expression;
-  operator: Expression;
-  expression: Expression;
-} & BinaryExprArgs;
+export type OperatorExprArgs = Merge<[
+  BinaryExprArgs,
+  { this: Expression;
+    operator: Expression;
+    expression: Expression; },
+]>;
 
 export class OperatorExpr extends BinaryExpr {
   key = ExpressionKey.OPERATOR;
@@ -19254,7 +19810,10 @@ export class OperatorExpr extends BinaryExpr {
   }
 }
 
-export type SimilarToExprArgs = BinaryExprArgs & PredicateExprArgs;
+export type SimilarToExprArgs = Merge<[
+  BinaryExprArgs,
+  PredicateExprArgs,
+]>;
 
 export class SimilarToExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.SIMILAR_TO;
@@ -19270,7 +19829,9 @@ export class SimilarToExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   }
 }
 
-export type SubExprArgs = BinaryExprArgs;
+export type SubExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class SubExpr extends BinaryExpr {
   key = ExpressionKey.SUB;
@@ -19286,7 +19847,9 @@ export class SubExpr extends BinaryExpr {
   }
 }
 
-export type AdjacentExprArgs = BinaryExprArgs;
+export type AdjacentExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 
 export class AdjacentExpr extends BinaryExpr {
   key = ExpressionKey.ADJACENT;
@@ -19302,7 +19865,9 @@ export class AdjacentExpr extends BinaryExpr {
   }
 }
 
-export type BitwiseNotExprArgs = UnaryExprArgs;
+export type BitwiseNotExprArgs = Merge<[
+  UnaryExprArgs,
+]>;
 
 export class BitwiseNotExpr extends UnaryExpr {
   key = ExpressionKey.BITWISE_NOT;
@@ -19318,7 +19883,9 @@ export class BitwiseNotExpr extends UnaryExpr {
   }
 }
 
-export type NotExprArgs = UnaryExprArgs;
+export type NotExprArgs = Merge<[
+  UnaryExprArgs,
+]>;
 
 export class NotExpr extends UnaryExpr {
   key = ExpressionKey.NOT;
@@ -19334,7 +19901,9 @@ export class NotExpr extends UnaryExpr {
   }
 }
 
-export type ParenExprArgs = UnaryExprArgs;
+export type ParenExprArgs = Merge<[
+  UnaryExprArgs,
+]>;
 
 export class ParenExpr extends UnaryExpr {
   key = ExpressionKey.PAREN;
@@ -19354,7 +19923,9 @@ export class ParenExpr extends UnaryExpr {
   }
 }
 
-export type NegExprArgs = UnaryExprArgs;
+export type NegExprArgs = Merge<[
+  UnaryExprArgs,
+]>;
 
 export class NegExpr extends UnaryExpr {
   key = ExpressionKey.NEG;
@@ -19377,12 +19948,13 @@ export class NegExpr extends UnaryExpr {
   }
 }
 
-export type BetweenExprArgs = {
-  this: Expression;
-  low: Expression;
-  high: Expression;
-  symmetric?: Expression;
-} & PredicateExprArgs;
+export type BetweenExprArgs = Merge<[
+  PredicateExprArgs,
+  { this: Expression;
+    low: Expression;
+    high: Expression;
+    symmetric?: Expression; },
+]>;
 
 export class BetweenExpr extends PredicateExpr {
   key = ExpressionKey.BETWEEN;
@@ -19418,14 +19990,15 @@ export class BetweenExpr extends PredicateExpr {
   }
 }
 
-export type InExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-  query?: Expression;
-  unnest?: UnnestExpr;
-  field?: Expression;
-  isGlobal?: boolean;
-} & PredicateExprArgs;
+export type InExprArgs = Merge<[
+  PredicateExprArgs,
+  { this: Expression;
+    expressions?: Expression[];
+    query?: Expression;
+    unnest?: UnnestExpr;
+    field?: Expression;
+    isGlobal?: boolean; },
+]>;
 
 export class InExpr extends PredicateExpr {
   key = ExpressionKey.IN;
@@ -19475,7 +20048,9 @@ export class InExpr extends PredicateExpr {
  * Function returns NULL instead of error
  * https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/functions-reference#safe_prefix
  */
-export type SafeFuncExprArgs = FuncExprArgs;
+export type SafeFuncExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SafeFuncExpr extends FuncExpr {
   key = ExpressionKey.SAFE_FUNC;
@@ -19495,7 +20070,9 @@ export class SafeFuncExpr extends FuncExpr {
   }
 }
 
-export type TypeofExprArgs = FuncExprArgs;
+export type TypeofExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TypeofExpr extends FuncExpr {
   key = ExpressionKey.TYPEOF;
@@ -19515,7 +20092,9 @@ export class TypeofExpr extends FuncExpr {
   }
 }
 
-export type AcosExprArgs = FuncExprArgs;
+export type AcosExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class AcosExpr extends FuncExpr {
   key = ExpressionKey.ACOS;
@@ -19535,7 +20114,9 @@ export class AcosExpr extends FuncExpr {
   }
 }
 
-export type AcoshExprArgs = FuncExprArgs;
+export type AcoshExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class AcoshExpr extends FuncExpr {
   key = ExpressionKey.ACOSH;
@@ -19555,7 +20136,9 @@ export class AcoshExpr extends FuncExpr {
   }
 }
 
-export type AsinExprArgs = FuncExprArgs;
+export type AsinExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class AsinExpr extends FuncExpr {
   key = ExpressionKey.ASIN;
@@ -19575,7 +20158,9 @@ export class AsinExpr extends FuncExpr {
   }
 }
 
-export type AsinhExprArgs = FuncExprArgs;
+export type AsinhExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class AsinhExpr extends FuncExpr {
   key = ExpressionKey.ASINH;
@@ -19595,10 +20180,11 @@ export class AsinhExpr extends FuncExpr {
   }
 }
 
-export type AtanExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type AtanExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class AtanExpr extends FuncExpr {
   key = ExpressionKey.ATAN;
@@ -19628,7 +20214,9 @@ export class AtanExpr extends FuncExpr {
   }
 }
 
-export type AtanhExprArgs = FuncExprArgs;
+export type AtanhExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class AtanhExpr extends FuncExpr {
   key = ExpressionKey.ATANH;
@@ -19648,10 +20236,11 @@ export class AtanhExpr extends FuncExpr {
   }
 }
 
-export type Atan2ExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type Atan2ExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class Atan2Expr extends FuncExpr {
   key = ExpressionKey.ATAN2;
@@ -19681,7 +20270,9 @@ export class Atan2Expr extends FuncExpr {
   }
 }
 
-export type CotExprArgs = FuncExprArgs;
+export type CotExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CotExpr extends FuncExpr {
   key = ExpressionKey.COT;
@@ -19701,7 +20292,9 @@ export class CotExpr extends FuncExpr {
   }
 }
 
-export type CothExprArgs = FuncExprArgs;
+export type CothExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CothExpr extends FuncExpr {
   key = ExpressionKey.COTH;
@@ -19721,7 +20314,9 @@ export class CothExpr extends FuncExpr {
   }
 }
 
-export type CosExprArgs = FuncExprArgs;
+export type CosExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CosExpr extends FuncExpr {
   key = ExpressionKey.COS;
@@ -19741,7 +20336,9 @@ export class CosExpr extends FuncExpr {
   }
 }
 
-export type CscExprArgs = FuncExprArgs;
+export type CscExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CscExpr extends FuncExpr {
   key = ExpressionKey.CSC;
@@ -19761,7 +20358,9 @@ export class CscExpr extends FuncExpr {
   }
 }
 
-export type CschExprArgs = FuncExprArgs;
+export type CschExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CschExpr extends FuncExpr {
   key = ExpressionKey.CSCH;
@@ -19781,7 +20380,9 @@ export class CschExpr extends FuncExpr {
   }
 }
 
-export type SecExprArgs = FuncExprArgs;
+export type SecExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SecExpr extends FuncExpr {
   key = ExpressionKey.SEC;
@@ -19801,7 +20402,9 @@ export class SecExpr extends FuncExpr {
   }
 }
 
-export type SechExprArgs = FuncExprArgs;
+export type SechExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SechExpr extends FuncExpr {
   key = ExpressionKey.SECH;
@@ -19821,7 +20424,9 @@ export class SechExpr extends FuncExpr {
   }
 }
 
-export type SinExprArgs = FuncExprArgs;
+export type SinExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SinExpr extends FuncExpr {
   key = ExpressionKey.SIN;
@@ -19841,7 +20446,9 @@ export class SinExpr extends FuncExpr {
   }
 }
 
-export type SinhExprArgs = FuncExprArgs;
+export type SinhExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SinhExpr extends FuncExpr {
   key = ExpressionKey.SINH;
@@ -19861,7 +20468,9 @@ export class SinhExpr extends FuncExpr {
   }
 }
 
-export type TanExprArgs = FuncExprArgs;
+export type TanExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TanExpr extends FuncExpr {
   key = ExpressionKey.TAN;
@@ -19881,7 +20490,9 @@ export class TanExpr extends FuncExpr {
   }
 }
 
-export type TanhExprArgs = FuncExprArgs;
+export type TanhExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TanhExpr extends FuncExpr {
   key = ExpressionKey.TANH;
@@ -19901,7 +20512,9 @@ export class TanhExpr extends FuncExpr {
   }
 }
 
-export type DegreesExprArgs = FuncExprArgs;
+export type DegreesExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class DegreesExpr extends FuncExpr {
   key = ExpressionKey.DEGREES;
@@ -19921,7 +20534,9 @@ export class DegreesExpr extends FuncExpr {
   }
 }
 
-export type CoshExprArgs = FuncExprArgs;
+export type CoshExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CoshExpr extends FuncExpr {
   key = ExpressionKey.COSH;
@@ -19941,10 +20556,11 @@ export class CoshExpr extends FuncExpr {
   }
 }
 
-export type CosineDistanceExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type CosineDistanceExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class CosineDistanceExpr extends FuncExpr {
   key = ExpressionKey.COSINE_DISTANCE;
@@ -19974,10 +20590,11 @@ export class CosineDistanceExpr extends FuncExpr {
   }
 }
 
-export type DotProductExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type DotProductExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class DotProductExpr extends FuncExpr {
   key = ExpressionKey.DOT_PRODUCT;
@@ -20007,10 +20624,11 @@ export class DotProductExpr extends FuncExpr {
   }
 }
 
-export type EuclideanDistanceExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type EuclideanDistanceExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class EuclideanDistanceExpr extends FuncExpr {
   key = ExpressionKey.EUCLIDEAN_DISTANCE;
@@ -20040,10 +20658,11 @@ export class EuclideanDistanceExpr extends FuncExpr {
   }
 }
 
-export type ManhattanDistanceExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type ManhattanDistanceExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class ManhattanDistanceExpr extends FuncExpr {
   key = ExpressionKey.MANHATTAN_DISTANCE;
@@ -20073,10 +20692,11 @@ export class ManhattanDistanceExpr extends FuncExpr {
   }
 }
 
-export type JarowinklerSimilarityExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type JarowinklerSimilarityExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class JarowinklerSimilarityExpr extends FuncExpr {
   key = ExpressionKey.JAROWINKLER_SIMILARITY;
@@ -20106,7 +20726,9 @@ export class JarowinklerSimilarityExpr extends FuncExpr {
   }
 }
 
-export type AggFuncExprArgs = BaseExpressionArgs;
+export type AggFuncExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class AggFuncExpr extends FuncExpr {
   key = ExpressionKey.AGG_FUNC;
@@ -20126,7 +20748,9 @@ export class AggFuncExpr extends FuncExpr {
   }
 }
 
-export type BitwiseCountExprArgs = FuncExprArgs;
+export type BitwiseCountExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class BitwiseCountExpr extends FuncExpr {
   key = ExpressionKey.BITWISE_COUNT;
@@ -20146,7 +20770,9 @@ export class BitwiseCountExpr extends FuncExpr {
   }
 }
 
-export type BitmapBucketNumberExprArgs = FuncExprArgs;
+export type BitmapBucketNumberExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class BitmapBucketNumberExpr extends FuncExpr {
   key = ExpressionKey.BITMAP_BUCKET_NUMBER;
@@ -20166,7 +20792,9 @@ export class BitmapBucketNumberExpr extends FuncExpr {
   }
 }
 
-export type BitmapCountExprArgs = FuncExprArgs;
+export type BitmapCountExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class BitmapCountExpr extends FuncExpr {
   key = ExpressionKey.BITMAP_COUNT;
@@ -20186,7 +20814,9 @@ export class BitmapCountExpr extends FuncExpr {
   }
 }
 
-export type BitmapBitPositionExprArgs = FuncExprArgs;
+export type BitmapBitPositionExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class BitmapBitPositionExpr extends FuncExpr {
   key = ExpressionKey.BITMAP_BIT_POSITION;
@@ -20206,7 +20836,9 @@ export class BitmapBitPositionExpr extends FuncExpr {
   }
 }
 
-export type ByteLengthExprArgs = FuncExprArgs;
+export type ByteLengthExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ByteLengthExpr extends FuncExpr {
   key = ExpressionKey.BYTE_LENGTH;
@@ -20226,10 +20858,11 @@ export class ByteLengthExpr extends FuncExpr {
   }
 }
 
-export type BoolnotExprArgs = {
-  this: Expression;
-  roundInput?: Expression;
-} & FuncExprArgs;
+export type BoolnotExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    roundInput?: Expression; },
+]>;
 
 export class BoolnotExpr extends FuncExpr {
   key = ExpressionKey.BOOLNOT;
@@ -20259,11 +20892,12 @@ export class BoolnotExpr extends FuncExpr {
   }
 }
 
-export type BoolandExprArgs = {
-  this: Expression;
-  expression: Expression;
-  roundInput?: Expression;
-} & FuncExprArgs;
+export type BoolandExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    roundInput?: Expression; },
+]>;
 
 export class BoolandExpr extends FuncExpr {
   key = ExpressionKey.BOOLAND;
@@ -20298,11 +20932,12 @@ export class BoolandExpr extends FuncExpr {
   }
 }
 
-export type BoolorExprArgs = {
-  this: Expression;
-  expression: Expression;
-  roundInput?: Expression;
-} & FuncExprArgs;
+export type BoolorExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    roundInput?: Expression; },
+]>;
 
 export class BoolorExpr extends FuncExpr {
   key = ExpressionKey.BOOLOR;
@@ -20340,7 +20975,9 @@ export class BoolorExpr extends FuncExpr {
 /**
  * https://cloud.google.com/bigquery/docs/reference/standard-sql/json_functions#bool_for_json
  */
-export type JSONBoolExprArgs = FuncExprArgs;
+export type JSONBoolExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class JSONBoolExpr extends FuncExpr {
   key = ExpressionKey.JSON_BOOL;
@@ -20360,11 +20997,12 @@ export class JSONBoolExpr extends FuncExpr {
   }
 }
 
-export type ArrayRemoveExprArgs = {
-  this: Expression;
-  expression: Expression;
-  nullPropagation?: Expression;
-} & FuncExprArgs;
+export type ArrayRemoveExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    nullPropagation?: Expression; },
+]>;
 
 export class ArrayRemoveExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_REMOVE;
@@ -20399,7 +21037,9 @@ export class ArrayRemoveExpr extends FuncExpr {
   }
 }
 
-export type AbsExprArgs = FuncExprArgs;
+export type AbsExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class AbsExpr extends FuncExpr {
   key = ExpressionKey.ABS;
@@ -20419,10 +21059,11 @@ export class AbsExpr extends FuncExpr {
   }
 }
 
-export type ApproxTopKEstimateExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type ApproxTopKEstimateExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class ApproxTopKEstimateExpr extends FuncExpr {
   key = ExpressionKey.APPROX_TOP_K_ESTIMATE;
@@ -20452,9 +21093,10 @@ export class ApproxTopKEstimateExpr extends FuncExpr {
   }
 }
 
-export type FarmFingerprintExprArgs = {
-  expressions: Expression[];
-} & FuncExprArgs;
+export type FarmFingerprintExprArgs = Merge<[
+  FuncExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class FarmFingerprintExpr extends FuncExpr {
   key = ExpressionKey.FARM_FINGERPRINT;
@@ -20483,7 +21125,9 @@ export class FarmFingerprintExpr extends FuncExpr {
   }
 }
 
-export type FlattenExprArgs = FuncExprArgs;
+export type FlattenExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class FlattenExpr extends FuncExpr {
   key = ExpressionKey.FLATTEN;
@@ -20503,10 +21147,11 @@ export class FlattenExpr extends FuncExpr {
   }
 }
 
-export type Float64ExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type Float64ExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class Float64Expr extends FuncExpr {
   key = ExpressionKey.FLOAT64;
@@ -20539,10 +21184,11 @@ export class Float64Expr extends FuncExpr {
 /**
  * https://spark.apache.org/docs/latest/api/sql/index.html#transform
  */
-export type TransformExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type TransformExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class TransformExpr extends FuncExpr {
   key = ExpressionKey.TRANSFORM;
@@ -20572,11 +21218,12 @@ export class TransformExpr extends FuncExpr {
   }
 }
 
-export type TranslateExprArgs = {
-  this: Expression;
-  from: Expression;
-  to: Expression;
-} & FuncExprArgs;
+export type TranslateExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    from: Expression;
+    to: Expression; },
+]>;
 
 export class TranslateExpr extends FuncExpr {
   key = ExpressionKey.TRANSLATE;
@@ -20611,10 +21258,11 @@ export class TranslateExpr extends FuncExpr {
   }
 }
 
-export type AnonymousExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & FuncExprArgs;
+export type AnonymousExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class AnonymousExpr extends FuncExpr {
   key = ExpressionKey.ANONYMOUS;
@@ -20650,10 +21298,11 @@ export class AnonymousExpr extends FuncExpr {
   }
 }
 
-export type ApplyExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type ApplyExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class ApplyExpr extends FuncExpr {
   key = ExpressionKey.APPLY;
@@ -20683,11 +21332,12 @@ export class ApplyExpr extends FuncExpr {
   }
 }
 
-export type ArrayExprArgs = {
-  expressions?: Expression[];
-  bracketNotation?: Expression;
-  structNameInheritance?: string;
-} & FuncExprArgs;
+export type ArrayExprArgs = Merge<[
+  FuncExprArgs,
+  { expressions?: Expression[];
+    bracketNotation?: Expression;
+    structNameInheritance?: string; },
+]>;
 
 export class ArrayExpr extends FuncExpr {
   key = ExpressionKey.ARRAY;
@@ -20728,7 +21378,9 @@ export class ArrayExpr extends FuncExpr {
   }
 }
 
-export type AsciiExprArgs = FuncExprArgs;
+export type AsciiExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class AsciiExpr extends FuncExpr {
   key = ExpressionKey.ASCII;
@@ -20748,7 +21400,9 @@ export class AsciiExpr extends FuncExpr {
   }
 }
 
-export type ToArrayExprArgs = FuncExprArgs;
+export type ToArrayExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ToArrayExpr extends FuncExpr {
   key = ExpressionKey.TO_ARRAY;
@@ -20768,10 +21422,11 @@ export class ToArrayExpr extends FuncExpr {
   }
 }
 
-export type ToBooleanExprArgs = {
-  this: Expression;
-  safe?: boolean;
-} & FuncExprArgs;
+export type ToBooleanExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    safe?: boolean; },
+]>;
 
 export class ToBooleanExpr extends FuncExpr {
   key = ExpressionKey.TO_BOOLEAN;
@@ -20801,9 +21456,10 @@ export class ToBooleanExpr extends FuncExpr {
   }
 }
 
-export type ListExprArgs = {
-  expressions?: Expression[];
-} & FuncExprArgs;
+export type ListExprArgs = Merge<[
+  FuncExprArgs,
+  { expressions?: Expression[] },
+]>;
 
 export class ListExpr extends FuncExpr {
   key = ExpressionKey.LIST;
@@ -20833,12 +21489,13 @@ export class ListExpr extends FuncExpr {
 /**
  * String pad, kind True -> LPAD, False -> RPAD
  */
-export type PadExprArgs = {
-  this: Expression;
-  expression: Expression;
-  fillPattern?: Expression;
-  isLeft: boolean;
-} & FuncExprArgs;
+export type PadExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    fillPattern?: Expression;
+    isLeft: boolean; },
+]>;
 
 export class PadExpr extends FuncExpr {
   key = ExpressionKey.PAD;
@@ -20882,12 +21539,13 @@ export class PadExpr extends FuncExpr {
  * https://docs.snowflake.com/en/sql-reference/functions/to_char
  * https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/TO_CHAR-number.html
  */
-export type ToCharExprArgs = {
-  this: Expression;
-  format?: Expression;
-  nlsparam?: Expression;
-  isNumeric?: Expression;
-} & FuncExprArgs;
+export type ToCharExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    format?: Expression;
+    nlsparam?: Expression;
+    isNumeric?: Expression; },
+]>;
 
 export class ToCharExpr extends FuncExpr {
   key = ExpressionKey.TO_CHAR;
@@ -20927,7 +21585,9 @@ export class ToCharExpr extends FuncExpr {
   }
 }
 
-export type ToCodePointsExprArgs = FuncExprArgs;
+export type ToCodePointsExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ToCodePointsExpr extends FuncExpr {
   key = ExpressionKey.TO_CODE_POINTS;
@@ -20951,15 +21611,16 @@ export class ToCodePointsExpr extends FuncExpr {
  * https://docs.snowflake.com/en/sql-reference/functions/to_decimal
  * https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/TO_NUMBER.html
  */
-export type ToNumberExprArgs = {
-  this: Expression;
-  format?: Expression;
-  nlsparam?: Expression;
-  precision?: Expression;
-  scale?: Expression;
-  safe?: boolean;
-  safeName?: string;
-} & FuncExprArgs;
+export type ToNumberExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    format?: Expression;
+    nlsparam?: Expression;
+    precision?: Expression;
+    scale?: Expression;
+    safe?: boolean;
+    safeName?: string; },
+]>;
 
 export class ToNumberExpr extends FuncExpr {
   key = ExpressionKey.TO_NUMBER;
@@ -21014,11 +21675,12 @@ export class ToNumberExpr extends FuncExpr {
   }
 }
 
-export type ToDoubleExprArgs = {
-  this: Expression;
-  format?: Expression;
-  safe?: boolean;
-} & FuncExprArgs;
+export type ToDoubleExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    format?: Expression;
+    safe?: boolean; },
+]>;
 
 export class ToDoubleExpr extends FuncExpr {
   key = ExpressionKey.TO_DOUBLE;
@@ -21057,10 +21719,11 @@ export class ToDoubleExpr extends FuncExpr {
   }
 }
 
-export type ToDecfloatExprArgs = {
-  this: Expression;
-  format?: Expression;
-} & FuncExprArgs;
+export type ToDecfloatExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    format?: Expression; },
+]>;
 
 export class ToDecfloatExpr extends FuncExpr {
   key = ExpressionKey.TO_DECFLOAT;
@@ -21090,10 +21753,11 @@ export class ToDecfloatExpr extends FuncExpr {
   }
 }
 
-export type TryToDecfloatExprArgs = {
-  this: Expression;
-  format?: Expression;
-} & FuncExprArgs;
+export type TryToDecfloatExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    format?: Expression; },
+]>;
 
 export class TryToDecfloatExpr extends FuncExpr {
   key = ExpressionKey.TRY_TO_DECFLOAT;
@@ -21123,11 +21787,12 @@ export class TryToDecfloatExpr extends FuncExpr {
   }
 }
 
-export type ToFileExprArgs = {
-  this: Expression;
-  path?: Expression;
-  safe?: boolean;
-} & FuncExprArgs;
+export type ToFileExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    path?: Expression;
+    safe?: boolean; },
+]>;
 
 export class ToFileExpr extends FuncExpr {
   key = ExpressionKey.TO_FILE;
@@ -21166,7 +21831,9 @@ export class ToFileExpr extends FuncExpr {
   }
 }
 
-export type CodePointsToBytesExprArgs = FuncExprArgs;
+export type CodePointsToBytesExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CodePointsToBytesExpr extends FuncExpr {
   key = ExpressionKey.CODE_POINTS_TO_BYTES;
@@ -21186,10 +21853,11 @@ export class CodePointsToBytesExpr extends FuncExpr {
   }
 }
 
-export type ColumnsExprArgs = {
-  this: Expression;
-  unpack?: Expression;
-} & FuncExprArgs;
+export type ColumnsExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    unpack?: Expression; },
+]>;
 
 export class ColumnsExpr extends FuncExpr {
   key = ExpressionKey.COLUMNS;
@@ -21219,12 +21887,13 @@ export class ColumnsExpr extends FuncExpr {
   }
 }
 
-export type ConvertExprArgs = {
-  this: Expression;
-  expression: Expression;
-  style?: Expression;
-  safe?: boolean;
-} & FuncExprArgs;
+export type ConvertExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    style?: Expression;
+    safe?: boolean; },
+]>;
 
 export class ConvertExpr extends FuncExpr {
   key = ExpressionKey.CONVERT;
@@ -21268,11 +21937,12 @@ export class ConvertExpr extends FuncExpr {
   }
 }
 
-export type ConvertToCharsetExprArgs = {
-  this: Expression;
-  dest: Expression;
-  source?: Expression;
-} & FuncExprArgs;
+export type ConvertToCharsetExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    dest: Expression;
+    source?: Expression; },
+]>;
 
 export class ConvertToCharsetExpr extends FuncExpr {
   key = ExpressionKey.CONVERT_TO_CHARSET;
@@ -21311,12 +21981,13 @@ export class ConvertToCharsetExpr extends FuncExpr {
   }
 }
 
-export type ConvertTimezoneExprArgs = {
-  sourceTz?: Expression;
-  targetTz: Expression;
-  timestamp: Expression;
-  options?: Expression[];
-} & FuncExprArgs;
+export type ConvertTimezoneExprArgs = Merge<[
+  FuncExprArgs,
+  { sourceTz?: Expression;
+    targetTz: Expression;
+    timestamp: Expression;
+    options?: Expression[]; },
+]>;
 
 export class ConvertTimezoneExpr extends FuncExpr {
   key = ExpressionKey.CONVERT_TIMEZONE;
@@ -21360,7 +22031,9 @@ export class ConvertTimezoneExpr extends FuncExpr {
   }
 }
 
-export type CodePointsToStringExprArgs = FuncExprArgs;
+export type CodePointsToStringExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CodePointsToStringExpr extends FuncExpr {
   key = ExpressionKey.CODE_POINTS_TO_STRING;
@@ -21380,12 +22053,13 @@ export class CodePointsToStringExpr extends FuncExpr {
   }
 }
 
-export type GenerateSeriesExprArgs = {
-  start: Expression;
-  end: Expression;
-  step?: Expression;
-  isEndExclusive?: Expression;
-} & FuncExprArgs;
+export type GenerateSeriesExprArgs = Merge<[
+  FuncExprArgs,
+  { start: Expression;
+    end: Expression;
+    step?: Expression;
+    isEndExclusive?: Expression; },
+]>;
 
 export class GenerateSeriesExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_SERIES;
@@ -21428,10 +22102,12 @@ export class GenerateSeriesExpr extends FuncExpr {
 /**
  * https://docs.snowflake.com/en/sql-reference/functions/generator
  */
-export type GeneratorExprArgs = {
-  rowcount?: Expression;
-  timelimit?: Expression;
-} & FuncExprArgs & UDTFExprArgs;
+export type GeneratorExprArgs = Merge<[
+  FuncExprArgs,
+  UDTFExprArgs,
+  { rowcount?: Expression;
+    timelimit?: Expression; },
+]>;
 
 export class GeneratorExpr extends multiInherit(FuncExpr, UDTFExpr) {
   key = ExpressionKey.GENERATOR;
@@ -21462,11 +22138,12 @@ export class GeneratorExpr extends multiInherit(FuncExpr, UDTFExpr) {
   }
 }
 
-export type AIClassifyExprArgs = {
-  this: Expression;
-  categories: Expression;
-  config?: Expression;
-} & FuncExprArgs;
+export type AIClassifyExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    categories: Expression;
+    config?: Expression; },
+]>;
 
 export class AIClassifyExpr extends FuncExpr {
   key = ExpressionKey.AI_CLASSIFY;
@@ -21503,10 +22180,11 @@ export class AIClassifyExpr extends FuncExpr {
   }
 }
 
-export type ArrayAllExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type ArrayAllExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class ArrayAllExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_ALL;
@@ -21539,10 +22217,11 @@ export class ArrayAllExpr extends FuncExpr {
 /**
  * Represents Python's `any(f(x) for x in array)`, where `array` is `this` and `f` is `expression`
  */
-export type ArrayAnyExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type ArrayAnyExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class ArrayAnyExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_ANY;
@@ -21572,11 +22251,12 @@ export class ArrayAnyExpr extends FuncExpr {
   }
 }
 
-export type ArrayAppendExprArgs = {
-  this: Expression;
-  expression: Expression;
-  nullPropagation?: Expression;
-} & FuncExprArgs;
+export type ArrayAppendExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    nullPropagation?: Expression; },
+]>;
 
 export class ArrayAppendExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_APPEND;
@@ -21611,11 +22291,12 @@ export class ArrayAppendExpr extends FuncExpr {
   }
 }
 
-export type ArrayPrependExprArgs = {
-  this: Expression;
-  expression: Expression;
-  nullPropagation?: Expression;
-} & FuncExprArgs;
+export type ArrayPrependExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    nullPropagation?: Expression; },
+]>;
 
 export class ArrayPrependExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_PREPEND;
@@ -21650,11 +22331,12 @@ export class ArrayPrependExpr extends FuncExpr {
   }
 }
 
-export type ArrayConcatExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-  nullPropagation?: Expression;
-} & FuncExprArgs;
+export type ArrayConcatExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[];
+    nullPropagation?: Expression; },
+]>;
 
 export class ArrayConcatExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_CONCAT;
@@ -21693,7 +22375,9 @@ export class ArrayConcatExpr extends FuncExpr {
   }
 }
 
-export type ArrayCompactExprArgs = FuncExprArgs;
+export type ArrayCompactExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ArrayCompactExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_COMPACT;
@@ -21713,12 +22397,13 @@ export class ArrayCompactExpr extends FuncExpr {
   }
 }
 
-export type ArrayInsertExprArgs = {
-  this: Expression;
-  position: Expression;
-  expression: Expression;
-  offset?: Expression;
-} & FuncExprArgs;
+export type ArrayInsertExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    position: Expression;
+    expression: Expression;
+    offset?: Expression; },
+]>;
 
 export class ArrayInsertExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_INSERT;
@@ -21758,10 +22443,11 @@ export class ArrayInsertExpr extends FuncExpr {
   }
 }
 
-export type ArrayRemoveAtExprArgs = {
-  this: Expression;
-  position: Expression;
-} & FuncExprArgs;
+export type ArrayRemoveAtExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    position: Expression; },
+]>;
 
 export class ArrayRemoveAtExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_REMOVE_AT;
@@ -21791,9 +22477,10 @@ export class ArrayRemoveAtExpr extends FuncExpr {
   }
 }
 
-export type ArrayConstructCompactExprArgs = {
-  expressions?: Expression[];
-} & FuncExprArgs;
+export type ArrayConstructCompactExprArgs = Merge<[
+  FuncExprArgs,
+  { expressions?: Expression[] },
+]>;
 
 export class ArrayConstructCompactExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_CONSTRUCT_COMPACT;
@@ -21820,11 +22507,13 @@ export class ArrayConstructCompactExpr extends FuncExpr {
   }
 }
 
-export type ArrayContainsExprArgs = {
-  this: Expression;
-  expression: Expression;
-  ensureVariant?: Expression;
-} & BinaryExprArgs & FuncExprArgs;
+export type ArrayContainsExprArgs = Merge<[
+  BinaryExprArgs,
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    ensureVariant?: Expression; },
+]>;
 
 export class ArrayContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.ARRAY_CONTAINS;
@@ -21862,10 +22551,12 @@ export class ArrayContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type ArrayContainsAllExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & BinaryExprArgs & FuncExprArgs;
+export type ArrayContainsAllExprArgs = Merge<[
+  BinaryExprArgs,
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class ArrayContainsAllExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.ARRAY_CONTAINS_ALL;
@@ -21898,10 +22589,11 @@ export class ArrayContainsAllExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type ArrayFilterExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type ArrayFilterExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class ArrayFilterExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_FILTER;
@@ -21933,7 +22625,9 @@ export class ArrayFilterExpr extends FuncExpr {
   }
 }
 
-export type ArrayFirstExprArgs = FuncExprArgs;
+export type ArrayFirstExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ArrayFirstExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_FIRST;
@@ -21953,7 +22647,9 @@ export class ArrayFirstExpr extends FuncExpr {
   }
 }
 
-export type ArrayLastExprArgs = FuncExprArgs;
+export type ArrayLastExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ArrayLastExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_LAST;
@@ -21973,7 +22669,9 @@ export class ArrayLastExpr extends FuncExpr {
   }
 }
 
-export type ArrayReverseExprArgs = FuncExprArgs;
+export type ArrayReverseExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ArrayReverseExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_REVERSE;
@@ -21993,12 +22691,13 @@ export class ArrayReverseExpr extends FuncExpr {
   }
 }
 
-export type ArraySliceExprArgs = {
-  this: Expression;
-  start: Expression;
-  end?: Expression;
-  step?: Expression;
-} & FuncExprArgs;
+export type ArraySliceExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    start: Expression;
+    end?: Expression;
+    step?: Expression; },
+]>;
 
 export class ArraySliceExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SLICE;
@@ -22038,11 +22737,12 @@ export class ArraySliceExpr extends FuncExpr {
   }
 }
 
-export type ArrayToStringExprArgs = {
-  this: Expression;
-  expression: Expression;
-  null?: Expression;
-} & FuncExprArgs;
+export type ArrayToStringExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    null?: Expression; },
+]>;
 
 export class ArrayToStringExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_TO_STRING;
@@ -22079,9 +22779,10 @@ export class ArrayToStringExpr extends FuncExpr {
   }
 }
 
-export type ArrayIntersectExprArgs = {
-  expressions: Expression[];
-} & FuncExprArgs;
+export type ArrayIntersectExprArgs = Merge<[
+  FuncExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class ArrayIntersectExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_INTERSECT;
@@ -22110,11 +22811,12 @@ export class ArrayIntersectExpr extends FuncExpr {
   }
 }
 
-export type StPointExprArgs = {
-  this: Expression;
-  expression: Expression;
-  null?: Expression;
-} & FuncExprArgs;
+export type StPointExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    null?: Expression; },
+]>;
 
 export class StPointExpr extends FuncExpr {
   key = ExpressionKey.ST_POINT;
@@ -22151,11 +22853,12 @@ export class StPointExpr extends FuncExpr {
   }
 }
 
-export type StDistanceExprArgs = {
-  this: Expression;
-  expression: Expression;
-  useSpheroid?: Expression;
-} & FuncExprArgs;
+export type StDistanceExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    useSpheroid?: Expression; },
+]>;
 
 export class StDistanceExpr extends FuncExpr {
   key = ExpressionKey.ST_DISTANCE;
@@ -22193,10 +22896,11 @@ export class StDistanceExpr extends FuncExpr {
 /**
  * https://cloud.google.com/bigquery/docs/reference/standard-sql/timestamp_functions#string
  */
-export type StringExprArgs = {
-  this: Expression;
-  zone?: Expression;
-} & FuncExprArgs;
+export type StringExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    zone?: Expression; },
+]>;
 
 export class StringExpr extends FuncExpr {
   key = ExpressionKey.STRING;
@@ -22226,11 +22930,12 @@ export class StringExpr extends FuncExpr {
   }
 }
 
-export type StringToArrayExprArgs = {
-  this: Expression;
-  expression?: Expression;
-  null?: Expression;
-} & FuncExprArgs;
+export type StringToArrayExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression;
+    null?: Expression; },
+]>;
 
 export class StringToArrayExpr extends FuncExpr {
   key = ExpressionKey.STRING_TO_ARRAY;
@@ -22271,10 +22976,12 @@ export class StringToArrayExpr extends FuncExpr {
   }
 }
 
-export type ArrayOverlapsExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & BinaryExprArgs & FuncExprArgs;
+export type ArrayOverlapsExprArgs = Merge<[
+  BinaryExprArgs,
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class ArrayOverlapsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.ARRAY_OVERLAPS;
@@ -22305,10 +23012,11 @@ export class ArrayOverlapsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type ArraySizeExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type ArraySizeExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class ArraySizeExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SIZE;
@@ -22340,10 +23048,11 @@ export class ArraySizeExpr extends FuncExpr {
   }
 }
 
-export type ArraySortExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type ArraySortExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class ArraySortExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SORT;
@@ -22373,10 +23082,11 @@ export class ArraySortExpr extends FuncExpr {
   }
 }
 
-export type ArraySumExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type ArraySumExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class ArraySumExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SUM;
@@ -22406,9 +23116,10 @@ export class ArraySumExpr extends FuncExpr {
   }
 }
 
-export type ArraysZipExprArgs = {
-  expressions?: Expression[];
-} & FuncExprArgs;
+export type ArraysZipExprArgs = Merge<[
+  FuncExprArgs,
+  { expressions?: Expression[] },
+]>;
 
 export class ArraysZipExpr extends FuncExpr {
   key = ExpressionKey.ARRAYS_ZIP;
@@ -22435,11 +23146,12 @@ export class ArraysZipExpr extends FuncExpr {
   }
 }
 
-export type CaseExprArgs = {
-  this?: Expression;
-  ifs: Expression[];
-  default?: Expression;
-} & FuncExprArgs;
+export type CaseExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression;
+    ifs: Expression[];
+    default?: Expression; },
+]>;
 
 export class CaseExpr extends FuncExpr {
   key = ExpressionKey.CASE;
@@ -22507,14 +23219,15 @@ export class CaseExpr extends FuncExpr {
   }
 }
 
-export type CastExprArgs = {
-  this: Expression;
-  to: Expression;
-  format?: string;
-  safe?: boolean;
-  action?: Expression;
-  default?: Expression;
-} & FuncExprArgs;
+export type CastExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    to: Expression;
+    format?: string;
+    safe?: boolean;
+    action?: Expression;
+    default?: Expression; },
+]>;
 
 export class CastExpr extends FuncExpr {
   key = ExpressionKey.CAST;
@@ -22589,7 +23302,9 @@ export class CastExpr extends FuncExpr {
   }
 }
 
-export type JustifyDaysExprArgs = FuncExprArgs;
+export type JustifyDaysExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class JustifyDaysExpr extends FuncExpr {
   key = ExpressionKey.JUSTIFY_DAYS;
@@ -22609,7 +23324,9 @@ export class JustifyDaysExpr extends FuncExpr {
   }
 }
 
-export type JustifyHoursExprArgs = FuncExprArgs;
+export type JustifyHoursExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class JustifyHoursExpr extends FuncExpr {
   key = ExpressionKey.JUSTIFY_HOURS;
@@ -22629,7 +23346,9 @@ export class JustifyHoursExpr extends FuncExpr {
   }
 }
 
-export type JustifyIntervalExprArgs = FuncExprArgs;
+export type JustifyIntervalExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class JustifyIntervalExpr extends FuncExpr {
   key = ExpressionKey.JUSTIFY_INTERVAL;
@@ -22649,7 +23368,9 @@ export class JustifyIntervalExpr extends FuncExpr {
   }
 }
 
-export type TryExprArgs = FuncExprArgs;
+export type TryExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TryExpr extends FuncExpr {
   key = ExpressionKey.TRY;
@@ -22669,10 +23390,11 @@ export class TryExpr extends FuncExpr {
   }
 }
 
-export type CastToStrTypeExprArgs = {
-  this: Expression;
-  to: Expression;
-} & FuncExprArgs;
+export type CastToStrTypeExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    to: Expression; },
+]>;
 
 export class CastToStrTypeExpr extends FuncExpr {
   key = ExpressionKey.CAST_TO_STR_TYPE;
@@ -22702,9 +23424,10 @@ export class CastToStrTypeExpr extends FuncExpr {
   }
 }
 
-export type CheckJsonExprArgs = {
-  this: Expression;
-} & FuncExprArgs;
+export type CheckJsonExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression },
+]>;
 
 export class CheckJsonExpr extends FuncExpr {
   key = ExpressionKey.CHECK_JSON;
@@ -22729,10 +23452,11 @@ export class CheckJsonExpr extends FuncExpr {
   }
 }
 
-export type CheckXmlExprArgs = {
-  this: Expression;
-  disableAutoConvert?: Expression;
-} & FuncExprArgs;
+export type CheckXmlExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    disableAutoConvert?: Expression; },
+]>;
 
 export class CheckXmlExpr extends FuncExpr {
   key = ExpressionKey.CHECK_XML;
@@ -22762,7 +23486,10 @@ export class CheckXmlExpr extends FuncExpr {
   }
 }
 
-export type CollateExprArgs = BinaryExprArgs & FuncExprArgs;
+export type CollateExprArgs = Merge<[
+  BinaryExprArgs,
+  FuncExprArgs,
+]>;
 
 export class CollateExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.COLLATE;
@@ -22783,7 +23510,9 @@ export class CollateExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type CollationExprArgs = FuncExprArgs;
+export type CollationExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CollationExpr extends FuncExpr {
   key = ExpressionKey.COLLATION;
@@ -22803,11 +23532,12 @@ export class CollationExpr extends FuncExpr {
   }
 }
 
-export type CeilExprArgs = {
-  this: Expression;
-  decimals?: Expression;
-  to?: Expression;
-} & FuncExprArgs;
+export type CeilExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    decimals?: Expression;
+    to?: Expression; },
+]>;
 
 export class CeilExpr extends FuncExpr {
   key = ExpressionKey.CEIL;
@@ -22845,12 +23575,13 @@ export class CeilExpr extends FuncExpr {
   }
 }
 
-export type CoalesceExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-  isNvl?: Expression;
-  isNull?: Expression;
-} & FuncExprArgs;
+export type CoalesceExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[];
+    isNvl?: Expression;
+    isNull?: Expression; },
+]>;
 
 export class CoalesceExpr extends FuncExpr {
   key = ExpressionKey.COALESCE;
@@ -22898,10 +23629,11 @@ export class CoalesceExpr extends FuncExpr {
   }
 }
 
-export type ChrExprArgs = {
-  expressions: Expression[];
-  charset?: string;
-} & FuncExprArgs;
+export type ChrExprArgs = Merge<[
+  FuncExprArgs,
+  { expressions: Expression[];
+    charset?: string; },
+]>;
 
 export class ChrExpr extends FuncExpr {
   key = ExpressionKey.CHR;
@@ -22935,11 +23667,12 @@ export class ChrExpr extends FuncExpr {
   }
 }
 
-export type ConcatExprArgs = {
-  expressions: Expression[];
-  safe?: boolean;
-  coalesce?: Expression;
-} & FuncExprArgs;
+export type ConcatExprArgs = Merge<[
+  FuncExprArgs,
+  { expressions: Expression[];
+    safe?: boolean;
+    coalesce?: Expression; },
+]>;
 
 export class ConcatExpr extends FuncExpr {
   key = ExpressionKey.CONCAT;
@@ -22976,11 +23709,12 @@ export class ConcatExpr extends FuncExpr {
   }
 }
 
-export type ContainsExprArgs = {
-  this: Expression;
-  expression: Expression;
-  jsonScope?: Expression;
-} & FuncExprArgs;
+export type ContainsExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    jsonScope?: Expression; },
+]>;
 
 export class ContainsExpr extends FuncExpr {
   key = ExpressionKey.CONTAINS;
@@ -23015,7 +23749,9 @@ export class ContainsExpr extends FuncExpr {
   }
 }
 
-export type ConnectByRootExprArgs = FuncExprArgs;
+export type ConnectByRootExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ConnectByRootExpr extends FuncExpr {
   key = ExpressionKey.CONNECT_BY_ROOT;
@@ -23035,7 +23771,9 @@ export class ConnectByRootExpr extends FuncExpr {
   }
 }
 
-export type CbrtExprArgs = FuncExprArgs;
+export type CbrtExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CbrtExpr extends FuncExpr {
   key = ExpressionKey.CBRT;
@@ -23055,7 +23793,9 @@ export class CbrtExpr extends FuncExpr {
   }
 }
 
-export type CurrentAccountExprArgs = FuncExprArgs;
+export type CurrentAccountExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentAccountExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ACCOUNT;
@@ -23075,7 +23815,9 @@ export class CurrentAccountExpr extends FuncExpr {
   }
 }
 
-export type CurrentAccountNameExprArgs = FuncExprArgs;
+export type CurrentAccountNameExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentAccountNameExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ACCOUNT_NAME;
@@ -23095,7 +23837,9 @@ export class CurrentAccountNameExpr extends FuncExpr {
   }
 }
 
-export type CurrentAvailableRolesExprArgs = FuncExprArgs;
+export type CurrentAvailableRolesExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentAvailableRolesExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_AVAILABLE_ROLES;
@@ -23115,7 +23859,9 @@ export class CurrentAvailableRolesExpr extends FuncExpr {
   }
 }
 
-export type CurrentClientExprArgs = FuncExprArgs;
+export type CurrentClientExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentClientExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_CLIENT;
@@ -23135,7 +23881,9 @@ export class CurrentClientExpr extends FuncExpr {
   }
 }
 
-export type CurrentIpAddressExprArgs = FuncExprArgs;
+export type CurrentIpAddressExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentIpAddressExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_IP_ADDRESS;
@@ -23155,7 +23903,9 @@ export class CurrentIpAddressExpr extends FuncExpr {
   }
 }
 
-export type CurrentDatabaseExprArgs = FuncExprArgs;
+export type CurrentDatabaseExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentDatabaseExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_DATABASE;
@@ -23175,9 +23925,10 @@ export class CurrentDatabaseExpr extends FuncExpr {
   }
 }
 
-export type CurrentSchemasExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type CurrentSchemasExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class CurrentSchemasExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SCHEMAS;
@@ -23202,7 +23953,9 @@ export class CurrentSchemasExpr extends FuncExpr {
   }
 }
 
-export type CurrentSecondaryRolesExprArgs = FuncExprArgs;
+export type CurrentSecondaryRolesExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentSecondaryRolesExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SECONDARY_ROLES;
@@ -23222,7 +23975,9 @@ export class CurrentSecondaryRolesExpr extends FuncExpr {
   }
 }
 
-export type CurrentSessionExprArgs = FuncExprArgs;
+export type CurrentSessionExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentSessionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SESSION;
@@ -23242,7 +23997,9 @@ export class CurrentSessionExpr extends FuncExpr {
   }
 }
 
-export type CurrentStatementExprArgs = FuncExprArgs;
+export type CurrentStatementExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentStatementExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_STATEMENT;
@@ -23262,7 +24019,9 @@ export class CurrentStatementExpr extends FuncExpr {
   }
 }
 
-export type CurrentVersionExprArgs = FuncExprArgs;
+export type CurrentVersionExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentVersionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_VERSION;
@@ -23282,7 +24041,9 @@ export class CurrentVersionExpr extends FuncExpr {
   }
 }
 
-export type CurrentTransactionExprArgs = FuncExprArgs;
+export type CurrentTransactionExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentTransactionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TRANSACTION;
@@ -23302,7 +24063,9 @@ export class CurrentTransactionExpr extends FuncExpr {
   }
 }
 
-export type CurrentWarehouseExprArgs = FuncExprArgs;
+export type CurrentWarehouseExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentWarehouseExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_WAREHOUSE;
@@ -23322,9 +24085,10 @@ export class CurrentWarehouseExpr extends FuncExpr {
   }
 }
 
-export type CurrentDateExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type CurrentDateExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class CurrentDateExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_DATE;
@@ -23349,9 +24113,10 @@ export class CurrentDateExpr extends FuncExpr {
   }
 }
 
-export type CurrentDatetimeExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type CurrentDatetimeExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class CurrentDatetimeExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_DATETIME;
@@ -23376,9 +24141,10 @@ export class CurrentDatetimeExpr extends FuncExpr {
   }
 }
 
-export type CurrentTimeExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type CurrentTimeExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class CurrentTimeExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIME;
@@ -23403,9 +24169,10 @@ export class CurrentTimeExpr extends FuncExpr {
   }
 }
 
-export type LocaltimeExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type LocaltimeExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class LocaltimeExpr extends FuncExpr {
   key = ExpressionKey.LOCALTIME;
@@ -23430,9 +24197,10 @@ export class LocaltimeExpr extends FuncExpr {
   }
 }
 
-export type LocaltimestampExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type LocaltimestampExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class LocaltimestampExpr extends FuncExpr {
   key = ExpressionKey.LOCALTIMESTAMP;
@@ -23457,9 +24225,10 @@ export class LocaltimestampExpr extends FuncExpr {
   }
 }
 
-export type SystimestampExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type SystimestampExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class SystimestampExpr extends FuncExpr {
   key = ExpressionKey.SYSTIMESTAMP;
@@ -23484,10 +24253,11 @@ export class SystimestampExpr extends FuncExpr {
   }
 }
 
-export type CurrentTimestampExprArgs = {
-  this?: Expression;
-  sysdate?: Expression;
-} & FuncExprArgs;
+export type CurrentTimestampExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression;
+    sysdate?: Expression; },
+]>;
 
 export class CurrentTimestampExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMESTAMP;
@@ -23517,7 +24287,9 @@ export class CurrentTimestampExpr extends FuncExpr {
   }
 }
 
-export type CurrentTimestampLTZExprArgs = FuncExprArgs;
+export type CurrentTimestampLTZExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentTimestampLTZExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMESTAMP_LTZ;
@@ -23537,7 +24309,9 @@ export class CurrentTimestampLTZExpr extends FuncExpr {
   }
 }
 
-export type CurrentTimezoneExprArgs = FuncExprArgs;
+export type CurrentTimezoneExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentTimezoneExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMEZONE;
@@ -23557,7 +24331,9 @@ export class CurrentTimezoneExpr extends FuncExpr {
   }
 }
 
-export type CurrentOrganizationNameExprArgs = FuncExprArgs;
+export type CurrentOrganizationNameExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentOrganizationNameExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ORGANIZATION_NAME;
@@ -23577,9 +24353,10 @@ export class CurrentOrganizationNameExpr extends FuncExpr {
   }
 }
 
-export type CurrentSchemaExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type CurrentSchemaExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class CurrentSchemaExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SCHEMA;
@@ -23604,9 +24381,10 @@ export class CurrentSchemaExpr extends FuncExpr {
   }
 }
 
-export type CurrentUserExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type CurrentUserExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class CurrentUserExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_USER;
@@ -23631,7 +24409,9 @@ export class CurrentUserExpr extends FuncExpr {
   }
 }
 
-export type CurrentCatalogExprArgs = FuncExprArgs;
+export type CurrentCatalogExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentCatalogExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_CATALOG;
@@ -23651,7 +24431,9 @@ export class CurrentCatalogExpr extends FuncExpr {
   }
 }
 
-export type CurrentRegionExprArgs = FuncExprArgs;
+export type CurrentRegionExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentRegionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_REGION;
@@ -23671,7 +24453,9 @@ export class CurrentRegionExpr extends FuncExpr {
   }
 }
 
-export type CurrentRoleExprArgs = FuncExprArgs;
+export type CurrentRoleExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentRoleExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ROLE;
@@ -23691,7 +24475,9 @@ export class CurrentRoleExpr extends FuncExpr {
   }
 }
 
-export type CurrentRoleTypeExprArgs = FuncExprArgs;
+export type CurrentRoleTypeExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentRoleTypeExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ROLE_TYPE;
@@ -23711,7 +24497,9 @@ export class CurrentRoleTypeExpr extends FuncExpr {
   }
 }
 
-export type CurrentOrganizationUserExprArgs = FuncExprArgs;
+export type CurrentOrganizationUserExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class CurrentOrganizationUserExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ORGANIZATION_USER;
@@ -23731,7 +24519,9 @@ export class CurrentOrganizationUserExpr extends FuncExpr {
   }
 }
 
-export type SessionUserExprArgs = FuncExprArgs;
+export type SessionUserExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SessionUserExpr extends FuncExpr {
   key = ExpressionKey.SESSION_USER;
@@ -23751,7 +24541,9 @@ export class SessionUserExpr extends FuncExpr {
   }
 }
 
-export type UtcDateExprArgs = FuncExprArgs;
+export type UtcDateExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class UtcDateExpr extends FuncExpr {
   key = ExpressionKey.UTC_DATE;
@@ -23771,9 +24563,10 @@ export class UtcDateExpr extends FuncExpr {
   }
 }
 
-export type UtcTimeExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type UtcTimeExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class UtcTimeExpr extends FuncExpr {
   key = ExpressionKey.UTC_TIME;
@@ -23798,9 +24591,10 @@ export class UtcTimeExpr extends FuncExpr {
   }
 }
 
-export type UtcTimestampExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type UtcTimestampExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class UtcTimestampExpr extends FuncExpr {
   key = ExpressionKey.UTC_TIMESTAMP;
@@ -23825,11 +24619,13 @@ export class UtcTimestampExpr extends FuncExpr {
   }
 }
 
-export type DateAddExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit?: Expression;
-} & FuncExprArgs & IntervalOpExprArgs;
+export type DateAddExprArgs = Merge<[
+  FuncExprArgs,
+  IntervalOpExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit?: Expression; },
+]>;
 
 export class DateAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   key = ExpressionKey.DATE_ADD;
@@ -23865,13 +24661,15 @@ export class DateAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   }
 }
 
-export type DateBinExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit?: Expression;
-  zone?: Expression;
-  origin?: Expression;
-} & FuncExprArgs & IntervalOpExprArgs;
+export type DateBinExprArgs = Merge<[
+  FuncExprArgs,
+  IntervalOpExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit?: Expression;
+    zone?: Expression;
+    origin?: Expression; },
+]>;
 
 export class DateBinExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   key = ExpressionKey.DATE_BIN;
@@ -23917,11 +24715,13 @@ export class DateBinExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   }
 }
 
-export type DateSubExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit?: Expression;
-} & FuncExprArgs & IntervalOpExprArgs;
+export type DateSubExprArgs = Merge<[
+  FuncExprArgs,
+  IntervalOpExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit?: Expression; },
+]>;
 
 export class DateSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   key = ExpressionKey.DATE_SUB;
@@ -23957,14 +24757,16 @@ export class DateSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   }
 }
 
-export type DateDiffExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit?: Expression;
-  zone?: Expression;
-  bigInt?: Expression;
-  datePartBoundary?: Expression;
-} & FuncExprArgs & TimeUnitExprArgs;
+export type DateDiffExprArgs = Merge<[
+  FuncExprArgs,
+  TimeUnitExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit?: Expression;
+    zone?: Expression;
+    bigInt?: Expression;
+    datePartBoundary?: Expression; },
+]>;
 
 export class DateDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.DATE_DIFF;
@@ -24017,13 +24819,14 @@ export class DateDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type DateTruncExprArgs = {
-  unit: Expression;
-  this: Expression;
-  zone?: Expression;
-  inputTypePreserved?: DataTypeExpr;
-  unabbreviate?: boolean;
-} & FuncExprArgs;
+export type DateTruncExprArgs = Merge<[
+  FuncExprArgs,
+  { unit: Expression;
+    this: Expression;
+    zone?: Expression;
+    inputTypePreserved?: DataTypeExpr;
+    unabbreviate?: boolean; },
+]>;
 
 export class DateTruncExpr extends FuncExpr {
   key = ExpressionKey.DATE_TRUNC;
@@ -24082,10 +24885,11 @@ export class DateTruncExpr extends FuncExpr {
   }
 }
 
-export type DatetimeExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type DatetimeExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class DatetimeExpr extends FuncExpr {
   key = ExpressionKey.DATETIME;
@@ -24115,11 +24919,13 @@ export class DatetimeExpr extends FuncExpr {
   }
 }
 
-export type DatetimeAddExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit?: Expression;
-} & FuncExprArgs & IntervalOpExprArgs;
+export type DatetimeAddExprArgs = Merge<[
+  FuncExprArgs,
+  IntervalOpExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit?: Expression; },
+]>;
 
 export class DatetimeAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   key = ExpressionKey.DATETIME_ADD;
@@ -24155,11 +24961,13 @@ export class DatetimeAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   }
 }
 
-export type DatetimeSubExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit?: Expression;
-} & FuncExprArgs & IntervalOpExprArgs;
+export type DatetimeSubExprArgs = Merge<[
+  FuncExprArgs,
+  IntervalOpExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit?: Expression; },
+]>;
 
 export class DatetimeSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   key = ExpressionKey.DATETIME_SUB;
@@ -24195,11 +25003,13 @@ export class DatetimeSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   }
 }
 
-export type DatetimeDiffExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit?: Expression;
-} & FuncExprArgs & TimeUnitExprArgs;
+export type DatetimeDiffExprArgs = Merge<[
+  FuncExprArgs,
+  TimeUnitExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit?: Expression; },
+]>;
 
 export class DatetimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.DATETIME_DIFF;
@@ -24235,11 +25045,13 @@ export class DatetimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type DatetimeTruncExprArgs = {
-  this: Expression;
-  unit: Expression;
-  zone?: Expression;
-} & FuncExprArgs & TimeUnitExprArgs;
+export type DatetimeTruncExprArgs = Merge<[
+  FuncExprArgs,
+  TimeUnitExprArgs,
+  { this: Expression;
+    unit: Expression;
+    zone?: Expression; },
+]>;
 
 export class DatetimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.DATETIME_TRUNC;
@@ -24275,7 +25087,9 @@ export class DatetimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type DateFromUnixDateExprArgs = FuncExprArgs;
+export type DateFromUnixDateExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class DateFromUnixDateExpr extends FuncExpr {
   key = ExpressionKey.DATE_FROM_UNIX_DATE;
@@ -24295,7 +25109,9 @@ export class DateFromUnixDateExpr extends FuncExpr {
   }
 }
 
-export type DayOfWeekExprArgs = FuncExprArgs;
+export type DayOfWeekExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class DayOfWeekExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_WEEK;
@@ -24315,7 +25131,9 @@ export class DayOfWeekExpr extends FuncExpr {
   }
 }
 
-export type DayOfWeekIsoExprArgs = FuncExprArgs;
+export type DayOfWeekIsoExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class DayOfWeekIsoExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_WEEK_ISO;
@@ -24335,7 +25153,9 @@ export class DayOfWeekIsoExpr extends FuncExpr {
   }
 }
 
-export type DayOfMonthExprArgs = FuncExprArgs;
+export type DayOfMonthExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class DayOfMonthExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_MONTH;
@@ -24357,7 +25177,9 @@ export class DayOfMonthExpr extends FuncExpr {
   }
 }
 
-export type DayOfYearExprArgs = FuncExprArgs;
+export type DayOfYearExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class DayOfYearExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_YEAR;
@@ -24379,10 +25201,11 @@ export class DayOfYearExpr extends FuncExpr {
   }
 }
 
-export type DaynameExprArgs = {
-  this: Expression;
-  abbreviated?: Expression;
-} & FuncExprArgs;
+export type DaynameExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    abbreviated?: Expression; },
+]>;
 
 export class DaynameExpr extends FuncExpr {
   key = ExpressionKey.DAYNAME;
@@ -24412,7 +25235,9 @@ export class DaynameExpr extends FuncExpr {
   }
 }
 
-export type ToDaysExprArgs = FuncExprArgs;
+export type ToDaysExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ToDaysExpr extends FuncExpr {
   key = ExpressionKey.TO_DAYS;
@@ -24432,7 +25257,9 @@ export class ToDaysExpr extends FuncExpr {
   }
 }
 
-export type WeekOfYearExprArgs = FuncExprArgs;
+export type WeekOfYearExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class WeekOfYearExpr extends FuncExpr {
   key = ExpressionKey.WEEK_OF_YEAR;
@@ -24452,7 +25279,9 @@ export class WeekOfYearExpr extends FuncExpr {
   }
 }
 
-export type YearOfWeekExprArgs = FuncExprArgs;
+export type YearOfWeekExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class YearOfWeekExpr extends FuncExpr {
   key = ExpressionKey.YEAR_OF_WEEK;
@@ -24474,7 +25303,9 @@ export class YearOfWeekExpr extends FuncExpr {
   }
 }
 
-export type YearOfWeekIsoExprArgs = FuncExprArgs;
+export type YearOfWeekIsoExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class YearOfWeekIsoExpr extends FuncExpr {
   key = ExpressionKey.YEAR_OF_WEEK_ISO;
@@ -24496,11 +25327,12 @@ export class YearOfWeekIsoExpr extends FuncExpr {
   }
 }
 
-export type MonthsBetweenExprArgs = {
-  this: Expression;
-  expression: Expression;
-  roundoff?: Expression;
-} & FuncExprArgs;
+export type MonthsBetweenExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    roundoff?: Expression; },
+]>;
 
 export class MonthsBetweenExpr extends FuncExpr {
   key = ExpressionKey.MONTHS_BETWEEN;
@@ -24535,15 +25367,16 @@ export class MonthsBetweenExpr extends FuncExpr {
   }
 }
 
-export type MakeIntervalExprArgs = {
-  year?: Expression;
-  month?: Expression;
-  week?: Expression;
-  day?: Expression;
-  hour?: Expression;
-  minute?: Expression;
-  second?: Expression;
-} & FuncExprArgs;
+export type MakeIntervalExprArgs = Merge<[
+  FuncExprArgs,
+  { year?: Expression;
+    month?: Expression;
+    week?: Expression;
+    day?: Expression;
+    hour?: Expression;
+    minute?: Expression;
+    second?: Expression; },
+]>;
 
 export class MakeIntervalExpr extends FuncExpr {
   key = ExpressionKey.MAKE_INTERVAL;
@@ -24602,10 +25435,11 @@ export class MakeIntervalExpr extends FuncExpr {
   }
 }
 
-export type LastDayExprArgs = {
-  this: Expression;
-  unit?: Expression;
-} & FuncExprArgs;
+export type LastDayExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    unit?: Expression; },
+]>;
 
 export class LastDayExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.LAST_DAY;
@@ -24636,10 +25470,11 @@ export class LastDayExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type PreviousDayExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type PreviousDayExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class PreviousDayExpr extends FuncExpr {
   key = ExpressionKey.PREVIOUS_DAY;
@@ -24669,7 +25504,9 @@ export class PreviousDayExpr extends FuncExpr {
   }
 }
 
-export type LaxBoolExprArgs = FuncExprArgs;
+export type LaxBoolExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class LaxBoolExpr extends FuncExpr {
   key = ExpressionKey.LAX_BOOL;
@@ -24689,7 +25526,9 @@ export class LaxBoolExpr extends FuncExpr {
   }
 }
 
-export type LaxFloat64ExprArgs = FuncExprArgs;
+export type LaxFloat64ExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class LaxFloat64Expr extends FuncExpr {
   key = ExpressionKey.LAX_FLOAT64;
@@ -24709,7 +25548,9 @@ export class LaxFloat64Expr extends FuncExpr {
   }
 }
 
-export type LaxInt64ExprArgs = FuncExprArgs;
+export type LaxInt64ExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class LaxInt64Expr extends FuncExpr {
   key = ExpressionKey.LAX_INT64;
@@ -24729,7 +25570,9 @@ export class LaxInt64Expr extends FuncExpr {
   }
 }
 
-export type LaxStringExprArgs = FuncExprArgs;
+export type LaxStringExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class LaxStringExpr extends FuncExpr {
   key = ExpressionKey.LAX_STRING;
@@ -24749,10 +25592,11 @@ export class LaxStringExpr extends FuncExpr {
   }
 }
 
-export type ExtractExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type ExtractExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class ExtractExpr extends FuncExpr {
   key = ExpressionKey.EXTRACT;
@@ -24782,10 +25626,11 @@ export class ExtractExpr extends FuncExpr {
   }
 }
 
-export type ExistsExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type ExistsExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 export class ExistsExpr extends multiInherit(FuncExpr, SubqueryPredicateExpr) {
   key = ExpressionKey.EXISTS;
 
@@ -24815,10 +25660,11 @@ export class ExistsExpr extends multiInherit(FuncExpr, SubqueryPredicateExpr) {
   }
 }
 
-export type EltExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-} & FuncExprArgs;
+export type EltExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class EltExpr extends FuncExpr {
   key = ExpressionKey.ELT;
@@ -24849,11 +25695,12 @@ export class EltExpr extends FuncExpr {
   }
 }
 
-export type TimestampExprArgs = {
-  this?: Expression;
-  zone?: Expression;
-  withTz?: Expression;
-} & FuncExprArgs;
+export type TimestampExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression;
+    zone?: Expression;
+    withTz?: Expression; },
+]>;
 
 export class TimestampExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP;
@@ -24892,11 +25739,12 @@ export class TimestampExpr extends FuncExpr {
   }
 }
 
-export type TimestampAddExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit?: Expression;
-} & FuncExprArgs;
+export type TimestampAddExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit?: Expression; },
+]>;
 
 export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_ADD;
@@ -24932,11 +25780,12 @@ export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TimestampSubExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit?: Expression;
-} & FuncExprArgs;
+export type TimestampSubExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit?: Expression; },
+]>;
 
 export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_SUB;
@@ -24972,11 +25821,12 @@ export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TimestampDiffExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit?: Expression;
-} & FuncExprArgs;
+export type TimestampDiffExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit?: Expression; },
+]>;
 
 export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_DIFF;
@@ -25012,12 +25862,13 @@ export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TimestampTruncExprArgs = {
-  this: Expression;
-  unit: Expression;
-  zone?: Expression;
-  inputTypePreserved?: DataTypeExpr;
-} & FuncExprArgs;
+export type TimestampTruncExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    unit: Expression;
+    zone?: Expression;
+    inputTypePreserved?: DataTypeExpr; },
+]>;
 
 export class TimestampTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_TRUNC;
@@ -25069,12 +25920,13 @@ export enum TimeSliceExprKind {
   START = 'START',
   END = 'END',
 }
-export type TimeSliceExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit: Expression;
-  kind?: TimeSliceExprKind;
-} & FuncExprArgs;
+export type TimeSliceExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit: Expression;
+    kind?: TimeSliceExprKind; },
+]>;
 
 export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_SLICE;
@@ -25119,11 +25971,12 @@ export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TimeAddExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit?: Expression;
-} & FuncExprArgs;
+export type TimeAddExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit?: Expression; },
+]>;
 
 export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_ADD;
@@ -25159,11 +26012,12 @@ export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TimeSubExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit?: Expression;
-} & FuncExprArgs;
+export type TimeSubExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit?: Expression; },
+]>;
 
 export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_SUB;
@@ -25199,11 +26053,12 @@ export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TimeDiffExprArgs = {
-  this: Expression;
-  expression: Expression;
-  unit?: Expression;
-} & FuncExprArgs;
+export type TimeDiffExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    unit?: Expression; },
+]>;
 
 export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_DIFF;
@@ -25239,11 +26094,12 @@ export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TimeTruncExprArgs = {
-  this: Expression;
-  unit: Expression;
-  zone?: Expression;
-} & FuncExprArgs;
+export type TimeTruncExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    unit: Expression;
+    zone?: Expression; },
+]>;
 
 export class TimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_TRUNC;
@@ -25283,12 +26139,13 @@ export class TimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type DateFromPartsExprArgs = {
-  year: Expression;
-  month?: Expression;
-  day?: Expression;
-  allowOverflow?: Expression;
-} & FuncExprArgs;
+export type DateFromPartsExprArgs = Merge<[
+  FuncExprArgs,
+  { year: Expression;
+    month?: Expression;
+    day?: Expression;
+    allowOverflow?: Expression; },
+]>;
 
 export class DateFromPartsExpr extends FuncExpr {
   key = ExpressionKey.DATE_FROM_PARTS;
@@ -25332,15 +26189,16 @@ export class DateFromPartsExpr extends FuncExpr {
   }
 }
 
-export type TimeFromPartsExprArgs = {
-  hour: Expression;
-  min: Expression;
-  sec: Expression;
-  nano?: Expression;
-  fractions?: Expression[];
-  precision?: number | Expression;
-  overflow?: Expression;
-} & FuncExprArgs;
+export type TimeFromPartsExprArgs = Merge<[
+  FuncExprArgs,
+  { hour: Expression;
+    min: Expression;
+    sec: Expression;
+    nano?: Expression;
+    fractions?: Expression[];
+    precision?: number | Expression;
+    overflow?: Expression; },
+]>;
 
 export class TimeFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIME_FROM_PARTS;
@@ -25399,7 +26257,9 @@ export class TimeFromPartsExpr extends FuncExpr {
   }
 }
 
-export type DateStrToDateExprArgs = FuncExprArgs;
+export type DateStrToDateExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class DateStrToDateExpr extends FuncExpr {
   key = ExpressionKey.DATE_STR_TO_DATE;
@@ -25419,7 +26279,9 @@ export class DateStrToDateExpr extends FuncExpr {
   }
 }
 
-export type DateToDateStrExprArgs = FuncExprArgs;
+export type DateToDateStrExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class DateToDateStrExpr extends FuncExpr {
   key = ExpressionKey.DATE_TO_DATE_STR;
@@ -25439,7 +26301,9 @@ export class DateToDateStrExpr extends FuncExpr {
   }
 }
 
-export type DateToDiExprArgs = FuncExprArgs;
+export type DateToDiExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class DateToDiExpr extends FuncExpr {
   key = ExpressionKey.DATE_TO_DI;
@@ -25459,11 +26323,12 @@ export class DateToDiExpr extends FuncExpr {
   }
 }
 
-export type DateExprArgs = {
-  this?: Expression;
-  expressions?: Expression[];
-  zone?: Expression;
-} & FuncExprArgs;
+export type DateExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression;
+    expressions?: Expression[];
+    zone?: Expression; },
+]>;
 
 export class DateExpr extends FuncExpr {
   key = ExpressionKey.DATE;
@@ -25500,7 +26365,9 @@ export class DateExpr extends FuncExpr {
   }
 }
 
-export type DayExprArgs = FuncExprArgs;
+export type DayExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class DayExpr extends FuncExpr {
   key = ExpressionKey.DAY;
@@ -25520,11 +26387,12 @@ export class DayExpr extends FuncExpr {
   }
 }
 
-export type DecodeExprArgs = {
-  this: Expression;
-  charset: string;
-  replace?: boolean;
-} & FuncExprArgs;
+export type DecodeExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    charset: string;
+    replace?: boolean; },
+]>;
 
 export class DecodeExpr extends FuncExpr {
   key = ExpressionKey.DECODE;
@@ -25563,9 +26431,10 @@ export class DecodeExpr extends FuncExpr {
   }
 }
 
-export type DecodeCaseExprArgs = {
-  expressions: Expression[];
-} & FuncExprArgs;
+export type DecodeCaseExprArgs = Merge<[
+  FuncExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class DecodeCaseExpr extends FuncExpr {
   key = ExpressionKey.DECODE_CASE;
@@ -25592,12 +26461,13 @@ export class DecodeCaseExpr extends FuncExpr {
   }
 }
 
-export type DecryptExprArgs = {
-  passphrase: Expression;
-  aad?: Expression;
-  encryptionMethod?: string;
-  safe?: boolean;
-} & FuncExprArgs;
+export type DecryptExprArgs = Merge<[
+  FuncExprArgs,
+  { passphrase: Expression;
+    aad?: Expression;
+    encryptionMethod?: string;
+    safe?: boolean; },
+]>;
 
 export class DecryptExpr extends FuncExpr {
   key = ExpressionKey.DECRYPT;
@@ -25641,14 +26511,15 @@ export class DecryptExpr extends FuncExpr {
   }
 }
 
-export type DecryptRawExprArgs = {
-  key: unknown;
-  iv: Expression;
-  aad?: Expression;
-  encryptionMethod?: string;
-  aead?: Expression;
-  safe?: boolean;
-} & FuncExprArgs;
+export type DecryptRawExprArgs = Merge<[
+  FuncExprArgs,
+  { key: unknown;
+    iv: Expression;
+    aad?: Expression;
+    encryptionMethod?: string;
+    aead?: Expression;
+    safe?: boolean; },
+]>;
 
 export class DecryptRawExpr extends FuncExpr {
   key = ExpressionKey.DECRYPT_RAW;
@@ -25702,7 +26573,9 @@ export class DecryptRawExpr extends FuncExpr {
   }
 }
 
-export type DiToDateExprArgs = FuncExprArgs;
+export type DiToDateExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class DiToDateExpr extends FuncExpr {
   key = ExpressionKey.DI_TO_DATE;
@@ -25722,10 +26595,11 @@ export class DiToDateExpr extends FuncExpr {
   }
 }
 
-export type EncodeExprArgs = {
-  this: Expression;
-  charset: string;
-} & FuncExprArgs;
+export type EncodeExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    charset: string; },
+]>;
 
 export class EncodeExpr extends FuncExpr {
   key = ExpressionKey.ENCODE;
@@ -25755,12 +26629,13 @@ export class EncodeExpr extends FuncExpr {
   }
 }
 
-export type EncryptExprArgs = {
-  this: Expression;
-  passphrase: Expression;
-  aad?: Expression;
-  encryptionMethod?: string;
-} & FuncExprArgs;
+export type EncryptExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    passphrase: Expression;
+    aad?: Expression;
+    encryptionMethod?: string; },
+]>;
 
 export class EncryptExpr extends FuncExpr {
   key = ExpressionKey.ENCRYPT;
@@ -25804,13 +26679,14 @@ export class EncryptExpr extends FuncExpr {
   }
 }
 
-export type EncryptRawExprArgs = {
-  this: Expression;
-  key: unknown;
-  iv: Expression;
-  aad?: Expression;
-  encryptionMethod?: string;
-} & FuncExprArgs;
+export type EncryptRawExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    key: unknown;
+    iv: Expression;
+    aad?: Expression;
+    encryptionMethod?: string; },
+]>;
 
 export class EncryptRawExpr extends FuncExpr {
   key = ExpressionKey.ENCRYPT_RAW;
@@ -25859,10 +26735,11 @@ export class EncryptRawExpr extends FuncExpr {
   }
 }
 
-export type EqualNullExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type EqualNullExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class EqualNullExpr extends FuncExpr {
   key = ExpressionKey.EQUAL_NULL;
@@ -25892,7 +26769,9 @@ export class EqualNullExpr extends FuncExpr {
   }
 }
 
-export type ExpExprArgs = FuncExprArgs;
+export type ExpExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ExpExpr extends FuncExpr {
   key = ExpressionKey.EXP;
@@ -25912,7 +26791,9 @@ export class ExpExpr extends FuncExpr {
   }
 }
 
-export type FactorialExprArgs = FuncExprArgs;
+export type FactorialExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class FactorialExpr extends FuncExpr {
   key = ExpressionKey.FACTORIAL;
@@ -25932,10 +26813,12 @@ export class FactorialExpr extends FuncExpr {
   }
 }
 
-export type ExplodeExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & FuncExprArgs & UDTFExprArgs;
+export type ExplodeExprArgs = Merge<[
+  FuncExprArgs,
+  UDTFExprArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class ExplodeExpr extends multiInherit(FuncExpr, UDTFExpr) {
   key = ExpressionKey.EXPLODE;
@@ -25968,7 +26851,9 @@ export class ExplodeExpr extends multiInherit(FuncExpr, UDTFExpr) {
   }
 }
 
-export type InlineExprArgs = FuncExprArgs;
+export type InlineExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class InlineExpr extends FuncExpr {
   key = ExpressionKey.INLINE;
@@ -25988,12 +26873,14 @@ export class InlineExpr extends FuncExpr {
   }
 }
 
-export type UnnestExprArgs = {
-  expressions: Expression[];
-  alias?: TableAliasExpr;
-  offset?: boolean | Expression;
-  explodeArray?: Expression;
-} & FuncExprArgs & UDTFExprArgs;
+export type UnnestExprArgs = Merge<[
+  FuncExprArgs,
+  UDTFExprArgs,
+  { expressions: Expression[];
+    alias?: TableAliasExpr;
+    offset?: boolean | Expression;
+    explodeArray?: Expression; },
+]>;
 
 export class UnnestExpr extends multiInherit(FuncExpr, UDTFExpr) {
   key = ExpressionKey.UNNEST;
@@ -26044,11 +26931,12 @@ export class UnnestExpr extends multiInherit(FuncExpr, UDTFExpr) {
   }
 }
 
-export type FloorExprArgs = {
-  this: Expression;
-  decimals?: Expression[];
-  to?: Expression;
-} & FuncExprArgs;
+export type FloorExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    decimals?: Expression[];
+    to?: Expression; },
+]>;
 
 export class FloorExpr extends FuncExpr {
   key = ExpressionKey.FLOOR;
@@ -26087,7 +26975,9 @@ export class FloorExpr extends FuncExpr {
   }
 }
 
-export type FromBase32ExprArgs = FuncExprArgs;
+export type FromBase32ExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class FromBase32Expr extends FuncExpr {
   key = ExpressionKey.FROM_BASE32;
@@ -26107,7 +26997,9 @@ export class FromBase32Expr extends FuncExpr {
   }
 }
 
-export type FromBase64ExprArgs = FuncExprArgs;
+export type FromBase64ExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class FromBase64Expr extends FuncExpr {
   key = ExpressionKey.FROM_BASE64;
@@ -26127,7 +27019,9 @@ export class FromBase64Expr extends FuncExpr {
   }
 }
 
-export type ToBase32ExprArgs = FuncExprArgs;
+export type ToBase32ExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ToBase32Expr extends FuncExpr {
   key = ExpressionKey.TO_BASE32;
@@ -26147,7 +27041,9 @@ export class ToBase32Expr extends FuncExpr {
   }
 }
 
-export type ToBase64ExprArgs = FuncExprArgs;
+export type ToBase64ExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ToBase64Expr extends FuncExpr {
   key = ExpressionKey.TO_BASE64;
@@ -26167,11 +27063,12 @@ export class ToBase64Expr extends FuncExpr {
   }
 }
 
-export type ToBinaryExprArgs = {
-  this: Expression;
-  format?: string;
-  safe?: boolean;
-} & FuncExprArgs;
+export type ToBinaryExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    format?: string;
+    safe?: boolean; },
+]>;
 
 export class ToBinaryExpr extends FuncExpr {
   key = ExpressionKey.TO_BINARY;
@@ -26210,10 +27107,11 @@ export class ToBinaryExpr extends FuncExpr {
   }
 }
 
-export type Base64DecodeBinaryExprArgs = {
-  this: Expression;
-  alphabet?: Expression;
-} & FuncExprArgs;
+export type Base64DecodeBinaryExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    alphabet?: Expression; },
+]>;
 
 export class Base64DecodeBinaryExpr extends FuncExpr {
   key = ExpressionKey.BASE64_DECODE_BINARY;
@@ -26243,10 +27141,11 @@ export class Base64DecodeBinaryExpr extends FuncExpr {
   }
 }
 
-export type Base64DecodeStringExprArgs = {
-  this: Expression;
-  alphabet?: Expression;
-} & FuncExprArgs;
+export type Base64DecodeStringExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    alphabet?: Expression; },
+]>;
 
 export class Base64DecodeStringExpr extends FuncExpr {
   key = ExpressionKey.BASE64_DECODE_STRING;
@@ -26276,11 +27175,12 @@ export class Base64DecodeStringExpr extends FuncExpr {
   }
 }
 
-export type Base64EncodeExprArgs = {
-  this: Expression;
-  maxLineLength?: number | Expression;
-  alphabet?: Expression;
-} & FuncExprArgs;
+export type Base64EncodeExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    maxLineLength?: number | Expression;
+    alphabet?: Expression; },
+]>;
 
 export class Base64EncodeExpr extends FuncExpr {
   key = ExpressionKey.BASE64_ENCODE;
@@ -26319,10 +27219,11 @@ export class Base64EncodeExpr extends FuncExpr {
   }
 }
 
-export type TryBase64DecodeBinaryExprArgs = {
-  this: Expression;
-  alphabet?: Expression;
-} & FuncExprArgs;
+export type TryBase64DecodeBinaryExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    alphabet?: Expression; },
+]>;
 
 export class TryBase64DecodeBinaryExpr extends FuncExpr {
   key = ExpressionKey.TRY_BASE64_DECODE_BINARY;
@@ -26352,10 +27253,11 @@ export class TryBase64DecodeBinaryExpr extends FuncExpr {
   }
 }
 
-export type TryBase64DecodeStringExprArgs = {
-  this: Expression;
-  alphabet?: Expression;
-} & FuncExprArgs;
+export type TryBase64DecodeStringExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    alphabet?: Expression; },
+]>;
 
 export class TryBase64DecodeStringExpr extends FuncExpr {
   key = ExpressionKey.TRY_BASE64_DECODE_STRING;
@@ -26385,7 +27287,9 @@ export class TryBase64DecodeStringExpr extends FuncExpr {
   }
 }
 
-export type TryHexDecodeBinaryExprArgs = FuncExprArgs;
+export type TryHexDecodeBinaryExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TryHexDecodeBinaryExpr extends FuncExpr {
   key = ExpressionKey.TRY_HEX_DECODE_BINARY;
@@ -26405,7 +27309,9 @@ export class TryHexDecodeBinaryExpr extends FuncExpr {
   }
 }
 
-export type TryHexDecodeStringExprArgs = FuncExprArgs;
+export type TryHexDecodeStringExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TryHexDecodeStringExpr extends FuncExpr {
   key = ExpressionKey.TRY_HEX_DECODE_STRING;
@@ -26425,7 +27331,9 @@ export class TryHexDecodeStringExpr extends FuncExpr {
   }
 }
 
-export type FromISO8601TimestampExprArgs = FuncExprArgs;
+export type FromISO8601TimestampExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class FromISO8601TimestampExpr extends FuncExpr {
   key = ExpressionKey.FROM_ISO8601_TIMESTAMP;
@@ -26447,14 +27355,15 @@ export class FromISO8601TimestampExpr extends FuncExpr {
   }
 }
 
-export type GapFillExprArgs = {
-  tsColumn: Expression;
-  bucketWidth: Expression;
-  partitioningColumns?: Expression[];
-  valueColumns?: Expression[];
-  origin?: Expression;
-  ignoreNulls?: Expression[];
-} & FuncExprArgs;
+export type GapFillExprArgs = Merge<[
+  FuncExprArgs,
+  { tsColumn: Expression;
+    bucketWidth: Expression;
+    partitioningColumns?: Expression[];
+    valueColumns?: Expression[];
+    origin?: Expression;
+    ignoreNulls?: Expression[]; },
+]>;
 
 export class GapFillExpr extends FuncExpr {
   key = ExpressionKey.GAP_FILL;
@@ -26508,11 +27417,12 @@ export class GapFillExpr extends FuncExpr {
   }
 }
 
-export type GenerateDateArrayExprArgs = {
-  start: Expression;
-  end: Expression;
-  step?: Expression;
-} & FuncExprArgs;
+export type GenerateDateArrayExprArgs = Merge<[
+  FuncExprArgs,
+  { start: Expression;
+    end: Expression;
+    step?: Expression; },
+]>;
 
 export class GenerateDateArrayExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_DATE_ARRAY;
@@ -26551,11 +27461,12 @@ export class GenerateDateArrayExpr extends FuncExpr {
   }
 }
 
-export type GenerateTimestampArrayExprArgs = {
-  start: Expression;
-  end: Expression;
-  step: Expression;
-} & FuncExprArgs;
+export type GenerateTimestampArrayExprArgs = Merge<[
+  FuncExprArgs,
+  { start: Expression;
+    end: Expression;
+    step: Expression; },
+]>;
 
 export class GenerateTimestampArrayExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_TIMESTAMP_ARRAY;
@@ -26595,10 +27506,11 @@ export class GenerateTimestampArrayExpr extends FuncExpr {
   }
 }
 
-export type GetExtractExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type GetExtractExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class GetExtractExpr extends FuncExpr {
   key = ExpressionKey.GET_EXTRACT;
@@ -26628,11 +27540,12 @@ export class GetExtractExpr extends FuncExpr {
   }
 }
 
-export type GetbitExprArgs = {
-  this: Expression;
-  expression: Expression;
-  zeroIsMsb?: Expression;
-} & FuncExprArgs;
+export type GetbitExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    zeroIsMsb?: Expression; },
+]>;
 
 export class GetbitExpr extends FuncExpr {
   key = ExpressionKey.GETBIT;
@@ -26667,11 +27580,12 @@ export class GetbitExpr extends FuncExpr {
   }
 }
 
-export type GreatestExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-  ignoreNulls: Expression[];
-} & FuncExprArgs;
+export type GreatestExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[];
+    ignoreNulls: Expression[]; },
+]>;
 
 export class GreatestExpr extends FuncExpr {
   key = ExpressionKey.GREATEST;
@@ -26708,7 +27622,9 @@ export class GreatestExpr extends FuncExpr {
   }
 }
 
-export type HexExprArgs = FuncExprArgs;
+export type HexExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class HexExpr extends FuncExpr {
   key = ExpressionKey.HEX;
@@ -26728,7 +27644,9 @@ export class HexExpr extends FuncExpr {
   }
 }
 
-export type HexDecodeStringExprArgs = FuncExprArgs;
+export type HexDecodeStringExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class HexDecodeStringExpr extends FuncExpr {
   key = ExpressionKey.HEX_DECODE_STRING;
@@ -26748,10 +27666,11 @@ export class HexDecodeStringExpr extends FuncExpr {
   }
 }
 
-export type HexEncodeExprArgs = {
-  this: Expression;
-  case?: Expression;
-} & FuncExprArgs;
+export type HexEncodeExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    case?: Expression; },
+]>;
 
 export class HexEncodeExpr extends FuncExpr {
   key = ExpressionKey.HEX_ENCODE;
@@ -26781,7 +27700,9 @@ export class HexEncodeExpr extends FuncExpr {
   }
 }
 
-export type HourExprArgs = FuncExprArgs;
+export type HourExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class HourExpr extends FuncExpr {
   key = ExpressionKey.HOUR;
@@ -26801,7 +27722,9 @@ export class HourExpr extends FuncExpr {
   }
 }
 
-export type MinuteExprArgs = FuncExprArgs;
+export type MinuteExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class MinuteExpr extends FuncExpr {
   key = ExpressionKey.MINUTE;
@@ -26821,7 +27744,9 @@ export class MinuteExpr extends FuncExpr {
   }
 }
 
-export type SecondExprArgs = FuncExprArgs;
+export type SecondExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SecondExpr extends FuncExpr {
   key = ExpressionKey.SECOND;
@@ -26841,10 +27766,11 @@ export class SecondExpr extends FuncExpr {
   }
 }
 
-export type CompressExprArgs = {
-  this: Expression;
-  method?: string;
-} & FuncExprArgs;
+export type CompressExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    method?: string; },
+]>;
 
 export class CompressExpr extends FuncExpr {
   key = ExpressionKey.COMPRESS;
@@ -26874,10 +27800,11 @@ export class CompressExpr extends FuncExpr {
   }
 }
 
-export type DecompressBinaryExprArgs = {
-  this: Expression;
-  method: string;
-} & FuncExprArgs;
+export type DecompressBinaryExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    method: string; },
+]>;
 
 export class DecompressBinaryExpr extends FuncExpr {
   key = ExpressionKey.DECOMPRESS_BINARY;
@@ -26907,10 +27834,11 @@ export class DecompressBinaryExpr extends FuncExpr {
   }
 }
 
-export type DecompressStringExprArgs = {
-  this: Expression;
-  method: string;
-} & FuncExprArgs;
+export type DecompressStringExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    method: string; },
+]>;
 
 export class DecompressStringExpr extends FuncExpr {
   key = ExpressionKey.DECOMPRESS_STRING;
@@ -26940,11 +27868,12 @@ export class DecompressStringExpr extends FuncExpr {
   }
 }
 
-export type IfExprArgs = {
-  this: Expression;
-  true: Expression;
-  false?: Expression;
-} & FuncExprArgs;
+export type IfExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    true: Expression;
+    false?: Expression; },
+]>;
 
 export class IfExpr extends FuncExpr {
   key = ExpressionKey.IF;
@@ -26985,10 +27914,11 @@ export class IfExpr extends FuncExpr {
   }
 }
 
-export type NullifExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type NullifExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class NullifExpr extends FuncExpr {
   key = ExpressionKey.NULLIF;
@@ -27018,10 +27948,11 @@ export class NullifExpr extends FuncExpr {
   }
 }
 
-export type InitcapExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type InitcapExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class InitcapExpr extends FuncExpr {
   key = ExpressionKey.INITCAP;
@@ -27051,7 +27982,9 @@ export class InitcapExpr extends FuncExpr {
   }
 }
 
-export type IsAsciiExprArgs = FuncExprArgs;
+export type IsAsciiExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class IsAsciiExpr extends FuncExpr {
   key = ExpressionKey.IS_ASCII;
@@ -27071,7 +28004,9 @@ export class IsAsciiExpr extends FuncExpr {
   }
 }
 
-export type IsNanExprArgs = FuncExprArgs;
+export type IsNanExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class IsNanExpr extends FuncExpr {
   key = ExpressionKey.IS_NAN;
@@ -27093,7 +28028,9 @@ export class IsNanExpr extends FuncExpr {
   }
 }
 
-export type Int64ExprArgs = FuncExprArgs;
+export type Int64ExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class Int64Expr extends FuncExpr {
   key = ExpressionKey.INT64;
@@ -27113,7 +28050,9 @@ export class Int64Expr extends FuncExpr {
   }
 }
 
-export type IsInfExprArgs = FuncExprArgs;
+export type IsInfExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class IsInfExpr extends FuncExpr {
   key = ExpressionKey.IS_INF;
@@ -27135,7 +28074,9 @@ export class IsInfExpr extends FuncExpr {
   }
 }
 
-export type IsNullValueExprArgs = FuncExprArgs;
+export type IsNullValueExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class IsNullValueExpr extends FuncExpr {
   key = ExpressionKey.IS_NULL_VALUE;
@@ -27155,7 +28096,9 @@ export class IsNullValueExpr extends FuncExpr {
   }
 }
 
-export type IsArrayExprArgs = FuncExprArgs;
+export type IsArrayExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class IsArrayExpr extends FuncExpr {
   key = ExpressionKey.IS_ARRAY;
@@ -27175,10 +28118,11 @@ export class IsArrayExpr extends FuncExpr {
   }
 }
 
-export type FormatExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & FuncExprArgs;
+export type FormatExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class FormatExpr extends FuncExpr {
   key = ExpressionKey.FORMAT;
@@ -27210,11 +28154,12 @@ export class FormatExpr extends FuncExpr {
   }
 }
 
-export type JSONKeysExprArgs = {
-  this: Expression;
-  expression?: Expression;
-  expressions?: Expression[];
-} & FuncExprArgs;
+export type JSONKeysExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class JSONKeysExpr extends FuncExpr {
   key = ExpressionKey.JSON_KEYS;
@@ -27251,11 +28196,12 @@ export class JSONKeysExpr extends FuncExpr {
   }
 }
 
-export type JSONKeysAtDepthExprArgs = {
-  this: Expression;
-  expression?: Expression;
-  mode?: Expression;
-} & FuncExprArgs;
+export type JSONKeysAtDepthExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression;
+    mode?: Expression; },
+]>;
 
 export class JSONKeysAtDepthExpr extends FuncExpr {
   key = ExpressionKey.JSON_KEYS_AT_DEPTH;
@@ -27290,12 +28236,13 @@ export class JSONKeysAtDepthExpr extends FuncExpr {
   }
 }
 
-export type JSONObjectExprArgs = {
-  nullHandling?: Expression;
-  uniqueKeys?: Expression[];
-  returnType?: DataTypeExpr;
-  encoding?: Expression;
-} & FuncExprArgs;
+export type JSONObjectExprArgs = Merge<[
+  FuncExprArgs,
+  { nullHandling?: Expression;
+    uniqueKeys?: Expression[];
+    returnType?: DataTypeExpr;
+    encoding?: Expression; },
+]>;
 
 export class JSONObjectExpr extends FuncExpr {
   key = ExpressionKey.JSON_OBJECT;
@@ -27339,11 +28286,12 @@ export class JSONObjectExpr extends FuncExpr {
   }
 }
 
-export type JSONArrayExprArgs = {
-  nullHandling?: Expression;
-  returnType?: DataTypeExpr;
-  strict?: Expression;
-} & FuncExprArgs;
+export type JSONArrayExprArgs = Merge<[
+  FuncExprArgs,
+  { nullHandling?: Expression;
+    returnType?: DataTypeExpr;
+    strict?: Expression; },
+]>;
 
 export class JSONArrayExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY;
@@ -27382,12 +28330,13 @@ export class JSONArrayExpr extends FuncExpr {
   }
 }
 
-export type JSONExistsExprArgs = {
-  path: Expression;
-  passing?: Expression;
-  onCondition?: Expression;
-  fromDcolonqmark?: Expression;
-} & FuncExprArgs;
+export type JSONExistsExprArgs = Merge<[
+  FuncExprArgs,
+  { path: Expression;
+    passing?: Expression;
+    onCondition?: Expression;
+    fromDcolonqmark?: Expression; },
+]>;
 
 export class JSONExistsExpr extends FuncExpr {
   key = ExpressionKey.JSON_EXISTS;
@@ -27431,10 +28380,11 @@ export class JSONExistsExpr extends FuncExpr {
   }
 }
 
-export type JSONSetExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-} & FuncExprArgs;
+export type JSONSetExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class JSONSetExpr extends FuncExpr {
   key = ExpressionKey.JSON_SET;
@@ -27467,12 +28417,13 @@ export class JSONSetExpr extends FuncExpr {
   }
 }
 
-export type JSONStripNullsExprArgs = {
-  this: Expression;
-  expression?: Expression;
-  includeArrays?: Expression;
-  removeEmpty?: Expression;
-} & FuncExprArgs;
+export type JSONStripNullsExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression;
+    includeArrays?: Expression;
+    removeEmpty?: Expression; },
+]>;
 
 export class JSONStripNullsExpr extends FuncExpr {
   key = ExpressionKey.JSON_STRIP_NULLS;
@@ -27518,10 +28469,11 @@ export class JSONStripNullsExpr extends FuncExpr {
   }
 }
 
-export type JSONValueArrayExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type JSONValueArrayExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class JSONValueArrayExpr extends FuncExpr {
   key = ExpressionKey.JSON_VALUE_ARRAY;
@@ -27551,10 +28503,11 @@ export class JSONValueArrayExpr extends FuncExpr {
   }
 }
 
-export type JSONRemoveExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-} & FuncExprArgs;
+export type JSONRemoveExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class JSONRemoveExpr extends FuncExpr {
   key = ExpressionKey.JSON_REMOVE;
@@ -27587,13 +28540,14 @@ export class JSONRemoveExpr extends FuncExpr {
   }
 }
 
-export type JSONTableExprArgs = {
-  this: Expression;
-  schema: Expression;
-  path?: Expression;
-  errorHandling?: Expression;
-  emptyHandling?: Expression;
-} & FuncExprArgs;
+export type JSONTableExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    schema: Expression;
+    path?: Expression;
+    errorHandling?: Expression;
+    emptyHandling?: Expression; },
+]>;
 
 export class JSONTableExpr extends FuncExpr {
   key = ExpressionKey.JSON_TABLE;
@@ -27642,10 +28596,11 @@ export class JSONTableExpr extends FuncExpr {
   }
 }
 
-export type JSONTypeExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type JSONTypeExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class JSONTypeExpr extends FuncExpr {
   key = ExpressionKey.JSON_TYPE;
@@ -27677,12 +28632,13 @@ export class JSONTypeExpr extends FuncExpr {
   }
 }
 
-export type ObjectInsertExprArgs = {
-  this: Expression;
-  key: Expression;
-  value: Expression;
-  updateFlag?: Expression;
-} & FuncExprArgs;
+export type ObjectInsertExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    key: Expression;
+    value: Expression;
+    updateFlag?: Expression; },
+]>;
 
 export class ObjectInsertExpr extends FuncExpr {
   key = ExpressionKey.OBJECT_INSERT;
@@ -27726,11 +28682,12 @@ export class ObjectInsertExpr extends FuncExpr {
   }
 }
 
-export type OpenJSONExprArgs = {
-  this: Expression;
-  path?: Expression;
-  expressions?: Expression[];
-} & FuncExprArgs;
+export type OpenJSONExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    path?: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class OpenJSONExpr extends FuncExpr {
   key = ExpressionKey.OPEN_JSON;
@@ -27765,7 +28722,10 @@ export class OpenJSONExpr extends FuncExpr {
   }
 }
 
-export type JSONBContainsExprArgs = BinaryExprArgs & FuncExprArgs;
+export type JSONBContainsExprArgs = Merge<[
+  BinaryExprArgs,
+  FuncExprArgs,
+]>;
 
 export class JSONBContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS;
@@ -27784,7 +28744,10 @@ export class JSONBContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type JSONBContainsAnyTopKeysExprArgs = BinaryExprArgs & FuncExprArgs;
+export type JSONBContainsAnyTopKeysExprArgs = Merge<[
+  BinaryExprArgs,
+  FuncExprArgs,
+]>;
 
 export class JSONBContainsAnyTopKeysExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS_ANY_TOP_KEYS;
@@ -27801,7 +28764,10 @@ export class JSONBContainsAnyTopKeysExpr extends multiInherit(BinaryExpr, FuncEx
   }
 }
 
-export type JSONBContainsAllTopKeysExprArgs = BinaryExprArgs & FuncExprArgs;
+export type JSONBContainsAllTopKeysExprArgs = Merge<[
+  BinaryExprArgs,
+  FuncExprArgs,
+]>;
 
 export class JSONBContainsAllTopKeysExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS_ALL_TOP_KEYS;
@@ -27818,10 +28784,11 @@ export class JSONBContainsAllTopKeysExpr extends multiInherit(BinaryExpr, FuncEx
   }
 }
 
-export type JSONBExistsExprArgs = {
-  this: Expression;
-  path: Expression;
-} & FuncExprArgs;
+export type JSONBExistsExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    path: Expression; },
+]>;
 
 export class JSONBExistsExpr extends FuncExpr {
   key = ExpressionKey.JSONB_EXISTS;
@@ -27853,7 +28820,10 @@ export class JSONBExistsExpr extends FuncExpr {
   }
 }
 
-export type JSONBDeleteAtPathExprArgs = BinaryExprArgs & FuncExprArgs;
+export type JSONBDeleteAtPathExprArgs = Merge<[
+  BinaryExprArgs,
+  FuncExprArgs,
+]>;
 
 export class JSONBDeleteAtPathExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_DELETE_AT_PATH;
@@ -27870,16 +28840,18 @@ export class JSONBDeleteAtPathExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type JSONExtractExprArgs = {
-  onlyJsonTypes?: Expression;
-  expressions?: Expression[];
-  variantExtract?: Expression;
-  jsonQuery?: Expression;
-  option?: Expression;
-  quote?: Expression;
-  onCondition?: Expression;
-  requiresJson?: Expression;
-} & BinaryExprArgs & FuncExprArgs;
+export type JSONExtractExprArgs = Merge<[
+  BinaryExprArgs,
+  FuncExprArgs,
+  { onlyJsonTypes?: Expression;
+    expressions?: Expression[];
+    variantExtract?: Expression;
+    jsonQuery?: Expression;
+    option?: Expression;
+    quote?: Expression;
+    onCondition?: Expression;
+    requiresJson?: Expression; },
+]>;
 
 export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSON_EXTRACT;
@@ -27947,10 +28919,11 @@ export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type JSONExtractArrayExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type JSONExtractArrayExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class JSONExtractArrayExpr extends FuncExpr {
   key = ExpressionKey.JSON_EXTRACT_ARRAY;
@@ -27982,14 +28955,16 @@ export class JSONExtractArrayExpr extends FuncExpr {
   }
 }
 
-export type JSONExtractScalarExprArgs = {
-  this: Expression;
-  expression: Expression;
-  onlyJsonTypes?: Expression;
-  expressions?: Expression[];
-  jsonType?: Expression;
-  scalarOnly?: boolean;
-} & BinaryExprArgs & FuncExprArgs;
+export type JSONExtractScalarExprArgs = Merge<[
+  BinaryExprArgs,
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    onlyJsonTypes?: Expression;
+    expressions?: Expression[];
+    jsonType?: Expression;
+    scalarOnly?: boolean; },
+]>;
 
 export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSON_EXTRACT_SCALAR;
@@ -28037,7 +29012,10 @@ export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type JSONBExtractExprArgs = BinaryExprArgs & FuncExprArgs;
+export type JSONBExtractExprArgs = Merge<[
+  BinaryExprArgs,
+  FuncExprArgs,
+]>;
 
 export class JSONBExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_EXTRACT;
@@ -28056,11 +29034,13 @@ export class JSONBExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type JSONBExtractScalarExprArgs = {
-  this: Expression;
-  expression: Expression;
-  jsonType?: Expression;
-} & BinaryExprArgs & FuncExprArgs;
+export type JSONBExtractScalarExprArgs = Merge<[
+  BinaryExprArgs,
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    jsonType?: Expression; },
+]>;
 
 export class JSONBExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_EXTRACT_SCALAR;
@@ -28094,12 +29074,13 @@ export class JSONBExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type JSONFormatExprArgs = {
-  this?: Expression;
-  options?: Expression[];
-  isJson?: Expression;
-  toJson?: Expression;
-} & FuncExprArgs;
+export type JSONFormatExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression;
+    options?: Expression[];
+    isJson?: Expression;
+    toJson?: Expression; },
+]>;
 
 export class JSONFormatExpr extends FuncExpr {
   key = ExpressionKey.JSON_FORMAT;
@@ -28145,10 +29126,11 @@ export class JSONFormatExpr extends FuncExpr {
   }
 }
 
-export type JSONArrayAppendExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-} & FuncExprArgs;
+export type JSONArrayAppendExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class JSONArrayAppendExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY_APPEND;
@@ -28181,11 +29163,12 @@ export class JSONArrayAppendExpr extends FuncExpr {
   }
 }
 
-export type JSONArrayContainsExprArgs = {
-  this: Expression;
-  jsonType?: Expression;
-  expression: Expression;
-} & BinaryExprArgs;
+export type JSONArrayContainsExprArgs = Merge<[
+  BinaryExprArgs,
+  { this: Expression;
+    jsonType?: Expression;
+    expression: Expression; },
+]>;
 
 export class JSONArrayContainsExpr extends multiInherit(BinaryExpr, PredicateExpr, FuncExpr) {
   key = ExpressionKey.JSON_ARRAY_CONTAINS;
@@ -28219,10 +29202,11 @@ export class JSONArrayContainsExpr extends multiInherit(BinaryExpr, PredicateExp
   }
 }
 
-export type JSONArrayInsertExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-} & FuncExprArgs;
+export type JSONArrayInsertExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class JSONArrayInsertExpr extends FuncExpr {
   key = ExpressionKey.JSON_ARRAY_INSERT;
@@ -28255,7 +29239,9 @@ export class JSONArrayInsertExpr extends FuncExpr {
   }
 }
 
-export type ParseBignumericExprArgs = FuncExprArgs;
+export type ParseBignumericExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ParseBignumericExpr extends FuncExpr {
   key = ExpressionKey.PARSE_BIGNUMERIC;
@@ -28275,7 +29261,9 @@ export class ParseBignumericExpr extends FuncExpr {
   }
 }
 
-export type ParseNumericExprArgs = FuncExprArgs;
+export type ParseNumericExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ParseNumericExpr extends FuncExpr {
   key = ExpressionKey.PARSE_NUMERIC;
@@ -28295,11 +29283,12 @@ export class ParseNumericExpr extends FuncExpr {
   }
 }
 
-export type ParseJSONExprArgs = {
-  this: Expression;
-  expression?: Expression;
-  safe?: boolean;
-} & FuncExprArgs;
+export type ParseJSONExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression;
+    safe?: boolean; },
+]>;
 
 export class ParseJSONExpr extends FuncExpr {
   key = ExpressionKey.PARSE_JSON;
@@ -28336,12 +29325,13 @@ export class ParseJSONExpr extends FuncExpr {
   }
 }
 
-export type ParseUrlExprArgs = {
-  this: Expression;
-  partToExtract?: Expression;
-  key?: unknown;
-  permissive?: Expression;
-} & FuncExprArgs;
+export type ParseUrlExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    partToExtract?: Expression;
+    key?: unknown;
+    permissive?: Expression; },
+]>;
 
 export class ParseUrlExpr extends FuncExpr {
   key = ExpressionKey.PARSE_URL;
@@ -28385,11 +29375,12 @@ export class ParseUrlExpr extends FuncExpr {
   }
 }
 
-export type ParseIpExprArgs = {
-  this: Expression;
-  type: Expression;
-  permissive?: Expression;
-} & FuncExprArgs;
+export type ParseIpExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    type: Expression;
+    permissive?: Expression; },
+]>;
 
 export class ParseIpExpr extends FuncExpr {
   key = ExpressionKey.PARSE_IP;
@@ -28424,10 +29415,11 @@ export class ParseIpExpr extends FuncExpr {
   }
 }
 
-export type ParseTimeExprArgs = {
-  this: Expression;
-  format: string;
-} & FuncExprArgs;
+export type ParseTimeExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    format: string; },
+]>;
 
 export class ParseTimeExpr extends FuncExpr {
   key = ExpressionKey.PARSE_TIME;
@@ -28457,11 +29449,12 @@ export class ParseTimeExpr extends FuncExpr {
   }
 }
 
-export type ParseDatetimeExprArgs = {
-  this: Expression;
-  format?: string;
-  zone?: Expression;
-} & FuncExprArgs;
+export type ParseDatetimeExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    format?: string;
+    zone?: Expression; },
+]>;
 
 export class ParseDatetimeExpr extends FuncExpr {
   key = ExpressionKey.PARSE_DATETIME;
@@ -28500,11 +29493,12 @@ export class ParseDatetimeExpr extends FuncExpr {
   }
 }
 
-export type LeastExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-  ignoreNulls: Expression[];
-} & FuncExprArgs;
+export type LeastExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[];
+    ignoreNulls: Expression[]; },
+]>;
 
 export class LeastExpr extends FuncExpr {
   key = ExpressionKey.LEAST;
@@ -28541,10 +29535,11 @@ export class LeastExpr extends FuncExpr {
   }
 }
 
-export type LeftExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type LeftExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class LeftExpr extends FuncExpr {
   key = ExpressionKey.LEFT;
@@ -28574,10 +29569,11 @@ export class LeftExpr extends FuncExpr {
   }
 }
 
-export type RightExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type RightExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class RightExpr extends FuncExpr {
   key = ExpressionKey.RIGHT;
@@ -28607,7 +29603,9 @@ export class RightExpr extends FuncExpr {
   }
 }
 
-export type ReverseExprArgs = FuncExprArgs;
+export type ReverseExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ReverseExpr extends FuncExpr {
   key = ExpressionKey.REVERSE;
@@ -28627,11 +29625,12 @@ export class ReverseExpr extends FuncExpr {
   }
 }
 
-export type LengthExprArgs = {
-  this: Expression;
-  binary?: Expression;
-  encoding?: Expression;
-} & FuncExprArgs;
+export type LengthExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    binary?: Expression;
+    encoding?: Expression; },
+]>;
 
 export class LengthExpr extends FuncExpr {
   key = ExpressionKey.LENGTH;
@@ -28677,7 +29676,9 @@ export class LengthExpr extends FuncExpr {
   }
 }
 
-export type RtrimmedLengthExprArgs = FuncExprArgs;
+export type RtrimmedLengthExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class RtrimmedLengthExpr extends FuncExpr {
   key = ExpressionKey.RTRIMMED_LENGTH;
@@ -28697,7 +29698,9 @@ export class RtrimmedLengthExpr extends FuncExpr {
   }
 }
 
-export type BitLengthExprArgs = FuncExprArgs;
+export type BitLengthExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class BitLengthExpr extends FuncExpr {
   key = ExpressionKey.BIT_LENGTH;
@@ -28717,12 +29720,13 @@ export class BitLengthExpr extends FuncExpr {
   }
 }
 
-export type LevenshteinExprArgs = {
-  insCost?: Expression;
-  delCost?: Expression;
-  subCost?: Expression;
-  maxDist?: Expression;
-} & FuncExprArgs;
+export type LevenshteinExprArgs = Merge<[
+  FuncExprArgs,
+  { insCost?: Expression;
+    delCost?: Expression;
+    subCost?: Expression;
+    maxDist?: Expression; },
+]>;
 
 export class LevenshteinExpr extends FuncExpr {
   key = ExpressionKey.LEVENSHTEIN;
@@ -28766,7 +29770,9 @@ export class LevenshteinExpr extends FuncExpr {
   }
 }
 
-export type LnExprArgs = FuncExprArgs;
+export type LnExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class LnExpr extends FuncExpr {
   key = ExpressionKey.LN;
@@ -28786,10 +29792,11 @@ export class LnExpr extends FuncExpr {
   }
 }
 
-export type LogExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type LogExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class LogExpr extends FuncExpr {
   key = ExpressionKey.LOG;
@@ -28819,7 +29826,9 @@ export class LogExpr extends FuncExpr {
   }
 }
 
-export type LowerExprArgs = FuncExprArgs;
+export type LowerExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class LowerExpr extends FuncExpr {
   key = ExpressionKey.LOWER;
@@ -28841,10 +29850,11 @@ export class LowerExpr extends FuncExpr {
   }
 }
 
-export type MapExprArgs = {
-  keys?: Expression[];
-  values?: Expression[];
-} & FuncExprArgs;
+export type MapExprArgs = Merge<[
+  FuncExprArgs,
+  { keys?: Expression[];
+    values?: Expression[]; },
+]>;
 
 export class MapExpr extends FuncExpr {
   key = ExpressionKey.MAP;
@@ -28888,7 +29898,9 @@ export class MapExpr extends FuncExpr {
   }
 }
 
-export type ToMapExprArgs = FuncExprArgs;
+export type ToMapExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class ToMapExpr extends FuncExpr {
   key = ExpressionKey.TO_MAP;
@@ -28908,7 +29920,9 @@ export class ToMapExpr extends FuncExpr {
   }
 }
 
-export type MapFromEntriesExprArgs = FuncExprArgs;
+export type MapFromEntriesExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class MapFromEntriesExpr extends FuncExpr {
   key = ExpressionKey.MAP_FROM_ENTRIES;
@@ -28928,10 +29942,11 @@ export class MapFromEntriesExpr extends FuncExpr {
   }
 }
 
-export type MapCatExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type MapCatExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class MapCatExpr extends FuncExpr {
   key = ExpressionKey.MAP_CAT;
@@ -28961,10 +29976,11 @@ export class MapCatExpr extends FuncExpr {
   }
 }
 
-export type MapContainsKeyExprArgs = {
-  this: Expression;
-  key: unknown;
-} & FuncExprArgs;
+export type MapContainsKeyExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    key: unknown; },
+]>;
 
 export class MapContainsKeyExpr extends FuncExpr {
   key = ExpressionKey.MAP_CONTAINS_KEY;
@@ -28994,10 +30010,11 @@ export class MapContainsKeyExpr extends FuncExpr {
   }
 }
 
-export type MapDeleteExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-} & FuncExprArgs;
+export type MapDeleteExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class MapDeleteExpr extends FuncExpr {
   key = ExpressionKey.MAP_DELETE;
@@ -29029,12 +30046,13 @@ export class MapDeleteExpr extends FuncExpr {
   }
 }
 
-export type MapInsertExprArgs = {
-  this: Expression;
-  key?: unknown;
-  value: string;
-  updateFlag?: Expression;
-} & FuncExprArgs;
+export type MapInsertExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    key?: unknown;
+    value: string;
+    updateFlag?: Expression; },
+]>;
 
 export class MapInsertExpr extends FuncExpr {
   key = ExpressionKey.MAP_INSERT;
@@ -29078,7 +30096,9 @@ export class MapInsertExpr extends FuncExpr {
   }
 }
 
-export type MapKeysExprArgs = FuncExprArgs;
+export type MapKeysExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class MapKeysExpr extends FuncExpr {
   key = ExpressionKey.MAP_KEYS;
@@ -29098,10 +30118,11 @@ export class MapKeysExpr extends FuncExpr {
   }
 }
 
-export type MapPickExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-} & FuncExprArgs;
+export type MapPickExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class MapPickExpr extends FuncExpr {
   key = ExpressionKey.MAP_PICK;
@@ -29133,7 +30154,9 @@ export class MapPickExpr extends FuncExpr {
   }
 }
 
-export type MapSizeExprArgs = FuncExprArgs;
+export type MapSizeExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class MapSizeExpr extends FuncExpr {
   key = ExpressionKey.MAP_SIZE;
@@ -29153,7 +30176,9 @@ export class MapSizeExpr extends FuncExpr {
   }
 }
 
-export type StarMapExprArgs = FuncExprArgs;
+export type StarMapExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class StarMapExpr extends FuncExpr {
   key = ExpressionKey.STAR_MAP;
@@ -29173,10 +30198,11 @@ export class StarMapExpr extends FuncExpr {
   }
 }
 
-export type VarMapExprArgs = {
-  keys: Expression[];
-  values: Expression[];
-} & FuncExprArgs;
+export type VarMapExprArgs = Merge<[
+  FuncExprArgs,
+  { keys: Expression[];
+    values: Expression[]; },
+]>;
 
 export class VarMapExpr extends FuncExpr {
   key = ExpressionKey.VAR_MAP;
@@ -29221,11 +30247,12 @@ export class VarMapExpr extends FuncExpr {
   }
 }
 
-export type MatchAgainstExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-  modifier?: Expression;
-} & FuncExprArgs;
+export type MatchAgainstExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions: Expression[];
+    modifier?: Expression; },
+]>;
 
 export class MatchAgainstExpr extends FuncExpr {
   key = ExpressionKey.MATCH_AGAINST;
@@ -29260,7 +30287,9 @@ export class MatchAgainstExpr extends FuncExpr {
   }
 }
 
-export type MD5ExprArgs = FuncExprArgs;
+export type MD5ExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class MD5Expr extends FuncExpr {
   key = ExpressionKey.MD5;
@@ -29282,10 +30311,11 @@ export class MD5Expr extends FuncExpr {
   }
 }
 
-export type MD5DigestExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & FuncExprArgs;
+export type MD5DigestExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class MD5DigestExpr extends FuncExpr {
   key = ExpressionKey.MD5_DIGEST;
@@ -29318,7 +30348,9 @@ export class MD5DigestExpr extends FuncExpr {
   }
 }
 
-export type MD5NumberLower64ExprArgs = FuncExprArgs;
+export type MD5NumberLower64ExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class MD5NumberLower64Expr extends FuncExpr {
   key = ExpressionKey.MD5_NUMBER_LOWER64;
@@ -29338,7 +30370,9 @@ export class MD5NumberLower64Expr extends FuncExpr {
   }
 }
 
-export type MD5NumberUpper64ExprArgs = FuncExprArgs;
+export type MD5NumberUpper64ExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class MD5NumberUpper64Expr extends FuncExpr {
   key = ExpressionKey.MD5_NUMBER_UPPER64;
@@ -29358,7 +30392,9 @@ export class MD5NumberUpper64Expr extends FuncExpr {
   }
 }
 
-export type MonthExprArgs = FuncExprArgs;
+export type MonthExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class MonthExpr extends FuncExpr {
   key = ExpressionKey.MONTH;
@@ -29378,10 +30414,11 @@ export class MonthExpr extends FuncExpr {
   }
 }
 
-export type MonthnameExprArgs = {
-  this: Expression;
-  abbreviated?: Expression;
-} & FuncExprArgs;
+export type MonthnameExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    abbreviated?: Expression; },
+]>;
 
 export class MonthnameExpr extends FuncExpr {
   key = ExpressionKey.MONTHNAME;
@@ -29411,11 +30448,12 @@ export class MonthnameExpr extends FuncExpr {
   }
 }
 
-export type AddMonthsExprArgs = {
-  this: Expression;
-  expression: Expression;
-  preserveEndOfMonth?: Expression;
-} & FuncExprArgs;
+export type AddMonthsExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    preserveEndOfMonth?: Expression; },
+]>;
 
 export class AddMonthsExpr extends FuncExpr {
   key = ExpressionKey.ADD_MONTHS;
@@ -29450,11 +30488,12 @@ export class AddMonthsExpr extends FuncExpr {
   }
 }
 
-export type Nvl2ExprArgs = {
-  this: Expression;
-  true: Expression;
-  false?: Expression;
-} & FuncExprArgs;
+export type Nvl2ExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    true: Expression;
+    false?: Expression; },
+]>;
 
 export class Nvl2Expr extends FuncExpr {
   key = ExpressionKey.NVL2;
@@ -29493,11 +30532,12 @@ export class Nvl2Expr extends FuncExpr {
   }
 }
 
-export type NormalizeExprArgs = {
-  this: Expression;
-  form?: Expression;
-  isCasefold?: Expression;
-} & FuncExprArgs;
+export type NormalizeExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    form?: Expression;
+    isCasefold?: Expression; },
+]>;
 
 export class NormalizeExpr extends FuncExpr {
   key = ExpressionKey.NORMALIZE;
@@ -29536,11 +30576,12 @@ export class NormalizeExpr extends FuncExpr {
   }
 }
 
-export type NormalExprArgs = {
-  this: Expression;
-  stddev: Expression;
-  gen: Expression;
-} & FuncExprArgs;
+export type NormalExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    stddev: Expression;
+    gen: Expression; },
+]>;
 
 export class NormalExpr extends FuncExpr {
   key = ExpressionKey.NORMAL;
@@ -29579,7 +30620,9 @@ export class NormalExpr extends FuncExpr {
   }
 }
 
-export type NetFuncExprArgs = BaseExpressionArgs;
+export type NetFuncExprArgs = Merge<[
+  BaseExpressionArgs,
+]>;
 
 export class NetFuncExpr extends FuncExpr {
   key = ExpressionKey.NET_FUNC;
@@ -29599,7 +30642,9 @@ export class NetFuncExpr extends FuncExpr {
   }
 }
 
-export type HostExprArgs = FuncExprArgs;
+export type HostExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class HostExpr extends FuncExpr {
   key = ExpressionKey.HOST;
@@ -29619,7 +30664,9 @@ export class HostExpr extends FuncExpr {
   }
 }
 
-export type RegDomainExprArgs = FuncExprArgs;
+export type RegDomainExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class RegDomainExpr extends FuncExpr {
   key = ExpressionKey.REG_DOMAIN;
@@ -29639,12 +30686,13 @@ export class RegDomainExpr extends FuncExpr {
   }
 }
 
-export type OverlayExprArgs = {
-  this: Expression;
-  expression: Expression;
-  from: Expression;
-  for?: Expression;
-} & FuncExprArgs;
+export type OverlayExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    from: Expression;
+    for?: Expression; },
+]>;
 
 export class OverlayExpr extends FuncExpr {
   key = ExpressionKey.OVERLAY;
@@ -29688,11 +30736,12 @@ export class OverlayExpr extends FuncExpr {
   }
 }
 
-export type PredictExprArgs = {
-  this: Expression;
-  expression: Expression;
-  paramsStruct?: Expression;
-} & FuncExprArgs;
+export type PredictExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    paramsStruct?: Expression; },
+]>;
 
 export class PredictExpr extends FuncExpr {
   key = ExpressionKey.PREDICT;
@@ -29727,11 +30776,12 @@ export class PredictExpr extends FuncExpr {
   }
 }
 
-export type MLTranslateExprArgs = {
-  this: Expression;
-  expression: Expression;
-  paramsStruct: Expression;
-} & FuncExprArgs;
+export type MLTranslateExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    paramsStruct: Expression; },
+]>;
 
 export class MLTranslateExpr extends FuncExpr {
   key = ExpressionKey.ML_TRANSLATE;
@@ -29766,12 +30816,13 @@ export class MLTranslateExpr extends FuncExpr {
   }
 }
 
-export type FeaturesAtTimeExprArgs = {
-  this: Expression;
-  time?: Expression;
-  numRows?: Expression[];
-  ignoreFeatureNulls?: Expression[];
-} & FuncExprArgs;
+export type FeaturesAtTimeExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    time?: Expression;
+    numRows?: Expression[];
+    ignoreFeatureNulls?: Expression[]; },
+]>;
 
 export class FeaturesAtTimeExpr extends FuncExpr {
   key = ExpressionKey.FEATURES_AT_TIME;
@@ -29815,12 +30866,13 @@ export class FeaturesAtTimeExpr extends FuncExpr {
   }
 }
 
-export type GenerateEmbeddingExprArgs = {
-  this: Expression;
-  expression: Expression;
-  paramsStruct?: Expression;
-  isText?: string;
-} & FuncExprArgs;
+export type GenerateEmbeddingExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    paramsStruct?: Expression;
+    isText?: string; },
+]>;
 
 export class GenerateEmbeddingExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_EMBEDDING;
@@ -29864,11 +30916,12 @@ export class GenerateEmbeddingExpr extends FuncExpr {
   }
 }
 
-export type MLForecastExprArgs = {
-  this: Expression;
-  expression?: Expression;
-  paramsStruct?: Expression;
-} & FuncExprArgs;
+export type MLForecastExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression;
+    paramsStruct?: Expression; },
+]>;
 
 export class MLForecastExpr extends FuncExpr {
   key = ExpressionKey.ML_FORECAST;
@@ -29903,14 +30956,15 @@ export class MLForecastExpr extends FuncExpr {
   }
 }
 
-export type VectorSearchExprArgs = {
-  columnToSearch: Expression;
-  queryTable: Expression;
-  queryColumnToSearch?: Expression;
-  topK?: Expression;
-  distanceType?: DataTypeExpr;
-  options?: Expression[];
-} & FuncExprArgs;
+export type VectorSearchExprArgs = Merge<[
+  FuncExprArgs,
+  { columnToSearch: Expression;
+    queryTable: Expression;
+    queryColumnToSearch?: Expression;
+    topK?: Expression;
+    distanceType?: DataTypeExpr;
+    options?: Expression[]; },
+]>;
 
 export class VectorSearchExpr extends FuncExpr {
   key = ExpressionKey.VECTOR_SEARCH;
@@ -29964,7 +31018,9 @@ export class VectorSearchExpr extends FuncExpr {
   }
 }
 
-export type PiExprArgs = FuncExprArgs;
+export type PiExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class PiExpr extends FuncExpr {
   key = ExpressionKey.PI;
@@ -29984,7 +31040,9 @@ export class PiExpr extends FuncExpr {
   }
 }
 
-export type PowExprArgs = BinaryExprArgs;
+export type PowExprArgs = Merge<[
+  BinaryExprArgs,
+]>;
 export class PowExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.POW;
 
@@ -30002,10 +31060,11 @@ export class PowExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type ApproxPercentileEstimateExprArgs = {
-  this: Expression;
-  percentile: Expression;
-} & FuncExprArgs;
+export type ApproxPercentileEstimateExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    percentile: Expression; },
+]>;
 
 export class ApproxPercentileEstimateExpr extends FuncExpr {
   key = ExpressionKey.APPROX_PERCENTILE_ESTIMATE;
@@ -30035,7 +31094,9 @@ export class ApproxPercentileEstimateExpr extends FuncExpr {
   }
 }
 
-export type QuarterExprArgs = FuncExprArgs;
+export type QuarterExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class QuarterExpr extends FuncExpr {
   key = ExpressionKey.QUARTER;
@@ -30055,11 +31116,12 @@ export class QuarterExpr extends FuncExpr {
   }
 }
 
-export type RandExprArgs = {
-  this?: Expression;
-  lower?: Expression;
-  upper?: Expression;
-} & FuncExprArgs;
+export type RandExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression;
+    lower?: Expression;
+    upper?: Expression; },
+]>;
 
 export class RandExpr extends FuncExpr {
   key = ExpressionKey.RAND;
@@ -30100,9 +31162,10 @@ export class RandExpr extends FuncExpr {
   }
 }
 
-export type RandnExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type RandnExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class RandnExpr extends FuncExpr {
   key = ExpressionKey.RANDN;
@@ -30127,10 +31190,11 @@ export class RandnExpr extends FuncExpr {
   }
 }
 
-export type RandstrExprArgs = {
-  this: Expression;
-  generator?: Expression;
-} & FuncExprArgs;
+export type RandstrExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    generator?: Expression; },
+]>;
 
 export class RandstrExpr extends FuncExpr {
   key = ExpressionKey.RANDSTR;
@@ -30160,11 +31224,12 @@ export class RandstrExpr extends FuncExpr {
   }
 }
 
-export type RangeNExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-  each?: Expression;
-} & FuncExprArgs;
+export type RangeNExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions: Expression[];
+    each?: Expression; },
+]>;
 
 export class RangeNExpr extends FuncExpr {
   key = ExpressionKey.RANGE_N;
@@ -30199,10 +31264,11 @@ export class RangeNExpr extends FuncExpr {
   }
 }
 
-export type RangeBucketExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type RangeBucketExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class RangeBucketExpr extends FuncExpr {
   key = ExpressionKey.RANGE_BUCKET;
@@ -30232,10 +31298,11 @@ export class RangeBucketExpr extends FuncExpr {
   }
 }
 
-export type ReadCSVExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & FuncExprArgs;
+export type ReadCSVExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class ReadCSVExpr extends FuncExpr {
   key = ExpressionKey.READ_CSV;
@@ -30268,9 +31335,10 @@ export class ReadCSVExpr extends FuncExpr {
   }
 }
 
-export type ReadParquetExprArgs = {
-  expressions: Expression[];
-} & FuncExprArgs;
+export type ReadParquetExprArgs = Merge<[
+  FuncExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class ReadParquetExpr extends FuncExpr {
   key = ExpressionKey.READ_PARQUET;
@@ -30297,12 +31365,13 @@ export class ReadParquetExpr extends FuncExpr {
   }
 }
 
-export type ReduceExprArgs = {
-  this: Expression;
-  initial: Expression;
-  merge: Expression;
-  finish?: Expression;
-} & FuncExprArgs;
+export type ReduceExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    initial: Expression;
+    merge: Expression;
+    finish?: Expression; },
+]>;
 
 export class ReduceExpr extends FuncExpr {
   key = ExpressionKey.REDUCE;
@@ -30346,13 +31415,14 @@ export class ReduceExpr extends FuncExpr {
   }
 }
 
-export type RegexpExtractExprArgs = {
-  position?: Expression;
-  occurrence?: Expression;
-  parameters?: Expression[];
-  group?: Expression;
-  nullIfPosOverflow?: Expression;
-} & FuncExprArgs;
+export type RegexpExtractExprArgs = Merge<[
+  FuncExprArgs,
+  { position?: Expression;
+    occurrence?: Expression;
+    parameters?: Expression[];
+    group?: Expression;
+    nullIfPosOverflow?: Expression; },
+]>;
 
 export class RegexpExtractExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_EXTRACT;
@@ -30401,12 +31471,13 @@ export class RegexpExtractExpr extends FuncExpr {
   }
 }
 
-export type RegexpExtractAllExprArgs = {
-  group?: Expression;
-  parameters?: Expression[];
-  position?: Expression;
-  occurrence?: Expression;
-} & FuncExprArgs;
+export type RegexpExtractAllExprArgs = Merge<[
+  FuncExprArgs,
+  { group?: Expression;
+    parameters?: Expression[];
+    position?: Expression;
+    occurrence?: Expression; },
+]>;
 
 export class RegexpExtractAllExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_EXTRACT_ALL;
@@ -30450,13 +31521,14 @@ export class RegexpExtractAllExpr extends FuncExpr {
   }
 }
 
-export type RegexpReplaceExprArgs = {
-  replacement?: boolean;
-  position?: Expression;
-  occurrence?: Expression;
-  modifiers?: Expression[];
-  singleReplace?: Expression;
-} & FuncExprArgs;
+export type RegexpReplaceExprArgs = Merge<[
+  FuncExprArgs,
+  { replacement?: boolean;
+    position?: Expression;
+    occurrence?: Expression;
+    modifiers?: Expression[];
+    singleReplace?: Expression; },
+]>;
 
 export class RegexpReplaceExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_REPLACE;
@@ -30505,11 +31577,12 @@ export class RegexpReplaceExpr extends FuncExpr {
   }
 }
 
-export type RegexpLikeExprArgs = {
-  this: Expression;
-  expression: Expression;
-  flag?: Expression;
-} & BinaryExprArgs;
+export type RegexpLikeExprArgs = Merge<[
+  BinaryExprArgs,
+  { this: Expression;
+    expression: Expression;
+    flag?: Expression; },
+]>;
 
 export class RegexpLikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.REGEXP_LIKE;
@@ -30541,11 +31614,12 @@ export class RegexpLikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type RegexpILikeExprArgs = {
-  this: Expression;
-  expression: Expression;
-  flag?: Expression;
-} & BinaryExprArgs;
+export type RegexpILikeExprArgs = Merge<[
+  BinaryExprArgs,
+  { this: Expression;
+    expression: Expression;
+    flag?: Expression; },
+]>;
 
 export class RegexpILikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.REGEXP_ILIKE;
@@ -30577,11 +31651,12 @@ export class RegexpILikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type RegexpFullMatchExprArgs = {
-  this: Expression;
-  expression: Expression;
-  options?: Expression[];
-} & BinaryExprArgs;
+export type RegexpFullMatchExprArgs = Merge<[
+  BinaryExprArgs,
+  { this: Expression;
+    expression: Expression;
+    options?: Expression[]; },
+]>;
 
 export class RegexpFullMatchExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.REGEXP_FULL_MATCH;
@@ -30613,13 +31688,14 @@ export class RegexpFullMatchExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 }
 
-export type RegexpInstrExprArgs = {
-  position?: Expression;
-  occurrence?: Expression;
-  option?: Expression;
-  parameters?: Expression[];
-  group?: Expression;
-} & FuncExprArgs;
+export type RegexpInstrExprArgs = Merge<[
+  FuncExprArgs,
+  { position?: Expression;
+    occurrence?: Expression;
+    option?: Expression;
+    parameters?: Expression[];
+    group?: Expression; },
+]>;
 
 export class RegexpInstrExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_INSTR;
@@ -30668,11 +31744,12 @@ export class RegexpInstrExpr extends FuncExpr {
   }
 }
 
-export type RegexpSplitExprArgs = {
-  this: Expression;
-  expression: Expression;
-  limit?: number | Expression;
-} & FuncExprArgs;
+export type RegexpSplitExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    limit?: number | Expression; },
+]>;
 
 export class RegexpSplitExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_SPLIT;
@@ -30707,10 +31784,11 @@ export class RegexpSplitExpr extends FuncExpr {
   }
 }
 
-export type RegexpCountExprArgs = {
-  position?: Expression;
-  parameters?: Expression[];
-} & FuncExprArgs;
+export type RegexpCountExprArgs = Merge<[
+  FuncExprArgs,
+  { position?: Expression;
+    parameters?: Expression[]; },
+]>;
 
 export class RegexpCountExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_COUNT;
@@ -30744,10 +31822,11 @@ export class RegexpCountExpr extends FuncExpr {
   }
 }
 
-export type RepeatExprArgs = {
-  this: Expression;
-  times: Expression[];
-} & FuncExprArgs;
+export type RepeatExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    times: Expression[]; },
+]>;
 
 export class RepeatExpr extends FuncExpr {
   key = ExpressionKey.REPEAT;
@@ -30777,11 +31856,12 @@ export class RepeatExpr extends FuncExpr {
   }
 }
 
-export type ReplaceExprArgs = {
-  this: Expression;
-  expression: Expression;
-  replacement?: boolean;
-} & FuncExprArgs;
+export type ReplaceExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    replacement?: boolean; },
+]>;
 
 export class ReplaceExpr extends FuncExpr {
   key = ExpressionKey.REPLACE;
@@ -30816,7 +31896,9 @@ export class ReplaceExpr extends FuncExpr {
   }
 }
 
-export type RadiansExprArgs = FuncExprArgs;
+export type RadiansExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class RadiansExpr extends FuncExpr {
   key = ExpressionKey.RADIANS;
@@ -30836,11 +31918,12 @@ export class RadiansExpr extends FuncExpr {
   }
 }
 
-export type RoundExprArgs = {
-  decimals?: Expression[];
-  truncate?: Expression;
-  castsNonIntegerDecimals?: Expression[];
-} & FuncExprArgs;
+export type RoundExprArgs = Merge<[
+  FuncExprArgs,
+  { decimals?: Expression[];
+    truncate?: Expression;
+    castsNonIntegerDecimals?: Expression[]; },
+]>;
 
 export class RoundExpr extends FuncExpr {
   key = ExpressionKey.ROUND;
@@ -30879,10 +31962,11 @@ export class RoundExpr extends FuncExpr {
   }
 }
 
-export type TruncExprArgs = {
-  this: Expression;
-  decimals?: Expression;
-} & FuncExprArgs;
+export type TruncExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    decimals?: Expression; },
+]>;
 
 export class TruncExpr extends FuncExpr {
   key = ExpressionKey.TRUNC;
@@ -30914,9 +31998,10 @@ export class TruncExpr extends FuncExpr {
   }
 }
 
-export type RowNumberExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type RowNumberExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class RowNumberExpr extends FuncExpr {
   key = ExpressionKey.ROW_NUMBER;
@@ -30941,9 +32026,10 @@ export class RowNumberExpr extends FuncExpr {
   }
 }
 
-export type Seq1ExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type Seq1ExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class Seq1Expr extends FuncExpr {
   key = ExpressionKey.SEQ1;
@@ -30968,9 +32054,10 @@ export class Seq1Expr extends FuncExpr {
   }
 }
 
-export type Seq2ExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type Seq2ExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class Seq2Expr extends FuncExpr {
   key = ExpressionKey.SEQ2;
@@ -30995,9 +32082,10 @@ export class Seq2Expr extends FuncExpr {
   }
 }
 
-export type Seq4ExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type Seq4ExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class Seq4Expr extends FuncExpr {
   key = ExpressionKey.SEQ4;
@@ -31022,9 +32110,10 @@ export class Seq4Expr extends FuncExpr {
   }
 }
 
-export type Seq8ExprArgs = {
-  this?: Expression;
-} & FuncExprArgs;
+export type Seq8ExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class Seq8Expr extends FuncExpr {
   key = ExpressionKey.SEQ8;
@@ -31049,10 +32138,11 @@ export class Seq8Expr extends FuncExpr {
   }
 }
 
-export type SafeAddExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type SafeAddExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class SafeAddExpr extends FuncExpr {
   key = ExpressionKey.SAFE_ADD;
@@ -31082,10 +32172,11 @@ export class SafeAddExpr extends FuncExpr {
   }
 }
 
-export type SafeDivideExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type SafeDivideExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class SafeDivideExpr extends FuncExpr {
   key = ExpressionKey.SAFE_DIVIDE;
@@ -31115,10 +32206,11 @@ export class SafeDivideExpr extends FuncExpr {
   }
 }
 
-export type SafeMultiplyExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type SafeMultiplyExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class SafeMultiplyExpr extends FuncExpr {
   key = ExpressionKey.SAFE_MULTIPLY;
@@ -31148,7 +32240,9 @@ export class SafeMultiplyExpr extends FuncExpr {
   }
 }
 
-export type SafeNegateExprArgs = FuncExprArgs;
+export type SafeNegateExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SafeNegateExpr extends FuncExpr {
   key = ExpressionKey.SAFE_NEGATE;
@@ -31168,10 +32262,11 @@ export class SafeNegateExpr extends FuncExpr {
   }
 }
 
-export type SafeSubtractExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type SafeSubtractExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class SafeSubtractExpr extends FuncExpr {
   key = ExpressionKey.SAFE_SUBTRACT;
@@ -31201,7 +32296,9 @@ export class SafeSubtractExpr extends FuncExpr {
   }
 }
 
-export type SafeConvertBytesToStringExprArgs = FuncExprArgs;
+export type SafeConvertBytesToStringExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SafeConvertBytesToStringExpr extends FuncExpr {
   key = ExpressionKey.SAFE_CONVERT_BYTES_TO_STRING;
@@ -31221,7 +32318,9 @@ export class SafeConvertBytesToStringExpr extends FuncExpr {
   }
 }
 
-export type SHAExprArgs = FuncExprArgs;
+export type SHAExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SHAExpr extends FuncExpr {
   key = ExpressionKey.SHA;
@@ -31243,10 +32342,11 @@ export class SHAExpr extends FuncExpr {
   }
 }
 
-export type SHA2ExprArgs = {
-  this: Expression;
-  length?: number | Expression;
-} & FuncExprArgs;
+export type SHA2ExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    length?: number | Expression; },
+]>;
 
 export class SHA2Expr extends FuncExpr {
   key = ExpressionKey.SHA2;
@@ -31278,7 +32378,9 @@ export class SHA2Expr extends FuncExpr {
   }
 }
 
-export type SHA1DigestExprArgs = FuncExprArgs;
+export type SHA1DigestExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SHA1DigestExpr extends FuncExpr {
   key = ExpressionKey.SHA1_DIGEST;
@@ -31298,10 +32400,11 @@ export class SHA1DigestExpr extends FuncExpr {
   }
 }
 
-export type SHA2DigestExprArgs = {
-  this: Expression;
-  length?: number | Expression;
-} & FuncExprArgs;
+export type SHA2DigestExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    length?: number | Expression; },
+]>;
 
 export class SHA2DigestExpr extends FuncExpr {
   key = ExpressionKey.SHA2_DIGEST;
@@ -31331,7 +32434,9 @@ export class SHA2DigestExpr extends FuncExpr {
   }
 }
 
-export type SignExprArgs = FuncExprArgs;
+export type SignExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SignExpr extends FuncExpr {
   key = ExpressionKey.SIGN;
@@ -31353,11 +32458,12 @@ export class SignExpr extends FuncExpr {
   }
 }
 
-export type SortArrayExprArgs = {
-  this: Expression;
-  asc?: Expression;
-  nullsFirst?: Expression;
-} & FuncExprArgs;
+export type SortArrayExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    asc?: Expression;
+    nullsFirst?: Expression; },
+]>;
 
 export class SortArrayExpr extends FuncExpr {
   key = ExpressionKey.SORT_ARRAY;
@@ -31396,7 +32502,9 @@ export class SortArrayExpr extends FuncExpr {
   }
 }
 
-export type SoundexExprArgs = FuncExprArgs;
+export type SoundexExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SoundexExpr extends FuncExpr {
   key = ExpressionKey.SOUNDEX;
@@ -31416,7 +32524,9 @@ export class SoundexExpr extends FuncExpr {
   }
 }
 
-export type SoundexP123ExprArgs = FuncExprArgs;
+export type SoundexP123ExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SoundexP123Expr extends FuncExpr {
   key = ExpressionKey.SOUNDEX_P123;
@@ -31436,11 +32546,12 @@ export class SoundexP123Expr extends FuncExpr {
   }
 }
 
-export type SplitExprArgs = {
-  this: Expression;
-  expression: Expression;
-  limit?: number | Expression;
-} & FuncExprArgs;
+export type SplitExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    limit?: number | Expression; },
+]>;
 
 export class SplitExpr extends FuncExpr {
   key = ExpressionKey.SPLIT;
@@ -31475,11 +32586,12 @@ export class SplitExpr extends FuncExpr {
   }
 }
 
-export type SplitPartExprArgs = {
-  this: Expression;
-  delimiter?: number | Expression;
-  partIndex?: Expression;
-} & FuncExprArgs;
+export type SplitPartExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    delimiter?: number | Expression;
+    partIndex?: Expression; },
+]>;
 
 export class SplitPartExpr extends FuncExpr {
   key = ExpressionKey.SPLIT_PART;
@@ -31518,11 +32630,12 @@ export class SplitPartExpr extends FuncExpr {
   }
 }
 
-export type SubstringExprArgs = {
-  this: Expression;
-  start?: Expression;
-  length?: number | Expression;
-} & FuncExprArgs;
+export type SubstringExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    start?: Expression;
+    length?: number | Expression; },
+]>;
 
 export class SubstringExpr extends FuncExpr {
   key = ExpressionKey.SUBSTRING;
@@ -31562,11 +32675,12 @@ export class SubstringExpr extends FuncExpr {
   }
 }
 
-export type SubstringIndexExprArgs = {
-  this: Expression;
-  delimiter: number | Expression;
-  count: Expression;
-} & FuncExprArgs;
+export type SubstringIndexExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    delimiter: number | Expression;
+    count: Expression; },
+]>;
 
 export class SubstringIndexExpr extends FuncExpr {
   key = ExpressionKey.SUBSTRING_INDEX;
@@ -31605,10 +32719,11 @@ export class SubstringIndexExpr extends FuncExpr {
   }
 }
 
-export type StandardHashExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type StandardHashExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class StandardHashExpr extends FuncExpr {
   key = ExpressionKey.STANDARD_HASH;
@@ -31638,10 +32753,11 @@ export class StandardHashExpr extends FuncExpr {
   }
 }
 
-export type StartsWithExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type StartsWithExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class StartsWithExpr extends FuncExpr {
   key = ExpressionKey.STARTS_WITH;
@@ -31672,10 +32788,11 @@ export class StartsWithExpr extends FuncExpr {
   }
 }
 
-export type EndsWithExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type EndsWithExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class EndsWithExpr extends FuncExpr {
   key = ExpressionKey.ENDS_WITH;
@@ -31706,12 +32823,13 @@ export class EndsWithExpr extends FuncExpr {
   }
 }
 
-export type StrPositionExprArgs = {
-  this: Expression;
-  substr: Expression;
-  position?: Expression;
-  occurrence?: Expression;
-} & FuncExprArgs;
+export type StrPositionExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    substr: Expression;
+    position?: Expression;
+    occurrence?: Expression; },
+]>;
 
 export class StrPositionExpr extends FuncExpr {
   key = ExpressionKey.STR_POSITION;
@@ -31755,14 +32873,15 @@ export class StrPositionExpr extends FuncExpr {
   }
 }
 
-export type SearchExprArgs = {
-  this: Expression;
-  expression: Expression;
-  jsonScope?: Expression;
-  analyzer?: Expression;
-  analyzerOptions?: Expression[];
-  searchMode?: Expression;
-} & FuncExprArgs;
+export type SearchExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    jsonScope?: Expression;
+    analyzer?: Expression;
+    analyzerOptions?: Expression[];
+    searchMode?: Expression; },
+]>;
 
 export class SearchExpr extends FuncExpr {
   key = ExpressionKey.SEARCH;
@@ -31816,10 +32935,11 @@ export class SearchExpr extends FuncExpr {
   }
 }
 
-export type SearchIpExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type SearchIpExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class SearchIpExpr extends FuncExpr {
   key = ExpressionKey.SEARCH_IP;
@@ -31849,11 +32969,12 @@ export class SearchIpExpr extends FuncExpr {
   }
 }
 
-export type StrToDateExprArgs = {
-  format?: string;
-  safe?: boolean;
-  this: Expression;
-} & FuncExprArgs;
+export type StrToDateExprArgs = Merge<[
+  FuncExprArgs,
+  { format?: string;
+    safe?: boolean;
+    this: Expression; },
+]>;
 
 export class StrToDateExpr extends FuncExpr {
   key = ExpressionKey.STR_TO_DATE;
@@ -31892,13 +33013,14 @@ export class StrToDateExpr extends FuncExpr {
   }
 }
 
-export type StrToTimeExprArgs = {
-  format: string;
-  zone?: Expression;
-  safe?: boolean;
-  targetType?: DataTypeExpr;
-  this: Expression;
-} & FuncExprArgs;
+export type StrToTimeExprArgs = Merge<[
+  FuncExprArgs,
+  { format: string;
+    zone?: Expression;
+    safe?: boolean;
+    targetType?: DataTypeExpr;
+    this: Expression; },
+]>;
 
 export class StrToTimeExpr extends FuncExpr {
   key = ExpressionKey.STR_TO_TIME;
@@ -31947,10 +33069,11 @@ export class StrToTimeExpr extends FuncExpr {
   }
 }
 
-export type StrToUnixExprArgs = {
-  format?: string;
-  this?: Expression;
-} & FuncExprArgs;
+export type StrToUnixExprArgs = Merge<[
+  FuncExprArgs,
+  { format?: string;
+    this?: Expression; },
+]>;
 
 export class StrToUnixExpr extends FuncExpr {
   key = ExpressionKey.STR_TO_UNIX;
@@ -31979,12 +33102,13 @@ export class StrToUnixExpr extends FuncExpr {
   }
 }
 
-export type StrToMapExprArgs = {
-  this: Expression;
-  pairDelim?: Expression;
-  keyValueDelim?: string;
-  duplicateResolutionCallback?: Expression;
-} & FuncExprArgs;
+export type StrToMapExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    pairDelim?: Expression;
+    keyValueDelim?: string;
+    duplicateResolutionCallback?: Expression; },
+]>;
 
 export class StrToMapExpr extends FuncExpr {
   key = ExpressionKey.STR_TO_MAP;
@@ -32028,11 +33152,12 @@ export class StrToMapExpr extends FuncExpr {
   }
 }
 
-export type NumberToStrExprArgs = {
-  format: string;
-  culture?: Expression;
-  this: Expression;
-} & FuncExprArgs;
+export type NumberToStrExprArgs = Merge<[
+  FuncExprArgs,
+  { format: string;
+    culture?: Expression;
+    this: Expression; },
+]>;
 
 export class NumberToStrExpr extends FuncExpr {
   key = ExpressionKey.NUMBER_TO_STR;
@@ -32071,10 +33196,11 @@ export class NumberToStrExpr extends FuncExpr {
   }
 }
 
-export type FromBaseExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type FromBaseExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class FromBaseExpr extends FuncExpr {
   key = ExpressionKey.FROM_BASE;
@@ -32104,7 +33230,9 @@ export class FromBaseExpr extends FuncExpr {
   }
 }
 
-export type SpaceExprArgs = FuncExprArgs;
+export type SpaceExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SpaceExpr extends FuncExpr {
   key = ExpressionKey.SPACE;
@@ -32124,9 +33252,10 @@ export class SpaceExpr extends FuncExpr {
   }
 }
 
-export type StructExprArgs = {
-  expressions?: Expression[];
-} & FuncExprArgs;
+export type StructExprArgs = Merge<[
+  FuncExprArgs,
+  { expressions?: Expression[] },
+]>;
 
 export class StructExpr extends FuncExpr {
   key = ExpressionKey.STRUCT;
@@ -32152,10 +33281,11 @@ export class StructExpr extends FuncExpr {
   }
 }
 
-export type StructExtractExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type StructExtractExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class StructExtractExpr extends FuncExpr {
   key = ExpressionKey.STRUCT_EXTRACT;
@@ -32185,12 +33315,13 @@ export class StructExtractExpr extends FuncExpr {
   }
 }
 
-export type StuffExprArgs = {
-  start: Expression;
-  length: number | Expression;
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type StuffExprArgs = Merge<[
+  FuncExprArgs,
+  { start: Expression;
+    length: number | Expression;
+    this: Expression;
+    expression: Expression; },
+]>;
 
 export class StuffExpr extends FuncExpr {
   key = ExpressionKey.STUFF;
@@ -32235,7 +33366,9 @@ export class StuffExpr extends FuncExpr {
   }
 }
 
-export type SqrtExprArgs = FuncExprArgs;
+export type SqrtExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class SqrtExpr extends FuncExpr {
   key = ExpressionKey.SQRT;
@@ -32255,10 +33388,11 @@ export class SqrtExpr extends FuncExpr {
   }
 }
 
-export type TimeExprArgs = {
-  zone?: Expression;
-  this?: Expression;
-} & FuncExprArgs;
+export type TimeExprArgs = Merge<[
+  FuncExprArgs,
+  { zone?: Expression;
+    this?: Expression; },
+]>;
 
 export class TimeExpr extends FuncExpr {
   key = ExpressionKey.TIME;
@@ -32287,12 +33421,13 @@ export class TimeExpr extends FuncExpr {
   }
 }
 
-export type TimeToStrExprArgs = {
-  format: string;
-  culture?: Expression;
-  zone?: Expression;
-  this: Expression;
-} & FuncExprArgs;
+export type TimeToStrExprArgs = Merge<[
+  FuncExprArgs,
+  { format: string;
+    culture?: Expression;
+    zone?: Expression;
+    this: Expression; },
+]>;
 
 export class TimeToStrExpr extends FuncExpr {
   key = ExpressionKey.TIME_TO_STR;
@@ -32336,7 +33471,9 @@ export class TimeToStrExpr extends FuncExpr {
   }
 }
 
-export type TimeToTimeStrExprArgs = FuncExprArgs;
+export type TimeToTimeStrExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TimeToTimeStrExpr extends FuncExpr {
   key = ExpressionKey.TIME_TO_TIME_STR;
@@ -32356,7 +33493,9 @@ export class TimeToTimeStrExpr extends FuncExpr {
   }
 }
 
-export type TimeToUnixExprArgs = FuncExprArgs;
+export type TimeToUnixExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TimeToUnixExpr extends FuncExpr {
   key = ExpressionKey.TIME_TO_UNIX;
@@ -32376,7 +33515,9 @@ export class TimeToUnixExpr extends FuncExpr {
   }
 }
 
-export type TimeStrToDateExprArgs = FuncExprArgs;
+export type TimeStrToDateExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TimeStrToDateExpr extends FuncExpr {
   key = ExpressionKey.TIME_STR_TO_DATE;
@@ -32396,10 +33537,11 @@ export class TimeStrToDateExpr extends FuncExpr {
   }
 }
 
-export type TimeStrToTimeExprArgs = {
-  zone?: Expression;
-  this: Expression;
-} & FuncExprArgs;
+export type TimeStrToTimeExprArgs = Merge<[
+  FuncExprArgs,
+  { zone?: Expression;
+    this: Expression; },
+]>;
 
 export class TimeStrToTimeExpr extends FuncExpr {
   key = ExpressionKey.TIME_STR_TO_TIME;
@@ -32428,7 +33570,9 @@ export class TimeStrToTimeExpr extends FuncExpr {
   }
 }
 
-export type TimeStrToUnixExprArgs = FuncExprArgs;
+export type TimeStrToUnixExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TimeStrToUnixExpr extends FuncExpr {
   key = ExpressionKey.TIME_STR_TO_UNIX;
@@ -32448,12 +33592,13 @@ export class TimeStrToUnixExpr extends FuncExpr {
   }
 }
 
-export type TrimExprArgs = {
-  this: Expression;
-  expression?: Expression;
-  position?: Expression;
-  collation?: Expression;
-} & FuncExprArgs;
+export type TrimExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression;
+    position?: Expression;
+    collation?: Expression; },
+]>;
 
 export class TrimExpr extends FuncExpr {
   key = ExpressionKey.TRIM;
@@ -32497,12 +33642,13 @@ export class TrimExpr extends FuncExpr {
   }
 }
 
-export type TsOrDsAddExprArgs = {
-  unit?: Expression;
-  returnType?: DataTypeExpr;
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type TsOrDsAddExprArgs = Merge<[
+  FuncExprArgs,
+  { unit?: Expression;
+    returnType?: DataTypeExpr;
+    this: Expression;
+    expression: Expression; },
+]>;
 
 export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TS_OR_DS_ADD;
@@ -32554,11 +33700,12 @@ export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TsOrDsDiffExprArgs = {
-  unit?: Expression;
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type TsOrDsDiffExprArgs = Merge<[
+  FuncExprArgs,
+  { unit?: Expression;
+    this: Expression;
+    expression: Expression; },
+]>;
 
 export class TsOrDsDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TS_OR_DS_DIFF;
@@ -32593,7 +33740,9 @@ export class TsOrDsDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   }
 }
 
-export type TsOrDsToDateStrExprArgs = FuncExprArgs;
+export type TsOrDsToDateStrExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TsOrDsToDateStrExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_DATE_STR;
@@ -32613,11 +33762,12 @@ export class TsOrDsToDateStrExpr extends FuncExpr {
   }
 }
 
-export type TsOrDsToDateExprArgs = {
-  format?: string;
-  safe?: boolean;
-  this: Expression;
-} & FuncExprArgs;
+export type TsOrDsToDateExprArgs = Merge<[
+  FuncExprArgs,
+  { format?: string;
+    safe?: boolean;
+    this: Expression; },
+]>;
 
 export class TsOrDsToDateExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_DATE;
@@ -32656,7 +33806,9 @@ export class TsOrDsToDateExpr extends FuncExpr {
   }
 }
 
-export type TsOrDsToDatetimeExprArgs = FuncExprArgs;
+export type TsOrDsToDatetimeExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TsOrDsToDatetimeExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_DATETIME;
@@ -32676,11 +33828,12 @@ export class TsOrDsToDatetimeExpr extends FuncExpr {
   }
 }
 
-export type TsOrDsToTimeExprArgs = {
-  format?: string;
-  safe?: boolean;
-  this: Expression;
-} & FuncExprArgs;
+export type TsOrDsToTimeExprArgs = Merge<[
+  FuncExprArgs,
+  { format?: string;
+    safe?: boolean;
+    this: Expression; },
+]>;
 
 export class TsOrDsToTimeExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_TIME;
@@ -32719,7 +33872,9 @@ export class TsOrDsToTimeExpr extends FuncExpr {
   }
 }
 
-export type TsOrDsToTimestampExprArgs = FuncExprArgs;
+export type TsOrDsToTimestampExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TsOrDsToTimestampExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_TIMESTAMP;
@@ -32739,7 +33894,9 @@ export class TsOrDsToTimestampExpr extends FuncExpr {
   }
 }
 
-export type TsOrDiToDiExprArgs = FuncExprArgs;
+export type TsOrDiToDiExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class TsOrDiToDiExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DI_TO_DI;
@@ -32759,10 +33916,11 @@ export class TsOrDiToDiExpr extends FuncExpr {
   }
 }
 
-export type UnhexExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type UnhexExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class UnhexExpr extends FuncExpr {
   key = ExpressionKey.UNHEX;
@@ -32792,7 +33950,9 @@ export class UnhexExpr extends FuncExpr {
   }
 }
 
-export type UnicodeExprArgs = FuncExprArgs;
+export type UnicodeExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class UnicodeExpr extends FuncExpr {
   key = ExpressionKey.UNICODE;
@@ -32812,12 +33972,13 @@ export class UnicodeExpr extends FuncExpr {
   }
 }
 
-export type UniformExprArgs = {
-  gen?: Expression;
-  seed?: Expression;
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type UniformExprArgs = Merge<[
+  FuncExprArgs,
+  { gen?: Expression;
+    seed?: Expression;
+    this: Expression;
+    expression: Expression; },
+]>;
 
 export class UniformExpr extends FuncExpr {
   key = ExpressionKey.UNIFORM;
@@ -32861,7 +34022,9 @@ export class UniformExpr extends FuncExpr {
   }
 }
 
-export type UnixDateExprArgs = FuncExprArgs;
+export type UnixDateExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class UnixDateExpr extends FuncExpr {
   key = ExpressionKey.UNIX_DATE;
@@ -32881,10 +34044,11 @@ export class UnixDateExpr extends FuncExpr {
   }
 }
 
-export type UnixToStrExprArgs = {
-  format?: string;
-  this: Expression;
-} & FuncExprArgs;
+export type UnixToStrExprArgs = Merge<[
+  FuncExprArgs,
+  { format?: string;
+    this: Expression; },
+]>;
 
 export class UnixToStrExpr extends FuncExpr {
   key = ExpressionKey.UNIX_TO_STR;
@@ -32914,15 +34078,16 @@ export class UnixToStrExpr extends FuncExpr {
   }
 }
 
-export type UnixToTimeExprArgs = {
-  this: Expression;
-  scale?: number | Expression;
-  zone?: Expression;
-  hours?: Expression[];
-  minutes?: Expression[];
-  format?: string;
-  targetType?: DataTypeExpr;
-} & FuncExprArgs;
+export type UnixToTimeExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    scale?: number | Expression;
+    zone?: Expression;
+    hours?: Expression[];
+    minutes?: Expression[];
+    format?: string;
+    targetType?: DataTypeExpr; },
+]>;
 
 export class UnixToTimeExpr extends FuncExpr {
   key = ExpressionKey.UNIX_TO_TIME;
@@ -32992,7 +34157,9 @@ export class UnixToTimeExpr extends FuncExpr {
   }
 }
 
-export type UnixToTimeStrExprArgs = FuncExprArgs;
+export type UnixToTimeStrExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class UnixToTimeStrExpr extends FuncExpr {
   key = ExpressionKey.UNIX_TO_TIME_STR;
@@ -33012,7 +34179,9 @@ export class UnixToTimeStrExpr extends FuncExpr {
   }
 }
 
-export type UnixSecondsExprArgs = FuncExprArgs;
+export type UnixSecondsExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class UnixSecondsExpr extends FuncExpr {
   key = ExpressionKey.UNIX_SECONDS;
@@ -33032,7 +34201,9 @@ export class UnixSecondsExpr extends FuncExpr {
   }
 }
 
-export type UnixMicrosExprArgs = FuncExprArgs;
+export type UnixMicrosExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class UnixMicrosExpr extends FuncExpr {
   key = ExpressionKey.UNIX_MICROS;
@@ -33052,7 +34223,9 @@ export class UnixMicrosExpr extends FuncExpr {
   }
 }
 
-export type UnixMillisExprArgs = FuncExprArgs;
+export type UnixMillisExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class UnixMillisExpr extends FuncExpr {
   key = ExpressionKey.UNIX_MILLIS;
@@ -33072,11 +34245,12 @@ export class UnixMillisExpr extends FuncExpr {
   }
 }
 
-export type UuidExprArgs = {
-  name?: Expression;
-  isString?: boolean;
-  this?: Expression;
-} & FuncExprArgs;
+export type UuidExprArgs = Merge<[
+  FuncExprArgs,
+  { name?: Expression;
+    isString?: boolean;
+    this?: Expression; },
+]>;
 
 export class UuidExpr extends FuncExpr {
   key = ExpressionKey.UUID;
@@ -33132,19 +34306,20 @@ const TIMESTAMP_PARTS = {
   nano: false,
 } as const;
 
-export type TimestampFromPartsExprArgs = {
-  year?: Expression;
-  month?: Expression;
-  day?: Expression;
-  hour?: Expression;
-  min?: Expression;
-  sec?: Expression;
-  nano?: Expression;
-  zone?: Expression;
-  milli?: Expression;
-  this?: Expression;
-  expression?: Expression;
-} & FuncExprArgs;
+export type TimestampFromPartsExprArgs = Merge<[
+  FuncExprArgs,
+  { year?: Expression;
+    month?: Expression;
+    day?: Expression;
+    hour?: Expression;
+    min?: Expression;
+    sec?: Expression;
+    nano?: Expression;
+    zone?: Expression;
+    milli?: Expression;
+    this?: Expression;
+    expression?: Expression; },
+]>;
 
 export class TimestampFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_FROM_PARTS;
@@ -33218,15 +34393,16 @@ export class TimestampFromPartsExpr extends FuncExpr {
   }
 }
 
-export type TimestampLtzFromPartsExprArgs = {
-  year?: Expression;
-  month?: Expression;
-  day?: Expression;
-  hour?: Expression;
-  min?: Expression;
-  sec?: Expression;
-  nano?: Expression;
-} & FuncExprArgs;
+export type TimestampLtzFromPartsExprArgs = Merge<[
+  FuncExprArgs,
+  { year?: Expression;
+    month?: Expression;
+    day?: Expression;
+    hour?: Expression;
+    min?: Expression;
+    sec?: Expression;
+    nano?: Expression; },
+]>;
 
 export class TimestampLtzFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_LTZ_FROM_PARTS;
@@ -33277,16 +34453,17 @@ export class TimestampLtzFromPartsExpr extends FuncExpr {
   }
 }
 
-export type TimestampTzFromPartsExprArgs = {
-  year?: Expression;
-  month?: Expression;
-  day?: Expression;
-  hour?: Expression;
-  min?: Expression;
-  sec?: Expression;
-  nano?: Expression;
-  zone?: Expression;
-} & FuncExprArgs;
+export type TimestampTzFromPartsExprArgs = Merge<[
+  FuncExprArgs,
+  { year?: Expression;
+    month?: Expression;
+    day?: Expression;
+    hour?: Expression;
+    min?: Expression;
+    sec?: Expression;
+    nano?: Expression;
+    zone?: Expression; },
+]>;
 
 export class TimestampTzFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_TZ_FROM_PARTS;
@@ -33341,7 +34518,9 @@ export class TimestampTzFromPartsExpr extends FuncExpr {
   }
 }
 
-export type UpperExprArgs = FuncExprArgs;
+export type UpperExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class UpperExpr extends FuncExpr {
   key = ExpressionKey.UPPER;
@@ -33363,11 +34542,13 @@ export class UpperExpr extends FuncExpr {
   }
 }
 
-export type CorrExprArgs = {
-  nullOnZeroVariance?: Expression;
-  this: Expression;
-  expression: Expression;
-} & BinaryExprArgs & AggFuncExprArgs;
+export type CorrExprArgs = Merge<[
+  BinaryExprArgs,
+  AggFuncExprArgs,
+  { nullOnZeroVariance?: Expression;
+    this: Expression;
+    expression: Expression; },
+]>;
 
 export class CorrExpr extends multiInherit(BinaryExpr, AggFuncExpr) {
   key = ExpressionKey.CORR;
@@ -33398,13 +34579,14 @@ export class CorrExpr extends multiInherit(BinaryExpr, AggFuncExpr) {
   }
 }
 
-export type WidthBucketExprArgs = {
-  this: Expression;
-  minValue?: string;
-  maxValue?: string;
-  numBuckets?: Expression[];
-  threshold?: Expression;
-} & FuncExprArgs;
+export type WidthBucketExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    minValue?: string;
+    maxValue?: string;
+    numBuckets?: Expression[];
+    threshold?: Expression; },
+]>;
 
 export class WidthBucketExpr extends FuncExpr {
   key = ExpressionKey.WIDTH_BUCKET;
@@ -33453,10 +34635,11 @@ export class WidthBucketExpr extends FuncExpr {
   }
 }
 
-export type WeekExprArgs = {
-  mode?: Expression;
-  this: Expression;
-} & FuncExprArgs;
+export type WeekExprArgs = Merge<[
+  FuncExprArgs,
+  { mode?: Expression;
+    this: Expression; },
+]>;
 
 export class WeekExpr extends FuncExpr {
   key = ExpressionKey.WEEK;
@@ -33486,10 +34669,11 @@ export class WeekExpr extends FuncExpr {
   }
 }
 
-export type NextDayExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type NextDayExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class NextDayExpr extends FuncExpr {
   key = ExpressionKey.NEXT_DAY;
@@ -33519,11 +34703,12 @@ export class NextDayExpr extends FuncExpr {
   }
 }
 
-export type XMLElementExprArgs = {
-  evalname?: string;
-  this: Expression;
-  expressions?: Expression;
-} & FuncExprArgs;
+export type XMLElementExprArgs = Merge<[
+  FuncExprArgs,
+  { evalname?: string;
+    this: Expression;
+    expressions?: Expression; },
+]>;
 
 export class XMLElementExpr extends FuncExpr {
   key = ExpressionKey.XML_ELEMENT;
@@ -33560,11 +34745,12 @@ export class XMLElementExpr extends FuncExpr {
   }
 }
 
-export type XMLGetExprArgs = {
-  instance?: Expression;
-  this: Expression;
-  expression: Expression;
-} & FuncExprArgs;
+export type XMLGetExprArgs = Merge<[
+  FuncExprArgs,
+  { instance?: Expression;
+    this: Expression;
+    expression: Expression; },
+]>;
 
 export class XMLGetExpr extends FuncExpr {
   key = ExpressionKey.XML_GET;
@@ -33600,13 +34786,14 @@ export class XMLGetExpr extends FuncExpr {
   }
 }
 
-export type XMLTableExprArgs = {
-  this: Expression;
-  namespaces?: Expression[];
-  passing?: Expression;
-  columns?: Expression[];
-  byRef?: Expression;
-} & FuncExprArgs;
+export type XMLTableExprArgs = Merge<[
+  FuncExprArgs,
+  { this: Expression;
+    namespaces?: Expression[];
+    passing?: Expression;
+    columns?: Expression[];
+    byRef?: Expression; },
+]>;
 
 export class XMLTableExpr extends FuncExpr {
   key = ExpressionKey.XML_TABLE;
@@ -33655,7 +34842,9 @@ export class XMLTableExpr extends FuncExpr {
   }
 }
 
-export type YearExprArgs = FuncExprArgs;
+export type YearExprArgs = Merge<[
+  FuncExprArgs,
+]>;
 
 export class YearExpr extends FuncExpr {
   key = ExpressionKey.YEAR;
@@ -33675,11 +34864,12 @@ export class YearExpr extends FuncExpr {
   }
 }
 
-export type ZipfExprArgs = {
-  elementcount: Expression;
-  gen: Expression;
-  this: Expression;
-} & FuncExprArgs;
+export type ZipfExprArgs = Merge<[
+  FuncExprArgs,
+  { elementcount: Expression;
+    gen: Expression;
+    this: Expression; },
+]>;
 
 export class ZipfExpr extends FuncExpr {
   key = ExpressionKey.ZIPF;
@@ -33718,10 +34908,11 @@ export class ZipfExpr extends FuncExpr {
   }
 }
 
-export type NextValueForExprArgs = {
-  order?: Expression;
-  this: Expression;
-} & FuncExprArgs;
+export type NextValueForExprArgs = Merge<[
+  FuncExprArgs,
+  { order?: Expression;
+    this: Expression; },
+]>;
 
 export class NextValueForExpr extends FuncExpr {
   key = ExpressionKey.NEXT_VALUE_FOR;
@@ -33751,7 +34942,9 @@ export class NextValueForExpr extends FuncExpr {
   }
 }
 
-export type AllExprArgs = SubqueryPredicateExprArgs;
+export type AllExprArgs = Merge<[
+  SubqueryPredicateExprArgs,
+]>;
 
 export class AllExpr extends SubqueryPredicateExpr {
   key = ExpressionKey.ALL;
@@ -33767,7 +34960,9 @@ export class AllExpr extends SubqueryPredicateExpr {
   }
 }
 
-export type AnyExprArgs = SubqueryPredicateExprArgs;
+export type AnyExprArgs = Merge<[
+  SubqueryPredicateExprArgs,
+]>;
 
 export class AnyExpr extends SubqueryPredicateExpr {
   key = ExpressionKey.ANY;
@@ -33783,7 +34978,9 @@ export class AnyExpr extends SubqueryPredicateExpr {
   }
 }
 
-export type BitwiseAndAggExprArgs = AggFuncExprArgs;
+export type BitwiseAndAggExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class BitwiseAndAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITWISE_AND_AGG;
@@ -33803,7 +35000,9 @@ export class BitwiseAndAggExpr extends AggFuncExpr {
   }
 }
 
-export type BitwiseOrAggExprArgs = AggFuncExprArgs;
+export type BitwiseOrAggExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class BitwiseOrAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITWISE_OR_AGG;
@@ -33823,7 +35022,9 @@ export class BitwiseOrAggExpr extends AggFuncExpr {
   }
 }
 
-export type BitwiseXorAggExprArgs = AggFuncExprArgs;
+export type BitwiseXorAggExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class BitwiseXorAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITWISE_XOR_AGG;
@@ -33843,7 +35044,9 @@ export class BitwiseXorAggExpr extends AggFuncExpr {
   }
 }
 
-export type BoolxorAggExprArgs = AggFuncExprArgs;
+export type BoolxorAggExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class BoolxorAggExpr extends AggFuncExpr {
   key = ExpressionKey.BOOLXOR_AGG;
@@ -33863,7 +35066,9 @@ export class BoolxorAggExpr extends AggFuncExpr {
   }
 }
 
-export type BitmapConstructAggExprArgs = AggFuncExprArgs;
+export type BitmapConstructAggExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class BitmapConstructAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITMAP_CONSTRUCT_AGG;
@@ -33883,7 +35088,9 @@ export class BitmapConstructAggExpr extends AggFuncExpr {
   }
 }
 
-export type BitmapOrAggExprArgs = AggFuncExprArgs;
+export type BitmapOrAggExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class BitmapOrAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITMAP_OR_AGG;
@@ -33903,11 +35110,12 @@ export class BitmapOrAggExpr extends AggFuncExpr {
   }
 }
 
-export type ParameterizedAggExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-  params: Expression[];
-} & AggFuncExprArgs;
+export type ParameterizedAggExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expressions: Expression[];
+    params: Expression[]; },
+]>;
 
 export class ParameterizedAggExpr extends AggFuncExpr {
   key = ExpressionKey.PARAMETERIZED_AGG;
@@ -33942,11 +35150,12 @@ export class ParameterizedAggExpr extends AggFuncExpr {
   }
 }
 
-export type ArgMaxExprArgs = {
-  this: Expression;
-  expression: Expression;
-  count?: Expression;
-} & AggFuncExprArgs;
+export type ArgMaxExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    count?: Expression; },
+]>;
 
 export class ArgMaxExpr extends AggFuncExpr {
   key = ExpressionKey.ARG_MAX;
@@ -33987,11 +35196,12 @@ export class ArgMaxExpr extends AggFuncExpr {
   }
 }
 
-export type ArgMinExprArgs = {
-  this: Expression;
-  expression: Expression;
-  count?: Expression;
-} & AggFuncExprArgs;
+export type ArgMinExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    count?: Expression; },
+]>;
 
 export class ArgMinExpr extends AggFuncExpr {
   key = ExpressionKey.ARG_MIN;
@@ -34032,11 +35242,12 @@ export class ArgMinExpr extends AggFuncExpr {
   }
 }
 
-export type ApproxTopKExprArgs = {
-  this: Expression;
-  expression?: Expression;
-  counters?: Expression;
-} & AggFuncExprArgs;
+export type ApproxTopKExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression?: Expression;
+    counters?: Expression; },
+]>;
 
 export class ApproxTopKExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_K;
@@ -34075,10 +35286,11 @@ export class ApproxTopKExpr extends AggFuncExpr {
  * https://docs.snowflake.com/en/sql-reference/functions/approx_top_k_accumulate
  * https://spark.apache.org/docs/preview/api/sql/index.html#approx_top_k_accumulate
  */
-export type ApproxTopKAccumulateExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & AggFuncExprArgs;
+export type ApproxTopKAccumulateExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class ApproxTopKAccumulateExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_K_ACCUMULATE;
@@ -34111,10 +35323,11 @@ export class ApproxTopKAccumulateExpr extends AggFuncExpr {
 /**
  * https://docs.snowflake.com/en/sql-reference/functions/approx_top_k_combine
  */
-export type ApproxTopKCombineExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & AggFuncExprArgs;
+export type ApproxTopKCombineExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class ApproxTopKCombineExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_K_COMBINE;
@@ -34144,11 +35357,12 @@ export class ApproxTopKCombineExpr extends AggFuncExpr {
   }
 }
 
-export type ApproxTopSumExprArgs = {
-  this: Expression;
-  expression: Expression;
-  count: Expression;
-} & AggFuncExprArgs;
+export type ApproxTopSumExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression;
+    count: Expression; },
+]>;
 
 export class ApproxTopSumExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_SUM;
@@ -34183,10 +35397,11 @@ export class ApproxTopSumExpr extends AggFuncExpr {
   }
 }
 
-export type ApproxQuantilesExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & AggFuncExprArgs;
+export type ApproxQuantilesExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class ApproxQuantilesExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_QUANTILES;
@@ -34219,7 +35434,9 @@ export class ApproxQuantilesExpr extends AggFuncExpr {
 /**
  * https://docs.snowflake.com/en/sql-reference/functions/approx_percentile_combine
  */
-export type ApproxPercentileCombineExprArgs = AggFuncExprArgs;
+export type ApproxPercentileCombineExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class ApproxPercentileCombineExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_PERCENTILE_COMBINE;
@@ -34242,10 +35459,11 @@ export class ApproxPercentileCombineExpr extends AggFuncExpr {
 /**
  * https://docs.snowflake.com/en/sql-reference/functions/minhash
  */
-export type MinhashExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-} & AggFuncExprArgs;
+export type MinhashExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expressions: Expression[]; },
+]>;
 
 export class MinhashExpr extends AggFuncExpr {
   key = ExpressionKey.MINHASH;
@@ -34280,7 +35498,9 @@ export class MinhashExpr extends AggFuncExpr {
 /**
  * https://docs.snowflake.com/en/sql-reference/functions/minhash_combine
  */
-export type MinhashCombineExprArgs = AggFuncExprArgs;
+export type MinhashCombineExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class MinhashCombineExpr extends AggFuncExpr {
   key = ExpressionKey.MINHASH_COMBINE;
@@ -34303,7 +35523,9 @@ export class MinhashCombineExpr extends AggFuncExpr {
 /**
  * https://docs.snowflake.com/en/sql-reference/functions/approximate_similarity
  */
-export type ApproximateSimilarityExprArgs = AggFuncExprArgs;
+export type ApproximateSimilarityExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class ApproximateSimilarityExpr extends AggFuncExpr {
   key = ExpressionKey.APPROXIMATE_SIMILARITY;
@@ -34325,9 +35547,10 @@ export class ApproximateSimilarityExpr extends AggFuncExpr {
   }
 }
 
-export type GroupingExprArgs = {
-  expressions: Expression[];
-} & AggFuncExprArgs;
+export type GroupingExprArgs = Merge<[
+  AggFuncExprArgs,
+  { expressions: Expression[] },
+]>;
 
 export class GroupingExpr extends AggFuncExpr {
   key = ExpressionKey.GROUPING;
@@ -34354,9 +35577,10 @@ export class GroupingExpr extends AggFuncExpr {
   }
 }
 
-export type GroupingIdExprArgs = {
-  expressions?: Expression[];
-} & AggFuncExprArgs;
+export type GroupingIdExprArgs = Merge<[
+  AggFuncExprArgs,
+  { expressions?: Expression[] },
+]>;
 
 export class GroupingIdExpr extends AggFuncExpr {
   key = ExpressionKey.GROUPING_ID;
@@ -34383,10 +35607,11 @@ export class GroupingIdExpr extends AggFuncExpr {
   }
 }
 
-export type AnonymousAggFuncExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & AggFuncExprArgs;
+export type AnonymousAggFuncExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class AnonymousAggFuncExpr extends AggFuncExpr {
   key = ExpressionKey.ANONYMOUS_AGG_FUNC;
@@ -34421,10 +35646,11 @@ export class AnonymousAggFuncExpr extends AggFuncExpr {
 /**
  * https://docs.snowflake.com/en/sql-reference/functions/hash_agg
  */
-export type HashAggExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & AggFuncExprArgs;
+export type HashAggExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class HashAggExpr extends AggFuncExpr {
   key = ExpressionKey.HASH_AGG;
@@ -34460,10 +35686,11 @@ export class HashAggExpr extends AggFuncExpr {
  * https://docs.snowflake.com/en/sql-reference/functions/hll
  * https://docs.aws.amazon.com/redshift/latest/dg/r_HLL_function.html
  */
-export type HllExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & AggFuncExprArgs;
+export type HllExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class HllExpr extends AggFuncExpr {
   key = ExpressionKey.HLL;
@@ -34495,10 +35722,11 @@ export class HllExpr extends AggFuncExpr {
   }
 }
 
-export type ApproxDistinctExprArgs = {
-  this: Expression;
-  accuracy?: Expression;
-} & AggFuncExprArgs;
+export type ApproxDistinctExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    accuracy?: Expression; },
+]>;
 
 export class ApproxDistinctExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_DISTINCT;
@@ -34535,7 +35763,9 @@ export class ApproxDistinctExpr extends AggFuncExpr {
  * used in a projection, so this expression is a helper that facilitates transpilation to other
  * dialects. For example, we'd generate UNNEST(GENERATE_SERIES(...)) in DuckDB
  */
-export type ExplodingGenerateSeriesExprArgs = GenerateSeriesExprArgs;
+export type ExplodingGenerateSeriesExprArgs = Merge<[
+  GenerateSeriesExprArgs,
+]>;
 
 export class ExplodingGenerateSeriesExpr extends GenerateSeriesExpr {
   key = ExpressionKey.EXPLODING_GENERATE_SERIES;
@@ -34545,10 +35775,11 @@ export class ExplodingGenerateSeriesExpr extends GenerateSeriesExpr {
   }
 }
 
-export type ArrayAggExprArgs = {
-  this: Expression;
-  nullsExcluded?: Expression;
-} & AggFuncExprArgs;
+export type ArrayAggExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    nullsExcluded?: Expression; },
+]>;
 
 export class ArrayAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_AGG;
@@ -34578,7 +35809,9 @@ export class ArrayAggExpr extends AggFuncExpr {
   }
 }
 
-export type ArrayUniqueAggExprArgs = AggFuncExprArgs;
+export type ArrayUniqueAggExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class ArrayUniqueAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_UNIQUE_AGG;
@@ -34598,10 +35831,11 @@ export class ArrayUniqueAggExpr extends AggFuncExpr {
   }
 }
 
-export type AIAggExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type AIAggExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class AIAggExpr extends AggFuncExpr {
   key = ExpressionKey.AI_AGG;
@@ -34633,7 +35867,9 @@ export class AIAggExpr extends AggFuncExpr {
   }
 }
 
-export type AISummarizeAggExprArgs = AggFuncExprArgs;
+export type AISummarizeAggExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class AISummarizeAggExpr extends AggFuncExpr {
   key = ExpressionKey.AI_SUMMARIZE_AGG;
@@ -34655,7 +35891,9 @@ export class AISummarizeAggExpr extends AggFuncExpr {
   }
 }
 
-export type ArrayConcatAggExprArgs = AggFuncExprArgs;
+export type ArrayConcatAggExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class ArrayConcatAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_CONCAT_AGG;
@@ -34675,7 +35913,9 @@ export class ArrayConcatAggExpr extends AggFuncExpr {
   }
 }
 
-export type ArrayUnionAggExprArgs = AggFuncExprArgs;
+export type ArrayUnionAggExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class ArrayUnionAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_UNION_AGG;
@@ -34695,7 +35935,9 @@ export class ArrayUnionAggExpr extends AggFuncExpr {
   }
 }
 
-export type AvgExprArgs = AggFuncExprArgs;
+export type AvgExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class AvgExpr extends AggFuncExpr {
   key = ExpressionKey.AVG;
@@ -34715,7 +35957,9 @@ export class AvgExpr extends AggFuncExpr {
   }
 }
 
-export type AnyValueExprArgs = AggFuncExprArgs;
+export type AnyValueExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class AnyValueExpr extends AggFuncExpr {
   key = ExpressionKey.ANY_VALUE;
@@ -34735,11 +35979,12 @@ export class AnyValueExpr extends AggFuncExpr {
   }
 }
 
-export type LagExprArgs = {
-  this: Expression;
-  offset?: Expression;
-  default?: Expression;
-} & AggFuncExprArgs;
+export type LagExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    offset?: Expression;
+    default?: Expression; },
+]>;
 
 export class LagExpr extends AggFuncExpr {
   key = ExpressionKey.LAG;
@@ -34774,11 +36019,12 @@ export class LagExpr extends AggFuncExpr {
   }
 }
 
-export type LeadExprArgs = {
-  this: Expression;
-  offset?: Expression;
-  default?: Expression;
-} & AggFuncExprArgs;
+export type LeadExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    offset?: Expression;
+    default?: Expression; },
+]>;
 
 export class LeadExpr extends AggFuncExpr {
   key = ExpressionKey.LEAD;
@@ -34813,10 +36059,11 @@ export class LeadExpr extends AggFuncExpr {
   }
 }
 
-export type FirstExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & AggFuncExprArgs;
+export type FirstExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class FirstExpr extends AggFuncExpr {
   key = ExpressionKey.FIRST;
@@ -34846,10 +36093,11 @@ export class FirstExpr extends AggFuncExpr {
   }
 }
 
-export type LastExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & AggFuncExprArgs;
+export type LastExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class LastExpr extends AggFuncExpr {
   key = ExpressionKey.LAST;
@@ -34879,7 +36127,9 @@ export class LastExpr extends AggFuncExpr {
   }
 }
 
-export type FirstValueExprArgs = AggFuncExprArgs;
+export type FirstValueExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class FirstValueExpr extends AggFuncExpr {
   key = ExpressionKey.FIRST_VALUE;
@@ -34899,7 +36149,9 @@ export class FirstValueExpr extends AggFuncExpr {
   }
 }
 
-export type LastValueExprArgs = AggFuncExprArgs;
+export type LastValueExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class LastValueExpr extends AggFuncExpr {
   key = ExpressionKey.LAST_VALUE;
@@ -34919,11 +36171,12 @@ export class LastValueExpr extends AggFuncExpr {
   }
 }
 
-export type NthValueExprArgs = {
-  this: Expression;
-  offset: Expression;
-  fromFirst?: Expression;
-} & AggFuncExprArgs;
+export type NthValueExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    offset: Expression;
+    fromFirst?: Expression; },
+]>;
 
 export class NthValueExpr extends AggFuncExpr {
   key = ExpressionKey.NTH_VALUE;
@@ -34958,10 +36211,11 @@ export class NthValueExpr extends AggFuncExpr {
   }
 }
 
-export type ObjectAggExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type ObjectAggExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class ObjectAggExpr extends AggFuncExpr {
   key = ExpressionKey.OBJECT_AGG;
@@ -34991,9 +36245,10 @@ export class ObjectAggExpr extends AggFuncExpr {
   }
 }
 
-export type TryCastExprArgs = {
-  requiresString?: Expression;
-} & CastExprArgs;
+export type TryCastExprArgs = Merge<[
+  CastExprArgs,
+  { requiresString?: Expression },
+]>;
 
 export class TryCastExpr extends CastExpr {
   key = ExpressionKey.TRY_CAST;
@@ -35014,7 +36269,9 @@ export class TryCastExpr extends CastExpr {
   }
 }
 
-export type JSONCastExprArgs = CastExprArgs;
+export type JSONCastExprArgs = Merge<[
+  CastExprArgs,
+]>;
 
 export class JSONCastExpr extends CastExpr {
   key = ExpressionKey.JSON_CAST;
@@ -35026,7 +36283,9 @@ export class JSONCastExpr extends CastExpr {
   }
 }
 
-export type ConcatWsExprArgs = ConcatExprArgs;
+export type ConcatWsExprArgs = Merge<[
+  ConcatExprArgs,
+]>;
 
 export class ConcatWsExpr extends ConcatExpr {
   key = ExpressionKey.CONCAT_WS;
@@ -35044,11 +36303,12 @@ export class ConcatWsExpr extends ConcatExpr {
   }
 }
 
-export type CountExprArgs = {
-  this?: Expression;
-  expressions?: Expression[];
-  bigInt?: Expression;
-} & AggFuncExprArgs;
+export type CountExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this?: Expression;
+    expressions?: Expression[];
+    bigInt?: Expression; },
+]>;
 
 export class CountExpr extends AggFuncExpr {
   key = ExpressionKey.COUNT;
@@ -35085,7 +36345,9 @@ export class CountExpr extends AggFuncExpr {
   }
 }
 
-export type CountIfExprArgs = AggFuncExprArgs;
+export type CountIfExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class CountIfExpr extends AggFuncExpr {
   key = ExpressionKey.COUNT_IF;
@@ -35107,9 +36369,10 @@ export class CountIfExpr extends AggFuncExpr {
   }
 }
 
-export type DenseRankExprArgs = {
-  expressions?: Expression[];
-} & AggFuncExprArgs;
+export type DenseRankExprArgs = Merge<[
+  AggFuncExprArgs,
+  { expressions?: Expression[] },
+]>;
 
 export class DenseRankExpr extends AggFuncExpr {
   key = ExpressionKey.DENSE_RANK;
@@ -35136,7 +36399,9 @@ export class DenseRankExpr extends AggFuncExpr {
   }
 }
 
-export type ExplodeOuterExprArgs = ExplodeExprArgs;
+export type ExplodeOuterExprArgs = Merge<[
+  ExplodeExprArgs,
+]>;
 export class ExplodeOuterExpr extends ExplodeExpr {
   key = ExpressionKey.EXPLODE_OUTER;
 
@@ -35151,7 +36416,9 @@ export class ExplodeOuterExpr extends ExplodeExpr {
   }
 }
 
-export type PosexplodeExprArgs = ExplodeExprArgs;
+export type PosexplodeExprArgs = Merge<[
+  ExplodeExprArgs,
+]>;
 export class PosexplodeExpr extends ExplodeExpr {
   key = ExpressionKey.POSEXPLODE;
 
@@ -35166,11 +36433,12 @@ export class PosexplodeExpr extends ExplodeExpr {
   }
 }
 
-export type GroupConcatExprArgs = {
-  this: Expression;
-  separator?: Expression;
-  onOverflow?: Expression;
-} & AggFuncExprArgs;
+export type GroupConcatExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    separator?: Expression;
+    onOverflow?: Expression; },
+]>;
 
 export class GroupConcatExpr extends AggFuncExpr {
   key = ExpressionKey.GROUP_CONCAT;
@@ -35209,7 +36477,9 @@ export class GroupConcatExpr extends AggFuncExpr {
   }
 }
 
-export type LowerHexExprArgs = HexExprArgs;
+export type LowerHexExprArgs = Merge<[
+  HexExprArgs,
+]>;
 export class LowerHexExpr extends HexExpr {
   key = ExpressionKey.LOWER_HEX;
 
@@ -35222,7 +36492,9 @@ export class LowerHexExpr extends HexExpr {
   }
 }
 
-export type AndExprArgs = ConnectorExprArgs;
+export type AndExprArgs = Merge<[
+  ConnectorExprArgs,
+]>;
 export class AndExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   key = ExpressionKey.AND;
 
@@ -35238,7 +36510,9 @@ export class AndExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   }
 }
 
-export type OrExprArgs = ConnectorExprArgs;
+export type OrExprArgs = Merge<[
+  ConnectorExprArgs,
+]>;
 export class OrExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   key = ExpressionKey.OR;
 
@@ -35254,12 +36528,13 @@ export class OrExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   }
 }
 
-export type XorExprArgs = {
-  this?: Expression;
-  expression?: Expression;
-  expressions?: Expression[];
-  roundInput?: Expression;
-} & ConnectorExprArgs;
+export type XorExprArgs = Merge<[
+  ConnectorExprArgs,
+  { this?: Expression;
+    expression?: Expression;
+    expressions?: Expression[];
+    roundInput?: Expression; },
+]>;
 
 export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   key = ExpressionKey.XOR;
@@ -35298,12 +36573,13 @@ export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   }
 }
 
-export type JSONObjectAggExprArgs = {
-  nullHandling?: Expression;
-  uniqueKeys?: Expression[];
-  returnType?: DataTypeExpr;
-  encoding?: Expression;
-} & AggFuncExprArgs;
+export type JSONObjectAggExprArgs = Merge<[
+  AggFuncExprArgs,
+  { nullHandling?: Expression;
+    uniqueKeys?: Expression[];
+    returnType?: DataTypeExpr;
+    encoding?: Expression; },
+]>;
 
 export class JSONObjectAggExpr extends AggFuncExpr {
   key = ExpressionKey.JSON_OBJECT_AGG;
@@ -35347,10 +36623,11 @@ export class JSONObjectAggExpr extends AggFuncExpr {
   }
 }
 
-export type JSONBObjectAggExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type JSONBObjectAggExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class JSONBObjectAggExpr extends AggFuncExpr {
   key = ExpressionKey.JSONB_OBJECT_AGG;
@@ -35380,12 +36657,13 @@ export class JSONBObjectAggExpr extends AggFuncExpr {
   }
 }
 
-export type JSONArrayAggExprArgs = {
-  order?: Expression;
-  nullHandling?: Expression;
-  returnType?: DataTypeExpr;
-  strict?: Expression;
-} & AggFuncExprArgs;
+export type JSONArrayAggExprArgs = Merge<[
+  AggFuncExprArgs,
+  { order?: Expression;
+    nullHandling?: Expression;
+    returnType?: DataTypeExpr;
+    strict?: Expression; },
+]>;
 
 export class JSONArrayAggExpr extends AggFuncExpr {
   key = ExpressionKey.JSON_ARRAY_AGG;
@@ -35429,7 +36707,9 @@ export class JSONArrayAggExpr extends AggFuncExpr {
   }
 }
 
-export type LogicalOrExprArgs = AggFuncExprArgs;
+export type LogicalOrExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class LogicalOrExpr extends AggFuncExpr {
   key = ExpressionKey.LOGICAL_OR;
@@ -35455,7 +36735,9 @@ export class LogicalOrExpr extends AggFuncExpr {
   }
 }
 
-export type LogicalAndExprArgs = AggFuncExprArgs;
+export type LogicalAndExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class LogicalAndExpr extends AggFuncExpr {
   key = ExpressionKey.LOGICAL_AND;
@@ -35481,10 +36763,11 @@ export class LogicalAndExpr extends AggFuncExpr {
   }
 }
 
-export type MaxExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & AggFuncExprArgs;
+export type MaxExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class MaxExpr extends AggFuncExpr {
   key = ExpressionKey.MAX;
@@ -35516,7 +36799,9 @@ export class MaxExpr extends AggFuncExpr {
   }
 }
 
-export type MedianExprArgs = AggFuncExprArgs;
+export type MedianExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class MedianExpr extends AggFuncExpr {
   key = ExpressionKey.MEDIAN;
@@ -35536,10 +36821,11 @@ export class MedianExpr extends AggFuncExpr {
   }
 }
 
-export type ModeExprArgs = {
-  this?: Expression;
-  deterministic?: Expression;
-} & AggFuncExprArgs;
+export type ModeExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this?: Expression;
+    deterministic?: Expression; },
+]>;
 
 export class ModeExpr extends AggFuncExpr {
   key = ExpressionKey.MODE;
@@ -35569,10 +36855,11 @@ export class ModeExpr extends AggFuncExpr {
   }
 }
 
-export type MinExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & AggFuncExprArgs;
+export type MinExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class MinExpr extends AggFuncExpr {
   key = ExpressionKey.MIN;
@@ -35604,9 +36891,10 @@ export class MinExpr extends AggFuncExpr {
   }
 }
 
-export type NtileExprArgs = {
-  this?: Expression;
-} & AggFuncExprArgs;
+export type NtileExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this?: Expression },
+]>;
 
 export class NtileExpr extends AggFuncExpr {
   key = ExpressionKey.NTILE;
@@ -35631,10 +36919,11 @@ export class NtileExpr extends AggFuncExpr {
   }
 }
 
-export type PercentileContExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & AggFuncExprArgs;
+export type PercentileContExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class PercentileContExpr extends AggFuncExpr {
   key = ExpressionKey.PERCENTILE_CONT;
@@ -35664,10 +36953,11 @@ export class PercentileContExpr extends AggFuncExpr {
   }
 }
 
-export type PercentileDiscExprArgs = {
-  this: Expression;
-  expression?: Expression;
-} & AggFuncExprArgs;
+export type PercentileDiscExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression?: Expression; },
+]>;
 
 export class PercentileDiscExpr extends AggFuncExpr {
   key = ExpressionKey.PERCENTILE_DISC;
@@ -35697,9 +36987,10 @@ export class PercentileDiscExpr extends AggFuncExpr {
   }
 }
 
-export type PercentRankExprArgs = {
-  expressions?: Expression[];
-} & AggFuncExprArgs;
+export type PercentRankExprArgs = Merge<[
+  AggFuncExprArgs,
+  { expressions?: Expression[] },
+]>;
 
 export class PercentRankExpr extends AggFuncExpr {
   key = ExpressionKey.PERCENT_RANK;
@@ -35726,10 +37017,11 @@ export class PercentRankExpr extends AggFuncExpr {
   }
 }
 
-export type QuantileExprArgs = {
-  this: Expression;
-  quantile: Expression;
-} & AggFuncExprArgs;
+export type QuantileExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    quantile: Expression; },
+]>;
 
 export class QuantileExpr extends AggFuncExpr {
   key = ExpressionKey.QUANTILE;
@@ -35759,7 +37051,9 @@ export class QuantileExpr extends AggFuncExpr {
   }
 }
 
-export type ApproxPercentileAccumulateExprArgs = AggFuncExprArgs;
+export type ApproxPercentileAccumulateExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class ApproxPercentileAccumulateExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_PERCENTILE_ACCUMULATE;
@@ -35779,9 +37073,10 @@ export class ApproxPercentileAccumulateExpr extends AggFuncExpr {
   }
 }
 
-export type RankExprArgs = {
-  expressions?: Expression[];
-} & AggFuncExprArgs;
+export type RankExprArgs = Merge<[
+  AggFuncExprArgs,
+  { expressions?: Expression[] },
+]>;
 
 export class RankExpr extends AggFuncExpr {
   key = ExpressionKey.RANK;
@@ -35808,10 +37103,11 @@ export class RankExpr extends AggFuncExpr {
   }
 }
 
-export type RegrValxExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type RegrValxExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class RegrValxExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_VALX;
@@ -35841,10 +37137,11 @@ export class RegrValxExpr extends AggFuncExpr {
   }
 }
 
-export type RegrValyExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type RegrValyExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class RegrValyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_VALY;
@@ -35874,10 +37171,11 @@ export class RegrValyExpr extends AggFuncExpr {
   }
 }
 
-export type RegrAvgyExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type RegrAvgyExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class RegrAvgyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_AVGY;
@@ -35907,10 +37205,11 @@ export class RegrAvgyExpr extends AggFuncExpr {
   }
 }
 
-export type RegrAvgxExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type RegrAvgxExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class RegrAvgxExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_AVGX;
@@ -35940,10 +37239,11 @@ export class RegrAvgxExpr extends AggFuncExpr {
   }
 }
 
-export type RegrCountExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type RegrCountExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class RegrCountExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_COUNT;
@@ -35973,10 +37273,11 @@ export class RegrCountExpr extends AggFuncExpr {
   }
 }
 
-export type RegrInterceptExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type RegrInterceptExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class RegrInterceptExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_INTERCEPT;
@@ -36006,10 +37307,11 @@ export class RegrInterceptExpr extends AggFuncExpr {
   }
 }
 
-export type RegrR2ExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type RegrR2ExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class RegrR2Expr extends AggFuncExpr {
   key = ExpressionKey.REGR_R2;
@@ -36039,10 +37341,11 @@ export class RegrR2Expr extends AggFuncExpr {
   }
 }
 
-export type RegrSxxExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type RegrSxxExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class RegrSxxExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SXX;
@@ -36072,10 +37375,11 @@ export class RegrSxxExpr extends AggFuncExpr {
   }
 }
 
-export type RegrSxyExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type RegrSxyExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class RegrSxyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SXY;
@@ -36105,10 +37409,11 @@ export class RegrSxyExpr extends AggFuncExpr {
   }
 }
 
-export type RegrSyyExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type RegrSyyExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class RegrSyyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SYY;
@@ -36138,10 +37443,11 @@ export class RegrSyyExpr extends AggFuncExpr {
   }
 }
 
-export type RegrSlopeExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type RegrSlopeExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class RegrSlopeExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SLOPE;
@@ -36171,7 +37477,9 @@ export class RegrSlopeExpr extends AggFuncExpr {
   }
 }
 
-export type SumExprArgs = AggFuncExprArgs;
+export type SumExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class SumExpr extends AggFuncExpr {
   key = ExpressionKey.SUM;
@@ -36191,7 +37499,9 @@ export class SumExpr extends AggFuncExpr {
   }
 }
 
-export type StddevExprArgs = AggFuncExprArgs;
+export type StddevExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class StddevExpr extends AggFuncExpr {
   key = ExpressionKey.STDDEV;
@@ -36213,7 +37523,9 @@ export class StddevExpr extends AggFuncExpr {
   }
 }
 
-export type StddevPopExprArgs = AggFuncExprArgs;
+export type StddevPopExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class StddevPopExpr extends AggFuncExpr {
   key = ExpressionKey.STDDEV_POP;
@@ -36233,7 +37545,9 @@ export class StddevPopExpr extends AggFuncExpr {
   }
 }
 
-export type StddevSampExprArgs = AggFuncExprArgs;
+export type StddevSampExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class StddevSampExpr extends AggFuncExpr {
   key = ExpressionKey.STDDEV_SAMP;
@@ -36253,9 +37567,10 @@ export class StddevSampExpr extends AggFuncExpr {
   }
 }
 
-export type CumeDistExprArgs = {
-  expressions?: Expression[];
-} & AggFuncExprArgs;
+export type CumeDistExprArgs = Merge<[
+  AggFuncExprArgs,
+  { expressions?: Expression[] },
+]>;
 
 export class CumeDistExpr extends AggFuncExpr {
   key = ExpressionKey.CUME_DIST;
@@ -36280,7 +37595,9 @@ export class CumeDistExpr extends AggFuncExpr {
   }
 }
 
-export type VarianceExprArgs = AggFuncExprArgs;
+export type VarianceExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class VarianceExpr extends AggFuncExpr {
   key = ExpressionKey.VARIANCE;
@@ -36306,7 +37623,9 @@ export class VarianceExpr extends AggFuncExpr {
   }
 }
 
-export type VariancePopExprArgs = AggFuncExprArgs;
+export type VariancePopExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class VariancePopExpr extends AggFuncExpr {
   key = ExpressionKey.VARIANCE_POP;
@@ -36328,7 +37647,9 @@ export class VariancePopExpr extends AggFuncExpr {
   }
 }
 
-export type KurtosisExprArgs = AggFuncExprArgs;
+export type KurtosisExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class KurtosisExpr extends AggFuncExpr {
   key = ExpressionKey.KURTOSIS;
@@ -36348,7 +37669,9 @@ export class KurtosisExpr extends AggFuncExpr {
   }
 }
 
-export type SkewnessExprArgs = AggFuncExprArgs;
+export type SkewnessExprArgs = Merge<[
+  AggFuncExprArgs,
+]>;
 
 export class SkewnessExpr extends AggFuncExpr {
   key = ExpressionKey.SKEWNESS;
@@ -36368,10 +37691,11 @@ export class SkewnessExpr extends AggFuncExpr {
   }
 }
 
-export type CovarSampExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type CovarSampExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class CovarSampExpr extends AggFuncExpr {
   key = ExpressionKey.COVAR_SAMP;
@@ -36401,10 +37725,11 @@ export class CovarSampExpr extends AggFuncExpr {
   }
 }
 
-export type CovarPopExprArgs = {
-  this: Expression;
-  expression: Expression;
-} & AggFuncExprArgs;
+export type CovarPopExprArgs = Merge<[
+  AggFuncExprArgs,
+  { this: Expression;
+    expression: Expression; },
+]>;
 
 export class CovarPopExpr extends AggFuncExpr {
   key = ExpressionKey.COVAR_POP;
@@ -36437,10 +37762,11 @@ export class CovarPopExpr extends AggFuncExpr {
 /**
  * https://clickhouse.com/docs/en/sql-reference/aggregate-functions/combinators
  */
-export type CombinedAggFuncExprArgs = {
-  this: Expression;
-  expressions?: Expression[];
-} & AnonymousAggFuncExprArgs;
+export type CombinedAggFuncExprArgs = Merge<[
+  AnonymousAggFuncExprArgs,
+  { this: Expression;
+    expressions?: Expression[]; },
+]>;
 
 export class CombinedAggFuncExpr extends AnonymousAggFuncExpr {
   key = ExpressionKey.COMBINED_AGG_FUNC;
@@ -36470,11 +37796,12 @@ export class CombinedAggFuncExpr extends AnonymousAggFuncExpr {
   }
 }
 
-export type CombinedParameterizedAggExprArgs = {
-  this: Expression;
-  expressions: Expression[];
-  params: Expression[];
-} & ParameterizedAggExprArgs;
+export type CombinedParameterizedAggExprArgs = Merge<[
+  ParameterizedAggExprArgs,
+  { this: Expression;
+    expressions: Expression[];
+    params: Expression[]; },
+]>;
 
 export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
   key = ExpressionKey.COMBINED_PARAMETERIZED_AGG;
@@ -36509,7 +37836,9 @@ export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
   }
 }
 
-export type PosexplodeOuterExprArgs = ExplodeExprArgs;
+export type PosexplodeOuterExprArgs = Merge<[
+  ExplodeExprArgs,
+]>;
 export class PosexplodeOuterExpr extends multiInherit(PosexplodeExpr, ExplodeOuterExpr) {
   key = ExpressionKey.POSEXPLODE_OUTER;
 
@@ -36524,12 +37853,13 @@ export class PosexplodeOuterExpr extends multiInherit(PosexplodeExpr, ExplodeOut
   }
 }
 
-export type ApproxQuantileExprArgs = {
-  quantile: Expression;
-  accuracy?: Expression;
-  weight?: Expression;
-  errorTolerance?: Expression;
-} & QuantileExprArgs;
+export type ApproxQuantileExprArgs = Merge<[
+  QuantileExprArgs,
+  { quantile: Expression;
+    accuracy?: Expression;
+    weight?: Expression;
+    errorTolerance?: Expression; },
+]>;
 
 export class ApproxQuantileExpr extends QuantileExpr {
   key = ExpressionKey.APPROX_QUANTILE;

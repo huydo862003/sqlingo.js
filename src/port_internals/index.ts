@@ -1,2 +1,4 @@
 export { multiInherit } from './inheritance';
-export type { RequiredMap } from './type_utils';
+export type {
+  Merge, Override, RequiredMap,
+} from './type_utils';

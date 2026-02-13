@@ -86,7 +86,7 @@ export function multiInherit<
     registeredTargets.get(BaseClass)!.add(MultiInheritClass);
   }
 
-  return MultiInheritClass as MultiInheritResult<TBase, TMixins>;
+  return MultiInheritClass as any as MultiInheritResult<TBase, TMixins>;
 }
 
 /**
@@ -111,21 +111,27 @@ type MergeInstances<T extends readonly Constructor[]> = T extends readonly [
 
 /**
  * Merges static properties from multiple constructors
+ * Uses UnionToIntersection to properly merge all static properties
  */
 type MergeStatics<T extends readonly Constructor[]> = T extends readonly [
   infer First,
   ...infer Rest extends readonly Constructor[],
 ]
   ? Omit<First, 'prototype' | 'name' | 'length'> & MergeStatics<Rest>
-  : object;
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  : {};
 
 /**
  * The return type of the multiInherit function
+ *
+ * This creates a constructor that:
+ * 1. Has the same constructor signature as TBase
+ * 2. Creates instances that merge instance properties from all bases
+ * 3. Has static properties from all bases merged together
  */
 type MultiInheritResult<
   TBase extends Constructor,
   TMixins extends readonly Constructor[],
-> = (new (...args: ConstructorParameters<TBase>) => InstanceType<TBase>
-  & MergeInstances<TMixins>)
-& Omit<TBase, 'prototype' | 'name' | 'length'>
-& MergeStatics<TMixins>;
+> = (abstract new (...args: ConstructorParameters<TBase>) => InstanceType<TBase> & MergeInstances<TMixins>)
+  & Omit<TBase, 'prototype' | 'name' | 'length'>
+  & MergeStatics<TMixins>;
