@@ -14701,7 +14701,7 @@ export class LogPropertyExpr extends PropertyExpr {
 
 export type MaterializedPropertyExprArgs = {
   this?: Expression;
-} & BaseExpressionArgs;
+} & PropertyExprArgs;
 
 export class MaterializedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.MATERIALIZED_PROPERTY;
