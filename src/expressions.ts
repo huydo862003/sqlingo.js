@@ -3065,7 +3065,7 @@ export class CacheExpr extends Expression {
 }
 
 export type UncacheExprArgs = {
-  exists?: Expression[];
+  exists?: boolean;
   this: Expression;
 } & BaseExpressionArgs;
 
@@ -3297,7 +3297,7 @@ export enum CreateExprKind {
 export type CreateExprArgs = {
   with?: WithExpr;
   kind: CreateExprKind;
-  exists?: Expression[];
+  exists?: boolean;
   properties?: Expression[];
   replace?: boolean;
   refresh?: Expression;
@@ -3480,7 +3480,7 @@ export class SequencePropertiesExpr extends Expression {
 
 export type TruncateTableExprArgs = {
   isDatabase?: string;
-  exists?: Expression[];
+  exists?: boolean;
   only?: Expression;
   cluster?: Expression;
   identity?: Expression;
@@ -3660,7 +3660,7 @@ export class DescribeExpr extends Expression {
 }
 
 export type AttachExprArgs = {
-  exists?: Expression[];
+  exists?: boolean;
   this: Expression;
   expressions?: Expression[];
 } & BaseExpressionArgs;
@@ -3699,7 +3699,7 @@ export class AttachExpr extends Expression {
 }
 
 export type DetachExprArgs = {
-  exists?: Expression[];
+  exists?: boolean;
   this: Expression;
 } & BaseExpressionArgs;
 
@@ -4611,7 +4611,7 @@ export enum ColumnDefExprKind {
 export type ColumnDefExprArgs = {
   kind?: ColumnDefExprKind;
   constraints?: ColumnConstraintExpr[];
-  exists?: Expression[];
+  exists?: boolean;
   position?: Expression;
   default?: Expression;
   output?: Expression;
@@ -4933,7 +4933,7 @@ export class AlterSetExpr extends Expression {
 
 export type RenameColumnExprArgs = {
   to: Expression;
-  exists?: Expression[];
+  exists?: boolean;
   this: Expression;
 } & BaseExpressionArgs;
 
@@ -5014,7 +5014,7 @@ export enum CommentExprKind {
 
 export type CommentExprArgs = {
   kind: CommentExprKind;
-  exists?: Expression[];
+  exists?: boolean;
   materialized?: boolean;
   this: Expression;
   expression: Expression;
@@ -5599,7 +5599,7 @@ export enum DropExprKind {
 
 export type DropExprArgs = {
   kind?: DropExprKind;
-  exists?: Expression[];
+  exists?: boolean;
   temporary?: boolean;
   materialized?: boolean;
   cascade?: Expression;
@@ -10012,7 +10012,7 @@ export type AlterExprArgs = {
   this?: Expression;
   kind: AlterExprKind;
   actions: Expression[];
-  exists?: Expression;
+  exists?: boolean;
   only?: Expression;
   options?: Expression[];
   cluster?: Expression;
@@ -10519,7 +10519,7 @@ export class AddConstraintExpr extends Expression {
 
 export type AddPartitionExprArgs = {
   this: Expression;
-  exists?: Expression;
+  exists?: boolean;
   location?: Expression;
 } & BaseExpressionArgs;
 
@@ -10583,7 +10583,7 @@ export class AttachOptionExpr extends Expression {
 
 export type DropPartitionExprArgs = {
   expressions: Expression[];
-  exists?: Expression;
+  exists?: boolean;
 } & BaseExpressionArgs;
 
 export class DropPartitionExpr extends Expression {
@@ -13038,7 +13038,7 @@ export type InsertExprArgs = {
   conflict?: Expression;
   returning?: Expression;
   overwrite?: Expression;
-  exists?: Expression[];
+  exists?: boolean;
   alternative?: Expression;
   where?: Expression;
   ignore?: Expression;
