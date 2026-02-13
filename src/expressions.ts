@@ -1772,7 +1772,9 @@ export class Expression {
       options?: Record<string, unknown>;
     } = {},
   ): Expression {
-    const { copy = true, ...restOptions } = options;
+    const {
+      copy = true, ...restOptions
+    } = options;
 
     let root: Expression | undefined;
     let newNode: Expression | undefined;
@@ -1954,7 +1956,9 @@ export class Expression {
       wrap?: boolean;
     } = {},
   ): AndExpr {
-    const { copy = true, wrap = true, ...restOptions } = options;
+    const {
+      copy = true, wrap = true, ...restOptions
+    } = options;
     const expressionList = ensureList(expressions);
     return and(expressionList, {
       ...restOptions,
@@ -1991,7 +1995,9 @@ export class Expression {
       wrap?: boolean;
     } = {},
   ): OrExpr {
-    const { copy = true, wrap = true, ...restOptions } = options;
+    const {
+      copy = true, wrap = true, ...restOptions
+    } = options;
     const expressionList = ensureList(expressions);
     return or(expressionList, {
       ...restOptions,
@@ -2017,7 +2023,9 @@ export class Expression {
    * @returns The new NOT instance
    */
   not (options: { copy?: boolean } = {}): NotExpr {
-    const { copy = true, ...restOptions } = options;
+    const {
+      copy = true, ...restOptions
+    } = options;
     return not(this, {
       ...restOptions,
       copy,
@@ -2089,7 +2097,9 @@ export class Expression {
       wrap?: boolean;
     } = {},
   ): AliasExpr {
-    const { copy = true, ...restOptions } = options;
+    const {
+      copy = true, ...restOptions
+    } = options;
     const aliasName = typeof _alias === 'string'
       ? _alias
       : _alias.name;
@@ -2231,7 +2241,9 @@ export class Expression {
       copy?: boolean;
     } = {},
   ): InExpr {
-    const { copy = true, unnest, ...restOptions } = options;
+    const {
+      copy = true, unnest, ...restOptions
+    } = options;
 
     let subquery = query
       ? maybeParse(query)
@@ -2275,7 +2287,9 @@ export class Expression {
       symmetric?: boolean;
     } = {},
   ): BetweenExpr {
-    const { copy = true, symmetric } = options;
+    const {
+      copy = true, symmetric,
+    } = options;
 
     const between = new BetweenExpr({
       this: maybeCopy(this, copy),
@@ -2593,7 +2607,7 @@ export class QueryExpr extends Expression {
     options: {
       copy?: boolean;
       [index: string]: unknown;
-    } = {}
+    } = {},
   ): SubqueryExpr {
     const { copy = true } = options;
     const instance = maybeCopy(this, copy);
@@ -2638,7 +2652,9 @@ export class QueryExpr extends Expression {
       [index: string]: unknown;
     } = {},
   ): this {
-    const { copy = true, ...restOptions } = options;
+    const {
+      copy = true, ...restOptions
+    } = options;
     return _applyBuilder(expression, {
       instance: this,
       arg: 'limit',
@@ -2675,7 +2691,9 @@ export class QueryExpr extends Expression {
       [index: string]: unknown;
     } = {},
   ): this {
-    const { copy = true, ...restOptions } = options;
+    const {
+      copy = true, ...restOptions
+    } = options;
     return _applyBuilder(expression, {
       instance: this,
       arg: 'offset',
@@ -2714,7 +2732,9 @@ export class QueryExpr extends Expression {
       [index: string]: unknown;
     } = {},
   ): this {
-    const { append = true, copy = true, ...restOptions } = options;
+    const {
+      append = true, copy = true, ...restOptions
+    } = options;
     const expressionList = ensureList(expressions);
     return _applyChildListBuilder(expressionList, {
       instance: this,
@@ -2811,7 +2831,9 @@ export class QueryExpr extends Expression {
       [index: string]: unknown;
     } = {},
   ): this {
-    const { append = true, copy = true, ...restOptions } = options;
+    const {
+      append = true, copy = true, ...restOptions
+    } = options;
     const processedExpressions = ensureList(expressions).map((expr): string | Expression =>
       expr instanceof WhereExpr
         ? expr.$this
@@ -2861,7 +2883,9 @@ export class QueryExpr extends Expression {
       [index: string]: unknown;
     } = {},
   ): this {
-    const { recursive = false, append = true, copy = true, ...restOptions } = options;
+    const {
+      recursive = false, append = true, copy = true, ...restOptions
+    } = options;
     return _applyCteBuilder({
       instance: this,
       alias,
@@ -3233,7 +3257,9 @@ export class DMLExpr extends Expression {
       copy?: boolean;
     } = {},
   ): this {
-    const { copy = true, ...restOptions } = options;
+    const {
+      copy = true, ...restOptions
+    } = options;
     return _applyBuilder(expression, {
       instance: this,
       arg: 'returning',
@@ -5459,7 +5485,9 @@ export class DeleteExpr extends DMLExpr {
       copy?: boolean;
     } = {},
   ): this {
-    const { copy = true, ...restOptions } = options;
+    const {
+      copy = true, ...restOptions
+    } = options;
     return _applyBuilder(table, {
       instance: this,
       arg: 'this',
@@ -5495,7 +5523,9 @@ export class DeleteExpr extends DMLExpr {
       [index: string]: unknown;
     } = {},
   ): this {
-    const { append = true, copy = true, ...restOptions } = options;
+    const {
+      append = true, copy = true, ...restOptions
+    } = options;
     return _applyConjunctionBuilder(ensureList(expressions), {
       instance: this,
       arg: 'where',
@@ -7390,7 +7420,9 @@ export class JoinExpr extends Expression {
       copy?: boolean;
     } = {},
   ): this {
-    const { append, dialect, copy, ...restOptions } = options;
+    const {
+      append, dialect, copy, ...restOptions
+    } = options;
     const join = _applyConjunctionBuilder(expressions, {
       instance: this,
       arg: 'on',
@@ -7431,7 +7463,9 @@ export class JoinExpr extends Expression {
       copy?: boolean;
     } = {},
   ): this {
-    const { append, dialect, copy, ...restOptions } = options;
+    const {
+      append, dialect, copy, ...restOptions
+    } = options;
     const join = _applyListBuilder(expressions, {
       instance: this,
       arg: 'using',
@@ -8344,7 +8378,9 @@ export class TupleExpr extends Expression {
       [key: string]: unknown;
     } = {},
   ): InExpr {
-    const { copy = true, unnest, ...restOptions } = options;
+    const {
+      copy = true, unnest, ...restOptions
+    } = options;
     return new InExpr({
       this: maybeCopy(this, copy),
       expressions: expressions.map((e) => convert(e, copy)),
@@ -8828,7 +8864,7 @@ export class TableExpr extends Expression {
         catalog: columnParts[3],
       }, {
         fields,
-        copy
+        copy,
       });
     } else {
       // If last part is a function or array wrapped in Table
@@ -13077,7 +13113,9 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
       copy?: boolean;
     } = {},
   ): this {
-    const { recursive, materialized, append, dialect, copy, ...restOptions } = options;
+    const {
+      recursive, materialized, append, dialect, copy, ...restOptions
+    } = options;
     return _applyCteBuilder({
       instance: this,
       alias,
@@ -16239,7 +16277,9 @@ export class SetOperationExpr extends QueryExpr {
       copy?: boolean;
     } = {},
   ): this {
-    const { copy = true, ...restOptions } = options;
+    const {
+      copy = true, ...restOptions
+    } = options;
     const self = maybeCopy(this, copy);
     self.this.unnest().select(expressions, {
       ...restOptions,
@@ -16406,7 +16446,9 @@ export class UpdateExpr extends DMLExpr {
       copy?: boolean;
     } = {},
   ): this {
-    const { dialect, copy = true } = options;
+    const {
+      dialect, copy = true,
+    } = options;
     return _applyBuilder(expression, {
       instance: this,
       arg: 'this',
@@ -16436,7 +16478,9 @@ export class UpdateExpr extends DMLExpr {
       copy?: boolean;
     } = {},
   ): this {
-    const { append = true, dialect, copy = true } = options;
+    const {
+      append = true, dialect, copy = true,
+    } = options;
     return _applyListBuilder(expressions, {
       instance: this,
       arg: 'expressions',
@@ -16467,7 +16511,9 @@ export class UpdateExpr extends DMLExpr {
       copy?: boolean;
     } = {},
   ): this {
-    const { append = true, dialect, copy = true } = options;
+    const {
+      append = true, dialect, copy = true,
+    } = options;
     return _applyConjunctionBuilder(expressions, {
       instance: this,
       arg: 'where',
@@ -16496,7 +16542,9 @@ export class UpdateExpr extends DMLExpr {
       copy?: boolean;
     } = {},
   ): this {
-    const { dialect, copy = true } = options;
+    const {
+      dialect, copy = true,
+    } = options;
     if (!expression) {
       return this;
     }
@@ -16535,7 +16583,9 @@ export class UpdateExpr extends DMLExpr {
       scalar?: boolean;
     } = {},
   ): this {
-    const { recursive = false, append = true, copy = true, ...restOptions } = options;
+    const {
+      recursive = false, append = true, copy = true, ...restOptions
+    } = options;
     return _applyCteBuilder({
       instance: this,
       alias,
@@ -16777,7 +16827,9 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): this {
-    const { dialect, copy = true, ...restOptions } = options;
+    const {
+      dialect, copy = true, ...restOptions
+    } = options;
     return _applyBuilder(expression, {
       ...restOptions,
       instance: this,
@@ -16805,7 +16857,9 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): this {
-    const { append = true, dialect, copy = true, ...restOptions } = options;
+    const {
+      append = true, dialect, copy = true, ...restOptions
+    } = options;
     if (expressions.length === 0) {
       return copy ? (this.copy() as this) : this;
     }
@@ -16838,7 +16892,9 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): this {
-    const { append = true, dialect, copy = true, ...restOptions } = options;
+    const {
+      append = true, dialect, copy = true, ...restOptions
+    } = options;
     return _applyChildListBuilder(expressions, {
       ...restOptions,
       instance: this,
@@ -16867,7 +16923,9 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): this {
-    const { append = true, dialect, copy = true, ...restOptions } = options;
+    const {
+      append = true, dialect, copy = true, ...restOptions
+    } = options;
     return _applyChildListBuilder(expressions, {
       ...restOptions,
       instance: this,
@@ -16896,7 +16954,9 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): this {
-    const { append = true, dialect, copy = true, ...restOptions } = options;
+    const {
+      append = true, dialect, copy = true, ...restOptions
+    } = options;
     return _applyListBuilder(expressions, {
       ...restOptions,
       instance: this,
@@ -16924,7 +16984,9 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): this {
-    const { append = true, dialect, copy = true, ...restOptions } = options;
+    const {
+      append = true, dialect, copy = true, ...restOptions
+    } = options;
     return _applyListBuilder(expressions, {
       ...restOptions,
       instance: this,
@@ -16965,7 +17027,9 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): this {
-    const { on, using: usingOpt, append = true, joinType, joinAlias, dialect, copy = true, ...restOptions } = options;
+    const {
+      on, using: usingOpt, append = true, joinType, joinAlias, dialect, copy = true, ...restOptions
+    } = options;
     const parseArgs = {
       dialect,
     };
@@ -17057,7 +17121,9 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): this {
-    const { append = true, dialect, copy = true, ...restOptions } = options;
+    const {
+      append = true, dialect, copy = true, ...restOptions
+    } = options;
     return _applyListBuilder(expressions, {
       ...restOptions,
       instance: this,
@@ -17085,7 +17151,9 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): this {
-    const { append = true, dialect, copy = true, ...restOptions } = options;
+    const {
+      append = true, dialect, copy = true, ...restOptions
+    } = options;
     return _applyConjunctionBuilder(expressions, {
       ...restOptions,
       instance: this,
@@ -17112,7 +17180,9 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): this {
-    const { distinct: distinctValue = true, copy = true, ...restOptions } = options;
+    const {
+      distinct: distinctValue = true, copy = true, ...restOptions
+    } = options;
     const instance = maybeCopy(this, copy);
 
     if (ons && 0 < ons.length) {
@@ -17143,7 +17213,9 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): CreateExpr {
-    const { properties, dialect, copy = true } = options;
+    const {
+      properties, dialect, copy = true,
+    } = options;
     const instance = maybeCopy(this, copy);
     const tableExpr = maybeParse(table, TableExpr, { dialect });
 
@@ -17178,7 +17250,9 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): this {
-    const { update = true, copy = true } = options;
+    const {
+      update = true, copy = true,
+    } = options;
     const inst = maybeCopy(this, copy);
     inst.set('locks', [new LockExpr({ update: new LiteralExpr({ this: update }) })]);
     return inst as this;
@@ -17199,7 +17273,9 @@ export class SelectExpr extends QueryExpr {
       [key: string]: unknown;
     } = {},
   ): this {
-    const { dialect, copy = true } = options;
+    const {
+      dialect, copy = true,
+    } = options;
     const hintExprs = hints.map((h) =>
       maybeParse(h, Expression, { dialect }));
     const inst = maybeCopy(this, copy);
@@ -17282,7 +17358,9 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
       [key: string]: unknown;
     } = {},
   ): this {
-    const { copy = true, ...restOptions } = options;
+    const {
+      copy = true, ...restOptions
+    } = options;
     const instance = maybeCopy(this, copy);
     const unnested = instance?.unnest();
 
@@ -36513,10 +36591,10 @@ export class ApproxQuantileExpr extends QuantileExpr {
  */
 export function column (
   columnRef: {
-    col: string | IdentifierExpr | StarExpr,
-    table?: string | IdentifierExpr,
-    db?: string | IdentifierExpr,
-    catalog?: string | IdentifierExpr,
+    col: string | IdentifierExpr | StarExpr;
+    table?: string | IdentifierExpr;
+    db?: string | IdentifierExpr;
+    catalog?: string | IdentifierExpr;
   },
   options: {
     fields?: Array<string | IdentifierExpr>;
@@ -36524,7 +36602,9 @@ export function column (
     copy?: boolean;
   } = {},
 ): ColumnExpr | DotExpr {
-  const { col, table, db, catalog } = columnRef;
+  const {
+    col, table, db, catalog,
+  } = columnRef;
 
   const {
     fields, quoted, copy = true,
