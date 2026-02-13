@@ -7889,7 +7889,7 @@ export class GrantPrivilegeExpr extends Expression {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  } satisfies RequiredMap<GrantPrivilegeExprArgs>;
 
   declare args: GrantPrivilegeExprArgs;
 
@@ -16273,7 +16273,7 @@ export class SetOperationExpr extends QueryExpr {
    * Applies select expressions to both sides of the set operation.
    */
   select (
-    expressions: Array<string | Expression>,
+    expressions: string | Expression | (string | Expression)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -16283,12 +16283,13 @@ export class SetOperationExpr extends QueryExpr {
     const {
       copy = true, ...restOptions
     } = options;
+    const expressionList = ensureList(expressions);
     const self = maybeCopy(this, copy);
-    self.this.unnest().select(expressions, {
+    self.this.unnest().select(expressionList, {
       ...restOptions,
       copy: false,
     });
-    self.expression.unnest().select(expressions, {
+    self.expression.unnest().select(expressionList, {
       ...restOptions,
       copy: false,
       append: options?.append ?? true,
