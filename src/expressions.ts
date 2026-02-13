@@ -14,8 +14,11 @@ import {
 } from './port_internals';
 import { traverseScope } from './optimizer/scope';
 import {
-  ErrorLevel, ParseError, parseOne, type ParseOptions,
-} from '.';
+  ErrorLevel, ParseError,
+} from './errors';
+import {
+  parseOne, type ParseOptions,
+} from './parser';
 
 export const SQLGLOT_META = 'sqlglot.meta';
 export const SQLGLOT_ANONYMOUS = 'sqlglot.anonymous';

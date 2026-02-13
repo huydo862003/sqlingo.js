@@ -1398,6 +1398,9 @@ Parser.UNARY_PARSERS = {
   [TokenType.NOT]: (parser) => parser.expression(exp.NotExpr, { this: parser['_parseEquality']() }),
 };
 
+// NOTE: parse() and parseOne() are defined here in parser.ts to avoid circular dependencies.
+// In Python sqlglot, these are in __init__.py.
+
 /**
  * Standalone parse function for convenience.
  */
@@ -1417,7 +1420,19 @@ export function parse (
 export function parseOne (
   sql: string,
   opts?: ParseOptions,
-): Expression | undefined {
-  const expressions = parse(sql, opts);
-  return expressions[0];
+): Expression {
+  const activeDialect = opts?.read ?? opts?.dialect;
+  const result = parse(sql, {
+    ...opts,
+    dialect: activeDialect,
+  });
+
+  for (const expression of result) {
+    if (!expression) {
+      throw new ParseError(`No expression was parsed from '${sql}'`);
+    }
+    return expression;
+  }
+
+  throw new ParseError(`No expression was parsed from '${sql}'`);
 }

@@ -15,7 +15,7 @@ import {
 } from './tokens';
 import type { ParseOptions } from './parser';
 import {
-  Parser, parse,
+  Parser, parse, parseOne,
 } from './parser';
 import type {
   GeneratorOptions, TranspileOptions,
@@ -31,7 +31,6 @@ import { diff } from './diff';
 import { lineage } from './lineage';
 import { optimize } from './optimizer/index';
 import { execute } from './executor/index';
-import type { Expression } from './expressions';
 
 export {
   Expression,
@@ -48,11 +47,11 @@ export {
   insert,
   intersect,
   maybeParse,
-  mergeExpr,
+  merge,
   not,
   or,
   select,
-  subqueryExpr,
+  subquery,
   table,
   toColumn,
   toIdentifier,
@@ -71,8 +70,10 @@ export {
   TokenType, Tokenizer,
 };
 export type { ParseOptions };
+// NOTE: parse() and parseOne() are imported from parser.ts (not defined here)
+// to avoid circular dependencies. In Python sqlglot, these are in __init__.py.
 export {
-  Parser, parse,
+  Parser, parse, parseOne,
 };
 export type {
   GeneratorOptions, TranspileOptions,
@@ -92,26 +93,6 @@ export let pretty = false;
 
 export function setPretty (value: boolean): void {
   pretty = value;
-}
-
-export function parseOne (
-  sql: string,
-  opts?: ParseOptions,
-): Expression {
-  const activeDialect = opts?.read ?? opts?.dialect;
-  const result = parse(sql, {
-    ...opts,
-    dialect: activeDialect,
-  });
-
-  for (const expression of result) {
-    if (!expression) {
-      throw new ParseError(`No expression was parsed from '${sql}'`);
-    }
-    return expression;
-  }
-
-  throw new ParseError(`No expression was parsed from '${sql}'`);
 }
 
 export function transpile (
