@@ -1565,12 +1565,15 @@ export class Expression {
    * @returns The generator object
    */
   * findAll<T extends Expression>(
-    expressionTypes: Array<new (...args: never[]) => T>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expressionTypes: (new (args: any) => T) | (new (args: any) => T)[],
     options?: { bfs?: boolean },
   ): Generator<T> {
+    const types = ensureList(expressionTypes);
+
     const bfs = options?.bfs ?? true;
     for (const expression of this.walk({ bfs })) {
-      if (expressionTypes.some((type) => expression instanceof type)) {
+      if (types.some((type) => expression instanceof type)) {
         yield expression as T;
       }
     }
@@ -38020,14 +38023,21 @@ export function toTable (
  * @param options.copy - Whether to copy a column if it is passed in
  * @returns A column expression
  */
+export function toColumn<T> (
+  sqlPath: string | ColumnExpr,
+  options?: {
+    quoted?: boolean;
+    dialect?: DialectType;
+    copy?: boolean;
+  } & { [K in keyof T]: K extends 'dialect' ? unknown : ExpressionValue | ExpressionValueList },
+): ColumnExpr;
 export function toColumn (
   sqlPath: string | ColumnExpr,
   options: {
     quoted?: boolean;
     dialect?: DialectType;
     copy?: boolean;
-    [key: string]: unknown;
-  } = {},
+  } & { [key: string]: ExpressionValue | ExpressionValueList } = {},
 ): ColumnExpr {
   const {
     quoted, dialect, copy = true, ...opts
