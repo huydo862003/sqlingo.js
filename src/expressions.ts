@@ -36751,7 +36751,7 @@ export function table (name: string, db?: string, catalog?: string): TableExpr {
  * Combine multiple conditions with an AND logical operator.
  *
  * Example:
- *     and_(["x=1", and_(["y=1", "z=1"])]).sql()
+ *     and(["x=1", and(["y=1", "z=1"])]).sql()
  *     // 'x = 1 AND (y = 1 AND z = 1)'
  *
  * @param expressions - The SQL code strings to parse. If an Expression instance is passed, this is used as-is.
@@ -36761,29 +36761,6 @@ export function table (name: string, db?: string, catalog?: string): TableExpr {
  * @param options.wrap - Whether to wrap the operands in Parens
  * @returns The new condition
  */
-export function and_ (
-  expressions: string | Expression | (string | Expression)[],
-  options: {
-    dialect?: DialectType;
-    copy?: boolean;
-    wrap?: boolean;
-    [key: string]: unknown;
-  } = {},
-): ConditionExpr {
-  const {
-    dialect, copy = true, wrap = true, ...opts
-  } = options;
-  return _combine(expressions, AndExpr, {
-    dialect,
-    copy,
-    wrap,
-    ...opts,
-  }) as ConditionExpr;
-}
-
-/**
- * Legacy and function that accepts arrays
- */
 export function and (
   expressions: string | Expression | (string | Expression)[],
   options: {
@@ -36792,7 +36769,7 @@ export function and (
     wrap?: boolean;
     [key: string]: unknown;
   } = {},
-): AndExpr {
+): ConditionExpr {
   const {
     dialect, copy = true, wrap = true, ...opts
   } = options;
@@ -36808,7 +36785,7 @@ export function and (
  * Combine multiple conditions with an OR logical operator.
  *
  * Example:
- *     or_(["x=1", or_(["y=1", "z=1"])]).sql()
+ *     or(["x=1", or(["y=1", "z=1"])]).sql()
  *     // 'x = 1 OR (y = 1 OR z = 1)'
  *
  * @param expressions - The SQL code strings to parse. If an Expression instance is passed, this is used as-is.
@@ -36818,7 +36795,7 @@ export function and (
  * @param options.wrap - Whether to wrap the operands in Parens
  * @returns The new condition
  */
-export function or_ (
+export function or (
   expressions: string | Expression | (string | Expression)[],
   options: {
     dialect?: DialectType;
@@ -36831,30 +36808,6 @@ export function or_ (
     dialect, copy = true, wrap = true, ...opts
   } = options;
   return _combine(expressions, OrExpr, {
-    dialect,
-    copy,
-    wrap,
-    ...opts,
-  }) as ConditionExpr;
-}
-
-/**
- * Legacy or function that accepts arrays
- */
-export function or (
-  expressions: string | Expression | (string | Expression)[],
-  options: {
-    dialect?: DialectType;
-    copy?: boolean;
-    wrap?: boolean;
-    [key: string]: unknown;
-  } = {},
-): OrExpr {
-  const expressionList = ensureList(expressions);
-  const {
-    dialect, copy = true, wrap = true, ...opts
-  } = options;
-  return _combine(expressionList, OrExpr, {
     dialect,
     copy,
     wrap,
@@ -37875,8 +37828,8 @@ export function merge (
  *
  * This is helpful for composing larger logical syntax trees:
  *     const where = condition("x=1")
- *     where = where.and_("y=1")
- *     Select().from_("tbl").select("*").where(where).sql()
+ *     where = where.and("y=1")
+ *     Select().from("tbl").select("*").where(where).sql()
  *     // 'SELECT * FROM tbl WHERE x = 1 AND y = 1'
  *
  * @param expression - The SQL code string to parse. If an Expression instance is passed, this is used as-is.
