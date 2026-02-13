@@ -11605,6 +11605,7 @@ export class XMLNamespaceExpr extends Expression {
 }
 
 export type XMLKeyValueOptionExprArgs = BaseExpressionArgs;
+
 export class XMLKeyValueOptionExpr extends Expression {
   key = ExpressionKey.XML_KEY_VALUE_OPTION;
 
@@ -11623,7 +11624,7 @@ export class XMLKeyValueOptionExpr extends Expression {
     return this.args.expression;
   }
 
-  get $this (): Expression {
+  get $this (): ExpressionValue {
     return this.args.this;
   }
 }
