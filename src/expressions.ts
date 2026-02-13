@@ -1033,7 +1033,7 @@ export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T
 export interface BaseExpressionArgs {
   this?: ExpressionValue;
   expression?: Expression;
-  expressions?: (Expression | string)[];
+  expressions?: Expression[];
   alias?: TableAliasExpr | IdentifierExpr;
   isString?: boolean;
   to?: DataTypeExpr;
@@ -13929,6 +13929,7 @@ export class ToTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.TO_TABLE_PROPERTY;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
   } satisfies RequiredMap<ToTablePropertyExprArgs>;
 
@@ -13966,9 +13967,9 @@ export class ExecuteAsPropertyExpr extends PropertyExpr {
   }
 }
 
-export type ExternalPropertyExprArgs = Omit<PropertyExprArgs, 'this'> & {
+export type ExternalPropertyExprArgs = {
   this?: Expression;
-};
+} & PropertyExprArgs;
 
 export class ExternalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXTERNAL_PROPERTY;
