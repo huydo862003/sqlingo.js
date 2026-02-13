@@ -1290,7 +1290,10 @@ export class Expression {
    * @param dtypes - Data type names to check
    * @returns True if expression has one of the specified types
    */
-  isType (...dtypes: Array<DataTypeExprKind | DataTypeExpr>): boolean {
+  isType (
+    dtypes: (DataTypeExprKind | DataTypeExpr | IdentifierExpr | DotExpr)[],
+    _options?: { checkNullable?: boolean },
+  ): boolean {
     if (!this._type) {
       return false;
     }
@@ -9577,7 +9580,7 @@ export type DataTypeExprArgs = {
   nested?: Expression;
   values?: Expression[];
   prefix?: Expression;
-  kind?: DataTypeExprKind;
+  kind?: DataTypeExprKind | DotExpr | IdentifierExpr;
   nullable?: Expression;
 } & BaseExpressionArgs;
 
@@ -9704,7 +9707,7 @@ export class DataTypeExpr extends Expression {
    * @returns The constructed DataTypeExpr object.
    */
   static build (
-    dtype: DataTypeExprKind | DataTypeExpr | IdentifierExpr | DotExpr | string,
+    dtype: DataTypeExprKind | DataTypeExpr | IdentifierExpr | DotExpr,
     options: {
       dialect?: string;
       udt?: boolean;
@@ -9716,7 +9719,7 @@ export class DataTypeExpr extends Expression {
       udt = false, copy = true, dialect, ...kwargs
     } = options;
 
-    let dataTypeExp;
+    let _dataTypeExp;
 
     if (typeof dtype === 'string') {
       if (dtype === DataTypeExprKind.UNKNOWN) {
@@ -9727,7 +9730,7 @@ export class DataTypeExpr extends Expression {
       }
 
       try {
-        dataTypeExp = parseOne(dtype, {
+        _dataTypeExp = parseOne(dtype, {
           read: dialect,
           into: DataTypeExpr,
           errorLevel: ErrorLevel.IGNORE,
@@ -9766,6 +9769,8 @@ export class DataTypeExpr extends Expression {
     }
 
     throw new Error(`Invalid data type: ${typeof dtype}. Expected string, DataTypeExprKind, or DataTypeExpr`);
+
+    // There's a return here in sqlglot but unreachable
   }
 
   /**
@@ -9779,7 +9784,7 @@ export class DataTypeExpr extends Expression {
    * @returns True, if and only if there is a type in dtypes which is equal to this DataType.
    */
   isType (
-    dtypes: Array<DataTypeExprKind | DataTypeExpr | IdentifierExpr | DotExpr>,
+    dtypes: (DataTypeExprKind | DataTypeExpr | IdentifierExpr | DotExpr)[],
     options?: { checkNullable?: boolean },
   ): boolean {
     const checkNullable = options?.checkNullable ?? false;
@@ -38087,7 +38092,7 @@ export function findTables (expression: Expression): Set<TableExpr> {
  */
 export function maybeCopy<E extends Expression | undefined> (instance: E, copy = true): E {
   if (copy && instance) {
-    return instance.copy();
+    return instance.copy() as E;
   }
   return instance;
 }
