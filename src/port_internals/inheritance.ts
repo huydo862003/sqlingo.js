@@ -41,7 +41,7 @@ export function multiInherit<
   Base: TBase,
   ...mixins: TMixins
 ): MultiInheritResult<TBase, TMixins> {
-  class MultiInheritClass extends (Base as Constructor) {}
+  class MultiInheritClass extends Base {}
 
   const allBases = [Base, ...mixins];
 
