@@ -13427,6 +13427,7 @@ export class BackupPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BACKUP_PROPERTY;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
   } satisfies RequiredMap<BackupPropertyExprArgs>;
 
@@ -13449,6 +13450,7 @@ export class BuildPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BUILD_PROPERTY;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
   } satisfies RequiredMap<BuildPropertyExprArgs>;
 
