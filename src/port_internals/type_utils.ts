@@ -15,16 +15,18 @@ export type RequiredMap<T> = {
         : K]: {} extends Pick<T, K> ? boolean : true;
 };
 
-/**
- * Merges two types where properties in the second type override properties in the first
- * Similar to object spreading: { ...T, ...U }
- */
-export type Override<T, U> = Omit<T, keyof U> & U;
+/** Removes properties with `never` values */
+type OmitNever<T> = {
+  [K in keyof T as T[K] extends never ? never : K]: T[K];
+};
 
-/**
- * Merges multiple types from left to right, with later types taking priority
- * Properties in later types override properties in earlier types.
- */
+/** Sets all properties of T to `never` for removal via Merge */
+export type RemoveAll<T> = { [K in keyof T]?: never };
+
+/** Merges T and U, with U overriding T. Properties set to `never` in U are removed. */
+export type Override<T, U> = OmitNever<Omit<T, keyof U> & U>;
+
+/** Merges multiple types left-to-right, with later types taking priority. */
 export type Merge<Types extends readonly unknown[]> = Types extends readonly [
   infer First,
   infer Second,

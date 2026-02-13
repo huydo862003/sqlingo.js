@@ -12,6 +12,7 @@ import {
 import {
   type Merge,
   multiInherit,
+  type RemoveAll,
   type RequiredMap,
 } from './port_internals';
 import { traverseScope } from './optimizer/scope';
@@ -1968,7 +1969,7 @@ export class Expression {
       copy = true, wrap = true, ...restOptions
     } = options;
     const expressionList = ensureList(expressions);
-    return and(expressionList, {
+    return and([this, ...expressionList], {
       ...restOptions,
       copy,
       wrap,
@@ -2007,7 +2008,7 @@ export class Expression {
       copy = true, wrap = true, ...restOptions
     } = options;
     const expressionList = ensureList(expressions);
-    return or(expressionList, {
+    return or([this, ...expressionList], {
       ...restOptions,
       copy,
       wrap,
@@ -3073,15 +3074,17 @@ export class CacheExpr extends Expression {
     return this.args.options;
   }
 
-  get $expression (): Expression | undefined {
+  get $expression (): ExpressionValue {
     return this.args.expression;
   }
 }
 
 export type UncacheExprArgs = Merge<[
   BaseExpressionArgs,
-  { exists?: boolean;
-    this: Expression; },
+  {
+    exists?: boolean;
+    this: Expression;
+  },
 ]>;
 
 export class UncacheExpr extends Expression {
@@ -3107,7 +3110,7 @@ export class UncacheExpr extends Expression {
     return this.args.this;
   }
 
-  get $exists (): Expression[] | undefined {
+  get $exists (): boolean | undefined {
     return this.args.exists;
   }
 }
@@ -3158,7 +3161,8 @@ export class RefreshExpr extends Expression {
 export type DDLExprArgs = Merge<[
   BaseExpressionArgs,
   {
-    with?: WithExpr; // NOTE: sqlglot does not have this, but based on usage, I added this expression?: SelectExpr; // NOTE: sqlglot does not have this, but based on usage, I added this;
+    with?: WithExpr; // NOTE: sqlglot does not have this, but based on usage, I added this
+    expression?: SelectExpr; // NOTE: sqlglot does not have this, but based on usage, I added this
   },
 ]>;
 
@@ -3388,7 +3392,7 @@ export class CreateExpr extends DDLExpr {
     return this.args.kind;
   }
 
-  get $exists (): Expression[] | undefined {
+  get $exists (): boolean | undefined {
     return this.args.exists;
   }
 
@@ -3505,7 +3509,7 @@ export type TruncateTableExprArgs = Merge<[
   BaseExpressionArgs,
   { isDatabase?: string;
     exists?: boolean;
-    only?: Expression;
+    only?: boolean;
     cluster?: Expression;
     identity?: Expression;
     option?: Expression;
@@ -3546,11 +3550,11 @@ export class TruncateTableExpr extends Expression {
     return this.args.isDatabase;
   }
 
-  get $exists (): Expression[] | undefined {
+  get $exists (): boolean | undefined {
     return this.args.exists;
   }
 
-  get $only (): Expression | undefined {
+  get $only (): boolean | undefined {
     return this.args.only;
   }
 
@@ -3720,7 +3724,7 @@ export class AttachExpr extends Expression {
     return this.args.expressions;
   }
 
-  get $exists (): Expression[] | undefined {
+  get $exists (): boolean | undefined {
     return this.args.exists;
   }
 }
@@ -3754,7 +3758,7 @@ export class DetachExpr extends Expression {
     return this.args.this;
   }
 
-  get $exists (): Expression[] | undefined {
+  get $exists (): boolean | undefined {
     return this.args.exists;
   }
 }
@@ -4703,7 +4707,7 @@ export class ColumnDefExpr extends Expression {
     return this.args.constraints;
   }
 
-  get $exists (): Expression[] | undefined {
+  get $exists (): boolean | undefined {
     return this.args.exists;
   }
 
@@ -5021,7 +5025,7 @@ export class RenameColumnExpr extends Expression {
     return this.args.to;
   }
 
-  get $exists (): Expression[] | undefined {
+  get $exists (): boolean | undefined {
     return this.args.exists;
   }
 }
@@ -5115,7 +5119,7 @@ export class CommentExpr extends Expression {
     return this.args.expression;
   }
 
-  get $exists (): Expression[] | undefined {
+  get $exists (): boolean | undefined {
     return this.args.exists;
   }
 
@@ -5732,7 +5736,7 @@ export class DropExpr extends Expression {
     return this.args.expressions;
   }
 
-  get $exists (): Expression[] | undefined {
+  get $exists (): boolean | undefined {
     return this.args.exists;
   }
 
@@ -8807,7 +8811,7 @@ export type TableExprArgs = Merge<[
   { this?: IdentifierExpr | DotExpr;
     db?: IdentifierExpr;
     catalog?: IdentifierExpr;
-    alias?: TableAliasExpr | IdentifierExpr | string;
+    alias?: TableAliasExpr | IdentifierExpr;
     laterals?: Expression[];
     joins?: Expression[];
     pivots?: Expression[];
@@ -8818,7 +8822,7 @@ export type TableExprArgs = Merge<[
     pattern?: Expression;
     ordinality?: boolean;
     when?: Expression;
-    only?: Expression;
+    only?: boolean;
     partition?: Expression;
     changes?: Expression[];
     rowsFrom?: number | Expression;
@@ -8921,7 +8925,7 @@ export class TableExpr extends Expression {
     return this.args.when;
   }
 
-  get $only (): Expression | undefined {
+  get $only (): boolean | undefined {
     return this.args.only;
   }
 
@@ -10197,7 +10201,7 @@ export type AlterExprArgs = Merge<[
     kind: AlterExprKind;
     actions: Expression[];
     exists?: boolean;
-    only?: Expression;
+    only?: boolean;
     options?: Expression[];
     cluster?: Expression;
     notValid?: Expression;
@@ -10244,11 +10248,11 @@ export class AlterExpr extends Expression {
     return this.args.actions;
   }
 
-  get $exists (): Expression | undefined {
+  get $exists (): boolean | undefined {
     return this.args.exists;
   }
 
-  get $only (): Expression | undefined {
+  get $only (): boolean | undefined {
     return this.args.only;
   }
 
@@ -10742,7 +10746,7 @@ export class AddPartitionExpr extends Expression {
     return this.args.this;
   }
 
-  get $exists (): Expression | undefined {
+  get $exists (): boolean | undefined {
     return this.args.exists;
   }
 
@@ -10806,7 +10810,7 @@ export class DropPartitionExpr extends Expression {
     return this.args.expressions;
   }
 
-  get $exists (): Expression | undefined {
+  get $exists (): boolean | undefined {
     return this.args.exists;
   }
 }
@@ -13482,7 +13486,7 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
     return this.args.overwrite;
   }
 
-  get $exists (): Expression[] | undefined {
+  get $exists (): boolean | undefined {
     return this.args.exists;
   }
 
@@ -13965,6 +13969,7 @@ export class CollatePropertyExpr extends PropertyExpr {
 
 export type CopyGrantsPropertyExprArgs = Merge<[
   PropertyExprArgs,
+  RemoveAll<PropertyExprArgs>,
 ]>;
 
 export class CopyGrantsPropertyExpr extends PropertyExpr {
