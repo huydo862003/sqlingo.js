@@ -2986,6 +2986,10 @@ export class QueryExpr extends Expression {
       distinct: options.distinct ?? true,
     });
   }
+
+  // NOTE: sqlglot does not have this
+  // However, I think this is a sensible assumption
+  declare unnest: () => QueryExpr;
 }
 
 export type UDTFExprArgs = {
@@ -16287,11 +16291,11 @@ export class SetOperationExpr extends QueryExpr {
     } = options;
     const expressionList = ensureList(expressions);
     const self = maybeCopy(this, copy);
-    self.this.unnest().select(expressionList, {
+    self.$this.unnest().select(expressionList, {
       ...restOptions,
       copy: false,
     });
-    self.expression.unnest().select(expressionList, {
+    self.$expression.unnest().select(expressionList, {
       ...restOptions,
       copy: false,
       append: options?.append ?? true,
@@ -16306,7 +16310,7 @@ export class SetOperationExpr extends QueryExpr {
    */
   get namedSelects (): string[] {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
-    let expression: Expression = this;
+    let expression: QueryExpr = this;
     while (expression instanceof SetOperationExpr) {
       expression = expression.args.this.unnest();
     }
@@ -16328,7 +16332,7 @@ export class SetOperationExpr extends QueryExpr {
    */
   get selects (): Expression[] {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
-    let expression: Expression = this;
+    let expression: QueryExpr = this;
     while (expression instanceof SetOperationExpr) {
       expression = expression.args.this.unnest();
     }
