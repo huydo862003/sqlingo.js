@@ -2,6 +2,7 @@
 
 import type { Expression } from './expressions';
 import {
+  AdjacentExpr,
   AddExpr,
   AllExpr,
   AndExpr,
@@ -10,14 +11,18 @@ import {
   ArrayAggExpr,
   ArrayAppendExpr,
   ArrayConcatExpr,
+  ArrayContainsAllExpr,
   ArrayExpr,
   ArrayPrependExpr,
   ArrayRemoveExpr,
   BinaryExpr,
+  BitStringExpr,
   BitwiseAndExpr,
   BitwiseNotExpr,
   BitwiseOrExpr,
   BitwiseXorExpr,
+  BooleanExpr,
+  ByteStringExpr,
   CastExpr,
   CbrtExpr,
   ClusterExpr,
@@ -41,6 +46,8 @@ import {
   EscapeExpr,
   ExistsExpr,
   ExpressionKey,
+  ExtendsLeftExpr,
+  ExtendsRightExpr,
   FUNCTION_BY_NAME,
   GenerateDateArrayExpr,
   GlobExpr,
@@ -48,9 +55,14 @@ import {
   GTEExpr,
   GTExpr,
   HexExpr,
+  HexStringExpr,
+  ILikeExpr,
   IntDivExpr,
   IntervalExpr,
+  JSONBContainsAllTopKeysExpr,
+  JSONBContainsAnyTopKeysExpr,
   JSONBContainsExpr,
+  JSONBDeleteAtPathExpr,
   JSONBExtractExpr,
   JSONBExtractScalarExpr,
   JSONCastExpr,
@@ -77,15 +89,21 @@ import {
   NEQExpr,
   NegExpr,
   NotExpr,
+  NullExpr,
   NullSafeEQExpr,
   OrExpr,
+  OverlapsExpr,
   PadExpr,
   ParenExpr,
+  PlaceholderExpr,
   PragmaExpr,
   PropertyEQExpr,
   RawStringExpr,
+  RegexpILikeExpr,
+  RegexpLikeExpr,
   ScopeResolutionExpr,
   SemicolonExpr,
+  SimilarToExpr,
   SortExpr,
   SqrtExpr,
   StarMapExpr,
@@ -1351,7 +1369,10 @@ export class Parser {
     [TokenType.HEREDOC_STRING]: (self: Parser, token: Token) => self.expression(RawStringExpr, { token }),
     [TokenType.NATIONAL_STRING]: (self: Parser, token: Token) => self.expression(NationalExpr, { token }),
     [TokenType.RAW_STRING]: (self: Parser, token: Token) => self.expression(RawStringExpr, { token }),
-    [TokenType.STRING]: (self: Parser, token: Token) => self.expression(LiteralExpr, { token, isString: true }),
+    [TokenType.STRING]: (self: Parser, token: Token) => self.expression(LiteralExpr, {
+      token,
+      isString: true,
+    }),
     [TokenType.UNICODE_STRING]: (self: Parser, token: Token) => self.expression(
       UnicodeStringExpr,
       {
@@ -1359,6 +1380,69 @@ export class Parser {
         escape: self._matchTextSeq('UESCAPE') && self._parseString(),
       },
     ),
+  };
+
+  static NUMERIC_PARSERS = {
+    [TokenType.BIT_STRING]: (self: Parser, token: Token) => self.expression(BitStringExpr, { token }),
+    [TokenType.BYTE_STRING]: (self: Parser, token: Token) => self.expression(
+      ByteStringExpr,
+      {
+        token,
+        isBytes: self.dialect.BYTE_STRING_IS_BYTES_TYPE || undefined,
+      },
+    ),
+    [TokenType.HEX_STRING]: (self: Parser, token: Token) => self.expression(
+      HexStringExpr,
+      {
+        token,
+        isInteger: self.dialect.HEX_STRING_IS_INTEGER_TYPE || undefined,
+      },
+    ),
+    [TokenType.NUMBER]: (self: Parser, token: Token) => self.expression(LiteralExpr, { token, isString: false }),
+  };
+
+  static PRIMARY_PARSERS = {
+    ...Parser.STRING_PARSERS,
+    ...Parser.NUMERIC_PARSERS,
+    [TokenType.INTRODUCER]: (self: Parser, token: Token) => self._parseIntroducer(token),
+    [TokenType.NULL]: (self: Parser, _: Token) => self.expression(NullExpr, {}),
+    [TokenType.TRUE]: (self: Parser, _: Token) => self.expression(BooleanExpr, { this: true }),
+    [TokenType.FALSE]: (self: Parser, _: Token) => self.expression(BooleanExpr, { this: false }),
+    [TokenType.SESSION_PARAMETER]: (self: Parser, _: Token) => self._parseSessionParameter(),
+    [TokenType.STAR]: (self: Parser, _: Token) => self._parseStarOps(),
+  };
+
+  static PLACEHOLDER_PARSERS = {
+    [TokenType.PLACEHOLDER]: (self: Parser) => self.expression(PlaceholderExpr, {}),
+    [TokenType.PARAMETER]: (self: Parser) => self._parseParameter(),
+    [TokenType.COLON]: (self: Parser) => (
+      self._matchSet(self.COLON_PLACEHOLDER_TOKENS)
+        ? self.expression(PlaceholderExpr, { this: self._prev.text })
+        : null
+    ),
+  };
+
+  static RANGE_PARSERS = {
+    [TokenType.AT_GT]: binaryRangeParser(ArrayContainsAllExpr),
+    [TokenType.BETWEEN]: (self: Parser, this_: Expression) => self._parseBetween(this_),
+    [TokenType.GLOB]: binaryRangeParser(GlobExpr),
+    [TokenType.ILIKE]: binaryRangeParser(ILikeExpr),
+    [TokenType.IN]: (self: Parser, this_: Expression) => self._parseIn(this_),
+    [TokenType.IRLIKE]: binaryRangeParser(RegexpILikeExpr),
+    [TokenType.IS]: (self: Parser, this_: Expression) => self._parseIs(this_),
+    [TokenType.LIKE]: binaryRangeParser(LikeExpr),
+    [TokenType.LT_AT]: binaryRangeParser(ArrayContainsAllExpr, { reverseArgs: true }),
+    [TokenType.OVERLAPS]: binaryRangeParser(OverlapsExpr),
+    [TokenType.RLIKE]: binaryRangeParser(RegexpLikeExpr),
+    [TokenType.SIMILAR_TO]: binaryRangeParser(SimilarToExpr),
+    [TokenType.FOR]: (self: Parser, this_: Expression) => self._parseComprehension(this_),
+    [TokenType.QMARK_AMP]: binaryRangeParser(JSONBContainsAllTopKeysExpr),
+    [TokenType.QMARK_PIPE]: binaryRangeParser(JSONBContainsAnyTopKeysExpr),
+    [TokenType.HASH_DASH]: binaryRangeParser(JSONBDeleteAtPathExpr),
+    [TokenType.ADJACENT]: binaryRangeParser(AdjacentExpr),
+    [TokenType.OPERATOR]: (self: Parser, this_: Expression) => self._parseOperator(this_),
+    [TokenType.AMP_LT]: binaryRangeParser(ExtendsLeftExpr),
+    [TokenType.AMP_GT]: binaryRangeParser(ExtendsRightExpr),
   };
 
   // Instance properties
