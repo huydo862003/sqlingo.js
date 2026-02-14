@@ -19,6 +19,7 @@ import {
   DataTypeExpr,
   DataTypeType,
   EscapeExpr,
+  FUNCTION_BY_NAME,
   GenerateDateArrayExpr,
   GlobExpr,
   GreatestExpr,
@@ -49,11 +50,19 @@ import {
   varExpr,
   VarMapExpr,
 } from './expressions';
-import { ensureList, seqGet } from './helper';
-import { Dialect, type DialectType } from './dialects/dialect';
-import { ErrorLevel, ParseError } from './errors';
+import {
+  ensureList, seqGet,
+} from './helper';
+import {
+  Dialect, type DialectType,
+} from './dialects/dialect';
+import type { ParseError } from './errors';
+import { ErrorLevel } from './errors';
 import type { Token } from './tokens';
 import { TokenType } from './tokens';
+import {
+  newTrie, type TrieNode,
+} from './trie';
 
 export type OptionsType = Record<string, (string[] | string)[]>;
 
@@ -433,51 +442,54 @@ export interface ParseOptions<IntoT extends Expression = Expression> {
  */
 export class Parser {
   // Cached tries for SHOW and SET parsers (metaclass pattern)
-  private static _showTrie?: unknown; // TODO: Replace with proper Trie type
-  private static _setTrie?: unknown;
 
-  static get SHOW_TRIE (): unknown {
+  private static _showTrie?: TrieNode;
+  static get SHOW_TRIE (): TrieNode {
     if (!this._showTrie) {
-      // TODO: Implement newTrie function
-      // this._showTrie = newTrie(Object.keys(this.SHOW_PARSERS).map(key => key.split(' ')));
-      throw new Error('SHOW_TRIE not implemented');
+      this._showTrie = newTrie(
+        Object.keys(this.SHOW_PARSERS).map((key) => key.split(' ')),
+      );
     }
     return this._showTrie;
   }
 
-  static get SET_TRIE (): unknown {
+  private static _setTrie?: TrieNode;
+  static get SET_TRIE (): TrieNode {
     if (!this._setTrie) {
-      // TODO: Implement newTrie function
-      // this._setTrie = newTrie(Object.keys(this.SET_PARSERS).map(key => key.split(' ')));
-      throw new Error('SET_TRIE not implemented');
+      this._setTrie = newTrie(
+        Object.keys(this.SET_PARSERS).map((key) => key.split(' ')),
+      );
     }
     return this._setTrie;
   }
 
-  // Static parser dictionaries (to be defined)
-  static SHOW_PARSERS: Record<string, unknown> = {};
-  static SET_PARSERS: Record<string, unknown> = {};
-
   // Function name to builder mapping
   static FUNCTIONS: Record<string, (args: Expression[], dialect: Dialect) => Expression> = {
-    // TODO: Spread all fromArgList functions from FUNCTION_BY_NAME
+    // Spread all fromArgList functions from FUNCTION_BY_NAME
+    ...Object.fromEntries(
+      Array.from(FUNCTION_BY_NAME.entries()).map(([name, func]) => [name, (args: Expression[], _dialect: Dialect) => func.fromArgList(args)]),
+    ),
 
     // Coalesce variants
-    COALESCE: (args, dialect) => buildCoalesce(args),
-    IFNULL: (args, dialect) => buildCoalesce(args),
-    NVL: (args, dialect) => buildCoalesce(args),
+    ...Object.fromEntries(
+      [
+        'COALESCE',
+        'IFNULL',
+        'NVL',
+      ].map((name) => [name, (args: Expression[], _dialect: Dialect) => buildCoalesce(args)]),
+    ),
 
     // Array functions
-    ARRAY: (args, dialect) => new ArrayExpr({ expressions: args }),
+    ARRAY: (args, _dialect) => new ArrayExpr({ expressions: args }),
 
     ARRAYAGG: (args, dialect) => new ArrayAggExpr({
-      this: seqGet(args, 0),
-      nullsExcluded: dialect.ARRAY_AGG_INCLUDES_NULLS === undefined ? undefined : undefined,
+      this: seqGet(args, 0)!,
+      nullsExcluded: dialect.ARRAY_AGG_INCLUDES_NULLS === undefined ? true : undefined,
     }),
 
     ARRAY_AGG: (args, dialect) => new ArrayAggExpr({
-      this: seqGet(args, 0),
-      nullsExcluded: dialect.ARRAY_AGG_INCLUDES_NULLS === undefined ? undefined : undefined,
+      this: seqGet(args, 0)!,
+      nullsExcluded: dialect.ARRAY_AGG_INCLUDES_NULLS === undefined ? true : undefined,
     }),
 
     ARRAY_APPEND: buildArrayAppend,
@@ -487,7 +499,7 @@ export class Parser {
     ARRAY_REMOVE: buildArrayRemove,
 
     // Aggregate functions
-    COUNT: (args, dialect) => new CountExpr({
+    COUNT: (args, _dialect) => new CountExpr({
       this: seqGet(args, 0),
       expressions: args.slice(1),
       bigInt: true,
@@ -507,22 +519,22 @@ export class Parser {
     }),
 
     // Conversion functions
-    CONVERT_TIMEZONE: (args, dialect) => buildConvertTimezone(args),
+    CONVERT_TIMEZONE: (args, _dialect) => buildConvertTimezone(args),
 
-    DATE_TO_DATE_STR: (args, dialect) => new CastExpr({
-      this: seqGet(args, 0),
+    DATE_TO_DATE_STR: (args, _dialect) => new CastExpr({
+      this: seqGet(args, 0)!,
       to: new DataTypeExpr({ this: DataTypeType.TEXT }),
     }),
 
-    TIME_TO_TIME_STR: (args, dialect) => new CastExpr({
-      this: seqGet(args, 0),
+    TIME_TO_TIME_STR: (args, _dialect) => new CastExpr({
+      this: seqGet(args, 0)!,
       to: new DataTypeExpr({ this: DataTypeType.TEXT }),
     }),
 
     // Generator functions
-    GENERATE_DATE_ARRAY: (args, dialect) => new GenerateDateArrayExpr({
-      start: seqGet(args, 0),
-      end: seqGet(args, 1),
+    GENERATE_DATE_ARRAY: (args, _dialect) => new GenerateDateArrayExpr({
+      start: seqGet(args, 0)!,
+      end: seqGet(args, 1)!,
       step: seqGet(args, 2) || new IntervalExpr({
         this: LiteralExpr.string('1'),
         unit: varExpr('DAY'),
@@ -534,22 +546,22 @@ export class Parser {
     }),
 
     // Pattern matching
-    GLOB: (args, dialect) => new GlobExpr({
-      this: seqGet(args, 1),
-      expression: seqGet(args, 0),
+    GLOB: (args, _dialect) => new GlobExpr({
+      this: seqGet(args, 1)!,
+      expression: seqGet(args, 0)!,
     }),
 
-    LIKE: (args, dialect) => buildLike(args),
+    LIKE: (args, _dialect) => buildLike(args),
 
     // Comparison functions
     GREATEST: (args, dialect) => new GreatestExpr({
-      this: seqGet(args, 0),
+      this: seqGet(args, 0)!,
       expressions: args.slice(1),
       ignoreNulls: dialect.LEAST_GREATEST_IGNORES_NULLS,
     }),
 
     LEAST: (args, dialect) => new LeastExpr({
-      this: seqGet(args, 0),
+      this: seqGet(args, 0)!,
       expressions: args.slice(1),
       ignoreNulls: dialect.LEAST_GREATEST_IGNORES_NULLS,
     }),
@@ -564,52 +576,52 @@ export class Parser {
     JSON_EXTRACT_PATH_TEXT: buildExtractJsonWithPath(JSONExtractScalarExpr),
 
     JSON_KEYS: (args, dialect) => new JSONKeysExpr({
-      this: seqGet(args, 0),
+      this: seqGet(args, 0)!,
       expression: dialect.toJsonPath(seqGet(args, 1)),
     }),
 
     // Math functions
     LOG: (args, dialect) => buildLogarithm(args, dialect),
-    LOG2: (args, dialect) => new LogExpr({
+    LOG2: (args, _dialect) => new LogExpr({
       this: LiteralExpr.number(2),
       expression: seqGet(args, 0),
     }),
-    LOG10: (args, dialect) => new LogExpr({
+    LOG10: (args, _dialect) => new LogExpr({
       this: LiteralExpr.number(10),
       expression: seqGet(args, 0),
     }),
-    MOD: (args, dialect) => buildMod(args),
+    MOD: (args, _dialect) => buildMod(args),
 
     // String manipulation
-    LOWER: (args, dialect) => buildLower(args),
-    UPPER: (args, dialect) => buildUpper(args),
+    LOWER: (args, _dialect) => buildLower(args),
+    UPPER: (args, _dialect) => buildUpper(args),
 
-    LPAD: (args, dialect) => buildPad(args),
-    LEFTPAD: (args, dialect) => buildPad(args),
-    RPAD: (args, dialect) => buildPad(args, { isLeft: false }),
-    RIGHTPAD: (args, dialect) => buildPad(args, { isLeft: false }),
+    LPAD: (args, _dialect) => buildPad(args),
+    LEFTPAD: (args, _dialect) => buildPad(args),
+    RPAD: (args, _dialect) => buildPad(args, { isLeft: false }),
+    RIGHTPAD: (args, _dialect) => buildPad(args, { isLeft: false }),
 
-    LTRIM: (args, dialect) => buildTrim(args),
-    RTRIM: (args, dialect) => buildTrim(args, { isLeft: false }),
+    LTRIM: (args, _dialect) => buildTrim(args),
+    RTRIM: (args, _dialect) => buildTrim(args, { isLeft: false }),
 
     // String search
-    STRPOS: (args, dialect) => StrPositionExpr.fromArgList(args),
-    INSTR: (args, dialect) => StrPositionExpr.fromArgList(args),
-    CHARINDEX: (args, dialect) => buildLocateStrposition(args),
-    LOCATE: (args, dialect) => buildLocateStrposition(args),
+    STRPOS: (args, _dialect) => StrPositionExpr.fromArgList(args),
+    INSTR: (args, _dialect) => StrPositionExpr.fromArgList(args),
+    CHARINDEX: (args, _dialect) => buildLocateStrposition(args),
+    LOCATE: (args, _dialect) => buildLocateStrposition(args),
 
     // Scope resolution
-    SCOPE_RESOLUTION: (args, dialect) => args.length !== 2
-      ? new ScopeResolutionExpr({ expression: seqGet(args, 0) })
+    SCOPE_RESOLUTION: (args, _dialect) => args.length !== 2
+      ? new ScopeResolutionExpr({ expression: seqGet(args, 0)! })
       : new ScopeResolutionExpr({
         this: seqGet(args, 0),
-        expression: seqGet(args, 1),
+        expression: seqGet(args, 1)!,
       }),
 
     // String operations
-    TS_OR_DS_TO_DATE_STR: (args, dialect) => new SubstringExpr({
+    TS_OR_DS_TO_DATE_STR: (args, _dialect) => new SubstringExpr({
       this: new CastExpr({
-        this: seqGet(args, 0),
+        this: seqGet(args, 0)!,
         to: new DataTypeExpr({ this: DataTypeType.TEXT }),
       }),
       start: LiteralExpr.number(1),
@@ -617,7 +629,7 @@ export class Parser {
     }),
 
     // Array operations
-    UNNEST: (args, dialect) => new UnnestExpr({
+    UNNEST: (args, _dialect) => new UnnestExpr({
       expressions: ensureList(seqGet(args, 0)),
     }),
 
@@ -627,7 +639,7 @@ export class Parser {
     }),
 
     // Map operations
-    VAR_MAP: (args, dialect) => buildVarMap(args),
+    VAR_MAP: (args, _dialect) => buildVarMap(args),
   };
 
   // Instance properties
@@ -685,5 +697,9 @@ export class Parser {
       return true;
     }
     return false;
+  }
+
+  private get _constructor (): typeof Parser {
+    return this.constructor as typeof Parser;
   }
 }

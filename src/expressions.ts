@@ -36975,7 +36975,7 @@ export type ArrayAggExprArgs = Merge<[
   AggFuncExprArgs,
   {
     this: Expression;
-    nullsExcluded?: Expression;
+    nullsExcluded?: boolean;
   },
 ]>;
 
@@ -36998,7 +36998,7 @@ export class ArrayAggExpr extends AggFuncExpr {
     return this.args.this;
   }
 
-  get $nullsExcluded (): Expression | undefined {
+  get $nullsExcluded (): boolean | undefined {
     return this.args.nullsExcluded;
   }
 
@@ -37520,7 +37520,7 @@ export type CountExprArgs = Merge<[
   {
     this?: Expression;
     expressions?: Expression[];
-    bigInt?: Expression;
+    bigInt?: boolean;
   },
 ]>;
 
@@ -37550,7 +37550,7 @@ export class CountExpr extends AggFuncExpr {
     return this.args.expressions;
   }
 
-  get $bigInt (): Expression | undefined {
+  get $bigInt (): boolean | undefined {
     return this.args.bigInt;
   }
 
