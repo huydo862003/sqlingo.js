@@ -1,7 +1,65 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/parser.py
 
 import type { Expression } from './expressions';
-import * as exp from './expressions';
+import {
+  AddExpr,
+  AliasExpr,
+  AnonymousExpr,
+  AvgExpr,
+  BetweenExpr,
+  BitwiseAndExpr,
+  BitwiseOrExpr,
+  BitwiseXorExpr,
+  BooleanExpr,
+  CaseExpr,
+  CastExpr,
+  ColumnExpr,
+  CountExpr,
+  CTEExpr,
+  DeleteExpr,
+  DivExpr,
+  EQExpr,
+  FromExpr,
+  GroupExpr,
+  GTEExpr,
+  GTExpr,
+  HavingExpr,
+  IdentifierExpr,
+  IfExpr,
+  InExpr,
+  InsertExpr,
+  IntDivExpr,
+  IsExpr,
+  JoinExpr,
+  LikeExpr,
+  LimitExpr,
+  LiteralExpr,
+  LTEExpr,
+  LTExpr,
+  MaxExpr,
+  MinExpr,
+  ModExpr,
+  MulExpr,
+  NEQExpr,
+  NegExpr,
+  NotExpr,
+  NullExpr,
+  OrderedExpr,
+  OrderExpr,
+  ParenExpr,
+  SelectExpr,
+  StarExpr,
+  SubExpr,
+  SubqueryExpr,
+  SumExpr,
+  TableAliasExpr,
+  TableExpr,
+  TupleExpr,
+  UpdateExpr,
+  ValuesExpr,
+  WhereExpr,
+  WithExpr,
+} from './expressions';
 import {
   Dialect, type DialectType,
 } from './dialects/dialect';
@@ -41,33 +99,33 @@ export class Parser {
 
   // Operator precedence levels
   static EQUALITY: Partial<Record<TokenType, typeof Expression>> = {
-    [TokenType.EQ]: exp.EQExpr,
-    [TokenType.NEQ]: exp.NEQExpr,
+    [TokenType.EQ]: EQExpr,
+    [TokenType.NEQ]: NEQExpr,
   };
 
   static COMPARISON: Partial<Record<TokenType, typeof Expression>> = {
-    [TokenType.GT]: exp.GTExpr,
-    [TokenType.GTE]: exp.GTEExpr,
-    [TokenType.LT]: exp.LTExpr,
-    [TokenType.LTE]: exp.LTEExpr,
+    [TokenType.GT]: GTExpr,
+    [TokenType.GTE]: GTEExpr,
+    [TokenType.LT]: LTExpr,
+    [TokenType.LTE]: LTEExpr,
   };
 
   static BITWISE: Partial<Record<TokenType, typeof Expression>> = {
-    [TokenType.AMP]: exp.BitwiseAndExpr,
-    [TokenType.CARET]: exp.BitwiseXorExpr,
-    [TokenType.PIPE]: exp.BitwiseOrExpr,
+    [TokenType.AMP]: BitwiseAndExpr,
+    [TokenType.CARET]: BitwiseXorExpr,
+    [TokenType.PIPE]: BitwiseOrExpr,
   };
 
   static TERM: Partial<Record<TokenType, typeof Expression>> = {
-    [TokenType.DASH]: exp.SubExpr,
-    [TokenType.PLUS]: exp.AddExpr,
-    [TokenType.MOD]: exp.ModExpr,
+    [TokenType.DASH]: SubExpr,
+    [TokenType.PLUS]: AddExpr,
+    [TokenType.MOD]: ModExpr,
   };
 
   static FACTOR: Partial<Record<TokenType, typeof Expression>> = {
-    [TokenType.DIV]: exp.IntDivExpr,
-    [TokenType.SLASH]: exp.DivExpr,
-    [TokenType.STAR]: exp.MulExpr,
+    [TokenType.DIV]: IntDivExpr,
+    [TokenType.SLASH]: DivExpr,
+    [TokenType.STAR]: MulExpr,
   };
 
   // Instance variables
@@ -332,7 +390,7 @@ export class Parser {
     // Parse projection list
     do {
       if (this._match(TokenType.STAR)) {
-        expressions.push(this.expression(exp.StarExpr, {}));
+        expressions.push(this.expression(StarExpr, {}));
       } else {
         const expr = this._parseExpression();
         if (expr) {
@@ -340,7 +398,7 @@ export class Parser {
           if (this._match(TokenType.ALIAS) || this._curr?.tokenType === TokenType.VAR) {
             const alias = this._parseIdVar();
             if (alias) {
-              const aliased = this.expression(exp.AliasExpr, {
+              const aliased = this.expression(AliasExpr, {
                 this: expr,
                 alias,
               });
@@ -399,7 +457,7 @@ export class Parser {
       args.limit = limit;
     }
 
-    return this.expression(exp.SelectExpr, args);
+    return this.expression(SelectExpr, args);
   }
 
   /**
@@ -451,7 +509,7 @@ export class Parser {
         } while (this._match(TokenType.COMMA));
         this._match(TokenType.R_PAREN);
 
-        return this.expression(exp.InExpr, {
+        return this.expression(InExpr, {
           this: expr,
           expressions: values,
         });
@@ -462,7 +520,7 @@ export class Parser {
     if (this._match(TokenType.LIKE)) {
       const pattern = this._parseBitwise();
       if (pattern) {
-        return this.expression(exp.LikeExpr, {
+        return this.expression(LikeExpr, {
           this: expr,
           expression: pattern,
         });
@@ -475,7 +533,7 @@ export class Parser {
       if (low && this._match(TokenType.AND)) {
         const high = this._parseBitwise();
         if (high) {
-          return this.expression(exp.BetweenExpr, {
+          return this.expression(BetweenExpr, {
             this: expr,
             low,
             high,
@@ -489,14 +547,14 @@ export class Parser {
       const not = this._match(TokenType.NOT);
       if (this._match(TokenType.NULL)) {
         if (not) {
-          return this.expression(exp.IsExpr, {
+          return this.expression(IsExpr, {
             this: expr,
-            expression: this.expression(exp.NotExpr, { this: this.expression(exp.NullExpr, {}) }),
+            expression: this.expression(NotExpr, { this: this.expression(NullExpr, {}) }),
           });
         }
-        return this.expression(exp.IsExpr, {
+        return this.expression(IsExpr, {
           this: expr,
-          expression: this.expression(exp.NullExpr, {}),
+          expression: this.expression(NullExpr, {}),
         });
       }
     }
@@ -587,7 +645,7 @@ export class Parser {
     const select = this._parseSelect();
     if (select) {
       this._match(TokenType.R_PAREN);
-      return this.expression(exp.SubqueryExpr, { this: select });
+      return this.expression(SubqueryExpr, { this: select });
     }
 
     // Parse as expression
@@ -598,7 +656,7 @@ export class Parser {
     }
 
     this._match(TokenType.R_PAREN);
-    return this.expression(exp.ParenExpr, { this: expr });
+    return this.expression(ParenExpr, { this: expr });
   }
 
   /**
@@ -642,7 +700,7 @@ export class Parser {
     if (upperName === 'CAST' && 0 < args.length) {
       // CAST(expr AS type) - args[0] should be expr, look for AS
       // For now, treat as anonymous function and handle later
-      return this.expression(exp.CastExpr, {
+      return this.expression(CastExpr, {
         this: args[0],
         to: args[1] || undefined,
       });
@@ -650,19 +708,19 @@ export class Parser {
 
     // Check for common aggregate functions
     if (upperName === 'COUNT') {
-      return this.expression(exp.CountExpr, { expressions: args });
+      return this.expression(CountExpr, { expressions: args });
     } else if (upperName === 'SUM') {
-      return this.expression(exp.SumExpr, { this: args[0] });
+      return this.expression(SumExpr, { this: args[0] });
     } else if (upperName === 'AVG') {
-      return this.expression(exp.AvgExpr, { this: args[0] });
+      return this.expression(AvgExpr, { this: args[0] });
     } else if (upperName === 'MIN') {
-      return this.expression(exp.MinExpr, { this: args[0] });
+      return this.expression(MinExpr, { this: args[0] });
     } else if (upperName === 'MAX') {
-      return this.expression(exp.MaxExpr, { this: args[0] });
+      return this.expression(MaxExpr, { this: args[0] });
     }
 
     // Default to anonymous function
-    return this.expression(exp.AnonymousExpr, {
+    return this.expression(AnonymousExpr, {
       this: funcName,
       expressions: args,
     });
@@ -703,7 +761,7 @@ export class Parser {
         break;
       }
 
-      ifs.push(this.expression(exp.IfExpr, {
+      ifs.push(this.expression(IfExpr, {
         this: condition,
         true: result,
       }));
@@ -719,7 +777,7 @@ export class Parser {
       this.raiseError('Expected END after CASE');
     }
 
-    return this.expression(exp.CaseExpr, {
+    return this.expression(CaseExpr, {
       this: caseExpr,
       ifs,
       default: defaultExpr,
@@ -765,7 +823,7 @@ export class Parser {
       if (!this._curr) break;
 
       if (this._curr.tokenType === TokenType.VAR || this._curr.tokenType === TokenType.IDENTIFIER) {
-        const identifier = this.expression(exp.IdentifierExpr, { this: this._curr.text });
+        const identifier = this.expression(IdentifierExpr, { this: this._curr.text });
         parts.push(identifier);
         this._advance();
 
@@ -781,7 +839,7 @@ export class Parser {
     }
 
     if (parts.length === 1) {
-      return this.expression(exp.ColumnExpr, { this: parts[0] });
+      return this.expression(ColumnExpr, { this: parts[0] });
     }
 
     // Handle qualified names: catalog.db.table.column
@@ -790,7 +848,7 @@ export class Parser {
     if (3 <= parts.length) args.db = parts[parts.length - 3];
     if (4 <= parts.length) args.catalog = parts[parts.length - 4];
 
-    return this.expression(exp.ColumnExpr, args);
+    return this.expression(ColumnExpr, args);
   }
 
   /**
@@ -806,7 +864,7 @@ export class Parser {
       return undefined;
     }
 
-    return this.expression(exp.FromExpr, { this: table });
+    return this.expression(FromExpr, { this: table });
   }
 
   /**
@@ -822,7 +880,7 @@ export class Parser {
       return undefined;
     }
 
-    return this.expression(exp.WhereExpr, { this: condition });
+    return this.expression(WhereExpr, { this: condition });
   }
 
   /**
@@ -845,7 +903,7 @@ export class Parser {
       return undefined;
     }
 
-    return this.expression(exp.GroupExpr, { expressions });
+    return this.expression(GroupExpr, { expressions });
   }
 
   /**
@@ -861,7 +919,7 @@ export class Parser {
       return undefined;
     }
 
-    return this.expression(exp.HavingExpr, { this: condition });
+    return this.expression(HavingExpr, { this: condition });
   }
 
   /**
@@ -884,7 +942,7 @@ export class Parser {
       return undefined;
     }
 
-    return this.expression(exp.OrderExpr, { expressions });
+    return this.expression(OrderExpr, { expressions });
   }
 
   /**
@@ -911,7 +969,7 @@ export class Parser {
       args.nullsFirst = false;
     }
 
-    return this.expression(exp.OrderedExpr, args);
+    return this.expression(OrderedExpr, args);
   }
 
   /**
@@ -937,7 +995,7 @@ export class Parser {
       args.offset = this._parseExpression();
     }
 
-    return this.expression(exp.LimitExpr, args);
+    return this.expression(LimitExpr, args);
   }
 
   /**
@@ -951,7 +1009,7 @@ export class Parser {
       if (!this._curr) break;
 
       if (this._curr.tokenType === TokenType.VAR || this._curr.tokenType === TokenType.IDENTIFIER) {
-        const identifier = this.expression(exp.IdentifierExpr, { this: this._curr.text });
+        const identifier = this.expression(IdentifierExpr, { this: this._curr.text });
         parts.push(identifier);
         this._advance();
 
@@ -971,15 +1029,15 @@ export class Parser {
     if (2 <= parts.length) args.db = parts[parts.length - 2];
     if (3 <= parts.length) args.catalog = parts[parts.length - 3];
 
-    const table = this.expression(exp.TableExpr, args);
+    const table = this.expression(TableExpr, args);
 
     // Parse table alias
     if (this._match(TokenType.ALIAS) || this._curr?.tokenType === TokenType.VAR) {
       const alias = this._parseIdVar();
       if (alias) {
-        return this.expression(exp.TableExpr, {
+        return this.expression(TableExpr, {
           ...args,
-          alias: this.expression(exp.TableAliasExpr, { this: alias }),
+          alias: this.expression(TableAliasExpr, { this: alias }),
         });
       }
     }
@@ -1063,7 +1121,7 @@ export class Parser {
       }
     }
 
-    return this.expression(exp.JoinExpr, args);
+    return this.expression(JoinExpr, args);
   }
 
   /**
@@ -1076,7 +1134,7 @@ export class Parser {
       if (!this._curr) break;
 
       if (this._curr.tokenType === TokenType.VAR || this._curr.tokenType === TokenType.IDENTIFIER) {
-        const identifier = this.expression(exp.IdentifierExpr, { this: this._curr.text });
+        const identifier = this.expression(IdentifierExpr, { this: this._curr.text });
         parts.push(identifier);
         this._advance();
 
@@ -1095,7 +1153,7 @@ export class Parser {
     if (2 <= parts.length) args.db = parts[parts.length - 2];
     if (3 <= parts.length) args.catalog = parts[parts.length - 3];
 
-    return this.expression(exp.TableExpr, args);
+    return this.expression(TableExpr, args);
   }
 
   /**
@@ -1109,7 +1167,7 @@ export class Parser {
     if (this._curr.tokenType === TokenType.VAR || this._curr.tokenType === TokenType.IDENTIFIER) {
       const text = this._curr.text;
       this._advance();
-      return this.expression(exp.IdentifierExpr, { this: text });
+      return this.expression(IdentifierExpr, { this: text });
     }
 
     return undefined;
@@ -1166,12 +1224,12 @@ export class Parser {
           } while (this._match(TokenType.COMMA));
           this._match(TokenType.R_PAREN);
 
-          values.push(this.expression(exp.TupleExpr, { expressions: row }));
+          values.push(this.expression(TupleExpr, { expressions: row }));
         }
       } while (this._match(TokenType.COMMA));
 
       if (0 < values.length) {
-        args.expression = this.expression(exp.ValuesExpr, { expressions: values });
+        args.expression = this.expression(ValuesExpr, { expressions: values });
       }
     } else {
       // Try to parse SELECT
@@ -1181,7 +1239,7 @@ export class Parser {
       }
     }
 
-    return this.expression(exp.InsertExpr, args);
+    return this.expression(InsertExpr, args);
   }
 
   /**
@@ -1209,7 +1267,7 @@ export class Parser {
         if (col && this._match(TokenType.EQ)) {
           const val = this._parseExpression();
           if (val) {
-            expressions.push(this.expression(exp.EQExpr, {
+            expressions.push(this.expression(EQExpr, {
               this: col,
               expression: val,
             }));
@@ -1240,7 +1298,7 @@ export class Parser {
       args.limit = limit;
     }
 
-    return this.expression(exp.UpdateExpr, args);
+    return this.expression(UpdateExpr, args);
   }
 
   /**
@@ -1286,7 +1344,7 @@ export class Parser {
       args.limit = limit;
     }
 
-    return this.expression(exp.DeleteExpr, args);
+    return this.expression(DeleteExpr, args);
   }
 
   /**
@@ -1340,9 +1398,9 @@ export class Parser {
 
       this._match(TokenType.R_PAREN);
 
-      const cte = this.expression(exp.CTEExpr, {
+      const cte = this.expression(CTEExpr, {
         this: query,
-        alias: this.expression(exp.TableAliasExpr, {
+        alias: this.expression(TableAliasExpr, {
           this: name,
           columns,
         }),
@@ -1355,30 +1413,30 @@ export class Parser {
       return undefined;
     }
 
-    return this.expression(exp.WithExpr, { expressions: ctes });
+    return this.expression(WithExpr, { expressions: ctes });
   }
 }
 
 // Initialize static parsers
 Parser.PRIMARY_PARSERS = {
-  [TokenType.STRING]: (parser, token) => parser.expression(exp.LiteralExpr, {
+  [TokenType.STRING]: (parser, token) => parser.expression(LiteralExpr, {
     this: token.text,
     isString: true,
   }),
-  [TokenType.NUMBER]: (parser, token) => parser.expression(exp.LiteralExpr, {
+  [TokenType.NUMBER]: (parser, token) => parser.expression(LiteralExpr, {
     this: token.text,
     isString: false,
   }),
-  [TokenType.NULL]: (parser) => parser.expression(exp.NullExpr, {}),
-  [TokenType.TRUE]: (parser) => parser.expression(exp.BooleanExpr, { this: true }),
-  [TokenType.FALSE]: (parser) => parser.expression(exp.BooleanExpr, { this: false }),
-  [TokenType.STAR]: (parser) => parser.expression(exp.StarExpr, {}),
+  [TokenType.NULL]: (parser) => parser.expression(NullExpr, {}),
+  [TokenType.TRUE]: (parser) => parser.expression(BooleanExpr, { this: true }),
+  [TokenType.FALSE]: (parser) => parser.expression(BooleanExpr, { this: false }),
+  [TokenType.STAR]: (parser) => parser.expression(StarExpr, {}),
   [TokenType.CASE]: (parser) => parser['_parseCase'](),
 };
 
 Parser.UNARY_PARSERS = {
-  [TokenType.DASH]: (parser) => parser.expression(exp.NegExpr, { this: parser['_parseUnary']() }),
-  [TokenType.NOT]: (parser) => parser.expression(exp.NotExpr, { this: parser['_parseEquality']() }),
+  [TokenType.DASH]: (parser) => parser.expression(NegExpr, { this: parser['_parseUnary']() }),
+  [TokenType.NOT]: (parser) => parser.expression(NotExpr, { this: parser['_parseEquality']() }),
 };
 
 // NOTE: parse() and parseOne() are defined here in parser.ts to avoid circular dependencies.
