@@ -4,7 +4,10 @@ import type { Expression } from './expressions';
 import {
   array,
   ArrayAppendExpr,
+  ArrayConcatExpr,
   ArrayExpr,
+  ArrayPrependExpr,
+  ArrayRemoveExpr,
   BinaryExpr,
   CoalesceExpr,
   ConvertTimezoneExpr,
@@ -327,6 +330,60 @@ export function buildArrayAppend (args: Expression[], dialect: Dialect): ArrayAp
    * Others (DuckDB, PostgreSQL) create a new single-element array instead.
    */
   return new ArrayAppendExpr({
+    this: seqGet(args, 0)!,
+    expression: seqGet(args, 1)!,
+    nullPropagation: dialect.ARRAY_FUNCS_PROPAGATES_NULLS,
+  });
+}
+
+export function buildArrayPrepend (args: Expression[], dialect: Dialect): ArrayPrependExpr {
+  if (args.length < 2) {
+    throw new Error('buildArrayPrepend only accepts an expression list with at least two expressions');
+  }
+
+  /**
+   * Builds ArrayPrepend with NULL propagation semantics based on the dialect configuration.
+   *
+   * Some dialects (Databricks, Spark, Snowflake) return NULL when the input array is NULL.
+   * Others (DuckDB, PostgreSQL) create a new single-element array instead.
+   */
+  return new ArrayPrependExpr({
+    this: seqGet(args, 0)!,
+    expression: seqGet(args, 1)!,
+    nullPropagation: dialect.ARRAY_FUNCS_PROPAGATES_NULLS,
+  });
+}
+
+export function buildArrayConcat (args: Expression[], dialect: Dialect): ArrayConcatExpr {
+  if (args.length < 1) {
+    throw new Error('buildArrayConcat only accepts an expression list with at least one expression');
+  }
+
+  /**
+   * Builds ArrayConcat with NULL propagation semantics based on the dialect configuration.
+   *
+   * Some dialects (Redshift, Snowflake) return NULL when any input array is NULL.
+   * Others (DuckDB, PostgreSQL) skip NULL arrays and continue concatenation.
+   */
+  return new ArrayConcatExpr({
+    this: seqGet(args, 0)!,
+    expressions: args.slice(1),
+    nullPropagation: dialect.ARRAY_FUNCS_PROPAGATES_NULLS,
+  });
+}
+
+export function buildArrayRemove (args: Expression[], dialect: Dialect): ArrayRemoveExpr {
+  if (args.length < 2) {
+    throw new Error('buildArrayRemove only accepts an expression list with at least two expressions');
+  }
+
+  /**
+   * Builds ArrayRemove with NULL propagation semantics based on the dialect configuration.
+   *
+   * Some dialects (Snowflake) return NULL when the removal value is NULL.
+   * Others (DuckDB) may return empty array due to NULL comparison semantics.
+   */
+  return new ArrayRemoveExpr({
     this: seqGet(args, 0)!,
     expression: seqGet(args, 1)!,
     nullPropagation: dialect.ARRAY_FUNCS_PROPAGATES_NULLS,
