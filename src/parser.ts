@@ -2,7 +2,9 @@
 
 import type { Expression } from './expressions';
 import {
+  AddExpr,
   AllExpr,
+  AndExpr,
   AnyExpr,
   array,
   ArrayAggExpr,
@@ -12,8 +14,12 @@ import {
   ArrayPrependExpr,
   ArrayRemoveExpr,
   BinaryExpr,
+  BitwiseAndExpr,
+  BitwiseOrExpr,
+  BitwiseXorExpr,
   CastExpr,
   CoalesceExpr,
+  CollateExpr,
   ConcatExpr,
   ConcatWsExpr,
   ConvertTimezoneExpr,
@@ -26,13 +32,19 @@ import {
   CurrentUserExpr,
   DataTypeExpr,
   DataTypeType,
+  DistanceExpr,
+  DivExpr,
+  EQExpr,
   EscapeExpr,
   ExistsExpr,
   FUNCTION_BY_NAME,
   GenerateDateArrayExpr,
   GlobExpr,
   GreatestExpr,
+  GTEExpr,
+  GTExpr,
   HexExpr,
+  IntDivExpr,
   IntervalExpr,
   JSONExtractExpr,
   JSONExtractScalarExpr,
@@ -47,12 +59,20 @@ import {
   LogExpr,
   LowerExpr,
   LowerHexExpr,
+  LTEExpr,
+  LTExpr,
   ModExpr,
+  MulExpr,
+  NEQExpr,
+  NullSafeEQExpr,
+  OrExpr,
   PadExpr,
   ParenExpr,
+  PropertyEQExpr,
   ScopeResolutionExpr,
   StarMapExpr,
   StrPositionExpr,
+  SubExpr,
   SubstringExpr,
   TrimExpr,
   TrimPosition,
@@ -994,10 +1014,161 @@ export class Parser {
 
   static COLON_PLACEHOLDER_TOKENS = Parser.ID_VAR_TOKENS;
 
-  static ARRAY_CONSTRUCTORS: Record<string, typeof Expression> = {
+  static ARRAY_CONSTRUCTORS = {
     ARRAY: ArrayExpr,
     LIST: ListExpr,
   };
+
+  static COMMENT_TABLE_ALIAS_TOKENS = new Set(
+    [...Parser.TABLE_ALIAS_TOKENS].filter(t => t !== TokenType.IS),
+  );
+
+  static UPDATE_ALIAS_TOKENS = new Set(
+    [...Parser.TABLE_ALIAS_TOKENS].filter(t => t !== TokenType.SET),
+  );
+
+  static TRIM_TYPES = new Set(['LEADING', 'TRAILING', 'BOTH']);
+
+  static FUNC_TOKENS = new Set([
+    TokenType.COLLATE,
+    TokenType.COMMAND,
+    TokenType.CURRENT_DATE,
+    TokenType.CURRENT_DATETIME,
+    TokenType.CURRENT_SCHEMA,
+    TokenType.CURRENT_TIMESTAMP,
+    TokenType.CURRENT_TIME,
+    TokenType.CURRENT_USER,
+    TokenType.CURRENT_CATALOG,
+    TokenType.FILTER,
+    TokenType.FIRST,
+    TokenType.FORMAT,
+    TokenType.GET,
+    TokenType.GLOB,
+    TokenType.IDENTIFIER,
+    TokenType.INDEX,
+    TokenType.ISNULL,
+    TokenType.ILIKE,
+    TokenType.INSERT,
+    TokenType.LIKE,
+    TokenType.LOCALTIME,
+    TokenType.LOCALTIMESTAMP,
+    TokenType.MERGE,
+    TokenType.NEXT,
+    TokenType.OFFSET,
+    TokenType.PRIMARY_KEY,
+    TokenType.RANGE,
+    TokenType.REPLACE,
+    TokenType.RLIKE,
+    TokenType.ROW,
+    TokenType.SESSION_USER,
+    TokenType.UNNEST,
+    TokenType.VAR,
+    TokenType.LEFT,
+    TokenType.RIGHT,
+    TokenType.SEQUENCE,
+    TokenType.DATE,
+    TokenType.DATETIME,
+    TokenType.TABLE,
+    TokenType.TIMESTAMP,
+    TokenType.TIMESTAMPTZ,
+    TokenType.TRUNCATE,
+    TokenType.UTC_DATE,
+    TokenType.UTC_TIME,
+    TokenType.UTC_TIMESTAMP,
+    TokenType.WINDOW,
+    TokenType.XOR,
+    ...Parser.TYPE_TOKENS,
+    ...Object.keys(Parser.SUBQUERY_PREDICATES).map(Number),
+  ]);
+
+  static CONJUNCTION = {
+    [TokenType.AND]: AndExpr,
+  };
+
+  static ASSIGNMENT = {
+    [TokenType.COLON_EQ]: PropertyEQExpr,
+  };
+
+  static DISJUNCTION = {
+    [TokenType.OR]: OrExpr,
+  };
+
+  static EQUALITY = {
+    [TokenType.EQ]: EQExpr,
+    [TokenType.NEQ]: NEQExpr,
+    [TokenType.NULLSAFE_EQ]: NullSafeEQExpr,
+  };
+
+  static COMPARISON = {
+    [TokenType.GT]: GTExpr,
+    [TokenType.GTE]: GTEExpr,
+    [TokenType.LT]: LTExpr,
+    [TokenType.LTE]: LTEExpr,
+  };
+
+  static BITWISE = {
+    [TokenType.AMP]: BitwiseAndExpr,
+    [TokenType.CARET]: BitwiseXorExpr,
+    [TokenType.PIPE]: BitwiseOrExpr,
+  };
+
+  static TERM = {
+    [TokenType.DASH]: SubExpr,
+    [TokenType.PLUS]: AddExpr,
+    [TokenType.MOD]: ModExpr,
+    [TokenType.COLLATE]: CollateExpr,
+  };
+
+  static FACTOR = {
+    [TokenType.DIV]: IntDivExpr,
+    [TokenType.LR_ARROW]: DistanceExpr,
+    [TokenType.SLASH]: DivExpr,
+    [TokenType.STAR]: MulExpr,
+  };
+
+  static EXPONENT = {};
+
+  static TIMES = new Set([
+    TokenType.TIME,
+    TokenType.TIMETZ,
+  ]);
+
+  static TIMESTAMPS = new Set([
+    TokenType.TIMESTAMP,
+    TokenType.TIMESTAMPNTZ,
+    TokenType.TIMESTAMPTZ,
+    TokenType.TIMESTAMPLTZ,
+    ...Parser.TIMES,
+  ]);
+
+  static SET_OPERATIONS = new Set([
+    TokenType.UNION,
+    TokenType.INTERSECT,
+    TokenType.EXCEPT,
+  ]);
+
+  static JOIN_METHODS = new Set([
+    TokenType.ASOF,
+    TokenType.NATURAL,
+    TokenType.POSITIONAL,
+  ]);
+
+  static JOIN_SIDES = new Set([
+    TokenType.LEFT,
+    TokenType.RIGHT,
+    TokenType.FULL,
+  ]);
+
+  static JOIN_KINDS = new Set([
+    TokenType.ANTI,
+    TokenType.CROSS,
+    TokenType.INNER,
+    TokenType.OUTER,
+    TokenType.SEMI,
+    TokenType.STRAIGHT_JOIN,
+  ]);
+
+  static JOIN_HINTS: Set<string> = new Set();
 
   // Instance properties
   protected sql: string;
