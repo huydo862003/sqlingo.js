@@ -48,3 +48,30 @@ export function buildLike (args: Expression[]): EscapeExpr | LikeExpr {
     })
     : like;
 }
+
+export function binaryRangeParser (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  exprType: new (args: any) => Expression,
+  options: { reverseArgs?: boolean } = {},
+): (parser: Parser, thisExpr: Expression | undefined) => Expression | undefined {
+  const { reverseArgs = false } = options;
+
+  return function parseBinaryRange (
+    parser: Parser,
+    thisExpr: Expression | undefined,
+  ): Expression | undefined {
+    let expression = parser._parseBitwise();
+    let thisArg = thisExpr;
+
+    if (reverseArgs) {
+      [thisArg, expression] = [expression, thisArg];
+    }
+
+    return parser._parseEscape(
+      parser.expression(exprType, {
+        this: thisArg,
+        expression,
+      }),
+    );
+  };
+}
