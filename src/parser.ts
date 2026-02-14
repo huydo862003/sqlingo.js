@@ -18,6 +18,7 @@ import {
   BitwiseOrExpr,
   BitwiseXorExpr,
   CastExpr,
+  ClusterExpr,
   CoalesceExpr,
   CollateExpr,
   ConcatExpr,
@@ -37,6 +38,7 @@ import {
   EQExpr,
   EscapeExpr,
   ExistsExpr,
+  ExpressionKey,
   FUNCTION_BY_NAME,
   GenerateDateArrayExpr,
   GlobExpr,
@@ -46,9 +48,15 @@ import {
   HexExpr,
   IntDivExpr,
   IntervalExpr,
+  JSONBContainsExpr,
+  JSONBExtractExpr,
+  JSONBExtractScalarExpr,
+  JSONCastExpr,
   JSONExtractExpr,
   JSONExtractScalarExpr,
   JSONKeysExpr,
+  KwargExpr,
+  LambdaExpr,
   LeastExpr,
   LikeExpr,
   ListExpr,
@@ -70,6 +78,7 @@ import {
   ParenExpr,
   PropertyEQExpr,
   ScopeResolutionExpr,
+  SortExpr,
   StarMapExpr,
   StrPositionExpr,
   SubExpr,
@@ -1020,14 +1029,18 @@ export class Parser {
   };
 
   static COMMENT_TABLE_ALIAS_TOKENS = new Set(
-    [...Parser.TABLE_ALIAS_TOKENS].filter(t => t !== TokenType.IS),
+    [...Parser.TABLE_ALIAS_TOKENS].filter((t) => t !== TokenType.IS),
   );
 
   static UPDATE_ALIAS_TOKENS = new Set(
-    [...Parser.TABLE_ALIAS_TOKENS].filter(t => t !== TokenType.SET),
+    [...Parser.TABLE_ALIAS_TOKENS].filter((t) => t !== TokenType.SET),
   );
 
-  static TRIM_TYPES = new Set(['LEADING', 'TRAILING', 'BOTH']);
+  static TRIM_TYPES = new Set([
+    'LEADING',
+    'TRAILING',
+    'BOTH',
+  ]);
 
   static FUNC_TOKENS = new Set([
     TokenType.COLLATE,
@@ -1128,10 +1141,7 @@ export class Parser {
 
   static EXPONENT = {};
 
-  static TIMES = new Set([
-    TokenType.TIME,
-    TokenType.TIMETZ,
-  ]);
+  static TIMES = new Set([TokenType.TIME, TokenType.TIMETZ]);
 
   static TIMESTAMPS = new Set([
     TokenType.TIMESTAMP,
@@ -1169,6 +1179,122 @@ export class Parser {
   ]);
 
   static JOIN_HINTS: Set<string> = new Set();
+
+  static LAMBDAS = {
+    [TokenType.ARROW]: (self: Parser, expressions: Expression[]) => self.expression(
+      LambdaExpr,
+      {
+        this: self._replaceLambda(
+          self._parseDisjunction(),
+          expressions,
+        ),
+        expressions: expressions,
+      },
+    ),
+    [TokenType.FARROW]: (self: Parser, expressions: Expression[]) => self.expression(
+      KwargExpr,
+      {
+        this: varExpr(expressions[0].name),
+        expression: self._parseDisjunction(),
+      },
+    ),
+  };
+
+  static COLUMN_OPERATORS = {
+    [TokenType.DOT]: null,
+    [TokenType.DOTCOLON]: (self: Parser, this_: Expression, to: Expression) => self.expression(
+      JSONCastExpr,
+      {
+        this: this_,
+        to: to,
+      },
+    ),
+    [TokenType.DCOLON]: (self: Parser, this_: Expression, to: Expression) => self.buildCast({
+      strict: self.STRICT_CAST,
+      this: this_,
+      to: to,
+    }),
+    [TokenType.ARROW]: (self: Parser, this_: Expression, path: Expression) => self.expression(
+      JSONExtractExpr,
+      {
+        this: this_,
+        expression: self.dialect.toJsonPath(path),
+        onlyJsonTypes: self.JSON_ARROWS_REQUIRE_JSON_TYPE,
+      },
+    ),
+    [TokenType.DARROW]: (self: Parser, this_: Expression, path: Expression) => self.expression(
+      JSONExtractScalarExpr,
+      {
+        this: this_,
+        expression: self.dialect.toJsonPath(path),
+        onlyJsonTypes: self.JSON_ARROWS_REQUIRE_JSON_TYPE,
+        scalarOnly: self.dialect.JSON_EXTRACT_SCALAR_SCALAR_ONLY,
+      },
+    ),
+    [TokenType.HASH_ARROW]: (self: Parser, this_: Expression, path: Expression) => self.expression(
+      JSONBExtractExpr,
+      {
+        this: this_,
+        expression: path,
+      },
+    ),
+    [TokenType.DHASH_ARROW]: (self: Parser, this_: Expression, path: Expression) => self.expression(
+      JSONBExtractScalarExpr,
+      {
+        this: this_,
+        expression: path,
+      },
+    ),
+    [TokenType.PLACEHOLDER]: (self: Parser, this_: Expression, key: Expression) => self.expression(
+      JSONBContainsExpr,
+      {
+        this: this_,
+        expression: key,
+      },
+    ),
+  };
+
+  static CAST_COLUMN_OPERATORS = new Set([TokenType.DOTCOLON, TokenType.DCOLON]);
+
+  static EXPRESSION_PARSERS = {
+    [ExpressionKey.CLUSTER]: (self: Parser) => self._parseSort(ClusterExpr, TokenType.CLUSTER_BY),
+    [ExpressionKey.COLUMN]: (self: Parser) => self._parseColumn(),
+    [ExpressionKey.COLUMN_DEF]: (self: Parser) => self._parseColumnDef(self._parseColumn()),
+    [ExpressionKey.CONDITION]: (self: Parser) => self._parseDisjunction(),
+    [ExpressionKey.DATA_TYPE]: (self: Parser) => self._parseTypes({
+      allowIdentifiers: false,
+      schema: true,
+    }),
+    [ExpressionKey.EXPRESSION]: (self: Parser) => self._parseExpression(),
+    [ExpressionKey.FROM]: (self: Parser) => self._parseFrom({ joins: true }),
+    [ExpressionKey.GRANT_PRINCIPAL]: (self: Parser) => self._parseGrantPrincipal(),
+    [ExpressionKey.GRANT_PRIVILEGE]: (self: Parser) => self._parseGrantPrivilege(),
+    [ExpressionKey.GROUP]: (self: Parser) => self._parseGroup(),
+    [ExpressionKey.HAVING]: (self: Parser) => self._parseHaving(),
+    [ExpressionKey.HINT]: (self: Parser) => self._parseHintBody(),
+    [ExpressionKey.IDENTIFIER]: (self: Parser) => self._parseIdVar(),
+    [ExpressionKey.JOIN]: (self: Parser) => self._parseJoin(),
+    [ExpressionKey.LAMBDA]: (self: Parser) => self._parseLambda(),
+    [ExpressionKey.LATERAL]: (self: Parser) => self._parseLateral(),
+    [ExpressionKey.LIMIT]: (self: Parser) => self._parseLimit(),
+    [ExpressionKey.OFFSET]: (self: Parser) => self._parseOffset(),
+    [ExpressionKey.ORDER]: (self: Parser) => self._parseOrder(),
+    [ExpressionKey.ORDERED]: (self: Parser) => self._parseOrdered(),
+    [ExpressionKey.PROPERTIES]: (self: Parser) => self._parseProperties(),
+    [ExpressionKey.PARTITIONED_BY_PROPERTY]: (self: Parser) => self._parsePartitionedBy(),
+    [ExpressionKey.QUALIFY]: (self: Parser) => self._parseQualify(),
+    [ExpressionKey.RETURNING]: (self: Parser) => self._parseReturning(),
+    [ExpressionKey.SELECT]: (self: Parser) => self._parseSelect(),
+    [ExpressionKey.SORT]: (self: Parser) => self._parseSort(SortExpr, TokenType.SORT_BY),
+    [ExpressionKey.TABLE]: (self: Parser) => self._parseTableParts(),
+    [ExpressionKey.TABLE_ALIAS]: (self: Parser) => self._parseTableAlias(),
+    [ExpressionKey.TUPLE]: (self: Parser) => self._parseValue({ values: false }),
+    [ExpressionKey.WHENS]: (self: Parser) => self._parseWhenMatched(),
+    [ExpressionKey.WHERE]: (self: Parser) => self._parseWhere(),
+    [ExpressionKey.WINDOW]: (self: Parser) => self._parseNamedWindow(),
+    [ExpressionKey.WITH]: (self: Parser) => self._parseWith(),
+    JOIN_TYPE: (self: Parser) => self._parseJoinParts(),
+  };
 
   // Instance properties
   protected sql: string;
