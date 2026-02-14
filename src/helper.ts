@@ -501,7 +501,7 @@ export function flatten (values: unknown[]): unknown[] {
 // Modified: renamed from dictDepth to objectDepth
 export function objectDepth (d: unknown): number {
   try {
-    if (typeof d !== 'object' || d === undefined) {
+    if (typeof d !== 'object' || d === null) {
       return 0;
     }
 

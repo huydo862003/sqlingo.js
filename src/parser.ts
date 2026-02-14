@@ -13,11 +13,13 @@ import {
   Tokenizer, TokenType,
 } from './tokens';
 
-export interface ParseOptions {
+export interface ParseOptions<IntoT extends Expression> {
   read?: DialectType;
   dialect?: DialectType;
   errorLevel?: ErrorLevel;
   maxErrors?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  into?: string | (new (args: any) => IntoT);
   [key: string]: unknown;
 }
 
@@ -97,7 +99,7 @@ export class Parser {
   /**
    * Parse SQL string into an array of expressions.
    */
-  parse (sql: string | Token[], opts?: ParseOptions): Expression[] {
+  parse<IntoT extends Expression> (sql: string | Token[], opts?: ParseOptions<IntoT>): Expression[] {
     if (typeof sql === 'string') {
       this.sql = sql;
       this.errors = [];
@@ -152,7 +154,7 @@ export class Parser {
   /**
    * Parse SQL into a specific expression type.
    */
-  parseInto (_into: typeof Expression, sql: string, opts?: ParseOptions): Expression | undefined {
+  parseInto<IntoT extends Expression> (_into: typeof Expression, sql: string, opts?: ParseOptions<IntoT>): Expression | undefined {
     const expressions = this.parse(sql, opts);
     return expressions[0];
   }
@@ -248,8 +250,9 @@ export class Parser {
    * Create an expression node.
    */
   expression<T extends Expression>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expClass: new (args: any) => T,
-    options?: { [key: string]: any },
+    options?: { [key: string]: unknown },
   ): T {
     return new expClass(options ?? {});
   }
@@ -265,10 +268,6 @@ export class Parser {
       throw err;
     }
   }
-
-  // ============================================================================
-  // Statement Parsers
-  // ============================================================================
 
   /**
    * Parse a SQL statement.
@@ -402,10 +401,6 @@ export class Parser {
 
     return this.expression(exp.SelectExpr, args);
   }
-
-  // ============================================================================
-  // Expression Parsers
-  // ============================================================================
 
   /**
    * Parse a general expression.
@@ -798,10 +793,6 @@ export class Parser {
     return this.expression(exp.ColumnExpr, args);
   }
 
-  // ============================================================================
-  // SQL Clause Parsers
-  // ============================================================================
-
   /**
    * Parse FROM clause.
    */
@@ -1001,7 +992,7 @@ export class Parser {
     }
 
     if (0 < joins.length) {
-      table.set('joins', joins);
+      table.setArgKey('joins', joins);
     }
 
     return table;
@@ -1123,10 +1114,6 @@ export class Parser {
 
     return undefined;
   }
-
-  // ============================================================================
-  // DML Statement Parsers (INSERT, UPDATE, DELETE)
-  // ============================================================================
 
   /**
    * Parse INSERT statement.
@@ -1302,10 +1289,6 @@ export class Parser {
     return this.expression(exp.DeleteExpr, args);
   }
 
-  // ============================================================================
-  // CTE and Advanced Features
-  // ============================================================================
-
   /**
    * Parse WITH clause (Common Table Expressions).
    */
@@ -1404,10 +1387,10 @@ Parser.UNARY_PARSERS = {
 /**
  * Standalone parse function for convenience.
  */
-export function parse (
+export function parse<IntoT extends Expression> (
   sql: string | Token[],
-  opts?: ParseOptions,
-): Expression[] {
+  opts?: ParseOptions<IntoT>,
+): IntoT[] {
   const parser = new Parser({
     ...opts,
   });
@@ -1417,10 +1400,10 @@ export function parse (
 /**
  * Parse a single expression.
  */
-export function parseOne (
+export function parseOne<IntoT extends Expression> (
   sql: string,
-  opts?: ParseOptions,
-): Expression {
+  opts?: ParseOptions<IntoT>,
+): IntoT {
   const activeDialect = opts?.read ?? opts?.dialect;
   const result = parse(sql, {
     ...opts,

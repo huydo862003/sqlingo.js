@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 import {
   Dialect, type DialectType,
 } from './dialects/dialect';
-import type { Token } from './tokens';
+import { Token } from './tokens';
 import {
   ensureList, splitNumWords,
 } from './helper';
@@ -1026,7 +1026,7 @@ export enum ExpressionKey {
   ZIPF = 'zipf',
 }
 
-export type ExpressionValue = Expression | string | boolean | number | undefined;
+export type ExpressionValue = Token | Expression | string | boolean | number | undefined;
 export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T[];
 
 /**
@@ -1113,6 +1113,18 @@ export class Expression {
     for (const [argKey, value] of Object.entries(args)) {
       this._setParent(argKey, value);
     }
+  }
+
+  * [Symbol.iterator] (): Iterator<Expression | Token> {
+    if ('expressions' in (this.constructor as typeof Expression).argTypes) {
+      if (Array.isArray(this.args.expressions)) {
+        for (const e of this.args.expressions) {
+          yield e;
+        }
+      }
+      return;
+    }
+    throw new Error(`'${this.constructor.name}' object is not iterable`);
   }
 
   get this (): ExpressionValue {
@@ -1344,7 +1356,7 @@ export class Expression {
         if (vs instanceof Expression) {
           const childCopy = new (vs.constructor as new () => Expression)();
           stack.push([vs, childCopy]);
-          copy.set(k, childCopy);
+          copy.setArgKey(k, childCopy);
         } else if (Array.isArray(vs)) {
           (copy.args as Record<string, ExpressionValue | ExpressionValueList>)[k] = [];
           for (const v of vs) {
@@ -1437,7 +1449,7 @@ export class Expression {
    * @param options
    * @param options.overwrite - If an index is given, determines whether to overwrite the list entry
    */
-  set (
+  setArgKey (
     argKey: string,
     value: ExpressionValue | ExpressionValueList,
     index?: number,
@@ -1758,9 +1770,15 @@ export class Expression {
     }
   }
 
-  sql (dialect?: DialectType, opts?: Record<string, unknown>): string {
+  sql (options: {
+    dialect?: DialectType;
+    [index: string]: unknown;
+  } = {}): string {
+    const {
+      dialect, ...restOptions
+    } = options;
     const dialectInstance = Dialect.getOrRaise(dialect);
-    return dialectInstance.generate(this, opts);
+    return dialectInstance.generate(this, restOptions);
   }
 
   /**
@@ -1807,7 +1825,7 @@ export class Expression {
       if (!root) {
         root = newNode;
       } else if (parent && argKey && newNode !== node) {
-        parent.set(argKey, newNode, index);
+        parent.setArgKey(argKey, newNode, index);
       }
     }
 
@@ -1850,7 +1868,7 @@ export class Expression {
       // the intention was to really replace the parent of this expression.
       value.parent?.replace(expression);
     } else {
-      parent.set(key, expression, this.index);
+      parent.setArgKey(key, expression, this.index);
     }
 
     if (expression !== this as unknown) {
@@ -1966,7 +1984,7 @@ export class Expression {
       copy?: boolean;
       wrap?: boolean;
     } = {},
-  ): AndExpr {
+  ): ConditionExpr {
     const {
       copy = true, wrap = true, ...restOptions
     } = options;
@@ -2005,7 +2023,7 @@ export class Expression {
       copy?: boolean;
       wrap?: boolean;
     } = {},
-  ): OrExpr {
+  ): ConditionExpr {
     const {
       copy = true, wrap = true, ...restOptions
     } = options;
@@ -2117,7 +2135,7 @@ export class Expression {
     return alias(this, aliasName, {
       ...restOptions,
       copy,
-    });
+    }) as AliasExpr; // NOTE: This is unsafe, needs verification
   }
 
   /**
@@ -2309,7 +2327,7 @@ export class Expression {
     });
 
     if (symmetric !== undefined) {
-      between.set('symmetric', symmetric);
+      between.setArgKey('symmetric', symmetric);
     }
 
     return between;
@@ -2363,8 +2381,8 @@ export class Expression {
   div (other: string | Expression, options?: { typed?: boolean;
     safe?: boolean; }): DivExpr {
     const div = this.binop(DivExpr, other);
-    div.set('typed', options?.typed ?? false);
-    div.set('safe', options?.safe ?? false);
+    div.setArgKey('typed', options?.typed ?? false);
+    div.setArgKey('safe', options?.safe ?? false);
     return div;
   }
 
@@ -2742,7 +2760,7 @@ export class QueryExpr extends Expression {
    * @returns The modified query expression
    */
   orderBy (
-    expressions: string | Expression | (string | Expression)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -2812,7 +2830,7 @@ export class QueryExpr extends Expression {
    * @returns The modified query expression
    */
   select (
-    _expressions: string | Expression | (string | Expression)[],
+    _expressions?: string | Expression | (string | Expression | undefined)[],
     _options: {
       append?: boolean;
       dialect?: DialectType;
@@ -2841,7 +2859,7 @@ export class QueryExpr extends Expression {
    * @returns The modified expression
    */
   where (
-    expressions: string | Expression | (string | Expression)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -2889,8 +2907,8 @@ export class QueryExpr extends Expression {
    * @returns The modified expression
    */
   with (
-    alias: string | Expression,
-    as: string | Expression,
+    alias: string | IdentifierExpr,
+    as: string | QueryExpr,
     options: {
       recursive?: boolean;
       materialized?: boolean;
@@ -2931,7 +2949,7 @@ export class QueryExpr extends Expression {
    * @returns A Union expression
    */
   union (
-    expressions: string | Expression | (string | Expression)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       distinct?: boolean;
       dialect?: DialectType;
@@ -2960,7 +2978,7 @@ export class QueryExpr extends Expression {
    * @returns An Intersect expression
    */
   intersect (
-    expressions: string | Expression | (string | Expression)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       distinct?: boolean;
       dialect?: DialectType;
@@ -2989,7 +3007,7 @@ export class QueryExpr extends Expression {
    * @returns An Except expression
    */
   except (
-    expressions: string | Expression | (string | Expression)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       distinct?: boolean;
       dialect?: DialectType;
@@ -3004,7 +3022,9 @@ export class QueryExpr extends Expression {
 
   // NOTE: sqlglot does not have this
   // However, I think this is a sensible assumption
-  declare unnest: () => QueryExpr;
+  unnest (): QueryExpr {
+    return super.unnest() as QueryExpr;
+  }
 }
 
 export type UDTFExprArgs = Merge<[
@@ -3333,7 +3353,7 @@ export type CreateExprArgs = Merge<[
     with?: WithExpr;
     kind: CreateExprKind;
     exists?: boolean;
-    properties?: Expression[];
+    properties?: PropertiesExpr;
     replace?: boolean;
     refresh?: Expression;
     unique?: boolean;
@@ -3406,7 +3426,7 @@ export class CreateExpr extends DDLExpr {
     return this.args.exists;
   }
 
-  get $properties (): Expression[] | undefined {
+  get $properties (): PropertiesExpr | undefined {
     return this.args.properties;
   }
 
@@ -5686,7 +5706,7 @@ export class DeleteExpr extends DMLExpr {
    * @returns The modified expression
    */
   where (
-    expressions: string | Expression | (string | Expression)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -7705,7 +7725,7 @@ export class JoinExpr extends Expression {
    * @returns The modified Join expression.
    */
   on (
-    expressions: string | Expression | (string | Expression)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -7726,7 +7746,7 @@ export class JoinExpr extends Expression {
     }) as this;
 
     if (join.$kind === JoinExprKind.CROSS) {
-      join.set('kind', undefined);
+      join.setArgKey('kind', undefined);
     }
 
     return join;
@@ -7749,7 +7769,7 @@ export class JoinExpr extends Expression {
    * @returns The modified Join expression.
    */
   using (
-    expressions: string | Expression | (string | Expression)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -7770,7 +7790,7 @@ export class JoinExpr extends Expression {
     }) as this;
 
     if (join.$kind === JoinExprKind.CROSS) {
-      join.set('kind', undefined);
+      join.setArgKey('kind', undefined);
     }
 
     return join;
@@ -10120,7 +10140,7 @@ export class DataTypeExpr extends Expression {
   static build (
     dtype: DataTypeExprKind | DataTypeExpr | IdentifierExpr | DotExpr,
     options: {
-      dialect?: string;
+      dialect?: DialectType;
       udt?: boolean;
       copy?: boolean;
       [key: string]: unknown;
@@ -11455,7 +11475,7 @@ export class TimeUnitExpr extends Expression {
     } else if (unit instanceof WeekExpr) {
       const thisArg = unit.args.this;
       if (thisArg) {
-        unit.set('this', new VarExpr({ this: thisArg.name.toUpperCase() }));
+        unit.setArgKey('this', new VarExpr({ this: thisArg.name.toUpperCase() }));
       }
     }
 
@@ -12562,7 +12582,7 @@ export type ColumnExprArgs = Merge<[
     table?: IdentifierExpr;
     db?: IdentifierExpr;
     catalog?: IdentifierExpr;
-    this: IdentifierExpr;
+    this: IdentifierExpr | StarExpr; // NOTE: sqlglot does not define `this` to also have type `StarExpr`, but based on the column function, I think it should also have this type
     joinMark?: Expression;
   },
 ]>;
@@ -12625,8 +12645,8 @@ export class ColumnExpr extends ConditionExpr {
    * Return the parts of a column in order catalog, db, table, name.
    * @returns Array of Identifier expressions for each part that exists
    */
-  get parts (): IdentifierExpr[] {
-    const result: IdentifierExpr[] = [];
+  get parts (): [] | [...IdentifierExpr[], StarExpr] {
+    const result = [];
     for (const part of [
       'catalog',
       'db',
@@ -12638,14 +12658,14 @@ export class ColumnExpr extends ConditionExpr {
         result.push(value);
       }
     }
-    return result;
+    return result as [] | [...IdentifierExpr[], StarExpr];
   }
 
   toDot () {
     // TODO
   }
 
-  get $this (): IdentifierExpr {
+  get $this (): IdentifierExpr | StarExpr {
     return this.args.this;
   }
 
@@ -12683,7 +12703,7 @@ export class PseudocolumnExpr extends ColumnExpr {
     super(args);
   }
 
-  get $this (): IdentifierExpr {
+  get $this (): IdentifierExpr | StarExpr {
     return this.args.this;
   }
 }
@@ -13691,7 +13711,7 @@ export type InsertExprArgs = Merge<[
     isFunction?: boolean;
     conflict?: Expression;
     returning?: Expression;
-    overwrite?: Expression;
+    overwrite?: boolean;
     exists?: boolean;
     alternative?: Expression;
     where?: Expression;
@@ -13763,9 +13783,9 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
    * @param options.copy - if false, modify this expression instance in-place.
    * @returns The modified expression.
    */
-  withWith (
-    alias: string | Expression,
-    as: string | Expression,
+  with (
+    alias: string | IdentifierExpr,
+    as: string | QueryExpr,
     options: {
       recursive?: boolean;
       materialized?: boolean;
@@ -13818,7 +13838,7 @@ export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
     return this.args.returning;
   }
 
-  get $overwrite (): Expression | undefined {
+  get $overwrite (): boolean | undefined {
     return this.args.overwrite;
   }
 
@@ -16608,8 +16628,8 @@ export class SecurePropertyExpr extends PropertyExpr {
 }
 
 export type TagsExprArgs = Merge<[
-  PropertyExprArgs,
   ColumnConstraintKindExprArgs,
+  PropertyExprArgs,
   { expressions: Expression[] },
 ]>;
 
@@ -16996,7 +17016,7 @@ export type IncludePropertyExprArgs = Merge<[
     // NOTE: sqlglot has value as optional, but we require it for type safety
     value: string;
     this: Expression;
-    alias?: Expression;
+    alias?: string | TableAliasExpr | IdentifierExpr;
     columnDef?: Expression;
   },
 ]>;
@@ -17027,7 +17047,7 @@ export class IncludePropertyExpr extends PropertyExpr {
     return this.args.this;
   }
 
-  get $alias (): Expression | undefined {
+  get $alias (): string | TableAliasExpr | IdentifierExpr | undefined {
     return this.args.alias;
   }
 
@@ -17264,7 +17284,7 @@ export class SetOperationExpr extends QueryExpr {
    * Applies select expressions to both sides of the set operation.
    */
   select (
-    expressions: string | Expression | (string | Expression)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -17469,7 +17489,7 @@ export class UpdateExpr extends DMLExpr {
    * @returns The modified Update expression
    */
   set (
-    expressions: string | Expression | (string | Expression)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -17571,8 +17591,8 @@ export class UpdateExpr extends DMLExpr {
    * @returns The modified Update expression
    */
   with (
-    alias: string | Expression,
-    as: string | Expression,
+    alias: string | IdentifierExpr,
+    as: string | QueryExpr,
     options: {
       recursive?: boolean;
       materialized?: boolean;
@@ -17622,7 +17642,7 @@ export enum SelectExprKind {
 export type SelectExprArgs = Merge<[
   QueryExprArgs,
   {
-    with?: Expression;
+    with?: WithExpr;
     kind?: SelectExprKind;
     expressions?: Expression[];
     hint?: Expression;
@@ -17788,7 +17808,7 @@ export class SelectExpr extends QueryExpr {
   get namedSelects (): string[] {
     const selects: string[] = [];
 
-    for (const e of this.expressions) {
+    for (const e of (this.$expressions || [])) {
       if (e.aliasOrName) {
         selects.push(e.outputName);
       } else if (e instanceof AliasesExpr) {
@@ -17804,14 +17824,14 @@ export class SelectExpr extends QueryExpr {
    * Returns true if any expression is a star expression.
    */
   get isStar (): boolean {
-    return this.expressions.some((expression) => expression.isStar);
+    return this.expressions.some((expression) => typeof expression === 'object' && expression.isStar);
   }
 
   /**
    * Returns the SELECT expressions.
    */
   get selects (): Expression[] {
-    return this.expressions;
+    return this.$expressions || [];
   }
 
   /**
@@ -17851,7 +17871,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x, COUNT(1) FROM tbl GROUP BY x'
    */
   groupBy (
-    expressions: string | Expression | undefined | (string | Expression | undefined)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -17887,7 +17907,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x FROM tbl SORT BY x DESC'
    */
   sortBy (
-    expressions: string | Expression | undefined | (string | Expression | undefined)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -17918,7 +17938,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x FROM tbl CLUSTER BY x'
    */
   clusterBy (
-    expressions: string | Expression | undefined | (string | Expression | undefined)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -17949,7 +17969,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x, y FROM tbl'
    */
   select (
-    expressions: string | Expression | undefined | (string | Expression | undefined)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -17979,7 +17999,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x FROM tbl LATERAL VIEW OUTER EXPLODE(y) tbl2 AS z'
    */
   lateral (
-    expressions: string | Expression | undefined | (string | Expression | undefined)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -18024,7 +18044,7 @@ export class SelectExpr extends QueryExpr {
       using?: string | Expression | (string | Expression)[];
       append?: boolean;
       joinType?: string;
-      joinAlias?: string | Expression;
+      joinAlias?: string | IdentifierExpr;
       dialect?: DialectType;
       copy?: boolean;
       [key: string]: unknown;
@@ -18039,12 +18059,16 @@ export class SelectExpr extends QueryExpr {
 
     let expr: Expression;
     try {
-      expr = maybeParse(expression, JoinExpr, {
+      expr = maybeParse(expression, {
         ...parseArgs,
+        into: JoinExpr,
         prefix: 'JOIN',
       });
     } catch {
-      expr = maybeParse(expression, Expression, parseArgs);
+      expr = maybeParse(expression, {
+        ...parseArgs,
+        into: Expression,
+      });
     }
 
     let join = expr instanceof JoinExpr ? expr : new JoinExpr({ this: expr });
@@ -18062,26 +18086,26 @@ export class SelectExpr extends QueryExpr {
         kind,
       ] = maybeParse(joinType, {
         ...parseArgs,
-        into: 'JOIN_TYPE',
+        into: 'JOIN_TYPE', // FIXME: What is this in sqlglot??
       });
-      if (method) {
-        join.set('method', method.text);
+      if (method instanceof Token) {
+        join.setArgKey('method', method.text);
       }
-      if (side) {
-        join.set('side', side.text);
+      if (side instanceof Token) {
+        join.setArgKey('side', side.text);
       }
-      if (kind) {
-        join.set('kind', kind.text);
+      if (kind instanceof Token) {
+        join.setArgKey('kind', kind.text);
       }
     }
 
     // Set ON condition
     if (on) {
-      const onExpr = and(...ensureList(on), {
+      const onExpr = and(ensureList(on), {
         dialect,
         copy,
       });
-      join.set('on', onExpr);
+      join.setArgKey('on', onExpr);
     }
 
     // Set USING
@@ -18097,7 +18121,7 @@ export class SelectExpr extends QueryExpr {
 
     // Set join alias
     if (joinAlias) {
-      join.set('this', alias(join.args.this as Expression, joinAlias, { table: true }));
+      join.setArgKey('this', alias(join.args.this as Expression, joinAlias, { table: true }));
     }
 
     return _applyListBuilder([join], {
@@ -18116,7 +18140,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x FROM tbl WINDOW w AS (PARTITION BY x)'
    */
   window (
-    expressions: string | Expression | undefined | (string | Expression | undefined)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -18184,17 +18208,20 @@ export class SelectExpr extends QueryExpr {
     } = {},
   ): this {
     const {
-      distinct: distinctValue = true, copy = true, ...restOptions
+      distinct: distinctValue = true, copy = true, ..._restOptions
     } = options;
     const instance = maybeCopy(this, copy);
 
     if (ons && 0 < ons.length) {
       const onExprs = ons.filter((on): on is string | Expression => on !== undefined)
-        .map((on) => maybeParse(on, Expression, { copy }));
+        .map((on) => maybeParse(on, {
+          copy,
+          into: Expression,
+        }));
       const tupleExpr = new TupleExpr({ expressions: onExprs });
-      instance.set('distinct', distinctValue ? new DistinctExpr({ on: tupleExpr }) : undefined);
+      instance.setArgKey('distinct', distinctValue ? new DistinctExpr({ on: tupleExpr }) : undefined);
     } else {
-      instance.set('distinct', distinctValue ? new DistinctExpr({}) : undefined);
+      instance.setArgKey('distinct', distinctValue ? new DistinctExpr({}) : undefined);
     }
 
     return instance as this;
@@ -18220,7 +18247,10 @@ export class SelectExpr extends QueryExpr {
       properties, dialect, copy = true,
     } = options;
     const instance = maybeCopy(this, copy);
-    const tableExpr = maybeParse(table, TableExpr, { dialect });
+    const tableExpr = maybeParse(table, {
+      dialect,
+      into: TableExpr,
+    });
 
     let propertiesExpr: PropertiesExpr | undefined;
     if (properties) {
@@ -18257,7 +18287,14 @@ export class SelectExpr extends QueryExpr {
       update = true, copy = true,
     } = options;
     const inst = maybeCopy(this, copy);
-    inst.set('locks', [new LockExpr({ update: new LiteralExpr({ this: update }) })]);
+    inst.setArgKey('locks', [
+      new LockExpr({
+        update: new LiteralExpr({
+          this: String(Number(update)),
+          isString: false,
+        }),
+      }),
+    ]);
     return inst as this;
   }
 
@@ -18280,9 +18317,12 @@ export class SelectExpr extends QueryExpr {
       dialect, copy = true,
     } = options;
     const hintExprs = hints.map((h) =>
-      maybeParse(h, Expression, { dialect }));
+      maybeParse(h, {
+        dialect,
+        into: Expression,
+      }));
     const inst = maybeCopy(this, copy);
-    inst.set('hint', new HintExpr({ expressions: hintExprs }));
+    inst.setArgKey('hint', new HintExpr({ expressions: hintExprs }));
     return inst as this;
   }
 }
@@ -18293,7 +18333,7 @@ export type SubqueryExprArgs = Merge<[
   {
     with?: WithExpr;
     alias?: TableAliasExpr;
-    this: Expression;
+    this: QueryExpr;
   },
 ]>;
 
@@ -18329,9 +18369,9 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
   /**
    * Returns the first non-subquery expression.
    */
-  unnest (): Expression {
+  unnest (): QueryExpr {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
-    let expression: Expression = this;
+    let expression: QueryExpr = this;
     while (expression instanceof SubqueryExpr) {
       expression = expression.args.this || expression;
       if (!expression || expression === this) break;
@@ -18357,7 +18397,7 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
    * Append to or set the SELECT expressions on the unnested query.
    */
   select (
-    expressions: string | Expression | undefined | (string | Expression | undefined)[],
+    expressions?: string | Expression | (string | Expression | undefined)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -19332,10 +19372,10 @@ export class JSONPathWildcardExpr extends JSONPathPartExpr {
 export type MergeExprArgs = Merge<[
   DMLExprArgs,
   {
-    using: string;
+    using: Expression;
     on?: Expression;
     usingCond?: string;
-    whens: Expression[];
+    whens: WhensExpr;
     with?: Expression;
     returning?: Expression;
   },
@@ -19364,7 +19404,7 @@ export class MergeExpr extends DMLExpr {
     super(args);
   }
 
-  get $using (): string {
+  get $using (): Expression {
     return this.args.using;
   }
 
@@ -19376,7 +19416,7 @@ export class MergeExpr extends DMLExpr {
     return this.args.usingCond;
   }
 
-  get $whens (): Expression[] {
+  get $whens (): WhensExpr {
     return this.args.whens;
   }
 
@@ -19942,12 +19982,12 @@ export class DotExpr extends BinaryExpr {
       throw new Error('Dot requires >= 2 expressions.');
     }
 
-    return expressions.reduce<DotExpr>(
+    return expressions.reduce(
       (x, y) => new DotExpr({
         this: x,
         expression: y,
       }),
-    );
+    ) as DotExpr;
   }
 
   /**
@@ -20003,8 +20043,8 @@ export class DPipeExpr extends BinaryExpr {
 }
 
 export type EQExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class EQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -20023,8 +20063,8 @@ export class EQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
 }
 
 export type NullSafeEQExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class NullSafeEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -20043,8 +20083,8 @@ export class NullSafeEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
 }
 
 export type NullSafeNEQExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class NullSafeNEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -20117,8 +20157,8 @@ export class EscapeExpr extends BinaryExpr {
 }
 
 export type GlobExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class GlobExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -20137,8 +20177,8 @@ export class GlobExpr extends multiInherit(BinaryExpr, PredicateExpr) {
 }
 
 export type GTExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class GTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -20157,8 +20197,8 @@ export class GTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
 }
 
 export type GTEExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class GTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -20177,8 +20217,8 @@ export class GTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
 }
 
 export type ILikeExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class ILikeExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -20215,8 +20255,8 @@ export class IntDivExpr extends BinaryExpr {
 }
 
 export type IsExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class IsExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -20256,8 +20296,8 @@ export class KwargExpr extends BinaryExpr {
 }
 
 export type LikeExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class LikeExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -20276,8 +20316,8 @@ export class LikeExpr extends multiInherit(BinaryExpr, PredicateExpr) {
 }
 
 export type MatchExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class MatchExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -20296,8 +20336,8 @@ export class MatchExpr extends multiInherit(BinaryExpr, PredicateExpr) {
 }
 
 export type LTExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class LTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -20316,8 +20356,8 @@ export class LTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
 }
 
 export type LTEExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class LTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -23938,7 +23978,7 @@ export class CaseExpr extends FuncExpr {
       prefix?: string; },
   ): CaseExpr {
     const instance = maybeCopy(this, copy);
-    instance.set('default', maybeParse(condition, options));
+    instance.setArgKey('default', maybeParse(condition, options));
     return instance;
   }
 
@@ -24018,7 +24058,10 @@ export class CastExpr extends FuncExpr {
     return this.name;
   }
 
-  isType (...dtypes: (DataTypeExprKind | DataTypeExpr)[]): boolean {
+  isType (
+    dtypes: (DataTypeExprKind | DataTypeExpr | IdentifierExpr | DotExpr)[],
+    _options?: { checkNullable?: boolean },
+  ): boolean {
     const toExpr = this.$to;
     if (!toExpr) return false;
     if (toExpr instanceof DataTypeExpr) {
@@ -24221,8 +24264,8 @@ export class CheckXmlExpr extends FuncExpr {
 }
 
 export type CollateExprArgs = Merge<[
-  BinaryExprArgs,
   FuncExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class CollateExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -27730,7 +27773,7 @@ export class UnnestExpr extends multiInherit(FuncExpr, UDTFExpr) {
     const columns = super.selects;
     const offset = this.args.offset;
     if (offset) {
-      const offsetCol = offset === true ? IdentifierExpr.build('offset') : offset;
+      const offsetCol = offset === true ? toIdentifier('offset') : offset;
       return [...columns, offsetCol];
     }
     return columns;
@@ -29617,8 +29660,8 @@ export class OpenJSONExpr extends FuncExpr {
 }
 
 export type JSONBContainsExprArgs = Merge<[
-  BinaryExprArgs,
   FuncExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class JSONBContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -29639,8 +29682,8 @@ export class JSONBContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
 }
 
 export type JSONBContainsAnyTopKeysExprArgs = Merge<[
-  BinaryExprArgs,
   FuncExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class JSONBContainsAnyTopKeysExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -29659,8 +29702,8 @@ export class JSONBContainsAnyTopKeysExpr extends multiInherit(BinaryExpr, FuncEx
 }
 
 export type JSONBContainsAllTopKeysExprArgs = Merge<[
-  BinaryExprArgs,
   FuncExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class JSONBContainsAllTopKeysExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -29717,8 +29760,8 @@ export class JSONBExistsExpr extends FuncExpr {
 }
 
 export type JSONBDeleteAtPathExprArgs = Merge<[
-  BinaryExprArgs,
   FuncExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class JSONBDeleteAtPathExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -29737,8 +29780,8 @@ export class JSONBDeleteAtPathExpr extends multiInherit(BinaryExpr, FuncExpr) {
 }
 
 export type JSONExtractExprArgs = Merge<[
-  BinaryExprArgs,
   FuncExprArgs,
+  BinaryExprArgs,
   {
     onlyJsonTypes?: Expression;
     expressions?: Expression[];
@@ -29813,7 +29856,7 @@ export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 
   get outputName (): string {
-    return !this.args.expressions ? this.expression?.outputName || '' : '';
+    return !this.args.expressions ? this.$expression.outputName : '';
   }
 }
 
@@ -29910,13 +29953,13 @@ export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   }
 
   get outputName (): string {
-    return this.expression.outputName;
+    return this.$expression.outputName;
   }
 }
 
 export type JSONBExtractExprArgs = Merge<[
-  BinaryExprArgs,
   FuncExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class JSONBExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
@@ -30918,7 +30961,7 @@ export type MapContainsKeyExprArgs = Merge<[
   FuncExprArgs,
   {
     this: Expression;
-    key: unknown;
+    key: Expression;
   },
 ]>;
 
@@ -30992,7 +31035,7 @@ export type MapInsertExprArgs = Merge<[
   FuncExprArgs,
   {
     this: Expression;
-    key?: unknown;
+    key?: Expression;
     value: string;
     updateFlag?: Expression;
   },
@@ -31027,7 +31070,7 @@ export class MapInsertExpr extends FuncExpr {
     return this.args.key;
   }
 
-  get $value (): Expression {
+  get $value (): string {
     return this.args.value;
   }
 
@@ -32548,7 +32591,7 @@ export class RegexpReplaceExpr extends FuncExpr {
     super(args);
   }
 
-  get $replacement (): Expression | undefined {
+  get $replacement (): boolean | undefined {
     return this.args.replacement;
   }
 
@@ -33609,7 +33652,7 @@ export class SplitExpr extends FuncExpr {
     return this.args.expression;
   }
 
-  get $limit (): Expression | undefined {
+  get $limit (): number | Expression | undefined {
     return this.args.limit;
   }
 
@@ -33651,7 +33694,7 @@ export class SplitPartExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $delimiter (): Expression | undefined {
+  get $delimiter (): number | Expression | undefined {
     return this.args.delimiter;
   }
 
@@ -33702,7 +33745,7 @@ export class SubstringExpr extends FuncExpr {
     return this.args.start;
   }
 
-  get $length (): Expression | undefined {
+  get $length (): number | Expression | undefined {
     return this.args.length;
   }
 
@@ -33744,7 +33787,7 @@ export class SubstringIndexExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $delimiter (): Expression {
+  get $delimiter (): number | Expression {
     return this.args.delimiter;
   }
 
@@ -35817,7 +35860,7 @@ export type XMLElementExprArgs = Merge<[
   {
     evalname?: string;
     this: Expression;
-    expressions?: Expression;
+    expressions?: Expression[];
   },
 ]>;
 
@@ -35843,7 +35886,7 @@ export class XMLElementExpr extends FuncExpr {
     return this.args.evalname;
   }
 
-  get $expressions (): Expression | undefined {
+  get $expressions (): Expression[] | undefined {
     return this.args.expressions;
   }
 
@@ -39180,23 +39223,29 @@ export function column (
     colIdent = toIdentifier(col, {
       quoted,
       copy,
-    }) as IdentifierExpr;
+    });
   }
 
   const columnExpr: ColumnExpr = new ColumnExpr({
     this: colIdent,
-    table: toIdentifier(table, {
-      quoted,
-      copy,
-    }),
-    db: toIdentifier(db, {
-      quoted,
-      copy,
-    }),
-    catalog: toIdentifier(catalog, {
-      quoted,
-      copy,
-    }),
+    table: table !== undefined
+      ? toIdentifier(table, {
+        quoted,
+        copy,
+      })
+      : undefined,
+    db: db !== undefined
+      ? toIdentifier(db, {
+        quoted,
+        copy,
+      })
+      : undefined,
+    catalog: catalog !== undefined
+      ? toIdentifier(catalog, {
+        quoted,
+        copy,
+      })
+      : undefined,
   });
 
   if (fields && 0 < fields.length) {
@@ -39309,26 +39358,8 @@ export function table (name: string, db?: string, catalog?: string): TableExpr {
  * @param options.wrap - Whether to wrap the operands in Parens
  * @returns The new condition
  */
-export function and<E extends Expression | string> (
-  expressions: E | [E],
-  options?: {
-    dialect?: DialectType;
-    copy?: boolean;
-    wrap?: boolean;
-    [key: string]: unknown;
-  },
-): E;
 export function and (
-  expressions: [string | Expression, ...(string | Expression)[]],
-  options?: {
-    dialect?: DialectType;
-    copy?: boolean;
-    wrap?: boolean;
-    [key: string]: unknown;
-  },
-): AndExpr;
-export function and (
-  expressions: string | Expression | (string | Expression)[],
+  expressions?: string | Expression | (string | Expression | undefined)[],
   options: {
     dialect?: DialectType;
     copy?: boolean;
@@ -39361,26 +39392,8 @@ export function and (
  * @param options.wrap - Whether to wrap the operands in Parens
  * @returns The new condition
  */
-export function or<E extends Expression | string> (
-  expressions: E | [E],
-  options?: {
-    dialect?: DialectType;
-    copy?: boolean;
-    wrap?: boolean;
-    [key: string]: unknown;
-  },
-): E;
 export function or (
-  expressions: [string | Expression, ...(string | Expression)[]],
-  options?: {
-    dialect?: DialectType;
-    copy?: boolean;
-    wrap?: boolean;
-    [key: string]: unknown;
-  },
-): OrExpr;
-export function or (
-  expressions: string | Expression | (string | Expression)[],
+  expressions?: string | Expression | (string | Expression | undefined)[],
   options: {
     dialect?: DialectType;
     copy?: boolean;
@@ -39413,26 +39426,8 @@ export function or (
  * @param options.wrap - Whether to wrap the operands in Parens
  * @returns The new condition
  */
-export function xor<E extends Expression | string> (
-  expressions: E | [E],
-  options?: {
-    dialect?: DialectType;
-    copy?: boolean;
-    wrap?: boolean;
-    [key: string]: unknown;
-  },
-): E;
 export function xor (
-  expressions: [string | Expression, ...(string | Expression)[]],
-  options?: {
-    dialect?: DialectType;
-    copy?: boolean;
-    wrap?: boolean;
-    [key: string]: unknown;
-  },
-): XorExpr;
-export function xor (
-  expressions: string | Expression | (string | Expression)[],
+  expressions?: string | Expression | (string | Expression | undefined)[],
   options: {
     dialect?: DialectType;
     copy?: boolean;
@@ -39525,32 +39520,26 @@ const SAFE_IDENTIFIER_RE = /^[_a-zA-Z][\w]*$/;
  * @returns The identifier ast node or undefined if name is undefined
  */
 export function toIdentifier (
-  name: string | IdentifierExpr | undefined,
+  name: string | IdentifierExpr,
   options: {
     quoted?: boolean;
     copy?: boolean;
   } = {},
-): IdentifierExpr | undefined {
+): IdentifierExpr {
   const {
     quoted, copy = true,
   } = options;
-
-  if (name === undefined) {
-    return undefined;
-  }
 
   if (name instanceof IdentifierExpr) {
     return maybeCopy(name, copy) as IdentifierExpr;
   }
 
-  if (typeof name === 'string') {
-    return new IdentifierExpr({
-      this: name,
-      quoted: quoted !== undefined ? quoted : !SAFE_IDENTIFIER_RE.test(name),
-    });
-  }
+  return new IdentifierExpr({
+    this: name,
+    quoted: quoted !== undefined ? quoted : !SAFE_IDENTIFIER_RE.test(name),
+  });
 
-  throw new Error(`Name needs to be a string or an Identifier, got: ${name?.constructor?.name}`);
+  // throw new Error(`Name needs to be a string or an Identifier, got: ${name?.constructor?.name}`);
 }
 
 /**
@@ -39590,7 +39579,7 @@ export function parseIdentifier (
  * Matches interval strings like "1 day" or "5.5 months"
  * Captures: (number, unit)
  */
-const INTERVAL_STRING_RE = /\s*(-?[0-9]+(?:\.[0-9]+)?)\s*([a-zA-Z]+)\s*/;
+export const INTERVAL_STRING_RE = /\s*(-?[0-9]+(?:\.[0-9]+)?)\s*([a-zA-Z]+)\s*/;
 
 /**
  * Matches day-time interval strings that contain:
@@ -39603,7 +39592,7 @@ const INTERVAL_STRING_RE = /\s*(-?[0-9]+(?:\.[0-9]+)?)\s*([a-zA-Z]+)\s*/;
  *   - Just hours, maybe colon           [-]h+[:]
  *   - Just colon                        :
  */
-const INTERVAL_DAY_TIME_RE = /\s*-?\s*\d+(?:\.\d+)?\s+(?:-?(?:\d+:)?\d+:\d+(?:\.\d+)?|-?(?:\d+:){1,2}|:)\s*/;
+export const INTERVAL_DAY_TIME_RE = /\s*-?\s*\d+(?:\.\d+)?\s+(?:-?(?:\d+:)?\d+:\d+(?:\.\d+)?|-?(?:\d+:){1,2}|:)\s*/;
 
 /**
  * Builds an interval expression from a string like '1 day' or '5 months'.
@@ -39656,8 +39645,8 @@ export function toInterval (
  * @param options.copy - Whether to copy the expression
  * @returns The aliased expression
  */
-export function alias (
-  expression: string | Expression,
+export function alias<E extends Expression> (
+  expression: string | E,
   aliasName: string | IdentifierExpr | undefined,
   options: {
     table?: boolean | (string | IdentifierExpr)[];
@@ -39666,7 +39655,7 @@ export function alias (
     copy?: boolean;
     [key: string]: unknown;
   } = {},
-): AliasExpr {
+): E | AliasExpr {
   const {
     table: tableOpt, quoted, dialect, copy = true, ...opts
   } = options;
@@ -39676,11 +39665,11 @@ export function alias (
     copy,
     ...opts,
   });
-  const aliasIdent = toIdentifier(aliasName, { quoted });
+  const aliasIdent = aliasName !== undefined ? toIdentifier(aliasName, { quoted }) : undefined;
 
   if (tableOpt) {
     const tableAlias = new TableAliasExpr({ this: aliasIdent });
-    exp.set('alias', tableAlias);
+    exp.setArgKey('alias', tableAlias);
 
     if (Array.isArray(tableOpt)) {
       for (const column of tableOpt) {
@@ -39697,10 +39686,10 @@ export function alias (
   // We don't set the "alias" arg for Window expressions, because that would add an IDENTIFIER node in
   // the AST, representing a "named_window" construct (eg. bigquery). What we want is an ALIAS node
   // for the complete Window expression.
-
-  if (exp.argTypes['alias'] !== undefined && !(exp instanceof WindowExpr)) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((exp.constructor as any).argTypes['alias'] !== undefined && !(exp instanceof WindowExpr)) {
     if (aliasIdent) {
-      exp.set('alias', aliasIdent);
+      exp.setArgKey('alias', aliasIdent);
     }
     return exp;
   }
@@ -39740,8 +39729,11 @@ export function subquery (
     dialect,
     ...opts,
   });
+  if (!(parsed instanceof QueryExpr)) {
+    throw new Error('The input sql is not a QueryExpr');
+  }
   const subqueryExpr = parsed.subquery(aliasName, opts);
-  return new SelectExpr().from([subqueryExpr], {
+  return new SelectExpr({}).from(subqueryExpr, {
     dialect,
     ...opts,
   });
@@ -39765,13 +39757,13 @@ export function subquery (
  * );
  */
 export function select (
-  expressions: string | Expression | (string | Expression)[],
+  expressions?: string | Expression | (string | Expression | undefined)[],
   options: {
     dialect?: DialectType;
     [key: string]: unknown;
   } = {},
 ): SelectExpr {
-  return new SelectExpr().select(expressions, options);
+  return new SelectExpr({}).select(expressions, options);
 }
 
 /**
@@ -39794,7 +39786,7 @@ export function from (
     [key: string]: unknown;
   } = {},
 ): SelectExpr {
-  return new SelectExpr().from(expression, options);
+  return new SelectExpr({}).from(expression, options);
 }
 
 /**
@@ -39870,7 +39862,7 @@ export function case_ (
  */
 export function cast (
   expression: string | Expression,
-  to: string | DataTypeExpr,
+  to: DataTypeExprKind,
   options: {
     copy?: boolean;
     dialect?: DialectType;
@@ -39901,7 +39893,7 @@ export function cast (
     //
     // For now, we use a simpler check until TYPE_MAPPING is available in TypeScript
 
-    if (expr.isType(dataType)) {
+    if (expr.isType([dataType])) {
       return expr;
     }
 
@@ -39955,7 +39947,7 @@ export function values (
   let alias: TableAliasExpr | undefined;
   if (columns) {
     alias = new TableAliasExpr({
-      this: toIdentifier(aliasName),
+      this: aliasName !== undefined ? toIdentifier(aliasName) : undefined,
       columns: columns.map((col) => toIdentifier(col)).filter((c): c is IdentifierExpr => c !== undefined),
     });
   } else if (aliasName) {
@@ -40006,7 +39998,8 @@ export function func (name: string, ...args: Expression[]): FuncExpr {
  */
 function _applySetOperation<S extends Expression> (
   expressions: (string | Expression)[],
-  setOperation: typeof SetOperationExpr,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setOperation: new (args: any) => S,
   options: {
     distinct?: boolean;
     dialect?: DialectType;
@@ -40050,7 +40043,7 @@ function _applySetOperation<S extends Expression> (
  * @returns The new Union instance
  */
 export function union (
-  expressions: string | Expression | (string | Expression)[],
+  expressions?: string | Expression | (string | Expression | undefined)[],
   options: {
     distinct?: boolean;
     dialect?: DialectType;
@@ -40081,7 +40074,7 @@ export function union (
  * @returns The new Intersect instance
  */
 export function intersect (
-  expressions: string | Expression | (string | Expression)[],
+  expressions?: string | Expression | (string | Expression | undefined)[],
   options: {
     distinct?: boolean;
     dialect?: DialectType;
@@ -40112,7 +40105,7 @@ export function intersect (
  * @returns The new Except instance
  */
 export function except (
-  expressions: string | Expression | (string | Expression)[],
+  expressions?: string | Expression | (string | Expression | undefined)[],
   options: {
     distinct?: boolean;
     dialect?: DialectType;
@@ -40145,8 +40138,8 @@ export function except (
  * @returns The syntax tree for the INSERT statement
  */
 export function insert (
-  expression: string | Expression,
-  into: string | Expression,
+  expression: string | SelectExpr,
+  into: string | TableExpr,
   options: {
     columns?: (string | IdentifierExpr)[];
     overwrite?: boolean;
@@ -40165,12 +40158,13 @@ export function insert (
     copy,
     ...opts,
   });
+
   let thisExpr: TableExpr | SchemaExpr = maybeParse(into, {
     into: TableExpr,
     dialect,
     copy,
     ...opts,
-  }) as TableExpr;
+  });
 
   if (columns) {
     thisExpr = new SchemaExpr({
@@ -40224,7 +40218,7 @@ export function delete_ (
     where, returning, dialect, ...opts
   } = options;
 
-  let deleteExpr = new DeleteExpr().delete(table, {
+  let deleteExpr = new DeleteExpr({}).delete(table, {
     dialect,
     copy: false,
     ...opts,
@@ -40265,6 +40259,16 @@ export function delete_ (
  * @param options.dialect - The dialect used to parse the input expressions
  * @returns The syntax tree for the UPDATE statement
  */
+export function update<T> (
+  table: string | TableExpr,
+  options: {
+    properties?: Record<string, unknown>;
+    where?: string | Expression;
+    from?: string | Expression;
+    with?: Record<string, string | Expression>;
+    dialect?: DialectType;
+  } & { [K in keyof T]: K extends 'dialect' ? unknown : ExpressionValue | ExpressionValueList },
+): UpdateExpr;
 export function update (
   table: string | TableExpr,
   options: {
@@ -40273,8 +40277,7 @@ export function update (
     from?: string | Expression;
     with?: Record<string, string | Expression>;
     dialect?: DialectType;
-    [key: string]: unknown;
-  } = {},
+  } & { [key: string]: ExpressionValue | ExpressionValueList } = {},
 ): UpdateExpr {
   const {
     properties, where, from: fromExpr, with: withCtes, dialect, ...opts
@@ -40288,7 +40291,7 @@ export function update (
   });
 
   if (properties) {
-    updateExpr.set('expressions', Object.entries(properties).map(([k, v]) =>
+    updateExpr.setArgKey('expressions', Object.entries(properties).map(([k, v]) =>
       new EQExpr({
         this: maybeParse(k, {
           dialect,
@@ -40299,7 +40302,7 @@ export function update (
   }
 
   if (fromExpr) {
-    updateExpr.set('from', maybeParse(fromExpr, {
+    updateExpr.setArgKey('from', maybeParse(fromExpr, {
       into: FromExpr,
       dialect,
       prefix: 'FROM',
@@ -40308,11 +40311,11 @@ export function update (
   }
 
   if (where) {
-    let whereExpr: Expression | WhereExpr = where;
+    let whereExpr = where;
     if (where instanceof ConditionExpr) {
       whereExpr = new WhereExpr({ this: where });
     }
-    updateExpr.set('where', maybeParse(whereExpr, {
+    updateExpr.setArgKey('where', maybeParse(whereExpr, {
       into: WhereExpr,
       dialect,
       prefix: 'WHERE',
@@ -40327,9 +40330,10 @@ export function update (
           dialect,
           ...opts,
         }),
-      }), aliasName, { table: true }));
+        aliases: [],
+      }), aliasName, { table: true })) as CTEExpr[];
 
-    updateExpr.set('with', new WithExpr({ expressions: cteList }));
+    updateExpr.setArgKey('with', new WithExpr({ expressions: cteList }));
   }
 
   return updateExpr;
@@ -40460,13 +40464,13 @@ export function condition (
  * @param options - Parsing options
  * @returns Expression
  */
-export function maybeParse (
-  sqlOrExpression: string | number | boolean | Expression | undefined,
-  options?: ParseOptions & {
+export function maybeParse<RetT extends Expression> (
+  sqlOrExpression: string | number | boolean | RetT | undefined,
+  options?: ParseOptions<RetT> & {
     prefix?: string;
     copy?: boolean;
   },
-): Expression {
+): RetT {
   // If it's already an Expression
   if (sqlOrExpression instanceof Expression) {
     if (options?.copy) {
@@ -40492,7 +40496,7 @@ export function maybeParse (
   } = options || {};
 
   // Parse the SQL string
-  return parseOne(_sql, {
+  return parseOne<RetT>(_sql, {
     ...parseOptions,
     read: dialect || parseOptions.read,
   });
@@ -40518,13 +40522,19 @@ export function maybeParse (
  * @param options.copy - Whether to copy a table if it is passed in
  * @returns A table expression
  */
+export function toTable<T> (
+  sqlPath: string | TableExpr,
+  options?: {
+    dialect?: DialectType;
+    copy?: boolean;
+  } & { [K in keyof T]: K extends 'dialect' ? unknown : ExpressionValue | ExpressionValueList },
+): TableExpr;
 export function toTable (
   sqlPath: string | TableExpr,
   options: {
     dialect?: DialectType;
     copy?: boolean;
-    [key: string]: unknown;
-  } = {},
+  } & { [key: string]: ExpressionValue | ExpressionValueList } = {},
 ): TableExpr {
   const {
     dialect, copy = true, ...opts
@@ -40541,7 +40551,7 @@ export function toTable (
       ...opts,
     });
     for (const [k, v] of Object.entries(opts)) {
-      parsed.set(k, v);
+      parsed.setArgKey(k, v);
     }
     return parsed as TableExpr;
   } catch {
@@ -40557,7 +40567,7 @@ export function toTable (
 
     const tableExpr = table(name, db, catalog);
     for (const [k, v] of Object.entries(opts)) {
-      tableExpr.set(k, v);
+      tableExpr.setArgKey(k, v);
     }
     return tableExpr;
   }
@@ -40609,12 +40619,12 @@ export function toColumn (
       ...opts,
     }) as ColumnExpr;
     for (const [k, v] of Object.entries(opts)) {
-      col.set(k, v);
+      col.setArgKey(k, v);
     }
 
     if (quoted) {
       for (const identifier of col.findAll(IdentifierExpr)) {
-        identifier.set('quoted', true);
+        identifier.setArgKey('quoted', true);
       }
     }
 
@@ -40630,7 +40640,7 @@ export function toColumn (
     }
     const col = new ColumnExpr(args);
     for (const [k, v] of Object.entries(opts)) {
-      col.set(k, v);
+      col.setArgKey(k, v);
     }
     return col;
   }
@@ -40745,7 +40755,7 @@ function _toS (node: unknown, verbose = false, level = 0, reprStr = false): stri
  * @param into - The expected expression class
  * @returns True if the expression is wrong type
  */
-function _isWrongExpression (expression: unknown, into: typeof Expression): boolean {
+function _isWrongExpression (expression: unknown, into: typeof Expression): expression is Expression {
   return expression instanceof Expression && !(expression instanceof into);
 }
 
@@ -40754,16 +40764,17 @@ function _isWrongExpression (expression: unknown, into: typeof Expression): bool
  * @param options - Options object
  * @returns The modified instance
  */
-function _applyBuilder (expression: Expression | string | number, options: {
-  instance: Expression;
+function _applyBuilder<RetT extends Expression, ArgT extends Expression> (expression: ArgT | string | number, options: {
+  instance: RetT;
   arg: string;
   copy?: boolean;
   prefix?: string;
-  into?: typeof Expression;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  into?: new (args: any) => ArgT;
   dialect?: DialectType;
   intoArg?: string;
   [key: string]: unknown;
-}): Expression {
+}): RetT {
   const {
     instance,
     arg,
@@ -40775,7 +40786,8 @@ function _applyBuilder (expression: Expression | string | number, options: {
     ...opts
   } = options;
 
-  if (into && _isWrongExpression(expression, into)) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (into && _isWrongExpression(expression, into as any)) {
     expression = new into({ [intoArg]: expression });
   }
 
@@ -40787,7 +40799,7 @@ function _applyBuilder (expression: Expression | string | number, options: {
     ...opts,
   });
 
-  inst.set(arg, expression);
+  inst.setArgKey(arg, expression);
   return inst;
 }
 
@@ -40796,20 +40808,20 @@ function _applyBuilder (expression: Expression | string | number, options: {
  * @param options - Options object
  * @returns The modified instance
  */
-function _applyChildListBuilder (
-  expressions: string | Expression | (string | Expression)[],
+function _applyChildListBuilder<ArgT extends Expression, IntoT extends Expression, RetT extends Expression> (
+  expressions: string | ArgT | undefined | (string | ArgT | undefined)[],
   options: {
-    instance: Expression;
+    instance: RetT;
     arg: string;
     append?: boolean;
     copy?: boolean;
     prefix?: string;
-    into?: typeof Expression;
+    into?: new (args: { expressions: ArgT[] }) => IntoT;
     dialect?: DialectType;
     properties?: Record<string, ExpressionValue | ExpressionValueList>;
     [key: string]: unknown;
   },
-): Expression {
+): RetT {
   const {
     instance,
     arg,
@@ -40832,8 +40844,9 @@ function _applyChildListBuilder (
       continue;
     }
 
-    let expr = expression;
-    if (into && _isWrongExpression(expr, into)) {
+    let expr: string | IntoT | ArgT = expression;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (into && _isWrongExpression(expr, into as any)) {
       expr = new into({ expressions: [expr] });
     }
 
@@ -40860,12 +40873,12 @@ function _applyChildListBuilder (
   }
 
   const child = into
-    ? new into({ expressions: allExpressions })
+    ? new into({ expressions: allExpressions as ArgT[] })
     : new Expression({ expressions: allExpressions });
   for (const [k, v] of Object.entries(properties)) {
-    child.set(k, v as ExpressionValue | ExpressionValueList);
+    child.setArgKey(k, v as ExpressionValue | ExpressionValueList);
   }
-  inst.set(arg, child);
+  inst.setArgKey(arg, child);
 
   return inst;
 }
@@ -40876,19 +40889,20 @@ function _applyChildListBuilder (
  * @param options - Options object
  * @returns The modified instance
  */
-function _applyListBuilder (
-  expressions: string | Expression | (string | Expression)[],
+function _applyListBuilder<ArgT extends Expression, RetT extends Expression> (
+  expressions: string | ArgT | undefined | (string | ArgT | undefined)[],
   options: {
-    instance: Expression;
+    instance: RetT;
     arg: string;
     append?: boolean;
     copy?: boolean;
     prefix?: string;
-    into?: typeof Expression;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    into?: new (args: any) => ArgT;
     dialect?: DialectType;
     [key: string]: unknown;
   },
-): Expression {
+): RetT {
   const {
     instance,
     arg,
@@ -40915,9 +40929,9 @@ function _applyListBuilder (
 
   const existing = (inst.args as Record<string, ExpressionValue | ExpressionValueList>)[arg] as Expression[] | undefined;
   if (append && existing) {
-    inst.set(arg, [...existing, ...parsedExpressions]);
+    inst.setArgKey(arg, [...existing, ...parsedExpressions]);
   } else {
-    inst.set(arg, parsedExpressions);
+    inst.setArgKey(arg, parsedExpressions);
   }
 
   return inst;
@@ -40929,10 +40943,10 @@ function _applyListBuilder (
  * @param options - Options object
  * @returns The modified instance
  */
-function _applyConjunctionBuilder (
-  expressions: string | Expression | (string | Expression)[],
+function _applyConjunctionBuilder<E extends Expression> (
+  expressions: string | Expression | undefined | (string | Expression | undefined)[],
   options: {
-    instance: Expression;
+    instance: E;
     arg: string;
     into?: typeof Expression;
     append?: boolean;
@@ -40940,7 +40954,7 @@ function _applyConjunctionBuilder (
     dialect?: DialectType;
     [key: string]: unknown;
   },
-): Expression {
+): E {
   const {
     instance,
     arg,
@@ -40990,7 +41004,7 @@ function _applyConjunctionBuilder (
   const node = into && combined ? new into({ this: combined }) : combined;
 
   if (node) {
-    inst.set(arg, node);
+    inst.setArgKey(arg, node);
   }
 
   return inst;
@@ -41001,10 +41015,10 @@ function _applyConjunctionBuilder (
  * @param options - Options object
  * @returns The modified instance
  */
-function _applyCteBuilder (options: {
-  instance: Expression;
-  alias: string | Expression;
-  as: string | Expression;
+function _applyCteBuilder<E extends Expression> (options: {
+  instance: E;
+  alias: string | IdentifierExpr | TableAliasExpr;
+  as: string | QueryExpr;
   recursive?: boolean;
   materialized?: boolean;
   append?: boolean;
@@ -41012,7 +41026,7 @@ function _applyCteBuilder (options: {
   copy?: boolean;
   scalar?: boolean;
   [key: string]: unknown;
-}): Expression {
+}): E {
   const {
     instance,
     alias,
@@ -41045,7 +41059,7 @@ function _applyCteBuilder (options: {
 
   const cte = new CTEExpr({
     this: asExpression,
-    alias: aliasExpression,
+    aliases: [aliasExpression],
     materialized,
     scalar,
   });
@@ -41067,30 +41081,8 @@ function _applyCteBuilder (options: {
  * @param options - Options object
  * @returns Combined expression
  */
-function _combine<E extends Expression | string, T extends ConnectorExpr> (
-  expressions: E | [E],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  operator: new (args: any) => T,
-  options: {
-    dialect?: DialectType;
-    copy?: boolean;
-    wrap?: boolean;
-    [key: string]: unknown;
-  },
-): E;
 function _combine<T extends ConnectorExpr> (
-  expressions: [string | Expression, ...(string | Expression)[]],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  operator: new (args: any) => T,
-  options: {
-    dialect?: DialectType;
-    copy?: boolean;
-    wrap?: boolean;
-    [key: string]: unknown;
-  },
-): T;
-function _combine<T extends ConnectorExpr> (
-  expressions: string | Expression | (string | Expression)[],
+  expressions: string | Expression | undefined | (string | Expression | undefined)[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   operator: new (args: any) => T,
   options: {
@@ -41245,7 +41237,7 @@ export function convert (value: unknown, copy = false): Expression {
   }
 
   // Handle objects as structs
-  if (value !== undefined && typeof value === 'object') {
+  if (value !== null && typeof value === 'object') {
     const entries = Object.entries(value);
     return new StructExpr({
       expressions: entries.map(([k, v]) =>
@@ -41295,7 +41287,7 @@ export function var_ (name: string | Expression | undefined): VarExpr {
  * @returns An array expression
  */
 export function array (
-  expressions: string | Expression | (string | Expression)[],
+  expressions?: string | Expression | (string | Expression | undefined)[],
   options: {
     copy?: boolean;
     dialect?: DialectType;
@@ -41330,7 +41322,7 @@ export function array (
  * @returns A tuple expression
  */
 export function tuple (
-  expressions: string | Expression | (string | Expression)[],
+  expressions?: string | Expression | (string | Expression | undefined)[],
   options: {
     copy?: boolean;
     dialect?: DialectType;
@@ -41378,7 +41370,7 @@ export function renameTable (
 
   return new AlterExpr({
     this: oldTable,
-    kind: 'TABLE',
+    kind: AlterExprKind.TABLE,
     actions: [new AlterRenameExpr({ this: newTable })],
   });
 }
@@ -41417,7 +41409,7 @@ export function renameColumn (
 
   return new AlterExpr({
     this: tableExpr,
-    kind: 'TABLE',
+    kind: AlterExprKind.TABLE,
     actions: [
       new RenameColumnExpr({
         this: oldColumn,
@@ -41532,9 +41524,9 @@ export function replaceChildren (
     }
 
     if (isListArg) {
-      expression.set(key, newChildNodes);
+      expression.setArgKey(key, newChildNodes);
     } else {
-      expression.set(key, newChildNodes[0]);
+      expression.setArgKey(key, newChildNodes[0]);
     }
   }
 }
@@ -41640,7 +41632,7 @@ export function replaceTables<T extends Expression> (
   }
 
   function replaceTablesTransform (node: Expression): Expression {
-    if (node instanceof TableExpr && node.meta.get('replace') !== false) {
+    if (node instanceof TableExpr && node.meta['replace'] !== false) {
       const original = normalizeTableName(node, { dialect });
       const newName = normalizedMapping[original];
 
@@ -41653,7 +41645,7 @@ export function replaceTables<T extends Expression> (
             'db',
             'catalog',
           ].includes(key)) {
-            newTable.set(key, value);
+            newTable.setArgKey(key, value);
           }
         }
         newTable.addComments([original]);
@@ -41699,7 +41691,7 @@ export function replacePlaceholders (
 
   function replacePlaceholder (node: Expression): Expression {
     if (node instanceof PlaceholderExpr) {
-      if (node.args.this) {
+      if (typeof node.args.this === 'string') {
         const newName = kwargs[node.args.this];
         if (newName !== undefined) {
           return convert(newName);
@@ -41732,7 +41724,7 @@ export function replacePlaceholders (
  */
 export function expand (
   expression: Expression,
-  sources: Record<string, Expression | (() => Expression)>,
+  sources: Record<string, QueryExpr | (() => QueryExpr)>,
   options: {
     dialect?: DialectType;
     copy?: boolean;
@@ -41742,7 +41734,7 @@ export function expand (
     dialect, copy = true,
   } = options;
 
-  const normalizedSources: Record<string, Expression | (() => Expression)> = {};
+  const normalizedSources: Record<string, QueryExpr | (() => QueryExpr)> = {};
   for (const [key, value] of Object.entries(sources)) {
     normalizedSources[normalizeTableName(key, { dialect })] = value;
   }
