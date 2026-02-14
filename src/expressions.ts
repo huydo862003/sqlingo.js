@@ -12,7 +12,6 @@ import {
 import {
   type Merge,
   multiInherit,
-  type RemoveAll,
   type RequiredMap,
 } from './port_internals';
 import { traverseScope } from './optimizer/scope';
@@ -11417,7 +11416,7 @@ export class TimeUnitExpr extends Expression {
 
   static argTypes = {
     ...super.argTypes,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional, but required for consistency with subclasses
   } satisfies RequiredMap<TimeUnitExprArgs>;
 
   static UNABBREVIATED_UNIT_NAME: Record<string, string> = {
@@ -12712,6 +12711,7 @@ export class ZeroFillColumnConstraintExpr extends ColumnConstraintExpr {
   key = ExpressionKey.ZERO_FILL_COLUMN_CONSTRAINT;
 
   static argTypes = {
+    ...super.argTypes,
     kind: true, // sqlglot does not have this, but i thought it was a mistake
   } satisfies RequiredMap<
     ZeroFillColumnConstraintExprArgs
@@ -13921,7 +13921,7 @@ export class LiteralExpr extends ConditionExpr {
    * @param string - The string value
    * @returns A literal expression
    */
-  static string (string: string | unknown): LiteralExpr {
+  static string (string: unknown): LiteralExpr {
     return new LiteralExpr({
       this: String(string),
       isString: true,
@@ -14195,7 +14195,8 @@ export class BlockCompressionPropertyExpr extends PropertyExpr {
 export type CharacterSetPropertyExprArgs = Merge<[
   PropertyExprArgs,
   {
-    value?: string;
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
     default: Expression;
     this: Expression;
   },
@@ -14236,6 +14237,8 @@ export class CharacterSetPropertyExpr extends PropertyExpr {
 export type ChecksumPropertyExprArgs = Merge<[
   PropertyExprArgs,
   {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
     on?: Expression;
     default?: Expression;
   },
@@ -14272,7 +14275,8 @@ export class ChecksumPropertyExpr extends PropertyExpr {
 export type CollatePropertyExprArgs = Merge<[
   PropertyExprArgs,
   {
-    value?: string;
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
     default?: Expression;
     this: Expression;
   },
@@ -14312,13 +14316,19 @@ export class CollatePropertyExpr extends PropertyExpr {
 
 export type CopyGrantsPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class CopyGrantsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.COPY_GRANTS_PROPERTY;
 
-  static argTypes = {} satisfies RequiredMap<CopyGrantsPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    value: true,
+  } satisfies RequiredMap<CopyGrantsPropertyExprArgs>;
 
   declare args: CopyGrantsPropertyExprArgs;
 
@@ -14608,7 +14618,10 @@ export class EnginePropertyExpr extends PropertyExpr {
 
 export type HeapPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class HeapPropertyExpr extends PropertyExpr {
@@ -14675,7 +14688,11 @@ export class ExecuteAsPropertyExpr extends PropertyExpr {
 
 export type ExternalPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this?: Expression },
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+    this?: Expression;
+  },
 ]>;
 
 export class ExternalPropertyExpr extends PropertyExpr {
@@ -14736,6 +14753,8 @@ export class FallbackPropertyExpr extends PropertyExpr {
 export type FileFormatPropertyExprArgs = Merge<[
   PropertyExprArgs,
   {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
     hiveFormat?: string;
     this?: Expression;
     expressions?: Expression[];
@@ -14841,13 +14860,16 @@ export class FreespacePropertyExpr extends PropertyExpr {
 
 export type GlobalPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class GlobalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.GLOBAL_PROPERTY;
 
-  static argTypes = {} satisfies RequiredMap<GlobalPropertyExprArgs>;
+  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<GlobalPropertyExprArgs>;
 
   declare args: GlobalPropertyExprArgs;
 
@@ -14858,13 +14880,16 @@ export class GlobalPropertyExpr extends PropertyExpr {
 
 export type IcebergPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class IcebergPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ICEBERG_PROPERTY;
 
-  static argTypes = {} satisfies RequiredMap<IcebergPropertyExprArgs>;
+  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<IcebergPropertyExprArgs>;
 
   declare args: IcebergPropertyExprArgs;
 
@@ -14882,6 +14907,7 @@ export class InheritsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.INHERITS_PROPERTY;
 
   static argTypes = {
+    ...super.argTypes,
     expressions: true,
   } satisfies RequiredMap<InheritsPropertyExprArgs>;
 
@@ -14901,6 +14927,7 @@ export class InputModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.INPUT_MODEL_PROPERTY;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
   } satisfies RequiredMap<InputModelPropertyExprArgs>;
 
@@ -14920,6 +14947,7 @@ export class OutputModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.OUTPUT_MODEL_PROPERTY;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
   } satisfies RequiredMap<OutputModelPropertyExprArgs>;
 
@@ -15036,6 +15064,7 @@ export class LanguagePropertyExpr extends PropertyExpr {
   key = ExpressionKey.LANGUAGE_PROPERTY;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
   } satisfies RequiredMap<LanguagePropertyExprArgs>;
 
@@ -15059,6 +15088,7 @@ export class EnviromentPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ENVIROMENT_PROPERTY;
 
   static argTypes = {
+    ...super.argTypes,
     expressions: true,
   } satisfies RequiredMap<EnviromentPropertyExprArgs>;
 
@@ -15173,7 +15203,10 @@ export class DictPropertyExpr extends PropertyExpr {
 
 export type DictSubPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class DictSubPropertyExpr extends PropertyExpr {
@@ -15234,13 +15267,16 @@ export class DictRangeExpr extends PropertyExpr {
 
 export type DynamicPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class DynamicPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DYNAMIC_PROPERTY;
 
-  static argTypes = {} satisfies RequiredMap<DynamicPropertyExprArgs>;
+  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<DynamicPropertyExprArgs>;
 
   declare args: DynamicPropertyExprArgs;
 
@@ -15275,13 +15311,16 @@ export class OnClusterExpr extends PropertyExpr {
 
 export type EmptyPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class EmptyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EMPTY_PROPERTY;
 
-  static argTypes = {} satisfies RequiredMap<EmptyPropertyExprArgs>;
+  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<EmptyPropertyExprArgs>;
 
   declare args: EmptyPropertyExprArgs;
 
@@ -15331,6 +15370,7 @@ export class LocationPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCATION_PROPERTY;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
   } satisfies RequiredMap<LocationPropertyExprArgs>;
 
@@ -15383,6 +15423,8 @@ export enum LockingPropertyExprKind {
 export type LockingPropertyExprArgs = Merge<[
   PropertyExprArgs,
   {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
     kind: LockingPropertyExprKind;
     forOrIn?: Expression;
     lockType: DataTypeExpr;
@@ -15463,13 +15505,18 @@ export class LogPropertyExpr extends PropertyExpr {
 
 export type MaterializedPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this?: Expression },
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+    this?: Expression;
+  },
 ]>;
 
 export class MaterializedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.MATERIALIZED_PROPERTY;
 
   static argTypes = {
+    ...super.argTypes,
     this: false,
   } satisfies RequiredMap<MaterializedPropertyExprArgs>;
 
@@ -15487,7 +15534,8 @@ export class MaterializedPropertyExpr extends PropertyExpr {
 export type MergeBlockRatioPropertyExprArgs = Merge<[
   PropertyExprArgs,
   {
-    value?: string;
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
     no?: Expression;
     default?: Expression;
     percent?: Expression;
@@ -15540,13 +15588,16 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
 
 export type NoPrimaryIndexPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class NoPrimaryIndexPropertyExpr extends PropertyExpr {
   key = ExpressionKey.NO_PRIMARY_INDEX_PROPERTY;
 
-  static argTypes = {} satisfies RequiredMap<NoPrimaryIndexPropertyExprArgs>;
+  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<NoPrimaryIndexPropertyExprArgs>;
 
   declare args: NoPrimaryIndexPropertyExprArgs;
 
@@ -15825,7 +15876,7 @@ export class RefreshTriggerPropertyExpr extends PropertyExpr {
     method: false,
     kind: false,
     every: false,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
     starts: false,
   } satisfies RequiredMap<RefreshTriggerPropertyExprArgs>;
 
@@ -15906,13 +15957,16 @@ export class PartitionedOfPropertyExpr extends PropertyExpr {
 
 export type StreamingTablePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class StreamingTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.STREAMING_TABLE_PROPERTY;
 
-  static argTypes = {} satisfies RequiredMap<StreamingTablePropertyExprArgs>;
+  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<StreamingTablePropertyExprArgs>;
 
   declare args: StreamingTablePropertyExprArgs;
 
@@ -15923,13 +15977,17 @@ export class StreamingTablePropertyExpr extends PropertyExpr {
 
 export type RemoteWithConnectionModelPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.REMOTE_WITH_CONNECTION_MODEL_PROPERTY;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
   } satisfies RequiredMap<RemoteWithConnectionModelPropertyExprArgs>;
 
@@ -15947,6 +16005,8 @@ export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
 export type ReturnsPropertyExprArgs = Merge<[
   PropertyExprArgs,
   {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
     this?: Expression;
     isTable?: Expression;
     table?: Expression;
@@ -15994,13 +16054,16 @@ export class ReturnsPropertyExpr extends PropertyExpr {
 
 export type StrictPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class StrictPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STRICT_PROPERTY;
 
-  static argTypes = {} satisfies RequiredMap<StrictPropertyExprArgs>;
+  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<StrictPropertyExprArgs>;
 
   declare args: StrictPropertyExprArgs;
 
@@ -16018,6 +16081,7 @@ export class RowFormatPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_PROPERTY;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
   } satisfies RequiredMap<RowFormatPropertyExprArgs>;
 
@@ -16141,6 +16205,7 @@ export class SamplePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SAMPLE_PROPERTY;
 
   static argTypes = {
+    ...super.argTypes,
     this: true,
   } satisfies RequiredMap<SamplePropertyExprArgs>;
 
@@ -16261,7 +16326,11 @@ export class SetPropertyExpr extends PropertyExpr {
 
 export type SharingPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this?: Expression },
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+    this?: Expression;
+  },
 ]>;
 
 export class SharingPropertyExpr extends PropertyExpr {
@@ -16465,7 +16534,11 @@ export class StorageHandlerPropertyExpr extends PropertyExpr {
 
 export type TemporaryPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this?: Expression },
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+    this?: Expression;
+  },
 ]>;
 
 export class TemporaryPropertyExpr extends PropertyExpr {
@@ -16489,13 +16562,16 @@ export class TemporaryPropertyExpr extends PropertyExpr {
 
 export type SecurePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class SecurePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURE_PROPERTY;
 
-  static argTypes = {} satisfies RequiredMap<SecurePropertyExprArgs>;
+  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<SecurePropertyExprArgs>;
 
   declare args: SecurePropertyExprArgs;
 
@@ -16555,7 +16631,11 @@ export class TransformModelPropertyExpr extends PropertyExpr {
 
 export type TransientPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this?: Expression },
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+    this?: Expression;
+  },
 ]>;
 
 export class TransientPropertyExpr extends PropertyExpr {
@@ -16579,13 +16659,16 @@ export class TransientPropertyExpr extends PropertyExpr {
 
 export type UnloggedPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class UnloggedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNLOGGED_PROPERTY;
 
-  static argTypes = {} satisfies RequiredMap<UnloggedPropertyExprArgs>;
+  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<UnloggedPropertyExprArgs>;
 
   declare args: UnloggedPropertyExprArgs;
 
@@ -16644,7 +16727,11 @@ export class ViewAttributePropertyExpr extends PropertyExpr {
 
 export type VolatilePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this?: Expression },
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+    this?: Expression;
+  },
 ]>;
 
 export class VolatilePropertyExpr extends PropertyExpr {
@@ -16874,6 +16961,8 @@ export class EncodePropertyExpr extends PropertyExpr {
 export type IncludePropertyExprArgs = Merge<[
   PropertyExprArgs,
   {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
     this: Expression;
     alias?: Expression;
     columnDef?: Expression;
@@ -16917,13 +17006,16 @@ export class IncludePropertyExpr extends PropertyExpr {
 
 export type ForcePropertyExprArgs = Merge<[
   PropertyExprArgs,
-  RemoveAll<PropertyExprArgs>,
+  {
+    // NOTE: sqlglot has value as optional, but we require it for type safety
+    value: string;
+  },
 ]>;
 
 export class ForcePropertyExpr extends PropertyExpr {
   key = ExpressionKey.FORCE_PROPERTY;
 
-  static argTypes = {} satisfies RequiredMap<ForcePropertyExprArgs>;
+  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<ForcePropertyExprArgs>;
 
   declare args: ForcePropertyExprArgs;
 
@@ -17904,7 +17996,7 @@ export class SelectExpr extends QueryExpr {
     } = {},
   ): this {
     const {
-      on, using: usingOpt, append = true, joinType, joinAlias, dialect, copy = true, ...restOptions
+      on, using: usingOpt, append = true, joinType, joinAlias, dialect, copy = true, ..._restOptions
     } = options;
     const parseArgs = {
       dialect,
@@ -18019,7 +18111,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x FROM tbl QUALIFY ROW_NUMBER() OVER (PARTITION BY x) = 1'
    */
   qualify (
-    expressions: string | Expression | undefined | (string | Expression | undefined)[],
+    expressions: string | Expression | undefined | (string | Expression)[],
     options: {
       append?: boolean;
       dialect?: DialectType;
@@ -18102,7 +18194,7 @@ export class SelectExpr extends QueryExpr {
 
     return new CreateExpr({
       this: tableExpr,
-      kind: 'TABLE',
+      kind: CreateExprKind.TABLE,
       expression: instance,
       properties: propertiesExpr,
     });
@@ -18738,7 +18830,7 @@ export class IntervalOpExpr extends TimeUnitExpr {
 
   static argTypes = {
     ...super.argTypes,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
     expression: true,
   } satisfies RequiredMap<IntervalOpExprArgs>;
 
@@ -18815,7 +18907,7 @@ export class IntervalExpr extends TimeUnitExpr {
   static argTypes = {
     ...super.argTypes,
     this: false,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<IntervalExprArgs>;
 
   declare args: IntervalExprArgs;
@@ -20233,8 +20325,8 @@ export class MulExpr extends BinaryExpr {
 }
 
 export type NEQExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class NEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -20282,8 +20374,8 @@ export class OperatorExpr extends BinaryExpr {
 }
 
 export type SimilarToExprArgs = Merge<[
-  BinaryExprArgs,
   PredicateExprArgs,
+  BinaryExprArgs,
 ]>;
 
 export class SimilarToExpr extends multiInherit(BinaryExpr, PredicateExpr) {
@@ -20374,6 +20466,7 @@ export class NotExpr extends UnaryExpr {
 
 export type ParenExprArgs = Merge<[
   UnaryExprArgs,
+  { this: Expression },
 ]>;
 
 export class ParenExpr extends UnaryExpr {
@@ -20381,6 +20474,7 @@ export class ParenExpr extends UnaryExpr {
 
   static argTypes = {
     ...super.argTypes,
+    this: true,
   } satisfies RequiredMap<ParenExprArgs>;
 
   declare args: ParenExprArgs;
@@ -20396,6 +20490,7 @@ export class ParenExpr extends UnaryExpr {
 
 export type NegExprArgs = Merge<[
   UnaryExprArgs,
+  { this: UnaryExpr }, // NOTE: sqlglot does not have this
 ]>;
 
 export class NegExpr extends UnaryExpr {
@@ -20403,6 +20498,7 @@ export class NegExpr extends UnaryExpr {
 
   static argTypes = {
     ...super.argTypes,
+    this: true,
   } satisfies RequiredMap<NegExprArgs>;
 
   declare args: NegExprArgs;
@@ -20411,9 +20507,9 @@ export class NegExpr extends UnaryExpr {
     super(args);
   }
 
-  toValue (): number {
+  toValue (): ExpressionValue {
     if (this.isNumber) {
-      return this.args.this.toValue() * -1;
+      return (this.args.this.toValue() as number) * -1;
     }
     return super.toValue();
   }
@@ -25238,7 +25334,7 @@ export class DateAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
     ...super.argTypes,
     this: true,
     expression: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<DateAddExprArgs>;
 
   declare args: DateAddExprArgs;
@@ -25284,7 +25380,7 @@ export class DateBinExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
     ...super.argTypes,
     this: true,
     expression: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
     zone: false,
     origin: false,
   } satisfies RequiredMap<DateBinExprArgs>;
@@ -25338,7 +25434,7 @@ export class DateSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
     ...super.argTypes,
     this: true,
     expression: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<DateSubExprArgs>;
 
   declare args: DateSubExprArgs;
@@ -25387,7 +25483,7 @@ export class DateDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     ...super.argTypes,
     this: true,
     expression: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
     zone: false,
     bigInt: false,
     datePartBoundary: false,
@@ -25550,7 +25646,7 @@ export class DatetimeAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
     ...super.argTypes,
     this: true,
     expression: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<DatetimeAddExprArgs>;
 
   declare args: DatetimeAddExprArgs;
@@ -25594,7 +25690,7 @@ export class DatetimeSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
     ...super.argTypes,
     this: true,
     expression: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<DatetimeSubExprArgs>;
 
   declare args: DatetimeSubExprArgs;
@@ -25638,7 +25734,7 @@ export class DatetimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     ...super.argTypes,
     this: true,
     expression: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<DatetimeDiffExprArgs>;
 
   declare args: DatetimeDiffExprArgs;
@@ -26077,7 +26173,7 @@ export class LastDayExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<LastDayExprArgs>;
 
   declare args: LastDayExprArgs;
@@ -26395,7 +26491,7 @@ export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     ...super.argTypes,
     this: true,
     expression: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<TimestampAddExprArgs>;
 
   declare args: TimestampAddExprArgs;
@@ -26438,7 +26534,7 @@ export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     ...super.argTypes,
     this: true,
     expression: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<TimestampSubExprArgs>;
 
   declare args: TimestampSubExprArgs;
@@ -26481,7 +26577,7 @@ export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     ...super.argTypes,
     this: true,
     expression: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<TimestampDiffExprArgs>;
 
   declare args: TimestampDiffExprArgs;
@@ -26637,7 +26733,7 @@ export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     ...super.argTypes,
     this: true,
     expression: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<TimeAddExprArgs>;
 
   declare args: TimeAddExprArgs;
@@ -26680,7 +26776,7 @@ export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     ...super.argTypes,
     this: true,
     expression: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<TimeSubExprArgs>;
 
   declare args: TimeSubExprArgs;
@@ -26723,7 +26819,7 @@ export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     ...super.argTypes,
     this: true,
     expression: true,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<TimeDiffExprArgs>;
 
   declare args: TimeDiffExprArgs;
@@ -34590,7 +34686,7 @@ export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
    */
   static argTypes = {
     ...super.argTypes,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
     returnType: false,
     this: true,
     expression: true,
@@ -34645,7 +34741,7 @@ export class TsOrDsDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
   static argTypes = {
     ...super.argTypes,
-    unit: false,
+    unit: true, // NOTE: sqlglot has this as optional
     this: true,
     expression: true,
   } satisfies RequiredMap<TsOrDsDiffExprArgs>;
