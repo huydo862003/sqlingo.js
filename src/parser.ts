@@ -3,8 +3,10 @@
 import type { Expression } from './expressions';
 import {
   array,
+  ArrayAppendExpr,
   ArrayExpr,
   BinaryExpr,
+  CoalesceExpr,
   ConvertTimezoneExpr,
   EscapeExpr,
   HexExpr,
@@ -20,6 +22,7 @@ import {
   PadExpr,
   ParenExpr,
   StarMapExpr,
+  StrPositionExpr,
   TrimExpr,
   TrimPosition,
   UpperExpr,
@@ -275,5 +278,57 @@ export function buildTrim (
     this: thisArg,
     expression,
     position: isLeft ? TrimPosition.LEADING : TrimPosition.TRAILING,
+  });
+}
+
+export function buildCoalesce (
+  args: Expression[],
+  options: {
+    isNvl?: boolean;
+    isNull?: boolean;
+  } = {},
+): CoalesceExpr {
+  if (args.length < 1) {
+    throw new Error('buildCoalesce only accepts an expression list with at least one expression');
+  }
+  const {
+    isNvl, isNull,
+  } = options;
+
+  return new CoalesceExpr({
+    this: seqGet(args, 0)!,
+    expressions: args.slice(1),
+    isNvl,
+    isNull,
+  });
+}
+
+export function buildLocateStrposition (args: Expression[]): StrPositionExpr {
+  if (args.length < 2) {
+    throw new Error('buildLocateStrposition only accepts an expression list with at least two expressions');
+  }
+
+  return new StrPositionExpr({
+    this: seqGet(args, 1)!,
+    substr: seqGet(args, 0)!,
+    position: seqGet(args, 2),
+  });
+}
+
+export function buildArrayAppend (args: Expression[], dialect: Dialect): ArrayAppendExpr {
+  if (args.length < 2) {
+    throw new Error('buildArrayAppend only accepts an expression list with at least two expressions');
+  }
+
+  /**
+   * Builds ArrayAppend with NULL propagation semantics based on the dialect configuration.
+   *
+   * Some dialects (Databricks, Spark, Snowflake) return NULL when the input array is NULL.
+   * Others (DuckDB, PostgreSQL) create a new single-element array instead.
+   */
+  return new ArrayAppendExpr({
+    this: seqGet(args, 0)!,
+    expression: seqGet(args, 1)!,
+    nullPropagation: dialect.ARRAY_FUNCS_PROPAGATES_NULLS,
   });
 }

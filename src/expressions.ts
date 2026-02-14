@@ -24362,8 +24362,8 @@ export type CoalesceExprArgs = Merge<[
   {
     this: Expression;
     expressions?: Expression[];
-    isNvl?: Expression;
-    isNull?: Expression;
+    isNvl?: boolean;
+    isNull?: boolean;
   },
 ]>;
 
@@ -24400,11 +24400,11 @@ export class CoalesceExpr extends FuncExpr {
     return this.args.expressions;
   }
 
-  get $isNvl (): Expression | undefined {
+  get $isNvl (): boolean | undefined {
     return this.args.isNvl;
   }
 
-  get $isNull (): Expression | undefined {
+  get $isNull (): boolean | undefined {
     return this.args.isNull;
   }
 
