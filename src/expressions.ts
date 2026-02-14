@@ -16593,6 +16593,7 @@ export class TagsExpr extends multiInherit(Expression, PropertyExpr, ColumnConst
   key = ExpressionKey.TAGS;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     expressions: true,
   } satisfies RequiredMap<TagsExprArgs>;
@@ -19980,6 +19981,7 @@ export class EQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.EQ;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<EQExprArgs>;
 
@@ -19999,6 +20001,7 @@ export class NullSafeEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.NULL_SAFE_EQ;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<NullSafeEQExprArgs>;
 
@@ -20018,6 +20021,7 @@ export class NullSafeNEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.NULL_SAFE_NEQ;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<NullSafeNEQExprArgs>;
 
@@ -20091,6 +20095,7 @@ export class GlobExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.GLOB;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<GlobExprArgs>;
 
@@ -20110,6 +20115,7 @@ export class GTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.GT;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<GTExprArgs>;
 
@@ -20129,6 +20135,7 @@ export class GTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.GTE;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<GTEExprArgs>;
 
@@ -20148,6 +20155,7 @@ export class ILikeExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.ILIKE;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<ILikeExprArgs>;
 
@@ -20185,6 +20193,7 @@ export class IsExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.IS;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<IsExprArgs>;
 
@@ -20225,6 +20234,7 @@ export class LikeExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.LIKE;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<LikeExprArgs>;
 
@@ -20244,6 +20254,7 @@ export class MatchExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.MATCH;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<MatchExprArgs>;
 
@@ -20263,6 +20274,7 @@ export class LTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.LT;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<LTExprArgs>;
 
@@ -20282,6 +20294,7 @@ export class LTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.LTE;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<LTEExprArgs>;
 
@@ -20337,6 +20350,7 @@ export class NEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.NEQ;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<NEQExprArgs>;
 
@@ -20386,6 +20400,7 @@ export class SimilarToExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.SIMILAR_TO;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<SimilarToExprArgs>;
 
@@ -34689,6 +34704,7 @@ export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     unit: true, // NOTE: sqlglot has this as optional
     returnType: false,
@@ -34744,6 +34760,7 @@ export class TsOrDsDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TS_OR_DS_DIFF;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     unit: true, // NOTE: sqlglot has this as optional
     this: true,
@@ -35609,6 +35626,7 @@ export class CorrExpr extends multiInherit(BinaryExpr, AggFuncExpr) {
   key = ExpressionKey.CORR;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     nullOnZeroVariance: false,
     this: true,
@@ -39010,6 +39028,7 @@ export class PosexplodeOuterExpr extends multiInherit(PosexplodeExpr, ExplodeOut
   key = ExpressionKey.POSEXPLODE_OUTER;
 
   static argTypes = {
+    // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
   } satisfies RequiredMap<PosexplodeOuterExprArgs>;
 
