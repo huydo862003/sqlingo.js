@@ -3,18 +3,31 @@
 import type { Expression } from './expressions';
 import {
   array,
+  ArrayAggExpr,
   ArrayAppendExpr,
   ArrayConcatExpr,
   ArrayExpr,
   ArrayPrependExpr,
   ArrayRemoveExpr,
   BinaryExpr,
+  CastExpr,
   CoalesceExpr,
+  ConcatExpr,
+  ConcatWsExpr,
   ConvertTimezoneExpr,
+  CountExpr,
+  DataTypeExpr,
+  DataTypeType,
   EscapeExpr,
+  GenerateDateArrayExpr,
+  GlobExpr,
+  GreatestExpr,
   HexExpr,
+  IntervalExpr,
   JSONExtractExpr,
   JSONExtractScalarExpr,
+  JSONKeysExpr,
+  LeastExpr,
   LikeExpr,
   LiteralExpr,
   LnExpr,
@@ -24,15 +37,22 @@ import {
   ModExpr,
   PadExpr,
   ParenExpr,
+  ScopeResolutionExpr,
   StarMapExpr,
   StrPositionExpr,
+  SubstringExpr,
   TrimExpr,
   TrimPosition,
+  UnnestExpr,
   UpperExpr,
+  UuidExpr,
+  varExpr,
   VarMapExpr,
 } from './expressions';
-import { seqGet } from './helper';
-import type { Dialect } from './dialects/dialect';
+import { ensureList, seqGet } from './helper';
+import { Dialect, type DialectType } from './dialects/dialect';
+import { ErrorLevel, ParseError } from './errors';
+import type { Token } from './tokens';
 import { TokenType } from './tokens';
 
 export type OptionsType = Record<string, (string[] | string)[]>;
@@ -388,4 +408,282 @@ export function buildArrayRemove (args: Expression[], dialect: Dialect): ArrayRe
     expression: seqGet(args, 1)!,
     nullPropagation: dialect.ARRAY_FUNCS_PROPAGATES_NULLS,
   });
+}
+
+export interface ParseOptions<IntoT extends Expression = Expression> {
+  read?: DialectType;
+  dialect?: DialectType;
+  errorLevel?: ErrorLevel;
+  errorMessageContext?: number;
+  maxErrors?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  into?: string | (new (args: any) => IntoT);
+  [key: string]: unknown;
+}
+
+/**
+ * Parser consumes a list of tokens produced by the Tokenizer and produces a parsed syntax tree.
+ *
+ * Args:
+ *   errorLevel: The desired error level. Default: ErrorLevel.IMMEDIATE
+ *   errorMessageContext: The amount of context to capture from a query string when displaying
+ *     the error message (in number of characters). Default: 100
+ *   maxErrors: Maximum number of error messages to include in a raised ParseError.
+ *     This is only relevant if error_level is ErrorLevel.RAISE. Default: 3
+ */
+export class Parser {
+  // Cached tries for SHOW and SET parsers (metaclass pattern)
+  private static _showTrie?: unknown; // TODO: Replace with proper Trie type
+  private static _setTrie?: unknown;
+
+  static get SHOW_TRIE (): unknown {
+    if (!this._showTrie) {
+      // TODO: Implement newTrie function
+      // this._showTrie = newTrie(Object.keys(this.SHOW_PARSERS).map(key => key.split(' ')));
+      throw new Error('SHOW_TRIE not implemented');
+    }
+    return this._showTrie;
+  }
+
+  static get SET_TRIE (): unknown {
+    if (!this._setTrie) {
+      // TODO: Implement newTrie function
+      // this._setTrie = newTrie(Object.keys(this.SET_PARSERS).map(key => key.split(' ')));
+      throw new Error('SET_TRIE not implemented');
+    }
+    return this._setTrie;
+  }
+
+  // Static parser dictionaries (to be defined)
+  static SHOW_PARSERS: Record<string, unknown> = {};
+  static SET_PARSERS: Record<string, unknown> = {};
+
+  // Function name to builder mapping
+  static FUNCTIONS: Record<string, (args: Expression[], dialect: Dialect) => Expression> = {
+    // TODO: Spread all fromArgList functions from FUNCTION_BY_NAME
+
+    // Coalesce variants
+    COALESCE: (args, dialect) => buildCoalesce(args),
+    IFNULL: (args, dialect) => buildCoalesce(args),
+    NVL: (args, dialect) => buildCoalesce(args),
+
+    // Array functions
+    ARRAY: (args, dialect) => new ArrayExpr({ expressions: args }),
+
+    ARRAYAGG: (args, dialect) => new ArrayAggExpr({
+      this: seqGet(args, 0),
+      nullsExcluded: dialect.ARRAY_AGG_INCLUDES_NULLS === undefined ? undefined : undefined,
+    }),
+
+    ARRAY_AGG: (args, dialect) => new ArrayAggExpr({
+      this: seqGet(args, 0),
+      nullsExcluded: dialect.ARRAY_AGG_INCLUDES_NULLS === undefined ? undefined : undefined,
+    }),
+
+    ARRAY_APPEND: buildArrayAppend,
+    ARRAY_CAT: buildArrayConcat,
+    ARRAY_CONCAT: buildArrayConcat,
+    ARRAY_PREPEND: buildArrayPrepend,
+    ARRAY_REMOVE: buildArrayRemove,
+
+    // Aggregate functions
+    COUNT: (args, dialect) => new CountExpr({
+      this: seqGet(args, 0),
+      expressions: args.slice(1),
+      bigInt: true,
+    }),
+
+    // String functions
+    CONCAT: (args, dialect) => new ConcatExpr({
+      expressions: args,
+      safe: !dialect.STRICT_STRING_CONCAT,
+      coalesce: dialect.CONCAT_COALESCE,
+    }),
+
+    CONCAT_WS: (args, dialect) => new ConcatWsExpr({
+      expressions: args,
+      safe: !dialect.STRICT_STRING_CONCAT,
+      coalesce: dialect.CONCAT_COALESCE,
+    }),
+
+    // Conversion functions
+    CONVERT_TIMEZONE: (args, dialect) => buildConvertTimezone(args),
+
+    DATE_TO_DATE_STR: (args, dialect) => new CastExpr({
+      this: seqGet(args, 0),
+      to: new DataTypeExpr({ this: DataTypeType.TEXT }),
+    }),
+
+    TIME_TO_TIME_STR: (args, dialect) => new CastExpr({
+      this: seqGet(args, 0),
+      to: new DataTypeExpr({ this: DataTypeType.TEXT }),
+    }),
+
+    // Generator functions
+    GENERATE_DATE_ARRAY: (args, dialect) => new GenerateDateArrayExpr({
+      start: seqGet(args, 0),
+      end: seqGet(args, 1),
+      step: seqGet(args, 2) || new IntervalExpr({
+        this: LiteralExpr.string('1'),
+        unit: varExpr('DAY'),
+      }),
+    }),
+
+    GENERATE_UUID: (args, dialect) => new UuidExpr({
+      isString: dialect.UUID_IS_STRING_TYPE || undefined,
+    }),
+
+    // Pattern matching
+    GLOB: (args, dialect) => new GlobExpr({
+      this: seqGet(args, 1),
+      expression: seqGet(args, 0),
+    }),
+
+    LIKE: (args, dialect) => buildLike(args),
+
+    // Comparison functions
+    GREATEST: (args, dialect) => new GreatestExpr({
+      this: seqGet(args, 0),
+      expressions: args.slice(1),
+      ignoreNulls: dialect.LEAST_GREATEST_IGNORES_NULLS,
+    }),
+
+    LEAST: (args, dialect) => new LeastExpr({
+      this: seqGet(args, 0),
+      expressions: args.slice(1),
+      ignoreNulls: dialect.LEAST_GREATEST_IGNORES_NULLS,
+    }),
+
+    // Encoding functions
+    HEX: (args, dialect) => buildHex(args, dialect),
+    TO_HEX: (args, dialect) => buildHex(args, dialect),
+
+    // JSON functions
+    JSON_EXTRACT: buildExtractJsonWithPath(JSONExtractExpr),
+    JSON_EXTRACT_SCALAR: buildExtractJsonWithPath(JSONExtractScalarExpr),
+    JSON_EXTRACT_PATH_TEXT: buildExtractJsonWithPath(JSONExtractScalarExpr),
+
+    JSON_KEYS: (args, dialect) => new JSONKeysExpr({
+      this: seqGet(args, 0),
+      expression: dialect.toJsonPath(seqGet(args, 1)),
+    }),
+
+    // Math functions
+    LOG: (args, dialect) => buildLogarithm(args, dialect),
+    LOG2: (args, dialect) => new LogExpr({
+      this: LiteralExpr.number(2),
+      expression: seqGet(args, 0),
+    }),
+    LOG10: (args, dialect) => new LogExpr({
+      this: LiteralExpr.number(10),
+      expression: seqGet(args, 0),
+    }),
+    MOD: (args, dialect) => buildMod(args),
+
+    // String manipulation
+    LOWER: (args, dialect) => buildLower(args),
+    UPPER: (args, dialect) => buildUpper(args),
+
+    LPAD: (args, dialect) => buildPad(args),
+    LEFTPAD: (args, dialect) => buildPad(args),
+    RPAD: (args, dialect) => buildPad(args, { isLeft: false }),
+    RIGHTPAD: (args, dialect) => buildPad(args, { isLeft: false }),
+
+    LTRIM: (args, dialect) => buildTrim(args),
+    RTRIM: (args, dialect) => buildTrim(args, { isLeft: false }),
+
+    // String search
+    STRPOS: (args, dialect) => StrPositionExpr.fromArgList(args),
+    INSTR: (args, dialect) => StrPositionExpr.fromArgList(args),
+    CHARINDEX: (args, dialect) => buildLocateStrposition(args),
+    LOCATE: (args, dialect) => buildLocateStrposition(args),
+
+    // Scope resolution
+    SCOPE_RESOLUTION: (args, dialect) => args.length !== 2
+      ? new ScopeResolutionExpr({ expression: seqGet(args, 0) })
+      : new ScopeResolutionExpr({
+        this: seqGet(args, 0),
+        expression: seqGet(args, 1),
+      }),
+
+    // String operations
+    TS_OR_DS_TO_DATE_STR: (args, dialect) => new SubstringExpr({
+      this: new CastExpr({
+        this: seqGet(args, 0),
+        to: new DataTypeExpr({ this: DataTypeType.TEXT }),
+      }),
+      start: LiteralExpr.number(1),
+      length: LiteralExpr.number(10),
+    }),
+
+    // Array operations
+    UNNEST: (args, dialect) => new UnnestExpr({
+      expressions: ensureList(seqGet(args, 0)),
+    }),
+
+    // UUID
+    UUID: (args, dialect) => new UuidExpr({
+      isString: dialect.UUID_IS_STRING_TYPE || undefined,
+    }),
+
+    // Map operations
+    VAR_MAP: (args, dialect) => buildVarMap(args),
+  };
+
+  // Instance properties
+  protected sql: string;
+  protected dialect: Dialect;
+  protected errorLevel: ErrorLevel;
+  protected errorMessageContext: number;
+  protected maxErrors: number;
+  protected errors: ParseError[];
+  protected tokens: Token[];
+  protected index: number;
+
+  constructor (options?: ParseOptions) {
+    const opts = options ?? {};
+    this.sql = '';
+    this.dialect = Dialect.getOrRaise(opts.dialect);
+    this.errorLevel = opts.errorLevel ?? ErrorLevel.IMMEDIATE;
+    this.errorMessageContext = opts.errorMessageContext ?? 100;
+    this.maxErrors = opts.maxErrors ?? 3;
+    this.errors = [];
+    this.tokens = [];
+    this.index = 0;
+  }
+
+  // Main parse method with generic type parameter
+  parse<IntoT extends Expression> (sql: string | Token[], opts?: ParseOptions<IntoT>): Expression[] {
+    // TODO: Implement parsing logic
+    throw new Error('Not implemented');
+  }
+
+  // Helper methods
+  protected _curr (): Token | undefined {
+    return this.tokens[this.index];
+  }
+
+  protected _prev (): Token | undefined {
+    return this.tokens[this.index - 1];
+  }
+
+  protected _next (): Token | undefined {
+    return this.tokens[this.index + 1];
+  }
+
+  protected _advance (): void {
+    this.index++;
+  }
+
+  protected _retreat (): void {
+    this.index--;
+  }
+
+  protected _match (tokenType: TokenType): boolean {
+    if (this._curr()?.tokenType === tokenType) {
+      this._advance();
+      return true;
+    }
+    return false;
+  }
 }
