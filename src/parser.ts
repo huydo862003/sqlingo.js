@@ -3,21 +3,31 @@
 import type { Expression } from './expressions';
 import {
   array,
+  ArrayExpr,
+  BinaryExpr,
+  ConvertTimezoneExpr,
   EscapeExpr,
   HexExpr,
   JSONExtractExpr,
   JSONExtractScalarExpr,
   LikeExpr,
+  LiteralExpr,
   LnExpr,
   LogExpr,
   LowerExpr,
   LowerHexExpr,
+  ModExpr,
+  PadExpr,
+  ParenExpr,
   StarMapExpr,
+  TrimExpr,
+  TrimPosition,
   UpperExpr,
   VarMapExpr,
 } from './expressions';
 import { seqGet } from './helper';
 import type { Dialect } from './dialects/dialect';
+import { TokenType } from './tokens';
 
 export type OptionsType = Record<string, (string[] | string)[]>;
 
@@ -25,6 +35,10 @@ export type OptionsType = Record<string, (string[] | string)[]>;
 export const TIME_ZONE_RE: RegExp = /:.*?[a-zA-Z+\-]/;
 
 export function buildVarMap (args: Expression[]): StarMapExpr | VarMapExpr {
+  if (args.length < 1) {
+    throw new Error('buildVarMap only accepts an expression list with at least one expression');
+  }
+
   if (args.length === 1 && args[0].isStar) {
     return new StarMapExpr({ this: args[0] });
   }
@@ -113,23 +127,32 @@ export function buildLogarithm (args: Expression[], dialect: Dialect): LogExpr |
 }
 
 export function buildHex (args: Expression[], dialect: Dialect): HexExpr | LowerHexExpr {
-  const arg = seqGet(args, 0);
+  if (args.length < 1) {
+    throw new Error('buildHex only accepts an expression list with at least one expression');
+  }
+  const arg = seqGet(args, 0)!;
   return dialect.HEX_LOWERCASE
     ? new LowerHexExpr({ this: arg })
     : new HexExpr({ this: arg });
 }
 
 export function buildLower (args: Expression[]): LowerExpr | LowerHexExpr {
+  if (args.length < 1) {
+    throw new Error('buildLower only accepts an expression list with at least one expression');
+  }
   // LOWER(HEX(..)) can be simplified to LowerHex to simplify its transpilation
-  const arg = seqGet(args, 0);
+  const arg = seqGet(args, 0)!;
   return arg instanceof HexExpr
     ? new LowerHexExpr({ this: arg.this })
     : new LowerExpr({ this: arg });
 }
 
 export function buildUpper (args: Expression[]): UpperExpr | HexExpr {
+  if (args.length < 1) {
+    throw new Error('buildUpper only accepts an expression list with at least one expression');
+  }
   // UPPER(HEX(..)) can be simplified to Hex to simplify its transpilation
-  const arg = seqGet(args, 0);
+  const arg = seqGet(args, 0)!;
   return arg instanceof LowerHexExpr
     ? new HexExpr({ this: arg.this })
     : new UpperExpr({ this: arg });
@@ -140,8 +163,11 @@ export function buildExtractJsonWithPath<E extends Expression> (
   exprType: new (args: any) => E,
 ): (args: Expression[], dialect: Dialect) => E {
   return function builder (args: Expression[], dialect: Dialect): E {
+    if (args.length < 2) {
+      throw new Error('buildExtractJsonWithPath only accepts an expression list with at least two expressions');
+    }
     const expression = new exprType({
-      this: seqGet(args, 0),
+      this: seqGet(args, 0)!,
       expression: dialect.toJsonPath(seqGet(args, 1)),
     });
 
@@ -155,4 +181,99 @@ export function buildExtractJsonWithPath<E extends Expression> (
 
     return expression;
   };
+}
+
+export function buildMod (args: Expression[]): ModExpr {
+  if (args.length < 2) {
+    throw new Error('buildMod only accepts an expression list with at least two expressions');
+  }
+  let thisArg = seqGet(args, 0)!;
+  let expression = seqGet(args, 1)!;
+
+  // Wrap the operands if they are binary nodes, e.g. MOD(a + 1, 7) -> (a + 1) % 7
+  thisArg = thisArg instanceof BinaryExpr ? new ParenExpr({ this: thisArg }) : thisArg;
+  expression = expression instanceof BinaryExpr ? new ParenExpr({ this: expression }) : expression;
+
+  return new ModExpr({
+    this: thisArg,
+    expression,
+  });
+}
+
+export function buildPad (args: Expression[], options: { isLeft?: boolean } = {}): PadExpr {
+  if (args.length < 2) {
+    throw new Error('buildPad only accepts an expression list with at least two expressions');
+  }
+  const { isLeft = true } = options;
+
+  return new PadExpr({
+    this: seqGet(args, 0)!,
+    expression: seqGet(args, 1)!,
+    fillPattern: seqGet(args, 2),
+    isLeft,
+  });
+}
+
+export function buildArrayConstructor<E extends Expression> (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  exprClass: new (args: any) => E,
+  args: Expression[],
+  bracketKind: TokenType,
+  dialect: Dialect,
+): E {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const arrayExpr = new exprClass({ expressions: args } as any);
+
+  if (arrayExpr instanceof ArrayExpr && dialect.HAS_DISTINCT_ARRAY_CONSTRUCTORS) {
+    arrayExpr.setArgKey('bracketNotation', bracketKind === TokenType.L_BRACKET);
+  }
+
+  return arrayExpr;
+}
+
+export function buildConvertTimezone (
+  args: Expression[],
+  options: { defaultSourceTz?: string } = {},
+): ConvertTimezoneExpr {
+  if (args.length < 2) {
+    throw new Error('buildConvertTimezone only accepts an expression list with at least two expressions');
+  }
+  const { defaultSourceTz } = options;
+
+  if (args.length === 2) {
+    const sourceTz = defaultSourceTz ? LiteralExpr.string(defaultSourceTz) : undefined;
+    return new ConvertTimezoneExpr({
+      sourceTz,
+      targetTz: seqGet(args, 0)!,
+      timestamp: seqGet(args, 1)!,
+    });
+  }
+
+  return ConvertTimezoneExpr.fromArgList(args);
+}
+
+export function buildTrim (
+  args: Expression[],
+  options: { isLeft?: boolean;
+    reverseArgs?: boolean; } = {},
+): TrimExpr {
+  if (args.length < 1) {
+    throw new Error('buildTrim only accepts an expression list with at least one expression');
+  }
+  const {
+    isLeft = true, reverseArgs = false,
+  } = options;
+
+  let thisArg = seqGet(args, 0)!;
+  let expression = seqGet(args, 1);
+
+  if (expression && reverseArgs) {
+    [thisArg, expression] = [expression, thisArg];
+  }
+
+  return new TrimExpr({
+    this: thisArg,
+    expression,
+    position: isLeft ? TrimPosition.LEADING : TrimPosition.TRAILING,
+  });
 }

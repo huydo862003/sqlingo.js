@@ -19040,7 +19040,7 @@ export class FuncExpr extends ConditionExpr {
   /**
    * Create a function instance from a list of arguments
    */
-  static fromArgList (args: Expression[]): FuncExpr {
+  static fromArgList<T extends typeof FuncExpr> (this: T, args: Expression[]): InstanceType<T> {
     const allArgKeys = Object.keys(this.argTypes);
 
     if (this.isVarLenArgs) {
@@ -19053,14 +19053,14 @@ export class FuncExpr extends ConditionExpr {
       }
       argsDict[allArgKeys[allArgKeys.length - 1]] = args.slice(numNonVar);
 
-      return new this(argsDict as FuncExprArgs);
+      return new this(argsDict as FuncExprArgs) as InstanceType<T>;
     } else {
       const argsDict: Record<string, Expression> = {};
       for (let i = 0; i < allArgKeys.length; i++) {
         argsDict[allArgKeys[i]] = args[i];
       }
 
-      return new this(argsDict as FuncExprArgs);
+      return new this(argsDict as FuncExprArgs) as InstanceType<T>;
     }
   }
 
@@ -34710,12 +34710,17 @@ export class TimeStrToUnixExpr extends FuncExpr {
   }
 }
 
+export enum TrimPosition {
+  LEADING = 'LEADING',
+  TRAILING = 'TRAILING',
+}
+
 export type TrimExprArgs = Merge<[
   FuncExprArgs,
   {
     this: Expression;
     expression?: Expression;
-    position?: Expression;
+    position?: TrimPosition;
     collation?: Expression;
   },
 ]>;
@@ -34749,7 +34754,7 @@ export class TrimExpr extends FuncExpr {
     return this.args.expression;
   }
 
-  get $position (): Expression | undefined {
+  get $position (): TrimPosition | undefined {
     return this.args.position;
   }
 
