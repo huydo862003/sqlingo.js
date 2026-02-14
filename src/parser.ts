@@ -4,11 +4,20 @@ import type { Expression } from './expressions';
 import {
   array,
   EscapeExpr,
+  HexExpr,
+  JSONExtractExpr,
+  JSONExtractScalarExpr,
   LikeExpr,
+  LnExpr,
+  LogExpr,
+  LowerExpr,
+  LowerHexExpr,
   StarMapExpr,
+  UpperExpr,
   VarMapExpr,
 } from './expressions';
 import { seqGet } from './helper';
+import type { Dialect } from './dialects/dialect';
 
 export type OptionsType = Record<string, (string[] | string)[]>;
 
@@ -73,5 +82,77 @@ export function binaryRangeParser (
         expression,
       }),
     );
+  };
+}
+
+export function buildLogarithm (args: Expression[], dialect: Dialect): LogExpr | LnExpr {
+  if (args.length < 1) {
+    throw new Error('buildAlgorithm only accepts an expression list with at least one expression');
+  }
+  // Default argument order is base, expression
+  let thisArg = seqGet(args, 0);
+  let expression = seqGet(args, 1);
+
+  if (thisArg && expression) {
+    if (!dialect.LOG_BASE_FIRST) {
+      [thisArg, expression] = [expression, thisArg];
+    }
+    return new LogExpr({
+      this: thisArg,
+      expression,
+    });
+  }
+
+  // Check if dialect's parser class has LOG_DEFAULTS_TO_LN property
+  const parserClass = dialect.parserClass;
+  const logDefaultsToLn = parserClass?.LOG_DEFAULTS_TO_LN ?? false;
+
+  return logDefaultsToLn
+    ? new LnExpr({ this: thisArg })
+    : new LogExpr({ this: thisArg! });
+}
+
+export function buildHex (args: Expression[], dialect: Dialect): HexExpr | LowerHexExpr {
+  const arg = seqGet(args, 0);
+  return dialect.HEX_LOWERCASE
+    ? new LowerHexExpr({ this: arg })
+    : new HexExpr({ this: arg });
+}
+
+export function buildLower (args: Expression[]): LowerExpr | LowerHexExpr {
+  // LOWER(HEX(..)) can be simplified to LowerHex to simplify its transpilation
+  const arg = seqGet(args, 0);
+  return arg instanceof HexExpr
+    ? new LowerHexExpr({ this: arg.this })
+    : new LowerExpr({ this: arg });
+}
+
+export function buildUpper (args: Expression[]): UpperExpr | HexExpr {
+  // UPPER(HEX(..)) can be simplified to Hex to simplify its transpilation
+  const arg = seqGet(args, 0);
+  return arg instanceof LowerHexExpr
+    ? new HexExpr({ this: arg.this })
+    : new UpperExpr({ this: arg });
+}
+
+export function buildExtractJsonWithPath<E extends Expression> (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  exprType: new (args: any) => E,
+): (args: Expression[], dialect: Dialect) => E {
+  return function builder (args: Expression[], dialect: Dialect): E {
+    const expression = new exprType({
+      this: seqGet(args, 0),
+      expression: dialect.toJsonPath(seqGet(args, 1)),
+    });
+
+    if (2 < args.length && expression instanceof JSONExtractExpr) {
+      expression.setArgKey('expressions', args.slice(2));
+    }
+
+    if (expression instanceof JSONExtractScalarExpr) {
+      expression.setArgKey('scalarOnly', dialect.JSON_EXTRACT_SCALAR_SCALAR_ONLY);
+    }
+
+    return expression;
   };
 }
