@@ -1035,7 +1035,7 @@ export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T
 export interface BaseExpressionArgs {
   this?: ExpressionValue;
   expression?: ExpressionValue;
-  expressions?: Expression[];
+  expressions?: (Expression | string | number | boolean | Token)[];
   alias?: TableAliasExpr | IdentifierExpr | string;
   isString?: boolean;
   to?: Expression;
@@ -1115,7 +1115,7 @@ export class Expression {
     }
   }
 
-  * [Symbol.iterator] (): Iterator<Expression | Token> {
+  * [Symbol.iterator] (): Iterator<Expression | string | number | boolean | Token> {
     if ('expressions' in (this.constructor as typeof Expression).argTypes) {
       if (Array.isArray(this.args.expressions)) {
         for (const e of this.args.expressions) {
@@ -1135,7 +1135,7 @@ export class Expression {
     return this.args.expression;
   }
 
-  get expressions (): (string | Expression)[] {
+  get expressions (): (Expression | string | number | boolean | Token)[] {
     const exprs = this.args.expressions;
     return Array.isArray(exprs)
       ? exprs
@@ -2870,10 +2870,12 @@ export class QueryExpr extends Expression {
     const {
       append = true, copy = true, ...restOptions
     } = options;
-    const processedExpressions = ensureList(expressions).map((expr): string | Expression =>
-      expr instanceof WhereExpr
-        ? expr.$this
-        : expr);
+    const processedExpressions = ensureList(expressions)
+      .filter((expr): expr is string | Expression => typeof expr === 'string' || expr instanceof Expression)
+      .map((expr): string | Expression =>
+        expr instanceof WhereExpr
+          ? expr.$this
+          : expr);
 
     return _applyConjunctionBuilder(processedExpressions, {
       instance: this,
@@ -17824,7 +17826,7 @@ export class SelectExpr extends QueryExpr {
    * Returns true if any expression is a star expression.
    */
   get isStar (): boolean {
-    return this.expressions.some((expression) => typeof expression === 'object' && expression.isStar);
+    return this.expressions.some((expression) => typeof expression === 'object' && 'isStar' in expression && expression.isStar);
   }
 
   /**
@@ -19131,7 +19133,7 @@ export class FuncExpr extends ConditionExpr {
 
 export type JSONPathFilterExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { this: Expression },
+  { this: string },
 ]>;
 export class JSONPathFilterExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_FILTER;
@@ -19147,14 +19149,14 @@ export class JSONPathFilterExpr extends JSONPathPartExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): string {
     return this.args.this;
   }
 }
 
 export type JSONPathKeyExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { this: Expression },
+  { this: string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | JSONPathSliceExpr | number | false },
 ]>;
 export class JSONPathKeyExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_KEY;
@@ -19170,14 +19172,14 @@ export class JSONPathKeyExpr extends JSONPathPartExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | JSONPathSliceExpr | number | false {
     return this.args.this;
   }
 }
 
 export type JSONPathRecursiveExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { this?: Expression },
+  { this?: string | Expression },
 ]>;
 
 export class JSONPathRecursiveExpr extends JSONPathPartExpr {
@@ -19194,7 +19196,7 @@ export class JSONPathRecursiveExpr extends JSONPathPartExpr {
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): string | Expression | undefined {
     return this.args.this;
   }
 }
@@ -19217,7 +19219,7 @@ export class JSONPathRootExpr extends JSONPathPartExpr {
 
 export type JSONPathScriptExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { this: Expression },
+  { this: string },
 ]>;
 
 export class JSONPathScriptExpr extends JSONPathPartExpr {
@@ -19234,7 +19236,7 @@ export class JSONPathScriptExpr extends JSONPathPartExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): string {
     return this.args.this;
   }
 }
@@ -19242,9 +19244,9 @@ export class JSONPathScriptExpr extends JSONPathPartExpr {
 export type JSONPathSliceExprArgs = Merge<[
   JSONPathPartExprArgs,
   {
-    start?: Expression;
-    end?: Expression;
-    step?: Expression;
+    start?: string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | number | false;
+    end?: string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | number | false;
+    step?: string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | number | false;
   },
 ]>;
 
@@ -19268,22 +19270,22 @@ export class JSONPathSliceExpr extends JSONPathPartExpr {
     super(args);
   }
 
-  get $start (): Expression | undefined {
+  get $start (): string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | number | false | undefined {
     return this.args.start;
   }
 
-  get $end (): Expression | undefined {
+  get $end (): string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | number | false | undefined {
     return this.args.end;
   }
 
-  get $step (): Expression | undefined {
+  get $step (): string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | JSONPathSliceExpr | number | false | undefined {
     return this.args.step;
   }
 }
 
 export type JSONPathSelectorExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { this: Expression },
+  { this: string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | JSONPathSliceExpr | number | false },
 ]>;
 
 export class JSONPathSelectorExpr extends JSONPathPartExpr {
@@ -19300,14 +19302,14 @@ export class JSONPathSelectorExpr extends JSONPathPartExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | JSONPathSliceExpr | number | false {
     return this.args.this;
   }
 }
 
 export type JSONPathSubscriptExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { this: Expression },
+  { this: string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | JSONPathSliceExpr | number | false },
 ]>;
 
 export class JSONPathSubscriptExpr extends JSONPathPartExpr {
@@ -19324,14 +19326,14 @@ export class JSONPathSubscriptExpr extends JSONPathPartExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | JSONPathSliceExpr | number | false {
     return this.args.this;
   }
 }
 
 export type JSONPathUnionExprArgs = Merge<[
   JSONPathPartExprArgs,
-  { expressions: Expression[] },
+  { expressions: (string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | JSONPathSliceExpr | number | false)[] },
 ]>;
 
 export class JSONPathUnionExpr extends JSONPathPartExpr {
@@ -19348,7 +19350,7 @@ export class JSONPathUnionExpr extends JSONPathPartExpr {
     super(args);
   }
 
-  get $expressions (): Expression[] {
+  get $expressions (): (string | JSONPathWildcardExpr | JSONPathScriptExpr | JSONPathFilterExpr | JSONPathSliceExpr | number | false)[] {
     return this.args.expressions;
   }
 }
@@ -30866,12 +30868,12 @@ export class MapExpr extends FuncExpr {
     return this.args.values;
   }
 
-  get keys (): Expression[] {
+  get keys (): (string | number | boolean | Token | Expression)[] {
     const keysArg = this.args.keys;
     return keysArg?.[0]?.args?.expressions || [];
   }
 
-  get values (): Expression[] {
+  get values (): (string | number | boolean | Token | Expression)[] {
     const valuesArg = this.args.values;
     return valuesArg?.[0]?.args?.expressions || [];
   }
@@ -31223,12 +31225,12 @@ export class VarMapExpr extends FuncExpr {
     return this.args.values;
   }
 
-  get keys (): Expression[] {
+  get keys (): (string | number | boolean | Token | Expression)[] {
     const keysArg = this.args.keys;
     return keysArg?.[0]?.args?.expressions || [];
   }
 
-  get values (): Expression[] {
+  get values (): (string | number | boolean | Token | Expression)[] {
     const valuesArg = this.args.values;
     return valuesArg?.[0]?.args?.expressions || [];
   }
@@ -40051,7 +40053,7 @@ export function union (
     [key: string]: unknown;
   } = {},
 ): UnionExpr {
-  const expressionList = ensureList(expressions);
+  const expressionList = ensureList(expressions).filter((e): e is string | Expression => e !== undefined);
   if (expressionList.length < 2) {
     throw new Error('At least two expressions are required by `union`.');
   }
@@ -40082,7 +40084,7 @@ export function intersect (
     [key: string]: unknown;
   } = {},
 ): IntersectExpr {
-  const expressionList = ensureList(expressions);
+  const expressionList = ensureList(expressions).filter((e): e is string | Expression => e !== undefined);
   if (expressionList.length < 2) {
     throw new Error('At least two expressions are required by `intersect`.');
   }
@@ -40113,7 +40115,7 @@ export function except (
     [key: string]: unknown;
   } = {},
 ): ExceptExpr {
-  const expressionList = ensureList(expressions);
+  const expressionList = ensureList(expressions).filter((e): e is string | Expression => e !== undefined);
   if (expressionList.length < 2) {
     throw new Error('At least two expressions are required by `except`.');
   }
