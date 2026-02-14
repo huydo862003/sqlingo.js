@@ -273,7 +273,7 @@ export class Generator {
 
     // Handle key extraction
     if (key !== undefined) {
-      const value = expression.args[key];
+      const value = (expression.args as Record<string, ExpressionValue | ExpressionValueList>)[key];
       if (value !== undefined) {
         if (typeof value === 'string' || value instanceof Expression) {
           return this.sql(value);
@@ -484,7 +484,7 @@ export class Generator {
     const newLine = options?.newLine ?? false;
 
     const exprs = expression
-      ? (expression.args[key] as Expression[] | undefined)
+      ? ((expression.args as Record<string, ExpressionValue | ExpressionValueList>)[key] as Expression[] | undefined)
       : options?.sqls;
 
     if (!exprs || exprs.length === 0) {

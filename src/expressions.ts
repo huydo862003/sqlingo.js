@@ -1136,7 +1136,7 @@ export class Expression {
    * @returns The text value, or empty string if not found
    */
   text (key: string): string {
-    const field = this.args[key];
+    const field = (this.args as Record<string, ExpressionValue | ExpressionValueList>)[key];
     if (typeof field === 'string') {
       return field;
     }
@@ -1346,7 +1346,7 @@ export class Expression {
           stack.push([vs, childCopy]);
           copy.set(k, childCopy);
         } else if (Array.isArray(vs)) {
-          copy.args[k] = [];
+          (copy.args as Record<string, ExpressionValue | ExpressionValueList>)[k] = [];
           for (const v of vs) {
             if (v instanceof Expression) {
               const childCopy = new (v.constructor as new () => Expression)();
@@ -1357,7 +1357,7 @@ export class Expression {
             }
           }
         } else {
-          copy.args[k] = vs;
+          (copy.args as Record<string, ExpressionValue | ExpressionValueList>)[k] = vs;
         }
       }
     }
@@ -1417,11 +1417,12 @@ export class Expression {
    * @param value - Value to append to the list
    */
   append (argKey: string, value: ExpressionValue): void {
-    if (!Array.isArray(this.args[argKey])) {
-      this.args[argKey] = [];
+    const args = this.args as Record<string, ExpressionValue | ExpressionValueList>;
+    if (!Array.isArray(args[argKey])) {
+      args[argKey] = [];
     }
     this._setParent(argKey, value);
-    const values = this.args[argKey] as unknown[];
+    const values = args[argKey] as unknown[];
     if (value instanceof Expression) {
       value.index = values.length;
     }
@@ -1451,8 +1452,10 @@ export class Expression {
       expression = expression.parent;
     }
 
+    const args = this.args as Record<string, ExpressionValue | ExpressionValueList>;
+
     if (index !== undefined) {
-      const expressions = (this.args[argKey] || []) as ExpressionValueList;
+      const expressions = (args[argKey] || []) as ExpressionValueList;
 
       if (expressions[index] === undefined) {
         return;
@@ -1480,11 +1483,11 @@ export class Expression {
 
       value = expressions;
     } else if (value === undefined) {
-      delete this.args[argKey];
+      delete args[argKey];
       return;
     }
 
-    this.args[argKey] = value;
+    args[argKey] = value;
     this._setParent(argKey, value, index);
   }
 
@@ -1840,7 +1843,7 @@ export class Expression {
       return expression;
     }
 
-    const value = parent.args[key];
+    const value = (parent.args as Record<string, ExpressionValue | ExpressionValueList>)[key];
 
     if (Array.isArray(expression) && value instanceof Expression) {
       // We are trying to replace an Expression with a list, so it's assumed that
@@ -1908,7 +1911,7 @@ export class Expression {
     const constructor = this.constructor as typeof Expression;
     if (constructor.argTypes) {
       for (const key of constructor.requiredArgs()) {
-        const v = this.args[key];
+        const v = (this.args as Record<string, ExpressionValue | ExpressionValueList>)[key];
         if (v === undefined || (Array.isArray(v) && v.length === 0)) {
           errors.push(`Required keyword: '${key}' missing for ${this.constructor.name}`);
         }
@@ -15728,7 +15731,7 @@ export class PartitionByTruncateExpr extends PropertyExpr {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  } satisfies RequiredMap<PartitionByTruncateExprArgs>;
 
   declare args: PartitionByTruncateExprArgs;
 
@@ -19925,7 +19928,7 @@ export class DotExpr extends BinaryExpr {
     parts.reverse();
 
     for (const arg of COLUMN_PARTS) {
-      const part = thisExpr.args[arg];
+      const part = (thisExpr.args as Record<string, ExpressionValue | ExpressionValueList>)[arg];
 
       if (part instanceof Expression) {
         parts.push(part);
@@ -40800,7 +40803,7 @@ function _applyChildListBuilder (
     }
   }
 
-  const existing = inst.args[arg] as Expression | undefined;
+  const existing = (inst.args as Record<string, ExpressionValue | ExpressionValueList>)[arg] as Expression | undefined;
   let allExpressions = parsed;
   if (append && existing && existing.args.expressions) {
     allExpressions = [...(existing.args.expressions as Expression[]), ...parsed];
@@ -40860,7 +40863,7 @@ function _applyListBuilder (
         ...opts,
       }));
 
-  const existing = inst.args[arg] as Expression[] | undefined;
+  const existing = (inst.args as Record<string, ExpressionValue | ExpressionValueList>)[arg] as Expression[] | undefined;
   if (append && existing) {
     inst.set(arg, [...existing, ...parsedExpressions]);
   } else {
@@ -40910,7 +40913,7 @@ function _applyConjunctionBuilder (
 
   const inst = maybeCopy(instance, copy)!;
 
-  const existing = inst.args[arg] as Expression | undefined;
+  const existing = (inst.args as Record<string, ExpressionValue | ExpressionValueList>)[arg] as Expression | undefined;
   let allExpressions = [...filteredExpressions];
 
   if (append && existing !== undefined) {
