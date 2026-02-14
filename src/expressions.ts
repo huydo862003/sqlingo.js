@@ -15432,7 +15432,7 @@ export type LockingPropertyExprArgs = Merge<[
     forOrIn?: Expression;
     lockType: DataTypeExpr;
     override?: Expression;
-    this?: Expression;
+    this: Expression; // NOTE: sqlglot has this as optional
   },
 ]>;
 
@@ -15556,7 +15556,7 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
    */
   static argTypes = {
     ...super.argTypes,
-    this: false,
+    this: true, // NOTE: sqlglot has this as optional
     no: false,
     default: false,
     percent: false,
