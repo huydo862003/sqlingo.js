@@ -14694,7 +14694,7 @@ export type ExternalPropertyExprArgs = Merge<[
   {
     // NOTE: sqlglot has value as optional, but we require it for type safety
     value: string;
-    this?: Expression;
+    this: Expression; // NOTE: sqlglot has this as optional
   },
 ]>;
 
@@ -14703,7 +14703,7 @@ export class ExternalPropertyExpr extends PropertyExpr {
 
   static argTypes = {
     ...super.argTypes,
-    this: false,
+    this: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<ExternalPropertyExprArgs>;
 
   declare args: ExternalPropertyExprArgs;
@@ -14712,7 +14712,7 @@ export class ExternalPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression {
     return this.args.this;
   }
 }
@@ -14759,7 +14759,7 @@ export type FileFormatPropertyExprArgs = Merge<[
     // NOTE: sqlglot has value as optional, but we require it for type safety
     value: string;
     hiveFormat?: string;
-    this?: Expression;
+    this: Expression; // NOTE: sqlglot has this as optional
     expressions?: Expression[];
   },
 ]>;
@@ -14775,7 +14775,7 @@ export class FileFormatPropertyExpr extends PropertyExpr {
     ...super.argTypes,
     expressions: false,
     hiveFormat: false,
-    this: false,
+    this: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<FileFormatPropertyExprArgs>;
 
   declare args: FileFormatPropertyExprArgs;
@@ -14788,7 +14788,7 @@ export class FileFormatPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression {
     return this.args.this;
   }
 
@@ -14852,7 +14852,7 @@ export class FreespacePropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression {
     return this.args.this;
   }
 
@@ -15511,7 +15511,7 @@ export type MaterializedPropertyExprArgs = Merge<[
   {
     // NOTE: sqlglot has value as optional, but we require it for type safety
     value: string;
-    this?: Expression;
+    this: Expression; // NOTE: sqlglot has this as optional
   },
 ]>;
 
@@ -15520,7 +15520,7 @@ export class MaterializedPropertyExpr extends PropertyExpr {
 
   static argTypes = {
     ...super.argTypes,
-    this: false,
+    this: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<MaterializedPropertyExprArgs>;
 
   declare args: MaterializedPropertyExprArgs;
@@ -15529,7 +15529,7 @@ export class MaterializedPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression {
     return this.args.this;
   }
 }
@@ -15542,7 +15542,7 @@ export type MergeBlockRatioPropertyExprArgs = Merge<[
     no?: Expression;
     default?: Expression;
     percent?: Expression;
-    this?: Expression;
+    this: Expression; // NOTE: sqlglot has this as optional
   },
 ]>;
 
@@ -15572,7 +15572,7 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression {
     return this.args.this;
   }
 
@@ -16010,7 +16010,7 @@ export type ReturnsPropertyExprArgs = Merge<[
   {
     // NOTE: sqlglot has value as optional, but we require it for type safety
     value: string;
-    this?: Expression;
+    this: Expression; // NOTE: sqlglot has this as optional
     isTable?: Expression;
     table?: Expression;
     null?: Expression;
@@ -16026,7 +16026,7 @@ export class ReturnsPropertyExpr extends PropertyExpr {
    */
   static argTypes = {
     ...super.argTypes,
-    this: false,
+    this: true, // NOTE: sqlglot has this as optional
     isTable: false,
     table: false,
     null: false,
@@ -16038,7 +16038,7 @@ export class ReturnsPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression {
     return this.args.this;
   }
 
@@ -16332,7 +16332,7 @@ export type SharingPropertyExprArgs = Merge<[
   {
     // NOTE: sqlglot has value as optional, but we require it for type safety
     value: string;
-    this?: Expression;
+    this: Expression; // NOTE: sqlglot has this as optional
   },
 ]>;
 
@@ -16341,7 +16341,7 @@ export class SharingPropertyExpr extends PropertyExpr {
 
   static argTypes = {
     ...super.argTypes,
-    this: false,
+    this: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<SharingPropertyExprArgs>;
 
   declare args: SharingPropertyExprArgs;
@@ -16350,7 +16350,7 @@ export class SharingPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression {
     return this.args.this;
   }
 }
@@ -16540,7 +16540,7 @@ export type TemporaryPropertyExprArgs = Merge<[
   {
     // NOTE: sqlglot has value as optional, but we require it for type safety
     value: string;
-    this?: Expression;
+    this: Expression; // NOTE: sqlglot has this as optional
   },
 ]>;
 
@@ -16549,7 +16549,7 @@ export class TemporaryPropertyExpr extends PropertyExpr {
 
   static argTypes = {
     ...super.argTypes,
-    this: false,
+    this: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<TemporaryPropertyExprArgs>;
 
   declare args: TemporaryPropertyExprArgs;
@@ -16558,7 +16558,7 @@ export class TemporaryPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression {
     return this.args.this;
   }
 }
@@ -16637,7 +16637,7 @@ export type TransientPropertyExprArgs = Merge<[
   {
     // NOTE: sqlglot has value as optional, but we require it for type safety
     value: string;
-    this?: Expression;
+    this: Expression; // NOTE: sqlglot has this as optional
   },
 ]>;
 
@@ -16646,7 +16646,7 @@ export class TransientPropertyExpr extends PropertyExpr {
 
   static argTypes = {
     ...super.argTypes,
-    this: false,
+    this: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<TransientPropertyExprArgs>;
 
   declare args: TransientPropertyExprArgs;
@@ -16655,7 +16655,7 @@ export class TransientPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression {
     return this.args.this;
   }
 }
@@ -16733,7 +16733,7 @@ export type VolatilePropertyExprArgs = Merge<[
   {
     // NOTE: sqlglot has value as optional, but we require it for type safety
     value: string;
-    this?: Expression;
+    this: Expression; // NOTE: sqlglot has this as optional
   },
 ]>;
 
@@ -16742,7 +16742,7 @@ export class VolatilePropertyExpr extends PropertyExpr {
 
   static argTypes = {
     ...super.argTypes,
-    this: false,
+    this: true, // NOTE: sqlglot has this as optional
   } satisfies RequiredMap<VolatilePropertyExprArgs>;
 
   declare args: VolatilePropertyExprArgs;
@@ -16751,7 +16751,7 @@ export class VolatilePropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression {
     return this.args.this;
   }
 }
@@ -16847,6 +16847,7 @@ export type WithSystemVersioningPropertyExprArgs = Merge<[
     dataConsistency?: Expression;
     retentionPeriod?: Expression;
     with: Expression;
+    this: Expression; // NOTE: sqlglot has this as optional
   },
 ]>;
 
@@ -16876,7 +16877,7 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
     return this.args.on;
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression {
     return this.args.this;
   }
 
