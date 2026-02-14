@@ -14872,7 +14872,10 @@ export type GlobalPropertyExprArgs = Merge<[
 export class GlobalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.GLOBAL_PROPERTY;
 
-  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<GlobalPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    value: true,
+  } satisfies RequiredMap<GlobalPropertyExprArgs>;
 
   declare args: GlobalPropertyExprArgs;
 
@@ -14892,7 +14895,10 @@ export type IcebergPropertyExprArgs = Merge<[
 export class IcebergPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ICEBERG_PROPERTY;
 
-  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<IcebergPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    value: true,
+  } satisfies RequiredMap<IcebergPropertyExprArgs>;
 
   declare args: IcebergPropertyExprArgs;
 
@@ -15279,7 +15285,10 @@ export type DynamicPropertyExprArgs = Merge<[
 export class DynamicPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DYNAMIC_PROPERTY;
 
-  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<DynamicPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    value: true,
+  } satisfies RequiredMap<DynamicPropertyExprArgs>;
 
   declare args: DynamicPropertyExprArgs;
 
@@ -15323,7 +15332,10 @@ export type EmptyPropertyExprArgs = Merge<[
 export class EmptyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EMPTY_PROPERTY;
 
-  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<EmptyPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    value: true,
+  } satisfies RequiredMap<EmptyPropertyExprArgs>;
 
   declare args: EmptyPropertyExprArgs;
 
@@ -15600,7 +15612,10 @@ export type NoPrimaryIndexPropertyExprArgs = Merge<[
 export class NoPrimaryIndexPropertyExpr extends PropertyExpr {
   key = ExpressionKey.NO_PRIMARY_INDEX_PROPERTY;
 
-  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<NoPrimaryIndexPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    value: true,
+  } satisfies RequiredMap<NoPrimaryIndexPropertyExprArgs>;
 
   declare args: NoPrimaryIndexPropertyExprArgs;
 
@@ -15969,7 +15984,10 @@ export type StreamingTablePropertyExprArgs = Merge<[
 export class StreamingTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.STREAMING_TABLE_PROPERTY;
 
-  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<StreamingTablePropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    value: true,
+  } satisfies RequiredMap<StreamingTablePropertyExprArgs>;
 
   declare args: StreamingTablePropertyExprArgs;
 
@@ -16066,7 +16084,10 @@ export type StrictPropertyExprArgs = Merge<[
 export class StrictPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STRICT_PROPERTY;
 
-  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<StrictPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    value: true,
+  } satisfies RequiredMap<StrictPropertyExprArgs>;
 
   declare args: StrictPropertyExprArgs;
 
@@ -16574,7 +16595,10 @@ export type SecurePropertyExprArgs = Merge<[
 export class SecurePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURE_PROPERTY;
 
-  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<SecurePropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    value: true,
+  } satisfies RequiredMap<SecurePropertyExprArgs>;
 
   declare args: SecurePropertyExprArgs;
 
@@ -16672,7 +16696,10 @@ export type UnloggedPropertyExprArgs = Merge<[
 export class UnloggedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNLOGGED_PROPERTY;
 
-  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<UnloggedPropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    value: true,
+  } satisfies RequiredMap<UnloggedPropertyExprArgs>;
 
   declare args: UnloggedPropertyExprArgs;
 
@@ -17020,7 +17047,10 @@ export type ForcePropertyExprArgs = Merge<[
 export class ForcePropertyExpr extends PropertyExpr {
   key = ExpressionKey.FORCE_PROPERTY;
 
-  static argTypes = { ...super.argTypes, value: true } satisfies RequiredMap<ForcePropertyExprArgs>;
+  static argTypes = {
+    ...super.argTypes,
+    value: true,
+  } satisfies RequiredMap<ForcePropertyExprArgs>;
 
   declare args: ForcePropertyExprArgs;
 
