@@ -1036,7 +1036,7 @@ export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T
 export interface BaseExpressionArgs {
   this?: ExpressionValue;
   expression?: ExpressionValue;
-  expressions?: readonly Expression[];
+  expressions?: Expression[];
   alias?: TableAliasExpr | IdentifierExpr | string;
   isString?: boolean;
   to?: Expression;
@@ -4517,7 +4517,7 @@ export type WithExprArgs = Merge<[
   {
     recursive?: boolean;
     search?: Expression;
-    readonly expressions: CTEExpr[];
+    expressions: CTEExpr[];
   },
 ]>;
 
@@ -12193,7 +12193,7 @@ export type UseExprArgs = Merge<[
   {
     kind?: UseExprKind;
     this?: Expression;
-    expressions?: readonly Expression[];
+    expressions?: Expression[];
   },
 ]>;
 
@@ -12216,7 +12216,7 @@ export class UseExpr extends Expression {
     return this.args.kind;
   }
 
-  get $expressions (): readonly Expression[] | undefined {
+  get $expressions (): Expression[] | undefined {
     return this.args.expressions;
   }
 
@@ -12275,7 +12275,7 @@ export class WhenExpr extends Expression {
 
 export type WhensExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: readonly Expression[] },
+  { expressions: Expression[] },
 ]>;
 
 export class WhensExpr extends Expression {
@@ -12292,7 +12292,7 @@ export class WhensExpr extends Expression {
     super(args);
   }
 
-  get $expressions (): readonly Expression[] {
+  get $expressions (): Expression[] {
     return this.args.expressions;
   }
 }
@@ -17971,7 +17971,7 @@ export class SelectExpr extends QueryExpr {
 
     // Set join alias
     if (joinAlias) {
-      join.set('this', alias(join.args.this, joinAlias, { table: true }));
+      join.set('this', alias(join.args.this as Expression, joinAlias, { table: true }));
     }
 
     return _applyListBuilder([join], {
