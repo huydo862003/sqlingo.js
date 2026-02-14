@@ -1040,7 +1040,6 @@ export interface BaseExpressionArgs {
   alias?: TableAliasExpr | IdentifierExpr | string;
   isString?: boolean;
   to?: Expression;
-  [key: string]: ExpressionValueList | ExpressionValue | undefined;
 }
 
 /**
