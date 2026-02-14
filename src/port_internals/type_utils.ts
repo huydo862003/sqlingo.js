@@ -24,13 +24,9 @@ type OmitNever<T> = {
 export type RemoveAll<T> = { [K in keyof T]?: never };
 
 /** Merges T and U, with U overriding T. Properties set to `never` in U are removed. */
-export type Override<T, U> = OmitNever<{
-  [K in keyof T | keyof U]: K extends keyof U
-    ? U[K]
-    : K extends keyof T
-      ? T[K]
-      : never;
-}>;
+export type Override<T, U> = OmitNever<
+  Omit<T, keyof U> & U
+>;
 
 /** Merges multiple types left-to-right, with later types taking priority. */
 export type Merge<Types extends readonly unknown[]> = Types extends readonly [
