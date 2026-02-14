@@ -1261,7 +1261,7 @@ export class Tokenizer {
   /**
    * Array of comment delimiters.
    */
-  static COMMENTS: Array<string | [string, string]> = ['--', ['/*', '*/']];
+  static COMMENTS: (string | [string, string])[] = ['--', ['/*', '*/']];
 
   /** The SQL string being tokenized. */
   sql = '';

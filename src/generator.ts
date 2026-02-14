@@ -416,7 +416,7 @@ export class Generator {
   /**
    * Generate a function call.
    */
-  func (name: string, ...args: Array<Expression | string | undefined>): string {
+  func (name: string, ...args: (Expression | string | undefined)[]): string {
     const options = {
       prefix: '(',
       suffix: ')',
@@ -431,7 +431,7 @@ export class Generator {
   /**
    * Format function arguments.
    */
-  formatArgs (...args: Array<Expression | string | undefined | boolean>): string {
+  formatArgs (...args: (Expression | string | undefined | boolean)[]): string {
     const sep = ', ';
     const argSqls = args
       .filter((arg) => arg !== undefined && typeof arg !== 'boolean')
@@ -462,7 +462,7 @@ export class Generator {
     expression?: Expression,
     options?: {
       key?: string;
-      sqls?: Array<string | Expression>;
+      sqls?: (string | Expression)[];
       flat?: boolean;
       indent?: boolean;
       skipFirst?: boolean;
@@ -563,7 +563,7 @@ export class Generator {
    */
   binary (expression: Expression, op: string): string {
     const sqls: string[] = [];
-    const stack: Array<string | Expression> = [expression];
+    const stack: (string | Expression)[] = [expression];
     const binaryType = expression.constructor;
 
     while (0 < stack.length) {

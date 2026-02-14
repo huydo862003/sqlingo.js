@@ -1036,10 +1036,10 @@ export type ExpressionValueList<T extends ExpressionValue = ExpressionValue> = T
 export interface BaseExpressionArgs {
   this?: ExpressionValue;
   expression?: ExpressionValue;
-  expressions?: Expression[];
+  expressions?: readonly Expression[];
   alias?: TableAliasExpr | IdentifierExpr | string;
   isString?: boolean;
-  to?: DataTypeExpr;
+  to?: Expression;
   [key: string]: ExpressionValueList | ExpressionValue | undefined;
 }
 
@@ -1325,7 +1325,7 @@ export class Expression {
 
   copy (): this {
     const root = new (this.constructor as new () => this)();
-    const stack: Array<[Expression, Expression]> = [[this, root]];
+    const stack: [Expression, Expression][] = [[this, root]];
 
     while (0 < stack.length) {
       const [node, copy] = stack.pop()!;
@@ -1550,7 +1550,7 @@ export class Expression {
    */
   find<T extends Expression>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expressionTypes: (new (args: any) => T) | Array<new (args: any) => T>,
+    expressionTypes: (new (args: any) => T) | (new (args: any) => T)[],
     options?: { bfs?: boolean },
   ): T | undefined {
     for (const expr of this.findAll(expressionTypes, options)) {
@@ -1589,7 +1589,7 @@ export class Expression {
    * @returns First matching ancestor or undefined
    */
   findAncestor<T extends Expression>(
-    ...expressionTypes: Array<new (...args: never[]) => T>
+    ...expressionTypes: (new (...args: never[]) => T)[]
   ): T | undefined {
     let node: Expression | undefined = this.parent;
     while (node) {
@@ -2247,7 +2247,7 @@ export class Expression {
     expressions: unknown[],
     query?: string | Expression,
     options: {
-      unnest?: string | Expression | Array<string | Expression>;
+      unnest?: string | Expression | (string | Expression)[];
       copy?: boolean;
     } = {},
   ): InExpr {
@@ -3344,7 +3344,7 @@ export type CreateExprArgs = Merge<[
     concurrently?: Expression;
     clustered?: Expression;
     this: Expression;
-    expression?: Expression;
+    expression?: SelectExpr;
   },
 ]>;
 
@@ -4517,7 +4517,7 @@ export type WithExprArgs = Merge<[
   {
     recursive?: boolean;
     search?: Expression;
-    expressions: CTEExpr[];
+    readonly expressions: CTEExpr[];
   },
 ]>;
 
@@ -12193,7 +12193,7 @@ export type UseExprArgs = Merge<[
   {
     kind?: UseExprKind;
     this?: Expression;
-    expressions?: Expression;
+    expressions?: readonly Expression[];
   },
 ]>;
 
@@ -12216,7 +12216,7 @@ export class UseExpr extends Expression {
     return this.args.kind;
   }
 
-  get $expressions (): Expression | undefined {
+  get $expressions (): readonly Expression[] | undefined {
     return this.args.expressions;
   }
 
@@ -12275,7 +12275,7 @@ export class WhenExpr extends Expression {
 
 export type WhensExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression },
+  { expressions: readonly Expression[] },
 ]>;
 
 export class WhensExpr extends Expression {
@@ -12292,7 +12292,7 @@ export class WhensExpr extends Expression {
     super(args);
   }
 
-  get $expressions (): Expression {
+  get $expressions (): readonly Expression[] {
     return this.args.expressions;
   }
 }
@@ -12355,7 +12355,8 @@ export type CTEExprArgs = Merge<[
     scalar?: boolean;
     materialized?: boolean;
     keyExpressions?: Expression[];
-    alias: Expression[];
+    // NOTE: sqlglot named it alias but we name it aliases
+    aliases: Expression[];
     this: Expression;
   },
 ]>;
@@ -12370,7 +12371,7 @@ export class CTEExpr extends DerivedTableExpr {
   static argTypes = {
     ...super.argTypes,
     this: true,
-    alias: true,
+    aliases: true,
     scalar: false,
     materialized: false,
     keyExpressions: false,
@@ -12386,8 +12387,8 @@ export class CTEExpr extends DerivedTableExpr {
     return this.args.this;
   }
 
-  get $alias (): Expression[] {
-    return this.args.alias;
+  get $aliases (): Expression[] {
+    return this.args.aliases;
   }
 
   get $scalar (): boolean | undefined {
@@ -17893,8 +17894,8 @@ export class SelectExpr extends QueryExpr {
   join (
     expression: string | Expression,
     options: {
-      on?: string | Expression | Array<string | Expression>;
-      using?: string | Expression | Array<string | Expression>;
+      on?: string | Expression | (string | Expression)[];
+      using?: string | Expression | (string | Expression)[];
       append?: boolean;
       joinType?: string;
       joinAlias?: string | Expression;
@@ -18049,7 +18050,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT DISTINCT x FROM tbl'
    */
   distinct (
-    ons?: Array<string | Expression | undefined>,
+    ons?: (string | Expression | undefined)[],
     options: {
       distinct?: boolean;
       copy?: boolean;
@@ -18142,7 +18143,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT /*+ BROADCAST(y) *\/ x FROM tbl'
    */
   hint (
-    hints: Array<string | Expression>,
+    hints: (string | Expression)[],
     options: {
       dialect?: DialectType;
       copy?: boolean;
@@ -23873,7 +23874,7 @@ export class CastExpr extends FuncExpr {
     return this.name;
   }
 
-  isType (...dtypes: Array<DataTypeExprKind | DataTypeExpr>): boolean {
+  isType (...dtypes: (DataTypeExprKind | DataTypeExpr)[]): boolean {
     const toExpr = this.$to;
     if (!toExpr) return false;
     if (toExpr instanceof DataTypeExpr) {
@@ -39787,10 +39788,10 @@ export function cast (
  * @returns The Values expression object
  */
 export function values (
-  valuesList: Array<Array<unknown>>,
+  valuesList: unknown[][],
   options: {
     alias?: string;
-    columns?: Array<string | IdentifierExpr>;
+    columns?: (string | IdentifierExpr)[];
   } = {},
 ): ValuesExpr {
   const {
@@ -39999,7 +40000,7 @@ export function insert (
   expression: string | Expression,
   into: string | Expression,
   options: {
-    columns?: Array<string | IdentifierExpr>;
+    columns?: (string | IdentifierExpr)[];
     overwrite?: boolean;
     returning?: string | Expression;
     dialect?: DialectType;
@@ -40207,7 +40208,7 @@ export function update (
  * @returns The syntax tree for the MERGE statement
  */
 export function merge (
-  whenExprs: Array<string | Expression>,
+  whenExprs: (string | Expression)[],
   options: {
     into: string | Expression;
     using: string | Expression;
