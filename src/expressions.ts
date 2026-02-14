@@ -37648,8 +37648,8 @@ export class OrExpr extends multiInherit(ConnectorExpr, FuncExpr) {
 export type XorExprArgs = Merge<[
   ConnectorExprArgs,
   {
-    this?: Expression;
-    expression?: Expression;
+    this: Expression; // NOTE: sqlglot has this as optional
+    expression: Expression; // NOTE: sqlglot has this as optional
     expressions?: Expression[];
     roundInput?: Expression;
   },
@@ -37663,8 +37663,8 @@ export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-    this: false,
-    expression: false,
+    this: true, // NOTE: sqlglot has this as optional
+    expression: true, // NOTE: sqlglot has this as optional
     expressions: false,
     roundInput: false,
   } satisfies RequiredMap<XorExprArgs>;
@@ -37675,11 +37675,11 @@ export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression {
     return this.args.this;
   }
 
-  get $expression (): ExpressionValue {
+  get $expression (): Expression {
     return this.args.expression;
   }
 
