@@ -1115,11 +1115,12 @@ export class Expression {
     }
   }
 
-  * [Symbol.iterator] (): Iterator<Expression | string | number | boolean | Token> {
+  * [Symbol.iterator] (): Iterator<this['args']['expressions'] extends (infer U)[] | undefined ? U : never> {
     if ('expressions' in (this.constructor as typeof Expression).argTypes) {
       if (Array.isArray(this.args.expressions)) {
         for (const e of this.args.expressions) {
-          yield e;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          yield e as any;
         }
       }
       return;
@@ -22031,7 +22032,7 @@ export class ApplyExpr extends FuncExpr {
 export type ArrayExprArgs = Merge<[
   FuncExprArgs,
   {
-    expressions?: Expression[];
+    expressions?: (string | number | boolean | Token | Expression)[];
     bracketNotation?: Expression;
     structNameInheritance?: string;
   },
@@ -22059,7 +22060,7 @@ export class ArrayExpr extends FuncExpr {
     super(args);
   }
 
-  get $expressions (): Expression[] | undefined {
+  get $expressions (): (string | number | boolean | Token | Expression)[] | undefined {
     return this.args.expressions;
   }
 
@@ -31192,8 +31193,8 @@ export class StarMapExpr extends FuncExpr {
 export type VarMapExprArgs = Merge<[
   FuncExprArgs,
   {
-    keys: Expression[];
-    values: Expression[];
+    keys: ArrayExpr;
+    values: ArrayExpr;
   },
 ]>;
 
@@ -31217,22 +31218,22 @@ export class VarMapExpr extends FuncExpr {
     super(args);
   }
 
-  get $keys (): Expression[] {
+  get $keys (): ArrayExpr {
     return this.args.keys;
   }
 
-  get $values (): Expression[] {
+  get $values (): ArrayExpr {
     return this.args.values;
   }
 
   get keys (): (string | number | boolean | Token | Expression)[] {
     const keysArg = this.args.keys;
-    return keysArg?.[0]?.args?.expressions || [];
+    return keysArg.expressions || [];
   }
 
   get values (): (string | number | boolean | Token | Expression)[] {
     const valuesArg = this.args.values;
-    return valuesArg?.[0]?.args?.expressions || [];
+    return valuesArg.expressions || [];
   }
 
   static {
