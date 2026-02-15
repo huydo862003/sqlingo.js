@@ -8183,7 +8183,7 @@ export type PropertyExprArgs = Merge<[
   BaseExpressionArgs,
   {
     value?: string | Expression;
-    this?: Expression; // NOTE: In argTypes, we set this to true
+    this?: Expression | string; // NOTE: In argTypes, we set this to true
   },
 ]>;
 
@@ -8206,7 +8206,7 @@ export class PropertyExpr extends Expression {
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression | string | undefined {
     return this.args.this;
   }
 
@@ -14465,7 +14465,7 @@ export class DataDeletionPropertyExpr extends PropertyExpr {
 
 export type DefinerPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { this: Expression },
+  { this: string },
 ]>;
 
 export class DefinerPropertyExpr extends PropertyExpr {
@@ -14482,7 +14482,7 @@ export class DefinerPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): string {
     return this.args.this;
   }
 }
@@ -16014,6 +16014,7 @@ export type RemoteWithConnectionModelPropertyExprArgs = Merge<[
   PropertyExprArgs,
   {
     value?: string;
+    this: Expression;
   },
 ]>;
 
@@ -16031,8 +16032,12 @@ export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): Expression {
     return this.args.this;
+  }
+
+  get $value (): string | undefined {
+    return this.args.value;
   }
 }
 
@@ -29813,6 +29818,7 @@ export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
     quote: false,
     onCondition: false,
     requiresJson: false,
+    expression: true,
   };
 
   declare args: JSONExtractExprArgs;
