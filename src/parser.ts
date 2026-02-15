@@ -3182,7 +3182,7 @@ export class Parser {
         );
         const result = parser(this, filteredKwargs);
         return Array.isArray(result) ? result[0] : result;
-      } catch (error) {
+      } catch {
         this.raiseError(`Cannot parse property '${this._prev!.text}'`);
       }
     }
@@ -3850,7 +3850,7 @@ export class Parser {
     this._match(TokenType.EQ);
     return this.expression(
       PartitionedByPropertyExpr,
-      { this: this.parseSchema() || this.parseBracket(() => this.parseField()) },
+      { this: this.parseSchema() || this.parseBracket(this.parseField()) },
     );
   }
 
@@ -3937,10 +3937,11 @@ export class Parser {
         return undefined;
       }
 
+      const thisId = idVar.this;
       options.push(
         this.expression(PropertyExpr, {
           this: thisText,
-          value: var_(idVar.this.toUpperCase()),
+          value: var_(typeof thisId === 'string' ? thisId.toUpperCase() : ''),
         }),
       );
     }
@@ -4029,7 +4030,7 @@ export class Parser {
 
     const format = this._match(TokenType.FORMAT, { advance: false }) ? this.parseProperty() : undefined;
 
-    let thisExpr: Expression;
+    let thisExpr: Expression | undefined;
     if (this._matchSet(new Set(Object.keys(this._constructor.STATEMENT_PARSERS) as TokenType[]), { advance: false })) {
       thisExpr = this.parseStatement();
     } else {
@@ -8146,8 +8147,10 @@ export class Parser {
     }
   }
 
-  parseIdVar (options?: { anyToken?: boolean;
-    tokens?: Set<TokenType>; }): Expression | undefined {
+  parseIdVar (options?: {
+    anyToken?: boolean;
+    tokens?: Set<TokenType>;
+  }): Expression | undefined {
     const anyToken = options?.anyToken !== undefined ? options.anyToken : true;
     const tokens = options?.tokens;
 
