@@ -3818,8 +3818,8 @@ export class DetachExpr extends Expression {
 export type InstallExprArgs = Merge<[
   BaseExpressionArgs,
   {
-    // NOTE: 'from' here is the install source location, not a FROM clause
-    from?: Expression;
+    // NOTE: 'fromSource' is the install source location, not a FROM clause
+    fromSource?: Expression;
     force?: Expression;
     this: Expression;
   },
@@ -3835,7 +3835,7 @@ export class InstallExpr extends Expression {
   static argTypes: RequiredMap<InstallExprArgs> = {
     ...super.argTypes,
     this: true,
-    from: false,
+    fromSource: false,
     force: false,
   };
 
@@ -3849,8 +3849,8 @@ export class InstallExpr extends Expression {
     return this.args.this;
   }
 
-  get $from (): Expression | undefined {
-    return this.args.from;
+  get $fromSource (): Expression | undefined {
+    return this.args.fromSource;
   }
 
   get $force (): Expression | undefined {
@@ -4226,8 +4226,8 @@ export type ShowExprArgs = Merge<[
     offset?: boolean;
     startsWith?: Expression;
     limit?: number | Expression;
-    // NOTE: 'from' here is part of SHOW command syntax, not a FROM clause
-    from?: Expression;
+    // NOTE: 'fromExpr' is part of SHOW command syntax, not a FROM clause
+    fromExpr?: Expression;
     like?: Expression;
     where?: Expression;
     db?: string;
@@ -4268,7 +4268,7 @@ export class ShowExpr extends Expression {
     offset: false,
     startsWith: false,
     limit: false,
-    from: false,
+    fromExpr: false,
     like: false,
     where: false,
     db: false,
@@ -4325,8 +4325,8 @@ export class ShowExpr extends Expression {
     return this.args.limit;
   }
 
-  get $from (): Expression | undefined {
-    return this.args.from;
+  get $fromExpr (): Expression | undefined {
+    return this.args.fromExpr;
   }
 
   get $like (): Expression | undefined {
@@ -8090,8 +8090,8 @@ export class OrderExpr extends Expression {
 export type WithFillExprArgs = Merge<[
   BaseExpressionArgs,
   {
-    // NOTE: 'from' here is the range start value, not a FROM clause
-    from?: Expression;
+    // NOTE: 'fromValue' is the range start value, not a FROM clause
+    fromValue?: Expression;
     to?: Expression;
     step?: Expression;
     interpolate?: Expression;
@@ -8107,7 +8107,7 @@ export class WithFillExpr extends Expression {
    */
   static argTypes: RequiredMap<WithFillExprArgs> = {
     ...super.argTypes,
-    from: false,
+    fromValue: false,
     to: false,
     step: false,
     interpolate: false,
@@ -8119,8 +8119,8 @@ export class WithFillExpr extends Expression {
     super(args);
   }
 
-  get $from (): Expression | undefined {
-    return this.args.from;
+  get $fromValue (): Expression | undefined {
+    return this.args.fromValue;
   }
 
   get $to (): Expression | undefined {
@@ -21921,8 +21921,8 @@ export type TranslateExprArgs = Merge<[
   FuncExprArgs,
   {
     this: Expression;
-    // NOTE: 'from' here is the source characters for TRANSLATE function, not a FROM clause
-    from: Expression;
+    // NOTE: 'fromStr' is the source characters for TRANSLATE function, not a FROM clause
+    fromStr: Expression;
     to: Expression;
   },
 ]>;
@@ -21933,7 +21933,7 @@ export class TranslateExpr extends FuncExpr {
   static argTypes: RequiredMap<TranslateExprArgs> = {
     ...super.argTypes,
     this: true,
-    from: true,
+    fromStr: true,
     to: true,
   };
 
@@ -21947,8 +21947,8 @@ export class TranslateExpr extends FuncExpr {
     return this.args.this;
   }
 
-  get $from (): Expression {
-    return this.args.from;
+  get $fromStr (): Expression {
+    return this.args.fromStr;
   }
 
   get $to (): Expression {
@@ -31720,8 +31720,8 @@ export type OverlayExprArgs = Merge<[
   {
     this: Expression;
     expression: Expression;
-    // NOTE: 'from' here is the position parameter for OVERLAY function, not a FROM clause
-    from: Expression;
+    // NOTE: 'fromPosition' is the position parameter for OVERLAY function, not a FROM clause
+    fromPosition: Expression;
     for?: Expression;
   },
 ]>;
@@ -31737,7 +31737,7 @@ export class OverlayExpr extends FuncExpr {
     ...super.argTypes,
     this: true,
     expression: true,
-    from: true,
+    fromPosition: true,
     for: false,
   };
 
@@ -31755,8 +31755,8 @@ export class OverlayExpr extends FuncExpr {
     return this.args.expression;
   }
 
-  get $from (): Expression {
-    return this.args.from;
+  get $fromPosition (): Expression {
+    return this.args.fromPosition;
   }
 
   get $for (): Expression | undefined {

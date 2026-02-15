@@ -2143,7 +2143,7 @@ export class Parser {
     XMLTABLE: (self: Parser) => self.parseXmlTable(),
   };
 
-  static QUERY_MODIFIER_PARSERS = {
+  static QUERY_MODIFIER_PARSERS: Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> = {
     [TokenType.MATCH_RECOGNIZE]: (self: Parser): [string, Expression | undefined] => ['match', self.parseMatchRecognize()],
     [TokenType.PREWHERE]: (self: Parser): [string, Expression | undefined] => ['prewhere', self.parsePrewhere()],
     [TokenType.WHERE]: (self: Parser): [string, Expression | undefined] => ['where', self.parseWhere()],
@@ -2508,12 +2508,13 @@ export class Parser {
     'CYCLE',
   ]);
 
-  static MODIFIABLES = [
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static MODIFIABLES: (new (args: any) => Expression)[] = [
     QueryExpr,
     TableExpr,
     TableFromRowsExpr,
     ValuesExpr,
-  ] as const;
+  ];
 
   static STRICT_CAST = true;
 
@@ -4688,7 +4689,7 @@ export class Parser {
 
     // Add the FROM clause table to refs
     if ('from' in args) {
-      const fromExpr: FromExpr | undefined = args['from'];
+      const fromExpr = args['from'];
       const fromExprThis = fromExpr?.$this;
       if (fromExprThis) {
         const normalized = normalizeIdentifiers(fromExprThis.copy(), { dialect: this.dialect });
@@ -4706,15 +4707,12 @@ export class Parser {
           if (table instanceof TableExpr && !join.args.on) {
             // Normalize the table with maybe_column meta flag
             const normalizedTable = table.copy();
-            if (!normalizedTable.meta) {
-              normalizedTable.meta = {};
-            }
             normalizedTable.meta['maybe_column'] = true;
             const normalized = normalizeIdentifiers(normalizedTable, { dialect: this.dialect });
 
             // Check if the first part of the table name is in refs
             const parts = normalized.parts;
-            if (parts && parts.length > 0 && refs.has(parts[0].name || '')) {
+            if (parts && 0 < parts.length && refs.has(parts[0].name || '')) {
               const tableAsColumn = table.toColumn();
               if (tableAsColumn) {
                 const unnest = new UnnestExpr({ expressions: [tableAsColumn] });
@@ -4727,9 +4725,7 @@ export class Parser {
                     table: [table.args.alias.$this],
                     copy: false,
                   };
-                  if ('alias' in unnest && typeof unnest.alias === 'function') {
-                    (unnest as { alias: (a: unknown, b: unknown) => void }).alias(undefined, aliasArgs);
-                  }
+                  alias(unnest, undefined, aliasArgs);
                 }
 
                 table.replace(unnest);
@@ -4764,10 +4760,10 @@ export class Parser {
         if (this._matchSet(new Set(Object.keys(this._constructor.QUERY_MODIFIER_PARSERS) as TokenType[]), { advance: false })) {
           const modifierToken = this._curr!;
           const parser = this._constructor.QUERY_MODIFIER_PARSERS[modifierToken.tokenType];
-          const [key, expression] = parser(this);
+          const [key, expression] = parser?.(this) || [];
 
-          if (expression) {
-            if (thisExpr.args[key]) {
+          if (key !== undefined && expression !== undefined) {
+            if (key in thisExpr.args && thisExpr.args[key as keyof typeof thisExpr.args]) {
               this.raiseError(
                 `Found multiple '${modifierToken.text.toUpperCase()}' clauses`,
                 modifierToken,
@@ -6439,7 +6435,7 @@ export class Parser {
       withFill = this.expression(
         WithFillExpr,
         {
-          from: this._match(TokenType.FROM) && this.parseBitwise(),
+          fromValue: this._match(TokenType.FROM) && this.parseBitwise(),
           to: this._matchTextSeq('TO') && this.parseBitwise(),
           step: this._matchTextSeq('STEP') && this.parseBitwise(),
           interpolate: this.parseInterpolate(),
@@ -8710,7 +8706,7 @@ export class Parser {
       {
         this: this.parseBitwise(),
         expression: parseOverlayArg('PLACING'),
-        from: parseOverlayArg('FROM'),
+        fromPosition: parseOverlayArg('FROM'),
         for: parseOverlayArg('FOR'),
       },
     );
