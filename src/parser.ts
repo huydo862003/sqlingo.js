@@ -12574,25 +12574,33 @@ export class Parser {
 /**
  * Standalone parse function for convenience.
  * Parses a SQL string into an array of Expression objects.
+ *
+ * @param sql - SQL string to parse
+ * @param opts - Parse options, including optional 'into' parameter to specify target expression type
+ * @returns Array of parsed expressions (may contain undefined for parse errors)
  */
-export function parse (
+export function parse<IntoT extends Expression = Expression> (
   sql: string,
-  opts?: ParseOptions,
-): Expression[] {
+  opts?: ParseOptions<IntoT>,
+): (IntoT | undefined)[] {
   const parser = new Parser(opts);
-  return parser.parse(sql);
+  return parser.parse(sql) as (IntoT | undefined)[];
 }
 
 /**
  * Parse a single expression from SQL string.
  * Throws ParseError if no expression is parsed.
+ *
+ * @param sql - SQL string to parse
+ * @param opts - Parse options, including optional 'into' parameter to specify target expression type
+ * @returns Single parsed expression of type IntoT
  */
-export function parseOne (
+export function parseOne<IntoT extends Expression = Expression> (
   sql: string,
-  opts?: ParseOptions,
-): Expression {
+  opts?: ParseOptions<IntoT>,
+): IntoT {
   const activeDialect = opts?.read ?? opts?.dialect;
-  const result = parse(sql, {
+  const result = parse<IntoT>(sql, {
     ...opts,
     dialect: activeDialect,
   });
