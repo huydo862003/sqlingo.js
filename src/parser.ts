@@ -2672,7 +2672,7 @@ export class Parser {
     return false;
   }
 
-  parseDrop (exists: boolean = false): DropExpr | CommandExpr {
+  parseDrop (options?: { exists?: boolean }): DropExpr | CommandExpr {
     const start = this._prev;
     const temporary = this._match(TokenType.TEMPORARY);
     const materialized = this._matchTextSeq('MATERIALIZED');
@@ -2683,7 +2683,7 @@ export class Parser {
     }
 
     const concurrently = this._matchTextSeq('CONCURRENTLY');
-    const ifExists = exists || this.parseExists();
+    const ifExists = options?.exists || this.parseExists();
 
     let thisExpr: Expression | undefined;
     if (kind === 'COLUMN') {
@@ -2717,10 +2717,10 @@ export class Parser {
     });
   }
 
-  parseExists (notParam: boolean = false): boolean | undefined {
+  parseExists (options?: { not?: boolean }): boolean | undefined {
     const result = (
       this._matchTextSeq('IF')
-      && (!notParam || this._match(TokenType.NOT))
+      && (!options?.not || this._match(TokenType.NOT))
       && this._match(TokenType.EXISTS)
     );
     return result ? true : undefined;
@@ -7634,9 +7634,9 @@ export class Parser {
       : current;
   }
 
-  parseComment (allowExists: boolean = true): Expression {
+  parseComment (options?: { allowExists?: boolean }): Expression {
     const start = this._prev;
-    const exists = allowExists ? this.parseExists() : undefined;
+    const exists = (options?.allowExists ?? true) ? this.parseExists() : undefined;
 
     this._match(TokenType.ON);
 
@@ -8481,8 +8481,8 @@ export class Parser {
     return thisExpr;
   }
 
-  parseWrappedIdVars (optional: boolean = false): Expression[] {
-    return this.parseWrappedCsv(() => this.parseIdVar(), { optional });
+  parseWrappedIdVars (options?: { optional?: boolean }): Expression[] {
+    return this.parseWrappedCsv(() => this.parseIdVar(), { optional: options?.optional });
   }
 
   parseWrappedCsv (parseMethod: () => Expression | undefined, options?: { sep?: TokenType;
@@ -8645,10 +8645,10 @@ export class Parser {
     return undefined;
   }
 
-  parseVarOrString (upper: boolean = false): Expression | undefined {
+  parseVarOrString (options?: { upper?: boolean }): Expression | undefined {
     return this.parseString() || this.parseVar({
       anyToken: true,
-      upper,
+      upper: options?.upper,
     });
   }
 
@@ -8712,7 +8712,7 @@ export class Parser {
     return thisExpr;
   }
 
-  parseWindow (thisExpr: Expression | undefined, alias: boolean = false): Expression | undefined {
+  parseWindow (thisExpr: Expression | undefined, options?: { alias?: boolean }): Expression | undefined {
     const func = thisExpr;
     const comments = func instanceof Expression ? func.comments : undefined;
 
@@ -8748,7 +8748,7 @@ export class Parser {
     thisExpr = this.parseRespectOrIgnoreNulls(thisExpr);
 
     let over: string | undefined;
-    if (alias) {
+    if (options?.alias) {
       over = undefined;
       this._match(TokenType.ALIAS);
     } else if (!this._matchSet(this._constructor.WINDOW_BEFORE_PAREN_TOKENS)) {
@@ -8828,7 +8828,7 @@ export class Parser {
     );
 
     if (this._matchSet(this._constructor.WINDOW_BEFORE_PAREN_TOKENS, false)) {
-      return this.parseWindow(window, alias);
+      return this.parseWindow(window, { alias: options?.alias });
     }
 
     return window;
@@ -8936,7 +8936,7 @@ export class Parser {
     });
   }
 
-  parsePosition (haystackFirst: boolean = false): StrPositionExpr {
+  parsePosition (options?: { haystackFirst?: boolean }): StrPositionExpr {
     const args = this.parseCsv(() => this.parseBitwise());
 
     if (this._match(TokenType.IN)) {
@@ -8949,8 +8949,8 @@ export class Parser {
       );
     }
 
-    const haystack = haystackFirst ? seqGet(args, 0) : seqGet(args, 1);
-    const needle = haystackFirst ? seqGet(args, 1) : seqGet(args, 0);
+    const haystack = options?.haystackFirst ? seqGet(args, 0) : seqGet(args, 1);
+    const needle = options?.haystackFirst ? seqGet(args, 1) : seqGet(args, 0);
 
     return this.expression(
       StrPositionExpr,
@@ -9038,7 +9038,7 @@ export class Parser {
   }
 
   parseNamedWindow (): Expression | undefined {
-    return this.parseWindow(this.parseIdVar(), true);
+    return this.parseWindow(this.parseIdVar(), { alias: true });
   }
 
   parseRespectOrIgnoreNulls (thisExpr: Expression | undefined): Expression | undefined {
@@ -9876,18 +9876,18 @@ export class Parser {
     return options;
   }
 
-  parseReferences (match: boolean = true): ReferenceExpr | undefined {
-    if (match && !this._match(TokenType.REFERENCES)) {
+  parseReferences (options?: { match?: boolean }): ReferenceExpr | undefined {
+    if ((options?.match ?? true) && !this._match(TokenType.REFERENCES)) {
       return undefined;
     }
 
     let expressions: Expression[] | undefined;
     const thisExpr = this.parseTable({ schema: true });
-    const options = this.parseKeyConstraintOptions();
+    const constraintOptions = this.parseKeyConstraintOptions();
     return this.expression(ReferenceExpr, {
       this: thisExpr,
       expressions,
-      options,
+      options: constraintOptions,
     });
   }
 
@@ -12005,7 +12005,7 @@ export class Parser {
 
   parsePipeSyntaxAggregateGroupOrderBy (
     query: SelectExpr,
-    groupByExists: boolean = true,
+    options?: { groupByExists?: boolean },
   ): SelectExpr {
     const expr = this.parseCsv(this.parsePipeSyntaxAggregateFields.bind(this));
     const aggregatesOrGroups: Expression[] = [];
@@ -12024,7 +12024,7 @@ export class Parser {
       aggregatesOrGroups.push(thisValue);
     }
 
-    if (groupByExists) {
+    if (options?.groupByExists ?? true) {
       query
         .select(aggregatesOrGroups, { copy: false })
         .groupBy(
@@ -12050,7 +12050,7 @@ export class Parser {
 
   parsePipeSyntaxAggregate (query: SelectExpr): SelectExpr {
     this._matchTextSeq('AGGREGATE');
-    query = this.parsePipeSyntaxAggregateGroupOrderBy(query, false);
+    query = this.parsePipeSyntaxAggregateGroupOrderBy(query, { groupByExists: false });
 
     if (
       this._match(TokenType.GROUP_BY)
