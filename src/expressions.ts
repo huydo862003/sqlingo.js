@@ -3818,6 +3818,7 @@ export class DetachExpr extends Expression {
 export type InstallExprArgs = Merge<[
   BaseExpressionArgs,
   {
+    // NOTE: 'from' here is the install source location, not a FROM clause
     from?: Expression;
     force?: Expression;
     this: Expression;
@@ -4225,6 +4226,7 @@ export type ShowExprArgs = Merge<[
     offset?: boolean;
     startsWith?: Expression;
     limit?: number | Expression;
+    // NOTE: 'from' here is part of SHOW command syntax, not a FROM clause
     from?: Expression;
     like?: Expression;
     where?: Expression;
@@ -8088,6 +8090,7 @@ export class OrderExpr extends Expression {
 export type WithFillExprArgs = Merge<[
   BaseExpressionArgs,
   {
+    // NOTE: 'from' here is the range start value, not a FROM clause
     from?: Expression;
     to?: Expression;
     step?: Expression;
@@ -21918,6 +21921,7 @@ export type TranslateExprArgs = Merge<[
   FuncExprArgs,
   {
     this: Expression;
+    // NOTE: 'from' here is the source characters for TRANSLATE function, not a FROM clause
     from: Expression;
     to: Expression;
   },
@@ -31716,6 +31720,7 @@ export type OverlayExprArgs = Merge<[
   {
     this: Expression;
     expression: Expression;
+    // NOTE: 'from' here is the position parameter for OVERLAY function, not a FROM clause
     from: Expression;
     for?: Expression;
   },
