@@ -4,11 +4,28 @@
 const registeredTargets = new WeakMap<Function, Set<Function>>();
 
 /**
+ * Walks up the prototype chain and collects all classes in order
+ * (simulates Python's MRO - Method Resolution Order)
+ */
+function getPrototypeChain (Class: Constructor): Constructor[] {
+  const chain: Constructor[] = [];
+  let current: any = Class;
+
+  while (current && current !== Object && current.prototype) {
+    chain.push(current);
+    current = Object.getPrototypeOf(current);
+  }
+
+  return chain;
+}
+
+/**
  * Creates a class that inherits from multiple base classes.
  * This enables proper multi-inheritance with:
- * - Instance methods and properties from all base classes
- * - Static methods and properties from all base classes
+ * - Instance methods and properties from all base classes AND their ancestors
+ * - Static methods and properties from all base classes AND their ancestors
  * - Proper `instanceof` checks for all base classes
+ * - Respects Python's MRO (Method Resolution Order) - first class wins
  *
  * @param Base - The primary base class (constructor will be called with its signature)
  * @param mixins - Additional classes to inherit from
@@ -43,20 +60,36 @@ export function multiInherit<
 ): MultiInheritResult<TBase, TMixins> {
   class MultiInheritClass extends Base {}
 
+  // Build MRO: [Base chain, Mixin1 chain, Mixin2 chain, ...]
+  // This follows Python's MRO where earlier bases have higher priority
   const allBases = [Base, ...mixins];
+  const mro: Constructor[] = [];
+  const seen = new Set<Constructor>();
 
   for (const BaseClass of allBases) {
+    const chain = getPrototypeChain(BaseClass);
+    for (const cls of chain) {
+      if (!seen.has(cls)) {
+        seen.add(cls);
+        mro.push(cls);
+      }
+    }
+  }
+
+  // Copy instance methods and properties following MRO
+  // "First-wins" policy: if a property already exists, don't override
+  for (const BaseClass of mro) {
     for (const name of Object.getOwnPropertyNames(BaseClass.prototype)) {
       if (name === 'constructor') continue;
       if (!Object.getOwnPropertyDescriptor(MultiInheritClass.prototype, name)) {
-        Object.defineProperty(
-          MultiInheritClass.prototype,
-          name,
-          Object.getOwnPropertyDescriptor(BaseClass.prototype, name)!,
-        );
+        const descriptor = Object.getOwnPropertyDescriptor(BaseClass.prototype, name);
+        if (descriptor) {
+          Object.defineProperty(MultiInheritClass.prototype, name, descriptor);
+        }
       }
     }
 
+    // Copy static methods and properties following MRO
     for (const name of Object.getOwnPropertyNames(BaseClass)) {
       if ([
         'prototype',
@@ -64,14 +97,14 @@ export function multiInherit<
         'name',
       ].includes(name)) continue;
       if (!Object.getOwnPropertyDescriptor(MultiInheritClass, name)) {
-        Object.defineProperty(
-          MultiInheritClass,
-          name,
-          Object.getOwnPropertyDescriptor(BaseClass, name)!,
-        );
+        const descriptor = Object.getOwnPropertyDescriptor(BaseClass, name);
+        if (descriptor) {
+          Object.defineProperty(MultiInheritClass, name, descriptor);
+        }
       }
     }
 
+    // Register for instanceof checks
     if (!registeredTargets.has(BaseClass)) {
       registeredTargets.set(BaseClass, new Set());
       Object.defineProperty(BaseClass, Symbol.hasInstance, {
