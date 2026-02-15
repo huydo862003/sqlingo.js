@@ -18750,7 +18750,8 @@ export type BinaryExprArgs = Merge<[
   ConditionExprArgs,
   {
     this?: Expression; // NOTE: We set `this: true` in argTypes
-    expression: Expression;
+    expression?: Expression; // NOTE: We set `expression: true` in argTypes
+
   },
 ]>;
 
@@ -18760,7 +18761,8 @@ export class BinaryExpr extends ConditionExpr {
   static argTypes: RequiredMap<BinaryExprArgs> = {
     ...super.argTypes,
     this: true, // NOTE: sqlglot sets this to true, although XorExpr sets to false
-    expression: true,
+    expression: true, // NOTE: sqlglot sets this to true, although XorExpr sets to false
+
   };
 
   declare args: BinaryExprArgs;
@@ -18773,15 +18775,15 @@ export class BinaryExpr extends ConditionExpr {
     return this.args.this;
   }
 
-  get $expression (): Expression {
+  get $expression (): Expression | undefined {
     return this.args.expression;
   }
 
-  get left (): Expression {
+  get left (): Expression | undefined {
     return this.args.this;
   }
 
-  get right (): Expression {
+  get right (): Expression | undefined {
     return this.args.expression;
   }
 }
@@ -19934,6 +19936,9 @@ export class ExtendsRightExpr extends BinaryExpr {
 
 export type DotExprArgs = Merge<[
   BinaryExprArgs,
+  {
+    expression: Expression;
+  },
 ]>;
 
 export class DotExpr extends BinaryExpr {
@@ -19941,6 +19946,7 @@ export class DotExpr extends BinaryExpr {
 
   static argTypes: RequiredMap<DotExprArgs> = {
     ...super.argTypes,
+    expression: true,
   };
 
   declare args: DotExprArgs;
@@ -19996,6 +20002,10 @@ export class DotExpr extends BinaryExpr {
 
     parts.reverse();
     return parts;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 }
 
@@ -29778,6 +29788,7 @@ export type JSONExtractExprArgs = Merge<[
     quote?: Expression;
     onCondition?: Expression;
     requiresJson?: Expression;
+    expression: Expression;
   },
 ]>;
 
@@ -29812,6 +29823,10 @@ export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   get $onlyJsonTypes (): Expression | undefined {
     return this.args.onlyJsonTypes;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 
   get $expressions (): Expression[] | undefined {
@@ -29911,10 +29926,12 @@ export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
   static argTypes: RequiredMap<JSONExtractScalarExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
+    expression: true,
     onlyJsonTypes: false,
     expressions: false,
     jsonType: false,
     scalarOnly: false,
+    this: true,
   };
 
   declare args: JSONExtractScalarExprArgs;
@@ -29941,6 +29958,10 @@ export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   get outputName (): string {
     return this.$expression.outputName;
+  }
+
+  get $expression (): Expression {
+    return this.args.expression;
   }
 }
 
@@ -39431,7 +39452,6 @@ export function xor (
   const {
     dialect, copy = true, wrap = true, ...opts
   } = options;
-  // @ts-expect-error - Multi-inheritance type conflict with optional properties
   return _combine(expressions, XorExpr, {
     dialect,
     copy,

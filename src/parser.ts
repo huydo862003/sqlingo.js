@@ -474,44 +474,50 @@ import {
 // In Python sqlglot, these are in __init__.py but we moved them here from index.ts.
 
 /**
- * Standalone parse function for convenience.
- * Parses a SQL string into an array of Expression objects.
+ * Parses the given SQL string into a collection of syntax trees, one per parsed SQL statement.
  *
- * @param sql - SQL string to parse
- * @param opts - Parse options, including optional 'into' parameter to specify target expression type
- * @returns Array of parsed expressions (may contain undefined for parse errors)
+ * @param sql - The SQL code string to parse
+ * @param opts - Parse options including:
+ *   - read: the SQL dialect to apply during parsing (eg. "spark", "hive", "presto", "mysql")
+ *   - dialect: the SQL dialect (alias for read)
+ *   - into: the SQLGlot Expression type to parse into
+ *   - other Parser options
+ * @returns The resulting syntax tree collection
  */
 export function parse<IntoT extends Expression = Expression> (
   sql: string,
   opts?: ParseOptions<IntoT>,
 ): (IntoT | undefined)[] {
-  const parser = new Parser(opts);
-  return parser.parse(sql) as (IntoT | undefined)[];
+  return Dialect.getOrRaise(opts?.read ?? opts?.dialect).parse(sql, opts) as (IntoT | undefined)[];
 }
 
 /**
- * Parse a single expression from SQL string.
- * Throws ParseError if no expression is parsed.
+ * Parses the given SQL string and returns a syntax tree for the first parsed SQL statement.
  *
- * @param sql - SQL string to parse
- * @param opts - Parse options, including optional 'into' parameter to specify target expression type
- * @returns Single parsed expression of type IntoT
+ * @param sql - The SQL code string to parse
+ * @param opts - Parse options including:
+ *   - read: the SQL dialect to apply during parsing (eg. "spark", "hive", "presto", "mysql")
+ *   - dialect: the SQL dialect (alias for read)
+ *   - into: the SQLGlot Expression type to parse into
+ *   - other Parser options
+ * @returns The syntax tree for the first parsed statement
+ * @throws ParseError if no expression was parsed
  */
 export function parseOne<IntoT extends Expression = Expression> (
   sql: string,
   opts?: ParseOptions<IntoT>,
 ): IntoT {
-  const activeDialect = opts?.read ?? opts?.dialect;
-  const result = parse<IntoT>(sql, {
-    ...opts,
-    dialect: activeDialect,
-  });
+  const dialect = Dialect.getOrRaise(opts?.read ?? opts?.dialect);
+
+  const result = opts?.into
+    ? dialect.parseInto(opts.into, sql, opts)
+    : dialect.parse(sql, opts);
 
   for (const expression of result) {
     if (!expression) {
       throw new ParseError(`No expression was parsed from '${sql}'`);
     }
-    return expression;
+    return expression as IntoT;
   }
 
   throw new ParseError(`No expression was parsed from '${sql}'`);
