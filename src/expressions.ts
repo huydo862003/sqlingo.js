@@ -6490,7 +6490,7 @@ export class HavingExpr extends Expression {
 
 export type HintExprArgs = Merge<[
   BaseExpressionArgs,
-  { expressions: Expression[] },
+  { expressions: (Expression | string)[] },
 ]>;
 export class HintExpr extends Expression {
   key = ExpressionKey.HINT;
@@ -6514,7 +6514,7 @@ export class HintExpr extends Expression {
 export type JoinHintExprArgs = Merge<[
   BaseExpressionArgs,
   {
-    this: Expression;
+    this: string;
     expressions: Expression[];
   },
 ]>;
@@ -8869,9 +8869,9 @@ export class WithTableHintExpr extends Expression {
 export type IndexTableHintExprArgs = Merge<[
   BaseExpressionArgs,
   {
-    this: Expression;
+    this: string;
     expressions?: Expression[];
-    target?: Expression;
+    target?: string;
   },
 ]>;
 
@@ -10011,9 +10011,9 @@ export type DataTypeExprArgs = Merge<[
   {
     this: DataTypeExprKind;
     expressions?: Expression[];
-    nested?: Expression;
+    nested?: boolean;
     values?: Expression[];
-    prefix?: Expression;
+    prefix?: boolean | string;
     kind?: DataTypeExprKind | DotExpr | IdentifierExpr;
     nullable?: Expression;
   },
@@ -10301,8 +10301,8 @@ export class TypeExpr extends Expression {
 export type CommandExprArgs = Merge<[
   BaseExpressionArgs,
   {
-    this: Expression;
-    expression?: Expression;
+    this: string;
+    expression?: string;
   },
 ]>;
 
@@ -12064,7 +12064,7 @@ export type SliceExprArgs = Merge<[
   BaseExpressionArgs,
   {
     this?: Expression;
-    expression?: Expression;
+    expression?: Expression | number;
     step?: Expression;
   },
 ]>;
@@ -13076,8 +13076,8 @@ export type GeneratedAsIdentityColumnConstraintExprArgs = Merge<[
     minvalue?: string;
     maxvalue?: string;
     cycle?: Expression;
-    order?: Expression;
-    this?: Expression;
+    order?: boolean;
+    this?: boolean;
     expression?: Expression;
   },
 ]>;
@@ -13556,8 +13556,8 @@ export class ProjectionPolicyColumnConstraintExpr extends ColumnConstraintKindEx
 export type ComputedColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
   {
-    persisted?: Expression;
-    notNull?: Expression;
+    persisted?: boolean;
+    notNull?: boolean;
     dataType?: DataTypeExpr;
     this: Expression;
   },
@@ -15664,7 +15664,7 @@ export class OnPropertyExpr extends PropertyExpr {
 
 export type OnCommitPropertyExprArgs = Merge<[
   PropertyExprArgs,
-  { delete?: Expression },
+  { delete?: boolean },
 ]>;
 
 export class OnCommitPropertyExpr extends PropertyExpr {
@@ -29476,9 +29476,9 @@ export type JSONTableExprArgs = Merge<[
   {
     this: Expression;
     schema: Expression;
-    path?: Expression;
-    errorHandling?: Expression;
-    emptyHandling?: Expression;
+    path?: Expression | string;
+    errorHandling?: Expression | string;
+    emptyHandling?: Expression | string;
   },
 ]>;
 
