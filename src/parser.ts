@@ -612,7 +612,7 @@ export function buildLogarithm (args: Expression[], dialect: Dialect): LogExpr |
   }
 
   // Check if dialect's parser class has LOG_DEFAULTS_TO_LN property
-  const parserClass = (dialect.constructor as typeof Dialect).parserClass;
+  const parserClass = dialect._constructor.parserClass;
   const logDefaultsToLn = parserClass?.LOG_DEFAULTS_TO_LN ?? false;
 
   return logDefaultsToLn
@@ -12617,6 +12617,6 @@ export class Parser {
   }
 
   private get _dialectConstructor (): typeof Dialect {
-    return this.dialect.constructor as typeof Dialect;
+    return this.dialect._constructor;
   }
 }
