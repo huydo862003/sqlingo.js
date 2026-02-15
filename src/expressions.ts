@@ -1849,6 +1849,7 @@ export class Expression {
    * @returns The new expression
    */
   replace<E extends Expression>(expression: E): E;
+  replace<E extends Expression>(expression: E | undefined): E | undefined;
   replace (expression: undefined): undefined;
   replace<E extends Expression>(expression: E | undefined): E | undefined {
     const parent = this.parent;
