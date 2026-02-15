@@ -4113,7 +4113,7 @@ export class Parser {
     let alternative: string | undefined;
     let isFunction: boolean | undefined;
 
-    let thisExpr: Expression;
+    let thisExpr: Expression | undefined;
     if (this._matchTextSeq('DIRECTORY')) {
       thisExpr = this.expression(
         DirectoryExpr,
@@ -4130,7 +4130,7 @@ export class Parser {
       }
 
       if (this._match(TokenType.OR)) {
-        alternative = this._matchTexts(Array.from(this._constructor.INSERT_ALTERNATIVES)) && this._prev?.text;
+        alternative = (this._matchTexts(Array.from(this._constructor.INSERT_ALTERNATIVES)) && this._prev?.text) || undefined;
       }
 
       this._match(TokenType.INTO);
@@ -4389,10 +4389,10 @@ export class Parser {
       }
 
       while (thisExpr instanceof SubqueryExpr && thisExpr.isWrapper) {
-        thisExpr = thisExpr.this;
+        thisExpr = thisExpr.$this;
       }
 
-      if ('with' in thisExpr.argTypes) {
+      if ('with' in thisExpr._constructor.argTypes) {
         thisExpr.setArgKey('with', cte);
       } else {
         this.raiseError(`${thisExpr.key} does not support CTE`);
@@ -4445,7 +4445,7 @@ export class Parser {
         operationModifiers.push(var_(this._prev!.text.toUpperCase()));
       }
 
-      const limit = this.parseLimit({ top: true });
+      const limit = this.parseLimit(undefined, { top: true });
       const projections = this.parseProjections();
 
       let thisExpr: SelectExpr = this.expression(
@@ -4486,7 +4486,7 @@ export class Parser {
     } else if (this._match(TokenType.VALUES, { advance: false })) {
       return this.parseDerivedTableValues();
     } else if (from) {
-      return select('*').from(from.this, { copy: false });
+      return select('*').from(from.$this, { copy: false });
     } else if (this._match(TokenType.SUMMARIZE)) {
       const table = this._match(TokenType.TABLE);
       const thisExpr = this.parseSelect() || this.parseString() || this.parseTable();
@@ -6462,8 +6462,10 @@ export class Parser {
 
   parseLimit (
     thisExpr?: Expression,
-    options?: { top?: boolean;
-      skipLimitToken?: boolean; },
+    options?: {
+      top?: boolean;
+      skipLimitToken?: boolean;
+    },
   ): Expression | undefined {
     if (options?.skipLimitToken || this._match(options?.top ? TokenType.TOP : TokenType.LIMIT)) {
       const comments = this._prevComments;

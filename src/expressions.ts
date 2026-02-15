@@ -17838,7 +17838,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT x FROM tbl'
    */
   from (
-    expression: string | Expression,
+    expression: string | Expression | undefined,
     options: {
       dialect?: DialectType;
       copy?: boolean;
@@ -40788,7 +40788,7 @@ function _isWrongExpression (expression: unknown, into: typeof Expression): expr
  * @param options - Options object
  * @returns The modified instance
  */
-function _applyBuilder<RetT extends Expression, ArgT extends Expression> (expression: ArgT | string | number, options: {
+function _applyBuilder<RetT extends Expression, ArgT extends Expression> (expression: undefined | ArgT | string | number, options: {
   instance: RetT;
   arg: string;
   copy?: boolean;
