@@ -1804,7 +1804,7 @@ export class Parser {
     'WHERE': (self: Parser, query: SelectExpr) => query.where(self.parseWhere(), { copy: false }),
   };
 
-  static PROPERTY_PARSERS: Record<string, (self: Parser, ...args: any[]) => Expression | Expression[] | undefined> = {
+  static PROPERTY_PARSERS: Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> = {
     'ALLOWED_VALUES': (self: Parser) => self.expression(
       AllowedValuesPropertyExpr,
       { expressions: self.parseCsv(self.parsePrimary) },
@@ -2738,14 +2738,17 @@ export class Parser {
 
     if (!thisExpr && this._match(TokenType.R_PAREN, { advance: false })) {
       thisExpr = this.expression(TupleExpr, {});
-    } else if (thisExpr && UNWRAPPED_QUERIES.some(cls => thisExpr instanceof cls)) {
-      thisExpr = this.parseSubquery({ thisExpr, parseAlias: false });
+    } else if (thisExpr && UNWRAPPED_QUERIES.some((cls) => thisExpr instanceof cls)) {
+      thisExpr = this.parseSubquery({
+        thisExpr,
+        parseAlias: false,
+      });
     } else if (thisExpr instanceof SubqueryExpr || thisExpr instanceof ValuesExpr) {
       thisExpr = this.parseSubquery({
         thisExpr: this.parseQueryModifiers(this.parseSetOperations(thisExpr)),
         parseAlias: false,
       });
-    } else if (expressions.length > 1 || this._prev?.tokenType === TokenType.COMMA) {
+    } else if (1 < expressions.length || this._prev?.tokenType === TokenType.COMMA) {
       thisExpr = this.expression(TupleExpr, { expressions });
     } else {
       thisExpr = this.expression(ParenExpr, { this: thisExpr });
@@ -3233,8 +3236,9 @@ export class Parser {
   }
 
   parsePropertyAssignment<E extends Expression> (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expClass: new (args: any) => E,
-    kwargs?: Record<string, any>,
+    kwargs?: Record<string, unknown>,
   ): E {
     this._match(TokenType.EQ);
     this._match(TokenType.ALIAS);
@@ -3396,6 +3400,7 @@ export class Parser {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parseCompositeKeyProperty<E extends Expression> (exprType: new (args: any) => E): E {
     this._matchTextSeq('KEY');
     const expressions = this.parseWrappedIdVars();
@@ -3491,7 +3496,7 @@ export class Parser {
     return this.expression(LogPropertyExpr, { no: options?.no });
   }
 
-  parseJournal (kwargs?: Record<string, any>): JournalPropertyExpr {
+  parseJournal (kwargs?: Record<string, unknown>): JournalPropertyExpr {
     return this.expression(JournalPropertyExpr, kwargs);
   }
 
@@ -4628,7 +4633,7 @@ export class Parser {
 
   protected _implicitUnnestToExplicit<E extends Expression> (thisExpr: E): E {
     const refs = new Set<string>();
-    const args: Record<string, any> = thisExpr.args;
+    const args: Record<string, unknown> = thisExpr.args;
     if ('from' in args) {
       const fromExpr: FromExpr | undefined = args['from'];
       if (fromExpr?.this) {
@@ -4654,7 +4659,7 @@ export class Parser {
 
                 if (table.args.alias instanceof TableAliasExpr) {
                   tableAsColumn.replace(tableAsColumn.this);
-                  const aliasArgs: Record<string, any> = {
+                  const aliasArgs: Record<string, unknown> = {
                     table: [table.args.alias.this],
                     copy: false,
                   };
@@ -4678,7 +4683,7 @@ export class Parser {
 
   parseQueryModifiers<E extends Expression> (thisExpr: E): E;
   parseQueryModifiers (thisExpr: undefined): undefined;
-  parseQueryModifiers (thisExpr: any): any {
+  parseQueryModifiers (thisExpr: unknown): unknown {
     if (thisExpr && this._constructor.MODIFIABLES.includes(thisExpr.constructor)) {
       for (const join of this.parseJoins()) {
         thisExpr.append('joins', join);
@@ -5124,7 +5129,7 @@ export class Parser {
       return undefined;
     }
 
-    const kwargs: Record<string, any> = {
+    const kwargs: Record<string, unknown> = {
       this: this.parseTable({ parseBracket: options?.parseBracket }),
     };
 
@@ -7323,7 +7328,7 @@ export class Parser {
       });
 
       if (identifier instanceof IdentifierExpr) {
-        let tokens: any[] | undefined;
+        let tokens: unknown[] | undefined;
         try {
           tokens = this.dialect.tokenize?.(identifier.name);
         } catch {
@@ -8049,13 +8054,10 @@ export class Parser {
     }
   }
 
-  protected mergeErrors (errors: ParseError[]): ParseError[] {
-    return mergeErrors(errors);
-  }
-
   expression<E extends Expression> (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expClass: new (args: any) => E,
-    options?: any,
+    options?: unknown,
   ): E {
     /**
      * Creates a new, validated Expression.
@@ -8499,6 +8501,7 @@ export class Parser {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parseCeilFloor<T extends Expression> (exprType: new (args: any) => T): T {
     const args = this.parseCsv(() => this.parseLambda());
 
@@ -8654,6 +8657,7 @@ export class Parser {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parseMaxMinBy (exprType: new (args: any) => AggFuncExpr): AggFuncExpr {
     const args: Expression[] = [];
 
@@ -8674,13 +8678,14 @@ export class Parser {
     );
   }
 
-  identifierExpression (token?: Token, kwargs?: any): IdentifierExpr {
+  identifierExpression (token?: Token, kwargs?: unknown): IdentifierExpr {
     return this.expression(IdentifierExpr, {
       token: token || this._prev,
       ...kwargs,
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parseTokens (parseMethod: () => Expression | undefined, expressions: Record<TokenType, new (args: any) => Expression>): Expression | undefined {
     let thisExpr = parseMethod();
 
@@ -11895,7 +11900,7 @@ export class Parser {
   }
 
   parseUpdate (): UpdateExpr {
-    const kwargs: Record<string, any> = {
+    const kwargs: Record<string, unknown> = {
       this: this.parseTable({
         joins: true,
         aliasTokens: this._constructor.UPDATE_ALIAS_TOKENS,
@@ -12082,7 +12087,7 @@ export class Parser {
 
   findParser (
     parsers: Record<string, Function>,
-    trie: Record<string, any>,
+    trie: Record<string, unknown>,
   ): Function | undefined {
     if (!this._curr) {
       return undefined;
@@ -12506,12 +12511,14 @@ export class Parser {
     return this.expression(DeclareExpr, { expressions });
   }
 
-  buildCast (options: { strict: boolean;
-    [key: string]: any; }): CastExpr | TryCastExpr {
+  buildCast (options: {
+    strict: boolean;
+    [key: string]: unknown;
+  }): CastExpr | TryCastExpr {
     const strict = options.strict;
     const ExpClass = strict ? CastExpr : TryCastExpr;
 
-    const kwargs: Record<string, any> = { ...options };
+    const kwargs: Record<string, unknown> = { ...options };
     delete kwargs.strict;
 
     if (ExpClass === TryCastExpr) {
@@ -12538,7 +12545,7 @@ export class Parser {
 
   validateExpression<E extends Expression> (
     expression: E,
-    args?: any[],
+    args?: unknown[],
   ): E {
     /**
      * Validates an Expression, making sure that all its mandatory arguments are set.
