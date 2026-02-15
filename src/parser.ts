@@ -470,6 +470,7 @@ import {
 import {
   newTrie, type TrieNode, inTrie, TrieResult,
 } from './trie';
+import { normalizeIdentifiers } from './optimizer/normalize_identifiers';
 
 // NOTE: parse() and parseOne() are defined here in parser.ts to avoid circular dependencies.
 // In Python sqlglot, these are in __init__.py but we moved them here from index.ts.
@@ -4682,10 +4683,6 @@ export class Parser {
   }
 
   protected _implicitUnnestToExplicit<E extends Expression> (thisExpr: E): E {
-    // Import normalizeIdentifiers (assuming it exists)
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { normalizeIdentifiers } = require('./optimizer/normalize_identifiers');
-
     const refs = new Set<string>();
     const args = thisExpr.args;
 
