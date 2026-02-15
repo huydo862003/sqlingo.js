@@ -643,7 +643,7 @@ export function buildArrayConstructor<E extends Expression> (
   dialect: Dialect,
 ): E {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const arrayExpr = new exprClass({ expressions: args } as any);
+  const arrayExpr = new exprClass({ expressions: args });
 
   if (arrayExpr instanceof ArrayExpr && dialect._constructor.HAS_DISTINCT_ARRAY_CONSTRUCTORS) {
     arrayExpr.setArgKey('bracketNotation', bracketKind === TokenType.L_BRACKET);
@@ -4411,7 +4411,7 @@ export class Parser {
         cte.setArgKey('this', select('*').from(values));
       } else {
         cte.setArgKey('this', select('*').from(
-          (values as any).alias('_values', { table: true }),
+          values.alias('_values', { table: true }),
         ));
       }
     }
@@ -4634,7 +4634,7 @@ export class Parser {
   parseHint (): HintExpr | undefined {
     if (this._match(TokenType.HINT) && this._prevComments && 0 < this._prevComments.length) {
       // Parse hint from comment
-      return (HintExpr as any).maybeParse?.(
+      return HintExpr.maybeParse?.(
         this._prevComments[0],
         {
           into: HintExpr,
@@ -6776,7 +6776,7 @@ export class Parser {
     // each INTERVAL expression into this canonical form so it's easy to transpile
     let finalThis = thisExpr;
     if (thisExpr && thisExpr.isNumber) {
-      finalThis = LiteralExpr.string((thisExpr as any).toPy?.() || thisExpr.sql());
+      finalThis = LiteralExpr.string(thisExpr.toPy?.() || thisExpr.sql());
     } else if (thisExpr && thisExpr.isString) {
       const parts = thisExpr.name?.match?.(this._constructor.INTERVAL_STRING_RE);
       if (parts && unit) {
@@ -7021,7 +7021,7 @@ export class Parser {
         const literal = thisExpr.name;
         const thisWithOps = this.parseColumnOps(thisExpr);
 
-        const parser = this._constructor.TYPE_LITERAL_PARSERS.get((dataType as DataTypeExpr).this as any);
+        const parser = this._constructor.TYPE_LITERAL_PARSERS.get((dataType as DataTypeExpr).this);
         if (parser) {
           return parser(this, thisWithOps, dataType as DataTypeExpr);
         }
@@ -7590,7 +7590,7 @@ export class Parser {
       // https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-reference#function_call_rules
       if ((field instanceof FuncExpr || field instanceof WindowExpr) && current) {
         current = current.transform(
-          (n: Expression) => n instanceof ColumnExpr ? (n as any).toDot?.({ includeDots: false }) || n : n,
+          (n: Expression) => n instanceof ColumnExpr ? n.toDot?.({ includeDots: false }) || n : n,
         );
       }
 
@@ -8026,13 +8026,13 @@ export class Parser {
 
     const lambdaTypes: Record<string, Expression | false> = {};
     for (const e of expressions) {
-      lambdaTypes[e.name] = (e as any).args.get?.('to') || false;
+      lambdaTypes[e.name] = e.args.get?.('to') || false;
     }
 
     for (const column of node.findAll(ColumnExpr)) {
-      const typ = lambdaTypes[(column as any).parts[0].name];
+      const typ = lambdaTypes[column.parts[0].name];
       if (typ !== undefined) {
-        let dotOrId = (column as any).table ? (column as any).toDot() : (column as any).this;
+        let dotOrId = column.table ? column.toDot() : column.this;
 
         if (typ) {
           dotOrId = this.expression(
@@ -8534,7 +8534,7 @@ export class Parser {
 
   parseTransaction (): TransactionExpr | CommandExpr {
     let thisText: string | undefined;
-    if (this._matchTexts(this._constructor.TRANSACTION_KIND as any)) {
+    if (this._matchTexts(this._constructor.TRANSACTION_KIND)) {
       thisText = this._prev?.text;
     }
 
@@ -8714,7 +8714,7 @@ export class Parser {
 
   parseWindow (thisExpr: Expression | undefined, alias: boolean = false): Expression | undefined {
     const func = thisExpr;
-    const comments = func instanceof Expression ? (func as any).comments : undefined;
+    const comments = func instanceof Expression ? func.comments : undefined;
 
     if (this._matchTextSeq('WITHIN', 'GROUP')) {
       const order = this.parseWrapped(() => this.parseOrder());
@@ -8737,11 +8737,11 @@ export class Parser {
     }
 
     if (thisExpr instanceof AggFuncExpr) {
-      const ignoreRespect = (thisExpr as any).find(IgnoreNullsExpr, RespectNullsExpr);
+      const ignoreRespect = thisExpr.find(IgnoreNullsExpr, RespectNullsExpr);
 
       if (ignoreRespect && ignoreRespect !== thisExpr) {
-        ignoreRespect.replace((ignoreRespect as any).this);
-        thisExpr = this.expression((ignoreRespect as any).constructor, { this: thisExpr });
+        ignoreRespect.replace(ignoreRespect.this);
+        thisExpr = this.expression(ignoreRespect.constructor, { this: thisExpr });
       }
     }
 
@@ -8758,7 +8758,7 @@ export class Parser {
     }
 
     if (comments && func instanceof Expression) {
-      (func as any).popComments();
+      func.popComments();
     }
 
     if (!this._match(TokenType.L_PAREN)) {
@@ -8847,7 +8847,7 @@ export class Parser {
         (this._matchTextSeq('UNBOUNDED') && 'UNBOUNDED')
         || (this._matchTextSeq('CURRENT', 'ROW') && 'CURRENT ROW')
         || this.parseBitwise(),
-      side: this._matchTexts(this._constructor.WINDOW_SIDES as any) && this._prev?.text,
+      side: this._matchTexts(this._constructor.WINDOW_SIDES) && this._prev?.text,
     };
   }
 
@@ -8886,16 +8886,16 @@ export class Parser {
       || (this._constructor.STRING_ALIASES && this.parseStringAsIdentifier());
 
     if (alias) {
-      comments.push(...(alias as any).popComments());
+      comments.push(...alias.popComments());
       thisExpr = this.expression(AliasExpr, {
         comments,
         this: thisExpr,
         alias,
       });
-      const column = (thisExpr as any).this;
+      const column = thisExpr.this;
 
-      if (!(thisExpr as any).comments && column && (column as any).comments) {
-        (thisExpr as any).comments = (column as any).popComments();
+      if (!thisExpr.comments && column && column.comments) {
+        thisExpr.comments = column.popComments();
       }
     }
 
@@ -8996,7 +8996,7 @@ export class Parser {
       args.push(length);
     }
 
-    return this.validateExpression((SubstringExpr as any).fromArgList(args), args);
+    return this.validateExpression(SubstringExpr.fromArgList(args), args);
   }
 
   parseTrim (): TrimExpr {
@@ -9004,7 +9004,7 @@ export class Parser {
     let collation: Expression | undefined;
     let expression: Expression | undefined;
 
-    if (this._matchTexts(this._constructor.TRIM_TYPES as any)) {
+    if (this._matchTexts(this._constructor.TRIM_TYPES)) {
       position = this._prev?.text.toUpperCase();
     }
 
@@ -9377,7 +9377,7 @@ export class Parser {
     this._match(TokenType.COMMA);
     const args = [thisExpr, ...this.parseCsv(() => this.parseLambda())];
 
-    const gapFill = (GapFillExpr as any).fromArgList(args);
+    const gapFill = GapFillExpr.fromArgList(args);
     return this.validateExpression(gapFill, args);
   }
 
@@ -9422,14 +9422,14 @@ export class Parser {
       if (!to) {
         to = DataTypeExpr.build(DataTypeExpr.Type.UNKNOWN);
       }
-      if ((DataTypeExpr as any).TEMPORAL_TYPES.has((to as any).this)) {
+      if (DataTypeExpr.TEMPORAL_TYPES.has(to.this)) {
         thisExpr = this.expression(
-          (to as any).this === DataTypeExpr.Type.DATE ? StrToDateExpr : StrToTimeExpr,
+          to.this === DataTypeExpr.Type.DATE ? StrToDateExpr : StrToTimeExpr,
           {
             this: thisExpr,
             format: LiteralExpr.string(
               formatTime(
-                fmtString ? (fmtString as any).this : '',
+                fmtString ? fmtString.this : '',
                 this._dialectConstructor.FORMAT_MAPPING || this._dialectConstructor.TIME_MAPPING,
                 this._dialectConstructor.FORMAT_TRIE || this._dialectConstructor.TIME_TRIE,
               ),
@@ -9439,7 +9439,7 @@ export class Parser {
         );
 
         if (fmt instanceof AtTimeZoneExpr && thisExpr instanceof StrToTimeExpr) {
-          thisExpr.setArgKey('zone', (fmt as any).args.zone);
+          thisExpr.setArgKey('zone', fmt.args.zone);
         }
         return thisExpr;
       }
@@ -9450,7 +9450,7 @@ export class Parser {
         dialect: this.dialect,
         udt: true,
       });
-    } else if ((to as any).this === DataTypeExpr.Type.CHAR) {
+    } else if (to.this === DataTypeExpr.Type.CHAR) {
       if (this._match(TokenType.CHARACTER_SET)) {
         to = this.expression(CharacterSetExpr, { this: this.parseVarOrString() });
       }
@@ -9510,7 +9510,7 @@ export class Parser {
 
     if (!this._matchTextSeq('WITHIN', 'GROUP')) {
       this._retreat(index);
-      return this.validateExpression((GroupConcatExpr as any).fromArgList(args), args);
+      return this.validateExpression(GroupConcatExpr.fromArgList(args), args);
     }
 
     this._matchLParen();
@@ -9594,7 +9594,7 @@ export class Parser {
         {
           this: thisExpr,
           expressions: adjustedExpressions,
-          comments: (thisExpr as any).popComments(),
+          comments: thisExpr.popComments(),
         },
       );
     }
@@ -9611,7 +9611,7 @@ export class Parser {
     let end: Expression | undefined;
     if (this._matchPair(TokenType.DASH, TokenType.COLON, false)) {
       this._advance();
-      end = -(LiteralExpr.number('1') as any);
+      end = -(LiteralExpr.number('1'));
     } else {
       end = this.parseAssignment();
     }
@@ -9651,7 +9651,7 @@ export class Parser {
     }
 
     if (!this._match(TokenType.END)) {
-      if (defaultCase instanceof IntervalExpr && (defaultCase as any).this.sql().toUpperCase() === 'END') {
+      if (defaultCase instanceof IntervalExpr && defaultCase.this.sql().toUpperCase() === 'END') {
         defaultCase = exp.column('interval');
       } else {
         this.raiseError('Expected END after CASE', this._prev);
@@ -9673,7 +9673,7 @@ export class Parser {
     if (this._match(TokenType.L_PAREN)) {
       const args = this.parseCsv(() =>
         this.parseAlias(this.parseAssignment(), { explicit: true }));
-      const thisExpr = this.validateExpression((IfExpr as any).fromArgList(args), args);
+      const thisExpr = this.validateExpression(IfExpr.fromArgList(args), args);
       this._matchRParen();
       return thisExpr;
     } else {
