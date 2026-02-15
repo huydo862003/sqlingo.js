@@ -2884,7 +2884,7 @@ export class Parser {
       // exp.Properties.Location.POST_SCHEMA ("schema" here is the UDF's type signature)
       extendProps(this.parseProperties());
 
-      expression = this._match(TokenType.ALIAS) && this.parseHeredoc();
+      expression = (this._match(TokenType.ALIAS) && this.parseHeredoc()) || undefined;
       extendProps(this.parseProperties());
 
       if (!expression) {
@@ -2982,10 +2982,7 @@ export class Parser {
         // Some dialects also support using a table as an alias instead of a SELECT.
         // Here we fallback to this as an alternative.
         if (!expression && hasAlias) {
-          expression = this._parse({
-            parseMethod: (self: Parser) => self.parseTableParts(),
-            rawTokens: this._tokens,
-          });
+          expression = this.tryParse(() => this.parseTableParts());
         }
       }
 
