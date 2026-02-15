@@ -9787,11 +9787,11 @@ export class Parser {
 
         options.push(`ON ${on} ${action}`);
       } else {
-        const varExpr = this.parseVarFromOptions(this._constructor.KEY_CONSTRAINT_OPTIONS, { raiseUnmatched: false });
-        if (!varExpr) {
+        const var_ = this.parseVarFromOptions(this._constructor.KEY_CONSTRAINT_OPTIONS, { raiseUnmatched: false });
+        if (!var_) {
           break;
         }
-        options.push(varExpr.name);
+        options.push(var_.name);
       }
     }
 
@@ -10585,9 +10585,9 @@ export class Parser {
     } else if (this._matchTextSeq('FILESTREAM_ON', { advance: false })) {
       alterSet.setArgKey('expressions', [this.parseAssignment()]);
     } else if (this._matchTexts(['LOGGED', 'UNLOGGED'])) {
-      alterSet.setArgKey('option', varExpr(this._prev!.text.toUpperCase()));
+      alterSet.setArgKey('option', var_(this._prev!.text.toUpperCase()));
     } else if (this._matchTextSeq('WITHOUT') && this._matchTexts(['CLUSTER', 'OIDS'])) {
-      alterSet.setArgKey('option', varExpr(`WITHOUT ${this._prev!.text.toUpperCase()}`));
+      alterSet.setArgKey('option', var_(`WITHOUT ${this._prev!.text.toUpperCase()}`));
     } else if (this._matchTextSeq('LOCATION')) {
       alterSet.setArgKey('location', this.parseField());
     } else if (this._matchTextSeq('ACCESS', 'METHOD')) {
@@ -10952,7 +10952,7 @@ export class Parser {
         } else {
           then = this.expression(InsertExpr, {
             this: this._matchTextSeq('ROW')
-              ? varExpr('ROW')
+              ? var_('ROW')
               : this.parseValue({ values: false }),
             expression: this._matchTextSeq('VALUES') && this.parseValue(),
           });
@@ -11021,7 +11021,7 @@ export class Parser {
 
     let right = this.parseStatement() || this.parseIdVar();
     if (right instanceof ColumnExpr || right instanceof IdentifierExpr) {
-      right = varExpr(right.name);
+      right = var_(right.name);
     }
 
     const thisValue = this.expression(EQExpr, {
@@ -11108,7 +11108,7 @@ export class Parser {
       return undefined;
     }
 
-    return varExpr(option);
+    return var_(option);
   }
 
   parseCache (): CacheExpr {
@@ -11154,7 +11154,7 @@ export class Parser {
         this._dialectConstructor.SUPPORTS_VALUES_DEFAULT
         && this._match(TokenType.DEFAULT)
       ) {
-        return varExpr(this._prev!.text.toUpperCase());
+        return var_(this._prev!.text.toUpperCase());
       }
       return this.parseExpression();
     };
@@ -11433,7 +11433,7 @@ export class Parser {
       'EVEN',
       'AUTO',
     ])) {
-      return this.expression(AlterDistStyleExpr, { this: varExpr(this._prev!.text.toUpperCase()) });
+      return this.expression(AlterDistStyleExpr, { this: var_(this._prev!.text.toUpperCase()) });
     }
 
     this._matchTextSeq('KEY', 'DISTKEY');
@@ -11456,7 +11456,7 @@ export class Parser {
 
     this._matchTexts(['AUTO', 'NONE']);
     return this.expression(AlterSortKeyExpr, {
-      this: varExpr(this._prev!.text.toUpperCase()),
+      this: var_(this._prev!.text.toUpperCase()),
       compound,
     });
   }
