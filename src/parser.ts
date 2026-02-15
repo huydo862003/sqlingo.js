@@ -441,8 +441,11 @@ import {
   XMLTableExpr,
   array,
   column,
+  INTERVAL_DAY_TIME_RE,
+  INTERVAL_STRING_RE,
   select,
   toIdentifier,
+  UNWRAPPED_QUERIES,
   var_,
 } from './expressions';
 import { formatTime } from './time';
@@ -2628,11 +2631,11 @@ export class Parser {
   }
 
   // Helper methods
-  protected _findSql (start: Token, end: Token): string {
+  findSql (start: Token, end: Token): string {
     return this.sql.slice(start.start ?? 0, (end.end ?? 0) + 1);
   }
 
-  protected _isConnected (): boolean {
+  isConnected (): boolean {
     return !!(
       this._prev
       && this._curr
@@ -2660,14 +2663,14 @@ export class Parser {
     }
   }
 
-  protected _warnUnsupported (): void {
+  warnUnsupported (): void {
     if (this._tokens.length <= 1) {
       return;
     }
 
-    // We use _findSql because this.sql may comprise multiple chunks, and we're only
+    // We use findSql because this.sql may comprise multiple chunks, and we're only
     // interested in emitting a warning for the one being currently processed.
-    const sql = this._findSql(
+    const sql = this.findSql(
       this._tokens[0],
       this._tokens[this._tokens.length - 1],
     ).slice(0, this.errorMessageContext);
@@ -2686,6 +2689,73 @@ export class Parser {
       return true;
     }
     return false;
+  }
+
+  tryParse<T extends Expression | undefined> (
+    parseMethod: () => T,
+    options: { retreat?: boolean } = {},
+  ): T | undefined {
+    const { retreat = false } = options;
+    const index = this._index;
+    const errorLevel = this.errorLevel;
+
+    this.errorLevel = ErrorLevel.IMMEDIATE;
+    let result: T | undefined;
+    try {
+      result = parseMethod();
+    } catch (error) {
+      if (error instanceof ParseError) {
+        result = undefined;
+      } else {
+        throw error;
+      }
+    } finally {
+      if (!result || retreat) {
+        this._retreat(index);
+      }
+      this.errorLevel = errorLevel;
+    }
+
+    return result;
+  }
+
+  parseParen (): Expression | undefined {
+    if (!this._match(TokenType.L_PAREN)) {
+      return undefined;
+    }
+
+    const comments = this._prevComments;
+    const query = this.parseSelect();
+
+    let expressions: Expression[];
+    if (query) {
+      expressions = [query];
+    } else {
+      expressions = this.parseCsv(() => this.parseExpression());
+    }
+
+    let thisExpr = seqGet(expressions, 0);
+
+    if (!thisExpr && this._match(TokenType.R_PAREN, { advance: false })) {
+      thisExpr = this.expression(TupleExpr, {});
+    } else if (thisExpr && UNWRAPPED_QUERIES.some(cls => thisExpr instanceof cls)) {
+      thisExpr = this.parseSubquery({ thisExpr, parseAlias: false });
+    } else if (thisExpr instanceof SubqueryExpr || thisExpr instanceof ValuesExpr) {
+      thisExpr = this.parseSubquery({
+        thisExpr: this.parseQueryModifiers(this.parseSetOperations(thisExpr)),
+        parseAlias: false,
+      });
+    } else if (expressions.length > 1 || this._prev?.tokenType === TokenType.COMMA) {
+      thisExpr = this.expression(TupleExpr, { expressions });
+    } else {
+      thisExpr = this.expression(ParenExpr, { this: thisExpr });
+    }
+
+    if (thisExpr && comments) {
+      thisExpr.addComments(comments);
+    }
+
+    return thisExpr;
   }
 
   parseDrop (options: { exists?: boolean } = {}): DropExpr | CommandExpr {
@@ -2989,7 +3059,7 @@ export class Parser {
   }
 
   parseCommand (): CommandExpr {
-    this._warnUnsupported();
+    this.warnUnsupported();
     return this.expression(CommandExpr, {
       comments: this._prevComments,
       this: this._prev?.text.toUpperCase(),
@@ -4495,7 +4565,7 @@ export class Parser {
     // In some dialects, LIMIT and OFFSET can act as both identifiers and keywords (clauses)
     // so this section tries to parse the clause version and if it fails, it treats the token
     // as an identifier (alias)
-    if (this._canParseLimitOrOffset()) {
+    if (this.canParseLimitOrOffset()) {
       return undefined;
     }
 
@@ -4669,7 +4739,7 @@ export class Parser {
     }
 
     const end = this._tokens[this._index - 1];
-    return new HintExpr({ expressions: [this._findSql(start, end)] });
+    return new HintExpr({ expressions: [this.findSql(start, end)] });
   }
 
   parseHintFunctionCall (): Expression | undefined {
@@ -4874,7 +4944,7 @@ export class Parser {
         this.raiseError('Expecting )', this._curr);
       }
 
-      pattern = var_(this._findSql(start, end));
+      pattern = var_(this.findSql(start, end));
     }
 
     const define = this._matchTextSeq('DEFINE')
@@ -5306,7 +5376,7 @@ export class Parser {
 
     if (
       options?.wildcard
-      && this._isConnected()
+      && this.isConnected()
       && (table instanceof IdentifierExpr || !table)
       && this._match(TokenType.STAR)
     ) {
@@ -6173,10 +6243,10 @@ export class Parser {
   }
 
   parseConnectWithPrior (): Expression | undefined {
-    this._constructor.NO_PAREN_FUNCTION_PARSERS.setArgKey('PRIOR', () =>
-      this.expression(PriorExpr, { this: this.parseBitwise() }));
+    this._constructor.NO_PAREN_FUNCTION_PARSERS['PRIOR'] = (self: Parser) =>
+      self.expression(PriorExpr, { this: self.parseBitwise() });
     const connect = this.parseDisjunction();
-    this._constructor.NO_PAREN_FUNCTION_PARSERS.delete('PRIOR');
+    delete this._constructor.NO_PAREN_FUNCTION_PARSERS['PRIOR'];
     return connect;
   }
 
@@ -6429,7 +6499,7 @@ export class Parser {
     );
   }
 
-  protected _canParseLimitOrOffset (): boolean {
+  canParseLimitOrOffset (): boolean {
     if (!this._matchSet(new Set(this._constructor.AMBIGUOUS_ALIAS_TOKENS), { advance: false })) {
       return false;
     }
@@ -6646,7 +6716,7 @@ export class Parser {
         thisExpr = thisExpr.this;
       }
 
-      const ExprClass = this._constructor.ASSIGNMENT.get(this._prev!.tokenType);
+      const ExprClass = this._constructor.ASSIGNMENT[this._prev!.tokenType];
       if (ExprClass) {
         thisExpr = this.expression(
           ExprClass,
@@ -6683,7 +6753,7 @@ export class Parser {
     const negate = this._match(TokenType.NOT);
 
     if (this._matchSet(this._constructor.RANGE_PARSERS)) {
-      const parser = this._constructor.RANGE_PARSERS.get(this._prev!.tokenType);
+      const parser = this._constructor.RANGE_PARSERS[this._prev!.tokenType];
       if (parser) {
         const expression = parser(this, current);
         if (!expression) {
@@ -6868,7 +6938,7 @@ export class Parser {
       thisExpr
       && thisExpr.isString
       && this._constructor.SUPPORTS_OMITTED_INTERVAL_SPAN_UNIT
-      && thisExpr.name?.match?.(this._constructor.INTERVAL_DAY_TIME_RE)
+      && thisExpr.name?.match?.(INTERVAL_DAY_TIME_RE)
     ) {
       const index = this._index;
 
@@ -6909,7 +6979,7 @@ export class Parser {
     if (thisExpr && thisExpr.isNumber) {
       finalThis = LiteralExpr.string(thisExpr.toPy?.() || thisExpr.sql());
     } else if (thisExpr && thisExpr.isString) {
-      const parts = thisExpr.name?.match?.(this._constructor.INTERVAL_STRING_RE);
+      const parts = thisExpr.name?.match?.(INTERVAL_STRING_RE);
       if (parts && unit) {
         // Unconsume the eagerly-parsed unit, since the real unit was part of the string
         unit = undefined;
@@ -6991,7 +7061,7 @@ export class Parser {
 
     while (true) {
       if (this._matchSet(this._constructor.BITWISE)) {
-        const ExprClass = this._constructor.BITWISE.get(this._prev!.tokenType);
+        const ExprClass = this._constructor.BITWISE[this._prev!.tokenType];
         if (ExprClass) {
           thisExpr = this.expression(
             ExprClass,
@@ -7046,7 +7116,7 @@ export class Parser {
     let thisExpr = this.parseFactor();
 
     while (this._matchSet(this._constructor.TERM)) {
-      const klass = this._constructor.TERM.get(this._prev!.tokenType);
+      const klass = this._constructor.TERM[this._prev!.tokenType];
       const comments = this._prevComments;
       const expression = this.parseFactor();
 
@@ -7080,7 +7150,7 @@ export class Parser {
     let thisExpr = this.parseAtTimeZone(parseMethod());
 
     while (this._matchSet(this._constructor.FACTOR)) {
-      const klass = this._constructor.FACTOR.get(this._prev!.tokenType);
+      const klass = this._constructor.FACTOR[this._prev!.tokenType];
       const comments = this._prevComments;
       const expression = parseMethod();
 
@@ -7112,7 +7182,7 @@ export class Parser {
 
   parseUnary (): Expression | undefined {
     if (this._matchSet(this._constructor.UNARY_PARSERS)) {
-      const parser = this._constructor.UNARY_PARSERS.get(this._prev!.tokenType);
+      const parser = this._constructor.UNARY_PARSERS[this._prev!.tokenType];
       return parser ? parser(this) : undefined;
     }
     return this.parseType();
@@ -7152,7 +7222,7 @@ export class Parser {
         const literal = thisExpr.name;
         const thisWithOps = this.parseColumnOps(thisExpr);
 
-        const parser = this._constructor.TYPE_LITERAL_PARSERS.get((dataType as DataTypeExpr).this);
+        const parser = this._constructor.TYPE_LITERAL_PARSERS[(dataType as DataTypeExpr).this];
         if (parser) {
           return parser(this, thisWithOps, dataType as DataTypeExpr);
         }
@@ -7440,7 +7510,7 @@ export class Parser {
 
     if (!thisExpr) {
       if (this._matchTextSeq('UNSIGNED')) {
-        const unsignedTypeToken = typeToken && this._constructor.SIGNED_TO_UNSIGNED_TYPE_TOKEN.get(typeToken);
+        const unsignedTypeToken = typeToken && this._constructor.SIGNED_TO_UNSIGNED_TYPE_TOKEN[typeToken];
         if (!unsignedTypeToken) {
           this.raiseError(`Cannot convert ${typeToken?.valueOf()} to unsigned.`, this._curr);
         }
@@ -7530,7 +7600,7 @@ export class Parser {
     }
 
     if (thisExpr && this._constructor.TYPE_CONVERTERS && (thisExpr as DataTypeExpr).this instanceof Object) {
-      const converter = this._constructor.TYPE_CONVERTERS.get((thisExpr as DataTypeExpr).this as DataTypeExprKind);
+      const converter = this._constructor.TYPE_CONVERTERS[(thisExpr as DataTypeExpr).this as DataTypeExprKind];
       if (converter) {
         thisExpr = converter(thisExpr as DataTypeExpr);
       }
@@ -7670,7 +7740,7 @@ export class Parser {
           escape = true;
         }
 
-        jsonPath.push(this._findSql(this._tokens[startIndex], endToken));
+        jsonPath.push(this.findSql(this._tokens[startIndex], endToken));
       }
     }
 
@@ -7713,7 +7783,7 @@ export class Parser {
 
     while (this._matchSet(this._constructor.COLUMN_OPERATORS)) {
       const opToken = this._prev!.tokenType;
-      const op = this._constructor.COLUMN_OPERATORS.get(opToken);
+      const op = this._constructor.COLUMN_OPERATORS[opToken];
 
       let field: Expression | undefined;
       if (this._constructor.CAST_COLUMN_OPERATORS.has(opToken)) {

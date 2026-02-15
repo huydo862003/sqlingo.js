@@ -12665,8 +12665,19 @@ export class ColumnExpr extends ConditionExpr {
     return result as [] | [...IdentifierExpr[], StarExpr];
   }
 
-  toDot () {
-    // TODO
+  toDot (options: { includeDots?: boolean } = {}): DotExpr | IdentifierExpr | StarExpr {
+    const { includeDots = true } = options;
+    const parts: Expression[] = this.parts;
+    let parent = this.parent;
+
+    if (includeDots) {
+      while (parent instanceof DotExpr) {
+        parts.push(parent.$expression);
+        parent = parent.parent;
+      }
+    }
+
+    return 1 < parts.length ? DotExpr.build(parts.map((p) => p.copy())) : parts[0] as IdentifierExpr | StarExpr;
   }
 
   get $this (): IdentifierExpr | StarExpr {

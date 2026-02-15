@@ -722,12 +722,11 @@ export class Dialect {
 
   // TODO: To be implemented
   static toJsonPath (path?: Expression): Expression | undefined {
-    return path;
+    throw new Error('toJsonPath not implemented');
   }
 
-  // TODO: To be implemented
   toJsonPath (path?: Expression): Expression | undefined {
-    return this.constructor.toJsonPath(path);
+    return (this.constructor as typeof Dialect).toJsonPath(path);
   }
 
   /**
