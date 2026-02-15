@@ -2743,7 +2743,7 @@ export class Parser {
         parseAlias: false,
       });
     } else if (thisExpr instanceof SubqueryExpr || thisExpr instanceof ValuesExpr) {
-      thisExpr = this.parseSubquery(this.parseQueryModifiers(this.parseSetOperations(thisExpr), {
+      thisExpr = this.parseSubquery(this.parseQueryModifiers(this.parseSetOperations(thisExpr)), {
         parseAlias: false,
       });
     } else if (1 < expressions.length || this._prev?.tokenType === TokenType.COMMA) {
@@ -4678,8 +4678,9 @@ export class Parser {
 
   parseQueryModifiers<E extends Expression> (thisExpr: E): E;
   parseQueryModifiers (thisExpr: undefined): undefined;
-  parseQueryModifiers (thisExpr: unknown): unknown {
-    if (thisExpr && this._constructor.MODIFIABLES.includes(thisExpr.constructor)) {
+  parseQueryModifiers<E extends Expression> (thisExpr: E | undefined): E | undefined;
+  parseQueryModifiers (thisExpr: Expression | undefined): Expression | undefined {
+    if (thisExpr && this._constructor.MODIFIABLES.includes(thisExpr._constructor)) {
       for (const join of this.parseJoins()) {
         thisExpr.append('joins', join);
       }
