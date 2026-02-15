@@ -4798,7 +4798,10 @@ export class Parser {
   parseStream (): StreamExpr | undefined {
     const index = this._index;
     if (this._matchTextSeq('STREAM')) {
-      const thisExpr = this._parse({ parseMethod: (self: Parser) => self.parseTable(), rawTokens: this._tokens });
+      const thisExpr = this._parse({
+        parseMethod: (self: Parser) => self.parseTable(),
+        rawTokens: this._tokens,
+      });
       if (thisExpr) {
         return this.expression(StreamExpr, { this: thisExpr });
       }
@@ -4833,7 +4836,10 @@ export class Parser {
     parseBracket?: boolean;
   }): JoinExpr | undefined {
     if (this._match(TokenType.COMMA)) {
-      const table = this._parse({ parseMethod: (self: Parser) => self.parseTable(), rawTokens: this._tokens });
+      const table = this._parse({
+        parseMethod: (self: Parser) => self.parseTable(),
+        rawTokens: this._tokens,
+      });
       const crossJoin = table ? this.expression(JoinExpr, { this: table }) : undefined;
 
       if (crossJoin && this._constructor.JOINS_HAVE_EQUAL_PRECEDENCE) {
@@ -4996,7 +5002,8 @@ export class Parser {
   }
 
   parseIndex (
-    options: { index?: Expression; anonymous?: boolean } = {},
+    options: { index?: Expression;
+      anonymous?: boolean; } = {},
   ): IndexExpr | undefined {
     const { anonymous = false } = options;
     let index = options.index;
@@ -5712,7 +5719,10 @@ export class Parser {
 
     const fields: InExpr[] = [];
     while (true) {
-      const results = this._parse({ parseMethod: (self: Parser) => self.parsePivotIn(), rawTokens: this._tokens });
+      const results = this._parse({
+        parseMethod: (self: Parser) => self.parsePivotIn(),
+        rawTokens: this._tokens,
+      });
       const field = results[0];
       if (!field || !(field instanceof InExpr)) {
         break;
@@ -6020,9 +6030,12 @@ export class Parser {
   }
 
   parseOrder (
-    options: { thisExpr?: Expression; skipOrderToken?: boolean } = {},
+    options: { thisExpr?: Expression;
+      skipOrderToken?: boolean; } = {},
   ): OrderExpr | undefined {
-    const { thisExpr, skipOrderToken } = options;
+    const {
+      thisExpr, skipOrderToken,
+    } = options;
     let siblings: boolean | undefined;
 
     if (!skipOrderToken && !this._match(TokenType.ORDER_BY)) {
@@ -6148,7 +6161,10 @@ export class Parser {
         // we try to build an exp.Mod expr. For that matter, we backtrack and instead
         // consume the factor plus parse the percentage separately
         const index = this._index;
-        const results = this._parse({ parseMethod: (self: Parser) => self.parseTerm(), rawTokens: this._tokens });
+        const results = this._parse({
+          parseMethod: (self: Parser) => self.parseTerm(),
+          rawTokens: this._tokens,
+        });
         expression = results[0];
         if (expression instanceof ModExpr) {
           this._retreat(index);
@@ -6224,8 +6240,14 @@ export class Parser {
     }
 
     const index = this._index;
-    const limitResults = this._parse({ parseMethod: (self: Parser) => self.parseLimit(), rawTokens: this._tokens });
-    const offsetResults = this._parse({ parseMethod: (self: Parser) => self.parseOffset(), rawTokens: this._tokens });
+    const limitResults = this._parse({
+      parseMethod: (self: Parser) => self.parseLimit(),
+      rawTokens: this._tokens,
+    });
+    const offsetResults = this._parse({
+      parseMethod: (self: Parser) => self.parseOffset(),
+      rawTokens: this._tokens,
+    });
     const result = !!(limitResults[0] || offsetResults[0]);
     this._retreat(index);
 
@@ -8361,205 +8383,6 @@ export class Parser {
       token: token || this._prev,
       ...kwargs,
     });
-  }
-
-  buildPipeCte (options: {
-    query: QueryExpr;
-    expressions: Expression[];
-    aliasCte?: TableAliasExpr;
-  }): SelectExpr {
-    const { query, expressions, aliasCte } = options;
-    let newCte: string | TableAliasExpr;
-    if (aliasCte) {
-      newCte = aliasCte;
-    } else {
-      this._pipeCteCounter += 1;
-      newCte = `__tmp${this._pipeCteCounter}`;
-    }
-
-    const with_ = (query as any).args.get?.('with');
-    const ctes = with_?.pop() || undefined;
-
-    const newSelect = select(expressions, { copy: false }).from(newCte, { copy: false });
-    if (ctes) {
-      newSelect.setArgKey('with', ctes);
-    }
-
-    return newSelect.with(newCte, {
-      as: query,
-      copy: false,
-    });
-  }
-
-  parsePipeSyntaxSelect (query: SelectExpr): SelectExpr {
-    const select = this.parseSelect({ consumePipe: false });
-    if (!select) {
-      return query;
-    }
-
-    return this.buildPipeCte({
-      query: query.select(select.$expressions, { append: false }),
-      expressions: [this.expression(StarExpr, {})],
-    });
-  }
-
-  parsePipeSyntaxLimit (query: SelectExpr): SelectExpr {
-    const limit = this.parseLimit();
-    const offset = this.parseOffset();
-
-    if (limit) {
-      const currLimit = query.args.limit || limit;
-      if (limit.$expression?.toValue() <= currLimit.$expression?.toValue()) {
-        query.limit(limit, { copy: false });
-      }
-    }
-
-    if (offset) {
-      const currOffset = query.args.offset;
-      const currOffsetValue = currOffset ? currOffset.$expression?.toValue() : 0;
-      query.offset(
-        LiteralExpr.number(currOffsetValue + offset.$expression?.toValue()),
-        { copy: false },
-      );
-    }
-
-    return query;
-  }
-
-  parsePipeSyntaxAggregateFields (): Expression | undefined {
-    let thisExpr = this.parseDisjunction();
-    if (this._matchTextSeq('GROUP', 'AND', false)) {
-      return thisExpr;
-    }
-
-    thisExpr = this.parseAlias(thisExpr);
-
-    if (this._matchSet(new Set([TokenType.ASC, TokenType.DESC]), false)) {
-      return this.parseOrdered(() => thisExpr);
-    }
-
-    return thisExpr;
-  }
-
-  parsePipeSyntaxAggregateGroupOrderBy (query: SelectExpr, groupByExists: boolean = true): SelectExpr {
-    const expr = this.parseCsv(() => this.parsePipeSyntaxAggregateFields());
-    const aggregatesOrGroups: Expression[] = [];
-    const orders: Expression[] = [];
-
-    for (const element of expr) {
-      if (element instanceof OrderedExpr) {
-        const thisExpr = element.$this;
-        if (thisExpr instanceof AliasExpr) {
-          element.setArgKey('this', thisExpr.args.alias);
-        }
-        orders.push(element);
-      }
-
-      const thisExpr = element instanceof OrderedExpr ? element.$this : element;
-      aggregatesOrGroups.push(thisExpr);
-    }
-
-    if (groupByExists) {
-      query.select(aggregatesOrGroups, { copy: false }).groupBy(
-        ...aggregatesOrGroups.map((projection) => (projection as any).args?.get?.('alias') || projection),
-        { copy: false },
-      );
-    } else {
-      query.select(aggregatesOrGroups, {
-        append: false,
-        copy: false,
-      });
-    }
-
-    if (0 < orders.length) {
-      return query.orderBy(...orders, {
-        append: false,
-        copy: false,
-      });
-    }
-
-    return query;
-  }
-
-  parsePipeSyntaxAggregate (query: SelectExpr): SelectExpr {
-    this._matchTextSeq('AGGREGATE');
-    query = this.parsePipeSyntaxAggregateGroupOrderBy(query, false);
-
-    if (
-      this._match(TokenType.GROUP_BY)
-      || (this._matchTextSeq('GROUP', 'AND') && this._match(TokenType.ORDER_BY))
-    ) {
-      query = this.parsePipeSyntaxAggregateGroupOrderBy(query);
-    }
-
-    return this.buildPipeCte({
-      query,
-      expressions: [this.expression(StarExpr, {})],
-    } as any);
-  }
-
-  parsePipeSyntaxSetOperator (query: QueryExpr): QueryExpr | undefined {
-    const firstSetop = this.parseSetOperation({ this: query });
-    if (!firstSetop) {
-      return undefined;
-    }
-
-    const parseAndUnwrapQuery = (): SelectExpr | undefined => {
-      const expr = this.parseParen();
-      return expr ? (expr as any).assertIs(SubqueryExpr).unnest() : undefined;
-    };
-
-    firstSetop.$this?.pop();
-
-    const setops: SelectExpr[] = [
-      (firstSetop as any).expression.pop().assertIs(SubqueryExpr)
-        .unnest(),
-      ...this.parseCsv(parseAndUnwrapQuery).filter(Boolean),
-    ];
-
-    query = this.buildPipeCte({
-      query,
-      expressions: [this.expression(StarExpr, {})],
-    } as any);
-    const with_ = (query as any).args.get('with');
-    const ctes = with_?.pop() || undefined;
-
-    if (firstSetop instanceof UnionExpr) {
-      query = query.union(...setops, {
-        copy: false,
-        ...(firstSetop as any).args,
-      });
-    } else if (firstSetop instanceof ExceptExpr) {
-      query = (query as any).except(...setops, {
-        copy: false,
-        ...(firstSetop as any).args,
-      });
-    } else {
-      query = query.intersect(...setops, {
-        copy: false,
-        ...(firstSetop as any).args,
-      });
-    }
-
-    query.setArgKey('with', ctes);
-
-    return this.buildPipeCte({
-      query,
-      expressions: [this.expression(StarExpr, {})],
-    } as any);
-  }
-
-  parsePipeSyntaxJoin (query: QueryExpr): QueryExpr | undefined {
-    const join = this.parseJoin();
-    if (!join) {
-      return undefined;
-    }
-
-    if (query instanceof SelectExpr) {
-      return query.join(join, { copy: false });
-    }
-
-    return query;
   }
 
   parseTokens (parseMethod: () => Expression | undefined, expressions: Record<TokenType, new (args: any) => Expression>): Expression | undefined {
@@ -11733,7 +11556,7 @@ export class Parser {
         const table = from_?.this;
         if (table instanceof SubqueryExpr && this._match(TokenType.JOIN, { advance: false })) {
           const joins = this.parseJoins();
-          table.setArgKey('joins', joins.length > 0 ? joins : undefined);
+          table.setArgKey('joins', 0 < joins.length ? joins : undefined);
         }
 
         kwargs.from_ = from_;
@@ -12027,23 +11850,14 @@ export class Parser {
     return result;
   }
 
-  identifierExpression (options?: { token?: Token;
-    [key: string]: any; }): IdentifierExpr {
-    const token = options?.token || this._prev;
-    const otherArgs = options ? { ...options } : {};
-    delete otherArgs.token;
-    return this.expression(IdentifierExpr, {
-      token,
-      ...otherArgs,
-    });
-  }
-
   buildPipeCte (options: {
     query: QueryExpr;
     expressions: Expression[];
     aliasCte?: TableAliasExpr;
   }): SelectExpr {
-    const { query, expressions, aliasCte } = options;
+    const {
+      query, expressions, aliasCte,
+    } = options;
     let newCte: string | TableAliasExpr;
     if (aliasCte) {
       newCte = aliasCte;
