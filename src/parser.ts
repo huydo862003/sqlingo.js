@@ -447,6 +447,7 @@ import {
   toIdentifier,
   UNWRAPPED_QUERIES,
   var_,
+  alias,
 } from './expressions';
 import { formatTime } from './time';
 import {
@@ -4565,8 +4566,8 @@ export class Parser {
   parseCte (): CTEExpr | undefined {
     const index = this._index;
 
-    const alias = this.parseTableAlias({ aliasTokens: this._constructor.ID_VAR_TOKENS });
-    if (!alias || !alias.this) {
+    const aliasExpr = this.parseTableAlias({ aliasTokens: this._constructor.ID_VAR_TOKENS });
+    if (!aliasExpr || !aliasExpr.this) {
       this.raiseError('Expected CTE to have alias');
     }
 
@@ -4592,7 +4593,7 @@ export class Parser {
       CTEExpr,
       {
         this: this.parseWrapped(() => this.parseStatement()),
-        alias,
+        alias: aliasExpr,
         materialized,
         keyExpressions,
         comments,
@@ -4605,7 +4606,7 @@ export class Parser {
         cte.setArgKey('this', select('*').from(values));
       } else {
         cte.setArgKey('this', select('*').from(
-          values.alias('_values', { table: true }),
+          alias(values, '_values', { table: true }),
         ));
       }
     }
@@ -4681,39 +4682,56 @@ export class Parser {
   }
 
   protected _implicitUnnestToExplicit<E extends Expression> (thisExpr: E): E {
+    // Import normalizeIdentifiers (assuming it exists)
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { normalizeIdentifiers } = require('./optimizer/normalize_identifiers');
+
     const refs = new Set<string>();
-    const args: Record<string, unknown> = thisExpr.args;
+    const args = thisExpr.args;
+
+    // Add the FROM clause table to refs
     if ('from' in args) {
       const fromExpr: FromExpr | undefined = args['from'];
-      if (fromExpr?.this) {
-        // Normalize and get alias/name
-        const normalized = fromExpr.this; // Simplified - full normalization would use optimizer
+      const fromExprThis = fromExpr?.$this;
+      if (fromExprThis) {
+        const normalized = normalizeIdentifiers(fromExprThis.copy(), { dialect: this.dialect });
         refs.add(normalized.aliasOrName || '');
       }
     }
 
+    // Process JOINs
     if ('joins' in args) {
       const joins: JoinExpr[] | undefined = args['joins'];
       if (joins) {
         for (const join of joins) {
-          const table = join.this;
-          if (table instanceof TableExpr && !join.args.on) {
-            const normalized = table; // Simplified
-            const tableName = normalized.parts?.[0]?.name || table.aliasOrName;
+          const table = join.$this;
 
-            if (tableName && refs.has(tableName)) {
+          if (table instanceof TableExpr && !join.args.on) {
+            // Normalize the table with maybe_column meta flag
+            const normalizedTable = table.copy();
+            if (!normalizedTable.meta) {
+              normalizedTable.meta = {};
+            }
+            normalizedTable.meta['maybe_column'] = true;
+            const normalized = normalizeIdentifiers(normalizedTable, { dialect: this.dialect });
+
+            // Check if the first part of the table name is in refs
+            const parts = normalized.parts;
+            if (parts && parts.length > 0 && refs.has(parts[0].name || '')) {
               const tableAsColumn = table.toColumn();
               if (tableAsColumn) {
                 const unnest = new UnnestExpr({ expressions: [tableAsColumn] });
 
+                // Convert Alias to TableAlias if needed
                 if (table.args.alias instanceof TableAliasExpr) {
-                  tableAsColumn.replace(tableAsColumn.this);
+                  tableAsColumn.replace(tableAsColumn.$this);
+                  // Use alias_ helper to attach TableAlias to Unnest
                   const aliasArgs: Record<string, unknown> = {
-                    table: [table.args.alias.this],
+                    table: [table.args.alias.$this],
                     copy: false,
                   };
                   if ('alias' in unnest && typeof unnest.alias === 'function') {
-                    unnest.alias(undefined, aliasArgs);
+                    (unnest as { alias: (a: unknown, b: unknown) => void }).alias(undefined, aliasArgs);
                   }
                 }
 
@@ -4721,7 +4739,7 @@ export class Parser {
               }
             }
 
-            refs.add(tableName || '');
+            refs.add(normalized.aliasOrName || '');
           }
         }
       }
