@@ -8183,7 +8183,7 @@ export type PropertyExprArgs = Merge<[
   BaseExpressionArgs,
   {
     value?: string | Expression;
-    this?: Expression;
+    this?: Expression; // NOTE: In argTypes, we set this to true
   },
 ]>;
 
@@ -8196,7 +8196,7 @@ export class PropertyExpr extends Expression {
    */
   static argTypes: RequiredMap<PropertyExprArgs> = {
     ...super.argTypes,
-    this: false,
+    this: true, // NOTE: sqlglot sets this to true, although some subclasses set this to false
     value: false,
   };
 
@@ -9065,7 +9065,7 @@ export class TableExpr extends Expression {
    *
    * @see {@link https://docs.sqlglot.com/sqlglot/expressions.html#Table | SQLGlot Table Documentation}
    */
-  static argTypes: RequiredMap<QueryOptionExprArgs> = {
+  static argTypes: RequiredMap<TableExprArgs> = {
     ...super.argTypes,
     this: false,
     alias: false,
@@ -16618,10 +16618,14 @@ export class SecurePropertyExpr extends PropertyExpr {
 export type TagsExprArgs = Merge<[
   PropertyExprArgs,
   ColumnConstraintKindExprArgs,
-  { expressions: Expression[] },
+  {
+    expressions: Expression[];
+    this?: Expression;
+    value?: string | Expression;
+  },
 ]>;
 
-export class TagsExpr extends multiInherit(ColumnConstraintKindExpr, PropertyExpr, Expression) {
+export class TagsExpr extends multiInherit(ColumnConstraintKindExpr, PropertyExpr) {
   key = ExpressionKey.TAGS;
 
   static argTypes: RequiredMap<TagsExprArgs> = {
@@ -18745,7 +18749,7 @@ export class ObjectIdentifierExpr extends DataTypeExpr {
 export type BinaryExprArgs = Merge<[
   ConditionExprArgs,
   {
-    this: Expression;
+    this?: Expression; // NOTE: We set `this: true` in argTypes
     expression: Expression;
   },
 ]>;
@@ -18755,7 +18759,7 @@ export class BinaryExpr extends ConditionExpr {
 
   static argTypes: RequiredMap<BinaryExprArgs> = {
     ...super.argTypes,
-    this: true,
+    this: true, // NOTE: sqlglot sets this to true, although XorExpr sets to false
     expression: true,
   };
 
@@ -18765,7 +18769,7 @@ export class BinaryExpr extends ConditionExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 
@@ -37740,14 +37744,14 @@ export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
 
   static isVarLenArgs = true;
 
-  static argTypes: RequiredMap<XorExprArgs> = {
+  static argTypes = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: false,
     expression: false,
     expressions: false,
     roundInput: false,
-  };
+  } as RequiredMap<XorExprArgs>;
 
   declare args: XorExprArgs;
 
@@ -39427,6 +39431,7 @@ export function xor (
   const {
     dialect, copy = true, wrap = true, ...opts
   } = options;
+  // @ts-expect-error - Multi-inheritance type conflict with optional properties
   return _combine(expressions, XorExpr, {
     dialect,
     copy,
