@@ -2531,6 +2531,10 @@ export class Expression {
   rpow (other: unknown): PowExpr {
     return this.binop(PowExpr, other, { reverse: true });
   }
+
+  get _constructor (): typeof Expression {
+    return this.constructor as typeof Expression;
+  }
 }
 
 export type ConditionExprArgs = Merge<[
