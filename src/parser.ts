@@ -2739,13 +2739,11 @@ export class Parser {
     if (!thisExpr && this._match(TokenType.R_PAREN, { advance: false })) {
       thisExpr = this.expression(TupleExpr, {});
     } else if (thisExpr && UNWRAPPED_QUERIES.some((cls) => thisExpr instanceof cls)) {
-      thisExpr = this.parseSubquery({
-        thisExpr,
+      thisExpr = this.parseSubquery(thisExpr, {
         parseAlias: false,
       });
     } else if (thisExpr instanceof SubqueryExpr || thisExpr instanceof ValuesExpr) {
-      thisExpr = this.parseSubquery({
-        thisExpr: this.parseQueryModifiers(this.parseSetOperations(thisExpr)),
+      thisExpr = this.parseSubquery(this.parseQueryModifiers(this.parseSetOperations(thisExpr), {
         parseAlias: false,
       });
     } else if (1 < expressions.length || this._prev?.tokenType === TokenType.COMMA) {
@@ -8046,7 +8044,7 @@ export class Parser {
     } else if (this.errorLevel === ErrorLevel.RAISE && 0 < this.errors.length) {
       throw new ParseError(
         concatMessages(this.errors, this.maxErrors),
-        { errors: mergeErrors(this.errors) },
+        mergeErrors(this.errors),
       );
     }
   }

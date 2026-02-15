@@ -13742,7 +13742,7 @@ export type InsertExprArgs = Merge<[
   },
 ]>;
 
-export class InsertExpr extends multiInherit(DMLExpr, DDLExpr, Expression) {
+export class InsertExpr extends multiInherit(DDLExpr, DMLExpr, Expression) {
   key = ExpressionKey.INSERT;
 
   /**
@@ -16643,12 +16643,12 @@ export class SecurePropertyExpr extends PropertyExpr {
 }
 
 export type TagsExprArgs = Merge<[
-  ColumnConstraintKindExprArgs,
   PropertyExprArgs,
+  ColumnConstraintKindExprArgs,
   { expressions: Expression[] },
 ]>;
 
-export class TagsExpr extends multiInherit(Expression, PropertyExpr, ColumnConstraintKindExpr) {
+export class TagsExpr extends multiInherit(ColumnConstraintKindExpr, PropertyExpr, Expression) {
   key = ExpressionKey.TAGS;
 
   static argTypes = {
