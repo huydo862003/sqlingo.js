@@ -1104,7 +1104,7 @@ export class Expression {
   // NOTE: In sqlglot, `this` is `true`,
   // but some subclasses of `Expression`
   // does not have `this`, so I set it to false
-  static argTypes = {} satisfies RequiredMap<BaseExpressionArgs>;
+  static argTypes: RequiredMap<BaseExpressionArgs> = {};
 
   /** Set of required argument names */
 
@@ -2540,9 +2540,9 @@ export type ConditionExprArgs = Merge<[
 export class ConditionExpr extends Expression {
   key = ExpressionKey.CONDITION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ConditionExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ConditionExprArgs>;
+  };
 
   declare args: ConditionExprArgs;
 
@@ -2558,9 +2558,9 @@ export type PredicateExprArgs = Merge<[
 export class PredicateExpr extends Expression {
   key = ExpressionKey.PREDICATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PredicateExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<PredicateExprArgs>;
+  };
 
   declare args: PredicateExprArgs;
 
@@ -2576,9 +2576,9 @@ export type DerivedTableExprArgs = Merge<[
 export class DerivedTableExpr extends Expression {
   key = ExpressionKey.DERIVED_TABLE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DerivedTableExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DerivedTableExprArgs>;
+  };
 
   declare args: DerivedTableExprArgs;
 
@@ -2617,9 +2617,9 @@ export type QueryExprArgs = Merge<[
 export class QueryExpr extends Expression {
   key = ExpressionKey.QUERY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<QueryExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<QueryExprArgs>;
+  };
 
   declare args: QueryExprArgs;
 
@@ -3039,7 +3039,7 @@ export type UDTFExprArgs = Merge<[
 export class UDTFExpr extends DerivedTableExpr {
   key = ExpressionKey.UDTF;
 
-  static argTypes = {} satisfies RequiredMap<UDTFExprArgs>;
+  static argTypes: RequiredMap<UDTFExprArgs> = {};
 
   declare args: UDTFExprArgs;
 
@@ -3076,13 +3076,13 @@ export class CacheExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Cache expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CacheExprArgs> = {
     ...super.argTypes,
     this: true,
     lazy: false,
     options: false,
     expression: false,
-  } satisfies RequiredMap<CacheExprArgs>;
+  };
 
   declare args: CacheExprArgs;
 
@@ -3122,11 +3122,11 @@ export class UncacheExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Uncache expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<UncacheExprArgs> = {
     ...super.argTypes,
     this: true,
     exists: false,
-  } satisfies RequiredMap<UncacheExprArgs>;
+  };
 
   declare args: UncacheExprArgs;
 
@@ -3167,11 +3167,11 @@ export class RefreshExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Refresh expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RefreshExprArgs> = {
     ...super.argTypes,
     this: true,
     kind: true,
-  } satisfies RequiredMap<RefreshExprArgs>;
+  };
 
   declare args: RefreshExprArgs;
 
@@ -3199,11 +3199,11 @@ export type DDLExprArgs = Merge<[
 export class DDLExpr extends Expression {
   key = ExpressionKey.DDL;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DDLExprArgs> = {
     ...super.argTypes,
     with: false,
     expression: false,
-  } satisfies RequiredMap<DDLExprArgs>;
+  };
 
   declare args: DDLExprArgs;
 
@@ -3262,11 +3262,11 @@ export type LockingStatementExprArgs = Merge<[
 export class LockingStatementExpr extends Expression {
   key = ExpressionKey.LOCKING_STATEMENT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: LockingStatementExprArgs;
 
@@ -3290,9 +3290,9 @@ export type DMLExprArgs = Merge<[
 export class DMLExpr extends Expression {
   key = ExpressionKey.DML;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DMLExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DMLExprArgs>;
+  };
 
   declare args: DMLExprArgs;
 
@@ -3380,7 +3380,7 @@ export class CreateExpr extends DDLExpr {
    * Defines the arguments (properties and child expressions) for Create expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CreateExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
@@ -3398,7 +3398,7 @@ export class CreateExpr extends DDLExpr {
     clone: false,
     concurrently: false,
     clustered: false,
-  } satisfies RequiredMap<CreateExprArgs>;
+  };
 
   declare args: CreateExprArgs;
 
@@ -3495,7 +3495,7 @@ export class SequencePropertiesExpr extends Expression {
    * Defines the arguments (properties and child expressions) for SequenceProperties expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<SequencePropertiesExprArgs> = {
     ...super.argTypes,
     increment: false,
     minvalue: false,
@@ -3504,7 +3504,7 @@ export class SequencePropertiesExpr extends Expression {
     start: false,
     owned: false,
     options: false,
-  } satisfies RequiredMap<SequencePropertiesExprArgs>;
+  };
 
   declare args: SequencePropertiesExprArgs;
 
@@ -3562,7 +3562,7 @@ export class TruncateTableExpr extends Expression {
    * Defines the arguments (properties and child expressions) for TruncateTable expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TruncateTableExprArgs> = {
     ...super.argTypes,
     expressions: true,
     isDatabase: false,
@@ -3572,7 +3572,7 @@ export class TruncateTableExpr extends Expression {
     identity: false,
     option: false,
     partition: false,
-  } satisfies RequiredMap<TruncateTableExprArgs>;
+  };
 
   declare args: TruncateTableExprArgs;
 
@@ -3629,12 +3629,12 @@ export class CloneExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Clone expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CloneExprArgs> = {
     ...super.argTypes,
     this: true,
     shallow: false,
     copy: false,
-  } satisfies RequiredMap<CloneExprArgs>;
+  };
 
   declare args: CloneExprArgs;
 
@@ -3685,7 +3685,7 @@ export class DescribeExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Describe expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DescribeExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
@@ -3694,7 +3694,7 @@ export class DescribeExpr extends Expression {
     partition: false,
     format: false,
     asJson: false,
-  } satisfies RequiredMap<DescribeExprArgs>;
+  };
 
   declare args: DescribeExprArgs;
 
@@ -3747,12 +3747,12 @@ export class AttachExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Attach expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<AttachExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
     exists: false,
-  } satisfies RequiredMap<AttachExprArgs>;
+  };
 
   declare args: AttachExprArgs;
 
@@ -3788,11 +3788,11 @@ export class DetachExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Detach expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DetachExprArgs> = {
     ...super.argTypes,
     this: true,
     exists: false,
-  } satisfies RequiredMap<DetachExprArgs>;
+  };
 
   declare args: DetachExprArgs;
 
@@ -3825,12 +3825,12 @@ export class InstallExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Install expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<InstallExprArgs> = {
     ...super.argTypes,
     this: true,
     from: false,
     force: false,
-  } satisfies RequiredMap<InstallExprArgs>;
+  };
 
   declare args: InstallExprArgs;
 
@@ -3866,11 +3866,11 @@ export class SummarizeExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Summarize expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<SummarizeExprArgs> = {
     ...super.argTypes,
     this: true,
     table: false,
-  } satisfies RequiredMap<SummarizeExprArgs>;
+  };
 
   declare args: SummarizeExprArgs;
 
@@ -3910,11 +3910,11 @@ export class KillExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Kill expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<KillExprArgs> = {
     ...super.argTypes,
     this: true,
     kind: false,
-  } satisfies RequiredMap<KillExprArgs>;
+  };
 
   declare args: KillExprArgs;
 
@@ -3938,9 +3938,9 @@ export type PragmaExprArgs = Merge<[
 export class PragmaExpr extends Expression {
   key = ExpressionKey.PRAGMA;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PragmaExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<PragmaExprArgs>;
+  };
 
   declare args: PragmaExprArgs;
 
@@ -3957,10 +3957,10 @@ export type DeclareExprArgs = Merge<[
 export class DeclareExpr extends Expression {
   key = ExpressionKey.DECLARE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DeclareExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<DeclareExprArgs>;
+  };
 
   declare args: DeclareExprArgs;
 
@@ -3999,12 +3999,12 @@ export class DeclareItemExpr extends Expression {
    * Defines the arguments (properties and child expressions) for DeclareItem expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DeclareItemExprArgs> = {
     ...super.argTypes,
     this: true,
     kind: false,
     default: false,
-  } satisfies RequiredMap<DeclareItemExprArgs>;
+  };
 
   declare args: DeclareItemExprArgs;
 
@@ -4041,12 +4041,12 @@ export class SetExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Set expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<SetExprArgs> = {
     ...super.argTypes,
     expressions: false,
     unset: false,
     tag: false,
-  } satisfies RequiredMap<SetExprArgs>;
+  };
 
   declare args: SetExprArgs;
 
@@ -4082,11 +4082,11 @@ export class HeredocExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Heredoc expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<HeredocExprArgs> = {
     ...super.argTypes,
     this: true,
     tag: false,
-  } satisfies RequiredMap<HeredocExprArgs>;
+  };
 
   declare args: HeredocExprArgs;
 
@@ -4132,14 +4132,14 @@ export class SetItemExpr extends Expression {
    * Defines the arguments (properties and child expressions) for SetItem expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<SetItemExprArgs> = {
     ...super.argTypes,
     this: false,
     expressions: false,
     kind: false,
     collate: false,
     global: false,
-  } satisfies RequiredMap<SetItemExprArgs>;
+  };
 
   declare args: SetItemExprArgs;
 
@@ -4184,12 +4184,12 @@ export class QueryBandExpr extends Expression {
    * Defines the arguments (properties and child expressions) for QueryBand expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<QueryBandExprArgs> = {
     ...super.argTypes,
     this: true,
     scope: false,
     update: false,
-  } satisfies RequiredMap<QueryBandExprArgs>;
+  };
 
   declare args: QueryBandExprArgs;
 
@@ -4251,7 +4251,7 @@ export class ShowExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Show expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ShowExprArgs> = {
     ...super.argTypes,
     this: true,
     history: false,
@@ -4281,7 +4281,7 @@ export class ShowExpr extends Expression {
     forRole: false,
     intoOutfile: false,
     json: false,
-  } satisfies RequiredMap<ShowExprArgs>;
+  };
 
   declare args: ShowExprArgs;
 
@@ -4418,12 +4418,12 @@ export class UserDefinedFunctionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for UserDefinedFunction expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<UserDefinedFunctionExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
     wrapped: false,
-  } satisfies RequiredMap<UserDefinedFunctionExprArgs>;
+  };
 
   declare args: UserDefinedFunctionExprArgs;
 
@@ -4459,11 +4459,11 @@ export class CharacterSetExpr extends Expression {
    * Defines the arguments (properties and child expressions) for CharacterSet expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CharacterSetExprArgs> = {
     ...super.argTypes,
     this: true,
     default: false,
-  } satisfies RequiredMap<CharacterSetExprArgs>;
+  };
 
   declare args: CharacterSetExprArgs;
 
@@ -4506,13 +4506,13 @@ export class RecursiveWithSearchExpr extends Expression {
    * Defines the arguments (properties and child expressions) for RecursiveWithSearch expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RecursiveWithSearchExprArgs> = {
     ...super.argTypes,
     kind: true,
     this: true,
     expression: true,
     using: false,
-  } satisfies RequiredMap<RecursiveWithSearchExprArgs>;
+  };
 
   declare args: RecursiveWithSearchExprArgs;
 
@@ -4553,12 +4553,12 @@ export class WithExpr extends Expression {
    * Defines the arguments (properties and child expressions) for With expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<WithExprArgs> = {
     ...super.argTypes,
     expressions: true,
     recursive: false,
     search: false,
-  } satisfies RequiredMap<WithExprArgs>;
+  };
 
   declare args: WithExprArgs;
 
@@ -4597,11 +4597,11 @@ export class WithinGroupExpr extends Expression {
    * Defines the arguments (properties and child expressions) for WithinGroup expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: WithinGroupExprArgs;
 
@@ -4632,11 +4632,11 @@ export class ProjectionDefExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ProjectionDef expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ProjectionDefExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<ProjectionDefExprArgs>;
+  };
 
   declare args: ProjectionDefExprArgs;
 
@@ -4668,11 +4668,11 @@ export class TableAliasExpr extends Expression {
    * Defines the arguments (properties and child expressions) for TableAlias expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TableAliasExprArgs> = {
     ...super.argTypes,
     this: false,
     columns: false,
-  } satisfies RequiredMap<TableAliasExprArgs>;
+  };
 
   declare args: TableAliasExprArgs;
 
@@ -4708,11 +4708,11 @@ export class ColumnPositionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ColumnPosition expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ColumnPositionExprArgs> = {
     ...super.argTypes,
     this: false,
     position: true,
-  } satisfies RequiredMap<ColumnPositionExprArgs>;
+  };
 
   declare args: ColumnPositionExprArgs;
 
@@ -4760,7 +4760,7 @@ export class ColumnDefExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ColumnDef expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ColumnDefExprArgs> = {
     ...super.argTypes,
     this: true,
     kind: false,
@@ -4769,7 +4769,7 @@ export class ColumnDefExpr extends Expression {
     position: false,
     default: false,
     output: false,
-  } satisfies RequiredMap<ColumnDefExprArgs>;
+  };
 
   declare args: ColumnDefExprArgs;
 
@@ -4845,7 +4845,7 @@ export class AlterColumnExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AlterColumn expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<AlterColumnExprArgs> = {
     ...super.argTypes,
     this: true,
     dtype: false,
@@ -4857,7 +4857,7 @@ export class AlterColumnExpr extends Expression {
     allowNull: false,
     visible: false,
     renameTo: false,
-  } satisfies RequiredMap<AlterColumnExprArgs>;
+  };
 
   declare args: AlterColumnExprArgs;
 
@@ -4921,11 +4921,11 @@ export class AlterIndexExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AlterIndex expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<AlterIndexExprArgs> = {
     ...super.argTypes,
     this: true,
     visible: true,
-  } satisfies RequiredMap<AlterIndexExprArgs>;
+  };
 
   declare args: AlterIndexExprArgs;
 
@@ -4949,9 +4949,9 @@ export type AlterDistStyleExprArgs = Merge<[
 export class AlterDistStyleExpr extends Expression {
   key = ExpressionKey.ALTER_DIST_STYLE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AlterDistStyleExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AlterDistStyleExprArgs>;
+  };
 
   declare args: AlterDistStyleExprArgs;
 
@@ -4976,12 +4976,12 @@ export class AlterSortKeyExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AlterSortKey expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<AlterSortKeyExprArgs> = {
     ...super.argTypes,
     this: false,
     expressions: false,
     compound: false,
-  } satisfies RequiredMap<AlterSortKeyExprArgs>;
+  };
 
   declare args: AlterSortKeyExprArgs;
 
@@ -5024,7 +5024,7 @@ export class AlterSetExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AlterSet expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<AlterSetExprArgs> = {
     ...super.argTypes,
     expressions: false,
     option: false,
@@ -5035,7 +5035,7 @@ export class AlterSetExpr extends Expression {
     tag: false,
     location: false,
     serde: false,
-  } satisfies RequiredMap<AlterSetExprArgs>;
+  };
 
   declare args: AlterSetExprArgs;
 
@@ -5096,12 +5096,12 @@ export class RenameColumnExpr extends Expression {
    * Defines the arguments (properties and child expressions) for RenameColumn expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RenameColumnExprArgs> = {
     ...super.argTypes,
     this: true,
     to: true,
     exists: false,
-  } satisfies RequiredMap<RenameColumnExprArgs>;
+  };
 
   declare args: RenameColumnExprArgs;
 
@@ -5129,9 +5129,9 @@ export type AlterRenameExprArgs = Merge<[
 export class AlterRenameExpr extends Expression {
   key = ExpressionKey.ALTER_RENAME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AlterRenameExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AlterRenameExprArgs>;
+  };
 
   declare args: AlterRenameExprArgs;
 
@@ -5147,9 +5147,9 @@ export type SwapTableExprArgs = Merge<[
 export class SwapTableExpr extends Expression {
   key = ExpressionKey.SWAP_TABLE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SwapTableExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SwapTableExprArgs>;
+  };
 
   declare args: SwapTableExprArgs;
 
@@ -5186,14 +5186,14 @@ export class CommentExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Comment expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CommentExprArgs> = {
     ...super.argTypes,
     this: true,
     kind: true,
     expression: true,
     exists: false,
     materialized: false,
-  } satisfies RequiredMap<CommentExprArgs>;
+  };
 
   declare args: CommentExprArgs;
 
@@ -5240,14 +5240,14 @@ export class ComprehensionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Comprehension expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ComprehensionExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     position: false,
     iterator: true,
     condition: false,
-  } satisfies RequiredMap<ComprehensionExprArgs>;
+  };
 
   declare args: ComprehensionExprArgs;
 
@@ -5294,14 +5294,14 @@ export class MergeTreeTTLActionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for MergeTreeTTLAction expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<MergeTreeTTLActionExprArgs> = {
     ...super.argTypes,
     this: true,
     delete: false,
     recompress: false,
     toDisk: false,
     toVolume: false,
-  } satisfies RequiredMap<MergeTreeTTLActionExprArgs>;
+  };
 
   declare args: MergeTreeTTLActionExprArgs;
 
@@ -5347,13 +5347,13 @@ export class MergeTreeTTLExpr extends Expression {
    * Defines the arguments (properties and child expressions) for MergeTreeTTL expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<MergeTreeTTLExprArgs> = {
     ...super.argTypes,
     expressions: true,
     where: false,
     group: false,
     aggregates: false,
-  } satisfies RequiredMap<MergeTreeTTLExprArgs>;
+  };
 
   declare args: MergeTreeTTLExprArgs;
 
@@ -5398,7 +5398,7 @@ export class IndexConstraintOptionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for IndexConstraintOption expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<IndexConstraintOptionExprArgs> = {
     ...super.argTypes,
     keyBlockSize: false,
     using: false,
@@ -5407,7 +5407,7 @@ export class IndexConstraintOptionExpr extends Expression {
     visible: false,
     engineAttr: false,
     secondaryEngineAttr: false,
-  } satisfies RequiredMap<IndexConstraintOptionExprArgs>;
+  };
 
   declare args: IndexConstraintOptionExprArgs;
 
@@ -5472,11 +5472,11 @@ export class ColumnConstraintExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ColumnConstraintExprArgs> = {
     ...super.argTypes,
     this: false,
     kind: true,
-  } satisfies RequiredMap<ColumnConstraintExprArgs>;
+  };
 
   declare args: ColumnConstraintExprArgs;
 
@@ -5508,9 +5508,9 @@ export type ColumnConstraintKindExprArgs = Merge<[
 export class ColumnConstraintKindExpr extends Expression {
   key = ExpressionKey.COLUMN_CONSTRAINT_KIND;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ColumnConstraintKindExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ColumnConstraintKindExprArgs>;
+  };
 
   declare args: ColumnConstraintKindExprArgs;
 
@@ -5534,11 +5534,11 @@ export class WithOperatorExpr extends Expression {
    * Defines the arguments (properties and child expressions) for WithOperator expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<WithOperatorExprArgs> = {
     ...super.argTypes,
     this: true,
     op: true,
-  } satisfies RequiredMap<WithOperatorExprArgs>;
+  };
 
   declare args: WithOperatorExprArgs;
 
@@ -5566,11 +5566,11 @@ export type WatermarkColumnConstraintExprArgs = Merge<[
 export class WatermarkColumnConstraintExpr extends Expression {
   key = ExpressionKey.WATERMARK_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: WatermarkColumnConstraintExprArgs;
 
@@ -5598,11 +5598,11 @@ export type ConstraintExprArgs = Merge<[
 export class ConstraintExpr extends Expression {
   key = ExpressionKey.CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: ConstraintExprArgs;
 
@@ -5641,7 +5641,7 @@ export class DeleteExpr extends DMLExpr {
    * Defines the arguments (properties and child expressions) for Delete expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DeleteExprArgs> = {
     ...super.argTypes,
     with: false,
     this: false,
@@ -5652,7 +5652,7 @@ export class DeleteExpr extends DMLExpr {
     limit: false,
     tables: false,
     cluster: false,
-  } satisfies RequiredMap<DeleteExprArgs>;
+  };
 
   declare args: DeleteExprArgs;
 
@@ -5809,7 +5809,7 @@ export class DropExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Drop expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DropExprArgs> = {
     ...super.argTypes,
     this: false,
     kind: false,
@@ -5822,7 +5822,7 @@ export class DropExpr extends Expression {
     purge: false,
     cluster: false,
     concurrently: false,
-  } satisfies RequiredMap<DropExprArgs>;
+  };
 
   declare args: DropExprArgs;
 
@@ -5899,12 +5899,12 @@ export class ExportExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Export expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ExportExprArgs> = {
     ...super.argTypes,
     this: true,
     connection: false,
     options: true,
-  } satisfies RequiredMap<ExportExprArgs>;
+  };
 
   declare args: ExportExprArgs;
 
@@ -5940,11 +5940,11 @@ export class FilterExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Filter expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<FilterExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<FilterExprArgs>;
+  };
 
   declare args: FilterExprArgs;
 
@@ -5968,9 +5968,9 @@ export type CheckExprArgs = Merge<[
 export class CheckExpr extends Expression {
   key = ExpressionKey.CHECK;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CheckExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CheckExprArgs>;
+  };
 
   declare args: CheckExprArgs;
 
@@ -5995,12 +5995,12 @@ export class ChangesExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Changes expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ChangesExprArgs> = {
     ...super.argTypes,
     information: true,
     atBefore: false,
     end: false,
-  } satisfies RequiredMap<ChangesExprArgs>;
+  };
 
   declare args: ChangesExprArgs;
 
@@ -6037,12 +6037,12 @@ export class ConnectExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Connect expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ConnectExprArgs> = {
     ...super.argTypes,
     start: false,
     connect: true,
     nocycle: false,
-  } satisfies RequiredMap<ConnectExprArgs>;
+  };
 
   declare args: ConnectExprArgs;
 
@@ -6079,12 +6079,12 @@ export class CopyParameterExpr extends Expression {
    * Defines the arguments (properties and child expressions) for CopyParameter expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CopyParameterExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
     expressions: false,
-  } satisfies RequiredMap<CopyParameterExprArgs>;
+  };
 
   declare args: CopyParameterExprArgs;
 
@@ -6123,14 +6123,14 @@ export class CredentialsExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Credentials expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CredentialsExprArgs> = {
     ...super.argTypes,
     credentials: false,
     encryption: false,
     storage: false,
     iamRole: false,
     region: false,
-  } satisfies RequiredMap<CredentialsExprArgs>;
+  };
 
   declare args: CredentialsExprArgs;
 
@@ -6166,9 +6166,9 @@ export type PriorExprArgs = Merge<[
 export class PriorExpr extends Expression {
   key = ExpressionKey.PRIOR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PriorExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<PriorExprArgs>;
+  };
 
   declare args: PriorExprArgs;
 
@@ -6193,12 +6193,12 @@ export class DirectoryExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Directory expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DirectoryExprArgs> = {
     ...super.argTypes,
     this: true,
     local: false,
     rowFormat: false,
-  } satisfies RequiredMap<DirectoryExprArgs>;
+  };
 
   declare args: DirectoryExprArgs;
 
@@ -6225,9 +6225,9 @@ export type DirectoryStageExprArgs = Merge<[
 export class DirectoryStageExpr extends Expression {
   key = ExpressionKey.DIRECTORY_STAGE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DirectoryStageExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DirectoryStageExprArgs>;
+  };
 
   declare args: DirectoryStageExprArgs;
 
@@ -6254,14 +6254,14 @@ export class ForeignKeyExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ForeignKey expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ForeignKeyExprArgs> = {
     ...super.argTypes,
     expressions: false,
     reference: false,
     delete: false,
     update: false,
     options: false,
-  } satisfies RequiredMap<ForeignKeyExprArgs>;
+  };
 
   declare args: ForeignKeyExprArgs;
 
@@ -6305,11 +6305,11 @@ export class ColumnPrefixExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ColumnPrefix expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: ColumnPrefixExprArgs;
 
@@ -6343,13 +6343,13 @@ export class PrimaryKeyExpr extends Expression {
    * Defines the arguments (properties and child expressions) for PrimaryKey expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<PrimaryKeyExprArgs> = {
     ...super.argTypes,
     this: false,
     expressions: true,
     options: false,
     include: false,
-  } satisfies RequiredMap<PrimaryKeyExprArgs>;
+  };
 
   declare args: PrimaryKeyExprArgs;
 
@@ -6392,14 +6392,14 @@ export class IntoExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Into expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<IntoExprArgs> = {
     ...super.argTypes,
     this: false,
     temporary: false,
     unlogged: false,
     bulkCollect: false,
     expressions: false,
-  } satisfies RequiredMap<IntoExprArgs>;
+  };
 
   declare args: IntoExprArgs;
 
@@ -6438,10 +6438,10 @@ export type FromExprArgs = Merge<[
 export class FromExpr extends Expression {
   key = ExpressionKey.FROM;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FromExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<FromExprArgs>;
+  };
 
   declare args: FromExprArgs;
 
@@ -6477,9 +6477,9 @@ export type HavingExprArgs = Merge<[
 export class HavingExpr extends Expression {
   key = ExpressionKey.HAVING;
 
-  static argTypes = {
+  static argTypes: RequiredMap<HavingExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<HavingExprArgs>;
+  };
 
   declare args: HavingExprArgs;
 
@@ -6495,10 +6495,10 @@ export type HintExprArgs = Merge<[
 export class HintExpr extends Expression {
   key = ExpressionKey.HINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: HintExprArgs;
 
@@ -6522,11 +6522,11 @@ export type JoinHintExprArgs = Merge<[
 export class JoinHintExpr extends Expression {
   key = ExpressionKey.JOIN_HINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: JoinHintExprArgs;
 
@@ -6560,13 +6560,13 @@ export class IdentifierExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Identifier expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<IdentifierExprArgs> = {
     ...super.argTypes,
     this: true,
     quoted: false,
     global: false,
     temporary: false,
-  } satisfies RequiredMap<IdentifierExprArgs>;
+  };
 
   declare args: IdentifierExprArgs;
 
@@ -6606,11 +6606,11 @@ export type OpclassExprArgs = Merge<[
 export class OpclassExpr extends Expression {
   key = ExpressionKey.OPCLASS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: OpclassExprArgs;
 
@@ -6646,7 +6646,7 @@ export class IndexExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Index expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<IndexExprArgs> = {
     ...super.argTypes,
     this: false,
     table: false,
@@ -6654,7 +6654,7 @@ export class IndexExpr extends Expression {
     primary: false,
     amp: false,
     params: false,
-  } satisfies RequiredMap<IndexExprArgs>;
+  };
 
   declare args: IndexExprArgs;
 
@@ -6708,7 +6708,7 @@ export class IndexParametersExpr extends Expression {
    * Defines the arguments (properties and child expressions) for IndexParameters expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<IndexParametersExprArgs> = {
     ...super.argTypes,
     using: false,
     include: false,
@@ -6718,7 +6718,7 @@ export class IndexParametersExpr extends Expression {
     tablespace: false,
     where: false,
     on: false,
-  } satisfies RequiredMap<IndexParametersExprArgs>;
+  };
 
   declare args: IndexParametersExprArgs;
 
@@ -6775,12 +6775,12 @@ export class ConditionalInsertExpr extends Expression {
    * Defines the arguments (properties and child expressions) for ConditionalInsert expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ConditionalInsertExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
     else: false,
-  } satisfies RequiredMap<ConditionalInsertExprArgs>;
+  };
 
   declare args: ConditionalInsertExprArgs;
 
@@ -6826,12 +6826,12 @@ export class MultitableInsertsExpr extends Expression {
    * Defines the arguments (properties and child expressions) for MultitableInserts expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<MultitableInsertsExprArgs> = {
     ...super.argTypes,
     expressions: true,
     kind: true,
     source: true,
-  } satisfies RequiredMap<MultitableInsertsExprArgs>;
+  };
 
   declare args: MultitableInsertsExprArgs;
 
@@ -6872,7 +6872,7 @@ export class OnConflictExpr extends Expression {
    * Defines the arguments (properties and child expressions) for OnConflict expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<OnConflictExprArgs> = {
     ...super.argTypes,
     duplicate: false,
     expressions: false,
@@ -6881,7 +6881,7 @@ export class OnConflictExpr extends Expression {
     indexPredicate: false,
     constraint: false,
     where: false,
-  } satisfies RequiredMap<OnConflictExprArgs>;
+  };
 
   declare args: OnConflictExprArgs;
 
@@ -6934,12 +6934,12 @@ export class OnConditionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for OnCondition expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<OnConditionExprArgs> = {
     ...super.argTypes,
     error: false,
     empty: false,
     null: false,
-  } satisfies RequiredMap<OnConditionExprArgs>;
+  };
 
   declare args: OnConditionExprArgs;
 
@@ -6975,11 +6975,11 @@ export class ReturningExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Returning expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ReturningExprArgs> = {
     ...super.argTypes,
     expressions: true,
     into: false,
-  } satisfies RequiredMap<ReturningExprArgs>;
+  };
 
   declare args: ReturningExprArgs;
 
@@ -7007,11 +7007,11 @@ export type IntroducerExprArgs = Merge<[
 export class IntroducerExpr extends Expression {
   key = ExpressionKey.INTRODUCER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: IntroducerExprArgs;
 
@@ -7035,9 +7035,9 @@ export type NationalExprArgs = Merge<[
 export class NationalExpr extends Expression {
   key = ExpressionKey.NATIONAL;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NationalExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<NationalExprArgs>;
+  };
 
   declare args: NationalExprArgs;
 
@@ -7066,7 +7066,7 @@ export class LoadDataExpr extends Expression {
    * Defines the arguments (properties and child expressions) for LoadData expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<LoadDataExprArgs> = {
     ...super.argTypes,
     this: true,
     local: false,
@@ -7075,7 +7075,7 @@ export class LoadDataExpr extends Expression {
     partition: false,
     inputFormat: false,
     serde: false,
-  } satisfies RequiredMap<LoadDataExprArgs>;
+  };
 
   declare args: LoadDataExprArgs;
 
@@ -7127,11 +7127,11 @@ export class PartitionExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Partition expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<PartitionExprArgs> = {
     ...super.argTypes,
     expressions: true,
     subpartition: false,
-  } satisfies RequiredMap<PartitionExprArgs>;
+  };
 
   declare args: PartitionExprArgs;
 
@@ -7160,12 +7160,12 @@ export type PartitionRangeExprArgs = Merge<[
 export class PartitionRangeExpr extends Expression {
   key = ExpressionKey.PARTITION_RANGE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PartitionRangeExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
     expressions: false,
-  } satisfies RequiredMap<PartitionRangeExprArgs>;
+  };
 
   declare args: PartitionRangeExprArgs;
 
@@ -7193,9 +7193,9 @@ export type PartitionIdExprArgs = Merge<[
 export class PartitionIdExpr extends Expression {
   key = ExpressionKey.PARTITION_ID;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PartitionIdExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<PartitionIdExprArgs>;
+  };
 
   declare args: PartitionIdExprArgs;
 
@@ -7220,12 +7220,12 @@ export class FetchExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Fetch expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<FetchExprArgs> = {
     ...super.argTypes,
     direction: false,
     count: false,
     limitOptions: false,
-  } satisfies RequiredMap<FetchExprArgs>;
+  };
 
   declare args: FetchExprArgs;
 
@@ -7272,14 +7272,14 @@ export class GrantExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Grant expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<GrantExprArgs> = {
     ...super.argTypes,
     privileges: true,
     kind: false,
     securable: true,
     principals: true,
     grantOption: false,
-  } satisfies RequiredMap<GrantExprArgs>;
+  };
 
   declare args: GrantExprArgs;
 
@@ -7328,7 +7328,7 @@ export class RevokeExpr extends Expression {
    * Each key represents an argument name, and the boolean indicates if it's required.
    * Extends Grant's arg_types with additional cascade field.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RevokeExprArgs> = {
     ...super.argTypes,
     privileges: true,
     kind: false,
@@ -7336,7 +7336,7 @@ export class RevokeExpr extends Expression {
     principals: true,
     grantOption: false,
     cascade: false,
-  } satisfies RequiredMap<RevokeExprArgs>;
+  };
 
   declare args: RevokeExprArgs;
 
@@ -7388,7 +7388,7 @@ export class GroupExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Group expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<GroupExprArgs> = {
     ...super.argTypes,
     expressions: false,
     groupingSets: false,
@@ -7396,7 +7396,7 @@ export class GroupExpr extends Expression {
     rollup: false,
     totals: false,
     all: false,
-  } satisfies RequiredMap<GroupExprArgs>;
+  };
 
   declare args: GroupExprArgs;
 
@@ -7437,10 +7437,10 @@ export type CubeExprArgs = Merge<[
 export class CubeExpr extends Expression {
   key = ExpressionKey.CUBE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CubeExprArgs> = {
     ...super.argTypes,
     expressions: false,
-  } satisfies RequiredMap<CubeExprArgs>;
+  };
 
   declare args: CubeExprArgs;
 
@@ -7461,10 +7461,10 @@ export type RollupExprArgs = Merge<[
 export class RollupExpr extends Expression {
   key = ExpressionKey.ROLLUP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RollupExprArgs> = {
     ...super.argTypes,
     expressions: false,
-  } satisfies RequiredMap<RollupExprArgs>;
+  };
 
   declare args: RollupExprArgs;
 
@@ -7485,10 +7485,10 @@ export type GroupingSetsExprArgs = Merge<[
 export class GroupingSetsExpr extends Expression {
   key = ExpressionKey.GROUPING_SETS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<GroupingSetsExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<GroupingSetsExprArgs>;
+  };
 
   declare args: GroupingSetsExprArgs;
 
@@ -7517,12 +7517,12 @@ export class LambdaExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Lambda expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<LambdaExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
     colon: false,
-  } satisfies RequiredMap<LambdaExprArgs>;
+  };
 
   declare args: LambdaExprArgs;
 
@@ -7561,14 +7561,14 @@ export class LimitExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Limit expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<LimitExprArgs> = {
     ...super.argTypes,
     this: false,
     expression: true,
     offset: false,
     limitOptions: false,
     expressions: false,
-  } satisfies RequiredMap<LimitExprArgs>;
+  };
 
   declare args: LimitExprArgs;
 
@@ -7613,12 +7613,12 @@ export class LimitOptionsExpr extends Expression {
    * Defines the arguments (properties and child expressions) for LimitOptions expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<LimitOptionsExprArgs> = {
     ...super.argTypes,
     percent: false,
     rows: false,
     withTies: false,
-  } satisfies RequiredMap<LimitOptionsExprArgs>;
+  };
 
   declare args: LimitOptionsExprArgs;
 
@@ -7689,7 +7689,7 @@ export class JoinExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Join expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JoinExprArgs> = {
     ...super.argTypes,
     this: true,
     on: false,
@@ -7703,7 +7703,7 @@ export class JoinExpr extends Expression {
     directed: false,
     expressions: false,
     pivots: false,
-  } satisfies RequiredMap<JoinExprArgs>;
+  };
 
   declare args: JoinExprArgs;
 
@@ -7888,11 +7888,11 @@ export class MatchRecognizeMeasureExpr extends Expression {
    * Defines the arguments (properties and child expressions) for MatchRecognizeMeasure expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<MatchRecognizeMeasureExprArgs> = {
     ...super.argTypes,
     this: true,
     windowFrame: false,
-  } satisfies RequiredMap<MatchRecognizeMeasureExprArgs>;
+  };
 
   declare args: MatchRecognizeMeasureExprArgs;
 
@@ -7930,7 +7930,7 @@ export class MatchRecognizeExpr extends Expression {
    * Defines the arguments (properties and child expressions) for MatchRecognize expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<MatchRecognizeExprArgs> = {
     ...super.argTypes,
     partitionBy: false,
     order: false,
@@ -7940,7 +7940,7 @@ export class MatchRecognizeExpr extends Expression {
     pattern: false,
     define: false,
     alias: false,
-  } satisfies RequiredMap<MatchRecognizeExprArgs>;
+  };
 
   declare args: MatchRecognizeExprArgs;
 
@@ -7988,9 +7988,9 @@ export type FinalExprArgs = Merge<[
 export class FinalExpr extends Expression {
   key = ExpressionKey.FINAL;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FinalExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<FinalExprArgs>;
+  };
 
   declare args: FinalExprArgs;
 
@@ -8011,12 +8011,12 @@ export type OffsetExprArgs = Merge<[
 export class OffsetExpr extends Expression {
   key = ExpressionKey.OFFSET;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     ...super.argTypes,
     this: false,
     expression: true,
     expressions: false,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: OffsetExprArgs;
 
@@ -8053,12 +8053,12 @@ export class OrderExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Order expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<OrderExprArgs> = {
     ...super.argTypes,
     this: false,
     expressions: true,
     siblings: false,
-  } satisfies RequiredMap<OrderExprArgs>;
+  };
 
   declare args: OrderExprArgs;
 
@@ -8096,13 +8096,13 @@ export class WithFillExpr extends Expression {
    * Defines the arguments (properties and child expressions) for WithFill expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<WithFillExprArgs> = {
     ...super.argTypes,
     from: false,
     to: false,
     step: false,
     interpolate: false,
-  } satisfies RequiredMap<WithFillExprArgs>;
+  };
 
   declare args: WithFillExprArgs;
 
@@ -8144,13 +8144,13 @@ export class OrderedExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Ordered expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<OrderedExprArgs> = {
     ...super.argTypes,
     this: true,
     desc: false,
     nullsFirst: true,
     withFill: false,
-  } satisfies RequiredMap<OrderedExprArgs>;
+  };
 
   declare args: OrderedExprArgs;
 
@@ -8182,8 +8182,8 @@ export class OrderedExpr extends Expression {
 export type PropertyExprArgs = Merge<[
   BaseExpressionArgs,
   {
-    value: string | Expression;
-    this: Expression;
+    value?: string | Expression;
+    this?: Expression;
   },
 ]>;
 
@@ -8194,11 +8194,11 @@ export class PropertyExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Property expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<PropertyExprArgs> = {
     ...super.argTypes,
-    this: true,
-    value: true,
-  } satisfies RequiredMap<PropertyExprArgs>;
+    this: false,
+    value: false,
+  };
 
   declare args: PropertyExprArgs;
 
@@ -8206,11 +8206,11 @@ export class PropertyExpr extends Expression {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 
-  get $value (): string | Expression {
+  get $value (): string | Expression | undefined {
     return this.args.value;
   }
 }
@@ -8226,11 +8226,11 @@ export type GrantPrivilegeExprArgs = Merge<[
 export class GrantPrivilegeExpr extends Expression {
   key = ExpressionKey.GRANT_PRIVILEGE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<GrantPrivilegeExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<GrantPrivilegeExprArgs>;
+  };
 
   declare args: GrantPrivilegeExprArgs;
 
@@ -8271,11 +8271,11 @@ export class GrantPrincipalExpr extends Expression {
    * Defines the arguments (properties and child expressions) for GrantPrincipal expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<GrantPrincipalExprArgs> = {
     ...super.argTypes,
     this: true,
     kind: false,
-  } satisfies RequiredMap<GrantPrincipalExprArgs>;
+  };
 
   declare args: GrantPrincipalExprArgs;
 
@@ -8300,9 +8300,9 @@ export type AllowedValuesPropertyExprArgs = Merge<[
 export class AllowedValuesPropertyExpr extends Expression {
   key = ExpressionKey.ALLOWED_VALUES_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AllowedValuesPropertyExprArgs> = {
     expressions: true,
-  } satisfies RequiredMap<AllowedValuesPropertyExprArgs>;
+  };
 
   declare args: AllowedValuesPropertyExprArgs;
 
@@ -8333,13 +8333,13 @@ export class PartitionByRangePropertyDynamicExpr extends Expression {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<PartitionByRangePropertyDynamicExprArgs> = {
     ...super.argTypes,
     this: false,
     start: true,
     end: true,
     every: true,
-  } satisfies RequiredMap<PartitionByRangePropertyDynamicExprArgs>;
+  };
 
   declare args: PartitionByRangePropertyDynamicExprArgs;
 
@@ -8381,13 +8381,13 @@ export class RollupIndexExpr extends Expression {
    * Defines the arguments (properties and child expressions) for RollupIndex expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RollupIndexExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
     fromIndex: false,
     properties: false,
-  } satisfies RequiredMap<RollupIndexExprArgs>;
+  };
 
   declare args: RollupIndexExprArgs;
 
@@ -8423,11 +8423,11 @@ export type PartitionListExprArgs = Merge<[
 export class PartitionListExpr extends Expression {
   key = ExpressionKey.PARTITION_LIST;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PartitionListExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
-  } satisfies RequiredMap<PartitionListExprArgs>;
+  };
 
   declare args: PartitionListExprArgs;
 
@@ -8461,13 +8461,13 @@ export class PartitionBoundSpecExpr extends Expression {
    * Defines the arguments (properties and child expressions) for PartitionBoundSpec expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<PartitionBoundSpecExprArgs> = {
     ...super.argTypes,
     this: false,
     expression: false,
     fromExpressions: false,
     toExpressions: false,
-  } satisfies RequiredMap<PartitionBoundSpecExprArgs>;
+  };
 
   declare args: PartitionBoundSpecExprArgs;
 
@@ -8511,7 +8511,7 @@ export class QueryTransformExpr extends Expression {
    * Defines the arguments (properties and child expressions) for QueryTransform expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<QueryTransformExprArgs> = {
     ...super.argTypes,
     commandScript: true,
     schema: false,
@@ -8519,7 +8519,7 @@ export class QueryTransformExpr extends Expression {
     recordWriter: false,
     rowFormatAfter: false,
     recordReader: false,
-  } satisfies RequiredMap<QueryTransformExprArgs>;
+  };
 
   declare args: QueryTransformExprArgs;
 
@@ -8569,13 +8569,13 @@ export class SemanticViewExpr extends Expression {
    * Defines the arguments (properties and child expressions) for SemanticView expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<SemanticViewExprArgs> = {
     ...super.argTypes,
     metrics: false,
     dimensions: false,
     facts: false,
     where: false,
-  } satisfies RequiredMap<SemanticViewExprArgs>;
+  };
 
   declare args: SemanticViewExprArgs;
 
@@ -8606,7 +8606,7 @@ export type LocationExprArgs = Merge<[
 export class LocationExpr extends Expression {
   key = ExpressionKey.LOCATION;
 
-  static argTypes = {} satisfies RequiredMap<LocationExprArgs>;
+  static argTypes: RequiredMap<LocationExprArgs> = {};
 
   declare args: LocationExprArgs;
 
@@ -8622,9 +8622,9 @@ export type QualifyExprArgs = Merge<[
 export class QualifyExpr extends Expression {
   key = ExpressionKey.QUALIFY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<QualifyExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<QualifyExprArgs>;
+  };
 
   declare args: QualifyExprArgs;
 
@@ -8648,11 +8648,11 @@ export class InputOutputFormatExpr extends Expression {
    * Defines the arguments (properties and child expressions) for InputOutputFormat expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<InputOutputFormatExprArgs> = {
     ...super.argTypes,
     inputFormat: false,
     outputFormat: false,
-  } satisfies RequiredMap<InputOutputFormatExprArgs>;
+  };
 
   declare args: InputOutputFormatExprArgs;
 
@@ -8676,9 +8676,9 @@ export type ReturnExprArgs = Merge<[
 export class ReturnExpr extends Expression {
   key = ExpressionKey.RETURN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ReturnExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ReturnExprArgs>;
+  };
 
   declare args: ReturnExprArgs;
 
@@ -8699,12 +8699,12 @@ export type ReferenceExprArgs = Merge<[
 export class ReferenceExpr extends Expression {
   key = ExpressionKey.REFERENCE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ReferenceExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
     options: false,
-  } satisfies RequiredMap<ReferenceExprArgs>;
+  };
 
   declare args: ReferenceExprArgs;
 
@@ -8733,10 +8733,10 @@ export type TupleExprArgs = Merge<[
 export class TupleExpr extends Expression {
   key = ExpressionKey.TUPLE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TupleExprArgs> = {
     ...super.argTypes,
     expressions: false,
-  } satisfies RequiredMap<TupleExprArgs>;
+  };
 
   declare args: TupleExprArgs;
 
@@ -8819,11 +8819,11 @@ export type QueryOptionExprArgs = Merge<[
 export class QueryOptionExpr extends Expression {
   key = ExpressionKey.QUERY_OPTION;
 
-  static argTypes: Record<string, boolean> = {
+  static argTypes: RequiredMap<QueryOptionExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<QueryOptionExprArgs>;
+  };
 
   declare args: QueryOptionExprArgs;
 
@@ -8849,10 +8849,10 @@ export type WithTableHintExprArgs = Merge<[
 export class WithTableHintExpr extends Expression {
   key = ExpressionKey.WITH_TABLE_HINT;
 
-  static argTypes: Record<string, boolean> = {
+  static argTypes: RequiredMap<WithTableHintExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<WithTableHintExprArgs>;
+  };
 
   declare args: WithTableHintExprArgs;
 
@@ -8878,12 +8878,12 @@ export type IndexTableHintExprArgs = Merge<[
 export class IndexTableHintExpr extends Expression {
   key = ExpressionKey.INDEX_TABLE_HINT;
 
-  static argTypes: Record<string, boolean> = {
+  static argTypes: RequiredMap<IndexTableHintExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
     target: false,
-  } satisfies RequiredMap<IndexTableHintExprArgs>;
+  };
 
   declare args: IndexTableHintExprArgs;
 
@@ -8926,12 +8926,12 @@ export type HistoricalDataExprArgs = Merge<[
 export class HistoricalDataExpr extends Expression {
   key = ExpressionKey.HISTORICAL_DATA;
 
-  static argTypes: Record<string, boolean> = {
+  static argTypes: RequiredMap<HistoricalDataExprArgs> = {
     ...super.argTypes,
     this: true,
     kind: true,
     expression: true,
-  } satisfies RequiredMap<HistoricalDataExprArgs>;
+  };
 
   declare args: HistoricalDataExprArgs;
 
@@ -8965,12 +8965,12 @@ export type PutExprArgs = Merge<[
 export class PutExpr extends Expression {
   key = ExpressionKey.PUT;
 
-  static argTypes: Record<string, boolean> = {
+  static argTypes: RequiredMap<PutExprArgs> = {
     ...super.argTypes,
     this: true,
     target: true,
     properties: false,
-  } satisfies RequiredMap<PutExprArgs>;
+  };
 
   declare args: PutExprArgs;
 
@@ -9004,12 +9004,12 @@ export type GetExprArgs = Merge<[
 export class GetExpr extends Expression {
   key = ExpressionKey.GET;
 
-  static argTypes: Record<string, boolean> = {
+  static argTypes: RequiredMap<GetExprArgs> = {
     ...super.argTypes,
     this: true,
     target: true,
     properties: false,
-  } satisfies RequiredMap<GetExprArgs>;
+  };
 
   declare args: GetExprArgs;
 
@@ -9065,7 +9065,7 @@ export class TableExpr extends Expression {
    *
    * @see {@link https://docs.sqlglot.com/sqlglot/expressions.html#Table | SQLGlot Table Documentation}
    */
-  static argTypes: Record<string, boolean> = {
+  static argTypes: RequiredMap<QueryOptionExprArgs> = {
     ...super.argTypes,
     this: false,
     alias: false,
@@ -9087,7 +9087,7 @@ export class TableExpr extends Expression {
     rowsFrom: false,
     sample: false,
     indexed: false,
-  } satisfies RequiredMap<TableExprArgs>;
+  };
 
   declare args: TableExprArgs;
 
@@ -9283,9 +9283,9 @@ export type VarExprArgs = Merge<[
 export class VarExpr extends Expression {
   key = ExpressionKey.VAR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<VarExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<VarExprArgs>;
+  };
 
   declare args: VarExprArgs;
 
@@ -9323,12 +9323,12 @@ export type VersionExprArgs = Merge<[
 export class VersionExpr extends Expression {
   key = ExpressionKey.VERSION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<VersionExprArgs> = {
     ...super.argTypes,
     this: true,
     kind: true,
     expression: false,
-  } satisfies RequiredMap<VersionExprArgs>;
+  };
 
   declare args: VersionExprArgs;
 
@@ -9360,11 +9360,11 @@ export type SchemaExprArgs = Merge<[
 export class SchemaExpr extends Expression {
   key = ExpressionKey.SCHEMA;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SchemaExprArgs> = {
     ...super.argTypes,
     this: false,
     expressions: false,
-  } satisfies RequiredMap<SchemaExprArgs>;
+  };
 
   declare args: SchemaExprArgs;
 
@@ -9399,13 +9399,13 @@ export type LockExprArgs = Merge<[
 export class LockExpr extends Expression {
   key = ExpressionKey.LOCK;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LockExprArgs> = {
     ...super.argTypes,
     update: true,
     expressions: false,
     wait: false,
     key: false,
-  } satisfies RequiredMap<LockExprArgs>;
+  };
 
   declare args: LockExprArgs;
 
@@ -9452,7 +9452,7 @@ export class TableSampleExpr extends Expression {
    * Defines the arguments (properties and child expressions) for TableSample expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TableSampleExprArgs> = {
     ...super.argTypes,
     expressions: false,
     method: false,
@@ -9463,7 +9463,7 @@ export class TableSampleExpr extends Expression {
     rows: false,
     size: false,
     seed: false,
-  } satisfies RequiredMap<TableSampleExprArgs>;
+  };
 
   declare args: TableSampleExprArgs;
 
@@ -9524,12 +9524,12 @@ export class TagExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Tag expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TagExprArgs> = {
     ...super.argTypes,
     this: false,
     prefix: false,
     postfix: false,
-  } satisfies RequiredMap<TagExprArgs>;
+  };
 
   declare args: TagExprArgs;
 
@@ -9572,7 +9572,7 @@ export class PivotExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Pivot expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<PivotExprArgs> = {
     ...super.argTypes,
     fields: false,
     unpivot: false,
@@ -9583,7 +9583,7 @@ export class PivotExpr extends Expression {
     defaultOnNull: false,
     into: false,
     with: false,
-  } satisfies RequiredMap<PivotExprArgs>;
+  };
 
   declare args: PivotExprArgs;
 
@@ -9653,10 +9653,10 @@ export type UnpivotColumnsExprArgs = Merge<[
 export class UnpivotColumnsExpr extends Expression {
   key = ExpressionKey.UNPIVOT_COLUMNS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UnpivotColumnsExprArgs> = {
     this: true,
     expressions: true,
-  } satisfies RequiredMap<UnpivotColumnsExprArgs>;
+  };
 
   declare args: UnpivotColumnsExprArgs;
 
@@ -9693,7 +9693,7 @@ export class WindowSpecExpr extends Expression {
    * Defines the arguments (properties and child expressions) for WindowSpec expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<WindowSpecExprArgs> = {
     ...super.argTypes,
     kind: false,
     start: false,
@@ -9701,7 +9701,7 @@ export class WindowSpecExpr extends Expression {
     end: false,
     endSide: false,
     exclude: false,
-  } satisfies RequiredMap<WindowSpecExprArgs>;
+  };
 
   declare args: WindowSpecExprArgs;
 
@@ -9741,9 +9741,9 @@ export type PreWhereExprArgs = Merge<[
 export class PreWhereExpr extends Expression {
   key = ExpressionKey.PRE_WHERE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PreWhereExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<PreWhereExprArgs>;
+  };
 
   declare args: PreWhereExprArgs;
 
@@ -9762,10 +9762,10 @@ export type WhereExprArgs = Merge<[
 export class WhereExpr extends Expression {
   key = ExpressionKey.WHERE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<WhereExprArgs> = {
     ...super.argTypes,
     this: true, // NOTE: sqlglot does not have this, but based on Subquery.where(), I added this
-  } satisfies RequiredMap<WhereExprArgs>;
+  };
 
   declare args: WhereExprArgs;
 
@@ -9794,12 +9794,12 @@ export class StarExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Star expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<StarExprArgs> = {
     ...super.argTypes,
     except: false,
     replace: false,
     rename: false,
-  } satisfies RequiredMap<StarExprArgs>;
+  };
 
   declare args: StarExprArgs;
 
@@ -9845,11 +9845,11 @@ export type DataTypeParamExprArgs = Merge<[
 export class DataTypeParamExpr extends Expression {
   key = ExpressionKey.DATA_TYPE_PARAM;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DataTypeParamExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<DataTypeParamExprArgs>;
+  };
 
   declare args: DataTypeParamExprArgs;
 
@@ -10026,7 +10026,7 @@ export class DataTypeExpr extends Expression {
    * Defines the arguments (properties and child expressions) for DataType expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DataTypeExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
@@ -10035,7 +10035,7 @@ export class DataTypeExpr extends Expression {
     prefix: false,
     kind: false,
     nullable: false,
-  } satisfies RequiredMap<DataTypeExprArgs>;
+  };
 
   static STRUCT_TYPES = new Set<DataTypeExprKind>([
     DataTypeExprKind.FILE,
@@ -10289,7 +10289,7 @@ export type TypeExprArgs = Merge<[
 export class TypeExpr extends Expression {
   key = ExpressionKey.TYPE;
 
-  static argTypes = {} satisfies RequiredMap<TypeExprArgs>;
+  static argTypes: RequiredMap<TypeExprArgs> = {};
 
   declare args: TypeExprArgs;
 
@@ -10309,11 +10309,11 @@ export type CommandExprArgs = Merge<[
 export class CommandExpr extends Expression {
   key = ExpressionKey.COMMAND;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CommandExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<CommandExprArgs>;
+  };
 
   declare args: CommandExprArgs;
 
@@ -10342,12 +10342,12 @@ export type TransactionExprArgs = Merge<[
 export class TransactionExpr extends Expression {
   key = ExpressionKey.TRANSACTION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TransactionExprArgs> = {
     ...super.argTypes,
     this: false,
     modes: false,
     mark: false,
-  } satisfies RequiredMap<TransactionExprArgs>;
+  };
 
   declare args: TransactionExprArgs;
 
@@ -10380,12 +10380,12 @@ export type CommitExprArgs = Merge<[
 export class CommitExpr extends Expression {
   key = ExpressionKey.COMMIT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CommitExprArgs> = {
     ...super.argTypes,
     chain: false,
     this: false,
     durability: false,
-  } satisfies RequiredMap<CommitExprArgs>;
+  };
 
   declare args: CommitExprArgs;
 
@@ -10417,11 +10417,11 @@ export type RollbackExprArgs = Merge<[
 export class RollbackExpr extends Expression {
   key = ExpressionKey.ROLLBACK;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RollbackExprArgs> = {
     ...super.argTypes,
     savepoint: false,
     this: false,
-  } satisfies RequiredMap<RollbackExprArgs>;
+  };
 
   declare args: RollbackExprArgs;
 
@@ -10474,7 +10474,7 @@ export class AlterExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Alter expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<AlterExprArgs> = {
     ...super.argTypes,
     this: false,
     kind: true,
@@ -10486,7 +10486,7 @@ export class AlterExpr extends Expression {
     notValid: false,
     check: false,
     cascade: false,
-  } satisfies RequiredMap<AlterExprArgs>;
+  };
 
   declare args: AlterExprArgs;
 
@@ -10561,11 +10561,11 @@ export type AlterSessionExprArgs = Merge<[
 export class AlterSessionExpr extends Expression {
   key = ExpressionKey.ALTER_SESSION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AlterSessionExprArgs> = {
     ...super.argTypes,
     expressions: true,
     unset: false,
-  } satisfies RequiredMap<AlterSessionExprArgs>;
+  };
 
   declare args: AlterSessionExprArgs;
 
@@ -10611,7 +10611,7 @@ export class AnalyzeExpr extends Expression {
    * Defines the arguments (properties and child expressions) for Analyze expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<AnalyzeExprArgs> = {
     ...super.argTypes,
     kind: false,
     this: false,
@@ -10620,7 +10620,7 @@ export class AnalyzeExpr extends Expression {
     partition: false,
     expression: false,
     properties: false,
-  } satisfies RequiredMap<AnalyzeExprArgs>;
+  };
 
   declare args: AnalyzeExprArgs;
 
@@ -10684,13 +10684,13 @@ export class AnalyzeStatisticsExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AnalyzeStatistics expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<AnalyzeStatisticsExprArgs> = {
     ...super.argTypes,
     kind: true,
     option: false,
     this: false,
     expressions: false,
-  } satisfies RequiredMap<AnalyzeStatisticsExprArgs>;
+  };
 
   declare args: AnalyzeStatisticsExprArgs;
 
@@ -10728,13 +10728,13 @@ export type AnalyzeHistogramExprArgs = Merge<[
 export class AnalyzeHistogramExpr extends Expression {
   key = ExpressionKey.ANALYZE_HISTOGRAM;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AnalyzeHistogramExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
     expression: false,
     updateOptions: false,
-  } satisfies RequiredMap<AnalyzeHistogramExprArgs>;
+  };
 
   declare args: AnalyzeHistogramExprArgs;
 
@@ -10783,11 +10783,11 @@ export class AnalyzeSampleExpr extends Expression {
    * Defines the arguments (properties and child expressions) for AnalyzeSample expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<AnalyzeSampleExprArgs> = {
     ...super.argTypes,
     kind: true,
     sample: true,
-  } satisfies RequiredMap<AnalyzeSampleExprArgs>;
+  };
 
   declare args: AnalyzeSampleExprArgs;
 
@@ -10812,10 +10812,10 @@ export type AnalyzeListChainedRowsExprArgs = Merge<[
 export class AnalyzeListChainedRowsExpr extends Expression {
   key = ExpressionKey.ANALYZE_LIST_CHAINED_ROWS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AnalyzeListChainedRowsExprArgs> = {
     ...super.argTypes,
     expression: false,
-  } satisfies RequiredMap<AnalyzeListChainedRowsExprArgs>;
+  };
 
   declare args: AnalyzeListChainedRowsExprArgs;
 
@@ -10842,10 +10842,10 @@ export type AnalyzeDeleteExprArgs = Merge<[
 export class AnalyzeDeleteExpr extends Expression {
   key = ExpressionKey.ANALYZE_DELETE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AnalyzeDeleteExprArgs> = {
     ...super.argTypes,
     kind: false,
-  } satisfies RequiredMap<AnalyzeDeleteExprArgs>;
+  };
 
   declare args: AnalyzeDeleteExprArgs;
 
@@ -10866,10 +10866,10 @@ export type AnalyzeWithExprArgs = Merge<[
 export class AnalyzeWithExpr extends Expression {
   key = ExpressionKey.ANALYZE_WITH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AnalyzeWithExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<AnalyzeWithExprArgs>;
+  };
 
   declare args: AnalyzeWithExprArgs;
 
@@ -10903,12 +10903,12 @@ export type AnalyzeValidateExprArgs = Merge<[
 export class AnalyzeValidateExpr extends Expression {
   key = ExpressionKey.ANALYZE_VALIDATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AnalyzeValidateExprArgs> = {
     ...super.argTypes,
     kind: true,
     this: false,
     expression: false,
-  } satisfies RequiredMap<AnalyzeValidateExprArgs>;
+  };
 
   declare args: AnalyzeValidateExprArgs;
 
@@ -10936,9 +10936,9 @@ export type AnalyzeColumnsExprArgs = Merge<[
 export class AnalyzeColumnsExpr extends Expression {
   key = ExpressionKey.ANALYZE_COLUMNS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AnalyzeColumnsExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AnalyzeColumnsExprArgs>;
+  };
 
   declare args: AnalyzeColumnsExprArgs;
 
@@ -10954,9 +10954,9 @@ export type UsingDataExprArgs = Merge<[
 export class UsingDataExpr extends Expression {
   key = ExpressionKey.USING_DATA;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UsingDataExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<UsingDataExprArgs>;
+  };
 
   declare args: UsingDataExprArgs;
 
@@ -10973,10 +10973,10 @@ export type AddConstraintExprArgs = Merge<[
 export class AddConstraintExpr extends Expression {
   key = ExpressionKey.ADD_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AddConstraintExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<AddConstraintExprArgs>;
+  };
 
   declare args: AddConstraintExprArgs;
 
@@ -11001,12 +11001,12 @@ export type AddPartitionExprArgs = Merge<[
 export class AddPartitionExpr extends Expression {
   key = ExpressionKey.ADD_PARTITION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AddPartitionExprArgs> = {
     ...super.argTypes,
     this: true,
     exists: false,
     location: false,
-  } satisfies RequiredMap<AddPartitionExprArgs>;
+  };
 
   declare args: AddPartitionExprArgs;
 
@@ -11038,11 +11038,11 @@ export type AttachOptionExprArgs = Merge<[
 export class AttachOptionExpr extends Expression {
   key = ExpressionKey.ATTACH_OPTION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AttachOptionExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<AttachOptionExprArgs>;
+  };
 
   declare args: AttachOptionExprArgs;
 
@@ -11070,11 +11070,11 @@ export type DropPartitionExprArgs = Merge<[
 export class DropPartitionExpr extends Expression {
   key = ExpressionKey.DROP_PARTITION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DropPartitionExprArgs> = {
     ...super.argTypes,
     expressions: true,
     exists: false,
-  } satisfies RequiredMap<DropPartitionExprArgs>;
+  };
 
   declare args: DropPartitionExprArgs;
 
@@ -11102,11 +11102,11 @@ export type ReplacePartitionExprArgs = Merge<[
 export class ReplacePartitionExpr extends Expression {
   key = ExpressionKey.REPLACE_PARTITION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ReplacePartitionExprArgs> = {
     ...super.argTypes,
     expression: true,
     source: true,
-  } satisfies RequiredMap<ReplacePartitionExprArgs>;
+  };
 
   declare args: ReplacePartitionExprArgs;
 
@@ -11134,11 +11134,11 @@ export type AliasExprArgs = Merge<[
 export class AliasExpr extends Expression {
   key = ExpressionKey.ALIAS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AliasExprArgs> = {
     ...super.argTypes,
     this: true,
     alias: false,
-  } satisfies RequiredMap<AliasExprArgs>;
+  };
 
   declare args: AliasExprArgs;
 
@@ -11174,10 +11174,10 @@ export type PivotAnyExprArgs = Merge<[
 export class PivotAnyExpr extends Expression {
   key = ExpressionKey.PIVOT_ANY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PivotAnyExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<PivotAnyExprArgs>;
+  };
 
   declare args: PivotAnyExprArgs;
 
@@ -11201,11 +11201,11 @@ export type AliasesExprArgs = Merge<[
 export class AliasesExpr extends Expression {
   key = ExpressionKey.ALIASES;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AliasesExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
-  } satisfies RequiredMap<AliasesExprArgs>;
+  };
 
   declare args: AliasesExprArgs;
 
@@ -11240,11 +11240,11 @@ export type AtIndexExprArgs = Merge<[
 export class AtIndexExpr extends Expression {
   key = ExpressionKey.AT_INDEX;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AtIndexExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<AtIndexExprArgs>;
+  };
 
   declare args: AtIndexExprArgs;
 
@@ -11272,11 +11272,11 @@ export type AtTimeZoneExprArgs = Merge<[
 export class AtTimeZoneExpr extends Expression {
   key = ExpressionKey.AT_TIME_ZONE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AtTimeZoneExprArgs> = {
     ...super.argTypes,
     this: true,
     zone: true,
-  } satisfies RequiredMap<AtTimeZoneExprArgs>;
+  };
 
   declare args: AtTimeZoneExprArgs;
 
@@ -11304,11 +11304,11 @@ export type FromTimeZoneExprArgs = Merge<[
 export class FromTimeZoneExpr extends Expression {
   key = ExpressionKey.FROM_TIME_ZONE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FromTimeZoneExprArgs> = {
     ...super.argTypes,
     this: true,
     zone: true,
-  } satisfies RequiredMap<FromTimeZoneExprArgs>;
+  };
 
   declare args: FromTimeZoneExprArgs;
 
@@ -11342,11 +11342,11 @@ export type FormatPhraseExprArgs = Merge<[
 export class FormatPhraseExpr extends Expression {
   key = ExpressionKey.FORMAT_PHRASE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FormatPhraseExprArgs> = {
     ...super.argTypes,
     this: true,
     format: true,
-  } satisfies RequiredMap<FormatPhraseExprArgs>;
+  };
 
   declare args: FormatPhraseExprArgs;
 
@@ -11374,11 +11374,11 @@ export type DistinctExprArgs = Merge<[
 export class DistinctExpr extends Expression {
   key = ExpressionKey.DISTINCT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DistinctExprArgs> = {
     ...super.argTypes,
     expressions: false,
     on: false,
-  } satisfies RequiredMap<DistinctExprArgs>;
+  };
 
   declare args: DistinctExprArgs;
 
@@ -11409,11 +11409,11 @@ export type ForInExprArgs = Merge<[
 export class ForInExpr extends Expression {
   key = ExpressionKey.FOR_IN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ForInExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<ForInExprArgs>;
+  };
 
   declare args: ForInExprArgs;
 
@@ -11441,10 +11441,10 @@ export type TimeUnitExprArgs = Merge<[
 export class TimeUnitExpr extends Expression {
   key = ExpressionKey.TIME_UNIT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimeUnitExprArgs> = {
     ...super.argTypes,
     unit: false,
-  } satisfies RequiredMap<TimeUnitExprArgs>;
+  };
 
   static UNABBREVIATED_UNIT_NAME: Record<string, string> = {
     D: 'DAY',
@@ -11502,9 +11502,9 @@ export type IgnoreNullsExprArgs = Merge<[
 export class IgnoreNullsExpr extends Expression {
   key = ExpressionKey.IGNORE_NULLS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<IgnoreNullsExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<IgnoreNullsExprArgs>;
+  };
 
   declare args: IgnoreNullsExprArgs;
 
@@ -11520,9 +11520,9 @@ export type RespectNullsExprArgs = Merge<[
 export class RespectNullsExpr extends Expression {
   key = ExpressionKey.RESPECT_NULLS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RespectNullsExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<RespectNullsExprArgs>;
+  };
 
   declare args: RespectNullsExprArgs;
 
@@ -11546,12 +11546,12 @@ export type HavingMaxExprArgs = Merge<[
 export class HavingMaxExpr extends Expression {
   key = ExpressionKey.HAVING_MAX;
 
-  static argTypes = {
+  static argTypes: RequiredMap<HavingMaxExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     max: true,
-  } satisfies RequiredMap<HavingMaxExprArgs>;
+  };
 
   declare args: HavingMaxExprArgs;
 
@@ -11584,12 +11584,12 @@ export type TranslateCharactersExprArgs = Merge<[
 export class TranslateCharactersExpr extends Expression {
   key = ExpressionKey.TRANSLATE_CHARACTERS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TranslateCharactersExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     withError: false,
-  } satisfies RequiredMap<TranslateCharactersExprArgs>;
+  };
 
   declare args: TranslateCharactersExprArgs;
 
@@ -11616,7 +11616,7 @@ export type PositionalColumnExprArgs = Merge<[
 export class PositionalColumnExpr extends Expression {
   key = ExpressionKey.POSITIONAL_COLUMN;
 
-  static argTypes = {} satisfies RequiredMap<PositionalColumnExprArgs>;
+  static argTypes: RequiredMap<PositionalColumnExprArgs> = {};
 
   declare args: PositionalColumnExprArgs;
 
@@ -11636,10 +11636,10 @@ export type OverflowTruncateBehaviorExprArgs = Merge<[
 export class OverflowTruncateBehaviorExpr extends Expression {
   key = ExpressionKey.OVERFLOW_TRUNCATE_BEHAVIOR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<OverflowTruncateBehaviorExprArgs> = {
     this: false,
     withCount: true,
-  } satisfies RequiredMap<OverflowTruncateBehaviorExprArgs>;
+  };
 
   declare args: OverflowTruncateBehaviorExprArgs;
 
@@ -11672,12 +11672,12 @@ export class JSONExpr extends Expression {
    * Defines the arguments (properties and child expressions) for JSON expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONExprArgs> = {
     ...super.argTypes,
     this: false,
     with: false,
     unique: false,
-  } satisfies RequiredMap<JSONExprArgs>;
+  };
 
   declare args: JSONExprArgs;
 
@@ -11709,11 +11709,11 @@ export type JSONPathExprArgs = Merge<[
 export class JSONPathExpr extends Expression {
   key = ExpressionKey.JSON_PATH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONPathExprArgs> = {
     ...super.argTypes,
     expressions: true,
     escape: false,
-  } satisfies RequiredMap<JSONPathExprArgs>;
+  };
 
   declare args: JSONPathExprArgs;
 
@@ -11743,7 +11743,7 @@ export type JSONPathPartExprArgs = Merge<[
 export class JSONPathPartExpr extends Expression {
   key = ExpressionKey.JSON_PATH_PART;
 
-  static argTypes = {} satisfies RequiredMap<JSONPathPartExprArgs>;
+  static argTypes: RequiredMap<JSONPathPartExprArgs> = {};
 
   declare args: JSONPathPartExprArgs;
 
@@ -11759,7 +11759,7 @@ export type FormatJsonExprArgs = Merge<[
 export class FormatJsonExpr extends Expression {
   key = ExpressionKey.FORMAT_JSON;
 
-  static argTypes = {} satisfies RequiredMap<FormatJsonExprArgs>;
+  static argTypes: RequiredMap<FormatJsonExprArgs> = {};
 
   declare args: FormatJsonExprArgs;
 
@@ -11779,10 +11779,10 @@ export type JSONKeyValueExprArgs = Merge<[
 export class JSONKeyValueExpr extends Expression {
   key = ExpressionKey.JSON_KEY_VALUE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONKeyValueExprArgs> = {
     this: true,
     expression: true,
-  } satisfies RequiredMap<JSONKeyValueExprArgs>;
+  };
 
   declare args: JSONKeyValueExprArgs;
 
@@ -11827,14 +11827,14 @@ export class JSONColumnDefExpr extends Expression {
    * Defines the arguments (properties and child expressions) for JSONColumnDef expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONColumnDefExprArgs> = {
     ...super.argTypes,
     this: false,
     kind: false,
     path: false,
     nestedSchema: false,
     ordinality: false,
-  } satisfies RequiredMap<JSONColumnDefExprArgs>;
+  };
 
   declare args: JSONColumnDefExprArgs;
 
@@ -11871,9 +11871,9 @@ export type JSONSchemaExprArgs = Merge<[
 export class JSONSchemaExpr extends Expression {
   key = ExpressionKey.JSON_SCHEMA;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONSchemaExprArgs> = {
     expressions: true,
-  } satisfies RequiredMap<JSONSchemaExprArgs>;
+  };
 
   declare args: JSONSchemaExprArgs;
 
@@ -11903,13 +11903,13 @@ export class JSONValueExpr extends Expression {
    * Defines the arguments (properties and child expressions) for JSONValue expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONValueExprArgs> = {
     ...super.argTypes,
     this: true,
     path: true,
     returning: false,
     onCondition: false,
-  } satisfies RequiredMap<JSONValueExprArgs>;
+  };
 
   declare args: JSONValueExprArgs;
 
@@ -11962,13 +11962,13 @@ export class OpenJSONColumnDefExpr extends Expression {
    * Defines the arguments (properties and child expressions) for OpenJSONColumnDef expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<OpenJSONColumnDefExprArgs> = {
     ...super.argTypes,
     this: true,
     kind: true,
     path: false,
     asJson: false,
-  } satisfies RequiredMap<OpenJSONColumnDefExprArgs>;
+  };
 
   declare args: OpenJSONColumnDefExprArgs;
 
@@ -12008,11 +12008,11 @@ export class JSONExtractQuoteExpr extends Expression {
    * Defines the arguments (properties and child expressions) for JSONExtractQuote expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONExtractQuoteExprArgs> = {
     ...super.argTypes,
     option: true,
     scalar: false,
-  } satisfies RequiredMap<JSONExtractQuoteExprArgs>;
+  };
 
   declare args: JSONExtractQuoteExprArgs;
 
@@ -12040,10 +12040,10 @@ export type ScopeResolutionExprArgs = Merge<[
 export class ScopeResolutionExpr extends Expression {
   key = ExpressionKey.SCOPE_RESOLUTION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ScopeResolutionExprArgs> = {
     this: false,
     expression: true,
-  } satisfies RequiredMap<ScopeResolutionExprArgs>;
+  };
 
   declare args: ScopeResolutionExprArgs;
 
@@ -12072,11 +12072,11 @@ export type SliceExprArgs = Merge<[
 export class SliceExpr extends Expression {
   key = ExpressionKey.SLICE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SliceExprArgs> = {
     this: false,
     expression: false,
     step: false,
-  } satisfies RequiredMap<SliceExprArgs>;
+  };
 
   declare args: SliceExprArgs;
 
@@ -12103,7 +12103,7 @@ export type StreamExprArgs = Merge<[
 export class StreamExpr extends Expression {
   key = ExpressionKey.STREAM;
 
-  static argTypes = {} satisfies RequiredMap<StreamExprArgs>;
+  static argTypes: RequiredMap<StreamExprArgs> = {};
 
   declare args: StreamExprArgs;
 
@@ -12123,10 +12123,10 @@ export type ModelAttributeExprArgs = Merge<[
 export class ModelAttributeExpr extends Expression {
   key = ExpressionKey.MODEL_ATTRIBUTE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ModelAttributeExprArgs> = {
     this: true,
     expression: true,
-  } satisfies RequiredMap<ModelAttributeExprArgs>;
+  };
 
   declare args: ModelAttributeExprArgs;
 
@@ -12149,7 +12149,7 @@ export type WeekStartExprArgs = Merge<[
 export class WeekStartExpr extends Expression {
   key = ExpressionKey.WEEK_START;
 
-  static argTypes = {} satisfies RequiredMap<WeekStartExprArgs>;
+  static argTypes: RequiredMap<WeekStartExprArgs> = {};
 
   declare args: WeekStartExprArgs;
 
@@ -12165,9 +12165,9 @@ export type XMLNamespaceExprArgs = Merge<[
 export class XMLNamespaceExpr extends Expression {
   key = ExpressionKey.XML_NAMESPACE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<XMLNamespaceExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<XMLNamespaceExprArgs>;
+  };
 
   declare args: XMLNamespaceExprArgs;
 
@@ -12183,10 +12183,10 @@ export type XMLKeyValueOptionExprArgs = Merge<[
 export class XMLKeyValueOptionExpr extends Expression {
   key = ExpressionKey.XML_KEY_VALUE_OPTION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<XMLKeyValueOptionExprArgs> = {
     this: true,
     expression: false,
-  } satisfies RequiredMap<XMLKeyValueOptionExprArgs>;
+  };
 
   declare args: XMLKeyValueOptionExprArgs;
 
@@ -12225,11 +12225,11 @@ export type UseExprArgs = Merge<[
 export class UseExpr extends Expression {
   key = ExpressionKey.USE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UseExprArgs> = {
     kind: false,
     this: false,
     expressions: false,
-  } satisfies RequiredMap<UseExprArgs>;
+  };
 
   declare args: UseExprArgs;
 
@@ -12267,13 +12267,13 @@ export class WhenExpr extends Expression {
    * Defines the arguments (properties and child expressions) for When expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<WhenExprArgs> = {
     ...super.argTypes,
     matched: true,
     source: false,
     condition: false,
     then: true,
-  } satisfies RequiredMap<WhenExprArgs>;
+  };
 
   declare args: WhenExprArgs;
 
@@ -12306,10 +12306,10 @@ export type WhensExprArgs = Merge<[
 export class WhensExpr extends Expression {
   key = ExpressionKey.WHENS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<WhensExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<WhensExprArgs>;
+  };
 
   declare args: WhensExprArgs;
 
@@ -12329,7 +12329,7 @@ export type SemicolonExprArgs = Merge<[
 export class SemicolonExpr extends Expression {
   key = ExpressionKey.SEMICOLON;
 
-  static argTypes = {} satisfies RequiredMap<SemicolonExprArgs>;
+  static argTypes: RequiredMap<SemicolonExprArgs> = {};
 
   declare args: SemicolonExprArgs;
 
@@ -12345,9 +12345,9 @@ export type TableColumnExprArgs = Merge<[
 export class TableColumnExpr extends Expression {
   key = ExpressionKey.TABLE_COLUMN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TableColumnExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TableColumnExprArgs>;
+  };
 
   declare args: TableColumnExprArgs;
 
@@ -12363,9 +12363,9 @@ export type VariadicExprArgs = Merge<[
 export class VariadicExpr extends Expression {
   key = ExpressionKey.VARIADIC;
 
-  static argTypes = {
+  static argTypes: RequiredMap<VariadicExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<VariadicExprArgs>;
+  };
 
   declare args: VariadicExprArgs;
 
@@ -12393,14 +12393,14 @@ export class CTEExpr extends DerivedTableExpr {
    * Defines the arguments (properties and child expressions) for CTE expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CTEExprArgs> = {
     ...super.argTypes,
     this: true,
     aliases: true,
     scalar: false,
     materialized: false,
     keyExpressions: false,
-  } satisfies RequiredMap<CTEExprArgs>;
+  };
 
   declare args: CTEExprArgs;
 
@@ -12436,9 +12436,9 @@ export type BitStringExprArgs = Merge<[
 export class BitStringExpr extends ConditionExpr {
   key = ExpressionKey.BIT_STRING;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitStringExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BitStringExprArgs>;
+  };
 
   declare args: BitStringExprArgs;
 
@@ -12462,11 +12462,11 @@ export class HexStringExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for HexString expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<HexStringExprArgs> = {
     ...super.argTypes,
     this: true,
     isInteger: false,
-  } satisfies RequiredMap<HexStringExprArgs>;
+  };
 
   declare args: HexStringExprArgs;
 
@@ -12498,11 +12498,11 @@ export class ByteStringExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for ByteString expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ByteStringExprArgs> = {
     ...super.argTypes,
     this: true,
     isBytes: false,
-  } satisfies RequiredMap<ByteStringExprArgs>;
+  };
 
   declare args: ByteStringExprArgs;
 
@@ -12526,9 +12526,9 @@ export type RawStringExprArgs = Merge<[
 export class RawStringExpr extends ConditionExpr {
   key = ExpressionKey.RAW_STRING;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RawStringExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<RawStringExprArgs>;
+  };
 
   declare args: RawStringExprArgs;
 
@@ -12552,11 +12552,11 @@ export class UnicodeStringExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for UnicodeString expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<UnicodeStringExprArgs> = {
     ...super.argTypes,
     this: true,
     escape: false,
-  } satisfies RequiredMap<UnicodeStringExprArgs>;
+  };
 
   declare args: UnicodeStringExprArgs;
 
@@ -12598,14 +12598,14 @@ export class ColumnExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for Column expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ColumnExprArgs> = {
     ...super.argTypes,
     this: true,
     table: false,
     db: false,
     catalog: false,
     joinMark: false,
-  } satisfies RequiredMap<ColumnExprArgs>;
+  };
 
   declare args: ColumnExprArgs;
 
@@ -12708,9 +12708,9 @@ export type PseudocolumnExprArgs = Merge<[
 export class PseudocolumnExpr extends ColumnExpr {
   key = ExpressionKey.PSEUDOCOLUMN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PseudocolumnExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<PseudocolumnExprArgs>;
+  };
 
   declare args: PseudocolumnExprArgs;
 
@@ -12730,9 +12730,9 @@ export type AutoIncrementColumnConstraintExprArgs = Merge<[
 export class AutoIncrementColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.AUTO_INCREMENT_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AutoIncrementColumnConstraintExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AutoIncrementColumnConstraintExprArgs>;
+  };
 
   declare args: AutoIncrementColumnConstraintExprArgs;
 
@@ -12748,12 +12748,10 @@ export type ZeroFillColumnConstraintExprArgs = Merge<[
 export class ZeroFillColumnConstraintExpr extends ColumnConstraintExpr {
   key = ExpressionKey.ZERO_FILL_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ZeroFillColumnConstraintExprArgs> = {
     ...super.argTypes,
     kind: true, // sqlglot does not have this, but i thought it was a mistake
-  } satisfies RequiredMap<
-    ZeroFillColumnConstraintExprArgs
-  >;
+  };
 
   declare args: ZeroFillColumnConstraintExprArgs;
 
@@ -12778,11 +12776,11 @@ export class PeriodForSystemTimeConstraintExpr extends ColumnConstraintKindExpr 
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: PeriodForSystemTimeConstraintExprArgs;
 
@@ -12812,10 +12810,10 @@ export class CaseSpecificColumnConstraintExpr extends ColumnConstraintKindExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CaseSpecificColumnConstraintExprArgs> = {
     ...super.argTypes,
     not: true,
-  } satisfies RequiredMap<CaseSpecificColumnConstraintExprArgs>;
+  };
 
   declare args: CaseSpecificColumnConstraintExprArgs;
 
@@ -12835,9 +12833,9 @@ export type CharacterSetColumnConstraintExprArgs = Merge<[
 export class CharacterSetColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CHARACTER_SET_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     this: true,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: CharacterSetColumnConstraintExprArgs;
 
@@ -12865,11 +12863,11 @@ export class CheckColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for CheckColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CheckColumnConstraintExprArgs> = {
     ...super.argTypes,
     this: true,
     enforced: false,
-  } satisfies RequiredMap<CheckColumnConstraintExprArgs>;
+  };
 
   declare args: CheckColumnConstraintExprArgs;
 
@@ -12893,9 +12891,9 @@ export type ClusteredColumnConstraintExprArgs = Merge<[
 export class ClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.CLUSTERED_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ClusteredColumnConstraintExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ClusteredColumnConstraintExprArgs>;
+  };
 
   declare args: ClusteredColumnConstraintExprArgs;
 
@@ -12911,9 +12909,9 @@ export type CollateColumnConstraintExprArgs = Merge<[
 export class CollateColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COLLATE_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CollateColumnConstraintExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CollateColumnConstraintExprArgs>;
+  };
 
   declare args: CollateColumnConstraintExprArgs;
 
@@ -12929,9 +12927,9 @@ export type CommentColumnConstraintExprArgs = Merge<[
 export class CommentColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMMENT_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CommentColumnConstraintExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CommentColumnConstraintExprArgs>;
+  };
 
   declare args: CommentColumnConstraintExprArgs;
 
@@ -12948,9 +12946,9 @@ export type CompressColumnConstraintExprArgs = Merge<[
 export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.COMPRESS_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     this: false,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: CompressColumnConstraintExprArgs;
 
@@ -12976,10 +12974,10 @@ export class DateFormatColumnConstraintExpr extends ColumnConstraintKindExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: DateFormatColumnConstraintExprArgs;
 
@@ -12999,9 +12997,9 @@ export type DefaultColumnConstraintExprArgs = Merge<[
 export class DefaultColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.DEFAULT_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DefaultColumnConstraintExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DefaultColumnConstraintExprArgs>;
+  };
 
   declare args: DefaultColumnConstraintExprArgs;
 
@@ -13017,9 +13015,9 @@ export type EncodeColumnConstraintExprArgs = Merge<[
 export class EncodeColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.ENCODE_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<EncodeColumnConstraintExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<EncodeColumnConstraintExprArgs>;
+  };
 
   declare args: EncodeColumnConstraintExprArgs;
 
@@ -13035,9 +13033,9 @@ export type ExcludeColumnConstraintExprArgs = Merge<[
 export class ExcludeColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.EXCLUDE_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ExcludeColumnConstraintExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ExcludeColumnConstraintExprArgs>;
+  };
 
   declare args: ExcludeColumnConstraintExprArgs;
 
@@ -13054,9 +13052,9 @@ export type EphemeralColumnConstraintExprArgs = Merge<[
 export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.EPHEMERAL_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BaseExpressionArgs> = {
     this: false,
-  } satisfies RequiredMap<BaseExpressionArgs>;
+  };
 
   declare args: EphemeralColumnConstraintExprArgs;
 
@@ -13093,7 +13091,7 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
    * Each key represents an argument name, and the boolean indicates if it's required.
    * Note: this: true -> ALWAYS, this: false -> BY DEFAULT
    */
-  static argTypes = {
+  static argTypes: RequiredMap<GeneratedAsIdentityColumnConstraintExprArgs> = {
     ...super.argTypes,
     this: false,
     expression: false,
@@ -13104,7 +13102,7 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
     maxvalue: false,
     cycle: false,
     order: false,
-  } satisfies RequiredMap<GeneratedAsIdentityColumnConstraintExprArgs>;
+  };
 
   declare args: GeneratedAsIdentityColumnConstraintExprArgs;
 
@@ -13165,11 +13163,11 @@ export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<GeneratedAsRowColumnConstraintExprArgs> = {
     ...super.argTypes,
     start: false,
     hidden: false,
-  } satisfies RequiredMap<GeneratedAsRowColumnConstraintExprArgs>;
+  };
 
   declare args: GeneratedAsRowColumnConstraintExprArgs;
 
@@ -13216,7 +13214,7 @@ export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for IndexColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<IndexColumnConstraintExprArgs> = {
     ...super.argTypes,
     this: false,
     expressions: false,
@@ -13225,7 +13223,7 @@ export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
     options: false,
     expression: false,
     granularity: false,
-  } satisfies RequiredMap<IndexColumnConstraintExprArgs>;
+  };
 
   declare args: IndexColumnConstraintExprArgs;
 
@@ -13269,9 +13267,9 @@ export type InlineLengthColumnConstraintExprArgs = Merge<[
 export class InlineLengthColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.INLINE_LENGTH_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<InlineLengthColumnConstraintExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<InlineLengthColumnConstraintExprArgs>;
+  };
 
   declare args: InlineLengthColumnConstraintExprArgs;
 
@@ -13287,9 +13285,9 @@ export type NonClusteredColumnConstraintExprArgs = Merge<[
 export class NonClusteredColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NON_CLUSTERED_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NonClusteredColumnConstraintExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<NonClusteredColumnConstraintExprArgs>;
+  };
 
   declare args: NonClusteredColumnConstraintExprArgs;
 
@@ -13305,7 +13303,7 @@ export type NotForReplicationColumnConstraintExprArgs = Merge<[
 export class NotForReplicationColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.NOT_FOR_REPLICATION_COLUMN_CONSTRAINT;
 
-  static argTypes = {} satisfies RequiredMap<NotForReplicationColumnConstraintExprArgs>;
+  static argTypes: RequiredMap<NotForReplicationColumnConstraintExprArgs> = {};
 
   declare args: NotForReplicationColumnConstraintExprArgs;
 
@@ -13325,11 +13323,11 @@ export type MaskingPolicyColumnConstraintExprArgs = Merge<[
 export class MaskingPolicyColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.MASKING_POLICY_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MaskingPolicyColumnConstraintExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<MaskingPolicyColumnConstraintExprArgs>;
+  };
 
   declare args: MaskingPolicyColumnConstraintExprArgs;
 
@@ -13359,10 +13357,10 @@ export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<NotNullColumnConstraintExprArgs> = {
     ...super.argTypes,
     allowNull: false,
-  } satisfies RequiredMap<NotNullColumnConstraintExprArgs>;
+  };
 
   declare args: NotNullColumnConstraintExprArgs;
 
@@ -13382,9 +13380,9 @@ export type OnUpdateColumnConstraintExprArgs = Merge<[
 export class OnUpdateColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.ON_UPDATE_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<OnUpdateColumnConstraintExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<OnUpdateColumnConstraintExprArgs>;
+  };
 
   declare args: OnUpdateColumnConstraintExprArgs;
 
@@ -13409,11 +13407,11 @@ export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<PrimaryKeyColumnConstraintExprArgs> = {
     ...super.argTypes,
     desc: false,
     options: false,
-  } satisfies RequiredMap<PrimaryKeyColumnConstraintExprArgs>;
+  };
 
   declare args: PrimaryKeyColumnConstraintExprArgs;
 
@@ -13437,9 +13435,9 @@ export type TitleColumnConstraintExprArgs = Merge<[
 export class TitleColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.TITLE_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TitleColumnConstraintExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TitleColumnConstraintExprArgs>;
+  };
 
   declare args: TitleColumnConstraintExprArgs;
 
@@ -13467,14 +13465,14 @@ export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<UniqueColumnConstraintExprArgs> = {
     ...super.argTypes,
     this: false,
     indexType: false,
     onConflict: false,
     nulls: false,
     options: false,
-  } satisfies RequiredMap<UniqueColumnConstraintExprArgs>;
+  };
 
   declare args: UniqueColumnConstraintExprArgs;
 
@@ -13510,9 +13508,7 @@ export type UppercaseColumnConstraintExprArgs = Merge<[
 export class UppercaseColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.UPPERCASE_COLUMN_CONSTRAINT;
 
-  static argTypes = {} satisfies RequiredMap<
-    UppercaseColumnConstraintExprArgs
-  >;
+  static argTypes: RequiredMap<UppercaseColumnConstraintExprArgs> = {};
 
   declare args: UppercaseColumnConstraintExprArgs;
 
@@ -13528,9 +13524,9 @@ export type PathColumnConstraintExprArgs = Merge<[
 export class PathColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PATH_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PathColumnConstraintExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<PathColumnConstraintExprArgs>;
+  };
 
   declare args: PathColumnConstraintExprArgs;
 
@@ -13546,9 +13542,9 @@ export type ProjectionPolicyColumnConstraintExprArgs = Merge<[
 export class ProjectionPolicyColumnConstraintExpr extends ColumnConstraintKindExpr {
   key = ExpressionKey.PROJECTION_POLICY_COLUMN_CONSTRAINT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ProjectionPolicyColumnConstraintExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ProjectionPolicyColumnConstraintExprArgs>;
+  };
 
   declare args: ProjectionPolicyColumnConstraintExprArgs;
 
@@ -13575,13 +13571,13 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ComputedColumnConstraintExprArgs> = {
     ...super.argTypes,
     this: true,
     persisted: false,
     notNull: false,
     dataType: false,
-  } satisfies RequiredMap<ComputedColumnConstraintExprArgs>;
+  };
 
   declare args: ComputedColumnConstraintExprArgs;
 
@@ -13622,12 +13618,12 @@ export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
    * Defines the arguments (properties and child expressions) for InOutColumnConstraint expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<InOutColumnConstraintExprArgs> = {
     ...super.argTypes,
     input: false,
     output: false,
     variadic: false,
-  } satisfies RequiredMap<InOutColumnConstraintExprArgs>;
+  };
 
   declare args: InOutColumnConstraintExprArgs;
 
@@ -13676,7 +13672,7 @@ export class CopyExpr extends DMLExpr {
    * Defines the arguments (properties and child expressions) for Copy expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CopyExprArgs> = {
     ...super.argTypes,
     this: true,
     kind: true,
@@ -13684,7 +13680,7 @@ export class CopyExpr extends DMLExpr {
     credentials: false,
     format: false,
     params: false,
-  } satisfies RequiredMap<CopyExprArgs>;
+  };
 
   declare args: CopyExprArgs;
 
@@ -13749,7 +13745,7 @@ export class InsertExpr extends multiInherit(DDLExpr, DMLExpr, Expression) {
    * Defines the arguments (properties and child expressions) for Insert expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<InsertExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     hint: false,
@@ -13770,7 +13766,7 @@ export class InsertExpr extends multiInherit(DDLExpr, DMLExpr, Expression) {
     settings: false,
     source: false,
     default: false,
-  } satisfies RequiredMap<InsertExprArgs>;
+  };
 
   declare args: InsertExprArgs;
 
@@ -13920,11 +13916,11 @@ export class LiteralExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for Literal expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<LiteralExprArgs> = {
     ...super.argTypes,
     this: true,
     isString: true,
-  } satisfies RequiredMap<LiteralExprArgs>;
+  };
 
   declare args: LiteralExprArgs;
 
@@ -14008,9 +14004,9 @@ export type ClusterExprArgs = Merge<[
 export class ClusterExpr extends OrderExpr {
   key = ExpressionKey.CLUSTER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ClusterExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ClusterExprArgs>;
+  };
 
   declare args: ClusterExprArgs;
 
@@ -14026,9 +14022,9 @@ export type DistributeExprArgs = Merge<[
 export class DistributeExpr extends OrderExpr {
   key = ExpressionKey.DISTRIBUTE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DistributeExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DistributeExprArgs>;
+  };
 
   declare args: DistributeExprArgs;
 
@@ -14044,9 +14040,9 @@ export type SortExprArgs = Merge<[
 export class SortExpr extends OrderExpr {
   key = ExpressionKey.SORT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SortExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SortExprArgs>;
+  };
 
   declare args: SortExprArgs;
 
@@ -14063,10 +14059,10 @@ export type AlgorithmPropertyExprArgs = Merge<[
 export class AlgorithmPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ALGORITHM_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AlgorithmPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<AlgorithmPropertyExprArgs>;
+  };
 
   declare args: AlgorithmPropertyExprArgs;
 
@@ -14087,10 +14083,10 @@ export type AutoIncrementPropertyExprArgs = Merge<[
 export class AutoIncrementPropertyExpr extends PropertyExpr {
   key = ExpressionKey.AUTO_INCREMENT_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AutoIncrementPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<AutoIncrementPropertyExprArgs>;
+  };
 
   declare args: AutoIncrementPropertyExprArgs;
 
@@ -14111,10 +14107,10 @@ export type AutoRefreshPropertyExprArgs = Merge<[
 export class AutoRefreshPropertyExpr extends PropertyExpr {
   key = ExpressionKey.AUTO_REFRESH_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AutoRefreshPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<AutoRefreshPropertyExprArgs>;
+  };
 
   declare args: AutoRefreshPropertyExprArgs;
 
@@ -14135,10 +14131,10 @@ export type BackupPropertyExprArgs = Merge<[
 export class BackupPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BACKUP_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BackupPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<BackupPropertyExprArgs>;
+  };
 
   declare args: BackupPropertyExprArgs;
 
@@ -14159,10 +14155,10 @@ export type BuildPropertyExprArgs = Merge<[
 export class BuildPropertyExpr extends PropertyExpr {
   key = ExpressionKey.BUILD_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BuildPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<BuildPropertyExprArgs>;
+  };
 
   declare args: BuildPropertyExprArgs;
 
@@ -14194,14 +14190,14 @@ export class BlockCompressionPropertyExpr extends PropertyExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<BlockCompressionPropertyExprArgs> = {
     ...super.argTypes,
     autotemp: false,
     always: false,
     default: false,
     manual: false,
     never: false,
-  } satisfies RequiredMap<BlockCompressionPropertyExprArgs>;
+  };
 
   declare args: BlockCompressionPropertyExprArgs;
 
@@ -14246,11 +14242,11 @@ export class CharacterSetPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for CharacterSetProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CharacterSetPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
     default: true,
-  } satisfies RequiredMap<CharacterSetPropertyExprArgs>;
+  };
 
   declare args: CharacterSetPropertyExprArgs;
 
@@ -14287,11 +14283,11 @@ export class ChecksumPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for ChecksumProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ChecksumPropertyExprArgs> = {
     ...super.argTypes,
     on: false,
     default: false,
-  } satisfies RequiredMap<ChecksumPropertyExprArgs>;
+  };
 
   declare args: ChecksumPropertyExprArgs;
 
@@ -14324,11 +14320,11 @@ export class CollatePropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for CollateProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CollatePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
     default: false,
-  } satisfies RequiredMap<CollatePropertyExprArgs>;
+  };
 
   declare args: CollatePropertyExprArgs;
 
@@ -14359,10 +14355,10 @@ export type CopyGrantsPropertyExprArgs = Merge<[
 export class CopyGrantsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.COPY_GRANTS_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CopyGrantsPropertyExprArgs> = {
     ...super.argTypes,
     value: true,
-  } satisfies RequiredMap<CopyGrantsPropertyExprArgs>;
+  };
 
   declare args: CopyGrantsPropertyExprArgs;
 
@@ -14389,14 +14385,14 @@ export class DataBlocksizePropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for DataBlocksizeProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DataBlocksizePropertyExprArgs> = {
     ...super.argTypes,
     size: false,
     units: false,
     minimum: false,
     maximum: false,
     default: false,
-  } satisfies RequiredMap<DataBlocksizePropertyExprArgs>;
+  };
 
   declare args: DataBlocksizePropertyExprArgs;
 
@@ -14441,12 +14437,12 @@ export class DataDeletionPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for DataDeletionProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DataDeletionPropertyExprArgs> = {
     ...super.argTypes,
     on: true,
     filterColumn: false,
     retentionPeriod: false,
-  } satisfies RequiredMap<DataDeletionPropertyExprArgs>;
+  };
 
   declare args: DataDeletionPropertyExprArgs;
 
@@ -14475,10 +14471,10 @@ export type DefinerPropertyExprArgs = Merge<[
 export class DefinerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DEFINER_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DefinerPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<DefinerPropertyExprArgs>;
+  };
 
   declare args: DefinerPropertyExprArgs;
 
@@ -14499,10 +14495,10 @@ export type DistKeyPropertyExprArgs = Merge<[
 export class DistKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DIST_KEY_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DistKeyPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<DistKeyPropertyExprArgs>;
+  };
 
   declare args: DistKeyPropertyExprArgs;
 
@@ -14543,13 +14539,13 @@ export class DistributedByPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for DistributedByProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DistributedByPropertyExprArgs> = {
     ...super.argTypes,
     expressions: false,
     kind: true,
     buckets: false,
     order: false,
-  } satisfies RequiredMap<DistributedByPropertyExprArgs>;
+  };
 
   declare args: DistributedByPropertyExprArgs;
 
@@ -14586,10 +14582,10 @@ export type DistStylePropertyExprArgs = Merge<[
 export class DistStylePropertyExpr extends PropertyExpr {
   key = ExpressionKey.DIST_STYLE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DistStylePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<DistStylePropertyExprArgs>;
+  };
 
   declare args: DistStylePropertyExprArgs;
 
@@ -14610,10 +14606,10 @@ export type DuplicateKeyPropertyExprArgs = Merge<[
 export class DuplicateKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DUPLICATE_KEY_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DuplicateKeyPropertyExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<DuplicateKeyPropertyExprArgs>;
+  };
 
   declare args: DuplicateKeyPropertyExprArgs;
 
@@ -14634,10 +14630,10 @@ export type EnginePropertyExprArgs = Merge<[
 export class EnginePropertyExpr extends PropertyExpr {
   key = ExpressionKey.ENGINE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<EnginePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<EnginePropertyExprArgs>;
+  };
 
   declare args: EnginePropertyExprArgs;
 
@@ -14660,9 +14656,9 @@ export type HeapPropertyExprArgs = Merge<[
 export class HeapPropertyExpr extends PropertyExpr {
   key = ExpressionKey.HEAP_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<HeapPropertyExprArgs> = {
     ...super.argTypes, // NOTE: sqlglot assisns `{}`
-  } satisfies RequiredMap<HeapPropertyExprArgs>;
+  };
 
   declare args: HeapPropertyExprArgs;
 
@@ -14679,10 +14675,10 @@ export type ToTablePropertyExprArgs = Merge<[
 export class ToTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.TO_TABLE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ToTablePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<ToTablePropertyExprArgs>;
+  };
 
   declare args: ToTablePropertyExprArgs;
 
@@ -14703,10 +14699,10 @@ export type ExecuteAsPropertyExprArgs = Merge<[
 export class ExecuteAsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXECUTE_AS_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ExecuteAsPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<ExecuteAsPropertyExprArgs>;
+  };
 
   declare args: ExecuteAsPropertyExprArgs;
 
@@ -14730,10 +14726,10 @@ export type ExternalPropertyExprArgs = Merge<[
 export class ExternalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EXTERNAL_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ExternalPropertyExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<ExternalPropertyExprArgs>;
+  };
 
   declare args: ExternalPropertyExprArgs;
 
@@ -14741,7 +14737,7 @@ export class ExternalPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 }
@@ -14761,11 +14757,11 @@ export class FallbackPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for FallbackProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<FallbackPropertyExprArgs> = {
     ...super.argTypes,
     no: true,
     protection: false,
-  } satisfies RequiredMap<FallbackPropertyExprArgs>;
+  };
 
   declare args: FallbackPropertyExprArgs;
 
@@ -14799,12 +14795,12 @@ export class FileFormatPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for FileFormatProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<FileFormatPropertyExprArgs> = {
     ...super.argTypes,
     expressions: false,
     hiveFormat: false,
     this: false,
-  } satisfies RequiredMap<FileFormatPropertyExprArgs>;
+  };
 
   declare args: FileFormatPropertyExprArgs;
 
@@ -14816,7 +14812,7 @@ export class FileFormatPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 
@@ -14837,10 +14833,10 @@ export type CredentialsPropertyExprArgs = Merge<[
 export class CredentialsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.CREDENTIALS_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CredentialsPropertyExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<CredentialsPropertyExprArgs>;
+  };
 
   declare args: CredentialsPropertyExprArgs;
 
@@ -14868,11 +14864,11 @@ export class FreespacePropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for FreespaceProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<FreespacePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
     percent: false,
-  } satisfies RequiredMap<FreespacePropertyExprArgs>;
+  };
 
   declare args: FreespacePropertyExprArgs;
 
@@ -14899,10 +14895,10 @@ export type GlobalPropertyExprArgs = Merge<[
 export class GlobalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.GLOBAL_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<GlobalPropertyExprArgs> = {
     ...super.argTypes,
     value: true,
-  } satisfies RequiredMap<GlobalPropertyExprArgs>;
+  };
 
   declare args: GlobalPropertyExprArgs;
 
@@ -14921,10 +14917,10 @@ export type IcebergPropertyExprArgs = Merge<[
 export class IcebergPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ICEBERG_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<IcebergPropertyExprArgs> = {
     ...super.argTypes,
     value: true,
-  } satisfies RequiredMap<IcebergPropertyExprArgs>;
+  };
 
   declare args: IcebergPropertyExprArgs;
 
@@ -14941,10 +14937,10 @@ export type InheritsPropertyExprArgs = Merge<[
 export class InheritsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.INHERITS_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<InheritsPropertyExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<InheritsPropertyExprArgs>;
+  };
 
   declare args: InheritsPropertyExprArgs;
 
@@ -14961,10 +14957,10 @@ export type InputModelPropertyExprArgs = Merge<[
 export class InputModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.INPUT_MODEL_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<InputModelPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<InputModelPropertyExprArgs>;
+  };
 
   declare args: InputModelPropertyExprArgs;
 
@@ -14981,10 +14977,10 @@ export type OutputModelPropertyExprArgs = Merge<[
 export class OutputModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.OUTPUT_MODEL_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<OutputModelPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<OutputModelPropertyExprArgs>;
+  };
 
   declare args: OutputModelPropertyExprArgs;
 
@@ -15010,12 +15006,12 @@ export class IsolatedLoadingPropertyExpr extends PropertyExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<IsolatedLoadingPropertyExprArgs> = {
     ...super.argTypes,
     no: false,
     concurrent: false,
     target: false,
-  } satisfies RequiredMap<IsolatedLoadingPropertyExprArgs>;
+  };
 
   declare args: IsolatedLoadingPropertyExprArgs;
 
@@ -15054,14 +15050,14 @@ export class JournalPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for JournalProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JournalPropertyExprArgs> = {
     ...super.argTypes,
     no: false,
     dual: false,
     before: false,
     local: false,
     after: false,
-  } satisfies RequiredMap<JournalPropertyExprArgs>;
+  };
 
   declare args: JournalPropertyExprArgs;
 
@@ -15098,10 +15094,10 @@ export type LanguagePropertyExprArgs = Merge<[
 export class LanguagePropertyExpr extends PropertyExpr {
   key = ExpressionKey.LANGUAGE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LanguagePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<LanguagePropertyExprArgs>;
+  };
 
   declare args: LanguagePropertyExprArgs;
 
@@ -15122,10 +15118,10 @@ export type EnviromentPropertyExprArgs = Merge<[
 export class EnviromentPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ENVIROMENT_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<EnviromentPropertyExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<EnviromentPropertyExprArgs>;
+  };
 
   declare args: EnviromentPropertyExprArgs;
 
@@ -15154,12 +15150,12 @@ export class ClusteredByPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for ClusteredByProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ClusteredByPropertyExprArgs> = {
     ...super.argTypes,
     expressions: true,
     sortedBy: false,
     buckets: true,
-  } satisfies RequiredMap<ClusteredByPropertyExprArgs>;
+  };
 
   declare args: ClusteredByPropertyExprArgs;
 
@@ -15210,12 +15206,12 @@ export class DictPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for DictProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DictPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
     kind: true,
     settings: false,
-  } satisfies RequiredMap<DictPropertyExprArgs>;
+  };
 
   declare args: DictPropertyExprArgs;
 
@@ -15246,9 +15242,9 @@ export type DictSubPropertyExprArgs = Merge<[
 export class DictSubPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DICT_SUB_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DictSubPropertyExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DictSubPropertyExprArgs>;
+  };
 
   declare args: DictSubPropertyExprArgs;
 
@@ -15273,12 +15269,12 @@ export class DictRangeExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for DictRange expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DictRangeExprArgs> = {
     ...super.argTypes,
     this: true,
     min: true,
     max: true,
-  } satisfies RequiredMap<DictRangeExprArgs>;
+  };
 
   declare args: DictRangeExprArgs;
 
@@ -15309,10 +15305,10 @@ export type DynamicPropertyExprArgs = Merge<[
 export class DynamicPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DYNAMIC_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DynamicPropertyExprArgs> = {
     ...super.argTypes,
     value: true,
-  } satisfies RequiredMap<DynamicPropertyExprArgs>;
+  };
 
   declare args: DynamicPropertyExprArgs;
 
@@ -15329,10 +15325,10 @@ export type OnClusterExprArgs = Merge<[
 export class OnClusterExpr extends PropertyExpr {
   key = ExpressionKey.ON_CLUSTER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<OnClusterExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<OnClusterExprArgs>;
+  };
 
   declare args: OnClusterExprArgs;
 
@@ -15355,10 +15351,10 @@ export type EmptyPropertyExprArgs = Merge<[
 export class EmptyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EMPTY_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<EmptyPropertyExprArgs> = {
     ...super.argTypes,
     value: true,
-  } satisfies RequiredMap<EmptyPropertyExprArgs>;
+  };
 
   declare args: EmptyPropertyExprArgs;
 
@@ -15378,11 +15374,11 @@ export type LikePropertyExprArgs = Merge<[
 export class LikePropertyExpr extends PropertyExpr {
   key = ExpressionKey.LIKE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LikePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<LikePropertyExprArgs>;
+  };
 
   declare args: LikePropertyExprArgs;
 
@@ -15407,10 +15403,10 @@ export type LocationPropertyExprArgs = Merge<[
 export class LocationPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCATION_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LocationPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<LocationPropertyExprArgs>;
+  };
 
   declare args: LocationPropertyExprArgs;
 
@@ -15431,10 +15427,10 @@ export type LockPropertyExprArgs = Merge<[
 export class LockPropertyExpr extends PropertyExpr {
   key = ExpressionKey.LOCK_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LockPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<LockPropertyExprArgs>;
+  };
 
   declare args: LockPropertyExprArgs;
 
@@ -15477,13 +15473,13 @@ export class LockingPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for LockingProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<LockingPropertyExprArgs> = {
     ...super.argTypes,
     kind: true,
     forOrIn: false,
     lockType: true,
     override: false,
-  } satisfies RequiredMap<LockingPropertyExprArgs>;
+  };
 
   declare args: LockingPropertyExprArgs;
 
@@ -15524,10 +15520,10 @@ export class LogPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for LogProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<LogPropertyExprArgs> = {
     ...super.argTypes,
     no: true,
-  } satisfies RequiredMap<LogPropertyExprArgs>;
+  };
 
   declare args: LogPropertyExprArgs;
 
@@ -15551,10 +15547,10 @@ export type MaterializedPropertyExprArgs = Merge<[
 export class MaterializedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.MATERIALIZED_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MaterializedPropertyExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<MaterializedPropertyExprArgs>;
+  };
 
   declare args: MaterializedPropertyExprArgs;
 
@@ -15562,7 +15558,7 @@ export class MaterializedPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 }
@@ -15586,13 +15582,13 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<MergeBlockRatioPropertyExprArgs> = {
     ...super.argTypes,
     this: false,
     no: false,
     default: false,
     percent: false,
-  } satisfies RequiredMap<MergeBlockRatioPropertyExprArgs>;
+  };
 
   declare args: MergeBlockRatioPropertyExprArgs;
 
@@ -15604,7 +15600,7 @@ export class MergeBlockRatioPropertyExpr extends PropertyExpr {
     return this.args.value as string;
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 
@@ -15631,10 +15627,10 @@ export type NoPrimaryIndexPropertyExprArgs = Merge<[
 export class NoPrimaryIndexPropertyExpr extends PropertyExpr {
   key = ExpressionKey.NO_PRIMARY_INDEX_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NoPrimaryIndexPropertyExprArgs> = {
     ...super.argTypes,
     value: true,
-  } satisfies RequiredMap<NoPrimaryIndexPropertyExprArgs>;
+  };
 
   declare args: NoPrimaryIndexPropertyExprArgs;
 
@@ -15650,10 +15646,10 @@ export type OnPropertyExprArgs = Merge<[
 export class OnPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ON_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<OnPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<OnPropertyExprArgs>;
+  };
 
   declare args: OnPropertyExprArgs;
 
@@ -15678,10 +15674,10 @@ export class OnCommitPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for OnCommitProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<OnCommitPropertyExprArgs> = {
     ...super.argTypes,
     delete: false,
-  } satisfies RequiredMap<OnCommitPropertyExprArgs>;
+  };
 
   declare args: OnCommitPropertyExprArgs;
 
@@ -15702,10 +15698,10 @@ export type PartitionedByPropertyExprArgs = Merge<[
 export class PartitionedByPropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_BY_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PartitionedByPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<PartitionedByPropertyExprArgs>;
+  };
 
   declare args: PartitionedByPropertyExprArgs;
 
@@ -15729,11 +15725,11 @@ export type PartitionedByBucketExprArgs = Merge<[
 export class PartitionedByBucketExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_BY_BUCKET;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PartitionedByBucketExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<PartitionedByBucketExprArgs>;
+  };
 
   declare args: PartitionedByBucketExprArgs;
 
@@ -15761,11 +15757,11 @@ export type PartitionByTruncateExprArgs = Merge<[
 export class PartitionByTruncateExpr extends PropertyExpr {
   key = ExpressionKey.PARTITION_BY_TRUNCATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PartitionByTruncateExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<PartitionByTruncateExprArgs>;
+  };
 
   declare args: PartitionByTruncateExprArgs;
 
@@ -15798,11 +15794,11 @@ export class PartitionByRangePropertyExpr extends PropertyExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<PartitionByRangePropertyExprArgs> = {
     ...super.argTypes,
     partitionExpressions: true,
     createExpressions: true,
-  } satisfies RequiredMap<PartitionByRangePropertyExprArgs>;
+  };
 
   declare args: PartitionByRangePropertyExprArgs;
 
@@ -15827,10 +15823,10 @@ export type RollupPropertyExprArgs = Merge<[
 export class RollupPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROLLUP_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RollupPropertyExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<RollupPropertyExprArgs>;
+  };
 
   declare args: RollupPropertyExprArgs;
 
@@ -15859,11 +15855,11 @@ export class PartitionByListPropertyExpr extends PropertyExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<PartitionByListPropertyExprArgs> = {
     ...super.argTypes,
     partitionExpressions: true,
     createExpressions: true,
-  } satisfies RequiredMap<PartitionByListPropertyExprArgs>;
+  };
 
   declare args: PartitionByListPropertyExprArgs;
 
@@ -15908,14 +15904,14 @@ export class RefreshTriggerPropertyExpr extends PropertyExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RefreshTriggerPropertyExprArgs> = {
     ...super.argTypes,
     method: false,
     kind: false,
     every: false,
     unit: false,
     starts: false,
-  } satisfies RequiredMap<RefreshTriggerPropertyExprArgs>;
+  };
 
   declare args: RefreshTriggerPropertyExprArgs;
 
@@ -15952,10 +15948,10 @@ export type UniqueKeyPropertyExprArgs = Merge<[
 export class UniqueKeyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNIQUE_KEY_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UniqueKeyPropertyExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<UniqueKeyPropertyExprArgs>;
+  };
 
   declare args: UniqueKeyPropertyExprArgs;
 
@@ -15979,11 +15975,11 @@ export type PartitionedOfPropertyExprArgs = Merge<[
 export class PartitionedOfPropertyExpr extends PropertyExpr {
   key = ExpressionKey.PARTITIONED_OF_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PartitionedOfPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<PartitionedOfPropertyExprArgs>;
+  };
 
   declare args: PartitionedOfPropertyExprArgs;
 
@@ -16002,10 +15998,10 @@ export type StreamingTablePropertyExprArgs = Merge<[
 export class StreamingTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.STREAMING_TABLE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<StreamingTablePropertyExprArgs> = {
     ...super.argTypes,
     value: true,
-  } satisfies RequiredMap<StreamingTablePropertyExprArgs>;
+  };
 
   declare args: StreamingTablePropertyExprArgs;
 
@@ -16024,10 +16020,10 @@ export type RemoteWithConnectionModelPropertyExprArgs = Merge<[
 export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.REMOTE_WITH_CONNECTION_MODEL_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RemoteWithConnectionModelPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<RemoteWithConnectionModelPropertyExprArgs>;
+  };
 
   declare args: RemoteWithConnectionModelPropertyExprArgs;
 
@@ -16035,7 +16031,7 @@ export class RemoteWithConnectionModelPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 }
@@ -16058,13 +16054,13 @@ export class ReturnsPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for ReturnsProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ReturnsPropertyExprArgs> = {
     ...super.argTypes,
     this: false,
     isTable: false,
     table: false,
     null: false,
-  } satisfies RequiredMap<ReturnsPropertyExprArgs>;
+  };
 
   declare args: ReturnsPropertyExprArgs;
 
@@ -16072,7 +16068,7 @@ export class ReturnsPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 
@@ -16099,10 +16095,10 @@ export type StrictPropertyExprArgs = Merge<[
 export class StrictPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STRICT_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<StrictPropertyExprArgs> = {
     ...super.argTypes,
     value: true,
-  } satisfies RequiredMap<StrictPropertyExprArgs>;
+  };
 
   declare args: StrictPropertyExprArgs;
 
@@ -16119,10 +16115,10 @@ export type RowFormatPropertyExprArgs = Merge<[
 export class RowFormatPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ROW_FORMAT_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RowFormatPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<RowFormatPropertyExprArgs>;
+  };
 
   declare args: RowFormatPropertyExprArgs;
 
@@ -16152,7 +16148,7 @@ export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RowFormatDelimitedPropertyExprArgs> = {
     ...super.argTypes,
     fields: false,
     escaped: false,
@@ -16161,7 +16157,7 @@ export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
     lines: false,
     null: false,
     serde: false,
-  } satisfies RequiredMap<RowFormatDelimitedPropertyExprArgs>;
+  };
 
   declare args: RowFormatDelimitedPropertyExprArgs;
 
@@ -16214,11 +16210,11 @@ export class RowFormatSerdePropertyExpr extends PropertyExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RowFormatSerdePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
     serdeProperties: false,
-  } satisfies RequiredMap<RowFormatSerdePropertyExprArgs>;
+  };
 
   declare args: RowFormatSerdePropertyExprArgs;
 
@@ -16243,10 +16239,10 @@ export type SamplePropertyExprArgs = Merge<[
 export class SamplePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SAMPLE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SamplePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<SamplePropertyExprArgs>;
+  };
 
   declare args: SamplePropertyExprArgs;
 
@@ -16267,10 +16263,10 @@ export type SecurityPropertyExprArgs = Merge<[
 export class SecurityPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURITY_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SecurityPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<SecurityPropertyExprArgs>;
+  };
 
   declare args: SecurityPropertyExprArgs;
 
@@ -16291,10 +16287,10 @@ export type SchemaCommentPropertyExprArgs = Merge<[
 export class SchemaCommentPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SCHEMA_COMMENT_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SchemaCommentPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<SchemaCommentPropertyExprArgs>;
+  };
 
   declare args: SchemaCommentPropertyExprArgs;
 
@@ -16318,11 +16314,11 @@ export class SerdePropertiesExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for SerdeProperties expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<SerdePropertiesExprArgs> = {
     ...super.argTypes,
     expressions: true,
     with: false,
-  } satisfies RequiredMap<SerdePropertiesExprArgs>;
+  };
 
   declare args: SerdePropertiesExprArgs;
 
@@ -16347,10 +16343,10 @@ export type SetPropertyExprArgs = Merge<[
 export class SetPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SET_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SetPropertyExprArgs> = {
     ...super.argTypes,
     multi: true,
-  } satisfies RequiredMap<SetPropertyExprArgs>;
+  };
 
   declare args: SetPropertyExprArgs;
 
@@ -16374,10 +16370,10 @@ export type SharingPropertyExprArgs = Merge<[
 export class SharingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SHARING_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SharingPropertyExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<SharingPropertyExprArgs>;
+  };
 
   declare args: SharingPropertyExprArgs;
 
@@ -16385,7 +16381,7 @@ export class SharingPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 }
@@ -16398,10 +16394,10 @@ export type SetConfigPropertyExprArgs = Merge<[
 export class SetConfigPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SET_CONFIG_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SetConfigPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<SetConfigPropertyExprArgs>;
+  };
 
   declare args: SetConfigPropertyExprArgs;
 
@@ -16422,10 +16418,10 @@ export type SettingsPropertyExprArgs = Merge<[
 export class SettingsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SETTINGS_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SettingsPropertyExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<SettingsPropertyExprArgs>;
+  };
 
   declare args: SettingsPropertyExprArgs;
 
@@ -16453,11 +16449,11 @@ export class SortKeyPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for SortKeyProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<SortKeyPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
     compound: false,
-  } satisfies RequiredMap<SortKeyPropertyExprArgs>;
+  };
 
   declare args: SortKeyPropertyExprArgs;
 
@@ -16482,10 +16478,10 @@ export type SqlReadWritePropertyExprArgs = Merge<[
 export class SqlReadWritePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SQL_READ_WRITE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SqlReadWritePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<SqlReadWritePropertyExprArgs>;
+  };
 
   declare args: SqlReadWritePropertyExprArgs;
 
@@ -16506,10 +16502,10 @@ export type SqlSecurityPropertyExprArgs = Merge<[
 export class SqlSecurityPropertyExpr extends PropertyExpr {
   key = ExpressionKey.SQL_SECURITY_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SqlSecurityPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<SqlSecurityPropertyExprArgs>;
+  };
 
   declare args: SqlSecurityPropertyExprArgs;
 
@@ -16530,10 +16526,10 @@ export type StabilityPropertyExprArgs = Merge<[
 export class StabilityPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STABILITY_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<StabilityPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<StabilityPropertyExprArgs>;
+  };
 
   declare args: StabilityPropertyExprArgs;
 
@@ -16554,10 +16550,10 @@ export type StorageHandlerPropertyExprArgs = Merge<[
 export class StorageHandlerPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STORAGE_HANDLER_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<StorageHandlerPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<StorageHandlerPropertyExprArgs>;
+  };
 
   declare args: StorageHandlerPropertyExprArgs;
 
@@ -16581,10 +16577,10 @@ export type TemporaryPropertyExprArgs = Merge<[
 export class TemporaryPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TEMPORARY_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TemporaryPropertyExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<TemporaryPropertyExprArgs>;
+  };
 
   declare args: TemporaryPropertyExprArgs;
 
@@ -16592,7 +16588,7 @@ export class TemporaryPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 }
@@ -16607,10 +16603,10 @@ export type SecurePropertyExprArgs = Merge<[
 export class SecurePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SecurePropertyExprArgs> = {
     ...super.argTypes,
     value: true,
-  } satisfies RequiredMap<SecurePropertyExprArgs>;
+  };
 
   declare args: SecurePropertyExprArgs;
 
@@ -16628,11 +16624,11 @@ export type TagsExprArgs = Merge<[
 export class TagsExpr extends multiInherit(ColumnConstraintKindExpr, PropertyExpr, Expression) {
   key = ExpressionKey.TAGS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TagsExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<TagsExprArgs>;
+  };
 
   declare args: TagsExprArgs;
 
@@ -16653,10 +16649,10 @@ export type TransformModelPropertyExprArgs = Merge<[
 export class TransformModelPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TRANSFORM_MODEL_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TransformModelPropertyExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<TransformModelPropertyExprArgs>;
+  };
 
   declare args: TransformModelPropertyExprArgs;
 
@@ -16680,10 +16676,10 @@ export type TransientPropertyExprArgs = Merge<[
 export class TransientPropertyExpr extends PropertyExpr {
   key = ExpressionKey.TRANSIENT_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TransientPropertyExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<TransientPropertyExprArgs>;
+  };
 
   declare args: TransientPropertyExprArgs;
 
@@ -16691,7 +16687,7 @@ export class TransientPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 }
@@ -16706,10 +16702,10 @@ export type UnloggedPropertyExprArgs = Merge<[
 export class UnloggedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNLOGGED_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UnloggedPropertyExprArgs> = {
     ...super.argTypes,
     value: true,
-  } satisfies RequiredMap<UnloggedPropertyExprArgs>;
+  };
 
   declare args: UnloggedPropertyExprArgs;
 
@@ -16726,10 +16722,10 @@ export type UsingTemplatePropertyExprArgs = Merge<[
 export class UsingTemplatePropertyExpr extends PropertyExpr {
   key = ExpressionKey.USING_TEMPLATE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UsingTemplatePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<UsingTemplatePropertyExprArgs>;
+  };
 
   declare args: UsingTemplatePropertyExprArgs;
 
@@ -16750,10 +16746,10 @@ export type ViewAttributePropertyExprArgs = Merge<[
 export class ViewAttributePropertyExpr extends PropertyExpr {
   key = ExpressionKey.VIEW_ATTRIBUTE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ViewAttributePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<ViewAttributePropertyExprArgs>;
+  };
 
   declare args: ViewAttributePropertyExprArgs;
 
@@ -16777,10 +16773,10 @@ export type VolatilePropertyExprArgs = Merge<[
 export class VolatilePropertyExpr extends PropertyExpr {
   key = ExpressionKey.VOLATILE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<VolatilePropertyExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<VolatilePropertyExprArgs>;
+  };
 
   declare args: VolatilePropertyExprArgs;
 
@@ -16788,7 +16784,7 @@ export class VolatilePropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 }
@@ -16808,11 +16804,11 @@ export class WithDataPropertyExpr extends PropertyExpr {
    * Defines the arguments (properties and child expressions) for WithDataProperty expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<WithDataPropertyExprArgs> = {
     ...super.argTypes,
     no: true,
     statistics: false,
-  } satisfies RequiredMap<WithDataPropertyExprArgs>;
+  };
 
   declare args: WithDataPropertyExprArgs;
 
@@ -16837,10 +16833,10 @@ export type WithJournalTablePropertyExprArgs = Merge<[
 export class WithJournalTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_JOURNAL_TABLE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<WithJournalTablePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<WithJournalTablePropertyExprArgs>;
+  };
 
   declare args: WithJournalTablePropertyExprArgs;
 
@@ -16861,10 +16857,10 @@ export type WithSchemaBindingPropertyExprArgs = Merge<[
 export class WithSchemaBindingPropertyExpr extends PropertyExpr {
   key = ExpressionKey.WITH_SCHEMA_BINDING_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<WithSchemaBindingPropertyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<WithSchemaBindingPropertyExprArgs>;
+  };
 
   declare args: WithSchemaBindingPropertyExprArgs;
 
@@ -16896,13 +16892,13 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<WithSystemVersioningPropertyExprArgs> = {
     ...super.argTypes,
     on: false,
     dataConsistency: false,
     retentionPeriod: false,
     with: true,
-  } satisfies RequiredMap<WithSystemVersioningPropertyExprArgs>;
+  };
 
   declare args: WithSystemVersioningPropertyExprArgs;
 
@@ -16914,7 +16910,7 @@ export class WithSystemVersioningPropertyExpr extends PropertyExpr {
     return this.args.on;
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 
@@ -16939,10 +16935,10 @@ export type WithProcedureOptionsExprArgs = Merge<[
 export class WithProcedureOptionsExpr extends PropertyExpr {
   key = ExpressionKey.WITH_PROCEDURE_OPTIONS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<WithProcedureOptionsExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<WithProcedureOptionsExprArgs>;
+  };
 
   declare args: WithProcedureOptionsExprArgs;
 
@@ -16973,12 +16969,12 @@ export class EncodePropertyExpr extends PropertyExpr {
    * Note: The 'key' argument can be accessed via this.args.key (no getter to avoid conflict with
    * Expression.key).
    */
-  static argTypes = {
+  static argTypes: RequiredMap<EncodePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
     properties: false,
     key: false,
-  } satisfies RequiredMap<EncodePropertyExprArgs>;
+  };
 
   declare args: EncodePropertyExprArgs;
 
@@ -17018,12 +17014,12 @@ export class IncludePropertyExpr extends PropertyExpr {
    * Note: The 'alias' argument can be accessed via this.args.alias (no getter to avoid conflict
    * with Expression.alias).
    */
-  static argTypes = {
+  static argTypes: RequiredMap<IncludePropertyExprArgs> = {
     ...super.argTypes,
     this: true,
     alias: false,
     columnDef: false,
-  } satisfies RequiredMap<IncludePropertyExprArgs>;
+  };
 
   declare args: IncludePropertyExprArgs;
 
@@ -17054,10 +17050,10 @@ export type ForcePropertyExprArgs = Merge<[
 export class ForcePropertyExpr extends PropertyExpr {
   key = ExpressionKey.FORCE_PROPERTY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ForcePropertyExprArgs> = {
     ...super.argTypes,
     value: true,
-  } satisfies RequiredMap<ForcePropertyExprArgs>;
+  };
 
   declare args: ForcePropertyExprArgs;
 
@@ -17100,10 +17096,10 @@ export type PropertiesExprArgs = Merge<[
 export class PropertiesExpr extends Expression {
   key = ExpressionKey.PROPERTIES;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PropertiesExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<PropertiesExprArgs>;
+  };
 
   declare args: PropertiesExprArgs;
 
@@ -17216,7 +17212,7 @@ export type SetOperationExprArgs = Merge<[
 export class SetOperationExpr extends QueryExpr {
   key = ExpressionKey.SET_OPERATION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SetOperationExprArgs> = {
     ...super.argTypes,
     with: false,
     this: true,
@@ -17227,7 +17223,7 @@ export class SetOperationExpr extends QueryExpr {
     kind: false,
     on: false,
     ...QUERY_MODIFIERS,
-  } satisfies RequiredMap<SetOperationExprArgs>;
+  };
 
   declare args: SetOperationExprArgs;
 
@@ -17378,7 +17374,7 @@ export type UpdateExprArgs = Merge<[
 export class UpdateExpr extends DMLExpr {
   key = ExpressionKey.UPDATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UpdateExprArgs> = {
     ...super.argTypes,
     with: false,
     this: false,
@@ -17389,7 +17385,7 @@ export class UpdateExpr extends DMLExpr {
     order: false,
     limit: false,
     options: false,
-  } satisfies RequiredMap<UpdateExprArgs>;
+  };
 
   declare args: UpdateExprArgs;
 
@@ -17662,7 +17658,7 @@ export type SelectExprArgs = Merge<[
 export class SelectExpr extends QueryExpr {
   key = ExpressionKey.SELECT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SelectExprArgs> = {
     ...super.argTypes,
     with: false,
     kind: false,
@@ -17673,7 +17669,7 @@ export class SelectExpr extends QueryExpr {
     from: false,
     operationModifiers: false,
     ...QUERY_MODIFIERS,
-  } satisfies RequiredMap<SelectExprArgs>;
+  };
 
   declare args: SelectExprArgs;
 
@@ -18327,13 +18323,13 @@ export type SubqueryExprArgs = Merge<[
 export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
   key = ExpressionKey.SUBQUERY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SubqueryExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     alias: false,
     with: false,
-  } satisfies RequiredMap<SubqueryExprArgs>;
+  };
 
   declare args: SubqueryExprArgs;
 
@@ -18457,7 +18453,7 @@ export class WindowExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for Window expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<WindowExprArgs> = {
     ...super.argTypes,
     this: true,
     partitionBy: false,
@@ -18466,7 +18462,7 @@ export class WindowExpr extends ConditionExpr {
     alias: false,
     over: false,
     first: false,
-  } satisfies RequiredMap<WindowExprArgs>;
+  };
 
   declare args: WindowExprArgs;
 
@@ -18514,11 +18510,11 @@ export type ParameterExprArgs = Merge<[
 export class ParameterExpr extends ConditionExpr {
   key = ExpressionKey.PARAMETER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ParameterExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<ParameterExprArgs>;
+  };
 
   declare args: ParameterExprArgs;
 
@@ -18555,11 +18551,11 @@ export type SessionParameterExprArgs = Merge<[
 export class SessionParameterExpr extends ConditionExpr {
   key = ExpressionKey.SESSION_PARAMETER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SessionParameterExprArgs> = {
     ...super.argTypes,
     this: true,
     kind: false,
-  } satisfies RequiredMap<SessionParameterExprArgs>;
+  };
 
   declare args: SessionParameterExprArgs;
 
@@ -18603,13 +18599,13 @@ export class PlaceholderExpr extends ConditionExpr {
    * Defines the arguments (properties and child expressions) for Placeholder expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<PlaceholderExprArgs> = {
     ...super.argTypes,
     this: false,
     kind: false,
     widget: false,
     jdbc: false,
-  } satisfies RequiredMap<PlaceholderExprArgs>;
+  };
 
   declare args: PlaceholderExprArgs;
 
@@ -18648,9 +18644,9 @@ export type NullExprArgs = Merge<[
 export class NullExpr extends ConditionExpr {
   key = ExpressionKey.NULL;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NullExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<NullExprArgs>;
+  };
 
   declare args: NullExprArgs;
 
@@ -18680,9 +18676,9 @@ export type BooleanExprArgs = Merge<[
 export class BooleanExpr extends ConditionExpr {
   key = ExpressionKey.BOOLEAN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BooleanExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BooleanExprArgs>;
+  };
 
   declare args: BooleanExprArgs;
 
@@ -18706,10 +18702,10 @@ export type PseudoTypeExprArgs = Merge<[
 export class PseudoTypeExpr extends DataTypeExpr {
   key = ExpressionKey.PSEUDO_TYPE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PseudoTypeExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<PseudoTypeExprArgs>;
+  };
 
   declare args: PseudoTypeExprArgs;
 
@@ -18730,10 +18726,10 @@ export type ObjectIdentifierExprArgs = Merge<[
 export class ObjectIdentifierExpr extends DataTypeExpr {
   key = ExpressionKey.OBJECT_IDENTIFIER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ObjectIdentifierExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<ObjectIdentifierExprArgs>;
+  };
 
   declare args: ObjectIdentifierExprArgs;
 
@@ -18757,11 +18753,11 @@ export type BinaryExprArgs = Merge<[
 export class BinaryExpr extends ConditionExpr {
   key = ExpressionKey.BINARY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BinaryExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<BinaryExprArgs>;
+  };
 
   declare args: BinaryExprArgs;
 
@@ -18792,7 +18788,7 @@ export type UnaryExprArgs = Merge<[
 export class UnaryExpr extends Expression {
   key = ExpressionKey.UNARY;
 
-  static argTypes = {} satisfies RequiredMap<UnaryExprArgs>;
+  static argTypes: RequiredMap<UnaryExprArgs> = {};
 
   declare args: UnaryExprArgs;
 
@@ -18808,9 +18804,9 @@ export type PivotAliasExprArgs = Merge<[
 export class PivotAliasExpr extends AliasExpr {
   key = ExpressionKey.PIVOT_ALIAS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PivotAliasExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<PivotAliasExprArgs>;
+  };
 
   declare args: PivotAliasExprArgs;
 
@@ -18836,14 +18832,14 @@ export type BracketExprArgs = Merge<[
 export class BracketExpr extends ConditionExpr {
   key = ExpressionKey.BRACKET;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BracketExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
     offset: false,
     safe: false,
     returnsListForMaps: false,
-  } satisfies RequiredMap<BracketExprArgs>;
+  };
 
   declare args: BracketExprArgs;
 
@@ -18890,11 +18886,11 @@ export type IntervalOpExprArgs = Merge<[
 export class IntervalOpExpr extends TimeUnitExpr {
   key = ExpressionKey.INTERVAL_OP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<IntervalOpExprArgs> = {
     ...super.argTypes,
     unit: false,
     expression: true,
-  } satisfies RequiredMap<IntervalOpExprArgs>;
+  };
 
   declare args: IntervalOpExprArgs;
 
@@ -18934,11 +18930,11 @@ export type IntervalSpanExprArgs = Merge<[
 export class IntervalSpanExpr extends DataTypeExpr {
   key = ExpressionKey.INTERVAL_SPAN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<IntervalSpanExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<IntervalSpanExprArgs>;
+  };
 
   declare args: IntervalSpanExprArgs;
 
@@ -18966,11 +18962,11 @@ export type IntervalExprArgs = Merge<[
 export class IntervalExpr extends TimeUnitExpr {
   key = ExpressionKey.INTERVAL;
 
-  static argTypes = {
+  static argTypes: RequiredMap<IntervalExprArgs> = {
     ...super.argTypes,
     this: false,
     unit: false,
-  } satisfies RequiredMap<IntervalExprArgs>;
+  };
 
   declare args: IntervalExprArgs;
 
@@ -19009,9 +19005,9 @@ export type FuncExprArgs = Merge<[
 export class FuncExpr extends ConditionExpr {
   key = ExpressionKey.FUNC;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FuncExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<FuncExprArgs>;
+  };
 
   declare args: FuncExprArgs;
 
@@ -19123,10 +19119,10 @@ export type JSONPathFilterExprArgs = Merge<[
 export class JSONPathFilterExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_FILTER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONPathFilterExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<JSONPathFilterExprArgs>;
+  };
 
   declare args: JSONPathFilterExprArgs;
 
@@ -19146,10 +19142,10 @@ export type JSONPathKeyExprArgs = Merge<[
 export class JSONPathKeyExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_KEY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONPathKeyExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<JSONPathKeyExprArgs>;
+  };
 
   declare args: JSONPathKeyExprArgs;
 
@@ -19170,10 +19166,10 @@ export type JSONPathRecursiveExprArgs = Merge<[
 export class JSONPathRecursiveExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_RECURSIVE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONPathRecursiveExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<JSONPathRecursiveExprArgs>;
+  };
 
   declare args: JSONPathRecursiveExprArgs;
 
@@ -19193,7 +19189,7 @@ export type JSONPathRootExprArgs = Merge<[
 export class JSONPathRootExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_ROOT;
 
-  static argTypes = {} satisfies RequiredMap<JSONPathRootExprArgs>;
+  static argTypes: RequiredMap<JSONPathRootExprArgs> = {};
 
   declare args: JSONPathRootExprArgs;
 
@@ -19210,10 +19206,10 @@ export type JSONPathScriptExprArgs = Merge<[
 export class JSONPathScriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SCRIPT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONPathScriptExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<JSONPathScriptExprArgs>;
+  };
 
   declare args: JSONPathScriptExprArgs;
 
@@ -19242,12 +19238,12 @@ export class JSONPathSliceExpr extends JSONPathPartExpr {
    * Defines the arguments (properties and child expressions) for JSONPathSlice expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONPathSliceExprArgs> = {
     ...super.argTypes,
     start: false,
     end: false,
     step: false,
-  } satisfies RequiredMap<JSONPathSliceExprArgs>;
+  };
 
   declare args: JSONPathSliceExprArgs;
 
@@ -19276,10 +19272,10 @@ export type JSONPathSelectorExprArgs = Merge<[
 export class JSONPathSelectorExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SELECTOR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONPathSelectorExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<JSONPathSelectorExprArgs>;
+  };
 
   declare args: JSONPathSelectorExprArgs;
 
@@ -19300,10 +19296,10 @@ export type JSONPathSubscriptExprArgs = Merge<[
 export class JSONPathSubscriptExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_SUBSCRIPT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONPathSubscriptExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<JSONPathSubscriptExprArgs>;
+  };
 
   declare args: JSONPathSubscriptExprArgs;
 
@@ -19324,10 +19320,10 @@ export type JSONPathUnionExprArgs = Merge<[
 export class JSONPathUnionExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_UNION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONPathUnionExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<JSONPathUnionExprArgs>;
+  };
 
   declare args: JSONPathUnionExprArgs;
 
@@ -19347,7 +19343,7 @@ export type JSONPathWildcardExprArgs = Merge<[
 export class JSONPathWildcardExpr extends JSONPathPartExpr {
   key = ExpressionKey.JSON_PATH_WILDCARD;
 
-  static argTypes = {} satisfies RequiredMap<JSONPathWildcardExprArgs>;
+  static argTypes: RequiredMap<JSONPathWildcardExprArgs> = {};
 
   declare args: JSONPathWildcardExprArgs;
 
@@ -19375,7 +19371,7 @@ export class MergeExpr extends DMLExpr {
    * Defines the arguments (properties and child expressions) for Merge expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<MergeExprArgs> = {
     ...super.argTypes,
     using: true,
     on: false,
@@ -19383,7 +19379,7 @@ export class MergeExpr extends DMLExpr {
     whens: true,
     with: false,
     returning: false,
-  } satisfies RequiredMap<MergeExprArgs>;
+  };
 
   declare args: MergeExprArgs;
 
@@ -19435,7 +19431,7 @@ export class LateralExpr extends UDTFExpr {
    * Defines the arguments (properties and child expressions) for Lateral expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<LateralExprArgs> = {
     ...super.argTypes,
     this: true,
     view: false,
@@ -19443,7 +19439,7 @@ export class LateralExpr extends UDTFExpr {
     alias: false,
     crossApply: false,
     ordinality: false,
-  } satisfies RequiredMap<LateralExprArgs>;
+  };
 
   declare args: LateralExprArgs;
 
@@ -19494,14 +19490,14 @@ export class TableFromRowsExpr extends UDTFExpr {
    * Defines the arguments (properties and child expressions) for TableFromRows expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TableFromRowsExprArgs> = {
     ...super.argTypes,
     this: true,
     alias: false,
     joins: false,
     pivots: false,
     sample: false,
-  } satisfies RequiredMap<TableFromRowsExprArgs>;
+  };
 
   declare args: TableFromRowsExprArgs;
 
@@ -19537,9 +19533,9 @@ export type UnionExprArgs = Merge<[
 export class UnionExpr extends SetOperationExpr {
   key = ExpressionKey.UNION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UnionExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<UnionExprArgs>;
+  };
 
   declare args: UnionExprArgs;
 
@@ -19555,9 +19551,9 @@ export type ExceptExprArgs = Merge<[
 export class ExceptExpr extends SetOperationExpr {
   key = ExpressionKey.EXCEPT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ExceptExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ExceptExprArgs>;
+  };
 
   declare args: ExceptExprArgs;
 
@@ -19573,9 +19569,9 @@ export type IntersectExprArgs = Merge<[
 export class IntersectExpr extends SetOperationExpr {
   key = ExpressionKey.INTERSECT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<IntersectExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<IntersectExprArgs>;
+  };
 
   declare args: IntersectExprArgs;
 
@@ -19602,14 +19598,14 @@ export type ValuesExprArgs = Merge<[
 export class ValuesExpr extends UDTFExpr {
   key = ExpressionKey.VALUES;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ValuesExprArgs> = {
     ...super.argTypes,
     expressions: true,
     alias: false,
     order: false,
     limit: false,
     offset: false,
-  } satisfies RequiredMap<ValuesExprArgs>;
+  };
 
   declare args: ValuesExprArgs;
 
@@ -19645,9 +19641,9 @@ export type SubqueryPredicateExprArgs = Merge<[
 export class SubqueryPredicateExpr extends PredicateExpr {
   key = ExpressionKey.SUBQUERY_PREDICATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SubqueryPredicateExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SubqueryPredicateExprArgs>;
+  };
 
   declare args: SubqueryPredicateExprArgs;
 
@@ -19663,9 +19659,9 @@ export type AddExprArgs = Merge<[
 export class AddExpr extends BinaryExpr {
   key = ExpressionKey.ADD;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AddExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AddExprArgs>;
+  };
 
   declare args: AddExprArgs;
 
@@ -19681,9 +19677,9 @@ export type ConnectorExprArgs = Merge<[
 export class ConnectorExpr extends BinaryExpr {
   key = ExpressionKey.CONNECTOR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ConnectorExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ConnectorExprArgs>;
+  };
 
   declare args: ConnectorExprArgs;
 
@@ -19704,12 +19700,12 @@ export type BitwiseAndExprArgs = Merge<[
 export class BitwiseAndExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_AND;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitwiseAndExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     padside: false,
-  } satisfies RequiredMap<BitwiseAndExprArgs>;
+  };
 
   declare args: BitwiseAndExprArgs;
 
@@ -19734,12 +19730,12 @@ export type BitwiseLeftShiftExprArgs = Merge<[
 export class BitwiseLeftShiftExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_LEFT_SHIFT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitwiseLeftShiftExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     requiresInt128: false,
-  } satisfies RequiredMap<BitwiseLeftShiftExprArgs>;
+  };
 
   declare args: BitwiseLeftShiftExprArgs;
 
@@ -19764,12 +19760,12 @@ export type BitwiseOrExprArgs = Merge<[
 export class BitwiseOrExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_OR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitwiseOrExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     padside: false,
-  } satisfies RequiredMap<BitwiseOrExprArgs>;
+  };
 
   declare args: BitwiseOrExprArgs;
 
@@ -19794,12 +19790,12 @@ export type BitwiseRightShiftExprArgs = Merge<[
 export class BitwiseRightShiftExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_RIGHT_SHIFT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitwiseRightShiftExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     requiresInt128: false,
-  } satisfies RequiredMap<BitwiseRightShiftExprArgs>;
+  };
 
   declare args: BitwiseRightShiftExprArgs;
 
@@ -19824,12 +19820,12 @@ export type BitwiseXorExprArgs = Merge<[
 export class BitwiseXorExpr extends BinaryExpr {
   key = ExpressionKey.BITWISE_XOR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitwiseXorExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     padside: false,
-  } satisfies RequiredMap<BitwiseXorExprArgs>;
+  };
 
   declare args: BitwiseXorExprArgs;
 
@@ -19855,13 +19851,13 @@ export type DivExprArgs = Merge<[
 export class DivExpr extends BinaryExpr {
   key = ExpressionKey.DIV;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DivExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     typed: false,
     safe: false,
-  } satisfies RequiredMap<DivExprArgs>;
+  };
 
   declare args: DivExprArgs;
 
@@ -19885,9 +19881,9 @@ export type OverlapsExprArgs = Merge<[
 export class OverlapsExpr extends BinaryExpr {
   key = ExpressionKey.OVERLAPS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<OverlapsExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<OverlapsExprArgs>;
+  };
 
   declare args: OverlapsExprArgs;
 
@@ -19903,9 +19899,9 @@ export type ExtendsLeftExprArgs = Merge<[
 export class ExtendsLeftExpr extends BinaryExpr {
   key = ExpressionKey.EXTENDS_LEFT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ExtendsLeftExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ExtendsLeftExprArgs>;
+  };
 
   declare args: ExtendsLeftExprArgs;
 
@@ -19921,9 +19917,9 @@ export type ExtendsRightExprArgs = Merge<[
 export class ExtendsRightExpr extends BinaryExpr {
   key = ExpressionKey.EXTENDS_RIGHT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ExtendsRightExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ExtendsRightExprArgs>;
+  };
 
   declare args: ExtendsRightExprArgs;
 
@@ -19939,9 +19935,9 @@ export type DotExprArgs = Merge<[
 export class DotExpr extends BinaryExpr {
   key = ExpressionKey.DOT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DotExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DotExprArgs>;
+  };
 
   declare args: DotExprArgs;
 
@@ -20011,12 +20007,12 @@ export type DPipeExprArgs = Merge<[
 export class DPipeExpr extends BinaryExpr {
   key = ExpressionKey.D_PIPE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DPipeExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     safe: false,
-  } satisfies RequiredMap<DPipeExprArgs>;
+  };
 
   declare args: DPipeExprArgs;
 
@@ -20037,10 +20033,10 @@ export type EQExprArgs = Merge<[
 export class EQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.EQ;
 
-  static argTypes = {
+  static argTypes: RequiredMap<EQExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<EQExprArgs>;
+  };
 
   declare args: EQExprArgs;
 
@@ -20057,10 +20053,10 @@ export type NullSafeEQExprArgs = Merge<[
 export class NullSafeEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.NULL_SAFE_EQ;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NullSafeEQExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<NullSafeEQExprArgs>;
+  };
 
   declare args: NullSafeEQExprArgs;
 
@@ -20077,10 +20073,10 @@ export type NullSafeNEQExprArgs = Merge<[
 export class NullSafeNEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.NULL_SAFE_NEQ;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NullSafeNEQExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<NullSafeNEQExprArgs>;
+  };
 
   declare args: NullSafeNEQExprArgs;
 
@@ -20096,9 +20092,9 @@ export type PropertyEQExprArgs = Merge<[
 export class PropertyEQExpr extends BinaryExpr {
   key = ExpressionKey.PROPERTY_EQ;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PropertyEQExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<PropertyEQExprArgs>;
+  };
 
   declare args: PropertyEQExprArgs;
 
@@ -20114,9 +20110,9 @@ export type DistanceExprArgs = Merge<[
 export class DistanceExpr extends BinaryExpr {
   key = ExpressionKey.DISTANCE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DistanceExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DistanceExprArgs>;
+  };
 
   declare args: DistanceExprArgs;
 
@@ -20132,9 +20128,9 @@ export type EscapeExprArgs = Merge<[
 export class EscapeExpr extends BinaryExpr {
   key = ExpressionKey.ESCAPE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<EscapeExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<EscapeExprArgs>;
+  };
 
   declare args: EscapeExprArgs;
 
@@ -20151,10 +20147,10 @@ export type GlobExprArgs = Merge<[
 export class GlobExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.GLOB;
 
-  static argTypes = {
+  static argTypes: RequiredMap<GlobExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<GlobExprArgs>;
+  };
 
   declare args: GlobExprArgs;
 
@@ -20171,10 +20167,10 @@ export type GTExprArgs = Merge<[
 export class GTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.GT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<GTExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<GTExprArgs>;
+  };
 
   declare args: GTExprArgs;
 
@@ -20191,10 +20187,10 @@ export type GTEExprArgs = Merge<[
 export class GTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.GTE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<GTEExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<GTEExprArgs>;
+  };
 
   declare args: GTEExprArgs;
 
@@ -20211,10 +20207,10 @@ export type ILikeExprArgs = Merge<[
 export class ILikeExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.ILIKE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ILikeExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<ILikeExprArgs>;
+  };
 
   declare args: ILikeExprArgs;
 
@@ -20230,9 +20226,9 @@ export type IntDivExprArgs = Merge<[
 export class IntDivExpr extends BinaryExpr {
   key = ExpressionKey.INT_DIV;
 
-  static argTypes = {
+  static argTypes: RequiredMap<IntDivExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<IntDivExprArgs>;
+  };
 
   declare args: IntDivExprArgs;
 
@@ -20249,10 +20245,10 @@ export type IsExprArgs = Merge<[
 export class IsExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.IS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<IsExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<IsExprArgs>;
+  };
 
   declare args: IsExprArgs;
 
@@ -20271,9 +20267,9 @@ export type KwargExprArgs = Merge<[
 export class KwargExpr extends BinaryExpr {
   key = ExpressionKey.KWARG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<KwargExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<KwargExprArgs>;
+  };
 
   declare args: KwargExprArgs;
 
@@ -20290,10 +20286,10 @@ export type LikeExprArgs = Merge<[
 export class LikeExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.LIKE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LikeExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<LikeExprArgs>;
+  };
 
   declare args: LikeExprArgs;
 
@@ -20310,10 +20306,10 @@ export type MatchExprArgs = Merge<[
 export class MatchExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.MATCH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MatchExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<MatchExprArgs>;
+  };
 
   declare args: MatchExprArgs;
 
@@ -20330,10 +20326,10 @@ export type LTExprArgs = Merge<[
 export class LTExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.LT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LTExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<LTExprArgs>;
+  };
 
   declare args: LTExprArgs;
 
@@ -20350,10 +20346,10 @@ export type LTEExprArgs = Merge<[
 export class LTEExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.LTE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LTEExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<LTEExprArgs>;
+  };
 
   declare args: LTEExprArgs;
 
@@ -20369,9 +20365,9 @@ export type ModExprArgs = Merge<[
 export class ModExpr extends BinaryExpr {
   key = ExpressionKey.MOD;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ModExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ModExprArgs>;
+  };
 
   declare args: ModExprArgs;
 
@@ -20387,9 +20383,9 @@ export type MulExprArgs = Merge<[
 export class MulExpr extends BinaryExpr {
   key = ExpressionKey.MUL;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MulExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<MulExprArgs>;
+  };
 
   declare args: MulExprArgs;
 
@@ -20406,10 +20402,10 @@ export type NEQExprArgs = Merge<[
 export class NEQExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.NEQ;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NEQExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<NEQExprArgs>;
+  };
 
   declare args: NEQExprArgs;
 
@@ -20430,12 +20426,12 @@ export type OperatorExprArgs = Merge<[
 export class OperatorExpr extends BinaryExpr {
   key = ExpressionKey.OPERATOR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<OperatorExprArgs> = {
     ...super.argTypes,
     this: true,
     operator: true,
     expression: true,
-  } satisfies RequiredMap<OperatorExprArgs>;
+  };
 
   declare args: OperatorExprArgs;
 
@@ -20456,10 +20452,10 @@ export type SimilarToExprArgs = Merge<[
 export class SimilarToExpr extends multiInherit(BinaryExpr, PredicateExpr) {
   key = ExpressionKey.SIMILAR_TO;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SimilarToExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<SimilarToExprArgs>;
+  };
 
   declare args: SimilarToExprArgs;
 
@@ -20475,9 +20471,9 @@ export type SubExprArgs = Merge<[
 export class SubExpr extends BinaryExpr {
   key = ExpressionKey.SUB;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SubExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SubExprArgs>;
+  };
 
   declare args: SubExprArgs;
 
@@ -20493,9 +20489,9 @@ export type AdjacentExprArgs = Merge<[
 export class AdjacentExpr extends BinaryExpr {
   key = ExpressionKey.ADJACENT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AdjacentExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AdjacentExprArgs>;
+  };
 
   declare args: AdjacentExprArgs;
 
@@ -20511,9 +20507,9 @@ export type BitwiseNotExprArgs = Merge<[
 export class BitwiseNotExpr extends UnaryExpr {
   key = ExpressionKey.BITWISE_NOT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitwiseNotExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BitwiseNotExprArgs>;
+  };
 
   declare args: BitwiseNotExprArgs;
 
@@ -20529,9 +20525,9 @@ export type NotExprArgs = Merge<[
 export class NotExpr extends UnaryExpr {
   key = ExpressionKey.NOT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NotExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<NotExprArgs>;
+  };
 
   declare args: NotExprArgs;
 
@@ -20548,10 +20544,10 @@ export type ParenExprArgs = Merge<[
 export class ParenExpr extends UnaryExpr {
   key = ExpressionKey.PAREN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ParenExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<ParenExprArgs>;
+  };
 
   declare args: ParenExprArgs;
 
@@ -20572,10 +20568,10 @@ export type NegExprArgs = Merge<[
 export class NegExpr extends UnaryExpr {
   key = ExpressionKey.NEG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NegExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<NegExprArgs>;
+  };
 
   declare args: NegExprArgs;
 
@@ -20604,13 +20600,13 @@ export type BetweenExprArgs = Merge<[
 export class BetweenExpr extends PredicateExpr {
   key = ExpressionKey.BETWEEN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BetweenExprArgs> = {
     ...super.argTypes,
     this: true,
     low: true,
     high: true,
     symmetric: false,
-  } satisfies RequiredMap<BetweenExprArgs>;
+  };
 
   declare args: BetweenExprArgs;
 
@@ -20650,7 +20646,7 @@ export type InExprArgs = Merge<[
 export class InExpr extends PredicateExpr {
   key = ExpressionKey.IN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<InExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
@@ -20658,7 +20654,7 @@ export class InExpr extends PredicateExpr {
     unnest: false,
     field: false,
     isGlobal: false,
-  } satisfies RequiredMap<InExprArgs>;
+  };
 
   declare args: InExprArgs;
 
@@ -20702,9 +20698,9 @@ export type SafeFuncExprArgs = Merge<[
 export class SafeFuncExpr extends FuncExpr {
   key = ExpressionKey.SAFE_FUNC;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SafeFuncExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SafeFuncExprArgs>;
+  };
 
   declare args: SafeFuncExprArgs;
 
@@ -20724,9 +20720,9 @@ export type TypeofExprArgs = Merge<[
 export class TypeofExpr extends FuncExpr {
   key = ExpressionKey.TYPEOF;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TypeofExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TypeofExprArgs>;
+  };
 
   declare args: TypeofExprArgs;
 
@@ -20746,9 +20742,9 @@ export type AcosExprArgs = Merge<[
 export class AcosExpr extends FuncExpr {
   key = ExpressionKey.ACOS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AcosExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AcosExprArgs>;
+  };
 
   declare args: AcosExprArgs;
 
@@ -20768,9 +20764,9 @@ export type AcoshExprArgs = Merge<[
 export class AcoshExpr extends FuncExpr {
   key = ExpressionKey.ACOSH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AcoshExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AcoshExprArgs>;
+  };
 
   declare args: AcoshExprArgs;
 
@@ -20790,9 +20786,9 @@ export type AsinExprArgs = Merge<[
 export class AsinExpr extends FuncExpr {
   key = ExpressionKey.ASIN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AsinExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AsinExprArgs>;
+  };
 
   declare args: AsinExprArgs;
 
@@ -20812,9 +20808,9 @@ export type AsinhExprArgs = Merge<[
 export class AsinhExpr extends FuncExpr {
   key = ExpressionKey.ASINH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AsinhExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AsinhExprArgs>;
+  };
 
   declare args: AsinhExprArgs;
 
@@ -20838,11 +20834,11 @@ export type AtanExprArgs = Merge<[
 export class AtanExpr extends FuncExpr {
   key = ExpressionKey.ATAN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AtanExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<AtanExprArgs>;
+  };
 
   declare args: AtanExprArgs;
 
@@ -20870,9 +20866,9 @@ export type AtanhExprArgs = Merge<[
 export class AtanhExpr extends FuncExpr {
   key = ExpressionKey.ATANH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AtanhExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AtanhExprArgs>;
+  };
 
   declare args: AtanhExprArgs;
 
@@ -20896,11 +20892,11 @@ export type Atan2ExprArgs = Merge<[
 export class Atan2Expr extends FuncExpr {
   key = ExpressionKey.ATAN2;
 
-  static argTypes = {
+  static argTypes: RequiredMap<Atan2ExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<Atan2ExprArgs>;
+  };
 
   declare args: Atan2ExprArgs;
 
@@ -20928,9 +20924,9 @@ export type CotExprArgs = Merge<[
 export class CotExpr extends FuncExpr {
   key = ExpressionKey.COT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CotExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CotExprArgs>;
+  };
 
   declare args: CotExprArgs;
 
@@ -20950,9 +20946,9 @@ export type CothExprArgs = Merge<[
 export class CothExpr extends FuncExpr {
   key = ExpressionKey.COTH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CothExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CothExprArgs>;
+  };
 
   declare args: CothExprArgs;
 
@@ -20972,9 +20968,9 @@ export type CosExprArgs = Merge<[
 export class CosExpr extends FuncExpr {
   key = ExpressionKey.COS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CosExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CosExprArgs>;
+  };
 
   declare args: CosExprArgs;
 
@@ -20994,9 +20990,9 @@ export type CscExprArgs = Merge<[
 export class CscExpr extends FuncExpr {
   key = ExpressionKey.CSC;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CscExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CscExprArgs>;
+  };
 
   declare args: CscExprArgs;
 
@@ -21016,9 +21012,9 @@ export type CschExprArgs = Merge<[
 export class CschExpr extends FuncExpr {
   key = ExpressionKey.CSCH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CschExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CschExprArgs>;
+  };
 
   declare args: CschExprArgs;
 
@@ -21038,9 +21034,9 @@ export type SecExprArgs = Merge<[
 export class SecExpr extends FuncExpr {
   key = ExpressionKey.SEC;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SecExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SecExprArgs>;
+  };
 
   declare args: SecExprArgs;
 
@@ -21060,9 +21056,9 @@ export type SechExprArgs = Merge<[
 export class SechExpr extends FuncExpr {
   key = ExpressionKey.SECH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SechExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SechExprArgs>;
+  };
 
   declare args: SechExprArgs;
 
@@ -21082,9 +21078,9 @@ export type SinExprArgs = Merge<[
 export class SinExpr extends FuncExpr {
   key = ExpressionKey.SIN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SinExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SinExprArgs>;
+  };
 
   declare args: SinExprArgs;
 
@@ -21104,9 +21100,9 @@ export type SinhExprArgs = Merge<[
 export class SinhExpr extends FuncExpr {
   key = ExpressionKey.SINH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SinhExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SinhExprArgs>;
+  };
 
   declare args: SinhExprArgs;
 
@@ -21126,9 +21122,9 @@ export type TanExprArgs = Merge<[
 export class TanExpr extends FuncExpr {
   key = ExpressionKey.TAN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TanExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TanExprArgs>;
+  };
 
   declare args: TanExprArgs;
 
@@ -21148,9 +21144,9 @@ export type TanhExprArgs = Merge<[
 export class TanhExpr extends FuncExpr {
   key = ExpressionKey.TANH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TanhExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TanhExprArgs>;
+  };
 
   declare args: TanhExprArgs;
 
@@ -21170,9 +21166,9 @@ export type DegreesExprArgs = Merge<[
 export class DegreesExpr extends FuncExpr {
   key = ExpressionKey.DEGREES;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DegreesExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DegreesExprArgs>;
+  };
 
   declare args: DegreesExprArgs;
 
@@ -21192,9 +21188,9 @@ export type CoshExprArgs = Merge<[
 export class CoshExpr extends FuncExpr {
   key = ExpressionKey.COSH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CoshExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CoshExprArgs>;
+  };
 
   declare args: CoshExprArgs;
 
@@ -21218,11 +21214,11 @@ export type CosineDistanceExprArgs = Merge<[
 export class CosineDistanceExpr extends FuncExpr {
   key = ExpressionKey.COSINE_DISTANCE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CosineDistanceExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<CosineDistanceExprArgs>;
+  };
 
   declare args: CosineDistanceExprArgs;
 
@@ -21254,11 +21250,11 @@ export type DotProductExprArgs = Merge<[
 export class DotProductExpr extends FuncExpr {
   key = ExpressionKey.DOT_PRODUCT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DotProductExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<DotProductExprArgs>;
+  };
 
   declare args: DotProductExprArgs;
 
@@ -21290,11 +21286,11 @@ export type EuclideanDistanceExprArgs = Merge<[
 export class EuclideanDistanceExpr extends FuncExpr {
   key = ExpressionKey.EUCLIDEAN_DISTANCE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<EuclideanDistanceExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<EuclideanDistanceExprArgs>;
+  };
 
   declare args: EuclideanDistanceExprArgs;
 
@@ -21326,11 +21322,11 @@ export type ManhattanDistanceExprArgs = Merge<[
 export class ManhattanDistanceExpr extends FuncExpr {
   key = ExpressionKey.MANHATTAN_DISTANCE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ManhattanDistanceExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<ManhattanDistanceExprArgs>;
+  };
 
   declare args: ManhattanDistanceExprArgs;
 
@@ -21362,11 +21358,11 @@ export type JarowinklerSimilarityExprArgs = Merge<[
 export class JarowinklerSimilarityExpr extends FuncExpr {
   key = ExpressionKey.JAROWINKLER_SIMILARITY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JarowinklerSimilarityExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<JarowinklerSimilarityExprArgs>;
+  };
 
   declare args: JarowinklerSimilarityExprArgs;
 
@@ -21394,9 +21390,9 @@ export type AggFuncExprArgs = Merge<[
 export class AggFuncExpr extends FuncExpr {
   key = ExpressionKey.AGG_FUNC;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AggFuncExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AggFuncExprArgs>;
+  };
 
   declare args: AggFuncExprArgs;
 
@@ -21416,9 +21412,9 @@ export type BitwiseCountExprArgs = Merge<[
 export class BitwiseCountExpr extends FuncExpr {
   key = ExpressionKey.BITWISE_COUNT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitwiseCountExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BitwiseCountExprArgs>;
+  };
 
   declare args: BitwiseCountExprArgs;
 
@@ -21438,9 +21434,9 @@ export type BitmapBucketNumberExprArgs = Merge<[
 export class BitmapBucketNumberExpr extends FuncExpr {
   key = ExpressionKey.BITMAP_BUCKET_NUMBER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitmapBucketNumberExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BitmapBucketNumberExprArgs>;
+  };
 
   declare args: BitmapBucketNumberExprArgs;
 
@@ -21460,9 +21456,9 @@ export type BitmapCountExprArgs = Merge<[
 export class BitmapCountExpr extends FuncExpr {
   key = ExpressionKey.BITMAP_COUNT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitmapCountExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BitmapCountExprArgs>;
+  };
 
   declare args: BitmapCountExprArgs;
 
@@ -21482,9 +21478,9 @@ export type BitmapBitPositionExprArgs = Merge<[
 export class BitmapBitPositionExpr extends FuncExpr {
   key = ExpressionKey.BITMAP_BIT_POSITION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitmapBitPositionExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BitmapBitPositionExprArgs>;
+  };
 
   declare args: BitmapBitPositionExprArgs;
 
@@ -21504,9 +21500,9 @@ export type ByteLengthExprArgs = Merge<[
 export class ByteLengthExpr extends FuncExpr {
   key = ExpressionKey.BYTE_LENGTH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ByteLengthExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ByteLengthExprArgs>;
+  };
 
   declare args: ByteLengthExprArgs;
 
@@ -21530,11 +21526,11 @@ export type BoolnotExprArgs = Merge<[
 export class BoolnotExpr extends FuncExpr {
   key = ExpressionKey.BOOLNOT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BoolnotExprArgs> = {
     ...super.argTypes,
     this: true,
     roundInput: false,
-  } satisfies RequiredMap<BoolnotExprArgs>;
+  };
 
   declare args: BoolnotExprArgs;
 
@@ -21567,12 +21563,12 @@ export type BoolandExprArgs = Merge<[
 export class BoolandExpr extends FuncExpr {
   key = ExpressionKey.BOOLAND;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BoolandExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     roundInput: false,
-  } satisfies RequiredMap<BoolandExprArgs>;
+  };
 
   declare args: BoolandExprArgs;
 
@@ -21609,12 +21605,12 @@ export type BoolorExprArgs = Merge<[
 export class BoolorExpr extends FuncExpr {
   key = ExpressionKey.BOOLOR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BoolorExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     roundInput: false,
-  } satisfies RequiredMap<BoolorExprArgs>;
+  };
 
   declare args: BoolorExprArgs;
 
@@ -21649,9 +21645,9 @@ export type JSONBoolExprArgs = Merge<[
 export class JSONBoolExpr extends FuncExpr {
   key = ExpressionKey.JSON_BOOL;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONBoolExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<JSONBoolExprArgs>;
+  };
 
   declare args: JSONBoolExprArgs;
 
@@ -21676,12 +21672,12 @@ export type ArrayRemoveExprArgs = Merge<[
 export class ArrayRemoveExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_REMOVE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayRemoveExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     nullPropagation: false,
-  } satisfies RequiredMap<ArrayRemoveExprArgs>;
+  };
 
   declare args: ArrayRemoveExprArgs;
 
@@ -21713,9 +21709,9 @@ export type AbsExprArgs = Merge<[
 export class AbsExpr extends FuncExpr {
   key = ExpressionKey.ABS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AbsExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AbsExprArgs>;
+  };
 
   declare args: AbsExprArgs;
 
@@ -21739,11 +21735,11 @@ export type ApproxTopKEstimateExprArgs = Merge<[
 export class ApproxTopKEstimateExpr extends FuncExpr {
   key = ExpressionKey.APPROX_TOP_K_ESTIMATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ApproxTopKEstimateExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<ApproxTopKEstimateExprArgs>;
+  };
 
   declare args: ApproxTopKEstimateExprArgs;
 
@@ -21776,10 +21772,10 @@ export class FarmFingerprintExpr extends FuncExpr {
 
   static _sqlNames = ['FARM_FINGERPRINT', 'FARMFINGERPRINT64'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<FarmFingerprintExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<FarmFingerprintExprArgs>;
+  };
 
   declare args: FarmFingerprintExprArgs;
 
@@ -21803,9 +21799,9 @@ export type FlattenExprArgs = Merge<[
 export class FlattenExpr extends FuncExpr {
   key = ExpressionKey.FLATTEN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FlattenExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<FlattenExprArgs>;
+  };
 
   declare args: FlattenExprArgs;
 
@@ -21829,11 +21825,11 @@ export type Float64ExprArgs = Merge<[
 export class Float64Expr extends FuncExpr {
   key = ExpressionKey.FLOAT64;
 
-  static argTypes = {
+  static argTypes: RequiredMap<Float64ExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<Float64ExprArgs>;
+  };
 
   declare args: Float64ExprArgs;
 
@@ -21868,11 +21864,11 @@ export type TransformExprArgs = Merge<[
 export class TransformExpr extends FuncExpr {
   key = ExpressionKey.TRANSFORM;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TransformExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<TransformExprArgs>;
+  };
 
   declare args: TransformExprArgs;
 
@@ -21905,12 +21901,12 @@ export type TranslateExprArgs = Merge<[
 export class TranslateExpr extends FuncExpr {
   key = ExpressionKey.TRANSLATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TranslateExprArgs> = {
     ...super.argTypes,
     this: true,
     from: true,
     to: true,
-  } satisfies RequiredMap<TranslateExprArgs>;
+  };
 
   declare args: TranslateExprArgs;
 
@@ -21948,11 +21944,11 @@ export class AnonymousExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AnonymousExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<AnonymousExprArgs>;
+  };
 
   declare args: AnonymousExprArgs;
 
@@ -21988,11 +21984,11 @@ export type ApplyExprArgs = Merge<[
 export class ApplyExpr extends FuncExpr {
   key = ExpressionKey.APPLY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ApplyExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<ApplyExprArgs>;
+  };
 
   declare args: ApplyExprArgs;
 
@@ -22031,12 +22027,12 @@ export class ArrayExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Array expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayExprArgs> = {
     ...super.argTypes,
     expressions: false,
     bracketNotation: false,
     structNameInheritance: false,
-  } satisfies RequiredMap<ArrayExprArgs>;
+  };
 
   declare args: ArrayExprArgs;
 
@@ -22068,9 +22064,9 @@ export type AsciiExprArgs = Merge<[
 export class AsciiExpr extends FuncExpr {
   key = ExpressionKey.ASCII;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AsciiExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AsciiExprArgs>;
+  };
 
   declare args: AsciiExprArgs;
 
@@ -22090,9 +22086,9 @@ export type ToArrayExprArgs = Merge<[
 export class ToArrayExpr extends FuncExpr {
   key = ExpressionKey.TO_ARRAY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ToArrayExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ToArrayExprArgs>;
+  };
 
   declare args: ToArrayExprArgs;
 
@@ -22116,11 +22112,11 @@ export type ToBooleanExprArgs = Merge<[
 export class ToBooleanExpr extends FuncExpr {
   key = ExpressionKey.TO_BOOLEAN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ToBooleanExprArgs> = {
     ...super.argTypes,
     this: true,
     safe: false,
-  } satisfies RequiredMap<ToBooleanExprArgs>;
+  };
 
   declare args: ToBooleanExprArgs;
 
@@ -22151,10 +22147,10 @@ export class ListExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ListExprArgs> = {
     ...super.argTypes,
     expressions: false,
-  } satisfies RequiredMap<ListExprArgs>;
+  };
 
   declare args: ListExprArgs;
 
@@ -22187,13 +22183,13 @@ export type PadExprArgs = Merge<[
 export class PadExpr extends FuncExpr {
   key = ExpressionKey.PAD;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PadExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     fillPattern: false,
     isLeft: true,
-  } satisfies RequiredMap<PadExprArgs>;
+  };
 
   declare args: PadExprArgs;
 
@@ -22239,13 +22235,13 @@ export type ToCharExprArgs = Merge<[
 export class ToCharExpr extends FuncExpr {
   key = ExpressionKey.TO_CHAR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ToCharExprArgs> = {
     ...super.argTypes,
     this: true,
     format: false,
     nlsparam: false,
     isNumeric: false,
-  } satisfies RequiredMap<ToCharExprArgs>;
+  };
 
   declare args: ToCharExprArgs;
 
@@ -22281,9 +22277,9 @@ export type ToCodePointsExprArgs = Merge<[
 export class ToCodePointsExpr extends FuncExpr {
   key = ExpressionKey.TO_CODE_POINTS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ToCodePointsExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ToCodePointsExprArgs>;
+  };
 
   declare args: ToCodePointsExprArgs;
 
@@ -22316,7 +22312,7 @@ export type ToNumberExprArgs = Merge<[
 export class ToNumberExpr extends FuncExpr {
   key = ExpressionKey.TO_NUMBER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ToNumberExprArgs> = {
     ...super.argTypes,
     this: true,
     format: false,
@@ -22325,7 +22321,7 @@ export class ToNumberExpr extends FuncExpr {
     scale: false,
     safe: false,
     safeName: false,
-  } satisfies RequiredMap<ToNumberExprArgs>;
+  };
 
   declare args: ToNumberExprArgs;
 
@@ -22382,12 +22378,12 @@ export class ToDoubleExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ToDouble expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ToDoubleExprArgs> = {
     ...super.argTypes,
     this: true,
     format: false,
     safe: false,
-  } satisfies RequiredMap<ToDoubleExprArgs>;
+  };
 
   declare args: ToDoubleExprArgs;
 
@@ -22423,11 +22419,11 @@ export type ToDecfloatExprArgs = Merge<[
 export class ToDecfloatExpr extends FuncExpr {
   key = ExpressionKey.TO_DECFLOAT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ToDecfloatExprArgs> = {
     ...super.argTypes,
     this: true,
     format: false,
-  } satisfies RequiredMap<ToDecfloatExprArgs>;
+  };
 
   declare args: ToDecfloatExprArgs;
 
@@ -22459,11 +22455,11 @@ export type TryToDecfloatExprArgs = Merge<[
 export class TryToDecfloatExpr extends FuncExpr {
   key = ExpressionKey.TRY_TO_DECFLOAT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TryToDecfloatExprArgs> = {
     ...super.argTypes,
     this: true,
     format: false,
-  } satisfies RequiredMap<TryToDecfloatExprArgs>;
+  };
 
   declare args: TryToDecfloatExprArgs;
 
@@ -22500,12 +22496,12 @@ export class ToFileExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ToFile expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ToFileExprArgs> = {
     ...super.argTypes,
     this: true,
     path: false,
     safe: false,
-  } satisfies RequiredMap<ToFileExprArgs>;
+  };
 
   declare args: ToFileExprArgs;
 
@@ -22537,9 +22533,9 @@ export type CodePointsToBytesExprArgs = Merge<[
 export class CodePointsToBytesExpr extends FuncExpr {
   key = ExpressionKey.CODE_POINTS_TO_BYTES;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CodePointsToBytesExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CodePointsToBytesExprArgs>;
+  };
 
   declare args: CodePointsToBytesExprArgs;
 
@@ -22563,11 +22559,11 @@ export type ColumnsExprArgs = Merge<[
 export class ColumnsExpr extends FuncExpr {
   key = ExpressionKey.COLUMNS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ColumnsExprArgs> = {
     ...super.argTypes,
     this: true,
     unpack: false,
-  } satisfies RequiredMap<ColumnsExprArgs>;
+  };
 
   declare args: ColumnsExprArgs;
 
@@ -22605,13 +22601,13 @@ export class ConvertExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Convert expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ConvertExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     style: false,
     safe: false,
-  } satisfies RequiredMap<ConvertExprArgs>;
+  };
 
   declare args: ConvertExprArgs;
 
@@ -22656,12 +22652,12 @@ export class ConvertToCharsetExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ConvertToCharset expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ConvertToCharsetExprArgs> = {
     ...super.argTypes,
     this: true,
     dest: true,
     source: false,
-  } satisfies RequiredMap<ConvertToCharsetExprArgs>;
+  };
 
   declare args: ConvertToCharsetExprArgs;
 
@@ -22703,13 +22699,13 @@ export class ConvertTimezoneExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ConvertTimezone expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ConvertTimezoneExprArgs> = {
     ...super.argTypes,
     sourceTz: false,
     targetTz: true,
     timestamp: true,
     options: false,
-  } satisfies RequiredMap<ConvertTimezoneExprArgs>;
+  };
 
   declare args: ConvertTimezoneExprArgs;
 
@@ -22745,9 +22741,9 @@ export type CodePointsToStringExprArgs = Merge<[
 export class CodePointsToStringExpr extends FuncExpr {
   key = ExpressionKey.CODE_POINTS_TO_STRING;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CodePointsToStringExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CodePointsToStringExprArgs>;
+  };
 
   declare args: CodePointsToStringExprArgs;
 
@@ -22773,13 +22769,13 @@ export type GenerateSeriesExprArgs = Merge<[
 export class GenerateSeriesExpr extends FuncExpr {
   key = ExpressionKey.GENERATE_SERIES;
 
-  static argTypes = {
+  static argTypes: RequiredMap<GenerateSeriesExprArgs> = {
     ...super.argTypes,
     start: true,
     end: true,
     step: false,
     isEndExclusive: false,
-  } satisfies RequiredMap<GenerateSeriesExprArgs>;
+  };
 
   declare args: GenerateSeriesExprArgs;
 
@@ -22823,12 +22819,12 @@ export type GeneratorExprArgs = Merge<[
 export class GeneratorExpr extends multiInherit(FuncExpr, UDTFExpr) {
   key = ExpressionKey.GENERATOR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<GeneratorExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     rowcount: false,
     timelimit: false,
-  } satisfies RequiredMap<GeneratorExprArgs>;
+  };
 
   declare args: GeneratorExprArgs;
 
@@ -22863,12 +22859,12 @@ export class AIClassifyExpr extends FuncExpr {
 
   static _sqlNames = ['AI_CLASSIFY'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<AIClassifyExprArgs> = {
     ...super.argTypes,
     this: true,
     categories: true,
     config: false,
-  } satisfies RequiredMap<AIClassifyExprArgs>;
+  };
 
   declare args: AIClassifyExprArgs;
 
@@ -22904,11 +22900,11 @@ export type ArrayAllExprArgs = Merge<[
 export class ArrayAllExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_ALL;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayAllExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<ArrayAllExprArgs>;
+  };
 
   declare args: ArrayAllExprArgs;
 
@@ -22943,11 +22939,11 @@ export type ArrayAnyExprArgs = Merge<[
 export class ArrayAnyExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_ANY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayAnyExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<ArrayAnyExprArgs>;
+  };
 
   declare args: ArrayAnyExprArgs;
 
@@ -22980,12 +22976,12 @@ export type ArrayAppendExprArgs = Merge<[
 export class ArrayAppendExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_APPEND;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayAppendExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     nullPropagation: false,
-  } satisfies RequiredMap<ArrayAppendExprArgs>;
+  };
 
   declare args: ArrayAppendExprArgs;
 
@@ -23022,12 +23018,12 @@ export type ArrayPrependExprArgs = Merge<[
 export class ArrayPrependExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_PREPEND;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayPrependExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     nullPropagation: false,
-  } satisfies RequiredMap<ArrayPrependExprArgs>;
+  };
 
   declare args: ArrayPrependExprArgs;
 
@@ -23068,12 +23064,12 @@ export class ArrayConcatExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayConcatExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
     nullPropagation: false,
-  } satisfies RequiredMap<ArrayConcatExprArgs>;
+  };
 
   declare args: ArrayConcatExprArgs;
 
@@ -23105,9 +23101,9 @@ export type ArrayCompactExprArgs = Merge<[
 export class ArrayCompactExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_COMPACT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayCompactExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ArrayCompactExprArgs>;
+  };
 
   declare args: ArrayCompactExprArgs;
 
@@ -23133,13 +23129,13 @@ export type ArrayInsertExprArgs = Merge<[
 export class ArrayInsertExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_INSERT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayInsertExprArgs> = {
     ...super.argTypes,
     this: true,
     position: true,
     expression: true,
     offset: false,
-  } satisfies RequiredMap<ArrayInsertExprArgs>;
+  };
 
   declare args: ArrayInsertExprArgs;
 
@@ -23179,11 +23175,11 @@ export type ArrayRemoveAtExprArgs = Merge<[
 export class ArrayRemoveAtExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_REMOVE_AT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayRemoveAtExprArgs> = {
     ...super.argTypes,
     this: true,
     position: true,
-  } satisfies RequiredMap<ArrayRemoveAtExprArgs>;
+  };
 
   declare args: ArrayRemoveAtExprArgs;
 
@@ -23214,10 +23210,10 @@ export class ArrayConstructCompactExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayConstructCompactExprArgs> = {
     ...super.argTypes,
     expressions: false,
-  } satisfies RequiredMap<ArrayConstructCompactExprArgs>;
+  };
 
   declare args: ArrayConstructCompactExprArgs;
 
@@ -23249,13 +23245,13 @@ export class ArrayContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   static _sqlNames = ['ARRAY_CONTAINS', 'ARRAY_HAS'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayContainsExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     ensureVariant: false,
-  } satisfies RequiredMap<ArrayContainsExprArgs>;
+  };
 
   declare args: ArrayContainsExprArgs;
 
@@ -23294,12 +23290,12 @@ export class ArrayContainsAllExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   static _sqlNames = ['ARRAY_CONTAINS_ALL', 'ARRAY_HAS_ALL'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayContainsAllExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<ArrayContainsAllExprArgs>;
+  };
 
   declare args: ArrayContainsAllExprArgs;
 
@@ -23333,11 +23329,11 @@ export class ArrayFilterExpr extends FuncExpr {
 
   static _sqlNames = ['FILTER', 'ARRAY_FILTER'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayFilterExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<ArrayFilterExprArgs>;
+  };
 
   declare args: ArrayFilterExprArgs;
 
@@ -23365,9 +23361,9 @@ export type ArrayFirstExprArgs = Merge<[
 export class ArrayFirstExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_FIRST;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayFirstExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ArrayFirstExprArgs>;
+  };
 
   declare args: ArrayFirstExprArgs;
 
@@ -23387,9 +23383,9 @@ export type ArrayLastExprArgs = Merge<[
 export class ArrayLastExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_LAST;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayLastExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ArrayLastExprArgs>;
+  };
 
   declare args: ArrayLastExprArgs;
 
@@ -23409,9 +23405,9 @@ export type ArrayReverseExprArgs = Merge<[
 export class ArrayReverseExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_REVERSE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayReverseExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ArrayReverseExprArgs>;
+  };
 
   declare args: ArrayReverseExprArgs;
 
@@ -23437,13 +23433,13 @@ export type ArraySliceExprArgs = Merge<[
 export class ArraySliceExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SLICE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArraySliceExprArgs> = {
     ...super.argTypes,
     this: true,
     start: true,
     end: false,
     step: false,
-  } satisfies RequiredMap<ArraySliceExprArgs>;
+  };
 
   declare args: ArraySliceExprArgs;
 
@@ -23486,12 +23482,12 @@ export class ArrayToStringExpr extends FuncExpr {
 
   static _sqlNames = ['ARRAY_TO_STRING', 'ARRAY_JOIN'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayToStringExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     null: false,
-  } satisfies RequiredMap<ArrayToStringExprArgs>;
+  };
 
   declare args: ArrayToStringExprArgs;
 
@@ -23528,10 +23524,10 @@ export class ArrayIntersectExpr extends FuncExpr {
 
   static _sqlNames = ['ARRAY_INTERSECT', 'ARRAY_INTERSECTION'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayIntersectExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<ArrayIntersectExprArgs>;
+  };
 
   declare args: ArrayIntersectExprArgs;
 
@@ -23562,12 +23558,12 @@ export class StPointExpr extends FuncExpr {
 
   static _sqlNames = ['ST_POINT', 'ST_MAKEPOINT'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<StPointExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     null: false,
-  } satisfies RequiredMap<StPointExprArgs>;
+  };
 
   declare args: StPointExprArgs;
 
@@ -23604,12 +23600,12 @@ export type StDistanceExprArgs = Merge<[
 export class StDistanceExpr extends FuncExpr {
   key = ExpressionKey.ST_DISTANCE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<StDistanceExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     useSpheroid: false,
-  } satisfies RequiredMap<StDistanceExprArgs>;
+  };
 
   declare args: StDistanceExprArgs;
 
@@ -23648,11 +23644,11 @@ export type StringExprArgs = Merge<[
 export class StringExpr extends FuncExpr {
   key = ExpressionKey.STRING;
 
-  static argTypes = {
+  static argTypes: RequiredMap<StringExprArgs> = {
     ...super.argTypes,
     this: true,
     zone: false,
-  } satisfies RequiredMap<StringExprArgs>;
+  };
 
   declare args: StringExprArgs;
 
@@ -23691,12 +23687,12 @@ export class StringToArrayExpr extends FuncExpr {
     'STRTOK_TO_ARRAY',
   ];
 
-  static argTypes = {
+  static argTypes: RequiredMap<StringToArrayExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
     null: false,
-  } satisfies RequiredMap<StringToArrayExprArgs>;
+  };
 
   declare args: StringToArrayExprArgs;
 
@@ -23733,12 +23729,12 @@ export type ArrayOverlapsExprArgs = Merge<[
 export class ArrayOverlapsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.ARRAY_OVERLAPS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayOverlapsExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<ArrayOverlapsExprArgs>;
+  };
 
   declare args: ArrayOverlapsExprArgs;
 
@@ -23772,11 +23768,11 @@ export class ArraySizeExpr extends FuncExpr {
 
   static _sqlNames = ['ARRAY_SIZE', 'ARRAY_LENGTH'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArraySizeExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<ArraySizeExprArgs>;
+  };
 
   declare args: ArraySizeExprArgs;
 
@@ -23808,11 +23804,11 @@ export type ArraySortExprArgs = Merge<[
 export class ArraySortExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SORT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArraySortExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<ArraySortExprArgs>;
+  };
 
   declare args: ArraySortExprArgs;
 
@@ -23844,11 +23840,11 @@ export type ArraySumExprArgs = Merge<[
 export class ArraySumExpr extends FuncExpr {
   key = ExpressionKey.ARRAY_SUM;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArraySumExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<ArraySumExprArgs>;
+  };
 
   declare args: ArraySumExprArgs;
 
@@ -23879,10 +23875,10 @@ export class ArraysZipExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArraysZipExprArgs> = {
     ...super.argTypes,
     expressions: false,
-  } satisfies RequiredMap<ArraysZipExprArgs>;
+  };
 
   declare args: ArraysZipExprArgs;
 
@@ -23915,12 +23911,12 @@ export class CaseExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Case expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CaseExprArgs> = {
     ...super.argTypes,
     this: false,
     ifs: true,
     default: false,
-  } satisfies RequiredMap<CaseExprArgs>;
+  };
 
   declare args: CaseExprArgs;
 
@@ -23993,7 +23989,7 @@ export class CastExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Cast expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<CastExprArgs> = {
     ...super.argTypes,
     this: true,
     to: true,
@@ -24001,7 +23997,7 @@ export class CastExpr extends FuncExpr {
     safe: false,
     action: false,
     default: false,
-  } satisfies RequiredMap<CastExprArgs>;
+  };
 
   declare args: CastExprArgs;
 
@@ -24069,9 +24065,9 @@ export type JustifyDaysExprArgs = Merge<[
 export class JustifyDaysExpr extends FuncExpr {
   key = ExpressionKey.JUSTIFY_DAYS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JustifyDaysExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<JustifyDaysExprArgs>;
+  };
 
   declare args: JustifyDaysExprArgs;
 
@@ -24091,9 +24087,9 @@ export type JustifyHoursExprArgs = Merge<[
 export class JustifyHoursExpr extends FuncExpr {
   key = ExpressionKey.JUSTIFY_HOURS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JustifyHoursExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<JustifyHoursExprArgs>;
+  };
 
   declare args: JustifyHoursExprArgs;
 
@@ -24113,9 +24109,9 @@ export type JustifyIntervalExprArgs = Merge<[
 export class JustifyIntervalExpr extends FuncExpr {
   key = ExpressionKey.JUSTIFY_INTERVAL;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JustifyIntervalExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<JustifyIntervalExprArgs>;
+  };
 
   declare args: JustifyIntervalExprArgs;
 
@@ -24135,9 +24131,9 @@ export type TryExprArgs = Merge<[
 export class TryExpr extends FuncExpr {
   key = ExpressionKey.TRY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TryExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TryExprArgs>;
+  };
 
   declare args: TryExprArgs;
 
@@ -24161,11 +24157,11 @@ export type CastToStrTypeExprArgs = Merge<[
 export class CastToStrTypeExpr extends FuncExpr {
   key = ExpressionKey.CAST_TO_STR_TYPE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CastToStrTypeExprArgs> = {
     ...super.argTypes,
     this: true,
     to: true,
-  } satisfies RequiredMap<CastToStrTypeExprArgs>;
+  };
 
   declare args: CastToStrTypeExprArgs;
 
@@ -24194,10 +24190,10 @@ export type CheckJsonExprArgs = Merge<[
 export class CheckJsonExpr extends FuncExpr {
   key = ExpressionKey.CHECK_JSON;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CheckJsonExprArgs> = {
     ...super.argTypes,
     this: true,
-  } satisfies RequiredMap<CheckJsonExprArgs>;
+  };
 
   declare args: CheckJsonExprArgs;
 
@@ -24225,11 +24221,11 @@ export type CheckXmlExprArgs = Merge<[
 export class CheckXmlExpr extends FuncExpr {
   key = ExpressionKey.CHECK_XML;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CheckXmlExprArgs> = {
     ...super.argTypes,
     this: true,
     disableAutoConvert: false,
-  } satisfies RequiredMap<CheckXmlExprArgs>;
+  };
 
   declare args: CheckXmlExprArgs;
 
@@ -24258,10 +24254,10 @@ export type CollateExprArgs = Merge<[
 export class CollateExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.COLLATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CollateExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<CollateExprArgs>;
+  };
 
   declare args: CollateExprArgs;
 
@@ -24281,9 +24277,9 @@ export type CollationExprArgs = Merge<[
 export class CollationExpr extends FuncExpr {
   key = ExpressionKey.COLLATION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CollationExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CollationExprArgs>;
+  };
 
   declare args: CollationExprArgs;
 
@@ -24310,12 +24306,12 @@ export class CeilExpr extends FuncExpr {
 
   static _sqlNames = ['CEIL', 'CEILING'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<CeilExprArgs> = {
     ...super.argTypes,
     this: true,
     decimals: false,
     to: false,
-  } satisfies RequiredMap<CeilExprArgs>;
+  };
 
   declare args: CeilExprArgs;
 
@@ -24362,13 +24358,13 @@ export class CoalesceExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CoalesceExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
     isNvl: false,
     isNull: false,
-  } satisfies RequiredMap<CoalesceExprArgs>;
+  };
 
   declare args: CoalesceExprArgs;
 
@@ -24412,11 +24408,11 @@ export class ChrExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ChrExprArgs> = {
     ...super.argTypes,
     expressions: true,
     charset: false,
-  } satisfies RequiredMap<ChrExprArgs>;
+  };
 
   declare args: ChrExprArgs;
 
@@ -24451,12 +24447,12 @@ export class ConcatExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ConcatExprArgs> = {
     ...super.argTypes,
     expressions: true,
     safe: false,
     coalesce: false,
-  } satisfies RequiredMap<ConcatExprArgs>;
+  };
 
   declare args: ConcatExprArgs;
 
@@ -24493,12 +24489,12 @@ export type ContainsExprArgs = Merge<[
 export class ContainsExpr extends FuncExpr {
   key = ExpressionKey.CONTAINS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ContainsExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     jsonScope: false,
-  } satisfies RequiredMap<ContainsExprArgs>;
+  };
 
   declare args: ContainsExprArgs;
 
@@ -24530,9 +24526,9 @@ export type ConnectByRootExprArgs = Merge<[
 export class ConnectByRootExpr extends FuncExpr {
   key = ExpressionKey.CONNECT_BY_ROOT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ConnectByRootExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ConnectByRootExprArgs>;
+  };
 
   declare args: ConnectByRootExprArgs;
 
@@ -24552,9 +24548,9 @@ export type CbrtExprArgs = Merge<[
 export class CbrtExpr extends FuncExpr {
   key = ExpressionKey.CBRT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CbrtExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CbrtExprArgs>;
+  };
 
   declare args: CbrtExprArgs;
 
@@ -24574,9 +24570,9 @@ export type CurrentAccountExprArgs = Merge<[
 export class CurrentAccountExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ACCOUNT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentAccountExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentAccountExprArgs>;
+  };
 
   declare args: CurrentAccountExprArgs;
 
@@ -24596,9 +24592,9 @@ export type CurrentAccountNameExprArgs = Merge<[
 export class CurrentAccountNameExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ACCOUNT_NAME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentAccountNameExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentAccountNameExprArgs>;
+  };
 
   declare args: CurrentAccountNameExprArgs;
 
@@ -24618,9 +24614,9 @@ export type CurrentAvailableRolesExprArgs = Merge<[
 export class CurrentAvailableRolesExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_AVAILABLE_ROLES;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentAvailableRolesExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentAvailableRolesExprArgs>;
+  };
 
   declare args: CurrentAvailableRolesExprArgs;
 
@@ -24640,9 +24636,9 @@ export type CurrentClientExprArgs = Merge<[
 export class CurrentClientExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_CLIENT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentClientExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentClientExprArgs>;
+  };
 
   declare args: CurrentClientExprArgs;
 
@@ -24662,9 +24658,9 @@ export type CurrentIpAddressExprArgs = Merge<[
 export class CurrentIpAddressExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_IP_ADDRESS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentIpAddressExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentIpAddressExprArgs>;
+  };
 
   declare args: CurrentIpAddressExprArgs;
 
@@ -24684,9 +24680,9 @@ export type CurrentDatabaseExprArgs = Merge<[
 export class CurrentDatabaseExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_DATABASE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentDatabaseExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentDatabaseExprArgs>;
+  };
 
   declare args: CurrentDatabaseExprArgs;
 
@@ -24707,10 +24703,10 @@ export type CurrentSchemasExprArgs = Merge<[
 export class CurrentSchemasExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SCHEMAS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentSchemasExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<CurrentSchemasExprArgs>;
+  };
 
   declare args: CurrentSchemasExprArgs;
 
@@ -24734,9 +24730,9 @@ export type CurrentSecondaryRolesExprArgs = Merge<[
 export class CurrentSecondaryRolesExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SECONDARY_ROLES;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentSecondaryRolesExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentSecondaryRolesExprArgs>;
+  };
 
   declare args: CurrentSecondaryRolesExprArgs;
 
@@ -24756,9 +24752,9 @@ export type CurrentSessionExprArgs = Merge<[
 export class CurrentSessionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SESSION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentSessionExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentSessionExprArgs>;
+  };
 
   declare args: CurrentSessionExprArgs;
 
@@ -24778,9 +24774,9 @@ export type CurrentStatementExprArgs = Merge<[
 export class CurrentStatementExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_STATEMENT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentStatementExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentStatementExprArgs>;
+  };
 
   declare args: CurrentStatementExprArgs;
 
@@ -24800,9 +24796,9 @@ export type CurrentVersionExprArgs = Merge<[
 export class CurrentVersionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_VERSION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentVersionExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentVersionExprArgs>;
+  };
 
   declare args: CurrentVersionExprArgs;
 
@@ -24822,9 +24818,9 @@ export type CurrentTransactionExprArgs = Merge<[
 export class CurrentTransactionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TRANSACTION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentTransactionExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentTransactionExprArgs>;
+  };
 
   declare args: CurrentTransactionExprArgs;
 
@@ -24844,9 +24840,9 @@ export type CurrentWarehouseExprArgs = Merge<[
 export class CurrentWarehouseExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_WAREHOUSE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentWarehouseExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentWarehouseExprArgs>;
+  };
 
   declare args: CurrentWarehouseExprArgs;
 
@@ -24867,10 +24863,10 @@ export type CurrentDateExprArgs = Merge<[
 export class CurrentDateExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_DATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentDateExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<CurrentDateExprArgs>;
+  };
 
   declare args: CurrentDateExprArgs;
 
@@ -24895,10 +24891,10 @@ export type CurrentDatetimeExprArgs = Merge<[
 export class CurrentDatetimeExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_DATETIME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentDatetimeExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<CurrentDatetimeExprArgs>;
+  };
 
   declare args: CurrentDatetimeExprArgs;
 
@@ -24923,10 +24919,10 @@ export type CurrentTimeExprArgs = Merge<[
 export class CurrentTimeExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentTimeExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<CurrentTimeExprArgs>;
+  };
 
   declare args: CurrentTimeExprArgs;
 
@@ -24951,10 +24947,10 @@ export type LocaltimeExprArgs = Merge<[
 export class LocaltimeExpr extends FuncExpr {
   key = ExpressionKey.LOCALTIME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LocaltimeExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<LocaltimeExprArgs>;
+  };
 
   declare args: LocaltimeExprArgs;
 
@@ -24979,10 +24975,10 @@ export type LocaltimestampExprArgs = Merge<[
 export class LocaltimestampExpr extends FuncExpr {
   key = ExpressionKey.LOCALTIMESTAMP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LocaltimestampExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<LocaltimestampExprArgs>;
+  };
 
   declare args: LocaltimestampExprArgs;
 
@@ -25007,10 +25003,10 @@ export type SystimestampExprArgs = Merge<[
 export class SystimestampExpr extends FuncExpr {
   key = ExpressionKey.SYSTIMESTAMP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SystimestampExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<SystimestampExprArgs>;
+  };
 
   declare args: SystimestampExprArgs;
 
@@ -25038,11 +25034,11 @@ export type CurrentTimestampExprArgs = Merge<[
 export class CurrentTimestampExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMESTAMP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentTimestampExprArgs> = {
     ...super.argTypes,
     this: false,
     sysdate: false,
-  } satisfies RequiredMap<CurrentTimestampExprArgs>;
+  };
 
   declare args: CurrentTimestampExprArgs;
 
@@ -25070,9 +25066,9 @@ export type CurrentTimestampLTZExprArgs = Merge<[
 export class CurrentTimestampLTZExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMESTAMP_LTZ;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentTimestampLTZExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentTimestampLTZExprArgs>;
+  };
 
   declare args: CurrentTimestampLTZExprArgs;
 
@@ -25092,9 +25088,9 @@ export type CurrentTimezoneExprArgs = Merge<[
 export class CurrentTimezoneExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMEZONE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentTimezoneExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentTimezoneExprArgs>;
+  };
 
   declare args: CurrentTimezoneExprArgs;
 
@@ -25114,9 +25110,9 @@ export type CurrentOrganizationNameExprArgs = Merge<[
 export class CurrentOrganizationNameExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ORGANIZATION_NAME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentOrganizationNameExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentOrganizationNameExprArgs>;
+  };
 
   declare args: CurrentOrganizationNameExprArgs;
 
@@ -25137,10 +25133,10 @@ export type CurrentSchemaExprArgs = Merge<[
 export class CurrentSchemaExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SCHEMA;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentSchemaExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<CurrentSchemaExprArgs>;
+  };
 
   declare args: CurrentSchemaExprArgs;
 
@@ -25165,10 +25161,10 @@ export type CurrentUserExprArgs = Merge<[
 export class CurrentUserExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_USER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentUserExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<CurrentUserExprArgs>;
+  };
 
   declare args: CurrentUserExprArgs;
 
@@ -25192,9 +25188,9 @@ export type CurrentCatalogExprArgs = Merge<[
 export class CurrentCatalogExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_CATALOG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentCatalogExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentCatalogExprArgs>;
+  };
 
   declare args: CurrentCatalogExprArgs;
 
@@ -25214,9 +25210,9 @@ export type CurrentRegionExprArgs = Merge<[
 export class CurrentRegionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_REGION;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentRegionExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentRegionExprArgs>;
+  };
 
   declare args: CurrentRegionExprArgs;
 
@@ -25236,9 +25232,9 @@ export type CurrentRoleExprArgs = Merge<[
 export class CurrentRoleExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ROLE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentRoleExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentRoleExprArgs>;
+  };
 
   declare args: CurrentRoleExprArgs;
 
@@ -25258,9 +25254,9 @@ export type CurrentRoleTypeExprArgs = Merge<[
 export class CurrentRoleTypeExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ROLE_TYPE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentRoleTypeExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentRoleTypeExprArgs>;
+  };
 
   declare args: CurrentRoleTypeExprArgs;
 
@@ -25280,9 +25276,9 @@ export type CurrentOrganizationUserExprArgs = Merge<[
 export class CurrentOrganizationUserExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ORGANIZATION_USER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CurrentOrganizationUserExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CurrentOrganizationUserExprArgs>;
+  };
 
   declare args: CurrentOrganizationUserExprArgs;
 
@@ -25302,9 +25298,9 @@ export type SessionUserExprArgs = Merge<[
 export class SessionUserExpr extends FuncExpr {
   key = ExpressionKey.SESSION_USER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SessionUserExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SessionUserExprArgs>;
+  };
 
   declare args: SessionUserExprArgs;
 
@@ -25324,9 +25320,9 @@ export type UtcDateExprArgs = Merge<[
 export class UtcDateExpr extends FuncExpr {
   key = ExpressionKey.UTC_DATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UtcDateExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<UtcDateExprArgs>;
+  };
 
   declare args: UtcDateExprArgs;
 
@@ -25347,10 +25343,10 @@ export type UtcTimeExprArgs = Merge<[
 export class UtcTimeExpr extends FuncExpr {
   key = ExpressionKey.UTC_TIME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UtcTimeExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<UtcTimeExprArgs>;
+  };
 
   declare args: UtcTimeExprArgs;
 
@@ -25375,10 +25371,10 @@ export type UtcTimestampExprArgs = Merge<[
 export class UtcTimestampExpr extends FuncExpr {
   key = ExpressionKey.UTC_TIMESTAMP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UtcTimestampExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<UtcTimestampExprArgs>;
+  };
 
   declare args: UtcTimestampExprArgs;
 
@@ -25408,13 +25404,13 @@ export type DateAddExprArgs = Merge<[
 export class DateAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   key = ExpressionKey.DATE_ADD;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DateAddExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     unit: false,
-  } satisfies RequiredMap<DateAddExprArgs>;
+  };
 
   declare args: DateAddExprArgs;
 
@@ -25454,7 +25450,7 @@ export type DateBinExprArgs = Merge<[
 export class DateBinExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   key = ExpressionKey.DATE_BIN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DateBinExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
@@ -25462,7 +25458,7 @@ export class DateBinExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
     unit: false,
     zone: false,
     origin: false,
-  } satisfies RequiredMap<DateBinExprArgs>;
+  };
 
   declare args: DateBinExprArgs;
 
@@ -25508,13 +25504,13 @@ export type DateSubExprArgs = Merge<[
 export class DateSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   key = ExpressionKey.DATE_SUB;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DateSubExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     unit: false,
-  } satisfies RequiredMap<DateSubExprArgs>;
+  };
 
   declare args: DateSubExprArgs;
 
@@ -25557,7 +25553,7 @@ export class DateDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
   static _sqlNames = ['DATEDIFF', 'DATE_DIFF'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<DateDiffExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
@@ -25566,7 +25562,7 @@ export class DateDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
     zone: false,
     bigInt: false,
     datePartBoundary: false,
-  } satisfies RequiredMap<DateDiffExprArgs>;
+  };
 
   declare args: DateDiffExprArgs;
 
@@ -25617,13 +25613,13 @@ export type DateTruncExprArgs = Merge<[
 export class DateTruncExpr extends FuncExpr {
   key = ExpressionKey.DATE_TRUNC;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DateTruncExprArgs> = {
     ...super.argTypes,
     unit: true,
     this: true,
     zone: false,
     inputTypePreserved: false,
-  } satisfies RequiredMap<DateTruncExprArgs>;
+  };
 
   declare args: DateTruncExprArgs;
 
@@ -25682,11 +25678,11 @@ export type DatetimeExprArgs = Merge<[
 export class DatetimeExpr extends FuncExpr {
   key = ExpressionKey.DATETIME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DatetimeExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<DatetimeExprArgs>;
+  };
 
   declare args: DatetimeExprArgs;
 
@@ -25720,13 +25716,13 @@ export type DatetimeAddExprArgs = Merge<[
 export class DatetimeAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   key = ExpressionKey.DATETIME_ADD;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DatetimeAddExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     unit: false,
-  } satisfies RequiredMap<DatetimeAddExprArgs>;
+  };
 
   declare args: DatetimeAddExprArgs;
 
@@ -25764,13 +25760,13 @@ export type DatetimeSubExprArgs = Merge<[
 export class DatetimeSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   key = ExpressionKey.DATETIME_SUB;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DatetimeSubExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     unit: false,
-  } satisfies RequiredMap<DatetimeSubExprArgs>;
+  };
 
   declare args: DatetimeSubExprArgs;
 
@@ -25808,13 +25804,13 @@ export type DatetimeDiffExprArgs = Merge<[
 export class DatetimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.DATETIME_DIFF;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DatetimeDiffExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     unit: false,
-  } satisfies RequiredMap<DatetimeDiffExprArgs>;
+  };
 
   declare args: DatetimeDiffExprArgs;
 
@@ -25852,13 +25848,13 @@ export type DatetimeTruncExprArgs = Merge<[
 export class DatetimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.DATETIME_TRUNC;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DatetimeTruncExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     unit: true,
     zone: false,
-  } satisfies RequiredMap<DatetimeTruncExprArgs>;
+  };
 
   declare args: DatetimeTruncExprArgs;
 
@@ -25890,9 +25886,9 @@ export type DateFromUnixDateExprArgs = Merge<[
 export class DateFromUnixDateExpr extends FuncExpr {
   key = ExpressionKey.DATE_FROM_UNIX_DATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DateFromUnixDateExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DateFromUnixDateExprArgs>;
+  };
 
   declare args: DateFromUnixDateExprArgs;
 
@@ -25912,9 +25908,9 @@ export type DayOfWeekExprArgs = Merge<[
 export class DayOfWeekExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_WEEK;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DayOfWeekExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DayOfWeekExprArgs>;
+  };
 
   declare args: DayOfWeekExprArgs;
 
@@ -25934,9 +25930,9 @@ export type DayOfWeekIsoExprArgs = Merge<[
 export class DayOfWeekIsoExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_WEEK_ISO;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DayOfWeekIsoExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DayOfWeekIsoExprArgs>;
+  };
 
   declare args: DayOfWeekIsoExprArgs;
 
@@ -25956,9 +25952,9 @@ export type DayOfMonthExprArgs = Merge<[
 export class DayOfMonthExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_MONTH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DayOfMonthExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DayOfMonthExprArgs>;
+  };
 
   declare args: DayOfMonthExprArgs;
 
@@ -25980,9 +25976,9 @@ export type DayOfYearExprArgs = Merge<[
 export class DayOfYearExpr extends FuncExpr {
   key = ExpressionKey.DAY_OF_YEAR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DayOfYearExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DayOfYearExprArgs>;
+  };
 
   declare args: DayOfYearExprArgs;
 
@@ -26008,11 +26004,11 @@ export type DaynameExprArgs = Merge<[
 export class DaynameExpr extends FuncExpr {
   key = ExpressionKey.DAYNAME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DaynameExprArgs> = {
     ...super.argTypes,
     this: true,
     abbreviated: false,
-  } satisfies RequiredMap<DaynameExprArgs>;
+  };
 
   declare args: DaynameExprArgs;
 
@@ -26040,9 +26036,9 @@ export type ToDaysExprArgs = Merge<[
 export class ToDaysExpr extends FuncExpr {
   key = ExpressionKey.TO_DAYS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ToDaysExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ToDaysExprArgs>;
+  };
 
   declare args: ToDaysExprArgs;
 
@@ -26062,9 +26058,9 @@ export type WeekOfYearExprArgs = Merge<[
 export class WeekOfYearExpr extends FuncExpr {
   key = ExpressionKey.WEEK_OF_YEAR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<WeekOfYearExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<WeekOfYearExprArgs>;
+  };
 
   declare args: WeekOfYearExprArgs;
 
@@ -26084,9 +26080,9 @@ export type YearOfWeekExprArgs = Merge<[
 export class YearOfWeekExpr extends FuncExpr {
   key = ExpressionKey.YEAR_OF_WEEK;
 
-  static argTypes = {
+  static argTypes: RequiredMap<YearOfWeekExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<YearOfWeekExprArgs>;
+  };
 
   declare args: YearOfWeekExprArgs;
 
@@ -26108,9 +26104,9 @@ export type YearOfWeekIsoExprArgs = Merge<[
 export class YearOfWeekIsoExpr extends FuncExpr {
   key = ExpressionKey.YEAR_OF_WEEK_ISO;
 
-  static argTypes = {
+  static argTypes: RequiredMap<YearOfWeekIsoExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<YearOfWeekIsoExprArgs>;
+  };
 
   declare args: YearOfWeekIsoExprArgs;
 
@@ -26137,12 +26133,12 @@ export type MonthsBetweenExprArgs = Merge<[
 export class MonthsBetweenExpr extends FuncExpr {
   key = ExpressionKey.MONTHS_BETWEEN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MonthsBetweenExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     roundoff: false,
-  } satisfies RequiredMap<MonthsBetweenExprArgs>;
+  };
 
   declare args: MonthsBetweenExprArgs;
 
@@ -26187,7 +26183,7 @@ export class MakeIntervalExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for MakeInterval expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<MakeIntervalExprArgs> = {
     ...super.argTypes,
     year: false,
     month: false,
@@ -26196,7 +26192,7 @@ export class MakeIntervalExpr extends FuncExpr {
     hour: false,
     minute: false,
     second: false,
-  } satisfies RequiredMap<MakeIntervalExprArgs>;
+  };
 
   declare args: MakeIntervalExprArgs;
 
@@ -26248,12 +26244,12 @@ export type LastDayExprArgs = Merge<[
 export class LastDayExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.LAST_DAY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LastDayExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     unit: false,
-  } satisfies RequiredMap<LastDayExprArgs>;
+  };
 
   declare args: LastDayExprArgs;
 
@@ -26285,11 +26281,11 @@ export type PreviousDayExprArgs = Merge<[
 export class PreviousDayExpr extends FuncExpr {
   key = ExpressionKey.PREVIOUS_DAY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PreviousDayExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<PreviousDayExprArgs>;
+  };
 
   declare args: PreviousDayExprArgs;
 
@@ -26317,9 +26313,9 @@ export type LaxBoolExprArgs = Merge<[
 export class LaxBoolExpr extends FuncExpr {
   key = ExpressionKey.LAX_BOOL;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LaxBoolExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<LaxBoolExprArgs>;
+  };
 
   declare args: LaxBoolExprArgs;
 
@@ -26339,9 +26335,9 @@ export type LaxFloat64ExprArgs = Merge<[
 export class LaxFloat64Expr extends FuncExpr {
   key = ExpressionKey.LAX_FLOAT64;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LaxFloat64ExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<LaxFloat64ExprArgs>;
+  };
 
   declare args: LaxFloat64ExprArgs;
 
@@ -26361,9 +26357,9 @@ export type LaxInt64ExprArgs = Merge<[
 export class LaxInt64Expr extends FuncExpr {
   key = ExpressionKey.LAX_INT64;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LaxInt64ExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<LaxInt64ExprArgs>;
+  };
 
   declare args: LaxInt64ExprArgs;
 
@@ -26383,9 +26379,9 @@ export type LaxStringExprArgs = Merge<[
 export class LaxStringExpr extends FuncExpr {
   key = ExpressionKey.LAX_STRING;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LaxStringExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<LaxStringExprArgs>;
+  };
 
   declare args: LaxStringExprArgs;
 
@@ -26409,11 +26405,11 @@ export type ExtractExprArgs = Merge<[
 export class ExtractExpr extends FuncExpr {
   key = ExpressionKey.EXTRACT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ExtractExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<ExtractExprArgs>;
+  };
 
   declare args: ExtractExprArgs;
 
@@ -26444,12 +26440,12 @@ export type ExistsExprArgs = Merge<[
 export class ExistsExpr extends multiInherit(FuncExpr, SubqueryPredicateExpr) {
   key = ExpressionKey.EXISTS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ExistsExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<ExistsExprArgs>;
+  };
 
   declare args: ExistsExprArgs;
 
@@ -26482,11 +26478,11 @@ export class EltExpr extends FuncExpr {
   key = ExpressionKey.ELT;
 
   static isVarLenArgs = true;
-  static argTypes = {
+  static argTypes: RequiredMap<EltExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
-  } satisfies RequiredMap<EltExprArgs>;
+  };
 
   declare args: EltExprArgs;
 
@@ -26523,12 +26519,12 @@ export class TimestampExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Timestamp expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TimestampExprArgs> = {
     ...super.argTypes,
     this: false,
     zone: false,
     withTz: false,
-  } satisfies RequiredMap<TimestampExprArgs>;
+  };
 
   declare args: TimestampExprArgs;
 
@@ -26565,13 +26561,13 @@ export type TimestampAddExprArgs = Merge<[
 export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_ADD;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimestampAddExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     unit: false,
-  } satisfies RequiredMap<TimestampAddExprArgs>;
+  };
 
   declare args: TimestampAddExprArgs;
 
@@ -26608,13 +26604,13 @@ export type TimestampSubExprArgs = Merge<[
 export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_SUB;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimestampSubExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     unit: false,
-  } satisfies RequiredMap<TimestampSubExprArgs>;
+  };
 
   declare args: TimestampSubExprArgs;
 
@@ -26651,13 +26647,13 @@ export type TimestampDiffExprArgs = Merge<[
 export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIMESTAMP_DIFF;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimestampDiffExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     unit: false,
-  } satisfies RequiredMap<TimestampDiffExprArgs>;
+  };
 
   declare args: TimestampDiffExprArgs;
 
@@ -26699,14 +26695,14 @@ export class TimestampTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
    * Defines the arguments (properties and child expressions) for TimestampTrunc expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TimestampTruncExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     unit: true,
     zone: false,
     inputTypePreserved: false,
-  } satisfies RequiredMap<TimestampTruncExprArgs>;
+  };
 
   declare args: TimestampTruncExprArgs;
 
@@ -26759,14 +26755,14 @@ export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
    * Defines the arguments (properties and child expressions) for TimeSlice expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TimeSliceExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     unit: true,
     kind: false,
-  } satisfies RequiredMap<TimeSliceExprArgs>;
+  };
 
   declare args: TimeSliceExprArgs;
 
@@ -26807,13 +26803,13 @@ export type TimeAddExprArgs = Merge<[
 export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_ADD;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimeAddExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     unit: false,
-  } satisfies RequiredMap<TimeAddExprArgs>;
+  };
 
   declare args: TimeAddExprArgs;
 
@@ -26850,13 +26846,13 @@ export type TimeSubExprArgs = Merge<[
 export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_SUB;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimeSubExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     unit: false,
-  } satisfies RequiredMap<TimeSubExprArgs>;
+  };
 
   declare args: TimeSubExprArgs;
 
@@ -26893,13 +26889,13 @@ export type TimeDiffExprArgs = Merge<[
 export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TIME_DIFF;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimeDiffExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     unit: false,
-  } satisfies RequiredMap<TimeDiffExprArgs>;
+  };
 
   declare args: TimeDiffExprArgs;
 
@@ -26940,13 +26936,13 @@ export class TimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
    * Defines the arguments (properties and child expressions) for TimeTrunc expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TimeTruncExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     unit: true,
     zone: false,
-  } satisfies RequiredMap<TimeTruncExprArgs>;
+  };
 
   declare args: TimeTruncExprArgs;
 
@@ -26988,13 +26984,13 @@ export class DateFromPartsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DateFromParts expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DateFromPartsExprArgs> = {
     ...super.argTypes,
     year: true,
     month: false,
     day: false,
     allowOverflow: false,
-  } satisfies RequiredMap<DateFromPartsExprArgs>;
+  };
 
   declare args: DateFromPartsExprArgs;
 
@@ -27043,7 +27039,7 @@ export class TimeFromPartsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimeFromParts expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TimeFromPartsExprArgs> = {
     ...super.argTypes,
     hour: true,
     min: true,
@@ -27052,7 +27048,7 @@ export class TimeFromPartsExpr extends FuncExpr {
     fractions: false,
     precision: false,
     overflow: false,
-  } satisfies RequiredMap<TimeFromPartsExprArgs>;
+  };
 
   declare args: TimeFromPartsExprArgs;
 
@@ -27100,9 +27096,9 @@ export type DateStrToDateExprArgs = Merge<[
 export class DateStrToDateExpr extends FuncExpr {
   key = ExpressionKey.DATE_STR_TO_DATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DateStrToDateExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DateStrToDateExprArgs>;
+  };
 
   declare args: DateStrToDateExprArgs;
 
@@ -27122,9 +27118,9 @@ export type DateToDateStrExprArgs = Merge<[
 export class DateToDateStrExpr extends FuncExpr {
   key = ExpressionKey.DATE_TO_DATE_STR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DateToDateStrExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DateToDateStrExprArgs>;
+  };
 
   declare args: DateToDateStrExprArgs;
 
@@ -27144,9 +27140,9 @@ export type DateToDiExprArgs = Merge<[
 export class DateToDiExpr extends FuncExpr {
   key = ExpressionKey.DATE_TO_DI;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DateToDiExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DateToDiExprArgs>;
+  };
 
   declare args: DateToDiExprArgs;
 
@@ -27173,12 +27169,12 @@ export class DateExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DateExprArgs> = {
     ...super.argTypes,
     this: false,
     expressions: false,
     zone: false,
-  } satisfies RequiredMap<DateExprArgs>;
+  };
 
   declare args: DateExprArgs;
 
@@ -27210,9 +27206,9 @@ export type DayExprArgs = Merge<[
 export class DayExpr extends FuncExpr {
   key = ExpressionKey.DAY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DayExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DayExprArgs>;
+  };
 
   declare args: DayExprArgs;
 
@@ -27241,12 +27237,12 @@ export class DecodeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Decode expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DecodeExprArgs> = {
     ...super.argTypes,
     this: true,
     charset: true,
     replace: false,
-  } satisfies RequiredMap<DecodeExprArgs>;
+  };
 
   declare args: DecodeExprArgs;
 
@@ -27281,10 +27277,10 @@ export class DecodeCaseExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DecodeCaseExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<DecodeCaseExprArgs>;
+  };
 
   declare args: DecodeCaseExprArgs;
 
@@ -27318,13 +27314,13 @@ export class DecryptExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Decrypt expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DecryptExprArgs> = {
     ...super.argTypes,
     passphrase: true,
     aad: false,
     encryptionMethod: false,
     safe: false,
-  } satisfies RequiredMap<DecryptExprArgs>;
+  };
 
   declare args: DecryptExprArgs;
 
@@ -27372,7 +27368,7 @@ export class DecryptRawExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for DecryptRaw expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<DecryptRawExprArgs> = {
     ...super.argTypes,
     key: true,
     iv: true,
@@ -27380,7 +27376,7 @@ export class DecryptRawExpr extends FuncExpr {
     encryptionMethod: false,
     aead: false,
     safe: false,
-  } satisfies RequiredMap<DecryptRawExprArgs>;
+  };
 
   declare args: DecryptRawExprArgs;
 
@@ -27424,9 +27420,9 @@ export type DiToDateExprArgs = Merge<[
 export class DiToDateExpr extends FuncExpr {
   key = ExpressionKey.DI_TO_DATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DiToDateExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<DiToDateExprArgs>;
+  };
 
   declare args: DiToDateExprArgs;
 
@@ -27450,11 +27446,11 @@ export type EncodeExprArgs = Merge<[
 export class EncodeExpr extends FuncExpr {
   key = ExpressionKey.ENCODE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<EncodeExprArgs> = {
     ...super.argTypes,
     this: true,
     charset: true,
-  } satisfies RequiredMap<EncodeExprArgs>;
+  };
 
   declare args: EncodeExprArgs;
 
@@ -27492,13 +27488,13 @@ export class EncryptExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Encrypt expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<EncryptExprArgs> = {
     ...super.argTypes,
     this: true,
     passphrase: true,
     aad: false,
     encryptionMethod: false,
-  } satisfies RequiredMap<EncryptExprArgs>;
+  };
 
   declare args: EncryptExprArgs;
 
@@ -27545,14 +27541,14 @@ export class EncryptRawExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for EncryptRaw expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<EncryptRawExprArgs> = {
     ...super.argTypes,
     this: true,
     key: true,
     iv: true,
     aad: false,
     encryptionMethod: false,
-  } satisfies RequiredMap<EncryptRawExprArgs>;
+  };
 
   declare args: EncryptRawExprArgs;
 
@@ -27596,11 +27592,11 @@ export type EqualNullExprArgs = Merge<[
 export class EqualNullExpr extends FuncExpr {
   key = ExpressionKey.EQUAL_NULL;
 
-  static argTypes = {
+  static argTypes: RequiredMap<EqualNullExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<EqualNullExprArgs>;
+  };
 
   declare args: EqualNullExprArgs;
 
@@ -27628,9 +27624,9 @@ export type ExpExprArgs = Merge<[
 export class ExpExpr extends FuncExpr {
   key = ExpressionKey.EXP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ExpExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ExpExprArgs>;
+  };
 
   declare args: ExpExprArgs;
 
@@ -27650,9 +27646,9 @@ export type FactorialExprArgs = Merge<[
 export class FactorialExpr extends FuncExpr {
   key = ExpressionKey.FACTORIAL;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FactorialExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<FactorialExprArgs>;
+  };
 
   declare args: FactorialExprArgs;
 
@@ -27679,12 +27675,12 @@ export class ExplodeExpr extends multiInherit(FuncExpr, UDTFExpr) {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ExplodeExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<ExplodeExprArgs>;
+  };
 
   declare args: ExplodeExprArgs;
 
@@ -27712,9 +27708,9 @@ export type InlineExprArgs = Merge<[
 export class InlineExpr extends FuncExpr {
   key = ExpressionKey.INLINE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<InlineExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<InlineExprArgs>;
+  };
 
   declare args: InlineExprArgs;
 
@@ -27741,14 +27737,14 @@ export type UnnestExprArgs = Merge<[
 export class UnnestExpr extends multiInherit(FuncExpr, UDTFExpr) {
   key = ExpressionKey.UNNEST;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UnnestExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     expressions: true,
     alias: false,
     offset: false,
     explodeArray: false,
-  } satisfies RequiredMap<UnnestExprArgs>;
+  };
 
   declare args: UnnestExprArgs;
 
@@ -27803,12 +27799,12 @@ export class FloorExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Floor expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<FloorExprArgs> = {
     ...super.argTypes,
     this: true,
     decimals: false,
     to: false,
-  } satisfies RequiredMap<FloorExprArgs>;
+  };
 
   declare args: FloorExprArgs;
 
@@ -27840,9 +27836,9 @@ export type FromBase32ExprArgs = Merge<[
 export class FromBase32Expr extends FuncExpr {
   key = ExpressionKey.FROM_BASE32;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FromBase32ExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<FromBase32ExprArgs>;
+  };
 
   declare args: FromBase32ExprArgs;
 
@@ -27862,9 +27858,9 @@ export type FromBase64ExprArgs = Merge<[
 export class FromBase64Expr extends FuncExpr {
   key = ExpressionKey.FROM_BASE64;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FromBase64ExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<FromBase64ExprArgs>;
+  };
 
   declare args: FromBase64ExprArgs;
 
@@ -27884,9 +27880,9 @@ export type ToBase32ExprArgs = Merge<[
 export class ToBase32Expr extends FuncExpr {
   key = ExpressionKey.TO_BASE32;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ToBase32ExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ToBase32ExprArgs>;
+  };
 
   declare args: ToBase32ExprArgs;
 
@@ -27906,9 +27902,9 @@ export type ToBase64ExprArgs = Merge<[
 export class ToBase64Expr extends FuncExpr {
   key = ExpressionKey.TO_BASE64;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ToBase64ExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ToBase64ExprArgs>;
+  };
 
   declare args: ToBase64ExprArgs;
 
@@ -27937,12 +27933,12 @@ export class ToBinaryExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ToBinary expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ToBinaryExprArgs> = {
     ...super.argTypes,
     this: true,
     format: false,
     safe: false,
-  } satisfies RequiredMap<ToBinaryExprArgs>;
+  };
 
   declare args: ToBinaryExprArgs;
 
@@ -27978,11 +27974,11 @@ export type Base64DecodeBinaryExprArgs = Merge<[
 export class Base64DecodeBinaryExpr extends FuncExpr {
   key = ExpressionKey.BASE64_DECODE_BINARY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<Base64DecodeBinaryExprArgs> = {
     ...super.argTypes,
     this: true,
     alphabet: false,
-  } satisfies RequiredMap<Base64DecodeBinaryExprArgs>;
+  };
 
   declare args: Base64DecodeBinaryExprArgs;
 
@@ -28014,11 +28010,11 @@ export type Base64DecodeStringExprArgs = Merge<[
 export class Base64DecodeStringExpr extends FuncExpr {
   key = ExpressionKey.BASE64_DECODE_STRING;
 
-  static argTypes = {
+  static argTypes: RequiredMap<Base64DecodeStringExprArgs> = {
     ...super.argTypes,
     this: true,
     alphabet: false,
-  } satisfies RequiredMap<Base64DecodeStringExprArgs>;
+  };
 
   declare args: Base64DecodeStringExprArgs;
 
@@ -28055,12 +28051,12 @@ export class Base64EncodeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Base64Encode expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<Base64EncodeExprArgs> = {
     ...super.argTypes,
     this: true,
     maxLineLength: false,
     alphabet: false,
-  } satisfies RequiredMap<Base64EncodeExprArgs>;
+  };
 
   declare args: Base64EncodeExprArgs;
 
@@ -28096,11 +28092,11 @@ export type TryBase64DecodeBinaryExprArgs = Merge<[
 export class TryBase64DecodeBinaryExpr extends FuncExpr {
   key = ExpressionKey.TRY_BASE64_DECODE_BINARY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TryBase64DecodeBinaryExprArgs> = {
     ...super.argTypes,
     this: true,
     alphabet: false,
-  } satisfies RequiredMap<TryBase64DecodeBinaryExprArgs>;
+  };
 
   declare args: TryBase64DecodeBinaryExprArgs;
 
@@ -28132,11 +28128,11 @@ export type TryBase64DecodeStringExprArgs = Merge<[
 export class TryBase64DecodeStringExpr extends FuncExpr {
   key = ExpressionKey.TRY_BASE64_DECODE_STRING;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TryBase64DecodeStringExprArgs> = {
     ...super.argTypes,
     this: true,
     alphabet: false,
-  } satisfies RequiredMap<TryBase64DecodeStringExprArgs>;
+  };
 
   declare args: TryBase64DecodeStringExprArgs;
 
@@ -28164,9 +28160,9 @@ export type TryHexDecodeBinaryExprArgs = Merge<[
 export class TryHexDecodeBinaryExpr extends FuncExpr {
   key = ExpressionKey.TRY_HEX_DECODE_BINARY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TryHexDecodeBinaryExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TryHexDecodeBinaryExprArgs>;
+  };
 
   declare args: TryHexDecodeBinaryExprArgs;
 
@@ -28186,9 +28182,9 @@ export type TryHexDecodeStringExprArgs = Merge<[
 export class TryHexDecodeStringExpr extends FuncExpr {
   key = ExpressionKey.TRY_HEX_DECODE_STRING;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TryHexDecodeStringExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TryHexDecodeStringExprArgs>;
+  };
 
   declare args: TryHexDecodeStringExprArgs;
 
@@ -28208,9 +28204,9 @@ export type FromISO8601TimestampExprArgs = Merge<[
 export class FromISO8601TimestampExpr extends FuncExpr {
   key = ExpressionKey.FROM_ISO8601_TIMESTAMP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FromISO8601TimestampExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<FromISO8601TimestampExprArgs>;
+  };
 
   declare args: FromISO8601TimestampExprArgs;
 
@@ -28244,7 +28240,7 @@ export class GapFillExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for GapFill expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<GapFillExprArgs> = {
     ...super.argTypes,
     tsColumn: true,
     bucketWidth: true,
@@ -28252,7 +28248,7 @@ export class GapFillExpr extends FuncExpr {
     valueColumns: false,
     origin: false,
     ignoreNulls: false,
-  } satisfies RequiredMap<GapFillExprArgs>;
+  };
 
   declare args: GapFillExprArgs;
 
@@ -28305,12 +28301,12 @@ export class GenerateDateArrayExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for GenerateDateArray expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<GenerateDateArrayExprArgs> = {
     ...super.argTypes,
     start: true,
     end: true,
     step: false,
-  } satisfies RequiredMap<GenerateDateArrayExprArgs>;
+  };
 
   declare args: GenerateDateArrayExprArgs;
 
@@ -28352,12 +28348,12 @@ export class GenerateTimestampArrayExpr extends FuncExpr {
    * expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<GenerateTimestampArrayExprArgs> = {
     ...super.argTypes,
     start: true,
     end: true,
     step: true,
-  } satisfies RequiredMap<GenerateTimestampArrayExprArgs>;
+  };
 
   declare args: GenerateTimestampArrayExprArgs;
 
@@ -28393,11 +28389,11 @@ export type GetExtractExprArgs = Merge<[
 export class GetExtractExpr extends FuncExpr {
   key = ExpressionKey.GET_EXTRACT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<GetExtractExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<GetExtractExprArgs>;
+  };
 
   declare args: GetExtractExprArgs;
 
@@ -28430,12 +28426,12 @@ export type GetbitExprArgs = Merge<[
 export class GetbitExpr extends FuncExpr {
   key = ExpressionKey.GETBIT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<GetbitExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     zeroIsMsb: false,
-  } satisfies RequiredMap<GetbitExprArgs>;
+  };
 
   declare args: GetbitExprArgs;
 
@@ -28474,12 +28470,12 @@ export class GreatestExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<GreatestExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
     ignoreNulls: true,
-  } satisfies RequiredMap<GreatestExprArgs>;
+  };
 
   declare args: GreatestExprArgs;
 
@@ -28511,9 +28507,9 @@ export type HexExprArgs = Merge<[
 export class HexExpr extends FuncExpr {
   key = ExpressionKey.HEX;
 
-  static argTypes = {
+  static argTypes: RequiredMap<HexExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<HexExprArgs>;
+  };
 
   declare args: HexExprArgs;
 
@@ -28533,9 +28529,9 @@ export type HexDecodeStringExprArgs = Merge<[
 export class HexDecodeStringExpr extends FuncExpr {
   key = ExpressionKey.HEX_DECODE_STRING;
 
-  static argTypes = {
+  static argTypes: RequiredMap<HexDecodeStringExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<HexDecodeStringExprArgs>;
+  };
 
   declare args: HexDecodeStringExprArgs;
 
@@ -28559,11 +28555,11 @@ export type HexEncodeExprArgs = Merge<[
 export class HexEncodeExpr extends FuncExpr {
   key = ExpressionKey.HEX_ENCODE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<HexEncodeExprArgs> = {
     ...super.argTypes,
     this: true,
     case: false,
-  } satisfies RequiredMap<HexEncodeExprArgs>;
+  };
 
   declare args: HexEncodeExprArgs;
 
@@ -28591,9 +28587,9 @@ export type HourExprArgs = Merge<[
 export class HourExpr extends FuncExpr {
   key = ExpressionKey.HOUR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<HourExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<HourExprArgs>;
+  };
 
   declare args: HourExprArgs;
 
@@ -28613,9 +28609,9 @@ export type MinuteExprArgs = Merge<[
 export class MinuteExpr extends FuncExpr {
   key = ExpressionKey.MINUTE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MinuteExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<MinuteExprArgs>;
+  };
 
   declare args: MinuteExprArgs;
 
@@ -28635,9 +28631,9 @@ export type SecondExprArgs = Merge<[
 export class SecondExpr extends FuncExpr {
   key = ExpressionKey.SECOND;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SecondExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SecondExprArgs>;
+  };
 
   declare args: SecondExprArgs;
 
@@ -28661,11 +28657,11 @@ export type CompressExprArgs = Merge<[
 export class CompressExpr extends FuncExpr {
   key = ExpressionKey.COMPRESS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CompressExprArgs> = {
     ...super.argTypes,
     this: true,
     method: false,
-  } satisfies RequiredMap<CompressExprArgs>;
+  };
 
   declare args: CompressExprArgs;
 
@@ -28697,11 +28693,11 @@ export type DecompressBinaryExprArgs = Merge<[
 export class DecompressBinaryExpr extends FuncExpr {
   key = ExpressionKey.DECOMPRESS_BINARY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DecompressBinaryExprArgs> = {
     ...super.argTypes,
     this: true,
     method: true,
-  } satisfies RequiredMap<DecompressBinaryExprArgs>;
+  };
 
   declare args: DecompressBinaryExprArgs;
 
@@ -28733,11 +28729,11 @@ export type DecompressStringExprArgs = Merge<[
 export class DecompressStringExpr extends FuncExpr {
   key = ExpressionKey.DECOMPRESS_STRING;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DecompressStringExprArgs> = {
     ...super.argTypes,
     this: true,
     method: true,
-  } satisfies RequiredMap<DecompressStringExprArgs>;
+  };
 
   declare args: DecompressStringExprArgs;
 
@@ -28776,12 +28772,12 @@ export class IfExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for If expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<IfExprArgs> = {
     ...super.argTypes,
     this: true,
     true: true,
     false: false,
-  } satisfies RequiredMap<IfExprArgs>;
+  };
 
   declare args: IfExprArgs;
 
@@ -28817,11 +28813,11 @@ export type NullifExprArgs = Merge<[
 export class NullifExpr extends FuncExpr {
   key = ExpressionKey.NULLIF;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NullifExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<NullifExprArgs>;
+  };
 
   declare args: NullifExprArgs;
 
@@ -28853,11 +28849,11 @@ export type InitcapExprArgs = Merge<[
 export class InitcapExpr extends FuncExpr {
   key = ExpressionKey.INITCAP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<InitcapExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<InitcapExprArgs>;
+  };
 
   declare args: InitcapExprArgs;
 
@@ -28885,9 +28881,9 @@ export type IsAsciiExprArgs = Merge<[
 export class IsAsciiExpr extends FuncExpr {
   key = ExpressionKey.IS_ASCII;
 
-  static argTypes = {
+  static argTypes: RequiredMap<IsAsciiExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<IsAsciiExprArgs>;
+  };
 
   declare args: IsAsciiExprArgs;
 
@@ -28907,9 +28903,9 @@ export type IsNanExprArgs = Merge<[
 export class IsNanExpr extends FuncExpr {
   key = ExpressionKey.IS_NAN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<IsNanExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<IsNanExprArgs>;
+  };
 
   declare args: IsNanExprArgs;
 
@@ -28931,9 +28927,9 @@ export type Int64ExprArgs = Merge<[
 export class Int64Expr extends FuncExpr {
   key = ExpressionKey.INT64;
 
-  static argTypes = {
+  static argTypes: RequiredMap<Int64ExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<Int64ExprArgs>;
+  };
 
   declare args: Int64ExprArgs;
 
@@ -28953,9 +28949,9 @@ export type IsInfExprArgs = Merge<[
 export class IsInfExpr extends FuncExpr {
   key = ExpressionKey.IS_INF;
 
-  static argTypes = {
+  static argTypes: RequiredMap<IsInfExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<IsInfExprArgs>;
+  };
 
   declare args: IsInfExprArgs;
 
@@ -28977,9 +28973,9 @@ export type IsNullValueExprArgs = Merge<[
 export class IsNullValueExpr extends FuncExpr {
   key = ExpressionKey.IS_NULL_VALUE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<IsNullValueExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<IsNullValueExprArgs>;
+  };
 
   declare args: IsNullValueExprArgs;
 
@@ -28999,9 +28995,9 @@ export type IsArrayExprArgs = Merge<[
 export class IsArrayExpr extends FuncExpr {
   key = ExpressionKey.IS_ARRAY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<IsArrayExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<IsArrayExprArgs>;
+  };
 
   declare args: IsArrayExprArgs;
 
@@ -29027,11 +29023,11 @@ export class FormatExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FormatExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<FormatExprArgs>;
+  };
 
   declare args: FormatExprArgs;
 
@@ -29066,12 +29062,12 @@ export class JSONKeysExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONKeysExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
     expressions: false,
-  } satisfies RequiredMap<JSONKeysExprArgs>;
+  };
 
   declare args: JSONKeysExprArgs;
 
@@ -29108,12 +29104,12 @@ export type JSONKeysAtDepthExprArgs = Merge<[
 export class JSONKeysAtDepthExpr extends FuncExpr {
   key = ExpressionKey.JSON_KEYS_AT_DEPTH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONKeysAtDepthExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
     mode: false,
-  } satisfies RequiredMap<JSONKeysAtDepthExprArgs>;
+  };
 
   declare args: JSONKeysAtDepthExprArgs;
 
@@ -29155,13 +29151,13 @@ export class JSONObjectExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONObject expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONObjectExprArgs> = {
     ...super.argTypes,
     nullHandling: false,
     uniqueKeys: false,
     returnType: false,
     encoding: false,
-  } satisfies RequiredMap<JSONObjectExprArgs>;
+  };
 
   declare args: JSONObjectExprArgs;
 
@@ -29206,12 +29202,12 @@ export class JSONArrayExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONArray expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONArrayExprArgs> = {
     ...super.argTypes,
     nullHandling: false,
     returnType: false,
     strict: false,
-  } satisfies RequiredMap<JSONArrayExprArgs>;
+  };
 
   declare args: JSONArrayExprArgs;
 
@@ -29253,13 +29249,13 @@ export class JSONExistsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONExists expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONExistsExprArgs> = {
     ...super.argTypes,
     path: true,
     passing: false,
     onCondition: false,
     fromDcolonqmark: false,
-  } satisfies RequiredMap<JSONExistsExprArgs>;
+  };
 
   declare args: JSONExistsExprArgs;
 
@@ -29302,11 +29298,11 @@ export class JSONSetExpr extends FuncExpr {
   static isVarLenArgs = true;
   static _sqlNames = ['JSON_SET'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONSetExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
-  } satisfies RequiredMap<JSONSetExprArgs>;
+  };
 
   declare args: JSONSetExprArgs;
 
@@ -29346,13 +29342,13 @@ export class JSONStripNullsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONStripNulls expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONStripNullsExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
     includeArrays: false,
     removeEmpty: false,
-  } satisfies RequiredMap<JSONStripNullsExprArgs>;
+  };
 
   declare args: JSONStripNullsExprArgs;
 
@@ -29392,11 +29388,11 @@ export type JSONValueArrayExprArgs = Merge<[
 export class JSONValueArrayExpr extends FuncExpr {
   key = ExpressionKey.JSON_VALUE_ARRAY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONValueArrayExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<JSONValueArrayExprArgs>;
+  };
 
   declare args: JSONValueArrayExprArgs;
 
@@ -29431,11 +29427,11 @@ export class JSONRemoveExpr extends FuncExpr {
   static isVarLenArgs = true;
   static _sqlNames = ['JSON_REMOVE'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONRemoveExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
-  } satisfies RequiredMap<JSONRemoveExprArgs>;
+  };
 
   declare args: JSONRemoveExprArgs;
 
@@ -29474,14 +29470,14 @@ export class JSONTableExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONTable expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONTableExprArgs> = {
     ...super.argTypes,
     this: true,
     schema: true,
     path: false,
     errorHandling: false,
     emptyHandling: false,
-  } satisfies RequiredMap<JSONTableExprArgs>;
+  };
 
   declare args: JSONTableExprArgs;
 
@@ -29527,11 +29523,11 @@ export class JSONTypeExpr extends FuncExpr {
 
   static _sqlNames = ['JSON_TYPE'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONTypeExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<JSONTypeExprArgs>;
+  };
 
   declare args: JSONTypeExprArgs;
 
@@ -29569,13 +29565,13 @@ export class ObjectInsertExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ObjectInsert expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ObjectInsertExprArgs> = {
     ...super.argTypes,
     this: true,
     key: true,
     value: true,
     updateFlag: false,
-  } satisfies RequiredMap<ObjectInsertExprArgs>;
+  };
 
   declare args: ObjectInsertExprArgs;
 
@@ -29616,12 +29612,12 @@ export type OpenJSONExprArgs = Merge<[
 export class OpenJSONExpr extends FuncExpr {
   key = ExpressionKey.OPEN_JSON;
 
-  static argTypes = {
+  static argTypes: RequiredMap<OpenJSONExprArgs> = {
     ...super.argTypes,
     this: true,
     path: false,
     expressions: false,
-  } satisfies RequiredMap<OpenJSONExprArgs>;
+  };
 
   declare args: OpenJSONExprArgs;
 
@@ -29656,10 +29652,10 @@ export class JSONBContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   static _sqlNames = ['JSONB_CONTAINS'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONBContainsExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<JSONBContainsExprArgs>;
+  };
 
   declare args: JSONBContainsExprArgs;
 
@@ -29676,10 +29672,10 @@ export type JSONBContainsAnyTopKeysExprArgs = Merge<[
 export class JSONBContainsAnyTopKeysExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS_ANY_TOP_KEYS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONBContainsAnyTopKeysExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<JSONBContainsAnyTopKeysExprArgs>;
+  };
 
   declare args: JSONBContainsAnyTopKeysExprArgs;
 
@@ -29696,10 +29692,10 @@ export type JSONBContainsAllTopKeysExprArgs = Merge<[
 export class JSONBContainsAllTopKeysExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_CONTAINS_ALL_TOP_KEYS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONBContainsAllTopKeysExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<JSONBContainsAllTopKeysExprArgs>;
+  };
 
   declare args: JSONBContainsAllTopKeysExprArgs;
 
@@ -29721,11 +29717,11 @@ export class JSONBExistsExpr extends FuncExpr {
 
   static _sqlNames = ['JSONB_EXISTS'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONBExistsExprArgs> = {
     ...super.argTypes,
     this: true,
     path: true,
-  } satisfies RequiredMap<JSONBExistsExprArgs>;
+  };
 
   declare args: JSONBExistsExprArgs;
 
@@ -29754,10 +29750,10 @@ export type JSONBDeleteAtPathExprArgs = Merge<[
 export class JSONBDeleteAtPathExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.JSONB_DELETE_AT_PATH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONBDeleteAtPathExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<JSONBDeleteAtPathExprArgs>;
+  };
 
   declare args: JSONBDeleteAtPathExprArgs;
 
@@ -29791,7 +29787,7 @@ export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
    * Defines the arguments (properties and child expressions) for JSONExtract expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONExtractExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     onlyJsonTypes: false,
@@ -29802,7 +29798,7 @@ export class JSONExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
     quote: false,
     onCondition: false,
     requiresJson: false,
-  } satisfies RequiredMap<JSONExtractExprArgs>;
+  };
 
   declare args: JSONExtractExprArgs;
 
@@ -29860,11 +29856,11 @@ export class JSONExtractArrayExpr extends FuncExpr {
 
   static _sqlNames = ['JSON_EXTRACT_ARRAY'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONExtractArrayExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<JSONExtractArrayExprArgs>;
+  };
 
   declare args: JSONExtractArrayExprArgs;
 
@@ -29908,14 +29904,14 @@ export class JSONExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
    * Defines the arguments (properties and child expressions) for JSONExtractScalar expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONExtractScalarExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     onlyJsonTypes: false,
     expressions: false,
     jsonType: false,
     scalarOnly: false,
-  } satisfies RequiredMap<JSONExtractScalarExprArgs>;
+  };
 
   declare args: JSONExtractScalarExprArgs;
 
@@ -29954,10 +29950,10 @@ export class JSONBExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   static _sqlNames = ['JSONB_EXTRACT'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONBExtractExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<JSONBExtractExprArgs>;
+  };
 
   declare args: JSONBExtractExprArgs;
 
@@ -29981,13 +29977,13 @@ export class JSONBExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   static _sqlNames = ['JSONB_EXTRACT_SCALAR'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONBExtractScalarExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     jsonType: false,
-  } satisfies RequiredMap<JSONBExtractScalarExprArgs>;
+  };
 
   declare args: JSONBExtractScalarExprArgs;
 
@@ -30027,13 +30023,13 @@ export class JSONFormatExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for JSONFormat expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONFormatExprArgs> = {
     ...super.argTypes,
     this: false,
     options: false,
     isJson: false,
     toJson: false,
-  } satisfies RequiredMap<JSONFormatExprArgs>;
+  };
 
   declare args: JSONFormatExprArgs;
 
@@ -30076,11 +30072,11 @@ export class JSONArrayAppendExpr extends FuncExpr {
   static isVarLenArgs = true;
   static _sqlNames = ['JSON_ARRAY_APPEND'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONArrayAppendExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
-  } satisfies RequiredMap<JSONArrayAppendExprArgs>;
+  };
 
   declare args: JSONArrayAppendExprArgs;
 
@@ -30115,13 +30111,13 @@ export class JSONArrayContainsExpr extends multiInherit(BinaryExpr, PredicateExp
 
   static _sqlNames = ['JSON_ARRAY_CONTAINS'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONArrayContainsExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     jsonType: false,
-  } satisfies RequiredMap<JSONArrayContainsExprArgs>;
+  };
 
   declare args: JSONArrayContainsExprArgs;
 
@@ -30156,11 +30152,11 @@ export class JSONArrayInsertExpr extends FuncExpr {
   static isVarLenArgs = true;
   static _sqlNames = ['JSON_ARRAY_INSERT'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONArrayInsertExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
-  } satisfies RequiredMap<JSONArrayInsertExprArgs>;
+  };
 
   declare args: JSONArrayInsertExprArgs;
 
@@ -30188,9 +30184,9 @@ export type ParseBignumericExprArgs = Merge<[
 export class ParseBignumericExpr extends FuncExpr {
   key = ExpressionKey.PARSE_BIGNUMERIC;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ParseBignumericExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ParseBignumericExprArgs>;
+  };
 
   declare args: ParseBignumericExprArgs;
 
@@ -30210,9 +30206,9 @@ export type ParseNumericExprArgs = Merge<[
 export class ParseNumericExpr extends FuncExpr {
   key = ExpressionKey.PARSE_NUMERIC;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ParseNumericExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ParseNumericExprArgs>;
+  };
 
   declare args: ParseNumericExprArgs;
 
@@ -30239,12 +30235,12 @@ export class ParseJSONExpr extends FuncExpr {
 
   static _sqlNames = ['PARSE_JSON', 'JSON_PARSE'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<ParseJSONExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
     safe: false,
-  } satisfies RequiredMap<ParseJSONExprArgs>;
+  };
 
   declare args: ParseJSONExprArgs;
 
@@ -30286,13 +30282,13 @@ export class ParseUrlExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ParseUrl expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ParseUrlExprArgs> = {
     ...super.argTypes,
     this: true,
     partToExtract: false,
     key: false,
     permissive: false,
-  } satisfies RequiredMap<ParseUrlExprArgs>;
+  };
 
   declare args: ParseUrlExprArgs;
 
@@ -30333,12 +30329,12 @@ export type ParseIpExprArgs = Merge<[
 export class ParseIpExpr extends FuncExpr {
   key = ExpressionKey.PARSE_IP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ParseIpExprArgs> = {
     ...super.argTypes,
     this: true,
     type: true,
     permissive: false,
-  } satisfies RequiredMap<ParseIpExprArgs>;
+  };
 
   declare args: ParseIpExprArgs;
 
@@ -30374,11 +30370,11 @@ export type ParseTimeExprArgs = Merge<[
 export class ParseTimeExpr extends FuncExpr {
   key = ExpressionKey.PARSE_TIME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ParseTimeExprArgs> = {
     ...super.argTypes,
     this: true,
     format: true,
-  } satisfies RequiredMap<ParseTimeExprArgs>;
+  };
 
   declare args: ParseTimeExprArgs;
 
@@ -30415,12 +30411,12 @@ export class ParseDatetimeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for ParseDatetime expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ParseDatetimeExprArgs> = {
     ...super.argTypes,
     this: true,
     format: false,
     zone: false,
-  } satisfies RequiredMap<ParseDatetimeExprArgs>;
+  };
 
   declare args: ParseDatetimeExprArgs;
 
@@ -30459,12 +30455,12 @@ export class LeastExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LeastExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
     ignoreNulls: true,
-  } satisfies RequiredMap<LeastExprArgs>;
+  };
 
   declare args: LeastExprArgs;
 
@@ -30500,11 +30496,11 @@ export type LeftExprArgs = Merge<[
 export class LeftExpr extends FuncExpr {
   key = ExpressionKey.LEFT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LeftExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<LeftExprArgs>;
+  };
 
   declare args: LeftExprArgs;
 
@@ -30536,11 +30532,11 @@ export type RightExprArgs = Merge<[
 export class RightExpr extends FuncExpr {
   key = ExpressionKey.RIGHT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RightExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<RightExprArgs>;
+  };
 
   declare args: RightExprArgs;
 
@@ -30568,9 +30564,9 @@ export type ReverseExprArgs = Merge<[
 export class ReverseExpr extends FuncExpr {
   key = ExpressionKey.REVERSE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ReverseExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ReverseExprArgs>;
+  };
 
   declare args: ReverseExprArgs;
 
@@ -30606,12 +30602,12 @@ export class LengthExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Length expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<LengthExprArgs> = {
     ...super.argTypes,
     this: true,
     binary: false,
     encoding: false,
-  } satisfies RequiredMap<LengthExprArgs>;
+  };
 
   declare args: LengthExprArgs;
 
@@ -30643,9 +30639,9 @@ export type RtrimmedLengthExprArgs = Merge<[
 export class RtrimmedLengthExpr extends FuncExpr {
   key = ExpressionKey.RTRIMMED_LENGTH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RtrimmedLengthExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<RtrimmedLengthExprArgs>;
+  };
 
   declare args: RtrimmedLengthExprArgs;
 
@@ -30665,9 +30661,9 @@ export type BitLengthExprArgs = Merge<[
 export class BitLengthExpr extends FuncExpr {
   key = ExpressionKey.BIT_LENGTH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitLengthExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BitLengthExprArgs>;
+  };
 
   declare args: BitLengthExprArgs;
 
@@ -30697,13 +30693,13 @@ export class LevenshteinExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Levenshtein expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<LevenshteinExprArgs> = {
     ...super.argTypes,
     insCost: false,
     delCost: false,
     subCost: false,
     maxDist: false,
-  } satisfies RequiredMap<LevenshteinExprArgs>;
+  };
 
   declare args: LevenshteinExprArgs;
 
@@ -30739,9 +30735,9 @@ export type LnExprArgs = Merge<[
 export class LnExpr extends FuncExpr {
   key = ExpressionKey.LN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LnExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<LnExprArgs>;
+  };
 
   declare args: LnExprArgs;
 
@@ -30765,11 +30761,11 @@ export type LogExprArgs = Merge<[
 export class LogExpr extends FuncExpr {
   key = ExpressionKey.LOG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LogExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<LogExprArgs>;
+  };
 
   declare args: LogExprArgs;
 
@@ -30797,9 +30793,9 @@ export type LowerExprArgs = Merge<[
 export class LowerExpr extends FuncExpr {
   key = ExpressionKey.LOWER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LowerExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<LowerExprArgs>;
+  };
 
   declare args: LowerExprArgs;
 
@@ -30829,11 +30825,11 @@ export class MapExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Map expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<MapExprArgs> = {
     ...super.argTypes,
     keys: false,
     values: false,
-  } satisfies RequiredMap<MapExprArgs>;
+  };
 
   declare args: MapExprArgs;
 
@@ -30871,9 +30867,9 @@ export type ToMapExprArgs = Merge<[
 export class ToMapExpr extends FuncExpr {
   key = ExpressionKey.TO_MAP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ToMapExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ToMapExprArgs>;
+  };
 
   declare args: ToMapExprArgs;
 
@@ -30893,9 +30889,9 @@ export type MapFromEntriesExprArgs = Merge<[
 export class MapFromEntriesExpr extends FuncExpr {
   key = ExpressionKey.MAP_FROM_ENTRIES;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MapFromEntriesExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<MapFromEntriesExprArgs>;
+  };
 
   declare args: MapFromEntriesExprArgs;
 
@@ -30919,11 +30915,11 @@ export type MapCatExprArgs = Merge<[
 export class MapCatExpr extends FuncExpr {
   key = ExpressionKey.MAP_CAT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MapCatExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<MapCatExprArgs>;
+  };
 
   declare args: MapCatExprArgs;
 
@@ -30955,11 +30951,11 @@ export type MapContainsKeyExprArgs = Merge<[
 export class MapContainsKeyExpr extends FuncExpr {
   key = ExpressionKey.MAP_CONTAINS_KEY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MapContainsKeyExprArgs> = {
     ...super.argTypes,
     this: true,
     key: true,
-  } satisfies RequiredMap<MapContainsKeyExprArgs>;
+  };
 
   declare args: MapContainsKeyExprArgs;
 
@@ -30993,11 +30989,11 @@ export class MapDeleteExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MapDeleteExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
-  } satisfies RequiredMap<MapDeleteExprArgs>;
+  };
 
   declare args: MapDeleteExprArgs;
 
@@ -31035,13 +31031,13 @@ export class MapInsertExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for MapInsert expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<MapInsertExprArgs> = {
     ...super.argTypes,
     this: true,
     key: false,
     value: true,
     updateFlag: false,
-  } satisfies RequiredMap<MapInsertExprArgs>;
+  };
 
   declare args: MapInsertExprArgs;
 
@@ -31077,9 +31073,9 @@ export type MapKeysExprArgs = Merge<[
 export class MapKeysExpr extends FuncExpr {
   key = ExpressionKey.MAP_KEYS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MapKeysExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<MapKeysExprArgs>;
+  };
 
   declare args: MapKeysExprArgs;
 
@@ -31105,11 +31101,11 @@ export class MapPickExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MapPickExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
-  } satisfies RequiredMap<MapPickExprArgs>;
+  };
 
   declare args: MapPickExprArgs;
 
@@ -31137,9 +31133,9 @@ export type MapSizeExprArgs = Merge<[
 export class MapSizeExpr extends FuncExpr {
   key = ExpressionKey.MAP_SIZE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MapSizeExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<MapSizeExprArgs>;
+  };
 
   declare args: MapSizeExprArgs;
 
@@ -31159,9 +31155,9 @@ export type StarMapExprArgs = Merge<[
 export class StarMapExpr extends FuncExpr {
   key = ExpressionKey.STAR_MAP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<StarMapExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<StarMapExprArgs>;
+  };
 
   declare args: StarMapExprArgs;
 
@@ -31190,11 +31186,11 @@ export class VarMapExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for VarMap expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<VarMapExprArgs> = {
     ...super.argTypes,
     keys: true,
     values: true,
-  } satisfies RequiredMap<VarMapExprArgs>;
+  };
 
   declare args: VarMapExprArgs;
 
@@ -31237,12 +31233,12 @@ export type MatchAgainstExprArgs = Merge<[
 export class MatchAgainstExpr extends FuncExpr {
   key = ExpressionKey.MATCH_AGAINST;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MatchAgainstExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
     modifier: false,
-  } satisfies RequiredMap<MatchAgainstExprArgs>;
+  };
 
   declare args: MatchAgainstExprArgs;
 
@@ -31276,9 +31272,9 @@ export class MD5Expr extends FuncExpr {
 
   static _sqlNames = ['MD5'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<MD5ExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<MD5ExprArgs>;
+  };
 
   declare args: MD5ExprArgs;
 
@@ -31305,11 +31301,11 @@ export class MD5DigestExpr extends FuncExpr {
   static isVarLenArgs = true;
   static _sqlNames = ['MD5_DIGEST'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<MD5DigestExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<MD5DigestExprArgs>;
+  };
 
   declare args: MD5DigestExprArgs;
 
@@ -31337,9 +31333,9 @@ export type MD5NumberLower64ExprArgs = Merge<[
 export class MD5NumberLower64Expr extends FuncExpr {
   key = ExpressionKey.MD5_NUMBER_LOWER64;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MD5NumberLower64ExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<MD5NumberLower64ExprArgs>;
+  };
 
   declare args: MD5NumberLower64ExprArgs;
 
@@ -31359,9 +31355,9 @@ export type MD5NumberUpper64ExprArgs = Merge<[
 export class MD5NumberUpper64Expr extends FuncExpr {
   key = ExpressionKey.MD5_NUMBER_UPPER64;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MD5NumberUpper64ExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<MD5NumberUpper64ExprArgs>;
+  };
 
   declare args: MD5NumberUpper64ExprArgs;
 
@@ -31381,9 +31377,9 @@ export type MonthExprArgs = Merge<[
 export class MonthExpr extends FuncExpr {
   key = ExpressionKey.MONTH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MonthExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<MonthExprArgs>;
+  };
 
   declare args: MonthExprArgs;
 
@@ -31407,11 +31403,11 @@ export type MonthnameExprArgs = Merge<[
 export class MonthnameExpr extends FuncExpr {
   key = ExpressionKey.MONTHNAME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MonthnameExprArgs> = {
     ...super.argTypes,
     this: true,
     abbreviated: false,
-  } satisfies RequiredMap<MonthnameExprArgs>;
+  };
 
   declare args: MonthnameExprArgs;
 
@@ -31444,12 +31440,12 @@ export type AddMonthsExprArgs = Merge<[
 export class AddMonthsExpr extends FuncExpr {
   key = ExpressionKey.ADD_MONTHS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AddMonthsExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     preserveEndOfMonth: false,
-  } satisfies RequiredMap<AddMonthsExprArgs>;
+  };
 
   declare args: AddMonthsExprArgs;
 
@@ -31490,12 +31486,12 @@ export class Nvl2Expr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Nvl2 expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<Nvl2ExprArgs> = {
     ...super.argTypes,
     this: true,
     true: true,
     false: false,
-  } satisfies RequiredMap<Nvl2ExprArgs>;
+  };
 
   declare args: Nvl2ExprArgs;
 
@@ -31536,12 +31532,12 @@ export class NormalizeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Normalize expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<NormalizeExprArgs> = {
     ...super.argTypes,
     this: true,
     form: false,
     isCasefold: false,
-  } satisfies RequiredMap<NormalizeExprArgs>;
+  };
 
   declare args: NormalizeExprArgs;
 
@@ -31582,12 +31578,12 @@ export class NormalExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Normal expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<NormalExprArgs> = {
     ...super.argTypes,
     this: true,
     stddev: true,
     gen: true,
-  } satisfies RequiredMap<NormalExprArgs>;
+  };
 
   declare args: NormalExprArgs;
 
@@ -31619,9 +31615,9 @@ export type NetFuncExprArgs = Merge<[
 export class NetFuncExpr extends FuncExpr {
   key = ExpressionKey.NET_FUNC;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NetFuncExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<NetFuncExprArgs>;
+  };
 
   declare args: NetFuncExprArgs;
 
@@ -31641,9 +31637,9 @@ export type HostExprArgs = Merge<[
 export class HostExpr extends FuncExpr {
   key = ExpressionKey.HOST;
 
-  static argTypes = {
+  static argTypes: RequiredMap<HostExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<HostExprArgs>;
+  };
 
   declare args: HostExprArgs;
 
@@ -31663,9 +31659,9 @@ export type RegDomainExprArgs = Merge<[
 export class RegDomainExpr extends FuncExpr {
   key = ExpressionKey.REG_DOMAIN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegDomainExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<RegDomainExprArgs>;
+  };
 
   declare args: RegDomainExprArgs;
 
@@ -31695,13 +31691,13 @@ export class OverlayExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Overlay expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<OverlayExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     from: true,
     for: false,
-  } satisfies RequiredMap<OverlayExprArgs>;
+  };
 
   declare args: OverlayExprArgs;
 
@@ -31742,12 +31738,12 @@ export type PredictExprArgs = Merge<[
 export class PredictExpr extends FuncExpr {
   key = ExpressionKey.PREDICT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PredictExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     paramsStruct: false,
-  } satisfies RequiredMap<PredictExprArgs>;
+  };
 
   declare args: PredictExprArgs;
 
@@ -31784,12 +31780,12 @@ export type MLTranslateExprArgs = Merge<[
 export class MLTranslateExpr extends FuncExpr {
   key = ExpressionKey.ML_TRANSLATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MLTranslateExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     paramsStruct: true,
-  } satisfies RequiredMap<MLTranslateExprArgs>;
+  };
 
   declare args: MLTranslateExprArgs;
 
@@ -31831,13 +31827,13 @@ export class FeaturesAtTimeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for FeaturesAtTime expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<FeaturesAtTimeExprArgs> = {
     ...super.argTypes,
     this: true,
     time: false,
     numRows: false,
     ignoreFeatureNulls: false,
-  } satisfies RequiredMap<FeaturesAtTimeExprArgs>;
+  };
 
   declare args: FeaturesAtTimeExprArgs;
 
@@ -31883,13 +31879,13 @@ export class GenerateEmbeddingExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for GenerateEmbedding expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<GenerateEmbeddingExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     paramsStruct: false,
     isText: false,
-  } satisfies RequiredMap<GenerateEmbeddingExprArgs>;
+  };
 
   declare args: GenerateEmbeddingExprArgs;
 
@@ -31930,12 +31926,12 @@ export type MLForecastExprArgs = Merge<[
 export class MLForecastExpr extends FuncExpr {
   key = ExpressionKey.ML_FORECAST;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MLForecastExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
     paramsStruct: false,
-  } satisfies RequiredMap<MLForecastExprArgs>;
+  };
 
   declare args: MLForecastExprArgs;
 
@@ -31979,7 +31975,7 @@ export class VectorSearchExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for VectorSearch expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<VectorSearchExprArgs> = {
     ...super.argTypes,
     columnToSearch: true,
     queryTable: true,
@@ -31987,7 +31983,7 @@ export class VectorSearchExpr extends FuncExpr {
     topK: false,
     distanceType: false,
     options: false,
-  } satisfies RequiredMap<VectorSearchExprArgs>;
+  };
 
   declare args: VectorSearchExprArgs;
 
@@ -32031,9 +32027,9 @@ export type PiExprArgs = Merge<[
 export class PiExpr extends FuncExpr {
   key = ExpressionKey.PI;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PiExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<PiExprArgs>;
+  };
 
   declare args: PiExprArgs;
 
@@ -32054,10 +32050,10 @@ export class PowExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   static _sqlNames = ['POWER', 'POW'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<PowExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<PowExprArgs>;
+  };
 
   declare args: PowExprArgs;
 
@@ -32077,11 +32073,11 @@ export type ApproxPercentileEstimateExprArgs = Merge<[
 export class ApproxPercentileEstimateExpr extends FuncExpr {
   key = ExpressionKey.APPROX_PERCENTILE_ESTIMATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ApproxPercentileEstimateExprArgs> = {
     ...super.argTypes,
     this: true,
     percentile: true,
-  } satisfies RequiredMap<ApproxPercentileEstimateExprArgs>;
+  };
 
   declare args: ApproxPercentileEstimateExprArgs;
 
@@ -32109,9 +32105,9 @@ export type QuarterExprArgs = Merge<[
 export class QuarterExpr extends FuncExpr {
   key = ExpressionKey.QUARTER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<QuarterExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<QuarterExprArgs>;
+  };
 
   declare args: QuarterExprArgs;
 
@@ -32142,12 +32138,12 @@ export class RandExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Rand expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RandExprArgs> = {
     ...super.argTypes,
     this: false,
     lower: false,
     upper: false,
-  } satisfies RequiredMap<RandExprArgs>;
+  };
 
   declare args: RandExprArgs;
 
@@ -32180,10 +32176,10 @@ export type RandnExprArgs = Merge<[
 export class RandnExpr extends FuncExpr {
   key = ExpressionKey.RANDN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RandnExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<RandnExprArgs>;
+  };
 
   declare args: RandnExprArgs;
 
@@ -32211,11 +32207,11 @@ export type RandstrExprArgs = Merge<[
 export class RandstrExpr extends FuncExpr {
   key = ExpressionKey.RANDSTR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RandstrExprArgs> = {
     ...super.argTypes,
     this: true,
     generator: false,
-  } satisfies RequiredMap<RandstrExprArgs>;
+  };
 
   declare args: RandstrExprArgs;
 
@@ -32248,12 +32244,12 @@ export type RangeNExprArgs = Merge<[
 export class RangeNExpr extends FuncExpr {
   key = ExpressionKey.RANGE_N;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RangeNExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
     each: false,
-  } satisfies RequiredMap<RangeNExprArgs>;
+  };
 
   declare args: RangeNExprArgs;
 
@@ -32289,11 +32285,11 @@ export type RangeBucketExprArgs = Merge<[
 export class RangeBucketExpr extends FuncExpr {
   key = ExpressionKey.RANGE_BUCKET;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RangeBucketExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<RangeBucketExprArgs>;
+  };
 
   declare args: RangeBucketExprArgs;
 
@@ -32328,11 +32324,11 @@ export class ReadCSVExpr extends FuncExpr {
   static isVarLenArgs = true;
   static _sqlNames = ['READ_CSV'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<ReadCSVExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<ReadCSVExprArgs>;
+  };
 
   declare args: ReadCSVExprArgs;
 
@@ -32363,10 +32359,10 @@ export class ReadParquetExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ReadParquetExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<ReadParquetExprArgs>;
+  };
 
   declare args: ReadParquetExprArgs;
 
@@ -32400,13 +32396,13 @@ export class ReduceExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Reduce expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ReduceExprArgs> = {
     ...super.argTypes,
     this: true,
     initial: true,
     merge: true,
     finish: false,
-  } satisfies RequiredMap<ReduceExprArgs>;
+  };
 
   declare args: ReduceExprArgs;
 
@@ -32453,14 +32449,14 @@ export class RegexpExtractExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for RegexpExtract expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RegexpExtractExprArgs> = {
     ...super.argTypes,
     position: false,
     occurrence: false,
     parameters: false,
     group: false,
     nullIfPosOverflow: false,
-  } satisfies RequiredMap<RegexpExtractExprArgs>;
+  };
 
   declare args: RegexpExtractExprArgs;
 
@@ -32510,13 +32506,13 @@ export class RegexpExtractAllExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for RegexpExtractAll expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RegexpExtractAllExprArgs> = {
     ...super.argTypes,
     group: false,
     parameters: false,
     position: false,
     occurrence: false,
-  } satisfies RequiredMap<RegexpExtractAllExprArgs>;
+  };
 
   declare args: RegexpExtractAllExprArgs;
 
@@ -32563,14 +32559,14 @@ export class RegexpReplaceExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for RegexpReplace expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RegexpReplaceExprArgs> = {
     ...super.argTypes,
     replacement: false,
     position: false,
     occurrence: false,
     modifiers: false,
     singleReplace: false,
-  } satisfies RequiredMap<RegexpReplaceExprArgs>;
+  };
 
   declare args: RegexpReplaceExprArgs;
 
@@ -32615,13 +32611,13 @@ export type RegexpLikeExprArgs = Merge<[
 export class RegexpLikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.REGEXP_LIKE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegexpLikeExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     flag: false,
-  } satisfies RequiredMap<RegexpLikeExprArgs>;
+  };
 
   declare args: RegexpLikeExprArgs;
 
@@ -32654,13 +32650,13 @@ export type RegexpILikeExprArgs = Merge<[
 export class RegexpILikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.REGEXP_ILIKE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegexpILikeExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     flag: false,
-  } satisfies RequiredMap<RegexpILikeExprArgs>;
+  };
 
   declare args: RegexpILikeExprArgs;
 
@@ -32693,13 +32689,13 @@ export type RegexpFullMatchExprArgs = Merge<[
 export class RegexpFullMatchExpr extends multiInherit(BinaryExpr, FuncExpr) {
   key = ExpressionKey.REGEXP_FULL_MATCH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegexpFullMatchExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: true,
     expression: true,
     options: false,
-  } satisfies RequiredMap<RegexpFullMatchExprArgs>;
+  };
 
   declare args: RegexpFullMatchExprArgs;
 
@@ -32738,14 +32734,14 @@ export class RegexpInstrExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for RegexpInstr expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RegexpInstrExprArgs> = {
     ...super.argTypes,
     position: false,
     occurrence: false,
     option: false,
     parameters: false,
     group: false,
-  } satisfies RequiredMap<RegexpInstrExprArgs>;
+  };
 
   declare args: RegexpInstrExprArgs;
 
@@ -32790,12 +32786,12 @@ export type RegexpSplitExprArgs = Merge<[
 export class RegexpSplitExpr extends FuncExpr {
   key = ExpressionKey.REGEXP_SPLIT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegexpSplitExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     limit: false,
-  } satisfies RequiredMap<RegexpSplitExprArgs>;
+  };
 
   declare args: RegexpSplitExprArgs;
 
@@ -32835,11 +32831,11 @@ export class RegexpCountExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for RegexpCount expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RegexpCountExprArgs> = {
     ...super.argTypes,
     position: false,
     parameters: false,
-  } satisfies RequiredMap<RegexpCountExprArgs>;
+  };
 
   declare args: RegexpCountExprArgs;
 
@@ -32871,11 +32867,11 @@ export type RepeatExprArgs = Merge<[
 export class RepeatExpr extends FuncExpr {
   key = ExpressionKey.REPEAT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RepeatExprArgs> = {
     ...super.argTypes,
     this: true,
     times: true,
-  } satisfies RequiredMap<RepeatExprArgs>;
+  };
 
   declare args: RepeatExprArgs;
 
@@ -32908,12 +32904,12 @@ export type ReplaceExprArgs = Merge<[
 export class ReplaceExpr extends FuncExpr {
   key = ExpressionKey.REPLACE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ReplaceExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     replacement: false,
-  } satisfies RequiredMap<ReplaceExprArgs>;
+  };
 
   declare args: ReplaceExprArgs;
 
@@ -32945,9 +32941,9 @@ export type RadiansExprArgs = Merge<[
 export class RadiansExpr extends FuncExpr {
   key = ExpressionKey.RADIANS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RadiansExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<RadiansExprArgs>;
+  };
 
   declare args: RadiansExprArgs;
 
@@ -32976,12 +32972,12 @@ export class RoundExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Round expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<RoundExprArgs> = {
     ...super.argTypes,
     decimals: false,
     truncate: false,
     castsNonIntegerDecimals: false,
-  } satisfies RequiredMap<RoundExprArgs>;
+  };
 
   declare args: RoundExprArgs;
 
@@ -33019,11 +33015,11 @@ export class TruncExpr extends FuncExpr {
 
   static _sqlNames = ['TRUNC', 'TRUNCATE'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<TruncExprArgs> = {
     ...super.argTypes,
     this: true,
     decimals: false,
-  } satisfies RequiredMap<TruncExprArgs>;
+  };
 
   declare args: TruncExprArgs;
 
@@ -33052,10 +33048,10 @@ export type RowNumberExprArgs = Merge<[
 export class RowNumberExpr extends FuncExpr {
   key = ExpressionKey.ROW_NUMBER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RowNumberExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<RowNumberExprArgs>;
+  };
 
   declare args: RowNumberExprArgs;
 
@@ -33080,10 +33076,10 @@ export type Seq1ExprArgs = Merge<[
 export class Seq1Expr extends FuncExpr {
   key = ExpressionKey.SEQ1;
 
-  static argTypes = {
+  static argTypes: RequiredMap<Seq1ExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<Seq1ExprArgs>;
+  };
 
   declare args: Seq1ExprArgs;
 
@@ -33108,10 +33104,10 @@ export type Seq2ExprArgs = Merge<[
 export class Seq2Expr extends FuncExpr {
   key = ExpressionKey.SEQ2;
 
-  static argTypes = {
+  static argTypes: RequiredMap<Seq2ExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<Seq2ExprArgs>;
+  };
 
   declare args: Seq2ExprArgs;
 
@@ -33136,10 +33132,10 @@ export type Seq4ExprArgs = Merge<[
 export class Seq4Expr extends FuncExpr {
   key = ExpressionKey.SEQ4;
 
-  static argTypes = {
+  static argTypes: RequiredMap<Seq4ExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<Seq4ExprArgs>;
+  };
 
   declare args: Seq4ExprArgs;
 
@@ -33164,10 +33160,10 @@ export type Seq8ExprArgs = Merge<[
 export class Seq8Expr extends FuncExpr {
   key = ExpressionKey.SEQ8;
 
-  static argTypes = {
+  static argTypes: RequiredMap<Seq8ExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<Seq8ExprArgs>;
+  };
 
   declare args: Seq8ExprArgs;
 
@@ -33195,11 +33191,11 @@ export type SafeAddExprArgs = Merge<[
 export class SafeAddExpr extends FuncExpr {
   key = ExpressionKey.SAFE_ADD;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SafeAddExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<SafeAddExprArgs>;
+  };
 
   declare args: SafeAddExprArgs;
 
@@ -33231,11 +33227,11 @@ export type SafeDivideExprArgs = Merge<[
 export class SafeDivideExpr extends FuncExpr {
   key = ExpressionKey.SAFE_DIVIDE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SafeDivideExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<SafeDivideExprArgs>;
+  };
 
   declare args: SafeDivideExprArgs;
 
@@ -33267,11 +33263,11 @@ export type SafeMultiplyExprArgs = Merge<[
 export class SafeMultiplyExpr extends FuncExpr {
   key = ExpressionKey.SAFE_MULTIPLY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SafeMultiplyExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<SafeMultiplyExprArgs>;
+  };
 
   declare args: SafeMultiplyExprArgs;
 
@@ -33299,9 +33295,9 @@ export type SafeNegateExprArgs = Merge<[
 export class SafeNegateExpr extends FuncExpr {
   key = ExpressionKey.SAFE_NEGATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SafeNegateExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SafeNegateExprArgs>;
+  };
 
   declare args: SafeNegateExprArgs;
 
@@ -33325,11 +33321,11 @@ export type SafeSubtractExprArgs = Merge<[
 export class SafeSubtractExpr extends FuncExpr {
   key = ExpressionKey.SAFE_SUBTRACT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SafeSubtractExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<SafeSubtractExprArgs>;
+  };
 
   declare args: SafeSubtractExprArgs;
 
@@ -33357,9 +33353,9 @@ export type SafeConvertBytesToStringExprArgs = Merge<[
 export class SafeConvertBytesToStringExpr extends FuncExpr {
   key = ExpressionKey.SAFE_CONVERT_BYTES_TO_STRING;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SafeConvertBytesToStringExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SafeConvertBytesToStringExprArgs>;
+  };
 
   declare args: SafeConvertBytesToStringExprArgs;
 
@@ -33379,9 +33375,9 @@ export type SHAExprArgs = Merge<[
 export class SHAExpr extends FuncExpr {
   key = ExpressionKey.SHA;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SHAExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SHAExprArgs>;
+  };
 
   declare args: SHAExprArgs;
 
@@ -33409,11 +33405,11 @@ export class SHA2Expr extends FuncExpr {
 
   static _sqlNames = ['SHA2'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<SHA2ExprArgs> = {
     ...super.argTypes,
     this: true,
     length: false,
-  } satisfies RequiredMap<SHA2ExprArgs>;
+  };
 
   declare args: SHA2ExprArgs;
 
@@ -33441,9 +33437,9 @@ export type SHA1DigestExprArgs = Merge<[
 export class SHA1DigestExpr extends FuncExpr {
   key = ExpressionKey.SHA1_DIGEST;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SHA1DigestExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SHA1DigestExprArgs>;
+  };
 
   declare args: SHA1DigestExprArgs;
 
@@ -33467,11 +33463,11 @@ export type SHA2DigestExprArgs = Merge<[
 export class SHA2DigestExpr extends FuncExpr {
   key = ExpressionKey.SHA2_DIGEST;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SHA2DigestExprArgs> = {
     ...super.argTypes,
     this: true,
     length: false,
-  } satisfies RequiredMap<SHA2DigestExprArgs>;
+  };
 
   declare args: SHA2DigestExprArgs;
 
@@ -33499,9 +33495,9 @@ export type SignExprArgs = Merge<[
 export class SignExpr extends FuncExpr {
   key = ExpressionKey.SIGN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SignExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SignExprArgs>;
+  };
 
   declare args: SignExprArgs;
 
@@ -33532,12 +33528,12 @@ export class SortArrayExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for SortArray expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<SortArrayExprArgs> = {
     ...super.argTypes,
     this: true,
     asc: false,
     nullsFirst: false,
-  } satisfies RequiredMap<SortArrayExprArgs>;
+  };
 
   declare args: SortArrayExprArgs;
 
@@ -33569,9 +33565,9 @@ export type SoundexExprArgs = Merge<[
 export class SoundexExpr extends FuncExpr {
   key = ExpressionKey.SOUNDEX;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SoundexExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SoundexExprArgs>;
+  };
 
   declare args: SoundexExprArgs;
 
@@ -33591,9 +33587,9 @@ export type SoundexP123ExprArgs = Merge<[
 export class SoundexP123Expr extends FuncExpr {
   key = ExpressionKey.SOUNDEX_P123;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SoundexP123ExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SoundexP123ExprArgs>;
+  };
 
   declare args: SoundexP123ExprArgs;
 
@@ -33618,12 +33614,12 @@ export type SplitExprArgs = Merge<[
 export class SplitExpr extends FuncExpr {
   key = ExpressionKey.SPLIT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SplitExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     limit: false,
-  } satisfies RequiredMap<SplitExprArgs>;
+  };
 
   declare args: SplitExprArgs;
 
@@ -33664,12 +33660,12 @@ export class SplitPartExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for SplitPart expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<SplitPartExprArgs> = {
     ...super.argTypes,
     this: true,
     delimiter: false,
     partIndex: false,
-  } satisfies RequiredMap<SplitPartExprArgs>;
+  };
 
   declare args: SplitPartExprArgs;
 
@@ -33711,12 +33707,12 @@ export class SubstringExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Substring expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<SubstringExprArgs> = {
     ...super.argTypes,
     this: true,
     start: false,
     length: false,
-  } satisfies RequiredMap<SubstringExprArgs>;
+  };
 
   declare args: SubstringExprArgs;
 
@@ -33757,12 +33753,12 @@ export class SubstringIndexExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for SubstringIndex expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<SubstringIndexExprArgs> = {
     ...super.argTypes,
     this: true,
     delimiter: true,
     count: true,
-  } satisfies RequiredMap<SubstringIndexExprArgs>;
+  };
 
   declare args: SubstringIndexExprArgs;
 
@@ -33798,11 +33794,11 @@ export type StandardHashExprArgs = Merge<[
 export class StandardHashExpr extends FuncExpr {
   key = ExpressionKey.STANDARD_HASH;
 
-  static argTypes = {
+  static argTypes: RequiredMap<StandardHashExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<StandardHashExprArgs>;
+  };
 
   declare args: StandardHashExprArgs;
 
@@ -33835,11 +33831,11 @@ export class StartsWithExpr extends FuncExpr {
   key = ExpressionKey.STARTS_WITH;
   static _sqlNames = ['STARTS_WITH', 'STARTSWITH'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<StartsWithExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<StartsWithExprArgs>;
+  };
 
   declare args: StartsWithExprArgs;
 
@@ -33872,11 +33868,11 @@ export class EndsWithExpr extends FuncExpr {
   key = ExpressionKey.ENDS_WITH;
   static _sqlNames = ['ENDS_WITH', 'ENDSWITH'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<EndsWithExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<EndsWithExprArgs>;
+  };
 
   declare args: EndsWithExprArgs;
 
@@ -33914,13 +33910,13 @@ export class StrPositionExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for StrPosition expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<StrPositionExprArgs> = {
     ...super.argTypes,
     this: true,
     substr: true,
     position: false,
     occurrence: false,
-  } satisfies RequiredMap<StrPositionExprArgs>;
+  };
 
   declare args: StrPositionExprArgs;
 
@@ -33968,7 +33964,7 @@ export class SearchExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Search expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<SearchExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
@@ -33976,7 +33972,7 @@ export class SearchExpr extends FuncExpr {
     analyzer: false,
     analyzerOptions: false,
     searchMode: false,
-  } satisfies RequiredMap<SearchExprArgs>;
+  };
 
   declare args: SearchExprArgs;
 
@@ -34024,11 +34020,11 @@ export type SearchIpExprArgs = Merge<[
 export class SearchIpExpr extends FuncExpr {
   key = ExpressionKey.SEARCH_IP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SearchIpExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<SearchIpExprArgs>;
+  };
 
   declare args: SearchIpExprArgs;
 
@@ -34065,12 +34061,12 @@ export class StrToDateExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for StrToDate expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<StrToDateExprArgs> = {
     ...super.argTypes,
     format: false,
     safe: false,
     this: true,
-  } satisfies RequiredMap<StrToDateExprArgs>;
+  };
 
   declare args: StrToDateExprArgs;
 
@@ -34113,14 +34109,14 @@ export class StrToTimeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for StrToTime expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<StrToTimeExprArgs> = {
     ...super.argTypes,
     format: true,
     zone: false,
     safe: false,
     targetType: false,
     this: true,
-  } satisfies RequiredMap<StrToTimeExprArgs>;
+  };
 
   declare args: StrToTimeExprArgs;
 
@@ -34164,10 +34160,10 @@ export type StrToUnixExprArgs = Merge<[
 export class StrToUnixExpr extends FuncExpr {
   key = ExpressionKey.STR_TO_UNIX;
 
-  static argTypes = {
+  static argTypes: RequiredMap<StrToUnixExprArgs> = {
     format: false,
     this: false,
-  } satisfies RequiredMap<StrToUnixExprArgs>;
+  };
 
   declare args: StrToUnixExprArgs;
 
@@ -34205,13 +34201,13 @@ export class StrToMapExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for StrToMap expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<StrToMapExprArgs> = {
     ...super.argTypes,
     this: true,
     pairDelim: false,
     keyValueDelim: false,
     duplicateResolutionCallback: false,
-  } satisfies RequiredMap<StrToMapExprArgs>;
+  };
 
   declare args: StrToMapExprArgs;
 
@@ -34256,12 +34252,12 @@ export class NumberToStrExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for NumberToStr expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<NumberToStrExprArgs> = {
     ...super.argTypes,
     format: true,
     culture: false,
     this: true,
-  } satisfies RequiredMap<NumberToStrExprArgs>;
+  };
 
   declare args: NumberToStrExprArgs;
 
@@ -34297,11 +34293,11 @@ export type FromBaseExprArgs = Merge<[
 export class FromBaseExpr extends FuncExpr {
   key = ExpressionKey.FROM_BASE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FromBaseExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<FromBaseExprArgs>;
+  };
 
   declare args: FromBaseExprArgs;
 
@@ -34329,9 +34325,9 @@ export type SpaceExprArgs = Merge<[
 export class SpaceExpr extends FuncExpr {
   key = ExpressionKey.SPACE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SpaceExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SpaceExprArgs>;
+  };
 
   declare args: SpaceExprArgs;
 
@@ -34353,10 +34349,10 @@ export class StructExpr extends FuncExpr {
   key = ExpressionKey.STRUCT;
 
   static isVarLenArgs = true;
-  static argTypes = {
+  static argTypes: RequiredMap<StructExprArgs> = {
     ...super.argTypes,
     expressions: false,
-  } satisfies RequiredMap<StructExprArgs>;
+  };
 
   declare args: StructExprArgs;
 
@@ -34384,11 +34380,11 @@ export type StructExtractExprArgs = Merge<[
 export class StructExtractExpr extends FuncExpr {
   key = ExpressionKey.STRUCT_EXTRACT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<StructExtractExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<StructExtractExprArgs>;
+  };
 
   declare args: StructExtractExprArgs;
 
@@ -34427,13 +34423,13 @@ export class StuffExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Stuff expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<StuffExprArgs> = {
     ...super.argTypes,
     start: true,
     length: true,
     this: true,
     expression: true,
-  } satisfies RequiredMap<StuffExprArgs>;
+  };
 
   declare args: StuffExprArgs;
 
@@ -34469,9 +34465,9 @@ export type SqrtExprArgs = Merge<[
 export class SqrtExpr extends FuncExpr {
   key = ExpressionKey.SQRT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SqrtExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SqrtExprArgs>;
+  };
 
   declare args: SqrtExprArgs;
 
@@ -34495,10 +34491,10 @@ export type TimeExprArgs = Merge<[
 export class TimeExpr extends FuncExpr {
   key = ExpressionKey.TIME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimeExprArgs> = {
     zone: false,
     this: false,
-  } satisfies RequiredMap<TimeExprArgs>;
+  };
 
   declare args: TimeExprArgs;
 
@@ -34536,13 +34532,13 @@ export class TimeToStrExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimeToStr expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TimeToStrExprArgs> = {
     ...super.argTypes,
     format: true,
     culture: false,
     zone: false,
     this: true,
-  } satisfies RequiredMap<TimeToStrExprArgs>;
+  };
 
   declare args: TimeToStrExprArgs;
 
@@ -34578,9 +34574,9 @@ export type TimeToTimeStrExprArgs = Merge<[
 export class TimeToTimeStrExpr extends FuncExpr {
   key = ExpressionKey.TIME_TO_TIME_STR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimeToTimeStrExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TimeToTimeStrExprArgs>;
+  };
 
   declare args: TimeToTimeStrExprArgs;
 
@@ -34600,9 +34596,9 @@ export type TimeToUnixExprArgs = Merge<[
 export class TimeToUnixExpr extends FuncExpr {
   key = ExpressionKey.TIME_TO_UNIX;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimeToUnixExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TimeToUnixExprArgs>;
+  };
 
   declare args: TimeToUnixExprArgs;
 
@@ -34622,9 +34618,9 @@ export type TimeStrToDateExprArgs = Merge<[
 export class TimeStrToDateExpr extends FuncExpr {
   key = ExpressionKey.TIME_STR_TO_DATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimeStrToDateExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TimeStrToDateExprArgs>;
+  };
 
   declare args: TimeStrToDateExprArgs;
 
@@ -34648,10 +34644,10 @@ export type TimeStrToTimeExprArgs = Merge<[
 export class TimeStrToTimeExpr extends FuncExpr {
   key = ExpressionKey.TIME_STR_TO_TIME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimeStrToTimeExprArgs> = {
     zone: false,
     this: true,
-  } satisfies RequiredMap<TimeStrToTimeExprArgs>;
+  };
 
   declare args: TimeStrToTimeExprArgs;
 
@@ -34679,9 +34675,9 @@ export type TimeStrToUnixExprArgs = Merge<[
 export class TimeStrToUnixExpr extends FuncExpr {
   key = ExpressionKey.TIME_STR_TO_UNIX;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimeStrToUnixExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TimeStrToUnixExprArgs>;
+  };
 
   declare args: TimeStrToUnixExprArgs;
 
@@ -34716,13 +34712,13 @@ export class TrimExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Trim expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TrimExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
     position: false,
     collation: false,
-  } satisfies RequiredMap<TrimExprArgs>;
+  };
 
   declare args: TrimExprArgs;
 
@@ -34768,14 +34764,14 @@ export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
    * Defines the arguments (properties and child expressions) for TsOrDsAdd expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TsOrDsAddExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     unit: false,
     returnType: false,
     this: true,
     expression: true,
-  } satisfies RequiredMap<TsOrDsAddExprArgs>;
+  };
 
   declare args: TsOrDsAddExprArgs;
 
@@ -34824,13 +34820,13 @@ export type TsOrDsDiffExprArgs = Merge<[
 export class TsOrDsDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   key = ExpressionKey.TS_OR_DS_DIFF;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TsOrDsDiffExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     unit: false,
     this: true,
     expression: true,
-  } satisfies RequiredMap<TsOrDsDiffExprArgs>;
+  };
 
   declare args: TsOrDsDiffExprArgs;
 
@@ -34862,9 +34858,9 @@ export type TsOrDsToDateStrExprArgs = Merge<[
 export class TsOrDsToDateStrExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_DATE_STR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TsOrDsToDateStrExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TsOrDsToDateStrExprArgs>;
+  };
 
   declare args: TsOrDsToDateStrExprArgs;
 
@@ -34893,12 +34889,12 @@ export class TsOrDsToDateExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TsOrDsToDate expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TsOrDsToDateExprArgs> = {
     ...super.argTypes,
     format: false,
     safe: false,
     this: true,
-  } satisfies RequiredMap<TsOrDsToDateExprArgs>;
+  };
 
   declare args: TsOrDsToDateExprArgs;
 
@@ -34930,9 +34926,9 @@ export type TsOrDsToDatetimeExprArgs = Merge<[
 export class TsOrDsToDatetimeExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_DATETIME;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TsOrDsToDatetimeExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TsOrDsToDatetimeExprArgs>;
+  };
 
   declare args: TsOrDsToDatetimeExprArgs;
 
@@ -34961,12 +34957,12 @@ export class TsOrDsToTimeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TsOrDsToTime expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TsOrDsToTimeExprArgs> = {
     ...super.argTypes,
     format: false,
     safe: false,
     this: true,
-  } satisfies RequiredMap<TsOrDsToTimeExprArgs>;
+  };
 
   declare args: TsOrDsToTimeExprArgs;
 
@@ -34998,9 +34994,9 @@ export type TsOrDsToTimestampExprArgs = Merge<[
 export class TsOrDsToTimestampExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DS_TO_TIMESTAMP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TsOrDsToTimestampExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TsOrDsToTimestampExprArgs>;
+  };
 
   declare args: TsOrDsToTimestampExprArgs;
 
@@ -35020,9 +35016,9 @@ export type TsOrDiToDiExprArgs = Merge<[
 export class TsOrDiToDiExpr extends FuncExpr {
   key = ExpressionKey.TS_OR_DI_TO_DI;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TsOrDiToDiExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<TsOrDiToDiExprArgs>;
+  };
 
   declare args: TsOrDiToDiExprArgs;
 
@@ -35046,11 +35042,11 @@ export type UnhexExprArgs = Merge<[
 export class UnhexExpr extends FuncExpr {
   key = ExpressionKey.UNHEX;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UnhexExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<UnhexExprArgs>;
+  };
 
   declare args: UnhexExprArgs;
 
@@ -35078,9 +35074,9 @@ export type UnicodeExprArgs = Merge<[
 export class UnicodeExpr extends FuncExpr {
   key = ExpressionKey.UNICODE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UnicodeExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<UnicodeExprArgs>;
+  };
 
   declare args: UnicodeExprArgs;
 
@@ -35110,13 +35106,13 @@ export class UniformExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Uniform expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<UniformExprArgs> = {
     ...super.argTypes,
     gen: false,
     seed: false,
     this: true,
     expression: true,
-  } satisfies RequiredMap<UniformExprArgs>;
+  };
 
   declare args: UniformExprArgs;
 
@@ -35152,9 +35148,9 @@ export type UnixDateExprArgs = Merge<[
 export class UnixDateExpr extends FuncExpr {
   key = ExpressionKey.UNIX_DATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UnixDateExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<UnixDateExprArgs>;
+  };
 
   declare args: UnixDateExprArgs;
 
@@ -35178,11 +35174,11 @@ export type UnixToStrExprArgs = Merge<[
 export class UnixToStrExpr extends FuncExpr {
   key = ExpressionKey.UNIX_TO_STR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UnixToStrExprArgs> = {
     ...super.argTypes,
     format: false,
     this: true,
-  } satisfies RequiredMap<UnixToStrExprArgs>;
+  };
 
   declare args: UnixToStrExprArgs;
 
@@ -35223,7 +35219,7 @@ export class UnixToTimeExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for UnixToTime expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<UnixToTimeExprArgs> = {
     ...super.argTypes,
     this: true,
     scale: false,
@@ -35232,7 +35228,7 @@ export class UnixToTimeExpr extends FuncExpr {
     minutes: false,
     format: false,
     targetType: false,
-  } satisfies RequiredMap<UnixToTimeExprArgs>;
+  };
 
   declare args: UnixToTimeExprArgs;
 
@@ -35291,9 +35287,9 @@ export type UnixToTimeStrExprArgs = Merge<[
 export class UnixToTimeStrExpr extends FuncExpr {
   key = ExpressionKey.UNIX_TO_TIME_STR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UnixToTimeStrExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<UnixToTimeStrExprArgs>;
+  };
 
   declare args: UnixToTimeStrExprArgs;
 
@@ -35313,9 +35309,9 @@ export type UnixSecondsExprArgs = Merge<[
 export class UnixSecondsExpr extends FuncExpr {
   key = ExpressionKey.UNIX_SECONDS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UnixSecondsExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<UnixSecondsExprArgs>;
+  };
 
   declare args: UnixSecondsExprArgs;
 
@@ -35335,9 +35331,9 @@ export type UnixMicrosExprArgs = Merge<[
 export class UnixMicrosExpr extends FuncExpr {
   key = ExpressionKey.UNIX_MICROS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UnixMicrosExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<UnixMicrosExprArgs>;
+  };
 
   declare args: UnixMicrosExprArgs;
 
@@ -35357,9 +35353,9 @@ export type UnixMillisExprArgs = Merge<[
 export class UnixMillisExpr extends FuncExpr {
   key = ExpressionKey.UNIX_MILLIS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UnixMillisExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<UnixMillisExprArgs>;
+  };
 
   declare args: UnixMillisExprArgs;
 
@@ -35395,12 +35391,12 @@ export class UuidExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Uuid expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<UuidExprArgs> = {
     ...super.argTypes,
     name: false,
     isString: false,
     this: false,
-  } satisfies RequiredMap<UuidExprArgs>;
+  };
 
   declare args: UuidExprArgs;
 
@@ -35460,14 +35456,14 @@ export class TimestampFromPartsExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for TimestampFromParts expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<TimestampFromPartsExprArgs> = {
     ...super.argTypes,
     ...TIMESTAMP_PARTS,
     zone: false,
     milli: false,
     this: false,
     expression: false,
-  } satisfies RequiredMap<TimestampFromPartsExprArgs>;
+  };
 
   declare args: TimestampFromPartsExprArgs;
 
@@ -35542,10 +35538,10 @@ export class TimestampLtzFromPartsExpr extends FuncExpr {
 
   static _sqlNames = ['TIMESTAMP_LTZ_FROM_PARTS', 'TIMESTAMPLTZFROMPARTS'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimestampLtzFromPartsExprArgs> = {
     ...super.argTypes,
     ...TIMESTAMP_PARTS,
-  } satisfies RequiredMap<TimestampLtzFromPartsExprArgs>;
+  };
 
   declare args: TimestampLtzFromPartsExprArgs;
 
@@ -35604,11 +35600,11 @@ export class TimestampTzFromPartsExpr extends FuncExpr {
   key = ExpressionKey.TIMESTAMP_TZ_FROM_PARTS;
   static _sqlNames = ['TIMESTAMP_TZ_FROM_PARTS', 'TIMESTAMPTZFROMPARTS'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<TimestampTzFromPartsExprArgs> = {
     ...super.argTypes,
     ...TIMESTAMP_PARTS,
     zone: false,
-  } satisfies RequiredMap<TimestampTzFromPartsExprArgs>;
+  };
 
   declare args: TimestampTzFromPartsExprArgs;
 
@@ -35660,9 +35656,9 @@ export type UpperExprArgs = Merge<[
 export class UpperExpr extends FuncExpr {
   key = ExpressionKey.UPPER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<UpperExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<UpperExprArgs>;
+  };
 
   declare args: UpperExprArgs;
 
@@ -35690,13 +35686,13 @@ export type CorrExprArgs = Merge<[
 export class CorrExpr extends multiInherit(BinaryExpr, AggFuncExpr) {
   key = ExpressionKey.CORR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CorrExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     nullOnZeroVariance: false,
     this: true,
     expression: true,
-  } satisfies RequiredMap<CorrExprArgs>;
+  };
 
   declare args: CorrExprArgs;
 
@@ -35735,14 +35731,14 @@ export class WidthBucketExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for WidthBucket expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<WidthBucketExprArgs> = {
     ...super.argTypes,
     this: true,
     minValue: false,
     maxValue: false,
     numBuckets: false,
     threshold: false,
-  } satisfies RequiredMap<WidthBucketExprArgs>;
+  };
 
   declare args: WidthBucketExprArgs;
 
@@ -35786,11 +35782,11 @@ export type WeekExprArgs = Merge<[
 export class WeekExpr extends FuncExpr {
   key = ExpressionKey.WEEK;
 
-  static argTypes = {
+  static argTypes: RequiredMap<WeekExprArgs> = {
     ...super.argTypes,
     mode: false,
     this: true,
-  } satisfies RequiredMap<WeekExprArgs>;
+  };
 
   declare args: WeekExprArgs;
 
@@ -35822,11 +35818,11 @@ export type NextDayExprArgs = Merge<[
 export class NextDayExpr extends FuncExpr {
   key = ExpressionKey.NEXT_DAY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NextDayExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<NextDayExprArgs>;
+  };
 
   declare args: NextDayExprArgs;
 
@@ -35861,12 +35857,12 @@ export class XMLElementExpr extends FuncExpr {
 
   static _sqlNames = ['XMLELEMENT'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<XMLElementExprArgs> = {
     ...super.argTypes,
     evalname: false,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<XMLElementExprArgs>;
+  };
 
   declare args: XMLElementExprArgs;
 
@@ -35904,12 +35900,12 @@ export class XMLGetExpr extends FuncExpr {
   key = ExpressionKey.XML_GET;
   static _sqlNames = ['XMLGET'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<XMLGetExprArgs> = {
     ...super.argTypes,
     instance: false,
     this: true,
     expression: true,
-  } satisfies RequiredMap<XMLGetExprArgs>;
+  };
 
   declare args: XMLGetExprArgs;
 
@@ -35952,14 +35948,14 @@ export class XMLTableExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for XMLTable expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<XMLTableExprArgs> = {
     ...super.argTypes,
     this: true,
     namespaces: false,
     passing: false,
     columns: false,
     byRef: false,
-  } satisfies RequiredMap<XMLTableExprArgs>;
+  };
 
   declare args: XMLTableExprArgs;
 
@@ -35999,9 +35995,9 @@ export type YearExprArgs = Merge<[
 export class YearExpr extends FuncExpr {
   key = ExpressionKey.YEAR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<YearExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<YearExprArgs>;
+  };
 
   declare args: YearExprArgs;
 
@@ -36030,12 +36026,12 @@ export class ZipfExpr extends FuncExpr {
    * Defines the arguments (properties and child expressions) for Zipf expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ZipfExprArgs> = {
     ...super.argTypes,
     elementcount: true,
     gen: true,
     this: true,
-  } satisfies RequiredMap<ZipfExprArgs>;
+  };
 
   declare args: ZipfExprArgs;
 
@@ -36071,11 +36067,11 @@ export type NextValueForExprArgs = Merge<[
 export class NextValueForExpr extends FuncExpr {
   key = ExpressionKey.NEXT_VALUE_FOR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NextValueForExprArgs> = {
     ...super.argTypes,
     order: false,
     this: true,
-  } satisfies RequiredMap<NextValueForExprArgs>;
+  };
 
   declare args: NextValueForExprArgs;
 
@@ -36103,9 +36099,9 @@ export type AllExprArgs = Merge<[
 export class AllExpr extends SubqueryPredicateExpr {
   key = ExpressionKey.ALL;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AllExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AllExprArgs>;
+  };
 
   declare args: AllExprArgs;
 
@@ -36121,9 +36117,9 @@ export type AnyExprArgs = Merge<[
 export class AnyExpr extends SubqueryPredicateExpr {
   key = ExpressionKey.ANY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AnyExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AnyExprArgs>;
+  };
 
   declare args: AnyExprArgs;
 
@@ -36139,9 +36135,9 @@ export type BitwiseAndAggExprArgs = Merge<[
 export class BitwiseAndAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITWISE_AND_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitwiseAndAggExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BitwiseAndAggExprArgs>;
+  };
 
   declare args: BitwiseAndAggExprArgs;
 
@@ -36161,9 +36157,9 @@ export type BitwiseOrAggExprArgs = Merge<[
 export class BitwiseOrAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITWISE_OR_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitwiseOrAggExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BitwiseOrAggExprArgs>;
+  };
 
   declare args: BitwiseOrAggExprArgs;
 
@@ -36183,9 +36179,9 @@ export type BitwiseXorAggExprArgs = Merge<[
 export class BitwiseXorAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITWISE_XOR_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitwiseXorAggExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BitwiseXorAggExprArgs>;
+  };
 
   declare args: BitwiseXorAggExprArgs;
 
@@ -36205,9 +36201,9 @@ export type BoolxorAggExprArgs = Merge<[
 export class BoolxorAggExpr extends AggFuncExpr {
   key = ExpressionKey.BOOLXOR_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BoolxorAggExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BoolxorAggExprArgs>;
+  };
 
   declare args: BoolxorAggExprArgs;
 
@@ -36227,9 +36223,9 @@ export type BitmapConstructAggExprArgs = Merge<[
 export class BitmapConstructAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITMAP_CONSTRUCT_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitmapConstructAggExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BitmapConstructAggExprArgs>;
+  };
 
   declare args: BitmapConstructAggExprArgs;
 
@@ -36249,9 +36245,9 @@ export type BitmapOrAggExprArgs = Merge<[
 export class BitmapOrAggExpr extends AggFuncExpr {
   key = ExpressionKey.BITMAP_OR_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<BitmapOrAggExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<BitmapOrAggExprArgs>;
+  };
 
   declare args: BitmapOrAggExprArgs;
 
@@ -36276,12 +36272,12 @@ export type ParameterizedAggExprArgs = Merge<[
 export class ParameterizedAggExpr extends AggFuncExpr {
   key = ExpressionKey.PARAMETERIZED_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ParameterizedAggExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
     params: true,
-  } satisfies RequiredMap<ParameterizedAggExprArgs>;
+  };
 
   declare args: ParameterizedAggExprArgs;
 
@@ -36324,12 +36320,12 @@ export class ArgMaxExpr extends AggFuncExpr {
     'MAX_BY',
   ];
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArgMaxExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     count: false,
-  } satisfies RequiredMap<ArgMaxExprArgs>;
+  };
 
   declare args: ArgMaxExprArgs;
 
@@ -36372,12 +36368,12 @@ export class ArgMinExpr extends AggFuncExpr {
     'MIN_BY',
   ];
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArgMinExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     count: false,
-  } satisfies RequiredMap<ArgMinExprArgs>;
+  };
 
   declare args: ArgMinExprArgs;
 
@@ -36414,12 +36410,12 @@ export type ApproxTopKExprArgs = Merge<[
 export class ApproxTopKExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_K;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ApproxTopKExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
     counters: false,
-  } satisfies RequiredMap<ApproxTopKExprArgs>;
+  };
 
   declare args: ApproxTopKExprArgs;
 
@@ -36459,11 +36455,11 @@ export type ApproxTopKAccumulateExprArgs = Merge<[
 export class ApproxTopKAccumulateExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_K_ACCUMULATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ApproxTopKAccumulateExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<ApproxTopKAccumulateExprArgs>;
+  };
 
   declare args: ApproxTopKAccumulateExprArgs;
 
@@ -36498,11 +36494,11 @@ export type ApproxTopKCombineExprArgs = Merge<[
 export class ApproxTopKCombineExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_K_COMBINE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ApproxTopKCombineExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<ApproxTopKCombineExprArgs>;
+  };
 
   declare args: ApproxTopKCombineExprArgs;
 
@@ -36535,12 +36531,12 @@ export type ApproxTopSumExprArgs = Merge<[
 export class ApproxTopSumExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_TOP_SUM;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ApproxTopSumExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
     count: true,
-  } satisfies RequiredMap<ApproxTopSumExprArgs>;
+  };
 
   declare args: ApproxTopSumExprArgs;
 
@@ -36576,11 +36572,11 @@ export type ApproxQuantilesExprArgs = Merge<[
 export class ApproxQuantilesExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_QUANTILES;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ApproxQuantilesExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<ApproxQuantilesExprArgs>;
+  };
 
   declare args: ApproxQuantilesExprArgs;
 
@@ -36611,9 +36607,9 @@ export type ApproxPercentileCombineExprArgs = Merge<[
 export class ApproxPercentileCombineExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_PERCENTILE_COMBINE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ApproxPercentileCombineExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ApproxPercentileCombineExprArgs>;
+  };
 
   declare args: ApproxPercentileCombineExprArgs;
 
@@ -36642,11 +36638,11 @@ export class MinhashExpr extends AggFuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MinhashExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
-  } satisfies RequiredMap<MinhashExprArgs>;
+  };
 
   declare args: MinhashExprArgs;
 
@@ -36677,9 +36673,9 @@ export type MinhashCombineExprArgs = Merge<[
 export class MinhashCombineExpr extends AggFuncExpr {
   key = ExpressionKey.MINHASH_COMBINE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MinhashCombineExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<MinhashCombineExprArgs>;
+  };
 
   declare args: MinhashCombineExprArgs;
 
@@ -36704,9 +36700,9 @@ export class ApproximateSimilarityExpr extends AggFuncExpr {
 
   static _sqlNames = ['APPROXIMATE_SIMILARITY', 'APPROXIMATE_JACCARD_INDEX'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<ApproximateSimilarityExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ApproximateSimilarityExprArgs>;
+  };
 
   declare args: ApproximateSimilarityExprArgs;
 
@@ -36729,10 +36725,10 @@ export class GroupingExpr extends AggFuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<GroupingExprArgs> = {
     ...super.argTypes,
     expressions: true,
-  } satisfies RequiredMap<GroupingExprArgs>;
+  };
 
   declare args: GroupingExprArgs;
 
@@ -36759,10 +36755,10 @@ export class GroupingIdExpr extends AggFuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<GroupingIdExprArgs> = {
     ...super.argTypes,
     expressions: false,
-  } satisfies RequiredMap<GroupingIdExprArgs>;
+  };
 
   declare args: GroupingIdExprArgs;
 
@@ -36792,11 +36788,11 @@ export class AnonymousAggFuncExpr extends AggFuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AnonymousAggFuncExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<AnonymousAggFuncExprArgs>;
+  };
 
   declare args: AnonymousAggFuncExprArgs;
 
@@ -36833,11 +36829,11 @@ export class HashAggExpr extends AggFuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<HashAggExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<HashAggExprArgs>;
+  };
 
   declare args: HashAggExprArgs;
 
@@ -36875,11 +36871,11 @@ export class HllExpr extends AggFuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<HllExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<HllExprArgs>;
+  };
 
   declare args: HllExprArgs;
 
@@ -36913,11 +36909,11 @@ export class ApproxDistinctExpr extends AggFuncExpr {
 
   static _sqlNames = ['APPROX_DISTINCT', 'APPROX_COUNT_DISTINCT'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<ApproxDistinctExprArgs> = {
     ...super.argTypes,
     this: true,
     accuracy: false,
-  } satisfies RequiredMap<ApproxDistinctExprArgs>;
+  };
 
   declare args: ApproxDistinctExprArgs;
 
@@ -36966,11 +36962,11 @@ export type ArrayAggExprArgs = Merge<[
 export class ArrayAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayAggExprArgs> = {
     ...super.argTypes,
     this: true,
     nullsExcluded: false,
-  } satisfies RequiredMap<ArrayAggExprArgs>;
+  };
 
   declare args: ArrayAggExprArgs;
 
@@ -36998,9 +36994,9 @@ export type ArrayUniqueAggExprArgs = Merge<[
 export class ArrayUniqueAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_UNIQUE_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayUniqueAggExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ArrayUniqueAggExprArgs>;
+  };
 
   declare args: ArrayUniqueAggExprArgs;
 
@@ -37026,11 +37022,11 @@ export class AIAggExpr extends AggFuncExpr {
 
   static _sqlNames = ['AI_AGG'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<AIAggExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<AIAggExprArgs>;
+  };
 
   declare args: AIAggExprArgs;
 
@@ -37060,9 +37056,9 @@ export class AISummarizeAggExpr extends AggFuncExpr {
 
   static _sqlNames = ['AI_SUMMARIZE_AGG'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<AISummarizeAggExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AISummarizeAggExprArgs>;
+  };
 
   declare args: AISummarizeAggExprArgs;
 
@@ -37082,9 +37078,9 @@ export type ArrayConcatAggExprArgs = Merge<[
 export class ArrayConcatAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_CONCAT_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayConcatAggExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ArrayConcatAggExprArgs>;
+  };
 
   declare args: ArrayConcatAggExprArgs;
 
@@ -37104,9 +37100,9 @@ export type ArrayUnionAggExprArgs = Merge<[
 export class ArrayUnionAggExpr extends AggFuncExpr {
   key = ExpressionKey.ARRAY_UNION_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ArrayUnionAggExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ArrayUnionAggExprArgs>;
+  };
 
   declare args: ArrayUnionAggExprArgs;
 
@@ -37126,9 +37122,9 @@ export type AvgExprArgs = Merge<[
 export class AvgExpr extends AggFuncExpr {
   key = ExpressionKey.AVG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AvgExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AvgExprArgs>;
+  };
 
   declare args: AvgExprArgs;
 
@@ -37148,9 +37144,9 @@ export type AnyValueExprArgs = Merge<[
 export class AnyValueExpr extends AggFuncExpr {
   key = ExpressionKey.ANY_VALUE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AnyValueExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<AnyValueExprArgs>;
+  };
 
   declare args: AnyValueExprArgs;
 
@@ -37175,12 +37171,12 @@ export type LagExprArgs = Merge<[
 export class LagExpr extends AggFuncExpr {
   key = ExpressionKey.LAG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LagExprArgs> = {
     ...super.argTypes,
     this: true,
     offset: false,
     default: false,
-  } satisfies RequiredMap<LagExprArgs>;
+  };
 
   declare args: LagExprArgs;
 
@@ -37217,12 +37213,12 @@ export type LeadExprArgs = Merge<[
 export class LeadExpr extends AggFuncExpr {
   key = ExpressionKey.LEAD;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LeadExprArgs> = {
     ...super.argTypes,
     this: true,
     offset: false,
     default: false,
-  } satisfies RequiredMap<LeadExprArgs>;
+  };
 
   declare args: LeadExprArgs;
 
@@ -37258,11 +37254,11 @@ export type FirstExprArgs = Merge<[
 export class FirstExpr extends AggFuncExpr {
   key = ExpressionKey.FIRST;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FirstExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<FirstExprArgs>;
+  };
 
   declare args: FirstExprArgs;
 
@@ -37294,11 +37290,11 @@ export type LastExprArgs = Merge<[
 export class LastExpr extends AggFuncExpr {
   key = ExpressionKey.LAST;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LastExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<LastExprArgs>;
+  };
 
   declare args: LastExprArgs;
 
@@ -37326,9 +37322,9 @@ export type FirstValueExprArgs = Merge<[
 export class FirstValueExpr extends AggFuncExpr {
   key = ExpressionKey.FIRST_VALUE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<FirstValueExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<FirstValueExprArgs>;
+  };
 
   declare args: FirstValueExprArgs;
 
@@ -37348,9 +37344,9 @@ export type LastValueExprArgs = Merge<[
 export class LastValueExpr extends AggFuncExpr {
   key = ExpressionKey.LAST_VALUE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LastValueExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<LastValueExprArgs>;
+  };
 
   declare args: LastValueExprArgs;
 
@@ -37375,12 +37371,12 @@ export type NthValueExprArgs = Merge<[
 export class NthValueExpr extends AggFuncExpr {
   key = ExpressionKey.NTH_VALUE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NthValueExprArgs> = {
     ...super.argTypes,
     this: true,
     offset: true,
     fromFirst: false,
-  } satisfies RequiredMap<NthValueExprArgs>;
+  };
 
   declare args: NthValueExprArgs;
 
@@ -37416,11 +37412,11 @@ export type ObjectAggExprArgs = Merge<[
 export class ObjectAggExpr extends AggFuncExpr {
   key = ExpressionKey.OBJECT_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ObjectAggExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<ObjectAggExprArgs>;
+  };
 
   declare args: ObjectAggExprArgs;
 
@@ -37449,10 +37445,10 @@ export type TryCastExprArgs = Merge<[
 export class TryCastExpr extends CastExpr {
   key = ExpressionKey.TRY_CAST;
 
-  static argTypes = {
+  static argTypes: RequiredMap<TryCastExprArgs> = {
     ...super.argTypes,
     requiresString: false,
-  } satisfies RequiredMap<TryCastExprArgs>;
+  };
 
   declare args: TryCastExprArgs;
 
@@ -37488,9 +37484,9 @@ export class ConcatWsExpr extends ConcatExpr {
 
   static _sqlNames = ['CONCAT_WS'];
 
-  static argTypes = {
+  static argTypes: RequiredMap<ConcatWsExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ConcatWsExprArgs>;
+  };
 
   declare args: ConcatWsExprArgs;
 
@@ -37513,12 +37509,12 @@ export class CountExpr extends AggFuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CountExprArgs> = {
     ...super.argTypes,
     this: false,
     expressions: false,
     bigInt: false,
-  } satisfies RequiredMap<CountExprArgs>;
+  };
 
   declare args: CountExprArgs;
 
@@ -37550,9 +37546,9 @@ export type CountIfExprArgs = Merge<[
 export class CountIfExpr extends AggFuncExpr {
   key = ExpressionKey.COUNT_IF;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CountIfExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<CountIfExprArgs>;
+  };
 
   declare args: CountIfExprArgs;
 
@@ -37577,10 +37573,10 @@ export class DenseRankExpr extends AggFuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<DenseRankExprArgs> = {
     ...super.argTypes,
     expressions: false,
-  } satisfies RequiredMap<DenseRankExprArgs>;
+  };
 
   declare args: DenseRankExprArgs;
 
@@ -37603,9 +37599,9 @@ export type ExplodeOuterExprArgs = Merge<[
 export class ExplodeOuterExpr extends ExplodeExpr {
   key = ExpressionKey.EXPLODE_OUTER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ExplodeOuterExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ExplodeOuterExprArgs>;
+  };
 
   declare args: ExplodeOuterExprArgs;
 
@@ -37620,9 +37616,9 @@ export type PosexplodeExprArgs = Merge<[
 export class PosexplodeExpr extends ExplodeExpr {
   key = ExpressionKey.POSEXPLODE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PosexplodeExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<PosexplodeExprArgs>;
+  };
 
   declare args: PosexplodeExprArgs;
 
@@ -37647,12 +37643,12 @@ export class GroupConcatExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for GroupConcat expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<GroupConcatExprArgs> = {
     ...super.argTypes,
     this: true,
     separator: false,
     onOverflow: false,
-  } satisfies RequiredMap<GroupConcatExprArgs>;
+  };
 
   declare args: GroupConcatExprArgs;
 
@@ -37683,7 +37679,7 @@ export type LowerHexExprArgs = Merge<[
 export class LowerHexExpr extends HexExpr {
   key = ExpressionKey.LOWER_HEX;
 
-  static argTypes = {} satisfies RequiredMap<LowerHexExprArgs>;
+  static argTypes: RequiredMap<LowerHexExprArgs> = {};
 
   declare args: LowerHexExprArgs;
 
@@ -37698,10 +37694,10 @@ export type AndExprArgs = Merge<[
 export class AndExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   key = ExpressionKey.AND;
 
-  static argTypes = {
+  static argTypes: RequiredMap<AndExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<AndExprArgs>;
+  };
 
   declare args: AndExprArgs;
 
@@ -37716,10 +37712,10 @@ export type OrExprArgs = Merge<[
 export class OrExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   key = ExpressionKey.OR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<OrExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<OrExprArgs>;
+  };
 
   declare args: OrExprArgs;
 
@@ -37730,6 +37726,7 @@ export class OrExpr extends multiInherit(ConnectorExpr, FuncExpr) {
 
 export type XorExprArgs = Merge<[
   ConnectorExprArgs,
+  FuncExpr,
   {
     this?: Expression;
     expression?: Expression;
@@ -37743,14 +37740,14 @@ export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<XorExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
     this: false,
     expression: false,
     expressions: false,
     roundInput: false,
-  } satisfies RequiredMap<XorExprArgs>;
+  };
 
   declare args: XorExprArgs;
 
@@ -37758,11 +37755,11 @@ export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): Expression | undefined {
     return this.args.this;
   }
 
-  get $expression (): Expression {
+  get $expression (): Expression | undefined {
     return this.args.expression;
   }
 
@@ -37792,13 +37789,13 @@ export class JSONObjectAggExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for JSONObjectAgg expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONObjectAggExprArgs> = {
     ...super.argTypes,
     nullHandling: false,
     uniqueKeys: false,
     returnType: false,
     encoding: false,
-  } satisfies RequiredMap<JSONObjectAggExprArgs>;
+  };
 
   declare args: JSONObjectAggExprArgs;
 
@@ -37838,11 +37835,11 @@ export type JSONBObjectAggExprArgs = Merge<[
 export class JSONBObjectAggExpr extends AggFuncExpr {
   key = ExpressionKey.JSONB_OBJECT_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<JSONBObjectAggExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<JSONBObjectAggExprArgs>;
+  };
 
   declare args: JSONBObjectAggExprArgs;
 
@@ -37880,13 +37877,13 @@ export class JSONArrayAggExpr extends AggFuncExpr {
    * Defines the arguments (properties and child expressions) for JSONArrayAgg expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<JSONArrayAggExprArgs> = {
     ...super.argTypes,
     order: false,
     nullHandling: false,
     returnType: false,
     strict: false,
-  } satisfies RequiredMap<JSONArrayAggExprArgs>;
+  };
 
   declare args: JSONArrayAggExprArgs;
 
@@ -37922,9 +37919,9 @@ export type LogicalOrExprArgs = Merge<[
 export class LogicalOrExpr extends AggFuncExpr {
   key = ExpressionKey.LOGICAL_OR;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LogicalOrExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<LogicalOrExprArgs>;
+  };
 
   declare args: LogicalOrExprArgs;
 
@@ -37950,9 +37947,9 @@ export type LogicalAndExprArgs = Merge<[
 export class LogicalAndExpr extends AggFuncExpr {
   key = ExpressionKey.LOGICAL_AND;
 
-  static argTypes = {
+  static argTypes: RequiredMap<LogicalAndExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<LogicalAndExprArgs>;
+  };
 
   declare args: LogicalAndExprArgs;
 
@@ -37984,11 +37981,11 @@ export class MaxExpr extends AggFuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MaxExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<MaxExprArgs>;
+  };
 
   declare args: MaxExprArgs;
 
@@ -38016,9 +38013,9 @@ export type MedianExprArgs = Merge<[
 export class MedianExpr extends AggFuncExpr {
   key = ExpressionKey.MEDIAN;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MedianExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<MedianExprArgs>;
+  };
 
   declare args: MedianExprArgs;
 
@@ -38042,11 +38039,11 @@ export type ModeExprArgs = Merge<[
 export class ModeExpr extends AggFuncExpr {
   key = ExpressionKey.MODE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ModeExprArgs> = {
     ...super.argTypes,
     this: false,
     deterministic: false,
-  } satisfies RequiredMap<ModeExprArgs>;
+  };
 
   declare args: ModeExprArgs;
 
@@ -38080,11 +38077,11 @@ export class MinExpr extends AggFuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<MinExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<MinExprArgs>;
+  };
 
   declare args: MinExprArgs;
 
@@ -38113,10 +38110,10 @@ export type NtileExprArgs = Merge<[
 export class NtileExpr extends AggFuncExpr {
   key = ExpressionKey.NTILE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<NtileExprArgs> = {
     ...super.argTypes,
     this: false,
-  } satisfies RequiredMap<NtileExprArgs>;
+  };
 
   declare args: NtileExprArgs;
 
@@ -38144,11 +38141,11 @@ export type PercentileContExprArgs = Merge<[
 export class PercentileContExpr extends AggFuncExpr {
   key = ExpressionKey.PERCENTILE_CONT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PercentileContExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<PercentileContExprArgs>;
+  };
 
   declare args: PercentileContExprArgs;
 
@@ -38180,11 +38177,11 @@ export type PercentileDiscExprArgs = Merge<[
 export class PercentileDiscExpr extends AggFuncExpr {
   key = ExpressionKey.PERCENTILE_DISC;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PercentileDiscExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: false,
-  } satisfies RequiredMap<PercentileDiscExprArgs>;
+  };
 
   declare args: PercentileDiscExprArgs;
 
@@ -38215,10 +38212,10 @@ export class PercentRankExpr extends AggFuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PercentRankExprArgs> = {
     ...super.argTypes,
     expressions: false,
-  } satisfies RequiredMap<PercentRankExprArgs>;
+  };
 
   declare args: PercentRankExprArgs;
 
@@ -38246,11 +38243,11 @@ export type QuantileExprArgs = Merge<[
 export class QuantileExpr extends AggFuncExpr {
   key = ExpressionKey.QUANTILE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<QuantileExprArgs> = {
     ...super.argTypes,
     this: true,
     quantile: true,
-  } satisfies RequiredMap<QuantileExprArgs>;
+  };
 
   declare args: QuantileExprArgs;
 
@@ -38278,9 +38275,9 @@ export type ApproxPercentileAccumulateExprArgs = Merge<[
 export class ApproxPercentileAccumulateExpr extends AggFuncExpr {
   key = ExpressionKey.APPROX_PERCENTILE_ACCUMULATE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<ApproxPercentileAccumulateExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<ApproxPercentileAccumulateExprArgs>;
+  };
 
   declare args: ApproxPercentileAccumulateExprArgs;
 
@@ -38303,10 +38300,10 @@ export class RankExpr extends AggFuncExpr {
 
   static isVarLenArgs = true;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RankExprArgs> = {
     ...super.argTypes,
     expressions: false,
-  } satisfies RequiredMap<RankExprArgs>;
+  };
 
   declare args: RankExprArgs;
 
@@ -38334,11 +38331,11 @@ export type RegrValxExprArgs = Merge<[
 export class RegrValxExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_VALX;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegrValxExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<RegrValxExprArgs>;
+  };
 
   declare args: RegrValxExprArgs;
 
@@ -38370,11 +38367,11 @@ export type RegrValyExprArgs = Merge<[
 export class RegrValyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_VALY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegrValyExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<RegrValyExprArgs>;
+  };
 
   declare args: RegrValyExprArgs;
 
@@ -38406,11 +38403,11 @@ export type RegrAvgyExprArgs = Merge<[
 export class RegrAvgyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_AVGY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegrAvgyExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<RegrAvgyExprArgs>;
+  };
 
   declare args: RegrAvgyExprArgs;
 
@@ -38442,11 +38439,11 @@ export type RegrAvgxExprArgs = Merge<[
 export class RegrAvgxExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_AVGX;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegrAvgxExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<RegrAvgxExprArgs>;
+  };
 
   declare args: RegrAvgxExprArgs;
 
@@ -38478,11 +38475,11 @@ export type RegrCountExprArgs = Merge<[
 export class RegrCountExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_COUNT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegrCountExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<RegrCountExprArgs>;
+  };
 
   declare args: RegrCountExprArgs;
 
@@ -38514,11 +38511,11 @@ export type RegrInterceptExprArgs = Merge<[
 export class RegrInterceptExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_INTERCEPT;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegrInterceptExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<RegrInterceptExprArgs>;
+  };
 
   declare args: RegrInterceptExprArgs;
 
@@ -38550,11 +38547,11 @@ export type RegrR2ExprArgs = Merge<[
 export class RegrR2Expr extends AggFuncExpr {
   key = ExpressionKey.REGR_R2;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegrR2ExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<RegrR2ExprArgs>;
+  };
 
   declare args: RegrR2ExprArgs;
 
@@ -38586,11 +38583,11 @@ export type RegrSxxExprArgs = Merge<[
 export class RegrSxxExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SXX;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegrSxxExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<RegrSxxExprArgs>;
+  };
 
   declare args: RegrSxxExprArgs;
 
@@ -38622,11 +38619,11 @@ export type RegrSxyExprArgs = Merge<[
 export class RegrSxyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SXY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegrSxyExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<RegrSxyExprArgs>;
+  };
 
   declare args: RegrSxyExprArgs;
 
@@ -38658,11 +38655,11 @@ export type RegrSyyExprArgs = Merge<[
 export class RegrSyyExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SYY;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegrSyyExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<RegrSyyExprArgs>;
+  };
 
   declare args: RegrSyyExprArgs;
 
@@ -38694,11 +38691,11 @@ export type RegrSlopeExprArgs = Merge<[
 export class RegrSlopeExpr extends AggFuncExpr {
   key = ExpressionKey.REGR_SLOPE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<RegrSlopeExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<RegrSlopeExprArgs>;
+  };
 
   declare args: RegrSlopeExprArgs;
 
@@ -38726,9 +38723,9 @@ export type SumExprArgs = Merge<[
 export class SumExpr extends AggFuncExpr {
   key = ExpressionKey.SUM;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SumExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SumExprArgs>;
+  };
 
   declare args: SumExprArgs;
 
@@ -38748,9 +38745,9 @@ export type StddevExprArgs = Merge<[
 export class StddevExpr extends AggFuncExpr {
   key = ExpressionKey.STDDEV;
 
-  static argTypes = {
+  static argTypes: RequiredMap<StddevExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<StddevExprArgs>;
+  };
 
   declare args: StddevExprArgs;
 
@@ -38772,9 +38769,9 @@ export type StddevPopExprArgs = Merge<[
 export class StddevPopExpr extends AggFuncExpr {
   key = ExpressionKey.STDDEV_POP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<StddevPopExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<StddevPopExprArgs>;
+  };
 
   declare args: StddevPopExprArgs;
 
@@ -38794,9 +38791,9 @@ export type StddevSampExprArgs = Merge<[
 export class StddevSampExpr extends AggFuncExpr {
   key = ExpressionKey.STDDEV_SAMP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<StddevSampExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<StddevSampExprArgs>;
+  };
 
   declare args: StddevSampExprArgs;
 
@@ -38818,9 +38815,9 @@ export class CumeDistExpr extends AggFuncExpr {
   key = ExpressionKey.CUME_DIST;
 
   static isVarLenArgs = true;
-  static argTypes = {
+  static argTypes: RequiredMap<CumeDistExprArgs> = {
     expressions: false,
-  } satisfies RequiredMap<CumeDistExprArgs>;
+  };
 
   declare args: CumeDistExprArgs;
 
@@ -38844,9 +38841,9 @@ export type VarianceExprArgs = Merge<[
 export class VarianceExpr extends AggFuncExpr {
   key = ExpressionKey.VARIANCE;
 
-  static argTypes = {
+  static argTypes: RequiredMap<VarianceExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<VarianceExprArgs>;
+  };
 
   declare args: VarianceExprArgs;
 
@@ -38872,9 +38869,9 @@ export type VariancePopExprArgs = Merge<[
 export class VariancePopExpr extends AggFuncExpr {
   key = ExpressionKey.VARIANCE_POP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<VariancePopExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<VariancePopExprArgs>;
+  };
 
   declare args: VariancePopExprArgs;
 
@@ -38896,9 +38893,9 @@ export type KurtosisExprArgs = Merge<[
 export class KurtosisExpr extends AggFuncExpr {
   key = ExpressionKey.KURTOSIS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<KurtosisExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<KurtosisExprArgs>;
+  };
 
   declare args: KurtosisExprArgs;
 
@@ -38918,9 +38915,9 @@ export type SkewnessExprArgs = Merge<[
 export class SkewnessExpr extends AggFuncExpr {
   key = ExpressionKey.SKEWNESS;
 
-  static argTypes = {
+  static argTypes: RequiredMap<SkewnessExprArgs> = {
     ...super.argTypes,
-  } satisfies RequiredMap<SkewnessExprArgs>;
+  };
 
   declare args: SkewnessExprArgs;
 
@@ -38944,11 +38941,11 @@ export type CovarSampExprArgs = Merge<[
 export class CovarSampExpr extends AggFuncExpr {
   key = ExpressionKey.COVAR_SAMP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CovarSampExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<CovarSampExprArgs>;
+  };
 
   declare args: CovarSampExprArgs;
 
@@ -38980,11 +38977,11 @@ export type CovarPopExprArgs = Merge<[
 export class CovarPopExpr extends AggFuncExpr {
   key = ExpressionKey.COVAR_POP;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CovarPopExprArgs> = {
     ...super.argTypes,
     this: true,
     expression: true,
-  } satisfies RequiredMap<CovarPopExprArgs>;
+  };
 
   declare args: CovarPopExprArgs;
 
@@ -39019,11 +39016,11 @@ export type CombinedAggFuncExprArgs = Merge<[
 export class CombinedAggFuncExpr extends AnonymousAggFuncExpr {
   key = ExpressionKey.COMBINED_AGG_FUNC;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CombinedAggFuncExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: false,
-  } satisfies RequiredMap<CombinedAggFuncExprArgs>;
+  };
 
   declare args: CombinedAggFuncExprArgs;
 
@@ -39056,12 +39053,12 @@ export type CombinedParameterizedAggExprArgs = Merge<[
 export class CombinedParameterizedAggExpr extends ParameterizedAggExpr {
   key = ExpressionKey.COMBINED_PARAMETERIZED_AGG;
 
-  static argTypes = {
+  static argTypes: RequiredMap<CombinedParameterizedAggExprArgs> = {
     ...super.argTypes,
     this: true,
     expressions: true,
     params: true,
-  } satisfies RequiredMap<CombinedParameterizedAggExprArgs>;
+  };
 
   declare args: CombinedParameterizedAggExprArgs;
 
@@ -39092,10 +39089,10 @@ export type PosexplodeOuterExprArgs = Merge<[
 export class PosexplodeOuterExpr extends multiInherit(PosexplodeExpr, ExplodeOuterExpr) {
   key = ExpressionKey.POSEXPLODE_OUTER;
 
-  static argTypes = {
+  static argTypes: RequiredMap<PosexplodeOuterExprArgs> = {
     // @ts-expect-error - super.argTypes not accessible in multiInherit classes
     ...super.argTypes,
-  } satisfies RequiredMap<PosexplodeOuterExprArgs>;
+  };
 
   declare args: PosexplodeOuterExprArgs;
 
@@ -39121,13 +39118,13 @@ export class ApproxQuantileExpr extends QuantileExpr {
    * Defines the arguments (properties and child expressions) for ApproxQuantile expressions.
    * Each key represents an argument name, and the boolean indicates if it's required.
    */
-  static argTypes = {
+  static argTypes: RequiredMap<ApproxQuantileExprArgs> = {
     ...super.argTypes,
     quantile: true,
     accuracy: false,
     weight: false,
     errorTolerance: false,
-  } satisfies RequiredMap<ApproxQuantileExprArgs>;
+  };
 
   declare args: ApproxQuantileExprArgs;
 
