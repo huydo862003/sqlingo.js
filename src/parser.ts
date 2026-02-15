@@ -470,6 +470,53 @@ import {
   newTrie, type TrieNode, inTrie, TrieResult,
 } from './trie';
 
+// NOTE: parse() and parseOne() are defined here in parser.ts to avoid circular dependencies.
+// In Python sqlglot, these are in __init__.py but we moved them here from index.ts.
+
+/**
+ * Standalone parse function for convenience.
+ * Parses a SQL string into an array of Expression objects.
+ *
+ * @param sql - SQL string to parse
+ * @param opts - Parse options, including optional 'into' parameter to specify target expression type
+ * @returns Array of parsed expressions (may contain undefined for parse errors)
+ */
+export function parse<IntoT extends Expression = Expression> (
+  sql: string,
+  opts?: ParseOptions<IntoT>,
+): (IntoT | undefined)[] {
+  const parser = new Parser(opts);
+  return parser.parse(sql) as (IntoT | undefined)[];
+}
+
+/**
+ * Parse a single expression from SQL string.
+ * Throws ParseError if no expression is parsed.
+ *
+ * @param sql - SQL string to parse
+ * @param opts - Parse options, including optional 'into' parameter to specify target expression type
+ * @returns Single parsed expression of type IntoT
+ */
+export function parseOne<IntoT extends Expression = Expression> (
+  sql: string,
+  opts?: ParseOptions<IntoT>,
+): IntoT {
+  const activeDialect = opts?.read ?? opts?.dialect;
+  const result = parse<IntoT>(sql, {
+    ...opts,
+    dialect: activeDialect,
+  });
+
+  for (const expression of result) {
+    if (!expression) {
+      throw new ParseError(`No expression was parsed from '${sql}'`);
+    }
+    return expression;
+  }
+
+  throw new ParseError(`No expression was parsed from '${sql}'`);
+}
+
 export type OptionsType = Record<string, (string[] | string)[]>;
 
 // Used to detect alphabetical characters and +/- in timestamp literals
@@ -12566,51 +12613,4 @@ export class Parser {
   private get _dialectConstructor (): typeof Dialect {
     return this.dialect.constructor as typeof Dialect;
   }
-}
-
-// NOTE: parse() and parseOne() are defined here in parser.ts to avoid circular dependencies.
-// In Python sqlglot, these are in __init__.py but we moved them here from index.ts.
-
-/**
- * Standalone parse function for convenience.
- * Parses a SQL string into an array of Expression objects.
- *
- * @param sql - SQL string to parse
- * @param opts - Parse options, including optional 'into' parameter to specify target expression type
- * @returns Array of parsed expressions (may contain undefined for parse errors)
- */
-export function parse<IntoT extends Expression = Expression> (
-  sql: string,
-  opts?: ParseOptions<IntoT>,
-): (IntoT | undefined)[] {
-  const parser = new Parser(opts);
-  return parser.parse(sql) as (IntoT | undefined)[];
-}
-
-/**
- * Parse a single expression from SQL string.
- * Throws ParseError if no expression is parsed.
- *
- * @param sql - SQL string to parse
- * @param opts - Parse options, including optional 'into' parameter to specify target expression type
- * @returns Single parsed expression of type IntoT
- */
-export function parseOne<IntoT extends Expression = Expression> (
-  sql: string,
-  opts?: ParseOptions<IntoT>,
-): IntoT {
-  const activeDialect = opts?.read ?? opts?.dialect;
-  const result = parse<IntoT>(sql, {
-    ...opts,
-    dialect: activeDialect,
-  });
-
-  for (const expression of result) {
-    if (!expression) {
-      throw new ParseError(`No expression was parsed from '${sql}'`);
-    }
-    return expression;
-  }
-
-  throw new ParseError(`No expression was parsed from '${sql}'`);
 }
