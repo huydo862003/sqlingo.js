@@ -5,6 +5,7 @@ import {
   ExceptExpr, IntersectExpr, UnionExpr,
 } from '../expressions';
 import { Tokenizer } from '../tokens';
+import type { Parser } from '../parser';
 import {
   newTrie, type TrieNode,
 } from '../trie';
@@ -712,6 +713,22 @@ export class Dialect {
 
   /** Inverse mapping of CREATABLE_KIND_MAPPING. */
   static INVERSE_CREATABLE_KIND_MAPPING: Record<string, string> = {};
+
+  // TODO: To be implemented
+  static parserClass: typeof Parser | undefined = undefined;
+
+  // TODO: To be implemented
+  static creatableKindMapping: Record<string, string> = {};
+
+  // TODO: To be implemented
+  static toJsonPath (path?: Expression): Expression | undefined {
+    return path;
+  }
+
+  // TODO: To be implemented
+  toJsonPath (path?: Expression): Expression | undefined {
+    return this.constructor.toJsonPath(path);
+  }
 
   /**
    * Register a dialect class.

@@ -21685,7 +21685,7 @@ export type ArrayRemoveExprArgs = Merge<[
   {
     this: Expression;
     expression: Expression;
-    nullPropagation?: Expression;
+    nullPropagation?: boolean;
   },
 ]>;
 
@@ -21713,7 +21713,7 @@ export class ArrayRemoveExpr extends FuncExpr {
     return this.args.expression;
   }
 
-  get $nullPropagation (): Expression | undefined {
+  get $nullPropagation (): boolean | undefined {
     return this.args.nullPropagation;
   }
 
@@ -22989,7 +22989,7 @@ export type ArrayAppendExprArgs = Merge<[
   {
     this: Expression;
     expression: Expression;
-    nullPropagation?: Expression;
+    nullPropagation?: boolean;
   },
 ]>;
 
@@ -23017,7 +23017,7 @@ export class ArrayAppendExpr extends FuncExpr {
     return this.args.expression;
   }
 
-  get $nullPropagation (): Expression | undefined {
+  get $nullPropagation (): boolean | undefined {
     return this.args.nullPropagation;
   }
 
@@ -23031,7 +23031,7 @@ export type ArrayPrependExprArgs = Merge<[
   {
     this: Expression;
     expression: Expression;
-    nullPropagation?: Expression;
+    nullPropagation?: boolean;
   },
 ]>;
 
@@ -23059,7 +23059,7 @@ export class ArrayPrependExpr extends FuncExpr {
     return this.args.expression;
   }
 
-  get $nullPropagation (): Expression | undefined {
+  get $nullPropagation (): boolean | undefined {
     return this.args.nullPropagation;
   }
 
@@ -23073,7 +23073,7 @@ export type ArrayConcatExprArgs = Merge<[
   {
     this: Expression;
     expressions?: Expression[];
-    nullPropagation?: Expression;
+    nullPropagation?: boolean;
   },
 ]>;
 
@@ -23105,7 +23105,7 @@ export class ArrayConcatExpr extends FuncExpr {
     return this.args.expressions;
   }
 
-  get $nullPropagation (): Expression | undefined {
+  get $nullPropagation (): boolean | undefined {
     return this.args.nullPropagation;
   }
 
@@ -24458,7 +24458,7 @@ export type ConcatExprArgs = Merge<[
   {
     expressions: Expression[];
     safe?: boolean;
-    coalesce?: Expression;
+    coalesce?: boolean;
   },
 ]>;
 
@@ -24488,7 +24488,7 @@ export class ConcatExpr extends FuncExpr {
     return this.args.safe;
   }
 
-  get $coalesce (): Expression | undefined {
+  get $coalesce (): boolean | undefined {
     return this.args.coalesce;
   }
 
@@ -28481,7 +28481,7 @@ export type GreatestExprArgs = Merge<[
   {
     this: Expression;
     expressions?: Expression[];
-    ignoreNulls: Expression[];
+    ignoreNulls: boolean;
   },
 ]>;
 
@@ -28511,7 +28511,7 @@ export class GreatestExpr extends FuncExpr {
     return this.args.expressions;
   }
 
-  get $ignoreNulls (): Expression[] {
+  get $ignoreNulls (): boolean {
     return this.args.ignoreNulls;
   }
 
@@ -30466,7 +30466,7 @@ export type LeastExprArgs = Merge<[
   {
     this: Expression;
     expressions?: Expression[];
-    ignoreNulls: Expression[];
+    ignoreNulls: boolean;
   },
 ]>;
 
@@ -30496,7 +30496,7 @@ export class LeastExpr extends FuncExpr {
     return this.args.expressions;
   }
 
-  get $ignoreNulls (): Expression[] {
+  get $ignoreNulls (): boolean {
     return this.args.ignoreNulls;
   }
 
