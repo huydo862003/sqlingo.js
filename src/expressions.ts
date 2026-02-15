@@ -6534,11 +6534,11 @@ export class JoinHintExpr extends Expression {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): string {
     return this.args.this;
   }
 
-  get $expressions (): Expression[] {
+  get $expressions (): (Expression | string)[] {
     return this.args.expressions;
   }
 }
@@ -8891,7 +8891,7 @@ export class IndexTableHintExpr extends Expression {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): string {
     return this.args.this;
   }
 
@@ -8899,7 +8899,7 @@ export class IndexTableHintExpr extends Expression {
     return this.args.expressions;
   }
 
-  get $target (): Expression | undefined {
+  get $target (): string | undefined {
     return this.args.target;
   }
 }
@@ -10261,7 +10261,7 @@ export class DataTypeExpr extends Expression {
     return this.args.expressions;
   }
 
-  get $nested (): Expression | undefined {
+  get $nested (): boolean | undefined {
     return this.args.nested;
   }
 
@@ -10269,7 +10269,7 @@ export class DataTypeExpr extends Expression {
     return this.args.values;
   }
 
-  get $prefix (): Expression | undefined {
+  get $prefix (): boolean | string | undefined {
     return this.args.prefix;
   }
 
@@ -10321,11 +10321,11 @@ export class CommandExpr extends Expression {
     super(args);
   }
 
-  get $this (): Expression {
+  get $this (): string {
     return this.args.this;
   }
 
-  get $expression (): ExpressionValue {
+  get $expression (): string | undefined {
     return this.args.expression;
   }
 }
@@ -13110,7 +13110,7 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
     super(args);
   }
 
-  get $this (): Expression | undefined {
+  get $this (): boolean | undefined {
     return this.args.this;
   }
 
@@ -13142,7 +13142,7 @@ export class GeneratedAsIdentityColumnConstraintExpr extends ColumnConstraintKin
     return this.args.cycle;
   }
 
-  get $order (): Expression | undefined {
+  get $order (): boolean | undefined {
     return this.args.order;
   }
 }
@@ -13589,11 +13589,11 @@ export class ComputedColumnConstraintExpr extends ColumnConstraintKindExpr {
     return this.args.this;
   }
 
-  get $persisted (): Expression | undefined {
+  get $persisted (): boolean | undefined {
     return this.args.persisted;
   }
 
-  get $notNull (): Expression | undefined {
+  get $notNull (): boolean | undefined {
     return this.args.notNull;
   }
 
@@ -15685,7 +15685,7 @@ export class OnCommitPropertyExpr extends PropertyExpr {
     super(args);
   }
 
-  get $delete (): Expression | undefined {
+  get $delete (): boolean | undefined {
     return this.args.delete;
   }
 }
@@ -29512,15 +29512,15 @@ export class JSONTableExpr extends FuncExpr {
     return this.args.schema;
   }
 
-  get $path (): Expression | undefined {
+  get $path (): Expression | string | undefined {
     return this.args.path;
   }
 
-  get $errorHandling (): Expression | undefined {
+  get $errorHandling (): Expression | string | undefined {
     return this.args.errorHandling;
   }
 
-  get $emptyHandling (): Expression | undefined {
+  get $emptyHandling (): Expression | string | undefined {
     return this.args.emptyHandling;
   }
 
