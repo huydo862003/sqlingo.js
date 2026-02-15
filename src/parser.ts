@@ -12567,3 +12567,42 @@ export class Parser {
     return this.dialect.constructor as typeof Dialect;
   }
 }
+
+// NOTE: parse() and parseOne() are defined here in parser.ts to avoid circular dependencies.
+// In Python sqlglot, these are in __init__.py but we moved them here from index.ts.
+
+/**
+ * Standalone parse function for convenience.
+ * Parses a SQL string into an array of Expression objects.
+ */
+export function parse (
+  sql: string,
+  opts?: ParseOptions,
+): Expression[] {
+  const parser = new Parser(opts);
+  return parser.parse(sql);
+}
+
+/**
+ * Parse a single expression from SQL string.
+ * Throws ParseError if no expression is parsed.
+ */
+export function parseOne (
+  sql: string,
+  opts?: ParseOptions,
+): Expression {
+  const activeDialect = opts?.read ?? opts?.dialect;
+  const result = parse(sql, {
+    ...opts,
+    dialect: activeDialect,
+  });
+
+  for (const expression of result) {
+    if (!expression) {
+      throw new ParseError(`No expression was parsed from '${sql}'`);
+    }
+    return expression;
+  }
+
+  throw new ParseError(`No expression was parsed from '${sql}'`);
+}
