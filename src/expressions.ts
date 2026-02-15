@@ -17377,7 +17377,7 @@ export type UpdateExprArgs = Merge<[
     with?: Expression;
     this?: Expression;
     expressions?: Expression[];
-    from?: Expression;
+    from?: FromExpr;
     where?: Expression;
     returning?: Expression;
     order?: Expression;
@@ -17420,7 +17420,7 @@ export class UpdateExpr extends DMLExpr {
     return this.args.expressions;
   }
 
-  get $from (): Expression | undefined {
+  get $from (): FromExpr | undefined {
     return this.args.from;
   }
 
