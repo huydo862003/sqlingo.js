@@ -6512,7 +6512,7 @@ export class HintExpr extends Expression {
     super(args);
   }
 
-  get $expressions (): Expression[] {
+  get $expressions (): (Expression | string)[] {
     return this.args.expressions;
   }
 }
