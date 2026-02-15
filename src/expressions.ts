@@ -1039,6 +1039,8 @@ export interface BaseExpressionArgs {
   alias?: TableAliasExpr | IdentifierExpr | string;
   isString?: boolean;
   to?: Expression;
+  from?: FromExpr;
+  joins?: JoinExpr[];
 }
 
 /**
@@ -9042,7 +9044,7 @@ export type TableExprArgs = Merge<[
     catalog?: IdentifierExpr;
     alias?: TableAliasExpr | IdentifierExpr;
     laterals?: Expression[];
-    joins?: Expression[];
+    joins?: JoinExpr[];
     pivots?: Expression[];
     hints?: Expression[];
     systemTime?: Expression;
@@ -9119,7 +9121,7 @@ export class TableExpr extends Expression {
     return this.args.laterals;
   }
 
-  get $joins (): Expression[] | undefined {
+  get $joins (): JoinExpr[] | undefined {
     return this.args.joins;
   }
 
@@ -17202,7 +17204,7 @@ export type SetOperationExprArgs = Merge<[
     on?: Expression;
     match?: Expression;
     laterals?: Expression[];
-    joins?: Expression[];
+    joins?: JoinExpr[];
     connect?: Expression;
     pivots?: Expression[];
     prewhere?: Expression;
@@ -17644,11 +17646,11 @@ export type SelectExprArgs = Merge<[
     hint?: Expression;
     distinct?: boolean;
     into?: Expression;
-    from?: Expression;
+    from?: FromExpr;
     operationModifiers?: Expression[];
     match?: Expression;
     laterals?: Expression[];
-    joins?: Expression[];
+    joins?: JoinExpr[];
     connect?: Expression;
     pivots?: Expression[];
     prewhere?: Expression;
@@ -17714,7 +17716,7 @@ export class SelectExpr extends QueryExpr {
     return this.args.into;
   }
 
-  get $from (): Expression | undefined {
+  get $from (): FromExpr | undefined {
     return this.args.from;
   }
 
@@ -17730,7 +17732,7 @@ export class SelectExpr extends QueryExpr {
     return this.args.laterals;
   }
 
-  get $joins (): Expression[] | undefined {
+  get $joins (): JoinExpr[] | undefined {
     return this.args.joins;
   }
 
@@ -19490,7 +19492,7 @@ export class LateralExpr extends UDTFExpr {
 export type TableFromRowsExprArgs = Merge<[
   UDTFExprArgs,
   {
-    joins?: Expression[];
+    joins?: JoinExpr[];
     pivots?: Expression[];
     sample?: number | Expression;
     alias?: TableAliasExpr;
@@ -19528,7 +19530,7 @@ export class TableFromRowsExpr extends UDTFExpr {
     return this.args.alias;
   }
 
-  get $joins (): Expression[] | undefined {
+  get $joins (): JoinExpr[] | undefined {
     return this.args.joins;
   }
 
