@@ -7950,7 +7950,7 @@ export class Parser {
       return this.parseAsCommand(start);
     }
 
-    let thisExpr: Expression;
+    let thisExpr: Expression | undefined;
     if (kind.tokenType === TokenType.FUNCTION || kind.tokenType === TokenType.PROCEDURE) {
       thisExpr = this.parseUserDefinedFunction({ kind: kind.tokenType });
     } else if (kind.tokenType === TokenType.TABLE) {
