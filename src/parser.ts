@@ -9926,19 +9926,11 @@ export class Parser {
         },
       );
     } else if (!thisExpr) {
-      thisExpr = buildArrayConstructor(ArrayExpr, {
-        args: expressions,
-        bracketKind,
-        dialect: this.dialect,
-      });
+      thisExpr = buildArrayConstructor(ArrayExpr, expressions, bracketKind, this.dialect);
     } else {
       const constructorType = this._constructor.ARRAY_CONSTRUCTORS[thisExpr.name?.toUpperCase()];
       if (constructorType) {
-        return buildArrayConstructor(constructorType, {
-          args: expressions,
-          bracketKind,
-          dialect: this.dialect,
-        });
+        return buildArrayConstructor(constructorType, expressions, bracketKind, this.dialect);
       }
 
       const adjustedExpressions = applyIndexOffset(
