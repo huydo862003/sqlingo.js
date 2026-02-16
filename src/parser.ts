@@ -7877,7 +7877,7 @@ export class Parser {
   parseColumnOps (thisExpr?: Expression): Expression | undefined {
     let current = this.parseBracket(thisExpr);
 
-    while (this._matchSet(this._constructor.COLUMN_OPERATORS)) {
+    while (this._matchSet(Object.keys(this._constructor.COLUMN_OPERATORS) as TokenType[])) {
       const opToken = this._prev!.tokenType;
       const op = this._constructor.COLUMN_OPERATORS[opToken];
 
@@ -10287,7 +10287,7 @@ export class Parser {
   }
 
   parsePrimary (): Expression | undefined {
-    if (this._matchSet(this._constructor.PRIMARY_PARSERS)) {
+    if (this._matchSet(Object.keys(this._constructor.PRIMARY_PARSERS) as TokenType[])) {
       const tokenType = this._prev!.tokenType;
       const primary = this._constructor.PRIMARY_PARSERS[tokenType](this, this._prev!);
 
@@ -10966,7 +10966,7 @@ export class Parser {
       expressions = [this.parseLambdaArg()];
     }
 
-    if (this._matchSet(this._constructor.LAMBDAS)) {
+    if (this._matchSet(Object.keys(this._constructor.LAMBDAS) as TokenType[])) {
       return this._constructor.LAMBDAS[this._prev!.tokenType](this, expressions);
     }
 
@@ -11166,7 +11166,7 @@ export class Parser {
       });
     } else if (this._matchTextSeq('CLUSTER')) {
       thisExpr = this.parseTable();
-    } else if (this._matchTexts(this._constructor.ANALYZE_EXPRESSION_PARSERS)) {
+    } else if (this._matchTexts(Object.keys(this._constructor.ANALYZE_EXPRESSION_PARSERS))) {
       kind = undefined;
       innerExpression =
         this._constructor.ANALYZE_EXPRESSION_PARSERS[this._prev!.text.toUpperCase()](this);
@@ -11198,7 +11198,7 @@ export class Parser {
       mode = undefined;
     }
 
-    if (this._matchTexts(this._constructor.ANALYZE_EXPRESSION_PARSERS)) {
+    if (this._matchTexts(Object.keys(this._constructor.ANALYZE_EXPRESSION_PARSERS))) {
       innerExpression =
         this._constructor.ANALYZE_EXPRESSION_PARSERS[this._prev!.text.toUpperCase()](this);
     }
@@ -11812,7 +11812,7 @@ export class Parser {
   }
 
   parseAlterTableAlter (): Expression | undefined {
-    if (this._matchTexts(this._constructor.ALTER_ALTER_PARSERS)) {
+    if (this._matchTexts(Object.keys(this._constructor.ALTER_ALTER_PARSERS))) {
       return this._constructor.ALTER_ALTER_PARSERS[this._prev!.text.toUpperCase()](this);
     }
 
