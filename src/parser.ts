@@ -2699,8 +2699,8 @@ export class Parser {
   }
 
   // Helper methods
-  findSql (start: Token, end: Token): string {
-    return this.sql.slice(start.start ?? 0, (end.end ?? 0) + 1);
+  findSql (start?: Token, end?: Token): string {
+    return this.sql.slice(start?.start ?? 0, (end?.end ?? 0) + 1);
   }
 
   isConnected (): boolean {
