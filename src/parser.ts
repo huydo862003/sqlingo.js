@@ -8340,7 +8340,7 @@ export class Parser {
     }
 
     for (const column of node.findAll(ColumnExpr)) {
-      const typ = lambdaTypes[column.parts[0].name];
+      const typ = lambdaTypes[column.parts[0]?.name];
       if (typ !== undefined) {
         let dotOrId = column.table ? column.toDot() : column.$this;
 
@@ -8886,7 +8886,7 @@ export class Parser {
 
   parseStar (): Expression | undefined {
     if (this._match(TokenType.STAR)) {
-      return this._constructor.PRIMARY_PARSERS[TokenType.STAR](this, this._prev!);
+      return this._constructor.PRIMARY_PARSERS[TokenType.STAR]?.(this, this._prev!);
     }
     return this.parsePlaceholder();
   }
@@ -8984,17 +8984,17 @@ export class Parser {
 
   parseNull (): Expression | undefined {
     if (this._matchSet(new Set([TokenType.NULL, TokenType.UNKNOWN]))) {
-      return this._constructor.PRIMARY_PARSERS[TokenType.NULL](this, this._prev!);
+      return this._constructor.PRIMARY_PARSERS[TokenType.NULL]?.(this, this._prev!);
     }
     return this.parsePlaceholder();
   }
 
   parseBoolean (): Expression | undefined {
     if (this._match(TokenType.TRUE)) {
-      return this._constructor.PRIMARY_PARSERS[TokenType.TRUE](this, this._prev!);
+      return this._constructor.PRIMARY_PARSERS[TokenType.TRUE]?.(this, this._prev!);
     }
     if (this._match(TokenType.FALSE)) {
-      return this._constructor.PRIMARY_PARSERS[TokenType.FALSE](this, this._prev!);
+      return this._constructor.PRIMARY_PARSERS[TokenType.FALSE]?.(this, this._prev!);
     }
     return this.parsePlaceholder();
   }
@@ -10001,7 +10001,7 @@ export class Parser {
     }
 
     if (!this._match(TokenType.END)) {
-      if (defaultCase instanceof IntervalExpr && defaultCase.$this.sql().toUpperCase() === 'END') {
+      if (defaultCase instanceof IntervalExpr && defaultCase.$this?.sql().toUpperCase() === 'END') {
         defaultCase = column('interval');
       } else {
         this.raiseError('Expected END after CASE', this._prev);
@@ -10878,7 +10878,7 @@ export class Parser {
 
         if (!(e instanceof PropertyEQExpr)) {
           e = this.expression(PropertyEQExpr, {
-            this: parseMap ? e.this : toIdentifier(e.this.name),
+            this: parseMap ? e.this : toIdentifier(e.this?.name),
             expression: e.expression,
           });
         }
@@ -11814,7 +11814,7 @@ export class Parser {
 
   parseAlterTableAlter (): Expression | undefined {
     if (this._matchTexts(Object.keys(this._constructor.ALTER_ALTER_PARSERS))) {
-      return this._constructor.ALTER_ALTER_PARSERS[this._prev!.text.toUpperCase()](this);
+      return this._constructor.ALTER_ALTER_PARSERS[this._prev!.text.toUpperCase()]?.(this);
     }
 
     this._match(TokenType.COLUMN);
@@ -12517,7 +12517,7 @@ export class Parser {
 
     const from = query.args.from;
     if (from) {
-      from.$this.setArgKey('pivots', pivots);
+      from.$this?.setArgKey('pivots', pivots);
     }
 
     return this.buildPipeCte({
