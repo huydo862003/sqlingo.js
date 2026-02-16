@@ -1823,7 +1823,7 @@ export class Parser {
     ),
   };
 
-  static RANGE_PARSERS: Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression>> = {
+  static RANGE_PARSERS: Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> = {
     [TokenType.AT_GT]: binaryRangeParser(ArrayContainsAllExpr),
     [TokenType.BETWEEN]: (self: Parser, this_: Expression) => self.parseBetween(this_),
     [TokenType.GLOB]: binaryRangeParser(GlobExpr),
