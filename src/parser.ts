@@ -4788,10 +4788,15 @@ export class Parser {
               );
             }
 
-            thisExpr.setArgKey(key, expression);
+            if (Array.isArray(expression)) {
+              this.raiseError('Unexpected array expression', this._curr);
+            }
+            const expr = expression as Expression;
+
+            thisExpr.setArgKey(key, expr);
             if (key === 'limit') {
-              const offset = expression.args.offset;
-              expression.setArgKey('offset', undefined);
+              const offset = expr.args.offset;
+              expr.setArgKey('offset', undefined);
 
               if (offset) {
                 const offsetExpr = new OffsetExpr({ expression: offset });
