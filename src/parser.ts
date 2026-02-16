@@ -8150,7 +8150,11 @@ export class Parser {
   expression<E extends Expression> (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expClass: new (args: any) => E,
-    options?: unknown,
+    options?: {
+      token?: Token;
+      comments?: string[];
+      [index: string]: unknown;
+    } = {},
   ): E {
     /**
      * Creates a new, validated Expression.
@@ -8161,7 +8165,7 @@ export class Parser {
      */
     const {
       token, comments, ...kwargs
-    } = options || {};
+    } = options;
 
     let instance: E;
     if (token) {
