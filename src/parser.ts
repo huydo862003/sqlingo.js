@@ -7408,7 +7408,7 @@ export class Parser {
       });
 
       if (identifier instanceof IdentifierExpr) {
-        let tokens: unknown[] | undefined;
+        let tokens: Token[] | undefined;
         try {
           tokens = this.dialect.tokenize?.(identifier.name);
         } catch {
@@ -7438,13 +7438,13 @@ export class Parser {
 
     // https://materialize.com/docs/sql/types/map/
     if (typeToken === TokenType.MAP && this._match(TokenType.L_BRACKET)) {
-      const keyType = this.parseTypes(options);
+      const keyType = this.parseTypes(options)!;
       if (!this._match(TokenType.FARROW)) {
         this._retreat(index);
         return undefined;
       }
 
-      const valueType = this.parseTypes(options);
+      const valueType = this.parseTypes(options)!;
       if (!this._match(TokenType.R_BRACKET)) {
         this._retreat(index);
         return undefined;
