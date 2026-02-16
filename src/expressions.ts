@@ -19048,10 +19048,27 @@ export class FuncExpr extends ConditionExpr {
   static isVarLenArgs = false;
 
   /**
+   * Explicit ordering of arguments for fromArgList.
+   *
+   * In Python, dict keys maintain insertion order (Python 3.7+), so Object.keys(argTypes)
+   * reliably reflects the order arguments were defined. However, in JavaScript, while
+   * modern engines do maintain insertion order for string keys, relying on this behavior
+   * can lead to subtle bugs, especially with numeric keys or in edge cases.
+   *
+   * By explicitly defining argOrder, we make the argument ordering:
+   * - Reliable and predictable across all JavaScript engines
+   * - Self-documenting (readers immediately see the expected argument order)
+   * - Protected from future refactoring that might change argTypes definition order
+   *
+   * Subclasses with specific arguments should override this array.
+   */
+  static argOrder: string[] = [];
+
+  /**
    * Create a function instance from a list of arguments
    */
   static fromArgList<T extends typeof FuncExpr> (this: T, args: Expression[]): InstanceType<T> {
-    const allArgKeys = Object.keys(this.argTypes);
+    const allArgKeys = this.argOrder;
 
     if (this.isVarLenArgs) {
       const nonVarLenArgKeys = allArgKeys.slice(0, -1);
@@ -20740,6 +20757,8 @@ export class SafeFuncExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: SafeFuncExprArgs;
 
   constructor (args: SafeFuncExprArgs) {
@@ -20761,6 +20780,8 @@ export class TypeofExpr extends FuncExpr {
   static argTypes: RequiredMap<TypeofExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: TypeofExprArgs;
 
@@ -20784,6 +20805,8 @@ export class AcosExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: AcosExprArgs;
 
   constructor (args: AcosExprArgs) {
@@ -20805,6 +20828,8 @@ export class AcoshExpr extends FuncExpr {
   static argTypes: RequiredMap<AcoshExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: AcoshExprArgs;
 
@@ -20828,6 +20853,8 @@ export class AsinExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: AsinExprArgs;
 
   constructor (args: AsinExprArgs) {
@@ -20849,6 +20876,8 @@ export class AsinhExpr extends FuncExpr {
   static argTypes: RequiredMap<AsinhExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: AsinhExprArgs;
 
@@ -20877,6 +20906,8 @@ export class AtanExpr extends FuncExpr {
     this: true,
     expression: false,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: AtanExprArgs;
 
@@ -20908,6 +20939,8 @@ export class AtanhExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: AtanhExprArgs;
 
   constructor (args: AtanhExprArgs) {
@@ -20935,6 +20968,8 @@ export class Atan2Expr extends FuncExpr {
     this: true,
     expression: true,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: Atan2ExprArgs;
 
@@ -20966,6 +21001,8 @@ export class CotExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CotExprArgs;
 
   constructor (args: CotExprArgs) {
@@ -20987,6 +21024,8 @@ export class CothExpr extends FuncExpr {
   static argTypes: RequiredMap<CothExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: CothExprArgs;
 
@@ -21010,6 +21049,8 @@ export class CosExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CosExprArgs;
 
   constructor (args: CosExprArgs) {
@@ -21031,6 +21072,8 @@ export class CscExpr extends FuncExpr {
   static argTypes: RequiredMap<CscExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: CscExprArgs;
 
@@ -21054,6 +21097,8 @@ export class CschExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CschExprArgs;
 
   constructor (args: CschExprArgs) {
@@ -21075,6 +21120,8 @@ export class SecExpr extends FuncExpr {
   static argTypes: RequiredMap<SecExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: SecExprArgs;
 
@@ -21098,6 +21145,8 @@ export class SechExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: SechExprArgs;
 
   constructor (args: SechExprArgs) {
@@ -21119,6 +21168,8 @@ export class SinExpr extends FuncExpr {
   static argTypes: RequiredMap<SinExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: SinExprArgs;
 
@@ -21142,6 +21193,8 @@ export class SinhExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: SinhExprArgs;
 
   constructor (args: SinhExprArgs) {
@@ -21163,6 +21216,8 @@ export class TanExpr extends FuncExpr {
   static argTypes: RequiredMap<TanExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: TanExprArgs;
 
@@ -21186,6 +21241,8 @@ export class TanhExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: TanhExprArgs;
 
   constructor (args: TanhExprArgs) {
@@ -21208,6 +21265,8 @@ export class DegreesExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: DegreesExprArgs;
 
   constructor (args: DegreesExprArgs) {
@@ -21229,6 +21288,8 @@ export class CoshExpr extends FuncExpr {
   static argTypes: RequiredMap<CoshExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: CoshExprArgs;
 
@@ -21257,6 +21318,8 @@ export class CosineDistanceExpr extends FuncExpr {
     this: true,
     expression: true,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: CosineDistanceExprArgs;
 
@@ -21294,6 +21357,8 @@ export class DotProductExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: DotProductExprArgs;
 
   constructor (args: DotProductExprArgs) {
@@ -21329,6 +21394,8 @@ export class EuclideanDistanceExpr extends FuncExpr {
     this: true,
     expression: true,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: EuclideanDistanceExprArgs;
 
@@ -21366,6 +21433,8 @@ export class ManhattanDistanceExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: ManhattanDistanceExprArgs;
 
   constructor (args: ManhattanDistanceExprArgs) {
@@ -21402,6 +21471,8 @@ export class JarowinklerSimilarityExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: JarowinklerSimilarityExprArgs;
 
   constructor (args: JarowinklerSimilarityExprArgs) {
@@ -21432,6 +21503,8 @@ export class AggFuncExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: AggFuncExprArgs;
 
   constructor (args: AggFuncExprArgs) {
@@ -21453,6 +21526,8 @@ export class BitwiseCountExpr extends FuncExpr {
   static argTypes: RequiredMap<BitwiseCountExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: BitwiseCountExprArgs;
 
@@ -21476,6 +21551,8 @@ export class BitmapBucketNumberExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: BitmapBucketNumberExprArgs;
 
   constructor (args: BitmapBucketNumberExprArgs) {
@@ -21497,6 +21574,8 @@ export class BitmapCountExpr extends FuncExpr {
   static argTypes: RequiredMap<BitmapCountExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: BitmapCountExprArgs;
 
@@ -21520,6 +21599,8 @@ export class BitmapBitPositionExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: BitmapBitPositionExprArgs;
 
   constructor (args: BitmapBitPositionExprArgs) {
@@ -21541,6 +21622,8 @@ export class ByteLengthExpr extends FuncExpr {
   static argTypes: RequiredMap<ByteLengthExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: ByteLengthExprArgs;
 
@@ -21569,6 +21652,8 @@ export class BoolnotExpr extends FuncExpr {
     this: true,
     roundInput: false,
   };
+
+  static argOrder = ['this', 'roundInput'];
 
   declare args: BoolnotExprArgs;
 
@@ -21607,6 +21692,12 @@ export class BoolandExpr extends FuncExpr {
     expression: true,
     roundInput: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'roundInput',
+  ];
 
   declare args: BoolandExprArgs;
 
@@ -21650,6 +21741,12 @@ export class BoolorExpr extends FuncExpr {
     roundInput: false,
   };
 
+  static argOrder = [
+    'this',
+    'expression',
+    'roundInput',
+  ];
+
   declare args: BoolorExprArgs;
 
   constructor (args: BoolorExprArgs) {
@@ -21687,6 +21784,8 @@ export class JSONBoolExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: JSONBoolExprArgs;
 
   constructor (args: JSONBoolExprArgs) {
@@ -21716,6 +21815,12 @@ export class ArrayRemoveExpr extends FuncExpr {
     expression: true,
     nullPropagation: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'nullPropagation',
+  ];
 
   declare args: ArrayRemoveExprArgs;
 
@@ -21751,6 +21856,8 @@ export class AbsExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: AbsExprArgs;
 
   constructor (args: AbsExprArgs) {
@@ -21778,6 +21885,8 @@ export class ApproxTopKEstimateExpr extends FuncExpr {
     this: true,
     expression: false,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: ApproxTopKEstimateExprArgs;
 
@@ -21815,6 +21924,8 @@ export class FarmFingerprintExpr extends FuncExpr {
     expressions: true,
   };
 
+  static argOrder = ['expressions'];
+
   declare args: FarmFingerprintExprArgs;
 
   constructor (args: FarmFingerprintExprArgs) {
@@ -21840,6 +21951,8 @@ export class FlattenExpr extends FuncExpr {
   static argTypes: RequiredMap<FlattenExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: FlattenExprArgs;
 
@@ -21868,6 +21981,8 @@ export class Float64Expr extends FuncExpr {
     this: true,
     expression: false,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: Float64ExprArgs;
 
@@ -21908,6 +22023,8 @@ export class TransformExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: TransformExprArgs;
 
   constructor (args: TransformExprArgs) {
@@ -21946,6 +22063,12 @@ export class TranslateExpr extends FuncExpr {
     fromStr: true,
     to: true,
   };
+
+  static argOrder = [
+    'this',
+    'fromStr',
+    'to',
+  ];
 
   declare args: TranslateExprArgs;
 
@@ -21989,6 +22112,8 @@ export class AnonymousExpr extends FuncExpr {
     expressions: false,
   };
 
+  static argOrder = ['this', 'expressions'];
+
   declare args: AnonymousExprArgs;
 
   constructor (args: AnonymousExprArgs) {
@@ -22028,6 +22153,8 @@ export class ApplyExpr extends FuncExpr {
     this: true,
     expression: true,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: ApplyExprArgs;
 
@@ -22073,6 +22200,12 @@ export class ArrayExpr extends FuncExpr {
     structNameInheritance: false,
   };
 
+  static argOrder = [
+    'expressions',
+    'bracketNotation',
+    'structNameInheritance',
+  ];
+
   declare args: ArrayExprArgs;
 
   constructor (args: ArrayExprArgs) {
@@ -22107,6 +22240,8 @@ export class AsciiExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: AsciiExprArgs;
 
   constructor (args: AsciiExprArgs) {
@@ -22128,6 +22263,8 @@ export class ToArrayExpr extends FuncExpr {
   static argTypes: RequiredMap<ToArrayExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: ToArrayExprArgs;
 
@@ -22156,6 +22293,8 @@ export class ToBooleanExpr extends FuncExpr {
     this: true,
     safe: false,
   };
+
+  static argOrder = ['this', 'safe'];
 
   declare args: ToBooleanExprArgs;
 
@@ -22190,6 +22329,8 @@ export class ListExpr extends FuncExpr {
     ...super.argTypes,
     expressions: false,
   };
+
+  static argOrder = ['expressions'];
 
   declare args: ListExprArgs;
 
@@ -22229,6 +22370,13 @@ export class PadExpr extends FuncExpr {
     fillPattern: false,
     isLeft: true,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'fillPattern',
+    'isLeft',
+  ];
 
   declare args: PadExprArgs;
 
@@ -22282,6 +22430,13 @@ export class ToCharExpr extends FuncExpr {
     isNumeric: false,
   };
 
+  static argOrder = [
+    'this',
+    'format',
+    'nlsparam',
+    'isNumeric',
+  ];
+
   declare args: ToCharExprArgs;
 
   constructor (args: ToCharExprArgs) {
@@ -22319,6 +22474,8 @@ export class ToCodePointsExpr extends FuncExpr {
   static argTypes: RequiredMap<ToCodePointsExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: ToCodePointsExprArgs;
 
@@ -22361,6 +22518,16 @@ export class ToNumberExpr extends FuncExpr {
     safe: false,
     safeName: false,
   };
+
+  static argOrder = [
+    'this',
+    'format',
+    'nlsparam',
+    'precision',
+    'scale',
+    'safe',
+    'safeName',
+  ];
 
   declare args: ToNumberExprArgs;
 
@@ -22424,6 +22591,12 @@ export class ToDoubleExpr extends FuncExpr {
     safe: false,
   };
 
+  static argOrder = [
+    'this',
+    'format',
+    'safe',
+  ];
+
   declare args: ToDoubleExprArgs;
 
   constructor (args: ToDoubleExprArgs) {
@@ -22464,6 +22637,8 @@ export class ToDecfloatExpr extends FuncExpr {
     format: false,
   };
 
+  static argOrder = ['this', 'format'];
+
   declare args: ToDecfloatExprArgs;
 
   constructor (args: ToDecfloatExprArgs) {
@@ -22499,6 +22674,8 @@ export class TryToDecfloatExpr extends FuncExpr {
     this: true,
     format: false,
   };
+
+  static argOrder = ['this', 'format'];
 
   declare args: TryToDecfloatExprArgs;
 
@@ -22542,6 +22719,12 @@ export class ToFileExpr extends FuncExpr {
     safe: false,
   };
 
+  static argOrder = [
+    'this',
+    'path',
+    'safe',
+  ];
+
   declare args: ToFileExprArgs;
 
   constructor (args: ToFileExprArgs) {
@@ -22576,6 +22759,8 @@ export class CodePointsToBytesExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CodePointsToBytesExprArgs;
 
   constructor (args: CodePointsToBytesExprArgs) {
@@ -22603,6 +22788,8 @@ export class ColumnsExpr extends FuncExpr {
     this: true,
     unpack: false,
   };
+
+  static argOrder = ['this', 'unpack'];
 
   declare args: ColumnsExprArgs;
 
@@ -22647,6 +22834,13 @@ export class ConvertExpr extends FuncExpr {
     style: false,
     safe: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'style',
+    'safe',
+  ];
 
   declare args: ConvertExprArgs;
 
@@ -22698,6 +22892,12 @@ export class ConvertToCharsetExpr extends FuncExpr {
     source: false,
   };
 
+  static argOrder = [
+    'this',
+    'dest',
+    'source',
+  ];
+
   declare args: ConvertToCharsetExprArgs;
 
   constructor (args: ConvertToCharsetExprArgs) {
@@ -22746,6 +22946,13 @@ export class ConvertTimezoneExpr extends FuncExpr {
     options: false,
   };
 
+  static argOrder = [
+    'sourceTz',
+    'targetTz',
+    'timestamp',
+    'options',
+  ];
+
   declare args: ConvertTimezoneExprArgs;
 
   constructor (args: ConvertTimezoneExprArgs) {
@@ -22784,6 +22991,8 @@ export class CodePointsToStringExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CodePointsToStringExprArgs;
 
   constructor (args: CodePointsToStringExprArgs) {
@@ -22815,6 +23024,13 @@ export class GenerateSeriesExpr extends FuncExpr {
     step: false,
     isEndExclusive: false,
   };
+
+  static argOrder = [
+    'start',
+    'end',
+    'step',
+    'isEndExclusive',
+  ];
 
   declare args: GenerateSeriesExprArgs;
 
@@ -22905,6 +23121,12 @@ export class AIClassifyExpr extends FuncExpr {
     config: false,
   };
 
+  static argOrder = [
+    'this',
+    'categories',
+    'config',
+  ];
+
   declare args: AIClassifyExprArgs;
 
   constructor (args: AIClassifyExprArgs) {
@@ -22945,6 +23167,8 @@ export class ArrayAllExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: ArrayAllExprArgs;
 
   constructor (args: ArrayAllExprArgs) {
@@ -22984,6 +23208,8 @@ export class ArrayAnyExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: ArrayAnyExprArgs;
 
   constructor (args: ArrayAnyExprArgs) {
@@ -23021,6 +23247,12 @@ export class ArrayAppendExpr extends FuncExpr {
     expression: true,
     nullPropagation: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'nullPropagation',
+  ];
 
   declare args: ArrayAppendExprArgs;
 
@@ -23063,6 +23295,12 @@ export class ArrayPrependExpr extends FuncExpr {
     expression: true,
     nullPropagation: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'nullPropagation',
+  ];
 
   declare args: ArrayPrependExprArgs;
 
@@ -23110,6 +23348,12 @@ export class ArrayConcatExpr extends FuncExpr {
     nullPropagation: false,
   };
 
+  static argOrder = [
+    'this',
+    'expressions',
+    'nullPropagation',
+  ];
+
   declare args: ArrayConcatExprArgs;
 
   constructor (args: ArrayConcatExprArgs) {
@@ -23144,6 +23388,8 @@ export class ArrayCompactExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: ArrayCompactExprArgs;
 
   constructor (args: ArrayCompactExprArgs) {
@@ -23175,6 +23421,13 @@ export class ArrayInsertExpr extends FuncExpr {
     expression: true,
     offset: false,
   };
+
+  static argOrder = [
+    'this',
+    'position',
+    'expression',
+    'offset',
+  ];
 
   declare args: ArrayInsertExprArgs;
 
@@ -23220,6 +23473,8 @@ export class ArrayRemoveAtExpr extends FuncExpr {
     position: true,
   };
 
+  static argOrder = ['this', 'position'];
+
   declare args: ArrayRemoveAtExprArgs;
 
   constructor (args: ArrayRemoveAtExprArgs) {
@@ -23253,6 +23508,8 @@ export class ArrayConstructCompactExpr extends FuncExpr {
     ...super.argTypes,
     expressions: false,
   };
+
+  static argOrder = ['expressions'];
 
   declare args: ArrayConstructCompactExprArgs;
 
@@ -23374,6 +23631,8 @@ export class ArrayFilterExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: ArrayFilterExprArgs;
 
   constructor (args: ArrayFilterExprArgs) {
@@ -23404,6 +23663,8 @@ export class ArrayFirstExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: ArrayFirstExprArgs;
 
   constructor (args: ArrayFirstExprArgs) {
@@ -23426,6 +23687,8 @@ export class ArrayLastExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: ArrayLastExprArgs;
 
   constructor (args: ArrayLastExprArgs) {
@@ -23447,6 +23710,8 @@ export class ArrayReverseExpr extends FuncExpr {
   static argTypes: RequiredMap<ArrayReverseExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: ArrayReverseExprArgs;
 
@@ -23479,6 +23744,13 @@ export class ArraySliceExpr extends FuncExpr {
     end: false,
     step: false,
   };
+
+  static argOrder = [
+    'this',
+    'start',
+    'end',
+    'step',
+  ];
 
   declare args: ArraySliceExprArgs;
 
@@ -23528,6 +23800,12 @@ export class ArrayToStringExpr extends FuncExpr {
     null: false,
   };
 
+  static argOrder = [
+    'this',
+    'expression',
+    'null',
+  ];
+
   declare args: ArrayToStringExprArgs;
 
   constructor (args: ArrayToStringExprArgs) {
@@ -23568,6 +23846,8 @@ export class ArrayIntersectExpr extends FuncExpr {
     expressions: true,
   };
 
+  static argOrder = ['expressions'];
+
   declare args: ArrayIntersectExprArgs;
 
   constructor (args: ArrayIntersectExprArgs) {
@@ -23603,6 +23883,12 @@ export class StPointExpr extends FuncExpr {
     expression: true,
     null: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'null',
+  ];
 
   declare args: StPointExprArgs;
 
@@ -23645,6 +23931,12 @@ export class StDistanceExpr extends FuncExpr {
     expression: true,
     useSpheroid: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'useSpheroid',
+  ];
 
   declare args: StDistanceExprArgs;
 
@@ -23689,6 +23981,8 @@ export class StringExpr extends FuncExpr {
     zone: false,
   };
 
+  static argOrder = ['this', 'zone'];
+
   declare args: StringExprArgs;
 
   constructor (args: StringExprArgs) {
@@ -23732,6 +24026,12 @@ export class StringToArrayExpr extends FuncExpr {
     expression: false,
     null: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'null',
+  ];
 
   declare args: StringToArrayExprArgs;
 
@@ -23813,6 +24113,8 @@ export class ArraySizeExpr extends FuncExpr {
     expression: false,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: ArraySizeExprArgs;
 
   constructor (args: ArraySizeExprArgs) {
@@ -23848,6 +24150,8 @@ export class ArraySortExpr extends FuncExpr {
     this: true,
     expression: false,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: ArraySortExprArgs;
 
@@ -23885,6 +24189,8 @@ export class ArraySumExpr extends FuncExpr {
     expression: false,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: ArraySumExprArgs;
 
   constructor (args: ArraySumExprArgs) {
@@ -23918,6 +24224,8 @@ export class ArraysZipExpr extends FuncExpr {
     ...super.argTypes,
     expressions: false,
   };
+
+  static argOrder = ['expressions'];
 
   declare args: ArraysZipExprArgs;
 
@@ -23956,6 +24264,12 @@ export class CaseExpr extends FuncExpr {
     ifs: true,
     default: false,
   };
+
+  static argOrder = [
+    'this',
+    'ifs',
+    'default',
+  ];
 
   declare args: CaseExprArgs;
 
@@ -24038,6 +24352,15 @@ export class CastExpr extends FuncExpr {
     default: false,
   };
 
+  static argOrder = [
+    'this',
+    'to',
+    'format',
+    'safe',
+    'action',
+    'default',
+  ];
+
   declare args: CastExprArgs;
 
   constructor (args: CastExprArgs) {
@@ -24108,6 +24431,8 @@ export class JustifyDaysExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: JustifyDaysExprArgs;
 
   constructor (args: JustifyDaysExprArgs) {
@@ -24129,6 +24454,8 @@ export class JustifyHoursExpr extends FuncExpr {
   static argTypes: RequiredMap<JustifyHoursExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: JustifyHoursExprArgs;
 
@@ -24152,6 +24479,8 @@ export class JustifyIntervalExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: JustifyIntervalExprArgs;
 
   constructor (args: JustifyIntervalExprArgs) {
@@ -24173,6 +24502,8 @@ export class TryExpr extends FuncExpr {
   static argTypes: RequiredMap<TryExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: TryExprArgs;
 
@@ -24201,6 +24532,8 @@ export class CastToStrTypeExpr extends FuncExpr {
     this: true,
     to: true,
   };
+
+  static argOrder = ['this', 'to'];
 
   declare args: CastToStrTypeExprArgs;
 
@@ -24234,6 +24567,8 @@ export class CheckJsonExpr extends FuncExpr {
     this: true,
   };
 
+  static argOrder = ['this'];
+
   declare args: CheckJsonExprArgs;
 
   constructor (args: CheckJsonExprArgs) {
@@ -24265,6 +24600,8 @@ export class CheckXmlExpr extends FuncExpr {
     this: true,
     disableAutoConvert: false,
   };
+
+  static argOrder = ['this', 'disableAutoConvert'];
 
   declare args: CheckXmlExprArgs;
 
@@ -24320,6 +24657,8 @@ export class CollationExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CollationExprArgs;
 
   constructor (args: CollationExprArgs) {
@@ -24351,6 +24690,12 @@ export class CeilExpr extends FuncExpr {
     decimals: false,
     to: false,
   };
+
+  static argOrder = [
+    'this',
+    'decimals',
+    'to',
+  ];
 
   declare args: CeilExprArgs;
 
@@ -24405,6 +24750,13 @@ export class CoalesceExpr extends FuncExpr {
     isNull: false,
   };
 
+  static argOrder = [
+    'this',
+    'expressions',
+    'isNvl',
+    'isNull',
+  ];
+
   declare args: CoalesceExprArgs;
 
   constructor (args: CoalesceExprArgs) {
@@ -24453,6 +24805,8 @@ export class ChrExpr extends FuncExpr {
     charset: false,
   };
 
+  static argOrder = ['expressions', 'charset'];
+
   declare args: ChrExprArgs;
 
   constructor (args: ChrExprArgs) {
@@ -24492,6 +24846,12 @@ export class ConcatExpr extends FuncExpr {
     safe: false,
     coalesce: false,
   };
+
+  static argOrder = [
+    'expressions',
+    'safe',
+    'coalesce',
+  ];
 
   declare args: ConcatExprArgs;
 
@@ -24535,6 +24895,12 @@ export class ContainsExpr extends FuncExpr {
     jsonScope: false,
   };
 
+  static argOrder = [
+    'this',
+    'expression',
+    'jsonScope',
+  ];
+
   declare args: ContainsExprArgs;
 
   constructor (args: ContainsExprArgs) {
@@ -24569,6 +24935,8 @@ export class ConnectByRootExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: ConnectByRootExprArgs;
 
   constructor (args: ConnectByRootExprArgs) {
@@ -24590,6 +24958,8 @@ export class CbrtExpr extends FuncExpr {
   static argTypes: RequiredMap<CbrtExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: CbrtExprArgs;
 
@@ -24613,6 +24983,8 @@ export class CurrentAccountExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CurrentAccountExprArgs;
 
   constructor (args: CurrentAccountExprArgs) {
@@ -24634,6 +25006,8 @@ export class CurrentAccountNameExpr extends FuncExpr {
   static argTypes: RequiredMap<CurrentAccountNameExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: CurrentAccountNameExprArgs;
 
@@ -24657,6 +25031,8 @@ export class CurrentAvailableRolesExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CurrentAvailableRolesExprArgs;
 
   constructor (args: CurrentAvailableRolesExprArgs) {
@@ -24678,6 +25054,8 @@ export class CurrentClientExpr extends FuncExpr {
   static argTypes: RequiredMap<CurrentClientExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: CurrentClientExprArgs;
 
@@ -24701,6 +25079,8 @@ export class CurrentIpAddressExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CurrentIpAddressExprArgs;
 
   constructor (args: CurrentIpAddressExprArgs) {
@@ -24722,6 +25102,8 @@ export class CurrentDatabaseExpr extends FuncExpr {
   static argTypes: RequiredMap<CurrentDatabaseExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: CurrentDatabaseExprArgs;
 
@@ -24746,6 +25128,8 @@ export class CurrentSchemasExpr extends FuncExpr {
     ...super.argTypes,
     this: false,
   };
+
+  static argOrder = ['this'];
 
   declare args: CurrentSchemasExprArgs;
 
@@ -24773,6 +25157,8 @@ export class CurrentSecondaryRolesExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CurrentSecondaryRolesExprArgs;
 
   constructor (args: CurrentSecondaryRolesExprArgs) {
@@ -24794,6 +25180,8 @@ export class CurrentSessionExpr extends FuncExpr {
   static argTypes: RequiredMap<CurrentSessionExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: CurrentSessionExprArgs;
 
@@ -24817,6 +25205,8 @@ export class CurrentStatementExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CurrentStatementExprArgs;
 
   constructor (args: CurrentStatementExprArgs) {
@@ -24838,6 +25228,8 @@ export class CurrentVersionExpr extends FuncExpr {
   static argTypes: RequiredMap<CurrentVersionExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: CurrentVersionExprArgs;
 
@@ -24861,6 +25253,8 @@ export class CurrentTransactionExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CurrentTransactionExprArgs;
 
   constructor (args: CurrentTransactionExprArgs) {
@@ -24882,6 +25276,8 @@ export class CurrentWarehouseExpr extends FuncExpr {
   static argTypes: RequiredMap<CurrentWarehouseExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: CurrentWarehouseExprArgs;
 
@@ -24906,6 +25302,8 @@ export class CurrentDateExpr extends FuncExpr {
     ...super.argTypes,
     this: false,
   };
+
+  static argOrder = ['this'];
 
   declare args: CurrentDateExprArgs;
 
@@ -24935,6 +25333,8 @@ export class CurrentDatetimeExpr extends FuncExpr {
     this: false,
   };
 
+  static argOrder = ['this'];
+
   declare args: CurrentDatetimeExprArgs;
 
   constructor (args: CurrentDatetimeExprArgs) {
@@ -24962,6 +25362,8 @@ export class CurrentTimeExpr extends FuncExpr {
     ...super.argTypes,
     this: false,
   };
+
+  static argOrder = ['this'];
 
   declare args: CurrentTimeExprArgs;
 
@@ -24991,6 +25393,8 @@ export class LocaltimeExpr extends FuncExpr {
     this: false,
   };
 
+  static argOrder = ['this'];
+
   declare args: LocaltimeExprArgs;
 
   constructor (args: LocaltimeExprArgs) {
@@ -25019,6 +25423,8 @@ export class LocaltimestampExpr extends FuncExpr {
     this: false,
   };
 
+  static argOrder = ['this'];
+
   declare args: LocaltimestampExprArgs;
 
   constructor (args: LocaltimestampExprArgs) {
@@ -25046,6 +25452,8 @@ export class SystimestampExpr extends FuncExpr {
     ...super.argTypes,
     this: false,
   };
+
+  static argOrder = ['this'];
 
   declare args: SystimestampExprArgs;
 
@@ -25079,6 +25487,8 @@ export class CurrentTimestampExpr extends FuncExpr {
     sysdate: false,
   };
 
+  static argOrder = ['this', 'sysdate'];
+
   declare args: CurrentTimestampExprArgs;
 
   constructor (args: CurrentTimestampExprArgs) {
@@ -25109,6 +25519,8 @@ export class CurrentTimestampLTZExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CurrentTimestampLTZExprArgs;
 
   constructor (args: CurrentTimestampLTZExprArgs) {
@@ -25131,6 +25543,8 @@ export class CurrentTimezoneExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CurrentTimezoneExprArgs;
 
   constructor (args: CurrentTimezoneExprArgs) {
@@ -25152,6 +25566,8 @@ export class CurrentOrganizationNameExpr extends FuncExpr {
   static argTypes: RequiredMap<CurrentOrganizationNameExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: CurrentOrganizationNameExprArgs;
 
@@ -25176,6 +25592,8 @@ export class CurrentSchemaExpr extends FuncExpr {
     ...super.argTypes,
     this: false,
   };
+
+  static argOrder = ['this'];
 
   declare args: CurrentSchemaExprArgs;
 
@@ -25205,6 +25623,8 @@ export class CurrentUserExpr extends FuncExpr {
     this: false,
   };
 
+  static argOrder = ['this'];
+
   declare args: CurrentUserExprArgs;
 
   constructor (args: CurrentUserExprArgs) {
@@ -25231,6 +25651,8 @@ export class CurrentCatalogExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CurrentCatalogExprArgs;
 
   constructor (args: CurrentCatalogExprArgs) {
@@ -25252,6 +25674,8 @@ export class CurrentRegionExpr extends FuncExpr {
   static argTypes: RequiredMap<CurrentRegionExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: CurrentRegionExprArgs;
 
@@ -25275,6 +25699,8 @@ export class CurrentRoleExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CurrentRoleExprArgs;
 
   constructor (args: CurrentRoleExprArgs) {
@@ -25296,6 +25722,8 @@ export class CurrentRoleTypeExpr extends FuncExpr {
   static argTypes: RequiredMap<CurrentRoleTypeExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: CurrentRoleTypeExprArgs;
 
@@ -25319,6 +25747,8 @@ export class CurrentOrganizationUserExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: CurrentOrganizationUserExprArgs;
 
   constructor (args: CurrentOrganizationUserExprArgs) {
@@ -25341,6 +25771,8 @@ export class SessionUserExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: SessionUserExprArgs;
 
   constructor (args: SessionUserExprArgs) {
@@ -25362,6 +25794,8 @@ export class UtcDateExpr extends FuncExpr {
   static argTypes: RequiredMap<UtcDateExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: UtcDateExprArgs;
 
@@ -25386,6 +25820,8 @@ export class UtcTimeExpr extends FuncExpr {
     ...super.argTypes,
     this: false,
   };
+
+  static argOrder = ['this'];
 
   declare args: UtcTimeExprArgs;
 
@@ -25414,6 +25850,8 @@ export class UtcTimestampExpr extends FuncExpr {
     ...super.argTypes,
     this: false,
   };
+
+  static argOrder = ['this'];
 
   declare args: UtcTimestampExprArgs;
 
@@ -25660,6 +26098,13 @@ export class DateTruncExpr extends FuncExpr {
     inputTypePreserved: false,
   };
 
+  static argOrder = [
+    'unit',
+    'this',
+    'zone',
+    'inputTypePreserved',
+  ];
+
   declare args: DateTruncExprArgs;
 
   constructor (args: DateTruncExprArgs) {
@@ -25722,6 +26167,8 @@ export class DatetimeExpr extends FuncExpr {
     this: true,
     expression: false,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: DatetimeExprArgs;
 
@@ -25929,6 +26376,8 @@ export class DateFromUnixDateExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: DateFromUnixDateExprArgs;
 
   constructor (args: DateFromUnixDateExprArgs) {
@@ -25950,6 +26399,8 @@ export class DayOfWeekExpr extends FuncExpr {
   static argTypes: RequiredMap<DayOfWeekExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: DayOfWeekExprArgs;
 
@@ -25973,6 +26424,8 @@ export class DayOfWeekIsoExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: DayOfWeekIsoExprArgs;
 
   constructor (args: DayOfWeekIsoExprArgs) {
@@ -25994,6 +26447,8 @@ export class DayOfMonthExpr extends FuncExpr {
   static argTypes: RequiredMap<DayOfMonthExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: DayOfMonthExprArgs;
 
@@ -26018,6 +26473,8 @@ export class DayOfYearExpr extends FuncExpr {
   static argTypes: RequiredMap<DayOfYearExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: DayOfYearExprArgs;
 
@@ -26049,6 +26506,8 @@ export class DaynameExpr extends FuncExpr {
     abbreviated: false,
   };
 
+  static argOrder = ['this', 'abbreviated'];
+
   declare args: DaynameExprArgs;
 
   constructor (args: DaynameExprArgs) {
@@ -26079,6 +26538,8 @@ export class ToDaysExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: ToDaysExprArgs;
 
   constructor (args: ToDaysExprArgs) {
@@ -26101,6 +26562,8 @@ export class WeekOfYearExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: WeekOfYearExprArgs;
 
   constructor (args: WeekOfYearExprArgs) {
@@ -26122,6 +26585,8 @@ export class YearOfWeekExpr extends FuncExpr {
   static argTypes: RequiredMap<YearOfWeekExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: YearOfWeekExprArgs;
 
@@ -26146,6 +26611,8 @@ export class YearOfWeekIsoExpr extends FuncExpr {
   static argTypes: RequiredMap<YearOfWeekIsoExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: YearOfWeekIsoExprArgs;
 
@@ -26178,6 +26645,12 @@ export class MonthsBetweenExpr extends FuncExpr {
     expression: true,
     roundoff: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'roundoff',
+  ];
 
   declare args: MonthsBetweenExprArgs;
 
@@ -26232,6 +26705,16 @@ export class MakeIntervalExpr extends FuncExpr {
     minute: false,
     second: false,
   };
+
+  static argOrder = [
+    'year',
+    'month',
+    'week',
+    'day',
+    'hour',
+    'minute',
+    'second',
+  ];
 
   declare args: MakeIntervalExprArgs;
 
@@ -26326,6 +26809,8 @@ export class PreviousDayExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: PreviousDayExprArgs;
 
   constructor (args: PreviousDayExprArgs) {
@@ -26356,6 +26841,8 @@ export class LaxBoolExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: LaxBoolExprArgs;
 
   constructor (args: LaxBoolExprArgs) {
@@ -26377,6 +26864,8 @@ export class LaxFloat64Expr extends FuncExpr {
   static argTypes: RequiredMap<LaxFloat64ExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: LaxFloat64ExprArgs;
 
@@ -26400,6 +26889,8 @@ export class LaxInt64Expr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: LaxInt64ExprArgs;
 
   constructor (args: LaxInt64ExprArgs) {
@@ -26421,6 +26912,8 @@ export class LaxStringExpr extends FuncExpr {
   static argTypes: RequiredMap<LaxStringExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: LaxStringExprArgs;
 
@@ -26449,6 +26942,8 @@ export class ExtractExpr extends FuncExpr {
     this: true,
     expression: true,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: ExtractExprArgs;
 
@@ -26523,6 +27018,8 @@ export class EltExpr extends FuncExpr {
     expressions: true,
   };
 
+  static argOrder = ['this', 'expressions'];
+
   declare args: EltExprArgs;
 
   constructor (args: EltExprArgs) {
@@ -26564,6 +27061,12 @@ export class TimestampExpr extends FuncExpr {
     zone: false,
     withTz: false,
   };
+
+  static argOrder = [
+    'this',
+    'zone',
+    'withTz',
+  ];
 
   declare args: TimestampExprArgs;
 
@@ -27031,6 +27534,13 @@ export class DateFromPartsExpr extends FuncExpr {
     allowOverflow: false,
   };
 
+  static argOrder = [
+    'year',
+    'month',
+    'day',
+    'allowOverflow',
+  ];
+
   declare args: DateFromPartsExprArgs;
 
   constructor (args: DateFromPartsExprArgs) {
@@ -27089,6 +27599,16 @@ export class TimeFromPartsExpr extends FuncExpr {
     overflow: false,
   };
 
+  static argOrder = [
+    'hour',
+    'min',
+    'sec',
+    'nano',
+    'fractions',
+    'precision',
+    'overflow',
+  ];
+
   declare args: TimeFromPartsExprArgs;
 
   constructor (args: TimeFromPartsExprArgs) {
@@ -27139,6 +27659,8 @@ export class DateStrToDateExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: DateStrToDateExprArgs;
 
   constructor (args: DateStrToDateExprArgs) {
@@ -27161,6 +27683,8 @@ export class DateToDateStrExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: DateToDateStrExprArgs;
 
   constructor (args: DateToDateStrExprArgs) {
@@ -27182,6 +27706,8 @@ export class DateToDiExpr extends FuncExpr {
   static argTypes: RequiredMap<DateToDiExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: DateToDiExprArgs;
 
@@ -27214,6 +27740,12 @@ export class DateExpr extends FuncExpr {
     expressions: false,
     zone: false,
   };
+
+  static argOrder = [
+    'this',
+    'expressions',
+    'zone',
+  ];
 
   declare args: DateExprArgs;
 
@@ -27249,6 +27781,8 @@ export class DayExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: DayExprArgs;
 
   constructor (args: DayExprArgs) {
@@ -27282,6 +27816,12 @@ export class DecodeExpr extends FuncExpr {
     charset: true,
     replace: false,
   };
+
+  static argOrder = [
+    'this',
+    'charset',
+    'replace',
+  ];
 
   declare args: DecodeExprArgs;
 
@@ -27320,6 +27860,8 @@ export class DecodeCaseExpr extends FuncExpr {
     ...super.argTypes,
     expressions: true,
   };
+
+  static argOrder = ['expressions'];
 
   declare args: DecodeCaseExprArgs;
 
@@ -27360,6 +27902,13 @@ export class DecryptExpr extends FuncExpr {
     encryptionMethod: false,
     safe: false,
   };
+
+  static argOrder = [
+    'passphrase',
+    'aad',
+    'encryptionMethod',
+    'safe',
+  ];
 
   declare args: DecryptExprArgs;
 
@@ -27417,6 +27966,15 @@ export class DecryptRawExpr extends FuncExpr {
     safe: false,
   };
 
+  static argOrder = [
+    'key',
+    'iv',
+    'aad',
+    'encryptionMethod',
+    'aead',
+    'safe',
+  ];
+
   declare args: DecryptRawExprArgs;
 
   constructor (args: DecryptRawExprArgs) {
@@ -27463,6 +28021,8 @@ export class DiToDateExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: DiToDateExprArgs;
 
   constructor (args: DiToDateExprArgs) {
@@ -27490,6 +28050,8 @@ export class EncodeExpr extends FuncExpr {
     this: true,
     charset: true,
   };
+
+  static argOrder = ['this', 'charset'];
 
   declare args: EncodeExprArgs;
 
@@ -27534,6 +28096,13 @@ export class EncryptExpr extends FuncExpr {
     aad: false,
     encryptionMethod: false,
   };
+
+  static argOrder = [
+    'this',
+    'passphrase',
+    'aad',
+    'encryptionMethod',
+  ];
 
   declare args: EncryptExprArgs;
 
@@ -27589,6 +28158,14 @@ export class EncryptRawExpr extends FuncExpr {
     encryptionMethod: false,
   };
 
+  static argOrder = [
+    'this',
+    'key',
+    'iv',
+    'aad',
+    'encryptionMethod',
+  ];
+
   declare args: EncryptRawExprArgs;
 
   constructor (args: EncryptRawExprArgs) {
@@ -27637,6 +28214,8 @@ export class EqualNullExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: EqualNullExprArgs;
 
   constructor (args: EqualNullExprArgs) {
@@ -27667,6 +28246,8 @@ export class ExpExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: ExpExprArgs;
 
   constructor (args: ExpExprArgs) {
@@ -27688,6 +28269,8 @@ export class FactorialExpr extends FuncExpr {
   static argTypes: RequiredMap<FactorialExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: FactorialExprArgs;
 
@@ -27750,6 +28333,8 @@ export class InlineExpr extends FuncExpr {
   static argTypes: RequiredMap<InlineExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: InlineExprArgs;
 
@@ -27845,6 +28430,12 @@ export class FloorExpr extends FuncExpr {
     to: false,
   };
 
+  static argOrder = [
+    'this',
+    'decimals',
+    'to',
+  ];
+
   declare args: FloorExprArgs;
 
   constructor (args: FloorExprArgs) {
@@ -27879,6 +28470,8 @@ export class FromBase32Expr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: FromBase32ExprArgs;
 
   constructor (args: FromBase32ExprArgs) {
@@ -27900,6 +28493,8 @@ export class FromBase64Expr extends FuncExpr {
   static argTypes: RequiredMap<FromBase64ExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: FromBase64ExprArgs;
 
@@ -27923,6 +28518,8 @@ export class ToBase32Expr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: ToBase32ExprArgs;
 
   constructor (args: ToBase32ExprArgs) {
@@ -27944,6 +28541,8 @@ export class ToBase64Expr extends FuncExpr {
   static argTypes: RequiredMap<ToBase64ExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: ToBase64ExprArgs;
 
@@ -27978,6 +28577,12 @@ export class ToBinaryExpr extends FuncExpr {
     format: false,
     safe: false,
   };
+
+  static argOrder = [
+    'this',
+    'format',
+    'safe',
+  ];
 
   declare args: ToBinaryExprArgs;
 
@@ -28019,6 +28624,8 @@ export class Base64DecodeBinaryExpr extends FuncExpr {
     alphabet: false,
   };
 
+  static argOrder = ['this', 'alphabet'];
+
   declare args: Base64DecodeBinaryExprArgs;
 
   constructor (args: Base64DecodeBinaryExprArgs) {
@@ -28054,6 +28661,8 @@ export class Base64DecodeStringExpr extends FuncExpr {
     this: true,
     alphabet: false,
   };
+
+  static argOrder = ['this', 'alphabet'];
 
   declare args: Base64DecodeStringExprArgs;
 
@@ -28097,6 +28706,12 @@ export class Base64EncodeExpr extends FuncExpr {
     alphabet: false,
   };
 
+  static argOrder = [
+    'this',
+    'maxLineLength',
+    'alphabet',
+  ];
+
   declare args: Base64EncodeExprArgs;
 
   constructor (args: Base64EncodeExprArgs) {
@@ -28137,6 +28752,8 @@ export class TryBase64DecodeBinaryExpr extends FuncExpr {
     alphabet: false,
   };
 
+  static argOrder = ['this', 'alphabet'];
+
   declare args: TryBase64DecodeBinaryExprArgs;
 
   constructor (args: TryBase64DecodeBinaryExprArgs) {
@@ -28173,6 +28790,8 @@ export class TryBase64DecodeStringExpr extends FuncExpr {
     alphabet: false,
   };
 
+  static argOrder = ['this', 'alphabet'];
+
   declare args: TryBase64DecodeStringExprArgs;
 
   constructor (args: TryBase64DecodeStringExprArgs) {
@@ -28203,6 +28822,8 @@ export class TryHexDecodeBinaryExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: TryHexDecodeBinaryExprArgs;
 
   constructor (args: TryHexDecodeBinaryExprArgs) {
@@ -28225,6 +28846,8 @@ export class TryHexDecodeStringExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: TryHexDecodeStringExprArgs;
 
   constructor (args: TryHexDecodeStringExprArgs) {
@@ -28246,6 +28869,8 @@ export class FromISO8601TimestampExpr extends FuncExpr {
   static argTypes: RequiredMap<FromISO8601TimestampExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: FromISO8601TimestampExprArgs;
 
@@ -28288,6 +28913,15 @@ export class GapFillExpr extends FuncExpr {
     origin: false,
     ignoreNulls: false,
   };
+
+  static argOrder = [
+    'tsColumn',
+    'bucketWidth',
+    'partitioningColumns',
+    'valueColumns',
+    'origin',
+    'ignoreNulls',
+  ];
 
   declare args: GapFillExprArgs;
 
@@ -28347,6 +28981,12 @@ export class GenerateDateArrayExpr extends FuncExpr {
     step: false,
   };
 
+  static argOrder = [
+    'start',
+    'end',
+    'step',
+  ];
+
   declare args: GenerateDateArrayExprArgs;
 
   constructor (args: GenerateDateArrayExprArgs) {
@@ -28394,6 +29034,12 @@ export class GenerateTimestampArrayExpr extends FuncExpr {
     step: true,
   };
 
+  static argOrder = [
+    'start',
+    'end',
+    'step',
+  ];
+
   declare args: GenerateTimestampArrayExprArgs;
 
   constructor (args: GenerateTimestampArrayExprArgs) {
@@ -28434,6 +29080,8 @@ export class GetExtractExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: GetExtractExprArgs;
 
   constructor (args: GetExtractExprArgs) {
@@ -28471,6 +29119,12 @@ export class GetbitExpr extends FuncExpr {
     expression: true,
     zeroIsMsb: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'zeroIsMsb',
+  ];
 
   declare args: GetbitExprArgs;
 
@@ -28516,6 +29170,12 @@ export class GreatestExpr extends FuncExpr {
     ignoreNulls: true,
   };
 
+  static argOrder = [
+    'this',
+    'expressions',
+    'ignoreNulls',
+  ];
+
   declare args: GreatestExprArgs;
 
   constructor (args: GreatestExprArgs) {
@@ -28550,6 +29210,8 @@ export class HexExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: HexExprArgs;
 
   constructor (args: HexExprArgs) {
@@ -28571,6 +29233,8 @@ export class HexDecodeStringExpr extends FuncExpr {
   static argTypes: RequiredMap<HexDecodeStringExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: HexDecodeStringExprArgs;
 
@@ -28599,6 +29263,8 @@ export class HexEncodeExpr extends FuncExpr {
     this: true,
     case: false,
   };
+
+  static argOrder = ['this', 'case'];
 
   declare args: HexEncodeExprArgs;
 
@@ -28630,6 +29296,8 @@ export class HourExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: HourExprArgs;
 
   constructor (args: HourExprArgs) {
@@ -28652,6 +29320,8 @@ export class MinuteExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: MinuteExprArgs;
 
   constructor (args: MinuteExprArgs) {
@@ -28673,6 +29343,8 @@ export class SecondExpr extends FuncExpr {
   static argTypes: RequiredMap<SecondExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: SecondExprArgs;
 
@@ -28701,6 +29373,8 @@ export class CompressExpr extends FuncExpr {
     this: true,
     method: false,
   };
+
+  static argOrder = ['this', 'method'];
 
   declare args: CompressExprArgs;
 
@@ -28738,6 +29412,8 @@ export class DecompressBinaryExpr extends FuncExpr {
     method: true,
   };
 
+  static argOrder = ['this', 'method'];
+
   declare args: DecompressBinaryExprArgs;
 
   constructor (args: DecompressBinaryExprArgs) {
@@ -28773,6 +29449,8 @@ export class DecompressStringExpr extends FuncExpr {
     this: true,
     method: true,
   };
+
+  static argOrder = ['this', 'method'];
 
   declare args: DecompressStringExprArgs;
 
@@ -28818,6 +29496,12 @@ export class IfExpr extends FuncExpr {
     false: false,
   };
 
+  static argOrder = [
+    'this',
+    'true',
+    'false',
+  ];
+
   declare args: IfExprArgs;
 
   constructor (args: IfExprArgs) {
@@ -28858,6 +29542,8 @@ export class NullifExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: NullifExprArgs;
 
   constructor (args: NullifExprArgs) {
@@ -28894,6 +29580,8 @@ export class InitcapExpr extends FuncExpr {
     expression: false,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: InitcapExprArgs;
 
   constructor (args: InitcapExprArgs) {
@@ -28924,6 +29612,8 @@ export class IsAsciiExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: IsAsciiExprArgs;
 
   constructor (args: IsAsciiExprArgs) {
@@ -28945,6 +29635,8 @@ export class IsNanExpr extends FuncExpr {
   static argTypes: RequiredMap<IsNanExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: IsNanExprArgs;
 
@@ -28970,6 +29662,8 @@ export class Int64Expr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: Int64ExprArgs;
 
   constructor (args: Int64ExprArgs) {
@@ -28991,6 +29685,8 @@ export class IsInfExpr extends FuncExpr {
   static argTypes: RequiredMap<IsInfExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: IsInfExprArgs;
 
@@ -29016,6 +29712,8 @@ export class IsNullValueExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: IsNullValueExprArgs;
 
   constructor (args: IsNullValueExprArgs) {
@@ -29037,6 +29735,8 @@ export class IsArrayExpr extends FuncExpr {
   static argTypes: RequiredMap<IsArrayExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: IsArrayExprArgs;
 
@@ -29067,6 +29767,8 @@ export class FormatExpr extends FuncExpr {
     this: true,
     expressions: false,
   };
+
+  static argOrder = ['this', 'expressions'];
 
   declare args: FormatExprArgs;
 
@@ -29107,6 +29809,12 @@ export class JSONKeysExpr extends FuncExpr {
     expression: false,
     expressions: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'expressions',
+  ];
 
   declare args: JSONKeysExprArgs;
 
@@ -29149,6 +29857,12 @@ export class JSONKeysAtDepthExpr extends FuncExpr {
     expression: false,
     mode: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'mode',
+  ];
 
   declare args: JSONKeysAtDepthExprArgs;
 
@@ -29197,6 +29911,13 @@ export class JSONObjectExpr extends FuncExpr {
     returnType: false,
     encoding: false,
   };
+
+  static argOrder = [
+    'nullHandling',
+    'uniqueKeys',
+    'returnType',
+    'encoding',
+  ];
 
   declare args: JSONObjectExprArgs;
 
@@ -29248,6 +29969,12 @@ export class JSONArrayExpr extends FuncExpr {
     strict: false,
   };
 
+  static argOrder = [
+    'nullHandling',
+    'returnType',
+    'strict',
+  ];
+
   declare args: JSONArrayExprArgs;
 
   constructor (args: JSONArrayExprArgs) {
@@ -29296,6 +30023,13 @@ export class JSONExistsExpr extends FuncExpr {
     fromDcolonqmark: false,
   };
 
+  static argOrder = [
+    'path',
+    'passing',
+    'onCondition',
+    'fromDcolonqmark',
+  ];
+
   declare args: JSONExistsExprArgs;
 
   constructor (args: JSONExistsExprArgs) {
@@ -29343,6 +30077,8 @@ export class JSONSetExpr extends FuncExpr {
     expressions: true,
   };
 
+  static argOrder = ['this', 'expressions'];
+
   declare args: JSONSetExprArgs;
 
   constructor (args: JSONSetExprArgs) {
@@ -29389,6 +30125,13 @@ export class JSONStripNullsExpr extends FuncExpr {
     removeEmpty: false,
   };
 
+  static argOrder = [
+    'this',
+    'expression',
+    'includeArrays',
+    'removeEmpty',
+  ];
+
   declare args: JSONStripNullsExprArgs;
 
   constructor (args: JSONStripNullsExprArgs) {
@@ -29433,6 +30176,8 @@ export class JSONValueArrayExpr extends FuncExpr {
     expression: false,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: JSONValueArrayExprArgs;
 
   constructor (args: JSONValueArrayExprArgs) {
@@ -29471,6 +30216,8 @@ export class JSONRemoveExpr extends FuncExpr {
     this: true,
     expressions: true,
   };
+
+  static argOrder = ['this', 'expressions'];
 
   declare args: JSONRemoveExprArgs;
 
@@ -29517,6 +30264,14 @@ export class JSONTableExpr extends FuncExpr {
     errorHandling: false,
     emptyHandling: false,
   };
+
+  static argOrder = [
+    'this',
+    'schema',
+    'path',
+    'errorHandling',
+    'emptyHandling',
+  ];
 
   declare args: JSONTableExprArgs;
 
@@ -29568,6 +30323,8 @@ export class JSONTypeExpr extends FuncExpr {
     expression: false,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: JSONTypeExprArgs;
 
   constructor (args: JSONTypeExprArgs) {
@@ -29611,6 +30368,13 @@ export class ObjectInsertExpr extends FuncExpr {
     value: true,
     updateFlag: false,
   };
+
+  static argOrder = [
+    'this',
+    'key',
+    'value',
+    'updateFlag',
+  ];
 
   declare args: ObjectInsertExprArgs;
 
@@ -29657,6 +30421,12 @@ export class OpenJSONExpr extends FuncExpr {
     path: false,
     expressions: false,
   };
+
+  static argOrder = [
+    'this',
+    'path',
+    'expressions',
+  ];
 
   declare args: OpenJSONExprArgs;
 
@@ -29761,6 +30531,8 @@ export class JSONBExistsExpr extends FuncExpr {
     this: true,
     path: true,
   };
+
+  static argOrder = ['this', 'path'];
 
   declare args: JSONBExistsExprArgs;
 
@@ -29906,6 +30678,8 @@ export class JSONExtractArrayExpr extends FuncExpr {
     this: true,
     expression: false,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: JSONExtractArrayExprArgs;
 
@@ -30082,6 +30856,13 @@ export class JSONFormatExpr extends FuncExpr {
     toJson: false,
   };
 
+  static argOrder = [
+    'this',
+    'options',
+    'isJson',
+    'toJson',
+  ];
+
   declare args: JSONFormatExprArgs;
 
   constructor (args: JSONFormatExprArgs) {
@@ -30128,6 +30909,8 @@ export class JSONArrayAppendExpr extends FuncExpr {
     this: true,
     expressions: true,
   };
+
+  static argOrder = ['this', 'expressions'];
 
   declare args: JSONArrayAppendExprArgs;
 
@@ -30209,6 +30992,8 @@ export class JSONArrayInsertExpr extends FuncExpr {
     expressions: true,
   };
 
+  static argOrder = ['this', 'expressions'];
+
   declare args: JSONArrayInsertExprArgs;
 
   constructor (args: JSONArrayInsertExprArgs) {
@@ -30239,6 +31024,8 @@ export class ParseBignumericExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: ParseBignumericExprArgs;
 
   constructor (args: ParseBignumericExprArgs) {
@@ -30260,6 +31047,8 @@ export class ParseNumericExpr extends FuncExpr {
   static argTypes: RequiredMap<ParseNumericExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: ParseNumericExprArgs;
 
@@ -30292,6 +31081,12 @@ export class ParseJSONExpr extends FuncExpr {
     expression: false,
     safe: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'safe',
+  ];
 
   declare args: ParseJSONExprArgs;
 
@@ -30341,6 +31136,13 @@ export class ParseUrlExpr extends FuncExpr {
     permissive: false,
   };
 
+  static argOrder = [
+    'this',
+    'partToExtract',
+    'key',
+    'permissive',
+  ];
+
   declare args: ParseUrlExprArgs;
 
   constructor (args: ParseUrlExprArgs) {
@@ -30387,6 +31189,12 @@ export class ParseIpExpr extends FuncExpr {
     permissive: false,
   };
 
+  static argOrder = [
+    'this',
+    'type',
+    'permissive',
+  ];
+
   declare args: ParseIpExprArgs;
 
   constructor (args: ParseIpExprArgs) {
@@ -30426,6 +31234,8 @@ export class ParseTimeExpr extends FuncExpr {
     this: true,
     format: true,
   };
+
+  static argOrder = ['this', 'format'];
 
   declare args: ParseTimeExprArgs;
 
@@ -30468,6 +31278,12 @@ export class ParseDatetimeExpr extends FuncExpr {
     format: false,
     zone: false,
   };
+
+  static argOrder = [
+    'this',
+    'format',
+    'zone',
+  ];
 
   declare args: ParseDatetimeExprArgs;
 
@@ -30513,6 +31329,12 @@ export class LeastExpr extends FuncExpr {
     ignoreNulls: true,
   };
 
+  static argOrder = [
+    'this',
+    'expressions',
+    'ignoreNulls',
+  ];
+
   declare args: LeastExprArgs;
 
   constructor (args: LeastExprArgs) {
@@ -30553,6 +31375,8 @@ export class LeftExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: LeftExprArgs;
 
   constructor (args: LeftExprArgs) {
@@ -30589,6 +31413,8 @@ export class RightExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: RightExprArgs;
 
   constructor (args: RightExprArgs) {
@@ -30618,6 +31444,8 @@ export class ReverseExpr extends FuncExpr {
   static argTypes: RequiredMap<ReverseExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: ReverseExprArgs;
 
@@ -30660,6 +31488,12 @@ export class LengthExpr extends FuncExpr {
     encoding: false,
   };
 
+  static argOrder = [
+    'this',
+    'binary',
+    'encoding',
+  ];
+
   declare args: LengthExprArgs;
 
   constructor (args: LengthExprArgs) {
@@ -30694,6 +31528,8 @@ export class RtrimmedLengthExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: RtrimmedLengthExprArgs;
 
   constructor (args: RtrimmedLengthExprArgs) {
@@ -30715,6 +31551,8 @@ export class BitLengthExpr extends FuncExpr {
   static argTypes: RequiredMap<BitLengthExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: BitLengthExprArgs;
 
@@ -30751,6 +31589,13 @@ export class LevenshteinExpr extends FuncExpr {
     subCost: false,
     maxDist: false,
   };
+
+  static argOrder = [
+    'insCost',
+    'delCost',
+    'subCost',
+    'maxDist',
+  ];
 
   declare args: LevenshteinExprArgs;
 
@@ -30790,6 +31635,8 @@ export class LnExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: LnExprArgs;
 
   constructor (args: LnExprArgs) {
@@ -30817,6 +31664,8 @@ export class LogExpr extends FuncExpr {
     this: true,
     expression: false,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: LogExprArgs;
 
@@ -30847,6 +31696,8 @@ export class LowerExpr extends FuncExpr {
   static argTypes: RequiredMap<LowerExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: LowerExprArgs;
 
@@ -30881,6 +31732,8 @@ export class MapExpr extends FuncExpr {
     keys: false,
     values: false,
   };
+
+  static argOrder = ['keys', 'values'];
 
   declare args: MapExprArgs;
 
@@ -30922,6 +31775,8 @@ export class ToMapExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: ToMapExprArgs;
 
   constructor (args: ToMapExprArgs) {
@@ -30943,6 +31798,8 @@ export class MapFromEntriesExpr extends FuncExpr {
   static argTypes: RequiredMap<MapFromEntriesExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: MapFromEntriesExprArgs;
 
@@ -30971,6 +31828,8 @@ export class MapCatExpr extends FuncExpr {
     this: true,
     expression: true,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: MapCatExprArgs;
 
@@ -31007,6 +31866,8 @@ export class MapContainsKeyExpr extends FuncExpr {
     this: true,
     key: true,
   };
+
+  static argOrder = ['this', 'key'];
 
   declare args: MapContainsKeyExprArgs;
 
@@ -31045,6 +31906,8 @@ export class MapDeleteExpr extends FuncExpr {
     this: true,
     expressions: true,
   };
+
+  static argOrder = ['this', 'expressions'];
 
   declare args: MapDeleteExprArgs;
 
@@ -31090,6 +31953,13 @@ export class MapInsertExpr extends FuncExpr {
     updateFlag: false,
   };
 
+  static argOrder = [
+    'this',
+    'key',
+    'value',
+    'updateFlag',
+  ];
+
   declare args: MapInsertExprArgs;
 
   constructor (args: MapInsertExprArgs) {
@@ -31128,6 +31998,8 @@ export class MapKeysExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: MapKeysExprArgs;
 
   constructor (args: MapKeysExprArgs) {
@@ -31157,6 +32029,8 @@ export class MapPickExpr extends FuncExpr {
     this: true,
     expressions: true,
   };
+
+  static argOrder = ['this', 'expressions'];
 
   declare args: MapPickExprArgs;
 
@@ -31188,6 +32062,8 @@ export class MapSizeExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: MapSizeExprArgs;
 
   constructor (args: MapSizeExprArgs) {
@@ -31209,6 +32085,8 @@ export class StarMapExpr extends FuncExpr {
   static argTypes: RequiredMap<StarMapExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: StarMapExprArgs;
 
@@ -31242,6 +32120,8 @@ export class VarMapExpr extends FuncExpr {
     keys: true,
     values: true,
   };
+
+  static argOrder = ['keys', 'values'];
 
   declare args: VarMapExprArgs;
 
@@ -31291,6 +32171,12 @@ export class MatchAgainstExpr extends FuncExpr {
     modifier: false,
   };
 
+  static argOrder = [
+    'this',
+    'expressions',
+    'modifier',
+  ];
+
   declare args: MatchAgainstExprArgs;
 
   constructor (args: MatchAgainstExprArgs) {
@@ -31327,6 +32213,8 @@ export class MD5Expr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: MD5ExprArgs;
 
   constructor (args: MD5ExprArgs) {
@@ -31358,6 +32246,8 @@ export class MD5DigestExpr extends FuncExpr {
     expressions: false,
   };
 
+  static argOrder = ['this', 'expressions'];
+
   declare args: MD5DigestExprArgs;
 
   constructor (args: MD5DigestExprArgs) {
@@ -31388,6 +32278,8 @@ export class MD5NumberLower64Expr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: MD5NumberLower64ExprArgs;
 
   constructor (args: MD5NumberLower64ExprArgs) {
@@ -31410,6 +32302,8 @@ export class MD5NumberUpper64Expr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: MD5NumberUpper64ExprArgs;
 
   constructor (args: MD5NumberUpper64ExprArgs) {
@@ -31431,6 +32325,8 @@ export class MonthExpr extends FuncExpr {
   static argTypes: RequiredMap<MonthExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: MonthExprArgs;
 
@@ -31459,6 +32355,8 @@ export class MonthnameExpr extends FuncExpr {
     this: true,
     abbreviated: false,
   };
+
+  static argOrder = ['this', 'abbreviated'];
 
   declare args: MonthnameExprArgs;
 
@@ -31497,6 +32395,12 @@ export class AddMonthsExpr extends FuncExpr {
     expression: true,
     preserveEndOfMonth: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'preserveEndOfMonth',
+  ];
 
   declare args: AddMonthsExprArgs;
 
@@ -31544,6 +32448,12 @@ export class Nvl2Expr extends FuncExpr {
     false: false,
   };
 
+  static argOrder = [
+    'this',
+    'true',
+    'false',
+  ];
+
   declare args: Nvl2ExprArgs;
 
   constructor (args: Nvl2ExprArgs) {
@@ -31589,6 +32499,12 @@ export class NormalizeExpr extends FuncExpr {
     form: false,
     isCasefold: false,
   };
+
+  static argOrder = [
+    'this',
+    'form',
+    'isCasefold',
+  ];
 
   declare args: NormalizeExprArgs;
 
@@ -31636,6 +32552,12 @@ export class NormalExpr extends FuncExpr {
     gen: true,
   };
 
+  static argOrder = [
+    'this',
+    'stddev',
+    'gen',
+  ];
+
   declare args: NormalExprArgs;
 
   constructor (args: NormalExprArgs) {
@@ -31670,6 +32592,8 @@ export class NetFuncExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: NetFuncExprArgs;
 
   constructor (args: NetFuncExprArgs) {
@@ -31692,6 +32616,8 @@ export class HostExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: HostExprArgs;
 
   constructor (args: HostExprArgs) {
@@ -31713,6 +32639,8 @@ export class RegDomainExpr extends FuncExpr {
   static argTypes: RequiredMap<RegDomainExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: RegDomainExprArgs;
 
@@ -31750,6 +32678,13 @@ export class OverlayExpr extends FuncExpr {
     fromPosition: true,
     for: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'fromPosition',
+    'for',
+  ];
 
   declare args: OverlayExprArgs;
 
@@ -31797,6 +32732,12 @@ export class PredictExpr extends FuncExpr {
     paramsStruct: false,
   };
 
+  static argOrder = [
+    'this',
+    'expression',
+    'paramsStruct',
+  ];
+
   declare args: PredictExprArgs;
 
   constructor (args: PredictExprArgs) {
@@ -31838,6 +32779,12 @@ export class MLTranslateExpr extends FuncExpr {
     expression: true,
     paramsStruct: true,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'paramsStruct',
+  ];
 
   declare args: MLTranslateExprArgs;
 
@@ -31886,6 +32833,13 @@ export class FeaturesAtTimeExpr extends FuncExpr {
     numRows: false,
     ignoreFeatureNulls: false,
   };
+
+  static argOrder = [
+    'this',
+    'time',
+    'numRows',
+    'ignoreFeatureNulls',
+  ];
 
   declare args: FeaturesAtTimeExprArgs;
 
@@ -31939,6 +32893,13 @@ export class GenerateEmbeddingExpr extends FuncExpr {
     isText: false,
   };
 
+  static argOrder = [
+    'this',
+    'expression',
+    'paramsStruct',
+    'isText',
+  ];
+
   declare args: GenerateEmbeddingExprArgs;
 
   constructor (args: GenerateEmbeddingExprArgs) {
@@ -31984,6 +32945,12 @@ export class MLForecastExpr extends FuncExpr {
     expression: false,
     paramsStruct: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'paramsStruct',
+  ];
 
   declare args: MLForecastExprArgs;
 
@@ -32037,6 +33004,15 @@ export class VectorSearchExpr extends FuncExpr {
     options: false,
   };
 
+  static argOrder = [
+    'columnToSearch',
+    'queryTable',
+    'queryColumnToSearch',
+    'topK',
+    'distanceType',
+    'options',
+  ];
+
   declare args: VectorSearchExprArgs;
 
   constructor (args: VectorSearchExprArgs) {
@@ -32082,6 +33058,8 @@ export class PiExpr extends FuncExpr {
   static argTypes: RequiredMap<PiExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: PiExprArgs;
 
@@ -32131,6 +33109,8 @@ export class ApproxPercentileEstimateExpr extends FuncExpr {
     percentile: true,
   };
 
+  static argOrder = ['this', 'percentile'];
+
   declare args: ApproxPercentileEstimateExprArgs;
 
   constructor (args: ApproxPercentileEstimateExprArgs) {
@@ -32160,6 +33140,8 @@ export class QuarterExpr extends FuncExpr {
   static argTypes: RequiredMap<QuarterExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: QuarterExprArgs;
 
@@ -32197,6 +33179,12 @@ export class RandExpr extends FuncExpr {
     upper: false,
   };
 
+  static argOrder = [
+    'this',
+    'lower',
+    'upper',
+  ];
+
   declare args: RandExprArgs;
 
   constructor (args: RandExprArgs) {
@@ -32233,6 +33221,8 @@ export class RandnExpr extends FuncExpr {
     this: false,
   };
 
+  static argOrder = ['this'];
+
   declare args: RandnExprArgs;
 
   constructor (args: RandnExprArgs) {
@@ -32264,6 +33254,8 @@ export class RandstrExpr extends FuncExpr {
     this: true,
     generator: false,
   };
+
+  static argOrder = ['this', 'generator'];
 
   declare args: RandstrExprArgs;
 
@@ -32302,6 +33294,12 @@ export class RangeNExpr extends FuncExpr {
     expressions: true,
     each: false,
   };
+
+  static argOrder = [
+    'this',
+    'expressions',
+    'each',
+  ];
 
   declare args: RangeNExprArgs;
 
@@ -32343,6 +33341,8 @@ export class RangeBucketExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: RangeBucketExprArgs;
 
   constructor (args: RangeBucketExprArgs) {
@@ -32382,6 +33382,8 @@ export class ReadCSVExpr extends FuncExpr {
     expressions: false,
   };
 
+  static argOrder = ['this', 'expressions'];
+
   declare args: ReadCSVExprArgs;
 
   constructor (args: ReadCSVExprArgs) {
@@ -32415,6 +33417,8 @@ export class ReadParquetExpr extends FuncExpr {
     ...super.argTypes,
     expressions: true,
   };
+
+  static argOrder = ['expressions'];
 
   declare args: ReadParquetExprArgs;
 
@@ -32455,6 +33459,13 @@ export class ReduceExpr extends FuncExpr {
     merge: true,
     finish: false,
   };
+
+  static argOrder = [
+    'this',
+    'initial',
+    'merge',
+    'finish',
+  ];
 
   declare args: ReduceExprArgs;
 
@@ -32509,6 +33520,14 @@ export class RegexpExtractExpr extends FuncExpr {
     group: false,
     nullIfPosOverflow: false,
   };
+
+  static argOrder = [
+    'position',
+    'occurrence',
+    'parameters',
+    'group',
+    'nullIfPosOverflow',
+  ];
 
   declare args: RegexpExtractExprArgs;
 
@@ -32566,6 +33585,13 @@ export class RegexpExtractAllExpr extends FuncExpr {
     occurrence: false,
   };
 
+  static argOrder = [
+    'group',
+    'parameters',
+    'position',
+    'occurrence',
+  ];
+
   declare args: RegexpExtractAllExprArgs;
 
   constructor (args: RegexpExtractAllExprArgs) {
@@ -32619,6 +33645,14 @@ export class RegexpReplaceExpr extends FuncExpr {
     modifiers: false,
     singleReplace: false,
   };
+
+  static argOrder = [
+    'replacement',
+    'position',
+    'occurrence',
+    'modifiers',
+    'singleReplace',
+  ];
 
   declare args: RegexpReplaceExprArgs;
 
@@ -32795,6 +33829,14 @@ export class RegexpInstrExpr extends FuncExpr {
     group: false,
   };
 
+  static argOrder = [
+    'position',
+    'occurrence',
+    'option',
+    'parameters',
+    'group',
+  ];
+
   declare args: RegexpInstrExprArgs;
 
   constructor (args: RegexpInstrExprArgs) {
@@ -32845,6 +33887,12 @@ export class RegexpSplitExpr extends FuncExpr {
     limit: false,
   };
 
+  static argOrder = [
+    'this',
+    'expression',
+    'limit',
+  ];
+
   declare args: RegexpSplitExprArgs;
 
   constructor (args: RegexpSplitExprArgs) {
@@ -32889,6 +33937,8 @@ export class RegexpCountExpr extends FuncExpr {
     parameters: false,
   };
 
+  static argOrder = ['position', 'parameters'];
+
   declare args: RegexpCountExprArgs;
 
   constructor (args: RegexpCountExprArgs) {
@@ -32924,6 +33974,8 @@ export class RepeatExpr extends FuncExpr {
     this: true,
     times: true,
   };
+
+  static argOrder = ['this', 'times'];
 
   declare args: RepeatExprArgs;
 
@@ -32963,6 +34015,12 @@ export class ReplaceExpr extends FuncExpr {
     replacement: false,
   };
 
+  static argOrder = [
+    'this',
+    'expression',
+    'replacement',
+  ];
+
   declare args: ReplaceExprArgs;
 
   constructor (args: ReplaceExprArgs) {
@@ -32997,6 +34055,8 @@ export class RadiansExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: RadiansExprArgs;
 
   constructor (args: RadiansExprArgs) {
@@ -33030,6 +34090,12 @@ export class RoundExpr extends FuncExpr {
     truncate: false,
     castsNonIntegerDecimals: false,
   };
+
+  static argOrder = [
+    'decimals',
+    'truncate',
+    'castsNonIntegerDecimals',
+  ];
 
   declare args: RoundExprArgs;
 
@@ -33073,6 +34139,8 @@ export class TruncExpr extends FuncExpr {
     decimals: false,
   };
 
+  static argOrder = ['this', 'decimals'];
+
   declare args: TruncExprArgs;
 
   constructor (args: TruncExprArgs) {
@@ -33105,6 +34173,8 @@ export class RowNumberExpr extends FuncExpr {
     this: false,
   };
 
+  static argOrder = ['this'];
+
   declare args: RowNumberExprArgs;
 
   constructor (args: RowNumberExprArgs) {
@@ -33132,6 +34202,8 @@ export class Seq1Expr extends FuncExpr {
     ...super.argTypes,
     this: false,
   };
+
+  static argOrder = ['this'];
 
   declare args: Seq1ExprArgs;
 
@@ -33161,6 +34233,8 @@ export class Seq2Expr extends FuncExpr {
     this: false,
   };
 
+  static argOrder = ['this'];
+
   declare args: Seq2ExprArgs;
 
   constructor (args: Seq2ExprArgs) {
@@ -33189,6 +34263,8 @@ export class Seq4Expr extends FuncExpr {
     this: false,
   };
 
+  static argOrder = ['this'];
+
   declare args: Seq4ExprArgs;
 
   constructor (args: Seq4ExprArgs) {
@@ -33216,6 +34292,8 @@ export class Seq8Expr extends FuncExpr {
     ...super.argTypes,
     this: false,
   };
+
+  static argOrder = ['this'];
 
   declare args: Seq8ExprArgs;
 
@@ -33248,6 +34326,8 @@ export class SafeAddExpr extends FuncExpr {
     this: true,
     expression: true,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: SafeAddExprArgs;
 
@@ -33285,6 +34365,8 @@ export class SafeDivideExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: SafeDivideExprArgs;
 
   constructor (args: SafeDivideExprArgs) {
@@ -33321,6 +34403,8 @@ export class SafeMultiplyExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: SafeMultiplyExprArgs;
 
   constructor (args: SafeMultiplyExprArgs) {
@@ -33351,6 +34435,8 @@ export class SafeNegateExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: SafeNegateExprArgs;
 
   constructor (args: SafeNegateExprArgs) {
@@ -33378,6 +34464,8 @@ export class SafeSubtractExpr extends FuncExpr {
     this: true,
     expression: true,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: SafeSubtractExprArgs;
 
@@ -33409,6 +34497,8 @@ export class SafeConvertBytesToStringExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: SafeConvertBytesToStringExprArgs;
 
   constructor (args: SafeConvertBytesToStringExprArgs) {
@@ -33430,6 +34520,8 @@ export class SHAExpr extends FuncExpr {
   static argTypes: RequiredMap<SHAExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: SHAExprArgs;
 
@@ -33463,6 +34555,8 @@ export class SHA2Expr extends FuncExpr {
     length: false,
   };
 
+  static argOrder = ['this', 'length'];
+
   declare args: SHA2ExprArgs;
 
   static {
@@ -33493,6 +34587,8 @@ export class SHA1DigestExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: SHA1DigestExprArgs;
 
   constructor (args: SHA1DigestExprArgs) {
@@ -33520,6 +34616,8 @@ export class SHA2DigestExpr extends FuncExpr {
     this: true,
     length: false,
   };
+
+  static argOrder = ['this', 'length'];
 
   declare args: SHA2DigestExprArgs;
 
@@ -33550,6 +34648,8 @@ export class SignExpr extends FuncExpr {
   static argTypes: RequiredMap<SignExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: SignExprArgs;
 
@@ -33587,6 +34687,12 @@ export class SortArrayExpr extends FuncExpr {
     nullsFirst: false,
   };
 
+  static argOrder = [
+    'this',
+    'asc',
+    'nullsFirst',
+  ];
+
   declare args: SortArrayExprArgs;
 
   static {
@@ -33621,6 +34727,8 @@ export class SoundexExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: SoundexExprArgs;
 
   constructor (args: SoundexExprArgs) {
@@ -33642,6 +34750,8 @@ export class SoundexP123Expr extends FuncExpr {
   static argTypes: RequiredMap<SoundexP123ExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: SoundexP123ExprArgs;
 
@@ -33672,6 +34782,12 @@ export class SplitExpr extends FuncExpr {
     expression: true,
     limit: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'limit',
+  ];
 
   declare args: SplitExprArgs;
 
@@ -33718,6 +34834,12 @@ export class SplitPartExpr extends FuncExpr {
     delimiter: false,
     partIndex: false,
   };
+
+  static argOrder = [
+    'this',
+    'delimiter',
+    'partIndex',
+  ];
 
   declare args: SplitPartExprArgs;
 
@@ -33766,6 +34888,12 @@ export class SubstringExpr extends FuncExpr {
     length: false,
   };
 
+  static argOrder = [
+    'this',
+    'start',
+    'length',
+  ];
+
   declare args: SubstringExprArgs;
 
   constructor (args: SubstringExprArgs) {
@@ -33812,6 +34940,12 @@ export class SubstringIndexExpr extends FuncExpr {
     count: true,
   };
 
+  static argOrder = [
+    'this',
+    'delimiter',
+    'count',
+  ];
+
   declare args: SubstringIndexExprArgs;
 
   constructor (args: SubstringIndexExprArgs) {
@@ -33852,6 +34986,8 @@ export class StandardHashExpr extends FuncExpr {
     expression: false,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: StandardHashExprArgs;
 
   constructor (args: StandardHashExprArgs) {
@@ -33889,6 +35025,8 @@ export class StartsWithExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: StartsWithExprArgs;
 
   constructor (args: StartsWithExprArgs) {
@@ -33925,6 +35063,8 @@ export class EndsWithExpr extends FuncExpr {
     this: true,
     expression: true,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: EndsWithExprArgs;
 
@@ -33969,6 +35109,13 @@ export class StrPositionExpr extends FuncExpr {
     position: false,
     occurrence: false,
   };
+
+  static argOrder = [
+    'this',
+    'substr',
+    'position',
+    'occurrence',
+  ];
 
   declare args: StrPositionExprArgs;
 
@@ -34026,6 +35173,15 @@ export class SearchExpr extends FuncExpr {
     searchMode: false,
   };
 
+  static argOrder = [
+    'this',
+    'expression',
+    'jsonScope',
+    'analyzer',
+    'analyzerOptions',
+    'searchMode',
+  ];
+
   declare args: SearchExprArgs;
 
   constructor (args: SearchExprArgs) {
@@ -34078,6 +35234,8 @@ export class SearchIpExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: SearchIpExprArgs;
 
   constructor (args: SearchIpExprArgs) {
@@ -34119,6 +35277,12 @@ export class StrToDateExpr extends FuncExpr {
     safe: false,
     this: true,
   };
+
+  static argOrder = [
+    'format',
+    'safe',
+    'this',
+  ];
 
   declare args: StrToDateExprArgs;
 
@@ -34170,6 +35334,14 @@ export class StrToTimeExpr extends FuncExpr {
     this: true,
   };
 
+  static argOrder = [
+    'format',
+    'zone',
+    'safe',
+    'targetType',
+    'this',
+  ];
+
   declare args: StrToTimeExprArgs;
 
   constructor (args: StrToTimeExprArgs) {
@@ -34217,6 +35389,8 @@ export class StrToUnixExpr extends FuncExpr {
     this: false,
   };
 
+  static argOrder = ['format', 'this'];
+
   declare args: StrToUnixExprArgs;
 
   constructor (args: StrToUnixExprArgs) {
@@ -34260,6 +35434,13 @@ export class StrToMapExpr extends FuncExpr {
     keyValueDelim: false,
     duplicateResolutionCallback: false,
   };
+
+  static argOrder = [
+    'this',
+    'pairDelim',
+    'keyValueDelim',
+    'duplicateResolutionCallback',
+  ];
 
   declare args: StrToMapExprArgs;
 
@@ -34311,6 +35492,12 @@ export class NumberToStrExpr extends FuncExpr {
     this: true,
   };
 
+  static argOrder = [
+    'format',
+    'culture',
+    'this',
+  ];
+
   declare args: NumberToStrExprArgs;
 
   constructor (args: NumberToStrExprArgs) {
@@ -34351,6 +35538,8 @@ export class FromBaseExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = ['this', 'expression'];
+
   declare args: FromBaseExprArgs;
 
   constructor (args: FromBaseExprArgs) {
@@ -34381,6 +35570,8 @@ export class SpaceExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: SpaceExprArgs;
 
   constructor (args: SpaceExprArgs) {
@@ -34405,6 +35596,8 @@ export class StructExpr extends FuncExpr {
     ...super.argTypes,
     expressions: false,
   };
+
+  static argOrder = ['expressions'];
 
   declare args: StructExprArgs;
 
@@ -34437,6 +35630,8 @@ export class StructExtractExpr extends FuncExpr {
     this: true,
     expression: true,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: StructExtractExprArgs;
 
@@ -34483,6 +35678,13 @@ export class StuffExpr extends FuncExpr {
     expression: true,
   };
 
+  static argOrder = [
+    'start',
+    'length',
+    'this',
+    'expression',
+  ];
+
   declare args: StuffExprArgs;
 
   constructor (args: StuffExprArgs) {
@@ -34521,6 +35723,8 @@ export class SqrtExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: SqrtExprArgs;
 
   constructor (args: SqrtExprArgs) {
@@ -34547,6 +35751,8 @@ export class TimeExpr extends FuncExpr {
     zone: false,
     this: false,
   };
+
+  static argOrder = ['zone', 'this'];
 
   declare args: TimeExprArgs;
 
@@ -34592,6 +35798,13 @@ export class TimeToStrExpr extends FuncExpr {
     this: true,
   };
 
+  static argOrder = [
+    'format',
+    'culture',
+    'zone',
+    'this',
+  ];
+
   declare args: TimeToStrExprArgs;
 
   constructor (args: TimeToStrExprArgs) {
@@ -34630,6 +35843,8 @@ export class TimeToTimeStrExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: TimeToTimeStrExprArgs;
 
   constructor (args: TimeToTimeStrExprArgs) {
@@ -34652,6 +35867,8 @@ export class TimeToUnixExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: TimeToUnixExprArgs;
 
   constructor (args: TimeToUnixExprArgs) {
@@ -34673,6 +35890,8 @@ export class TimeStrToDateExpr extends FuncExpr {
   static argTypes: RequiredMap<TimeStrToDateExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: TimeStrToDateExprArgs;
 
@@ -34700,6 +35919,8 @@ export class TimeStrToTimeExpr extends FuncExpr {
     zone: false,
     this: true,
   };
+
+  static argOrder = ['zone', 'this'];
 
   declare args: TimeStrToTimeExprArgs;
 
@@ -34730,6 +35951,8 @@ export class TimeStrToUnixExpr extends FuncExpr {
   static argTypes: RequiredMap<TimeStrToUnixExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: TimeStrToUnixExprArgs;
 
@@ -34772,6 +35995,13 @@ export class TrimExpr extends FuncExpr {
     position: false,
     collation: false,
   };
+
+  static argOrder = [
+    'this',
+    'expression',
+    'position',
+    'collation',
+  ];
 
   declare args: TrimExprArgs;
 
@@ -34915,6 +36145,8 @@ export class TsOrDsToDateStrExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: TsOrDsToDateStrExprArgs;
 
   constructor (args: TsOrDsToDateStrExprArgs) {
@@ -34948,6 +36180,12 @@ export class TsOrDsToDateExpr extends FuncExpr {
     safe: false,
     this: true,
   };
+
+  static argOrder = [
+    'format',
+    'safe',
+    'this',
+  ];
 
   declare args: TsOrDsToDateExprArgs;
 
@@ -34983,6 +36221,8 @@ export class TsOrDsToDatetimeExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: TsOrDsToDatetimeExprArgs;
 
   constructor (args: TsOrDsToDatetimeExprArgs) {
@@ -35016,6 +36256,12 @@ export class TsOrDsToTimeExpr extends FuncExpr {
     safe: false,
     this: true,
   };
+
+  static argOrder = [
+    'format',
+    'safe',
+    'this',
+  ];
 
   declare args: TsOrDsToTimeExprArgs;
 
@@ -35051,6 +36297,8 @@ export class TsOrDsToTimestampExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: TsOrDsToTimestampExprArgs;
 
   constructor (args: TsOrDsToTimestampExprArgs) {
@@ -35072,6 +36320,8 @@ export class TsOrDiToDiExpr extends FuncExpr {
   static argTypes: RequiredMap<TsOrDiToDiExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: TsOrDiToDiExprArgs;
 
@@ -35100,6 +36350,8 @@ export class UnhexExpr extends FuncExpr {
     this: true,
     expression: false,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: UnhexExprArgs;
 
@@ -35130,6 +36382,8 @@ export class UnicodeExpr extends FuncExpr {
   static argTypes: RequiredMap<UnicodeExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: UnicodeExprArgs;
 
@@ -35166,6 +36420,13 @@ export class UniformExpr extends FuncExpr {
     this: true,
     expression: true,
   };
+
+  static argOrder = [
+    'gen',
+    'seed',
+    'this',
+    'expression',
+  ];
 
   declare args: UniformExprArgs;
 
@@ -35205,6 +36466,8 @@ export class UnixDateExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: UnixDateExprArgs;
 
   constructor (args: UnixDateExprArgs) {
@@ -35232,6 +36495,8 @@ export class UnixToStrExpr extends FuncExpr {
     format: false,
     this: true,
   };
+
+  static argOrder = ['format', 'this'];
 
   declare args: UnixToStrExprArgs;
 
@@ -35282,6 +36547,16 @@ export class UnixToTimeExpr extends FuncExpr {
     format: false,
     targetType: false,
   };
+
+  static argOrder = [
+    'this',
+    'scale',
+    'zone',
+    'hours',
+    'minutes',
+    'format',
+    'targetType',
+  ];
 
   declare args: UnixToTimeExprArgs;
 
@@ -35344,6 +36619,8 @@ export class UnixToTimeStrExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: UnixToTimeStrExprArgs;
 
   constructor (args: UnixToTimeStrExprArgs) {
@@ -35365,6 +36642,8 @@ export class UnixSecondsExpr extends FuncExpr {
   static argTypes: RequiredMap<UnixSecondsExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: UnixSecondsExprArgs;
 
@@ -35388,6 +36667,8 @@ export class UnixMicrosExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: UnixMicrosExprArgs;
 
   constructor (args: UnixMicrosExprArgs) {
@@ -35409,6 +36690,8 @@ export class UnixMillisExpr extends FuncExpr {
   static argTypes: RequiredMap<UnixMillisExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: UnixMillisExprArgs;
 
@@ -35450,6 +36733,12 @@ export class UuidExpr extends FuncExpr {
     isString: false,
     this: false,
   };
+
+  static argOrder = [
+    'name',
+    'isString',
+    'this',
+  ];
 
   declare args: UuidExprArgs;
 
@@ -35517,6 +36806,13 @@ export class TimestampFromPartsExpr extends FuncExpr {
     this: false,
     expression: false,
   };
+
+  static argOrder = [
+    'zone',
+    'milli',
+    'this',
+    'expression',
+  ];
 
   declare args: TimestampFromPartsExprArgs;
 
@@ -35659,6 +36955,8 @@ export class TimestampTzFromPartsExpr extends FuncExpr {
     zone: false,
   };
 
+  static argOrder = ['zone'];
+
   declare args: TimestampTzFromPartsExprArgs;
 
   constructor (args: TimestampTzFromPartsExprArgs) {
@@ -35712,6 +37010,8 @@ export class UpperExpr extends FuncExpr {
   static argTypes: RequiredMap<UpperExprArgs> = {
     ...super.argTypes,
   };
+
+  static argOrder = ['this'];
 
   declare args: UpperExprArgs;
 
@@ -35793,6 +37093,14 @@ export class WidthBucketExpr extends FuncExpr {
     threshold: false,
   };
 
+  static argOrder = [
+    'this',
+    'minValue',
+    'maxValue',
+    'numBuckets',
+    'threshold',
+  ];
+
   declare args: WidthBucketExprArgs;
 
   constructor (args: WidthBucketExprArgs) {
@@ -35841,6 +37149,8 @@ export class WeekExpr extends FuncExpr {
     this: true,
   };
 
+  static argOrder = ['mode', 'this'];
+
   declare args: WeekExprArgs;
 
   constructor (args: WeekExprArgs) {
@@ -35876,6 +37186,8 @@ export class NextDayExpr extends FuncExpr {
     this: true,
     expression: true,
   };
+
+  static argOrder = ['this', 'expression'];
 
   declare args: NextDayExprArgs;
 
@@ -35916,6 +37228,12 @@ export class XMLElementExpr extends FuncExpr {
     this: true,
     expressions: false,
   };
+
+  static argOrder = [
+    'evalname',
+    'this',
+    'expressions',
+  ];
 
   declare args: XMLElementExprArgs;
 
@@ -35959,6 +37277,12 @@ export class XMLGetExpr extends FuncExpr {
     this: true,
     expression: true,
   };
+
+  static argOrder = [
+    'instance',
+    'this',
+    'expression',
+  ];
 
   declare args: XMLGetExprArgs;
 
@@ -36010,6 +37334,14 @@ export class XMLTableExpr extends FuncExpr {
     byRef: false,
   };
 
+  static argOrder = [
+    'this',
+    'namespaces',
+    'passing',
+    'columns',
+    'byRef',
+  ];
+
   declare args: XMLTableExprArgs;
 
   constructor (args: XMLTableExprArgs) {
@@ -36052,6 +37384,8 @@ export class YearExpr extends FuncExpr {
     ...super.argTypes,
   };
 
+  static argOrder = ['this'];
+
   declare args: YearExprArgs;
 
   constructor (args: YearExprArgs) {
@@ -36085,6 +37419,12 @@ export class ZipfExpr extends FuncExpr {
     gen: true,
     this: true,
   };
+
+  static argOrder = [
+    'elementcount',
+    'gen',
+    'this',
+  ];
 
   declare args: ZipfExprArgs;
 
@@ -36125,6 +37465,8 @@ export class NextValueForExpr extends FuncExpr {
     order: false,
     this: true,
   };
+
+  static argOrder = ['order', 'this'];
 
   declare args: NextValueForExprArgs;
 
