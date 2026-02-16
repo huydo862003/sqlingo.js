@@ -10018,7 +10018,7 @@ export enum DataTypeExprKind {
 export type DataTypeExprArgs = Merge<[
   BaseExpressionArgs,
   {
-    this: string;
+    this: string | Expression;
     expressions?: Expression[];
     nested?: boolean;
     values?: Expression[];
@@ -10262,7 +10262,7 @@ export class DataTypeExpr extends Expression {
     return false;
   }
 
-  get $this (): string {
+  get $this (): string | Expression {
     return this.args.this;
   }
 
@@ -18952,7 +18952,7 @@ export class IntervalOpExpr extends TimeUnitExpr {
 export type IntervalSpanExprArgs = Merge<[
   DataTypeExprArgs,
   {
-    this: DataTypeExprKind;
+    this: DataTypeExprKind | Expression;
     expression: Expression;
   },
 ]>;
@@ -18972,7 +18972,7 @@ export class IntervalSpanExpr extends DataTypeExpr {
     super(args);
   }
 
-  get $this (): DataTypeExprKind {
+  get $this (): DataTypeExprKind | Expression {
     return this.args.this;
   }
 
@@ -39904,7 +39904,7 @@ export function case_ (
  */
 export function cast (
   expression: string | Expression,
-  to: DataTypeExprKind,
+  to: DataTypeExprKind | IdentifierExpr | string | DataTypeExpr,
   options: {
     copy?: boolean;
     dialect?: DialectType;

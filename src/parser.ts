@@ -451,6 +451,7 @@ import {
   UNWRAPPED_QUERIES,
   var_,
   alias,
+  cast,
 } from './expressions';
 import { formatTime } from './time';
 import {
@@ -7631,11 +7632,11 @@ export class Parser {
         // Empty arrays/structs are allowed
         if (values !== undefined) {
           const cls = isStruct ? StructExpr : ArrayExpr;
-          thisExpr = new CastExpr({
-            this: new cls({ expressions: values }),
-            to: thisExpr as DataTypeExpr,
-            copy: false,
-          });
+          thisExpr = cast(
+            new cls({ expressions: values }),
+            thisExpr as DataTypeExpr,
+            { copy: false },
+          );
         }
       }
     } else if (expressions) {
@@ -7646,7 +7647,7 @@ export class Parser {
     while (this._match(TokenType.LIST)) {
       thisExpr = new DataTypeExpr({
         this: DataTypeExprKind.LIST,
-        expressions: [thisExpr],
+        expressions: [thisExpr!],
         nested: true,
       });
     }
@@ -7654,7 +7655,7 @@ export class Parser {
     const index3 = this._index;
 
     // Postgres supports the INT ARRAY[3] syntax as a synonym for INT[3]
-    let matchedArray = this._match(TokenType.ARRAY);
+    let matchedArray = this._match(TokenType.ARRAY) ?? false;
 
     while (this._curr) {
       const datatypeToken = this._prev!.tokenType;
@@ -7688,14 +7689,14 @@ export class Parser {
 
       thisExpr = new DataTypeExpr({
         this: DataTypeExprKind.ARRAY,
-        expressions: [thisExpr],
+        expressions: [thisExpr!],
         values: valuesInBracket,
         nested: true,
       });
       this._match(TokenType.R_BRACKET);
     }
 
-    if (thisExpr && this._constructor.TYPE_CONVERTERS && (thisExpr as DataTypeExpr).this instanceof Object) {
+    if (thisExpr && this._constructor.TYPE_CONVERTERS && typeof (thisExpr as DataTypeExpr).this === 'object') {
       const converter = this._constructor.TYPE_CONVERTERS[(thisExpr as DataTypeExpr).this as DataTypeExprKind];
       if (converter) {
         thisExpr = converter(thisExpr as DataTypeExpr);
