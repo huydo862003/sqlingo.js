@@ -8228,13 +8228,17 @@ export class Parser {
     return undefined;
   }
 
-  _matchSet (types: Set<TokenType>, options: { advance?: boolean } = {}): boolean | undefined {
+  _matchSet (types: Set<TokenType> | TokenType[], options: { advance?: boolean } = {}): boolean | undefined {
     const { advance = true } = options;
     if (!this._curr) {
       return undefined;
     }
 
-    if (types.has(this._curr.tokenType)) {
+    const hasType = Array.isArray(types)
+      ? types.includes(this._curr.tokenType)
+      : types.has(this._curr.tokenType);
+
+    if (hasType) {
       if (advance) {
         this._advance();
       }
