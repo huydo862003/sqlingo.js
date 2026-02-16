@@ -8228,7 +8228,7 @@ export class Parser {
     });
   }
 
-  _matchTexts (texts: string[] | Set<string>, options: { advance?: boolean } = {}): boolean | undefined {
+  _matchTexts (texts: string[] | Set<string>, options: { advance?: boolean } = {}): true | undefined {
     const { advance = true } = options;
     const textsArray = texts instanceof Set ? Array.from(texts) : texts;
     if (
@@ -8244,7 +8244,7 @@ export class Parser {
     return undefined;
   }
 
-  _matchSet (types: Set<TokenType> | TokenType[], options: { advance?: boolean } = {}): boolean | undefined {
+  _matchSet (types: Set<TokenType> | TokenType[], options: { advance?: boolean } = {}): true | undefined {
     const { advance = true } = options;
     if (!this._curr) {
       return undefined;
@@ -8264,7 +8264,7 @@ export class Parser {
     return undefined;
   }
 
-  _matchPair (tokenTypeA: TokenType, tokenTypeB: TokenType, options: { advance?: boolean } = {}): boolean | undefined {
+  _matchPair (tokenTypeA: TokenType, tokenTypeB: TokenType, options: { advance?: boolean } = {}): true | undefined {
     const { advance = true } = options;
     if (!this._curr || !this._next) {
       return undefined;
@@ -8292,7 +8292,7 @@ export class Parser {
     }
   }
 
-  _matchTextSeq (texts: string | string[], options: { advance?: boolean } = {}): boolean | undefined {
+  _matchTextSeq (texts: string | string[], options: { advance?: boolean } = {}): true | undefined {
     const { advance = true } = options;
     const textArray = ensureList(texts);
 
