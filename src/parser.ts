@@ -6835,7 +6835,7 @@ export class Parser {
 
     if (this._matchSet(Object.keys(this._constructor.RANGE_PARSERS) as TokenType[])) {
       const parser = this._constructor.RANGE_PARSERS[this._prev!.tokenType];
-      if (parser) {
+      if (parser && current) {
         const expression = parser(this, current);
         if (!expression) {
           return current;
