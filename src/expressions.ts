@@ -12002,9 +12002,9 @@ export type ZeroFillColumnConstraintExprArgs = Merge<[
 export class ZeroFillColumnConstraintExpr extends ColumnConstraintExpr {
   key = ExpressionKey.ZERO_FILL_COLUMN_CONSTRAINT;
 
-  static requiredArgs = new Set([...ColumnConstraintExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...ColumnConstraintExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   declare args: ZeroFillColumnConstraintExprArgs;
 
@@ -13501,9 +13501,9 @@ export type CopyGrantsPropertyExprArgs = Merge<[
 export class CopyGrantsPropertyExpr extends PropertyExpr {
   key = ExpressionKey.COPY_GRANTS_PROPERTY;
 
-  static requiredArgs = new Set([...PropertyExpr.requiredArgs, 'value']);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...PropertyExpr.availableArgs, 'value']);
+  static availableArgs = new Set<string>();
 
   declare args: CopyGrantsPropertyExprArgs;
 
@@ -13780,9 +13780,9 @@ export type HeapPropertyExprArgs = Merge<[
 export class HeapPropertyExpr extends PropertyExpr {
   key = ExpressionKey.HEAP_PROPERTY;
 
-  static requiredArgs = new Set([...PropertyExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...PropertyExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   declare args: HeapPropertyExprArgs;
 
@@ -14003,9 +14003,9 @@ export type GlobalPropertyExprArgs = Merge<[
 export class GlobalPropertyExpr extends PropertyExpr {
   key = ExpressionKey.GLOBAL_PROPERTY;
 
-  static requiredArgs = new Set([...PropertyExpr.requiredArgs, 'value']);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...PropertyExpr.availableArgs, 'value']);
+  static availableArgs = new Set<string>();
 
   declare args: GlobalPropertyExprArgs;
 
@@ -14024,9 +14024,9 @@ export type IcebergPropertyExprArgs = Merge<[
 export class IcebergPropertyExpr extends PropertyExpr {
   key = ExpressionKey.ICEBERG_PROPERTY;
 
-  static requiredArgs = new Set([...PropertyExpr.requiredArgs, 'value']);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...PropertyExpr.availableArgs, 'value']);
+  static availableArgs = new Set<string>();
 
   declare args: IcebergPropertyExprArgs;
 
@@ -14385,9 +14385,9 @@ export type DynamicPropertyExprArgs = Merge<[
 export class DynamicPropertyExpr extends PropertyExpr {
   key = ExpressionKey.DYNAMIC_PROPERTY;
 
-  static requiredArgs = new Set([...PropertyExpr.requiredArgs, 'value']);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...PropertyExpr.availableArgs, 'value']);
+  static availableArgs = new Set<string>();
 
   declare args: DynamicPropertyExprArgs;
 
@@ -14429,9 +14429,9 @@ export type EmptyPropertyExprArgs = Merge<[
 export class EmptyPropertyExpr extends PropertyExpr {
   key = ExpressionKey.EMPTY_PROPERTY;
 
-  static requiredArgs = new Set([...PropertyExpr.requiredArgs, 'value']);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...PropertyExpr.availableArgs, 'value']);
+  static availableArgs = new Set<string>();
 
   declare args: EmptyPropertyExprArgs;
 
@@ -14686,9 +14686,9 @@ export type NoPrimaryIndexPropertyExprArgs = Merge<[
 export class NoPrimaryIndexPropertyExpr extends PropertyExpr {
   key = ExpressionKey.NO_PRIMARY_INDEX_PROPERTY;
 
-  static requiredArgs = new Set([...PropertyExpr.requiredArgs, 'value']);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...PropertyExpr.availableArgs, 'value']);
+  static availableArgs = new Set<string>();
 
   declare args: NoPrimaryIndexPropertyExprArgs;
 
@@ -15032,9 +15032,9 @@ export type StreamingTablePropertyExprArgs = Merge<[
 export class StreamingTablePropertyExpr extends PropertyExpr {
   key = ExpressionKey.STREAMING_TABLE_PROPERTY;
 
-  static requiredArgs = new Set([...PropertyExpr.requiredArgs, 'value']);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...PropertyExpr.availableArgs, 'value']);
+  static availableArgs = new Set<string>();
 
   declare args: StreamingTablePropertyExprArgs;
 
@@ -15126,9 +15126,9 @@ export type StrictPropertyExprArgs = Merge<[
 export class StrictPropertyExpr extends PropertyExpr {
   key = ExpressionKey.STRICT_PROPERTY;
 
-  static requiredArgs = new Set([...PropertyExpr.requiredArgs, 'value']);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...PropertyExpr.availableArgs, 'value']);
+  static availableArgs = new Set<string>();
 
   declare args: StrictPropertyExprArgs;
 
@@ -15600,9 +15600,9 @@ export type SecurePropertyExprArgs = Merge<[
 export class SecurePropertyExpr extends PropertyExpr {
   key = ExpressionKey.SECURE_PROPERTY;
 
-  static requiredArgs = new Set([...PropertyExpr.requiredArgs, 'value']);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...PropertyExpr.availableArgs, 'value']);
+  static availableArgs = new Set<string>();
 
   declare args: SecurePropertyExprArgs;
 
@@ -15697,9 +15697,9 @@ export type UnloggedPropertyExprArgs = Merge<[
 export class UnloggedPropertyExpr extends PropertyExpr {
   key = ExpressionKey.UNLOGGED_PROPERTY;
 
-  static requiredArgs = new Set([...PropertyExpr.requiredArgs, 'value']);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...PropertyExpr.availableArgs, 'value']);
+  static availableArgs = new Set<string>();
 
   declare args: UnloggedPropertyExprArgs;
 
@@ -16021,9 +16021,9 @@ export type ForcePropertyExprArgs = Merge<[
 export class ForcePropertyExpr extends PropertyExpr {
   key = ExpressionKey.FORCE_PROPERTY;
 
-  static requiredArgs = new Set([...PropertyExpr.requiredArgs, 'value']);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...PropertyExpr.availableArgs, 'value']);
+  static availableArgs = new Set<string>();
 
   declare args: ForcePropertyExprArgs;
 
@@ -17562,9 +17562,9 @@ export type NullExprArgs = Merge<[
 export class NullExpr extends ConditionExpr {
   key = ExpressionKey.NULL;
 
-  static requiredArgs = new Set([...ConditionExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...ConditionExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   declare args: NullExprArgs;
 
@@ -23579,9 +23579,9 @@ export type CurrentAccountExprArgs = Merge<[
 export class CurrentAccountExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ACCOUNT;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -23603,9 +23603,9 @@ export type CurrentAccountNameExprArgs = Merge<[
 export class CurrentAccountNameExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ACCOUNT_NAME;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -23627,9 +23627,9 @@ export type CurrentAvailableRolesExprArgs = Merge<[
 export class CurrentAvailableRolesExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_AVAILABLE_ROLES;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -23651,9 +23651,9 @@ export type CurrentClientExprArgs = Merge<[
 export class CurrentClientExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_CLIENT;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -23675,9 +23675,9 @@ export type CurrentIpAddressExprArgs = Merge<[
 export class CurrentIpAddressExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_IP_ADDRESS;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -23699,9 +23699,9 @@ export type CurrentDatabaseExprArgs = Merge<[
 export class CurrentDatabaseExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_DATABASE;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -23751,9 +23751,9 @@ export type CurrentSecondaryRolesExprArgs = Merge<[
 export class CurrentSecondaryRolesExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SECONDARY_ROLES;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -23775,9 +23775,9 @@ export type CurrentSessionExprArgs = Merge<[
 export class CurrentSessionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_SESSION;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -23799,9 +23799,9 @@ export type CurrentStatementExprArgs = Merge<[
 export class CurrentStatementExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_STATEMENT;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -23823,9 +23823,9 @@ export type CurrentVersionExprArgs = Merge<[
 export class CurrentVersionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_VERSION;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -23847,9 +23847,9 @@ export type CurrentTransactionExprArgs = Merge<[
 export class CurrentTransactionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TRANSACTION;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -23871,9 +23871,9 @@ export type CurrentWarehouseExprArgs = Merge<[
 export class CurrentWarehouseExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_WAREHOUSE;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -24098,9 +24098,9 @@ export type CurrentTimestampLTZExprArgs = Merge<[
 export class CurrentTimestampLTZExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMESTAMP_LTZ;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -24122,9 +24122,9 @@ export type CurrentTimezoneExprArgs = Merge<[
 export class CurrentTimezoneExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_TIMEZONE;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -24146,9 +24146,9 @@ export type CurrentOrganizationNameExprArgs = Merge<[
 export class CurrentOrganizationNameExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ORGANIZATION_NAME;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -24226,9 +24226,9 @@ export type CurrentCatalogExprArgs = Merge<[
 export class CurrentCatalogExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_CATALOG;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -24250,9 +24250,9 @@ export type CurrentRegionExprArgs = Merge<[
 export class CurrentRegionExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_REGION;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -24274,9 +24274,9 @@ export type CurrentRoleExprArgs = Merge<[
 export class CurrentRoleExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ROLE;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -24298,9 +24298,9 @@ export type CurrentRoleTypeExprArgs = Merge<[
 export class CurrentRoleTypeExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ROLE_TYPE;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -24322,9 +24322,9 @@ export type CurrentOrganizationUserExprArgs = Merge<[
 export class CurrentOrganizationUserExpr extends FuncExpr {
   key = ExpressionKey.CURRENT_ORGANIZATION_USER;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -24346,9 +24346,9 @@ export type SessionUserExprArgs = Merge<[
 export class SessionUserExpr extends FuncExpr {
   key = ExpressionKey.SESSION_USER;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -24370,9 +24370,9 @@ export type UtcDateExprArgs = Merge<[
 export class UtcDateExpr extends FuncExpr {
   key = ExpressionKey.UTC_DATE;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -31216,9 +31216,9 @@ export type PiExprArgs = Merge<[
 export class PiExpr extends FuncExpr {
   key = ExpressionKey.PI;
 
-  static requiredArgs = new Set([...FuncExpr.requiredArgs]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([...FuncExpr.availableArgs]);
+  static availableArgs = new Set<string>();
 
   static argOrder = ['this'];
 
