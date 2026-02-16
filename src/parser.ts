@@ -183,6 +183,7 @@ import {
   GrantPrincipalExpr,
   GreatestExpr,
   GroupExpr,
+  GroupConcatExpr,
   GroupingSetsExpr,
   HavingExpr,
   HavingMaxExpr,
