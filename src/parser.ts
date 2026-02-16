@@ -1846,7 +1846,7 @@ export class Parser {
     [TokenType.AMP_GT]: binaryRangeParser(ExtendsRightExpr),
   };
 
-  static PIPE_SYNTAX_TRANSFORM_PARSERS = {
+  static PIPE_SYNTAX_TRANSFORM_PARSERS: Partial<Record<string, (self: Parser, query: SelectExpr) => SelectExpr>> = {
     'AGGREGATE': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxAggregate(query),
     'AS': (self: Parser, query: SelectExpr) => self.buildPipeCte({
       query,
@@ -1989,7 +1989,8 @@ export class Parser {
     'WITH': (self: Parser) => self.parseWithProperty(),
   };
 
-  static CONSTRAINT_PARSERS = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static CONSTRAINT_PARSERS: Partial<Record<string, (self: Parser, ...args: any[]) => Expression | Expression[] | undefined>> = {
     'AUTOINCREMENT': (self: Parser) => self.parseAutoIncrement(),
     'AUTO_INCREMENT': (self: Parser) => self.parseAutoIncrement(),
     'CASESPECIFIC': (self: Parser) => self.expression(CaseSpecificColumnConstraintExpr, { not_: false }),
@@ -2063,7 +2064,8 @@ export class Parser {
     'TRUNCATE': (self: Parser) => self.parsePartitionedByBucketOrTruncate(),
   };
 
-  static ALTER_PARSERS = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static ALTER_PARSERS: Partial<Record<string, (self: Parser) => any>> = {
     'ADD': (self: Parser) => self.parseAlterTableAdd(),
     'AS': (self: Parser) => self.parseSelect(),
     'ALTER': (self: Parser) => self.parseAlterTableAlter(),
@@ -2078,7 +2080,7 @@ export class Parser {
     ),
   };
 
-  static ALTER_ALTER_PARSERS = {
+  static ALTER_ALTER_PARSERS: Partial<Record<string, (self: Parser) => Expression>> = {
     DISTKEY: (self: Parser) => self.parseAlterDiststyle(),
     DISTSTYLE: (self: Parser) => self.parseAlterDiststyle(),
     SORTKEY: (self: Parser) => self.parseAlterSortkey(),
@@ -2097,7 +2099,7 @@ export class Parser {
     'TRUNCATE',
   ]);
 
-  static NO_PAREN_FUNCTION_PARSERS = {
+  static NO_PAREN_FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> = {
     ANY: (self: Parser) => self.expression(AnyExpr, { this: self.parseBitwise() }),
     CASE: (self: Parser) => self.parseCase(),
     CONNECT_BY_ROOT: (self: Parser) => self.expression(
@@ -2118,7 +2120,7 @@ export class Parser {
     SliceExpr,
   ]);
 
-  static FUNCTION_PARSERS = {
+  static FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> = {
     ...Object.fromEntries(
       ArgMaxExpr.sqlNames().map((name) => [name, (self: Parser) => self.parseMaxMinBy(ArgMaxExpr)]),
     ),
