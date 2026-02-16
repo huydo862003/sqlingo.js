@@ -1721,7 +1721,8 @@ export class Parser {
     [ExpressionKey.WITH]: (self: Parser) => self.parseWith(),
   };
 
-  static STATEMENT_PARSERS = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static STATEMENT_PARSERS: Partial<Record<TokenType, (self: Parser) => any>> = {
     [TokenType.ALTER]: (self: Parser) => self.parseAlter(),
     [TokenType.ANALYZE]: (self: Parser) => self.parseAnalyze(),
     [TokenType.BEGIN]: (self: Parser) => self.parseTransaction(),
@@ -1753,7 +1754,7 @@ export class Parser {
     [TokenType.SEMICOLON]: (_self: Parser) => new SemicolonExpr({}),
   };
 
-  static UNARY_PARSERS = {
+  static UNARY_PARSERS: Partial<Record<TokenType, (self: Parser) => Expression | undefined>> = {
     [TokenType.PLUS]: (self: Parser) => self.parseUnary(),
     [TokenType.NOT]: (self: Parser) => self.expression(NotExpr, { this: self.parseEquality() }),
     [TokenType.TILDE]: (self: Parser) => self.expression(BitwiseNotExpr, { this: self.parseUnary() }),
@@ -1762,7 +1763,7 @@ export class Parser {
     [TokenType.DPIPE_SLASH]: (self: Parser) => self.expression(CbrtExpr, { this: self.parseUnary() }),
   };
 
-  static STRING_PARSERS = {
+  static STRING_PARSERS: Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> = {
     [TokenType.HEREDOC_STRING]: (self: Parser, token: Token) => self.expression(RawStringExpr, { token }),
     [TokenType.NATIONAL_STRING]: (self: Parser, token: Token) => self.expression(NationalExpr, { token }),
     [TokenType.RAW_STRING]: (self: Parser, token: Token) => self.expression(RawStringExpr, { token }),
@@ -1779,7 +1780,7 @@ export class Parser {
     ),
   };
 
-  static NUMERIC_PARSERS = {
+  static NUMERIC_PARSERS: Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> = {
     [TokenType.BIT_STRING]: (self: Parser, token: Token) => self.expression(BitStringExpr, { token }),
     [TokenType.BYTE_STRING]: (self: Parser, token: Token) => self.expression(
       ByteStringExpr,
@@ -1801,7 +1802,7 @@ export class Parser {
     }),
   };
 
-  static PRIMARY_PARSERS = {
+  static PRIMARY_PARSERS: Partial<Record<TokenType, (self: Parser, token: Token) => Expression | undefined>> = {
     ...Parser.STRING_PARSERS,
     ...Parser.NUMERIC_PARSERS,
     [TokenType.INTRODUCER]: (self: Parser, token: Token) => self.parseIntroducer(token),
@@ -1812,7 +1813,7 @@ export class Parser {
     [TokenType.STAR]: (self: Parser, _: Token) => self.parseStarOps(),
   };
 
-  static PLACEHOLDER_PARSERS = {
+  static PLACEHOLDER_PARSERS: Partial<Record<TokenType, (self: Parser) => Expression | undefined>> = {
     [TokenType.PLACEHOLDER]: (self: Parser) => self.expression(PlaceholderExpr),
     [TokenType.PARAMETER]: (self: Parser) => self.parseParameter(),
     [TokenType.COLON]: (self: Parser) => (
@@ -1822,7 +1823,7 @@ export class Parser {
     ),
   };
 
-  static RANGE_PARSERS = {
+  static RANGE_PARSERS: Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression>> = {
     [TokenType.AT_GT]: binaryRangeParser(ArrayContainsAllExpr),
     [TokenType.BETWEEN]: (self: Parser, this_: Expression) => self.parseBetween(this_),
     [TokenType.GLOB]: binaryRangeParser(GlobExpr),
