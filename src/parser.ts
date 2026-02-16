@@ -1508,7 +1508,7 @@ export class Parser {
     TokenType.WINDOW,
     TokenType.XOR,
     ...Parser.TYPE_TOKENS,
-    ...Object.keys(Parser.SUBQUERY_PREDICATES).map(Number),
+    ...Object.keys(Parser.SUBQUERY_PREDICATES),
   ]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4046,7 +4046,7 @@ export class Parser {
     const format = this._match(TokenType.FORMAT, { advance: false }) ? this.parseProperty() : undefined;
 
     let thisExpr: Expression | undefined;
-    if (this._matchSet(new Set(Object.keys(this._constructor.STATEMENT_PARSERS) as TokenType[]), { advance: false })) {
+    if (this._matchSet(new Set(Object.keys(this._constructor.STATEMENT_PARSERS)) as Set<TokenType>, { advance: false })) {
       thisExpr = this.parseStatement();
     } else {
       thisExpr = this.parseTable({ schema: true });
@@ -4769,7 +4769,7 @@ export class Parser {
       }
 
       while (true) {
-        if (this._matchSet(new Set(Object.keys(this._constructor.QUERY_MODIFIER_PARSERS) as TokenType[]), { advance: false })) {
+        if (this._matchSet(new Set(Object.keys(this._constructor.QUERY_MODIFIER_PARSERS)) as Set<TokenType>, { advance: false })) {
           const modifierToken = this._curr!;
           const parser = this._constructor.QUERY_MODIFIER_PARSERS[modifierToken.tokenType];
           const [key, expression] = parser?.(this) || [];
@@ -6791,7 +6791,8 @@ export class Parser {
       thisExpr = new ColumnExpr({ this: this._prev!.text });
     }
 
-    while (this._matchSet(this._constructor.ASSIGNMENT)) {
+    const assignmentTokens = Object.keys(this._constructor.ASSIGNMENT) as TokenType[];
+    while (this._matchSet(assignmentTokens)) {
       if (thisExpr instanceof ColumnExpr && thisExpr.parts.length === 1) {
         thisExpr = thisExpr.this;
       }
@@ -6832,7 +6833,7 @@ export class Parser {
     let current = thisExpr || this.parseBitwise();
     const negate = this._match(TokenType.NOT);
 
-    if (this._matchSet(this._constructor.RANGE_PARSERS)) {
+    if (this._matchSet(Object.keys(this._constructor.RANGE_PARSERS) as TokenType[])) {
       const parser = this._constructor.RANGE_PARSERS[this._prev!.tokenType];
       if (parser) {
         const expression = parser(this, current);
@@ -7140,8 +7141,9 @@ export class Parser {
   parseBitwise (): Expression | undefined {
     let thisExpr = this.parseTerm();
 
+    const bitwiseTokens = Object.keys(this._constructor.BITWISE) as TokenType[];
     while (true) {
-      if (this._matchSet(this._constructor.BITWISE)) {
+      if (this._matchSet(bitwiseTokens)) {
         const ExprClass = this._constructor.BITWISE[this._prev!.tokenType];
         if (ExprClass) {
           thisExpr = this.expression(
@@ -7196,7 +7198,8 @@ export class Parser {
   parseTerm (): Expression | undefined {
     let thisExpr = this.parseFactor();
 
-    while (this._matchSet(this._constructor.TERM)) {
+    const termTokens = Object.keys(this._constructor.TERM) as TokenType[];
+    while (this._matchSet(termTokens)) {
       const klass = this._constructor.TERM[this._prev!.tokenType];
       const comments = this._prevComments;
       const expression = this.parseFactor();
@@ -7230,7 +7233,8 @@ export class Parser {
     const parseMethod = this._constructor.EXPONENT ? () => this.parseExponent() : () => this.parseUnary();
     let thisExpr = this.parseAtTimeZone(parseMethod());
 
-    while (this._matchSet(this._constructor.FACTOR)) {
+    const factorTokens = Object.keys(this._constructor.FACTOR) as TokenType[];
+    while (this._matchSet(factorTokens)) {
       const klass = this._constructor.FACTOR[this._prev!.tokenType];
       const comments = this._prevComments;
       const expression = parseMethod();
@@ -7262,7 +7266,7 @@ export class Parser {
   }
 
   parseUnary (): Expression | undefined {
-    if (this._matchSet(this._constructor.UNARY_PARSERS)) {
+    if (this._matchSet(Object.keys(this._constructor.UNARY_PARSERS) as TokenType[])) {
       const parser = this._constructor.UNARY_PARSERS[this._prev!.tokenType];
       return parser ? parser(this) : undefined;
     }
@@ -8768,10 +8772,12 @@ export class Parser {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  parseTokens (parseMethod: () => Expression | undefined, expressions: Record<TokenType, new (args: any) => Expression>): Expression | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parseTokens (parseMethod: () => Expression | undefined, expressions: Partial<Record<TokenType, new (args: any) => Expression>>): Expression | undefined {
     let thisExpr = parseMethod();
 
-    while (this._matchSet(new Set(Object.keys(expressions).map((k) => parseInt(k) as TokenType)))) {
+    const expressionTokens = new Set(Object.keys(expressions)) as Set<TokenType>;
+    while (this._matchSet(expressionTokens)) {
       const exprType = expressions[this._prev!.tokenType];
       thisExpr = this.expression(
         exprType,
@@ -8880,7 +8886,7 @@ export class Parser {
   }
 
   parsePlaceholder (): Expression | undefined {
-    if (this._matchSet(new Set(Object.keys(this._constructor.PLACEHOLDER_PARSERS).map((k) => parseInt(k) as TokenType)))) {
+    if (this._matchSet(new Set(Object.keys(this._constructor.PLACEHOLDER_PARSERS)) as Set<TokenType>)) {
       const placeholder = this._constructor.PLACEHOLDER_PARSERS[this._prev!.tokenType]?.(this);
       if (placeholder) {
         return placeholder;
@@ -8981,7 +8987,7 @@ export class Parser {
   }
 
   parseString (): Expression | undefined {
-    if (this._matchSet(new Set(Object.keys(this._constructor.STRING_PARSERS).map((k) => parseInt(k) as TokenType)))) {
+    if (this._matchSet(new Set(Object.keys(this._constructor.STRING_PARSERS)) as Set<TokenType>)) {
       return this._constructor.STRING_PARSERS[this._prev!.tokenType]?.(this, this._prev!);
     }
     return this.parsePlaceholder();
@@ -8996,7 +9002,7 @@ export class Parser {
   }
 
   parseNumber (): Expression | undefined {
-    if (this._matchSet(new Set(Object.keys(this._constructor.NUMERIC_PARSERS).map((k) => parseInt(k) as TokenType)))) {
+    if (this._matchSet(new Set(Object.keys(this._constructor.NUMERIC_PARSERS)) as Set<TokenType>)) {
       return this._constructor.NUMERIC_PARSERS[this._prev!.tokenType]?.(this, this._prev!);
     }
     return this.parsePlaceholder();
