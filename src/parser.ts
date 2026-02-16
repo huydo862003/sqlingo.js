@@ -7096,7 +7096,8 @@ export class Parser {
     if (!thisExpr || (
       thisExpr instanceof ColumnExpr
       && !thisExpr.args.table
-      && !(thisExpr.this as IdentifierExpr)?.quoted
+      && thisExpr.$this instanceof IdentifierExpr
+      && !thisExpr.$this.$quoted
       && this._curr
       && !this._dialectConstructor.VALID_INTERVAL_UNITS.has(this._curr.text.toUpperCase())
     )) {
