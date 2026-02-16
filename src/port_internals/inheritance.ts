@@ -7,8 +7,8 @@ const registeredTargets = new WeakMap<Function, Set<Function>>();
  * Walks up the prototype chain and collects all classes in order
  * (simulates Python's MRO - Method Resolution Order)
  */
-function getPrototypeChain (Class: Constructor): Constructor[] {
-  const chain: Constructor[] = [];
+function getPrototypeChain (Class: AbstractConstructor): AbstractConstructor[] {
+  const chain: AbstractConstructor[] = [];
   let current: any = Class;
 
   while (current && current !== Object && current.prototype) {
@@ -52,19 +52,19 @@ function getPrototypeChain (Class: Constructor): Constructor[] {
  * C.staticB; // accessible
  */
 export function multiInherit<
-  TBase extends Constructor,
-  TMixins extends readonly Constructor[],
+  TBase extends AbstractConstructor,
+  TMixins extends readonly AbstractConstructor[],
 > (
   Base: TBase,
   ...mixins: TMixins
 ): MultiInheritResult<TBase, TMixins> {
-  class MultiInheritClass extends Base {}
+  abstract class MultiInheritClass extends Base {}
 
   // Build MRO: [Base chain, Mixin1 chain, Mixin2 chain, ...]
   // This follows Python's MRO where earlier bases have higher priority
   const allBases = [Base, ...mixins];
-  const mro: Constructor[] = [];
-  const seen = new Set<Constructor>();
+  const mro: AbstractConstructor[] = [];
+  const seen = new Set<AbstractConstructor>();
 
   for (const BaseClass of allBases) {
     const chain = getPrototypeChain(BaseClass);
@@ -123,21 +123,16 @@ export function multiInherit<
 }
 
 /**
- * Extracts the constructor type from a class
- */
-type Constructor<T = object> = new (...args: any[]) => T;
-
-/**
  * Extracts the instance type from a constructor
  */
-type InstanceType<T> = T extends Constructor<infer U> ? U : never;
+type InstanceType<T> = T extends AbstractConstructor<infer U> ? U : never;
 
 /**
  * Merges multiple instance types into a single intersection type
  */
-type MergeInstances<T extends readonly Constructor[]> = T extends readonly [
+type MergeInstances<T extends readonly AbstractConstructor[]> = T extends readonly [
   infer First,
-  ...infer Rest extends readonly Constructor[],
+  ...infer Rest extends readonly AbstractConstructor[],
 ]
   ? InstanceType<First> & MergeInstances<Rest>
   : object;
@@ -146,9 +141,9 @@ type MergeInstances<T extends readonly Constructor[]> = T extends readonly [
  * Merges static properties from multiple constructors
  * Uses UnionToIntersection to properly merge all static properties
  */
-type MergeStatics<T extends readonly Constructor[]> = T extends readonly [
+type MergeStatics<T extends readonly AbstractConstructor[]> = T extends readonly [
   infer First,
-  ...infer Rest extends readonly Constructor[],
+  ...infer Rest extends readonly AbstractConstructor[],
 ]
   ? Omit<First, 'prototype' | 'name' | 'length'> & MergeStatics<Rest>
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -163,8 +158,11 @@ type MergeStatics<T extends readonly Constructor[]> = T extends readonly [
  * 3. Has static properties from all bases merged together
  */
 type MultiInheritResult<
-  TBase extends Constructor,
-  TMixins extends readonly Constructor[],
+  TBase extends AbstractConstructor,
+  TMixins extends readonly AbstractConstructor[],
 > = (abstract new (...args: ConstructorParameters<TBase>) => InstanceType<TBase> & MergeInstances<TMixins>)
   & Omit<TBase, 'prototype' | 'name' | 'length'>
   & MergeStatics<TMixins>;
+
+type AbstractConstructor<T = object> =
+  abstract new (...args: any[]) => T;

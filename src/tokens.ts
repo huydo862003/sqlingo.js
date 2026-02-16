@@ -9,451 +9,449 @@ import {
 
 /**
  * Represents a syntax token's tag.
- *
  */
 export enum TokenType {
-  L_PAREN = 'L_PAREN',
-  R_PAREN = 'R_PAREN',
-  L_BRACKET = 'L_BRACKET',
-  R_BRACKET = 'R_BRACKET',
-  L_BRACE = 'L_BRACE',
-  R_BRACE = 'R_BRACE',
-  COMMA = 'COMMA',
-  DOT = 'DOT',
-  DASH = 'DASH',
-  PLUS = 'PLUS',
-  COLON = 'COLON',
-  DOTCOLON = 'DOTCOLON',
-  DCOLON = 'DCOLON',
-  DCOLONDOLLAR = 'DCOLONDOLLAR',
-  DCOLONPERCENT = 'DCOLONPERCENT',
-  DCOLONQMARK = 'DCOLONQMARK',
-  DQMARK = 'DQMARK',
-  SEMICOLON = 'SEMICOLON',
-  STAR = 'STAR',
-  BACKSLASH = 'BACKSLASH',
-  SLASH = 'SLASH',
-  LT = 'LT',
-  LTE = 'LTE',
-  GT = 'GT',
-  GTE = 'GTE',
-  NOT = 'NOT',
-  EQ = 'EQ',
-  NEQ = 'NEQ',
-  NULLSAFE_EQ = 'NULLSAFE_EQ',
-  COLON_EQ = 'COLON_EQ',
-  COLON_GT = 'COLON_GT',
-  NCOLON_GT = 'NCOLON_GT',
-  AND = 'AND',
-  OR = 'OR',
-  AMP = 'AMP',
-  DPIPE = 'DPIPE',
-  PIPE_GT = 'PIPE_GT',
-  PIPE = 'PIPE',
-  PIPE_SLASH = 'PIPE_SLASH',
-  DPIPE_SLASH = 'DPIPE_SLASH',
-  CARET = 'CARET',
-  CARET_AT = 'CARET_AT',
-  TILDE = 'TILDE',
-  ARROW = 'ARROW',
-  DARROW = 'DARROW',
-  FARROW = 'FARROW',
-  HASH = 'HASH',
-  HASH_ARROW = 'HASH_ARROW',
-  DHASH_ARROW = 'DHASH_ARROW',
-  LR_ARROW = 'LR_ARROW',
-  DAT = 'DAT',
-  LT_AT = 'LT_AT',
-  AT_GT = 'AT_GT',
-  DOLLAR = 'DOLLAR',
-  PARAMETER = 'PARAMETER',
-  SESSION = 'SESSION',
-  SESSION_PARAMETER = 'SESSION_PARAMETER',
-  SESSION_USER = 'SESSION_USER',
-  DAMP = 'DAMP',
-  AMP_LT = 'AMP_LT',
-  AMP_GT = 'AMP_GT',
-  ADJACENT = 'ADJACENT',
-  XOR = 'XOR',
-  DSTAR = 'DSTAR',
-  QMARK_AMP = 'QMARK_AMP',
-  QMARK_PIPE = 'QMARK_PIPE',
-  HASH_DASH = 'HASH_DASH',
-  EXCLAMATION = 'EXCLAMATION',
+  L_PAREN = 'lParen',
+  R_PAREN = 'rParen',
+  L_BRACKET = 'lBracket',
+  R_BRACKET = 'rBracket',
+  L_BRACE = 'lBrace',
+  R_BRACE = 'rBrace',
+  COMMA = 'comma',
+  DOT = 'dot',
+  DASH = 'dash',
+  PLUS = 'plus',
+  COLON = 'colon',
+  DOTCOLON = 'dotcolon',
+  DCOLON = 'dcolon',
+  DCOLONDOLLAR = 'dcolondollar',
+  DCOLONPERCENT = 'dcolonpercent',
+  DCOLONQMARK = 'dcolonqmark',
+  DQMARK = 'dqmark',
+  SEMICOLON = 'semicolon',
+  STAR = 'star',
+  BACKSLASH = 'backslash',
+  SLASH = 'slash',
+  LT = 'lt',
+  LTE = 'lte',
+  GT = 'gt',
+  GTE = 'gte',
+  NOT = 'not',
+  EQ = 'eq',
+  NEQ = 'neq',
+  NULLSAFE_EQ = 'nullsafeEq',
+  COLON_EQ = 'colonEq',
+  COLON_GT = 'colonGt',
+  NCOLON_GT = 'ncolonGt',
+  AND = 'and',
+  OR = 'or',
+  AMP = 'amp',
+  DPIPE = 'dpipe',
+  PIPE_GT = 'pipeGt',
+  PIPE = 'pipe',
+  PIPE_SLASH = 'pipeSlash',
+  DPIPE_SLASH = 'dpipeSlash',
+  CARET = 'caret',
+  CARET_AT = 'caretAt',
+  TILDE = 'tilde',
+  ARROW = 'arrow',
+  DARROW = 'darrow',
+  FARROW = 'farrow',
+  HASH = 'hash',
+  HASH_ARROW = 'hashArrow',
+  DHASH_ARROW = 'dhashArrow',
+  LR_ARROW = 'lrArrow',
+  DAT = 'dat',
+  LT_AT = 'ltAt',
+  AT_GT = 'atGt',
+  DOLLAR = 'dollar',
+  PARAMETER = 'parameter',
+  SESSION = 'session',
+  SESSION_PARAMETER = 'sessionParameter',
+  SESSION_USER = 'sessionUser',
+  DAMP = 'damp',
+  AMP_LT = 'ampLt',
+  AMP_GT = 'ampGt',
+  ADJACENT = 'adjacent',
+  XOR = 'xor',
+  DSTAR = 'dstar',
+  QMARK_AMP = 'qmarkAmp',
+  QMARK_PIPE = 'qmarkPipe',
+  HASH_DASH = 'hashDash',
+  EXCLAMATION = 'exclamation',
 
-  URI_START = 'URI_START',
+  URI_START = 'uriStart',
 
-  BLOCK_START = 'BLOCK_START',
-  BLOCK_END = 'BLOCK_END',
+  BLOCK_START = 'blockStart',
+  BLOCK_END = 'blockEnd',
 
-  SPACE = 'SPACE',
-  BREAK = 'BREAK',
+  SPACE = 'space',
+  BREAK = 'break',
 
-  STRING = 'STRING',
-  NUMBER = 'NUMBER',
-  IDENTIFIER = 'IDENTIFIER',
-  DATABASE = 'DATABASE',
-  COLUMN = 'COLUMN',
-  COLUMN_DEF = 'COLUMN_DEF',
-  SCHEMA = 'SCHEMA',
-  TABLE = 'TABLE',
-  WAREHOUSE = 'WAREHOUSE',
-  STAGE = 'STAGE',
-  STREAMLIT = 'STREAMLIT',
-  VAR = 'VAR',
-  BIT_STRING = 'BIT_STRING',
-  HEX_STRING = 'HEX_STRING',
-  BYTE_STRING = 'BYTE_STRING',
-  NATIONAL_STRING = 'NATIONAL_STRING',
-  RAW_STRING = 'RAW_STRING',
-  HEREDOC_STRING = 'HEREDOC_STRING',
-  UNICODE_STRING = 'UNICODE_STRING',
+  STRING = 'string',
+  NUMBER = 'number',
+  IDENTIFIER = 'identifier',
+  DATABASE = 'database',
+  COLUMN = 'column',
+  COLUMN_DEF = 'columnDef',
+  SCHEMA = 'schema',
+  TABLE = 'table',
+  WAREHOUSE = 'warehouse',
+  STAGE = 'stage',
+  STREAMLIT = 'streamlit',
+  VAR = 'var',
+  BIT_STRING = 'bitString',
+  HEX_STRING = 'hexString',
+  BYTE_STRING = 'byteString',
+  NATIONAL_STRING = 'nationalString',
+  RAW_STRING = 'rawString',
+  HEREDOC_STRING = 'heredocString',
+  UNICODE_STRING = 'unicodeString',
 
   // types
-  BIT = 'BIT',
-  BOOLEAN = 'BOOLEAN',
-  TINYINT = 'TINYINT',
-  UTINYINT = 'UTINYINT',
-  SMALLINT = 'SMALLINT',
-  USMALLINT = 'USMALLINT',
-  MEDIUMINT = 'MEDIUMINT',
-  UMEDIUMINT = 'UMEDIUMINT',
-  INT = 'INT',
-  UINT = 'UINT',
-  BIGINT = 'BIGINT',
-  UBIGINT = 'UBIGINT',
-  BIGNUM = 'BIGNUM',
-  INT128 = 'INT128',
-  UINT128 = 'UINT128',
-  INT256 = 'INT256',
-  UINT256 = 'UINT256',
-  FLOAT = 'FLOAT',
-  DOUBLE = 'DOUBLE',
-  UDOUBLE = 'UDOUBLE',
-  DECIMAL = 'DECIMAL',
-  DECIMAL32 = 'DECIMAL32',
-  DECIMAL64 = 'DECIMAL64',
-  DECIMAL128 = 'DECIMAL128',
-  DECIMAL256 = 'DECIMAL256',
-  DECFLOAT = 'DECFLOAT',
-  UDECIMAL = 'UDECIMAL',
-  BIGDECIMAL = 'BIGDECIMAL',
-  CHAR = 'CHAR',
-  NCHAR = 'NCHAR',
-  VARCHAR = 'VARCHAR',
-  NVARCHAR = 'NVARCHAR',
-  BPCHAR = 'BPCHAR',
-  TEXT = 'TEXT',
-  MEDIUMTEXT = 'MEDIUMTEXT',
-  LONGTEXT = 'LONGTEXT',
-  BLOB = 'BLOB',
-  MEDIUMBLOB = 'MEDIUMBLOB',
-  LONGBLOB = 'LONGBLOB',
-  TINYBLOB = 'TINYBLOB',
-  TINYTEXT = 'TINYTEXT',
-  NAME = 'NAME',
-  BINARY = 'BINARY',
-  VARBINARY = 'VARBINARY',
-  JSON = 'JSON',
-  JSONB = 'JSONB',
-  TIME = 'TIME',
-  TIMETZ = 'TIMETZ',
-  TIME_NS = 'TIME_NS',
-  TIMESTAMP = 'TIMESTAMP',
-  TIMESTAMPTZ = 'TIMESTAMPTZ',
-  TIMESTAMPLTZ = 'TIMESTAMPLTZ',
-  TIMESTAMPNTZ = 'TIMESTAMPNTZ',
-  TIMESTAMP_S = 'TIMESTAMP_S',
-  TIMESTAMP_MS = 'TIMESTAMP_MS',
-  TIMESTAMP_NS = 'TIMESTAMP_NS',
-  DATETIME = 'DATETIME',
-  DATETIME2 = 'DATETIME2',
-  DATETIME64 = 'DATETIME64',
-  SMALLDATETIME = 'SMALLDATETIME',
-  DATE = 'DATE',
-  DATE32 = 'DATE32',
-  INT4RANGE = 'INT4RANGE',
-  INT4MULTIRANGE = 'INT4MULTIRANGE',
-  INT8RANGE = 'INT8RANGE',
-  INT8MULTIRANGE = 'INT8MULTIRANGE',
-  NUMRANGE = 'NUMRANGE',
-  NUMMULTIRANGE = 'NUMMULTIRANGE',
-  TSRANGE = 'TSRANGE',
-  TSMULTIRANGE = 'TSMULTIRANGE',
-  TSTZRANGE = 'TSTZRANGE',
-  TSTZMULTIRANGE = 'TSTZMULTIRANGE',
-  DATERANGE = 'DATERANGE',
-  DATEMULTIRANGE = 'DATEMULTIRANGE',
-  UUID = 'UUID',
-  GEOGRAPHY = 'GEOGRAPHY',
-  GEOGRAPHYPOINT = 'GEOGRAPHYPOINT',
-  NULLABLE = 'NULLABLE',
-  GEOMETRY = 'GEOMETRY',
-  POINT = 'POINT',
-  RING = 'RING',
-  LINESTRING = 'LINESTRING',
-  LOCALTIME = 'LOCALTIME',
-  LOCALTIMESTAMP = 'LOCALTIMESTAMP',
-  SYSTIMESTAMP = 'SYSTIMESTAMP',
-  MULTILINESTRING = 'MULTILINESTRING',
-  POLYGON = 'POLYGON',
-  MULTIPOLYGON = 'MULTIPOLYGON',
-  HLLSKETCH = 'HLLSKETCH',
-  HSTORE = 'HSTORE',
-  SUPER = 'SUPER',
-  SERIAL = 'SERIAL',
-  SMALLSERIAL = 'SMALLSERIAL',
-  BIGSERIAL = 'BIGSERIAL',
-  XML = 'XML',
-  YEAR = 'YEAR',
-  USERDEFINED = 'USERDEFINED',
-  MONEY = 'MONEY',
-  SMALLMONEY = 'SMALLMONEY',
-  ROWVERSION = 'ROWVERSION',
-  IMAGE = 'IMAGE',
-  VARIANT = 'VARIANT',
-  OBJECT = 'OBJECT',
-  INET = 'INET',
-  IPADDRESS = 'IPADDRESS',
-  IPPREFIX = 'IPPREFIX',
-  IPV4 = 'IPV4',
-  IPV6 = 'IPV6',
-  ENUM = 'ENUM',
-  ENUM8 = 'ENUM8',
-  ENUM16 = 'ENUM16',
-  FIXEDSTRING = 'FIXEDSTRING',
-  LOWCARDINALITY = 'LOWCARDINALITY',
-  NESTED = 'NESTED',
-  AGGREGATEFUNCTION = 'AGGREGATEFUNCTION',
-  SIMPLEAGGREGATEFUNCTION = 'SIMPLEAGGREGATEFUNCTION',
-  TDIGEST = 'TDIGEST',
-  UNKNOWN = 'UNKNOWN',
-  VECTOR = 'VECTOR',
-  DYNAMIC = 'DYNAMIC',
-  VOID = 'VOID',
+  BIT = 'bit',
+  BOOLEAN = 'boolean',
+  TINYINT = 'tinyint',
+  UTINYINT = 'utinyint',
+  SMALLINT = 'smallint',
+  USMALLINT = 'usmallint',
+  MEDIUMINT = 'mediumint',
+  UMEDIUMINT = 'umediumint',
+  INT = 'int',
+  UINT = 'uint',
+  BIGINT = 'bigint',
+  UBIGINT = 'ubigint',
+  BIGNUM = 'bignum',
+  INT128 = 'int128',
+  UINT128 = 'uint128',
+  INT256 = 'int256',
+  UINT256 = 'uint256',
+  FLOAT = 'float',
+  DOUBLE = 'double',
+  UDOUBLE = 'udouble',
+  DECIMAL = 'decimal',
+  DECIMAL32 = 'decimal32',
+  DECIMAL64 = 'decimal64',
+  DECIMAL128 = 'decimal128',
+  DECIMAL256 = 'decimal256',
+  DECFLOAT = 'decfloat',
+  UDECIMAL = 'udecimal',
+  BIGDECIMAL = 'bigdecimal',
+  CHAR = 'char',
+  NCHAR = 'nchar',
+  VARCHAR = 'varchar',
+  NVARCHAR = 'nvarchar',
+  BPCHAR = 'bpchar',
+  TEXT = 'text',
+  MEDIUMTEXT = 'mediumtext',
+  LONGTEXT = 'longtext',
+  BLOB = 'blob',
+  MEDIUMBLOB = 'mediumblob',
+  LONGBLOB = 'longblob',
+  TINYBLOB = 'tinyblob',
+  TINYTEXT = 'tinytext',
+  NAME = 'name',
+  BINARY = 'binary',
+  VARBINARY = 'varbinary',
+  JSON = 'json',
+  JSONB = 'jsonb',
+  TIME = 'time',
+  TIMETZ = 'timetz',
+  TIME_NS = 'timeNs',
+  TIMESTAMP = 'timestamp',
+  TIMESTAMPTZ = 'timestamptz',
+  TIMESTAMPLTZ = 'timestampltz',
+  TIMESTAMPNTZ = 'timestampntz',
+  TIMESTAMP_S = 'timestampS',
+  TIMESTAMP_MS = 'timestampMs',
+  TIMESTAMP_NS = 'timestampNs',
+  DATETIME = 'datetime',
+  DATETIME2 = 'datetime2',
+  DATETIME64 = 'datetime64',
+  SMALLDATETIME = 'smalldatetime',
+  DATE = 'date',
+  DATE32 = 'date32',
+  INT4RANGE = 'int4range',
+  INT4MULTIRANGE = 'int4multirange',
+  INT8RANGE = 'int8range',
+  INT8MULTIRANGE = 'int8multirange',
+  NUMRANGE = 'numrange',
+  NUMMULTIRANGE = 'nummultirange',
+  TSRANGE = 'tsrange',
+  TSMULTIRANGE = 'tsmultirange',
+  TSTZRANGE = 'tstzrange',
+  TSTZMULTIRANGE = 'tstzmultirange',
+  DATERANGE = 'daterange',
+  DATEMULTIRANGE = 'datemultirange',
+  UUID = 'uuid',
+  GEOGRAPHY = 'geography',
+  GEOGRAPHYPOINT = 'geographypoint',
+  NULLABLE = 'nullable',
+  GEOMETRY = 'geometry',
+  POINT = 'point',
+  RING = 'ring',
+  LINESTRING = 'linestring',
+  LOCALTIME = 'localtime',
+  LOCALTIMESTAMP = 'localtimestamp',
+  SYSTIMESTAMP = 'systimestamp',
+  MULTILINESTRING = 'multilinestring',
+  POLYGON = 'polygon',
+  MULTIPOLYGON = 'multipolygon',
+  HLLSKETCH = 'hllsketch',
+  HSTORE = 'hstore',
+  SUPER = 'super',
+  SERIAL = 'serial',
+  SMALLSERIAL = 'smallserial',
+  BIGSERIAL = 'bigserial',
+  XML = 'xml',
+  YEAR = 'year',
+  USERDEFINED = 'userdefined',
+  MONEY = 'money',
+  SMALLMONEY = 'smallmoney',
+  ROWVERSION = 'rowversion',
+  IMAGE = 'image',
+  VARIANT = 'variant',
+  OBJECT = 'object',
+  INET = 'inet',
+  IPADDRESS = 'ipaddress',
+  IPPREFIX = 'ipprefix',
+  IPV4 = 'ipv4',
+  IPV6 = 'ipv6',
+  ENUM = 'enum',
+  ENUM8 = 'enum8',
+  ENUM16 = 'enum16',
+  FIXEDSTRING = 'fixedstring',
+  LOWCARDINALITY = 'lowcardinality',
+  NESTED = 'nested',
+  AGGREGATEFUNCTION = 'aggregatefunction',
+  SIMPLEAGGREGATEFUNCTION = 'simpleaggregatefunction',
+  TDIGEST = 'tdigest',
+  UNKNOWN = 'unknown',
+  VECTOR = 'vector',
+  DYNAMIC = 'dynamic',
+  VOID = 'void',
 
   // keywords
-  ALIAS = 'ALIAS',
-  ALTER = 'ALTER',
-  ALL = 'ALL',
-  ANTI = 'ANTI',
-  ANY = 'ANY',
-  APPLY = 'APPLY',
-  ARRAY = 'ARRAY',
-  ASC = 'ASC',
-  ASOF = 'ASOF',
-  ATTACH = 'ATTACH',
-  AUTO_INCREMENT = 'AUTO_INCREMENT',
-  BEGIN = 'BEGIN',
-  BETWEEN = 'BETWEEN',
-  BULK_COLLECT_INTO = 'BULK_COLLECT_INTO',
-  CACHE = 'CACHE',
-  CASE = 'CASE',
-  CHARACTER_SET = 'CHARACTER_SET',
-  CLUSTER_BY = 'CLUSTER_BY',
-  COLLATE = 'COLLATE',
-  COMMAND = 'COMMAND',
-  COMMENT = 'COMMENT',
-  COMMIT = 'COMMIT',
-  CONNECT_BY = 'CONNECT_BY',
-  CONSTRAINT = 'CONSTRAINT',
-  COPY = 'COPY',
-  CREATE = 'CREATE',
-  CROSS = 'CROSS',
-  CUBE = 'CUBE',
-  CURRENT_DATE = 'CURRENT_DATE',
-  CURRENT_DATETIME = 'CURRENT_DATETIME',
-  CURRENT_SCHEMA = 'CURRENT_SCHEMA',
-  CURRENT_TIME = 'CURRENT_TIME',
-  CURRENT_TIMESTAMP = 'CURRENT_TIMESTAMP',
-  CURRENT_USER = 'CURRENT_USER',
-  CURRENT_ROLE = 'CURRENT_ROLE',
-  CURRENT_CATALOG = 'CURRENT_CATALOG',
-  DECLARE = 'DECLARE',
-  DEFAULT = 'DEFAULT',
-  DELETE = 'DELETE',
-  DESC = 'DESC',
-  DESCRIBE = 'DESCRIBE',
-  DETACH = 'DETACH',
-  DICTIONARY = 'DICTIONARY',
-  DISTINCT = 'DISTINCT',
-  DISTRIBUTE_BY = 'DISTRIBUTE_BY',
-  DIV = 'DIV',
-  DROP = 'DROP',
-  ELSE = 'ELSE',
-  END = 'END',
-  ESCAPE = 'ESCAPE',
-  EXCEPT = 'EXCEPT',
-  EXECUTE = 'EXECUTE',
-  EXISTS = 'EXISTS',
-  FALSE = 'FALSE',
-  FETCH = 'FETCH',
-  FILE = 'FILE',
-  FILE_FORMAT = 'FILE_FORMAT',
-  FILTER = 'FILTER',
-  FINAL = 'FINAL',
-  FIRST = 'FIRST',
-  FOR = 'FOR',
-  FORCE = 'FORCE',
-  FOREIGN_KEY = 'FOREIGN_KEY',
-  FORMAT = 'FORMAT',
-  FROM = 'FROM',
-  FULL = 'FULL',
-  FUNCTION = 'FUNCTION',
-  GET = 'GET',
-  GLOB = 'GLOB',
-  GLOBAL = 'GLOBAL',
-  GRANT = 'GRANT',
-  GROUP_BY = 'GROUP_BY',
-  GROUPING_SETS = 'GROUPING_SETS',
-  HAVING = 'HAVING',
-  HINT = 'HINT',
-  IGNORE = 'IGNORE',
-  ILIKE = 'ILIKE',
-  IN = 'IN',
-  INDEX = 'INDEX',
-  INDEXED_BY = 'INDEXED_BY',
-  INNER = 'INNER',
-  INSERT = 'INSERT',
-  INSTALL = 'INSTALL',
-  INTERSECT = 'INTERSECT',
-  INTERVAL = 'INTERVAL',
-  INTO = 'INTO',
-  INTRODUCER = 'INTRODUCER',
-  IRLIKE = 'IRLIKE',
-  IS = 'IS',
-  ISNULL = 'ISNULL',
-  JOIN = 'JOIN',
-  JOIN_MARKER = 'JOIN_MARKER',
-  KEEP = 'KEEP',
-  KEY = 'KEY',
-  KILL = 'KILL',
-  LANGUAGE = 'LANGUAGE',
-  LATERAL = 'LATERAL',
-  LEFT = 'LEFT',
-  LIKE = 'LIKE',
-  LIMIT = 'LIMIT',
-  LIST = 'LIST',
-  LOAD = 'LOAD',
-  LOCK = 'LOCK',
-  MAP = 'MAP',
-  MATCH = 'MATCH',
-  MATCH_CONDITION = 'MATCH_CONDITION',
-  MATCH_RECOGNIZE = 'MATCH_RECOGNIZE',
-  MEMBER_OF = 'MEMBER_OF',
-  MERGE = 'MERGE',
-  MOD = 'MOD',
-  MODEL = 'MODEL',
-  NATURAL = 'NATURAL',
-  NEXT = 'NEXT',
-  NOTHING = 'NOTHING',
-  NOTNULL = 'NOTNULL',
-  NULL = 'NULL',
-  OBJECT_IDENTIFIER = 'OBJECT_IDENTIFIER',
-  OFFSET = 'OFFSET',
-  ON = 'ON',
-  ONLY = 'ONLY',
-  OPERATOR = 'OPERATOR',
-  ORDER_BY = 'ORDER_BY',
-  ORDER_SIBLINGS_BY = 'ORDER_SIBLINGS_BY',
-  ORDERED = 'ORDERED',
-  ORDINALITY = 'ORDINALITY',
-  OUT = 'OUT',
-  INOUT = 'INOUT',
-  OUTER = 'OUTER',
-  OVER = 'OVER',
-  OVERLAPS = 'OVERLAPS',
-  OVERWRITE = 'OVERWRITE',
-  PARTITION = 'PARTITION',
-  PARTITION_BY = 'PARTITION_BY',
-  PERCENT = 'PERCENT',
-  PIVOT = 'PIVOT',
-  PLACEHOLDER = 'PLACEHOLDER',
-  POSITIONAL = 'POSITIONAL',
-  PRAGMA = 'PRAGMA',
-  PREWHERE = 'PREWHERE',
-  PRIMARY_KEY = 'PRIMARY_KEY',
-  PROCEDURE = 'PROCEDURE',
-  PROPERTIES = 'PROPERTIES',
-  PSEUDO_TYPE = 'PSEUDO_TYPE',
-  PUT = 'PUT',
-  QUALIFY = 'QUALIFY',
-  QUOTE = 'QUOTE',
-  QDCOLON = 'QDCOLON',
-  RANGE = 'RANGE',
-  RECURSIVE = 'RECURSIVE',
-  REFRESH = 'REFRESH',
-  RENAME = 'RENAME',
-  REPLACE = 'REPLACE',
-  RETURNING = 'RETURNING',
-  REVOKE = 'REVOKE',
-  REFERENCES = 'REFERENCES',
-  RIGHT = 'RIGHT',
-  RLIKE = 'RLIKE',
-  ROLLBACK = 'ROLLBACK',
-  ROLLUP = 'ROLLUP',
-  ROW = 'ROW',
-  ROWS = 'ROWS',
-  SELECT = 'SELECT',
-  SEMI = 'SEMI',
-  SEPARATOR = 'SEPARATOR',
-  SEQUENCE = 'SEQUENCE',
-  SERDE_PROPERTIES = 'SERDE_PROPERTIES',
-  SET = 'SET',
-  SETTINGS = 'SETTINGS',
-  SHOW = 'SHOW',
-  SIMILAR_TO = 'SIMILAR_TO',
-  SOME = 'SOME',
-  SORT_BY = 'SORT_BY',
-  SOUNDS_LIKE = 'SOUNDS_LIKE',
-  START_WITH = 'START_WITH',
-  STORAGE_INTEGRATION = 'STORAGE_INTEGRATION',
-  STRAIGHT_JOIN = 'STRAIGHT_JOIN',
-  STRUCT = 'STRUCT',
-  SUMMARIZE = 'SUMMARIZE',
-  TABLE_SAMPLE = 'TABLE_SAMPLE',
-  TAG = 'TAG',
-  TEMPORARY = 'TEMPORARY',
-  TOP = 'TOP',
-  THEN = 'THEN',
-  TRUE = 'TRUE',
-  TRUNCATE = 'TRUNCATE',
-  UNCACHE = 'UNCACHE',
-  UNION = 'UNION',
-  UNNEST = 'UNNEST',
-  UNPIVOT = 'UNPIVOT',
-  UPDATE = 'UPDATE',
-  USE = 'USE',
-  USING = 'USING',
-  VALUES = 'VALUES',
-  VARIADIC = 'VARIADIC',
-  VIEW = 'VIEW',
-  SEMANTIC_VIEW = 'SEMANTIC_VIEW',
-  VOLATILE = 'VOLATILE',
-  WHEN = 'WHEN',
-  WHERE = 'WHERE',
-  WINDOW = 'WINDOW',
-  WITH = 'WITH',
-  UNIQUE = 'UNIQUE',
-  UTC_DATE = 'UTC_DATE',
-  UTC_TIME = 'UTC_TIME',
-  UTC_TIMESTAMP = 'UTC_TIMESTAMP',
-  VERSION_SNAPSHOT = 'VERSION_SNAPSHOT',
-  TIMESTAMP_SNAPSHOT = 'TIMESTAMP_SNAPSHOT',
-  OPTION = 'OPTION',
-  SINK = 'SINK',
-  SOURCE = 'SOURCE',
-  ANALYZE = 'ANALYZE',
-  NAMESPACE = 'NAMESPACE',
-  EXPORT = 'EXPORT',
+  ALIAS = 'alias',
+  ALTER = 'alter',
+  ALL = 'all',
+  ANTI = 'anti',
+  ANY = 'any',
+  APPLY = 'apply',
+  ARRAY = 'array',
+  ASC = 'asc',
+  ASOF = 'asof',
+  ATTACH = 'attach',
+  AUTO_INCREMENT = 'autoIncrement',
+  BEGIN = 'begin',
+  BETWEEN = 'between',
+  BULK_COLLECT_INTO = 'bulkCollectInto',
+  CACHE = 'cache',
+  CASE = 'case',
+  CHARACTER_SET = 'characterSet',
+  CLUSTER_BY = 'clusterBy',
+  COLLATE = 'collate',
+  COMMAND = 'command',
+  COMMENT = 'comment',
+  COMMIT = 'commit',
+  CONNECT_BY = 'connectBy',
+  CONSTRAINT = 'constraint',
+  COPY = 'copy',
+  CREATE = 'create',
+  CROSS = 'cross',
+  CUBE = 'cube',
+  CURRENT_DATE = 'currentDate',
+  CURRENT_DATETIME = 'currentDatetime',
+  CURRENT_SCHEMA = 'currentSchema',
+  CURRENT_TIME = 'currentTime',
+  CURRENT_TIMESTAMP = 'currentTimestamp',
+  CURRENT_USER = 'currentUser',
+  CURRENT_ROLE = 'currentRole',
+  CURRENT_CATALOG = 'currentCatalog',
+  DECLARE = 'declare',
+  DEFAULT = 'default',
+  DELETE = 'delete',
+  DESC = 'desc',
+  DESCRIBE = 'describe',
+  DETACH = 'detach',
+  DICTIONARY = 'dictionary',
+  DISTINCT = 'distinct',
+  DISTRIBUTE_BY = 'distributeBy',
+  DIV = 'div',
+  DROP = 'drop',
+  ELSE = 'else',
+  END = 'end',
+  ESCAPE = 'escape',
+  EXCEPT = 'except',
+  EXECUTE = 'execute',
+  EXISTS = 'exists',
+  FALSE = 'false',
+  FETCH = 'fetch',
+  FILE = 'file',
+  FILE_FORMAT = 'fileFormat',
+  FILTER = 'filter',
+  FINAL = 'final',
+  FIRST = 'first',
+  FOR = 'for',
+  FORCE = 'force',
+  FOREIGN_KEY = 'foreignKey',
+  FORMAT = 'format',
+  FROM = 'from',
+  FULL = 'full',
+  FUNCTION = 'function',
+  GET = 'get',
+  GLOB = 'glob',
+  GLOBAL = 'global',
+  GRANT = 'grant',
+  GROUP_BY = 'groupBy',
+  GROUPING_SETS = 'groupingSets',
+  HAVING = 'having',
+  HINT = 'hint',
+  IGNORE = 'ignore',
+  ILIKE = 'ilike',
+  IN = 'in',
+  INDEX = 'index',
+  INDEXED_BY = 'indexedBy',
+  INNER = 'inner',
+  INSERT = 'insert',
+  INSTALL = 'install',
+  INTERSECT = 'intersect',
+  INTERVAL = 'interval',
+  INTO = 'into',
+  INTRODUCER = 'introducer',
+  IRLIKE = 'irlike',
+  IS = 'is',
+  ISNULL = 'isnull',
+  JOIN = 'join',
+  JOIN_MARKER = 'joinMarker',
+  KEEP = 'keep',
+  KEY = 'key',
+  KILL = 'kill',
+  LANGUAGE = 'language',
+  LATERAL = 'lateral',
+  LEFT = 'left',
+  LIKE = 'like',
+  LIMIT = 'limit',
+  LIST = 'list',
+  LOAD = 'load',
+  LOCK = 'lock',
+  MAP = 'map',
+  MATCH = 'match',
+  MATCH_CONDITION = 'matchCondition',
+  MATCH_RECOGNIZE = 'matchRecognize',
+  MEMBER_OF = 'memberOf',
+  MERGE = 'merge',
+  MOD = 'mod',
+  MODEL = 'model',
+  NATURAL = 'natural',
+  NEXT = 'next',
+  NOTHING = 'nothing',
+  NOTNULL = 'notnull',
+  NULL = 'null',
+  OBJECT_IDENTIFIER = 'objectIdentifier',
+  OFFSET = 'offset',
+  ON = 'on',
+  ONLY = 'only',
+  OPERATOR = 'operator',
+  ORDER_BY = 'orderBy',
+  ORDER_SIBLINGS_BY = 'orderSiblingsBy',
+  ORDERED = 'ordered',
+  ORDINALITY = 'ordinality',
+  OUT = 'out',
+  INOUT = 'inout',
+  OUTER = 'outer',
+  OVER = 'over',
+  OVERLAPS = 'overlaps',
+  OVERWRITE = 'overwrite',
+  PARTITION = 'partition',
+  PARTITION_BY = 'partitionBy',
+  PERCENT = 'percent',
+  PIVOT = 'pivot',
+  PLACEHOLDER = 'placeholder',
+  POSITIONAL = 'positional',
+  PRAGMA = 'pragma',
+  PREWHERE = 'prewhere',
+  PRIMARY_KEY = 'primaryKey',
+  PROCEDURE = 'procedure',
+  PROPERTIES = 'properties',
+  PSEUDO_TYPE = 'pseudoType',
+  PUT = 'put',
+  QUALIFY = 'qualify',
+  QUOTE = 'quote',
+  QDCOLON = 'qdcolon',
+  RANGE = 'range',
+  RECURSIVE = 'recursive',
+  REFRESH = 'refresh',
+  RENAME = 'rename',
+  REPLACE = 'replace',
+  RETURNING = 'returning',
+  REVOKE = 'revoke',
+  REFERENCES = 'references',
+  RIGHT = 'right',
+  RLIKE = 'rlike',
+  ROLLBACK = 'rollback',
+  ROLLUP = 'rollup',
+  ROW = 'row',
+  ROWS = 'rows',
+  SELECT = 'select',
+  SEMI = 'semi',
+  SEPARATOR = 'separator',
+  SEQUENCE = 'sequence',
+  SERDE_PROPERTIES = 'serdeProperties',
+  SET = 'set',
+  SETTINGS = 'settings',
+  SHOW = 'show',
+  SIMILAR_TO = 'similarTo',
+  SOME = 'some',
+  SORT_BY = 'sortBy',
+  SOUNDS_LIKE = 'soundsLike',
+  START_WITH = 'startWith',
+  STORAGE_INTEGRATION = 'storageIntegration',
+  STRAIGHT_JOIN = 'straightJoin',
+  STRUCT = 'struct',
+  SUMMARIZE = 'summarize',
+  TABLE_SAMPLE = 'tableSample',
+  TAG = 'tag',
+  TEMPORARY = 'temporary',
+  TOP = 'top',
+  THEN = 'then',
+  TRUE = 'true',
+  TRUNCATE = 'truncate',
+  UNCACHE = 'uncache',
+  UNION = 'union',
+  UNNEST = 'unnest',
+  UNPIVOT = 'unpivot',
+  UPDATE = 'update',
+  USE = 'use',
+  USING = 'using',
+  VALUES = 'values',
+  VARIADIC = 'variadic',
+  VIEW = 'view',
+  SEMANTIC_VIEW = 'semanticView',
+  VOLATILE = 'volatile',
+  WHEN = 'when',
+  WHERE = 'where',
+  WINDOW = 'window',
+  WITH = 'with',
+  UNIQUE = 'unique',
+  UTC_DATE = 'utcDate',
+  UTC_TIME = 'utcTime',
+  UTC_TIMESTAMP = 'utcTimestamp',
+  VERSION_SNAPSHOT = 'versionSnapshot',
+  TIMESTAMP_SNAPSHOT = 'timestampSnapshot',
+  OPTION = 'option',
+  SINK = 'sink',
+  SOURCE = 'source',
+  ANALYZE = 'analyze',
+  NAMESPACE = 'namespace',
+  EXPORT = 'export',
 
   // sentinel
-  HIVE_TOKEN_STREAM = 'HIVE_TOKEN_STREAM',
+  HIVE_TOKEN_STREAM = 'hiveTokenStream',
 }
 
 /**
  * Represents a single token in the SQL lexical analysis.
- *
  */
 export class Token {
   tokenType: TokenType;
@@ -508,6 +506,11 @@ export class Token {
     this.end = end;
     this.comments = comments;
   }
+}
+
+export interface TokenizerOptions {
+  dialect?: Dialect;
+  [index: string]: unknown;
 }
 
 /**
@@ -628,7 +631,7 @@ export class Tokenizer {
    *
    * @example ["\\"]
    */
-  static BYTE_STRING_ESCAPES (): string[] {
+  static get BYTE_STRING_ESCAPES (): string[] {
     return this.STRING_ESCAPES;
   }
 
@@ -705,7 +708,7 @@ export class Tokenizer {
    *
    * @example { '--': undefined, '{#': '#}' }
    */
-  static _COMMENTS (): Record<string, string | undefined> {
+  static get _COMMENTS (): Record<string, string | undefined> {
     let cached = this.commentsCache.get(this);
     if (!cached) {
       cached = {};
@@ -734,12 +737,12 @@ export class Tokenizer {
   /**
    * Dictionary mapping format string prefixes to [closing delimiter, token type] tuples.
    */
-  static _FORMAT_STRINGS (): Record<string, [string, TokenType]> {
+  static get _FORMAT_STRINGS (): Record<string, [string, TokenType]> {
     let cached = this.formatStringsCache.get(this);
     if (!cached) {
       // Generate national strings by prefixing 'n' or 'N' to all quotes
       const nationalStrings: Record<string, [string, TokenType]> = {};
-      for (const [start, end] of Object.entries(this._QUOTES())) {
+      for (const [start, end] of Object.entries(this._QUOTES)) {
         for (const prefix of ['n', 'N']) {
           nationalStrings[prefix + start] = [end, TokenType.STRING];
         }
@@ -766,7 +769,7 @@ export class Tokenizer {
    *
    * @example { '"': '"', '`': '`' }
    */
-  static _IDENTIFIERS (): Record<string, string> {
+  static get _IDENTIFIERS (): Record<string, string> {
     let cached = this.identifiersCache.get(this);
     if (!cached) {
       cached = this._convertQuotes(this.IDENTIFIERS);
@@ -782,7 +785,7 @@ export class Tokenizer {
    *
    * @example new Set(['"'])
    */
-  static _IDENTIFIER_ESCAPES (): Set<string> {
+  static get _IDENTIFIER_ESCAPES (): Set<string> {
     let cached = this.identifierEscapesCache.get(this);
     if (!cached) {
       cached = new Set(this.IDENTIFIER_ESCAPES);
@@ -798,7 +801,7 @@ export class Tokenizer {
    *
    * @example { "'": "'", '"': '"' }
    */
-  static _QUOTES (): Record<string, string> {
+  static get _QUOTES (): Record<string, string> {
     let cached = this.quotesCache.get(this);
     if (!cached) {
       cached = this._convertQuotes(this.QUOTES);
@@ -814,7 +817,7 @@ export class Tokenizer {
    *
    * @example new Set(["'", "\\"])
    */
-  static _STRING_ESCAPES (): Set<string> {
+  static get _STRING_ESCAPES (): Set<string> {
     let cached = this.stringEscapesCache.get(this);
     if (!cached) {
       cached = new Set(this.STRING_ESCAPES);
@@ -830,10 +833,10 @@ export class Tokenizer {
    *
    * @example new Set(["\\"])
    */
-  static _BYTE_STRING_ESCAPES (): Set<string> {
+  static get _BYTE_STRING_ESCAPES (): Set<string> {
     let cached = this.byteStringEscapesCache.get(this);
     if (!cached) {
-      cached = new Set(this.BYTE_STRING_ESCAPES());
+      cached = new Set(this.BYTE_STRING_ESCAPES);
       this.byteStringEscapesCache.set(this, cached);
     }
     return cached;
@@ -846,7 +849,7 @@ export class Tokenizer {
    *
    * @example new Set(["n", "t", "r"])
    */
-  static _ESCAPE_FOLLOW_CHARS (): Set<string> {
+  static get _ESCAPE_FOLLOW_CHARS (): Set<string> {
     let cached = this.escapeFollowCharsCache.get(this);
     if (!cached) {
       cached = new Set(this.ESCAPE_FOLLOW_CHARS);
@@ -863,15 +866,15 @@ export class Tokenizer {
    * Contains keywords that have spaces or contain single-token characters,
    * allowing for efficient prefix-based scanning of multi-character keywords.
    */
-  static _KEYWORD_TRIE (): TrieNode {
+  static get _KEYWORD_TRIE (): TrieNode {
     let cached = this.keywordTrieCache.get(this);
     if (!cached) {
       const singleTokenChars = Object.keys(this.SINGLE_TOKENS);
       const keys = [
-        ...Object.keys(this.KEYWORDS()),
-        ...Object.keys(this._COMMENTS()),
-        ...Object.keys(this._QUOTES()),
-        ...Object.keys(this._FORMAT_STRINGS()),
+        ...Object.keys(this.KEYWORDS),
+        ...Object.keys(this._COMMENTS),
+        ...Object.keys(this._QUOTES),
+        ...Object.keys(this._FORMAT_STRINGS),
       ];
 
       cached = newTrie(
@@ -894,7 +897,7 @@ export class Tokenizer {
    *
    * @example { 'SELECT': TokenType.SELECT, 'FROM': TokenType.FROM }
    */
-  static KEYWORDS (): Record<string, TokenType> {
+  static get KEYWORDS (): Record<string, TokenType> {
     let cached = this.keywordsCache.get(this);
     if (!cached) {
       cached = {
@@ -1289,7 +1292,8 @@ export class Tokenizer {
   /** Line number of the previously added token. */
   private _prev_token_line = -1;
 
-  constructor (dialect?: DialectType) {
+  constructor (options: TokenizerOptions = {}) {
+    const { dialect } = options;
     this.dialect = Dialect.getOrRaise(dialect);
     this.reset();
   }
@@ -1366,8 +1370,8 @@ export class Tokenizer {
       if (!this._isWhitespace(this._char)) {
         if (this._isDigit(this._char)) {
           this._scanNumber();
-        } else if (this._char in (this._constructor)._IDENTIFIERS()) {
-          this._scanIdentifier((this._constructor)._IDENTIFIERS()[this._char]);
+        } else if (this._char in (this._constructor)._IDENTIFIERS) {
+          this._scanIdentifier((this._constructor)._IDENTIFIERS[this._char]);
         } else {
           this._scanKeywords();
         }
@@ -1402,8 +1406,10 @@ export class Tokenizer {
    * @param opts.i - Number of characters to advance
    * @param opts.alnum - If true, fast-forward through alphanumeric characters
    */
-  private _advance (opts: { i?: number;
-    alnum?: boolean; } = {}): void {
+  private _advance (opts: {
+    i?: number;
+    alnum?: boolean;
+  } = {}): void {
     const {
       i = 1, alnum = false,
     } = opts;
@@ -1508,7 +1514,7 @@ export class Tokenizer {
     let prevSpace = false;
     let skip = false;
     const constructor = this._constructor;
-    let trie = constructor._KEYWORD_TRIE();
+    let trie = constructor._KEYWORD_TRIE;
     let singleToken = char in this._constructor.SINGLE_TOKENS;
 
     while (chars) {
@@ -1560,7 +1566,7 @@ export class Tokenizer {
       if (prevSpace || singleToken || !char) {
         this._advance({ i: size - 1 });
         const upper = word.toUpperCase();
-        this._add(constructor.KEYWORDS()[upper], upper);
+        this._add(constructor.KEYWORDS[upper], upper);
         return;
       }
     }
@@ -1582,13 +1588,13 @@ export class Tokenizer {
    */
   private _scanComment (commentStart: string): boolean {
     const constructor = this._constructor;
-    if (!(commentStart in constructor._COMMENTS())) {
+    if (!(commentStart in constructor._COMMENTS)) {
       return false;
     }
 
     const commentStartLine = this._line;
     const commentStartSize = commentStart.length;
-    const commentEnd = constructor._COMMENTS()[commentStart];
+    const commentEnd = constructor._COMMENTS[commentStart];
 
     if (commentEnd) {
       // Skip the comment's start delimiter
@@ -1700,7 +1706,7 @@ export class Tokenizer {
           this._advance();
         }
 
-        const tokenType = constructor.KEYWORDS()[constructor.NUMERIC_LITERALS[literal.toUpperCase()] || ''];
+        const tokenType = constructor.KEYWORDS[constructor.NUMERIC_LITERALS[literal.toUpperCase()] || ''];
 
         if (tokenType) {
           this._add(TokenType.NUMBER, numberText);
@@ -1766,10 +1772,10 @@ export class Tokenizer {
     let tokenType = TokenType.STRING;
 
     let end: string;
-    if (start in constructor._QUOTES()) {
-      end = constructor._QUOTES()[start];
-    } else if (start in constructor._FORMAT_STRINGS()) {
-      [end, tokenType] = constructor._FORMAT_STRINGS()[start];
+    if (start in constructor._QUOTES) {
+      end = constructor._QUOTES[start];
+    } else if (start in constructor._FORMAT_STRINGS) {
+      [end, tokenType] = constructor._FORMAT_STRINGS[start];
 
       if (tokenType === TokenType.HEX_STRING) {
         base = 16;
@@ -1809,8 +1815,8 @@ export class Tokenizer {
     const text = this._extractString(
       end,
       tokenType === TokenType.BYTE_STRING
-        ? constructor._BYTE_STRING_ESCAPES()
-        : constructor._STRING_ESCAPES(),
+        ? constructor._BYTE_STRING_ESCAPES
+        : constructor._STRING_ESCAPES,
       tokenType === TokenType.RAW_STRING,
     );
 
@@ -1825,7 +1831,7 @@ export class Tokenizer {
   private _scanIdentifier (identifierEnd: string): void {
     this._advance();
     const constructor = this._constructor;
-    const escapes = new Set([...Array.from(constructor._IDENTIFIER_ESCAPES()), identifierEnd]);
+    const escapes = new Set([...Array.from(constructor._IDENTIFIER_ESCAPES), identifierEnd]);
     const text = this._extractString(identifierEnd, escapes);
     this._add(TokenType.IDENTIFIER, text);
   }
@@ -1847,7 +1853,7 @@ export class Tokenizer {
     this._add(
       this.tokens.length && this.tokens[this.tokens.length - 1].tokenType === TokenType.PARAMETER
         ? TokenType.VAR
-        : constructor.KEYWORDS()[this._text.toUpperCase()] || TokenType.VAR,
+        : constructor.KEYWORDS[this._text.toUpperCase()] || TokenType.VAR,
     );
   }
 
@@ -1871,7 +1877,7 @@ export class Tokenizer {
     let text = '';
     const delimSize = delimiter.length;
     escapes = escapes === undefined
-      ? constructor._STRING_ESCAPES()
+      ? constructor._STRING_ESCAPES
       : escapes;
 
     while (true) {
@@ -1898,7 +1904,7 @@ export class Tokenizer {
         (constructor.STRING_ESCAPES_ALLOWED_IN_RAW_STRINGS || !rawString)
         && escapes.has(this._char)
         && (this._peek === delimiter || escapes.has(this._peek) || isValidCustomEscape)
-        && (!(this._char in constructor._QUOTES()) || this._char === this._peek)
+        && (!(this._char in constructor._QUOTES) || this._char === this._peek)
       ) {
         if (this._peek === delimiter) {
           text += this._peek;

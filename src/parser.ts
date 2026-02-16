@@ -452,10 +452,15 @@ import {
   var_,
   alias,
   cast,
+  maybeParse,
+  JoinExprKind,
+} from './expressions';
+import type {
+  JoinExprArgs, StringExpr,
 } from './expressions';
 import { formatTime } from './time';
 import {
-  ensureList, seqGet,
+  applyIndexOffset, ensureList, seqGet,
 } from './helper';
 import {
   Dialect, type DialectType,
@@ -1632,21 +1637,21 @@ export class Parser {
     ),
   };
 
-  static COLUMN_OPERATORS: Partial<Record<TokenType, null | ((self: Parser, this_: Expression, to: Expression) => Expression)>> = {
+  static COLUMN_OPERATORS: Partial<Record<TokenType, null | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> = {
     [TokenType.DOT]: null,
-    [TokenType.DOTCOLON]: (self: Parser, this_: Expression, to: Expression) => self.expression(
+    [TokenType.DOTCOLON]: (self: Parser, this_?: Expression, to?: Expression) => self.expression(
       JSONCastExpr,
       {
         this: this_,
         to: to,
       },
     ),
-    [TokenType.DCOLON]: (self: Parser, this_: Expression, to: Expression) => self.buildCast({
+    [TokenType.DCOLON]: (self: Parser, this_?: Expression, to?: Expression) => self.buildCast({
       strict: self._constructor.STRICT_CAST,
       this: this_,
       to: to,
     }),
-    [TokenType.ARROW]: (self: Parser, this_: Expression, path: Expression) => self.expression(
+    [TokenType.ARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
       JSONExtractExpr,
       {
         this: this_,
@@ -1654,7 +1659,7 @@ export class Parser {
         onlyJsonTypes: self._constructor.JSON_ARROWS_REQUIRE_JSON_TYPE,
       },
     ),
-    [TokenType.DARROW]: (self: Parser, this_: Expression, path: Expression) => self.expression(
+    [TokenType.DARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
       JSONExtractScalarExpr,
       {
         this: this_,
@@ -1663,21 +1668,21 @@ export class Parser {
         scalarOnly: self._dialectConstructor.JSON_EXTRACT_SCALAR_SCALAR_ONLY,
       },
     ),
-    [TokenType.HASH_ARROW]: (self: Parser, this_: Expression, path: Expression) => self.expression(
+    [TokenType.HASH_ARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
       JSONBExtractExpr,
       {
         this: this_,
         expression: path,
       },
     ),
-    [TokenType.DHASH_ARROW]: (self: Parser, this_: Expression, path: Expression) => self.expression(
+    [TokenType.DHASH_ARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
       JSONBExtractScalarExpr,
       {
         this: this_,
         expression: path,
       },
     ),
-    [TokenType.PLACEHOLDER]: (self: Parser, this_: Expression, key: Expression) => self.expression(
+    [TokenType.PLACEHOLDER]: (self: Parser, this_?: Expression, key?: Expression) => self.expression(
       JSONBContainsExpr,
       {
         this: this_,
@@ -2198,8 +2203,8 @@ export class Parser {
 
   static SHOW_PARSERS: Record<string, (self: Parser) => Expression> = {};
 
-  static TYPE_LITERAL_PARSERS: Partial<Record<DataTypeExprKind, (self: Parser, thisArg: Expression, _: unknown) => Expression>> = {
-    [DataTypeExprKind.JSON]: (self: Parser, thisArg: Expression, _: unknown) => self.expression(ParseJSONExpr, { this: thisArg }),
+  static TYPE_LITERAL_PARSERS: Partial<Record<DataTypeExprKind, (self: Parser, thisArg?: Expression, _?: unknown) => Expression>> = {
+    [DataTypeExprKind.JSON]: (self: Parser, thisArg?: Expression, _?: unknown) => self.expression(ParseJSONExpr, { this: thisArg }),
   };
 
   static TYPE_CONVERTERS: Partial<Record<DataTypeExprKind, (dataType: DataTypeExpr) => DataTypeExpr>> = {};
@@ -2759,7 +2764,9 @@ export class Parser {
     advance?: boolean;
     expression?: Expression;
   } = {}): true | undefined {
-    const { advance = true, expression } = options;
+    const {
+      advance = true, expression,
+    } = options;
     if (this._curr?.tokenType === tokenType) {
       if (advance) {
         this._advance();
@@ -2770,7 +2777,7 @@ export class Parser {
     return undefined;
   }
 
-  tryParse<T extends Expression | undefined> (
+  tryParse<T extends Expression | Expression[] | undefined> (
     parseMethod: () => T,
     options: { retreat?: boolean } = {},
   ): T | undefined {
@@ -3394,13 +3401,13 @@ export class Parser {
     return var_(`${numberStr}${unit}`);
   }
 
-  parseSystemVersioningProperty (options?: { with_?: boolean }): WithSystemVersioningPropertyExpr {
+  parseSystemVersioningProperty (options?: { with?: boolean }): WithSystemVersioningPropertyExpr {
     this._match(TokenType.EQ);
     const prop = this.expression(
       WithSystemVersioningPropertyExpr,
       {
         on: true,
-        with_: options?.with_,
+        with: options?.with,
       },
     );
 
@@ -3483,7 +3490,7 @@ export class Parser {
 
   parseWithProperty (): Expression | Expression[] | undefined {
     if (this._matchTextSeq(['(', 'SYSTEM_VERSIONING'])) {
-      const prop = this.parseSystemVersioningProperty({ with_: true });
+      const prop = this.parseSystemVersioningProperty({ with: true });
       this._matchRParen();
       return prop;
     }
@@ -4423,7 +4430,7 @@ export class Parser {
       if (thisExpr._constructor.availableArgs.has('with')) {
         thisExpr.setArgKey('with', cte);
       } else {
-        this.raiseError(`${thisExpr.key} does not support CTE`);
+        this.raiseError(`${thisExpr._constructor.key} does not support CTE`);
         thisExpr = cte;
       }
 
@@ -4802,15 +4809,15 @@ export class Parser {
 
             thisExpr.setArgKey(key, expr);
             if (key === 'limit') {
-              const offset = expr.args.offset;
+              const offset = (expr as LimitExpr).$offset;
               expr.setArgKey('offset', undefined);
 
               if (offset) {
-                const offsetExpr = new OffsetExpr({ expression: offset });
+                const offsetExpr = new OffsetExpr({ expression: offset as number | Expression });
                 thisExpr.setArgKey('offset', offsetExpr);
 
-                const limitByExpressions = expression.expressions;
-                expression.setArgKey('expressions', undefined);
+                const limitByExpressions = (expr as LimitExpr).$expressions;
+                expr.setArgKey('expressions', undefined);
                 offsetExpr.setArgKey('expressions', limitByExpressions);
               }
             }
@@ -4855,7 +4862,7 @@ export class Parser {
         hintBatch = this.parseCsv(() =>
           this.parseHintFunctionCall() || this.parseVar({ upper: true }));
       }
-    } catch (error) {
+    } catch {
       shouldFallbackToString = true;
     }
 
@@ -4870,7 +4877,7 @@ export class Parser {
   parseHint (): HintExpr | undefined {
     if (this._match(TokenType.HINT) && this._prevComments && 0 < this._prevComments.length) {
       // Parse hint from comment
-      return HintExpr.maybeParse?.(
+      return maybeParse(
         this._prevComments[0],
         {
           into: HintExpr,
@@ -5159,12 +5166,14 @@ export class Parser {
     return undefined;
   }
 
-  parseJoinParts (): [Token | undefined, Token | undefined, Token | undefined] {
-    return [
-      this._matchSet(this._constructor.JOIN_METHODS) ? this._prev : undefined,
-      this._matchSet(this._constructor.JOIN_SIDES) ? this._prev : undefined,
-      this._matchSet(this._constructor.JOIN_KINDS) ? this._prev : undefined,
-    ];
+  parseJoinParts (): { method: Token | undefined;
+    side: Token | undefined;
+    kind: Token | undefined; } {
+    return {
+      method: this._matchSet(this._constructor.JOIN_METHODS) ? this._prev : undefined,
+      side: this._matchSet(this._constructor.JOIN_SIDES) ? this._prev : undefined,
+      kind: this._matchSet(this._constructor.JOIN_KINDS) ? this._prev : undefined,
+    };
   }
 
   parseUsingIdentifiers (): Expression[] {
@@ -5198,11 +5207,11 @@ export class Parser {
     }
 
     const index = this._index;
-    const [
+    const {
       method,
       side,
       kind,
-    ] = this.parseJoinParts();
+    } = this.parseJoinParts();
     const directed = this._matchTextSeq('DIRECTED');
     const hint = this._matchTexts(Array.from(this._constructor.JOIN_HINTS)) && this._prev?.text;
     const join = this._match(TokenType.JOIN) || (kind?.tokenType === TokenType.STRAIGHT_JOIN);
@@ -5220,8 +5229,8 @@ export class Parser {
       return undefined;
     }
 
-    const kwargs: Record<string, unknown> = {
-      this: this.parseTable({ parseBracket: options?.parseBracket }),
+    const kwargs: JoinExprArgs = {
+      this: this.parseTable({ parseBracket: options?.parseBracket })!,
     };
 
     if (kind?.tokenType === TokenType.ARRAY && this._match(TokenType.COMMA)) {
@@ -5231,7 +5240,7 @@ export class Parser {
 
     if (method) kwargs.method = method.text.toUpperCase();
     if (side) kwargs.side = side.text.toUpperCase();
-    if (kind) kwargs.kind = kind.text.toUpperCase();
+    if (kind) kwargs.kind = kind.text.toUpperCase() as JoinExprKind;
     if (hint) kwargs.hint = hint;
 
     if (this._match(TokenType.MATCH_CONDITION)) {
@@ -5280,7 +5289,7 @@ export class Parser {
       && !kwargs.on
       && !kwargs.using
       && !kwargs.method
-      && (!kwargs.kind || kwargs.kind === 'INNER' || kwargs.kind === 'OUTER')
+      && (!kwargs.kind || kwargs.kind === JoinExprKind.INNER || kwargs.kind === JoinExprKind.OUTER)
     ) {
       kwargs.on = new BooleanExpr({ this: true });
     }
@@ -5354,8 +5363,10 @@ export class Parser {
   }
 
   parseIndex (
-    options: { index?: Expression;
-      anonymous?: boolean; } = {},
+    options: {
+      index?: Expression;
+      anonymous?: boolean;
+    } = {},
   ): IndexExpr | undefined {
     const { anonymous = false } = options;
     let index = options.index;
@@ -5561,7 +5572,7 @@ export class Parser {
       consumePipe: options?.consumePipe,
     });
     if (subquery) {
-      if (!subquery.args.pivots) {
+      if (!(subquery as SelectExpr).$pivots) {
         subquery.setArgKey('pivots', this.parsePivots());
       }
       return subquery;
@@ -5634,7 +5645,7 @@ export class Parser {
 
     thisExpr.setArgKey('hints', this.parseTableHints());
 
-    if (!thisExpr.args.pivots) {
+    if (!('pivots' in thisExpr.args) || !thisExpr.args.pivots) {
       thisExpr.setArgKey('pivots', this.parsePivots());
     }
 
@@ -5768,7 +5779,7 @@ export class Parser {
       if (this._dialectConstructor.UNNEST_COLUMN_ONLY) {
         const columns = alias.args.columns;
         if (columns) {
-          this.raiseError('Unexpected extra column alias in unnest.', alias);
+          this.raiseError('Unexpected extra column alias in unnest.');
         }
 
         alias.setArgKey('columns', [alias.$this]);
@@ -6000,7 +6011,6 @@ export class Parser {
     }
 
     let exprs: Expression[];
-    let field: Expression | undefined;
 
     if (this._match(TokenType.L_PAREN)) {
       if (this._match(TokenType.ANY)) {
@@ -6015,7 +6025,7 @@ export class Parser {
       });
     }
 
-    field = this.parseIdVar();
+    const field = this.parseIdVar();
     return this.expression(InExpr, {
       this: value,
       field,
@@ -6121,7 +6131,7 @@ export class Parser {
       const allFields: string[][] = [];
 
       for (const pivotField of pivot.args.fields as InExpr[]) {
-        const pivotFieldExpressions = pivotField.expressions;
+        const pivotFieldExpressions = pivotField.$expressions;
 
         // The `PivotAny` expression corresponds to `ANY ORDER BY <column>`; we can't infer in this case.
         if (pivotFieldExpressions?.[0] instanceof PivotAnyExpr) {
@@ -6696,10 +6706,10 @@ export class Parser {
     options: { consumePipe?: boolean } = {},
   ): Expression | undefined {
     const start = this._index;
-    const [
-      , sideToken,
-      kindToken,
-    ] = this.parseJoinParts();
+    const {
+      side: sideToken,
+      kind: kindToken,
+    } = this.parseJoinParts();
 
     const side = sideToken?.text;
     const kind = kindToken?.text;
@@ -6711,7 +6721,7 @@ export class Parser {
 
     const tokenType = this._prev!.tokenType;
 
-    let operation: typeof UnionExpr | typeof ExceptExpr | typeof IntersectExpr;
+    let operation;
     if (tokenType === TokenType.UNION) {
       operation = UnionExpr;
     } else if (tokenType === TokenType.EXCEPT) {
@@ -6728,7 +6738,7 @@ export class Parser {
     } else if (this._match(TokenType.ALL)) {
       distinct = false;
     } else {
-      distinct = this._dialectConstructor.SET_OP_DISTINCT_BY_DEFAULT[operation];
+      distinct = this._dialectConstructor.SET_OP_DISTINCT_BY_DEFAULT[operation.key];
       if (distinct === undefined) {
         this.raiseError(`Expected DISTINCT or ALL for ${operation.name}`, this._curr);
       }
@@ -6806,7 +6816,7 @@ export class Parser {
     if (!thisExpr && this._next && this._next.tokenType in this._constructor.ASSIGNMENT) {
       // This allows us to parse <non-identifier token> := <expr>
       this.advanceAny({ ignoreReserved: true });
-      thisExpr = new ColumnExpr({ this: this._prev!.text });
+      thisExpr = new ColumnExpr({ this: new IdentifierExpr({ this: this._prev!.text }) });
     }
 
     const assignmentTokens = Object.keys(this._constructor.ASSIGNMENT) as TokenType[];
@@ -6938,12 +6948,12 @@ export class Parser {
       }
     }
 
-    let result = this.expression(IsExpr, {
+    const result = this.expression(IsExpr, {
       this: thisExpr,
       expression,
     });
     if (negate) {
-      result = this.expression(NotExpr, { this: result });
+      return this.expression(NotExpr, { this: result });
     }
     return this.parseColumnOps(result);
   }
@@ -6967,7 +6977,7 @@ export class Parser {
           InExpr,
           {
             this: thisExpr,
-            query: this.parseQueryModifiers(query).subquery({ copy: false }) as SubqueryExpr,
+            query: this.parseQueryModifiers(query).subquery(undefined, { copy: false }) as SubqueryExpr,
           },
         );
       } else {
@@ -7070,13 +7080,14 @@ export class Parser {
             upper: true,
           })
         )
+        || undefined
       );
 
     // Most dialects support, e.g., the form INTERVAL '5' day, thus we try to parse
     // each INTERVAL expression into this canonical form so it's easy to transpile
     let finalThis = thisExpr;
     if (thisExpr && thisExpr.isNumber) {
-      finalThis = LiteralExpr.string(thisExpr.toPy?.() || thisExpr.sql());
+      finalThis = LiteralExpr.string(thisExpr.toValue() || thisExpr.sql());
     } else if (thisExpr && thisExpr.isString) {
       const parts = thisExpr.name?.match?.(INTERVAL_STRING_RE);
       if (parts && unit) {
@@ -7325,15 +7336,15 @@ export class Parser {
         const literal = thisExpr.name;
         const thisWithOps = this.parseColumnOps(thisExpr);
 
-        const parser = this._constructor.TYPE_LITERAL_PARSERS[(dataType as DataTypeExpr).this];
+        const parser = typeof dataType.this === 'string' ? this._constructor.TYPE_LITERAL_PARSERS[dataType.this as DataTypeExprKind] : undefined;
         if (parser) {
           return parser(this, thisWithOps, dataType as DataTypeExpr);
         }
 
         if (
           this._constructor.ZONE_AWARE_TIMESTAMP_CONSTRUCTOR
-          && (dataType as DataTypeExpr).isType?.(DataTypeExprKind.TIMESTAMP)
-          && this._constructor.TIME_ZONE_RE?.test(literal)
+          && (dataType as DataTypeExpr).isType?.([DataTypeExprKind.TIMESTAMP])
+          && TIME_ZONE_RE.test(literal)
         ) {
           (dataType as DataTypeExpr).setArgKey('this', DataTypeExprKind.TIMESTAMPTZ);
         }
@@ -9030,7 +9041,8 @@ export class Parser {
   }
 
   parseStringAsIdentifier (): IdentifierExpr | undefined {
-    const output = toIdentifier(this._match(TokenType.STRING) && this._prev?.text, { quoted: true });
+    const id = this._match(TokenType.STRING) && this._prev?.text;
+    const output = id === undefined ? undefined : toIdentifier(id, { quoted: true });
     if (output && this._prev) {
       output.updatePositions(this._prev);
     }
@@ -9188,8 +9200,10 @@ export class Parser {
     return [this.parsePartitionBy(), this.parseOrder()];
   }
 
-  parseWindowSpec (): { value?: string | Expression;
-    side?: string; } {
+  parseWindowSpec (): {
+    value?: string | Expression;
+    side?: string;
+  } {
     this._match(TokenType.BETWEEN);
 
     return {
@@ -9480,13 +9494,16 @@ export class Parser {
 
   parseJsonTable (): JSONTableExpr {
     const thisExpr = this.parseFormatJson(this.parseBitwise());
+    if (!thisExpr) {
+      this.raiseError('Expected expression for JSON_TABLE');
+    }
     const path = this._match(TokenType.COMMA) && this.parseString();
     const errorHandling = this.parseOnHandling('ERROR', 'ERROR', 'NULL');
     const emptyHandling = this.parseOnHandling('EMPTY', 'ERROR', 'NULL');
     const schema = this.parseJsonSchema();
 
     return new JSONTableExpr({
-      this: thisExpr,
+      this: thisExpr!,
       schema,
       path,
       errorHandling,
@@ -9756,7 +9773,7 @@ export class Parser {
     const thisExpr = this.parseTable();
 
     this._match(TokenType.COMMA);
-    const args = [thisExpr, ...this.parseCsv(() => this.parseLambda())];
+    const args = [thisExpr, ...this.parseCsv(() => this.parseLambda())].filter((e): e is Expression => e instanceof Expression);
 
     const gapFill = GapFillExpr.fromArgList(args);
     return this.validateExpression(gapFill, args);
@@ -9774,7 +9791,7 @@ export class Parser {
 
   parseCast (strict: boolean, options: { safe?: boolean } = {}): Expression {
     const { safe } = options;
-    const thisExpr = this.parseDisjunction();
+    let thisExpr = this.parseDisjunction();
 
     if (!this._match(TokenType.ALIAS)) {
       if (this._match(TokenType.COMMA)) {
@@ -9788,7 +9805,7 @@ export class Parser {
     }
 
     let fmt: Expression | undefined;
-    let to = this.parseTypes();
+    let to = this.parseTypes() as DataTypeExpr | CharacterSetExpr;
 
     let defaultValue: Expression | undefined;
     if (this._match(TokenType.DEFAULT)) {
@@ -9801,22 +9818,22 @@ export class Parser {
     }
 
     if (this._matchSet(new Set([TokenType.FORMAT, TokenType.COMMA]))) {
-      const fmtString = this.parseString();
+      const fmtString = this.parseString() as StringExpr;
       fmt = this.parseAtTimeZone(fmtString);
 
       if (!to) {
-        to = DataTypeExpr.build(DataTypeExpr.Type.UNKNOWN);
+        to = DataTypeExpr.build(DataTypeExprKind.UNKNOWN);
       }
-      if (DataTypeExpr.TEMPORAL_TYPES.has(to.this)) {
+      if (DataTypeExpr.TEMPORAL_TYPES.has(to.$this as DataTypeExprKind)) {
         thisExpr = this.expression(
-          to.this === DataTypeExpr.Type.DATE ? StrToDateExpr : StrToTimeExpr,
+          to.this === DataTypeExprKind.DATE ? StrToDateExpr : StrToTimeExpr,
           {
             this: thisExpr,
             format: LiteralExpr.string(
               formatTime(
-                fmtString ? fmtString.this : '',
+                fmtString ? fmtString.$this : '',
                 this._dialectConstructor.FORMAT_MAPPING || this._dialectConstructor.TIME_MAPPING,
-                this._dialectConstructor.FORMAT_TRIE || this._dialectConstructor.TIME_TRIE,
+                this._dialectConstructor.FORMAT_TRIE() || this._dialectConstructor.TIME_TRIE(),
               ),
             ),
             safe,
@@ -9835,7 +9852,7 @@ export class Parser {
         dialect: this.dialect,
         udt: true,
       });
-    } else if (to.this === DataTypeExpr.Type.CHAR) {
+    } else if (to.this === DataTypeExprKind.CHAR) {
       if (this._match(TokenType.CHARACTER_SET)) {
         to = this.expression(CharacterSetExpr, { this: this.parseVarOrString() });
       }
@@ -9886,7 +9903,7 @@ export class Parser {
 
     const index = this._index;
     if (!this._match(TokenType.R_PAREN) && 0 < args.length) {
-      args[0] = this.parseLimit({ this: this.parseOrder({ thisExpr: args[0] }) });
+      args[0] = this.parseLimit(this.parseOrder({ thisExpr: args[0] }));
       return this.expression(GroupConcatExpr, {
         this: args[0],
         separator: seqGet(args, 1),
@@ -9895,7 +9912,7 @@ export class Parser {
 
     if (!this._matchTextSeq(['WITHIN', 'GROUP'])) {
       this._retreat(index);
-      return this.validateExpression(GroupConcatExpr.fromArgList(args), args);
+      return this.validateExpression(GroupConcatExpr.fromArgList(args.filter((a): a is Expression => a instanceof Expression)), args);
     }
 
     this._matchLParen();
@@ -9928,7 +9945,7 @@ export class Parser {
       bracketKind === TokenType.L_BRACE
       && this._curr
       && this._curr.tokenType === TokenType.VAR
-      && this._constructor.ODBC_DATETIME_LITERALS.has(this._curr.text.toLowerCase())
+      && this._constructor.ODBC_DATETIME_LITERALS[this._curr.text.toLowerCase()]
     ) {
       return this.parseOdbcDatetimeLiteral();
     }
@@ -9946,8 +9963,7 @@ export class Parser {
       thisExpr = this.expression(
         StructExpr,
         {
-          expressions: this.kvToPropEq({
-            expressions,
+          expressions: this.kvToPropEq(expressions, {
             parseMap,
           }),
         },
@@ -9988,7 +10004,7 @@ export class Parser {
     let end: Expression | undefined;
     if (this._matchPair(TokenType.DASH, TokenType.COLON, { advance: false })) {
       this._advance();
-      end = -(LiteralExpr.number('1'));
+      end = LiteralExpr.number('1').neg();
     } else {
       end = this.parseAssignment();
     }
@@ -10029,7 +10045,7 @@ export class Parser {
 
     if (!this._match(TokenType.END)) {
       if (defaultCase instanceof IntervalExpr && defaultCase.$this?.sql().toUpperCase() === 'END') {
-        defaultCase = column('interval');
+        defaultCase = column({ col: 'interval' });
       } else {
         this.raiseError('Expected END after CASE', this._prev);
       }
@@ -10316,7 +10332,7 @@ export class Parser {
   parsePrimary (): Expression | undefined {
     if (this._matchSet(Object.keys(this._constructor.PRIMARY_PARSERS) as TokenType[])) {
       const tokenType = this._prev!.tokenType;
-      const primary = this._constructor.PRIMARY_PARSERS[tokenType](this, this._prev!);
+      const primary = this._constructor.PRIMARY_PARSERS[tokenType]?.(this, this._prev!);
 
       if (tokenType === TokenType.STRING) {
         const expressions = [primary];
@@ -10347,7 +10363,7 @@ export class Parser {
 
   parseField (options: {
     anyToken?: boolean;
-    tokens?: Iterable<TokenType>;
+    tokens?: Set<TokenType>;
     anonymousFunc?: boolean;
   } = {}): Expression | undefined {
     const {
@@ -10573,9 +10589,9 @@ export class Parser {
       const constraintKind = new ComputedColumnConstraintExpr({
         this: this.parseDisjunction()!,
         persisted: persisted || this._matchTextSeq('PERSISTED'),
-        dataType: this._matchTextSeq('AUTO')
-          ? new VarExpr({ this: 'AUTO' })
-          : this.parseTypes()!,
+        dataType: (this._matchTextSeq('AUTO')
+          ? new DataTypeExpr({ this: 'AUTO' })
+          : this.parseTypes()!) as DataTypeExpr,
         notNull: this._matchPair(TokenType.NOT, TokenType.NULL),
       });
       constraints.push(this.expression(ColumnConstraintExpr, { kind: constraintKind }));
@@ -10696,6 +10712,7 @@ export class Parser {
   }
 
   parseFunction (options: {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     functions?: Record<string, Function>;
     anonymous?: boolean;
     optionalParens?: boolean;
@@ -10764,7 +10781,7 @@ export class Parser {
     }
 
     if (!this._next || this._next.tokenType !== TokenType.L_PAREN) {
-      const noParen = this._constructor.NO_PAREN_FUNCTIONS[tokenType];
+      const noParen = this._constructor.NO_PAREN_FUNCTIONS[tokenType as keyof typeof this._constructor.NO_PAREN_FUNCTIONS];
       if (optionalParens && noParen) {
         this._advance();
         return this.expression(noParen);
@@ -10785,7 +10802,7 @@ export class Parser {
 
     const funcParser = this._constructor.FUNCTION_PARSERS[upper];
     if (funcParser && !anonymous) {
-      const thisExpr: Expression = funcParser(this);
+      const thisExpr: Expression | undefined = funcParser(this);
 
       if (thisExpr instanceof Expression) {
         thisExpr.addComments(comments);
@@ -10845,6 +10862,7 @@ export class Parser {
       let thisExpr: Expression;
 
       if (isKnownFunction) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
         const funcBuilder = functionBuilder as Function;
 
         let func: Expression;
@@ -11481,7 +11499,7 @@ export class Parser {
       (kind === 'GLOBAL' || kind === 'SESSION')
       && this._matchTextSeq('TRANSACTION')
     ) {
-      return this.parseSetTransaction({ global_: kind === 'GLOBAL' });
+      return this.parseSetTransaction({ global: kind === 'GLOBAL' });
     }
 
     const left = this.parsePrimary() || this.parseColumn();
@@ -11512,15 +11530,15 @@ export class Parser {
     });
   }
 
-  parseSetTransaction (options?: { global_?: boolean }): Expression {
-    const global_ = options?.global_ ?? false;
+  parseSetTransaction (options?: { global?: boolean }): Expression {
+    const global_ = options?.global ?? false;
     this._matchTextSeq('TRANSACTION');
     const characteristics = this.parseCsv(() =>
       this.parseVarFromOptions(this._constructor.TRANSACTION_CHARACTERISTICS));
     return this.expression(SetItemExpr, {
       expressions: characteristics,
       kind: 'TRANSACTION',
-      global_,
+      global: global_,
     });
   }
 
@@ -11570,7 +11588,7 @@ export class Parser {
     for (const keywords of continuations || []) {
       const keywordArray = typeof keywords === 'string' ? [keywords] : keywords;
 
-      if (this._matchTextSeq(...keywordArray)) {
+      if (this._matchTextSeq(keywordArray)) {
         option = `${option} ${keywordArray.join(' ')}`;
         matched = true;
         break;
@@ -11598,9 +11616,15 @@ export class Parser {
     if (this._matchTextSeq('OPTIONS')) {
       this._matchLParen();
       const k = this.parseString();
+      if (!k) {
+        this.raiseError('Expected option key');
+      }
       this._match(TokenType.EQ);
       const v = this.parseString();
-      options = [k, v];
+      if (!v) {
+        this.raiseError('Expected option value');
+      }
+      options = [k!, v!];
       this._matchRParen();
     }
 
@@ -11624,9 +11648,7 @@ export class Parser {
     });
   }
 
-  parseValue (options?: { values?: boolean }): TupleExpr | undefined {
-    const values = options?.values ?? true;
-
+  parseValue (_options?: { values?: boolean }): TupleExpr | undefined {
     const parseValueExpression = (): Expression | undefined => {
       if (
         this._dialectConstructor.SUPPORTS_VALUES_DEFAULT
@@ -11667,12 +11689,12 @@ export class Parser {
         skipFromToken: true,
         consumePipe: true,
       });
-      const select = this.parseSelect({ from });
-      if (select) {
-        if (!select.args.from) {
-          select.setArgKey('from', from);
+      const selectExpr = this.parseSelect({ from });
+      if (selectExpr) {
+        if (!selectExpr.args.from) {
+          selectExpr.setArgKey('from', from);
         }
-        thisExpr = select;
+        thisExpr = selectExpr;
       } else {
         thisExpr = select('*').from(from as FromExpr);
         thisExpr = this.parseQueryModifiers(this.parseSetOperations(thisExpr));
@@ -12062,7 +12084,7 @@ export class Parser {
 
   parseUse (): UseExpr {
     return this.expression(UseExpr, {
-      kind: this.parseVarFromOptions(this._constructor.USABLES, false),
+      kind: this.parseVarFromOptions(this._constructor.USABLES, { raiseUnmatched: false }),
       this: this.parseTable({ schema: false }),
     });
   }
@@ -12124,22 +12146,31 @@ export class Parser {
   parseDictRange (options: { this: string }): DictRangeExpr {
     this._matchLParen();
     const hasMin = this._matchTextSeq('MIN');
-    let min: Expression;
-    let max: Expression;
+    let min: Expression | undefined;
+    let max: Expression | undefined;
 
     if (hasMin) {
       min = this.parseVar() || this.parsePrimary();
+      if (!min) {
+        this.raiseError('Expected MIN value');
+      }
       this._matchTextSeq('MAX');
       max = this.parseVar() || this.parsePrimary();
+      if (!max) {
+        this.raiseError('Expected MAX value');
+      }
     } else {
       max = this.parseVar() || this.parsePrimary();
+      if (!max) {
+        this.raiseError('Expected MAX value');
+      }
       min = LiteralExpr.number(0);
     }
     this._matchRParen();
     return this.expression(DictRangeExpr, {
       this: options.this,
-      min,
-      max,
+      min: min!,
+      max: max!,
     });
   }
 
@@ -12194,7 +12225,7 @@ export class Parser {
     const heredocStart = this._curr;
 
     while (this._curr) {
-      if (this._matchTextSeq(...tags, { advance: false })) {
+      if (this._matchTextSeq(tags, { advance: false })) {
         const thisValue = this.findSql(heredocStart, this._prev);
         this._advance(tags.length);
         return this.expression(HeredocExpr, {
@@ -12211,8 +12242,10 @@ export class Parser {
   }
 
   findParser (
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     parsers: Record<string, Function>,
-    trie: Record<string, unknown>,
+    trie: TrieNode,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   ): Function | undefined {
     if (!this._curr) {
       return undefined;
@@ -12276,7 +12309,7 @@ export class Parser {
       const order: OrderExpr | undefined =
         lastArg instanceof OrderExpr ? lastArg : undefined;
 
-      if (order) {
+      if (order?.$this) {
         args[args.length - 1] = order.$this;
         order.setArgKey('this', concatExprs(order.$this, args));
       }
@@ -12360,37 +12393,46 @@ export class Parser {
       newSelect.setArgKey('with', ctes);
     }
 
-    return newSelect.with(newCte, {
-      as_: query,
+    return newSelect.with(newCte, query, {
       copy: false,
     });
   }
 
   parsePipeSyntaxSelect (query: SelectExpr): SelectExpr {
-    const select = this.parseSelect({ consumePipe: false });
+    const select = this.parseSelect({ consumePipe: false }) as SelectExpr;
     if (!select) {
       return query;
     }
 
     return this.buildPipeCte({
-      query: query.select(select.expressions, { append: false }),
+      query: query.select(select.$expressions, { append: false }),
       expressions: [new StarExpr({})],
     });
   }
 
   parsePipeSyntaxLimit (query: SelectExpr): SelectExpr {
-    const limit = this.parseLimit();
-    const offset = this.parseOffset();
+    const limit = this.parseLimit() as LimitExpr;
+    const offset = this.parseOffset() as OffsetExpr;
     if (limit) {
       const currLimit = query.args.limit || limit;
-      if (limit.expression.toValue() <= currLimit.expression.toValue()) {
+      const currLimitValue = typeof currLimit === 'number' ? currLimit : currLimit.$expression.toValue() as number;
+      const limitValue = typeof limit === 'number' ? limit : limit.$expression.toValue() as number;
+      if (limitValue <= currLimitValue) {
         query.limit(limit, { copy: false });
       }
     }
     if (offset) {
       const currOffset = query.args.offset;
-      const currOffsetVal = currOffset ? currOffset.expression.toValue() : 0;
-      query.offset(LiteralExpr.number(currOffsetVal + offset.expression.toValue()), { copy: false });
+      const currOffsetVal: number = currOffset === undefined
+        ? 0
+        : typeof currOffset === 'number'
+          ? currOffset
+          : typeof currOffset.$expression === 'number'
+            ? currOffset.$expression
+            : currOffset.$expression.toValue() as number;
+      const offsetVal: number = typeof offset.$expression === 'number' ? offset.$expression : offset.$expression.toValue() as number;
+
+      query.offset(LiteralExpr.number(currOffsetVal + offsetVal));
     }
 
     return query;
@@ -12398,7 +12440,7 @@ export class Parser {
 
   parsePipeSyntaxAggregateFields (): Expression | undefined {
     let thisValue = this.parseDisjunction();
-    if (this._matchTextSeq('GROUP', 'AND', { advance: false })) {
+    if (this._matchTextSeq(['GROUP', 'AND'], { advance: false })) {
       return thisValue;
     }
 
@@ -12476,20 +12518,20 @@ export class Parser {
   }
 
   parsePipeSyntaxSetOperator (query: QueryExpr): QueryExpr | undefined {
-    const firstSetop = this.parseSetOperation({ this: query });
+    const firstSetop = this.parseSetOperation(query) as SetOperationExpr;
     if (!firstSetop) {
       return undefined;
     }
 
     const parseAndUnwrapQuery = (): SelectExpr | undefined => {
       const expr = this.parseParen();
-      return expr ? expr.assertIs(SubqueryExpr).unnest() : undefined;
+      return expr ? expr.assertIs(SubqueryExpr).unnest() as SelectExpr : undefined;
     };
 
-    firstSetop.this.pop();
+    firstSetop.$this.pop();
 
     const setops = [
-      firstSetop.expression.pop().assertIs(SubqueryExpr)
+      firstSetop.$expression.pop().assertIs(SubqueryExpr)
         .unnest(),
       ...this.parseCsv(parseAndUnwrapQuery),
     ];
@@ -12518,7 +12560,7 @@ export class Parser {
       });
     }
 
-    query.setArgKey('with_', ctes);
+    query.setArgKey('with', ctes);
 
     return this.buildPipeCte({
       query,
@@ -12558,7 +12600,7 @@ export class Parser {
 
   parsePipeSyntaxExtend (query: SelectExpr): SelectExpr {
     this._matchTextSeq('EXTEND');
-    query.select(new StarExpr({}), ...this.parseExpressions(), {
+    query.select([new StarExpr({}), ...this.parseExpressions()], {
       append: false,
       copy: false,
     });
@@ -12573,7 +12615,10 @@ export class Parser {
 
     const with_ = query.args.with;
     if (with_) {
-      with_.expressions[with_.expressions.length - 1].this.setArgKey('sample', sample);
+      const expression = with_.expressions[with_.expressions.length - 1];
+      if (expression instanceof Expression && expression.this instanceof Expression) {
+        expression.this.setArgKey('sample', sample);
+      }
     } else {
       query.setArgKey('sample', sample);
     }
@@ -12582,31 +12627,32 @@ export class Parser {
   }
 
   parsePipeSyntaxQuery (query: QueryExpr): QueryExpr | undefined {
-    let result = query;
+    let result: QueryExpr | undefined = query;
 
     if (result instanceof SubqueryExpr) {
       result = select('*').from(result, { copy: false });
     }
 
     if (!result.args.from) {
-      result = select('*').from(result.subquery({ copy: false }), { copy: false });
+      result = select('*').from(result.subquery(undefined, { copy: false }), { copy: false });
     }
 
     while (this._match(TokenType.PIPE_GT)) {
       const start = this._curr;
+      const startIdx = this._tokens.indexOf(start!);
       const parser =
         this._constructor.PIPE_SYNTAX_TRANSFORM_PARSERS[this._curr!.text.toUpperCase()];
       if (!parser) {
-        let parsedQuery = this.parsePipeSyntaxSetOperator(result);
-        parsedQuery = parsedQuery || this.parsePipeSyntaxJoin(result);
-        if (!parsedQuery) {
-          this._retreat(start);
+        let parsedQuery = this.parsePipeSyntaxSetOperator(result!);
+        parsedQuery = parsedQuery || this.parsePipeSyntaxJoin(result!);
+        if (!parsedQuery && 0 <= startIdx) {
+          this._retreat(startIdx);
           this.raiseError(`Unsupported pipe syntax operator: '${start!.text.toUpperCase()}'.`);
           break;
         }
         result = parsedQuery;
       } else {
-        result = parser(this, result);
+        result = parser(this, result as SelectExpr);
       }
     }
 
@@ -12689,11 +12735,11 @@ export class Parser {
     return expression;
   }
 
-  private get _constructor (): typeof Parser {
+  get _constructor (): typeof Parser {
     return this.constructor as typeof Parser;
   }
 
-  private get _dialectConstructor (): typeof Dialect {
+  get _dialectConstructor (): typeof Dialect {
     return this.dialect._constructor;
   }
 }

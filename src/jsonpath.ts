@@ -3,7 +3,7 @@ import {
   Tokenizer, TokenType,
 } from './tokens';
 import type {
-  DataTypeExprKind, Expression, JSONPathPartExpr,
+  DataTypeExprKind, JSONPathPartExpr,
 } from './expressions';
 import {
   ExpressionKey,
@@ -259,7 +259,7 @@ export function parse (path: string, options?: ParseJsonPathOptions): JSONPathEx
 
 export const JSON_PATH_PART_TRANSFORMS = {
   [ExpressionKey.JSON_PATH_FILTER]: (_generator: Generator, e: JSONPathFilterExpr) => `?${e.this}`,
-  [ExpressionKey.JSON_PATH_KEY]: (generator: Generator, e: JSONPathKeyExpr) => generator._jsonpathkeySql(e),
+  [ExpressionKey.JSON_PATH_KEY]: (generator: Generator, e: JSONPathKeyExpr) => generator.jsonPathKeySql(e),
   [ExpressionKey.JSON_PATH_RECURSIVE]: (_generator: Generator, e: JSONPathRecursiveExpr) => `..${e.this || ''}`,
   [ExpressionKey.JSON_PATH_ROOT]: (_generator: Generator, _e: JSONPathRootExpr) => '$',
   [ExpressionKey.JSON_PATH_SCRIPT]: (_generator: Generator, e: JSONPathScriptExpr) => `(${e.this}`,
@@ -276,7 +276,7 @@ export const JSON_PATH_PART_TRANSFORMS = {
       .map((p) => p === false ? '' : generator.jsonPathPart(p));
     return parts.join(':');
   },
-  [ExpressionKey.JSON_PATH_SUBSCRIPT]: (generator: Generator, e: JSONPathSubscriptExpr) => generator._jsonpathsubscriptSql(e),
+  [ExpressionKey.JSON_PATH_SUBSCRIPT]: (generator: Generator, e: JSONPathSubscriptExpr) => generator.jsonPathSubscriptSql(e),
   [ExpressionKey.JSON_PATH_UNION]: (generator: Generator, e: JSONPathUnionExpr) => {
     return `[${e.expressions.map((p) => generator.jsonPathPart(p)).join(',')}]`;
   },

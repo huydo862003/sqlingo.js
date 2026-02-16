@@ -108,8 +108,13 @@ export function highlightSql (options: {
   sql: string;
   positions: [number, number][];
   contextLength?: number;
-}): { formattedSql: string; startContext: string; highlight: string; endContext: string } {
-  const { sql, positions, contextLength = ERROR_MESSAGE_CONTEXT_DEFAULT } = options;
+}): { formattedSql: string;
+  startContext: string;
+  highlight: string;
+  endContext: string; } {
+  const {
+    sql, positions, contextLength = ERROR_MESSAGE_CONTEXT_DEFAULT,
+  } = options;
   if (positions.length === 0) {
     throw new Error('positions must contain at least one [start, end] tuple');
   }

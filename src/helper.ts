@@ -1,6 +1,16 @@
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py
 
-// Not ported from Python: AutoName, classproperty, subclasses, apply_index_offset, object_to_dict, is_iterable, is_date_unit
+import { DateTime } from 'luxon';
+import type { Expression } from './expressions';
+import {
+  DataTypeExpr, AddExpr, literal,
+  DataTypeExprKind,
+} from './expressions';
+import { annotateTypes } from './optimizer/annotate_types';
+import { simplify } from './optimizer/simplify';
+import type { Dialect } from './dialects';
+
+// Not ported from Python: AutoName, classproperty, subclasses, object_to_dict, is_iterable, is_date_unit
 
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L22
 const CAMEL_CASE_PATTERN = /(?<!^)(?=[A-Z])/;
@@ -74,14 +84,14 @@ export function seqGet<T> (seq: T[], index: number): T | undefined {
  * ```
  *
  */
-export function ensureList<T> (value?: T | T[]): T[] {
+export function ensureList<T> (value?: T | readonly T[]): T[] {
   if (value === undefined) {
     return [];
   }
   if (Array.isArray(value)) {
     return value;
   }
-  return [value];
+  return [value as T];
 }
 
 /**
@@ -113,9 +123,6 @@ export function ensureCollection<T> (value: T | T[]): T[] {
 /**
  * Joins strings with a separator (comma-separated values).
  *
- * @param args - Strings to join, optionally with custom separator as first arg
- * @returns Comma-separated string of values
- *
  * @example
  * ```ts
  * csv("a", "b", "c"); // "a, b, c"
@@ -124,12 +131,8 @@ export function ensureCollection<T> (value: T | T[]): T[] {
  * ```
  *
  */
-export function csv (...args: string[]): string;
-export function csv (sep: string, ...args: string[]): string;
-export function csv (...args: string[]): string {
-  const sep = 0 < args.length && args[0].length <= 3 && args[0].includes(',')
-    ? args.shift()
-    : ', ';
+export function csv (args: string[], options: { sep?: string } = {}): string {
+  const { sep = ', ' } = options;
   return args.filter((arg) => arg).join(sep || ', ');
 }
 
@@ -640,10 +643,9 @@ export function mergeRanges<T> (ranges: [T, T][]): [T, T][] {
  * ```
  *
  */
-// Modified: removed unnecessary try-catch (Date constructor doesn't throw in JS)
 export function isIsoDate (text: string): boolean {
-  const date = new Date(text);
-  return !isNaN(date.getTime()) && /^\d{4}-\d{2}-\d{2}$/.test(text);
+  const dt = DateTime.fromISO(text);
+  return dt.isValid && /^\d{4}-\d{2}-\d{2}$/.test(text);
 }
 
 /**
@@ -660,10 +662,9 @@ export function isIsoDate (text: string): boolean {
  * ```
  *
  */
-// Modified: removed unnecessary try-catch (Date constructor doesn't throw in JS)
 export function isIsoDatetime (text: string): boolean {
-  const date = new Date(text);
-  return !isNaN(date.getTime());
+  const dt = DateTime.fromISO(text);
+  return dt.isValid;
 }
 
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L490
@@ -675,6 +676,23 @@ export const DATE_UNITS = new Set([
   'year',
   'year_month',
 ]);
+
+/**
+ * Checks if an expression represents a date unit.
+ *
+ * @param expression - The expression to check (or undefined)
+ * @returns True if the expression's name is a valid date unit
+ *
+ * @example
+ * ```ts
+ * import { parseOne } from 'sqlglot';
+ * const expr = parseOne("'day'");
+ * isDateUnit(expr); // true
+ * ```
+ */
+export function isDateUnit (expression: { name: string } | undefined): boolean {
+  return expression !== undefined && DATE_UNITS.has(expression.name.toLowerCase());
+}
 
 /**
  * Map-like structure where multiple keys all return the same single value.
@@ -697,7 +715,7 @@ export const DATE_UNITS = new Set([
  *
  */
 // Modified: constructor accepts K[] instead of Collection<K>, doesn't implement Map to avoid MapIterator requirements
-export class SingleValuedMapping<K, V> {
+export class SingleValuedMapping<K, V> implements Map<K, V> {
   private _keys: Set<K>;
   private _value: V;
 
@@ -720,23 +738,23 @@ export class SingleValuedMapping<K, V> {
     return this._keys.size;
   }
 
-  * [Symbol.iterator] (): IterableIterator<[K, V]> {
+  * [Symbol.iterator] (): MapIterator<[K, V]> {
     for (const key of Array.from(this._keys)) {
       yield [key, this._value] as [K, V];
     }
   }
 
-  * entries (): IterableIterator<[K, V]> {
+  * entries (): MapIterator<[K, V]> {
     for (const key of Array.from(this._keys)) {
       yield [key, this._value] as [K, V];
     }
   }
 
-  keys (): IterableIterator<K> {
+  keys (): MapIterator<K> {
     return this._keys.values();
   }
 
-  * values (): IterableIterator<V> {
+  * values (): MapIterator<V> {
     for (const _ of Array.from(this._keys)) {
       yield this._value;
     }
@@ -763,4 +781,58 @@ export class SingleValuedMapping<K, V> {
   get [Symbol.toStringTag] (): string {
     return 'SingleValuedMapping';
   }
+}
+
+/**
+ * Applies an offset to a given integer literal expression.
+ *
+ * @param this_ - The target of the index
+ * @param expressions - List of expressions to adjust
+ * @param offset - The offset to apply
+ * @param options - Options including dialect
+ * @returns The adjusted expressions
+ */
+export function applyIndexOffset (
+  this_: Expression,
+  expressions: Expression[],
+  offset: number,
+  options?: { dialect?: Dialect },
+): Expression[] {
+  if (!offset || expressions.length !== 1) {
+    return expressions;
+  }
+
+  const expression = expressions[0];
+
+  // Annotate types if not already done
+  if (!this_.type) {
+    annotateTypes(this_, { dialect: options?.dialect });
+  }
+
+  // Check if this_ is an array type
+  const thisType = this_.type;
+  if (
+    thisType?.this !== DataTypeExprKind.UNKNOWN
+    && thisType?.this !== DataTypeExprKind.ARRAY
+  ) {
+    return expressions;
+  }
+
+  // Annotate expression type if not already done
+  if (!expression.type) {
+    annotateTypes(expression, { dialect: options?.dialect });
+  }
+
+  // Check if expression is an integer type
+  const exprType = expression.type;
+  if (exprType?.this && DataTypeExpr.INTEGER_TYPES?.has(exprType.$this as DataTypeExprKind)) {
+    // Apply offset: expression + offset
+    const offsetExpr = new AddExpr({
+      this: expression,
+      expression: literal(offset),
+    });
+    return [simplify(offsetExpr)];
+  }
+
+  return expressions;
 }

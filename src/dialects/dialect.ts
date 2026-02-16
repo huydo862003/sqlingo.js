@@ -1,14 +1,237 @@
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/dialects/dialect.py
 
-import type { Expression } from '../expressions';
-import {
-  ExceptExpr, IntersectExpr, UnionExpr,
+import type {
+  DateSubExpr,
+  JSONBExtractScalarExpr,
+  JSONExtractScalarExpr,
+  TimeSubExpr,
+  TimestampSubExpr,
+  TsOrDsDiffExpr,
+  ApproxDistinctExpr,
+  ILikeExpr,
+  CurrentDateExpr,
+  WithExpr,
+  TableSampleExpr,
+  PivotExpr,
+  CommentColumnConstraintExpr,
+  MapFromEntriesExpr,
+  PropertyExpr,
+  StrPositionExpr,
+  StructExtractExpr,
+  ArrayAppendExpr,
+  ArrayPrependExpr,
+  ArrayConcatExpr,
+  MapExpr,
+  VarMapExpr,
+  MonthsBetweenExpr,
+  UnixToStrExpr,
+  StrToUnixExpr,
+  RegexpReplaceExpr,
+  RegexpExtractAllExpr,
+  FuncExpr,
+  ConcatWsExpr,
+  ConcatExpr,
+  StrToTimeExpr,
+  TrimExpr,
+  CountIfExpr,
+  MaxExpr,
+  MinExpr,
+  EncodeExpr,
+  DecodeExpr,
+  DateStrToDateExpr,
+  TimeStrToTimeExpr,
+  RightExpr,
+  LeftExpr,
+  DatetimeExpr,
+  TimeExpr,
+  TimestampExpr,
+  SHA2Expr,
+  GenerateSeriesExpr,
+  GenerateDateArrayExpr,
+  DatetimeDiffExpr,
+  TimestampDiffExpr,
+  MakeIntervalExpr,
+  GroupConcatExpr,
+  ArrayCompactExpr,
+  GetbitExpr,
+  TimeUnitExpr,
+  GeneratedAsIdentityColumnConstraintExpr,
+  ArgMaxExpr,
+  ArgMinExpr,
+  MergeExpr,
+  AnyValueExpr,
+  XorExpr,
+  DotExpr,
+  ValuesExpr,
+  JSONExtractExprArgs,
+  RegexpExtractExprArgs,
 } from '../expressions';
-import { Tokenizer } from '../tokens';
-import type { Parser } from '../parser';
+import {
+  JSONBExtractExpr,
+  DatetimeSubExpr,
+  RegexpExtractExpr,
+  PosexplodeExpr,
+  SelectExpr,
+  TableAliasExpr,
+  ExplodeExpr,
+  KwargExpr,
+  ArrayRemoveExpr,
+  JSONPathPartExpr,
+  LimitExpr,
+  PlaceholderExpr,
+  JoinExprKind,
+  UpdateExpr,
+  InsertExpr,
+  TupleExpr,
+  DateDiffExpr,
+  DayExpr,
+  LastDayExpr,
+  DivExpr,
+  ParenExpr,
+  SAFE_IDENTIFIER_RE,
+  Expression,
+  AddExpr,
+  alias,
+  AliasExpr,
+  AndExpr,
+  AnonymousExpr,
+  ArrayExpr,
+  ArrayFilterExpr,
+  AtTimeZoneExpr,
+  BitwiseAndExpr,
+  BitwiseRightShiftExpr,
+  CastExpr,
+  ColumnExpr,
+  DataTypeExpr,
+  DataTypeExprKind,
+  DateAddExpr,
+  DateTruncExpr,
+  DatetimeAddExpr,
+  DPipeExpr,
+  EQExpr,
+  EscapeExpr,
+  ExpressionKey,
+  GTExpr,
+  GTEExpr,
+  IdentifierExpr,
+  IfExpr,
+  IntervalExpr,
+  IsExpr,
+  JoinExpr,
+  JSONExtractExpr,
+  JSONPathExpr,
+  JSONPathKeyExpr,
+  JSONPathRootExpr,
+  JSONPathSubscriptExpr,
+  JSONPathWildcardExpr,
+  LambdaExpr,
+  LateralExpr,
+  LengthExpr,
+  LikeExpr,
+  LiteralExpr,
+  LowerExpr,
+  LTExpr,
+  LTEExpr,
+  NEQExpr,
+  NotExpr,
+  NullExpr,
+  OrderExpr,
+  OrExpr,
+  ParseJSONExpr,
+  QueryExpr,
+  ReplaceExpr,
+  select,
+  SubExpr,
+  SubstringExpr,
+  TimeAddExpr,
+  TimestampAddExpr,
+  TimestampFromPartsExpr,
+  TimestampTruncExpr,
+  TimeToStrExpr,
+  ToCharExpr,
+  toIdentifier,
+  TruncExpr,
+  TsOrDsAddExpr,
+  UnnestExpr,
+  VarExpr,
+  WithinGroupExpr,
+  cast,
+  var_,
+  InExpr,
+  CoalesceExpr,
+  DistinctExpr,
+  DataTypeParamExpr,
+  StarExpr,
+} from '../expressions';
+import { annotateTypes } from '../optimizer/annotate_types';
+import type { TokenizerOptions } from '../tokens';
+import {
+  TokenType, Tokenizer,
+} from '../tokens';
+import type { ParseOptions } from '../parser';
+import { Parser } from '../parser';
 import {
   newTrie, type TrieNode,
 } from '../trie';
+import {
+  JSONPathTokenizer, parse as parseJsonPath,
+} from '../jsonpath';
+import type {
+  GeneratorOptions, TranspileOptions,
+} from '../generator';
+import {
+  Generator, unsupportedArgs,
+} from '../generator';
+import {
+  ensureList,
+  isInt,
+  seqGet,
+  suggestClosestMatchAndFail, toBool,
+} from '../helper';
+import {
+  formatTime, TIMEZONES,
+} from '../time';
+
+// Type aliases for common expression type unions
+export type DATE_ADD_OR_DIFF =
+  | DateAddExpr
+  | DateDiffExpr
+  | DateSubExpr
+  | TsOrDsAddExpr
+  | TsOrDsDiffExpr;
+
+export type DATE_ADD_OR_SUB =
+  | DateAddExpr
+  | TsOrDsAddExpr
+  | DateSubExpr;
+
+export type JSON_EXTRACT_TYPE =
+  | JSONExtractExpr
+  | JSONExtractScalarExpr
+  | JSONBExtractExpr
+  | JSONBExtractScalarExpr;
+
+export type DATETIME_DELTA =
+  | DateAddExpr
+  | DatetimeAddExpr
+  | DatetimeSubExpr
+  | TimeAddExpr
+  | TimeSubExpr
+  | TimestampAddExpr
+  | TimestampSubExpr
+  | TsOrDsAddExpr;
+
+export const DATETIME_ADD = [
+  DateAddExpr,
+  TimeAddExpr,
+  DatetimeAddExpr,
+  TsOrDsAddExpr,
+  TimestampAddExpr,
+] as const;
+
+// Type aliases for dialect configuration properties
+export type NormalizeFunctions = false | 'upper' | 'lower';
+export type NullOrdering = 'nulls_are_small' | 'nulls_are_large' | 'nulls_are_last';
 
 /**
  * Base unescaped sequences that are common across dialects.
@@ -23,6 +246,8 @@ const BASE_UNESCAPED_SEQUENCES: Record<string, string> = {
   '\\v': '\v',
   '\\\\': '\\',
 };
+
+export const PLUGIN_GROUP_NAME = 'sqlglot.dialects';
 
 /**
  * Dialects supported by SQLGlot.
@@ -69,15 +294,15 @@ export enum Dialects {
  */
 export enum NormalizationStrategy {
   /** Unquoted identifiers are lowercased. */
-  LOWERCASE = 'LOWERCASE',
+  LOWERCASE = 'lowercase',
   /** Unquoted identifiers are uppercased. */
-  UPPERCASE = 'UPPERCASE',
+  UPPERCASE = 'uppercase',
   /** Always case-sensitive, regardless of quotes. */
-  CASE_SENSITIVE = 'CASE_SENSITIVE',
+  CASE_SENSITIVE = 'caseSensitive',
   /** Always case-insensitive (lowercase), regardless of quotes. */
-  CASE_INSENSITIVE = 'CASE_INSENSITIVE',
+  CASE_INSENSITIVE = 'caseInsensitive',
   /** Always case-insensitive (uppercase), regardless of quotes. */
-  CASE_INSENSITIVE_UPPERCASE = 'CASE_INSENSITIVE_UPPERCASE',
+  CASE_INSENSITIVE_UPPERCASE = 'caseInsensitiveUppercase',
 }
 
 export type DialectType = string | Dialect | typeof Dialect;
@@ -88,8 +313,7 @@ export type DialectType = string | Dialect | typeof Dialect;
  * Dialect = sqlglot's _Dialect (metaclass) + Dialect
  */
 export class Dialect {
-  // Registry of dialect classes (simulates metaclass _Dialect's classes)
-  protected static _registry: Map<string, typeof Dialect> = new Map();
+  static DIALECT_NAME = Dialects.DIALECT;
 
   /** The base index offset for arrays. */
   static INDEX_OFFSET = 0;
@@ -126,8 +350,11 @@ export class Dialect {
 
   /** Whether the old-style outer join (+) syntax is supported. */
   static get SUPPORTS_COLUMN_JOIN_MARKS (): boolean {
-    return '(+)' in this.tokenizerClass.KEYWORDS;
+    return !!this.tokenizerClass.KEYWORDS['(+)'];
   }
+
+  /** Separator of COPY statement parameters. */
+  static COPY_PARAMS_ARE_CSV = true;
 
   /**
    * Determines how function names are going to be normalized.
@@ -136,7 +363,7 @@ export class Dialect {
    *   "lower": Convert names to lowercase.
    *   false: Disables function name normalization.
    */
-  static NORMALIZE_FUNCTIONS: false | 'upper' | 'lower' = 'upper';
+  static NORMALIZE_FUNCTIONS: NormalizeFunctions = 'upper';
 
   /**
    * Whether the name of the function should be preserved inside the node's metadata.
@@ -153,7 +380,7 @@ export class Dialect {
    * Default `NULL` ordering method to use if not explicitly set.
    * Possible values: "nulls_are_small", "nulls_are_large", "nulls_are_last"
    */
-  static NULL_ORDERING: 'nulls_are_small' | 'nulls_are_large' | 'nulls_are_last' = 'nulls_are_small';
+  static NULL_ORDERING: NullOrdering = 'nulls_are_small';
 
   /**
    * Whether the behavior of `a / b` depends on the types of `a` and `b`.
@@ -184,8 +411,23 @@ export class Dialect {
    */
   static FORMAT_MAPPING: Record<string, string> = {};
 
-  /** Mapping of an escaped sequence (`\\n`) to its unescaped version (`\n`). */
-  static UNESCAPED_SEQUENCES: Record<string, string> = {};
+  private static unescapedSequencesCache = new WeakMap<typeof Dialect, Record<string, string>>();
+
+  static get UNESCAPED_SEQUENCES (): Record<string, string> {
+    let cached = this.unescapedSequencesCache.get(this);
+    if (!cached) {
+      if (this.STRINGS_SUPPORT_ESCAPED_SEQUENCES || this.BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES) {
+        cached = {
+          ...BASE_UNESCAPED_SEQUENCES,
+          ...this.UNESCAPED_SEQUENCES,
+        };
+      } else {
+        cached = this.UNESCAPED_SEQUENCES;
+      }
+      this.unescapedSequencesCache.set(this, cached);
+    }
+    return cached;
+  }
 
   /**
    * Columns that are auto-generated by the engine corresponding to this dialect.
@@ -197,9 +439,6 @@ export class Dialect {
    * Some dialects allow you to reference a CTE column alias in the HAVING clause.
    */
   static PREFER_CTE_ALIAS_COLUMN = false;
-
-  /** Separator of COPY statement parameters. */
-  static COPY_PARAMS_ARE_CSV = true;
 
   /**
    * Whether alias reference expansion should run before column qualification.
@@ -289,11 +528,11 @@ export class Dialect {
    * Whether a set operation uses DISTINCT by default. This is undefined when either DISTINCT or ALL
    * must be explicitly specified.
    */
-  static SET_OP_DISTINCT_BY_DEFAULT: Map<typeof Expression, boolean | undefined> = new Map([
-    [ExceptExpr, true],
-    [IntersectExpr, true],
-    [UnionExpr, true],
-  ]);
+  static SET_OP_DISTINCT_BY_DEFAULT: Partial<Record<ExpressionKey, boolean>> = {
+    [ExpressionKey.EXCEPT]: true,
+    [ExpressionKey.INTERSECT]: true,
+    [ExpressionKey.UNION]: true,
+  };
 
   /**
    * Helper for dialects that use a different name for the same creatable kind.
@@ -323,8 +562,16 @@ export class Dialect {
    */
   static SAFE_TO_ELIMINATE_DOUBLE_NEGATION = true;
 
-  /** Whether the INITCAP function supports custom delimiter characters as the second argument. */
-  static INITCAP_SUPPORTS_CUSTOM_DELIMITERS = true;
+  /**
+   * Whether the INITCAP function supports custom delimiter characters as the second argument.
+   */
+  static get INITCAP_SUPPORTS_CUSTOM_DELIMITERS (): boolean {
+    return [
+      Dialects.DIALECT,
+      Dialects.BIGQUERY,
+      Dialects.SNOWFLAKE,
+    ].includes(this.DIALECT_NAME);
+  }
 
   /** Default delimiter characters for INITCAP function: whitespace and non-alphanumeric characters. */
   static INITCAP_DEFAULT_DELIMITER_CHARS = ' \t\n\r\f\v!"#$%&\'()*+,\\-./:;<=>?@\\[\\]^_`{|}~';
@@ -345,7 +592,7 @@ export class Dialect {
   static DEFAULT_FUNCTIONS_COLUMN_NAMES: Record<string, string | string[]> = {};
 
   /** The default type of NULL for producing the correct projection type. */
-  static DEFAULT_NULL_TYPE = 'UNKNOWN';
+  static DEFAULT_NULL_TYPE = DataTypeExprKind.UNKNOWN;
 
   /**
    * Whether LEAST/GREATEST functions ignore NULL values, e.g:
@@ -357,19 +604,129 @@ export class Dialect {
   /** Whether to prioritize non-literal types over literals during type annotation. */
   static PRIORITIZE_NON_LITERAL_TYPES = false;
 
-  // --- Autofilled by metaclass in Python, set as instance properties in TypeScript ---
+  static get TRY_SUPPORTED (): boolean {
+    const TRY_SUPPORTED_DIALECTS = [
+      Dialects.DIALECT,
+      Dialects.ATHENA,
+      Dialects.PRESTO,
+      Dialects.TRINO,
+      Dialects.DUCKDB,
+    ];
 
-  // Tokenizer class reference
-  static tokenizerClass: typeof Tokenizer = Tokenizer;
-  // TODO: add jsonpathTokenizerClass
-  // TODO: add parserClass
-
-  protected static timeTrieCache = new WeakMap<typeof Dialect, TrieNode>();
+    return TRY_SUPPORTED_DIALECTS.includes(this.DIALECT_NAME);
+  }
 
   /**
-   * Cache a trie of time format keys for efficient matching.
+   * Whether UESCAPE clause is supported in string literals.
+   * Returns false for non-Athena/Presto/Trino/DuckDB dialects.
    */
-  protected static TIME_TRIE (): TrieNode {
+  static get SUPPORTS_UESCAPE (): boolean {
+    return [
+      Dialects.DIALECT,
+      Dialects.ATHENA,
+      Dialects.PRESTO,
+      Dialects.TRINO,
+      Dialects.DUCKDB,
+    ].includes(this.DIALECT_NAME);
+  }
+
+  // --- Autofilled by metaclass in Python, set as instance properties in TypeScript ---
+  private static tokenizerClassCache = new WeakMap<typeof Dialect, typeof Tokenizer>();
+  static get tokenizerClass (): typeof Tokenizer {
+    if (this.tokenizerClassCache.has(this)) {
+      return this.tokenizerClassCache.get(this)!;
+    }
+    if (Object.prototype.hasOwnProperty.call(this, 'Tokenizer')) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (this as any).Tokenizer;
+    }
+    const base = Object.getPrototypeOf(this);
+    const baseTokenizer = base?.tokenizerClass as typeof Tokenizer;
+    if (!baseTokenizer) {
+      this.tokenizerClassCache.set(this, Tokenizer);
+      return Tokenizer;
+    }
+    class DerivedTokenizer extends baseTokenizer {}
+    this.tokenizerClassCache.set(this, DerivedTokenizer);
+    return DerivedTokenizer;
+  }
+
+  private static jsonpathTokenizerClassCache = new WeakMap<typeof Dialect, typeof JSONPathTokenizer>();
+  static get jsonpathTokenizerClass (): typeof JSONPathTokenizer {
+    if (this.jsonpathTokenizerClassCache.has(this)) {
+      return this.jsonpathTokenizerClassCache.get(this)!;
+    }
+    if (Object.prototype.hasOwnProperty.call(this, 'JSONPathTokenizer')) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (this as any).JSONPathTokenizer;
+    }
+    const base = Object.getPrototypeOf(this);
+    const baseJsonpathTokenizer = base?.JSONPathTokenizer as typeof JSONPathTokenizer;
+    if (!baseJsonpathTokenizer) {
+      this.jsonpathTokenizerClassCache.set(this, JSONPathTokenizer);
+      return JSONPathTokenizer;
+    }
+    class DerivedJSONPathTokenizer extends baseJsonpathTokenizer {}
+    this.jsonpathTokenizerClassCache.set(this, DerivedJSONPathTokenizer);
+    return DerivedJSONPathTokenizer;
+  }
+
+  private static parserClassCache = new WeakMap<typeof Dialect, typeof Parser>();
+
+  // NOTE: These logic should be handled in the respective dialect files:
+  // - https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/dialects/dialect.py#L317-L380
+  static get parserClass (): typeof Parser {
+    if (this.parserClassCache.has(this)) {
+      return this.parserClassCache.get(this)!;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(this, 'Parser')) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (this as any).Parser;
+    }
+
+    const base = Object.getPrototypeOf(this);
+    const baseParser = base?.parserClass as typeof Parser;
+
+    if (!baseParser) {
+      this.parserClassCache.set(this, Parser);
+      return Parser;
+    }
+
+    class DerivedParser extends baseParser {}
+    this.parserClassCache.set(this, DerivedParser);
+    return DerivedParser;
+  }
+
+  private static generatorClassCache = new WeakMap<typeof Dialect, typeof Generator>();
+
+  // NOTE: These logic should be handled in the respective dialect files:
+  // - https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/dialects/dialect.py#L300-L326
+  static get generatorClass (): typeof Generator {
+    if (this.generatorClassCache.has(this)) {
+      return this.generatorClassCache.get(this)!;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(this, 'Generator')) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (this as any).Generator;
+    }
+
+    const base = Object.getPrototypeOf(this);
+    const baseGenerator = base?.generatorClass as typeof Generator;
+
+    if (!baseGenerator) {
+      this.generatorClassCache.set(this, Generator);
+      return Generator;
+    }
+
+    class DerivedGenerator extends baseGenerator {}
+    this.generatorClassCache.set(this, DerivedGenerator);
+    return DerivedGenerator;
+  }
+
+  private static timeTrieCache = new WeakMap<typeof Dialect, TrieNode>();
+  static get TIME_TRIE (): TrieNode {
     let cached = this.timeTrieCache.get(this);
     if (!cached) {
       cached = newTrie(Object.keys(this.TIME_MAPPING).map((k) => Array.from(k)));
@@ -378,9 +735,8 @@ export class Dialect {
     return cached;
   }
 
-  protected static formatTrieCache = new WeakMap<typeof Dialect, TrieNode>();
-
-  protected static FORMAT_TRIE (): TrieNode {
+  private static formatTrieCache = new WeakMap<typeof Dialect, TrieNode>();
+  static get FORMAT_TRIE (): TrieNode {
     let cached = this.formatTrieCache.get(this);
     if (!cached) {
       const mapping = 0 < Object.keys(this.FORMAT_MAPPING).length
@@ -392,9 +748,8 @@ export class Dialect {
     return cached;
   }
 
-  protected static inverseTimeMappingCache = new WeakMap<typeof Dialect, Record<string, string>>();
-
-  protected static INVERSE_TIME_MAPPING (): Record<string, string> {
+  private static inverseTimeMappingCache = new WeakMap<typeof Dialect, Record<string, string>>();
+  static get INVERSE_TIME_MAPPING (): Record<string, string> {
     let cached = this.inverseTimeMappingCache.get(this);
     if (!cached) {
       cached = Object.fromEntries(Object.entries(this.TIME_MAPPING).map(([k, v]) => [v, k]));
@@ -403,20 +758,18 @@ export class Dialect {
     return cached;
   }
 
-  protected static inverseTimeTrieCache = new WeakMap<typeof Dialect, TrieNode>();
-
-  protected static INVERSE_TIME_TRIE (): TrieNode {
+  private static inverseTimeTrieCache = new WeakMap<typeof Dialect, TrieNode>();
+  static INVERSE_TIME_TRIE (): TrieNode {
     let cached = this.inverseTimeTrieCache.get(this);
     if (!cached) {
-      cached = newTrie(Object.keys(this.INVERSE_TIME_MAPPING()).map((k) => Array.from(k)));
+      cached = newTrie(Object.keys(this.INVERSE_TIME_MAPPING).map((k) => Array.from(k)));
       this.inverseTimeTrieCache.set(this, cached);
     }
     return cached;
   }
 
-  protected static inverseFormatMappingCache = new WeakMap<typeof Dialect, Record<string, string>>();
-
-  protected static INVERSE_FORMAT_MAPPING (): Record<string, string> {
+  private static inverseFormatMappingCache = new WeakMap<typeof Dialect, Record<string, string>>();
+  static INVERSE_FORMAT_MAPPING (): Record<string, string> {
     let cached = this.inverseFormatMappingCache.get(this);
     if (!cached) {
       cached = Object.fromEntries(Object.entries(this.FORMAT_MAPPING).map(([k, v]) => [v, k]));
@@ -425,24 +778,8 @@ export class Dialect {
     return cached;
   }
 
-  protected static inverseFormatTrieCache = new WeakMap<typeof Dialect, TrieNode>();
-
-  protected static INVERSE_FORMAT_TRIE (): TrieNode {
-    let cached = this.inverseFormatTrieCache.get(this);
-    if (!cached) {
-      cached = newTrie(Object.keys(this.INVERSE_FORMAT_MAPPING()).map((k) => Array.from(k)));
-      this.inverseFormatTrieCache.set(this, cached);
-    }
-    return cached;
-  }
-
-  protected static inverseCreatableKindMappingCache = new WeakMap<typeof Dialect, Record<string, string>>();
-
-  /**
-   * Cache the inverse of CREATABLE_KIND_MAPPING.
-   * Maps normalized creatable kind names back to their original names.
-   */
-  protected static INVERSE_CREATABLE_KIND_MAPPING_COMPUTED (): Record<string, string> {
+  private static inverseCreatableKindMappingCache = new WeakMap<typeof Dialect, Record<string, string>>();
+  static get INVERSE_CREATABLE_KIND_MAPPING (): Record<string, string> {
     let cached = this.inverseCreatableKindMappingCache.get(this);
     if (!cached) {
       cached = Object.fromEntries(Object.entries(this.CREATABLE_KIND_MAPPING).map(([k, v]) => [v, k]));
@@ -451,149 +788,83 @@ export class Dialect {
     return cached;
   }
 
-  protected static unescapedSequencesCache = new WeakMap<typeof Dialect, Record<string, string>>();
-
-  /**
-   * Caches unescaped sequences, merging BASE_UNESCAPED_SEQUENCES
-   * with dialect-specific sequences when escape sequences are supported.
-   */
-  protected static UNESCAPED_SEQUENCES_COMPUTED (): Record<string, string> {
-    let cached = this.unescapedSequencesCache.get(this);
-    if (!cached) {
-      if (this.STRINGS_SUPPORT_ESCAPED_SEQUENCES || this.BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES) {
-        cached = {
-          ...BASE_UNESCAPED_SEQUENCES,
-          ...this.UNESCAPED_SEQUENCES,
-        };
-      } else {
-        cached = this.UNESCAPED_SEQUENCES;
-      }
-      this.unescapedSequencesCache.set(this, cached);
+  private static escapedSequenceCache = new WeakMap<typeof Dialect, Record<string, string>>();
+  static get ESCAPED_SEQUENCES (): Record<string, string> {
+    if (this.escapedSequenceCache.has(this)) {
+      return this.escapedSequenceCache.get(this)!;
     }
-    return cached;
-  }
-
-  protected static escapedSequencesCache = new WeakMap<typeof Dialect, Record<string, string>>();
-
-  /**
-   * Caches escaped sequences by inverting UNESCAPED_SEQUENCES_COMPUTED.
-   */
-  protected static ESCAPED_SEQUENCES_COMPUTED (): Record<string, string> {
-    let cached = this.escapedSequencesCache.get(this);
-    if (!cached) {
-      cached = Object.fromEntries(
-        Object.entries(this.UNESCAPED_SEQUENCES_COMPUTED()).map(([k, v]) => [v, k]),
-      );
-      this.escapedSequencesCache.set(this, cached);
-    }
-    return cached;
-  }
-
-  protected static validIntervalUnitsCache = new WeakMap<typeof Dialect, Set<string>>();
-
-  protected static VALID_INTERVAL_UNITS_COMPUTED (): Set<string> {
-    let cached = this.validIntervalUnitsCache.get(this);
-    if (!cached) {
-      cached = new Set([
-        ...this.VALID_INTERVAL_UNITS,
-        ...Object.keys(this.DATE_PART_MAPPING),
-        ...Object.values(this.DATE_PART_MAPPING),
-      ]);
-      this.validIntervalUnitsCache.set(this, cached);
-    }
-    return cached;
-  }
-
-  /** Mapping of escaped sequences. */
-  static ESCAPED_SEQUENCES: Record<string, string> = {};
-
-  protected static quoteDelimitersCache = new WeakMap<typeof Dialect, [string, string]>();
-
-  /**
-   * Extracts quote delimiters from the tokenizer class.
-   * Returns [start, end] delimiter pair for string literals.
-   */
-  protected static QUOTE_DELIMITERS (): [string, string] {
-    let cached = this.quoteDelimitersCache.get(this);
-    if (!cached) {
-      const quotes = Object.entries(this.tokenizerClass.QUOTES)[0];
-      cached = quotes as [string, string];
-      this.quoteDelimitersCache.set(this, cached);
-    }
-    return cached;
+    const res = Object.fromEntries(
+      Object.entries(this.UNESCAPED_SEQUENCES).map(([k, v]) => [v, k]),
+    );
+    this.escapedSequenceCache.set(this, res);
+    return res;
   }
 
   /** Delimiters for string literals. */
   static get QUOTE_START (): string {
-    return this.QUOTE_DELIMITERS()[0];
+    return Object.entries(this.tokenizerClass._QUOTES)[0]?.[0];
   }
 
   static get QUOTE_END (): string {
-    return this.QUOTE_DELIMITERS()[1];
-  }
-
-  protected static identifierDelimitersCache = new WeakMap<typeof Dialect, [string, string]>();
-
-  /**
-   * Extracts identifier delimiters from the tokenizer class.
-   * Returns [start, end] delimiter pair for identifiers.
-   */
-  protected static IDENTIFIER_DELIMITERS (): [string, string] {
-    let cached = this.identifierDelimitersCache.get(this);
-    if (!cached) {
-      const identifiers = Object.entries(this.tokenizerClass.IDENTIFIERS)[0];
-      cached = identifiers as [string, string];
-      this.identifierDelimitersCache.set(this, cached);
-    }
-    return cached;
+    return Object.entries(this.tokenizerClass._QUOTES)[0]?.[1];
   }
 
   /** Delimiters for identifiers. */
   static get IDENTIFIER_START (): string {
-    return this.IDENTIFIER_DELIMITERS()[0];
+    return Object.entries(this.tokenizerClass._IDENTIFIERS)[0]?.[0];
   }
 
   static get IDENTIFIER_END (): string {
-    return this.IDENTIFIER_DELIMITERS()[1];
+    return Object.entries(this.tokenizerClass._IDENTIFIERS)[0]?.[1];
   }
 
-  /** Valid interval units. */
-  static VALID_INTERVAL_UNITS: Set<string> = new Set();
+  private static getStartEnd (tokenType: TokenType): [string | undefined, string | undefined] {
+    const result = Object.entries(this.tokenizerClass._FORMAT_STRINGS).find(
+      ([_, [__, type]]) => type === tokenType,
+    );
+
+    if (result) {
+      const [start, [end]] = result;
+      return [start, end];
+    }
+
+    return [undefined, undefined];
+  }
 
   /** Delimiters for bit literals. */
   static get BIT_START (): string | undefined {
-    return this.tokenizerClass.BIT_STRINGS[0]?.[0];
+    return this.getStartEnd(TokenType.BIT_STRING)[0];
   }
 
   static get BIT_END (): string | undefined {
-    return this.tokenizerClass.BIT_STRINGS[0]?.[1];
+    return this.getStartEnd(TokenType.BIT_STRING)[1];
   }
 
   /** Delimiters for hex literals. */
   static get HEX_START (): string | undefined {
-    return this.tokenizerClass.HEX_STRINGS[0]?.[0];
+    return this.getStartEnd(TokenType.HEX_STRING)[0];
   }
 
   static get HEX_END (): string | undefined {
-    return this.tokenizerClass.HEX_STRINGS[0]?.[1];
+    return this.getStartEnd(TokenType.HEX_STRING)[1];
   }
 
   /** Delimiters for byte literals. */
   static get BYTE_START (): string | undefined {
-    return this.tokenizerClass.BYTE_STRINGS[0]?.[0];
+    return this.getStartEnd(TokenType.BYTE_STRING)[0];
   }
 
   static get BYTE_END (): string | undefined {
-    return this.tokenizerClass.BYTE_STRINGS[0]?.[1];
+    return this.getStartEnd(TokenType.BYTE_STRING)[1];
   }
 
   /** Delimiters for unicode literals. */
   static get UNICODE_START (): string | undefined {
-    return this.tokenizerClass.UNICODE_STRINGS[0]?.[0];
+    return this.getStartEnd(TokenType.UNICODE_STRING)[0];
   }
 
   static get UNICODE_END (): string | undefined {
-    return this.tokenizerClass.UNICODE_STRINGS[0]?.[1];
+    return this.getStartEnd(TokenType.UNICODE_STRING)[1];
   }
 
   /** Date part mapping for normalization. */
@@ -699,7 +970,60 @@ export class Dialect {
   static EXPRESSION_METADATA: Record<string, unknown> = {};
 
   /** Determines the supported Dialect instance settings. */
-  static SUPPORTED_SETTINGS: Set<string> = new Set(['normalization_strategy', 'version']);
+  static SUPPORTED_SETTINGS: Set<string> = new Set(['normalizationStrategy', 'version']);
+
+  private static quoteDelimitersCache = new WeakMap<typeof Dialect, [string, string]>();
+  /**
+   * Extracts quote delimiters from the tokenizer class.
+   * Returns [start, end] delimiter pair for string literals.
+   */
+  static get QUOTE_DELIMITERS (): [string, string] {
+    let cached = this.quoteDelimitersCache.get(this);
+    if (!cached) {
+      const quotes = Object.entries(this.tokenizerClass.QUOTES)[0];
+      cached = quotes as [string, string];
+      this.quoteDelimitersCache.set(this, cached);
+    }
+    return cached;
+  }
+
+  private static identifierDelimitersCache = new WeakMap<typeof Dialect, [string, string]>();
+
+  /**
+   * Extracts identifier delimiters from the tokenizer class.
+   * Returns [start, end] delimiter pair for identifiers.
+   */
+  static get IDENTIFIER_DELIMITERS (): [string, string] {
+    let cached = this.identifierDelimitersCache.get(this);
+    if (!cached) {
+      const identifiers = Object.entries(this.tokenizerClass.IDENTIFIERS)[0];
+      cached = identifiers as [string, string];
+      this.identifierDelimitersCache.set(this, cached);
+    }
+    return cached;
+  }
+
+  /** Valid interval units. */
+  static BASE_VALID_INTERVAL_UNITS = new Set<string>(); // NOTE: Corresponds to VALID_INTERVAL_UNITS in sqlglot python version
+
+  private static validIntervalUnitsCache = new WeakMap<typeof Dialect, Set<string>>();
+
+  static get VALID_INTERVAL_UNITS (): Set<string> {
+    if (this.validIntervalUnitsCache.has(this)) {
+      return this.validIntervalUnitsCache.get(this)!;
+    }
+
+    const mapping = this.DATE_PART_MAPPING;
+
+    const resultSet = new Set([
+      ...this.BASE_VALID_INTERVAL_UNITS,
+      ...Object.keys(mapping),
+      ...Object.values(mapping),
+    ]);
+
+    this.validIntervalUnitsCache.set(this, resultSet);
+    return resultSet;
+  }
 
   /** Whether strings support escaped sequences. */
   static get STRINGS_SUPPORT_ESCAPED_SEQUENCES (): boolean {
@@ -708,44 +1032,42 @@ export class Dialect {
 
   /** Whether byte strings support escaped sequences. */
   static get BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES (): boolean {
-    return this.tokenizerClass.BYTE_STRING_ESCAPES().includes('\\');
-  }
-
-  /** Inverse mapping of CREATABLE_KIND_MAPPING. */
-  static INVERSE_CREATABLE_KIND_MAPPING: Record<string, string> = {};
-
-  // TODO: To be implemented
-  static parserClass: typeof Parser | undefined = undefined;
-
-  // TODO: To be implemented
-  static creatableKindMapping: Record<string, string> = {};
-
-  // TODO: To be implemented
-  static toJsonPath (path?: Expression): Expression | undefined {
-    throw new Error('toJsonPath not implemented');
-  }
-
-  toJsonPath (path?: Expression): Expression | undefined {
-    return (this.constructor as typeof Dialect).toJsonPath(path);
+    return this.tokenizerClass.BYTE_STRING_ESCAPES.includes('\\');
   }
 
   /**
-   * Register a dialect class.
+   * Compare this dialect class with another value for equality.
+   *
+   * @param other - Value to compare with
+   * @returns true if equal, false otherwise
    */
-  static register (name: string, dialectClass: typeof Dialect): void {
-    this._registry.set(name.toLowerCase(), dialectClass);
+  static equals (other: unknown): boolean {
+    if (this === other) {
+      return true;
+    }
+    if (typeof other === 'string') {
+      return this === this.get(other);
+    }
+    if (other instanceof Dialect) {
+      return this === other.constructor;
+    }
+    return false;
+  }
+
+  private static registry: Map<string, typeof Dialect> = new Map();
+  // If a subclass wants `Dialect.get` or `Dialect.getOrRaise` to recognize it, it should call this method
+  static register (name: string, dialect: typeof Dialect) {
+    this.registry.set(name, dialect);
   }
 
   /**
    * Get a dialect class by name.
    */
   static get (name: string, fallback?: typeof Dialect): typeof Dialect | undefined {
-    return this._registry.get(name.toLowerCase()) || fallback;
+    return this.registry.get(name) || fallback;
   }
 
   /**
-   * Look up a dialect in the global dialect registry and return it if it exists.
-   *
    * @param dialect - The target dialect. If this is a string, it can be optionally followed by
    *   additional key-value pairs that are separated by commas and are used to specify dialect settings.
    *
@@ -760,77 +1082,118 @@ export class Dialect {
       return new this();
     }
 
-    if (typeof dialect === 'function') {
+    // Is a Dialect class
+    if (typeof dialect === 'function' && dialect.prototype instanceof Dialect) {
       return new dialect();
     }
 
+    // Is already a Dialect instance
     if (dialect instanceof Dialect) {
       return dialect;
     }
 
+    // Handle String parsing ("mysql, normalizationStrategy = case_sensitive")
     if (typeof dialect === 'string') {
-      const parts = dialect.split(',');
-      const dialectName = parts[0].trim();
-      const kwargs: Record<string, boolean | string> = {};
+      let dialectName: string;
+      const kwargs: Record<string, string | number | boolean> = {};
 
-      for (let i = 1; i < parts.length; i++) {
-        const kv = parts[i].split('=');
-        const key = kv[0].trim();
-        let value: boolean | string = true;
+      try {
+        const [name, ...kvStrings] = dialect.split(',');
+        dialectName = name.trim();
 
-        if (kv.length === 2) {
-          const val = kv[1].trim().toLowerCase();
-          if (val === 'true') {
-            value = true;
-          } else if (val === 'false') {
-            value = false;
-          } else {
-            value = kv[1].trim();
+        for (const kvString of kvStrings) {
+          const parts = kvString.split('=');
+          const key = parts[0].trim();
+          let value: string | boolean = true;
+
+          if (parts.length === 2) {
+            value = parts[1].trim();
           }
+
+          kwargs[key] = toBool(value) ?? false;
         }
-
-        kwargs[key] = value;
+      } catch {
+        throw new Error(
+          `Invalid dialect format: '${dialect}'. `
+          + 'Please use the correct format: \'dialect [, k1 = v2 [, ...]]\'.',
+        );
       }
 
-      const DialectClass = this.get(dialectName);
-      if (!DialectClass) {
-        throw new Error(`Unknown dialect: '${dialectName}'`);
+      const ResultClass = this.get(dialectName);
+
+      if (!ResultClass) {
+        const allDialects = new Set(Object.keys(Dialects));
+        suggestClosestMatchAndFail('dialect', dialectName, Array.from(allDialects));
       }
 
-      return new DialectClass(kwargs);
+      return new ResultClass(kwargs);
     }
 
-    throw new Error(`Invalid dialect type: '${typeof dialect}'`);
+    throw new Error(`Invalid dialect type for '${dialect}': '${typeof dialect}'.`);
   }
 
-  version: [number, number, number];
-  normalizationStrategy: NormalizationStrategy;
-  settings: Record<string, boolean | string>;
+  static formatTime (expression?: string | Expression): Expression | undefined {
+    if (typeof expression === 'string') {
+      return LiteralExpr.string(
+        formatTime(
+          expression.slice(1, -1),
+          this.TIME_MAPPING,
+          this.TIME_TRIE,
+        ),
+      );
+    }
 
-  constructor (kwargs: Record<string, boolean | string | number> = {}) {
-    const versionStr = String(kwargs.version ?? Number.MAX_SAFE_INTEGER);
-    const parts = versionStr.split('.');
+    if (expression instanceof Expression && expression.isString) {
+      return LiteralExpr.string(
+        formatTime(expression.this as string, this.TIME_MAPPING, this.TIME_TRIE),
+      );
+    }
+
+    return expression;
+  }
+
+  version: {
+    major: number;
+    minor: number;
+    patch: number;
+  };
+
+  normalizationStrategy: NormalizationStrategy;
+  settings: Record<string, boolean | number | string | undefined>;
+
+  constructor (kwargs: {
+    version?: number | string;
+    normalizationStrategy?: NormalizationStrategy;
+    [index: string]: boolean | string | number | undefined;
+  } = {}) {
+    const {
+      version = Number.MAX_SAFE_INTEGER,
+      normalizationStrategy,
+    } = kwargs;
+
+    const parts = version.toString().split('.');
     while (parts.length < 3) {
       parts.push('0');
     }
-    this.version = [
-      parseInt(parts[0]),
-      parseInt(parts[1]),
-      parseInt(parts[2]),
-    ];
+    this.version = {
+      major: parseInt(parts[0]),
+      minor: parseInt(parts[1]),
+      patch: parseInt(parts[2]),
+    };
 
-    const normalizationStrategy = kwargs.normalization_strategy;
-    if (normalizationStrategy === undefined) {
-      this.normalizationStrategy = this._constructor.NORMALIZATION_STRATEGY;
-    } else {
-      this.normalizationStrategy = NormalizationStrategy[String(normalizationStrategy).toUpperCase() as keyof typeof NormalizationStrategy];
+    this.normalizationStrategy = normalizationStrategy ?? this._constructor.NORMALIZATION_STRATEGY;
+
+    this.settings = kwargs;
+
+    for (const unsupportedSetting of Object.keys(kwargs)) {
+      if (!this._constructor.SUPPORTED_SETTINGS.has(unsupportedSetting)) {
+        suggestClosestMatchAndFail(
+          'setting',
+          unsupportedSetting,
+          [...this._constructor.SUPPORTED_SETTINGS],
+        );
+      }
     }
-
-    // Remove version and normalization_strategy from settings
-    const {
-      version: _version, normalization_strategy: _ns, ...settings
-    } = kwargs;
-    this.settings = settings as Record<string, boolean | string>;
   }
 
   equals (other: unknown): boolean {
@@ -845,6 +1208,50 @@ export class Dialect {
 
   hash (): string {
     return this.constructor.name.toLowerCase();
+  }
+
+  /**
+   * Transforms an identifier in a way that resembles how it'd be resolved by this dialect.
+   *
+   * For example, an identifier like `FoO` would be resolved as `foo` in Postgres, because it
+   * lowercases all unquoted identifiers. On the other hand, Snowflake uppercases them, so
+   * it would resolve it as `FOO`. If it was quoted, it'd need to be treated as case-sensitive,
+   * and so any normalization would be prohibited in order to avoid "breaking" the identifier.
+   *
+   * There are also dialects like Spark, which are case-insensitive even when quotes are
+   * present, and dialects like MySQL, whose resolution rules match those employed by the
+   * underlying operating system, for example they may always be case-sensitive in Linux.
+   *
+   * Finally, the normalization behavior of some engines can even be controlled through flags,
+   * like in Redshift's case, where users can explicitly set enable_case_sensitive_identifier.
+   *
+   * SQLGlot aims to understand and handle all of these different behaviors gracefully, so
+   * that it can analyze queries in the optimizer and successfully capture their semantics.
+   */
+  normalizeIdentifier<E extends Expression> (expression: E): E {
+    if (
+      expression instanceof IdentifierExpr
+      && this.normalizationStrategy !== NormalizationStrategy.CASE_SENSITIVE
+      && (
+        !expression.args.quoted
+        || this.normalizationStrategy === NormalizationStrategy.CASE_INSENSITIVE
+        || this.normalizationStrategy === NormalizationStrategy.CASE_INSENSITIVE_UPPERCASE
+      )
+    ) {
+      const shouldUppercase = (
+        this.normalizationStrategy === NormalizationStrategy.UPPERCASE
+        || this.normalizationStrategy === NormalizationStrategy.CASE_INSENSITIVE_UPPERCASE
+      );
+      const thisValue = expression.args.this;
+      if (typeof thisValue === 'string') {
+        const normalized = shouldUppercase
+          ? thisValue.toUpperCase()
+          : thisValue.toLowerCase();
+        expression.setArgKey('this', normalized);
+      }
+    }
+
+    return expression;
   }
 
   /**
@@ -863,43 +1270,163 @@ export class Dialect {
   }
 
   /**
-   * Tokenize SQL string into tokens.
+   * Checks if an identifier can be quoted.
+   *
+   * @param identifier - The identifier to check
+   * @param identify - `true`: always quote; `"safe"`: only if case-insensitive; `"unsafe"`: only if case-sensitive
    */
-  tokenize (sql: string): ReturnType<Tokenizer['tokenize']> {
-    return this.tokenizer().tokenize(sql);
+  canQuote (
+    identifier: IdentifierExpr,
+    options: {
+      identify?: string | boolean;
+    } = {},
+  ): boolean {
+    const { identify = 'safe' } = options;
+
+    if (identifier.$quoted) return true;
+    if (!identify) return false;
+    if (identify === true) return true;
+
+    const name = identifier.name ?? '';
+    const isSafe = !this.caseSensitive(name) && SAFE_IDENTIFIER_RE.test(name);
+
+    if (identify === 'safe') return isSafe;
+    if (identify === 'unsafe') return !isSafe;
+
+    throw new Error(`Unexpected argument for identify: '${identify}'`);
   }
 
   /**
-   * Get a tokenizer instance for this dialect.
+   * Adds quotes to a given expression if it is an identifier.
+   *
+   * @param expression - The expression of interest
+   * @param identify - If `false`, only quote if the identifier is deemed "unsafe"
    */
-  tokenizer (): Tokenizer {
-    return new this._constructor.tokenizerClass(this);
+  quoteIdentifier<E extends Expression> (
+    expression: E,
+    options: {
+      identify?: boolean;
+    } = {},
+  ): E {
+    const { identify = true } = options;
+
+    if (expression instanceof IdentifierExpr) {
+      expression.setArgKey('quoted', this.canQuote(expression, { identify: identify || 'unsafe' }));
+    }
+    return expression;
+  }
+
+  toJsonPath (path?: Expression): Expression | undefined {
+    if (path instanceof LiteralExpr) {
+      let pathText = path.name;
+
+      if (path.isNumber) {
+        pathText = `[${pathText}]`;
+      }
+
+      try {
+        return parseJsonPath(pathText, { dialect: this });
+      } catch (e) {
+        const isStrict = this._constructor.STRICT_JSON_PATH_SYNTAX;
+        const trimmedPath = pathText.trimStart();
+        const hasModePrefix = trimmedPath.startsWith('lax') || trimmedPath.startsWith('strict');
+
+        if (isStrict && !hasModePrefix) {
+          console.warn(`Invalid JSON path syntax. ${e instanceof Error ? e.message : String(e)}`);
+        }
+      }
+    }
+
+    return path;
+  }
+
+  /**
+   * Parse SQL string into expression tree.
+   */
+  parse (sql: string, opts?: ParseOptions): (Expression | undefined)[] {
+    return this.parser(opts).parse(this.tokenize(sql));
+  }
+
+  parser (opts?: ParseOptions): Parser {
+    return new this._constructor.parserClass({
+      dialect: this,
+      ...opts,
+    });
+  }
+
+  /**
+   * Parse SQL string into specific expression type.
+   */
+  parseInto (expressionType: typeof Expression, sql: string, opts?: ParseOptions): (Expression | undefined)[] {
+    return this.parser({
+      into: expressionType,
+      ...opts,
+    }).parse(this.tokenize(sql));
   }
 
   /**
    * Generate SQL from an expression tree.
    */
-  generate (expression: Expression, options?: { copy?: boolean;
-    [key: string]: unknown; }): string {
+  generate (expression: Expression, options: GeneratorOptions & { copy?: boolean } = {}): string {
+    const {
+      copy = true, ...restOptions
+    } = options;
+    return this.generator(restOptions).generate(expression, { copy });
   }
 
   /**
    * Get or create a generator instance for this dialect.
    */
-  generator (options?: Record<string, unknown>) {
+  generator (options: GeneratorOptions = {}): Generator {
+    return new this._constructor.generatorClass({
+      dialect: this,
+      ...options,
+    });
   }
 
-  // TODO: Port these methods when classes are available
-  // normalizeIdentifier(expression: E): E
-  // canQuote(identifier: Identifier, identify?: string | boolean): boolean
-  // quoteIdentifier(expression: E, identify?: boolean): E
-  // toJsonPath(path?: Expression): Expression | undefined
-  // parse(sql: string, opts?: unknown): Expression[]
-  // parseInto(expressionType: unknown, sql: string, opts?: unknown): Expression[]
-  // transpile(sql: string, opts?: unknown): string[]
-  // jsonpathTokenizer(opts?: unknown): JSONPathTokenizer
-  // parser(opts?: unknown): Parser
-  // generateValuesAliases(expression: Values): Identifier[]
+  /**
+   * Tokenize SQL string into tokens.
+   */
+  tokenize (sql: string, options: TokenizerOptions = {}): ReturnType<Tokenizer['tokenize']> {
+    return this.tokenizer(options).tokenize(sql);
+  }
+
+  /**
+   * Get a tokenizer instance for this dialect.
+   */
+  tokenizer (options: TokenizerOptions = {}): Tokenizer {
+    return new this._constructor.tokenizerClass({
+      dialect: this,
+      ...options,
+    });
+  }
+
+  /**
+   * Parse SQL and generate it back in this dialect.
+   */
+  transpile (sql: string, options: TranspileOptions = {}): string[] {
+    return this.parse(sql, options).map((expression) =>
+      expression
+        ? this.generate(expression, {
+          copy: false,
+          ...options,
+        })
+        : '');
+  }
+
+  /**
+   * Generate column aliases for a VALUES expression.
+   * By default, generates _col_0, _col_1, etc.
+   */
+  generateValuesAliases (expression: Expression): IdentifierExpr[] {
+    const firstRow = expression.expressions[0];
+    if (!(firstRow instanceof Expression)) {
+      return [];
+    }
+
+    const firstRowExpr = firstRow as Expression;
+    return firstRowExpr.expressions.map((_: unknown, i: number) => toIdentifier(`_col_${i}`));
+  }
 
   get _constructor (): typeof Dialect {
     return this.constructor as typeof Dialect;
@@ -907,5 +1434,1578 @@ export class Dialect {
 }
 
 // Register the base Dialect
-Dialect.register('', Dialect);
-Dialect.register('dialect', Dialect);
+Dialect.register(Dialects.DIALECT, Dialect);
+
+/**
+ * Creates a function that renames a function call.
+ */
+export function renameFunc (name: string): (self: Generator, expression: Expression) => string {
+  return function (self: Generator, expression: Expression): string {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const flatten = (arr: any[]): any[] => arr.reduce((acc, val) =>
+      Array.isArray(val) ? acc.concat(flatten(val)) : acc.concat(val), []);
+    return self.func(name, flatten(Object.values(expression.args)));
+  };
+}
+
+/**
+ * Generate APPROX_COUNT_DISTINCT SQL (with unsupported accuracy parameter).
+ */
+export function approxCountDistinctSql (self: Generator, expression: ApproxDistinctExpr): string {
+  function res (expression: ApproxDistinctExpr): string {
+    return self.func('APPROX_COUNT_DISTINCT', [expression.$this]);
+  }
+  return unsupportedArgs<ApproxDistinctExpr>('accuracy')(res)(expression);
+}
+
+/**
+ * Creates an IF function generator with custom name and optional false value.
+ */
+export function ifSql (
+  name: string = 'IF',
+  falseValue?: Expression | string,
+): (self: Generator, expression: IfExpr) => string {
+  return function (self: Generator, expression: IfExpr): string {
+    return self.func(
+      name,
+      [
+        expression.$this,
+        expression.$true,
+        expression.$false || falseValue,
+      ],
+    );
+  };
+}
+
+/**
+ * Generate arrow-based JSON extract (-> or ->>).
+ */
+export function arrowJsonExtractSql (self: Generator, expression: JSON_EXTRACT_TYPE): string {
+  const thisArg = expression.$this;
+
+  if (
+    self._constructor.JSON_TYPE_REQUIRED_FOR_EXTRACTION
+    && thisArg instanceof LiteralExpr
+    && thisArg.isString
+  ) {
+    const jsonType = new DataTypeExpr({ this: DataTypeExprKind.JSON });
+    thisArg.replace(cast(thisArg.copy(), jsonType));
+  }
+
+  const operator = expression instanceof JSONExtractExpr ? '->' : '->>';
+  return self.binary(expression, operator);
+}
+
+/**
+ * Generate inline array syntax: [elem1, elem2, ...]
+ */
+export function inlineArraySql (self: Generator, expression: Expression): string {
+  return `[${self.expressions(expression, {
+    dynamic: true,
+    newLine: true,
+    skipFirst: true,
+    skipLast: true,
+  })}]`;
+}
+
+/**
+ * Generate inline array unless it contains a query.
+ */
+export function inlineArrayUnlessQuery (self: Generator, expression: Expression): string {
+  const elem = seqGet(expression.expressions, 0);
+  if (elem instanceof Expression && elem?.find?.(QueryExpr)) {
+    return self.func('ARRAY', [elem]);
+  }
+  return inlineArraySql(self, expression);
+}
+
+/**
+ * Transpile ILIKE to LIKE with LOWER().
+ */
+export function noIlikeSql (self: Generator, expression: ILikeExpr): string {
+  const likeExpr = new LikeExpr({
+    this: new LowerExpr({ this: expression.args.this }),
+    expression: new LowerExpr({ this: expression.args.expression }),
+  });
+  return self.likeSql(likeExpr);
+}
+
+/**
+ * Generate CURRENT_DATE without parentheses.
+ */
+export function noParenCurrentDateSql (self: Generator, expression: CurrentDateExpr): string {
+  const zone = self.sql(expression, 'this');
+  return zone ? `CURRENT_DATE AT TIME ZONE ${zone}` : 'CURRENT_DATE';
+}
+
+/**
+ * Emit unsupported warning for recursive CTEs.
+ */
+export function noRecursiveCteSql (self: Generator, expression: WithExpr): string {
+  if (expression.$recursive) {
+    self.unsupported('Recursive CTEs are unsupported');
+    expression.args.recursive = false;
+  }
+  return self.withSql(expression);
+}
+
+/**
+ * Emit unsupported warning for TABLESAMPLE.
+ */
+export function noTablesampleSql (self: Generator, expression: TableSampleExpr): string {
+  self.unsupported('TABLESAMPLE unsupported');
+  return self.sql(expression.$this);
+}
+
+/**
+ * Emit unsupported warning for PIVOT.
+ */
+export function noPivotSql (self: Generator, _expression: PivotExpr): string {
+  self.unsupported('PIVOT unsupported');
+  return '';
+}
+
+/**
+ * Transpile TRY_CAST to CAST.
+ */
+export function noTrycastSql (self: Generator, expression: Expression): string {
+  return self.castSql(expression);
+}
+
+/**
+ * Emit unsupported warning for comment column constraints.
+ */
+export function noCommentColumnConstraintSql (self: Generator, _expression: CommentColumnConstraintExpr): string {
+  self.unsupported('CommentColumnConstraint unsupported');
+  return '';
+}
+
+/**
+ * Emit unsupported warning for MAP_FROM_ENTRIES.
+ */
+export function noMapFromEntriesSql (self: Generator, _expression: MapFromEntriesExpr): string {
+  self.unsupported('MAP_FROM_ENTRIES unsupported');
+  return '';
+}
+
+/**
+ * Generate property SQL: key=value.
+ */
+export function propertySql (self: Generator, expression: PropertyExpr): string {
+  return `${self.propertyName(expression, { stringKey: true })}=${self.sql(expression, 'value')}`;
+}
+
+/**
+ * Generate STRPOS/POSITION SQL with optional parameters.
+ */
+export function strpositionSql (
+  self: Generator,
+  expression: StrPositionExpr,
+  options: {
+    funcName?: string;
+    supportsPosition?: boolean;
+    supportsOccurrence?: boolean;
+    useAnsiPosition?: boolean;
+  } = {},
+): string {
+  const {
+    funcName = 'STRPOS',
+    supportsPosition = false,
+    supportsOccurrence = false,
+    useAnsiPosition = true,
+  } = options;
+
+  let string = expression.$this;
+  const substr = expression.$substr;
+  let position = expression.$position;
+  const occurrence = expression.$occurrence;
+  const zero = LiteralExpr.number(0);
+  const one = LiteralExpr.number(1);
+
+  if (supportsOccurrence && occurrence && supportsPosition && !position) {
+    position = one;
+  }
+
+  const transpilePosition = position && !supportsPosition;
+  if (transpilePosition) {
+    string = new SubstringExpr({
+      this: string,
+      start: position,
+    });
+  }
+
+  let func: Expression;
+  if (funcName === 'POSITION' && useAnsiPosition) {
+    func = new AnonymousExpr({
+      this: funcName,
+      expressions: [
+        new InExpr({
+          this: substr,
+          field: string,
+        }),
+      ],
+    });
+  } else {
+    const args = (funcName === 'LOCATE' || funcName === 'CHARINDEX')
+      ? [substr, string]
+      : [string, substr];
+
+    if (supportsPosition && position !== undefined) {
+      args.push(position);
+    }
+
+    if (occurrence) {
+      if (supportsOccurrence) {
+        args.push(occurrence);
+      } else {
+        self.unsupported(`${funcName} does not support the occurrence parameter.`);
+      }
+    }
+    func = new AnonymousExpr({
+      this: funcName,
+      expressions: args,
+    });
+  }
+
+  if (transpilePosition) {
+    const funcWithOffset = new SubExpr({
+      this: new AddExpr({
+        this: func,
+        expression: position,
+      }),
+      expression: one,
+    });
+
+    const funcWrapped = new IfExpr({
+      this: func.eq(zero),
+      true: zero,
+      false: funcWithOffset,
+    });
+
+    return self.sql(funcWrapped);
+  }
+
+  return self.sql(func);
+}
+
+/**
+ * Generate struct extract: struct.field.
+ */
+export function structExtractSql (self: Generator, expression: StructExtractExpr): string {
+  return `${self.sql(expression, 'this')}.${self.sql(toIdentifier(expression.$expression.name))}`;
+}
+
+/**
+ * Creates array append/prepend function with NULL handling.
+ */
+export function arrayAppendSql (
+  name: string,
+  swapParams: boolean = false,
+): (self: Generator, expression: ArrayAppendExpr | ArrayPrependExpr) => string {
+  return (self: Generator, expression: ArrayAppendExpr | ArrayPrependExpr): string => {
+    let thisArg = expression.$this;
+    const element = expression.$expression;
+
+    let args = swapParams ? [element, thisArg] : [thisArg, element];
+    const funcSql = self.func(name, args);
+
+    const sourceNullPropagation = Boolean(expression.$nullPropagation);
+    const targetNullPropagation = self.dialect._constructor.ARRAY_FUNCS_PROPAGATES_NULLS;
+
+    // No transpilation needed when source and target have matching NULL semantics
+    if (sourceNullPropagation === targetNullPropagation) {
+      return funcSql;
+    }
+
+    // Source propagates NULLs, target doesn't: wrap in conditional to return NULL explicitly
+    if (sourceNullPropagation) {
+      return self.sql(
+        new IfExpr({
+          this: new IsExpr({
+            this: thisArg,
+            expression: new NullExpr({}),
+          }),
+          true: new NullExpr({}),
+          false: funcSql,
+        }),
+      );
+    }
+
+    // Source doesn't propagate NULLs, target does: use COALESCE to convert NULL to empty array
+    thisArg = new CoalesceExpr({
+      expressions: [thisArg, new ArrayExpr({ expressions: [] })],
+    });
+
+    args = swapParams ? [element, thisArg] : [thisArg, element];
+    return self.func(name, args);
+  };
+}
+
+export function arrayConcatSql (
+  name: string,
+): (self: Generator, expression: ArrayConcatExpr) => string {
+  function buildFuncCall (self: Generator, funcName: string, args: Expression[]): string {
+    if (self._constructor.ARRAY_CONCAT_IS_VAR_LEN) {
+      return self.func(funcName, args);
+    }
+
+    if (args.length === 1) {
+      return self.func(funcName, [args[0], new ArrayExpr({ expressions: [] })]);
+    }
+
+    // Binary nesting: ARRAY_CAT(a, ARRAY_CAT(b, c))
+    let result = self.func(funcName, [args[args.length - 2], args[args.length - 1]]);
+    for (let i = args.length - 3; 0 <= i; i--) {
+      result = `${funcName}(${self.sql(args[i])}, ${result})`;
+    }
+    return result;
+  }
+
+  return (self: Generator, expression: ArrayConcatExpr): string => {
+    const thisArg = expression.$this;
+    const exprs = expression.$expressions || [];
+    const allArgs = [thisArg, ...exprs];
+
+    const sourceNullPropagation = Boolean(expression.$nullPropagation);
+    const targetNullPropagation = self.dialect._constructor.ARRAY_FUNCS_PROPAGATES_NULLS;
+
+    if (
+      sourceNullPropagation === targetNullPropagation
+      || thisArg instanceof ArrayExpr
+      || exprs.length === 0
+    ) {
+      return buildFuncCall(self, name, allArgs);
+    }
+
+    if (sourceNullPropagation) {
+      // Build OR-chain: a IS NULL OR b IS NULL
+      const nullChecks = allArgs.map(
+        (arg) => new IsExpr({
+          this: arg.copy(),
+          expression: new NullExpr({}),
+        }),
+      );
+
+      const combinedCheck = nullChecks.reduce(
+        (acc, curr) => new OrExpr({
+          this: acc,
+          expression: curr,
+        }),
+      );
+
+      return self.sql(
+        new IfExpr({
+          this: combinedCheck,
+          true: new NullExpr({}),
+          false: buildFuncCall(self, name, allArgs),
+        }),
+      );
+    }
+
+    // Convert NULL -> empty array
+    const wrappedArgs = allArgs.map(
+      (arg) => new CoalesceExpr({
+        expressions: [arg.copy(), new ArrayExpr({ expressions: [] })],
+      }),
+    );
+
+    return buildFuncCall(self, name, wrappedArgs);
+  };
+}
+
+export function varMapSql (
+  self: Generator,
+  expression: MapExpr | VarMapExpr,
+  mapFuncName: string = 'MAP',
+): string {
+  const keys = expression.$keys;
+  const values = expression.$values;
+
+  if (!(keys instanceof ArrayExpr) || !(values instanceof ArrayExpr)) {
+    self.unsupported('Cannot convert array columns into map.');
+    return self.func(mapFuncName, [...ensureList(keys), ...ensureList(values)]);
+  }
+
+  const args: string[] = [];
+  const keyExprs = keys.$expressions;
+  const valueExprs = values.$expressions;
+
+  for (let i = 0; i < Math.min(keyExprs?.length || 0, valueExprs?.length || 0); i++) {
+    args.push(self.sql(keyExprs?.[i]));
+    args.push(self.sql(valueExprs?.[i]));
+  }
+
+  return self.func(mapFuncName, args);
+}
+
+export function monthsBetweenSql (self: Generator, expression: MonthsBetweenExpr): string {
+  const date1 = expression.$this;
+  const date2 = expression.$expression;
+
+  const date1Cast = cast(date1, DataTypeExprKind.DATE);
+  const date2Cast = cast(date2, DataTypeExprKind.DATE);
+
+  const wholeMonths = new DateDiffExpr({
+    this: date1Cast,
+    expression: date2Cast,
+    unit: var_('month'),
+  });
+
+  const day1 = new DayExpr({ this: date1Cast.copy() });
+  const day2 = new DayExpr({ this: date2Cast.copy() });
+
+  const lastDay1 = new LastDayExpr({ this: date1Cast.copy() });
+  const lastDay2 = new LastDayExpr({ this: date2Cast.copy() });
+
+  const dayOfLastDay1 = new DayExpr({ this: lastDay1 });
+  const dayOfLastDay2 = new DayExpr({ this: lastDay2 });
+
+  const isLastDay1 = new EQExpr({
+    this: day1.copy(),
+    expression: dayOfLastDay1,
+  });
+  const isLastDay2 = new EQExpr({
+    this: day2.copy(),
+    expression: dayOfLastDay2,
+  });
+  const bothLastDay = new AndExpr({
+    this: isLastDay1,
+    expression: isLastDay2,
+  });
+
+  const fractional = new DivExpr({
+    this: new ParenExpr({
+      this: new SubExpr({
+        this: day1.copy(),
+        expression: day2.copy(),
+      }),
+    }),
+    expression: LiteralExpr.number('31.0'),
+  });
+
+  const fractionalWithCheck = new IfExpr({
+    this: bothLastDay,
+    true: LiteralExpr.number('0'),
+    false: fractional,
+  });
+
+  return self.sql(new AddExpr({
+    this: wholeMonths,
+    expression: fractionalWithCheck,
+  }));
+}
+
+export function buildFormattedTime<T extends Expression> (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ExpClass: new (args: any) => T,
+  options: {
+    dialect: string;
+    defaultValue?: boolean | string;
+  },
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+): (args: any) => T {
+  const {
+    dialect, defaultValue,
+  } = options;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (args: any) => {
+    return new ExpClass({
+      this: seqGet(args, 0),
+      format: Dialect.get(dialect)?.formatTime(
+        seqGet(args, 1) || (defaultValue === true ? Dialect.get(dialect)?.TIME_FORMAT : undefined),
+      ),
+    });
+  };
+}
+
+export function timeFormat (
+  dialect?: string,
+): (self: Generator, expression: UnixToStrExpr | StrToUnixExpr) => string | undefined {
+  return (self: Generator, expression: UnixToStrExpr | StrToUnixExpr) => {
+    const format = self.formatTime(expression);
+    return format !== Dialect.getOrRaise(dialect)?._constructor.TIME_FORMAT ? format : undefined;
+  };
+}
+
+export function buildDateDelta<T extends Expression> (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ExpClass: new (args: any) => T,
+  unitMapping?: Record<string, string>,
+  options: {
+    defaultUnit?: string;
+    supportsTimezone?: boolean;
+  } = {},
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+): (args: any) => T {
+  const {
+    defaultUnit = 'DAY',
+    supportsTimezone = false,
+  } = options;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (args: any) => {
+    const unitBased = 3 <= args.length;
+    const hasTimezone = args.length === 4;
+    const thisArg = unitBased ? args[2] : seqGet(args, 0);
+    let unit = undefined;
+
+    if (unitBased || defaultUnit) {
+      unit = unitBased ? args[0] : LiteralExpr.string(defaultUnit);
+      const unitName = unit.name?.toLowerCase();
+      if (unitMapping && unitName && unitMapping[unitName]) {
+        unit = var_(unitMapping[unitName]);
+      }
+    }
+
+    const expression = new ExpClass({
+      this: thisArg,
+      expression: seqGet(args, 1),
+      unit,
+    });
+    if (supportsTimezone && hasTimezone) {
+      expression.setArgKey('zone', args[args.length - 1]);
+    }
+    return expression;
+  };
+}
+
+export function buildDateDeltaWithInterval<T extends Expression> (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ExpClass: new (args: any) => T,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+): (args: any) => T | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (args: any) => {
+    if (args.length < 2) return undefined;
+    const interval = args[1];
+
+    if (!(interval instanceof IntervalExpr)) {
+      throw new Error(`INTERVAL expression expected but got '${interval}'`);
+    }
+
+    return new ExpClass({
+      this: args[0],
+      expression: interval.$this,
+      unit: unitToStr(interval),
+    });
+  };
+}
+
+export function dateTruncToTime (args: {
+  unit: Expression;
+  this: Expression;
+}): DateTruncExpr | TimestampTruncExpr {
+  if (args.this instanceof CastExpr && args.this.isType('date')) {
+    return new DateTruncExpr({
+      unit: args.unit,
+      this: args.this,
+    });
+  }
+  return new TimestampTruncExpr({
+    this: args.this,
+    unit: args.unit,
+  });
+}
+
+export function dateAddIntervalSql (
+  dataType: string,
+  kind: string,
+): (self: Generator, expression: TimeUnitExpr) => string {
+  return (self: Generator, expression: TimeUnitExpr) => {
+    const thisArg = self.sql(expression, 'this');
+    const interval = new IntervalExpr({
+      this: expression.$expression,
+      unit: unitToVar(expression),
+    });
+    return `${dataType}_${kind}(${thisArg}, ${self.sql(interval)})`;
+  };
+}
+
+export function timestampTruncSql (
+  options: {
+    func?: string;
+    zone?: boolean;
+  } = {},
+): (self: Generator, expression: TimestampTruncExpr) => string {
+  const {
+    func = 'DATE_TRUNC', zone = false,
+  } = options;
+  return (self: Generator, expression: TimestampTruncExpr): string => {
+    const args = [unitToStr(expression), expression.$this];
+    if (zone) {
+      args.push(expression.$zone);
+    }
+    return self.func(func, args);
+  };
+}
+
+export function noTimestampSql (self: Generator, expression: TimestampExpr): string {
+  const zone = expression.$zone;
+  if (!zone) {
+    // Ported annotateTypes helper
+    const targetType = annotateTypes(expression, { dialect: self.dialect }).type || DataTypeExprKind.TIMESTAMP;
+    return self.sql(cast(expression.$this || '', targetType));
+  }
+
+  if (TIMEZONES.has(zone.name?.toLowerCase())) {
+    return self.sql(
+      new AtTimeZoneExpr({
+        this: cast(expression.$this || '', DataTypeExprKind.TIMESTAMP),
+        zone: zone,
+      }),
+    );
+  }
+  return self.func('TIMESTAMP', [expression.$this, zone]);
+}
+
+export function noTimeSql (self: Generator, expression: TimeExpr): string {
+  const thisArg = cast(expression.$this || '', DataTypeExprKind.TIMESTAMPTZ);
+  const expr = cast(
+    new AtTimeZoneExpr({
+      this: thisArg,
+      zone: expression.$zone!,
+    }),
+    DataTypeExprKind.TIME,
+  );
+  return self.sql(expr);
+}
+
+export function noDatetimeSql (self: Generator, expression: DatetimeExpr): string {
+  const thisArg = expression.$this;
+  const expr = expression.$expression;
+
+  if (expr && TIMEZONES.has(expr.name?.toLowerCase() || '')) {
+    const tsTz = cast(thisArg, DataTypeExprKind.TIMESTAMPTZ);
+    const ts = cast(new AtTimeZoneExpr({
+      this: tsTz,
+      zone: expr,
+    }), DataTypeExprKind.TIMESTAMP);
+    return self.sql(ts);
+  }
+
+  const date = cast(thisArg, DataTypeExprKind.DATE);
+  const time = cast(expr || '', DataTypeExprKind.TIME);
+
+  return self.sql(cast(new AddExpr({
+    this: date,
+    expression: time,
+  }), DataTypeExprKind.TIMESTAMP));
+}
+
+export function leftToSubstringSql (self: Generator, expression: LeftExpr): string {
+  return self.sql(
+    new SubstringExpr({
+      this: expression.$this,
+      start: LiteralExpr.number(1),
+      length: expression.$expression,
+    }),
+  );
+}
+
+export function rightToSubstringSql (self: Generator, expression: RightExpr): string {
+  return self.sql(
+    new SubstringExpr({
+      this: expression.$this,
+      start: new SubExpr({
+        this: new LengthExpr({ this: expression.$this }),
+        expression: new ParenExpr({
+          this: new SubExpr({
+            this: expression.$expression,
+            expression: LiteralExpr.number(1),
+          }),
+        }),
+      }),
+    }),
+  );
+}
+
+export function timeStrToTimeSql (
+  self: Generator,
+  expression: TimeStrToTimeExpr,
+  options: {
+    includePrecision?: boolean;
+  } = {},
+): string {
+  const { includePrecision = false } = options;
+
+  let datatype = DataTypeExpr.build(
+    expression.$zone ? DataTypeExprKind.TIMESTAMPTZ : DataTypeExprKind.TIMESTAMP,
+  );
+
+  if (expression.$this instanceof LiteralExpr && includePrecision) {
+    const precision = subsecondPrecision(expression.$this.name);
+    if (0 < precision) {
+      datatype = DataTypeExpr.build(
+        datatype.$this,
+        {
+          expressions: new DataTypeParamExpr({
+            this: LiteralExpr.number(precision),
+          }),
+        },
+      );
+    }
+  }
+
+  return self.sql(cast(expression.$this, datatype, { dialect: self.dialect }));
+}
+
+export function dateStrToDateSql (self: Generator, expression: DateStrToDateExpr): string {
+  return self.sql(cast(expression.$this || '', DataTypeExprKind.DATE));
+}
+
+export function encodeDecodeSql (
+  self: Generator,
+  expression: EncodeExpr | DecodeExpr,
+  name: string,
+  replace: boolean = true,
+): string {
+  const charset = expression.$charset;
+  if (charset && !['utf-8', 'utf8'].includes(charset.name?.toLowerCase())) {
+    self.unsupported(`Expected utf-8 character set, got ${charset}.`);
+  }
+
+  return self.func(name, [expression.$this, replace ? expression.getArgKey('replace') as Expression | undefined : undefined]);
+}
+
+export function minOrLeast (self: Generator, expression: MinExpr): string {
+  const name = 0 < (expression.$expressions?.length ?? 0) ? 'LEAST' : 'MIN';
+  return renameFunc(name)(self, expression);
+}
+
+export function maxOrGreatest (self: Generator, expression: MaxExpr): string {
+  const name = 0 < (expression.$expressions?.length ?? 0) ? 'GREATEST' : 'MAX';
+  return renameFunc(name)(self, expression);
+}
+
+export function countIfToSum (self: Generator, expression: CountIfExpr): string {
+  let cond: Expression | undefined = expression.$this;
+
+  if (cond instanceof DistinctExpr) {
+    cond = cond.$expressions?.[0];
+    self.unsupported('DISTINCT is not supported when converting COUNT_IF to SUM');
+  }
+
+  return self.func('sum', cond
+    ? [
+      new IfExpr({
+        this: cond,
+        true: LiteralExpr.number(1),
+        false: LiteralExpr.number(0),
+      }),
+    ]
+    : []);
+}
+
+export function trimSql (self: Generator, expression: TrimExpr, options: { defaultTrimType: string }): string {
+  const { defaultTrimType = '' } = options;
+
+  const target = self.sql(expression, 'this');
+  const trimType = self.sql(expression, 'position') || defaultTrimType;
+  const removeChars = self.sql(expression, 'expression');
+  const collation = self.sql(expression, 'collation');
+
+  if (!removeChars) {
+    return self.trimSql(expression);
+  }
+
+  const typePart = trimType ? `${trimType} ` : '';
+  const charPart = removeChars ? `${removeChars} ` : '';
+  const fromPart = typePart || charPart ? 'FROM ' : '';
+  const collPart = collation ? ` COLLATE ${collation}` : '';
+
+  return `TRIM(${typePart}${charPart}${fromPart}${target}${collPart})`;
+}
+
+export function strToTimeSql (self: Generator, expression: StrToTimeExpr): string {
+  return self.func('STRPTIME', [expression.$this, self.formatTime(expression)]);
+}
+
+export function concatToDPipeSql (self: Generator, expression: ConcatExpr): string {
+  return self.sql(
+    expression.$expressions.reduce((acc, curr) => new DPipeExpr({
+      this: acc,
+      expression: curr,
+    })),
+  );
+}
+
+export function concatWsToDPipeSql (self: Generator, expression: ConcatWsExpr): string {
+  const [delim, ...rest] = expression.$expressions;
+  return self.sql(
+    rest.reduce((acc, curr) =>
+      new DPipeExpr({
+        this: acc,
+        expression: new DPipeExpr({
+          this: delim,
+          expression: curr,
+        }),
+      })),
+  );
+}
+
+export function regexpExtractSql (
+  self: Generator,
+  expression: RegexpExtractExpr | RegexpExtractAllExpr,
+): string {
+  let group = expression.$group;
+
+  if (group && group.name === String(self.dialect._constructor.REGEXP_EXTRACT_DEFAULT_GROUP)) {
+    group = undefined;
+  }
+
+  return self.func((expression._constructor as typeof FuncExpr).sqlName(), [
+    expression.$this,
+    expression.$expression,
+    group,
+  ]);
+}
+
+export function regexpReplaceSql (self: Generator, expression: RegexpReplaceExpr): string {
+  return self.func('REGEXP_REPLACE', [
+    expression.$this,
+    expression.$expression,
+    expression.$replacement,
+  ]);
+}
+export function pivotColumnNames (aggregations: Expression[], dialect: DialectType): string[] {
+  const names: string[] = [];
+  for (const agg of aggregations) {
+    if (agg instanceof AliasExpr) {
+      names.push(agg.alias);
+    } else {
+      const aggAllUnquoted = agg.transform((node) => {
+        if (node instanceof IdentifierExpr) {
+          return new IdentifierExpr({
+            this: node.name,
+            quoted: false,
+          });
+        }
+        return node;
+      });
+      names.push(aggAllUnquoted.sql({
+        dialect,
+        normalizeFunctions: 'lower',
+      }));
+    }
+  }
+  return names;
+}
+
+export function binaryFromFunction<T extends Expression> (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ExprType: new (args: any) => T,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): (args: any[]) => T {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (args: any[]) => new ExprType({
+    this: seqGet(args, 0),
+    expression: seqGet(args, 1),
+  });
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function buildTimestampTrunc (args: any[]): TimestampTruncExpr {
+  return new TimestampTruncExpr({
+    this: seqGet(args, 1),
+    unit: seqGet(args, 0),
+  });
+}
+
+export function buildTrunc (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  args: any[],
+  options: {
+    dialect: DialectType;
+    dateTruncUnabbreviate?: boolean;
+    defaultDateTruncUnit?: string;
+  },
+): DateTruncExpr | TruncExpr | AnonymousExpr {
+  const {
+    dialect, dateTruncUnabbreviate = true, defaultDateTruncUnit,
+  } = options;
+  let thisArg = seqGet(args, 0);
+  let second = seqGet(args, 1);
+
+  if (thisArg && !thisArg.type) {
+    thisArg = annotateTypes(thisArg, { dialect });
+  }
+  if (second && !second.type) {
+    second = annotateTypes(second, { dialect });
+  }
+
+  const isTemporal = thisArg?.isType(...DataTypeExpr.TEMPORAL_TYPES);
+  const isText = second?.isType(...DataTypeExpr.TEXT_TYPES);
+
+  if ((isTemporal && (second || defaultDateTruncUnit)) || isText) {
+    const unit = second || LiteralExpr.string(defaultDateTruncUnit!);
+    return new DateTruncExpr({
+      this: thisArg,
+      unit: unit,
+      unabbreviate: dateTruncUnabbreviate,
+    });
+  }
+
+  const isNumeric = thisArg?.isType(...DataTypeExpr.NUMERIC_TYPES) || second?.isType(...DataTypeExpr.NUMERIC_TYPES);
+  if (isNumeric || !second) {
+    return new TruncExpr({
+      this: thisArg,
+      decimals: second,
+    });
+  }
+
+  return new AnonymousExpr({
+    this: 'TRUNC',
+    expressions: args,
+  });
+}
+
+export function anyValueToMaxSql (self: Generator, expression: AnyValueExpr): string {
+  return self.func('MAX', [expression.$this]);
+}
+
+export function boolXorSql (self: Generator, expression: XorExpr): string {
+  const a = self.sql(expression.left);
+  const b = self.sql(expression.right);
+  return `(${a} AND (NOT ${b})) OR ((NOT ${a}) AND {b})`;
+}
+
+export function isParseJson (expression: Expression): boolean {
+  return expression instanceof ParseJSONExpr || (expression instanceof CastExpr && expression.isType('json'));
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isnullToIsNull (args: any[]): Expression {
+  return new ParenExpr({
+    this: new IsExpr({
+      this: seqGet(args, 0),
+      expression: new NullExpr({}),
+    }),
+  });
+}
+
+export function generatedAsIdentityColumnConstraintSql (
+  self: Generator,
+  expression: GeneratedAsIdentityColumnConstraintExpr,
+): string {
+  const start = self.sql(expression, 'start') || '1';
+  const increment = self.sql(expression, 'increment') || '1';
+  return `IDENTITY(${start}, ${increment})`;
+}
+
+export function argMaxOrMinNoCount (name: string): (self: Generator, expression: ArgMaxExpr | ArgMinExpr) => string {
+  return (self: Generator, expression: ArgMaxExpr | ArgMinExpr): string => {
+    return self.func(name, [expression.$this, expression.$expression]);
+  };
+}
+
+export function tsOrDsAddCast (expression: TsOrDsAddExpr): TsOrDsAddExpr {
+  let thisArg = expression.$this.copy();
+  const returnType = expression.returnType;
+
+  if (returnType.isType(DataTypeExprKind.DATE)) {
+    thisArg = cast(thisArg, DataTypeExprKind.TIMESTAMP);
+  }
+
+  expression.$this.replace(cast(thisArg, returnType));
+  return expression;
+}
+
+export function dateDeltaSql (
+  name: string,
+  options: {
+    cast?: boolean;
+  } = {},
+): (self: Generator, expression: DateAddExpr | DateDiffExpr | DateSubExpr | TsOrDsAddExpr | TsOrDsDiffExpr) => string {
+  const { cast = false } = options;
+  return (self, expression): string => {
+    let expr = expression;
+    if (cast && expression instanceof TsOrDsAddExpr) {
+      expr = tsOrDsAddCast(expression);
+    }
+
+    return self.func(name, [
+      unitToVar(expr),
+      expr.$expression,
+      expr.$this,
+    ]);
+  };
+}
+
+export function dateDeltaToBinaryIntervalOp (
+  options: {
+    cast?: boolean;
+  } = {},
+): (self: Generator, expression: DatetimeAddExpr | DatetimeSubExpr) => string {
+  const { cast: shouldCast = true } = options;
+  return (self: Generator, expression: DatetimeAddExpr | DatetimeSubExpr): string => {
+    let thisArg = expression.$this;
+    const unit = unitToVar(expression);
+    const op = expression instanceof DatetimeAddExpr ? '+' : '-';
+
+    let toType: DataTypeExpr | DataTypeExprKind | undefined = undefined;
+    if (shouldCast) {
+      if (expression instanceof TsOrDsAddExpr) {
+        toType = expression.returnType;
+      } else if (thisArg.isString) {
+        toType = (expression instanceof DatetimeAddExpr || expression instanceof DatetimeSubExpr)
+          ? DataTypeExprKind.DATETIME
+          : DataTypeExprKind.DATE;
+      }
+    }
+
+    thisArg = toType ? cast(thisArg, toType) : thisArg;
+    const expr = expression.$expression;
+    const interval = expr instanceof IntervalExpr
+      ? expr
+      : new IntervalExpr({
+        this: expr,
+        unit,
+      });
+
+    return `${self.sql(thisArg)} ${op} ${self.sql(interval)}`;
+  };
+}
+
+export function unitToStr (expression: TimeUnitExpr, options: {
+  defaultValue?: string;
+} = {}): Expression | undefined {
+  const { defaultValue = 'DAY' } = options;
+  const unit = expression.$unit;
+  if (!unit) {
+    return defaultValue ? LiteralExpr.string(defaultValue) : undefined;
+  }
+
+  if (unit instanceof PlaceholderExpr || !(unit instanceof VarExpr || unit instanceof LiteralExpr)) {
+    return unit;
+  }
+
+  return LiteralExpr.string(unit.name);
+}
+
+export function unitToVar (expression: TimeUnitExpr, options: {
+  defaultValue?: string;
+} = {}): Expression | undefined {
+  const { defaultValue = 'DAY' } = options;
+  const unit = expression.$unit;
+
+  if (unit instanceof VarExpr || unit instanceof PlaceholderExpr || unit instanceof ColumnExpr) {
+    return unit;
+  }
+
+  const value = unit?.name || defaultValue;
+  return value ? var_(value) : undefined;
+}
+
+export function mapDatePart (part: Expression | undefined, dialect: DialectType): Expression | undefined {
+  const mapped = (part && !(part instanceof ColumnExpr && part.parts.length !== 1))
+    ? Dialect.getOrRaise(dialect)._constructor.DATE_PART_MAPPING?.[part.name?.toUpperCase()]
+    : null;
+
+  if (mapped) {
+    return part!.isString ? LiteralExpr.string(mapped) : var_(mapped);
+  }
+
+  return part;
+}
+
+export function noLastDaySql (self: Generator, expression: LastDayExpr): string {
+  const truncCurrDate = new AnonymousExpr({
+    this: 'date_trunc',
+    expressions: [LiteralExpr.string('month'), expression.$this],
+  });
+  const plusOneMonth = new AnonymousExpr({
+    this: 'date_add',
+    expressions: [
+      truncCurrDate,
+      LiteralExpr.number(1),
+      LiteralExpr.string('month'),
+    ],
+  });
+  const minusOneDay = new AnonymousExpr({
+    this: 'date_sub',
+    expressions: [
+      plusOneMonth,
+      LiteralExpr.number(1),
+      LiteralExpr.string('day'),
+    ],
+  });
+
+  return self.sql(cast(minusOneDay, DataTypeExprKind.DATE));
+}
+
+export function mergeWithoutTargetSql (self: Generator, expression: MergeExpr): string {
+  const alias = expression.$this?.$alias;
+  const normalize = (id: Expression | undefined) => id ? self.dialect.normalizeIdentifier(id).name : undefined;
+
+  const targets = new Set([normalize(expression.$this?.$this)]);
+  if (alias) targets.add(typeof alias.$this === 'string' ? alias.$this : normalize(alias.$this));
+
+  for (const when of expression.$whens?.$expressions || []) {
+    const then = when.$then;
+    if (then instanceof UpdateExpr) {
+      for (const equals of then.findAll(EQExpr)) {
+        const lhs = equals.$this;
+        if (lhs instanceof ColumnExpr && targets.has(normalize(lhs.args.table))) {
+          lhs.replace(new ColumnExpr({ this: lhs.$this }));
+        }
+      }
+    } else if (then instanceof InsertExpr) {
+      const columnList = then.$this;
+      if (columnList instanceof TupleExpr) {
+        for (const col of columnList.$expressions || []) {
+          const tableArg = col.getArgKey('table');
+          if (
+            (col.this instanceof IdentifierExpr || col.this instanceof StarExpr)
+            && tableArg
+            && targets.has(tableArg instanceof Expression ? normalize(tableArg) : tableArg.toString())) {
+            col.replace(new ColumnExpr({ this: col.this }));
+          }
+        }
+      }
+    }
+  }
+
+  return self.mergeSql(expression);
+}
+
+export function buildJsonExtractPath<T extends JSONExtractExpr> (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ExprType: (typeof JSONExtractExpr) & (new (arg: any) => T),
+  options: {
+    zeroBasedIndexing?: boolean;
+    arrowReqJsonType?: boolean;
+    jsonType?: string;
+  } = {},
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): (args: any) => T {
+  const {
+    zeroBasedIndexing = true, arrowReqJsonType = false, jsonType,
+  } = options;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (args: any) => {
+    const segments: JSONPathPartExpr[] = [new JSONPathRootExpr({})];
+    for (const arg of args.slice(1)) {
+      if (!(arg instanceof LiteralExpr)) {
+        return ExprType.fromArgList(args);
+      }
+
+      const text = arg.name;
+      if (isInt(text) && (!arrowReqJsonType || !arg.isString)) {
+        const index = parseInt(text);
+        segments.push(new JSONPathSubscriptExpr({ this: zeroBasedIndexing ? index : index - 1 }));
+      } else {
+        segments.push(new JSONPathKeyExpr({ this: text }));
+      }
+    }
+
+    args.splice(2);
+    const kwargs: JSONExtractExprArgs & Record<string, unknown> = {
+      this: seqGet(args, 0),
+      expression: new JSONPathExpr({ expressions: segments }),
+    };
+
+    if (!(ExprType.prototype instanceof JSONBExtractExpr)) {
+      kwargs.onlyJsonTypes = arrowReqJsonType;
+    }
+    if (jsonType !== undefined) kwargs.jsonType = jsonType;
+
+    return new ExprType(kwargs) as T;
+  };
+}
+
+export function jsonExtractSegments (
+  name: string,
+  options: {
+    quotedIndex?: boolean;
+    op?: string;
+  } = {},
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): (self: Generator, expression: any) => string {
+  const {
+    quotedIndex = true, op,
+  } = options;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (self: Generator, expression: any): string => {
+    const path = expression.$expression;
+    if (!(path instanceof JSONPathExpr)) {
+      return renameFunc(name)(self, expression);
+    }
+
+    const segments: string[] = [];
+    for (const segment of path.$expressions) {
+      let segmentSql = self.sql(segment);
+      if (segmentSql) {
+        if (segment instanceof JSONPathPartExpr && (quotedIndex || !(segment instanceof JSONPathSubscriptExpr))) {
+          if (path.args.escape) segmentSql = self.escapeStr(segmentSql);
+          segmentSql = `${self.dialect._constructor.QUOTE_START}${segmentSql}${self.dialect._constructor.QUOTE_END}`;
+        }
+        segments.push(segmentSql);
+      }
+    }
+
+    if (op) return [self.sql(expression.$this), ...segments].join(` ${op} `);
+    return self.func(name, [expression.$this, ...segments]);
+  };
+}
+
+export function jsonPathKeyOnlyName (self: Generator, expression: JSONPathKeyExpr): string {
+  if (expression.$this instanceof JSONPathWildcardExpr) {
+    self.unsupported('Unsupported wildcard in JSONPathKey expression');
+  }
+  return expression.name;
+}
+
+export function filterArrayUsingUnnest (self: Generator, expression: ArrayFilterExpr | ArrayRemoveExpr): string {
+  let cond = expression.$expression;
+  let alias: string | Expression = '_u';
+
+  if (cond instanceof LambdaExpr && cond.$expressions.length === 1) {
+    alias = cond.$expressions[0];
+    cond = cond.$this;
+  } else if (expression instanceof ArrayRemoveExpr) {
+    cond = new NEQExpr({
+      this: alias,
+      expression: expression.$expression,
+    });
+  }
+
+  const unnest = new UnnestExpr({ expressions: [expression.$this] });
+  const filtered = select(alias).from(new AliasExpr({
+    this: unnest,
+    alias: new TableAliasExpr({ this: alias as string | IdentifierExpr }),
+  }))
+    .where(cond);
+  return self.sql(new ArrayExpr({ expressions: [filtered] }));
+}
+
+export function arrayCompactSql (self: Generator, expression: ArrayCompactExpr): string {
+  const lambdaId = new IdentifierExpr({
+    this: '_u',
+    quoted: false,
+  });
+  const cond = new IsExpr({
+    this: lambdaId,
+    expression: new NullExpr({}),
+  }).not();
+  return self.sql(new ArrayFilterExpr({
+    this: expression.$this || '',
+    expression: new LambdaExpr({
+      this: cond,
+      expressions: [lambdaId],
+    }),
+  }));
+}
+
+export function removeFromArrayUsingFilter (self: Generator, expression: ArrayRemoveExpr): string {
+  const lambdaId = new IdentifierExpr({
+    this: '_u',
+    quoted: false,
+  });
+  const cond = new NEQExpr({
+    this: lambdaId,
+    expression: expression.$expression,
+  });
+  const filterSql = self.sql(new ArrayFilterExpr({
+    this: expression.$this,
+    expression: new LambdaExpr({
+      this: cond,
+      expressions: [lambdaId],
+    }),
+  }));
+
+  if (expression.$nullPropagation && !self.dialect._constructor.ARRAY_FUNCS_PROPAGATES_NULLS) {
+    const val = expression.$expression;
+    if ((val instanceof LiteralExpr && !(val instanceof NullExpr)) || val instanceof ArrayExpr) {
+      return filterSql;
+    }
+    return self.sql(new IfExpr({
+      this: new IsExpr({
+        this: val,
+        expression: new NullExpr({}),
+      }),
+      true: new NullExpr({}),
+      false: filterSql,
+    }));
+  }
+  return filterSql;
+}
+
+export function buildDefaultDecimalType (precision?: number, scale?: number): (dtype: DataTypeExpr) => DataTypeExpr {
+  return (dtype: DataTypeExpr) => {
+    if (0 < (dtype.$expressions?.length ?? 0) || precision === undefined) return dtype;
+    const params = scale !== undefined ? `${precision}, ${scale}` : `${precision}`;
+    return DataTypeExpr.build(`DECIMAL(${params})`);
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function buildTimestampFromParts (args: any[]): Expression {
+  if (args.length === 2) {
+    return new AnonymousExpr({
+      this: 'TIMESTAMP_FROM_PARTS',
+      expressions: args,
+    });
+  }
+  return TimestampFromPartsExpr.fromArgList(args);
+}
+
+export function sha256Sql (self: Generator, expression: SHA2Expr): string {
+  return self.func(`SHA${expression.text('length') || '256'}`, [expression.$this]);
+}
+
+export function sequenceSql (self: Generator, expression: GenerateSeriesExpr | GenerateDateArrayExpr): string {
+  let start = expression.$start;
+  let end = expression.$end;
+  const step = expression.$step;
+  const targetType = (start instanceof CastExpr ? start.$to : (end instanceof CastExpr ? end.$to : undefined));
+
+  if (start !== undefined && end !== undefined && targetType?.isType(['date', 'timestamp'])) {
+    if (start instanceof CastExpr && targetType === start.to) end = cast(end, targetType);
+    else start = cast(start, targetType);
+
+    if ('$isEndExclusive' in expression && expression.$isEndExclusive) {
+      const stepVal = step || LiteralExpr.number(1);
+      end = new ParenExpr({
+        this: new SubExpr({
+          this: end,
+          expression: stepVal,
+        }),
+      });
+      const seqCall = new AnonymousExpr({
+        this: 'SEQUENCE',
+        expressions: [
+          start!,
+          end!,
+          step!,
+        ],
+      });
+      const zero = LiteralExpr.number(0);
+      const shouldEmpty = new OrExpr({
+        this: new EQExpr({
+          this: stepVal.copy(),
+          expression: zero.copy(),
+        }),
+        expression: new OrExpr({
+          this: new AndExpr({
+            this: new GTExpr({
+              this: stepVal.copy(),
+              expression: zero.copy(),
+            }),
+            expression: new GTEExpr({
+              this: start.copy(),
+              expression: end.copy(),
+            }),
+          }),
+          expression: new AndExpr({
+            this: new LTExpr({
+              this: stepVal.copy(),
+              expression: zero.copy(),
+            }),
+            expression: new LTEExpr({
+              this: start.copy(),
+              expression: end.copy(),
+            }),
+          }),
+        }),
+      });
+      return self.sql(new IfExpr({
+        this: shouldEmpty,
+        true: new ArrayExpr({ expressions: [] }),
+        false: seqCall,
+      }));
+    }
+  }
+  return self.func('SEQUENCE', [
+    start,
+    end,
+    step,
+  ]);
+}
+
+export function buildLike<T extends Expression> (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ExprType: new (args: any) => T,
+  options: {
+    notLike?: boolean;
+  } = {},
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): (args: any[]) => Expression {
+  const { notLike = false } = options;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (args: any[]) => {
+    let likeExpr: Expression = new ExprType({
+      this: seqGet(args, 0),
+      expression: seqGet(args, 1),
+    });
+    const escape = seqGet(args, 2);
+    if (escape) likeExpr = new EscapeExpr({
+      this: likeExpr,
+      expression: escape,
+    });
+    return notLike ? new NotExpr({ this: likeExpr }) : likeExpr;
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function buildRegexpExtract<T extends Expression> (ExprType: (typeof RegexpExtractExpr) & (new (args: any) => T)): (args: any[], dialect: Dialect) => Expression {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (args: any[], dialect: Dialect) => {
+    const kwargs: RegexpExtractExprArgs = {
+      this: seqGet(args, 0),
+      expression: seqGet(args, 1),
+      group: seqGet(args, 2) || LiteralExpr.number(dialect._constructor.REGEXP_EXTRACT_DEFAULT_GROUP),
+      parameters: seqGet(args, 3),
+    };
+    if (ExprType === RegexpExtractExpr) {
+      kwargs.nullIfPosOverflow = dialect._constructor.REGEXP_EXTRACT_POSITION_OVERFLOW_RETURNS_NULL;
+    }
+    return new ExprType(kwargs);
+  };
+}
+
+export function explodeToUnnestSql (self: Generator, expression: LateralExpr): string {
+  const thisArg = expression.$this;
+  const aliasExpr = expression.args.alias;
+  let crossJoinExpr;
+
+  if (thisArg instanceof PosexplodeExpr && aliasExpr) {
+    const [pos, ...cols] = aliasExpr.$columns || [];
+    const lateralSubquery = select([alias(pos.sub(1), pos), ...cols])
+      .from(new UnnestExpr({
+        expressions: [thisArg.$this],
+        offset: true,
+        alias: new TableAliasExpr({
+          this: aliasExpr.$this,
+          columns: [...cols, pos],
+        }),
+      }));
+    crossJoinExpr = new LateralExpr({ this: lateralSubquery.subquery() });
+  }
+  if (thisArg instanceof ExplodeExpr) {
+    crossJoinExpr = new UnnestExpr({
+      expressions: [thisArg.$this],
+      alias: aliasExpr,
+    });
+  }
+
+  if (crossJoinExpr) {
+    return self.sql(new JoinExpr({
+      this: crossJoinExpr,
+      kind: JoinExprKind.CROSS,
+    }));
+  }
+
+  return self.lateralSql(expression);
+}
+
+export function timestampDiffSql (self: Generator, expression: DatetimeDiffExpr | TimestampDiffExpr): string {
+  return self.func('TIMESTAMPDIFF', [
+    expression.unit,
+    expression.$expression,
+    expression.$this,
+  ]);
+}
+
+export function noMakeIntervalSql (self: Generator, expression: MakeIntervalExpr, options: {
+  sep?: string;
+} = {}): string {
+  const { sep = ', ' } = options;
+  const args = Object.entries(expression.args).map(([unit, val]) => `${val instanceof KwargExpr ? val.$expression : val} ${unit}`);
+  return `INTERVAL '${args.join(sep)}'`;
+}
+
+export function lengthOrCharLengthSql (self: Generator, expression: LengthExpr): string {
+  return self.func(expression.args.binary ? 'LENGTH' : 'CHAR_LENGTH', [expression.$this]);
+}
+
+export function groupConcatSql (self: Generator, expression: GroupConcatExpr, options: {
+  funcName?: string;
+  sep?: string;
+  withinGroup?: boolean;
+  onOverflow?: boolean;
+} = {}): string {
+  const {
+    funcName = 'LISTAGG', sep = ',', withinGroup = true, onOverflow = false,
+  } = options;
+  let thisArg: Expression | undefined = expression.$this;
+  const separator = self.sql(expression.args.separator || (sep ? LiteralExpr.string(sep) : undefined));
+  const overflow = onOverflow && self.sql(expression, 'on_overflow') ? ` ON OVERFLOW ${self.sql(expression, 'on_overflow')}` : '';
+
+  let limit = undefined;
+  if (thisArg instanceof LimitExpr) {
+    limit = thisArg;
+    thisArg = limit.$this?.pop();
+  }
+
+  const order = thisArg?.find(OrderExpr);
+  if (order?.$this) thisArg = order.$this.pop();
+
+  const formattedArgs = [thisArg, separator ? `${separator}${overflow}` : (overflow || undefined)].filter(Boolean).join(', ');
+  let listagg: Expression = new AnonymousExpr({
+    this: funcName,
+    expressions: [formattedArgs],
+  });
+  let modifiers = self.sql(limit);
+
+  if (order) {
+    if (withinGroup) listagg = new WithinGroupExpr({
+      this: listagg,
+      expression: order,
+    });
+    else modifiers = `${self.sql(order)}${modifiers}`;
+  }
+
+  if (modifiers) listagg.setArgKey('expressions', [`${formattedArgs}${modifiers}`]);
+  return self.sql(listagg);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function buildTimeToStrOrTochar (args: any[], dialect: DialectType): TimeToStrExpr | ToCharExpr {
+  if (args.length === 2) {
+    const thisArg = args[0];
+    if (!thisArg.type) annotateTypes(thisArg, { dialect: dialect });
+    if (thisArg.isType(...DataTypeExpr.TEMPORAL_TYPES)) {
+      return buildFormattedTime(TimeToStrExpr, {
+        dialect: dialect.constructor.name.toLowerCase(),
+        defaultValue: true,
+      })(args);
+    }
+  }
+  return ToCharExpr.fromArgList(args);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function buildReplaceWithOptionalReplacement (args: any[]): ReplaceExpr {
+  return new ReplaceExpr({
+    this: seqGet(args, 0),
+    expression: seqGet(args, 1),
+    replacement: seqGet(args, 2) || LiteralExpr.string(''),
+  });
+}
+
+export function regexpReplaceGlobalModifier (expression: RegexpReplaceExpr): Expression | undefined {
+  const modifiers = expression.$modifiers;
+  if (!expression.$singleReplace && (!expression.$occurrence || (expression.$occurrence.isInt && expression.$occurrence.toValue() === 0))) {
+    if (!modifiers || modifiers.isString) {
+      return LiteralExpr.string((modifiers?.name || '') + 'g');
+    }
+  }
+  return modifiers;
+}
+
+export function getbitSql (self: Generator, expression: GetbitExpr): string {
+  const value = expression.$this;
+  const pos = expression.$expression;
+
+  if (!expression.args.zeroIsMsb && expression.isType([...DataTypeExpr.SIGNED_INTEGER_TYPES, ...DataTypeExpr.UNSIGNED_INTEGER_TYPES])) {
+    const shifted = new BitwiseRightShiftExpr({
+      this: value,
+      expression: pos,
+    });
+    const masked = new BitwiseAndExpr({
+      this: shifted,
+      expression: LiteralExpr.number(1),
+    });
+    return self.sql(masked);
+  }
+  return self.func('GET_BIT', [value, pos]);
+}
