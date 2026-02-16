@@ -34745,6 +34745,7 @@ export class TimeStrToUnixExpr extends FuncExpr {
 export enum TrimPosition {
   LEADING = 'LEADING',
   TRAILING = 'TRAILING',
+  BOTH = 'BOTH',
 }
 
 export type TrimExprArgs = Merge<[

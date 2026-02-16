@@ -1455,10 +1455,10 @@ export class Parser {
     [...Parser.TABLE_ALIAS_TOKENS].filter((t) => t !== TokenType.SET),
   );
 
-  static TRIM_TYPES: Set<TokenType> = new Set([
-    'LEADING',
-    'TRAILING',
-    'BOTH',
+  static TRIM_TYPES: Set<TrimPosition> = new Set([
+    TrimPosition.LEADING,
+    TrimPosition.TRAILING,
+    TrimPosition.BOTH,
   ]);
 
   static FUNC_TOKENS: Set<TokenType> = new Set([
@@ -1510,7 +1510,7 @@ export class Parser {
     TokenType.WINDOW,
     TokenType.XOR,
     ...Parser.TYPE_TOKENS,
-    ...Object.keys(Parser.SUBQUERY_PREDICATES),
+    ...Object.keys(Parser.SUBQUERY_PREDICATES) as TokenType[],
   ]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
