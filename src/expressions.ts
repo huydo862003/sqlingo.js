@@ -1084,8 +1084,8 @@ export class Expression {
   // NOTE: We intentionally do not maintain argTypes. The argTypes system was inherited
   // from Python sqlglot but is problematic in TypeScript due to object key ordering
   // issues and inheritance complexity. We use explicit Sets instead.
-  static requiredArgs = new Set<string>();
-  static availableArgs = new Set<string>();
+  static requiredArgs = new Set(['this']);
+  static availableArgs = new Set(['this']);
 
   /** Set of required argument names */
 
@@ -36211,6 +36211,9 @@ export type ExplodingGenerateSeriesExprArgs = Merge<[
 export class ExplodingGenerateSeriesExpr extends GenerateSeriesExpr {
   key = ExpressionKey.EXPLODING_GENERATE_SERIES;
 
+  static requiredArgs = new Set(['start', 'end']);
+  static availableArgs = new Set(['start', 'end', 'step', 'is_end_exclusive']);
+
   static {
     this.register();
   }
@@ -36712,6 +36715,9 @@ export type JSONCastExprArgs = Merge<[
 
 export class JSONCastExpr extends CastExpr {
   key = ExpressionKey.JSON_CAST;
+
+  static requiredArgs = new Set(['this', 'to']);
+  static availableArgs = new Set(['this', 'to', 'format', 'safe', 'action', 'default']);
 
   declare args: JSONCastExprArgs;
 
