@@ -2089,7 +2089,7 @@ export class Parser {
     COMPOUND: (self: Parser) => self.parseAlterSortkey({ compound: true }),
   };
 
-  static SCHEMA_UNNAMED_CONSTRAINTS: Set<TokenType> = new Set([
+  static SCHEMA_UNNAMED_CONSTRAINTS: Set<string> = new Set([
     'CHECK',
     'EXCLUDE',
     'FOREIGN KEY',
