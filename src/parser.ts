@@ -8032,14 +8032,15 @@ export class Parser {
       return undefined;
     }
 
-    if (this._matchSet(this._constructor.STATEMENT_PARSERS)) {
+    const statementTokens = Object.keys(this._constructor.STATEMENT_PARSERS) as TokenType[];
+    if (this._matchSet(statementTokens)) {
       const comments = this._prevComments;
-      const stmt = this._constructor.STATEMENT_PARSERS[this._prev!.tokenType](this);
+      const stmt = this._constructor.STATEMENT_PARSERS[this._prev!.tokenType]!(this);
       stmt.addComments(comments, { prepend: true });
       return stmt;
     }
 
-    if (this._matchSet(this._dialectConstructor.tokenizerClass().COMMANDS)) {
+    if (this._matchSet(this._dialectConstructor.tokenizerClass.COMMANDS)) {
       return this.parseCommand();
     }
 
