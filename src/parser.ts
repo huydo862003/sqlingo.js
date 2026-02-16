@@ -1262,7 +1262,7 @@ export class Parser {
     ...Parser.AGGREGATE_TYPE_TOKENS,
   ]);
 
-  static SIGNED_TO_UNSIGNED_TYPE_TOKEN = {
+  static SIGNED_TO_UNSIGNED_TYPE_TOKEN: Partial<Record<TokenType, TokenType>> = {
     [TokenType.BIGINT]: TokenType.UBIGINT,
     [TokenType.INT]: TokenType.UINT,
     [TokenType.MEDIUMINT]: TokenType.UMEDIUMINT,
@@ -1272,7 +1272,8 @@ export class Parser {
     [TokenType.DOUBLE]: TokenType.UDOUBLE,
   };
 
-  static SUBQUERY_PREDICATES = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static SUBQUERY_PREDICATES: Partial<Record<TokenType, new (args: any) => Expression>> = {
     [TokenType.ANY]: AnyExpr,
     [TokenType.ALL]: AllExpr,
     [TokenType.EXISTS]: ExistsExpr,
@@ -1440,7 +1441,8 @@ export class Parser {
 
   static COLON_PLACEHOLDER_TOKENS = Parser.ID_VAR_TOKENS;
 
-  static ARRAY_CONSTRUCTORS = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static ARRAY_CONSTRUCTORS: Record<string, new (args: any) => Expression> = {
     ARRAY: ArrayExpr,
     LIST: ListExpr,
   };
@@ -1606,7 +1608,7 @@ export class Parser {
 
   static JOIN_HINTS: Set<string> = new Set();
 
-  static LAMBDAS = {
+  static LAMBDAS: Partial<Record<TokenType, (self: Parser, expressions: Expression[]) => Expression>> = {
     [TokenType.ARROW]: (self: Parser, expressions: Expression[]) => self.expression(
       LambdaExpr,
       {
@@ -1626,7 +1628,7 @@ export class Parser {
     ),
   };
 
-  static COLUMN_OPERATORS = {
+  static COLUMN_OPERATORS: Partial<Record<TokenType, null | ((self: Parser, this_: Expression, to: Expression) => Expression)>> = {
     [TokenType.DOT]: null,
     [TokenType.DOTCOLON]: (self: Parser, this_: Expression, to: Expression) => self.expression(
       JSONCastExpr,
@@ -2182,7 +2184,7 @@ export class Parser {
     Object.keys(Parser.QUERY_MODIFIER_PARSERS) as TokenType[],
   );
 
-  static SET_PARSERS = {
+  static SET_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
     GLOBAL: (self: Parser) => self.parseSetItemAssignment({ kind: 'GLOBAL' }),
     LOCAL: (self: Parser) => self.parseSetItemAssignment({ kind: 'LOCAL' }),
     SESSION: (self: Parser) => self.parseSetItemAssignment({ kind: 'SESSION' }),
@@ -2191,7 +2193,7 @@ export class Parser {
 
   static SHOW_PARSERS: Record<string, (self: Parser) => Expression> = {};
 
-  static TYPE_LITERAL_PARSERS = {
+  static TYPE_LITERAL_PARSERS: Partial<Record<DataTypeExprKind, (self: Parser, thisArg: Expression, _: unknown) => Expression>> = {
     [DataTypeExprKind.JSON]: (self: Parser, thisArg: Expression, _: unknown) => self.expression(ParseJSONExpr, { this: thisArg }),
   };
 
@@ -2496,7 +2498,7 @@ export class Parser {
     'VERBOSE',
   ]);
 
-  static ANALYZE_EXPRESSION_PARSERS = {
+  static ANALYZE_EXPRESSION_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
     ALL: (self: Parser) => self.parseAnalyzeColumns(),
     COMPUTE: (self: Parser) => self.parseAnalyzeStatistics(),
     DELETE: (self: Parser) => self.parseAnalyzeDelete(),
@@ -8930,9 +8932,11 @@ export class Parser {
     return this.parsePlaceholder();
   }
 
-  parseVar (options?: { anyToken?: boolean;
+  parseVar (options?: {
+    anyToken?: boolean;
     tokens?: Set<TokenType>;
-    upper?: boolean; }): Expression | undefined {
+    upper?: boolean;
+  }): Expression | undefined {
     const anyToken = options?.anyToken || false;
     const tokens = options?.tokens;
     const upper = options?.upper || false;
