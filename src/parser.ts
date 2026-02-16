@@ -12491,7 +12491,7 @@ export class Parser {
 
     return this.buildPipeCte({
       query,
-      expressions: [new StarExpr()],
+      expressions: [new StarExpr({})],
     });
   }
 
@@ -12521,7 +12521,7 @@ export class Parser {
 
     return this.buildPipeCte({
       query,
-      expressions: [new StarExpr()],
+      expressions: [new StarExpr({})],
     });
   }
 
