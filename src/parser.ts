@@ -10123,7 +10123,7 @@ export class Parser {
     let thisExpr: Expression | undefined;
     if (
       namedPrimaryKey
-      && !this._constructor.CONSTRAINT_PARSERS.has(this._curr?.text.toUpperCase())
+      && !((this._curr?.text.toUpperCase() || '') in this._constructor.CONSTRAINT_PARSERS)
       && this._next
       && this._next.tokenType === TokenType.L_PAREN
     ) {
@@ -10156,7 +10156,7 @@ export class Parser {
     );
   }
 
-  parseBracketKeyValue (options?: { isMap?: boolean }): Expression | undefined {
+  parseBracketKeyValue (_options?: { isMap?: boolean }): Expression | undefined {
     return this.parseSlice(this.parseAlias(this.parseDisjunction(), { explicit: true }));
   }
 
