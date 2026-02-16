@@ -10872,7 +10872,7 @@ export class Parser {
     }
   }
 
-  toPropEq (expression: Expression, index: number): Expression {
+  toPropEq (expression: Expression, _index: number): Expression {
     return expression;
   }
 
@@ -10883,7 +10883,7 @@ export class Parser {
     for (let index = 0; index < expressions.length; index++) {
       let e = expressions[index];
 
-      if (this._constructor.KEY_VALUE_DEFINITIONS.some((def) => e instanceof def)) {
+      if ([...this._constructor.KEY_VALUE_DEFINITIONS.keys()].some((def) => e instanceof def)) {
         if (e instanceof AliasExpr) {
           e = this.expression(PropertyEQExpr, {
             this: e.args.alias,
@@ -10892,14 +10892,15 @@ export class Parser {
         }
 
         if (!(e instanceof PropertyEQExpr)) {
+          const eThis = e.this;
           e = this.expression(PropertyEQExpr, {
-            this: parseMap ? e.this : toIdentifier(e.this?.name),
+            this: parseMap ? e.this : toIdentifier(typeof eThis === 'object' && 'name' in eThis ? eThis.name : ''),
             expression: e.expression,
           });
         }
 
         if (e.this instanceof ColumnExpr) {
-          e.this.replace(e.this.this);
+          e.this.replace(e.this.$this);
         }
       } else {
         e = this.toPropEq(e, index);
