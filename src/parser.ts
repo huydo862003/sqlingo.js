@@ -2212,7 +2212,7 @@ export class Parser {
     TokenType.UNIQUE,
   ]);
 
-  static TRANSACTION_KIND: Set<TokenType> = new Set([
+  static TRANSACTION_KIND: Set<string> = new Set([
     'DEFERRED',
     'IMMEDIATE',
     'EXCLUSIVE',
@@ -2351,7 +2351,7 @@ export class Parser {
     ),
   };
 
-  static INSERT_ALTERNATIVES: Set<TokenType> = new Set([
+  static INSERT_ALTERNATIVES: Set<string> = new Set([
     'ABORT',
     'FAIL',
     'IGNORE',
@@ -2446,7 +2446,7 @@ export class Parser {
     TokenType.SELECT,
   ]);
 
-  static COPY_INTO_VARLEN_OPTIONS: Set<TokenType> = new Set([
+  static COPY_INTO_VARLEN_OPTIONS: Set<string> = new Set([
     'FILE_FORMAT',
     'COPY_OPTIONS',
     'FORMAT_OPTIONS',
@@ -2462,7 +2462,7 @@ export class Parser {
 
   static ODBC_DATETIME_LITERALS: Record<string, typeof Expression> = {};
 
-  static ON_CONDITION_TOKENS: Set<TokenType> = new Set([
+  static ON_CONDITION_TOKENS: Set<string> = new Set([
     'ERROR',
     'NULL',
     'TRUE',
@@ -2483,7 +2483,7 @@ export class Parser {
     'HISTORY',
   ]);
 
-  static SET_ASSIGNMENT_DELIMITERS: Set<TokenType> = new Set([
+  static SET_ASSIGNMENT_DELIMITERS: Set<string> = new Set([
     '=',
     ':=',
     'TO',
