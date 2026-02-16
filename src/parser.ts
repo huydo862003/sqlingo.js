@@ -8097,7 +8097,7 @@ export class Parser {
     });
   }
 
-  raiseError (message: string, token?: Token): void {
+  raiseError (message: string, token?: Token): never {
     /**
      * Appends an error in the list of recorded errors or raises it, depending on the chosen
      * error level setting.
