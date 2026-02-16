@@ -8651,7 +8651,11 @@ export class Parser {
     ).updatePositions(starToken);
   }
 
-  parseGrantRevokeCommon (): [GrantPrivilegeExpr[] | undefined, string | undefined, Expression | undefined] {
+  parseGrantRevokeCommon (): {
+    privileges: GrantPrivilegeExpr[] | undefined;
+    kind: string | undefined;
+    securable: Expression | undefined;
+  } {
     const privileges = this.parseCsv(() => this.parseGrantPrivilege());
 
     this._match(TokenType.ON);
@@ -8659,21 +8663,21 @@ export class Parser {
 
     const securable = this.tryParse(() => this.parseTableParts());
 
-    return [
+    return {
       privileges,
       kind,
       securable,
-    ];
+    };
   }
 
   parseGrant (): GrantExpr | CommandExpr {
     const start = this._prev;
 
-    const [
+    const {
       privileges,
       kind,
       securable,
-    ] = this.parseGrantRevokeCommon();
+    } = this.parseGrantRevokeCommon();
 
     if (!securable || !this._matchTextSeq('TO')) {
       return this.parseAsCommand(start);
@@ -8712,11 +8716,11 @@ export class Parser {
       'FOR',
     ]);
 
-    const [
+    const {
       privileges,
       kind,
       securable,
-    ] = this.parseGrantRevokeCommon();
+    } = this.parseGrantRevokeCommon();
 
     if (!securable || !this._matchTextSeq('FROM')) {
       return this.parseAsCommand(start);
@@ -8938,9 +8942,9 @@ export class Parser {
     return expression ? [expression] : undefined;
   }
 
-  parseCsv (parseMethod: () => Expression | undefined, sep: TokenType = TokenType.COMMA): Expression[] {
+  parseCsv<E extends Expression> (parseMethod: () => E | undefined, sep: TokenType = TokenType.COMMA): E[] {
     let parseResult = parseMethod();
-    const items: Expression[] = parseResult !== undefined ? [parseResult] : [];
+    const items: E[] = parseResult !== undefined ? [parseResult] : [];
 
     while (this._match(sep)) {
       this._addComments(parseResult);
