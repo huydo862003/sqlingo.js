@@ -6778,7 +6778,7 @@ export class Parser {
 
       if (expression) {
         for (const arg of this._constructor.SET_OP_MODIFIERS) {
-          const expr = expression.args[arg];
+          const expr = expression.args[arg as keyof typeof expression.args];
           if (expr instanceof Expression) {
             current.setArgKey(arg, expr.pop());
           }
@@ -10735,9 +10735,10 @@ export class Parser {
     }
 
     if (!this._next || this._next.tokenType !== TokenType.L_PAREN) {
-      if (optionalParens && this._constructor.NO_PAREN_FUNCTIONS[tokenType]) {
+      const noParen = this._constructor.NO_PAREN_FUNCTIONS[tokenType];
+      if (optionalParens && noParen) {
         this._advance();
-        return this.expression(this._constructor.NO_PAREN_FUNCTIONS[tokenType]);
+        return this.expression(noParen);
       }
 
       return undefined;
