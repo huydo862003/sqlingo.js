@@ -2748,7 +2748,7 @@ export class Parser {
     );
   }
 
-  protected _match (tokenType: TokenType, options?: { advance?: boolean }): boolean {
+  protected _match (tokenType: TokenType, options?: { advance?: boolean }): true | undefined {
     const { advance = true } = options || {};
     if (this._curr?.tokenType === tokenType) {
       if (advance) {
@@ -2756,7 +2756,7 @@ export class Parser {
       }
       return true;
     }
-    return false;
+    return undefined;
   }
 
   tryParse<T extends Expression | undefined> (
