@@ -2551,7 +2551,7 @@ export class Parser {
 
   static MODIFIERS_ATTACHED_TO_SET_OP = true;
 
-  static SET_OP_MODIFIERS: Set<TokenType> = new Set([
+  static SET_OP_MODIFIERS: Set<string> = new Set([
     'order',
     'limit',
     'offset',
