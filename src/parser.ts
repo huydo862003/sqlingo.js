@@ -1511,52 +1511,61 @@ export class Parser {
     ...Object.keys(Parser.SUBQUERY_PREDICATES).map(Number),
   ]);
 
-  static CONJUNCTION = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static CONJUNCTION: Partial<Record<TokenType, new (args: any) => Expression>> = {
     [TokenType.AND]: AndExpr,
   };
 
-  static ASSIGNMENT = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static ASSIGNMENT: Partial<Record<TokenType, new (args: any) => Expression>> = {
     [TokenType.COLON_EQ]: PropertyEQExpr,
   };
 
-  static DISJUNCTION = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static DISJUNCTION: Partial<Record<TokenType, new (args: any) => Expression>> = {
     [TokenType.OR]: OrExpr,
   };
 
-  static EQUALITY = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static EQUALITY: Partial<Record<TokenType, new (args: any) => Expression>> = {
     [TokenType.EQ]: EQExpr,
     [TokenType.NEQ]: NEQExpr,
     [TokenType.NULLSAFE_EQ]: NullSafeEQExpr,
   };
 
-  static COMPARISON = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static COMPARISON: Partial<Record<TokenType, new (args: any) => Expression>> = {
     [TokenType.GT]: GTExpr,
     [TokenType.GTE]: GTEExpr,
     [TokenType.LT]: LTExpr,
     [TokenType.LTE]: LTEExpr,
   };
 
-  static BITWISE = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static BITWISE: Partial<Record<TokenType, new (args: any) => Expression>> = {
     [TokenType.AMP]: BitwiseAndExpr,
     [TokenType.CARET]: BitwiseXorExpr,
     [TokenType.PIPE]: BitwiseOrExpr,
   };
 
-  static TERM = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static TERM: Partial<Record<TokenType, new (args: any) => Expression>> = {
     [TokenType.DASH]: SubExpr,
     [TokenType.PLUS]: AddExpr,
     [TokenType.MOD]: ModExpr,
     [TokenType.COLLATE]: CollateExpr,
   };
 
-  static FACTOR = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static FACTOR: Partial<Record<TokenType, new (args: any) => Expression>> = {
     [TokenType.DIV]: IntDivExpr,
     [TokenType.LR_ARROW]: DistanceExpr,
     [TokenType.SLASH]: DivExpr,
     [TokenType.STAR]: MulExpr,
   };
 
-  static EXPONENT = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static EXPONENT: Partial<Record<TokenType, new (args: any) => Expression>> = {};
 
   static TIMES = new Set([TokenType.TIME, TokenType.TIMETZ]);
 
