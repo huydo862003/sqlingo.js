@@ -8251,9 +8251,9 @@ export class Parser {
     });
   }
 
-  _matchTexts (texts: string[] | Set<string>, options: { advance?: boolean } = {}): true | undefined {
+  _matchTexts (texts: string | string[] | Set<string>, options: { advance?: boolean } = {}): true | undefined {
     const { advance = true } = options;
-    const textsArray = texts instanceof Set ? Array.from(texts) : texts;
+    const textsArray = texts instanceof Set ? Array.from(texts) : ensureList(texts);
     if (
       this._curr
       && this._curr.tokenType !== TokenType.STRING
@@ -8304,13 +8304,19 @@ export class Parser {
   }
 
   _matchLParen (expression?: Expression): void {
-    if (!this._match(TokenType.L_PAREN, true, expression)) {
+    if (!this._match(TokenType.L_PAREN, {
+      advance: true,
+      expression,
+    })) {
       this.raiseError('Expecting (');
     }
   }
 
   _matchRParen (expression?: Expression): void {
-    if (!this._match(TokenType.R_PAREN, true, expression)) {
+    if (!this._match(TokenType.R_PAREN, {
+      advance: true,
+      expression,
+    })) {
       this.raiseError('Expecting )');
     }
   }
@@ -8347,13 +8353,13 @@ export class Parser {
 
     const lambdaTypes: Record<string, Expression | false> = {};
     for (const e of expressions) {
-      lambdaTypes[e.name] = e.$to || false;
+      lambdaTypes[e.name] = e.args.to || false;
     }
 
     for (const column of node.findAll(ColumnExpr)) {
-      const typ = lambdaTypes[column.parts[0]?.name];
+      const typ = lambdaTypes[column.parts[0]?.name || ''];
       if (typ !== undefined) {
-        let dotOrId = column.table ? column.toDot() : column.$this;
+        let dotOrId: DotExpr | IdentifierExpr | StarExpr | CastExpr = column.table ? column.toDot() : column.$this;
 
         if (typ) {
           dotOrId = this.expression(
@@ -8627,7 +8633,7 @@ export class Parser {
   parseStarOps (): Expression | undefined {
     const starToken = this._prev;
 
-    if (this._matchTextSeq('COLUMNS', '(', { advance: false })) {
+    if (this._matchTextSeq(['COLUMNS', '('], { advance: false })) {
       const thisExpr = this.parseFunction();
       if (thisExpr instanceof ColumnsExpr) {
         thisExpr.setArgKey('unpack', true);
@@ -10920,7 +10926,7 @@ export class Parser {
     return this.parseColumnDef(this.parseIdVar(), { computedColumn: false });
   }
 
-  parseUserDefinedFunction (options?: { kind?: TokenType }): Expression | undefined {
+  parseUserDefinedFunction (_options: { kind?: TokenType } = {}): Expression | undefined {
     const thisExpr = this.parseTableParts({ schema: true });
 
     if (!this._match(TokenType.L_PAREN)) {
@@ -10984,7 +10990,7 @@ export class Parser {
     }
 
     if (this._matchSet(Object.keys(this._constructor.LAMBDAS) as TokenType[])) {
-      return this._constructor.LAMBDAS[this._prev!.tokenType](this, expressions);
+      return this._constructor.LAMBDAS[this._prev!.tokenType]?.(this, expressions.filter((e): e is Expression => Boolean(e)));
     }
 
     this._retreat(index);
