@@ -10441,8 +10441,8 @@ export class Parser {
       && this._next
       && this._next.text.toUpperCase() in this._constructor.PROCEDURE_OPTIONS;
 
-    if (!procedureOptionFollows && this._matchTexts(this._constructor.CONSTRAINT_PARSERS)) {
-      const constraint = this._constructor.CONSTRAINT_PARSERS[this._prev!.text.toUpperCase()](this);
+    if (!procedureOptionFollows && this._matchTexts(Object.keys(this._constructor.CONSTRAINT_PARSERS))) {
+      const constraint = this._constructor.CONSTRAINT_PARSERS[this._prev!.text.toUpperCase()]?.(this);
       if (!constraint) {
         this._retreat(this._index - 1);
         return undefined;
@@ -10490,7 +10490,7 @@ export class Parser {
 
     if (
       this._match(TokenType.IDENTIFIER, { advance: false })
-      || !this._matchTexts(constraints || this._constructor.CONSTRAINT_PARSERS)
+      || !this._matchTexts(constraints || Object.keys(this._constructor.CONSTRAINT_PARSERS))
     ) {
       return undefined;
     }
@@ -10500,9 +10500,10 @@ export class Parser {
       this.raiseError(`No parser found for schema constraint ${constraintName}.`);
     }
 
-    const constraint = this._constructor.CONSTRAINT_PARSERS[constraintName](this);
-    if (!constraint) {
+    const constraint = this._constructor.CONSTRAINT_PARSERS[constraintName]?.(this);
+    if (!constraint || Array.isArray(constraint)) {
       this._retreat(index);
+      return undefined;
     }
 
     return constraint;
@@ -10541,11 +10542,11 @@ export class Parser {
     if ((!kind && this._match(TokenType.ALIAS)) || this._matchTexts(['ALIAS', 'MATERIALIZED'])) {
       const persisted = this._prev!.text.toUpperCase() === 'MATERIALIZED';
       const constraintKind = new ComputedColumnConstraintExpr({
-        this: this.parseDisjunction(),
+        this: this.parseDisjunction()!,
         persisted: persisted || this._matchTextSeq('PERSISTED'),
         dataType: this._matchTextSeq('AUTO')
           ? new VarExpr({ this: 'AUTO' })
-          : this.parseTypes(),
+          : this.parseTypes()!,
         notNull: this._matchPair(TokenType.NOT, TokenType.NULL),
       });
       constraints.push(this.expression(ColumnConstraintExpr, { kind: constraintKind }));
@@ -10571,7 +10572,7 @@ export class Parser {
           ColumnConstraintExpr,
           {
             kind: new ComputedColumnConstraintExpr({
-              this: this.parseDisjunction(),
+              this: this.parseDisjunction()!,
               persisted:
                 this._matchTexts(['STORED', 'VIRTUAL'])
                 && this._prev!.text.toUpperCase() === 'STORED',
@@ -10629,7 +10630,7 @@ export class Parser {
       });
     }
 
-    return new AutoIncrementColumnConstraintExpr();
+    return new AutoIncrementColumnConstraintExpr({});
   }
 
   parseCheckConstraint (): CheckColumnConstraintExpr | undefined {
@@ -11146,7 +11147,7 @@ export class Parser {
     let thisExpr: Expression | undefined;
     let innerExpression: Expression | undefined;
 
-    let kind = this._curr?.text.toUpperCase();
+    let kind: string | undefined = this._curr?.text.toUpperCase();
 
     if (this._match(TokenType.TABLE) || this._match(TokenType.INDEX)) {
       thisExpr = this.parseTableParts();
@@ -12389,8 +12390,9 @@ export class Parser {
     const orders: OrderedExpr[] = [];
 
     for (const element of expr) {
+      let thisValue: Expression;
       if (element instanceof OrderedExpr) {
-        const thisValue = element.$this;
+        thisValue = element.$this;
         if (thisValue instanceof AliasExpr) {
           element.setArgKey('this', thisValue.args.alias);
         }
