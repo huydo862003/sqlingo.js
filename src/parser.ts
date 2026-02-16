@@ -9051,11 +9051,11 @@ export class Parser {
     }
 
     if (thisExpr instanceof AggFuncExpr) {
-      const ignoreRespect = thisExpr.find(IgnoreNullsExpr, RespectNullsExpr);
+      const ignoreRespect = thisExpr.find([IgnoreNullsExpr, RespectNullsExpr]);
 
       if (ignoreRespect && ignoreRespect !== thisExpr) {
-        ignoreRespect.replace(ignoreRespect.this);
-        thisExpr = this.expression(ignoreRespect.constructor, { this: thisExpr });
+        ignoreRespect.replace(ignoreRespect.$this);
+        thisExpr = this.expression(ignoreRespect._constructor, { this: thisExpr });
       }
     }
 

@@ -11506,6 +11506,7 @@ export class TimeUnitExpr extends Expression {
 
 export type IgnoreNullsExprArgs = Merge<[
   BaseExpressionArgs,
+  { this?: Expression },
 ]>;
 
 export class IgnoreNullsExpr extends Expression {
@@ -11520,10 +11521,15 @@ export class IgnoreNullsExpr extends Expression {
   constructor (args: IgnoreNullsExprArgs) {
     super(args);
   }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
+  }
 }
 
 export type RespectNullsExprArgs = Merge<[
   BaseExpressionArgs,
+  { this?: Expression },
 ]>;
 
 export class RespectNullsExpr extends Expression {
@@ -11537,6 +11543,10 @@ export class RespectNullsExpr extends Expression {
 
   constructor (args: RespectNullsExprArgs) {
     super(args);
+  }
+
+  get $this (): Expression | undefined {
+    return this.args.this;
   }
 }
 
