@@ -7576,11 +7576,11 @@ export class Parser {
       }
     } else if (typeToken === TokenType.INTERVAL) {
       if (this._curr && this._dialectConstructor.VALID_INTERVAL_UNITS.has(this._curr.text.toUpperCase())) {
-        let unit: Expression | undefined = this.parseVar({ upper: true });
+        let unit = this.parseVar({ upper: true });
         if (this._matchTextSeq('TO')) {
           unit = new IntervalSpanExpr({
-            this: unit,
-            expression: this.parseVar({ upper: true }),
+            this: unit!,
+            expression: this.parseVar({ upper: true })!,
           });
         }
 

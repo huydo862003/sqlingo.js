@@ -10018,12 +10018,12 @@ export enum DataTypeExprKind {
 export type DataTypeExprArgs = Merge<[
   BaseExpressionArgs,
   {
-    this: DataTypeExprKind;
+    this: string;
     expressions?: Expression[];
     nested?: boolean;
     values?: Expression[];
     prefix?: boolean | string;
-    kind?: DataTypeExprKind | DotExpr | IdentifierExpr;
+    kind?: DataTypeExprKind | DotExpr | IdentifierExpr | string;
     nullable?: Expression;
   },
 ]>;
@@ -10151,7 +10151,7 @@ export class DataTypeExpr extends Expression {
    * @returns The constructed DataTypeExpr object.
    */
   static build (
-    dtype: DataTypeExprKind | DataTypeExpr | IdentifierExpr | DotExpr,
+    dtype: DataTypeExprKind | DataTypeExpr | IdentifierExpr | DotExpr | string,
     options: {
       dialect?: DialectType;
       udt?: boolean;
@@ -10262,7 +10262,7 @@ export class DataTypeExpr extends Expression {
     return false;
   }
 
-  get $this (): DataTypeExprKind {
+  get $this (): string {
     return this.args.this;
   }
 
@@ -10282,7 +10282,7 @@ export class DataTypeExpr extends Expression {
     return this.args.prefix;
   }
 
-  get $kind (): DataTypeExprKind | DotExpr | IdentifierExpr | undefined {
+  get $kind (): DataTypeExprKind | DotExpr | IdentifierExpr | string | undefined {
     return this.args.kind;
   }
 
