@@ -639,7 +639,7 @@ export function buildLower (args: Expression[]): LowerExpr | LowerHexExpr {
   // LOWER(HEX(..)) can be simplified to LowerHex to simplify its transpilation
   const arg = seqGet(args, 0)!;
   return arg instanceof HexExpr
-    ? new LowerHexExpr({ this: arg.$this })
+    ? new LowerHexExpr({ this: arg.this })
     : new LowerExpr({ this: arg });
 }
 
@@ -650,7 +650,7 @@ export function buildUpper (args: Expression[]): UpperExpr | HexExpr {
   // UPPER(HEX(..)) can be simplified to Hex to simplify its transpilation
   const arg = seqGet(args, 0)!;
   return arg instanceof LowerHexExpr
-    ? new HexExpr({ this: arg.$this })
+    ? new HexExpr({ this: arg.this })
     : new UpperExpr({ this: arg });
 }
 
@@ -3952,7 +3952,7 @@ export class Parser {
         return undefined;
       }
 
-      const thisId = idVar.$this;
+      const thisId = idVar.this;
       options.push(
         this.expression(PropertyExpr, {
           this: thisText,
