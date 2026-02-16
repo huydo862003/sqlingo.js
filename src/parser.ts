@@ -9206,7 +9206,7 @@ export class Parser {
         this: thisExpr,
         alias,
       });
-      const column = thisExpr.$this;
+      const column = thisExpr.this;
 
       if (!thisExpr.comments && column && column.comments) {
         thisExpr.comments = column.popComments();
@@ -9767,14 +9767,14 @@ export class Parser {
       if (!to) {
         to = DataTypeExpr.build(DataTypeExpr.Type.UNKNOWN);
       }
-      if (DataTypeExpr.TEMPORAL_TYPES.has(to.$this)) {
+      if (DataTypeExpr.TEMPORAL_TYPES.has(to.this)) {
         thisExpr = this.expression(
-          to.$this === DataTypeExpr.Type.DATE ? StrToDateExpr : StrToTimeExpr,
+          to.this === DataTypeExpr.Type.DATE ? StrToDateExpr : StrToTimeExpr,
           {
             this: thisExpr,
             format: LiteralExpr.string(
               formatTime(
-                fmtString ? fmtString.$this : '',
+                fmtString ? fmtString.this : '',
                 this._dialectConstructor.FORMAT_MAPPING || this._dialectConstructor.TIME_MAPPING,
                 this._dialectConstructor.FORMAT_TRIE || this._dialectConstructor.TIME_TRIE,
               ),
@@ -9795,7 +9795,7 @@ export class Parser {
         dialect: this.dialect,
         udt: true,
       });
-    } else if (to.$this === DataTypeExpr.Type.CHAR) {
+    } else if (to.this === DataTypeExpr.Type.CHAR) {
       if (this._match(TokenType.CHARACTER_SET)) {
         to = this.expression(CharacterSetExpr, { this: this.parseVarOrString() });
       }
@@ -10871,13 +10871,13 @@ export class Parser {
 
         if (!(e instanceof PropertyEQExpr)) {
           e = this.expression(PropertyEQExpr, {
-            this: parseMap ? e.$this : toIdentifier(e.$this.name),
+            this: parseMap ? e.this : toIdentifier(e.this.name),
             expression: e.expression,
           });
         }
 
-        if (e.$this instanceof ColumnExpr) {
-          e.$this.replace(e.$this.$this);
+        if (e.this instanceof ColumnExpr) {
+          e.this.replace(e.this.this);
         }
       } else {
         e = this.toPropEq(e, index);
@@ -12448,7 +12448,7 @@ export class Parser {
       return expr ? expr.assertIs(SubqueryExpr).unnest() : undefined;
     };
 
-    firstSetop.$this.pop();
+    firstSetop.this.pop();
 
     const setops = [
       firstSetop.expression.pop().assertIs(SubqueryExpr)
