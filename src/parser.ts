@@ -1114,7 +1114,7 @@ export class Parser {
     [TokenType.CURRENT_ROLE]: CurrentRoleExpr,
   };
 
-  static STRUCT_TYPE_TOKENS = new Set([
+  static STRUCT_TYPE_TOKENS: Set<TokenType> = new Set([
     TokenType.FILE,
     TokenType.NESTED,
     TokenType.OBJECT,
@@ -1122,7 +1122,7 @@ export class Parser {
     TokenType.UNION,
   ]);
 
-  static NESTED_TYPE_TOKENS = new Set([
+  static NESTED_TYPE_TOKENS: Set<TokenType> = new Set([
     TokenType.ARRAY,
     TokenType.LIST,
     TokenType.LOWCARDINALITY,
@@ -1132,16 +1132,16 @@ export class Parser {
     ...Parser.STRUCT_TYPE_TOKENS,
   ]);
 
-  static ENUM_TYPE_TOKENS = new Set([
+  static ENUM_TYPE_TOKENS: Set<TokenType> = new Set([
     TokenType.DYNAMIC,
     TokenType.ENUM,
     TokenType.ENUM8,
     TokenType.ENUM16,
   ]);
 
-  static AGGREGATE_TYPE_TOKENS = new Set([TokenType.AGGREGATEFUNCTION, TokenType.SIMPLEAGGREGATEFUNCTION]);
+  static AGGREGATE_TYPE_TOKENS: Set<TokenType> = new Set([TokenType.AGGREGATEFUNCTION, TokenType.SIMPLEAGGREGATEFUNCTION]);
 
-  static TYPE_TOKENS = new Set([
+  static TYPE_TOKENS: Set<TokenType> = new Set([
     TokenType.BIT,
     TokenType.BOOLEAN,
     TokenType.TINYINT,
@@ -1280,11 +1280,11 @@ export class Parser {
     [TokenType.SOME]: AnyExpr,
   };
 
-  static RESERVED_TOKENS = new Set(
+  static RESERVED_TOKENS: Set<TokenType> = new Set(
     [...Object.values(Tokenizer.SINGLE_TOKENS), TokenType.SELECT].filter((t) => t !== TokenType.IDENTIFIER),
   );
 
-  static DB_CREATABLES = new Set([
+  static DB_CREATABLES: Set<TokenType> = new Set([
     TokenType.DATABASE,
     TokenType.DICTIONARY,
     TokenType.FILE_FORMAT,
@@ -1304,7 +1304,7 @@ export class Parser {
     TokenType.WAREHOUSE,
   ]);
 
-  static CREATABLES = new Set([
+  static CREATABLES: Set<TokenType> = new Set([
     TokenType.COLUMN,
     TokenType.CONSTRAINT,
     TokenType.FOREIGN_KEY,
@@ -1314,7 +1314,7 @@ export class Parser {
     ...Parser.DB_CREATABLES,
   ]);
 
-  static ALTERABLES = new Set([
+  static ALTERABLES: Set<TokenType> = new Set([
     TokenType.INDEX,
     TokenType.TABLE,
     TokenType.VIEW,
@@ -1423,7 +1423,7 @@ export class Parser {
     return tokens;
   })();
 
-  static TABLE_ALIAS_TOKENS = new Set(
+  static TABLE_ALIAS_TOKENS: Set<TokenType> = new Set(
     [...Parser.ID_VAR_TOKENS].filter((t) => ![
       TokenType.ANTI,
       TokenType.ASOF,
@@ -1447,21 +1447,21 @@ export class Parser {
     LIST: ListExpr,
   };
 
-  static COMMENT_TABLE_ALIAS_TOKENS = new Set(
+  static COMMENT_TABLE_ALIAS_TOKENS: Set<TokenType> = new Set(
     [...Parser.TABLE_ALIAS_TOKENS].filter((t) => t !== TokenType.IS),
   );
 
-  static UPDATE_ALIAS_TOKENS = new Set(
+  static UPDATE_ALIAS_TOKENS: Set<TokenType> = new Set(
     [...Parser.TABLE_ALIAS_TOKENS].filter((t) => t !== TokenType.SET),
   );
 
-  static TRIM_TYPES = new Set([
+  static TRIM_TYPES: Set<TokenType> = new Set([
     'LEADING',
     'TRAILING',
     'BOTH',
   ]);
 
-  static FUNC_TOKENS = new Set([
+  static FUNC_TOKENS: Set<TokenType> = new Set([
     TokenType.COLLATE,
     TokenType.COMMAND,
     TokenType.CURRENT_DATE,
@@ -1569,9 +1569,9 @@ export class Parser {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static EXPONENT: Partial<Record<TokenType, new (args: any) => Expression>> = {};
 
-  static TIMES = new Set([TokenType.TIME, TokenType.TIMETZ]);
+  static TIMES: Set<TokenType> = new Set([TokenType.TIME, TokenType.TIMETZ]);
 
-  static TIMESTAMPS = new Set([
+  static TIMESTAMPS: Set<TokenType> = new Set([
     TokenType.TIMESTAMP,
     TokenType.TIMESTAMPNTZ,
     TokenType.TIMESTAMPTZ,
@@ -1579,25 +1579,25 @@ export class Parser {
     ...Parser.TIMES,
   ]);
 
-  static SET_OPERATIONS = new Set([
+  static SET_OPERATIONS: Set<TokenType> = new Set([
     TokenType.UNION,
     TokenType.INTERSECT,
     TokenType.EXCEPT,
   ]);
 
-  static JOIN_METHODS = new Set([
+  static JOIN_METHODS: Set<TokenType> = new Set([
     TokenType.ASOF,
     TokenType.NATURAL,
     TokenType.POSITIONAL,
   ]);
 
-  static JOIN_SIDES = new Set([
+  static JOIN_SIDES: Set<TokenType> = new Set([
     TokenType.LEFT,
     TokenType.RIGHT,
     TokenType.FULL,
   ]);
 
-  static JOIN_KINDS = new Set([
+  static JOIN_KINDS: Set<TokenType> = new Set([
     TokenType.ANTI,
     TokenType.CROSS,
     TokenType.INNER,
@@ -1682,7 +1682,7 @@ export class Parser {
     ),
   };
 
-  static CAST_COLUMN_OPERATORS = new Set([TokenType.DOTCOLON, TokenType.DCOLON]);
+  static CAST_COLUMN_OPERATORS: Set<TokenType> = new Set([TokenType.DOTCOLON, TokenType.DCOLON]);
 
   static EXPRESSION_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
     [ExpressionKey.CLUSTER]: (self: Parser) => self.parseSort(ClusterExpr, TokenType.CLUSTER_BY),
@@ -2089,7 +2089,7 @@ export class Parser {
     COMPOUND: (self: Parser) => self.parseAlterSortkey({ compound: true }),
   };
 
-  static SCHEMA_UNNAMED_CONSTRAINTS = new Set([
+  static SCHEMA_UNNAMED_CONSTRAINTS: Set<TokenType> = new Set([
     'CHECK',
     'EXCLUDE',
     'FOREIGN KEY',
@@ -2111,11 +2111,12 @@ export class Parser {
     IF: (self: Parser) => self.parseIf(),
   };
 
-  static INVALID_FUNC_NAME_TOKENS = new Set([TokenType.IDENTIFIER, TokenType.STRING]);
+  static INVALID_FUNC_NAME_TOKENS: Set<TokenType> = new Set([TokenType.IDENTIFIER, TokenType.STRING]);
 
-  static FUNCTIONS_WITH_ALIASED_ARGS = new Set(['STRUCT']);
+  static FUNCTIONS_WITH_ALIASED_ARGS: Set<string> = new Set(['STRUCT']);
 
-  static KEY_VALUE_DEFINITIONS = new Set([
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static KEY_VALUE_DEFINITIONS: Set<new (args: any) => Expression> = new Set([
     AliasExpr,
     EQExpr,
     PropertyEQExpr,
@@ -2180,7 +2181,7 @@ export class Parser {
     [TokenType.START_WITH]: (self: Parser): [string, Expression | undefined] => ['connect', self.parseConnect()],
   };
 
-  static QUERY_MODIFIER_TOKENS = new Set(
+  static QUERY_MODIFIER_TOKENS: Set<TokenType> = new Set(
     Object.keys(Parser.QUERY_MODIFIER_PARSERS) as TokenType[],
   );
 
@@ -2199,19 +2200,19 @@ export class Parser {
 
   static TYPE_CONVERTERS: Partial<Record<DataTypeExprKind, (dataType: DataTypeExpr) => DataTypeExpr>> = {};
 
-  static DDL_SELECT_TOKENS = new Set([
+  static DDL_SELECT_TOKENS: Set<TokenType> = new Set([
     TokenType.SELECT,
     TokenType.WITH,
     TokenType.L_PAREN,
   ]);
 
-  static PRE_VOLATILE_TOKENS = new Set([
+  static PRE_VOLATILE_TOKENS: Set<TokenType> = new Set([
     TokenType.CREATE,
     TokenType.REPLACE,
     TokenType.UNIQUE,
   ]);
 
-  static TRANSACTION_KIND = new Set([
+  static TRANSACTION_KIND: Set<TokenType> = new Set([
     'DEFERRED',
     'IMMEDIATE',
     'EXCLUSIVE',
@@ -2350,7 +2351,7 @@ export class Parser {
     ),
   };
 
-  static INSERT_ALTERNATIVES = new Set([
+  static INSERT_ALTERNATIVES: Set<TokenType> = new Set([
     'ABORT',
     'FAIL',
     'IGNORE',
@@ -2358,15 +2359,15 @@ export class Parser {
     'ROLLBACK',
   ]);
 
-  static CLONE_KEYWORDS = new Set(['CLONE', 'COPY']);
+  static CLONE_KEYWORDS: Set<string> = new Set(['CLONE', 'COPY']);
 
-  static HISTORICAL_DATA_PREFIX = new Set([
+  static HISTORICAL_DATA_PREFIX: Set<string> = new Set([
     'AT',
     'BEFORE',
     'END',
   ]);
 
-  static HISTORICAL_DATA_KIND = new Set([
+  static HISTORICAL_DATA_KIND: Set<string> = new Set([
     'OFFSET',
     'STATEMENT',
     'STREAM',
@@ -2374,22 +2375,22 @@ export class Parser {
     'VERSION',
   ]);
 
-  static OPCLASS_FOLLOW_KEYWORDS = new Set([
+  static OPCLASS_FOLLOW_KEYWORDS: Set<string> = new Set([
     'ASC',
     'DESC',
     'NULLS',
     'WITH',
   ]);
 
-  static OPTYPE_FOLLOW_TOKENS = new Set([TokenType.COMMA, TokenType.R_PAREN]);
+  static OPTYPE_FOLLOW_TOKENS: Set<TokenType> = new Set([TokenType.COMMA, TokenType.R_PAREN]);
 
-  static TABLE_INDEX_HINT_TOKENS = new Set([
+  static TABLE_INDEX_HINT_TOKENS: Set<TokenType> = new Set([
     TokenType.FORCE,
     TokenType.IGNORE,
     TokenType.USE,
   ]);
 
-  static VIEW_ATTRIBUTES = new Set([
+  static VIEW_ATTRIBUTES: Set<string> = new Set([
     'ENCRYPTION',
     'SCHEMABINDING',
     'VIEW_METADATA',
@@ -2402,11 +2403,11 @@ export class Parser {
     return result;
   })();
 
-  static WINDOW_BEFORE_PAREN_TOKENS = new Set([TokenType.OVER]);
+  static WINDOW_BEFORE_PAREN_TOKENS: Set<TokenType> = new Set([TokenType.OVER]);
 
-  static WINDOW_SIDES = new Set(['FOLLOWING', 'PRECEDING']);
+  static WINDOW_SIDES: Set<string> = new Set(['FOLLOWING', 'PRECEDING']);
 
-  static JSON_KEY_VALUE_SEPARATOR_TOKENS = new Set([
+  static JSON_KEY_VALUE_SEPARATOR_TOKENS: Set<TokenType> = new Set([
     TokenType.COLON,
     TokenType.COMMA,
     TokenType.IS,
@@ -2420,7 +2421,7 @@ export class Parser {
     return result;
   })();
 
-  static ADD_CONSTRAINT_TOKENS = new Set([
+  static ADD_CONSTRAINT_TOKENS: Set<TokenType> = new Set([
     TokenType.CONSTRAINT,
     TokenType.FOREIGN_KEY,
     TokenType.INDEX,
@@ -2429,7 +2430,7 @@ export class Parser {
     TokenType.UNIQUE,
   ]);
 
-  static DISTINCT_TOKENS = new Set([TokenType.DISTINCT]);
+  static DISTINCT_TOKENS: Set<TokenType> = new Set([TokenType.DISTINCT]);
 
   static UNNEST_OFFSET_ALIAS_TOKENS = (() => {
     const result = new Set(Parser.TABLE_ALIAS_TOKENS);
@@ -2439,20 +2440,20 @@ export class Parser {
     return result;
   })();
 
-  static SELECT_START_TOKENS = new Set([
+  static SELECT_START_TOKENS: Set<TokenType> = new Set([
     TokenType.L_PAREN,
     TokenType.WITH,
     TokenType.SELECT,
   ]);
 
-  static COPY_INTO_VARLEN_OPTIONS = new Set([
+  static COPY_INTO_VARLEN_OPTIONS: Set<TokenType> = new Set([
     'FILE_FORMAT',
     'COPY_OPTIONS',
     'FORMAT_OPTIONS',
     'CREDENTIAL',
   ]);
 
-  static IS_JSON_PREDICATE_KIND = new Set([
+  static IS_JSON_PREDICATE_KIND: Set<string> = new Set([
     'VALUE',
     'SCALAR',
     'ARRAY',
@@ -2461,7 +2462,7 @@ export class Parser {
 
   static ODBC_DATETIME_LITERALS: Record<string, typeof Expression> = {};
 
-  static ON_CONDITION_TOKENS = new Set([
+  static ON_CONDITION_TOKENS: Set<TokenType> = new Set([
     'ERROR',
     'NULL',
     'TRUE',
@@ -2469,26 +2470,26 @@ export class Parser {
     'EMPTY',
   ]);
 
-  static PRIVILEGE_FOLLOW_TOKENS = new Set([
+  static PRIVILEGE_FOLLOW_TOKENS: Set<TokenType> = new Set([
     TokenType.ON,
     TokenType.COMMA,
     TokenType.L_PAREN,
   ]);
 
-  static DESCRIBE_STYLES = new Set([
+  static DESCRIBE_STYLES: Set<string> = new Set([
     'ANALYZE',
     'EXTENDED',
     'FORMATTED',
     'HISTORY',
   ]);
 
-  static SET_ASSIGNMENT_DELIMITERS = new Set([
+  static SET_ASSIGNMENT_DELIMITERS: Set<TokenType> = new Set([
     '=',
     ':=',
     'TO',
   ]);
 
-  static ANALYZE_STYLES = new Set([
+  static ANALYZE_STYLES: Set<string> = new Set([
     'BUFFER_USAGE_LIMIT',
     'FULL',
     'LOCAL',
@@ -2510,13 +2511,13 @@ export class Parser {
     VALIDATE: (self: Parser) => self.parseAnalyzeValidate(),
   };
 
-  static PARTITION_KEYWORDS = new Set(['PARTITION', 'SUBPARTITION']);
+  static PARTITION_KEYWORDS: Set<string> = new Set(['PARTITION', 'SUBPARTITION']);
 
   static AMBIGUOUS_ALIAS_TOKENS = [TokenType.LIMIT, TokenType.OFFSET] as const;
 
   static OPERATION_MODIFIERS: Set<string> = new Set();
 
-  static RECURSIVE_CTE_SEARCH_KIND = new Set([
+  static RECURSIVE_CTE_SEARCH_KIND: Set<string> = new Set([
     'BREADTH',
     'DEPTH',
     'CYCLE',
@@ -2550,7 +2551,7 @@ export class Parser {
 
   static MODIFIERS_ATTACHED_TO_SET_OP = true;
 
-  static SET_OP_MODIFIERS = new Set([
+  static SET_OP_MODIFIERS: Set<TokenType> = new Set([
     'order',
     'limit',
     'offset',
