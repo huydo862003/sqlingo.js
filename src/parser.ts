@@ -4420,7 +4420,7 @@ export class Parser {
         thisExpr = thisExpr.$this;
       }
 
-      if ('with' in thisExpr._constructor.argTypes) {
+      if (thisExpr._constructor.availableArgs.has('with')) {
         thisExpr.setArgKey('with', cte);
       } else {
         this.raiseError(`${thisExpr.key} does not support CTE`);
@@ -8797,7 +8797,7 @@ export class Parser {
     );
   }
 
-  identifierExpression (token?: Token, kwargs?: unknown): IdentifierExpr {
+  identifierExpression (token?: Token, kwargs?: { [index: string]: unknown }): IdentifierExpr {
     return this.expression(IdentifierExpr, {
       token: token || this._prev,
       ...kwargs,
@@ -8812,7 +8812,7 @@ export class Parser {
     while (this._matchSet(expressionTokens)) {
       const exprType = expressions[this._prev!.tokenType];
       thisExpr = this.expression(
-        exprType,
+        exprType!,
         {
           this: thisExpr,
           comments: this._prevComments,
@@ -9242,7 +9242,7 @@ export class Parser {
         this: thisExpr,
         alias,
       });
-      const column = thisExpr.this;
+      const column = (thisExpr as AliasExpr).$this;
 
       if (!thisExpr.comments && column && column.comments) {
         thisExpr.comments = column.popComments();
@@ -9322,7 +9322,7 @@ export class Parser {
   }
 
   parseSubstring (): SubstringExpr {
-    const args = this.parseCsv(() => this.parseBitwise()) as (Expression | undefined)[];
+    const args = this.parseCsv(() => this.parseBitwise()) as Expression[];
 
     let start: Expression | undefined;
     let length: Expression | undefined;
@@ -9507,7 +9507,11 @@ export class Parser {
       expressions = this.parseCsv(() => this.parseColumn());
     }
 
-    this._matchTextSeq(')', 'AGAINST', '(');
+    this._matchTextSeq([
+      ')',
+      'AGAINST',
+      '(',
+    ]);
 
     const thisExpr = this.parseString();
 
@@ -9682,7 +9686,7 @@ export class Parser {
 
     if (this._matchTextSeq(['XMLNAMESPACES', '('])) {
       namespaces = this.parseXmlNamespace();
-      this._matchTextSeq(')', ',');
+      this._matchTextSeq([')', ',']);
     }
 
     const thisExpr = this.parseString();
