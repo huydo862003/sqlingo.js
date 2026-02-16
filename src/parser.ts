@@ -466,8 +466,8 @@ import {
   mergeErrors,
   ParseError,
 } from './errors';
-import type { Token } from './tokens';
 import {
+  Token,
   Tokenizer, TokenType,
 } from './tokens';
 import {
@@ -8097,7 +8097,7 @@ export class Parser {
     });
   }
 
-  raiseError (message: string, token?: Token): never {
+  raiseError (message: string, token?: Token) {
     /**
      * Appends an error in the list of recorded errors or raises it, depending on the chosen
      * error level setting.

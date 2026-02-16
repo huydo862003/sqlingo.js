@@ -104,11 +104,12 @@ export class ExecuteError extends SqlglotError {
 }
 
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/errors.py#L90-L150
-export function highlightSql (
-  sql: string,
-  positions: [number, number][],
-  contextLength: number = ERROR_MESSAGE_CONTEXT_DEFAULT,
-): [string, string, string, string] {
+export function highlightSql (options: {
+  sql: string;
+  positions: [number, number][];
+  contextLength?: number;
+}): { formattedSql: string; startContext: string; highlight: string; endContext: string } {
+  const { sql, positions, contextLength = ERROR_MESSAGE_CONTEXT_DEFAULT } = options;
   if (positions.length === 0) {
     throw new Error('positions must contain at least one [start, end] tuple');
   }
@@ -153,12 +154,12 @@ export function highlightSql (
   const formattedSql = formattedParts.join('');
   const highlight = sql.slice(firstHighlightStart, previousPartEnd);
 
-  return [
+  return {
     formattedSql,
     startContext,
     highlight,
     endContext,
-  ];
+  };
 }
 
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/errors.py#L153-L158
