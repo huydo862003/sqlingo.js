@@ -37,6 +37,6 @@
     "GitHub": "https://github.com/tobymao/sqlglot",
     "Original SQLGlot": "https://sqlglot.com"
   },
-  "name": "@hdnax/sqlglot.js",
+  "name": "@hdnax/sqlingo.js",
   "includeHierarchySummary": true
 }

@@ -1,4 +1,4 @@
-# sqlglot.js
+# sqlingo.js
 
 ![Status](https://img.shields.io/badge/status-active-brightblue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -74,7 +74,7 @@ pnpm docs          # Generate documentation
 
 ## License
 
-sqlglot.js is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+sqlingo.js is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## Attribution
 
