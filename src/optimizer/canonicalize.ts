@@ -16,20 +16,20 @@ import {
   DateExpr,
   DateSubExpr,
   DateTruncExpr,
-  EQExpr,
+  EqExpr,
   ExtractExpr,
-  GTEExpr,
-  GTExpr,
+  GteExpr,
+  GtExpr,
   HavingExpr,
   IfExpr,
   IntervalExpr,
   LiteralExpr,
-  LTEExpr,
-  LTExpr,
-  NEQExpr,
+  LteExpr,
+  LtExpr,
+  NeqExpr,
   NotExpr,
-  NullSafeEQExpr,
-  NullSafeNEQExpr,
+  NullSafeEqExpr,
+  NullSafeNeqExpr,
   OrderedExpr,
   SubExpr,
   TimestampExpr,
@@ -81,7 +81,7 @@ export function canonicalize (
     node = replaceDateFuncs(node, dialectInstance);
     node = coerceType(node, { promoteToInferredDatetimeType: Dialect.PROMOTE_TO_INFERRED_DATETIME_TYPE });
     node = removeRedundantCasts(node);
-    node = ensureBools(node, _replaceIntPredicate);
+    node = ensureBools(node, replaceIntPredicate);
     node = removeAscendingOrder(node);
     return node;
   }
@@ -136,8 +136,10 @@ export function replaceDateFuncs (node: Expression, dialect: Dialect): Expressio
 
   // Timestamp() with no zone
   if (node instanceof TimestampExpr) {
-    const args = node.args as { zone?: Expression;
-      this?: Expression; };
+    const args = node.args as {
+      zone?: Expression;
+      this?: Expression;
+    };
     const zone = args.zone;
 
     if (!zone) {
@@ -152,6 +154,10 @@ export function replaceDateFuncs (node: Expression, dialect: Dialect): Expressio
       }
 
       const targetType = nodeToUse.type || new DataTypeExpr({ this: DataTypeExprKind.TIMESTAMP });
+
+      if (!(targetType instanceof DataTypeExpr)) {
+        return node;
+      }
 
       return new CastExpr({
         this: thisArg,
@@ -169,14 +175,14 @@ export function replaceDateFuncs (node: Expression, dialect: Dialect): Expressio
 const COERCIBLE_DATE_OPS = [
   AddExpr,
   SubExpr,
-  EQExpr,
-  NEQExpr,
-  GTExpr,
-  GTEExpr,
-  LTExpr,
-  LTEExpr,
-  NullSafeEQExpr,
-  NullSafeNEQExpr,
+  EqExpr,
+  NeqExpr,
+  GtExpr,
+  GteExpr,
+  LtExpr,
+  LteExpr,
+  NullSafeEqExpr,
+  NullSafeNeqExpr,
 ];
 
 /**
@@ -192,14 +198,14 @@ export function coerceType (node: Expression, options: { promoteToInferredDateti
     const right = node.expression;
 
     if (left && right) {
-      _coerceDate(left as Expression, right as Expression, promoteToInferredDatetimeType);
+      coerceDate(left as Expression, right as Expression, promoteToInferredDatetimeType);
     }
   } else if (node instanceof BetweenExpr) {
     const thisArg = node.$this;
     const low = node.args.low;
 
     if (thisArg && low) {
-      _coerceDate(thisArg as Expression, low as Expression, promoteToInferredDatetimeType);
+      coerceDate(thisArg as Expression, low as Expression, promoteToInferredDatetimeType);
     }
   } else if (node instanceof ExtractExpr) {
     const expr = node.$expression;
@@ -208,7 +214,7 @@ export function coerceType (node: Expression, options: { promoteToInferredDateti
       const exprNode = expr as Expression;
       const isTemporalType = exprNode.type?.this && DataTypeExpr.TEMPORAL_TYPES.has(exprNode.type.this as DataTypeExprKind);
       if (!isTemporalType) {
-        _replaceCast(exprNode, DataTypeExprKind.DATETIME);
+        replaceCast(exprNode, DataTypeExprKind.DATETIME);
       }
     }
   } else if (node instanceof DateAddExpr || node instanceof DateSubExpr || node instanceof DateTruncExpr) {
@@ -216,10 +222,10 @@ export function coerceType (node: Expression, options: { promoteToInferredDateti
     const unit = node.args.unit;
 
     if (thisArg) {
-      _coerceTimeunitArg(thisArg as Expression, unit as Expression | undefined);
+      coerceTimeunitArg(thisArg as Expression, unit as Expression | undefined);
     }
   } else if (node instanceof DateDiffExpr) {
-    _coerceDateDiffArgs(node);
+    coerceDateDiffArgs(node);
   }
 
   return node;
@@ -317,7 +323,7 @@ export function removeAscendingOrder (expression: Expression): Expression {
 /**
  * Coerce date types between two expressions.
  */
-function _coerceDate (
+function coerceDate (
   a: Expression,
   b: Expression,
   promoteToInferredDatetimeType: boolean,
@@ -326,7 +332,7 @@ function _coerceDate (
   for (const [left, right] of [[a, b], [b, a]]) {
     if (right instanceof IntervalExpr) {
       const unit = right.args.unit;
-      _coerceTimeunitArg(left, unit as Expression | undefined);
+      coerceTimeunitArg(left, unit as Expression | undefined);
     }
 
     const leftType = left.type;
@@ -366,17 +372,17 @@ function _coerceDate (
     }
 
     if (targetType !== leftType.this) {
-      _replaceCast(left, targetType);
+      replaceCast(left, targetType);
     }
 
-    _replaceCast(right, targetType);
+    replaceCast(right, targetType);
   }
 }
 
 /**
  * Coerce time unit argument to appropriate type.
  */
-function _coerceTimeunitArg (
+function coerceTimeunitArg (
   arg: Expression,
   unit: Expression | undefined,
 ): Expression {
@@ -415,7 +421,7 @@ function _coerceTimeunitArg (
 /**
  * Coerce DateDiff arguments to temporal types.
  */
-function _coerceDateDiffArgs (node: DateDiffExpr): void {
+function coerceDateDiffArgs (node: DateDiffExpr): void {
   const thisArg = node.$this;
   const exprArg = node.$expression;
 
@@ -435,7 +441,7 @@ function _coerceDateDiffArgs (node: DateDiffExpr): void {
 /**
  * Replace node with a cast to the given type.
  */
-function _replaceCast (node: Expression, to: DataTypeExprKind): void {
+function replaceCast (node: Expression, to: DataTypeExprKind): void {
   node.replace(new CastExpr({
     this: node.copy(),
     to: new DataTypeExpr({ this: to }),
@@ -448,12 +454,12 @@ function _replaceCast (node: Expression, to: DataTypeExprKind): void {
  * This was originally designed for Presto, which has a boolean type.
  * Presto requires: with y as (select true as x) select x = 0 FROM y -- illegal
  */
-function _replaceIntPredicate (expression: Expression): void {
+function replaceIntPredicate (expression: Expression): void {
   if (expression instanceof CoalesceExpr) {
     const expressions = expression.$expressions;
     if (expressions) {
       for (const child of expressions) {
-        _replaceIntPredicate(child);
+        replaceIntPredicate(child);
       }
     }
   } else if (expression.type?.this && DataTypeExpr.INTEGER_TYPES.has(expression.type.this as DataTypeExprKind)) {
@@ -461,7 +467,7 @@ function _replaceIntPredicate (expression: Expression): void {
       this: '0',
       isString: false,
     });
-    expression.replace(new NEQExpr({
+    expression.replace(new NeqExpr({
       this: expression,
       expression: zero,
     }));

@@ -6,11 +6,11 @@ import type {
 } from '../expressions';
 import {
   ColumnExpr,
-  CTEExpr,
-  DDLExpr,
+  CteExpr,
+  DdlExpr,
   DerivedTableExpr,
   DistinctExpr,
-  DMLExpr,
+  DmlExpr,
   DotExpr,
   FinalExpr,
   FuncExpr,
@@ -31,7 +31,7 @@ import {
   TableAliasExpr,
   TableColumnExpr,
   TableExpr,
-  UDTFExpr,
+  UdtfExpr,
   UnnestExpr,
   UNWRAPPED_QUERIES,
   WindowExpr,
@@ -44,8 +44,8 @@ import {
 
 const TRAVERSABLES = [
   QueryExpr,
-  DDLExpr,
-  DMLExpr,
+  DdlExpr,
+  DmlExpr,
 ] as const;
 
 /**
@@ -142,9 +142,9 @@ export class Scope {
   private _tableColumns?: TableColumnExpr[];
   private _stars?: (ColumnExpr | DotExpr)[];
   private _derivedTables?: SubqueryExpr[];
-  private _udtfs?: UDTFExpr[];
+  private _udtfs?: UdtfExpr[];
   private _tables?: TableExpr[];
-  private _ctes?: CTEExpr[];
+  private _ctes?: CteExpr[];
   private _subqueries?: QueryExpr[];
   private _selectedSources?: Record<string, [Expression, TableExpr | Scope]>;
   private _columns?: ColumnExpr[];
@@ -313,10 +313,10 @@ export class Scope {
         this._tables.push(node as TableExpr);
       } else if (node instanceof JoinHintExpr) {
         this._joinHints.push(node as JoinHintExpr);
-      } else if (node instanceof UDTFExpr) {
-        this._udtfs.push(node as UDTFExpr);
-      } else if (node instanceof CTEExpr) {
-        this._ctes.push(node as CTEExpr);
+      } else if (node instanceof UdtfExpr) {
+        this._udtfs.push(node as UdtfExpr);
+      } else if (node instanceof CteExpr) {
+        this._ctes.push(node as CteExpr);
       } else if (node instanceof SubqueryExpr) {
         const isFromOrJoin = _isFromOrJoin(node);
         if (_isDerivedTable(node) && isFromOrJoin) {
@@ -387,7 +387,7 @@ export class Scope {
   /**
    * List of CTEs in this scope
    */
-  get ctes (): CTEExpr[] {
+  get ctes (): CteExpr[] {
     this._ensureCollected();
     return this._ctes!;
   }
@@ -405,7 +405,7 @@ export class Scope {
   /**
    * List of user-defined tabular functions in this scope
    */
-  get udtfs (): UDTFExpr[] {
+  get udtfs (): UdtfExpr[] {
     this._ensureCollected();
     return this._udtfs!;
   }
@@ -765,9 +765,9 @@ function* _traverseScope (scope: Scope): Generator<Scope> {
     }
   } else if (expression instanceof TableExpr) {
     yield* _traverseTables(scope);
-  } else if (expression instanceof UDTFExpr) {
+  } else if (expression instanceof UdtfExpr) {
     yield* _traverseUdtfs(scope);
-  } else if (expression instanceof DDLExpr) {
+  } else if (expression instanceof DdlExpr) {
     if (expression.expression instanceof QueryExpr) {
       yield* _traverseCtes(scope);
       yield* _traverseScope(
@@ -778,11 +778,11 @@ function* _traverseScope (scope: Scope): Generator<Scope> {
       );
     }
     return;
-  } else if (expression instanceof DMLExpr) {
+  } else if (expression instanceof DmlExpr) {
     yield* _traverseCtes(scope);
     for (const query of findAllInScope(expression, [QueryExpr])) {
       const parent = query.parent;
-      if (parent && !(parent instanceof CTEExpr) && !(parent instanceof SubqueryExpr)) {
+      if (parent && !(parent instanceof CteExpr) && !(parent instanceof SubqueryExpr)) {
         yield* _traverseScope(
           new Scope({
             expression: query,
@@ -992,7 +992,7 @@ function* _traverseTables (scope: Scope): Generator<Scope> {
     let scopeType: ScopeType;
     let scopes: Scope[];
 
-    if (expression instanceof UDTFExpr) {
+    if (expression instanceof UdtfExpr) {
       lateralSources = sources;
       scopeType = ScopeType.UDTF;
       scopes = scope.udtfScopes;
@@ -1141,18 +1141,18 @@ export function* walkInScope (
     }
 
     if (
-      node instanceof CTEExpr
+      node instanceof CteExpr
       || (
         (node.parent instanceof FromExpr || node.parent instanceof JoinExpr)
         && node instanceof SubqueryExpr
         && _isDerivedTable(node)
       )
-      || (node.parent instanceof UDTFExpr && node instanceof QueryExpr)
+      || (node.parent instanceof UdtfExpr && node instanceof QueryExpr)
       || UNWRAPPED_QUERIES.some((T) => node instanceof T)
     ) {
       crossedScopeBoundary = true;
 
-      if (node instanceof SubqueryExpr || node instanceof UDTFExpr) {
+      if (node instanceof SubqueryExpr || node instanceof UdtfExpr) {
         for (const key of [
           'joins',
           'laterals',

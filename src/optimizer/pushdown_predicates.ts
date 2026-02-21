@@ -23,8 +23,8 @@ import {
 import {
   Dialect, type DialectType,
 } from '../dialects/dialect';
-import { Athena } from '../dialects/athena.ts';
-import { Presto } from '../dialects/presto.ts';
+import { Athena } from '../dialects/athena';
+import { Presto } from '../dialects/presto';
 import { normalized } from './normalize';
 import {
   buildScope, findInScope, Scope,
@@ -91,7 +91,7 @@ export function pushdownPredicates<E extends Expression> (
           const [node] = source;
           if (!node) continue;
 
-          const parent = node.findAncestor(JoinExpr, FromExpr);
+          const parent = node.findAncestor<JoinExpr | FromExpr>(JoinExpr, FromExpr);
 
           if (parent instanceof JoinExpr) {
             const joinParent = parent as JoinExpr;
@@ -178,7 +178,7 @@ function pushdownCnf (
 
     for (const [name, node] of Object.entries(nodes)) {
       if (node instanceof JoinExpr) {
-        const predicateTables = columnTableNames(predicate, name);
+        const predicateTables = columnTableNames(predicate, { exclude: name });
 
         // Don't push the predicate if it references tables that appear in later joins
         const thisIndex = joinIndexMap.get(name) ?? -1;
@@ -298,7 +298,7 @@ function nodesForPredicate (
     // If the predicate is in a where statement we can try to push it down
     // We want to find the root join or from statement
     if (node && whereCondition) {
-      const parent = node.findAncestor(JoinExpr, FromExpr);
+      const parent = node.findAncestor<JoinExpr | FromExpr>(JoinExpr, FromExpr);
       if (parent) {
         node = parent;
       }

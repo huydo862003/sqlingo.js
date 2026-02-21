@@ -2,8 +2,8 @@
 
 import type {
   DateSubExpr,
-  JSONBExtractScalarExpr,
-  JSONExtractScalarExpr,
+  JsonbExtractScalarExpr,
+  JsonExtractScalarExpr,
   TimeSubExpr,
   TimestampSubExpr,
   TsOrDsDiffExpr,
@@ -45,7 +45,7 @@ import type {
   DatetimeExpr,
   TimeExpr,
   TimestampExpr,
-  SHA2Expr,
+  Sha2Expr,
   GenerateSeriesExpr,
   GenerateDateArrayExpr,
   DatetimeDiffExpr,
@@ -61,22 +61,19 @@ import type {
   MergeExpr,
   AnyValueExpr,
   XorExpr,
-  DotExpr,
-  ValuesExpr,
-  JSONExtractExprArgs,
+  JsonExtractExprArgs,
   RegexpExtractExprArgs,
 } from '../expressions';
 import {
-  JSONBExtractExpr,
+  JsonbExtractExpr,
   DatetimeSubExpr,
   RegexpExtractExpr,
   PosexplodeExpr,
-  SelectExpr,
   TableAliasExpr,
   ExplodeExpr,
   KwargExpr,
   ArrayRemoveExpr,
-  JSONPathPartExpr,
+  JsonPathPartExpr,
   LimitExpr,
   PlaceholderExpr,
   JoinExprKind,
@@ -108,36 +105,36 @@ import {
   DateTruncExpr,
   DatetimeAddExpr,
   DPipeExpr,
-  EQExpr,
+  EqExpr,
   EscapeExpr,
   ExpressionKey,
-  GTExpr,
-  GTEExpr,
+  GtExpr,
+  GteExpr,
   IdentifierExpr,
   IfExpr,
   IntervalExpr,
   IsExpr,
   JoinExpr,
-  JSONExtractExpr,
-  JSONPathExpr,
-  JSONPathKeyExpr,
-  JSONPathRootExpr,
-  JSONPathSubscriptExpr,
-  JSONPathWildcardExpr,
+  JsonExtractExpr,
+  JsonPathExpr,
+  JsonPathKeyExpr,
+  JsonPathRootExpr,
+  JsonPathSubscriptExpr,
+  JsonPathWildcardExpr,
   LambdaExpr,
   LateralExpr,
   LengthExpr,
   LikeExpr,
   LiteralExpr,
   LowerExpr,
-  LTExpr,
-  LTEExpr,
-  NEQExpr,
+  LtExpr,
+  LteExpr,
+  NeqExpr,
   NotExpr,
   NullExpr,
   OrderExpr,
   OrExpr,
-  ParseJSONExpr,
+  ParseJsonExpr,
   QueryExpr,
   ReplaceExpr,
   select,
@@ -174,7 +171,7 @@ import {
   newTrie, type TrieNode,
 } from '../trie';
 import {
-  JSONPathTokenizer, parse as parseJsonPath,
+  JsonPathTokenizer, parse as parseJsonPath,
 } from '../jsonpath';
 import type {
   GeneratorOptions, TranspileOptions,
@@ -189,7 +186,7 @@ import {
   suggestClosestMatchAndFail, toBool,
 } from '../helper';
 import {
-  formatTime, TIMEZONES,
+  formatTime, subsecondPrecision, TIMEZONES,
 } from '../time';
 
 // Type aliases for common expression type unions
@@ -206,10 +203,10 @@ export type DATE_ADD_OR_SUB =
   | DateSubExpr;
 
 export type JSON_EXTRACT_TYPE =
-  | JSONExtractExpr
-  | JSONExtractScalarExpr
-  | JSONBExtractExpr
-  | JSONBExtractScalarExpr;
+  | JsonExtractExpr
+  | JsonExtractScalarExpr
+  | JsonbExtractExpr
+  | JsonbExtractScalarExpr;
 
 export type DATETIME_DELTA =
   | DateAddExpr
@@ -651,24 +648,24 @@ export class Dialect {
     return DerivedTokenizer;
   }
 
-  private static jsonpathTokenizerClassCache = new WeakMap<typeof Dialect, typeof JSONPathTokenizer>();
-  static get jsonpathTokenizerClass (): typeof JSONPathTokenizer {
+  private static jsonpathTokenizerClassCache = new WeakMap<typeof Dialect, typeof JsonPathTokenizer>();
+  static get jsonpathTokenizerClass (): typeof JsonPathTokenizer {
     if (this.jsonpathTokenizerClassCache.has(this)) {
       return this.jsonpathTokenizerClassCache.get(this)!;
     }
-    if (Object.prototype.hasOwnProperty.call(this, 'JSONPathTokenizer')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'JsonPathTokenizer')) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (this as any).JSONPathTokenizer;
+      return (this as any).JsonPathTokenizer;
     }
     const base = Object.getPrototypeOf(this);
-    const baseJsonpathTokenizer = base?.JSONPathTokenizer as typeof JSONPathTokenizer;
+    const baseJsonpathTokenizer = base?.JsonPathTokenizer as typeof JsonPathTokenizer;
     if (!baseJsonpathTokenizer) {
-      this.jsonpathTokenizerClassCache.set(this, JSONPathTokenizer);
-      return JSONPathTokenizer;
+      this.jsonpathTokenizerClassCache.set(this, JsonPathTokenizer);
+      return JsonPathTokenizer;
     }
-    class DerivedJSONPathTokenizer extends baseJsonpathTokenizer {}
-    this.jsonpathTokenizerClassCache.set(this, DerivedJSONPathTokenizer);
-    return DerivedJSONPathTokenizer;
+    class DerivedJsonPathTokenizer extends baseJsonpathTokenizer {}
+    this.jsonpathTokenizerClassCache.set(this, DerivedJsonPathTokenizer);
+    return DerivedJsonPathTokenizer;
   }
 
   private static parserClassCache = new WeakMap<typeof Dialect, typeof Parser>();
@@ -1357,7 +1354,8 @@ export class Dialect {
   /**
    * Parse SQL string into specific expression type.
    */
-  parseInto (expressionType: typeof Expression, sql: string, opts?: ParseOptions): (Expression | undefined)[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parseInto<T extends Expression> (expressionType: string | typeof Expression | (new (arg: any) => T), sql: string, opts?: ParseOptions): (Expression | undefined)[] {
     return this.parser({
       into: expressionType,
       ...opts,
@@ -1396,6 +1394,16 @@ export class Dialect {
    */
   tokenizer (options: TokenizerOptions = {}): Tokenizer {
     return new this._constructor.tokenizerClass({
+      dialect: this,
+      ...options,
+    });
+  }
+
+  /**
+   * Get a jsonpath tokenizer instance for this dialect.
+   */
+  jsonpathTokenizer (options: TokenizerOptions = {}): Tokenizer {
+    return new this._constructor.jsonpathTokenizerClass({
       dialect: this,
       ...options,
     });
@@ -1492,7 +1500,7 @@ export function arrowJsonExtractSql (self: Generator, expression: JSON_EXTRACT_T
     thisArg.replace(cast(thisArg.copy(), jsonType));
   }
 
-  const operator = expression instanceof JSONExtractExpr ? '->' : '->>';
+  const operator = expression instanceof JsonExtractExpr ? '->' : '->>';
   return self.binary(expression, operator);
 }
 
@@ -1700,8 +1708,11 @@ export function structExtractSql (self: Generator, expression: StructExtractExpr
  */
 export function arrayAppendSql (
   name: string,
-  swapParams: boolean = false,
+  options: {
+    swapParams?: boolean;
+  } = {},
 ): (self: Generator, expression: ArrayAppendExpr | ArrayPrependExpr) => string {
+  const { swapParams = false } = options;
   return (self: Generator, expression: ArrayAppendExpr | ArrayPrependExpr): string => {
     let thisArg = expression.$this;
     const element = expression.$expression;
@@ -1860,11 +1871,11 @@ export function monthsBetweenSql (self: Generator, expression: MonthsBetweenExpr
   const dayOfLastDay1 = new DayExpr({ this: lastDay1 });
   const dayOfLastDay2 = new DayExpr({ this: lastDay2 });
 
-  const isLastDay1 = new EQExpr({
+  const isLastDay1 = new EqExpr({
     this: day1.copy(),
     expression: dayOfLastDay1,
   });
-  const isLastDay2 = new EQExpr({
+  const isLastDay2 = new EqExpr({
     this: day2.copy(),
     expression: dayOfLastDay2,
   });
@@ -2041,7 +2052,6 @@ export function timestampTruncSql (
 export function noTimestampSql (self: Generator, expression: TimestampExpr): string {
   const zone = expression.$zone;
   if (!zone) {
-    // Ported annotateTypes helper
     const targetType = annotateTypes(expression, { dialect: self.dialect }).type || DataTypeExprKind.TIMESTAMP;
     return self.sql(cast(expression.$this || '', targetType));
   }
@@ -2369,7 +2379,7 @@ export function boolXorSql (self: Generator, expression: XorExpr): string {
 }
 
 export function isParseJson (expression: Expression): boolean {
-  return expression instanceof ParseJSONExpr || (expression instanceof CastExpr && expression.isType('json'));
+  return expression instanceof ParseJsonExpr || (expression instanceof CastExpr && expression.isType('json'));
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2542,7 +2552,7 @@ export function mergeWithoutTargetSql (self: Generator, expression: MergeExpr): 
   for (const when of expression.$whens?.$expressions || []) {
     const then = when.$then;
     if (then instanceof UpdateExpr) {
-      for (const equals of then.findAll(EQExpr)) {
+      for (const equals of then.findAll(EqExpr)) {
         const lhs = equals.$this;
         if (lhs instanceof ColumnExpr && targets.has(normalize(lhs.args.table))) {
           lhs.replace(new ColumnExpr({ this: lhs.$this }));
@@ -2567,9 +2577,9 @@ export function mergeWithoutTargetSql (self: Generator, expression: MergeExpr): 
   return self.mergeSql(expression);
 }
 
-export function buildJsonExtractPath<T extends JSONExtractExpr> (
+export function buildJsonExtractPath<T extends JsonExtractExpr> (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ExprType: (typeof JSONExtractExpr) & (new (arg: any) => T),
+  ExprType: (typeof JsonExtractExpr) & (new (arg: any) => T),
   options: {
     zeroBasedIndexing?: boolean;
     arrowReqJsonType?: boolean;
@@ -2582,7 +2592,7 @@ export function buildJsonExtractPath<T extends JSONExtractExpr> (
   } = options;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (args: any) => {
-    const segments: JSONPathPartExpr[] = [new JSONPathRootExpr({})];
+    const segments: JsonPathPartExpr[] = [new JsonPathRootExpr({})];
     for (const arg of args.slice(1)) {
       if (!(arg instanceof LiteralExpr)) {
         return ExprType.fromArgList(args);
@@ -2591,19 +2601,19 @@ export function buildJsonExtractPath<T extends JSONExtractExpr> (
       const text = arg.name;
       if (isInt(text) && (!arrowReqJsonType || !arg.isString)) {
         const index = parseInt(text);
-        segments.push(new JSONPathSubscriptExpr({ this: zeroBasedIndexing ? index : index - 1 }));
+        segments.push(new JsonPathSubscriptExpr({ this: zeroBasedIndexing ? index : index - 1 }));
       } else {
-        segments.push(new JSONPathKeyExpr({ this: text }));
+        segments.push(new JsonPathKeyExpr({ this: text }));
       }
     }
 
     args.splice(2);
-    const kwargs: JSONExtractExprArgs & Record<string, unknown> = {
+    const kwargs: JsonExtractExprArgs & Record<string, unknown> = {
       this: seqGet(args, 0),
-      expression: new JSONPathExpr({ expressions: segments }),
+      expression: new JsonPathExpr({ expressions: segments }),
     };
 
-    if (!(ExprType.prototype instanceof JSONBExtractExpr)) {
+    if (!(ExprType.prototype instanceof JsonbExtractExpr)) {
       kwargs.onlyJsonTypes = arrowReqJsonType;
     }
     if (jsonType !== undefined) kwargs.jsonType = jsonType;
@@ -2626,7 +2636,7 @@ export function jsonExtractSegments (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (self: Generator, expression: any): string => {
     const path = expression.$expression;
-    if (!(path instanceof JSONPathExpr)) {
+    if (!(path instanceof JsonPathExpr)) {
       return renameFunc(name)(self, expression);
     }
 
@@ -2634,7 +2644,7 @@ export function jsonExtractSegments (
     for (const segment of path.$expressions) {
       let segmentSql = self.sql(segment);
       if (segmentSql) {
-        if (segment instanceof JSONPathPartExpr && (quotedIndex || !(segment instanceof JSONPathSubscriptExpr))) {
+        if (segment instanceof JsonPathPartExpr && (quotedIndex || !(segment instanceof JsonPathSubscriptExpr))) {
           if (path.args.escape) segmentSql = self.escapeStr(segmentSql);
           segmentSql = `${self.dialect._constructor.QUOTE_START}${segmentSql}${self.dialect._constructor.QUOTE_END}`;
         }
@@ -2647,32 +2657,30 @@ export function jsonExtractSegments (
   };
 }
 
-export function jsonPathKeyOnlyName (self: Generator, expression: JSONPathKeyExpr): string {
-  if (expression.$this instanceof JSONPathWildcardExpr) {
-    self.unsupported('Unsupported wildcard in JSONPathKey expression');
+export function jsonPathKeyOnlyName (self: Generator, expression: JsonPathKeyExpr): string {
+  if (expression.$this instanceof JsonPathWildcardExpr) {
+    self.unsupported('Unsupported wildcard in JsonPathKey expression');
   }
   return expression.name;
 }
 
 export function filterArrayUsingUnnest (self: Generator, expression: ArrayFilterExpr | ArrayRemoveExpr): string {
   let cond = expression.$expression;
-  let alias: string | Expression = '_u';
+  let aliasExpr: Expression = LiteralExpr.string('_u');
 
   if (cond instanceof LambdaExpr && cond.$expressions.length === 1) {
-    alias = cond.$expressions[0];
+    aliasExpr = cond.$expressions[0];
     cond = cond.$this;
   } else if (expression instanceof ArrayRemoveExpr) {
-    cond = new NEQExpr({
-      this: alias,
+    cond = new NeqExpr({
+      this: aliasExpr,
       expression: expression.$expression,
     });
   }
 
   const unnest = new UnnestExpr({ expressions: [expression.$this] });
-  const filtered = select(alias).from(new AliasExpr({
-    this: unnest,
-    alias: new TableAliasExpr({ this: alias as string | IdentifierExpr }),
-  }))
+  const filtered = select(aliasExpr)
+    .from(alias(unnest, undefined, { table: [aliasExpr as string | IdentifierExpr] }))
     .where(cond);
   return self.sql(new ArrayExpr({ expressions: [filtered] }));
 }
@@ -2687,7 +2695,7 @@ export function arrayCompactSql (self: Generator, expression: ArrayCompactExpr):
     expression: new NullExpr({}),
   }).not();
   return self.sql(new ArrayFilterExpr({
-    this: expression.$this || '',
+    this: expression.$this!,
     expression: new LambdaExpr({
       this: cond,
       expressions: [lambdaId],
@@ -2700,7 +2708,7 @@ export function removeFromArrayUsingFilter (self: Generator, expression: ArrayRe
     this: '_u',
     quoted: false,
   });
-  const cond = new NEQExpr({
+  const cond = new NeqExpr({
     this: lambdaId,
     expression: expression.$expression,
   });
@@ -2748,7 +2756,7 @@ export function buildTimestampFromParts (args: any[]): Expression {
   return TimestampFromPartsExpr.fromArgList(args);
 }
 
-export function sha256Sql (self: Generator, expression: SHA2Expr): string {
+export function sha256Sql (self: Generator, expression: Sha2Expr): string {
   return self.func(`SHA${expression.text('length') || '256'}`, [expression.$this]);
 }
 
@@ -2780,27 +2788,27 @@ export function sequenceSql (self: Generator, expression: GenerateSeriesExpr | G
       });
       const zero = LiteralExpr.number(0);
       const shouldEmpty = new OrExpr({
-        this: new EQExpr({
+        this: new EqExpr({
           this: stepVal.copy(),
           expression: zero.copy(),
         }),
         expression: new OrExpr({
           this: new AndExpr({
-            this: new GTExpr({
+            this: new GtExpr({
               this: stepVal.copy(),
               expression: zero.copy(),
             }),
-            expression: new GTEExpr({
+            expression: new GteExpr({
               this: start.copy(),
               expression: end.copy(),
             }),
           }),
           expression: new AndExpr({
-            this: new LTExpr({
+            this: new LtExpr({
               this: stepVal.copy(),
               expression: zero.copy(),
             }),
-            expression: new LTEExpr({
+            expression: new LteExpr({
               this: start.copy(),
               expression: end.copy(),
             }),

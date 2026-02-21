@@ -1,7 +1,8 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/qualify_columns.py
 
 import type {
-  CTEExpr,
+  ColumnDefExpr,
+  CteExpr,
   DataTypeExpr,
   SetOperationExpr,
 } from '../expressions';
@@ -26,7 +27,7 @@ import {
   LiteralExpr,
   paren as parenExpr,
   PivotExpr,
-  PropertyEQExpr,
+  PropertyEqExpr,
   PseudocolumnExpr,
   QueryTransformExpr,
   SelectExpr,
@@ -409,7 +410,7 @@ function expandUsing (scope: Scope, resolver: Resolver): Map<string, string[]> {
         if (column.parent instanceof SelectExpr) {
           replacement = aliasExpr(replacement, column.name, { copy: false }) as Expression;
         } else if (column.parent instanceof StructExpr) {
-          replacement = new PropertyEQExpr({
+          replacement = new PropertyEqExpr({
             this: toIdentifier(column.name),
             expression: replacement,
           });
@@ -531,11 +532,11 @@ function expandAliasRefs_ (
     if (cteExpr) {
       const withNode = cteExpr.findAncestor(WithExpr);
       if (withNode?.$recursive) {
-        const aliasArg = (cteExpr as CTEExpr).args.alias;
+        const aliasArg = (cteExpr as CteExpr).args.alias;
         const aliasColumns = aliasArg instanceof TableAliasExpr ? aliasArg.columns : [];
         const columnsSource: Expression[] = 0 < aliasColumns.length
           ? aliasColumns as Expression[]
-          : ((cteExpr as CTEExpr).$this as SelectExpr)?.selects || [];
+          : ((cteExpr as CteExpr).$this as SelectExpr)?.selects || [];
         for (const col of columnsSource) {
           if (col instanceof Expression) {
             aliasToExpression.delete(col.outputName);
@@ -677,7 +678,7 @@ function qualifyColumnsInScope (
         && column.parts.length === 1
         && columnName in scope.selectedSources
       ) {
-        scope.replace(column, new TableColumnExpr({ this: column.this }));
+        scope.replace(column, new TableColumnExpr({ this: column.$this }));
       }
     }
   }
@@ -760,8 +761,8 @@ function expandStructStarsNoParens (expression: DotExpr): AliasExpr[] {
   }
 
   // All nested struct values are ColumnDefs, so normalize the first Column in one
-  const dotColumnCopy = dotColumn.copy() as ColumnExpr;
-  let startingStruct: DataTypeExpr | undefined = dotColumnCopy.type;
+  const dotColumnCopy = dotColumn.copy();
+  let startingStruct: IdentifierExpr | DotExpr | DataTypeExpr | ColumnDefExpr | undefined = dotColumnCopy.type;
 
   // First part is the table name and last part is the star so they can be dropped
   const dotParts = expression.parts.slice(1, -1);
@@ -771,14 +772,19 @@ function expandStructStarsNoParens (expression: DotExpr): AliasExpr[] {
     const fieldExprs = startingStruct?.$expressions || [];
     for (const field of fieldExprs) {
       // Unable to expand star unless all fields are named
-      if (!(field.$this instanceof IdentifierExpr)) {
+      if (!(field.this instanceof IdentifierExpr)) {
         return [];
       }
 
-      const fieldKind = field.$kind as unknown as DataTypeExpr | undefined;
+      if (!('$kind' in field) || !(field.$kind instanceof Expression)) {
+        return [];
+      }
+
+      const fieldKind = field.$kind;
+
       if (field.name === part.name && fieldKind?.isType(DataTypeExprKind.STRUCT)) {
-        startingStruct = fieldKind;
-        continue outer;
+        startingStruct = fieldKind as typeof startingStruct;
+        break outer;
       }
     }
     // There is no matching field in the struct
@@ -790,7 +796,7 @@ function expandStructStarsNoParens (expression: DotExpr): AliasExpr[] {
 
   for (const field of (startingStruct?.$expressions || [])) {
     const name = field.name;
-    const fieldThis = field.$this;
+    const fieldThis = field.this;
 
     // Ambiguous or anonymous fields can't be expanded
     if (takenNames.has(name) || !(fieldThis instanceof IdentifierExpr)) {
@@ -828,7 +834,7 @@ function expandStructStarsWithParens (expression: DotExpr): AliasExpr[] {
   }
 
   let parent = dotColumn.parent;
-  let startingStruct: string | DotExpr | IdentifierExpr | DataTypeExpr | undefined = dotColumn.type;
+  let startingStruct: string | ColumnDefExpr | DotExpr | IdentifierExpr | DataTypeExpr | undefined = dotColumn.type;
 
   while (parent !== undefined) {
     if (parent instanceof ParenExpr) {
@@ -850,7 +856,7 @@ function expandStructStarsWithParens (expression: DotExpr): AliasExpr[] {
     }
 
     let matched = false;
-    const expressions: DataTypeExpr[] = (startingStruct as DataTypeExpr).$expressions || [];
+    const expressions: (DataTypeExpr | ColumnDefExpr)[] = (startingStruct as DataTypeExpr).$expressions || [];
     for (const structFieldDef of expressions) {
       if (structFieldDef.name === rhs.name) {
         matched = true;
@@ -868,9 +874,9 @@ function expandStructStarsWithParens (expression: DotExpr): AliasExpr[] {
 
   const outerParen = expression.$this;
 
-  const expressions: DataTypeExpr[] = (startingStruct as DataTypeExpr).$expressions || [];
+  const expressions: (DataTypeExpr | ColumnDefExpr)[] = (startingStruct as DataTypeExpr).$expressions || [];
   for (const structFieldDef of expressions) {
-    const newIdentifier = structFieldDef.$this instanceof Expression ? structFieldDef.$this.copy() : new IdentifierExpr({ this: structFieldDef.$this });
+    const newIdentifier = structFieldDef.$this instanceof IdentifierExpr ? structFieldDef.$this.copy() : new IdentifierExpr({ this: structFieldDef.$this.toString() });
     const newDot = DotExpr.build([outerParen.copy(), newIdentifier]);
     const newAlias = alias(newDot, newIdentifier, { copy: false }) as AliasExpr;
     newSelections.push(newAlias);

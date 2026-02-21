@@ -177,7 +177,7 @@ export function normalize (expression: Expression): Expression {
  */
 export function otherTableNames (join: JoinExpr): Set<string> {
   const on = join.args.on;
-  return on ? columnTableNames(on, join.aliasOrName) : new Set();
+  return on ? columnTableNames(on, { exclude: join.aliasOrName }) : new Set();
 }
 
 /**

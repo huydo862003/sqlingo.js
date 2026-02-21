@@ -6,7 +6,7 @@ import {
   BinaryExpr,
   ColumnExpr,
   columnTableNames,
-  EQExpr,
+  EqExpr,
   ExplodeExpr,
   Expression,
   FromExpr,
@@ -15,7 +15,7 @@ import {
   HavingExpr,
   JoinExpr,
   JoinExprKind,
-  NEQExpr,
+  NeqExpr,
   OrderExpr,
   ParenExpr,
   paren as parenExpr,
@@ -91,9 +91,9 @@ const UNMERGABLE_ARGS = new Set(
 
 const SAFE_TO_REPLACE_UNWRAPPED = [
   ColumnExpr,
-  EQExpr,
+  EqExpr,
   FuncExpr,
-  NEQExpr,
+  NeqExpr,
   ParenExpr,
 ] as const;
 
@@ -141,16 +141,16 @@ function mergeCtes<E extends Expression> (
     table,
   ] of singularCteSelections) {
     // Find FromExpr or JoinExpr ancestor
-    const fromOrJoin = table.findAncestor(FromExpr, JoinExpr);
+    const fromOrJoin = table.findAncestor<FromExpr | JoinExpr>(FromExpr, JoinExpr);
 
-    if (fromOrJoin && mergeable(outerScope, innerScope, leaveTablesIsolated, fromOrJoin as FromOrJoin)) {
+    if (fromOrJoin && mergeable(outerScope, innerScope, leaveTablesIsolated, fromOrJoin)) {
       const alias = table.aliasOrName;
       renameInnerSources(outerScope, innerScope, alias);
       mergeFrom(outerScope, innerScope, table as SubqueryExpr | TableExpr, alias);
       mergeExpressions(outerScope, innerScope, alias);
       mergeOrder(outerScope, innerScope);
-      mergeJoins(outerScope, innerScope, fromOrJoin as FromOrJoin);
-      mergeWhere(outerScope, innerScope, fromOrJoin as FromOrJoin);
+      mergeJoins(outerScope, innerScope, fromOrJoin);
+      mergeWhere(outerScope, innerScope, fromOrJoin);
       mergeHints(outerScope, innerScope);
       popCte(innerScope);
       outerScope.clearCache();
@@ -167,7 +167,7 @@ function mergeDerivedTables<E extends Expression> (
   for (const outerScope of traverseScope(expression)) {
     for (const subquery of outerScope.derivedTables) {
       // Find FromExpr or JoinExpr ancestor
-      const fromOrJoin = subquery.findAncestor(FromExpr, JoinExpr);
+      const fromOrJoin = subquery.findAncestor<FromExpr | JoinExpr>(FromExpr, JoinExpr);
 
       const alias = subquery.aliasOrName;
       const innerScope = outerScope.sources.get(alias);
@@ -175,14 +175,14 @@ function mergeDerivedTables<E extends Expression> (
       if (
         innerScope instanceof Scope
         && fromOrJoin
-        && mergeable(outerScope, innerScope, leaveTablesIsolated, fromOrJoin as FromOrJoin)
+        && mergeable(outerScope, innerScope, leaveTablesIsolated, fromOrJoin)
       ) {
         renameInnerSources(outerScope, innerScope, alias);
         mergeFrom(outerScope, innerScope, subquery, alias);
         mergeExpressions(outerScope, innerScope, alias);
         mergeOrder(outerScope, innerScope);
-        mergeJoins(outerScope, innerScope, fromOrJoin as FromOrJoin);
-        mergeWhere(outerScope, innerScope, fromOrJoin as FromOrJoin);
+        mergeJoins(outerScope, innerScope, fromOrJoin);
+        mergeWhere(outerScope, innerScope, fromOrJoin);
         mergeHints(outerScope, innerScope);
         outerScope.clearCache();
       }

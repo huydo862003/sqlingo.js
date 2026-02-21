@@ -33,7 +33,7 @@ import {
   select,
   toIdentifier,
   true_,
-  EQExpr,
+  EqExpr,
   AllExpr,
   SubqueryExpr,
   ExistsExpr,
@@ -171,7 +171,7 @@ function unnest (
 
   let predicateToUse = predicate;
   if (predicate instanceof AnyExpr) {
-    const eqPredicate = predicate.findAncestor(EQExpr);
+    const eqPredicate = predicate.findAncestor(EqExpr);
 
     if (!eqPredicate || parentSelect !== eqPredicate.parentSelect) {
       return;
@@ -281,7 +281,7 @@ function decorrelate (
 
   if (!keys.some(([
     , , predicate,
-  ]) => predicate instanceof EQExpr)) {
+  ]) => predicate instanceof EqExpr)) {
     return;
   }
 
@@ -308,7 +308,7 @@ function decorrelate (
       }
       // all predicates that are equalities must also be in the unique
       // so that we don't do a many to many join
-      if (predicate instanceof EQExpr && !groupBy.includes(key)) {
+      if (predicate instanceof EqExpr && !groupBy.includes(key)) {
         groupBy.push(key);
       }
     }
@@ -427,7 +427,7 @@ function decorrelate (
 
     if (isSubqueryProjection) {
       key.replace(nested);
-      if (!(predicate instanceof EQExpr)) {
+      if (!(predicate instanceof EqExpr)) {
         parentSelect.where(predicate, { copy: false });
       }
       continue;
@@ -435,7 +435,7 @@ function decorrelate (
 
     if (groupBy.includes(key)) {
       key.replace(nested);
-    } else if (predicate instanceof EQExpr) {
+    } else if (predicate instanceof EqExpr) {
       replace(parentPredicate!, `(${parentPredicate} AND ARRAY_CONTAINS(${nested}, ${columnExpr}))`);
     } else {
       key.replace(toIdentifier('_x'));
@@ -448,7 +448,7 @@ function decorrelate (
     {
       on: keys.filter(([
         , , predicate,
-      ]) => predicate instanceof EQExpr).map(([
+      ]) => predicate instanceof EqExpr).map(([
         , , predicate,
       ]) => predicate),
       joinType: JoinExprKind.LEFT,

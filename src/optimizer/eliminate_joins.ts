@@ -8,7 +8,7 @@ import {
   and,
   AndExpr,
   ColumnExpr,
-  EQExpr,
+  EqExpr,
   Expression,
   JoinExprKind,
   LimitExpr,
@@ -258,22 +258,22 @@ export function joinCondition (
     // CNF form: AND of EQ conditions
     const andOn = on instanceof AndExpr ? on : and([on, true_()], { copy: false });
     for (const condition of andOn.flatten()) {
-      if (condition instanceof EQExpr) {
+      if (condition instanceof EqExpr) {
         extractCondition(condition);
       }
     }
   } else if (normalized(on, { dnf: true })) {
     // DNF form: OR of ANDs — find EQ conditions present in every OR branch
-    let conditions: EQExpr[] | null = null;
+    let conditions: EqExpr[] | null = null;
 
     for (const orBranch of on.flatten()) {
       const parts = Array.from(orBranch.flatten())
-        .filter((p): p is EQExpr => p instanceof EQExpr);
+        .filter((p): p is EqExpr => p instanceof EqExpr);
 
       if (conditions === null) {
         conditions = parts;
       } else {
-        const temp: EQExpr[] = [];
+        const temp: EqExpr[] = [];
         for (const p of parts) {
           const cs = conditions.filter((c) => p.sql() === c.sql());
           if (0 < cs.length) {

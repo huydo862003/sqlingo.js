@@ -4,6 +4,7 @@ import { DateTime } from 'luxon';
 import type {
   AliasExpr,
   AnonymousExpr,
+  ColumnDefExpr,
   ExpressionValueList,
   FromExpr,
   ILikeExpr,
@@ -14,7 +15,6 @@ import type {
   TableAliasExpr,
   TableExpr,
   VarExpr,
-  ExpressionValue,
 } from '../expressions';
 import {
   DivExpr,
@@ -46,10 +46,10 @@ import {
   DateTruncExpr,
   DotExpr,
   DPipeExpr,
-  EQExpr,
+  EqExpr,
   FuncExpr,
-  GTExpr,
-  GTEExpr,
+  GtExpr,
+  GteExpr,
   HintExpr,
   IdentifierExpr,
   IfExpr,
@@ -59,24 +59,24 @@ import {
   JoinExpr,
   LambdaExpr,
   LiteralExpr,
-  LTExpr,
-  LTEExpr,
+  LtExpr,
+  LteExpr,
   MulExpr,
-  NEQExpr,
+  NeqExpr,
   NegExpr,
   NONNULL_CONSTANTS,
   NotExpr,
   NullExpr,
   not,
-  NullSafeEQExpr,
-  NullSafeNEQExpr,
+  NullSafeEqExpr,
+  NullSafeNeqExpr,
   or,
   OrExpr,
   paren,
   ParenExpr,
   xor,
   PredicateExpr,
-  PropertyEQExpr,
+  PropertyEqExpr,
   QueryExpr,
   RandExpr,
   RandnExpr,
@@ -334,7 +334,7 @@ export function propagateConstants (
     const constantMapping = new Map<ColumnExpr, [ColumnExpr, LiteralExpr]>();
 
     for (const expr of walkInScope(expression, { prune: (node) => node instanceof IfExpr })) {
-      if (expr instanceof EQExpr) {
+      if (expr instanceof EqExpr) {
         const l = expr.left;
         const r = expr.right;
 
@@ -414,18 +414,18 @@ function _datetruncRange (date: DateTime, unit: string, dialect: Dialect): DateR
  * @param targetType - Target data type
  * @returns Logical expression
  */
-function _datetruncEqExpression (
+function datetruncEqExpression (
   left: Expression,
   drange: DateRange,
-  targetType: DataTypeExpr | undefined,
+  targetType: DataTypeExpr | ColumnDefExpr | undefined,
 ): Expression {
   return and(
     [
-      new GTEExpr({
+      new GteExpr({
         this: left,
         expression: dateLiteral(drange[0], targetType),
       }),
-      new LTEExpr({
+      new LteExpr({
         this: left,
         expression: dateLiteral(drange[1], targetType),
       }),
@@ -444,19 +444,19 @@ function _datetruncEqExpression (
  * @param targetType - Target data type
  * @returns Expression or undefined
  */
-function _datetruncEq (
+function datetruncEq (
   left: Expression,
   date: DateTime,
   unit: string,
   dialect: Dialect,
-  targetType: DataTypeExpr | undefined,
+  targetType: DataTypeExpr | ColumnDefExpr | undefined,
 ): Expression | undefined {
   const drange = _datetruncRange(date, unit, dialect);
   if (!drange) {
     return undefined;
   }
 
-  return _datetruncEqExpression(left, drange, targetType);
+  return datetruncEqExpression(left, drange, targetType);
 }
 
 /**
@@ -469,12 +469,12 @@ function _datetruncEq (
  * @param targetType - Target data type
  * @returns Expression or undefined
  */
-function _datetruncNeq (
+function datetruncNeq (
   left: Expression,
   date: DateTime,
   unit: string,
   dialect: Dialect,
-  targetType: DataTypeExpr | undefined,
+  targetType: DataTypeExpr | ColumnDefExpr | undefined,
 ): Expression | undefined {
   const drange = _datetruncRange(date, unit, dialect);
   if (!drange) {
@@ -483,11 +483,11 @@ function _datetruncNeq (
 
   return and(
     [
-      new LTEExpr({
+      new LteExpr({
         this: left,
         expression: dateLiteral(drange[0], targetType),
       }),
-      new GTEExpr({
+      new GteExpr({
         this: left,
         expression: dateLiteral(drange[1], targetType),
       }),
@@ -536,22 +536,22 @@ function isNull (a: unknown): a is NullExpr {
  * @returns Boolean literal or undefined
  */
 function evalBoolean (expression: Expression, a: number | string, b: number | string): BooleanExpr | undefined {
-  if (expression instanceof EQExpr || expression instanceof IsExpr) {
+  if (expression instanceof EqExpr || expression instanceof IsExpr) {
     return booleanLiteral(a === b);
   }
-  if (expression instanceof NEQExpr) {
+  if (expression instanceof NeqExpr) {
     return booleanLiteral(a !== b);
   }
-  if (expression instanceof GTExpr) {
+  if (expression instanceof GtExpr) {
     return booleanLiteral(b < a);
   }
-  if (expression instanceof GTEExpr) {
+  if (expression instanceof GteExpr) {
     return booleanLiteral(b <= a);
   }
-  if (expression instanceof LTExpr) {
+  if (expression instanceof LtExpr) {
     return booleanLiteral(a < b);
   }
-  if (expression instanceof LTEExpr) {
+  if (expression instanceof LteExpr) {
     return booleanLiteral(a <= b);
   }
   return undefined;
@@ -656,8 +656,8 @@ function extractInterval (expression: IntervalExpr): number | undefined {
   }
 }
 
-function extractType (...expressions: Expression[]): DataTypeExpr | undefined {
-  let targetType: DataTypeExpr | undefined;
+function extractType (...expressions: Expression[]): DataTypeExpr | ColumnDefExpr | undefined {
+  let targetType: DataTypeExpr | ColumnDefExpr | undefined;
 
   for (const expression of expressions) {
     if (expression instanceof CastExpr) {
@@ -673,7 +673,7 @@ function extractType (...expressions: Expression[]): DataTypeExpr | undefined {
   return targetType;
 }
 
-function dateLiteral (date: DateTime, targetType?: DataTypeExpr): Expression {
+function dateLiteral (date: DateTime, targetType?: DataTypeExpr | ColumnDefExpr): Expression {
   let type: DataTypeExprKind;
 
   if (!targetType || !(targetType.isType(Array.from(DataTypeExpr.TEMPORAL_TYPES)))) {
@@ -806,12 +806,12 @@ export class Simplifier {
   static UTINYINT_MAX = 255;
 
   static COMPLEMENT_COMPARISONS: Record<string, typeof Expression> = {
-    [LTExpr.key]: GTEExpr,
-    [GTExpr.key]: LTEExpr,
-    [LTEExpr.key]: GTExpr,
-    [GTEExpr.key]: LTExpr,
-    [EQExpr.key]: NEQExpr,
-    [NEQExpr.key]: EQExpr,
+    [LtExpr.key]: GteExpr,
+    [GtExpr.key]: LteExpr,
+    [LteExpr.key]: GtExpr,
+    [GteExpr.key]: LtExpr,
+    [EqExpr.key]: NeqExpr,
+    [NeqExpr.key]: EqExpr,
   };
 
   static COMPLEMENT_SUBQUERY_PREDICATES: Record<string, typeof Expression> = {
@@ -819,22 +819,22 @@ export class Simplifier {
     [AnyExpr.key]: AllExpr,
   };
 
-  static LT_LTE = [LTExpr, LTEExpr] as const;
-  static GT_GTE = [GTExpr, GTEExpr] as const;
+  static LT_Lte = [LtExpr, LteExpr] as const;
+  static GT_GtE = [GtExpr, GteExpr] as const;
 
   static COMPARISONS = [
-    ...Simplifier.LT_LTE,
-    ...Simplifier.GT_GTE,
-    EQExpr,
-    NEQExpr,
+    ...Simplifier.LT_Lte,
+    ...Simplifier.GT_GtE,
+    EqExpr,
+    NeqExpr,
     IsExpr,
   ] as const;
 
   static INVERSE_COMPARISONS: Record<string, typeof Expression> = {
-    [LTExpr.key]: GTExpr,
-    [GTExpr.key]: LTExpr,
-    [LTEExpr.key]: GTEExpr,
-    [GTEExpr.key]: LTEExpr,
+    [LtExpr.key]: GtExpr,
+    [GtExpr.key]: LtExpr,
+    [LteExpr.key]: GteExpr,
+    [GteExpr.key]: LteExpr,
   };
 
   static NONDETERMINISTIC = [RandExpr, RandnExpr] as const;
@@ -854,48 +854,48 @@ export class Simplifier {
   };
 
   static NULL_OK = [
-    NullSafeEQExpr,
-    NullSafeNEQExpr,
-    PropertyEQExpr,
+    NullSafeEqExpr,
+    NullSafeNeqExpr,
+    PropertyEqExpr,
   ] as const;
 
   static CONCATS = [ConcatExpr, DPipeExpr] as const;
 
   static DATETRUNC_BINARY_COMPARISONS: Record<
     string,
-    (l: Expression, dt: DateTime, u: string, d: Dialect, t?: DataTypeExpr) => Expression | undefined
+    (l: Expression, dt: DateTime, u: string, d: Dialect, t?: DataTypeExpr | ColumnDefExpr) => Expression | undefined
   > = {
-    [LTExpr.key]: (l, dt, u, d, t) => {
+    [LtExpr.key]: (l, dt, u, d, t) => {
       const floor = dateFloor(dt, u, d);
       const ceilValue = dt.toMillis() === floor.toMillis() ? dt : DateTime.fromMillis(floor.toMillis() + interval(u));
-      return new LTExpr({
+      return new LtExpr({
         this: l,
         expression: dateLiteral(ceilValue, t),
       });
     },
-    [GTExpr.key]: (l, dt, u, d, t) => {
+    [GtExpr.key]: (l, dt, u, d, t) => {
       const floor = dateFloor(dt, u, d);
-      return new GTEExpr({
+      return new GteExpr({
         this: l,
         expression: dateLiteral(DateTime.fromMillis(floor.toMillis() + interval(u)), t),
       });
     },
-    [LTEExpr.key]: (l, dt, u, d, t) => {
+    [LteExpr.key]: (l, dt, u, d, t) => {
       const floor = dateFloor(dt, u, d);
-      return new LTExpr({
+      return new LtExpr({
         this: l,
         expression: dateLiteral(DateTime.fromMillis(floor.toMillis() + interval(u)), t),
       });
     },
-    [GTEExpr.key]: (l, dt, u, d, t) => {
+    [GteExpr.key]: (l, dt, u, d, t) => {
       const ceil = dateCeil(dt, u, d);
-      return new GTEExpr({
+      return new GteExpr({
         this: l,
         expression: dateLiteral(ceil, t),
       });
     },
-    [EQExpr.key]: _datetruncEq,
-    [NEQExpr.key]: _datetruncNeq,
+    [EqExpr.key]: datetruncEq,
+    [NeqExpr.key]: datetruncNeq,
   };
 
   static DATETRUNC_COMPARISONS = new Set([InExpr.key, ...Object.keys(Simplifier.DATETRUNC_BINARY_COMPARISONS)]);
@@ -1314,7 +1314,7 @@ export class Simplifier {
     if (expression instanceof CaseExpr) {
       const thisExpr = expression.$this;
 
-      for (const caseIf of expression.$ifs) {
+      for (const caseIf of expression.$ifs || []) {
         let cond = caseIf.this as Expression;
         if (thisExpr) {
           // Convert CASE x WHEN matching_value ... to CASE WHEN x = matching_value ...
@@ -1322,14 +1322,14 @@ export class Simplifier {
         }
 
         if (alwaysTrue(cond)) {
-          return (caseIf.args as Record<string, unknown>).true as Expression;
+          return caseIf.getArgKey('true') as Expression;
         }
 
         if (alwaysFalse(cond)) {
           caseIf.pop();
           const remainingIfs = expression.$ifs;
           if (!remainingIfs || remainingIfs.length === 0) {
-            return expression.$default || null_();
+            return expression.$default as Expression || null_();
           }
         }
       }
@@ -1339,7 +1339,7 @@ export class Simplifier {
         return expression.$true;
       }
       if (alwaysFalse(thisExpr)) {
-        return expression.$false || null_();
+        return expression.$false as Expression || null_();
       }
     }
 
@@ -1450,7 +1450,7 @@ export class Simplifier {
           if (alwaysTrue(right)) {
             return left;
           }
-          return this._simplifyComparison(expr, left, right, { or: false });
+          return this.simplifyComparison(expr, left, right, { or: false });
         } else if (expr instanceof OrExpr) {
           if (alwaysTrue(left) || alwaysTrue(right)) {
             return true_();
@@ -1468,7 +1468,7 @@ export class Simplifier {
           if (isFalse(right)) {
             return left;
           }
-          return this._simplifyComparison(expr, left, right, { or: true });
+          return this.simplifyComparison(expr, left, right, { or: true });
         }
         return undefined;
       }, { root });
@@ -1498,7 +1498,7 @@ export class Simplifier {
     return expression;
   }
 
-  _simplifyComparison (
+  simplifyComparison (
     expression: Expression,
     left: Expression,
     right: Expression,
@@ -1581,39 +1581,39 @@ export class Simplifier {
           const avNum = typeof av === 'number' ? av : (DateTime.isDateTime(av) ? av.toMillis() : String(av));
           const bvNum = typeof bv === 'number' ? bv : (DateTime.isDateTime(bv) ? bv.toMillis() : String(bv));
 
-          if (Simplifier.LT_LTE.some((cls) => a instanceof cls)
-            && Simplifier.LT_LTE.some((cls) => b instanceof cls)) {
+          if (Simplifier.LT_Lte.some((cls) => a instanceof cls)
+            && Simplifier.LT_Lte.some((cls) => b instanceof cls)) {
             return or_ ? (bvNum < avNum ? left : right) : (avNum <= bvNum ? left : right);
           }
-          if (Simplifier.GT_GTE.some((cls) => a instanceof cls)
-            && Simplifier.GT_GTE.some((cls) => b instanceof cls)) {
+          if (Simplifier.GT_GtE.some((cls) => a instanceof cls)
+            && Simplifier.GT_GtE.some((cls) => b instanceof cls)) {
             return or_ ? (avNum < bvNum ? left : right) : (bvNum <= avNum ? left : right);
           }
 
           // we can't ever shortcut to true because the column could be null
           if (!or_) {
-            if (a instanceof LTExpr && Simplifier.GT_GTE.some((cls) => b instanceof cls)) {
+            if (a instanceof LtExpr && Simplifier.GT_GtE.some((cls) => b instanceof cls)) {
               if (avNum <= bvNum) {
                 return false_();
               }
-            } else if (a instanceof GTExpr && Simplifier.LT_LTE.some((cls) => b instanceof cls)) {
+            } else if (a instanceof GtExpr && Simplifier.LT_Lte.some((cls) => b instanceof cls)) {
               if (bvNum <= avNum) {
                 return false_();
               }
-            } else if (a instanceof EQExpr) {
-              if (b instanceof LTExpr) {
+            } else if (a instanceof EqExpr) {
+              if (b instanceof LtExpr) {
                 return bvNum <= avNum ? false_() : a;
               }
-              if (b instanceof LTEExpr) {
+              if (b instanceof LteExpr) {
                 return bvNum < avNum ? false_() : a;
               }
-              if (b instanceof GTExpr) {
+              if (b instanceof GtExpr) {
                 return avNum <= bvNum ? false_() : a;
               }
-              if (b instanceof GTEExpr) {
+              if (b instanceof GteExpr) {
                 return avNum < bvNum ? false_() : a;
               }
-              if (b instanceof NEQExpr) {
+              if (b instanceof NeqExpr) {
                 if (avNum === bvNum) {
                   return false_();
                 }
@@ -1765,9 +1765,9 @@ export class Simplifier {
     // This expression is more complex than when we started, but it will get simplified further
     return paren(
       or([
-        and([not(coalesceOrThis.is(null_()), { copy: false }), expression.copy()], { copy: false }),
+        and([not(coalesceOrThis?.is(null_()), { copy: false }), expression.copy()], { copy: false }),
         and([
-          coalesceOrThis.is(null_()),
+          coalesceOrThis?.is(null_()),
           new (expression._constructor)({
             this: arg.copy(),
             expression: other.copy(),
@@ -2101,7 +2101,7 @@ export class Simplifier {
         const targetType = extractType(...rs.filter((r): r is Expression => r instanceof Expression));
 
         return or(
-          ranges.map((drange) => _datetruncEqExpression(l, drange, targetType)),
+          ranges.map((drange) => datetruncEqExpression(l, drange, targetType)),
           { copy: false },
         );
       }
@@ -2200,11 +2200,11 @@ export class Simplifier {
     }
 
     let result = and([
-      new GTEExpr({
+      new GteExpr({
         this: betweenThis.copy(),
         expression: low,
       }),
-      new LTEExpr({
+      new LteExpr({
         this: betweenThis.copy(),
         expression: high,
       }),
@@ -2300,7 +2300,7 @@ export function gen (expression: Expression, comments: boolean = false): string 
 }
 
 class Gen {
-  private stack: (Expression | string | Expression[] | [string, ExpressionValue][])[] = [];
+  private stack: unknown[] = [];
   private sqls: string[] = [];
 
   gen (expression: Expression, comments: boolean = false): string {
@@ -2320,10 +2320,10 @@ class Gen {
         if (typeof this[expHandlerName] === 'function') {
           (this[expHandlerName] as (e: Expression) => void).call(this, node);
         } else if (node instanceof FuncExpr) {
-          this._function(node);
+          this.function(node);
         } else {
           const key = node._constructor.key.toUpperCase();
-          this.stack.push(this._args(node) ? `${key} ` : key);
+          this.stack.push(this.args(node) ? `${key} ` : key);
         }
       } else if (Array.isArray(node)) {
         for (let i = node.length - 1; 0 <= i; i--) {
@@ -2354,7 +2354,7 @@ class Gen {
   }
 
   addDql (e: AddExpr): void {
-    this._binary(e, ' + ');
+    this.binary(e, ' + ');
   }
 
   aliasSql (e: AliasExpr): void {
@@ -2366,7 +2366,7 @@ class Gen {
   }
 
   andSql (e: AndExpr): void {
-    this._binary(e, ' AND ');
+    this.binary(e, ' AND ');
   }
 
   anonymousSql (e: AnonymousExpr): void {
@@ -2424,34 +2424,34 @@ class Gen {
   }
 
   datatypeSql (e: DataTypeExpr): void {
-    this._args(e, 1);
+    this.args(e, 1);
     const thisValue = e.$this;
     const name = typeof thisValue === 'string' ? thisValue : String(thisValue);
     this.stack.push(`${name} `);
   }
 
   divSql (e: DivExpr): void {
-    this._binary(e, ' / ');
+    this.binary(e, ' / ');
   }
 
   dotSql (e: DotExpr): void {
-    this._binary(e, '.');
+    this.binary(e, '.');
   }
 
-  eqSql (e: EQExpr): void {
-    this._binary(e, ' = ');
+  eqSql (e: EqExpr): void {
+    this.binary(e, ' = ');
   }
 
   fromSql (e: FromExpr): void {
     this.stack.push(e.$this as Expression, 'FROM ');
   }
 
-  gtSql (e: GTExpr): void {
-    this._binary(e, ' > ');
+  gtSql (e: GtExpr): void {
+    this.binary(e, ' > ');
   }
 
-  gteSql (e: GTEExpr): void {
-    this._binary(e, ' >= ');
+  gteSql (e: GteExpr): void {
+    this.binary(e, ' >= ');
   }
 
   identifierSql (e: IdentifierExpr): void {
@@ -2461,12 +2461,12 @@ class Gen {
   }
 
   ilikeSql (e: ILikeExpr): void {
-    this._binary(e, ' ILIKE ');
+    this.binary(e, ' ILIKE ');
   }
 
   inSql (e: InExpr): void {
     this.stack.push(')');
-    this._args(e, 1);
+    this.args(e, 1);
     this.stack.push(
       '(',
       ' IN ',
@@ -2475,15 +2475,15 @@ class Gen {
   }
 
   intdivSql (e: IntDivExpr): void {
-    this._binary(e, ' DIV ');
+    this.binary(e, ' DIV ');
   }
 
   isSql (e: IsExpr): void {
-    this._binary(e, ' IS ');
+    this.binary(e, ' IS ');
   }
 
   likeSql (e: LikeExpr): void {
-    this._binary(e, ' LIKE ');
+    this.binary(e, ' LIKE ');
   }
 
   literalSql (e: LiteralExpr): void {
@@ -2491,32 +2491,32 @@ class Gen {
     this.stack.push(e.isString ? `'${thisValue}'` : String(thisValue));
   }
 
-  ltSql (e: LTExpr): void {
-    this._binary(e, ' < ');
+  ltSql (e: LtExpr): void {
+    this.binary(e, ' < ');
   }
 
-  lteSql (e: LTEExpr): void {
-    this._binary(e, ' <= ');
+  lteSql (e: LteExpr): void {
+    this.binary(e, ' <= ');
   }
 
   modSql (e: ModExpr): void {
-    this._binary(e, ' % ');
+    this.binary(e, ' % ');
   }
 
   mulSql (e: MulExpr): void {
-    this._binary(e, ' * ');
+    this.binary(e, ' * ');
   }
 
   negSql (e: NegExpr): void {
-    this._unary(e, '-');
+    this.unary(e, '-');
   }
 
-  neqSql (e: NEQExpr): void {
-    this._binary(e, ' <> ');
+  neqSql (e: NeqExpr): void {
+    this.binary(e, ' <> ');
   }
 
   notSql (e: NotExpr): void {
-    this._unary(e, 'NOT ');
+    this.unary(e, 'NOT ');
   }
 
   nullSql (_e: NullExpr): void {
@@ -2524,7 +2524,7 @@ class Gen {
   }
 
   orSql (e: OrExpr): void {
-    this._binary(e, ' OR ');
+    this.binary(e, ' OR ');
   }
 
   parenSql (e: ParenExpr): void {
@@ -2536,11 +2536,11 @@ class Gen {
   }
 
   subSql (e: SubExpr): void {
-    this._binary(e, ' - ');
+    this.binary(e, ' - ');
   }
 
   subquerySql (e: SubqueryExpr): void {
-    this._args(e, 2);
+    this.args(e, 2);
     const alias = e.$alias;
     if (alias) {
       this.stack.push(alias);
@@ -2549,7 +2549,7 @@ class Gen {
   }
 
   tableSql (e: TableExpr): void {
-    this._args(e, 4);
+    this.args(e, 4);
     const alias = e.$alias;
     if (alias) {
       this.stack.push(alias as Expression);
@@ -2561,7 +2561,7 @@ class Gen {
     this.stack.pop(); // Remove trailing dot
   }
 
-  tablealias_sql (e: TableAliasExpr): void {
+  tableAliasSql (e: TableAliasExpr): void {
     const columns = e.columns;
 
     if (columns && 0 < columns.length) {
@@ -2571,19 +2571,19 @@ class Gen {
     this.stack.push(e.$this || [], ' AS ');
   }
 
-  var_sql (e: VarExpr): void {
+  varSql (e: VarExpr): void {
     this.stack.push(String(e.this));
   }
 
-  private _binary (e: BinaryExpr, op: string): void {
+  private binary (e: BinaryExpr, op: string): void {
     this.stack.push(e.$expression as Expression, op, e.$this as Expression);
   }
 
-  private _unary (e: UnaryExpr, op: string): void {
+  private unary (e: UnaryExpr, op: string): void {
     this.stack.push(e.this as Expression, op);
   }
 
-  private _function (e: FuncExpr): void {
+  private function (e: FuncExpr): void {
     this.stack.push(
       ')',
       Object.values(e.args),
@@ -2592,7 +2592,7 @@ class Gen {
     );
   }
 
-  private _args (node: Expression, argIndex: number = 0): boolean {
+  private args (node: Expression, argIndex: number = 0): boolean {
     const kvs: [string, Expression | string | number | boolean][] = [];
     const argTypes = Object.keys(node._constructor.availableArgs || {});
     const argsToProcess = 0 < argIndex ? argTypes.slice(argIndex) : argTypes;

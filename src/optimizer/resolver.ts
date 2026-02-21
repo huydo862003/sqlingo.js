@@ -6,7 +6,6 @@ import {
   IdentifierExpr,
   JoinExprKind,
   SetOperationExprKind,
-
   ColumnExpr,
   DataTypeExprKind,
   JoinExpr,
@@ -222,7 +221,7 @@ export class Resolver {
     let columns: string[] = [];
 
     if (source instanceof TableExpr) {
-      columns = this.schema.columnNames?.(source, onlyVisible) || [];
+      columns = this.schema.columnNames?.(source, { onlyVisible }) || [];
     } else if (source instanceof Scope) {
       const sourceExpr = source.expression;
       if (sourceExpr instanceof ValuesExpr || sourceExpr instanceof UnnestExpr) {

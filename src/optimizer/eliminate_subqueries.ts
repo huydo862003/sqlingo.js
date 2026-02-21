@@ -6,8 +6,8 @@ import type {
 } from '../expressions';
 import {
   alias,
-  CTEExpr,
-  DDLExpr,
+  CteExpr,
+  DdlExpr,
   LateralExpr,
   SubqueryExpr,
   table,
@@ -129,12 +129,12 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
   }
 
   if (0 < newCtes.length) {
-    const query = expression instanceof DDLExpr
+    const query = expression instanceof DdlExpr
       ? expression.$expression
       : expression;
 
     query?.setArgKey('with', new WithExpr({
-      expressions: newCtes as CTEExpr[],
+      expressions: newCtes as CteExpr[],
       recursive,
     }));
   }
@@ -266,7 +266,7 @@ function newCte (
   let cte: Expression | undefined;
   if (!duplicateCteAlias) {
     existingCtes.set(scope.expression, name);
-    cte = new CTEExpr({
+    cte = new CteExpr({
       this: scope.expression,
       alias: new TableAliasExpr({ this: toIdentifier(name) }),
     });
