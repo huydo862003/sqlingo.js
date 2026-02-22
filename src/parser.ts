@@ -480,7 +480,9 @@ import {
   newTrie, type TrieNode, inTrie, TrieResult,
 } from './trie';
 import { normalizeIdentifiers } from './optimizer/normalize_identifiers';
-import { enumFromString } from './port_internals';
+import {
+  assertIsInstanceOf, filterInstanceOf, is, enumFromString,
+} from './port_internals';
 
 // NOTE: parse() and parseOne() are defined here in parser.ts to avoid circular dependencies.
 // In Python sqlglot, these are in __init__.py but we moved them here from index.ts.
@@ -4738,7 +4740,7 @@ export class Parser {
 
     // Process JOINs
     if ('joins' in args) {
-      const joins: JoinExpr[] | undefined = args['joins'];
+      const joins: JoinExpr[] | undefined = args['joins'] ? filterInstanceOf(args['joins'] as Expression[], JoinExpr) : undefined;
       if (joins) {
         for (const join of joins) {
           const table = join.args.this;
@@ -4759,8 +4761,9 @@ export class Parser {
                 // Convert Alias to TableAlias if needed
                 if (table.args.alias instanceof TableAliasExpr && tableAsColumn.args.this instanceof Expression) {
                   tableAsColumn.replace(tableAsColumn.args.this);
+                  const aliasThis = table.args.alias?.args.this;
                   const aliasArgs = {
-                    table: table.args.alias?.args.this ? [table.args.alias.args.this] : undefined,
+                    table: aliasThis ? (typeof aliasThis === 'string' ? [aliasThis] : (assertIsInstanceOf(aliasThis, IdentifierExpr), [aliasThis])) : undefined,
                     copy: false,
                   };
                   alias(unnest, undefined, aliasArgs);
@@ -5999,6 +6002,7 @@ export class Parser {
       if (alias) {
         let aliasExpr = alias;
         if (alias instanceof ColumnExpr && !alias.args.db) {
+          assertIsInstanceOf(alias.args.this, Expression);
           aliasExpr = alias.args.this;
         }
         return this.expression(PivotAliasExpr, {
@@ -6828,6 +6832,7 @@ export class Parser {
     const assignmentTokens = Object.keys(this._constructor.ASSIGNMENT) as TokenType[];
     while (this.matchSet(assignmentTokens)) {
       if (thisExpr instanceof ColumnExpr && thisExpr.parts.length === 1) {
+        assertIsInstanceOf(thisExpr.args.this, Expression);
         thisExpr = thisExpr.args.this;
       }
 
@@ -8376,7 +8381,9 @@ export class Parser {
     for (const column of node.findAll(ColumnExpr)) {
       const typ = lambdaTypes[column.parts[0]?.name || ''];
       if (typ !== undefined) {
-        let dotOrId: DotExpr | IdentifierExpr | StarExpr | CastExpr = column.table ? column.toDot() : column.args.this;
+        const colThis = column.args.this;
+        assertIsInstanceOf(colThis, IdentifierExpr);
+        let dotOrId: DotExpr | IdentifierExpr | StarExpr | CastExpr = column.table ? column.toDot() : colThis;
 
         if (typ) {
           dotOrId = this.expression(
@@ -10575,6 +10582,7 @@ export class Parser {
     let thisResult = thisExpr;
 
     if (thisResult instanceof ColumnExpr) {
+      assertIsInstanceOf(thisResult.args.this, Expression);
       thisResult = thisResult.args.this;
     }
 
@@ -10941,7 +10949,9 @@ export class Parser {
         }
 
         if (e.this instanceof ColumnExpr) {
-          e.this.replace(e.this.args.this);
+          const eThisInner = e.this.args.this;
+          assertIsInstanceOf(eThisInner, Expression);
+          e.this.replace(eThisInner);
         }
       } else {
         e = this.toPropEq(e, index);
@@ -12424,22 +12434,34 @@ export class Parser {
     const offset = this.parseOffset() as OffsetExpr;
     if (limit) {
       const currLimit = query.args.limit || limit;
-      const currLimitValue = typeof currLimit === 'number' ? currLimit : currLimit.args.expression.toValue() as number;
-      const limitValue = typeof limit === 'number' ? limit : limit.args.expression.toValue() as number;
+      let currLimitValue: number;
+      if (typeof currLimit === 'number') {
+        currLimitValue = currLimit;
+      } else {
+        assertIsInstanceOf(currLimit, LimitExpr);
+        const expr = currLimit.args.expression;
+        assertIsInstanceOf(expr, Expression);
+        currLimitValue = expr.toValue() as number;
+      }
+      const limitValue = limit.args.expression.toValue() as number;
       if (limitValue <= currLimitValue) {
         query.limit(limit, { copy: false });
       }
     }
     if (offset) {
       const currOffset = query.args.offset;
-      const currOffsetVal: number = currOffset === undefined
-        ? 0
-        : typeof currOffset === 'number'
-          ? currOffset
-          : typeof currOffset.args.expression === 'number'
-            ? currOffset.args.expression
-            : currOffset.args.expression.toValue() as number;
-      const offsetVal: number = typeof offset.args.expression === 'number' ? offset.args.expression : offset.args.expression.toValue() as number;
+      let currOffsetVal: number;
+      if (currOffset === undefined) {
+        currOffsetVal = 0;
+      } else if (typeof currOffset === 'number') {
+        currOffsetVal = currOffset;
+      } else {
+        assertIsInstanceOf(currOffset, OffsetExpr);
+        const expr = currOffset.args.expression;
+        currOffsetVal = typeof expr === 'number' ? expr : (assertIsInstanceOf(expr, Expression), expr.toValue() as number);
+      }
+      const offsetExpr = offset.args.expression;
+      const offsetVal: number = typeof offsetExpr === 'number' ? offsetExpr : (assertIsInstanceOf(offsetExpr, Expression), offsetExpr.toValue() as number);
 
       query.offset(LiteralExpr.number(currOffsetVal + offsetVal));
     }
@@ -12598,7 +12620,10 @@ export class Parser {
 
     const from = query.args.from;
     if (from) {
-      from.args.this?.setArgKey('pivots', pivots);
+      const fromThis = from.args.this;
+      if (is(fromThis, Expression)) {
+        fromThis.setArgKey('pivots', pivots);
+      }
     }
 
     return this.buildPipeCte({

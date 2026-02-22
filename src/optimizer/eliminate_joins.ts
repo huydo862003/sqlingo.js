@@ -1,8 +1,5 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/eliminate_joins.py
 
-import type {
-  JoinExpr,
-} from '../expressions';
 import {
   AggFuncExpr,
   and,
@@ -10,11 +7,13 @@ import {
   ColumnExpr,
   EqExpr,
   Expression,
+  JoinExpr,
   JoinExprKind,
   LimitExpr,
   SelectExpr,
   true_,
 } from '../expressions';
+import { assertIsInstanceOf } from '../port_internals';
 import { normalized } from './normalize';
 import {
   Scope, traverseScope,
@@ -55,7 +54,8 @@ export function eliminateJoins<E extends Expression> (expression: E): E {
 
     // Reverse the joins so we can remove chains of unused joins
     for (let i = joins.length - 1; 0 <= i; i--) {
-      const join = joins[i];
+      const join: Expression = joins[i];
+      assertIsInstanceOf(join, JoinExpr);
       if (join.isSemiOrAntiJoin) {
         continue;
       }

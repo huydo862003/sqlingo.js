@@ -16,6 +16,9 @@ import {
   toIdentifier,
   WithExpr,
 } from '../expressions';
+import {
+  assertIsInstanceOf, is,
+} from '../port_internals';
 import { findNewName } from '../helper';
 import type { Scope } from './scope';
 import { buildScope } from './scope';
@@ -83,9 +86,12 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
   let recursive = false;
 
   if (withClause) {
+    assertIsInstanceOf(withClause, WithExpr);
     recursive = Boolean(withClause.args.recursive);
-    for (const cte of withClause.args.expressions) {
-      existingCtes.set(cte.args.this, cte.alias);
+    for (const cte of withClause.args.expressions ?? []) {
+      if (is(cte, CteExpr)) {
+        existingCtes.set(cte.args.this, cte.alias);
+      }
     }
   }
 

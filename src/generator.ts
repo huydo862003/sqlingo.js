@@ -117,7 +117,6 @@ import type {
   InputOutputFormatExpr,
   InstallExpr,
   IntDivExpr,
-  IntoExpr,
   IntroducerExpr,
   JsonArrayAggExpr,
   JsonArrayExpr,
@@ -285,7 +284,7 @@ import {
   RandExpr,
   WindowExpr,
   WithTableHintExpr,
-  Expression, LiteralExpr, TableExpr, literal,
+  Expression, LiteralExpr, TableExpr, IntoExpr, literal,
   FuncExpr, PropertyExpr,
   CaseExpr, IfExpr, NullExpr, BooleanExpr,
   CastExpr, DivExpr, DataTypeExpr, DataTypeExprKind,
@@ -533,8 +532,12 @@ import {
 import { ALL_JSON_PATH_PARTS } from './jsonpath';
 import { annotateTypes } from './optimizer';
 import type { TrieNode } from './trie';
-import { ensureBools } from './optimizer/canonicalize';
-import { moveCtesToTopLevel } from './transforms';
+import {
+  ensureBools, moveCtesToTopLevel,
+} from './transforms';
+import {
+  assertIsInstanceOf, is,
+} from './port_internals';
 
 export interface GeneratorOptions extends ParseOptions {
   pretty?: boolean;
@@ -1385,8 +1388,10 @@ export class Generator {
       !expression.parent
       && (this.constructor as typeof Generator).EXPRESSIONS_WITHOUT_NESTED_CteS.has(expression._constructor)
       && [...expression.findAll(WithExpr)].some((node) => node.parent !== expression)
+      && is(expression, SelectExpr)
     ) {
-      expression = moveCtesToTopLevel(expression);
+      assertIsInstanceOf(expression, SelectExpr);
+      return moveCtesToTopLevel(expression) as unknown as E;
     }
     return expression;
   }
@@ -1868,6 +1873,9 @@ export class Generator {
     kind = this.dialect._constructor.INVERSE_CREATABLE_KIND_MAPPING[kind] ?? kind;
 
     const properties = expression.args.properties;
+    if (properties) {
+      assertIsInstanceOf(properties, PropertiesExpr);
+    }
     const propertiesLocs = properties ? this.locateProperties(properties) : new Map<string, Expression[]>();
 
     const thisSql = this.createableSql(expression, propertiesLocs);
@@ -3240,12 +3248,12 @@ export class Generator {
     }
 
     const table = fromExpr.args.this;
-    const nestedJoins: Expression[] = table?.args.joins || [];
-    if (0 < nestedJoins.length) {
-      table?.setArgKey('joins', undefined);
+    const nestedJoins: Expression[] = (is(table, Expression) ? table.args.joins : undefined) || [];
+    if (0 < nestedJoins.length && is(table, Expression)) {
+      table.setArgKey('joins', undefined);
     }
 
-    let joinSql = table
+    let joinSql = is(table, Expression)
       ? this.sql(new JoinExpr({
         this: table,
         on: true_(),
@@ -3306,7 +3314,7 @@ export class Generator {
     }
 
     // Converts `VALUES...` expression into a series of select unions.
-    const aliasNode = expression.args.alias;
+    const aliasNode = is(expression.args.alias, TableAliasExpr) ? expression.args.alias : undefined;
     const columnNames = aliasNode?.columns;
 
     const selects: QueryExpr[] = [];
@@ -3387,6 +3395,9 @@ export class Generator {
     const fromIndex = this.sql(expression, 'fromIndex');
     const fromStr = fromIndex ? ` FROM ${fromIndex}` : '';
     const properties = expression.args.properties;
+    if (properties) {
+      assertIsInstanceOf(properties, PropertiesExpr);
+    }
     const propertiesStr = properties
       ? ` ${this.properties(properties, { prefix: 'PROPERTIES' })}`
       : '';
@@ -4043,6 +4054,7 @@ export class Generator {
     sql = this.prependCtes(expression, sql);
 
     if (!genClass.SUPPORTS_SELECT_INTO && into) {
+      assertIsInstanceOf(into, IntoExpr);
       let tableKind = '';
       if (into.args.temporary) {
         tableKind = ' TEMPORARY';
@@ -4146,6 +4158,7 @@ export class Generator {
 
     if (this._constructor.UNNEST_WITH_ORDINALITY) {
       if (alias && offset instanceof IdentifierExpr) {
+        assertIsInstanceOf(alias, TableAliasExpr);
         // Append offset to alias columns
         if (alias.args.columns) {
           alias.args.columns.push(offset);
@@ -4157,6 +4170,7 @@ export class Generator {
 
     let aliasStr = '';
     if (alias && this.dialect._constructor.UNNEST_COLUMN_ONLY) {
+      assertIsInstanceOf(alias, TableAliasExpr);
       const columns = alias.columns;
       aliasStr = columns && columns[0] ? this.sql(columns[0]) : '';
     } else {
@@ -4193,6 +4207,9 @@ export class Generator {
     let thisStr = this.sql(expression, 'this');
     const partition = this.partitionBySql(expression);
     const order = expression.args.order;
+    if (order) {
+      assertIsInstanceOf(order, OrderExpr);
+    }
     const orderStr = order ? this.orderSql(order, { flat: true }) : '';
     const spec = this.sql(expression, 'spec');
     const alias = this.sql(expression, 'alias');
@@ -4365,6 +4382,9 @@ export class Generator {
 
   nextValueForSql (expression: NextValueForExpr): string {
     const order = expression.args.order;
+    if (order) {
+      assertIsInstanceOf(order, OrderExpr);
+    }
     const orderStr = order ? ` OVER (${this.orderSql(order, { flat: true })})` : '';
     return `NEXT VALUE FOR ${this.sql(expression, 'this')}${orderStr}`;
   }
@@ -5768,11 +5788,14 @@ export class Generator {
     const table = expression.args.this;
     let tableAlias = '';
 
-    const hints = table?.args.hints || [];
-    if (0 < hints.length && table?.alias && hints[0] instanceof WithTableHintExpr) {
-      // T-SQL syntax is MERGE ... <target_table> [WITH (<merge_hint>)] [[AS] table_alias]
-      const aliasExpr = table.args.alias?.pop();
-      tableAlias = aliasExpr ? ` AS ${this.sql(aliasExpr)}` : '';
+    if (is(table, TableExpr)) {
+      const hints: Expression[] = table.args.hints || [];
+      if (0 < hints.length && table.alias && hints[0] instanceof WithTableHintExpr) {
+        // T-SQL syntax is MERGE ... <target_table> [WITH (<merge_hint>)] [[AS] table_alias]
+        const aliasRaw = table.args.alias;
+        const aliasExpr = is(aliasRaw, Expression) ? aliasRaw.pop() : undefined;
+        tableAlias = aliasExpr ? ` AS ${this.sql(aliasExpr)}` : '';
+      }
     }
 
     const thisStr = this.sql(table);
@@ -6232,9 +6255,11 @@ export class Generator {
       'expressions',
       expression.expressions.map((e) => {
         if (e instanceof PropertyEqExpr) {
+          const thisArg = e.args.this;
+          const aliasName = thisArg?.isString ? e.name : is(thisArg, IdentifierExpr) ? thisArg : typeof thisArg === 'string' ? thisArg : undefined;
           return alias(
             e.args.expression || '',
-            e.args.this?.isString ? e.name : e.args.this,
+            aliasName,
           );
         }
         return e;
@@ -6276,7 +6301,8 @@ export class Generator {
       return '';
     }
 
-    let finalTo = to;
+    assertIsInstanceOf(to, DataTypeExpr);
+    let finalTo: DataTypeExpr = to;
 
     // Retrieve length of datatype and override to default if not specified
     if (!seqGet(to.expressions, 0) && this._constructor.PARAMETERIZABLE_TEXT_TYPES.has(to.args.this as DataTypeExprKind)) {
@@ -7034,6 +7060,7 @@ export class Generator {
 
     const properties = expression.args.properties;
     if (properties) {
+      assertIsInstanceOf(properties, PropertiesExpr);
       encodeSql = `${encodeSql} ${this.properties(properties)}`;
     }
 
@@ -7251,6 +7278,9 @@ export class Generator {
 
   getPutSql (expression: PutExpr | GetExpr): string {
     const props = expression.args.properties;
+    if (props) {
+      assertIsInstanceOf(props, PropertiesExpr);
+    }
     const propsSql = props
       ? this.properties(props, {
         prefix: ' ',

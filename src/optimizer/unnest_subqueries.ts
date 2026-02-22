@@ -2,11 +2,11 @@
 
 import type {
   ColumnExpr,
-  SelectExpr,
 } from '../expressions';
 import {
   Expression,
   InExpr,
+  SelectExpr,
   SetOperationExpr,
   WhereExpr,
   HavingExpr,
@@ -40,6 +40,7 @@ import {
   JoinExprKind,
   ConditionExpr,
 } from '../expressions';
+import { is } from '../port_internals';
 import { nameSequence } from '../helper';
 import {
   findInScope, ScopeType, traverseScope,
@@ -71,14 +72,20 @@ export function unnestSubqueries<E extends Expression> (expression: E): E {
     const select = scope.expression;
     const parent = select.parentSelect;
 
-    if (!parent) {
+    if (!parent || !is(parent, SelectExpr)) {
       continue;
     }
 
+    if (!is(select, SelectExpr)) {
+      continue;
+    }
+
+    const selectExpr: SelectExpr = select;
+
     if (0 < scope.externalColumns.length) {
-      decorrelate(select as SelectExpr, parent, scope.externalColumns, nextAliasName);
+      decorrelate(selectExpr, parent, scope.externalColumns, nextAliasName);
     } else if (scope.scopeType === ScopeType.SUBQUERY) {
-      unnest(select as SelectExpr, parent, nextAliasName);
+      unnest(selectExpr, parent, nextAliasName);
     }
   }
 

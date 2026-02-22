@@ -1,14 +1,14 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/qualify_columns.py
 
 import type {
-  ColumnDefExpr,
   CteExpr,
-  DataTypeExpr,
   SetOperationExpr,
 } from '../expressions';
 import {
   IdentifierExpr,
   AggFuncExpr,
+  ColumnDefExpr,
+  DataTypeExpr,
   Expression,
   AliasesExpr,
   AliasExpr,
@@ -24,6 +24,7 @@ import {
   GroupExpr,
   HavingExpr,
   InExpr,
+  JoinExpr,
   LiteralExpr,
   paren as parenExpr,
   PivotExpr,
@@ -44,6 +45,9 @@ import {
   DataTypeExprKind,
   alias,
 } from '../expressions';
+import {
+  assertIsInstanceOf, filterInstanceOf, is,
+} from '../port_internals';
 import {
   Dialect, type DialectType,
 } from '../dialects/dialect';
@@ -217,8 +221,9 @@ export function validateQualifyColumns<E extends Expression> (
 
   if (0 < allUnqualifiedColumns.length) {
     const firstColumn = allUnqualifiedColumns[0];
-    const line = firstColumn.args.this.meta['line'];
-    const col = firstColumn.args.this.meta['col'];
+    const firstColumnThis = firstColumn.args.this;
+    const line = is(firstColumnThis, Expression) ? firstColumnThis.meta['line'] : undefined;
+    const col = is(firstColumnThis, Expression) ? firstColumnThis.meta['col'] : undefined;
 
     let errorMsg = `Ambiguous column '${firstColumn.name}'`;
     if (line && col) {
@@ -320,6 +325,7 @@ function expandUsing (scope: Scope, resolver: Resolver): Map<string, string[]> {
 
   for (let i = 0; i < joins.length; i++) {
     const join = joins[i];
+    assertIsInstanceOf(join, JoinExpr);
     const sourceTable = ordered[ordered.length - 1];
     if (sourceTable) {
       updateSourceColumns(sourceTable);
@@ -678,7 +684,8 @@ function qualifyColumnsInScope (
         && column.parts.length === 1
         && columnName in scope.selectedSources
       ) {
-        scope.replace(column, new TableColumnExpr({ this: column.args.this }));
+        const colThis = column.args.this;
+        scope.replace(column, new TableColumnExpr({ this: is(colThis, Expression) ? colThis : undefined }));
       }
     }
   }
@@ -762,7 +769,8 @@ function expandStructStarsNoParens (expression: DotExpr): AliasExpr[] {
 
   // All nested struct values are ColumnDefs, so normalize the first Column in one
   const dotColumnCopy = dotColumn.copy();
-  let startingStruct: IdentifierExpr | DotExpr | DataTypeExpr | ColumnDefExpr | undefined = dotColumnCopy.type;
+  const dotColumnType = dotColumnCopy.type;
+  let startingStruct: IdentifierExpr | DotExpr | DataTypeExpr | ColumnDefExpr | undefined = is(dotColumnType, DataTypeExpr) ? dotColumnType : undefined;
 
   // First part is the table name and last part is the star so they can be dropped
   const dotParts = expression.parts.slice(1, -1);
@@ -776,14 +784,15 @@ function expandStructStarsNoParens (expression: DotExpr): AliasExpr[] {
         return [];
       }
 
-      if (!('$kind' in field) || !(field.args.kind instanceof Expression)) {
+      if (!is(field, ColumnDefExpr)) {
         return [];
       }
 
-      const fieldKind = field.args.kind;
+      const fieldKindRaw: unknown = field.args.kind;
+      const fieldKind = is(fieldKindRaw, DataTypeExpr) ? fieldKindRaw : undefined;
 
       if (field.name === part.name && fieldKind?.isType(DataTypeExprKind.STRUCT)) {
-        startingStruct = fieldKind as typeof startingStruct;
+        startingStruct = fieldKind;
         break outer;
       }
     }
@@ -834,7 +843,8 @@ function expandStructStarsWithParens (expression: DotExpr): AliasExpr[] {
   }
 
   let parent = dotColumn.parent;
-  let startingStruct: string | ColumnDefExpr | DotExpr | IdentifierExpr | DataTypeExpr | undefined = dotColumn.type;
+  const dotColumnType2 = dotColumn.type;
+  let startingStruct: string | ColumnDefExpr | DotExpr | IdentifierExpr | DataTypeExpr | undefined = is(dotColumnType2, DataTypeExpr) ? dotColumnType2 : undefined;
 
   while (parent !== undefined) {
     if (parent instanceof ParenExpr) {
@@ -856,11 +866,11 @@ function expandStructStarsWithParens (expression: DotExpr): AliasExpr[] {
     }
 
     let matched = false;
-    const expressions: (DataTypeExpr | ColumnDefExpr)[] = (startingStruct as DataTypeExpr).args.expressions || [];
+    const expressions: (DataTypeExpr | ColumnDefExpr)[] = filterInstanceOf((startingStruct as DataTypeExpr).args.expressions || [], ColumnDefExpr);
     for (const structFieldDef of expressions) {
       if (structFieldDef.name === rhs.name) {
         matched = true;
-        startingStruct = structFieldDef.args.kind;
+        startingStruct = structFieldDef.args.kind as unknown as DataTypeExpr | undefined;
         break;
       }
     }
@@ -874,7 +884,7 @@ function expandStructStarsWithParens (expression: DotExpr): AliasExpr[] {
 
   const outerParen = expression.args.this;
 
-  const expressions: (DataTypeExpr | ColumnDefExpr)[] = (startingStruct as DataTypeExpr).args.expressions || [];
+  const expressions: (DataTypeExpr | ColumnDefExpr)[] = filterInstanceOf((startingStruct as DataTypeExpr).args.expressions || [], ColumnDefExpr);
   for (const structFieldDef of expressions) {
     const newIdentifier = structFieldDef.args.this instanceof IdentifierExpr ? structFieldDef.args.this.copy() : new IdentifierExpr({ this: structFieldDef.args.this.toString() });
     const newDot = DotExpr.build([outerParen.copy(), newIdentifier]);
@@ -1174,7 +1184,7 @@ function expandGroupBy (scope: Scope, dialect: Dialect): void {
   const group = (scope.expression as SelectExpr).args.group;
   if (!group) return;
 
-  const groupExpressions = group.args.expressions || [];
+  const groupExpressions = filterInstanceOf(group.args.expressions || [], Expression);
   group.args.expressions = expandPositionalReferences(scope, groupExpressions, dialect);
   (scope.expression as SelectExpr).args.group = group;
 }

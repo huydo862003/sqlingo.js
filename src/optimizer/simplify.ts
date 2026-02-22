@@ -4,7 +4,6 @@ import { DateTime } from 'luxon';
 import type {
   AliasExpr,
   AnonymousExpr,
-  ColumnDefExpr,
   ExpressionValueList,
   FromExpr,
   ILikeExpr,
@@ -17,6 +16,7 @@ import type {
   VarExpr,
 } from '../expressions';
 import {
+  ColumnDefExpr,
   DivExpr,
   Expression,
   AddExpr,
@@ -103,6 +103,7 @@ import {
 } from '../helper';
 import { ensureSchema } from '../schema';
 import { MapBinaryTuple } from '../port_internals/binary_tuple_map';
+import { is } from '../port_internals';
 import { TypeAnnotator } from './annotate_types';
 import { normalized } from './normalize';
 import {
@@ -661,9 +662,11 @@ function extractType (...expressions: Expression[]): DataTypeExpr | ColumnDefExp
 
   for (const expression of expressions) {
     if (expression instanceof CastExpr) {
-      targetType = expression.to;
+      const castTo = expression.to;
+      targetType = is(castTo, DataTypeExpr) ? castTo : is(castTo, ColumnDefExpr) ? castTo : undefined;
     } else {
-      targetType = expression.type;
+      const exprType = expression.type;
+      targetType = is(exprType, DataTypeExpr) ? exprType : is(exprType, ColumnDefExpr) ? exprType : undefined;
     }
     if (targetType) {
       break;

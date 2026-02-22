@@ -10,6 +10,7 @@ import {
   ensureList, splitNumWords,
 } from './helper';
 import {
+  assertIsInstanceOf, filterInstanceOf, is,
   type Merge,
   multiInherit,
 } from './port_internals';
@@ -2772,7 +2773,7 @@ export class QueryExpr extends Expression {
    */
   get ctes (): Expression[] {
     const withExpr = this.args.with;
-    return withExpr?.args.expressions || []; // sqlglot uses `Expression.expressions`, but I used $expressions for type safety
+    return filterInstanceOf(withExpr?.args.expressions ?? [], Expression); // sqlglot uses `Expression.expressions`, but I used $expressions for type safety
   }
 
   /**
@@ -3027,7 +3028,7 @@ export class UdtfExpr extends DerivedTableExpr {
 
   get selects (): Expression[] {
     const alias = this.args.alias;
-    return alias
+    return is(alias, TableAliasExpr)
       ? alias.columns
       : [];
   }
@@ -3141,7 +3142,7 @@ export class DdlExpr extends Expression {
    */
   get ctes (): Expression[] {
     const withExpr = this.args.with;
-    return withExpr?.args.expressions || []; // NOTE: The original sqlglot uses `Expression.expressions`
+    return filterInstanceOf(withExpr?.args.expressions ?? [], Expression); // NOTE: The original sqlglot uses `Expression.expressions`
   }
 
   /**
@@ -7096,7 +7097,9 @@ export class TableExpr extends Expression {
 
     const aliasArg = this.args.alias;
     if (aliasArg) {
-      col = alias(col, aliasArg.args.this, { copy });
+      const aliasThis = aliasArg.args.this;
+      const aliasName = typeof aliasThis === 'string' ? aliasThis : is(aliasThis, IdentifierExpr) ? aliasThis : undefined;
+      col = alias(col, aliasName, { copy });
     }
 
     return col;
@@ -13044,11 +13047,15 @@ export class SetOperationExpr extends QueryExpr {
     } = options;
     const expressionList = ensureList(expressions);
     const self = maybeCopy(this, copy);
-    self.args.this.unnest().select(expressionList, {
+    const leftSide = self.args.this;
+    assertIsInstanceOf(leftSide, QueryExpr);
+    leftSide.unnest().select(expressionList, {
       ...restOptions,
       copy: false,
     });
-    self.args.expression.unnest().select(expressionList, {
+    const rightSide = self.args.expression;
+    assertIsInstanceOf(rightSide, QueryExpr);
+    rightSide.unnest().select(expressionList, {
       ...restOptions,
       copy: false,
       append: options?.append ?? true,
@@ -13065,7 +13072,9 @@ export class SetOperationExpr extends QueryExpr {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let expression: QueryExpr = this;
     while (expression instanceof SetOperationExpr) {
-      expression = expression.args.this.unnest();
+      const next = expression.args.this.unnest();
+      assertIsInstanceOf(next, QueryExpr);
+      expression = next;
     }
     return expression.namedSelects;
   }
@@ -13087,7 +13096,9 @@ export class SetOperationExpr extends QueryExpr {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let expression: QueryExpr = this;
     while (expression instanceof SetOperationExpr) {
-      expression = expression.args.this.unnest();
+      const next = expression.args.this.unnest();
+      assertIsInstanceOf(next, QueryExpr);
+      expression = next;
     }
     return expression.selects;
   }
@@ -14007,8 +14018,11 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let expression: QueryExpr = this;
     while (expression instanceof SubqueryExpr) {
-      expression = expression.args.this || expression;
-      if (!expression || expression === this) break;
+      const next = expression.args.this;
+      if (!next) break;
+      assertIsInstanceOf(next, QueryExpr);
+      expression = next;
+      if (expression === this) break;
     }
     return expression;
   }
@@ -31611,7 +31625,8 @@ export function cast (
     const typeMapping = targetDialect._constructor.generatorClass.TYPE_MAPPING;
     const existingCastType = expr.args.to?.args.this;
     const newCastType = dataType.args.this;
-    const typesAreEquivalent = (typeMapping.get(existingCastType.toString()) || existingCastType) === (typeMapping.get(newCastType.toString()) || newCastType);
+    const typesAreEquivalent = existingCastType != null
+      && (typeMapping.get(existingCastType.toString()) || existingCastType) === (typeMapping.get(newCastType?.toString() ?? '') || newCastType);
 
     if (expr.isType([dataType]) || typesAreEquivalent) {
       return expr;
@@ -32130,7 +32145,9 @@ export function merge (
 
   const usingClause = mergeExpr.args.using;
   if (usingClause instanceof AliasExpr) {
-    usingClause.replace(alias(usingClause.args.this!, usingClause.args.alias, { table: true }));
+    const usingAlias = usingClause.args.alias;
+    const aliasName = typeof usingAlias === 'string' ? usingAlias : is(usingAlias, IdentifierExpr) ? usingAlias : undefined;
+    usingClause.replace(alias(usingClause.args.this!, aliasName, { table: true }));
   }
 
   return mergeExpr;

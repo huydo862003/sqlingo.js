@@ -11,6 +11,7 @@ import {
   SelectExpr,
   true_,
 } from '../expressions';
+import { filterInstanceOf } from '../port_internals';
 import { tsort } from '../helper';
 
 const JOIN_ATTRS = [
@@ -39,7 +40,7 @@ const JOIN_ATTRS = [
  */
 export function optimizeJoins (expression: Expression): Expression {
   for (const select of expression.findAll(SelectExpr)) {
-    const joins = select.args.joins ?? [];
+    const joins = filterInstanceOf(select.args.joins ?? [], JoinExpr);
 
     if (!isReorderable(joins)) {
       continue;
@@ -109,7 +110,7 @@ export function reorderJoins (expression: Expression): Expression {
     const parent = from.parent;
     if (!parent) continue;
 
-    const joins = parent.args.joins ?? [];
+    const joins = filterInstanceOf(parent.args.joins ?? [], JoinExpr);
 
     if (!isReorderable(joins)) {
       continue;

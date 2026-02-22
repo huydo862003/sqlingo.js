@@ -1,7 +1,6 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/scope.py
 
 import type {
-  Expression,
   PivotExpr,
 } from '../expressions';
 import {
@@ -12,6 +11,7 @@ import {
   DistinctExpr,
   DmlExpr,
   DotExpr,
+  Expression,
   FinalExpr,
   FuncExpr,
   FromExpr,
@@ -35,8 +35,12 @@ import {
   UnnestExpr,
   UNWRAPPED_QUERIES,
   WindowExpr,
+  WithExpr,
   WithinGroupExpr,
 } from '../expressions';
+import {
+  assertIsInstanceOf, isInstanceOf,
+} from '../port_internals';
 import { OptimizeError } from '../errors';
 import {
   ensureList, findNewName, seqGet,
@@ -852,7 +856,7 @@ function* _traverseCtes (scope: Scope): Generator<Scope> {
     const cteName = cte.alias;
     const with_ = scope.expression.args.with;
 
-    if (with_ && with_.args.recursive) {
+    if (with_ && isInstanceOf(with_, WithExpr) && with_.args.recursive) {
       const union = cte.args.this;
 
       if (union instanceof SetOperationExpr) {
@@ -977,7 +981,9 @@ function* _traverseTables (scope: Scope): Generator<Scope> {
       // Make sure to not include the joins twice
       if ((expression as Expression) !== scope.expression) {
         for (const join of expression.args.joins || []) {
-          expressions.push(join.args.this);
+          if (isInstanceOf(join.args.this, Expression)) {
+            expressions.push(join.args.this);
+          }
         }
       }
 

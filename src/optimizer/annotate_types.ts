@@ -50,7 +50,7 @@ import {
   ensureList, isDateUnit, isIsoDate, isIsoDatetime, seqGet,
 } from '../helper';
 import {
-  MapBinaryTuple,
+  MapBinaryTuple, assertIsInstanceOf, is,
 } from '../port_internals';
 import {
   ensureSchema, MappingSchema, type Schema,
@@ -461,19 +461,22 @@ export class TypeAnnotator {
         } else {
           const colRecord: Record<string, DataTypeExpr | DataTypeExprKind | ColumnDefExpr | undefined> = {};
           for (let i = 0; i < aliasColumnNames.length && i < values.length; i++) {
-            colRecord[aliasColumnNames[i]] = values[i].type;
+            const vType = values[i].type;
+            colRecord[aliasColumnNames[i]] = is(vType, DataTypeExpr) ? vType : is(vType, ColumnDefExpr) ? vType : undefined;
           }
           selects.set(name, colRecord);
         }
       } else if (
         expression instanceof SetOperationExpr
+        && is(expression.left, QueryExpr) && is(expression.right, QueryExpr)
         && expression.left.selects.length === expression.right.selects.length
       ) {
         selects.set(name, this.getSetopColumnTypes(expression) as Record<string, DataTypeExpr | DataTypeExprKind | undefined>);
       } else {
         const colRecord: Record<string, ColumnDefExpr | DataTypeExpr | DataTypeExprKind | undefined> = {};
         for (const s of expression.selects) {
-          colRecord[s.aliasOrName] = s.type;
+          const sType = s.type;
+          colRecord[s.aliasOrName] = is(sType, DataTypeExpr) ? sType : is(sType, ColumnDefExpr) ? sType : undefined;
         }
         selects.set(name, colRecord);
       }
@@ -492,10 +495,13 @@ export class TypeAnnotator {
 
     const colTypes: Record<string, DataTypeExpr | DataTypeExprKind> = {};
 
+    const setopLeft = setop.left;
+    const setopRight = setop.right;
     if (
-      !setop.left.selects.length
-      || !setop.right.selects.length
-      || setop.left.selects.length !== setop.right.selects.length
+      !is(setopLeft, QueryExpr) || !is(setopRight, QueryExpr)
+      || !setopLeft.selects.length
+      || !setopRight.selects.length
+      || setopLeft.selects.length !== setopRight.selects.length
     ) {
       return colTypes;
     }
@@ -507,24 +513,33 @@ export class TypeAnnotator {
 
       let setopCols: Record<string, DataTypeExpr | DataTypeExprKind>;
 
+      const nodeLeft = node.left;
+      const nodeRight = node.right;
+      assertIsInstanceOf(nodeLeft, QueryExpr);
+      assertIsInstanceOf(nodeRight, QueryExpr);
+
       if (node.args.byName) {
         const rightTypeBySelect: Record<string, DataTypeExpr | DataTypeExprKind | ColumnDefExpr | undefined> = {};
-        for (const s of node.right.selects) {
-          rightTypeBySelect[s.aliasOrName] = s.type;
+        for (const s of nodeRight.selects) {
+          const sType = s.type;
+          rightTypeBySelect[s.aliasOrName] = is(sType, DataTypeExpr) ? sType : is(sType, ColumnDefExpr) ? sType : undefined;
         }
         setopCols = {};
-        for (const s of node.left.selects) {
-          const lType = s.type ?? DataTypeExprKind.UNKNOWN;
+        for (const s of nodeLeft.selects) {
+          const sType = s.type;
+          const lType = (is(sType, DataTypeExpr) ? sType : undefined) ?? DataTypeExprKind.UNKNOWN;
           const rType = rightTypeBySelect[s.aliasOrName] ?? DataTypeExprKind.UNKNOWN;
           setopCols[s.aliasOrName] = this.maybeCoerce(lType, rType);
         }
       } else {
         setopCols = {};
-        for (let i = 0; i < node.left.selects.length; i++) {
-          const ls = node.left.selects[i];
-          const rs = node.right.selects[i];
-          const lType = ls.type ?? DataTypeExprKind.UNKNOWN;
-          const rType = rs.type ?? DataTypeExprKind.UNKNOWN;
+        for (let i = 0; i < nodeLeft.selects.length; i++) {
+          const ls = nodeLeft.selects[i];
+          const rs = nodeRight.selects[i];
+          const lsType = ls.type;
+          const rsType = rs.type;
+          const lType = (is(lsType, DataTypeExpr) ? lsType : undefined) ?? DataTypeExprKind.UNKNOWN;
+          const rType = (is(rsType, DataTypeExpr) ? rsType : undefined) ?? DataTypeExprKind.UNKNOWN;
           setopCols[ls.aliasOrName] = this.maybeCoerce(lType, rType);
         }
       }
@@ -586,7 +601,8 @@ export class TypeAnnotator {
           if (colType) {
             this.setType(expr, colType);
           } else if ((source as Scope).expression instanceof UnnestExpr) {
-            this.setType(expr, (source as Scope).expression.type);
+            const unnestType = (source as Scope).expression.type;
+            this.setType(expr, is(unnestType, DataTypeExpr) ? unnestType : undefined);
           } else {
             this.setType(expr, DataTypeExprKind.UNKNOWN);
           }
@@ -743,8 +759,8 @@ export class TypeAnnotator {
       return;
     }
 
-    const leftType = left.type?.args.this.toString() as DataTypeExprKind;
-    const rightType = right.type?.args.this.toString() as DataTypeExprKind;
+    const leftType = left.type?.args.this?.toString() as DataTypeExprKind;
+    const rightType = right.type?.args.this?.toString() as DataTypeExprKind;
 
     // Connectors (AND, OR) and predicates (=, <, >, IS, etc.) always return BOOLEAN
     if (expression instanceof PredicateExpr) {
@@ -769,7 +785,8 @@ export class TypeAnnotator {
       this.setType(expression, DataTypeExprKind.BOOLEAN);
     } else {
       const inner = expression.args.this as Expression;
-      this.setType(expression, inner?.type);
+      const innerType = inner?.type;
+      this.setType(expression, is(innerType, DataTypeExpr) ? innerType : is(innerType, ColumnDefExpr) ? innerType : undefined);
     }
 
     const inner = expression.args.this as Expression;
@@ -829,16 +846,21 @@ export class TypeAnnotator {
           continue;
         }
 
+        const narrowedExprType: DataTypeExpr | ColumnDefExpr | undefined = is(exprType, DataTypeExpr) ? exprType : is(exprType, ColumnDefExpr) ? exprType : undefined;
+        if (!narrowedExprType) {
+          continue;
+        }
+
         // Stop at the first nested type (e.g., ARRAY<INT>)
-        if (exprType.getArgKey('nested')) {
-          nestedType = exprType;
+        if (narrowedExprType.getArgKey('nested')) {
+          nestedType = narrowedExprType;
           break outer;
         }
 
         if (expr instanceof LiteralExpr) {
-          literalType = this.maybeCoerce(literalType ?? exprType, exprType);
+          literalType = this.maybeCoerce(literalType ?? narrowedExprType, narrowedExprType);
         } else {
-          nonLiteralType = this.maybeCoerce(nonLiteralType ?? exprType, exprType);
+          nonLiteralType = this.maybeCoerce(nonLiteralType ?? narrowedExprType, narrowedExprType);
         }
       }
     }
@@ -915,7 +937,8 @@ export class TypeAnnotator {
 
     if (bracketArg instanceof SliceExpr) {
       // Slice returns same type as the collection
-      this.setType(expression, thisExpr.type);
+      const thisExprType = thisExpr.type;
+      this.setType(expression, is(thisExprType, DataTypeExpr) ? thisExprType : undefined);
     } else if (thisExpr.type?.isType(DataTypeExprKind.ARRAY)) {
       // Array indexing returns the element type
       const elemType = seqGet(thisExpr.type.args.expressions as DataTypeExpr[] | undefined ?? [], 0);
@@ -928,7 +951,8 @@ export class TypeAnnotator {
         if (0 <= index) {
           const values = thisExpr.values as Expression[];
           const value = seqGet(values, index);
-          this.setType(expression, value instanceof Expression ? value.type : undefined);
+          const valueType = value instanceof Expression ? value.type : undefined;
+          this.setType(expression, is(valueType, DataTypeExpr) ? valueType : undefined);
         } else {
           this.setType(expression, DataTypeExprKind.UNKNOWN);
         }
@@ -957,7 +981,8 @@ export class TypeAnnotator {
       // If result is not a real type, promote to DOUBLE
       const currentKind = expression.type?.this as DataTypeExprKind;
       if (!DataTypeExpr.REAL_TYPES.has(currentKind)) {
-        this.setType(expression, this.maybeCoerce(expression.type, DataTypeExprKind.DOUBLE));
+        const curType = expression.type;
+        this.setType(expression, this.maybeCoerce(is(curType, DataTypeExpr) ? curType : undefined, DataTypeExprKind.DOUBLE));
       }
     }
   }
@@ -968,7 +993,8 @@ export class TypeAnnotator {
     // Propagate type from qualified UDF calls (e.g., db.my_udf(...))
     const exprRight = expression.args.expression as Expression;
     if (exprRight instanceof AnonymousExpr) {
-      this.setType(expression, exprRight.type);
+      const exprRightType = exprRight.type;
+      this.setType(expression, is(exprRightType, DataTypeExpr) ? exprRightType : undefined);
       return;
     }
 
@@ -1021,7 +1047,8 @@ export class TypeAnnotator {
     if (query instanceof QueryExpr) {
       const selects = query.selects;
       if (selects.length === 1) {
-        this.setType(expression, selects[0].type);
+        const selectType = selects[0].type;
+        this.setType(expression, is(selectType, DataTypeExpr) ? selectType : is(selectType, ColumnDefExpr) ? selectType : undefined);
         return;
       }
     }
@@ -1033,7 +1060,8 @@ export class TypeAnnotator {
     expr: Expression,
   ): ColumnDefExpr | DataTypeExpr | DataTypeExprKind | null {
     let nameExpr: Expression | undefined;
-    let kind: ColumnDefExpr | DataTypeExpr | DataTypeExprKind | undefined = expr.type;
+    const exprType0 = expr.type;
+    let kind: ColumnDefExpr | DataTypeExpr | DataTypeExprKind | undefined = is(exprType0, DataTypeExpr) ? exprType0 : is(exprType0, ColumnDefExpr) ? exprType0 : undefined;
 
     const alias = expr.args['alias'];
     if (alias instanceof Expression) {
@@ -1041,13 +1069,14 @@ export class TypeAnnotator {
     } else if (expr.args['expression'] instanceof Expression) {
       // STRUCT(key = value) or STRUCT(key := value)
       nameExpr = (expr.args.this as Expression)?.copy();
-      kind = (expr.args['expression'] as Expression)?.type;
+      const argExprType = (expr.args['expression'] as Expression)?.type;
+      kind = is(argExprType, DataTypeExpr) ? argExprType : is(argExprType, ColumnDefExpr) ? argExprType : undefined;
     } else if (expr instanceof ColumnExpr) {
       // STRUCT(c)
       nameExpr = (expr.args.this as Expression)?.copy();
     }
 
-    if (kind?.isType?.(DataTypeExprKind.UNKNOWN)) {
+    if (is(kind, DataTypeExpr) && kind.isType(DataTypeExprKind.UNKNOWN)) {
       return null;
     }
 

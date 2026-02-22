@@ -46,8 +46,6 @@ import type {
   TimeExpr,
   TimestampExpr,
   Sha2Expr,
-  GenerateSeriesExpr,
-  GenerateDateArrayExpr,
   DatetimeDiffExpr,
   TimestampDiffExpr,
   MakeIntervalExpr,
@@ -63,6 +61,8 @@ import type {
   XorExpr,
   JsonExtractExprArgs,
   RegexpExtractExprArgs,
+
+  GenerateDateArrayExpr,
 } from '../expressions';
 import {
   JsonbExtractExpr,
@@ -80,6 +80,8 @@ import {
   UpdateExpr,
   InsertExpr,
   TupleExpr,
+  WhenExpr,
+  GenerateSeriesExpr,
   DateDiffExpr,
   DayExpr,
   LastDayExpr,
@@ -188,6 +190,9 @@ import {
 import {
   formatTime, subsecondPrecision, TIMEZONES,
 } from '../time';
+import {
+  assertIsInstanceOf, is,
+} from '../port_internals';
 
 // Type aliases for common expression type unions
 export type DATE_ADD_OR_DIFF =
@@ -2052,7 +2057,8 @@ export function timestampTruncSql (
 export function noTimestampSql (self: Generator, expression: TimestampExpr): string {
   const zone = expression.args.zone;
   if (!zone) {
-    const targetType = annotateTypes(expression, { dialect: self.dialect }).type || DataTypeExprKind.TIMESTAMP;
+    const annotated = annotateTypes(expression, { dialect: self.dialect }).type;
+    const targetType: DataTypeExpr | DataTypeExprKind = is(annotated, DataTypeExpr) ? annotated : DataTypeExprKind.TIMESTAMP;
     return self.sql(cast(expression.args.this || '', targetType));
   }
 
@@ -2410,6 +2416,7 @@ export function argMaxOrMinNoCount (name: string): (self: Generator, expression:
 export function tsOrDsAddCast (expression: TsOrDsAddExpr): TsOrDsAddExpr {
   let thisArg = expression.args.this.copy();
   const returnType = expression.returnType;
+  assertIsInstanceOf(returnType, DataTypeExpr);
 
   if (returnType.isType(DataTypeExprKind.DATE)) {
     thisArg = cast(thisArg, DataTypeExprKind.TIMESTAMP);
@@ -2454,7 +2461,9 @@ export function dateDeltaToBinaryIntervalOp (
     let toType: DataTypeExpr | DataTypeExprKind | undefined = undefined;
     if (shouldCast) {
       if (expression instanceof TsOrDsAddExpr) {
-        toType = expression.returnType;
+        const rt = expression.returnType;
+        assertIsInstanceOf(rt, DataTypeExpr);
+        toType = rt;
       } else if (thisArg.isString) {
         toType = (expression instanceof DatetimeAddExpr || expression instanceof DatetimeSubExpr)
           ? DataTypeExprKind.DATETIME
@@ -2546,10 +2555,12 @@ export function mergeWithoutTargetSql (self: Generator, expression: MergeExpr): 
   const alias = expression.args.this?.args.alias;
   const normalize = (id: Expression | undefined) => id ? self.dialect.normalizeIdentifier(id).name : undefined;
 
-  const targets = new Set([normalize(expression.args.this?.args.this)]);
-  if (alias) targets.add(typeof alias.args.this === 'string' ? alias.args.this : normalize(alias.args.this));
+  const thisThis = expression.args.this?.args.this;
+  const targets = new Set([normalize(is(thisThis, Expression) ? thisThis : undefined)]);
+  if (is(alias, Expression)) targets.add(typeof alias.args.this === 'string' ? alias.args.this : normalize(is(alias.args.this, Expression) ? alias.args.this : undefined));
 
   for (const when of expression.args.whens?.args.expressions || []) {
+    if (!is(when, WhenExpr)) continue;
     const then = when.args.then;
     if (then instanceof UpdateExpr) {
       for (const equals of then.findAll(EqExpr)) {
@@ -2767,10 +2778,11 @@ export function sequenceSql (self: Generator, expression: GenerateSeriesExpr | G
   const targetType = (start instanceof CastExpr ? start.args.to : (end instanceof CastExpr ? end.args.to : undefined));
 
   if (start !== undefined && end !== undefined && targetType?.isType(['date', 'timestamp'])) {
+    assertIsInstanceOf(targetType, DataTypeExpr);
     if (start instanceof CastExpr && targetType === start.to) end = cast(end, targetType);
     else start = cast(start, targetType);
 
-    if ('$isEndExclusive' in expression && expression.args.isEndExclusive) {
+    if (is(expression, GenerateSeriesExpr) && expression.args.isEndExclusive) {
       const stepVal = step || LiteralExpr.number(1);
       end = new ParenExpr({
         this: new SubExpr({
@@ -2876,7 +2888,9 @@ export function explodeToUnnestSql (self: Generator, expression: LateralExpr): s
   let crossJoinExpr;
 
   if (thisArg instanceof PosexplodeExpr && aliasExpr) {
+    assertIsInstanceOf(aliasExpr, TableAliasExpr);
     const [pos, ...cols] = aliasExpr.args.columns || [];
+    assertIsInstanceOf(pos, IdentifierExpr);
     const lateralSubquery = select([alias(pos.sub(1), pos), ...cols])
       .from(new UnnestExpr({
         expressions: [thisArg.args.this],

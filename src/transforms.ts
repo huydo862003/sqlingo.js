@@ -85,7 +85,9 @@ import { ensureBools as canonicalizeEnsureBools } from './optimizer/canonicalize
 import {
   findAllInScope, normalize, Scope, traverseScope,
 } from './optimizer';
-import { enumFromString } from './port_internals';
+import {
+  assertIsInstanceOf, enumFromString, filterInstanceOf, isInstanceOf,
+} from './port_internals';
 
 /**
  * Creates a new transform by chaining a sequence of transformations.
@@ -159,7 +161,8 @@ export function unnestGenerateDateArrayUsingRecursiveCte (expression: Expression
       }
 
       const aliasExpr = unnest.args.alias;
-      const columnName = aliasExpr instanceof TableAliasExpr ? aliasExpr.columns[0] : 'date_value';
+      const rawColumnName = aliasExpr instanceof TableAliasExpr ? aliasExpr.columns[0] : undefined;
+      const columnName: string | IdentifierExpr = isInstanceOf(rawColumnName, IdentifierExpr) ? rawColumnName : isInstanceOf(rawColumnName, Expression) ? rawColumnName.name : 'date_value';
 
       const startCast = cast(start, 'date');
       const dateAdd = new AnonymousExpr({
@@ -225,7 +228,7 @@ export function unnestGenerateSeries (expression: Expression): Expression {
         unnest,
         '_u',
         {
-          table: [expression.args.alias instanceof TableAliasExpr ? expression.args.alias.args.this || '' : expression.args.alias],
+          table: [expression.args.alias instanceof TableAliasExpr ? (isInstanceOf(expression.args.alias.args.this, IdentifierExpr) ? expression.args.alias.args.this : typeof expression.args.alias.args.this === 'string' ? expression.args.alias.args.this : '') : (typeof expression.args.alias === 'string' ? expression.args.alias : '')],
         },
       );
     }
@@ -320,7 +323,7 @@ export function eliminateQualify (expression: Expression): Expression {
       if (s instanceof AliasExpr) expressionByAlias[s.alias] = s.args.this;
     }
 
-    const candidates = qualifyFilters?.findAll<WindowExpr | ColumnExpr>(expression.isStar ? [WindowExpr] : [WindowExpr, ColumnExpr]);
+    const candidates = isInstanceOf(qualifyFilters, Expression) ? qualifyFilters.findAll<WindowExpr | ColumnExpr>(expression.isStar ? [WindowExpr] : [WindowExpr, ColumnExpr]) : [];
     for (const candidate of candidates) {
       if (candidate instanceof WindowExpr) {
         for (const col of candidate.findAll(ColumnExpr)) {
@@ -344,7 +347,7 @@ export function eliminateQualify (expression: Expression): Expression {
       }
     }
 
-    return outerSelects.from(expression.subquery('_t', { copy: false })).where(qualifyFilters);
+    return outerSelects.from(expression.subquery('_t', { copy: false })).where(isInstanceOf(qualifyFilters, Expression) ? qualifyFilters : typeof qualifyFilters === 'string' ? qualifyFilters : undefined);
   }
   return expression;
 }
@@ -450,7 +453,7 @@ export function unnestToExplode (
       const hasMultiExpr = 1 < exprs.length;
       const [thisArg] = unnestZipExprs(unnest, exprs, hasMultiExpr);
 
-      const columns = alias ? [...alias.columns] : [];
+      const columns: IdentifierExpr[] = isInstanceOf(alias, TableAliasExpr) ? filterInstanceOf(alias.columns, IdentifierExpr) : [];
       const offset = unnest.args.offset;
       if (offset) {
         columns.unshift(
@@ -467,9 +470,9 @@ export function unnestToExplode (
       unnest.replace(
         new TableExpr({
           this: new UdtfClass({ this: thisArg }),
-          alias: alias
+          alias: isInstanceOf(alias, TableAliasExpr)
             ? new TableAliasExpr({
-              this: alias.args.this,
+              this: isInstanceOf(alias.args.this, Expression) ? alias.args.this : typeof alias.args.this === 'string' ? alias.args.this : undefined,
               columns,
             })
             : undefined,
@@ -491,7 +494,8 @@ export function unnestToExplode (
 
         joins.splice(joins.indexOf(join), 1);
 
-        const aliasCols = alias ? [...alias.columns] : [];
+        const aliasAsTableAlias = isInstanceOf(alias, TableAliasExpr) ? alias : undefined;
+        const aliasCols: IdentifierExpr[] = aliasAsTableAlias ? filterInstanceOf(aliasAsTableAlias.columns, IdentifierExpr) : [];
 
         if (!hasMultiExpr && aliasCols.length !== 1 && aliasCols.length !== 2) {
           throw new UnsupportedError(
@@ -519,7 +523,7 @@ export function unnestToExplode (
               this: new UdtfClass({ this: e }),
               view: true,
               alias: new TableAliasExpr({
-                this: alias?.args.this,
+                this: aliasAsTableAlias ? (isInstanceOf(aliasAsTableAlias.args.this, Expression) ? aliasAsTableAlias.args.this : typeof aliasAsTableAlias.args.this === 'string' ? aliasAsTableAlias.args.this : undefined) : undefined,
                 columns: aliasCols,
               }),
             }),
@@ -546,11 +550,12 @@ export function moveCtesToTopLevel<T extends SelectExpr> (expression: T): T {
       innerWith.pop();
 
       const innerExprs = innerWith.args.expressions;
+      assertIsInstanceOf(topLevelWith, WithExpr);
       if (parentCte) {
         const index = topLevelWith.args.expressions.indexOf(parentCte);
-        topLevelWith.args.expressions.splice(index, 0, ...innerExprs);
+        topLevelWith.args.expressions.splice(index, 0, ...filterInstanceOf(innerExprs, Expression));
       } else {
-        topLevelWith.setArgKey('expressions', [...topLevelWith.args.expressions, ...innerExprs]);
+        topLevelWith.setArgKey('expressions', [...topLevelWith.args.expressions, ...filterInstanceOf(innerExprs, Expression)]);
       }
     }
   }
@@ -565,7 +570,7 @@ export function structKvToAlias (expression: Expression): Expression {
         e instanceof PropertyEqExpr
           ? alias(
             e.args.expression || '',
-            e.args.this,
+            isInstanceOf(e.args.this, IdentifierExpr) ? e.args.this : typeof e.args.this === 'string' ? e.args.this : undefined,
           )
           : e),
     );
@@ -740,7 +745,7 @@ export function explodeProjectionToUnnest (
                   table: unnestSourceAlias,
                 }),
               }),
-              posAlias,
+              isInstanceOf(posAlias, IdentifierExpr) ? posAlias : typeof posAlias === 'string' ? posAlias : undefined,
             ));
           }
 
@@ -765,7 +770,7 @@ export function explodeProjectionToUnnest (
                 }),
               }),
               unnestSourceAlias,
-              { table: [explodeAlias] },
+              { table: [isInstanceOf(explodeAlias, IdentifierExpr) ? explodeAlias : typeof explodeAlias === 'string' ? explodeAlias : ''] },
             ),
             { joinType: JoinExprKind.CROSS },
           );
@@ -884,13 +889,16 @@ export function addRecursiveCteColumnNames (expression: Expression): Expression 
     const nextName = nameSequence('_c_');
 
     for (const cte of expression.args.expressions) {
-      if (!cte.args.alias?.columns) {
-        let query = cte.args.this;
+      assertIsInstanceOf(cte, CteExpr);
+      const cteAlias = isInstanceOf(cte.args.alias, TableAliasExpr) ? cte.args.alias : undefined;
+      if (!cteAlias?.columns.length) {
+        let query: Expression = cte.args.this;
         if (query instanceof SetOperationExpr) {
           query = query.args.this;
         }
+        assertIsInstanceOf(query, QueryExpr);
 
-        cte.args.alias?.setArgKey(
+        cteAlias?.setArgKey(
           'columns',
           query.selects.map((s) =>
             toIdentifier(s.aliasOrName || nextName())),
@@ -909,7 +917,7 @@ export function epochCastToTs (expression: Expression): Expression {
   if (
     (expression instanceof CastExpr || expression instanceof TryCastExpr)
     && expression.name.toLowerCase() === 'epoch'
-    && DataTypeExpr.TEMPORAL_TYPES.has(enumFromString(DataTypeExprKind, expression.args.to.args.this.toString())!)
+    && DataTypeExpr.TEMPORAL_TYPES.has(enumFromString(DataTypeExprKind, expression.args.to.args.this?.toString() ?? '')!)
   ) {
     expression.args.this.replace(LiteralExpr.string('1970-01-01 00:00:00'));
   }
@@ -924,6 +932,7 @@ export function eliminateSemiAndAntiJoins (expression: Expression): Expression {
   if (expression instanceof SelectExpr) {
     const joins = expression.args.joins || [];
     for (const join of [...joins]) {
+      assertIsInstanceOf(join, JoinExpr);
       const on = join.args.on;
       if (on && (join.kind === JoinExprKind.SEMI || join.kind === JoinExprKind.ANTI)) {
         const subquery = select('1').from(join.args.this)
@@ -950,7 +959,8 @@ export function eliminateSemiAndAntiJoins (expression: Expression): Expression {
 export function eliminateFullOuterJoin (expression: Expression): Expression {
   if (expression instanceof SelectExpr) {
     const joins = expression.args.joins || [];
-    const fullOuterJoins = joins
+    const joinExprs = filterInstanceOf(joins, JoinExpr);
+    const fullOuterJoins = joinExprs
       .map((join, index) => ({
         index,
         join,
@@ -968,7 +978,7 @@ export function eliminateFullOuterJoin (expression: Expression): Expression {
       const joinName = fullOuterJoin.aliasOrName;
 
       const joinConditions = fullOuterJoin.args.on || new AndExpr({
-        expressions: (fullOuterJoin.args.using || []).map((col) =>
+        expressions: (fullOuterJoin.args.using || []).map((col: Expression) =>
           new EqExpr({
             this: new ColumnExpr({
               this: col,
@@ -1056,7 +1066,7 @@ export function ctasWithTmpTablesToCreateTmpView (
   if (!(expression instanceof CreateExpr)) return expression;
 
   const properties = expression.args.properties;
-  const temporary = properties?.args.expressions.some(
+  const temporary = properties?.args.expressions?.some(
     (prop) => prop instanceof TemporaryPropertyExpr,
   );
 
@@ -1088,6 +1098,7 @@ export function moveSchemaColumnsToPartitionedBy (expression: Expression): Expre
     const prop = expression.find(PartitionedByPropertyExpr);
     if (prop && prop.args.this && !(prop.args.this instanceof SchemaExpr)) {
       const schema = expression.args.this;
+      assertIsInstanceOf(schema, SchemaExpr);
       const columns = new Set(prop.args.this.expressions.map((v) => v instanceof Expression ? v.name.toUpperCase() : v.toString()));
 
       const partitions = schema.args.expressions?.filter((col) =>
@@ -1099,7 +1110,7 @@ export function moveSchemaColumnsToPartitionedBy (expression: Expression): Expre
       );
 
       prop.replace(new PartitionedByPropertyExpr({
-        this: new SchemaExpr({ expressions: partitions }),
+        this: new SchemaExpr({ expressions: filterInstanceOf(partitions ?? [], Expression) }),
       }));
 
       expression.setArgKey('this', schema);
@@ -1122,7 +1133,9 @@ export function movePartitionedByToSchemaColumns (expression: Expression): Expre
     && prop.args.this.args.expressions?.every((e) => e instanceof ColumnDefExpr && e.kind)
   ) {
     const propThis = new TupleExpr({
-      expressions: prop.args.this.args.expressions.map((e) => toIdentifier((e as ColumnDefExpr).args.this)),
+      expressions: prop.args.this.args.expressions.map((e) => {
+        const t = (e as ColumnDefExpr).args.this; return toIdentifier(isInstanceOf(t, IdentifierExpr) ? t : t.name);
+      }),
     });
 
     const schema = expression.args.this as SchemaExpr;
@@ -1155,6 +1168,7 @@ export function eliminateJoinMarks (expression: Expression): Expression {
       throw new Error('Correlated queries with join marks are not supported');
     }
 
+    assertIsInstanceOf(where.args.this, Expression);
     const normalizedWhere = normalize(where.args.this);
     const joinsOns: Record<string, Expression[]> = {};
 
@@ -1179,7 +1193,9 @@ export function eliminateJoinMarks (expression: Expression): Expression {
     }
 
     const oldJoins: Record<string, JoinExpr> = {};
-    for (const j of joins) oldJoins[j.aliasOrName] = j;
+    for (const j of joins) {
+      assertIsInstanceOf(j, JoinExpr); oldJoins[j.aliasOrName] = j;
+    }
 
     const newJoins: Record<string, JoinExpr> = {};
     const queryFrom = query.args.from;

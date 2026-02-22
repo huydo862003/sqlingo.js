@@ -13,6 +13,7 @@ import {
   SelectExpr,
   SetOperationExpr,
   SubqueryExpr,
+  TableAliasExpr,
   TableExpr,
   toIdentifier,
   UnnestExpr,
@@ -25,6 +26,7 @@ import {
 } from '../helper';
 import type { Schema } from '../schema';
 import { MapBinaryTuple } from '../port_internals/binary_tuple_map';
+import { is } from '../port_internals';
 import { OptimizeError } from '../errors';
 import { Scope } from './scope';
 
@@ -248,7 +250,9 @@ export class Resolver {
 
           if (unnest.isType(DataTypeExprKind.STRUCT)) {
             for (const field of unnest.type?.args.expressions || []) {
-              columns.push(field.name);
+              if (is(field, Expression)) {
+                columns.push(field.name);
+              }
             }
           }
         }
@@ -384,7 +388,7 @@ export class Resolver {
       for (const [sourceName, source] of this.scope.sources) {
         if (source instanceof Scope && source.expression instanceof UnnestExpr) {
           const aliasArg = source.expression.args.alias;
-          if (aliasArg?.columns.length) {
+          if (is(aliasArg, TableAliasExpr) && aliasArg.columns.length) {
             unnestOriginalAliases.set(aliasArg.columns[0].name, sourceName);
           }
         }
