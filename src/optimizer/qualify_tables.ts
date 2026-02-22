@@ -105,7 +105,7 @@ export function qualifyTables<E extends Expression> (
     const withClause = expression.getArgKey('with') as WithExpr | undefined;
     const with_ = withClause || new WithExpr({ expressions: [] });
     const cteNames = new Set(
-      (with_.$expressions || []).map((cte) => cte.aliasOrName),
+      (with_.args.expressions || []).map((cte) => cte.aliasOrName),
     );
 
     for (const node of expression.walk({
@@ -204,7 +204,7 @@ export function qualifyTables<E extends Expression> (
       if (source instanceof TableExpr) {
         const isRealTableSource = Boolean(name);
 
-        const pivots = source.$pivots;
+        const pivots = source.args.pivots;
         const pivot = pivots ? seqGet(pivots, 0) : undefined;
         let sourceName = name;
         if (pivot) {
@@ -212,7 +212,7 @@ export function qualifyTables<E extends Expression> (
         }
 
         const tableThis = source.this;
-        const tableAlias = source.$alias;
+        const tableAlias = source.args.alias;
         let functionColumns: (string | IdentifierExpr)[] = [];
 
         if (tableThis && tableThis instanceof FuncExpr) {
@@ -223,7 +223,7 @@ export function qualifyTables<E extends Expression> (
           if (!tableAlias) {
             const defaultCols = dialectClass.DEFAULT_FUNCTIONS_COLUMN_NAMES[funcTypeName];
             functionColumns = defaultCols ? ensureList(defaultCols) : [];
-          } else if (tableAlias instanceof TableAliasExpr && tableAlias.$columns?.length) {
+          } else if (tableAlias instanceof TableAliasExpr && tableAlias.args.columns?.length) {
             functionColumns = tableAlias.columns as IdentifierExpr[];
           } else if (funcTypeName in dialectClass.DEFAULT_FUNCTIONS_COLUMN_NAMES) {
             functionColumns = ensureList(source.aliasOrName);
@@ -239,7 +239,7 @@ export function qualifyTables<E extends Expression> (
         });
 
         const sourceFqn = source.parts.map((p) => p.name).join('.');
-        const sourceAliasThis = source.$alias?.this;
+        const sourceAliasThis = source.args.alias?.this;
         if (sourceAliasThis instanceof IdentifierExpr) {
           tableAliases.set(sourceFqn, sourceAliasThis.copy());
         }
@@ -269,7 +269,7 @@ export function qualifyTables<E extends Expression> (
 
         if (udtf instanceof ValuesExpr) {
           const tableAlias = udtf.getArgKey('alias');
-          if (tableAlias instanceof TableAliasExpr && !tableAlias.$columns?.length) {
+          if (tableAlias instanceof TableAliasExpr && !tableAlias.args.columns?.length) {
             tableAlias.args.columns = dialect
               .generateValuesAliases(udtf)
               .map((i: IdentifierExpr) => normalizeIdentifiers(i, { dialect }));

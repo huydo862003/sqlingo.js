@@ -35,7 +35,7 @@ export function flattenSchema (
   const d = depth ?? objectDepth(schema) - 1;
 
   for (const [k, v] of Object.entries(schema)) {
-    if (d === 1 || typeof v !== 'object' || v === null) {
+    if (d === 1 || typeof v !== 'object' || v === undefined) {
       tables.push([...keys, k]);
     } else if (2 <= d) {
       tables.push(...flattenSchema(v as Record<string, unknown>, d - 1, [...keys, k]));
@@ -52,18 +52,18 @@ export function nestedGet (
 ): unknown {
   let current: unknown = d;
   for (const [name, key] of path) {
-    if (typeof current !== 'object' || current === null) {
+    if (typeof current !== 'object' || current === undefined) {
       if (raiseOnMissing) {
         throw new SchemaError(`Unknown ${name === 'this' ? 'table' : name}: ${key}`);
       }
-      return null;
+      return undefined;
     }
     const val = (current as Record<string, unknown>)[key];
-    if (val === undefined || val === null) {
+    if (val === undefined || val === undefined) {
       if (raiseOnMissing) {
         throw new SchemaError(`Unknown ${name === 'this' ? 'table' : name}: ${key}`);
       }
-      return null;
+      return undefined;
     }
     current = val;
   }
@@ -78,7 +78,7 @@ export function nestedSet (d: Record<string, unknown>, keys: string[], value: un
   }
   let current = d;
   for (let i = 0; i < keys.length - 1; i++) {
-    if (!(keys[i] in current) || typeof current[keys[i]] !== 'object' || current[keys[i]] === null) {
+    if (!(keys[i] in current) || typeof current[keys[i]] !== 'object' || current[keys[i]] === undefined) {
       current[keys[i]] = {};
     }
     current = current[keys[i]] as Record<string, unknown>;
@@ -88,7 +88,7 @@ export function nestedSet (d: Record<string, unknown>, keys: string[], value: un
 }
 
 export function ensureColumnMapping (mapping?: ColumnMapping): Record<string, unknown> {
-  if (mapping == null) return {};
+  if (mapping == undefined) return {};
   if (typeof mapping === 'object' && !Array.isArray(mapping)) return mapping;
   if (typeof mapping === 'string') {
     return Object.fromEntries(
@@ -99,7 +99,7 @@ export function ensureColumnMapping (mapping?: ColumnMapping): Record<string, un
     );
   }
   if (Array.isArray(mapping)) {
-    return Object.fromEntries((mapping as string[]).map((col) => [col.trim(), null]));
+    return Object.fromEntries((mapping as string[]).map((col) => [col.trim(), undefined]));
   }
   throw new Error(`Invalid mapping provided: ${typeof mapping}`);
 }
@@ -248,11 +248,11 @@ export abstract class AbstractMappingSchema extends Schema {
     parts: string[],
     trie: TrieNode,
     raiseOnMissing: boolean,
-  ): string[] | null {
+  ): string[] | undefined {
     const [value, node] = inTrie(trie, parts);
 
     if (value === TrieResult.FAILED) {
-      return null;
+      return undefined;
     }
 
     if (value === TrieResult.PREFIX) {
@@ -265,7 +265,7 @@ export abstract class AbstractMappingSchema extends Schema {
           const message = possibilities.map((p) => p.join('.')).join(', ');
           throw new SchemaError(`Ambiguous mapping for ${joined}: ${message}.`);
         }
-        return null;
+        return undefined;
       }
     }
 
@@ -274,20 +274,22 @@ export abstract class AbstractMappingSchema extends Schema {
 
   find (
     table: TableExpr,
-    options: { raiseOnMissing?: boolean;
-      ensureDataTypes?: boolean; } = {},
+    options: {
+      raiseOnMissing?: boolean;
+      ensureDataTypes?: boolean;
+    } = {},
   ): unknown {
     const { raiseOnMissing = true } = options;
     const parts = this.tableParts(table).slice(0, this.supportedTableArgs.length);
     const resolvedParts = this.findInTrie(parts, this.mappingTrie, raiseOnMissing);
-    if (!resolvedParts) return null;
-    return this.nestedGet(resolvedParts, undefined, raiseOnMissing);
+    if (!resolvedParts) return undefined;
+    return this.nestedGet(resolvedParts, undefined, { raiseOnMissing });
   }
 
   findUdf (udf: AnonymousExpr, raiseOnMissing: boolean = false): unknown {
     const parts = this.udfParts(udf);
     const resolvedParts = this.findInTrie(parts, this.udfTrie, raiseOnMissing);
-    if (!resolvedParts) return null;
+    if (!resolvedParts) return undefined;
     const reversed = [...resolvedParts].reverse();
     return nestedGet(
       this.udfMapping,
@@ -299,8 +301,11 @@ export abstract class AbstractMappingSchema extends Schema {
   nestedGet (
     parts: string[],
     d?: Record<string, unknown>,
-    raiseOnMissing: boolean = true,
+    options: {
+      raiseOnMissing?: boolean;
+    } = {},
   ): unknown {
+    const { raiseOnMissing = true } = options;
     const reversed = [...parts].reverse();
     return nestedGet(
       d || this.mapping,
@@ -335,8 +340,8 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
     const rawSchema = schema || {};
     const rawUdfs = udfMapping || {};
     super(
-      normalize ? MappingSchema._normalizeSchemaStatic(rawSchema, d, normalize) : rawSchema,
-      normalize ? MappingSchema._normalizeUdfsStatic(rawUdfs, d, normalize) : rawUdfs,
+      normalize ? MappingSchema.normalizeSchemaStatic(rawSchema, d, normalize) : rawSchema,
+      normalize ? MappingSchema.normalizeUdfsStatic(rawUdfs, d, normalize) : rawUdfs,
     );
     this.visible = visible || {};
     this.normalize = normalize;
@@ -383,8 +388,10 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
 
   override find (
     table: TableExpr,
-    options: { raiseOnMissing?: boolean;
-      ensureDataTypes?: boolean; } = {},
+    options: {
+      raiseOnMissing?: boolean;
+      ensureDataTypes?: boolean;
+    } = {},
   ): unknown {
     const { ensureDataTypes = false } = options;
     const schema = super.find(table, options);
@@ -406,7 +413,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
     const {
       dialect, normalize, matchDepth = true,
     } = options;
-    const normalizedTable = this._normalizeTable(table, dialect, normalize);
+    const normalizedTable = this.normalizeTable(table, dialect, normalize);
 
     if (matchDepth && !this.empty && normalizedTable.parts.length !== this.depth()) {
       throw new SchemaError(
@@ -415,7 +422,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
     }
 
     const normalizedColumnMapping = Object.fromEntries(
-      Object.entries(ensureColumnMapping(columnMapping)).map(([k, v]) => [this._normalizeName(k, dialect, false, normalize), v]),
+      Object.entries(ensureColumnMapping(columnMapping)).map(([k, v]) => [this.normalizeName(k, dialect, false, normalize), v]),
     );
 
     const existing = this.find(normalizedTable, { raiseOnMissing: false });
@@ -435,7 +442,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
     const {
       onlyVisible = false, dialect, normalize,
     } = options;
-    const normalizedTable = this._normalizeTable(table, dialect, normalize);
+    const normalizedTable = this.normalizeTable(table, dialect, normalize);
     const schema = this.find(normalizedTable, { raiseOnMissing: false });
     if (!schema || typeof schema !== 'object') return [];
 
@@ -444,7 +451,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
       return columns;
     }
 
-    const visible = (this.nestedGet(this.tableParts(normalizedTable), this.visible, false) || []) as string[];
+    const visible = (this.nestedGet(this.tableParts(normalizedTable), this.visible, { raiseOnMissing: false }) || []) as string[];
     return columns.filter((col) => visible.includes(col));
   }
 
@@ -457,8 +464,8 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
     const {
       dialect, normalize,
     } = options;
-    const normalizedTable = this._normalizeTable(table, dialect, normalize);
-    const colName = this._normalizeName(
+    const normalizedTable = this.normalizeTable(table, dialect, normalize);
+    const colName = this.normalizeName(
       typeof column === 'string' ? column : column.args.this as IdentifierExpr,
       dialect,
       false,
@@ -484,8 +491,8 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
     const {
       dialect, normalize,
     } = options || {};
-    const normalizedTable = this._normalizeTable(table, dialect, normalize);
-    const normalizedColName = this._normalizeName(
+    const normalizedTable = this.normalizeTable(table, dialect, normalize);
+    const normalizedColName = this.normalizeName(
       typeof column === 'string' ? column : column.args.this as IdentifierExpr,
       dialect,
       false,
@@ -503,7 +510,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
     const {
       dialect, normalize,
     } = options;
-    const parts = this._normalizeUdf(udf, dialect, normalize);
+    const parts = this.normalizeUdf(udf, dialect, normalize);
     const resolvedParts = this.findInTrie(parts, this.udfTrie, false);
     if (!resolvedParts) return DataTypeExpr.build(DataTypeExprKind.UNKNOWN);
 
@@ -518,7 +525,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
     return DataTypeExpr.build(DataTypeExprKind.UNKNOWN);
   }
 
-  private _normalizeUdf (
+  private normalizeUdf (
     udf: AnonymousExpr | string,
     dialect?: DialectType,
     normalize?: boolean,
@@ -547,7 +554,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
 
     const parts = this.udfParts(udfExpr);
     if (shouldNormalize) {
-      return parts.map((part) => this._normalizeName(part, dialect, true, normalize));
+      return parts.map((part) => this.normalizeName(part, dialect, true, normalize));
     }
     return parts;
   }
@@ -560,7 +567,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
     return this._typeCache[schemaType];
   }
 
-  private _normalizeTable (
+  private normalizeTable (
     table: TableExpr | string,
     dialect?: DialectType,
     normalize?: boolean,
@@ -585,7 +592,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
     return tableExpr;
   }
 
-  private _normalizeName (
+  private normalizeName (
     name: string | IdentifierExpr,
     dialect?: DialectType,
     isTable: boolean = false,
@@ -599,7 +606,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
     }).name;
   }
 
-  private static _normalizeSchemaStatic (
+  private static normalizeSchemaStatic (
     schema: Record<string, unknown>,
     dialect: Dialect,
     normalize: boolean,
@@ -616,7 +623,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
         keys.map((k) => [k, k] as [string, string]),
         false,
       );
-      if (typeof columns !== 'object' || columns === null) {
+      if (typeof columns !== 'object' || columns === undefined) {
         throw new SchemaError(
           `Table ${keys.slice(0, -1).join('.')} must match the schema's nesting level: ${flattened[0].length}.`,
         );
@@ -626,7 +633,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
         throw new SchemaError(`Table ${keys.slice(0, -1).join('.')} must have at least one column`);
       }
       const firstVal = colEntries[0][1];
-      if (typeof firstVal === 'object' && firstVal !== null) {
+      if (typeof firstVal === 'object' && firstVal !== undefined) {
         const deeper = flattenSchema(columns as Record<string, unknown>);
         throw new SchemaError(
           `Table ${[...keys, ...(deeper[0] || [])].join('.')} must match the schema's nesting level: ${flattened[0].length}.`,
@@ -655,7 +662,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
     return normalized;
   }
 
-  private static _normalizeUdfsStatic (
+  private static normalizeUdfsStatic (
     udfs: Record<string, unknown>,
     dialect: Dialect,
     normalize: boolean,

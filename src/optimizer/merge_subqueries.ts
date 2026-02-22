@@ -250,7 +250,7 @@ function mergeable (
     }
 
     const alias = fromOrJoin.aliasOrName;
-    const on = fromOrJoin.$on;
+    const on = fromOrJoin.args.on;
 
     if (!on) {
       return false;
@@ -330,7 +330,7 @@ function mergeable (
     }
   }
 
-  if (!innerSelectExpr.$from) {
+  if (!innerSelectExpr.args.from) {
     return false;
   }
 
@@ -352,27 +352,27 @@ function mergeable (
     return false;
   }
 
-  if (fromOrJoin instanceof JoinExpr && innerSelectExpr.$joins) {
+  if (fromOrJoin instanceof JoinExpr && innerSelectExpr.args.joins) {
     return false;
   }
 
-  const joinSide = fromOrJoin instanceof JoinExpr ? fromOrJoin.$side : undefined;
+  const joinSide = fromOrJoin instanceof JoinExpr ? fromOrJoin.args.side : undefined;
 
   if (
     fromOrJoin instanceof JoinExpr
-    && innerSelectExpr.$where
+    && innerSelectExpr.args.where
     && (joinSide === JoinExprKind.FULL || joinSide === JoinExprKind.LEFT || joinSide === JoinExprKind.RIGHT)
   ) {
     return false;
   }
 
-  const outerJoins = outerSelectExpr.$joins;
+  const outerJoins = outerSelectExpr.args.joins;
 
   if (
     fromOrJoin instanceof FromExpr
-    && innerSelectExpr.$where
+    && innerSelectExpr.args.where
     && outerJoins
-    && outerJoins.some((j) => j.$side === JoinExprKind.FULL || j.$side === JoinExprKind.RIGHT)
+    && outerJoins.some((j) => j.args.side === JoinExprKind.FULL || j.args.side === JoinExprKind.RIGHT)
   ) {
     return false;
   }
@@ -389,7 +389,7 @@ function mergeable (
     return false;
   }
 
-  if (innerSelectExpr.$order && outerScope.isUnion) {
+  if (innerSelectExpr.args.order && outerScope.isUnion) {
     return false;
   }
 
@@ -585,14 +585,14 @@ function mergeWhere (outerScope: Scope, innerScope: Scope, fromOrJoin: FromOrJoi
 
   if (fromOrJoin instanceof JoinExpr) {
     // Merge predicates from outer join to ON clause if columns are already joined
-    const from = outerExpression.$from;
+    const from = outerExpression.args.from;
     const sources = new Set<string>();
 
     if (from) {
       sources.add(from.aliasOrName);
     }
 
-    const joins = outerExpression.$joins;
+    const joins = outerExpression.args.joins;
     if (joins) {
       for (const join of joins) {
         const source = join.aliasOrName;
@@ -619,10 +619,10 @@ function mergeOrder (outerScope: Scope, innerScope: Scope): void {
   const outerSelectExpr = outerScope.expression as SelectExpr;
 
   if (
-    outerSelectExpr.$group
-    || outerSelectExpr.$distinct
-    || outerSelectExpr.$having
-    || outerSelectExpr.$order
+    outerSelectExpr.args.group
+    || outerSelectExpr.args.distinct
+    || outerSelectExpr.args.having
+    || outerSelectExpr.args.order
     || Object.keys(outerScope.selectedSources).length !== 1
   ) {
     return;
@@ -650,7 +650,7 @@ function mergeHints (outerScope: Scope, innerScope: Scope): void {
   }
 
   const outerSelectExpr = outerScope.expression as SelectExpr;
-  const outerScopeHint = outerSelectExpr.$hint;
+  const outerScopeHint = outerSelectExpr.args.hint;
 
   if (outerScopeHint) {
     const innerHintExpressions = innerScopeHint.expressions;

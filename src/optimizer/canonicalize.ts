@@ -94,8 +94,8 @@ export function canonicalize (
  */
 export function addTextToConcat (node: Expression): Expression {
   if (node instanceof AddExpr && node.type && node.type.this && DataTypeExpr.TEXT_TYPES.has(node.type.this as DataTypeExprKind)) {
-    const left = node.$this;
-    const right = node.$expression;
+    const left = node.args.this;
+    const right = node.args.expression;
 
     if (!left || !right) {
       return node;
@@ -201,14 +201,14 @@ export function coerceType (node: Expression, options: { promoteToInferredDateti
       coerceDate(left as Expression, right as Expression, promoteToInferredDatetimeType);
     }
   } else if (node instanceof BetweenExpr) {
-    const thisArg = node.$this;
+    const thisArg = node.args.this;
     const low = node.args.low;
 
     if (thisArg && low) {
       coerceDate(thisArg as Expression, low as Expression, promoteToInferredDatetimeType);
     }
   } else if (node instanceof ExtractExpr) {
-    const expr = node.$expression;
+    const expr = node.args.expression;
 
     if (expr) {
       const exprNode = expr as Expression;
@@ -218,7 +218,7 @@ export function coerceType (node: Expression, options: { promoteToInferredDateti
       }
     }
   } else if (node instanceof DateAddExpr || node instanceof DateSubExpr || node instanceof DateTruncExpr) {
-    const thisArg = node.$this;
+    const thisArg = node.args.this;
     const unit = node.args.unit;
 
     if (thisArg) {
@@ -236,7 +236,7 @@ export function coerceType (node: Expression, options: { promoteToInferredDateti
  */
 export function removeRedundantCasts (expression: Expression): Expression {
   if (expression instanceof CastExpr) {
-    const thisArg = expression.$this;
+    const thisArg = expression.args.this;
     const to = expression.args.to;
 
     if (thisArg && to) {
@@ -251,7 +251,7 @@ export function removeRedundantCasts (expression: Expression): Expression {
   }
 
   if (expression instanceof DateExpr || expression instanceof TsOrDsToDateExpr) {
-    const thisArg = expression.$this;
+    const thisArg = expression.args.this;
 
     if (thisArg) {
       const thisExpr = thisArg as Expression;
@@ -279,12 +279,12 @@ export function ensureBools (
 ): Expression {
   if (expression instanceof ConnectorExpr) {
     const left = expression.args.this;
-    const right = expression.$expression;
+    const right = expression.args.expression;
 
     if (left) replaceFunc(left as Expression);
     if (right) replaceFunc(right as Expression);
   } else if (expression instanceof NotExpr) {
-    const thisArg = expression.$this;
+    const thisArg = expression.args.this;
     if (thisArg) replaceFunc(thisArg as Expression);
   } else if (expression instanceof IfExpr) {
     // We can't replace num in CASE x WHEN num ..., because it's not the full predicate
@@ -292,7 +292,7 @@ export function ensureBools (
     const isCaseWithThis = parent instanceof CaseExpr && parent.args.this;
 
     if (!isCaseWithThis) {
-      const thisArg = expression.$this;
+      const thisArg = expression.args.this;
       if (thisArg) replaceFunc(thisArg as Expression);
     }
   } else if (expression instanceof WhereExpr || expression instanceof HavingExpr) {
@@ -422,8 +422,8 @@ function coerceTimeunitArg (
  * Coerce DateDiff arguments to temporal types.
  */
 function coerceDateDiffArgs (node: DateDiffExpr): void {
-  const thisArg = node.$this;
-  const exprArg = node.$expression;
+  const thisArg = node.args.this;
+  const exprArg = node.args.expression;
 
   for (const arg of [thisArg, exprArg]) {
     if (arg) {
@@ -456,7 +456,7 @@ function replaceCast (node: Expression, to: DataTypeExprKind): void {
  */
 function replaceIntPredicate (expression: Expression): void {
   if (expression instanceof CoalesceExpr) {
-    const expressions = expression.$expressions;
+    const expressions = expression.args.expressions;
     if (expressions) {
       for (const child of expressions) {
         replaceIntPredicate(child);

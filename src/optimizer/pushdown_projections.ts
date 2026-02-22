@@ -95,8 +95,8 @@ export function pushdownProjections<E extends Expression> (
     }
 
     if (scopeExpr instanceof SetOperationExpr) {
-      const kind = scopeExpr.$kind;
-      const side = scopeExpr.$side;
+      const kind = scopeExpr.args.kind;
+      const side = scopeExpr.args.side;
 
       if (!kind && !side) {
         // Do not optimize this set operation if it's using the BigQuery specific
@@ -114,7 +114,7 @@ export function pushdownProjections<E extends Expression> (
         if (right.expression.selects.some((select) => select instanceof Expression && select.isStar)) {
           referencedColumns.set(right, parentSelections);
         } else if (!left.expression.selects.some((select) => select instanceof Expression && select.isStar)) {
-          if (scopeExpr.$byName) {
+          if (scopeExpr.args.byName) {
             referencedColumns.set(right, referencedColumns.get(left) || new Set());
           } else {
             for (let j = 0; j < left.expression.selects.length; j++) {

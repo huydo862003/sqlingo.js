@@ -48,7 +48,7 @@ type TakenNameMapping = Map<string, Scope | TableExpr>;
  */
 export function eliminateSubqueries<E extends Expression> (expression: E): E {
   if (expression instanceof SubqueryExpr) {
-    eliminateSubqueries(expression.$this);
+    eliminateSubqueries(expression.args.this);
     return expression;
   }
 
@@ -83,9 +83,9 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
   let recursive = false;
 
   if (withClause) {
-    recursive = Boolean(withClause.$recursive);
+    recursive = Boolean(withClause.args.recursive);
     for (const cte of withClause.args.expressions) {
-      existingCtes.set(cte.$this, cte.alias);
+      existingCtes.set(cte.args.this, cte.alias);
     }
   }
 
@@ -130,7 +130,7 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
 
   if (0 < newCtes.length) {
     const query = expression instanceof DdlExpr
-      ? expression.$expression
+      ? expression.args.expression
       : expression;
 
     query?.setArgKey('with', new WithExpr({

@@ -825,7 +825,7 @@ export function applyIndexOffset (
 
   // Check if expression is an integer type
   const exprType = expression.type;
-  if (exprType?.this && DataTypeExpr.INTEGER_TYPES?.has(exprType.$this as DataTypeExprKind)) {
+  if (exprType?.this && DataTypeExpr.INTEGER_TYPES?.has(exprType.args.this as DataTypeExprKind)) {
     // Apply offset: expression + offset
     const offsetExpr = new AddExpr({
       this: expression,

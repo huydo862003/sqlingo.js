@@ -238,7 +238,7 @@ function decorrelate (
   externalColumns: ColumnExpr[],
   nextAliasName: () => string,
 ): void {
-  const where = select.$where;
+  const where = select.args.where;
 
   if (!where || where.find(OrExpr) || select.find([LimitExpr, OffsetExpr])) {
     return;
@@ -464,7 +464,7 @@ function replace (expression: Expression, conditionExpr: string | Expression): E
 
 function otherOperand (expression: Expression | undefined): Expression | undefined {
   if (expression instanceof InExpr) {
-    return expression.$this as Expression;
+    return expression.args.this as Expression;
   }
 
   if (expression instanceof AnyExpr || expression instanceof AllExpr) {

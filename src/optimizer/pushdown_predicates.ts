@@ -95,7 +95,7 @@ export function pushdownPredicates<E extends Expression> (
 
           if (parent instanceof JoinExpr) {
             const joinParent = parent as JoinExpr;
-            if (joinParent.$side === JoinExprKind.RIGHT) {
+            if (joinParent.args.side === JoinExprKind.RIGHT) {
               selectedSources = { [k]: source };
               break;
             }
@@ -121,7 +121,7 @@ export function pushdownPredicates<E extends Expression> (
         for (const join of joins) {
           const name = join.aliasOrName;
           if (name && name in scope.selectedSources) {
-            const onClause = join.$on;
+            const onClause = join.args.on;
             pushdown(
               onClause,
               { [name]: scope.selectedSources[name] },
@@ -198,7 +198,7 @@ function pushdownCnf (
 
         if (findInScope(innerPredicate, AggFuncExpr)) {
           // Add to HAVING clause
-          const having = node.$having;
+          const having = node.args.having;
           node.setArgKey('having', having
             ? andExpr([having, innerPredicate], { copy: false })
             : innerPredicate);
@@ -265,7 +265,7 @@ function pushdownDnf (
 
         if (findInScope(innerPredicate, AggFuncExpr)) {
           // Add to HAVING clause
-          const having = node.$having;
+          const having = node.args.having;
           node.setArgKey('having', having
             ? andExpr([having, innerPredicate], { copy: false })
             : innerPredicate);
@@ -324,7 +324,7 @@ function nodesForPredicate (
     }
 
     if (node instanceof JoinExpr) {
-      const side = node.$side;
+      const side = node.args.side;
       if (side && side !== JoinExprKind.RIGHT) {
         return {};
       }
@@ -338,7 +338,7 @@ function nodesForPredicate (
         return sel.find(WindowExpr) !== undefined;
       });
 
-      const hasGroup = Boolean(node.$group);
+      const hasGroup = Boolean(node.args.group);
 
       // We can't push down predicates to select statements if they are referenced multiple times
       const refCount = scopeRefCount.get(source) || 0;

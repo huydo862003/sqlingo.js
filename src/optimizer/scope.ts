@@ -297,7 +297,7 @@ export class Scope {
       } else if (node instanceof ColumnExpr) {
         this._columnIndex.add(Object.keys(node).length);
 
-        if (node.$this instanceof StarExpr) {
+        if (node.args.this instanceof StarExpr) {
           this._stars.push(node);
         } else {
           this._rawColumns.push(node);
@@ -505,7 +505,7 @@ export class Scope {
           !ancestor
           || column.table
           || ancestor instanceof SelectExpr
-          || (ancestor instanceof TableExpr && !(ancestor.$this instanceof FuncExpr))
+          || (ancestor instanceof TableExpr && !(ancestor.args.this instanceof FuncExpr))
           || (
             (ancestor instanceof OrderExpr || ancestor instanceof DistinctExpr)
             && (
@@ -852,12 +852,12 @@ function* _traverseCtes (scope: Scope): Generator<Scope> {
     const cteName = cte.alias;
     const with_ = scope.expression.args.with;
 
-    if (with_ && with_.$recursive) {
-      const union = cte.$this;
+    if (with_ && with_.args.recursive) {
+      const union = cte.args.this;
 
       if (union instanceof SetOperationExpr) {
         sources.set(cteName, scope.branch({
-          expression: union.$this,
+          expression: union.args.this,
           scopeType: ScopeType.CTE,
         }));
       }
@@ -866,7 +866,7 @@ function* _traverseCtes (scope: Scope): Generator<Scope> {
     let childScope: Scope | undefined;
     for (const s of _traverseScope(
       scope.branch({
-        expression: cte.$this,
+        expression: cte.args.this,
         cteSources: sources,
         outerColumns: cte.aliasColumnNames || [],
         scopeType: ScopeType.CTE,
@@ -896,7 +896,7 @@ function* _traverseCtes (scope: Scope): Generator<Scope> {
 function _isDerivedTable (expression: SubqueryExpr): boolean {
   return Boolean(
     expression.alias
-    || UNWRAPPED_QUERIES.some((T) => expression.$this instanceof T),
+    || UNWRAPPED_QUERIES.some((T) => expression.args.this instanceof T),
   );
 }
 
@@ -931,12 +931,12 @@ function* _traverseTables (scope: Scope): Generator<Scope> {
   const expressions: Expression[] = [];
   const from = scope.expression.getArgKey('from') as FromExpr | undefined;
 
-  if (from?.$this) {
-    expressions.push(from.$this);
+  if (from?.args.this) {
+    expressions.push(from.args.this);
   }
 
   for (const join of (scope.expression.getArgKey('joins') as JoinExpr[] | undefined) || []) {
-    expressions.push(join.$this);
+    expressions.push(join.args.this);
   }
 
   if (scope.expression instanceof TableExpr) {
@@ -962,7 +962,7 @@ function* _traverseTables (scope: Scope): Generator<Scope> {
       if (scope.sources.has(tableName) && !expression.db) {
         // This is a reference to a parent source (e.g. a CTE), not an actual table, unless
         // it is pivoted, because then we get back a new table and hence a new source.
-        const pivots = expression.$pivots;
+        const pivots = expression.args.pivots;
         if (pivots && 0 < pivots.length) {
           sources.set(pivots[0].alias, expression);
         } else {
@@ -976,8 +976,8 @@ function* _traverseTables (scope: Scope): Generator<Scope> {
 
       // Make sure to not include the joins twice
       if ((expression as Expression) !== scope.expression) {
-        for (const join of expression.$joins || []) {
-          expressions.push(join.$this);
+        for (const join of expression.args.joins || []) {
+          expressions.push(join.args.this);
         }
       }
 
@@ -1001,13 +1001,13 @@ function* _traverseTables (scope: Scope): Generator<Scope> {
       scopeType = ScopeType.DERIVED_TABLE;
       scopes = scope.derivedTableScopes;
       for (const join of (expression.getArgKey('joins') as JoinExpr[]) || []) {
-        expressions.push(join.$this);
+        expressions.push(join.args.this);
       }
     } else {
       // Makes sure we check for possible sources in nested table constructs
       expressions.push(expression.getArgKey('this') as Expression);
       for (const join of (expression.getArgKey('joins') as JoinExpr[]) || []) {
-        expressions.push(join.$this);
+        expressions.push(join.args.this);
       }
       continue;
     }
@@ -1062,9 +1062,9 @@ function* _traverseUdtfs (scope: Scope): Generator<Scope> {
   let expressions: Expression[];
 
   if (scope.expression instanceof UnnestExpr) {
-    expressions = scope.expression.$expressions;
+    expressions = scope.expression.args.expressions;
   } else if (scope.expression instanceof LateralExpr) {
-    expressions = [scope.expression.$this];
+    expressions = [scope.expression.args.this];
   } else {
     expressions = [];
   }

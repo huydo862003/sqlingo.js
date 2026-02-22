@@ -270,7 +270,7 @@ export const JSON_PATH_PART_TRANSFORMS = {
   [ExpressionKey.JSON_PATH_ROOT]: (_generator: Generator, _e: JsonPathRootExpr) => '$',
   [ExpressionKey.JSON_PATH_SCRIPT]: (_generator: Generator, e: JsonPathScriptExpr) => `(${e.this}`,
   [ExpressionKey.JSON_PATH_SELECTOR]: (generator: Generator, e: JsonPathSelectorExpr) => {
-    return `[${generator.jsonPathPart(e.$this)}]`;
+    return `[${generator.jsonPathPart(e.args.this)}]`;
   },
   [ExpressionKey.JSON_PATH_SLICE]: (generator: Generator, e: JsonPathSliceExpr) => {
     const parts = [
@@ -284,7 +284,7 @@ export const JSON_PATH_PART_TRANSFORMS = {
   },
   [ExpressionKey.JSON_PATH_SUBSCRIPT]: (generator: Generator, e: JsonPathSubscriptExpr) => generator.jsonPathSubscriptSql(e),
   [ExpressionKey.JSON_PATH_UNION]: (generator: Generator, e: JsonPathUnionExpr) => {
-    return `[${e.$expressions.map((p) => generator.jsonPathPart(p)).join(',')}]`;
+    return `[${e.args.expressions.map((p) => generator.jsonPathPart(p)).join(',')}]`;
   },
   [ExpressionKey.JSON_PATH_WILDCARD]: (_generator: Generator, _e: JsonPathWildcardExpr) => '*',
 } as const;

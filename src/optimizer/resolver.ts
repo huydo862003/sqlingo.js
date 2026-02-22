@@ -166,13 +166,13 @@ export class Resolver {
     }
 
     const setOp = expression;
-    const onColumnList = setOp.$on;
+    const onColumnList = setOp.args.on;
     if (onColumnList) {
       return onColumnList.map((col) => col.name);
     }
 
-    const side = setOp.$side;
-    const kind = setOp.$kind;
+    const side = setOp.args.side;
+    const kind = setOp.args.kind;
 
     if (side || kind) {
       const leftExpr = setOp.this;
@@ -236,7 +236,7 @@ export class Resolver {
             if (unnestExpr instanceof ColumnExpr && this.scope.parent) {
               const colType = this.getUnnestColumnType(unnestExpr);
               if (colType && colType.isType(DataTypeExprKind.ARRAY)) {
-                const elementTypes = colType.$expressions;
+                const elementTypes = colType.args.expressions;
                 if (elementTypes && 0 < elementTypes.length) {
                   unnest.type = elementTypes[0].copy();
                 } else {
@@ -247,7 +247,7 @@ export class Resolver {
           }
 
           if (unnest.isType(DataTypeExprKind.STRUCT)) {
-            for (const field of unnest.type?.$expressions || []) {
+            for (const field of unnest.type?.args.expressions || []) {
               columns.push(field.name);
             }
           }
@@ -257,7 +257,7 @@ export class Resolver {
       } else {
         const select = seqGet(sourceExpr.expressions, 0);
         if (select instanceof QueryTransformExpr) {
-          const schema = select.$schema;
+          const schema = select.args.schema;
           columns = schema
             ? schema.expressions.map((c) => {
               if (c instanceof Expression) {
@@ -383,7 +383,7 @@ export class Resolver {
     if (this.dialect._constructor.UNNEST_COLUMN_ONLY) {
       for (const [sourceName, source] of this.scope.sources) {
         if (source instanceof Scope && source.expression instanceof UnnestExpr) {
-          const aliasArg = source.expression.$alias;
+          const aliasArg = source.expression.args.alias;
           if (aliasArg?.columns.length) {
             unnestOriginalAliases.set(aliasArg.columns[0].name, sourceName);
           }

@@ -649,7 +649,7 @@ export function buildLower (args: Expression[]): LowerExpr | LowerHexExpr {
   // LOWER(HEX(..)) can be simplified to LowerHex to simplify its transpilation
   const arg = seqGet(args, 0)!;
   return arg instanceof HexExpr
-    ? new LowerHexExpr({ this: arg.$this })
+    ? new LowerHexExpr({ this: arg.args.this })
     : new LowerExpr({ this: arg });
 }
 
@@ -660,7 +660,7 @@ export function buildUpper (args: Expression[]): UpperExpr | HexExpr {
   // UPPER(HEX(..)) can be simplified to Hex to simplify its transpilation
   const arg = seqGet(args, 0)!;
   return arg instanceof LowerHexExpr
-    ? new HexExpr({ this: arg.$this })
+    ? new HexExpr({ this: arg.args.this })
     : new UpperExpr({ this: arg });
 }
 
@@ -2652,15 +2652,15 @@ export class Parser {
     this.pipeCteCounter = 0;
   }
 
+  /**
+    * Parses a list of tokens and returns a list of syntax trees, one tree
+    * per parsed SQL statement.
+    *
+    * @param rawTokens - The list of tokens.
+    * @param sql - The original SQL string, used to produce helpful debug messages.
+    * @returns The list of the produced syntax trees.
+    */
   parse (rawTokens: Token[], sql?: string): (Expression | undefined)[] {
-    /**
-     * Parses a list of tokens and returns a list of syntax trees, one tree
-     * per parsed SQL statement.
-     *
-     * @param rawTokens - The list of tokens.
-     * @param sql - The original SQL string, used to produce helpful debug messages.
-     * @returns The list of the produced syntax trees.
-     */
     return this._parse({
       parseMethod: (self: Parser) => self.parseStatement(),
       rawTokens,
@@ -3316,7 +3316,7 @@ export class Parser {
 
   parseUnquotedField (): Expression | undefined {
     const field = this.parseField();
-    if (field instanceof IdentifierExpr && !field.$quoted) {
+    if (field instanceof IdentifierExpr && !field.args.quoted) {
       return var_(field);
     }
 
@@ -4431,7 +4431,7 @@ export class Parser {
       }
 
       while (thisExpr instanceof SubqueryExpr && thisExpr.isWrapper) {
-        thisExpr = thisExpr.$this;
+        thisExpr = thisExpr.args.this;
       }
 
       if (thisExpr._constructor.availableArgs.has('with')) {
@@ -4528,7 +4528,7 @@ export class Parser {
     } else if (this.match(TokenType.VALUES, { advance: false })) {
       return this.parseDerivedTableValues();
     } else if (from) {
-      return select('*').from(from.$this, { copy: false });
+      return select('*').from(from.args.this, { copy: false });
     } else if (this.match(TokenType.SUMMARIZE)) {
       const table = this.match(TokenType.TABLE);
       const thisExpr = this.parseSelect() || this.parseString() || this.parseTable();
@@ -4608,7 +4608,7 @@ export class Parser {
     const index = this.index;
 
     const aliasExpr = this.parseTableAlias({ aliasTokens: this._constructor.ID_VAR_TOKENS });
-    if (!aliasExpr || !aliasExpr.$this) {
+    if (!aliasExpr || !aliasExpr.args.this) {
       this.raiseError('Expected CTE to have alias');
     }
 
@@ -4641,7 +4641,7 @@ export class Parser {
       },
     );
 
-    const values = cte.$this;
+    const values = cte.args.this;
     if (values instanceof ValuesExpr) {
       if (values.alias) {
         cte.setArgKey('this', select('*').from(values));
@@ -4729,7 +4729,7 @@ export class Parser {
     // Add the FROM clause table to refs
     if ('from' in args) {
       const fromExpr = args['from'] as FromExpr;
-      const fromExprThis = fromExpr?.$this;
+      const fromExprThis = fromExpr?.args.this;
       if (fromExprThis) {
         const normalized = normalizeIdentifiers(fromExprThis.copy(), { dialect: this.dialect });
         refs.add(normalized.aliasOrName || '');
@@ -4741,7 +4741,7 @@ export class Parser {
       const joins: JoinExpr[] | undefined = args['joins'];
       if (joins) {
         for (const join of joins) {
-          const table = join.$this;
+          const table = join.args.this;
 
           if (table instanceof TableExpr && !join.args.on) {
             // Normalize the table with maybeColumn meta flag
@@ -4757,10 +4757,10 @@ export class Parser {
                 const unnest = new UnnestExpr({ expressions: [tableAsColumn] });
 
                 // Convert Alias to TableAlias if needed
-                if (table.$alias instanceof TableAliasExpr && tableAsColumn.$this instanceof Expression) {
-                  tableAsColumn.replace(tableAsColumn.$this);
+                if (table.args.alias instanceof TableAliasExpr && tableAsColumn.args.this instanceof Expression) {
+                  tableAsColumn.replace(tableAsColumn.args.this);
                   const aliasArgs = {
-                    table: table.$alias?.$this ? [table.$alias.$this] : undefined,
+                    table: table.args.alias?.args.this ? [table.args.alias.args.this] : undefined,
                     copy: false,
                   };
                   alias(unnest, undefined, aliasArgs);
@@ -4815,14 +4815,14 @@ export class Parser {
 
             thisExpr.setArgKey(key, expr);
             if (key === 'limit') {
-              const offset = (expr as LimitExpr).$offset;
+              const offset = (expr as LimitExpr).args.offset;
               expr.setArgKey('offset', undefined);
 
               if (offset) {
                 const offsetExpr = new OffsetExpr({ expression: offset as number | Expression });
                 thisExpr.setArgKey('offset', offsetExpr);
 
-                const limitByExpressions = (expr as LimitExpr).$expressions;
+                const limitByExpressions = (expr as LimitExpr).args.expressions;
                 expr.setArgKey('expressions', undefined);
                 offsetExpr.setArgKey('expressions', limitByExpressions);
               }
@@ -5186,7 +5186,7 @@ export class Parser {
     const parseColumnAsIdentifier = (): Expression | undefined => {
       const thisExpr = this.parseColumn();
       if (thisExpr instanceof ColumnExpr) {
-        return thisExpr.$this;
+        return thisExpr.args.this instanceof Expression ? thisExpr.args.this : toIdentifier(thisExpr.args.this);
       }
       return thisExpr;
     };
@@ -5578,7 +5578,7 @@ export class Parser {
       consumePipe: options?.consumePipe,
     });
     if (subquery) {
-      if (!(subquery as SelectExpr).$pivots) {
+      if (!(subquery as SelectExpr).args.pivots) {
         subquery.setArgKey('pivots', this.parsePivots());
       }
       return subquery;
@@ -5788,7 +5788,7 @@ export class Parser {
           this.raiseError('Unexpected extra column alias in unnest.');
         }
 
-        alias.setArgKey('columns', [alias.$this]);
+        alias.setArgKey('columns', [alias.args.this]);
         alias.setArgKey('this', undefined);
       }
 
@@ -5999,7 +5999,7 @@ export class Parser {
       if (alias) {
         let aliasExpr = alias;
         if (alias instanceof ColumnExpr && !alias.args.db) {
-          aliasExpr = alias.$this;
+          aliasExpr = alias.args.this;
         }
         return this.expression(PivotAliasExpr, {
           this: thisExpr,
@@ -6137,7 +6137,7 @@ export class Parser {
       const allFields: string[][] = [];
 
       for (const pivotField of pivot.args.fields as InExpr[]) {
-        const pivotFieldExpressions = pivotField.$expressions;
+        const pivotFieldExpressions = pivotField.args.expressions;
 
         // The `PivotAny` expression corresponds to `ANY ORDER BY <column>`; we can't infer in this case.
         if (pivotFieldExpressions?.[0] instanceof PivotAnyExpr) {
@@ -6828,7 +6828,7 @@ export class Parser {
     const assignmentTokens = Object.keys(this._constructor.ASSIGNMENT) as TokenType[];
     while (this.matchSet(assignmentTokens)) {
       if (thisExpr instanceof ColumnExpr && thisExpr.parts.length === 1) {
-        thisExpr = thisExpr.$this;
+        thisExpr = thisExpr.args.this;
       }
 
       const ExprClass = this._constructor.ASSIGNMENT[this.prev!.tokenType];
@@ -7144,8 +7144,8 @@ export class Parser {
     if (!thisExpr || (
       thisExpr instanceof ColumnExpr
       && !thisExpr.args.table
-      && thisExpr.$this instanceof IdentifierExpr
-      && !thisExpr.$this.$quoted
+      && thisExpr.args.this instanceof IdentifierExpr
+      && !thisExpr.args.this.args.quoted
       && this.curr
       && !this._dialectConstructor.VALID_INTERVAL_UNITS.has(this.curr.text.toUpperCase())
     )) {
@@ -7252,9 +7252,9 @@ export class Parser {
           // Preserve collations such as pg_catalog."default" (Postgres) as columns, otherwise
           // fallback to Identifier / Var
           if (expr instanceof ColumnExpr && expr.parts.length === 1) {
-            const ident = expr.$this;
+            const ident = expr.args.this;
             if (ident instanceof IdentifierExpr) {
-              thisExpr.setArgKey('expression', ident.$quoted ? ident : var_(ident.name));
+              thisExpr.setArgKey('expression', ident.args.quoted ? ident : var_(ident.name));
             }
           }
         }
@@ -7840,7 +7840,7 @@ export class Parser {
       // we rearrange the AST appropriately to avoid casting the JSON path
       while (path instanceof CastExpr) {
         casts.push(path.args.to as DataTypeExpr);
-        path = path.$this;
+        path = path.args.this;
       }
 
       let endToken: Token;
@@ -7856,7 +7856,7 @@ export class Parser {
       if (path) {
         // Escape single quotes from Snowflake's colon extraction (e.g. col:"a'b") as
         // it'll roundtrip to a string literal in GET_PATH
-        if (path instanceof IdentifierExpr && path.$quoted) {
+        if (path instanceof IdentifierExpr && path.args.quoted) {
           escape = true;
         }
 
@@ -7940,7 +7940,7 @@ export class Parser {
           {
             comments: current.comments,
             this: field,
-            table: current.$this,
+            table: current.args.this,
             db: current.args.table,
             catalog: current.args.db,
           },
@@ -7949,7 +7949,7 @@ export class Parser {
         // Move the exp.Dot's to the window's function
         const windowFunc = this.expression(DotExpr, {
           this: current,
-          expression: field.$this,
+          expression: field.args.this,
         });
         field.setArgKey('this', windowFunc);
         current = field;
@@ -8376,7 +8376,7 @@ export class Parser {
     for (const column of node.findAll(ColumnExpr)) {
       const typ = lambdaTypes[column.parts[0]?.name || ''];
       if (typ !== undefined) {
-        let dotOrId: DotExpr | IdentifierExpr | StarExpr | CastExpr = column.table ? column.toDot() : column.$this;
+        let dotOrId: DotExpr | IdentifierExpr | StarExpr | CastExpr = column.table ? column.toDot() : column.args.this;
 
         if (typ) {
           dotOrId = this.expression(
@@ -9108,7 +9108,7 @@ export class Parser {
       const ignoreRespect = thisExpr.find([IgnoreNullsExpr, RespectNullsExpr]);
 
       if (ignoreRespect && ignoreRespect !== thisExpr) {
-        ignoreRespect.replace(ignoreRespect.$this);
+        ignoreRespect.replace(ignoreRespect.args.this);
         thisExpr = this.expression(ignoreRespect._constructor, { this: thisExpr });
       }
     }
@@ -9262,7 +9262,7 @@ export class Parser {
         this: thisExpr,
         alias,
       });
-      const column = (thisExpr as AliasExpr).$this;
+      const column = (thisExpr as AliasExpr).args.this;
 
       if (!thisExpr.comments && column && column.comments) {
         thisExpr.comments = column.popComments();
@@ -9830,14 +9830,14 @@ export class Parser {
       if (!to) {
         to = DataTypeExpr.build(DataTypeExprKind.UNKNOWN);
       }
-      if (DataTypeExpr.TEMPORAL_TYPES.has(to.$this as DataTypeExprKind)) {
+      if (DataTypeExpr.TEMPORAL_TYPES.has(to.args.this as DataTypeExprKind)) {
         thisExpr = this.expression(
           to.this === DataTypeExprKind.DATE ? StrToDateExpr : StrToTimeExpr,
           {
             this: thisExpr,
             format: LiteralExpr.string(
               formatTime(
-                fmtString ? fmtString.$this : '',
+                fmtString ? fmtString.args.this : '',
                 this._dialectConstructor.FORMAT_MAPPING || this._dialectConstructor.TIME_MAPPING,
                 this._dialectConstructor.FORMAT_TRIE || this._dialectConstructor.TIME_TRIE,
               ),
@@ -10052,7 +10052,7 @@ export class Parser {
     if (!this.match(TokenType.END)) {
       if (
         defaultCase instanceof IntervalExpr
-        && (typeof defaultCase.$this === 'string' ? defaultCase.$this : defaultCase.$this?.sql())?.toUpperCase() === 'END'
+        && (typeof defaultCase.args.this === 'string' ? defaultCase.args.this : defaultCase.args.this?.sql())?.toUpperCase() === 'END'
       ) {
         defaultCase = column({ col: 'interval' });
       } else {
@@ -10575,7 +10575,7 @@ export class Parser {
     let thisResult = thisExpr;
 
     if (thisResult instanceof ColumnExpr) {
-      thisResult = thisResult.$this;
+      thisResult = thisResult.args.this;
     }
 
     if (!computedColumn) {
@@ -10928,7 +10928,7 @@ export class Parser {
         if (e instanceof AliasExpr) {
           e = this.expression(PropertyEqExpr, {
             this: e.args.alias,
-            expression: e.$this,
+            expression: e.args.this,
           });
         }
 
@@ -10941,7 +10941,7 @@ export class Parser {
         }
 
         if (e.this instanceof ColumnExpr) {
-          e.this.replace(e.this.$this);
+          e.this.replace(e.this.args.this);
         }
       } else {
         e = this.toPropEq(e, index);
@@ -12318,9 +12318,9 @@ export class Parser {
       const order: OrderExpr | undefined =
         lastArg instanceof OrderExpr ? lastArg : undefined;
 
-      if (order?.$this) {
-        args[args.length - 1] = order.$this;
-        order.setArgKey('this', concatExprs(order.$this, args));
+      if (order?.args.this) {
+        args[args.length - 1] = order.args.this;
+        order.setArgKey('this', concatExprs(order.args.this, args));
       }
 
       thisValue = order || concatExprs(args[0], args);
@@ -12414,7 +12414,7 @@ export class Parser {
     }
 
     return this.buildPipeCte({
-      query: query.select(select.$expressions, { append: false }),
+      query: query.select(select.args.expressions, { append: false }),
       expressions: [new StarExpr({})],
     });
   }
@@ -12424,8 +12424,8 @@ export class Parser {
     const offset = this.parseOffset() as OffsetExpr;
     if (limit) {
       const currLimit = query.args.limit || limit;
-      const currLimitValue = typeof currLimit === 'number' ? currLimit : currLimit.$expression.toValue() as number;
-      const limitValue = typeof limit === 'number' ? limit : limit.$expression.toValue() as number;
+      const currLimitValue = typeof currLimit === 'number' ? currLimit : currLimit.args.expression.toValue() as number;
+      const limitValue = typeof limit === 'number' ? limit : limit.args.expression.toValue() as number;
       if (limitValue <= currLimitValue) {
         query.limit(limit, { copy: false });
       }
@@ -12436,10 +12436,10 @@ export class Parser {
         ? 0
         : typeof currOffset === 'number'
           ? currOffset
-          : typeof currOffset.$expression === 'number'
-            ? currOffset.$expression
-            : currOffset.$expression.toValue() as number;
-      const offsetVal: number = typeof offset.$expression === 'number' ? offset.$expression : offset.$expression.toValue() as number;
+          : typeof currOffset.args.expression === 'number'
+            ? currOffset.args.expression
+            : currOffset.args.expression.toValue() as number;
+      const offsetVal: number = typeof offset.args.expression === 'number' ? offset.args.expression : offset.args.expression.toValue() as number;
 
       query.offset(LiteralExpr.number(currOffsetVal + offsetVal));
     }
@@ -12474,7 +12474,7 @@ export class Parser {
     for (const element of expr) {
       let thisValue: Expression;
       if (element instanceof OrderedExpr) {
-        thisValue = element.$this;
+        thisValue = element.args.this;
         if (thisValue instanceof AliasExpr) {
           element.setArgKey('this', thisValue.args.alias);
         }
@@ -12537,10 +12537,10 @@ export class Parser {
       return expr ? expr.assertIs(SubqueryExpr).unnest() as SelectExpr : undefined;
     };
 
-    firstSetop.$this.pop();
+    firstSetop.args.this.pop();
 
     const setops = [
-      firstSetop.$expression.pop().assertIs(SubqueryExpr)
+      firstSetop.args.expression.pop().assertIs(SubqueryExpr)
         .unnest(),
       ...this.parseCsv(parseAndUnwrapQuery),
     ];
@@ -12598,7 +12598,7 @@ export class Parser {
 
     const from = query.args.from;
     if (from) {
-      from.$this?.setArgKey('pivots', pivots);
+      from.args.this?.setArgKey('pivots', pivots);
     }
 
     return this.buildPipeCte({

@@ -81,8 +81,8 @@ function shouldEliminateJoin (scope: Scope, join: JoinExpr, alias: string): bool
     return false;
   }
 
-  const side = join.$side;
-  const onClause = join.$on;
+  const side = join.args.side;
+  const onClause = join.args.on;
 
   return (
     (side === JoinExprKind.LEFT && isJoinedOnAllUniqueOutputs(innerSource, join))
@@ -93,7 +93,7 @@ function shouldEliminateJoin (scope: Scope, join: JoinExpr, alias: string): bool
 function joinIsUsed (scope: Scope, join: JoinExpr, alias: string): boolean {
   // We need to find all columns that reference this join.
   // But columns in the ON clause shouldn't count.
-  const onClause = join.$on;
+  const onClause = join.args.on;
 
   const onClauseColumns = new Set<Expression>();
   if (onClause) {
@@ -133,12 +133,12 @@ function uniqueOutputs (scope: Scope): Set<string> | undefined {
   const select = expression;
 
   // DISTINCT makes all outputs unique
-  if (select.$distinct) {
+  if (select.args.distinct) {
     return new Set(select.namedSelects);
   }
 
   // GROUP BY makes grouped columns unique
-  const group = select.$group;
+  const group = select.args.group;
   if (group) {
     const groupedExpressions = new Set(group.expressions.filter((e) => e instanceof Expression));
     const groupedOutputs = new Set<Expression>();
@@ -185,7 +185,7 @@ function hasSingleOutputRow (scope: Scope): boolean {
   const select = expression;
 
   // No FROM clause means single row
-  if (!select.$from) {
+  if (!select.args.from) {
     return true;
   }
 
@@ -215,7 +215,7 @@ function isLimit1 (scope: Scope): boolean {
   if (!(limit instanceof LimitExpr)) {
     return false;
   }
-  return limit.$expression?.this === '1';
+  return limit.args.expression?.this === '1';
 }
 
 /**
@@ -228,7 +228,7 @@ export function joinCondition (
   join: JoinExpr,
 ): [Expression[], Expression[], Expression] {
   const name = join.aliasOrName;
-  const onClause = join.$on;
+  const onClause = join.args.on;
   const on = (onClause || true_()).copy();
 
   const sourceKey: Expression[] = [];
@@ -264,13 +264,13 @@ export function joinCondition (
     }
   } else if (normalized(on, { dnf: true })) {
     // DNF form: OR of ANDs — find EQ conditions present in every OR branch
-    let conditions: EqExpr[] | null = null;
+    let conditions: EqExpr[] | undefined;
 
     for (const orBranch of on.flatten()) {
       const parts = Array.from(orBranch.flatten())
         .filter((p): p is EqExpr => p instanceof EqExpr);
 
-      if (conditions === null) {
+      if (conditions === undefined) {
         conditions = parts;
       } else {
         const temp: EqExpr[] = [];

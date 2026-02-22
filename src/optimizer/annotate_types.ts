@@ -147,11 +147,11 @@ function coerceDate (l: Expression, unit?: Expression): DataTypeExprKind {
   if (!isDateUnit(unit)) {
     return DataTypeExprKind.DATETIME;
   }
-  const typeThis = l.type?.$this;
+  const typeThis = l.type?.args.this;
   if (typeof typeThis === 'string') {
     return typeThis as DataTypeExprKind;
   }
-  return typeThis instanceof IdentifierExpr ? typeThis.$this as DataTypeExprKind : DataTypeExprKind.UNKNOWN;
+  return typeThis instanceof IdentifierExpr ? typeThis.args.this as DataTypeExprKind : DataTypeExprKind.UNKNOWN;
 }
 
 function swapArgs (func: BinaryCoercionFunc): BinaryCoercionFunc {
@@ -507,7 +507,7 @@ export class TypeAnnotator {
 
       let setopCols: Record<string, DataTypeExpr | DataTypeExprKind>;
 
-      if (node.$byName) {
+      if (node.args.byName) {
         const rightTypeBySelect: Record<string, DataTypeExpr | DataTypeExprKind | ColumnDefExpr | undefined> = {};
         for (const s of node.right.selects) {
           rightTypeBySelect[s.aliasOrName] = s.type;
@@ -706,7 +706,7 @@ export class TypeAnnotator {
 
     this.visited.add(expression);
 
-    if (!this.supportsNullType && expression.type?.$this === DataTypeExprKind.NULL) {
+    if (!this.supportsNullType && expression.type?.args.this === DataTypeExprKind.NULL) {
       this.nullExpressions.set(expression, expression);
     } else if (prevType?.isType(DataTypeExprKind.NULL)) {
       this.nullExpressions.delete(expression);
@@ -743,8 +743,8 @@ export class TypeAnnotator {
       return;
     }
 
-    const leftType = left.type?.$this.toString() as DataTypeExprKind;
-    const rightType = right.type?.$this.toString() as DataTypeExprKind;
+    const leftType = left.type?.args.this.toString() as DataTypeExprKind;
+    const rightType = right.type?.args.this.toString() as DataTypeExprKind;
 
     // Connectors (AND, OR) and predicates (=, <, >, IS, etc.) always return BOOLEAN
     if (expression instanceof PredicateExpr) {

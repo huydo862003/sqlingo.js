@@ -267,7 +267,7 @@ export function simplifyParens (expression: Expression, dialect: DialectType): E
     return expression;
   }
 
-  const thisExpr = expression.$this;
+  const thisExpr = expression.args.this;
   const parent = expression.parent;
   const parentIsPredicate = parent instanceof PredicateExpr;
 
@@ -498,7 +498,7 @@ function datetruncNeq (
 
 /** Check if expression is always true */
 function alwaysTrue (expression: unknown): boolean {
-  return (expression instanceof BooleanExpr && expression.$this)
+  return (expression instanceof BooleanExpr && expression.args.this)
     || (expression instanceof LiteralExpr && expression.isNumber && !isZero(expression));
 }
 
@@ -519,7 +519,7 @@ function _isComplement (a: unknown, b: unknown): boolean {
 
 /** Check if expression is false */
 function isFalse (a: unknown): a is BooleanExpr & { $this: false } {
-  return a instanceof BooleanExpr && !a.$this;
+  return a instanceof BooleanExpr && !a.args.this;
 }
 
 /** Check if expression is null */
@@ -623,7 +623,7 @@ function extractDate (cast: unknown): DateTime | undefined {
   }
 
   let value: unknown;
-  const thisArg = cast.$this;
+  const thisArg = cast.args.this;
 
   if (thisArg instanceof LiteralExpr) {
     value = thisArg.name;
@@ -641,11 +641,11 @@ function _isDateLiteral (expression: unknown): boolean {
 }
 
 function extractInterval (expression: IntervalExpr): number | undefined {
-  if (expression.$this === undefined) {
+  if (expression.args.this === undefined) {
     return undefined;
   }
   try {
-    const n = parseInt(String(expression.$this.toValue()));
+    const n = parseInt(String(expression.args.this.toValue()));
     const unit = expression.text('unit').toLowerCase();
     return interval(unit, n);
   } catch (e) {
@@ -960,7 +960,7 @@ export class Simplifier {
             }
           }
 
-          const having = node.$having;
+          const having = node.args.having;
           if (having) {
             for (const n of having.walk()) {
               if (groups.has(n)) {
@@ -985,7 +985,7 @@ export class Simplifier {
         wheres.push(node);
       } else if (node instanceof JoinExpr) {
         // snowflake match_conditions have very strict ordering rules
-        const matchCondition = node.$matchCondition;
+        const matchCondition = node.args.matchCondition;
         if (matchCondition) {
           matchCondition.meta[FINAL] = true;
         }
@@ -995,17 +995,17 @@ export class Simplifier {
     }
 
     for (const where of wheres) {
-      if (alwaysTrue(where.$this)) {
+      if (alwaysTrue(where.args.this)) {
         where.pop();
       }
     }
 
     for (const join of joins) {
-      const on = join.$on;
-      const using = join.$using;
-      const method = join.$method;
-      const side = join.$side || '';
-      const kind = join.$kind || '';
+      const on = join.args.on;
+      const using = join.args.using;
+      const method = join.args.method;
+      const side = join.args.side || '';
+      const kind = join.args.kind || '';
 
       if (
         on
@@ -1264,8 +1264,8 @@ export class Simplifier {
       sep = '';
       concatType = ConcatExpr;
       args = {
-        safe: (expression as ConcatExpr).$safe,
-        coalesce: (expression as ConcatExpr).$coalesce,
+        safe: (expression as ConcatExpr).args.safe,
+        coalesce: (expression as ConcatExpr).args.coalesce,
       };
     }
 
@@ -1312,9 +1312,9 @@ export class Simplifier {
   simplifyConditionals (expression: Expression): Expression {
     // Simplifies expressions like IF, CASE if their condition is statically known
     if (expression instanceof CaseExpr) {
-      const thisExpr = expression.$this;
+      const thisExpr = expression.args.this;
 
-      for (const caseIf of expression.$ifs || []) {
+      for (const caseIf of expression.args.ifs || []) {
         let cond = caseIf.this as Expression;
         if (thisExpr) {
           // Convert CASE x WHEN matching_value ... to CASE WHEN x = matching_value ...
@@ -1327,19 +1327,19 @@ export class Simplifier {
 
         if (alwaysFalse(cond)) {
           caseIf.pop();
-          const remainingIfs = expression.$ifs;
+          const remainingIfs = expression.args.ifs;
           if (!remainingIfs || remainingIfs.length === 0) {
-            return expression.$default as Expression || null_();
+            return expression.args.default as Expression || null_();
           }
         }
       }
     } else if (expression instanceof IfExpr && !(expression.parent instanceof CaseExpr)) {
-      const thisExpr = expression.$this;
+      const thisExpr = expression.args.this;
       if (alwaysTrue(thisExpr)) {
-        return expression.$true;
+        return expression.args.true;
       }
       if (alwaysFalse(thisExpr)) {
-        return expression.$false as Expression || null_();
+        return expression.args.false as Expression || null_();
       }
     }
 
@@ -1354,7 +1354,7 @@ export class Simplifier {
   @catch_(UnsupportedUnit)
   simplifyNot (expression: Expression): Expression {
     if (expression instanceof NotExpr) {
-      const thisExpr = expression.$this;
+      const thisExpr = expression.args.this;
       if (isNull(thisExpr)) {
         return and([null_(), true_()], { copy: false });
       }
@@ -1382,13 +1382,13 @@ export class Simplifier {
         const condition = thisExpr.unnest();
         if (condition instanceof AndExpr) {
           return paren(
-            or([not(condition.$this, { copy: false }), not(condition.$expression, { copy: false })], { copy: false }),
+            or([not(condition.args.this, { copy: false }), not(condition.args.expression, { copy: false })], { copy: false }),
             { copy: false },
           );
         }
         if (condition instanceof OrExpr) {
           return paren(
-            and([not(condition.$this, { copy: false }), not(condition.$expression, { copy: false })], { copy: false }),
+            and([not(condition.args.this, { copy: false }), not(condition.args.expression, { copy: false })], { copy: false }),
             { copy: false },
           );
         }
@@ -1405,7 +1405,7 @@ export class Simplifier {
       }
 
       if (thisExpr instanceof NotExpr && this.dialect._constructor.SAFE_TO_ELIMINATE_DOUBLE_NEGATION) {
-        const inner = thisExpr.$this;
+        const inner = thisExpr.args.this;
         if (inner instanceof Expression && inner.isType(DataTypeExprKind.BOOLEAN)) {
           // double negation
           // NOT NOT x -> x, if x is BOOLEAN type
@@ -1704,11 +1704,11 @@ export class Simplifier {
     // COALESCE(x) -> x
     if (
       expression instanceof CoalesceExpr
-      && (expression.expressions.length === 0 || _isNonnullConstant(expression.$this))
+      && (expression.expressions.length === 0 || _isNonnullConstant(expression.args.this))
       // COALESCE is also used as a Spark partitioning hint
       && !(expression.parent instanceof HintExpr)
     ) {
-      return expression.$this as Expression;
+      return expression.args.this as Expression;
     }
 
     if (this.dialect._constructor.COALESCE_COMPARISON_NON_STANDARD) {
@@ -1760,7 +1760,7 @@ export class Simplifier {
 
     // Remove the COALESCE function. This is an optimization, skipping a simplify iteration,
     // since we already remove COALESCE at the top of this function.
-    const coalesceOrThis = 0 < coalesce.expressions.length ? coalesce : coalesce.$this;
+    const coalesceOrThis = 0 < coalesce.expressions.length ? coalesce : coalesce.args.this;
 
     // This expression is more complex than when we started, but it will get simplified further
     return paren(
@@ -1788,7 +1788,7 @@ export class Simplifier {
 
     if (expression instanceof NegExpr && expression.this instanceof NegExpr) {
       const inner = expression.this;
-      return inner.$this;
+      return inner.args.this;
     }
 
     if (Simplifier.INVERSE_DATE_OPS[expression._constructor.key]) {
@@ -1807,7 +1807,7 @@ export class Simplifier {
       return expr;
     }
 
-    const exprThis = expr.$this;
+    const exprThis = expr.args.this;
     let thisExpr: Expression;
     if (exprThis instanceof CastExpr) {
       thisExpr = this._simplifyIntegerCast(exprThis);
@@ -1829,10 +1829,10 @@ export class Simplifier {
       if (
         (
           Simplifier.TINYINT_MIN <= num && num <= Simplifier.TINYINT_MAX
-          && to.$this && DataTypeExpr.SIGNED_INTEGER_TYPES.has(to.$this as DataTypeExprKind)
+          && to.args.this && DataTypeExpr.SIGNED_INTEGER_TYPES.has(to.args.this as DataTypeExprKind)
         ) || (
           Simplifier.UTINYINT_MIN <= num && num <= Simplifier.UTINYINT_MAX
-          && to.$this && DataTypeExpr.UNSIGNED_INTEGER_TYPES.has(to.$this as DataTypeExprKind)
+          && to.args.this && DataTypeExpr.UNSIGNED_INTEGER_TYPES.has(to.args.this as DataTypeExprKind)
         )
       ) {
         return thisExpr;
@@ -1856,7 +1856,7 @@ export class Simplifier {
       let c: Expression;
       let not_: boolean;
       if (b instanceof NotExpr) {
-        c = b.$this;
+        c = b.args.this;
         not_ = true;
       } else {
         c = b;
@@ -2037,11 +2037,11 @@ export class Simplifier {
 
     if (Simplifier.DATETRUNCS.some((cls) => expression instanceof cls)) {
       const e = expression as DateTruncExpr | TimestampTruncExpr;
-      const thisExpr = e.$this;
+      const thisExpr = e.args.this;
       const truncType = extractType(thisExpr);
       const date = extractDate(thisExpr);
-      if (date && e.$unit) {
-        const unit = e.$unit.name.toLowerCase();
+      if (date && e.args.unit) {
+        const unit = e.args.unit.name.toLowerCase();
         return dateLiteral(dateFloor(date, unit, this.dialect), truncType);
       }
     } else if (!Simplifier.DATETRUNC_COMPARISONS.has(comparison.key)) {
@@ -2049,8 +2049,8 @@ export class Simplifier {
     }
 
     if (expression instanceof BinaryExpr) {
-      const l = expression.$this as Expression;
-      const r = expression.$expression as Expression;
+      const l = expression.args.this as Expression;
+      const r = expression.args.expression as Expression;
 
       if (!this._isDatetruncPredicate(l, r)) {
         return expression;
@@ -2076,7 +2076,7 @@ export class Simplifier {
     }
 
     if (expression instanceof InExpr) {
-      const l = expression.$this as Expression;
+      const l = expression.args.this as Expression;
       const rs = expression.expressions;
 
       if (rs && rs.every((r) => this._isDatetruncPredicate(l, r))) {
@@ -2156,12 +2156,12 @@ export class Simplifier {
   simplifyStartswith (expression: Expression): Expression {
     if (
       expression instanceof StartsWithExpr
-      && expression.$this instanceof Expression
-      && expression.$expression instanceof Expression
-      && expression.$this.isString
-      && expression.$expression.isString
+      && expression.args.this instanceof Expression
+      && expression.args.expression instanceof Expression
+      && expression.args.this.isString
+      && expression.args.expression.isString
     ) {
-      const result = expression.$this.name.startsWith(expression.$expression.name);
+      const result = expression.args.this.name.startsWith(expression.args.expression.name);
       return result ? true_() : false_();
     }
 
@@ -2182,9 +2182,9 @@ export class Simplifier {
     const negate = parent instanceof NotExpr;
 
     // BETWEEN has: this, low, high args
-    const betweenThis = expression.$this;
-    const low = expression.$low;
-    const high = expression.$high;
+    const betweenThis = expression.args.this;
+    const low = expression.args.low;
+    const high = expression.args.high;
 
     // Validate all are Expression instances (not primitives)
     if (!(betweenThis instanceof Expression)) {
@@ -2361,7 +2361,7 @@ class Gen {
     this.stack.push(
       (e.args as Record<string, unknown>).alias as Expression,
       ' AS ',
-      e.$this as Expression,
+      e.args.this as Expression,
     );
   }
 
@@ -2370,14 +2370,14 @@ class Gen {
   }
 
   anonymousSql (e: AnonymousExpr): void {
-    const thisExpr = e.$this;
+    const thisExpr = e.args.this;
     let name: string;
 
     if (typeof thisExpr === 'string') {
       name = thisExpr.toUpperCase();
     } else if (thisExpr instanceof IdentifierExpr) {
-      const idName = thisExpr.$this;
-      name = thisExpr.$quoted ? `"${idName}"` : String(idName).toUpperCase();
+      const idName = thisExpr.args.this;
+      name = thisExpr.args.quoted ? `"${idName}"` : String(idName).toUpperCase();
     } else {
       throw new Error(
         `Anonymous.this expects a string or an Identifier, got '${(thisExpr as Expression | undefined)?._constructor?.name || typeof thisExpr}'.`,
@@ -2386,7 +2386,7 @@ class Gen {
 
     this.stack.push(
       ')',
-      e.$expressions || [],
+      e.args.expressions || [],
       '(',
       name,
     );
@@ -2394,24 +2394,24 @@ class Gen {
 
   betweenSql (e: BetweenExpr): void {
     this.stack.push(
-      e.$high as Expression,
+      e.args.high as Expression,
       ' AND ',
-      e.$low as Expression,
+      e.args.low as Expression,
       ' BETWEEN ',
-      e.$this as Expression,
+      e.args.this as Expression,
     );
   }
 
   booleanSql (e: BooleanExpr): void {
-    this.stack.push(e.$this ? 'TRUE' : 'FALSE');
+    this.stack.push(e.args.this ? 'TRUE' : 'FALSE');
   }
 
   bracketSql (e: BracketExpr): void {
     this.stack.push(
       ']',
-      e.$expressions || [],
+      e.args.expressions || [],
       '[',
-      e.$this as Expression,
+      e.args.this as Expression,
     );
   }
 
@@ -2425,7 +2425,7 @@ class Gen {
 
   datatypeSql (e: DataTypeExpr): void {
     this.args(e, 1);
-    const thisValue = e.$this;
+    const thisValue = e.args.this;
     const name = typeof thisValue === 'string' ? thisValue : String(thisValue);
     this.stack.push(`${name} `);
   }
@@ -2443,7 +2443,7 @@ class Gen {
   }
 
   fromSql (e: FromExpr): void {
-    this.stack.push(e.$this as Expression, 'FROM ');
+    this.stack.push(e.args.this as Expression, 'FROM ');
   }
 
   gtSql (e: GtExpr): void {
@@ -2455,9 +2455,9 @@ class Gen {
   }
 
   identifierSql (e: IdentifierExpr): void {
-    const thisValue = e.$this;
+    const thisValue = e.args.this;
     const str = String(thisValue);
-    this.stack.push(e.$quoted ? `"${str}"` : str);
+    this.stack.push(e.args.quoted ? `"${str}"` : str);
   }
 
   ilikeSql (e: ILikeExpr): void {
@@ -2470,7 +2470,7 @@ class Gen {
     this.stack.push(
       '(',
       ' IN ',
-      e.$this,
+      e.args.this,
     );
   }
 
@@ -2487,7 +2487,7 @@ class Gen {
   }
 
   literalSql (e: LiteralExpr): void {
-    const thisValue = e.$this;
+    const thisValue = e.args.this;
     this.stack.push(e.isString ? `'${thisValue}'` : String(thisValue));
   }
 
@@ -2530,7 +2530,7 @@ class Gen {
   parenSql (e: ParenExpr): void {
     this.stack.push(
       ')',
-      e.$this,
+      e.args.this,
       '(',
     );
   }
@@ -2541,16 +2541,16 @@ class Gen {
 
   subquerySql (e: SubqueryExpr): void {
     this.args(e, 2);
-    const alias = e.$alias;
+    const alias = e.args.alias;
     if (alias) {
       this.stack.push(alias);
     }
-    this.stack.push(')', e.$this, '(');
+    this.stack.push(')', e.args.this, '(');
   }
 
   tableSql (e: TableExpr): void {
     this.args(e, 4);
-    const alias = e.$alias;
+    const alias = e.args.alias;
     if (alias) {
       this.stack.push(alias as Expression);
     }
@@ -2568,7 +2568,7 @@ class Gen {
       this.stack.push(')', columns, '(');
     }
 
-    this.stack.push(e.$this || [], ' AS ');
+    this.stack.push(e.args.this || [], ' AS ');
   }
 
   varSql (e: VarExpr): void {
@@ -2576,7 +2576,7 @@ class Gen {
   }
 
   private binary (e: BinaryExpr, op: string): void {
-    this.stack.push(e.$expression as Expression, op, e.$this as Expression);
+    this.stack.push(e.args.expression as Expression, op, e.args.this as Expression);
   }
 
   private unary (e: UnaryExpr, op: string): void {
