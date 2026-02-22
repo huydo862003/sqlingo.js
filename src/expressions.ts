@@ -2150,6 +2150,14 @@ export class Expression {
     });
   }
 
+  resetHash () {
+    this._hash = undefined;
+  }
+
+  computeHash (): string {
+    return this.hash();
+  }
+
   hash (): string {
     if (this._hash !== undefined) {
       return this._hash;
