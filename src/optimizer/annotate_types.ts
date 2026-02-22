@@ -274,11 +274,11 @@ export class TypeAnnotator {
   coercesTo: Map<DataTypeExprKind, Set<DataTypeExprKind>>;
   binaryCoercions: BinaryCoercions;
 
-  private visited: Set<Expression>;
-  private nullExpressions: Map<Expression, Expression>;
-  private supportsNullType: boolean;
-  private setopColumnTypes: Map<Expression, Record<string, DataTypeExpr | DataTypeExprKind>>;
-  private scopeSelects: Map<Scope, Map<string, Record<string, ColumnDefExpr | DataTypeExpr | DataTypeExprKind | undefined>>>;
+  visited: Set<Expression>;
+  nullExpressions: Map<Expression, Expression>;
+  supportsNullType: boolean;
+  setopColumnTypes: Map<Expression, Record<string, DataTypeExpr | DataTypeExprKind>>;
+  scopeSelects: Map<Scope, Map<string, Record<string, ColumnDefExpr | DataTypeExpr | DataTypeExprKind | undefined>>>;
 
   constructor (options: {
     schema: Schema;
@@ -403,7 +403,7 @@ export class TypeAnnotator {
     }
   }
 
-  private getScopeSelects (
+  getScopeSelects (
     scope: Scope,
   ): Map<string, Record<string, DataTypeExpr | ColumnDefExpr | DataTypeExprKind | undefined>> {
     if (this.scopeSelects.has(scope)) {
@@ -486,7 +486,7 @@ export class TypeAnnotator {
     return selects;
   }
 
-  private getSetopColumnTypes (
+  getSetopColumnTypes (
     setop: SetOperationExpr,
   ): Record<string, DataTypeExpr | DataTypeExprKind> {
     if (this.setopColumnTypes.has(setop)) {
@@ -559,7 +559,7 @@ export class TypeAnnotator {
    * Annotate a single expression (and all its children) using iterative post-order traversal.
    * If scope is provided, resolves column types from that scope's sources.
    */
-  private annotateExpression (expression: Expression, scope?: Scope): void {
+  annotateExpression (expression: Expression, scope?: Scope): void {
     const stack: [Expression, boolean][] = [[expression, false]];
 
     while (0 < stack.length) {
@@ -635,7 +635,7 @@ export class TypeAnnotator {
   }
 
   /** Dispatch to the appropriate annotation method based on expression type */
-  private dispatchAnnotate (expr: Expression): void {
+  dispatchAnnotate (expr: Expression): void {
     if (expr instanceof DivExpr) {
       this.annotateDiv(expr);
     } else if (expr instanceof BinaryExpr || expr instanceof AddExpr || expr instanceof SubExpr) {
@@ -716,7 +716,7 @@ export class TypeAnnotator {
     return this.coercesTo.get(type1Value)?.has(type2Value) ? type2Value : type1Value;
   }
 
-  private setType (expression: Expression, targetType?: ColumnDefExpr | DataTypeExpr | DataTypeExprKind): Expression {
+  setType (expression: Expression, targetType?: ColumnDefExpr | DataTypeExpr | DataTypeExprKind): Expression {
     const prevType = expression.type;
     expression.type = targetType || DataTypeExprKind.UNKNOWN;
 
@@ -750,7 +750,7 @@ export class TypeAnnotator {
     return expression;
   }
 
-  private annotateBinary (expression: BinaryExpr): void {
+  annotateBinary (expression: BinaryExpr): void {
     const left = expression.left;
     const right = expression.right;
 
@@ -780,7 +780,7 @@ export class TypeAnnotator {
     }
   }
 
-  private annotateUnary (expression: UnaryExpr): void {
+  annotateUnary (expression: UnaryExpr): void {
     if (expression instanceof NotExpr) {
       this.setType(expression, DataTypeExprKind.BOOLEAN);
     } else {
@@ -795,7 +795,7 @@ export class TypeAnnotator {
     }
   }
 
-  private annotateLiteral (expression: LiteralExpr): void {
+  annotateLiteral (expression: LiteralExpr): void {
     if (expression.args.isString) {
       this.setType(expression, DataTypeExprKind.VARCHAR);
     } else if (expression.isInt) {
@@ -909,7 +909,7 @@ export class TypeAnnotator {
     }
   }
 
-  private annotateTimeunit (expression: TimeUnitExpr | DateTruncExpr): void {
+  annotateTimeunit (expression: TimeUnitExpr | DateTruncExpr): void {
     const inner = expression.args.this as Expression;
     if (!inner?.type) {
       this.setType(expression, DataTypeExprKind.UNKNOWN);
@@ -931,7 +931,7 @@ export class TypeAnnotator {
     this.setType(expression, datatype);
   }
 
-  private annotateBracket (expression: BracketExpr): void {
+  annotateBracket (expression: BracketExpr): void {
     const bracketArg = seqGet(expression.args.expressions, 0);
     const thisExpr = expression.args.this;
 
@@ -964,7 +964,7 @@ export class TypeAnnotator {
     }
   }
 
-  private annotateDiv (expression: DivExpr): void {
+  annotateDiv (expression: DivExpr): void {
     const left = expression.left;
     const right = expression.right;
     const leftType = left?.type?.this as DataTypeExprKind;
@@ -987,7 +987,7 @@ export class TypeAnnotator {
     }
   }
 
-  private annotateDot (expression: DotExpr): void {
+  annotateDot (expression: DotExpr): void {
     this.setType(expression);
 
     // Propagate type from qualified UDF calls (e.g., db.my_udf(...))
@@ -1011,7 +1011,7 @@ export class TypeAnnotator {
     }
   }
 
-  private annotateExtract (expression: ExtractExpr): void {
+  annotateExtract (expression: ExtractExpr): void {
     const part = expression.name;
     if (part === 'TIME') {
       this.setType(expression, DataTypeExprKind.TIME);
@@ -1024,13 +1024,13 @@ export class TypeAnnotator {
     }
   }
 
-  private annotateExplode (expression: ExplodeExpr): void {
+  annotateExplode (expression: ExplodeExpr): void {
     const thisExpr = expression.args.this as Expression;
     const elemType = seqGet(thisExpr?.type?.args.expressions as DataTypeExpr[] | undefined ?? [], 0);
     this.setType(expression, elemType);
   }
 
-  private annotateUnnest (expression: UnnestExpr): void {
+  annotateUnnest (expression: UnnestExpr): void {
     const child = seqGet(expression.args.expressions, 0);
     let exprType: DataTypeExpr | undefined;
 
@@ -1041,7 +1041,7 @@ export class TypeAnnotator {
     this.setType(expression, exprType);
   }
 
-  private annotateSubquery (expression: SubqueryExpr): void {
+  annotateSubquery (expression: SubqueryExpr): void {
     const query = expression.unnest();
 
     if (query instanceof QueryExpr) {
@@ -1056,7 +1056,7 @@ export class TypeAnnotator {
     this.setType(expression, DataTypeExprKind.UNKNOWN);
   }
 
-  private annotateStructValue (
+  annotateStructValue (
     expr: Expression,
   ): ColumnDefExpr | DataTypeExpr | DataTypeExprKind | null {
     let nameExpr: Expression | undefined;
@@ -1090,7 +1090,7 @@ export class TypeAnnotator {
     return kind ?? DataTypeExprKind.UNKNOWN;
   }
 
-  private annotateStruct (expression: StructExpr): void {
+  annotateStruct (expression: StructExpr): void {
     const expressions: (ColumnDefExpr | DataTypeExpr | DataTypeExprKind)[] = [];
 
     for (const expr of expression.expressions as Expression[]) {
@@ -1109,7 +1109,7 @@ export class TypeAnnotator {
     }));
   }
 
-  private annotateMap (expression: MapExpr | VarMapExpr): void {
+  annotateMap (expression: MapExpr | VarMapExpr): void {
     // Get keys/values ArrayExpr
     let keysExpr: ArrayExpr | undefined;
     let valuesExpr: ArrayExpr | undefined;
@@ -1142,7 +1142,7 @@ export class TypeAnnotator {
     this.setType(expression, mapType);
   }
 
-  private annotateToMap (expression: ToMapExpr): void {
+  annotateToMap (expression: ToMapExpr): void {
     const mapType = new DataTypeExpr({ this: DataTypeExprKind.MAP });
     const arg = expression.args.this as Expression;
 
