@@ -112,7 +112,7 @@ function isJoinedOnAllUniqueOutputs (scope: Scope, join: JoinExpr): boolean {
     return false;
   }
 
-  const [, joinKeys] = joinCondition(join);
+  const { joinKeys } = joinCondition(join);
   const joinKeyNames = new Set(joinKeys.map((k) => k.name));
 
   for (const output of uniqueOutputs_) {
@@ -226,13 +226,17 @@ function isLimit1 (scope: Scope): boolean {
  */
 export function joinCondition (
   join: JoinExpr,
-): [Expression[], Expression[], Expression] {
+): {
+  sourceKeys: Expression[];
+  joinKeys: Expression[];
+  on: Expression;
+} {
   const name = join.aliasOrName;
   const onClause = join.args.on;
   const on = (onClause || true_()).copy();
 
-  const sourceKey: Expression[] = [];
-  const joinKey: Expression[] = [];
+  const sourceKeys: Expression[] = [];
+  const joinKeys: Expression[] = [];
 
   function extractCondition (condition: Expression): void {
     const [left, right] = condition.unnestOperands();
@@ -244,12 +248,12 @@ export function joinCondition (
     const rightTables = columnTableNames(right);
 
     if (name && leftTables.has(name) && !rightTables.has(name)) {
-      joinKey.push(left);
-      sourceKey.push(right);
+      joinKeys.push(left);
+      sourceKeys.push(right);
       condition.replace(true_());
     } else if (name && rightTables.has(name) && !leftTables.has(name)) {
-      joinKey.push(right);
-      sourceKey.push(left);
+      joinKeys.push(right);
+      sourceKeys.push(left);
       condition.replace(true_());
     }
   }
@@ -292,11 +296,11 @@ export function joinCondition (
     }
   }
 
-  return [
-    sourceKey,
-    joinKey,
+  return {
+    sourceKeys,
+    joinKeys,
     on,
-  ];
+  };
 }
 
 function columnTableNames (expression: Expression): Set<string> {

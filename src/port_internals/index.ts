@@ -4,6 +4,9 @@ export { enumFromString } from './enum_utils';
 export {
   isInstanceOf, assertIsInstanceOf, filterInstanceOf,
 } from './typecheck_utils';
+export type { TypeofMap } from './typecheck_utils';
 export type {
   Merge, Override,
 } from './type_utils';
+export { id } from './id_utils';
+export type { Id } from './id_utils';
