@@ -1,6 +1,6 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/merge_subqueries.py
 
-import { is } from '../port_internals';
+import { isInstanceOf } from '../port_internals';
 import {
   AggFuncExpr,
   alias as aliasExpr,
@@ -373,7 +373,7 @@ function mergeable (
     fromOrJoin instanceof FromExpr
     && innerSelectExpr.args.where
     && outerJoins
-    && outerJoins.some((j) => is(j, JoinExpr) && (j.args.side === JoinExprKind.FULL || j.args.side === JoinExprKind.RIGHT))
+    && outerJoins.some((j) => isInstanceOf(j, JoinExpr) && (j.args.side === JoinExprKind.FULL || j.args.side === JoinExprKind.RIGHT))
   ) {
     return false;
   }

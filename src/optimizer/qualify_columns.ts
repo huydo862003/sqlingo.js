@@ -46,7 +46,7 @@ import {
   alias,
 } from '../expressions';
 import {
-  assertIsInstanceOf, filterInstanceOf, is,
+  assertIsInstanceOf, filterInstanceOf, isInstanceOf,
 } from '../port_internals';
 import {
   Dialect, type DialectType,
@@ -222,8 +222,8 @@ export function validateQualifyColumns<E extends Expression> (
   if (0 < allUnqualifiedColumns.length) {
     const firstColumn = allUnqualifiedColumns[0];
     const firstColumnThis = firstColumn.args.this;
-    const line = is(firstColumnThis, Expression) ? firstColumnThis.meta['line'] : undefined;
-    const col = is(firstColumnThis, Expression) ? firstColumnThis.meta['col'] : undefined;
+    const line = isInstanceOf(firstColumnThis, Expression) ? firstColumnThis.meta['line'] : undefined;
+    const col = isInstanceOf(firstColumnThis, Expression) ? firstColumnThis.meta['col'] : undefined;
 
     let errorMsg = `Ambiguous column '${firstColumn.name}'`;
     if (line && col) {
@@ -685,7 +685,7 @@ function qualifyColumnsInScope (
         && columnName in scope.selectedSources
       ) {
         const colThis = column.args.this;
-        scope.replace(column, new TableColumnExpr({ this: is(colThis, Expression) ? colThis : undefined }));
+        scope.replace(column, new TableColumnExpr({ this: isInstanceOf(colThis, Expression) ? colThis : undefined }));
       }
     }
   }
@@ -770,7 +770,7 @@ function expandStructStarsNoParens (expression: DotExpr): AliasExpr[] {
   // All nested struct values are ColumnDefs, so normalize the first Column in one
   const dotColumnCopy = dotColumn.copy();
   const dotColumnType = dotColumnCopy.type;
-  let startingStruct: IdentifierExpr | DotExpr | DataTypeExpr | ColumnDefExpr | undefined = is(dotColumnType, DataTypeExpr) ? dotColumnType : undefined;
+  let startingStruct: IdentifierExpr | DotExpr | DataTypeExpr | ColumnDefExpr | undefined = isInstanceOf(dotColumnType, DataTypeExpr) ? dotColumnType : undefined;
 
   // First part is the table name and last part is the star so they can be dropped
   const dotParts = expression.parts.slice(1, -1);
@@ -784,12 +784,12 @@ function expandStructStarsNoParens (expression: DotExpr): AliasExpr[] {
         return [];
       }
 
-      if (!is(field, ColumnDefExpr)) {
+      if (!isInstanceOf(field, ColumnDefExpr)) {
         return [];
       }
 
       const fieldKindRaw: unknown = field.args.kind;
-      const fieldKind = is(fieldKindRaw, DataTypeExpr) ? fieldKindRaw : undefined;
+      const fieldKind = isInstanceOf(fieldKindRaw, DataTypeExpr) ? fieldKindRaw : undefined;
 
       if (field.name === part.name && fieldKind?.isType(DataTypeExprKind.STRUCT)) {
         startingStruct = fieldKind;
@@ -844,7 +844,7 @@ function expandStructStarsWithParens (expression: DotExpr): AliasExpr[] {
 
   let parent = dotColumn.parent;
   const dotColumnType2 = dotColumn.type;
-  let startingStruct: string | ColumnDefExpr | DotExpr | IdentifierExpr | DataTypeExpr | undefined = is(dotColumnType2, DataTypeExpr) ? dotColumnType2 : undefined;
+  let startingStruct: string | ColumnDefExpr | DotExpr | IdentifierExpr | DataTypeExpr | undefined = isInstanceOf(dotColumnType2, DataTypeExpr) ? dotColumnType2 : undefined;
 
   while (parent !== undefined) {
     if (parent instanceof ParenExpr) {

@@ -40,7 +40,7 @@ import {
   JoinExprKind,
   ConditionExpr,
 } from '../expressions';
-import { is } from '../port_internals';
+import { isInstanceOf } from '../port_internals';
 import { nameSequence } from '../helper';
 import {
   findInScope, ScopeType, traverseScope,
@@ -72,11 +72,11 @@ export function unnestSubqueries<E extends Expression> (expression: E): E {
     const select = scope.expression;
     const parent = select.parentSelect;
 
-    if (!parent || !is(parent, SelectExpr)) {
+    if (!parent || !isInstanceOf(parent, SelectExpr)) {
       continue;
     }
 
-    if (!is(select, SelectExpr)) {
+    if (!isInstanceOf(select, SelectExpr)) {
       continue;
     }
 

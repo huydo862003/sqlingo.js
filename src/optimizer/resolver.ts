@@ -26,7 +26,7 @@ import {
 } from '../helper';
 import type { Schema } from '../schema';
 import { MapBinaryTuple } from '../port_internals/binary_tuple_map';
-import { is } from '../port_internals';
+import { isInstanceOf } from '../port_internals';
 import { OptimizeError } from '../errors';
 import { Scope } from './scope';
 
@@ -250,7 +250,7 @@ export class Resolver {
 
           if (unnest.isType(DataTypeExprKind.STRUCT)) {
             for (const field of unnest.type?.args.expressions || []) {
-              if (is(field, Expression)) {
+              if (isInstanceOf(field, Expression)) {
                 columns.push(field.name);
               }
             }
@@ -388,7 +388,7 @@ export class Resolver {
       for (const [sourceName, source] of this.scope.sources) {
         if (source instanceof Scope && source.expression instanceof UnnestExpr) {
           const aliasArg = source.expression.args.alias;
-          if (is(aliasArg, TableAliasExpr) && aliasArg.columns.length) {
+          if (isInstanceOf(aliasArg, TableAliasExpr) && aliasArg.columns.length) {
             unnestOriginalAliases.set(aliasArg.columns[0].name, sourceName);
           }
         }

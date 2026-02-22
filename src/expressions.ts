@@ -10,7 +10,7 @@ import {
   ensureList, splitNumWords,
 } from './helper';
 import {
-  assertIsInstanceOf, filterInstanceOf, is,
+  assertIsInstanceOf, filterInstanceOf, isInstanceOf,
   type Merge,
   multiInherit,
 } from './port_internals';
@@ -3036,7 +3036,7 @@ export class UdtfExpr extends DerivedTableExpr {
 
   get selects (): Expression[] {
     const alias = this.args.alias;
-    return is(alias, TableAliasExpr)
+    return isInstanceOf(alias, TableAliasExpr)
       ? alias.columns
       : [];
   }
@@ -7106,7 +7106,7 @@ export class TableExpr extends Expression {
     const aliasArg = this.args.alias;
     if (aliasArg) {
       const aliasThis = aliasArg.args.this;
-      const aliasName = typeof aliasThis === 'string' ? aliasThis : is(aliasThis, IdentifierExpr) ? aliasThis : undefined;
+      const aliasName = typeof aliasThis === 'string' ? aliasThis : isInstanceOf(aliasThis, IdentifierExpr) ? aliasThis : undefined;
       col = alias(col, aliasName, { copy });
     }
 
@@ -32154,7 +32154,7 @@ export function merge (
   const usingClause = mergeExpr.args.using;
   if (usingClause instanceof AliasExpr) {
     const usingAlias = usingClause.args.alias;
-    const aliasName = typeof usingAlias === 'string' ? usingAlias : is(usingAlias, IdentifierExpr) ? usingAlias : undefined;
+    const aliasName = typeof usingAlias === 'string' ? usingAlias : isInstanceOf(usingAlias, IdentifierExpr) ? usingAlias : undefined;
     usingClause.replace(alias(usingClause.args.this!, aliasName, { table: true }));
   }
 

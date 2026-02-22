@@ -481,7 +481,7 @@ import {
 } from './trie';
 import { normalizeIdentifiers } from './optimizer/normalize_identifiers';
 import {
-  assertIsInstanceOf, filterInstanceOf, is, enumFromString,
+  assertIsInstanceOf, filterInstanceOf, isInstanceOf, enumFromString,
 } from './port_internals';
 
 // NOTE: parse() and parseOne() are defined here in parser.ts to avoid circular dependencies.
@@ -12621,7 +12621,7 @@ export class Parser {
     const from = query.args.from;
     if (from) {
       const fromThis = from.args.this;
-      if (is(fromThis, Expression)) {
+      if (isInstanceOf(fromThis, Expression)) {
         fromThis.setArgKey('pivots', pivots);
       }
     }

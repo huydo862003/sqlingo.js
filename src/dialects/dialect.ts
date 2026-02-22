@@ -191,7 +191,7 @@ import {
   formatTime, subsecondPrecision, TIMEZONES,
 } from '../time';
 import {
-  assertIsInstanceOf, is,
+  assertIsInstanceOf, isInstanceOf,
 } from '../port_internals';
 
 // Type aliases for common expression type unions
@@ -2058,7 +2058,7 @@ export function noTimestampSql (self: Generator, expression: TimestampExpr): str
   const zone = expression.args.zone;
   if (!zone) {
     const annotated = annotateTypes(expression, { dialect: self.dialect }).type;
-    const targetType: DataTypeExpr | DataTypeExprKind = is(annotated, DataTypeExpr) ? annotated : DataTypeExprKind.TIMESTAMP;
+    const targetType: DataTypeExpr | DataTypeExprKind = isInstanceOf(annotated, DataTypeExpr) ? annotated : DataTypeExprKind.TIMESTAMP;
     return self.sql(cast(expression.args.this || '', targetType));
   }
 
@@ -2556,11 +2556,11 @@ export function mergeWithoutTargetSql (self: Generator, expression: MergeExpr): 
   const normalize = (id: Expression | undefined) => id ? self.dialect.normalizeIdentifier(id).name : undefined;
 
   const thisThis = expression.args.this?.args.this;
-  const targets = new Set([normalize(is(thisThis, Expression) ? thisThis : undefined)]);
-  if (is(alias, Expression)) targets.add(typeof alias.args.this === 'string' ? alias.args.this : normalize(is(alias.args.this, Expression) ? alias.args.this : undefined));
+  const targets = new Set([normalize(isInstanceOf(thisThis, Expression) ? thisThis : undefined)]);
+  if (isInstanceOf(alias, Expression)) targets.add(typeof alias.args.this === 'string' ? alias.args.this : normalize(isInstanceOf(alias.args.this, Expression) ? alias.args.this : undefined));
 
   for (const when of expression.args.whens?.args.expressions || []) {
-    if (!is(when, WhenExpr)) continue;
+    if (!isInstanceOf(when, WhenExpr)) continue;
     const then = when.args.then;
     if (then instanceof UpdateExpr) {
       for (const equals of then.findAll(EqExpr)) {
@@ -2782,7 +2782,7 @@ export function sequenceSql (self: Generator, expression: GenerateSeriesExpr | G
     if (start instanceof CastExpr && targetType === start.to) end = cast(end, targetType);
     else start = cast(start, targetType);
 
-    if (is(expression, GenerateSeriesExpr) && expression.args.isEndExclusive) {
+    if (isInstanceOf(expression, GenerateSeriesExpr) && expression.args.isEndExclusive) {
       const stepVal = step || LiteralExpr.number(1);
       end = new ParenExpr({
         this: new SubExpr({

@@ -536,7 +536,7 @@ import {
   ensureBools, moveCtesToTopLevel,
 } from './transforms';
 import {
-  assertIsInstanceOf, is,
+  assertIsInstanceOf, isInstanceOf,
 } from './port_internals';
 
 export interface GeneratorOptions extends ParseOptions {
@@ -1388,7 +1388,7 @@ export class Generator {
       !expression.parent
       && (this.constructor as typeof Generator).EXPRESSIONS_WITHOUT_NESTED_CteS.has(expression._constructor)
       && [...expression.findAll(WithExpr)].some((node) => node.parent !== expression)
-      && is(expression, SelectExpr)
+      && isInstanceOf(expression, SelectExpr)
     ) {
       assertIsInstanceOf(expression, SelectExpr);
       return moveCtesToTopLevel(expression) as unknown as E;
@@ -3248,12 +3248,12 @@ export class Generator {
     }
 
     const table = fromExpr.args.this;
-    const nestedJoins: Expression[] = (is(table, Expression) ? table.args.joins : undefined) || [];
-    if (0 < nestedJoins.length && is(table, Expression)) {
+    const nestedJoins: Expression[] = (isInstanceOf(table, Expression) ? table.args.joins : undefined) || [];
+    if (0 < nestedJoins.length && isInstanceOf(table, Expression)) {
       table.setArgKey('joins', undefined);
     }
 
-    let joinSql = is(table, Expression)
+    let joinSql = isInstanceOf(table, Expression)
       ? this.sql(new JoinExpr({
         this: table,
         on: true_(),
@@ -3314,7 +3314,7 @@ export class Generator {
     }
 
     // Converts `VALUES...` expression into a series of select unions.
-    const aliasNode = is(expression.args.alias, TableAliasExpr) ? expression.args.alias : undefined;
+    const aliasNode = isInstanceOf(expression.args.alias, TableAliasExpr) ? expression.args.alias : undefined;
     const columnNames = aliasNode?.columns;
 
     const selects: QueryExpr[] = [];
@@ -5788,12 +5788,12 @@ export class Generator {
     const table = expression.args.this;
     let tableAlias = '';
 
-    if (is(table, TableExpr)) {
+    if (isInstanceOf(table, TableExpr)) {
       const hints: Expression[] = table.args.hints || [];
       if (0 < hints.length && table.alias && hints[0] instanceof WithTableHintExpr) {
         // T-SQL syntax is MERGE ... <target_table> [WITH (<merge_hint>)] [[AS] table_alias]
         const aliasRaw = table.args.alias;
-        const aliasExpr = is(aliasRaw, Expression) ? aliasRaw.pop() : undefined;
+        const aliasExpr = isInstanceOf(aliasRaw, Expression) ? aliasRaw.pop() : undefined;
         tableAlias = aliasExpr ? ` AS ${this.sql(aliasExpr)}` : '';
       }
     }
@@ -6256,7 +6256,7 @@ export class Generator {
       expression.expressions.map((e) => {
         if (e instanceof PropertyEqExpr) {
           const thisArg = e.args.this;
-          const aliasName = thisArg?.isString ? e.name : is(thisArg, IdentifierExpr) ? thisArg : typeof thisArg === 'string' ? thisArg : undefined;
+          const aliasName = thisArg?.isString ? e.name : isInstanceOf(thisArg, IdentifierExpr) ? thisArg : typeof thisArg === 'string' ? thisArg : undefined;
           return alias(
             e.args.expression || '',
             aliasName,
