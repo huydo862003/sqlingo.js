@@ -39,7 +39,7 @@ import {
   WithinGroupExpr,
 } from '../expressions';
 import {
-  assertIsInstanceOf, isInstanceOf,
+  isInstanceOf,
 } from '../port_internals';
 import { OptimizeError } from '../errors';
 import {

@@ -10770,6 +10770,7 @@ export class Parser {
   }
 
   parseFunctionCall (options: {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     functions?: Record<string, Function>;
     anonymous?: boolean;
     optionalParens?: boolean;

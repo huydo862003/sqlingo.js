@@ -28097,7 +28097,7 @@ export class UuidExpr extends FuncExpr {
   }
 }
 
-const TIMESTAMP_PARTS = {
+export const TIMESTAMP_PARTS = {
   year: false,
   month: false,
   day: false,

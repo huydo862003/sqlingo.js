@@ -1134,7 +1134,8 @@ export function movePartitionedByToSchemaColumns (expression: Expression): Expre
   ) {
     const propThis = new TupleExpr({
       expressions: prop.args.this.args.expressions.map((e) => {
-        const t = (e as ColumnDefExpr).args.this; return toIdentifier(isInstanceOf(t, IdentifierExpr) ? t : t.name);
+        const t = (e as ColumnDefExpr).args.this;
+        return toIdentifier(isInstanceOf(t, IdentifierExpr) ? t : t.name);
       }),
     });
 
@@ -1194,7 +1195,8 @@ export function eliminateJoinMarks (expression: Expression): Expression {
 
     const oldJoins: Record<string, JoinExpr> = {};
     for (const j of joins) {
-      assertIsInstanceOf(j, JoinExpr); oldJoins[j.aliasOrName] = j;
+      assertIsInstanceOf(j, JoinExpr);
+      oldJoins[j.aliasOrName] = j;
     }
 
     const newJoins: Record<string, JoinExpr> = {};
