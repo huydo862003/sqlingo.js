@@ -13,6 +13,15 @@ import {
   assertIsInstanceOf, filterInstanceOf, isInstanceOf,
   type Merge,
   multiInherit,
+  type AddableObject, type RaddableObject,
+  type SubtractableObject, type RsubtractableObject,
+  type MultipliableObject, type RmultipliableObject,
+  type TrueDivisibleObject, type RtrueDivisibleObject,
+  type FloorDivisibleObject, type RfloorDivisibleObject,
+  type ModableObject, type RmodableObject,
+  type PowableObject, type RpowableObject,
+  type NegatableObject,
+  type InvertableObject,
 } from './port_internals';
 import { traverseScope } from './optimizer/scope';
 import {
@@ -1056,7 +1065,16 @@ export interface BaseExpressionArgs {
  * @example
  * const col = new ColumnExpr({ this: new IdentifierExpr({ this: 'name' }) });
  */
-export class Expression {
+export class Expression implements
+  AddableObject<unknown, AddExpr>, RaddableObject<unknown, AddExpr>,
+  SubtractableObject<unknown, SubExpr>, RsubtractableObject<unknown, SubExpr>,
+  MultipliableObject<unknown, MulExpr>, RmultipliableObject<unknown, MulExpr>,
+  TrueDivisibleObject<unknown, DivExpr>, RtrueDivisibleObject<unknown, DivExpr>,
+  FloorDivisibleObject<unknown, IntDivExpr>, RfloorDivisibleObject<unknown, IntDivExpr>,
+  ModableObject<unknown, ModExpr>, RmodableObject<unknown, ModExpr>,
+  PowableObject<unknown, PowExpr>, RpowableObject<unknown, PowExpr>,
+  NegatableObject<NegExpr>,
+  InvertableObject<NotExpr> {
   /** The key identifying this expression type */
   static key: ExpressionKey = ExpressionKey.EXPRESSION;
 
@@ -2463,9 +2481,16 @@ export class Expression {
   }
 
   /**
+   * Create a DIV expression.
+   */
+  truediv (other: unknown): DivExpr {
+    return this.binop(DivExpr, other);
+  }
+
+  /**
    * Create a DIV expression (reversed operands).
    */
-  rdiv (other: unknown): DivExpr {
+  rtruediv (other: unknown): DivExpr {
     return this.binop(DivExpr, other, { reverse: true });
   }
 
