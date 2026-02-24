@@ -68,8 +68,8 @@ export class Node {
       let group: number;
 
       if (node.expression instanceof TableExpr) {
-        label = `FROM ${node.expression.this}`;
-        title = `<pre>SELECT ${node.name} FROM ${node.expression.this}</pre>`;
+        label = `FROM ${node.expression.args.this}`;
+        title = `<pre>SELECT ${node.name} FROM ${node.expression.args.this}</pre>`;
         group = 1;
       } else {
         label = node.expression.sql({
@@ -355,7 +355,8 @@ export function toNode (
 
     derivedTables = Array.from(scope.sources.values())
       .filter((s): s is Scope => s instanceof Scope && s.isDerivedTable)
-      .map((s) => s.expression.parent!);
+      .map((s) => s.expression.parent)
+      .filter((p): p is Expression => p !== undefined);
   } else {
     derivedTables = scope.derivedTables;
   }
@@ -372,13 +373,13 @@ export function toNode (
   const pivotColumnMapping = new Map<string, ColumnExpr[]>();
 
   if (pivot) {
-    const pivotColumns = pivot.args.columns;
-    const pivotAggsCount = pivot.expressions.length;
+    const pivotColumns = pivot.args.columns ?? [];
+    const pivotAggsCount = pivot.args.expressions?.length ?? 0;
 
     pivot.args.expressions?.forEach((agg, i: number) => {
       const aggCols = Array.from(agg.findAll(ColumnExpr)) as ColumnExpr[];
       for (let colIndex = i; colIndex < (pivotColumns?.length || 0); colIndex += pivotAggsCount) {
-        pivotColumnMapping.set(pivotColumns![colIndex].name, aggCols);
+        pivotColumnMapping.set(pivotColumns[colIndex].name, aggCols);
       }
     });
   }

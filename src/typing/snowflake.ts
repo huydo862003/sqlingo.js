@@ -1,3 +1,4 @@
+import type { ExpressionOrString } from '../expressions';
 import {
   Expression, DataTypeExprKind,
   DataTypeExpr, ReverseExpr, TimestampFromPartsExpr, DecodeCaseExpr,
@@ -91,7 +92,7 @@ function annotateDateOrTimeAdd (self: TypeAnnotator, expression: Expression): Ex
 
 function annotateDecodeCase (self: TypeAnnotator, expression: DecodeCaseExpr): DecodeCaseExpr {
   const expressions = expression.args.expressions ?? [];
-  const returnTypes: (Expression | undefined)[] = [];
+  const returnTypes: (ExpressionOrString | undefined)[] = [];
 
   for (let i = 2; i < expressions.length; i += 2) {
     returnTypes.push(expressions[i].type);

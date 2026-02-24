@@ -31,13 +31,14 @@ function undefinedIfAny (...indices: number[]): <This, Args extends unknown[], R
   value: (this: This, ...args: Args) => Return,
   context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
 ) => (this: This, ...args: Args) => Return;
-function undefinedIfAny (...args: unknown[]): unknown {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function undefinedIfAny (...args: any[]): unknown {
   const isDirectDecorator =
     args.length === 2 // decorator receives exactly (value, context)
     && typeof args[0] === 'function' // value is the decorated method
     && args[1] !== undefined // context is present
     && typeof args[1] === 'object' // context is an object
-    && (args[1] as { kind?: unknown }).kind === 'method'; // context.kind identifies a method decorator
+    && args[1].kind === 'method'; // context.kind identifies a method decorator
 
   const wrap = (func: (...a: unknown[]) => unknown, indices: number[]) => {
     const predicate =
@@ -107,7 +108,7 @@ export class ENV {
 
   @undefinedIfAny(0, 1)
   @undefinedIfAny(0, 1)
-  static ARRAYTOSTRING<T> (this_: T[], expression: string, fallback: T | undefined = undefined): string {
+  static ARRAYTOSTRING<T> (this_: T[], expression: string, fallback?: T): string {
     return this_
       .map((x) => (x !== undefined ? x : fallback))
       .filter((x): x is T => x !== undefined)
@@ -302,7 +303,11 @@ export class ENV {
     return c.codePointAt(0)!;
   }
 
-  static ORDERED<T> (this_: T, desc: boolean, _undefinedFirst: boolean): T | ReverseKey<T> {
+  static ORDERED<T> (this_: T, options: {
+    desc: boolean;
+    undefinedFirst: boolean;
+  }): T | ReverseKey<T> {
+    const { desc } = options;
     if (desc) return new ReverseKey(this_);
     return this_;
   }
@@ -315,11 +320,11 @@ export class ENV {
   }
 
   @undefinedIfAny
-  static ROUND (this_: number, decimals: number | undefined = undefined, _truncate: unknown = undefined): number {
+  static ROUND (this_: number, decimals?: number, _truncate?: unknown): number {
     return decimals === undefined ? Math.round(this_) : parseFloat(this_.toFixed(decimals));
   }
 
-  static STRPOSITION (this_: string | undefined, substr: string | undefined, position?: number): number | undefined {
+  static STRPOSITION (this_?: string, substr?: string, position?: number): number | undefined {
     if (this_ === undefined || substr === undefined) return undefined;
     const pos = position !== undefined ? position - 1 : 0;
     return this_.indexOf(substr, pos) + 1;
@@ -330,7 +335,7 @@ export class ENV {
     return sub(e, this_);
   }
 
-  static SUBSTRING (this_: string | undefined, start?: number, length?: number): string | undefined {
+  static SUBSTRING (this_?: string, start?: number, length?: number): string | undefined {
     if (this_ === undefined) return undefined;
     if (start === undefined) return this_;
     if (start === 0) return '';
@@ -388,7 +393,7 @@ export class ENV {
   }
 
   @undefinedIfAny
-  static TRIM (this_: string, e: string | undefined = undefined): string {
+  static TRIM (this_: string, e?: string): string {
     return e === undefined ? this_.trim() : this_.replace(new RegExp(`^[${e}]+|[${e}]+$`, 'g'), '');
   }
 

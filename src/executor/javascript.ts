@@ -1,7 +1,6 @@
 import { Dialect } from '../dialects/dialect';
 import { ExecuteError } from '../errors';
 import {
-  type Expression,
   AliasExpr,
   AndExpr,
   ArrayExpr,
@@ -13,7 +12,7 @@ import {
   ConcatExpr,
   DistinctExpr,
   DivExpr,
-  Expression as ExpressionClass,
+  Expression,
   ExceptExpr,
   ExtractExpr,
   FuncExpr,
@@ -53,7 +52,7 @@ function orderedJs (self: Generator, expression: OrderedExpr): string {
   const thisSql = self.sql(expression, 'this');
   const desc = expression.args.desc ? 'true' : 'false';
   const nullsFirst = expression.args.nullsFirst ? 'true' : 'false';
-  return `ORDERED(${thisSql}, ${desc}, ${nullsFirst})`;
+  return `ORDERED(${thisSql}, { desc: ${desc}, undefinedFirst: ${nullsFirst} })`;
 }
 
 /** Generates a function call using the expression's key as the function name. */
@@ -136,21 +135,21 @@ export class JavascriptGenerator extends Generator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const overrides = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...parent.entries(),
-      [AliasExpr, (_self: Generator, e: AliasExpr) => _self.sql(e.this as Expression)],
+      [AliasExpr, (_self: Generator, e: AliasExpr) => _self.sql(e.args.this as Expression)],
       [AndExpr, (s: Generator, e: AndExpr) => s.binary(e, '&&')],
       [ArrayExpr, (s: Generator, e: ArrayExpr) => `[${s.expressions(e, { flat: true })}]`],
       [BetweenExpr, rename],
-      [BooleanExpr, (_s: Generator, e: BooleanExpr) => (e.this ? 'true' : 'false')],
+      [BooleanExpr, (_s: Generator, e: BooleanExpr) => (e.args.this ? 'true' : 'false')],
       [CaseExpr, caseJs],
       [
         CastExpr,
         (s: Generator, e: CastExpr) =>
-          `CAST(${s.sql(e.this as Expression)}, '${s.sql(e.args.to as Expression)}')`,
+          `CAST(${s.sql(e.args.this as Expression)}, '${s.sql(e.args.to as Expression)}')`,
       ],
       [
         ColumnExpr,
         (s: Generator, e: ColumnExpr) =>
-          `scope[${s.sql(e, 'table') || null}][${s.sql(e.this as Expression)}]`,
+          `scope[${s.sql(e, 'table') || null}][${s.sql(e.args.this as Expression)}]`,
       ],
       [
         ConcatExpr,
@@ -175,12 +174,12 @@ export class JavascriptGenerator extends Generator {
       [
         IntervalExpr,
         (s: Generator, e: IntervalExpr) =>
-          `INTERVAL(${s.sql(e.this as Expression)}, '${s.sql(e.args.unit as Expression)}')`,
+          `INTERVAL(${s.sql(e.args.this as Expression)}, '${s.sql(e.args.unit as Expression)}')`,
       ],
       [
         IsExpr,
         (s: Generator, e: IsExpr) =>
-          e.this instanceof LiteralExpr ? s.binary(e, '===') : s.binary(e, '==='),
+          e.args.this instanceof LiteralExpr ? s.binary(e, '===') : s.binary(e, '==='),
       ],
       [
         JsonExtractExpr,
@@ -188,7 +187,7 @@ export class JavascriptGenerator extends Generator {
           s.func(
             JsonExtractExpr.key,
             [
-              e.this as Expression,
+              e.args.this as Expression,
               e.args.expression as Expression,
               ...(e.args.expressions ?? []) as Expression[],
             ],
@@ -202,10 +201,10 @@ export class JavascriptGenerator extends Generator {
             .join(',')}]`;
         },
       ],
-      [JsonPathKeyExpr, (s: Generator, e: JsonPathKeyExpr) => `'${s.sql(e.this as Expression)}'`],
-      [JsonPathSubscriptExpr, (_s: Generator, e: JsonPathSubscriptExpr) => `'${e.this}'`],
+      [JsonPathKeyExpr, (s: Generator, e: JsonPathKeyExpr) => `'${s.sql(e.args.this as Expression)}'`],
+      [JsonPathSubscriptExpr, (_s: Generator, e: JsonPathSubscriptExpr) => `'${e.args.this}'`],
       [LambdaExpr, lambdaJs],
-      [NotExpr, (s: Generator, e: NotExpr) => `!(${s.sql(e.this as Expression)})`],
+      [NotExpr, (s: Generator, e: NotExpr) => `!(${s.sql(e.args.this as Expression)})`],
       [NullExpr, () => 'null'],
       [OrExpr, (s: Generator, e: OrExpr) => s.binary(e, '||')],
       [OrderedExpr, orderedJs],
@@ -221,20 +220,20 @@ export class JavascriptDialect extends Dialect {
 }
 
 export class JavascriptExecutor {
-  public generator: unknown;
+  public generator: Generator;
   public env: Record<string, unknown>;
-  public tables: Record<string, Table> | { find(source: Expression): Table };
+  public tables: Record<string, Table>;
 
-  constructor (envOverride?: Record<string, unknown>, tables?: unknown) {
+  constructor (env?: Record<string, unknown>, tables?: Record<string, Table>) {
     this.generator = new JavascriptDialect().generator({
       identify: true,
       comments: false,
     });
     this.env = {
       ...ENV,
-      ...(envOverride || {}),
+      ...(env || {}),
     };
-    this.tables = (tables || {}) as Record<string, Table> | { find(source: Expression): Table };
+    this.tables = tables || {};
   }
 
   /**
@@ -247,7 +246,8 @@ export class JavascriptExecutor {
     const contexts = new Map<Scan | Aggregate | Join | Sort | SetOperation, Context>();
 
     while (0 < queue.size) {
-      const node = Array.from(queue).pop()!;
+      const node = Array.from(queue).pop();
+      if (!node) break;
       queue.delete(node);
 
       try {
@@ -274,7 +274,8 @@ export class JavascriptExecutor {
         } else if (node instanceof SetOperation) {
           contexts.set(node, this.setOperation(node, context));
         } else {
-          throw new Error(`NotImplementedError: ${(node as { constructor: { name: string } }).constructor.name}`);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          throw new Error(`NotImplementedError: ${(node as any).constructor.name}`);
         }
 
         finished.add(node);
@@ -296,19 +297,20 @@ export class JavascriptExecutor {
     }
 
     const root = plan.root;
-    return contexts.get(root as Scan)!.tables.get(root.name!)!;
+    if (!root) return new Table([]);
+    return contexts.get(root as Scan)?.tables.get(root.name) ?? new Table([]);
   }
 
   /** Convert a SQL expression into literal JS code string. */
-  generate (expression: ExpressionClass | undefined): string | undefined {
+  generate (expression: Expression | undefined): string | undefined {
     if (!expression) return undefined;
-    return (this.generator as { generate(e: Expression): string }).generate(expression);
+    return this.generator.generate(expression);
   }
 
   /** Convert an array of SQL expressions into an array of JS code strings. */
-  generateTuple (expressions: ExpressionClass[]): string[] {
+  generateTuple (expressions: Expression[]): string[] {
     if (!expressions || expressions.length === 0) return [];
-    return expressions.map((e) => this.generate(e)!);
+    return expressions.map((e) => this.generate(e) ?? '');
   }
 
   context (tables: Map<string, Table> | Record<string, Table>): Context {
@@ -317,14 +319,14 @@ export class JavascriptExecutor {
   }
 
   table (expressions: unknown[]): Table {
-    const names = expressions.map((e) => (e instanceof ExpressionClass ? e.aliasOrName : e));
+    const names = expressions.map((e) => (e instanceof Expression ? e.aliasOrName : e));
     return new Table(names as string[]);
   }
 
   scan (step: Scan, context: Context): Context {
     let source: string | undefined = undefined;
 
-    if (step.source && step.source instanceof ExpressionClass) {
+    if (step.source && step.source instanceof Expression) {
       source = step.source.name || step.source.alias;
     }
 
@@ -336,7 +338,9 @@ export class JavascriptExecutor {
       tableIter = staticResult[1];
     } else if (context.has(source)) {
       if (!step.projections?.length && !step.condition) {
-        return this.context({ [step.name!]: context.tables.get(source)! });
+        const srcTable = context.tables.get(source);
+        if (!srcTable) return context;
+        return this.context({ [step.name]: srcTable });
       }
       tableIter = context.tableIter(source);
     } else {
@@ -345,10 +349,10 @@ export class JavascriptExecutor {
       tableIter = scanResult[1];
     }
 
-    return this.context({ [step.name!]: this._projectAndFilter(context, step, tableIter) });
+    return this.context({ [step.name]: this.projectAndFilter(context, step, tableIter) });
   }
 
-  _projectAndFilter (context: Context, step: Step, tableIter: Iterable<unknown>): Table {
+  projectAndFilter (context: Context, step: Step, tableIter: Iterable<unknown>): Table {
     const sink = this.table(step.projections?.length ? step.projections : context.columns);
     const condition = this.generate(step.condition);
     const projections = this.generateTuple(step.projections || []);
@@ -379,13 +383,11 @@ export class JavascriptExecutor {
   }
 
   scanTable (step: Scan): [Context, Iterable<unknown>] {
-    const tables = this.tables as Record<string, Table> | { find(source: Expression): Table };
-    const table = typeof (tables as { find?: unknown }).find === 'function'
-      ? (tables as { find(source: Expression): Table }).find(step.source!)
-      : (tables as Record<string, Table>)[(step.source as ExpressionClass).name!];
+    const tables = this.tables;
+    const table = tables[(step.source as Expression).name];
 
     const contextMap = new Map<string, Table>();
-    contextMap.set((step.source as ExpressionClass).aliasOrName, table);
+    contextMap.set((step.source as Expression).aliasOrName, table);
     const context = this.context(contextMap);
 
     return [context, table[Symbol.iterator]()];
@@ -394,18 +396,19 @@ export class JavascriptExecutor {
   join (step: Join, context: Context): Context {
     const source = step.sourceName;
 
-    const sourceTable = context.tables.get(source!)!;
-    let sourceContext = this.context(new Map([[source!, sourceTable]]));
+    if (!source) return context;
+    const sourceTable = context.tables.get(source) ?? new Table([]);
+    let sourceContext = this.context(new Map([[source, sourceTable]]));
 
     const columnRanges = new Map<string, { start: number;
       stop: number; }>();
-    columnRanges.set(source!, {
+    columnRanges.set(source, {
       start: 0,
       stop: sourceTable.columns.length,
     });
 
     for (const [name, join] of Object.entries(step.joins || {})) {
-      const table = context.tables.get(name)!;
+      const table = context.tables.get(name) ?? new Table([]);
       const start = Math.max(...Array.from(columnRanges.values()).map((r) => r.stop));
       columnRanges.set(name, {
         start,
@@ -438,7 +441,7 @@ export class JavascriptExecutor {
       return sourceContext;
     }
 
-    const sink = this._projectAndFilter(
+    const sink = this.projectAndFilter(
       sourceContext,
       step,
       (function* (ctx: Context) {
@@ -449,7 +452,7 @@ export class JavascriptExecutor {
     );
 
     if (step.projections?.length) {
-      return this.context(new Map([[step.name!, sink]]));
+      return this.context(new Map([[step.name ?? '', sink]]));
     } else {
       const finalTables = new Map<string, Table>();
       for (const [name, table] of sourceContext.tables.entries()) {
@@ -482,13 +485,13 @@ export class JavascriptExecutor {
     for (const [reader, ctx] of sourceContext) {
       const keyStr = JSON.stringify(ctx.evalTuple(sourceKey));
       if (!results.has(keyStr)) results.set(keyStr, [[], []]);
-      results.get(keyStr)![0].push(reader.row);
+      results.get(keyStr)?.[0].push(reader.row);
     }
 
     for (const [reader, ctx] of joinContext) {
       const keyStr = JSON.stringify(ctx.evalTuple(joinKey));
       if (!results.has(keyStr)) results.set(keyStr, [[], []]);
-      results.get(keyStr)![1].push(reader.row);
+      results.get(keyStr)?.[1].push(reader.row);
     }
 
     const table = new Table([...sourceContext.columns, ...joinContext.columns]);
@@ -589,14 +592,14 @@ export class JavascriptExecutor {
     }
 
     const nextTables = new Map<string, Table>();
-    nextTables.set(step.name!, table);
+    nextTables.set(step.name, table);
     for (const [name] of context.tables.entries()) {
       nextTables.set(name, table);
     }
     context = this.context(nextTables);
 
     if (step.projections?.length || step.condition) {
-      return this.scan(step as unknown as Scan, context);
+      return this.scan(step, context);
     }
     return context;
   }
@@ -629,12 +632,12 @@ export class JavascriptExecutor {
       sortContext.table.rows.map((r: unknown[]) => r.slice(colStart, colEnd)),
     );
 
-    return this.context(new Map([[step.name!, output]]));
+    return this.context(new Map([[step.name ?? '', output]]));
   }
 
   setOperation (step: SetOperation, context: Context): Context {
-    const left = context.tables.get(step.left!)!;
-    const right = context.tables.get(step.right!)!;
+    const left = context.tables.get(step.left ?? '') ?? new Table([]);
+    const right = context.tables.get(step.right ?? '') ?? new Table([]);
 
     const sink = this.table(left.columns);
 
@@ -656,6 +659,6 @@ export class JavascriptExecutor {
       sink.rows = sink.rows.slice(0, step.limit);
     }
 
-    return this.context(new Map([[step.name!, sink]]));
+    return this.context(new Map([[step.name, sink]]));
   }
 }

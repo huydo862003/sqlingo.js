@@ -73,6 +73,19 @@ export function assertIsInstanceOf<Cs extends readonly TypeChecker[]> (
 }
 
 /**
+ * Narrows a singular value to the union of matched types, returning `undefined` if it doesn't match.
+ *
+ * @example
+ * narrowInstanceOf(expr, Expression, 'string')  // Expression | string | undefined
+ */
+export function narrowInstanceOf<Cs extends readonly TypeChecker[]> (
+  value: unknown,
+  ...types: Cs
+): InferUnion<Cs> | undefined {
+  return types.some((t) => checkOne(value, t)) ? value as InferUnion<Cs> : undefined;
+}
+
+/**
  * Filters an iterable, keeping only values that match one of the given type checkers.
  *
  * @example
@@ -82,5 +95,9 @@ export function filterInstanceOf<Cs extends readonly TypeChecker[]> (
   values: Iterable<unknown>,
   ...types: Cs
 ): InferUnion<Cs>[] {
-  return Array.from(values).filter((v): v is InferUnion<Cs> => types.some((t) => checkOne(v, t)));
+  const result: InferUnion<Cs>[] = [];
+  for (const v of values) {
+    if (types.some((t) => checkOne(v, t))) result.push(v as InferUnion<Cs>);
+  }
+  return result;
 }

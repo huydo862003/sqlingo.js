@@ -161,7 +161,7 @@ function unnest (
       onClause = true_();
     }
 
-    replace(selectExpr.parent!, columnExpr);
+    replace(selectExpr.parent as Expression, columnExpr);
     parentSelect.join(selectToUse, {
       on: onClause,
       joinType,
@@ -176,7 +176,7 @@ function unnest (
     return;
   }
 
-  let predicateToUse = predicate;
+  let predicateToUse: InExpr | AnyExpr | EqExpr = predicate;
   if (predicate instanceof AnyExpr) {
     const eqPredicate = predicate.findAncestor(EqExpr);
 
@@ -189,7 +189,7 @@ function unnest (
 
   const columnExpr = otherOperand(predicateToUse);
   const value = selectToUse.selects[0];
-  const valueThis = value.this;
+  const valueThis = value.args.this;
   if (!(valueThis instanceof Expression)) {
     return;
   }
@@ -211,7 +211,7 @@ function unnest (
 
   if (group) {
     // Simulate set comparison in sqlglot
-    if ([value.this].length !== new Set(group.expressions).size || value.this !== group.expressions[0]) {
+    if ([value.args.this].length !== new Set(group.args.expressions).size || value.args.this !== group.args.expressions?.[0]) {
       selectToUse = select(
         alias(column({
           col: value.alias,
@@ -228,10 +228,12 @@ function unnest (
     selectToUse = selectToUse.groupBy(valueThis, { copy: false });
   }
 
+  if (!columnExpr) return;
+
   parentSelect.join(
     selectToUse,
     {
-      on: columnExpr!.eq(joinKey),
+      on: columnExpr.eq(joinKey),
       joinType: JoinExprKind.LEFT,
       joinAlias: aliasExpr,
       copy: false,
@@ -242,7 +244,7 @@ function unnest (
 function decorrelate (
   select: SelectExpr,
   parentSelect: SelectExpr,
-  externalColumns: ColumnExpr[],
+  externalColumns: Iterable<ColumnExpr>,
   nextAliasName: () => string,
 ): void {
   const where = select.args.where;
@@ -297,7 +299,7 @@ function decorrelate (
     .some((node) => node instanceof SubqueryExpr && node === select.parent);
 
   const value = select.selects[0];
-  const valueThis = value.this;
+  const valueThis = value.args.this;
   if (!(valueThis instanceof Expression)) return;
   const keyAliases = new Map<Expression, string>();
   const groupBy: Expression[] = [];
@@ -306,7 +308,7 @@ function decorrelate (
     key, , predicate,
   ] of keys) {
     // if we filter on the value of the subquery, it needs to be unique
-    if (key === value.this) {
+    if (key === value.args.this) {
       keyAliases.set(key, value.alias);
       groupBy.push(key);
     } else {
@@ -346,7 +348,7 @@ function decorrelate (
     if (groupBy.includes(key)) {
       // add all keys to the projections of the subquery
       // so that we can use it as a join key
-      if (parentPredicate instanceof ExistsExpr || key !== value.this) {
+      if (parentPredicate instanceof ExistsExpr || key !== value.args.this) {
         select.select(`${key} AS ${keyAlias}`, { copy: false });
       }
     } else {
@@ -373,15 +375,15 @@ function decorrelate (
       this: other,
       expression: column({ col: '_x' }),
     });
-    replace(parentPredicate.parent!, `ARRAY_ALL(${aliasExpr}, _x -> ${predicateExpr})`);
+    if (parentPredicate.parent) replace(parentPredicate.parent, `ARRAY_ALL(${aliasExpr}, _x -> ${predicateExpr})`);
   } else if (parentPredicate instanceof AnyExpr) {
     if (!opType || !(opType.prototype instanceof BinaryExpr || opType === BinaryExpr)) return;
-    if (groupBy.includes(value.this as Expression)) {
+    if (groupBy.includes(value.args.this as Expression)) {
       const predicateExpr = new opType({
         this: other,
         expression: aliasExpr,
       });
-      replace(parentPredicate.parent!, predicateExpr);
+      if (parentPredicate.parent) replace(parentPredicate.parent, predicateExpr);
     } else {
       const predicateExpr = new opType({
         this: other,
@@ -390,10 +392,10 @@ function decorrelate (
       replace(parentPredicate, `ARRAY_ANY(${aliasExpr}, _x -> ${predicateExpr})`);
     }
   } else if (parentPredicate instanceof InExpr) {
-    if (groupBy.includes(value.this as Expression)) {
+    if (groupBy.includes(value.args.this as Expression)) {
       replace(parentPredicate, `${other} = ${aliasExpr}`);
     } else {
-      replace(parentPredicate, `ARRAY_ANY(${aliasExpr}, _x -> _x = ${parentPredicate.this})`);
+      replace(parentPredicate, `ARRAY_ANY(${aliasExpr}, _x -> _x = ${parentPredicate.args.this})`);
     }
   } else {
     if (isSubqueryProjection && select.parent?.alias) {
@@ -414,7 +416,7 @@ function decorrelate (
 
       aliasExpr = new CoalesceExpr({
         this: aliasExpr,
-        expressions: [(value.this as Expression).transform(removeAggs)],
+        expressions: [(value.args.this as Expression).transform(removeAggs)],
       });
     }
 
@@ -427,8 +429,10 @@ function decorrelate (
     predicate,
   ] of keys) {
     predicate.replace(true_());
+    const keyAlias = keyAliases.get(key);
+    if (!keyAlias) continue;
     const nested = column({
-      col: keyAliases.get(key)!,
+      col: keyAlias,
       table: tableAlias,
     });
 
@@ -443,10 +447,10 @@ function decorrelate (
     if (groupBy.includes(key)) {
       key.replace(nested);
     } else if (predicate instanceof EqExpr) {
-      replace(parentPredicate!, `(${parentPredicate} AND ARRAY_CONTAINS(${nested}, ${columnExpr}))`);
+      if (parentPredicate) replace(parentPredicate, `(${parentPredicate} AND ARRAY_CONTAINS(${nested}, ${columnExpr}))`);
     } else {
       key.replace(toIdentifier('_x'));
-      replace(parentPredicate!, `(${parentPredicate} AND ARRAY_ANY(${nested}, _x -> ${predicate}))`);
+      if (parentPredicate) replace(parentPredicate, `(${parentPredicate} AND ARRAY_ANY(${nested}, _x -> ${predicate}))`);
     }
   }
 

@@ -1,7 +1,6 @@
 export {
-  optimize, RULES,
+  RULES,
 } from './optimizer';
-
 export {
   annotateTypes, TypeAnnotator,
 } from './annotate_types';

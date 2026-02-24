@@ -1,3 +1,35 @@
 export {
   Dialect, Dialects, NormalizationStrategy, type DialectType,
 } from './dialect';
+export { Athena } from './athena';
+export { BigQuery } from './bigquery';
+export { ClickHouse } from './clickhouse';
+export { Databricks } from './databricks';
+export { Doris } from './doris';
+export { Dremio } from './dremio';
+export { Drill } from './drill';
+export { Druid } from './druid';
+export { DuckDB } from './duckdb';
+export { Dune } from './dune';
+export { Exasol } from './exasol';
+export { Fabric } from './fabric';
+export { Hive } from './hive';
+export { Materialize } from './materialize';
+export { MySQL } from './mysql';
+export { Oracle } from './oracle';
+export { Postgres } from './postgres';
+export { Presto } from './presto';
+export { PRQL } from './prql';
+export { Redshift } from './redshift';
+export { RisingWave } from './risingwave';
+export { SingleStore } from './singlestore';
+export { Snowflake } from './snowflake';
+export { Solr } from './solr';
+export { Spark } from './spark';
+export { Spark2 } from './spark2';
+export { SQLite } from './sqlite';
+export { StarRocks } from './starrocks';
+export { Tableau } from './tableau';
+export { Teradata } from './teradata';
+export { Trino } from './trino';
+export { TSQL } from './tsql';

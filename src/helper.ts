@@ -1,16 +1,23 @@
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py
 
 import { DateTime } from 'luxon';
-import type { Expression } from './expressions';
+import type {
+  Expression,
+  ExpressionValue,
+  ExpressionValueList,
+  ExpressionOrString,
+  ExpressionOrStringList,
+} from './expressions';
 import {
   DataTypeExpr, AddExpr, literal,
   DataTypeExprKind,
 } from './expressions';
+import { isIterable } from './port_internals';
 import { annotateTypes } from './optimizer/annotate_types';
 import { simplify } from './optimizer/simplify';
 import type { Dialect } from './dialects';
 
-// Not ported from Python: AutoName, classproperty, subclasses, object_to_dict, is_iterable, is_date_unit
+// Not ported from Python: AutoName, classproperty, subclasses, object_to_dict, is_date_unit
 
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L22
 const CAMEL_CASE_PATTERN = /(?<!^)(?=[A-Z])/;
@@ -35,7 +42,7 @@ const CAMEL_CASE_PATTERN = /(?<!^)(?=[A-Z])/;
 export function suggestClosestMatchAndFail (
   kind: string,
   word: string,
-  possibilities: string[],
+  possibilities: Iterable<string>,
 ): never {
   const closeMatches = getCloseMatches(word, possibilities, 1);
 
@@ -63,45 +70,67 @@ export function suggestClosestMatchAndFail (
  * ```
  *
  */
-export function seqGet<T> (seq: T[], index: number): T | undefined {
-  return 0 <= index && index < seq.length
-    ? seq[index]
-    : undefined;
+export function seqGet<T> (seq: Iterable<T>, index: number): T | undefined {
+  if (Array.isArray(seq)) {
+    return 0 <= index && index < seq.length ? seq[index] : undefined;
+  }
+  let i = 0;
+  for (const item of seq) {
+    if (i === index) return item;
+    i++;
+  }
+  return undefined;
+}
+
+export function expressionValueToOrString<E extends Expression = Expression> (
+  value: ExpressionValue<E>,
+): ExpressionOrString<E> {
+  if (typeof value === 'boolean' || typeof value === 'number') {
+    return String(value);
+  }
+  return value;
+}
+
+export function expressionValueListToOrStringList<E extends Expression = Expression> (
+  values: ExpressionValueList<E>,
+): ExpressionOrStringList<E> {
+  return values.map(expressionValueToOrString) as ExpressionOrStringList<E>;
 }
 
 /**
- * Ensures a value is an array.
+ * Ensures a value is iterable.
  *
  * @typeParam T - The element type
- * @param value - A single value, array, or undefined
- * @returns An array containing the value(s), or empty array if undefined
+ * @param value - A single value, iterable, or undefined
+ * @returns The iterable as-is, a single-element array, or an empty array if undefined
  *
  * @example
  * ```ts
- * ensureList(5); // [5]
- * ensureList([1, 2]); // [1, 2]
- * ensureList(undefined); // []
+ * ensureIterable(5); // [5]
+ * ensureIterable([1, 2]); // [1, 2]
+ * ensureIterable(new Set([1, 2])); // Set {1, 2}
+ * ensureIterable(undefined); // []
  * ```
  *
  */
-export function ensureList<T> (value?: T | readonly T[]): T[] {
+export function ensureIterable<T> (value?: T | Iterable<T>): Iterable<T> {
   if (value === undefined) {
     return [];
   }
-  if (Array.isArray(value)) {
+  if (typeof value !== 'string' && isIterable<T>(value)) {
     return value;
   }
   return [value as T];
 }
 
 /**
- * Ensures a value is a collection (array).
+ * Ensures a value is iterable.
  *
- * Similar to ensureList but doesn't handle undefined.
+ * Similar to ensureIterable but doesn't handle undefined.
  *
  * @typeParam T - The element type
- * @param value - A single value or array
- * @returns An array containing the value(s)
+ * @param value - A single value or iterable
+ * @returns The iterable as-is or a single-element array
  *
  * @example
  * ```ts
@@ -110,14 +139,11 @@ export function ensureList<T> (value?: T | readonly T[]): T[] {
  * ```
  *
  */
-export function ensureCollection<T> (value: T | T[]): T[] {
-  if (value === undefined) {
-    return [];
-  }
-  if (Array.isArray(value)) {
+export function ensureCollection<T> (value: T | Iterable<T>): Iterable<T> {
+  if (typeof value !== 'string' && isIterable<T>(value)) {
     return value;
   }
-  return [value];
+  return [value as T];
 }
 
 /**
@@ -131,14 +157,16 @@ export function ensureCollection<T> (value: T | T[]): T[] {
  * ```
  *
  */
-export function csv (args: string[], options: { sep?: string } = {}): string {
+export function csv (args: Iterable<string>, options: { sep?: string } = {}): string {
   const { sep = ', ' } = options;
-  return args.filter((arg) => arg).join(sep || ', ');
+  const filtered: string[] = [];
+  for (const arg of args) if (arg) filtered.push(arg);
+  return filtered.join(sep || ', ');
 }
 
 function getCloseMatches (
   word: string,
-  possibilities: string[],
+  possibilities: Iterable<string>,
   n: number,
   cutoff: number = 0.6,
 ): string[] {
@@ -332,8 +360,7 @@ export function tsort<T> (dag: Map<T, Set<T>>): T[] {
  * ```
  *
  */
-// Modified: accepts string[] instead of Iterable<string>
-export function findNewName (taken: string[], base: string): string {
+export function findNewName (taken: Iterable<string>, base: string): string {
   const takenSet = new Set(taken);
   if (!takenSet.has(base)) {
     return base;
@@ -445,8 +472,9 @@ export function splitNumWords (
   value: string,
   sep: string,
   minNumWords: number,
-  fillFromStart: boolean = true,
+  options: { fillFromStart?: boolean } = {},
 ): (string | undefined)[] {
+  const { fillFromStart = true } = options;
   const words = value.split(sep);
   const padding = Math.max(0, minNumWords - words.length);
 
@@ -470,8 +498,7 @@ export function splitNumWords (
  * ```
  *
  */
-// Modified: returns array instead of generator, uses Array.isArray instead of is_iterable
-export function flatten (values: unknown[]): unknown[] {
+export function flatten (values: Iterable<unknown>): unknown[] {
   const result: unknown[] = [];
   for (const value of values) {
     if (Array.isArray(value)) {
@@ -535,12 +562,9 @@ export function objectDepth (d: unknown): number {
  * ```
  *
  */
-// Modified: accepts T[] instead of Iterable<T>
-export function first<T> (it: T[]): T {
-  if (it.length === 0) {
-    throw new Error('Array is empty');
-  }
-  return it[0];
+export function first<T> (it: Iterable<T>): T {
+  for (const v of it) return v;
+  throw new Error('Iterable is empty');
 }
 
 /**
@@ -597,12 +621,13 @@ export function toBool (value?: string | boolean): string | boolean | undefined 
  * ```
  *
  */
-export function mergeRanges<T> (ranges: [T, T][]): [T, T][] {
-  if (ranges.length === 0) {
+export function mergeRanges<T> (ranges: Iterable<[T, T]>): [T, T][] {
+  const arr = [...ranges];
+  if (arr.length === 0) {
     return [];
   }
 
-  const sorted = [...ranges].sort((a, b) => (a[0] < b[0]
+  const sorted = arr.sort((a, b) => (a[0] < b[0]
     ? -1
     : b[0] < a[0]
       ? 1
@@ -714,12 +739,11 @@ export function isDateUnit (expression: { name: string } | undefined): boolean {
  * ```
  *
  */
-// Modified: constructor accepts K[] instead of Collection<K>, doesn't implement Map to avoid MapIterator requirements
 export class SingleValuedMapping<K, V> implements Map<K, V> {
   private _keys: Set<K>;
   private _value: V;
 
-  constructor (keys: K[], value: V) {
+  constructor (keys: Iterable<K>, value: V) {
     this._keys = new Set(keys);
     this._value = value;
   }
@@ -794,15 +818,16 @@ export class SingleValuedMapping<K, V> implements Map<K, V> {
  */
 export function applyIndexOffset (
   this_: Expression,
-  expressions: Expression[],
+  expressions: Iterable<Expression>,
   offset: number,
   options?: { dialect?: Dialect },
 ): Expression[] {
-  if (!offset || expressions.length !== 1) {
-    return expressions;
+  const exprs = [...expressions];
+  if (!offset || exprs.length !== 1) {
+    return exprs;
   }
 
-  const expression = expressions[0];
+  const expression = exprs[0];
 
   // Annotate types if not already done
   if (!this_.type) {
@@ -810,12 +835,12 @@ export function applyIndexOffset (
   }
 
   // Check if this_ is an array type
-  const thisType = this_.type;
+  const thisType = this_.type as DataTypeExpr | undefined;
   if (
-    thisType?.this !== DataTypeExprKind.UNKNOWN
-    && thisType?.this !== DataTypeExprKind.ARRAY
+    thisType?.args.this !== DataTypeExprKind.UNKNOWN
+    && thisType?.args.this !== DataTypeExprKind.ARRAY
   ) {
-    return expressions;
+    return exprs;
   }
 
   // Annotate expression type if not already done
@@ -824,8 +849,8 @@ export function applyIndexOffset (
   }
 
   // Check if expression is an integer type
-  const exprType = expression.type;
-  if (exprType?.this && DataTypeExpr.INTEGER_TYPES?.has(exprType.args.this as DataTypeExprKind)) {
+  const exprType = expression.type as DataTypeExpr | undefined;
+  if (exprType?.args.this && DataTypeExpr.INTEGER_TYPES?.has(exprType.args.this as DataTypeExprKind)) {
     // Apply offset: expression + offset
     const offsetExpr = new AddExpr({
       this: expression,
@@ -834,5 +859,5 @@ export function applyIndexOffset (
     return [simplify(offsetExpr)];
   }
 
-  return expressions;
+  return exprs;
 }

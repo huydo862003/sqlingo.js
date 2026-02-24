@@ -70,8 +70,8 @@ export function mergeSubqueries<E extends Expression> (
 ): E {
   const { leaveTablesIsolated = false } = options;
 
-  expression = mergeCtes(expression, leaveTablesIsolated) as E;
-  expression = mergeDerivedTables(expression, leaveTablesIsolated) as E;
+  expression = mergeCtes(expression, { leaveTablesIsolated }) as E;
+  expression = mergeDerivedTables(expression, { leaveTablesIsolated }) as E;
 
   return expression;
 }
@@ -102,8 +102,9 @@ type FromOrJoin = FromExpr | JoinExpr;
 
 function mergeCtes<E extends Expression> (
   expression: E,
-  leaveTablesIsolated: boolean,
+  options: { leaveTablesIsolated: boolean },
 ): E {
+  const { leaveTablesIsolated } = options;
   const scopes = Array.from(traverseScope(expression));
 
   // All places where we select from CTEs
@@ -144,7 +145,7 @@ function mergeCtes<E extends Expression> (
     // Find FromExpr or JoinExpr ancestor
     const fromOrJoin = table.findAncestor<FromExpr | JoinExpr>(FromExpr, JoinExpr);
 
-    if (fromOrJoin && mergeable(outerScope, innerScope, leaveTablesIsolated, fromOrJoin)) {
+    if (fromOrJoin && mergeable(outerScope, innerScope, { leaveTablesIsolated }, fromOrJoin)) {
       const alias = table.aliasOrName;
       renameInnerSources(outerScope, innerScope, alias);
       mergeFrom(outerScope, innerScope, table as SubqueryExpr | TableExpr, alias);
@@ -163,8 +164,9 @@ function mergeCtes<E extends Expression> (
 
 function mergeDerivedTables<E extends Expression> (
   expression: E,
-  leaveTablesIsolated: boolean,
+  options: { leaveTablesIsolated: boolean },
 ): E {
+  const { leaveTablesIsolated } = options;
   for (const outerScope of traverseScope(expression)) {
     for (const subquery of outerScope.derivedTables) {
       // Find FromExpr or JoinExpr ancestor
@@ -176,7 +178,7 @@ function mergeDerivedTables<E extends Expression> (
       if (
         innerScope instanceof Scope
         && fromOrJoin
-        && mergeable(outerScope, innerScope, leaveTablesIsolated, fromOrJoin)
+        && mergeable(outerScope, innerScope, { leaveTablesIsolated }, fromOrJoin)
       ) {
         renameInnerSources(outerScope, innerScope, alias);
         mergeFrom(outerScope, innerScope, subquery, alias);
@@ -196,9 +198,10 @@ function mergeDerivedTables<E extends Expression> (
 function mergeable (
   outerScope: Scope,
   innerScope: Scope,
-  leaveTablesIsolated: boolean,
+  options: { leaveTablesIsolated: boolean },
   fromOrJoin: FromOrJoin,
 ): boolean {
+  const { leaveTablesIsolated } = options;
   const innerSelect = innerScope.expression.unnest();
 
   // Check if window expressions are in unmergable operations
@@ -340,7 +343,7 @@ function mergeable (
   }
 
   // Check for AggFunc, Select, or Explode in inner expressions
-  for (const e of innerSelectExpr.expressions) {
+  for (const e of innerSelectExpr.args.expressions ?? []) {
     if (!(e instanceof Expression)) {
       continue;
     }
@@ -394,7 +397,7 @@ function mergeable (
     return false;
   }
 
-  const firstExpr = seqGet(innerSelectExpr.expressions, 0);
+  const firstExpr = seqGet(innerSelectExpr.args.expressions ?? [], 0);
   if (firstExpr instanceof QueryTransformExpr) {
     return false;
   }
@@ -447,7 +450,7 @@ function mergeFrom (
   alias: string,
 ): void {
   const from = innerScope.expression.getArgKey('from') as FromExpr;
-  const newSubquery = from.this as Expression;
+  const newSubquery = from.args.this as Expression;
 
   newSubquery.setArgKey('joins', nodeToReplace.args.joins);
   nodeToReplace.replace(newSubquery);
@@ -523,7 +526,7 @@ function mergeExpressions (outerScope: Scope, innerScope: Scope, alias: string):
 
   const innerSelectExpr = innerScope.expression;
 
-  for (const expr of innerSelectExpr.expressions) {
+  for (const expr of innerSelectExpr.args.expressions ?? []) {
     if (!(expr instanceof Expression)) {
       continue;
     }
@@ -577,7 +580,7 @@ function mergeWhere (outerScope: Scope, innerScope: Scope, fromOrJoin: FromOrJoi
     return;
   }
 
-  const whereThis = where.this;
+  const whereThis = where.args.this;
   if (!(whereThis instanceof Expression)) {
     return;
   }
@@ -629,7 +632,7 @@ function mergeOrder (outerScope: Scope, innerScope: Scope): void {
     return;
   }
 
-  const hasAgg = outerSelectExpr.expressions.some((expr) => {
+  const hasAgg = outerSelectExpr.args.expressions?.some((expr) => {
     if (!(expr instanceof Expression)) {
       return false;
     }
@@ -654,8 +657,8 @@ function mergeHints (outerScope: Scope, innerScope: Scope): void {
   const outerScopeHint = outerSelectExpr.args.hint;
 
   if (outerScopeHint) {
-    const innerHintExpressions = innerScopeHint.expressions;
-    for (const hintExpression of innerHintExpressions) {
+    const innerHintExpressions = innerScopeHint.args.expressions;
+    for (const hintExpression of innerHintExpressions ?? []) {
       if (hintExpression instanceof Expression) {
         outerScopeHint.append('expressions', hintExpression);
       }
@@ -676,8 +679,8 @@ function popCte (innerScope: Scope): void {
     return;
   }
 
-  const withExpressions = with_.expressions;
-  if (withExpressions.length === 1) {
+  const withExpressions = with_.args.expressions;
+  if (withExpressions?.length === 1) {
     with_.pop();
   } else {
     cte.pop();

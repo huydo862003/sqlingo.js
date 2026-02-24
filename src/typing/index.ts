@@ -261,7 +261,7 @@ export const EXPRESSION_METADATA: ExpressionMetadata = (() => {
   map.set(ArrayExpr, { annotator: (s: TypeAnnotator, e: ArrayExpr) => s.annotateByArgs(e, ['expressions'], { array: true }) });
   map.set(ArrayAggExpr, { annotator: (s: TypeAnnotator, e: ArrayAggExpr) => s.annotateByArgs(e, ['this'], { array: true }) });
   map.set(BracketExpr, { annotator: (s: TypeAnnotator, e: BracketExpr) => s.annotateBracket(e) });
-  map.set(CaseExpr, { annotator: (s: TypeAnnotator, e: CaseExpr) => s.annotateByArgs(e, [...filterInstanceOf(e.args.ifs ?? [], IfExpr).map((i) => i.args.true), 'default']) });
+  map.set(CaseExpr, { annotator: (s: TypeAnnotator, e: CaseExpr) => s.annotateByArgs(e, [...filterInstanceOf(e.args.ifs ?? [], IfExpr).flatMap((i) => i.args.true ?? []), 'default']) });
   map.set(CountExpr, { annotator: (s: TypeAnnotator, e: CountExpr) => s.setType(e, e.args.bigInt ? DataTypeExprKind.BIGINT : DataTypeExprKind.INT) });
   map.set(DateDiffExpr, { annotator: (s: TypeAnnotator, e: DateDiffExpr) => s.setType(e, e.args.bigInt ? DataTypeExprKind.BIGINT : DataTypeExprKind.INT) });
   map.set(DataTypeExpr, { annotator: (s: TypeAnnotator, e: DataTypeExpr) => s.setType(e, e.copy()) });

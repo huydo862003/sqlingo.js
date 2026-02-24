@@ -42,7 +42,7 @@ function annotateMathFunctions (self: TypeAnnotator, expression: Expression): Ex
   const thisType = thisArg.type;
   self.setType(
     expression,
-    thisArg.isType([...DataTypeExpr.INTEGER_TYPES])
+    thisArg.isType(DataTypeExpr.INTEGER_TYPES)
       ? DataTypeExprKind.DOUBLE
       : isInstanceOf(thisType, DataTypeExpr) ? thisType : undefined,
   );
@@ -55,8 +55,8 @@ function annotateSafeDivide (self: TypeAnnotator, expression: SafeDivideExpr): E
   if (
     isInstanceOf(thisArg, Expression)
     && isInstanceOf(exprArg, Expression)
-    && thisArg.isType([...DataTypeExpr.INTEGER_TYPES])
-    && exprArg.isType([...DataTypeExpr.INTEGER_TYPES])
+    && thisArg.isType(DataTypeExpr.INTEGER_TYPES)
+    && exprArg.isType(DataTypeExpr.INTEGER_TYPES)
   ) {
     return self.setType(expression, DataTypeExprKind.DOUBLE);
   }

@@ -1,6 +1,7 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/scope.py
 
 import type {
+  ExpressionValue,
   PivotExpr,
 } from '../expressions';
 import {
@@ -43,7 +44,7 @@ import {
 } from '../port_internals';
 import { OptimizeError } from '../errors';
 import {
-  ensureList, findNewName, seqGet,
+  ensureIterable, findNewName, seqGet,
 } from '../helper';
 
 const TRAVERSABLES = [
@@ -278,7 +279,7 @@ export class Scope {
    * Collect all tables, columns, CTEs, etc. from the expression tree
    * @private
    */
-  private _collect (): void {
+  private collect (): void {
     this._tables = [];
     this._ctes = [];
     this._subqueries = [];
@@ -340,9 +341,9 @@ export class Scope {
    * Ensure collection has been done
    * @private
    */
-  private _ensureCollected (): void {
+  private ensureCollected (): void {
     if (!this._collected) {
-      this._collect();
+      this.collect();
     }
   }
 
@@ -384,16 +385,16 @@ export class Scope {
    * List of tables in this scope
    */
   get tables (): TableExpr[] {
-    this._ensureCollected();
-    return this._tables!;
+    this.ensureCollected();
+    return this._tables ?? [];
   }
 
   /**
    * List of CTEs in this scope
    */
   get ctes (): CteExpr[] {
-    this._ensureCollected();
-    return this._ctes!;
+    this.ensureCollected();
+    return this._ctes ?? [];
   }
 
   /**
@@ -402,16 +403,16 @@ export class Scope {
    * Example: `SELECT * FROM (SELECT ...) <- that's a derived table`
    */
   get derivedTables (): SubqueryExpr[] {
-    this._ensureCollected();
-    return this._derivedTables!;
+    this.ensureCollected();
+    return this._derivedTables ?? [];
   }
 
   /**
    * List of user-defined tabular functions in this scope
    */
   get udtfs (): UdtfExpr[] {
-    this._ensureCollected();
-    return this._udtfs!;
+    this.ensureCollected();
+    return this._udtfs ?? [];
   }
 
   /**
@@ -420,24 +421,24 @@ export class Scope {
    * Example: `SELECT * FROM x WHERE a IN (SELECT ...) <- that's a subquery`
    */
   get subqueries (): QueryExpr[] {
-    this._ensureCollected();
-    return this._subqueries!;
+    this.ensureCollected();
+    return this._subqueries ?? [];
   }
 
   /**
    * List of star expressions (columns or dots) in this scope
    */
   get stars (): (ColumnExpr | DotExpr)[] {
-    this._ensureCollected();
-    return this._stars!;
+    this.ensureCollected();
+    return this._stars ?? [];
   }
 
   /**
    * Set of column object IDs that belong to this scope's expression
    */
   get columnIndex (): Set<number> {
-    this._ensureCollected();
-    return this._columnIndex!;
+    this.ensureCollected();
+    return this._columnIndex ?? new Set();
   }
 
   // Scope type checks
@@ -479,8 +480,8 @@ export class Scope {
    */
   get columns (): ColumnExpr[] {
     if (this._columns === undefined) {
-      this._ensureCollected();
-      const columns = this._rawColumns!;
+      this.ensureCollected();
+      const columns = this._rawColumns ?? [];
 
       const externalColumns: ColumnExpr[] = [];
       for (const scope of [
@@ -533,9 +534,9 @@ export class Scope {
    */
   get tableColumns (): TableColumnExpr[] {
     if (this._tableColumns === undefined) {
-      this._ensureCollected();
+      this.ensureCollected();
     }
-    return this._tableColumns!;
+    return this._tableColumns ?? [];
   }
 
   /**
@@ -772,11 +773,11 @@ function* _traverseScope (scope: Scope): Generator<Scope> {
   } else if (expression instanceof UdtfExpr) {
     yield* _traverseUdtfs(scope);
   } else if (expression instanceof DdlExpr) {
-    if (expression.expression instanceof QueryExpr) {
+    if (expression.args.expression instanceof QueryExpr) {
       yield* _traverseCtes(scope);
       yield* _traverseScope(
         new Scope({
-          expression: expression.expression as QueryExpr,
+          expression: expression.args.expression as QueryExpr,
           cteSources: scope.cteSources,
         }),
       );
@@ -859,7 +860,7 @@ function* _traverseCtes (scope: Scope): Generator<Scope> {
     if (with_ && isInstanceOf(with_, WithExpr) && with_.args.recursive) {
       const union = cte.args.this;
 
-      if (union instanceof SetOperationExpr) {
+      if (union instanceof SetOperationExpr && union.args.this) {
         sources.set(cteName, scope.branch({
           expression: union.args.this,
           scopeType: ScopeType.CTE,
@@ -867,10 +868,13 @@ function* _traverseCtes (scope: Scope): Generator<Scope> {
       }
     }
 
+    const cteThis = cte.args.this;
+    if (!cteThis) continue;
+
     let childScope: Scope | undefined;
     for (const s of _traverseScope(
       scope.branch({
-        expression: cte.args.this,
+        expression: cteThis,
         cteSources: sources,
         outerColumns: cte.aliasColumnNames || [],
         scopeType: ScopeType.CTE,
@@ -940,7 +944,9 @@ function* _traverseTables (scope: Scope): Generator<Scope> {
   }
 
   for (const join of (scope.expression.getArgKey('joins') as JoinExpr[] | undefined) || []) {
-    expressions.push(join.args.this);
+    if (join.args.this) {
+      expressions.push(join.args.this);
+    }
   }
 
   if (scope.expression instanceof TableExpr) {
@@ -1007,13 +1013,17 @@ function* _traverseTables (scope: Scope): Generator<Scope> {
       scopeType = ScopeType.DERIVED_TABLE;
       scopes = scope.derivedTableScopes;
       for (const join of (expression.getArgKey('joins') as JoinExpr[]) || []) {
-        expressions.push(join.args.this);
+        if (join.args.this) {
+          expressions.push(join.args.this);
+        }
       }
     } else {
       // Makes sure we check for possible sources in nested table constructs
       expressions.push(expression.getArgKey('this') as Expression);
       for (const join of (expression.getArgKey('joins') as JoinExpr[]) || []) {
-        expressions.push(join.args.this);
+        if (join.args.this) {
+          expressions.push(join.args.this);
+        }
       }
       continue;
     }
@@ -1065,11 +1075,11 @@ function* _traverseSubqueries (scope: Scope): Generator<Scope> {
 }
 
 function* _traverseUdtfs (scope: Scope): Generator<Scope> {
-  let expressions: Expression[];
+  let expressions: ExpressionValue[];
 
   if (scope.expression instanceof UnnestExpr) {
-    expressions = scope.expression.args.expressions;
-  } else if (scope.expression instanceof LateralExpr) {
+    expressions = scope.expression.args.expressions ?? [];
+  } else if (scope.expression instanceof LateralExpr && scope.expression.args.this) {
     expressions = [scope.expression.args.this];
   } else {
     expressions = [];
@@ -1212,7 +1222,7 @@ export function findInScope (
   const { bfs = true } = options;
 
   for (const node of walkInScope(expression, { bfs })) {
-    for (const ExprType of ensureList(expressionTypes)) {
+    for (const ExprType of ensureIterable(expressionTypes)) {
       if (node instanceof ExprType) {
         return node;
       }

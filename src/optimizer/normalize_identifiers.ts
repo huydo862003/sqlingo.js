@@ -92,7 +92,7 @@ export function normalizeIdentifiers (
     expr = expression;
   }
 
-  for (const node of expr.walk({ prune: (n) => Boolean(n.meta?.case_sensitive) })) {
+  for (const node of expr.walk({ prune: (n) => Boolean(n.meta?.caseSensitive) })) {
     if (!node.meta?.caseSensitive) {
       if (storeOriginalColumnIdentifiers && node instanceof ColumnExpr) {
         // TODO: This does not handle non-column cases, e.g PARSE_JSON(...).key

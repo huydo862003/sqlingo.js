@@ -25,7 +25,7 @@ import type { ExpressionMetadata } from '.';
 function annotateBySimilarArgs (
   self: TypeAnnotator,
   expression: Expression,
-  args: string[],
+  args: Iterable<string>,
   targetType: DataTypeExprKind | DataTypeExpr,
 ): Expression {
   const expressions: Expression[] = [];

@@ -25,6 +25,7 @@ import {
 } from '../dialects/dialect';
 import { Athena } from '../dialects/athena';
 import { Presto } from '../dialects/presto';
+import { seqGet } from '../helper';
 import { normalized } from './normalize';
 import {
   buildScope, findInScope, Scope,
@@ -107,7 +108,7 @@ export function pushdownPredicates<E extends Expression> (
         }
 
         if (pushdownAllowed) {
-          const whereThis = whereClause.this;
+          const whereThis = whereClause.args.this;
           if (whereThis instanceof Expression) {
             pushdown(whereThis, selectedSources, scopeRefCount, dialect, joinIndex);
           }
@@ -163,7 +164,7 @@ function pushdown (
 }
 
 function pushdownCnf (
-  predicates: Expression[],
+  predicates: Iterable<Expression>,
   sources: Record<string, [Expression, Scope | Expression]>,
   scopeRefCount: Map<Scope | Expression, number>,
   joinIndex?: Map<string, number>,
@@ -211,7 +212,7 @@ function pushdownCnf (
 }
 
 function pushdownDnf (
-  predicates: Expression[],
+  predicates: Iterable<Expression>,
   sources: Record<string, [Expression, Scope | Expression]>,
   scopeRefCount: Map<Scope | Expression, number>,
 ): void {
@@ -251,7 +252,7 @@ function pushdownDnf (
       conditions.set(table, existing ? orExpr([existing, predicate], { copy: false }) : predicate);
     }
 
-    const nodes = nodesForPredicate(predicates[0], sources, scopeRefCount);
+    const nodes = nodesForPredicate(seqGet(predicates, 0)!, sources, scopeRefCount);
     for (const [name, node] of Object.entries(nodes)) {
       const condition = conditions.get(name);
       if (!condition) {
@@ -361,7 +362,7 @@ function replaceAliases (source: SelectExpr, predicate: Expression): Expression 
     }
 
     if (select instanceof AliasExpr) {
-      const aliasThis = select.this;
+      const aliasThis = select.args.this;
       if (aliasThis instanceof Expression) {
         aliases.set(select.alias, aliasThis);
       }

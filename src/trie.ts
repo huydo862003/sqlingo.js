@@ -41,7 +41,7 @@ export type Key = string[];
  * ```
  *
  */
-export function newTrie (keywords: Key[], trie?: TrieNode): TrieNode {
+export function newTrie (keywords: Iterable<Key>, trie?: TrieNode): TrieNode {
   const result = trie ?? {};
 
   for (const key of keywords) {

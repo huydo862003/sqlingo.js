@@ -1,7 +1,7 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/canonicalize.py
 
-import type { Expression } from '../expressions';
 import {
+  Expression,
   AddExpr,
   BetweenExpr,
   CaseExpr,
@@ -93,7 +93,7 @@ export function canonicalize (
  * Convert Add expressions with text type to Concat.
  */
 export function addTextToConcat (node: Expression): Expression {
-  if (node instanceof AddExpr && node.type && node.type.this && DataTypeExpr.TEXT_TYPES.has(node.type.this as DataTypeExprKind)) {
+  if (node instanceof AddExpr && node.type instanceof Expression && node.type.args.this && DataTypeExpr.TEXT_TYPES.has(node.type.args.this as DataTypeExprKind)) {
     const left = node.args.this;
     const right = node.args.expression;
 
@@ -136,10 +136,7 @@ export function replaceDateFuncs (node: Expression, dialect: Dialect): Expressio
 
   // Timestamp() with no zone
   if (node instanceof TimestampExpr) {
-    const args = node.args as {
-      zone?: Expression;
-      this?: Expression;
-    };
+    const args = node.args;
     const zone = args.zone;
 
     if (!zone) {
@@ -148,7 +145,7 @@ export function replaceDateFuncs (node: Expression, dialect: Dialect): Expressio
         nodeToUse = annotateTypes(node, { dialect }) as TimestampExpr;
       }
 
-      const thisArg = (nodeToUse.args as { this?: Expression }).this;
+      const thisArg = nodeToUse.args.this;
       if (!thisArg) {
         return node;
       }
@@ -194,25 +191,25 @@ export function coerceType (node: Expression, options: { promoteToInferredDateti
   const isCoercibleOp = COERCIBLE_DATE_OPS.some((opClass) => node instanceof opClass);
 
   if (isCoercibleOp) {
-    const left = node.this;
-    const right = node.expression;
+    const left = node.args.this;
+    const right = node.args.expression;
 
     if (left && right) {
-      coerceDate(left as Expression, right as Expression, promoteToInferredDatetimeType);
+      coerceDate(left as Expression, right as Expression, { promoteToInferredDatetimeType });
     }
   } else if (node instanceof BetweenExpr) {
     const thisArg = node.args.this;
     const low = node.args.low;
 
     if (thisArg && low) {
-      coerceDate(thisArg as Expression, low as Expression, promoteToInferredDatetimeType);
+      coerceDate(thisArg as Expression, low as Expression, { promoteToInferredDatetimeType });
     }
   } else if (node instanceof ExtractExpr) {
     const expr = node.args.expression;
 
     if (expr) {
       const exprNode = expr as Expression;
-      const isTemporalType = exprNode.type?.this && DataTypeExpr.TEMPORAL_TYPES.has(exprNode.type.this as DataTypeExprKind);
+      const isTemporalType = exprNode.type instanceof Expression && exprNode.type.args.this && DataTypeExpr.TEMPORAL_TYPES.has(exprNode.type.args.this as DataTypeExprKind);
       if (!isTemporalType) {
         replaceCast(exprNode, DataTypeExprKind.DATETIME);
       }
@@ -256,7 +253,7 @@ export function removeRedundantCasts (expression: Expression): Expression {
     if (thisArg) {
       const thisExpr = thisArg as Expression;
 
-      if (thisExpr.type && thisExpr.type.this === DataTypeExprKind.DATE) {
+      if (thisExpr.type instanceof Expression && thisExpr.type.args.this === DataTypeExprKind.DATE) {
         const typeExprs = thisExpr.type.args.expressions;
         const hasExpressions = typeExprs && Array.isArray(typeExprs) && 0 < typeExprs.length;
 
@@ -296,7 +293,7 @@ export function ensureBools (
       if (thisArg) replaceFunc(thisArg as Expression);
     }
   } else if (expression instanceof WhereExpr || expression instanceof HavingExpr) {
-    const thisArg = expression.this;
+    const thisArg = expression.args.this;
     if (thisArg) replaceFunc(thisArg as Expression);
   }
 
@@ -308,7 +305,7 @@ export function ensureBools (
  */
 export function removeAscendingOrder (expression: Expression): Expression {
   if (expression instanceof OrderedExpr) {
-    const args = expression.args as { desc?: boolean };
+    const args = expression.args;
     const desc = args.desc;
 
     if (desc === false) {
@@ -326,8 +323,9 @@ export function removeAscendingOrder (expression: Expression): Expression {
 function coerceDate (
   a: Expression,
   b: Expression,
-  promoteToInferredDatetimeType: boolean,
+  options: { promoteToInferredDatetimeType: boolean },
 ): void {
+  const { promoteToInferredDatetimeType } = options;
   // Try both permutations (a, b) and (b, a)
   for (const [left, right] of [[a, b], [b, a]]) {
     if (right instanceof IntervalExpr) {
@@ -335,13 +333,14 @@ function coerceDate (
       coerceTimeunitArg(left, unit as Expression | undefined);
     }
 
-    const leftType = left.type;
-    if (!leftType || !leftType.this || !DataTypeExpr.TEMPORAL_TYPES.has(leftType.this as DataTypeExprKind)) {
+    const leftTypeRaw = left.type;
+    if (!leftTypeRaw || !(leftTypeRaw instanceof Expression) || !leftTypeRaw.args.this || !DataTypeExpr.TEMPORAL_TYPES.has(leftTypeRaw.args.this as DataTypeExprKind)) {
       continue;
     }
+    const leftType = leftTypeRaw as Expression;
 
     const rightType = right.type;
-    if (!rightType || !rightType.this || !DataTypeExpr.TEXT_TYPES.has(rightType.this as DataTypeExprKind)) {
+    if (!rightType || !(rightType instanceof Expression) || !rightType.args.this || !DataTypeExpr.TEXT_TYPES.has(rightType.args.this as DataTypeExprKind)) {
       continue;
     }
 
@@ -357,7 +356,7 @@ function coerceDate (
         } else if (isIsoDatetime(dateText)) {
           bType = DataTypeExprKind.DATETIME;
         } else {
-          bType = leftType.this as DataTypeExprKind;
+          bType = leftType.args.this as DataTypeExprKind;
         }
       } else {
         // If b is not a datetime string, we conservatively promote it to a DATETIME,
@@ -365,13 +364,13 @@ function coerceDate (
         bType = DataTypeExprKind.DATETIME;
       }
 
-      const coercesTo = TypeAnnotator.COERCES_TO.get(leftType.this as DataTypeExprKind);
-      targetType = coercesTo && coercesTo.has(bType) ? bType : leftType.this as DataTypeExprKind;
+      const coercesTo = TypeAnnotator.COERCES_TO.get(leftType.args.this as DataTypeExprKind);
+      targetType = coercesTo && coercesTo.has(bType) ? bType : leftType.args.this as DataTypeExprKind;
     } else {
-      targetType = leftType.this as DataTypeExprKind;
+      targetType = leftType.args.this as DataTypeExprKind;
     }
 
-    if (targetType !== leftType.this) {
+    if (targetType !== leftType.args.this) {
       replaceCast(left, targetType);
     }
 
@@ -390,7 +389,7 @@ function coerceTimeunitArg (
     return arg;
   }
 
-  if (arg.type.this && DataTypeExpr.TEXT_TYPES.has(arg.type.this as DataTypeExprKind)) {
+  if (arg.type instanceof Expression && arg.type.args.this && DataTypeExpr.TEXT_TYPES.has(arg.type.args.this as DataTypeExprKind)) {
     const dateText = arg.name;
     const isIsoDate_ = isIsoDate(dateText);
 
@@ -408,7 +407,7 @@ function coerceTimeunitArg (
         to: new DataTypeExpr({ this: DataTypeExprKind.DATETIME }),
       }));
     }
-  } else if (arg.type.this === DataTypeExprKind.DATE && !isDateUnit(unit)) {
+  } else if (arg.type instanceof Expression && arg.type.args.this === DataTypeExprKind.DATE && !isDateUnit(unit)) {
     return arg.replace(new CastExpr({
       this: arg.copy(),
       to: new DataTypeExpr({ this: DataTypeExprKind.DATETIME }),
@@ -428,7 +427,7 @@ function coerceDateDiffArgs (node: DateDiffExpr): void {
   for (const arg of [thisArg, exprArg]) {
     if (arg) {
       const argExpr = arg as Expression;
-      if (argExpr.type?.this && !DataTypeExpr.TEMPORAL_TYPES.has(argExpr.type.this as DataTypeExprKind)) {
+      if (argExpr.type instanceof Expression && argExpr.type.args.this && !DataTypeExpr.TEMPORAL_TYPES.has(argExpr.type.args.this as DataTypeExprKind)) {
         argExpr.replace(new CastExpr({
           this: argExpr.copy(),
           to: new DataTypeExpr({ this: DataTypeExprKind.DATETIME }),
@@ -459,10 +458,12 @@ function replaceIntPredicate (expression: Expression): void {
     const expressions = expression.args.expressions;
     if (expressions) {
       for (const child of expressions) {
-        replaceIntPredicate(child);
+        if (child instanceof Expression) {
+          replaceIntPredicate(child);
+        }
       }
     }
-  } else if (expression.type?.this && DataTypeExpr.INTEGER_TYPES.has(expression.type.this as DataTypeExprKind)) {
+  } else if (expression.type instanceof Expression && expression.type.args.this && DataTypeExpr.INTEGER_TYPES.has(expression.type.args.this as DataTypeExprKind)) {
     const zero = new LiteralExpr({
       this: '0',
       isString: false,

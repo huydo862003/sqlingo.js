@@ -550,3 +550,23 @@ export function rshift (a: unknown, b: unknown): unknown {
   // @ts-expect-error "Fallback to primitive operation"
   return a >> b;
 }
+
+export interface IndexableObject<TOther = unknown, TReturn = unknown> {
+  getItem(other: TOther): TReturn;
+}
+export type Indexable = IndexableObject | Array<unknown>;
+export function isIndexable (a: unknown): a is Indexable {
+  return Array.isArray(a) || isIndexableObj(a);
+}
+export function isIndexableObj (a: unknown): a is IndexableObject {
+  return a !== null && typeof a === 'object' && typeof (a as IndexableObject).getItem === 'function';
+}
+
+export function getitem<A extends IndexableObject<B, R>, B, R> (a: A, b: B): R;
+export function getitem (a: unknown[], b: number): unknown;
+export function getitem (a: unknown, b: unknown): unknown;
+export function getitem (a: unknown, b: unknown): unknown {
+  if (isIndexableObj(a)) return (a as IndexableObject).getItem(b);
+  if (Array.isArray(a)) return (a as unknown[])[b as number];
+  throw new TypeError(`'${typeof a}' object is not subscriptable`);
+}

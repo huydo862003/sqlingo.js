@@ -63,6 +63,9 @@ import type {
   RegexpExtractExprArgs,
 
   GenerateDateArrayExpr,
+  ToNumberExpr,
+  Sha2DigestExpr,
+  ExpressionValue,
 } from '../expressions';
 import {
   JsonbExtractExpr,
@@ -161,6 +164,8 @@ import {
   DistinctExpr,
   DataTypeParamExpr,
   StarExpr,
+  isType,
+  null_,
 } from '../expressions';
 import { annotateTypes } from '../optimizer/annotate_types';
 import type { TokenizerOptions } from '../tokens';
@@ -182,7 +187,7 @@ import {
   Generator, unsupportedArgs,
 } from '../generator';
 import {
-  ensureList,
+  ensureIterable,
   isInt,
   seqGet,
   suggestClosestMatchAndFail, toBool,
@@ -193,27 +198,28 @@ import {
 import {
   assertIsInstanceOf, isInstanceOf,
 } from '../port_internals';
+import type { ExpressionMetadata } from '../typing';
 
 // Type aliases for common expression type unions
-export type DATE_ADD_OR_DIFF =
+export type DateAddOrDiff =
   | DateAddExpr
   | DateDiffExpr
   | DateSubExpr
   | TsOrDsAddExpr
   | TsOrDsDiffExpr;
 
-export type DATE_ADD_OR_SUB =
+export type DateAddOrSub =
   | DateAddExpr
   | TsOrDsAddExpr
   | DateSubExpr;
 
-export type JSON_EXTRACT_TYPE =
+export type JsonExtractType =
   | JsonExtractExpr
   | JsonExtractScalarExpr
   | JsonbExtractExpr
   | JsonbExtractScalarExpr;
 
-export type DATETIME_DELTA =
+export type DatetimeDelta =
   | DateAddExpr
   | DatetimeAddExpr
   | DatetimeSubExpr
@@ -234,6 +240,12 @@ export const DATETIME_ADD = [
 // Type aliases for dialect configuration properties
 export type NormalizeFunctions = false | 'upper' | 'lower';
 export type NullOrdering = 'nulls_are_small' | 'nulls_are_large' | 'nulls_are_last';
+
+export interface DialectOptions {
+  version?: number | string;
+  normalizationStrategy?: NormalizationStrategy;
+  [index: string]: boolean | string | number | undefined;
+}
 
 /**
  * Base unescaped sequences that are common across dialects.
@@ -278,6 +290,7 @@ export enum Dialects {
   PRQL = 'prql',
   REDSHIFT = 'redshift',
   RISINGWAVE = 'risingwave',
+  SINGLESTORE = 'SINGLESTORE',
   SNOWFLAKE = 'snowflake',
   SOLR = 'solr',
   SPARK = 'spark',
@@ -591,7 +604,7 @@ export class Dialect {
    * Maps function expressions to their default output column name(s).
    * For example, in Postgres, generate_series function outputs a column named "generate_series" by default.
    */
-  static DEFAULT_FUNCTIONS_COLUMN_NAMES: Record<string, string | string[]> = {};
+  static DEFAULT_FUNCTIONS_COLUMN_NAMES: Map<string, string | string[]> = new Map();
 
   /** The default type of NULL for producing the correct projection type. */
   static DEFAULT_NULL_TYPE = DataTypeExprKind.UNKNOWN;
@@ -761,7 +774,7 @@ export class Dialect {
   }
 
   private static inverseTimeTrieCache = new WeakMap<typeof Dialect, TrieNode>();
-  static INVERSE_TIME_TRIE (): TrieNode {
+  static get INVERSE_TIME_TRIE (): TrieNode {
     let cached = this.inverseTimeTrieCache.get(this);
     if (!cached) {
       cached = newTrie(Object.keys(this.INVERSE_TIME_MAPPING).map((k) => Array.from(k)));
@@ -771,7 +784,7 @@ export class Dialect {
   }
 
   private static inverseFormatMappingCache = new WeakMap<typeof Dialect, Record<string, string>>();
-  static INVERSE_FORMAT_MAPPING (): Record<string, string> {
+  static get INVERSE_FORMAT_MAPPING (): Record<string, string> {
     let cached = this.inverseFormatMappingCache.get(this);
     if (!cached) {
       cached = Object.fromEntries(Object.entries(this.FORMAT_MAPPING).map(([k, v]) => [v, k]));
@@ -969,7 +982,7 @@ export class Dialect {
   static COERCES_TO: Record<string, Set<string>> = {};
 
   /** Specifies type inference & validation rules for expressions. */
-  static EXPRESSION_METADATA: Record<string, unknown> = {};
+  static EXPRESSION_METADATA: ExpressionMetadata = new Map();
 
   /** Determines the supported Dialect instance settings. */
   static SUPPORTED_SETTINGS: Set<string> = new Set(['normalizationStrategy', 'version']);
@@ -1147,7 +1160,7 @@ export class Dialect {
 
     if (expression instanceof Expression && expression.isString) {
       return LiteralExpr.string(
-        formatTime(expression.this as string, this.TIME_MAPPING, this.TIME_TRIE),
+        formatTime(expression.args.this as string, this.TIME_MAPPING, this.TIME_TRIE),
       );
     }
 
@@ -1163,15 +1176,11 @@ export class Dialect {
   normalizationStrategy: NormalizationStrategy;
   settings: Record<string, boolean | number | string | undefined>;
 
-  constructor (kwargs: {
-    version?: number | string;
-    normalizationStrategy?: NormalizationStrategy;
-    [index: string]: boolean | string | number | undefined;
-  } = {}) {
+  constructor (options: DialectOptions = {}) {
     const {
       version = Number.MAX_SAFE_INTEGER,
       normalizationStrategy,
-    } = kwargs;
+    } = options;
 
     const parts = version.toString().split('.');
     while (parts.length < 3) {
@@ -1185,9 +1194,9 @@ export class Dialect {
 
     this.normalizationStrategy = normalizationStrategy ?? this._constructor.NORMALIZATION_STRATEGY;
 
-    this.settings = kwargs;
+    this.settings = options;
 
-    for (const unsupportedSetting of Object.keys(kwargs)) {
+    for (const unsupportedSetting of Object.keys(options)) {
       if (!this._constructor.SUPPORTED_SETTINGS.has(unsupportedSetting)) {
         suggestClosestMatchAndFail(
           'setting',
@@ -1359,8 +1368,12 @@ export class Dialect {
   /**
    * Parse SQL string into specific expression type.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  parseInto<T extends Expression> (expressionType: string | typeof Expression | (new (arg: any) => T), sql: string, opts?: ParseOptions): (Expression | undefined)[] {
+  parseInto<T extends Expression> (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expressionType: string | (new (args: any) => T) | string[] | (new (args: any) => T)[],
+    sql: string,
+    opts?: ParseOptions,
+  ): (Expression | undefined)[] {
     return this.parser({
       into: expressionType,
       ...opts,
@@ -1432,13 +1445,13 @@ export class Dialect {
    * By default, generates _col_0, _col_1, etc.
    */
   generateValuesAliases (expression: Expression): IdentifierExpr[] {
-    const firstRow = expression.expressions[0];
+    const firstRow = expression.args.expressions?.[0];
     if (!(firstRow instanceof Expression)) {
       return [];
     }
 
     const firstRowExpr = firstRow as Expression;
-    return firstRowExpr.expressions.map((_: unknown, i: number) => toIdentifier(`_col_${i}`));
+    return (firstRowExpr.args.expressions ?? []).map((_: unknown, i: number) => toIdentifier(`_col_${i}`));
   }
 
   get _constructor (): typeof Dialect {
@@ -1493,7 +1506,7 @@ export function ifSql (
 /**
  * Generate arrow-based JSON extract (-> or ->>).
  */
-export function arrowJsonExtractSql (self: Generator, expression: JSON_EXTRACT_TYPE): string {
+export function arrowJsonExtractSql (self: Generator, expression: JsonExtractType): string {
   const thisArg = expression.args.this;
 
   if (
@@ -1525,7 +1538,7 @@ export function inlineArraySql (self: Generator, expression: Expression): string
  * Generate inline array unless it contains a query.
  */
 export function inlineArrayUnlessQuery (self: Generator, expression: Expression): string {
-  const elem = seqGet(expression.expressions, 0);
+  const elem = seqGet(expression.args.expressions ?? [], 0);
   if (elem instanceof Expression && elem?.find?.(QueryExpr)) {
     return self.func('ARRAY', [elem]);
   }
@@ -1611,7 +1624,7 @@ export function propertySql (self: Generator, expression: PropertyExpr): string 
 /**
  * Generate STRPOS/POSITION SQL with optional parameters.
  */
-export function strpositionSql (
+export function strPositionSql (
   self: Generator,
   expression: StrPositionExpr,
   options: {
@@ -1676,7 +1689,7 @@ export function strpositionSql (
     }
     func = new AnonymousExpr({
       this: funcName,
-      expressions: args,
+      expressions: args.filter((x): x is Expression => x !== undefined),
     });
   }
 
@@ -1705,7 +1718,7 @@ export function strpositionSql (
  * Generate struct extract: struct.field.
  */
 export function structExtractSql (self: Generator, expression: StructExtractExpr): string {
-  return `${self.sql(expression, 'this')}.${self.sql(toIdentifier(expression.args.expression.name))}`;
+  return `${self.sql(expression, 'this')}.${self.sql(toIdentifier(expression.args.expression?.name ?? ''))}`;
 }
 
 /**
@@ -1739,17 +1752,18 @@ export function arrayAppendSql (
         new IfExpr({
           this: new IsExpr({
             this: thisArg,
-            expression: new NullExpr({}),
+            expression: null_(),
           }),
-          true: new NullExpr({}),
+          true: null_(),
           false: funcSql,
         }),
       );
     }
 
     // Source doesn't propagate NULLs, target does: use COALESCE to convert NULL to empty array
+    const coalesceThis = thisArg ?? new ArrayExpr({ expressions: [] });
     thisArg = new CoalesceExpr({
-      expressions: [thisArg, new ArrayExpr({ expressions: [] })],
+      expressions: [coalesceThis, new ArrayExpr({ expressions: [] })],
     });
 
     args = swapParams ? [element, thisArg] : [thisArg, element];
@@ -1780,7 +1794,7 @@ export function arrayConcatSql (
   return (self: Generator, expression: ArrayConcatExpr): string => {
     const thisArg = expression.args.this;
     const exprs = expression.args.expressions || [];
-    const allArgs = [thisArg, ...exprs];
+    const allArgs = [...(thisArg ? [thisArg] : []), ...exprs] as Expression[];
 
     const sourceNullPropagation = Boolean(expression.args.nullPropagation);
     const targetNullPropagation = self.dialect._constructor.ARRAY_FUNCS_PROPAGATES_NULLS;
@@ -1798,7 +1812,7 @@ export function arrayConcatSql (
       const nullChecks = allArgs.map(
         (arg) => new IsExpr({
           this: arg.copy(),
-          expression: new NullExpr({}),
+          expression: null_(),
         }),
       );
 
@@ -1812,7 +1826,7 @@ export function arrayConcatSql (
       return self.sql(
         new IfExpr({
           this: combinedCheck,
-          true: new NullExpr({}),
+          true: null_(),
           false: buildFuncCall(self, name, allArgs),
         }),
       );
@@ -1839,7 +1853,7 @@ export function varMapSql (
 
   if (!(keys instanceof ArrayExpr) || !(values instanceof ArrayExpr)) {
     self.unsupported('Cannot convert array columns into map.');
-    return self.func(mapFuncName, [...ensureList(keys), ...ensureList(values)]);
+    return self.func(mapFuncName, [...ensureIterable(keys), ...ensureIterable(values)] as (Expression | string | undefined)[]);
   }
 
   const args: string[] = [];
@@ -2006,19 +2020,18 @@ export function buildDateDeltaWithInterval<T extends Expression> (
   };
 }
 
-export function dateTruncToTime (args: {
-  unit: Expression;
-  this: Expression;
-}): DateTruncExpr | TimestampTruncExpr {
-  if (args.this instanceof CastExpr && args.this.isType('date')) {
+export function dateTruncToTime (args: (Expression | undefined)[]): DateTruncExpr | TimestampTruncExpr {
+  const unit = seqGet(args, 0);
+  const thisExpr = seqGet(args, 1);
+  if (thisExpr instanceof CastExpr && thisExpr.isType('date')) {
     return new DateTruncExpr({
-      unit: args.unit,
-      this: args.this,
+      unit: unit,
+      this: thisExpr,
     });
   }
   return new TimestampTruncExpr({
-    this: args.this,
-    unit: args.unit,
+    this: thisExpr,
+    unit: unit,
   });
 }
 
@@ -2078,7 +2091,7 @@ export function noTimeSql (self: Generator, expression: TimeExpr): string {
   const expr = cast(
     new AtTimeZoneExpr({
       this: thisArg,
-      zone: expression.args.zone!,
+      zone: expression.args.zone,
     }),
     DataTypeExprKind.TIME,
   );
@@ -2149,7 +2162,7 @@ export function timeStrToTimeSql (
 
   if (expression.args.this instanceof LiteralExpr && includePrecision) {
     const precision = subsecondPrecision(expression.args.this.name);
-    if (0 < precision) {
+    if (0 < precision && datatype) {
       datatype = DataTypeExpr.build(
         datatype.args.this,
         {
@@ -2165,15 +2178,20 @@ export function timeStrToTimeSql (
 }
 
 export function dateStrToDateSql (self: Generator, expression: DateStrToDateExpr): string {
-  return self.sql(cast(expression.args.this || '', DataTypeExprKind.DATE));
+  const thisArg = expression.args.this;
+  const castArg: string | Expression = (thisArg instanceof Expression || typeof thisArg === 'string') ? thisArg : '';
+  return self.sql(cast(castArg, DataTypeExprKind.DATE));
 }
 
 export function encodeDecodeSql (
   self: Generator,
   expression: EncodeExpr | DecodeExpr,
   name: string,
-  replace: boolean = true,
+  options: { replace?: boolean } = {},
 ): string {
+  const {
+    replace = true,
+  } = options;
   const charset = expression.args.charset;
   if (charset && !['utf-8', 'utf8'].includes(charset.name?.toLowerCase())) {
     self.unsupported(`Expected utf-8 character set, got ${charset}.`);
@@ -2193,7 +2211,7 @@ export function maxOrGreatest (self: Generator, expression: MaxExpr): string {
 }
 
 export function countIfToSum (self: Generator, expression: CountIfExpr): string {
-  let cond: Expression | undefined = expression.args.this;
+  let cond: ExpressionValue | undefined = expression.args.this;
 
   if (cond instanceof DistinctExpr) {
     cond = cond.args.expressions?.[0];
@@ -2211,7 +2229,7 @@ export function countIfToSum (self: Generator, expression: CountIfExpr): string 
     : []);
 }
 
-export function trimSql (self: Generator, expression: TrimExpr, options: { defaultTrimType: string }): string {
+export function trimSql (self: Generator, expression: TrimExpr, options: { defaultTrimType?: string } = {}): string {
   const { defaultTrimType = '' } = options;
 
   const target = self.sql(expression, 'this');
@@ -2232,12 +2250,12 @@ export function trimSql (self: Generator, expression: TrimExpr, options: { defau
 }
 
 export function strToTimeSql (self: Generator, expression: StrToTimeExpr): string {
-  return self.func('STRPTIME', [expression.args.this, self.formatTime(expression)]);
+  return self.func('STRPTIME', [expression.args.this, self.formatTime(expression)!]);
 }
 
 export function concatToDPipeSql (self: Generator, expression: ConcatExpr): string {
   return self.sql(
-    expression.args.expressions.reduce((acc, curr) => new DPipeExpr({
+    (expression.args.expressions ?? []).reduce((acc, curr) => new DPipeExpr({
       this: acc,
       expression: curr,
     })),
@@ -2245,7 +2263,7 @@ export function concatToDPipeSql (self: Generator, expression: ConcatExpr): stri
 }
 
 export function concatWsToDPipeSql (self: Generator, expression: ConcatWsExpr): string {
-  const [delim, ...rest] = expression.args.expressions;
+  const [delim, ...rest] = expression.args.expressions ?? [];
   return self.sql(
     rest.reduce((acc, curr) =>
       new DPipeExpr({
@@ -2282,7 +2300,8 @@ export function regexpReplaceSql (self: Generator, expression: RegexpReplaceExpr
     expression.args.replacement,
   ]);
 }
-export function pivotColumnNames (aggregations: Expression[], dialect: DialectType): string[] {
+export function pivotColumnNames (aggregations: Expression[], options: { dialect: DialectType }): string[] {
+  const { dialect } = options;
   const names: string[] = [];
   for (const agg of aggregations) {
     if (agg instanceof AliasExpr) {
@@ -2333,10 +2352,11 @@ export function buildTrunc (
     dialect: DialectType;
     dateTruncUnabbreviate?: boolean;
     defaultDateTruncUnit?: string;
+    dateTruncRequiresPart?: boolean;
   },
 ): DateTruncExpr | TruncExpr | AnonymousExpr {
   const {
-    dialect, dateTruncUnabbreviate = true, defaultDateTruncUnit,
+    dialect, dateTruncUnabbreviate = true, defaultDateTruncUnit, dateTruncRequiresPart = true,
   } = options;
   let thisArg = seqGet(args, 0);
   let second = seqGet(args, 1);
@@ -2352,7 +2372,7 @@ export function buildTrunc (
   const isText = second?.isType(...DataTypeExpr.TEXT_TYPES);
 
   if ((isTemporal && (second || defaultDateTruncUnit)) || isText) {
-    const unit = second || LiteralExpr.string(defaultDateTruncUnit!);
+    const unit = second || LiteralExpr.string(defaultDateTruncUnit);
     return new DateTruncExpr({
       this: thisArg,
       unit: unit,
@@ -2361,7 +2381,7 @@ export function buildTrunc (
   }
 
   const isNumeric = thisArg?.isType(...DataTypeExpr.NUMERIC_TYPES) || second?.isType(...DataTypeExpr.NUMERIC_TYPES);
-  if (isNumeric || !second) {
+  if (isNumeric || (!dateTruncRequiresPart && !second)) {
     return new TruncExpr({
       this: thisArg,
       decimals: second,
@@ -2384,7 +2404,7 @@ export function boolXorSql (self: Generator, expression: XorExpr): string {
   return `(${a} AND (NOT ${b})) OR ((NOT ${a}) AND {b})`;
 }
 
-export function isParseJson (expression: Expression): boolean {
+export function isParseJson (expression: unknown): boolean {
   return expression instanceof ParseJsonExpr || (expression instanceof CastExpr && expression.isType('json'));
 }
 
@@ -2393,7 +2413,7 @@ export function isnullToIsNull (args: any[]): Expression {
   return new ParenExpr({
     this: new IsExpr({
       this: seqGet(args, 0),
-      expression: new NullExpr({}),
+      expression: null_(),
     }),
   });
 }
@@ -2414,6 +2434,7 @@ export function argMaxOrMinNoCount (name: string): (self: Generator, expression:
 }
 
 export function tsOrDsAddCast (expression: TsOrDsAddExpr): TsOrDsAddExpr {
+  if (!expression.args.this) return expression;
   let thisArg = expression.args.this.copy();
   const returnType = expression.returnType;
   assertIsInstanceOf(returnType, DataTypeExpr);
@@ -2422,7 +2443,7 @@ export function tsOrDsAddCast (expression: TsOrDsAddExpr): TsOrDsAddExpr {
     thisArg = cast(thisArg, DataTypeExprKind.TIMESTAMP);
   }
 
-  expression.args.this.replace(cast(thisArg, returnType));
+  expression.args.this?.replace(cast(thisArg, returnType));
   return expression;
 }
 
@@ -2440,7 +2461,7 @@ export function dateDeltaSql (
     }
 
     return self.func(name, [
-      unitToVar(expr),
+      unitToVar(expr)!,
       expr.args.expression,
       expr.args.this,
     ]);
@@ -2464,7 +2485,7 @@ export function dateDeltaToBinaryIntervalOp (
         const rt = expression.returnType;
         assertIsInstanceOf(rt, DataTypeExpr);
         toType = rt;
-      } else if (thisArg.isString) {
+      } else if (thisArg?.isString) {
         toType = (expression instanceof DatetimeAddExpr || expression instanceof DatetimeSubExpr)
           ? DataTypeExprKind.DATETIME
           : DataTypeExprKind.DATE;
@@ -2484,7 +2505,7 @@ export function dateDeltaToBinaryIntervalOp (
   };
 }
 
-export function unitToStr (expression: TimeUnitExpr, options: {
+export function unitToStr (expression: TsOrDsDiffExpr | DateAddOrSub | DateTruncExpr | TimeUnitExpr, options: {
   defaultValue?: string;
 } = {}): Expression | undefined {
   const { defaultValue = 'DAY' } = options;
@@ -2514,22 +2535,31 @@ export function unitToVar (expression: TimeUnitExpr, options: {
   return value ? var_(value) : undefined;
 }
 
-export function mapDatePart (part: Expression | undefined, dialect: DialectType): Expression | undefined {
+export function mapDatePart (part: string | Expression | undefined, options: { dialect?: DialectType } = {}): Expression | undefined {
+  const partName = part instanceof Expression ? part.name : part || '';
+  const { dialect } = options;
   const mapped = (part && !(part instanceof ColumnExpr && part.parts.length !== 1))
-    ? Dialect.getOrRaise(dialect)._constructor.DATE_PART_MAPPING?.[part.name?.toUpperCase()]
+    ? Dialect.getOrRaise(dialect)._constructor.DATE_PART_MAPPING?.[partName.toUpperCase()]
     : undefined;
 
   if (mapped) {
-    return part!.isString ? LiteralExpr.string(mapped) : var_(mapped);
+    if (typeof part === 'string') {
+      return LiteralExpr.string(mapped);
+    }
+
+    return part?.isString ? LiteralExpr.string(mapped) : var_(mapped);
   }
 
+  if (typeof part === 'string') {
+    return LiteralExpr.string(part);
+  }
   return part;
 }
 
 export function noLastDaySql (self: Generator, expression: LastDayExpr): string {
   const truncCurrDate = new AnonymousExpr({
     this: 'date_trunc',
-    expressions: [LiteralExpr.string('month'), expression.args.this],
+    expressions: [LiteralExpr.string('month'), ...(expression.args.this ? [expression.args.this] : [])],
   });
   const plusOneMonth = new AnonymousExpr({
     this: 'date_add',
@@ -2572,13 +2602,15 @@ export function mergeWithoutTargetSql (self: Generator, expression: MergeExpr): 
     } else if (then instanceof InsertExpr) {
       const columnList = then.args.this;
       if (columnList instanceof TupleExpr) {
-        for (const col of columnList.args.expressions || []) {
+        for (const colVal of columnList.args.expressions || []) {
+          if (!(colVal instanceof Expression)) continue;
+          const col = colVal;
           const tableArg = col.getArgKey('table');
           if (
-            (col.this instanceof IdentifierExpr || col.this instanceof StarExpr)
+            (col.args.this instanceof IdentifierExpr || col.args.this instanceof StarExpr)
             && tableArg
             && targets.has(tableArg instanceof Expression ? normalize(tableArg) : tableArg.toString())) {
-            col.replace(new ColumnExpr({ this: col.this }));
+            col.replace(new ColumnExpr({ this: col.args.this }));
           }
         }
       }
@@ -2588,9 +2620,9 @@ export function mergeWithoutTargetSql (self: Generator, expression: MergeExpr): 
   return self.mergeSql(expression);
 }
 
-export function buildJsonExtractPath<T extends JsonExtractExpr> (
+export function buildJsonExtractPath<T extends JsonExtractExpr | JsonExtractScalarExpr | JsonbExtractExpr | JsonbExtractScalarExpr> (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ExprType: (typeof JsonExtractExpr) & (new (arg: any) => T),
+  ExprType: (typeof JsonExtractExpr | typeof JsonExtractScalarExpr | typeof JsonbExtractExpr | typeof JsonbExtractScalarExpr) & (new (arg: any) => T),
   options: {
     zeroBasedIndexing?: boolean;
     arrowReqJsonType?: boolean;
@@ -2652,7 +2684,7 @@ export function jsonExtractSegments (
     }
 
     const segments: string[] = [];
-    for (const segment of path.args.expressions) {
+    for (const segment of path.args.expressions ?? []) {
       let segmentSql = self.sql(segment);
       if (segmentSql) {
         if (segment instanceof JsonPathPartExpr && (quotedIndex || !(segment instanceof JsonPathSubscriptExpr))) {
@@ -2679,8 +2711,9 @@ export function filterArrayUsingUnnest (self: Generator, expression: ArrayFilter
   let cond = expression.args.expression;
   let aliasExpr: Expression = LiteralExpr.string('_u');
 
-  if (cond instanceof LambdaExpr && cond.args.expressions.length === 1) {
-    aliasExpr = cond.args.expressions[0];
+  if (cond instanceof LambdaExpr && (cond.args.expressions?.length ?? 0) === 1) {
+    const firstExpr = cond.args.expressions?.[0];
+    if (firstExpr) aliasExpr = firstExpr;
     cond = cond.args.this;
   } else if (expression instanceof ArrayRemoveExpr) {
     cond = new NeqExpr({
@@ -2689,7 +2722,7 @@ export function filterArrayUsingUnnest (self: Generator, expression: ArrayFilter
     });
   }
 
-  const unnest = new UnnestExpr({ expressions: [expression.args.this] });
+  const unnest = new UnnestExpr({ expressions: [...(expression.args.this ? [expression.args.this] : [])] });
   const filtered = select(aliasExpr)
     .from(alias(unnest, undefined, { table: [aliasExpr as string | IdentifierExpr] }))
     .where(cond);
@@ -2703,10 +2736,10 @@ export function arrayCompactSql (self: Generator, expression: ArrayCompactExpr):
   });
   const cond = new IsExpr({
     this: lambdaId,
-    expression: new NullExpr({}),
+    expression: null_(),
   }).not();
   return self.sql(new ArrayFilterExpr({
-    this: expression.args.this!,
+    this: expression.args.this,
     expression: new LambdaExpr({
       this: cond,
       expressions: [lambdaId],
@@ -2739,20 +2772,31 @@ export function removeFromArrayUsingFilter (self: Generator, expression: ArrayRe
     return self.sql(new IfExpr({
       this: new IsExpr({
         this: val,
-        expression: new NullExpr({}),
+        expression: null_(),
       }),
-      true: new NullExpr({}),
+      true: null_(),
       false: filterSql,
     }));
   }
   return filterSql;
 }
 
+export function toNumberWithNlsParam (self: Generator, expression: ToNumberExpr): string {
+  return self.func(
+    'TO_NUMBER',
+    [
+      expression.args.this,
+      expression.args.format,
+      expression.args.nlsparam,
+    ],
+  );
+}
+
 export function buildDefaultDecimalType (precision?: number, scale?: number): (dtype: DataTypeExpr) => DataTypeExpr {
   return (dtype: DataTypeExpr) => {
     if (0 < (dtype.args.expressions?.length ?? 0) || precision === undefined) return dtype;
     const params = scale !== undefined ? `${precision}, ${scale}` : `${precision}`;
-    return DataTypeExpr.build(`DECIMAL(${params})`);
+    return DataTypeExpr.build(`DECIMAL(${params})`) ?? dtype;
   };
 }
 
@@ -2771,13 +2815,17 @@ export function sha256Sql (self: Generator, expression: Sha2Expr): string {
   return self.func(`SHA${expression.text('length') || '256'}`, [expression.args.this]);
 }
 
+export function sha2DigestSql (self: Generator, expression: Sha2DigestExpr): string {
+  return self.func(`SHA${expression.text('length') || '256'}`, [expression.args.this]);
+}
+
 export function sequenceSql (self: Generator, expression: GenerateSeriesExpr | GenerateDateArrayExpr): string {
   let start = expression.args.start;
   let end = expression.args.end;
   const step = expression.args.step;
   const targetType = (start instanceof CastExpr ? start.args.to : (end instanceof CastExpr ? end.args.to : undefined));
 
-  if (start !== undefined && end !== undefined && targetType?.isType(['date', 'timestamp'])) {
+  if (start !== undefined && end !== undefined && isType(targetType, ['date', 'timestamp'])) {
     assertIsInstanceOf(targetType, DataTypeExpr);
     if (start instanceof CastExpr && targetType === start.to) end = cast(end, targetType);
     else start = cast(start, targetType);
@@ -2793,9 +2841,9 @@ export function sequenceSql (self: Generator, expression: GenerateSeriesExpr | G
       const seqCall = new AnonymousExpr({
         this: 'SEQUENCE',
         expressions: [
-          start!,
-          end!,
-          step!,
+          start,
+          end,
+          ...(step ? [step] : []),
         ],
       });
       const zero = LiteralExpr.number(0);
@@ -2866,9 +2914,9 @@ export function buildLike<T extends Expression> (
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function buildRegexpExtract<T extends Expression> (ExprType: (typeof RegexpExtractExpr) & (new (args: any) => T)): (args: any[], dialect: Dialect) => Expression {
+export function buildRegexpExtract<T extends Expression> (ExprType: (typeof RegexpExtractExpr) & (new (args: any) => T)): (args: any[], options: { dialect: Dialect }) => Expression {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (args: any[], dialect: Dialect) => {
+  return (args: any[], { dialect }: { dialect: Dialect }) => {
     const kwargs: RegexpExtractExprArgs = {
       this: seqGet(args, 0),
       expression: seqGet(args, 1),
@@ -2891,20 +2939,21 @@ export function explodeToUnnestSql (self: Generator, expression: LateralExpr): s
     assertIsInstanceOf(aliasExpr, TableAliasExpr);
     const [pos, ...cols] = aliasExpr.args.columns || [];
     assertIsInstanceOf(pos, IdentifierExpr);
-    const lateralSubquery = select([alias(pos.sub(1), pos), ...cols])
+    const validCols = cols.filter((c) => c instanceof Expression) as Expression[];
+    const lateralSubquery = select([alias(pos.sub(1), pos), ...validCols])
       .from(new UnnestExpr({
-        expressions: [thisArg.args.this],
+        expressions: [...(thisArg.args.this ? [thisArg.args.this] : [])],
         offset: true,
         alias: new TableAliasExpr({
-          this: aliasExpr.args.this,
-          columns: [...cols, pos],
+          this: aliasExpr.args.this as IdentifierExpr | undefined,
+          columns: [...validCols, pos] as IdentifierExpr[],
         }),
       }));
     crossJoinExpr = new LateralExpr({ this: lateralSubquery.subquery() });
   }
   if (thisArg instanceof ExplodeExpr) {
     crossJoinExpr = new UnnestExpr({
-      expressions: [thisArg.args.this],
+      expressions: [...(thisArg.args.this ? [thisArg.args.this] : [])],
       alias: aliasExpr,
     });
   }
@@ -2981,7 +3030,7 @@ export function groupConcatSql (self: Generator, expression: GroupConcatExpr, op
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function buildTimeToStrOrTochar (args: any[], dialect: DialectType): TimeToStrExpr | ToCharExpr {
+export function buildTimeToStrOrToChar (args: any[], { dialect }: { dialect: DialectType }): TimeToStrExpr | ToCharExpr {
   if (args.length === 2) {
     const thisArg = args[0];
     if (!thisArg.type) annotateTypes(thisArg, { dialect: dialect });
@@ -3006,7 +3055,7 @@ export function buildReplaceWithOptionalReplacement (args: any[]): ReplaceExpr {
 
 export function regexpReplaceGlobalModifier (expression: RegexpReplaceExpr): Expression | undefined {
   const modifiers = expression.args.modifiers;
-  if (!expression.args.singleReplace && (!expression.args.occurrence || (expression.args.occurrence.isInt && expression.args.occurrence.toValue() === 0))) {
+  if (!expression.args.singleReplace && (!expression.args.occurrence || (expression.args.occurrence.isInteger && expression.args.occurrence.toValue() === 0))) {
     if (!modifiers || modifiers.isString) {
       return LiteralExpr.string((modifiers?.name || '') + 'g');
     }
@@ -3014,7 +3063,7 @@ export function regexpReplaceGlobalModifier (expression: RegexpReplaceExpr): Exp
   return modifiers;
 }
 
-export function getbitSql (self: Generator, expression: GetbitExpr): string {
+export function getBitSql (self: Generator, expression: GetbitExpr): string {
   const value = expression.args.this;
   const pos = expression.args.expression;
 

@@ -20,7 +20,7 @@ import {
   Dialect, type DialectType,
 } from '../dialects/dialect';
 import {
-  ensureList, nameSequence, seqGet,
+  ensureIterable, nameSequence, seqGet,
 } from '../helper';
 import { normalizeIdentifiers } from './normalize_identifiers';
 import {
@@ -90,8 +90,8 @@ export function qualifyTables<E extends Expression> (
     catalog = normalizeIdentifiers(catalog, { dialect });
   }
 
-  const _qualify = (table: TableExpr): void => {
-    if (table.this instanceof IdentifierExpr) {
+  const qualify = (table: TableExpr): void => {
+    if (table.args.this instanceof IdentifierExpr) {
       if (db && !table.args.db) {
         table.args.db = db.copy();
       }
@@ -113,13 +113,13 @@ export function qualifyTables<E extends Expression> (
     })) {
       if (node instanceof TableExpr) {
         if (!cteNames.has(node.name)) {
-          _qualify(node);
+          qualify(node);
         }
       }
     }
   }
 
-  const _setAlias = (
+  const setAlias = (
     expr: Expression,
     canonicalAliases: Map<string, string>,
     options: {
@@ -181,7 +181,7 @@ export function qualifyTables<E extends Expression> (
         const joins = unnested.args.joins;
         unnested.args.joins = undefined;
 
-        const derivedThis = derivedTable.this;
+        const derivedThis = derivedTable.args.this;
         if (derivedThis instanceof Expression) {
           derivedThis.replace(
             select('*').from(unnested.copy(), { copy: false }),
@@ -190,11 +190,11 @@ export function qualifyTables<E extends Expression> (
         }
       }
 
-      _setAlias(derivedTable, canonicalAliases, { scope });
+      setAlias(derivedTable, canonicalAliases, { scope });
 
       const pivot = seqGet(derivedTable.getArgKey('pivots') as Expression[] || [], 0);
       if (pivot) {
-        _setAlias(pivot, canonicalAliases);
+        setAlias(pivot, canonicalAliases);
       }
     }
 
@@ -211,42 +211,41 @@ export function qualifyTables<E extends Expression> (
           sourceName = source.name;
         }
 
-        const tableThis = source.this;
+        const tableThis = source.args.this;
         const tableAlias = source.args.alias;
         let functionColumns: (string | IdentifierExpr)[] = [];
 
         if (tableThis && tableThis instanceof FuncExpr) {
           const func = tableThis as FuncExpr;
           const funcTypeName = func.constructor.name;
-          const dialectClass = dialect._constructor;
 
           if (!tableAlias) {
-            const defaultCols = dialectClass.DEFAULT_FUNCTIONS_COLUMN_NAMES[funcTypeName];
-            functionColumns = defaultCols ? ensureList(defaultCols) : [];
+            const defaultCols = dialect._constructor.DEFAULT_FUNCTIONS_COLUMN_NAMES.get(funcTypeName);
+            functionColumns = defaultCols ? Array.from(ensureIterable(defaultCols)) : [];
           } else if (tableAlias instanceof TableAliasExpr && tableAlias.args.columns?.length) {
             functionColumns = tableAlias.columns as IdentifierExpr[];
-          } else if (funcTypeName in dialectClass.DEFAULT_FUNCTIONS_COLUMN_NAMES) {
-            functionColumns = ensureList(source.aliasOrName);
+          } else if (dialect._constructor.DEFAULT_FUNCTIONS_COLUMN_NAMES.has(funcTypeName)) {
+            functionColumns = Array.from(ensureIterable(source.aliasOrName));
             source.setArgKey('alias', undefined);
             sourceName = '';
           }
         }
 
-        _setAlias(source, canonicalAliases, {
+        setAlias(source, canonicalAliases, {
           targetAlias: sourceName || source.name || undefined,
           normalize: true,
           columns: functionColumns,
         });
 
         const sourceFqn = source.parts.map((p) => p.name).join('.');
-        const sourceAliasThis = source.args.alias?.this;
+        const sourceAliasThis = source.args.alias?.args.this;
         if (sourceAliasThis instanceof IdentifierExpr) {
           tableAliases.set(sourceFqn, sourceAliasThis.copy());
         }
 
         if (pivot) {
           const targetAlias = pivot.getArgKey('unpivot') ? undefined : source.alias;
-          _setAlias(pivot, canonicalAliases, {
+          setAlias(pivot, canonicalAliases, {
             targetAlias,
             normalize: true,
           });
@@ -257,7 +256,7 @@ export function qualifyTables<E extends Expression> (
         }
 
         if (isRealTableSource) {
-          _qualify(source);
+          qualify(source);
 
           if (onQualify) {
             onQualify(source);
@@ -265,7 +264,7 @@ export function qualifyTables<E extends Expression> (
         }
       } else if (source instanceof Scope && source.isUdtf) {
         const udtf = source.expression;
-        _setAlias(udtf, canonicalAliases);
+        setAlias(udtf, canonicalAliases);
 
         if (udtf instanceof ValuesExpr) {
           const tableAlias = udtf.getArgKey('alias');
@@ -282,7 +281,7 @@ export function qualifyTables<E extends Expression> (
       if (!table.alias && table.parent) {
         const parent = table.parent;
         if (parent instanceof FromExpr || parent instanceof JoinExpr) {
-          _setAlias(table, canonicalAliases, { targetAlias: table.name });
+          setAlias(table, canonicalAliases, { targetAlias: table.name });
         }
       }
     }

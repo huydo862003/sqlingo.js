@@ -140,7 +140,7 @@ function uniqueOutputs (scope: Scope): Set<string> | undefined {
   // GROUP BY makes grouped columns unique
   const group = select.args.group;
   if (group) {
-    const groupedExpressions = new Set(group.expressions.filter((e) => e instanceof Expression));
+    const groupedExpressions = new Set(group.args.expressions?.filter((e) => e instanceof Expression));
     const groupedOutputs = new Set<Expression>();
     const uniqueOutputs = new Set<string>();
 
@@ -215,7 +215,7 @@ function isLimit1 (scope: Scope): boolean {
   if (!(limit instanceof LimitExpr)) {
     return false;
   }
-  return limit.args.expression?.this === '1';
+  return limit.args.expression?.args.this === '1';
 }
 
 /**

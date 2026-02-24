@@ -50,7 +50,7 @@ type TakenNameMapping = Map<string, Scope | TableExpr>;
  * @returns The optimized expression
  */
 export function eliminateSubqueries<E extends Expression> (expression: E): E {
-  if (expression instanceof SubqueryExpr) {
+  if (expression instanceof SubqueryExpr && expression.args.this) {
     eliminateSubqueries(expression.args.this);
     return expression;
   }
@@ -89,7 +89,7 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
     assertIsInstanceOf(withClause, WithExpr);
     recursive = Boolean(withClause.args.recursive);
     for (const cte of withClause.args.expressions ?? []) {
-      if (isInstanceOf(cte, CteExpr)) {
+      if (isInstanceOf(cte, CteExpr) && cte.args.this) {
         existingCtes.set(cte.args.this, cte.alias);
       }
     }
@@ -216,7 +216,7 @@ function eliminateCte (
   parent.pop();
 
   if (withClause) {
-    const withExpressions = withClause.expressions;
+    const withExpressions = withClause.args.expressions;
     if (!withExpressions || withExpressions.length === 0) {
       withClause.pop();
     }

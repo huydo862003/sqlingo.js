@@ -55,7 +55,13 @@ export function dump (expression: Expression): Array<Record<string, unknown>> {
       payload[CLASS] = node.constructor.name;
 
       if (node.type) {
-        payload[TYPE] = dump(node.type);
+        if (typeof node === 'string') {
+          payload[TYPE] = [node];
+        } else if (typeof node.type === 'string') {
+          payload[TYPE] = [node.type];
+        } else {
+          payload[TYPE] = dump(node.type);
+        }
       }
       if (node.comments && 0 < node.comments.length) {
         payload[COMMENTS] = node.comments;

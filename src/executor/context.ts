@@ -96,7 +96,7 @@ export class Context {
       for (const table of this.tables.values()) {
         reader = table.get(i);
       }
-      yield [reader!, this];
+      if (reader) yield [reader, this];
     }
   }
 

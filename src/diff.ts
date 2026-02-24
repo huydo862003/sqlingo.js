@@ -213,13 +213,14 @@ class ChangeDistiller {
     const computedMatchings = this.computeMatchingSet();
     preMatchedNodes.forEach((v, k) => computedMatchings.set(k, v));
 
-    return this.generateEditScript(computedMatchings, deltaOnly);
+    return this.generateEditScript(computedMatchings, { deltaOnly });
   }
 
   private generateEditScript (
     matchings: Map<Expression, Expression>,
-    deltaOnly: boolean,
+    options: { deltaOnly: boolean },
   ): Edit[] {
+    const { deltaOnly } = options;
     const editScript: Edit[] = [];
 
     this.unmatchedSourceNodes.forEach((node) => editScript.push(new Remove(node)));
@@ -292,12 +293,12 @@ class ChangeDistiller {
 
     // Maintain BFS order for unmatched nodes
     const orderedUnmatchedSource: Expression[] = [];
-    for (const n of this.source!.bfs()) {
+    for (const n of this.source?.bfs() ?? []) {
       if (this.unmatchedSourceNodes.has(n)) orderedUnmatchedSource.push(n);
     }
 
     const orderedUnmatchedTarget: Expression[] = [];
-    for (const n of this.target!.bfs()) {
+    for (const n of this.target?.bfs() ?? []) {
       if (this.unmatchedTargetNodes.has(n)) orderedUnmatchedTarget.push(n);
     };
 

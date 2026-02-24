@@ -1,6 +1,9 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/optimize_joins.py
 
-import type { Expression } from '../expressions';
+import type {
+  Expression,
+  JoinExprArgs,
+} from '../expressions';
 import {
   combine,
   columnTableNames,
@@ -149,19 +152,20 @@ export function normalize (expression: Expression): Expression {
     // Check if any join attributes are present
     const hasAnyAttr = JOIN_ATTRS.some((k) => join.args[k] != null);
 
+    const joinArgs = join.args as JoinExprArgs;
     if (!hasAnyAttr) {
-      join.args.kind = JoinExprKind.CROSS;
+      joinArgs.kind = JoinExprKind.CROSS;
     }
 
-    if (join.args.kind === JoinExprKind.CROSS) {
-      join.args.on = undefined;
+    if (joinArgs.kind === JoinExprKind.CROSS) {
+      joinArgs.on = undefined;
     } else {
-      if (join.args.kind === JoinExprKind.INNER || join.args.kind === JoinExprKind.OUTER) {
-        join.args.kind = undefined;
+      if (joinArgs.kind === JoinExprKind.INNER || joinArgs.kind === JoinExprKind.OUTER) {
+        joinArgs.kind = undefined;
       }
 
-      if (!join.args.on && !join.args.using) {
-        join.args.on = true_();
+      if (!joinArgs.on && !joinArgs.using) {
+        joinArgs.on = true_();
       }
     }
   }
@@ -206,6 +210,9 @@ export function otherTableNames (join: JoinExpr): Set<string> {
  * @param joins - Array of join expressions
  * @returns True if joins can be safely reordered
  */
-export function isReorderable (joins: JoinExpr[]): boolean {
-  return !joins.some((join) => join.args.side);
+export function isReorderable (joins: Iterable<JoinExpr>): boolean {
+  for (const join of joins) {
+    if (join.args.side) return false;
+  }
+  return true;
 }

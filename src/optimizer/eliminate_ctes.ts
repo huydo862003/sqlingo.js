@@ -51,7 +51,7 @@ export function eliminateCtes<E extends Expression> (expression: E): E {
 
           // Pop the entire WITH clause if this is the last CTE
           if (withNode) {
-            const withExpressions = withNode.expressions;
+            const withExpressions = withNode.args.expressions;
             if (!withExpressions || withExpressions.length === 0) {
               withNode.pop();
             }

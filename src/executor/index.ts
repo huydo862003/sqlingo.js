@@ -30,7 +30,7 @@ export function execute (
   sql: string | Expression,
   schema?: Record<string, unknown> | Schema,
   dialect?: DialectType,
-  tables_?: Record<string, unknown>,
+  tables_?: Record<string, Table>,
 ): Table {
   const tables = ensureTables(tables_, dialect);
 
@@ -43,7 +43,7 @@ export function execute (
 
     for (const keys of flattened) {
       const path: Array<[string, string]> = keys.map((k) => [k, k]);
-      const table = nestedGet(mapping, path, false) as Table | undefined;
+      const table = nestedGet(mapping, path, { raiseOnMissing: false }) as Table | undefined;
       if (!table) continue;
 
       for (const column of table.columns) {

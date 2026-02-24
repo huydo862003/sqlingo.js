@@ -67,7 +67,10 @@ export function normalize (
 
     node.transform((expr) => simplifier.rewriteBetween(expr), { copy: false });
 
-    const distance = normalizationDistance(node, dnf, maxDistance);
+    const distance = normalizationDistance(node, {
+      dnf,
+      max: maxDistance,
+    });
 
     if (maxDistance < distance) {
       return expression;
@@ -75,7 +78,11 @@ export function normalize (
 
     try {
       const newNode = whileChanging(node, (e: Expression) =>
-        distributiveLaw(e, dnf, maxDistance, simplifier));
+        distributiveLaw(e, {
+          dnf,
+          maxDistance,
+          simplifier,
+        }));
       node = node.replace(newNode) as ConnectorExpr;
     } catch (e) {
       if (e instanceof OptimizeError) {
@@ -145,9 +152,12 @@ export function normalized (expression: Expression, options: { dnf?: boolean } =
  */
 export function normalizationDistance (
   expression: Expression,
-  dnf: boolean = false,
-  max: number = Infinity,
+  options: { dnf?: boolean;
+    max?: number; } = {},
 ): number {
+  const {
+    dnf = false, max = Infinity,
+  } = options;
   // Start with negative count of connectors
   let total = -1;
   for (const _ of expression.findAll(ConnectorExpr)) {
@@ -155,7 +165,10 @@ export function normalizationDistance (
   }
 
   // Add the lengths of all predicates when expanded
-  for (const length of predicateLengths(expression, dnf, max)) {
+  for (const length of predicateLengths(expression, {
+    dnf,
+    max,
+  })) {
     total += length;
     if (max < total) {
       return total;
@@ -172,12 +185,15 @@ export function normalizationDistance (
  */
 function* predicateLengths (
   expression: Expression,
-  dnf: boolean,
-  max: number = Infinity,
-  depth: number = 0,
+  options: { dnf: boolean;
+    max?: number;
+    depth?: number; },
 ): Generator<number> {
-  if (max < depth) {
-    yield depth;
+  const {
+    dnf, max = Infinity, depth: depth0 = 0,
+  } = options;
+  if (max < depth0) {
+    yield depth0;
     return;
   }
 
@@ -188,7 +204,7 @@ function* predicateLengths (
     return;
   }
 
-  depth += 1;
+  const depth = depth0 + 1;
 
   const left = unnested.left;
   const right = unnested.right;
@@ -202,15 +218,31 @@ function* predicateLengths (
 
   if (unnested instanceof expandType) {
     // This is the expanding operator - multiply lengths
-    for (const a of predicateLengths(left, dnf, max, depth)) {
-      for (const b of predicateLengths(right, dnf, max, depth)) {
+    for (const a of predicateLengths(left, {
+      dnf,
+      max,
+      depth,
+    })) {
+      for (const b of predicateLengths(right, {
+        dnf,
+        max,
+        depth,
+      })) {
         yield a + b;
       }
     }
   } else {
     // This is the other operator - just yield from both
-    yield* predicateLengths(left, dnf, max, depth);
-    yield* predicateLengths(right, dnf, max, depth);
+    yield* predicateLengths(left, {
+      dnf,
+      max,
+      depth,
+    });
+    yield* predicateLengths(right, {
+      dnf,
+      max,
+      depth,
+    });
   }
 }
 
@@ -222,21 +254,27 @@ function* predicateLengths (
  */
 function distributiveLaw (
   expression: Expression,
-  dnf: boolean,
-  maxDistance: number,
-  simplifier?: Simplifier,
+  options: { dnf: boolean;
+    maxDistance: number;
+    simplifier?: Simplifier; },
 ): Expression {
+  const {
+    dnf, maxDistance, simplifier,
+  } = options;
   if (normalized(expression, { dnf })) {
     return expression;
   }
 
-  const distance = normalizationDistance(expression, dnf, maxDistance);
+  const distance = normalizationDistance(expression, {
+    dnf,
+    max: maxDistance,
+  });
 
   if (maxDistance < distance) {
     throw new OptimizeError(`Normalization distance ${distance} exceeds max ${maxDistance}`);
   }
 
-  replaceChildren(expression, (e) => distributiveLaw(e, dnf, maxDistance, simplifier));
+  replaceChildren(expression, (e) => distributiveLaw(e, options));
 
   const [toExp, fromExp] = dnf ? [OrExpr, AndExpr] : [AndExpr, OrExpr];
 

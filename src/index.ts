@@ -26,11 +26,11 @@ import {
 import {
   Schema, MappingSchema,
 } from './schema';
-import type { Dialects } from './dialects/index';
+import type { Dialects } from './dialects';
 import { diff } from './diff';
 import { lineage } from './lineage';
-import { optimize } from './optimizer/index';
-import { execute } from './executor/index';
+import { optimize } from './optimizer/optimizer';
+import { execute } from './executor';
 
 export {
   Expression,

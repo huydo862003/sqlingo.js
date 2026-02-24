@@ -29,7 +29,8 @@ const SELECT_ALL = Symbol('SELECT_ALL');
 /**
  * Selection to use if selection list is empty
  */
-function defaultSelection (isAgg: boolean): Expression {
+function defaultSelection (options: { isAgg: boolean }): Expression {
+  const { isAgg } = options;
   return alias(
     isAgg
       ? new MaxExpr({ this: LiteralExpr.number(1) })
@@ -263,7 +264,7 @@ function removeUnusedSelections_ (
 
   // If there are no remaining selections, just select a single constant
   if (newSelections.length === 0) {
-    newSelections.push(defaultSelection(isAgg));
+    newSelections.push(defaultSelection({ isAgg }));
   }
 
   select.select(...newSelections, {
