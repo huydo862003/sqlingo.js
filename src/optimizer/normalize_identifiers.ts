@@ -65,6 +65,14 @@ export function normalizeIdentifiers<E extends Expression> (
   },
 ): E;
 
+export function normalizeIdentifiers<E extends Expression> (
+  expression: E | string,
+  options?: {
+    dialect?: DialectType;
+    storeOriginalColumnIdentifiers?: boolean;
+  },
+): E | IdentifierExpr;
+
 export function normalizeIdentifiers (
   expression: string | Expression,
   options: {

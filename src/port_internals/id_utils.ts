@@ -1,6 +1,6 @@
 declare const _brand: unique symbol;
 
-export type Id = bigint & { readonly [_brand]: 'Id' };
+export type Id = string & { readonly [_brand]: 'Id' };
 
 let _counter = 0n;
 
@@ -8,7 +8,7 @@ const _objectIds = new WeakMap<object, Id>();
 const _primitiveIds = new Map<unknown, Id>();
 
 function nextId (): Id {
-  return _counter++ as Id;
+  return (_counter++).toString() as Id;
 }
 
 export function id (value: object): Id;

@@ -1182,7 +1182,7 @@ export function* walkInScope (
 export function findAllInScope<E extends Expression> (
   expression: Expression,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expressionTypes: (new (...args: any) => E)[],
+  expressionTypes: readonly (new (...args: any) => E)[],
   options: { bfs?: boolean } = {},
 ): E[] {
   const { bfs = true } = options;

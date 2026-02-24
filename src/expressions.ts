@@ -7301,8 +7301,8 @@ export type TagExprArgs = Merge<[
   BaseExpressionArgs,
   {
     this?: Expression;
-    prefix?: Expression;
-    postfix?: Expression;
+    prefix?: string;
+    postfix?: string;
   },
 ]>;
 
@@ -7342,6 +7342,7 @@ export type PivotExprArgs = Merge<[
     defaultOnNull?: Expression;
     into?: Expression;
     with?: Expression;
+    expressions?: Expression[];
   },
 ]>;
 
