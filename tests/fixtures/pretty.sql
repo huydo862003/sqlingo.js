@@ -1,0 +1,1 @@
+../../upstream/sqlglot/tests/fixtures/pretty.sql

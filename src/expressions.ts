@@ -31,6 +31,9 @@ import {
   parseOne, type ParseOptions,
 } from './parser';
 import { normalizeIdentifiers } from './optimizer';
+import {
+  dump, load,
+} from './serde';
 
 export const SQLGLOT_META = 'sqlglot.meta';
 export const SQLGLOT_ANONYMOUS = 'sqlglot.anonymous';
@@ -1018,7 +1021,7 @@ export enum ExpressionKey {
   WITH = 'with',
   WITHIN_GROUP = 'withinGroup',
   WITH_DATA_PROPERTY = 'withDataProperty',
-  WITH_FILL = 'withfill',
+  WITH_FILL = 'withFill',
   WITH_JOURNAL_TABLE_PROPERTY = 'withJournalTableProperty',
   WITH_OPERATOR = 'withOperator',
   WITH_PROCEDURE_OPTIONS = 'withProcedureOptions',
@@ -1789,7 +1792,7 @@ export class Expression implements
    * @returns The transformed tree
    */
   transform (
-    func: (node: Expression, options: Record<string, unknown>) => string | Expression | undefined,
+    func: (node: Expression, options: Record<string, unknown>) => string | Expression | Expression[] | undefined,
     options: {
       copy?: boolean;
       [index: string]: unknown;
@@ -1799,8 +1802,8 @@ export class Expression implements
       copy = true, ...restOptions
     } = options;
 
-    let root: string | Expression | undefined;
-    let newNode: string | Expression | undefined;
+    let root: string | Expression | Expression[] | undefined;
+    let newNode: string | Expression | Expression[] | undefined;
 
     const startNode = copy
       ? this.copy()
@@ -1847,9 +1850,10 @@ export class Expression implements
    */
   replace<E extends Expression>(expression: E): E;
   replace<E extends Expression>(expression: ExpressionValue<E>): ExpressionValue<E>;
+  replace<E extends Expression>(expression: ExpressionValue<E>[]): ExpressionValue<E>[];
   replace<E extends Expression>(expression: ExpressionValue<E> | undefined): ExpressionValue<E> | undefined;
   replace (expression: undefined): undefined;
-  replace<E extends Expression>(expression: ExpressionValue<E> | undefined): ExpressionValue<E> | undefined {
+  replace<E extends Expression>(expression: ExpressionValue<E> | ExpressionValue<E>[] | undefined): ExpressionValue<E> | ExpressionValue<E>[] | undefined {
     const parent = this.parent;
 
     if (!parent || parent === expression) {
@@ -1907,7 +1911,8 @@ export class Expression implements
    * @param type - the class constructor to check against
    * @returns This expression, typed as the specified type
    */
-  assertIs<T extends Expression>(type: new (...args: never[]) => T): T {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  assertIs<T extends Expression>(type: new (args: any) => T): T {
     if (!(this instanceof type)) {
       throw new Error(`${this.constructor.name} is not ${type.name}.`);
     }
@@ -1951,7 +1956,19 @@ export class Expression implements
     return errors;
   }
 
-  // TODO: implement load and dump
+  /**
+   * Dump this Expression to a JSON-serializable list.
+   */
+  dump (): Record<string, unknown>[] {
+    return dump(this);
+  }
+
+  /**
+   * Load a list (as returned by Expression.dump) into an Expression instance.
+   */
+  static load (obj?: Record<string, unknown>[]): Expression | undefined {
+    return load(obj);
+  }
 
   /**
    * AND this condition with one or multiple expressions.
@@ -2270,7 +2287,7 @@ export class Expression implements
    * @returns The IN expression
    */
   in (
-    expressions?: ExpressionValue[],
+    expressions?: (ExpressionValue | ExpressionValueList)[],
     query?: ExpressionValue,
     options: {
       unnest?: ExpressionValue | ExpressionValueList;
@@ -9305,7 +9322,7 @@ export class UseExpr extends Expression {
 export type WhenExprArgs = Merge<[
   BaseExpressionArgs,
   {
-    matched?: Expression;
+    matched?: ExpressionOrBoolean;
     source?: Expression;
     condition?: Expression;
     then?: Expression;
@@ -13856,7 +13873,7 @@ export class SelectExpr extends QueryExpr {
    * // 'SELECT /*+ BROADCAST(y) *\/ x FROM tbl'
    */
   hint (
-    hints: ExpressionValue[],
+    _hints?: ExpressionValue | ExpressionValue[],
     options: {
       dialect?: DialectType;
       copy?: boolean;
@@ -13866,6 +13883,7 @@ export class SelectExpr extends QueryExpr {
     const {
       dialect, copy = true,
     } = options;
+    const hints = _hints !== undefined ? Array.from(ensureIterable<ExpressionValue>(_hints)) : [];
     const hintExprs = hints.map((h) =>
       maybeParse(h, {
         dialect,
@@ -30699,7 +30717,7 @@ export class ApproxQuantileExpr extends QuantileExpr {
  */
 export function column (
   columnRef: {
-    col?: string | IdentifierExpr;
+    col?: string | IdentifierExpr | StarExpr;
     table?: string | IdentifierExpr;
     db?: string | IdentifierExpr;
     catalog?: string | IdentifierExpr;
@@ -31171,7 +31189,7 @@ export function toInterval (
  * @returns The aliased expression
  */
 export function alias<E extends Expression> (
-  expression?: ExpressionOrString<E>,
+  expression?: ExpressionValue<E>,
   aliasName?: ExpressionValue<IdentifierExpr>,
   options: {
     table?: boolean | ExpressionOrStringList<IdentifierExpr>;
@@ -31445,7 +31463,7 @@ export function cast (
  * @returns The Values expression object
  */
 export function values (
-  valuesList: unknown[][],
+  valuesList: (ExpressionValue | undefined)[][],
   options: {
     alias?: string;
     columns?: (string | IdentifierExpr)[];
@@ -31778,18 +31796,18 @@ export function delete_ (
  */
 export function update<T> (
   table: string | TableExpr,
-  options: {
-    properties?: Record<string, unknown>;
+  properties?: Record<string, unknown>,
+  options?: {
     where?: string | Expression;
     from?: string | Expression;
     with?: Record<string, string | Expression>;
     dialect?: DialectType;
-  } & { [K in keyof T]: K extends 'dialect' ? unknown : ExpressionValue | ExpressionValueList },
+  } & { [K in keyof T]: K extends 'dialect' | 'with' ? unknown : ExpressionValue | ExpressionValueList },
 ): UpdateExpr;
 export function update (
   table: string | TableExpr,
+  properties?: Record<string, unknown>,
   options: {
-    properties?: Record<string, unknown>;
     where?: string | Expression;
     from?: string | Expression;
     with?: Record<string, string | Expression>;
@@ -31797,7 +31815,7 @@ export function update (
   } & { [key: string]: ExpressionValue | ExpressionValueList } = {},
 ): UpdateExpr {
   const {
-    properties, where, from: fromExpr, with: withCtes, dialect, ...opts
+    where, from: fromExpr, with: withCtes, dialect, ...opts
   } = options;
 
   const updateExpr = new UpdateExpr({
@@ -31865,7 +31883,7 @@ export function update (
  *       on: "my_table.id = source_table.id"
  *     }).sql()
  *
- * @param whenExprs - The WHEN clauses specifying actions for matched and unmatched rows
+ * @param _whenExprs - The WHEN clauses specifying actions for matched and unmatched rows
  * @param options - Options object
  * @param options.into - The target table to merge data into
  * @param options.using - The source table to merge data from
@@ -31876,20 +31894,22 @@ export function update (
  * @returns The syntax tree for the MERGE statement
  */
 export function merge (
-  whenExprs: (string | Expression)[],
+  _whenExprs?: ExpressionOrString | ExpressionOrString[],
   options: {
-    into?: string | TableExpr;
-    using?: string | Expression;
-    on?: string | Expression;
-    returning?: string | Expression;
+    into?: ExpressionOrString<TableExpr | AliasExpr>;
+    using?: ExpressionOrString;
+    on?: ExpressionOrString;
+    returning?: ExpressionOrString;
     dialect?: DialectType;
     copy?: boolean;
     [key: string]: unknown;
-  },
+  } = {},
 ): MergeExpr {
   const {
     into, using: usingExpr, on, returning, dialect, copy = true, ...restOptions
   } = options;
+
+  const whenExprs = _whenExprs !== undefined ? Array.from(ensureIterable<ExpressionOrString>(_whenExprs)) : [];
 
   const expressions: WhenExpr[] = [];
   for (const whenExpr of whenExprs) {
@@ -31982,7 +32002,7 @@ export function condition (
  * @returns Expression
  */
 export function maybeParse<RetT extends Expression> (
-  sqlOrExpression: string | number | boolean | RetT | undefined,
+  sqlOrExpression?: ExpressionValue<RetT>,
   options?: ParseOptions<RetT> & {
     prefix?: string;
     copy?: boolean;

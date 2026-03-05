@@ -526,7 +526,7 @@ import {
 } from './tokens';
 import { simplify } from './optimizer/simplify';
 import {
-  applyIndexOffset, csv, ensureIterable, nameSequence,
+  applyIndexOffset, csv, nameSequence,
   seqGet,
 } from './helper';
 import { ALL_JSON_PATH_PARTS } from './jsonpath';
@@ -557,6 +557,9 @@ export interface GeneratorOptions extends ParseOptions {
 }
 
 export interface TranspileOptions extends ParseOptions {
+  write?: DialectType;
+  identity?: boolean;
+  errorLevel?: ErrorLevel;
   pretty?: boolean;
   [key: string]: unknown;
 }

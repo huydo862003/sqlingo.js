@@ -26,7 +26,9 @@ import {
 import {
   Schema, MappingSchema,
 } from './schema';
-import type { Dialects } from './dialects';
+import {
+  Dialect, type Dialects, type DialectType,
+} from './dialects/dialect';
 import { diff } from './diff';
 import { lineage } from './lineage';
 import { optimize } from './optimizer/optimizer';
@@ -60,6 +62,10 @@ export {
   findTables,
 } from './expressions';
 
+export {
+  dump, load,
+} from './serde';
+
 export const version = packageJson.version;
 
 export {
@@ -70,8 +76,6 @@ export {
   TokenType, Tokenizer,
 };
 export type { ParseOptions };
-// NOTE: parse() and parseOne() are imported from parser.ts (not defined here)
-// to avoid circular dependencies. In Python sqlglot, these are in __init__.py.
 export {
   Parser, parse, parseOne,
 };
@@ -84,6 +88,9 @@ export {
 export {
   Schema, MappingSchema,
 };
+export {
+  Dialect, type Dialects, type DialectType,
+};
 export { diff };
 export { lineage };
 export { optimize };
@@ -95,18 +102,28 @@ export function setPretty (value: boolean): void {
   pretty = value;
 }
 
+export function tokenize (sql: string, read?: DialectType, dialect?: DialectType): Token[] {
+  return Dialect.getOrRaise(read ?? dialect).tokenize(sql);
+}
+
 export function transpile (
   sql: string,
-  read?: Dialects,
-  write?: Dialects,
-  identity = true,
-  errorLevel?: ErrorLevel,
-  opts?: TranspileOptions,
+  opts: TranspileOptions = {},
 ): string[] {
-  const writeDialect = identity
-    ? (write ?? read)
-    : write;
-  throw new UnsupportedError(
-    `transpile() not yet implemented (sql: "${sql}", read: "${read}", write: "${writeDialect}", errorLevel: ${errorLevel}, opts: ${JSON.stringify(opts)})`,
-  );
+  const {
+    read, dialect, write, identity = true, errorLevel, ...rest
+  } = opts;
+  const writeDialect = identity ? (write ?? read ?? dialect) : write;
+  const writeDial = Dialect.getOrRaise(writeDialect);
+  return parse(sql, {
+    read: read ?? dialect,
+    errorLevel,
+    ...rest,
+  }).map((expression) =>
+    expression
+      ? writeDial.generate(expression, {
+        copy: false,
+        ...rest,
+      })
+      : '');
 }
