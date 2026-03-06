@@ -404,86 +404,101 @@ class ExasolTokenizer extends Tokenizer {
 }
 
 class ExasolParser extends Parser {
-  static FUNCTIONS = (() => {
-    const functions: Record<string, (args: Expression[]) => Expression> = {
-      ...Parser.FUNCTIONS,
-      BIT_AND: binaryFromFunction(BitwiseAndExpr),
-      BIT_OR: binaryFromFunction(BitwiseOrExpr),
-      BIT_XOR: binaryFromFunction(BitwiseXorExpr),
-      BIT_NOT: (args: Expression[]) => new BitwiseNotExpr({ this: seqGet(args, 0) }),
-      BIT_LSHIFT: binaryFromFunction(BitwiseLeftShiftExpr),
-      BIT_RSHIFT: binaryFromFunction(BitwiseRightShiftExpr),
-      DATE_TRUNC: (args: Expression[]) => new TimestampTruncExpr({
-        this: seqGet(args, 1)!,
-        unit: seqGet(args, 0)!,
-      }),
-      DIV: binaryFromFunction(IntDivExpr),
-      EVERY: (args: Expression[]) => new AllExpr({ this: seqGet(args, 0) }),
-      EDIT_DISTANCE: LevenshteinExpr.fromArgList,
-      HASH_SHA: ShaExpr.fromArgList,
-      HASH_SHA1: ShaExpr.fromArgList,
-      HASH_MD5: Md5Expr.fromArgList,
-      HASHTYPE_MD5: Md5DigestExpr.fromArgList,
-      REGEXP_SUBSTR: RegexpExtractExpr.fromArgList,
-      REGEXP_REPLACE: (args: Expression[]) => new RegexpReplaceExpr({
-        this: seqGet(args, 0),
-        expression: seqGet(args, 1),
-        replacement: seqGet(args, 2),
-        position: seqGet(args, 3),
-        occurrence: seqGet(args, 4),
-      }),
-      HASH_SHA256: (args: Expression[]) => new Sha2Expr({
-        this: seqGet(args, 0)!,
-        length: LiteralExpr.number(256),
-      }),
-      HASH_SHA512: (args: Expression[]) => new Sha2Expr({
-        this: seqGet(args, 0)!,
-        length: LiteralExpr.number(512),
-      }),
-      TRUNC: (args: Expression[]) => buildTrunc(args, { dialect: Dialects.EXASOL }),
-      TRUNCATE: (args: Expression[]) => buildTrunc(args, { dialect: Dialects.EXASOL }),
-      VAR_POP: VariancePopExpr.fromArgList,
-      APPROXIMATE_COUNT_DISTINCT: ApproxDistinctExpr.fromArgList,
-      TO_CHAR: (args: Expression[]) => buildTimeToStrOrToChar(args, { dialect: Dialects.EXASOL }),
-      TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: Dialects.EXASOL }),
-      CONVERT_TZ: (args: Expression[]) => new ConvertTimezoneExpr({
-        timestamp: seqGet(args, 0)!,
-        sourceTz: seqGet(args, 1),
-        targetTz: seqGet(args, 2)!,
-      }),
-      NULLIFZERO: buildNullIfZero,
-      ZEROIFNULL: buildZeroIfNull,
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return ExasolParser.#FUNCTIONS ??= (() => {
+      const functions: Record<string, (args: Expression[]) => Expression> = {
+        ...Parser.FUNCTIONS,
+        BIT_AND: binaryFromFunction(BitwiseAndExpr),
+        BIT_OR: binaryFromFunction(BitwiseOrExpr),
+        BIT_XOR: binaryFromFunction(BitwiseXorExpr),
+        BIT_NOT: (args: Expression[]) => new BitwiseNotExpr({ this: seqGet(args, 0) }),
+        BIT_LSHIFT: binaryFromFunction(BitwiseLeftShiftExpr),
+        BIT_RSHIFT: binaryFromFunction(BitwiseRightShiftExpr),
+        DATE_TRUNC: (args: Expression[]) => new TimestampTruncExpr({
+          this: seqGet(args, 1)!,
+          unit: seqGet(args, 0)!,
+        }),
+        DIV: binaryFromFunction(IntDivExpr),
+        EVERY: (args: Expression[]) => new AllExpr({ this: seqGet(args, 0) }),
+        EDIT_DISTANCE: LevenshteinExpr.fromArgList,
+        HASH_SHA: ShaExpr.fromArgList,
+        HASH_SHA1: ShaExpr.fromArgList,
+        HASH_MD5: Md5Expr.fromArgList,
+        HASHTYPE_MD5: Md5DigestExpr.fromArgList,
+        REGEXP_SUBSTR: RegexpExtractExpr.fromArgList,
+        REGEXP_REPLACE: (args: Expression[]) => new RegexpReplaceExpr({
+          this: seqGet(args, 0),
+          expression: seqGet(args, 1),
+          replacement: seqGet(args, 2),
+          position: seqGet(args, 3),
+          occurrence: seqGet(args, 4),
+        }),
+        HASH_SHA256: (args: Expression[]) => new Sha2Expr({
+          this: seqGet(args, 0)!,
+          length: LiteralExpr.number(256),
+        }),
+        HASH_SHA512: (args: Expression[]) => new Sha2Expr({
+          this: seqGet(args, 0)!,
+          length: LiteralExpr.number(512),
+        }),
+        TRUNC: (args: Expression[]) => buildTrunc(args, { dialect: Dialects.EXASOL }),
+        TRUNCATE: (args: Expression[]) => buildTrunc(args, { dialect: Dialects.EXASOL }),
+        VAR_POP: VariancePopExpr.fromArgList,
+        APPROXIMATE_COUNT_DISTINCT: ApproxDistinctExpr.fromArgList,
+        TO_CHAR: (args: Expression[]) => buildTimeToStrOrToChar(args, { dialect: Dialects.EXASOL }),
+        TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: Dialects.EXASOL }),
+        CONVERT_TZ: (args: Expression[]) => new ConvertTimezoneExpr({
+          timestamp: seqGet(args, 0)!,
+          sourceTz: seqGet(args, 1),
+          targetTz: seqGet(args, 2)!,
+        }),
+        NULLIFZERO: buildNullIfZero,
+        ZEROIFNULL: buildZeroIfNull,
+      };
+
+      DATE_UNITS.forEach((unit) => {
+        functions[`ADD_${unit}S`] = buildDateDelta(DateAddExpr, undefined, { defaultUnit: unit });
+        functions[`${unit}S_BETWEEN`] = buildDateDelta(DateDiffExpr, undefined, { defaultUnit: unit });
+      });
+
+      return functions;
+    })();
+  }
+
+  static #CONSTRAINT_PARSERS: undefined = undefined;
+  static get CONSTRAINT_PARSERS () {
+    return ExasolParser.#CONSTRAINT_PARSERS ??= {
+      ...Parser.CONSTRAINT_PARSERS,
+      COMMENT: (self: Parser) => {
+        return self.expression(
+          CommentColumnConstraintExpr,
+          { this: (self as ExasolParser).match(TokenType.IS) && self.parseString() },
+        );
+      },
     };
+  }
 
-    DATE_UNITS.forEach((unit) => {
-      functions[`ADD_${unit}S`] = buildDateDelta(DateAddExpr, undefined, { defaultUnit: unit });
-      functions[`${unit}S_BETWEEN`] = buildDateDelta(DateDiffExpr, undefined, { defaultUnit: unit });
-    });
+  static #FUNC_TOKENS: undefined = undefined;
+  static get FUNC_TOKENS () {
+    return ExasolParser.#FUNC_TOKENS ??= new Set([...Parser.FUNC_TOKENS, TokenType.SYSTIMESTAMP]);
+  }
 
-    return functions;
-  })();
+  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  static get NO_PAREN_FUNCTIONS () {
+    return ExasolParser.#NO_PAREN_FUNCTIONS ??= {
+      ...Parser.NO_PAREN_FUNCTIONS,
+      [TokenType.SYSTIMESTAMP]: SystimestampExpr,
+    };
+  }
 
-  static CONSTRAINT_PARSERS = {
-    ...Parser.CONSTRAINT_PARSERS,
-    COMMENT: (self: Parser) => {
-      return self.expression(
-        CommentColumnConstraintExpr,
-        { this: (self as ExasolParser).match(TokenType.IS) && self.parseString() },
-      );
-    },
-  };
-
-  static FUNC_TOKENS = new Set([...Parser.FUNC_TOKENS, TokenType.SYSTIMESTAMP]);
-
-  static NO_PAREN_FUNCTIONS = {
-    ...Parser.NO_PAREN_FUNCTIONS,
-    [TokenType.SYSTIMESTAMP]: SystimestampExpr,
-  };
-
-  static FUNCTION_PARSERS = {
-    ...Parser.FUNCTION_PARSERS,
-    ...Object.fromEntries(['GROUP_CONCAT', 'LISTAGG'].map((k) => [k, (self: Parser) => self.parseGroupConcat()])),
-  };
+  static #FUNCTION_PARSERS: undefined = undefined;
+  static get FUNCTION_PARSERS () {
+    return ExasolParser.#FUNCTION_PARSERS ??= {
+      ...Parser.FUNCTION_PARSERS,
+      ...Object.fromEntries(['GROUP_CONCAT', 'LISTAGG'].map((k) => [k, (self: Parser) => self.parseGroupConcat()])),
+    };
+  }
 
   static ODBC_DATETIME_LITERALS = {
     d: DateExpr,

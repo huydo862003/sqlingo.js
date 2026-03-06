@@ -183,50 +183,68 @@ export class TeradataParser extends Parser {
     'UNICODE_TO_UNICODE_NFKD',
   ]);
 
-  public static FUNC_TOKENS: Set<TokenType> = (() => {
-    const tokens = new Set(Parser.FUNC_TOKENS);
-    tokens.delete(TokenType.REPLACE);
-    return tokens;
-  })();
+  static #FUNC_TOKENS: Set<TokenType> | undefined = undefined;
+  static get FUNC_TOKENS (): Set<TokenType> {
+    return TeradataParser.#FUNC_TOKENS ??= (() => {
+      const tokens = new Set(Parser.FUNC_TOKENS);
+      tokens.delete(TokenType.REPLACE);
+      return tokens;
+    })();
+  }
 
-  public static STATEMENT_PARSERS: Record<TokenType | string, (self: Parser) => Expression | Expression[] | undefined> = {
-    ...Parser.STATEMENT_PARSERS,
-    [TokenType.DATABASE]: (self: Parser) => self.expression(
-      UseExpr,
-      { this: self.parseTable({ schema: false }) },
-    ),
-    [TokenType.REPLACE]: (self: Parser) => self.parseCreate(),
-    [TokenType.LOCK]: (self: Parser) => (self as TeradataParser).parseLockingStatement(),
-  };
+  static #STATEMENT_PARSERS: Record<TokenType | string, (self: Parser) => Expression | Expression[] | undefined> | undefined = undefined;
+  static get STATEMENT_PARSERS (): Record<TokenType | string, (self: Parser) => Expression | Expression[] | undefined> {
+    return TeradataParser.#STATEMENT_PARSERS ??= {
+      ...Parser.STATEMENT_PARSERS,
+      [TokenType.DATABASE]: (self: Parser) => self.expression(
+        UseExpr,
+        { this: self.parseTable({ schema: false }) },
+      ),
+      [TokenType.REPLACE]: (self: Parser) => self.parseCreate(),
+      [TokenType.LOCK]: (self: Parser) => (self as TeradataParser).parseLockingStatement(),
+    };
+  }
 
-  public static SET_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
-    ...Parser.SET_PARSERS,
-    QUERY_BAND: (self: Parser) => (self as TeradataParser).parseQueryBand(),
-  };
+  static #SET_PARSERS: Record<string, (self: Parser) => Expression | undefined> | undefined = undefined;
+  static get SET_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+    return TeradataParser.#SET_PARSERS ??= {
+      ...Parser.SET_PARSERS,
+      QUERY_BAND: (self: Parser) => (self as TeradataParser).parseQueryBand(),
+    };
+  }
 
-  public static FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> = {
-    ...Parser.FUNCTION_PARSERS,
-    TRYCAST: Parser.FUNCTION_PARSERS['TRY_CAST'],
-    RANGE_N: (self: Parser) => (self as TeradataParser).parseRangeN(),
-    TRANSLATE: (self: Parser) => (self as TeradataParser).parseTranslate(),
-  };
+  static #FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+    return TeradataParser.#FUNCTION_PARSERS ??= {
+      ...Parser.FUNCTION_PARSERS,
+      TRYCAST: Parser.FUNCTION_PARSERS['TRY_CAST'],
+      RANGE_N: (self: Parser) => (self as TeradataParser).parseRangeN(),
+      TRANSLATE: (self: Parser) => (self as TeradataParser).parseTranslate(),
+    };
+  }
 
-  public static FUNCTIONS: Record<string, (args: Expression[]) => Expression> = {
-    ...Parser.FUNCTIONS,
-    DATE: (args: Expression[]) => new CurrentDateExpr({ expressions: args }),
-    HASHMD5: (args: Expression[]) => new Md5Expr({ this: seqGet(args, 0) }),
-    LOG: (args: Expression[]) => new LogExpr({
-      this: seqGet(args, 1),
-      expression: seqGet(args, 0),
-    }),
-    TIME: (args: Expression[]) => new CurrentTimeExpr({ expressions: args }),
-  };
+  static #FUNCTIONS: Record<string, (args: Expression[]) => Expression> | undefined = undefined;
+  static get FUNCTIONS (): Record<string, (args: Expression[]) => Expression> {
+    return TeradataParser.#FUNCTIONS ??= {
+      ...Parser.FUNCTIONS,
+      DATE: (args: Expression[]) => new CurrentDateExpr({ expressions: args }),
+      HASHMD5: (args: Expression[]) => new Md5Expr({ this: seqGet(args, 0) }),
+      LOG: (args: Expression[]) => new LogExpr({
+        this: seqGet(args, 1),
+        expression: seqGet(args, 0),
+      }),
+      TIME: (args: Expression[]) => new CurrentTimeExpr({ expressions: args }),
+    };
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public static EXPONENT: Partial<Record<TokenType, new (args: any) => Expression>> = {
-    ...Parser.EXPONENT,
-    [TokenType.DSTAR]: PowExpr,
-  };
+  static #EXPONENT: Partial<Record<TokenType, new (args: any) => Expression>> | undefined = undefined;
+  static get EXPONENT (): Partial<Record<TokenType, new (args: any) => Expression>> {
+    return TeradataParser.#EXPONENT ??= {
+      ...Parser.EXPONENT,
+      [TokenType.DSTAR]: PowExpr,
+    };
+  }
 
   public parseLockingStatement (): LockingStatementExpr {
     const lockingProperty = this.parseLocking();

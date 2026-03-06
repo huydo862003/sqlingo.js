@@ -430,91 +430,109 @@ class HiveParser extends Parser {
 
   static CHANGE_COLUMN_ALTER_SYNTAX = false;
 
-  static FUNCTION_PARSERS = {
-    ...Parser.FUNCTION_PARSERS,
-    PERCENTILE: (self: Parser) => (self as HiveParser).parseQuantileFunction(QuantileExpr),
-    PERCENTILE_APPROX: (self: Parser) => (self as HiveParser).parseQuantileFunction(ApproxQuantileExpr),
-  };
+  static #FUNCTION_PARSERS: undefined = undefined;
+  static get FUNCTION_PARSERS () {
+    return HiveParser.#FUNCTION_PARSERS ??= {
+      ...Parser.FUNCTION_PARSERS,
+      PERCENTILE: (self: Parser) => (self as HiveParser).parseQuantileFunction(QuantileExpr),
+      PERCENTILE_APPROX: (self: Parser) => (self as HiveParser).parseQuantileFunction(ApproxQuantileExpr),
+    };
+  }
 
-  static FUNCTIONS: Record<string, (expression: Expression[], options: { dialect: Dialect }) => Expression> = {
-    ...Parser.FUNCTIONS,
-    BASE64: ToBase64Expr.fromArgList,
-    COLLECT_LIST: (args: Expression[]) => new ArrayAggExpr({
-      this: seqGet(args, 0),
-      nullsExcluded: true,
-    }),
-    COLLECT_SET: ArrayUniqueAggExpr.fromArgList,
-    DATE_ADD: (args: Expression[]) => new TsOrDsAddExpr({
-      this: seqGet(args, 0),
-      expression: seqGet(args, 1),
-      unit: LiteralExpr.string('DAY'),
-    }),
-    DATE_FORMAT: (args: Expression[]) => buildFormattedTime(TimeToStrExpr, { dialect: 'hive' })([new TimeStrToTimeExpr({ this: seqGet(args, 0) }), seqGet(args, 1)]),
-    DATE_SUB: buildDateAdd,
-    DATEDIFF: (args: Expression[]) => new DateDiffExpr({
-      this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
-      expression: new TsOrDsToDateExpr({ this: seqGet(args, 1) }),
-    }),
-    DAY: (args: Expression[]) => new DayExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
-    FIRST: buildWithIgnoreNulls(FirstExpr),
-    FIRST_VALUE: buildWithIgnoreNulls(FirstValueExpr),
-    FROM_UNIXTIME: buildFormattedTime(UnixToStrExpr, {
-      dialect: 'hive',
-      defaultValue: true,
-    }),
-    GET_JSON_OBJECT: (args: Expression[], { dialect }: { dialect: Dialect }) => new JsonExtractScalarExpr({
-      this: seqGet(args, 0),
-      expression: dialect.toJsonPath(seqGet(args, 1)),
-    }),
-    LAST: buildWithIgnoreNulls(LastExpr),
-    LAST_VALUE: buildWithIgnoreNulls(LastValueExpr),
-    MAP: VarMapExpr.fromArgList,
-    MONTH: (args: Expression[]) => new MonthExpr({ this: TsOrDsToDateExpr.fromArgList(args) }),
-    REGEXP_EXTRACT: buildRegexpExtract(RegexpExtractExpr),
-    REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr),
-    SEQUENCE: GenerateSeriesExpr.fromArgList,
-    SIZE: ArraySizeExpr.fromArgList,
-    SPLIT: RegexpSplitExpr.fromArgList,
-    STR_TO_MAP: (args: Expression[]) => new StrToMapExpr({
-      this: seqGet(args, 0),
-      pairDelim: seqGet(args, 1) || LiteralExpr.string(','),
-      keyValueDelim: seqGet(args, 2) || LiteralExpr.string(':'),
-    }),
-    TO_DATE: buildToDate,
-    TO_JSON: JsonFormatExpr.fromArgList,
-    TRUNC: TimestampTruncExpr.fromArgList,
-    UNBASE64: FromBase64Expr.fromArgList,
-    UNIX_TIMESTAMP: (args: Expression[]) => buildFormattedTime(StrToUnixExpr, {
-      dialect: 'hive',
-      defaultValue: true,
-    })(
-      0 < args.length ? args : [new CurrentTimestampExpr({})],
-    ),
-    YEAR: (args: Expression[]) => new YearExpr({ this: TsOrDsToDateExpr.fromArgList(args) }),
-  };
+  static #FUNCTIONS: Record<string, (expression: Expression[], options: { dialect: Dialect }) => Expression> | undefined = undefined;
+  static get FUNCTIONS (): Record<string, (expression: Expression[], options: { dialect: Dialect }) => Expression> {
+    return HiveParser.#FUNCTIONS ??= {
+      ...Parser.FUNCTIONS,
+      BASE64: ToBase64Expr.fromArgList,
+      COLLECT_LIST: (args: Expression[]) => new ArrayAggExpr({
+        this: seqGet(args, 0),
+        nullsExcluded: true,
+      }),
+      COLLECT_SET: ArrayUniqueAggExpr.fromArgList,
+      DATE_ADD: (args: Expression[]) => new TsOrDsAddExpr({
+        this: seqGet(args, 0),
+        expression: seqGet(args, 1),
+        unit: LiteralExpr.string('DAY'),
+      }),
+      DATE_FORMAT: (args: Expression[]) => buildFormattedTime(TimeToStrExpr, { dialect: 'hive' })([new TimeStrToTimeExpr({ this: seqGet(args, 0) }), seqGet(args, 1)]),
+      DATE_SUB: buildDateAdd,
+      DATEDIFF: (args: Expression[]) => new DateDiffExpr({
+        this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
+        expression: new TsOrDsToDateExpr({ this: seqGet(args, 1) }),
+      }),
+      DAY: (args: Expression[]) => new DayExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+      FIRST: buildWithIgnoreNulls(FirstExpr),
+      FIRST_VALUE: buildWithIgnoreNulls(FirstValueExpr),
+      FROM_UNIXTIME: buildFormattedTime(UnixToStrExpr, {
+        dialect: 'hive',
+        defaultValue: true,
+      }),
+      GET_JSON_OBJECT: (args: Expression[], { dialect }: { dialect: Dialect }) => new JsonExtractScalarExpr({
+        this: seqGet(args, 0),
+        expression: dialect.toJsonPath(seqGet(args, 1)),
+      }),
+      LAST: buildWithIgnoreNulls(LastExpr),
+      LAST_VALUE: buildWithIgnoreNulls(LastValueExpr),
+      MAP: VarMapExpr.fromArgList,
+      MONTH: (args: Expression[]) => new MonthExpr({ this: TsOrDsToDateExpr.fromArgList(args) }),
+      REGEXP_EXTRACT: buildRegexpExtract(RegexpExtractExpr),
+      REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr),
+      SEQUENCE: GenerateSeriesExpr.fromArgList,
+      SIZE: ArraySizeExpr.fromArgList,
+      SPLIT: RegexpSplitExpr.fromArgList,
+      STR_TO_MAP: (args: Expression[]) => new StrToMapExpr({
+        this: seqGet(args, 0),
+        pairDelim: seqGet(args, 1) || LiteralExpr.string(','),
+        keyValueDelim: seqGet(args, 2) || LiteralExpr.string(':'),
+      }),
+      TO_DATE: buildToDate,
+      TO_JSON: JsonFormatExpr.fromArgList,
+      TRUNC: TimestampTruncExpr.fromArgList,
+      UNBASE64: FromBase64Expr.fromArgList,
+      UNIX_TIMESTAMP: (args: Expression[]) => buildFormattedTime(StrToUnixExpr, {
+        dialect: 'hive',
+        defaultValue: true,
+      })(
+        0 < args.length ? args : [new CurrentTimestampExpr({})],
+      ),
+      YEAR: (args: Expression[]) => new YearExpr({ this: TsOrDsToDateExpr.fromArgList(args) }),
+    };
+  }
 
-  static NO_PAREN_FUNCTION_PARSERS = {
-    ...Parser.NO_PAREN_FUNCTION_PARSERS,
-    TRANSFORM: (self: Parser) => (self as HiveParser).parseTransform(),
-  };
+  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  static get NO_PAREN_FUNCTION_PARSERS () {
+    return HiveParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+      ...Parser.NO_PAREN_FUNCTION_PARSERS,
+      TRANSFORM: (self: Parser) => (self as HiveParser).parseTransform(),
+    };
+  }
 
-  static NO_PAREN_FUNCTIONS = (() => {
-    const noParen = { ...Parser.NO_PAREN_FUNCTIONS };
-    delete noParen[TokenType.CURRENT_TIME];
-    return noParen;
-  })();
+  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  static get NO_PAREN_FUNCTIONS () {
+    return HiveParser.#NO_PAREN_FUNCTIONS ??= (() => {
+      const noParen = { ...Parser.NO_PAREN_FUNCTIONS };
+      delete noParen[TokenType.CURRENT_TIME];
+      return noParen;
+    })();
+  }
 
-  static PROPERTY_PARSERS = {
-    ...Parser.PROPERTY_PARSERS,
-    SERDEPROPERTIES: (self: Parser) => new SerdePropertiesExpr({
-      expressions: self.parseWrappedCsv(() => self.parseProperty()),
-    }),
-  };
+  static #PROPERTY_PARSERS: undefined = undefined;
+  static get PROPERTY_PARSERS () {
+    return HiveParser.#PROPERTY_PARSERS ??= {
+      ...Parser.PROPERTY_PARSERS,
+      SERDEPROPERTIES: (self: Parser) => new SerdePropertiesExpr({
+        expressions: self.parseWrappedCsv(() => self.parseProperty()),
+      }),
+    };
+  }
 
-  static ALTER_PARSERS = {
-    ...Parser.ALTER_PARSERS,
-    CHANGE: (self: Parser) => (self as HiveParser).parseAlterTableChange(),
-  };
+  static #ALTER_PARSERS: undefined = undefined;
+  static get ALTER_PARSERS () {
+    return HiveParser.#ALTER_PARSERS ??= {
+      ...Parser.ALTER_PARSERS,
+      CHANGE: (self: Parser) => (self as HiveParser).parseAlterTableChange(),
+    };
+  }
 
   parseTransform (): TransformExpr | QueryTransformExpr | undefined {
     if (!this.match(TokenType.L_PAREN, { advance: false })) {

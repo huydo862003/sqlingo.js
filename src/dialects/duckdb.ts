@@ -1959,178 +1959,211 @@ class DuckDBTokenizer extends Tokenizer {
 class DuckDBParser extends Parser {
   static MAP_KEYS_ARE_ARBITRARY_EXPRESSIONS = true;
 
-  static BITWISE = (() => {
-    const bitwise = { ...Parser.BITWISE };
-    delete bitwise[TokenType.CARET];
-    return bitwise;
-  })();
+  static #BITWISE: undefined = undefined;
+  static get BITWISE () {
+    return DuckDBParser.#BITWISE ??= (() => {
+      const bitwise = { ...Parser.BITWISE };
+      delete bitwise[TokenType.CARET];
+      return bitwise;
+    })();
+  }
 
-  static RANGE_PARSERS = {
-    ...Parser.RANGE_PARSERS,
-    [TokenType.DAMP]: binaryRangeParser(ArrayOverlapsExpr),
-    [TokenType.CARET_AT]: binaryRangeParser(StartsWithExpr),
-    [TokenType.TILDE]: binaryRangeParser(RegexpFullMatchExpr),
-  };
+  static #RANGE_PARSERS: undefined = undefined;
+  static get RANGE_PARSERS () {
+    return DuckDBParser.#RANGE_PARSERS ??= {
+      ...Parser.RANGE_PARSERS,
+      [TokenType.DAMP]: binaryRangeParser(ArrayOverlapsExpr),
+      [TokenType.CARET_AT]: binaryRangeParser(StartsWithExpr),
+      [TokenType.TILDE]: binaryRangeParser(RegexpFullMatchExpr),
+    };
+  }
 
-  static EXPONENT = {
-    ...Parser.EXPONENT,
-    [TokenType.CARET]: PowExpr,
-    [TokenType.DSTAR]: PowExpr,
-  };
+  static #EXPONENT: undefined = undefined;
+  static get EXPONENT () {
+    return DuckDBParser.#EXPONENT ??= {
+      ...Parser.EXPONENT,
+      [TokenType.CARET]: PowExpr,
+      [TokenType.DSTAR]: PowExpr,
+    };
+  }
 
-  static FUNCTIONS_WITH_ALIASED_ARGS = new Set([...Parser.FUNCTIONS_WITH_ALIASED_ARGS, 'STRUCT_PACK']);
+  static #FUNCTIONS_WITH_ALIASED_ARGS: undefined = undefined;
+  static get FUNCTIONS_WITH_ALIASED_ARGS () {
+    return DuckDBParser.#FUNCTIONS_WITH_ALIASED_ARGS ??= new Set([...Parser.FUNCTIONS_WITH_ALIASED_ARGS, 'STRUCT_PACK']);
+  }
 
   static SHOW_PARSERS = {
     'TABLES': showParser('TABLES'),
     'ALL TABLES': showParser('ALL TABLES'),
   };
 
-  static FUNCTIONS = (() => {
-    const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
-      ...Parser.FUNCTIONS,
-      ANY_VALUE: (args: Expression[]) => new IgnoreNullsExpr({ this: AnyValueExpr.fromArgList(args) }),
-      ARRAY_PREPEND: buildArrayPrepend,
-      ARRAY_REVERSE_SORT: buildSortArrayDesc,
-      ARRAY_SORT: SortArrayExpr.fromArgList,
-      BIT_AND: BitwiseAndAggExpr.fromArgList,
-      BIT_OR: BitwiseOrAggExpr.fromArgList,
-      BIT_XOR: BitwiseXorAggExpr.fromArgList,
-      DATEDIFF: buildDateDiff,
-      DATE_DIFF: buildDateDiff,
-      DATE_TRUNC: (args: Expression[]) => dateTruncToTime([seqGet(args, 0), seqGet(args, 1)]),
-      DATETRUNC: (args: Expression[]) => dateTruncToTime([seqGet(args, 0), seqGet(args, 1)]),
-      DECODE: (args: Expression[]) => new DecodeExpr({
-        this: seqGet(args, 0),
-        charset: LiteralExpr.string('utf-8'),
-      }),
-      EDITDIST3: LevenshteinExpr.fromArgList,
-      JARO_WINKLER_SIMILARITY: JarowinklerSimilarityExpr.fromArgList,
-      ENCODE: (args: Expression[]) => new EncodeExpr({
-        this: seqGet(args, 0),
-        charset: LiteralExpr.string('utf-8'),
-      }),
-      EPOCH: TimeToUnixExpr.fromArgList,
-      EPOCH_MS: (args: Expression[]) => new UnixToTimeExpr({
-        this: seqGet(args, 0),
-        scale: UnixToTimeExpr.MILLIS,
-      }),
-      GENERATE_SERIES: buildGenerateSeries(),
-      GET_BIT: (args: Expression[]) => new GetbitExpr({
-        this: seqGet(args, 0),
-        expression: seqGet(args, 1),
-        zeroIsMsb: true,
-      }),
-      JSON: ParseJsonExpr.fromArgList,
-      JSON_EXTRACT_PATH: buildExtractJsonWithPath(JsonExtractExpr),
-      JSON_EXTRACT_STRING: buildExtractJsonWithPath(JsonExtractScalarExpr),
-      LIST_APPEND: ArrayAppendExpr.fromArgList,
-      LIST_CONCAT: buildArrayConcat,
-      LIST_CONTAINS: ArrayContainsExpr.fromArgList,
-      LIST_COSINE_DISTANCE: CosineDistanceExpr.fromArgList,
-      LIST_DISTANCE: EuclideanDistanceExpr.fromArgList,
-      LIST_FILTER: ArrayFilterExpr.fromArgList,
-      LIST_HAS: ArrayContainsExpr.fromArgList,
-      LIST_HAS_ANY: ArrayOverlapsExpr.fromArgList,
-      LIST_PREPEND: buildArrayPrepend,
-      LIST_REVERSE_SORT: buildSortArrayDesc,
-      LIST_SORT: SortArrayExpr.fromArgList,
-      LIST_TRANSFORM: TransformExpr.fromArgList,
-      LIST_VALUE: (args: Expression[]) => new ArrayExpr({ expressions: args }),
-      MAKE_DATE: DateFromPartsExpr.fromArgList,
-      MAKE_TIME: TimeFromPartsExpr.fromArgList,
-      MAKE_TIMESTAMP: buildMakeTimestamp,
-      QUANTILE_CONT: PercentileContExpr.fromArgList,
-      QUANTILE_DISC: PercentileDiscExpr.fromArgList,
-      RANGE: buildGenerateSeries({ endExclusive: true }),
-      REGEXP_EXTRACT: buildRegexpExtract(RegexpExtractExpr),
-      REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr),
-      REGEXP_MATCHES: RegexpLikeExpr.fromArgList,
-      REGEXP_REPLACE: (args: Expression[]) => new RegexpReplaceExpr({
-        this: seqGet(args, 0),
-        expression: seqGet(args, 1),
-        replacement: seqGet(args, 2),
-        modifiers: seqGet(args, 3),
-        singleReplace: true,
-      }),
-      SHA256: (args: Expression[]) => new Sha2Expr({
-        this: seqGet(args, 0),
-        length: LiteralExpr.number(256),
-      }),
-      STRFTIME: buildFormattedTime(TimeToStrExpr, { dialect: 'duckdb' }),
-      STRING_SPLIT: SplitExpr.fromArgList,
-      STRING_SPLIT_REGEX: RegexpSplitExpr.fromArgList,
-      STRING_TO_ARRAY: SplitExpr.fromArgList,
-      STRPTIME: buildFormattedTime(StrToTimeExpr, { dialect: 'duckdb' }),
-      STRUCT_PACK: StructExpr.fromArgList,
-      STR_SPLIT: SplitExpr.fromArgList,
-      STR_SPLIT_REGEX: RegexpSplitExpr.fromArgList,
-      TIME_BUCKET: DateBinExpr.fromArgList,
-      TO_TIMESTAMP: UnixToTimeExpr.fromArgList,
-      UNNEST: ExplodeExpr.fromArgList,
-      VERSION: CurrentVersionExpr.fromArgList,
-      XOR: binaryFromFunction(BitwiseXorExpr),
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return DuckDBParser.#FUNCTIONS ??= (() => {
+      const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
+        ...Parser.FUNCTIONS,
+        ANY_VALUE: (args: Expression[]) => new IgnoreNullsExpr({ this: AnyValueExpr.fromArgList(args) }),
+        ARRAY_PREPEND: buildArrayPrepend,
+        ARRAY_REVERSE_SORT: buildSortArrayDesc,
+        ARRAY_SORT: SortArrayExpr.fromArgList,
+        BIT_AND: BitwiseAndAggExpr.fromArgList,
+        BIT_OR: BitwiseOrAggExpr.fromArgList,
+        BIT_XOR: BitwiseXorAggExpr.fromArgList,
+        DATEDIFF: buildDateDiff,
+        DATE_DIFF: buildDateDiff,
+        DATE_TRUNC: (args: Expression[]) => dateTruncToTime([seqGet(args, 0), seqGet(args, 1)]),
+        DATETRUNC: (args: Expression[]) => dateTruncToTime([seqGet(args, 0), seqGet(args, 1)]),
+        DECODE: (args: Expression[]) => new DecodeExpr({
+          this: seqGet(args, 0),
+          charset: LiteralExpr.string('utf-8'),
+        }),
+        EDITDIST3: LevenshteinExpr.fromArgList,
+        JARO_WINKLER_SIMILARITY: JarowinklerSimilarityExpr.fromArgList,
+        ENCODE: (args: Expression[]) => new EncodeExpr({
+          this: seqGet(args, 0),
+          charset: LiteralExpr.string('utf-8'),
+        }),
+        EPOCH: TimeToUnixExpr.fromArgList,
+        EPOCH_MS: (args: Expression[]) => new UnixToTimeExpr({
+          this: seqGet(args, 0),
+          scale: UnixToTimeExpr.MILLIS,
+        }),
+        GENERATE_SERIES: buildGenerateSeries(),
+        GET_BIT: (args: Expression[]) => new GetbitExpr({
+          this: seqGet(args, 0),
+          expression: seqGet(args, 1),
+          zeroIsMsb: true,
+        }),
+        JSON: ParseJsonExpr.fromArgList,
+        JSON_EXTRACT_PATH: buildExtractJsonWithPath(JsonExtractExpr),
+        JSON_EXTRACT_STRING: buildExtractJsonWithPath(JsonExtractScalarExpr),
+        LIST_APPEND: ArrayAppendExpr.fromArgList,
+        LIST_CONCAT: buildArrayConcat,
+        LIST_CONTAINS: ArrayContainsExpr.fromArgList,
+        LIST_COSINE_DISTANCE: CosineDistanceExpr.fromArgList,
+        LIST_DISTANCE: EuclideanDistanceExpr.fromArgList,
+        LIST_FILTER: ArrayFilterExpr.fromArgList,
+        LIST_HAS: ArrayContainsExpr.fromArgList,
+        LIST_HAS_ANY: ArrayOverlapsExpr.fromArgList,
+        LIST_PREPEND: buildArrayPrepend,
+        LIST_REVERSE_SORT: buildSortArrayDesc,
+        LIST_SORT: SortArrayExpr.fromArgList,
+        LIST_TRANSFORM: TransformExpr.fromArgList,
+        LIST_VALUE: (args: Expression[]) => new ArrayExpr({ expressions: args }),
+        MAKE_DATE: DateFromPartsExpr.fromArgList,
+        MAKE_TIME: TimeFromPartsExpr.fromArgList,
+        MAKE_TIMESTAMP: buildMakeTimestamp,
+        QUANTILE_CONT: PercentileContExpr.fromArgList,
+        QUANTILE_DISC: PercentileDiscExpr.fromArgList,
+        RANGE: buildGenerateSeries({ endExclusive: true }),
+        REGEXP_EXTRACT: buildRegexpExtract(RegexpExtractExpr),
+        REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr),
+        REGEXP_MATCHES: RegexpLikeExpr.fromArgList,
+        REGEXP_REPLACE: (args: Expression[]) => new RegexpReplaceExpr({
+          this: seqGet(args, 0),
+          expression: seqGet(args, 1),
+          replacement: seqGet(args, 2),
+          modifiers: seqGet(args, 3),
+          singleReplace: true,
+        }),
+        SHA256: (args: Expression[]) => new Sha2Expr({
+          this: seqGet(args, 0),
+          length: LiteralExpr.number(256),
+        }),
+        STRFTIME: buildFormattedTime(TimeToStrExpr, { dialect: 'duckdb' }),
+        STRING_SPLIT: SplitExpr.fromArgList,
+        STRING_SPLIT_REGEX: RegexpSplitExpr.fromArgList,
+        STRING_TO_ARRAY: SplitExpr.fromArgList,
+        STRPTIME: buildFormattedTime(StrToTimeExpr, { dialect: 'duckdb' }),
+        STRUCT_PACK: StructExpr.fromArgList,
+        STR_SPLIT: SplitExpr.fromArgList,
+        STR_SPLIT_REGEX: RegexpSplitExpr.fromArgList,
+        TIME_BUCKET: DateBinExpr.fromArgList,
+        TO_TIMESTAMP: UnixToTimeExpr.fromArgList,
+        UNNEST: ExplodeExpr.fromArgList,
+        VERSION: CurrentVersionExpr.fromArgList,
+        XOR: binaryFromFunction(BitwiseXorExpr),
+      };
+
+      delete functions['DATE_SUB'];
+      delete functions['GLOB'];
+      return functions;
+    })();
+  }
+
+  static #FUNCTION_PARSERS: undefined = undefined;
+  static get FUNCTION_PARSERS () {
+    return DuckDBParser.#FUNCTION_PARSERS ??= (() => {
+      const parsers = {
+        ...Parser.FUNCTION_PARSERS,
+        ...Object.fromEntries(
+          [
+            'GROUP_CONCAT',
+            'LISTAGG',
+            'STRINGAGG',
+          ].map((key) => [key, (self: Parser) => (self as DuckDBParser).parseStringAgg()]),
+        ),
+      };
+      delete parsers['DECODE'];
+      return parsers;
+    })();
+  }
+
+  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  static get NO_PAREN_FUNCTION_PARSERS () {
+    return DuckDBParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+      ...Parser.NO_PAREN_FUNCTION_PARSERS,
+      'MAP': (self: Parser) => (self as DuckDBParser).parseMap(),
+      '@': (self: Parser) => new AbsExpr({ this: (self as DuckDBParser).parseBitwise() }),
     };
+  }
 
-    delete functions['DATE_SUB'];
-    delete functions['GLOB'];
-    return functions;
-  })();
+  static #TABLE_ALIAS_TOKENS: undefined = undefined;
+  static get TABLE_ALIAS_TOKENS () {
+    return DuckDBParser.#TABLE_ALIAS_TOKENS ??= (() => {
+      const tokens = new Set(Parser.TABLE_ALIAS_TOKENS);
+      tokens.delete(TokenType.SEMI);
+      tokens.delete(TokenType.ANTI);
+      return tokens;
+    })();
+  }
 
-  static FUNCTION_PARSERS = (() => {
-    const parsers = {
-      ...Parser.FUNCTION_PARSERS,
-      ...Object.fromEntries(
-        [
-          'GROUP_CONCAT',
-          'LISTAGG',
-          'STRINGAGG',
-        ].map((key) => [key, (self: Parser) => (self as DuckDBParser).parseStringAgg()]),
+  static #PLACEHOLDER_PARSERS: undefined = undefined;
+  static get PLACEHOLDER_PARSERS () {
+    return DuckDBParser.#PLACEHOLDER_PARSERS ??= {
+      ...Parser.PLACEHOLDER_PARSERS,
+      [TokenType.PARAMETER]: (self: Parser) => (
+        (self as DuckDBParser).match(TokenType.NUMBER) || self.matchSet(self._constructor.ID_VAR_TOKENS)
+          ? self.expression(PlaceholderExpr, { this: (self as DuckDBParser).prev?.text })
+          : undefined
       ),
     };
-    delete parsers['DECODE'];
-    return parsers;
-  })();
-
-  static NO_PAREN_FUNCTION_PARSERS = {
-    ...Parser.NO_PAREN_FUNCTION_PARSERS,
-    'MAP': (self: Parser) => (self as DuckDBParser).parseMap(),
-    '@': (self: Parser) => new AbsExpr({ this: (self as DuckDBParser).parseBitwise() }),
-  };
-
-  static TABLE_ALIAS_TOKENS = (() => {
-    const tokens = new Set(Parser.TABLE_ALIAS_TOKENS);
-    tokens.delete(TokenType.SEMI);
-    tokens.delete(TokenType.ANTI);
-    return tokens;
-  })();
-
-  static PLACEHOLDER_PARSERS = {
-    ...Parser.PLACEHOLDER_PARSERS,
-    [TokenType.PARAMETER]: (self: Parser) => (
-      (self as DuckDBParser).match(TokenType.NUMBER) || self.matchSet(self._constructor.ID_VAR_TOKENS)
-        ? self.expression(PlaceholderExpr, { this: (self as DuckDBParser).prev?.text })
-        : undefined
-    ),
-  };
+  }
 
   static TYPE_CONVERTERS = {
     [DataTypeExprKind.DECIMAL]: buildDefaultDecimalType(18, 3),
     [DataTypeExprKind.TEXT]: () => DataTypeExpr.build('TEXT') ?? new DataTypeExpr({ this: DataTypeExprKind.TEXT }),
   };
 
-  static STATEMENT_PARSERS = {
-    ...Parser.STATEMENT_PARSERS,
-    [TokenType.ATTACH]: (self: Parser) => (self as DuckDBParser).parseAttachDetach(),
-    [TokenType.DETACH]: (self: Parser) => (self as DuckDBParser).parseAttachDetach({ isAttach: false }),
-    [TokenType.FORCE]: (self: Parser) => (self as DuckDBParser).parseForce(),
-    [TokenType.INSTALL]: (self: Parser) => (self as DuckDBParser).parseInstall(),
-    [TokenType.SHOW]: (self: Parser) => (self as DuckDBParser).parseShow(),
-  };
+  static #STATEMENT_PARSERS: undefined = undefined;
+  static get STATEMENT_PARSERS () {
+    return DuckDBParser.#STATEMENT_PARSERS ??= {
+      ...Parser.STATEMENT_PARSERS,
+      [TokenType.ATTACH]: (self: Parser) => (self as DuckDBParser).parseAttachDetach(),
+      [TokenType.DETACH]: (self: Parser) => (self as DuckDBParser).parseAttachDetach({ isAttach: false }),
+      [TokenType.FORCE]: (self: Parser) => (self as DuckDBParser).parseForce(),
+      [TokenType.INSTALL]: (self: Parser) => (self as DuckDBParser).parseInstall(),
+      [TokenType.SHOW]: (self: Parser) => (self as DuckDBParser).parseShow(),
+    };
+  }
 
-  static SET_PARSERS = {
-    ...Parser.SET_PARSERS,
-    VARIABLE: (self: Parser) => (self as DuckDBParser).parseSetItemAssignment({ kind: 'VARIABLE' }),
-  };
+  static #SET_PARSERS: undefined = undefined;
+  static get SET_PARSERS () {
+    return DuckDBParser.#SET_PARSERS ??= {
+      ...Parser.SET_PARSERS,
+      VARIABLE: (self: Parser) => (self as DuckDBParser).parseSetItemAssignment({ kind: 'VARIABLE' }),
+    };
+  }
 
   parseLambda (options: { alias?: boolean } = {}): Expression | undefined {
     const index = this.index;

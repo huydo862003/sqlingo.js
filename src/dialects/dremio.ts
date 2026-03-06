@@ -163,26 +163,32 @@ class DremioTokenizer extends Tokenizer {
 class DremioParser extends Parser {
   static LOG_DEFAULTS_TO_LN = true;
 
-  static NO_PAREN_FUNCTION_PARSERS = {
-    ...Parser.NO_PAREN_FUNCTION_PARSERS,
-    CURRENT_DATE_UTC: (self: Parser) => (self as DremioParser).parseCurrentDateUtc(),
-  };
+  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  static get NO_PAREN_FUNCTION_PARSERS () {
+    return DremioParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+      ...Parser.NO_PAREN_FUNCTION_PARSERS,
+      CURRENT_DATE_UTC: (self: Parser) => (self as DremioParser).parseCurrentDateUtc(),
+    };
+  }
 
-  static FUNCTIONS = {
-    ...Parser.FUNCTIONS,
-    ARRAY_GENERATE_RANGE: GenerateSeriesExpr.fromArgList,
-    BIT_AND: BitwiseAndAggExpr.fromArgList,
-    BIT_OR: BitwiseOrAggExpr.fromArgList,
-    DATE_ADD: buildDateDeltaWithCastInterval(DateAddExpr),
-    DATE_FORMAT: buildFormattedTime(TimeToStrExpr, { dialect: 'dremio' }),
-    DATE_SUB: buildDateDeltaWithCastInterval(DateSubExpr),
-    REGEXP_MATCHES: RegexpLikeExpr.fromArgList,
-    REPEATSTR: RepeatExpr.fromArgList,
-    TO_CHAR: toCharIsNumericHandler,
-    TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: 'dremio' }),
-    DATE_PART: ExtractExpr.fromArgList,
-    DATETYPE: dateTypeHandler,
-  };
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return DremioParser.#FUNCTIONS ??= {
+      ...Parser.FUNCTIONS,
+      ARRAY_GENERATE_RANGE: GenerateSeriesExpr.fromArgList,
+      BIT_AND: BitwiseAndAggExpr.fromArgList,
+      BIT_OR: BitwiseOrAggExpr.fromArgList,
+      DATE_ADD: buildDateDeltaWithCastInterval(DateAddExpr),
+      DATE_FORMAT: buildFormattedTime(TimeToStrExpr, { dialect: 'dremio' }),
+      DATE_SUB: buildDateDeltaWithCastInterval(DateSubExpr),
+      REGEXP_MATCHES: RegexpLikeExpr.fromArgList,
+      REPEATSTR: RepeatExpr.fromArgList,
+      TO_CHAR: toCharIsNumericHandler,
+      TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: 'dremio' }),
+      DATE_PART: ExtractExpr.fromArgList,
+      DATETYPE: dateTypeHandler,
+    };
+  }
 
   parseCurrentDateUtc (): CastExpr {
     if (this.match(TokenType.L_PAREN)) {

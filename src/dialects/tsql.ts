@@ -579,72 +579,97 @@ export class TSQLParser extends Parser {
   static STRING_ALIASES = true;
   static NO_PAREN_IF_COMMANDS = false;
 
-  static QUERY_MODIFIER_PARSERS: Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> = {
-    ...Parser.QUERY_MODIFIER_PARSERS,
-    [TokenType.OPTION]: (self: Parser) => ['options', (self as TSQLParser).parseOptions()],
-    [TokenType.FOR]: (self: Parser) => ['for', (self as TSQLParser).parseFor()],
-  };
+  static #QUERY_MODIFIER_PARSERS: Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> | undefined = undefined;
+  static get QUERY_MODIFIER_PARSERS (): Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> {
+    return TSQLParser.#QUERY_MODIFIER_PARSERS ??= {
+      ...Parser.QUERY_MODIFIER_PARSERS,
+      [TokenType.OPTION]: (self: Parser) => ['options', (self as TSQLParser).parseOptions()],
+      [TokenType.FOR]: (self: Parser) => ['for', (self as TSQLParser).parseFor()],
+    };
+  }
 
   // T-SQL does not allow BEGIN to be used as an identifier
-  static ID_VAR_TOKENS = new Set([...Array.from(Parser.ID_VAR_TOKENS)].filter((t) => t !== TokenType.BEGIN));
-  static ALIAS_TOKENS = new Set([...Array.from(Parser.ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
-  static TABLE_ALIAS_TOKENS = new Set([...Array.from(Parser.TABLE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
-  static COMMENT_TABLE_ALIAS_TOKENS = new Set([...Array.from(Parser.COMMENT_TABLE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
-  static UPDATE_ALIAS_TOKENS = new Set([...Array.from(Parser.UPDATE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
+  static #ID_VAR_TOKENS: undefined = undefined;
+  static get ID_VAR_TOKENS () {
+    return TSQLParser.#ID_VAR_TOKENS ??= new Set([...Array.from(Parser.ID_VAR_TOKENS)].filter((t) => t !== TokenType.BEGIN));
+  }
 
-  static FUNCTIONS = {
-    ...Parser.FUNCTIONS,
-    ATN2: Atan2Expr.fromArgList,
-    CHARINDEX: (args: Expression[]) => new StrPositionExpr({
-      this: seqGet(args, 1),
-      substr: seqGet(args, 0),
-      position: seqGet(args, 2),
-    }),
-    COUNT: (args: Expression[]) => new CountExpr({
-      this: seqGet(args, 0),
-      expressions: args.slice(1),
-      bigInt: false,
-    }),
-    COUNT_BIG: (args: Expression[]) => new CountExpr({
-      this: seqGet(args, 0),
-      expressions: args.slice(1),
-      bigInt: true,
-    }),
-    DATEADD: buildDateDelta(DateAddExpr, DATE_DELTA_INTERVAL),
-    DATEDIFF: buildDateDelta(DateDiffExpr, DATE_DELTA_INTERVAL),
-    DATEDIFF_BIG: (args: Expression[]) => {
-      const expr = buildDateDelta(DateDiffExpr, DATE_DELTA_INTERVAL)(args);
-      expr.setArgKey('bigInt', true);
-      return expr;
-    },
-    DATENAME: buildBuiltinFormattedTime(true),
-    DATETIMEFROMPARTS: buildDatetimefromparts,
-    EOMONTH: buildEomonth,
-    FORMAT: buildFormat,
-    GETDATE: CurrentTimestampExpr.fromArgList,
-    HASHBYTES: buildHashbytes,
-    ISNULL: (args: Expression[]) => buildCoalesce(args, { isNull: true }),
-    JSON_QUERY: buildJsonQuery,
-    JSON_VALUE: buildExtractJsonWithPath(JsonExtractScalarExpr),
-    LEN: buildWithArgAsText(LengthExpr),
-    LEFT: buildWithArgAsText(LeftExpr),
-    NEWID: UuidExpr.fromArgList,
-    RIGHT: buildWithArgAsText(RightExpr),
-    PARSENAME: buildParsename,
-    REPLICATE: RepeatExpr.fromArgList,
-    SCHEMA_NAME: CurrentSchemaExpr.fromArgList,
-    SQUARE: (args: Expression[]) => new PowExpr({
-      this: seqGet(args, 0),
-      expression: LiteralExpr.number(2),
-    }),
-    SYSDATETIME: CurrentTimestampExpr.fromArgList,
-    SUSER_NAME: CurrentUserExpr.fromArgList,
-    SUSER_SNAME: CurrentUserExpr.fromArgList,
-    SYSDATETIMEOFFSET: CurrentTimestampLtzExpr.fromArgList,
-    SYSTEM_USER: CurrentUserExpr.fromArgList,
-    TIMEFROMPARTS: buildTimefromparts,
-    DATETRUNC: buildDatetrunc,
-  };
+  static #ALIAS_TOKENS: undefined = undefined;
+  static get ALIAS_TOKENS () {
+    return TSQLParser.#ALIAS_TOKENS ??= new Set([...Array.from(Parser.ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
+  }
+
+  static #TABLE_ALIAS_TOKENS: undefined = undefined;
+  static get TABLE_ALIAS_TOKENS () {
+    return TSQLParser.#TABLE_ALIAS_TOKENS ??= new Set([...Array.from(Parser.TABLE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
+  }
+
+  static #COMMENT_TABLE_ALIAS_TOKENS: undefined = undefined;
+  static get COMMENT_TABLE_ALIAS_TOKENS () {
+    return TSQLParser.#COMMENT_TABLE_ALIAS_TOKENS ??= new Set([...Array.from(Parser.COMMENT_TABLE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
+  }
+
+  static #UPDATE_ALIAS_TOKENS: undefined = undefined;
+  static get UPDATE_ALIAS_TOKENS () {
+    return TSQLParser.#UPDATE_ALIAS_TOKENS ??= new Set([...Array.from(Parser.UPDATE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
+  }
+
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return TSQLParser.#FUNCTIONS ??= {
+      ...Parser.FUNCTIONS,
+      ATN2: Atan2Expr.fromArgList,
+      CHARINDEX: (args: Expression[]) => new StrPositionExpr({
+        this: seqGet(args, 1),
+        substr: seqGet(args, 0),
+        position: seqGet(args, 2),
+      }),
+      COUNT: (args: Expression[]) => new CountExpr({
+        this: seqGet(args, 0),
+        expressions: args.slice(1),
+        bigInt: false,
+      }),
+      COUNT_BIG: (args: Expression[]) => new CountExpr({
+        this: seqGet(args, 0),
+        expressions: args.slice(1),
+        bigInt: true,
+      }),
+      DATEADD: buildDateDelta(DateAddExpr, DATE_DELTA_INTERVAL),
+      DATEDIFF: buildDateDelta(DateDiffExpr, DATE_DELTA_INTERVAL),
+      DATEDIFF_BIG: (args: Expression[]) => {
+        const expr = buildDateDelta(DateDiffExpr, DATE_DELTA_INTERVAL)(args);
+        expr.setArgKey('bigInt', true);
+        return expr;
+      },
+      DATENAME: buildBuiltinFormattedTime(true),
+      DATETIMEFROMPARTS: buildDatetimefromparts,
+      EOMONTH: buildEomonth,
+      FORMAT: buildFormat,
+      GETDATE: CurrentTimestampExpr.fromArgList,
+      HASHBYTES: buildHashbytes,
+      ISNULL: (args: Expression[]) => buildCoalesce(args, { isNull: true }),
+      JSON_QUERY: buildJsonQuery,
+      JSON_VALUE: buildExtractJsonWithPath(JsonExtractScalarExpr),
+      LEN: buildWithArgAsText(LengthExpr),
+      LEFT: buildWithArgAsText(LeftExpr),
+      NEWID: UuidExpr.fromArgList,
+      RIGHT: buildWithArgAsText(RightExpr),
+      PARSENAME: buildParsename,
+      REPLICATE: RepeatExpr.fromArgList,
+      SCHEMA_NAME: CurrentSchemaExpr.fromArgList,
+      SQUARE: (args: Expression[]) => new PowExpr({
+        this: seqGet(args, 0),
+        expression: LiteralExpr.number(2),
+      }),
+      SYSDATETIME: CurrentTimestampExpr.fromArgList,
+      SUSER_NAME: CurrentUserExpr.fromArgList,
+      SUSER_SNAME: CurrentUserExpr.fromArgList,
+      SYSDATETIMEOFFSET: CurrentTimestampLtzExpr.fromArgList,
+      SYSTEM_USER: CurrentUserExpr.fromArgList,
+      TIMEFROMPARTS: buildTimefromparts,
+      DATETRUNC: buildDatetrunc,
+    };
+  }
 
   static JOIN_HINTS = new Set([
     'LOOP',
@@ -667,55 +692,73 @@ export class TSQLParser extends Parser {
     'READONLY',
   ]);
 
-  static RETURNS_TABLE_TOKENS = new Set(
-    [...Array.from(Parser.ID_VAR_TOKENS)].filter((t) =>
-      t !== TokenType.TABLE && !Parser.TYPE_TOKENS.has(t)),
-  );
+  static #RETURNS_TABLE_TOKENS: undefined = undefined;
+  static get RETURNS_TABLE_TOKENS () {
+    return TSQLParser.#RETURNS_TABLE_TOKENS ??= new Set(
+      [...Array.from(Parser.ID_VAR_TOKENS)].filter((t) =>
+        t !== TokenType.TABLE && !Parser.TYPE_TOKENS.has(t)),
+    );
+  }
 
-  static STATEMENT_PARSERS = {
-    ...Parser.STATEMENT_PARSERS,
-    [TokenType.DECLARE]: (self: Parser) => (self as TSQLParser).parseDeclare(),
-  };
+  static #STATEMENT_PARSERS: undefined = undefined;
+  static get STATEMENT_PARSERS () {
+    return TSQLParser.#STATEMENT_PARSERS ??= {
+      ...Parser.STATEMENT_PARSERS,
+      [TokenType.DECLARE]: (self: Parser) => (self as TSQLParser).parseDeclare(),
+    };
+  }
 
-  static RANGE_PARSERS = {
-    ...Parser.RANGE_PARSERS,
-    [TokenType.DCOLON]: (self: Parser, thisNode: Expression) => (self as TSQLParser).expression(ScopeResolutionExpr, {
-      this: thisNode,
-      expression: self.parseFunction() || self.parseVar({ anyToken: true }),
-    }),
-  };
+  static #RANGE_PARSERS: undefined = undefined;
+  static get RANGE_PARSERS () {
+    return TSQLParser.#RANGE_PARSERS ??= {
+      ...Parser.RANGE_PARSERS,
+      [TokenType.DCOLON]: (self: Parser, thisNode: Expression) => (self as TSQLParser).expression(ScopeResolutionExpr, {
+        this: thisNode,
+        expression: self.parseFunction() || self.parseVar({ anyToken: true }),
+      }),
+    };
+  }
 
-  static NO_PAREN_FUNCTION_PARSERS: Record<string, (self: Parser) => Expression> = {
-    ...Parser.NO_PAREN_FUNCTION_PARSERS,
-    NEXT: (self: Parser) => (self as TSQLParser).parseNextValueFor()!,
-  };
+  static #NO_PAREN_FUNCTION_PARSERS: Record<string, (self: Parser) => Expression> | undefined = undefined;
+  static get NO_PAREN_FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression> {
+    return TSQLParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+      ...Parser.NO_PAREN_FUNCTION_PARSERS,
+      NEXT: (self: Parser) => (self as TSQLParser).parseNextValueFor()!,
+    };
+  }
 
-  static FUNCTION_PARSERS: Record<string, (self: Parser) => Expression> = {
-    ...Parser.FUNCTION_PARSERS,
-    JSON_ARRAYAGG: (self: Parser) => {
-      const p = self as TSQLParser;
-      return p.expression(JsonArrayAggExpr, {
-        this: p.parseBitwise(),
-        order: p.parseOrder(),
-        nullHandling: p.parseOnHandling('NULL', ['NULL', 'ABSENT']),
-      });
-    },
-    DATEPART: (self: Parser) => (self as TSQLParser).parseDatepart(),
-  };
+  static #FUNCTION_PARSERS: Record<string, (self: Parser) => Expression> | undefined = undefined;
+  static get FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression> {
+    return TSQLParser.#FUNCTION_PARSERS ??= {
+      ...Parser.FUNCTION_PARSERS,
+      JSON_ARRAYAGG: (self: Parser) => {
+        const p = self as TSQLParser;
+        return p.expression(JsonArrayAggExpr, {
+          this: p.parseBitwise(),
+          order: p.parseOrder(),
+          nullHandling: p.parseOnHandling('NULL', ['NULL', 'ABSENT']),
+        });
+      },
+      DATEPART: (self: Parser) => (self as TSQLParser).parseDatepart(),
+    };
+  }
 
-  static COLUMN_OPERATORS = {
-    ...Parser.COLUMN_OPERATORS,
-    [TokenType.DCOLON]: (self: Parser, thisNode?: Expression, to?: Expression) =>
-      to instanceof DataTypeExpr && to.args.this !== DataTypeExprKind.USERDEFINED
-        ? self.expression(CastExpr, {
-          this: thisNode,
-          to,
-        })
-        : self.expression(ScopeResolutionExpr, {
-          this: thisNode,
-          expression: to,
-        }),
-  };
+  static #COLUMN_OPERATORS: undefined = undefined;
+  static get COLUMN_OPERATORS () {
+    return TSQLParser.#COLUMN_OPERATORS ??= {
+      ...Parser.COLUMN_OPERATORS,
+      [TokenType.DCOLON]: (self: Parser, thisNode?: Expression, to?: Expression) =>
+        to instanceof DataTypeExpr && to.args.this !== DataTypeExprKind.USERDEFINED
+          ? self.expression(CastExpr, {
+            this: thisNode,
+            to,
+          })
+          : self.expression(ScopeResolutionExpr, {
+            this: thisNode,
+            expression: to,
+          }),
+    };
+  }
 
   static SET_OP_MODIFIERS = new Set(['offset']);
 

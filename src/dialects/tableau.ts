@@ -31,16 +31,19 @@ export class TableauTokenizer extends Tokenizer {
 export class TableauParser extends Parser {
   public static NO_PAREN_IF_COMMANDS = false;
 
-  public static FUNCTIONS: Record<string, (args: Expression[]) => Expression> = {
-    ...Parser.FUNCTIONS,
-    COUNTD: (args: Expression[]) => new CountExpr({ this: new DistinctExpr({ expressions: args }) }),
-    FIND: (args: Expression[]) => StrPositionExpr.fromArgList(args),
-    FINDNTH: (args: Expression[]) => new StrPositionExpr({
-      this: seqGet(args, 0),
-      substr: seqGet(args, 1),
-      occurrence: seqGet(args, 2),
-    }),
-  };
+  static #FUNCTIONS: Record<string, (args: Expression[]) => Expression> | undefined = undefined;
+  static get FUNCTIONS (): Record<string, (args: Expression[]) => Expression> {
+    return TableauParser.#FUNCTIONS ??= {
+      ...Parser.FUNCTIONS,
+      COUNTD: (args: Expression[]) => new CountExpr({ this: new DistinctExpr({ expressions: args }) }),
+      FIND: (args: Expression[]) => StrPositionExpr.fromArgList(args),
+      FINDNTH: (args: Expression[]) => new StrPositionExpr({
+        this: seqGet(args, 0),
+        substr: seqGet(args, 1),
+        occurrence: seqGet(args, 2),
+      }),
+    };
+  }
 }
 
 export class TableauGenerator extends Generator {

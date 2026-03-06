@@ -145,75 +145,96 @@ export class OracleParser extends Parser {
   public static WINDOW_BEFORE_PAREN_TOKENS = new Set([TokenType.OVER, TokenType.KEEP]);
   public static VALUES_FOLLOWED_BY_PAREN = false;
 
-  public static FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
-    ...Parser.FUNCTIONS,
-    CONVERT: (args: Expression[]) => ConvertToCharsetExpr.fromArgList(args),
-    L2_DISTANCE: (args: Expression[]) => EuclideanDistanceExpr.fromArgList(args),
-    NVL: (args: Expression[]) => buildCoalesce(args, { isNvl: true }),
-    SQUARE: (args: Expression[]) => new PowExpr({
-      this: seqGet(args, 0),
-      expression: literal(2),
-    }),
-    TO_CHAR: buildTimeToStrOrToChar,
-    TO_TIMESTAMP: buildToTimestamp,
-    TO_DATE: buildFormattedTime(StrToDateExpr, { dialect: Dialects.ORACLE }),
-    TRUNC: (args: Expression[], { dialect }: { dialect: Dialect }) => buildTrunc(args, {
-      dialect,
-      dateTruncUnabbreviate: false,
-      defaultDateTruncUnit: 'DD',
-    }),
-  };
+  static #FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> | undefined = undefined;
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+    return OracleParser.#FUNCTIONS ??= {
+      ...Parser.FUNCTIONS,
+      CONVERT: (args: Expression[]) => ConvertToCharsetExpr.fromArgList(args),
+      L2_DISTANCE: (args: Expression[]) => EuclideanDistanceExpr.fromArgList(args),
+      NVL: (args: Expression[]) => buildCoalesce(args, { isNvl: true }),
+      SQUARE: (args: Expression[]) => new PowExpr({
+        this: seqGet(args, 0),
+        expression: literal(2),
+      }),
+      TO_CHAR: buildTimeToStrOrToChar,
+      TO_TIMESTAMP: buildToTimestamp,
+      TO_DATE: buildFormattedTime(StrToDateExpr, { dialect: Dialects.ORACLE }),
+      TRUNC: (args: Expression[], { dialect }: { dialect: Dialect }) => buildTrunc(args, {
+        dialect,
+        dateTruncUnabbreviate: false,
+        defaultDateTruncUnit: 'DD',
+      }),
+    };
+  }
 
-  public static NO_PAREN_FUNCTION_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
-    ...Parser.NO_PAREN_FUNCTION_PARSERS,
-    NEXT: (self: Parser) => self.parseNextValueFor(),
-    PRIOR: (self: Parser) => self.expression(PriorExpr, { this: self.parseBitwise() }),
-    SYSDATE: (self: Parser) => self.expression(CurrentTimestampExpr, { sysdate: true }),
-    DBMS_RANDOM: (self: Parser) => (self as OracleParser).parseDbmsRandom(),
-  };
+  static #NO_PAREN_FUNCTION_PARSERS: Record<string, (self: Parser) => Expression | undefined> | undefined = undefined;
+  static get NO_PAREN_FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+    return OracleParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+      ...Parser.NO_PAREN_FUNCTION_PARSERS,
+      NEXT: (self: Parser) => self.parseNextValueFor(),
+      PRIOR: (self: Parser) => self.expression(PriorExpr, { this: self.parseBitwise() }),
+      SYSDATE: (self: Parser) => self.expression(CurrentTimestampExpr, { sysdate: true }),
+      DBMS_RANDOM: (self: Parser) => (self as OracleParser).parseDbmsRandom(),
+    };
+  }
 
-  public static NO_PAREN_FUNCTIONS = {
-    ...Parser.NO_PAREN_FUNCTIONS,
-    [TokenType.SYSTIMESTAMP]: SystimestampExpr,
-  };
+  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  static get NO_PAREN_FUNCTIONS () {
+    return OracleParser.#NO_PAREN_FUNCTIONS ??= {
+      ...Parser.NO_PAREN_FUNCTIONS,
+      [TokenType.SYSTIMESTAMP]: SystimestampExpr,
+    };
+  }
 
-  public static FUNCTION_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
-    ...Parser.FUNCTION_PARSERS,
-    JSON_ARRAY: (self: Parser) => (self as OracleParser).parseJsonArray(
-      JsonArrayExpr,
-      { expressions: self.parseCsv(() => self.parseFormatJson(self.parseBitwise())) },
-    ),
-    JSON_ARRAYAGG: (self: Parser) => (self as OracleParser).parseJsonArray(
-      JsonArrayAggExpr,
-      {
-        this: self.parseFormatJson(self.parseBitwise()),
-        order: self.parseOrder(),
-      },
-    ),
-    JSON_EXISTS: (self: Parser) => (self as OracleParser).parseJsonExists(),
-  };
+  static #FUNCTION_PARSERS: Record<string, (self: Parser) => Expression | undefined> | undefined = undefined;
+  static get FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+    return OracleParser.#FUNCTION_PARSERS ??= {
+      ...Parser.FUNCTION_PARSERS,
+      JSON_ARRAY: (self: Parser) => (self as OracleParser).parseJsonArray(
+        JsonArrayExpr,
+        { expressions: self.parseCsv(() => self.parseFormatJson(self.parseBitwise())) },
+      ),
+      JSON_ARRAYAGG: (self: Parser) => (self as OracleParser).parseJsonArray(
+        JsonArrayAggExpr,
+        {
+          this: self.parseFormatJson(self.parseBitwise()),
+          order: self.parseOrder(),
+        },
+      ),
+      JSON_EXISTS: (self: Parser) => (self as OracleParser).parseJsonExists(),
+    };
+  }
 
-  public static PROPERTY_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
-    ...Parser.PROPERTY_PARSERS,
-    GLOBAL: (self: Parser) => self.matchTextSeq('TEMPORARY')
-      && self.expression(TemporaryPropertyExpr, { this: 'GLOBAL' }),
-    PRIVATE: (self: Parser) => self.matchTextSeq('TEMPORARY')
-      && self.expression(TemporaryPropertyExpr, { this: 'PRIVATE' }),
-    FORCE: (self: Parser) => self.expression(ForcePropertyExpr, {}),
-  };
+  static #PROPERTY_PARSERS: Record<string, (self: Parser) => Expression | undefined> | undefined = undefined;
+  static get PROPERTY_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+    return OracleParser.#PROPERTY_PARSERS ??= {
+      ...Parser.PROPERTY_PARSERS,
+      GLOBAL: (self: Parser) => self.matchTextSeq('TEMPORARY')
+        && self.expression(TemporaryPropertyExpr, { this: 'GLOBAL' }),
+      PRIVATE: (self: Parser) => self.matchTextSeq('TEMPORARY')
+        && self.expression(TemporaryPropertyExpr, { this: 'PRIVATE' }),
+      FORCE: (self: Parser) => self.expression(ForcePropertyExpr, {}),
+    };
+  }
 
-  public static QUERY_MODIFIER_PARSERS: Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> = {
-    ...Parser.QUERY_MODIFIER_PARSERS,
-    [TokenType.ORDER_SIBLINGS_BY]: (self: Parser) => ['order', self.parseOrder()],
-    [TokenType.WITH]: (self: Parser) => ['options', (self as OracleParser).parseQueryRestrictions()],
-  };
+  static #QUERY_MODIFIER_PARSERS: Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> | undefined = undefined;
+  static get QUERY_MODIFIER_PARSERS (): Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> {
+    return OracleParser.#QUERY_MODIFIER_PARSERS ??= {
+      ...Parser.QUERY_MODIFIER_PARSERS,
+      [TokenType.ORDER_SIBLINGS_BY]: (self: Parser) => ['order', self.parseOrder()],
+      [TokenType.WITH]: (self: Parser) => ['options', (self as OracleParser).parseQueryRestrictions()],
+    };
+  }
 
-  public static TYPE_LITERAL_PARSERS: Partial<Record<DataTypeExprKind, (self: Parser, thisArg?: Expression, _?: unknown) => Expression>> = {
-    [DataTypeExprKind.DATE]: (self: Parser, thisExpr?: Expression) => self.expression(DateStrToDateExpr, { this: thisExpr }),
-    [DataTypeExprKind.TIMESTAMP]: (self: Parser, thisExpr?: Expression) => buildToTimestamp(
-      [thisExpr ?? literal(''), literal('%Y-%m-%d %H:%M:%S.%f')],
-    ),
-  };
+  static #TYPE_LITERAL_PARSERS: Partial<Record<DataTypeExprKind, (self: Parser, thisArg?: Expression, _?: unknown) => Expression>> | undefined = undefined;
+  static get TYPE_LITERAL_PARSERS (): Partial<Record<DataTypeExprKind, (self: Parser, thisArg?: Expression, _?: unknown) => Expression>> {
+    return OracleParser.#TYPE_LITERAL_PARSERS ??= {
+      [DataTypeExprKind.DATE]: (self: Parser, thisExpr?: Expression) => self.expression(DateStrToDateExpr, { this: thisExpr }),
+      [DataTypeExprKind.TIMESTAMP]: (self: Parser, thisExpr?: Expression) => buildToTimestamp(
+        [thisExpr ?? literal(''), literal('%Y-%m-%d %H:%M:%S.%f')],
+      ),
+    };
+  }
 
   public static DISTINCT_TOKENS = new Set([TokenType.DISTINCT, TokenType.UNIQUE]);
 

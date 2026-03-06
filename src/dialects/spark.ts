@@ -175,53 +175,62 @@ class SparkTokenizer extends Spark2.Tokenizer {
 }
 
 class SparkParser extends Spark2.Parser {
-  static FUNCTIONS = {
-    ...Spark2.Parser.FUNCTIONS,
-    ANY_VALUE: buildWithIgnoreNulls(AnyValueExpr),
-    ARRAY_INSERT: (args: Expression[]) =>
-      new ArrayInsertExpr({
-        this: seqGet(args, 0),
-        position: seqGet(args, 1),
-        expression: seqGet(args, 2),
-        offset: 1,
-      }),
-    BIT_AND: BitwiseAndAggExpr.fromArgList,
-    BIT_OR: BitwiseOrAggExpr.fromArgList,
-    BIT_XOR: BitwiseXorAggExpr.fromArgList,
-    BIT_COUNT: BitwiseCountExpr.fromArgList,
-    DATE_ADD: buildDateAdd,
-    DATEADD: buildDateAdd,
-    TIMESTAMPADD: buildDateAdd,
-    TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr),
-    TRY_ADD: SafeAddExpr.fromArgList,
-    TRY_MULTIPLY: SafeMultiplyExpr.fromArgList,
-    TRY_SUBTRACT: SafeSubtractExpr.fromArgList,
-    DATEDIFF: buildDatediff,
-    DATE_DIFF: buildDatediff,
-    JSON_OBJECT_KEYS: JsonKeysExpr.fromArgList,
-    LISTAGG: GroupConcatExpr.fromArgList,
-    TIMESTAMP_LTZ: buildAsCast('TIMESTAMP_LTZ'),
-    TIMESTAMP_NTZ: buildAsCast('TIMESTAMP_NTZ'),
-    TRY_ELEMENT_AT: (args: Expression[]) =>
-      new BracketExpr({
-        this: seqGet(args, 0),
-        expressions: [seqGet(args, 1)!],
-        offset: 1,
-        safe: true,
-      }),
-    LIKE: buildLike(LikeExpr),
-    ILIKE: buildLike(ILikeExpr),
-  };
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return SparkParser.#FUNCTIONS ??= {
+      ...Spark2.Parser.FUNCTIONS,
+      ANY_VALUE: buildWithIgnoreNulls(AnyValueExpr),
+      ARRAY_INSERT: (args: Expression[]) =>
+        new ArrayInsertExpr({
+          this: seqGet(args, 0),
+          position: seqGet(args, 1),
+          expression: seqGet(args, 2),
+          offset: 1,
+        }),
+      BIT_AND: BitwiseAndAggExpr.fromArgList,
+      BIT_OR: BitwiseOrAggExpr.fromArgList,
+      BIT_XOR: BitwiseXorAggExpr.fromArgList,
+      BIT_COUNT: BitwiseCountExpr.fromArgList,
+      DATE_ADD: buildDateAdd,
+      DATEADD: buildDateAdd,
+      TIMESTAMPADD: buildDateAdd,
+      TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr),
+      TRY_ADD: SafeAddExpr.fromArgList,
+      TRY_MULTIPLY: SafeMultiplyExpr.fromArgList,
+      TRY_SUBTRACT: SafeSubtractExpr.fromArgList,
+      DATEDIFF: buildDatediff,
+      DATE_DIFF: buildDatediff,
+      JSON_OBJECT_KEYS: JsonKeysExpr.fromArgList,
+      LISTAGG: GroupConcatExpr.fromArgList,
+      TIMESTAMP_LTZ: buildAsCast('TIMESTAMP_LTZ'),
+      TIMESTAMP_NTZ: buildAsCast('TIMESTAMP_NTZ'),
+      TRY_ELEMENT_AT: (args: Expression[]) =>
+        new BracketExpr({
+          this: seqGet(args, 0),
+          expressions: [seqGet(args, 1)!],
+          offset: 1,
+          safe: true,
+        }),
+      LIKE: buildLike(LikeExpr),
+      ILIKE: buildLike(ILikeExpr),
+    };
+  }
 
-  static PLACEHOLDER_PARSERS = {
-    ...Spark2.Parser.PLACEHOLDER_PARSERS,
-    [TokenType.L_BRACE]: (self: Parser) => (self as SparkParser).parseQueryParameter(),
-  };
+  static #PLACEHOLDER_PARSERS: undefined = undefined;
+  static get PLACEHOLDER_PARSERS () {
+    return SparkParser.#PLACEHOLDER_PARSERS ??= {
+      ...Spark2.Parser.PLACEHOLDER_PARSERS,
+      [TokenType.L_BRACE]: (self: Parser) => (self as SparkParser).parseQueryParameter(),
+    };
+  }
 
-  static FUNCTION_PARSERS = {
-    ...Spark2.Parser.FUNCTION_PARSERS,
-    SUBSTR: (self: Parser) => self.parseSubstring(),
-  };
+  static #FUNCTION_PARSERS: undefined = undefined;
+  static get FUNCTION_PARSERS () {
+    return SparkParser.#FUNCTION_PARSERS ??= {
+      ...Spark2.Parser.FUNCTION_PARSERS,
+      SUBSTR: (self: Parser) => self.parseSubstring(),
+    };
+  }
 
   parseQueryParameter (): Expression | undefined {
     const thisNode = this.parseIdVar();

@@ -79,47 +79,53 @@ function buildDateDelta<T extends Expression> (ExprClass: new (args: any) => T) 
 }
 
 class RedshiftParser extends Postgres.Parser {
-  static FUNCTIONS = (() => {
-    const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
-      ...Postgres.Parser.FUNCTIONS,
-      ADD_MONTHS: (args: Expression[]) =>
-        new TsOrDsAddExpr({
-          this: seqGet(args, 0),
-          expression: seqGet(args, 1),
-          unit: var_('month'),
-          returnType: DataTypeExpr.build('TIMESTAMP'),
-        }),
-      CONVERT_TIMEZONE: (args: Expression[]) => buildConvertTimezone(args, { defaultSourceTz: 'UTC' }),
-      DATEADD: buildDateDelta(TsOrDsAddExpr),
-      DATE_ADD: buildDateDelta(TsOrDsAddExpr),
-      DATEDIFF: buildDateDelta(TsOrDsDiffExpr),
-      DATE_DIFF: buildDateDelta(TsOrDsDiffExpr),
-      GETDATE: CurrentTimestampExpr.fromArgList,
-      LISTAGG: GroupConcatExpr.fromArgList,
-      REGEXP_SUBSTR: (args: Expression[]) =>
-        new RegexpExtractExpr({
-          this: seqGet(args, 0),
-          expression: seqGet(args, 1),
-          position: seqGet(args, 2),
-          occurrence: seqGet(args, 3),
-          parameters: seqGet(args, 4),
-        }),
-      SPLIT_TO_ARRAY: (args: Expression[]) =>
-        new StringToArrayExpr({
-          this: seqGet(args, 0),
-          expression: seqGet(args, 1) || LiteralExpr.string(','),
-        }),
-      STRTOL: FromBaseExpr.fromArgList,
-    };
-    delete functions['GET_BIT'];
-    return functions;
-  })();
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return RedshiftParser.#FUNCTIONS ??= (() => {
+      const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
+        ...Postgres.Parser.FUNCTIONS,
+        ADD_MONTHS: (args: Expression[]) =>
+          new TsOrDsAddExpr({
+            this: seqGet(args, 0),
+            expression: seqGet(args, 1),
+            unit: var_('month'),
+            returnType: DataTypeExpr.build('TIMESTAMP'),
+          }),
+        CONVERT_TIMEZONE: (args: Expression[]) => buildConvertTimezone(args, { defaultSourceTz: 'UTC' }),
+        DATEADD: buildDateDelta(TsOrDsAddExpr),
+        DATE_ADD: buildDateDelta(TsOrDsAddExpr),
+        DATEDIFF: buildDateDelta(TsOrDsDiffExpr),
+        DATE_DIFF: buildDateDelta(TsOrDsDiffExpr),
+        GETDATE: CurrentTimestampExpr.fromArgList,
+        LISTAGG: GroupConcatExpr.fromArgList,
+        REGEXP_SUBSTR: (args: Expression[]) =>
+          new RegexpExtractExpr({
+            this: seqGet(args, 0),
+            expression: seqGet(args, 1),
+            position: seqGet(args, 2),
+            occurrence: seqGet(args, 3),
+            parameters: seqGet(args, 4),
+          }),
+        SPLIT_TO_ARRAY: (args: Expression[]) =>
+          new StringToArrayExpr({
+            this: seqGet(args, 0),
+            expression: seqGet(args, 1) || LiteralExpr.string(','),
+          }),
+        STRTOL: FromBaseExpr.fromArgList,
+      };
+      delete functions['GET_BIT'];
+      return functions;
+    })();
+  }
 
-  static NO_PAREN_FUNCTION_PARSERS = {
-    ...Postgres.Parser.NO_PAREN_FUNCTION_PARSERS,
-    APPROXIMATE: (self: Parser) => (self as RedshiftParser).parseApproximateCount(),
-    SYSDATE: (self: Parser) => self.expression(CurrentTimestampExpr, { sysdate: true }),
-  };
+  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  static get NO_PAREN_FUNCTION_PARSERS () {
+    return RedshiftParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+      ...Postgres.Parser.NO_PAREN_FUNCTION_PARSERS,
+      APPROXIMATE: (self: Parser) => (self as RedshiftParser).parseApproximateCount(),
+      SYSDATE: (self: Parser) => self.expression(CurrentTimestampExpr, { sysdate: true }),
+    };
+  }
 
   static SUPPORTS_IMPLICIT_UNNEST = true;
 

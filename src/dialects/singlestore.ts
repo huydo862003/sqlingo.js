@@ -155,247 +155,265 @@ class SingleStoreTokenizer extends MySQL.Tokenizer {
 }
 
 class SingleStoreParser extends MySQL.Parser {
-  static FUNCTIONS = (() => {
-    const functions = {
-      ...MySQL.Parser.FUNCTIONS,
-      TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: 'singlestore' }),
-      TO_TIMESTAMP: buildFormattedTime(StrToTimeExpr, { dialect: 'singlestore' }),
-      TO_CHAR: buildFormattedTime(ToCharExpr, { dialect: 'singlestore' }),
-      STR_TO_DATE: buildFormattedTime(StrToDateExpr, { dialect: 'mysql' }),
-      DATE_FORMAT: buildFormattedTime(TimeToStrExpr, { dialect: 'mysql' }),
-      TIME_FORMAT: (args: Expression[]) =>
-        new TimeToStrExpr({
-          this: castToTime6(seqGet(args, 0)),
-          format: MySQL.formatTime(seqGet(args, 1)),
-        }),
-      HOUR: (args: Expression[]) =>
-        new CastExpr({
-          this: new TimeToStrExpr({
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return SingleStoreParser.#FUNCTIONS ??= (() => {
+      const functions = {
+        ...MySQL.Parser.FUNCTIONS,
+        TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: 'singlestore' }),
+        TO_TIMESTAMP: buildFormattedTime(StrToTimeExpr, { dialect: 'singlestore' }),
+        TO_CHAR: buildFormattedTime(ToCharExpr, { dialect: 'singlestore' }),
+        STR_TO_DATE: buildFormattedTime(StrToDateExpr, { dialect: 'mysql' }),
+        DATE_FORMAT: buildFormattedTime(TimeToStrExpr, { dialect: 'mysql' }),
+        TIME_FORMAT: (args: Expression[]) =>
+          new TimeToStrExpr({
             this: castToTime6(seqGet(args, 0)),
-            format: MySQL.formatTime(LiteralExpr.string('%k')),
+            format: MySQL.formatTime(seqGet(args, 1)),
           }),
-          to: DataTypeExpr.build(DataTypeExprKind.INT),
-        }),
-      MICROSECOND: (args: Expression[]) =>
-        new CastExpr({
-          this: new TimeToStrExpr({
-            this: castToTime6(seqGet(args, 0)),
-            format: MySQL.formatTime(LiteralExpr.string('%f')),
+        HOUR: (args: Expression[]) =>
+          new CastExpr({
+            this: new TimeToStrExpr({
+              this: castToTime6(seqGet(args, 0)),
+              format: MySQL.formatTime(LiteralExpr.string('%k')),
+            }),
+            to: DataTypeExpr.build(DataTypeExprKind.INT),
           }),
-          to: DataTypeExpr.build(DataTypeExprKind.INT),
-        }),
-      SECOND: (args: Expression[]) =>
-        new CastExpr({
-          this: new TimeToStrExpr({
-            this: castToTime6(seqGet(args, 0)),
-            format: MySQL.formatTime(LiteralExpr.string('%s')),
+        MICROSECOND: (args: Expression[]) =>
+          new CastExpr({
+            this: new TimeToStrExpr({
+              this: castToTime6(seqGet(args, 0)),
+              format: MySQL.formatTime(LiteralExpr.string('%f')),
+            }),
+            to: DataTypeExpr.build(DataTypeExprKind.INT),
           }),
-          to: DataTypeExpr.build(DataTypeExprKind.INT),
-        }),
-      MINUTE: (args: Expression[]) =>
-        new CastExpr({
-          this: new TimeToStrExpr({
-            this: castToTime6(seqGet(args, 0)),
-            format: MySQL.formatTime(LiteralExpr.string('%i')),
+        SECOND: (args: Expression[]) =>
+          new CastExpr({
+            this: new TimeToStrExpr({
+              this: castToTime6(seqGet(args, 0)),
+              format: MySQL.formatTime(LiteralExpr.string('%s')),
+            }),
+            to: DataTypeExpr.build(DataTypeExprKind.INT),
           }),
-          to: DataTypeExpr.build(DataTypeExprKind.INT),
-        }),
-      MONTHNAME: (args: Expression[]) =>
-        new TimeToStrExpr({
-          this: seqGet(args, 0),
-          format: MySQL.formatTime(LiteralExpr.string('%M')),
-        }),
-      WEEKDAY: (args: Expression[]) =>
-        new ParenExpr({
-          this: (new DayOfWeekExpr({ this: seqGet(args, 0) }).add(5))
-            .mod(7),
-        }),
-      UNIX_TIMESTAMP: StrToUnixExpr.fromArgList,
-      FROM_UNIXTIME: buildFormattedTime(UnixToTimeExpr, { dialect: 'mysql' }),
-      TIME_BUCKET: (args: Expression[]) =>
-        new DateBinExpr({
-          this: seqGet(args, 0),
-          expression: seqGet(args, 1),
-          origin: seqGet(args, 2),
-        }),
-      BSON_EXTRACT_BSON: buildJsonExtractPath(JsonbExtractExpr),
-      BSON_EXTRACT_STRING: buildJsonExtractPath(JsonbExtractScalarExpr, { jsonType: 'STRING' }),
-      BSON_EXTRACT_DOUBLE: buildJsonExtractPath(JsonbExtractScalarExpr, { jsonType: 'DOUBLE' }),
-      BSON_EXTRACT_BIGINT: buildJsonExtractPath(JsonbExtractScalarExpr, { jsonType: 'BIGINT' }),
-      JSON_EXTRACT_JSON: buildJsonExtractPath(JsonExtractExpr),
-      JSON_EXTRACT_STRING: buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'STRING' }),
-      JSON_EXTRACT_DOUBLE: buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'DOUBLE' }),
-      JSON_EXTRACT_BIGINT: buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'BIGINT' }),
-      JSON_ARRAY_CONTAINS_STRING: (args: Expression[]) =>
-        new JsonArrayContainsExpr({
-          this: seqGet(args, 1),
-          expression: seqGet(args, 0),
-          jsonType: 'STRING',
-        }),
-      JSON_ARRAY_CONTAINS_DOUBLE: (args: Expression[]) =>
-        new JsonArrayContainsExpr({
-          this: seqGet(args, 1),
-          expression: seqGet(args, 0),
-          jsonType: 'DOUBLE',
-        }),
-      JSON_ARRAY_CONTAINS_JSON: (args: Expression[]) =>
-        new JsonArrayContainsExpr({
-          this: seqGet(args, 1),
-          expression: seqGet(args, 0),
-          jsonType: 'JSON',
-        }),
-      JSON_KEYS: (args: Expression[]) =>
-        new JsonKeysExpr({
-          this: seqGet(args, 0),
-          expressions: args.slice(1),
-        }),
-      JSON_PRETTY: JsonFormatExpr.fromArgList,
-      JSON_BUILD_ARRAY: (args: Expression[]) => new JsonArrayExpr({ expressions: args }),
-      JSON_BUILD_OBJECT: (args: Expression[]) => new JsonObjectExpr({ expressions: args }),
-      DATE: DateExpr.fromArgList,
-      DAYNAME: (args: Expression[]) =>
-        new TimeToStrExpr({
-          this: seqGet(args, 0),
-          format: MySQL.formatTime(LiteralExpr.string('%W')),
-        }),
-      TIMESTAMPDIFF: (args: Expression[]) =>
-        new TimestampDiffExpr({
-          this: seqGet(args, 2),
-          expression: seqGet(args, 1),
-          unit: seqGet(args, 0),
-        }),
-      APPROX_COUNT_DISTINCT: HllExpr.fromArgList,
-      APPROX_PERCENTILE: (args: Expression[]) =>
-        new ApproxQuantileExpr({
-          this: seqGet(args, 0),
-          quantile: seqGet(args, 1),
-          errorTolerance: seqGet(args, 2),
-        }),
-      VARIANCE: VariancePopExpr.fromArgList,
-      INSTR: ContainsExpr.fromArgList,
-      REGEXP_MATCH: (args: Expression[]) =>
-        new RegexpExtractAllExpr({
-          this: seqGet(args, 0),
-          expression: seqGet(args, 1),
-          parameters: seqGet(args, 2),
-        }),
-      REGEXP_SUBSTR: (args: Expression[]) =>
-        new RegexpExtractExpr({
-          this: seqGet(args, 0),
-          expression: seqGet(args, 1),
-          position: seqGet(args, 2),
-          occurrence: seqGet(args, 3),
-          parameters: seqGet(args, 4),
-        }),
-      REDUCE: (args: Expression[]) =>
-        new ReduceExpr({
-          initial: seqGet(args, 0),
-          this: seqGet(args, 1),
-          merge: seqGet(args, 2),
+        MINUTE: (args: Expression[]) =>
+          new CastExpr({
+            this: new TimeToStrExpr({
+              this: castToTime6(seqGet(args, 0)),
+              format: MySQL.formatTime(LiteralExpr.string('%i')),
+            }),
+            to: DataTypeExpr.build(DataTypeExprKind.INT),
+          }),
+        MONTHNAME: (args: Expression[]) =>
+          new TimeToStrExpr({
+            this: seqGet(args, 0),
+            format: MySQL.formatTime(LiteralExpr.string('%M')),
+          }),
+        WEEKDAY: (args: Expression[]) =>
+          new ParenExpr({
+            this: (new DayOfWeekExpr({ this: seqGet(args, 0) }).add(5))
+              .mod(7),
+          }),
+        UNIX_TIMESTAMP: StrToUnixExpr.fromArgList,
+        FROM_UNIXTIME: buildFormattedTime(UnixToTimeExpr, { dialect: 'mysql' }),
+        TIME_BUCKET: (args: Expression[]) =>
+          new DateBinExpr({
+            this: seqGet(args, 0),
+            expression: seqGet(args, 1),
+            origin: seqGet(args, 2),
+          }),
+        BSON_EXTRACT_BSON: buildJsonExtractPath(JsonbExtractExpr),
+        BSON_EXTRACT_STRING: buildJsonExtractPath(JsonbExtractScalarExpr, { jsonType: 'STRING' }),
+        BSON_EXTRACT_DOUBLE: buildJsonExtractPath(JsonbExtractScalarExpr, { jsonType: 'DOUBLE' }),
+        BSON_EXTRACT_BIGINT: buildJsonExtractPath(JsonbExtractScalarExpr, { jsonType: 'BIGINT' }),
+        JSON_EXTRACT_JSON: buildJsonExtractPath(JsonExtractExpr),
+        JSON_EXTRACT_STRING: buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'STRING' }),
+        JSON_EXTRACT_DOUBLE: buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'DOUBLE' }),
+        JSON_EXTRACT_BIGINT: buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'BIGINT' }),
+        JSON_ARRAY_CONTAINS_STRING: (args: Expression[]) =>
+          new JsonArrayContainsExpr({
+            this: seqGet(args, 1),
+            expression: seqGet(args, 0),
+            jsonType: 'STRING',
+          }),
+        JSON_ARRAY_CONTAINS_DOUBLE: (args: Expression[]) =>
+          new JsonArrayContainsExpr({
+            this: seqGet(args, 1),
+            expression: seqGet(args, 0),
+            jsonType: 'DOUBLE',
+          }),
+        JSON_ARRAY_CONTAINS_JSON: (args: Expression[]) =>
+          new JsonArrayContainsExpr({
+            this: seqGet(args, 1),
+            expression: seqGet(args, 0),
+            jsonType: 'JSON',
+          }),
+        JSON_KEYS: (args: Expression[]) =>
+          new JsonKeysExpr({
+            this: seqGet(args, 0),
+            expressions: args.slice(1),
+          }),
+        JSON_PRETTY: JsonFormatExpr.fromArgList,
+        JSON_BUILD_ARRAY: (args: Expression[]) => new JsonArrayExpr({ expressions: args }),
+        JSON_BUILD_OBJECT: (args: Expression[]) => new JsonObjectExpr({ expressions: args }),
+        DATE: DateExpr.fromArgList,
+        DAYNAME: (args: Expression[]) =>
+          new TimeToStrExpr({
+            this: seqGet(args, 0),
+            format: MySQL.formatTime(LiteralExpr.string('%W')),
+          }),
+        TIMESTAMPDIFF: (args: Expression[]) =>
+          new TimestampDiffExpr({
+            this: seqGet(args, 2),
+            expression: seqGet(args, 1),
+            unit: seqGet(args, 0),
+          }),
+        APPROX_COUNT_DISTINCT: HllExpr.fromArgList,
+        APPROX_PERCENTILE: (args: Expression[]) =>
+          new ApproxQuantileExpr({
+            this: seqGet(args, 0),
+            quantile: seqGet(args, 1),
+            errorTolerance: seqGet(args, 2),
+          }),
+        VARIANCE: VariancePopExpr.fromArgList,
+        INSTR: ContainsExpr.fromArgList,
+        REGEXP_MATCH: (args: Expression[]) =>
+          new RegexpExtractAllExpr({
+            this: seqGet(args, 0),
+            expression: seqGet(args, 1),
+            parameters: seqGet(args, 2),
+          }),
+        REGEXP_SUBSTR: (args: Expression[]) =>
+          new RegexpExtractExpr({
+            this: seqGet(args, 0),
+            expression: seqGet(args, 1),
+            position: seqGet(args, 2),
+            occurrence: seqGet(args, 3),
+            parameters: seqGet(args, 4),
+          }),
+        REDUCE: (args: Expression[]) =>
+          new ReduceExpr({
+            initial: seqGet(args, 0),
+            this: seqGet(args, 1),
+            merge: seqGet(args, 2),
+          }),
+      };
+      return functions;
+    })();
+  }
+
+  static #FUNCTION_PARSERS: undefined = undefined;
+  static get FUNCTION_PARSERS () {
+    return SingleStoreParser.#FUNCTION_PARSERS ??= {
+      ...MySQL.Parser.FUNCTION_PARSERS,
+      JSON_AGG: (self: Parser) =>
+        self.expression(JsonArrayAggExpr, {
+          this: (self as SingleStoreParser).parseTerm(),
+          order: (self as SingleStoreParser).parseOrder(),
         }),
     };
-    return functions;
-  })();
+  }
 
-  static FUNCTION_PARSERS = {
-    ...MySQL.Parser.FUNCTION_PARSERS,
-    JSON_AGG: (self: Parser) =>
-      self.expression(JsonArrayAggExpr, {
-        this: (self as SingleStoreParser).parseTerm(),
-        order: (self as SingleStoreParser).parseOrder(),
-      }),
-  };
-
-  static NO_PAREN_FUNCTIONS = {
-    ...MySQL.Parser.NO_PAREN_FUNCTIONS,
-    [TokenType.UTC_DATE]: UtcDateExpr,
-    [TokenType.UTC_TIME]: UtcTimeExpr,
-    [TokenType.UTC_TIMESTAMP]: UtcTimestampExpr,
-  };
+  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  static get NO_PAREN_FUNCTIONS () {
+    return SingleStoreParser.#NO_PAREN_FUNCTIONS ??= {
+      ...MySQL.Parser.NO_PAREN_FUNCTIONS,
+      [TokenType.UTC_DATE]: UtcDateExpr,
+      [TokenType.UTC_TIME]: UtcTimeExpr,
+      [TokenType.UTC_TIMESTAMP]: UtcTimestampExpr,
+    };
+  }
 
   static CAST_COLUMN_OPERATORS = new Set([TokenType.COLON_GT, TokenType.NCOLON_GT]);
 
-  static COLUMN_OPERATORS = (() => {
-    const operators = {
-      ...MySQL.Parser.COLUMN_OPERATORS,
-      [TokenType.COLON_GT]: (self: Parser, thisNode?: Expression, to?: Expression) =>
-        self.expression(CastExpr, {
-          this: thisNode,
-          to,
-        }),
-      [TokenType.NCOLON_GT]: (self: Parser, thisNode?: Expression, to?: Expression) =>
-        self.expression(TryCastExpr, {
-          this: thisNode,
-          to,
-        }),
-      [TokenType.DCOLON]: (self: Parser, thisNode?: Expression, path?: Expression) =>
-        buildJsonExtractPath(JsonExtractExpr)([thisNode, LiteralExpr.string((path as IdentifierExpr).name)]),
-      [TokenType.DCOLONDOLLAR]: (self: Parser, thisNode?: Expression, path?: Expression) =>
-        buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'STRING' })([thisNode, LiteralExpr.string((path as IdentifierExpr).name)]),
-      [TokenType.DCOLONPERCENT]: (self: Parser, thisNode?: Expression, path?: Expression) =>
-        buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'DOUBLE' })([thisNode, LiteralExpr.string((path as IdentifierExpr).name)]),
-      [TokenType.DCOLONQMARK]: (self: Parser, thisNode?: Expression, path?: Expression) =>
-        self.expression(JsonExistsExpr, {
-          this: thisNode,
-          path: path?.name,
-          fromDcolonqmark: true,
+  static #COLUMN_OPERATORS: undefined = undefined;
+  static get COLUMN_OPERATORS () {
+    return SingleStoreParser.#COLUMN_OPERATORS ??= (() => {
+      const operators = {
+        ...MySQL.Parser.COLUMN_OPERATORS,
+        [TokenType.COLON_GT]: (self: Parser, thisNode?: Expression, to?: Expression) =>
+          self.expression(CastExpr, {
+            this: thisNode,
+            to,
+          }),
+        [TokenType.NCOLON_GT]: (self: Parser, thisNode?: Expression, to?: Expression) =>
+          self.expression(TryCastExpr, {
+            this: thisNode,
+            to,
+          }),
+        [TokenType.DCOLON]: (self: Parser, thisNode?: Expression, path?: Expression) =>
+          buildJsonExtractPath(JsonExtractExpr)([thisNode, LiteralExpr.string((path as IdentifierExpr).name)]),
+        [TokenType.DCOLONDOLLAR]: (self: Parser, thisNode?: Expression, path?: Expression) =>
+          buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'STRING' })([thisNode, LiteralExpr.string((path as IdentifierExpr).name)]),
+        [TokenType.DCOLONPERCENT]: (self: Parser, thisNode?: Expression, path?: Expression) =>
+          buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'DOUBLE' })([thisNode, LiteralExpr.string((path as IdentifierExpr).name)]),
+        [TokenType.DCOLONQMARK]: (self: Parser, thisNode?: Expression, path?: Expression) =>
+          self.expression(JsonExistsExpr, {
+            this: thisNode,
+            path: path?.name,
+            fromDcolonqmark: true,
+          }),
+      };
+      delete operators[TokenType.ARROW];
+      delete operators[TokenType.DARROW];
+      delete operators[TokenType.HASH_ARROW];
+      delete operators[TokenType.DHASH_ARROW];
+      delete operators[TokenType.PLACEHOLDER];
+      return operators;
+    })();
+  }
+
+  static #SHOW_PARSERS: undefined = undefined;
+  static get SHOW_PARSERS () {
+    return SingleStoreParser.#SHOW_PARSERS ??= {
+      ...MySQL.Parser.SHOW_PARSERS,
+      'AGGREGATES': showParser('AGGREGATES'),
+      'CDC EXTRACTOR POOL': showParser('CDC EXTRACTOR POOL'),
+      'CREATE AGGREGATE': showParser('CREATE AGGREGATE', { target: true }),
+      'CREATE PIPELINE': showParser('CREATE PIPELINE', { target: true }),
+      'CREATE PROJECTION': showParser('CREATE PROJECTION', { target: true }),
+      'DATABASE STATUS': showParser('DATABASE STATUS'),
+      'DISTRIBUTED_PLANCACHE STATUS': showParser('DISTRIBUTED_PLANCACHE STATUS'),
+      'FULLTEXT SERVICE METRICS LOCAL': showParser('FULLTEXT SERVICE METRICS LOCAL'),
+      'FULLTEXT SERVICE METRICS FOR NODE': showParser('FULLTEXT SERVICE METRICS FOR NODE', { target: true }),
+      'FULLTEXT SERVICE STATUS': showParser('FULLTEXT SERVICE STATUS'),
+      'FUNCTIONS': showParser('FUNCTIONS'),
+      'GROUPS': showParser('GROUPS'),
+      'GROUPS FOR ROLE': showParser('GROUPS FOR ROLE', { target: true }),
+      'GROUPS FOR USER': showParser('GROUPS FOR USER', { target: true }),
+      'INDEXES': showParser('INDEX', { target: 'FROM' }),
+      'KEYS': showParser('INDEX', { target: 'FROM' }),
+      'LINKS': showParser('LINKS', { target: 'ON' }),
+      'LOAD ERRORS': showParser('LOAD ERRORS'),
+      'LOAD WARNINGS': showParser('LOAD WARNINGS'),
+      'PARTITIONS': showParser('PARTITIONS', { target: 'ON' }),
+      'PIPELINES': showParser('PIPELINES'),
+      'PLAN': showParser('PLAN', { target: true }),
+      'PLANCACHE': showParser('PLANCACHE'),
+      'PROCEDURES': showParser('PROCEDURES'),
+      'PROJECTIONS': showParser('PROJECTIONS', { target: 'ON TABLE' }),
+      'REPLICATION STATUS': showParser('REPLICATION STATUS'),
+      'REPRODUCTION': showParser('REPRODUCTION'),
+      'RESOURCE POOLS': showParser('RESOURCE POOLS'),
+      'ROLES': showParser('ROLES'),
+      'ROLES FOR USER': showParser('ROLES FOR USER', { target: true }),
+      'ROLES FOR GROUP': showParser('ROLES FOR GROUP', { target: true }),
+      'STATUS EXTENDED': showParser('STATUS EXTENDED'),
+      'USERS': showParser('USERS'),
+      'USERS FOR ROLE': showParser('USERS FOR ROLE', { target: true }),
+      'USERS FOR GROUP': showParser('USERS FOR GROUP', { target: true }),
+    };
+  }
+
+  static #ALTER_PARSERS: undefined = undefined;
+  static get ALTER_PARSERS () {
+    return SingleStoreParser.#ALTER_PARSERS ??= {
+      ...MySQL.Parser.ALTER_PARSERS,
+      CHANGE: (self: Parser) =>
+        self.expression(RenameColumnExpr, {
+          this: (self as SingleStoreParser).parseColumn(),
+          to: (self as SingleStoreParser).parseColumn(),
         }),
     };
-    delete operators[TokenType.ARROW];
-    delete operators[TokenType.DARROW];
-    delete operators[TokenType.HASH_ARROW];
-    delete operators[TokenType.DHASH_ARROW];
-    delete operators[TokenType.PLACEHOLDER];
-    return operators;
-  })();
-
-  static SHOW_PARSERS = {
-    ...MySQL.Parser.SHOW_PARSERS,
-    'AGGREGATES': showParser('AGGREGATES'),
-    'CDC EXTRACTOR POOL': showParser('CDC EXTRACTOR POOL'),
-    'CREATE AGGREGATE': showParser('CREATE AGGREGATE', { target: true }),
-    'CREATE PIPELINE': showParser('CREATE PIPELINE', { target: true }),
-    'CREATE PROJECTION': showParser('CREATE PROJECTION', { target: true }),
-    'DATABASE STATUS': showParser('DATABASE STATUS'),
-    'DISTRIBUTED_PLANCACHE STATUS': showParser('DISTRIBUTED_PLANCACHE STATUS'),
-    'FULLTEXT SERVICE METRICS LOCAL': showParser('FULLTEXT SERVICE METRICS LOCAL'),
-    'FULLTEXT SERVICE METRICS FOR NODE': showParser('FULLTEXT SERVICE METRICS FOR NODE', { target: true }),
-    'FULLTEXT SERVICE STATUS': showParser('FULLTEXT SERVICE STATUS'),
-    'FUNCTIONS': showParser('FUNCTIONS'),
-    'GROUPS': showParser('GROUPS'),
-    'GROUPS FOR ROLE': showParser('GROUPS FOR ROLE', { target: true }),
-    'GROUPS FOR USER': showParser('GROUPS FOR USER', { target: true }),
-    'INDEXES': showParser('INDEX', { target: 'FROM' }),
-    'KEYS': showParser('INDEX', { target: 'FROM' }),
-    'LINKS': showParser('LINKS', { target: 'ON' }),
-    'LOAD ERRORS': showParser('LOAD ERRORS'),
-    'LOAD WARNINGS': showParser('LOAD WARNINGS'),
-    'PARTITIONS': showParser('PARTITIONS', { target: 'ON' }),
-    'PIPELINES': showParser('PIPELINES'),
-    'PLAN': showParser('PLAN', { target: true }),
-    'PLANCACHE': showParser('PLANCACHE'),
-    'PROCEDURES': showParser('PROCEDURES'),
-    'PROJECTIONS': showParser('PROJECTIONS', { target: 'ON TABLE' }),
-    'REPLICATION STATUS': showParser('REPLICATION STATUS'),
-    'REPRODUCTION': showParser('REPRODUCTION'),
-    'RESOURCE POOLS': showParser('RESOURCE POOLS'),
-    'ROLES': showParser('ROLES'),
-    'ROLES FOR USER': showParser('ROLES FOR USER', { target: true }),
-    'ROLES FOR GROUP': showParser('ROLES FOR GROUP', { target: true }),
-    'STATUS EXTENDED': showParser('STATUS EXTENDED'),
-    'USERS': showParser('USERS'),
-    'USERS FOR ROLE': showParser('USERS FOR ROLE', { target: true }),
-    'USERS FOR GROUP': showParser('USERS FOR GROUP', { target: true }),
-  };
-
-  static ALTER_PARSERS = {
-    ...MySQL.Parser.ALTER_PARSERS,
-    CHANGE: (self: Parser) =>
-      self.expression(RenameColumnExpr, {
-        this: (self as SingleStoreParser).parseColumn(),
-        to: (self as SingleStoreParser).parseColumn(),
-      }),
-  };
+  }
 
   parseVectorExpressions (expressions: Expression[]): Expression[] {
     let typeName = (expressions[1] as IdentifierExpr).name.toUpperCase();

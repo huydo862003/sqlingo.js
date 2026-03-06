@@ -91,35 +91,41 @@ class StarRocksTokenizer extends MySQL.Tokenizer {
 };
 
 class StarRocksParser extends MySQL.Parser {
-  public static FUNCTIONS = {
-    ...MySQL.Parser.FUNCTIONS,
-    DATE_TRUNC: buildTimestampTrunc,
-    DATEDIFF: (args: Expression[]): DateDiffExpr =>
-      new DateDiffExpr({
-        this: seqGet(args, 0),
-        expression: seqGet(args, 1),
-        unit: new LiteralExpr({
-          this: 'DAY',
-          isString: true,
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return StarRocksParser.#FUNCTIONS ??= {
+      ...MySQL.Parser.FUNCTIONS,
+      DATE_TRUNC: buildTimestampTrunc,
+      DATEDIFF: (args: Expression[]): DateDiffExpr =>
+        new DateDiffExpr({
+          this: seqGet(args, 0),
+          expression: seqGet(args, 1),
+          unit: new LiteralExpr({
+            this: 'DAY',
+            isString: true,
+          }),
         }),
-      }),
-    DATE_DIFF: (args: Expression[]): DateDiffExpr =>
-      new DateDiffExpr({
-        this: seqGet(args, 1),
-        expression: seqGet(args, 2),
-        unit: seqGet(args, 0),
-      }),
-    ARRAY_FLATTEN: FlattenExpr.fromArgList,
-    REGEXP: RegexpLikeExpr.fromArgList,
-  };
+      DATE_DIFF: (args: Expression[]): DateDiffExpr =>
+        new DateDiffExpr({
+          this: seqGet(args, 1),
+          expression: seqGet(args, 2),
+          unit: seqGet(args, 0),
+        }),
+      ARRAY_FLATTEN: FlattenExpr.fromArgList,
+      REGEXP: RegexpLikeExpr.fromArgList,
+    };
+  }
 
-  public static PROPERTY_PARSERS = {
-    ...MySQL.Parser.PROPERTY_PARSERS,
-    PROPERTIES: (self: StarRocksParser): Expression[] => self.parseWrappedProperties(),
-    UNIQUE: (self: StarRocksParser): Expression => self.parseCompositeKeyProperty(UniqueKeyPropertyExpr),
-    ROLLUP: (self: StarRocksParser): RollupPropertyExpr => self.parseRollupProperty(),
-    REFRESH: (self: StarRocksParser): Expression => self.parseRefreshProperty(),
-  };
+  static #PROPERTY_PARSERS: undefined = undefined;
+  static get PROPERTY_PARSERS () {
+    return StarRocksParser.#PROPERTY_PARSERS ??= {
+      ...MySQL.Parser.PROPERTY_PARSERS,
+      PROPERTIES: (self: StarRocksParser): Expression[] => self.parseWrappedProperties(),
+      UNIQUE: (self: StarRocksParser): Expression => self.parseCompositeKeyProperty(UniqueKeyPropertyExpr),
+      ROLLUP: (self: StarRocksParser): RollupPropertyExpr => self.parseRollupProperty(),
+      REFRESH: (self: StarRocksParser): Expression => self.parseRefreshProperty(),
+    };
+  }
 
   /**
      * ROLLUP (rollup_name (col1, col2) [FROM from_index] [PROPERTIES (...)], ...)

@@ -1122,379 +1122,406 @@ class SnowflakeParser extends Parser {
   static COLON_IS_VARIANT_EXTRACT = true;
   static JSON_EXTRACT_REQUIRES_JSON_EXPRESSION = true;
 
-  static ID_VAR_TOKENS = new Set([
-    ...Parser.ID_VAR_TOKENS,
-    TokenType.EXCEPT,
-    TokenType.MATCH_CONDITION,
-  ]);
+  static #ID_VAR_TOKENS: undefined = undefined;
+  static get ID_VAR_TOKENS () {
+    return SnowflakeParser.#ID_VAR_TOKENS ??= new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.EXCEPT,
+      TokenType.MATCH_CONDITION,
+    ]);
+  }
 
-  static TABLE_ALIAS_TOKENS = (() => {
-    const tokens = new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.WINDOW]);
-    tokens.delete(TokenType.MATCH_CONDITION);
-    return tokens;
-  })();
+  static #TABLE_ALIAS_TOKENS: undefined = undefined;
+  static get TABLE_ALIAS_TOKENS () {
+    return SnowflakeParser.#TABLE_ALIAS_TOKENS ??= (() => {
+      const tokens = new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.WINDOW]);
+      tokens.delete(TokenType.MATCH_CONDITION);
+      return tokens;
+    })();
+  }
 
   static COLON_PLACEHOLDER_TOKENS = new Set([...SnowflakeParser.ID_VAR_TOKENS, TokenType.NUMBER]);
 
-  static NO_PAREN_FUNCTIONS = {
-    ...Parser.NO_PAREN_FUNCTIONS,
-    [TokenType.CURRENT_TIME]: LocaltimeExpr,
-  };
+  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  static get NO_PAREN_FUNCTIONS () {
+    return SnowflakeParser.#NO_PAREN_FUNCTIONS ??= {
+      ...Parser.NO_PAREN_FUNCTIONS,
+      [TokenType.CURRENT_TIME]: LocaltimeExpr,
+    };
+  }
 
-  static FUNCTIONS = (() => {
-    const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
-      ...Parser.FUNCTIONS,
-      ADD_MONTHS: (args: Expression[]) =>
-        new AddMonthsExpr({
-          this: seqGet(args, 0),
-          expression: seqGet(args, 1),
-          preserveEndOfMonth: true,
-        }),
-      APPROX_PERCENTILE: ApproxQuantileExpr.fromArgList,
-      CURRENT_TIME: (args: Expression[]) => new LocaltimeExpr({ this: seqGet(args, 0) }),
-      APPROX_TOP_K: buildApproxTopK,
-      ARRAY_CONSTRUCT: (args: Expression[]) => new ArrayExpr({ expressions: args }),
-      ARRAY_CONTAINS: (args: Expression[]) =>
-        new ArrayContainsExpr({
-          this: seqGet(args, 1),
-          expression: seqGet(args, 0),
-          ensureVariant: false,
-        }),
-      ARRAY_GENERATE_RANGE: (args: Expression[]) =>
-        new GenerateSeriesExpr({
-          start: seqGet(args, 0)!,
-          end: new SubExpr({
-            this: seqGet(args, 1),
-            expression: LiteralExpr.number(1),
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return SnowflakeParser.#FUNCTIONS ??= (() => {
+      const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
+        ...Parser.FUNCTIONS,
+        ADD_MONTHS: (args: Expression[]) =>
+          new AddMonthsExpr({
+            this: seqGet(args, 0),
+            expression: seqGet(args, 1),
+            preserveEndOfMonth: true,
           }),
-          step: seqGet(args, 2),
-        }),
-      ARRAY_SORT: SortArrayExpr.fromArgList,
-      ARRAY_FLATTEN: FlattenExpr.fromArgList,
-      BITAND: buildBitwise(BitwiseAndExpr, 'BITAND'),
-      BIT_AND: buildBitwise(BitwiseAndExpr, 'BITAND'),
-      BITNOT: (args: Expression[]) => new BitwiseNotExpr({ this: seqGet(args, 0) }),
-      BIT_NOT: (args: Expression[]) => new BitwiseNotExpr({ this: seqGet(args, 0) }),
-      BITXOR: buildBitwise(BitwiseXorExpr, 'BITXOR'),
-      BIT_XOR: buildBitwise(BitwiseXorExpr, 'BITXOR'),
-      BITOR: buildBitwise(BitwiseOrExpr, 'BITOR'),
-      BIT_OR: buildBitwise(BitwiseOrExpr, 'BITOR'),
-      BITSHIFTLEFT: buildBitwise(BitwiseLeftShiftExpr, 'BITSHIFTLEFT'),
-      BIT_SHIFTLEFT: buildBitwise(BitwiseLeftShiftExpr, 'BIT_SHIFTLEFT'),
-      BITSHIFTRIGHT: buildBitwise(BitwiseRightShiftExpr, 'BITSHIFTRIGHT'),
-      BIT_SHIFTRIGHT: buildBitwise(BitwiseRightShiftExpr, 'BITSHIFTRIGHT'),
-      BITANDAGG: BitwiseAndAggExpr.fromArgList,
-      BITAND_AGG: BitwiseAndAggExpr.fromArgList,
-      BIT_AND_AGG: BitwiseAndAggExpr.fromArgList,
-      BIT_ANDAGG: BitwiseAndAggExpr.fromArgList,
-      BITORAGG: BitwiseOrAggExpr.fromArgList,
-      BITOR_AGG: BitwiseOrAggExpr.fromArgList,
-      BIT_OR_AGG: BitwiseOrAggExpr.fromArgList,
-      BIT_ORAGG: BitwiseOrAggExpr.fromArgList,
-      BITXORAGG: BitwiseXorAggExpr.fromArgList,
-      BITXOR_AGG: BitwiseXorAggExpr.fromArgList,
-      BIT_XOR_AGG: BitwiseXorAggExpr.fromArgList,
-      BIT_XORAGG: BitwiseXorAggExpr.fromArgList,
-      BITMAP_OR_AGG: BitmapOrAggExpr.fromArgList,
-      BOOLAND: (args: Expression[]) =>
-        new BoolandExpr({
+        APPROX_PERCENTILE: ApproxQuantileExpr.fromArgList,
+        CURRENT_TIME: (args: Expression[]) => new LocaltimeExpr({ this: seqGet(args, 0) }),
+        APPROX_TOP_K: buildApproxTopK,
+        ARRAY_CONSTRUCT: (args: Expression[]) => new ArrayExpr({ expressions: args }),
+        ARRAY_CONTAINS: (args: Expression[]) =>
+          new ArrayContainsExpr({
+            this: seqGet(args, 1),
+            expression: seqGet(args, 0),
+            ensureVariant: false,
+          }),
+        ARRAY_GENERATE_RANGE: (args: Expression[]) =>
+          new GenerateSeriesExpr({
+            start: seqGet(args, 0)!,
+            end: new SubExpr({
+              this: seqGet(args, 1),
+              expression: LiteralExpr.number(1),
+            }),
+            step: seqGet(args, 2),
+          }),
+        ARRAY_SORT: SortArrayExpr.fromArgList,
+        ARRAY_FLATTEN: FlattenExpr.fromArgList,
+        BITAND: buildBitwise(BitwiseAndExpr, 'BITAND'),
+        BIT_AND: buildBitwise(BitwiseAndExpr, 'BITAND'),
+        BITNOT: (args: Expression[]) => new BitwiseNotExpr({ this: seqGet(args, 0) }),
+        BIT_NOT: (args: Expression[]) => new BitwiseNotExpr({ this: seqGet(args, 0) }),
+        BITXOR: buildBitwise(BitwiseXorExpr, 'BITXOR'),
+        BIT_XOR: buildBitwise(BitwiseXorExpr, 'BITXOR'),
+        BITOR: buildBitwise(BitwiseOrExpr, 'BITOR'),
+        BIT_OR: buildBitwise(BitwiseOrExpr, 'BITOR'),
+        BITSHIFTLEFT: buildBitwise(BitwiseLeftShiftExpr, 'BITSHIFTLEFT'),
+        BIT_SHIFTLEFT: buildBitwise(BitwiseLeftShiftExpr, 'BIT_SHIFTLEFT'),
+        BITSHIFTRIGHT: buildBitwise(BitwiseRightShiftExpr, 'BITSHIFTRIGHT'),
+        BIT_SHIFTRIGHT: buildBitwise(BitwiseRightShiftExpr, 'BITSHIFTRIGHT'),
+        BITANDAGG: BitwiseAndAggExpr.fromArgList,
+        BITAND_AGG: BitwiseAndAggExpr.fromArgList,
+        BIT_AND_AGG: BitwiseAndAggExpr.fromArgList,
+        BIT_ANDAGG: BitwiseAndAggExpr.fromArgList,
+        BITORAGG: BitwiseOrAggExpr.fromArgList,
+        BITOR_AGG: BitwiseOrAggExpr.fromArgList,
+        BIT_OR_AGG: BitwiseOrAggExpr.fromArgList,
+        BIT_ORAGG: BitwiseOrAggExpr.fromArgList,
+        BITXORAGG: BitwiseXorAggExpr.fromArgList,
+        BITXOR_AGG: BitwiseXorAggExpr.fromArgList,
+        BIT_XOR_AGG: BitwiseXorAggExpr.fromArgList,
+        BIT_XORAGG: BitwiseXorAggExpr.fromArgList,
+        BITMAP_OR_AGG: BitmapOrAggExpr.fromArgList,
+        BOOLAND: (args: Expression[]) =>
+          new BoolandExpr({
+            this: seqGet(args, 0),
+            expression: seqGet(args, 1),
+            roundInput: true,
+          }),
+        BOOLOR: (args: Expression[]) =>
+          new BoolorExpr({
+            this: seqGet(args, 0),
+            expression: seqGet(args, 1),
+            roundInput: true,
+          }),
+        BOOLNOT: (args: Expression[]) => new BoolnotExpr({
           this: seqGet(args, 0),
-          expression: seqGet(args, 1),
           roundInput: true,
         }),
-      BOOLOR: (args: Expression[]) =>
-        new BoolorExpr({
+        BOOLXOR: (args: Expression[]) =>
+          new XorExpr({
+            this: seqGet(args, 0),
+            expression: seqGet(args, 1),
+            roundInput: true,
+          }),
+        CORR: (args: Expression[]) =>
+          new CorrExpr({
+            this: seqGet(args, 0),
+            expression: seqGet(args, 1),
+            nullOnZeroVariance: true,
+          }),
+        DATE: buildDatetime('DATE', DataTypeExprKind.DATE),
+        DATEFROMPARTS: buildDateFromParts,
+        DATE_FROM_PARTS: buildDateFromParts,
+        DATE_TRUNC: dateTruncToTimeWrapper,
+        DATEADD: buildDateTimeAdd(DateAddExpr),
+        DATEDIFF: buildDatediff,
+        DAYNAME: (args: Expression[]) => new DaynameExpr({
           this: seqGet(args, 0),
-          expression: seqGet(args, 1),
-          roundInput: true,
+          abbreviated: true,
         }),
-      BOOLNOT: (args: Expression[]) => new BoolnotExpr({
-        this: seqGet(args, 0),
-        roundInput: true,
-      }),
-      BOOLXOR: (args: Expression[]) =>
-        new XorExpr({
+        DAYOFWEEKISO: DayOfWeekIsoExpr.fromArgList,
+        DIV0: buildIfFromDiv0,
+        DIV0NULL: buildIfFromDiv0null,
+        EDITDISTANCE: (args: Expression[]) =>
+          new LevenshteinExpr({
+            this: seqGet(args, 0),
+            expression: seqGet(args, 1),
+            maxDist: seqGet(args, 2),
+          }),
+        FLATTEN: ExplodeExpr.fromArgList,
+        GENERATOR: buildGenerator,
+        GET: GetExtractExpr.fromArgList,
+        GETDATE: CurrentTimestampExpr.fromArgList,
+        GET_PATH: (args: Expression[], { dialect }: { dialect: Dialect }) =>
+          new JsonExtractExpr({
+            this: seqGet(args, 0),
+            expression: dialect.toJsonPath(seqGet(args, 1)),
+            requiresJson: true,
+          }),
+        GREATEST_IGNORE_NULLS: (args: Expression[]) =>
+          new GreatestExpr({
+            this: seqGet(args, 0),
+            expressions: args.slice(1),
+            ignoreNulls: true,
+          }),
+        LEAST_IGNORE_NULLS: (args: Expression[]) =>
+          new LeastExpr({
+            this: seqGet(args, 0),
+            expressions: args.slice(1),
+            ignoreNulls: true,
+          }),
+        HEX_DECODE_BINARY: UnhexExpr.fromArgList,
+        IFF: IfExpr.fromArgList,
+        MD5_HEX: Md5Expr.fromArgList,
+        MD5_BINARY: Md5DigestExpr.fromArgList,
+        MD5_NUMBER_LOWER64: Md5NumberLower64Expr.fromArgList,
+        MD5_NUMBER_UPPER64: Md5NumberUpper64Expr.fromArgList,
+        MONTHNAME: (args: Expression[]) => new MonthnameExpr({
           this: seqGet(args, 0),
-          expression: seqGet(args, 1),
-          roundInput: true,
+          abbreviated: true,
         }),
-      CORR: (args: Expression[]) =>
-        new CorrExpr({
+        LAST_DAY: (args: Expression[]) =>
+          new LastDayExpr({
+            this: seqGet(args, 0),
+            unit: mapDatePart(seqGet(args, 1)),
+          }),
+        LEN: (args: Expression[]) => new LengthExpr({
           this: seqGet(args, 0),
-          expression: seqGet(args, 1),
-          nullOnZeroVariance: true,
+          binary: true,
         }),
-      DATE: buildDatetime('DATE', DataTypeExprKind.DATE),
-      DATEFROMPARTS: buildDateFromParts,
-      DATE_FROM_PARTS: buildDateFromParts,
-      DATE_TRUNC: dateTruncToTimeWrapper,
-      DATEADD: buildDateTimeAdd(DateAddExpr),
-      DATEDIFF: buildDatediff,
-      DAYNAME: (args: Expression[]) => new DaynameExpr({
-        this: seqGet(args, 0),
-        abbreviated: true,
-      }),
-      DAYOFWEEKISO: DayOfWeekIsoExpr.fromArgList,
-      DIV0: buildIfFromDiv0,
-      DIV0NULL: buildIfFromDiv0null,
-      EDITDISTANCE: (args: Expression[]) =>
-        new LevenshteinExpr({
+        LENGTH: (args: Expression[]) => new LengthExpr({
           this: seqGet(args, 0),
-          expression: seqGet(args, 1),
-          maxDist: seqGet(args, 2),
+          binary: true,
         }),
-      FLATTEN: ExplodeExpr.fromArgList,
-      GENERATOR: buildGenerator,
-      GET: GetExtractExpr.fromArgList,
-      GETDATE: CurrentTimestampExpr.fromArgList,
-      GET_PATH: (args: Expression[], { dialect }: { dialect: Dialect }) =>
-        new JsonExtractExpr({
+        LOCALTIMESTAMP: CurrentTimestampExpr.fromArgList,
+        NULLIFZERO: buildIfFromNullifzero,
+        OBJECT_CONSTRUCT: buildObjectConstruct,
+        OBJECT_KEYS: JsonKeysExpr.fromArgList,
+        OCTET_LENGTH: ByteLengthExpr.fromArgList,
+        PARSE_URL: (args: Expression[]) =>
+          new ParseUrlExpr({
+            this: seqGet(args, 0),
+            permissive: seqGet(args, 1),
+          }),
+        REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr),
+        REGEXP_REPLACE: buildRegexpReplace,
+        REGEXP_SUBSTR: buildRegexpExtract(RegexpExtractExpr),
+        REGEXP_SUBSTR_ALL: buildRegexpExtract(RegexpExtractAllExpr),
+        REPLACE: buildReplaceWithOptionalReplacement,
+        RLIKE: RegexpLikeExpr.fromArgList,
+        ROUND: buildRound,
+        SHA1_BINARY: Sha1DigestExpr.fromArgList,
+        SHA1_HEX: ShaExpr.fromArgList,
+        SHA2_BINARY: Sha2DigestExpr.fromArgList,
+        SHA2_HEX: Sha2Expr.fromArgList,
+        SQUARE: (args: Expression[]) =>
+          new PowExpr({
+            this: seqGet(args, 0),
+            expression: LiteralExpr.number(2),
+          }),
+        STDDEV_SAMP: StddevExpr.fromArgList,
+        STRTOK: buildStrtok,
+        SYSDATE: (args: Expression[]) =>
+          new CurrentTimestampExpr({
+            this: seqGet(args, 0),
+            sysdate: true,
+          }),
+        TABLE: (args: Expression[]) => new TableFromRowsExpr({ this: seqGet(args, 0) }),
+        TIME_ADD: buildDateTimeAdd(TimeAddExpr),
+        TIMEDIFF: buildDatediff,
+        TIME_FROM_PARTS: (args: Expression[]) =>
+          new TimeFromPartsExpr({
+            hour: seqGet(args, 0),
+            min: seqGet(args, 1),
+            sec: seqGet(args, 2),
+            nano: seqGet(args, 3),
+            overflow: true,
+          }),
+        TIMESTAMPADD: buildDateTimeAdd(DateAddExpr),
+        TIMESTAMPDIFF: buildDatediff,
+        TIMESTAMPFROMPARTS: buildTimestampFromParts,
+        TIMESTAMP_FROM_PARTS: buildTimestampFromParts,
+        TIMESTAMPNTZFROMPARTS: buildTimestampFromParts,
+        TIMESTAMP_NTZ_FROM_PARTS: buildTimestampFromParts,
+        TRUNC: (args: Expression[], { dialect }: { dialect: Dialect }) =>
+          buildTrunc(args, {
+            dialect,
+            dateTruncRequiresPart: false,
+          }),
+        TRUNCATE: (args: Expression[], { dialect }: { dialect: Dialect }) =>
+          buildTrunc(args, {
+            dialect,
+            dateTruncRequiresPart: false,
+          }),
+        TRY_DECRYPT: (args: Expression[]) =>
+          new DecryptExpr({
+            this: seqGet(args, 0),
+            passphrase: seqGet(args, 1),
+            aad: seqGet(args, 2),
+            encryptionMethod: seqGet(args, 3),
+            safe: true,
+          }),
+        TRY_DECRYPT_RAW: (args: Expression[]) =>
+          new DecryptRawExpr({
+            this: seqGet(args, 0),
+            key: seqGet(args, 1),
+            iv: seqGet(args, 2),
+            aad: seqGet(args, 3),
+            encryptionMethod: seqGet(args, 4),
+            aead: seqGet(args, 5),
+            safe: true,
+          }),
+        TRY_PARSE_JSON: (args: Expression[]) => new ParseJsonExpr({
           this: seqGet(args, 0),
-          expression: dialect.toJsonPath(seqGet(args, 1)),
-          requiresJson: true,
-        }),
-      GREATEST_IGNORE_NULLS: (args: Expression[]) =>
-        new GreatestExpr({
-          this: seqGet(args, 0),
-          expressions: args.slice(1),
-          ignoreNulls: true,
-        }),
-      LEAST_IGNORE_NULLS: (args: Expression[]) =>
-        new LeastExpr({
-          this: seqGet(args, 0),
-          expressions: args.slice(1),
-          ignoreNulls: true,
-        }),
-      HEX_DECODE_BINARY: UnhexExpr.fromArgList,
-      IFF: IfExpr.fromArgList,
-      MD5_HEX: Md5Expr.fromArgList,
-      MD5_BINARY: Md5DigestExpr.fromArgList,
-      MD5_NUMBER_LOWER64: Md5NumberLower64Expr.fromArgList,
-      MD5_NUMBER_UPPER64: Md5NumberUpper64Expr.fromArgList,
-      MONTHNAME: (args: Expression[]) => new MonthnameExpr({
-        this: seqGet(args, 0),
-        abbreviated: true,
-      }),
-      LAST_DAY: (args: Expression[]) =>
-        new LastDayExpr({
-          this: seqGet(args, 0),
-          unit: mapDatePart(seqGet(args, 1)),
-        }),
-      LEN: (args: Expression[]) => new LengthExpr({
-        this: seqGet(args, 0),
-        binary: true,
-      }),
-      LENGTH: (args: Expression[]) => new LengthExpr({
-        this: seqGet(args, 0),
-        binary: true,
-      }),
-      LOCALTIMESTAMP: CurrentTimestampExpr.fromArgList,
-      NULLIFZERO: buildIfFromNullifzero,
-      OBJECT_CONSTRUCT: buildObjectConstruct,
-      OBJECT_KEYS: JsonKeysExpr.fromArgList,
-      OCTET_LENGTH: ByteLengthExpr.fromArgList,
-      PARSE_URL: (args: Expression[]) =>
-        new ParseUrlExpr({
-          this: seqGet(args, 0),
-          permissive: seqGet(args, 1),
-        }),
-      REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr),
-      REGEXP_REPLACE: buildRegexpReplace,
-      REGEXP_SUBSTR: buildRegexpExtract(RegexpExtractExpr),
-      REGEXP_SUBSTR_ALL: buildRegexpExtract(RegexpExtractAllExpr),
-      REPLACE: buildReplaceWithOptionalReplacement,
-      RLIKE: RegexpLikeExpr.fromArgList,
-      ROUND: buildRound,
-      SHA1_BINARY: Sha1DigestExpr.fromArgList,
-      SHA1_HEX: ShaExpr.fromArgList,
-      SHA2_BINARY: Sha2DigestExpr.fromArgList,
-      SHA2_HEX: Sha2Expr.fromArgList,
-      SQUARE: (args: Expression[]) =>
-        new PowExpr({
-          this: seqGet(args, 0),
-          expression: LiteralExpr.number(2),
-        }),
-      STDDEV_SAMP: StddevExpr.fromArgList,
-      STRTOK: buildStrtok,
-      SYSDATE: (args: Expression[]) =>
-        new CurrentTimestampExpr({
-          this: seqGet(args, 0),
-          sysdate: true,
-        }),
-      TABLE: (args: Expression[]) => new TableFromRowsExpr({ this: seqGet(args, 0) }),
-      TIME_ADD: buildDateTimeAdd(TimeAddExpr),
-      TIMEDIFF: buildDatediff,
-      TIME_FROM_PARTS: (args: Expression[]) =>
-        new TimeFromPartsExpr({
-          hour: seqGet(args, 0),
-          min: seqGet(args, 1),
-          sec: seqGet(args, 2),
-          nano: seqGet(args, 3),
-          overflow: true,
-        }),
-      TIMESTAMPADD: buildDateTimeAdd(DateAddExpr),
-      TIMESTAMPDIFF: buildDatediff,
-      TIMESTAMPFROMPARTS: buildTimestampFromParts,
-      TIMESTAMP_FROM_PARTS: buildTimestampFromParts,
-      TIMESTAMPNTZFROMPARTS: buildTimestampFromParts,
-      TIMESTAMP_NTZ_FROM_PARTS: buildTimestampFromParts,
-      TRUNC: (args: Expression[], { dialect }: { dialect: Dialect }) =>
-        buildTrunc(args, {
-          dialect,
-          dateTruncRequiresPart: false,
-        }),
-      TRUNCATE: (args: Expression[], { dialect }: { dialect: Dialect }) =>
-        buildTrunc(args, {
-          dialect,
-          dateTruncRequiresPart: false,
-        }),
-      TRY_DECRYPT: (args: Expression[]) =>
-        new DecryptExpr({
-          this: seqGet(args, 0),
-          passphrase: seqGet(args, 1),
-          aad: seqGet(args, 2),
-          encryptionMethod: seqGet(args, 3),
           safe: true,
         }),
-      TRY_DECRYPT_RAW: (args: Expression[]) =>
-        new DecryptRawExpr({
+        TRY_TO_BINARY: (args: Expression[]) =>
+          new ToBinaryExpr({
+            this: seqGet(args, 0),
+            format: seqGet(args, 1),
+            safe: true,
+          }),
+        TRY_TO_BOOLEAN: (args: Expression[]) => new ToBooleanExpr({
           this: seqGet(args, 0),
-          key: seqGet(args, 1),
-          iv: seqGet(args, 2),
-          aad: seqGet(args, 3),
-          encryptionMethod: seqGet(args, 4),
-          aead: seqGet(args, 5),
           safe: true,
         }),
-      TRY_PARSE_JSON: (args: Expression[]) => new ParseJsonExpr({
-        this: seqGet(args, 0),
-        safe: true,
-      }),
-      TRY_TO_BINARY: (args: Expression[]) =>
-        new ToBinaryExpr({
-          this: seqGet(args, 0),
-          format: seqGet(args, 1),
-          safe: true,
+        TRY_TO_DATE: buildDatetime('TRY_TO_DATE', DataTypeExprKind.DATE, { safe: true }),
+        TRY_TO_DECIMAL: buildTryToNumber,
+        TRY_TO_NUMBER: buildTryToNumber,
+        TRY_TO_NUMERIC: buildTryToNumber,
+        TRY_TO_DOUBLE: (args: Expression[]) =>
+          new ToDoubleExpr({
+            this: seqGet(args, 0),
+            format: seqGet(args, 1),
+            safe: true,
+          }),
+        TRY_TO_FILE: (args: Expression[]) =>
+          new ToFileExpr({
+            this: seqGet(args, 0),
+            path: seqGet(args, 1),
+            safe: true,
+          }),
+        TRY_TO_TIME: buildDatetime('TRY_TO_TIME', DataTypeExprKind.TIME, { safe: true }),
+        TRY_TO_TIMESTAMP: buildDatetime('TRY_TO_TIMESTAMP', DataTypeExprKind.TIMESTAMP, { safe: true }),
+        TRY_TO_TIMESTAMP_LTZ: buildDatetime('TRY_TO_TIMESTAMP_LTZ', DataTypeExprKind.TIMESTAMPLTZ, { safe: true }),
+        TRY_TO_TIMESTAMP_NTZ: buildDatetime('TRY_TO_TIMESTAMP_NTZ', DataTypeExprKind.TIMESTAMPNTZ, { safe: true }),
+        TRY_TO_TIMESTAMP_TZ: buildDatetime('TRY_TO_TIMESTAMP_TZ', DataTypeExprKind.TIMESTAMPTZ, { safe: true }),
+        TO_CHAR: buildTimeToStrOrToChar,
+        TO_DATE: buildDatetime('TO_DATE', DataTypeExprKind.DATE),
+        TO_DECIMAL: (args: Expression[]) =>
+          new ToNumberExpr({
+            this: seqGet(args, 0),
+            format: seqGet(args, 1),
+            precision: seqGet(args, 2),
+            scale: seqGet(args, 3),
+          }),
+        TO_NUMBER: (args: Expression[]) =>
+          new ToNumberExpr({
+            this: seqGet(args, 0),
+            format: seqGet(args, 1),
+            precision: seqGet(args, 2),
+            scale: seqGet(args, 3),
+          }),
+        TO_NUMERIC: (args: Expression[]) =>
+          new ToNumberExpr({
+            this: seqGet(args, 0),
+            format: seqGet(args, 1),
+            precision: seqGet(args, 2),
+            scale: seqGet(args, 3),
+          }),
+        TO_TIME: buildDatetime('TO_TIME', DataTypeExprKind.TIME),
+        TO_TIMESTAMP: buildDatetime('TO_TIMESTAMP', DataTypeExprKind.TIMESTAMP),
+        TO_TIMESTAMP_LTZ: buildDatetime('TO_TIMESTAMP_LTZ', DataTypeExprKind.TIMESTAMPLTZ),
+        TO_TIMESTAMP_NTZ: buildDatetime('TO_TIMESTAMP_NTZ', DataTypeExprKind.TIMESTAMPNTZ),
+        TO_TIMESTAMP_TZ: buildDatetime('TO_TIMESTAMP_TZ', DataTypeExprKind.TIMESTAMPTZ),
+        TO_VARCHAR: buildTimeToStrOrToChar,
+        TO_JSON: JsonFormatExpr.fromArgList,
+        VECTOR_COSINE_SIMILARITY: CosineDistanceExpr.fromArgList,
+        VECTOR_INNER_PRODUCT: DotProductExpr.fromArgList,
+        VECTOR_L1_DISTANCE: ManhattanDistanceExpr.fromArgList,
+        VECTOR_L2_DISTANCE: EuclideanDistanceExpr.fromArgList,
+        ZEROIFNULL: buildIfFromZeroifnull,
+        LIKE: buildLike(LikeExpr),
+        ILIKE: buildLike(ILikeExpr),
+        SEARCH: buildSearch,
+        SKEW: SkewnessExpr.fromArgList,
+        SYSTIMESTAMP: CurrentTimestampExpr.fromArgList,
+        WEEKISO: WeekOfYearExpr.fromArgList,
+        WEEKOFYEAR: WeekExpr.fromArgList,
+      };
+      delete functions['PREDICT'];
+      return functions;
+    })();
+  }
+
+  static #FUNCTION_PARSERS: undefined = undefined;
+  static get FUNCTION_PARSERS () {
+    return SnowflakeParser.#FUNCTION_PARSERS ??= (() => {
+      const parsers: Partial<Record<string, (self: Parser) => Expression | undefined>> = {
+        ...Parser.FUNCTION_PARSERS,
+        DATE_PART: (self: Parser) => (self as SnowflakeParser).parseDatePart(),
+        DIRECTORY: (self: Parser) => (self as SnowflakeParser).parseDirectory(),
+        OBJECT_CONSTRUCT_KEEP_NULL: (self: Parser) => (self as SnowflakeParser).parseJsonObject(),
+        LISTAGG: (self: Parser) => self.parseStringAgg(),
+        SEMANTIC_VIEW: (self: Parser) => (self as SnowflakeParser).parseSemanticView(),
+      };
+      delete parsers['TRIM'];
+      return parsers;
+    })();
+  }
+
+  static #TIMESTAMPS: undefined = undefined;
+  static get TIMESTAMPS () {
+    return SnowflakeParser.#TIMESTAMPS ??= new Set(
+      Array.from(Parser.TIMESTAMPS).filter((t) => t !== TokenType.TIME),
+    );
+  }
+
+  static #ALTER_PARSERS: undefined = undefined;
+  static get ALTER_PARSERS () {
+    return SnowflakeParser.#ALTER_PARSERS ??= {
+      ...Parser.ALTER_PARSERS,
+      SESSION: (self: Parser) => self.parseAlterSession(),
+      UNSET: (self: Parser) =>
+        self.expression(SetExpr, {
+          tag: self.matchTextSeq('TAG'),
+          expressions: self.parseCsv(() => self.parseIdVar()),
+          unset: true,
         }),
-      TRY_TO_BOOLEAN: (args: Expression[]) => new ToBooleanExpr({
-        this: seqGet(args, 0),
-        safe: true,
-      }),
-      TRY_TO_DATE: buildDatetime('TRY_TO_DATE', DataTypeExprKind.DATE, { safe: true }),
-      TRY_TO_DECIMAL: buildTryToNumber,
-      TRY_TO_NUMBER: buildTryToNumber,
-      TRY_TO_NUMERIC: buildTryToNumber,
-      TRY_TO_DOUBLE: (args: Expression[]) =>
-        new ToDoubleExpr({
-          this: seqGet(args, 0),
-          format: seqGet(args, 1),
-          safe: true,
-        }),
-      TRY_TO_FILE: (args: Expression[]) =>
-        new ToFileExpr({
-          this: seqGet(args, 0),
-          path: seqGet(args, 1),
-          safe: true,
-        }),
-      TRY_TO_TIME: buildDatetime('TRY_TO_TIME', DataTypeExprKind.TIME, { safe: true }),
-      TRY_TO_TIMESTAMP: buildDatetime('TRY_TO_TIMESTAMP', DataTypeExprKind.TIMESTAMP, { safe: true }),
-      TRY_TO_TIMESTAMP_LTZ: buildDatetime('TRY_TO_TIMESTAMP_LTZ', DataTypeExprKind.TIMESTAMPLTZ, { safe: true }),
-      TRY_TO_TIMESTAMP_NTZ: buildDatetime('TRY_TO_TIMESTAMP_NTZ', DataTypeExprKind.TIMESTAMPNTZ, { safe: true }),
-      TRY_TO_TIMESTAMP_TZ: buildDatetime('TRY_TO_TIMESTAMP_TZ', DataTypeExprKind.TIMESTAMPTZ, { safe: true }),
-      TO_CHAR: buildTimeToStrOrToChar,
-      TO_DATE: buildDatetime('TO_DATE', DataTypeExprKind.DATE),
-      TO_DECIMAL: (args: Expression[]) =>
-        new ToNumberExpr({
-          this: seqGet(args, 0),
-          format: seqGet(args, 1),
-          precision: seqGet(args, 2),
-          scale: seqGet(args, 3),
-        }),
-      TO_NUMBER: (args: Expression[]) =>
-        new ToNumberExpr({
-          this: seqGet(args, 0),
-          format: seqGet(args, 1),
-          precision: seqGet(args, 2),
-          scale: seqGet(args, 3),
-        }),
-      TO_NUMERIC: (args: Expression[]) =>
-        new ToNumberExpr({
-          this: seqGet(args, 0),
-          format: seqGet(args, 1),
-          precision: seqGet(args, 2),
-          scale: seqGet(args, 3),
-        }),
-      TO_TIME: buildDatetime('TO_TIME', DataTypeExprKind.TIME),
-      TO_TIMESTAMP: buildDatetime('TO_TIMESTAMP', DataTypeExprKind.TIMESTAMP),
-      TO_TIMESTAMP_LTZ: buildDatetime('TO_TIMESTAMP_LTZ', DataTypeExprKind.TIMESTAMPLTZ),
-      TO_TIMESTAMP_NTZ: buildDatetime('TO_TIMESTAMP_NTZ', DataTypeExprKind.TIMESTAMPNTZ),
-      TO_TIMESTAMP_TZ: buildDatetime('TO_TIMESTAMP_TZ', DataTypeExprKind.TIMESTAMPTZ),
-      TO_VARCHAR: buildTimeToStrOrToChar,
-      TO_JSON: JsonFormatExpr.fromArgList,
-      VECTOR_COSINE_SIMILARITY: CosineDistanceExpr.fromArgList,
-      VECTOR_INNER_PRODUCT: DotProductExpr.fromArgList,
-      VECTOR_L1_DISTANCE: ManhattanDistanceExpr.fromArgList,
-      VECTOR_L2_DISTANCE: EuclideanDistanceExpr.fromArgList,
-      ZEROIFNULL: buildIfFromZeroifnull,
-      LIKE: buildLike(LikeExpr),
-      ILIKE: buildLike(ILikeExpr),
-      SEARCH: buildSearch,
-      SKEW: SkewnessExpr.fromArgList,
-      SYSTIMESTAMP: CurrentTimestampExpr.fromArgList,
-      WEEKISO: WeekOfYearExpr.fromArgList,
-      WEEKOFYEAR: WeekExpr.fromArgList,
     };
-    delete functions['PREDICT'];
-    return functions;
-  })();
+  }
 
-  static FUNCTION_PARSERS = (() => {
-    const parsers: Partial<Record<string, (self: Parser) => Expression | undefined>> = {
-      ...Parser.FUNCTION_PARSERS,
-      DATE_PART: (self: Parser) => (self as SnowflakeParser).parseDatePart(),
-      DIRECTORY: (self: Parser) => (self as SnowflakeParser).parseDirectory(),
-      OBJECT_CONSTRUCT_KEEP_NULL: (self: Parser) => (self as SnowflakeParser).parseJsonObject(),
-      LISTAGG: (self: Parser) => self.parseStringAgg(),
-      SEMANTIC_VIEW: (self: Parser) => (self as SnowflakeParser).parseSemanticView(),
+  static #STATEMENT_PARSERS: undefined = undefined;
+  static get STATEMENT_PARSERS () {
+    return SnowflakeParser.#STATEMENT_PARSERS ??= {
+      ...Parser.STATEMENT_PARSERS,
+      [TokenType.GET]: (self: Parser) => (self as SnowflakeParser).parseGet(),
+      [TokenType.PUT]: (self: Parser) => (self as SnowflakeParser).parsePut(),
+      [TokenType.SHOW]: (self: Parser) => self.parseShow(),
     };
-    delete parsers['TRIM'];
-    return parsers;
-  })();
+  }
 
-  static TIMESTAMPS = new Set(
-    Array.from(Parser.TIMESTAMPS).filter((t) => t !== TokenType.TIME),
-  );
-
-  static ALTER_PARSERS = {
-    ...Parser.ALTER_PARSERS,
-    SESSION: (self: Parser) => self.parseAlterSession(),
-    UNSET: (self: Parser) =>
-      self.expression(SetExpr, {
-        tag: self.matchTextSeq('TAG'),
-        expressions: self.parseCsv(() => self.parseIdVar()),
-        unset: true,
-      }),
-  };
-
-  static STATEMENT_PARSERS = {
-    ...Parser.STATEMENT_PARSERS,
-    [TokenType.GET]: (self: Parser) => (self as SnowflakeParser).parseGet(),
-    [TokenType.PUT]: (self: Parser) => (self as SnowflakeParser).parsePut(),
-    [TokenType.SHOW]: (self: Parser) => self.parseShow(),
-  };
-
-  static PROPERTY_PARSERS = {
-    ...Parser.PROPERTY_PARSERS,
-    CREDENTIALS: (self: Parser) => (self as SnowflakeParser).parseCredentialsProperty(),
-    FILE_FORMAT: (self: Parser) => (self as SnowflakeParser).parseFileFormatProperty(),
-    LOCATION: (self: Parser) => (self as SnowflakeParser).parseLocationProperty(),
-    TAG: (self: Parser) => (self as SnowflakeParser).parseTag(),
-    USING: (self: Parser) =>
-      self.matchTextSeq('TEMPLATE')
-      && self.expression(UsingTemplatePropertyExpr, {
-        this: self.parseStatement(),
-      }),
-  };
+  static #PROPERTY_PARSERS: undefined = undefined;
+  static get PROPERTY_PARSERS () {
+    return SnowflakeParser.#PROPERTY_PARSERS ??= {
+      ...Parser.PROPERTY_PARSERS,
+      CREDENTIALS: (self: Parser) => (self as SnowflakeParser).parseCredentialsProperty(),
+      FILE_FORMAT: (self: Parser) => (self as SnowflakeParser).parseFileFormatProperty(),
+      LOCATION: (self: Parser) => (self as SnowflakeParser).parseLocationProperty(),
+      TAG: (self: Parser) => (self as SnowflakeParser).parseTag(),
+      USING: (self: Parser) =>
+        self.matchTextSeq('TEMPLATE')
+        && self.expression(UsingTemplatePropertyExpr, {
+          this: self.parseStatement(),
+        }),
+    };
+  }
 
   static TYPE_CONVERTERS = {
     [DataTypeExprKind.DECIMAL]: buildDefaultDecimalType(38, 0),
@@ -1529,13 +1556,16 @@ class SnowflakeParser extends Parser {
     'WAREHOUSES': showParser('WAREHOUSES'),
   };
 
-  static CONSTRAINT_PARSERS = {
-    ...Parser.CONSTRAINT_PARSERS,
-    WITH: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
-    MASKING: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
-    PROJECTION: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
-    TAG: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
-  };
+  static #CONSTRAINT_PARSERS: undefined = undefined;
+  static get CONSTRAINT_PARSERS () {
+    return SnowflakeParser.#CONSTRAINT_PARSERS ??= {
+      ...Parser.CONSTRAINT_PARSERS,
+      WITH: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
+      MASKING: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
+      PROJECTION: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
+      TAG: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
+    };
+  }
 
   static STAGED_FILE_SINGLE_TOKENS = new Set([
     TokenType.DOT,
@@ -1568,23 +1598,29 @@ class SnowflakeParser extends Parser {
     'STREAMLIT',
   ]);
 
-  static LAMBDAS = {
-    ...Parser.LAMBDAS,
-    [TokenType.ARROW]: (self: Parser, expressions: Expression[]) =>
-      self.expression(LambdaExpr, {
-        this: self.replaceLambda(self.parseAssignment(), expressions),
-        expressions: expressions.map((e) => (e instanceof CastExpr ? e.args.this : e)),
-      }),
-  };
+  static #LAMBDAS: undefined = undefined;
+  static get LAMBDAS () {
+    return SnowflakeParser.#LAMBDAS ??= {
+      ...Parser.LAMBDAS,
+      [TokenType.ARROW]: (self: Parser, expressions: Expression[]) =>
+        self.expression(LambdaExpr, {
+          this: self.replaceLambda(self.parseAssignment(), expressions),
+          expressions: expressions.map((e) => (e instanceof CastExpr ? e.args.this : e)),
+        }),
+    };
+  }
 
-  static COLUMN_OPERATORS = {
-    ...Parser.COLUMN_OPERATORS,
-    [TokenType.EXCLAMATION]: (self: Parser, thisNode?: Expression, attr?: Expression) =>
-      self.expression(ModelAttributeExpr, {
-        this: thisNode,
-        expression: attr,
-      }),
-  };
+  static #COLUMN_OPERATORS: undefined = undefined;
+  static get COLUMN_OPERATORS () {
+    return SnowflakeParser.#COLUMN_OPERATORS ??= {
+      ...Parser.COLUMN_OPERATORS,
+      [TokenType.EXCLAMATION]: (self: Parser, thisNode?: Expression, attr?: Expression) =>
+        self.expression(ModelAttributeExpr, {
+          this: thisNode,
+          expression: attr,
+        }),
+    };
+  }
 
   parseDirectory (): DirectoryStageExpr {
     let table: ExpressionOrString | undefined = this.parseTableParts();

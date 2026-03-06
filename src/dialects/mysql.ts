@@ -475,138 +475,162 @@ class MySQLTokenizer extends Tokenizer {
 };
 
 class MySQLParser extends Parser {
-  public static FUNC_TOKENS: Set<TokenType> = new Set([
-    ...Parser.FUNC_TOKENS,
-    TokenType.DATABASE,
-    TokenType.MOD,
-    TokenType.SCHEMA,
-    TokenType.VALUES,
-    TokenType.CHARACTER_SET,
-  ]);
+  static #FUNC_TOKENS: Set<TokenType> | undefined = undefined;
+  static get FUNC_TOKENS (): Set<TokenType> {
+    return MySQLParser.#FUNC_TOKENS ??= new Set([
+      ...Parser.FUNC_TOKENS,
+      TokenType.DATABASE,
+      TokenType.MOD,
+      TokenType.SCHEMA,
+      TokenType.VALUES,
+      TokenType.CHARACTER_SET,
+    ]);
+  }
 
-  public static CONJUNCTION = {
-    ...Parser.CONJUNCTION,
-    [TokenType.DAMP]: AndExpr,
-    [TokenType.XOR]: XorExpr,
-  };
+  static #CONJUNCTION: undefined = undefined;
+  static get CONJUNCTION () {
+    return MySQLParser.#CONJUNCTION ??= {
+      ...Parser.CONJUNCTION,
+      [TokenType.DAMP]: AndExpr,
+      [TokenType.XOR]: XorExpr,
+    };
+  }
 
-  public static DISJUNCTION = {
-    ...Parser.DISJUNCTION,
-    [TokenType.DPIPE]: OrExpr,
-  };
+  static #DISJUNCTION: undefined = undefined;
+  static get DISJUNCTION () {
+    return MySQLParser.#DISJUNCTION ??= {
+      ...Parser.DISJUNCTION,
+      [TokenType.DPIPE]: OrExpr,
+    };
+  }
 
-  public static TABLE_ALIAS_TOKENS: Set<TokenType> = (() => {
-    const tokens = new Set(Parser.TABLE_ALIAS_TOKENS);
-    for (const hint of Parser.TABLE_INDEX_HINT_TOKENS) {
-      tokens.delete(hint);
-    }
-    return tokens;
-  })();
+  static #TABLE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return MySQLParser.#TABLE_ALIAS_TOKENS ??= (() => {
+      const tokens = new Set(Parser.TABLE_ALIAS_TOKENS);
+      for (const hint of Parser.TABLE_INDEX_HINT_TOKENS) {
+        tokens.delete(hint);
+      }
+      return tokens;
+    })();
+  }
 
-  public static RANGE_PARSERS = {
-    ...Parser.RANGE_PARSERS,
-    [TokenType.SOUNDS_LIKE]: (self: Parser, thisArg: Expression): EqExpr =>
-      self.expression(EqExpr, {
-        this: self.expression(SoundexExpr, { this: thisArg }),
-        expression: self.expression(SoundexExpr, { this: self.parseTerm() }),
-      }),
-    [TokenType.MEMBER_OF]: (self: Parser, thisArg: Expression): JsonArrayContainsExpr =>
-      self.expression(JsonArrayContainsExpr, {
-        this: thisArg,
-        expression: self.parseWrapped(self.parseExpression.bind(self)),
-      }),
-  };
-
-  public static FUNCTIONS: typeof Parser.FUNCTIONS = {
-    ...Parser.FUNCTIONS,
-    BIT_AND: BitwiseAndAggExpr.fromArgList,
-    BIT_OR: BitwiseOrAggExpr.fromArgList,
-    BIT_XOR: BitwiseXorAggExpr.fromArgList,
-    BIT_COUNT: BitwiseCountExpr.fromArgList,
-    CONVERT_TZ: (args: Expression[]): ConvertTimezoneExpr =>
-      new ConvertTimezoneExpr({
-        sourceTz: seqGet(args, 1),
-        targetTz: seqGet(args, 2),
-        timestamp: seqGet(args, 0),
-      }),
-    CURDATE: CurrentDateExpr.fromArgList,
-    DATE: (args: Expression[]): TsOrDsToDateExpr =>
-      new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
-    DATE_ADD: (args: Expression[]) => buildDateDeltaWithInterval(DateAddExpr)(args)!,
-    DATE_FORMAT: buildFormattedTime(TimeToStrExpr, { dialect: Dialects.MYSQL }),
-    DATE_SUB: (args: Expression[]) => buildDateDeltaWithInterval(DateSubExpr)(args)!,
-    DAY: (args: Expression[]): DayExpr =>
-      new DayExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
-    DAYOFMONTH: (args: Expression[]): DayOfMonthExpr =>
-      new DayOfMonthExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
-    DAYOFWEEK: (args: Expression[]): DayOfWeekExpr =>
-      new DayOfWeekExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
-    DAYOFYEAR: (args: Expression[]): DayOfYearExpr =>
-      new DayOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
-    FORMAT: NumberToStrExpr.fromArgList,
-    FROM_UNIXTIME: buildFormattedTime(UnixToTimeExpr, { dialect: Dialects.MYSQL }),
-    ISNULL: isnullToIsNull,
-    LENGTH: (args: Expression[]): LengthExpr =>
-      new LengthExpr({
-        this: seqGet(args, 0),
-        binary: true,
-      }),
-    MAKETIME: TimeFromPartsExpr.fromArgList,
-    MONTH: (args: Expression[]): MonthExpr =>
-      new MonthExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
-    MONTHNAME: (args: Expression[]): TimeToStrExpr =>
-      new TimeToStrExpr({
-        this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
-        format: new LiteralExpr({
-          this: '%B',
-          isString: true,
+  static #RANGE_PARSERS: undefined = undefined;
+  static get RANGE_PARSERS () {
+    return MySQLParser.#RANGE_PARSERS ??= {
+      ...Parser.RANGE_PARSERS,
+      [TokenType.SOUNDS_LIKE]: (self: Parser, thisArg: Expression): EqExpr =>
+        self.expression(EqExpr, {
+          this: self.expression(SoundexExpr, { this: thisArg }),
+          expression: self.expression(SoundexExpr, { this: self.parseTerm() }),
         }),
-      }),
-    SCHEMA: CurrentSchemaExpr.fromArgList,
-    DATABASE: CurrentSchemaExpr.fromArgList,
-    STR_TO_DATE: buildStrToDate as (args: Expression[]) => Expression,
-    TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr),
-    TO_DAYS: (args: Expression[]) => {
-      const diff = new DateDiffExpr({
-        this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
-        expression: new TsOrDsToDateExpr({
-          this: new LiteralExpr({
-            this: '0000-01-01',
+      [TokenType.MEMBER_OF]: (self: Parser, thisArg: Expression): JsonArrayContainsExpr =>
+        self.expression(JsonArrayContainsExpr, {
+          this: thisArg,
+          expression: self.parseWrapped(self.parseExpression.bind(self)),
+        }),
+    };
+  }
+
+  static #FUNCTIONS: typeof Parser.FUNCTIONS | undefined = undefined;
+  static get FUNCTIONS (): typeof Parser.FUNCTIONS {
+    return MySQLParser.#FUNCTIONS ??= {
+      ...Parser.FUNCTIONS,
+      BIT_AND: BitwiseAndAggExpr.fromArgList,
+      BIT_OR: BitwiseOrAggExpr.fromArgList,
+      BIT_XOR: BitwiseXorAggExpr.fromArgList,
+      BIT_COUNT: BitwiseCountExpr.fromArgList,
+      CONVERT_TZ: (args: Expression[]): ConvertTimezoneExpr =>
+        new ConvertTimezoneExpr({
+          sourceTz: seqGet(args, 1),
+          targetTz: seqGet(args, 2),
+          timestamp: seqGet(args, 0),
+        }),
+      CURDATE: CurrentDateExpr.fromArgList,
+      DATE: (args: Expression[]): TsOrDsToDateExpr =>
+        new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
+      DATE_ADD: (args: Expression[]) => buildDateDeltaWithInterval(DateAddExpr)(args)!,
+      DATE_FORMAT: buildFormattedTime(TimeToStrExpr, { dialect: Dialects.MYSQL }),
+      DATE_SUB: (args: Expression[]) => buildDateDeltaWithInterval(DateSubExpr)(args)!,
+      DAY: (args: Expression[]): DayExpr =>
+        new DayExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+      DAYOFMONTH: (args: Expression[]): DayOfMonthExpr =>
+        new DayOfMonthExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+      DAYOFWEEK: (args: Expression[]): DayOfWeekExpr =>
+        new DayOfWeekExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+      DAYOFYEAR: (args: Expression[]): DayOfYearExpr =>
+        new DayOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+      FORMAT: NumberToStrExpr.fromArgList,
+      FROM_UNIXTIME: buildFormattedTime(UnixToTimeExpr, { dialect: Dialects.MYSQL }),
+      ISNULL: isnullToIsNull,
+      LENGTH: (args: Expression[]): LengthExpr =>
+        new LengthExpr({
+          this: seqGet(args, 0),
+          binary: true,
+        }),
+      MAKETIME: TimeFromPartsExpr.fromArgList,
+      MONTH: (args: Expression[]): MonthExpr =>
+        new MonthExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+      MONTHNAME: (args: Expression[]): TimeToStrExpr =>
+        new TimeToStrExpr({
+          this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
+          format: new LiteralExpr({
+            this: '%B',
             isString: true,
           }),
         }),
-        unit: new VarExpr({ this: 'DAY' }),
-      });
-      return diff.add(1); // Standardized parenthesized expression with offset
-    },
-    VERSION: CurrentVersionExpr.fromArgList,
-    WEEK: (args: Expression[]): WeekExpr =>
-      new WeekExpr({
-        this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
-        mode: seqGet(args, 1),
-      }),
-    WEEKOFYEAR: (args: Expression[]): WeekOfYearExpr =>
-      new WeekOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
-    YEAR: (args: Expression[]): YearExpr =>
-      new YearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
-  };
+      SCHEMA: CurrentSchemaExpr.fromArgList,
+      DATABASE: CurrentSchemaExpr.fromArgList,
+      STR_TO_DATE: buildStrToDate as (args: Expression[]) => Expression,
+      TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr),
+      TO_DAYS: (args: Expression[]) => {
+        const diff = new DateDiffExpr({
+          this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
+          expression: new TsOrDsToDateExpr({
+            this: new LiteralExpr({
+              this: '0000-01-01',
+              isString: true,
+            }),
+          }),
+          unit: new VarExpr({ this: 'DAY' }),
+        });
+        return diff.add(1); // Standardized parenthesized expression with offset
+      },
+      VERSION: CurrentVersionExpr.fromArgList,
+      WEEK: (args: Expression[]): WeekExpr =>
+        new WeekExpr({
+          this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
+          mode: seqGet(args, 1),
+        }),
+      WEEKOFYEAR: (args: Expression[]): WeekOfYearExpr =>
+        new WeekOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+      YEAR: (args: Expression[]): YearExpr =>
+        new YearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+    };
+  }
 
-  public static FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> = {
-    ...Parser.FUNCTION_PARSERS,
-    GROUP_CONCAT: (self: Parser) => self.parseGroupConcat(),
-    VALUES: (self: Parser): AnonymousExpr =>
-      self.expression(AnonymousExpr, {
-        this: 'VALUES',
-        expressions: [self.parseIdVar()],
-      }),
-    JSON_VALUE: (self: Parser): Expression => self.parseJsonValue(),
-    SUBSTR: (self: Parser): Expression => self.parseSubstring(),
-  };
+  static #FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+    return MySQLParser.#FUNCTION_PARSERS ??= {
+      ...Parser.FUNCTION_PARSERS,
+      GROUP_CONCAT: (self: Parser) => self.parseGroupConcat(),
+      VALUES: (self: Parser): AnonymousExpr =>
+        self.expression(AnonymousExpr, {
+          this: 'VALUES',
+          expressions: [self.parseIdVar()],
+        }),
+      JSON_VALUE: (self: Parser): Expression => self.parseJsonValue(),
+      SUBSTR: (self: Parser): Expression => self.parseSubstring(),
+    };
+  }
 
-  public static STATEMENT_PARSERS = {
-    ...Parser.STATEMENT_PARSERS,
-    [TokenType.SHOW]: (self: Parser) => self.parseShow(),
-  };
+  static #STATEMENT_PARSERS: undefined = undefined;
+  static get STATEMENT_PARSERS () {
+    return MySQLParser.#STATEMENT_PARSERS ??= {
+      ...Parser.STATEMENT_PARSERS,
+      [TokenType.SHOW]: (self: Parser) => self.parseShow(),
+    };
+  }
 
   public static SHOW_PARSERS: typeof Parser.SHOW_PARSERS = ({
     'BINARY LOGS': showParser('BINARY LOGS'),
@@ -666,66 +690,66 @@ class MySQLParser extends Parser {
     'WARNINGS': showParser('WARNINGS'),
   });
 
-  /**
-   * Parsers for table and column properties.
-   */
-  public static PROPERTY_PARSERS = {
-    ...Parser.PROPERTY_PARSERS,
-    'LOCK': (self: Parser) => self.parsePropertyAssignment(LockPropertyExpr),
-    'PARTITION BY': (self: Parser) => (self as MySQLParser).parsePartitionProperty(),
-  };
+  static #PROPERTY_PARSERS: undefined = undefined;
+  static get PROPERTY_PARSERS () {
+    return MySQLParser.#PROPERTY_PARSERS ??= {
+      ...Parser.PROPERTY_PARSERS,
+      'LOCK': (self: Parser) => self.parsePropertyAssignment(LockPropertyExpr),
+      'PARTITION BY': (self: Parser) => (self as MySQLParser).parsePartitionProperty(),
+    };
+  }
 
-  /**
-   * Parsers for SET statement items.
-   */
-  public static SET_PARSERS = {
-    ...Parser.SET_PARSERS,
-    'PERSIST': (self: Parser) => (self as MySQLParser).parseSetItemAssignment({ kind: SetItemExprKind.PERSIST }),
-    'PERSIST_ONLY': (self: Parser) => self.parseSetItemAssignment({ kind: 'PERSIST_ONLY' }),
-    'CHARACTER SET': (self: Parser): Expression => (self as MySQLParser).parseSetItemCharset('CHARACTER SET'),
-    'CHARSET': (self: Parser): Expression => (self as MySQLParser).parseSetItemCharset('CHARACTER SET'),
-    'NAMES': (self: Parser) => (self as MySQLParser).parseSetItemNames(),
-  };
+  static #SET_PARSERS: undefined = undefined;
+  static get SET_PARSERS () {
+    return MySQLParser.#SET_PARSERS ??= {
+      ...Parser.SET_PARSERS,
+      'PERSIST': (self: Parser) => (self as MySQLParser).parseSetItemAssignment({ kind: SetItemExprKind.PERSIST }),
+      'PERSIST_ONLY': (self: Parser) => self.parseSetItemAssignment({ kind: 'PERSIST_ONLY' }),
+      'CHARACTER SET': (self: Parser): Expression => (self as MySQLParser).parseSetItemCharset('CHARACTER SET'),
+      'CHARSET': (self: Parser): Expression => (self as MySQLParser).parseSetItemCharset('CHARACTER SET'),
+      'NAMES': (self: Parser) => (self as MySQLParser).parseSetItemNames(),
+    };
+  }
 
-  /**
-   * Parsers for column and table constraints.
-   */
-  public static CONSTRAINT_PARSERS = {
-    ...Parser.CONSTRAINT_PARSERS,
-    FULLTEXT: (self: Parser) => (self as MySQLParser).parseIndexConstraint('FULLTEXT'),
-    INDEX: (self: Parser) => (self as MySQLParser).parseIndexConstraint(),
-    KEY: (self: Parser) => (self as MySQLParser).parseIndexConstraint(),
-    SPATIAL: (self: Parser) => (self as MySQLParser).parseIndexConstraint('SPATIAL'),
-    ZEROFILL: (self: Parser) =>
-      self.expression(ZeroFillColumnConstraintExpr),
-  };
+  static #CONSTRAINT_PARSERS: undefined = undefined;
+  static get CONSTRAINT_PARSERS () {
+    return MySQLParser.#CONSTRAINT_PARSERS ??= {
+      ...Parser.CONSTRAINT_PARSERS,
+      FULLTEXT: (self: Parser) => (self as MySQLParser).parseIndexConstraint('FULLTEXT'),
+      INDEX: (self: Parser) => (self as MySQLParser).parseIndexConstraint(),
+      KEY: (self: Parser) => (self as MySQLParser).parseIndexConstraint(),
+      SPATIAL: (self: Parser) => (self as MySQLParser).parseIndexConstraint('SPATIAL'),
+      ZEROFILL: (self: Parser) =>
+        self.expression(ZeroFillColumnConstraintExpr),
+    };
+  }
 
-  /**
-   * Parsers for ALTER TABLE actions.
-   */
-  public static ALTER_PARSERS = {
-    ...Parser.ALTER_PARSERS,
-    MODIFY: (self: Parser) => self.parseAlterTableAlter(),
-  };
+  static #ALTER_PARSERS: undefined = undefined;
+  static get ALTER_PARSERS () {
+    return MySQLParser.#ALTER_PARSERS ??= {
+      ...Parser.ALTER_PARSERS,
+      MODIFY: (self: Parser) => self.parseAlterTableAlter(),
+    };
+  }
 
-  /**
-   * Parsers for ALTER TABLE ALTER sub-actions.
-   */
-  public static ALTER_ALTER_PARSERS = {
-    ...Parser.ALTER_ALTER_PARSERS,
-    INDEX: (self: Parser) => (self as MySQLParser).parseAlterTableAlterIndex(),
-  };
+  static #ALTER_ALTER_PARSERS: undefined = undefined;
+  static get ALTER_ALTER_PARSERS () {
+    return MySQLParser.#ALTER_ALTER_PARSERS ??= {
+      ...Parser.ALTER_ALTER_PARSERS,
+      INDEX: (self: Parser) => (self as MySQLParser).parseAlterTableAlterIndex(),
+    };
+  }
 
-  /**
-   * List of constraints that do not require an explicit name in the schema definition.
-   */
-  public static SCHEMA_UNNAMED_CONSTRAINTS: Set<string> = new Set([
-    ...Parser.SCHEMA_UNNAMED_CONSTRAINTS,
-    'FULLTEXT',
-    'INDEX',
-    'KEY',
-    'SPATIAL',
-  ]);
+  static #SCHEMA_UNNAMED_CONSTRAINTS: Set<string> | undefined = undefined;
+  static get SCHEMA_UNNAMED_CONSTRAINTS (): Set<string> {
+    return MySQLParser.#SCHEMA_UNNAMED_CONSTRAINTS ??= new Set([
+      ...Parser.SCHEMA_UNNAMED_CONSTRAINTS,
+      'FULLTEXT',
+      'INDEX',
+      'KEY',
+      'SPATIAL',
+    ]);
+  }
 
   public static PROFILE_TYPES = {
     ALL: [],
@@ -739,9 +763,15 @@ class MySQLParser extends Parser {
     PAGE: ['FAULTS'],
   };
 
-  public static TYPE_TOKENS: Set<TokenType> = new Set([...Parser.TYPE_TOKENS, TokenType.SET]);
+  static #TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  static get TYPE_TOKENS (): Set<TokenType> {
+    return MySQLParser.#TYPE_TOKENS ??= new Set([...Parser.TYPE_TOKENS, TokenType.SET]);
+  }
 
-  public static ENUM_TYPE_TOKENS: Set<TokenType> = new Set([...Parser.ENUM_TYPE_TOKENS, TokenType.SET]);
+  static #ENUM_TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  static get ENUM_TYPE_TOKENS (): Set<TokenType> {
+    return MySQLParser.#ENUM_TYPE_TOKENS ??= new Set([...Parser.ENUM_TYPE_TOKENS, TokenType.SET]);
+  }
 
   /**
    * Modifiers that can appear in a MySQL SELECT statement.

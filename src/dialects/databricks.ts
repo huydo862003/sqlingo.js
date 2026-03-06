@@ -74,40 +74,52 @@ class DatabricksParser extends Spark.Parser {
   static STRICT_CAST = true;
   static COLON_IS_VARIANT_EXTRACT = true;
 
-  static FUNCTIONS = {
-    ...Spark.Parser.FUNCTIONS,
-    GETDATE: CurrentTimestampExpr.fromArgList,
-    DATEADD: buildDateDelta(DateAddExpr),
-    DATE_ADD: buildDateDelta(DateAddExpr),
-    DATEDIFF: buildDateDelta(DateDiffExpr),
-    DATE_DIFF: buildDateDelta(DateDiffExpr),
-    NOW: CurrentTimestampExpr.fromArgList,
-    TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: Dialects.DATABRICKS }),
-    UNIFORM: (args: Expression[]) => new UniformExpr({
-      this: seqGet(args, 0),
-      expression: seqGet(args, 1),
-      seed: seqGet(args, 2),
-    }),
-  };
-
-  static NO_PAREN_FUNCTION_PARSERS = {
-    ...Spark.Parser.NO_PAREN_FUNCTION_PARSERS,
-    CURDATE: (self: Parser) => (self as DatabricksParser).parseCurdate(),
-  };
-
-  static FACTOR = {
-    ...Spark.Parser.FACTOR,
-    [TokenType.COLON]: JsonExtractExpr,
-  };
-
-  static COLUMN_OPERATORS = {
-    ...Parser.COLUMN_OPERATORS,
-    [TokenType.QDCOLON]: (self: Parser, thisNode?: Expression, to?: Expression) =>
-      self.expression(TryCastExpr, {
-        this: thisNode,
-        to: to,
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return DatabricksParser.#FUNCTIONS ??= {
+      ...Spark.Parser.FUNCTIONS,
+      GETDATE: CurrentTimestampExpr.fromArgList,
+      DATEADD: buildDateDelta(DateAddExpr),
+      DATE_ADD: buildDateDelta(DateAddExpr),
+      DATEDIFF: buildDateDelta(DateDiffExpr),
+      DATE_DIFF: buildDateDelta(DateDiffExpr),
+      NOW: CurrentTimestampExpr.fromArgList,
+      TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: Dialects.DATABRICKS }),
+      UNIFORM: (args: Expression[]) => new UniformExpr({
+        this: seqGet(args, 0),
+        expression: seqGet(args, 1),
+        seed: seqGet(args, 2),
       }),
-  };
+    };
+  }
+
+  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  static get NO_PAREN_FUNCTION_PARSERS () {
+    return DatabricksParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+      ...Spark.Parser.NO_PAREN_FUNCTION_PARSERS,
+      CURDATE: (self: Parser) => (self as DatabricksParser).parseCurdate(),
+    };
+  }
+
+  static #FACTOR: undefined = undefined;
+  static get FACTOR () {
+    return DatabricksParser.#FACTOR ??= {
+      ...Spark.Parser.FACTOR,
+      [TokenType.COLON]: JsonExtractExpr,
+    };
+  }
+
+  static #COLUMN_OPERATORS: undefined = undefined;
+  static get COLUMN_OPERATORS () {
+    return DatabricksParser.#COLUMN_OPERATORS ??= {
+      ...Parser.COLUMN_OPERATORS,
+      [TokenType.QDCOLON]: (self: Parser, thisNode?: Expression, to?: Expression) =>
+        self.expression(TryCastExpr, {
+          this: thisNode,
+          to: to,
+        }),
+    };
+  }
 
   parseCurdate (): CurrentDateExpr {
     if (this.match(TokenType.L_PAREN)) {

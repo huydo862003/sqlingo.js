@@ -38,18 +38,24 @@ class TrinoTokenizer extends Presto.Tokenizer {
 };
 
 class TrinoParser extends Presto.Parser {
-  static FUNCTIONS = {
-    ...Presto.Parser.FUNCTIONS,
-    VERSION: (args: Expression[]) => CurrentVersionExpr.fromArgList(args),
-  };
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return TrinoParser.#FUNCTIONS ??= {
+      ...Presto.Parser.FUNCTIONS,
+      VERSION: (args: Expression[]) => CurrentVersionExpr.fromArgList(args),
+    };
+  }
 
-  static FUNCTION_PARSERS = {
-    ...Presto.Parser.FUNCTION_PARSERS,
-    TRIM: (self: Parser) => self.parseTrim(),
-    JSON_QUERY: (self: Parser) => (self as TrinoParser).parseJsonQuery(),
-    JSON_VALUE: (self: Parser) => self.parseJsonValue(),
-    LISTAGG: (self: Parser) => self.parseStringAgg(),
-  };
+  static #FUNCTION_PARSERS: undefined = undefined;
+  static get FUNCTION_PARSERS () {
+    return TrinoParser.#FUNCTION_PARSERS ??= {
+      ...Presto.Parser.FUNCTION_PARSERS,
+      TRIM: (self: Parser) => self.parseTrim(),
+      JSON_QUERY: (self: Parser) => (self as TrinoParser).parseJsonQuery(),
+      JSON_VALUE: (self: Parser) => self.parseJsonValue(),
+      LISTAGG: (self: Parser) => self.parseStringAgg(),
+    };
+  }
 
   static JSON_QUERY_OPTIONS: Record<string, string[][]> = {
     WITH: [

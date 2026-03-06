@@ -778,59 +778,86 @@ export class BigQueryParser extends Parser {
   public static JOINS_HAVE_EQUAL_PRECEDENCE = true;
 
   // BigQuery does not allow ASC/DESC to be used as an identifier, allows GRANT as an identifier
-  public static ID_VAR_TOKENS: Set<TokenType> = (() => {
-    const s = new Set([...Parser.ID_VAR_TOKENS, TokenType.GRANT]);
-    s.delete(TokenType.ASC);
-    s.delete(TokenType.DESC);
-    return s;
-  })();
+  static #ID_VAR_TOKENS: Set<TokenType> | undefined = undefined;
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return BigQueryParser.#ID_VAR_TOKENS ??= (() => {
+      const s = new Set([...Parser.ID_VAR_TOKENS, TokenType.GRANT]);
+      s.delete(TokenType.ASC);
+      s.delete(TokenType.DESC);
+      return s;
+    })();
+  }
 
-  public static ALIAS_TOKENS: Set<TokenType> = (() => {
-    const s = new Set([...Parser.ALIAS_TOKENS, TokenType.GRANT]);
-    s.delete(TokenType.ASC);
-    s.delete(TokenType.DESC);
-    return s;
-  })();
+  static #ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  static get ALIAS_TOKENS (): Set<TokenType> {
+    return BigQueryParser.#ALIAS_TOKENS ??= (() => {
+      const s = new Set([...Parser.ALIAS_TOKENS, TokenType.GRANT]);
+      s.delete(TokenType.ASC);
+      s.delete(TokenType.DESC);
+      return s;
+    })();
+  }
 
-  public static TABLE_ALIAS_TOKENS: Set<TokenType> = (() => {
-    const s = new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.GRANT]);
-    s.delete(TokenType.ASC);
-    s.delete(TokenType.DESC);
-    return s;
-  })();
+  static #TABLE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return BigQueryParser.#TABLE_ALIAS_TOKENS ??= (() => {
+      const s = new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.GRANT]);
+      s.delete(TokenType.ASC);
+      s.delete(TokenType.DESC);
+      return s;
+    })();
+  }
 
-  public static COMMENT_TABLE_ALIAS_TOKENS: Set<TokenType> = (() => {
-    const s = new Set([...Parser.COMMENT_TABLE_ALIAS_TOKENS, TokenType.GRANT]);
-    s.delete(TokenType.ASC);
-    s.delete(TokenType.DESC);
-    return s;
-  })();
+  static #COMMENT_TABLE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  static get COMMENT_TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return BigQueryParser.#COMMENT_TABLE_ALIAS_TOKENS ??= (() => {
+      const s = new Set([...Parser.COMMENT_TABLE_ALIAS_TOKENS, TokenType.GRANT]);
+      s.delete(TokenType.ASC);
+      s.delete(TokenType.DESC);
+      return s;
+    })();
+  }
 
-  public static UPDATE_ALIAS_TOKENS: Set<TokenType> = (() => {
-    const s = new Set([...Parser.UPDATE_ALIAS_TOKENS, TokenType.GRANT]);
-    s.delete(TokenType.ASC);
-    s.delete(TokenType.DESC);
-    return s;
-  })();
+  static #UPDATE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  static get UPDATE_ALIAS_TOKENS (): Set<TokenType> {
+    return BigQueryParser.#UPDATE_ALIAS_TOKENS ??= (() => {
+      const s = new Set([...Parser.UPDATE_ALIAS_TOKENS, TokenType.GRANT]);
+      s.delete(TokenType.ASC);
+      s.delete(TokenType.DESC);
+      return s;
+    })();
+  }
 
-  public static NESTED_TYPE_TOKENS: Set<TokenType> = new Set([...Parser.NESTED_TYPE_TOKENS, TokenType.TABLE]);
+  static #NESTED_TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  static get NESTED_TYPE_TOKENS (): Set<TokenType> {
+    return BigQueryParser.#NESTED_TYPE_TOKENS ??= new Set([...Parser.NESTED_TYPE_TOKENS, TokenType.TABLE]);
+  }
 
-  public static PROPERTY_PARSERS = {
-    ...Parser.PROPERTY_PARSERS,
-    'NOT DETERMINISTIC': (self: Parser) => self.expression(StabilityPropertyExpr, { this: LiteralExpr.string('VOLATILE') }),
-    'OPTIONS': (self: Parser) => self.parseWithProperty(),
-  };
+  static #PROPERTY_PARSERS: undefined = undefined;
+  static get PROPERTY_PARSERS () {
+    return BigQueryParser.#PROPERTY_PARSERS ??= {
+      ...Parser.PROPERTY_PARSERS,
+      'NOT DETERMINISTIC': (self: Parser) => self.expression(StabilityPropertyExpr, { this: LiteralExpr.string('VOLATILE') }),
+      'OPTIONS': (self: Parser) => self.parseWithProperty(),
+    };
+  }
 
-  public static CONSTRAINT_PARSERS = {
-    ...Parser.CONSTRAINT_PARSERS,
-    OPTIONS: (self: Parser) => self.expression(PropertiesExpr, { expressions: self.parseWithProperty() }),
-  };
+  static #CONSTRAINT_PARSERS: undefined = undefined;
+  static get CONSTRAINT_PARSERS () {
+    return BigQueryParser.#CONSTRAINT_PARSERS ??= {
+      ...Parser.CONSTRAINT_PARSERS,
+      OPTIONS: (self: Parser) => self.expression(PropertiesExpr, { expressions: self.parseWithProperty() }),
+    };
+  }
 
-  public static RANGE_PARSERS: Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> = (() => {
-    const m = { ...Parser.RANGE_PARSERS };
-    delete m[TokenType.OVERLAPS];
-    return m;
-  })();
+  static #RANGE_PARSERS: Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> | undefined = undefined;
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
+    return BigQueryParser.#RANGE_PARSERS ??= (() => {
+      const m = { ...Parser.RANGE_PARSERS };
+      delete m[TokenType.OVERLAPS];
+      return m;
+    })();
+  }
 
   public static DASHED_TABLE_PART_FOLLOW_TOKENS: Set<TokenType> = new Set([
     TokenType.DOT,
@@ -838,14 +865,17 @@ export class BigQueryParser extends Parser {
     TokenType.R_PAREN,
   ]);
 
-  public static STATEMENT_PARSERS = {
-    ...Parser.STATEMENT_PARSERS,
-    [TokenType.ELSE]: (self: Parser) => self.parseAsCommand((self as BigQueryParser).prev),
-    [TokenType.END]: (self: Parser) => self.parseAsCommand((self as BigQueryParser).prev),
-    [TokenType.FOR]: (self: Parser) => (self as BigQueryParser).parseForIn(),
-    [TokenType.EXPORT]: (self: Parser) => (self as BigQueryParser).parseExportData(),
-    [TokenType.DECLARE]: (self: Parser) => self.parseDeclare(),
-  };
+  static #STATEMENT_PARSERS: undefined = undefined;
+  static get STATEMENT_PARSERS () {
+    return BigQueryParser.#STATEMENT_PARSERS ??= {
+      ...Parser.STATEMENT_PARSERS,
+      [TokenType.ELSE]: (self: Parser) => self.parseAsCommand((self as BigQueryParser).prev),
+      [TokenType.END]: (self: Parser) => self.parseAsCommand((self as BigQueryParser).prev),
+      [TokenType.FOR]: (self: Parser) => (self as BigQueryParser).parseForIn(),
+      [TokenType.EXPORT]: (self: Parser) => (self as BigQueryParser).parseExportData(),
+      [TokenType.DECLARE]: (self: Parser) => self.parseDeclare(),
+    };
+  }
 
   public static BRACKET_OFFSETS: Record<string, [number, boolean]> = {
     OFFSET: [0, false],
@@ -854,142 +884,151 @@ export class BigQueryParser extends Parser {
     SAFE_ORDINAL: [1, true],
   };
 
-  public static NO_PAREN_FUNCTIONS = {
-    ...Parser.NO_PAREN_FUNCTIONS,
-    [TokenType.CURRENT_DATETIME]: CurrentDatetimeExpr,
-  };
-
-  public static FUNCTIONS = (() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const fns: Record<string, (args: Expression[], dialect: any) => Expression> = {
-      ...Parser.FUNCTIONS,
-      APPROX_TOP_COUNT: ApproxTopKExpr.fromArgList,
-      BIT_AND: BitwiseAndAggExpr.fromArgList,
-      BIT_OR: BitwiseOrAggExpr.fromArgList,
-      BIT_XOR: BitwiseXorAggExpr.fromArgList,
-      BIT_COUNT: BitwiseCountExpr.fromArgList,
-      BOOL: JsonBoolExpr.fromArgList,
-      CONTAINS_SUBSTR: buildContainsSubstring,
-      DATE: buildDate,
-      DATE_ADD: (args) => buildDateDeltaWithInterval(DateAddExpr)(args)!,
-      DATE_DIFF: buildDateDiff,
-      DATE_SUB: (args) => buildDateDeltaWithInterval(DateSubExpr)(args)!,
-      DATE_TRUNC: (args) => new DateTruncExpr({
-        unit: seqGet(args, 1)!,
-        this: seqGet(args, 0)!,
-        zone: seqGet(args, 2),
-      }),
-      DATETIME: buildDatetime,
-      DATETIME_ADD: (args) => buildDateDeltaWithInterval(DatetimeAddExpr)(args)!,
-      DATETIME_SUB: (args) => buildDateDeltaWithInterval(DatetimeSubExpr)(args)!,
-      DIV: binaryFromFunction(IntDivExpr),
-      EDIT_DISTANCE: buildLevenshtein,
-      FORMAT_DATE: buildFormatTime(TsOrDsToDateExpr),
-      GENERATE_ARRAY: GenerateSeriesExpr.fromArgList,
-      JSON_EXTRACT_SCALAR: buildExtractJsonWithDefaultPath(JsonExtractScalarExpr),
-      JSON_EXTRACT_ARRAY: buildExtractJsonWithDefaultPath(JsonExtractArrayExpr),
-      JSON_EXTRACT_STRING_ARRAY: buildExtractJsonWithDefaultPath(JsonValueArrayExpr),
-      JSON_KEYS: JsonKeysExpr.fromArgList,
-      JSON_QUERY: buildExtractJsonWithPath(JsonExtractExpr),
-      JSON_QUERY_ARRAY: buildExtractJsonWithDefaultPath(JsonExtractArrayExpr),
-      JSON_STRIP_NULLS: buildJsonStripNulls,
-      JSON_VALUE: buildExtractJsonWithDefaultPath(JsonExtractScalarExpr),
-      JSON_VALUE_ARRAY: buildExtractJsonWithDefaultPath(JsonValueArrayExpr),
-      LENGTH: (args) => new LengthExpr({
-        this: seqGet(args, 0)!,
-        binary: true,
-      }),
-      MD5: Md5DigestExpr.fromArgList,
-      SHA1: Sha1DigestExpr.fromArgList,
-      NORMALIZE_AND_CASEFOLD: (args) => new NormalizeExpr({
-        this: seqGet(args, 0)!,
-        form: seqGet(args, 1),
-        isCasefold: true,
-      }),
-      OCTET_LENGTH: ByteLengthExpr.fromArgList,
-      TO_HEX: buildToHex,
-      PARSE_DATE: (args) => buildFormattedTime(StrToDateExpr, { dialect: Dialects.BIGQUERY })(
-        [seqGet(args, 1), seqGet(args, 0)],
-      ),
-      PARSE_TIME: (args) => buildFormattedTime(ParseTimeExpr, { dialect: Dialects.BIGQUERY })(
-        [seqGet(args, 1), seqGet(args, 0)],
-      ),
-      PARSE_TIMESTAMP: buildParseTimestamp,
-      PARSE_DATETIME: (args) => buildFormattedTime(ParseDatetimeExpr, { dialect: Dialects.BIGQUERY })(
-        [seqGet(args, 1), seqGet(args, 0)],
-      ),
-      REGEXP_CONTAINS: RegexpLikeExpr.fromArgList,
-      REGEXP_EXTRACT: buildRegexpExtract(RegexpExtractExpr),
-      REGEXP_SUBSTR: buildRegexpExtract(RegexpExtractExpr),
-      REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr, literal(0)),
-      SHA256: (args) => new Sha2DigestExpr({
-        this: seqGet(args, 0)!,
-        length: literal(256),
-      }),
-      SHA512: (args) => new Sha2Expr({
-        this: seqGet(args, 0)!,
-        length: literal(512),
-      }),
-      SPLIT: (args) => new SplitExpr({
-        // https://cloud.google.com/bigquery/docs/reference/standard-sql/string_functions#split
-        this: seqGet(args, 0)!,
-        expression: seqGet(args, 1) || literal(','),
-      }),
-      STRPOS: StrPositionExpr.fromArgList,
-      TIME: buildTime,
-      TIME_ADD: (args) => buildDateDeltaWithInterval(TimeAddExpr)(args)!,
-      TIME_SUB: (args) => buildDateDeltaWithInterval(TimeSubExpr)(args)!,
-      TIMESTAMP: buildTimestamp,
-      TIMESTAMP_ADD: (args) => buildDateDeltaWithInterval(TimestampAddExpr)(args)!,
-      TIMESTAMP_SUB: (args) => buildDateDeltaWithInterval(TimestampSubExpr)(args)!,
-      TIMESTAMP_MICROS: (args) => new UnixToTimeExpr({
-        this: seqGet(args, 0)!,
-        scale: UnixToTimeExpr.MICROS,
-      }),
-      TIMESTAMP_MILLIS: (args) => new UnixToTimeExpr({
-        this: seqGet(args, 0)!,
-        scale: UnixToTimeExpr.MILLIS,
-      }),
-      TIMESTAMP_SECONDS: (args) => new UnixToTimeExpr({ this: seqGet(args, 0)! }),
-      TO_JSON: (args) => new JsonFormatExpr({
-        this: seqGet(args, 0)!,
-        options: seqGet(args, 1),
-        toJson: true,
-      }),
-      TO_JSON_STRING: JsonFormatExpr.fromArgList,
-      FORMAT_DATETIME: buildFormatTime(TsOrDsToDatetimeExpr),
-      FORMAT_TIMESTAMP: buildFormatTime(TsOrDsToTimestampExpr),
-      FORMAT_TIME: buildFormatTime(TsOrDsToTimeExpr),
-      FROM_HEX: UnhexExpr.fromArgList,
-      WEEK: (args) => new WeekStartExpr({ this: var_(seqGet(args, 0)) }),
+  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  static get NO_PAREN_FUNCTIONS () {
+    return BigQueryParser.#NO_PAREN_FUNCTIONS ??= {
+      ...Parser.NO_PAREN_FUNCTIONS,
+      [TokenType.CURRENT_DATETIME]: CurrentDatetimeExpr,
     };
-    // Remove SEARCH to avoid parameter routing issues - let it fall back to Anonymous function
-    delete fns['SEARCH'];
-    return fns;
-  })();
+  }
 
-  public static FUNCTION_PARSERS = (() => {
-    const fps = {
-      ...Parser.FUNCTION_PARSERS,
-      ARRAY: (self: Parser) => self.expression(ArrayExpr, {
-        expressions: [self.parseStatement()],
-        structNameInheritance: true,
-      }),
-      JSON_ARRAY: (self: Parser) => self.expression(JsonArrayExpr, {
-        expressions: self.parseCsv(() => self.parseBitwise()),
-      }),
-      MAKE_INTERVAL: (self: Parser) => (self as BigQueryParser).parseMakeInterval(),
-      PREDICT: (self: Parser) => (self as BigQueryParser).parseMl(PredictExpr),
-      TRANSLATE: (self: Parser) => (self as BigQueryParser).parseTranslate(),
-      FEATURES_AT_TIME: (self: Parser) => (self as BigQueryParser).parseFeaturesAtTime(),
-      GENERATE_EMBEDDING: (self: Parser) => (self as BigQueryParser).parseMl(GenerateEmbeddingExpr),
-      GENERATE_TEXT_EMBEDDING: (self: Parser) => (self as BigQueryParser).parseMl(GenerateEmbeddingExpr, { isText: true }),
-      VECTOR_SEARCH: (self: Parser) => (self as BigQueryParser).parseVectorSearch(),
-      FORECAST: (self: Parser) => (self as BigQueryParser).parseMl(MlForecastExpr),
-    };
-    delete (fps as Record<string, unknown>)['TRIM'];
-    return fps;
-  })();
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return BigQueryParser.#FUNCTIONS ??= (() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fns: Record<string, (args: Expression[], dialect: any) => Expression> = {
+        ...Parser.FUNCTIONS,
+        APPROX_TOP_COUNT: ApproxTopKExpr.fromArgList,
+        BIT_AND: BitwiseAndAggExpr.fromArgList,
+        BIT_OR: BitwiseOrAggExpr.fromArgList,
+        BIT_XOR: BitwiseXorAggExpr.fromArgList,
+        BIT_COUNT: BitwiseCountExpr.fromArgList,
+        BOOL: JsonBoolExpr.fromArgList,
+        CONTAINS_SUBSTR: buildContainsSubstring,
+        DATE: buildDate,
+        DATE_ADD: (args) => buildDateDeltaWithInterval(DateAddExpr)(args)!,
+        DATE_DIFF: buildDateDiff,
+        DATE_SUB: (args) => buildDateDeltaWithInterval(DateSubExpr)(args)!,
+        DATE_TRUNC: (args) => new DateTruncExpr({
+          unit: seqGet(args, 1)!,
+          this: seqGet(args, 0)!,
+          zone: seqGet(args, 2),
+        }),
+        DATETIME: buildDatetime,
+        DATETIME_ADD: (args) => buildDateDeltaWithInterval(DatetimeAddExpr)(args)!,
+        DATETIME_SUB: (args) => buildDateDeltaWithInterval(DatetimeSubExpr)(args)!,
+        DIV: binaryFromFunction(IntDivExpr),
+        EDIT_DISTANCE: buildLevenshtein,
+        FORMAT_DATE: buildFormatTime(TsOrDsToDateExpr),
+        GENERATE_ARRAY: GenerateSeriesExpr.fromArgList,
+        JSON_EXTRACT_SCALAR: buildExtractJsonWithDefaultPath(JsonExtractScalarExpr),
+        JSON_EXTRACT_ARRAY: buildExtractJsonWithDefaultPath(JsonExtractArrayExpr),
+        JSON_EXTRACT_STRING_ARRAY: buildExtractJsonWithDefaultPath(JsonValueArrayExpr),
+        JSON_KEYS: JsonKeysExpr.fromArgList,
+        JSON_QUERY: buildExtractJsonWithPath(JsonExtractExpr),
+        JSON_QUERY_ARRAY: buildExtractJsonWithDefaultPath(JsonExtractArrayExpr),
+        JSON_STRIP_NULLS: buildJsonStripNulls,
+        JSON_VALUE: buildExtractJsonWithDefaultPath(JsonExtractScalarExpr),
+        JSON_VALUE_ARRAY: buildExtractJsonWithDefaultPath(JsonValueArrayExpr),
+        LENGTH: (args) => new LengthExpr({
+          this: seqGet(args, 0)!,
+          binary: true,
+        }),
+        MD5: Md5DigestExpr.fromArgList,
+        SHA1: Sha1DigestExpr.fromArgList,
+        NORMALIZE_AND_CASEFOLD: (args) => new NormalizeExpr({
+          this: seqGet(args, 0)!,
+          form: seqGet(args, 1),
+          isCasefold: true,
+        }),
+        OCTET_LENGTH: ByteLengthExpr.fromArgList,
+        TO_HEX: buildToHex,
+        PARSE_DATE: (args) => buildFormattedTime(StrToDateExpr, { dialect: Dialects.BIGQUERY })(
+          [seqGet(args, 1), seqGet(args, 0)],
+        ),
+        PARSE_TIME: (args) => buildFormattedTime(ParseTimeExpr, { dialect: Dialects.BIGQUERY })(
+          [seqGet(args, 1), seqGet(args, 0)],
+        ),
+        PARSE_TIMESTAMP: buildParseTimestamp,
+        PARSE_DATETIME: (args) => buildFormattedTime(ParseDatetimeExpr, { dialect: Dialects.BIGQUERY })(
+          [seqGet(args, 1), seqGet(args, 0)],
+        ),
+        REGEXP_CONTAINS: RegexpLikeExpr.fromArgList,
+        REGEXP_EXTRACT: buildRegexpExtract(RegexpExtractExpr),
+        REGEXP_SUBSTR: buildRegexpExtract(RegexpExtractExpr),
+        REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr, literal(0)),
+        SHA256: (args) => new Sha2DigestExpr({
+          this: seqGet(args, 0)!,
+          length: literal(256),
+        }),
+        SHA512: (args) => new Sha2Expr({
+          this: seqGet(args, 0)!,
+          length: literal(512),
+        }),
+        SPLIT: (args) => new SplitExpr({
+          // https://cloud.google.com/bigquery/docs/reference/standard-sql/string_functions#split
+          this: seqGet(args, 0)!,
+          expression: seqGet(args, 1) || literal(','),
+        }),
+        STRPOS: StrPositionExpr.fromArgList,
+        TIME: buildTime,
+        TIME_ADD: (args) => buildDateDeltaWithInterval(TimeAddExpr)(args)!,
+        TIME_SUB: (args) => buildDateDeltaWithInterval(TimeSubExpr)(args)!,
+        TIMESTAMP: buildTimestamp,
+        TIMESTAMP_ADD: (args) => buildDateDeltaWithInterval(TimestampAddExpr)(args)!,
+        TIMESTAMP_SUB: (args) => buildDateDeltaWithInterval(TimestampSubExpr)(args)!,
+        TIMESTAMP_MICROS: (args) => new UnixToTimeExpr({
+          this: seqGet(args, 0)!,
+          scale: UnixToTimeExpr.MICROS,
+        }),
+        TIMESTAMP_MILLIS: (args) => new UnixToTimeExpr({
+          this: seqGet(args, 0)!,
+          scale: UnixToTimeExpr.MILLIS,
+        }),
+        TIMESTAMP_SECONDS: (args) => new UnixToTimeExpr({ this: seqGet(args, 0)! }),
+        TO_JSON: (args) => new JsonFormatExpr({
+          this: seqGet(args, 0)!,
+          options: seqGet(args, 1),
+          toJson: true,
+        }),
+        TO_JSON_STRING: JsonFormatExpr.fromArgList,
+        FORMAT_DATETIME: buildFormatTime(TsOrDsToDatetimeExpr),
+        FORMAT_TIMESTAMP: buildFormatTime(TsOrDsToTimestampExpr),
+        FORMAT_TIME: buildFormatTime(TsOrDsToTimeExpr),
+        FROM_HEX: UnhexExpr.fromArgList,
+        WEEK: (args) => new WeekStartExpr({ this: var_(seqGet(args, 0)) }),
+      };
+        // Remove SEARCH to avoid parameter routing issues - let it fall back to Anonymous function
+      delete fns['SEARCH'];
+      return fns;
+    })();
+  }
+
+  static #FUNCTION_PARSERS: undefined = undefined;
+  static get FUNCTION_PARSERS () {
+    return BigQueryParser.#FUNCTION_PARSERS ??= (() => {
+      const fps = {
+        ...Parser.FUNCTION_PARSERS,
+        ARRAY: (self: Parser) => self.expression(ArrayExpr, {
+          expressions: [self.parseStatement()],
+          structNameInheritance: true,
+        }),
+        JSON_ARRAY: (self: Parser) => self.expression(JsonArrayExpr, {
+          expressions: self.parseCsv(() => self.parseBitwise()),
+        }),
+        MAKE_INTERVAL: (self: Parser) => (self as BigQueryParser).parseMakeInterval(),
+        PREDICT: (self: Parser) => (self as BigQueryParser).parseMl(PredictExpr),
+        TRANSLATE: (self: Parser) => (self as BigQueryParser).parseTranslate(),
+        FEATURES_AT_TIME: (self: Parser) => (self as BigQueryParser).parseFeaturesAtTime(),
+        GENERATE_EMBEDDING: (self: Parser) => (self as BigQueryParser).parseMl(GenerateEmbeddingExpr),
+        GENERATE_TEXT_EMBEDDING: (self: Parser) => (self as BigQueryParser).parseMl(GenerateEmbeddingExpr, { isText: true }),
+        VECTOR_SEARCH: (self: Parser) => (self as BigQueryParser).parseVectorSearch(),
+        FORECAST: (self: Parser) => (self as BigQueryParser).parseMl(MlForecastExpr),
+      };
+      delete (fps as Record<string, unknown>)['TRIM'];
+      return fps;
+    })();
+  }
 
   parseForIn (): ForInExpr | CommandExpr {
     const index = this.index;

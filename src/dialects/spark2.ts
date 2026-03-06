@@ -183,77 +183,83 @@ class Spark2Parser extends Hive.Parser {
   static TRIM_PATTERN_FIRST = true;
   static CHANGE_COLUMN_ALTER_SYNTAX = true;
 
-  static FUNCTIONS = {
-    ...Hive.Parser.FUNCTIONS,
-    AGGREGATE: ReduceExpr.fromArgList,
-    BOOLEAN: buildAsCast('boolean'),
-    DATE: buildAsCast('date'),
-    DATE_TRUNC: (args: Expression[]) =>
-      new TimestampTruncExpr({
-        this: seqGet(args, 1),
-        unit: var_(seqGet(args, 0)),
-      }),
-    DAYOFMONTH: (args: Expression[]) =>
-      new DayOfMonthExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
-    DAYOFWEEK: (args: Expression[]) =>
-      new DayOfWeekExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
-    DAYOFYEAR: (args: Expression[]) =>
-      new DayOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
-    DOUBLE: buildAsCast('double'),
-    FLOAT: buildAsCast('float'),
-    FORMAT_STRING: FormatExpr.fromArgList,
-    FROM_UTC_TIMESTAMP: (args: Expression[], { dialect }: { dialect: Dialect }) =>
-      new AtTimeZoneExpr({
-        this: cast(seqGet(args, 0) || var_(''), DataTypeExprKind.TIMESTAMP, {
-          dialect,
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return Spark2Parser.#FUNCTIONS ??= {
+      ...Hive.Parser.FUNCTIONS,
+      AGGREGATE: ReduceExpr.fromArgList,
+      BOOLEAN: buildAsCast('boolean'),
+      DATE: buildAsCast('date'),
+      DATE_TRUNC: (args: Expression[]) =>
+        new TimestampTruncExpr({
+          this: seqGet(args, 1),
+          unit: var_(seqGet(args, 0)),
         }),
-        zone: seqGet(args, 1),
-      }),
-    LTRIM: (args: Expression[]) => buildTrim(args, { reverseArgs: true }),
-    INT: buildAsCast('int'),
-    MAP_FROM_ARRAYS: MapExpr.fromArgList,
-    RLIKE: RegexpLikeExpr.fromArgList,
-    RTRIM: (args: Expression[]) => buildTrim(args, {
-      isLeft: false,
-      reverseArgs: true,
-    }),
-    SHIFTLEFT: binaryFromFunction(BitwiseLeftShiftExpr),
-    SHIFTRIGHT: binaryFromFunction(BitwiseRightShiftExpr),
-    STRING: buildAsCast('string'),
-    SLICE: ArraySliceExpr.fromArgList,
-    TIMESTAMP: buildAsCast('timestamp'),
-    TO_TIMESTAMP: (args: Expression[]) =>
-      args.length === 1
-        ? buildAsCast('timestamp')(args)
-        : buildFormattedTime(StrToTimeExpr, { dialect: 'spark' })(args),
-    TO_UNIX_TIMESTAMP: StrToUnixExpr.fromArgList,
-    TO_UTC_TIMESTAMP: (args: Expression[], { dialect }: { dialect: Dialect }) =>
-      new FromTimeZoneExpr({
-        this: cast(seqGet(args, 0) || var_(''), DataTypeExprKind.TIMESTAMP, {
-          dialect,
+      DAYOFMONTH: (args: Expression[]) =>
+        new DayOfMonthExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+      DAYOFWEEK: (args: Expression[]) =>
+        new DayOfWeekExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+      DAYOFYEAR: (args: Expression[]) =>
+        new DayOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+      DOUBLE: buildAsCast('double'),
+      FLOAT: buildAsCast('float'),
+      FORMAT_STRING: FormatExpr.fromArgList,
+      FROM_UTC_TIMESTAMP: (args: Expression[], { dialect }: { dialect: Dialect }) =>
+        new AtTimeZoneExpr({
+          this: cast(seqGet(args, 0) || var_(''), DataTypeExprKind.TIMESTAMP, {
+            dialect,
+          }),
+          zone: seqGet(args, 1),
         }),
-        zone: seqGet(args, 1),
+      LTRIM: (args: Expression[]) => buildTrim(args, { reverseArgs: true }),
+      INT: buildAsCast('int'),
+      MAP_FROM_ARRAYS: MapExpr.fromArgList,
+      RLIKE: RegexpLikeExpr.fromArgList,
+      RTRIM: (args: Expression[]) => buildTrim(args, {
+        isLeft: false,
+        reverseArgs: true,
       }),
-    TRUNC: (args: Expression[]) => new DateTruncExpr({
-      unit: seqGet(args, 1),
-      this: seqGet(args, 0),
-    }),
-    WEEKOFYEAR: (args: Expression[]) =>
-      new WeekOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
-  };
+      SHIFTLEFT: binaryFromFunction(BitwiseLeftShiftExpr),
+      SHIFTRIGHT: binaryFromFunction(BitwiseRightShiftExpr),
+      STRING: buildAsCast('string'),
+      SLICE: ArraySliceExpr.fromArgList,
+      TIMESTAMP: buildAsCast('timestamp'),
+      TO_TIMESTAMP: (args: Expression[]) =>
+        args.length === 1
+          ? buildAsCast('timestamp')(args)
+          : buildFormattedTime(StrToTimeExpr, { dialect: 'spark' })(args),
+      TO_UNIX_TIMESTAMP: StrToUnixExpr.fromArgList,
+      TO_UTC_TIMESTAMP: (args: Expression[], { dialect }: { dialect: Dialect }) =>
+        new FromTimeZoneExpr({
+          this: cast(seqGet(args, 0) || var_(''), DataTypeExprKind.TIMESTAMP, {
+            dialect,
+          }),
+          zone: seqGet(args, 1),
+        }),
+      TRUNC: (args: Expression[]) => new DateTruncExpr({
+        unit: seqGet(args, 1),
+        this: seqGet(args, 0),
+      }),
+      WEEKOFYEAR: (args: Expression[]) =>
+        new WeekOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+    };
+  }
 
-  static FUNCTION_PARSERS = {
-    ...Hive.Parser.FUNCTION_PARSERS,
-    APPROX_PERCENTILE: (self: Parser) => (self as Spark2Parser).parseQuantileFunction(ApproxQuantileExpr),
-    BROADCAST: (self: Parser) => self.parseJoinHint('BROADCAST'),
-    BROADCASTJOIN: (self: Parser) => self.parseJoinHint('BROADCASTJOIN'),
-    MAPJOIN: (self: Parser) => self.parseJoinHint('MAPJOIN'),
-    MERGE: (self: Parser) => self.parseJoinHint('MERGE'),
-    SHUFFLEMERGE: (self: Parser) => self.parseJoinHint('SHUFFLEMERGE'),
-    MERGEJOIN: (self: Parser) => self.parseJoinHint('MERGEJOIN'),
-    SHUFFLE_HASH: (self: Parser) => self.parseJoinHint('SHUFFLE_HASH'),
-    SHUFFLE_REPLICATE_NL: (self: Parser) => self.parseJoinHint('SHUFFLE_REPLICATE_NL'),
-  };
+  static #FUNCTION_PARSERS: undefined = undefined;
+  static get FUNCTION_PARSERS () {
+    return Spark2Parser.#FUNCTION_PARSERS ??= {
+      ...Hive.Parser.FUNCTION_PARSERS,
+      APPROX_PERCENTILE: (self: Parser) => (self as Spark2Parser).parseQuantileFunction(ApproxQuantileExpr),
+      BROADCAST: (self: Parser) => self.parseJoinHint('BROADCAST'),
+      BROADCASTJOIN: (self: Parser) => self.parseJoinHint('BROADCASTJOIN'),
+      MAPJOIN: (self: Parser) => self.parseJoinHint('MAPJOIN'),
+      MERGE: (self: Parser) => self.parseJoinHint('MERGE'),
+      SHUFFLEMERGE: (self: Parser) => self.parseJoinHint('SHUFFLEMERGE'),
+      MERGEJOIN: (self: Parser) => self.parseJoinHint('MERGEJOIN'),
+      SHUFFLE_HASH: (self: Parser) => self.parseJoinHint('SHUFFLE_HASH'),
+      SHUFFLE_REPLICATE_NL: (self: Parser) => self.parseJoinHint('SHUFFLE_REPLICATE_NL'),
+    };
+  }
 
   parseDropColumn (): DropExpr | CommandExpr | undefined {
     return (

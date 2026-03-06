@@ -518,140 +518,173 @@ export class PostgresTokenizer extends Tokenizer {
 class PostgresParser extends Parser {
   static SUPPORTS_OMITTED_INTERVAL_SPAN_UNIT = true;
 
-  static PROPERTY_PARSERS = (() => {
-    const parsers: Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> = {
-      ...Parser.PROPERTY_PARSERS,
-      SET: (self: Parser) => self.expression(SetConfigPropertyExpr, { this: (self as PostgresParser).parseSet() }),
+  static #PROPERTY_PARSERS: undefined = undefined;
+  static get PROPERTY_PARSERS () {
+    return PostgresParser.#PROPERTY_PARSERS ??= (() => {
+      const parsers: Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> = {
+        ...Parser.PROPERTY_PARSERS,
+        SET: (self: Parser) => self.expression(SetConfigPropertyExpr, { this: (self as PostgresParser).parseSet() }),
+      };
+      delete parsers['INPUT'];
+      return parsers;
+    })();
+  }
+
+  static #PLACEHOLDER_PARSERS: undefined = undefined;
+  static get PLACEHOLDER_PARSERS () {
+    return PostgresParser.#PLACEHOLDER_PARSERS ??= {
+      ...Parser.PLACEHOLDER_PARSERS,
+      [TokenType.PLACEHOLDER]: (self: Parser) => self.expression(PlaceholderExpr, { jdbc: true }),
+      [TokenType.MOD]: (self: Parser) => (self as PostgresParser).parseQueryParameter(),
     };
-    delete parsers['INPUT'];
-    return parsers;
-  })();
+  }
 
-  static PLACEHOLDER_PARSERS = {
-    ...Parser.PLACEHOLDER_PARSERS,
-    [TokenType.PLACEHOLDER]: (self: Parser) => self.expression(PlaceholderExpr, { jdbc: true }),
-    [TokenType.MOD]: (self: Parser) => (self as PostgresParser).parseQueryParameter(),
-  };
-
-  static FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
-    ...Parser.FUNCTIONS,
-    ARRAY_PREPEND: (args: Expression[]) => new ArrayPrependExpr({
-      this: seqGet(args, 1),
-      expression: seqGet(args, 0),
-    }),
-    BIT_AND: BitwiseAndAggExpr.fromArgList,
-    BIT_OR: BitwiseOrAggExpr.fromArgList,
-    BIT_XOR: BitwiseXorAggExpr.fromArgList,
-    VERSION: CurrentVersionExpr.fromArgList,
-    DATE_TRUNC: buildTimestampTrunc,
-    DIV: (args: Expression[]) => new CastExpr({
-      this: binaryFromFunction(IntDivExpr)(args),
-      to: DataTypeExpr.build('decimal'),
-    }),
-    GENERATE_SERIES: buildGenerateSeries,
-    GET_BIT: (args: Expression[]) => new GetbitExpr({
-      this: seqGet(args, 0),
-      expression: seqGet(args, 1),
-      zeroIsMsb: true,
-    }),
-    JSON_EXTRACT_PATH: buildJsonExtractPath(JsonExtractExpr),
-    JSON_EXTRACT_PATH_TEXT: buildJsonExtractPath(JsonExtractScalarExpr),
-    LENGTH: (args: Expression[]) => new LengthExpr({
-      this: seqGet(args, 0),
-      encoding: seqGet(args, 1),
-    }),
-    MAKE_TIME: TimeFromPartsExpr.fromArgList,
-    MAKE_TIMESTAMP: TimestampFromPartsExpr.fromArgList,
-    NOW: CurrentTimestampExpr.fromArgList,
-    REGEXP_REPLACE: buildRegexpReplace,
-    TO_CHAR: buildFormattedTime(TimeToStrExpr, { dialect: 'postgres' }),
-    TO_DATE: buildFormattedTime(StrToDateExpr, { dialect: 'postgres' }),
-    TO_TIMESTAMP: buildToTimestamp,
-    UNNEST: ExplodeExpr.fromArgList,
-    SHA256: (args: Expression[]) => new Sha2Expr({
-      this: seqGet(args, 0),
-      length: LiteralExpr.number(256),
-    }),
-    SHA384: (args: Expression[]) => new Sha2Expr({
-      this: seqGet(args, 0),
-      length: LiteralExpr.number(384),
-    }),
-    SHA512: (args: Expression[]) => new Sha2Expr({
-      this: seqGet(args, 0),
-      length: LiteralExpr.number(512),
-    }),
-    LEVENSHTEIN_LESS_EQUAL: buildLevenshteinLessEqual,
-    JSON_OBJECT_AGG: JsonObjectAggExpr.fromArgList,
-    JSONB_OBJECT_AGG: JsonbObjectAggExpr.fromArgList,
-    WIDTH_BUCKET: (args: Expression[]) => args.length === 2
-      ? new WidthBucketExpr({
+  static #FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> | undefined = undefined;
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+    return PostgresParser.#FUNCTIONS ??= {
+      ...Parser.FUNCTIONS,
+      ARRAY_PREPEND: (args: Expression[]) => new ArrayPrependExpr({
+        this: seqGet(args, 1),
+        expression: seqGet(args, 0),
+      }),
+      BIT_AND: BitwiseAndAggExpr.fromArgList,
+      BIT_OR: BitwiseOrAggExpr.fromArgList,
+      BIT_XOR: BitwiseXorAggExpr.fromArgList,
+      VERSION: CurrentVersionExpr.fromArgList,
+      DATE_TRUNC: buildTimestampTrunc,
+      DIV: (args: Expression[]) => new CastExpr({
+        this: binaryFromFunction(IntDivExpr)(args),
+        to: DataTypeExpr.build('decimal'),
+      }),
+      GENERATE_SERIES: buildGenerateSeries,
+      GET_BIT: (args: Expression[]) => new GetbitExpr({
         this: seqGet(args, 0),
-        threshold: seqGet(args, 1),
-      })
-      : WidthBucketExpr.fromArgList(args),
-  };
+        expression: seqGet(args, 1),
+        zeroIsMsb: true,
+      }),
+      JSON_EXTRACT_PATH: buildJsonExtractPath(JsonExtractExpr),
+      JSON_EXTRACT_PATH_TEXT: buildJsonExtractPath(JsonExtractScalarExpr),
+      LENGTH: (args: Expression[]) => new LengthExpr({
+        this: seqGet(args, 0),
+        encoding: seqGet(args, 1),
+      }),
+      MAKE_TIME: TimeFromPartsExpr.fromArgList,
+      MAKE_TIMESTAMP: TimestampFromPartsExpr.fromArgList,
+      NOW: CurrentTimestampExpr.fromArgList,
+      REGEXP_REPLACE: buildRegexpReplace,
+      TO_CHAR: buildFormattedTime(TimeToStrExpr, { dialect: 'postgres' }),
+      TO_DATE: buildFormattedTime(StrToDateExpr, { dialect: 'postgres' }),
+      TO_TIMESTAMP: buildToTimestamp,
+      UNNEST: ExplodeExpr.fromArgList,
+      SHA256: (args: Expression[]) => new Sha2Expr({
+        this: seqGet(args, 0),
+        length: LiteralExpr.number(256),
+      }),
+      SHA384: (args: Expression[]) => new Sha2Expr({
+        this: seqGet(args, 0),
+        length: LiteralExpr.number(384),
+      }),
+      SHA512: (args: Expression[]) => new Sha2Expr({
+        this: seqGet(args, 0),
+        length: LiteralExpr.number(512),
+      }),
+      LEVENSHTEIN_LESS_EQUAL: buildLevenshteinLessEqual,
+      JSON_OBJECT_AGG: JsonObjectAggExpr.fromArgList,
+      JSONB_OBJECT_AGG: JsonbObjectAggExpr.fromArgList,
+      WIDTH_BUCKET: (args: Expression[]) => args.length === 2
+        ? new WidthBucketExpr({
+          this: seqGet(args, 0),
+          threshold: seqGet(args, 1),
+        })
+        : WidthBucketExpr.fromArgList(args),
+    };
+  }
 
-  static NO_PAREN_FUNCTION_PARSERS = {
-    ...Parser.NO_PAREN_FUNCTION_PARSERS,
-    VARIADIC: (self: Parser) => self.expression(VariadicExpr, { this: (self as PostgresParser).parseBitwise() }),
-  };
+  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  static get NO_PAREN_FUNCTION_PARSERS () {
+    return PostgresParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+      ...Parser.NO_PAREN_FUNCTION_PARSERS,
+      VARIADIC: (self: Parser) => self.expression(VariadicExpr, { this: (self as PostgresParser).parseBitwise() }),
+    };
+  }
 
-  static NO_PAREN_FUNCTIONS = {
-    ...Parser.NO_PAREN_FUNCTIONS,
-    [TokenType.CURRENT_SCHEMA]: CurrentSchemaExpr,
-  };
+  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  static get NO_PAREN_FUNCTIONS () {
+    return PostgresParser.#NO_PAREN_FUNCTIONS ??= {
+      ...Parser.NO_PAREN_FUNCTIONS,
+      [TokenType.CURRENT_SCHEMA]: CurrentSchemaExpr,
+    };
+  }
 
-  static FUNCTION_PARSERS = {
-    ...Parser.FUNCTION_PARSERS,
-    DATE_PART: (self: Parser) => (self as PostgresParser).parseDatePart(),
-    JSON_AGG: (self: Parser) => self.expression(JsonArrayAggExpr, {
-      this: (self as PostgresParser).parseLambda(),
-      order: (self as PostgresParser).parseOrder(),
-    }),
-    JSONB_EXISTS: (self: Parser) => (self as PostgresParser).parseJsonbExists(),
-  };
+  static #FUNCTION_PARSERS: undefined = undefined;
+  static get FUNCTION_PARSERS () {
+    return PostgresParser.#FUNCTION_PARSERS ??= {
+      ...Parser.FUNCTION_PARSERS,
+      DATE_PART: (self: Parser) => (self as PostgresParser).parseDatePart(),
+      JSON_AGG: (self: Parser) => self.expression(JsonArrayAggExpr, {
+        this: (self as PostgresParser).parseLambda(),
+        order: (self as PostgresParser).parseOrder(),
+      }),
+      JSONB_EXISTS: (self: Parser) => (self as PostgresParser).parseJsonbExists(),
+    };
+  }
 
-  static BITWISE = {
-    ...Parser.BITWISE,
-    [TokenType.HASH]: BitwiseXorExpr,
-  };
+  static #BITWISE: undefined = undefined;
+  static get BITWISE () {
+    return PostgresParser.#BITWISE ??= {
+      ...Parser.BITWISE,
+      [TokenType.HASH]: BitwiseXorExpr,
+    };
+  }
 
   static EXPONENT = {
     [TokenType.CARET]: PowExpr,
   };
 
-  static RANGE_PARSERS = {
-    ...Parser.RANGE_PARSERS,
-    [TokenType.DAMP]: binaryRangeParser(ArrayOverlapsExpr),
-    [TokenType.DAT]: (self: Parser, thisNode: Expression) => self.expression(MatchAgainstExpr, {
-      this: (self as PostgresParser).parseBitwise(),
-      expressions: [thisNode],
-    }),
-  };
+  static #RANGE_PARSERS: undefined = undefined;
+  static get RANGE_PARSERS () {
+    return PostgresParser.#RANGE_PARSERS ??= {
+      ...Parser.RANGE_PARSERS,
+      [TokenType.DAMP]: binaryRangeParser(ArrayOverlapsExpr),
+      [TokenType.DAT]: (self: Parser, thisNode: Expression) => self.expression(MatchAgainstExpr, {
+        this: (self as PostgresParser).parseBitwise(),
+        expressions: [thisNode],
+      }),
+    };
+  }
 
-  static STATEMENT_PARSERS = {
-    ...Parser.STATEMENT_PARSERS,
-    [TokenType.END]: (self: Parser) => (self as PostgresParser).parseCommitOrRollback(),
-  };
+  static #STATEMENT_PARSERS: undefined = undefined;
+  static get STATEMENT_PARSERS () {
+    return PostgresParser.#STATEMENT_PARSERS ??= {
+      ...Parser.STATEMENT_PARSERS,
+      [TokenType.END]: (self: Parser) => (self as PostgresParser).parseCommitOrRollback(),
+    };
+  }
 
-  static UNARY_PARSERS = {
-    ...Parser.UNARY_PARSERS,
-    [TokenType.RLIKE]: (self: Parser) => self.expression(BitwiseNotExpr, {
-      this: (self as PostgresParser).parseUnary(),
-    }),
-  };
+  static #UNARY_PARSERS: undefined = undefined;
+  static get UNARY_PARSERS () {
+    return PostgresParser.#UNARY_PARSERS ??= {
+      ...Parser.UNARY_PARSERS,
+      [TokenType.RLIKE]: (self: Parser) => self.expression(BitwiseNotExpr, {
+        this: (self as PostgresParser).parseUnary(),
+      }),
+    };
+  }
 
   static JSON_ARROWS_REQUIRE_JSON_TYPE = true;
 
-  static COLUMN_OPERATORS = {
-    ...Parser.COLUMN_OPERATORS,
-    [TokenType.ARROW]: (self: Parser, thisNode?: Expression, path?: Expression) => self.validateExpression(
-      buildJsonExtractPath(JsonExtractExpr, { arrowReqJsonType: (self.constructor as typeof PostgresParser).JSON_ARROWS_REQUIRE_JSON_TYPE })([thisNode, path]),
-    ),
-    [TokenType.DARROW]: (self: Parser, thisNode?: Expression, path?: Expression) => self.validateExpression(
-      buildJsonExtractPath(JsonExtractScalarExpr, { arrowReqJsonType: (self.constructor as typeof PostgresParser).JSON_ARROWS_REQUIRE_JSON_TYPE })([thisNode, path]),
-    ),
-  };
+  static #COLUMN_OPERATORS: undefined = undefined;
+  static get COLUMN_OPERATORS () {
+    return PostgresParser.#COLUMN_OPERATORS ??= {
+      ...Parser.COLUMN_OPERATORS,
+      [TokenType.ARROW]: (self: Parser, thisNode?: Expression, path?: Expression) => self.validateExpression(
+        buildJsonExtractPath(JsonExtractExpr, { arrowReqJsonType: (self.constructor as typeof PostgresParser).JSON_ARROWS_REQUIRE_JSON_TYPE })([thisNode, path]),
+      ),
+      [TokenType.DARROW]: (self: Parser, thisNode?: Expression, path?: Expression) => self.validateExpression(
+        buildJsonExtractPath(JsonExtractScalarExpr, { arrowReqJsonType: (self.constructor as typeof PostgresParser).JSON_ARROWS_REQUIRE_JSON_TYPE })([thisNode, path]),
+      ),
+    };
+  }
 
   static ARG_MODE_TOKENS = new Set([
     TokenType.IN,

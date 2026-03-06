@@ -69,13 +69,16 @@ class DrillParser extends Parser {
   static STRICT_CAST = false;
   static LOG_DEFAULTS_TO_LN = true;
 
-  static FUNCTIONS = {
-    ...Parser.FUNCTIONS,
-    REPEATED_COUNT: ArraySizeExpr.fromArgList,
-    TO_TIMESTAMP: TimeStrToTimeExpr.fromArgList,
-    TO_CHAR: buildFormattedTime(TimeToStrExpr, { dialect: 'drill' }),
-    LEVENSHTEIN_DISTANCE: LevenshteinExpr.fromArgList,
-  };
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return DrillParser.#FUNCTIONS ??= {
+      ...Parser.FUNCTIONS,
+      REPEATED_COUNT: ArraySizeExpr.fromArgList,
+      TO_TIMESTAMP: TimeStrToTimeExpr.fromArgList,
+      TO_CHAR: buildFormattedTime(TimeToStrExpr, { dialect: 'drill' }),
+      LEVENSHTEIN_DISTANCE: LevenshteinExpr.fromArgList,
+    };
+  }
 }
 
 class DrillGenerator extends Generator {

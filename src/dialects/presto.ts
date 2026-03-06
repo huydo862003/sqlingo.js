@@ -573,121 +573,127 @@ class PrestoParser extends Parser {
   public static VALUES_FOLLOWED_BY_PAREN = false;
   public static ZONE_AWARE_TIMESTAMP_CONSTRUCTOR = true;
 
-  public static FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
-    ...Parser.FUNCTIONS,
-    ARBITRARY: AnyValueExpr.fromArgList,
-    APPROX_DISTINCT: ApproxDistinctExpr.fromArgList,
-    APPROX_PERCENTILE: buildApproxPercentile,
-    BITWISE_AND: binaryFromFunction(BitwiseAndExpr),
-    BITWISE_NOT: (args: Expression[]) => new BitwiseNotExpr({ this: seqGet(args, 0) }),
-    BITWISE_OR: binaryFromFunction(BitwiseOrExpr),
-    BITWISE_XOR: binaryFromFunction(BitwiseXorExpr),
-    CARDINALITY: ArraySizeExpr.fromArgList,
-    CONTAINS: ArrayContainsExpr.fromArgList,
-    // Presto/Trino: DATE_ADD(unit, value, timestamp)
-    DATE_ADD: (args: Expression[]) =>
-      new DateAddExpr({
-        this: seqGet(args, 2),
-        expression: seqGet(args, 1),
-        unit: seqGet(args, 0),
-      }),
-    DATE_DIFF: (args: Expression[]) =>
-      new DateDiffExpr({
-        this: seqGet(args, 2),
-        expression: seqGet(args, 1),
-        unit: seqGet(args, 0),
-      }),
-    DATE_FORMAT: buildFormattedTime(TimeToStrExpr, { dialect: Dialects.PRESTO }),
-    DATE_PARSE: buildFormattedTime(StrToTimeExpr, { dialect: Dialects.PRESTO }),
-    DATE_TRUNC: dateTruncToTime,
-    DAY_OF_WEEK: DayOfWeekIsoExpr.fromArgList,
-    DOW: DayOfWeekIsoExpr.fromArgList,
-    DOY: DayOfYearExpr.fromArgList,
-    // ELEMENT_AT is 1-indexed and returns NULL instead of throwing on out-of-bounds
-    ELEMENT_AT: (args: Expression[]) =>
-      new BracketExpr({
-        this: seqGet(args, 0),
-        expressions: [seqGet(args, 1)!],
-        offset: 1,
-        safe: true,
-      }),
-    FROM_HEX: UnhexExpr.fromArgList,
-    FROM_UNIXTIME: buildFromUnixtime,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    FROM_UTF8: (args: any[]) =>
-      new DecodeExpr({
-        this: seqGet(args, 0),
-        replace: seqGet(args, 1),
-        charset: new LiteralExpr({
-          this: 'utf-8',
-          isString: true,
+  static #FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> | undefined = undefined;
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+    return PrestoParser.#FUNCTIONS ??= {
+      ...Parser.FUNCTIONS,
+      ARBITRARY: AnyValueExpr.fromArgList,
+      APPROX_DISTINCT: ApproxDistinctExpr.fromArgList,
+      APPROX_PERCENTILE: buildApproxPercentile,
+      BITWISE_AND: binaryFromFunction(BitwiseAndExpr),
+      BITWISE_NOT: (args: Expression[]) => new BitwiseNotExpr({ this: seqGet(args, 0) }),
+      BITWISE_OR: binaryFromFunction(BitwiseOrExpr),
+      BITWISE_XOR: binaryFromFunction(BitwiseXorExpr),
+      CARDINALITY: ArraySizeExpr.fromArgList,
+      CONTAINS: ArrayContainsExpr.fromArgList,
+      // Presto/Trino: DATE_ADD(unit, value, timestamp)
+      DATE_ADD: (args: Expression[]) =>
+        new DateAddExpr({
+          this: seqGet(args, 2),
+          expression: seqGet(args, 1),
+          unit: seqGet(args, 0),
         }),
-      }),
-    JSON_FORMAT: (args: Expression[]) =>
-      new JsonFormatExpr({
-        this: seqGet(args, 0),
-        options: seqGet(args, 1),
-        isJson: true,
-      }),
-    LEVENSHTEIN_DISTANCE: LevenshteinExpr.fromArgList,
-    NOW: CurrentTimestampExpr.fromArgList,
-    REGEXP_EXTRACT: buildRegexpExtract(RegexpExtractExpr),
-    REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    REGEXP_REPLACE: (args: any[]) =>
-      new RegexpReplaceExpr({
-        this: seqGet(args, 0),
-        expression: seqGet(args, 1),
-        replacement: seqGet(args, 2) ?? '',
-      }),
-    REPLACE: buildReplaceWithOptionalReplacement,
-    ROW: StructExpr.fromArgList,
-    SEQUENCE: GenerateSeriesExpr.fromArgList,
-    SET_AGG: ArrayUniqueAggExpr.fromArgList,
-    SPLIT_TO_MAP: StrToMapExpr.fromArgList,
-    STRPOS: (args: Expression[]) =>
-      new StrPositionExpr({
-        this: seqGet(args, 0),
-        substr: seqGet(args, 1),
-        occurrence: seqGet(args, 2),
-      }),
-    SLICE: ArraySliceExpr.fromArgList,
-    TO_CHAR: buildToChar,
-    TO_UNIXTIME: TimeToUnixExpr.fromArgList,
-    TO_UTF8: (args: Expression[]) =>
-      new EncodeExpr({
-        this: seqGet(args, 0),
-        charset: new LiteralExpr({
-          this: 'utf-8',
-          isString: true,
+      DATE_DIFF: (args: Expression[]) =>
+        new DateDiffExpr({
+          this: seqGet(args, 2),
+          expression: seqGet(args, 1),
+          unit: seqGet(args, 0),
         }),
-      }),
-    MD5: Md5DigestExpr.fromArgList,
-    SHA256: (args: Expression[]) =>
-      new Sha2Expr({
-        this: seqGet(args, 0),
-        length: new LiteralExpr({
-          this: '256',
-          isString: false,
+      DATE_FORMAT: buildFormattedTime(TimeToStrExpr, { dialect: Dialects.PRESTO }),
+      DATE_PARSE: buildFormattedTime(StrToTimeExpr, { dialect: Dialects.PRESTO }),
+      DATE_TRUNC: dateTruncToTime,
+      DAY_OF_WEEK: DayOfWeekIsoExpr.fromArgList,
+      DOW: DayOfWeekIsoExpr.fromArgList,
+      DOY: DayOfYearExpr.fromArgList,
+      // ELEMENT_AT is 1-indexed and returns NULL instead of throwing on out-of-bounds
+      ELEMENT_AT: (args: Expression[]) =>
+        new BracketExpr({
+          this: seqGet(args, 0),
+          expressions: [seqGet(args, 1)!],
+          offset: 1,
+          safe: true,
         }),
-      }),
-    SHA512: (args: Expression[]) =>
-      new Sha2Expr({
-        this: seqGet(args, 0),
-        length: new LiteralExpr({
-          this: '512',
-          isString: false,
+      FROM_HEX: UnhexExpr.fromArgList,
+      FROM_UNIXTIME: buildFromUnixtime,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      FROM_UTF8: (args: any[]) =>
+        new DecodeExpr({
+          this: seqGet(args, 0),
+          replace: seqGet(args, 1),
+          charset: new LiteralExpr({
+            this: 'utf-8',
+            isString: true,
+          }),
         }),
-      }),
-    WEEK: WeekOfYearExpr.fromArgList,
-  };
+      JSON_FORMAT: (args: Expression[]) =>
+        new JsonFormatExpr({
+          this: seqGet(args, 0),
+          options: seqGet(args, 1),
+          isJson: true,
+        }),
+      LEVENSHTEIN_DISTANCE: LevenshteinExpr.fromArgList,
+      NOW: CurrentTimestampExpr.fromArgList,
+      REGEXP_EXTRACT: buildRegexpExtract(RegexpExtractExpr),
+      REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      REGEXP_REPLACE: (args: any[]) =>
+        new RegexpReplaceExpr({
+          this: seqGet(args, 0),
+          expression: seqGet(args, 1),
+          replacement: seqGet(args, 2) ?? '',
+        }),
+      REPLACE: buildReplaceWithOptionalReplacement,
+      ROW: StructExpr.fromArgList,
+      SEQUENCE: GenerateSeriesExpr.fromArgList,
+      SET_AGG: ArrayUniqueAggExpr.fromArgList,
+      SPLIT_TO_MAP: StrToMapExpr.fromArgList,
+      STRPOS: (args: Expression[]) =>
+        new StrPositionExpr({
+          this: seqGet(args, 0),
+          substr: seqGet(args, 1),
+          occurrence: seqGet(args, 2),
+        }),
+      SLICE: ArraySliceExpr.fromArgList,
+      TO_CHAR: buildToChar,
+      TO_UNIXTIME: TimeToUnixExpr.fromArgList,
+      TO_UTF8: (args: Expression[]) =>
+        new EncodeExpr({
+          this: seqGet(args, 0),
+          charset: new LiteralExpr({
+            this: 'utf-8',
+            isString: true,
+          }),
+        }),
+      MD5: Md5DigestExpr.fromArgList,
+      SHA256: (args: Expression[]) =>
+        new Sha2Expr({
+          this: seqGet(args, 0),
+          length: new LiteralExpr({
+            this: '256',
+            isString: false,
+          }),
+        }),
+      SHA512: (args: Expression[]) =>
+        new Sha2Expr({
+          this: seqGet(args, 0),
+          length: new LiteralExpr({
+            this: '512',
+            isString: false,
+          }),
+        }),
+      WEEK: WeekOfYearExpr.fromArgList,
+    };
+  }
 
-  public static FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> = (() => {
-    const parsers = { ...Parser.FUNCTION_PARSERS };
-    // Presto uses its own TRIM logic, so we remove the base SQL parser
-    delete parsers['TRIM'];
-    return parsers;
-  })();
+  static #FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+    return PrestoParser.#FUNCTION_PARSERS ??= (() => {
+      const parsers = { ...Parser.FUNCTION_PARSERS };
+      // Presto uses its own TRIM logic, so we remove the base SQL parser
+      delete parsers['TRIM'];
+      return parsers;
+    })();
+  }
 }
 
 class PrestoGenerator extends Generator {

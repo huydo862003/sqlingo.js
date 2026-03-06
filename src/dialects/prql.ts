@@ -37,15 +37,21 @@ class PRQLTokenizer extends Tokenizer {
 }
 
 class PRQLParser extends Parser {
-  static CONJUNCTION = {
-    ...Parser.CONJUNCTION,
-    [TokenType.DAMP]: AndExpr,
-  };
+  static #CONJUNCTION: undefined = undefined;
+  static get CONJUNCTION () {
+    return PRQLParser.#CONJUNCTION ??= {
+      ...Parser.CONJUNCTION,
+      [TokenType.DAMP]: AndExpr,
+    };
+  }
 
-  static DISJUNCTION = {
-    ...Parser.DISJUNCTION,
-    [TokenType.DPIPE]: OrExpr,
-  };
+  static #DISJUNCTION: undefined = undefined;
+  static get DISJUNCTION () {
+    return PRQLParser.#DISJUNCTION ??= {
+      ...Parser.DISJUNCTION,
+      [TokenType.DPIPE]: OrExpr,
+    };
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static TRANSFORM_PARSERS: Record<string, (self: Parser, query: any) => QueryExpr | undefined> = {
@@ -76,14 +82,17 @@ class PRQLParser extends Parser {
       }),
   };
 
-  static FUNCTIONS = {
-    ...Parser.FUNCTIONS,
-    AVERAGE: AvgExpr.fromArgList,
-    SUM: (args: Expression[]) => func('COALESCE', new SumExpr({
-      this: seqGet(args, 0),
-      expression: 0,
-    })),
-  };
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return PRQLParser.#FUNCTIONS ??= {
+      ...Parser.FUNCTIONS,
+      AVERAGE: AvgExpr.fromArgList,
+      SUM: (args: Expression[]) => func('COALESCE', new SumExpr({
+        this: seqGet(args, 0),
+        expression: 0,
+      })),
+    };
+  }
 
   parseEquality (): Expression | undefined {
     const eq = this.parseTokens(() => this.parseComparison(), (this._constructor as typeof PRQLParser).EQUALITY);

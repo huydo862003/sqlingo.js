@@ -232,31 +232,40 @@ class SQLiteParser extends Parser {
   static JOINS_HAVE_EQUAL_PRECEDENCE = true;
   static ADD_JOIN_ON_TRUE = true;
 
-  static FUNCTIONS = {
-    ...Parser.FUNCTIONS,
-    EDITDIST3: LevenshteinExpr.fromArgList,
-    STRFTIME: buildStrftime,
-    DATETIME: (args: Expression[]) => new AnonymousExpr({
-      this: 'DATETIME',
-      expressions: args,
-    }),
-    TIME: (args: Expression[]) => new AnonymousExpr({
-      this: 'TIME',
-      expressions: args,
-    }),
-    SQLITE_VERSION: CurrentVersionExpr.fromArgList,
-  };
+  static #FUNCTIONS: undefined = undefined;
+  static get FUNCTIONS () {
+    return SQLiteParser.#FUNCTIONS ??= {
+      ...Parser.FUNCTIONS,
+      EDITDIST3: LevenshteinExpr.fromArgList,
+      STRFTIME: buildStrftime,
+      DATETIME: (args: Expression[]) => new AnonymousExpr({
+        this: 'DATETIME',
+        expressions: args,
+      }),
+      TIME: (args: Expression[]) => new AnonymousExpr({
+        this: 'TIME',
+        expressions: args,
+      }),
+      SQLITE_VERSION: CurrentVersionExpr.fromArgList,
+    };
+  }
 
-  static STATEMENT_PARSERS = {
-    ...Parser.STATEMENT_PARSERS,
-    [TokenType.ATTACH]: (self: Parser) => (self as SQLiteParser).parseAttachDetach(),
-    [TokenType.DETACH]: (self: Parser) => (self as SQLiteParser).parseAttachDetach({ isAttach: false }),
-  };
+  static #STATEMENT_PARSERS: undefined = undefined;
+  static get STATEMENT_PARSERS () {
+    return SQLiteParser.#STATEMENT_PARSERS ??= {
+      ...Parser.STATEMENT_PARSERS,
+      [TokenType.ATTACH]: (self: Parser) => (self as SQLiteParser).parseAttachDetach(),
+      [TokenType.DETACH]: (self: Parser) => (self as SQLiteParser).parseAttachDetach({ isAttach: false }),
+    };
+  }
 
-  static RANGE_PARSERS = {
-    ...Parser.RANGE_PARSERS,
-    [TokenType.MATCH]: binaryRangeParser(MatchExpr),
-  };
+  static #RANGE_PARSERS: undefined = undefined;
+  static get RANGE_PARSERS () {
+    return SQLiteParser.#RANGE_PARSERS ??= {
+      ...Parser.RANGE_PARSERS,
+      [TokenType.MATCH]: binaryRangeParser(MatchExpr),
+    };
+  }
 
   parseUnique (): UniqueColumnConstraintExpr {
     // Do not consume more tokens if UNIQUE is used as a standalone constraint

@@ -483,77 +483,80 @@ class ClickHouseParser extends Parser {
   static OPTIONAL_ALIAS_TOKEN_CTE = false;
   static JOINS_HAVE_EQUAL_PRECEDENCE = true;
 
-  static FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
-    ...Parser.FUNCTIONS,
-    ...Object.fromEntries(
-      [...TIMESTAMP_TRUNC_UNITS].map((unit) => [`TOSTARTOF${unit}`, buildTimestampTrunc(unit)]),
-    ),
-    ANY: AnyValueExpr.fromArgList,
-    ARRAYSUM: ArraySumExpr.fromArgList,
-    ARRAYREVERSE: ArrayReverseExpr.fromArgList,
-    ARRAYSLICE: ArraySliceExpr.fromArgList,
-    CURRENTDATABASE: CurrentDatabaseExpr.fromArgList,
-    CURRENTSCHEMAS: CurrentSchemasExpr.fromArgList,
-    COUNTIF: buildCountIf,
-    COSINEDISTANCE: CosineDistanceExpr.fromArgList,
-    VERSION: CurrentVersionExpr.fromArgList,
-    DATE_ADD: buildDateDelta(DateAddExpr, undefined, { defaultUnit: undefined }),
-    DATEADD: buildDateDelta(DateAddExpr, undefined, { defaultUnit: undefined }),
-    DATE_DIFF: buildDateDelta(DateDiffExpr, undefined, {
-      defaultUnit: undefined,
-      supportsTimezone: true,
-    }),
-    DATEDIFF: buildDateDelta(DateDiffExpr, undefined, {
-      defaultUnit: undefined,
-      supportsTimezone: true,
-    }),
-    DATE_FORMAT: buildDateTimeFormat(TimeToStrExpr),
-    DATE_SUB: buildDateDelta(DateSubExpr, undefined, { defaultUnit: undefined }),
-    DATESUB: buildDateDelta(DateSubExpr, undefined, { defaultUnit: undefined }),
-    FORMATDATETIME: buildDateTimeFormat(TimeToStrExpr),
-    HAS: ArrayContainsExpr.fromArgList,
-    ILIKE: buildLike(ILikeExpr),
-    JSONEXTRACTSTRING: buildJsonExtractPath(JsonExtractScalarExpr, { zeroBasedIndexing: false }),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    LENGTH: (args: any[]) => new LengthExpr({
-      this: seqGet(args, 0),
-      binary: true,
-    }),
-    LIKE: buildLike(LikeExpr),
-    L2Distance: EuclideanDistanceExpr.fromArgList,
-    MAP: buildVarMap,
-    MATCH: RegexpLikeExpr.fromArgList,
-    NOTLIKE: buildLike(LikeExpr, { notLike: true }),
-    PARSEDATETIME: buildDateTimeFormat(ParseDatetimeExpr),
-    RANDCANONICAL: RandExpr.fromArgList,
-    STR_TO_DATE: buildStrToDate,
-    TIMESTAMP_SUB: buildDateDelta(TimestampSubExpr, undefined, { defaultUnit: undefined }),
-    TIMESTAMPSUB: buildDateDelta(TimestampSubExpr, undefined, { defaultUnit: undefined }),
-    TIMESTAMP_ADD: buildDateDelta(TimestampAddExpr, undefined, { defaultUnit: undefined }),
-    TIMESTAMPADD: buildDateDelta(TimestampAddExpr, undefined, { defaultUnit: undefined }),
-    TOMONDAY: buildTimestampTrunc('WEEK'),
-    UNIQ: ApproxDistinctExpr.fromArgList,
-    XOR: (args: Expression[]) => new XorExpr({ expressions: args }),
-    MD5: Md5DigestExpr.fromArgList,
-    SHA256: (args: Expression[]) =>
-      new Sha2Expr({
-        this: seqGet(args, 0),
-        length: LiteralExpr.number(256),
+  static #FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> | undefined = undefined;
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+    return ClickHouseParser.#FUNCTIONS ??= {
+      ...Parser.FUNCTIONS,
+      ...Object.fromEntries(
+        [...TIMESTAMP_TRUNC_UNITS].map((unit) => [`TOSTARTOF${unit}`, buildTimestampTrunc(unit)]),
+      ),
+      ANY: AnyValueExpr.fromArgList,
+      ARRAYSUM: ArraySumExpr.fromArgList,
+      ARRAYREVERSE: ArrayReverseExpr.fromArgList,
+      ARRAYSLICE: ArraySliceExpr.fromArgList,
+      CURRENTDATABASE: CurrentDatabaseExpr.fromArgList,
+      CURRENTSCHEMAS: CurrentSchemasExpr.fromArgList,
+      COUNTIF: buildCountIf,
+      COSINEDISTANCE: CosineDistanceExpr.fromArgList,
+      VERSION: CurrentVersionExpr.fromArgList,
+      DATE_ADD: buildDateDelta(DateAddExpr, undefined, { defaultUnit: undefined }),
+      DATEADD: buildDateDelta(DateAddExpr, undefined, { defaultUnit: undefined }),
+      DATE_DIFF: buildDateDelta(DateDiffExpr, undefined, {
+        defaultUnit: undefined,
+        supportsTimezone: true,
       }),
-    SHA512: (args: Expression[]) =>
-      new Sha2Expr({
-        this: seqGet(args, 0),
-        length: LiteralExpr.number(512),
+      DATEDIFF: buildDateDelta(DateDiffExpr, undefined, {
+        defaultUnit: undefined,
+        supportsTimezone: true,
       }),
-    SPLITBYCHAR: buildSplitByChar,
-    SPLITBYREGEXP: buildSplit(RegexpSplitExpr),
-    SPLITBYSTRING: buildSplit(SplitExpr),
-    SUBSTRINGINDEX: SubstringIndexExpr.fromArgList,
-    TOTYPENAME: TypeofExpr.fromArgList,
-    EDITDISTANCE: LevenshteinExpr.fromArgList,
-    JAROWINKLERSIMILARITY: JarowinklerSimilarityExpr.fromArgList,
-    LEVENSHTEINDISTANCE: LevenshteinExpr.fromArgList,
-  };
+      DATE_FORMAT: buildDateTimeFormat(TimeToStrExpr),
+      DATE_SUB: buildDateDelta(DateSubExpr, undefined, { defaultUnit: undefined }),
+      DATESUB: buildDateDelta(DateSubExpr, undefined, { defaultUnit: undefined }),
+      FORMATDATETIME: buildDateTimeFormat(TimeToStrExpr),
+      HAS: ArrayContainsExpr.fromArgList,
+      ILIKE: buildLike(ILikeExpr),
+      JSONEXTRACTSTRING: buildJsonExtractPath(JsonExtractScalarExpr, { zeroBasedIndexing: false }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      LENGTH: (args: any[]) => new LengthExpr({
+        this: seqGet(args, 0),
+        binary: true,
+      }),
+      LIKE: buildLike(LikeExpr),
+      L2Distance: EuclideanDistanceExpr.fromArgList,
+      MAP: buildVarMap,
+      MATCH: RegexpLikeExpr.fromArgList,
+      NOTLIKE: buildLike(LikeExpr, { notLike: true }),
+      PARSEDATETIME: buildDateTimeFormat(ParseDatetimeExpr),
+      RANDCANONICAL: RandExpr.fromArgList,
+      STR_TO_DATE: buildStrToDate,
+      TIMESTAMP_SUB: buildDateDelta(TimestampSubExpr, undefined, { defaultUnit: undefined }),
+      TIMESTAMPSUB: buildDateDelta(TimestampSubExpr, undefined, { defaultUnit: undefined }),
+      TIMESTAMP_ADD: buildDateDelta(TimestampAddExpr, undefined, { defaultUnit: undefined }),
+      TIMESTAMPADD: buildDateDelta(TimestampAddExpr, undefined, { defaultUnit: undefined }),
+      TOMONDAY: buildTimestampTrunc('WEEK'),
+      UNIQ: ApproxDistinctExpr.fromArgList,
+      XOR: (args: Expression[]) => new XorExpr({ expressions: args }),
+      MD5: Md5DigestExpr.fromArgList,
+      SHA256: (args: Expression[]) =>
+        new Sha2Expr({
+          this: seqGet(args, 0),
+          length: LiteralExpr.number(256),
+        }),
+      SHA512: (args: Expression[]) =>
+        new Sha2Expr({
+          this: seqGet(args, 0),
+          length: LiteralExpr.number(512),
+        }),
+      SPLITBYCHAR: buildSplitByChar,
+      SPLITBYREGEXP: buildSplit(RegexpSplitExpr),
+      SPLITBYSTRING: buildSplit(SplitExpr),
+      SUBSTRINGINDEX: SubstringIndexExpr.fromArgList,
+      TOTYPENAME: TypeofExpr.fromArgList,
+      EDITDISTANCE: LevenshteinExpr.fromArgList,
+      JAROWINKLERSIMILARITY: JarowinklerSimilarityExpr.fromArgList,
+      LEVENSHTEINDISTANCE: LevenshteinExpr.fromArgList,
+    };
+  }
 
   static {
     delete this.FUNCTIONS['TRANSFORM'];
@@ -696,18 +699,27 @@ class ClickHouseParser extends Parser {
     'ArgMax',
   ];
 
-  static FUNC_TOKENS = new Set([
-    ...Parser.FUNC_TOKENS,
-    TokenType.AND,
-    TokenType.OR,
-    TokenType.SET,
-  ]);
+  static #FUNC_TOKENS: undefined = undefined;
+  static get FUNC_TOKENS () {
+    return ClickHouseParser.#FUNC_TOKENS ??= new Set([
+      ...Parser.FUNC_TOKENS,
+      TokenType.AND,
+      TokenType.OR,
+      TokenType.SET,
+    ]);
+  }
 
-  static RESERVED_TOKENS = new Set(
-    [...Parser.RESERVED_TOKENS].filter((t) => t !== TokenType.SELECT),
-  );
+  static #RESERVED_TOKENS: undefined = undefined;
+  static get RESERVED_TOKENS () {
+    return ClickHouseParser.#RESERVED_TOKENS ??= new Set(
+      [...Parser.RESERVED_TOKENS].filter((t) => t !== TokenType.SELECT),
+    );
+  }
 
-  static ID_VAR_TOKENS = new Set([...Parser.ID_VAR_TOKENS, TokenType.LIKE]);
+  static #ID_VAR_TOKENS: undefined = undefined;
+  static get ID_VAR_TOKENS () {
+    return ClickHouseParser.#ID_VAR_TOKENS ??= new Set([...Parser.ID_VAR_TOKENS, TokenType.LIKE]);
+  }
 
   static AGG_FUNC_MAPPING = (() => {
     const mapping: Record<string, [string, string]> = {};
@@ -720,112 +732,157 @@ class ClickHouseParser extends Parser {
     return mapping;
   })();
 
-  static FUNCTION_PARSERS: Record<string, (self: Parser) => Expression> = {
-    ...Parser.FUNCTION_PARSERS,
-    ARRAYJOIN: (self) => self.expression(ExplodeExpr, { this: self.parseExpression() }),
-    QUANTILE: (self) => (self as ClickHouseParser).parseQuantile(),
-    MEDIAN: (self) => (self as ClickHouseParser).parseQuantile(),
-    COLUMNS: (self) => (self as ClickHouseParser).parseColumns(),
-    TUPLE: (self) => StructExpr.fromArgList(self.parseFunctionArgs({ alias: true })),
-    AND: (self) => {
-      const args = self.parseFunctionArgs({ alias: false });
-      return new AndExpr({
-        this: args[0],
-        expression: args[1],
-      });
-    },
-    OR: (self) => {
-      const args = self.parseFunctionArgs({ alias: false });
-      return new OrExpr({
-        this: args[0],
-        expression: args[1],
-      });
-    },
-  };
+  static #FUNCTION_PARSERS: Record<string, (self: Parser) => Expression> | undefined = undefined;
+  static get FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression> {
+    return ClickHouseParser.#FUNCTION_PARSERS ??= {
+      ...Parser.FUNCTION_PARSERS,
+      ARRAYJOIN: (self) => self.expression(ExplodeExpr, { this: self.parseExpression() }),
+      QUANTILE: (self) => (self as ClickHouseParser).parseQuantile(),
+      MEDIAN: (self) => (self as ClickHouseParser).parseQuantile(),
+      COLUMNS: (self) => (self as ClickHouseParser).parseColumns(),
+      TUPLE: (self) => StructExpr.fromArgList(self.parseFunctionArgs({ alias: true })),
+      AND: (self) => {
+        const args = self.parseFunctionArgs({ alias: false });
+        return new AndExpr({
+          this: args[0],
+          expression: args[1],
+        });
+      },
+      OR: (self) => {
+        const args = self.parseFunctionArgs({ alias: false });
+        return new OrExpr({
+          this: args[0],
+          expression: args[1],
+        });
+      },
+    };
+  }
 
   static {
     delete ClickHouseParser.FUNCTION_PARSERS['MATCH'];
   }
 
-  static PROPERTY_PARSERS: Record<string, (self: Parser) => Expression> = {
-    ...Parser.PROPERTY_PARSERS,
-    ENGINE: (self) => (self as ClickHouseParser).parseEngineProperty(),
-  };
+  static #PROPERTY_PARSERS: Record<string, (self: Parser) => Expression> | undefined = undefined;
+  static get PROPERTY_PARSERS (): Record<string, (self: Parser) => Expression> {
+    return ClickHouseParser.#PROPERTY_PARSERS ??= {
+      ...Parser.PROPERTY_PARSERS,
+      ENGINE: (self) => (self as ClickHouseParser).parseEngineProperty(),
+    };
+  }
 
   static {
     delete ClickHouseParser.PROPERTY_PARSERS['DYNAMIC'];
   }
 
-  static NO_PAREN_FUNCTION_PARSERS = { ...Parser.NO_PAREN_FUNCTION_PARSERS };
+  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  static get NO_PAREN_FUNCTION_PARSERS () {
+    return ClickHouseParser.#NO_PAREN_FUNCTION_PARSERS ??= { ...Parser.NO_PAREN_FUNCTION_PARSERS };
+  }
+
   static {
     delete ClickHouseParser.NO_PAREN_FUNCTION_PARSERS['ANY'];
   }
 
-  static NO_PAREN_FUNCTIONS = { ...Parser.NO_PAREN_FUNCTIONS };
+  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  static get NO_PAREN_FUNCTIONS () {
+    return ClickHouseParser.#NO_PAREN_FUNCTIONS ??= { ...Parser.NO_PAREN_FUNCTIONS };
+  }
+
   static {
     delete (ClickHouseParser.NO_PAREN_FUNCTIONS as Record<string, unknown>)[TokenType.CURRENT_TIMESTAMP];
   }
 
-  static RANGE_PARSERS = {
-    ...Parser.RANGE_PARSERS,
-    [TokenType.GLOBAL]: (self: Parser, thisNode: Expression) =>
-      (self as ClickHouseParser).parseGlobalIn(thisNode),
-  };
+  static #RANGE_PARSERS: undefined = undefined;
+  static get RANGE_PARSERS () {
+    return ClickHouseParser.#RANGE_PARSERS ??= {
+      ...Parser.RANGE_PARSERS,
+      [TokenType.GLOBAL]: (self: Parser, thisNode: Expression) =>
+        (self as ClickHouseParser).parseGlobalIn(thisNode),
+    };
+  }
 
-  static COLUMN_OPERATORS = { ...Parser.COLUMN_OPERATORS };
+  static #COLUMN_OPERATORS: undefined = undefined;
+  static get COLUMN_OPERATORS () {
+    return ClickHouseParser.#COLUMN_OPERATORS ??= { ...Parser.COLUMN_OPERATORS };
+  }
+
   static {
     delete ClickHouseParser.COLUMN_OPERATORS[TokenType.PLACEHOLDER];
   }
 
-  static JOIN_KINDS = new Set([
-    ...Parser.JOIN_KINDS,
-    TokenType.ANY,
-    TokenType.ASOF,
-    TokenType.ARRAY,
-  ]);
+  static #JOIN_KINDS: undefined = undefined;
+  static get JOIN_KINDS () {
+    return ClickHouseParser.#JOIN_KINDS ??= new Set([
+      ...Parser.JOIN_KINDS,
+      TokenType.ANY,
+      TokenType.ASOF,
+      TokenType.ARRAY,
+    ]);
+  }
 
-  static TABLE_ALIAS_TOKENS = new Set(
-    [...Parser.TABLE_ALIAS_TOKENS].filter(
-      (t) =>
-        ![
-          TokenType.ANY,
-          TokenType.ARRAY,
-          TokenType.FINAL,
-          TokenType.FORMAT,
-          TokenType.SETTINGS,
-        ].includes(t),
-    ),
-  );
+  static #TABLE_ALIAS_TOKENS: undefined = undefined;
+  static get TABLE_ALIAS_TOKENS () {
+    return ClickHouseParser.#TABLE_ALIAS_TOKENS ??= new Set(
+      [...Parser.TABLE_ALIAS_TOKENS].filter(
+        (t) =>
+          ![
+            TokenType.ANY,
+            TokenType.ARRAY,
+            TokenType.FINAL,
+            TokenType.FORMAT,
+            TokenType.SETTINGS,
+          ].includes(t),
+      ),
+    );
+  }
 
-  static ALIAS_TOKENS = new Set(
-    [...Parser.ALIAS_TOKENS].filter((t) => t !== TokenType.FORMAT),
-  );
+  static #ALIAS_TOKENS: undefined = undefined;
+  static get ALIAS_TOKENS () {
+    return ClickHouseParser.#ALIAS_TOKENS ??= new Set(
+      [...Parser.ALIAS_TOKENS].filter((t) => t !== TokenType.FORMAT),
+    );
+  }
 
   static LOG_DEFAULTS_TO_LN = true;
 
-  static QUERY_MODIFIER_PARSERS: Record<string, (self: Parser) => [string, string | Expression | Expression[] | undefined]> = {
-    ...Parser.QUERY_MODIFIER_PARSERS,
-    [TokenType.SETTINGS]: (self) => ['settings', ((self as ClickHouseParser).advance(), self.parseCsv(() => self.parseAssignment()))],
-    [TokenType.FORMAT]: (self) => ['format', ((self as ClickHouseParser).advance(), self.parseIdVar())],
-  };
+  static #QUERY_MODIFIER_PARSERS: Record<string, (self: Parser) => [string, string | Expression | Expression[] | undefined]> | undefined = undefined;
+  static get QUERY_MODIFIER_PARSERS (): Record<string, (self: Parser) => [string, string | Expression | Expression[] | undefined]> {
+    return ClickHouseParser.#QUERY_MODIFIER_PARSERS ??= {
+      ...Parser.QUERY_MODIFIER_PARSERS,
+      [TokenType.SETTINGS]: (self) => ['settings', ((self as ClickHouseParser).advance(), self.parseCsv(() => self.parseAssignment()))],
+      [TokenType.FORMAT]: (self) => ['format', ((self as ClickHouseParser).advance(), self.parseIdVar())],
+    };
+  }
 
-  static CONSTRAINT_PARSERS: Record<string, (self: Parser) => Expression> = {
-    ...Parser.CONSTRAINT_PARSERS,
-    INDEX: (self) => (self as ClickHouseParser).parseIndexConstraint(),
-    CODEC: (self) => (self as ClickHouseParser).parseCompress(),
-  };
+  static #CONSTRAINT_PARSERS: Record<string, (self: Parser) => Expression> | undefined = undefined;
+  static get CONSTRAINT_PARSERS (): Record<string, (self: Parser) => Expression> {
+    return ClickHouseParser.#CONSTRAINT_PARSERS ??= {
+      ...Parser.CONSTRAINT_PARSERS,
+      INDEX: (self) => (self as ClickHouseParser).parseIndexConstraint(),
+      CODEC: (self) => (self as ClickHouseParser).parseCompress(),
+    };
+  }
 
-  static ALTER_PARSERS: Record<string, (self: Parser) => Expression> = {
-    ...Parser.ALTER_PARSERS,
-    REPLACE: (self) => (self as ClickHouseParser).parseAlterTableReplace()!,
-  };
+  static #ALTER_PARSERS: Record<string, (self: Parser) => Expression> | undefined = undefined;
+  static get ALTER_PARSERS (): Record<string, (self: Parser) => Expression> {
+    return ClickHouseParser.#ALTER_PARSERS ??= {
+      ...Parser.ALTER_PARSERS,
+      REPLACE: (self) => (self as ClickHouseParser).parseAlterTableReplace()!,
+    };
+  }
 
-  static SCHEMA_UNNAMED_CONSTRAINTS = new Set([...Parser.SCHEMA_UNNAMED_CONSTRAINTS, 'INDEX']);
+  static #SCHEMA_UNNAMED_CONSTRAINTS: undefined = undefined;
+  static get SCHEMA_UNNAMED_CONSTRAINTS () {
+    return ClickHouseParser.#SCHEMA_UNNAMED_CONSTRAINTS ??= new Set([...Parser.SCHEMA_UNNAMED_CONSTRAINTS, 'INDEX']);
+  }
 
-  static PLACEHOLDER_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
-    ...Parser.PLACEHOLDER_PARSERS,
-    [TokenType.L_BRACE]: (self) => (self as ClickHouseParser).parseQueryParameter(),
-  };
+  static #PLACEHOLDER_PARSERS: Record<string, (self: Parser) => Expression | undefined> | undefined = undefined;
+  static get PLACEHOLDER_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+    return ClickHouseParser.#PLACEHOLDER_PARSERS ??= {
+      ...Parser.PLACEHOLDER_PARSERS,
+      [TokenType.L_BRACE]: (self) => (self as ClickHouseParser).parseQueryParameter(),
+    };
+  }
 
   parseEngineProperty (): EnginePropertyExpr {
     this.match(TokenType.EQ);
