@@ -9,22 +9,22 @@
   "version": "0.1.0",
   "type": "module",
   "description": "A JavaScript port of SQLGlot - SQL parser, transpiler, optimizer, and engine",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "scripts": {
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "build": "tsc && vite build",
-    "dev": "vite build --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -62,13 +62,12 @@
     "@types/luxon": "^3.7.1",
     "@types/node": "^25.2.1",
     "eslint": "^9.39.2",
+    "tsup": "^8.5.1",
     "typedoc": "^0.28.16",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1",
-    "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.18"
   },
-  "dependencies": {
+  "peerDependencies": {
     "luxon": "^3.7.2"
   }
 }
