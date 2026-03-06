@@ -426,10 +426,10 @@ export class Dialect {
    */
   static FORMAT_MAPPING: Record<string, string> = {};
 
-  private static unescapedSequencesCache = new WeakMap<typeof Dialect, Record<string, string>>();
+  static #UNESCAPED_SEQUENCES = new WeakMap<typeof Dialect, Record<string, string>>();
 
   static get UNESCAPED_SEQUENCES (): Record<string, string> {
-    let cached = this.unescapedSequencesCache.get(this);
+    let cached = this.#UNESCAPED_SEQUENCES.get(this);
     if (!cached) {
       if (this.STRINGS_SUPPORT_ESCAPED_SEQUENCES || this.BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES) {
         cached = {
@@ -439,7 +439,7 @@ export class Dialect {
       } else {
         cached = this.UNESCAPED_SEQUENCES;
       }
-      this.unescapedSequencesCache.set(this, cached);
+      this.#UNESCAPED_SEQUENCES.set(this, cached);
     }
     return cached;
   }
@@ -646,10 +646,10 @@ export class Dialect {
   }
 
   // --- Autofilled by metaclass in Python, set as instance properties in TypeScript ---
-  private static tokenizerClassCache = new WeakMap<typeof Dialect, typeof Tokenizer>();
+  static #tokenizerClass = new WeakMap<typeof Dialect, typeof Tokenizer>();
   static get tokenizerClass (): typeof Tokenizer {
-    if (this.tokenizerClassCache.has(this)) {
-      return this.tokenizerClassCache.get(this)!;
+    if (this.#tokenizerClass.has(this)) {
+      return this.#tokenizerClass.get(this)!;
     }
     if (Object.prototype.hasOwnProperty.call(this, 'Tokenizer')) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -658,18 +658,18 @@ export class Dialect {
     const base = Object.getPrototypeOf(this);
     const baseTokenizer = base?.tokenizerClass as typeof Tokenizer;
     if (!baseTokenizer) {
-      this.tokenizerClassCache.set(this, Tokenizer);
+      this.#tokenizerClass.set(this, Tokenizer);
       return Tokenizer;
     }
     class DerivedTokenizer extends baseTokenizer {}
-    this.tokenizerClassCache.set(this, DerivedTokenizer);
+    this.#tokenizerClass.set(this, DerivedTokenizer);
     return DerivedTokenizer;
   }
 
-  private static jsonpathTokenizerClassCache = new WeakMap<typeof Dialect, typeof JsonPathTokenizer>();
+  static #jsonpathTokenizerClass = new WeakMap<typeof Dialect, typeof JsonPathTokenizer>();
   static get jsonpathTokenizerClass (): typeof JsonPathTokenizer {
-    if (this.jsonpathTokenizerClassCache.has(this)) {
-      return this.jsonpathTokenizerClassCache.get(this)!;
+    if (this.#jsonpathTokenizerClass.has(this)) {
+      return this.#jsonpathTokenizerClass.get(this)!;
     }
     if (Object.prototype.hasOwnProperty.call(this, 'JsonPathTokenizer')) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -678,21 +678,21 @@ export class Dialect {
     const base = Object.getPrototypeOf(this);
     const baseJsonpathTokenizer = base?.JsonPathTokenizer as typeof JsonPathTokenizer;
     if (!baseJsonpathTokenizer) {
-      this.jsonpathTokenizerClassCache.set(this, JsonPathTokenizer);
+      this.#jsonpathTokenizerClass.set(this, JsonPathTokenizer);
       return JsonPathTokenizer;
     }
     class DerivedJsonPathTokenizer extends baseJsonpathTokenizer {}
-    this.jsonpathTokenizerClassCache.set(this, DerivedJsonPathTokenizer);
+    this.#jsonpathTokenizerClass.set(this, DerivedJsonPathTokenizer);
     return DerivedJsonPathTokenizer;
   }
 
-  private static parserClassCache = new WeakMap<typeof Dialect, typeof Parser>();
+  static #parserClass = new WeakMap<typeof Dialect, typeof Parser>();
 
   // NOTE: These logic should be handled in the respective dialect files:
   // - https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/dialects/dialect.py#L317-L380
   static get parserClass (): typeof Parser {
-    if (this.parserClassCache.has(this)) {
-      return this.parserClassCache.get(this)!;
+    if (this.#parserClass.has(this)) {
+      return this.#parserClass.get(this)!;
     }
 
     if (Object.prototype.hasOwnProperty.call(this, 'Parser')) {
@@ -704,22 +704,22 @@ export class Dialect {
     const baseParser = base?.parserClass as typeof Parser;
 
     if (!baseParser) {
-      this.parserClassCache.set(this, Parser);
+      this.#parserClass.set(this, Parser);
       return Parser;
     }
 
     class DerivedParser extends baseParser {}
-    this.parserClassCache.set(this, DerivedParser);
+    this.#parserClass.set(this, DerivedParser);
     return DerivedParser;
   }
 
-  private static generatorClassCache = new WeakMap<typeof Dialect, typeof Generator>();
+  static #generatorClass = new WeakMap<typeof Dialect, typeof Generator>();
 
   // NOTE: These logic should be handled in the respective dialect files:
   // - https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/dialects/dialect.py#L300-L326
   static get generatorClass (): typeof Generator {
-    if (this.generatorClassCache.has(this)) {
-      return this.generatorClassCache.get(this)!;
+    if (this.#generatorClass.has(this)) {
+      return this.#generatorClass.get(this)!;
     }
 
     if (Object.prototype.hasOwnProperty.call(this, 'Generator')) {
@@ -731,87 +731,87 @@ export class Dialect {
     const baseGenerator = base?.generatorClass as typeof Generator;
 
     if (!baseGenerator) {
-      this.generatorClassCache.set(this, Generator);
+      this.#generatorClass.set(this, Generator);
       return Generator;
     }
 
     class DerivedGenerator extends baseGenerator {}
-    this.generatorClassCache.set(this, DerivedGenerator);
+    this.#generatorClass.set(this, DerivedGenerator);
     return DerivedGenerator;
   }
 
-  private static timeTrieCache = new WeakMap<typeof Dialect, TrieNode>();
+  static #TIME_TRIE = new WeakMap<typeof Dialect, TrieNode>();
   static get TIME_TRIE (): TrieNode {
-    let cached = this.timeTrieCache.get(this);
+    let cached = this.#TIME_TRIE.get(this);
     if (!cached) {
       cached = newTrie(Object.keys(this.TIME_MAPPING).map((k) => Array.from(k)));
-      this.timeTrieCache.set(this, cached);
+      this.#TIME_TRIE.set(this, cached);
     }
     return cached;
   }
 
-  private static formatTrieCache = new WeakMap<typeof Dialect, TrieNode>();
+  static #FORMAT_TRIE = new WeakMap<typeof Dialect, TrieNode>();
   static get FORMAT_TRIE (): TrieNode {
-    let cached = this.formatTrieCache.get(this);
+    let cached = this.#FORMAT_TRIE.get(this);
     if (!cached) {
       const mapping = 0 < Object.keys(this.FORMAT_MAPPING).length
         ? this.FORMAT_MAPPING
         : this.TIME_MAPPING;
       cached = newTrie(Object.keys(mapping).map((k) => Array.from(k)));
-      this.formatTrieCache.set(this, cached);
+      this.#FORMAT_TRIE.set(this, cached);
     }
     return cached;
   }
 
-  private static inverseTimeMappingCache = new WeakMap<typeof Dialect, Record<string, string>>();
+  static #INVERSE_TIME_MAPPING = new WeakMap<typeof Dialect, Record<string, string>>();
   static get INVERSE_TIME_MAPPING (): Record<string, string> {
-    let cached = this.inverseTimeMappingCache.get(this);
+    let cached = this.#INVERSE_TIME_MAPPING.get(this);
     if (!cached) {
       cached = Object.fromEntries(Object.entries(this.TIME_MAPPING).map(([k, v]) => [v, k]));
-      this.inverseTimeMappingCache.set(this, cached);
+      this.#INVERSE_TIME_MAPPING.set(this, cached);
     }
     return cached;
   }
 
-  private static inverseTimeTrieCache = new WeakMap<typeof Dialect, TrieNode>();
+  static #INVERSE_TIME_TRIE = new WeakMap<typeof Dialect, TrieNode>();
   static get INVERSE_TIME_TRIE (): TrieNode {
-    let cached = this.inverseTimeTrieCache.get(this);
+    let cached = this.#INVERSE_TIME_TRIE.get(this);
     if (!cached) {
       cached = newTrie(Object.keys(this.INVERSE_TIME_MAPPING).map((k) => Array.from(k)));
-      this.inverseTimeTrieCache.set(this, cached);
+      this.#INVERSE_TIME_TRIE.set(this, cached);
     }
     return cached;
   }
 
-  private static inverseFormatMappingCache = new WeakMap<typeof Dialect, Record<string, string>>();
+  static #INVERSE_FORMAT_MAPPING = new WeakMap<typeof Dialect, Record<string, string>>();
   static get INVERSE_FORMAT_MAPPING (): Record<string, string> {
-    let cached = this.inverseFormatMappingCache.get(this);
+    let cached = this.#INVERSE_FORMAT_MAPPING.get(this);
     if (!cached) {
       cached = Object.fromEntries(Object.entries(this.FORMAT_MAPPING).map(([k, v]) => [v, k]));
-      this.inverseFormatMappingCache.set(this, cached);
+      this.#INVERSE_FORMAT_MAPPING.set(this, cached);
     }
     return cached;
   }
 
-  private static inverseCreatableKindMappingCache = new WeakMap<typeof Dialect, Record<string, string>>();
+  static #INVERSE_CREATABLE_KIND_MAPPING = new WeakMap<typeof Dialect, Record<string, string>>();
   static get INVERSE_CREATABLE_KIND_MAPPING (): Record<string, string> {
-    let cached = this.inverseCreatableKindMappingCache.get(this);
+    let cached = this.#INVERSE_CREATABLE_KIND_MAPPING.get(this);
     if (!cached) {
       cached = Object.fromEntries(Object.entries(this.CREATABLE_KIND_MAPPING).map(([k, v]) => [v, k]));
-      this.inverseCreatableKindMappingCache.set(this, cached);
+      this.#INVERSE_CREATABLE_KIND_MAPPING.set(this, cached);
     }
     return cached;
   }
 
-  private static escapedSequenceCache = new WeakMap<typeof Dialect, Record<string, string>>();
+  static #ESCAPED_SEQUENCES = new WeakMap<typeof Dialect, Record<string, string>>();
   static get ESCAPED_SEQUENCES (): Record<string, string> {
-    if (this.escapedSequenceCache.has(this)) {
-      return this.escapedSequenceCache.get(this)!;
+    if (this.#ESCAPED_SEQUENCES.has(this)) {
+      return this.#ESCAPED_SEQUENCES.get(this)!;
     }
     const res = Object.fromEntries(
       Object.entries(this.UNESCAPED_SEQUENCES).map(([k, v]) => [v, k]),
     );
-    this.escapedSequenceCache.set(this, res);
+    this.#ESCAPED_SEQUENCES.set(this, res);
     return res;
   }
 
@@ -987,33 +987,33 @@ export class Dialect {
   /** Determines the supported Dialect instance settings. */
   static SUPPORTED_SETTINGS: Set<string> = new Set(['normalizationStrategy', 'version']);
 
-  private static quoteDelimitersCache = new WeakMap<typeof Dialect, [string, string]>();
+  static #QUOTE_DELIMITERS = new WeakMap<typeof Dialect, [string, string]>();
   /**
    * Extracts quote delimiters from the tokenizer class.
    * Returns [start, end] delimiter pair for string literals.
    */
   static get QUOTE_DELIMITERS (): [string, string] {
-    let cached = this.quoteDelimitersCache.get(this);
+    let cached = this.#QUOTE_DELIMITERS.get(this);
     if (!cached) {
       const quotes = Object.entries(this.tokenizerClass.QUOTES)[0];
       cached = quotes as [string, string];
-      this.quoteDelimitersCache.set(this, cached);
+      this.#QUOTE_DELIMITERS.set(this, cached);
     }
     return cached;
   }
 
-  private static identifierDelimitersCache = new WeakMap<typeof Dialect, [string, string]>();
+  static #IDENTIFIER_DELIMITERS = new WeakMap<typeof Dialect, [string, string]>();
 
   /**
    * Extracts identifier delimiters from the tokenizer class.
    * Returns [start, end] delimiter pair for identifiers.
    */
   static get IDENTIFIER_DELIMITERS (): [string, string] {
-    let cached = this.identifierDelimitersCache.get(this);
+    let cached = this.#IDENTIFIER_DELIMITERS.get(this);
     if (!cached) {
       const identifiers = Object.entries(this.tokenizerClass.IDENTIFIERS)[0];
       cached = identifiers as [string, string];
-      this.identifierDelimitersCache.set(this, cached);
+      this.#IDENTIFIER_DELIMITERS.set(this, cached);
     }
     return cached;
   }
@@ -1021,11 +1021,11 @@ export class Dialect {
   /** Valid interval units. */
   static BASE_VALID_INTERVAL_UNITS = new Set<string>(); // NOTE: Corresponds to VALID_INTERVAL_UNITS in sqlglot python version
 
-  private static validIntervalUnitsCache = new WeakMap<typeof Dialect, Set<string>>();
+  static #VALID_INTERVAL_UNITS = new WeakMap<typeof Dialect, Set<string>>();
 
   static get VALID_INTERVAL_UNITS (): Set<string> {
-    if (this.validIntervalUnitsCache.has(this)) {
-      return this.validIntervalUnitsCache.get(this)!;
+    if (this.#VALID_INTERVAL_UNITS.has(this)) {
+      return this.#VALID_INTERVAL_UNITS.get(this)!;
     }
 
     const mapping = this.DATE_PART_MAPPING;
@@ -1036,7 +1036,7 @@ export class Dialect {
       ...Object.values(mapping),
     ]);
 
-    this.validIntervalUnitsCache.set(this, resultSet);
+    this.#VALID_INTERVAL_UNITS.set(this, resultSet);
     return resultSet;
   }
 

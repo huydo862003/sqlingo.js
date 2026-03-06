@@ -44,16 +44,16 @@ export class JsonPathTokenizer extends Tokenizer {
     '*': TokenType.STAR,
   };
 
-  private static jsonPathKeywordsCache: WeakMap<typeof JsonPathTokenizer, Record<string, TokenType>> = new WeakMap();
+  static #JSON_PATH_KEYWORDS: WeakMap<typeof JsonPathTokenizer, Record<string, TokenType>> = new WeakMap();
   static get KEYWORDS (): Record<string, TokenType> {
-    if (this.jsonPathKeywordsCache.has(this)) {
-      return this.jsonPathKeywordsCache.get(this)!;
+    if (this.#JSON_PATH_KEYWORDS.has(this)) {
+      return this.#JSON_PATH_KEYWORDS.get(this)!;
     }
     const res = {
       ...super.KEYWORDS,
       '..': TokenType.DOT,
     };
-    this.jsonPathKeywordsCache.set(this, res);
+    this.#JSON_PATH_KEYWORDS.set(this, res);
     return res;
   }
 
