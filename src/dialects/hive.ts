@@ -428,10 +428,10 @@ class HiveParser extends Parser {
   static JOINS_HAVE_EQUAL_PRECEDENCE = true;
   static ADD_JOIN_ON_TRUE = true;
   static ALTER_TABLE_PARTITIONS = true;
-
   static CHANGE_COLUMN_ALTER_SYNTAX = false;
+
   @cache
-  static get FUNCTION_PARSERS () {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.FUNCTION_PARSERS,
       PERCENTILE: (self: Parser) => (self as HiveParser).parseQuantileFunction(QuantileExpr),
@@ -500,7 +500,7 @@ class HiveParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS () {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
       TRANSFORM: (self: Parser) => (self as HiveParser).parseTransform(),
@@ -508,7 +508,7 @@ class HiveParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTIONS () {
+  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
     return (() => {
       const noParen = { ...Parser.NO_PAREN_FUNCTIONS };
       delete noParen[TokenType.CURRENT_TIME];
@@ -517,7 +517,7 @@ class HiveParser extends Parser {
   }
 
   @cache
-  static get PROPERTY_PARSERS () {
+  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return {
       ...Parser.PROPERTY_PARSERS,
       SERDEPROPERTIES: (self: Parser) => new SerdePropertiesExpr({
@@ -527,7 +527,7 @@ class HiveParser extends Parser {
   }
 
   @cache
-  static get ALTER_PARSERS () {
+  static get ALTER_PARSERS (): Partial<Record<string, (self: Parser) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.ALTER_PARSERS,
       CHANGE: (self: Parser) => (self as HiveParser).parseAlterTableChange(),
@@ -710,28 +710,36 @@ class HiveGenerator extends Generator {
     SetOperationExpr,
   ]);
 
-  static SUPPORTED_JSON_PATH_PARTS = new Set([
-    JsonPathKeyExpr,
-    JsonPathRootExpr,
-    JsonPathSubscriptExpr,
-    JsonPathWildcardExpr,
-  ]);
+  @cache
+  static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
+    return new Set([
+      JsonPathKeyExpr,
+      JsonPathRootExpr,
+      JsonPathSubscriptExpr,
+      JsonPathWildcardExpr,
+    ]);
+  }
 
-  static TYPE_MAPPING = {
-    ...Generator.TYPE_MAPPING,
-    [DataTypeExprKind.BIT]: 'BOOLEAN',
-    [DataTypeExprKind.BLOB]: 'BINARY',
-    [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
-    [DataTypeExprKind.ROWVERSION]: 'BINARY',
-    [DataTypeExprKind.TEXT]: 'STRING',
-    [DataTypeExprKind.TIME]: 'TIMESTAMP',
-    [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
-    [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
-    [DataTypeExprKind.UTINYINT]: 'SMALLINT',
-    [DataTypeExprKind.VARBINARY]: 'BINARY',
-  };
+  @cache
+  static get TYPE_MAPPING () {
+    return {
+      ...Generator.TYPE_MAPPING,
+      [DataTypeExprKind.BIT]: 'BOOLEAN',
+      [DataTypeExprKind.BLOB]: 'BINARY',
+      [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
+      [DataTypeExprKind.ROWVERSION]: 'BINARY',
+      [DataTypeExprKind.TEXT]: 'STRING',
+      [DataTypeExprKind.TIME]: 'TIMESTAMP',
+      [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
+      [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
+      [DataTypeExprKind.UTINYINT]: 'SMALLINT',
+      [DataTypeExprKind.VARBINARY]: 'BINARY',
+    };
+  }
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
@@ -866,22 +874,28 @@ class HiveGenerator extends Generator {
       [LevenshteinExpr, (self: Generator, e: Expression) => unsupportedArgs('insCost', 'delCost', 'subCost', 'maxDist')((expr) => renameFunc('LEVENSHTEIN')(self, expr))(e)],
     ]);
     return transforms;
-  })();
+  }
 
-  static PROPERTIES_LOCATION = {
-    ...Generator.PROPERTIES_LOCATION,
-    [FileFormatPropertyExpr.constructor.name]: PropertiesLocation.POST_SCHEMA,
-    [PartitionedByPropertyExpr.constructor.name]: PropertiesLocation.POST_SCHEMA,
-    [VolatilePropertyExpr.constructor.name]: PropertiesLocation.UNSUPPORTED,
-    [WithDataPropertyExpr.constructor.name]: PropertiesLocation.UNSUPPORTED,
-  };
+  @cache
+  static get PROPERTIES_LOCATION () {
+    return {
+      ...Generator.PROPERTIES_LOCATION,
+      [FileFormatPropertyExpr.constructor.name]: PropertiesLocation.POST_SCHEMA,
+      [PartitionedByPropertyExpr.constructor.name]: PropertiesLocation.POST_SCHEMA,
+      [VolatilePropertyExpr.constructor.name]: PropertiesLocation.UNSUPPORTED,
+      [WithDataPropertyExpr.constructor.name]: PropertiesLocation.UNSUPPORTED,
+    };
+  }
 
-  static TS_OR_DS_EXPRESSIONS: Set<typeof Expression> = new Set([
-    DateDiffExpr,
-    DayExpr,
-    MonthExpr,
-    YearExpr,
-  ]);
+  @cache
+  static get TS_OR_DS_EXPRESSIONS () {
+    return new Set([
+      DateDiffExpr,
+      DayExpr,
+      MonthExpr,
+      YearExpr,
+    ]);
+  }
 
   unnestSql (expression: UnnestExpr): string {
     return renameFunc('EXPLODE')(this, expression);

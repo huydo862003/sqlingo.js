@@ -164,7 +164,7 @@ class DremioTokenizer extends Tokenizer {
 class DremioParser extends Parser {
   static LOG_DEFAULTS_TO_LN = true;
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS () {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
       CURRENT_DATE_UTC: (self: Parser) => (self as DremioParser).parseCurrentDateUtc(),
@@ -172,7 +172,7 @@ class DremioParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       ARRAY_GENERATE_RANGE: GenerateSeriesExpr.fromArgList,
@@ -214,22 +214,26 @@ class DremioGenerator extends Generator {
   static MULTI_ARG_DISTINCT = false;
   static SUPPORTS_BETWEEN_FLAGS = true;
 
-  static TYPE_MAPPING = {
-    ...Generator.TYPE_MAPPING,
-    [DataTypeExprKind.SMALLINT]: 'INT',
-    [DataTypeExprKind.TINYINT]: 'INT',
-    [DataTypeExprKind.BINARY]: 'VARBINARY',
-    [DataTypeExprKind.TEXT]: 'VARCHAR',
-    [DataTypeExprKind.NCHAR]: 'VARCHAR',
-    [DataTypeExprKind.CHAR]: 'VARCHAR',
-    [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
-    [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
-    [DataTypeExprKind.ARRAY]: 'LIST',
-    [DataTypeExprKind.BIT]: 'BOOLEAN',
-  };
+  @cache
+  static get TYPE_MAPPING () {
+    return {
+      ...Generator.TYPE_MAPPING,
+      [DataTypeExprKind.SMALLINT]: 'INT',
+      [DataTypeExprKind.TINYINT]: 'INT',
+      [DataTypeExprKind.BINARY]: 'VARBINARY',
+      [DataTypeExprKind.TEXT]: 'VARCHAR',
+      [DataTypeExprKind.NCHAR]: 'VARCHAR',
+      [DataTypeExprKind.CHAR]: 'VARCHAR',
+      [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
+      [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
+      [DataTypeExprKind.ARRAY]: 'LIST',
+      [DataTypeExprKind.BIT]: 'BOOLEAN',
+    };
+  }
 
   @cache
-  static get ORIGINAL_TRANSFORMS () {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
@@ -245,7 +249,7 @@ class DremioGenerator extends Generator {
     return transforms;
   }
 
-  datatypeSql (expression: DataTypeExpr): string {
+  dataTypeSql (expression: DataTypeExpr): string {
     if (expression.isType([DataTypeExprKind.TIMESTAMPTZ, DataTypeExprKind.TIMESTAMPLTZ])) {
       this.unsupported('Dremio does not support time-zone-aware TIMESTAMP');
     }
@@ -274,14 +278,14 @@ class DremioGenerator extends Generator {
 }
 
 export class Dremio extends Dialect {
-  public static SUPPORTS_USER_DEFINED_TYPES = false;
-  public static CONCAT_COALESCE = true;
-  public static TYPED_DIVISION = true;
-  public static SUPPORTS_SEMI_ANTI_JOIN = false;
-  public static NULL_ORDERING = 'nulls_are_last' as const;
-  public static SUPPORTS_VALUES_DEFAULT = false;
+  static SUPPORTS_USER_DEFINED_TYPES = false;
+  static CONCAT_COALESCE = true;
+  static TYPED_DIVISION = true;
+  static SUPPORTS_SEMI_ANTI_JOIN = false;
+  static NULL_ORDERING = 'nulls_are_last' as const;
+  static SUPPORTS_VALUES_DEFAULT = false;
 
-  public static TIME_MAPPING = {
+  static TIME_MAPPING = {
     YYYY: '%Y',
     yyyy: '%Y',
     YY: '%y',
@@ -326,9 +330,9 @@ export class Dremio extends Dialect {
     tzo: '%z',
   };
 
-  public static Tokenizer = DremioTokenizer;
-  public static Parser = DremioParser;
-  public static Generator = DremioGenerator;
+  static Tokenizer = DremioTokenizer;
+  static Parser = DremioParser;
+  static Generator = DremioGenerator;
 }
 
 Dialect.register(Dialects.DREMIO, Dremio);

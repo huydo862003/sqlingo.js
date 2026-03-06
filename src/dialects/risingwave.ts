@@ -18,39 +18,52 @@ import {
 } from '../expressions';
 import { TokenType } from '../tokens';
 import type { Parser } from '../parser';
+import { cache } from '../port_internals';
 import {
   Dialect, Dialects,
 } from './dialect';
 import { Postgres } from './postgres';
 
 class RisingWaveTokenizer extends Postgres.Tokenizer {
-  static ORIGINAL_KEYWORDS = {
-    ...Postgres.Tokenizer.KEYWORDS,
-    SINK: TokenType.SINK,
-    SOURCE: TokenType.SOURCE,
-  };
+  @cache
+  static get ORIGINAL_KEYWORDS () {
+    return {
+      ...Postgres.Tokenizer.KEYWORDS,
+      SINK: TokenType.SINK,
+      SOURCE: TokenType.SOURCE,
+    };
+  }
 }
 
 class RisingWaveParser extends Postgres.Parser {
   static WRAPPED_TRANSFORM_COLUMN_CONSTRAINT = false;
 
-  static PROPERTY_PARSERS = {
-    ...Postgres.Parser.PROPERTY_PARSERS,
-    ENCODE: (self: Parser) => (self as RisingWaveParser).parseEncodeProperty(),
-    INCLUDE: (self: Parser) => (self as RisingWaveParser).parseIncludeProperty(),
-    KEY: (self: Parser) => (self as RisingWaveParser).parseEncodeProperty(true),
-  };
+  @cache
+  static get PROPERTY_PARSERS () {
+    return {
+      ...Postgres.Parser.PROPERTY_PARSERS,
+      ENCODE: (self: Parser) => (self as RisingWaveParser).parseEncodeProperty(),
+      INCLUDE: (self: Parser) => (self as RisingWaveParser).parseIncludeProperty(),
+      KEY: (self: Parser) => (self as RisingWaveParser).parseEncodeProperty(true),
+    };
+  }
 
-  static CONSTRAINT_PARSERS = {
-    ...Postgres.Parser.CONSTRAINT_PARSERS,
-    WATERMARK: (self: Parser) =>
-      self.expression(WatermarkColumnConstraintExpr, {
-        this: (self as RisingWaveParser).match(TokenType.FOR) && (self as RisingWaveParser).parseColumn(),
-        expression: (self as RisingWaveParser).match(TokenType.ALIAS) && (self as RisingWaveParser).parseDisjunction(),
-      }),
-  };
+  @cache
+  static get CONSTRAINT_PARSERS () {
+    return {
+      ...Postgres.Parser.CONSTRAINT_PARSERS,
+      WATERMARK: (self: Parser) =>
+        self.expression(WatermarkColumnConstraintExpr, {
+          this: (self as RisingWaveParser).match(TokenType.FOR) && (self as RisingWaveParser).parseColumn(),
+          expression: (self as RisingWaveParser).match(TokenType.ALIAS) && (self as RisingWaveParser).parseDisjunction(),
+        }),
+    };
+  }
 
-  static SCHEMA_UNNAMED_CONSTRAINTS = new Set([...Postgres.Parser.SCHEMA_UNNAMED_CONSTRAINTS, 'WATERMARK']);
+  @cache
+  static get SCHEMA_UNNAMED_CONSTRAINTS () {
+    return new Set([...Postgres.Parser.SCHEMA_UNNAMED_CONSTRAINTS, 'WATERMARK']);
+  }
 
   parseTableHints (): Expression[] | undefined {
     // There is no hint in risingwave.
@@ -108,16 +121,20 @@ class RisingWaveGenerator extends Postgres.Generator {
   static SUPPORTS_BETWEEN_FLAGS = false;
 
   @cache
-  static get ORIGINAL_TRANSFORMS () {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([...Postgres.Generator.TRANSFORMS, [FileFormatPropertyExpr, (self: Generator, e: FileFormatPropertyExpr) => `FORMAT ${self.sql(e.args.this)}`]]);
     return transforms;
   }
 
-  static PROPERTIES_LOCATION = {
-    ...Postgres.Generator.PROPERTIES_LOCATION,
-    [FileFormatPropertyExpr.constructor.name]: PropertiesLocation.POST_EXPRESSION,
-  };
+  @cache
+  static get PROPERTIES_LOCATION () {
+    return {
+      ...Postgres.Generator.PROPERTIES_LOCATION,
+      [FileFormatPropertyExpr.constructor.name]: PropertiesLocation.POST_EXPRESSION,
+    };
+  }
 
   static EXPRESSION_PRECEDES_PROPERTIES_CREATABLES = new Set(['SINK']);
 

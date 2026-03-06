@@ -177,7 +177,7 @@ class SparkTokenizer extends Spark2.Tokenizer {
 
 class SparkParser extends Spark2.Parser {
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Spark2.Parser.FUNCTIONS,
       ANY_VALUE: buildWithIgnoreNulls(AnyValueExpr),
@@ -218,7 +218,7 @@ class SparkParser extends Spark2.Parser {
   }
 
   @cache
-  static get PLACEHOLDER_PARSERS () {
+  static get PLACEHOLDER_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
     return {
       ...Spark2.Parser.PLACEHOLDER_PARSERS,
       [TokenType.L_BRACE]: (self: Parser) => (self as SparkParser).parseQueryParameter(),
@@ -226,7 +226,7 @@ class SparkParser extends Spark2.Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS () {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return {
       ...Spark2.Parser.FUNCTION_PARSERS,
       SUBSTR: (self: Parser) => self.parseSubstring(),
@@ -265,17 +265,21 @@ class SparkGenerator extends Spark2.Generator {
   static SUPPORTS_DECODE_CASE = true;
   static PARSE_JSON_NAME?: string;
 
-  static TYPE_MAPPING = {
-    ...Spark2.Generator.TYPE_MAPPING,
-    [DataTypeExprKind.MONEY]: 'DECIMAL(15, 4)',
-    [DataTypeExprKind.SMALLMONEY]: 'DECIMAL(6, 4)',
-    [DataTypeExprKind.UUID]: 'STRING',
-    [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP_LTZ',
-    [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP_NTZ',
-  };
+  @cache
+  static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
+    return {
+      ...Spark2.Generator.TYPE_MAPPING,
+      [DataTypeExprKind.MONEY]: 'DECIMAL(15, 4)',
+      [DataTypeExprKind.SMALLMONEY]: 'DECIMAL(6, 4)',
+      [DataTypeExprKind.UUID]: 'STRING',
+      [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP_LTZ',
+      [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP_NTZ',
+    };
+  }
 
   @cache
-  static get ORIGINAL_TRANSFORMS () {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Spark2.Generator.TRANSFORMS.entries(),
@@ -376,7 +380,7 @@ class SparkGenerator extends Spark2.Generator {
     return `{${expression.name}}`;
   }
 
-  readparquetSql (expression: ReadParquetExpr): string {
+  readParquetSql (expression: ReadParquetExpr): string {
     if (expression.args.expressions?.length !== 1) {
       this.unsupported('READ_PARQUET with multiple arguments is not supported');
       return '';

@@ -106,7 +106,7 @@ export class DorisTokenizer extends MySQL.Tokenizer {}
 
 class DorisParser extends MySQL.Parser {
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...MySQL.Parser.FUNCTIONS,
       COLLECT_SET: ArrayUniqueAggExpr.fromArgList,
@@ -128,7 +128,7 @@ class DorisParser extends MySQL.Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTIONS () {
+  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
     return { ...MySQL.Parser.NO_PAREN_FUNCTIONS };
   }
 
@@ -137,7 +137,7 @@ class DorisParser extends MySQL.Parser {
   }
 
   @cache
-  static get PROPERTY_PARSERS () {
+  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return {
       ...MySQL.Parser.PROPERTY_PARSERS,
       PROPERTIES: (self: Parser) => self.parseWrappedProperties(),
@@ -259,25 +259,32 @@ class DorisGenerator extends MySQL.Generator {
   static RENAME_TABLE_WITH_DB = false;
   static UPDATE_STATEMENT_SUPPORTS_FROM = true;
 
-  static TYPE_MAPPING = {
-    ...MySQL.Generator.TYPE_MAPPING,
-    [DataTypeExprKind.TEXT]: 'STRING',
-    [DataTypeExprKind.TIMESTAMP]: 'DATETIME',
-    [DataTypeExprKind.TIMESTAMPTZ]: 'DATETIME',
-  };
+  @cache
+  static get TYPE_MAPPING () {
+    return {
+      ...MySQL.Generator.TYPE_MAPPING,
+      [DataTypeExprKind.TEXT]: 'STRING',
+      [DataTypeExprKind.TIMESTAMP]: 'DATETIME',
+      [DataTypeExprKind.TIMESTAMPTZ]: 'DATETIME',
+    };
+  }
 
-  static PROPERTIES_LOCATION = new Map<typeof Expression, PropertiesLocation>([
-    ...MySQL.Generator.PROPERTIES_LOCATION,
-    [UniqueKeyPropertyExpr, PropertiesLocation.POST_SCHEMA],
-    [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
-    [BuildPropertyExpr, PropertiesLocation.POST_SCHEMA],
-  ]);
+  @cache
+  static get PROPERTIES_LOCATION () {
+    return new Map<typeof Expression, PropertiesLocation>([
+      ...MySQL.Generator.PROPERTIES_LOCATION,
+      [UniqueKeyPropertyExpr, PropertiesLocation.POST_SCHEMA],
+      [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
+      [BuildPropertyExpr, PropertiesLocation.POST_SCHEMA],
+    ]);
+  }
 
   static CAST_MAPPING = {};
   static TIMESTAMP_FUNC_TYPES = new Set<DataTypeExprKind>();
 
   @cache
-  static get ORIGINAL_TRANSFORMS () {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...MySQL.Generator.TRANSFORMS,
@@ -331,12 +338,12 @@ class DorisGenerator extends MySQL.Generator {
       [
         TimestampTruncExpr,
         (self: Generator, e: TimestampTruncExpr) =>
-          self.func('DATE_TRUNC', [e.args.this, unitToStr(e)!]),
+          self.func('DATE_TRUNC', [e.args.this, unitToStr(e)]),
       ],
       [
         UnixToStrExpr,
         (self: Generator, e: UnixToStrExpr) =>
-          self.func('FROM_UNIXTIME', [e.args.this, timeFormat('doris')(self, e)!]),
+          self.func('FROM_UNIXTIME', [e.args.this, timeFormat('doris')(self, e)]),
       ],
       [UnixToTimeExpr, renameFunc('FROM_UNIXTIME')],
     ]);
@@ -895,9 +902,9 @@ export class Doris extends MySQL {
   static DATEINT_FORMAT = '\'yyyyMMdd\'';
   static TIME_FORMAT = '\'yyyy-MM-dd HH:mm:ss\'';
 
-  public static Tokenizer = DorisTokenizer;
-  public static Parser = DorisParser;
-  public static Generator = DorisGenerator;
+  static Tokenizer = DorisTokenizer;
+  static Parser = DorisParser;
+  static Generator = DorisGenerator;
 }
 
 Dialect.register(Dialects.DORIS, Doris);

@@ -264,7 +264,7 @@ function quantileSql (self: Generator, expression: QuantileExpr): string {
 
 function buildCountIf (args: Expression[]): CountIfExpr | CombinedAggFuncExpr {
   if (args.length === 1) {
-    return new CountIfExpr({ this: seqGet(args, 0)! });
+    return new CountIfExpr({ this: seqGet(args, 0) });
   }
 
   return new CombinedAggFuncExpr({
@@ -473,10 +473,13 @@ class ClickHouseTokenizer extends Tokenizer {
     delete this.ORIGINAL_KEYWORDS['/*+'];
   }
 
-  static SINGLE_TOKENS: Record<string, TokenType> = {
-    ...Tokenizer.SINGLE_TOKENS,
-    $: TokenType.HEREDOC_STRING,
-  };
+  @cache
+  static get SINGLE_TOKENS (): Record<string, TokenType> {
+    return {
+      ...Tokenizer.SINGLE_TOKENS,
+      $: TokenType.HEREDOC_STRING,
+    };
+  }
 }
 
 class ClickHouseParser extends Parser {
@@ -484,6 +487,7 @@ class ClickHouseParser extends Parser {
   static INTERVAL_SPANS = false;
   static OPTIONAL_ALIAS_TOKEN_CTE = false;
   static JOINS_HAVE_EQUAL_PRECEDENCE = true;
+
   @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
@@ -701,7 +705,7 @@ class ClickHouseParser extends Parser {
   ];
 
   @cache
-  static get FUNC_TOKENS () {
+  static get FUNC_TOKENS (): Set<TokenType> {
     return new Set([
       ...Parser.FUNC_TOKENS,
       TokenType.AND,
@@ -711,19 +715,19 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get RESERVED_TOKENS () {
+  static get RESERVED_TOKENS (): Set<TokenType> {
     return new Set(
       [...Parser.RESERVED_TOKENS].filter((t) => t !== TokenType.SELECT),
     );
   }
 
   @cache
-  static get ID_VAR_TOKENS () {
+  static get ID_VAR_TOKENS (): Set<TokenType> {
     return new Set([...Parser.ID_VAR_TOKENS, TokenType.LIKE]);
   }
 
   @cache
-  static get AGG_FUNC_MAPPING () {
+  static get AGG_FUNC_MAPPING (): Record<string, [string, string]> {
     const mapping: Record<string, [string, string]> = {};
     const suffixes = [...ClickHouseParser.AGG_FUNCTIONS_SUFFIXES, ''];
     for (const sfx of suffixes) {
@@ -777,7 +781,7 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS () {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return { ...Parser.NO_PAREN_FUNCTION_PARSERS };
   }
 
@@ -786,7 +790,7 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTIONS () {
+  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
     return { ...Parser.NO_PAREN_FUNCTIONS };
   }
 
@@ -795,7 +799,7 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get RANGE_PARSERS () {
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
     return {
       ...Parser.RANGE_PARSERS,
       [TokenType.GLOBAL]: (self: Parser, thisNode: Expression) =>
@@ -804,7 +808,7 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get COLUMN_OPERATORS () {
+  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
     return { ...Parser.COLUMN_OPERATORS };
   }
 
@@ -813,7 +817,7 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get JOIN_KINDS () {
+  static get JOIN_KINDS (): Set<TokenType> {
     return new Set([
       ...Parser.JOIN_KINDS,
       TokenType.ANY,
@@ -823,7 +827,7 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get TABLE_ALIAS_TOKENS () {
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
     return new Set(
       [...Parser.TABLE_ALIAS_TOKENS].filter(
         (t) =>
@@ -839,13 +843,14 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get ALIAS_TOKENS () {
+  static get ALIAS_TOKENS (): Set<TokenType> {
     return new Set(
       [...Parser.ALIAS_TOKENS].filter((t) => t !== TokenType.FORMAT),
     );
   }
 
   static LOG_DEFAULTS_TO_LN = true;
+
   @cache
   static get QUERY_MODIFIER_PARSERS (): Record<string, (self: Parser) => [string, string | Expression | Expression[] | undefined]> {
     return {
@@ -873,7 +878,7 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get SCHEMA_UNNAMED_CONSTRAINTS () {
+  static get SCHEMA_UNNAMED_CONSTRAINTS (): Set<string> {
     return new Set([...Parser.SCHEMA_UNNAMED_CONSTRAINTS, 'INDEX']);
   }
 
@@ -1439,66 +1444,72 @@ export class ClickHouseGenerator extends Generator {
     [DataTypeExprKind.VARCHAR]: 'String',
   };
 
-  static SUPPORTED_JSON_PATH_PARTS = new Set([
-    JsonPathKeyExpr,
-    JsonPathRootExpr,
-    JsonPathSubscriptExpr,
-  ]);
+  @cache
+  static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
+    return new Set([
+      JsonPathKeyExpr,
+      JsonPathRootExpr,
+      JsonPathSubscriptExpr,
+    ]);
+  }
 
-  static TYPE_MAPPING = new Map<DataTypeExprKind | string, string>([
-    ...Generator.TYPE_MAPPING,
-    ...Object.entries(ClickHouseGenerator.STRING_TYPE_MAPPING),
-    [DataTypeExprKind.ARRAY, 'Array'],
-    [DataTypeExprKind.BOOLEAN, 'Bool'],
-    [DataTypeExprKind.BIGINT, 'Int64'],
-    [DataTypeExprKind.DATE32, 'Date32'],
-    [DataTypeExprKind.DATETIME, 'DateTime'],
-    [DataTypeExprKind.DATETIME2, 'DateTime'],
-    [DataTypeExprKind.SMALLDATETIME, 'DateTime'],
-    [DataTypeExprKind.DATETIME64, 'DateTime64'],
-    [DataTypeExprKind.DECIMAL, 'Decimal'],
-    [DataTypeExprKind.DECIMAL32, 'Decimal32'],
-    [DataTypeExprKind.DECIMAL64, 'Decimal64'],
-    [DataTypeExprKind.DECIMAL128, 'Decimal128'],
-    [DataTypeExprKind.DECIMAL256, 'Decimal256'],
-    [DataTypeExprKind.TIMESTAMP, 'DateTime'],
-    [DataTypeExprKind.TIMESTAMPNTZ, 'DateTime'],
-    [DataTypeExprKind.TIMESTAMPTZ, 'DateTime'],
-    [DataTypeExprKind.DOUBLE, 'Float64'],
-    [DataTypeExprKind.ENUM, 'Enum'],
-    [DataTypeExprKind.ENUM8, 'Enum8'],
-    [DataTypeExprKind.ENUM16, 'Enum16'],
-    [DataTypeExprKind.FIXEDSTRING, 'FixedString'],
-    [DataTypeExprKind.FLOAT, 'Float32'],
-    [DataTypeExprKind.INT, 'Int32'],
-    [DataTypeExprKind.MEDIUMINT, 'Int32'],
-    [DataTypeExprKind.INT128, 'Int128'],
-    [DataTypeExprKind.INT256, 'Int256'],
-    [DataTypeExprKind.LOWCARDINALITY, 'LowCardinality'],
-    [DataTypeExprKind.MAP, 'Map'],
-    [DataTypeExprKind.NESTED, 'Nested'],
-    [DataTypeExprKind.NOTHING, 'Nothing'],
-    [DataTypeExprKind.SMALLINT, 'Int16'],
-    [DataTypeExprKind.STRUCT, 'Tuple'],
-    [DataTypeExprKind.TINYINT, 'Int8'],
-    [DataTypeExprKind.UBIGINT, 'UInt64'],
-    [DataTypeExprKind.UINT, 'UInt32'],
-    [DataTypeExprKind.UINT128, 'UInt128'],
-    [DataTypeExprKind.UINT256, 'UInt256'],
-    [DataTypeExprKind.USMALLINT, 'UInt16'],
-    [DataTypeExprKind.UTINYINT, 'UInt8'],
-    [DataTypeExprKind.IPV4, 'IPv4'],
-    [DataTypeExprKind.IPV6, 'IPv6'],
-    [DataTypeExprKind.POINT, 'Point'],
-    [DataTypeExprKind.RING, 'Ring'],
-    [DataTypeExprKind.LINESTRING, 'LineString'],
-    [DataTypeExprKind.MULTILINESTRING, 'MultiLineString'],
-    [DataTypeExprKind.POLYGON, 'Polygon'],
-    [DataTypeExprKind.MULTIPOLYGON, 'MultiPolygon'],
-    [DataTypeExprKind.AGGREGATEFUNCTION, 'AggregateFunction'],
-    [DataTypeExprKind.SIMPLEAGGREGATEFUNCTION, 'SimpleAggregateFunction'],
-    [DataTypeExprKind.DYNAMIC, 'Dynamic'],
-  ]);
+  @cache
+  static get TYPE_MAPPING () {
+    return new Map<DataTypeExprKind | string, string>([
+      ...Generator.TYPE_MAPPING,
+      ...Object.entries(ClickHouseGenerator.STRING_TYPE_MAPPING),
+      [DataTypeExprKind.ARRAY, 'Array'],
+      [DataTypeExprKind.BOOLEAN, 'Bool'],
+      [DataTypeExprKind.BIGINT, 'Int64'],
+      [DataTypeExprKind.DATE32, 'Date32'],
+      [DataTypeExprKind.DATETIME, 'DateTime'],
+      [DataTypeExprKind.DATETIME2, 'DateTime'],
+      [DataTypeExprKind.SMALLDATETIME, 'DateTime'],
+      [DataTypeExprKind.DATETIME64, 'DateTime64'],
+      [DataTypeExprKind.DECIMAL, 'Decimal'],
+      [DataTypeExprKind.DECIMAL32, 'Decimal32'],
+      [DataTypeExprKind.DECIMAL64, 'Decimal64'],
+      [DataTypeExprKind.DECIMAL128, 'Decimal128'],
+      [DataTypeExprKind.DECIMAL256, 'Decimal256'],
+      [DataTypeExprKind.TIMESTAMP, 'DateTime'],
+      [DataTypeExprKind.TIMESTAMPNTZ, 'DateTime'],
+      [DataTypeExprKind.TIMESTAMPTZ, 'DateTime'],
+      [DataTypeExprKind.DOUBLE, 'Float64'],
+      [DataTypeExprKind.ENUM, 'Enum'],
+      [DataTypeExprKind.ENUM8, 'Enum8'],
+      [DataTypeExprKind.ENUM16, 'Enum16'],
+      [DataTypeExprKind.FIXEDSTRING, 'FixedString'],
+      [DataTypeExprKind.FLOAT, 'Float32'],
+      [DataTypeExprKind.INT, 'Int32'],
+      [DataTypeExprKind.MEDIUMINT, 'Int32'],
+      [DataTypeExprKind.INT128, 'Int128'],
+      [DataTypeExprKind.INT256, 'Int256'],
+      [DataTypeExprKind.LOWCARDINALITY, 'LowCardinality'],
+      [DataTypeExprKind.MAP, 'Map'],
+      [DataTypeExprKind.NESTED, 'Nested'],
+      [DataTypeExprKind.NOTHING, 'Nothing'],
+      [DataTypeExprKind.SMALLINT, 'Int16'],
+      [DataTypeExprKind.STRUCT, 'Tuple'],
+      [DataTypeExprKind.TINYINT, 'Int8'],
+      [DataTypeExprKind.UBIGINT, 'UInt64'],
+      [DataTypeExprKind.UINT, 'UInt32'],
+      [DataTypeExprKind.UINT128, 'UInt128'],
+      [DataTypeExprKind.UINT256, 'UInt256'],
+      [DataTypeExprKind.USMALLINT, 'UInt16'],
+      [DataTypeExprKind.UTINYINT, 'UInt8'],
+      [DataTypeExprKind.IPV4, 'IPv4'],
+      [DataTypeExprKind.IPV6, 'IPv6'],
+      [DataTypeExprKind.POINT, 'Point'],
+      [DataTypeExprKind.RING, 'Ring'],
+      [DataTypeExprKind.LINESTRING, 'LineString'],
+      [DataTypeExprKind.MULTILINESTRING, 'MultiLineString'],
+      [DataTypeExprKind.POLYGON, 'Polygon'],
+      [DataTypeExprKind.MULTIPOLYGON, 'MultiPolygon'],
+      [DataTypeExprKind.AGGREGATEFUNCTION, 'AggregateFunction'],
+      [DataTypeExprKind.SIMPLEAGGREGATEFUNCTION, 'SimpleAggregateFunction'],
+      [DataTypeExprKind.DYNAMIC, 'Dynamic'],
+    ]);
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static ORIGINAL_TRANSFORMS = new Map<typeof Expression, (self: Generator, e: any) => string>([
@@ -1684,13 +1695,16 @@ export class ClickHouseGenerator extends Generator {
     [ParseDatetimeExpr, renameFunc('parseDateTime')],
   ]);
 
-  static PROPERTIES_LOCATION = new Map<typeof Expression, PropertiesLocation>([
-    ...Generator.PROPERTIES_LOCATION,
-    [OnClusterExpr, PropertiesLocation.POST_NAME],
-    [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
-    [ToTablePropertyExpr, PropertiesLocation.POST_NAME],
-    [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
-  ]);
+  @cache
+  static get PROPERTIES_LOCATION () {
+    return new Map<typeof Expression, PropertiesLocation>([
+      ...Generator.PROPERTIES_LOCATION,
+      [OnClusterExpr, PropertiesLocation.POST_NAME],
+      [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
+      [ToTablePropertyExpr, PropertiesLocation.POST_NAME],
+      [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
+    ]);
+  }
 
   static ON_CLUSTER_TARGETS = new Set([
     'SCHEMA',

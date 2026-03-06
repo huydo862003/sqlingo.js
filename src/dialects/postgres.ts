@@ -436,26 +436,26 @@ function roundSql (self: Generator, expression: RoundExpr): string {
 }
 
 export class PostgresTokenizer extends Tokenizer {
-  public static BIT_STRINGS: TokenPair[] = [
+  static BIT_STRINGS: TokenPair[] = [
     ['b\'', '\''],
     ['B\'', '\''],
     '0b',
   ];
 
-  public static HEX_STRINGS: TokenPair[] = [
+  static HEX_STRINGS: TokenPair[] = [
     ['x\'', '\''],
     ['X\'', '\''],
     '0x',
   ];
 
-  public static BYTE_STRINGS: TokenPair[] = [['e\'', '\''], ['E\'', '\'']];
-  public static BYTE_STRING_ESCAPES = ['\'', '\\'];
-  public static HEREDOC_STRINGS: TokenPair[] = ['$'];
+  static BYTE_STRINGS: TokenPair[] = [['e\'', '\''], ['E\'', '\'']];
+  static BYTE_STRING_ESCAPES = ['\'', '\\'];
+  static HEREDOC_STRINGS: TokenPair[] = ['$'];
 
-  public static HEREDOC_TAG_IS_IDENTIFIER = true;
-  public static HEREDOC_STRING_ALTERNATIVE = TokenType.PARAMETER;
+  static HEREDOC_TAG_IS_IDENTIFIER = true;
+  static HEREDOC_STRING_ALTERNATIVE = TokenType.PARAMETER;
 
-  public static ORIGINAL_KEYWORDS: Record<string, TokenType> = (() => {
+  static ORIGINAL_KEYWORDS: Record<string, TokenType> = (() => {
     const {
       '/*+': _1, DIV: _2, ...kw
     } = Tokenizer.KEYWORDS;
@@ -508,18 +508,19 @@ export class PostgresTokenizer extends Tokenizer {
     };
   })();
 
-  public static SINGLE_TOKENS: Record<string, TokenType> = {
+  static SINGLE_TOKENS: Record<string, TokenType> = {
     ...Tokenizer.SINGLE_TOKENS,
     $: TokenType.HEREDOC_STRING,
   };
 
-  public static VAR_SINGLE_TOKENS = new Set(['$']);
+  static VAR_SINGLE_TOKENS = new Set(['$']);
 }
 
 class PostgresParser extends Parser {
   static SUPPORTS_OMITTED_INTERVAL_SPAN_UNIT = true;
+
   @cache
-  static get PROPERTY_PARSERS () {
+  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return (() => {
       const parsers: Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> = {
         ...Parser.PROPERTY_PARSERS,
@@ -531,7 +532,7 @@ class PostgresParser extends Parser {
   }
 
   @cache
-  static get PLACEHOLDER_PARSERS () {
+  static get PLACEHOLDER_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.PLACEHOLDER_PARSERS,
       [TokenType.PLACEHOLDER]: (self: Parser) => self.expression(PlaceholderExpr, { jdbc: true }),
@@ -601,7 +602,7 @@ class PostgresParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS () {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
       VARIADIC: (self: Parser) => self.expression(VariadicExpr, { this: (self as PostgresParser).parseBitwise() }),
@@ -609,7 +610,7 @@ class PostgresParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTIONS () {
+  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
     return {
       ...Parser.NO_PAREN_FUNCTIONS,
       [TokenType.CURRENT_SCHEMA]: CurrentSchemaExpr,
@@ -617,7 +618,7 @@ class PostgresParser extends Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS () {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.FUNCTION_PARSERS,
       DATE_PART: (self: Parser) => (self as PostgresParser).parseDatePart(),
@@ -630,7 +631,7 @@ class PostgresParser extends Parser {
   }
 
   @cache
-  static get BITWISE () {
+  static get BITWISE (): Partial<Record<TokenType, typeof Expression>> {
     return {
       ...Parser.BITWISE,
       [TokenType.HASH]: BitwiseXorExpr,
@@ -642,7 +643,7 @@ class PostgresParser extends Parser {
   };
 
   @cache
-  static get RANGE_PARSERS () {
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
     return {
       ...Parser.RANGE_PARSERS,
       [TokenType.DAMP]: binaryRangeParser(ArrayOverlapsExpr),
@@ -654,7 +655,7 @@ class PostgresParser extends Parser {
   }
 
   @cache
-  static get STATEMENT_PARSERS () {
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.END]: (self: Parser) => (self as PostgresParser).parseCommitOrRollback(),
@@ -662,7 +663,7 @@ class PostgresParser extends Parser {
   }
 
   @cache
-  static get UNARY_PARSERS () {
+  static get UNARY_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.UNARY_PARSERS,
       [TokenType.RLIKE]: (self: Parser) => self.expression(BitwiseNotExpr, {
@@ -673,7 +674,7 @@ class PostgresParser extends Parser {
 
   static JSON_ARROWS_REQUIRE_JSON_TYPE = true;
   @cache
-  static get COLUMN_OPERATORS () {
+  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
     return {
       ...Parser.COLUMN_OPERATORS,
       [TokenType.ARROW]: (self: Parser, thisNode?: Expression, path?: Expression) => self.validateExpression(
@@ -855,24 +856,30 @@ class PostgresGenerator extends Generator {
   static SUPPORTS_BETWEEN_FLAGS = true;
   static INOUT_SEPARATOR = '';
 
-  static SUPPORTED_JSON_PATH_PARTS = new Set([
-    JsonPathKeyExpr,
-    JsonPathRootExpr,
-    JsonPathSubscriptExpr,
-  ]);
+  @cache
+  static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
+    return new Set([
+      JsonPathKeyExpr,
+      JsonPathRootExpr,
+      JsonPathSubscriptExpr,
+    ]);
+  }
 
-  static TYPE_MAPPING = {
-    ...Generator.TYPE_MAPPING,
-    [DataTypeExprKind.TINYINT]: 'SMALLINT',
-    [DataTypeExprKind.FLOAT]: 'REAL',
-    [DataTypeExprKind.DOUBLE]: 'DOUBLE PRECISION',
-    [DataTypeExprKind.BINARY]: 'BYTEA',
-    [DataTypeExprKind.VARBINARY]: 'BYTEA',
-    [DataTypeExprKind.ROWVERSION]: 'BYTEA',
-    [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
-    [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
-    [DataTypeExprKind.BLOB]: 'BYTEA',
-  };
+  @cache
+  static get TYPE_MAPPING () {
+    return {
+      ...Generator.TYPE_MAPPING,
+      [DataTypeExprKind.TINYINT]: 'SMALLINT',
+      [DataTypeExprKind.FLOAT]: 'REAL',
+      [DataTypeExprKind.DOUBLE]: 'DOUBLE PRECISION',
+      [DataTypeExprKind.BINARY]: 'BYTEA',
+      [DataTypeExprKind.VARBINARY]: 'BYTEA',
+      [DataTypeExprKind.ROWVERSION]: 'BYTEA',
+      [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
+      [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
+      [DataTypeExprKind.BLOB]: 'BYTEA',
+    };
+  }
 
   lateralSql (expression: LateralExpr): string {
     let sql = super.lateralSql(expression);
@@ -884,7 +891,9 @@ class PostgresGenerator extends Generator {
     return sql;
   }
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
@@ -1017,14 +1026,17 @@ class PostgresGenerator extends Generator {
     ]);
     transforms.delete(CommentColumnConstraintExpr);
     return transforms;
-  })();
+  }
 
-  static PROPERTIES_LOCATION = {
-    ...Generator.PROPERTIES_LOCATION,
-    [PartitionedByPropertyExpr.constructor.name]: PropertiesLocation.POST_SCHEMA,
-    [TransientPropertyExpr.constructor.name]: PropertiesLocation.UNSUPPORTED,
-    [VolatilePropertyExpr.constructor.name]: PropertiesLocation.UNSUPPORTED,
-  };
+  @cache
+  static get PROPERTIES_LOCATION () {
+    return {
+      ...Generator.PROPERTIES_LOCATION,
+      [PartitionedByPropertyExpr.constructor.name]: PropertiesLocation.POST_SCHEMA,
+      [TransientPropertyExpr.constructor.name]: PropertiesLocation.UNSUPPORTED,
+      [VolatilePropertyExpr.constructor.name]: PropertiesLocation.UNSUPPORTED,
+    };
+  }
 
   schemaCommentPropertySql (_expression: SchemaCommentPropertyExpr): string {
     this.unsupported('Table comments are not supported in the CREATE statement');

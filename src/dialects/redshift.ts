@@ -81,7 +81,7 @@ function buildDateDelta<T extends Expression> (ExprClass: new (args: any) => T) 
 
 class RedshiftParser extends Postgres.Parser {
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return (() => {
       const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
         ...Postgres.Parser.FUNCTIONS,
@@ -120,7 +120,7 @@ class RedshiftParser extends Postgres.Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS () {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return {
       ...Postgres.Parser.NO_PAREN_FUNCTION_PARSERS,
       APPROXIMATE: (self: Parser) => (self as RedshiftParser).parseApproximateCount(),
@@ -185,7 +185,8 @@ class RedshiftTokenizer extends Postgres.Tokenizer {
   static HEX_STRINGS = [];
   static STRING_ESCAPES = ['\\', '\''];
 
-  static ORIGINAL_KEYWORDS = (() => {
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     const keywords: Record<string, TokenType> = {
       ...Postgres.Tokenizer.KEYWORDS,
       '(+)': TokenType.JOIN_MARKER,
@@ -199,13 +200,14 @@ class RedshiftTokenizer extends Postgres.Tokenizer {
     };
     delete keywords['VALUES'];
     return keywords;
-  })();
+  }
 
-  static SINGLE_TOKENS = (() => {
+  @cache
+  static get SINGLE_TOKENS (): Record<string, TokenType> {
     const singleTokens: Record<string, TokenType> = { ...Postgres.Tokenizer.SINGLE_TOKENS };
     delete singleTokens['#'];
     return singleTokens;
-  })();
+  }
 }
 
 class RedshiftGenerator extends Postgres.Generator {
@@ -231,18 +233,23 @@ class RedshiftGenerator extends Postgres.Generator {
 
   static WITH_PROPERTIES_PREFIX = ' ';
 
-  static TYPE_MAPPING = {
-    ...Postgres.Generator.TYPE_MAPPING,
-    [DataTypeExprKind.BINARY]: 'VARBYTE',
-    [DataTypeExprKind.BLOB]: 'VARBYTE',
-    [DataTypeExprKind.INT]: 'INTEGER',
-    [DataTypeExprKind.TIMETZ]: 'TIME',
-    [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
-    [DataTypeExprKind.VARBINARY]: 'VARBYTE',
-    [DataTypeExprKind.ROWVERSION]: 'VARBYTE',
-  };
+  @cache
+  static get TYPE_MAPPING () {
+    return {
+      ...Postgres.Generator.TYPE_MAPPING,
+      [DataTypeExprKind.BINARY]: 'VARBYTE',
+      [DataTypeExprKind.BLOB]: 'VARBYTE',
+      [DataTypeExprKind.INT]: 'INTEGER',
+      [DataTypeExprKind.TIMETZ]: 'TIME',
+      [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
+      [DataTypeExprKind.VARBINARY]: 'VARBYTE',
+      [DataTypeExprKind.ROWVERSION]: 'VARBYTE',
+    };
+  }
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Postgres.Generator.TRANSFORMS,
@@ -317,7 +324,7 @@ class RedshiftGenerator extends Postgres.Generator {
     transforms.delete(RoundExpr);
 
     return transforms;
-  })();
+  }
 
   static RESERVED_KEYWORDS = new Set([
     'aes128',

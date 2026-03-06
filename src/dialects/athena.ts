@@ -153,28 +153,28 @@ class HiveGeneratorExtension extends Hive.Generator {
 }
 
 class TrinoTokenizerExtension extends Trino.Tokenizer {
-  public static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
+  static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
     ...Trino.Tokenizer.ORIGINAL_KEYWORDS,
     UNLOAD: TokenType.COMMAND,
   };
 }
 
 class TrinoParserExtension extends Trino.Parser {
-  public static STATEMENT_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
+  static STATEMENT_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
     ...Trino.Parser.STATEMENT_PARSERS,
     [TokenType.USING]: (self: Parser) => self.parseAsCommand((self as TrinoParserExtension).prev),
   };
 }
 
 class TrinoGeneratorExtension extends Trino.Generator {
-  public static PROPERTIES_LOCATION: Map<typeof Expression, PropertiesLocation> = (() => {
+  static PROPERTIES_LOCATION: Map<typeof Expression, PropertiesLocation> = (() => {
     const m = new Map(Trino.Generator.PROPERTIES_LOCATION);
     m.set(LocationPropertyExpr, (PropertiesLocation).POST_WITH);
     return m;
   })();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public static ORIGINAL_TRANSFORMS: Map<typeof Expression, (self: Generator, e: any) => string> = (() => {
+  static ORIGINAL_TRANSFORMS: Map<typeof Expression, (self: Generator, e: any) => string> = (() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const m = new Map<typeof Expression, (self: Generator, e: any) => string>(Trino.Generator.ORIGINAL_TRANSFORMS);
     m.set(PartitionedByPropertyExpr, partitionedByPropertySql);
@@ -184,17 +184,17 @@ class TrinoGeneratorExtension extends Trino.Generator {
 }
 
 export class AthenaTokenizer extends Tokenizer {
-  public static IDENTIFIERS = [...Trino.Tokenizer.IDENTIFIERS, ...Hive.Tokenizer.IDENTIFIERS];
-  public static STRING_ESCAPES = [...Trino.Tokenizer.STRING_ESCAPES, ...Hive.Tokenizer.STRING_ESCAPES];
-  public static HEX_STRINGS = [...Trino.Tokenizer.HEX_STRINGS, ...Hive.Tokenizer.HEX_STRINGS];
-  public static UNICODE_STRINGS = [...Trino.Tokenizer.UNICODE_STRINGS, ...Hive.Tokenizer.UNICODE_STRINGS];
+  static IDENTIFIERS = [...Trino.Tokenizer.IDENTIFIERS, ...Hive.Tokenizer.IDENTIFIERS];
+  static STRING_ESCAPES = [...Trino.Tokenizer.STRING_ESCAPES, ...Hive.Tokenizer.STRING_ESCAPES];
+  static HEX_STRINGS = [...Trino.Tokenizer.HEX_STRINGS, ...Hive.Tokenizer.HEX_STRINGS];
+  static UNICODE_STRINGS = [...Trino.Tokenizer.UNICODE_STRINGS, ...Hive.Tokenizer.UNICODE_STRINGS];
 
-  public static NUMERIC_LITERALS = {
+  static NUMERIC_LITERALS = {
     ...Trino.Tokenizer.NUMERIC_LITERALS,
     ...Hive.Tokenizer.NUMERIC_LITERALS,
   };
 
-  public static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
+  static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
     ...Hive.Tokenizer.ORIGINAL_KEYWORDS,
     ...Trino.Tokenizer.ORIGINAL_KEYWORDS,
     UNLOAD: TokenType.COMMAND,
@@ -338,9 +338,9 @@ export class Athena extends Dialect {
     return super.generate(expression, options);
   }
 
-  public static Tokenizer = AthenaTokenizer;
-  public static Parser = AthenaParser;
-  public static Generator = AthenaGenerator;
+  static Tokenizer = AthenaTokenizer;
+  static Parser = AthenaParser;
+  static Generator = AthenaGenerator;
 }
 
 Dialect.register(Dialects.ATHENA, Athena);

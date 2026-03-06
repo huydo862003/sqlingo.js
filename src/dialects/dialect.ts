@@ -346,7 +346,7 @@ export class Dialect {
   /** Whether a size in the table sample clause represents percentage. */
   static TABLESAMPLE_SIZE_IS_PERCENT = false;
   @cache
-  static get NORMALIZATION_STRATEGY () {
+  static get NORMALIZATION_STRATEGY (): NormalizationStrategy {
     return NormalizationStrategy.LOWERCASE;
   }
 
@@ -606,7 +606,7 @@ export class Dialect {
    */
   static DEFAULT_FUNCTIONS_COLUMN_NAMES: Map<string, string | string[]> = new Map();
   @cache
-  static get DEFAULT_NULL_TYPE () {
+  static get DEFAULT_NULL_TYPE (): DataTypeExprKind {
     return DataTypeExprKind.UNKNOWN;
   }
 

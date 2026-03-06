@@ -8,7 +8,9 @@ import {
 import type { Generator } from '../generator';
 import { seqGet } from '../helper';
 import type { Parser } from '../parser';
-import { narrowInstanceOf } from '../port_internals';
+import {
+  cache, narrowInstanceOf,
+} from '../port_internals';
 import { TokenType } from '../tokens';
 import {
   ctasWithTmpTablesToCreateTmpView, preprocess, removeUniqueConstraints,
@@ -69,7 +71,8 @@ class MaterializeGenerator extends Postgres.Generator {
   static SUPPORTS_BETWEEN_FLAGS = false;
 
   @cache
-  static get ORIGINAL_TRANSFORMS () {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Postgres.Generator.TRANSFORMS,

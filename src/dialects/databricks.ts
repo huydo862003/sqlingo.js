@@ -76,7 +76,7 @@ class DatabricksParser extends Spark.Parser {
   static STRICT_CAST = true;
   static COLON_IS_VARIANT_EXTRACT = true;
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Spark.Parser.FUNCTIONS,
       GETDATE: CurrentTimestampExpr.fromArgList,
@@ -95,7 +95,7 @@ class DatabricksParser extends Spark.Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS () {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return {
       ...Spark.Parser.NO_PAREN_FUNCTION_PARSERS,
       CURDATE: (self: Parser) => (self as DatabricksParser).parseCurdate(),
@@ -103,7 +103,7 @@ class DatabricksParser extends Spark.Parser {
   }
 
   @cache
-  static get FACTOR () {
+  static get FACTOR (): Partial<Record<TokenType, typeof Expression>> {
     return {
       ...Spark.Parser.FACTOR,
       [TokenType.COLON]: JsonExtractExpr,
@@ -111,7 +111,7 @@ class DatabricksParser extends Spark.Parser {
   }
 
   @cache
-  static get COLUMN_OPERATORS () {
+  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
     return {
       ...Parser.COLUMN_OPERATORS,
       [TokenType.QDCOLON]: (self: Parser, thisNode?: Expression, to?: Expression) =>
@@ -138,12 +138,17 @@ class DatabricksGenerator extends Spark.Generator {
   static QUOTE_JSON_PATH = false;
   static PARSE_JSON_NAME = 'PARSE_JSON' as const;
 
-  static TYPE_MAPPING = {
-    ...Spark.Generator.TYPE_MAPPING,
-    [DataTypeExprKind.NULL]: 'VOID',
-  };
+  @cache
+  static get TYPE_MAPPING () {
+    return {
+      ...Spark.Generator.TYPE_MAPPING,
+      [DataTypeExprKind.NULL]: 'VOID',
+    };
+  }
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Spark.Generator.TRANSFORMS,
@@ -200,7 +205,7 @@ class DatabricksGenerator extends Spark.Generator {
     transforms.delete(TryCastExpr);
 
     return transforms;
-  })();
+  }
 
   columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
     const {
@@ -257,7 +262,8 @@ export class Databricks extends Spark {
   static Parser = DatabricksParser;
   static Generator = DatabricksGenerator;
 
-  static COERCES_TO = (() => {
+  @cache
+  static get COERCES_TO (): Record<string, Set<string>> {
     const coersionMap = Object.fromEntries(Object.entries(TypeAnnotator.COERCES_TO));
 
     for (const textType of DataTypeExpr.TEXT_TYPES) {
@@ -272,7 +278,7 @@ export class Databricks extends Spark {
       coersionMap.set(textType, types);
     }
     return coersionMap;
-  })();
+  }
 }
 
 Dialect.register(Dialects.DATABRICKS, Databricks);

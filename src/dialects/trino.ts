@@ -40,7 +40,7 @@ class TrinoTokenizer extends Presto.Tokenizer {
 
 class TrinoParser extends Presto.Parser {
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Presto.Parser.FUNCTIONS,
       VERSION: (args: Expression[]) => CurrentVersionExpr.fromArgList(args),
@@ -48,7 +48,7 @@ class TrinoParser extends Presto.Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS () {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return {
       ...Presto.Parser.FUNCTION_PARSERS,
       TRIM: (self: Parser) => self.parseTrim(),
@@ -130,59 +130,69 @@ class TrinoParser extends Presto.Parser {
 class TrinoGenerator extends Presto.Generator {
   static EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE = true;
 
-  static PROPERTIES_LOCATION = {
-    ...Presto.Generator.PROPERTIES_LOCATION,
-    [LocationPropertyExpr.name]: PropertiesLocation.POST_WITH,
-  };
+  @cache
+  static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
+    return {
+      ...Presto.Generator.PROPERTIES_LOCATION,
+      [LocationPropertyExpr.name]: PropertiesLocation.POST_WITH,
+    };
+  }
 
+  @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static ORIGINAL_TRANSFORMS = new Map<typeof Expression, (self: Generator, e: any) => string>([
-    ...Presto.Generator.TRANSFORMS,
-    [
-      ArraySumExpr,
-      (self, e) =>
-        `REDUCE(${self.sql(e, 'this')}, 0, (acc, x) -> acc + x, acc -> acc)`,
-    ],
-    [
-      ArrayUniqueAggExpr,
-      (self, e) =>
-        `ARRAY_AGG(DISTINCT ${self.sql(e, 'this')})`,
-    ],
-    [CurrentVersionExpr, renameFunc('VERSION')],
-    [
-      GroupConcatExpr,
-      (self, e) =>
-        groupConcatSql(self, e, { onOverflow: true }),
-    ],
-    [
-      LocationPropertyExpr,
-      (self, e) =>
-        self.propertySql(e),
-    ],
-    [MergeExpr, mergeWithoutTargetSql],
-    [
-      SelectExpr,
-      preprocess([
-        eliminateQualify,
-        eliminateDistinctOn,
-        explodeProjectionToUnnest(1),
-        eliminateSemiAndAntiJoins,
-        amendExplodedColumnTable,
-      ]),
-    ],
-    [
-      TimeStrToTimeExpr,
-      (self, e) =>
-        timeStrToTimeSql(self, e, { includePrecision: true }),
-    ],
-    [TrimExpr, trimSql],
-  ]);
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new Map<typeof Expression, (self: Generator, e: any) => string>([
+      ...Presto.Generator.TRANSFORMS,
+      [
+        ArraySumExpr,
+        (self, e) =>
+          `REDUCE(${self.sql(e, 'this')}, 0, (acc, x) -> acc + x, acc -> acc)`,
+      ],
+      [
+        ArrayUniqueAggExpr,
+        (self, e) =>
+          `ARRAY_AGG(DISTINCT ${self.sql(e, 'this')})`,
+      ],
+      [CurrentVersionExpr, renameFunc('VERSION')],
+      [
+        GroupConcatExpr,
+        (self, e) =>
+          groupConcatSql(self, e, { onOverflow: true }),
+      ],
+      [
+        LocationPropertyExpr,
+        (self, e) =>
+          self.propertySql(e),
+      ],
+      [MergeExpr, mergeWithoutTargetSql],
+      [
+        SelectExpr,
+        preprocess([
+          eliminateQualify,
+          eliminateDistinctOn,
+          explodeProjectionToUnnest(1),
+          eliminateSemiAndAntiJoins,
+          amendExplodedColumnTable,
+        ]),
+      ],
+      [
+        TimeStrToTimeExpr,
+        (self, e) =>
+          timeStrToTimeSql(self, e, { includePrecision: true }),
+      ],
+      [TrimExpr, trimSql],
+    ]);
+  }
 
-  static SUPPORTED_JSON_PATH_PARTS = new Set([
-    JsonPathKeyExpr,
-    JsonPathRootExpr,
-    JsonPathSubscriptExpr,
-  ]);
+  @cache
+  static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
+    return new Set([
+      JsonPathKeyExpr,
+      JsonPathRootExpr,
+      JsonPathSubscriptExpr,
+    ]);
+  }
 
   public jsonExtractSql (expression: JsonExtractExpr): string {
     if (!expression.args.jsonQuery) {

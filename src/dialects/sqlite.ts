@@ -212,7 +212,8 @@ class SQLiteTokenizer extends Tokenizer {
 
   static NESTED_COMMENTS = false;
 
-  static ORIGINAL_KEYWORDS = (() => {
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     const keywords: Record<string, TokenType> = {
       ...Tokenizer.KEYWORDS,
       'ATTACH': TokenType.ATTACH,
@@ -222,7 +223,7 @@ class SQLiteTokenizer extends Tokenizer {
     };
     delete keywords['/*+'];
     return keywords;
-  })();
+  }
 
   static COMMANDS = new Set([...Array.from(Tokenizer.COMMANDS), TokenType.REPLACE]);
 }
@@ -233,7 +234,7 @@ class SQLiteParser extends Parser {
   static JOINS_HAVE_EQUAL_PRECEDENCE = true;
   static ADD_JOIN_ON_TRUE = true;
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       EDITDIST3: LevenshteinExpr.fromArgList,
@@ -251,7 +252,7 @@ class SQLiteParser extends Parser {
   }
 
   @cache
-  static get STATEMENT_PARSERS () {
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.ATTACH]: (self: Parser) => (self as SQLiteParser).parseAttachDetach(),
@@ -260,7 +261,7 @@ class SQLiteParser extends Parser {
   }
 
   @cache
-  static get RANGE_PARSERS () {
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
     return {
       ...Parser.RANGE_PARSERS,
       [TokenType.MATCH]: binaryRangeParser(MatchExpr),
@@ -302,13 +303,17 @@ class SQLiteGenerator extends Generator {
   static JSON_KEY_VALUE_PAIR_SEP = ',';
   static PARSE_JSON_NAME = undefined;
 
-  static SUPPORTED_JSON_PATH_PARTS = new Set([
-    JsonPathKeyExpr,
-    JsonPathRootExpr,
-    JsonPathSubscriptExpr,
-  ]);
+  @cache
+  static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
+    return new Set([
+      JsonPathKeyExpr,
+      JsonPathRootExpr,
+      JsonPathSubscriptExpr,
+    ]);
+  }
 
-  static TYPE_MAPPING = (() => {
+  @cache
+  static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map<DataTypeExprKind | string, string>([
       ...Generator.TYPE_MAPPING,
       [DataTypeExprKind.BOOLEAN, 'INTEGER'],
@@ -330,13 +335,15 @@ class SQLiteGenerator extends Generator {
     mapping.delete(DataTypeExprKind.BLOB);
 
     return mapping;
-  })();
+  }
 
   static TOKEN_MAPPING = {
     [TokenType.AUTO_INCREMENT]: 'AUTOINCREMENT',
   } as Record<TokenType, string>;
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Generator.TRANSFORMS.entries(),
@@ -394,9 +401,10 @@ class SQLiteGenerator extends Generator {
     ]);
 
     return transforms;
-  })();
+  }
 
-  static PROPERTIES_LOCATION = (() => {
+  @cache
+  static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     const locations = new Map<typeof Expression, PropertiesLocation>();
 
     // Initialize all base properties as UNSUPPORTED for SQLite
@@ -409,7 +417,7 @@ class SQLiteGenerator extends Generator {
     locations.set(TemporaryPropertyExpr, PropertiesLocation.POST_CREATE);
 
     return locations;
-  })();
+  }
 
   static LIMIT_FETCH = 'LIMIT';
 
@@ -444,7 +452,7 @@ class SQLiteGenerator extends Generator {
     return this.func('TRUNC', [expression.args.this]);
   }
 
-  generateseriesSql (expression: GenerateSeriesExpr): string {
+  generateSeriesSql (expression: GenerateSeriesExpr): string {
     const parent = expression.parent;
     const aliasExpr = parent?.args.alias;
 
@@ -463,7 +471,7 @@ class SQLiteGenerator extends Generator {
     return this.functionFallbackSql(expression);
   }
 
-  datediffSql (expression: DateDiffExpr): string {
+  dateDiffSql (expression: DateDiffExpr): string {
     const unitNode = expression.args.unit;
     const unit = unitNode instanceof IdentifierExpr ? unitNode.name.toUpperCase() : 'DAY';
 

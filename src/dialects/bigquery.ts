@@ -408,7 +408,7 @@ export function pushdownCteColumnNames (expression: Expression): Expression {
  */
 export function buildParseTimestamp (args: Expression[]): StrToTimeExpr {
   const thisExpr = buildFormattedTime(StrToTimeExpr, { dialect: Dialects.BIGQUERY })([seqGet(args, 1), seqGet(args, 0)]);
-  thisExpr.setArgKey('zone', seqGet(args, 2)!);
+  thisExpr.setArgKey('zone', seqGet(args, 2));
   return thisExpr;
 }
 
@@ -504,8 +504,8 @@ export function buildDatetime (args: Expression[]): Expression {
 
 export function buildDateDiff (args: Expression[]): DateDiffExpr {
   const expr = new DateDiffExpr({
-    this: seqGet(args, 0)!,
-    expression: seqGet(args, 1)!,
+    this: seqGet(args, 0),
+    expression: seqGet(args, 1),
     unit: seqGet(args, 2),
     datePartBoundary: true,
   });
@@ -715,32 +715,33 @@ function unixToTimeSql (self: Generator, expression: UnixToTimeExpr): string {
 }
 
 export class BigQueryTokenizer extends Tokenizer {
-  public static QUOTES: TokenPair[] = [
+  static QUOTES: TokenPair[] = [
     '\'',
     '"',
     '"""',
     '\'\'\'',
   ];
 
-  public static COMMENTS: TokenPair[] = [
+  static COMMENTS: TokenPair[] = [
     '--',
     '#',
     ['/*', '*/'],
   ];
 
-  public static IDENTIFIERS = ['`'];
-  public static STRING_ESCAPES = ['\\'];
-  public static HEX_STRINGS: TokenPair[] = [['0x', ''], ['0X', '']];
+  static IDENTIFIERS = ['`'];
+  static STRING_ESCAPES = ['\\'];
+  static HEX_STRINGS: TokenPair[] = [['0x', ''], ['0X', '']];
 
-  public static BYTE_STRINGS: TokenPair[] = (['b', 'B'] as const).flatMap((prefix) =>
+  static BYTE_STRINGS: TokenPair[] = (['b', 'B'] as const).flatMap((prefix) =>
     (BigQueryTokenizer.QUOTES as string[]).map((q): TokenPair => [prefix + q, q as string]));
 
-  public static RAW_STRINGS: TokenPair[] = (['r', 'R'] as const).flatMap((prefix) =>
+  static RAW_STRINGS: TokenPair[] = (['r', 'R'] as const).flatMap((prefix) =>
     (BigQueryTokenizer.QUOTES as string[]).map((q): TokenPair => [prefix + q, q as string]));
 
-  public static NESTED_COMMENTS = false;
+  static NESTED_COMMENTS = false;
 
-  public static ORIGINAL_KEYWORDS: Record<string, TokenType> = (() => {
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     const keywords: Record<string, TokenType> = {
       ...Tokenizer.KEYWORDS,
       'ANY TYPE': TokenType.VARIANT,
@@ -768,14 +769,14 @@ export class BigQueryTokenizer extends Tokenizer {
     delete keywords['VALUES'];
     delete keywords['/*+'];
     return keywords;
-  })();
+  };
 }
 
 export class BigQueryParser extends Parser {
-  public static PREFIXED_PIVOT_COLUMNS = true;
-  public static LOG_DEFAULTS_TO_LN = true;
-  public static SUPPORTS_IMPLICIT_UNNEST = true;
-  public static JOINS_HAVE_EQUAL_PRECEDENCE = true;
+  static PREFIXED_PIVOT_COLUMNS = true;
+  static LOG_DEFAULTS_TO_LN = true;
+  static SUPPORTS_IMPLICIT_UNNEST = true;
+  static JOINS_HAVE_EQUAL_PRECEDENCE = true;
 
   // BigQuery does not allow ASC/DESC to be used as an identifier, allows GRANT as an identifier
   @cache
@@ -834,7 +835,7 @@ export class BigQueryParser extends Parser {
   }
 
   @cache
-  static get PROPERTY_PARSERS () {
+  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return {
       ...Parser.PROPERTY_PARSERS,
       'NOT DETERMINISTIC': (self: Parser) => self.expression(StabilityPropertyExpr, { this: LiteralExpr.string('VOLATILE') }),
@@ -843,7 +844,7 @@ export class BigQueryParser extends Parser {
   }
 
   @cache
-  static get CONSTRAINT_PARSERS () {
+  static get CONSTRAINT_PARSERS (): Partial<Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.CONSTRAINT_PARSERS,
       OPTIONS: (self: Parser) => self.expression(PropertiesExpr, { expressions: self.parseWithProperty() }),
@@ -859,14 +860,14 @@ export class BigQueryParser extends Parser {
     })();
   }
 
-  public static DASHED_TABLE_PART_FOLLOW_TOKENS: Set<TokenType> = new Set([
+  static DASHED_TABLE_PART_FOLLOW_TOKENS: Set<TokenType> = new Set([
     TokenType.DOT,
     TokenType.L_PAREN,
     TokenType.R_PAREN,
   ]);
 
   @cache
-  static get STATEMENT_PARSERS () {
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.ELSE]: (self: Parser) => self.parseAsCommand((self as BigQueryParser).prev),
@@ -877,7 +878,7 @@ export class BigQueryParser extends Parser {
     };
   }
 
-  public static BRACKET_OFFSETS: Record<string, [number, boolean]> = {
+  static BRACKET_OFFSETS: Record<string, [number, boolean]> = {
     OFFSET: [0, false],
     ORDINAL: [1, false],
     SAFE_OFFSET: [0, true],
@@ -885,7 +886,7 @@ export class BigQueryParser extends Parser {
   };
 
   @cache
-  static get NO_PAREN_FUNCTIONS () {
+  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
     return {
       ...Parser.NO_PAREN_FUNCTIONS,
       [TokenType.CURRENT_DATETIME]: CurrentDatetimeExpr,
@@ -893,7 +894,7 @@ export class BigQueryParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return (() => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fns: Record<string, (args: Expression[], dialect: any) => Expression> = {
@@ -931,13 +932,13 @@ export class BigQueryParser extends Parser {
         JSON_VALUE: buildExtractJsonWithDefaultPath(JsonExtractScalarExpr),
         JSON_VALUE_ARRAY: buildExtractJsonWithDefaultPath(JsonValueArrayExpr),
         LENGTH: (args) => new LengthExpr({
-          this: seqGet(args, 0)!,
+          this: seqGet(args, 0),
           binary: true,
         }),
         MD5: Md5DigestExpr.fromArgList,
         SHA1: Sha1DigestExpr.fromArgList,
         NORMALIZE_AND_CASEFOLD: (args) => new NormalizeExpr({
-          this: seqGet(args, 0)!,
+          this: seqGet(args, 0),
           form: seqGet(args, 1),
           isCasefold: true,
         }),
@@ -958,16 +959,16 @@ export class BigQueryParser extends Parser {
         REGEXP_SUBSTR: buildRegexpExtract(RegexpExtractExpr),
         REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr, literal(0)),
         SHA256: (args) => new Sha2DigestExpr({
-          this: seqGet(args, 0)!,
+          this: seqGet(args, 0),
           length: literal(256),
         }),
         SHA512: (args) => new Sha2Expr({
-          this: seqGet(args, 0)!,
+          this: seqGet(args, 0),
           length: literal(512),
         }),
         SPLIT: (args) => new SplitExpr({
           // https://cloud.google.com/bigquery/docs/reference/standard-sql/string_functions#split
-          this: seqGet(args, 0)!,
+          this: seqGet(args, 0),
           expression: seqGet(args, 1) || literal(','),
         }),
         STRPOS: StrPositionExpr.fromArgList,
@@ -978,16 +979,16 @@ export class BigQueryParser extends Parser {
         TIMESTAMP_ADD: (args) => buildDateDeltaWithInterval(TimestampAddExpr)(args)!,
         TIMESTAMP_SUB: (args) => buildDateDeltaWithInterval(TimestampSubExpr)(args)!,
         TIMESTAMP_MICROS: (args) => new UnixToTimeExpr({
-          this: seqGet(args, 0)!,
+          this: seqGet(args, 0),
           scale: UnixToTimeExpr.MICROS,
         }),
         TIMESTAMP_MILLIS: (args) => new UnixToTimeExpr({
-          this: seqGet(args, 0)!,
+          this: seqGet(args, 0),
           scale: UnixToTimeExpr.MILLIS,
         }),
-        TIMESTAMP_SECONDS: (args) => new UnixToTimeExpr({ this: seqGet(args, 0)! }),
+        TIMESTAMP_SECONDS: (args) => new UnixToTimeExpr({ this: seqGet(args, 0) }),
         TO_JSON: (args) => new JsonFormatExpr({
-          this: seqGet(args, 0)!,
+          this: seqGet(args, 0),
           options: seqGet(args, 1),
           toJson: true,
         }),
@@ -1005,7 +1006,7 @@ export class BigQueryParser extends Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS () {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return (() => {
       const fps = {
         ...Parser.FUNCTION_PARSERS,
@@ -1493,251 +1494,266 @@ export class BigQueryGenerator extends Generator {
 
   static SAFE_JSON_PATH_KEY_RE = /^[_\-a-zA-Z][\-\w]*$/;
 
-  static TS_OR_DS_TYPES = [
-    TsOrDsToDatetimeExpr,
-    TsOrDsToTimestampExpr,
-    TsOrDsToTimeExpr,
-    TsOrDsToDateExpr,
-  ];
+  @cache
+  static get TS_OR_DS_TYPES () {
+    return [
+      TsOrDsToDatetimeExpr,
+      TsOrDsToTimestampExpr,
+      TsOrDsToTimeExpr,
+      TsOrDsToDateExpr,
+    ];
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static ORIGINAL_TRANSFORMS = new Map<typeof Expression, (self: any, e: any) => string>([
-    ...Generator.TRANSFORMS,
-    [ApproxTopKExpr, renameFunc('APPROX_TOP_COUNT')],
-    [ApproxDistinctExpr, renameFunc('APPROX_COUNT_DISTINCT')],
-    [ArgMaxExpr, argMaxOrMinNoCount('MAX_BY')],
-    [ArgMinExpr, argMaxOrMinNoCount('MIN_BY')],
-    [ArrayExpr, inlineArrayUnlessQuery],
-    [ArrayContainsExpr, arrayContainsSql],
-    [ArrayFilterExpr, filterArrayUsingUnnest],
-    [ArrayRemoveExpr, filterArrayUsingUnnest],
-    [BitwiseAndAggExpr, renameFunc('BIT_AND')],
-    [BitwiseOrAggExpr, renameFunc('BIT_OR')],
-    [BitwiseXorAggExpr, renameFunc('BIT_XOR')],
-    [BitwiseCountExpr, renameFunc('BIT_COUNT')],
-    [ByteLengthExpr, renameFunc('BYTE_LENGTH')],
-    [CastExpr, preprocess([removePrecisionParameterizedTypes])],
-    [
-      CollatePropertyExpr,
-      (self: BigQueryGenerator, e: CollatePropertyExpr) =>
-        e.args.default
-          ? `DEFAULT COLLATE ${self.sql(e, 'this')}`
-          : `COLLATE ${self.sql(e, 'this')}`,
-    ],
-    [CommitExpr, () => 'COMMIT TRANSACTION'],
-    [CountIfExpr, renameFunc('COUNTIF')],
-    [CreateExpr, createSql],
-    [CteExpr, preprocess([pushdownCteColumnNames])],
-    [DateAddExpr, dateAddIntervalSql('DATE', 'ADD')],
-    [
-      DateDiffExpr,
-      (self: BigQueryGenerator, e: DateDiffExpr) =>
-        self.func('DATE_DIFF', [
-          e.args.this,
-          e.args.expression,
-          unitToVar(e),
-        ]),
-    ],
-    [DateFromPartsExpr, renameFunc('DATE')],
-    [DateStrToDateExpr, dateStrToDateSql],
-    [DateSubExpr, dateAddIntervalSql('DATE', 'SUB')],
-    [DatetimeAddExpr, dateAddIntervalSql('DATETIME', 'ADD')],
-    [DatetimeSubExpr, dateAddIntervalSql('DATETIME', 'SUB')],
-    [DateFromUnixDateExpr, renameFunc('DATE_FROM_UNIX_DATE')],
-    [
-      FromTimeZoneExpr,
-      (self: BigQueryGenerator, e: FromTimeZoneExpr) =>
-        self.func(
-          'DATETIME',
-          [self.func('TIMESTAMP', [e.args.this, e.args.zone]), '\'UTC\''],
-        ),
-    ],
-    [GenerateSeriesExpr, renameFunc('GENERATE_ARRAY')],
-    [
-      GroupConcatExpr,
-      (self: BigQueryGenerator, e: GroupConcatExpr) =>
-        groupConcatSql(self, e, {
-          funcName: 'STRING_AGG',
-          withinGroup: false,
-          sep: undefined,
-        }),
-    ],
-    [
-      HexExpr,
-      (self: BigQueryGenerator, e: HexExpr) =>
-        self.func('UPPER', [self.func('TO_HEX', [self.sql(e, 'this')])]),
-    ],
-    [
-      HexStringExpr,
-      (self: BigQueryGenerator, e: HexStringExpr) =>
-        self.hexStringSql(e, { binaryFunctionRepr: 'FROM_HEX' }),
-    ],
-    [IfExpr, ifSql('IF', 'NULL')],
-    [ILikeExpr, noIlikeSql],
-    [IntDivExpr, renameFunc('DIV')],
-    [Int64Expr, renameFunc('INT64')],
-    [JsonBoolExpr, renameFunc('BOOL')],
-    [JsonExtractExpr, jsonExtractSql],
-    [JsonExtractArrayExpr, jsonExtractSql],
-    [JsonExtractScalarExpr, jsonExtractSql],
-    [
-      JsonFormatExpr,
-      (self: BigQueryGenerator, e: JsonFormatExpr) =>
-        self.func(
-          e.args.toJson ? 'TO_JSON' : 'TO_JSON_STRING',
-          [e.args.this, ...(Array.isArray(e.args.options) ? e.args.options : e.args.options ? [e.args.options] : [])],
-        ),
-    ],
-    [JsonKeysAtDepthExpr, renameFunc('JSON_KEYS')],
-    [JsonValueArrayExpr, renameFunc('JSON_VALUE_ARRAY')],
-    [LevenshteinExpr, jsonExtractSql], // Assuming logic similarity
-    [MaxExpr, maxOrGreatest],
-    [
-      Md5Expr,
-      (self: BigQueryGenerator, e: Md5Expr) =>
-        self.func('TO_HEX', [self.func('MD5', [e.args.this])]),
-    ],
-    [Md5DigestExpr, renameFunc('MD5')],
-    [MinExpr, minOrLeast],
-    [
-      NormalizeExpr,
-      (self: BigQueryGenerator, e: NormalizeExpr) =>
-        self.func(
-          e.args.isCasefold ? 'NORMALIZE_AND_CASEFOLD' : 'NORMALIZE',
-          [e.args.this, e.args.form],
-        ),
-    ],
-    [
-      PartitionedByPropertyExpr,
-      (self: BigQueryGenerator, e: PartitionedByPropertyExpr) =>
-        `PARTITION BY ${self.sql(e, 'this')}`,
-    ],
-    [
-      RegexpExtractExpr,
-      (self: BigQueryGenerator, e: RegexpExtractExpr) =>
-        self.func(
-          'REGEXP_EXTRACT',
-          [
+  @cache
+
+  static get ORIGINAL_TRANSFORMS () {
+    return new Map<typeof Expression, (self: any, e: any) => string>([
+      ...Generator.TRANSFORMS,
+      [ApproxTopKExpr, renameFunc('APPROX_TOP_COUNT')],
+      [ApproxDistinctExpr, renameFunc('APPROX_COUNT_DISTINCT')],
+      [ArgMaxExpr, argMaxOrMinNoCount('MAX_BY')],
+      [ArgMinExpr, argMaxOrMinNoCount('MIN_BY')],
+      [ArrayExpr, inlineArrayUnlessQuery],
+      [ArrayContainsExpr, arrayContainsSql],
+      [ArrayFilterExpr, filterArrayUsingUnnest],
+      [ArrayRemoveExpr, filterArrayUsingUnnest],
+      [BitwiseAndAggExpr, renameFunc('BIT_AND')],
+      [BitwiseOrAggExpr, renameFunc('BIT_OR')],
+      [BitwiseXorAggExpr, renameFunc('BIT_XOR')],
+      [BitwiseCountExpr, renameFunc('BIT_COUNT')],
+      [ByteLengthExpr, renameFunc('BYTE_LENGTH')],
+      [CastExpr, preprocess([removePrecisionParameterizedTypes])],
+      [
+        CollatePropertyExpr,
+        (self: BigQueryGenerator, e: CollatePropertyExpr) =>
+          e.args.default
+            ? `DEFAULT COLLATE ${self.sql(e, 'this')}`
+            : `COLLATE ${self.sql(e, 'this')}`,
+      ],
+      [CommitExpr, () => 'COMMIT TRANSACTION'],
+      [CountIfExpr, renameFunc('COUNTIF')],
+      [CreateExpr, createSql],
+      [CteExpr, preprocess([pushdownCteColumnNames])],
+      [DateAddExpr, dateAddIntervalSql('DATE', 'ADD')],
+      [
+        DateDiffExpr,
+        (self: BigQueryGenerator, e: DateDiffExpr) =>
+          self.func('DATE_DIFF', [
             e.args.this,
             e.args.expression,
-            e.args.position,
-            e.args.occurrence,
-          ],
-        ),
-    ],
-    [
-      RegexpExtractAllExpr,
-      (self: BigQueryGenerator, e: RegexpExtractAllExpr) =>
-        self.func('REGEXP_EXTRACT_ALL', [e.args.this, e.args.expression]),
-    ],
-    [RegexpReplaceExpr, regexpReplaceSql],
-    [RegexpLikeExpr, renameFunc('REGEXP_CONTAINS')],
-    [ReturnsPropertyExpr, returnsPropertySql],
-    [RollbackExpr, () => 'ROLLBACK TRANSACTION'],
-    [
-      ParseTimeExpr,
-      (self: BigQueryGenerator, e: ParseTimeExpr) =>
-        self.func('PARSE_TIME', [self.formatTime(e)!, e.args.this]),
-    ],
-    [
-      ParseDatetimeExpr,
-      (self: BigQueryGenerator, e: ParseDatetimeExpr) =>
-        self.func('PARSE_DATETIME', [self.formatTime(e)!, e.args.this]),
-    ],
-    [
-      SelectExpr,
-      preprocess([
-        explodeProjectionToUnnest(),
-        unqualifyUnnest,
-        eliminateDistinctOn,
-        aliasOrderedGroup,
-        eliminateSemiAndAntiJoins,
-      ]),
-    ],
-    [ShaExpr, renameFunc('SHA1')],
-    [Sha2Expr, sha256Sql],
-    [Sha1DigestExpr, renameFunc('SHA1')],
-    [Sha2DigestExpr, sha2DigestSql],
-    [
-      StabilityPropertyExpr,
-      (self: BigQueryGenerator, e: StabilityPropertyExpr) =>
-        e.name === 'IMMUTABLE' ? 'DETERMINISTIC' : 'NOT DETERMINISTIC',
-    ],
-    [StringExpr, renameFunc('STRING')],
-    [
-      StrPositionExpr,
-      (self: BigQueryGenerator, e: StrPositionExpr) =>
-        strPositionSql(self, e, {
-          funcName: 'INSTR',
-          supportsPosition: true,
-          supportsOccurrence: true,
-        }),
-    ],
-    [StrToDateExpr, strToDatetimeSql],
-    [StrToTimeExpr, strToDatetimeSql],
-    [SessionUserExpr, () => 'SESSION_USER()'],
-    [TimeAddExpr, dateAddIntervalSql('TIME', 'ADD')],
-    [TimeFromPartsExpr, renameFunc('TIME')],
-    [TimestampFromPartsExpr, renameFunc('DATETIME')],
-    [TimeSubExpr, dateAddIntervalSql('TIME', 'SUB')],
-    [TimestampAddExpr, dateAddIntervalSql('TIMESTAMP', 'ADD')],
-    [TimestampDiffExpr, renameFunc('TIMESTAMP_DIFF')],
-    [TimestampSubExpr, dateAddIntervalSql('TIMESTAMP', 'SUB')],
-    [TimeStrToTimeExpr, timeStrToTimeSql],
-    [TransactionExpr, () => 'BEGIN TRANSACTION'],
-    [TsOrDsAddExpr, tsOrDsAddSql],
-    [TsOrDsDiffExpr, tsOrDsDiffSql],
-    [TsOrDsToTimeExpr, renameFunc('TIME')],
-    [TsOrDsToDatetimeExpr, renameFunc('DATETIME')],
-    [TsOrDsToTimestampExpr, renameFunc('TIMESTAMP')],
-    [UnhexExpr, renameFunc('FROM_HEX')],
-    [UnixDateExpr, renameFunc('UNIX_DATE')],
-    [UnixToTimeExpr, unixToTimeSql],
-    [UuidExpr, () => 'GENERATE_UUID()'],
-    [ValuesExpr, derivedTableValuesToUnnest],
-    [VariancePopExpr, renameFunc('VAR_POP')],
-    [SafeDivideExpr, renameFunc('SAFE_DIVIDE')],
-  ]);
+            unitToVar(e),
+          ]),
+      ],
+      [DateFromPartsExpr, renameFunc('DATE')],
+      [DateStrToDateExpr, dateStrToDateSql],
+      [DateSubExpr, dateAddIntervalSql('DATE', 'SUB')],
+      [DatetimeAddExpr, dateAddIntervalSql('DATETIME', 'ADD')],
+      [DatetimeSubExpr, dateAddIntervalSql('DATETIME', 'SUB')],
+      [DateFromUnixDateExpr, renameFunc('DATE_FROM_UNIX_DATE')],
+      [
+        FromTimeZoneExpr,
+        (self: BigQueryGenerator, e: FromTimeZoneExpr) =>
+          self.func(
+            'DATETIME',
+            [self.func('TIMESTAMP', [e.args.this, e.args.zone]), '\'UTC\''],
+          ),
+      ],
+      [GenerateSeriesExpr, renameFunc('GENERATE_ARRAY')],
+      [
+        GroupConcatExpr,
+        (self: BigQueryGenerator, e: GroupConcatExpr) =>
+          groupConcatSql(self, e, {
+            funcName: 'STRING_AGG',
+            withinGroup: false,
+            sep: undefined,
+          }),
+      ],
+      [
+        HexExpr,
+        (self: BigQueryGenerator, e: HexExpr) =>
+          self.func('UPPER', [self.func('TO_HEX', [self.sql(e, 'this')])]),
+      ],
+      [
+        HexStringExpr,
+        (self: BigQueryGenerator, e: HexStringExpr) =>
+          self.hexStringSql(e, { binaryFunctionRepr: 'FROM_HEX' }),
+      ],
+      [IfExpr, ifSql('IF', 'NULL')],
+      [ILikeExpr, noIlikeSql],
+      [IntDivExpr, renameFunc('DIV')],
+      [Int64Expr, renameFunc('INT64')],
+      [JsonBoolExpr, renameFunc('BOOL')],
+      [JsonExtractExpr, jsonExtractSql],
+      [JsonExtractArrayExpr, jsonExtractSql],
+      [JsonExtractScalarExpr, jsonExtractSql],
+      [
+        JsonFormatExpr,
+        (self: BigQueryGenerator, e: JsonFormatExpr) =>
+          self.func(
+            e.args.toJson ? 'TO_JSON' : 'TO_JSON_STRING',
+            [e.args.this, ...(Array.isArray(e.args.options) ? e.args.options : e.args.options ? [e.args.options] : [])],
+          ),
+      ],
+      [JsonKeysAtDepthExpr, renameFunc('JSON_KEYS')],
+      [JsonValueArrayExpr, renameFunc('JSON_VALUE_ARRAY')],
+      [LevenshteinExpr, jsonExtractSql], // Assuming logic similarity
+      [MaxExpr, maxOrGreatest],
+      [
+        Md5Expr,
+        (self: BigQueryGenerator, e: Md5Expr) =>
+          self.func('TO_HEX', [self.func('MD5', [e.args.this])]),
+      ],
+      [Md5DigestExpr, renameFunc('MD5')],
+      [MinExpr, minOrLeast],
+      [
+        NormalizeExpr,
+        (self: BigQueryGenerator, e: NormalizeExpr) =>
+          self.func(
+            e.args.isCasefold ? 'NORMALIZE_AND_CASEFOLD' : 'NORMALIZE',
+            [e.args.this, e.args.form],
+          ),
+      ],
+      [
+        PartitionedByPropertyExpr,
+        (self: BigQueryGenerator, e: PartitionedByPropertyExpr) =>
+          `PARTITION BY ${self.sql(e, 'this')}`,
+      ],
+      [
+        RegexpExtractExpr,
+        (self: BigQueryGenerator, e: RegexpExtractExpr) =>
+          self.func(
+            'REGEXP_EXTRACT',
+            [
+              e.args.this,
+              e.args.expression,
+              e.args.position,
+              e.args.occurrence,
+            ],
+          ),
+      ],
+      [
+        RegexpExtractAllExpr,
+        (self: BigQueryGenerator, e: RegexpExtractAllExpr) =>
+          self.func('REGEXP_EXTRACT_ALL', [e.args.this, e.args.expression]),
+      ],
+      [RegexpReplaceExpr, regexpReplaceSql],
+      [RegexpLikeExpr, renameFunc('REGEXP_CONTAINS')],
+      [ReturnsPropertyExpr, returnsPropertySql],
+      [RollbackExpr, () => 'ROLLBACK TRANSACTION'],
+      [
+        ParseTimeExpr,
+        (self: BigQueryGenerator, e: ParseTimeExpr) =>
+          self.func('PARSE_TIME', [self.formatTime(e)!, e.args.this]),
+      ],
+      [
+        ParseDatetimeExpr,
+        (self: BigQueryGenerator, e: ParseDatetimeExpr) =>
+          self.func('PARSE_DATETIME', [self.formatTime(e)!, e.args.this]),
+      ],
+      [
+        SelectExpr,
+        preprocess([
+          explodeProjectionToUnnest(),
+          unqualifyUnnest,
+          eliminateDistinctOn,
+          aliasOrderedGroup,
+          eliminateSemiAndAntiJoins,
+        ]),
+      ],
+      [ShaExpr, renameFunc('SHA1')],
+      [Sha2Expr, sha256Sql],
+      [Sha1DigestExpr, renameFunc('SHA1')],
+      [Sha2DigestExpr, sha2DigestSql],
+      [
+        StabilityPropertyExpr,
+        (self: BigQueryGenerator, e: StabilityPropertyExpr) =>
+          e.name === 'IMMUTABLE' ? 'DETERMINISTIC' : 'NOT DETERMINISTIC',
+      ],
+      [StringExpr, renameFunc('STRING')],
+      [
+        StrPositionExpr,
+        (self: BigQueryGenerator, e: StrPositionExpr) =>
+          strPositionSql(self, e, {
+            funcName: 'INSTR',
+            supportsPosition: true,
+            supportsOccurrence: true,
+          }),
+      ],
+      [StrToDateExpr, strToDatetimeSql],
+      [StrToTimeExpr, strToDatetimeSql],
+      [SessionUserExpr, () => 'SESSION_USER()'],
+      [TimeAddExpr, dateAddIntervalSql('TIME', 'ADD')],
+      [TimeFromPartsExpr, renameFunc('TIME')],
+      [TimestampFromPartsExpr, renameFunc('DATETIME')],
+      [TimeSubExpr, dateAddIntervalSql('TIME', 'SUB')],
+      [TimestampAddExpr, dateAddIntervalSql('TIMESTAMP', 'ADD')],
+      [TimestampDiffExpr, renameFunc('TIMESTAMP_DIFF')],
+      [TimestampSubExpr, dateAddIntervalSql('TIMESTAMP', 'SUB')],
+      [TimeStrToTimeExpr, timeStrToTimeSql],
+      [TransactionExpr, () => 'BEGIN TRANSACTION'],
+      [TsOrDsAddExpr, tsOrDsAddSql],
+      [TsOrDsDiffExpr, tsOrDsDiffSql],
+      [TsOrDsToTimeExpr, renameFunc('TIME')],
+      [TsOrDsToDatetimeExpr, renameFunc('DATETIME')],
+      [TsOrDsToTimestampExpr, renameFunc('TIMESTAMP')],
+      [UnhexExpr, renameFunc('FROM_HEX')],
+      [UnixDateExpr, renameFunc('UNIX_DATE')],
+      [UnixToTimeExpr, unixToTimeSql],
+      [UuidExpr, () => 'GENERATE_UUID()'],
+      [ValuesExpr, derivedTableValuesToUnnest],
+      [VariancePopExpr, renameFunc('VAR_POP')],
+      [SafeDivideExpr, renameFunc('SAFE_DIVIDE')],
+    ]);
+  }
 
-  static SUPPORTED_JSON_PATH_PARTS = new Set([
-    JsonPathKeyExpr,
-    JsonPathRootExpr,
-    JsonPathSubscriptExpr,
-  ]);
+  @cache
+  static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
+    return new Set([
+      JsonPathKeyExpr,
+      JsonPathRootExpr,
+      JsonPathSubscriptExpr,
+    ]);
+  }
 
-  static TYPE_MAPPING = {
-    ...Generator.TYPE_MAPPING,
-    [DataTypeExprKind.BIGDECIMAL]: 'BIGNUMERIC',
-    [DataTypeExprKind.BIGINT]: 'INT64',
-    [DataTypeExprKind.BINARY]: 'BYTES',
-    [DataTypeExprKind.BLOB]: 'BYTES',
-    [DataTypeExprKind.BOOLEAN]: 'BOOL',
-    [DataTypeExprKind.CHAR]: 'STRING',
-    [DataTypeExprKind.DECIMAL]: 'NUMERIC',
-    [DataTypeExprKind.DOUBLE]: 'FLOAT64',
-    [DataTypeExprKind.FLOAT]: 'FLOAT64',
-    [DataTypeExprKind.INT]: 'INT64',
-    [DataTypeExprKind.NCHAR]: 'STRING',
-    [DataTypeExprKind.NVARCHAR]: 'STRING',
-    [DataTypeExprKind.SMALLINT]: 'INT64',
-    [DataTypeExprKind.TEXT]: 'STRING',
-    [DataTypeExprKind.TIMESTAMP]: 'DATETIME',
-    [DataTypeExprKind.TIMESTAMPNTZ]: 'DATETIME',
-    [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
-    [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP',
-    [DataTypeExprKind.TINYINT]: 'INT64',
-    [DataTypeExprKind.ROWVERSION]: 'BYTES',
-    [DataTypeExprKind.UUID]: 'STRING',
-    [DataTypeExprKind.VARBINARY]: 'BYTES',
-    [DataTypeExprKind.VARCHAR]: 'STRING',
-    [DataTypeExprKind.VARIANT]: 'ANY TYPE',
-  };
+  @cache
+  static get TYPE_MAPPING () {
+    return {
+      ...Generator.TYPE_MAPPING,
+      [DataTypeExprKind.BIGDECIMAL]: 'BIGNUMERIC',
+      [DataTypeExprKind.BIGINT]: 'INT64',
+      [DataTypeExprKind.BINARY]: 'BYTES',
+      [DataTypeExprKind.BLOB]: 'BYTES',
+      [DataTypeExprKind.BOOLEAN]: 'BOOL',
+      [DataTypeExprKind.CHAR]: 'STRING',
+      [DataTypeExprKind.DECIMAL]: 'NUMERIC',
+      [DataTypeExprKind.DOUBLE]: 'FLOAT64',
+      [DataTypeExprKind.FLOAT]: 'FLOAT64',
+      [DataTypeExprKind.INT]: 'INT64',
+      [DataTypeExprKind.NCHAR]: 'STRING',
+      [DataTypeExprKind.NVARCHAR]: 'STRING',
+      [DataTypeExprKind.SMALLINT]: 'INT64',
+      [DataTypeExprKind.TEXT]: 'STRING',
+      [DataTypeExprKind.TIMESTAMP]: 'DATETIME',
+      [DataTypeExprKind.TIMESTAMPNTZ]: 'DATETIME',
+      [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
+      [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP',
+      [DataTypeExprKind.TINYINT]: 'INT64',
+      [DataTypeExprKind.ROWVERSION]: 'BYTES',
+      [DataTypeExprKind.UUID]: 'STRING',
+      [DataTypeExprKind.VARBINARY]: 'BYTES',
+      [DataTypeExprKind.VARCHAR]: 'STRING',
+      [DataTypeExprKind.VARIANT]: 'ANY TYPE',
+    };
+  }
 
-  static PROPERTIES_LOCATION = new Map([
-    ...Generator.PROPERTIES_LOCATION,
-    [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
-    [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
-  ]);
+  @cache
+  static get PROPERTIES_LOCATION () {
+    return new Map([
+      ...Generator.PROPERTIES_LOCATION,
+      [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
+      [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
+    ]);
+  }
 
   static AFTER_HAVING_MODIFIER_TRANSFORMS = {
     qualify: Generator.AFTER_HAVING_MODIFIER_TRANSFORMS.qualify,
@@ -2054,35 +2070,35 @@ export class BigQueryJsonPathTokenizer extends JsonPathTokenizer {
 }
 
 export class BigQuery extends Dialect {
-  public static WEEK_OFFSET = -1;
-  public static UNNEST_COLUMN_ONLY = true;
-  public static SUPPORTS_USER_DEFINED_TYPES = false;
-  public static SUPPORTS_SEMI_ANTI_JOIN = false;
-  public static LOG_BASE_FIRST = false;
-  public static HEX_LOWERCASE = true;
-  public static FORCE_EARLY_ALIAS_REF_EXPANSION = true;
-  public static EXPAND_ONLY_GROUP_ALIAS_REF = true;
-  public static PRESERVE_ORIGINAL_NAMES = true;
-  public static HEX_STRING_IS_INTEGER_TYPE = true;
-  public static BYTE_STRING_IS_BYTES_TYPE = true;
-  public static UUID_IS_STRING_TYPE = true;
-  public static ANNOTATE_ALL_SCOPES = true;
-  public static PROJECTION_ALIASES_SHADOW_SOURCE_NAMES = true;
-  public static TABLES_REFERENCEABLE_AS_COLUMNS = true;
-  public static SUPPORTS_STRUCT_STAR_EXPANSION = true;
-  public static EXCLUDES_PSEUDOCOLUMNS_FROM_STAR = true;
-  public static QUERY_RESULTS_ARE_STRUCTS = true;
-  public static JSON_EXTRACT_SCALAR_SCALAR_ONLY = true;
-  public static LEAST_GREATEST_IGNORES_NULLS = false;
-  public static DEFAULT_NULL_TYPE = DataTypeExprKind.BIGINT;
-  public static PRIORITIZE_NON_LITERAL_TYPES = true;
+  static WEEK_OFFSET = -1;
+  static UNNEST_COLUMN_ONLY = true;
+  static SUPPORTS_USER_DEFINED_TYPES = false;
+  static SUPPORTS_SEMI_ANTI_JOIN = false;
+  static LOG_BASE_FIRST = false;
+  static HEX_LOWERCASE = true;
+  static FORCE_EARLY_ALIAS_REF_EXPANSION = true;
+  static EXPAND_ONLY_GROUP_ALIAS_REF = true;
+  static PRESERVE_ORIGINAL_NAMES = true;
+  static HEX_STRING_IS_INTEGER_TYPE = true;
+  static BYTE_STRING_IS_BYTES_TYPE = true;
+  static UUID_IS_STRING_TYPE = true;
+  static ANNOTATE_ALL_SCOPES = true;
+  static PROJECTION_ALIASES_SHADOW_SOURCE_NAMES = true;
+  static TABLES_REFERENCEABLE_AS_COLUMNS = true;
+  static SUPPORTS_STRUCT_STAR_EXPANSION = true;
+  static EXCLUDES_PSEUDOCOLUMNS_FROM_STAR = true;
+  static QUERY_RESULTS_ARE_STRUCTS = true;
+  static JSON_EXTRACT_SCALAR_SCALAR_ONLY = true;
+  static LEAST_GREATEST_IGNORES_NULLS = false;
+  static DEFAULT_NULL_TYPE = DataTypeExprKind.BIGINT;
+  static PRIORITIZE_NON_LITERAL_TYPES = true;
 
-  public static INITCAP_DEFAULT_DELIMITER_CHARS = ' \t\n\r\f\v\\[\\](){}/|<>!?@"^#$&~_,.:;*%+\\-';
+  static INITCAP_DEFAULT_DELIMITER_CHARS = ' \t\n\r\f\v\\[\\](){}/|<>!?@"^#$&~_,.:;*%+\\-';
 
-  public static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE;
-  public static NORMALIZE_FUNCTIONS = false as const;
+  static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE;
+  static NORMALIZE_FUNCTIONS = false as const;
 
-  public static TIME_MAPPING = {
+  static TIME_MAPPING = {
     '%x': '%m/%d/%y',
     '%D': '%m/%d/%y',
     '%E6S': '%S.%f',
@@ -2092,11 +2108,11 @@ export class BigQuery extends Dialect {
     '%c': '%a %b %e %H:%M:%S %Y',
   };
 
-  public static INVERSE_TIME_MAPPING = {
+  static INVERSE_TIME_MAPPING = {
     '%H:%M:%S.%f': '%H:%M:%E6S',
   };
 
-  public static FORMAT_MAPPING: Record<string, string> = {
+  static FORMAT_MAPPING: Record<string, string> = {
     DD: '%d',
     MM: '%m',
     MON: '%b',
@@ -2116,7 +2132,7 @@ export class BigQuery extends Dialect {
   // https://cloud.google.com/bigquery/docs/querying-partitioned-tables#query_an_ingestion-time_partitioned_table
   // https://cloud.google.com/bigquery/docs/querying-wildcard-tables#scanning_a_range_of_tables_using_table_suffix
   // https://cloud.google.com/bigquery/docs/query-cloud-storage-data#query_the_file_name_pseudo-column
-  public static PSEUDOCOLUMNS: Set<string> = new Set([
+  static PSEUDOCOLUMNS: Set<string> = new Set([
     '_PARTITIONTIME',
     '_PARTITIONDATE',
     '_TABLE_SUFFIX',
@@ -2125,10 +2141,10 @@ export class BigQuery extends Dialect {
   ]);
 
   // All set operations require either a DISTINCT or ALL specifier
-  public static SET_OP_DISTINCT_BY_DEFAULT: Partial<Record<ExpressionKey, boolean>> = {};
+  static SET_OP_DISTINCT_BY_DEFAULT: Partial<Record<ExpressionKey, boolean>> = {};
 
   // https://cloud.google.com/bigquery/docs/reference/standard-sql/navigation_functions#percentile_cont
-  public static COERCES_TO: Record<string, Set<string>> = (() => {
+  static COERCES_TO: Record<string, Set<string>> = (() => {
     const base: Record<string, Set<string>> = {};
     for (const [k, v] of TypeAnnotator.COERCES_TO) {
       base[k] = new Set(v as Iterable<string>);
@@ -2147,7 +2163,7 @@ export class BigQuery extends Dialect {
     return base;
   })();
 
-  public static EXPRESSION_METADATA: ExpressionMetadata = new Map(BIGQUERY_EXPRESSION_METADATA);
+  static EXPRESSION_METADATA: ExpressionMetadata = new Map(BIGQUERY_EXPRESSION_METADATA);
 
   normalizeIdentifier<E extends Expression> (expression: E): E {
     if (
@@ -2183,10 +2199,10 @@ export class BigQuery extends Dialect {
     return super.normalizeIdentifier(expression);
   }
 
-  public static Tokenizer = BigQueryTokenizer;
-  public static Parser = BigQueryParser;
-  public static Generator = BigQueryGenerator;
-  public static JsonPathTokenizer = BigQueryJsonPathTokenizer;
+  static Tokenizer = BigQueryTokenizer;
+  static Parser = BigQueryParser;
+  static Generator = BigQueryGenerator;
+  static JsonPathTokenizer = BigQueryJsonPathTokenizer;
 }
 
 Dialect.register(Dialects.BIGQUERY, BigQuery);

@@ -1200,7 +1200,8 @@ export class Generator {
    * @final Do not override this getter in subclasses; override `ORIGINAL_TRANSFORMS` instead.
    */
   @cache
-  static get TRANSFORMS () {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     const transforms = this.ORIGINAL_TRANSFORMS;
     for (const part of Array.from(ALL_JSON_PATH_PARTS).filter((cls) => !this.SUPPORTED_JSON_PATH_PARTS.has(cls))) {
       transforms.delete(part);

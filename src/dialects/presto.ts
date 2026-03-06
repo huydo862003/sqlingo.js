@@ -570,8 +570,9 @@ class PrestoTokenizer extends Tokenizer {
 }
 
 class PrestoParser extends Parser {
-  public static VALUES_FOLLOWED_BY_PAREN = false;
-  public static ZONE_AWARE_TIMESTAMP_CONSTRUCTOR = true;
+  static VALUES_FOLLOWED_BY_PAREN = false;
+  static ZONE_AWARE_TIMESTAMP_CONSTRUCTOR = true;
+
   @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
@@ -696,190 +697,199 @@ class PrestoParser extends Parser {
 }
 
 class PrestoGenerator extends Generator {
-  public static INTERVAL_ALLOWS_PLURAL_FORM = false;
-  public static JOIN_HINTS = false;
-  public static TABLE_HINTS = false;
-  public static QUERY_HINTS = false;
-  public static IS_BOOL_ALLOWED = false;
-  public static TZ_TO_WITH_TIME_ZONE = true;
-  public static NVL2_SUPPORTED = false;
-  public static STRUCT_DELIMITER = ['(', ')'] as [string, string];
-  public static LIMIT_ONLY_LITERALS = true;
-  public static SUPPORTS_SINGLE_ARG_CONCAT = false;
-  public static LIKE_PROPERTY_INSIDE_SCHEMA = true;
-  public static MULTI_ARG_DISTINCT = false;
-  public static SUPPORTS_TO_NUMBER = false;
-  public static HEX_FUNC = 'TO_HEX';
-  public static PARSE_JSON_NAME = 'JSON_PARSE';
-  public static PAD_FILL_PATTERN_IS_REQUIRED = true;
-  public static EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE = false;
-  public static SUPPORTS_MEDIAN = false;
-  public static ARRAY_SIZE_NAME = 'CARDINALITY';
+  static INTERVAL_ALLOWS_PLURAL_FORM = false;
+  static JOIN_HINTS = false;
+  static TABLE_HINTS = false;
+  static QUERY_HINTS = false;
+  static IS_BOOL_ALLOWED = false;
+  static TZ_TO_WITH_TIME_ZONE = true;
+  static NVL2_SUPPORTED = false;
+  static STRUCT_DELIMITER = ['(', ')'] as [string, string];
+  static LIMIT_ONLY_LITERALS = true;
+  static SUPPORTS_SINGLE_ARG_CONCAT = false;
+  static LIKE_PROPERTY_INSIDE_SCHEMA = true;
+  static MULTI_ARG_DISTINCT = false;
+  static SUPPORTS_TO_NUMBER = false;
+  static HEX_FUNC = 'TO_HEX';
+  static PARSE_JSON_NAME = 'JSON_PARSE';
+  static PAD_FILL_PATTERN_IS_REQUIRED = true;
+  static EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE = false;
+  static SUPPORTS_MEDIAN = false;
+  static ARRAY_SIZE_NAME = 'CARDINALITY';
 
-  public static PROPERTIES_LOCATION = new Map([
-    ...Generator.PROPERTIES_LOCATION,
-    [LocationPropertyExpr, PropertiesLocation.UNSUPPORTED],
-    [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
-  ]);
+  @cache
+  static get PROPERTIES_LOCATION () {
+    return new Map([
+      ...Generator.PROPERTIES_LOCATION,
+      [LocationPropertyExpr, PropertiesLocation.UNSUPPORTED],
+      [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
+    ]);
+  }
 
-  public static TYPE_MAPPING = new Map([
-    ...Generator.TYPE_MAPPING,
-    [DataTypeExprKind.BINARY, 'VARBINARY'],
-    [DataTypeExprKind.BIT, 'BOOLEAN'],
-    [DataTypeExprKind.DATETIME, 'TIMESTAMP'],
-    [DataTypeExprKind.DATETIME64, 'TIMESTAMP'],
-    [DataTypeExprKind.FLOAT, 'REAL'],
-    [DataTypeExprKind.HLLSKETCH, 'HYPERLOGLOG'],
-    [DataTypeExprKind.INT, 'INTEGER'],
-    [DataTypeExprKind.STRUCT, 'ROW'],
-    [DataTypeExprKind.TEXT, 'VARCHAR'],
-    [DataTypeExprKind.TIMESTAMPTZ, 'TIMESTAMP'],
-    [DataTypeExprKind.TIMESTAMPNTZ, 'TIMESTAMP'],
-    [DataTypeExprKind.TIMETZ, 'TIME'],
-  ]);
+  @cache
+  static get TYPE_MAPPING () {
+    return new Map([
+      ...Generator.TYPE_MAPPING,
+      [DataTypeExprKind.BINARY, 'VARBINARY'],
+      [DataTypeExprKind.BIT, 'BOOLEAN'],
+      [DataTypeExprKind.DATETIME, 'TIMESTAMP'],
+      [DataTypeExprKind.DATETIME64, 'TIMESTAMP'],
+      [DataTypeExprKind.FLOAT, 'REAL'],
+      [DataTypeExprKind.HLLSKETCH, 'HYPERLOGLOG'],
+      [DataTypeExprKind.INT, 'INTEGER'],
+      [DataTypeExprKind.STRUCT, 'ROW'],
+      [DataTypeExprKind.TEXT, 'VARCHAR'],
+      [DataTypeExprKind.TIMESTAMPTZ, 'TIMESTAMP'],
+      [DataTypeExprKind.TIMESTAMPNTZ, 'TIMESTAMP'],
+      [DataTypeExprKind.TIMETZ, 'TIME'],
+    ]);
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public static ORIGINAL_TRANSFORMS = new Map<typeof Expression, (self: Generator, e: any) => string>([
-    ...Generator.TRANSFORMS,
-    [AnyValueExpr, renameFunc('ARBITRARY')],
-    [
-      ApproxQuantileExpr,
-      (self: Generator, e: ApproxQuantileExpr) => self.func(
-        'APPROX_PERCENTILE',
-        [
+  @cache
+
+  static get ORIGINAL_TRANSFORMS () {
+    return new Map<typeof Expression, (self: Generator, e: any) => string>([
+      ...Generator.TRANSFORMS,
+      [AnyValueExpr, renameFunc('ARBITRARY')],
+      [
+        ApproxQuantileExpr,
+        (self: Generator, e: ApproxQuantileExpr) => self.func(
+          'APPROX_PERCENTILE',
+          [
+            e.args.this,
+            e.args.weight,
+            e.args.quantile,
+            e.args.accuracy,
+          ],
+        ),
+      ],
+      [ArgMaxExpr, renameFunc('MAX_BY')],
+      [ArgMinExpr, renameFunc('MIN_BY')],
+      [
+        ArrayExpr,
+        preprocess(
+          [inheritStructFieldNames],
+          (self, e) => `ARRAY[${self.expressions(e, { flat: true })}]`,
+        ),
+      ],
+      [ArrayAnyExpr, renameFunc('ANY_MATCH')],
+      [ArrayConcatExpr, renameFunc('CONCAT')],
+      [ArrayContainsExpr, renameFunc('CONTAINS')],
+      [ArrayToStringExpr, renameFunc('ARRAY_JOIN')],
+      [ArrayUniqueAggExpr, renameFunc('SET_AGG')],
+      [ArraySliceExpr, renameFunc('SLICE')],
+      [AtTimeZoneExpr, renameFunc('AT_TIMEZONE')],
+      [BitwiseAndExpr, (self: Generator, e: BitwiseAndExpr) => self.func('BITWISE_AND', [e.args.this, e.args.expression])],
+      [BitwiseLeftShiftExpr, (self: Generator, e: BitwiseLeftShiftExpr) => self.func('BITWISE_ARITHMETIC_SHIFT_LEFT', [e.args.this, e.args.expression])],
+      [BitwiseNotExpr, (self: Generator, e: BitwiseNotExpr) => self.func('BITWISE_NOT', [e.args.this])],
+      [BitwiseOrExpr, (self: Generator, e: BitwiseOrExpr) => self.func('BITWISE_OR', [e.args.this, e.args.expression])],
+      [BitwiseRightShiftExpr, (self: Generator, e: BitwiseRightShiftExpr) => self.func('BITWISE_ARITHMETIC_SHIFT_RIGHT', [e.args.this, e.args.expression])],
+      [BitwiseXorExpr, (self: Generator, e: BitwiseXorExpr) => self.func('BITWISE_XOR', [e.args.this, e.args.expression])],
+      [CastExpr, preprocess([epochCastToTs])],
+      [CurrentTimeExpr, (_self: Generator, _e: Expression) => 'CURRENT_TIME'],
+      [CurrentTimestampExpr, (_self: Generator, _e: Expression) => 'CURRENT_TIMESTAMP'],
+      [CurrentUserExpr, (_self: Generator, _e: Expression) => 'CURRENT_USER'],
+      [DateAddExpr, dateDeltaSql('DATE_ADD')],
+      [
+        DateDiffExpr,
+        (self: Generator, e: DateDiffExpr) => self.func('DATE_DIFF', [
+          unitToStr(e),
+          e.args.expression,
           e.args.this,
-          e.args.weight,
-          e.args.quantile,
-          e.args.accuracy,
-        ],
-      ),
-    ],
-    [ArgMaxExpr, renameFunc('MAX_BY')],
-    [ArgMinExpr, renameFunc('MIN_BY')],
-    [
-      ArrayExpr,
-      preprocess(
-        [inheritStructFieldNames],
-        (self, e) => `ARRAY[${self.expressions(e, { flat: true })}]`,
-      ),
-    ],
-    [ArrayAnyExpr, renameFunc('ANY_MATCH')],
-    [ArrayConcatExpr, renameFunc('CONCAT')],
-    [ArrayContainsExpr, renameFunc('CONTAINS')],
-    [ArrayToStringExpr, renameFunc('ARRAY_JOIN')],
-    [ArrayUniqueAggExpr, renameFunc('SET_AGG')],
-    [ArraySliceExpr, renameFunc('SLICE')],
-    [AtTimeZoneExpr, renameFunc('AT_TIMEZONE')],
-    [BitwiseAndExpr, (self: Generator, e: BitwiseAndExpr) => self.func('BITWISE_AND', [e.args.this, e.args.expression])],
-    [BitwiseLeftShiftExpr, (self: Generator, e: BitwiseLeftShiftExpr) => self.func('BITWISE_ARITHMETIC_SHIFT_LEFT', [e.args.this, e.args.expression])],
-    [BitwiseNotExpr, (self: Generator, e: BitwiseNotExpr) => self.func('BITWISE_NOT', [e.args.this])],
-    [BitwiseOrExpr, (self: Generator, e: BitwiseOrExpr) => self.func('BITWISE_OR', [e.args.this, e.args.expression])],
-    [BitwiseRightShiftExpr, (self: Generator, e: BitwiseRightShiftExpr) => self.func('BITWISE_ARITHMETIC_SHIFT_RIGHT', [e.args.this, e.args.expression])],
-    [BitwiseXorExpr, (self: Generator, e: BitwiseXorExpr) => self.func('BITWISE_XOR', [e.args.this, e.args.expression])],
-    [CastExpr, preprocess([epochCastToTs])],
-    [CurrentTimeExpr, (_self: Generator, _e: Expression) => 'CURRENT_TIME'],
-    [CurrentTimestampExpr, (_self: Generator, _e: Expression) => 'CURRENT_TIMESTAMP'],
-    [CurrentUserExpr, (_self: Generator, _e: Expression) => 'CURRENT_USER'],
-    [DateAddExpr, dateDeltaSql('DATE_ADD')],
-    [
-      DateDiffExpr,
-      (self: Generator, e: DateDiffExpr) => self.func('DATE_DIFF', [
-        unitToStr(e),
-        e.args.expression,
-        e.args.this,
-      ]),
-    ],
-    [DateStrToDateExpr, dateStrToDateSql],
-    [DateToDiExpr, (self: Generator, e: Expression) => `CAST(DATE_FORMAT(${self.sql(e, 'this')}, ${self.dialect._constructor.DATEINT_FORMAT}) AS INT)`],
-    [DateSubExpr, dateDeltaSql('DATE_ADD', { negateInterval: true })],
-    [DayOfWeekExpr, (self: Generator, e: DayOfWeekExpr) => `((${self.func('DAY_OF_WEEK', [e.args.this])} % 7) + 1)`],
-    [DayOfWeekIsoExpr, renameFunc('DAY_OF_WEEK')],
-    [DecodeExpr, (self: Generator, e: DecodeExpr) => encodeDecodeSql(self, e, 'FROM_UTF8')],
-    [DiToDateExpr, (self: Generator, e: Expression) => `CAST(DATE_PARSE(CAST(${self.sql(e, 'this')} AS VARCHAR), ${self.dialect._constructor.DATEINT_FORMAT}) AS DATE)`],
-    [EncodeExpr, (self: Generator, e: EncodeExpr) => encodeDecodeSql(self, e, 'TO_UTF8')],
-    [
-      FileFormatPropertyExpr,
-      (self: Generator, e: Expression) => `format=${self.sql(new LiteralExpr({
-        this: e.name,
-        isString: true,
-      }))}`,
-    ],
-    [FirstExpr, firstLastSql],
-    [FromTimeZoneExpr, (self: Generator, e: Expression) => `WITH_TIMEZONE(${self.sql(e, 'this')}, ${self.sql(e, 'zone')}) AT TIME ZONE 'UTC'`],
-    [GenerateSeriesExpr, sequenceSql],
-    [GenerateDateArrayExpr, sequenceSql],
-    [IfExpr, ifSql()],
-    [ILikeExpr, noIlikeSql],
-    [InitcapExpr, initcapSql],
-    [LastExpr, firstLastSql],
-    [LastDayExpr, (self: Generator, e: LastDayExpr) => self.func('LAST_DAY_OF_MONTH', [e.args.this])],
-    [LateralExpr, explodeToUnnestSqlPresto],
-    [LeftExpr, leftToSubstringSql],
-    [LevenshteinExpr, (self: Generator, e: Expression) => unsupportedArgs('insCost', 'delCost', 'subCost', 'maxDist')((e) => renameFunc('LEVENSHTEIN_DISTANCE')(self, e))(e)],
-    [LogicalAndExpr, renameFunc('BOOL_AND')],
-    [LogicalOrExpr, renameFunc('BOOL_OR')],
-    [PivotExpr, noPivotSql],
-    [QuantileExpr, quantileSql],
-    [RegexpExtractExpr, regexpExtractSql],
-    [RegexpExtractAllExpr, regexpExtractSql],
-    [RightExpr, rightToSubstringSql],
-    [SchemaExpr, schemaSql],
-    [SchemaCommentPropertyExpr, (self: Generator, e: SchemaCommentPropertyExpr) => self.nakedProperty(e)],
-    [
-      SelectExpr,
-      preprocess([
-        eliminateWindowClause,
-        eliminateQualify,
-        eliminateDistinctOn,
-        explodeProjectionToUnnest(1),
-        eliminateSemiAndAntiJoins,
-        amendExplodedColumnTable,
-      ]),
-    ],
-    [SortArrayExpr, noSortArray],
-    [StrPositionExpr, (self: Generator, e: StrPositionExpr) => strPositionSql(self, e, { supportsOccurrence: true })],
-    [StrToDateExpr, (self: Generator, e: StrPositionExpr) => `CAST(${strToTimeSql(self, e)} AS DATE)`],
-    [StrToMapExpr, renameFunc('SPLIT_TO_MAP')],
-    [StrToTimeExpr, strToTimeSql],
-    [StructExtractExpr, structExtractSql],
-    [TableExpr, preprocess([unnestGenerateSeries])],
-    [
-      TimestampExpr,
-      (self: Generator, e: TimestampExpr) => {
+        ]),
+      ],
+      [DateStrToDateExpr, dateStrToDateSql],
+      [DateToDiExpr, (self: Generator, e: Expression) => `CAST(DATE_FORMAT(${self.sql(e, 'this')}, ${self.dialect._constructor.DATEINT_FORMAT}) AS INT)`],
+      [DateSubExpr, dateDeltaSql('DATE_ADD', { negateInterval: true })],
+      [DayOfWeekExpr, (self: Generator, e: DayOfWeekExpr) => `((${self.func('DAY_OF_WEEK', [e.args.this])} % 7) + 1)`],
+      [DayOfWeekIsoExpr, renameFunc('DAY_OF_WEEK')],
+      [DecodeExpr, (self: Generator, e: DecodeExpr) => encodeDecodeSql(self, e, 'FROM_UTF8')],
+      [DiToDateExpr, (self: Generator, e: Expression) => `CAST(DATE_PARSE(CAST(${self.sql(e, 'this')} AS VARCHAR), ${self.dialect._constructor.DATEINT_FORMAT}) AS DATE)`],
+      [EncodeExpr, (self: Generator, e: EncodeExpr) => encodeDecodeSql(self, e, 'TO_UTF8')],
+      [
+        FileFormatPropertyExpr,
+        (self: Generator, e: Expression) => `format=${self.sql(new LiteralExpr({
+          this: e.name,
+          isString: true,
+        }))}`,
+      ],
+      [FirstExpr, firstLastSql],
+      [FromTimeZoneExpr, (self: Generator, e: Expression) => `WITH_TIMEZONE(${self.sql(e, 'this')}, ${self.sql(e, 'zone')}) AT TIME ZONE 'UTC'`],
+      [GenerateSeriesExpr, sequenceSql],
+      [GenerateDateArrayExpr, sequenceSql],
+      [IfExpr, ifSql()],
+      [ILikeExpr, noIlikeSql],
+      [InitcapExpr, initcapSql],
+      [LastExpr, firstLastSql],
+      [LastDayExpr, (self: Generator, e: LastDayExpr) => self.func('LAST_DAY_OF_MONTH', [e.args.this])],
+      [LateralExpr, explodeToUnnestSqlPresto],
+      [LeftExpr, leftToSubstringSql],
+      [LevenshteinExpr, (self: Generator, e: Expression) => unsupportedArgs('insCost', 'delCost', 'subCost', 'maxDist')((e) => renameFunc('LEVENSHTEIN_DISTANCE')(self, e))(e)],
+      [LogicalAndExpr, renameFunc('BOOL_AND')],
+      [LogicalOrExpr, renameFunc('BOOL_OR')],
+      [PivotExpr, noPivotSql],
+      [QuantileExpr, quantileSql],
+      [RegexpExtractExpr, regexpExtractSql],
+      [RegexpExtractAllExpr, regexpExtractSql],
+      [RightExpr, rightToSubstringSql],
+      [SchemaExpr, schemaSql],
+      [SchemaCommentPropertyExpr, (self: Generator, e: SchemaCommentPropertyExpr) => self.nakedProperty(e)],
+      [
+        SelectExpr,
+        preprocess([
+          eliminateWindowClause,
+          eliminateQualify,
+          eliminateDistinctOn,
+          explodeProjectionToUnnest(1),
+          eliminateSemiAndAntiJoins,
+          amendExplodedColumnTable,
+        ]),
+      ],
+      [SortArrayExpr, noSortArray],
+      [StrPositionExpr, (self: Generator, e: StrPositionExpr) => strPositionSql(self, e, { supportsOccurrence: true })],
+      [StrToDateExpr, (self: Generator, e: StrPositionExpr) => `CAST(${strToTimeSql(self, e)} AS DATE)`],
+      [StrToMapExpr, renameFunc('SPLIT_TO_MAP')],
+      [StrToTimeExpr, strToTimeSql],
+      [StructExtractExpr, structExtractSql],
+      [TableExpr, preprocess([unnestGenerateSeries])],
+      [
+        TimestampExpr,
+        (self: Generator, e: TimestampExpr) => {
         // Presto doesn't support the TIMESTAMP keyword in the same way as Postgres/Spark
-        return `CAST(${self.sql(e.args.this)} AS TIMESTAMP)`;
-      },
-    ],
-    [TimestampAddExpr, dateDeltaSql('DATE_ADD')],
-    [TimestampTruncExpr, timestampTruncSql()],
-    [TimeStrToDateExpr, timeStrToTimeSql],
-    [TimeStrToTimeExpr, timeStrToTimeSql],
-    [TimeStrToUnixExpr, (self: Generator, e: TimeStrToUnixExpr) => self.func('TO_UNIXTIME', [self.func('DATE_PARSE', [e.args.this, self.dialect._constructor.TIME_FORMAT])])],
-    [TimeToStrExpr, (self: Generator, e: TimeToStrExpr) => self.func('DATE_FORMAT', [e.args.this, self.formatTime(e)])],
-    [TimeToUnixExpr, renameFunc('TO_UNIXTIME')],
-    [ToCharExpr, (self: Generator, e: ToCharExpr) => self.func('DATE_FORMAT', [e.args.this, self.formatTime(e)])],
-    [TryCastExpr, preprocess([epochCastToTs])],
-    [TsOrDiToDiExpr, (self: Generator, e: TsOrDiToDiExpr) => `CAST(SUBSTR(REPLACE(CAST(${self.sql(e, 'this')} AS VARCHAR), '-', ''), 1, 8) AS INT)`],
-    [TsOrDsAddExpr, tsOrDsAddSql],
-    [TsOrDsDiffExpr, tsOrDsDiffSql],
-    [TsOrDsToDateExpr, tsOrDsToDateSql],
-    [UnhexExpr, renameFunc('FROM_HEX')],
-    [UnixToStrExpr, (self: Generator, e: Expression) => `DATE_FORMAT(FROM_UNIXTIME(${self.sql(e, 'this')}), ${self.formatTime(e)})`],
-    [UnixToTimeExpr, unixToTimeSql],
-    [UnixToTimeStrExpr, (self: Generator, e: Expression) => `CAST(FROM_UNIXTIME(${self.sql(e, 'this')}) AS VARCHAR)`],
-    [VariancePopExpr, renameFunc('VAR_POP')],
-    [WithExpr, preprocess([addRecursiveCteColumnNames])],
-    [WithinGroupExpr, preprocess([removeWithinGroupForPercentiles])],
-    [TruncExpr, renameFunc('TRUNCATE')],
-    [XorExpr, boolXorSql],
-    [Md5DigestExpr, renameFunc('MD5')],
-    [ShaExpr, renameFunc('SHA1')],
-    [Sha1DigestExpr, renameFunc('SHA1')],
-    [Sha2Expr, sha256Sql],
-    [Sha2DigestExpr, sha2DigestSql],
-  ]);
+          return `CAST(${self.sql(e.args.this)} AS TIMESTAMP)`;
+        },
+      ],
+      [TimestampAddExpr, dateDeltaSql('DATE_ADD')],
+      [TimestampTruncExpr, timestampTruncSql()],
+      [TimeStrToDateExpr, timeStrToTimeSql],
+      [TimeStrToTimeExpr, timeStrToTimeSql],
+      [TimeStrToUnixExpr, (self: Generator, e: TimeStrToUnixExpr) => self.func('TO_UNIXTIME', [self.func('DATE_PARSE', [e.args.this, self.dialect._constructor.TIME_FORMAT])])],
+      [TimeToStrExpr, (self: Generator, e: TimeToStrExpr) => self.func('DATE_FORMAT', [e.args.this, self.formatTime(e)])],
+      [TimeToUnixExpr, renameFunc('TO_UNIXTIME')],
+      [ToCharExpr, (self: Generator, e: ToCharExpr) => self.func('DATE_FORMAT', [e.args.this, self.formatTime(e)])],
+      [TryCastExpr, preprocess([epochCastToTs])],
+      [TsOrDiToDiExpr, (self: Generator, e: TsOrDiToDiExpr) => `CAST(SUBSTR(REPLACE(CAST(${self.sql(e, 'this')} AS VARCHAR), '-', ''), 1, 8) AS INT)`],
+      [TsOrDsAddExpr, tsOrDsAddSql],
+      [TsOrDsDiffExpr, tsOrDsDiffSql],
+      [TsOrDsToDateExpr, tsOrDsToDateSql],
+      [UnhexExpr, renameFunc('FROM_HEX')],
+      [UnixToStrExpr, (self: Generator, e: Expression) => `DATE_FORMAT(FROM_UNIXTIME(${self.sql(e, 'this')}), ${self.formatTime(e)})`],
+      [UnixToTimeExpr, unixToTimeSql],
+      [UnixToTimeStrExpr, (self: Generator, e: Expression) => `CAST(FROM_UNIXTIME(${self.sql(e, 'this')}) AS VARCHAR)`],
+      [VariancePopExpr, renameFunc('VAR_POP')],
+      [WithExpr, preprocess([addRecursiveCteColumnNames])],
+      [WithinGroupExpr, preprocess([removeWithinGroupForPercentiles])],
+      [TruncExpr, renameFunc('TRUNCATE')],
+      [XorExpr, boolXorSql],
+      [Md5DigestExpr, renameFunc('MD5')],
+      [ShaExpr, renameFunc('SHA1')],
+      [Sha1DigestExpr, renameFunc('SHA1')],
+      [Sha2Expr, sha256Sql],
+      [Sha2DigestExpr, sha2DigestSql],
+    ]);
+  }
 
-  public static RESERVED_KEYWORDS = new Set([
+  static RESERVED_KEYWORDS = new Set([
     'alter',
     'and',
     'as',
@@ -1087,9 +1097,9 @@ class PrestoGenerator extends Generator {
   }
 
   /**
-     * Presto uses ROW(...) for structs. If types are known, it casts the row
-     * to a specific ROW schema to maintain field naming.
-     */
+   * Presto uses ROW(...) for structs. If types are known, it casts the row
+   * to a specific ROW schema to maintain field naming.
+   */
   public structSql (expression: StructExpr): string {
     if (!expression.type) {
       annotateTypes(expression, { dialect: this.dialect });
@@ -1234,4 +1244,5 @@ export class Presto extends Dialect {
   static Parser = PrestoParser;
   static Generator = PrestoGenerator;
 }
+
 Dialect.register(Dialects.PRESTO, Presto);

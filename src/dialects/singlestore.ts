@@ -157,7 +157,7 @@ class SingleStoreTokenizer extends MySQL.Tokenizer {
 
 class SingleStoreParser extends MySQL.Parser {
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return (() => {
       const functions = {
         ...MySQL.Parser.FUNCTIONS,
@@ -302,7 +302,7 @@ class SingleStoreParser extends MySQL.Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS () {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return {
       ...MySQL.Parser.FUNCTION_PARSERS,
       JSON_AGG: (self: Parser) =>
@@ -314,7 +314,7 @@ class SingleStoreParser extends MySQL.Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTIONS () {
+  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
     return {
       ...MySQL.Parser.NO_PAREN_FUNCTIONS,
       [TokenType.UTC_DATE]: UtcDateExpr,
@@ -325,7 +325,7 @@ class SingleStoreParser extends MySQL.Parser {
 
   static CAST_COLUMN_OPERATORS = new Set([TokenType.COLON_GT, TokenType.NCOLON_GT]);
   @cache
-  static get COLUMN_OPERATORS () {
+  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
     return (() => {
       const operators = {
         ...MySQL.Parser.COLUMN_OPERATORS,
@@ -362,7 +362,7 @@ class SingleStoreParser extends MySQL.Parser {
   }
 
   @cache
-  static get SHOW_PARSERS () {
+  static get SHOW_PARSERS (): Record<string, (self: Parser) => Expression> {
     return {
       ...MySQL.Parser.SHOW_PARSERS,
       'AGGREGATES': showParser('AGGREGATES'),
@@ -404,7 +404,7 @@ class SingleStoreParser extends MySQL.Parser {
   }
 
   @cache
-  static get ALTER_PARSERS () {
+  static get ALTER_PARSERS (): Partial<Record<string, (self: Parser) => Expression | Expression[] | undefined>> {
     return {
       ...MySQL.Parser.ALTER_PARSERS,
       CHANGE: (self: Parser) =>
@@ -436,13 +436,18 @@ class SingleStoreGenerator extends MySQL.Generator {
     return String.fromCharCode(parseInt(group, 16));
   };
 
-  static SUPPORTED_JSON_PATH_PARTS = new Set([
-    JsonPathKeyExpr,
-    JsonPathRootExpr,
-    JsonPathSubscriptExpr,
-  ]);
+  @cache
+  static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
+    return new Set([
+      JsonPathKeyExpr,
+      JsonPathRootExpr,
+      JsonPathSubscriptExpr,
+    ]);
+  }
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...MySQL.Generator.TRANSFORMS,
@@ -811,95 +816,101 @@ class SingleStoreGenerator extends MySQL.Generator {
     transforms.delete(JsonExtractScalarExpr);
     transforms.delete(CurrentDateExpr);
     return transforms;
-  })();
+  }
 
-  static UNSUPPORTED_TYPES = new Set([
-    DataTypeExprKind.ARRAY,
-    DataTypeExprKind.AGGREGATEFUNCTION,
-    DataTypeExprKind.SIMPLEAGGREGATEFUNCTION,
-    DataTypeExprKind.BIGSERIAL,
-    DataTypeExprKind.BPCHAR,
-    DataTypeExprKind.DATEMULTIRANGE,
-    DataTypeExprKind.DATERANGE,
-    DataTypeExprKind.DYNAMIC,
-    DataTypeExprKind.HLLSKETCH,
-    DataTypeExprKind.HSTORE,
-    DataTypeExprKind.IMAGE,
-    DataTypeExprKind.INET,
-    DataTypeExprKind.INT128,
-    DataTypeExprKind.INT256,
-    DataTypeExprKind.INT4MULTIRANGE,
-    DataTypeExprKind.INT4RANGE,
-    DataTypeExprKind.INT8MULTIRANGE,
-    DataTypeExprKind.INT8RANGE,
-    DataTypeExprKind.INTERVAL,
-    DataTypeExprKind.IPADDRESS,
-    DataTypeExprKind.IPPREFIX,
-    DataTypeExprKind.IPV4,
-    DataTypeExprKind.IPV6,
-    DataTypeExprKind.LIST,
-    DataTypeExprKind.MAP,
-    DataTypeExprKind.LOWCARDINALITY,
-    DataTypeExprKind.MONEY,
-    DataTypeExprKind.MULTILINESTRING,
-    DataTypeExprKind.NAME,
-    DataTypeExprKind.NESTED,
-    DataTypeExprKind.NOTHING,
-    DataTypeExprKind.NULL,
-    DataTypeExprKind.NUMMULTIRANGE,
-    DataTypeExprKind.NUMRANGE,
-    DataTypeExprKind.OBJECT,
-    DataTypeExprKind.RANGE,
-    DataTypeExprKind.ROWVERSION,
-    DataTypeExprKind.SERIAL,
-    DataTypeExprKind.SMALLSERIAL,
-    DataTypeExprKind.SMALLMONEY,
-    DataTypeExprKind.SUPER,
-    DataTypeExprKind.TIMETZ,
-    DataTypeExprKind.TIMESTAMPNTZ,
-    DataTypeExprKind.TIMESTAMPLTZ,
-    DataTypeExprKind.TIMESTAMPTZ,
-    DataTypeExprKind.TIMESTAMP_NS,
-    DataTypeExprKind.TSMULTIRANGE,
-    DataTypeExprKind.TSRANGE,
-    DataTypeExprKind.TSTZMULTIRANGE,
-    DataTypeExprKind.TSTZRANGE,
-    DataTypeExprKind.UINT128,
-    DataTypeExprKind.UINT256,
-    DataTypeExprKind.UNION,
-    DataTypeExprKind.UNKNOWN,
-    DataTypeExprKind.USERDEFINED,
-    DataTypeExprKind.UUID,
-    DataTypeExprKind.VARIANT,
-    DataTypeExprKind.XML,
-    DataTypeExprKind.TDIGEST,
-  ]);
+  @cache
+  static get UNSUPPORTED_TYPES (): Set<DataTypeExprKind> {
+    return new Set([
+      DataTypeExprKind.ARRAY,
+      DataTypeExprKind.AGGREGATEFUNCTION,
+      DataTypeExprKind.SIMPLEAGGREGATEFUNCTION,
+      DataTypeExprKind.BIGSERIAL,
+      DataTypeExprKind.BPCHAR,
+      DataTypeExprKind.DATEMULTIRANGE,
+      DataTypeExprKind.DATERANGE,
+      DataTypeExprKind.DYNAMIC,
+      DataTypeExprKind.HLLSKETCH,
+      DataTypeExprKind.HSTORE,
+      DataTypeExprKind.IMAGE,
+      DataTypeExprKind.INET,
+      DataTypeExprKind.INT128,
+      DataTypeExprKind.INT256,
+      DataTypeExprKind.INT4MULTIRANGE,
+      DataTypeExprKind.INT4RANGE,
+      DataTypeExprKind.INT8MULTIRANGE,
+      DataTypeExprKind.INT8RANGE,
+      DataTypeExprKind.INTERVAL,
+      DataTypeExprKind.IPADDRESS,
+      DataTypeExprKind.IPPREFIX,
+      DataTypeExprKind.IPV4,
+      DataTypeExprKind.IPV6,
+      DataTypeExprKind.LIST,
+      DataTypeExprKind.MAP,
+      DataTypeExprKind.LOWCARDINALITY,
+      DataTypeExprKind.MONEY,
+      DataTypeExprKind.MULTILINESTRING,
+      DataTypeExprKind.NAME,
+      DataTypeExprKind.NESTED,
+      DataTypeExprKind.NOTHING,
+      DataTypeExprKind.NULL,
+      DataTypeExprKind.NUMMULTIRANGE,
+      DataTypeExprKind.NUMRANGE,
+      DataTypeExprKind.OBJECT,
+      DataTypeExprKind.RANGE,
+      DataTypeExprKind.ROWVERSION,
+      DataTypeExprKind.SERIAL,
+      DataTypeExprKind.SMALLSERIAL,
+      DataTypeExprKind.SMALLMONEY,
+      DataTypeExprKind.SUPER,
+      DataTypeExprKind.TIMETZ,
+      DataTypeExprKind.TIMESTAMPNTZ,
+      DataTypeExprKind.TIMESTAMPLTZ,
+      DataTypeExprKind.TIMESTAMPTZ,
+      DataTypeExprKind.TIMESTAMP_NS,
+      DataTypeExprKind.TSMULTIRANGE,
+      DataTypeExprKind.TSRANGE,
+      DataTypeExprKind.TSTZMULTIRANGE,
+      DataTypeExprKind.TSTZRANGE,
+      DataTypeExprKind.UINT128,
+      DataTypeExprKind.UINT256,
+      DataTypeExprKind.UNION,
+      DataTypeExprKind.UNKNOWN,
+      DataTypeExprKind.USERDEFINED,
+      DataTypeExprKind.UUID,
+      DataTypeExprKind.VARIANT,
+      DataTypeExprKind.XML,
+      DataTypeExprKind.TDIGEST,
+    ]);
+  }
 
-  static TYPE_MAPPING = {
-    ...MySQL.Generator.TYPE_MAPPING,
-    [DataTypeExprKind.BIGDECIMAL]: 'DECIMAL',
-    [DataTypeExprKind.BIT]: 'BOOLEAN',
-    [DataTypeExprKind.DATE32]: 'DATE',
-    [DataTypeExprKind.DATETIME64]: 'DATETIME',
-    [DataTypeExprKind.DECIMAL32]: 'DECIMAL',
-    [DataTypeExprKind.DECIMAL64]: 'DECIMAL',
-    [DataTypeExprKind.DECIMAL128]: 'DECIMAL',
-    [DataTypeExprKind.DECIMAL256]: 'DECIMAL',
-    [DataTypeExprKind.ENUM8]: 'ENUM',
-    [DataTypeExprKind.ENUM16]: 'ENUM',
-    [DataTypeExprKind.FIXEDSTRING]: 'TEXT',
-    [DataTypeExprKind.GEOMETRY]: 'GEOGRAPHY',
-    [DataTypeExprKind.POINT]: 'GEOGRAPHYPOINT',
-    [DataTypeExprKind.RING]: 'GEOGRAPHY',
-    [DataTypeExprKind.LINESTRING]: 'GEOGRAPHY',
-    [DataTypeExprKind.POLYGON]: 'GEOGRAPHY',
-    [DataTypeExprKind.MULTIPOLYGON]: 'GEOGRAPHY',
-    [DataTypeExprKind.STRUCT]: 'RECORD',
-    [DataTypeExprKind.JSONB]: 'BSON',
-    [DataTypeExprKind.TIMESTAMP]: 'TIMESTAMP',
-    [DataTypeExprKind.TIMESTAMP_S]: 'TIMESTAMP',
-    [DataTypeExprKind.TIMESTAMP_MS]: 'TIMESTAMP(6)',
-  };
+  @cache
+  static get TYPE_MAPPING () {
+    return {
+      ...MySQL.Generator.TYPE_MAPPING,
+      [DataTypeExprKind.BIGDECIMAL]: 'DECIMAL',
+      [DataTypeExprKind.BIT]: 'BOOLEAN',
+      [DataTypeExprKind.DATE32]: 'DATE',
+      [DataTypeExprKind.DATETIME64]: 'DATETIME',
+      [DataTypeExprKind.DECIMAL32]: 'DECIMAL',
+      [DataTypeExprKind.DECIMAL64]: 'DECIMAL',
+      [DataTypeExprKind.DECIMAL128]: 'DECIMAL',
+      [DataTypeExprKind.DECIMAL256]: 'DECIMAL',
+      [DataTypeExprKind.ENUM8]: 'ENUM',
+      [DataTypeExprKind.ENUM16]: 'ENUM',
+      [DataTypeExprKind.FIXEDSTRING]: 'TEXT',
+      [DataTypeExprKind.GEOMETRY]: 'GEOGRAPHY',
+      [DataTypeExprKind.POINT]: 'GEOGRAPHYPOINT',
+      [DataTypeExprKind.RING]: 'GEOGRAPHY',
+      [DataTypeExprKind.LINESTRING]: 'GEOGRAPHY',
+      [DataTypeExprKind.POLYGON]: 'GEOGRAPHY',
+      [DataTypeExprKind.MULTIPOLYGON]: 'GEOGRAPHY',
+      [DataTypeExprKind.STRUCT]: 'RECORD',
+      [DataTypeExprKind.JSONB]: 'BSON',
+      [DataTypeExprKind.TIMESTAMP]: 'TIMESTAMP',
+      [DataTypeExprKind.TIMESTAMP_S]: 'TIMESTAMP',
+      [DataTypeExprKind.TIMESTAMP_MS]: 'TIMESTAMP(6)',
+    };
+  }
 
   static RESERVED_KEYWORDS = new Set([
     'abs',
@@ -2204,9 +2215,12 @@ export class SingleStore extends MySQL {
     F64: 'DOUBLE',
   };
 
-  static INVERSE_VECTOR_TYPE_ALIASES = Object.fromEntries(
-    Object.entries(SingleStore.VECTOR_TYPE_ALIASES).map(([k, v]) => [v, k]),
-  );
+  @cache
+  static get INVERSE_VECTOR_TYPE_ALIASES () {
+    return Object.fromEntries(
+      Object.entries(SingleStore.VECTOR_TYPE_ALIASES).map(([k, v]) => [v, k]),
+    );
+  }
 
   static Tokenizer = SingleStoreTokenizer;
   static Parser = SingleStoreParser;

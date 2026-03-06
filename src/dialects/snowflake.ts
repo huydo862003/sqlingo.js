@@ -425,8 +425,8 @@ function buildObjectConstruct (args: Expression[]): StarMapExpr | StructExpr {
 
 function buildDatediff (args: Expression[]): DateDiffExpr {
   return new DateDiffExpr({
-    this: seqGet(args, 2)!,
-    expression: seqGet(args, 1)!,
+    this: seqGet(args, 2),
+    expression: seqGet(args, 1),
     unit: mapDatePart(seqGet(args, 0)),
     datePartBoundary: true,
   });
@@ -1052,11 +1052,12 @@ function buildTryToNumber (args: Expression[]): ToNumberExpr {
 }
 
 class SnowflakeJsonPathTokenizer extends JsonPathTokenizer {
-  static SINGLE_TOKENS = (() => {
+  @cache
+  static get SINGLE_TOKENS (): Record<string, TokenType> {
     const tokens: Record<string, TokenType> = { ...JsonPathTokenizer.SINGLE_TOKENS };
     delete tokens['$'];
     return tokens;
-  })();
+  }
 }
 
 class SnowflakeTokenizer extends Tokenizer {
@@ -1074,7 +1075,8 @@ class SnowflakeTokenizer extends Tokenizer {
 
   static NESTED_COMMENTS = false;
 
-  static ORIGINAL_KEYWORDS = (() => {
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     const keywords: Record<string, TokenType> = {
       ...Tokenizer.KEYWORDS,
       'BYTEINT': TokenType.INT,
@@ -1103,19 +1105,25 @@ class SnowflakeTokenizer extends Tokenizer {
     };
     delete keywords['/*+'];
     return keywords;
-  })();
+  }
 
-  static SINGLE_TOKENS = {
-    ...Tokenizer.SINGLE_TOKENS,
-    '$': TokenType.PARAMETER,
-    '!': TokenType.EXCLAMATION,
-  };
+  @cache
+  static get SINGLE_TOKENS (): Record<string, TokenType> {
+    return {
+      ...Tokenizer.SINGLE_TOKENS,
+      '$': TokenType.PARAMETER,
+      '!': TokenType.EXCLAMATION,
+    };
+  }
 
   static VAR_SINGLE_TOKENS = new Set(['$']);
 
-  static COMMANDS = new Set(
-    Array.from(Tokenizer.COMMANDS).filter((t) => t !== TokenType.SHOW),
-  );
+  @cache
+  static get COMMANDS (): Set<TokenType> {
+    return new Set(
+      Array.from(Tokenizer.COMMANDS).filter((t) => t !== TokenType.SHOW),
+    );
+  }
 }
 
 class SnowflakeParser extends Parser {
@@ -1123,8 +1131,9 @@ class SnowflakeParser extends Parser {
   static DEFAULT_SAMPLING_METHOD = 'BERNOULLI' as const;
   static COLON_IS_VARIANT_EXTRACT = true;
   static JSON_EXTRACT_REQUIRES_JSON_EXPRESSION = true;
+
   @cache
-  static get ID_VAR_TOKENS () {
+  static get ID_VAR_TOKENS (): Set<TokenType> {
     return new Set([
       ...Parser.ID_VAR_TOKENS,
       TokenType.EXCEPT,
@@ -1133,7 +1142,7 @@ class SnowflakeParser extends Parser {
   }
 
   @cache
-  static get TABLE_ALIAS_TOKENS () {
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
     return (() => {
       const tokens = new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.WINDOW]);
       tokens.delete(TokenType.MATCH_CONDITION);
@@ -1141,9 +1150,13 @@ class SnowflakeParser extends Parser {
     })();
   }
 
-  static COLON_PLACEHOLDER_TOKENS = new Set([...SnowflakeParser.ID_VAR_TOKENS, TokenType.NUMBER]);
   @cache
-  static get NO_PAREN_FUNCTIONS () {
+  static get COLON_PLACEHOLDER_TOKENS (): Set<TokenType> {
+    return new Set([...SnowflakeParser.ID_VAR_TOKENS, TokenType.NUMBER]);
+  }
+
+  @cache
+  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
     return {
       ...Parser.NO_PAREN_FUNCTIONS,
       [TokenType.CURRENT_TIME]: LocaltimeExpr,
@@ -1151,7 +1164,7 @@ class SnowflakeParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return (() => {
       const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
         ...Parser.FUNCTIONS,
@@ -1173,7 +1186,7 @@ class SnowflakeParser extends Parser {
           }),
         ARRAY_GENERATE_RANGE: (args: Expression[]) =>
           new GenerateSeriesExpr({
-            start: seqGet(args, 0)!,
+            start: seqGet(args, 0),
             end: new SubExpr({
               this: seqGet(args, 1),
               expression: LiteralExpr.number(1),
@@ -1461,7 +1474,7 @@ class SnowflakeParser extends Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS () {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return (() => {
       const parsers: Partial<Record<string, (self: Parser) => Expression | undefined>> = {
         ...Parser.FUNCTION_PARSERS,
@@ -1477,14 +1490,14 @@ class SnowflakeParser extends Parser {
   }
 
   @cache
-  static get TIMESTAMPS () {
+  static get TIMESTAMPS (): Set<TokenType> {
     return new Set(
       Array.from(Parser.TIMESTAMPS).filter((t) => t !== TokenType.TIME),
     );
   }
 
   @cache
-  static get ALTER_PARSERS () {
+  static get ALTER_PARSERS (): Partial<Record<string, (self: Parser) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.ALTER_PARSERS,
       SESSION: (self: Parser) => self.parseAlterSession(),
@@ -1498,7 +1511,7 @@ class SnowflakeParser extends Parser {
   }
 
   @cache
-  static get STATEMENT_PARSERS () {
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.GET]: (self: Parser) => (self as SnowflakeParser).parseGet(),
@@ -1508,7 +1521,7 @@ class SnowflakeParser extends Parser {
   }
 
   @cache
-  static get PROPERTY_PARSERS () {
+  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return {
       ...Parser.PROPERTY_PARSERS,
       CREDENTIALS: (self: Parser) => (self as SnowflakeParser).parseCredentialsProperty(),
@@ -1557,7 +1570,7 @@ class SnowflakeParser extends Parser {
   };
 
   @cache
-  static get CONSTRAINT_PARSERS () {
+  static get CONSTRAINT_PARSERS (): Partial<Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.CONSTRAINT_PARSERS,
       WITH: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
@@ -1567,11 +1580,14 @@ class SnowflakeParser extends Parser {
     };
   }
 
-  static STAGED_FILE_SINGLE_TOKENS = new Set([
-    TokenType.DOT,
-    TokenType.MOD,
-    TokenType.SLASH,
-  ]);
+  @cache
+  static get STAGED_FILE_SINGLE_TOKENS (): Set<TokenType> {
+    return new Set([
+      TokenType.DOT,
+      TokenType.MOD,
+      TokenType.SLASH,
+    ]);
+  }
 
   static FLATTEN_COLUMNS = [
     'SEQ',
@@ -1599,7 +1615,7 @@ class SnowflakeParser extends Parser {
   ]);
 
   @cache
-  static get LAMBDAS () {
+  static get LAMBDAS (): Partial<Record<TokenType, (self: Parser, expressions: Expression[]) => Expression>> {
     return {
       ...Parser.LAMBDAS,
       [TokenType.ARROW]: (self: Parser, expressions: Expression[]) =>
@@ -1611,7 +1627,7 @@ class SnowflakeParser extends Parser {
   }
 
   @cache
-  static get COLUMN_OPERATORS () {
+  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
     return {
       ...Parser.COLUMN_OPERATORS,
       [TokenType.EXCLAMATION]: (self: Parser, thisNode?: Expression, attr?: Expression) =>
@@ -2130,7 +2146,9 @@ class SnowflakeGenerator extends Generator {
   static IS_BOOL_ALLOWED = false;
   static DIRECTED_JOINS = true;
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
@@ -2423,7 +2441,7 @@ class SnowflakeGenerator extends Generator {
       ],
     ]);
     return transforms;
-  })();
+  }
 
   nthvalueSql (expression: NthValueExpr): string {
     let result = this.func('NTH_VALUE', [expression.args.this, expression.args.offset]);
@@ -2436,41 +2454,56 @@ class SnowflakeGenerator extends Generator {
     return result;
   }
 
-  static SUPPORTED_JSON_PATH_PARTS = new Set([
-    JsonPathKeyExpr,
-    JsonPathRootExpr,
-    JsonPathSubscriptExpr,
-  ]);
+  @cache
+  static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
+    return new Set([
+      JsonPathKeyExpr,
+      JsonPathRootExpr,
+      JsonPathSubscriptExpr,
+    ]);
+  }
 
-  static TYPE_MAPPING = {
-    ...Generator.TYPE_MAPPING,
-    [DataTypeExprKind.BIGDECIMAL]: 'DOUBLE',
-    [DataTypeExprKind.NESTED]: 'OBJECT',
-    [DataTypeExprKind.STRUCT]: 'OBJECT',
-    [DataTypeExprKind.TEXT]: 'VARCHAR',
-  };
+  @cache
+  static get TYPE_MAPPING () {
+    return {
+      ...Generator.TYPE_MAPPING,
+      [DataTypeExprKind.BIGDECIMAL]: 'DOUBLE',
+      [DataTypeExprKind.NESTED]: 'OBJECT',
+      [DataTypeExprKind.STRUCT]: 'OBJECT',
+      [DataTypeExprKind.TEXT]: 'VARCHAR',
+    };
+  }
 
   static TOKEN_MAPPING: Partial<Record<TokenType, string>> = {
     [TokenType.AUTO_INCREMENT]: 'AUTOINCREMENT',
   };
 
-  static PROPERTIES_LOCATION = new Map([
-    ...Generator.PROPERTIES_LOCATION,
-    [CredentialsPropertyExpr, PropertiesLocation.POST_WITH],
-    [LocationPropertyExpr, PropertiesLocation.POST_WITH],
-    [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
-    [SetPropertyExpr, PropertiesLocation.UNSUPPORTED],
-    [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
-  ]);
+  @cache
+  static get PROPERTIES_LOCATION () {
+    return new Map([
+      ...Generator.PROPERTIES_LOCATION,
+      [CredentialsPropertyExpr, PropertiesLocation.POST_WITH],
+      [LocationPropertyExpr, PropertiesLocation.POST_WITH],
+      [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
+      [SetPropertyExpr, PropertiesLocation.UNSUPPORTED],
+      [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
+    ]);
+  }
 
-  static UNSUPPORTED_VALUES_EXPRESSIONS = new Set([
-    MapExpr,
-    StarMapExpr,
-    StructExpr,
-    VarMapExpr,
-  ]);
+  @cache
+  static get UNSUPPORTED_VALUES_EXPRESSIONS (): Set<typeof Expression> {
+    return new Set([
+      MapExpr,
+      StarMapExpr,
+      StructExpr,
+      VarMapExpr,
+    ]);
+  }
 
-  static RESPECT_IGNORE_NULLS_UNSUPPORTED_EXPRESSIONS = [ArrayAggExpr];
+  @cache
+  static get RESPECT_IGNORE_NULLS_UNSUPPORTED_EXPRESSIONS (): (typeof Expression)[] {
+    return [ArrayAggExpr];
+  }
 
   withProperties (properties: PropertiesExpr): string {
     return this.properties(properties, {
@@ -2921,7 +2954,7 @@ class SnowflakeGenerator extends Generator {
     return inlineArraySql(this, expression);
   }
 
-  currentdateSql (expression: CurrentDateExpr): string {
+  currentDateSql (expression: CurrentDateExpr): string {
     const zone = this.sql(expression, 'this');
     if (!zone) {
       return super.currentDateSql(expression);
@@ -3075,12 +3108,15 @@ export class Snowflake extends Dialect {
     'pm': '%p',
   };
 
-  static DATE_PART_MAPPING = {
-    ...Dialect.DATE_PART_MAPPING,
-    ISOWEEK: 'WEEKISO',
-    EPOCH_SECOND: 'EPOCH_SECOND',
-    EPOCH_SECONDS: 'EPOCH_SECOND',
-  };
+  @cache
+  static get DATE_PART_MAPPING (): Record<string, string> {
+    return {
+      ...Dialect.DATE_PART_MAPPING,
+      ISOWEEK: 'WEEKISO',
+      EPOCH_SECOND: 'EPOCH_SECOND',
+      EPOCH_SECONDS: 'EPOCH_SECOND',
+    };
+  }
 
   static PSEUDOCOLUMNS = new Set(['LEVEL']);
 
@@ -3100,10 +3136,10 @@ export class Snowflake extends Dialect {
     );
   }
 
-  public static JsonPathTokenizer = SnowflakeJsonPathTokenizer;
-  public static Tokenizer = SnowflakeTokenizer;
-  public static Parser = SnowflakeParser;
-  public static Generator = SnowflakeGenerator;
+  static JsonPathTokenizer = SnowflakeJsonPathTokenizer;
+  static Tokenizer = SnowflakeTokenizer;
+  static Parser = SnowflakeParser;
+  static Generator = SnowflakeGenerator;
 }
 
 Dialect.register(Dialects.SNOWFLAKE, Snowflake);

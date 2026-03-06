@@ -388,9 +388,10 @@ function addDateSql (self: ExasolGenerator, expression: DateAddExpr | DateSubExp
 }
 
 class ExasolTokenizer extends Tokenizer {
-  public static IDENTIFIERS: TokenPair[] = ['"', ['[', ']']];
+  static IDENTIFIERS: TokenPair[] = ['"', ['[', ']']];
+
   @cache
-  public static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     const keywords = {
       ...Tokenizer.KEYWORDS,
       'USER': TokenType.CURRENT_USER,
@@ -407,7 +408,7 @@ class ExasolTokenizer extends Tokenizer {
 
 class ExasolParser extends Parser {
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return (() => {
       const functions: Record<string, (args: Expression[]) => Expression> = {
         ...Parser.FUNCTIONS,
@@ -418,8 +419,8 @@ class ExasolParser extends Parser {
         BIT_LSHIFT: binaryFromFunction(BitwiseLeftShiftExpr),
         BIT_RSHIFT: binaryFromFunction(BitwiseRightShiftExpr),
         DATE_TRUNC: (args: Expression[]) => new TimestampTruncExpr({
-          this: seqGet(args, 1)!,
-          unit: seqGet(args, 0)!,
+          this: seqGet(args, 1),
+          unit: seqGet(args, 0),
         }),
         DIV: binaryFromFunction(IntDivExpr),
         EVERY: (args: Expression[]) => new AllExpr({ this: seqGet(args, 0) }),
@@ -437,11 +438,11 @@ class ExasolParser extends Parser {
           occurrence: seqGet(args, 4),
         }),
         HASH_SHA256: (args: Expression[]) => new Sha2Expr({
-          this: seqGet(args, 0)!,
+          this: seqGet(args, 0),
           length: LiteralExpr.number(256),
         }),
         HASH_SHA512: (args: Expression[]) => new Sha2Expr({
-          this: seqGet(args, 0)!,
+          this: seqGet(args, 0),
           length: LiteralExpr.number(512),
         }),
         TRUNC: (args: Expression[]) => buildTrunc(args, { dialect: Dialects.EXASOL }),
@@ -469,7 +470,7 @@ class ExasolParser extends Parser {
   }
 
   @cache
-  static get CONSTRAINT_PARSERS () {
+  static get CONSTRAINT_PARSERS (): Partial<Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.CONSTRAINT_PARSERS,
       COMMENT: (self: Parser) => {
@@ -482,12 +483,12 @@ class ExasolParser extends Parser {
   }
 
   @cache
-  static get FUNC_TOKENS () {
+  static get FUNC_TOKENS (): Set<TokenType> {
     return new Set([...Parser.FUNC_TOKENS, TokenType.SYSTIMESTAMP]);
   }
 
   @cache
-  static get NO_PAREN_FUNCTIONS () {
+  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
     return {
       ...Parser.NO_PAREN_FUNCTIONS,
       [TokenType.SYSTIMESTAMP]: SystimestampExpr,
@@ -495,7 +496,7 @@ class ExasolParser extends Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS () {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.FUNCTION_PARSERS,
       ...Object.fromEntries(['GROUP_CONCAT', 'LISTAGG'].map((k) => [k, (self: Parser) => self.parseGroupConcat()])),
@@ -536,20 +537,23 @@ class ExasolGenerator extends Generator {
     [DataTypeExprKind.VARBINARY]: 'VARCHAR',
   };
 
-  static TYPE_MAPPING = {
-    ...Generator.TYPE_MAPPING,
-    ...ExasolGenerator.STRING_TYPE_MAPPING,
-    [DataTypeExprKind.TINYINT]: 'SMALLINT',
-    [DataTypeExprKind.MEDIUMINT]: 'INT',
-    [DataTypeExprKind.DECIMAL32]: 'DECIMAL',
-    [DataTypeExprKind.DECIMAL64]: 'DECIMAL',
-    [DataTypeExprKind.DECIMAL128]: 'DECIMAL',
-    [DataTypeExprKind.DECIMAL256]: 'DECIMAL',
-    [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
-    [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
-    [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP',
-    [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
-  };
+  @cache
+  static get TYPE_MAPPING () {
+    return {
+      ...Generator.TYPE_MAPPING,
+      ...ExasolGenerator.STRING_TYPE_MAPPING,
+      [DataTypeExprKind.TINYINT]: 'SMALLINT',
+      [DataTypeExprKind.MEDIUMINT]: 'INT',
+      [DataTypeExprKind.DECIMAL32]: 'DECIMAL',
+      [DataTypeExprKind.DECIMAL64]: 'DECIMAL',
+      [DataTypeExprKind.DECIMAL128]: 'DECIMAL',
+      [DataTypeExprKind.DECIMAL256]: 'DECIMAL',
+      [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
+      [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
+      [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP',
+      [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
+    };
+  }
 
   dataTypeSql (expression: DataTypeExpr): string {
     if (expression.isType([DataTypeExprKind.TIMESTAMPLTZ])) {
@@ -559,7 +563,8 @@ class ExasolGenerator extends Generator {
   }
 
   @cache
-  static get ORIGINAL_TRANSFORMS () {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,

@@ -100,13 +100,14 @@ function dateAddSqlTd (
 }
 
 export class TeradataTokenizer extends Tokenizer {
-  public static HEX_STRINGS: TokenPair[] = [
+  static HEX_STRINGS: TokenPair[] = [
     ['X\'', '\''],
     ['x\'', '\''],
     ['0x', ''],
   ];
 
-  public static ORIGINAL_KEYWORDS = (() => {
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     const keywords: Record<string, TokenType> = {
       ...Tokenizer.KEYWORDS,
       '**': TokenType.DSTAR,
@@ -134,20 +135,21 @@ export class TeradataTokenizer extends Tokenizer {
     };
     delete keywords['/*+'];
     return keywords;
-  })();
+  };
 
-  public static SINGLE_TOKENS: Record<string, TokenType> = (() => {
+  @cache
+  static get SINGLE_TOKENS (): Record<string, TokenType> {
     const tokens = { ...Tokenizer.SINGLE_TOKENS };
     delete tokens['%'];
     return tokens;
-  })();
+  }
 }
 
 export class TeradataParser extends Parser {
-  public static TABLESAMPLE_CSV = true;
-  public static VALUES_FOLLOWED_BY_PAREN = false;
+  static TABLESAMPLE_CSV = true;
+  static VALUES_FOLLOWED_BY_PAREN = false;
 
-  public static CHARSET_TRANSLATORS = new Set([
+  static CHARSET_TRANSLATORS = new Set([
     'GRAPHIC_TO_KANJISJIS',
     'GRAPHIC_TO_LATIN',
     'GRAPHIC_TO_UNICODE',
@@ -327,21 +329,22 @@ export class TeradataParser extends Parser {
 }
 
 export class TeradataGenerator extends Generator {
-  public static LIMIT_IS_TOP = true;
-  public static JOIN_HINTS = false;
-  public static TABLE_HINTS = false;
-  public static QUERY_HINTS = false;
-  public static TABLESAMPLE_KEYWORDS = 'SAMPLE';
-  public static LAST_DAY_SUPPORTS_DATE_PART = false;
-  public static CAN_IMPLEMENT_ARRAY_ANY = true;
-  public static TZ_TO_WITH_TIME_ZONE = true;
-  public static ARRAY_SIZE_NAME = 'CARDINALITY';
-  public static NVL2_SUPPORTED = false;
-  public static SUPPORTS_TO_NUMBER = false;
-  public static EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE = false;
-  public static SUPPORTS_MEDIAN = false;
+  static LIMIT_IS_TOP = true;
+  static JOIN_HINTS = false;
+  static TABLE_HINTS = false;
+  static QUERY_HINTS = false;
+  static TABLESAMPLE_KEYWORDS = 'SAMPLE';
+  static LAST_DAY_SUPPORTS_DATE_PART = false;
+  static CAN_IMPLEMENT_ARRAY_ANY = true;
+  static TZ_TO_WITH_TIME_ZONE = true;
+  static ARRAY_SIZE_NAME = 'CARDINALITY';
+  static NVL2_SUPPORTED = false;
+  static SUPPORTS_TO_NUMBER = false;
+  static EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE = false;
+  static SUPPORTS_MEDIAN = false;
 
-  public static TYPE_MAPPING: Map<DataTypeExprKind | string, string> = (() => {
+  @cache
+  static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map(Generator.TYPE_MAPPING);
     mapping.set(DataTypeExprKind.BOOLEAN, 'BYTEINT');
     mapping.set(DataTypeExprKind.DOUBLE, 'DOUBLE PRECISION');
@@ -349,17 +352,20 @@ export class TeradataGenerator extends Generator {
     mapping.set(DataTypeExprKind.GEOMETRY, 'ST_GEOMETRY');
     mapping.set(DataTypeExprKind.TIMESTAMPTZ, 'TIMESTAMP');
     return mapping;
-  })();
+  };
 
-  public static PROPERTIES_LOCATION: Map<typeof Expression, PropertiesLocation> = (() => {
+  @cache
+  static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     const m = new Map(Generator.PROPERTIES_LOCATION);
     m.set(OnCommitPropertyExpr, PropertiesLocation.POST_INDEX);
     m.set(PartitionedByPropertyExpr, PropertiesLocation.POST_EXPRESSION);
     m.set(StabilityPropertyExpr, PropertiesLocation.POST_CREATE);
     return m;
-  })();
+  };
 
-  public static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const m = new Map<typeof Expression, (self: Generator, e: any) => string>(Generator.TRANSFORMS);
     m.set(ArgMaxExpr, renameFunc('MAX_BY'));
@@ -393,7 +399,7 @@ export class TeradataGenerator extends Generator {
       expression: (e as QuarterExpr).args.this,
     })));
     return m;
-  })();
+  };
 
   public currentTimestampSql (expression: CurrentTimestampExpr): string {
     const prefix = expression.args.this ? '(' : '';
@@ -503,10 +509,10 @@ export class TeradataGenerator extends Generator {
 }
 
 export class Teradata extends Dialect {
-  public static NORMALIZATION_STRATEGY = NormalizationStrategy.UPPERCASE;
-  public static SUPPORTS_SEMI_ANTI_JOIN = false;
-  public static TYPED_DIVISION = true;
-  public static TIME_MAPPING = {
+  static NORMALIZATION_STRATEGY = NormalizationStrategy.UPPERCASE;
+  static SUPPORTS_SEMI_ANTI_JOIN = false;
+  static TYPED_DIVISION = true;
+  static TIME_MAPPING = {
     YY: '%y',
     Y4: '%Y',
     YYYY: '%Y',
@@ -535,9 +541,9 @@ export class Teradata extends Dialect {
     EEEE: '%A',
   };
 
-  public static Tokenizer = TeradataTokenizer;
-  public static Parser = TeradataParser;
-  public static Generator = TeradataGenerator;
+  static Tokenizer = TeradataTokenizer;
+  static Parser = TeradataParser;
+  static Generator = TeradataGenerator;
 }
 
 Dialect.register(Dialects.TERADATA, Teradata);

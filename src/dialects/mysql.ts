@@ -489,7 +489,7 @@ class MySQLParser extends Parser {
   }
 
   @cache
-  static get CONJUNCTION () {
+  static get CONJUNCTION (): Partial<Record<TokenType, typeof Expression>> {
     return {
       ...Parser.CONJUNCTION,
       [TokenType.DAMP]: AndExpr,
@@ -498,7 +498,7 @@ class MySQLParser extends Parser {
   }
 
   @cache
-  static get DISJUNCTION () {
+  static get DISJUNCTION (): Partial<Record<TokenType, typeof Expression>> {
     return {
       ...Parser.DISJUNCTION,
       [TokenType.DPIPE]: OrExpr,
@@ -517,7 +517,7 @@ class MySQLParser extends Parser {
   }
 
   @cache
-  static get RANGE_PARSERS () {
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
     return {
       ...Parser.RANGE_PARSERS,
       [TokenType.SOUNDS_LIKE]: (self: Parser, thisArg: Expression): EqExpr =>
@@ -626,14 +626,14 @@ class MySQLParser extends Parser {
   }
 
   @cache
-  static get STATEMENT_PARSERS () {
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.SHOW]: (self: Parser) => self.parseShow(),
     };
   }
 
-  public static SHOW_PARSERS: typeof Parser.SHOW_PARSERS = ({
+  static SHOW_PARSERS: typeof Parser.SHOW_PARSERS = ({
     'BINARY LOGS': showParser('BINARY LOGS'),
     'MASTER LOGS': showParser('BINARY LOGS'),
     'BINLOG EVENTS': showParser('BINLOG EVENTS'),
@@ -692,7 +692,7 @@ class MySQLParser extends Parser {
   });
 
   @cache
-  static get PROPERTY_PARSERS () {
+  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return {
       ...Parser.PROPERTY_PARSERS,
       'LOCK': (self: Parser) => self.parsePropertyAssignment(LockPropertyExpr),
@@ -701,7 +701,7 @@ class MySQLParser extends Parser {
   }
 
   @cache
-  static get SET_PARSERS () {
+  static get SET_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
     return {
       ...Parser.SET_PARSERS,
       'PERSIST': (self: Parser) => (self as MySQLParser).parseSetItemAssignment({ kind: SetItemExprKind.PERSIST }),
@@ -713,7 +713,7 @@ class MySQLParser extends Parser {
   }
 
   @cache
-  static get CONSTRAINT_PARSERS () {
+  static get CONSTRAINT_PARSERS (): Partial<Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.CONSTRAINT_PARSERS,
       FULLTEXT: (self: Parser) => (self as MySQLParser).parseIndexConstraint('FULLTEXT'),
@@ -726,7 +726,7 @@ class MySQLParser extends Parser {
   }
 
   @cache
-  static get ALTER_PARSERS () {
+  static get ALTER_PARSERS (): Partial<Record<string, (self: Parser) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.ALTER_PARSERS,
       MODIFY: (self: Parser) => self.parseAlterTableAlter(),
@@ -734,7 +734,7 @@ class MySQLParser extends Parser {
   }
 
   @cache
-  static get ALTER_ALTER_PARSERS () {
+  static get ALTER_ALTER_PARSERS (): Partial<Record<string, (self: Parser) => Expression>> {
     return {
       ...Parser.ALTER_ALTER_PARSERS,
       INDEX: (self: Parser) => (self as MySQLParser).parseAlterTableAlterIndex(),
@@ -752,7 +752,7 @@ class MySQLParser extends Parser {
     ]);
   }
 
-  public static PROFILE_TYPES = {
+  static PROFILE_TYPES = {
     ALL: [],
     CPU: [],
     IPC: [],
@@ -777,7 +777,7 @@ class MySQLParser extends Parser {
   /**
    * Modifiers that can appear in a MySQL SELECT statement.
    */
-  public static OPERATION_MODIFIERS: Set<string> = new Set([
+  static OPERATION_MODIFIERS: Set<string> = new Set([
     'HIGH_PRIORITY',
     'STRAIGHT_JOIN',
     'SQL_SMALL_RESULT',
@@ -787,10 +787,10 @@ class MySQLParser extends Parser {
     'SQL_CALC_FOUND_ROWS',
   ]);
 
-  public static LOG_DEFAULTS_TO_LN = true;
-  public static STRING_ALIASES = true;
-  public static VALUES_FOLLOWED_BY_PAREN = false;
-  public static SUPPORTS_PARTITION_SELECTION = true;
+  static LOG_DEFAULTS_TO_LN = true;
+  static STRING_ALIASES = true;
+  static VALUES_FOLLOWED_BY_PAREN = false;
+  static SUPPORTS_PARTITION_SELECTION = true;
 
   /**
    * Handles MySQL's GENERATED ALWAYS AS logic, including VIRTUAL vs STORED persistence.
@@ -1167,29 +1167,29 @@ class MySQLParser extends Parser {
 }
 
 class MySQLGenerator extends Generator {
-  public static INTERVAL_ALLOWS_PLURAL_FORM: boolean = false;
-  public static LOCKING_READS_SUPPORTED: boolean = true;
-  public static NULL_ORDERING_SUPPORTED: boolean | undefined = undefined;
-  public static JOIN_HINTS: boolean = false;
-  public static TABLE_HINTS: boolean = true;
-  public static DUPLICATE_KEY_UPDATE_WITH_SET: boolean = false;
-  public static QUERY_HINT_SEP: string = ' ';
-  public static VALUES_AS_TABLE: boolean = false;
-  public static NVL2_SUPPORTED: boolean = false;
-  public static LAST_DAY_SUPPORTS_DATE_PART: boolean = false;
-  public static JSON_TYPE_REQUIRED_FOR_EXTRACTION: boolean = true;
-  public static JSON_PATH_BRACKETED_KEY_SUPPORTED: boolean = false;
-  public static JSON_KEY_VALUE_PAIR_SEP: string = ',';
-  public static SUPPORTS_TO_NUMBER: boolean = false;
-  public static PARSE_JSON_NAME: string | undefined = undefined;
-  public static PAD_FILL_PATTERN_IS_REQUIRED: boolean = true;
-  public static WRAP_DERIVED_VALUES: boolean = false;
-  public static VARCHAR_REQUIRES_SIZE: boolean = true;
-  public static SUPPORTS_MEDIAN: boolean = false;
-  public static UPDATE_STATEMENT_SUPPORTS_FROM: boolean = false;
+  static INTERVAL_ALLOWS_PLURAL_FORM: boolean = false;
+  static LOCKING_READS_SUPPORTED: boolean = true;
+  static NULL_ORDERING_SUPPORTED: boolean | undefined = undefined;
+  static JOIN_HINTS: boolean = false;
+  static TABLE_HINTS: boolean = true;
+  static DUPLICATE_KEY_UPDATE_WITH_SET: boolean = false;
+  static QUERY_HINT_SEP: string = ' ';
+  static VALUES_AS_TABLE: boolean = false;
+  static NVL2_SUPPORTED: boolean = false;
+  static LAST_DAY_SUPPORTS_DATE_PART: boolean = false;
+  static JSON_TYPE_REQUIRED_FOR_EXTRACTION: boolean = true;
+  static JSON_PATH_BRACKETED_KEY_SUPPORTED: boolean = false;
+  static JSON_KEY_VALUE_PAIR_SEP: string = ',';
+  static SUPPORTS_TO_NUMBER: boolean = false;
+  static PARSE_JSON_NAME: string | undefined = undefined;
+  static PAD_FILL_PATTERN_IS_REQUIRED: boolean = true;
+  static WRAP_DERIVED_VALUES: boolean = false;
+  static VARCHAR_REQUIRES_SIZE: boolean = true;
+  static SUPPORTS_MEDIAN: boolean = false;
+  static UPDATE_STATEMENT_SUPPORTS_FROM: boolean = false;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public static ORIGINAL_TRANSFORMS = new Map<typeof Expression, (self: Generator, e: any) => string>([
+  static ORIGINAL_TRANSFORMS = new Map<typeof Expression, (self: Generator, e: any) => string>([
     ...Generator.TRANSFORMS,
     [ArrayAggExpr, renameFunc('GROUP_CONCAT')],
     [BitwiseAndAggExpr, renameFunc('BIT_AND')],
@@ -1296,7 +1296,7 @@ class MySQLGenerator extends Generator {
    * Maps unsigned types to their standard MySQL counterparts.
    * MySQL adds the 'UNSIGNED' attribute during generation based on the DataTypeExpr.
    */
-  public static UNSIGNED_TYPE_MAPPING: Record<string, string> = {
+  static UNSIGNED_TYPE_MAPPING: Record<string, string> = {
     [DataTypeExprKind.UBIGINT]: 'BIGINT',
     [DataTypeExprKind.UINT]: 'INT',
     [DataTypeExprKind.UMEDIUMINT]: 'MEDIUMINT',
@@ -1309,7 +1309,7 @@ class MySQLGenerator extends Generator {
   /**
    * Standardizes various timestamp types to MySQL's DATETIME or TIMESTAMP.
    */
-  public static TIMESTAMP_TYPE_MAPPING: Record<string, string> = {
+  static TIMESTAMP_TYPE_MAPPING: Record<string, string> = {
     [DataTypeExprKind.DATETIME2]: 'DATETIME',
     [DataTypeExprKind.SMALLDATETIME]: 'DATETIME',
     [DataTypeExprKind.TIMESTAMP]: 'DATETIME',
@@ -1318,7 +1318,8 @@ class MySQLGenerator extends Generator {
     [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP',
   };
 
-  public static TYPE_MAPPING = (() => {
+  @cache
+  static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map(Generator.TYPE_MAPPING);
 
     for (const [k, v] of Object.entries(MySQLGenerator.UNSIGNED_TYPE_MAPPING)) {
@@ -1338,9 +1339,10 @@ class MySQLGenerator extends Generator {
     mapping.delete(DataTypeExprKind.TINYBLOB);
 
     return mapping;
-  })();
+  }
 
-  public static PROPERTIES_LOCATION = (() => {
+  @cache
+  static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     const map = new Map(Generator.PROPERTIES_LOCATION);
     map.set(TransientPropertyExpr, PropertiesLocation.UNSUPPORTED);
     map.set(VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED);
@@ -1348,15 +1350,15 @@ class MySQLGenerator extends Generator {
     map.set(PartitionByRangePropertyExpr, PropertiesLocation.POST_SCHEMA);
     map.set(PartitionByListPropertyExpr, PropertiesLocation.POST_SCHEMA);
     return map;
-  })();
+  }
 
-  public static LIMIT_FETCH: string = 'LIMIT';
-  public static LIMIT_ONLY_LITERALS: boolean = true;
+  static LIMIT_FETCH: string = 'LIMIT';
+  static LIMIT_ONLY_LITERALS: boolean = true;
 
   /**
    * MySQL CAST targets for character-based types.
    */
-  public static CHAR_CAST_MAPPING: Record<string, string> = [
+  static CHAR_CAST_MAPPING: Record<string, string> = [
     DataTypeExprKind.LONGTEXT,
     DataTypeExprKind.LONGBLOB,
     DataTypeExprKind.MEDIUMBLOB,
@@ -1373,7 +1375,7 @@ class MySQLGenerator extends Generator {
   /**
    * MySQL CAST targets for integer-based types.
    */
-  public static SIGNED_CAST_MAPPING: Record<string, string> = [
+  static SIGNED_CAST_MAPPING: Record<string, string> = [
     DataTypeExprKind.BIGINT,
     DataTypeExprKind.BOOLEAN,
     DataTypeExprKind.INT,
@@ -1389,7 +1391,7 @@ class MySQLGenerator extends Generator {
    * MySQL is restricted in which types it can use as a CAST target.
    * Reference: https://dev.mysql.com/doc/refman/8.0/en/cast-functions.html#function_cast
    */
-  public static CAST_MAPPING: Record<string, string> = {
+  static CAST_MAPPING: Record<string, string> = {
     ...MySQLGenerator.CHAR_CAST_MAPPING,
     ...MySQLGenerator.SIGNED_CAST_MAPPING,
     [DataTypeExprKind.UBIGINT]: 'UNSIGNED',
@@ -1398,13 +1400,13 @@ class MySQLGenerator extends Generator {
   /**
    * Types that require specific function-like syntax for timestamp manipulation.
    */
-  public static TIMESTAMP_FUNC_TYPES: Set<string> = new Set([DataTypeExprKind.TIMESTAMPTZ, DataTypeExprKind.TIMESTAMPLTZ]);
+  static TIMESTAMP_FUNC_TYPES: Set<string> = new Set([DataTypeExprKind.TIMESTAMPTZ, DataTypeExprKind.TIMESTAMPLTZ]);
 
   /**
    * Comprehensive list of MySQL reserved keywords for identifier quoting.
    * Reference: https://dev.mysql.com/doc/refman/8.0/en/keywords.html
    */
-  public static RESERVED_KEYWORDS: Set<string> = new Set([
+  static RESERVED_KEYWORDS: Set<string> = new Set([
     'accessible',
     'add',
     'all',
@@ -1930,11 +1932,11 @@ class MySQLGenerator extends Generator {
 }
 
 export class MySQL extends Dialect {
-  public static PROMOTE_TO_INFERRED_DATETIME_TYPE: boolean = true;
+  static PROMOTE_TO_INFERRED_DATETIME_TYPE: boolean = true;
 
   // MySQL allows identifiers to start with digits if they are quoted or in specific contexts
   // Reference: https://dev.mysql.com/doc/refman/8.0/en/identifiers.html
-  public static IDENTIFIERS_CAN_START_WITH_DIGIT: boolean = true;
+  static IDENTIFIERS_CAN_START_WITH_DIGIT: boolean = true;
 
   /**
    * We default to treating all identifiers as case-sensitive, since it matches MySQL's
@@ -1942,23 +1944,23 @@ export class MySQL extends Dialect {
    * setting by specifying `dialect="mysql, normalization_strategy = lowercase"`.
    * * Reference: https://dev.mysql.com/doc/refman/8.2/en/identifier-case-sensitivity.html
    */
-  public static NORMALIZATION_STRATEGY: NormalizationStrategy = NormalizationStrategy.CASE_SENSITIVE;
+  static NORMALIZATION_STRATEGY: NormalizationStrategy = NormalizationStrategy.CASE_SENSITIVE;
 
-  public static TIME_FORMAT: string = '\'%Y-%m-%d %T\'';
-  public static DPIPE_IS_STRING_CONCAT: boolean = false;
-  public static SUPPORTS_USER_DEFINED_TYPES: boolean = false;
-  public static SUPPORTS_SEMI_ANTI_JOIN: boolean = false;
-  public static SAFE_DIVISION: boolean = true;
-  public static SAFE_TO_ELIMINATE_DOUBLE_NEGATION: boolean = false;
-  public static LEAST_GREATEST_IGNORES_NULLS: boolean = false;
+  static TIME_FORMAT: string = '\'%Y-%m-%d %T\'';
+  static DPIPE_IS_STRING_CONCAT: boolean = false;
+  static SUPPORTS_USER_DEFINED_TYPES: boolean = false;
+  static SUPPORTS_SEMI_ANTI_JOIN: boolean = false;
+  static SAFE_DIVISION: boolean = true;
+  static SAFE_TO_ELIMINATE_DOUBLE_NEGATION: boolean = false;
+  static LEAST_GREATEST_IGNORES_NULLS: boolean = false;
 
-  public static EXPRESSION_METADATA: ExpressionMetadata = { ...BASE_EXPRESSION_METADATA };
+  static EXPRESSION_METADATA: ExpressionMetadata = { ...BASE_EXPRESSION_METADATA };
 
   /**
    * MySQL-specific time format mapping.
    * Reference: https://prestodb.io/docs/current/functions/datetime.html#mysql-date-functions
    */
-  public static TIME_MAPPING: Record<string, string> = {
+  static TIME_MAPPING: Record<string, string> = {
     '%M': '%B',
     '%c': '%-m',
     '%e': '%-d',
@@ -1976,7 +1978,7 @@ export class MySQL extends Dialect {
    * Valid interval units supported by MySQL.
    * Includes standard units plus MySQL-specific compound units.
    */
-  public static VALID_INTERVAL_UNITS: Set<string> = new Set([
+  static VALID_INTERVAL_UNITS: Set<string> = new Set([
     ...Dialect.VALID_INTERVAL_UNITS,
     'SECOND_MICROSECOND',
     'MINUTE_MICROSECOND',

@@ -25,12 +25,13 @@ import {
 } from './dialect';
 
 export class TableauTokenizer extends Tokenizer {
-  public static IDENTIFIERS: TokenPair[] = [['[', ']']];
-  public static QUOTES = ['\'', '"'];
+  static IDENTIFIERS: TokenPair[] = [['[', ']']];
+  static QUOTES = ['\'', '"'];
 }
 
 export class TableauParser extends Parser {
-  public static NO_PAREN_IF_COMMANDS = false;
+  static NO_PAREN_IF_COMMANDS = false;
+
   @cache
   static get FUNCTIONS (): Record<string, (args: Expression[]) => Expression> {
     return {
@@ -47,12 +48,12 @@ export class TableauParser extends Parser {
 }
 
 export class TableauGenerator extends Generator {
-  public static JOIN_HINTS = false;
-  public static TABLE_HINTS = false;
-  public static QUERY_HINTS = false;
+  static JOIN_HINTS = false;
+  static TABLE_HINTS = false;
+  static QUERY_HINTS = false;
 
   @cache
-  public static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
+  static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map(Generator.TYPE_MAPPING);
     mapping.set(DataTypeExprKind.BOOLEAN, 'BOOL');
     mapping.set(DataTypeExprKind.TINYINT, 'INT');
@@ -67,7 +68,8 @@ export class TableauGenerator extends Generator {
   }
 
   @cache
-  public static get ORIGINAL_TRANSFORMS () {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const m = new Map<typeof Expression, (self: Generator, e: any) => string>(Generator.TRANSFORMS);
     m.set(CoalesceExpr, renameFunc('IFNULL'));
@@ -85,7 +87,7 @@ export class TableauGenerator extends Generator {
     return this.func('COUNT', [inner]);
   }
 
-  public strpositionSql (expression: StrPositionExpr): string {
+  public strPositionSql (expression: StrPositionExpr): string {
     const hasOccurrence = expression.args.occurrence !== undefined;
     return strPositionSql(this, expression, {
       funcName: hasOccurrence ? 'FINDNTH' : 'FIND',
@@ -95,12 +97,12 @@ export class TableauGenerator extends Generator {
 }
 
 export class Tableau extends Dialect {
-  public static LOG_BASE_FIRST = false;
-  public static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE;
+  static LOG_BASE_FIRST = false;
+  static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE;
 
-  public static Tokenizer = TableauTokenizer;
-  public static Parser = TableauParser;
-  public static Generator = TableauGenerator;
+  static Tokenizer = TableauTokenizer;
+  static Parser = TableauParser;
+  static Generator = TableauGenerator;
 }
 
 Dialect.register(Dialects.TABLEAU, Tableau);

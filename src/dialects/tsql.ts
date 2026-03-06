@@ -536,7 +536,7 @@ export class TSQLTokenizer extends Tokenizer {
   ]);
 
   @cache
-  static get ORIGINAL_KEYWORDS () {
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     const keywords: Record<string, TokenType> = {
       ...Tokenizer.KEYWORDS,
       'CLUSTERED INDEX': TokenType.INDEX,
@@ -572,7 +572,7 @@ export class TSQLTokenizer extends Tokenizer {
   }
 
   @cache
-  static get COMMANDS () {
+  static get COMMANDS (): Set<TokenType> {
     return new Set([...Array.from(Tokenizer.COMMANDS), TokenType.END]);
   };
 }
@@ -594,32 +594,32 @@ export class TSQLParser extends Parser {
 
   // T-SQL does not allow BEGIN to be used as an identifier
   @cache
-  static get ID_VAR_TOKENS () {
+  static get ID_VAR_TOKENS (): Set<TokenType> {
     return new Set([...Array.from(Parser.ID_VAR_TOKENS)].filter((t) => t !== TokenType.BEGIN));
   }
 
   @cache
-  static get ALIAS_TOKENS () {
+  static get ALIAS_TOKENS (): Set<TokenType> {
     return new Set([...Array.from(Parser.ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
   }
 
   @cache
-  static get TABLE_ALIAS_TOKENS () {
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
     return new Set([...Array.from(Parser.TABLE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
   }
 
   @cache
-  static get COMMENT_TABLE_ALIAS_TOKENS () {
+  static get COMMENT_TABLE_ALIAS_TOKENS (): Set<TokenType> {
     return new Set([...Array.from(Parser.COMMENT_TABLE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
   }
 
   @cache
-  static get UPDATE_ALIAS_TOKENS () {
+  static get UPDATE_ALIAS_TOKENS (): Set<TokenType> {
     return new Set([...Array.from(Parser.UPDATE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
   }
 
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       ATN2: Atan2Expr.fromArgList,
@@ -697,7 +697,7 @@ export class TSQLParser extends Parser {
   ]);
 
   @cache
-  static get RETURNS_TABLE_TOKENS () {
+  static get RETURNS_TABLE_TOKENS (): Set<TokenType> {
     return new Set(
       [...Array.from(Parser.ID_VAR_TOKENS)].filter((t) =>
         t !== TokenType.TABLE && !Parser.TYPE_TOKENS.has(t)),
@@ -705,7 +705,7 @@ export class TSQLParser extends Parser {
   }
 
   @cache
-  static get STATEMENT_PARSERS () {
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.DECLARE]: (self: Parser) => (self as TSQLParser).parseDeclare(),
@@ -713,7 +713,7 @@ export class TSQLParser extends Parser {
   }
 
   @cache
-  static get RANGE_PARSERS () {
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
     return {
       ...Parser.RANGE_PARSERS,
       [TokenType.DCOLON]: (self: Parser, thisNode: Expression) => (self as TSQLParser).expression(ScopeResolutionExpr, {
@@ -748,7 +748,7 @@ export class TSQLParser extends Parser {
   }
 
   @cache
-  static get COLUMN_OPERATORS () {
+  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
     return {
       ...Parser.COLUMN_OPERATORS,
       [TokenType.DCOLON]: (self: Parser, thisNode?: Expression, to?: Expression) =>
@@ -1159,14 +1159,17 @@ export class TSQLGenerator extends Generator {
     UpdateExpr,
   ]);
 
-  static SUPPORTED_JSON_PATH_PARTS = new Set([
-    JsonPathKeyExpr,
-    JsonPathRootExpr,
-    JsonPathSubscriptExpr,
-  ]);
+  @cache
+  static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
+    return new Set([
+      JsonPathKeyExpr,
+      JsonPathRootExpr,
+      JsonPathSubscriptExpr,
+    ]);
+  }
 
   @cache
-  static get TYPE_MAPPING () {
+  static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map<DataTypeExprKind | string, string>([
       ...Generator.TYPE_MAPPING.entries(),
       [DataTypeExprKind.BOOLEAN, 'BIT'],
@@ -1192,7 +1195,8 @@ export class TSQLGenerator extends Generator {
   }
 
   @cache
-  static get ORIGINAL_TRANSFORMS () {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>(([
       ...Generator.TRANSFORMS.entries(),
@@ -1273,7 +1277,7 @@ export class TSQLGenerator extends Generator {
   }
 
   @cache
-  static get PROPERTIES_LOCATION () {
+  static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     return new Map<typeof Expression, PropertiesLocation>([...Generator.PROPERTIES_LOCATION.entries(), [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED]]);
   }
 
@@ -1711,7 +1715,7 @@ export class TSQL extends Dialect {
   static EXPRESSION_METADATA = { ...EXPRESSION_METADATA };
 
   @cache
-  static get DATE_PART_MAPPING () {
+  static get DATE_PART_MAPPING (): Record<string, string> {
     return {
       ...Dialect.DATE_PART_MAPPING,
       QQ: 'QUARTER',
@@ -1837,9 +1841,9 @@ export class TSQL extends Dialect {
     Y: '%a %Y',
   };
 
-  public static Tokenizer = TSQLTokenizer;
-  public static Parser = TSQLParser;
-  public static Generator = TSQLGenerator;
+  static Tokenizer = TSQLTokenizer;
+  static Parser = TSQLParser;
+  static Generator = TSQLGenerator;
 }
 
 Dialect.register(Dialects.TSQL, TSQL);

@@ -5,6 +5,7 @@ import {
 import {
   Parser, buildCoalesce,
 } from '../parser';
+import type { TokenPair } from '../tokens';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
@@ -104,13 +105,14 @@ function buildToTimestamp (args: Expression[]): StrToTimeExpr | AnonymousExpr {
 }
 
 export class OracleTokenizer extends Tokenizer {
-  public static VAR_SINGLE_TOKENS = new Set([
+  static VAR_SINGLE_TOKENS = new Set([
     '@',
     '$',
     '#',
   ]);
 
-  public static UNICODE_STRINGS = (() => {
+  @cache
+  static get UNICODE_STRINGS (): TokenPair[] {
     const quotes = Tokenizer.QUOTES as string[];
     const results: [string, string][] = [];
     for (const q of quotes) {
@@ -119,32 +121,36 @@ export class OracleTokenizer extends Tokenizer {
       }
     }
     return results;
-  })();
+  }
 
-  public static NESTED_COMMENTS = false;
+  static NESTED_COMMENTS = false;
 
-  public static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
-    ...Tokenizer.KEYWORDS,
-    '(+)': TokenType.JOIN_MARKER,
-    'BINARY_DOUBLE': TokenType.DOUBLE,
-    'BINARY_FLOAT': TokenType.FLOAT,
-    'BULK COLLECT INTO': TokenType.BULK_COLLECT_INTO,
-    'COLUMNS': TokenType.COLUMN,
-    'MATCH_RECOGNIZE': TokenType.MATCH_RECOGNIZE,
-    'MINUS': TokenType.EXCEPT,
-    'NVARCHAR2': TokenType.NVARCHAR,
-    'ORDER SIBLINGS BY': TokenType.ORDER_SIBLINGS_BY,
-    'SAMPLE': TokenType.TABLE_SAMPLE,
-    'START': TokenType.BEGIN,
-    'TOP': TokenType.TOP,
-    'VARCHAR2': TokenType.VARCHAR,
-    'SYSTIMESTAMP': TokenType.SYSTIMESTAMP,
-  };
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
+    return {
+      ...Tokenizer.KEYWORDS,
+      '(+)': TokenType.JOIN_MARKER,
+      'BINARY_DOUBLE': TokenType.DOUBLE,
+      'BINARY_FLOAT': TokenType.FLOAT,
+      'BULK COLLECT INTO': TokenType.BULK_COLLECT_INTO,
+      'COLUMNS': TokenType.COLUMN,
+      'MATCH_RECOGNIZE': TokenType.MATCH_RECOGNIZE,
+      'MINUS': TokenType.EXCEPT,
+      'NVARCHAR2': TokenType.NVARCHAR,
+      'ORDER SIBLINGS BY': TokenType.ORDER_SIBLINGS_BY,
+      'SAMPLE': TokenType.TABLE_SAMPLE,
+      'START': TokenType.BEGIN,
+      'TOP': TokenType.TOP,
+      'VARCHAR2': TokenType.VARCHAR,
+      'SYSTIMESTAMP': TokenType.SYSTIMESTAMP,
+    };
+  }
 }
 
 export class OracleParser extends Parser {
-  public static WINDOW_BEFORE_PAREN_TOKENS = new Set([TokenType.OVER, TokenType.KEEP]);
-  public static VALUES_FOLLOWED_BY_PAREN = false;
+  static WINDOW_BEFORE_PAREN_TOKENS = new Set([TokenType.OVER, TokenType.KEEP]);
+  static VALUES_FOLLOWED_BY_PAREN = false;
+
   @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
@@ -179,7 +185,7 @@ export class OracleParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTIONS () {
+  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
     return {
       ...Parser.NO_PAREN_FUNCTIONS,
       [TokenType.SYSTIMESTAMP]: SystimestampExpr,
@@ -236,9 +242,12 @@ export class OracleParser extends Parser {
     };
   }
 
-  public static DISTINCT_TOKENS = new Set([TokenType.DISTINCT, TokenType.UNIQUE]);
+  @cache
+  static get DISTINCT_TOKENS () {
+    return new Set([TokenType.DISTINCT, TokenType.UNIQUE]);
+  }
 
-  public static QUERY_RESTRICTIONS = {
+  static QUERY_RESTRICTIONS = {
     WITH: [['READ', 'ONLY'], ['CHECK', 'OPTION']],
   };
 
@@ -399,21 +408,22 @@ export class OracleParser extends Parser {
 }
 
 export class OracleGenerator extends Generator {
-  public static LOCKING_READS_SUPPORTED = true;
-  public static JOIN_HINTS = false;
-  public static TABLE_HINTS = false;
-  public static DATA_TYPE_SPECIFIERS_ALLOWED = true;
-  public static ALTER_TABLE_INCLUDE_COLUMN_KEYWORD = false;
-  public static LIMIT_FETCH = 'FETCH';
-  public static TABLESAMPLE_KEYWORDS = 'SAMPLE';
-  public static LAST_DAY_SUPPORTS_DATE_PART = false;
-  public static SUPPORTS_SELECT_INTO = true;
-  public static TZ_TO_WITH_TIME_ZONE = true;
-  public static SUPPORTS_WINDOW_EXCLUDE = true;
-  public static QUERY_HINT_SEP = ' ';
-  public static SUPPORTS_DECODE_CASE = true;
+  static LOCKING_READS_SUPPORTED = true;
+  static JOIN_HINTS = false;
+  static TABLE_HINTS = false;
+  static DATA_TYPE_SPECIFIERS_ALLOWED = true;
+  static ALTER_TABLE_INCLUDE_COLUMN_KEYWORD = false;
+  static LIMIT_FETCH = 'FETCH';
+  static TABLESAMPLE_KEYWORDS = 'SAMPLE';
+  static LAST_DAY_SUPPORTS_DATE_PART = false;
+  static SUPPORTS_SELECT_INTO = true;
+  static TZ_TO_WITH_TIME_ZONE = true;
+  static SUPPORTS_WINDOW_EXCLUDE = true;
+  static QUERY_HINT_SEP = ' ';
+  static SUPPORTS_DECODE_CASE = true;
 
-  public static TYPE_MAPPING: Map<DataTypeExprKind | string, string> = (() => {
+  @cache
+  static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map(Generator.TYPE_MAPPING);
     mapping.set(DataTypeExprKind.TINYINT, 'SMALLINT');
     mapping.set(DataTypeExprKind.SMALLINT, 'SMALLINT');
@@ -433,9 +443,11 @@ export class OracleGenerator extends Generator {
     mapping.set(DataTypeExprKind.ROWVERSION, 'BLOB');
     mapping.delete(DataTypeExprKind.BLOB);
     return mapping;
-  })();
+  }
 
-  public static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const m = new Map<typeof Expression, (self: Generator, e: any) => string>(Generator.TRANSFORMS);
     m.set(DateStrToDateExpr, (self, e: DateStrToDateExpr) => self.func('TO_DATE', [e.args.this, literal('YYYY-MM-DD')]));
@@ -471,13 +483,14 @@ export class OracleGenerator extends Generator {
     m.set(UtcTimeExpr, renameFunc('UTC_TIME'));
     m.set(SystimestampExpr, () => 'SYSTIMESTAMP');
     return m;
-  })();
+  }
 
-  public static PROPERTIES_LOCATION: Map<typeof Expression, PropertiesLocation> = (() => {
+  @cache
+  static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     const m = new Map(Generator.PROPERTIES_LOCATION);
     m.set(VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED);
     return m;
-  })();
+  }
 
   public currentTimestampSql (expression: CurrentTimestampExpr): string {
     if (expression.args.sysdate) {
@@ -556,17 +569,17 @@ export class OracleGenerator extends Generator {
 }
 
 export class Oracle extends Dialect {
-  public static ALIAS_POST_TABLESAMPLE = true;
-  public static LOCKING_READS_SUPPORTED = true;
-  public static TABLESAMPLE_SIZE_IS_PERCENT = true;
-  public static NULL_ORDERING = 'nulls_are_large' as const;
-  public static ON_CONDITION_EMPTY_BEFORE_ERROR = false;
-  public static ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN = false;
-  public static DISABLES_ALIAS_REF_EXPANSION = true;
+  static ALIAS_POST_TABLESAMPLE = true;
+  static LOCKING_READS_SUPPORTED = true;
+  static TABLESAMPLE_SIZE_IS_PERCENT = true;
+  static NULL_ORDERING = 'nulls_are_large' as const;
+  static ON_CONDITION_EMPTY_BEFORE_ERROR = false;
+  static ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN = false;
+  static DISABLES_ALIAS_REF_EXPANSION = true;
 
-  public static NORMALIZATION_STRATEGY = NormalizationStrategy.UPPERCASE;
+  static NORMALIZATION_STRATEGY = NormalizationStrategy.UPPERCASE;
 
-  public static TIME_MAPPING = {
+  static TIME_MAPPING = {
     D: '%u',
     DAY: '%A',
     DD: '%d',
@@ -587,7 +600,7 @@ export class Oracle extends Dialect {
     FF6: '%f',
   };
 
-  public static PSEUDOCOLUMNS = new Set([
+  static PSEUDOCOLUMNS = new Set([
     'ROWNUM',
     'ROWID',
     'OBJECT_ID',
@@ -603,9 +616,9 @@ export class Oracle extends Dialect {
     ) && super.canQuote(identifier, { identify });
   }
 
-  public static Tokenizer = OracleTokenizer;
-  public static Parser = OracleParser;
-  public static Generator = OracleGenerator;
+  static Tokenizer = OracleTokenizer;
+  static Parser = OracleParser;
+  static Generator = OracleGenerator;
 }
 
 Dialect.register(Dialects.ORACLE, Oracle);

@@ -1375,7 +1375,7 @@ export class Parser {
   }
 
   @cache
-  static get ID_VAR_TOKENS () {
+  static get ID_VAR_TOKENS (): Set<TokenType> {
     return (() => {
       const tokens = new Set([
         TokenType.ALL,
@@ -1497,12 +1497,12 @@ export class Parser {
   }
 
   @cache
-  static get ALIAS_TOKENS () {
+  static get ALIAS_TOKENS (): Set<TokenType> {
     return Parser.ID_VAR_TOKENS;
   }
 
   @cache
-  static get COLON_PLACEHOLDER_TOKENS () {
+  static get COLON_PLACEHOLDER_TOKENS (): Set<TokenType> {
     return Parser.ID_VAR_TOKENS;
   }
 
@@ -2586,7 +2586,7 @@ export class Parser {
   ]);
 
   @cache
-  static get WINDOW_ALIAS_TOKENS () {
+  static get WINDOW_ALIAS_TOKENS (): Set<TokenType> {
     return (() => {
       const result = new Set(Parser.ID_VAR_TOKENS);
       result.delete(TokenType.RANGE);
@@ -2611,7 +2611,7 @@ export class Parser {
   }
 
   @cache
-  static get FETCH_TOKENS () {
+  static get FETCH_TOKENS (): Set<TokenType> {
     return (() => {
       const result = new Set(Parser.ID_VAR_TOKENS);
       result.delete(TokenType.ROW);
@@ -2639,7 +2639,7 @@ export class Parser {
   }
 
   @cache
-  static get UNNEST_OFFSET_ALIAS_TOKENS () {
+  static get UNNEST_OFFSET_ALIAS_TOKENS (): Set<TokenType> {
     return (() => {
       const result = new Set(Parser.TABLE_ALIAS_TOKENS);
       for (const token of Parser.SET_OPERATIONS) {

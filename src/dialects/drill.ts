@@ -60,7 +60,7 @@ class DrillTokenizer extends Tokenizer {
   static IDENTIFIERS = ['`'];
   static STRING_ESCAPES = ['\\'];
   @cache
-  static get KEYWORDS () {
+  static get KEYWORDS (): Record<string, TokenType> {
     const keywords = { ...Tokenizer.KEYWORDS };
     delete keywords['/*+'];
     return keywords;
@@ -71,7 +71,7 @@ class DrillParser extends Parser {
   static STRICT_CAST = false;
   static LOG_DEFAULTS_TO_LN = true;
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       REPEATED_COUNT: ArraySizeExpr.fromArgList,
@@ -91,27 +91,34 @@ class DrillGenerator extends Generator {
   static SUPPORTS_CREATE_TABLE_LIKE = false;
   static ARRAY_SIZE_NAME = 'REPEATED_COUNT';
 
-  static TYPE_MAPPING = {
-    ...Generator.TYPE_MAPPING,
-    [DataTypeExprKind.INT]: 'INTEGER',
-    [DataTypeExprKind.SMALLINT]: 'INTEGER',
-    [DataTypeExprKind.TINYINT]: 'INTEGER',
-    [DataTypeExprKind.BINARY]: 'VARBINARY',
-    [DataTypeExprKind.TEXT]: 'VARCHAR',
-    [DataTypeExprKind.NCHAR]: 'VARCHAR',
-    [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP',
-    [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
-    [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
-  };
-
-  static PROPERTIES_LOCATION = new Map<typeof Expression, PropertiesLocation>([
-    ...Generator.PROPERTIES_LOCATION,
-    [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
-    [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
-  ]);
+  @cache
+  static get TYPE_MAPPING () {
+    return {
+      ...Generator.TYPE_MAPPING,
+      [DataTypeExprKind.INT]: 'INTEGER',
+      [DataTypeExprKind.SMALLINT]: 'INTEGER',
+      [DataTypeExprKind.TINYINT]: 'INTEGER',
+      [DataTypeExprKind.BINARY]: 'VARBINARY',
+      [DataTypeExprKind.TEXT]: 'VARCHAR',
+      [DataTypeExprKind.NCHAR]: 'VARCHAR',
+      [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP',
+      [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
+      [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
+    };
+  }
 
   @cache
-  static get ORIGINAL_TRANSFORMS () {
+  static get PROPERTIES_LOCATION () {
+    return new Map<typeof Expression, PropertiesLocation>([
+      ...Generator.PROPERTIES_LOCATION,
+      [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
+      [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
+    ]);
+  }
+
+  @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
@@ -171,7 +178,7 @@ class DrillGenerator extends Generator {
       [TsOrDiToDiExpr, (self, e) => `CAST(SUBSTR(REPLACE(CAST(${self.sql(e, 'this')} AS VARCHAR), '-', ''), 1, 8) AS INT)`],
     ]);
     return transforms;
-  })();
+  }
 
   strToDate (expression: StrToDateExpr): string {
     const thisSql = this.sql(expression, 'this');

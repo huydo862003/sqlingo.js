@@ -1903,7 +1903,8 @@ class DuckDBTokenizer extends Tokenizer {
   static HEREDOC_TAG_IS_IDENTIFIER = true;
   static HEREDOC_STRING_ALTERNATIVE = TokenType.PARAMETER;
 
-  static ORIGINAL_KEYWORDS = (() => {
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     const keywords: Record<string, TokenType> = {
       ...Tokenizer.KEYWORDS,
       '//': TokenType.DIV,
@@ -1944,24 +1945,29 @@ class DuckDBTokenizer extends Tokenizer {
     };
     delete keywords['/*+'];
     return keywords;
-  })();
+  }
 
-  static SINGLE_TOKENS = {
-    ...Tokenizer.SINGLE_TOKENS,
-    $: TokenType.PARAMETER,
-  };
+  @cache
+  static get SINGLE_TOKENS () {
+    return {
+      ...Tokenizer.SINGLE_TOKENS,
+      $: TokenType.PARAMETER,
+    };
+  }
 
-  static COMMANDS = (() => {
+  @cache
+  static get COMMANDS (): Set<TokenType> {
     const commands = new Set(Tokenizer.COMMANDS);
     commands.delete(TokenType.SHOW);
     return commands;
-  })();
+  }
 }
 
 class DuckDBParser extends Parser {
   static MAP_KEYS_ARE_ARBITRARY_EXPRESSIONS = true;
+
   @cache
-  static get BITWISE () {
+  static get BITWISE (): Partial<Record<TokenType, typeof Expression>> {
     return (() => {
       const bitwise = { ...Parser.BITWISE };
       delete bitwise[TokenType.CARET];
@@ -1970,7 +1976,7 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get RANGE_PARSERS () {
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
     return {
       ...Parser.RANGE_PARSERS,
       [TokenType.DAMP]: binaryRangeParser(ArrayOverlapsExpr),
@@ -1980,7 +1986,7 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get EXPONENT () {
+  static get EXPONENT (): Partial<Record<TokenType, typeof Expression>> {
     return {
       ...Parser.EXPONENT,
       [TokenType.CARET]: PowExpr,
@@ -1989,7 +1995,7 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS_WITH_ALIASED_ARGS () {
+  static get FUNCTIONS_WITH_ALIASED_ARGS (): Set<string> {
     return new Set([...Parser.FUNCTIONS_WITH_ALIASED_ARGS, 'STRUCT_PACK']);
   }
 
@@ -1999,7 +2005,7 @@ class DuckDBParser extends Parser {
   };
 
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return (() => {
       const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
         ...Parser.FUNCTIONS,
@@ -2093,7 +2099,7 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS () {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return (() => {
       const parsers = {
         ...Parser.FUNCTION_PARSERS,
@@ -2111,7 +2117,7 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS () {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
       'MAP': (self: Parser) => (self as DuckDBParser).parseMap(),
@@ -2120,7 +2126,7 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get TABLE_ALIAS_TOKENS () {
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
     return (() => {
       const tokens = new Set(Parser.TABLE_ALIAS_TOKENS);
       tokens.delete(TokenType.SEMI);
@@ -2130,7 +2136,7 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get PLACEHOLDER_PARSERS () {
+  static get PLACEHOLDER_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.PLACEHOLDER_PARSERS,
       [TokenType.PARAMETER]: (self: Parser) => (
@@ -2141,13 +2147,16 @@ class DuckDBParser extends Parser {
     };
   }
 
-  static TYPE_CONVERTERS = {
-    [DataTypeExprKind.DECIMAL]: buildDefaultDecimalType(18, 3),
-    [DataTypeExprKind.TEXT]: () => DataTypeExpr.build('TEXT') ?? new DataTypeExpr({ this: DataTypeExprKind.TEXT }),
-  };
+  @cache
+  static get TYPE_CONVERTERS () {
+    return {
+      [DataTypeExprKind.DECIMAL]: buildDefaultDecimalType(18, 3),
+      [DataTypeExprKind.TEXT]: () => DataTypeExpr.build('TEXT') ?? new DataTypeExpr({ this: DataTypeExprKind.TEXT }),
+    };
+  }
 
   @cache
-  static get STATEMENT_PARSERS () {
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
     return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.ATTACH]: (self: Parser) => (self as DuckDBParser).parseAttachDetach(),
@@ -2159,7 +2168,7 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get SET_PARSERS () {
+  static get SET_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
     return {
       ...Parser.SET_PARSERS,
       VARIABLE: (self: Parser) => (self as DuckDBParser).parseSetItemAssignment({ kind: 'VARIABLE' }),
@@ -2385,7 +2394,9 @@ class DuckDBGenerator extends Generator {
   static SUPPORTS_LIKE_QUANTIFIERS = false;
   static SET_ASSIGNMENT_REQUIRES_VARIABLE_KEYWORD = true;
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
@@ -2675,37 +2686,43 @@ class DuckDBGenerator extends Generator {
       [LastDayExpr, lastDaySql],
     ]);
     return transforms;
-  })();
+  }
 
-  static SUPPORTED_JSON_PATH_PARTS = new Set([
-    JsonPathKeyExpr,
-    JsonPathRootExpr,
-    JsonPathSubscriptExpr,
-    JsonPathWildcardExpr,
-  ]);
+  @cache
+  static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
+    return new Set([
+      JsonPathKeyExpr,
+      JsonPathRootExpr,
+      JsonPathSubscriptExpr,
+      JsonPathWildcardExpr,
+    ]);
+  }
 
-  static TYPE_MAPPING = {
-    ...Generator.TYPE_MAPPING,
-    [DataTypeExprKind.BINARY]: 'BLOB',
-    [DataTypeExprKind.BPCHAR]: 'TEXT',
-    [DataTypeExprKind.CHAR]: 'TEXT',
-    [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
-    [DataTypeExprKind.DECFLOAT]: 'DECIMAL(38, 5)',
-    [DataTypeExprKind.FLOAT]: 'REAL',
-    [DataTypeExprKind.JSONB]: 'JSON',
-    [DataTypeExprKind.NCHAR]: 'TEXT',
-    [DataTypeExprKind.NVARCHAR]: 'TEXT',
-    [DataTypeExprKind.UINT]: 'UINTEGER',
-    [DataTypeExprKind.VARBINARY]: 'BLOB',
-    [DataTypeExprKind.ROWVERSION]: 'BLOB',
-    [DataTypeExprKind.VARCHAR]: 'TEXT',
-    [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMPTZ',
-    [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
-    [DataTypeExprKind.TIMESTAMP_S]: 'TIMESTAMP_S',
-    [DataTypeExprKind.TIMESTAMP_MS]: 'TIMESTAMP_MS',
-    [DataTypeExprKind.TIMESTAMP_NS]: 'TIMESTAMP_NS',
-    [DataTypeExprKind.BIGDECIMAL]: 'DECIMAL(38, 5)',
-  };
+  @cache
+  static get TYPE_MAPPING () {
+    return {
+      ...Generator.TYPE_MAPPING,
+      [DataTypeExprKind.BINARY]: 'BLOB',
+      [DataTypeExprKind.BPCHAR]: 'TEXT',
+      [DataTypeExprKind.CHAR]: 'TEXT',
+      [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
+      [DataTypeExprKind.DECFLOAT]: 'DECIMAL(38, 5)',
+      [DataTypeExprKind.FLOAT]: 'REAL',
+      [DataTypeExprKind.JSONB]: 'JSON',
+      [DataTypeExprKind.NCHAR]: 'TEXT',
+      [DataTypeExprKind.NVARCHAR]: 'TEXT',
+      [DataTypeExprKind.UINT]: 'UINTEGER',
+      [DataTypeExprKind.VARBINARY]: 'BLOB',
+      [DataTypeExprKind.ROWVERSION]: 'BLOB',
+      [DataTypeExprKind.VARCHAR]: 'TEXT',
+      [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMPTZ',
+      [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
+      [DataTypeExprKind.TIMESTAMP_S]: 'TIMESTAMP_S',
+      [DataTypeExprKind.TIMESTAMP_MS]: 'TIMESTAMP_MS',
+      [DataTypeExprKind.TIMESTAMP_NS]: 'TIMESTAMP_NS',
+      [DataTypeExprKind.BIGDECIMAL]: 'DECIMAL(38, 5)',
+    };
+  }
 
   static RESERVED_KEYWORDS = new Set([
     'array',
@@ -2787,9 +2804,13 @@ class DuckDBGenerator extends Generator {
     'current_catalog',
   ]);
 
-  static UNWRAPPED_INTERVAL_VALUES = new Set<typeof Expression>([LiteralExpr, ParenExpr]);
+  @cache
+  static get UNWRAPPED_INTERVAL_VALUES () {
+    return new Set<typeof Expression>([LiteralExpr, ParenExpr]);
+  }
 
-  static PROPERTIES_LOCATION = (() => {
+  @cache
+  static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     const locations = new Map<typeof Expression, PropertiesLocation>();
 
     // Default all existing properties to UNSUPPORTED
@@ -2804,15 +2825,18 @@ class DuckDBGenerator extends Generator {
     locations.set(SequencePropertiesExpr, PropertiesLocation.POST_EXPRESSION);
 
     return locations;
-  })();
+  }
 
-  static IGNORE_RESPECT_NULLS_WINDOW_FUNCTIONS = [
-    FirstValueExpr,
-    LagExpr,
-    LastValueExpr,
-    LeadExpr,
-    NthValueExpr,
-  ];
+  @cache
+  static get IGNORE_RESPECT_NULLS_WINDOW_FUNCTIONS () {
+    return [
+      FirstValueExpr,
+      LagExpr,
+      LastValueExpr,
+      LeadExpr,
+      NthValueExpr,
+    ];
+  }
 
   static ZIPF_TEMPLATE = maybeParse(`
   WITH rand AS (SELECT :random_expr AS r),
@@ -4696,14 +4720,15 @@ export class DuckDB extends Dialect {
 
   static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE;
 
-  static DATE_PART_MAPPING = (() => {
+  @cache
+  static get DATE_PART_MAPPING (): Record<string, string> {
     const mapping: Record<string, string> = {
       ...Dialect.DATE_PART_MAPPING,
       DAYOFWEEKISO: 'ISODOW',
     };
     delete mapping['WEEKDAY'];
     return mapping;
-  })();
+  }
 
   static EXPRESSION_METADATA = { ...Dialect.EXPRESSION_METADATA };
 

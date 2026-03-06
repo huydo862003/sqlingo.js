@@ -1,4 +1,5 @@
 import type { Generator } from '../generator';
+import type { Parser } from '../parser';
 import { TokenType } from '../tokens';
 import type { UnnestExpr } from '../expressions';
 import {
@@ -86,15 +87,18 @@ export function stDistanceSphere (self: Generator, expression: StDistanceExpr): 
 }
 
 class StarRocksTokenizer extends MySQL.Tokenizer {
-  public static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
-    ...MySQL.Tokenizer.ORIGINAL_KEYWORDS,
-    LARGEINT: TokenType.INT128,
-  };
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
+    return {
+      ...MySQL.Tokenizer.ORIGINAL_KEYWORDS,
+      LARGEINT: TokenType.INT128,
+    };
+  }
 };
 
 class StarRocksParser extends MySQL.Parser {
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...MySQL.Parser.FUNCTIONS,
       DATE_TRUNC: buildTimestampTrunc,
@@ -119,7 +123,7 @@ class StarRocksParser extends MySQL.Parser {
   }
 
   @cache
-  static get PROPERTY_PARSERS () {
+  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return {
       ...MySQL.Parser.PROPERTY_PARSERS,
       PROPERTIES: (self: StarRocksParser): Expression[] => self.parseWrappedProperties(),
@@ -265,40 +269,44 @@ class StarRocksParser extends MySQL.Parser {
 };
 
 class StarRocksGenerator extends MySQL.Generator {
-  public static EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE: boolean = false;
-  public static JSON_TYPE_REQUIRED_FOR_EXTRACTION: boolean = false;
-  public static VARCHAR_REQUIRES_SIZE: boolean = false;
-  public static PARSE_JSON_NAME: string | undefined = 'PARSE_JSON';
-  public static WITH_PROPERTIES_PREFIX: string = 'PROPERTIES';
-  public static UPDATE_STATEMENT_SUPPORTS_FROM: boolean = true;
-  public static INSERT_OVERWRITE: string = ' OVERWRITE';
+  static EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE: boolean = false;
+  static JSON_TYPE_REQUIRED_FOR_EXTRACTION: boolean = false;
+  static VARCHAR_REQUIRES_SIZE: boolean = false;
+  static PARSE_JSON_NAME: string | undefined = 'PARSE_JSON';
+  static WITH_PROPERTIES_PREFIX: string = 'PROPERTIES';
+  static UPDATE_STATEMENT_SUPPORTS_FROM: boolean = true;
+  static INSERT_OVERWRITE: string = ' OVERWRITE';
 
   // StarRocks doesn't support "IS TRUE/FALSE" syntax.
-  public static IS_BOOL_ALLOWED: boolean = false;
+  static IS_BOOL_ALLOWED: boolean = false;
   // StarRocks doesn't support renaming a table with a database.
-  public static RENAME_TABLE_WITH_DB: boolean = false;
+  static RENAME_TABLE_WITH_DB: boolean = false;
 
-  public static CAST_MAPPING: Record<string, string> = {};
+  static CAST_MAPPING: Record<string, string> = {};
 
-  public static TYPE_MAPPING: Map<DataTypeExprKind | string, string> = (() => {
+  @cache
+  static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const m = new Map(MySQL.Generator.TYPE_MAPPING);
     m.set(DataTypeExprKind.INT128, 'LARGEINT');
     m.set(DataTypeExprKind.TEXT, 'STRING');
     m.set(DataTypeExprKind.TIMESTAMP, 'DATETIME');
     m.set(DataTypeExprKind.TIMESTAMPTZ, 'DATETIME');
     return m;
-  })();
+  }
 
-  public static PROPERTIES_LOCATION: Map<typeof Expression, PropertiesLocation> = (() => {
+  @cache
+  static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     const m = new Map(MySQL.Generator.PROPERTIES_LOCATION);
     m.set(PrimaryKeyExpr, PropertiesLocation.POST_SCHEMA);
     m.set(UniqueKeyPropertyExpr, PropertiesLocation.POST_SCHEMA);
     m.set(RollupPropertyExpr, PropertiesLocation.POST_SCHEMA);
     m.set(PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA);
     return m;
-  })();
+  }
 
-  public static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const m = new Map<typeof Expression, (self: Generator, e: any) => string>(MySQL.Generator.TRANSFORMS);
     m.set(ArrayExpr, inlineArraySql);
@@ -344,13 +352,13 @@ class StarRocksGenerator extends MySQL.Generator {
     // StarRocks uses DATE_TRUNC instead of the MySQL simulation, so we remove the MySQL transform.
     m.delete(DateTruncExpr);
     return m;
-  })();
+  }
 
   /**
      * Comprehensive list of StarRocks reserved keywords.
      * Reference: https://docs.starrocks.io/docs/sql-reference/sql-statements/keywords/#reserved-keywords
      */
-  public static RESERVED_KEYWORDS: Set<string> = new Set([
+  static RESERVED_KEYWORDS: Set<string> = new Set([
     'add',
     'all',
     'alter',
@@ -590,11 +598,11 @@ class StarRocksGenerator extends MySQL.Generator {
 }
 
 export class StarRocks extends MySQL {
-  public static STRICT_JSON_PATH_SYNTAX = false;
-  public static INDEX_OFFSET = 1;
+  static STRICT_JSON_PATH_SYNTAX = false;
+  static INDEX_OFFSET = 1;
 
-  public static Tokenizer = StarRocksTokenizer;
-  public static Parser = StarRocksParser;
-  public static Generator = StarRocksGenerator;
+  static Tokenizer = StarRocksTokenizer;
+  static Parser = StarRocksParser;
+  static Generator = StarRocksGenerator;
 }
 Dialect.register(Dialects.STARROCKS, StarRocks);

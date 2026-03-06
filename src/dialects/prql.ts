@@ -23,23 +23,29 @@ class PRQLTokenizer extends Tokenizer {
   static IDENTIFIERS = ['`'];
   static QUOTES = ['\'', '"'];
 
-  static SINGLE_TOKENS = {
-    ...Tokenizer.SINGLE_TOKENS,
-    '=': TokenType.ALIAS,
-    '\'': TokenType.QUOTE,
-    '"': TokenType.QUOTE,
-    '`': TokenType.IDENTIFIER,
-    '#': TokenType.COMMENT,
-  };
+  @cache
+  static get SINGLE_TOKENS () {
+    return {
+      ...Tokenizer.SINGLE_TOKENS,
+      '=': TokenType.ALIAS,
+      '\'': TokenType.QUOTE,
+      '"': TokenType.QUOTE,
+      '`': TokenType.IDENTIFIER,
+      '#': TokenType.COMMENT,
+    };
+  }
 
-  static KEYWORDS = {
-    ...Tokenizer.KEYWORDS,
-  };
+  @cache
+  static get ORIGINAL_KEYWORDS () {
+    return {
+      ...Tokenizer.KEYWORDS,
+    };
+  }
 }
 
 class PRQLParser extends Parser {
   @cache
-  static get CONJUNCTION () {
+  static get CONJUNCTION (): Partial<Record<TokenType, typeof Expression>> {
     return {
       ...Parser.CONJUNCTION,
       [TokenType.DAMP]: AndExpr,
@@ -47,44 +53,47 @@ class PRQLParser extends Parser {
   }
 
   @cache
-  static get DISJUNCTION () {
+  static get DISJUNCTION (): Partial<Record<TokenType, typeof Expression>> {
     return {
       ...Parser.DISJUNCTION,
       [TokenType.DPIPE]: OrExpr,
     };
   }
 
+  @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static TRANSFORM_PARSERS: Record<string, (self: Parser, query: any) => QueryExpr | undefined> = {
-    DERIVE: (self, query) => (self as PRQLParser).parseSelection(query),
-    SELECT: (self, query) => (self as PRQLParser).parseSelection(query, { append: false }),
-    TAKE: (self, query) => (self as PRQLParser).parseTake(query),
-    FILTER: (self, query) => query.where((self as PRQLParser).parseDisjunction()),
-    APPEND: (self, query) =>
-      query.union(selectAll((self as PRQLParser).parseTable()), {
-        distinct: false,
-        copy: false,
-      }),
-    REMOVE: (self, query) =>
-      query.except(selectAll((self as PRQLParser).parseTable()), {
-        distinct: false,
-        copy: false,
-      }),
-    INTERSECT: (self, query) =>
-      query.intersect(selectAll((self as PRQLParser).parseTable()), {
-        distinct: false,
-        copy: false,
-      }),
-    SORT: (self, query) => (self as PRQLParser).parseOrderBy(query),
-    AGGREGATE: (self, query) =>
-      (self as PRQLParser).parseSelection(query, {
-        parseMethod: (self as PRQLParser).parseAggregate,
-        append: false,
-      }),
-  };
+  static get TRANSFORM_PARSERS (): Record<string, (self: Parser, query: any) => QueryExpr | undefined> {
+    return {
+      DERIVE: (self, query) => (self as PRQLParser).parseSelection(query),
+      SELECT: (self, query) => (self as PRQLParser).parseSelection(query, { append: false }),
+      TAKE: (self, query) => (self as PRQLParser).parseTake(query),
+      FILTER: (self, query) => query.where((self as PRQLParser).parseDisjunction()),
+      APPEND: (self, query) =>
+        query.union(selectAll((self as PRQLParser).parseTable()), {
+          distinct: false,
+          copy: false,
+        }),
+      REMOVE: (self, query) =>
+        query.except(selectAll((self as PRQLParser).parseTable()), {
+          distinct: false,
+          copy: false,
+        }),
+      INTERSECT: (self, query) =>
+        query.intersect(selectAll((self as PRQLParser).parseTable()), {
+          distinct: false,
+          copy: false,
+        }),
+      SORT: (self, query) => (self as PRQLParser).parseOrderBy(query),
+      AGGREGATE: (self, query) =>
+        (self as PRQLParser).parseSelection(query, {
+          parseMethod: (self as PRQLParser).parseAggregate,
+          append: false,
+        }),
+    };
+  }
 
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       AVERAGE: AvgExpr.fromArgList,

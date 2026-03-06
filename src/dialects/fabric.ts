@@ -26,6 +26,7 @@ import {
   literal,
 } from '../expressions';
 import { preprocess } from '../transforms';
+import { cache } from '../port_internals';
 import { TSQL } from './tsql';
 import {
   Dialect, NormalizationStrategy, Dialects,
@@ -70,11 +71,14 @@ function addDefaultPrecisionToVarchar (expression: Expression): Expression {
 }
 
 export class FabricTokenizer extends TSQL.Tokenizer {
-  public static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
-    ...TSQL.Tokenizer.ORIGINAL_KEYWORDS,
-    TIMESTAMP: TokenType.TIMESTAMP,
-    UTINYINT: TokenType.UTINYINT,
-  };
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
+    return {
+      ...TSQL.Tokenizer.ORIGINAL_KEYWORDS,
+      TIMESTAMP: TokenType.TIMESTAMP,
+      UTINYINT: TokenType.UTINYINT,
+    };
+  }
 }
 
 export class FabricParser extends TSQL.Parser {
@@ -103,7 +107,8 @@ export class FabricParser extends TSQL.Parser {
 }
 
 export class FabricGenerator extends TSQL.Generator {
-  public static TYPE_MAPPING: Map<DataTypeExprKind, string> = (() => {
+  @cache
+  static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map(TSQL.Generator.TYPE_MAPPING);
     mapping.set(DataTypeExprKind.DATETIME, 'DATETIME2');
     mapping.set(DataTypeExprKind.DECIMAL, 'DECIMAL');
@@ -124,13 +129,14 @@ export class FabricGenerator extends TSQL.Generator {
     mapping.set(DataTypeExprKind.UUID, 'UNIQUEIDENTIFIER');
     mapping.set(DataTypeExprKind.XML, 'VARCHAR');
     return mapping;
-  })();
+  };
 
-  public static ORIGINAL_TRANSFORMS: Map<typeof Expression, (self: Generator, e: Expression) => string> = (() => {
+  @cache
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: Expression) => string> {
     const m = new Map<typeof Expression, (self: Generator, e: Expression) => string>(TSQL.Generator.ORIGINAL_TRANSFORMS);
     m.set(CreateExpr, preprocess([addDefaultPrecisionToVarchar]));
     return m;
-  })();
+  };
 
   public dataTypeSql (expression: DataTypeExpr): string {
     if (
@@ -210,11 +216,11 @@ export class FabricGenerator extends TSQL.Generator {
 }
 
 export class Fabric extends TSQL {
-  public static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_SENSITIVE;
+  static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_SENSITIVE;
 
-  public static Tokenizer = FabricTokenizer;
-  public static Parser = FabricParser;
-  public static Generator = FabricGenerator;
+  static Tokenizer = FabricTokenizer;
+  static Parser = FabricParser;
+  static Generator = FabricGenerator;
 }
 
 Dialect.register(Dialects.FABRIC, Fabric);

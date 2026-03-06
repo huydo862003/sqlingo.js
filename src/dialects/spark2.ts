@@ -45,6 +45,7 @@ import { buildTrim } from '../parser';
 import {
   cache, narrowInstanceOf,
 } from '../port_internals';
+import type { TokenPair } from '../tokens';
 import { TokenType } from '../tokens';
 import {
   anyToExists,
@@ -173,19 +174,23 @@ export function temporaryStorageProvider (expression: Expression): Expression {
 }
 
 class Spark2Tokenizer extends Hive.Tokenizer {
-  static HEX_STRINGS: [string, string][] = [['X\'', '\''], ['x\'', '\'']];
+  static HEX_STRINGS: TokenPair[] = [['X\'', '\''], ['x\'', '\'']];
 
-  static ORIGINAL_KEYWORDS = {
-    ...Hive.Tokenizer.KEYWORDS,
-    TIMESTAMP: TokenType.TIMESTAMPTZ,
-  };
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
+    return {
+      ...Hive.Tokenizer.KEYWORDS,
+      TIMESTAMP: TokenType.TIMESTAMPTZ,
+    };
+  }
 }
 
 class Spark2Parser extends Hive.Parser {
   static TRIM_PATTERN_FIRST = true;
   static CHANGE_COLUMN_ALTER_SYNTAX = true;
+
   @cache
-  static get FUNCTIONS () {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Hive.Parser.FUNCTIONS,
       AGGREGATE: ReduceExpr.fromArgList,
@@ -247,7 +252,7 @@ class Spark2Parser extends Hive.Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS () {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
     return {
       ...Hive.Parser.FUNCTION_PARSERS,
       APPROX_PERCENTILE: (self: Parser) => (self as Spark2Parser).parseQuantileFunction(ApproxQuantileExpr),
@@ -287,24 +292,31 @@ class Spark2Generator extends Hive.Generator {
   static ALTER_SET_TYPE = 'TYPE';
   static PARSE_JSON_NAME?: string;
 
-  static PROPERTIES_LOCATION = new Map([
-    ...Hive.Generator.PROPERTIES_LOCATION,
-    [EnginePropertyExpr, PropertiesLocation.UNSUPPORTED],
-    [AutoIncrementPropertyExpr, PropertiesLocation.UNSUPPORTED],
-    [CharacterSetPropertyExpr, PropertiesLocation.UNSUPPORTED],
-    [CollatePropertyExpr, PropertiesLocation.UNSUPPORTED],
-  ]);
-
-  static TS_OR_DS_EXPRESSIONS = new Set([
-    ...Hive.Generator.TS_OR_DS_EXPRESSIONS,
-    DayOfMonthExpr,
-    DayOfWeekExpr,
-    DayOfYearExpr,
-    WeekOfYearExpr,
-  ]);
+  @cache
+  static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
+    return new Map([
+      ...Hive.Generator.PROPERTIES_LOCATION,
+      [EnginePropertyExpr, PropertiesLocation.UNSUPPORTED],
+      [AutoIncrementPropertyExpr, PropertiesLocation.UNSUPPORTED],
+      [CharacterSetPropertyExpr, PropertiesLocation.UNSUPPORTED],
+      [CollatePropertyExpr, PropertiesLocation.UNSUPPORTED],
+    ]);
+  }
 
   @cache
-  static get ORIGINAL_TRANSFORMS () {
+  static get TS_OR_DS_EXPRESSIONS (): Set<typeof Expression> {
+    return new Set([
+      ...Hive.Generator.TS_OR_DS_EXPRESSIONS,
+      DayOfMonthExpr,
+      DayOfWeekExpr,
+      DayOfYearExpr,
+      WeekOfYearExpr,
+    ]);
+  }
+
+  @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Hive.Generator.TRANSFORMS.entries(),
