@@ -190,11 +190,10 @@ class TestPostgres extends Validator {
       'select count() OVER(partition by a order by a range offset preceding exclude current row)',
       'SELECT COUNT() OVER (PARTITION BY a ORDER BY a range BETWEEN offset preceding AND CURRENT ROW EXCLUDE CURRENT ROW)',
     );
-    narrowInstanceOf(narrowInstanceOf(
-      this.validateIdentity(
-        String.raw`x::JSON -> 'duration' ->> -1`,
-        String.raw`JSON_EXTRACT_PATH_TEXT(CAST(x AS JSON) -> 'duration', -1)`,
-      ).assertIs(JsonExtractScalarExpr)?.args.this, Expression)?.assertIs(JsonExtractExpr);
+    narrowInstanceOf(this.validateIdentity(
+      String.raw`x::JSON -> 'duration' ->> -1`,
+      String.raw`JSON_EXTRACT_PATH_TEXT(CAST(x AS JSON) -> 'duration', -1)`,
+    ).assertIs(JsonExtractScalarExpr)?.args.this, Expression)?.assertIs(JsonExtractExpr);
     this.validateIdentity(
       'SELECT SUBSTRING(\'Thomas\' FOR 3 FROM 2)',
       'SELECT SUBSTRING(\'Thomas\' FROM 2 FOR 3)',
