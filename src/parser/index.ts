@@ -160,7 +160,6 @@ import {
   ExtendsRightExpr,
   ExternalPropertyExpr,
   ExtractExpr,
-  FUNCTION_BY_NAME,
   FallbackPropertyExpr,
   FetchExpr,
   FileFormatPropertyExpr,
@@ -455,37 +454,38 @@ import {
   maybeParse,
   JoinExprKind,
   null_,
-} from './expressions';
+} from '../expressions';
 import type {
   JoinExprArgs, StringExpr,
 
   ExpressionValue,
-} from './expressions';
-import { formatTime } from './time';
+} from '../expressions';
+import { formatTime } from '../time';
 import {
   applyIndexOffset, ensureIterable, seqGet,
-} from './helper';
+} from '../helper';
 import {
   Dialect, type DialectType,
-} from './dialects/dialect';
+} from '../dialects/dialect';
 import {
   concatMessages,
   ErrorLevel,
   highlightSql,
   mergeErrors,
   ParseError,
-} from './errors';
+} from '../errors';
 import {
   Token,
   Tokenizer, TokenType,
-} from './tokens';
+} from '../tokens';
 import {
   newTrie, type TrieNode, inTrie, TrieResult,
-} from './trie';
-import { normalizeIdentifiers } from './optimizer/normalize_identifiers';
+} from '../trie';
+import { normalizeIdentifiers } from '../optimizer/normalize_identifiers';
 import {
   assertIsInstanceOf, filterInstanceOf, isInstanceOf, enumFromString,
-} from './port_internals';
+} from '../port_internals';
+import { FUNCTION_BY_NAME } from './function_registry';
 
 /**
  * Parses the given SQL string into a collection of syntax trees, one per parsed SQL statement.
@@ -938,1163 +938,1305 @@ export class Parser {
   }
 
   // Function name to builder mapping
-  static FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
-    // Spread all fromArgList functions from FUNCTION_BY_NAME
-    ...Object.fromEntries(
-      Array.from(FUNCTION_BY_NAME.entries()).map(([name, func]) => [name, (args: Expression[], _options: { dialect: Dialect }) => func.fromArgList(args)]),
-    ),
+  static #FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> | undefined = undefined;
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+    return Parser.#FUNCTIONS ??= {
+      // Spread all fromArgList functions from FUNCTION_BY_NAME
+      ...Object.fromEntries(
+        Array.from(FUNCTION_BY_NAME.entries()).map(([name, func]) => [name, (args: Expression[], _options: { dialect: Dialect }) => func.fromArgList(args)]),
+      ),
 
-    // Coalesce variants
-    ...Object.fromEntries(
-      [
-        'COALESCE',
-        'IFNULL',
-        'NVL',
-      ].map((name) => [name, (args: Expression[], _options: { dialect: Dialect }) => buildCoalesce(args)]),
-    ),
+      // Coalesce variants
+      ...Object.fromEntries(
+        [
+          'COALESCE',
+          'IFNULL',
+          'NVL',
+        ].map((name) => [name, (args: Expression[], _options: { dialect: Dialect }) => buildCoalesce(args)]),
+      ),
 
-    // Array functions
-    ARRAY: (args, _options) => new ArrayExpr({ expressions: args }),
+      // Array functions
+      ARRAY: (args, _options) => new ArrayExpr({ expressions: args }),
 
-    ARRAYAGG: (args, { dialect }) => new ArrayAggExpr({
-      this: seqGet(args, 0)!,
-      nullsExcluded: dialect._constructor.ARRAY_AGG_INCLUDES_NULLS === undefined ? true : undefined,
-    }),
-
-    ARRAY_AGG: (args, { dialect }) => new ArrayAggExpr({
-      this: seqGet(args, 0)!,
-      nullsExcluded: dialect._constructor.ARRAY_AGG_INCLUDES_NULLS === undefined ? true : undefined,
-    }),
-
-    ARRAY_APPEND: buildArrayAppend,
-    ARRAY_CAT: buildArrayConcat,
-    ARRAY_CONCAT: buildArrayConcat,
-    ARRAY_PREPEND: buildArrayPrepend,
-    ARRAY_REMOVE: buildArrayRemove,
-
-    // Aggregate functions
-    COUNT: (args, _options) => new CountExpr({
-      this: seqGet(args, 0)!,
-      expressions: args.slice(1),
-      bigInt: true,
-    }),
-
-    // String functions
-    CONCAT: (args, { dialect }) => new ConcatExpr({
-      expressions: args,
-      safe: !dialect._constructor.STRICT_STRING_CONCAT,
-      coalesce: dialect._constructor.CONCAT_COALESCE,
-    }),
-
-    CONCAT_WS: (args, { dialect }) => new ConcatWsExpr({
-      expressions: args,
-      safe: !dialect._constructor.STRICT_STRING_CONCAT,
-      coalesce: dialect._constructor.CONCAT_COALESCE,
-    }),
-
-    // Conversion functions
-    CONVERT_TIMEZONE: (args, _options) => buildConvertTimezone(args),
-
-    DATE_TO_DATE_STR: (args, _options) => new CastExpr({
-      this: seqGet(args, 0)!,
-      to: new DataTypeExpr({ this: DataTypeExprKind.TEXT }),
-    }),
-
-    TIME_TO_TIME_STR: (args, _options) => new CastExpr({
-      this: seqGet(args, 0)!,
-      to: new DataTypeExpr({ this: DataTypeExprKind.TEXT }),
-    }),
-
-    // Generator functions
-    GENERATE_DATE_ARRAY: (args, _options) => new GenerateDateArrayExpr({
-      start: seqGet(args, 0)!,
-      end: seqGet(args, 1)!,
-      step: seqGet(args, 2) || new IntervalExpr({
-        this: LiteralExpr.string('1'),
-        unit: var_('DAY'),
-      }),
-    }),
-
-    GENERATE_UUID: (args, { dialect }) => new UuidExpr({
-      isString: dialect._constructor.UUID_IS_STRING_TYPE || undefined,
-    }),
-
-    // Pattern matching
-    GLOB: (args, _options) => new GlobExpr({
-      this: seqGet(args, 1)!,
-      expression: seqGet(args, 0)!,
-    }),
-
-    LIKE: (args, _options) => buildLike(args),
-
-    // Comparison functions
-    GREATEST: (args, { dialect }) => new GreatestExpr({
-      this: seqGet(args, 0)!,
-      expressions: args.slice(1),
-      ignoreNulls: dialect._constructor.LEAST_GREATEST_IGNORES_NULLS,
-    }),
-
-    LEAST: (args, { dialect }) => new LeastExpr({
-      this: seqGet(args, 0)!,
-      expressions: args.slice(1),
-      ignoreNulls: dialect._constructor.LEAST_GREATEST_IGNORES_NULLS,
-    }),
-
-    // Encoding functions
-    HEX: (args, { dialect }) => buildHex(args, { dialect }),
-    TO_HEX: (args, { dialect }) => buildHex(args, { dialect }),
-
-    // JSON functions
-    JSON_EXTRACT: buildExtractJsonWithPath(JsonExtractExpr),
-    JSON_EXTRACT_SCALAR: buildExtractJsonWithPath(JsonExtractScalarExpr),
-    JSON_EXTRACT_PATH_TEXT: buildExtractJsonWithPath(JsonExtractScalarExpr),
-
-    JSON_KEYS: (args, { dialect }) => new JsonKeysExpr({
-      this: seqGet(args, 0)!,
-      expression: dialect.toJsonPath(seqGet(args, 1)),
-    }),
-
-    // Math functions
-    LOG: (args, { dialect }) => buildLogarithm(args, { dialect }),
-    LOG2: (args, _options) => new LogExpr({
-      this: LiteralExpr.number(2),
-      expression: seqGet(args, 0),
-    }),
-    LOG10: (args, _options) => new LogExpr({
-      this: LiteralExpr.number(10),
-      expression: seqGet(args, 0),
-    }),
-    MOD: (args, _options) => buildMod(args),
-
-    // String manipulation
-    LOWER: (args, _options) => buildLower(args),
-    UPPER: (args, _options) => buildUpper(args),
-
-    LPAD: (args, _options) => buildPad(args),
-    LEFTPAD: (args, _options) => buildPad(args),
-    RPAD: (args, _options) => buildPad(args, { isLeft: false }),
-    RIGHTPAD: (args, _options) => buildPad(args, { isLeft: false }),
-
-    LTRIM: (args, _options) => buildTrim(args),
-    RTRIM: (args, _options) => buildTrim(args, { isLeft: false }),
-
-    // String search
-    STRPOS: (args, _options) => StrPositionExpr.fromArgList(args),
-    INSTR: (args, _options) => StrPositionExpr.fromArgList(args),
-    CHARINDEX: (args, _options) => buildLocateStrposition(args),
-    LOCATE: (args, _options) => buildLocateStrposition(args),
-
-    // Scope resolution
-    SCOPE_RESOLUTION: (args, _options) => args.length !== 2
-      ? new ScopeResolutionExpr({ expression: seqGet(args, 0)! })
-      : new ScopeResolutionExpr({
-        this: seqGet(args, 0),
-        expression: seqGet(args, 1)!,
+      ARRAYAGG: (args, { dialect }) => new ArrayAggExpr({
+        this: seqGet(args, 0)!,
+        nullsExcluded: dialect._constructor.ARRAY_AGG_INCLUDES_NULLS === undefined ? true : undefined,
       }),
 
-    // String operations
-    TS_OR_DS_TO_DATE_STR: (args, _options) => new SubstringExpr({
-      this: new CastExpr({
+      ARRAY_AGG: (args, { dialect }) => new ArrayAggExpr({
+        this: seqGet(args, 0)!,
+        nullsExcluded: dialect._constructor.ARRAY_AGG_INCLUDES_NULLS === undefined ? true : undefined,
+      }),
+
+      ARRAY_APPEND: buildArrayAppend,
+      ARRAY_CAT: buildArrayConcat,
+      ARRAY_CONCAT: buildArrayConcat,
+      ARRAY_PREPEND: buildArrayPrepend,
+      ARRAY_REMOVE: buildArrayRemove,
+
+      // Aggregate functions
+      COUNT: (args, _options) => new CountExpr({
+        this: seqGet(args, 0)!,
+        expressions: args.slice(1),
+        bigInt: true,
+      }),
+
+      // String functions
+      CONCAT: (args, { dialect }) => new ConcatExpr({
+        expressions: args,
+        safe: !dialect._constructor.STRICT_STRING_CONCAT,
+        coalesce: dialect._constructor.CONCAT_COALESCE,
+      }),
+
+      CONCAT_WS: (args, { dialect }) => new ConcatWsExpr({
+        expressions: args,
+        safe: !dialect._constructor.STRICT_STRING_CONCAT,
+        coalesce: dialect._constructor.CONCAT_COALESCE,
+      }),
+
+      // Conversion functions
+      CONVERT_TIMEZONE: (args, _options) => buildConvertTimezone(args),
+
+      DATE_TO_DATE_STR: (args, _options) => new CastExpr({
         this: seqGet(args, 0)!,
         to: new DataTypeExpr({ this: DataTypeExprKind.TEXT }),
       }),
-      start: LiteralExpr.number(1),
-      length: LiteralExpr.number(10),
-    }),
 
-    // Array operations
-    UNNEST: (args, _options) => new UnnestExpr({
-      expressions: [seqGet(args, 0)!],
-    }),
+      TIME_TO_TIME_STR: (args, _options) => new CastExpr({
+        this: seqGet(args, 0)!,
+        to: new DataTypeExpr({ this: DataTypeExprKind.TEXT }),
+      }),
 
-    // UUID
-    UUID: (args, { dialect }) => new UuidExpr({
-      isString: dialect._constructor.UUID_IS_STRING_TYPE || undefined,
-    }),
+      // Generator functions
+      GENERATE_DATE_ARRAY: (args, _options) => new GenerateDateArrayExpr({
+        start: seqGet(args, 0)!,
+        end: seqGet(args, 1)!,
+        step: seqGet(args, 2) || new IntervalExpr({
+          this: LiteralExpr.string('1'),
+          unit: var_('DAY'),
+        }),
+      }),
 
-    // Map operations
-    VAR_MAP: (args, _options) => buildVarMap(args),
-  };
+      GENERATE_UUID: (args, { dialect }) => new UuidExpr({
+        isString: dialect._constructor.UUID_IS_STRING_TYPE || undefined,
+      }),
+
+      // Pattern matching
+      GLOB: (args, _options) => new GlobExpr({
+        this: seqGet(args, 1)!,
+        expression: seqGet(args, 0)!,
+      }),
+
+      LIKE: (args, _options) => buildLike(args),
+
+      // Comparison functions
+      GREATEST: (args, { dialect }) => new GreatestExpr({
+        this: seqGet(args, 0)!,
+        expressions: args.slice(1),
+        ignoreNulls: dialect._constructor.LEAST_GREATEST_IGNORES_NULLS,
+      }),
+
+      LEAST: (args, { dialect }) => new LeastExpr({
+        this: seqGet(args, 0)!,
+        expressions: args.slice(1),
+        ignoreNulls: dialect._constructor.LEAST_GREATEST_IGNORES_NULLS,
+      }),
+
+      // Encoding functions
+      HEX: (args, { dialect }) => buildHex(args, { dialect }),
+      TO_HEX: (args, { dialect }) => buildHex(args, { dialect }),
+
+      // JSON functions
+      JSON_EXTRACT: buildExtractJsonWithPath(JsonExtractExpr),
+      JSON_EXTRACT_SCALAR: buildExtractJsonWithPath(JsonExtractScalarExpr),
+      JSON_EXTRACT_PATH_TEXT: buildExtractJsonWithPath(JsonExtractScalarExpr),
+
+      JSON_KEYS: (args, { dialect }) => new JsonKeysExpr({
+        this: seqGet(args, 0)!,
+        expression: dialect.toJsonPath(seqGet(args, 1)),
+      }),
+
+      // Math functions
+      LOG: (args, { dialect }) => buildLogarithm(args, { dialect }),
+      LOG2: (args, _options) => new LogExpr({
+        this: LiteralExpr.number(2),
+        expression: seqGet(args, 0),
+      }),
+      LOG10: (args, _options) => new LogExpr({
+        this: LiteralExpr.number(10),
+        expression: seqGet(args, 0),
+      }),
+      MOD: (args, _options) => buildMod(args),
+
+      // String manipulation
+      LOWER: (args, _options) => buildLower(args),
+      UPPER: (args, _options) => buildUpper(args),
+
+      LPAD: (args, _options) => buildPad(args),
+      LEFTPAD: (args, _options) => buildPad(args),
+      RPAD: (args, _options) => buildPad(args, { isLeft: false }),
+      RIGHTPAD: (args, _options) => buildPad(args, { isLeft: false }),
+
+      LTRIM: (args, _options) => buildTrim(args),
+      RTRIM: (args, _options) => buildTrim(args, { isLeft: false }),
+
+      // String search
+      STRPOS: (args, _options) => StrPositionExpr.fromArgList(args),
+      INSTR: (args, _options) => StrPositionExpr.fromArgList(args),
+      CHARINDEX: (args, _options) => buildLocateStrposition(args),
+      LOCATE: (args, _options) => buildLocateStrposition(args),
+
+      // Scope resolution
+      SCOPE_RESOLUTION: (args, _options) => args.length !== 2
+        ? new ScopeResolutionExpr({ expression: seqGet(args, 0)! })
+        : new ScopeResolutionExpr({
+          this: seqGet(args, 0),
+          expression: seqGet(args, 1)!,
+        }),
+
+      // String operations
+      TS_OR_DS_TO_DATE_STR: (args, _options) => new SubstringExpr({
+        this: new CastExpr({
+          this: seqGet(args, 0)!,
+          to: new DataTypeExpr({ this: DataTypeExprKind.TEXT }),
+        }),
+        start: LiteralExpr.number(1),
+        length: LiteralExpr.number(10),
+      }),
+
+      // Array operations
+      UNNEST: (args, _options) => new UnnestExpr({
+        expressions: [seqGet(args, 0)!],
+      }),
+
+      // UUID
+      UUID: (args, { dialect }) => new UuidExpr({
+        isString: dialect._constructor.UUID_IS_STRING_TYPE || undefined,
+      }),
+
+      // Map operations
+      VAR_MAP: (args, _options) => buildVarMap(args),
+    };
+  }
 
   // Function expressions that don't require parentheses
-  static NO_PAREN_FUNCTIONS: Partial<Record<TokenType, typeof Expression>> = {
-    [TokenType.CURRENT_DATE]: CurrentDateExpr,
-    [TokenType.CURRENT_DATETIME]: CurrentDateExpr,
-    [TokenType.CURRENT_TIME]: CurrentTimeExpr,
-    [TokenType.CURRENT_TIMESTAMP]: CurrentTimestampExpr,
-    [TokenType.CURRENT_USER]: CurrentUserExpr,
-    [TokenType.LOCALTIME]: LocaltimeExpr,
-    [TokenType.LOCALTIMESTAMP]: LocaltimestampExpr,
-    [TokenType.CURRENT_ROLE]: CurrentRoleExpr,
-  };
+  static #NO_PAREN_FUNCTIONS?: Partial<Record<TokenType, typeof Expression>>;
+  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
+    return Parser.#NO_PAREN_FUNCTIONS ??= {
+      [TokenType.CURRENT_DATE]: CurrentDateExpr,
+      [TokenType.CURRENT_DATETIME]: CurrentDateExpr,
+      [TokenType.CURRENT_TIME]: CurrentTimeExpr,
+      [TokenType.CURRENT_TIMESTAMP]: CurrentTimestampExpr,
+      [TokenType.CURRENT_USER]: CurrentUserExpr,
+      [TokenType.LOCALTIME]: LocaltimeExpr,
+      [TokenType.LOCALTIMESTAMP]: LocaltimestampExpr,
+      [TokenType.CURRENT_ROLE]: CurrentRoleExpr,
+    };
+  }
 
-  static STRUCT_TYPE_TOKENS: Set<TokenType> = new Set([
-    TokenType.FILE,
-    TokenType.NESTED,
-    TokenType.OBJECT,
-    TokenType.STRUCT,
-    TokenType.UNION,
-  ]);
+  static #STRUCT_TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  static get STRUCT_TYPE_TOKENS (): Set<TokenType> {
+    return Parser.#STRUCT_TYPE_TOKENS ??= new Set([
+      TokenType.FILE,
+      TokenType.NESTED,
+      TokenType.OBJECT,
+      TokenType.STRUCT,
+      TokenType.UNION,
+    ]);
+  }
 
-  static NESTED_TYPE_TOKENS: Set<TokenType> = new Set([
-    TokenType.ARRAY,
-    TokenType.LIST,
-    TokenType.LOWCARDINALITY,
-    TokenType.MAP,
-    TokenType.NULLABLE,
-    TokenType.RANGE,
-    ...Parser.STRUCT_TYPE_TOKENS,
-  ]);
+  static #NESTED_TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  static get NESTED_TYPE_TOKENS (): Set<TokenType> {
+    return Parser.#NESTED_TYPE_TOKENS ??= new Set([
+      TokenType.ARRAY,
+      TokenType.LIST,
+      TokenType.LOWCARDINALITY,
+      TokenType.MAP,
+      TokenType.NULLABLE,
+      TokenType.RANGE,
+      ...Parser.STRUCT_TYPE_TOKENS,
+    ]);
+  }
 
-  static ENUM_TYPE_TOKENS: Set<TokenType> = new Set([
-    TokenType.DYNAMIC,
-    TokenType.ENUM,
-    TokenType.ENUM8,
-    TokenType.ENUM16,
-  ]);
+  static #ENUM_TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  static get ENUM_TYPE_TOKENS (): Set<TokenType> {
+    return Parser.#ENUM_TYPE_TOKENS ??= new Set([
+      TokenType.DYNAMIC,
+      TokenType.ENUM,
+      TokenType.ENUM8,
+      TokenType.ENUM16,
+    ]);
+  }
 
-  static AGGREGATE_TYPE_TOKENS: Set<TokenType> = new Set([TokenType.AGGREGATEFUNCTION, TokenType.SIMPLEAGGREGATEFUNCTION]);
+  static #AGGREGATE_TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  static get AGGREGATE_TYPE_TOKENS (): Set<TokenType> {
+    return Parser.#AGGREGATE_TYPE_TOKENS ??= new Set([TokenType.AGGREGATEFUNCTION, TokenType.SIMPLEAGGREGATEFUNCTION]);
+  }
 
-  static TYPE_TOKENS: Set<TokenType> = new Set([
-    TokenType.BIT,
-    TokenType.BOOLEAN,
-    TokenType.TINYINT,
-    TokenType.UTINYINT,
-    TokenType.SMALLINT,
-    TokenType.USMALLINT,
-    TokenType.INT,
-    TokenType.UINT,
-    TokenType.BIGINT,
-    TokenType.UBIGINT,
-    TokenType.BIGNUM,
-    TokenType.INT128,
-    TokenType.UINT128,
-    TokenType.INT256,
-    TokenType.UINT256,
-    TokenType.MEDIUMINT,
-    TokenType.UMEDIUMINT,
-    TokenType.FIXEDSTRING,
-    TokenType.FLOAT,
-    TokenType.DOUBLE,
-    TokenType.UDOUBLE,
-    TokenType.CHAR,
-    TokenType.NCHAR,
-    TokenType.VARCHAR,
-    TokenType.NVARCHAR,
-    TokenType.BPCHAR,
-    TokenType.TEXT,
-    TokenType.MEDIUMTEXT,
-    TokenType.LONGTEXT,
-    TokenType.BLOB,
-    TokenType.MEDIUMBLOB,
-    TokenType.LONGBLOB,
-    TokenType.BINARY,
-    TokenType.VARBINARY,
-    TokenType.JSON,
-    TokenType.JSONB,
-    TokenType.INTERVAL,
-    TokenType.TINYBLOB,
-    TokenType.TINYTEXT,
-    TokenType.TIME,
-    TokenType.TIMETZ,
-    TokenType.TIME_NS,
-    TokenType.TIMESTAMP,
-    TokenType.TIMESTAMP_S,
-    TokenType.TIMESTAMP_MS,
-    TokenType.TIMESTAMP_NS,
-    TokenType.TIMESTAMPTZ,
-    TokenType.TIMESTAMPLTZ,
-    TokenType.TIMESTAMPNTZ,
-    TokenType.DATETIME,
-    TokenType.DATETIME2,
-    TokenType.DATETIME64,
-    TokenType.SMALLDATETIME,
-    TokenType.DATE,
-    TokenType.DATE32,
-    TokenType.INT4RANGE,
-    TokenType.INT4MULTIRANGE,
-    TokenType.INT8RANGE,
-    TokenType.INT8MULTIRANGE,
-    TokenType.NUMRANGE,
-    TokenType.NUMMULTIRANGE,
-    TokenType.TSRANGE,
-    TokenType.TSMULTIRANGE,
-    TokenType.TSTZRANGE,
-    TokenType.TSTZMULTIRANGE,
-    TokenType.DATERANGE,
-    TokenType.DATEMULTIRANGE,
-    TokenType.DECIMAL,
-    TokenType.DECIMAL32,
-    TokenType.DECIMAL64,
-    TokenType.DECIMAL128,
-    TokenType.DECIMAL256,
-    TokenType.DECFLOAT,
-    TokenType.UDECIMAL,
-    TokenType.BIGDECIMAL,
-    TokenType.UUID,
-    TokenType.GEOGRAPHY,
-    TokenType.GEOGRAPHYPOINT,
-    TokenType.GEOMETRY,
-    TokenType.POINT,
-    TokenType.RING,
-    TokenType.LINESTRING,
-    TokenType.MULTILINESTRING,
-    TokenType.POLYGON,
-    TokenType.MULTIPOLYGON,
-    TokenType.HLLSKETCH,
-    TokenType.HSTORE,
-    TokenType.PSEUDO_TYPE,
-    TokenType.SUPER,
-    TokenType.SERIAL,
-    TokenType.SMALLSERIAL,
-    TokenType.BIGSERIAL,
-    TokenType.XML,
-    TokenType.YEAR,
-    TokenType.USERDEFINED,
-    TokenType.MONEY,
-    TokenType.SMALLMONEY,
-    TokenType.ROWVERSION,
-    TokenType.IMAGE,
-    TokenType.VARIANT,
-    TokenType.VECTOR,
-    TokenType.VOID,
-    TokenType.OBJECT,
-    TokenType.OBJECT_IDENTIFIER,
-    TokenType.INET,
-    TokenType.IPADDRESS,
-    TokenType.IPPREFIX,
-    TokenType.IPV4,
-    TokenType.IPV6,
-    TokenType.UNKNOWN,
-    TokenType.NOTHING,
-    TokenType.NULL,
-    TokenType.NAME,
-    TokenType.TDIGEST,
-    TokenType.DYNAMIC,
-    ...Parser.ENUM_TYPE_TOKENS,
-    ...Parser.NESTED_TYPE_TOKENS,
-    ...Parser.AGGREGATE_TYPE_TOKENS,
-  ]);
-
-  static SIGNED_TO_UNSIGNED_TYPE_TOKEN: Partial<Record<TokenType, TokenType>> = {
-    [TokenType.BIGINT]: TokenType.UBIGINT,
-    [TokenType.INT]: TokenType.UINT,
-    [TokenType.MEDIUMINT]: TokenType.UMEDIUMINT,
-    [TokenType.SMALLINT]: TokenType.USMALLINT,
-    [TokenType.TINYINT]: TokenType.UTINYINT,
-    [TokenType.DECIMAL]: TokenType.UDECIMAL,
-    [TokenType.DOUBLE]: TokenType.UDOUBLE,
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static SUBQUERY_PREDICATES: Partial<Record<TokenType, new (args: any) => Expression>> = {
-    [TokenType.ANY]: AnyExpr,
-    [TokenType.ALL]: AllExpr,
-    [TokenType.EXISTS]: ExistsExpr,
-    [TokenType.SOME]: AnyExpr,
-  };
-
-  static RESERVED_TOKENS: Set<TokenType> = new Set(
-    [...Object.values(Tokenizer.SINGLE_TOKENS), TokenType.SELECT].filter((t) => t !== TokenType.IDENTIFIER),
-  );
-
-  static DB_CREATABLES: Set<TokenType> = new Set([
-    TokenType.DATABASE,
-    TokenType.DICTIONARY,
-    TokenType.FILE_FORMAT,
-    TokenType.MODEL,
-    TokenType.NAMESPACE,
-    TokenType.SCHEMA,
-    TokenType.SEMANTIC_VIEW,
-    TokenType.SEQUENCE,
-    TokenType.SINK,
-    TokenType.SOURCE,
-    TokenType.STAGE,
-    TokenType.STORAGE_INTEGRATION,
-    TokenType.STREAMLIT,
-    TokenType.TABLE,
-    TokenType.TAG,
-    TokenType.VIEW,
-    TokenType.WAREHOUSE,
-  ]);
-
-  static CREATABLES: Set<TokenType> = new Set([
-    TokenType.COLUMN,
-    TokenType.CONSTRAINT,
-    TokenType.FOREIGN_KEY,
-    TokenType.FUNCTION,
-    TokenType.INDEX,
-    TokenType.PROCEDURE,
-    ...Parser.DB_CREATABLES,
-  ]);
-
-  static ALTERABLES: Set<TokenType> = new Set([
-    TokenType.INDEX,
-    TokenType.TABLE,
-    TokenType.VIEW,
-    TokenType.SESSION,
-  ]);
-
-  static ID_VAR_TOKENS = (() => {
-    const tokens = new Set([
-      TokenType.ALL,
-      TokenType.ANALYZE,
-      TokenType.ATTACH,
-      TokenType.VAR,
-      TokenType.ANTI,
-      TokenType.APPLY,
-      TokenType.ASC,
-      TokenType.ASOF,
-      TokenType.AUTO_INCREMENT,
-      TokenType.BEGIN,
+  static #TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  static get TYPE_TOKENS (): Set<TokenType> {
+    return Parser.#TYPE_TOKENS ??= new Set([
+      TokenType.BIT,
+      TokenType.BOOLEAN,
+      TokenType.TINYINT,
+      TokenType.UTINYINT,
+      TokenType.SMALLINT,
+      TokenType.USMALLINT,
+      TokenType.INT,
+      TokenType.UINT,
+      TokenType.BIGINT,
+      TokenType.UBIGINT,
+      TokenType.BIGNUM,
+      TokenType.INT128,
+      TokenType.UINT128,
+      TokenType.INT256,
+      TokenType.UINT256,
+      TokenType.MEDIUMINT,
+      TokenType.UMEDIUMINT,
+      TokenType.FIXEDSTRING,
+      TokenType.FLOAT,
+      TokenType.DOUBLE,
+      TokenType.UDOUBLE,
+      TokenType.CHAR,
+      TokenType.NCHAR,
+      TokenType.VARCHAR,
+      TokenType.NVARCHAR,
       TokenType.BPCHAR,
-      TokenType.CACHE,
-      TokenType.CASE,
+      TokenType.TEXT,
+      TokenType.MEDIUMTEXT,
+      TokenType.LONGTEXT,
+      TokenType.BLOB,
+      TokenType.MEDIUMBLOB,
+      TokenType.LONGBLOB,
+      TokenType.BINARY,
+      TokenType.VARBINARY,
+      TokenType.JSON,
+      TokenType.JSONB,
+      TokenType.INTERVAL,
+      TokenType.TINYBLOB,
+      TokenType.TINYTEXT,
+      TokenType.TIME,
+      TokenType.TIMETZ,
+      TokenType.TIME_NS,
+      TokenType.TIMESTAMP,
+      TokenType.TIMESTAMP_S,
+      TokenType.TIMESTAMP_MS,
+      TokenType.TIMESTAMP_NS,
+      TokenType.TIMESTAMPTZ,
+      TokenType.TIMESTAMPLTZ,
+      TokenType.TIMESTAMPNTZ,
+      TokenType.DATETIME,
+      TokenType.DATETIME2,
+      TokenType.DATETIME64,
+      TokenType.SMALLDATETIME,
+      TokenType.DATE,
+      TokenType.DATE32,
+      TokenType.INT4RANGE,
+      TokenType.INT4MULTIRANGE,
+      TokenType.INT8RANGE,
+      TokenType.INT8MULTIRANGE,
+      TokenType.NUMRANGE,
+      TokenType.NUMMULTIRANGE,
+      TokenType.TSRANGE,
+      TokenType.TSMULTIRANGE,
+      TokenType.TSTZRANGE,
+      TokenType.TSTZMULTIRANGE,
+      TokenType.DATERANGE,
+      TokenType.DATEMULTIRANGE,
+      TokenType.DECIMAL,
+      TokenType.DECIMAL32,
+      TokenType.DECIMAL64,
+      TokenType.DECIMAL128,
+      TokenType.DECIMAL256,
+      TokenType.DECFLOAT,
+      TokenType.UDECIMAL,
+      TokenType.BIGDECIMAL,
+      TokenType.UUID,
+      TokenType.GEOGRAPHY,
+      TokenType.GEOGRAPHYPOINT,
+      TokenType.GEOMETRY,
+      TokenType.POINT,
+      TokenType.RING,
+      TokenType.LINESTRING,
+      TokenType.MULTILINESTRING,
+      TokenType.POLYGON,
+      TokenType.MULTIPOLYGON,
+      TokenType.HLLSKETCH,
+      TokenType.HSTORE,
+      TokenType.PSEUDO_TYPE,
+      TokenType.SUPER,
+      TokenType.SERIAL,
+      TokenType.SMALLSERIAL,
+      TokenType.BIGSERIAL,
+      TokenType.XML,
+      TokenType.YEAR,
+      TokenType.USERDEFINED,
+      TokenType.MONEY,
+      TokenType.SMALLMONEY,
+      TokenType.ROWVERSION,
+      TokenType.IMAGE,
+      TokenType.VARIANT,
+      TokenType.VECTOR,
+      TokenType.VOID,
+      TokenType.OBJECT,
+      TokenType.OBJECT_IDENTIFIER,
+      TokenType.INET,
+      TokenType.IPADDRESS,
+      TokenType.IPPREFIX,
+      TokenType.IPV4,
+      TokenType.IPV6,
+      TokenType.UNKNOWN,
+      TokenType.NOTHING,
+      TokenType.NULL,
+      TokenType.NAME,
+      TokenType.TDIGEST,
+      TokenType.DYNAMIC,
+      ...Parser.ENUM_TYPE_TOKENS,
+      ...Parser.NESTED_TYPE_TOKENS,
+      ...Parser.AGGREGATE_TYPE_TOKENS,
+    ]);
+  }
+
+  static #SIGNED_TO_UNSIGNED_TYPE_TOKEN: Partial<Record<TokenType, TokenType>> | undefined = undefined;
+  static get SIGNED_TO_UNSIGNED_TYPE_TOKEN (): Partial<Record<TokenType, TokenType>> {
+    return Parser.#SIGNED_TO_UNSIGNED_TYPE_TOKEN ??= {
+      [TokenType.BIGINT]: TokenType.UBIGINT,
+      [TokenType.INT]: TokenType.UINT,
+      [TokenType.MEDIUMINT]: TokenType.UMEDIUMINT,
+      [TokenType.SMALLINT]: TokenType.USMALLINT,
+      [TokenType.TINYINT]: TokenType.UTINYINT,
+      [TokenType.DECIMAL]: TokenType.UDECIMAL,
+      [TokenType.DOUBLE]: TokenType.UDOUBLE,
+    };
+  }
+
+  static #SUBQUERY_PREDICATES: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  static get SUBQUERY_PREDICATES (): Partial<Record<TokenType, typeof Expression>> {
+    return Parser.#SUBQUERY_PREDICATES ??= {
+      [TokenType.ANY]: AnyExpr,
+      [TokenType.ALL]: AllExpr,
+      [TokenType.EXISTS]: ExistsExpr,
+      [TokenType.SOME]: AnyExpr,
+    };
+  }
+
+  static #RESERVED_TOKENS: Set<TokenType> | undefined = undefined;
+  static get RESERVED_TOKENS (): Set<TokenType> {
+    return Parser.#RESERVED_TOKENS ??= new Set(
+      [...Object.values(Tokenizer.SINGLE_TOKENS), TokenType.SELECT].filter((t) => t !== TokenType.IDENTIFIER),
+    );
+  }
+
+  static #DB_CREATABLES: Set<TokenType> | undefined = undefined;
+  static get DB_CREATABLES (): Set<TokenType> {
+    return Parser.#DB_CREATABLES ??= new Set([
+      TokenType.DATABASE,
+      TokenType.DICTIONARY,
+      TokenType.FILE_FORMAT,
+      TokenType.MODEL,
+      TokenType.NAMESPACE,
+      TokenType.SCHEMA,
+      TokenType.SEMANTIC_VIEW,
+      TokenType.SEQUENCE,
+      TokenType.SINK,
+      TokenType.SOURCE,
+      TokenType.STAGE,
+      TokenType.STORAGE_INTEGRATION,
+      TokenType.STREAMLIT,
+      TokenType.TABLE,
+      TokenType.TAG,
+      TokenType.VIEW,
+      TokenType.WAREHOUSE,
+    ]);
+  }
+
+  static #CREATABLES: Set<TokenType> | undefined = undefined;
+  static get CREATABLES (): Set<TokenType> {
+    return Parser.#CREATABLES ??= new Set([
+      TokenType.COLUMN,
+      TokenType.CONSTRAINT,
+      TokenType.FOREIGN_KEY,
+      TokenType.FUNCTION,
+      TokenType.INDEX,
+      TokenType.PROCEDURE,
+      ...Parser.DB_CREATABLES,
+    ]);
+  }
+
+  static #ALTERABLES: Set<TokenType> | undefined = undefined;
+  static get ALTERABLES (): Set<TokenType> {
+    return Parser.#ALTERABLES ??= new Set([
+      TokenType.INDEX,
+      TokenType.TABLE,
+      TokenType.VIEW,
+      TokenType.SESSION,
+    ]);
+  }
+
+  static #ID_VAR_TOKENS: Set<TokenType> | undefined = undefined;
+  static get ID_VAR_TOKENS () {
+    return Parser.#ID_VAR_TOKENS ??= (() => {
+      const tokens = new Set([
+        TokenType.ALL,
+        TokenType.ANALYZE,
+        TokenType.ATTACH,
+        TokenType.VAR,
+        TokenType.ANTI,
+        TokenType.APPLY,
+        TokenType.ASC,
+        TokenType.ASOF,
+        TokenType.AUTO_INCREMENT,
+        TokenType.BEGIN,
+        TokenType.BPCHAR,
+        TokenType.CACHE,
+        TokenType.CASE,
+        TokenType.COLLATE,
+        TokenType.COMMAND,
+        TokenType.COMMENT,
+        TokenType.COMMIT,
+        TokenType.CONSTRAINT,
+        TokenType.COPY,
+        TokenType.CUBE,
+        TokenType.CURRENT_SCHEMA,
+        TokenType.DEFAULT,
+        TokenType.DELETE,
+        TokenType.DESC,
+        TokenType.DESCRIBE,
+        TokenType.DETACH,
+        TokenType.DICTIONARY,
+        TokenType.DIV,
+        TokenType.END,
+        TokenType.EXECUTE,
+        TokenType.EXPORT,
+        TokenType.ESCAPE,
+        TokenType.FALSE,
+        TokenType.FIRST,
+        TokenType.FILTER,
+        TokenType.FINAL,
+        TokenType.FORMAT,
+        TokenType.FULL,
+        TokenType.GET,
+        TokenType.IDENTIFIER,
+        TokenType.INOUT,
+        TokenType.IS,
+        TokenType.ISNULL,
+        TokenType.INTERVAL,
+        TokenType.KEEP,
+        TokenType.KILL,
+        TokenType.LEFT,
+        TokenType.LIMIT,
+        TokenType.LOAD,
+        TokenType.LOCK,
+        TokenType.MATCH,
+        TokenType.MERGE,
+        TokenType.NATURAL,
+        TokenType.NEXT,
+        TokenType.OFFSET,
+        TokenType.OPERATOR,
+        TokenType.ORDINALITY,
+        TokenType.OVER,
+        TokenType.OVERLAPS,
+        TokenType.OVERWRITE,
+        TokenType.PARTITION,
+        TokenType.PERCENT,
+        TokenType.PIVOT,
+        TokenType.PRAGMA,
+        TokenType.PUT,
+        TokenType.RANGE,
+        TokenType.RECURSIVE,
+        TokenType.REFERENCES,
+        TokenType.REFRESH,
+        TokenType.RENAME,
+        TokenType.REPLACE,
+        TokenType.RIGHT,
+        TokenType.ROLLUP,
+        TokenType.ROW,
+        TokenType.ROWS,
+        TokenType.SEMI,
+        TokenType.SET,
+        TokenType.SETTINGS,
+        TokenType.SHOW,
+        TokenType.TEMPORARY,
+        TokenType.TOP,
+        TokenType.TRUE,
+        TokenType.TRUNCATE,
+        TokenType.UNIQUE,
+        TokenType.UNNEST,
+        TokenType.UNPIVOT,
+        TokenType.UPDATE,
+        TokenType.USE,
+        TokenType.VOLATILE,
+        TokenType.WINDOW,
+        ...Parser.ALTERABLES,
+        ...Parser.CREATABLES,
+        ...Object.keys(Parser.SUBQUERY_PREDICATES) as TokenType[],
+        ...Parser.TYPE_TOKENS,
+        ...Object.keys(Parser.NO_PAREN_FUNCTIONS) as TokenType[],
+      ]);
+      tokens.delete(TokenType.UNION);
+      return tokens;
+    })();
+  }
+
+  static #TABLE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return Parser.#TABLE_ALIAS_TOKENS ??= new Set(
+      [...Parser.ID_VAR_TOKENS].filter((t) => ![
+        TokenType.ANTI,
+        TokenType.ASOF,
+        TokenType.FULL,
+        TokenType.LEFT,
+        TokenType.LOCK,
+        TokenType.NATURAL,
+        TokenType.RIGHT,
+        TokenType.SEMI,
+        TokenType.WINDOW,
+      ].includes(t)),
+    );
+  }
+
+  static #ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  static get ALIAS_TOKENS () {
+    return Parser.#ALIAS_TOKENS ??= Parser.ID_VAR_TOKENS;
+  }
+
+  static #COLON_PLACEHOLDER_TOKENS: Set<TokenType> | undefined = undefined;
+  static get COLON_PLACEHOLDER_TOKENS () {
+    return Parser.#COLON_PLACEHOLDER_TOKENS ??= Parser.ID_VAR_TOKENS;
+  }
+
+  static #ARRAY_CONSTRUCTORS: Record<string, typeof Expression> | undefined = undefined;
+  static get ARRAY_CONSTRUCTORS (): Record<string, typeof Expression> {
+    return Parser.#ARRAY_CONSTRUCTORS ??= {
+      ARRAY: ArrayExpr,
+      LIST: ListExpr,
+    };
+  }
+
+  static #COMMENT_TABLE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  static get COMMENT_TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return Parser.#COMMENT_TABLE_ALIAS_TOKENS ??= new Set(
+      [...Parser.TABLE_ALIAS_TOKENS].filter((t) => t !== TokenType.IS),
+    );
+  }
+
+  static #UPDATE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  static get UPDATE_ALIAS_TOKENS (): Set<TokenType> {
+    return Parser.#UPDATE_ALIAS_TOKENS ??= new Set(
+      [...Parser.TABLE_ALIAS_TOKENS].filter((t) => t !== TokenType.SET),
+    );
+  }
+
+  static #TRIM_TYPES?: Set<TrimPosition>;
+  static get TRIM_TYPES (): Set<TrimPosition> {
+    return Parser.#TRIM_TYPES ??= new Set([
+      TrimPosition.LEADING,
+      TrimPosition.TRAILING,
+      TrimPosition.BOTH,
+    ]);
+  }
+
+  static #FUNC_TOKENS: Set<TokenType> | undefined = undefined;
+  static get FUNC_TOKENS (): Set<TokenType> {
+    return Parser.#FUNC_TOKENS ??= new Set([
       TokenType.COLLATE,
       TokenType.COMMAND,
-      TokenType.COMMENT,
-      TokenType.COMMIT,
-      TokenType.CONSTRAINT,
-      TokenType.COPY,
-      TokenType.CUBE,
+      TokenType.CURRENT_DATE,
+      TokenType.CURRENT_DATETIME,
       TokenType.CURRENT_SCHEMA,
-      TokenType.DEFAULT,
-      TokenType.DELETE,
-      TokenType.DESC,
-      TokenType.DESCRIBE,
-      TokenType.DETACH,
-      TokenType.DICTIONARY,
-      TokenType.DIV,
-      TokenType.END,
-      TokenType.EXECUTE,
-      TokenType.EXPORT,
-      TokenType.ESCAPE,
-      TokenType.FALSE,
-      TokenType.FIRST,
+      TokenType.CURRENT_TIMESTAMP,
+      TokenType.CURRENT_TIME,
+      TokenType.CURRENT_USER,
+      TokenType.CURRENT_CATALOG,
       TokenType.FILTER,
-      TokenType.FINAL,
+      TokenType.FIRST,
       TokenType.FORMAT,
-      TokenType.FULL,
       TokenType.GET,
+      TokenType.GLOB,
       TokenType.IDENTIFIER,
-      TokenType.INOUT,
-      TokenType.IS,
+      TokenType.INDEX,
       TokenType.ISNULL,
-      TokenType.INTERVAL,
-      TokenType.KEEP,
-      TokenType.KILL,
-      TokenType.LEFT,
-      TokenType.LIMIT,
-      TokenType.LOAD,
-      TokenType.LOCK,
-      TokenType.MATCH,
+      TokenType.ILIKE,
+      TokenType.INSERT,
+      TokenType.LIKE,
+      TokenType.LOCALTIME,
+      TokenType.LOCALTIMESTAMP,
       TokenType.MERGE,
-      TokenType.NATURAL,
       TokenType.NEXT,
       TokenType.OFFSET,
-      TokenType.OPERATOR,
-      TokenType.ORDINALITY,
-      TokenType.OVER,
-      TokenType.OVERLAPS,
-      TokenType.OVERWRITE,
-      TokenType.PARTITION,
-      TokenType.PERCENT,
-      TokenType.PIVOT,
-      TokenType.PRAGMA,
-      TokenType.PUT,
+      TokenType.PRIMARY_KEY,
       TokenType.RANGE,
-      TokenType.RECURSIVE,
-      TokenType.REFERENCES,
-      TokenType.REFRESH,
-      TokenType.RENAME,
       TokenType.REPLACE,
-      TokenType.RIGHT,
-      TokenType.ROLLUP,
+      TokenType.RLIKE,
       TokenType.ROW,
-      TokenType.ROWS,
-      TokenType.SEMI,
-      TokenType.SET,
-      TokenType.SETTINGS,
-      TokenType.SHOW,
-      TokenType.TEMPORARY,
-      TokenType.TOP,
-      TokenType.TRUE,
-      TokenType.TRUNCATE,
-      TokenType.UNIQUE,
+      TokenType.SESSION_USER,
       TokenType.UNNEST,
-      TokenType.UNPIVOT,
-      TokenType.UPDATE,
-      TokenType.USE,
-      TokenType.VOLATILE,
-      TokenType.WINDOW,
-      ...Parser.ALTERABLES,
-      ...Parser.CREATABLES,
-      ...Object.keys(Parser.SUBQUERY_PREDICATES) as TokenType[],
-      ...Parser.TYPE_TOKENS,
-      ...Object.keys(Parser.NO_PAREN_FUNCTIONS) as TokenType[],
-    ]);
-    tokens.delete(TokenType.UNION);
-    return tokens;
-  })();
-
-  static TABLE_ALIAS_TOKENS: Set<TokenType> = new Set(
-    [...Parser.ID_VAR_TOKENS].filter((t) => ![
-      TokenType.ANTI,
-      TokenType.ASOF,
-      TokenType.FULL,
+      TokenType.VAR,
       TokenType.LEFT,
-      TokenType.LOCK,
-      TokenType.NATURAL,
       TokenType.RIGHT,
-      TokenType.SEMI,
+      TokenType.SEQUENCE,
+      TokenType.DATE,
+      TokenType.DATETIME,
+      TokenType.TABLE,
+      TokenType.TIMESTAMP,
+      TokenType.TIMESTAMPTZ,
+      TokenType.TRUNCATE,
+      TokenType.UTC_DATE,
+      TokenType.UTC_TIME,
+      TokenType.UTC_TIMESTAMP,
       TokenType.WINDOW,
-    ].includes(t)),
-  );
+      TokenType.XOR,
+      ...Parser.TYPE_TOKENS,
+      ...Object.keys(Parser.SUBQUERY_PREDICATES) as TokenType[],
+    ]);
+  }
 
-  static ALIAS_TOKENS = Parser.ID_VAR_TOKENS;
+  static #CONJUNCTION: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  static get CONJUNCTION (): Partial<Record<TokenType, typeof Expression>> {
+    return Parser.#CONJUNCTION ??= {
+      [TokenType.AND]: AndExpr,
+    };
+  }
 
-  static COLON_PLACEHOLDER_TOKENS = Parser.ID_VAR_TOKENS;
+  static #ASSIGNMENT: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  static get ASSIGNMENT (): Partial<Record<TokenType, typeof Expression>> {
+    return Parser.#ASSIGNMENT ??= {
+      [TokenType.COLON_EQ]: PropertyEqExpr,
+    };
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static ARRAY_CONSTRUCTORS: Record<string, new (args: any) => Expression> = {
-    ARRAY: ArrayExpr,
-    LIST: ListExpr,
-  };
+  static #DISJUNCTION: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  static get DISJUNCTION (): Partial<Record<TokenType, typeof Expression>> {
+    return Parser.#DISJUNCTION ??= {
+      [TokenType.OR]: OrExpr,
+    };
+  }
 
-  static COMMENT_TABLE_ALIAS_TOKENS: Set<TokenType> = new Set(
-    [...Parser.TABLE_ALIAS_TOKENS].filter((t) => t !== TokenType.IS),
-  );
+  static #EQUALITY: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  static get EQUALITY (): Partial<Record<TokenType, typeof Expression>> {
+    return Parser.#EQUALITY ??= {
+      [TokenType.EQ]: EqExpr,
+      [TokenType.NEQ]: NeqExpr,
+      [TokenType.NULLSAFE_EQ]: NullSafeEqExpr,
+    };
+  }
 
-  static UPDATE_ALIAS_TOKENS: Set<TokenType> = new Set(
-    [...Parser.TABLE_ALIAS_TOKENS].filter((t) => t !== TokenType.SET),
-  );
+  static #COMPARISON: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  static get COMPARISON (): Partial<Record<TokenType, typeof Expression>> {
+    return Parser.#COMPARISON ??= {
+      [TokenType.GT]: GtExpr,
+      [TokenType.GTE]: GteExpr,
+      [TokenType.LT]: LtExpr,
+      [TokenType.LTE]: LteExpr,
+    };
+  }
 
-  static TRIM_TYPES: Set<TrimPosition> = new Set([
-    TrimPosition.LEADING,
-    TrimPosition.TRAILING,
-    TrimPosition.BOTH,
-  ]);
+  static #BITWISE: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  static get BITWISE (): Partial<Record<TokenType, typeof Expression>> {
+    return Parser.#BITWISE ??= {
+      [TokenType.AMP]: BitwiseAndExpr,
+      [TokenType.CARET]: BitwiseXorExpr,
+      [TokenType.PIPE]: BitwiseOrExpr,
+    };
+  }
 
-  static FUNC_TOKENS: Set<TokenType> = new Set([
-    TokenType.COLLATE,
-    TokenType.COMMAND,
-    TokenType.CURRENT_DATE,
-    TokenType.CURRENT_DATETIME,
-    TokenType.CURRENT_SCHEMA,
-    TokenType.CURRENT_TIMESTAMP,
-    TokenType.CURRENT_TIME,
-    TokenType.CURRENT_USER,
-    TokenType.CURRENT_CATALOG,
-    TokenType.FILTER,
-    TokenType.FIRST,
-    TokenType.FORMAT,
-    TokenType.GET,
-    TokenType.GLOB,
-    TokenType.IDENTIFIER,
-    TokenType.INDEX,
-    TokenType.ISNULL,
-    TokenType.ILIKE,
-    TokenType.INSERT,
-    TokenType.LIKE,
-    TokenType.LOCALTIME,
-    TokenType.LOCALTIMESTAMP,
-    TokenType.MERGE,
-    TokenType.NEXT,
-    TokenType.OFFSET,
-    TokenType.PRIMARY_KEY,
-    TokenType.RANGE,
-    TokenType.REPLACE,
-    TokenType.RLIKE,
-    TokenType.ROW,
-    TokenType.SESSION_USER,
-    TokenType.UNNEST,
-    TokenType.VAR,
-    TokenType.LEFT,
-    TokenType.RIGHT,
-    TokenType.SEQUENCE,
-    TokenType.DATE,
-    TokenType.DATETIME,
-    TokenType.TABLE,
-    TokenType.TIMESTAMP,
-    TokenType.TIMESTAMPTZ,
-    TokenType.TRUNCATE,
-    TokenType.UTC_DATE,
-    TokenType.UTC_TIME,
-    TokenType.UTC_TIMESTAMP,
-    TokenType.WINDOW,
-    TokenType.XOR,
-    ...Parser.TYPE_TOKENS,
-    ...Object.keys(Parser.SUBQUERY_PREDICATES) as TokenType[],
-  ]);
+  static #TERM: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  static get TERM (): Partial<Record<TokenType, typeof Expression>> {
+    return Parser.#TERM ??= {
+      [TokenType.DASH]: SubExpr,
+      [TokenType.PLUS]: AddExpr,
+      [TokenType.MOD]: ModExpr,
+      [TokenType.COLLATE]: CollateExpr,
+    };
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static CONJUNCTION: Partial<Record<TokenType, new (args: any) => Expression>> = {
-    [TokenType.AND]: AndExpr,
-  };
+  static #FACTOR: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  static get FACTOR (): Partial<Record<TokenType, typeof Expression>> {
+    return Parser.#FACTOR ??= {
+      [TokenType.DIV]: IntDivExpr,
+      [TokenType.LR_ARROW]: DistanceExpr,
+      [TokenType.SLASH]: DivExpr,
+      [TokenType.STAR]: MulExpr,
+    };
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static ASSIGNMENT: Partial<Record<TokenType, new (args: any) => Expression>> = {
-    [TokenType.COLON_EQ]: PropertyEqExpr,
-  };
+  static #EXPONENT: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  static get EXPONENT (): Partial<Record<TokenType, typeof Expression>> {
+    return Parser.#EXPONENT ??= {};
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static DISJUNCTION: Partial<Record<TokenType, new (args: any) => Expression>> = {
-    [TokenType.OR]: OrExpr,
-  };
+  static #TIMES: Set<TokenType> | undefined = undefined;
+  static get TIMES (): Set<TokenType> {
+    return Parser.#TIMES ??= new Set([TokenType.TIME, TokenType.TIMETZ]);
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static EQUALITY: Partial<Record<TokenType, new (args: any) => Expression>> = {
-    [TokenType.EQ]: EqExpr,
-    [TokenType.NEQ]: NeqExpr,
-    [TokenType.NULLSAFE_EQ]: NullSafeEqExpr,
-  };
+  static #TIMESTAMPS: Set<TokenType> | undefined = undefined;
+  static get TIMESTAMPS (): Set<TokenType> {
+    return Parser.#TIMESTAMPS ??= new Set([
+      TokenType.TIMESTAMP,
+      TokenType.TIMESTAMPNTZ,
+      TokenType.TIMESTAMPTZ,
+      TokenType.TIMESTAMPLTZ,
+      ...Parser.TIMES,
+    ]);
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static COMPARISON: Partial<Record<TokenType, new (args: any) => Expression>> = {
-    [TokenType.GT]: GtExpr,
-    [TokenType.GTE]: GteExpr,
-    [TokenType.LT]: LtExpr,
-    [TokenType.LTE]: LteExpr,
-  };
+  static #SET_OPERATIONS: Set<TokenType> | undefined = undefined;
+  static get SET_OPERATIONS (): Set<TokenType> {
+    return Parser.#SET_OPERATIONS ??= new Set([
+      TokenType.UNION,
+      TokenType.INTERSECT,
+      TokenType.EXCEPT,
+    ]);
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static BITWISE: Partial<Record<TokenType, new (args: any) => Expression>> = {
-    [TokenType.AMP]: BitwiseAndExpr,
-    [TokenType.CARET]: BitwiseXorExpr,
-    [TokenType.PIPE]: BitwiseOrExpr,
-  };
+  static #JOIN_METHODS: Set<TokenType> | undefined = undefined;
+  static get JOIN_METHODS (): Set<TokenType> {
+    return Parser.#JOIN_METHODS ??= new Set([
+      TokenType.ASOF,
+      TokenType.NATURAL,
+      TokenType.POSITIONAL,
+    ]);
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static TERM: Partial<Record<TokenType, new (args: any) => Expression>> = {
-    [TokenType.DASH]: SubExpr,
-    [TokenType.PLUS]: AddExpr,
-    [TokenType.MOD]: ModExpr,
-    [TokenType.COLLATE]: CollateExpr,
-  };
+  static #JOIN_SIDES: Set<TokenType> | undefined = undefined;
+  static get JOIN_SIDES (): Set<TokenType> {
+    return Parser.#JOIN_SIDES ??= new Set([
+      TokenType.LEFT,
+      TokenType.RIGHT,
+      TokenType.FULL,
+    ]);
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static FACTOR: Partial<Record<TokenType, new (args: any) => Expression>> = {
-    [TokenType.DIV]: IntDivExpr,
-    [TokenType.LR_ARROW]: DistanceExpr,
-    [TokenType.SLASH]: DivExpr,
-    [TokenType.STAR]: MulExpr,
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static EXPONENT: Partial<Record<TokenType, new (args: any) => Expression>> = {};
-
-  static TIMES: Set<TokenType> = new Set([TokenType.TIME, TokenType.TIMETZ]);
-
-  static TIMESTAMPS: Set<TokenType> = new Set([
-    TokenType.TIMESTAMP,
-    TokenType.TIMESTAMPNTZ,
-    TokenType.TIMESTAMPTZ,
-    TokenType.TIMESTAMPLTZ,
-    ...Parser.TIMES,
-  ]);
-
-  static SET_OPERATIONS: Set<TokenType> = new Set([
-    TokenType.UNION,
-    TokenType.INTERSECT,
-    TokenType.EXCEPT,
-  ]);
-
-  static JOIN_METHODS: Set<TokenType> = new Set([
-    TokenType.ASOF,
-    TokenType.NATURAL,
-    TokenType.POSITIONAL,
-  ]);
-
-  static JOIN_SIDES: Set<TokenType> = new Set([
-    TokenType.LEFT,
-    TokenType.RIGHT,
-    TokenType.FULL,
-  ]);
-
-  static JOIN_KINDS: Set<TokenType> = new Set([
-    TokenType.ANTI,
-    TokenType.CROSS,
-    TokenType.INNER,
-    TokenType.OUTER,
-    TokenType.SEMI,
-    TokenType.STRAIGHT_JOIN,
-  ]);
+  static #JOIN_KINDS: Set<TokenType> | undefined = undefined;
+  static get JOIN_KINDS (): Set<TokenType> {
+    return Parser.#JOIN_KINDS ??= new Set([
+      TokenType.ANTI,
+      TokenType.CROSS,
+      TokenType.INNER,
+      TokenType.OUTER,
+      TokenType.SEMI,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
 
   static JOIN_HINTS: Set<string> = new Set();
 
-  static LAMBDAS: Partial<Record<TokenType, (self: Parser, expressions: Expression[]) => Expression>> = {
-    [TokenType.ARROW]: (self: Parser, expressions: Expression[]) => self.expression(
-      LambdaExpr,
-      {
-        this: self.replaceLambda(
-          self.parseDisjunction(),
-          expressions,
-        ),
-        expressions: expressions,
-      },
-    ),
-    [TokenType.FARROW]: (self: Parser, expressions: Expression[]) => self.expression(
-      KwargExpr,
-      {
-        this: var_(expressions[0].name),
-        expression: self.parseDisjunction(),
-      },
-    ),
-  };
+  static #LAMBDAS: Partial<Record<TokenType, (self: Parser, expressions: Expression[]) => Expression>> | undefined = undefined;
+  static get LAMBDAS (): Partial<Record<TokenType, (self: Parser, expressions: Expression[]) => Expression>> {
+    return Parser.#LAMBDAS ??= {
+      [TokenType.ARROW]: (self: Parser, expressions: Expression[]) => self.expression(
+        LambdaExpr,
+        {
+          this: self.replaceLambda(
+            self.parseDisjunction(),
+            expressions,
+          ),
+          expressions: expressions,
+        },
+      ),
+      [TokenType.FARROW]: (self: Parser, expressions: Expression[]) => self.expression(
+        KwargExpr,
+        {
+          this: var_(expressions[0].name),
+          expression: self.parseDisjunction(),
+        },
+      ),
+    };
+  }
 
-  static COLUMN_OPERATORS: Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> = {
-    [TokenType.DOT]: undefined,
-    [TokenType.DOTCOLON]: (self: Parser, this_?: Expression, to?: Expression) => self.expression(
-      JsonCastExpr,
-      {
+  static #COLUMN_OPERATORS: Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> | undefined = undefined;
+  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
+    return Parser.#COLUMN_OPERATORS ??= {
+      [TokenType.DOT]: undefined,
+      [TokenType.DOTCOLON]: (self: Parser, this_?: Expression, to?: Expression) => self.expression(
+        JsonCastExpr,
+        {
+          this: this_,
+          to: to,
+        },
+      ),
+      [TokenType.DCOLON]: (self: Parser, this_?: Expression, to?: Expression) => self.buildCast({
+        strict: self._constructor.STRICT_CAST,
         this: this_,
         to: to,
-      },
-    ),
-    [TokenType.DCOLON]: (self: Parser, this_?: Expression, to?: Expression) => self.buildCast({
-      strict: self._constructor.STRICT_CAST,
-      this: this_,
-      to: to,
-    }),
-    [TokenType.ARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
-      JsonExtractExpr,
-      {
-        this: this_,
-        expression: self.dialect.toJsonPath(path),
-        onlyJsonTypes: self._constructor.JSON_ARROWS_REQUIRE_JSON_TYPE,
-      },
-    ),
-    [TokenType.DARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
-      JsonExtractScalarExpr,
-      {
-        this: this_,
-        expression: self.dialect.toJsonPath(path),
-        onlyJsonTypes: self._constructor.JSON_ARROWS_REQUIRE_JSON_TYPE,
-        scalarOnly: self._dialectConstructor.JSON_EXTRACT_SCALAR_SCALAR_ONLY,
-      },
-    ),
-    [TokenType.HASH_ARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
-      JsonbExtractExpr,
-      {
-        this: this_,
-        expression: path,
-      },
-    ),
-    [TokenType.DHASH_ARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
-      JsonbExtractScalarExpr,
-      {
-        this: this_,
-        expression: path,
-      },
-    ),
-    [TokenType.PLACEHOLDER]: (self: Parser, this_?: Expression, key?: Expression) => self.expression(
-      JsonbContainsExpr,
-      {
-        this: this_,
-        expression: key,
-      },
-    ),
-  };
+      }),
+      [TokenType.ARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
+        JsonExtractExpr,
+        {
+          this: this_,
+          expression: self.dialect.toJsonPath(path),
+          onlyJsonTypes: self._constructor.JSON_ARROWS_REQUIRE_JSON_TYPE,
+        },
+      ),
+      [TokenType.DARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
+        JsonExtractScalarExpr,
+        {
+          this: this_,
+          expression: self.dialect.toJsonPath(path),
+          onlyJsonTypes: self._constructor.JSON_ARROWS_REQUIRE_JSON_TYPE,
+          scalarOnly: self._dialectConstructor.JSON_EXTRACT_SCALAR_SCALAR_ONLY,
+        },
+      ),
+      [TokenType.HASH_ARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
+        JsonbExtractExpr,
+        {
+          this: this_,
+          expression: path,
+        },
+      ),
+      [TokenType.DHASH_ARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
+        JsonbExtractScalarExpr,
+        {
+          this: this_,
+          expression: path,
+        },
+      ),
+      [TokenType.PLACEHOLDER]: (self: Parser, this_?: Expression, key?: Expression) => self.expression(
+        JsonbContainsExpr,
+        {
+          this: this_,
+          expression: key,
+        },
+      ),
+    };
+  }
 
-  static CAST_COLUMN_OPERATORS: Set<TokenType> = new Set([TokenType.DOTCOLON, TokenType.DCOLON]);
+  static #CAST_COLUMN_OPERATORS: Set<TokenType> | undefined = undefined;
+  static get CAST_COLUMN_OPERATORS (): Set<TokenType> {
+    return Parser.#CAST_COLUMN_OPERATORS ??= new Set([TokenType.DOTCOLON, TokenType.DCOLON]);
+  }
 
-  static EXPRESSION_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
-    [ExpressionKey.CLUSTER]: (self: Parser) => self.parseSort(ClusterExpr, TokenType.CLUSTER_BY),
-    [ExpressionKey.COLUMN]: (self: Parser) => self.parseColumn(),
-    [ExpressionKey.COLUMN_DEF]: (self: Parser) => self.parseColumnDef(self.parseColumn()),
-    [ExpressionKey.CONDITION]: (self: Parser) => self.parseDisjunction(),
-    [ExpressionKey.DATA_TYPE]: (self: Parser) => self.parseTypes({
-      allowIdentifiers: false,
-      schema: true,
-    }),
-    [ExpressionKey.EXPRESSION]: (self: Parser) => self.parseExpression(),
-    [ExpressionKey.FROM]: (self: Parser) => self.parseFrom({ joins: true }),
-    [ExpressionKey.GRANT_PRINCIPAL]: (self: Parser) => self.parseGrantPrincipal(),
-    [ExpressionKey.GRANT_PRIVILEGE]: (self: Parser) => self.parseGrantPrivilege(),
-    [ExpressionKey.GROUP]: (self: Parser) => self.parseGroup(),
-    [ExpressionKey.HAVING]: (self: Parser) => self.parseHaving(),
-    [ExpressionKey.HINT]: (self: Parser) => self.parseHintBody(),
-    [ExpressionKey.IDENTIFIER]: (self: Parser) => self.parseIdVar(),
-    [ExpressionKey.JOIN]: (self: Parser) => self.parseJoin(),
-    [ExpressionKey.LAMBDA]: (self: Parser) => self.parseLambda(),
-    [ExpressionKey.LATERAL]: (self: Parser) => self.parseLateral(),
-    [ExpressionKey.LIMIT]: (self: Parser) => self.parseLimit(),
-    [ExpressionKey.OFFSET]: (self: Parser) => self.parseOffset(),
-    [ExpressionKey.ORDER]: (self: Parser) => self.parseOrder(),
-    [ExpressionKey.ORDERED]: (self: Parser) => self.parseOrdered(),
-    [ExpressionKey.PROPERTIES]: (self: Parser) => self.parseProperties(),
-    [ExpressionKey.PARTITIONED_BY_PROPERTY]: (self: Parser) => self.parsePartitionedBy(),
-    [ExpressionKey.QUALIFY]: (self: Parser) => self.parseQualify(),
-    [ExpressionKey.RETURNING]: (self: Parser) => self.parseReturning(),
-    [ExpressionKey.SELECT]: (self: Parser) => self.parseSelect(),
-    [ExpressionKey.SORT]: (self: Parser) => self.parseSort(SortExpr, TokenType.SORT_BY),
-    [ExpressionKey.TABLE]: (self: Parser) => self.parseTableParts(),
-    [ExpressionKey.TABLE_ALIAS]: (self: Parser) => self.parseTableAlias(),
-    [ExpressionKey.TUPLE]: (self: Parser) => self.parseValue({ values: false }),
-    [ExpressionKey.WHENS]: (self: Parser) => self.parseWhenMatched(),
-    [ExpressionKey.WHERE]: (self: Parser) => self.parseWhere(),
-    [ExpressionKey.WINDOW]: (self: Parser) => self.parseNamedWindow(),
-    [ExpressionKey.WITH]: (self: Parser) => self.parseWith(),
-  };
+  static #EXPRESSION_PARSERS: Record<string, (self: Parser) => Expression | undefined> | undefined = undefined;
+  static get EXPRESSION_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+    return Parser.#EXPRESSION_PARSERS ??= {
+      [ExpressionKey.CLUSTER]: (self: Parser) => self.parseSort(ClusterExpr, TokenType.CLUSTER_BY),
+      [ExpressionKey.COLUMN]: (self: Parser) => self.parseColumn(),
+      [ExpressionKey.COLUMN_DEF]: (self: Parser) => self.parseColumnDef(self.parseColumn()),
+      [ExpressionKey.CONDITION]: (self: Parser) => self.parseDisjunction(),
+      [ExpressionKey.DATA_TYPE]: (self: Parser) => self.parseTypes({
+        allowIdentifiers: false,
+        schema: true,
+      }),
+      [ExpressionKey.EXPRESSION]: (self: Parser) => self.parseExpression(),
+      [ExpressionKey.FROM]: (self: Parser) => self.parseFrom({ joins: true }),
+      [ExpressionKey.GRANT_PRINCIPAL]: (self: Parser) => self.parseGrantPrincipal(),
+      [ExpressionKey.GRANT_PRIVILEGE]: (self: Parser) => self.parseGrantPrivilege(),
+      [ExpressionKey.GROUP]: (self: Parser) => self.parseGroup(),
+      [ExpressionKey.HAVING]: (self: Parser) => self.parseHaving(),
+      [ExpressionKey.HINT]: (self: Parser) => self.parseHintBody(),
+      [ExpressionKey.IDENTIFIER]: (self: Parser) => self.parseIdVar(),
+      [ExpressionKey.JOIN]: (self: Parser) => self.parseJoin(),
+      [ExpressionKey.LAMBDA]: (self: Parser) => self.parseLambda(),
+      [ExpressionKey.LATERAL]: (self: Parser) => self.parseLateral(),
+      [ExpressionKey.LIMIT]: (self: Parser) => self.parseLimit(),
+      [ExpressionKey.OFFSET]: (self: Parser) => self.parseOffset(),
+      [ExpressionKey.ORDER]: (self: Parser) => self.parseOrder(),
+      [ExpressionKey.ORDERED]: (self: Parser) => self.parseOrdered(),
+      [ExpressionKey.PROPERTIES]: (self: Parser) => self.parseProperties(),
+      [ExpressionKey.PARTITIONED_BY_PROPERTY]: (self: Parser) => self.parsePartitionedBy(),
+      [ExpressionKey.QUALIFY]: (self: Parser) => self.parseQualify(),
+      [ExpressionKey.RETURNING]: (self: Parser) => self.parseReturning(),
+      [ExpressionKey.SELECT]: (self: Parser) => self.parseSelect(),
+      [ExpressionKey.SORT]: (self: Parser) => self.parseSort(SortExpr, TokenType.SORT_BY),
+      [ExpressionKey.TABLE]: (self: Parser) => self.parseTableParts(),
+      [ExpressionKey.TABLE_ALIAS]: (self: Parser) => self.parseTableAlias(),
+      [ExpressionKey.TUPLE]: (self: Parser) => self.parseValue({ values: false }),
+      [ExpressionKey.WHENS]: (self: Parser) => self.parseWhenMatched(),
+      [ExpressionKey.WHERE]: (self: Parser) => self.parseWhere(),
+      [ExpressionKey.WINDOW]: (self: Parser) => self.parseNamedWindow(),
+      [ExpressionKey.WITH]: (self: Parser) => self.parseWith(),
+    };
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static STATEMENT_PARSERS: Partial<Record<TokenType, (self: Parser) => any>> = {
-    [TokenType.ALTER]: (self: Parser) => self.parseAlter(),
-    [TokenType.ANALYZE]: (self: Parser) => self.parseAnalyze(),
-    [TokenType.BEGIN]: (self: Parser) => self.parseTransaction(),
-    [TokenType.CACHE]: (self: Parser) => self.parseCache(),
-    [TokenType.COMMENT]: (self: Parser) => self.parseComment(),
-    [TokenType.COMMIT]: (self: Parser) => self.parseCommitOrRollback(),
-    [TokenType.COPY]: (self: Parser) => self.parseCopy(),
-    [TokenType.CREATE]: (self: Parser) => self.parseCreate(),
-    [TokenType.DELETE]: (self: Parser) => self.parseDelete(),
-    [TokenType.DESC]: (self: Parser) => self.parseDescribe(),
-    [TokenType.DESCRIBE]: (self: Parser) => self.parseDescribe(),
-    [TokenType.DROP]: (self: Parser) => self.parseDrop(),
-    [TokenType.GRANT]: (self: Parser) => self.parseGrant(),
-    [TokenType.REVOKE]: (self: Parser) => self.parseRevoke(),
-    [TokenType.INSERT]: (self: Parser) => self.parseInsert(),
-    [TokenType.KILL]: (self: Parser) => self.parseKill(),
-    [TokenType.LOAD]: (self: Parser) => self.parseLoad(),
-    [TokenType.MERGE]: (self: Parser) => self.parseMerge(),
-    [TokenType.PIVOT]: (self: Parser) => self.parseSimplifiedPivot(),
-    [TokenType.PRAGMA]: (self: Parser) => self.expression(PragmaExpr, { this: self.parseExpression() }),
-    [TokenType.REFRESH]: (self: Parser) => self.parseRefresh(),
-    [TokenType.ROLLBACK]: (self: Parser) => self.parseCommitOrRollback(),
-    [TokenType.SET]: (self: Parser) => self.parseSet(),
-    [TokenType.TRUNCATE]: (self: Parser) => self.parseTruncateTable(),
-    [TokenType.UNCACHE]: (self: Parser) => self.parseUncache(),
-    [TokenType.UNPIVOT]: (self: Parser) => self.parseSimplifiedPivot({ isUnpivot: true }),
-    [TokenType.UPDATE]: (self: Parser) => self.parseUpdate(),
-    [TokenType.USE]: (self: Parser) => self.parseUse(),
-    [TokenType.SEMICOLON]: (_self: Parser) => new SemicolonExpr({}),
-  };
+  static #STATEMENT_PARSERS: Partial<Record<TokenType, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
+    return Parser.#STATEMENT_PARSERS ??= {
+      [TokenType.ALTER]: (self: Parser) => self.parseAlter(),
+      [TokenType.ANALYZE]: (self: Parser) => self.parseAnalyze(),
+      [TokenType.BEGIN]: (self: Parser) => self.parseTransaction(),
+      [TokenType.CACHE]: (self: Parser) => self.parseCache(),
+      [TokenType.COMMENT]: (self: Parser) => self.parseComment(),
+      [TokenType.COMMIT]: (self: Parser) => self.parseCommitOrRollback(),
+      [TokenType.COPY]: (self: Parser) => self.parseCopy(),
+      [TokenType.CREATE]: (self: Parser) => self.parseCreate(),
+      [TokenType.DELETE]: (self: Parser) => self.parseDelete(),
+      [TokenType.DESC]: (self: Parser) => self.parseDescribe(),
+      [TokenType.DESCRIBE]: (self: Parser) => self.parseDescribe(),
+      [TokenType.DROP]: (self: Parser) => self.parseDrop(),
+      [TokenType.GRANT]: (self: Parser) => self.parseGrant(),
+      [TokenType.REVOKE]: (self: Parser) => self.parseRevoke(),
+      [TokenType.INSERT]: (self: Parser) => self.parseInsert(),
+      [TokenType.KILL]: (self: Parser) => self.parseKill(),
+      [TokenType.LOAD]: (self: Parser) => self.parseLoad(),
+      [TokenType.MERGE]: (self: Parser) => self.parseMerge(),
+      [TokenType.PIVOT]: (self: Parser) => self.parseSimplifiedPivot(),
+      [TokenType.PRAGMA]: (self: Parser) => self.expression(PragmaExpr, { this: self.parseExpression() }),
+      [TokenType.REFRESH]: (self: Parser) => self.parseRefresh(),
+      [TokenType.ROLLBACK]: (self: Parser) => self.parseCommitOrRollback(),
+      [TokenType.SET]: (self: Parser) => self.parseSet(),
+      [TokenType.TRUNCATE]: (self: Parser) => self.parseTruncateTable(),
+      [TokenType.UNCACHE]: (self: Parser) => self.parseUncache(),
+      [TokenType.UNPIVOT]: (self: Parser) => self.parseSimplifiedPivot({ isUnpivot: true }),
+      [TokenType.UPDATE]: (self: Parser) => self.parseUpdate(),
+      [TokenType.USE]: (self: Parser) => self.parseUse(),
+      [TokenType.SEMICOLON]: (_self: Parser) => new SemicolonExpr({}),
+    };
+  }
 
-  static UNARY_PARSERS: Partial<Record<TokenType, (self: Parser) => Expression | undefined>> = {
-    [TokenType.PLUS]: (self: Parser) => self.parseUnary(),
-    [TokenType.NOT]: (self: Parser) => self.expression(NotExpr, { this: self.parseEquality() }),
-    [TokenType.TILDE]: (self: Parser) => self.expression(BitwiseNotExpr, { this: self.parseUnary() }),
-    [TokenType.DASH]: (self: Parser) => self.expression(NegExpr, { this: self.parseUnary() }),
-    [TokenType.PIPE_SLASH]: (self: Parser) => self.expression(SqrtExpr, { this: self.parseUnary() }),
-    [TokenType.DPIPE_SLASH]: (self: Parser) => self.expression(CbrtExpr, { this: self.parseUnary() }),
-  };
+  static #UNARY_PARSERS: Partial<Record<TokenType, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  static get UNARY_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
+    return Parser.#UNARY_PARSERS ??= {
+      [TokenType.PLUS]: (self: Parser) => self.parseUnary(),
+      [TokenType.NOT]: (self: Parser) => self.expression(NotExpr, { this: self.parseEquality() }),
+      [TokenType.TILDE]: (self: Parser) => self.expression(BitwiseNotExpr, { this: self.parseUnary() }),
+      [TokenType.DASH]: (self: Parser) => self.expression(NegExpr, { this: self.parseUnary() }),
+      [TokenType.PIPE_SLASH]: (self: Parser) => self.expression(SqrtExpr, { this: self.parseUnary() }),
+      [TokenType.DPIPE_SLASH]: (self: Parser) => self.expression(CbrtExpr, { this: self.parseUnary() }),
+    };
+  }
 
-  static STRING_PARSERS: Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> = {
-    [TokenType.HEREDOC_STRING]: (self: Parser, token: Token) => self.expression(RawStringExpr, { token }),
-    [TokenType.NATIONAL_STRING]: (self: Parser, token: Token) => self.expression(NationalExpr, { token }),
-    [TokenType.RAW_STRING]: (self: Parser, token: Token) => self.expression(RawStringExpr, { token }),
-    [TokenType.STRING]: (self: Parser, token: Token) => self.expression(LiteralExpr, {
-      token,
-      isString: true,
-    }),
-    [TokenType.UNICODE_STRING]: (self: Parser, token: Token) => self.expression(
-      UnicodeStringExpr,
-      {
+  static #STRING_PARSERS: Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> | undefined = undefined;
+  static get STRING_PARSERS (): Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> {
+    return Parser.#STRING_PARSERS ??= {
+      [TokenType.HEREDOC_STRING]: (self: Parser, token: Token) => self.expression(RawStringExpr, { token }),
+      [TokenType.NATIONAL_STRING]: (self: Parser, token: Token) => self.expression(NationalExpr, { token }),
+      [TokenType.RAW_STRING]: (self: Parser, token: Token) => self.expression(RawStringExpr, { token }),
+      [TokenType.STRING]: (self: Parser, token: Token) => self.expression(LiteralExpr, {
         token,
-        escape: self.matchTextSeq('UESCAPE') && self.parseString(),
-      },
-    ),
-  };
+        isString: true,
+      }),
+      [TokenType.UNICODE_STRING]: (self: Parser, token: Token) => self.expression(
+        UnicodeStringExpr,
+        {
+          token,
+          escape: self.matchTextSeq('UESCAPE') && self.parseString(),
+        },
+      ),
+    };
+  }
 
-  static NUMERIC_PARSERS: Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> = {
-    [TokenType.BIT_STRING]: (self: Parser, token: Token) => self.expression(BitStringExpr, { token }),
-    [TokenType.BYTE_STRING]: (self: Parser, token: Token) => self.expression(
-      ByteStringExpr,
-      {
+  static #NUMERIC_PARSERS: Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> | undefined = undefined;
+  static get NUMERIC_PARSERS (): Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> {
+    return Parser.#NUMERIC_PARSERS ??= {
+      [TokenType.BIT_STRING]: (self: Parser, token: Token) => self.expression(BitStringExpr, { token }),
+      [TokenType.BYTE_STRING]: (self: Parser, token: Token) => self.expression(
+        ByteStringExpr,
+        {
+          token,
+          isBytes: self._dialectConstructor.BYTE_STRING_IS_BYTES_TYPE || undefined,
+        },
+      ),
+      [TokenType.HEX_STRING]: (self: Parser, token: Token) => self.expression(
+        HexStringExpr,
+        {
+          token,
+          isInteger: self._dialectConstructor.HEX_STRING_IS_INTEGER_TYPE || undefined,
+        },
+      ),
+      [TokenType.NUMBER]: (self: Parser, token: Token) => self.expression(LiteralExpr, {
         token,
-        isBytes: self._dialectConstructor.BYTE_STRING_IS_BYTES_TYPE || undefined,
-      },
-    ),
-    [TokenType.HEX_STRING]: (self: Parser, token: Token) => self.expression(
-      HexStringExpr,
-      {
-        token,
-        isInteger: self._dialectConstructor.HEX_STRING_IS_INTEGER_TYPE || undefined,
-      },
-    ),
-    [TokenType.NUMBER]: (self: Parser, token: Token) => self.expression(LiteralExpr, {
-      token,
-      isString: false,
-    }),
-  };
+        isString: false,
+      }),
+    };
+  }
 
-  static PRIMARY_PARSERS: Partial<Record<TokenType, (self: Parser, token: Token) => Expression | undefined>> = {
-    ...Parser.STRING_PARSERS,
-    ...Parser.NUMERIC_PARSERS,
-    [TokenType.INTRODUCER]: (self: Parser, token: Token) => self.parseIntroducer(token),
-    [TokenType.NULL]: (self: Parser, _: Token) => self.expression(NullExpr, {}),
-    [TokenType.TRUE]: (self: Parser, _: Token) => self.expression(BooleanExpr, { this: true }),
-    [TokenType.FALSE]: (self: Parser, _: Token) => self.expression(BooleanExpr, { this: false }),
-    [TokenType.SESSION_PARAMETER]: (self: Parser, _: Token) => self.parseSessionParameter(),
-    [TokenType.STAR]: (self: Parser, _: Token) => self.parseStarOps(),
-  };
+  static #PRIMARY_PARSERS: Partial<Record<TokenType, (self: Parser, token: Token) => Expression | undefined>> | undefined = undefined;
+  static get PRIMARY_PARSERS (): Partial<Record<TokenType, (self: Parser, token: Token) => Expression | undefined>> {
+    return Parser.#PRIMARY_PARSERS ??= {
+      ...Parser.STRING_PARSERS,
+      ...Parser.NUMERIC_PARSERS,
+      [TokenType.INTRODUCER]: (self: Parser, token: Token) => self.parseIntroducer(token),
+      [TokenType.NULL]: (self: Parser, _: Token) => self.expression(NullExpr, {}),
+      [TokenType.TRUE]: (self: Parser, _: Token) => self.expression(BooleanExpr, { this: true }),
+      [TokenType.FALSE]: (self: Parser, _: Token) => self.expression(BooleanExpr, { this: false }),
+      [TokenType.SESSION_PARAMETER]: (self: Parser, _: Token) => self.parseSessionParameter(),
+      [TokenType.STAR]: (self: Parser, _: Token) => self.parseStarOps(),
+    };
+  }
 
-  static PLACEHOLDER_PARSERS: Partial<Record<TokenType, (self: Parser) => Expression | undefined>> = {
-    [TokenType.PLACEHOLDER]: (self: Parser) => self.expression(PlaceholderExpr),
-    [TokenType.PARAMETER]: (self: Parser) => self.parseParameter(),
-    [TokenType.COLON]: (self: Parser) => (
-      self.matchSet(self._constructor.COLON_PLACEHOLDER_TOKENS)
-        ? self.expression(PlaceholderExpr, { this: self.prev?.text })
-        : undefined
-    ),
-  };
+  static #PLACEHOLDER_PARSERS: Partial<Record<TokenType, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  static get PLACEHOLDER_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
+    return Parser.#PLACEHOLDER_PARSERS ??= {
+      [TokenType.PLACEHOLDER]: (self: Parser) => self.expression(PlaceholderExpr),
+      [TokenType.PARAMETER]: (self: Parser) => self.parseParameter(),
+      [TokenType.COLON]: (self: Parser) => (
+        self.matchSet(self._constructor.COLON_PLACEHOLDER_TOKENS)
+          ? self.expression(PlaceholderExpr, { this: self.prev?.text })
+          : undefined
+      ),
+    };
+  }
 
-  static RANGE_PARSERS: Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> = {
-    [TokenType.AT_GT]: binaryRangeParser(ArrayContainsAllExpr),
-    [TokenType.BETWEEN]: (self: Parser, this_: Expression) => self.parseBetween(this_),
-    [TokenType.GLOB]: binaryRangeParser(GlobExpr),
-    [TokenType.ILIKE]: binaryRangeParser(ILikeExpr),
-    [TokenType.IN]: (self: Parser, this_: Expression) => self.parseIn(this_),
-    [TokenType.IRLIKE]: binaryRangeParser(RegexpILikeExpr),
-    [TokenType.IS]: (self: Parser, this_: Expression) => self.parseIs(this_),
-    [TokenType.LIKE]: binaryRangeParser(LikeExpr),
-    [TokenType.LT_AT]: binaryRangeParser(ArrayContainsAllExpr, { reverseArgs: true }),
-    [TokenType.OVERLAPS]: binaryRangeParser(OverlapsExpr),
-    [TokenType.RLIKE]: binaryRangeParser(RegexpLikeExpr),
-    [TokenType.SIMILAR_TO]: binaryRangeParser(SimilarToExpr),
-    [TokenType.FOR]: (self: Parser, this_: Expression) => self.parseComprehension(this_),
-    [TokenType.QMARK_AMP]: binaryRangeParser(JsonbContainsAllTopKeysExpr),
-    [TokenType.QMARK_PIPE]: binaryRangeParser(JsonbContainsAnyTopKeysExpr),
-    [TokenType.HASH_DASH]: binaryRangeParser(JsonbDeleteAtPathExpr),
-    [TokenType.ADJACENT]: binaryRangeParser(AdjacentExpr),
-    [TokenType.OPERATOR]: (self: Parser, this_: Expression) => self.parseOperator(this_),
-    [TokenType.AMP_LT]: binaryRangeParser(ExtendsLeftExpr),
-    [TokenType.AMP_GT]: binaryRangeParser(ExtendsRightExpr),
-  };
+  static #RANGE_PARSERS: Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> | undefined = undefined;
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
+    return Parser.#RANGE_PARSERS ??= {
+      [TokenType.AT_GT]: binaryRangeParser(ArrayContainsAllExpr),
+      [TokenType.BETWEEN]: (self: Parser, this_: Expression) => self.parseBetween(this_),
+      [TokenType.GLOB]: binaryRangeParser(GlobExpr),
+      [TokenType.ILIKE]: binaryRangeParser(ILikeExpr),
+      [TokenType.IN]: (self: Parser, this_: Expression) => self.parseIn(this_),
+      [TokenType.IRLIKE]: binaryRangeParser(RegexpILikeExpr),
+      [TokenType.IS]: (self: Parser, this_: Expression) => self.parseIs(this_),
+      [TokenType.LIKE]: binaryRangeParser(LikeExpr),
+      [TokenType.LT_AT]: binaryRangeParser(ArrayContainsAllExpr, { reverseArgs: true }),
+      [TokenType.OVERLAPS]: binaryRangeParser(OverlapsExpr),
+      [TokenType.RLIKE]: binaryRangeParser(RegexpLikeExpr),
+      [TokenType.SIMILAR_TO]: binaryRangeParser(SimilarToExpr),
+      [TokenType.FOR]: (self: Parser, this_: Expression) => self.parseComprehension(this_),
+      [TokenType.QMARK_AMP]: binaryRangeParser(JsonbContainsAllTopKeysExpr),
+      [TokenType.QMARK_PIPE]: binaryRangeParser(JsonbContainsAnyTopKeysExpr),
+      [TokenType.HASH_DASH]: binaryRangeParser(JsonbDeleteAtPathExpr),
+      [TokenType.ADJACENT]: binaryRangeParser(AdjacentExpr),
+      [TokenType.OPERATOR]: (self: Parser, this_: Expression) => self.parseOperator(this_),
+      [TokenType.AMP_LT]: binaryRangeParser(ExtendsLeftExpr),
+      [TokenType.AMP_GT]: binaryRangeParser(ExtendsRightExpr),
+    };
+  }
 
-  static PIPE_SYNTAX_TRANSFORM_PARSERS: Partial<Record<string, (self: Parser, query: SelectExpr) => SelectExpr>> = {
-    'AGGREGATE': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxAggregate(query),
-    'AS': (self: Parser, query: SelectExpr) => self.buildPipeCte({
-      query,
-      expressions: [new StarExpr({})],
-      aliasCte: self.parseTableAlias(),
-    }),
-    'EXTEND': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxExtend(query),
-    'LIMIT': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxLimit(query),
-    'ORDER BY': (self: Parser, query: SelectExpr) => query.orderBy(
-      self.parseOrder(),
-      {
-        append: false,
-        copy: false,
-      },
-    ),
-    'PIVOT': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxPivot(query),
-    'SELECT': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxSelect(query),
-    'TABLESAMPLE': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxTablesample(query),
-    'UNPIVOT': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxPivot(query),
-    'WHERE': (self: Parser, query: SelectExpr) => query.where(self.parseWhere(), { copy: false }),
-  };
+  static #PIPE_SYNTAX_TRANSFORM_PARSERS: Partial<Record<string, (self: Parser, query: SelectExpr) => SelectExpr>> | undefined = undefined;
+  static get PIPE_SYNTAX_TRANSFORM_PARSERS (): Partial<Record<string, (self: Parser, query: SelectExpr) => SelectExpr>> {
+    return Parser.#PIPE_SYNTAX_TRANSFORM_PARSERS ??= {
+      'AGGREGATE': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxAggregate(query),
+      'AS': (self: Parser, query: SelectExpr) => self.buildPipeCte({
+        query,
+        expressions: [new StarExpr({})],
+        aliasCte: self.parseTableAlias(),
+      }),
+      'EXTEND': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxExtend(query),
+      'LIMIT': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxLimit(query),
+      'ORDER BY': (self: Parser, query: SelectExpr) => query.orderBy(
+        self.parseOrder(),
+        {
+          append: false,
+          copy: false,
+        },
+      ),
+      'PIVOT': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxPivot(query),
+      'SELECT': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxSelect(query),
+      'TABLESAMPLE': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxTablesample(query),
+      'UNPIVOT': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxPivot(query),
+      'WHERE': (self: Parser, query: SelectExpr) => query.where(self.parseWhere(), { copy: false }),
+    };
+  }
 
-  static PROPERTY_PARSERS: Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> = {
-    'ALLOWED_VALUES': (self: Parser) => self.expression(
-      AllowedValuesPropertyExpr,
-      { expressions: self.parseCsv(self.parsePrimary) },
-    ),
-    'ALGORITHM': (self: Parser) => self.parsePropertyAssignment(AlgorithmPropertyExpr),
-    'AUTO': (self: Parser) => self.parseAutoProperty(),
-    'AUTO_INCREMENT': (self: Parser) => self.parsePropertyAssignment(AutoIncrementPropertyExpr),
-    'BACKUP': (self: Parser) => self.expression(
-      BackupPropertyExpr,
-      { this: self.parseVar({ anyToken: true }) },
-    ),
-    'BLOCKCOMPRESSION': (self: Parser) => self.parseBlockcompression(),
-    'CHARSET': (self: Parser) => self.parseCharacterSet(),
-    'CHARACTER SET': (self: Parser) => self.parseCharacterSet(),
-    'CHECKSUM': (self: Parser) => self.parseChecksum(),
-    'CLUSTER BY': (self: Parser) => self.parseCluster(),
-    'CLUSTERED': (self: Parser) => self.parseClusteredBy(),
-    'COLLATE': (self: Parser) => self.parsePropertyAssignment(CollatePropertyExpr),
-    'COMMENT': (self: Parser) => self.parsePropertyAssignment(SchemaCommentPropertyExpr),
-    'CONTAINS': (self: Parser) => self.parseContainsProperty(),
-    'COPY': (self: Parser) => self.parseCopyProperty(),
-    'DATABLOCKSIZE': (self: Parser) => self.parseDatablocksize(),
-    'DATA_DELETION': (self: Parser) => self.parseDataDeletionProperty(),
-    'DEFINER': (self: Parser) => self.parseDefiner(),
-    'DETERMINISTIC': (self: Parser) => self.expression(
-      StabilityPropertyExpr,
-      { this: LiteralExpr.string('IMMUTABLE') },
-    ),
-    'DISTRIBUTED': (self: Parser) => self.parseDistributedProperty(),
-    'DUPLICATE': (self: Parser) => self.parseCompositeKeyProperty(DuplicateKeyPropertyExpr),
-    'DYNAMIC': (self: Parser) => self.expression(DynamicPropertyExpr, {}),
-    'DISTKEY': (self: Parser) => self.parseDistkey(),
-    'DISTSTYLE': (self: Parser) => self.parsePropertyAssignment(DistStylePropertyExpr),
-    'EMPTY': (self: Parser) => self.expression(EmptyPropertyExpr, {}),
-    'ENGINE': (self: Parser) => self.parsePropertyAssignment(EnginePropertyExpr),
-    'ENVIRONMENT': (self: Parser) => self.expression(
-      EnviromentPropertyExpr,
-      { expressions: self.parseWrappedCsv(self.parseAssignment) },
-    ),
-    'EXECUTE': (self: Parser) => self.parsePropertyAssignment(ExecuteAsPropertyExpr),
-    'EXTERNAL': (self: Parser) => self.expression(ExternalPropertyExpr, {}),
-    'FALLBACK': (self: Parser) => self.parseFallback(),
-    'FORMAT': (self: Parser) => self.parsePropertyAssignment(FileFormatPropertyExpr),
-    'FREESPACE': (self: Parser) => self.parseFreespace(),
-    'GLOBAL': (self: Parser) => self.expression(GlobalPropertyExpr, {}),
-    'HEAP': (self: Parser) => self.expression(HeapPropertyExpr, {}),
-    'ICEBERG': (self: Parser) => self.expression(IcebergPropertyExpr, {}),
-    'IMMUTABLE': (self: Parser) => self.expression(
-      StabilityPropertyExpr,
-      { this: LiteralExpr.string('IMMUTABLE') },
-    ),
-    'INHERITS': (self: Parser) => self.expression(
-      InheritsPropertyExpr,
-      { expressions: self.parseWrappedCsv(self.parseTable) },
-    ),
-    'INPUT': (self: Parser) => self.expression(InputModelPropertyExpr, { this: self.parseSchema() }),
-    'JOURNAL': (self: Parser) => self.parseJournal(),
-    'LANGUAGE': (self: Parser) => self.parsePropertyAssignment(LanguagePropertyExpr),
-    'LAYOUT': (self: Parser) => self.parseDictProperty({ this: 'LAYOUT' }),
-    'LIFETIME': (self: Parser) => self.parseDictRange({ this: 'LIFETIME' }),
-    'LIKE': (self: Parser) => self.parseCreateLike(),
-    'LOCATION': (self: Parser) => self.parsePropertyAssignment(LocationPropertyExpr),
-    'LOCK': (self: Parser) => self.parseLocking(),
-    'LOCKING': (self: Parser) => self.parseLocking(),
-    'LOG': (self: Parser) => self.parseLog(),
-    'MATERIALIZED': (self: Parser) => self.expression(MaterializedPropertyExpr, {}),
-    'MERGEBLOCKRATIO': (self: Parser) => self.parseMergeblockratio(),
-    'MODIFIES': (self: Parser) => self.parseModifiesProperty(),
-    'MULTISET': (self: Parser) => self.expression(SetPropertyExpr, { multi: true }),
-    'NO': (self: Parser) => self.parseNoProperty(),
-    'ON': (self: Parser) => self.parseOnProperty(),
-    'ORDER BY': (self: Parser) => self.parseOrder({ skipOrderToken: true }),
-    'OUTPUT': (self: Parser) => self.expression(OutputModelPropertyExpr, { this: self.parseSchema() }),
-    'PARTITION': (self: Parser) => self.parsePartitionedOf(),
-    'PARTITION BY': (self: Parser) => self.parsePartitionedBy(),
-    'PARTITIONED BY': (self: Parser) => self.parsePartitionedBy(),
-    'PARTITIONED_BY': (self: Parser) => self.parsePartitionedBy(),
-    'PRIMARY KEY': (self: Parser) => self.parsePrimaryKey({ inProps: true }),
-    'RANGE': (self: Parser) => self.parseDictRange({ this: 'RANGE' }),
-    'READS': (self: Parser) => self.parseReadsProperty(),
-    'REMOTE': (self: Parser) => self.parseRemoteWithConnection(),
-    'RETURNS': (self: Parser) => self.parseReturns(),
-    'STRICT': (self: Parser) => self.expression(StrictPropertyExpr, {}),
-    'STREAMING': (self: Parser) => self.expression(StreamingTablePropertyExpr, {}),
-    'ROW': (self: Parser) => self.parseRow(),
-    'ROW_FORMAT': (self: Parser) => self.parsePropertyAssignment(RowFormatPropertyExpr),
-    'SAMPLE': (self: Parser) => self.expression(
-      SamplePropertyExpr,
-      { this: self.matchTextSeq('BY') && self.parseBitwise() },
-    ),
-    'SECURE': (self: Parser) => self.expression(SecurePropertyExpr, {}),
-    'SECURITY': (self: Parser) => self.parseSecurity(),
-    'SET': (self: Parser) => self.expression(SetPropertyExpr, { multi: false }),
-    'SETTINGS': (self: Parser) => self.parseSettingsProperty(),
-    'SHARING': (self: Parser) => self.parsePropertyAssignment(SharingPropertyExpr),
-    'SORTKEY': (self: Parser) => self.parseSortkey(),
-    'SOURCE': (self: Parser) => self.parseDictProperty({ this: 'SOURCE' }),
-    'STABLE': (self: Parser) => self.expression(
-      StabilityPropertyExpr,
-      { this: LiteralExpr.string('STABLE') },
-    ),
-    'STORED': (self: Parser) => self.parseStored(),
-    'SYSTEM_VERSIONING': (self: Parser) => self.parseSystemVersioningProperty(),
-    'TBLPROPERTIES': (self: Parser) => self.parseWrappedProperties(),
-    'TEMP': (self: Parser) => self.expression(TemporaryPropertyExpr, {}),
-    'TEMPORARY': (self: Parser) => self.expression(TemporaryPropertyExpr, {}),
-    'TO': (self: Parser) => self.parseToTable(),
-    'TRANSIENT': (self: Parser) => self.expression(TransientPropertyExpr, {}),
-    'TRANSFORM': (self: Parser) => self.expression(
-      TransformModelPropertyExpr,
-      { expressions: self.parseWrappedCsv(self.parseExpression) },
-    ),
-    'TTL': (self: Parser) => self.parseTtl(),
-    'USING': (self: Parser) => self.parsePropertyAssignment(FileFormatPropertyExpr),
-    'UNLOGGED': (self: Parser) => self.expression(UnloggedPropertyExpr, {}),
-    'VOLATILE': (self: Parser) => self.parseVolatileProperty(),
-    'WITH': (self: Parser) => self.parseWithProperty(),
-  };
+  static #PROPERTY_PARSERS: Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> | undefined = undefined;
+  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
+    return Parser.#PROPERTY_PARSERS ??= {
+      'ALLOWED_VALUES': (self: Parser) => self.expression(
+        AllowedValuesPropertyExpr,
+        { expressions: self.parseCsv(self.parsePrimary) },
+      ),
+      'ALGORITHM': (self: Parser) => self.parsePropertyAssignment(AlgorithmPropertyExpr),
+      'AUTO': (self: Parser) => self.parseAutoProperty(),
+      'AUTO_INCREMENT': (self: Parser) => self.parsePropertyAssignment(AutoIncrementPropertyExpr),
+      'BACKUP': (self: Parser) => self.expression(
+        BackupPropertyExpr,
+        { this: self.parseVar({ anyToken: true }) },
+      ),
+      'BLOCKCOMPRESSION': (self: Parser) => self.parseBlockcompression(),
+      'CHARSET': (self: Parser) => self.parseCharacterSet(),
+      'CHARACTER SET': (self: Parser) => self.parseCharacterSet(),
+      'CHECKSUM': (self: Parser) => self.parseChecksum(),
+      'CLUSTER BY': (self: Parser) => self.parseCluster(),
+      'CLUSTERED': (self: Parser) => self.parseClusteredBy(),
+      'COLLATE': (self: Parser) => self.parsePropertyAssignment(CollatePropertyExpr),
+      'COMMENT': (self: Parser) => self.parsePropertyAssignment(SchemaCommentPropertyExpr),
+      'CONTAINS': (self: Parser) => self.parseContainsProperty(),
+      'COPY': (self: Parser) => self.parseCopyProperty(),
+      'DATABLOCKSIZE': (self: Parser) => self.parseDatablocksize(),
+      'DATA_DELETION': (self: Parser) => self.parseDataDeletionProperty(),
+      'DEFINER': (self: Parser) => self.parseDefiner(),
+      'DETERMINISTIC': (self: Parser) => self.expression(
+        StabilityPropertyExpr,
+        { this: LiteralExpr.string('IMMUTABLE') },
+      ),
+      'DISTRIBUTED': (self: Parser) => self.parseDistributedProperty(),
+      'DUPLICATE': (self: Parser) => self.parseCompositeKeyProperty(DuplicateKeyPropertyExpr),
+      'DYNAMIC': (self: Parser) => self.expression(DynamicPropertyExpr, {}),
+      'DISTKEY': (self: Parser) => self.parseDistkey(),
+      'DISTSTYLE': (self: Parser) => self.parsePropertyAssignment(DistStylePropertyExpr),
+      'EMPTY': (self: Parser) => self.expression(EmptyPropertyExpr, {}),
+      'ENGINE': (self: Parser) => self.parsePropertyAssignment(EnginePropertyExpr),
+      'ENVIRONMENT': (self: Parser) => self.expression(
+        EnviromentPropertyExpr,
+        { expressions: self.parseWrappedCsv(self.parseAssignment) },
+      ),
+      'EXECUTE': (self: Parser) => self.parsePropertyAssignment(ExecuteAsPropertyExpr),
+      'EXTERNAL': (self: Parser) => self.expression(ExternalPropertyExpr, {}),
+      'FALLBACK': (self: Parser) => self.parseFallback(),
+      'FORMAT': (self: Parser) => self.parsePropertyAssignment(FileFormatPropertyExpr),
+      'FREESPACE': (self: Parser) => self.parseFreespace(),
+      'GLOBAL': (self: Parser) => self.expression(GlobalPropertyExpr, {}),
+      'HEAP': (self: Parser) => self.expression(HeapPropertyExpr, {}),
+      'ICEBERG': (self: Parser) => self.expression(IcebergPropertyExpr, {}),
+      'IMMUTABLE': (self: Parser) => self.expression(
+        StabilityPropertyExpr,
+        { this: LiteralExpr.string('IMMUTABLE') },
+      ),
+      'INHERITS': (self: Parser) => self.expression(
+        InheritsPropertyExpr,
+        { expressions: self.parseWrappedCsv(self.parseTable) },
+      ),
+      'INPUT': (self: Parser) => self.expression(InputModelPropertyExpr, { this: self.parseSchema() }),
+      'JOURNAL': (self: Parser) => self.parseJournal(),
+      'LANGUAGE': (self: Parser) => self.parsePropertyAssignment(LanguagePropertyExpr),
+      'LAYOUT': (self: Parser) => self.parseDictProperty({ this: 'LAYOUT' }),
+      'LIFETIME': (self: Parser) => self.parseDictRange({ this: 'LIFETIME' }),
+      'LIKE': (self: Parser) => self.parseCreateLike(),
+      'LOCATION': (self: Parser) => self.parsePropertyAssignment(LocationPropertyExpr),
+      'LOCK': (self: Parser) => self.parseLocking(),
+      'LOCKING': (self: Parser) => self.parseLocking(),
+      'LOG': (self: Parser) => self.parseLog(),
+      'MATERIALIZED': (self: Parser) => self.expression(MaterializedPropertyExpr, {}),
+      'MERGEBLOCKRATIO': (self: Parser) => self.parseMergeblockratio(),
+      'MODIFIES': (self: Parser) => self.parseModifiesProperty(),
+      'MULTISET': (self: Parser) => self.expression(SetPropertyExpr, { multi: true }),
+      'NO': (self: Parser) => self.parseNoProperty(),
+      'ON': (self: Parser) => self.parseOnProperty(),
+      'ORDER BY': (self: Parser) => self.parseOrder({ skipOrderToken: true }),
+      'OUTPUT': (self: Parser) => self.expression(OutputModelPropertyExpr, { this: self.parseSchema() }),
+      'PARTITION': (self: Parser) => self.parsePartitionedOf(),
+      'PARTITION BY': (self: Parser) => self.parsePartitionedBy(),
+      'PARTITIONED BY': (self: Parser) => self.parsePartitionedBy(),
+      'PARTITIONED_BY': (self: Parser) => self.parsePartitionedBy(),
+      'PRIMARY KEY': (self: Parser) => self.parsePrimaryKey({ inProps: true }),
+      'RANGE': (self: Parser) => self.parseDictRange({ this: 'RANGE' }),
+      'READS': (self: Parser) => self.parseReadsProperty(),
+      'REMOTE': (self: Parser) => self.parseRemoteWithConnection(),
+      'RETURNS': (self: Parser) => self.parseReturns(),
+      'STRICT': (self: Parser) => self.expression(StrictPropertyExpr, {}),
+      'STREAMING': (self: Parser) => self.expression(StreamingTablePropertyExpr, {}),
+      'ROW': (self: Parser) => self.parseRow(),
+      'ROW_FORMAT': (self: Parser) => self.parsePropertyAssignment(RowFormatPropertyExpr),
+      'SAMPLE': (self: Parser) => self.expression(
+        SamplePropertyExpr,
+        { this: self.matchTextSeq('BY') && self.parseBitwise() },
+      ),
+      'SECURE': (self: Parser) => self.expression(SecurePropertyExpr, {}),
+      'SECURITY': (self: Parser) => self.parseSecurity(),
+      'SET': (self: Parser) => self.expression(SetPropertyExpr, { multi: false }),
+      'SETTINGS': (self: Parser) => self.parseSettingsProperty(),
+      'SHARING': (self: Parser) => self.parsePropertyAssignment(SharingPropertyExpr),
+      'SORTKEY': (self: Parser) => self.parseSortkey(),
+      'SOURCE': (self: Parser) => self.parseDictProperty({ this: 'SOURCE' }),
+      'STABLE': (self: Parser) => self.expression(
+        StabilityPropertyExpr,
+        { this: LiteralExpr.string('STABLE') },
+      ),
+      'STORED': (self: Parser) => self.parseStored(),
+      'SYSTEM_VERSIONING': (self: Parser) => self.parseSystemVersioningProperty(),
+      'TBLPROPERTIES': (self: Parser) => self.parseWrappedProperties(),
+      'TEMP': (self: Parser) => self.expression(TemporaryPropertyExpr, {}),
+      'TEMPORARY': (self: Parser) => self.expression(TemporaryPropertyExpr, {}),
+      'TO': (self: Parser) => self.parseToTable(),
+      'TRANSIENT': (self: Parser) => self.expression(TransientPropertyExpr, {}),
+      'TRANSFORM': (self: Parser) => self.expression(
+        TransformModelPropertyExpr,
+        { expressions: self.parseWrappedCsv(self.parseExpression) },
+      ),
+      'TTL': (self: Parser) => self.parseTtl(),
+      'USING': (self: Parser) => self.parsePropertyAssignment(FileFormatPropertyExpr),
+      'UNLOGGED': (self: Parser) => self.expression(UnloggedPropertyExpr, {}),
+      'VOLATILE': (self: Parser) => self.parseVolatileProperty(),
+      'WITH': (self: Parser) => self.parseWithProperty(),
+    };
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static CONSTRAINT_PARSERS: Partial<Record<string, (self: Parser, ...args: any[]) => Expression | Expression[] | undefined>> = {
-    'AUTOINCREMENT': (self: Parser) => self.parseAutoIncrement(),
-    'AUTO_INCREMENT': (self: Parser) => self.parseAutoIncrement(),
-    'CASESPECIFIC': (self: Parser) => self.expression(CaseSpecificColumnConstraintExpr, { not_: false }),
-    'CHARACTER SET': (self: Parser) => self.expression(
-      CharacterSetColumnConstraintExpr,
-      { this: self.parseVarOrString() },
-    ),
-    'CHECK': (self: Parser) => self.parseCheckConstraint(),
-    'COLLATE': (self: Parser) => self.expression(
-      CollateColumnConstraintExpr,
-      { this: self.parseIdentifier() || self.parseColumn() },
-    ),
-    'COMMENT': (self: Parser) => self.expression(
-      CommentColumnConstraintExpr,
-      { this: self.parseString() },
-    ),
-    'COMPRESS': (self: Parser) => self.parseCompress(),
-    'CLUSTERED': (self: Parser) => self.expression(
-      ClusteredColumnConstraintExpr,
-      { this: self.parseWrappedCsv(self.parseOrdered) },
-    ),
-    'NONCLUSTERED': (self: Parser) => self.expression(
-      NonClusteredColumnConstraintExpr,
-      { this: self.parseWrappedCsv(self.parseOrdered) },
-    ),
-    'DEFAULT': (self: Parser) => self.expression(
-      DefaultColumnConstraintExpr,
-      { this: self.parseBitwise() },
-    ),
-    'ENCODE': (self: Parser) => self.expression(EncodeColumnConstraintExpr, { this: self.parseVar() }),
-    'EPHEMERAL': (self: Parser) => self.expression(
-      EphemeralColumnConstraintExpr,
-      { this: self.parseBitwise() },
-    ),
-    'EXCLUDE': (self: Parser) => self.expression(
-      ExcludeColumnConstraintExpr,
-      { this: self.parseIndexParams() },
-    ),
-    'FOREIGN KEY': (self: Parser) => self.parseForeignKey(),
-    'FORMAT': (self: Parser) => self.expression(
-      DateFormatColumnConstraintExpr,
-      { this: self.parseVarOrString() },
-    ),
-    'GENERATED': (self: Parser) => self.parseGeneratedAsIdentity(),
-    'IDENTITY': (self: Parser) => self.parseAutoIncrement(),
-    'INLINE': (self: Parser) => self.parseInline(),
-    'LIKE': (self: Parser) => self.parseCreateLike(),
-    'NOT': (self: Parser) => self.parseNotConstraint(),
-    'NULL': (self: Parser) => self.expression(NotNullColumnConstraintExpr, { allowNull: true }),
-    'ON': (self: Parser) => (
-      self.match(TokenType.UPDATE)
-      && self.expression(OnUpdateColumnConstraintExpr, { this: self.parseFunction() })
-    )
-    || self.expression(OnPropertyExpr, { this: self.parseIdVar() }),
-    'PATH': (self: Parser) => self.expression(PathColumnConstraintExpr, { this: self.parseString() }),
-    'PERIOD': (self: Parser) => self.parsePeriodForSystemTime(),
-    'PRIMARY KEY': (self: Parser) => self.parsePrimaryKey(),
-    'REFERENCES': (self: Parser) => self.parseReferences({ match: false }),
-    'TITLE': (self: Parser) => self.expression(
-      TitleColumnConstraintExpr,
-      { this: self.parseVarOrString() },
-    ),
-    'TTL': (self: Parser) => self.expression(MergeTreeTtlExpr, { expressions: [self.parseBitwise()] }),
-    'UNIQUE': (self: Parser) => self.parseUnique(),
-    'UPPERCASE': (self: Parser) => self.expression(UppercaseColumnConstraintExpr),
-    'WITH': (self: Parser) => self.expression(
-      PropertiesExpr,
-      { expressions: self.parseWrappedProperties() },
-    ),
-    'BUCKET': (self: Parser) => self.parsePartitionedByBucketOrTruncate(),
-    'TRUNCATE': (self: Parser) => self.parsePartitionedByBucketOrTruncate(),
-  };
+  static #CONSTRAINT_PARSERS: Partial<Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> | undefined = undefined;
+  static get CONSTRAINT_PARSERS (): Partial<Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
+    return Parser.#CONSTRAINT_PARSERS ??= {
+      'AUTOINCREMENT': (self: Parser) => self.parseAutoIncrement(),
+      'AUTO_INCREMENT': (self: Parser) => self.parseAutoIncrement(),
+      'CASESPECIFIC': (self: Parser) => self.expression(CaseSpecificColumnConstraintExpr, { not_: false }),
+      'CHARACTER SET': (self: Parser) => self.expression(
+        CharacterSetColumnConstraintExpr,
+        { this: self.parseVarOrString() },
+      ),
+      'CHECK': (self: Parser) => self.parseCheckConstraint(),
+      'COLLATE': (self: Parser) => self.expression(
+        CollateColumnConstraintExpr,
+        { this: self.parseIdentifier() || self.parseColumn() },
+      ),
+      'COMMENT': (self: Parser) => self.expression(
+        CommentColumnConstraintExpr,
+        { this: self.parseString() },
+      ),
+      'COMPRESS': (self: Parser) => self.parseCompress(),
+      'CLUSTERED': (self: Parser) => self.expression(
+        ClusteredColumnConstraintExpr,
+        { this: self.parseWrappedCsv(self.parseOrdered) },
+      ),
+      'NONCLUSTERED': (self: Parser) => self.expression(
+        NonClusteredColumnConstraintExpr,
+        { this: self.parseWrappedCsv(self.parseOrdered) },
+      ),
+      'DEFAULT': (self: Parser) => self.expression(
+        DefaultColumnConstraintExpr,
+        { this: self.parseBitwise() },
+      ),
+      'ENCODE': (self: Parser) => self.expression(EncodeColumnConstraintExpr, { this: self.parseVar() }),
+      'EPHEMERAL': (self: Parser) => self.expression(
+        EphemeralColumnConstraintExpr,
+        { this: self.parseBitwise() },
+      ),
+      'EXCLUDE': (self: Parser) => self.expression(
+        ExcludeColumnConstraintExpr,
+        { this: self.parseIndexParams() },
+      ),
+      'FOREIGN KEY': (self: Parser) => self.parseForeignKey(),
+      'FORMAT': (self: Parser) => self.expression(
+        DateFormatColumnConstraintExpr,
+        { this: self.parseVarOrString() },
+      ),
+      'GENERATED': (self: Parser) => self.parseGeneratedAsIdentity(),
+      'IDENTITY': (self: Parser) => self.parseAutoIncrement(),
+      'INLINE': (self: Parser) => self.parseInline(),
+      'LIKE': (self: Parser) => self.parseCreateLike(),
+      'NOT': (self: Parser) => self.parseNotConstraint(),
+      'NULL': (self: Parser) => self.expression(NotNullColumnConstraintExpr, { allowNull: true }),
+      'ON': (self: Parser) => (
+        self.match(TokenType.UPDATE)
+        && self.expression(OnUpdateColumnConstraintExpr, { this: self.parseFunction() })
+      )
+      || self.expression(OnPropertyExpr, { this: self.parseIdVar() }),
+      'PATH': (self: Parser) => self.expression(PathColumnConstraintExpr, { this: self.parseString() }),
+      'PERIOD': (self: Parser) => self.parsePeriodForSystemTime(),
+      'PRIMARY KEY': (self: Parser) => self.parsePrimaryKey(),
+      'REFERENCES': (self: Parser) => self.parseReferences({ match: false }),
+      'TITLE': (self: Parser) => self.expression(
+        TitleColumnConstraintExpr,
+        { this: self.parseVarOrString() },
+      ),
+      'TTL': (self: Parser) => self.expression(MergeTreeTtlExpr, { expressions: [self.parseBitwise()] }),
+      'UNIQUE': (self: Parser) => self.parseUnique(),
+      'UPPERCASE': (self: Parser) => self.expression(UppercaseColumnConstraintExpr),
+      'WITH': (self: Parser) => self.expression(
+        PropertiesExpr,
+        { expressions: self.parseWrappedProperties() },
+      ),
+      'BUCKET': (self: Parser) => self.parsePartitionedByBucketOrTruncate(),
+      'TRUNCATE': (self: Parser) => self.parsePartitionedByBucketOrTruncate(),
+    };
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static ALTER_PARSERS: Partial<Record<string, (self: Parser) => any>> = {
-    'ADD': (self: Parser) => self.parseAlterTableAdd(),
-    'AS': (self: Parser) => self.parseSelect(),
-    'ALTER': (self: Parser) => self.parseAlterTableAlter(),
-    'CLUSTER BY': (self: Parser) => self.parseCluster({ wrapped: true }),
-    'DELETE': (self: Parser) => self.expression(DeleteExpr, { where: self.parseWhere() }),
-    'DROP': (self: Parser) => self.parseAlterTableDrop(),
-    'RENAME': (self: Parser) => self.parseAlterTableRename(),
-    'SET': (self: Parser) => self.parseAlterTableSet(),
-    'SWAP': (self: Parser) => self.expression(
-      SwapTableExpr,
-      { this: self.match(TokenType.WITH) && self.parseTable({ schema: true }) },
-    ),
-  };
+  static #ALTER_PARSERS: Partial<Record<string, (self: Parser) => Expression | Expression[] | undefined>> | undefined = undefined;
+  static get ALTER_PARSERS (): Partial<Record<string, (self: Parser) => Expression | Expression[] | undefined>> {
+    return Parser.#ALTER_PARSERS ??= {
+      'ADD': (self: Parser) => self.parseAlterTableAdd(),
+      'AS': (self: Parser) => self.parseSelect(),
+      'ALTER': (self: Parser) => self.parseAlterTableAlter(),
+      'CLUSTER BY': (self: Parser) => self.parseCluster({ wrapped: true }),
+      'DELETE': (self: Parser) => self.expression(DeleteExpr, { where: self.parseWhere() }),
+      'DROP': (self: Parser) => self.parseAlterTableDrop(),
+      'RENAME': (self: Parser) => self.parseAlterTableRename(),
+      'SET': (self: Parser) => self.parseAlterTableSet(),
+      'SWAP': (self: Parser) => self.expression(
+        SwapTableExpr,
+        { this: self.match(TokenType.WITH) && self.parseTable({ schema: true }) },
+      ),
+    };
+  }
 
   static ALTER_ALTER_PARSERS: Partial<Record<string, (self: Parser) => Expression>> = {
     DISTKEY: (self: Parser) => self.parseAlterDiststyle(),
@@ -2115,89 +2257,106 @@ export class Parser {
     'TRUNCATE',
   ]);
 
-  static NO_PAREN_FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> = {
-    ANY: (self: Parser) => self.expression(AnyExpr, { this: self.parseBitwise() }),
-    CASE: (self: Parser) => self.parseCase(),
-    CONNECT_BY_ROOT: (self: Parser) => self.expression(
-      ConnectByRootExpr,
-      { this: self.parseColumn() },
-    ),
-    IF: (self: Parser) => self.parseIf(),
-  };
+  static #NO_PAREN_FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+    return Parser.#NO_PAREN_FUNCTION_PARSERS ??= {
+      ANY: (self: Parser) => self.expression(AnyExpr, { this: self.parseBitwise() }),
+      CASE: (self: Parser) => self.parseCase(),
+      CONNECT_BY_ROOT: (self: Parser) => self.expression(
+        ConnectByRootExpr,
+        { this: self.parseColumn() },
+      ),
+      IF: (self: Parser) => self.parseIf(),
+    };
+  }
 
-  static INVALID_FUNC_NAME_TOKENS: Set<TokenType> = new Set([TokenType.IDENTIFIER, TokenType.STRING]);
+  static #INVALID_FUNC_NAME_TOKENS: Set<TokenType> | undefined = undefined;
+  static get INVALID_FUNC_NAME_TOKENS (): Set<TokenType> {
+    return Parser.#INVALID_FUNC_NAME_TOKENS ??= new Set([TokenType.IDENTIFIER, TokenType.STRING]);
+  }
 
   static FUNCTIONS_WITH_ALIASED_ARGS: Set<string> = new Set(['STRUCT']);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static KEY_VALUE_DEFINITIONS: Set<new (args: any) => Expression> = new Set([
-    AliasExpr,
-    EqExpr,
-    PropertyEqExpr,
-    SliceExpr,
-  ]);
+  static #KEY_VALUE_DEFINITIONS: Set<typeof Expression> | undefined = undefined;
+  static get KEY_VALUE_DEFINITIONS (): Set<typeof Expression> {
+    return Parser.#KEY_VALUE_DEFINITIONS ??= new Set([
+      AliasExpr,
+      EqExpr,
+      PropertyEqExpr,
+      SliceExpr,
+    ]);
+  }
 
-  static FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> = {
-    ...Object.fromEntries(
-      ArgMaxExpr.sqlNames().map((name) => [name, (self: Parser) => self.parseMaxMinBy(ArgMaxExpr)]),
-    ),
-    ...Object.fromEntries(
-      ArgMinExpr.sqlNames().map((name) => [name, (self: Parser) => self.parseMaxMinBy(ArgMinExpr)]),
-    ),
-    CAST: (self: Parser) => self.parseCast(self._constructor.STRICT_CAST),
-    CEIL: (self: Parser) => self.parseCeilFloor(CeilExpr),
-    CONVERT: (self: Parser) => self.parseConvert(self._constructor.STRICT_CAST),
-    CHAR: (self: Parser) => self.parseChar(),
-    CHR: (self: Parser) => self.parseChar(),
-    DECODE: (self: Parser) => self.parseDecode(),
-    EXTRACT: (self: Parser) => self.parseExtract(),
-    FLOOR: (self: Parser) => self.parseCeilFloor(FloorExpr),
-    GAP_FILL: (self: Parser) => self.parseGapFill(),
-    INITCAP: (self: Parser) => self.parseInitcap(),
-    JSON_OBJECT: (self: Parser) => self.parseJsonObject(),
-    JSON_OBJECTAGG: (self: Parser) => self.parseJsonObject({ agg: true }),
-    JSON_TABLE: (self: Parser) => self.parseJsonTable(),
-    MATCH: (self: Parser) => self.parseMatchAgainst(),
-    NORMALIZE: (self: Parser) => self.parseNormalize(),
-    OPENJSON: (self: Parser) => self.parseOpenJson(),
-    OVERLAY: (self: Parser) => self.parseOverlay(),
-    POSITION: (self: Parser) => self.parsePosition(),
-    SAFE_CAST: (self: Parser) => self.parseCast(false, { safe: true }),
-    STRING_AGG: (self: Parser) => self.parseStringAgg(),
-    SUBSTRING: (self: Parser) => self.parseSubstring(),
-    TRIM: (self: Parser) => self.parseTrim(),
-    TRY_CAST: (self: Parser) => self.parseCast(false, { safe: true }),
-    TRY_CONVERT: (self: Parser) => self.parseConvert(false, { safe: true }),
-    XMLELEMENT: (self: Parser) => self.parseXmlElement(),
-    XMLTABLE: (self: Parser) => self.parseXmlTable(),
-  };
+  static #FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+    return Parser.#FUNCTION_PARSERS ??= {
+      ...Object.fromEntries(
+        ArgMaxExpr.sqlNames().map((name) => [name, (self: Parser) => self.parseMaxMinBy(ArgMaxExpr)]),
+      ),
+      ...Object.fromEntries(
+        ArgMinExpr.sqlNames().map((name) => [name, (self: Parser) => self.parseMaxMinBy(ArgMinExpr)]),
+      ),
+      CAST: (self: Parser) => self.parseCast(self._constructor.STRICT_CAST),
+      CEIL: (self: Parser) => self.parseCeilFloor(CeilExpr),
+      CONVERT: (self: Parser) => self.parseConvert(self._constructor.STRICT_CAST),
+      CHAR: (self: Parser) => self.parseChar(),
+      CHR: (self: Parser) => self.parseChar(),
+      DECODE: (self: Parser) => self.parseDecode(),
+      EXTRACT: (self: Parser) => self.parseExtract(),
+      FLOOR: (self: Parser) => self.parseCeilFloor(FloorExpr),
+      GAP_FILL: (self: Parser) => self.parseGapFill(),
+      INITCAP: (self: Parser) => self.parseInitcap(),
+      JSON_OBJECT: (self: Parser) => self.parseJsonObject(),
+      JSON_OBJECTAGG: (self: Parser) => self.parseJsonObject({ agg: true }),
+      JSON_TABLE: (self: Parser) => self.parseJsonTable(),
+      MATCH: (self: Parser) => self.parseMatchAgainst(),
+      NORMALIZE: (self: Parser) => self.parseNormalize(),
+      OPENJSON: (self: Parser) => self.parseOpenJson(),
+      OVERLAY: (self: Parser) => self.parseOverlay(),
+      POSITION: (self: Parser) => self.parsePosition(),
+      SAFE_CAST: (self: Parser) => self.parseCast(false, { safe: true }),
+      STRING_AGG: (self: Parser) => self.parseStringAgg(),
+      SUBSTRING: (self: Parser) => self.parseSubstring(),
+      TRIM: (self: Parser) => self.parseTrim(),
+      TRY_CAST: (self: Parser) => self.parseCast(false, { safe: true }),
+      TRY_CONVERT: (self: Parser) => self.parseConvert(false, { safe: true }),
+      XMLELEMENT: (self: Parser) => self.parseXmlElement(),
+      XMLTABLE: (self: Parser) => self.parseXmlTable(),
+    };
+  }
 
-  static QUERY_MODIFIER_PARSERS: Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> = {
-    [TokenType.MATCH_RECOGNIZE]: (self: Parser): [string, Expression | undefined] => ['match', self.parseMatchRecognize()],
-    [TokenType.PREWHERE]: (self: Parser): [string, Expression | undefined] => ['prewhere', self.parsePrewhere()],
-    [TokenType.WHERE]: (self: Parser): [string, Expression | undefined] => ['where', self.parseWhere()],
-    [TokenType.GROUP_BY]: (self: Parser): [string, Expression | undefined] => ['group', self.parseGroup()],
-    [TokenType.HAVING]: (self: Parser): [string, Expression | undefined] => ['having', self.parseHaving()],
-    [TokenType.QUALIFY]: (self: Parser): [string, Expression | undefined] => ['qualify', self.parseQualify()],
-    [TokenType.WINDOW]: (self: Parser): [string, Expression[] | undefined] => ['windows', self.parseWindowClause()],
-    [TokenType.ORDER_BY]: (self: Parser): [string, Expression | undefined] => ['order', self.parseOrder()],
-    [TokenType.LIMIT]: (self: Parser): [string, Expression | undefined] => ['limit', self.parseLimit()],
-    [TokenType.FETCH]: (self: Parser): [string, Expression | undefined] => ['limit', self.parseLimit()],
-    [TokenType.OFFSET]: (self: Parser): [string, Expression | undefined] => ['offset', self.parseOffset()],
-    [TokenType.FOR]: (self: Parser): [string, Expression[] | undefined] => ['locks', self.parseLocks()],
-    [TokenType.LOCK]: (self: Parser): [string, Expression[] | undefined] => ['locks', self.parseLocks()],
-    [TokenType.TABLE_SAMPLE]: (self: Parser): [string, Expression | undefined] => ['sample', self.parseTableSample({ asModifier: true })],
-    [TokenType.USING]: (self: Parser): [string, Expression | undefined] => ['sample', self.parseTableSample({ asModifier: true })],
-    [TokenType.CLUSTER_BY]: (self: Parser): [string, Expression | undefined] => ['cluster', self.parseSort(ClusterExpr, TokenType.CLUSTER_BY)],
-    [TokenType.DISTRIBUTE_BY]: (self: Parser): [string, Expression | undefined] => ['distribute', self.parseSort(DistributeExpr, TokenType.DISTRIBUTE_BY)],
-    [TokenType.SORT_BY]: (self: Parser): [string, Expression | undefined] => ['sort', self.parseSort(SortExpr, TokenType.SORT_BY)],
-    [TokenType.CONNECT_BY]: (self: Parser): [string, Expression | undefined] => ['connect', self.parseConnect({ skipStartToken: true })],
-    [TokenType.START_WITH]: (self: Parser): [string, Expression | undefined] => ['connect', self.parseConnect()],
-  };
+  static #QUERY_MODIFIER_PARSERS: Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> | undefined = undefined;
+  static get QUERY_MODIFIER_PARSERS (): Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> {
+    return Parser.#QUERY_MODIFIER_PARSERS ??= {
+      [TokenType.MATCH_RECOGNIZE]: (self: Parser): [string, Expression | undefined] => ['match', self.parseMatchRecognize()],
+      [TokenType.PREWHERE]: (self: Parser): [string, Expression | undefined] => ['prewhere', self.parsePrewhere()],
+      [TokenType.WHERE]: (self: Parser): [string, Expression | undefined] => ['where', self.parseWhere()],
+      [TokenType.GROUP_BY]: (self: Parser): [string, Expression | undefined] => ['group', self.parseGroup()],
+      [TokenType.HAVING]: (self: Parser): [string, Expression | undefined] => ['having', self.parseHaving()],
+      [TokenType.QUALIFY]: (self: Parser): [string, Expression | undefined] => ['qualify', self.parseQualify()],
+      [TokenType.WINDOW]: (self: Parser): [string, Expression[] | undefined] => ['windows', self.parseWindowClause()],
+      [TokenType.ORDER_BY]: (self: Parser): [string, Expression | undefined] => ['order', self.parseOrder()],
+      [TokenType.LIMIT]: (self: Parser): [string, Expression | undefined] => ['limit', self.parseLimit()],
+      [TokenType.FETCH]: (self: Parser): [string, Expression | undefined] => ['limit', self.parseLimit()],
+      [TokenType.OFFSET]: (self: Parser): [string, Expression | undefined] => ['offset', self.parseOffset()],
+      [TokenType.FOR]: (self: Parser): [string, Expression[] | undefined] => ['locks', self.parseLocks()],
+      [TokenType.LOCK]: (self: Parser): [string, Expression[] | undefined] => ['locks', self.parseLocks()],
+      [TokenType.TABLE_SAMPLE]: (self: Parser): [string, Expression | undefined] => ['sample', self.parseTableSample({ asModifier: true })],
+      [TokenType.USING]: (self: Parser): [string, Expression | undefined] => ['sample', self.parseTableSample({ asModifier: true })],
+      [TokenType.CLUSTER_BY]: (self: Parser): [string, Expression | undefined] => ['cluster', self.parseSort(ClusterExpr, TokenType.CLUSTER_BY)],
+      [TokenType.DISTRIBUTE_BY]: (self: Parser): [string, Expression | undefined] => ['distribute', self.parseSort(DistributeExpr, TokenType.DISTRIBUTE_BY)],
+      [TokenType.SORT_BY]: (self: Parser): [string, Expression | undefined] => ['sort', self.parseSort(SortExpr, TokenType.SORT_BY)],
+      [TokenType.CONNECT_BY]: (self: Parser): [string, Expression | undefined] => ['connect', self.parseConnect({ skipStartToken: true })],
+      [TokenType.START_WITH]: (self: Parser): [string, Expression | undefined] => ['connect', self.parseConnect()],
+    };
+  }
 
-  static QUERY_MODIFIER_TOKENS: Set<TokenType> = new Set(
-    Object.keys(Parser.QUERY_MODIFIER_PARSERS) as TokenType[],
-  );
+  static #QUERY_MODIFIER_TOKENS: Set<TokenType> | undefined = undefined;
+  static get QUERY_MODIFIER_TOKENS (): Set<TokenType> {
+    return Parser.#QUERY_MODIFIER_TOKENS ??= new Set(
+      Object.keys(Parser.QUERY_MODIFIER_PARSERS) as TokenType[],
+    );
+  }
 
   static SET_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
     GLOBAL: (self: Parser) => self.parseSetItemAssignment({ kind: 'GLOBAL' }),
@@ -2208,23 +2367,35 @@ export class Parser {
 
   static SHOW_PARSERS: Record<string, (self: Parser) => Expression> = {};
 
-  static TYPE_LITERAL_PARSERS: Partial<Record<DataTypeExprKind, (self: Parser, thisArg?: Expression, _?: unknown) => Expression>> = {
-    [DataTypeExprKind.JSON]: (self: Parser, thisArg?: Expression, _?: unknown) => self.expression(ParseJsonExpr, { this: thisArg }),
-  };
+  static #TYPE_LITERAL_PARSERS?: Partial<Record<DataTypeExprKind, (self: Parser, thisArg?: Expression, _?: unknown) => Expression>>;
+  static get TYPE_LITERAL_PARSERS (): Partial<Record<DataTypeExprKind, (self: Parser, thisArg?: Expression, _?: unknown) => Expression>> {
+    return Parser.#TYPE_LITERAL_PARSERS ??= {
+      [DataTypeExprKind.JSON]: (self: Parser, thisArg?: Expression, _?: unknown) => self.expression(ParseJsonExpr, { this: thisArg }),
+    };
+  }
 
-  static TYPE_CONVERTERS: Partial<Record<DataTypeExprKind, (dataType: DataTypeExpr) => DataTypeExpr>> = {};
+  static #TYPE_CONVERTERS: Partial<Record<DataTypeExprKind, (dataType: DataTypeExpr) => DataTypeExpr>> | undefined = undefined;
+  static get TYPE_CONVERTERS (): Partial<Record<DataTypeExprKind, (dataType: DataTypeExpr) => DataTypeExpr>> {
+    return Parser.#TYPE_CONVERTERS ??= {};
+  }
 
-  static DDL_SELECT_TOKENS: Set<TokenType> = new Set([
-    TokenType.SELECT,
-    TokenType.WITH,
-    TokenType.L_PAREN,
-  ]);
+  static #DDL_SELECT_TOKENS: Set<TokenType> | undefined = undefined;
+  static get DDL_SELECT_TOKENS (): Set<TokenType> {
+    return Parser.#DDL_SELECT_TOKENS ??= new Set([
+      TokenType.SELECT,
+      TokenType.WITH,
+      TokenType.L_PAREN,
+    ]);
+  }
 
-  static PRE_VOLATILE_TOKENS: Set<TokenType> = new Set([
-    TokenType.CREATE,
-    TokenType.REPLACE,
-    TokenType.UNIQUE,
-  ]);
+  static #PRE_VOLATILE_TOKENS: Set<TokenType> | undefined = undefined;
+  static get PRE_VOLATILE_TOKENS (): Set<TokenType> {
+    return Parser.#PRE_VOLATILE_TOKENS ??= new Set([
+      TokenType.CREATE,
+      TokenType.REPLACE,
+      TokenType.UNIQUE,
+    ]);
+  }
 
   static TRANSACTION_KIND: Set<string> = new Set([
     'DEFERRED',
@@ -2396,13 +2567,19 @@ export class Parser {
     'WITH',
   ]);
 
-  static OPTYPE_FOLLOW_TOKENS: Set<TokenType> = new Set([TokenType.COMMA, TokenType.R_PAREN]);
+  static #OPTYPE_FOLLOW_TOKENS: Set<TokenType> | undefined = undefined;
+  static get OPTYPE_FOLLOW_TOKENS (): Set<TokenType> {
+    return Parser.#OPTYPE_FOLLOW_TOKENS ??= new Set([TokenType.COMMA, TokenType.R_PAREN]);
+  }
 
-  static TABLE_INDEX_HINT_TOKENS: Set<TokenType> = new Set([
-    TokenType.FORCE,
-    TokenType.IGNORE,
-    TokenType.USE,
-  ]);
+  static #TABLE_INDEX_HINT_TOKENS: Set<TokenType> | undefined = undefined;
+  static get TABLE_INDEX_HINT_TOKENS (): Set<TokenType> {
+    return Parser.#TABLE_INDEX_HINT_TOKENS ??= new Set([
+      TokenType.FORCE,
+      TokenType.IGNORE,
+      TokenType.USE,
+    ]);
+  }
 
   static VIEW_ATTRIBUTES: Set<string> = new Set([
     'ENCRYPTION',
@@ -2410,55 +2587,79 @@ export class Parser {
     'VIEW_METADATA',
   ]);
 
-  static WINDOW_ALIAS_TOKENS = (() => {
-    const result = new Set(Parser.ID_VAR_TOKENS);
-    result.delete(TokenType.RANGE);
-    result.delete(TokenType.ROWS);
-    return result;
-  })();
+  static #WINDOW_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  static get WINDOW_ALIAS_TOKENS () {
+    return Parser.#WINDOW_ALIAS_TOKENS ??= (() => {
+      const result = new Set(Parser.ID_VAR_TOKENS);
+      result.delete(TokenType.RANGE);
+      result.delete(TokenType.ROWS);
+      return result;
+    })();
+  }
 
-  static WINDOW_BEFORE_PAREN_TOKENS: Set<TokenType> = new Set([TokenType.OVER]);
+  static #WINDOW_BEFORE_PAREN_TOKENS: Set<TokenType> | undefined = undefined;
+  static get WINDOW_BEFORE_PAREN_TOKENS (): Set<TokenType> {
+    return Parser.#WINDOW_BEFORE_PAREN_TOKENS ??= new Set([TokenType.OVER]);
+  }
 
   static WINDOW_SIDES: Set<string> = new Set(['FOLLOWING', 'PRECEDING']);
 
-  static JSON_KEY_VALUE_SEPARATOR_TOKENS: Set<TokenType> = new Set([
-    TokenType.COLON,
-    TokenType.COMMA,
-    TokenType.IS,
-  ]);
+  static #JSON_KEY_VALUE_SEPARATOR_TOKENS: Set<TokenType> | undefined = undefined;
+  static get JSON_KEY_VALUE_SEPARATOR_TOKENS (): Set<TokenType> {
+    return Parser.#JSON_KEY_VALUE_SEPARATOR_TOKENS ??= new Set([
+      TokenType.COLON,
+      TokenType.COMMA,
+      TokenType.IS,
+    ]);
+  }
 
-  static FETCH_TOKENS = (() => {
-    const result = new Set(Parser.ID_VAR_TOKENS);
-    result.delete(TokenType.ROW);
-    result.delete(TokenType.ROWS);
-    result.delete(TokenType.PERCENT);
-    return result;
-  })();
+  static #FETCH_TOKENS: Set<TokenType> | undefined = undefined;
+  static get FETCH_TOKENS () {
+    return Parser.#FETCH_TOKENS ??= (() => {
+      const result = new Set(Parser.ID_VAR_TOKENS);
+      result.delete(TokenType.ROW);
+      result.delete(TokenType.ROWS);
+      result.delete(TokenType.PERCENT);
+      return result;
+    })();
+  }
 
-  static ADD_CONSTRAINT_TOKENS: Set<TokenType> = new Set([
-    TokenType.CONSTRAINT,
-    TokenType.FOREIGN_KEY,
-    TokenType.INDEX,
-    TokenType.KEY,
-    TokenType.PRIMARY_KEY,
-    TokenType.UNIQUE,
-  ]);
+  static #ADD_CONSTRAINT_TOKENS: Set<TokenType> | undefined = undefined;
+  static get ADD_CONSTRAINT_TOKENS (): Set<TokenType> {
+    return Parser.#ADD_CONSTRAINT_TOKENS ??= new Set([
+      TokenType.CONSTRAINT,
+      TokenType.FOREIGN_KEY,
+      TokenType.INDEX,
+      TokenType.KEY,
+      TokenType.PRIMARY_KEY,
+      TokenType.UNIQUE,
+    ]);
+  }
 
-  static DISTINCT_TOKENS: Set<TokenType> = new Set([TokenType.DISTINCT]);
+  static #DISTINCT_TOKENS: Set<TokenType> | undefined = undefined;
+  static get DISTINCT_TOKENS (): Set<TokenType> {
+    return Parser.#DISTINCT_TOKENS ??= new Set([TokenType.DISTINCT]);
+  }
 
-  static UNNEST_OFFSET_ALIAS_TOKENS = (() => {
-    const result = new Set(Parser.TABLE_ALIAS_TOKENS);
-    for (const token of Parser.SET_OPERATIONS) {
-      result.delete(token);
-    }
-    return result;
-  })();
+  static #UNNEST_OFFSET_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  static get UNNEST_OFFSET_ALIAS_TOKENS () {
+    return Parser.#UNNEST_OFFSET_ALIAS_TOKENS ??= (() => {
+      const result = new Set(Parser.TABLE_ALIAS_TOKENS);
+      for (const token of Parser.SET_OPERATIONS) {
+        result.delete(token);
+      }
+      return result;
+    })();
+  }
 
-  static SELECT_START_TOKENS: Set<TokenType> = new Set([
-    TokenType.L_PAREN,
-    TokenType.WITH,
-    TokenType.SELECT,
-  ]);
+  static #SELECT_START_TOKENS: Set<TokenType> | undefined = undefined;
+  static get SELECT_START_TOKENS (): Set<TokenType> {
+    return Parser.#SELECT_START_TOKENS ??= new Set([
+      TokenType.L_PAREN,
+      TokenType.WITH,
+      TokenType.SELECT,
+    ]);
+  }
 
   static COPY_INTO_VARLEN_OPTIONS: Set<string> = new Set([
     'FILE_FORMAT',
@@ -2484,11 +2685,14 @@ export class Parser {
     'EMPTY',
   ]);
 
-  static PRIVILEGE_FOLLOW_TOKENS: Set<TokenType> = new Set([
-    TokenType.ON,
-    TokenType.COMMA,
-    TokenType.L_PAREN,
-  ]);
+  static #PRIVILEGE_FOLLOW_TOKENS: Set<TokenType> | undefined = undefined;
+  static get PRIVILEGE_FOLLOW_TOKENS (): Set<TokenType> {
+    return Parser.#PRIVILEGE_FOLLOW_TOKENS ??= new Set([
+      TokenType.ON,
+      TokenType.COMMA,
+      TokenType.L_PAREN,
+    ]);
+  }
 
   static DESCRIBE_STYLES: Set<string> = new Set([
     'ANALYZE',
@@ -2527,7 +2731,10 @@ export class Parser {
 
   static PARTITION_KEYWORDS: Set<string> = new Set(['PARTITION', 'SUBPARTITION']);
 
-  static AMBIGUOUS_ALIAS_TOKENS = [TokenType.LIMIT, TokenType.OFFSET] as const;
+  static #AMBIGUOUS_ALIAS_TOKENS: readonly [TokenType, TokenType] | undefined = undefined;
+  static get AMBIGUOUS_ALIAS_TOKENS () {
+    return Parser.#AMBIGUOUS_ALIAS_TOKENS ??= [TokenType.LIMIT, TokenType.OFFSET] as const;
+  }
 
   static OPERATION_MODIFIERS: Set<string> = new Set();
 
@@ -2537,13 +2744,15 @@ export class Parser {
     'CYCLE',
   ]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static MODIFIABLES: (new (args: any) => Expression)[] = [
-    QueryExpr,
-    TableExpr,
-    TableFromRowsExpr,
-    ValuesExpr,
-  ];
+  static #MODIFIABLES: (typeof Expression)[] | undefined = undefined;
+  static get MODIFIABLES (): (typeof Expression)[] {
+    return Parser.#MODIFIABLES ??= [
+      QueryExpr,
+      TableExpr,
+      TableFromRowsExpr,
+      ValuesExpr,
+    ];
+  }
 
   static STRICT_CAST = true;
 
@@ -8871,8 +9080,7 @@ export class Parser {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  parseTokens (parseMethod: () => Expression | undefined, expressions: Partial<Record<TokenType, new (args: any) => Expression>>): Expression | undefined {
+  parseTokens (parseMethod: () => Expression | undefined, expressions: Partial<Record<TokenType, typeof Expression>>): Expression | undefined {
     let thisExpr = parseMethod();
 
     const expressionTokens = new Set(Object.keys(expressions)) as Set<TokenType>;

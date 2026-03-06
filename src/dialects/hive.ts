@@ -394,7 +394,7 @@ class HiveTokenizer extends Tokenizer {
     $: TokenType.PARAMETER,
   };
 
-  static KEYWORDS = {
+  static ORIGINAL_KEYWORDS = {
     ...Tokenizer.KEYWORDS,
     'ADD ARCHIVE': TokenType.COMMAND,
     'ADD ARCHIVES': TokenType.COMMAND,
@@ -440,22 +440,22 @@ class HiveParser extends Parser {
     ...Parser.FUNCTIONS,
     BASE64: ToBase64Expr.fromArgList,
     COLLECT_LIST: (args: Expression[]) => new ArrayAggExpr({
-      this: seqGet(args, 0)!,
+      this: seqGet(args, 0),
       nullsExcluded: true,
     }),
     COLLECT_SET: ArrayUniqueAggExpr.fromArgList,
     DATE_ADD: (args: Expression[]) => new TsOrDsAddExpr({
-      this: seqGet(args, 0)!,
-      expression: seqGet(args, 1)!,
+      this: seqGet(args, 0),
+      expression: seqGet(args, 1),
       unit: LiteralExpr.string('DAY'),
     }),
-    DATE_FORMAT: (args: Expression[]) => buildFormattedTime(TimeToStrExpr, { dialect: 'hive' })([new TimeStrToTimeExpr({ this: seqGet(args, 0)! }), seqGet(args, 1)]),
+    DATE_FORMAT: (args: Expression[]) => buildFormattedTime(TimeToStrExpr, { dialect: 'hive' })([new TimeStrToTimeExpr({ this: seqGet(args, 0) }), seqGet(args, 1)]),
     DATE_SUB: buildDateAdd,
     DATEDIFF: (args: Expression[]) => new DateDiffExpr({
-      this: new TsOrDsToDateExpr({ this: seqGet(args, 0)! }),
-      expression: new TsOrDsToDateExpr({ this: seqGet(args, 1)! }),
+      this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
+      expression: new TsOrDsToDateExpr({ this: seqGet(args, 1) }),
     }),
-    DAY: (args: Expression[]) => new DayExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0)! }) }),
+    DAY: (args: Expression[]) => new DayExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
     FIRST: buildWithIgnoreNulls(FirstExpr),
     FIRST_VALUE: buildWithIgnoreNulls(FirstValueExpr),
     FROM_UNIXTIME: buildFormattedTime(UnixToStrExpr, {
@@ -463,8 +463,8 @@ class HiveParser extends Parser {
       defaultValue: true,
     }),
     GET_JSON_OBJECT: (args: Expression[], { dialect }: { dialect: Dialect }) => new JsonExtractScalarExpr({
-      this: seqGet(args, 0)!,
-      expression: dialect.toJsonPath(seqGet(args, 1))!,
+      this: seqGet(args, 0),
+      expression: dialect.toJsonPath(seqGet(args, 1)),
     }),
     LAST: buildWithIgnoreNulls(LastExpr),
     LAST_VALUE: buildWithIgnoreNulls(LastValueExpr),
@@ -476,7 +476,7 @@ class HiveParser extends Parser {
     SIZE: ArraySizeExpr.fromArgList,
     SPLIT: RegexpSplitExpr.fromArgList,
     STR_TO_MAP: (args: Expression[]) => new StrToMapExpr({
-      this: seqGet(args, 0)!,
+      this: seqGet(args, 0),
       pairDelim: seqGet(args, 1) || LiteralExpr.string(','),
       keyValueDelim: seqGet(args, 2) || LiteralExpr.string(':'),
     }),
@@ -806,7 +806,7 @@ class HiveGenerator extends Generator {
       [TimeStrToDateExpr, renameFunc('TO_DATE')],
       [TimeStrToTimeExpr, timeStrToTimeSql],
       [TimeStrToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
-      [TimestampTruncExpr, (self: Generator, e: TimestampTruncExpr) => self.func('TRUNC', [e.args.this, unitToStr(e)!])],
+      [TimestampTruncExpr, (self: Generator, e: TimestampTruncExpr) => self.func('TRUNC', [e.args.this, unitToStr(e)])],
       [TimeToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
       [ToBase64Expr, renameFunc('BASE64')],
       [TsOrDiToDiExpr, (self: Generator, e: TsOrDiToDiExpr) => `CAST(SUBSTR(REPLACE(CAST(${self.sql(e, 'this')} AS STRING), '-', ''), 1, 8) AS INT)`],
@@ -816,7 +816,7 @@ class HiveGenerator extends Generator {
       [TryCastExpr, noTrycastSql],
       [TrimExpr, trimSql],
       [UnicodeExpr, renameFunc('ASCII')],
-      [UnixToStrExpr, (self: Generator, e: UnixToStrExpr) => self.func('FROM_UNIXTIME', [e.args.this, timeFormat('hive')(self, e)!])],
+      [UnixToStrExpr, (self: Generator, e: UnixToStrExpr) => self.func('FROM_UNIXTIME', [e.args.this, timeFormat('hive')(self, e)])],
       [UnixToTimeExpr, (self: Generator, e: UnixToTimeExpr) => unixToTimeSql(self as HiveGenerator, e)],
       [UnixToTimeStrExpr, renameFunc('FROM_UNIXTIME')],
       [UnnestExpr, (self: Generator, e: UnnestExpr) => self.func('EXPLODE', [e.args.this])],
@@ -1066,7 +1066,7 @@ class HiveGenerator extends Generator {
       thisNode = thisNode.args.this;
     }
 
-    return this.func('DATE_FORMAT', [thisNode, this.formatTime(expression)!]);
+    return this.func('DATE_FORMAT', [thisNode, this.formatTime(expression)]);
   }
 
   fileFormatPropertySql (expression: FileFormatPropertyExpr): string {

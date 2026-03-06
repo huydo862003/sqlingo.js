@@ -30,6 +30,7 @@ import {
 import {
   parseOne, type ParseOptions,
 } from '../parser';
+import { registerFunc } from '../parser/function_registry';
 import { normalizeIdentifiers } from '../optimizer';
 import {
   dump, load,
@@ -13116,10 +13117,6 @@ export class IntervalExpr extends TimeUnitExpr {
   }
 }
 
-// Private global registry for function classes (populated by self-registration)
-const functionRegistry = new Map<string, typeof FuncExpr>();
-const allFunctions = new Set<typeof FuncExpr>();
-
 /**
  * The base class for all function expressions.
  *
@@ -13247,19 +13244,10 @@ export class FuncExpr extends ConditionExpr {
    * Called automatically by subclasses using static initialization blocks
    */
   static register (): void {
-    // Don't register base classes
     if (this === FuncExpr || this === AggFuncExpr) {
       return;
     }
-
-    // Add to all functions set
-    allFunctions.add(this);
-
-    // Register by all SQL names
-    const sqlNames = this.sqlNames();
-    for (const name of sqlNames) {
-      functionRegistry.set(name.toUpperCase(), this);
-    }
+    registerFunc(this);
   }
 }
 
@@ -32008,8 +31996,9 @@ export const CONSTANTS = [
   NullExpr,
 ] as const;
 
-export const FUNCTION_BY_NAME: ReadonlyMap<string, typeof FuncExpr> = functionRegistry;
-export const ALL_FUNCTIONS: ReadonlySet<typeof FuncExpr> = allFunctions;
+export {
+  FUNCTION_BY_NAME, ALL_FUNCTIONS,
+} from '../parser/function_registry';
 
 /**
  * Set of JSON path part expression classes

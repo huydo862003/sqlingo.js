@@ -281,7 +281,7 @@ export function unixToTimeSql (self: Generator, expression: UnixToTimeExpr): str
   const timestamp = expression.args.this;
 
   if (scale === undefined || scale === UnixToTimeExpr.SECONDS) {
-    return self.func('FROM_UNIXTIME', [timestamp, self.formatTime(expression)!]);
+    return self.func('FROM_UNIXTIME', [timestamp, self.formatTime(expression)]);
   }
 
   return self.func(
@@ -582,13 +582,13 @@ class MySQLParser extends Parser {
     VERSION: CurrentVersionExpr.fromArgList,
     WEEK: (args: Expression[]): WeekExpr =>
       new WeekExpr({
-        this: new TsOrDsToDateExpr({ this: seqGet(args, 0)! }),
+        this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
         mode: seqGet(args, 1),
       }),
     WEEKOFYEAR: (args: Expression[]): WeekOfYearExpr =>
-      new WeekOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0)! }) }),
+      new WeekOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
     YEAR: (args: Expression[]): YearExpr =>
-      new YearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0)! }) }),
+      new YearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
   };
 
   public static FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> = {
@@ -1229,7 +1229,7 @@ class MySQLGenerator extends Generator {
       TimestampDiffExpr,
       (self: Generator, e: TimestampDiffExpr): string =>
         self.func('TIMESTAMPDIFF', [
-          unitToVar(e)!,
+          unitToVar(e),
           e.args.expression,
           e.args.this,
         ]),
@@ -1244,7 +1244,7 @@ class MySQLGenerator extends Generator {
     [
       TimeToStrExpr,
       removeTsOrDsToDate((self: Generator, e: TimeToStrExpr) =>
-        self.func('DATE_FORMAT', [e.args.this, self.formatTime(e)!])),
+        self.func('DATE_FORMAT', [e.args.this, self.formatTime(e)])),
     ],
     [TrimExpr, trimSql],
     [TruncExpr, renameFunc('TRUNCATE')],

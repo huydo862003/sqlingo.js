@@ -67,6 +67,7 @@ import type {
   ExpressionValue,
 } from '../expressions';
 import {
+  SelectExpr,
   JsonbExtractExpr,
   DatetimeSubExpr,
   RegexpExtractExpr,
@@ -344,8 +345,10 @@ export class Dialect {
   /** Whether a size in the table sample clause represents percentage. */
   static TABLESAMPLE_SIZE_IS_PERCENT = false;
 
-  /** Specifies the strategy according to which identifiers should be normalized. */
-  static NORMALIZATION_STRATEGY = NormalizationStrategy.LOWERCASE;
+  static #NORMALIZATION_STRATEGY: NormalizationStrategy | undefined = undefined;
+  static get NORMALIZATION_STRATEGY () {
+    return Dialect.#NORMALIZATION_STRATEGY ??= NormalizationStrategy.LOWERCASE;
+  }
 
   /** Whether an unquoted identifier can start with a digit. */
   static IDENTIFIERS_CAN_START_WITH_DIGIT = false;
@@ -538,15 +541,14 @@ export class Dialect {
   /** Whether REGEXP_EXTRACT returns NULL when the position arg exceeds the string length. */
   static REGEXP_EXTRACT_POSITION_OVERFLOW_RETURNS_NULL = true;
 
-  /**
-   * Whether a set operation uses DISTINCT by default. This is undefined when either DISTINCT or ALL
-   * must be explicitly specified.
-   */
-  static SET_OP_DISTINCT_BY_DEFAULT: Partial<Record<ExpressionKey, boolean>> = {
-    [ExpressionKey.EXCEPT]: true,
-    [ExpressionKey.INTERSECT]: true,
-    [ExpressionKey.UNION]: true,
-  };
+  static #SET_OP_DISTINCT_BY_DEFAULT: Partial<Record<ExpressionKey, boolean>> | undefined = undefined;
+  static get SET_OP_DISTINCT_BY_DEFAULT (): Partial<Record<ExpressionKey, boolean>> {
+    return Dialect.#SET_OP_DISTINCT_BY_DEFAULT ??= {
+      [ExpressionKey.EXCEPT]: true,
+      [ExpressionKey.INTERSECT]: true,
+      [ExpressionKey.UNION]: true,
+    };
+  }
 
   /**
    * Helper for dialects that use a different name for the same creatable kind.
@@ -605,8 +607,26 @@ export class Dialect {
    */
   static DEFAULT_FUNCTIONS_COLUMN_NAMES: Map<string, string | string[]> = new Map();
 
-  /** The default type of NULL for producing the correct projection type. */
-  static DEFAULT_NULL_TYPE = DataTypeExprKind.UNKNOWN;
+  static #DEFAULT_NULL_TYPE: DataTypeExprKind | undefined = undefined;
+  static get DEFAULT_NULL_TYPE () {
+    return Dialect.#DEFAULT_NULL_TYPE ??= DataTypeExprKind.UNKNOWN;
+  }
+
+  static #UNMERGABLE_ARGS: Set<string> | undefined = undefined;
+  static get UNMERGABLE_ARGS (): Set<string> {
+    return Dialect.#UNMERGABLE_ARGS ??= new Set(
+      Array.from(SelectExpr.availableArgs).filter(
+        (arg) => ![
+          'expressions',
+          'from',
+          'joins',
+          'where',
+          'order',
+          'hint',
+        ].includes(arg),
+      ),
+    );
+  }
 
   /**
    * Whether LEAST/GREATEST functions ignore NULL values, e.g:

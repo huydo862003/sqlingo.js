@@ -33,6 +33,7 @@ import {
 import {
   findNewName, seqGet,
 } from '../helper';
+import { Dialect } from '../dialects/dialect';
 import {
   Scope, traverseScope,
 } from './scope';
@@ -75,20 +76,6 @@ export function mergeSubqueries<E extends Expression> (
 
   return expression;
 }
-
-// If a derived table has these Select args, it can't be merged
-const UNMERGABLE_ARGS = new Set(
-  Array.from(SelectExpr.availableArgs).filter(
-    (arg) => ![
-      'expressions',
-      'from',
-      'joins',
-      'where',
-      'order',
-      'hint',
-    ].includes(arg),
-  ),
-);
 
 const SAFE_TO_REPLACE_UNWRAPPED = [
   ColumnExpr,
@@ -328,7 +315,7 @@ function mergeable (
   const innerSelectExpr = innerSelect;
 
   // Check for unmergable args
-  for (const arg of UNMERGABLE_ARGS) {
+  for (const arg of Dialect.UNMERGABLE_ARGS) {
     if (innerSelectExpr.getArgKey(arg)) {
       return false;
     }

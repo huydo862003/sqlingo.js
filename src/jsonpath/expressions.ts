@@ -1,5 +1,5 @@
+import { ExpressionKey } from '../expressions/types';
 import {
-  ExpressionKey,
   JsonPathFilterExpr,
   JsonPathKeyExpr,
   JsonPathRecursiveExpr,
