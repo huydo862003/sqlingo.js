@@ -28,12 +28,6 @@ type OptimizerRule = (expression: Expression, options?: Record<string, unknown>)
 
 /**
  * Default sequence of optimizer rules.
- *
- * NOTE: canonicalize is omitted as it's not fully implemented yet.
- * The Python version includes: qualify, pushdown_projections, normalize,
- * unnest_subqueries, pushdown_predicates, optimize_joins, eliminate_subqueries,
- * merge_subqueries, eliminate_joins, eliminate_ctes, quote_identifiers,
- * annotate_types, canonicalize, simplify
  */
 export const RULES: OptimizerRule[] = [
   qualify,
