@@ -105,18 +105,19 @@ export function multiInherit<
     }
 
     // Register for instanceof checks
-    if (!registeredTargets.has(BaseClass)) {
-      registeredTargets.set(BaseClass, new Set());
+    let targets = registeredTargets.get(BaseClass);
+    if (!targets) {
+      targets = new Set();
+      registeredTargets.set(BaseClass, targets);
       Object.defineProperty(BaseClass, Symbol.hasInstance, {
         value (instance: unknown) {
           if (BaseClass.prototype.isPrototypeOf(Object(instance))) return true;
-          const targets = registeredTargets.get(BaseClass);
-          return targets?.has((instance as any)?.constructor) ?? false;
+          return registeredTargets.get(BaseClass)?.has((instance as any)?.constructor) ?? false;
         },
         configurable: true,
       });
     }
-    registeredTargets.get(BaseClass)!.add(MultiInheritClass);
+    targets.add(MultiInheritClass);
   }
 
   return MultiInheritClass as any as MultiInheritResult<TBase, TMixins>;

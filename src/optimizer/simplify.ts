@@ -1209,10 +1209,12 @@ export class Simplifier {
         if (!(op instanceof kind)) {
           // In cases like: A OR (A AND B)
           // Subop will be: ^
-          if (!subops.has(op)) {
-            subops.set(op, []);
+          let subopsOp = subops.get(op);
+          if (!subopsOp) {
+            subopsOp = [];
+            subops.set(op, subopsOp);
           }
-          subops.get(op)!.push(new Set([op]));
+          subopsOp.push(new Set([op]));
           continue;
         }
 
@@ -1220,10 +1222,12 @@ export class Simplifier {
         // Subops will be: ^     ^
         const subset = new Set(op.flatten());
         for (const i of subset) {
-          if (!subops.has(i)) {
-            subops.set(i, []);
+          let subopsI = subops.get(i);
+          if (!subopsI) {
+            subopsI = [];
+            subops.set(i, subopsI);
           }
-          subops.get(i)!.push(subset);
+          subopsI.push(subset);
         }
 
         const [a, b] = op.unnestOperands();

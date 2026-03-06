@@ -417,9 +417,8 @@ export class TypeAnnotator {
   getScopeSelects (
     scope: Scope,
   ): Map<string, Record<string, DataTypeExpr | ColumnDefExpr | DataTypeExprKind | undefined>> {
-    if (this.scopeSelects.has(scope)) {
-      return this.scopeSelects.get(scope)!;
-    }
+    const cached = this.scopeSelects.get(scope);
+    if (cached !== undefined) return cached;
 
     const selects = new Map<string, Record<string, DataTypeExpr | DataTypeExprKind | ColumnDefExpr | undefined>>();
 
@@ -500,9 +499,8 @@ export class TypeAnnotator {
   getSetopColumnTypes (
     setop: SetOperationExpr,
   ): Record<string, DataTypeExpr | DataTypeExprKind> {
-    if (this.setopColumnTypes.has(setop)) {
-      return this.setopColumnTypes.get(setop)!;
-    }
+    const cached = this.setopColumnTypes.get(setop);
+    if (cached !== undefined) return cached;
 
     const colTypes: Record<string, DataTypeExpr | DataTypeExprKind> = {};
 

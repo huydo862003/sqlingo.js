@@ -408,8 +408,9 @@ export class Resolver {
       for (const col of columns) allColumns.add(col);
 
       for (const column of ambiguous) {
-        if (unnestOriginalAliases.has(column)) {
-          unambiguousColumns.set(column, unnestOriginalAliases.get(column)!);
+        const unnestAlias = unnestOriginalAliases.get(column);
+        if (unnestAlias !== undefined) {
+          unambiguousColumns.set(column, unnestAlias);
           continue;
         }
         unambiguousColumns.delete(column);

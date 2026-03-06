@@ -213,8 +213,7 @@ const OPTIONS_THAT_REQUIRE_EQUAL = new Set([
   'LABEL',
 ]);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const BIT_TYPES: Set<any> = new Set([
+const BIT_TYPES: Set<typeof Expression> = new Set([
   EqExpr,
   NeqExpr,
   IsExpr,
@@ -379,7 +378,7 @@ function buildHashbytes (args: Expression[]): Expression {
   return func('HASHBYTES', ...args);
 }
 
-function buildDatetimefromparts (args: Expression[]): TimestampFromPartsExpr {
+function buildDatetimeFromParts (args: Expression[]): TimestampFromPartsExpr {
   return new TimestampFromPartsExpr({
     year: seqGet(args, 0),
     month: seqGet(args, 1),
@@ -391,7 +390,7 @@ function buildDatetimefromparts (args: Expression[]): TimestampFromPartsExpr {
   });
 }
 
-function buildTimefromparts (args: Expression[]): TimeFromPartsExpr {
+function buildTimeFromParts (args: Expression[]): TimeFromPartsExpr {
   const fractions = seqGet(args, 3);
   return new TimeFromPartsExpr({
     hour: seqGet(args, 0),
@@ -536,7 +535,8 @@ export class TSQLTokenizer extends Tokenizer {
     '#',
   ]);
 
-  static ORIGINAL_KEYWORDS = (() => {
+  @cache
+  static get ORIGINAL_KEYWORDS () {
     const keywords: Record<string, TokenType> = {
       ...Tokenizer.KEYWORDS,
       'CLUSTERED INDEX': TokenType.INDEX,
@@ -569,9 +569,12 @@ export class TSQLTokenizer extends Tokenizer {
     };
     delete keywords['/*+'];
     return keywords;
-  })();
+  }
 
-  static COMMANDS = new Set([...Array.from(Tokenizer.COMMANDS), TokenType.END]);
+  @cache
+  static get COMMANDS () {
+    return new Set([...Array.from(Tokenizer.COMMANDS), TokenType.END]);
+  };
 }
 
 export class TSQLParser extends Parser {
@@ -579,6 +582,7 @@ export class TSQLParser extends Parser {
   static LOG_DEFAULTS_TO_LN = true;
   static STRING_ALIASES = true;
   static NO_PAREN_IF_COMMANDS = false;
+
   @cache
   static get QUERY_MODIFIER_PARSERS (): Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> {
     return {
@@ -642,7 +646,7 @@ export class TSQLParser extends Parser {
         return expr;
       },
       DATENAME: buildBuiltinFormattedTime(true),
-      DATETIMEFROMPARTS: buildDatetimefromparts,
+      DATETIMEFROMPARTS: buildDatetimeFromParts,
       EOMONTH: buildEomonth,
       FORMAT: buildFormat,
       GETDATE: CurrentTimestampExpr.fromArgList,
@@ -666,7 +670,7 @@ export class TSQLParser extends Parser {
       SUSER_SNAME: CurrentUserExpr.fromArgList,
       SYSDATETIMEOFFSET: CurrentTimestampLtzExpr.fromArgList,
       SYSTEM_USER: CurrentUserExpr.fromArgList,
-      TIMEFROMPARTS: buildTimefromparts,
+      TIMEFROMPARTS: buildTimeFromParts,
       DATETRUNC: buildDatetrunc,
     };
   }
@@ -1161,9 +1165,10 @@ export class TSQLGenerator extends Generator {
     JsonPathSubscriptExpr,
   ]);
 
-  static TYPE_MAPPING = (() => {
-    const mapping = new Map<DataTypeExprKind, string>([
-      ...(Generator.TYPE_MAPPING.entries() as unknown as [DataTypeExprKind, string][]),
+  @cache
+  static get TYPE_MAPPING () {
+    const mapping = new Map<DataTypeExprKind | string, string>([
+      ...Generator.TYPE_MAPPING.entries(),
       [DataTypeExprKind.BOOLEAN, 'BIT'],
       [DataTypeExprKind.DATETIME2, 'DATETIME2'],
       [DataTypeExprKind.DECIMAL, 'NUMERIC'],
@@ -1184,7 +1189,7 @@ export class TSQLGenerator extends Generator {
     mapping.delete(DataTypeExprKind.NVARCHAR);
 
     return mapping;
-  })();
+  }
 
   static ORIGINAL_TRANSFORMS = (() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

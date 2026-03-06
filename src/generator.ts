@@ -258,7 +258,6 @@ import type {
   XmlKeyValueOptionExpr,
   XmlNamespaceExpr,
   XmlTableExpr,
-
   KillExpr,
   IndexTableHintExpr,
   HistoricalDataExpr,
@@ -1046,6 +1045,7 @@ export class Generator {
   static EXPRESSION_PRECEDES_PROPERTIES_CREATABLES: Set<string> = new Set();
 
   @cache
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new Map<typeof Expression, (self: Generator, e: any) => string>(
@@ -6119,8 +6119,8 @@ export class Generator {
       [
         thisStr,
         expression.args.time,
-        ...(expression.args.numRows || [undefined])!,
-        ...(expression.args.ignoreFeatureNulls || [undefined])!,
+        ...(expression.args.numRows || [undefined]),
+        ...(expression.args.ignoreFeatureNulls || [undefined]),
       ],
     );
   }
@@ -6281,7 +6281,7 @@ export class Generator {
       [
         expression.args.this,
         expression.args.expression,
-        unitToStr(expression)!,
+        unitToStr(expression),
       ],
     );
   }

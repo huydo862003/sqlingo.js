@@ -151,10 +151,12 @@ export function pushdownProjections<E extends Expression> (
         const tableName = col.table || '';
         const colName = col.name;
 
-        if (!selects.has(tableName)) {
-          selects.set(tableName, new Set());
+        let selectsForTable = selects.get(tableName);
+        if (!selectsForTable) {
+          selectsForTable = new Set();
+          selects.set(tableName, selectsForTable);
         }
-        selects.get(tableName)!.add(colName);
+        selectsForTable.add(colName);
       }
 
       // Push the selected columns down to the next scope
@@ -171,11 +173,13 @@ export function pushdownProjections<E extends Expression> (
             columns = selects.get(name) || new Set();
           }
 
-          if (!referencedColumns.has(sourceScope)) {
-            referencedColumns.set(sourceScope, new Set());
+          let referencedCols = referencedColumns.get(sourceScope);
+          if (!referencedCols) {
+            referencedCols = new Set();
+            referencedColumns.set(sourceScope, referencedCols);
           }
           for (const col of columns) {
-            referencedColumns.get(sourceScope)!.add(col);
+            referencedCols.add(col);
           }
         }
 

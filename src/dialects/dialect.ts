@@ -665,9 +665,8 @@ export class Dialect {
   // --- Autofilled by metaclass in Python, set as instance properties in TypeScript ---
   static #tokenizerClass = new WeakMap<typeof Dialect, typeof Tokenizer>();
   static get tokenizerClass (): typeof Tokenizer {
-    if (this.#tokenizerClass.has(this)) {
-      return this.#tokenizerClass.get(this)!;
-    }
+    const cached = this.#tokenizerClass.get(this);
+    if (cached) return cached;
     if (Object.prototype.hasOwnProperty.call(this, 'Tokenizer')) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (this as any).Tokenizer;
@@ -685,9 +684,8 @@ export class Dialect {
 
   static #jsonpathTokenizerClass = new WeakMap<typeof Dialect, typeof JsonPathTokenizer>();
   static get jsonpathTokenizerClass (): typeof JsonPathTokenizer {
-    if (this.#jsonpathTokenizerClass.has(this)) {
-      return this.#jsonpathTokenizerClass.get(this)!;
-    }
+    const cached = this.#jsonpathTokenizerClass.get(this);
+    if (cached) return cached;
     if (Object.prototype.hasOwnProperty.call(this, 'JsonPathTokenizer')) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (this as any).JsonPathTokenizer;
@@ -708,9 +706,8 @@ export class Dialect {
   // NOTE: These logic should be handled in the respective dialect files:
   // - https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/dialects/dialect.py#L317-L380
   static get parserClass (): typeof Parser {
-    if (this.#parserClass.has(this)) {
-      return this.#parserClass.get(this)!;
-    }
+    const cached = this.#parserClass.get(this);
+    if (cached) return cached;
 
     if (Object.prototype.hasOwnProperty.call(this, 'Parser')) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -735,9 +732,8 @@ export class Dialect {
   // NOTE: These logic should be handled in the respective dialect files:
   // - https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/dialects/dialect.py#L300-L326
   static get generatorClass (): typeof Generator {
-    if (this.#generatorClass.has(this)) {
-      return this.#generatorClass.get(this)!;
-    }
+    const cached = this.#generatorClass.get(this);
+    if (cached) return cached;
 
     if (Object.prototype.hasOwnProperty.call(this, 'Generator')) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

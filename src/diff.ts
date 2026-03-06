@@ -354,8 +354,9 @@ class ChangeDistiller {
 
     let overlapLen = 0;
     sourceHisto.forEach((count, gram) => {
-      if (targetHisto.has(gram)) {
-        overlapLen += Math.min(count, targetHisto.get(gram)!);
+      const gramCount = targetHisto.get(gram);
+      if (gramCount !== undefined) {
+        overlapLen += Math.min(count, gramCount);
       }
     });
 
@@ -420,7 +421,8 @@ class ChangeDistiller {
   }
 
   private getBigramHisto (expression: Expression): Map<string, number> {
-    if (this.bigramHistoCache.has(expression)) return this.bigramHistoCache.get(expression)!;
+    const cached = this.bigramHistoCache.get(expression);
+    if (cached !== undefined) return cached;
 
     const str = this.sqlGenerator.generate(expression);
     const histo = new Map<string, number>();

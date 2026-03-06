@@ -387,10 +387,11 @@ function expandUsing (scope: Scope, resolver: Resolver): Map<string, string[]> {
       })));
 
       if (!isSemiOrAntiJoin) {
-        if (!columnTables.has(identifier)) {
-          columnTables.set(identifier, []);
+        let tables_ = columnTables.get(identifier);
+        if (!tables_) {
+          tables_ = [];
+          columnTables.set(identifier, tables_);
         }
-        const tables_ = columnTables.get(identifier)!;
         if (!tables_.includes(table)) tables_.push(table);
         if (!tables_.includes(joinTable)) tables_.push(joinTable);
       }
@@ -402,8 +403,8 @@ function expandUsing (scope: Scope, resolver: Resolver): Map<string, string[]> {
 
   if (0 < columnTables.size) {
     for (const column of scope.columns) {
-      if (!column.table && columnTables.has(column.name)) {
-        const tables_ = columnTables.get(column.name)!;
+      const tables_ = !column.table ? columnTables.get(column.name) : undefined;
+      if (tables_ !== undefined) {
         const coalesceArgs = tables_.map((t) => columnExpr({
           col: column.name,
           table: t,
@@ -1030,9 +1031,9 @@ function expandStars_ (
       for (const name of columns) {
         if (columnsToExclude.has(name) || coalesedColumns.has(name)) continue;
 
-        if (usingColumnTables.has(name) && usingColumnTables.get(name)?.includes(table)) {
+        const tablesForCol = usingColumnTables.get(name);
+        if (tablesForCol?.includes(table)) {
           coalesedColumns.add(name);
-          const tablesForCol = usingColumnTables.get(name)!;
           const coalesceArgs = tablesForCol.map((t) => columnExpr({
             col: name,
             table: t,

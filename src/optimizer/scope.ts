@@ -638,8 +638,9 @@ export class Scope {
           throw new OptimizeError(`Alias already used: ${name}`);
         }
 
-        if (this.sources.has(name)) {
-          this._selectedSources[name] = [node, this.sources.get(name)!];
+        const source = this.sources.get(name);
+        if (source !== undefined) {
+          this._selectedSources[name] = [node, source];
         }
       }
     }
@@ -658,8 +659,8 @@ export class Scope {
    */
   renameSource (oldName: string, newName: string): void {
     const name = oldName || '';
-    if (this.sources.has(name)) {
-      const source = this.sources.get(name)!;
+    const source = this.sources.get(name);
+    if (source !== undefined) {
       this.sources.delete(name);
       this.sources.set(newName, source);
     }
@@ -719,8 +720,8 @@ export class Scope {
       }
 
       for (const name of scope.semiOrAntiJoinTables) {
-        if (scope.sources.has(name)) {
-          const source = scope.sources.get(name)!;
+        const source = scope.sources.get(name);
+        if (source !== undefined) {
           if (source instanceof Scope) {
             scopeRefCount.set(source, (scopeRefCount.get(source) || 0) + 1);
           }
