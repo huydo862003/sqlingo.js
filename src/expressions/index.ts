@@ -13116,9 +13116,9 @@ export class IntervalExpr extends TimeUnitExpr {
   }
 }
 
-// Global registry for function classes (populated by self-registration)
-const _functionRegistry = new Map<string, typeof FuncExpr>();
-const _allFunctions = new Set<typeof FuncExpr>();
+// Private global registry for function classes (populated by self-registration)
+const functionRegistry = new Map<string, typeof FuncExpr>();
+const allFunctions = new Set<typeof FuncExpr>();
 
 /**
  * The base class for all function expressions.
@@ -13253,12 +13253,12 @@ export class FuncExpr extends ConditionExpr {
     }
 
     // Add to all functions set
-    _allFunctions.add(this);
+    allFunctions.add(this);
 
     // Register by all SQL names
     const sqlNames = this.sqlNames();
     for (const name of sqlNames) {
-      _functionRegistry.set(name.toUpperCase(), this);
+      functionRegistry.set(name.toUpperCase(), this);
     }
   }
 }
@@ -32008,11 +32008,8 @@ export const CONSTANTS = [
   NullExpr,
 ] as const;
 
-/** Map of SQL function names to their expression classes (auto-populated by self-registration) */
-export const FUNCTION_BY_NAME: ReadonlyMap<string, typeof FuncExpr> = _functionRegistry;
-
-/** Set of all FuncExpr subclasses (auto-populated by self-registration) */
-export const ALL_FUNCTIONS: ReadonlySet<typeof FuncExpr> = _allFunctions;
+export const FUNCTION_BY_NAME: ReadonlyMap<string, typeof FuncExpr> = functionRegistry;
+export const ALL_FUNCTIONS: ReadonlySet<typeof FuncExpr> = allFunctions;
 
 /**
  * Set of JSON path part expression classes
