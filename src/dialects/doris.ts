@@ -276,7 +276,8 @@ class DorisGenerator extends MySQL.Generator {
   static CAST_MAPPING = {};
   static TIMESTAMP_FUNC_TYPES = new Set<DataTypeExprKind>();
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  static get ORIGINAL_TRANSFORMS () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...MySQL.Generator.TRANSFORMS,
@@ -341,7 +342,7 @@ class DorisGenerator extends MySQL.Generator {
     ]);
 
     return transforms;
-  })();
+  }
 
   static RESERVED_KEYWORDS = new Set([
     'account_lock',

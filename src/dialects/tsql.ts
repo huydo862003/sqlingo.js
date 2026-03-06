@@ -349,7 +349,7 @@ function buildEomonth (args: Expression[]): LastDayExpr {
   return new LastDayExpr({ this: thisExpr });
 }
 
-function buildHashbytes (args: Expression[]): Expression {
+function buildHashBytes (args: Expression[]): Expression {
   const kind = args[0] as LiteralExpr;
   const data = args[1];
   const kindStr = kind?.isString ? (kind.name ?? '').toUpperCase() : '';
@@ -424,7 +424,7 @@ function buildWithArgAsText<T extends Expression> (
   };
 }
 
-function buildParsename (args: Expression[]): SplitPartExpr | Expression {
+function buildParseName (args: Expression[]): SplitPartExpr | Expression {
   if (args.length === 2 && args.every((arg) => (arg as LiteralExpr).isString || (arg as LiteralExpr).isNumber)) {
     const thisExpr = args[0] as LiteralExpr;
     const partIndex = args[1] as LiteralExpr;
@@ -650,7 +650,7 @@ export class TSQLParser extends Parser {
       EOMONTH: buildEomonth,
       FORMAT: buildFormat,
       GETDATE: CurrentTimestampExpr.fromArgList,
-      HASHBYTES: buildHashbytes,
+      HASHBYTES: buildHashBytes,
       ISNULL: (args: Expression[]) => buildCoalesce(args, { isNull: true }),
       JSON_QUERY: buildJsonQuery,
       JSON_VALUE: buildExtractJsonWithPath(JsonExtractScalarExpr),
@@ -658,7 +658,7 @@ export class TSQLParser extends Parser {
       LEFT: buildWithArgAsText(LeftExpr),
       NEWID: UuidExpr.fromArgList,
       RIGHT: buildWithArgAsText(RightExpr),
-      PARSENAME: buildParsename,
+      PARSENAME: buildParseName,
       REPLICATE: RepeatExpr.fromArgList,
       SCHEMA_NAME: CurrentSchemaExpr.fromArgList,
       SQUARE: (args: Expression[]) => new PowExpr({
@@ -1191,7 +1191,8 @@ export class TSQLGenerator extends Generator {
     return mapping;
   }
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  static get ORIGINAL_TRANSFORMS () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>(([
       ...Generator.TRANSFORMS.entries(),
@@ -1269,9 +1270,12 @@ export class TSQLGenerator extends Generator {
     transforms.delete(ReturnsPropertyExpr);
 
     return transforms;
-  })();
+  }
 
-  static PROPERTIES_LOCATION = new Map<typeof Expression, PropertiesLocation>([...Generator.PROPERTIES_LOCATION.entries(), [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED]]);
+  @cache
+  static get PROPERTIES_LOCATION () {
+    return new Map<typeof Expression, PropertiesLocation>([...Generator.PROPERTIES_LOCATION.entries(), [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED]]);
+  }
 
   scopeResolution (rhs: string, scopeName: string): string {
     return `${scopeName}::${rhs}`;
@@ -1315,7 +1319,7 @@ export class TSQLGenerator extends Generator {
     ]);
   }
 
-  queryoptionSql (expression: QueryOptionExpr): string {
+  queryOptionSql (expression: QueryOptionExpr): string {
     const option = this.sql(expression, 'this');
     const value = this.sql(expression, 'expression');
 
@@ -1340,7 +1344,7 @@ export class TSQLGenerator extends Generator {
     return 'LATERAL';
   }
 
-  splitpartSql (expression: SplitPartExpr): string {
+  splitPartSql (expression: SplitPartExpr): string {
     const thisNode = expression.args.this;
     const splitCount = (thisNode instanceof LiteralExpr) ? thisNode.name.split('.').length : 0;
     const delimiter = expression.args.delimiter;
@@ -1389,7 +1393,7 @@ export class TSQLGenerator extends Generator {
     return renameFunc('TIMEFROMPARTS')(this, expression);
   }
 
-  timestampfrompartsSql (expression: TimestampFromPartsExpr): string {
+  timestampFromPartsSql (expression: TimestampFromPartsExpr): string {
     const zone = expression.args.zone;
     if (zone !== undefined) {
       zone.pop();
@@ -1428,7 +1432,7 @@ export class TSQLGenerator extends Generator {
     // In predicates, we use (1=1) or (1=0).
     //
     if (
-      (parent && BIT_TYPES.has(parent.constructor))
+      (parent && BIT_TYPES.has(parent._constructor))
       || (valuesOrSelect instanceof ValuesExpr)
     ) {
       return expression.args.this ? '1' : '0';
@@ -1573,7 +1577,7 @@ export class TSQLGenerator extends Generator {
     return `FOR ${name} ${kind}${exprSql ? ' ' + exprSql : ''}`;
   }
 
-  returnspropertySql (expression: ReturnsPropertyExpr): string {
+  returnsPropertySql (expression: ReturnsPropertyExpr): string {
     const table = expression.args.table;
     const tablePart = table ? `${table} ` : '';
     return `RETURNS ${tablePart}${this.sql(expression, 'this')}`;
@@ -1666,7 +1670,7 @@ export class TSQLGenerator extends Generator {
     return options ? ` OPTION${this.wrap(options)}` : '';
   }
 
-  dpipeSql (expression: DPipeExpr): string {
+  dPipeSql (expression: DPipeExpr): string {
     // Converts || concatenation into + for T-SQL
     const flattened = [...expression.flatten()].reduce((acc: Expression, curr: Expression) =>
       new AddExpr({
@@ -1706,21 +1710,24 @@ export class TSQL extends Dialect {
 
   static EXPRESSION_METADATA = { ...EXPRESSION_METADATA };
 
-  static DATE_PART_MAPPING = {
-    ...Dialect.DATE_PART_MAPPING,
-    QQ: 'QUARTER',
-    M: 'MONTH',
-    Y: 'DAYOFYEAR',
-    WW: 'WEEK',
-    N: 'MINUTE',
-    SS: 'SECOND',
-    MCS: 'MICROSECOND',
-    TZOFFSET: 'TIMEZONE_MINUTE',
-    TZ: 'TIMEZONE_MINUTE',
-    ISO_WEEK: 'WEEKISO',
-    ISOWK: 'WEEKISO',
-    ISOWW: 'WEEKISO',
-  };
+  @cache
+  static get DATE_PART_MAPPING () {
+    return {
+      ...Dialect.DATE_PART_MAPPING,
+      QQ: 'QUARTER',
+      M: 'MONTH',
+      Y: 'DAYOFYEAR',
+      WW: 'WEEK',
+      N: 'MINUTE',
+      SS: 'SECOND',
+      MCS: 'MICROSECOND',
+      TZOFFSET: 'TIMEZONE_MINUTE',
+      TZ: 'TIMEZONE_MINUTE',
+      ISO_WEEK: 'WEEKISO',
+      ISOWK: 'WEEKISO',
+      ISOWW: 'WEEKISO',
+    };
+  }
 
   static TIME_MAPPING = {
     year: '%Y',

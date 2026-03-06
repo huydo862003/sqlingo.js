@@ -11,11 +11,12 @@ class DuneTokenizer extends Trino.Tokenizer {
 }
 
 class DuneGenerator extends Trino.Generator {
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  static get ORIGINAL_TRANSFORMS () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([...Trino.Generator.TRANSFORMS, [HexStringExpr, (self, e) => `0x${e.args.this}`]]);
     return transforms;
-  })();
+  }
 }
 
 export class Dune extends Trino {

@@ -59,11 +59,12 @@ import { dateAddSql } from './mysql';
 class DrillTokenizer extends Tokenizer {
   static IDENTIFIERS = ['`'];
   static STRING_ESCAPES = ['\\'];
-  static KEYWORDS = (() => {
+  @cache
+  static get KEYWORDS () {
     const keywords = { ...Tokenizer.KEYWORDS };
     delete keywords['/*+'];
     return keywords;
-  })();
+  }
 }
 
 class DrillParser extends Parser {
@@ -109,7 +110,8 @@ class DrillGenerator extends Generator {
     [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
   ]);
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  static get ORIGINAL_TRANSFORMS () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,

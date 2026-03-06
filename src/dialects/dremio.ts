@@ -228,7 +228,8 @@ class DremioGenerator extends Generator {
     [DataTypeExprKind.BIT]: 'BOOLEAN',
   };
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  static get ORIGINAL_TRANSFORMS () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
@@ -242,7 +243,7 @@ class DremioGenerator extends Generator {
       [GenerateSeriesExpr, renameFunc('ARRAY_GENERATE_RANGE')],
     ]);
     return transforms;
-  })();
+  }
 
   datatypeSql (expression: DataTypeExpr): string {
     if (expression.isType([DataTypeExprKind.TIMESTAMPTZ, DataTypeExprKind.TIMESTAMPLTZ])) {

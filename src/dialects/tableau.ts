@@ -51,7 +51,8 @@ export class TableauGenerator extends Generator {
   public static TABLE_HINTS = false;
   public static QUERY_HINTS = false;
 
-  public static TYPE_MAPPING: Map<DataTypeExprKind | string, string> = (() => {
+  @cache
+  public static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map(Generator.TYPE_MAPPING);
     mapping.set(DataTypeExprKind.BOOLEAN, 'BOOL');
     mapping.set(DataTypeExprKind.TINYINT, 'INT');
@@ -63,9 +64,10 @@ export class TableauGenerator extends Generator {
     mapping.set(DataTypeExprKind.VARCHAR, 'STR');
     mapping.set(DataTypeExprKind.TEXT, 'STR');
     return mapping;
-  })();
+  }
 
-  public static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  public static get ORIGINAL_TRANSFORMS () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const m = new Map<typeof Expression, (self: Generator, e: any) => string>(Generator.TRANSFORMS);
     m.set(CoalesceExpr, renameFunc('IFNULL'));
@@ -73,7 +75,7 @@ export class TableauGenerator extends Generator {
     m.set(IfExpr, (self, e: IfExpr) => `IF ${self.sql(e, 'this')} THEN ${self.sql(e, 'true')} ELSE ${self.sql(e, 'false')} END`);
     m.set(SelectExpr, preprocess([eliminateDistinctOn]));
     return m;
-  })();
+  }
 
   public countSql (expression: CountExpr): string {
     const inner = expression.args.this;

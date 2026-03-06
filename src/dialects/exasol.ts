@@ -389,7 +389,8 @@ function addDateSql (self: ExasolGenerator, expression: DateAddExpr | DateSubExp
 
 class ExasolTokenizer extends Tokenizer {
   public static IDENTIFIERS: TokenPair[] = ['"', ['[', ']']];
-  public static ORIGINAL_KEYWORDS: Record<string, TokenType> = (() => {
+  @cache
+  public static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     const keywords = {
       ...Tokenizer.KEYWORDS,
       'USER': TokenType.CURRENT_USER,
@@ -401,7 +402,7 @@ class ExasolTokenizer extends Tokenizer {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (keywords as any)['DIV'];
     return keywords;
-  })();
+  }
 }
 
 class ExasolParser extends Parser {
@@ -557,7 +558,8 @@ class ExasolGenerator extends Generator {
     return super.dataTypeSql(expression);
   }
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  static get ORIGINAL_TRANSFORMS () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
@@ -627,7 +629,7 @@ class ExasolGenerator extends Generator {
       [LastDayExpr, noLastDaySql],
     ]);
     return transforms;
-  })();
+  }
 
   convertTimezoneSql (expression: ConvertTimezoneExpr): string {
     return this.func('CONVERT_TZ', [

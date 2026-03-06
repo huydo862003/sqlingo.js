@@ -107,11 +107,12 @@ class RisingWaveGenerator extends Postgres.Generator {
   static LOCKING_READS_SUPPORTED = false;
   static SUPPORTS_BETWEEN_FLAGS = false;
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  static get ORIGINAL_TRANSFORMS () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([...Postgres.Generator.TRANSFORMS, [FileFormatPropertyExpr, (self: Generator, e: FileFormatPropertyExpr) => `FORMAT ${self.sql(e.args.this)}`]]);
     return transforms;
-  })();
+  }
 
   static PROPERTIES_LOCATION = {
     ...Postgres.Generator.PROPERTIES_LOCATION,

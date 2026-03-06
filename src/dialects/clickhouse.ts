@@ -722,7 +722,8 @@ class ClickHouseParser extends Parser {
     return new Set([...Parser.ID_VAR_TOKENS, TokenType.LIKE]);
   }
 
-  static AGG_FUNC_MAPPING = (() => {
+  @cache
+  static get AGG_FUNC_MAPPING () {
     const mapping: Record<string, [string, string]> = {};
     const suffixes = [...ClickHouseParser.AGG_FUNCTIONS_SUFFIXES, ''];
     for (const sfx of suffixes) {
@@ -731,7 +732,7 @@ class ClickHouseParser extends Parser {
       }
     }
     return mapping;
-  })();
+  }
 
   @cache
   static get FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression> {

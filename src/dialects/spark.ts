@@ -274,7 +274,8 @@ class SparkGenerator extends Spark2.Generator {
     [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP_NTZ',
   };
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  static get ORIGINAL_TRANSFORMS () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Spark2.Generator.TRANSFORMS.entries(),
@@ -336,7 +337,7 @@ class SparkGenerator extends Spark2.Generator {
     transforms.delete(DateDiffExpr);
 
     return transforms;
-  })();
+  }
 
   bracketSql (expression: BracketExpr): string {
     if (expression.args.safe) {

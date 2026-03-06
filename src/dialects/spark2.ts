@@ -303,7 +303,8 @@ class Spark2Generator extends Hive.Generator {
     WeekOfYearExpr,
   ]);
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  static get ORIGINAL_TRANSFORMS () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Hive.Generator.TRANSFORMS.entries(),
@@ -402,7 +403,7 @@ class Spark2Generator extends Hive.Generator {
     ].forEach((expr) => transforms.delete(expr));
 
     return transforms;
-  })();
+  }
 
   static WRAP_DERIVED_VALUES = false;
   static CREATE_FUNCTION_RETURN_AS = false;

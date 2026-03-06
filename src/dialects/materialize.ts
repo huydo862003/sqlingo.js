@@ -68,7 +68,8 @@ class MaterializeGenerator extends Postgres.Generator {
   static SUPPORTS_CREATE_TABLE_LIKE = false;
   static SUPPORTS_BETWEEN_FLAGS = false;
 
-  static ORIGINAL_TRANSFORMS = (() => {
+  @cache
+  static get ORIGINAL_TRANSFORMS () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
       ...Postgres.Generator.TRANSFORMS,
@@ -80,7 +81,7 @@ class MaterializeGenerator extends Postgres.Generator {
     ]);
     transforms.delete(ToMapExpr);
     return transforms;
-  })();
+  }
 
   propertyEqSql (expression: PropertyEqExpr): string {
     return this.binary(expression, '=>');
