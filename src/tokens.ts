@@ -1,6 +1,6 @@
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/tokens.py
 
-import { Dialect } from './dialects';
+import { Dialect } from './dialects/dialect';
 import { TokenError } from './errors';
 import {
   inTrie, newTrie, TrieResult, type TrieNode,

@@ -61,7 +61,6 @@ import type {
   XorExpr,
   JsonExtractExprArgs,
   RegexpExtractExprArgs,
-
   GenerateDateArrayExpr,
   ToNumberExpr,
   Sha2DigestExpr,
