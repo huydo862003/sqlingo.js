@@ -508,7 +508,7 @@ export class Token {
 }
 
 export interface TokenizerOptions {
-  dialect?: Dialect;
+  dialect?: Dialect | string;
   [index: string]: unknown;
 }
 
