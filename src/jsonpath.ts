@@ -75,7 +75,7 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
 
   let i = 0;
 
-  function _curr (): TokenType | undefined {
+  function curr (): TokenType | undefined {
     return i < size ? tokens[i].tokenType : undefined;
   }
 
@@ -83,34 +83,34 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
     return tokens[i - 1];
   }
 
-  function _advance (): Token {
+  function advance (): Token {
     i += 1;
     return prev();
   }
 
-  function _error (msg: string): string {
+  function error (msg: string): string {
     return `${msg} at index ${i}: ${path}`;
   }
 
   function match (tokenType: TokenType, raiseUnmatched: true): Token;
   function match (tokenType: TokenType, raiseUnmatched?: false): Token | undefined;
   function match (tokenType: TokenType, raiseUnmatched = false): Token | undefined {
-    if (_curr() === tokenType) {
-      return _advance();
+    if (curr() === tokenType) {
+      return advance();
     }
     if (raiseUnmatched) {
-      throw new ParseError(_error(`Expected ${tokenType}`));
+      throw new ParseError(error(`Expected ${tokenType}`));
     }
     return undefined;
   }
 
   function matchSet (types: Set<TokenType>): Token | undefined {
-    const curr = _curr();
-    if (curr === undefined) return undefined;
-    return types.has(curr) ? _advance() : undefined;
+    const currToken = curr();
+    if (currToken === undefined) return undefined;
+    return types.has(currToken) ? advance() : undefined;
   }
 
-  function _parseLiteral (): string | JsonPathWildcardExpr | JsonPathScriptExpr | JsonPathFilterExpr | number | false {
+  function parseLiteral (): string | JsonPathWildcardExpr | JsonPathScriptExpr | JsonPathFilterExpr | number | false {
     const token = match(TokenType.STRING) || match(TokenType.IDENTIFIER);
     if (token) {
       return token.text;
@@ -126,11 +126,11 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
         if (match(TokenType.L_BRACKET)) {
           parseBracket();
         }
-        const curr = _curr();
-        if (curr === TokenType.R_BRACKET || curr === undefined) {
+        const currToken = curr();
+        if (currToken === TokenType.R_BRACKET || currToken === undefined) {
           break;
         }
-        _advance();
+        advance();
       }
 
       const ExprType = script ? JsonPathScriptExpr : JsonPathFilterExpr;
@@ -153,10 +153,10 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
     return false;
   }
 
-  function _parseSlice (): string | JsonPathWildcardExpr | JsonPathScriptExpr | JsonPathFilterExpr | JsonPathSliceExpr | number | false {
-    const start = _parseLiteral();
-    const end = match(TokenType.COLON) ? _parseLiteral() : undefined;
-    const step = match(TokenType.COLON) ? _parseLiteral() : undefined;
+  function parseSlice (): string | JsonPathWildcardExpr | JsonPathScriptExpr | JsonPathFilterExpr | JsonPathSliceExpr | number | false {
+    const start = parseLiteral();
+    const end = match(TokenType.COLON) ? parseLiteral() : undefined;
+    const step = match(TokenType.COLON) ? parseLiteral() : undefined;
 
     if (end === undefined && step === undefined) {
       return start;
@@ -170,12 +170,12 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
   }
 
   function parseBracket (): JsonPathPartExpr {
-    const literal = _parseSlice();
+    const literal = parseSlice();
 
     if (typeof literal === 'string' || literal !== false) {
       const indexes: (string | JsonPathWildcardExpr | JsonPathScriptExpr | JsonPathFilterExpr | JsonPathSliceExpr | number)[] = [literal];
       while (match(TokenType.COMMA)) {
-        const nextLiteral = _parseSlice();
+        const nextLiteral = parseSlice();
         if (nextLiteral) {
           indexes.push(nextLiteral);
         }
@@ -197,7 +197,7 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
       match(TokenType.R_BRACKET, true);
       return node;
     } else {
-      throw new ParseError(_error('Cannot have empty segment'));
+      throw new ParseError(error('Cannot have empty segment'));
     }
   }
 
@@ -223,7 +223,7 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
   match(TokenType.DOLLAR);
   const expressions: JsonPathPartExpr[] = [new JsonPathRootExpr({})];
 
-  while (_curr()) {
+  while (curr()) {
     if (match(TokenType.DOT) || match(TokenType.COLON)) {
       const recursive = prev().text === '..';
 
@@ -243,7 +243,7 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
       } else if (value) {
         expressions.push(new JsonPathKeyExpr({ this: value }));
       } else {
-        throw new ParseError(_error('Expected key name or * after DOT'));
+        throw new ParseError(error('Expected key name or * after DOT'));
       }
     } else if (match(TokenType.L_BRACKET)) {
       expressions.push(parseBracket());
@@ -254,7 +254,7 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
     } else if (match(TokenType.STAR)) {
       expressions.push(new JsonPathWildcardExpr({}));
     } else {
-      throw new ParseError(_error(`Unexpected ${tokens[i].tokenType}`));
+      throw new ParseError(error(`Unexpected ${tokens[i].tokenType}`));
     }
   }
 
