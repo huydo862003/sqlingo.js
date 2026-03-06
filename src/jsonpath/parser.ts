@@ -1,12 +1,9 @@
-import type { Token } from './tokens';
-import {
-  Tokenizer, TokenType,
-} from './tokens';
+import type { Token } from '../tokens';
+import { TokenType } from '../tokens';
 import type {
   DataTypeExprKind, ExpressionOrString, JsonPathPartExpr,
-} from './expressions';
+} from '../expressions';
 import {
-  ExpressionKey,
   JsonPathExpr,
   JsonPathFilterExpr,
   JsonPathKeyExpr,
@@ -18,49 +15,13 @@ import {
   JsonPathSubscriptExpr,
   JsonPathUnionExpr,
   JsonPathWildcardExpr,
-} from './expressions';
-import { ParseError } from './errors';
+} from '../expressions';
+import { ParseError } from '../errors';
 import {
   Dialect,
   type DialectType,
-} from './dialects/dialect';
-import type { Generator } from './generator';
-
-export class JsonPathTokenizer extends Tokenizer {
-  static SINGLE_TOKENS: Record<string, TokenType> = {
-    '(': TokenType.L_PAREN,
-    ')': TokenType.R_PAREN,
-    '[': TokenType.L_BRACKET,
-    ']': TokenType.R_BRACKET,
-    ':': TokenType.COLON,
-    ',': TokenType.COMMA,
-    '-': TokenType.DASH,
-    '.': TokenType.DOT,
-    '?': TokenType.PLACEHOLDER,
-    '@': TokenType.PARAMETER,
-    '\'': TokenType.QUOTE,
-    '"': TokenType.QUOTE,
-    '$': TokenType.DOLLAR,
-    '*': TokenType.STAR,
-  };
-
-  static #JSON_PATH_KEYWORDS: WeakMap<typeof JsonPathTokenizer, Record<string, TokenType>> = new WeakMap();
-  static get KEYWORDS (): Record<string, TokenType> {
-    if (this.#JSON_PATH_KEYWORDS.has(this)) {
-      return this.#JSON_PATH_KEYWORDS.get(this)!;
-    }
-    const res = {
-      ...super.KEYWORDS,
-      '..': TokenType.DOT,
-    };
-    this.#JSON_PATH_KEYWORDS.set(this, res);
-    return res;
-  }
-
-  static IDENTIFIER_ESCAPES: string[] = ['\\'];
-  static STRING_ESCAPES: string[] = ['\\'];
-  static VAR_TOKENS = new Set([TokenType.VAR]);
-}
+} from '../dialects/dialect';
+import { JsonPathTokenizer } from './tokenizer';
 
 export interface ParseJsonPathOptions {
   into?: DataTypeExprKind;
@@ -262,42 +223,3 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
     expressions,
   });
 }
-
-export const JSON_PATH_PART_TRANSFORMS = {
-  [ExpressionKey.JSON_PATH_FILTER]: (_generator: Generator, e: JsonPathFilterExpr) => `?${e.args.this}`,
-  [ExpressionKey.JSON_PATH_KEY]: (generator: Generator, e: JsonPathKeyExpr) => generator.jsonPathKeySql(e),
-  [ExpressionKey.JSON_PATH_RECURSIVE]: (_generator: Generator, e: JsonPathRecursiveExpr) => `..${e.args.this || ''}`,
-  [ExpressionKey.JSON_PATH_ROOT]: (_generator: Generator, _e: JsonPathRootExpr) => '$',
-  [ExpressionKey.JSON_PATH_SCRIPT]: (_generator: Generator, e: JsonPathScriptExpr) => `(${e.args.this}`,
-  [ExpressionKey.JSON_PATH_SELECTOR]: (generator: Generator, e: JsonPathSelectorExpr) => {
-    return `[${generator.jsonPathPart(e.args.this)}]`;
-  },
-  [ExpressionKey.JSON_PATH_SLICE]: (generator: Generator, e: JsonPathSliceExpr) => {
-    const parts = [
-      e.args.start,
-      e.args.end,
-      e.args.step,
-    ]
-      .filter((p) => p !== undefined)
-      .map((p) => p === undefined ? '' : generator.jsonPathPart(p));
-    return parts.join(':');
-  },
-  [ExpressionKey.JSON_PATH_SUBSCRIPT]: (generator: Generator, e: JsonPathSubscriptExpr) => generator.jsonPathSubscriptSql(e),
-  [ExpressionKey.JSON_PATH_UNION]: (generator: Generator, e: JsonPathUnionExpr) => {
-    return `[${(e.args.expressions ?? []).map((p) => generator.jsonPathPart(p)).join(',')}]`;
-  },
-  [ExpressionKey.JSON_PATH_WILDCARD]: (_generator: Generator, _e: JsonPathWildcardExpr) => '*',
-} as const;
-
-export const ALL_JSON_PATH_PARTS = new Set([
-  JsonPathFilterExpr,
-  JsonPathKeyExpr,
-  JsonPathRecursiveExpr,
-  JsonPathRootExpr,
-  JsonPathScriptExpr,
-  JsonPathSelectorExpr,
-  JsonPathSliceExpr,
-  JsonPathSubscriptExpr,
-  JsonPathUnionExpr,
-  JsonPathWildcardExpr,
-]);

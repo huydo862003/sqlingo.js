@@ -814,7 +814,7 @@ export class Simplifier {
   static UTINYINT_MAX = 255;
 
   static #COMPLEMENT_COMPARISONS?: Record<string, typeof Expression>;
-  static get COMPLEMENT_COMPARISONS(): Record<string, typeof Expression> {
+  static get COMPLEMENT_COMPARISONS (): Record<string, typeof Expression> {
     return Simplifier.#COMPLEMENT_COMPARISONS ??= {
       [LtExpr.key]: GteExpr,
       [GtExpr.key]: LteExpr,
@@ -826,7 +826,7 @@ export class Simplifier {
   }
 
   static #COMPLEMENT_SUBQUERY_PREDICATES?: Record<string, typeof Expression>;
-  static get COMPLEMENT_SUBQUERY_PREDICATES(): Record<string, typeof Expression> {
+  static get COMPLEMENT_SUBQUERY_PREDICATES (): Record<string, typeof Expression> {
     return Simplifier.#COMPLEMENT_SUBQUERY_PREDICATES ??= {
       [AllExpr.key]: AnyExpr,
       [AnyExpr.key]: AllExpr,
@@ -834,17 +834,17 @@ export class Simplifier {
   }
 
   static #LT_Lte?: readonly [typeof LtExpr, typeof LteExpr];
-  static get LT_Lte(): readonly [typeof LtExpr, typeof LteExpr] {
+  static get LT_Lte (): readonly [typeof LtExpr, typeof LteExpr] {
     return Simplifier.#LT_Lte ??= [LtExpr, LteExpr];
   }
 
   static #GT_GtE?: readonly [typeof GtExpr, typeof GteExpr];
-  static get GT_GtE(): readonly [typeof GtExpr, typeof GteExpr] {
+  static get GT_GtE (): readonly [typeof GtExpr, typeof GteExpr] {
     return Simplifier.#GT_GtE ??= [GtExpr, GteExpr];
   }
 
   static #COMPARISONS?: readonly [typeof LtExpr, typeof LteExpr, typeof GtExpr, typeof GteExpr, typeof EqExpr, typeof NeqExpr, typeof IsExpr];
-  static get COMPARISONS(): readonly [typeof LtExpr, typeof LteExpr, typeof GtExpr, typeof GteExpr, typeof EqExpr, typeof NeqExpr, typeof IsExpr] {
+  static get COMPARISONS (): readonly [typeof LtExpr, typeof LteExpr, typeof GtExpr, typeof GteExpr, typeof EqExpr, typeof NeqExpr, typeof IsExpr] {
     return Simplifier.#COMPARISONS ??= [
       ...Simplifier.LT_Lte,
       ...Simplifier.GT_GtE,
@@ -855,7 +855,7 @@ export class Simplifier {
   }
 
   static #INVERSE_COMPARISONS?: Record<string, typeof Expression>;
-  static get INVERSE_COMPARISONS(): Record<string, typeof Expression> {
+  static get INVERSE_COMPARISONS (): Record<string, typeof Expression> {
     return Simplifier.#INVERSE_COMPARISONS ??= {
       [LtExpr.key]: GtExpr,
       [GtExpr.key]: LtExpr,
@@ -865,17 +865,17 @@ export class Simplifier {
   }
 
   static #NONDETERMINISTIC?: readonly [typeof RandExpr, typeof RandnExpr];
-  static get NONDETERMINISTIC(): readonly [typeof RandExpr, typeof RandnExpr] {
+  static get NONDETERMINISTIC (): readonly [typeof RandExpr, typeof RandnExpr] {
     return Simplifier.#NONDETERMINISTIC ??= [RandExpr, RandnExpr];
   }
 
   static #AND_OR?: readonly [typeof AndExpr, typeof OrExpr];
-  static get AND_OR(): readonly [typeof AndExpr, typeof OrExpr] {
+  static get AND_OR (): readonly [typeof AndExpr, typeof OrExpr] {
     return Simplifier.#AND_OR ??= [AndExpr, OrExpr];
   }
 
   static #INVERSE_DATE_OPS?: Record<string, typeof Expression>;
-  static get INVERSE_DATE_OPS(): Record<string, typeof Expression> {
+  static get INVERSE_DATE_OPS (): Record<string, typeof Expression> {
     return Simplifier.#INVERSE_DATE_OPS ??= {
       [DateAddExpr.key]: SubExpr,
       [DateSubExpr.key]: AddExpr,
@@ -885,7 +885,7 @@ export class Simplifier {
   }
 
   static #INVERSE_OPS?: Record<string, typeof Expression>;
-  static get INVERSE_OPS(): Record<string, typeof Expression> {
+  static get INVERSE_OPS (): Record<string, typeof Expression> {
     return Simplifier.#INVERSE_OPS ??= {
       ...Simplifier.INVERSE_DATE_OPS,
       [AddExpr.key]: SubExpr,
@@ -894,17 +894,21 @@ export class Simplifier {
   }
 
   static #NULL_OK?: readonly [typeof NullSafeEqExpr, typeof NullSafeNeqExpr, typeof PropertyEqExpr];
-  static get NULL_OK(): readonly [typeof NullSafeEqExpr, typeof NullSafeNeqExpr, typeof PropertyEqExpr] {
-    return Simplifier.#NULL_OK ??= [NullSafeEqExpr, NullSafeNeqExpr, PropertyEqExpr];
+  static get NULL_OK (): readonly [typeof NullSafeEqExpr, typeof NullSafeNeqExpr, typeof PropertyEqExpr] {
+    return Simplifier.#NULL_OK ??= [
+      NullSafeEqExpr,
+      NullSafeNeqExpr,
+      PropertyEqExpr,
+    ];
   }
 
   static #CONCATS?: readonly [typeof ConcatExpr, typeof DPipeExpr];
-  static get CONCATS(): readonly [typeof ConcatExpr, typeof DPipeExpr] {
+  static get CONCATS (): readonly [typeof ConcatExpr, typeof DPipeExpr] {
     return Simplifier.#CONCATS ??= [ConcatExpr, DPipeExpr];
   }
 
   static #DATETRUNC_BINARY_COMPARISONS?: Record<string, (l: Expression, dt: DateTime, u: string, d: Dialect, t?: DataTypeExpr | ColumnDefExpr) => Expression | undefined>;
-  static get DATETRUNC_BINARY_COMPARISONS(): Record<string, (l: Expression, dt: DateTime, u: string, d: Dialect, t?: DataTypeExpr | ColumnDefExpr) => Expression | undefined> {
+  static get DATETRUNC_BINARY_COMPARISONS (): Record<string, (l: Expression, dt: DateTime, u: string, d: Dialect, t?: DataTypeExpr | ColumnDefExpr) => Expression | undefined> {
     return Simplifier.#DATETRUNC_BINARY_COMPARISONS ??= {
       [LtExpr.key]: (l, dt, u, d, t) => {
         const floor = dateFloor(dt, u, d);
@@ -941,17 +945,17 @@ export class Simplifier {
   }
 
   static #DATETRUNC_COMPARISONS?: Set<string>;
-  static get DATETRUNC_COMPARISONS(): Set<string> {
+  static get DATETRUNC_COMPARISONS (): Set<string> {
     return Simplifier.#DATETRUNC_COMPARISONS ??= new Set([InExpr.key, ...Object.keys(Simplifier.DATETRUNC_BINARY_COMPARISONS)]);
   }
 
   static #DATETRUNCS?: readonly [typeof DateTruncExpr, typeof TimestampTruncExpr];
-  static get DATETRUNCS(): readonly [typeof DateTruncExpr, typeof TimestampTruncExpr] {
+  static get DATETRUNCS (): readonly [typeof DateTruncExpr, typeof TimestampTruncExpr] {
     return Simplifier.#DATETRUNCS ??= [DateTruncExpr, TimestampTruncExpr];
   }
 
   static #SAFE_CONNECTOR_ELIMINATION_RESULT?: readonly [typeof ConnectorExpr, typeof BooleanExpr];
-  static get SAFE_CONNECTOR_ELIMINATION_RESULT(): readonly [typeof ConnectorExpr, typeof BooleanExpr] {
+  static get SAFE_CONNECTOR_ELIMINATION_RESULT (): readonly [typeof ConnectorExpr, typeof BooleanExpr] {
     return Simplifier.#SAFE_CONNECTOR_ELIMINATION_RESULT ??= [ConnectorExpr, BooleanExpr];
   }
 
@@ -959,7 +963,7 @@ export class Simplifier {
   // So we can only simplify certain types of joins to CROSS.
   // Or in other words, LEFT JOIN x ON TRUE != CROSS JOIN x
   static #JOINS?: readonly (readonly [string, string])[];
-  static get JOINS(): readonly (readonly [string, string])[] {
+  static get JOINS (): readonly (readonly [string, string])[] {
     return Simplifier.#JOINS ??= [
       ['', ''],
       ['', JoinExprKind.INNER],
