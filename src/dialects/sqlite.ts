@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import {
   Generator,
   unsupportedArgs,
@@ -231,10 +232,9 @@ class SQLiteParser extends Parser {
   static ALTER_RENAME_REQUIRES_COLUMN = false;
   static JOINS_HAVE_EQUAL_PRECEDENCE = true;
   static ADD_JOIN_ON_TRUE = true;
-
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return SQLiteParser.#FUNCTIONS ??= {
+    return {
       ...Parser.FUNCTIONS,
       EDITDIST3: LevenshteinExpr.fromArgList,
       STRFTIME: buildStrftime,
@@ -250,18 +250,18 @@ class SQLiteParser extends Parser {
     };
   }
 
-  static #STATEMENT_PARSERS: undefined = undefined;
+  @cache
   static get STATEMENT_PARSERS () {
-    return SQLiteParser.#STATEMENT_PARSERS ??= {
+    return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.ATTACH]: (self: Parser) => (self as SQLiteParser).parseAttachDetach(),
       [TokenType.DETACH]: (self: Parser) => (self as SQLiteParser).parseAttachDetach({ isAttach: false }),
     };
   }
 
-  static #RANGE_PARSERS: undefined = undefined;
+  @cache
   static get RANGE_PARSERS () {
-    return SQLiteParser.#RANGE_PARSERS ??= {
+    return {
       ...Parser.RANGE_PARSERS,
       [TokenType.MATCH]: binaryRangeParser(MatchExpr),
     };

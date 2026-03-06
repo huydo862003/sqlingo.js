@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import type {
   Expression, OrderedExpr, QueryExpr, SelectExpr,
 } from '../expressions';
@@ -37,17 +38,17 @@ class PRQLTokenizer extends Tokenizer {
 }
 
 class PRQLParser extends Parser {
-  static #CONJUNCTION: undefined = undefined;
+  @cache
   static get CONJUNCTION () {
-    return PRQLParser.#CONJUNCTION ??= {
+    return {
       ...Parser.CONJUNCTION,
       [TokenType.DAMP]: AndExpr,
     };
   }
 
-  static #DISJUNCTION: undefined = undefined;
+  @cache
   static get DISJUNCTION () {
-    return PRQLParser.#DISJUNCTION ??= {
+    return {
       ...Parser.DISJUNCTION,
       [TokenType.DPIPE]: OrExpr,
     };
@@ -82,9 +83,9 @@ class PRQLParser extends Parser {
       }),
   };
 
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return PRQLParser.#FUNCTIONS ??= {
+    return {
       ...Parser.FUNCTIONS,
       AVERAGE: AvgExpr.fromArgList,
       SUM: (args: Expression[]) => func('COALESCE', new SumExpr({

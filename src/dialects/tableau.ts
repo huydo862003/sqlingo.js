@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import {
   Generator,
 } from '../generator';
@@ -30,10 +31,9 @@ export class TableauTokenizer extends Tokenizer {
 
 export class TableauParser extends Parser {
   public static NO_PAREN_IF_COMMANDS = false;
-
-  static #FUNCTIONS: Record<string, (args: Expression[]) => Expression> | undefined = undefined;
+  @cache
   static get FUNCTIONS (): Record<string, (args: Expression[]) => Expression> {
-    return TableauParser.#FUNCTIONS ??= {
+    return {
       ...Parser.FUNCTIONS,
       COUNTD: (args: Expression[]) => new CountExpr({ this: new DistinctExpr({ expressions: args }) }),
       FIND: (args: Expression[]) => StrPositionExpr.fromArgList(args),

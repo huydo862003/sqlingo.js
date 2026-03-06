@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import type {
   Expression,
   ExpressionValue,
@@ -175,9 +176,9 @@ class SparkTokenizer extends Spark2.Tokenizer {
 }
 
 class SparkParser extends Spark2.Parser {
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return SparkParser.#FUNCTIONS ??= {
+    return {
       ...Spark2.Parser.FUNCTIONS,
       ANY_VALUE: buildWithIgnoreNulls(AnyValueExpr),
       ARRAY_INSERT: (args: Expression[]) =>
@@ -216,17 +217,17 @@ class SparkParser extends Spark2.Parser {
     };
   }
 
-  static #PLACEHOLDER_PARSERS: undefined = undefined;
+  @cache
   static get PLACEHOLDER_PARSERS () {
-    return SparkParser.#PLACEHOLDER_PARSERS ??= {
+    return {
       ...Spark2.Parser.PLACEHOLDER_PARSERS,
       [TokenType.L_BRACE]: (self: Parser) => (self as SparkParser).parseQueryParameter(),
     };
   }
 
-  static #FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS () {
-    return SparkParser.#FUNCTION_PARSERS ??= {
+    return {
       ...Spark2.Parser.FUNCTION_PARSERS,
       SUBSTR: (self: Parser) => self.parseSubstring(),
     };

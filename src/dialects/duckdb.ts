@@ -330,7 +330,9 @@ import {
 import {
   seqGet, isDateUnit,
 } from '../helper';
-import { narrowInstanceOf } from '../port_internals';
+import {
+  cache, narrowInstanceOf,
+} from '../port_internals';
 import {
   inheritStructFieldNames, preprocess, unqualifyColumns,
 } from '../transforms';
@@ -1958,19 +1960,18 @@ class DuckDBTokenizer extends Tokenizer {
 
 class DuckDBParser extends Parser {
   static MAP_KEYS_ARE_ARBITRARY_EXPRESSIONS = true;
-
-  static #BITWISE: undefined = undefined;
+  @cache
   static get BITWISE () {
-    return DuckDBParser.#BITWISE ??= (() => {
+    return (() => {
       const bitwise = { ...Parser.BITWISE };
       delete bitwise[TokenType.CARET];
       return bitwise;
     })();
   }
 
-  static #RANGE_PARSERS: undefined = undefined;
+  @cache
   static get RANGE_PARSERS () {
-    return DuckDBParser.#RANGE_PARSERS ??= {
+    return {
       ...Parser.RANGE_PARSERS,
       [TokenType.DAMP]: binaryRangeParser(ArrayOverlapsExpr),
       [TokenType.CARET_AT]: binaryRangeParser(StartsWithExpr),
@@ -1978,18 +1979,18 @@ class DuckDBParser extends Parser {
     };
   }
 
-  static #EXPONENT: undefined = undefined;
+  @cache
   static get EXPONENT () {
-    return DuckDBParser.#EXPONENT ??= {
+    return {
       ...Parser.EXPONENT,
       [TokenType.CARET]: PowExpr,
       [TokenType.DSTAR]: PowExpr,
     };
   }
 
-  static #FUNCTIONS_WITH_ALIASED_ARGS: undefined = undefined;
+  @cache
   static get FUNCTIONS_WITH_ALIASED_ARGS () {
-    return DuckDBParser.#FUNCTIONS_WITH_ALIASED_ARGS ??= new Set([...Parser.FUNCTIONS_WITH_ALIASED_ARGS, 'STRUCT_PACK']);
+    return new Set([...Parser.FUNCTIONS_WITH_ALIASED_ARGS, 'STRUCT_PACK']);
   }
 
   static SHOW_PARSERS = {
@@ -1997,9 +1998,9 @@ class DuckDBParser extends Parser {
     'ALL TABLES': showParser('ALL TABLES'),
   };
 
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return DuckDBParser.#FUNCTIONS ??= (() => {
+    return (() => {
       const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
         ...Parser.FUNCTIONS,
         ANY_VALUE: (args: Expression[]) => new IgnoreNullsExpr({ this: AnyValueExpr.fromArgList(args) }),
@@ -2091,9 +2092,9 @@ class DuckDBParser extends Parser {
     })();
   }
 
-  static #FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS () {
-    return DuckDBParser.#FUNCTION_PARSERS ??= (() => {
+    return (() => {
       const parsers = {
         ...Parser.FUNCTION_PARSERS,
         ...Object.fromEntries(
@@ -2109,18 +2110,18 @@ class DuckDBParser extends Parser {
     })();
   }
 
-  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTION_PARSERS () {
-    return DuckDBParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+    return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
       'MAP': (self: Parser) => (self as DuckDBParser).parseMap(),
       '@': (self: Parser) => new AbsExpr({ this: (self as DuckDBParser).parseBitwise() }),
     };
   }
 
-  static #TABLE_ALIAS_TOKENS: undefined = undefined;
+  @cache
   static get TABLE_ALIAS_TOKENS () {
-    return DuckDBParser.#TABLE_ALIAS_TOKENS ??= (() => {
+    return (() => {
       const tokens = new Set(Parser.TABLE_ALIAS_TOKENS);
       tokens.delete(TokenType.SEMI);
       tokens.delete(TokenType.ANTI);
@@ -2128,9 +2129,9 @@ class DuckDBParser extends Parser {
     })();
   }
 
-  static #PLACEHOLDER_PARSERS: undefined = undefined;
+  @cache
   static get PLACEHOLDER_PARSERS () {
-    return DuckDBParser.#PLACEHOLDER_PARSERS ??= {
+    return {
       ...Parser.PLACEHOLDER_PARSERS,
       [TokenType.PARAMETER]: (self: Parser) => (
         (self as DuckDBParser).match(TokenType.NUMBER) || self.matchSet(self._constructor.ID_VAR_TOKENS)
@@ -2145,9 +2146,9 @@ class DuckDBParser extends Parser {
     [DataTypeExprKind.TEXT]: () => DataTypeExpr.build('TEXT') ?? new DataTypeExpr({ this: DataTypeExprKind.TEXT }),
   };
 
-  static #STATEMENT_PARSERS: undefined = undefined;
+  @cache
   static get STATEMENT_PARSERS () {
-    return DuckDBParser.#STATEMENT_PARSERS ??= {
+    return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.ATTACH]: (self: Parser) => (self as DuckDBParser).parseAttachDetach(),
       [TokenType.DETACH]: (self: Parser) => (self as DuckDBParser).parseAttachDetach({ isAttach: false }),
@@ -2157,9 +2158,9 @@ class DuckDBParser extends Parser {
     };
   }
 
-  static #SET_PARSERS: undefined = undefined;
+  @cache
   static get SET_PARSERS () {
-    return DuckDBParser.#SET_PARSERS ??= {
+    return {
       ...Parser.SET_PARSERS,
       VARIABLE: (self: Parser) => (self as DuckDBParser).parseSetItemAssignment({ kind: 'VARIABLE' }),
     };

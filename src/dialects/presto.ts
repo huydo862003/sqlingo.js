@@ -152,7 +152,7 @@ import {
   applyIndexOffset, seqGet,
 } from '../helper';
 import {
-  narrowInstanceOf,
+  cache, narrowInstanceOf,
 } from '../port_internals';
 import type { DateAddOrSub } from './dialect';
 import {
@@ -572,10 +572,9 @@ class PrestoTokenizer extends Tokenizer {
 class PrestoParser extends Parser {
   public static VALUES_FOLLOWED_BY_PAREN = false;
   public static ZONE_AWARE_TIMESTAMP_CONSTRUCTOR = true;
-
-  static #FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> | undefined = undefined;
+  @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
-    return PrestoParser.#FUNCTIONS ??= {
+    return {
       ...Parser.FUNCTIONS,
       ARBITRARY: AnyValueExpr.fromArgList,
       APPROX_DISTINCT: ApproxDistinctExpr.fromArgList,
@@ -685,9 +684,9 @@ class PrestoParser extends Parser {
     };
   }
 
-  static #FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
-    return PrestoParser.#FUNCTION_PARSERS ??= (() => {
+    return (() => {
       const parsers = { ...Parser.FUNCTION_PARSERS };
       // Presto uses its own TRIM logic, so we remove the base SQL parser
       delete parsers['TRIM'];

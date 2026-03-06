@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import type {
   Expression, TableExpr,
 } from '../expressions';
@@ -104,9 +105,9 @@ function buildDateTrunc (args: Expression[]): TimestampTruncExpr {
 export class DorisTokenizer extends MySQL.Tokenizer {}
 
 class DorisParser extends MySQL.Parser {
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return DorisParser.#FUNCTIONS ??= {
+    return {
       ...MySQL.Parser.FUNCTIONS,
       COLLECT_SET: ArrayUniqueAggExpr.fromArgList,
       DATE_TRUNC: buildDateTrunc,
@@ -117,27 +118,27 @@ class DorisParser extends MySQL.Parser {
     };
   }
 
-  static #FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
-    return DorisParser.#FUNCTION_PARSERS ??= { ...MySQL.Parser.FUNCTION_PARSERS };
+    return { ...MySQL.Parser.FUNCTION_PARSERS };
   }
 
   static {
     delete DorisParser.FUNCTION_PARSERS['GROUP_CONCAT'];
   }
 
-  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTIONS () {
-    return DorisParser.#NO_PAREN_FUNCTIONS ??= { ...MySQL.Parser.NO_PAREN_FUNCTIONS };
+    return { ...MySQL.Parser.NO_PAREN_FUNCTIONS };
   }
 
   static {
     delete DorisParser.NO_PAREN_FUNCTIONS[TokenType.CURRENT_DATE];
   }
 
-  static #PROPERTY_PARSERS: undefined = undefined;
+  @cache
   static get PROPERTY_PARSERS () {
-    return DorisParser.#PROPERTY_PARSERS ??= {
+    return {
       ...MySQL.Parser.PROPERTY_PARSERS,
       PROPERTIES: (self: Parser) => self.parseWrappedProperties(),
       UNIQUE: (self: Parser) => self.parseCompositeKeyProperty(UniqueKeyPropertyExpr),

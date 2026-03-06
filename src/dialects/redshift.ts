@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import type {
   CastExpr, UnnestExpr,
   ArrayExpr,
@@ -79,9 +80,9 @@ function buildDateDelta<T extends Expression> (ExprClass: new (args: any) => T) 
 }
 
 class RedshiftParser extends Postgres.Parser {
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return RedshiftParser.#FUNCTIONS ??= (() => {
+    return (() => {
       const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
         ...Postgres.Parser.FUNCTIONS,
         ADD_MONTHS: (args: Expression[]) =>
@@ -118,9 +119,9 @@ class RedshiftParser extends Postgres.Parser {
     })();
   }
 
-  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTION_PARSERS () {
-    return RedshiftParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+    return {
       ...Postgres.Parser.NO_PAREN_FUNCTION_PARSERS,
       APPROXIMATE: (self: Parser) => (self as RedshiftParser).parseApproximateCount(),
       SYSDATE: (self: Parser) => self.expression(CurrentTimestampExpr, { sysdate: true }),

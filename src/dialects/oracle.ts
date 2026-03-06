@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import {
   Generator,
 } from '../generator';
@@ -144,10 +145,9 @@ export class OracleTokenizer extends Tokenizer {
 export class OracleParser extends Parser {
   public static WINDOW_BEFORE_PAREN_TOKENS = new Set([TokenType.OVER, TokenType.KEEP]);
   public static VALUES_FOLLOWED_BY_PAREN = false;
-
-  static #FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> | undefined = undefined;
+  @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
-    return OracleParser.#FUNCTIONS ??= {
+    return {
       ...Parser.FUNCTIONS,
       CONVERT: (args: Expression[]) => ConvertToCharsetExpr.fromArgList(args),
       L2_DISTANCE: (args: Expression[]) => EuclideanDistanceExpr.fromArgList(args),
@@ -167,9 +167,9 @@ export class OracleParser extends Parser {
     };
   }
 
-  static #NO_PAREN_FUNCTION_PARSERS: Record<string, (self: Parser) => Expression | undefined> | undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
-    return OracleParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+    return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
       NEXT: (self: Parser) => self.parseNextValueFor(),
       PRIOR: (self: Parser) => self.expression(PriorExpr, { this: self.parseBitwise() }),
@@ -178,17 +178,17 @@ export class OracleParser extends Parser {
     };
   }
 
-  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTIONS () {
-    return OracleParser.#NO_PAREN_FUNCTIONS ??= {
+    return {
       ...Parser.NO_PAREN_FUNCTIONS,
       [TokenType.SYSTIMESTAMP]: SystimestampExpr,
     };
   }
 
-  static #FUNCTION_PARSERS: Record<string, (self: Parser) => Expression | undefined> | undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
-    return OracleParser.#FUNCTION_PARSERS ??= {
+    return {
       ...Parser.FUNCTION_PARSERS,
       JSON_ARRAY: (self: Parser) => (self as OracleParser).parseJsonArray(
         JsonArrayExpr,
@@ -205,9 +205,9 @@ export class OracleParser extends Parser {
     };
   }
 
-  static #PROPERTY_PARSERS: Record<string, (self: Parser) => Expression | undefined> | undefined = undefined;
+  @cache
   static get PROPERTY_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
-    return OracleParser.#PROPERTY_PARSERS ??= {
+    return {
       ...Parser.PROPERTY_PARSERS,
       GLOBAL: (self: Parser) => self.matchTextSeq('TEMPORARY')
         && self.expression(TemporaryPropertyExpr, { this: 'GLOBAL' }),
@@ -217,18 +217,18 @@ export class OracleParser extends Parser {
     };
   }
 
-  static #QUERY_MODIFIER_PARSERS: Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> | undefined = undefined;
+  @cache
   static get QUERY_MODIFIER_PARSERS (): Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> {
-    return OracleParser.#QUERY_MODIFIER_PARSERS ??= {
+    return {
       ...Parser.QUERY_MODIFIER_PARSERS,
       [TokenType.ORDER_SIBLINGS_BY]: (self: Parser) => ['order', self.parseOrder()],
       [TokenType.WITH]: (self: Parser) => ['options', (self as OracleParser).parseQueryRestrictions()],
     };
   }
 
-  static #TYPE_LITERAL_PARSERS: Partial<Record<DataTypeExprKind, (self: Parser, thisArg?: Expression, _?: unknown) => Expression>> | undefined = undefined;
+  @cache
   static get TYPE_LITERAL_PARSERS (): Partial<Record<DataTypeExprKind, (self: Parser, thisArg?: Expression, _?: unknown) => Expression>> {
-    return OracleParser.#TYPE_LITERAL_PARSERS ??= {
+    return {
       [DataTypeExprKind.DATE]: (self: Parser, thisExpr?: Expression) => self.expression(DateStrToDateExpr, { this: thisExpr }),
       [DataTypeExprKind.TIMESTAMP]: (self: Parser, thisExpr?: Expression) => buildToTimestamp(
         [thisExpr ?? literal(''), literal('%Y-%m-%d %H:%M:%S.%f')],

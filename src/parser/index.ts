@@ -1,6 +1,10 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/parser.py
 
 import {
+  cache,
+  assertIsInstanceOf, filterInstanceOf, isInstanceOf, enumFromString,
+} from '../port_internals';
+import {
   AddConstraintExpr,
   AddExpr,
   AddPartitionExpr,
@@ -482,9 +486,6 @@ import {
   newTrie, type TrieNode, inTrie, TrieResult,
 } from '../trie';
 import { normalizeIdentifiers } from '../optimizer/normalize_identifiers';
-import {
-  assertIsInstanceOf, filterInstanceOf, isInstanceOf, enumFromString,
-} from '../port_internals';
 import { FUNCTION_BY_NAME } from './function_registry';
 
 /**
@@ -938,9 +939,9 @@ export class Parser {
   }
 
   // Function name to builder mapping
-  static #FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> | undefined = undefined;
+  @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
-    return Parser.#FUNCTIONS ??= {
+    return {
       // Spread all fromArgList functions from FUNCTION_BY_NAME
       ...Object.fromEntries(
         Array.from(FUNCTION_BY_NAME.entries()).map(([name, func]) => [name, (args: Expression[], _options: { dialect: Dialect }) => func.fromArgList(args)]),
@@ -1120,9 +1121,9 @@ export class Parser {
   }
 
   // Function expressions that don't require parentheses
-  static #NO_PAREN_FUNCTIONS?: Partial<Record<TokenType, typeof Expression>>;
+  @cache
   static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
-    return Parser.#NO_PAREN_FUNCTIONS ??= {
+    return {
       [TokenType.CURRENT_DATE]: CurrentDateExpr,
       [TokenType.CURRENT_DATETIME]: CurrentDateExpr,
       [TokenType.CURRENT_TIME]: CurrentTimeExpr,
@@ -1134,9 +1135,9 @@ export class Parser {
     };
   }
 
-  static #STRUCT_TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get STRUCT_TYPE_TOKENS (): Set<TokenType> {
-    return Parser.#STRUCT_TYPE_TOKENS ??= new Set([
+    return new Set([
       TokenType.FILE,
       TokenType.NESTED,
       TokenType.OBJECT,
@@ -1145,9 +1146,9 @@ export class Parser {
     ]);
   }
 
-  static #NESTED_TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get NESTED_TYPE_TOKENS (): Set<TokenType> {
-    return Parser.#NESTED_TYPE_TOKENS ??= new Set([
+    return new Set([
       TokenType.ARRAY,
       TokenType.LIST,
       TokenType.LOWCARDINALITY,
@@ -1158,9 +1159,9 @@ export class Parser {
     ]);
   }
 
-  static #ENUM_TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get ENUM_TYPE_TOKENS (): Set<TokenType> {
-    return Parser.#ENUM_TYPE_TOKENS ??= new Set([
+    return new Set([
       TokenType.DYNAMIC,
       TokenType.ENUM,
       TokenType.ENUM8,
@@ -1168,14 +1169,14 @@ export class Parser {
     ]);
   }
 
-  static #AGGREGATE_TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get AGGREGATE_TYPE_TOKENS (): Set<TokenType> {
-    return Parser.#AGGREGATE_TYPE_TOKENS ??= new Set([TokenType.AGGREGATEFUNCTION, TokenType.SIMPLEAGGREGATEFUNCTION]);
+    return new Set([TokenType.AGGREGATEFUNCTION, TokenType.SIMPLEAGGREGATEFUNCTION]);
   }
 
-  static #TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get TYPE_TOKENS (): Set<TokenType> {
-    return Parser.#TYPE_TOKENS ??= new Set([
+    return new Set([
       TokenType.BIT,
       TokenType.BOOLEAN,
       TokenType.TINYINT,
@@ -1297,9 +1298,9 @@ export class Parser {
     ]);
   }
 
-  static #SIGNED_TO_UNSIGNED_TYPE_TOKEN: Partial<Record<TokenType, TokenType>> | undefined = undefined;
+  @cache
   static get SIGNED_TO_UNSIGNED_TYPE_TOKEN (): Partial<Record<TokenType, TokenType>> {
-    return Parser.#SIGNED_TO_UNSIGNED_TYPE_TOKEN ??= {
+    return {
       [TokenType.BIGINT]: TokenType.UBIGINT,
       [TokenType.INT]: TokenType.UINT,
       [TokenType.MEDIUMINT]: TokenType.UMEDIUMINT,
@@ -1310,9 +1311,9 @@ export class Parser {
     };
   }
 
-  static #SUBQUERY_PREDICATES: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  @cache
   static get SUBQUERY_PREDICATES (): Partial<Record<TokenType, typeof Expression>> {
-    return Parser.#SUBQUERY_PREDICATES ??= {
+    return {
       [TokenType.ANY]: AnyExpr,
       [TokenType.ALL]: AllExpr,
       [TokenType.EXISTS]: ExistsExpr,
@@ -1320,16 +1321,16 @@ export class Parser {
     };
   }
 
-  static #RESERVED_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get RESERVED_TOKENS (): Set<TokenType> {
-    return Parser.#RESERVED_TOKENS ??= new Set(
+    return new Set(
       [...Object.values(Tokenizer.SINGLE_TOKENS), TokenType.SELECT].filter((t) => t !== TokenType.IDENTIFIER),
     );
   }
 
-  static #DB_CREATABLES: Set<TokenType> | undefined = undefined;
+  @cache
   static get DB_CREATABLES (): Set<TokenType> {
-    return Parser.#DB_CREATABLES ??= new Set([
+    return new Set([
       TokenType.DATABASE,
       TokenType.DICTIONARY,
       TokenType.FILE_FORMAT,
@@ -1350,9 +1351,9 @@ export class Parser {
     ]);
   }
 
-  static #CREATABLES: Set<TokenType> | undefined = undefined;
+  @cache
   static get CREATABLES (): Set<TokenType> {
-    return Parser.#CREATABLES ??= new Set([
+    return new Set([
       TokenType.COLUMN,
       TokenType.CONSTRAINT,
       TokenType.FOREIGN_KEY,
@@ -1363,9 +1364,9 @@ export class Parser {
     ]);
   }
 
-  static #ALTERABLES: Set<TokenType> | undefined = undefined;
+  @cache
   static get ALTERABLES (): Set<TokenType> {
-    return Parser.#ALTERABLES ??= new Set([
+    return new Set([
       TokenType.INDEX,
       TokenType.TABLE,
       TokenType.VIEW,
@@ -1373,9 +1374,9 @@ export class Parser {
     ]);
   }
 
-  static #ID_VAR_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get ID_VAR_TOKENS () {
-    return Parser.#ID_VAR_TOKENS ??= (() => {
+    return (() => {
       const tokens = new Set([
         TokenType.ALL,
         TokenType.ANALYZE,
@@ -1478,9 +1479,9 @@ export class Parser {
     })();
   }
 
-  static #TABLE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return Parser.#TABLE_ALIAS_TOKENS ??= new Set(
+    return new Set(
       [...Parser.ID_VAR_TOKENS].filter((t) => ![
         TokenType.ANTI,
         TokenType.ASOF,
@@ -1495,50 +1496,50 @@ export class Parser {
     );
   }
 
-  static #ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get ALIAS_TOKENS () {
-    return Parser.#ALIAS_TOKENS ??= Parser.ID_VAR_TOKENS;
+    return Parser.ID_VAR_TOKENS;
   }
 
-  static #COLON_PLACEHOLDER_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get COLON_PLACEHOLDER_TOKENS () {
-    return Parser.#COLON_PLACEHOLDER_TOKENS ??= Parser.ID_VAR_TOKENS;
+    return Parser.ID_VAR_TOKENS;
   }
 
-  static #ARRAY_CONSTRUCTORS: Record<string, typeof Expression> | undefined = undefined;
+  @cache
   static get ARRAY_CONSTRUCTORS (): Record<string, typeof Expression> {
-    return Parser.#ARRAY_CONSTRUCTORS ??= {
+    return {
       ARRAY: ArrayExpr,
       LIST: ListExpr,
     };
   }
 
-  static #COMMENT_TABLE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get COMMENT_TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return Parser.#COMMENT_TABLE_ALIAS_TOKENS ??= new Set(
+    return new Set(
       [...Parser.TABLE_ALIAS_TOKENS].filter((t) => t !== TokenType.IS),
     );
   }
 
-  static #UPDATE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get UPDATE_ALIAS_TOKENS (): Set<TokenType> {
-    return Parser.#UPDATE_ALIAS_TOKENS ??= new Set(
+    return new Set(
       [...Parser.TABLE_ALIAS_TOKENS].filter((t) => t !== TokenType.SET),
     );
   }
 
-  static #TRIM_TYPES?: Set<TrimPosition>;
+  @cache
   static get TRIM_TYPES (): Set<TrimPosition> {
-    return Parser.#TRIM_TYPES ??= new Set([
+    return new Set([
       TrimPosition.LEADING,
       TrimPosition.TRAILING,
       TrimPosition.BOTH,
     ]);
   }
 
-  static #FUNC_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get FUNC_TOKENS (): Set<TokenType> {
-    return Parser.#FUNC_TOKENS ??= new Set([
+    return new Set([
       TokenType.COLLATE,
       TokenType.COMMAND,
       TokenType.CURRENT_DATE,
@@ -1591,39 +1592,39 @@ export class Parser {
     ]);
   }
 
-  static #CONJUNCTION: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  @cache
   static get CONJUNCTION (): Partial<Record<TokenType, typeof Expression>> {
-    return Parser.#CONJUNCTION ??= {
+    return {
       [TokenType.AND]: AndExpr,
     };
   }
 
-  static #ASSIGNMENT: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  @cache
   static get ASSIGNMENT (): Partial<Record<TokenType, typeof Expression>> {
-    return Parser.#ASSIGNMENT ??= {
+    return {
       [TokenType.COLON_EQ]: PropertyEqExpr,
     };
   }
 
-  static #DISJUNCTION: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  @cache
   static get DISJUNCTION (): Partial<Record<TokenType, typeof Expression>> {
-    return Parser.#DISJUNCTION ??= {
+    return {
       [TokenType.OR]: OrExpr,
     };
   }
 
-  static #EQUALITY: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  @cache
   static get EQUALITY (): Partial<Record<TokenType, typeof Expression>> {
-    return Parser.#EQUALITY ??= {
+    return {
       [TokenType.EQ]: EqExpr,
       [TokenType.NEQ]: NeqExpr,
       [TokenType.NULLSAFE_EQ]: NullSafeEqExpr,
     };
   }
 
-  static #COMPARISON: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  @cache
   static get COMPARISON (): Partial<Record<TokenType, typeof Expression>> {
-    return Parser.#COMPARISON ??= {
+    return {
       [TokenType.GT]: GtExpr,
       [TokenType.GTE]: GteExpr,
       [TokenType.LT]: LtExpr,
@@ -1631,18 +1632,18 @@ export class Parser {
     };
   }
 
-  static #BITWISE: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  @cache
   static get BITWISE (): Partial<Record<TokenType, typeof Expression>> {
-    return Parser.#BITWISE ??= {
+    return {
       [TokenType.AMP]: BitwiseAndExpr,
       [TokenType.CARET]: BitwiseXorExpr,
       [TokenType.PIPE]: BitwiseOrExpr,
     };
   }
 
-  static #TERM: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  @cache
   static get TERM (): Partial<Record<TokenType, typeof Expression>> {
-    return Parser.#TERM ??= {
+    return {
       [TokenType.DASH]: SubExpr,
       [TokenType.PLUS]: AddExpr,
       [TokenType.MOD]: ModExpr,
@@ -1650,9 +1651,9 @@ export class Parser {
     };
   }
 
-  static #FACTOR: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  @cache
   static get FACTOR (): Partial<Record<TokenType, typeof Expression>> {
-    return Parser.#FACTOR ??= {
+    return {
       [TokenType.DIV]: IntDivExpr,
       [TokenType.LR_ARROW]: DistanceExpr,
       [TokenType.SLASH]: DivExpr,
@@ -1660,19 +1661,19 @@ export class Parser {
     };
   }
 
-  static #EXPONENT: Partial<Record<TokenType, typeof Expression>> | undefined = undefined;
+  @cache
   static get EXPONENT (): Partial<Record<TokenType, typeof Expression>> {
-    return Parser.#EXPONENT ??= {};
+    return {};
   }
 
-  static #TIMES: Set<TokenType> | undefined = undefined;
+  @cache
   static get TIMES (): Set<TokenType> {
-    return Parser.#TIMES ??= new Set([TokenType.TIME, TokenType.TIMETZ]);
+    return new Set([TokenType.TIME, TokenType.TIMETZ]);
   }
 
-  static #TIMESTAMPS: Set<TokenType> | undefined = undefined;
+  @cache
   static get TIMESTAMPS (): Set<TokenType> {
-    return Parser.#TIMESTAMPS ??= new Set([
+    return new Set([
       TokenType.TIMESTAMP,
       TokenType.TIMESTAMPNTZ,
       TokenType.TIMESTAMPTZ,
@@ -1681,36 +1682,36 @@ export class Parser {
     ]);
   }
 
-  static #SET_OPERATIONS: Set<TokenType> | undefined = undefined;
+  @cache
   static get SET_OPERATIONS (): Set<TokenType> {
-    return Parser.#SET_OPERATIONS ??= new Set([
+    return new Set([
       TokenType.UNION,
       TokenType.INTERSECT,
       TokenType.EXCEPT,
     ]);
   }
 
-  static #JOIN_METHODS: Set<TokenType> | undefined = undefined;
+  @cache
   static get JOIN_METHODS (): Set<TokenType> {
-    return Parser.#JOIN_METHODS ??= new Set([
+    return new Set([
       TokenType.ASOF,
       TokenType.NATURAL,
       TokenType.POSITIONAL,
     ]);
   }
 
-  static #JOIN_SIDES: Set<TokenType> | undefined = undefined;
+  @cache
   static get JOIN_SIDES (): Set<TokenType> {
-    return Parser.#JOIN_SIDES ??= new Set([
+    return new Set([
       TokenType.LEFT,
       TokenType.RIGHT,
       TokenType.FULL,
     ]);
   }
 
-  static #JOIN_KINDS: Set<TokenType> | undefined = undefined;
+  @cache
   static get JOIN_KINDS (): Set<TokenType> {
-    return Parser.#JOIN_KINDS ??= new Set([
+    return new Set([
       TokenType.ANTI,
       TokenType.CROSS,
       TokenType.INNER,
@@ -1721,10 +1722,9 @@ export class Parser {
   }
 
   static JOIN_HINTS: Set<string> = new Set();
-
-  static #LAMBDAS: Partial<Record<TokenType, (self: Parser, expressions: Expression[]) => Expression>> | undefined = undefined;
+  @cache
   static get LAMBDAS (): Partial<Record<TokenType, (self: Parser, expressions: Expression[]) => Expression>> {
-    return Parser.#LAMBDAS ??= {
+    return {
       [TokenType.ARROW]: (self: Parser, expressions: Expression[]) => self.expression(
         LambdaExpr,
         {
@@ -1745,9 +1745,9 @@ export class Parser {
     };
   }
 
-  static #COLUMN_OPERATORS: Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> | undefined = undefined;
+  @cache
   static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
-    return Parser.#COLUMN_OPERATORS ??= {
+    return {
       [TokenType.DOT]: undefined,
       [TokenType.DOTCOLON]: (self: Parser, this_?: Expression, to?: Expression) => self.expression(
         JsonCastExpr,
@@ -1802,14 +1802,14 @@ export class Parser {
     };
   }
 
-  static #CAST_COLUMN_OPERATORS: Set<TokenType> | undefined = undefined;
+  @cache
   static get CAST_COLUMN_OPERATORS (): Set<TokenType> {
-    return Parser.#CAST_COLUMN_OPERATORS ??= new Set([TokenType.DOTCOLON, TokenType.DCOLON]);
+    return new Set([TokenType.DOTCOLON, TokenType.DCOLON]);
   }
 
-  static #EXPRESSION_PARSERS: Record<string, (self: Parser) => Expression | undefined> | undefined = undefined;
+  @cache
   static get EXPRESSION_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
-    return Parser.#EXPRESSION_PARSERS ??= {
+    return {
       [ExpressionKey.CLUSTER]: (self: Parser) => self.parseSort(ClusterExpr, TokenType.CLUSTER_BY),
       [ExpressionKey.COLUMN]: (self: Parser) => self.parseColumn(),
       [ExpressionKey.COLUMN_DEF]: (self: Parser) => self.parseColumnDef(self.parseColumn()),
@@ -1849,9 +1849,9 @@ export class Parser {
     };
   }
 
-  static #STATEMENT_PARSERS: Partial<Record<TokenType, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  @cache
   static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
-    return Parser.#STATEMENT_PARSERS ??= {
+    return {
       [TokenType.ALTER]: (self: Parser) => self.parseAlter(),
       [TokenType.ANALYZE]: (self: Parser) => self.parseAnalyze(),
       [TokenType.BEGIN]: (self: Parser) => self.parseTransaction(),
@@ -1884,9 +1884,9 @@ export class Parser {
     };
   }
 
-  static #UNARY_PARSERS: Partial<Record<TokenType, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  @cache
   static get UNARY_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
-    return Parser.#UNARY_PARSERS ??= {
+    return {
       [TokenType.PLUS]: (self: Parser) => self.parseUnary(),
       [TokenType.NOT]: (self: Parser) => self.expression(NotExpr, { this: self.parseEquality() }),
       [TokenType.TILDE]: (self: Parser) => self.expression(BitwiseNotExpr, { this: self.parseUnary() }),
@@ -1896,9 +1896,9 @@ export class Parser {
     };
   }
 
-  static #STRING_PARSERS: Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> | undefined = undefined;
+  @cache
   static get STRING_PARSERS (): Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> {
-    return Parser.#STRING_PARSERS ??= {
+    return {
       [TokenType.HEREDOC_STRING]: (self: Parser, token: Token) => self.expression(RawStringExpr, { token }),
       [TokenType.NATIONAL_STRING]: (self: Parser, token: Token) => self.expression(NationalExpr, { token }),
       [TokenType.RAW_STRING]: (self: Parser, token: Token) => self.expression(RawStringExpr, { token }),
@@ -1916,9 +1916,9 @@ export class Parser {
     };
   }
 
-  static #NUMERIC_PARSERS: Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> | undefined = undefined;
+  @cache
   static get NUMERIC_PARSERS (): Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> {
-    return Parser.#NUMERIC_PARSERS ??= {
+    return {
       [TokenType.BIT_STRING]: (self: Parser, token: Token) => self.expression(BitStringExpr, { token }),
       [TokenType.BYTE_STRING]: (self: Parser, token: Token) => self.expression(
         ByteStringExpr,
@@ -1941,9 +1941,9 @@ export class Parser {
     };
   }
 
-  static #PRIMARY_PARSERS: Partial<Record<TokenType, (self: Parser, token: Token) => Expression | undefined>> | undefined = undefined;
+  @cache
   static get PRIMARY_PARSERS (): Partial<Record<TokenType, (self: Parser, token: Token) => Expression | undefined>> {
-    return Parser.#PRIMARY_PARSERS ??= {
+    return {
       ...Parser.STRING_PARSERS,
       ...Parser.NUMERIC_PARSERS,
       [TokenType.INTRODUCER]: (self: Parser, token: Token) => self.parseIntroducer(token),
@@ -1955,9 +1955,9 @@ export class Parser {
     };
   }
 
-  static #PLACEHOLDER_PARSERS: Partial<Record<TokenType, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  @cache
   static get PLACEHOLDER_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
-    return Parser.#PLACEHOLDER_PARSERS ??= {
+    return {
       [TokenType.PLACEHOLDER]: (self: Parser) => self.expression(PlaceholderExpr),
       [TokenType.PARAMETER]: (self: Parser) => self.parseParameter(),
       [TokenType.COLON]: (self: Parser) => (
@@ -1968,9 +1968,9 @@ export class Parser {
     };
   }
 
-  static #RANGE_PARSERS: Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> | undefined = undefined;
+  @cache
   static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
-    return Parser.#RANGE_PARSERS ??= {
+    return {
       [TokenType.AT_GT]: binaryRangeParser(ArrayContainsAllExpr),
       [TokenType.BETWEEN]: (self: Parser, this_: Expression) => self.parseBetween(this_),
       [TokenType.GLOB]: binaryRangeParser(GlobExpr),
@@ -1994,9 +1994,9 @@ export class Parser {
     };
   }
 
-  static #PIPE_SYNTAX_TRANSFORM_PARSERS: Partial<Record<string, (self: Parser, query: SelectExpr) => SelectExpr>> | undefined = undefined;
+  @cache
   static get PIPE_SYNTAX_TRANSFORM_PARSERS (): Partial<Record<string, (self: Parser, query: SelectExpr) => SelectExpr>> {
-    return Parser.#PIPE_SYNTAX_TRANSFORM_PARSERS ??= {
+    return {
       'AGGREGATE': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxAggregate(query),
       'AS': (self: Parser, query: SelectExpr) => self.buildPipeCte({
         query,
@@ -2020,9 +2020,9 @@ export class Parser {
     };
   }
 
-  static #PROPERTY_PARSERS: Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> | undefined = undefined;
+  @cache
   static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
-    return Parser.#PROPERTY_PARSERS ??= {
+    return {
       'ALLOWED_VALUES': (self: Parser) => self.expression(
         AllowedValuesPropertyExpr,
         { expressions: self.parseCsv(self.parsePrimary) },
@@ -2143,9 +2143,9 @@ export class Parser {
     };
   }
 
-  static #CONSTRAINT_PARSERS: Partial<Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> | undefined = undefined;
+  @cache
   static get CONSTRAINT_PARSERS (): Partial<Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
-    return Parser.#CONSTRAINT_PARSERS ??= {
+    return {
       'AUTOINCREMENT': (self: Parser) => self.parseAutoIncrement(),
       'AUTO_INCREMENT': (self: Parser) => self.parseAutoIncrement(),
       'CASESPECIFIC': (self: Parser) => self.expression(CaseSpecificColumnConstraintExpr, { not_: false }),
@@ -2220,9 +2220,9 @@ export class Parser {
     };
   }
 
-  static #ALTER_PARSERS: Partial<Record<string, (self: Parser) => Expression | Expression[] | undefined>> | undefined = undefined;
+  @cache
   static get ALTER_PARSERS (): Partial<Record<string, (self: Parser) => Expression | Expression[] | undefined>> {
-    return Parser.#ALTER_PARSERS ??= {
+    return {
       'ADD': (self: Parser) => self.parseAlterTableAdd(),
       'AS': (self: Parser) => self.parseSelect(),
       'ALTER': (self: Parser) => self.parseAlterTableAlter(),
@@ -2257,9 +2257,9 @@ export class Parser {
     'TRUNCATE',
   ]);
 
-  static #NO_PAREN_FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
-    return Parser.#NO_PAREN_FUNCTION_PARSERS ??= {
+    return {
       ANY: (self: Parser) => self.expression(AnyExpr, { this: self.parseBitwise() }),
       CASE: (self: Parser) => self.parseCase(),
       CONNECT_BY_ROOT: (self: Parser) => self.expression(
@@ -2270,16 +2270,15 @@ export class Parser {
     };
   }
 
-  static #INVALID_FUNC_NAME_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get INVALID_FUNC_NAME_TOKENS (): Set<TokenType> {
-    return Parser.#INVALID_FUNC_NAME_TOKENS ??= new Set([TokenType.IDENTIFIER, TokenType.STRING]);
+    return new Set([TokenType.IDENTIFIER, TokenType.STRING]);
   }
 
   static FUNCTIONS_WITH_ALIASED_ARGS: Set<string> = new Set(['STRUCT']);
-
-  static #KEY_VALUE_DEFINITIONS: Set<typeof Expression> | undefined = undefined;
+  @cache
   static get KEY_VALUE_DEFINITIONS (): Set<typeof Expression> {
-    return Parser.#KEY_VALUE_DEFINITIONS ??= new Set([
+    return new Set([
       AliasExpr,
       EqExpr,
       PropertyEqExpr,
@@ -2287,9 +2286,9 @@ export class Parser {
     ]);
   }
 
-  static #FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
-    return Parser.#FUNCTION_PARSERS ??= {
+    return {
       ...Object.fromEntries(
         ArgMaxExpr.sqlNames().map((name) => [name, (self: Parser) => self.parseMaxMinBy(ArgMaxExpr)]),
       ),
@@ -2325,9 +2324,9 @@ export class Parser {
     };
   }
 
-  static #QUERY_MODIFIER_PARSERS: Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> | undefined = undefined;
+  @cache
   static get QUERY_MODIFIER_PARSERS (): Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> {
-    return Parser.#QUERY_MODIFIER_PARSERS ??= {
+    return {
       [TokenType.MATCH_RECOGNIZE]: (self: Parser): [string, Expression | undefined] => ['match', self.parseMatchRecognize()],
       [TokenType.PREWHERE]: (self: Parser): [string, Expression | undefined] => ['prewhere', self.parsePrewhere()],
       [TokenType.WHERE]: (self: Parser): [string, Expression | undefined] => ['where', self.parseWhere()],
@@ -2351,9 +2350,9 @@ export class Parser {
     };
   }
 
-  static #QUERY_MODIFIER_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get QUERY_MODIFIER_TOKENS (): Set<TokenType> {
-    return Parser.#QUERY_MODIFIER_TOKENS ??= new Set(
+    return new Set(
       Object.keys(Parser.QUERY_MODIFIER_PARSERS) as TokenType[],
     );
   }
@@ -2366,31 +2365,30 @@ export class Parser {
   };
 
   static SHOW_PARSERS: Record<string, (self: Parser) => Expression> = {};
-
-  static #TYPE_LITERAL_PARSERS?: Partial<Record<DataTypeExprKind, (self: Parser, thisArg?: Expression, _?: unknown) => Expression>>;
+  @cache
   static get TYPE_LITERAL_PARSERS (): Partial<Record<DataTypeExprKind, (self: Parser, thisArg?: Expression, _?: unknown) => Expression>> {
-    return Parser.#TYPE_LITERAL_PARSERS ??= {
+    return {
       [DataTypeExprKind.JSON]: (self: Parser, thisArg?: Expression, _?: unknown) => self.expression(ParseJsonExpr, { this: thisArg }),
     };
   }
 
-  static #TYPE_CONVERTERS: Partial<Record<DataTypeExprKind, (dataType: DataTypeExpr) => DataTypeExpr>> | undefined = undefined;
+  @cache
   static get TYPE_CONVERTERS (): Partial<Record<DataTypeExprKind, (dataType: DataTypeExpr) => DataTypeExpr>> {
-    return Parser.#TYPE_CONVERTERS ??= {};
+    return {};
   }
 
-  static #DDL_SELECT_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get DDL_SELECT_TOKENS (): Set<TokenType> {
-    return Parser.#DDL_SELECT_TOKENS ??= new Set([
+    return new Set([
       TokenType.SELECT,
       TokenType.WITH,
       TokenType.L_PAREN,
     ]);
   }
 
-  static #PRE_VOLATILE_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get PRE_VOLATILE_TOKENS (): Set<TokenType> {
-    return Parser.#PRE_VOLATILE_TOKENS ??= new Set([
+    return new Set([
       TokenType.CREATE,
       TokenType.REPLACE,
       TokenType.UNIQUE,
@@ -2567,14 +2565,14 @@ export class Parser {
     'WITH',
   ]);
 
-  static #OPTYPE_FOLLOW_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get OPTYPE_FOLLOW_TOKENS (): Set<TokenType> {
-    return Parser.#OPTYPE_FOLLOW_TOKENS ??= new Set([TokenType.COMMA, TokenType.R_PAREN]);
+    return new Set([TokenType.COMMA, TokenType.R_PAREN]);
   }
 
-  static #TABLE_INDEX_HINT_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get TABLE_INDEX_HINT_TOKENS (): Set<TokenType> {
-    return Parser.#TABLE_INDEX_HINT_TOKENS ??= new Set([
+    return new Set([
       TokenType.FORCE,
       TokenType.IGNORE,
       TokenType.USE,
@@ -2587,9 +2585,9 @@ export class Parser {
     'VIEW_METADATA',
   ]);
 
-  static #WINDOW_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get WINDOW_ALIAS_TOKENS () {
-    return Parser.#WINDOW_ALIAS_TOKENS ??= (() => {
+    return (() => {
       const result = new Set(Parser.ID_VAR_TOKENS);
       result.delete(TokenType.RANGE);
       result.delete(TokenType.ROWS);
@@ -2597,25 +2595,24 @@ export class Parser {
     })();
   }
 
-  static #WINDOW_BEFORE_PAREN_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get WINDOW_BEFORE_PAREN_TOKENS (): Set<TokenType> {
-    return Parser.#WINDOW_BEFORE_PAREN_TOKENS ??= new Set([TokenType.OVER]);
+    return new Set([TokenType.OVER]);
   }
 
   static WINDOW_SIDES: Set<string> = new Set(['FOLLOWING', 'PRECEDING']);
-
-  static #JSON_KEY_VALUE_SEPARATOR_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get JSON_KEY_VALUE_SEPARATOR_TOKENS (): Set<TokenType> {
-    return Parser.#JSON_KEY_VALUE_SEPARATOR_TOKENS ??= new Set([
+    return new Set([
       TokenType.COLON,
       TokenType.COMMA,
       TokenType.IS,
     ]);
   }
 
-  static #FETCH_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get FETCH_TOKENS () {
-    return Parser.#FETCH_TOKENS ??= (() => {
+    return (() => {
       const result = new Set(Parser.ID_VAR_TOKENS);
       result.delete(TokenType.ROW);
       result.delete(TokenType.ROWS);
@@ -2624,9 +2621,9 @@ export class Parser {
     })();
   }
 
-  static #ADD_CONSTRAINT_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get ADD_CONSTRAINT_TOKENS (): Set<TokenType> {
-    return Parser.#ADD_CONSTRAINT_TOKENS ??= new Set([
+    return new Set([
       TokenType.CONSTRAINT,
       TokenType.FOREIGN_KEY,
       TokenType.INDEX,
@@ -2636,14 +2633,14 @@ export class Parser {
     ]);
   }
 
-  static #DISTINCT_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get DISTINCT_TOKENS (): Set<TokenType> {
-    return Parser.#DISTINCT_TOKENS ??= new Set([TokenType.DISTINCT]);
+    return new Set([TokenType.DISTINCT]);
   }
 
-  static #UNNEST_OFFSET_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get UNNEST_OFFSET_ALIAS_TOKENS () {
-    return Parser.#UNNEST_OFFSET_ALIAS_TOKENS ??= (() => {
+    return (() => {
       const result = new Set(Parser.TABLE_ALIAS_TOKENS);
       for (const token of Parser.SET_OPERATIONS) {
         result.delete(token);
@@ -2652,9 +2649,9 @@ export class Parser {
     })();
   }
 
-  static #SELECT_START_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get SELECT_START_TOKENS (): Set<TokenType> {
-    return Parser.#SELECT_START_TOKENS ??= new Set([
+    return new Set([
       TokenType.L_PAREN,
       TokenType.WITH,
       TokenType.SELECT,
@@ -2685,9 +2682,9 @@ export class Parser {
     'EMPTY',
   ]);
 
-  static #PRIVILEGE_FOLLOW_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get PRIVILEGE_FOLLOW_TOKENS (): Set<TokenType> {
-    return Parser.#PRIVILEGE_FOLLOW_TOKENS ??= new Set([
+    return new Set([
       TokenType.ON,
       TokenType.COMMA,
       TokenType.L_PAREN,
@@ -2730,10 +2727,9 @@ export class Parser {
   };
 
   static PARTITION_KEYWORDS: Set<string> = new Set(['PARTITION', 'SUBPARTITION']);
-
-  static #AMBIGUOUS_ALIAS_TOKENS: readonly [TokenType, TokenType] | undefined = undefined;
+  @cache
   static get AMBIGUOUS_ALIAS_TOKENS () {
-    return Parser.#AMBIGUOUS_ALIAS_TOKENS ??= [TokenType.LIMIT, TokenType.OFFSET] as const;
+    return [TokenType.LIMIT, TokenType.OFFSET] as const;
   }
 
   static OPERATION_MODIFIERS: Set<string> = new Set();
@@ -2744,9 +2740,9 @@ export class Parser {
     'CYCLE',
   ]);
 
-  static #MODIFIABLES: (typeof Expression)[] | undefined = undefined;
+  @cache
   static get MODIFIABLES (): (typeof Expression)[] {
-    return Parser.#MODIFIABLES ??= [
+    return [
       QueryExpr,
       TableExpr,
       TableFromRowsExpr,

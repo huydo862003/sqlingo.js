@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import {
   Generator, unsupportedArgs,
 } from '../generator';
@@ -475,9 +476,9 @@ class MySQLTokenizer extends Tokenizer {
 };
 
 class MySQLParser extends Parser {
-  static #FUNC_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get FUNC_TOKENS (): Set<TokenType> {
-    return MySQLParser.#FUNC_TOKENS ??= new Set([
+    return new Set([
       ...Parser.FUNC_TOKENS,
       TokenType.DATABASE,
       TokenType.MOD,
@@ -487,26 +488,26 @@ class MySQLParser extends Parser {
     ]);
   }
 
-  static #CONJUNCTION: undefined = undefined;
+  @cache
   static get CONJUNCTION () {
-    return MySQLParser.#CONJUNCTION ??= {
+    return {
       ...Parser.CONJUNCTION,
       [TokenType.DAMP]: AndExpr,
       [TokenType.XOR]: XorExpr,
     };
   }
 
-  static #DISJUNCTION: undefined = undefined;
+  @cache
   static get DISJUNCTION () {
-    return MySQLParser.#DISJUNCTION ??= {
+    return {
       ...Parser.DISJUNCTION,
       [TokenType.DPIPE]: OrExpr,
     };
   }
 
-  static #TABLE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return MySQLParser.#TABLE_ALIAS_TOKENS ??= (() => {
+    return (() => {
       const tokens = new Set(Parser.TABLE_ALIAS_TOKENS);
       for (const hint of Parser.TABLE_INDEX_HINT_TOKENS) {
         tokens.delete(hint);
@@ -515,9 +516,9 @@ class MySQLParser extends Parser {
     })();
   }
 
-  static #RANGE_PARSERS: undefined = undefined;
+  @cache
   static get RANGE_PARSERS () {
-    return MySQLParser.#RANGE_PARSERS ??= {
+    return {
       ...Parser.RANGE_PARSERS,
       [TokenType.SOUNDS_LIKE]: (self: Parser, thisArg: Expression): EqExpr =>
         self.expression(EqExpr, {
@@ -532,9 +533,9 @@ class MySQLParser extends Parser {
     };
   }
 
-  static #FUNCTIONS: typeof Parser.FUNCTIONS | undefined = undefined;
+  @cache
   static get FUNCTIONS (): typeof Parser.FUNCTIONS {
-    return MySQLParser.#FUNCTIONS ??= {
+    return {
       ...Parser.FUNCTIONS,
       BIT_AND: BitwiseAndAggExpr.fromArgList,
       BIT_OR: BitwiseOrAggExpr.fromArgList,
@@ -609,9 +610,9 @@ class MySQLParser extends Parser {
     };
   }
 
-  static #FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
-    return MySQLParser.#FUNCTION_PARSERS ??= {
+    return {
       ...Parser.FUNCTION_PARSERS,
       GROUP_CONCAT: (self: Parser) => self.parseGroupConcat(),
       VALUES: (self: Parser): AnonymousExpr =>
@@ -624,9 +625,9 @@ class MySQLParser extends Parser {
     };
   }
 
-  static #STATEMENT_PARSERS: undefined = undefined;
+  @cache
   static get STATEMENT_PARSERS () {
-    return MySQLParser.#STATEMENT_PARSERS ??= {
+    return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.SHOW]: (self: Parser) => self.parseShow(),
     };
@@ -690,18 +691,18 @@ class MySQLParser extends Parser {
     'WARNINGS': showParser('WARNINGS'),
   });
 
-  static #PROPERTY_PARSERS: undefined = undefined;
+  @cache
   static get PROPERTY_PARSERS () {
-    return MySQLParser.#PROPERTY_PARSERS ??= {
+    return {
       ...Parser.PROPERTY_PARSERS,
       'LOCK': (self: Parser) => self.parsePropertyAssignment(LockPropertyExpr),
       'PARTITION BY': (self: Parser) => (self as MySQLParser).parsePartitionProperty(),
     };
   }
 
-  static #SET_PARSERS: undefined = undefined;
+  @cache
   static get SET_PARSERS () {
-    return MySQLParser.#SET_PARSERS ??= {
+    return {
       ...Parser.SET_PARSERS,
       'PERSIST': (self: Parser) => (self as MySQLParser).parseSetItemAssignment({ kind: SetItemExprKind.PERSIST }),
       'PERSIST_ONLY': (self: Parser) => self.parseSetItemAssignment({ kind: 'PERSIST_ONLY' }),
@@ -711,9 +712,9 @@ class MySQLParser extends Parser {
     };
   }
 
-  static #CONSTRAINT_PARSERS: undefined = undefined;
+  @cache
   static get CONSTRAINT_PARSERS () {
-    return MySQLParser.#CONSTRAINT_PARSERS ??= {
+    return {
       ...Parser.CONSTRAINT_PARSERS,
       FULLTEXT: (self: Parser) => (self as MySQLParser).parseIndexConstraint('FULLTEXT'),
       INDEX: (self: Parser) => (self as MySQLParser).parseIndexConstraint(),
@@ -724,25 +725,25 @@ class MySQLParser extends Parser {
     };
   }
 
-  static #ALTER_PARSERS: undefined = undefined;
+  @cache
   static get ALTER_PARSERS () {
-    return MySQLParser.#ALTER_PARSERS ??= {
+    return {
       ...Parser.ALTER_PARSERS,
       MODIFY: (self: Parser) => self.parseAlterTableAlter(),
     };
   }
 
-  static #ALTER_ALTER_PARSERS: undefined = undefined;
+  @cache
   static get ALTER_ALTER_PARSERS () {
-    return MySQLParser.#ALTER_ALTER_PARSERS ??= {
+    return {
       ...Parser.ALTER_ALTER_PARSERS,
       INDEX: (self: Parser) => (self as MySQLParser).parseAlterTableAlterIndex(),
     };
   }
 
-  static #SCHEMA_UNNAMED_CONSTRAINTS: Set<string> | undefined = undefined;
+  @cache
   static get SCHEMA_UNNAMED_CONSTRAINTS (): Set<string> {
-    return MySQLParser.#SCHEMA_UNNAMED_CONSTRAINTS ??= new Set([
+    return new Set([
       ...Parser.SCHEMA_UNNAMED_CONSTRAINTS,
       'FULLTEXT',
       'INDEX',
@@ -763,14 +764,14 @@ class MySQLParser extends Parser {
     PAGE: ['FAULTS'],
   };
 
-  static #TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get TYPE_TOKENS (): Set<TokenType> {
-    return MySQLParser.#TYPE_TOKENS ??= new Set([...Parser.TYPE_TOKENS, TokenType.SET]);
+    return new Set([...Parser.TYPE_TOKENS, TokenType.SET]);
   }
 
-  static #ENUM_TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get ENUM_TYPE_TOKENS (): Set<TokenType> {
-    return MySQLParser.#ENUM_TYPE_TOKENS ??= new Set([...Parser.ENUM_TYPE_TOKENS, TokenType.SET]);
+    return new Set([...Parser.ENUM_TYPE_TOKENS, TokenType.SET]);
   }
 
   /**

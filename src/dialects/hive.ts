@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import type {
   AlterSetExpr,
   ColumnDefExpr,
@@ -429,19 +430,18 @@ class HiveParser extends Parser {
   static ALTER_TABLE_PARTITIONS = true;
 
   static CHANGE_COLUMN_ALTER_SYNTAX = false;
-
-  static #FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS () {
-    return HiveParser.#FUNCTION_PARSERS ??= {
+    return {
       ...Parser.FUNCTION_PARSERS,
       PERCENTILE: (self: Parser) => (self as HiveParser).parseQuantileFunction(QuantileExpr),
       PERCENTILE_APPROX: (self: Parser) => (self as HiveParser).parseQuantileFunction(ApproxQuantileExpr),
     };
   }
 
-  static #FUNCTIONS: Record<string, (expression: Expression[], options: { dialect: Dialect }) => Expression> | undefined = undefined;
+  @cache
   static get FUNCTIONS (): Record<string, (expression: Expression[], options: { dialect: Dialect }) => Expression> {
-    return HiveParser.#FUNCTIONS ??= {
+    return {
       ...Parser.FUNCTIONS,
       BASE64: ToBase64Expr.fromArgList,
       COLLECT_LIST: (args: Expression[]) => new ArrayAggExpr({
@@ -499,26 +499,26 @@ class HiveParser extends Parser {
     };
   }
 
-  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTION_PARSERS () {
-    return HiveParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+    return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
       TRANSFORM: (self: Parser) => (self as HiveParser).parseTransform(),
     };
   }
 
-  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTIONS () {
-    return HiveParser.#NO_PAREN_FUNCTIONS ??= (() => {
+    return (() => {
       const noParen = { ...Parser.NO_PAREN_FUNCTIONS };
       delete noParen[TokenType.CURRENT_TIME];
       return noParen;
     })();
   }
 
-  static #PROPERTY_PARSERS: undefined = undefined;
+  @cache
   static get PROPERTY_PARSERS () {
-    return HiveParser.#PROPERTY_PARSERS ??= {
+    return {
       ...Parser.PROPERTY_PARSERS,
       SERDEPROPERTIES: (self: Parser) => new SerdePropertiesExpr({
         expressions: self.parseWrappedCsv(() => self.parseProperty()),
@@ -526,9 +526,9 @@ class HiveParser extends Parser {
     };
   }
 
-  static #ALTER_PARSERS: undefined = undefined;
+  @cache
   static get ALTER_PARSERS () {
-    return HiveParser.#ALTER_PARSERS ??= {
+    return {
       ...Parser.ALTER_PARSERS,
       CHANGE: (self: Parser) => (self as HiveParser).parseAlterTableChange(),
     };

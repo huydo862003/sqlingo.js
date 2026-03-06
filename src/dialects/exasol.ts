@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import {
   Generator,
   unsupportedArgs,
@@ -404,9 +405,9 @@ class ExasolTokenizer extends Tokenizer {
 }
 
 class ExasolParser extends Parser {
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return ExasolParser.#FUNCTIONS ??= (() => {
+    return (() => {
       const functions: Record<string, (args: Expression[]) => Expression> = {
         ...Parser.FUNCTIONS,
         BIT_AND: binaryFromFunction(BitwiseAndExpr),
@@ -466,9 +467,9 @@ class ExasolParser extends Parser {
     })();
   }
 
-  static #CONSTRAINT_PARSERS: undefined = undefined;
+  @cache
   static get CONSTRAINT_PARSERS () {
-    return ExasolParser.#CONSTRAINT_PARSERS ??= {
+    return {
       ...Parser.CONSTRAINT_PARSERS,
       COMMENT: (self: Parser) => {
         return self.expression(
@@ -479,22 +480,22 @@ class ExasolParser extends Parser {
     };
   }
 
-  static #FUNC_TOKENS: undefined = undefined;
+  @cache
   static get FUNC_TOKENS () {
-    return ExasolParser.#FUNC_TOKENS ??= new Set([...Parser.FUNC_TOKENS, TokenType.SYSTIMESTAMP]);
+    return new Set([...Parser.FUNC_TOKENS, TokenType.SYSTIMESTAMP]);
   }
 
-  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTIONS () {
-    return ExasolParser.#NO_PAREN_FUNCTIONS ??= {
+    return {
       ...Parser.NO_PAREN_FUNCTIONS,
       [TokenType.SYSTIMESTAMP]: SystimestampExpr,
     };
   }
 
-  static #FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS () {
-    return ExasolParser.#FUNCTION_PARSERS ??= {
+    return {
       ...Parser.FUNCTION_PARSERS,
       ...Object.fromEntries(['GROUP_CONCAT', 'LISTAGG'].map((k) => [k, (self: Parser) => self.parseGroupConcat()])),
     };

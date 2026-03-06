@@ -1,5 +1,9 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/generator.py
 
+import {
+  cache,
+  assertIsInstanceOf, isInstanceOf,
+} from './port_internals';
 import type {
   AddConstraintExpr,
   AddPartitionExpr,
@@ -530,15 +534,12 @@ import {
   seqGet,
 } from './helper';
 import { ALL_JSON_PATH_PARTS } from './jsonpath/expressions';
-import { annotateTypes } from './optimizer';
+import { annotateTypes } from './optimizer/annotate_types';
 import type { TrieNode } from './trie';
 import { TSQL } from './dialects/tsql';
 import {
   ensureBools, moveCtesToTopLevel,
 } from './transforms';
-import {
-  assertIsInstanceOf, isInstanceOf,
-} from './port_internals';
 
 export interface GeneratorOptions extends ParseOptions {
   pretty?: boolean;
@@ -814,9 +815,9 @@ export class Generator {
   static JSON_PATH_SINGLE_QUOTE_ESCAPE = false;
 
   // The JsonPathPart expressions supported by this dialect
-  static #SUPPORTED_JSON_PATH_PARTS: Set<typeof Expression> | undefined;
+  @cache
   static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
-    return Generator.#SUPPORTED_JSON_PATH_PARTS ??= new Set([...ALL_JSON_PATH_PARTS]);
+    return new Set([...ALL_JSON_PATH_PARTS]);
   }
 
   // Whether any(f(x) for x in array) can be implemented by this dialect
@@ -956,9 +957,9 @@ export class Generator {
     YEARS: 'YEAR',
   };
 
-  static #UNWRAPPED_INTERVAL_VALUES: Set<typeof Expression> | undefined;
+  @cache
   static get UNWRAPPED_INTERVAL_VALUES (): Set<typeof Expression> {
-    return Generator.#UNWRAPPED_INTERVAL_VALUES ??= new Set<typeof Expression>([
+    return new Set<typeof Expression>([
       ColumnExpr,
       LiteralExpr,
       NegExpr,
@@ -966,9 +967,9 @@ export class Generator {
     ]);
   }
 
-  static #WITH_SEPARATED_COMMENTS: Set<typeof Expression> | undefined;
+  @cache
   static get WITH_SEPARATED_COMMENTS (): Set<typeof Expression> {
-    return Generator.#WITH_SEPARATED_COMMENTS ??= new Set<typeof Expression>([
+    return new Set<typeof Expression>([
       CommandExpr,
       CreateExpr,
       DescribeExpr,
@@ -989,14 +990,14 @@ export class Generator {
     ]);
   }
 
-  static #EXCLUDE_COMMENTS: Set<typeof Expression> | undefined;
+  @cache
   static get EXCLUDE_COMMENTS (): Set<typeof Expression> {
-    return Generator.#EXCLUDE_COMMENTS ??= new Set<typeof Expression>([BinaryExpr, SetOperationExpr]);
+    return new Set<typeof Expression>([BinaryExpr, SetOperationExpr]);
   }
 
-  static #TYPE_MAPPING: Map<DataTypeExprKind | string, string> | undefined;
+  @cache
   static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
-    return Generator.#TYPE_MAPPING ??= new Map<DataTypeExprKind | string, string>([
+    return new Map<DataTypeExprKind | string, string>([
       [DataTypeExprKind.DATETIME2, 'TIMESTAMP'],
       [DataTypeExprKind.NCHAR, 'CHAR'],
       [DataTypeExprKind.NVARCHAR, 'VARCHAR'],
@@ -1013,16 +1014,15 @@ export class Generator {
     ]);
   }
 
-  static #UNSUPPORTED_TYPES: Set<DataTypeExprKind> | undefined;
+  @cache
   static get UNSUPPORTED_TYPES (): Set<DataTypeExprKind> {
-    return Generator.#UNSUPPORTED_TYPES ??= new Set<DataTypeExprKind>();
+    return new Set<DataTypeExprKind>();
   }
 
   static STRUCT_DELIMITER = ['<', '>'];
-
-  static #PARAMETERIZABLE_TEXT_TYPES: Set<DataTypeExprKind> | undefined;
+  @cache
   static get PARAMETERIZABLE_TEXT_TYPES (): Set<DataTypeExprKind> {
-    return Generator.#PARAMETERIZABLE_TEXT_TYPES ??= new Set<DataTypeExprKind>([
+    return new Set<DataTypeExprKind>([
       DataTypeExprKind.NVARCHAR,
       DataTypeExprKind.VARCHAR,
       DataTypeExprKind.CHAR,
@@ -1034,9 +1034,9 @@ export class Generator {
   static NAMED_PLACEHOLDER_TOKEN = ':';
 
   static RESERVED_KEYWORDS = new Set<string>();
-  static #TOKEN_MAPPING: Partial<Record<TokenType, string>> | undefined;
+  @cache
   static get TOKEN_MAPPING (): Partial<Record<TokenType, string>> {
-    return Generator.#TOKEN_MAPPING ??= {};
+    return {};
   }
 
   // Expressions that need to have all CTEs under them bubbled up to them
@@ -1045,12 +1045,10 @@ export class Generator {
   // Creatables where the expression (e.g. AS SELECT ...) precedes the schema-level properties
   static EXPRESSION_PRECEDES_PROPERTIES_CREATABLES: Set<string> = new Set();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static #ORIGINAL_TRANSFORMS: Map<typeof Expression, (self: Generator, e: any) => string> | undefined;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  @cache
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return Generator.#ORIGINAL_TRANSFORMS ??= new Map<typeof Expression, (self: Generator, e: any) => string>(
+    return new Map<typeof Expression, (self: Generator, e: any) => string>(
       [
         [AdjacentExpr, (self, e: BinaryExpr) => self.binary(e, '-|-')],
         [AllowedValuesPropertyExpr, (self, e) => `ALLOWED_VALUES ${self.expressions(e, { flat: true })}`],
@@ -1198,27 +1196,21 @@ export class Generator {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected static transformsCache = new WeakMap<typeof Generator, Map<typeof Expression, (self: Generator, e: any) => string>>();
   /**
    * @final Do not override this getter in subclasses; override `ORIGINAL_TRANSFORMS` instead.
    */
+  @cache
   static get TRANSFORMS () {
-    let cachedTransforms = this.transformsCache.get(this);
-    if (cachedTransforms) return cachedTransforms;
-
-    cachedTransforms = this.ORIGINAL_TRANSFORMS;
-
+    const transforms = this.ORIGINAL_TRANSFORMS;
     for (const part of Array.from(ALL_JSON_PATH_PARTS).filter((cls) => !this.SUPPORTED_JSON_PATH_PARTS.has(cls))) {
-      cachedTransforms.delete(part);
+      transforms.delete(part);
     }
-    this.transformsCache.set(this, cachedTransforms);
-    return cachedTransforms;
+    return transforms;
   }
 
-  static #PROPERTIES_LOCATION: Map<typeof Expression, PropertiesLocation> | undefined;
+  @cache
   static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
-    return Generator.#PROPERTIES_LOCATION ??= new Map<typeof Expression, PropertiesLocation>([
+    return new Map<typeof Expression, PropertiesLocation>([
       [AllowedValuesPropertyExpr, PropertiesLocation.POST_SCHEMA],
       [AlgorithmPropertyExpr, PropertiesLocation.POST_CREATE],
       [AutoIncrementPropertyExpr, PropertiesLocation.POST_SCHEMA],

@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import type { Expression } from '../expressions';
 import {
   ArrayContainsExpr,
@@ -68,10 +69,9 @@ class DrillTokenizer extends Tokenizer {
 class DrillParser extends Parser {
   static STRICT_CAST = false;
   static LOG_DEFAULTS_TO_LN = true;
-
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return DrillParser.#FUNCTIONS ??= {
+    return {
       ...Parser.FUNCTIONS,
       REPEATED_COUNT: ArraySizeExpr.fromArgList,
       TO_TIMESTAMP: TimeStrToTimeExpr.fromArgList,

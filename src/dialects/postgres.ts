@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import {
   Generator,
 } from '../generator';
@@ -517,10 +518,9 @@ export class PostgresTokenizer extends Tokenizer {
 
 class PostgresParser extends Parser {
   static SUPPORTS_OMITTED_INTERVAL_SPAN_UNIT = true;
-
-  static #PROPERTY_PARSERS: undefined = undefined;
+  @cache
   static get PROPERTY_PARSERS () {
-    return PostgresParser.#PROPERTY_PARSERS ??= (() => {
+    return (() => {
       const parsers: Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> = {
         ...Parser.PROPERTY_PARSERS,
         SET: (self: Parser) => self.expression(SetConfigPropertyExpr, { this: (self as PostgresParser).parseSet() }),
@@ -530,18 +530,18 @@ class PostgresParser extends Parser {
     })();
   }
 
-  static #PLACEHOLDER_PARSERS: undefined = undefined;
+  @cache
   static get PLACEHOLDER_PARSERS () {
-    return PostgresParser.#PLACEHOLDER_PARSERS ??= {
+    return {
       ...Parser.PLACEHOLDER_PARSERS,
       [TokenType.PLACEHOLDER]: (self: Parser) => self.expression(PlaceholderExpr, { jdbc: true }),
       [TokenType.MOD]: (self: Parser) => (self as PostgresParser).parseQueryParameter(),
     };
   }
 
-  static #FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> | undefined = undefined;
+  @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
-    return PostgresParser.#FUNCTIONS ??= {
+    return {
       ...Parser.FUNCTIONS,
       ARRAY_PREPEND: (args: Expression[]) => new ArrayPrependExpr({
         this: seqGet(args, 1),
@@ -600,25 +600,25 @@ class PostgresParser extends Parser {
     };
   }
 
-  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTION_PARSERS () {
-    return PostgresParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+    return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
       VARIADIC: (self: Parser) => self.expression(VariadicExpr, { this: (self as PostgresParser).parseBitwise() }),
     };
   }
 
-  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTIONS () {
-    return PostgresParser.#NO_PAREN_FUNCTIONS ??= {
+    return {
       ...Parser.NO_PAREN_FUNCTIONS,
       [TokenType.CURRENT_SCHEMA]: CurrentSchemaExpr,
     };
   }
 
-  static #FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS () {
-    return PostgresParser.#FUNCTION_PARSERS ??= {
+    return {
       ...Parser.FUNCTION_PARSERS,
       DATE_PART: (self: Parser) => (self as PostgresParser).parseDatePart(),
       JSON_AGG: (self: Parser) => self.expression(JsonArrayAggExpr, {
@@ -629,9 +629,9 @@ class PostgresParser extends Parser {
     };
   }
 
-  static #BITWISE: undefined = undefined;
+  @cache
   static get BITWISE () {
-    return PostgresParser.#BITWISE ??= {
+    return {
       ...Parser.BITWISE,
       [TokenType.HASH]: BitwiseXorExpr,
     };
@@ -641,9 +641,9 @@ class PostgresParser extends Parser {
     [TokenType.CARET]: PowExpr,
   };
 
-  static #RANGE_PARSERS: undefined = undefined;
+  @cache
   static get RANGE_PARSERS () {
-    return PostgresParser.#RANGE_PARSERS ??= {
+    return {
       ...Parser.RANGE_PARSERS,
       [TokenType.DAMP]: binaryRangeParser(ArrayOverlapsExpr),
       [TokenType.DAT]: (self: Parser, thisNode: Expression) => self.expression(MatchAgainstExpr, {
@@ -653,17 +653,17 @@ class PostgresParser extends Parser {
     };
   }
 
-  static #STATEMENT_PARSERS: undefined = undefined;
+  @cache
   static get STATEMENT_PARSERS () {
-    return PostgresParser.#STATEMENT_PARSERS ??= {
+    return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.END]: (self: Parser) => (self as PostgresParser).parseCommitOrRollback(),
     };
   }
 
-  static #UNARY_PARSERS: undefined = undefined;
+  @cache
   static get UNARY_PARSERS () {
-    return PostgresParser.#UNARY_PARSERS ??= {
+    return {
       ...Parser.UNARY_PARSERS,
       [TokenType.RLIKE]: (self: Parser) => self.expression(BitwiseNotExpr, {
         this: (self as PostgresParser).parseUnary(),
@@ -672,10 +672,9 @@ class PostgresParser extends Parser {
   }
 
   static JSON_ARROWS_REQUIRE_JSON_TYPE = true;
-
-  static #COLUMN_OPERATORS: undefined = undefined;
+  @cache
   static get COLUMN_OPERATORS () {
-    return PostgresParser.#COLUMN_OPERATORS ??= {
+    return {
       ...Parser.COLUMN_OPERATORS,
       [TokenType.ARROW]: (self: Parser, thisNode?: Expression, path?: Expression) => self.validateExpression(
         buildJsonExtractPath(JsonExtractExpr, { arrowReqJsonType: (self.constructor as typeof PostgresParser).JSON_ARROWS_REQUIRE_JSON_TYPE })([thisNode, path]),

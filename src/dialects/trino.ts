@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import type { Expression } from '../expressions';
 import {
   JsonExtractExpr, JsonExtractQuoteExpr,
@@ -38,17 +39,17 @@ class TrinoTokenizer extends Presto.Tokenizer {
 };
 
 class TrinoParser extends Presto.Parser {
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return TrinoParser.#FUNCTIONS ??= {
+    return {
       ...Presto.Parser.FUNCTIONS,
       VERSION: (args: Expression[]) => CurrentVersionExpr.fromArgList(args),
     };
   }
 
-  static #FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS () {
-    return TrinoParser.#FUNCTION_PARSERS ??= {
+    return {
       ...Presto.Parser.FUNCTION_PARSERS,
       TRIM: (self: Parser) => self.parseTrim(),
       JSON_QUERY: (self: Parser) => (self as TrinoParser).parseJsonQuery(),

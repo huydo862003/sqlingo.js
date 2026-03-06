@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
@@ -20,17 +21,12 @@ export class JsonPathTokenizer extends Tokenizer {
     '*': TokenType.STAR,
   };
 
-  static #KEYWORDS: WeakMap<typeof JsonPathTokenizer, Record<string, TokenType>> = new WeakMap();
+  @cache
   static get KEYWORDS (): Record<string, TokenType> {
-    if (this.#KEYWORDS.has(this)) {
-      return this.#KEYWORDS.get(this)!;
-    }
-    const res = {
+    return {
       ...super.KEYWORDS,
       '..': TokenType.DOT,
     };
-    this.#KEYWORDS.set(this, res);
-    return res;
   }
 
   static IDENTIFIER_ESCAPES: string[] = ['\\'];

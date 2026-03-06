@@ -20,7 +20,9 @@ import {
   toIdentifier,
 } from '../expressions';
 import { seqGet } from '../helper';
-import { narrowInstanceOf } from '../port_internals';
+import {
+  cache, narrowInstanceOf,
+} from '../port_internals';
 import { preprocess } from '../transforms';
 import {
   renameFunc, arrowJsonExtractSql, buildTimestampTrunc, unitToStr,
@@ -91,9 +93,9 @@ class StarRocksTokenizer extends MySQL.Tokenizer {
 };
 
 class StarRocksParser extends MySQL.Parser {
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return StarRocksParser.#FUNCTIONS ??= {
+    return {
       ...MySQL.Parser.FUNCTIONS,
       DATE_TRUNC: buildTimestampTrunc,
       DATEDIFF: (args: Expression[]): DateDiffExpr =>
@@ -116,9 +118,9 @@ class StarRocksParser extends MySQL.Parser {
     };
   }
 
-  static #PROPERTY_PARSERS: undefined = undefined;
+  @cache
   static get PROPERTY_PARSERS () {
-    return StarRocksParser.#PROPERTY_PARSERS ??= {
+    return {
       ...MySQL.Parser.PROPERTY_PARSERS,
       PROPERTIES: (self: StarRocksParser): Expression[] => self.parseWrappedProperties(),
       UNIQUE: (self: StarRocksParser): Expression => self.parseCompositeKeyProperty(UniqueKeyPropertyExpr),

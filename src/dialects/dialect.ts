@@ -67,6 +67,10 @@ import type {
   ExpressionValue,
 } from '../expressions';
 import {
+  cache,
+  assertIsInstanceOf, isInstanceOf,
+} from '../port_internals';
+import {
   SelectExpr,
   JsonbExtractExpr,
   DatetimeSubExpr,
@@ -195,9 +199,6 @@ import {
 import {
   formatTime, subsecondPrecision, TIMEZONES,
 } from '../time';
-import {
-  assertIsInstanceOf, isInstanceOf,
-} from '../port_internals';
 import type { ExpressionMetadata } from '../typing';
 
 // Type aliases for common expression type unions
@@ -344,10 +345,9 @@ export class Dialect {
 
   /** Whether a size in the table sample clause represents percentage. */
   static TABLESAMPLE_SIZE_IS_PERCENT = false;
-
-  static #NORMALIZATION_STRATEGY: NormalizationStrategy | undefined = undefined;
+  @cache
   static get NORMALIZATION_STRATEGY () {
-    return Dialect.#NORMALIZATION_STRATEGY ??= NormalizationStrategy.LOWERCASE;
+    return NormalizationStrategy.LOWERCASE;
   }
 
   /** Whether an unquoted identifier can start with a digit. */
@@ -540,10 +540,9 @@ export class Dialect {
 
   /** Whether REGEXP_EXTRACT returns NULL when the position arg exceeds the string length. */
   static REGEXP_EXTRACT_POSITION_OVERFLOW_RETURNS_NULL = true;
-
-  static #SET_OP_DISTINCT_BY_DEFAULT: Partial<Record<ExpressionKey, boolean>> | undefined = undefined;
+  @cache
   static get SET_OP_DISTINCT_BY_DEFAULT (): Partial<Record<ExpressionKey, boolean>> {
-    return Dialect.#SET_OP_DISTINCT_BY_DEFAULT ??= {
+    return {
       [ExpressionKey.EXCEPT]: true,
       [ExpressionKey.INTERSECT]: true,
       [ExpressionKey.UNION]: true,
@@ -606,15 +605,14 @@ export class Dialect {
    * For example, in Postgres, generate_series function outputs a column named "generate_series" by default.
    */
   static DEFAULT_FUNCTIONS_COLUMN_NAMES: Map<string, string | string[]> = new Map();
-
-  static #DEFAULT_NULL_TYPE: DataTypeExprKind | undefined = undefined;
+  @cache
   static get DEFAULT_NULL_TYPE () {
-    return Dialect.#DEFAULT_NULL_TYPE ??= DataTypeExprKind.UNKNOWN;
+    return DataTypeExprKind.UNKNOWN;
   }
 
-  static #UNMERGABLE_ARGS: Set<string> | undefined = undefined;
+  @cache
   static get UNMERGABLE_ARGS (): Set<string> {
-    return Dialect.#UNMERGABLE_ARGS ??= new Set(
+    return new Set(
       Array.from(SelectExpr.availableArgs).filter(
         (arg) => ![
           'expressions',
@@ -759,79 +757,44 @@ export class Dialect {
     return DerivedGenerator;
   }
 
-  static #TIME_TRIE = new WeakMap<typeof Dialect, TrieNode>();
+  @cache
   static get TIME_TRIE (): TrieNode {
-    let cached = this.#TIME_TRIE.get(this);
-    if (!cached) {
-      cached = newTrie(Object.keys(this.TIME_MAPPING).map((k) => Array.from(k)));
-      this.#TIME_TRIE.set(this, cached);
-    }
-    return cached;
+    return newTrie(Object.keys(this.TIME_MAPPING).map((k) => Array.from(k)));
   }
 
-  static #FORMAT_TRIE = new WeakMap<typeof Dialect, TrieNode>();
+  @cache
   static get FORMAT_TRIE (): TrieNode {
-    let cached = this.#FORMAT_TRIE.get(this);
-    if (!cached) {
-      const mapping = 0 < Object.keys(this.FORMAT_MAPPING).length
-        ? this.FORMAT_MAPPING
-        : this.TIME_MAPPING;
-      cached = newTrie(Object.keys(mapping).map((k) => Array.from(k)));
-      this.#FORMAT_TRIE.set(this, cached);
-    }
-    return cached;
+    const mapping = 0 < Object.keys(this.FORMAT_MAPPING).length
+      ? this.FORMAT_MAPPING
+      : this.TIME_MAPPING;
+    return newTrie(Object.keys(mapping).map((k) => Array.from(k)));
   }
 
-  static #INVERSE_TIME_MAPPING = new WeakMap<typeof Dialect, Record<string, string>>();
+  @cache
   static get INVERSE_TIME_MAPPING (): Record<string, string> {
-    let cached = this.#INVERSE_TIME_MAPPING.get(this);
-    if (!cached) {
-      cached = Object.fromEntries(Object.entries(this.TIME_MAPPING).map(([k, v]) => [v, k]));
-      this.#INVERSE_TIME_MAPPING.set(this, cached);
-    }
-    return cached;
+    return Object.fromEntries(Object.entries(this.TIME_MAPPING).map(([k, v]) => [v, k]));
   }
 
-  static #INVERSE_TIME_TRIE = new WeakMap<typeof Dialect, TrieNode>();
+  @cache
   static get INVERSE_TIME_TRIE (): TrieNode {
-    let cached = this.#INVERSE_TIME_TRIE.get(this);
-    if (!cached) {
-      cached = newTrie(Object.keys(this.INVERSE_TIME_MAPPING).map((k) => Array.from(k)));
-      this.#INVERSE_TIME_TRIE.set(this, cached);
-    }
-    return cached;
+    return newTrie(Object.keys(this.INVERSE_TIME_MAPPING).map((k) => Array.from(k)));
   }
 
-  static #INVERSE_FORMAT_MAPPING = new WeakMap<typeof Dialect, Record<string, string>>();
+  @cache
   static get INVERSE_FORMAT_MAPPING (): Record<string, string> {
-    let cached = this.#INVERSE_FORMAT_MAPPING.get(this);
-    if (!cached) {
-      cached = Object.fromEntries(Object.entries(this.FORMAT_MAPPING).map(([k, v]) => [v, k]));
-      this.#INVERSE_FORMAT_MAPPING.set(this, cached);
-    }
-    return cached;
+    return Object.fromEntries(Object.entries(this.FORMAT_MAPPING).map(([k, v]) => [v, k]));
   }
 
-  static #INVERSE_CREATABLE_KIND_MAPPING = new WeakMap<typeof Dialect, Record<string, string>>();
+  @cache
   static get INVERSE_CREATABLE_KIND_MAPPING (): Record<string, string> {
-    let cached = this.#INVERSE_CREATABLE_KIND_MAPPING.get(this);
-    if (!cached) {
-      cached = Object.fromEntries(Object.entries(this.CREATABLE_KIND_MAPPING).map(([k, v]) => [v, k]));
-      this.#INVERSE_CREATABLE_KIND_MAPPING.set(this, cached);
-    }
-    return cached;
+    return Object.fromEntries(Object.entries(this.CREATABLE_KIND_MAPPING).map(([k, v]) => [v, k]));
   }
 
-  static #ESCAPED_SEQUENCES = new WeakMap<typeof Dialect, Record<string, string>>();
+  @cache
   static get ESCAPED_SEQUENCES (): Record<string, string> {
-    if (this.#ESCAPED_SEQUENCES.has(this)) {
-      return this.#ESCAPED_SEQUENCES.get(this)!;
-    }
-    const res = Object.fromEntries(
+    return Object.fromEntries(
       Object.entries(this.UNESCAPED_SEQUENCES).map(([k, v]) => [v, k]),
     );
-    this.#ESCAPED_SEQUENCES.set(this, res);
-    return res;
   }
 
   /** Delimiters for string literals. */
@@ -1006,57 +969,35 @@ export class Dialect {
   /** Determines the supported Dialect instance settings. */
   static SUPPORTED_SETTINGS: Set<string> = new Set(['normalizationStrategy', 'version']);
 
-  static #QUOTE_DELIMITERS = new WeakMap<typeof Dialect, [string, string]>();
   /**
    * Extracts quote delimiters from the tokenizer class.
    * Returns [start, end] delimiter pair for string literals.
    */
+  @cache
   static get QUOTE_DELIMITERS (): [string, string] {
-    let cached = this.#QUOTE_DELIMITERS.get(this);
-    if (!cached) {
-      const quotes = Object.entries(this.tokenizerClass.QUOTES)[0];
-      cached = quotes as [string, string];
-      this.#QUOTE_DELIMITERS.set(this, cached);
-    }
-    return cached;
+    return Object.entries(this.tokenizerClass.QUOTES)[0] as [string, string];
   }
-
-  static #IDENTIFIER_DELIMITERS = new WeakMap<typeof Dialect, [string, string]>();
 
   /**
    * Extracts identifier delimiters from the tokenizer class.
    * Returns [start, end] delimiter pair for identifiers.
    */
+  @cache
   static get IDENTIFIER_DELIMITERS (): [string, string] {
-    let cached = this.#IDENTIFIER_DELIMITERS.get(this);
-    if (!cached) {
-      const identifiers = Object.entries(this.tokenizerClass.IDENTIFIERS)[0];
-      cached = identifiers as [string, string];
-      this.#IDENTIFIER_DELIMITERS.set(this, cached);
-    }
-    return cached;
+    return Object.entries(this.tokenizerClass.IDENTIFIERS)[0] as [string, string];
   }
 
   /** Valid interval units. */
   static BASE_VALID_INTERVAL_UNITS = new Set<string>(); // NOTE: Corresponds to VALID_INTERVAL_UNITS in sqlglot python version
 
-  static #VALID_INTERVAL_UNITS = new WeakMap<typeof Dialect, Set<string>>();
-
+  @cache
   static get VALID_INTERVAL_UNITS (): Set<string> {
-    if (this.#VALID_INTERVAL_UNITS.has(this)) {
-      return this.#VALID_INTERVAL_UNITS.get(this)!;
-    }
-
     const mapping = this.DATE_PART_MAPPING;
-
-    const resultSet = new Set([
+    return new Set([
       ...this.BASE_VALID_INTERVAL_UNITS,
       ...Object.keys(mapping),
       ...Object.values(mapping),
     ]);
-
-    this.#VALID_INTERVAL_UNITS.set(this, resultSet);
-    return resultSet;
   }
 
   /** Whether strings support escaped sequences. */

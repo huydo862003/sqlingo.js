@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import type {
   AllExpr,
   AlterColumnExpr,
@@ -155,9 +156,9 @@ class SingleStoreTokenizer extends MySQL.Tokenizer {
 }
 
 class SingleStoreParser extends MySQL.Parser {
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return SingleStoreParser.#FUNCTIONS ??= (() => {
+    return (() => {
       const functions = {
         ...MySQL.Parser.FUNCTIONS,
         TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: 'singlestore' }),
@@ -300,9 +301,9 @@ class SingleStoreParser extends MySQL.Parser {
     })();
   }
 
-  static #FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS () {
-    return SingleStoreParser.#FUNCTION_PARSERS ??= {
+    return {
       ...MySQL.Parser.FUNCTION_PARSERS,
       JSON_AGG: (self: Parser) =>
         self.expression(JsonArrayAggExpr, {
@@ -312,9 +313,9 @@ class SingleStoreParser extends MySQL.Parser {
     };
   }
 
-  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTIONS () {
-    return SingleStoreParser.#NO_PAREN_FUNCTIONS ??= {
+    return {
       ...MySQL.Parser.NO_PAREN_FUNCTIONS,
       [TokenType.UTC_DATE]: UtcDateExpr,
       [TokenType.UTC_TIME]: UtcTimeExpr,
@@ -323,10 +324,9 @@ class SingleStoreParser extends MySQL.Parser {
   }
 
   static CAST_COLUMN_OPERATORS = new Set([TokenType.COLON_GT, TokenType.NCOLON_GT]);
-
-  static #COLUMN_OPERATORS: undefined = undefined;
+  @cache
   static get COLUMN_OPERATORS () {
-    return SingleStoreParser.#COLUMN_OPERATORS ??= (() => {
+    return (() => {
       const operators = {
         ...MySQL.Parser.COLUMN_OPERATORS,
         [TokenType.COLON_GT]: (self: Parser, thisNode?: Expression, to?: Expression) =>
@@ -361,9 +361,9 @@ class SingleStoreParser extends MySQL.Parser {
     })();
   }
 
-  static #SHOW_PARSERS: undefined = undefined;
+  @cache
   static get SHOW_PARSERS () {
-    return SingleStoreParser.#SHOW_PARSERS ??= {
+    return {
       ...MySQL.Parser.SHOW_PARSERS,
       'AGGREGATES': showParser('AGGREGATES'),
       'CDC EXTRACTOR POOL': showParser('CDC EXTRACTOR POOL'),
@@ -403,9 +403,9 @@ class SingleStoreParser extends MySQL.Parser {
     };
   }
 
-  static #ALTER_PARSERS: undefined = undefined;
+  @cache
   static get ALTER_PARSERS () {
-    return SingleStoreParser.#ALTER_PARSERS ??= {
+    return {
       ...MySQL.Parser.ALTER_PARSERS,
       CHANGE: (self: Parser) =>
         self.expression(RenameColumnExpr, {

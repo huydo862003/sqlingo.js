@@ -196,7 +196,7 @@ import {
   splitNumWords,
 } from '../helper';
 import {
-  filterInstanceOf, narrowInstanceOf,
+  cache, filterInstanceOf, narrowInstanceOf,
 } from '../port_internals';
 import { JsonPathTokenizer } from '../jsonpath';
 import {
@@ -778,9 +778,9 @@ export class BigQueryParser extends Parser {
   public static JOINS_HAVE_EQUAL_PRECEDENCE = true;
 
   // BigQuery does not allow ASC/DESC to be used as an identifier, allows GRANT as an identifier
-  static #ID_VAR_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get ID_VAR_TOKENS (): Set<TokenType> {
-    return BigQueryParser.#ID_VAR_TOKENS ??= (() => {
+    return (() => {
       const s = new Set([...Parser.ID_VAR_TOKENS, TokenType.GRANT]);
       s.delete(TokenType.ASC);
       s.delete(TokenType.DESC);
@@ -788,9 +788,9 @@ export class BigQueryParser extends Parser {
     })();
   }
 
-  static #ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get ALIAS_TOKENS (): Set<TokenType> {
-    return BigQueryParser.#ALIAS_TOKENS ??= (() => {
+    return (() => {
       const s = new Set([...Parser.ALIAS_TOKENS, TokenType.GRANT]);
       s.delete(TokenType.ASC);
       s.delete(TokenType.DESC);
@@ -798,9 +798,9 @@ export class BigQueryParser extends Parser {
     })();
   }
 
-  static #TABLE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return BigQueryParser.#TABLE_ALIAS_TOKENS ??= (() => {
+    return (() => {
       const s = new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.GRANT]);
       s.delete(TokenType.ASC);
       s.delete(TokenType.DESC);
@@ -808,9 +808,9 @@ export class BigQueryParser extends Parser {
     })();
   }
 
-  static #COMMENT_TABLE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get COMMENT_TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return BigQueryParser.#COMMENT_TABLE_ALIAS_TOKENS ??= (() => {
+    return (() => {
       const s = new Set([...Parser.COMMENT_TABLE_ALIAS_TOKENS, TokenType.GRANT]);
       s.delete(TokenType.ASC);
       s.delete(TokenType.DESC);
@@ -818,9 +818,9 @@ export class BigQueryParser extends Parser {
     })();
   }
 
-  static #UPDATE_ALIAS_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get UPDATE_ALIAS_TOKENS (): Set<TokenType> {
-    return BigQueryParser.#UPDATE_ALIAS_TOKENS ??= (() => {
+    return (() => {
       const s = new Set([...Parser.UPDATE_ALIAS_TOKENS, TokenType.GRANT]);
       s.delete(TokenType.ASC);
       s.delete(TokenType.DESC);
@@ -828,31 +828,31 @@ export class BigQueryParser extends Parser {
     })();
   }
 
-  static #NESTED_TYPE_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get NESTED_TYPE_TOKENS (): Set<TokenType> {
-    return BigQueryParser.#NESTED_TYPE_TOKENS ??= new Set([...Parser.NESTED_TYPE_TOKENS, TokenType.TABLE]);
+    return new Set([...Parser.NESTED_TYPE_TOKENS, TokenType.TABLE]);
   }
 
-  static #PROPERTY_PARSERS: undefined = undefined;
+  @cache
   static get PROPERTY_PARSERS () {
-    return BigQueryParser.#PROPERTY_PARSERS ??= {
+    return {
       ...Parser.PROPERTY_PARSERS,
       'NOT DETERMINISTIC': (self: Parser) => self.expression(StabilityPropertyExpr, { this: LiteralExpr.string('VOLATILE') }),
       'OPTIONS': (self: Parser) => self.parseWithProperty(),
     };
   }
 
-  static #CONSTRAINT_PARSERS: undefined = undefined;
+  @cache
   static get CONSTRAINT_PARSERS () {
-    return BigQueryParser.#CONSTRAINT_PARSERS ??= {
+    return {
       ...Parser.CONSTRAINT_PARSERS,
       OPTIONS: (self: Parser) => self.expression(PropertiesExpr, { expressions: self.parseWithProperty() }),
     };
   }
 
-  static #RANGE_PARSERS: Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> | undefined = undefined;
+  @cache
   static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
-    return BigQueryParser.#RANGE_PARSERS ??= (() => {
+    return (() => {
       const m = { ...Parser.RANGE_PARSERS };
       delete m[TokenType.OVERLAPS];
       return m;
@@ -865,9 +865,9 @@ export class BigQueryParser extends Parser {
     TokenType.R_PAREN,
   ]);
 
-  static #STATEMENT_PARSERS: undefined = undefined;
+  @cache
   static get STATEMENT_PARSERS () {
-    return BigQueryParser.#STATEMENT_PARSERS ??= {
+    return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.ELSE]: (self: Parser) => self.parseAsCommand((self as BigQueryParser).prev),
       [TokenType.END]: (self: Parser) => self.parseAsCommand((self as BigQueryParser).prev),
@@ -884,17 +884,17 @@ export class BigQueryParser extends Parser {
     SAFE_ORDINAL: [1, true],
   };
 
-  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTIONS () {
-    return BigQueryParser.#NO_PAREN_FUNCTIONS ??= {
+    return {
       ...Parser.NO_PAREN_FUNCTIONS,
       [TokenType.CURRENT_DATETIME]: CurrentDatetimeExpr,
     };
   }
 
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return BigQueryParser.#FUNCTIONS ??= (() => {
+    return (() => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fns: Record<string, (args: Expression[], dialect: any) => Expression> = {
         ...Parser.FUNCTIONS,
@@ -1004,9 +1004,9 @@ export class BigQueryParser extends Parser {
     })();
   }
 
-  static #FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS () {
-    return BigQueryParser.#FUNCTION_PARSERS ??= (() => {
+    return (() => {
       const fps = {
         ...Parser.FUNCTION_PARSERS,
         ARRAY: (self: Parser) => self.expression(ArrayExpr, {

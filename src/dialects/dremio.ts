@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import {
   Generator,
 } from '../generator';
@@ -162,18 +163,17 @@ class DremioTokenizer extends Tokenizer {
 
 class DremioParser extends Parser {
   static LOG_DEFAULTS_TO_LN = true;
-
-  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTION_PARSERS () {
-    return DremioParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+    return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
       CURRENT_DATE_UTC: (self: Parser) => (self as DremioParser).parseCurrentDateUtc(),
     };
   }
 
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return DremioParser.#FUNCTIONS ??= {
+    return {
       ...Parser.FUNCTIONS,
       ARRAY_GENERATE_RANGE: GenerateSeriesExpr.fromArgList,
       BIT_AND: BitwiseAndAggExpr.fromArgList,

@@ -11,6 +11,7 @@ export {
 export type {
   Merge, Override,
 } from './type_utils';
+export { cache } from './decorators';
 export { id } from './id_utils';
 export type { Id } from './id_utils';
 export {

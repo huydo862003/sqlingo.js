@@ -41,7 +41,9 @@ import { JsonPathTokenizer } from '../jsonpath';
 import {
   anyToExists, eliminateDistinctOn, preprocess, unnestToExplode,
 } from '../transforms';
-import { narrowInstanceOf } from '../port_internals';
+import {
+  cache, narrowInstanceOf,
+} from '../port_internals';
 import { Spark } from './spark';
 import {
   dateDeltaSql,
@@ -73,10 +75,9 @@ class DatabricksParser extends Spark.Parser {
   static LOG_DEFAULTS_TO_LN = true;
   static STRICT_CAST = true;
   static COLON_IS_VARIANT_EXTRACT = true;
-
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return DatabricksParser.#FUNCTIONS ??= {
+    return {
       ...Spark.Parser.FUNCTIONS,
       GETDATE: CurrentTimestampExpr.fromArgList,
       DATEADD: buildDateDelta(DateAddExpr),
@@ -93,25 +94,25 @@ class DatabricksParser extends Spark.Parser {
     };
   }
 
-  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTION_PARSERS () {
-    return DatabricksParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+    return {
       ...Spark.Parser.NO_PAREN_FUNCTION_PARSERS,
       CURDATE: (self: Parser) => (self as DatabricksParser).parseCurdate(),
     };
   }
 
-  static #FACTOR: undefined = undefined;
+  @cache
   static get FACTOR () {
-    return DatabricksParser.#FACTOR ??= {
+    return {
       ...Spark.Parser.FACTOR,
       [TokenType.COLON]: JsonExtractExpr,
     };
   }
 
-  static #COLUMN_OPERATORS: undefined = undefined;
+  @cache
   static get COLUMN_OPERATORS () {
-    return DatabricksParser.#COLUMN_OPERATORS ??= {
+    return {
       ...Parser.COLUMN_OPERATORS,
       [TokenType.QDCOLON]: (self: Parser, thisNode?: Expression, to?: Expression) =>
         self.expression(TryCastExpr, {

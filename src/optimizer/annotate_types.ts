@@ -1,5 +1,9 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/annotate_types.py
 
+import {
+  cache,
+  MapBinaryTuple, assertIsInstanceOf, isInstanceOf,
+} from '../port_internals';
 import type { ColumnDefExprKind } from '../expressions/types';
 import {
   DataTypeExprKind,
@@ -52,9 +56,6 @@ import {
 import {
   ensureIterable, isDateUnit, isIsoDate, isIsoDatetime, seqGet,
 } from '../helper';
-import {
-  MapBinaryTuple, assertIsInstanceOf, isInstanceOf,
-} from '../port_internals';
 import {
   ensureSchema, MappingSchema, type Schema,
 } from '../schema';
@@ -175,17 +176,16 @@ function swapAll (coercions: BinaryCoercions): BinaryCoercions {
  * Walks the AST and infers types for all expressions based on schema and type rules.
  */
 export class TypeAnnotator {
-  static #NESTED_TYPES?: Set<DataTypeExprKind>;
+  @cache
   static get NESTED_TYPES (): Set<DataTypeExprKind> {
-    return TypeAnnotator.#NESTED_TYPES ??= new Set([DataTypeExprKind.ARRAY]);
+    return new Set([DataTypeExprKind.ARRAY]);
   }
 
   // Specifies what types a given type can be coerced into
   // Highest-to-lowest precedence: lowest types can coerce INTO higher types
   // E.g. CHAR (lowest) can coerce to TEXT (highest)
-  static #COERCES_TO?: Map<DataTypeExprKind, Set<DataTypeExprKind>>;
+  @cache
   static get COERCES_TO (): Map<DataTypeExprKind, Set<DataTypeExprKind>> {
-    if (TypeAnnotator.#COERCES_TO) return TypeAnnotator.#COERCES_TO;
     const map = new Map<DataTypeExprKind, Set<DataTypeExprKind>>();
 
     // Text precedence: highest to lowest (TEXT wins over CHAR in coercion)
@@ -233,13 +233,13 @@ export class TypeAnnotator {
       }
     }
 
-    return TypeAnnotator.#COERCES_TO = map;
+    return map;
   }
 
   // Coercion functions for binary operations where COERCES_TO is not sufficient
-  static #BINARY_COERCIONS?: BinaryCoercions;
+  @cache
   static get BINARY_COERCIONS (): BinaryCoercions {
-    return TypeAnnotator.#BINARY_COERCIONS ??= swapAll((() => {
+    return swapAll((() => {
       const map: BinaryCoercions = new MapBinaryTuple();
 
       // text + interval → DATE/DATETIME based on whether text is ISO date

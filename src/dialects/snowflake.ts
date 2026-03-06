@@ -242,7 +242,9 @@ import {
 import {
   Parser, buildVarMap,
 } from '../parser';
-import { narrowInstanceOf } from '../port_internals';
+import {
+  cache, narrowInstanceOf,
+} from '../port_internals';
 import type { TokenPair } from '../tokens';
 import {
   Tokenizer, TokenType,
@@ -1121,19 +1123,18 @@ class SnowflakeParser extends Parser {
   static DEFAULT_SAMPLING_METHOD = 'BERNOULLI' as const;
   static COLON_IS_VARIANT_EXTRACT = true;
   static JSON_EXTRACT_REQUIRES_JSON_EXPRESSION = true;
-
-  static #ID_VAR_TOKENS: undefined = undefined;
+  @cache
   static get ID_VAR_TOKENS () {
-    return SnowflakeParser.#ID_VAR_TOKENS ??= new Set([
+    return new Set([
       ...Parser.ID_VAR_TOKENS,
       TokenType.EXCEPT,
       TokenType.MATCH_CONDITION,
     ]);
   }
 
-  static #TABLE_ALIAS_TOKENS: undefined = undefined;
+  @cache
   static get TABLE_ALIAS_TOKENS () {
-    return SnowflakeParser.#TABLE_ALIAS_TOKENS ??= (() => {
+    return (() => {
       const tokens = new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.WINDOW]);
       tokens.delete(TokenType.MATCH_CONDITION);
       return tokens;
@@ -1141,18 +1142,17 @@ class SnowflakeParser extends Parser {
   }
 
   static COLON_PLACEHOLDER_TOKENS = new Set([...SnowflakeParser.ID_VAR_TOKENS, TokenType.NUMBER]);
-
-  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTIONS () {
-    return SnowflakeParser.#NO_PAREN_FUNCTIONS ??= {
+    return {
       ...Parser.NO_PAREN_FUNCTIONS,
       [TokenType.CURRENT_TIME]: LocaltimeExpr,
     };
   }
 
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return SnowflakeParser.#FUNCTIONS ??= (() => {
+    return (() => {
       const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
         ...Parser.FUNCTIONS,
         ADD_MONTHS: (args: Expression[]) =>
@@ -1460,9 +1460,9 @@ class SnowflakeParser extends Parser {
     })();
   }
 
-  static #FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS () {
-    return SnowflakeParser.#FUNCTION_PARSERS ??= (() => {
+    return (() => {
       const parsers: Partial<Record<string, (self: Parser) => Expression | undefined>> = {
         ...Parser.FUNCTION_PARSERS,
         DATE_PART: (self: Parser) => (self as SnowflakeParser).parseDatePart(),
@@ -1476,16 +1476,16 @@ class SnowflakeParser extends Parser {
     })();
   }
 
-  static #TIMESTAMPS: undefined = undefined;
+  @cache
   static get TIMESTAMPS () {
-    return SnowflakeParser.#TIMESTAMPS ??= new Set(
+    return new Set(
       Array.from(Parser.TIMESTAMPS).filter((t) => t !== TokenType.TIME),
     );
   }
 
-  static #ALTER_PARSERS: undefined = undefined;
+  @cache
   static get ALTER_PARSERS () {
-    return SnowflakeParser.#ALTER_PARSERS ??= {
+    return {
       ...Parser.ALTER_PARSERS,
       SESSION: (self: Parser) => self.parseAlterSession(),
       UNSET: (self: Parser) =>
@@ -1497,9 +1497,9 @@ class SnowflakeParser extends Parser {
     };
   }
 
-  static #STATEMENT_PARSERS: undefined = undefined;
+  @cache
   static get STATEMENT_PARSERS () {
-    return SnowflakeParser.#STATEMENT_PARSERS ??= {
+    return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.GET]: (self: Parser) => (self as SnowflakeParser).parseGet(),
       [TokenType.PUT]: (self: Parser) => (self as SnowflakeParser).parsePut(),
@@ -1507,9 +1507,9 @@ class SnowflakeParser extends Parser {
     };
   }
 
-  static #PROPERTY_PARSERS: undefined = undefined;
+  @cache
   static get PROPERTY_PARSERS () {
-    return SnowflakeParser.#PROPERTY_PARSERS ??= {
+    return {
       ...Parser.PROPERTY_PARSERS,
       CREDENTIALS: (self: Parser) => (self as SnowflakeParser).parseCredentialsProperty(),
       FILE_FORMAT: (self: Parser) => (self as SnowflakeParser).parseFileFormatProperty(),
@@ -1556,9 +1556,9 @@ class SnowflakeParser extends Parser {
     'WAREHOUSES': showParser('WAREHOUSES'),
   };
 
-  static #CONSTRAINT_PARSERS: undefined = undefined;
+  @cache
   static get CONSTRAINT_PARSERS () {
-    return SnowflakeParser.#CONSTRAINT_PARSERS ??= {
+    return {
       ...Parser.CONSTRAINT_PARSERS,
       WITH: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
       MASKING: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
@@ -1598,9 +1598,9 @@ class SnowflakeParser extends Parser {
     'STREAMLIT',
   ]);
 
-  static #LAMBDAS: undefined = undefined;
+  @cache
   static get LAMBDAS () {
-    return SnowflakeParser.#LAMBDAS ??= {
+    return {
       ...Parser.LAMBDAS,
       [TokenType.ARROW]: (self: Parser, expressions: Expression[]) =>
         self.expression(LambdaExpr, {
@@ -1610,9 +1610,9 @@ class SnowflakeParser extends Parser {
     };
   }
 
-  static #COLUMN_OPERATORS: undefined = undefined;
+  @cache
   static get COLUMN_OPERATORS () {
-    return SnowflakeParser.#COLUMN_OPERATORS ??= {
+    return {
       ...Parser.COLUMN_OPERATORS,
       [TokenType.EXCLAMATION]: (self: Parser, thisNode?: Expression, attr?: Expression) =>
         self.expression(ModelAttributeExpr, {

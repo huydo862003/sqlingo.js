@@ -151,7 +151,9 @@ import {
   eliminateDistinctOn, eliminateQualify, eliminateSemiAndAntiJoins, preprocess, unnestGenerateDateArrayUsingRecursiveCte,
 } from '../transforms';
 import { EXPRESSION_METADATA } from '../typing';
-import { narrowInstanceOf } from '../port_internals';
+import {
+  narrowInstanceOf, cache,
+} from '../port_internals';
 import {
   buildDateDelta,
   dateDeltaSql,
@@ -164,7 +166,6 @@ import {
   timeStrToTimeSql,
   trimSql,
   mapDatePart,
-
   Dialect, NormalizationStrategy, Dialects,
   renameFunc,
 } from './dialect';
@@ -578,10 +579,9 @@ export class TSQLParser extends Parser {
   static LOG_DEFAULTS_TO_LN = true;
   static STRING_ALIASES = true;
   static NO_PAREN_IF_COMMANDS = false;
-
-  static #QUERY_MODIFIER_PARSERS: Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> | undefined = undefined;
+  @cache
   static get QUERY_MODIFIER_PARSERS (): Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> {
-    return TSQLParser.#QUERY_MODIFIER_PARSERS ??= {
+    return {
       ...Parser.QUERY_MODIFIER_PARSERS,
       [TokenType.OPTION]: (self: Parser) => ['options', (self as TSQLParser).parseOptions()],
       [TokenType.FOR]: (self: Parser) => ['for', (self as TSQLParser).parseFor()],
@@ -589,34 +589,34 @@ export class TSQLParser extends Parser {
   }
 
   // T-SQL does not allow BEGIN to be used as an identifier
-  static #ID_VAR_TOKENS: undefined = undefined;
+  @cache
   static get ID_VAR_TOKENS () {
-    return TSQLParser.#ID_VAR_TOKENS ??= new Set([...Array.from(Parser.ID_VAR_TOKENS)].filter((t) => t !== TokenType.BEGIN));
+    return new Set([...Array.from(Parser.ID_VAR_TOKENS)].filter((t) => t !== TokenType.BEGIN));
   }
 
-  static #ALIAS_TOKENS: undefined = undefined;
+  @cache
   static get ALIAS_TOKENS () {
-    return TSQLParser.#ALIAS_TOKENS ??= new Set([...Array.from(Parser.ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
+    return new Set([...Array.from(Parser.ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
   }
 
-  static #TABLE_ALIAS_TOKENS: undefined = undefined;
+  @cache
   static get TABLE_ALIAS_TOKENS () {
-    return TSQLParser.#TABLE_ALIAS_TOKENS ??= new Set([...Array.from(Parser.TABLE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
+    return new Set([...Array.from(Parser.TABLE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
   }
 
-  static #COMMENT_TABLE_ALIAS_TOKENS: undefined = undefined;
+  @cache
   static get COMMENT_TABLE_ALIAS_TOKENS () {
-    return TSQLParser.#COMMENT_TABLE_ALIAS_TOKENS ??= new Set([...Array.from(Parser.COMMENT_TABLE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
+    return new Set([...Array.from(Parser.COMMENT_TABLE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
   }
 
-  static #UPDATE_ALIAS_TOKENS: undefined = undefined;
+  @cache
   static get UPDATE_ALIAS_TOKENS () {
-    return TSQLParser.#UPDATE_ALIAS_TOKENS ??= new Set([...Array.from(Parser.UPDATE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
+    return new Set([...Array.from(Parser.UPDATE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
   }
 
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return TSQLParser.#FUNCTIONS ??= {
+    return {
       ...Parser.FUNCTIONS,
       ATN2: Atan2Expr.fromArgList,
       CHARINDEX: (args: Expression[]) => new StrPositionExpr({
@@ -692,25 +692,25 @@ export class TSQLParser extends Parser {
     'READONLY',
   ]);
 
-  static #RETURNS_TABLE_TOKENS: undefined = undefined;
+  @cache
   static get RETURNS_TABLE_TOKENS () {
-    return TSQLParser.#RETURNS_TABLE_TOKENS ??= new Set(
+    return new Set(
       [...Array.from(Parser.ID_VAR_TOKENS)].filter((t) =>
         t !== TokenType.TABLE && !Parser.TYPE_TOKENS.has(t)),
     );
   }
 
-  static #STATEMENT_PARSERS: undefined = undefined;
+  @cache
   static get STATEMENT_PARSERS () {
-    return TSQLParser.#STATEMENT_PARSERS ??= {
+    return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.DECLARE]: (self: Parser) => (self as TSQLParser).parseDeclare(),
     };
   }
 
-  static #RANGE_PARSERS: undefined = undefined;
+  @cache
   static get RANGE_PARSERS () {
-    return TSQLParser.#RANGE_PARSERS ??= {
+    return {
       ...Parser.RANGE_PARSERS,
       [TokenType.DCOLON]: (self: Parser, thisNode: Expression) => (self as TSQLParser).expression(ScopeResolutionExpr, {
         this: thisNode,
@@ -719,17 +719,17 @@ export class TSQLParser extends Parser {
     };
   }
 
-  static #NO_PAREN_FUNCTION_PARSERS: Record<string, (self: Parser) => Expression> | undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression> {
-    return TSQLParser.#NO_PAREN_FUNCTION_PARSERS ??= {
+    return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
       NEXT: (self: Parser) => (self as TSQLParser).parseNextValueFor()!,
     };
   }
 
-  static #FUNCTION_PARSERS: Record<string, (self: Parser) => Expression> | undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression> {
-    return TSQLParser.#FUNCTION_PARSERS ??= {
+    return {
       ...Parser.FUNCTION_PARSERS,
       JSON_ARRAYAGG: (self: Parser) => {
         const p = self as TSQLParser;
@@ -743,9 +743,9 @@ export class TSQLParser extends Parser {
     };
   }
 
-  static #COLUMN_OPERATORS: undefined = undefined;
+  @cache
   static get COLUMN_OPERATORS () {
-    return TSQLParser.#COLUMN_OPERATORS ??= {
+    return {
       ...Parser.COLUMN_OPERATORS,
       [TokenType.DCOLON]: (self: Parser, thisNode?: Expression, to?: Expression) =>
         to instanceof DataTypeExpr && to.args.this !== DataTypeExprKind.USERDEFINED

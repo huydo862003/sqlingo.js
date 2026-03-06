@@ -1,3 +1,4 @@
+import { cache } from '../port_internals';
 import {
   Generator,
 } from '../generator';
@@ -8,7 +9,6 @@ import {
 } from '../tokens';
 import type {
   Expression,
-
   DataTypeExpr,
   UpdateExpr,
   TryCastExpr,
@@ -67,7 +67,6 @@ import {
   minOrLeast,
   strPositionSql,
   toNumberWithNlsParam,
-
   Dialect, NormalizationStrategy, Dialects,
   renameFunc,
 } from './dialect';
@@ -183,18 +182,18 @@ export class TeradataParser extends Parser {
     'UNICODE_TO_UNICODE_NFKD',
   ]);
 
-  static #FUNC_TOKENS: Set<TokenType> | undefined = undefined;
+  @cache
   static get FUNC_TOKENS (): Set<TokenType> {
-    return TeradataParser.#FUNC_TOKENS ??= (() => {
+    return (() => {
       const tokens = new Set(Parser.FUNC_TOKENS);
       tokens.delete(TokenType.REPLACE);
       return tokens;
     })();
   }
 
-  static #STATEMENT_PARSERS: Record<TokenType | string, (self: Parser) => Expression | Expression[] | undefined> | undefined = undefined;
+  @cache
   static get STATEMENT_PARSERS (): Record<TokenType | string, (self: Parser) => Expression | Expression[] | undefined> {
-    return TeradataParser.#STATEMENT_PARSERS ??= {
+    return {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.DATABASE]: (self: Parser) => self.expression(
         UseExpr,
@@ -205,17 +204,17 @@ export class TeradataParser extends Parser {
     };
   }
 
-  static #SET_PARSERS: Record<string, (self: Parser) => Expression | undefined> | undefined = undefined;
+  @cache
   static get SET_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
-    return TeradataParser.#SET_PARSERS ??= {
+    return {
       ...Parser.SET_PARSERS,
       QUERY_BAND: (self: Parser) => (self as TeradataParser).parseQueryBand(),
     };
   }
 
-  static #FUNCTION_PARSERS: Partial<Record<string, (self: Parser) => Expression | undefined>> | undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
-    return TeradataParser.#FUNCTION_PARSERS ??= {
+    return {
       ...Parser.FUNCTION_PARSERS,
       TRYCAST: Parser.FUNCTION_PARSERS['TRY_CAST'],
       RANGE_N: (self: Parser) => (self as TeradataParser).parseRangeN(),
@@ -223,9 +222,9 @@ export class TeradataParser extends Parser {
     };
   }
 
-  static #FUNCTIONS: Record<string, (args: Expression[]) => Expression> | undefined = undefined;
+  @cache
   static get FUNCTIONS (): Record<string, (args: Expression[]) => Expression> {
-    return TeradataParser.#FUNCTIONS ??= {
+    return {
       ...Parser.FUNCTIONS,
       DATE: (args: Expression[]) => new CurrentDateExpr({ expressions: args }),
       HASHMD5: (args: Expression[]) => new Md5Expr({ this: seqGet(args, 0) }),
@@ -237,10 +236,9 @@ export class TeradataParser extends Parser {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static #EXPONENT: Partial<Record<TokenType, new (args: any) => Expression>> | undefined = undefined;
-  static get EXPONENT (): Partial<Record<TokenType, new (args: any) => Expression>> {
-    return TeradataParser.#EXPONENT ??= {
+  @cache
+  static get EXPONENT (): Partial<Record<TokenType, typeof Expression>> {
+    return {
       ...Parser.EXPONENT,
       [TokenType.DSTAR]: PowExpr,
     };
@@ -508,7 +506,6 @@ export class Teradata extends Dialect {
   public static NORMALIZATION_STRATEGY = NormalizationStrategy.UPPERCASE;
   public static SUPPORTS_SEMI_ANTI_JOIN = false;
   public static TYPED_DIVISION = true;
-
   public static TIME_MAPPING = {
     YY: '%y',
     Y4: '%Y',

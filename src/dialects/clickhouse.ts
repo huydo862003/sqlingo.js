@@ -163,7 +163,9 @@ import {
   isInt,
   seqGet,
 } from '../helper';
-import { narrowInstanceOf } from '../port_internals';
+import {
+  cache, narrowInstanceOf,
+} from '../port_internals';
 import type { DatetimeDelta } from './dialect';
 import {
   buildDateDelta,
@@ -482,10 +484,9 @@ class ClickHouseParser extends Parser {
   static INTERVAL_SPANS = false;
   static OPTIONAL_ALIAS_TOKEN_CTE = false;
   static JOINS_HAVE_EQUAL_PRECEDENCE = true;
-
-  static #FUNCTIONS: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> | undefined = undefined;
+  @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
-    return ClickHouseParser.#FUNCTIONS ??= {
+    return {
       ...Parser.FUNCTIONS,
       ...Object.fromEntries(
         [...TIMESTAMP_TRUNC_UNITS].map((unit) => [`TOSTARTOF${unit}`, buildTimestampTrunc(unit)]),
@@ -699,9 +700,9 @@ class ClickHouseParser extends Parser {
     'ArgMax',
   ];
 
-  static #FUNC_TOKENS: undefined = undefined;
+  @cache
   static get FUNC_TOKENS () {
-    return ClickHouseParser.#FUNC_TOKENS ??= new Set([
+    return new Set([
       ...Parser.FUNC_TOKENS,
       TokenType.AND,
       TokenType.OR,
@@ -709,16 +710,16 @@ class ClickHouseParser extends Parser {
     ]);
   }
 
-  static #RESERVED_TOKENS: undefined = undefined;
+  @cache
   static get RESERVED_TOKENS () {
-    return ClickHouseParser.#RESERVED_TOKENS ??= new Set(
+    return new Set(
       [...Parser.RESERVED_TOKENS].filter((t) => t !== TokenType.SELECT),
     );
   }
 
-  static #ID_VAR_TOKENS: undefined = undefined;
+  @cache
   static get ID_VAR_TOKENS () {
-    return ClickHouseParser.#ID_VAR_TOKENS ??= new Set([...Parser.ID_VAR_TOKENS, TokenType.LIKE]);
+    return new Set([...Parser.ID_VAR_TOKENS, TokenType.LIKE]);
   }
 
   static AGG_FUNC_MAPPING = (() => {
@@ -732,9 +733,9 @@ class ClickHouseParser extends Parser {
     return mapping;
   })();
 
-  static #FUNCTION_PARSERS: Record<string, (self: Parser) => Expression> | undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression> {
-    return ClickHouseParser.#FUNCTION_PARSERS ??= {
+    return {
       ...Parser.FUNCTION_PARSERS,
       ARRAYJOIN: (self) => self.expression(ExplodeExpr, { this: self.parseExpression() }),
       QUANTILE: (self) => (self as ClickHouseParser).parseQuantile(),
@@ -762,9 +763,9 @@ class ClickHouseParser extends Parser {
     delete ClickHouseParser.FUNCTION_PARSERS['MATCH'];
   }
 
-  static #PROPERTY_PARSERS: Record<string, (self: Parser) => Expression> | undefined = undefined;
+  @cache
   static get PROPERTY_PARSERS (): Record<string, (self: Parser) => Expression> {
-    return ClickHouseParser.#PROPERTY_PARSERS ??= {
+    return {
       ...Parser.PROPERTY_PARSERS,
       ENGINE: (self) => (self as ClickHouseParser).parseEngineProperty(),
     };
@@ -774,45 +775,45 @@ class ClickHouseParser extends Parser {
     delete ClickHouseParser.PROPERTY_PARSERS['DYNAMIC'];
   }
 
-  static #NO_PAREN_FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTION_PARSERS () {
-    return ClickHouseParser.#NO_PAREN_FUNCTION_PARSERS ??= { ...Parser.NO_PAREN_FUNCTION_PARSERS };
+    return { ...Parser.NO_PAREN_FUNCTION_PARSERS };
   }
 
   static {
     delete ClickHouseParser.NO_PAREN_FUNCTION_PARSERS['ANY'];
   }
 
-  static #NO_PAREN_FUNCTIONS: undefined = undefined;
+  @cache
   static get NO_PAREN_FUNCTIONS () {
-    return ClickHouseParser.#NO_PAREN_FUNCTIONS ??= { ...Parser.NO_PAREN_FUNCTIONS };
+    return { ...Parser.NO_PAREN_FUNCTIONS };
   }
 
   static {
     delete (ClickHouseParser.NO_PAREN_FUNCTIONS as Record<string, unknown>)[TokenType.CURRENT_TIMESTAMP];
   }
 
-  static #RANGE_PARSERS: undefined = undefined;
+  @cache
   static get RANGE_PARSERS () {
-    return ClickHouseParser.#RANGE_PARSERS ??= {
+    return {
       ...Parser.RANGE_PARSERS,
       [TokenType.GLOBAL]: (self: Parser, thisNode: Expression) =>
         (self as ClickHouseParser).parseGlobalIn(thisNode),
     };
   }
 
-  static #COLUMN_OPERATORS: undefined = undefined;
+  @cache
   static get COLUMN_OPERATORS () {
-    return ClickHouseParser.#COLUMN_OPERATORS ??= { ...Parser.COLUMN_OPERATORS };
+    return { ...Parser.COLUMN_OPERATORS };
   }
 
   static {
     delete ClickHouseParser.COLUMN_OPERATORS[TokenType.PLACEHOLDER];
   }
 
-  static #JOIN_KINDS: undefined = undefined;
+  @cache
   static get JOIN_KINDS () {
-    return ClickHouseParser.#JOIN_KINDS ??= new Set([
+    return new Set([
       ...Parser.JOIN_KINDS,
       TokenType.ANY,
       TokenType.ASOF,
@@ -820,9 +821,9 @@ class ClickHouseParser extends Parser {
     ]);
   }
 
-  static #TABLE_ALIAS_TOKENS: undefined = undefined;
+  @cache
   static get TABLE_ALIAS_TOKENS () {
-    return ClickHouseParser.#TABLE_ALIAS_TOKENS ??= new Set(
+    return new Set(
       [...Parser.TABLE_ALIAS_TOKENS].filter(
         (t) =>
           ![
@@ -836,49 +837,48 @@ class ClickHouseParser extends Parser {
     );
   }
 
-  static #ALIAS_TOKENS: undefined = undefined;
+  @cache
   static get ALIAS_TOKENS () {
-    return ClickHouseParser.#ALIAS_TOKENS ??= new Set(
+    return new Set(
       [...Parser.ALIAS_TOKENS].filter((t) => t !== TokenType.FORMAT),
     );
   }
 
   static LOG_DEFAULTS_TO_LN = true;
-
-  static #QUERY_MODIFIER_PARSERS: Record<string, (self: Parser) => [string, string | Expression | Expression[] | undefined]> | undefined = undefined;
+  @cache
   static get QUERY_MODIFIER_PARSERS (): Record<string, (self: Parser) => [string, string | Expression | Expression[] | undefined]> {
-    return ClickHouseParser.#QUERY_MODIFIER_PARSERS ??= {
+    return {
       ...Parser.QUERY_MODIFIER_PARSERS,
       [TokenType.SETTINGS]: (self) => ['settings', ((self as ClickHouseParser).advance(), self.parseCsv(() => self.parseAssignment()))],
       [TokenType.FORMAT]: (self) => ['format', ((self as ClickHouseParser).advance(), self.parseIdVar())],
     };
   }
 
-  static #CONSTRAINT_PARSERS: Record<string, (self: Parser) => Expression> | undefined = undefined;
+  @cache
   static get CONSTRAINT_PARSERS (): Record<string, (self: Parser) => Expression> {
-    return ClickHouseParser.#CONSTRAINT_PARSERS ??= {
+    return {
       ...Parser.CONSTRAINT_PARSERS,
       INDEX: (self) => (self as ClickHouseParser).parseIndexConstraint(),
       CODEC: (self) => (self as ClickHouseParser).parseCompress(),
     };
   }
 
-  static #ALTER_PARSERS: Record<string, (self: Parser) => Expression> | undefined = undefined;
+  @cache
   static get ALTER_PARSERS (): Record<string, (self: Parser) => Expression> {
-    return ClickHouseParser.#ALTER_PARSERS ??= {
+    return {
       ...Parser.ALTER_PARSERS,
       REPLACE: (self) => (self as ClickHouseParser).parseAlterTableReplace()!,
     };
   }
 
-  static #SCHEMA_UNNAMED_CONSTRAINTS: undefined = undefined;
+  @cache
   static get SCHEMA_UNNAMED_CONSTRAINTS () {
-    return ClickHouseParser.#SCHEMA_UNNAMED_CONSTRAINTS ??= new Set([...Parser.SCHEMA_UNNAMED_CONSTRAINTS, 'INDEX']);
+    return new Set([...Parser.SCHEMA_UNNAMED_CONSTRAINTS, 'INDEX']);
   }
 
-  static #PLACEHOLDER_PARSERS: Record<string, (self: Parser) => Expression | undefined> | undefined = undefined;
+  @cache
   static get PLACEHOLDER_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
-    return ClickHouseParser.#PLACEHOLDER_PARSERS ??= {
+    return {
       ...Parser.PLACEHOLDER_PARSERS,
       [TokenType.L_BRACE]: (self) => (self as ClickHouseParser).parseQueryParameter(),
     };

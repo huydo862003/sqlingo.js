@@ -42,7 +42,9 @@ import type { Generator } from '../generator';
 import { seqGet } from '../helper';
 import type { Parser } from '../parser';
 import { buildTrim } from '../parser';
-import { narrowInstanceOf } from '../port_internals';
+import {
+  cache, narrowInstanceOf,
+} from '../port_internals';
 import { TokenType } from '../tokens';
 import {
   anyToExists,
@@ -182,10 +184,9 @@ class Spark2Tokenizer extends Hive.Tokenizer {
 class Spark2Parser extends Hive.Parser {
   static TRIM_PATTERN_FIRST = true;
   static CHANGE_COLUMN_ALTER_SYNTAX = true;
-
-  static #FUNCTIONS: undefined = undefined;
+  @cache
   static get FUNCTIONS () {
-    return Spark2Parser.#FUNCTIONS ??= {
+    return {
       ...Hive.Parser.FUNCTIONS,
       AGGREGATE: ReduceExpr.fromArgList,
       BOOLEAN: buildAsCast('boolean'),
@@ -245,9 +246,9 @@ class Spark2Parser extends Hive.Parser {
     };
   }
 
-  static #FUNCTION_PARSERS: undefined = undefined;
+  @cache
   static get FUNCTION_PARSERS () {
-    return Spark2Parser.#FUNCTION_PARSERS ??= {
+    return {
       ...Hive.Parser.FUNCTION_PARSERS,
       APPROX_PERCENTILE: (self: Parser) => (self as Spark2Parser).parseQuantileFunction(ApproxQuantileExpr),
       BROADCAST: (self: Parser) => self.parseJoinHint('BROADCAST'),

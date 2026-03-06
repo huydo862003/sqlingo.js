@@ -1,5 +1,6 @@
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/tokens.py
 
+import { cache } from './port_internals';
 import { Dialect } from './dialects/dialect';
 import { TokenError } from './errors';
 import {
@@ -698,8 +699,6 @@ export class Tokenizer {
     TokenType.DELETE,
   ]);
 
-  protected static commentsCache = new WeakMap<typeof Tokenizer, Record<string, string | undefined>>();
-
   /**
    * Dictionary mapping comment start delimiters to end delimiters (or null for single-line comments).
    *
@@ -707,157 +706,101 @@ export class Tokenizer {
    *
    * @example { '--': undefined, '{#': '#}' }
    */
+  @cache
   static get _COMMENTS (): Record<string, string | undefined> {
-    let cached = this.commentsCache.get(this);
-    if (!cached) {
-      cached = {};
-
-      // Convert COMMENTS array to dictionary format
-      for (const comment of this.COMMENTS) {
-        if (typeof comment === 'string') {
-          // Single-line comment (e.g., '--')
-          cached[comment] = undefined;
-        } else {
-          // Multi-line comment (e.g., ['/*', '*/'])
-          cached[comment[0]] = comment[1];
-        }
+    const result: Record<string, string | undefined> = {};
+    for (const comment of this.COMMENTS) {
+      if (typeof comment === 'string') {
+        result[comment] = undefined;
+      } else {
+        result[comment[0]] = comment[1];
       }
-
-      // Ensure Jinja comments are tokenized correctly in all dialects
-      cached['{#'] = '#}';
-
-      this.commentsCache.set(this, cached);
     }
-    return cached;
+    result['{#'] = '#}';
+    return result;
   }
-
-  protected static formatStringsCache = new WeakMap<typeof Tokenizer, Record<string, [string, TokenType]>>();
 
   /**
    * Dictionary mapping format string prefixes to [closing delimiter, token type] tuples.
    */
+  @cache
   static get _FORMAT_STRINGS (): Record<string, [string, TokenType]> {
-    let cached = this.formatStringsCache.get(this);
-    if (!cached) {
-      // Generate national strings by prefixing 'n' or 'N' to all quotes
-      const nationalStrings: Record<string, [string, TokenType]> = {};
-      for (const [start, end] of Object.entries(this._QUOTES)) {
-        for (const prefix of ['n', 'N']) {
-          nationalStrings[prefix + start] = [end, TokenType.STRING];
-        }
+    const nationalStrings: Record<string, [string, TokenType]> = {};
+    for (const [start, end] of Object.entries(this._QUOTES)) {
+      for (const prefix of ['n', 'N']) {
+        nationalStrings[prefix + start] = [end, TokenType.STRING];
       }
-
-      cached = {
-        ...nationalStrings,
-        ...this.quotesToFormat(TokenType.STRING, this.BIT_STRINGS),
-        ...this.quotesToFormat(TokenType.STRING, this.BYTE_STRINGS),
-        ...this.quotesToFormat(TokenType.STRING, this.HEX_STRINGS),
-        ...this.quotesToFormat(TokenType.STRING, this.RAW_STRINGS),
-        ...this.quotesToFormat(TokenType.STRING, this.HEREDOC_STRINGS),
-        ...this.quotesToFormat(TokenType.STRING, this.UNICODE_STRINGS),
-      };
-      this.formatStringsCache.set(this, cached);
     }
-    return cached;
+    return {
+      ...nationalStrings,
+      ...this.quotesToFormat(TokenType.STRING, this.BIT_STRINGS),
+      ...this.quotesToFormat(TokenType.STRING, this.BYTE_STRINGS),
+      ...this.quotesToFormat(TokenType.STRING, this.HEX_STRINGS),
+      ...this.quotesToFormat(TokenType.STRING, this.RAW_STRINGS),
+      ...this.quotesToFormat(TokenType.STRING, this.HEREDOC_STRINGS),
+      ...this.quotesToFormat(TokenType.STRING, this.UNICODE_STRINGS),
+    };
   }
-
-  protected static identifiersCache = new WeakMap<typeof Tokenizer, Record<string, string>>();
 
   /**
    * Dictionary mapping opening identifier delimiters to closing delimiters.
    *
    * @example { '"': '"', '`': '`' }
    */
+  @cache
   static get _IDENTIFIERS (): Record<string, string> {
-    let cached = this.identifiersCache.get(this);
-    if (!cached) {
-      cached = this.convertQuotes(this.IDENTIFIERS);
-      this.identifiersCache.set(this, cached);
-    }
-    return cached;
+    return this.convertQuotes(this.IDENTIFIERS);
   }
-
-  protected static identifierEscapesCache = new WeakMap<typeof Tokenizer, Set<string>>();
 
   /**
    * Set of characters that can be escaped in identifiers.
    *
    * @example new Set(['"'])
    */
+  @cache
   static get _IDENTIFIER_ESCAPES (): Set<string> {
-    let cached = this.identifierEscapesCache.get(this);
-    if (!cached) {
-      cached = new Set(this.IDENTIFIER_ESCAPES);
-      this.identifierEscapesCache.set(this, cached);
-    }
-    return cached;
+    return new Set(this.IDENTIFIER_ESCAPES);
   }
-
-  protected static quotesCache = new WeakMap<typeof Tokenizer, Record<string, string>>();
 
   /**
    * Dictionary mapping opening quote delimiters to closing delimiters.
    *
    * @example { "'": "'", '"': '"' }
    */
+  @cache
   static get _QUOTES (): Record<string, string> {
-    let cached = this.quotesCache.get(this);
-    if (!cached) {
-      cached = this.convertQuotes(this.QUOTES);
-      this.quotesCache.set(this, cached);
-    }
-    return cached;
+    return this.convertQuotes(this.QUOTES);
   }
-
-  protected static stringEscapesCache = new WeakMap<typeof Tokenizer, Set<string>>();
 
   /**
    * Set of characters that can be escaped in strings.
    *
    * @example new Set(["'", "\\"])
    */
+  @cache
   static get _STRING_ESCAPES (): Set<string> {
-    let cached = this.stringEscapesCache.get(this);
-    if (!cached) {
-      cached = new Set(this.STRING_ESCAPES);
-      this.stringEscapesCache.set(this, cached);
-    }
-    return cached;
+    return new Set(this.STRING_ESCAPES);
   }
-
-  protected static byteStringEscapesCache = new WeakMap<typeof Tokenizer, Set<string>>();
 
   /**
    * Set of characters that can be escaped in byte strings.
    *
    * @example new Set(["\\"])
    */
+  @cache
   static get _BYTE_STRING_ESCAPES (): Set<string> {
-    let cached = this.byteStringEscapesCache.get(this);
-    if (!cached) {
-      cached = new Set(this.BYTE_STRING_ESCAPES);
-      this.byteStringEscapesCache.set(this, cached);
-    }
-    return cached;
+    return new Set(this.BYTE_STRING_ESCAPES);
   }
-
-  protected static escapeFollowCharsCache = new WeakMap<typeof Tokenizer, Set<string>>();
 
   /**
    * Set of characters that can follow an escape character.
    *
    * @example new Set(["n", "t", "r"])
    */
+  @cache
   static get _ESCAPE_FOLLOW_CHARS (): Set<string> {
-    let cached = this.escapeFollowCharsCache.get(this);
-    if (!cached) {
-      cached = new Set(this.ESCAPE_FOLLOW_CHARS);
-      this.escapeFollowCharsCache.set(this, cached);
-    }
-    return cached;
+    return new Set(this.ESCAPE_FOLLOW_CHARS);
   }
-
-  protected static keywordTrieCache = new WeakMap<typeof Tokenizer, TrieNode>();
 
   /**
    * Trie structure for efficient keyword matching.
@@ -865,29 +808,21 @@ export class Tokenizer {
    * Contains keywords that have spaces or contain single-token characters,
    * allowing for efficient prefix-based scanning of multi-character keywords.
    */
+  @cache
   static get _KEYWORD_TRIE (): TrieNode {
-    let cached = this.keywordTrieCache.get(this);
-    if (!cached) {
-      const singleTokenChars = Object.keys(this.SINGLE_TOKENS);
-      const keys = [
-        ...Object.keys(this.KEYWORDS),
-        ...Object.keys(this._COMMENTS),
-        ...Object.keys(this._QUOTES),
-        ...Object.keys(this._FORMAT_STRINGS),
-      ];
-
-      cached = newTrie(
-        keys
-          .filter((key) => key.includes(' ') || singleTokenChars.some((c) => key.includes(c)))
-          .map((key) => Array.from(key.toUpperCase())),
-      );
-
-      this.keywordTrieCache.set(this, cached);
-    }
-    return cached;
+    const singleTokenChars = Object.keys(this.SINGLE_TOKENS);
+    const keys = [
+      ...Object.keys(this.KEYWORDS),
+      ...Object.keys(this._COMMENTS),
+      ...Object.keys(this._QUOTES),
+      ...Object.keys(this._FORMAT_STRINGS),
+    ];
+    return newTrie(
+      keys
+        .filter((key) => key.includes(' ') || singleTokenChars.some((c) => key.includes(c)))
+        .map((key) => Array.from(key.toUpperCase())),
+    );
   }
-
-  protected static keywordsCache = new WeakMap<typeof Tokenizer, Record<string, TokenType>>();
 
   /**
    * Override this in subclasses to add or change keywords for a dialect.
@@ -1223,13 +1158,9 @@ export class Tokenizer {
    * @final Do not override this getter in subclasses; override `ORIGINAL_KEYWORDS` instead.
    * @example { 'SELECT': TokenType.SELECT, 'FROM': TokenType.FROM }
    */
+  @cache
   static get KEYWORDS (): Record<string, TokenType> {
-    let cached = this.keywordsCache.get(this);
-    if (!cached) {
-      cached = this.ORIGINAL_KEYWORDS;
-      this.keywordsCache.set(this, cached);
-    }
-    return cached;
+    return this.ORIGINAL_KEYWORDS;
   }
 
   /**
