@@ -3,11 +3,11 @@
 import { DateTime } from 'luxon';
 import {
   Dialect, type DialectType,
-} from './dialects/dialect';
-import { Token } from './tokens';
+} from '../dialects/dialect';
+import { Token } from '../tokens';
 import {
   ensureIterable, splitNumWords,
-} from './helper';
+} from '../helper';
 import {
   assertIsInstanceOf, filterInstanceOf, isInstanceOf, narrowInstanceOf, isIterable, enumFromString,
   type Merge,
@@ -22,18 +22,64 @@ import {
   type NegatableObject,
   type InvertableObject,
   type IndexableObject,
-} from './port_internals';
-import { traverseScope } from './optimizer/scope';
+} from '../port_internals';
+import { traverseScope } from '../optimizer/scope';
 import {
   ErrorLevel, ParseError,
-} from './errors';
+} from '../errors';
 import {
   parseOne, type ParseOptions,
-} from './parser';
-import { normalizeIdentifiers } from './optimizer';
+} from '../parser';
+import { normalizeIdentifiers } from '../optimizer';
 import {
   dump, load,
-} from './serde';
+} from '../serde';
+import {
+  ExpressionKey,
+  CreateExprKind,
+  JoinExprKind,
+  DataTypeExprKind,
+  AlterExprKind,
+} from './types';
+import type {
+  RefreshExprKind,
+  DescribeExprKind,
+  KillExprKind,
+  DeclareItemExprKind,
+  SetItemExprKind,
+  RecursiveWithSearchExprKind,
+  ColumnDefExprKind,
+  CommentExprKind,
+  ColumnConstraintExprKind,
+  DropExprKind,
+  MultitableInsertsExprKind,
+  GrantExprKind,
+  GrantPrincipalExprKind,
+  HistoricalDataExprKind,
+  WindowSpecExprKind,
+  AnalyzeExprKind,
+  AnalyzeStatisticsExprKind,
+  AnalyzeSampleExprKind,
+  AnalyzeDeleteExprKind,
+  AnalyzeValidateExprKind,
+  JsonColumnDefExprKind,
+  OpenJsonColumnDefExprKind,
+  UseExprKind,
+  IndexColumnConstraintExprKind,
+  CopyExprKind,
+  DistributedByPropertyExprKind,
+  DictPropertyExprKind,
+  LockingPropertyExprKind,
+  RefreshTriggerPropertyExprKind,
+  SetOperationExprKind,
+  SelectExprKind,
+  SessionParameterExprKind,
+  PlaceholderExprKind,
+  TimeSliceExprKind,
+  TrimPosition,
+} from './types';
+
+export * from './types';
 
 export const SQLGLOT_META = 'sqlglot.meta';
 export const SQLGLOT_ANONYMOUS = 'sqlglot.anonymous';
@@ -72,975 +118,6 @@ function toBool (value: unknown): boolean {
 export type IntoType = string | typeof Expression | (string | typeof Expression)[];
 
 /** Expression key enum */
-export enum ExpressionKey {
-  ABS = 'abs',
-  ACOS = 'acos',
-  ACOSH = 'acosh',
-  ADD = 'add',
-  ADD_CONSTRAINT = 'addConstraint',
-  ADD_MONTHS = 'addMonths',
-  ADD_PARTITION = 'addPartition',
-  ADJACENT = 'adjacent',
-  AGG_FUNC = 'aggFunc',
-  AI_AGG = 'aiAgg',
-  AI_CLASSIFY = 'aiClassify',
-  AI_SUMMARIZE_AGG = 'aiSummarizeAgg',
-  ALGORITHM_PROPERTY = 'algorithmProperty',
-  ALIAS = 'alias',
-  ALIASES = 'aliases',
-  ALL = 'all',
-  ALLOWED_VALUES_PROPERTY = 'allowedValuesProperty',
-  ALTER = 'alter',
-  ALTER_COLUMN = 'alterColumn',
-  ALTER_DIST_STYLE = 'alterDistStyle',
-  ALTER_INDEX = 'alterIndex',
-  ALTER_RENAME = 'alterRename',
-  ALTER_SESSION = 'alterSession',
-  ALTER_SET = 'alterSet',
-  ALTER_SORT_KEY = 'alterSortKey',
-  ANALYZE = 'analyze',
-  ANALYZE_COLUMNS = 'analyzeColumns',
-  ANALYZE_DELETE = 'analyzeDelete',
-  ANALYZE_HISTOGRAM = 'analyzeHistogram',
-  ANALYZE_LIST_CHAINED_ROWS = 'analyzeListChainedRows',
-  ANALYZE_SAMPLE = 'analyzeSample',
-  ANALYZE_STATISTICS = 'analyzeStatistics',
-  ANALYZE_VALIDATE = 'analyzeValidate',
-  ANALYZE_WITH = 'analyzeWith',
-  AND = 'and',
-  ANONYMOUS = 'anonymous',
-  ANONYMOUS_AGG_FUNC = 'anonymousAggFunc',
-  ANY = 'any',
-  ANY_VALUE = 'anyValue',
-  APPLY = 'apply',
-  APPROXIMATE_SIMILARITY = 'approximateSimilarity',
-  APPROX_DISTINCT = 'approxDistinct',
-  APPROX_PERCENTILE_ACCUMULATE = 'approxPercentileAccumulate',
-  APPROX_PERCENTILE_COMBINE = 'approxPercentileCombine',
-  APPROX_PERCENTILE_ESTIMATE = 'approxPercentileEstimate',
-  APPROX_QUANTILE = 'approxQuantile',
-  APPROX_QUANTILES = 'approxQuantiles',
-  APPROX_TOP_K = 'approxTopK',
-  APPROX_TOP_K_ACCUMULATE = 'approxTopKAccumulate',
-  APPROX_TOP_K_COMBINE = 'approxTopKCombine',
-  APPROX_TOP_K_ESTIMATE = 'approxTopKEstimate',
-  APPROX_TOP_SUM = 'approxTopSum',
-  ARG_MAX = 'argMax',
-  ARG_MIN = 'argMin',
-  ARRAY = 'array',
-  ARRAYS_ZIP = 'arraysZip',
-  ARRAY_AGG = 'arrayAgg',
-  ARRAY_ALL = 'arrayAll',
-  ARRAY_ANY = 'arrayAny',
-  ARRAY_APPEND = 'arrayAppend',
-  ARRAY_COMPACT = 'arrayCompact',
-  ARRAY_CONCAT = 'arrayConcat',
-  ARRAY_CONCAT_AGG = 'arrayConcatAgg',
-  ARRAY_CONSTRUCT_COMPACT = 'arrayConstructCompact',
-  ARRAY_CONTAINS = 'arrayContains',
-  ARRAY_CONTAINS_ALL = 'arrayContainsAll',
-  ARRAY_FILTER = 'arrayFilter',
-  ARRAY_FIRST = 'arrayFirst',
-  ARRAY_INSERT = 'arrayInsert',
-  ARRAY_INTERSECT = 'arrayIntersect',
-  ARRAY_LAST = 'arrayLast',
-  ARRAY_OVERLAPS = 'arrayOverlaps',
-  ARRAY_PREPEND = 'arrayPrepend',
-  ARRAY_REMOVE = 'arrayRemove',
-  ARRAY_REMOVE_AT = 'arrayRemoveAt',
-  ARRAY_REVERSE = 'arrayReverse',
-  ARRAY_SIZE = 'arraySize',
-  ARRAY_SLICE = 'arraySlice',
-  ARRAY_SORT = 'arraySort',
-  ARRAY_SUM = 'arraySum',
-  ARRAY_TO_STRING = 'arrayToString',
-  ARRAY_UNION_AGG = 'arrayUnionAgg',
-  ARRAY_UNIQUE_AGG = 'arrayUniqueAgg',
-  ASCII = 'ascii',
-  ASIN = 'asin',
-  ASINH = 'asinh',
-  ATAN = 'atan',
-  ATAN2 = 'atan2',
-  ATANH = 'atanh',
-  ATTACH = 'attach',
-  ATTACH_OPTION = 'attachOption',
-  AT_INDEX = 'atIndex',
-  AT_TIME_ZONE = 'atTimeZone',
-  AUTO_INCREMENT_COLUMN_CONSTRAINT = 'autoIncrementColumnConstraint',
-  AUTO_INCREMENT_PROPERTY = 'autoIncrementProperty',
-  AUTO_REFRESH_PROPERTY = 'autoRefreshProperty',
-  AVG = 'avg',
-  BACKUP_PROPERTY = 'backupProperty',
-  BASE64_DECODE_BINARY = 'base64DecodeBinary',
-  BASE64_DECODE_STRING = 'base64DecodeString',
-  BASE64_ENCODE = 'base64Encode',
-  BETWEEN = 'between',
-  BINARY = 'binary',
-  BITMAP_BIT_POSITION = 'bitmapBitPosition',
-  BITMAP_BUCKET_NUMBER = 'bitmapBucketNumber',
-  BITMAP_CONSTRUCT_AGG = 'bitmapConstructAgg',
-  BITMAP_COUNT = 'bitmapCount',
-  BITMAP_OR_AGG = 'bitmapOrAgg',
-  BITWISE_AND = 'bitwiseAnd',
-  BITWISE_AND_AGG = 'bitwiseAndAgg',
-  BITWISE_COUNT = 'bitwiseCount',
-  BITWISE_LEFT_SHIFT = 'bitwiseLeftShift',
-  BITWISE_NOT = 'bitwiseNot',
-  BITWISE_OR = 'bitwiseOr',
-  BITWISE_OR_AGG = 'bitwiseOrAgg',
-  BITWISE_RIGHT_SHIFT = 'bitwiseRightShift',
-  BITWISE_XOR = 'bitwiseXor',
-  BITWISE_XOR_AGG = 'bitwiseXorAgg',
-  BIT_LENGTH = 'bitLength',
-  BIT_STRING = 'bitString',
-  BLOCK_COMPRESSION_PROPERTY = 'blockCompressionProperty',
-  BOOLAND = 'booland',
-  BOOLEAN = 'boolean',
-  BOOLNOT = 'boolnot',
-  BOOLOR = 'boolor',
-  BOOLXOR_AGG = 'boolxorAgg',
-  BRACKET = 'bracket',
-  BUILD_PROPERTY = 'buildProperty',
-  BYTE_LENGTH = 'byteLength',
-  BYTE_STRING = 'byteString',
-  CACHE = 'cache',
-  CASE = 'case',
-  CASE_SPECIFIC_COLUMN_CONSTRAINT = 'caseSpecificColumnConstraint',
-  CAST = 'cast',
-  CAST_TO_STR_TYPE = 'castToStrType',
-  CBRT = 'cbrt',
-  CEIL = 'ceil',
-  CHANGES = 'changes',
-  CHARACTER_SET = 'characterSet',
-  CHARACTER_SET_COLUMN_CONSTRAINT = 'characterSetColumnConstraint',
-  CHARACTER_SET_PROPERTY = 'characterSetProperty',
-  CHECK = 'check',
-  CHECKSUM_PROPERTY = 'checksumProperty',
-  CHECK_COLUMN_CONSTRAINT = 'checkColumnConstraint',
-  CHECK_JSON = 'checkJson',
-  CHECK_XML = 'checkXml',
-  CHR = 'chr',
-  CLONE = 'clone',
-  CLUSTER = 'cluster',
-  CLUSTERED_BY_PROPERTY = 'clusteredByProperty',
-  CLUSTERED_COLUMN_CONSTRAINT = 'clusteredColumnConstraint',
-  COALESCE = 'coalesce',
-  CODE_POINTS_TO_BYTES = 'codePointsToBytes',
-  CODE_POINTS_TO_STRING = 'codePointsToString',
-  COLLATE = 'collate',
-  COLLATE_COLUMN_CONSTRAINT = 'collateColumnConstraint',
-  COLLATE_PROPERTY = 'collateProperty',
-  COLLATION = 'collation',
-  COLUMN = 'column',
-  COLUMNS = 'columns',
-  COLUMN_CONSTRAINT = 'columnConstraint',
-  COLUMN_CONSTRAINT_KIND = 'columnConstraintKind',
-  COLUMN_DEF = 'columndef',
-  COLUMN_POSITION = 'columnPosition',
-  COLUMN_PREFIX = 'columnPrefix',
-  COMBINED_AGG_FUNC = 'combinedAggFunc',
-  COMBINED_PARAMETERIZED_AGG = 'combinedParameterizedAgg',
-  COMMAND = 'command',
-  COMMENT = 'comment',
-  COMMENT_COLUMN_CONSTRAINT = 'commentColumnConstraint',
-  COMMIT = 'commit',
-  COMPREHENSION = 'comprehension',
-  COMPRESS = 'compress',
-  COMPRESS_COLUMN_CONSTRAINT = 'compressColumnConstraint',
-  COMPUTED_COLUMN_CONSTRAINT = 'computedColumnConstraint',
-  CONCAT = 'concat',
-  CONCAT_WS = 'concatWs',
-  CONDITION = 'condition',
-  CONDITIONAL_INSERT = 'conditionalInsert',
-  CONNECT = 'connect',
-  CONNECTOR = 'connector',
-  CONNECT_BY_ROOT = 'connectByRoot',
-  CONSTRAINT = 'constraint',
-  CONTAINS = 'contains',
-  CONVERT = 'convert',
-  CONVERT_TIMEZONE = 'convertTimezone',
-  CONVERT_TO_CHARSET = 'convertToCharset',
-  COPY = 'copy',
-  COPY_GRANTS_PROPERTY = 'copyGrantsProperty',
-  COPY_PARAMETER = 'copyParameter',
-  CORR = 'corr',
-  COS = 'cos',
-  COSH = 'cosh',
-  COSINE_DISTANCE = 'cosineDistance',
-  COT = 'cot',
-  COTH = 'coth',
-  COUNT = 'count',
-  COUNT_IF = 'countIf',
-  COVAR_POP = 'covarPop',
-  COVAR_SAMP = 'covarSamp',
-  CREATE = 'create',
-  CREDENTIALS = 'credentials',
-  CREDENTIALS_PROPERTY = 'credentialsProperty',
-  CSC = 'csc',
-  CSCH = 'csch',
-  CTE = 'cte',
-  CUBE = 'cube',
-  CUME_DIST = 'cumeDist',
-  CURRENT_ACCOUNT = 'currentAccount',
-  CURRENT_ACCOUNT_NAME = 'currentAccountName',
-  CURRENT_AVAILABLE_ROLES = 'currentAvailableRoles',
-  CURRENT_CATALOG = 'currentCatalog',
-  CURRENT_CLIENT = 'currentClient',
-  CURRENT_DATABASE = 'currentDatabase',
-  CURRENT_DATE = 'currentDate',
-  CURRENT_DATETIME = 'currentDatetime',
-  CURRENT_IP_ADDRESS = 'currentIpAddress',
-  CURRENT_ORGANIZATION_NAME = 'currentOrganizationName',
-  CURRENT_ORGANIZATION_USER = 'currentOrganizationUser',
-  CURRENT_REGION = 'currentRegion',
-  CURRENT_ROLE = 'currentRole',
-  CURRENT_ROLE_TYPE = 'currentRoleType',
-  CURRENT_SCHEMA = 'currentSchema',
-  CURRENT_SCHEMAS = 'currentSchemas',
-  CURRENT_SECONDARY_ROLES = 'currentSecondaryRoles',
-  CURRENT_SESSION = 'currentSession',
-  CURRENT_STATEMENT = 'currentStatement',
-  CURRENT_TIME = 'currentTime',
-  CURRENT_TIMESTAMP = 'currentTimestamp',
-  CURRENT_TIMESTAMP_LTZ = 'currentTimestampLTZ',
-  CURRENT_TIMEZONE = 'currentTimezone',
-  CURRENT_TRANSACTION = 'currentTransaction',
-  CURRENT_USER = 'currentUser',
-  CURRENT_VERSION = 'currentVersion',
-  CURRENT_WAREHOUSE = 'currentWarehouse',
-  DATA_BLOCKSIZE_PROPERTY = 'dataBlocksizeProperty',
-  DATA_DELETION_PROPERTY = 'dataDeletionProperty',
-  DATA_TYPE = 'datatype',
-  DATA_TYPE_PARAM = 'dataTypeParam',
-  DATE = 'date',
-  DATETIME = 'datetime',
-  DATETIME_ADD = 'datetimeAdd',
-  DATETIME_DIFF = 'datetimeDiff',
-  DATETIME_SUB = 'datetimeSub',
-  DATETIME_TRUNC = 'datetimeTrunc',
-  DATE_ADD = 'dateAdd',
-  DATE_BIN = 'dateBin',
-  DATE_DIFF = 'dateDiff',
-  DATE_FORMAT_COLUMN_CONSTRAINT = 'dateFormatColumnConstraint',
-  DATE_FROM_PARTS = 'dateFromParts',
-  DATE_FROM_UNIX_DATE = 'dateFromUnixDate',
-  DATE_STR_TO_DATE = 'dateStrToDate',
-  DATE_SUB = 'dateSub',
-  DATE_TO_DATE_STR = 'dateToDateStr',
-  DATE_TO_DI = 'dateToDi',
-  DATE_TRUNC = 'dateTrunc',
-  DAY = 'day',
-  DAYNAME = 'dayname',
-  DAY_OF_MONTH = 'dayOfMonth',
-  DAY_OF_WEEK = 'dayOfWeek',
-  DAY_OF_WEEK_ISO = 'dayOfWeekIso',
-  DAY_OF_YEAR = 'dayOfYear',
-  DDL = 'ddl',
-  DECLARE = 'declare',
-  DECLARE_ITEM = 'declareItem',
-  DECODE = 'decode',
-  DECODE_CASE = 'decodeCase',
-  DECOMPRESS_BINARY = 'decompressBinary',
-  DECOMPRESS_STRING = 'decompressString',
-  DECRYPT = 'decrypt',
-  DECRYPT_RAW = 'decryptRaw',
-  DEFAULT_COLUMN_CONSTRAINT = 'defaultColumnConstraint',
-  DEFINER_PROPERTY = 'definerProperty',
-  DEGREES = 'degrees',
-  DELETE = 'delete',
-  DENSE_RANK = 'denseRank',
-  DERIVED_TABLE = 'derivedTable',
-  DESCRIBE = 'describe',
-  DETACH = 'detach',
-  DICT_PROPERTY = 'dictProperty',
-  DICT_RANGE = 'dictRange',
-  DICT_SUB_PROPERTY = 'dictSubProperty',
-  DIRECTORY = 'directory',
-  DIRECTORY_STAGE = 'directoryStage',
-  DISTANCE = 'distance',
-  DISTINCT = 'distinct',
-  DISTRIBUTE = 'distribute',
-  DISTRIBUTED_BY_PROPERTY = 'distributedByProperty',
-  DIST_KEY_PROPERTY = 'distKeyProperty',
-  DIST_STYLE_PROPERTY = 'distStyleProperty',
-  DIV = 'div',
-  DI_TO_DATE = 'diToDate',
-  DML = 'dml',
-  DOT = 'dot',
-  DOT_PRODUCT = 'dotProduct',
-  DROP = 'drop',
-  DROP_PARTITION = 'dropPartition',
-  DUPLICATE_KEY_PROPERTY = 'duplicateKeyProperty',
-  DYNAMIC_PROPERTY = 'dynamicProperty',
-  D_PIPE = 'dPipe',
-  ELT = 'elt',
-  EMPTY_PROPERTY = 'emptyProperty',
-  ENCODE = 'encode',
-  ENCODE_COLUMN_CONSTRAINT = 'encodeColumnConstraint',
-  ENCODE_PROPERTY = 'encodeProperty',
-  ENCRYPT = 'encrypt',
-  ENCRYPT_RAW = 'encryptRaw',
-  ENDS_WITH = 'endsWith',
-  ENGINE_PROPERTY = 'engineProperty',
-  ENVIROMENT_PROPERTY = 'enviromentProperty',
-  EPHEMERAL_COLUMN_CONSTRAINT = 'ephemeralColumnConstraint',
-  EQ = 'eq',
-  EqUAL_NULL = 'equalNull',
-  ESCAPE = 'escape',
-  EUCLIDEAN_DISTANCE = 'euclideanDistance',
-  EXCEPT = 'except',
-  EXCLUDE_COLUMN_CONSTRAINT = 'excludeColumnConstraint',
-  EXECUTE_AS_PROPERTY = 'executeAsProperty',
-  EXISTS = 'exists',
-  EXP = 'exp',
-  EXPLODE = 'explode',
-  EXPLODE_OUTER = 'explodeOuter',
-  EXPLODING_GENERATE_SERIES = 'explodingGenerateSeries',
-  EXPORT = 'export',
-  EXPRESSION = 'expression',
-  EXTENDS_LEFT = 'extendsLeft',
-  EXTENDS_RIGHT = 'extendsRight',
-  EXTERNAL_PROPERTY = 'externalProperty',
-  EXTRACT = 'extract',
-  FACTORIAL = 'factorial',
-  FALLBACK_PROPERTY = 'fallbackProperty',
-  FARM_FINGERPRINT = 'farmFingerprint',
-  FEATURES_AT_TIME = 'featuresAtTime',
-  FETCH = 'fetch',
-  FILE_FORMAT_PROPERTY = 'fileFormatProperty',
-  FILTER = 'filter',
-  FINAL = 'final',
-  FIRST = 'first',
-  FIRST_VALUE = 'firstValue',
-  FLATTEN = 'flatten',
-  FLOAT64 = 'float64',
-  FLOOR = 'floor',
-  FORCE_PROPERTY = 'forceProperty',
-  FOREIGN_KEY = 'foreignKey',
-  FORMAT = 'format',
-  FORMAT_JSON = 'formatJson',
-  FORMAT_PHRASE = 'formatPhrase',
-  FOR_IN = 'forIn',
-  FREESPACE_PROPERTY = 'freespaceProperty',
-  FROM = 'from',
-  FROM_BASE = 'fromBase',
-  FROM_BASE32 = 'fromBase32',
-  FROM_BASE64 = 'fromBase64',
-  FROM_ISO8601_TIMESTAMP = 'fromIso8601Timestamp',
-  FROM_TIME_ZONE = 'fromTimeZone',
-  FUNC = 'func',
-  GAP_FILL = 'gapFill',
-  GENERATED_AS_IDENTITY_COLUMN_CONSTRAINT = 'generatedAsIdentityColumnConstraint',
-  GENERATED_AS_ROW_COLUMN_CONSTRAINT = 'generatedAsRowColumnConstraint',
-  GENERATE_DATE_ARRAY = 'generateDateArray',
-  GENERATE_EMBEDDING = 'generateEmbedding',
-  GENERATE_SERIES = 'generateSeries',
-  GENERATE_TIMESTAMP_ARRAY = 'generateTimestampArray',
-  GENERATOR = 'generator',
-  GET = 'get',
-  GETBIT = 'getbit',
-  GET_EXTRACT = 'getExtract',
-  GLOB = 'glob',
-  GLOBAL_PROPERTY = 'globalProperty',
-  GRANT = 'grant',
-  GRANT_PRINCIPAL = 'grantPrincipal',
-  GRANT_PRIVILEGE = 'grantPrivilege',
-  GREATEST = 'greatest',
-  GROUP = 'group',
-  GROUPING = 'grouping',
-  GROUPING_ID = 'groupingId',
-  GROUPING_SETS = 'groupingsets',
-  GROUP_CONCAT = 'groupConcat',
-  GT = 'gt',
-  GtE = 'gte',
-  HASH_AGG = 'hashAgg',
-  HAVING = 'having',
-  HAVING_MAX = 'havingMax',
-  HEAP_PROPERTY = 'heapProperty',
-  HEREDOC = 'heredoc',
-  HEX = 'hex',
-  HEX_DECODE_STRING = 'hexDecodeString',
-  HEX_ENCODE = 'hexEncode',
-  HEX_STRING = 'hexString',
-  HINT = 'hint',
-  HISTORICAL_DATA = 'historicalData',
-  HLL = 'hll',
-  HOST = 'host',
-  HOUR = 'hour',
-  ICEBERG_PROPERTY = 'icebergProperty',
-  IDENTIFIER = 'identifier',
-  IF = 'if',
-  IGNORE_NULLS = 'ignorenulls',
-  IN = 'in',
-  INCLUDE_PROPERTY = 'includeProperty',
-  INDEX = 'index',
-  INDEX_COLUMN_CONSTRAINT = 'indexColumnConstraint',
-  INDEX_CONSTRAINT_OPTION = 'indexConstraintOption',
-  INDEX_PARAMETERS = 'indexParameters',
-  INDEX_TABLE_HINT = 'indexTableHint',
-  INHERITS_PROPERTY = 'inheritsProperty',
-  INITCAP = 'initcap',
-  INLINE = 'inline',
-  INLINE_LENGTH_COLUMN_CONSTRAINT = 'inlineLengthColumnConstraint',
-  INPUT_MODEL_PROPERTY = 'inputModelProperty',
-  INPUT_OUTPUT_FORMAT = 'inputOutputFormat',
-  INSERT = 'insert',
-  INSTALL = 'install',
-  INT64 = 'int64',
-  INTERSECT = 'intersect',
-  INTERVAL = 'interval',
-  INTERVAL_OP = 'intervalOp',
-  INTERVAL_SPAN = 'intervalSpan',
-  INTO = 'into',
-  INTRODUCER = 'introducer',
-  INT_DIV = 'intDiv',
-  IN_OUT_COLUMN_CONSTRAINT = 'inOutColumnConstraint',
-  IS = 'is',
-  ISOLATED_LOADING_PROPERTY = 'isolatedLoadingProperty',
-  IS_ARRAY = 'isArray',
-  IS_ASCII = 'isAscii',
-  IS_INF = 'isInf',
-  IS_NAN = 'isNan',
-  IS_NULL_VALUE = 'isNullValue',
-  ILIKE = 'ilike',
-  JAROWINKLER_SIMILARITY = 'jarowinklerSimilarity',
-  JOIN = 'join',
-  JOIN_HINT = 'joinHint',
-  JOURNAL_PROPERTY = 'journalProperty',
-  JSON = 'json',
-  JSON_ARRAY = 'jsonArray',
-  JSON_ARRAY_AGG = 'jsonArrayAgg',
-  JSON_ARRAY_APPEND = 'jsonArrayAppend',
-  JSON_ARRAY_CONTAINS = 'jsonArrayContains',
-  JSON_ARRAY_INSERT = 'jsonArrayInsert',
-  JSON_BOOL = 'jsonBool',
-  JSONB_CONTAINS = 'jsonbContains',
-  JSONB_CONTAINS_ALL_TOP_KEYS = 'jsonbContainsAllTopKeys',
-  JSONB_CONTAINS_ANY_TOP_KEYS = 'jsonbContainsAnyTopKeys',
-  JSONB_DELETE_AT_PATH = 'jsonbDeleteAtPath',
-  JSONB_EXISTS = 'jsonbExists',
-  JSONB_EXTRACT = 'jsonbExtract',
-  JSONB_EXTRACT_SCALAR = 'jsonbExtractScalar',
-  JSONB_OBJECT_AGG = 'jsonbObjectAgg',
-  JSON_CAST = 'jsonCast',
-  JSON_COLUMN_DEF = 'jsonColumnDef',
-  JSON_EXISTS = 'jsonExists',
-  JSON_EXTRACT = 'jsonExtract',
-  JSON_EXTRACT_ARRAY = 'jsonExtractArray',
-  JSON_EXTRACT_QUOTE = 'jsonExtractQuote',
-  JSON_EXTRACT_SCALAR = 'jsonExtractScalar',
-  JSON_FORMAT = 'jsonFormat',
-  JSON_KEYS = 'jsonKeys',
-  JSON_KEYS_AT_DEPTH = 'jsonKeysAtDepth',
-  JSON_KEY_VALUE = 'jsonKeyValue',
-  JSON_OBJECT = 'jsonObject',
-  JSON_OBJECT_AGG = 'jsonObjectAgg',
-  JSON_PATH = 'jsonPath',
-  JSON_PATH_FILTER = 'jsonPathFilter',
-  JSON_PATH_KEY = 'jsonPathKey',
-  JSON_PATH_PART = 'jsonPathPart',
-  JSON_PATH_RECURSIVE = 'jsonPathRecursive',
-  JSON_PATH_ROOT = 'jsonPathRoot',
-  JSON_PATH_SCRIPT = 'jsonPathScript',
-  JSON_PATH_SELECTOR = 'jsonPathSelector',
-  JSON_PATH_SLICE = 'jsonPathSlice',
-  JSON_PATH_SUBSCRIPT = 'jsonPathSubscript',
-  JSON_PATH_UNION = 'jsonPathUnion',
-  JSON_PATH_WILDCARD = 'jsonPathWildcard',
-  JSON_REMOVE = 'jsonRemove',
-  JSON_SCHEMA = 'jsonSchema',
-  JSON_SET = 'jsonSet',
-  JSON_STRIP_NULLS = 'jsonStripNulls',
-  JSON_TABLE = 'jsonTable',
-  JSON_TYPE = 'jsontype',
-  JSON_VALUE = 'jsonValue',
-  JSON_VALUE_ARRAY = 'jsonValueArray',
-  JUSTIFY_DAYS = 'justifyDays',
-  JUSTIFY_HOURS = 'justifyHours',
-  JUSTIFY_INTERVAL = 'justifyInterval',
-  KILL = 'kill',
-  KURTOSIS = 'kurtosis',
-  KWARG = 'kwarg',
-  LAG = 'lag',
-  LAMBDA = 'lambda',
-  LANGUAGE_PROPERTY = 'languageProperty',
-  LAST = 'last',
-  LAST_DAY = 'lastDay',
-  LAST_VALUE = 'lastValue',
-  LATERAL = 'lateral',
-  LAX_BOOL = 'laxBool',
-  LAX_FLOAT64 = 'laxFloat64',
-  LAX_INT64 = 'laxInt64',
-  LAX_STRING = 'laxString',
-  LEAD = 'lead',
-  LEAST = 'least',
-  LEFT = 'left',
-  LENGTH = 'length',
-  LEVENSHTEIN = 'levenshtein',
-  LIKE = 'like',
-  LIKE_PROPERTY = 'likeProperty',
-  LIMIT = 'limit',
-  LIMIT_OPTIONS = 'limitoptions',
-  LIST = 'list',
-  LITERAL = 'literal',
-  LN = 'ln',
-  LOAD_DATA = 'loadData',
-  LOCALTIME = 'localtime',
-  LOCALTIMESTAMP = 'localtimestamp',
-  LOCATION = 'location',
-  LOCATION_PROPERTY = 'locationProperty',
-  LOCK = 'lock',
-  LOCKING_PROPERTY = 'lockingProperty',
-  LOCKING_STATEMENT = 'lockingStatement',
-  LOCK_PROPERTY = 'lockProperty',
-  LOG = 'log',
-  LOGICAL_AND = 'logicalAnd',
-  LOGICAL_OR = 'logicalOr',
-  LOG_PROPERTY = 'logProperty',
-  LOWER = 'lower',
-  LOWER_HEX = 'lowerHex',
-  LT = 'lt',
-  LTE = 'lte',
-  MAKE_INTERVAL = 'makeInterval',
-  MANHATTAN_DISTANCE = 'manhattanDistance',
-  MAP = 'map',
-  MAP_CAT = 'mapCat',
-  MAP_CONTAINS_KEY = 'mapContainsKey',
-  MAP_DELETE = 'mapDelete',
-  MAP_FROM_ENTRIES = 'mapFromEntries',
-  MAP_INSERT = 'mapInsert',
-  MAP_KEYS = 'mapkeys',
-  MAP_PICK = 'mapPick',
-  MAP_SIZE = 'mapSize',
-  MASKING_POLICY_COLUMN_CONSTRAINT = 'maskingPolicyColumnConstraint',
-  MATCH = 'match',
-  MATCH_AGAINST = 'matchAgainst',
-  MATCH_RECOGNIZE = 'matchRecognize',
-  MATCH_RECOGNIZE_MEASURE = 'matchRecognizeMeasure',
-  MATERIALIZED_PROPERTY = 'materializedProperty',
-  MAX = 'max',
-  MD5 = 'md5',
-  MD5_DIGEST = 'md5Digest',
-  MD5_NUMBER_LOWER64 = 'md5NumberLower64',
-  MD5_NUMBER_UPPER64 = 'md5NumberUpper64',
-  MEDIAN = 'median',
-  MERGE = 'merge',
-  MERGE_BLOCK_RATIO_PROPERTY = 'mergeBlockRatioProperty',
-  MERGE_TREE_TTL = 'mergeTreeTtl',
-  MERGE_TREE_TTL_ACTION = 'mergeTreeTtlAction',
-  MIN = 'min',
-  MINHASH = 'minhash',
-  MINHASH_COMBINE = 'minhashCombine',
-  MINUTE = 'minute',
-  ML_FORECAST = 'mlForecast',
-  ML_TRANSLATE = 'mlTranslate',
-  MOD = 'mod',
-  MODE = 'mode',
-  MODEL_ATTRIBUTE = 'modelAttribute',
-  MONTH = 'month',
-  MONTHNAME = 'monthname',
-  MONTHS_BETWEEN = 'monthsBetween',
-  MUL = 'mul',
-  MULTITABLE_INSERTS = 'multitableInserts',
-  NATIONAL = 'national',
-  NEG = 'neg',
-  NEQ = 'neq',
-  NET_FUNC = 'netFunc',
-  NEXT_DAY = 'nextDay',
-  NEXT_VALUE_FOR = 'nextValueFor',
-  NON_CLUSTERED_COLUMN_CONSTRAINT = 'nonClusteredColumnConstraint',
-  NORMAL = 'normal',
-  NORMALIZE = 'normalize',
-  NOT = 'not',
-  NOT_FOR_REPLICATION_COLUMN_CONSTRAINT = 'notForReplicationColumnConstraint',
-  NOT_NULL_COLUMN_CONSTRAINT = 'notNullColumnConstraint',
-  NO_PRIMARY_INDEX_PROPERTY = 'noPrimaryIndexProperty',
-  NTH_VALUE = 'nthValue',
-  NTILE = 'ntile',
-  NULL = 'null',
-  NULLIF = 'nullif',
-  NULL_SAFE_EQ = 'nullSafeEq',
-  NULL_SAFE_NEQ = 'nullSafeNeq',
-  NUMBER_TO_STR = 'numberToStr',
-  NVL2 = 'nvl2',
-  OBJECT_AGG = 'objectAgg',
-  OBJECT_IDENTIFIER = 'objectIdentifier',
-  OBJECT_INSERT = 'objectInsert',
-  OFFSET = 'offset',
-  ON_CLUSTER = 'onCluster',
-  ON_COMMIT_PROPERTY = 'onCommitProperty',
-  ON_CONDITION = 'oncondition',
-  ON_CONFLICT = 'onconflict',
-  ON_PROPERTY = 'onProperty',
-  ON_UPDATE_COLUMN_CONSTRAINT = 'onUpdateColumnConstraint',
-  OPCLASS = 'opclass',
-  OPEN_JSON = 'openJson',
-  OPEN_JSON_COLUMN_DEF = 'openJsonColumnDef',
-  OPERATOR = 'operator',
-  OR = 'or',
-  ORDER = 'order',
-  ORDERED = 'ordered',
-  OUTPUT_MODEL_PROPERTY = 'outputModelProperty',
-  OVERFLOW_TRUNCATE_BEHAVIOR = 'overflowTruncateBehavior',
-  OVERLAPS = 'overlaps',
-  OVERLAY = 'overlay',
-  PAD = 'pad',
-  PARAMETER = 'parameter',
-  PARAMETERIZED_AGG = 'parameterizedAgg',
-  PAREN = 'paren',
-  PARSE_BIGNUMERIC = 'parseBignumeric',
-  PARSE_DATETIME = 'parseDatetime',
-  PARSE_IP = 'parseIp',
-  PARSE_JSON = 'parseJson',
-  PARSE_NUMERIC = 'parseNumeric',
-  PARSE_TIME = 'parseTime',
-  PARSE_URL = 'parseUrl',
-  PARTITION = 'partition',
-  PARTITIONED_BY_BUCKET = 'partitionedByBucket',
-  PARTITIONED_BY_PROPERTY = 'partitionedByProperty',
-  PARTITIONED_OF_PROPERTY = 'partitionedOfProperty',
-  PARTITION_BOUND_SPEC = 'partitionBoundSpec',
-  PARTITION_BY_LIST_PROPERTY = 'partitionByListProperty',
-  PARTITION_BY_RANGE_PROPERTY = 'partitionByRangeProperty',
-  PARTITION_BY_RANGE_PROPERTY_DYNAMIC = 'partitionByRangePropertyDynamic',
-  PARTITION_BY_TRUNCATE = 'partitionByTruncate',
-  PARTITION_ID = 'partitionId',
-  PARTITION_LIST = 'partitionList',
-  PARTITION_RANGE = 'partitionRange',
-  PATH_COLUMN_CONSTRAINT = 'pathColumnConstraint',
-  PERCENTILE_CONT = 'percentileCont',
-  PERCENTILE_DISC = 'percentileDisc',
-  PERCENT_RANK = 'percentRank',
-  PERIOD_FOR_SYSTEM_TIME_CONSTRAINT = 'periodForSystemTimeConstraint',
-  PI = 'pi',
-  PIVOT = 'pivot',
-  PIVOT_ALIAS = 'pivotAlias',
-  PIVOT_ANY = 'pivotAny',
-  PLACEHOLDER = 'placeholder',
-  POSEXPLODE = 'posexplode',
-  POSEXPLODE_OUTER = 'posexplodeOuter',
-  POSITIONAL_COLUMN = 'positionalColumn',
-  POW = 'pow',
-  PRAGMA = 'pragma',
-  PREDICATE = 'predicate',
-  PREDICT = 'predict',
-  PREVIOUS_DAY = 'previousDay',
-  PRE_WHERE = 'preWhere',
-  PRIMARY_KEY = 'primaryKey',
-  PRIMARY_KEY_COLUMN_CONSTRAINT = 'primaryKeyColumnConstraint',
-  PRIOR = 'prior',
-  PROJECTION_DEF = 'projectionDef',
-  PROJECTION_POLICY_COLUMN_CONSTRAINT = 'projectionPolicyColumnConstraint',
-  PROPERTIES = 'properties',
-  PROPERTY = 'property',
-  PROPERTY_EQ = 'propertyEq',
-  PSEUDOCOLUMN = 'pseudocolumn',
-  PSEUDO_TYPE = 'pseudoType',
-  PUT = 'put',
-  QUALIFY = 'qualify',
-  QUANTILE = 'quantile',
-  QUARTER = 'quarter',
-  QUERY = 'query',
-  QUERY_BAND = 'queryBand',
-  QUERY_OPTION = 'queryOption',
-  QUERY_TRANSFORM = 'queryTransform',
-  RADIANS = 'radians',
-  RAND = 'rand',
-  RANDN = 'randn',
-  RANDSTR = 'randstr',
-  RANGE_BUCKET = 'rangeBucket',
-  RANGE_N = 'rangeN',
-  RANK = 'rank',
-  RAW_STRING = 'rawString',
-  READ_CSV = 'readCsv',
-  READ_PARQUET = 'readParquet',
-  RECURSIVE_WITH_SEARCH = 'recursiveWithSearch',
-  REDUCE = 'reduce',
-  REFERENCE = 'reference',
-  REFRESH = 'refresh',
-  REFRESH_TRIGGER_PROPERTY = 'refreshTriggerProperty',
-  REGEXP_COUNT = 'regexpCount',
-  REGEXP_EXTRACT = 'regexpExtract',
-  REGEXP_EXTRACT_ALL = 'regexpExtractAll',
-  REGEXP_FULL_MATCH = 'regexpFullMatch',
-  REGEXP_INSTR = 'regexpInstr',
-  REGEXP_ILIKE = 'regexpIlike',
-  REGEXP_LIKE = 'regexpLike',
-  REGEXP_REPLACE = 'regexpReplace',
-  REGEXP_SPLIT = 'regexpSplit',
-  REGR_AVGX = 'regrAvgx',
-  REGR_AVGY = 'regrAvgy',
-  REGR_COUNT = 'regrCount',
-  REGR_INTERCEPT = 'regrIntercept',
-  REGR_R2 = 'regrR2',
-  REGR_SLOPE = 'regrSlope',
-  REGR_SXX = 'regrSxx',
-  REGR_SXY = 'regrSxy',
-  REGR_SYY = 'regrSyy',
-  REGR_VALX = 'regrValx',
-  REGR_VALY = 'regrValy',
-  REG_DOMAIN = 'regDomain',
-  REMOTE_WITH_CONNECTION_MODEL_PROPERTY = 'remoteWithConnectionModelProperty',
-  RENAME_COLUMN = 'renameColumn',
-  REPEAT = 'repeat',
-  REPLACE = 'replace',
-  REPLACE_PARTITION = 'replacePartition',
-  RESPECT_NULLS = 'respectNulls',
-  RETURN = 'return',
-  RETURNING = 'returning',
-  RETURNS_PROPERTY = 'returnsProperty',
-  REVERSE = 'reverse',
-  REVOKE = 'revoke',
-  RIGHT = 'right',
-  ROLLBACK = 'rollback',
-  ROLLUP = 'rollup',
-  ROLLUP_INDEX = 'rollupIndex',
-  ROLLUP_PROPERTY = 'rollupProperty',
-  ROUND = 'round',
-  ROW_FORMAT_DELIMITED_PROPERTY = 'rowFormatDelimitedProperty',
-  ROW_FORMAT_PROPERTY = 'rowFormatProperty',
-  ROW_FORMAT_SERDE_PROPERTY = 'rowFormatSerdeProperty',
-  ROW_NUMBER = 'rowNumber',
-  RTRIMMED_LENGTH = 'rtrimmedLength',
-  SAFE_ADD = 'safeAdd',
-  SAFE_CONVERT_BYTES_TO_STRING = 'safeConvertBytesToString',
-  SAFE_DIVIDE = 'safeDivide',
-  SAFE_FUNC = 'safeFunc',
-  SAFE_MULTIPLY = 'safeMultiply',
-  SAFE_NEGATE = 'safeNegate',
-  SAFE_SUBTRACT = 'safeSubtract',
-  SAMPLE_PROPERTY = 'sampleProperty',
-  SCHEMA = 'schema',
-  SCHEMA_COMMENT_PROPERTY = 'schemaCommentProperty',
-  SCOPE_RESOLUTION = 'scopeResolution',
-  SEARCH = 'search',
-  SEARCH_IP = 'searchIp',
-  SEC = 'sec',
-  SECH = 'sech',
-  SECOND = 'second',
-  SECURE_PROPERTY = 'secureProperty',
-  SECURITY_PROPERTY = 'securityProperty',
-  SELECT = 'select',
-  SEMANTIC_VIEW = 'semanticView',
-  SEMICOLON = 'semicolon',
-  SEQ1 = 'seq1',
-  SEQ2 = 'seq2',
-  SEQ4 = 'seq4',
-  SEQ8 = 'seq8',
-  SEQUENCE_PROPERTIES = 'sequenceProperties',
-  SERDE_PROPERTIES = 'serdeProperties',
-  SESSION_PARAMETER = 'sessionParameter',
-  SESSION_USER = 'sessionUser',
-  SET = 'set',
-  SETTINGS_PROPERTY = 'settingsProperty',
-  SET_CONFIG_PROPERTY = 'setConfigProperty',
-  SET_ITEM = 'setItem',
-  SET_OPERATION = 'setOperation',
-  SET_PROPERTY = 'setProperty',
-  SHA = 'sha',
-  Sha1_DIGEST = 'sha1Digest',
-  Sha2 = 'sha2',
-  Sha2_DIGEST = 'sha2Digest',
-  SHARING_PROPERTY = 'sharingProperty',
-  SHOW = 'show',
-  SIGN = 'sign',
-  SIMILAR_TO = 'similarTo',
-  SIN = 'sin',
-  SINH = 'sinh',
-  SKEWNESS = 'skewness',
-  SLICE = 'slice',
-  SORT = 'sort',
-  SORT_ARRAY = 'sortArray',
-  SORT_KEY_PROPERTY = 'sortKeyProperty',
-  SOUNDEX = 'soundex',
-  SOUNDEX_P123 = 'soundexP123',
-  SPACE = 'space',
-  SPLIT = 'split',
-  SPLIT_PART = 'splitPart',
-  SQL_READ_WRITE_PROPERTY = 'sqlReadWriteProperty',
-  SQL_SECURITY_PROPERTY = 'sqlSecurityProperty',
-  SQRT = 'sqrt',
-  STABILITY_PROPERTY = 'stabilityProperty',
-  STANDARD_HASH = 'standardHash',
-  STAR = 'star',
-  STARTS_WITH = 'startswith',
-  STAR_MAP = 'starMap',
-  STDDEV = 'stddev',
-  STDDEV_POP = 'stddevPop',
-  STDDEV_SAMP = 'stddevSamp',
-  STORAGE_HANDLER_PROPERTY = 'storageHandlerProperty',
-  STREAM = 'stream',
-  STREAMING_TABLE_PROPERTY = 'streamingTableProperty',
-  STRICT_PROPERTY = 'strictProperty',
-  STRING = 'string',
-  STRING_TO_ARRAY = 'stringToArray',
-  STRUCT = 'struct',
-  STRUCT_EXTRACT = 'structExtract',
-  STR_POSITION = 'strPosition',
-  STR_TO_DATE = 'strToDate',
-  STR_TO_MAP = 'strToMap',
-  STR_TO_TIME = 'strToTime',
-  STR_TO_UNIX = 'strToUnix',
-  STUFF = 'stuff',
-  ST_DISTANCE = 'stDistance',
-  ST_POINT = 'stPoint',
-  SUB = 'sub',
-  SUBQUERY = 'subquery',
-  SUBQUERY_PREDICATE = 'subqueryPredicate',
-  SUBSTRING = 'substring',
-  SUBSTRING_INDEX = 'substringIndex',
-  SUM = 'sum',
-  SUMMARIZE = 'summarize',
-  SWAP_TABLE = 'swapTable',
-  SYSTIMESTAMP = 'systimestamp',
-  TABLE = 'table',
-  TABLE_ALIAS = 'tableAlias',
-  TABLE_COLUMN = 'tableColumn',
-  TABLE_FROM_ROWS = 'tableFromRows',
-  TABLE_SAMPLE = 'tableSample',
-  TAG = 'tag',
-  TAGS = 'tags',
-  TAN = 'tan',
-  TANH = 'tanh',
-  TEMPORARY_PROPERTY = 'temporaryProperty',
-  TIME = 'time',
-  TIMESTAMP = 'timestamp',
-  TIMESTAMP_ADD = 'timestampAdd',
-  TIMESTAMP_DIFF = 'timestampDiff',
-  TIMESTAMP_FROM_PARTS = 'timestampFromParts',
-  TIMESTAMP_LTZ_FROM_PARTS = 'timestampLtzFromParts',
-  TIMESTAMP_SUB = 'timestampSub',
-  TIMESTAMP_TRUNC = 'timestampTrunc',
-  TIMESTAMP_TZ_FROM_PARTS = 'timestampTzFromParts',
-  TIME_ADD = 'timeAdd',
-  TIME_DIFF = 'timeDiff',
-  TIME_FROM_PARTS = 'timeFromParts',
-  TIME_SLICE = 'timeSlice',
-  TIME_STR_TO_DATE = 'timeStrToDate',
-  TIME_STR_TO_TIME = 'timeStrToTime',
-  TIME_STR_TO_UNIX = 'timeStrToUnix',
-  TIME_SUB = 'timeSub',
-  TIME_TO_STR = 'timeToStr',
-  TIME_TO_TIME_STR = 'timeToTimeStr',
-  TIME_TO_UNIX = 'timeToUnix',
-  TIME_TRUNC = 'timeTrunc',
-  TIME_UNIT = 'timeUnit',
-  TITLE_COLUMN_CONSTRAINT = 'titleColumnConstraint',
-  TO_ARRAY = 'toArray',
-  TO_BASE32 = 'toBase32',
-  TO_BASE64 = 'toBase64',
-  TO_BINARY = 'toBinary',
-  TO_BOOLEAN = 'toBoolean',
-  TO_CHAR = 'toChar',
-  TO_CODE_POINTS = 'toCodePoints',
-  TO_DAYS = 'toDays',
-  TO_DECFLOAT = 'toDecfloat',
-  TO_DOUBLE = 'toDouble',
-  TO_FILE = 'toFile',
-  TO_MAP = 'toMap',
-  TO_NUMBER = 'toNumber',
-  TO_TABLE_PROPERTY = 'toTableProperty',
-  TRANSACTION = 'transaction',
-  TRANSFORM = 'transform',
-  TRANSFORM_MODEL_PROPERTY = 'transformModelProperty',
-  TRANSIENT_PROPERTY = 'transientProperty',
-  TRANSLATE = 'translate',
-  TRANSLATE_CHARACTERS = 'translateCharacters',
-  TRIM = 'trim',
-  TRUNC = 'trunc',
-  TRUNCATE_TABLE = 'truncateTable',
-  TRY = 'try',
-  TRY_BASE64_DECODE_BINARY = 'tryBase64DecodeBinary',
-  TRY_BASE64_DECODE_STRING = 'tryBase64DecodeString',
-  TRY_CAST = 'tryCast',
-  TRY_HEX_DECODE_BINARY = 'tryHexDecodeBinary',
-  TRY_HEX_DECODE_STRING = 'tryHexDecodeString',
-  TRY_TO_DECFLOAT = 'tryToDecfloat',
-  TS_OR_DI_TO_DI = 'tsOrDiToDi',
-  TS_OR_DS_ADD = 'tsOrDsAdd',
-  TS_OR_DS_DIFF = 'tsOrDsDiff',
-  TS_OR_DS_TO_DATE = 'tsOrDsToDate',
-  TS_OR_DS_TO_DATETIME = 'tsOrDsToDatetime',
-  TS_OR_DS_TO_DATE_STR = 'tsOrDsToDateStr',
-  TS_OR_DS_TO_TIME = 'tsOrDsToTime',
-  TS_OR_DS_TO_TIMESTAMP = 'tsOrDsToTimestamp',
-  TUPLE = 'tuple',
-  TYPE = 'type',
-  TYPEOF = 'typeof',
-  UDTF = 'udtf',
-  UNARY = 'unary',
-  UNCACHE = 'uncache',
-  UNHEX = 'unhex',
-  UNICODE = 'unicode',
-  UNICODE_STRING = 'unicodeString',
-  UNIFORM = 'uniform',
-  UNION = 'union',
-  UNIQUE_COLUMN_CONSTRAINT = 'uniqueColumnConstraint',
-  UNIQUE_KEY_PROPERTY = 'uniqueKeyProperty',
-  UNIX_DATE = 'unixDate',
-  UNIX_MICROS = 'unixMicros',
-  UNIX_MILLIS = 'unixMillis',
-  UNIX_SECONDS = 'unixSeconds',
-  UNIX_TO_STR = 'unixToStr',
-  UNIX_TO_TIME = 'unixToTime',
-  UNIX_TO_TIME_STR = 'unixToTimeStr',
-  UNLOGGED_PROPERTY = 'unloggedProperty',
-  UNNEST = 'unnest',
-  UNPIVOT_COLUMNS = 'unpivotColumns',
-  UPDATE = 'update',
-  UPPER = 'upper',
-  UPPERCASE_COLUMN_CONSTRAINT = 'uppercaseColumnConstraint',
-  USE = 'use',
-  USER_DEFINED_FUNCTION = 'userDefinedFunction',
-  USING_DATA = 'usingData',
-  USING_TEMPLATE_PROPERTY = 'usingTemplateProperty',
-  UTC_DATE = 'utcDate',
-  UTC_TIME = 'utcTime',
-  UTC_TIMESTAMP = 'utcTimestamp',
-  UUID = 'uuid',
-  VALUES = 'values',
-  VAR = 'var',
-  VARIADIC = 'variadic',
-  VARIANCE = 'variance',
-  VARIANCE_POP = 'variancePop',
-  VAR_MAP = 'varMap',
-  VECTOR_SEARCH = 'vectorSearch',
-  VERSION = 'version',
-  VIEW_ATTRIBUTE_PROPERTY = 'viewAttributeProperty',
-  VOLATILE_PROPERTY = 'volatileProperty',
-  WATERMARK_COLUMN_CONSTRAINT = 'watermarkColumnConstraint',
-  WEEK = 'week',
-  WEEK_OF_YEAR = 'weekOfYear',
-  WEEK_START = 'weekStart',
-  WHEN = 'when',
-  WHENS = 'whens',
-  WHERE = 'where',
-  WIDTH_BUCKET = 'widthBucket',
-  WINDOW = 'window',
-  WINDOW_SPEC = 'windowSpec',
-  WITH = 'with',
-  WITHIN_GROUP = 'withinGroup',
-  WITH_DATA_PROPERTY = 'withDataProperty',
-  WITH_FILL = 'withFill',
-  WITH_JOURNAL_TABLE_PROPERTY = 'withJournalTableProperty',
-  WITH_OPERATOR = 'withOperator',
-  WITH_PROCEDURE_OPTIONS = 'withProcedureOptions',
-  WITH_SCHEMA_BINDING_PROPERTY = 'withSchemaBindingProperty',
-  WITH_SYSTEM_VERSIONING_PROPERTY = 'withSystemVersioningProperty',
-  WITH_TABLE_HINT = 'withTableHint',
-  XML_ELEMENT = 'xmlElement',
-  XML_GET = 'xmlGet',
-  XML_KEY_VALUE_OPTION = 'xmlKeyValueOption',
-  XML_NAMESPACE = 'xmlNamespace',
-  XML_TABLE = 'xmlTable',
-  XOR = 'xor',
-  YEAR = 'year',
-  YEAR_OF_WEEK = 'yearOfWeek',
-  YEAR_OF_WEEK_ISO = 'yearOfWeekIso',
-  ZERO_FILL_COLUMN_CONSTRAINT = 'zeroFillColumnConstraint',
-  ZIPF = 'zipf',
-}
-
 export type PrimitiveExpressionValue = string | boolean | number;
 
 export type ExpressionValue<E extends Expression = Expression> = E | PrimitiveExpressionValue;
@@ -3154,11 +2231,6 @@ export class UncacheExpr extends Expression {
  * Enumeration of valid kind values for Refresh expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum RefreshExprKind {
-  INCREMENTAL = 'incremental',
-  FULL = 'full',
-}
-
 export type RefreshExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -3316,19 +2388,6 @@ export class DmlExpr extends Expression {
  * Enumeration of valid kind values for Create expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum CreateExprKind {
-  TABLE = 'table',
-  VIEW = 'view',
-  INDEX = 'index',
-  SCHEMA = 'schema',
-  DATABASE = 'database',
-  FUNCTION = 'function',
-  PROCEDURE = 'procedure',
-  TRIGGER = 'trigger',
-  SEQUENCE = 'sequence',
-  TEMPORARY_VIEW = 'temporary view',
-}
-
 export type CreateExprArgs = Merge<[
   DdlExprArgs,
   {
@@ -3483,13 +2542,6 @@ export class CloneExpr extends Expression {
 /**
  * Valid kind values for DESCRIBE statements
  */
-export enum DescribeExprKind {
-  TABLE = 'table',
-  VIEW = 'view',
-  SCHEMA = 'schema',
-  FUNCTION = 'function',
-  PROCEDURE = 'procedure',
-}
 export type DescribeExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -3621,11 +2673,6 @@ export class SummarizeExpr extends Expression {
 /**
  * Valid kind values for KILL statements
  */
-export enum KillExprKind {
-  CONNECTION = 'connection',
-  QUERY = 'query',
-}
-
 export type KillExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -3687,13 +2734,6 @@ export class DeclareExpr extends Expression {
 /**
  * Valid kind values for DECLARE items
  */
-export enum DeclareItemExprKind {
-  CURSOR = 'cursor',
-  VARIABLE = 'variable',
-  TABLE = 'table',
-  CONSTANT = 'constant',
-}
-
 export type DeclareItemExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -3769,14 +2809,6 @@ export class HeredocExpr extends Expression {
 /**
  * Valid kind values for SET items
  */
-export enum SetItemExprKind {
-  SESSION = 'session',
-  GLOBAL = 'global',
-  LOCAL = 'local',
-  PERSIST = 'persist',
-  PERSIST_ONLY = 'persistOnly',
-}
-
 export type SetItemExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -3959,11 +2991,6 @@ export class CharacterSetExpr extends Expression {
  * Enumeration of valid kind values for RecursiveWithSearch expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum RecursiveWithSearchExprKind {
-  BREADTH = 'breadth',
-  DEPTH = 'depth',
-}
-
 export type RecursiveWithSearchExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -4117,13 +3144,6 @@ export class ColumnPositionExpr extends Expression {
  * Enumeration of valid kind values for ColumnDef expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum ColumnDefExprKind {
-  GENERATED = 'generated',
-  STORED = 'stored',
-  VIRTUAL = 'virtual',
-  DEFAULT = 'default',
-}
-
 export type ColumnDefExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -4385,12 +3405,6 @@ export class SwapTableExpr extends Expression {
  * Enumeration of valid kind values for Comment expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum CommentExprKind {
-  TABLE = 'table',
-  COLUMN = 'column',
-  VIEW = 'view',
-}
-
 export type CommentExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -4556,15 +3570,6 @@ export class IndexConstraintOptionExpr extends Expression {
  * Enumeration of valid kind values for ColumnConstraint expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum ColumnConstraintExprKind {
-  PRIMARY_KEY = 'primaryKey',
-  UNIQUE = 'unique',
-  NOT_NULL = 'notNull',
-  CHECK = 'check',
-  DEFAULT = 'default',
-  FOREIGN_KEY = 'foreignKey',
-}
-
 export type ColumnConstraintExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -4789,20 +3794,6 @@ export class DeleteExpr extends DmlExpr {
 /**
  * Valid kind values for DROP statements
  */
-export enum DropExprKind {
-  TABLE = 'table',
-  VIEW = 'view',
-  INDEX = 'index',
-  SCHEMA = 'schema',
-  DATABASE = 'database',
-  FUNCTION = 'function',
-  PROCEDURE = 'procedure',
-  TRIGGER = 'trigger',
-  SEQUENCE = 'sequence',
-  CONSTRAINT = 'constraint',
-  COLUMN = 'column',
-}
-
 export type DropExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -5446,11 +4437,6 @@ export class ConditionalInsertExpr extends Expression {
  * Enumeration of valid kind values for MultitableInserts expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum MultitableInsertsExprKind {
-  CONDITIONAL = 'conditional',
-  UNCONDITIONAL = 'unconditional',
-}
-
 export type MultitableInsertsExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -5731,11 +4717,6 @@ export class FetchExpr extends Expression {
 /**
  * Valid kind values for GRANT statements
  */
-export enum GrantExprKind {
-  GRANT = 'grant',
-  REVOKE = 'revoke',
-}
-
 export type GrantExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -5978,17 +4959,6 @@ export class LimitOptionsExpr extends Expression {
  * Enumeration of valid kind values for JOIN expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum JoinExprKind {
-  INNER = 'inner',
-  OUTER = 'outer',
-  LEFT = 'left',
-  RIGHT = 'right',
-  FULL = 'full',
-  CROSS = 'cross',
-  SEMI = 'semi',
-  ANTI = 'anti',
-}
-
 /**
  * Represents a JOIN clause in SQL.
  *
@@ -6390,12 +5360,6 @@ export class GrantPrivilegeExpr extends Expression {
 /**
  * Valid kind values for GRANT principals
  */
-export enum GrantPrincipalExprKind {
-  USER = 'user',
-  ROLE = 'role',
-  GROUP = 'group',
-  PUBLIC = 'public',
-}
 export type GrantPrincipalExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -6861,11 +5825,6 @@ export class IndexTableHintExpr extends Expression {
  * Enumeration of valid kind values for HistoricalData expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum HistoricalDataExprKind {
-  SYSTEM_TIME = 'systemTime',
-  TRANSACTION_TIME = 'transactionTime',
-}
-
 // https://docs.snowflake.com/en/sql-reference/constructs/at-before
 export type HistoricalDataExprArgs = Merge<[
   BaseExpressionArgs,
@@ -7371,12 +6330,6 @@ export class UnpivotColumnsExpr extends Expression {
 /**
  * Valid kind values for window frame specifications
  */
-export enum WindowSpecExprKind {
-  ROWS = 'rows',
-  RANGE = 'range',
-  GROUPS = 'groups',
-}
-
 export type WindowSpecExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -7518,136 +6471,6 @@ export class DataTypeParamExpr extends Expression {
 /**
  * Valid kind values for DataType expressions (SQL data types)
  */
-export enum DataTypeExprKind {
-  ARRAY = 'array',
-  AGGREGATEFUNCTION = 'aggregatefunction',
-  SIMPLEAGGREGATEFUNCTION = 'simpleaggregatefunction',
-  BIGDECIMAL = 'bigdecimal',
-  BIGINT = 'bigint',
-  BIGNUM = 'bignum',
-  BIGSERIAL = 'bigserial',
-  BINARY = 'binary',
-  BIT = 'bit',
-  BLOB = 'blob',
-  BOOLEAN = 'boolean',
-  BPCHAR = 'bpchar',
-  CHAR = 'char',
-  DATE = 'date',
-  DATE32 = 'date32',
-  DATEMULTIRANGE = 'datemultirange',
-  DATERANGE = 'daterange',
-  DATETIME = 'datetime',
-  DATETIME2 = 'datetime2',
-  DATETIME64 = 'datetime64',
-  DECIMAL = 'decimal',
-  DECIMAL32 = 'decimal32',
-  DECIMAL64 = 'decimal64',
-  DECIMAL128 = 'decimal128',
-  DECIMAL256 = 'decimal256',
-  DECFLOAT = 'decfloat',
-  DOUBLE = 'double',
-  DYNAMIC = 'dynamic',
-  ENUM = 'enum',
-  ENUM8 = 'enum8',
-  ENUM16 = 'enum16',
-  FILE = 'file',
-  FIXEDSTRING = 'fixedstring',
-  FLOAT = 'float',
-  GEOGRAPHY = 'geography',
-  GEOGRAPHYPOINT = 'geographypoint',
-  GEOMETRY = 'geometry',
-  POINT = 'point',
-  RING = 'ring',
-  LINESTRING = 'linestring',
-  MULTILINESTRING = 'multilinestring',
-  POLYGON = 'polygon',
-  MULTIPOLYGON = 'multipolygon',
-  HLLSKETCH = 'hllsketch',
-  HSTORE = 'hstore',
-  IMAGE = 'image',
-  INET = 'inet',
-  INT = 'int',
-  INT128 = 'int128',
-  INT256 = 'int256',
-  INT4MULTIRANGE = 'int4multirange',
-  INT4RANGE = 'int4range',
-  INT8MULTIRANGE = 'int8multirange',
-  INT8RANGE = 'int8range',
-  INTERVAL = 'interval',
-  IPADDRESS = 'ipaddress',
-  IPPREFIX = 'ipprefix',
-  IPV4 = 'ipv4',
-  IPV6 = 'ipv6',
-  JSON = 'json',
-  JSONB = 'jsonb',
-  LIST = 'list',
-  LONGBLOB = 'longblob',
-  LONGTEXT = 'longtext',
-  LOWCARDINALITY = 'lowcardinality',
-  MAP = 'map',
-  MEDIUMBLOB = 'mediumblob',
-  MEDIUMINT = 'mediumint',
-  MEDIUMTEXT = 'mediumtext',
-  MONEY = 'money',
-  NAME = 'name',
-  NCHAR = 'nchar',
-  NESTED = 'nested',
-  NOTHING = 'nothing',
-  NULL = 'null',
-  NUMMULTIRANGE = 'nummultirange',
-  NUMRANGE = 'numrange',
-  NVARCHAR = 'nvarchar',
-  OBJECT = 'object',
-  RANGE = 'range',
-  ROWVERSION = 'rowversion',
-  SERIAL = 'serial',
-  SET = 'set',
-  SMALLDATETIME = 'smalldatetime',
-  SMALLINT = 'smallint',
-  SMALLMONEY = 'smallmoney',
-  SMALLSERIAL = 'smallserial',
-  STRUCT = 'struct',
-  SUPER = 'super',
-  TEXT = 'text',
-  TINYBLOB = 'tinyblob',
-  TINYTEXT = 'tinytext',
-  TIME = 'time',
-  TIMETZ = 'timetz',
-  TIME_NS = 'timeNs',
-  TIMESTAMP = 'timestamp',
-  TIMESTAMPNTZ = 'timestampntz',
-  TIMESTAMPLTZ = 'timestampltz',
-  TIMESTAMPTZ = 'timestamptz',
-  TIMESTAMP_S = 'timestampS',
-  TIMESTAMP_MS = 'timestampMs',
-  TIMESTAMP_NS = 'timestampNs',
-  TINYINT = 'tinyint',
-  TSMULTIRANGE = 'tsmultirange',
-  TSRANGE = 'tsrange',
-  TSTZMULTIRANGE = 'tstzmultirange',
-  TSTZRANGE = 'tstzrange',
-  UBIGINT = 'ubigint',
-  UINT = 'uint',
-  UINT128 = 'uint128',
-  UINT256 = 'uint256',
-  UMEDIUMINT = 'umediumint',
-  UDECIMAL = 'udecimal',
-  UDOUBLE = 'udouble',
-  UNION = 'union',
-  UNKNOWN = 'unknown',
-  USERDEFINED = 'user-defined',
-  USMALLINT = 'usmallint',
-  UTINYINT = 'utinyint',
-  UUID = 'uuid',
-  VARBINARY = 'varbinary',
-  VARCHAR = 'varchar',
-  VARIANT = 'variant',
-  VECTOR = 'vector',
-  XML = 'xml',
-  YEAR = 'year',
-  TDIGEST = 'tdigest',
-}
-
 export type DataTypeExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -7996,15 +6819,6 @@ export class RollbackExpr extends Expression {
  * Enumeration of valid kind values for Alter expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum AlterExprKind {
-  TABLE = 'table',
-  VIEW = 'view',
-  SCHEMA = 'schema',
-  DATABASE = 'database',
-  INDEX = 'index',
-  COLUMN = 'column',
-}
-
 export type AlterExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -8086,12 +6900,6 @@ export class AlterSessionExpr extends Expression {
 /**
  * Valid kind values for ANALYZE statements
  */
-export enum AnalyzeExprKind {
-  STATISTICS = 'statistics',
-  COMPUTE = 'compute',
-  TABLE = 'table',
-}
-
 export type AnalyzeExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -8129,12 +6937,6 @@ export class AnalyzeExpr extends Expression {
  * Enumeration of valid kind values for AnalyzeStatistics expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum AnalyzeStatisticsExprKind {
-  ALL = 'all',
-  DEFAULT = 'default',
-  COLUMNS = 'columns',
-}
-
 export type AnalyzeStatisticsExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -8196,11 +6998,6 @@ export class AnalyzeHistogramExpr extends Expression {
  * Enumeration of valid kind values for AnalyzeSample expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum AnalyzeSampleExprKind {
-  PERCENT = 'percent',
-  ROWS = 'rows',
-}
-
 export type AnalyzeSampleExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -8243,9 +7040,6 @@ export class AnalyzeListChainedRowsExpr extends Expression {
 /**
  * Valid kind values for ANALYZE DELETE statements
  */
-export enum AnalyzeDeleteExprKind {
-  STATISTICS = 'statistics',
-}
 export type AnalyzeDeleteExprArgs = Merge<[
   BaseExpressionArgs,
   { kind?: AnalyzeDeleteExprKind },
@@ -8286,11 +7080,6 @@ export class AnalyzeWithExpr extends Expression {
  * Enumeration of valid kind values for AnalyzeValidate expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum AnalyzeValidateExprKind {
-  REF_UPDATE = 'refUpdate',
-  STRUCTURE = 'structure',
-}
-
 export type AnalyzeValidateExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -8999,13 +7788,6 @@ export class JsonKeyValueExpr extends Expression {
 /**
  * Valid kind values for JSON column definitions
  */
-export enum JsonColumnDefExprKind {
-  PATH = 'path',
-  EXISTS = 'exists',
-  VALUE = 'value',
-  QUERY = 'query',
-}
-
 export type JsonColumnDefExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -9087,13 +7869,6 @@ export class JsonValueExpr extends Expression {
  * Enumeration of valid kind values for OpenJsonColumnDef expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum OpenJsonColumnDefExprKind {
-  PATH = 'path',
-  EXISTS = 'exists',
-  VALUE = 'value',
-  QUERY = 'query',
-}
-
 export type OpenJsonColumnDefExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -9287,13 +8062,6 @@ export class XmlKeyValueOptionExpr extends Expression {
 /**
  * Valid kind values for USE statements
  */
-export enum UseExprKind {
-  DATABASE = 'database',
-  SCHEMA = 'schema',
-  WAREHOUSE = 'warehouse',
-  ROLE = 'role',
-  CATALOG = 'catalog',
-}
 export type UseExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -9953,13 +8721,6 @@ export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr
 /**
  * Valid kind values for index column constraints
  */
-export enum IndexColumnConstraintExprKind {
-  PRIMARY = 'primary',
-  UNIQUE = 'unique',
-  FULLTEXT = 'fulltext',
-  SPATIAL = 'spatial',
-}
-
 export type IndexColumnConstraintExprArgs = Merge<[
   ColumnConstraintKindExprArgs,
   {
@@ -10255,11 +9016,6 @@ export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
  * Enumeration of valid kind values for Copy expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum CopyExprKind {
-  LOCAL = 'local',
-  REMOTE = 'remote',
-}
-
 export type CopyExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -10843,13 +9599,6 @@ export class DistKeyPropertyExpr extends PropertyExpr {
  * Enumeration of valid kind values for DistributedByProperty expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum DistributedByPropertyExprKind {
-  HASH = 'hash',
-  RANGE = 'range',
-  LIST = 'list',
-  REPLICATE = 'replicate',
-}
-
 export type DistributedByPropertyExprArgs = Merge<[
   PropertyExprArgs,
   {
@@ -11331,16 +10080,6 @@ export class ClusteredByPropertyExpr extends PropertyExpr {
  * Enumeration of valid kind values for DictProperty expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum DictPropertyExprKind {
-  FLAT = 'flat',
-  HASHED = 'hashed',
-  RANGE_HASHED = 'rangeHashed',
-  CACHE = 'cache',
-  DIRECT = 'direct',
-  IP_TRIE = 'ipTrie',
-  POLYGON = 'polygon',
-}
-
 export type DictPropertyExprArgs = Merge<[
   PropertyExprArgs,
   {
@@ -11541,13 +10280,6 @@ export class LockPropertyExpr extends PropertyExpr {
  * Enumeration of valid kind values for LockingProperty expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum LockingPropertyExprKind {
-  DEFAULT = 'default',
-  ALL = 'all',
-  FALLBACK = 'fallback',
-  LOCKING = 'locking',
-}
-
 export type LockingPropertyExprArgs = Merge<[
   PropertyExprArgs,
   {
@@ -11839,12 +10571,6 @@ export class PartitionByListPropertyExpr extends PropertyExpr {
 /**
  * Valid kind values for refresh trigger properties
  */
-export enum RefreshTriggerPropertyExprKind {
-  ON_COMMIT = 'onCommit',
-  ON_DEMAND = 'onDemand',
-  START_WITH = 'startWith',
-  NEXT = 'next',
-}
 export type RefreshTriggerPropertyExprArgs = Merge<[
   PropertyExprArgs,
   {
@@ -12712,17 +11438,6 @@ export class ForcePropertyExpr extends PropertyExpr {
  *     as [POST_ALIAS] (select * from b) [POST_EXPRESSION]
  *     index (c) [POST_INDEX]
  */
-export enum PropertiesLocation {
-  POST_CREATE = 'postCreate',
-  POST_NAME = 'postName',
-  POST_SCHEMA = 'postSchema',
-  POST_WITH = 'postWith',
-  POST_ALIAS = 'postAlias',
-  POST_EXPRESSION = 'postExpression',
-  POST_INDEX = 'postIndex',
-  UNSUPPORTED = 'unsupported',
-}
-
 export type PropertiesExprArgs = Merge<[
   BaseExpressionArgs,
   { expressions?: Expression[] },
@@ -12801,13 +11516,6 @@ export class PropertiesExpr extends Expression {
  * Enumeration of valid kind values for SetOperation expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum SetOperationExprKind {
-  UNION = 'union',
-  INTERSECT = 'intersect',
-  EXCEPT = 'except',
-  INNER = 'inner',
-}
-
 export type SetOperationExprArgs = Merge<[
   QueryExprArgs,
   {
@@ -13196,13 +11904,6 @@ export class UpdateExpr extends DmlExpr {
  * Enumeration of valid kind values for SELECT expressions.
  * Used to specify the variant or subtype of the expression.
  */
-export enum SelectExprKind {
-  STRUCT = 'struct',
-  VALUE = 'value',
-  OBJECT = 'object',
-  ALL = 'all',
-  DISTINCT = 'distinct',
-}
 /**
  * Represents a SELECT statement.
  *
@@ -14087,12 +12788,6 @@ export class ParameterExpr extends ConditionExpr {
 /**
  * Valid kind values for session parameters
  */
-export enum SessionParameterExprKind {
-  SESSION = 'session',
-  GLOBAL = 'global',
-  LOCAL = 'local',
-  VARIABLE = 'variable',
-}
 export type SessionParameterExprArgs = Merge<[
   ConditionExprArgs,
   {
@@ -14116,13 +12811,6 @@ export class SessionParameterExpr extends ConditionExpr {
 /**
  * Valid kind values for placeholders
  */
-export enum PlaceholderExprKind {
-  POSITIONAL = 'positional',
-  NAMED = 'named',
-  QUESTION = 'question',
-  NUMERIC = 'numeric',
-  DOLLAR = 'dollar',
-}
 export type PlaceholderExprArgs = Merge<[
   ConditionExprArgs,
   {
@@ -20923,10 +19611,6 @@ export class TimestampTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 /**
  * Valid kind values for time slice expressions
  */
-export enum TimeSliceExprKind {
-  START = 'start',
-  END = 'end',
-}
 export type TimeSliceExprArgs = Merge<[
   FuncExprArgs,
   {
@@ -27313,12 +25997,6 @@ export class TimeStrToUnixExpr extends FuncExpr {
   static {
     this.register();
   }
-}
-
-export enum TrimPosition {
-  LEADING = 'leading',
-  TRAILING = 'trailing',
-  BOTH = 'both',
 }
 
 export type TrimExprArgs = Merge<[

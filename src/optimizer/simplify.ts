@@ -813,114 +813,160 @@ export class Simplifier {
   static UTINYINT_MIN = 0;
   static UTINYINT_MAX = 255;
 
-  static COMPLEMENT_COMPARISONS: Record<string, typeof Expression> = {
-    [LtExpr.key]: GteExpr,
-    [GtExpr.key]: LteExpr,
-    [LteExpr.key]: GtExpr,
-    [GteExpr.key]: LtExpr,
-    [EqExpr.key]: NeqExpr,
-    [NeqExpr.key]: EqExpr,
-  };
+  static #COMPLEMENT_COMPARISONS?: Record<string, typeof Expression>;
+  static get COMPLEMENT_COMPARISONS(): Record<string, typeof Expression> {
+    return Simplifier.#COMPLEMENT_COMPARISONS ??= {
+      [LtExpr.key]: GteExpr,
+      [GtExpr.key]: LteExpr,
+      [LteExpr.key]: GtExpr,
+      [GteExpr.key]: LtExpr,
+      [EqExpr.key]: NeqExpr,
+      [NeqExpr.key]: EqExpr,
+    };
+  }
 
-  static COMPLEMENT_SUBQUERY_PREDICATES: Record<string, typeof Expression> = {
-    [AllExpr.key]: AnyExpr,
-    [AnyExpr.key]: AllExpr,
-  };
+  static #COMPLEMENT_SUBQUERY_PREDICATES?: Record<string, typeof Expression>;
+  static get COMPLEMENT_SUBQUERY_PREDICATES(): Record<string, typeof Expression> {
+    return Simplifier.#COMPLEMENT_SUBQUERY_PREDICATES ??= {
+      [AllExpr.key]: AnyExpr,
+      [AnyExpr.key]: AllExpr,
+    };
+  }
 
-  static LT_Lte = [LtExpr, LteExpr] as const;
-  static GT_GtE = [GtExpr, GteExpr] as const;
+  static #LT_Lte?: readonly [typeof LtExpr, typeof LteExpr];
+  static get LT_Lte(): readonly [typeof LtExpr, typeof LteExpr] {
+    return Simplifier.#LT_Lte ??= [LtExpr, LteExpr];
+  }
 
-  static COMPARISONS = [
-    ...Simplifier.LT_Lte,
-    ...Simplifier.GT_GtE,
-    EqExpr,
-    NeqExpr,
-    IsExpr,
-  ] as const;
+  static #GT_GtE?: readonly [typeof GtExpr, typeof GteExpr];
+  static get GT_GtE(): readonly [typeof GtExpr, typeof GteExpr] {
+    return Simplifier.#GT_GtE ??= [GtExpr, GteExpr];
+  }
 
-  static INVERSE_COMPARISONS: Record<string, typeof Expression> = {
-    [LtExpr.key]: GtExpr,
-    [GtExpr.key]: LtExpr,
-    [LteExpr.key]: GteExpr,
-    [GteExpr.key]: LteExpr,
-  };
+  static #COMPARISONS?: readonly [typeof LtExpr, typeof LteExpr, typeof GtExpr, typeof GteExpr, typeof EqExpr, typeof NeqExpr, typeof IsExpr];
+  static get COMPARISONS(): readonly [typeof LtExpr, typeof LteExpr, typeof GtExpr, typeof GteExpr, typeof EqExpr, typeof NeqExpr, typeof IsExpr] {
+    return Simplifier.#COMPARISONS ??= [
+      ...Simplifier.LT_Lte,
+      ...Simplifier.GT_GtE,
+      EqExpr,
+      NeqExpr,
+      IsExpr,
+    ];
+  }
 
-  static NONDETERMINISTIC = [RandExpr, RandnExpr] as const;
-  static AND_OR = [AndExpr, OrExpr] as const;
+  static #INVERSE_COMPARISONS?: Record<string, typeof Expression>;
+  static get INVERSE_COMPARISONS(): Record<string, typeof Expression> {
+    return Simplifier.#INVERSE_COMPARISONS ??= {
+      [LtExpr.key]: GtExpr,
+      [GtExpr.key]: LtExpr,
+      [LteExpr.key]: GteExpr,
+      [GteExpr.key]: LteExpr,
+    };
+  }
 
-  static INVERSE_DATE_OPS: Record<string, typeof Expression> = {
-    [DateAddExpr.key]: SubExpr,
-    [DateSubExpr.key]: AddExpr,
-    [DatetimeAddExpr.key]: SubExpr,
-    [DatetimeSubExpr.key]: AddExpr,
-  };
+  static #NONDETERMINISTIC?: readonly [typeof RandExpr, typeof RandnExpr];
+  static get NONDETERMINISTIC(): readonly [typeof RandExpr, typeof RandnExpr] {
+    return Simplifier.#NONDETERMINISTIC ??= [RandExpr, RandnExpr];
+  }
 
-  static INVERSE_OPS: Record<string, typeof Expression> = {
-    ...Simplifier.INVERSE_DATE_OPS,
-    [AddExpr.key]: SubExpr,
-    [SubExpr.key]: AddExpr,
-  };
+  static #AND_OR?: readonly [typeof AndExpr, typeof OrExpr];
+  static get AND_OR(): readonly [typeof AndExpr, typeof OrExpr] {
+    return Simplifier.#AND_OR ??= [AndExpr, OrExpr];
+  }
 
-  static NULL_OK = [
-    NullSafeEqExpr,
-    NullSafeNeqExpr,
-    PropertyEqExpr,
-  ] as const;
+  static #INVERSE_DATE_OPS?: Record<string, typeof Expression>;
+  static get INVERSE_DATE_OPS(): Record<string, typeof Expression> {
+    return Simplifier.#INVERSE_DATE_OPS ??= {
+      [DateAddExpr.key]: SubExpr,
+      [DateSubExpr.key]: AddExpr,
+      [DatetimeAddExpr.key]: SubExpr,
+      [DatetimeSubExpr.key]: AddExpr,
+    };
+  }
 
-  static CONCATS = [ConcatExpr, DPipeExpr] as const;
+  static #INVERSE_OPS?: Record<string, typeof Expression>;
+  static get INVERSE_OPS(): Record<string, typeof Expression> {
+    return Simplifier.#INVERSE_OPS ??= {
+      ...Simplifier.INVERSE_DATE_OPS,
+      [AddExpr.key]: SubExpr,
+      [SubExpr.key]: AddExpr,
+    };
+  }
 
-  static DATETRUNC_BINARY_COMPARISONS: Record<
-    string,
-    (l: Expression, dt: DateTime, u: string, d: Dialect, t?: DataTypeExpr | ColumnDefExpr) => Expression | undefined
-  > = {
-    [LtExpr.key]: (l, dt, u, d, t) => {
-      const floor = dateFloor(dt, u, d);
-      const ceilValue = dt.toMillis() === floor.toMillis() ? dt : DateTime.fromMillis(floor.toMillis() + interval(u));
-      return new LtExpr({
-        this: l,
-        expression: dateLiteral(ceilValue, t),
-      });
-    },
-    [GtExpr.key]: (l, dt, u, d, t) => {
-      const floor = dateFloor(dt, u, d);
-      return new GteExpr({
-        this: l,
-        expression: dateLiteral(DateTime.fromMillis(floor.toMillis() + interval(u)), t),
-      });
-    },
-    [LteExpr.key]: (l, dt, u, d, t) => {
-      const floor = dateFloor(dt, u, d);
-      return new LtExpr({
-        this: l,
-        expression: dateLiteral(DateTime.fromMillis(floor.toMillis() + interval(u)), t),
-      });
-    },
-    [GteExpr.key]: (l, dt, u, d, t) => {
-      const ceil = dateCeil(dt, u, d);
-      return new GteExpr({
-        this: l,
-        expression: dateLiteral(ceil, t),
-      });
-    },
-    [EqExpr.key]: dateTruncEq,
-    [NeqExpr.key]: dateTruncNeq,
-  };
+  static #NULL_OK?: readonly [typeof NullSafeEqExpr, typeof NullSafeNeqExpr, typeof PropertyEqExpr];
+  static get NULL_OK(): readonly [typeof NullSafeEqExpr, typeof NullSafeNeqExpr, typeof PropertyEqExpr] {
+    return Simplifier.#NULL_OK ??= [NullSafeEqExpr, NullSafeNeqExpr, PropertyEqExpr];
+  }
 
-  static DATETRUNC_COMPARISONS = new Set([InExpr.key, ...Object.keys(Simplifier.DATETRUNC_BINARY_COMPARISONS)]);
+  static #CONCATS?: readonly [typeof ConcatExpr, typeof DPipeExpr];
+  static get CONCATS(): readonly [typeof ConcatExpr, typeof DPipeExpr] {
+    return Simplifier.#CONCATS ??= [ConcatExpr, DPipeExpr];
+  }
 
-  static DATETRUNCS = [DateTruncExpr, TimestampTruncExpr] as const;
+  static #DATETRUNC_BINARY_COMPARISONS?: Record<string, (l: Expression, dt: DateTime, u: string, d: Dialect, t?: DataTypeExpr | ColumnDefExpr) => Expression | undefined>;
+  static get DATETRUNC_BINARY_COMPARISONS(): Record<string, (l: Expression, dt: DateTime, u: string, d: Dialect, t?: DataTypeExpr | ColumnDefExpr) => Expression | undefined> {
+    return Simplifier.#DATETRUNC_BINARY_COMPARISONS ??= {
+      [LtExpr.key]: (l, dt, u, d, t) => {
+        const floor = dateFloor(dt, u, d);
+        const ceilValue = dt.toMillis() === floor.toMillis() ? dt : DateTime.fromMillis(floor.toMillis() + interval(u));
+        return new LtExpr({
+          this: l,
+          expression: dateLiteral(ceilValue, t),
+        });
+      },
+      [GtExpr.key]: (l, dt, u, d, t) => {
+        const floor = dateFloor(dt, u, d);
+        return new GteExpr({
+          this: l,
+          expression: dateLiteral(DateTime.fromMillis(floor.toMillis() + interval(u)), t),
+        });
+      },
+      [LteExpr.key]: (l, dt, u, d, t) => {
+        const floor = dateFloor(dt, u, d);
+        return new LtExpr({
+          this: l,
+          expression: dateLiteral(DateTime.fromMillis(floor.toMillis() + interval(u)), t),
+        });
+      },
+      [GteExpr.key]: (l, dt, u, d, t) => {
+        const ceil = dateCeil(dt, u, d);
+        return new GteExpr({
+          this: l,
+          expression: dateLiteral(ceil, t),
+        });
+      },
+      [EqExpr.key]: dateTruncEq,
+      [NeqExpr.key]: dateTruncNeq,
+    };
+  }
 
-  static SAFE_CONNECTOR_ELIMINATION_RESULT = [ConnectorExpr, BooleanExpr] as const;
+  static #DATETRUNC_COMPARISONS?: Set<string>;
+  static get DATETRUNC_COMPARISONS(): Set<string> {
+    return Simplifier.#DATETRUNC_COMPARISONS ??= new Set([InExpr.key, ...Object.keys(Simplifier.DATETRUNC_BINARY_COMPARISONS)]);
+  }
+
+  static #DATETRUNCS?: readonly [typeof DateTruncExpr, typeof TimestampTruncExpr];
+  static get DATETRUNCS(): readonly [typeof DateTruncExpr, typeof TimestampTruncExpr] {
+    return Simplifier.#DATETRUNCS ??= [DateTruncExpr, TimestampTruncExpr];
+  }
+
+  static #SAFE_CONNECTOR_ELIMINATION_RESULT?: readonly [typeof ConnectorExpr, typeof BooleanExpr];
+  static get SAFE_CONNECTOR_ELIMINATION_RESULT(): readonly [typeof ConnectorExpr, typeof BooleanExpr] {
+    return Simplifier.#SAFE_CONNECTOR_ELIMINATION_RESULT ??= [ConnectorExpr, BooleanExpr];
+  }
 
   // CROSS joins result in an empty table if the right table is empty.
   // So we can only simplify certain types of joins to CROSS.
   // Or in other words, LEFT JOIN x ON TRUE != CROSS JOIN x
-  static JOINS = [
-    ['', ''],
-    ['', JoinExprKind.INNER],
-    [JoinExprKind.RIGHT, ''],
-    [JoinExprKind.RIGHT, JoinExprKind.OUTER],
-  ] as const;
+  static #JOINS?: readonly (readonly [string, string])[];
+  static get JOINS(): readonly (readonly [string, string])[] {
+    return Simplifier.#JOINS ??= [
+      ['', ''],
+      ['', JoinExprKind.INNER],
+      [JoinExprKind.RIGHT, ''],
+      [JoinExprKind.RIGHT, JoinExprKind.OUTER],
+    ];
+  }
 
   simplify<E extends Expression> (
     expression: E,

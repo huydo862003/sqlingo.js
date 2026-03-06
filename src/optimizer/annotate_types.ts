@@ -1,7 +1,10 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/annotate_types.py
 
+import type { ColumnDefExprKind } from '../expressions/types';
+import {
+  DataTypeExprKind,
+} from '../expressions/types';
 import type {
-  ColumnDefExprKind,
   IntervalExpr,
 } from '../expressions';
 import {
@@ -14,7 +17,6 @@ import {
   ColumnExpr,
   ColumnDefExpr,
   DataTypeExpr,
-  DataTypeExprKind,
   DateTruncExpr,
   DivExpr,
   DotExpr,
@@ -173,12 +175,17 @@ function swapAll (coercions: BinaryCoercions): BinaryCoercions {
  * Walks the AST and infers types for all expressions based on schema and type rules.
  */
 export class TypeAnnotator {
-  static NESTED_TYPES = new Set([DataTypeExprKind.ARRAY]);
+  static #NESTED_TYPES?: Set<DataTypeExprKind>;
+  static get NESTED_TYPES (): Set<DataTypeExprKind> {
+    return TypeAnnotator.#NESTED_TYPES ??= new Set([DataTypeExprKind.ARRAY]);
+  }
 
   // Specifies what types a given type can be coerced into
   // Highest-to-lowest precedence: lowest types can coerce INTO higher types
   // E.g. CHAR (lowest) can coerce to TEXT (highest)
-  static COERCES_TO: Map<DataTypeExprKind, Set<DataTypeExprKind>> = (() => {
+  static #COERCES_TO?: Map<DataTypeExprKind, Set<DataTypeExprKind>>;
+  static get COERCES_TO (): Map<DataTypeExprKind, Set<DataTypeExprKind>> {
+    if (TypeAnnotator.#COERCES_TO) return TypeAnnotator.#COERCES_TO;
     const map = new Map<DataTypeExprKind, Set<DataTypeExprKind>>();
 
     // Text precedence: highest to lowest (TEXT wins over CHAR in coercion)
@@ -226,47 +233,50 @@ export class TypeAnnotator {
       }
     }
 
-    return map;
-  })();
+    return TypeAnnotator.#COERCES_TO = map;
+  }
 
   // Coercion functions for binary operations where COERCES_TO is not sufficient
-  static BINARY_COERCIONS: BinaryCoercions = swapAll((() => {
-    const map: BinaryCoercions = new MapBinaryTuple();
+  static #BINARY_COERCIONS?: BinaryCoercions;
+  static get BINARY_COERCIONS (): BinaryCoercions {
+    return TypeAnnotator.#BINARY_COERCIONS ??= swapAll((() => {
+      const map: BinaryCoercions = new MapBinaryTuple();
 
-    // text + interval → DATE/DATETIME based on whether text is ISO date
-    for (const t of DataTypeExpr.TEXT_TYPES) {
-      map.set(
-        t,
-        DataTypeExprKind.INTERVAL,
-        (l: Expression, r: Expression): DataTypeExprKind =>
-          coerceDateLiteral(l, (r as IntervalExpr).unit),
-      );
-    }
-
-    // text + numeric → return the numeric type (match most dialect semantics)
-    for (const text of DataTypeExpr.TEXT_TYPES) {
-      for (const numeric of DataTypeExpr.NUMERIC_TYPES) {
+      // text + interval → DATE/DATETIME based on whether text is ISO date
+      for (const t of DataTypeExpr.TEXT_TYPES) {
         map.set(
-          text,
-          numeric,
-          (l: Expression, r: Expression): DataTypeExprKind => {
-            const lTypeKind = (l.type as DataTypeExpr | undefined)?.args.this as DataTypeExprKind;
-            return DataTypeExpr.NUMERIC_TYPES.has(lTypeKind) ? lTypeKind : (r.type as DataTypeExpr | undefined)?.args.this as DataTypeExprKind;
-          },
+          t,
+          DataTypeExprKind.INTERVAL,
+          (l: Expression, r: Expression): DataTypeExprKind =>
+            coerceDateLiteral(l, (r as IntervalExpr).unit),
         );
       }
-    }
 
-    // date + interval → DATE/DATETIME based on interval unit
-    map.set(
-      DataTypeExprKind.DATE,
-      DataTypeExprKind.INTERVAL,
-      (l: Expression, r: Expression): DataTypeExprKind =>
-        coerceDate(l, (r as IntervalExpr).unit),
-    );
+      // text + numeric → return the numeric type (match most dialect semantics)
+      for (const text of DataTypeExpr.TEXT_TYPES) {
+        for (const numeric of DataTypeExpr.NUMERIC_TYPES) {
+          map.set(
+            text,
+            numeric,
+            (l: Expression, r: Expression): DataTypeExprKind => {
+              const lTypeKind = (l.type as DataTypeExpr | undefined)?.args.this as DataTypeExprKind;
+              return DataTypeExpr.NUMERIC_TYPES.has(lTypeKind) ? lTypeKind : (r.type as DataTypeExpr | undefined)?.args.this as DataTypeExprKind;
+            },
+          );
+        }
+      }
 
-    return map;
-  })());
+      // date + interval → DATE/DATETIME based on interval unit
+      map.set(
+        DataTypeExprKind.DATE,
+        DataTypeExprKind.INTERVAL,
+        (l: Expression, r: Expression): DataTypeExprKind =>
+          coerceDate(l, (r as IntervalExpr).unit),
+      );
+
+      return map;
+    })());
+  }
 
   schema: Schema;
   dialect: Dialect;
