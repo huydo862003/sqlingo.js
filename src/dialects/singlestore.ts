@@ -138,21 +138,24 @@ function castToTime6 (
 class SingleStoreTokenizer extends MySQL.Tokenizer {
   static BYTE_STRINGS: [string, string][] = [['e\'', '\''], ['E\'', '\'']];
 
-  static KEYWORDS = {
-    ...MySQL.Tokenizer.KEYWORDS,
-    'BSON': TokenType.JSONB,
-    'GEOGRAPHYPOINT': TokenType.GEOGRAPHYPOINT,
-    'TIMESTAMP': TokenType.TIMESTAMP,
-    'UTC_DATE': TokenType.UTC_DATE,
-    'UTC_TIME': TokenType.UTC_TIME,
-    'UTC_TIMESTAMP': TokenType.UTC_TIMESTAMP,
-    ':>': TokenType.COLON_GT,
-    '!:>': TokenType.NCOLON_GT,
-    '::$': TokenType.DCOLONDOLLAR,
-    '::%': TokenType.DCOLONPERCENT,
-    '::?': TokenType.DCOLONQMARK,
-    'RECORD': TokenType.STRUCT,
-  };
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
+    return {
+      ...MySQL.Tokenizer.KEYWORDS,
+      'BSON': TokenType.JSONB,
+      'GEOGRAPHYPOINT': TokenType.GEOGRAPHYPOINT,
+      'TIMESTAMP': TokenType.TIMESTAMP,
+      'UTC_DATE': TokenType.UTC_DATE,
+      'UTC_TIME': TokenType.UTC_TIME,
+      'UTC_TIMESTAMP': TokenType.UTC_TIMESTAMP,
+      ':>': TokenType.COLON_GT,
+      '!:>': TokenType.NCOLON_GT,
+      '::$': TokenType.DCOLONDOLLAR,
+      '::%': TokenType.DCOLONPERCENT,
+      '::?': TokenType.DCOLONQMARK,
+      'RECORD': TokenType.STRUCT,
+    };
+  }
 }
 
 class SingleStoreParser extends MySQL.Parser {

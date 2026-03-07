@@ -289,8 +289,15 @@ class DorisGenerator extends MySQL.Generator {
     ]);
   }
 
-  static CAST_MAPPING = {};
-  static TIMESTAMP_FUNC_TYPES = new Set<DataTypeExprKind>();
+  @cache
+  static get CAST_MAPPING () {
+    return {};
+  }
+
+  @cache
+  static get TIMESTAMP_FUNC_TYPES () {
+    return new Set<DataTypeExprKind>();
+  }
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -65,16 +65,20 @@ class DatabricksJsonPathTokenizer extends JsonPathTokenizer {
 }
 
 class DatabricksTokenizer extends Spark.Tokenizer {
-  static KEYWORDS = {
-    ...Spark.Tokenizer.KEYWORDS,
-    VOID: TokenType.VOID,
-  };
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
+    return {
+      ...Spark.Tokenizer.KEYWORDS,
+      VOID: TokenType.VOID,
+    };
+  }
 }
 
 class DatabricksParser extends Spark.Parser {
   static LOG_DEFAULTS_TO_LN = true;
   static STRICT_CAST = true;
   static COLON_IS_VARIANT_EXTRACT = true;
+
   @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {

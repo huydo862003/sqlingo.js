@@ -456,7 +456,8 @@ export class PostgresTokenizer extends Tokenizer {
   static HEREDOC_TAG_IS_IDENTIFIER = true;
   static HEREDOC_STRING_ALTERNATIVE = TokenType.PARAMETER;
 
-  static ORIGINAL_KEYWORDS: Record<string, TokenType> = (() => {
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     const {
       '/*+': _1, DIV: _2, ...kw
     } = Tokenizer.KEYWORDS;
@@ -507,7 +508,7 @@ export class PostgresTokenizer extends Tokenizer {
       'VARIADIC': TokenType.VARIADIC,
       'INOUT': TokenType.INOUT,
     };
-  })();
+  }
 
   static SINGLE_TOKENS: Record<string, TokenType> = {
     ...Tokenizer.SINGLE_TOKENS,
