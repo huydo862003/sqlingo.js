@@ -430,48 +430,49 @@ class ClickHouseTokenizer extends Tokenizer {
   static HEX_STRINGS: TokenPair[] = [['0x', ''], ['0X', '']];
   static HEREDOC_STRINGS = ['$'];
 
-  static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
-    ...Tokenizer.KEYWORDS,
-    '.:': TokenType.DOTCOLON,
-    'ATTACH': TokenType.COMMAND,
-    'DATE32': TokenType.DATE32,
-    'DATETIME64': TokenType.DATETIME64,
-    'DICTIONARY': TokenType.DICTIONARY,
-    'DYNAMIC': TokenType.DYNAMIC,
-    'ENUM8': TokenType.ENUM8,
-    'ENUM16': TokenType.ENUM16,
-    'EXCHANGE': TokenType.COMMAND,
-    'FINAL': TokenType.FINAL,
-    'FIXEDSTRING': TokenType.FIXEDSTRING,
-    'FLOAT32': TokenType.FLOAT,
-    'FLOAT64': TokenType.DOUBLE,
-    'GLOBAL': TokenType.GLOBAL,
-    'LOWCARDINALITY': TokenType.LOWCARDINALITY,
-    'MAP': TokenType.MAP,
-    'NESTED': TokenType.NESTED,
-    'NOTHING': TokenType.NOTHING,
-    'SAMPLE': TokenType.TABLE_SAMPLE,
-    'TUPLE': TokenType.STRUCT,
-    'UINT16': TokenType.USMALLINT,
-    'UINT32': TokenType.UINT,
-    'UINT64': TokenType.UBIGINT,
-    'UINT8': TokenType.UTINYINT,
-    'IPV4': TokenType.IPV4,
-    'IPV6': TokenType.IPV6,
-    'POINT': TokenType.POINT,
-    'RING': TokenType.RING,
-    'LINESTRING': TokenType.LINESTRING,
-    'MULTILINESTRING': TokenType.MULTILINESTRING,
-    'POLYGON': TokenType.POLYGON,
-    'MULTIPOLYGON': TokenType.MULTIPOLYGON,
-    'AGGREGATEFUNCTION': TokenType.AGGREGATEFUNCTION,
-    'SIMPLEAGGREGATEFUNCTION': TokenType.SIMPLEAGGREGATEFUNCTION,
-    'SYSTEM': TokenType.COMMAND,
-    'PREWHERE': TokenType.PREWHERE,
-  };
-
-  static {
-    delete this.ORIGINAL_KEYWORDS['/*+'];
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
+    const keywords: Record<string, TokenType> = {
+      ...Tokenizer.KEYWORDS,
+      '.:': TokenType.DOTCOLON,
+      'ATTACH': TokenType.COMMAND,
+      'DATE32': TokenType.DATE32,
+      'DATETIME64': TokenType.DATETIME64,
+      'DICTIONARY': TokenType.DICTIONARY,
+      'DYNAMIC': TokenType.DYNAMIC,
+      'ENUM8': TokenType.ENUM8,
+      'ENUM16': TokenType.ENUM16,
+      'EXCHANGE': TokenType.COMMAND,
+      'FINAL': TokenType.FINAL,
+      'FIXEDSTRING': TokenType.FIXEDSTRING,
+      'FLOAT32': TokenType.FLOAT,
+      'FLOAT64': TokenType.DOUBLE,
+      'GLOBAL': TokenType.GLOBAL,
+      'LOWCARDINALITY': TokenType.LOWCARDINALITY,
+      'MAP': TokenType.MAP,
+      'NESTED': TokenType.NESTED,
+      'NOTHING': TokenType.NOTHING,
+      'SAMPLE': TokenType.TABLE_SAMPLE,
+      'TUPLE': TokenType.STRUCT,
+      'UINT16': TokenType.USMALLINT,
+      'UINT32': TokenType.UINT,
+      'UINT64': TokenType.UBIGINT,
+      'UINT8': TokenType.UTINYINT,
+      'IPV4': TokenType.IPV4,
+      'IPV6': TokenType.IPV6,
+      'POINT': TokenType.POINT,
+      'RING': TokenType.RING,
+      'LINESTRING': TokenType.LINESTRING,
+      'MULTILINESTRING': TokenType.MULTILINESTRING,
+      'POLYGON': TokenType.POLYGON,
+      'MULTIPOLYGON': TokenType.MULTIPOLYGON,
+      'AGGREGATEFUNCTION': TokenType.AGGREGATEFUNCTION,
+      'SIMPLEAGGREGATEFUNCTION': TokenType.SIMPLEAGGREGATEFUNCTION,
+      'SYSTEM': TokenType.COMMAND,
+      'PREWHERE': TokenType.PREWHERE,
+    };
+    delete keywords['/*+'];
+    return keywords;
   }
 
   @cache
@@ -1537,219 +1538,223 @@ export class ClickHouseGenerator extends Generator {
     ]);
   }
 
+  @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static ORIGINAL_TRANSFORMS = new Map<typeof Expression, (this: Generator, e: any) => string>([
-    ...Generator.ORIGINAL_TRANSFORMS,
-    [AnyValueExpr, renameFunc('any')],
-    [ApproxDistinctExpr, renameFunc('uniq')],
-    [ArrayConcatExpr, renameFunc('arrayConcat')],
-    [ArrayContainsExpr, renameFunc('has')],
-    [
-      ArrayFilterExpr,
-      function (this: Generator, e: ArrayFilterExpr) {
-        return this.func('arrayFilter', [e.args.expression, e.args.this]);
-      },
-    ],
-    [ArrayRemoveExpr, removeFromArrayUsingFilter],
-    [ArrayReverseExpr, renameFunc('arrayReverse')],
-    [ArraySliceExpr, renameFunc('arraySlice')],
-    [ArraySumExpr, renameFunc('arraySum')],
-    [ArgMaxExpr, argMaxOrMinNoCount('argMax')],
-    [ArgMinExpr, argMaxOrMinNoCount('argMin')],
-    [ArrayExpr, inlineArraySql],
-    [CastToStrTypeExpr, renameFunc('CAST')],
-    [CurrentDatabaseExpr, renameFunc('CURRENT_DATABASE')],
-    [CurrentSchemasExpr, renameFunc('CURRENT_SCHEMAS')],
-    [CountIfExpr, renameFunc('countIf')],
-    [CosineDistanceExpr, renameFunc('cosineDistance')],
-    [
-      CompressColumnConstraintExpr,
-      function (this: Generator, e: CompressColumnConstraintExpr) {
-        return `CODEC(${this.expressions(e, {
-          key: 'this',
-          flat: true,
-        })})`;
-      },
-    ],
-    [
-      ComputedColumnConstraintExpr,
-      function (this: Generator, e: ComputedColumnConstraintExpr) {
-        return `${e.args.persisted ? 'MATERIALIZED' : 'ALIAS'} ${this.sql(e, 'this')}`;
-      },
-    ],
-    [
-      CurrentDateExpr,
-      function (this: Generator, _e: CurrentDateExpr) {
-        return this.func('CURRENT_DATE', []);
-      },
-    ],
-    [CurrentVersionExpr, renameFunc('VERSION')],
-    [DateAddExpr, datetimeDeltaSql('DATE_ADD')],
-    [DateDiffExpr, datetimeDeltaSql('DATE_DIFF')],
-    [DateStrToDateExpr, renameFunc('toDate')],
-    [DateSubExpr, datetimeDeltaSql('DATE_SUB')],
-    [ExplodeExpr, renameFunc('arrayJoin')],
-    [FarmFingerprintExpr, renameFunc('farmFingerprint64')],
-    [
-      FinalExpr,
-      function (this: Generator, e: FinalExpr) {
-        return `${this.sql(e, 'this')} FINAL`;
-      },
-    ],
-    [IsNanExpr, renameFunc('isNaN')],
-    [
-      JsonCastExpr,
-      function (this: Generator, e: JsonCastExpr) {
-        return `${this.sql(e, 'this')}.:${this.sql(e, 'to')}`;
-      },
-    ],
-    [JsonExtractExpr, jsonExtractSegments('JSONExtractString', { quotedIndex: false })],
-    [JsonExtractScalarExpr, jsonExtractSegments('JSONExtractString', { quotedIndex: false })],
-    [JsonPathKeyExpr, jsonPathKeyOnlyName],
-    [JsonPathRootExpr, () => ''],
-    [LengthExpr, lengthOrCharLengthSql],
-    [MapExpr, mapSql],
-    [MedianExpr, renameFunc('median')],
-    [NullifExpr, renameFunc('nullIf')],
-    [
-      PartitionedByPropertyExpr,
-      function (this: Generator, e: PartitionedByPropertyExpr) {
-        return `PARTITION BY ${this.sql(e, 'this')}`;
-      },
-    ],
-    [PivotExpr, noPivotSql],
-    [QuantileExpr, quantileSql],
-    [
-      RegexpLikeExpr,
-      function (this: Generator, e: RegexpLikeExpr) {
-        return this.func('match', [e.args.this, e.args.expression]);
-      },
-    ],
-    [RandExpr, renameFunc('randCanonical')],
-    [StartsWithExpr, renameFunc('startsWith')],
-    [StructExpr, renameFunc('tuple')],
-    [TruncExpr, renameFunc('trunc')],
-    [EndsWithExpr, renameFunc('endsWith')],
-    [EuclideanDistanceExpr, renameFunc('L2Distance')],
-    [
-      StrPositionExpr,
-      function (this: Generator, e: StrPositionExpr) {
-        return strPositionSql.call(this, e, {
-          funcName: 'POSITION',
-          supportsPosition: true,
-          useAnsiPosition: false,
-        });
-      },
-    ],
-    [
-      TimeToStrExpr,
-      function (this: Generator, e: TimeToStrExpr) {
-        return this.func('formatDateTime', [
-          e.args.this,
-          this.formatTime(e),
-          e.args.zone,
-        ]);
-      },
-    ],
-    [TimeStrToTimeExpr, timeStrToTimeSql],
-    [TimestampAddExpr, datetimeDeltaSql('TIMESTAMP_ADD')],
-    [TimestampSubExpr, datetimeDeltaSql('TIMESTAMP_SUB')],
-    [TypeofExpr, renameFunc('toTypeName')],
-    [VarMapExpr, mapSql],
-    [
-      XorExpr,
-      function (this: Generator, e: XorExpr) {
-        return this.func('xor', [
-          e.args.this,
-          e.args.expression,
-          ...e.args.expressions || [],
-        ]);
-      },
-    ],
-    [Md5DigestExpr, renameFunc('MD5')],
-    [
-      Md5Expr,
-      function (this: Generator, e: Md5Expr) {
-        return this.func('LOWER', [this.func('HEX', [this.func('MD5', [e.args.this])])]);
-      },
-    ],
-    [ShaExpr, renameFunc('SHA1')],
-    [Sha1DigestExpr, renameFunc('SHA1')],
-    [Sha2Expr, sha256Sql],
-    [Sha2DigestExpr, sha2DigestSql],
-    [
-      SplitExpr,
-      function (this: Generator, e: SplitExpr) {
-        return this.func('splitByString', [
-          e.args.expression,
-          e.args.this,
-          typeof e.args.limit === 'number' ? LiteralExpr.number(e.args.limit) : e.args.limit,
-        ]);
-      },
-    ],
-    [
-      RegexpSplitExpr,
-      function (this: Generator, e: RegexpSplitExpr) {
-        return this.func('splitByRegexp', [
-          e.args.expression,
-          e.args.this,
-          typeof e.args.limit === 'number' ? LiteralExpr.number(e.args.limit) : e.args.limit,
-        ]);
-      },
-    ],
-    [UnixToTimeExpr, unixToTimeSql],
-    [
-      TimestampTruncExpr,
-      timestampTruncSql({
-        func: 'dateTrunc',
-        zone: true,
-      }),
-    ],
-    [
-      TrimExpr,
-      function (this: Generator, e: TrimExpr) {
-        return trimSql.call(this, e, { defaultTrimType: 'BOTH' });
-      },
-    ],
-    [VarianceExpr, renameFunc('varSamp')],
-    [
-      SchemaCommentPropertyExpr,
-      function (this: Generator, e: SchemaCommentPropertyExpr) {
-        return this.nakedProperty(e);
-      },
-    ],
-    [StddevExpr, renameFunc('stddevSamp')],
-    [ChrExpr, renameFunc('CHAR')],
-    [
-      LagExpr,
-      function (this: Generator, e: LagExpr) {
-        return this.func('lagInFrame', [
-          e.args.this,
-          e.args.offset,
-          e.args.default,
-        ]);
-      },
-    ],
-    [
-      LeadExpr,
-      function (this: Generator, e: LeadExpr) {
-        return this.func('leadInFrame', [
-          e.args.this,
-          e.args.offset,
-          e.args.default,
-        ]);
-      },
-    ],
-    [JarowinklerSimilarityExpr, renameFunc('jaroWinklerSimilarity')],
-    [
-      LevenshteinExpr,
-      function (this: Generator, e: LevenshteinExpr) {
-        unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
-        return renameFunc('editDistance').call(this, e);
-      },
-    ],
-    [ParseDatetimeExpr, renameFunc('parseDateTime')],
-  ]);
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new Map<typeof Expression, (this: Generator, e: any) => string> ([
+      ...Generator.ORIGINAL_TRANSFORMS,
+      [AnyValueExpr, renameFunc('any')],
+      [ApproxDistinctExpr, renameFunc('uniq')],
+      [ArrayConcatExpr, renameFunc('arrayConcat')],
+      [ArrayContainsExpr, renameFunc('has')],
+      [
+        ArrayFilterExpr,
+        function (this: Generator, e: ArrayFilterExpr) {
+          return this.func('arrayFilter', [e.args.expression, e.args.this]);
+        },
+      ],
+      [ArrayRemoveExpr, removeFromArrayUsingFilter],
+      [ArrayReverseExpr, renameFunc('arrayReverse')],
+      [ArraySliceExpr, renameFunc('arraySlice')],
+      [ArraySumExpr, renameFunc('arraySum')],
+      [ArgMaxExpr, argMaxOrMinNoCount('argMax')],
+      [ArgMinExpr, argMaxOrMinNoCount('argMin')],
+      [ArrayExpr, inlineArraySql],
+      [CastToStrTypeExpr, renameFunc('CAST')],
+      [CurrentDatabaseExpr, renameFunc('CURRENT_DATABASE')],
+      [CurrentSchemasExpr, renameFunc('CURRENT_SCHEMAS')],
+      [CountIfExpr, renameFunc('countIf')],
+      [CosineDistanceExpr, renameFunc('cosineDistance')],
+      [
+        CompressColumnConstraintExpr,
+        function (this: Generator, e: CompressColumnConstraintExpr) {
+          return `CODEC(${this.expressions(e, {
+            key: 'this',
+            flat: true,
+          })})`;
+        },
+      ],
+      [
+        ComputedColumnConstraintExpr,
+        function (this: Generator, e: ComputedColumnConstraintExpr) {
+          return `${e.args.persisted ? 'MATERIALIZED' : 'ALIAS'} ${this.sql(e, 'this')}`;
+        },
+      ],
+      [
+        CurrentDateExpr,
+        function (this: Generator, _e: CurrentDateExpr) {
+          return this.func('CURRENT_DATE', []);
+        },
+      ],
+      [CurrentVersionExpr, renameFunc('VERSION')],
+      [DateAddExpr, datetimeDeltaSql('DATE_ADD')],
+      [DateDiffExpr, datetimeDeltaSql('DATE_DIFF')],
+      [DateStrToDateExpr, renameFunc('toDate')],
+      [DateSubExpr, datetimeDeltaSql('DATE_SUB')],
+      [ExplodeExpr, renameFunc('arrayJoin')],
+      [FarmFingerprintExpr, renameFunc('farmFingerprint64')],
+      [
+        FinalExpr,
+        function (this: Generator, e: FinalExpr) {
+          return `${this.sql(e, 'this')} FINAL`;
+        },
+      ],
+      [IsNanExpr, renameFunc('isNaN')],
+      [
+        JsonCastExpr,
+        function (this: Generator, e: JsonCastExpr) {
+          return `${this.sql(e, 'this')}.:${this.sql(e, 'to')}`;
+        },
+      ],
+      [JsonExtractExpr, jsonExtractSegments('JSONExtractString', { quotedIndex: false })],
+      [JsonExtractScalarExpr, jsonExtractSegments('JSONExtractString', { quotedIndex: false })],
+      [JsonPathKeyExpr, jsonPathKeyOnlyName],
+      [JsonPathRootExpr, () => ''],
+      [LengthExpr, lengthOrCharLengthSql],
+      [MapExpr, mapSql],
+      [MedianExpr, renameFunc('median')],
+      [NullifExpr, renameFunc('nullIf')],
+      [
+        PartitionedByPropertyExpr,
+        function (this: Generator, e: PartitionedByPropertyExpr) {
+          return `PARTITION BY ${this.sql(e, 'this')}`;
+        },
+      ],
+      [PivotExpr, noPivotSql],
+      [QuantileExpr, quantileSql],
+      [
+        RegexpLikeExpr,
+        function (this: Generator, e: RegexpLikeExpr) {
+          return this.func('match', [e.args.this, e.args.expression]);
+        },
+      ],
+      [RandExpr, renameFunc('randCanonical')],
+      [StartsWithExpr, renameFunc('startsWith')],
+      [StructExpr, renameFunc('tuple')],
+      [TruncExpr, renameFunc('trunc')],
+      [EndsWithExpr, renameFunc('endsWith')],
+      [EuclideanDistanceExpr, renameFunc('L2Distance')],
+      [
+        StrPositionExpr,
+        function (this: Generator, e: StrPositionExpr) {
+          return strPositionSql.call(this, e, {
+            funcName: 'POSITION',
+            supportsPosition: true,
+            useAnsiPosition: false,
+          });
+        },
+      ],
+      [
+        TimeToStrExpr,
+        function (this: Generator, e: TimeToStrExpr) {
+          return this.func('formatDateTime', [
+            e.args.this,
+            this.formatTime(e),
+            e.args.zone,
+          ]);
+        },
+      ],
+      [TimeStrToTimeExpr, timeStrToTimeSql],
+      [TimestampAddExpr, datetimeDeltaSql('TIMESTAMP_ADD')],
+      [TimestampSubExpr, datetimeDeltaSql('TIMESTAMP_SUB')],
+      [TypeofExpr, renameFunc('toTypeName')],
+      [VarMapExpr, mapSql],
+      [
+        XorExpr,
+        function (this: Generator, e: XorExpr) {
+          return this.func('xor', [
+            e.args.this,
+            e.args.expression,
+            ...e.args.expressions || [],
+          ]);
+        },
+      ],
+      [Md5DigestExpr, renameFunc('MD5')],
+      [
+        Md5Expr,
+        function (this: Generator, e: Md5Expr) {
+          return this.func('LOWER', [this.func('HEX', [this.func('MD5', [e.args.this])])]);
+        },
+      ],
+      [ShaExpr, renameFunc('SHA1')],
+      [Sha1DigestExpr, renameFunc('SHA1')],
+      [Sha2Expr, sha256Sql],
+      [Sha2DigestExpr, sha2DigestSql],
+      [
+        SplitExpr,
+        function (this: Generator, e: SplitExpr) {
+          return this.func('splitByString', [
+            e.args.expression,
+            e.args.this,
+            typeof e.args.limit === 'number' ? LiteralExpr.number(e.args.limit) : e.args.limit,
+          ]);
+        },
+      ],
+      [
+        RegexpSplitExpr,
+        function (this: Generator, e: RegexpSplitExpr) {
+          return this.func('splitByRegexp', [
+            e.args.expression,
+            e.args.this,
+            typeof e.args.limit === 'number' ? LiteralExpr.number(e.args.limit) : e.args.limit,
+          ]);
+        },
+      ],
+      [UnixToTimeExpr, unixToTimeSql],
+      [
+        TimestampTruncExpr,
+        timestampTruncSql({
+          func: 'dateTrunc',
+          zone: true,
+        }),
+      ],
+      [
+        TrimExpr,
+        function (this: Generator, e: TrimExpr) {
+          return trimSql.call(this, e, { defaultTrimType: 'BOTH' });
+        },
+      ],
+      [VarianceExpr, renameFunc('varSamp')],
+      [
+        SchemaCommentPropertyExpr,
+        function (this: Generator, e: SchemaCommentPropertyExpr) {
+          return this.nakedProperty(e);
+        },
+      ],
+      [StddevExpr, renameFunc('stddevSamp')],
+      [ChrExpr, renameFunc('CHAR')],
+      [
+        LagExpr,
+        function (this: Generator, e: LagExpr) {
+          return this.func('lagInFrame', [
+            e.args.this,
+            e.args.offset,
+            e.args.default,
+          ]);
+        },
+      ],
+      [
+        LeadExpr,
+        function (this: Generator, e: LeadExpr) {
+          return this.func('leadInFrame', [
+            e.args.this,
+            e.args.offset,
+            e.args.default,
+          ]);
+        },
+      ],
+      [JarowinklerSimilarityExpr, renameFunc('jaroWinklerSimilarity')],
+      [
+        LevenshteinExpr,
+        function (this: Generator, e: LevenshteinExpr) {
+          unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
+          return renameFunc('editDistance').call(this, e);
+        },
+      ],
+      [ParseDatetimeExpr, renameFunc('parseDateTime')],
+    ]);
+  }
 
   @cache
   static get PROPERTIES_LOCATION () {
@@ -2100,16 +2105,22 @@ export class ClickHouse extends Dialect {
 
   static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_SENSITIVE;
 
-  static UNESCAPED_SEQUENCES = {
-    '\\0': '\0',
-  };
+  @cache
+  static get UNESCAPED_SEQUENCES () {
+    return {
+      '\\0': '\0',
+    };
+  }
 
   static CREATABLE_KIND_MAPPING = { DATABASE: 'SCHEMA' };
 
-  static SET_OP_DISTINCT_BY_DEFAULT: Partial<Record<ExpressionKey, boolean>> = {
-    [ExpressionKey.EXCEPT]: false,
-    [ExpressionKey.INTERSECT]: false,
-  };
+  @cache
+  static get SET_OP_DISTINCT_BY_DEFAULT (): Partial<Record<ExpressionKey, boolean>> {
+    return {
+      [ExpressionKey.EXCEPT]: false,
+      [ExpressionKey.INTERSECT]: false,
+    };
+  }
 
   generateValuesAliases (expression: ValuesExpr): IdentifierExpr[] {
   // Clickhouse allows VALUES to have an embedded structure e.g:

@@ -35,7 +35,7 @@ import {
   TimestampExpr,
   TsOrDsToDateExpr,
   WhereExpr,
-} from '../expressions';
+} from '../expressions/expressions';
 import {
   Dialect, type DialectType,
 } from '../dialects/dialect';

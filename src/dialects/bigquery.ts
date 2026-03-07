@@ -2141,13 +2141,25 @@ export class BigQuery extends Dialect {
   static QUERY_RESULTS_ARE_STRUCTS = true;
   static JSON_EXTRACT_SCALAR_SCALAR_ONLY = true;
   static LEAST_GREATEST_IGNORES_NULLS = false;
-  static DEFAULT_NULL_TYPE = DataTypeExprKind.BIGINT;
+
+  @cache
+  static get DEFAULT_NULL_TYPE () {
+    return DataTypeExprKind.BIGINT;
+  }
+
   static PRIORITIZE_NON_LITERAL_TYPES = true;
 
   static INITCAP_DEFAULT_DELIMITER_CHARS = ' \t\n\r\f\v\\[\\](){}/|<>!?@"^#$&~_,.:;*%+\\-';
 
-  static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE;
-  static NORMALIZE_FUNCTIONS = NormalizeFunctions.NONE;
+  @cache
+  static get NORMALIZATION_STRATEGY () {
+    return NormalizationStrategy.CASE_INSENSITIVE;
+  }
+
+  @cache
+  static get NORMALIZE_FUNCTIONS () {
+    return NormalizeFunctions.NONE;
+  }
 
   static TIME_MAPPING = {
     '%x': '%m/%d/%y',
@@ -2159,9 +2171,12 @@ export class BigQuery extends Dialect {
     '%c': '%a %b %e %H:%M:%S %Y',
   };
 
-  static INVERSE_TIME_MAPPING = {
-    '%H:%M:%S.%f': '%H:%M:%E6S',
-  };
+  @cache
+  static get INVERSE_TIME_MAPPING () {
+    return {
+      '%H:%M:%S.%f': '%H:%M:%E6S',
+    };
+  }
 
   static FORMAT_MAPPING: Record<string, string> = {
     DD: '%d',
@@ -2192,10 +2207,14 @@ export class BigQuery extends Dialect {
   ]);
 
   // All set operations require either a DISTINCT or ALL specifier
-  static SET_OP_DISTINCT_BY_DEFAULT: Partial<Record<ExpressionKey, boolean>> = {};
+  @cache
+  static get SET_OP_DISTINCT_BY_DEFAULT (): Partial<Record<ExpressionKey, boolean>> {
+    return {};
+  }
 
   // https://cloud.google.com/bigquery/docs/reference/standard-sql/navigation_functions#percentile_cont
-  static COERCES_TO: Record<string, Set<string>> = (() => {
+  @cache
+  static get COERCES_TO (): Record<string, Set<string>> {
     const base: Record<string, Set<string>> = {};
     for (const [k, v] of TypeAnnotator.COERCES_TO) {
       base[k] = new Set(v as Iterable<string>);
@@ -2212,7 +2231,7 @@ export class BigQuery extends Dialect {
       DataTypeExprKind.TIMESTAMPTZ,
     ]) base[DataTypeExprKind.VARCHAR].add(t);
     return base;
-  })();
+  };
 
   @cache
   static get EXPRESSION_METADATA (): ExpressionMetadata {

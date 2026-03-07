@@ -2,7 +2,7 @@ import { UnsupportedError } from './errors';
 import type {
   ExpressionOrString,
   ExpressionValue,
-} from './expressions';
+} from './expressions/types';
 import {
   alias,
   AliasesExpr,
@@ -80,7 +80,7 @@ import {
   WindowExpr,
   WithExpr,
   WithinGroupExpr,
-} from './expressions';
+} from './expressions/expressions';
 import type { Generator } from './generator';
 import {
   findNewName, nameSequence,

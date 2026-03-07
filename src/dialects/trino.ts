@@ -32,10 +32,13 @@ import {
 } from './presto';
 
 class TrinoTokenizer extends Presto.Tokenizer {
-  static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
-    ...Presto.Tokenizer.KEYWORDS,
-    REFRESH: TokenType.REFRESH,
-  };
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
+    return {
+      ...Presto.Tokenizer.KEYWORDS,
+      REFRESH: TokenType.REFRESH,
+    };
+  }
 };
 
 class TrinoParser extends Presto.Parser {

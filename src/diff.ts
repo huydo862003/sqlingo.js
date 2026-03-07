@@ -1,4 +1,4 @@
-import { Dialect } from './dialects';
+import { Dialect } from './dialects/dialect';
 import {
   AliasExpr, AnonymousExpr, BooleanExpr, ColumnExpr, DataTypeExpr, Expression, IdentifierExpr, JoinExpr, LambdaExpr, LiteralExpr, TableExpr, WindowExpr,
 } from './expressions';

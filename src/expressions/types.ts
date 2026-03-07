@@ -1,3 +1,21 @@
+import type { Expression } from './expressions';
+
+export type IntoType = string | typeof Expression | (string | typeof Expression)[];
+
+/** Expression key enum */
+export type PrimitiveExpressionValue = string | boolean | number;
+
+export type ExpressionValue<E extends Expression = Expression> = E | PrimitiveExpressionValue;
+export type ExpressionValueList<E extends Expression = Expression> = ExpressionValue<E>[];
+
+export type ExpressionOrNumber<E extends Expression = Expression> = E | number;
+export type ExpressionOrNumberList<E extends Expression = Expression> = ExpressionOrNumber<E>[];
+export type ExpressionOrString<E extends Expression = Expression> = E | string;
+export type ExpressionOrStringList<E extends Expression = Expression> = ExpressionOrString<E>[];
+
+export type ExpressionOrBoolean<E extends Expression = Expression> = E | boolean;
+export type ExpressionOrBooleanList<E extends Expression = Expression> = ExpressionOrBoolean<E>[];
+
 export enum ExpressionKey {
   ABS = 'abs',
   ACOS = 'acos',

@@ -31,7 +31,7 @@ import {
   parseOne, type ParseOptions,
 } from '../parser';
 import { registerFunc } from '../parser/function_registry';
-import { normalizeIdentifiers } from '../optimizer';
+import { normalizeIdentifiers } from '../optimizer/normalize_identifiers';
 import {
   dump, load,
 } from '../serde';
@@ -78,6 +78,13 @@ import type {
   PlaceholderExprKind,
   TimeSliceExprKind,
   TrimPosition,
+  ExpressionValue,
+  ExpressionValueList,
+  ExpressionOrNumber,
+  ExpressionOrBoolean,
+  ExpressionOrString,
+  ExpressionOrStringList,
+  PrimitiveExpressionValue,
 } from './types';
 
 export * from './types';
@@ -115,22 +122,6 @@ function toBool (value: unknown): boolean {
   }
   return Boolean(value);
 }
-
-export type IntoType = string | typeof Expression | (string | typeof Expression)[];
-
-/** Expression key enum */
-export type PrimitiveExpressionValue = string | boolean | number;
-
-export type ExpressionValue<E extends Expression = Expression> = E | PrimitiveExpressionValue;
-export type ExpressionValueList<E extends Expression = Expression> = ExpressionValue<E>[];
-
-export type ExpressionOrNumber<E extends Expression = Expression> = E | number;
-export type ExpressionOrNumberList<E extends Expression = Expression> = ExpressionOrNumber<E>[];
-export type ExpressionOrString<E extends Expression = Expression> = E | string;
-export type ExpressionOrStringList<E extends Expression = Expression> = ExpressionOrString<E>[];
-
-export type ExpressionOrBoolean<E extends Expression = Expression> = E | boolean;
-export type ExpressionOrBooleanList<E extends Expression = Expression> = ExpressionOrBoolean<E>[];
 
 /**
  * Base arguments that all Expression classes can accept.
