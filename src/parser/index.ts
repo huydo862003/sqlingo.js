@@ -5362,7 +5362,7 @@ export class Parser {
         this.match(TokenType.ALIAS)
         && this.matchTexts(['STRUCT', 'VALUE'])
         && this.prev?.text.toUpperCase()
-      );
+      ) || undefined;
 
       if (distinct) {
         distinct = this.expression(
@@ -9181,7 +9181,7 @@ export class Parser {
     });
   }
 
-  matchTexts (texts: string | string[] | Set<string>, options: { advance?: boolean } = {}): true | undefined {
+  matchTexts (texts: string | string[] | Set<string>, options: { advance?: boolean } = {}): boolean {
     const { advance = true } = options;
     const textsArray = Array.from(texts instanceof Set ? texts : ensureIterable(texts));
     if (
@@ -9194,13 +9194,13 @@ export class Parser {
       }
       return true;
     }
-    return undefined;
+    return false;
   }
 
-  matchSet (types: Set<TokenType> | TokenType[], options: { advance?: boolean } = {}): true | undefined {
+  matchSet (types: Set<TokenType> | TokenType[], options: { advance?: boolean } = {}): boolean {
     const { advance = true } = options;
     if (!this.curr) {
-      return undefined;
+      return false;
     }
 
     const hasType = Array.isArray(types)
@@ -9214,13 +9214,13 @@ export class Parser {
       return true;
     }
 
-    return undefined;
+    return false;
   }
 
-  matchPair (tokenTypeA: TokenType, tokenTypeB: TokenType, options: { advance?: boolean } = {}): true | undefined {
+  matchPair (tokenTypeA: TokenType, tokenTypeB: TokenType, options: { advance?: boolean } = {}): boolean {
     const { advance = true } = options;
     if (!this.curr || !this.next) {
-      return undefined;
+      return false;
     }
 
     if (this.curr.tokenType === tokenTypeA && this.next.tokenType === tokenTypeB) {
@@ -9230,7 +9230,7 @@ export class Parser {
       return true;
     }
 
-    return undefined;
+    return false;
   }
 
   matchLParen (expression?: Expression): void {
@@ -9251,7 +9251,7 @@ export class Parser {
     }
   }
 
-  matchTextSeq (texts: string | string[], options: { advance?: boolean } = {}): true | undefined {
+  matchTextSeq (texts: string | string[], options: { advance?: boolean } = {}): boolean {
     const { advance = true } = options;
     const textArray = ensureIterable(texts);
 
@@ -9265,7 +9265,7 @@ export class Parser {
         this.advance();
       } else {
         this.retreat(index);
-        return undefined;
+        return false;
       }
     }
 

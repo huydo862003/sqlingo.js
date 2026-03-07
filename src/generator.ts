@@ -6083,13 +6083,13 @@ export class Generator {
       sqls,
     } = options;
 
-    const exprs = expression ? expression.getArgKey(key) : sqls;
+    const exprs = expression ? expression.getArgKey(key || 'expressions') : sqls;
 
     if (!exprs || (Array.isArray(exprs) && exprs.length === 0)) {
       return '';
     }
 
-    const exprArray = (Array.isArray(exprs) ? exprs : [exprs]).filter((e): e is Expression | string => e instanceof Expression || typeof e === 'string');
+    const exprArray = Array.isArray(exprs) ? exprs : [exprs];
 
     if (flat) {
       return exprArray
