@@ -11277,7 +11277,7 @@ export class Parser {
     anonymousFunc?: boolean;
   } = {}): Expression | undefined {
     const {
-      anyToken = false, tokens, anonymousFunc,
+      anyToken = false, tokens, anonymousFunc = false,
     } = options || {};
 
     let field: Expression | undefined;
