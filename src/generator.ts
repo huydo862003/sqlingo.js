@@ -520,6 +520,7 @@ import type { ParseOptions } from './parser';
 import {
   Dialect, type DialectType, mapDatePart, unitToStr,
   concatToDPipeSql, NullOrdering, NormalizeFunctions,
+  Dialects,
 } from './dialects/dialect';
 import {
   ErrorLevel, UnsupportedError, concatMessages,
@@ -535,7 +536,6 @@ import {
 import { ALL_JSON_PATH_PARTS } from './jsonpath/expressions';
 import { annotateTypes } from './optimizer/annotate_types';
 import type { TrieNode } from './trie';
-import { TSQL } from './dialects/tsql';
 import {
   ensureBools, moveCtesToTopLevel,
 } from './transforms';
@@ -6765,7 +6765,7 @@ export class Generator {
     // Check whether a conversion with format (T-SQL calls this 'style') is applicable
     if (style instanceof LiteralExpr && style.isInteger) {
       const styleValue = style.name;
-      const convertedStyle = TSQL.INVERSE_FORMAT_MAPPING[styleValue];
+      const convertedStyle = Dialect.get(Dialects.TSQL)?.INVERSE_FORMAT_MAPPING[styleValue] ?? {};
 
       if (!convertedStyle) {
         this.unsupported(`Unsupported T-SQL 'style' value: ${styleValue}`);
