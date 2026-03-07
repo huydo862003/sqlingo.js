@@ -1000,9 +1000,9 @@ export class Expression implements
     const errors: string[] = [];
 
     // Check for required arguments
-    const constructor = this.constructor as typeof Expression;
+    const constructor = this._constructor;
     for (const key of constructor.requiredArgs) {
-      const v = (this.args as Record<string, ExpressionValue | ExpressionValueList>)[key];
+      const v = this.getArgKey(key);
       if (v === undefined || (Array.isArray(v) && v.length === 0)) {
         errors.push(`Required keyword: '${key}' missing for ${this.constructor.name}`);
       }
@@ -11942,6 +11942,8 @@ export type SelectExprArgs = Merge<[
 
 export class SelectExpr extends QueryExpr {
   static key = ExpressionKey.SELECT;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'with',

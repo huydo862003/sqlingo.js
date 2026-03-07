@@ -3646,10 +3646,11 @@ export class Parser {
   protected match (tokenType: TokenType, options: {
     advance?: boolean;
     expression?: Expression;
-  } = {}): true | undefined {
+  } = {}): boolean {
     const {
       advance = true, expression,
     } = options;
+
     if (this.curr?.tokenType === tokenType) {
       if (advance) {
         this.advance();
@@ -3657,7 +3658,7 @@ export class Parser {
       this.addComments(expression);
       return true;
     }
-    return undefined;
+    return false;
   }
 
   tryParse<T extends Expression | Expression[] | undefined> (
@@ -5270,20 +5271,29 @@ export class Parser {
     consumePipe?: boolean;
     from?: FromExpr;
   } = {}): Expression | undefined {
+    const {
+      nested = false,
+      table = false,
+      parseSubqueryAlias = true,
+      parseSetOperation = true,
+      consumePipe = true,
+      from,
+    } = options;
+
     let query = this.parseSelectQuery({
-      nested: options?.nested,
-      table: options?.table,
-      parseSubqueryAlias: options?.parseSubqueryAlias,
-      parseSetOperation: options?.parseSetOperation,
+      nested,
+      table,
+      parseSubqueryAlias,
+      parseSetOperation,
     });
 
-    if ((options?.consumePipe ?? true) && this.match(TokenType.PIPE_GT, { advance: false })) {
-      if (!query && options?.from) {
-        query = select('*').from(options.from);
+    if (consumePipe && this.match(TokenType.PIPE_GT, { advance: false })) {
+      if (!query && from) {
+        query = select('*').from(from);
       }
       if (query instanceof QueryExpr) {
         query = this.parsePipeSyntaxQuery(query);
-        query = (query && options?.table) ? (query as SelectExpr).subquery(undefined, { copy: false }) : query;
+        query = (query && table) ? (query as SelectExpr).subquery(undefined, { copy: false }) : query;
       }
     }
 
@@ -5296,6 +5306,13 @@ export class Parser {
     parseSubqueryAlias?: boolean;
     parseSetOperation?: boolean;
   } = {}): Expression | undefined {
+    const {
+      nested = false,
+      table = false,
+      parseSubqueryAlias = true,
+      parseSetOperation = true,
+    } = options;
+
     const cte = this.parseWith();
 
     if (cte) {
@@ -5334,11 +5351,11 @@ export class Parser {
 
       const hint = this.parseHint();
 
-      let all_: boolean | undefined;
+      let all: boolean | undefined;
       let distinct: DistinctExpr | undefined;
       if (this.next && this.next.tokenType !== TokenType.DOT) {
-        all_ = this.match(TokenType.ALL);
-        distinct = this.matchSet(this._constructor.DISTINCT_TOKENS) ? new DistinctExpr({}) : undefined;
+        all = this.match(TokenType.ALL);
+        distinct = this.matchSet(this._constructor.DISTINCT_TOKENS) ? new DistinctExpr() : undefined;
       }
 
       const kind = (
@@ -5354,7 +5371,7 @@ export class Parser {
         );
       }
 
-      if (all_ && distinct) {
+      if (all && distinct) {
         this.raiseError('Cannot specify both ALL and DISTINCT after SELECT');
       }
 
@@ -5393,14 +5410,14 @@ export class Parser {
       }
 
       thisExpr = this.parseQueryModifiers(thisExpr) as SelectExpr;
-      return options?.parseSetOperation ?? true ? this.parseSetOperations(thisExpr) : thisExpr;
-    } else if ((options?.table || options?.nested) && this.match(TokenType.L_PAREN)) {
-      const thisExpr = this.parseWrappedSelect({ table: options?.table });
+      return parseSetOperation ? this.parseSetOperations(thisExpr) : thisExpr;
+    } else if ((table || nested) && this.match(TokenType.L_PAREN)) {
+      const thisExpr = this.parseWrappedSelect({ table });
 
       // We return early here so that the UNION isn't attached to the subquery by the
       // following call to _parse_set_operations, but instead becomes the parent node
       this.matchRParen();
-      return this.parseSubquery(thisExpr, { parseAlias: options?.parseSubqueryAlias });
+      return this.parseSubquery(thisExpr, { parseAlias: parseSubqueryAlias });
     } else if (this.match(TokenType.VALUES, { advance: false })) {
       return this.parseDerivedTableValues();
     } else if (from) {
@@ -5416,7 +5433,7 @@ export class Parser {
       return this.parseDescribe();
     }
 
-    return options?.parseSetOperation ?? true ? this.parseSetOperations(undefined) : undefined;
+    return parseSetOperation ? this.parseSetOperations() : undefined;
   }
 
   parseRecursiveWithSearch (): RecursiveWithSearchExpr | undefined {
@@ -9017,11 +9034,11 @@ export class Parser {
     });
   }
 
+  /**
+   * Appends an error in the list of recorded errors or raises it, depending on the chosen
+   * error level setting.
+   */
   raiseError (message: string, token?: Token) {
-    /**
-     * Appends an error in the list of recorded errors or raises it, depending on the chosen
-     * error level setting.
-     */
     const errorToken = token || this.curr || this.prev || Token.string('');
     const {
       formattedSql, startContext, highlight, endContext,
@@ -10130,7 +10147,7 @@ export class Parser {
     }
 
     const anyToken = this.match(TokenType.ALIAS);
-    const comments = this.prevComments || [];
+    const comments = this.prevComments ?? [];
 
     if (explicit && !anyToken) {
       return thisExpr;
