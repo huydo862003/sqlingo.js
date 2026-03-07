@@ -1997,7 +1997,7 @@ export class Generator {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const handler = (this as any)[expHandlerName];
       if (handler instanceof Function) {
-        sql = handler(expression);
+        sql = handler.call(this, expression);
       } else if (expression instanceof FuncExpr) {
         sql = this.functionFallbackSql(expression);
       } else if (expression instanceof PropertyExpr) {
