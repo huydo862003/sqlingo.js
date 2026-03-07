@@ -13,8 +13,8 @@ import {
   WeekExpr,
   LocaltimeExpr,
 } from '../expressions';
-import type { ExpressionMetadata } from '.';
-import { EXPRESSION_METADATA as BASE_EXPRESSION_METADATA } from '.';
+import type { ExpressionMetadata } from './dialect';
+import { EXPRESSION_METADATA as BASE_EXPRESSION_METADATA } from './dialect';
 
 export const EXPRESSION_METADATA: ExpressionMetadata = (() => {
   // Clone the base metadata to apply dialect-specific overrides

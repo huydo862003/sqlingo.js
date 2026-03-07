@@ -16,7 +16,7 @@ import {
 } from '../expressions';
 import type { TypeAnnotator } from '../optimizer';
 import { EXPRESSION_METADATA as SPARK2_METADATA } from './spark2';
-import type { ExpressionMetadata } from '.';
+import type { ExpressionMetadata } from './dialect';
 
 export const EXPRESSION_METADATA: ExpressionMetadata = (() => {
   // Clone the Spark 2 base metadata to apply specific overrides

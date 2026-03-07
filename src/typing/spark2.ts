@@ -15,7 +15,7 @@ import {
   isInstanceOf, filterInstanceOf,
 } from '../port_internals';
 import { EXPRESSION_METADATA as HIVE_EXPRESSION_METADATA } from './hive';
-import type { ExpressionMetadata } from '.';
+import type { ExpressionMetadata } from './dialect';
 
 /**
  * Infers the type of the expression according to the following rules:

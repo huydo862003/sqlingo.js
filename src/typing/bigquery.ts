@@ -30,8 +30,8 @@ import {
 import { DataTypeExprKind } from '../expressions/types';
 import { isInstanceOf } from '../port_internals';
 import type { TypeAnnotator } from '../optimizer';
-import { TIMESTAMP_EXPRESSIONS } from '.';
-import type { ExpressionMetadata } from '.';
+import { TIMESTAMP_EXPRESSIONS } from './dialect';
+import type { ExpressionMetadata } from './dialect';
 
 /**
  * Many BigQuery math functions such as CEIL, FLOOR etc follow this return type convention.

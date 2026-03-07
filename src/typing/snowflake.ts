@@ -49,8 +49,8 @@ import type { TypeAnnotator } from '../optimizer';
 import {
   isInstanceOf, filterInstanceOf,
 } from '../port_internals';
-import { EXPRESSION_METADATA as BASE_EXPRESSION_METADATA } from '.';
-import type { ExpressionMetadata } from '.';
+import { EXPRESSION_METADATA as BASE_EXPRESSION_METADATA } from './dialect';
+import type { ExpressionMetadata } from './dialect';
 
 const DATE_PARTS = new Set([
   'DAY',
