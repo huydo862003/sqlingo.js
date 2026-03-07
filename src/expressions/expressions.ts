@@ -13251,6 +13251,23 @@ export class FuncExpr extends ConditionExpr {
   }
 }
 
+export type AggFuncExprArgs = Merge<[
+  FuncExprArgs,
+  { this?: ExpressionValue },
+]>;
+
+export class AggFuncExpr extends FuncExpr {
+  static key = ExpressionKey.AGG_FUNC;
+
+  static argOrder = ['this'];
+
+  declare args: AggFuncExprArgs;
+
+  constructor (args: AggFuncExprArgs = {}) {
+    super(args);
+  }
+}
+
 export type JsonPathFilterExprArgs = Merge<[
   JsonPathPartExprArgs,
   { this?: string },
@@ -15116,27 +15133,6 @@ export class JarowinklerSimilarityExpr extends FuncExpr {
   declare args: JarowinklerSimilarityExprArgs;
 
   constructor (args: JarowinklerSimilarityExprArgs = {}) {
-    super(args);
-  }
-
-  static {
-    this.register();
-  }
-}
-
-export type AggFuncExprArgs = Merge<[
-  FuncExprArgs,
-  { this?: ExpressionValue },
-]>;
-
-export class AggFuncExpr extends FuncExpr {
-  static key = ExpressionKey.AGG_FUNC;
-
-  static argOrder = ['this'];
-
-  declare args: AggFuncExprArgs;
-
-  constructor (args: AggFuncExprArgs = {}) {
     super(args);
   }
 

@@ -154,7 +154,6 @@ import {
  * @param kwargs - Keyword arguments to pass to the internal MySQL SHOW parser.
  * @returns A function that takes a MySQL Parser and returns a ShowExpr.
  */
-
 export function showParser (
   thisArg: string,
   options: {
@@ -1230,167 +1229,176 @@ class MySQLGenerator extends Generator {
   static SUPPORTS_MEDIAN: boolean = false;
   static UPDATE_STATEMENT_SUPPORTS_FROM: boolean = false;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static ORIGINAL_TRANSFORMS = new Map<typeof Expression, (this: Generator, e: any) => string>([
-    ...Generator.TRANSFORMS,
-    [ArrayAggExpr, renameFunc('GROUP_CONCAT')],
-    [BitwiseAndAggExpr, renameFunc('BIT_AND')],
-    [BitwiseOrAggExpr, renameFunc('BIT_OR')],
-    [BitwiseXorAggExpr, renameFunc('BIT_XOR')],
-    [BitwiseCountExpr, renameFunc('BIT_COUNT')],
-    [
-      ChrExpr,
-      function (this: Generator, e: ChrExpr): string {
-        return this.chrSql(e, { name: 'CHAR' });
-      },
-    ],
-    [CurrentDateExpr, noParenCurrentDateSql],
-    [CurrentVersionExpr, renameFunc('VERSION')],
-    [
-      DateDiffExpr,
-      removeTsOrDsToDate(
-        function (this: Generator, e: DateDiffExpr): string {
+  @cache
+  static get ORIGINAL_TRANSFORMS () {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new Map<typeof Expression, (this: Generator, e: any) => string>([
+      ...Generator.TRANSFORMS,
+      [ArrayAggExpr, renameFunc('GROUP_CONCAT')],
+      [BitwiseAndAggExpr, renameFunc('BIT_AND')],
+      [BitwiseOrAggExpr, renameFunc('BIT_OR')],
+      [BitwiseXorAggExpr, renameFunc('BIT_XOR')],
+      [BitwiseCountExpr, renameFunc('BIT_COUNT')],
+      [
+        ChrExpr,
+        function (this: Generator, e: ChrExpr): string {
+          return this.chrSql(e, { name: 'CHAR' });
+        },
+      ],
+      [CurrentDateExpr, noParenCurrentDateSql],
+      [CurrentVersionExpr, renameFunc('VERSION')],
+      [
+        DateDiffExpr,
+        removeTsOrDsToDate(
+          function (this: Generator, e: DateDiffExpr): string {
+            return this.func('DATEDIFF', [e.args.this, e.args.expression]);
+          },
+          ['this', 'expression'],
+        ),
+      ],
+      [DateAddExpr, removeTsOrDsToDate(dateAddSql('ADD'))],
+      [DateStrToDateExpr, dateStrToDateSql],
+      [DateSubExpr, removeTsOrDsToDate(dateAddSql('SUB'))],
+      [DateTruncExpr, dateTruncSql],
+      [DayExpr, removeTsOrDsToDate()],
+      [DayOfMonthExpr, removeTsOrDsToDate(renameFunc('DAYOFMONTH'))],
+      [DayOfWeekExpr, removeTsOrDsToDate(renameFunc('DAYOFWEEK'))],
+      [DayOfYearExpr, removeTsOrDsToDate(renameFunc('DAYOFYEAR'))],
+      [
+        GroupConcatExpr,
+        function (this: Generator, e: GroupConcatExpr): string {
+          return `GROUP_CONCAT(${this.sql(e, 'this')} SEPARATOR ${this.sql(e, 'separator') || '\',\''})`;
+        },
+      ],
+      [ILikeExpr, noIlikeSql],
+      [JsonExtractScalarExpr, arrowJsonExtractSql],
+      [LengthExpr, lengthOrCharLengthSql],
+      [LogicalOrExpr, renameFunc('MAX')],
+      [LogicalAndExpr, renameFunc('MIN')],
+      [MaxExpr, maxOrGreatest],
+      [MinExpr, minOrLeast],
+      [MonthExpr, removeTsOrDsToDate()],
+      [
+        NullSafeEqExpr,
+        function (this: Generator, e: NullSafeEqExpr): string {
+          return this.binary(e, '<=>');
+        },
+      ],
+      [
+        NullSafeNeqExpr,
+        function (this: Generator, e: NullSafeNeqExpr): string {
+          return `NOT ${this.binary(e, '<=>')}`;
+        },
+      ],
+      [NumberToStrExpr, renameFunc('FORMAT')],
+      [PivotExpr, noPivotSql],
+      [
+        SelectExpr,
+        preprocess([
+          eliminateDistinctOn,
+          eliminateSemiAndAntiJoins,
+          eliminateQualify,
+          eliminateFullOuterJoin,
+          unnestGenerateDateArrayUsingRecursiveCte,
+        ]),
+      ],
+      [
+        StrPositionExpr,
+        function (this: Generator, e: StrPositionExpr): string {
+          return strPositionSql.call(this, e, {
+            funcName: 'LOCATE',
+            supportsPosition: true,
+          });
+        },
+      ],
+      [StrToDateExpr, strToDateSql],
+      [StrToTimeExpr, strToDateSql],
+      [StuffExpr, renameFunc('INSERT')],
+      [SessionUserExpr, () => 'SESSION_USER()'],
+      [TableSampleExpr, noTablesampleSql],
+      [TimeFromPartsExpr, renameFunc('MAKETIME')],
+      [TimestampAddExpr, dateAddIntervalSql('DATE', 'ADD')],
+      [
+        TimestampDiffExpr,
+        function (this: Generator, e: TimestampDiffExpr): string {
+          return this.func('TIMESTAMPDIFF', [
+            unitToVar(e),
+            e.args.expression,
+            e.args.this,
+          ]);
+        },
+      ],
+      [TimestampSubExpr, dateAddIntervalSql('DATE', 'SUB')],
+      [TimeStrToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
+      [
+        TimeStrToTimeExpr,
+        function (this: Generator, e: TimeStrToTimeExpr): string {
+          return timeStrToTimeSql.call(this, e, { includePrecision: !e.args.zone });
+        },
+      ],
+      [
+        TimeToStrExpr,
+        removeTsOrDsToDate(function (this: Generator, e: TimeToStrExpr) {
+          return this.func('DATE_FORMAT', [e.args.this, this.formatTime(e)]);
+        }),
+      ],
+      [TrimExpr, trimSql],
+      [TruncExpr, renameFunc('TRUNCATE')],
+      [TryCastExpr, noTrycastSql],
+      [TsOrDsAddExpr, dateAddSql('ADD')],
+      [
+        TsOrDsDiffExpr,
+        function (this: Generator, e: TsOrDsDiffExpr): string {
           return this.func('DATEDIFF', [e.args.this, e.args.expression]);
         },
-        ['this', 'expression'],
-      ),
-    ],
-    [DateAddExpr, removeTsOrDsToDate(dateAddSql('ADD'))],
-    [DateStrToDateExpr, dateStrToDateSql],
-    [DateSubExpr, removeTsOrDsToDate(dateAddSql('SUB'))],
-    [DateTruncExpr, dateTruncSql],
-    [DayExpr, removeTsOrDsToDate()],
-    [DayOfMonthExpr, removeTsOrDsToDate(renameFunc('DAYOFMONTH'))],
-    [DayOfWeekExpr, removeTsOrDsToDate(renameFunc('DAYOFWEEK'))],
-    [DayOfYearExpr, removeTsOrDsToDate(renameFunc('DAYOFYEAR'))],
-    [
-      GroupConcatExpr,
-      function (this: Generator, e: GroupConcatExpr): string {
-        return `GROUP_CONCAT(${this.sql(e, 'this')} SEPARATOR ${this.sql(e, 'separator') || '\',\''})`;
-      },
-    ],
-    [ILikeExpr, noIlikeSql],
-    [JsonExtractScalarExpr, arrowJsonExtractSql],
-    [LengthExpr, lengthOrCharLengthSql],
-    [LogicalOrExpr, renameFunc('MAX')],
-    [LogicalAndExpr, renameFunc('MIN')],
-    [MaxExpr, maxOrGreatest],
-    [MinExpr, minOrLeast],
-    [MonthExpr, removeTsOrDsToDate()],
-    [
-      NullSafeEqExpr,
-      function (this: Generator, e: NullSafeEqExpr): string {
-        return this.binary(e, '<=>');
-      },
-    ],
-    [
-      NullSafeNeqExpr,
-      function (this: Generator, e: NullSafeNeqExpr): string {
-        return `NOT ${this.binary(e, '<=>')}`;
-      },
-    ],
-    [NumberToStrExpr, renameFunc('FORMAT')],
-    [PivotExpr, noPivotSql],
-    [
-      SelectExpr,
-      preprocess([
-        eliminateDistinctOn,
-        eliminateSemiAndAntiJoins,
-        eliminateQualify,
-        eliminateFullOuterJoin,
-        unnestGenerateDateArrayUsingRecursiveCte,
-      ]),
-    ],
-    [
-      StrPositionExpr,
-      function (this: Generator, e: StrPositionExpr): string {
-        return strPositionSql.call(this, e, {
-          funcName: 'LOCATE',
-          supportsPosition: true,
-        });
-      },
-    ],
-    [StrToDateExpr, strToDateSql],
-    [StrToTimeExpr, strToDateSql],
-    [StuffExpr, renameFunc('INSERT')],
-    [SessionUserExpr, () => 'SESSION_USER()'],
-    [TableSampleExpr, noTablesampleSql],
-    [TimeFromPartsExpr, renameFunc('MAKETIME')],
-    [TimestampAddExpr, dateAddIntervalSql('DATE', 'ADD')],
-    [
-      TimestampDiffExpr,
-      function (this: Generator, e: TimestampDiffExpr): string {
-        return this.func('TIMESTAMPDIFF', [
-          unitToVar(e),
-          e.args.expression,
-          e.args.this,
-        ]);
-      },
-    ],
-    [TimestampSubExpr, dateAddIntervalSql('DATE', 'SUB')],
-    [TimeStrToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
-    [
-      TimeStrToTimeExpr,
-      function (this: Generator, e: TimeStrToTimeExpr): string {
-        return timeStrToTimeSql.call(this, e, { includePrecision: !e.args.zone });
-      },
-    ],
-    [
-      TimeToStrExpr,
-      removeTsOrDsToDate(function (this: Generator, e: TimeToStrExpr) {
-        return this.func('DATE_FORMAT', [e.args.this, this.formatTime(e)]);
-      }),
-    ],
-    [TrimExpr, trimSql],
-    [TruncExpr, renameFunc('TRUNCATE')],
-    [TryCastExpr, noTrycastSql],
-    [TsOrDsAddExpr, dateAddSql('ADD')],
-    [
-      TsOrDsDiffExpr,
-      function (this: Generator, e: TsOrDsDiffExpr): string {
-        return this.func('DATEDIFF', [e.args.this, e.args.expression]);
-      },
-    ],
-    [TsOrDsToDateExpr, tsOrDsToDateSql],
-    [
-      UnicodeExpr,
-      function (this: Generator, e: UnicodeExpr): string {
-        return `ORD(CONVERT(${this.sql(e.args.this)} USING utf32))`;
-      },
-    ],
-    [UnixToTimeExpr, unixToTimeSql],
-    [WeekExpr, removeTsOrDsToDate()],
-    [WeekOfYearExpr, removeTsOrDsToDate(renameFunc('WEEKOFYEAR'))],
-    [YearExpr, removeTsOrDsToDate()],
-    [UtcTimestampExpr, renameFunc('UTC_TIMESTAMP')],
-    [UtcTimeExpr, renameFunc('UTC_TIME')],
-  ]);
+      ],
+      [TsOrDsToDateExpr, tsOrDsToDateSql],
+      [
+        UnicodeExpr,
+        function (this: Generator, e: UnicodeExpr): string {
+          return `ORD(CONVERT(${this.sql(e.args.this)} USING utf32))`;
+        },
+      ],
+      [UnixToTimeExpr, unixToTimeSql],
+      [WeekExpr, removeTsOrDsToDate()],
+      [WeekOfYearExpr, removeTsOrDsToDate(renameFunc('WEEKOFYEAR'))],
+      [YearExpr, removeTsOrDsToDate()],
+      [UtcTimestampExpr, renameFunc('UTC_TIMESTAMP')],
+      [UtcTimeExpr, renameFunc('UTC_TIME')],
+    ]);
+  }
 
   /**
    * Maps unsigned types to their standard MySQL counterparts.
    * MySQL adds the 'UNSIGNED' attribute during generation based on the DataTypeExpr.
    */
-  static UNSIGNED_TYPE_MAPPING: Record<string, string> = {
-    [DataTypeExprKind.UBIGINT]: 'BIGINT',
-    [DataTypeExprKind.UINT]: 'INT',
-    [DataTypeExprKind.UMEDIUMINT]: 'MEDIUMINT',
-    [DataTypeExprKind.USMALLINT]: 'SMALLINT',
-    [DataTypeExprKind.UTINYINT]: 'TINYINT',
-    [DataTypeExprKind.UDECIMAL]: 'DECIMAL',
-    [DataTypeExprKind.UDOUBLE]: 'DOUBLE',
-  };
+  @cache
+  static get UNSIGNED_TYPE_MAPPING () {
+    return {
+      [DataTypeExprKind.UBIGINT]: 'BIGINT',
+      [DataTypeExprKind.UINT]: 'INT',
+      [DataTypeExprKind.UMEDIUMINT]: 'MEDIUMINT',
+      [DataTypeExprKind.USMALLINT]: 'SMALLINT',
+      [DataTypeExprKind.UTINYINT]: 'TINYINT',
+      [DataTypeExprKind.UDECIMAL]: 'DECIMAL',
+      [DataTypeExprKind.UDOUBLE]: 'DOUBLE',
+    };
+  }
 
   /**
    * Standardizes various timestamp types to MySQL's DATETIME or TIMESTAMP.
    */
-  static TIMESTAMP_TYPE_MAPPING: Record<string, string> = {
-    [DataTypeExprKind.DATETIME2]: 'DATETIME',
-    [DataTypeExprKind.SMALLDATETIME]: 'DATETIME',
-    [DataTypeExprKind.TIMESTAMP]: 'DATETIME',
-    [DataTypeExprKind.TIMESTAMPNTZ]: 'DATETIME',
-    [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
-    [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP',
-  };
+  @cache
+  static get TIMESTAMP_TYPE_MAPPING () {
+    return {
+      [DataTypeExprKind.DATETIME2]: 'DATETIME',
+      [DataTypeExprKind.SMALLDATETIME]: 'DATETIME',
+      [DataTypeExprKind.TIMESTAMP]: 'DATETIME',
+      [DataTypeExprKind.TIMESTAMPNTZ]: 'DATETIME',
+      [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
+      [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP',
+    };
+  }
 
   @cache
   static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
@@ -1432,49 +1440,61 @@ class MySQLGenerator extends Generator {
   /**
    * MySQL CAST targets for character-based types.
    */
-  static CHAR_CAST_MAPPING: Record<string, string> = [
-    DataTypeExprKind.LONGTEXT,
-    DataTypeExprKind.LONGBLOB,
-    DataTypeExprKind.MEDIUMBLOB,
-    DataTypeExprKind.MEDIUMTEXT,
-    DataTypeExprKind.TEXT,
-    DataTypeExprKind.TINYBLOB,
-    DataTypeExprKind.TINYTEXT,
-    DataTypeExprKind.VARCHAR,
-  ].reduce((acc, type) => ({
-    ...acc,
-    [type]: 'CHAR',
-  }), {});
+  @cache
+  static get CHAR_CAST_MAPPING () {
+    return [
+      DataTypeExprKind.LONGTEXT,
+      DataTypeExprKind.LONGBLOB,
+      DataTypeExprKind.MEDIUMBLOB,
+      DataTypeExprKind.MEDIUMTEXT,
+      DataTypeExprKind.TEXT,
+      DataTypeExprKind.TINYBLOB,
+      DataTypeExprKind.TINYTEXT,
+      DataTypeExprKind.VARCHAR,
+    ].reduce((acc, type) => ({
+      ...acc,
+      [type]: 'CHAR',
+    }), {});
+  }
 
   /**
    * MySQL CAST targets for integer-based types.
    */
-  static SIGNED_CAST_MAPPING: Record<string, string> = [
-    DataTypeExprKind.BIGINT,
-    DataTypeExprKind.BOOLEAN,
-    DataTypeExprKind.INT,
-    DataTypeExprKind.SMALLINT,
-    DataTypeExprKind.TINYINT,
-    DataTypeExprKind.MEDIUMINT,
-  ].reduce((acc, type) => ({
-    ...acc,
-    [type]: 'SIGNED',
-  }), {});
+  @cache
+  static get SIGNED_CAST_MAPPING () {
+    return [
+      DataTypeExprKind.BIGINT,
+      DataTypeExprKind.BOOLEAN,
+      DataTypeExprKind.INT,
+      DataTypeExprKind.SMALLINT,
+      DataTypeExprKind.TINYINT,
+      DataTypeExprKind.MEDIUMINT,
+    ].reduce((acc, type) => ({
+      ...acc,
+      [type]: 'SIGNED',
+    }), {});
+  }
 
   /**
    * MySQL is restricted in which types it can use as a CAST target.
    * Reference: https://dev.mysql.com/doc/refman/8.0/en/cast-functions.html#function_cast
    */
-  static CAST_MAPPING: Record<string, string> = {
-    ...MySQLGenerator.CHAR_CAST_MAPPING,
-    ...MySQLGenerator.SIGNED_CAST_MAPPING,
-    [DataTypeExprKind.UBIGINT]: 'UNSIGNED',
-  };
+  @cache
+  static get CAST_MAPPING (): Record<string, string> {
+    return {
+      ...MySQLGenerator.CHAR_CAST_MAPPING,
+      ...MySQLGenerator.SIGNED_CAST_MAPPING,
+      [DataTypeExprKind.UBIGINT]: 'UNSIGNED',
+    };
+  }
 
   /**
    * Types that require specific function-like syntax for timestamp manipulation.
    */
-  static TIMESTAMP_FUNC_TYPES: Set<string> = new Set([DataTypeExprKind.TIMESTAMPTZ, DataTypeExprKind.TIMESTAMPLTZ]);
+  @cache
+  static get TIMESTAMP_FUNC_TYPES (): Set<string> {
+    return new Set([DataTypeExprKind.TIMESTAMPTZ, DataTypeExprKind.TIMESTAMPLTZ]);
+  }
 
   /**
    * Comprehensive list of MySQL reserved keywords for identifier quoting.
@@ -2055,20 +2075,23 @@ export class MySQL extends Dialect {
    * Valid interval units supported by MySQL.
    * Includes standard units plus MySQL-specific compound units.
    */
-  static VALID_INTERVAL_UNITS: Set<string> = new Set([
-    ...Dialect.VALID_INTERVAL_UNITS,
-    'SECOND_MICROSECOND',
-    'MINUTE_MICROSECOND',
-    'MINUTE_SECOND',
-    'HOUR_MICROSECOND',
-    'HOUR_SECOND',
-    'HOUR_MINUTE',
-    'DAY_MICROSECOND',
-    'DAY_SECOND',
-    'DAY_MINUTE',
-    'DAY_HOUR',
-    'YEAR_MONTH',
-  ]);
+  @cache
+  static get VALID_INTERVAL_UNITS () {
+    return new Set([
+      ...Dialect.VALID_INTERVAL_UNITS,
+      'SECOND_MICROSECOND',
+      'MINUTE_MICROSECOND',
+      'MINUTE_SECOND',
+      'HOUR_MICROSECOND',
+      'HOUR_SECOND',
+      'HOUR_MINUTE',
+      'DAY_MICROSECOND',
+      'DAY_SECOND',
+      'DAY_MINUTE',
+      'DAY_HOUR',
+      'YEAR_MONTH',
+    ]);
+  }
 
   static Tokenizer = MySQLTokenizer;
   static Parser = MySQLParser;

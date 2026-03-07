@@ -30,6 +30,7 @@ import {
   DropExprKind,
   AlterExprKind,
 } from '../expressions';
+import { cache } from '../port_internals';
 import type { DialectOptions } from './dialect';
 import {
   Dialect, Dialects,
@@ -153,54 +154,83 @@ class HiveGeneratorExtension extends Hive.Generator {
 }
 
 class TrinoTokenizerExtension extends Trino.Tokenizer {
-  static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
-    ...Trino.Tokenizer.ORIGINAL_KEYWORDS,
-    UNLOAD: TokenType.COMMAND,
-  };
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
+    return {
+      ...Trino.Tokenizer.ORIGINAL_KEYWORDS,
+      UNLOAD: TokenType.COMMAND,
+    };
+  }
 }
 
 class TrinoParserExtension extends Trino.Parser {
-  static STATEMENT_PARSERS: Record<string, (this: Parser) => Expression | undefined> = {
-    ...Trino.Parser.STATEMENT_PARSERS,
-    [TokenType.USING]: function (this: Parser) {
-      return this.parseAsCommand((this as TrinoParserExtension).prev);
-    },
-  };
+  @cache
+  static get STATEMENT_PARSERS (): Record<string, (this: Parser) => Expression | undefined> {
+    return {
+      ...Trino.Parser.STATEMENT_PARSERS,
+      [TokenType.USING]: function (this: Parser) {
+        return this.parseAsCommand((this as TrinoParserExtension).prev);
+      },
+    };
+  }
 }
 
 class TrinoGeneratorExtension extends Trino.Generator {
-  static PROPERTIES_LOCATION: Map<typeof Expression, PropertiesLocation> = (() => {
+  @cache
+  static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     const m = new Map(Trino.Generator.PROPERTIES_LOCATION);
     m.set(LocationPropertyExpr, (PropertiesLocation).POST_WITH);
     return m;
-  })();
+  }
 
+  @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static ORIGINAL_TRANSFORMS: Map<typeof Expression, (this: Generator, e: any) => string> = (() => {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const m = new Map<typeof Expression, (this: Generator, e: any) => string>(Trino.Generator.ORIGINAL_TRANSFORMS);
     m.set(PartitionedByPropertyExpr, partitionedByPropertySql);
     m.set(LocationPropertyExpr, locationPropertySql);
     return m;
-  })();
+  }
 }
 
 export class AthenaTokenizer extends Tokenizer {
-  static IDENTIFIERS = [...Trino.Tokenizer.IDENTIFIERS, ...Hive.Tokenizer.IDENTIFIERS];
-  static STRING_ESCAPES = [...Trino.Tokenizer.STRING_ESCAPES, ...Hive.Tokenizer.STRING_ESCAPES];
-  static HEX_STRINGS = [...Trino.Tokenizer.HEX_STRINGS, ...Hive.Tokenizer.HEX_STRINGS];
-  static UNICODE_STRINGS = [...Trino.Tokenizer.UNICODE_STRINGS, ...Hive.Tokenizer.UNICODE_STRINGS];
+  @cache
+  static get IDENTIFIERS () {
+    return [...Trino.Tokenizer.IDENTIFIERS, ...Hive.Tokenizer.IDENTIFIERS];
+  }
 
-  static NUMERIC_LITERALS = {
-    ...Trino.Tokenizer.NUMERIC_LITERALS,
-    ...Hive.Tokenizer.NUMERIC_LITERALS,
-  };
+  @cache
+  static get STRING_ESCAPES () {
+    return [...Trino.Tokenizer.STRING_ESCAPES, ...Hive.Tokenizer.STRING_ESCAPES];
+  }
 
-  static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
-    ...Hive.Tokenizer.ORIGINAL_KEYWORDS,
-    ...Trino.Tokenizer.ORIGINAL_KEYWORDS,
-    UNLOAD: TokenType.COMMAND,
-  };
+  @cache
+  static get HEX_STRINGS () {
+    return [...Trino.Tokenizer.HEX_STRINGS, ...Hive.Tokenizer.HEX_STRINGS];
+  }
+
+  @cache
+  static get UNICODE_STRINGS () {
+    return [...Trino.Tokenizer.UNICODE_STRINGS, ...Hive.Tokenizer.UNICODE_STRINGS];
+  }
+
+  @cache
+  static get NUMERIC_LITERALS () {
+    return {
+      ...Trino.Tokenizer.NUMERIC_LITERALS,
+      ...Hive.Tokenizer.NUMERIC_LITERALS,
+    };
+  }
+
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
+    return {
+      ...Hive.Tokenizer.ORIGINAL_KEYWORDS,
+      ...Trino.Tokenizer.ORIGINAL_KEYWORDS,
+      UNLOAD: TokenType.COMMAND,
+    };
+  }
 
   private hiveTokenizer: InstanceType<typeof Hive.Tokenizer>;
   private trinoTokenizer: InstanceType<typeof Trino.Tokenizer>;

@@ -390,26 +390,32 @@ class HiveTokenizer extends Tokenizer {
   static IDENTIFIERS = ['`'];
   static STRING_ESCAPES = ['\\'];
 
-  static SINGLE_TOKENS = {
-    ...Tokenizer.SINGLE_TOKENS,
-    $: TokenType.PARAMETER,
-  };
+  @cache
+  static get SINGLE_TOKENS () {
+    return {
+      ...Tokenizer.SINGLE_TOKENS,
+      $: TokenType.PARAMETER,
+    };
+  }
 
-  static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
-    ...Tokenizer.KEYWORDS,
-    'ADD ARCHIVE': TokenType.COMMAND,
-    'ADD ARCHIVES': TokenType.COMMAND,
-    'ADD FILE': TokenType.COMMAND,
-    'ADD FILES': TokenType.COMMAND,
-    'ADD JAR': TokenType.COMMAND,
-    'ADD JARS': TokenType.COMMAND,
-    'MINUS': TokenType.EXCEPT,
-    'MSCK REPAIR': TokenType.COMMAND,
-    'REFRESH': TokenType.REFRESH,
-    'TIMESTAMP AS OF': TokenType.TIMESTAMP_SNAPSHOT,
-    'VERSION AS OF': TokenType.VERSION_SNAPSHOT,
-    'SERDEPROPERTIES': TokenType.SERDE_PROPERTIES,
-  };
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
+    return {
+      ...Tokenizer.KEYWORDS,
+      'ADD ARCHIVE': TokenType.COMMAND,
+      'ADD ARCHIVES': TokenType.COMMAND,
+      'ADD FILE': TokenType.COMMAND,
+      'ADD FILES': TokenType.COMMAND,
+      'ADD JAR': TokenType.COMMAND,
+      'ADD JARS': TokenType.COMMAND,
+      'MINUS': TokenType.EXCEPT,
+      'MSCK REPAIR': TokenType.COMMAND,
+      'REFRESH': TokenType.REFRESH,
+      'TIMESTAMP AS OF': TokenType.TIMESTAMP_SNAPSHOT,
+      'VERSION AS OF': TokenType.VERSION_SNAPSHOT,
+      'SERDEPROPERTIES': TokenType.SERDE_PROPERTIES,
+    };
+  }
 
   static NUMERIC_LITERALS = {
     L: 'BIGINT',
