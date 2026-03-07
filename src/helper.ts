@@ -7,11 +7,11 @@ import type {
   ExpressionValueList,
   ExpressionOrString,
   ExpressionOrStringList,
-} from './expressions';
+} from './expressions/expressions';
 import {
   DataTypeExpr, AddExpr, literal,
   DataTypeExprKind,
-} from './expressions';
+} from './expressions/expressions';
 import { isIterable } from './port_internals';
 import { annotateTypes } from './optimizer/annotate_types';
 import { simplify } from './optimizer/simplify';

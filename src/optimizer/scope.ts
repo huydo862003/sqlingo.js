@@ -47,12 +47,6 @@ import {
   ensureIterable, findNewName, seqGet,
 } from '../helper';
 
-const TRAVERSABLES = [
-  QueryExpr,
-  DdlExpr,
-  DmlExpr,
-] as const;
-
 /**
  * Scope type enumeration
  */
@@ -324,7 +318,7 @@ export class Scope {
         this._ctes.push(node as CteExpr);
       } else if (node instanceof SubqueryExpr) {
         const isFromOrJoin = _isFromOrJoin(node);
-        if (_isDerivedTable(node) && isFromOrJoin) {
+        if (isDerivedTable(node) && isFromOrJoin) {
           this._derivedTables.push(node);
         } else if (!isFromOrJoin) {
           this._subqueries.push(node);
@@ -743,6 +737,12 @@ export class Scope {
  * @returns List of all scopes found
  */
 export function traverseScope (expression: Expression): Scope[] {
+  const TRAVERSABLES = [
+    QueryExpr,
+    DdlExpr,
+    DmlExpr,
+  ] as const;
+
   if (!TRAVERSABLES.some((T) => expression instanceof T)) {
     return [];
   }
@@ -758,24 +758,24 @@ function* _traverseScope (scope: Scope): Generator<Scope> {
   const expression = scope.expression;
 
   if (expression instanceof SelectExpr) {
-    yield* _traverseSelect(scope);
+    yield* traverseSelect(scope);
   } else if (expression instanceof SetOperationExpr) {
-    yield* _traverseCtes(scope);
-    yield* _traverseUnion(scope);
+    yield* traverseCtes(scope);
+    yield* traverseUnion(scope);
     return;
   } else if (expression instanceof SubqueryExpr) {
     if (scope.isRoot) {
-      yield* _traverseSelect(scope);
+      yield* traverseSelect(scope);
     } else {
-      yield* _traverseSubqueries(scope);
+      yield* traverseSubqueries(scope);
     }
   } else if (expression instanceof TableExpr) {
-    yield* _traverseTables(scope);
+    yield* traverseTables(scope);
   } else if (expression instanceof UdtfExpr) {
-    yield* _traverseUdtfs(scope);
+    yield* traverseUdtfs(scope);
   } else if (expression instanceof DdlExpr) {
     if (expression.args.expression instanceof QueryExpr) {
-      yield* _traverseCtes(scope);
+      yield* traverseCtes(scope);
       yield* _traverseScope(
         new Scope({
           expression: expression.args.expression as QueryExpr,
@@ -785,7 +785,7 @@ function* _traverseScope (scope: Scope): Generator<Scope> {
     }
     return;
   } else if (expression instanceof DmlExpr) {
-    yield* _traverseCtes(scope);
+    yield* traverseCtes(scope);
     for (const query of findAllInScope(expression, [QueryExpr])) {
       const parent = query.parent;
       if (parent && !(parent instanceof CteExpr) && !(parent instanceof SubqueryExpr)) {
@@ -803,13 +803,13 @@ function* _traverseScope (scope: Scope): Generator<Scope> {
   yield scope;
 }
 
-function* _traverseSelect (scope: Scope): Generator<Scope> {
-  yield* _traverseCtes(scope);
-  yield* _traverseTables(scope);
-  yield* _traverseSubqueries(scope);
+function* traverseSelect (scope: Scope): Generator<Scope> {
+  yield* traverseCtes(scope);
+  yield* traverseTables(scope);
+  yield* traverseSubqueries(scope);
 }
 
-function* _traverseUnion (scope: Scope): Generator<Scope> {
+function* traverseUnion (scope: Scope): Generator<Scope> {
   let prevScope: Scope | undefined;
   const unionScopeStack: Scope[] = [scope];
   const setOp = scope.expression as SetOperationExpr;
@@ -827,7 +827,7 @@ function* _traverseUnion (scope: Scope): Generator<Scope> {
     });
 
     if (expression instanceof SetOperationExpr) {
-      yield* _traverseCtes(newScope);
+      yield* traverseCtes(newScope);
       unionScopeStack.push(newScope);
       expressionStack.push(expression.right);
       expressionStack.push(expression.left);
@@ -851,7 +851,7 @@ function* _traverseUnion (scope: Scope): Generator<Scope> {
   }
 }
 
-function* _traverseCtes (scope: Scope): Generator<Scope> {
+function* traverseCtes (scope: Scope): Generator<Scope> {
   const sources = new Map<string, Scope>();
 
   for (const cte of scope.ctes) {
@@ -902,7 +902,7 @@ function* _traverseCtes (scope: Scope): Generator<Scope> {
  * as it doesn't introduce a new scope. If an alias is present, it shadows all names
  * under the Subquery, so that's one exception to this rule.
  */
-function _isDerivedTable (expression: SubqueryExpr): boolean {
+function isDerivedTable (expression: SubqueryExpr): boolean {
   return Boolean(
     expression.alias
     || UNWRAPPED_QUERIES.some((T) => expression.args.this instanceof T),
@@ -922,7 +922,7 @@ function _isFromOrJoin (expression: Expression): boolean {
   return parent instanceof FromExpr || parent instanceof JoinExpr;
 }
 
-function _getSourceAlias (expression: Expression): string {
+function getSourceAlias (expression: Expression): string {
   const aliasArg = expression.getArgKey('alias');
   let aliasName = expression.alias;
 
@@ -933,7 +933,7 @@ function _getSourceAlias (expression: Expression): string {
   return aliasName;
 }
 
-function* _traverseTables (scope: Scope): Generator<Scope> {
+function* traverseTables (scope: Scope): Generator<Scope> {
   const sources = new Map<string, TableExpr | Scope>();
 
   // Traverse FROMs, JOINs, and LATERALs in the order they are defined
@@ -1009,7 +1009,7 @@ function* _traverseTables (scope: Scope): Generator<Scope> {
       lateralSources = sources;
       scopeType = ScopeType.UDTF;
       scopes = scope.udtfScopes;
-    } else if (expression instanceof SubqueryExpr && _isDerivedTable(expression)) {
+    } else if (expression instanceof SubqueryExpr && isDerivedTable(expression)) {
       lateralSources = undefined;
       scopeType = ScopeType.DERIVED_TABLE;
       scopes = scope.derivedTableScopes;
@@ -1043,7 +1043,7 @@ function* _traverseTables (scope: Scope): Generator<Scope> {
       // Tables without aliases will be set as "".
       // Until qualify_columns runs (which adds aliases on everything), only a single
       // unaliased derived table is allowed (the latest one wins).
-      sources.set(_getSourceAlias(expression), childScope);
+      sources.set(getSourceAlias(expression), childScope);
     }
 
     if (childScope) {
@@ -1057,7 +1057,7 @@ function* _traverseTables (scope: Scope): Generator<Scope> {
   }
 }
 
-function* _traverseSubqueries (scope: Scope): Generator<Scope> {
+function* traverseSubqueries (scope: Scope): Generator<Scope> {
   for (const subquery of scope.subqueries) {
     let top: Scope | undefined;
     for (const childScope of _traverseScope(
@@ -1075,7 +1075,7 @@ function* _traverseSubqueries (scope: Scope): Generator<Scope> {
   }
 }
 
-function* _traverseUdtfs (scope: Scope): Generator<Scope> {
+function* traverseUdtfs (scope: Scope): Generator<Scope> {
   let expressions: ExpressionValue[];
 
   if (scope.expression instanceof UnnestExpr) {
@@ -1103,7 +1103,7 @@ function* _traverseUdtfs (scope: Scope): Generator<Scope> {
     )) {
       yield childScope;
       top = childScope;
-      sources.set(_getSourceAlias(expression), childScope);
+      sources.set(getSourceAlias(expression), childScope);
     }
 
     if (top) {
@@ -1162,7 +1162,7 @@ export function* walkInScope (
       || (
         (node.parent instanceof FromExpr || node.parent instanceof JoinExpr)
         && node instanceof SubqueryExpr
-        && _isDerivedTable(node)
+        && isDerivedTable(node)
       )
       || (node.parent instanceof UdtfExpr && node instanceof QueryExpr)
       || UNWRAPPED_QUERIES.some((T) => node instanceof T)
