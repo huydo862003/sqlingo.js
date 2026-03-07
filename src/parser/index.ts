@@ -469,7 +469,7 @@ import {
   applyIndexOffset, ensureIterable, seqGet,
 } from '../helper';
 import {
-  Dialect, type DialectType,
+  Dialect, type DialectType, NullOrdering,
 } from '../dialects/dialect';
 import {
   concatMessages,
@@ -7355,10 +7355,10 @@ export class Parser {
     if (
       !explicitlyNullOrdered
       && (
-        (!desc && this._dialectConstructor.NULL_ORDERING === 'nulls_are_small')
-        || (desc && this._dialectConstructor.NULL_ORDERING !== 'nulls_are_small')
+        (!desc && this._dialectConstructor.NULL_ORDERING === NullOrdering.NULLS_ARE_SMALL)
+        || (desc && this._dialectConstructor.NULL_ORDERING !== NullOrdering.NULLS_ARE_SMALL)
       )
-      && this._dialectConstructor.NULL_ORDERING !== 'nulls_are_last'
+      && this._dialectConstructor.NULL_ORDERING !== NullOrdering.NULLS_ARE_LAST
     ) {
       nullsFirst = true;
     }

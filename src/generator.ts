@@ -519,7 +519,7 @@ import { formatTime } from './time';
 import type { ParseOptions } from './parser';
 import {
   Dialect, type DialectType, mapDatePart, unitToStr,
-  concatToDPipeSql,
+  concatToDPipeSql, NullOrdering, NormalizeFunctions,
 } from './dialects/dialect';
 import {
   ErrorLevel, UnsupportedError, concatMessages,
@@ -1739,7 +1739,7 @@ export class Generator {
     // Get dialect and prioritize option over dialect default
     this.dialect = Dialect.getOrRaise(options.dialect);
     const dialectClass = this.dialect._constructor;
-    this.normalizeFunctions = options.normalizeFunctions ?? dialectClass.NORMALIZE_FUNCTIONS ?? 'upper';
+    this.normalizeFunctions = options.normalizeFunctions ?? dialectClass.NORMALIZE_FUNCTIONS ?? NormalizeFunctions.UPPER;
 
     // Initialize escaped delimiters
     const stringEscapes = dialectClass.tokenizerClass.STRING_ESCAPES;
@@ -1912,10 +1912,10 @@ export class Generator {
    * Normalize a function name based on settings.
    */
   normalizeFunc (name: string): string {
-    if (this.normalizeFunctions === 'upper' || this.normalizeFunctions === true) {
+    if (this.normalizeFunctions === NormalizeFunctions.UPPER || this.normalizeFunctions === true) {
       return name.toUpperCase();
     }
-    if (this.normalizeFunctions === 'lower') {
+    if (this.normalizeFunctions === NormalizeFunctions.LOWER) {
       return name.toLowerCase();
     }
     return name;
@@ -4248,9 +4248,9 @@ export class Generator {
 
     const nullsFirst = expression.args.nullsFirst;
     const nullsLast = !nullsFirst;
-    const nullsAreLarge = this.dialect._constructor.NULL_ORDERING === 'nulls_are_large';
-    const nullsAreSmall = this.dialect._constructor.NULL_ORDERING === 'nulls_are_small';
-    const nullsAreLast = this.dialect._constructor.NULL_ORDERING === 'nulls_are_last';
+    const nullsAreLarge = this.dialect._constructor.NULL_ORDERING === NullOrdering.NULLS_ARE_LARGE;
+    const nullsAreSmall = this.dialect._constructor.NULL_ORDERING === NullOrdering.NULLS_ARE_SMALL;
+    const nullsAreLast = this.dialect._constructor.NULL_ORDERING === NullOrdering.NULLS_ARE_LAST;
 
     let thisStr = this.sql(expression, 'this');
 

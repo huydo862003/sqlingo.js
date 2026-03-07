@@ -54,6 +54,8 @@ import {
   renameFunc,
   strPositionSql,
   timeStrToTimeSql,
+  NullOrdering,
+  NormalizeFunctions,
 } from './dialect';
 import { dateAddSql } from './mysql';
 
@@ -244,9 +246,9 @@ class DrillGenerator extends Generator {
 }
 
 export class Drill extends Dialect {
-  static NORMALIZE_FUNCTIONS = false as const;
+  static NORMALIZE_FUNCTIONS = NormalizeFunctions.NONE;
   static PRESERVE_ORIGINAL_NAMES = true;
-  static NULL_ORDERING = 'nulls_are_last' as const;
+  static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
   static DATE_FORMAT = '\'yyyy-MM-dd\'';
   static DATEINT_FORMAT = '\'yyyyMMdd\'';
   static TIME_FORMAT = '\'yyyy-MM-dd HH:mm:ss\'';

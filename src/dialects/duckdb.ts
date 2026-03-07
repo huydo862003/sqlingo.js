@@ -371,6 +371,7 @@ import {
   noTimestampSql,
   timeStrToTimeSql,
   countIfToSum,
+  NullOrdering,
 } from './dialect';
 import type { JsonExtractType } from './dialect';
 import { strToTimeSql } from './presto';
@@ -4927,7 +4928,7 @@ class DuckDBGenerator extends Generator {
 }
 
 export class DuckDB extends Dialect {
-  static NULL_ORDERING = 'nulls_are_last' as const;
+  static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
   static SUPPORTS_USER_DEFINED_TYPES = true;
   static SAFE_DIVISION = true;
   static INDEX_OFFSET = 1;

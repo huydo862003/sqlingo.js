@@ -91,6 +91,7 @@ import {
   strPositionSql,
   timeStrToTimeSql,
   noLastDaySql,
+  NullOrdering,
 } from './dialect';
 
 const DATE_UNITS = new Set([
@@ -792,7 +793,7 @@ export class Exasol extends Dialect {
   static SUPPORTS_USER_DEFINED_TYPES = false;
   static SUPPORTS_SEMI_ANTI_JOIN = false;
   static SUPPORTS_COLUMN_JOIN_MARKS = true;
-  static NULL_ORDERING = 'nulls_are_last' as const;
+  static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
   static CONCAT_COALESCE = true;
   static TIME_MAPPING = {
     CC: '%y',

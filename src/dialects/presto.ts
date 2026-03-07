@@ -176,6 +176,7 @@ import {
   timeStrToTimeSql,
   tsOrDsAddCast,
   unitToStr,
+  NullOrdering,
 } from './dialect';
 import { MySQL } from './mysql';
 import { Hive } from './hive';
@@ -1348,7 +1349,7 @@ class PrestoGenerator extends Generator {
 
 export class Presto extends Dialect {
   static INDEX_OFFSET = 1;
-  static NULL_ORDERING = 'nulls_are_last' as const;
+  static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
   static TIME_FORMAT = MySQL.TIME_FORMAT;
   static STRICT_STRING_CONCAT = true;
   static SUPPORTS_SEMI_ANTI_JOIN = false;

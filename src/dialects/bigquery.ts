@@ -230,6 +230,7 @@ import {
   tsOrDsAddCast,
   regexpReplaceSql,
   buildFormattedTime,
+  NormalizeFunctions,
 } from './dialect';
 
 const DQUOTES_ESCAPING_JSON_FUNCTIONS = [
@@ -2146,7 +2147,7 @@ export class BigQuery extends Dialect {
   static INITCAP_DEFAULT_DELIMITER_CHARS = ' \t\n\r\f\v\\[\\](){}/|<>!?@"^#$&~_,.:;*%+\\-';
 
   static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE;
-  static NORMALIZE_FUNCTIONS = false as const;
+  static NORMALIZE_FUNCTIONS = NormalizeFunctions.NONE;
 
   static TIME_MAPPING = {
     '%x': '%m/%d/%y',

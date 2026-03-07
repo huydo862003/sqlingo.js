@@ -81,6 +81,7 @@ import {
   trimSql,
   Dialect, NormalizationStrategy, Dialects,
   renameFunc,
+  NullOrdering,
 } from './dialect';
 
 function trimSqlEx (this: Generator, expression: TrimExpr): string {
@@ -624,7 +625,7 @@ export class Oracle extends Dialect {
   static ALIAS_POST_TABLESAMPLE = true;
   static LOCKING_READS_SUPPORTED = true;
   static TABLESAMPLE_SIZE_IS_PERCENT = true;
-  static NULL_ORDERING = 'nulls_are_large' as const;
+  static NULL_ORDERING = NullOrdering.NULLS_ARE_LARGE;
   static ON_CONDITION_EMPTY_BEFORE_ERROR = false;
   static ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN = false;
   static DISABLES_ALIAS_REF_EXPANSION = true;

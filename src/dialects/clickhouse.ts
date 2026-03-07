@@ -187,6 +187,8 @@ import {
   removeFromArrayUsingFilter,
   argMaxOrMinNoCount,
   inlineArraySql,
+  NullOrdering,
+  NormalizeFunctions,
 } from './dialect';
 
 const TIMESTAMP_TRUNC_UNITS = new Set([
@@ -2085,8 +2087,8 @@ export class ClickHouseGenerator extends Generator {
 
 export class ClickHouse extends Dialect {
   static INDEX_OFFSET = 1;
-  static NORMALIZE_FUNCTIONS = false as const;
-  static NULL_ORDERING = 'nulls_are_last' as const;
+  static NORMALIZE_FUNCTIONS = NormalizeFunctions.NONE;
+  static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
   static SUPPORTS_USER_DEFINED_TYPES = false;
   static SAFE_DIVISION = true;
   static LOG_BASE_FIRST: boolean | undefined = undefined;

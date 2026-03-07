@@ -191,6 +191,7 @@ import {
   inlineArraySql,
   tsOrDsAddCast,
   Dialect, Dialects,
+  NullOrdering,
 } from './dialect';
 
 const DATE_DIFF_FACTOR: Record<string, string> = {
@@ -1334,7 +1335,7 @@ export class Postgres extends Dialect {
   static INDEX_OFFSET = 1;
   static TYPED_DIVISION = true;
   static CONCAT_COALESCE = true;
-  static NULL_ORDERING = 'nulls_are_large' as const;
+  static NULL_ORDERING = NullOrdering.NULLS_ARE_LARGE;
   static TIME_FORMAT = '\'YYYY-MM-DD HH24:MI:SS\'';
   static TABLESAMPLE_SIZE_IS_PERCENT = true;
   static TABLES_REFERENCEABLE_AS_COLUMNS = true;

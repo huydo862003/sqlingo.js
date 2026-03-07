@@ -41,6 +41,7 @@ import {
   Dialect, Dialects,
   buildTimeToStrOrToChar,
   renameFunc,
+  NullOrdering,
 } from './dialect';
 
 type DateDeltaType = DateAddExpr | DateSubExpr;
@@ -289,7 +290,7 @@ export class Dremio extends Dialect {
   static CONCAT_COALESCE = true;
   static TYPED_DIVISION = true;
   static SUPPORTS_SEMI_ANTI_JOIN = false;
-  static NULL_ORDERING = 'nulls_are_last' as const;
+  static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
   static SUPPORTS_VALUES_DEFAULT = false;
 
   static TIME_MAPPING = {

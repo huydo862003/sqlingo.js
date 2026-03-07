@@ -289,6 +289,7 @@ import {
   noTimestampSql,
   unitToStr,
   inlineArraySql,
+  NullOrdering,
 } from './dialect';
 
 const TIMESTAMP_TYPES: Partial<Record<DataTypeExprKind, string>> = {
@@ -3141,7 +3142,7 @@ class SnowflakeGenerator extends Generator {
 
 export class Snowflake extends Dialect {
   static NORMALIZATION_STRATEGY = NormalizationStrategy.UPPERCASE;
-  static NULL_ORDERING = 'nulls_are_large' as const;
+  static NULL_ORDERING = NullOrdering.NULLS_ARE_LARGE;
   static TIME_FORMAT = '\'YYYY-MM-DD HH24:MI:SS\'';
   static SUPPORTS_USER_DEFINED_TYPES = false;
   static SUPPORTS_SEMI_ANTI_JOIN = false;

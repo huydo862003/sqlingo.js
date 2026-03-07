@@ -239,8 +239,17 @@ export const DATETIME_ADD = [
 ] as const;
 
 // Type aliases for dialect configuration properties
-export type NormalizeFunctions = false | 'upper' | 'lower';
-export type NullOrdering = 'nulls_are_small' | 'nulls_are_large' | 'nulls_are_last';
+export enum NormalizeFunctions {
+  NONE = '',
+  UPPER = 'upper',
+  LOWER = 'lower',
+}
+
+export enum NullOrdering {
+  NULLS_ARE_SMALL = 'nulls_are_small',
+  NULLS_ARE_LARGE = 'nulls_are_large',
+  NULLS_ARE_LAST = 'nulls_are_last',
+}
 
 export interface DialectOptions {
   version?: number | string;
@@ -345,10 +354,8 @@ export class Dialect {
 
   /** Whether a size in the table sample clause represents percentage. */
   static TABLESAMPLE_SIZE_IS_PERCENT = false;
-  @cache
-  static get NORMALIZATION_STRATEGY (): NormalizationStrategy {
-    return NormalizationStrategy.LOWERCASE;
-  }
+
+  static NORMALIZATION_STRATEGY = NormalizationStrategy.LOWERCASE;
 
   /** Whether an unquoted identifier can start with a digit. */
   static IDENTIFIERS_CAN_START_WITH_DIGIT = false;
@@ -376,11 +383,11 @@ export class Dialect {
   /**
    * Determines how function names are going to be normalized.
    * Possible values:
-   *   "upper" or true: Convert names to uppercase.
-   *   "lower": Convert names to lowercase.
+   *   NormalizeFunctions.UPPER or true: Convert names to uppercase.
+   *   NormalizeFunctions.LOWER: Convert names to lowercase.
    *   false: Disables function name normalization.
    */
-  static NORMALIZE_FUNCTIONS: NormalizeFunctions = 'upper';
+  static NORMALIZE_FUNCTIONS: NormalizeFunctions = NormalizeFunctions.UPPER;
 
   /**
    * Whether the name of the function should be preserved inside the node's metadata.
@@ -395,9 +402,9 @@ export class Dialect {
 
   /**
    * Default `NULL` ordering method to use if not explicitly set.
-   * Possible values: "nulls_are_small", "nulls_are_large", "nulls_are_last"
+   * Possible values: NullOrdering.NULLS_ARE_SMALL, NullOrdering.NULLS_ARE_LARGE, NullOrdering.NULLS_ARE_LAST
    */
-  static NULL_ORDERING: NullOrdering = 'nulls_are_small';
+  static NULL_ORDERING: NullOrdering = NullOrdering.NULLS_ARE_SMALL;
 
   /**
    * Whether the behavior of `a / b` depends on the types of `a` and `b`.
@@ -2272,7 +2279,7 @@ export function pivotColumnNames (aggregations: Expression[], options: { dialect
       });
       names.push(aggAllUnquoted.sql({
         dialect,
-        normalizeFunctions: 'lower',
+        normalizeFunctions: NormalizeFunctions.LOWER,
       }));
     }
   }
