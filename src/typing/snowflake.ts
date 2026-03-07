@@ -5,7 +5,7 @@ import {
 } from '../port_internals';
 import { DataTypeExprKind } from '../expressions/types';
 import {
-  Expression, DataTypeExprKind,
+  Expression,
   DataTypeExpr, ReverseExpr, TimestampFromPartsExpr, DecodeCaseExpr,
   ArgMaxExpr, ArgMinExpr, WithinGroupExpr, PercentileDiscExpr, PercentileContExpr,
   OrderExpr, OrderedExpr, MedianExpr, KurtosisExpr, StrToTimeExpr,
