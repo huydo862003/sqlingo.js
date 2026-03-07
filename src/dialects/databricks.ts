@@ -54,9 +54,9 @@ import {
   groupConcatSql,
 } from './dialect';
 
-function jsonExtractSql (self: Generator, expression: JsonExtractExpr | JsonExtractScalarExpr): string {
-  const thisSql = self.sql(expression, 'this');
-  const exprSql = self.sql(expression, 'expression');
+function jsonExtractSql (this: Generator, expression: JsonExtractExpr | JsonExtractScalarExpr): string {
+  const thisSql = this.sql(expression, 'this');
+  const exprSql = this.sql(expression, 'expression');
   return `${thisSql}:${exprSql}`;
 }
 
@@ -95,10 +95,12 @@ class DatabricksParser extends Spark.Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Spark.Parser.NO_PAREN_FUNCTION_PARSERS,
-      CURDATE: (self: Parser) => (self as DatabricksParser).parseCurdate(),
+      CURDATE: function (this: Parser) {
+        return (this as DatabricksParser).parseCurdate();
+      },
     };
   }
 
@@ -111,14 +113,15 @@ class DatabricksParser extends Spark.Parser {
   }
 
   @cache
-  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
+  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((this: Parser, this_?: Expression, to?: Expression) => Expression)>> {
     return {
       ...Parser.COLUMN_OPERATORS,
-      [TokenType.QDCOLON]: (self: Parser, thisNode?: Expression, to?: Expression) =>
-        self.expression(TryCastExpr, {
+      [TokenType.QDCOLON]: function (this: Parser, thisNode?: Expression, to?: Expression) {
+        return this.expression(TryCastExpr, {
           this: thisNode,
           to: to,
-        }),
+        });
+      },
     };
   }
 
@@ -148,32 +151,35 @@ class DatabricksGenerator extends Spark.Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Spark.Generator.TRANSFORMS,
       [CurrentVersionExpr, () => 'CURRENT_VERSION()'],
       [DateAddExpr, dateDeltaSql('DATEADD')],
       [DateDiffExpr, dateDeltaSql('DATEDIFF')],
       [
         DatetimeAddExpr,
-        (self, e) => self.func('TIMESTAMPADD', [
-          e.args.unit,
-          e.args.expression,
-          e.args.this,
-        ]),
+        function (this: Generator, e) {
+          return this.func('TIMESTAMPADD', [
+            e.args.unit,
+            e.args.expression,
+            e.args.this,
+          ]);
+        },
       ],
       [
         DatetimeSubExpr,
-        (self, e) =>
-          self.func('TIMESTAMPADD', [
+        function (this: Generator, e) {
+          return this.func('TIMESTAMPADD', [
             e.args.unit,
             new MulExpr({
               this: e.args.expression,
               expression: LiteralExpr.number(-1),
             }),
             e.args.this,
-          ]),
+          ]);
+        },
       ],
       [DatetimeTruncExpr, timestampTruncSql()],
       [GroupConcatExpr, groupConcatSql],
@@ -185,18 +191,29 @@ class DatabricksGenerator extends Spark.Generator {
           anyToExists,
         ]),
       ],
-      [JsonExtractExpr, (self, e) => jsonExtractSql(self, e)],
-      [JsonExtractScalarExpr, (self, e) => jsonExtractSql(self, e)],
+      [
+        JsonExtractExpr,
+        function (this: Generator, e) {
+          return jsonExtractSql.call(this, e);
+        },
+      ],
+      [
+        JsonExtractScalarExpr,
+        function (this: Generator, e) {
+          return jsonExtractSql.call(this, e);
+        },
+      ],
       [JsonPathRootExpr, () => ''],
       [
         ToCharExpr,
-        (self, e: ToCharExpr) =>
-          e.args.isNumeric
-            ? self.castSql(new CastExpr({
+        function (this: Generator, e: ToCharExpr) {
+          return e.args.isNumeric
+            ? this.castSql(new CastExpr({
               this: e.args.this,
               to: new DataTypeExpr({ this: 'STRING' }),
             }))
-            : self.functionFallbackSql(e),
+            : this.functionFallbackSql(e);
+        },
       ],
       [CurrentCatalogExpr, () => 'CURRENT_CATALOG()'],
     ]);

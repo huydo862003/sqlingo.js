@@ -221,9 +221,9 @@ const DIFF_MONTH_SWITCH = new Set([
   'MONTH',
 ]);
 
-function addDateSql (self: Generator, expression: DateAddExpr | DateSubExpr | TsOrDsAddExpr): string {
+function addDateSql (this: Generator, expression: DateAddExpr | DateSubExpr | TsOrDsAddExpr): string {
   if (expression instanceof TsOrDsAddExpr && !expression.args.unit) {
-    return self.func('DATE_ADD', [expression.args.this, expression.args.expression]);
+    return this.func('DATE_ADD', [expression.args.this, expression.args.expression]);
   }
 
   const unit = expression.text('unit').toUpperCase();
@@ -245,16 +245,16 @@ function addDateSql (self: Generator, expression: DateAddExpr | DateSubExpr | Ts
     });
   }
 
-  return self.func(func, [expression.args.this, increment]);
+  return this.func(func, [expression.args.this, increment]);
 }
 
-function dateDiffSql (self: Generator, expression: DateDiffExpr | TsOrDsDiffExpr): string {
+function dateDiffSql (this: Generator, expression: DateDiffExpr | TsOrDsDiffExpr): string {
   const unit = expression.text('unit').toUpperCase();
 
   const factor = TIME_DIFF_FACTOR[unit];
   if (factor !== undefined) {
-    const left = self.sql(expression, 'this');
-    const right = self.sql(expression, 'expression');
+    const left = this.sql(expression, 'this');
+    const right = this.sql(expression, 'expression');
     const secDiff = `UNIX_TIMESTAMP(${left}) - UNIX_TIMESTAMP(${right})`;
     return factor ? `(${secDiff})${factor}` : secDiff;
   }
@@ -264,7 +264,7 @@ function dateDiffSql (self: Generator, expression: DateDiffExpr | TsOrDsDiffExpr
   const multiplier = DATE_DELTA_INTERVAL[unit]?.[1] || 1;
   const multiplierSql = 1 < multiplier ? ` / ${multiplier}` : '';
 
-  let diffSql = `${sqlFunc}(${self.formatArgs([expression.args.this, expression.args.expression])})`;
+  let diffSql = `${sqlFunc}(${this.formatArgs([expression.args.this, expression.args.expression])})`;
 
   if (monthsBetween || multiplierSql) {
     diffSql = `CAST(${diffSql}${multiplierSql} AS INT)`;
@@ -273,53 +273,53 @@ function dateDiffSql (self: Generator, expression: DateDiffExpr | TsOrDsDiffExpr
   return diffSql;
 }
 
-function jsonFormatSql (self: Generator, expression: JsonFormatExpr): string {
+function jsonFormatSql (this: Generator, expression: JsonFormatExpr): string {
   const thisNode = expression.args.this;
 
   if (thisNode && isParseJson(thisNode)) {
     if (thisNode.args.this instanceof LiteralExpr && thisNode.args.this.isString) {
       const wrappedJson = LiteralExpr.string(`[${thisNode.args.this.args.this}]`);
 
-      const fromJson = self.func('FROM_JSON', [wrappedJson, self.func('SCHEMA_OF_JSON', [wrappedJson])]);
-      const toJson = self.func('TO_JSON', [fromJson]);
+      const fromJson = this.func('FROM_JSON', [wrappedJson, this.func('SCHEMA_OF_JSON', [wrappedJson])]);
+      const toJson = this.func('TO_JSON', [fromJson]);
 
-      return self.func('REGEXP_EXTRACT', [
+      return this.func('REGEXP_EXTRACT', [
         toJson,
         LiteralExpr.string('\'^.(.*).$\''),
         LiteralExpr.number(1),
       ]);
     }
-    return self.sql(thisNode);
+    return this.sql(thisNode);
   }
 
-  return self.func('TO_JSON', [thisNode, expression.args.options]);
+  return this.func('TO_JSON', [thisNode, expression.args.options]);
 }
 
-function arraySortSql (self: Generator, expression: ArraySortExpr): string {
+function arraySortSql (this: Generator, expression: ArraySortExpr): string {
   if (expression.args.expression) {
-    self.unsupported('Unsupported arg \'expression\' for ArraySort');
+    this.unsupported('Unsupported arg \'expression\' for ArraySort');
   }
-  return self.func('SORT_ARRAY', [expression.args.this]);
+  return this.func('SORT_ARRAY', [expression.args.this]);
 }
 
-function strToUnixSql (self: Generator, expression: StrToUnixExpr): string {
-  return self.func('UNIX_TIMESTAMP', [expression.args.this, timeFormat('hive')(self, expression)]);
+function strToUnixSql (this: Generator, expression: StrToUnixExpr): string {
+  return this.func('UNIX_TIMESTAMP', [expression.args.this, timeFormat('hive').call(this, expression)]);
 }
 
-function unixToTimeSql (self: Generator, expression: UnixToTimeExpr): string {
-  const timestamp = self.sql(expression, 'this');
+function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
+  const timestamp = this.sql(expression, 'this');
   const scale = expression.args.scale;
 
   if (scale === undefined || scale === UnixToTimeExpr.SECONDS) {
-    return renameFunc('FROM_UNIXTIME')(self, expression);
+    return renameFunc('FROM_UNIXTIME').call(this, expression);
   }
 
   return `FROM_UNIXTIME(${timestamp} / POW(10, ${scale}))`;
 }
 
-function strToDateSql (self: Generator, expression: StrToDateExpr): string {
-  let thisSql = self.sql(expression, 'this');
-  const timeFormatSql = self.formatTime(expression);
+function strToDateSql (this: Generator, expression: StrToDateExpr): string {
+  let thisSql = this.sql(expression, 'this');
+  const timeFormatSql = this.formatTime(expression);
 
   if (timeFormatSql !== null && timeFormatSql !== undefined && ![Hive.TIME_FORMAT, Hive.DATE_FORMAT].includes(timeFormatSql)) {
     thisSql = `FROM_UNIXTIME(UNIX_TIMESTAMP(${thisSql}, ${timeFormatSql}))`;
@@ -328,9 +328,9 @@ function strToDateSql (self: Generator, expression: StrToDateExpr): string {
   return `CAST(${thisSql} AS DATE)`;
 }
 
-function strToTimeSql (self: Generator, expression: StrToTimeExpr): string {
-  let thisSql = self.sql(expression, 'this');
-  const timeFormatSql = self.formatTime(expression);
+function strToTimeSql (this: Generator, expression: StrToTimeExpr): string {
+  let thisSql = this.sql(expression, 'this');
+  const timeFormatSql = this.formatTime(expression);
 
   if (timeFormatSql !== null && timeFormatSql !== undefined && ![Hive.TIME_FORMAT, Hive.DATE_FORMAT].includes(timeFormatSql)) {
     thisSql = `FROM_UNIXTIME(UNIX_TIMESTAMP(${thisSql}, ${timeFormatSql}))`;
@@ -339,18 +339,18 @@ function strToTimeSql (self: Generator, expression: StrToTimeExpr): string {
   return `CAST(${thisSql} AS TIMESTAMP)`;
 }
 
-function toDateSql (self: Generator, expression: TsOrDsToDateExpr): string {
-  const timeFormatSql = self.formatTime(expression);
+function toDateSql (this: Generator, expression: TsOrDsToDateExpr): string {
+  const timeFormatSql = this.formatTime(expression);
 
   if (timeFormatSql && ![Hive.TIME_FORMAT, Hive.DATE_FORMAT].includes(timeFormatSql)) {
-    return self.func('TO_DATE', [expression.args.this, timeFormatSql]);
+    return this.func('TO_DATE', [expression.args.this, timeFormatSql]);
   }
 
-  if (expression.parent instanceof Expression && (self._constructor as typeof HiveGenerator).TS_OR_DS_EXPRESSIONS.has(expression.parent._constructor)) {
-    return self.sql(expression, 'this');
+  if (expression.parent instanceof Expression && (this._constructor as typeof HiveGenerator).TS_OR_DS_EXPRESSIONS.has(expression.parent._constructor)) {
+    return this.sql(expression, 'this');
   }
 
-  return self.func('TO_DATE', [expression.args.this]);
+  return this.func('TO_DATE', [expression.args.this]);
 }
 
 export function buildWithIgnoreNulls (ExpClass: typeof Expression) {
@@ -395,7 +395,7 @@ class HiveTokenizer extends Tokenizer {
     $: TokenType.PARAMETER,
   };
 
-  static ORIGINAL_KEYWORDS = {
+  static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
     ...Tokenizer.KEYWORDS,
     'ADD ARCHIVE': TokenType.COMMAND,
     'ADD ARCHIVES': TokenType.COMMAND,
@@ -431,11 +431,15 @@ class HiveParser extends Parser {
   static CHANGE_COLUMN_ALTER_SYNTAX = false;
 
   @cache
-  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.FUNCTION_PARSERS,
-      PERCENTILE: (self: Parser) => (self as HiveParser).parseQuantileFunction(QuantileExpr),
-      PERCENTILE_APPROX: (self: Parser) => (self as HiveParser).parseQuantileFunction(ApproxQuantileExpr),
+      PERCENTILE: function (this: Parser) {
+        return (this as HiveParser).parseQuantileFunction(QuantileExpr);
+      },
+      PERCENTILE_APPROX: function (this: Parser) {
+        return (this as HiveParser).parseQuantileFunction(ApproxQuantileExpr);
+      },
     };
   }
 
@@ -500,10 +504,12 @@ class HiveParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
-      TRANSFORM: (self: Parser) => (self as HiveParser).parseTransform(),
+      TRANSFORM: function (this: Parser) {
+        return (this as HiveParser).parseTransform();
+      },
     };
   }
 
@@ -517,20 +523,24 @@ class HiveParser extends Parser {
   }
 
   @cache
-  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
+  static get PROPERTY_PARSERS (): Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return {
       ...Parser.PROPERTY_PARSERS,
-      SERDEPROPERTIES: (self: Parser) => new SerdePropertiesExpr({
-        expressions: self.parseWrappedCsv(() => self.parseProperty()),
-      }),
+      SERDEPROPERTIES: function (this: Parser) {
+        return new SerdePropertiesExpr({
+          expressions: this.parseWrappedCsv(() => this.parseProperty()),
+        });
+      },
     };
   }
 
   @cache
-  static get ALTER_PARSERS (): Partial<Record<string, (self: Parser) => Expression | Expression[] | undefined>> {
+  static get ALTER_PARSERS (): Partial<Record<string, (this: Parser) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.ALTER_PARSERS,
-      CHANGE: (self: Parser) => (self as HiveParser).parseAlterTableChange(),
+      CHANGE: function (this: Parser) {
+        return (this as HiveParser).parseAlterTableChange();
+      },
     };
   }
 
@@ -739,9 +749,9 @@ class HiveGenerator extends Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
       [PropertyExpr, propertySql],
       [AnyValueExpr, renameFunc('FIRST')],
@@ -750,33 +760,108 @@ class HiveGenerator extends Generator {
       [ArgMinExpr, argMaxOrMinNoCount('MIN_BY')],
       [ArrayExpr, preprocess([inheritStructFieldNames])],
       [ArrayConcatExpr, renameFunc('CONCAT')],
-      [ArrayToStringExpr, (self: Generator, e: ArrayToStringExpr) => self.func('CONCAT_WS', [e.args.expression, e.args.this])],
-      [ArraySortExpr, (self: Generator, e: ArraySortExpr) => arraySortSql(self as HiveGenerator, e)],
+      [
+        ArrayToStringExpr,
+        function (this: Generator, e: ArrayToStringExpr) {
+          return this.func('CONCAT_WS', [e.args.expression, e.args.this]);
+        },
+      ],
+      [
+        ArraySortExpr,
+        function (this: Generator, e: ArraySortExpr) {
+          return arraySortSql.call(this as HiveGenerator, e);
+        },
+      ],
       [WithExpr, noRecursiveCteSql],
-      [DateAddExpr, (self: Generator, e: DateAddExpr) => addDateSql(self as HiveGenerator, e)],
-      [DateDiffExpr, (self: Generator, e: DateDiffExpr) => dateDiffSql(self as HiveGenerator, e)],
+      [
+        DateAddExpr,
+        function (this: Generator, e: DateAddExpr) {
+          return addDateSql.call(this as HiveGenerator, e);
+        },
+      ],
+      [
+        DateDiffExpr,
+        function (this: Generator, e: DateDiffExpr) {
+          return dateDiffSql.call(this as HiveGenerator, e);
+        },
+      ],
       [DateStrToDateExpr, dateStrToDateSql],
-      [DateSubExpr, (self: Generator, e: DateSubExpr) => addDateSql(self as HiveGenerator, e)],
-      [DateToDiExpr, (self: Generator, e: DateToDiExpr) => `CAST(DATE_FORMAT(${self.sql(e, 'this')}, ${Hive.DATEINT_FORMAT}) AS INT)`],
-      [DiToDateExpr, (self: Generator, e: DiToDateExpr) => `TO_DATE(CAST(${self.sql(e, 'this')} AS STRING), ${Hive.DATEINT_FORMAT})`],
-      [StorageHandlerPropertyExpr, (self: Generator, e: StorageHandlerPropertyExpr) => `STORED BY ${self.sql(e, 'this')}`],
+      [
+        DateSubExpr,
+        function (this: Generator, e: DateSubExpr) {
+          return addDateSql.call(this as HiveGenerator, e);
+        },
+      ],
+      [
+        DateToDiExpr,
+        function (this: Generator, e: DateToDiExpr) {
+          return `CAST(DATE_FORMAT(${this.sql(e, 'this')}, ${Hive.DATEINT_FORMAT}) AS INT)`;
+        },
+      ],
+      [
+        DiToDateExpr,
+        function (this: Generator, e: DiToDateExpr) {
+          return `TO_DATE(CAST(${this.sql(e, 'this')} AS STRING), ${Hive.DATEINT_FORMAT})`;
+        },
+      ],
+      [
+        StorageHandlerPropertyExpr,
+        function (this: Generator, e: StorageHandlerPropertyExpr) {
+          return `STORED BY ${this.sql(e, 'this')}`;
+        },
+      ],
       [FromBase64Expr, renameFunc('UNBASE64')],
       [GenerateSeriesExpr, sequenceSql],
       [GenerateDateArrayExpr, sequenceSql],
       [IfExpr, ifSql()],
       [ILikeExpr, noIlikeSql],
-      [IntDivExpr, (self: Generator, e: IntDivExpr) => self.binary(e, 'DIV')],
+      [
+        IntDivExpr,
+        function (this: Generator, e: IntDivExpr) {
+          return this.binary(e, 'DIV');
+        },
+      ],
       [IsNanExpr, renameFunc('ISNAN')],
-      [JsonExtractExpr, (self: Generator, e: JsonExtractExpr) => self.func('GET_JSON_OBJECT', [e.args.this, e.args.expression])],
-      [JsonExtractScalarExpr, (self: Generator, e: JsonExtractScalarExpr) => self.func('GET_JSON_OBJECT', [e.args.this, e.args.expression])],
-      [JsonFormatExpr, (self: Generator, e: JsonFormatExpr) => jsonFormatSql(self as HiveGenerator, e)],
+      [
+        JsonExtractExpr,
+        function (this: Generator, e: JsonExtractExpr) {
+          return this.func('GET_JSON_OBJECT', [e.args.this, e.args.expression]);
+        },
+      ],
+      [
+        JsonExtractScalarExpr,
+        function (this: Generator, e: JsonExtractScalarExpr) {
+          return this.func('GET_JSON_OBJECT', [e.args.this, e.args.expression]);
+        },
+      ],
+      [
+        JsonFormatExpr,
+        function (this: Generator, e: JsonFormatExpr) {
+          return jsonFormatSql.call(this as HiveGenerator, e);
+        },
+      ],
       [LeftExpr, leftToSubstringSql],
       [MapExpr, varMapSql],
       [MaxExpr, maxOrGreatest],
-      [Md5DigestExpr, (self: Generator, e: Md5DigestExpr) => self.func('UNHEX', [self.func('MD5', [e.args.this])])],
+      [
+        Md5DigestExpr,
+        function (this: Generator, e: Md5DigestExpr) {
+          return this.func('UNHEX', [this.func('MD5', [e.args.this])]);
+        },
+      ],
       [MinExpr, minOrLeast],
-      [MonthsBetweenExpr, (self: Generator, e: MonthsBetweenExpr) => self.func('MONTHS_BETWEEN', [e.args.this, e.args.expression])],
-      [NotNullColumnConstraintExpr, (_: Generator, e: NotNullColumnConstraintExpr) => e.args.allowNull ? '' : 'NOT NULL'],
+      [
+        MonthsBetweenExpr,
+        function (this: Generator, e: MonthsBetweenExpr) {
+          return this.func('MONTHS_BETWEEN', [e.args.this, e.args.expression]);
+        },
+      ],
+      [
+        NotNullColumnConstraintExpr,
+        function (this: Generator, e: NotNullColumnConstraintExpr) {
+          return e.args.allowNull ? '' : 'NOT NULL';
+        },
+      ],
       [VarMapExpr, varMapSql],
       [
         CreateExpr,
@@ -791,21 +876,33 @@ class HiveGenerator extends Generator {
       [RegexpExtractExpr, regexpExtractSql],
       [RegexpExtractAllExpr, regexpExtractSql],
       [RegexpReplaceExpr, regexpReplaceSql],
-      [RegexpLikeExpr, (self: Generator, e: RegexpLikeExpr) => self.binary(e, 'RLIKE')],
+      [
+        RegexpLikeExpr,
+        function (this: Generator, e: RegexpLikeExpr) {
+          return this.binary(e, 'RLIKE');
+        },
+      ],
       [RegexpSplitExpr, renameFunc('SPLIT')],
       [RightExpr, rightToSubstringSql],
-      [SchemaCommentPropertyExpr, (self: Generator, e: SchemaCommentPropertyExpr) => self.nakedProperty(e)],
+      [
+        SchemaCommentPropertyExpr,
+        function (this: Generator, e: SchemaCommentPropertyExpr) {
+          return this.nakedProperty(e);
+        },
+      ],
       [ArrayUniqueAggExpr, renameFunc('COLLECT_SET')],
       [
         SplitExpr,
-        (self: Generator, e: SplitExpr) => self.func('SPLIT', [
-          e.args.this,
-          self.func('CONCAT', [
-            LiteralExpr.string('\\\\Q'),
-            e.args.expression,
-            LiteralExpr.string('\\\\E'),
-          ]),
-        ]),
+        function (this: Generator, e: SplitExpr) {
+          return this.func('SPLIT', [
+            e.args.this,
+            this.func('CONCAT', [
+              LiteralExpr.string('\\\\Q'),
+              e.args.expression,
+              LiteralExpr.string('\\\\E'),
+            ]),
+          ]);
+        },
       ],
       [
         SelectExpr,
@@ -818,60 +915,147 @@ class HiveGenerator extends Generator {
       ],
       [
         StrPositionExpr,
-        (self: Generator, e: StrPositionExpr) => strPositionSql(self, e, {
-          funcName: 'LOCATE',
-          supportsPosition: true,
-        }),
+        function (this: Generator, e: StrPositionExpr) {
+          return strPositionSql.call(this, e, {
+            funcName: 'LOCATE',
+            supportsPosition: true,
+          });
+        },
       ],
-      [StrToDateExpr, (self: Generator, e: StrToDateExpr) => strToDateSql(self as HiveGenerator, e)],
-      [StrToTimeExpr, (self: Generator, e: StrToTimeExpr) => strToTimeSql(self as HiveGenerator, e)],
-      [StrToUnixExpr, (self: Generator, e: StrToUnixExpr) => strToUnixSql(self as HiveGenerator, e)],
+      [
+        StrToDateExpr,
+        function (this: Generator, e: StrToDateExpr) {
+          return strToDateSql.call(this as HiveGenerator, e);
+        },
+      ],
+      [
+        StrToTimeExpr,
+        function (this: Generator, e: StrToTimeExpr) {
+          return strToTimeSql.call(this as HiveGenerator, e);
+        },
+      ],
+      [
+        StrToUnixExpr,
+        function (this: Generator, e: StrToUnixExpr) {
+          return strToUnixSql.call(this as HiveGenerator, e);
+        },
+      ],
       [StructExtractExpr, structExtractSql],
       [StarMapExpr, renameFunc('MAP')],
       [TableExpr, preprocess([unnestGenerateSeries])],
       [TimeStrToDateExpr, renameFunc('TO_DATE')],
       [TimeStrToTimeExpr, timeStrToTimeSql],
       [TimeStrToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
-      [TimestampTruncExpr, (self: Generator, e: TimestampTruncExpr) => self.func('TRUNC', [e.args.this, unitToStr(e)])],
+      [
+        TimestampTruncExpr,
+        function (this: Generator, e: TimestampTruncExpr) {
+          return this.func('TRUNC', [e.args.this, unitToStr(e)]);
+        },
+      ],
       [TimeToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
       [ToBase64Expr, renameFunc('BASE64')],
-      [TsOrDiToDiExpr, (self: Generator, e: TsOrDiToDiExpr) => `CAST(SUBSTR(REPLACE(CAST(${self.sql(e, 'this')} AS STRING), '-', ''), 1, 8) AS INT)`],
-      [TsOrDsAddExpr, (self: Generator, e: TsOrDsAddExpr) => addDateSql(self as HiveGenerator, e)],
-      [TsOrDsDiffExpr, (self: Generator, e: TsOrDsDiffExpr) => dateDiffSql(self as HiveGenerator, e)],
-      [TsOrDsToDateExpr, (self: Generator, e: TsOrDsToDateExpr) => toDateSql(self as HiveGenerator, e)],
+      [
+        TsOrDiToDiExpr,
+        function (this: Generator, e: TsOrDiToDiExpr) {
+          return `CAST(SUBSTR(REPLACE(CAST(${this.sql(e, 'this')} AS STRING), '-', ''), 1, 8) AS INT)`;
+        },
+      ],
+      [
+        TsOrDsAddExpr,
+        function (this: Generator, e: TsOrDsAddExpr) {
+          return addDateSql.call(this as HiveGenerator, e);
+        },
+      ],
+      [
+        TsOrDsDiffExpr,
+        function (this: Generator, e: TsOrDsDiffExpr) {
+          return dateDiffSql.call(this as HiveGenerator, e);
+        },
+      ],
+      [
+        TsOrDsToDateExpr,
+        function (this: Generator, e: TsOrDsToDateExpr) {
+          return toDateSql.call(this as HiveGenerator, e);
+        },
+      ],
       [TryCastExpr, noTrycastSql],
       [TrimExpr, trimSql],
       [UnicodeExpr, renameFunc('ASCII')],
-      [UnixToStrExpr, (self: Generator, e: UnixToStrExpr) => self.func('FROM_UNIXTIME', [e.args.this, timeFormat('hive')(self, e)])],
-      [UnixToTimeExpr, (self: Generator, e: UnixToTimeExpr) => unixToTimeSql(self as HiveGenerator, e)],
+      [
+        UnixToStrExpr,
+        function (this: Generator, e: UnixToStrExpr) {
+          return this.func('FROM_UNIXTIME', [e.args.this, timeFormat('hive').call(this, e)]);
+        },
+      ],
+      [
+        UnixToTimeExpr,
+        function (this: Generator, e: UnixToTimeExpr) {
+          return unixToTimeSql.call(this as HiveGenerator, e);
+        },
+      ],
       [UnixToTimeStrExpr, renameFunc('FROM_UNIXTIME')],
-      [UnnestExpr, (self: Generator, e: UnnestExpr) => self.func('EXPLODE', [e.args.this])],
-      [PartitionedByPropertyExpr, (self: Generator, e: PartitionedByPropertyExpr) => `PARTITIONED BY ${self.sql(e, 'this')}`],
+      [
+        UnnestExpr,
+        function (this: Generator, e: UnnestExpr) {
+          return this.func('EXPLODE', [e.args.this]);
+        },
+      ],
+      [
+        PartitionedByPropertyExpr,
+        function (this: Generator, e: PartitionedByPropertyExpr) {
+          return `PARTITIONED BY ${this.sql(e, 'this')}`;
+        },
+      ],
       [NumberToStrExpr, renameFunc('FORMAT_NUMBER')],
-      [NationalExpr, (self: Generator, e: NationalExpr) => self.nationalSql(e, { prefix: '' })],
+      [
+        NationalExpr,
+        function (this: Generator, e: NationalExpr) {
+          return this.nationalSql(e, { prefix: '' });
+        },
+      ],
       [
         ClusteredColumnConstraintExpr,
-        (self: Generator, e: ClusteredColumnConstraintExpr) => `(${self.expressions(e, {
-          key: 'this',
-          indent: false,
-        })})`,
+        function (this: Generator, e: ClusteredColumnConstraintExpr) {
+          return `(${this.expressions(e, {
+            key: 'this',
+            indent: false,
+          })})`;
+        },
       ],
       [
         NonClusteredColumnConstraintExpr,
-        (self: Generator, e: NonClusteredColumnConstraintExpr) => `(${self.expressions(e, {
-          key: 'this',
-          indent: false,
-        })})`,
+        function (this: Generator, e: NonClusteredColumnConstraintExpr) {
+          return `(${this.expressions(e, {
+            key: 'this',
+            indent: false,
+          })})`;
+        },
       ],
       [NotForReplicationColumnConstraintExpr, () => ''],
       [OnPropertyExpr, () => ''],
-      [PartitionedByBucketExpr, (self: Generator, e: PartitionedByBucketExpr) => self.func('BUCKET', [e.args.expression, e.args.this])],
-      [PartitionByTruncateExpr, (self: Generator, e: PartitionByTruncateExpr) => self.func('TRUNCATE', [e.args.expression, e.args.this])],
+      [
+        PartitionedByBucketExpr,
+        function (this: Generator, e: PartitionedByBucketExpr) {
+          return this.func('BUCKET', [e.args.expression, e.args.this]);
+        },
+      ],
+      [
+        PartitionByTruncateExpr,
+        function (this: Generator, e: PartitionByTruncateExpr) {
+          return this.func('TRUNCATE', [e.args.expression, e.args.this]);
+        },
+      ],
       [PrimaryKeyColumnConstraintExpr, () => 'PRIMARY KEY'],
       [WeekOfYearExpr, renameFunc('WEEKOFYEAR')],
       [DayOfMonthExpr, renameFunc('DAYOFMONTH')],
       [DayOfWeekExpr, renameFunc('DAYOFWEEK')],
-      [LevenshteinExpr, (self: Generator, e: Expression) => unsupportedArgs('insCost', 'delCost', 'subCost', 'maxDist')((expr) => renameFunc('LEVENSHTEIN')(self, expr))(e)],
+      [
+        LevenshteinExpr,
+        function (this: Generator, e: Expression) {
+          unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
+          return renameFunc('LEVENSHTEIN').call(this, e);
+        },
+      ],
     ]);
     return transforms;
   }
@@ -888,7 +1072,7 @@ class HiveGenerator extends Generator {
   }
 
   @cache
-  static get TS_OR_DS_EXPRESSIONS () {
+  static get TS_OR_DS_EXPRESSIONS (): Set<typeof Expression> {
     return new Set([
       DateDiffExpr,
       DayExpr,
@@ -898,7 +1082,7 @@ class HiveGenerator extends Generator {
   }
 
   unnestSql (expression: UnnestExpr): string {
-    return renameFunc('EXPLODE')(this, expression);
+    return renameFunc('EXPLODE').call(this, expression);
   }
 
   jsonPathKeySql (expression: JsonPathKeyExpr): string {

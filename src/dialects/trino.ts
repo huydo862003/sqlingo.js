@@ -48,13 +48,21 @@ class TrinoParser extends Presto.Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Presto.Parser.FUNCTION_PARSERS,
-      TRIM: (self: Parser) => self.parseTrim(),
-      JSON_QUERY: (self: Parser) => (self as TrinoParser).parseJsonQuery(),
-      JSON_VALUE: (self: Parser) => self.parseJsonValue(),
-      LISTAGG: (self: Parser) => self.parseStringAgg(),
+      TRIM: function (this: Parser) {
+        return this.parseTrim();
+      },
+      JSON_QUERY: function (this: Parser) {
+        return (this as TrinoParser).parseJsonQuery();
+      },
+      JSON_VALUE: function (this: Parser) {
+        return this.parseJsonValue();
+      },
+      LISTAGG: function (this: Parser) {
+        return this.parseStringAgg();
+      },
     };
   }
 
@@ -140,30 +148,34 @@ class TrinoGenerator extends Presto.Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new Map<typeof Expression, (self: Generator, e: any) => string>([
+    return new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Presto.Generator.TRANSFORMS,
       [
         ArraySumExpr,
-        (self, e) =>
-          `REDUCE(${self.sql(e, 'this')}, 0, (acc, x) -> acc + x, acc -> acc)`,
+        function (this: Generator, e) {
+          return `REDUCE(${this.sql(e, 'this')}, 0, (acc, x) -> acc + x, acc -> acc)`;
+        },
       ],
       [
         ArrayUniqueAggExpr,
-        (self, e) =>
-          `ARRAY_AGG(DISTINCT ${self.sql(e, 'this')})`,
+        function (this: Generator, e) {
+          return `ARRAY_AGG(DISTINCT ${this.sql(e, 'this')})`;
+        },
       ],
       [CurrentVersionExpr, renameFunc('VERSION')],
       [
         GroupConcatExpr,
-        (self, e) =>
-          groupConcatSql(self, e, { onOverflow: true }),
+        function (this: Generator, e) {
+          return groupConcatSql.call(this, e, { onOverflow: true });
+        },
       ],
       [
         LocationPropertyExpr,
-        (self, e) =>
-          self.propertySql(e),
+        function (this: Generator, e) {
+          return this.propertySql(e);
+        },
       ],
       [MergeExpr, mergeWithoutTargetSql],
       [
@@ -178,8 +190,9 @@ class TrinoGenerator extends Presto.Generator {
       ],
       [
         TimeStrToTimeExpr,
-        (self, e) =>
-          timeStrToTimeSql(self, e, { includePrecision: true }),
+        function (this: Generator, e) {
+          return timeStrToTimeSql.call(this, e, { includePrecision: true });
+        },
       ],
       [TrimExpr, trimSql],
     ]);

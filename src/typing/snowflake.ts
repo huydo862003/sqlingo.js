@@ -62,35 +62,35 @@ const DATE_PARTS = new Set([
 const MAX_PRECISION = 38;
 const MAX_SCALE = 37;
 
-function annotateReverse (self: TypeAnnotator, expression: ReverseExpr): ReverseExpr {
-  self.annotateByArgs(expression, ['this']);
+function annotateReverse (this: TypeAnnotator, expression: ReverseExpr): ReverseExpr {
+  this.annotateByArgs(expression, ['this']);
   if (expression.isType(DataTypeExprKind.NULL)) {
     // Snowflake treats REVERSE(NULL) as a VARCHAR
-    self.setType(expression, DataTypeExprKind.VARCHAR);
+    this.setType(expression, DataTypeExprKind.VARCHAR);
   }
   return expression;
 }
 
-function annotateTimestampFromParts (self: TypeAnnotator, expression: TimestampFromPartsExpr): TimestampFromPartsExpr {
+function annotateTimestampFromParts (this: TypeAnnotator, expression: TimestampFromPartsExpr): TimestampFromPartsExpr {
   if (expression.args.zone) {
-    self.setType(expression, DataTypeExprKind.TIMESTAMPTZ);
+    this.setType(expression, DataTypeExprKind.TIMESTAMPTZ);
   } else {
-    self.setType(expression, DataTypeExprKind.TIMESTAMP);
+    this.setType(expression, DataTypeExprKind.TIMESTAMP);
   }
   return expression;
 }
 
-function annotateDateOrTimeAdd (self: TypeAnnotator, expression: Expression): Expression {
+function annotateDateOrTimeAdd (this: TypeAnnotator, expression: Expression): Expression {
   const thisArg = expression.args.this;
   if (isInstanceOf(thisArg, Expression) && thisArg.isType(DataTypeExprKind.DATE) && !DATE_PARTS.has(expression.text('unit').toUpperCase())) {
-    self.setType(expression, DataTypeExprKind.TIMESTAMPNTZ);
+    this.setType(expression, DataTypeExprKind.TIMESTAMPNTZ);
   } else {
-    self.annotateByArgs(expression, ['this']);
+    this.annotateByArgs(expression, ['this']);
   }
   return expression;
 }
 
-function annotateDecodeCase (self: TypeAnnotator, expression: DecodeCaseExpr): DecodeCaseExpr {
+function annotateDecodeCase (this: TypeAnnotator, expression: DecodeCaseExpr): DecodeCaseExpr {
   const expressions = expression.args.expressions ?? [];
   const returnTypes: (ExpressionOrString | undefined)[] = [];
 
@@ -105,24 +105,24 @@ function annotateDecodeCase (self: TypeAnnotator, expression: DecodeCaseExpr): D
   let lastType: DataTypeExpr | DataTypeExprKind | undefined;
   for (const retType of returnTypes) {
     const narrowedRetType = isInstanceOf(retType, DataTypeExpr) ? retType : undefined;
-    lastType = self.maybeCoerce(lastType || narrowedRetType, narrowedRetType);
+    lastType = this.maybeCoerce(lastType || narrowedRetType, narrowedRetType);
   }
 
-  self.setType(expression, lastType);
+  this.setType(expression, lastType);
   return expression;
 }
 
-function annotateArgMaxMin (self: TypeAnnotator, expression: ArgMaxExpr | ArgMinExpr): Expression {
+function annotateArgMaxMin (this: TypeAnnotator, expression: ArgMaxExpr | ArgMinExpr): Expression {
   const thisArg = expression.args.this;
   const thisType = isInstanceOf(thisArg, Expression) ? thisArg.type : undefined;
-  self.setType(
+  this.setType(
     expression,
     expression.args.count ? DataTypeExprKind.ARRAY : (isInstanceOf(thisType, DataTypeExpr) ? thisType : undefined),
   );
   return expression;
 }
 
-function annotateWithinGroup (self: TypeAnnotator, expression: WithinGroupExpr): WithinGroupExpr {
+function annotateWithinGroup (this: TypeAnnotator, expression: WithinGroupExpr): WithinGroupExpr {
   const inner = expression.args.this;
   const orderExpr = expression.args.expression;
   const orderExprs = isInstanceOf(orderExpr, OrderExpr) ? (orderExpr.args.expressions ?? []) : [];
@@ -135,20 +135,20 @@ function annotateWithinGroup (self: TypeAnnotator, expression: WithinGroupExpr):
   ) {
     const firstThis = orderExprs[0].args.this;
     const firstType = isInstanceOf(firstThis, Expression) ? firstThis.type : undefined;
-    self.setType(expression, isInstanceOf(firstType, DataTypeExpr) ? firstType : undefined);
+    this.setType(expression, isInstanceOf(firstType, DataTypeExpr) ? firstType : undefined);
   }
 
   return expression;
 }
 
-function annotateMedian (self: TypeAnnotator, expression: MedianExpr): MedianExpr {
-  self.annotateByArgs(expression, ['this']);
+function annotateMedian (this: TypeAnnotator, expression: MedianExpr): MedianExpr {
+  this.annotateByArgs(expression, ['this']);
   const thisArg = expression.args.this;
   const inputType = isInstanceOf(thisArg, Expression) ? thisArg.type : undefined;
   if (!isInstanceOf(inputType, DataTypeExpr)) return expression;
 
   if (inputType.isType(DataTypeExprKind.DOUBLE)) {
-    self.setType(expression, DataTypeExprKind.DOUBLE);
+    this.setType(expression, DataTypeExprKind.DOUBLE);
   } else {
     const exprs = filterInstanceOf(inputType.args.expressions ?? [], Expression);
     // Assuming text('this') retrieves the numeric value of the AST literal node
@@ -159,73 +159,73 @@ function annotateMedian (self: TypeAnnotator, expression: MedianExpr): MedianExp
     const newScale = Math.min(scale + 3, MAX_SCALE);
 
     const newType = DataTypeExpr.build(`NUMBER(${newPrecision}, ${newScale})`, { dialect: 'snowflake' });
-    self.setType(expression, newType);
+    this.setType(expression, newType);
   }
 
   return expression;
 }
 
-function annotateVariance (self: TypeAnnotator, expression: Expression): Expression {
-  self.annotateByArgs(expression, ['this']);
+function annotateVariance (this: TypeAnnotator, expression: Expression): Expression {
+  this.annotateByArgs(expression, ['this']);
   const thisArg = expression.args.this;
   const inputType = isInstanceOf(thisArg, Expression) ? thisArg.type : undefined;
   if (!isInstanceOf(inputType, DataTypeExpr)) return expression;
 
   if (inputType.isType(DataTypeExprKind.DECFLOAT)) {
-    self.setType(expression, DataTypeExpr.build('DECFLOAT', { dialect: 'snowflake' }));
+    this.setType(expression, DataTypeExpr.build('DECFLOAT', { dialect: 'snowflake' }));
   } else if (inputType.isType([DataTypeExprKind.FLOAT, DataTypeExprKind.DOUBLE])) {
-    self.setType(expression, DataTypeExprKind.DOUBLE);
+    this.setType(expression, DataTypeExprKind.DOUBLE);
   } else {
     const exprs = filterInstanceOf(inputType.args.expressions ?? [], Expression);
     const scale = exprs[1] ? Number(exprs[1].text('this')) : 0;
     const newScale = scale === 0 ? 6 : Math.max(12, scale);
 
     const newType = DataTypeExpr.build(`NUMBER(${MAX_PRECISION}, ${newScale})`, { dialect: 'snowflake' });
-    self.setType(expression, newType);
+    this.setType(expression, newType);
   }
 
   return expression;
 }
 
-function annotateKurtosis (self: TypeAnnotator, expression: KurtosisExpr): KurtosisExpr {
-  self.annotateByArgs(expression, ['this']);
+function annotateKurtosis (this: TypeAnnotator, expression: KurtosisExpr): KurtosisExpr {
+  this.annotateByArgs(expression, ['this']);
   const thisArg = expression.args.this;
   const inputType = isInstanceOf(thisArg, Expression) ? thisArg.type : undefined;
   if (!isInstanceOf(inputType, DataTypeExpr)) {
-    self.setType(expression, DataTypeExpr.build(`NUMBER(${MAX_PRECISION}, 12)`, { dialect: 'snowflake' }));
+    this.setType(expression, DataTypeExpr.build(`NUMBER(${MAX_PRECISION}, 12)`, { dialect: 'snowflake' }));
     return expression;
   }
 
   if (inputType.isType(DataTypeExprKind.DECFLOAT)) {
-    self.setType(expression, DataTypeExpr.build('DECFLOAT', { dialect: 'snowflake' }));
+    this.setType(expression, DataTypeExpr.build('DECFLOAT', { dialect: 'snowflake' }));
   } else if (inputType.isType([DataTypeExprKind.FLOAT, DataTypeExprKind.DOUBLE])) {
-    self.setType(expression, DataTypeExprKind.DOUBLE);
+    this.setType(expression, DataTypeExprKind.DOUBLE);
   } else {
-    self.setType(expression, DataTypeExpr.build(`NUMBER(${MAX_PRECISION}, 12)`, { dialect: 'snowflake' }));
+    this.setType(expression, DataTypeExpr.build(`NUMBER(${MAX_PRECISION}, 12)`, { dialect: 'snowflake' }));
   }
 
   return expression;
 }
 
-function annotateMathWithFloatDecfloat (self: TypeAnnotator, expression: Expression): Expression {
-  self.annotateByArgs(expression, ['this']);
+function annotateMathWithFloatDecfloat (this: TypeAnnotator, expression: Expression): Expression {
+  this.annotateByArgs(expression, ['this']);
 
   const thisArg = expression.args.this;
   if (isInstanceOf(thisArg, Expression) && thisArg.isType(DataTypeExprKind.DECFLOAT)) {
     const thisType = thisArg.type;
-    self.setType(expression, isInstanceOf(thisType, DataTypeExpr) ? thisType : undefined);
+    this.setType(expression, isInstanceOf(thisType, DataTypeExpr) ? thisType : undefined);
   } else {
-    self.setType(expression, DataTypeExprKind.DOUBLE);
+    this.setType(expression, DataTypeExprKind.DOUBLE);
   }
 
   return expression;
 }
 
-function annotateStrToTime (self: TypeAnnotator, expression: StrToTimeExpr): StrToTimeExpr {
+function annotateStrToTime (this: TypeAnnotator, expression: StrToTimeExpr): StrToTimeExpr {
   const targetTypeArg = expression.args.targetType;
   const targetType = isInstanceOf(targetTypeArg, DataTypeExpr) ? targetTypeArg : DataTypeExprKind.TIMESTAMP;
 
-  self.setType(expression, targetType);
+  this.setType(expression, targetType);
   return expression;
 }
 

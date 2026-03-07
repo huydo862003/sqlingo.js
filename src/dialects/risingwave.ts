@@ -42,9 +42,15 @@ class RisingWaveParser extends Postgres.Parser {
   static get PROPERTY_PARSERS () {
     return {
       ...Postgres.Parser.PROPERTY_PARSERS,
-      ENCODE: (self: Parser) => (self as RisingWaveParser).parseEncodeProperty(),
-      INCLUDE: (self: Parser) => (self as RisingWaveParser).parseIncludeProperty(),
-      KEY: (self: Parser) => (self as RisingWaveParser).parseEncodeProperty(true),
+      ENCODE: function (this: Parser) {
+        return (this as RisingWaveParser).parseEncodeProperty();
+      },
+      INCLUDE: function (this: Parser) {
+        return (this as RisingWaveParser).parseIncludeProperty();
+      },
+      KEY: function (this: Parser) {
+        return (this as RisingWaveParser).parseEncodeProperty(true);
+      },
     };
   }
 
@@ -52,11 +58,12 @@ class RisingWaveParser extends Postgres.Parser {
   static get CONSTRAINT_PARSERS () {
     return {
       ...Postgres.Parser.CONSTRAINT_PARSERS,
-      WATERMARK: (self: Parser) =>
-        self.expression(WatermarkColumnConstraintExpr, {
-          this: (self as RisingWaveParser).match(TokenType.FOR) && (self as RisingWaveParser).parseColumn(),
-          expression: (self as RisingWaveParser).match(TokenType.ALIAS) && (self as RisingWaveParser).parseDisjunction(),
-        }),
+      WATERMARK: function (this: Parser) {
+        return this.expression(WatermarkColumnConstraintExpr, {
+          this: (this as RisingWaveParser).match(TokenType.FOR) && (this as RisingWaveParser).parseColumn(),
+          expression: (this as RisingWaveParser).match(TokenType.ALIAS) && (this as RisingWaveParser).parseDisjunction(),
+        });
+      },
     };
   }
 
@@ -122,9 +129,17 @@ class RisingWaveGenerator extends Postgres.Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([...Postgres.Generator.TRANSFORMS, [FileFormatPropertyExpr, (self: Generator, e: FileFormatPropertyExpr) => `FORMAT ${self.sql(e.args.this)}`]]);
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
+      ...Postgres.Generator.TRANSFORMS,
+      [
+        FileFormatPropertyExpr,
+        function (this: Generator, e: FileFormatPropertyExpr) {
+          return `FORMAT ${this.sql(e.args.this)}`;
+        },
+      ],
+    ]);
     return transforms;
   }
 

@@ -570,13 +570,13 @@ export function buildLike (args: Expression[]): EscapeExpr | LikeExpr {
     throw new Error('buildLike only accept expression lists with at least 2 expressions');
   }
   const like = new LikeExpr({
-    this: seqGet(args, 1)!,
-    expression: seqGet(args, 0)!,
+    this: args[1],
+    expression: args[0],
   });
   return 2 < args.length
     ? new EscapeExpr({
       this: like,
-      expression: seqGet(args, 2)!,
+      expression: args[2],
     })
     : like;
 }
@@ -585,22 +585,22 @@ export function binaryRangeParser (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   exprType: new (args: any) => Expression,
   options: { reverseArgs?: boolean } = {},
-): (parser: Parser, thisExpr: Expression | undefined) => Expression | undefined {
+): (this: Parser, thisExpr: Expression | undefined) => Expression | undefined {
   const { reverseArgs = false } = options;
 
   return function parseBinaryRange (
-    parser: Parser,
+    this: Parser,
     thisExpr: Expression | undefined,
   ): Expression | undefined {
-    let expression = parser.parseBitwise();
+    let expression = this.parseBitwise();
     let thisArg = thisExpr;
 
     if (reverseArgs) {
       [thisArg, expression] = [expression, thisArg];
     }
 
-    return parser.parseEscape(
-      parser.expression(exprType, {
+    return this.parseEscape(
+      this.expression(exprType, {
         this: thisArg,
         expression,
       }),
@@ -639,7 +639,7 @@ export function buildHex (args: Expression[], { dialect }: { dialect: Dialect })
   if (args.length < 1) {
     throw new Error('buildHex only accepts an expression list with at least one expression');
   }
-  const arg = seqGet(args, 0)!;
+  const arg = args[0];
   return dialect._constructor.HEX_LOWERCASE
     ? new LowerHexExpr({ this: arg })
     : new HexExpr({ this: arg });
@@ -650,7 +650,7 @@ export function buildLower (args: Expression[]): LowerExpr | LowerHexExpr {
     throw new Error('buildLower only accepts an expression list with at least one expression');
   }
   // LOWER(HEX(..)) can be simplified to LowerHex to simplify its transpilation
-  const arg = seqGet(args, 0)!;
+  const arg = args[0];
   return arg instanceof HexExpr
     ? new LowerHexExpr({ this: arg.args.this })
     : new LowerExpr({ this: arg });
@@ -661,7 +661,7 @@ export function buildUpper (args: Expression[]): UpperExpr | HexExpr {
     throw new Error('buildUpper only accepts an expression list with at least one expression');
   }
   // UPPER(HEX(..)) can be simplified to Hex to simplify its transpilation
-  const arg = seqGet(args, 0)!;
+  const arg = args[0];
   return arg instanceof LowerHexExpr
     ? new HexExpr({ this: arg.args.this })
     : new UpperExpr({ this: arg });
@@ -676,7 +676,7 @@ export function buildExtractJsonWithPath<E extends Expression> (
       throw new Error('buildExtractJsonWithPath only accepts an expression list with at least two expressions');
     }
     const expression = new exprType({
-      this: seqGet(args, 0)!,
+      this: args[0],
       expression: dialect.toJsonPath(seqGet(args, 1)),
     });
 
@@ -696,8 +696,8 @@ export function buildMod (args: Expression[]): ModExpr {
   if (args.length < 2) {
     throw new Error('buildMod only accepts an expression list with at least two expressions');
   }
-  let thisArg = seqGet(args, 0)!;
-  let expression = seqGet(args, 1)!;
+  let thisArg = args[0];
+  let expression = args[1];
 
   // Wrap the operands if they are binary nodes, e.g. MOD(a + 1, 7) -> (a + 1) % 7
   thisArg = thisArg instanceof BinaryExpr ? new ParenExpr({ this: thisArg }) : thisArg;
@@ -854,8 +854,8 @@ export function buildArrayPrepend (args: Expression[], { dialect }: { dialect: D
    * Others (DuckDB, PostgreSQL) create a new single-element array instead.
    */
   return new ArrayPrependExpr({
-    this: seqGet(args, 0)!,
-    expression: seqGet(args, 1)!,
+    this: args[0],
+    expression: args[1],
     nullPropagation: dialect._constructor.ARRAY_FUNCS_PROPAGATES_NULLS,
   });
 }
@@ -872,7 +872,7 @@ export function buildArrayConcat (args: Expression[], { dialect }: { dialect: Di
    * Others (DuckDB, PostgreSQL) skip NULL arrays and continue concatenation.
    */
   return new ArrayConcatExpr({
-    this: seqGet(args, 0)!,
+    this: args[0],
     expressions: args.slice(1),
     nullPropagation: dialect._constructor.ARRAY_FUNCS_PROPAGATES_NULLS,
   });
@@ -890,8 +890,8 @@ export function buildArrayRemove (args: Expression[], { dialect }: { dialect: Di
    * Others (DuckDB) may return empty array due to NULL comparison semantics.
    */
   return new ArrayRemoveExpr({
-    this: seqGet(args, 0)!,
-    expression: seqGet(args, 1)!,
+    this: args[0],
+    expression: args[1],
     nullPropagation: dialect._constructor.ARRAY_FUNCS_PROPAGATES_NULLS,
   });
 }
@@ -960,12 +960,12 @@ export class Parser {
       ARRAY: (args, _options) => new ArrayExpr({ expressions: args }),
 
       ARRAYAGG: (args, { dialect }) => new ArrayAggExpr({
-        this: seqGet(args, 0)!,
+        this: args[0],
         nullsExcluded: dialect._constructor.ARRAY_AGG_INCLUDES_NULLS === undefined ? true : undefined,
       }),
 
       ARRAY_AGG: (args, { dialect }) => new ArrayAggExpr({
-        this: seqGet(args, 0)!,
+        this: args[0],
         nullsExcluded: dialect._constructor.ARRAY_AGG_INCLUDES_NULLS === undefined ? true : undefined,
       }),
 
@@ -977,7 +977,7 @@ export class Parser {
 
       // Aggregate functions
       COUNT: (args, _options) => new CountExpr({
-        this: seqGet(args, 0)!,
+        this: args[0],
         expressions: args.slice(1),
         bigInt: true,
       }),
@@ -999,19 +999,19 @@ export class Parser {
       CONVERT_TIMEZONE: (args, _options) => buildConvertTimezone(args),
 
       DATE_TO_DATE_STR: (args, _options) => new CastExpr({
-        this: seqGet(args, 0)!,
+        this: args[0],
         to: new DataTypeExpr({ this: DataTypeExprKind.TEXT }),
       }),
 
       TIME_TO_TIME_STR: (args, _options) => new CastExpr({
-        this: seqGet(args, 0)!,
+        this: args[0],
         to: new DataTypeExpr({ this: DataTypeExprKind.TEXT }),
       }),
 
       // Generator functions
       GENERATE_DATE_ARRAY: (args, _options) => new GenerateDateArrayExpr({
-        start: seqGet(args, 0)!,
-        end: seqGet(args, 1)!,
+        start: args[0],
+        end: args[1],
         step: seqGet(args, 2) || new IntervalExpr({
           this: LiteralExpr.string('1'),
           unit: var_('DAY'),
@@ -1024,21 +1024,21 @@ export class Parser {
 
       // Pattern matching
       GLOB: (args, _options) => new GlobExpr({
-        this: seqGet(args, 1)!,
-        expression: seqGet(args, 0)!,
+        this: args[1],
+        expression: args[0],
       }),
 
       LIKE: (args, _options) => buildLike(args),
 
       // Comparison functions
       GREATEST: (args, { dialect }) => new GreatestExpr({
-        this: seqGet(args, 0)!,
+        this: args[0],
         expressions: args.slice(1),
         ignoreNulls: dialect._constructor.LEAST_GREATEST_IGNORES_NULLS,
       }),
 
       LEAST: (args, { dialect }) => new LeastExpr({
-        this: seqGet(args, 0)!,
+        this: args[0],
         expressions: args.slice(1),
         ignoreNulls: dialect._constructor.LEAST_GREATEST_IGNORES_NULLS,
       }),
@@ -1053,7 +1053,7 @@ export class Parser {
       JSON_EXTRACT_PATH_TEXT: buildExtractJsonWithPath(JsonExtractScalarExpr),
 
       JSON_KEYS: (args, { dialect }) => new JsonKeysExpr({
-        this: seqGet(args, 0)!,
+        this: args[0],
         expression: dialect.toJsonPath(seqGet(args, 1)),
       }),
 
@@ -1089,16 +1089,16 @@ export class Parser {
 
       // Scope resolution
       SCOPE_RESOLUTION: (args, _options) => args.length !== 2
-        ? new ScopeResolutionExpr({ expression: seqGet(args, 0)! })
+        ? new ScopeResolutionExpr({ expression: args[0] })
         : new ScopeResolutionExpr({
           this: seqGet(args, 0),
-          expression: seqGet(args, 1)!,
+          expression: args[1],
         }),
 
       // String operations
       TS_OR_DS_TO_DATE_STR: (args, _options) => new SubstringExpr({
         this: new CastExpr({
-          this: seqGet(args, 0)!,
+          this: args[0],
           to: new DataTypeExpr({ this: DataTypeExprKind.TEXT }),
         }),
         start: LiteralExpr.number(1),
@@ -1107,7 +1107,7 @@ export class Parser {
 
       // Array operations
       UNNEST: (args, _options) => new UnnestExpr({
-        expressions: [seqGet(args, 0)!],
+        expressions: [args[0]],
       }),
 
       // UUID
@@ -1723,82 +1723,100 @@ export class Parser {
 
   static JOIN_HINTS: Set<string> = new Set();
   @cache
-  static get LAMBDAS (): Partial<Record<TokenType, (self: Parser, expressions: Expression[]) => Expression>> {
+  static get LAMBDAS (): Partial<Record<TokenType, (this: Parser, expressions: Expression[]) => Expression>> {
     return {
-      [TokenType.ARROW]: (self: Parser, expressions: Expression[]) => self.expression(
-        LambdaExpr,
-        {
-          this: self.replaceLambda(
-            self.parseDisjunction(),
-            expressions,
-          ),
-          expressions: expressions,
-        },
-      ),
-      [TokenType.FARROW]: (self: Parser, expressions: Expression[]) => self.expression(
-        KwargExpr,
-        {
-          this: var_(expressions[0].name),
-          expression: self.parseDisjunction(),
-        },
-      ),
+      [TokenType.ARROW]: function (this: Parser, expressions: Expression[]) {
+        return this.expression(
+          LambdaExpr,
+          {
+            this: this.replaceLambda(
+              this.parseDisjunction(),
+              expressions,
+            ),
+            expressions: expressions,
+          },
+        );
+      },
+      [TokenType.FARROW]: function (this: Parser, expressions: Expression[]) {
+        return this.expression(
+          KwargExpr,
+          {
+            this: var_(expressions[0].name),
+            expression: this.parseDisjunction(),
+          },
+        );
+      },
     };
   }
 
   @cache
-  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
+  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((this: Parser, this_?: Expression, to?: Expression) => Expression)>> {
     return {
       [TokenType.DOT]: undefined,
-      [TokenType.DOTCOLON]: (self: Parser, this_?: Expression, to?: Expression) => self.expression(
-        JsonCastExpr,
-        {
+      [TokenType.DOTCOLON]: function (this: Parser, this_?: Expression, to?: Expression) {
+        return this.expression(
+          JsonCastExpr,
+          {
+            this: this_,
+            to: to,
+          },
+        );
+      },
+      [TokenType.DCOLON]: function (this: Parser, this_?: Expression, to?: Expression) {
+        return this.buildCast({
+          strict: this._constructor.STRICT_CAST,
           this: this_,
           to: to,
-        },
-      ),
-      [TokenType.DCOLON]: (self: Parser, this_?: Expression, to?: Expression) => self.buildCast({
-        strict: self._constructor.STRICT_CAST,
-        this: this_,
-        to: to,
-      }),
-      [TokenType.ARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
-        JsonExtractExpr,
-        {
-          this: this_,
-          expression: self.dialect.toJsonPath(path),
-          onlyJsonTypes: self._constructor.JSON_ARROWS_REQUIRE_JSON_TYPE,
-        },
-      ),
-      [TokenType.DARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
-        JsonExtractScalarExpr,
-        {
-          this: this_,
-          expression: self.dialect.toJsonPath(path),
-          onlyJsonTypes: self._constructor.JSON_ARROWS_REQUIRE_JSON_TYPE,
-          scalarOnly: self._dialectConstructor.JSON_EXTRACT_SCALAR_SCALAR_ONLY,
-        },
-      ),
-      [TokenType.HASH_ARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
-        JsonbExtractExpr,
-        {
-          this: this_,
-          expression: path,
-        },
-      ),
-      [TokenType.DHASH_ARROW]: (self: Parser, this_?: Expression, path?: Expression) => self.expression(
-        JsonbExtractScalarExpr,
-        {
-          this: this_,
-          expression: path,
-        },
-      ),
-      [TokenType.PLACEHOLDER]: (self: Parser, this_?: Expression, key?: Expression) => self.expression(
-        JsonbContainsExpr,
-        {
-          this: this_,
-          expression: key,
-        },
-      ),
+        });
+      },
+      [TokenType.ARROW]: function (this: Parser, this_?: Expression, path?: Expression) {
+        return this.expression(
+          JsonExtractExpr,
+          {
+            this: this_,
+            expression: this.dialect.toJsonPath(path),
+            onlyJsonTypes: this._constructor.JSON_ARROWS_REQUIRE_JSON_TYPE,
+          },
+        );
+      },
+      [TokenType.DARROW]: function (this: Parser, this_?: Expression, path?: Expression) {
+        return this.expression(
+          JsonExtractScalarExpr,
+          {
+            this: this_,
+            expression: this.dialect.toJsonPath(path),
+            onlyJsonTypes: this._constructor.JSON_ARROWS_REQUIRE_JSON_TYPE,
+            scalarOnly: this._dialectConstructor.JSON_EXTRACT_SCALAR_SCALAR_ONLY,
+          },
+        );
+      },
+      [TokenType.HASH_ARROW]: function (this: Parser, this_?: Expression, path?: Expression) {
+        return this.expression(
+          JsonbExtractExpr,
+          {
+            this: this_,
+            expression: path,
+          },
+        );
+      },
+      [TokenType.DHASH_ARROW]: function (this: Parser, this_?: Expression, path?: Expression) {
+        return this.expression(
+          JsonbExtractScalarExpr,
+          {
+            this: this_,
+            expression: path,
+          },
+        );
+      },
+      [TokenType.PLACEHOLDER]: function (this: Parser, this_?: Expression, key?: Expression) {
+        return this.expression(
+          JsonbContainsExpr,
+          {
+            this: this_,
+            expression: key,
+          },
+        );
+      },
     };
   }
 
@@ -1808,441 +1826,915 @@ export class Parser {
   }
 
   @cache
-  static get EXPRESSION_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+  static get EXPRESSION_PARSERS (): Record<string, (this: Parser) => Expression | undefined> {
     return {
-      [ExpressionKey.CLUSTER]: (self: Parser) => self.parseSort(ClusterExpr, TokenType.CLUSTER_BY),
-      [ExpressionKey.COLUMN]: (self: Parser) => self.parseColumn(),
-      [ExpressionKey.COLUMN_DEF]: (self: Parser) => self.parseColumnDef(self.parseColumn()),
-      [ExpressionKey.CONDITION]: (self: Parser) => self.parseDisjunction(),
-      [ExpressionKey.DATA_TYPE]: (self: Parser) => self.parseTypes({
-        allowIdentifiers: false,
-        schema: true,
-      }),
-      [ExpressionKey.EXPRESSION]: (self: Parser) => self.parseExpression(),
-      [ExpressionKey.FROM]: (self: Parser) => self.parseFrom({ joins: true }),
-      [ExpressionKey.GRANT_PRINCIPAL]: (self: Parser) => self.parseGrantPrincipal(),
-      [ExpressionKey.GRANT_PRIVILEGE]: (self: Parser) => self.parseGrantPrivilege(),
-      [ExpressionKey.GROUP]: (self: Parser) => self.parseGroup(),
-      [ExpressionKey.HAVING]: (self: Parser) => self.parseHaving(),
-      [ExpressionKey.HINT]: (self: Parser) => self.parseHintBody(),
-      [ExpressionKey.IDENTIFIER]: (self: Parser) => self.parseIdVar(),
-      [ExpressionKey.JOIN]: (self: Parser) => self.parseJoin(),
-      [ExpressionKey.LAMBDA]: (self: Parser) => self.parseLambda(),
-      [ExpressionKey.LATERAL]: (self: Parser) => self.parseLateral(),
-      [ExpressionKey.LIMIT]: (self: Parser) => self.parseLimit(),
-      [ExpressionKey.OFFSET]: (self: Parser) => self.parseOffset(),
-      [ExpressionKey.ORDER]: (self: Parser) => self.parseOrder(),
-      [ExpressionKey.ORDERED]: (self: Parser) => self.parseOrdered(),
-      [ExpressionKey.PROPERTIES]: (self: Parser) => self.parseProperties(),
-      [ExpressionKey.PARTITIONED_BY_PROPERTY]: (self: Parser) => self.parsePartitionedBy(),
-      [ExpressionKey.QUALIFY]: (self: Parser) => self.parseQualify(),
-      [ExpressionKey.RETURNING]: (self: Parser) => self.parseReturning(),
-      [ExpressionKey.SELECT]: (self: Parser) => self.parseSelect(),
-      [ExpressionKey.SORT]: (self: Parser) => self.parseSort(SortExpr, TokenType.SORT_BY),
-      [ExpressionKey.TABLE]: (self: Parser) => self.parseTableParts(),
-      [ExpressionKey.TABLE_ALIAS]: (self: Parser) => self.parseTableAlias(),
-      [ExpressionKey.TUPLE]: (self: Parser) => self.parseValue({ values: false }),
-      [ExpressionKey.WHENS]: (self: Parser) => self.parseWhenMatched(),
-      [ExpressionKey.WHERE]: (self: Parser) => self.parseWhere(),
-      [ExpressionKey.WINDOW]: (self: Parser) => self.parseNamedWindow(),
-      [ExpressionKey.WITH]: (self: Parser) => self.parseWith(),
+      [ExpressionKey.CLUSTER]: function (this: Parser) {
+        return this.parseSort(ClusterExpr, TokenType.CLUSTER_BY);
+      },
+      [ExpressionKey.COLUMN]: function (this: Parser) {
+        return this.parseColumn();
+      },
+      [ExpressionKey.COLUMN_DEF]: function (this: Parser) {
+        return this.parseColumnDef(this.parseColumn());
+      },
+      [ExpressionKey.CONDITION]: function (this: Parser) {
+        return this.parseDisjunction();
+      },
+      [ExpressionKey.DATA_TYPE]: function (this: Parser) {
+        return this.parseTypes({
+          allowIdentifiers: false,
+          schema: true,
+        });
+      },
+      [ExpressionKey.EXPRESSION]: function (this: Parser) {
+        return this.parseExpression();
+      },
+      [ExpressionKey.FROM]: function (this: Parser) {
+        return this.parseFrom({ joins: true });
+      },
+      [ExpressionKey.GRANT_PRINCIPAL]: function (this: Parser) {
+        return this.parseGrantPrincipal();
+      },
+      [ExpressionKey.GRANT_PRIVILEGE]: function (this: Parser) {
+        return this.parseGrantPrivilege();
+      },
+      [ExpressionKey.GROUP]: function (this: Parser) {
+        return this.parseGroup();
+      },
+      [ExpressionKey.HAVING]: function (this: Parser) {
+        return this.parseHaving();
+      },
+      [ExpressionKey.HINT]: function (this: Parser) {
+        return this.parseHintBody();
+      },
+      [ExpressionKey.IDENTIFIER]: function (this: Parser) {
+        return this.parseIdVar();
+      },
+      [ExpressionKey.JOIN]: function (this: Parser) {
+        return this.parseJoin();
+      },
+      [ExpressionKey.LAMBDA]: function (this: Parser) {
+        return this.parseLambda();
+      },
+      [ExpressionKey.LATERAL]: function (this: Parser) {
+        return this.parseLateral();
+      },
+      [ExpressionKey.LIMIT]: function (this: Parser) {
+        return this.parseLimit();
+      },
+      [ExpressionKey.OFFSET]: function (this: Parser) {
+        return this.parseOffset();
+      },
+      [ExpressionKey.ORDER]: function (this: Parser) {
+        return this.parseOrder();
+      },
+      [ExpressionKey.ORDERED]: function (this: Parser) {
+        return this.parseOrdered();
+      },
+      [ExpressionKey.PROPERTIES]: function (this: Parser) {
+        return this.parseProperties();
+      },
+      [ExpressionKey.PARTITIONED_BY_PROPERTY]: function (this: Parser) {
+        return this.parsePartitionedBy();
+      },
+      [ExpressionKey.QUALIFY]: function (this: Parser) {
+        return this.parseQualify();
+      },
+      [ExpressionKey.RETURNING]: function (this: Parser) {
+        return this.parseReturning();
+      },
+      [ExpressionKey.SELECT]: function (this: Parser) {
+        return this.parseSelect();
+      },
+      [ExpressionKey.SORT]: function (this: Parser) {
+        return this.parseSort(SortExpr, TokenType.SORT_BY);
+      },
+      [ExpressionKey.TABLE]: function (this: Parser) {
+        return this.parseTableParts();
+      },
+      [ExpressionKey.TABLE_ALIAS]: function (this: Parser) {
+        return this.parseTableAlias();
+      },
+      [ExpressionKey.TUPLE]: function (this: Parser) {
+        return this.parseValue({ values: false });
+      },
+      [ExpressionKey.WHENS]: function (this: Parser) {
+        return this.parseWhenMatched();
+      },
+      [ExpressionKey.WHERE]: function (this: Parser) {
+        return this.parseWhere();
+      },
+      [ExpressionKey.WINDOW]: function (this: Parser) {
+        return this.parseNamedWindow();
+      },
+      [ExpressionKey.WITH]: function (this: Parser) {
+        return this.parseWith();
+      },
     };
   }
 
   @cache
-  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (this: Parser) => Expression | undefined>> {
     return {
-      [TokenType.ALTER]: (self: Parser) => self.parseAlter(),
-      [TokenType.ANALYZE]: (self: Parser) => self.parseAnalyze(),
-      [TokenType.BEGIN]: (self: Parser) => self.parseTransaction(),
-      [TokenType.CACHE]: (self: Parser) => self.parseCache(),
-      [TokenType.COMMENT]: (self: Parser) => self.parseComment(),
-      [TokenType.COMMIT]: (self: Parser) => self.parseCommitOrRollback(),
-      [TokenType.COPY]: (self: Parser) => self.parseCopy(),
-      [TokenType.CREATE]: (self: Parser) => self.parseCreate(),
-      [TokenType.DELETE]: (self: Parser) => self.parseDelete(),
-      [TokenType.DESC]: (self: Parser) => self.parseDescribe(),
-      [TokenType.DESCRIBE]: (self: Parser) => self.parseDescribe(),
-      [TokenType.DROP]: (self: Parser) => self.parseDrop(),
-      [TokenType.GRANT]: (self: Parser) => self.parseGrant(),
-      [TokenType.REVOKE]: (self: Parser) => self.parseRevoke(),
-      [TokenType.INSERT]: (self: Parser) => self.parseInsert(),
-      [TokenType.KILL]: (self: Parser) => self.parseKill(),
-      [TokenType.LOAD]: (self: Parser) => self.parseLoad(),
-      [TokenType.MERGE]: (self: Parser) => self.parseMerge(),
-      [TokenType.PIVOT]: (self: Parser) => self.parseSimplifiedPivot(),
-      [TokenType.PRAGMA]: (self: Parser) => self.expression(PragmaExpr, { this: self.parseExpression() }),
-      [TokenType.REFRESH]: (self: Parser) => self.parseRefresh(),
-      [TokenType.ROLLBACK]: (self: Parser) => self.parseCommitOrRollback(),
-      [TokenType.SET]: (self: Parser) => self.parseSet(),
-      [TokenType.TRUNCATE]: (self: Parser) => self.parseTruncateTable(),
-      [TokenType.UNCACHE]: (self: Parser) => self.parseUncache(),
-      [TokenType.UNPIVOT]: (self: Parser) => self.parseSimplifiedPivot({ isUnpivot: true }),
-      [TokenType.UPDATE]: (self: Parser) => self.parseUpdate(),
-      [TokenType.USE]: (self: Parser) => self.parseUse(),
-      [TokenType.SEMICOLON]: (_self: Parser) => new SemicolonExpr({}),
+      [TokenType.ALTER]: function (this: Parser) {
+        return this.parseAlter();
+      },
+      [TokenType.ANALYZE]: function (this: Parser) {
+        return this.parseAnalyze();
+      },
+      [TokenType.BEGIN]: function (this: Parser) {
+        return this.parseTransaction();
+      },
+      [TokenType.CACHE]: function (this: Parser) {
+        return this.parseCache();
+      },
+      [TokenType.COMMENT]: function (this: Parser) {
+        return this.parseComment();
+      },
+      [TokenType.COMMIT]: function (this: Parser) {
+        return this.parseCommitOrRollback();
+      },
+      [TokenType.COPY]: function (this: Parser) {
+        return this.parseCopy();
+      },
+      [TokenType.CREATE]: function (this: Parser) {
+        return this.parseCreate();
+      },
+      [TokenType.DELETE]: function (this: Parser) {
+        return this.parseDelete();
+      },
+      [TokenType.DESC]: function (this: Parser) {
+        return this.parseDescribe();
+      },
+      [TokenType.DESCRIBE]: function (this: Parser) {
+        return this.parseDescribe();
+      },
+      [TokenType.DROP]: function (this: Parser) {
+        return this.parseDrop();
+      },
+      [TokenType.GRANT]: function (this: Parser) {
+        return this.parseGrant();
+      },
+      [TokenType.REVOKE]: function (this: Parser) {
+        return this.parseRevoke();
+      },
+      [TokenType.INSERT]: function (this: Parser) {
+        return this.parseInsert();
+      },
+      [TokenType.KILL]: function (this: Parser) {
+        return this.parseKill();
+      },
+      [TokenType.LOAD]: function (this: Parser) {
+        return this.parseLoad();
+      },
+      [TokenType.MERGE]: function (this: Parser) {
+        return this.parseMerge();
+      },
+      [TokenType.PIVOT]: function (this: Parser) {
+        return this.parseSimplifiedPivot();
+      },
+      [TokenType.PRAGMA]: function (this: Parser) {
+        return this.expression(PragmaExpr, { this: this.parseExpression() });
+      },
+      [TokenType.REFRESH]: function (this: Parser) {
+        return this.parseRefresh();
+      },
+      [TokenType.ROLLBACK]: function (this: Parser) {
+        return this.parseCommitOrRollback();
+      },
+      [TokenType.SET]: function (this: Parser) {
+        return this.parseSet();
+      },
+      [TokenType.TRUNCATE]: function (this: Parser) {
+        return this.parseTruncateTable();
+      },
+      [TokenType.UNCACHE]: function (this: Parser) {
+        return this.parseUncache();
+      },
+      [TokenType.UNPIVOT]: function (this: Parser) {
+        return this.parseSimplifiedPivot({ isUnpivot: true });
+      },
+      [TokenType.UPDATE]: function (this: Parser) {
+        return this.parseUpdate();
+      },
+      [TokenType.USE]: function (this: Parser) {
+        return this.parseUse();
+      },
+      [TokenType.SEMICOLON]: () => new SemicolonExpr({}),
     };
   }
 
   @cache
-  static get UNARY_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
+  static get UNARY_PARSERS (): Partial<Record<TokenType, (this: Parser) => Expression | undefined>> {
     return {
-      [TokenType.PLUS]: (self: Parser) => self.parseUnary(),
-      [TokenType.NOT]: (self: Parser) => self.expression(NotExpr, { this: self.parseEquality() }),
-      [TokenType.TILDE]: (self: Parser) => self.expression(BitwiseNotExpr, { this: self.parseUnary() }),
-      [TokenType.DASH]: (self: Parser) => self.expression(NegExpr, { this: self.parseUnary() }),
-      [TokenType.PIPE_SLASH]: (self: Parser) => self.expression(SqrtExpr, { this: self.parseUnary() }),
-      [TokenType.DPIPE_SLASH]: (self: Parser) => self.expression(CbrtExpr, { this: self.parseUnary() }),
+      [TokenType.PLUS]: function (this: Parser) {
+        return this.parseUnary();
+      },
+      [TokenType.NOT]: function (this: Parser) {
+        return this.expression(NotExpr, { this: this.parseEquality() });
+      },
+      [TokenType.TILDE]: function (this: Parser) {
+        return this.expression(BitwiseNotExpr, { this: this.parseUnary() });
+      },
+      [TokenType.DASH]: function (this: Parser) {
+        return this.expression(NegExpr, { this: this.parseUnary() });
+      },
+      [TokenType.PIPE_SLASH]: function (this: Parser) {
+        return this.expression(SqrtExpr, { this: this.parseUnary() });
+      },
+      [TokenType.DPIPE_SLASH]: function (this: Parser) {
+        return this.expression(CbrtExpr, { this: this.parseUnary() });
+      },
     };
   }
 
   @cache
-  static get STRING_PARSERS (): Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> {
+  static get STRING_PARSERS (): Partial<Record<TokenType, (this: Parser, token: Token) => Expression>> {
     return {
-      [TokenType.HEREDOC_STRING]: (self: Parser, token: Token) => self.expression(RawStringExpr, { token }),
-      [TokenType.NATIONAL_STRING]: (self: Parser, token: Token) => self.expression(NationalExpr, { token }),
-      [TokenType.RAW_STRING]: (self: Parser, token: Token) => self.expression(RawStringExpr, { token }),
-      [TokenType.STRING]: (self: Parser, token: Token) => self.expression(LiteralExpr, {
-        token,
-        isString: true,
-      }),
-      [TokenType.UNICODE_STRING]: (self: Parser, token: Token) => self.expression(
-        UnicodeStringExpr,
-        {
+      [TokenType.HEREDOC_STRING]: function (this: Parser, token: Token) {
+        return this.expression(RawStringExpr, { token });
+      },
+      [TokenType.NATIONAL_STRING]: function (this: Parser, token: Token) {
+        return this.expression(NationalExpr, { token });
+      },
+      [TokenType.RAW_STRING]: function (this: Parser, token: Token) {
+        return this.expression(RawStringExpr, { token });
+      },
+      [TokenType.STRING]: function (this: Parser, token: Token) {
+        return this.expression(LiteralExpr, {
           token,
-          escape: self.matchTextSeq('UESCAPE') && self.parseString(),
-        },
-      ),
+          isString: true,
+        });
+      },
+      [TokenType.UNICODE_STRING]: function (this: Parser, token: Token) {
+        return this.expression(
+          UnicodeStringExpr,
+          {
+            token,
+            escape: this.matchTextSeq('UESCAPE') && this.parseString(),
+          },
+        );
+      },
     };
   }
 
   @cache
-  static get NUMERIC_PARSERS (): Partial<Record<TokenType, (self: Parser, token: Token) => Expression>> {
+  static get NUMERIC_PARSERS (): Partial<Record<TokenType, (this: Parser, token: Token) => Expression>> {
     return {
-      [TokenType.BIT_STRING]: (self: Parser, token: Token) => self.expression(BitStringExpr, { token }),
-      [TokenType.BYTE_STRING]: (self: Parser, token: Token) => self.expression(
-        ByteStringExpr,
-        {
+      [TokenType.BIT_STRING]: function (this: Parser, token: Token) {
+        return this.expression(BitStringExpr, { token });
+      },
+      [TokenType.BYTE_STRING]: function (this: Parser, token: Token) {
+        return this.expression(
+          ByteStringExpr,
+          {
+            token,
+            isBytes: this._dialectConstructor.BYTE_STRING_IS_BYTES_TYPE || undefined,
+          },
+        );
+      },
+      [TokenType.HEX_STRING]: function (this: Parser, token: Token) {
+        return this.expression(
+          HexStringExpr,
+          {
+            token,
+            isInteger: this._dialectConstructor.HEX_STRING_IS_INTEGER_TYPE || undefined,
+          },
+        );
+      },
+      [TokenType.NUMBER]: function (this: Parser, token: Token) {
+        return this.expression(LiteralExpr, {
           token,
-          isBytes: self._dialectConstructor.BYTE_STRING_IS_BYTES_TYPE || undefined,
-        },
-      ),
-      [TokenType.HEX_STRING]: (self: Parser, token: Token) => self.expression(
-        HexStringExpr,
-        {
-          token,
-          isInteger: self._dialectConstructor.HEX_STRING_IS_INTEGER_TYPE || undefined,
-        },
-      ),
-      [TokenType.NUMBER]: (self: Parser, token: Token) => self.expression(LiteralExpr, {
-        token,
-        isString: false,
-      }),
+          isString: false,
+        });
+      },
     };
   }
 
   @cache
-  static get PRIMARY_PARSERS (): Partial<Record<TokenType, (self: Parser, token: Token) => Expression | undefined>> {
+  static get PRIMARY_PARSERS (): Partial<Record<TokenType, (this: Parser, token: Token) => Expression | undefined>> {
     return {
       ...Parser.STRING_PARSERS,
       ...Parser.NUMERIC_PARSERS,
-      [TokenType.INTRODUCER]: (self: Parser, token: Token) => self.parseIntroducer(token),
-      [TokenType.NULL]: (self: Parser, _: Token) => self.expression(NullExpr, {}),
-      [TokenType.TRUE]: (self: Parser, _: Token) => self.expression(BooleanExpr, { this: true }),
-      [TokenType.FALSE]: (self: Parser, _: Token) => self.expression(BooleanExpr, { this: false }),
-      [TokenType.SESSION_PARAMETER]: (self: Parser, _: Token) => self.parseSessionParameter(),
-      [TokenType.STAR]: (self: Parser, _: Token) => self.parseStarOps(),
+      [TokenType.INTRODUCER]: function (this: Parser, token: Token) {
+        return this.parseIntroducer(token);
+      },
+      [TokenType.NULL]: function (this: Parser, _: Token) {
+        return this.expression(NullExpr, {});
+      },
+      [TokenType.TRUE]: function (this: Parser, _: Token) {
+        return this.expression(BooleanExpr, { this: true });
+      },
+      [TokenType.FALSE]: function (this: Parser, _: Token) {
+        return this.expression(BooleanExpr, { this: false });
+      },
+      [TokenType.SESSION_PARAMETER]: function (this: Parser, _: Token) {
+        return this.parseSessionParameter();
+      },
+      [TokenType.STAR]: function (this: Parser, _: Token) {
+        return this.parseStarOps();
+      },
     };
   }
 
   @cache
-  static get PLACEHOLDER_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
+  static get PLACEHOLDER_PARSERS (): Partial<Record<TokenType, (this: Parser) => Expression | undefined>> {
     return {
-      [TokenType.PLACEHOLDER]: (self: Parser) => self.expression(PlaceholderExpr),
-      [TokenType.PARAMETER]: (self: Parser) => self.parseParameter(),
-      [TokenType.COLON]: (self: Parser) => (
-        self.matchSet(self._constructor.COLON_PLACEHOLDER_TOKENS)
-          ? self.expression(PlaceholderExpr, { this: self.prev?.text })
-          : undefined
-      ),
+      [TokenType.PLACEHOLDER]: function (this: Parser) {
+        return this.expression(PlaceholderExpr);
+      },
+      [TokenType.PARAMETER]: function (this: Parser) {
+        return this.parseParameter();
+      },
+      [TokenType.COLON]: function (this: Parser) {
+        return (
+          this.matchSet(this._constructor.COLON_PLACEHOLDER_TOKENS)
+            ? this.expression(PlaceholderExpr, { this: this.prev?.text })
+            : undefined
+        );
+      },
     };
   }
 
   @cache
-  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (this: Parser, this_: Expression) => Expression | undefined>> {
     return {
       [TokenType.AT_GT]: binaryRangeParser(ArrayContainsAllExpr),
-      [TokenType.BETWEEN]: (self: Parser, this_: Expression) => self.parseBetween(this_),
+      [TokenType.BETWEEN]: function (this: Parser, this_: Expression) {
+        return this.parseBetween(this_);
+      },
       [TokenType.GLOB]: binaryRangeParser(GlobExpr),
       [TokenType.ILIKE]: binaryRangeParser(ILikeExpr),
-      [TokenType.IN]: (self: Parser, this_: Expression) => self.parseIn(this_),
+      [TokenType.IN]: function (this: Parser, this_: Expression) {
+        return this.parseIn(this_);
+      },
       [TokenType.IRLIKE]: binaryRangeParser(RegexpILikeExpr),
-      [TokenType.IS]: (self: Parser, this_: Expression) => self.parseIs(this_),
+      [TokenType.IS]: function (this: Parser, this_: Expression) {
+        return this.parseIs(this_);
+      },
       [TokenType.LIKE]: binaryRangeParser(LikeExpr),
       [TokenType.LT_AT]: binaryRangeParser(ArrayContainsAllExpr, { reverseArgs: true }),
       [TokenType.OVERLAPS]: binaryRangeParser(OverlapsExpr),
       [TokenType.RLIKE]: binaryRangeParser(RegexpLikeExpr),
       [TokenType.SIMILAR_TO]: binaryRangeParser(SimilarToExpr),
-      [TokenType.FOR]: (self: Parser, this_: Expression) => self.parseComprehension(this_),
+      [TokenType.FOR]: function (this: Parser, this_: Expression) {
+        return this.parseComprehension(this_);
+      },
       [TokenType.QMARK_AMP]: binaryRangeParser(JsonbContainsAllTopKeysExpr),
       [TokenType.QMARK_PIPE]: binaryRangeParser(JsonbContainsAnyTopKeysExpr),
       [TokenType.HASH_DASH]: binaryRangeParser(JsonbDeleteAtPathExpr),
       [TokenType.ADJACENT]: binaryRangeParser(AdjacentExpr),
-      [TokenType.OPERATOR]: (self: Parser, this_: Expression) => self.parseOperator(this_),
+      [TokenType.OPERATOR]: function (this: Parser, this_: Expression) {
+        return this.parseOperator(this_);
+      },
       [TokenType.AMP_LT]: binaryRangeParser(ExtendsLeftExpr),
       [TokenType.AMP_GT]: binaryRangeParser(ExtendsRightExpr),
     };
   }
 
   @cache
-  static get PIPE_SYNTAX_TRANSFORM_PARSERS (): Partial<Record<string, (self: Parser, query: SelectExpr) => SelectExpr>> {
+  static get PIPE_SYNTAX_TRANSFORM_PARSERS (): Partial<Record<string, (this: Parser, query: SelectExpr) => SelectExpr>> {
     return {
-      'AGGREGATE': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxAggregate(query),
-      'AS': (self: Parser, query: SelectExpr) => self.buildPipeCte({
-        query,
-        expressions: [new StarExpr({})],
-        aliasCte: self.parseTableAlias(),
-      }),
-      'EXTEND': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxExtend(query),
-      'LIMIT': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxLimit(query),
-      'ORDER BY': (self: Parser, query: SelectExpr) => query.orderBy(
-        self.parseOrder(),
-        {
-          append: false,
-          copy: false,
-        },
-      ),
-      'PIVOT': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxPivot(query),
-      'SELECT': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxSelect(query),
-      'TABLESAMPLE': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxTablesample(query),
-      'UNPIVOT': (self: Parser, query: SelectExpr) => self.parsePipeSyntaxPivot(query),
-      'WHERE': (self: Parser, query: SelectExpr) => query.where(self.parseWhere(), { copy: false }),
+      'AGGREGATE': function (this: Parser, query: SelectExpr) {
+        return this.parsePipeSyntaxAggregate(query);
+      },
+      'AS': function (this: Parser, query: SelectExpr) {
+        return this.buildPipeCte({
+          query,
+          expressions: [new StarExpr({})],
+          aliasCte: this.parseTableAlias(),
+        });
+      },
+      'EXTEND': function (this: Parser, query: SelectExpr) {
+        return this.parsePipeSyntaxExtend(query);
+      },
+      'LIMIT': function (this: Parser, query: SelectExpr) {
+        return this.parsePipeSyntaxLimit(query);
+      },
+      'ORDER BY': function (this: Parser, query: SelectExpr) {
+        return query.orderBy(
+          this.parseOrder(),
+          {
+            append: false,
+            copy: false,
+          },
+        );
+      },
+      'PIVOT': function (this: Parser, query: SelectExpr) {
+        return this.parsePipeSyntaxPivot(query);
+      },
+      'SELECT': function (this: Parser, query: SelectExpr) {
+        return this.parsePipeSyntaxSelect(query);
+      },
+      'TABLESAMPLE': function (this: Parser, query: SelectExpr) {
+        return this.parsePipeSyntaxTablesample(query);
+      },
+      'UNPIVOT': function (this: Parser, query: SelectExpr) {
+        return this.parsePipeSyntaxPivot(query);
+      },
+      'WHERE': function (this: Parser, query: SelectExpr) {
+        return query.where(this.parseWhere(), { copy: false });
+      },
     };
   }
 
   @cache
-  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
+  static get PROPERTY_PARSERS (): Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return {
-      'ALLOWED_VALUES': (self: Parser) => self.expression(
-        AllowedValuesPropertyExpr,
-        { expressions: self.parseCsv(self.parsePrimary) },
-      ),
-      'ALGORITHM': (self: Parser) => self.parsePropertyAssignment(AlgorithmPropertyExpr),
-      'AUTO': (self: Parser) => self.parseAutoProperty(),
-      'AUTO_INCREMENT': (self: Parser) => self.parsePropertyAssignment(AutoIncrementPropertyExpr),
-      'BACKUP': (self: Parser) => self.expression(
-        BackupPropertyExpr,
-        { this: self.parseVar({ anyToken: true }) },
-      ),
-      'BLOCKCOMPRESSION': (self: Parser) => self.parseBlockcompression(),
-      'CHARSET': (self: Parser) => self.parseCharacterSet(),
-      'CHARACTER SET': (self: Parser) => self.parseCharacterSet(),
-      'CHECKSUM': (self: Parser) => self.parseChecksum(),
-      'CLUSTER BY': (self: Parser) => self.parseCluster(),
-      'CLUSTERED': (self: Parser) => self.parseClusteredBy(),
-      'COLLATE': (self: Parser) => self.parsePropertyAssignment(CollatePropertyExpr),
-      'COMMENT': (self: Parser) => self.parsePropertyAssignment(SchemaCommentPropertyExpr),
-      'CONTAINS': (self: Parser) => self.parseContainsProperty(),
-      'COPY': (self: Parser) => self.parseCopyProperty(),
-      'DATABLOCKSIZE': (self: Parser) => self.parseDatablocksize(),
-      'DATA_DELETION': (self: Parser) => self.parseDataDeletionProperty(),
-      'DEFINER': (self: Parser) => self.parseDefiner(),
-      'DETERMINISTIC': (self: Parser) => self.expression(
-        StabilityPropertyExpr,
-        { this: LiteralExpr.string('IMMUTABLE') },
-      ),
-      'DISTRIBUTED': (self: Parser) => self.parseDistributedProperty(),
-      'DUPLICATE': (self: Parser) => self.parseCompositeKeyProperty(DuplicateKeyPropertyExpr),
-      'DYNAMIC': (self: Parser) => self.expression(DynamicPropertyExpr, {}),
-      'DISTKEY': (self: Parser) => self.parseDistkey(),
-      'DISTSTYLE': (self: Parser) => self.parsePropertyAssignment(DistStylePropertyExpr),
-      'EMPTY': (self: Parser) => self.expression(EmptyPropertyExpr, {}),
-      'ENGINE': (self: Parser) => self.parsePropertyAssignment(EnginePropertyExpr),
-      'ENVIRONMENT': (self: Parser) => self.expression(
-        EnviromentPropertyExpr,
-        { expressions: self.parseWrappedCsv(self.parseAssignment) },
-      ),
-      'EXECUTE': (self: Parser) => self.parsePropertyAssignment(ExecuteAsPropertyExpr),
-      'EXTERNAL': (self: Parser) => self.expression(ExternalPropertyExpr, {}),
-      'FALLBACK': (self: Parser) => self.parseFallback(),
-      'FORMAT': (self: Parser) => self.parsePropertyAssignment(FileFormatPropertyExpr),
-      'FREESPACE': (self: Parser) => self.parseFreespace(),
-      'GLOBAL': (self: Parser) => self.expression(GlobalPropertyExpr, {}),
-      'HEAP': (self: Parser) => self.expression(HeapPropertyExpr, {}),
-      'ICEBERG': (self: Parser) => self.expression(IcebergPropertyExpr, {}),
-      'IMMUTABLE': (self: Parser) => self.expression(
-        StabilityPropertyExpr,
-        { this: LiteralExpr.string('IMMUTABLE') },
-      ),
-      'INHERITS': (self: Parser) => self.expression(
-        InheritsPropertyExpr,
-        { expressions: self.parseWrappedCsv(self.parseTable) },
-      ),
-      'INPUT': (self: Parser) => self.expression(InputModelPropertyExpr, { this: self.parseSchema() }),
-      'JOURNAL': (self: Parser) => self.parseJournal(),
-      'LANGUAGE': (self: Parser) => self.parsePropertyAssignment(LanguagePropertyExpr),
-      'LAYOUT': (self: Parser) => self.parseDictProperty({ this: 'LAYOUT' }),
-      'LIFETIME': (self: Parser) => self.parseDictRange({ this: 'LIFETIME' }),
-      'LIKE': (self: Parser) => self.parseCreateLike(),
-      'LOCATION': (self: Parser) => self.parsePropertyAssignment(LocationPropertyExpr),
-      'LOCK': (self: Parser) => self.parseLocking(),
-      'LOCKING': (self: Parser) => self.parseLocking(),
-      'LOG': (self: Parser) => self.parseLog(),
-      'MATERIALIZED': (self: Parser) => self.expression(MaterializedPropertyExpr, {}),
-      'MERGEBLOCKRATIO': (self: Parser) => self.parseMergeblockratio(),
-      'MODIFIES': (self: Parser) => self.parseModifiesProperty(),
-      'MULTISET': (self: Parser) => self.expression(SetPropertyExpr, { multi: true }),
-      'NO': (self: Parser) => self.parseNoProperty(),
-      'ON': (self: Parser) => self.parseOnProperty(),
-      'ORDER BY': (self: Parser) => self.parseOrder({ skipOrderToken: true }),
-      'OUTPUT': (self: Parser) => self.expression(OutputModelPropertyExpr, { this: self.parseSchema() }),
-      'PARTITION': (self: Parser) => self.parsePartitionedOf(),
-      'PARTITION BY': (self: Parser) => self.parsePartitionedBy(),
-      'PARTITIONED BY': (self: Parser) => self.parsePartitionedBy(),
-      'PARTITIONED_BY': (self: Parser) => self.parsePartitionedBy(),
-      'PRIMARY KEY': (self: Parser) => self.parsePrimaryKey({ inProps: true }),
-      'RANGE': (self: Parser) => self.parseDictRange({ this: 'RANGE' }),
-      'READS': (self: Parser) => self.parseReadsProperty(),
-      'REMOTE': (self: Parser) => self.parseRemoteWithConnection(),
-      'RETURNS': (self: Parser) => self.parseReturns(),
-      'STRICT': (self: Parser) => self.expression(StrictPropertyExpr, {}),
-      'STREAMING': (self: Parser) => self.expression(StreamingTablePropertyExpr, {}),
-      'ROW': (self: Parser) => self.parseRow(),
-      'ROW_FORMAT': (self: Parser) => self.parsePropertyAssignment(RowFormatPropertyExpr),
-      'SAMPLE': (self: Parser) => self.expression(
-        SamplePropertyExpr,
-        { this: self.matchTextSeq('BY') && self.parseBitwise() },
-      ),
-      'SECURE': (self: Parser) => self.expression(SecurePropertyExpr, {}),
-      'SECURITY': (self: Parser) => self.parseSecurity(),
-      'SET': (self: Parser) => self.expression(SetPropertyExpr, { multi: false }),
-      'SETTINGS': (self: Parser) => self.parseSettingsProperty(),
-      'SHARING': (self: Parser) => self.parsePropertyAssignment(SharingPropertyExpr),
-      'SORTKEY': (self: Parser) => self.parseSortkey(),
-      'SOURCE': (self: Parser) => self.parseDictProperty({ this: 'SOURCE' }),
-      'STABLE': (self: Parser) => self.expression(
-        StabilityPropertyExpr,
-        { this: LiteralExpr.string('STABLE') },
-      ),
-      'STORED': (self: Parser) => self.parseStored(),
-      'SYSTEM_VERSIONING': (self: Parser) => self.parseSystemVersioningProperty(),
-      'TBLPROPERTIES': (self: Parser) => self.parseWrappedProperties(),
-      'TEMP': (self: Parser) => self.expression(TemporaryPropertyExpr, {}),
-      'TEMPORARY': (self: Parser) => self.expression(TemporaryPropertyExpr, {}),
-      'TO': (self: Parser) => self.parseToTable(),
-      'TRANSIENT': (self: Parser) => self.expression(TransientPropertyExpr, {}),
-      'TRANSFORM': (self: Parser) => self.expression(
-        TransformModelPropertyExpr,
-        { expressions: self.parseWrappedCsv(self.parseExpression) },
-      ),
-      'TTL': (self: Parser) => self.parseTtl(),
-      'USING': (self: Parser) => self.parsePropertyAssignment(FileFormatPropertyExpr),
-      'UNLOGGED': (self: Parser) => self.expression(UnloggedPropertyExpr, {}),
-      'VOLATILE': (self: Parser) => self.parseVolatileProperty(),
-      'WITH': (self: Parser) => self.parseWithProperty(),
+      'ALLOWED_VALUES': function (this: Parser) {
+        return this.expression(
+          AllowedValuesPropertyExpr,
+          { expressions: this.parseCsv(this.parsePrimary) },
+        );
+      },
+      'ALGORITHM': function (this: Parser) {
+        return this.parsePropertyAssignment(AlgorithmPropertyExpr);
+      },
+      'AUTO': function (this: Parser) {
+        return this.parseAutoProperty();
+      },
+      'AUTO_INCREMENT': function (this: Parser) {
+        return this.parsePropertyAssignment(AutoIncrementPropertyExpr);
+      },
+      'BACKUP': function (this: Parser) {
+        return this.expression(
+          BackupPropertyExpr,
+          { this: this.parseVar({ anyToken: true }) },
+        );
+      },
+      'BLOCKCOMPRESSION': function (this: Parser) {
+        return this.parseBlockcompression();
+      },
+      'CHARSET': function (this: Parser) {
+        return this.parseCharacterSet();
+      },
+      'CHARACTER SET': function (this: Parser) {
+        return this.parseCharacterSet();
+      },
+      'CHECKSUM': function (this: Parser) {
+        return this.parseChecksum();
+      },
+      'CLUSTER BY': function (this: Parser) {
+        return this.parseCluster();
+      },
+      'CLUSTERED': function (this: Parser) {
+        return this.parseClusteredBy();
+      },
+      'COLLATE': function (this: Parser) {
+        return this.parsePropertyAssignment(CollatePropertyExpr);
+      },
+      'COMMENT': function (this: Parser) {
+        return this.parsePropertyAssignment(SchemaCommentPropertyExpr);
+      },
+      'CONTAINS': function (this: Parser) {
+        return this.parseContainsProperty();
+      },
+      'COPY': function (this: Parser) {
+        return this.parseCopyProperty();
+      },
+      'DATABLOCKSIZE': function (this: Parser) {
+        return this.parseDatablocksize();
+      },
+      'DATA_DELETION': function (this: Parser) {
+        return this.parseDataDeletionProperty();
+      },
+      'DEFINER': function (this: Parser) {
+        return this.parseDefiner();
+      },
+      'DETERMINISTIC': function (this: Parser) {
+        return this.expression(
+          StabilityPropertyExpr,
+          { this: LiteralExpr.string('IMMUTABLE') },
+        );
+      },
+      'DISTRIBUTED': function (this: Parser) {
+        return this.parseDistributedProperty();
+      },
+      'DUPLICATE': function (this: Parser) {
+        return this.parseCompositeKeyProperty(DuplicateKeyPropertyExpr);
+      },
+      'DYNAMIC': function (this: Parser) {
+        return this.expression(DynamicPropertyExpr, {});
+      },
+      'DISTKEY': function (this: Parser) {
+        return this.parseDistkey();
+      },
+      'DISTSTYLE': function (this: Parser) {
+        return this.parsePropertyAssignment(DistStylePropertyExpr);
+      },
+      'EMPTY': function (this: Parser) {
+        return this.expression(EmptyPropertyExpr, {});
+      },
+      'ENGINE': function (this: Parser) {
+        return this.parsePropertyAssignment(EnginePropertyExpr);
+      },
+      'ENVIRONMENT': function (this: Parser) {
+        return this.expression(
+          EnviromentPropertyExpr,
+          { expressions: this.parseWrappedCsv(this.parseAssignment) },
+        );
+      },
+      'EXECUTE': function (this: Parser) {
+        return this.parsePropertyAssignment(ExecuteAsPropertyExpr);
+      },
+      'EXTERNAL': function (this: Parser) {
+        return this.expression(ExternalPropertyExpr, {});
+      },
+      'FALLBACK': function (this: Parser) {
+        return this.parseFallback();
+      },
+      'FORMAT': function (this: Parser) {
+        return this.parsePropertyAssignment(FileFormatPropertyExpr);
+      },
+      'FREESPACE': function (this: Parser) {
+        return this.parseFreespace();
+      },
+      'GLOBAL': function (this: Parser) {
+        return this.expression(GlobalPropertyExpr, {});
+      },
+      'HEAP': function (this: Parser) {
+        return this.expression(HeapPropertyExpr, {});
+      },
+      'ICEBERG': function (this: Parser) {
+        return this.expression(IcebergPropertyExpr, {});
+      },
+      'IMMUTABLE': function (this: Parser) {
+        return this.expression(
+          StabilityPropertyExpr,
+          { this: LiteralExpr.string('IMMUTABLE') },
+        );
+      },
+      'INHERITS': function (this: Parser) {
+        return this.expression(
+          InheritsPropertyExpr,
+          { expressions: this.parseWrappedCsv(this.parseTable) },
+        );
+      },
+      'INPUT': function (this: Parser) {
+        return this.expression(InputModelPropertyExpr, { this: this.parseSchema() });
+      },
+      'JOURNAL': function (this: Parser) {
+        return this.parseJournal();
+      },
+      'LANGUAGE': function (this: Parser) {
+        return this.parsePropertyAssignment(LanguagePropertyExpr);
+      },
+      'LAYOUT': function (this: Parser) {
+        return this.parseDictProperty({ this: 'LAYOUT' });
+      },
+      'LIFETIME': function (this: Parser) {
+        return this.parseDictRange({ this: 'LIFETIME' });
+      },
+      'LIKE': function (this: Parser) {
+        return this.parseCreateLike();
+      },
+      'LOCATION': function (this: Parser) {
+        return this.parsePropertyAssignment(LocationPropertyExpr);
+      },
+      'LOCK': function (this: Parser) {
+        return this.parseLocking();
+      },
+      'LOCKING': function (this: Parser) {
+        return this.parseLocking();
+      },
+      'LOG': function (this: Parser) {
+        return this.parseLog();
+      },
+      'MATERIALIZED': function (this: Parser) {
+        return this.expression(MaterializedPropertyExpr, {});
+      },
+      'MERGEBLOCKRATIO': function (this: Parser) {
+        return this.parseMergeblockratio();
+      },
+      'MODIFIES': function (this: Parser) {
+        return this.parseModifiesProperty();
+      },
+      'MULTISET': function (this: Parser) {
+        return this.expression(SetPropertyExpr, { multi: true });
+      },
+      'NO': function (this: Parser) {
+        return this.parseNoProperty();
+      },
+      'ON': function (this: Parser) {
+        return this.parseOnProperty();
+      },
+      'ORDER BY': function (this: Parser) {
+        return this.parseOrder({ skipOrderToken: true });
+      },
+      'OUTPUT': function (this: Parser) {
+        return this.expression(OutputModelPropertyExpr, { this: this.parseSchema() });
+      },
+      'PARTITION': function (this: Parser) {
+        return this.parsePartitionedOf();
+      },
+      'PARTITION BY': function (this: Parser) {
+        return this.parsePartitionedBy();
+      },
+      'PARTITIONED BY': function (this: Parser) {
+        return this.parsePartitionedBy();
+      },
+      'PARTITIONED_BY': function (this: Parser) {
+        return this.parsePartitionedBy();
+      },
+      'PRIMARY KEY': function (this: Parser) {
+        return this.parsePrimaryKey({ inProps: true });
+      },
+      'RANGE': function (this: Parser) {
+        return this.parseDictRange({ this: 'RANGE' });
+      },
+      'READS': function (this: Parser) {
+        return this.parseReadsProperty();
+      },
+      'REMOTE': function (this: Parser) {
+        return this.parseRemoteWithConnection();
+      },
+      'RETURNS': function (this: Parser) {
+        return this.parseReturns();
+      },
+      'STRICT': function (this: Parser) {
+        return this.expression(StrictPropertyExpr, {});
+      },
+      'STREAMING': function (this: Parser) {
+        return this.expression(StreamingTablePropertyExpr, {});
+      },
+      'ROW': function (this: Parser) {
+        return this.parseRow();
+      },
+      'ROW_FORMAT': function (this: Parser) {
+        return this.parsePropertyAssignment(RowFormatPropertyExpr);
+      },
+      'SAMPLE': function (this: Parser) {
+        return this.expression(
+          SamplePropertyExpr,
+          { this: this.matchTextSeq('BY') && this.parseBitwise() },
+        );
+      },
+      'SECURE': function (this: Parser) {
+        return this.expression(SecurePropertyExpr, {});
+      },
+      'SECURITY': function (this: Parser) {
+        return this.parseSecurity();
+      },
+      'SET': function (this: Parser) {
+        return this.expression(SetPropertyExpr, { multi: false });
+      },
+      'SETTINGS': function (this: Parser) {
+        return this.parseSettingsProperty();
+      },
+      'SHARING': function (this: Parser) {
+        return this.parsePropertyAssignment(SharingPropertyExpr);
+      },
+      'SORTKEY': function (this: Parser) {
+        return this.parseSortkey();
+      },
+      'SOURCE': function (this: Parser) {
+        return this.parseDictProperty({ this: 'SOURCE' });
+      },
+      'STABLE': function (this: Parser) {
+        return this.expression(
+          StabilityPropertyExpr,
+          { this: LiteralExpr.string('STABLE') },
+        );
+      },
+      'STORED': function (this: Parser) {
+        return this.parseStored();
+      },
+      'SYSTEM_VERSIONING': function (this: Parser) {
+        return this.parseSystemVersioningProperty();
+      },
+      'TBLPROPERTIES': function (this: Parser) {
+        return this.parseWrappedProperties();
+      },
+      'TEMP': function (this: Parser) {
+        return this.expression(TemporaryPropertyExpr, {});
+      },
+      'TEMPORARY': function (this: Parser) {
+        return this.expression(TemporaryPropertyExpr, {});
+      },
+      'TO': function (this: Parser) {
+        return this.parseToTable();
+      },
+      'TRANSIENT': function (this: Parser) {
+        return this.expression(TransientPropertyExpr, {});
+      },
+      'TRANSFORM': function (this: Parser) {
+        return this.expression(
+          TransformModelPropertyExpr,
+          { expressions: this.parseWrappedCsv(this.parseExpression) },
+        );
+      },
+      'TTL': function (this: Parser) {
+        return this.parseTtl();
+      },
+      'USING': function (this: Parser) {
+        return this.parsePropertyAssignment(FileFormatPropertyExpr);
+      },
+      'UNLOGGED': function (this: Parser) {
+        return this.expression(UnloggedPropertyExpr, {});
+      },
+      'VOLATILE': function (this: Parser) {
+        return this.parseVolatileProperty();
+      },
+      'WITH': function (this: Parser) {
+        return this.parseWithProperty();
+      },
     };
   }
 
   @cache
-  static get CONSTRAINT_PARSERS (): Partial<Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
+  static get CONSTRAINT_PARSERS (): Partial<Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
     return {
-      'AUTOINCREMENT': (self: Parser) => self.parseAutoIncrement(),
-      'AUTO_INCREMENT': (self: Parser) => self.parseAutoIncrement(),
-      'CASESPECIFIC': (self: Parser) => self.expression(CaseSpecificColumnConstraintExpr, { not_: false }),
-      'CHARACTER SET': (self: Parser) => self.expression(
-        CharacterSetColumnConstraintExpr,
-        { this: self.parseVarOrString() },
-      ),
-      'CHECK': (self: Parser) => self.parseCheckConstraint(),
-      'COLLATE': (self: Parser) => self.expression(
-        CollateColumnConstraintExpr,
-        { this: self.parseIdentifier() || self.parseColumn() },
-      ),
-      'COMMENT': (self: Parser) => self.expression(
-        CommentColumnConstraintExpr,
-        { this: self.parseString() },
-      ),
-      'COMPRESS': (self: Parser) => self.parseCompress(),
-      'CLUSTERED': (self: Parser) => self.expression(
-        ClusteredColumnConstraintExpr,
-        { this: self.parseWrappedCsv(self.parseOrdered) },
-      ),
-      'NONCLUSTERED': (self: Parser) => self.expression(
-        NonClusteredColumnConstraintExpr,
-        { this: self.parseWrappedCsv(self.parseOrdered) },
-      ),
-      'DEFAULT': (self: Parser) => self.expression(
-        DefaultColumnConstraintExpr,
-        { this: self.parseBitwise() },
-      ),
-      'ENCODE': (self: Parser) => self.expression(EncodeColumnConstraintExpr, { this: self.parseVar() }),
-      'EPHEMERAL': (self: Parser) => self.expression(
-        EphemeralColumnConstraintExpr,
-        { this: self.parseBitwise() },
-      ),
-      'EXCLUDE': (self: Parser) => self.expression(
-        ExcludeColumnConstraintExpr,
-        { this: self.parseIndexParams() },
-      ),
-      'FOREIGN KEY': (self: Parser) => self.parseForeignKey(),
-      'FORMAT': (self: Parser) => self.expression(
-        DateFormatColumnConstraintExpr,
-        { this: self.parseVarOrString() },
-      ),
-      'GENERATED': (self: Parser) => self.parseGeneratedAsIdentity(),
-      'IDENTITY': (self: Parser) => self.parseAutoIncrement(),
-      'INLINE': (self: Parser) => self.parseInline(),
-      'LIKE': (self: Parser) => self.parseCreateLike(),
-      'NOT': (self: Parser) => self.parseNotConstraint(),
-      'NULL': (self: Parser) => self.expression(NotNullColumnConstraintExpr, { allowNull: true }),
-      'ON': (self: Parser) => (
-        self.match(TokenType.UPDATE)
-        && self.expression(OnUpdateColumnConstraintExpr, { this: self.parseFunction() })
-      )
-      || self.expression(OnPropertyExpr, { this: self.parseIdVar() }),
-      'PATH': (self: Parser) => self.expression(PathColumnConstraintExpr, { this: self.parseString() }),
-      'PERIOD': (self: Parser) => self.parsePeriodForSystemTime(),
-      'PRIMARY KEY': (self: Parser) => self.parsePrimaryKey(),
-      'REFERENCES': (self: Parser) => self.parseReferences({ match: false }),
-      'TITLE': (self: Parser) => self.expression(
-        TitleColumnConstraintExpr,
-        { this: self.parseVarOrString() },
-      ),
-      'TTL': (self: Parser) => self.expression(MergeTreeTtlExpr, { expressions: [self.parseBitwise()] }),
-      'UNIQUE': (self: Parser) => self.parseUnique(),
-      'UPPERCASE': (self: Parser) => self.expression(UppercaseColumnConstraintExpr),
-      'WITH': (self: Parser) => self.expression(
-        PropertiesExpr,
-        { expressions: self.parseWrappedProperties() },
-      ),
-      'BUCKET': (self: Parser) => self.parsePartitionedByBucketOrTruncate(),
-      'TRUNCATE': (self: Parser) => self.parsePartitionedByBucketOrTruncate(),
+      'AUTOINCREMENT': function (this: Parser) {
+        return this.parseAutoIncrement();
+      },
+      'AUTO_INCREMENT': function (this: Parser) {
+        return this.parseAutoIncrement();
+      },
+      'CASESPECIFIC': function (this: Parser) {
+        return this.expression(CaseSpecificColumnConstraintExpr, { not_: false });
+      },
+      'CHARACTER SET': function (this: Parser) {
+        return this.expression(
+          CharacterSetColumnConstraintExpr,
+          { this: this.parseVarOrString() },
+        );
+      },
+      'CHECK': function (this: Parser) {
+        return this.parseCheckConstraint();
+      },
+      'COLLATE': function (this: Parser) {
+        return this.expression(
+          CollateColumnConstraintExpr,
+          { this: this.parseIdentifier() || this.parseColumn() },
+        );
+      },
+      'COMMENT': function (this: Parser) {
+        return this.expression(
+          CommentColumnConstraintExpr,
+          { this: this.parseString() },
+        );
+      },
+      'COMPRESS': function (this: Parser) {
+        return this.parseCompress();
+      },
+      'CLUSTERED': function (this: Parser) {
+        return this.expression(
+          ClusteredColumnConstraintExpr,
+          { this: this.parseWrappedCsv(this.parseOrdered) },
+        );
+      },
+      'NONCLUSTERED': function (this: Parser) {
+        return this.expression(
+          NonClusteredColumnConstraintExpr,
+          { this: this.parseWrappedCsv(this.parseOrdered) },
+        );
+      },
+      'DEFAULT': function (this: Parser) {
+        return this.expression(
+          DefaultColumnConstraintExpr,
+          { this: this.parseBitwise() },
+        );
+      },
+      'ENCODE': function (this: Parser) {
+        return this.expression(EncodeColumnConstraintExpr, { this: this.parseVar() });
+      },
+      'EPHEMERAL': function (this: Parser) {
+        return this.expression(
+          EphemeralColumnConstraintExpr,
+          { this: this.parseBitwise() },
+        );
+      },
+      'EXCLUDE': function (this: Parser) {
+        return this.expression(
+          ExcludeColumnConstraintExpr,
+          { this: this.parseIndexParams() },
+        );
+      },
+      'FOREIGN KEY': function (this: Parser) {
+        return this.parseForeignKey();
+      },
+      'FORMAT': function (this: Parser) {
+        return this.expression(
+          DateFormatColumnConstraintExpr,
+          { this: this.parseVarOrString() },
+        );
+      },
+      'GENERATED': function (this: Parser) {
+        return this.parseGeneratedAsIdentity();
+      },
+      'IDENTITY': function (this: Parser) {
+        return this.parseAutoIncrement();
+      },
+      'INLINE': function (this: Parser) {
+        return this.parseInline();
+      },
+      'LIKE': function (this: Parser) {
+        return this.parseCreateLike();
+      },
+      'NOT': function (this: Parser) {
+        return this.parseNotConstraint();
+      },
+      'NULL': function (this: Parser) {
+        return this.expression(NotNullColumnConstraintExpr, { allowNull: true });
+      },
+      'ON': function (this: Parser) {
+        return (
+          this.match(TokenType.UPDATE)
+          && this.expression(OnUpdateColumnConstraintExpr, { this: this.parseFunction() })
+        )
+        || this.expression(OnPropertyExpr, { this: this.parseIdVar() });
+      },
+      'PATH': function (this: Parser) {
+        return this.expression(PathColumnConstraintExpr, { this: this.parseString() });
+      },
+      'PERIOD': function (this: Parser) {
+        return this.parsePeriodForSystemTime();
+      },
+      'PRIMARY KEY': function (this: Parser) {
+        return this.parsePrimaryKey();
+      },
+      'REFERENCES': function (this: Parser) {
+        return this.parseReferences({ match: false });
+      },
+      'TITLE': function (this: Parser) {
+        return this.expression(
+          TitleColumnConstraintExpr,
+          { this: this.parseVarOrString() },
+        );
+      },
+      'TTL': function (this: Parser) {
+        return this.expression(MergeTreeTtlExpr, { expressions: [this.parseBitwise()] });
+      },
+      'UNIQUE': function (this: Parser) {
+        return this.parseUnique();
+      },
+      'UPPERCASE': function (this: Parser) {
+        return this.expression(UppercaseColumnConstraintExpr);
+      },
+      'WITH': function (this: Parser) {
+        return this.expression(
+          PropertiesExpr,
+          { expressions: this.parseWrappedProperties() },
+        );
+      },
+      'BUCKET': function (this: Parser) {
+        return this.parsePartitionedByBucketOrTruncate();
+      },
+      'TRUNCATE': function (this: Parser) {
+        return this.parsePartitionedByBucketOrTruncate();
+      },
     };
   }
 
   @cache
-  static get ALTER_PARSERS (): Partial<Record<string, (self: Parser) => Expression | Expression[] | undefined>> {
+  static get ALTER_PARSERS (): Partial<Record<string, (this: Parser) => Expression | Expression[] | undefined>> {
     return {
-      'ADD': (self: Parser) => self.parseAlterTableAdd(),
-      'AS': (self: Parser) => self.parseSelect(),
-      'ALTER': (self: Parser) => self.parseAlterTableAlter(),
-      'CLUSTER BY': (self: Parser) => self.parseCluster({ wrapped: true }),
-      'DELETE': (self: Parser) => self.expression(DeleteExpr, { where: self.parseWhere() }),
-      'DROP': (self: Parser) => self.parseAlterTableDrop(),
-      'RENAME': (self: Parser) => self.parseAlterTableRename(),
-      'SET': (self: Parser) => self.parseAlterTableSet(),
-      'SWAP': (self: Parser) => self.expression(
-        SwapTableExpr,
-        { this: self.match(TokenType.WITH) && self.parseTable({ schema: true }) },
-      ),
+      'ADD': function (this: Parser) {
+        return this.parseAlterTableAdd();
+      },
+      'AS': function (this: Parser) {
+        return this.parseSelect();
+      },
+      'ALTER': function (this: Parser) {
+        return this.parseAlterTableAlter();
+      },
+      'CLUSTER BY': function (this: Parser) {
+        return this.parseCluster({ wrapped: true });
+      },
+      'DELETE': function (this: Parser) {
+        return this.expression(DeleteExpr, { where: this.parseWhere() });
+      },
+      'DROP': function (this: Parser) {
+        return this.parseAlterTableDrop();
+      },
+      'RENAME': function (this: Parser) {
+        return this.parseAlterTableRename();
+      },
+      'SET': function (this: Parser) {
+        return this.parseAlterTableSet();
+      },
+      'SWAP': function (this: Parser) {
+        return this.expression(
+          SwapTableExpr,
+          { this: this.match(TokenType.WITH) && this.parseTable({ schema: true }) },
+        );
+      },
     };
   }
 
-  static ALTER_ALTER_PARSERS: Partial<Record<string, (self: Parser) => Expression>> = {
-    DISTKEY: (self: Parser) => self.parseAlterDiststyle(),
-    DISTSTYLE: (self: Parser) => self.parseAlterDiststyle(),
-    SORTKEY: (self: Parser) => self.parseAlterSortkey(),
-    COMPOUND: (self: Parser) => self.parseAlterSortkey({ compound: true }),
+  static ALTER_ALTER_PARSERS: Partial<Record<string, (this: Parser) => Expression>> = {
+    DISTKEY: function (this: Parser) {
+      return this.parseAlterDiststyle();
+    },
+    DISTSTYLE: function (this: Parser) {
+      return this.parseAlterDiststyle();
+    },
+    SORTKEY: function (this: Parser) {
+      return this.parseAlterSortkey();
+    },
+    COMPOUND: function (this: Parser) {
+      return this.parseAlterSortkey({ compound: true });
+    },
   };
 
   static SCHEMA_UNNAMED_CONSTRAINTS: Set<string> = new Set([
@@ -2258,15 +2750,23 @@ export class Parser {
   ]);
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
-      ANY: (self: Parser) => self.expression(AnyExpr, { this: self.parseBitwise() }),
-      CASE: (self: Parser) => self.parseCase(),
-      CONNECT_BY_ROOT: (self: Parser) => self.expression(
-        ConnectByRootExpr,
-        { this: self.parseColumn() },
-      ),
-      IF: (self: Parser) => self.parseIf(),
+      ANY: function (this: Parser) {
+        return this.expression(AnyExpr, { this: this.parseBitwise() });
+      },
+      CASE: function (this: Parser) {
+        return this.parseCase();
+      },
+      CONNECT_BY_ROOT: function (this: Parser) {
+        return this.expression(
+          ConnectByRootExpr,
+          { this: this.parseColumn() },
+        );
+      },
+      IF: function (this: Parser) {
+        return this.parseIf();
+      },
     };
   }
 
@@ -2287,66 +2787,168 @@ export class Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Object.fromEntries(
-        ArgMaxExpr.sqlNames().map((name) => [name, (self: Parser) => self.parseMaxMinBy(ArgMaxExpr)]),
+        ArgMaxExpr.sqlNames().map((name) => [
+          name,
+          function (this: Parser) {
+            return this.parseMaxMinBy(ArgMaxExpr);
+          },
+        ]),
       ),
       ...Object.fromEntries(
-        ArgMinExpr.sqlNames().map((name) => [name, (self: Parser) => self.parseMaxMinBy(ArgMinExpr)]),
+        ArgMinExpr.sqlNames().map((name) => [
+          name,
+          function (this: Parser) {
+            return this.parseMaxMinBy(ArgMinExpr);
+          },
+        ]),
       ),
-      CAST: (self: Parser) => self.parseCast(self._constructor.STRICT_CAST),
-      CEIL: (self: Parser) => self.parseCeilFloor(CeilExpr),
-      CONVERT: (self: Parser) => self.parseConvert(self._constructor.STRICT_CAST),
-      CHAR: (self: Parser) => self.parseChar(),
-      CHR: (self: Parser) => self.parseChar(),
-      DECODE: (self: Parser) => self.parseDecode(),
-      EXTRACT: (self: Parser) => self.parseExtract(),
-      FLOOR: (self: Parser) => self.parseCeilFloor(FloorExpr),
-      GAP_FILL: (self: Parser) => self.parseGapFill(),
-      INITCAP: (self: Parser) => self.parseInitcap(),
-      JSON_OBJECT: (self: Parser) => self.parseJsonObject(),
-      JSON_OBJECTAGG: (self: Parser) => self.parseJsonObject({ agg: true }),
-      JSON_TABLE: (self: Parser) => self.parseJsonTable(),
-      MATCH: (self: Parser) => self.parseMatchAgainst(),
-      NORMALIZE: (self: Parser) => self.parseNormalize(),
-      OPENJSON: (self: Parser) => self.parseOpenJson(),
-      OVERLAY: (self: Parser) => self.parseOverlay(),
-      POSITION: (self: Parser) => self.parsePosition(),
-      SAFE_CAST: (self: Parser) => self.parseCast(false, { safe: true }),
-      STRING_AGG: (self: Parser) => self.parseStringAgg(),
-      SUBSTRING: (self: Parser) => self.parseSubstring(),
-      TRIM: (self: Parser) => self.parseTrim(),
-      TRY_CAST: (self: Parser) => self.parseCast(false, { safe: true }),
-      TRY_CONVERT: (self: Parser) => self.parseConvert(false, { safe: true }),
-      XMLELEMENT: (self: Parser) => self.parseXmlElement(),
-      XMLTABLE: (self: Parser) => self.parseXmlTable(),
+      CAST: function (this: Parser) {
+        return this.parseCast(this._constructor.STRICT_CAST);
+      },
+      CEIL: function (this: Parser) {
+        return this.parseCeilFloor(CeilExpr);
+      },
+      CONVERT: function (this: Parser) {
+        return this.parseConvert(this._constructor.STRICT_CAST);
+      },
+      CHAR: function (this: Parser) {
+        return this.parseChar();
+      },
+      CHR: function (this: Parser) {
+        return this.parseChar();
+      },
+      DECODE: function (this: Parser) {
+        return this.parseDecode();
+      },
+      EXTRACT: function (this: Parser) {
+        return this.parseExtract();
+      },
+      FLOOR: function (this: Parser) {
+        return this.parseCeilFloor(FloorExpr);
+      },
+      GAP_FILL: function (this: Parser) {
+        return this.parseGapFill();
+      },
+      INITCAP: function (this: Parser) {
+        return this.parseInitcap();
+      },
+      JSON_OBJECT: function (this: Parser) {
+        return this.parseJsonObject();
+      },
+      JSON_OBJECTAGG: function (this: Parser) {
+        return this.parseJsonObject({ agg: true });
+      },
+      JSON_TABLE: function (this: Parser) {
+        return this.parseJsonTable();
+      },
+      MATCH: function (this: Parser) {
+        return this.parseMatchAgainst();
+      },
+      NORMALIZE: function (this: Parser) {
+        return this.parseNormalize();
+      },
+      OPENJSON: function (this: Parser) {
+        return this.parseOpenJson();
+      },
+      OVERLAY: function (this: Parser) {
+        return this.parseOverlay();
+      },
+      POSITION: function (this: Parser) {
+        return this.parsePosition();
+      },
+      SAFE_CAST: function (this: Parser) {
+        return this.parseCast(false, { safe: true });
+      },
+      STRING_AGG: function (this: Parser) {
+        return this.parseStringAgg();
+      },
+      SUBSTRING: function (this: Parser) {
+        return this.parseSubstring();
+      },
+      TRIM: function (this: Parser) {
+        return this.parseTrim();
+      },
+      TRY_CAST: function (this: Parser) {
+        return this.parseCast(false, { safe: true });
+      },
+      TRY_CONVERT: function (this: Parser) {
+        return this.parseConvert(false, { safe: true });
+      },
+      XMLELEMENT: function (this: Parser) {
+        return this.parseXmlElement();
+      },
+      XMLTABLE: function (this: Parser) {
+        return this.parseXmlTable();
+      },
     };
   }
 
   @cache
-  static get QUERY_MODIFIER_PARSERS (): Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> {
+  static get QUERY_MODIFIER_PARSERS (): Partial<Record<TokenType, (this: Parser) => [string, Expression | Expression[] | undefined]>> {
     return {
-      [TokenType.MATCH_RECOGNIZE]: (self: Parser): [string, Expression | undefined] => ['match', self.parseMatchRecognize()],
-      [TokenType.PREWHERE]: (self: Parser): [string, Expression | undefined] => ['prewhere', self.parsePrewhere()],
-      [TokenType.WHERE]: (self: Parser): [string, Expression | undefined] => ['where', self.parseWhere()],
-      [TokenType.GROUP_BY]: (self: Parser): [string, Expression | undefined] => ['group', self.parseGroup()],
-      [TokenType.HAVING]: (self: Parser): [string, Expression | undefined] => ['having', self.parseHaving()],
-      [TokenType.QUALIFY]: (self: Parser): [string, Expression | undefined] => ['qualify', self.parseQualify()],
-      [TokenType.WINDOW]: (self: Parser): [string, Expression[] | undefined] => ['windows', self.parseWindowClause()],
-      [TokenType.ORDER_BY]: (self: Parser): [string, Expression | undefined] => ['order', self.parseOrder()],
-      [TokenType.LIMIT]: (self: Parser): [string, Expression | undefined] => ['limit', self.parseLimit()],
-      [TokenType.FETCH]: (self: Parser): [string, Expression | undefined] => ['limit', self.parseLimit()],
-      [TokenType.OFFSET]: (self: Parser): [string, Expression | undefined] => ['offset', self.parseOffset()],
-      [TokenType.FOR]: (self: Parser): [string, Expression[] | undefined] => ['locks', self.parseLocks()],
-      [TokenType.LOCK]: (self: Parser): [string, Expression[] | undefined] => ['locks', self.parseLocks()],
-      [TokenType.TABLE_SAMPLE]: (self: Parser): [string, Expression | undefined] => ['sample', self.parseTableSample({ asModifier: true })],
-      [TokenType.USING]: (self: Parser): [string, Expression | undefined] => ['sample', self.parseTableSample({ asModifier: true })],
-      [TokenType.CLUSTER_BY]: (self: Parser): [string, Expression | undefined] => ['cluster', self.parseSort(ClusterExpr, TokenType.CLUSTER_BY)],
-      [TokenType.DISTRIBUTE_BY]: (self: Parser): [string, Expression | undefined] => ['distribute', self.parseSort(DistributeExpr, TokenType.DISTRIBUTE_BY)],
-      [TokenType.SORT_BY]: (self: Parser): [string, Expression | undefined] => ['sort', self.parseSort(SortExpr, TokenType.SORT_BY)],
-      [TokenType.CONNECT_BY]: (self: Parser): [string, Expression | undefined] => ['connect', self.parseConnect({ skipStartToken: true })],
-      [TokenType.START_WITH]: (self: Parser): [string, Expression | undefined] => ['connect', self.parseConnect()],
+      [TokenType.MATCH_RECOGNIZE]: function (this: Parser): [string, Expression | undefined] {
+        return ['match', this.parseMatchRecognize()];
+      },
+      [TokenType.PREWHERE]: function (this: Parser): [string, Expression | undefined] {
+        return ['prewhere', this.parsePrewhere()];
+      },
+      [TokenType.WHERE]: function (this: Parser): [string, Expression | undefined] {
+        return ['where', this.parseWhere()];
+      },
+      [TokenType.GROUP_BY]: function (this: Parser): [string, Expression | undefined] {
+        return ['group', this.parseGroup()];
+      },
+      [TokenType.HAVING]: function (this: Parser): [string, Expression | undefined] {
+        return ['having', this.parseHaving()];
+      },
+      [TokenType.QUALIFY]: function (this: Parser): [string, Expression | undefined] {
+        return ['qualify', this.parseQualify()];
+      },
+      [TokenType.WINDOW]: function (this: Parser): [string, Expression[] | undefined] {
+        return ['windows', this.parseWindowClause()];
+      },
+      [TokenType.ORDER_BY]: function (this: Parser): [string, Expression | undefined] {
+        return ['order', this.parseOrder()];
+      },
+      [TokenType.LIMIT]: function (this: Parser): [string, Expression | undefined] {
+        return ['limit', this.parseLimit()];
+      },
+      [TokenType.FETCH]: function (this: Parser): [string, Expression | undefined] {
+        return ['limit', this.parseLimit()];
+      },
+      [TokenType.OFFSET]: function (this: Parser): [string, Expression | undefined] {
+        return ['offset', this.parseOffset()];
+      },
+      [TokenType.FOR]: function (this: Parser): [string, Expression[] | undefined] {
+        return ['locks', this.parseLocks()];
+      },
+      [TokenType.LOCK]: function (this: Parser): [string, Expression[] | undefined] {
+        return ['locks', this.parseLocks()];
+      },
+      [TokenType.TABLE_SAMPLE]: function (this: Parser): [string, Expression | undefined] {
+        return ['sample', this.parseTableSample({ asModifier: true })];
+      },
+      [TokenType.USING]: function (this: Parser): [string, Expression | undefined] {
+        return ['sample', this.parseTableSample({ asModifier: true })];
+      },
+      [TokenType.CLUSTER_BY]: function (this: Parser): [string, Expression | undefined] {
+        return ['cluster', this.parseSort(ClusterExpr, TokenType.CLUSTER_BY)];
+      },
+      [TokenType.DISTRIBUTE_BY]: function (this: Parser): [string, Expression | undefined] {
+        return ['distribute', this.parseSort(DistributeExpr, TokenType.DISTRIBUTE_BY)];
+      },
+      [TokenType.SORT_BY]: function (this: Parser): [string, Expression | undefined] {
+        return ['sort', this.parseSort(SortExpr, TokenType.SORT_BY)];
+      },
+      [TokenType.CONNECT_BY]: function (this: Parser): [string, Expression | undefined] {
+        return ['connect', this.parseConnect({ skipStartToken: true })];
+      },
+      [TokenType.START_WITH]: function (this: Parser): [string, Expression | undefined] {
+        return ['connect', this.parseConnect()];
+      },
     };
   }
 
@@ -2357,18 +2959,28 @@ export class Parser {
     );
   }
 
-  static SET_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
-    GLOBAL: (self: Parser) => self.parseSetItemAssignment({ kind: 'GLOBAL' }),
-    LOCAL: (self: Parser) => self.parseSetItemAssignment({ kind: 'LOCAL' }),
-    SESSION: (self: Parser) => self.parseSetItemAssignment({ kind: 'SESSION' }),
-    TRANSACTION: (self: Parser) => self.parseSetTransaction(),
+  static SET_PARSERS: Record<string, (this: Parser) => Expression | undefined> = {
+    GLOBAL: function (this: Parser) {
+      return this.parseSetItemAssignment({ kind: 'GLOBAL' });
+    },
+    LOCAL: function (this: Parser) {
+      return this.parseSetItemAssignment({ kind: 'LOCAL' });
+    },
+    SESSION: function (this: Parser) {
+      return this.parseSetItemAssignment({ kind: 'SESSION' });
+    },
+    TRANSACTION: function (this: Parser) {
+      return this.parseSetTransaction();
+    },
   };
 
-  static SHOW_PARSERS: Record<string, (self: Parser) => Expression> = {};
+  static SHOW_PARSERS: Record<string, (this: Parser) => Expression> = {};
   @cache
-  static get TYPE_LITERAL_PARSERS (): Partial<Record<DataTypeExprKind, (self: Parser, thisArg?: Expression, _?: unknown) => Expression>> {
+  static get TYPE_LITERAL_PARSERS (): Partial<Record<DataTypeExprKind, (this: Parser, thisArg?: Expression, _?: unknown) => Expression>> {
     return {
-      [DataTypeExprKind.JSON]: (self: Parser, thisArg?: Expression, _?: unknown) => self.expression(ParseJsonExpr, { this: thisArg }),
+      [DataTypeExprKind.JSON]: function (this: Parser, thisArg?: Expression, _?: unknown) {
+        return this.expression(ParseJsonExpr, { this: thisArg });
+      },
     };
   }
 
@@ -2714,16 +3326,34 @@ export class Parser {
     'VERBOSE',
   ]);
 
-  static ANALYZE_EXPRESSION_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
-    ALL: (self: Parser) => self.parseAnalyzeColumns(),
-    COMPUTE: (self: Parser) => self.parseAnalyzeStatistics(),
-    DELETE: (self: Parser) => self.parseAnalyzeDelete(),
-    DROP: (self: Parser) => self.parseAnalyzeHistogram(),
-    ESTIMATE: (self: Parser) => self.parseAnalyzeStatistics(),
-    LIST: (self: Parser) => self.parseAnalyzeList(),
-    PREDICATE: (self: Parser) => self.parseAnalyzeColumns(),
-    UPDATE: (self: Parser) => self.parseAnalyzeHistogram(),
-    VALIDATE: (self: Parser) => self.parseAnalyzeValidate(),
+  static ANALYZE_EXPRESSION_PARSERS: Record<string, (this: Parser) => Expression | undefined> = {
+    ALL: function (this: Parser) {
+      return this.parseAnalyzeColumns();
+    },
+    COMPUTE: function (this: Parser) {
+      return this.parseAnalyzeStatistics();
+    },
+    DELETE: function (this: Parser) {
+      return this.parseAnalyzeDelete();
+    },
+    DROP: function (this: Parser) {
+      return this.parseAnalyzeHistogram();
+    },
+    ESTIMATE: function (this: Parser) {
+      return this.parseAnalyzeStatistics();
+    },
+    LIST: function (this: Parser) {
+      return this.parseAnalyzeList();
+    },
+    PREDICATE: function (this: Parser) {
+      return this.parseAnalyzeColumns();
+    },
+    UPDATE: function (this: Parser) {
+      return this.parseAnalyzeHistogram();
+    },
+    VALIDATE: function (this: Parser) {
+      return this.parseAnalyzeValidate();
+    },
   };
 
   static PARTITION_KEYWORDS: Set<string> = new Set(['PARTITION', 'SUBPARTITION']);
@@ -2869,14 +3499,16 @@ export class Parser {
     */
   parse (rawTokens: Token[], sql?: string): (Expression | undefined)[] {
     return this._parse({
-      parseMethod: (self: Parser) => self.parseStatement(),
+      parseMethod: function (this: Parser) {
+        return this.parseStatement();
+      },
       rawTokens,
       sql,
     });
   }
 
   protected _parse (options: {
-    parseMethod: (self: Parser) => Expression | undefined;
+    parseMethod: (this: Parser) => Expression | undefined;
     rawTokens: Token[];
     sql?: string;
   }): (Expression | undefined)[] {
@@ -2912,7 +3544,7 @@ export class Parser {
       this.tokens = tokens;
       this.advance();
 
-      expressions.push(parseMethod(this));
+      expressions.push(parseMethod.call(this));
 
       if (this.index < this.tokens.length) {
         this.raiseError('Invalid expression / Unexpected token');
@@ -3413,14 +4045,14 @@ export class Parser {
       if (this.matchTextSeq('INCREMENT')) {
         this.matchTextSeq('BY');
         this.matchTextSeq('=');
-        seq.setArgKey('increment', this.parseTerm()!);
+        seq.setArgKey('increment', this.parseTerm());
       } else if (this.matchTextSeq('MINVALUE')) {
-        seq.setArgKey('minvalue', this.parseTerm()!);
+        seq.setArgKey('minvalue', this.parseTerm());
       } else if (this.matchTextSeq('MAXVALUE')) {
-        seq.setArgKey('maxvalue', this.parseTerm()!);
+        seq.setArgKey('maxvalue', this.parseTerm());
       } else if (this.match(TokenType.START_WITH) || this.matchTextSeq('START')) {
         this.matchTextSeq('=');
-        seq.setArgKey('start', this.parseTerm()!);
+        seq.setArgKey('start', this.parseTerm());
       } else if (this.matchTextSeq('CACHE')) {
         // T-SQL allows empty CACHE which is initialized dynamically
         seq.setArgKey('cache', this.parseNumber() || true);
@@ -3464,7 +4096,7 @@ export class Parser {
         const filteredKwargs = Object.fromEntries(
           Object.entries(kwargs).filter(([, v]) => v),
         );
-        const result = parser(this, filteredKwargs);
+        const result = parser.call(this, filteredKwargs);
         return Array.isArray(result) ? result[0] : result;
       } catch {
         this.raiseError(`Cannot parse property '${this.prev?.text ?? ''}'`);
@@ -3480,12 +4112,12 @@ export class Parser {
 
   parseProperty (): Expression | undefined {
     if (this.matchTexts(Object.keys(this._constructor.PROPERTY_PARSERS))) {
-      const result = this._constructor.PROPERTY_PARSERS[this.prev?.text ?? ''.toUpperCase()](this);
+      const result = this._constructor.PROPERTY_PARSERS[this.prev?.text ?? ''.toUpperCase()].call(this);
       return Array.isArray(result) ? result[0] : result;
     }
 
     if (this.match(TokenType.DEFAULT) && this.matchTexts(Object.keys(this._constructor.PROPERTY_PARSERS))) {
-      const result = this._constructor.PROPERTY_PARSERS[this.prev?.text ?? ''.toUpperCase()](this, { default: true });
+      const result = this._constructor.PROPERTY_PARSERS[this.prev?.text ?? ''.toUpperCase()].call(this, { default: true });
       return Array.isArray(result) ? result[0] : result;
     }
 
@@ -4460,7 +5092,7 @@ export class Parser {
       parsePartition: true,
     });
     if (thisExpr instanceof TableExpr && this.match(TokenType.ALIAS, { advance: false })) {
-      thisExpr.setArgKey('alias', this.parseTableAlias()!);
+      thisExpr.setArgKey('alias', this.parseTableAlias());
     }
     return thisExpr;
   }
@@ -5043,7 +5675,7 @@ export class Parser {
         if (this.matchSet(new Set(Object.keys(this._constructor.QUERY_MODIFIER_PARSERS)) as Set<TokenType>, { advance: false })) {
           const modifierToken = this.curr as Token;
           const parser = this._constructor.QUERY_MODIFIER_PARSERS[modifierToken.tokenType];
-          const [key, expression] = parser?.(this) || [];
+          const [key, expression] = parser?.call(this) || [];
 
           if (key !== undefined && expression !== undefined) {
             if (key in thisExpr.args && thisExpr.args[key as keyof typeof thisExpr.args]) {
@@ -5405,7 +6037,9 @@ export class Parser {
     const index = this.index;
     if (this.matchTextSeq('STREAM')) {
       const thisExpr = this._parse({
-        parseMethod: (self: Parser) => self.parseTable(),
+        parseMethod: function (this: Parser) {
+          return this.parseTable();
+        },
         rawTokens: this.tokens,
       });
       if (thisExpr) {
@@ -5445,7 +6079,9 @@ export class Parser {
   } = {}): JoinExpr | undefined {
     if (this.match(TokenType.COMMA)) {
       const table = this._parse({
-        parseMethod: (self: Parser) => self.parseTable(),
+        parseMethod: function (this: Parser) {
+          return this.parseTable();
+        },
         rawTokens: this.tokens,
       });
       const crossJoin = table ? this.expression(JoinExpr, { this: table }) : undefined;
@@ -5824,7 +6460,7 @@ export class Parser {
     });
     if (subquery) {
       if (!(subquery as SelectExpr).args.pivots) {
-        subquery.setArgKey('pivots', this.parsePivots()!);
+        subquery.setArgKey('pivots', this.parsePivots());
       }
       return subquery;
     }
@@ -5857,7 +6493,7 @@ export class Parser {
 
     const parsePartition = options?.parsePartition || this._constructor.SUPPORTS_PARTITION_SELECTION;
     if (parsePartition && this.match(TokenType.PARTITION, { advance: false })) {
-      thisExpr.setArgKey('partition', this.parsePartition()!);
+      thisExpr.setArgKey('partition', this.parsePartition());
     }
 
     if (options?.schema) {
@@ -5870,7 +6506,7 @@ export class Parser {
     }
 
     if (this._dialectConstructor.ALIAS_POST_TABLESAMPLE) {
-      thisExpr.setArgKey('sample', this.parseTableSample()!);
+      thisExpr.setArgKey('sample', this.parseTableSample());
     }
 
     const alias = this.parseTableAlias({ aliasTokens: options?.aliasTokens || this._constructor.TABLE_ALIAS_TOKENS });
@@ -5894,14 +6530,14 @@ export class Parser {
       );
     }
 
-    thisExpr.setArgKey('hints', this.parseTableHints()!);
+    thisExpr.setArgKey('hints', this.parseTableHints());
 
     if (!('pivots' in thisExpr.args) || !thisExpr.args.pivots) {
-      thisExpr.setArgKey('pivots', this.parsePivots()!);
+      thisExpr.setArgKey('pivots', this.parsePivots());
     }
 
     if (!this._dialectConstructor.ALIAS_POST_TABLESAMPLE) {
-      thisExpr.setArgKey('sample', this.parseTableSample()!);
+      thisExpr.setArgKey('sample', this.parseTableSample());
     }
 
     if (options?.joins) {
@@ -5912,7 +6548,7 @@ export class Parser {
 
     if (this.matchPair(TokenType.WITH, TokenType.ORDINALITY)) {
       thisExpr.setArgKey('ordinality', true);
-      thisExpr.setArgKey('alias', this.parseTableAlias()!);
+      thisExpr.setArgKey('alias', this.parseTableAlias());
     }
 
     return thisExpr;
@@ -6339,7 +6975,9 @@ export class Parser {
     const fields: InExpr[] = [];
     while (true) {
       const results = this._parse({
-        parseMethod: (self: Parser) => self.parsePivotIn(),
+        parseMethod: function (this: Parser) {
+          return this.parsePivotIn();
+        },
         rawTokens: this.tokens,
       });
       const field = results[0];
@@ -6373,7 +7011,7 @@ export class Parser {
     );
 
     if (!this.matchSet(new Set([TokenType.PIVOT, TokenType.UNPIVOT]), { advance: false })) {
-      pivot.setArgKey('alias', this.parseTableAlias()!);
+      pivot.setArgKey('alias', this.parseTableAlias());
     }
 
     if (!unpivot) {
@@ -6601,8 +7239,9 @@ export class Parser {
   }
 
   parseConnectWithPrior (): Expression | undefined {
-    this._constructor.NO_PAREN_FUNCTION_PARSERS['PRIOR'] = (self: Parser) =>
-      self.expression(PriorExpr, { this: self.parseBitwise() });
+    this._constructor.NO_PAREN_FUNCTION_PARSERS['PRIOR'] = function (this: Parser) {
+      return this.expression(PriorExpr, { this: this.parseBitwise() });
+    };
     const connect = this.parseDisjunction();
     delete this._constructor.NO_PAREN_FUNCTION_PARSERS['PRIOR'];
     return connect;
@@ -6789,7 +7428,9 @@ export class Parser {
         // consume the factor plus parse the percentage separately
         const index = this.index;
         const results = this._parse({
-          parseMethod: (self: Parser) => self.parseTerm(),
+          parseMethod: function (this: Parser) {
+            return this.parseTerm();
+          },
           rawTokens: this.tokens,
         });
         expression = results[0];
@@ -6868,11 +7509,15 @@ export class Parser {
 
     const index = this.index;
     const limitResults = this._parse({
-      parseMethod: (self: Parser) => self.parseLimit(),
+      parseMethod: function (this: Parser) {
+        return this.parseLimit();
+      },
       rawTokens: this.tokens,
     });
     const offsetResults = this._parse({
-      parseMethod: (self: Parser) => self.parseOffset(),
+      parseMethod: function (this: Parser) {
+        return this.parseOffset();
+      },
       rawTokens: this.tokens,
     });
     const result = !!(limitResults[0] || offsetResults[0]);
@@ -7119,7 +7764,7 @@ export class Parser {
     if (this.matchSet(Object.keys(this._constructor.RANGE_PARSERS) as TokenType[])) {
       const parser = this._constructor.RANGE_PARSERS[this.prev?.tokenType ?? TokenType.UNKNOWN];
       if (parser && current) {
-        const expression = parser(this, current);
+        const expression = parser.call(this, current);
         if (!expression) {
           return current;
         }
@@ -7555,7 +8200,7 @@ export class Parser {
   parseUnary (): Expression | undefined {
     if (this.matchSet(Object.keys(this._constructor.UNARY_PARSERS) as TokenType[])) {
       const parser = this._constructor.UNARY_PARSERS[this.prev?.tokenType ?? TokenType.UNKNOWN];
-      return parser ? parser(this) : undefined;
+      return parser ? parser.call(this) : undefined;
     }
     return this.parseType();
   }
@@ -7596,7 +8241,7 @@ export class Parser {
 
         const parser = typeof dataType.args.this === 'string' ? this._constructor.TYPE_LITERAL_PARSERS[dataType.args.this as DataTypeExprKind] : undefined;
         if (parser) {
-          return parser(this, thisWithOps, dataType as DataTypeExpr);
+          return parser.call(this, thisWithOps, dataType as DataTypeExpr);
         }
 
         if (
@@ -8044,7 +8689,7 @@ export class Parser {
     const column = thisExpr ? this.parseColumnOps(thisExpr) : this.parseBracket(thisExpr);
 
     if (this._dialectConstructor.SUPPORTS_COLUMN_JOIN_MARKS && column) {
-      column.setArgKey('joinMark', this.match(TokenType.JOIN_MARKER)!);
+      column.setArgKey('joinMark', this.match(TokenType.JOIN_MARKER));
     }
 
     return column;
@@ -8186,7 +8831,7 @@ export class Parser {
       }
 
       if (op) {
-        current = op(this, current, field);
+        current = op.call(this, current, field);
       } else if (current instanceof ColumnExpr && !current.args.catalog) {
         current = this.expression(
           ColumnExpr,
@@ -8323,7 +8968,7 @@ export class Parser {
     const statementTokens = Object.keys(this._constructor.STATEMENT_PARSERS) as TokenType[];
     if (this.matchSet(statementTokens)) {
       const comments = this.prevComments;
-      const stmt = this._constructor.STATEMENT_PARSERS[this.prev?.tokenType ?? TokenType.UNKNOWN]?.(this);
+      const stmt = this._constructor.STATEMENT_PARSERS[this.prev?.tokenType ?? TokenType.UNKNOWN]?.call(this);
       stmt?.addComments(comments, { prepend: true });
       return stmt;
     }
@@ -9183,7 +9828,7 @@ export class Parser {
 
   parseStar (): Expression | undefined {
     if (this.match(TokenType.STAR)) {
-      return this._constructor.PRIMARY_PARSERS[TokenType.STAR]?.(this, this.prev as Token);
+      return this._constructor.PRIMARY_PARSERS[TokenType.STAR]?.call(this, this.prev as Token);
     }
     return this.parsePlaceholder();
   }
@@ -9195,7 +9840,7 @@ export class Parser {
 
   parsePlaceholder (): Expression | undefined {
     if (this.matchSet(new Set(Object.keys(this._constructor.PLACEHOLDER_PARSERS)) as Set<TokenType>)) {
-      const placeholder = this._constructor.PLACEHOLDER_PARSERS[this.prev?.tokenType ?? TokenType.UNKNOWN]?.(this);
+      const placeholder = this._constructor.PLACEHOLDER_PARSERS[this.prev?.tokenType ?? TokenType.UNKNOWN]?.call(this);
       if (placeholder) {
         return placeholder;
       }
@@ -9282,24 +9927,24 @@ export class Parser {
 
   parseNull (): Expression | undefined {
     if (this.matchSet(new Set([TokenType.NULL, TokenType.UNKNOWN]))) {
-      return this._constructor.PRIMARY_PARSERS[TokenType.NULL]?.(this, this.prev as Token);
+      return this._constructor.PRIMARY_PARSERS[TokenType.NULL]?.call(this, this.prev as Token);
     }
     return this.parsePlaceholder();
   }
 
   parseBoolean (): Expression | undefined {
     if (this.match(TokenType.TRUE)) {
-      return this._constructor.PRIMARY_PARSERS[TokenType.TRUE]?.(this, this.prev as Token);
+      return this._constructor.PRIMARY_PARSERS[TokenType.TRUE]?.call(this, this.prev as Token);
     }
     if (this.match(TokenType.FALSE)) {
-      return this._constructor.PRIMARY_PARSERS[TokenType.FALSE]?.(this, this.prev as Token);
+      return this._constructor.PRIMARY_PARSERS[TokenType.FALSE]?.call(this, this.prev as Token);
     }
     return this.parsePlaceholder();
   }
 
   parseString (): Expression | undefined {
     if (this.matchSet(new Set(Object.keys(this._constructor.STRING_PARSERS)) as Set<TokenType>)) {
-      return this._constructor.STRING_PARSERS[this.prev?.tokenType ?? TokenType.UNKNOWN]?.(this, this.prev as Token);
+      return this._constructor.STRING_PARSERS[this.prev?.tokenType ?? TokenType.UNKNOWN]?.call(this, this.prev as Token);
     }
     return this.parsePlaceholder();
   }
@@ -9315,7 +9960,7 @@ export class Parser {
 
   parseNumber (): Expression | undefined {
     if (this.matchSet(new Set(Object.keys(this._constructor.NUMERIC_PARSERS)) as Set<TokenType>)) {
-      return this._constructor.NUMERIC_PARSERS[this.prev?.tokenType ?? TokenType.UNKNOWN]?.(this, this.prev as Token);
+      return this._constructor.NUMERIC_PARSERS[this.prev?.tokenType ?? TokenType.UNKNOWN]?.call(this, this.prev as Token);
     }
     return this.parsePlaceholder();
   }
@@ -10599,7 +11244,7 @@ export class Parser {
   parsePrimary (): Expression | undefined {
     if (this.matchSet(Object.keys(this._constructor.PRIMARY_PARSERS) as TokenType[])) {
       const tokenType = this.prev?.tokenType ?? TokenType.UNKNOWN;
-      const primary = this._constructor.PRIMARY_PARSERS[tokenType]?.(this, this.prev as Token);
+      const primary = this._constructor.PRIMARY_PARSERS[tokenType]?.call(this, this.prev as Token);
 
       if (tokenType === TokenType.STRING) {
         const expressions = [primary];
@@ -10693,16 +11338,16 @@ export class Parser {
 
     if (this.match(TokenType.L_PAREN)) {
       if (this.match(TokenType.START_WITH)) {
-        thisExpr.setArgKey('start', this.parseBitwise()!);
+        thisExpr.setArgKey('start', this.parseBitwise());
       }
       if (this.matchTextSeq(['INCREMENT', 'BY'])) {
-        thisExpr.setArgKey('increment', this.parseBitwise()!);
+        thisExpr.setArgKey('increment', this.parseBitwise());
       }
       if (this.matchTextSeq('MINVALUE')) {
-        thisExpr.setArgKey('minvalue', this.parseBitwise()!);
+        thisExpr.setArgKey('minvalue', this.parseBitwise());
       }
       if (this.matchTextSeq('MAXVALUE')) {
-        thisExpr.setArgKey('maxvalue', this.parseBitwise()!);
+        thisExpr.setArgKey('maxvalue', this.parseBitwise());
       }
 
       if (this.matchTextSeq('CYCLE')) {
@@ -10712,11 +11357,11 @@ export class Parser {
       }
 
       if (!identity) {
-        thisExpr.setArgKey('expression', this.parseRange()!);
+        thisExpr.setArgKey('expression', this.parseRange());
       } else if (!thisExpr.args.start && this.match(TokenType.NUMBER, { advance: false })) {
         const args = this.parseCsv(this.parseBitwise.bind(this));
-        thisExpr.setArgKey('start', seqGet(args, 0)!);
-        thisExpr.setArgKey('increment', seqGet(args, 1)!);
+        thisExpr.setArgKey('start', seqGet(args, 0));
+        thisExpr.setArgKey('increment', seqGet(args, 1));
       }
 
       this.matchRParen();
@@ -10754,7 +11399,7 @@ export class Parser {
       && this.next.text.toUpperCase() in this._constructor.PROCEDURE_OPTIONS;
 
     if (!procedureOptionFollows && this.matchTexts(Object.keys(this._constructor.CONSTRAINT_PARSERS))) {
-      const constraint = this._constructor.CONSTRAINT_PARSERS[this.prev?.text ?? ''.toUpperCase()]?.(this);
+      const constraint = this._constructor.CONSTRAINT_PARSERS[this.prev?.text ?? ''.toUpperCase()]?.call(this);
       if (!constraint) {
         this.retreat(this.index - 1);
         return undefined;
@@ -10812,7 +11457,7 @@ export class Parser {
       this.raiseError(`No parser found for schema constraint ${constraintName}.`);
     }
 
-    const constraint = this._constructor.CONSTRAINT_PARSERS[constraintName]?.(this);
+    const constraint = this._constructor.CONSTRAINT_PARSERS[constraintName]?.call(this);
     if (!constraint || Array.isArray(constraint)) {
       this.retreat(index);
       return undefined;
@@ -11046,7 +11691,7 @@ export class Parser {
     const parser = this._constructor.NO_PAREN_FUNCTION_PARSERS[upper];
     if (parser && optionalParens && !this._constructor.INVALID_FUNC_NAME_TOKENS.has(tokenType)) {
       this.advance();
-      return this.parseWindow(parser(this));
+      return this.parseWindow(parser.call(this));
     }
 
     if (!this.next || this.next.tokenType !== TokenType.L_PAREN) {
@@ -11071,7 +11716,7 @@ export class Parser {
 
     const funcParser = this._constructor.FUNCTION_PARSERS[upper];
     if (funcParser && !anonymous) {
-      const thisExpr: Expression | undefined = funcParser(this);
+      const thisExpr: Expression | undefined = funcParser.call(this);
 
       if (thisExpr instanceof Expression) {
         thisExpr.addComments(comments);
@@ -11288,7 +11933,7 @@ export class Parser {
 
     if (this.matchSet(Object.keys(this._constructor.LAMBDAS) as TokenType[])) {
       const lambdaTokenType = this.prev?.tokenType;
-      return lambdaTokenType && this._constructor.LAMBDAS[lambdaTokenType]?.(this, expressions.filter((e): e is Expression => Boolean(e)));
+      return lambdaTokenType && this._constructor.LAMBDAS[lambdaTokenType]?.call(this, expressions.filter((e): e is Expression => Boolean(e)));
     }
 
     this.retreat(index);
@@ -11344,11 +11989,11 @@ export class Parser {
     } else if (this.matchTextSeq('WITHOUT') && this.matchTexts(['CLUSTER', 'OIDS'])) {
       alterSet.setArgKey('option', var_(`WITHOUT ${this.prev?.text ?? ''.toUpperCase()}`));
     } else if (this.matchTextSeq('LOCATION')) {
-      alterSet.setArgKey('location', this.parseField()!);
+      alterSet.setArgKey('location', this.parseField());
     } else if (this.matchTextSeq(['ACCESS', 'METHOD'])) {
-      alterSet.setArgKey('accessMethod', this.parseField()!);
+      alterSet.setArgKey('accessMethod', this.parseField());
     } else if (this.matchTextSeq('TABLESPACE')) {
-      alterSet.setArgKey('tablespace', this.parseField()!);
+      alterSet.setArgKey('tablespace', this.parseField());
     } else if (this.matchTextSeq(['FILE', 'FORMAT']) || this.matchTextSeq('FILEFORMAT')) {
       alterSet.setArgKey('fileFormat', [this.parseField()!]);
     } else if (this.matchTextSeq('STAGE_FILE_FORMAT')) {
@@ -11359,7 +12004,7 @@ export class Parser {
       alterSet.setArgKey('tag', this.parseCsv(this.parseAssignment.bind(this)));
     } else {
       if (this.matchTextSeq('SERDE')) {
-        alterSet.setArgKey('serde', this.parseField()!);
+        alterSet.setArgKey('serde', this.parseField());
       }
 
       const properties = this.parseWrapped(this.parseProperties.bind(this), { optional: true });
@@ -11423,7 +12068,7 @@ export class Parser {
       ? this._constructor.ALTER_PARSERS[this.prev.text.toUpperCase()]
       : undefined;
     if (parser) {
-      const actions = ensureIterable(parser(this));
+      const actions = ensureIterable(parser.call(this));
       const notValid = this.matchTextSeq(['NOT', 'VALID']);
       const options = this.parseCsv(this.parseProperty.bind(this));
       const cascade =
@@ -11490,7 +12135,7 @@ export class Parser {
     } else if (this.matchTexts(Object.keys(this._constructor.ANALYZE_EXPRESSION_PARSERS))) {
       kind = undefined;
       innerExpression =
-        this._constructor.ANALYZE_EXPRESSION_PARSERS[this.prev?.text ?? ''.toUpperCase()](this);
+        this._constructor.ANALYZE_EXPRESSION_PARSERS[this.prev?.text ?? ''.toUpperCase()].call(this);
     } else {
       kind = undefined;
       thisExpr = this.parseTableParts();
@@ -11521,7 +12166,7 @@ export class Parser {
 
     if (this.matchTexts(Object.keys(this._constructor.ANALYZE_EXPRESSION_PARSERS))) {
       innerExpression =
-        this._constructor.ANALYZE_EXPRESSION_PARSERS[this.prev?.text ?? ''.toUpperCase()](this);
+        this._constructor.ANALYZE_EXPRESSION_PARSERS[this.prev?.text ?? ''.toUpperCase()].call(this);
     }
 
     const properties = this.parseProperties();
@@ -11682,7 +12327,7 @@ export class Parser {
     const target = this.parseTable();
 
     if (target && this.match(TokenType.ALIAS, { advance: false })) {
-      target.setArgKey('alias', this.parseTableAlias()!);
+      target.setArgKey('alias', this.parseTableAlias());
     }
 
     this.match(TokenType.USING);
@@ -11758,7 +12403,7 @@ export class Parser {
       this._constructor.SHOW_TRIE,
     );
     if (parser) {
-      return parser(this);
+      return parser.call(this);
     }
     return this.parseAsCommand(this.prev);
   }
@@ -11819,7 +12464,7 @@ export class Parser {
       this._constructor.SET_PARSERS,
       this._constructor.SET_TRIE,
     );
-    return parser ? parser(this) : this.parseSetItemAssignment({ kind: undefined });
+    return parser ? parser.call(this) : this.parseSetItemAssignment({ kind: undefined });
   }
 
   parseSet (options?: { unset?: boolean;
@@ -12138,7 +12783,7 @@ export class Parser {
 
   parseAlterTableAlter (): Expression | undefined {
     if (this.matchTexts(Object.keys(this._constructor.ALTER_ALTER_PARSERS))) {
-      return this._constructor.ALTER_ALTER_PARSERS[this.prev?.text ?? ''.toUpperCase()]?.(this);
+      return this._constructor.ALTER_ALTER_PARSERS[this.prev?.text ?? ''.toUpperCase()]?.call(this);
     }
 
     this.match(TokenType.COLUMN);
@@ -12947,7 +13592,7 @@ export class Parser {
         }
         result = parsedQuery;
       } else {
-        result = parser(this, result as SelectExpr);
+        result = parser.call(this, result as SelectExpr);
       }
     }
 

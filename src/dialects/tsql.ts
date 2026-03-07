@@ -475,33 +475,33 @@ function tableName (table: TableExpr): string {
   return parts.join('.');
 }
 
-function formatSql (self: Generator, expression: NumberToStrExpr | TimeToStrExpr): string {
+function formatSql (this: Generator, expression: NumberToStrExpr | TimeToStrExpr): string {
   const fmt = expression.args.format as LiteralExpr | undefined;
   let fmtSql: string;
 
   if (!(expression instanceof NumberToStrExpr)) {
     if (fmt?.isString) {
       const mappedFmt = TSQL.INVERSE_TIME_MAPPING[fmt.name] ?? fmt.name;
-      fmtSql = self.sql(LiteralExpr.string(mappedFmt));
+      fmtSql = this.sql(LiteralExpr.string(mappedFmt));
     } else {
-      fmtSql = self.formatTime?.(expression) ?? (fmt ? self.sql(fmt) : '');
+      fmtSql = this.formatTime?.(expression) ?? (fmt ? this.sql(fmt) : '');
     }
   } else {
-    fmtSql = fmt ? self.sql(fmt) : '';
+    fmtSql = fmt ? this.sql(fmt) : '';
   }
 
-  return self.func('FORMAT', [
+  return this.func('FORMAT', [
     expression.args.this,
     fmtSql,
     expression.args.culture,
   ]);
 }
 
-function stringAggSql (self: Generator, expression: GroupConcatExpr): string {
+function stringAggSql (this: Generator, expression: GroupConcatExpr): string {
   let thisExpr = expression.args.this;
   const distinct = expression.find(DistinctExpr);
   if (distinct) {
-    self.unsupported('T-SQL STRING_AGG doesn\'t support DISTINCT.');
+    this.unsupported('T-SQL STRING_AGG doesn\'t support DISTINCT.');
     thisExpr = distinct.pop().args.expressions?.[0];
   }
 
@@ -511,18 +511,18 @@ function stringAggSql (self: Generator, expression: GroupConcatExpr): string {
     if (orderExpr.args.this) {
       thisExpr = orderExpr.args.this.pop();
     }
-    const orderSql = self.sql(orderExpr);
+    const orderSql = this.sql(orderExpr);
     order = ` WITHIN GROUP (${orderSql.slice(1)})`;
   }
 
   const separator: Expression = (expression.args.separator as Expression | undefined) ?? LiteralExpr.string(',');
-  return `STRING_AGG(${self.formatArgs([thisExpr, separator])})${order}`;
+  return `STRING_AGG(${this.formatArgs([thisExpr, separator])})${order}`;
 }
 
-function jsonExtractSql (self: Generator, expression: JsonExtractExpr | JsonExtractScalarExpr): string {
-  const jsonQuery = self.func('JSON_QUERY', [expression.args.this, expression.args.expression]);
-  const jsonValue = self.func('JSON_VALUE', [expression.args.this, expression.args.expression]);
-  return self.func('ISNULL', [jsonQuery, jsonValue]);
+function jsonExtractSql (this: Generator, expression: JsonExtractExpr | JsonExtractScalarExpr): string {
+  const jsonQuery = this.func('JSON_QUERY', [expression.args.this, expression.args.expression]);
+  const jsonValue = this.func('JSON_VALUE', [expression.args.this, expression.args.expression]);
+  return this.func('ISNULL', [jsonQuery, jsonValue]);
 }
 
 export class TSQLTokenizer extends Tokenizer {
@@ -584,11 +584,15 @@ export class TSQLParser extends Parser {
   static NO_PAREN_IF_COMMANDS = false;
 
   @cache
-  static get QUERY_MODIFIER_PARSERS (): Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> {
+  static get QUERY_MODIFIER_PARSERS (): Partial<Record<TokenType, (this: Parser) => [string, Expression | Expression[] | undefined]>> {
     return {
       ...Parser.QUERY_MODIFIER_PARSERS,
-      [TokenType.OPTION]: (self: Parser) => ['options', (self as TSQLParser).parseOptions()],
-      [TokenType.FOR]: (self: Parser) => ['for', (self as TSQLParser).parseFor()],
+      [TokenType.OPTION]: function (this: Parser) {
+        return ['options', (this as TSQLParser).parseOptions()];
+      },
+      [TokenType.FOR]: function (this: Parser) {
+        return ['for', (this as TSQLParser).parseFor()];
+      },
     };
   }
 
@@ -705,62 +709,71 @@ export class TSQLParser extends Parser {
   }
 
   @cache
-  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.STATEMENT_PARSERS,
-      [TokenType.DECLARE]: (self: Parser) => (self as TSQLParser).parseDeclare(),
+      [TokenType.DECLARE]: function (this: Parser) {
+        return (this as TSQLParser).parseDeclare();
+      },
     };
   }
 
   @cache
-  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (this: Parser, this_: Expression) => Expression | undefined>> {
     return {
       ...Parser.RANGE_PARSERS,
-      [TokenType.DCOLON]: (self: Parser, thisNode: Expression) => (self as TSQLParser).expression(ScopeResolutionExpr, {
-        this: thisNode,
-        expression: self.parseFunction() || self.parseVar({ anyToken: true }),
-      }),
+      [TokenType.DCOLON]: function (this: Parser, thisNode: Expression) {
+        return (this as TSQLParser).expression(ScopeResolutionExpr, {
+          this: thisNode,
+          expression: this.parseFunction() || this.parseVar({ anyToken: true }),
+        });
+      },
     };
   }
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression> {
+  static get NO_PAREN_FUNCTION_PARSERS (): Record<string, (this: Parser) => Expression> {
     return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
-      NEXT: (self: Parser) => (self as TSQLParser).parseNextValueFor()!,
+      NEXT: function (this: Parser) {
+        return (this as TSQLParser).parseNextValueFor()!;
+      },
     };
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression> {
+  static get FUNCTION_PARSERS (): Record<string, (this: Parser) => Expression> {
     return {
       ...Parser.FUNCTION_PARSERS,
-      JSON_ARRAYAGG: (self: Parser) => {
-        const p = self as TSQLParser;
+      JSON_ARRAYAGG: function (this: Parser) {
+        const p = this as TSQLParser;
         return p.expression(JsonArrayAggExpr, {
           this: p.parseBitwise(),
           order: p.parseOrder(),
           nullHandling: p.parseOnHandling('NULL', ['NULL', 'ABSENT']),
         });
       },
-      DATEPART: (self: Parser) => (self as TSQLParser).parseDatepart(),
+      DATEPART: function (this: Parser) {
+        return (this as TSQLParser).parseDatepart();
+      },
     };
   }
 
   @cache
-  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
+  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((this: Parser, this_?: Expression, to?: Expression) => Expression)>> {
     return {
       ...Parser.COLUMN_OPERATORS,
-      [TokenType.DCOLON]: (self: Parser, thisNode?: Expression, to?: Expression) =>
-        to instanceof DataTypeExpr && to.args.this !== DataTypeExprKind.USERDEFINED
-          ? self.expression(CastExpr, {
+      [TokenType.DCOLON]: function (this: Parser, thisNode?: Expression, to?: Expression) {
+        return to instanceof DataTypeExpr && to.args.this !== DataTypeExprKind.USERDEFINED
+          ? this.expression(CastExpr, {
             this: thisNode,
             to,
           })
-          : self.expression(ScopeResolutionExpr, {
+          : this.expression(ScopeResolutionExpr, {
             this: thisNode,
             expression: to,
-          }),
+          });
+      },
     };
   }
 
@@ -1049,7 +1062,7 @@ export class TSQLParser extends Parser {
     let thisNode: ExpressionValue | undefined;
     if (this.matchTexts(['CLUSTERED', 'NONCLUSTERED'])) {
       const parsers = this._constructor.CONSTRAINT_PARSERS;
-      thisNode = seqGet(ensureIterable(parsers[this.prev?.text.toUpperCase() ?? '']?.(this)), 0) as ExpressionValue;
+      thisNode = seqGet(ensureIterable(parsers[this.prev?.text.toUpperCase() ?? '']?.call(this)), 0) as ExpressionValue;
     } else {
       thisNode = this.parseSchema({ this: this.parseIdVar({ anyToken: false }) }) ?? new VarExpr({});
     }
@@ -1196,9 +1209,9 @@ export class TSQLGenerator extends Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>(([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>(([
       ...Generator.TRANSFORMS.entries(),
       [AnyValueExpr, anyValueToMaxSql],
       [Atan2Expr, renameFunc('ATN2')],
@@ -1217,10 +1230,20 @@ export class TSQLGenerator extends Generator {
       [IfExpr, renameFunc('IIF')],
       [JsonExtractExpr, jsonExtractSql],
       [JsonExtractScalarExpr, jsonExtractSql],
-      [LastDayExpr, (self: Generator, e: LastDayExpr) => self.func('EOMONTH', [e.args.this])],
+      [
+        LastDayExpr,
+        function (this: Generator, e: LastDayExpr) {
+          return this.func('EOMONTH', [e.args.this]);
+        },
+      ],
       [LnExpr, renameFunc('LOG')],
       [MaxExpr, maxOrGreatest],
-      [Md5Expr, (self: Generator, e: Md5Expr) => self.func('HASHBYTES', [LiteralExpr.string('MD5'), e.args.this])],
+      [
+        Md5Expr,
+        function (this: Generator, e: Md5Expr) {
+          return this.func('HASHBYTES', [LiteralExpr.string('MD5'), e.args.this]);
+        },
+      ],
       [MinExpr, minOrLeast],
       [NumberToStrExpr, formatSql],
       [RepeatExpr, renameFunc('REPLICATE')],
@@ -1237,19 +1260,31 @@ export class TSQLGenerator extends Generator {
       [StddevExpr, renameFunc('STDEV')],
       [
         StrPositionExpr,
-        (self: Generator, e: StrPositionExpr) =>
-          strPositionSql(self, e, {
+        function (this: Generator, e: StrPositionExpr) {
+          return strPositionSql.call(this, e, {
             funcName: 'CHARINDEX',
             supportsPosition: true,
-          }),
+          });
+        },
       ],
       [SubqueryExpr, preprocess([qualifyDerivedTableOutputs])],
-      [ShaExpr, (self: Generator, e: ShaExpr) => self.func('HASHBYTES', [LiteralExpr.string('SHA1'), e.args.this])],
-      [Sha1DigestExpr, (self: Generator, e: Sha1DigestExpr) => self.func('HASHBYTES', [LiteralExpr.string('SHA1'), e.args.this])],
+      [
+        ShaExpr,
+        function (this: Generator, e: ShaExpr) {
+          return this.func('HASHBYTES', [LiteralExpr.string('SHA1'), e.args.this]);
+        },
+      ],
+      [
+        Sha1DigestExpr,
+        function (this: Generator, e: Sha1DigestExpr) {
+          return this.func('HASHBYTES', [LiteralExpr.string('SHA1'), e.args.this]);
+        },
+      ],
       [
         Sha2Expr,
-        (self: Generator, e: Sha2Expr) =>
-          self.func('HASHBYTES', [LiteralExpr.string(`SHA2_${e.args.length || 256}`), e.args.this]),
+        function (this: Generator, e: Sha2Expr) {
+          return this.func('HASHBYTES', [LiteralExpr.string(`SHA2_${e.args.length || 256}`), e.args.this]);
+        },
       ],
       [TemporaryPropertyExpr, () => ''],
       [TimeStrToTimeExpr, timeStrToTimeSql],
@@ -1257,15 +1292,21 @@ export class TSQLGenerator extends Generator {
       [TrimExpr, trimSql],
       [TsOrDsAddExpr, dateDeltaSql('DATEADD', { cast: true })],
       [TsOrDsDiffExpr, dateDeltaSql('DATEDIFF')],
-      [TimestampTruncExpr, (self: Generator, e: TimestampTruncExpr) => self.func('DATETRUNC', [e.args.unit, e.args.this])],
+      [
+        TimestampTruncExpr,
+        function (this: Generator, e: TimestampTruncExpr) {
+          return this.func('DATETRUNC', [e.args.unit, e.args.this]);
+        },
+      ],
       [
         TruncExpr,
-        (self: Generator, e: TruncExpr) =>
-          self.func('ROUND', [
+        function (this: Generator, e: TruncExpr) {
+          return this.func('ROUND', [
             e.args.this,
             e.args.decimals || LiteralExpr.number(0),
             LiteralExpr.number(1),
-          ]),
+          ]);
+        },
       ],
       [UuidExpr, () => 'NEWID()'],
       [DateFromPartsExpr, renameFunc('DATEFROMPARTS')],
@@ -1394,7 +1435,7 @@ export class TSQLGenerator extends Generator {
       expression.setArgKey('precision', LiteralExpr.number(0));
     }
 
-    return renameFunc('TIMEFROMPARTS')(this, expression);
+    return renameFunc('TIMEFROMPARTS').call(this, expression);
   }
 
   timestampFromPartsSql (expression: TimestampFromPartsExpr): string {
@@ -1414,7 +1455,7 @@ export class TSQLGenerator extends Generator {
       expression.setArgKey('milli', LiteralExpr.number(0));
     }
 
-    return renameFunc('DATETIMEFROMPARTS')(this, expression);
+    return renameFunc('DATETIMEFROMPARTS').call(this, expression);
   }
 
   setItemSql (expression: SetItemExpr): string {
@@ -1552,12 +1593,12 @@ export class TSQLGenerator extends Generator {
 
   countSql (expression: CountExpr): string {
     const funcName = expression.args.bigInt ? 'COUNT_BIG' : 'COUNT';
-    return renameFunc(funcName)(this, expression);
+    return renameFunc(funcName).call(this, expression);
   }
 
   datediffSql (expression: DateDiffExpr): string {
     const funcName = expression.args.bigInt ? 'DATEDIFF_BIG' : 'DATEDIFF';
-    return dateDeltaSql(funcName)(this, expression);
+    return dateDeltaSql(funcName).call(this, expression);
   }
 
   offsetSql (expression: OffsetExpr): string {
@@ -1698,7 +1739,7 @@ export class TSQLGenerator extends Generator {
 
   coalesceSql (expression: CoalesceExpr): string {
     const funcName = expression.args.isNull ? 'ISNULL' : 'COALESCE';
-    return renameFunc(funcName)(this, expression);
+    return renameFunc(funcName).call(this, expression);
   }
 }
 

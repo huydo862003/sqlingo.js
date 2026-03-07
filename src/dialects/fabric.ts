@@ -132,8 +132,8 @@ export class FabricGenerator extends TSQL.Generator {
   };
 
   @cache
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: Expression) => string> {
-    const m = new Map<typeof Expression, (self: Generator, e: Expression) => string>(TSQL.Generator.ORIGINAL_TRANSFORMS);
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: Expression) => string> {
+    const m = new Map<typeof Expression, (this: Generator, e: Expression) => string>(TSQL.Generator.ORIGINAL_TRANSFORMS);
     m.set(CreateExpr, preprocess([addDefaultPrecisionToVarchar]));
     return m;
   };

@@ -115,7 +115,7 @@ function isIcebergTable (properties: PropertiesExpr): boolean {
   return false;
 }
 
-function locationPropertySql (self: Generator, e: LocationPropertyExpr): string {
+function locationPropertySql (this: Generator, e: LocationPropertyExpr): string {
   let propName = 'external_location';
 
   if (e.parent instanceof PropertiesExpr) {
@@ -124,10 +124,10 @@ function locationPropertySql (self: Generator, e: LocationPropertyExpr): string 
     }
   }
 
-  return `${propName}=${self.sql(e, 'this')}`;
+  return `${propName}=${this.sql(e, 'this')}`;
 }
 
-function partitionedByPropertySql (self: Generator, e: PartitionedByPropertyExpr): string {
+function partitionedByPropertySql (this: Generator, e: PartitionedByPropertyExpr): string {
   let propName = 'partitioned_by';
 
   if (e.parent instanceof PropertiesExpr) {
@@ -136,7 +136,7 @@ function partitionedByPropertySql (self: Generator, e: PartitionedByPropertyExpr
     }
   }
 
-  return `${propName}=${self.sql(e, 'this')}`;
+  return `${propName}=${this.sql(e, 'this')}`;
 }
 
 class HiveGeneratorExtension extends Hive.Generator {
@@ -160,9 +160,11 @@ class TrinoTokenizerExtension extends Trino.Tokenizer {
 }
 
 class TrinoParserExtension extends Trino.Parser {
-  static STATEMENT_PARSERS: Record<string, (self: Parser) => Expression | undefined> = {
+  static STATEMENT_PARSERS: Record<string, (this: Parser) => Expression | undefined> = {
     ...Trino.Parser.STATEMENT_PARSERS,
-    [TokenType.USING]: (self: Parser) => self.parseAsCommand((self as TrinoParserExtension).prev),
+    [TokenType.USING]: function (this: Parser) {
+      return this.parseAsCommand((this as TrinoParserExtension).prev);
+    },
   };
 }
 
@@ -174,9 +176,9 @@ class TrinoGeneratorExtension extends Trino.Generator {
   })();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static ORIGINAL_TRANSFORMS: Map<typeof Expression, (self: Generator, e: any) => string> = (() => {
+  static ORIGINAL_TRANSFORMS: Map<typeof Expression, (this: Generator, e: any) => string> = (() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const m = new Map<typeof Expression, (self: Generator, e: any) => string>(Trino.Generator.ORIGINAL_TRANSFORMS);
+    const m = new Map<typeof Expression, (this: Generator, e: any) => string>(Trino.Generator.ORIGINAL_TRANSFORMS);
     m.set(PartitionedByPropertyExpr, partitionedByPropertySql);
     m.set(LocationPropertyExpr, locationPropertySql);
     return m;

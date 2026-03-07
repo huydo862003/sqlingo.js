@@ -73,14 +73,14 @@ import {
 
 function dateAddSqlTd (
   kind: '+' | '-',
-): (self: Generator, expression: DateAddExpr | DateSubExpr) => string {
-  return function (self: Generator, expression: DateAddExpr | DateSubExpr): string {
-    const thisSql = self.sql(expression, 'this');
+): (this: Generator, expression: DateAddExpr | DateSubExpr) => string {
+  return function (this: Generator, expression: DateAddExpr | DateSubExpr): string {
+    const thisSql = this.sql(expression, 'this');
     const unit = expression.args.unit;
-    let value = expression.args.expression && self.simplifyUnlessLiteral(expression.args.expression);
+    let value = expression.args.expression && this.simplifyUnlessLiteral(expression.args.expression);
 
     if (!(value instanceof LiteralExpr)) {
-      self.unsupported('Cannot add non literal');
+      this.unsupported('Cannot add non literal');
     }
 
     let kindToOp: string;
@@ -92,7 +92,7 @@ function dateAddSqlTd (
       (value as LiteralExpr).setArgKey('isString', true);
     }
 
-    return `${thisSql} ${kindToOp} ${self.sql(new IntervalExpr({
+    return `${thisSql} ${kindToOp} ${this.sql(new IntervalExpr({
       this: value,
       unit,
     }))}`;
@@ -194,33 +194,45 @@ export class TeradataParser extends Parser {
   }
 
   @cache
-  static get STATEMENT_PARSERS (): Record<TokenType | string, (self: Parser) => Expression | Expression[] | undefined> {
+  static get STATEMENT_PARSERS (): Record<TokenType | string, (this: Parser) => Expression | Expression[] | undefined> {
     return {
       ...Parser.STATEMENT_PARSERS,
-      [TokenType.DATABASE]: (self: Parser) => self.expression(
-        UseExpr,
-        { this: self.parseTable({ schema: false }) },
-      ),
-      [TokenType.REPLACE]: (self: Parser) => self.parseCreate(),
-      [TokenType.LOCK]: (self: Parser) => (self as TeradataParser).parseLockingStatement(),
+      [TokenType.DATABASE]: function (this: Parser) {
+        return this.expression(
+          UseExpr,
+          { this: this.parseTable({ schema: false }) },
+        );
+      },
+      [TokenType.REPLACE]: function (this: Parser) {
+        return this.parseCreate();
+      },
+      [TokenType.LOCK]: function (this: Parser) {
+        return (this as TeradataParser).parseLockingStatement();
+      },
     };
   }
 
   @cache
-  static get SET_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+  static get SET_PARSERS (): Record<string, (this: Parser) => Expression | undefined> {
     return {
       ...Parser.SET_PARSERS,
-      QUERY_BAND: (self: Parser) => (self as TeradataParser).parseQueryBand(),
+      QUERY_BAND: function (this: Parser) {
+        return (this as TeradataParser).parseQueryBand();
+      },
     };
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.FUNCTION_PARSERS,
       TRYCAST: Parser.FUNCTION_PARSERS['TRY_CAST'],
-      RANGE_N: (self: Parser) => (self as TeradataParser).parseRangeN(),
-      TRANSLATE: (self: Parser) => (self as TeradataParser).parseTranslate(),
+      RANGE_N: function (this: Parser) {
+        return (this as TeradataParser).parseRangeN();
+      },
+      TRANSLATE: function (this: Parser) {
+        return (this as TeradataParser).parseTranslate();
+      },
     };
   }
 
@@ -365,39 +377,67 @@ export class TeradataGenerator extends Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const m = new Map<typeof Expression, (self: Generator, e: any) => string>(Generator.TRANSFORMS);
+    const m = new Map<typeof Expression, (this: Generator, e: any) => string>(Generator.TRANSFORMS);
     m.set(ArgMaxExpr, renameFunc('MAX_BY'));
     m.set(ArgMinExpr, renameFunc('MIN_BY'));
     m.set(CurrentDateExpr, () => 'DATE');
     m.set(CurrentTimeExpr, () => 'TIME');
     m.set(CurrentTimestampExpr, () => 'CURRENT_TIMESTAMP');
-    m.set(MaxExpr, (self, e) => maxOrGreatest(self, e as MaxExpr));
-    m.set(MinExpr, (self, e) => minOrLeast(self, e as MinExpr));
+    m.set(MaxExpr, function (this: Generator, e) {
+      return maxOrGreatest.call(this, e as MaxExpr);
+    });
+    m.set(MinExpr, function (this: Generator, e) {
+      return minOrLeast.call(this, e as MinExpr);
+    });
     m.set(Md5Expr, renameFunc('HASHMD5'));
-    m.set(ModExpr, (self, e) => (self as TeradataGenerator).binary(e as ModExpr, 'MOD'));
-    m.set(PowExpr, (self, e) => self.binary(e as PowExpr, '**'));
-    m.set(RandExpr, (self, e) => self.func('RANDOM', [(e as RandExpr).args.lower, (e as RandExpr).args.upper]));
+    m.set(ModExpr, function (this: Generator, e) {
+      return (this as TeradataGenerator).binary(e as ModExpr, 'MOD');
+    });
+    m.set(PowExpr, function (this: Generator, e) {
+      return this.binary(e as PowExpr, '**');
+    });
+    m.set(RandExpr, function (this: Generator, e) {
+      return this.func('RANDOM', [(e as RandExpr).args.lower, (e as RandExpr).args.upper]);
+    });
     m.set(SelectExpr, preprocess([eliminateDistinctOn, eliminateSemiAndAntiJoins]));
-    m.set(StrPositionExpr, (self, e) => strPositionSql(self, e as StrPositionExpr, {
-      funcName: 'INSTR',
-      supportsPosition: true,
-      supportsOccurrence: true,
-    }));
-    m.set(StrToDateExpr, (self, e) => `CAST(${self.sql(e, 'this')} AS DATE FORMAT ${self.formatTime(e as StrToDateExpr)})`);
-    m.set(StrToTimeExpr, (self, e) => self.castSql(e as StrToTimeExpr));
+    m.set(StrPositionExpr, function (this: Generator, e) {
+      return strPositionSql.call(this, e as StrPositionExpr, {
+        funcName: 'INSTR',
+        supportsPosition: true,
+        supportsOccurrence: true,
+      });
+    });
+    m.set(StrToDateExpr, function (this: Generator, e) {
+      return `CAST(${this.sql(e, 'this')} AS DATE FORMAT ${this.formatTime(e as StrToDateExpr)})`;
+    });
+    m.set(StrToTimeExpr, function (this: Generator, e) {
+      return this.castSql(e as StrToTimeExpr);
+    });
     m.set(TableSampleExpr, noTablesampleSql);
-    m.set(TimeToStrExpr, (self, e) => self.func('TO_CHAR', [(e as TimeToStrExpr).args.this, self.formatTime(e as TimeToStrExpr)]));
-    m.set(ToCharExpr, (self, e) => self.functionFallbackSql(e as FuncExpr | JsonExtractExpr));
+    m.set(TimeToStrExpr, function (this: Generator, e) {
+      return this.func('TO_CHAR', [(e as TimeToStrExpr).args.this, this.formatTime(e as TimeToStrExpr)]);
+    });
+    m.set(ToCharExpr, function (this: Generator, e) {
+      return this.functionFallbackSql(e as FuncExpr | JsonExtractExpr);
+    });
     m.set(ToNumberExpr, toNumberWithNlsParam);
-    m.set(UseExpr, (self, e) => `DATABASE ${self.sql(e, 'this')}`);
-    m.set(DateAddExpr, (self, e) => dateAddSqlTd('+')(self, e as DateAddExpr));
-    m.set(DateSubExpr, (self, e) => dateAddSqlTd('-')(self, e as DateSubExpr));
-    m.set(QuarterExpr, (self, e) => self.sql(new ExtractExpr({
-      this: 'QUARTER',
-      expression: (e as QuarterExpr).args.this,
-    })));
+    m.set(UseExpr, function (this: Generator, e) {
+      return `DATABASE ${this.sql(e, 'this')}`;
+    });
+    m.set(DateAddExpr, function (this: Generator, e) {
+      return dateAddSqlTd('+').call(this, e as DateAddExpr);
+    });
+    m.set(DateSubExpr, function (this: Generator, e) {
+      return dateAddSqlTd('-').call(this, e as DateSubExpr);
+    });
+    m.set(QuarterExpr, function (this: Generator, e) {
+      return this.sql(new ExtractExpr({
+        this: 'QUARTER',
+        expression: (e as QuarterExpr).args.this,
+      }));
+    });
     return m;
   };
 

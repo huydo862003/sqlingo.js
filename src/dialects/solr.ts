@@ -2,6 +2,7 @@ import { Parser } from '../parser';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
+import type { Expression } from '../expressions';
 import { OrExpr } from '../expressions';
 import { cache } from '../port_internals';
 import {

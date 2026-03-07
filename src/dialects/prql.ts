@@ -62,33 +62,47 @@ class PRQLParser extends Parser {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get TRANSFORM_PARSERS (): Record<string, (self: Parser, query: any) => QueryExpr | undefined> {
+  static get TRANSFORM_PARSERS (): Record<string, (this: Parser, query: any) => QueryExpr | undefined> {
     return {
-      DERIVE: (self, query) => (self as PRQLParser).parseSelection(query),
-      SELECT: (self, query) => (self as PRQLParser).parseSelection(query, { append: false }),
-      TAKE: (self, query) => (self as PRQLParser).parseTake(query),
-      FILTER: (self, query) => query.where((self as PRQLParser).parseDisjunction()),
-      APPEND: (self, query) =>
-        query.union(selectAll((self as PRQLParser).parseTable()), {
+      DERIVE: function (this: Parser, query) {
+        return (this as PRQLParser).parseSelection(query);
+      },
+      SELECT: function (this: Parser, query) {
+        return (this as PRQLParser).parseSelection(query, { append: false });
+      },
+      TAKE: function (this: Parser, query) {
+        return (this as PRQLParser).parseTake(query);
+      },
+      FILTER: function (this: Parser, query) {
+        return query.where((this as PRQLParser).parseDisjunction());
+      },
+      APPEND: function (this: Parser, query) {
+        return query.union(selectAll((this as PRQLParser).parseTable()), {
           distinct: false,
           copy: false,
-        }),
-      REMOVE: (self, query) =>
-        query.except(selectAll((self as PRQLParser).parseTable()), {
+        });
+      },
+      REMOVE: function (this: Parser, query) {
+        return query.except(selectAll((this as PRQLParser).parseTable()), {
           distinct: false,
           copy: false,
-        }),
-      INTERSECT: (self, query) =>
-        query.intersect(selectAll((self as PRQLParser).parseTable()), {
+        });
+      },
+      INTERSECT: function (this: Parser, query) {
+        return query.intersect(selectAll((this as PRQLParser).parseTable()), {
           distinct: false,
           copy: false,
-        }),
-      SORT: (self, query) => (self as PRQLParser).parseOrderBy(query),
-      AGGREGATE: (self, query) =>
-        (self as PRQLParser).parseSelection(query, {
-          parseMethod: (self as PRQLParser).parseAggregate,
+        });
+      },
+      SORT: function (this: Parser, query) {
+        return (this as PRQLParser).parseOrderBy(query);
+      },
+      AGGREGATE: function (this: Parser, query) {
+        return (this as PRQLParser).parseSelection(query, {
+          parseMethod: (this as PRQLParser).parseAggregate,
           append: false,
-        }),
+        });
+      },
     };
   }
 
@@ -143,7 +157,7 @@ class PRQLParser extends Parser {
 
     while (this.matchTexts(Object.keys((this._constructor as typeof PRQLParser).TRANSFORM_PARSERS))) {
       const transform = (this._constructor as typeof PRQLParser).TRANSFORM_PARSERS[this.prev?.text.toUpperCase() ?? ''];
-      const result = transform(this, query);
+      const result = transform.call(this, query);
       if (result) {
         query = result;
       }

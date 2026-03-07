@@ -120,11 +120,15 @@ class RedshiftParser extends Postgres.Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Postgres.Parser.NO_PAREN_FUNCTION_PARSERS,
-      APPROXIMATE: (self: Parser) => (self as RedshiftParser).parseApproximateCount(),
-      SYSDATE: (self: Parser) => self.expression(CurrentTimestampExpr, { sysdate: true }),
+      APPROXIMATE: function (this: Parser) {
+        return (this as RedshiftParser).parseApproximateCount();
+      },
+      SYSDATE: function (this: Parser) {
+        return this.expression(CurrentTimestampExpr, { sysdate: true });
+      },
     };
   }
 
@@ -249,28 +253,45 @@ class RedshiftGenerator extends Postgres.Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Postgres.Generator.TRANSFORMS,
       [ArrayConcatExpr, arrayConcatSql('ARRAY_CONCAT')],
       [ConcatExpr, concatToDPipeSql],
       [ConcatWsExpr, concatWsToDPipeSql],
       [
         ApproxDistinctExpr,
-        (self: Generator, e: ApproxDistinctExpr) =>
-          `APPROXIMATE COUNT(DISTINCT ${self.sql(e, 'this')})`,
+        function (this: Generator, e: ApproxDistinctExpr) {
+          return `APPROXIMATE COUNT(DISTINCT ${this.sql(e, 'this')})`;
+        },
       ],
       [
         CurrentTimestampExpr,
-        (self: Generator, e: CurrentTimestampExpr) =>
-          e.args.sysdate ? 'SYSDATE' : 'GETDATE()',
+        function (this: Generator, e: CurrentTimestampExpr) {
+          return e.args.sysdate ? 'SYSDATE' : 'GETDATE()';
+        },
       ],
       [DateAddExpr, dateDeltaSql('DATEADD')],
       [DateDiffExpr, dateDeltaSql('DATEDIFF')],
-      [DistKeyPropertyExpr, (self: Generator, e: DistKeyPropertyExpr) => self.func('DISTKEY', [e.args.this])],
-      [DistStylePropertyExpr, (self: Generator, e: DistStylePropertyExpr) => (self as RedshiftGenerator).nakedProperty(e)],
-      [ExplodeExpr, (self: Generator, e: ExplodeExpr) => (self as RedshiftGenerator).explodeSql(e)],
+      [
+        DistKeyPropertyExpr,
+        function (this: Generator, e: DistKeyPropertyExpr) {
+          return this.func('DISTKEY', [e.args.this]);
+        },
+      ],
+      [
+        DistStylePropertyExpr,
+        function (this: Generator, e: DistStylePropertyExpr) {
+          return (this as RedshiftGenerator).nakedProperty(e);
+        },
+      ],
+      [
+        ExplodeExpr,
+        function (this: Generator, e: ExplodeExpr) {
+          return (this as RedshiftGenerator).explodeSql(e);
+        },
+      ],
       [FarmFingerprintExpr, renameFunc('FARMFINGERPRINT64')],
       [FromBaseExpr, renameFunc('STRTOL')],
       [GeneratedAsIdentityColumnConstraintExpr, generatedAsIdentityColumnConstraintSql],
@@ -279,8 +300,9 @@ class RedshiftGenerator extends Postgres.Generator {
       [GroupConcatExpr, renameFunc('LISTAGG')],
       [
         HexExpr,
-        (self: Generator, e: HexExpr) =>
-          self.func('UPPER', [self.func('TO_HEX', [self.sql(e, 'this')])]),
+        function (this: Generator, e: HexExpr) {
+          return this.func('UPPER', [this.func('TO_HEX', [this.sql(e, 'this')])]);
+        },
       ],
       [RegexpExtractExpr, renameFunc('REGEXP_SUBSTR')],
       [
@@ -295,23 +317,31 @@ class RedshiftGenerator extends Postgres.Generator {
       ],
       [
         SortKeyPropertyExpr,
-        (self: Generator, e: SortKeyPropertyExpr) =>
-          `${e.args.compound ? 'COMPOUND ' : ''}SORTKEY(${self.formatArgs([e.args.this])})`,
+        function (this: Generator, e: SortKeyPropertyExpr) {
+          return `${e.args.compound ? 'COMPOUND ' : ''}SORTKEY(${this.formatArgs([e.args.this])})`;
+        },
       ],
       [
         StartsWithExpr,
-        (self: Generator, e: StartsWithExpr) =>
-          `${self.sql(e.args.this)} LIKE ${self.sql(e.args.expression)} || '%'`,
+        function (this: Generator, e: StartsWithExpr) {
+          return `${this.sql(e.args.this)} LIKE ${this.sql(e.args.expression)} || '%'`;
+        },
       ],
       [StringToArrayExpr, renameFunc('SPLIT_TO_ARRAY')],
       [TableSampleExpr, noTablesampleSql],
       [TsOrDsAddExpr, dateDeltaSql('DATEADD')],
       [TsOrDsDiffExpr, dateDeltaSql('DATEDIFF')],
-      [UnixToTimeExpr, (self: Generator, e: UnixToTimeExpr) => (self as RedshiftGenerator).unixToTimeSql(e)],
+      [
+        UnixToTimeExpr,
+        function (this: Generator, e: UnixToTimeExpr) {
+          return (this as RedshiftGenerator).unixToTimeSql(e);
+        },
+      ],
       [
         Sha2DigestExpr,
-        (self: Generator, e: Sha2DigestExpr) =>
-          self.func('SHA2', [e.args.this, e.args.length || LiteralExpr.number(256)]),
+        function (this: Generator, e: Sha2DigestExpr) {
+          return this.func('SHA2', [e.args.this, e.args.length || LiteralExpr.number(256)]);
+        },
       ],
     ]);
 
@@ -560,7 +590,7 @@ class RedshiftGenerator extends Postgres.Generator {
       return super.arraySql(expression);
     }
 
-    return renameFunc('ARRAY')(this, expression);
+    return renameFunc('ARRAY').call(this, expression);
   }
 
   explodeSql (_expression: ExplodeExpr): string {

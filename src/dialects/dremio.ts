@@ -45,17 +45,17 @@ import {
 
 type DateDeltaType = DateAddExpr | DateSubExpr;
 
-function dateDeltaSql (name: string): (self: Generator, expression: DateDeltaType) => string {
-  return (self: Generator, expression: DateDeltaType): string => {
+function dateDeltaSql (name: string): (this: Generator, expression: DateDeltaType) => string {
+  return function (this: Generator, expression: DateDeltaType): string {
     const unit = expression.text('unit').toUpperCase();
 
     // Fallback to default behavior if unit is missing or 'DAY'
     if (!unit || unit === 'DAY') {
-      return self.func(name, [expression.args.this, expression.args.expression]);
+      return this.func(name, [expression.args.this, expression.args.expression]);
     }
 
-    const thisSql = self.sql(expression, 'this');
-    const exprSql = self.sql(expression, 'expression');
+    const thisSql = this.sql(expression, 'this');
+    const exprSql = this.sql(expression, 'expression');
 
     const intervalSql = `CAST(${exprSql} AS INTERVAL ${unit})`;
     return `${name}(${thisSql}, ${intervalSql})`;
@@ -164,10 +164,12 @@ class DremioTokenizer extends Tokenizer {
 class DremioParser extends Parser {
   static LOG_DEFAULTS_TO_LN = true;
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
-      CURRENT_DATE_UTC: (self: Parser) => (self as DremioParser).parseCurrentDateUtc(),
+      CURRENT_DATE_UTC: function (this: Parser) {
+        return (this as DremioParser).parseCurrentDateUtc();
+      },
     };
   }
 
@@ -233,14 +235,19 @@ class DremioGenerator extends Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
       [BitwiseAndAggExpr, renameFunc('BIT_AND')],
       [BitwiseOrAggExpr, renameFunc('BIT_OR')],
       [ToCharExpr, renameFunc('TO_CHAR')],
-      [TimeToStrExpr, (self, e) => self.func('TO_CHAR', [e.args.this, self.formatTime(e)])],
+      [
+        TimeToStrExpr,
+        function (this: Generator, e) {
+          return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+        },
+      ],
       [TryCastExpr, noTrycastSql],
       [DateAddExpr, dateDeltaSql('DATE_ADD')],
       [DateSubExpr, dateDeltaSql('DATE_SUB')],

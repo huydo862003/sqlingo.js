@@ -25,11 +25,13 @@ export class DruidGenerator extends Generator {
   })();
 
   @cache
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: Expression) => string> {
-    const m = new Map<typeof Expression, (self: Generator, e: Expression) => string>(Generator.TRANSFORMS);
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: Expression) => string> {
+    const m = new Map<typeof Expression, (this: Generator, e: Expression) => string>(Generator.TRANSFORMS);
     m.set(CurrentTimestampExpr, () => 'CURRENT_TIMESTAMP');
     m.set(ModExpr, renameFunc('MOD'));
-    m.set(ArrayExpr, (self, e) => `ARRAY[${self.expressions(e)}]`);
+    m.set(ArrayExpr, function (this: Generator, e) {
+      return `ARRAY[${this.expressions(e)}]`;
+    });
     return m;
   };
 }

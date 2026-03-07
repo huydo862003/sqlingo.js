@@ -1,7 +1,6 @@
 import { cache } from '../port_internals';
 import {
-  Generator,
-  unsupportedArgs,
+  Generator, unsupportedArgs,
 } from '../generator';
 import { Parser } from '../parser';
 import {
@@ -104,21 +103,21 @@ const DATE_UNITS = new Set([
   'SECOND',
 ]);
 
-function sha2Sql (self: ExasolGenerator, expression: Sha2Expr): string {
+function sha2Sql (this: ExasolGenerator, expression: Sha2Expr): string {
   const length = expression.text('length');
   const funcName = length === '256' ? 'HASH_SHA256' : 'HASH_SHA512';
-  return self.func(funcName, [expression.args.this]);
+  return this.func(funcName, [expression.args.this]);
 }
 
-function dateDiffSql (self: ExasolGenerator, expression: DateDiffExpr | TsOrDsDiffExpr): string {
+function dateDiffSql (this: ExasolGenerator, expression: DateDiffExpr | TsOrDsDiffExpr): string {
   const unit = expression.text('unit').toUpperCase() || 'DAY';
 
   if (!DATE_UNITS.has(unit)) {
-    self.unsupported(`'${unit}' is not supported in Exasol.`);
-    return self.functionFallbackSql(expression);
+    this.unsupported(`'${unit}' is not supported in Exasol.`);
+    return this.functionFallbackSql(expression);
   }
 
-  return self.func(`${unit}S_BETWEEN`, [expression.args.this, expression.args.expression]);
+  return this.func(`${unit}S_BETWEEN`, [expression.args.this, expression.args.expression]);
 }
 
 /**
@@ -225,10 +224,10 @@ function addLocalPrefixForAliases (expression: Expression): Expression {
 
 type TruncableExpr = DateTruncExpr | TimestampTruncExpr | DatetimeTruncExpr;
 
-function truncSql (self: ExasolGenerator, kind: string, expression: TruncableExpr): string {
+function truncSql (this: ExasolGenerator, kind: string, expression: TruncableExpr): string {
   const unit = expression.text('unit');
   const node = expression.args.this instanceof CastExpr ? expression.args.this.args.this : expression.args.this;
-  let exprSql = self.sql(node);
+  let exprSql = this.sql(node);
 
   if (node instanceof LiteralExpr && node.isString) {
     exprSql =
@@ -239,29 +238,29 @@ function truncSql (self: ExasolGenerator, kind: string, expression: TruncableExp
   return `DATE_TRUNC('${unit}', ${exprSql})`;
 }
 
-function dateTruncSql (self: ExasolGenerator, expression: DateTruncExpr): string {
-  return truncSql(self, 'DATE', expression);
+function dateTruncSql (this: ExasolGenerator, expression: DateTruncExpr): string {
+  return truncSql.call(this, 'DATE', expression);
 }
 
-function timestampTruncSql (self: ExasolGenerator, expression: TruncableExpr): string {
-  return truncSql(self, 'TIMESTAMP', expression);
+function timestampTruncSql (this: ExasolGenerator, expression: TruncableExpr): string {
+  return truncSql.call(this, 'TIMESTAMP', expression);
 }
 
 function isCaseInsensitive (node: Expression): boolean {
   return node instanceof CollateExpr && node.text('expression').toUpperCase() === 'UTF8_LCASE';
 }
 
-function substringIndexSql (self: ExasolGenerator, expression: SubstringIndexExpr): string {
+function substringIndexSql (this: ExasolGenerator, expression: SubstringIndexExpr): string {
   const thisNode = expression.args.this;
   const delimiterNode = expression.args.delimiter;
   const delimiterExpr: Expression = delimiterNode instanceof Expression ? delimiterNode : LiteralExpr.number(delimiterNode ?? 0);
   const countNode = expression.args.count;
-  const countSql = self.sql(expression, 'count');
+  const countSql = this.sql(expression, 'count');
   const num = countNode instanceof LiteralExpr && countNode.isNumber ? parseFloat(countNode.args.this ?? '0') : 0;
 
-  const haystackSql = self.sql(thisNode);
+  const haystackSql = this.sql(thisNode);
   if (num === 0) {
-    return self.func('SUBSTR', [
+    return this.func('SUBSTR', [
       haystackSql,
       '1',
       '0',
@@ -270,25 +269,25 @@ function substringIndexSql (self: ExasolGenerator, expression: SubstringIndexExp
 
   const fromRight = num < 0;
   const direction = fromRight ? '-1' : '1';
-  const occur = fromRight ? self.func('ABS', [countSql]) : countSql;
+  const occur = fromRight ? this.func('ABS', [countSql]) : countSql;
 
-  const delimiterSql = self.sql(delimiterExpr);
+  const delimiterSql = this.sql(delimiterExpr);
 
-  const position = self.func('INSTR', [
-    thisNode instanceof Expression && isCaseInsensitive(thisNode) ? self.func('LOWER', [haystackSql]) : haystackSql,
-    isCaseInsensitive(delimiterExpr) ? self.func('LOWER', [delimiterSql]) : delimiterSql,
+  const position = this.func('INSTR', [
+    thisNode instanceof Expression && isCaseInsensitive(thisNode) ? this.func('LOWER', [haystackSql]) : haystackSql,
+    isCaseInsensitive(delimiterExpr) ? this.func('LOWER', [delimiterSql]) : delimiterSql,
     direction,
     occur,
   ]);
-  const nullablePos = self.func('NULLIF', [position, '0']);
+  const nullablePos = this.func('NULLIF', [position, '0']);
 
   if (fromRight) {
-    const start = self.func('NVL', [`${nullablePos} + ${self.func('LENGTH', [delimiterSql])}`, direction]);
-    return self.func('SUBSTR', [haystackSql, start]);
+    const start = this.func('NVL', [`${nullablePos} + ${this.func('LENGTH', [delimiterSql])}`, direction]);
+    return this.func('SUBSTR', [haystackSql, start]);
   }
 
-  const length = self.func('NVL', [`${nullablePos} - 1`, self.func('LENGTH', [haystackSql])]);
-  return self.func('SUBSTR', [
+  const length = this.func('NVL', [`${nullablePos} - 1`, this.func('LENGTH', [haystackSql])]);
+  return this.func('SUBSTR', [
     haystackSql,
     direction,
     length,
@@ -361,7 +360,7 @@ function qualifyUnscopedStar (expression: Expression): Expression {
   return expression;
 }
 
-function addDateSql (self: ExasolGenerator, expression: DateAddExpr | DateSubExpr | TsOrDsAddExpr): string {
+function addDateSql (this: ExasolGenerator, expression: DateAddExpr | DateSubExpr | TsOrDsAddExpr): string {
   const interval = expression.args.expression instanceof IntervalExpr ? expression.args.expression : null;
 
   const unit = (
@@ -369,14 +368,14 @@ function addDateSql (self: ExasolGenerator, expression: DateAddExpr | DateSubExp
   ).toUpperCase();
 
   if (!DATE_UNITS.has(unit)) {
-    self.unsupported(`'${unit}' is not supported in Exasol.`);
-    return self.functionFallbackSql(expression);
+    this.unsupported(`'${unit}' is not supported in Exasol.`);
+    return this.functionFallbackSql(expression);
   }
 
-  if (!expression.args.expression) return self.functionFallbackSql(expression);
+  if (!expression.args.expression) return this.functionFallbackSql(expression);
   let offsetExpr: Expression = expression.args.expression;
   if (interval) {
-    if (!interval.args.this) return self.functionFallbackSql(expression);
+    if (!interval.args.this) return this.functionFallbackSql(expression);
     offsetExpr = interval.args.this;
   }
 
@@ -384,7 +383,7 @@ function addDateSql (self: ExasolGenerator, expression: DateAddExpr | DateSubExp
     offsetExpr = new NegExpr({ this: offsetExpr });
   }
 
-  return self.func(`ADD_${unit}S`, [expression.args.this, offsetExpr]);
+  return this.func(`ADD_${unit}S`, [expression.args.this, offsetExpr]);
 }
 
 class ExasolTokenizer extends Tokenizer {
@@ -452,9 +451,9 @@ class ExasolParser extends Parser {
         TO_CHAR: (args: Expression[]) => buildTimeToStrOrToChar(args, { dialect: Dialects.EXASOL }),
         TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: Dialects.EXASOL }),
         CONVERT_TZ: (args: Expression[]) => new ConvertTimezoneExpr({
-          timestamp: seqGet(args, 0)!,
+          timestamp: args[0],
           sourceTz: seqGet(args, 1),
-          targetTz: seqGet(args, 2)!,
+          targetTz: args[2],
         }),
         NULLIFZERO: buildNullIfZero,
         ZEROIFNULL: buildZeroIfNull,
@@ -470,13 +469,13 @@ class ExasolParser extends Parser {
   }
 
   @cache
-  static get CONSTRAINT_PARSERS (): Partial<Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
+  static get CONSTRAINT_PARSERS (): Partial<Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.CONSTRAINT_PARSERS,
-      COMMENT: (self: Parser) => {
-        return self.expression(
+      COMMENT: function (this: Parser) {
+        return this.expression(
           CommentColumnConstraintExpr,
-          { this: (self as ExasolParser).match(TokenType.IS) && self.parseString() },
+          { this: (this as ExasolParser).match(TokenType.IS) && this.parseString() },
         );
       },
     };
@@ -496,10 +495,15 @@ class ExasolParser extends Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.FUNCTION_PARSERS,
-      ...Object.fromEntries(['GROUP_CONCAT', 'LISTAGG'].map((k) => [k, (self: Parser) => self.parseGroupConcat()])),
+      ...Object.fromEntries(['GROUP_CONCAT', 'LISTAGG'].map((k) => [
+        k,
+        function (this: Parser) {
+          return this.parseGroupConcat();
+        },
+      ])),
     };
   }
 
@@ -564,9 +568,9 @@ class ExasolGenerator extends Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
       [AllExpr, renameFunc('EVERY')],
       [BitwiseAndExpr, renameFunc('BIT_AND')],
@@ -575,62 +579,182 @@ class ExasolGenerator extends Generator {
       [BitwiseLeftShiftExpr, renameFunc('BIT_LSHIFT')],
       [BitwiseRightShiftExpr, renameFunc('BIT_RSHIFT')],
       [BitwiseXorExpr, renameFunc('BIT_XOR')],
-      [DateDiffExpr, (self: Generator, e: DateDiffExpr) => dateDiffSql(self as ExasolGenerator, e)],
-      [DateAddExpr, (self: Generator, e: DateAddExpr) => addDateSql(self as ExasolGenerator, e)],
-      [TsOrDsAddExpr, (self: Generator, e: TsOrDsAddExpr) => addDateSql(self as ExasolGenerator, e)],
-      [DateSubExpr, (self: Generator, e: DateSubExpr) => addDateSql(self as ExasolGenerator, e)],
+      [
+        DateDiffExpr,
+        function (this: Generator, e: DateDiffExpr) {
+          return dateDiffSql.call(this as ExasolGenerator, e);
+        },
+      ],
+      [
+        DateAddExpr,
+        function (this: Generator, e: DateAddExpr) {
+          return addDateSql.call(this as ExasolGenerator, e);
+        },
+      ],
+      [
+        TsOrDsAddExpr,
+        function (this: Generator, e: TsOrDsAddExpr) {
+          return addDateSql.call(this as ExasolGenerator, e);
+        },
+      ],
+      [
+        DateSubExpr,
+        function (this: Generator, e: DateSubExpr) {
+          return addDateSql.call(this as ExasolGenerator, e);
+        },
+      ],
       [IntDivExpr, renameFunc('DIV')],
-      [TsOrDsDiffExpr, (self: Generator, e: TsOrDsDiffExpr) => dateDiffSql(self as ExasolGenerator, e)],
-      [DateTruncExpr, (self: Generator, e: DateTruncExpr) => dateTruncSql(self as ExasolGenerator, e)],
-      [DayOfWeekExpr, (self: Generator, e: DayOfWeekExpr) => `CAST(TO_CHAR(${self.sql(e, 'this')}, 'D') AS INTEGER)`],
-      [DatetimeTruncExpr, (self: Generator, e: DatetimeTruncExpr) => timestampTruncSql(self as ExasolGenerator, e)],
+      [
+        TsOrDsDiffExpr,
+        function (this: Generator, e: TsOrDsDiffExpr) {
+          return dateDiffSql.call(this as ExasolGenerator, e);
+        },
+      ],
+      [
+        DateTruncExpr,
+        function (this: Generator, e: DateTruncExpr) {
+          return dateTruncSql.call(this as ExasolGenerator, e);
+        },
+      ],
+      [
+        DayOfWeekExpr,
+        function (this: Generator, e: DayOfWeekExpr) {
+          return `CAST(TO_CHAR(${this.sql(e, 'this')}, 'D') AS INTEGER)`;
+        },
+      ],
+      [
+        DatetimeTruncExpr,
+        function (this: Generator, e: DatetimeTruncExpr) {
+          return timestampTruncSql.call(this as ExasolGenerator, e);
+        },
+      ],
       [
         GroupConcatExpr,
-        (self: Generator, e: GroupConcatExpr) => groupConcatSql(self, e, {
-          funcName: 'LISTAGG',
-          withinGroup: true,
-        }),
+        function (this: Generator, e: GroupConcatExpr) {
+          return groupConcatSql.call(this, e, {
+            funcName: 'LISTAGG',
+            withinGroup: true,
+          });
+        },
       ],
-      [LevenshteinExpr, (self: Generator, e: Expression) => unsupportedArgs('insCost', 'delCost', 'subCost', 'maxDist')((expr) => renameFunc('EDIT_DISTANCE')(self, expr))(e)],
+      [
+        LevenshteinExpr,
+        function (this: Generator, e: Expression) {
+          unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
+          return renameFunc('EDIT_DISTANCE').call(this, e);
+        },
+      ],
       [ModExpr, renameFunc('MOD')],
-      [RegexpExtractExpr, (self: Generator, e: Expression) => unsupportedArgs('parameters', 'group')((expr) => renameFunc('REGEXP_SUBSTR')(self, expr))(e)],
-      [RegexpReplaceExpr, (self: Generator, e: Expression) => unsupportedArgs('modifiers')((expr) => renameFunc('REGEXP_REPLACE')(self, expr))(e)],
+      [
+        RegexpExtractExpr,
+        function (this: Generator, e: Expression) {
+          unsupportedArgs.call(this, e, 'parameters', 'group');
+          return renameFunc('REGEXP_SUBSTR').call(this, e);
+        },
+      ],
+      [
+        RegexpReplaceExpr,
+        function (this: Generator, e: Expression) {
+          unsupportedArgs.call(this, e, 'modifiers');
+          return renameFunc('REGEXP_REPLACE').call(this, e);
+        },
+      ],
       [VariancePopExpr, renameFunc('VAR_POP')],
-      [ApproxDistinctExpr, (self: Generator, e: Expression) => unsupportedArgs('accuracy')((expr) => renameFunc('APPROXIMATE_COUNT_DISTINCT')(self, expr))(e)],
-      [ToCharExpr, (self: Generator, e: ToCharExpr) => self.func('TO_CHAR', [e.args.this, self.formatTime(e)!])],
-      [TsOrDsToDateExpr, (self: Generator, e: TsOrDsToDateExpr) => self.func('TO_DATE', [e.args.this, self.formatTime(e)!])],
-      [TimeToStrExpr, (self: Generator, e: TimeToStrExpr) => self.func('TO_CHAR', [e.args.this, self.formatTime(e)!])],
-      [TimeStrToTimeExpr, (self: Generator, e: TimeStrToTimeExpr) => timeStrToTimeSql(self, e)],
-      [TimestampTruncExpr, (self: Generator, e: TimestampTruncExpr) => timestampTruncSql(self as ExasolGenerator, e)],
-      [StrToTimeExpr, (self: Generator, e: StrToTimeExpr) => self.func('TO_DATE', [e.args.this, self.formatTime(e)!])],
+      [
+        ApproxDistinctExpr,
+        function (this: Generator, e: Expression) {
+          unsupportedArgs.call(this, e, 'accuracy');
+          return renameFunc('APPROXIMATE_COUNT_DISTINCT').call(this, e);
+        },
+      ],
+      [
+        ToCharExpr,
+        function (this: Generator, e: ToCharExpr) {
+          return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+        },
+      ],
+      [
+        TsOrDsToDateExpr,
+        function (this: Generator, e: TsOrDsToDateExpr) {
+          return this.func('TO_DATE', [e.args.this, this.formatTime(e)]);
+        },
+      ],
+      [
+        TimeToStrExpr,
+        function (this: Generator, e: TimeToStrExpr) {
+          return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+        },
+      ],
+      [
+        TimeStrToTimeExpr,
+        function (this: Generator, e: TimeStrToTimeExpr) {
+          return timeStrToTimeSql.call(this, e);
+        },
+      ],
+      [
+        TimestampTruncExpr,
+        function (this: Generator, e: TimestampTruncExpr) {
+          return timestampTruncSql.call(this as ExasolGenerator, e);
+        },
+      ],
+      [
+        StrToTimeExpr,
+        function (this: Generator, e: StrToTimeExpr) {
+          return this.func('TO_DATE', [e.args.this, this.formatTime(e)]);
+        },
+      ],
       [CurrentUserExpr, () => 'CURRENT_USER'],
       [
         AtTimeZoneExpr,
-        (self: Generator, e: AtTimeZoneExpr) => self.func('CONVERT_TZ', [
-          e.args.this,
-          '\'UTC\'',
-          e.args.zone,
-        ]),
+        function (this: Generator, e: AtTimeZoneExpr) {
+          return this.func('CONVERT_TZ', [
+            e.args.this,
+            '\'UTC\'',
+            e.args.zone,
+          ]);
+        },
       ],
       [
         StrPositionExpr,
-        (self: Generator, e: StrPositionExpr) => strPositionSql(self, e, {
-          funcName: 'INSTR',
-          supportsPosition: true,
-          supportsOccurrence: true,
-        }),
+        function (this: Generator, e: StrPositionExpr) {
+          return strPositionSql.call(this, e, {
+            funcName: 'INSTR',
+            supportsPosition: true,
+            supportsOccurrence: true,
+          });
+        },
       ],
       [ShaExpr, renameFunc('HASH_SHA')],
-      [Sha2Expr, (self: Generator, e: Sha2Expr) => sha2Sql(self as ExasolGenerator, e)],
+      [
+        Sha2Expr,
+        function (this: Generator, e: Sha2Expr) {
+          return sha2Sql.call(this as ExasolGenerator, e);
+        },
+      ],
       [Md5Expr, renameFunc('HASH_MD5')],
       [Md5DigestExpr, renameFunc('HASHTYPE_MD5')],
-      [CommentColumnConstraintExpr, (self: Generator, e: CommentColumnConstraintExpr) => `COMMENT IS ${self.sql(e, 'this')}`],
+      [
+        CommentColumnConstraintExpr,
+        function (this: Generator, e: CommentColumnConstraintExpr) {
+          return `COMMENT IS ${this.sql(e, 'this')}`;
+        },
+      ],
       [SelectExpr, preprocess([qualifyUnscopedStar, addLocalPrefixForAliases])],
-      [SubstringIndexExpr, (self: Generator, e: SubstringIndexExpr) => substringIndexSql(self as ExasolGenerator, e)],
+      [
+        SubstringIndexExpr,
+        function (this: Generator, e: SubstringIndexExpr) {
+          return substringIndexSql.call(this as ExasolGenerator, e);
+        },
+      ],
       [WeekOfYearExpr, renameFunc('WEEK')],
       [DateExpr, renameFunc('TO_DATE')],
       [TimestampExpr, renameFunc('TO_TIMESTAMP')],
-      [QuarterExpr, (self: Generator, e: QuarterExpr) => `CEIL(MONTH(TO_DATE(${self.sql(e, 'this')}))/3)`],
+      [
+        QuarterExpr,
+        function (this: Generator, e: QuarterExpr) {
+          return `CEIL(MONTH(TO_DATE(${this.sql(e, 'this')}))/3)`;
+        },
+      ],
       [LastDayExpr, noLastDaySql],
     ]);
     return transforms;

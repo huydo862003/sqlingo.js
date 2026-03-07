@@ -23,16 +23,19 @@ import { Postgres } from './postgres';
 class MaterializeParser extends Postgres.Parser {
   static NO_PAREN_FUNCTION_PARSERS = {
     ...Postgres.Parser.NO_PAREN_FUNCTION_PARSERS,
-    MAP: (self: Parser) => (self as MaterializeParser).parseMap(),
+    MAP: function (this: Parser) {
+      return (this as MaterializeParser).parseMap();
+    },
   };
 
   static LAMBDAS = {
     ...Postgres.Parser.LAMBDAS,
-    [TokenType.FARROW]: (self: Parser, expressions: Expression[]) =>
-      self.expression(KwargExpr, {
+    [TokenType.FARROW]: function (this: Parser, expressions: Expression[]) {
+      return this.expression(KwargExpr, {
         this: seqGet(expressions, 0),
-        expression: (self as MaterializeParser).parseAssignment(),
-      }),
+        expression: (this as MaterializeParser).parseAssignment(),
+      });
+    },
   };
 
   parseLambdaArg (): Expression | undefined {
@@ -72,9 +75,9 @@ class MaterializeGenerator extends Postgres.Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Postgres.Generator.TRANSFORMS,
       [AutoIncrementColumnConstraintExpr, () => ''],
       [CreateExpr, preprocess([removeUniqueConstraints, ctasWithTmpTablesToCreateTmpView])],

@@ -25,7 +25,6 @@ import {
 } from '../dialects/dialect';
 import { Athena } from '../dialects/athena';
 import { Presto } from '../dialects/presto';
-import { seqGet } from '../helper';
 import { normalized } from './normalize';
 import {
   buildScope, findInScope, Scope,
@@ -252,7 +251,7 @@ function pushdownDnf (
       conditions.set(table, existing ? orExpr([existing, predicate], { copy: false }) : predicate);
     }
 
-    const nodes = nodesForPredicate(seqGet(predicates, 0)!, sources, scopeRefCount);
+    const nodes = nodesForPredicate(Array.from(predicates)[0], sources, scopeRefCount);
     for (const [name, node] of Object.entries(nodes)) {
       const condition = conditions.get(name);
       if (!condition) {

@@ -69,12 +69,14 @@ export class TableauGenerator extends Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const m = new Map<typeof Expression, (self: Generator, e: any) => string>(Generator.TRANSFORMS);
+    const m = new Map<typeof Expression, (this: Generator, e: any) => string>(Generator.TRANSFORMS);
     m.set(CoalesceExpr, renameFunc('IFNULL'));
 
-    m.set(IfExpr, (self, e: IfExpr) => `IF ${self.sql(e, 'this')} THEN ${self.sql(e, 'true')} ELSE ${self.sql(e, 'false')} END`);
+    m.set(IfExpr, function (this: Generator, e: IfExpr) {
+      return `IF ${this.sql(e, 'this')} THEN ${this.sql(e, 'true')} ELSE ${this.sql(e, 'false')} END`;
+    });
     m.set(SelectExpr, preprocess([eliminateDistinctOn]));
     return m;
   }
@@ -89,7 +91,7 @@ export class TableauGenerator extends Generator {
 
   public strPositionSql (expression: StrPositionExpr): string {
     const hasOccurrence = expression.args.occurrence !== undefined;
-    return strPositionSql(this, expression, {
+    return strPositionSql.call(this, expression, {
       funcName: hasOccurrence ? 'FINDNTH' : 'FIND',
       supportsOccurrence: hasOccurrence,
     });

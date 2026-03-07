@@ -302,14 +302,15 @@ class SingleStoreParser extends MySQL.Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...MySQL.Parser.FUNCTION_PARSERS,
-      JSON_AGG: (self: Parser) =>
-        self.expression(JsonArrayAggExpr, {
-          this: (self as SingleStoreParser).parseTerm(),
-          order: (self as SingleStoreParser).parseOrder(),
-        }),
+      JSON_AGG: function (this: Parser) {
+        return this.expression(JsonArrayAggExpr, {
+          this: (this as SingleStoreParser).parseTerm(),
+          order: (this as SingleStoreParser).parseOrder(),
+        });
+      },
     };
   }
 
@@ -325,32 +326,38 @@ class SingleStoreParser extends MySQL.Parser {
 
   static CAST_COLUMN_OPERATORS = new Set([TokenType.COLON_GT, TokenType.NCOLON_GT]);
   @cache
-  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
+  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((this: Parser, this_?: Expression, to?: Expression) => Expression)>> {
     return (() => {
       const operators = {
         ...MySQL.Parser.COLUMN_OPERATORS,
-        [TokenType.COLON_GT]: (self: Parser, thisNode?: Expression, to?: Expression) =>
-          self.expression(CastExpr, {
+        [TokenType.COLON_GT]: function (this: Parser, thisNode?: Expression, to?: Expression) {
+          return this.expression(CastExpr, {
             this: thisNode,
             to,
-          }),
-        [TokenType.NCOLON_GT]: (self: Parser, thisNode?: Expression, to?: Expression) =>
-          self.expression(TryCastExpr, {
+          });
+        },
+        [TokenType.NCOLON_GT]: function (this: Parser, thisNode?: Expression, to?: Expression) {
+          return this.expression(TryCastExpr, {
             this: thisNode,
             to,
-          }),
-        [TokenType.DCOLON]: (self: Parser, thisNode?: Expression, path?: Expression) =>
-          buildJsonExtractPath(JsonExtractExpr)([thisNode, LiteralExpr.string((path as IdentifierExpr).name)]),
-        [TokenType.DCOLONDOLLAR]: (self: Parser, thisNode?: Expression, path?: Expression) =>
-          buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'STRING' })([thisNode, LiteralExpr.string((path as IdentifierExpr).name)]),
-        [TokenType.DCOLONPERCENT]: (self: Parser, thisNode?: Expression, path?: Expression) =>
-          buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'DOUBLE' })([thisNode, LiteralExpr.string((path as IdentifierExpr).name)]),
-        [TokenType.DCOLONQMARK]: (self: Parser, thisNode?: Expression, path?: Expression) =>
-          self.expression(JsonExistsExpr, {
+          });
+        },
+        [TokenType.DCOLON]: function (this: Parser, thisNode?: Expression, path?: Expression) {
+          return buildJsonExtractPath(JsonExtractExpr)([thisNode, LiteralExpr.string((path as IdentifierExpr).name)]);
+        },
+        [TokenType.DCOLONDOLLAR]: function (this: Parser, thisNode?: Expression, path?: Expression) {
+          return buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'STRING' })([thisNode, LiteralExpr.string((path as IdentifierExpr).name)]);
+        },
+        [TokenType.DCOLONPERCENT]: function (this: Parser, thisNode?: Expression, path?: Expression) {
+          return buildJsonExtractPath(JsonExtractScalarExpr, { jsonType: 'DOUBLE' })([thisNode, LiteralExpr.string((path as IdentifierExpr).name)]);
+        },
+        [TokenType.DCOLONQMARK]: function (this: Parser, thisNode?: Expression, path?: Expression) {
+          return this.expression(JsonExistsExpr, {
             this: thisNode,
             path: path?.name,
             fromDcolonqmark: true,
-          }),
+          });
+        },
       };
       delete operators[TokenType.ARROW];
       delete operators[TokenType.DARROW];
@@ -362,7 +369,7 @@ class SingleStoreParser extends MySQL.Parser {
   }
 
   @cache
-  static get SHOW_PARSERS (): Record<string, (self: Parser) => Expression> {
+  static get SHOW_PARSERS (): Record<string, (this: Parser) => Expression> {
     return {
       ...MySQL.Parser.SHOW_PARSERS,
       'AGGREGATES': showParser('AGGREGATES'),
@@ -404,14 +411,15 @@ class SingleStoreParser extends MySQL.Parser {
   }
 
   @cache
-  static get ALTER_PARSERS (): Partial<Record<string, (self: Parser) => Expression | Expression[] | undefined>> {
+  static get ALTER_PARSERS (): Partial<Record<string, (this: Parser) => Expression | Expression[] | undefined>> {
     return {
       ...MySQL.Parser.ALTER_PARSERS,
-      CHANGE: (self: Parser) =>
-        self.expression(RenameColumnExpr, {
-          this: (self as SingleStoreParser).parseColumn(),
-          to: (self as SingleStoreParser).parseColumn(),
-        }),
+      CHANGE: function (this: Parser) {
+        return this.expression(RenameColumnExpr, {
+          this: (this as SingleStoreParser).parseColumn(),
+          to: (this as SingleStoreParser).parseColumn(),
+        });
+      },
     };
   }
 
@@ -447,370 +455,465 @@ class SingleStoreGenerator extends MySQL.Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...MySQL.Generator.TRANSFORMS,
       [
         TsOrDsToDateExpr,
-        (self: Generator, e: TsOrDsToDateExpr) =>
-          e.args.format
-            ? self.func('TO_DATE', [e.args.this, self.formatTime(e)])
-            : self.func('DATE', [e.args.this]),
+        function (this: Generator, e: TsOrDsToDateExpr) {
+          return e.args.format
+            ? this.func('TO_DATE', [e.args.this, this.formatTime(e)])
+            : this.func('DATE', [e.args.this]);
+        },
       ],
-      [StrToTimeExpr, (self: Generator, e: StrToTimeExpr) => self.func('TO_TIMESTAMP', [e.args.this, self.formatTime(e)])],
-      [ToCharExpr, (self: Generator, e: ToCharExpr) => self.func('TO_CHAR', [e.args.this, self.formatTime(e)])],
+      [
+        StrToTimeExpr,
+        function (this: Generator, e: StrToTimeExpr) {
+          return this.func('TO_TIMESTAMP', [e.args.this, this.formatTime(e)]);
+        },
+      ],
+      [
+        ToCharExpr,
+        function (this: Generator, e: ToCharExpr) {
+          return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+        },
+      ],
       [
         StrToDateExpr,
-        (self: Generator, e: StrToDateExpr) =>
-          self.func('STR_TO_DATE', [
+        function (this: Generator, e: StrToDateExpr) {
+          return this.func('STR_TO_DATE', [
             e.args.this,
-            self.formatTime(
+            this.formatTime(
               e,
               MySQL.INVERSE_TIME_MAPPING,
               MySQL.INVERSE_TIME_TRIE,
             ),
-          ]),
+          ]);
+        },
       ],
       [
         TimeToStrExpr,
-        (self: Generator, e: TimeToStrExpr) =>
-          self.func('DATE_FORMAT', [
+        function (this: Generator, e: TimeToStrExpr) {
+          return this.func('DATE_FORMAT', [
             e.args.this,
-            self.formatTime(
+            this.formatTime(
               e,
               MySQL.INVERSE_TIME_MAPPING,
               MySQL.INVERSE_TIME_TRIE,
             ),
-          ]),
+          ]);
+        },
       ],
-      [DateExpr, (self: Generator, e: DateExpr) => unsupportedArgs<DateExpr>('zone', 'expressions')((e) => renameFunc('DATE')(self, e))(e)],
+      [
+        DateExpr,
+        function (this: Generator, e: DateExpr) {
+          unsupportedArgs.call(this, e, 'zone', 'expressions');
+          return renameFunc('DATE').call(this, e);
+        },
+      ],
       [
         CastExpr,
-        (self: Generator, e: CastExpr) => unsupportedArgs<CastExpr>(
-          'format',
-          'action',
-          'default',
-        )(
-          (e: CastExpr) => `${self.sql(e.args.this)} :> ${self.sql(e.args.to)}`,
-        )(e),
+        function (this: Generator, e: CastExpr) {
+          unsupportedArgs.call(this, e, 'format', 'action', 'default');
+          return `${this.sql(e.args.this)} :> ${this.sql(e.args.to)}`;
+        },
       ],
       [
         TryCastExpr,
-        (self: Generator, e: TryCastExpr) => unsupportedArgs<TryCastExpr>(
-          'format',
-          'action',
-          'default',
-        )(
-          (e: TryCastExpr) => `${self.sql(e.args.this)} !:> ${self.sql(e.args.to)}`,
-        )(e),
+        function (this: Generator, e: TryCastExpr) {
+          unsupportedArgs.call(this, e, 'format', 'action', 'default');
+          return `${this.sql(e.args.this)} !:> ${this.sql(e.args.to)}`;
+        },
       ],
       [
         CastToStrTypeExpr,
-        (self: Generator, e: CastToStrTypeExpr) =>
-          self.sql(new CastExpr({
+        function (this: Generator, e: CastToStrTypeExpr) {
+          return this.sql(new CastExpr({
             this: e.args.this,
             to: DataTypeExpr.build(e.args.to?.name),
-          })),
+          }));
+        },
       ],
-      [StrToUnixExpr, (self: Generator, e: StrToUnixExpr) => unsupportedArgs<StrToUnixExpr>('format')((e) => renameFunc('UNIX_TIMESTAMP')(self, e))(e)],
+      [
+        StrToUnixExpr,
+        function (this: Generator, e: StrToUnixExpr) {
+          unsupportedArgs.call(this, e, 'format');
+          return renameFunc('UNIX_TIMESTAMP').call(this, e);
+        },
+      ],
       [TimeToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
       [TimeStrToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
       [UnixSecondsExpr, renameFunc('UNIX_TIMESTAMP')],
       [
         UnixToStrExpr,
-        (self: Generator, e: UnixToStrExpr) =>
-          self.func('FROM_UNIXTIME', [
+        function (this: Generator, e: UnixToStrExpr) {
+          return this.func('FROM_UNIXTIME', [
             e.args.this,
-            self.formatTime(
+            this.formatTime(
               e,
               MySQL.INVERSE_TIME_MAPPING,
               MySQL.INVERSE_TIME_TRIE,
             ),
-          ]),
+          ]);
+        },
       ],
       [
         UnixToTimeExpr,
-        (self: Generator, e: UnixToTimeExpr) => unsupportedArgs<UnixToTimeExpr>(
-          'scale',
-          'zone',
-          'hours',
-          'minutes',
-        )(
-          (e: UnixToTimeExpr) =>
-            self.func('FROM_UNIXTIME', [
-              e.args.this,
-              self.formatTime(
-                e,
-                MySQL.INVERSE_TIME_MAPPING,
-                MySQL.INVERSE_TIME_TRIE,
-              ),
-            ]),
-        )(e),
+        function (this: Generator, e: UnixToTimeExpr) {
+          unsupportedArgs.call(this, e, 'scale', 'zone', 'hours', 'minutes');
+          return this.func('FROM_UNIXTIME', [
+            e.args.this,
+            this.formatTime(
+              e,
+              MySQL.INVERSE_TIME_MAPPING,
+              MySQL.INVERSE_TIME_TRIE,
+            ),
+          ]);
+        },
       ],
-      [UnixToTimeStrExpr, (self: Generator, e: UnixToTimeStrExpr) => `FROM_UNIXTIME(${self.sql(e.args.this)}) :> TEXT`],
+      [
+        UnixToTimeStrExpr,
+        function (this: Generator, e: UnixToTimeStrExpr) {
+          return `FROM_UNIXTIME(${this.sql(e.args.this)}) :> TEXT`;
+        },
+      ],
       [
         DateBinExpr,
-        (self: Generator, e: DateBinExpr) => unsupportedArgs<DateBinExpr>('unit', 'zone')(
-          (e: DateBinExpr) =>
-            self.func('TIME_BUCKET', [
-              e.args.this,
-              e.args.expression,
-              e.args.origin,
-            ]),
-        )(e),
+        function (this: Generator, e: DateBinExpr) {
+          unsupportedArgs.call(this, e, 'unit', 'zone');
+          return this.func('TIME_BUCKET', [
+            e.args.this,
+            e.args.expression,
+            e.args.origin,
+          ]);
+        },
       ],
       [
         TimeStrToDateExpr,
-        (self: Generator, e: TimeStrToDateExpr) => self.sql(new CastExpr({
-          this: e.args.this,
-          to: DataTypeExpr.build(DataTypeExprKind.DATE),
-        })),
+        function (this: Generator, e: TimeStrToDateExpr) {
+          return this.sql(new CastExpr({
+            this: e.args.this,
+            to: DataTypeExpr.build(DataTypeExprKind.DATE),
+          }));
+        },
       ],
       [
         FromTimeZoneExpr,
-        (self: Generator, e: FromTimeZoneExpr) => self.func('CONVERT_TZ', [
-          e.args.this,
-          e.args.zone,
-          '\'UTC\'',
-        ]),
+        function (this: Generator, e: FromTimeZoneExpr) {
+          return this.func('CONVERT_TZ', [
+            e.args.this,
+            e.args.zone,
+            '\'UTC\'',
+          ]);
+        },
       ],
-      [DiToDateExpr, (self: Generator, e: DiToDateExpr) => `STR_TO_DATE(${self.sql(e.args.this)}, ${SingleStore.DATEINT_FORMAT})`],
-      [DateToDiExpr, (self: Generator, e: DateToDiExpr) => `(DATE_FORMAT(${self.sql(e.args.this)}, ${SingleStore.DATEINT_FORMAT}) :> INT)`],
-      [TsOrDiToDiExpr, (self: Generator, e: TsOrDiToDiExpr) => `(DATE_FORMAT(${self.sql(e.args.this)}, ${SingleStore.DATEINT_FORMAT}) :> INT)`],
-      [TimeExpr, (self: Generator, e: TimeExpr) => unsupportedArgs<TimeExpr>('zone')((e: TimeExpr) => `${self.sql(e.args.this)} :> TIME`)(e)],
+      [
+        DiToDateExpr,
+        function (this: Generator, e: DiToDateExpr) {
+          return `STR_TO_DATE(${this.sql(e.args.this)}, ${SingleStore.DATEINT_FORMAT})`;
+        },
+      ],
+      [
+        DateToDiExpr,
+        function (this: Generator, e: DateToDiExpr) {
+          return `(DATE_FORMAT(${this.sql(e.args.this)}, ${SingleStore.DATEINT_FORMAT}) :> INT)`;
+        },
+      ],
+      [
+        TsOrDiToDiExpr,
+        function (this: Generator, e: TsOrDiToDiExpr) {
+          return `(DATE_FORMAT(${this.sql(e.args.this)}, ${SingleStore.DATEINT_FORMAT}) :> INT)`;
+        },
+      ],
+      [
+        TimeExpr,
+        function (this: Generator, e: TimeExpr) {
+          unsupportedArgs.call(this, e, 'zone');
+          return `${this.sql(e.args.this)} :> TIME`;
+        },
+      ],
       [DatetimeAddExpr, removeTsOrDsToDate(dateAddSql('ADD'))],
-      [DatetimeTruncExpr, (self: Generator, e: DatetimeTruncExpr) => unsupportedArgs<DatetimeTruncExpr>('zone')((e) => timestampTruncSql()(self, e as TimestampTruncExpr))(e)],
+      [
+        DatetimeTruncExpr,
+        function (this: Generator, e: DatetimeTruncExpr) {
+          unsupportedArgs.call(this, e, 'zone');
+          return timestampTruncSql().call(this, e as TimestampTruncExpr);
+        },
+      ],
       [DatetimeSubExpr, dateAddIntervalSql('DATE', 'SUB')],
       [DatetimeDiffExpr, timestampDiffSql],
-      [DateTruncExpr, (self: Generator, e: DateTruncExpr) => unsupportedArgs<DateTruncExpr>('zone')((e) => timestampTruncSql()(self, e as TimestampTruncExpr))(e)],
+      [
+        DateTruncExpr,
+        function (this: Generator, e: DateTruncExpr) {
+          unsupportedArgs.call(this, e, 'zone');
+          return timestampTruncSql().call(this, e as TimestampTruncExpr);
+        },
+      ],
       [
         DateDiffExpr,
-        (self: Generator, e: DateDiffExpr) => unsupportedArgs<DateDiffExpr>('zone')(
-          (e: DateDiffExpr) =>
-            e.args.unit !== undefined ? timestampDiffSql(self, e) : self.func('DATEDIFF', [e.args.this, e.args.expression]),
-        )(e),
+        function (this: Generator, e: DateDiffExpr) {
+          unsupportedArgs.call(this, e, 'zone');
+          return e.args.unit !== undefined ? timestampDiffSql.call(this, e) : this.func('DATEDIFF', [e.args.this, e.args.expression]);
+        },
       ],
       [
         TsOrDsDiffExpr,
-        (self: Generator, e: TsOrDsDiffExpr) =>
-          e.args.unit !== undefined ? timestampDiffSql(self, e) : self.func('DATEDIFF', [e.args.this, e.args.expression]),
+        function (this: Generator, e: TsOrDsDiffExpr) {
+          return e.args.unit !== undefined ? timestampDiffSql.call(this, e) : this.func('DATEDIFF', [e.args.this, e.args.expression]);
+        },
       ],
-      [TimestampTruncExpr, (self: Generator, e: TimestampTruncExpr) => unsupportedArgs<TimestampTruncExpr>('zone')((e) => timestampTruncSql()(self, e))(e)],
+      [
+        TimestampTruncExpr,
+        function (this: Generator, e: TimestampTruncExpr) {
+          unsupportedArgs.call(this, e, 'zone');
+          return timestampTruncSql().call(this, e);
+        },
+      ],
       [
         CurrentDatetimeExpr,
-        (self: Generator, _e: CurrentDatetimeExpr) =>
-          self.sql(castToTime6(new CurrentTimestampExpr({ this: LiteralExpr.number(6) }), DataTypeExprKind.DATETIME)),
+        function (this: Generator, _e: CurrentDatetimeExpr) {
+          return this.sql(castToTime6(new CurrentTimestampExpr({ this: LiteralExpr.number(6) }), DataTypeExprKind.DATETIME));
+        },
       ],
       [
         JsonExtractExpr,
-        (self: Generator, e: JsonExtractExpr) => unsupportedArgs<JsonExtractExpr>(
-          'onlyJsonTypes',
-          'expressions',
-          'variantExtract',
-          'jsonQuery',
-          'option',
-          'quote',
-          'onCondition',
-          'requiresJson',
-        )((e) => jsonExtractSegments('JSON_EXTRACT_JSON')(self, e))(e),
+        function (this: Generator, e: JsonExtractExpr) {
+          unsupportedArgs.call(this, e, 'onlyJsonTypes', 'expressions', 'variantExtract', 'jsonQuery', 'option', 'quote', 'onCondition', 'requiresJson');
+          return jsonExtractSegments('JSON_EXTRACT_JSON').call(this, e);
+        },
       ],
       [JsonbExtractExpr, jsonExtractSegments('BSON_EXTRACT_BSON')],
       [JsonPathKeyExpr, jsonPathKeyOnlyName],
-      [JsonPathSubscriptExpr, (self: Generator, e: JsonPathSubscriptExpr) => self.jsonPathPart(e.args.this)],
+      [
+        JsonPathSubscriptExpr,
+        function (this: Generator, e: JsonPathSubscriptExpr) {
+          return this.jsonPathPart(e.args.this);
+        },
+      ],
       [JsonPathRootExpr, () => ''],
-      [JsonFormatExpr, (self: Generator, e: JsonFormatExpr) => unsupportedArgs<JsonFormatExpr>('options', 'isJson')((e) => renameFunc('JSON_PRETTY')(self, e))(e)],
+      [
+        JsonFormatExpr,
+        function (this: Generator, e: JsonFormatExpr) {
+          unsupportedArgs.call(this, e, 'options', 'isJson');
+          return renameFunc('JSON_PRETTY').call(this, e);
+        },
+      ],
       [
         JsonArrayAggExpr,
-        (self: Generator, e: JsonArrayAggExpr) => unsupportedArgs<JsonArrayAggExpr>(
-          'nullHandling',
-          'returnType',
-          'strict',
-        )(
-          (e: JsonArrayAggExpr) =>
-            self.func('JSON_AGG', [e.args.this], { suffix: `${self.sql(e.args.order)})` }),
-        )(e),
+        function (this: Generator, e: JsonArrayAggExpr) {
+          unsupportedArgs.call(this, e, 'nullHandling', 'returnType', 'strict');
+          return this.func('JSON_AGG', [e.args.this], { suffix: `${this.sql(e.args.order)})` });
+        },
       ],
       [
         JsonArrayExpr,
-        (self: Generator, e: JsonArrayExpr) => unsupportedArgs<JsonArrayExpr>(
-          'nullHandling',
-          'returnType',
-          'strict',
-        )((e) => renameFunc('JSON_BUILD_ARRAY')(self, e))(e),
+        function (this: Generator, e: JsonArrayExpr) {
+          unsupportedArgs.call(this, e, 'nullHandling', 'returnType', 'strict');
+          return renameFunc('JSON_BUILD_ARRAY').call(this, e);
+        },
       ],
-      [JsonbExistsExpr, (self: Generator, e: JsonbExistsExpr) => self.func('BSON_MATCH_ANY_EXISTS', [e.args.this, e.args.path])],
+      [
+        JsonbExistsExpr,
+        function (this: Generator, e: JsonbExistsExpr) {
+          return this.func('BSON_MATCH_ANY_EXISTS', [e.args.this, e.args.path]);
+        },
+      ],
       [
         JsonExistsExpr,
-        (self: Generator, e: JsonExistsExpr) =>
-          e.args.fromDcolonqmark
-            ? `${self.sql(e.args.this)}::?${self.sql(e.args.path)}`
-            : self.func('JSON_MATCH_ANY_EXISTS', [e.args.this, e.args.path]),
+        function (this: Generator, e: JsonExistsExpr) {
+          return e.args.fromDcolonqmark
+            ? `${this.sql(e.args.this)}::?${this.sql(e.args.path)}`
+            : this.func('JSON_MATCH_ANY_EXISTS', [e.args.this, e.args.path]);
+        },
       ],
       [
         JsonObjectExpr,
-        (self: Generator, e: JsonObjectExpr) => unsupportedArgs<JsonObjectExpr>(
-          'nullHandling',
-          'uniqueKeys',
-          'returnType',
-          'encoding',
-        )((e) => renameFunc('JSON_BUILD_OBJECT')(self, e))(e),
+        function (this: Generator, e: JsonObjectExpr) {
+          unsupportedArgs.call(this, e, 'nullHandling', 'uniqueKeys', 'returnType', 'encoding');
+          return renameFunc('JSON_BUILD_OBJECT').call(this, e);
+        },
       ],
-      [DayOfWeekIsoExpr, (self: Generator, e: DayOfWeekIsoExpr) => `((${self.func('DAYOFWEEK', [e.args.this])} % 7) + 1)`],
+      [
+        DayOfWeekIsoExpr,
+        function (this: Generator, e: DayOfWeekIsoExpr) {
+          return `((${this.func('DAYOFWEEK', [e.args.this])} % 7) + 1)`;
+        },
+      ],
       [DayOfMonthExpr, renameFunc('DAY')],
       [HllExpr, renameFunc('APPROX_COUNT_DISTINCT')],
       [ApproxDistinctExpr, renameFunc('APPROX_COUNT_DISTINCT')],
       [CountIfExpr, countIfToSum],
-      [LogicalOrExpr, (self: Generator, e: LogicalOrExpr) => `MAX(ABS(${self.sql(e.args.this)}))`],
-      [LogicalAndExpr, (self: Generator, e: LogicalAndExpr) => `MIN(ABS(${self.sql(e.args.this)}))`],
+      [
+        LogicalOrExpr,
+        function (this: Generator, e: LogicalOrExpr) {
+          return `MAX(ABS(${this.sql(e.args.this)}))`;
+        },
+      ],
+      [
+        LogicalAndExpr,
+        function (this: Generator, e: LogicalAndExpr) {
+          return `MIN(ABS(${this.sql(e.args.this)}))`;
+        },
+      ],
       [
         ApproxQuantileExpr,
-        (self: Generator, e: ApproxQuantileExpr) => unsupportedArgs<ApproxQuantileExpr>('accuracy', 'weight')(
-          (e: ApproxQuantileExpr) =>
-            self.func('APPROX_PERCENTILE', [
-              e.args.this,
-              e.args.quantile,
-              e.args.errorTolerance,
-            ]),
-        )(e),
+        function (this: Generator, e: ApproxQuantileExpr) {
+          unsupportedArgs.call(this, e, 'accuracy', 'weight');
+          return this.func('APPROX_PERCENTILE', [
+            e.args.this,
+            e.args.quantile,
+            e.args.errorTolerance,
+          ]);
+        },
       ],
       [VarianceExpr, renameFunc('VAR_SAMP')],
       [VariancePopExpr, renameFunc('VAR_POP')],
       [XorExpr, boolXorSql],
       [
         CbrtExpr,
-        (self: Generator, e: CbrtExpr) =>
-          self.sql(new PowExpr({
+        function (this: Generator, e: CbrtExpr) {
+          return this.sql(new PowExpr({
             this: e.args.this as Expression,
             expression: LiteralExpr.number(1).div(LiteralExpr.number(3)),
-          })),
+          }));
+        },
       ],
-      [RegexpLikeExpr, (self: Generator, e: RegexpLikeExpr) => self.binary(e, 'RLIKE')],
+      [
+        RegexpLikeExpr,
+        function (this: Generator, e: RegexpLikeExpr) {
+          return this.binary(e, 'RLIKE');
+        },
+      ],
       [
         RepeatExpr,
-        (self: Generator, e: RepeatExpr) =>
-          self.func('LPAD', [
+        function (this: Generator, e: RepeatExpr) {
+          return this.func('LPAD', [
             LiteralExpr.string(''),
             new MulExpr({
-              this: self.func('LENGTH', [e.args.this]),
+              this: this.func('LENGTH', [e.args.this]),
               expression: e.args.times?.[0],
             }),
             e.args.this,
-          ]),
+          ]);
+        },
       ],
-      [IsAsciiExpr, (self: Generator, e: IsAsciiExpr) => `(${self.sql(e.args.this)} RLIKE '^[\\x00-\\x7f]*$')`],
-      [Md5DigestExpr, (self: Generator, e: Md5DigestExpr) => self.func('UNHEX', [self.func('MD5', [e.args.this])])],
+      [
+        IsAsciiExpr,
+        function (this: Generator, e: IsAsciiExpr) {
+          return `(${this.sql(e.args.this)} RLIKE '^[\\x00-\\x7f]*$')`;
+        },
+      ],
+      [
+        Md5DigestExpr,
+        function (this: Generator, e: Md5DigestExpr) {
+          return this.func('UNHEX', [this.func('MD5', [e.args.this])]);
+        },
+      ],
       [ContainsExpr, renameFunc('INSTR')],
       [
         RegexpExtractAllExpr,
-        (self: Generator, e: RegexpExtractAllExpr) => unsupportedArgs<RegexpExtractAllExpr>(
-          'position',
-          'occurrence',
-          'group',
-        )(
-          (e: RegexpExtractAllExpr) =>
-            self.func('REGEXP_MATCH', [
-              e.args.this,
-              e.args.expression,
-              e.args.parameters,
-            ]),
-        )(e),
+        function (this: Generator, e: RegexpExtractAllExpr) {
+          unsupportedArgs.call(this, e, 'position', 'occurrence', 'group');
+          return this.func('REGEXP_MATCH', [
+            e.args.this,
+            e.args.expression,
+            e.args.parameters,
+          ]);
+        },
       ],
       [
         RegexpExtractExpr,
-        (self: Generator, e: RegexpExtractExpr) => unsupportedArgs<RegexpExtractExpr>('group')(
-          (e: RegexpExtractExpr) =>
-            self.func('REGEXP_SUBSTR', [
-              e.args.this,
-              e.args.expression,
-              e.args.position,
-              e.args.occurrence,
-              e.args.parameters,
-            ]),
-        )(e),
+        function (this: Generator, e: RegexpExtractExpr) {
+          unsupportedArgs.call(this, e, 'group');
+          return this.func('REGEXP_SUBSTR', [
+            e.args.this,
+            e.args.expression,
+            e.args.position,
+            e.args.occurrence,
+            e.args.parameters,
+          ]);
+        },
       ],
       [
         StartsWithExpr,
-        (self: Generator, e: StartsWithExpr) =>
-          self.func('REGEXP_INSTR', [e.args.this, self.func('CONCAT', [LiteralExpr.string('^'), e.args.expression])]),
+        function (this: Generator, e: StartsWithExpr) {
+          return this.func('REGEXP_INSTR', [e.args.this, this.func('CONCAT', [LiteralExpr.string('^'), e.args.expression])]);
+        },
       ],
       [
         FromBaseExpr,
-        (self: Generator, e: FromBaseExpr) => self.func('CONV', [
-          e.args.this,
-          e.args.expression,
-          LiteralExpr.number(10),
-        ]),
+        function (this: Generator, e: FromBaseExpr) {
+          return this.func('CONV', [
+            e.args.this,
+            e.args.expression,
+            LiteralExpr.number(10),
+          ]);
+        },
       ],
       [
         RegexpILikeExpr,
-        (self: Generator, e: RegexpILikeExpr) =>
-          self.binary(
+        function (this: Generator, e: RegexpILikeExpr) {
+          return this.binary(
             new RegexpLikeExpr({
               this: new LowerExpr({ this: e.args.this }),
               expression: new LowerExpr({ this: e.args.expression }),
             }),
             'RLIKE',
-          ),
+          );
+        },
       ],
       [
         StuffExpr,
-        (self: Generator, e: StuffExpr) =>
-          self.func('CONCAT', [
-            self.func('SUBSTRING', [
+        function (this: Generator, e: StuffExpr) {
+          return this.func('CONCAT', [
+            this.func('SUBSTRING', [
               e.args.this,
               LiteralExpr.number(1),
               e.args.start?.sub(1),
             ]),
             e.args.expression,
-            self.func('SUBSTRING', [e.args.this, e.args.start?.add(e.args.length)]),
-          ]),
+            this.func('SUBSTRING', [e.args.this, e.args.start?.add(e.args.length)]),
+          ]);
+        },
       ],
-      [NationalExpr, (self: Generator, e: NationalExpr) => (self as SingleStoreGenerator).nationalSql(e, { prefix: '' })],
+      [
+        NationalExpr,
+        function (this: Generator, e: NationalExpr) {
+          return (this as SingleStoreGenerator).nationalSql(e, { prefix: '' });
+        },
+      ],
       [
         ReduceExpr,
-        (self: Generator, e: ReduceExpr) => unsupportedArgs<ReduceExpr>('finish')(
-          (e: ReduceExpr) => self.func('REDUCE', [
+        function (this: Generator, e: ReduceExpr) {
+          unsupportedArgs.call(this, e, 'finish');
+          return this.func('REDUCE', [
             e.args.initial,
             e.args.this,
             e.args.merge,
-          ]),
-        )(e),
+          ]);
+        },
       ],
       [
         MatchAgainstExpr,
-        (self: Generator, e: MatchAgainstExpr) => unsupportedArgs<MatchAgainstExpr>('modifier')(
-          (e: MatchAgainstExpr) => self.matchAgainstSql(e),
-        )(e),
+        function (this: Generator, e: MatchAgainstExpr) {
+          unsupportedArgs.call(this, e, 'modifier');
+          return this.matchAgainstSql(e);
+        },
       ],
       [
         ShowExpr,
-        (self: Generator, e: ShowExpr) => unsupportedArgs<ShowExpr>(
-          'history',
-          'terse',
-          'offset',
-          'startsWith',
-          'limit',
-          'from',
-          'scope',
-          'scopeKind',
-          'mutex',
-          'query',
-          'channel',
-          'log',
-          'types',
-          'privileges',
-        )((e: ShowExpr) => self.showSql(e))(e),
+        function (this: Generator, e: ShowExpr) {
+          unsupportedArgs.call(this, e, 'history', 'terse', 'offset', 'startsWith', 'limit', 'from', 'scope', 'scopeKind', 'mutex', 'query', 'channel', 'log', 'types', 'privileges');
+          return this.showSql(e);
+        },
       ],
       [
         DescribeExpr,
-        (self: Generator, e: DescribeExpr) => unsupportedArgs<DescribeExpr>(
-          'style',
-          'kind',
-          'expressions',
-          'partition',
-          'format',
-        )((e: DescribeExpr) => self.describeSql(e))(e),
+        function (this: Generator, e: DescribeExpr) {
+          unsupportedArgs.call(this, e, 'style', 'kind', 'expressions', 'partition', 'format');
+          return this.describeSql(e);
+        },
       ],
     ]);
     transforms.delete(JsonExtractScalarExpr);
@@ -1966,13 +2069,13 @@ class SingleStoreGenerator extends MySQL.Generator {
   jsonExtractScalarSql (expression: JsonExtractScalarExpr): string {
     const jsonType = expression.args.jsonType;
     const funcName = jsonType === undefined ? 'JSON_EXTRACT_JSON' : `JSON_EXTRACT_${jsonType}`;
-    return jsonExtractSegments(funcName)(this, expression);
+    return jsonExtractSegments(funcName).call(this, expression);
   }
 
   jsonbExtractScalarSql (expression: JsonbExtractScalarExpr): string {
     const jsonType = expression.args.jsonType;
     const funcName = jsonType === undefined ? 'BSON_EXTRACT_BSON' : `BSON_EXTRACT_${jsonType}`;
-    return jsonExtractSegments(funcName)(this, expression);
+    return jsonExtractSegments(funcName).call(this, expression);
   }
 
   jsonExtractArraySql (expression: JsonExtractArrayExpr): string {
@@ -1980,8 +2083,8 @@ class SingleStoreGenerator extends MySQL.Generator {
     return this.functionFallbackSql(expression);
   }
 
-  @unsupportedArgs('onCondition')
   jsonValueSql (expression: JsonValueExpr): string {
+    unsupportedArgs.call(this, expression, 'onCondition');
     let res: Expression = new JsonExtractScalarExpr({
       this: expression.args.this,
       expression: expression.args.path,
@@ -2014,8 +2117,8 @@ class SingleStoreGenerator extends MySQL.Generator {
     return this.func('JSON_ARRAY_CONTAINS_JSON', [expression.args.expression, this.func('TO_JSON', [expression.args.this])]);
   }
 
-  @unsupportedArgs('kind', 'values')
   dataTypeSql (expression: DataTypeExpr): string {
+    unsupportedArgs.call(this, expression, 'kind', 'values');
     if (expression.args.nested && !expression.isType(DataTypeExprKind.STRUCT)) {
       this.unsupported(
         `Argument 'nested' is not supported for representation of '${expression.args.this}' in SingleStore`,
@@ -2138,15 +2241,8 @@ class SingleStoreGenerator extends MySQL.Generator {
     return this.func('SHA', [expression.args.this]);
   }
 
-  @unsupportedArgs(
-    'isDatabase',
-    'exists',
-    'cluster',
-    'identity',
-    'option',
-    'partition',
-  )
   truncateTableSql (expression: TruncateTableExpr): string {
+    unsupportedArgs.call(this, expression, 'isDatabase', 'exists', 'cluster', 'identity', 'option', 'partition');
     const statements: string[] = [];
     for (const expr of expression.args.expressions ?? []) {
       statements.push(`TRUNCATE ${this.sql(expr)}`);
@@ -2155,21 +2251,15 @@ class SingleStoreGenerator extends MySQL.Generator {
     return statements.join('; ');
   }
 
-  @unsupportedArgs('exists')
   renameColumnSql (expression: RenameColumnExpr): string {
+    unsupportedArgs.call(this, expression, 'exists');
     const oldColumn = this.sql(expression, 'this');
     const newColumn = this.sql(expression, 'to');
     return `CHANGE ${oldColumn} ${newColumn}`;
   }
 
-  @unsupportedArgs(
-    'drop',
-    'comment',
-    'allowNull',
-    'visible',
-    'using',
-  )
   alterColumnSql (expression: AlterColumnExpr): string {
+    unsupportedArgs.call(this, expression, 'drop', 'comment', 'allowNull', 'visible', 'using');
     const alter = super.alterColumnSql(expression);
 
     const collate = this.sql(expression, 'collate');

@@ -36,11 +36,11 @@ import type { ExpressionMetadata } from '.';
 /**
  * Many BigQuery math functions such as CEIL, FLOOR etc follow this return type convention.
  */
-function annotateMathFunctions (self: TypeAnnotator, expression: Expression): Expression {
+function annotateMathFunctions (this: TypeAnnotator, expression: Expression): Expression {
   const thisArg = expression.args.this;
   if (!isInstanceOf(thisArg, Expression)) return expression;
   const thisType = thisArg.type;
-  self.setType(
+  this.setType(
     expression,
     thisArg.isType(DataTypeExpr.INTEGER_TYPES)
       ? DataTypeExprKind.DOUBLE
@@ -49,7 +49,7 @@ function annotateMathFunctions (self: TypeAnnotator, expression: Expression): Ex
   return expression;
 }
 
-function annotateSafeDivide (self: TypeAnnotator, expression: SafeDivideExpr): Expression {
+function annotateSafeDivide (this: TypeAnnotator, expression: SafeDivideExpr): Expression {
   const thisArg = expression.args.this;
   const exprArg = expression.args.expression;
   if (
@@ -58,20 +58,20 @@ function annotateSafeDivide (self: TypeAnnotator, expression: SafeDivideExpr): E
     && thisArg.isType(DataTypeExpr.INTEGER_TYPES)
     && exprArg.isType(DataTypeExpr.INTEGER_TYPES)
   ) {
-    return self.setType(expression, DataTypeExprKind.DOUBLE);
+    return this.setType(expression, DataTypeExprKind.DOUBLE);
   }
 
-  return annotateByArgsWithCoerce(self, expression);
+  return annotateByArgsWithCoerce.call(this, expression);
 }
 
-function annotateByArgsWithCoerce (self: TypeAnnotator, expression: Expression): Expression {
+function annotateByArgsWithCoerce (this: TypeAnnotator, expression: Expression): Expression {
   const thisArg = expression.args.this;
   const exprArg = expression.args.expression;
   const thisType = isInstanceOf(thisArg, Expression) ? thisArg.type : undefined;
   const exprType = isInstanceOf(exprArg, Expression) ? exprArg.type : undefined;
-  self.setType(
+  this.setType(
     expression,
-    self.maybeCoerce(
+    this.maybeCoerce(
       isInstanceOf(thisType, DataTypeExpr) ? thisType : undefined,
       isInstanceOf(exprType, DataTypeExpr) ? exprType : undefined,
     ),
@@ -80,7 +80,7 @@ function annotateByArgsWithCoerce (self: TypeAnnotator, expression: Expression):
 }
 
 function annotateByArgsApproxTop (
-  self: TypeAnnotator,
+  this: TypeAnnotator,
   expression: ApproxTopKExpr | ApproxTopSumExpr,
 ): Expression {
   const thisArg = expression.args.this;
@@ -95,7 +95,7 @@ function annotateByArgsApproxTop (
     nested: true,
   });
 
-  self.setType(
+  this.setType(
     expression,
     new DataTypeExpr({
       this: DataTypeExprKind.ARRAY,
@@ -107,18 +107,18 @@ function annotateByArgsApproxTop (
   return expression;
 }
 
-function annotateConcat (self: TypeAnnotator, expression: ConcatExpr): ConcatExpr {
-  self.annotateByArgs(expression, ['expressions']);
+function annotateConcat (this: TypeAnnotator, expression: ConcatExpr): ConcatExpr {
+  this.annotateByArgs(expression, ['expressions']);
 
   // Args must be BYTES or types that can be cast to STRING, return type is either BYTES or STRING
   if (!expression.isType([DataTypeExprKind.BINARY, DataTypeExprKind.UNKNOWN])) {
-    self.setType(expression, DataTypeExprKind.VARCHAR);
+    this.setType(expression, DataTypeExprKind.VARCHAR);
   }
 
   return expression;
 }
 
-function annotateArray (self: TypeAnnotator, expression: ArrayExpr): ArrayExpr {
+function annotateArray (this: TypeAnnotator, expression: ArrayExpr): ArrayExpr {
   const arrayArgs = expression.args.expressions;
 
   if (arrayArgs && arrayArgs.length === 1) {
@@ -148,7 +148,7 @@ function annotateArray (self: TypeAnnotator, expression: ArrayExpr): ArrayExpr {
       }
     } else if (unnested instanceof SetOperationExpr) {
       // Handle ARRAY(SELECT ... UNION ALL SELECT ...) - set operations
-      const colTypes = self.getSetopColumnTypes(unnested);
+      const colTypes = this.getSetopColumnTypes(unnested);
       const left = unnested.left;
       if (colTypes && isInstanceOf(left, QueryExpr) && 0 < left.selects.length) {
         const firstColName = left.selects[0].aliasOrName;
@@ -175,12 +175,12 @@ function annotateArray (self: TypeAnnotator, expression: ArrayExpr): ArrayExpr {
         nested: true,
       });
 
-      self.setType(expression, arrayType);
+      this.setType(expression, arrayType);
       return expression;
     }
   }
 
-  self.annotateByArgs(expression, ['expressions'], { array: true });
+  this.annotateByArgs(expression, ['expressions'], { array: true });
   return expression;
 }
 
@@ -202,7 +202,7 @@ export const EXPRESSION_METADATA: ExpressionMetadata = (() => {
     RoundExpr,
     SqrtExpr,
   ], {
-    annotator: (s: TypeAnnotator, e: Expression) => annotateMathFunctions(s, e),
+    annotator: (s: TypeAnnotator, e: Expression) => annotateMathFunctions.call(s, e),
   });
 
   extend([
@@ -332,7 +332,7 @@ export const EXPRESSION_METADATA: ExpressionMetadata = (() => {
     SafeMultiplyExpr,
     SafeSubtractExpr,
   ], {
-    annotator: (s: TypeAnnotator, e: Expression) => annotateByArgsWithCoerce(s, e),
+    annotator: (s: TypeAnnotator, e: Expression) => annotateByArgsWithCoerce.call(s, e),
   });
 
   extend([
@@ -346,8 +346,8 @@ export const EXPRESSION_METADATA: ExpressionMetadata = (() => {
 
   TIMESTAMP_EXPRESSIONS.forEach((type) => map.set(type, { returns: DataTypeExprKind.TIMESTAMPTZ }));
 
-  map.set(ApproxTopKExpr, { annotator: (s: TypeAnnotator, e: ApproxTopKExpr) => annotateByArgsApproxTop(s, e) });
-  map.set(ApproxTopSumExpr, { annotator: (s: TypeAnnotator, e: ApproxTopSumExpr) => annotateByArgsApproxTop(s, e) });
+  map.set(ApproxTopKExpr, { annotator: (s: TypeAnnotator, e: ApproxTopKExpr) => annotateByArgsApproxTop.call(s, e) });
+  map.set(ApproxTopSumExpr, { annotator: (s: TypeAnnotator, e: ApproxTopSumExpr) => annotateByArgsApproxTop.call(s, e) });
   map.set(ArrayExpr, { annotator: annotateArray });
   map.set(ConcatExpr, { annotator: annotateConcat });
   map.set(DateFromUnixDateExpr, { returns: DataTypeExprKind.DATE });
@@ -371,7 +371,7 @@ export const EXPRESSION_METADATA: ExpressionMetadata = (() => {
   map.set(LagExpr, { annotator: (s: TypeAnnotator, e: LagExpr) => s.annotateByArgs(e, ['this', 'default']) });
   map.set(ParseBignumericExpr, { returns: DataTypeExprKind.BIGDECIMAL });
   map.set(ParseNumericExpr, { returns: DataTypeExprKind.DECIMAL });
-  map.set(SafeDivideExpr, { annotator: (s: TypeAnnotator, e: SafeDivideExpr) => annotateSafeDivide(s, e) });
+  map.set(SafeDivideExpr, { annotator: (s: TypeAnnotator, e: SafeDivideExpr) => annotateSafeDivide.call(s, e) });
 
   map.set(ToCodePointsExpr, {
     annotator: (s: TypeAnnotator, e: ToCodePointsExpr) => s.setType(e, DataTypeExpr.build('ARRAY<BIGINT>', { dialect: 'bigquery' })),

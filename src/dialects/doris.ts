@@ -66,8 +66,8 @@ import {
   unitToStr,
 } from './dialect';
 
-function lagLeadSql (self: Generator, expression: LagExpr | LeadExpr): string {
-  return self.func(
+function lagLeadSql (this: Generator, expression: LagExpr | LeadExpr): string {
+  return this.func(
     expression instanceof LagExpr ? 'LAG' : 'LEAD',
     [
       expression.args.this,
@@ -119,7 +119,7 @@ class DorisParser extends MySQL.Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return { ...MySQL.Parser.FUNCTION_PARSERS };
   }
 
@@ -137,14 +137,24 @@ class DorisParser extends MySQL.Parser {
   }
 
   @cache
-  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
+  static get PROPERTY_PARSERS (): Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return {
       ...MySQL.Parser.PROPERTY_PARSERS,
-      PROPERTIES: (self: Parser) => self.parseWrappedProperties(),
-      UNIQUE: (self: Parser) => self.parseCompositeKeyProperty(UniqueKeyPropertyExpr),
-      KEY: (self: Parser) => self.parseCompositeKeyProperty(UniqueKeyPropertyExpr),
-      BUILD: (self: Parser) => (self as DorisParser).parseBuildProperty(),
-      REFRESH: (self: Parser) => (self as DorisParser).parseRefreshProperty(),
+      PROPERTIES: function (this: Parser) {
+        return this.parseWrappedProperties();
+      },
+      UNIQUE: function (this: Parser) {
+        return this.parseCompositeKeyProperty(UniqueKeyPropertyExpr);
+      },
+      KEY: function (this: Parser) {
+        return this.parseCompositeKeyProperty(UniqueKeyPropertyExpr);
+      },
+      BUILD: function (this: Parser) {
+        return (this as DorisParser).parseBuildProperty();
+      },
+      REFRESH: function (this: Parser) {
+        return (this as DorisParser).parseRefreshProperty();
+      },
     };
   }
 
@@ -284,9 +294,9 @@ class DorisGenerator extends MySQL.Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...MySQL.Generator.TRANSFORMS,
       [AddMonthsExpr, renameFunc('MONTHS_ADD')],
       [ApproxDistinctExpr, approxCountDistinctSql],
@@ -295,55 +305,87 @@ class DorisGenerator extends MySQL.Generator {
       [ArrayAggExpr, renameFunc('COLLECT_LIST')],
       [ArrayToStringExpr, renameFunc('ARRAY_JOIN')],
       [ArrayUniqueAggExpr, renameFunc('COLLECT_SET')],
-      [CurrentDateExpr, (self: Generator) => self.func('CURRENT_DATE', [])],
-      [CurrentTimestampExpr, (self: Generator) => self.func('NOW', [])],
+      [
+        CurrentDateExpr,
+        function (this: Generator) {
+          return this.func('CURRENT_DATE', []);
+        },
+      ],
+      [
+        CurrentTimestampExpr,
+        function (this: Generator) {
+          return this.func('NOW', []);
+        },
+      ],
       [
         DateTruncExpr,
-        (self: Generator, e: DateTruncExpr) =>
-          self.func('DATE_TRUNC', [e.args.this, unitToStr(e)!]),
+        function (this: Generator, e: DateTruncExpr) {
+          return this.func('DATE_TRUNC', [e.args.this, unitToStr(e)]);
+        },
       ],
       [EuclideanDistanceExpr, renameFunc('L2_DISTANCE')],
       [
         GroupConcatExpr,
-        (self: Generator, e: GroupConcatExpr) =>
-          self.func('GROUP_CONCAT', [e.args.this, e.args.separator ?? LiteralExpr.string(',')]),
+        function (this: Generator, e: GroupConcatExpr) {
+          return this.func('GROUP_CONCAT', [e.args.this, e.args.separator ?? LiteralExpr.string(',')]);
+        },
       ],
       [
         JsonExtractScalarExpr,
-        (self: Generator, e: JsonExtractScalarExpr) =>
-          self.func('JSON_EXTRACT', [e.args.this, e.args.expression]),
+        function (this: Generator, e: JsonExtractScalarExpr) {
+          return this.func('JSON_EXTRACT', [e.args.this, e.args.expression]);
+        },
       ],
       [LagExpr, lagLeadSql],
       [LeadExpr, lagLeadSql],
       [MapExpr, renameFunc('ARRAY_MAP')],
-      [PropertyExpr, (self: Generator, e: PropertyExpr) => self.propertySql(e)],
+      [
+        PropertyExpr,
+        function (this: Generator, e: PropertyExpr) {
+          return this.propertySql(e);
+        },
+      ],
       [RegexpLikeExpr, renameFunc('REGEXP')],
       [RegexpSplitExpr, renameFunc('SPLIT_BY_STRING')],
-      [SchemaCommentPropertyExpr, (self: Generator, e: SchemaCommentPropertyExpr) => self.nakedProperty(e)],
+      [
+        SchemaCommentPropertyExpr,
+        function (this: Generator, e: SchemaCommentPropertyExpr) {
+          return this.nakedProperty(e);
+        },
+      ],
       [SplitExpr, renameFunc('SPLIT_BY_STRING')],
       [StringToArrayExpr, renameFunc('SPLIT_BY_STRING')],
       [
         StrToUnixExpr,
-        (self: Generator, e: StrToUnixExpr) =>
-          self.func('UNIX_TIMESTAMP', [e.args.this, self.formatTime(e)]),
+        function (this: Generator, e: StrToUnixExpr) {
+          return this.func('UNIX_TIMESTAMP', [e.args.this, this.formatTime(e)]);
+        },
       ],
       [TimeStrToDateExpr, renameFunc('TO_DATE')],
       [
         TsOrDsAddExpr,
-        (self: Generator, e: TsOrDsAddExpr) =>
-          self.func('DATE_ADD', [e.args.this, e.args.expression]),
+        function (this: Generator, e: TsOrDsAddExpr) {
+          return this.func('DATE_ADD', [e.args.this, e.args.expression]);
+        },
       ],
-      [TsOrDsToDateExpr, (self: Generator, e: TsOrDsToDateExpr) => self.func('TO_DATE', [e.args.this])],
+      [
+        TsOrDsToDateExpr,
+        function (this: Generator, e: TsOrDsToDateExpr) {
+          return this.func('TO_DATE', [e.args.this]);
+        },
+      ],
       [TimeToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
       [
         TimestampTruncExpr,
-        (self: Generator, e: TimestampTruncExpr) =>
-          self.func('DATE_TRUNC', [e.args.this, unitToStr(e)]),
+        function (this: Generator, e: TimestampTruncExpr) {
+          return this.func('DATE_TRUNC', [e.args.this, unitToStr(e)]);
+        },
       ],
       [
         UnixToStrExpr,
-        (self: Generator, e: UnixToStrExpr) =>
-          self.func('FROM_UNIXTIME', [e.args.this, timeFormat('doris')(self, e)]),
+        function (this: Generator, e: UnixToStrExpr) {
+          return this.func('FROM_UNIXTIME', [e.args.this, timeFormat('doris').call(this, e)]);
+        },
       ],
       [UnixToTimeExpr, renameFunc('FROM_UNIXTIME')],
     ]);

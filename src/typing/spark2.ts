@@ -23,7 +23,7 @@ import type { ExpressionMetadata } from '.';
  * - If any arg is of UNKNOWN type and none of targetType, the expr is inferred as UNKNOWN
  */
 function annotateBySimilarArgs (
-  self: TypeAnnotator,
+  this: TypeAnnotator,
   expression: Expression,
   args: Iterable<string>,
   targetType: DataTypeExprKind | DataTypeExpr,
@@ -54,7 +54,7 @@ function annotateBySimilarArgs (
     }
   }
 
-  self.setType(
+  this.setType(
     expression,
     hasUnknown ? DataTypeExprKind.UNKNOWN : lastDatatype,
   );
@@ -75,11 +75,11 @@ export const EXPRESSION_METADATA: ExpressionMetadata = (() => {
   extend([FormatExpr, RightExpr], { returns: DataTypeExprKind.VARCHAR });
 
   map.set(ConcatExpr, {
-    annotator: (s: TypeAnnotator, e: ConcatExpr) => annotateBySimilarArgs(s, e, ['expressions'], DataTypeExprKind.TEXT),
+    annotator: (s: TypeAnnotator, e: ConcatExpr) => annotateBySimilarArgs.call(s, e, ['expressions'], DataTypeExprKind.TEXT),
   });
 
   map.set(PadExpr, {
-    annotator: (s: TypeAnnotator, e: PadExpr) => annotateBySimilarArgs(s, e, ['this', 'fillPattern'], DataTypeExprKind.TEXT),
+    annotator: (s: TypeAnnotator, e: PadExpr) => annotateBySimilarArgs.call(s, e, ['this', 'fillPattern'], DataTypeExprKind.TEXT),
   });
 
   map.set(SubstringExpr, {

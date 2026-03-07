@@ -129,7 +129,7 @@ function normalizePartition (e: Exclude<ExpressionValue, undefined>): Expression
   return e;
 }
 
-function dateAddSql (self: Generator, expression: TsOrDsAddExpr | TimestampAddExpr): string {
+function dateAddSql (this: Generator, expression: TsOrDsAddExpr | TimestampAddExpr): string {
   const unit = expression.args.unit;
 
   if (
@@ -137,10 +137,10 @@ function dateAddSql (self: Generator, expression: TsOrDsAddExpr | TimestampAddEx
     || (expression instanceof TsOrDsAddExpr && expression.text('unit').toUpperCase() === 'DAY')
   ) {
     // Coming from Hive/Spark2 DATE_ADD or roundtripping the 2-arg version of Spark3/DB
-    return self.func('DATE_ADD', [expression.args.this, expression.args.expression]);
+    return this.func('DATE_ADD', [expression.args.this, expression.args.expression]);
   }
 
-  let thisSql = self.func('DATE_ADD', [
+  let thisSql = this.func('DATE_ADD', [
     unitToVar(expression),
     expression.args.expression,
     expression.args.this,
@@ -157,16 +157,16 @@ function dateAddSql (self: Generator, expression: TsOrDsAddExpr | TimestampAddEx
   return thisSql;
 }
 
-function groupConcatSql (self: Generator, expression: GroupConcatExpr): string {
-  if (self.dialect.version.major < 4) {
+function groupConcatSql (this: Generator, expression: GroupConcatExpr): string {
+  if (this.dialect.version.major < 4) {
     const expr = new ArrayToStringExpr({
       this: new ArrayAggExpr({ this: expression.args.this }),
       expression: expression.args.separator || LiteralExpr.string(''),
     });
-    return self.sql(expr);
+    return this.sql(expr);
   }
 
-  return baseGroupConcatSql(self, expression);
+  return baseGroupConcatSql.call(this, expression);
 }
 
 class SparkTokenizer extends Spark2.Tokenizer {
@@ -208,7 +208,7 @@ class SparkParser extends Spark2.Parser {
       TRY_ELEMENT_AT: (args: Expression[]) =>
         new BracketExpr({
           this: seqGet(args, 0),
-          expressions: [seqGet(args, 1)!],
+          expressions: [args[1]],
           offset: 1,
           safe: true,
         }),
@@ -218,18 +218,22 @@ class SparkParser extends Spark2.Parser {
   }
 
   @cache
-  static get PLACEHOLDER_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
+  static get PLACEHOLDER_PARSERS (): Partial<Record<TokenType, (this: Parser) => Expression | undefined>> {
     return {
       ...Spark2.Parser.PLACEHOLDER_PARSERS,
-      [TokenType.L_BRACE]: (self: Parser) => (self as SparkParser).parseQueryParameter(),
+      [TokenType.L_BRACE]: function (this: Parser) {
+        return (this as SparkParser).parseQueryParameter();
+      },
     };
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Spark2.Parser.FUNCTION_PARSERS,
-      SUBSTR: (self: Parser) => self.parseSubstring(),
+      SUBSTR: function (this: Parser) {
+        return this.parseSubstring();
+      },
     };
   }
 
@@ -266,7 +270,7 @@ class SparkGenerator extends Spark2.Generator {
   static PARSE_JSON_NAME?: string;
 
   @cache
-  static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
+  static get TYPE_MAPPING () {
     return {
       ...Spark2.Generator.TYPE_MAPPING,
       [DataTypeExprKind.MONEY]: 'DECIMAL(15, 4)',
@@ -279,14 +283,15 @@ class SparkGenerator extends Spark2.Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Spark2.Generator.TRANSFORMS.entries(),
       [
         ArrayConstructCompactExpr,
-        (self: Generator, e: ArrayConstructCompactExpr) =>
-          self.func('ARRAY_COMPACT', [self.func('ARRAY', e.args.expressions || [])]),
+        function (this: Generator, e: ArrayConstructCompactExpr) {
+          return this.func('ARRAY_COMPACT', [this.func('ARRAY', e.args.expressions || [])]);
+        },
       ],
       [ArrayAppendExpr, arrayAppendSql('ARRAY_APPEND')],
       [ArrayPrependExpr, arrayAppendSql('ARRAY_PREPEND')],
@@ -311,13 +316,14 @@ class SparkGenerator extends Spark2.Generator {
       [JsonKeysExpr, renameFunc('JSON_OBJECT_KEYS')],
       [
         PartitionedByPropertyExpr,
-        (self: Generator, e: PartitionedByPropertyExpr) =>
-          `PARTITIONED BY ${self.wrap(
-            self.expressions(undefined, {
+        function (this: Generator, e: PartitionedByPropertyExpr) {
+          return `PARTITIONED BY ${this.wrap(
+            this.expressions(undefined, {
               sqls: e.args.this?.args.expressions?.map((expr) => normalizePartition(expr as ExpressionValue)),
               skipFirst: true,
             }),
-          )}`,
+          )}`;
+        },
       ],
       [SafeAddExpr, renameFunc('TRY_ADD')],
       [SafeMultiplyExpr, renameFunc('TRY_MULTIPLY')],
@@ -332,8 +338,9 @@ class SparkGenerator extends Spark2.Generator {
       [TimestampDiffExpr, timestampDiffSql],
       [
         TryCastExpr,
-        (self: Generator, e: TryCastExpr) =>
-          e.args.safe ? self.tryCastSql(e) : self.castSql(e),
+        function (this: Generator, e: TryCastExpr) {
+          return e.args.safe ? this.tryCastSql(e) : this.castSql(e);
+        },
       ],
     ]);
 

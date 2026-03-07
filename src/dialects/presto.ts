@@ -184,37 +184,37 @@ import { Hive } from './hive';
  * Presto doesn't have a native INITCAP. We simulate it using REGEXP_REPLACE with a lambda.
  * It transforms 'hello world' into 'Hello World'.
  */
-export function initcapSql (self: Generator, expression: InitcapExpr): string {
+export function initcapSql (this: Generator, expression: InitcapExpr): string {
   const delimiters = expression.args.expression;
 
   // Presto's simulation only supports default whitespace delimiters
-  if (delimiters && !(delimiters.isString && delimiters.args.this === self.dialect._constructor.INITCAP_DEFAULT_DELIMITER_CHARS)) {
-    self.unsupported('INITCAP does not support custom delimiters in Presto.');
+  if (delimiters && !(delimiters.isString && delimiters.args.this === this.dialect._constructor.INITCAP_DEFAULT_DELIMITER_CHARS)) {
+    this.unsupported('INITCAP does not support custom delimiters in Presto.');
   }
 
   const regex = '(\\w)(\\w*)';
   const lambda = 'x -> UPPER(x[1]) || LOWER(x[2])';
-  return `REGEXP_REPLACE(${self.sql(expression, 'this')}, '${regex}', ${lambda})`;
+  return `REGEXP_REPLACE(${this.sql(expression, 'this')}, '${regex}', ${lambda})`;
 }
 
 /**
  * Presto uses ARRAY_SORT. If descending is requested, we provide a custom comparator lambda.
  */
-export function noSortArray (self: Generator, expression: SortArrayExpr): string {
+export function noSortArray (this: Generator, expression: SortArrayExpr): string {
   let comparator: string | undefined;
 
   if (expression.args.asc instanceof BooleanExpr && !expression.args.asc.args.this) {
     comparator = '(a, b) -> CASE WHEN a < b THEN 1 WHEN a > b THEN -1 ELSE 0 END';
   }
 
-  return self.func('ARRAY_SORT', [expression.args.this, comparator]);
+  return this.func('ARRAY_SORT', [expression.args.this, comparator]);
 }
 
 /**
  * Handles schema generation, with special logic for PARTITIONED BY properties
  * where column names must be rendered as string literals within an array.
  */
-export function schemaSql (self: Generator, expression: SchemaExpr): string {
+export function schemaSql (this: Generator, expression: SchemaExpr): string {
   if (expression.parent instanceof PartitionedByPropertyExpr) {
     // Columns in the ARRAY[] string literals should not be quoted identifiers
     expression.transform((n) => {
@@ -224,11 +224,11 @@ export function schemaSql (self: Generator, expression: SchemaExpr): string {
 
     const partitionExprs = expression.args.expressions?.map((c) => {
       return (c instanceof FuncExpr || c instanceof PropertyExpr)
-        ? self.sql(c)
-        : self.sql(c, 'this');
+        ? this.sql(c)
+        : this.sql(c, 'this');
     }) || [];
 
-    return self.sql(
+    return this.sql(
       new ArrayExpr({
         expressions: partitionExprs.map((c) => new LiteralExpr({
           this: c,
@@ -251,44 +251,44 @@ export function schemaSql (self: Generator, expression: SchemaExpr): string {
     }
   }
 
-  return self.schemaSql(expression);
+  return this.schemaSql(expression);
 }
 
 /**
  * Presto lacks exact quantiles, so we pivot to the approximate version.
  */
-export function quantileSql (self: Generator, expression: QuantileExpr): string {
-  self.unsupported('Presto does not support exact quantiles; using APPROX_PERCENTILE.');
-  return self.func('APPROX_PERCENTILE', [expression.args.this, expression.args.quantile]);
+export function quantileSql (this: Generator, expression: QuantileExpr): string {
+  this.unsupported('Presto does not support exact quantiles; using APPROX_PERCENTILE.');
+  return this.func('APPROX_PERCENTILE', [expression.args.this, expression.args.quantile]);
 }
 
 /**
  * Maps StrToDate/Time to Presto's DATE_PARSE function.
  */
 export function strToTimeSql (
-  self: Generator,
+  this: Generator,
   expression: StrToDateExpr | StrToTimeExpr | TsOrDsToDateExpr,
 ): string {
-  return self.func('DATE_PARSE', [expression.args.this, self.formatTime(expression)]);
+  return this.func('DATE_PARSE', [expression.args.this, this.formatTime(expression)]);
 }
 
 /**
  * Handles converting a Timestamp or DateString to a Date.
  * If a custom format is provided, it uses DATE_PARSE; otherwise, it performs a nested cast.
  */
-export function tsOrDsToDateSql (self: Generator, expression: TsOrDsToDateExpr): string {
-  const timeFormat = self.formatTime(expression);
+export function tsOrDsToDateSql (this: Generator, expression: TsOrDsToDateExpr): string {
+  const timeFormat = this.formatTime(expression);
 
   if (timeFormat && timeFormat !== Presto.TIME_FORMAT && timeFormat !== Presto.DATE_FORMAT) {
-    const parsedTime = strToTimeSql(self, expression); // from previous step
-    return self.sql(new CastExpr({
+    const parsedTime = strToTimeSql.call(this, expression); // from previous step
+    return this.sql(new CastExpr({
       this: LiteralExpr.string({ this: parsedTime }),
       to: LiteralExpr.string({ this: DataTypeExprKind.DATE }),
     }));
   }
 
   // Standard case: CAST(CAST(x AS TIMESTAMP) AS DATE)
-  return self.sql(
+  return this.sql(
     new CastExpr({
       this: new CastExpr({
         this: expression.args.this,
@@ -299,17 +299,17 @@ export function tsOrDsToDateSql (self: Generator, expression: TsOrDsToDateExpr):
   );
 }
 
-export function tsOrDsAddSql (self: Generator, expression: TsOrDsAddExpr): string {
+export function tsOrDsAddSql (this: Generator, expression: TsOrDsAddExpr): string {
   const standardized = tsOrDsAddCast(expression);
   const unit = unitToStr(standardized);
-  return self.func('DATE_ADD', [
+  return this.func('DATE_ADD', [
     unit,
     standardized.args.expression,
     standardized.args.this,
   ]);
 }
 
-export function tsOrDsDiffSql (self: Generator, expression: TsOrDsDiffExpr): string {
+export function tsOrDsDiffSql (this: Generator, expression: TsOrDsDiffExpr): string {
   const thisTs = new CastExpr({
     this: expression.args.this,
     to: LiteralExpr.string({ this: DataTypeExprKind.TIMESTAMP }),
@@ -319,7 +319,7 @@ export function tsOrDsDiffSql (self: Generator, expression: TsOrDsDiffExpr): str
     to: LiteralExpr.string({ this: DataTypeExprKind.TIMESTAMP }),
   });
   const unit = unitToStr(expression);
-  return self.func('DATE_DIFF', [
+  return this.func('DATE_DIFF', [
     unit,
     exprTs,
     thisTs,
@@ -373,34 +373,34 @@ export function buildFromUnixtime (args: Expression[]): UnixToTimeExpr {
  * In Trino, FIRST/LAST are navigation functions within MATCH_RECOGNIZE.
  * Everywhere else, they are treated as ARBITRARY.
  */
-export function firstLastSql (self: Generator, expression: FuncExpr): string {
+export function firstLastSql (this: Generator, expression: FuncExpr): string {
   if (expression.findAncestor<MatchRecognizeExpr | SelectExpr>(MatchRecognizeExpr, SelectExpr)) {
-    return self.functionFallbackSql(expression);
+    return this.functionFallbackSql(expression);
   }
-  return renameFunc('ARBITRARY')(self, expression);
+  return renameFunc('ARBITRARY').call(this, expression);
 }
 
 /**
  * Handles UNIX timestamp conversion, potentially scaling for milliseconds/microseconds.
  */
-export function unixToTimeSql (self: Generator, expression: UnixToTimeExpr): string {
+export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   const scale = expression.args.scale;
-  const timestamp = self.sql(expression, 'this');
+  const timestamp = this.sql(expression, 'this');
 
   if (!scale || scale === UnixToTimeExpr.SECONDS) {
-    return renameFunc('FROM_UNIXTIME')(self, expression);
+    return renameFunc('FROM_UNIXTIME').call(this, expression);
   }
 
   // Presto expects seconds (Double) for from_unixtime
-  return `FROM_UNIXTIME(CAST(${timestamp} AS DOUBLE) / POW(10, ${self.sql(scale)}))`;
+  return `FROM_UNIXTIME(CAST(${timestamp} AS DOUBLE) / POW(10, ${this.sql(scale)}))`;
 }
 
 /**
  * Ensures a value is an Integer for date arithmetic. Casts to BIGINT if necessary.
  */
-function toInt (self: Generator, expression: Expression): Expression {
+function toInt (this: Generator, expression: Expression): Expression {
   if (!expression.type) {
-    annotateTypes(expression, { dialect: self.dialect });
+    annotateTypes(expression, { dialect: this.dialect });
   }
   if (expression.type instanceof Expression && !DataTypeExpr.INTEGER_TYPES.has(expression.type.args.this as DataTypeExprKind)) {
     return new CastExpr({
@@ -425,23 +425,23 @@ export function buildToChar (args: Expression[]): TimeToStrExpr {
 /**
  * Higher-order function to create SQL for date addition or subtraction.
  */
-export function dateDeltaSql (name: string, options: { negateInterval?: boolean } = {}): (self: Generator, expression: DateAddOrSub) => string {
+export function dateDeltaSql (name: string, options: { negateInterval?: boolean } = {}): (this: Generator, expression: DateAddOrSub) => string {
   const { negateInterval = false } = options;
-  return (self: Generator, expression: DateAddOrSub): string => {
+  return function (this: Generator, expression: DateAddOrSub): string {
     const interval = expression.args.expression
-      ? toInt(self, expression.args.expression)
+      ? toInt.call(this, expression.args.expression)
       : new LiteralExpr({
         this: '0',
         isString: false,
       });
     const finalInterval = negateInterval ? interval.mul(-1) : interval;
 
-    return self.func(
+    return this.func(
       name,
       [
         unitToStr(expression),
-        self.sql(finalInterval),
-        self.sql(expression, 'this'),
+        this.sql(finalInterval),
+        this.sql(expression, 'this'),
       ],
     );
   };
@@ -451,7 +451,7 @@ export function dateDeltaSql (name: string, options: { negateInterval?: boolean 
  * Converts Spark/Hive style EXPLODE into Presto UNNEST, with special handling for
  * Arrays of Structs which Presto flattens into multiple columns.
  */
-export function explodeToUnnestSqlPresto (self: Generator, expression: LateralExpr): string {
+export function explodeToUnnestSqlPresto (this: Generator, expression: LateralExpr): string {
   const explode = expression.args.this;
 
   if (explode instanceof ExplodeExpr) {
@@ -475,7 +475,7 @@ export function explodeToUnnestSqlPresto (self: Generator, expression: LateralEx
     explode.replace(new ExplodeExpr({ this: explode.args.this instanceof Expression ? explode.args.this.copy() : explode.args.this?.toString() ?? '' }));
   }
 
-  return explodeToUnnestSql(self, expression);
+  return explodeToUnnestSql.call(this, expression);
 }
 
 /**
@@ -609,7 +609,7 @@ class PrestoParser extends Parser {
       ELEMENT_AT: (args: Expression[]) =>
         new BracketExpr({
           this: seqGet(args, 0),
-          expressions: [seqGet(args, 1)!],
+          expressions: [args[1]],
           offset: 1,
           safe: true,
         }),
@@ -686,7 +686,7 @@ class PrestoParser extends Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return (() => {
       const parsers = { ...Parser.FUNCTION_PARSERS };
       // Presto uses its own TRIM logic, so we remove the base SQL parser
@@ -748,20 +748,23 @@ class PrestoGenerator extends Generator {
   @cache
 
   static get ORIGINAL_TRANSFORMS () {
-    return new Map<typeof Expression, (self: Generator, e: any) => string>([
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
       [AnyValueExpr, renameFunc('ARBITRARY')],
       [
         ApproxQuantileExpr,
-        (self: Generator, e: ApproxQuantileExpr) => self.func(
-          'APPROX_PERCENTILE',
-          [
-            e.args.this,
-            e.args.weight,
-            e.args.quantile,
-            e.args.accuracy,
-          ],
-        ),
+        function (this: Generator, e: ApproxQuantileExpr) {
+          return this.func(
+            'APPROX_PERCENTILE',
+            [
+              e.args.this,
+              e.args.weight,
+              e.args.quantile,
+              e.args.accuracy,
+            ],
+          );
+        },
       ],
       [ArgMaxExpr, renameFunc('MAX_BY')],
       [ArgMinExpr, renameFunc('MIN_BY')],
@@ -769,7 +772,9 @@ class PrestoGenerator extends Generator {
         ArrayExpr,
         preprocess(
           [inheritStructFieldNames],
-          (self, e) => `ARRAY[${self.expressions(e, { flat: true })}]`,
+          function (this: Generator, e) {
+            return `ARRAY[${this.expressions(e, { flat: true })}]`;
+          },
         ),
       ],
       [ArrayAnyExpr, renameFunc('ANY_MATCH')],
@@ -779,52 +784,127 @@ class PrestoGenerator extends Generator {
       [ArrayUniqueAggExpr, renameFunc('SET_AGG')],
       [ArraySliceExpr, renameFunc('SLICE')],
       [AtTimeZoneExpr, renameFunc('AT_TIMEZONE')],
-      [BitwiseAndExpr, (self: Generator, e: BitwiseAndExpr) => self.func('BITWISE_AND', [e.args.this, e.args.expression])],
-      [BitwiseLeftShiftExpr, (self: Generator, e: BitwiseLeftShiftExpr) => self.func('BITWISE_ARITHMETIC_SHIFT_LEFT', [e.args.this, e.args.expression])],
-      [BitwiseNotExpr, (self: Generator, e: BitwiseNotExpr) => self.func('BITWISE_NOT', [e.args.this])],
-      [BitwiseOrExpr, (self: Generator, e: BitwiseOrExpr) => self.func('BITWISE_OR', [e.args.this, e.args.expression])],
-      [BitwiseRightShiftExpr, (self: Generator, e: BitwiseRightShiftExpr) => self.func('BITWISE_ARITHMETIC_SHIFT_RIGHT', [e.args.this, e.args.expression])],
-      [BitwiseXorExpr, (self: Generator, e: BitwiseXorExpr) => self.func('BITWISE_XOR', [e.args.this, e.args.expression])],
+      [
+        BitwiseAndExpr,
+        function (this: Generator, e: BitwiseAndExpr) {
+          return this.func('BITWISE_AND', [e.args.this, e.args.expression]);
+        },
+      ],
+      [
+        BitwiseLeftShiftExpr,
+        function (this: Generator, e: BitwiseLeftShiftExpr) {
+          return this.func('BITWISE_ARITHMETIC_SHIFT_LEFT', [e.args.this, e.args.expression]);
+        },
+      ],
+      [
+        BitwiseNotExpr,
+        function (this: Generator, e: BitwiseNotExpr) {
+          return this.func('BITWISE_NOT', [e.args.this]);
+        },
+      ],
+      [
+        BitwiseOrExpr,
+        function (this: Generator, e: BitwiseOrExpr) {
+          return this.func('BITWISE_OR', [e.args.this, e.args.expression]);
+        },
+      ],
+      [
+        BitwiseRightShiftExpr,
+        function (this: Generator, e: BitwiseRightShiftExpr) {
+          return this.func('BITWISE_ARITHMETIC_SHIFT_RIGHT', [e.args.this, e.args.expression]);
+        },
+      ],
+      [
+        BitwiseXorExpr,
+        function (this: Generator, e: BitwiseXorExpr) {
+          return this.func('BITWISE_XOR', [e.args.this, e.args.expression]);
+        },
+      ],
       [CastExpr, preprocess([epochCastToTs])],
-      [CurrentTimeExpr, (_self: Generator, _e: Expression) => 'CURRENT_TIME'],
-      [CurrentTimestampExpr, (_self: Generator, _e: Expression) => 'CURRENT_TIMESTAMP'],
-      [CurrentUserExpr, (_self: Generator, _e: Expression) => 'CURRENT_USER'],
+      [CurrentTimeExpr, () => 'CURRENT_TIME'],
+      [CurrentTimestampExpr, () => 'CURRENT_TIMESTAMP'],
+      [CurrentUserExpr, () => 'CURRENT_USER'],
       [DateAddExpr, dateDeltaSql('DATE_ADD')],
       [
         DateDiffExpr,
-        (self: Generator, e: DateDiffExpr) => self.func('DATE_DIFF', [
-          unitToStr(e),
-          e.args.expression,
-          e.args.this,
-        ]),
+        function (this: Generator, e: DateDiffExpr) {
+          return this.func('DATE_DIFF', [
+            unitToStr(e),
+            e.args.expression,
+            e.args.this,
+          ]);
+        },
       ],
       [DateStrToDateExpr, dateStrToDateSql],
-      [DateToDiExpr, (self: Generator, e: Expression) => `CAST(DATE_FORMAT(${self.sql(e, 'this')}, ${self.dialect._constructor.DATEINT_FORMAT}) AS INT)`],
+      [
+        DateToDiExpr,
+        function (this: Generator, e: Expression) {
+          return `CAST(DATE_FORMAT(${this.sql(e, 'this')}, ${this.dialect._constructor.DATEINT_FORMAT}) AS INT)`;
+        },
+      ],
       [DateSubExpr, dateDeltaSql('DATE_ADD', { negateInterval: true })],
-      [DayOfWeekExpr, (self: Generator, e: DayOfWeekExpr) => `((${self.func('DAY_OF_WEEK', [e.args.this])} % 7) + 1)`],
+      [
+        DayOfWeekExpr,
+        function (this: Generator, e: DayOfWeekExpr) {
+          return `((${this.func('DAY_OF_WEEK', [e.args.this])} % 7) + 1)`;
+        },
+      ],
       [DayOfWeekIsoExpr, renameFunc('DAY_OF_WEEK')],
-      [DecodeExpr, (self: Generator, e: DecodeExpr) => encodeDecodeSql(self, e, 'FROM_UTF8')],
-      [DiToDateExpr, (self: Generator, e: Expression) => `CAST(DATE_PARSE(CAST(${self.sql(e, 'this')} AS VARCHAR), ${self.dialect._constructor.DATEINT_FORMAT}) AS DATE)`],
-      [EncodeExpr, (self: Generator, e: EncodeExpr) => encodeDecodeSql(self, e, 'TO_UTF8')],
+      [
+        DecodeExpr,
+        function (this: Generator, e: DecodeExpr) {
+          return encodeDecodeSql.call(this, e, 'FROM_UTF8');
+        },
+      ],
+      [
+        DiToDateExpr,
+        function (this: Generator, e: Expression) {
+          return `CAST(DATE_PARSE(CAST(${this.sql(e, 'this')} AS VARCHAR), ${this.dialect._constructor.DATEINT_FORMAT}) AS DATE)`;
+        },
+      ],
+      [
+        EncodeExpr,
+        function (this: Generator, e: EncodeExpr) {
+          return encodeDecodeSql.call(this, e, 'TO_UTF8');
+        },
+      ],
       [
         FileFormatPropertyExpr,
-        (self: Generator, e: Expression) => `format=${self.sql(new LiteralExpr({
-          this: e.name,
-          isString: true,
-        }))}`,
+        function (this: Generator, e: Expression) {
+          return `format=${this.sql(new LiteralExpr({
+            this: e.name,
+            isString: true,
+          }))}`;
+        },
       ],
       [FirstExpr, firstLastSql],
-      [FromTimeZoneExpr, (self: Generator, e: Expression) => `WITH_TIMEZONE(${self.sql(e, 'this')}, ${self.sql(e, 'zone')}) AT TIME ZONE 'UTC'`],
+      [
+        FromTimeZoneExpr,
+        function (this: Generator, e: Expression) {
+          return `WITH_TIMEZONE(${this.sql(e, 'this')}, ${this.sql(e, 'zone')}) AT TIME ZONE 'UTC'`;
+        },
+      ],
       [GenerateSeriesExpr, sequenceSql],
       [GenerateDateArrayExpr, sequenceSql],
       [IfExpr, ifSql()],
       [ILikeExpr, noIlikeSql],
       [InitcapExpr, initcapSql],
       [LastExpr, firstLastSql],
-      [LastDayExpr, (self: Generator, e: LastDayExpr) => self.func('LAST_DAY_OF_MONTH', [e.args.this])],
+      [
+        LastDayExpr,
+        function (this: Generator, e: LastDayExpr) {
+          return this.func('LAST_DAY_OF_MONTH', [e.args.this]);
+        },
+      ],
       [LateralExpr, explodeToUnnestSqlPresto],
       [LeftExpr, leftToSubstringSql],
-      [LevenshteinExpr, (self: Generator, e: Expression) => unsupportedArgs('insCost', 'delCost', 'subCost', 'maxDist')((e) => renameFunc('LEVENSHTEIN_DISTANCE')(self, e))(e)],
+      [
+        LevenshteinExpr,
+        function (this: Generator, e: Expression) {
+          unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
+          return renameFunc('LEVENSHTEIN_DISTANCE').call(this, e);
+        },
+      ],
       [LogicalAndExpr, renameFunc('BOOL_AND')],
       [LogicalOrExpr, renameFunc('BOOL_OR')],
       [PivotExpr, noPivotSql],
@@ -833,7 +913,12 @@ class PrestoGenerator extends Generator {
       [RegexpExtractAllExpr, regexpExtractSql],
       [RightExpr, rightToSubstringSql],
       [SchemaExpr, schemaSql],
-      [SchemaCommentPropertyExpr, (self: Generator, e: SchemaCommentPropertyExpr) => self.nakedProperty(e)],
+      [
+        SchemaCommentPropertyExpr,
+        function (this: Generator, e: SchemaCommentPropertyExpr) {
+          return this.nakedProperty(e);
+        },
+      ],
       [
         SelectExpr,
         preprocess([
@@ -846,36 +931,76 @@ class PrestoGenerator extends Generator {
         ]),
       ],
       [SortArrayExpr, noSortArray],
-      [StrPositionExpr, (self: Generator, e: StrPositionExpr) => strPositionSql(self, e, { supportsOccurrence: true })],
-      [StrToDateExpr, (self: Generator, e: StrPositionExpr) => `CAST(${strToTimeSql(self, e)} AS DATE)`],
+      [
+        StrPositionExpr,
+        function (this: Generator, e: StrPositionExpr) {
+          return strPositionSql.call(this, e, { supportsOccurrence: true });
+        },
+      ],
+      [
+        StrToDateExpr,
+        function (this: Generator, e: StrPositionExpr) {
+          return `CAST(${strToTimeSql.call(this, e)} AS DATE)`;
+        },
+      ],
       [StrToMapExpr, renameFunc('SPLIT_TO_MAP')],
       [StrToTimeExpr, strToTimeSql],
       [StructExtractExpr, structExtractSql],
       [TableExpr, preprocess([unnestGenerateSeries])],
       [
         TimestampExpr,
-        (self: Generator, e: TimestampExpr) => {
-        // Presto doesn't support the TIMESTAMP keyword in the same way as Postgres/Spark
-          return `CAST(${self.sql(e.args.this)} AS TIMESTAMP)`;
+        function (this: Generator, e: TimestampExpr) {
+          // Presto doesn't support the TIMESTAMP keyword in the same way as Postgres/Spark
+          return `CAST(${this.sql(e.args.this)} AS TIMESTAMP)`;
         },
       ],
       [TimestampAddExpr, dateDeltaSql('DATE_ADD')],
       [TimestampTruncExpr, timestampTruncSql()],
       [TimeStrToDateExpr, timeStrToTimeSql],
       [TimeStrToTimeExpr, timeStrToTimeSql],
-      [TimeStrToUnixExpr, (self: Generator, e: TimeStrToUnixExpr) => self.func('TO_UNIXTIME', [self.func('DATE_PARSE', [e.args.this, self.dialect._constructor.TIME_FORMAT])])],
-      [TimeToStrExpr, (self: Generator, e: TimeToStrExpr) => self.func('DATE_FORMAT', [e.args.this, self.formatTime(e)])],
+      [
+        TimeStrToUnixExpr,
+        function (this: Generator, e: TimeStrToUnixExpr) {
+          return this.func('TO_UNIXTIME', [this.func('DATE_PARSE', [e.args.this, this.dialect._constructor.TIME_FORMAT])]);
+        },
+      ],
+      [
+        TimeToStrExpr,
+        function (this: Generator, e: TimeToStrExpr) {
+          return this.func('DATE_FORMAT', [e.args.this, this.formatTime(e)]);
+        },
+      ],
       [TimeToUnixExpr, renameFunc('TO_UNIXTIME')],
-      [ToCharExpr, (self: Generator, e: ToCharExpr) => self.func('DATE_FORMAT', [e.args.this, self.formatTime(e)])],
+      [
+        ToCharExpr,
+        function (this: Generator, e: ToCharExpr) {
+          return this.func('DATE_FORMAT', [e.args.this, this.formatTime(e)]);
+        },
+      ],
       [TryCastExpr, preprocess([epochCastToTs])],
-      [TsOrDiToDiExpr, (self: Generator, e: TsOrDiToDiExpr) => `CAST(SUBSTR(REPLACE(CAST(${self.sql(e, 'this')} AS VARCHAR), '-', ''), 1, 8) AS INT)`],
+      [
+        TsOrDiToDiExpr,
+        function (this: Generator, e: TsOrDiToDiExpr) {
+          return `CAST(SUBSTR(REPLACE(CAST(${this.sql(e, 'this')} AS VARCHAR), '-', ''), 1, 8) AS INT)`;
+        },
+      ],
       [TsOrDsAddExpr, tsOrDsAddSql],
       [TsOrDsDiffExpr, tsOrDsDiffSql],
       [TsOrDsToDateExpr, tsOrDsToDateSql],
       [UnhexExpr, renameFunc('FROM_HEX')],
-      [UnixToStrExpr, (self: Generator, e: Expression) => `DATE_FORMAT(FROM_UNIXTIME(${self.sql(e, 'this')}), ${self.formatTime(e)})`],
+      [
+        UnixToStrExpr,
+        function (this: Generator, e: Expression) {
+          return `DATE_FORMAT(FROM_UNIXTIME(${this.sql(e, 'this')}), ${this.formatTime(e)})`;
+        },
+      ],
       [UnixToTimeExpr, unixToTimeSql],
-      [UnixToTimeStrExpr, (self: Generator, e: Expression) => `CAST(FROM_UNIXTIME(${self.sql(e, 'this')}) AS VARCHAR)`],
+      [
+        UnixToTimeStrExpr,
+        function (this: Generator, e: Expression) {
+          return `CAST(FROM_UNIXTIME(${this.sql(e, 'this')}) AS VARCHAR)`;
+        },
+      ],
       [VariancePopExpr, renameFunc('VAR_POP')],
       [WithExpr, preprocess([addRecursiveCteColumnNames])],
       [WithinGroupExpr, preprocess([removeWithinGroupForPercentiles])],

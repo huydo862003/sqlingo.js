@@ -14,9 +14,17 @@ class DuneTokenizer extends Trino.Tokenizer {
 class DuneGenerator extends Trino.Generator {
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([...Trino.Generator.TRANSFORMS, [HexStringExpr, (self, e) => `0x${e.args.this}`]]);
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
+      ...Trino.Generator.TRANSFORMS,
+      [
+        HexStringExpr,
+        function (this: Generator, e) {
+          return `0x${e.args.this}`;
+        },
+      ],
+    ]);
     return transforms;
   }
 }

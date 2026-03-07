@@ -1,6 +1,5 @@
 import {
-  Generator,
-  unsupportedArgs,
+  Generator, unsupportedArgs,
 } from '../generator';
 import {
   buildVarMap, Parser,
@@ -214,28 +213,28 @@ function buildDateTimeFormat<E extends Expression> (exprType: new (args: any) =>
   };
 }
 
-export function unixToTimeSql (self: Generator, expression: UnixToTimeExpr): string {
+export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   const scale = expression.args.scale;
   const timestamp = expression.args.this;
 
   if (scale === undefined || scale === UnixToTimeExpr.SECONDS) {
-    return self.func('fromUnixTimestamp', [cast(timestamp, DataTypeExprKind.BIGINT)]);
+    return this.func('fromUnixTimestamp', [cast(timestamp, DataTypeExprKind.BIGINT)]);
   }
   if (scale === UnixToTimeExpr.MILLIS) {
-    return self.func('fromUnixTimestamp64Milli', [cast(timestamp, DataTypeExprKind.BIGINT)]);
+    return this.func('fromUnixTimestamp64Milli', [cast(timestamp, DataTypeExprKind.BIGINT)]);
   }
   if (scale === UnixToTimeExpr.MICROS) {
-    return self.func('fromUnixTimestamp64Micro', [cast(timestamp, DataTypeExprKind.BIGINT)]);
+    return this.func('fromUnixTimestamp64Micro', [cast(timestamp, DataTypeExprKind.BIGINT)]);
   }
   if (scale === UnixToTimeExpr.NANOS) {
-    return self.func('fromUnixTimestamp64Nano', [cast(timestamp, DataTypeExprKind.BIGINT)]);
+    return this.func('fromUnixTimestamp64Nano', [cast(timestamp, DataTypeExprKind.BIGINT)]);
   }
 
-  return self.func('fromUnixTimestamp', [
+  return this.func('fromUnixTimestamp', [
     cast(
       new DivExpr({
         this: timestamp,
-        expression: self.func('POW', ['10', scale]),
+        expression: this.func('POW', ['10', scale]),
       }),
       DataTypeExprKind.BIGINT,
     ),
@@ -248,15 +247,15 @@ function lowerFunc (sql: string): string {
   return sql.slice(0, index).toLowerCase() + sql.slice(index);
 }
 
-function quantileSql (self: Generator, expression: QuantileExpr): string {
+function quantileSql (this: Generator, expression: QuantileExpr): string {
   const quantile = expression.args.quantile;
-  const argsSql = `(${self.sql(expression, 'this')})`;
+  const argsSql = `(${this.sql(expression, 'this')})`;
 
   let func: string;
   if (quantile instanceof ArrayExpr) {
-    func = self.func('quantiles', quantile.args.expressions || []);
+    func = this.func('quantiles', quantile.args.expressions || []);
   } else {
-    func = self.func('quantile', [quantile]);
+    func = this.func('quantile', [quantile]);
   }
 
   return func + argsSql;
@@ -285,15 +284,15 @@ function buildStrToDate (args: Expression[]): CastExpr | AnonymousExpr {
   return cast(strToDate, DataTypeExpr.build(DataTypeExprKind.DATETIME));
 }
 
-function datetimeDeltaSql (name: string): (self: Generator, expression: DatetimeDelta) => string {
-  return (self: Generator, expression: DatetimeDelta): string => {
+function datetimeDeltaSql (name: string): (this: Generator, expression: DatetimeDelta) => string {
+  return function (this: Generator, expression: DatetimeDelta): string {
     if (!expression.unit) {
-      return renameFunc(name)(self, expression);
+      return renameFunc(name).call(this, expression);
     }
 
     const zone = expression.getArgKey('zone');
 
-    return self.func(name, [
+    return this.func(name, [
       unitToVar(expression),
       expression.args.expression,
       expression.args.this,
@@ -302,7 +301,7 @@ function datetimeDeltaSql (name: string): (self: Generator, expression: Datetime
   };
 }
 
-function timeStrToTimeSql (self: Generator, expression: TimeStrToTimeExpr): string {
+function timeStrToTimeSql (this: Generator, expression: TimeStrToTimeExpr): string {
   let ts = expression.args.this;
   const tz = expression.args.zone;
 
@@ -344,25 +343,25 @@ function timeStrToTimeSql (self: Generator, expression: TimeStrToTimeExpr): stri
     nullable: false,
   });
 
-  return self.sql(cast(
+  return this.sql(cast(
     ts,
     datatype,
     {
-      dialect: self.dialect,
+      dialect: this.dialect,
     },
   ));
 }
 
-function mapSql (self: Generator, expression: MapExpr | VarMapExpr): string {
+function mapSql (this: Generator, expression: MapExpr | VarMapExpr): string {
   if (!(expression.parent && expression.parent.argKey === 'settings')) {
-    return lowerFunc(varMapSql(self, expression));
+    return lowerFunc(varMapSql.call(this, expression));
   }
 
   const keys = expression.args.keys;
   const values = expression.args.values;
 
   if (!(keys instanceof ArrayExpr) || !(values instanceof ArrayExpr)) {
-    self.unsupported('Cannot convert array columns into map.');
+    this.unsupported('Cannot convert array columns into map.');
     return '';
   }
 
@@ -371,7 +370,7 @@ function mapSql (self: Generator, expression: MapExpr | VarMapExpr): string {
   const valueExprs = values.args.expressions;
 
   for (let i = 0; i < Math.min(keyExprs?.length ?? 0, valueExprs?.length ?? 0); i++) {
-    args.push(`${self.sql(keyExprs?.[i])}: ${self.sql(valueExprs?.[i])}`);
+    args.push(`${this.sql(keyExprs?.[i])}: ${this.sql(valueExprs?.[i])}`);
   }
 
   return `{${args.join(', ')}}`;
@@ -739,23 +738,33 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression> {
+  static get FUNCTION_PARSERS (): Record<string, (this: Parser) => Expression> {
     return {
       ...Parser.FUNCTION_PARSERS,
-      ARRAYJOIN: (self) => self.expression(ExplodeExpr, { this: self.parseExpression() }),
-      QUANTILE: (self) => (self as ClickHouseParser).parseQuantile(),
-      MEDIAN: (self) => (self as ClickHouseParser).parseQuantile(),
-      COLUMNS: (self) => (self as ClickHouseParser).parseColumns(),
-      TUPLE: (self) => StructExpr.fromArgList(self.parseFunctionArgs({ alias: true })),
-      AND: (self) => {
-        const args = self.parseFunctionArgs({ alias: false });
+      ARRAYJOIN: function (this: Parser) {
+        return this.expression(ExplodeExpr, { this: this.parseExpression() });
+      },
+      QUANTILE: function (this: Parser) {
+        return (this as ClickHouseParser).parseQuantile();
+      },
+      MEDIAN: function (this: Parser) {
+        return (this as ClickHouseParser).parseQuantile();
+      },
+      COLUMNS: function (this: Parser) {
+        return (this as ClickHouseParser).parseColumns();
+      },
+      TUPLE: function (this: Parser) {
+        return StructExpr.fromArgList(this.parseFunctionArgs({ alias: true }));
+      },
+      AND: function (this: Parser) {
+        const args = this.parseFunctionArgs({ alias: false });
         return new AndExpr({
           this: args[0],
           expression: args[1],
         });
       },
-      OR: (self) => {
-        const args = self.parseFunctionArgs({ alias: false });
+      OR: function (this: Parser) {
+        const args = this.parseFunctionArgs({ alias: false });
         return new OrExpr({
           this: args[0],
           expression: args[1],
@@ -769,10 +778,12 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get PROPERTY_PARSERS (): Record<string, (self: Parser) => Expression> {
+  static get PROPERTY_PARSERS (): Record<string, (this: Parser) => Expression> {
     return {
       ...Parser.PROPERTY_PARSERS,
-      ENGINE: (self) => (self as ClickHouseParser).parseEngineProperty(),
+      ENGINE: function (this: Parser) {
+        return (this as ClickHouseParser).parseEngineProperty();
+      },
     };
   }
 
@@ -781,7 +792,7 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return { ...Parser.NO_PAREN_FUNCTION_PARSERS };
   }
 
@@ -799,16 +810,17 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (this: Parser, this_: Expression) => Expression | undefined>> {
     return {
       ...Parser.RANGE_PARSERS,
-      [TokenType.GLOBAL]: (self: Parser, thisNode: Expression) =>
-        (self as ClickHouseParser).parseGlobalIn(thisNode),
+      [TokenType.GLOBAL]: function (this: Parser, thisNode: Expression) {
+        return (this as ClickHouseParser).parseGlobalIn(thisNode);
+      },
     };
   }
 
   @cache
-  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
+  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((this: Parser, this_?: Expression, to?: Expression) => Expression)>> {
     return { ...Parser.COLUMN_OPERATORS };
   }
 
@@ -852,28 +864,38 @@ class ClickHouseParser extends Parser {
   static LOG_DEFAULTS_TO_LN = true;
 
   @cache
-  static get QUERY_MODIFIER_PARSERS (): Record<string, (self: Parser) => [string, string | Expression | Expression[] | undefined]> {
+  static get QUERY_MODIFIER_PARSERS (): Record<string, (this: Parser) => [string, string | Expression | Expression[] | undefined]> {
     return {
       ...Parser.QUERY_MODIFIER_PARSERS,
-      [TokenType.SETTINGS]: (self) => ['settings', ((self as ClickHouseParser).advance(), self.parseCsv(() => self.parseAssignment()))],
-      [TokenType.FORMAT]: (self) => ['format', ((self as ClickHouseParser).advance(), self.parseIdVar())],
+      [TokenType.SETTINGS]: function (this: Parser) {
+        return ['settings', ((this as ClickHouseParser).advance(), this.parseCsv(() => this.parseAssignment()))];
+      },
+      [TokenType.FORMAT]: function (this: Parser) {
+        return ['format', ((this as ClickHouseParser).advance(), this.parseIdVar())];
+      },
     };
   }
 
   @cache
-  static get CONSTRAINT_PARSERS (): Record<string, (self: Parser) => Expression> {
+  static get CONSTRAINT_PARSERS (): Record<string, (this: Parser) => Expression> {
     return {
       ...Parser.CONSTRAINT_PARSERS,
-      INDEX: (self) => (self as ClickHouseParser).parseIndexConstraint(),
-      CODEC: (self) => (self as ClickHouseParser).parseCompress(),
+      INDEX: function (this: Parser) {
+        return (this as ClickHouseParser).parseIndexConstraint();
+      },
+      CODEC: function (this: Parser) {
+        return (this as ClickHouseParser).parseCompress();
+      },
     };
   }
 
   @cache
-  static get ALTER_PARSERS (): Record<string, (self: Parser) => Expression> {
+  static get ALTER_PARSERS (): Record<string, (this: Parser) => Expression> {
     return {
       ...Parser.ALTER_PARSERS,
-      REPLACE: (self) => (self as ClickHouseParser).parseAlterTableReplace()!,
+      REPLACE: function (this: Parser) {
+        return (this as ClickHouseParser).parseAlterTableReplace()!;
+      },
     };
   }
 
@@ -883,10 +905,12 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get PLACEHOLDER_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+  static get PLACEHOLDER_PARSERS (): Record<string, (this: Parser) => Expression | undefined> {
     return {
       ...Parser.PLACEHOLDER_PARSERS,
-      [TokenType.L_BRACE]: (self) => (self as ClickHouseParser).parseQueryParameter(),
+      [TokenType.L_BRACE]: function (this: Parser) {
+        return (this as ClickHouseParser).parseQueryParameter();
+      },
     };
   }
 
@@ -1512,7 +1536,7 @@ export class ClickHouseGenerator extends Generator {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static ORIGINAL_TRANSFORMS = new Map<typeof Expression, (self: Generator, e: any) => string>([
+  static ORIGINAL_TRANSFORMS = new Map<typeof Expression, (this: Generator, e: any) => string>([
     ...Generator.ORIGINAL_TRANSFORMS,
     [AnyValueExpr, renameFunc('any')],
     [ApproxDistinctExpr, renameFunc('uniq')],
@@ -1520,8 +1544,9 @@ export class ClickHouseGenerator extends Generator {
     [ArrayContainsExpr, renameFunc('has')],
     [
       ArrayFilterExpr,
-      (self: Generator, e: ArrayFilterExpr) =>
-        self.func('arrayFilter', [e.args.expression, e.args.this]),
+      function (this: Generator, e: ArrayFilterExpr) {
+        return this.func('arrayFilter', [e.args.expression, e.args.this]);
+      },
     ],
     [ArrayRemoveExpr, removeFromArrayUsingFilter],
     [ArrayReverseExpr, renameFunc('arrayReverse')],
@@ -1537,18 +1562,25 @@ export class ClickHouseGenerator extends Generator {
     [CosineDistanceExpr, renameFunc('cosineDistance')],
     [
       CompressColumnConstraintExpr,
-      (self: Generator, e: CompressColumnConstraintExpr) =>
-        `CODEC(${self.expressions(e, {
+      function (this: Generator, e: CompressColumnConstraintExpr) {
+        return `CODEC(${this.expressions(e, {
           key: 'this',
           flat: true,
-        })})`,
+        })})`;
+      },
     ],
     [
       ComputedColumnConstraintExpr,
-      (self: Generator, e: ComputedColumnConstraintExpr) =>
-        `${e.args.persisted ? 'MATERIALIZED' : 'ALIAS'} ${self.sql(e, 'this')}`,
+      function (this: Generator, e: ComputedColumnConstraintExpr) {
+        return `${e.args.persisted ? 'MATERIALIZED' : 'ALIAS'} ${this.sql(e, 'this')}`;
+      },
     ],
-    [CurrentDateExpr, (self: Generator, _e: CurrentDateExpr) => self.func('CURRENT_DATE', [])],
+    [
+      CurrentDateExpr,
+      function (this: Generator, _e: CurrentDateExpr) {
+        return this.func('CURRENT_DATE', []);
+      },
+    ],
     [CurrentVersionExpr, renameFunc('VERSION')],
     [DateAddExpr, datetimeDeltaSql('DATE_ADD')],
     [DateDiffExpr, datetimeDeltaSql('DATE_DIFF')],
@@ -1556,12 +1588,18 @@ export class ClickHouseGenerator extends Generator {
     [DateSubExpr, datetimeDeltaSql('DATE_SUB')],
     [ExplodeExpr, renameFunc('arrayJoin')],
     [FarmFingerprintExpr, renameFunc('farmFingerprint64')],
-    [FinalExpr, (self: Generator, e: FinalExpr) => `${self.sql(e, 'this')} FINAL`],
+    [
+      FinalExpr,
+      function (this: Generator, e: FinalExpr) {
+        return `${this.sql(e, 'this')} FINAL`;
+      },
+    ],
     [IsNanExpr, renameFunc('isNaN')],
     [
       JsonCastExpr,
-      (self: Generator, e: JsonCastExpr) =>
-        `${self.sql(e, 'this')}.:${self.sql(e, 'to')}`,
+      function (this: Generator, e: JsonCastExpr) {
+        return `${this.sql(e, 'this')}.:${this.sql(e, 'to')}`;
+      },
     ],
     [JsonExtractExpr, jsonExtractSegments('JSONExtractString', { quotedIndex: false })],
     [JsonExtractScalarExpr, jsonExtractSegments('JSONExtractString', { quotedIndex: false })],
@@ -1573,15 +1611,17 @@ export class ClickHouseGenerator extends Generator {
     [NullifExpr, renameFunc('nullIf')],
     [
       PartitionedByPropertyExpr,
-      (self: Generator, e: PartitionedByPropertyExpr) =>
-        `PARTITION BY ${self.sql(e, 'this')}`,
+      function (this: Generator, e: PartitionedByPropertyExpr) {
+        return `PARTITION BY ${this.sql(e, 'this')}`;
+      },
     ],
     [PivotExpr, noPivotSql],
     [QuantileExpr, quantileSql],
     [
       RegexpLikeExpr,
-      (self: Generator, e: RegexpLikeExpr) =>
-        self.func('match', [e.args.this, e.args.expression]),
+      function (this: Generator, e: RegexpLikeExpr) {
+        return this.func('match', [e.args.this, e.args.expression]);
+      },
     ],
     [RandExpr, renameFunc('randCanonical')],
     [StartsWithExpr, renameFunc('startsWith')],
@@ -1591,21 +1631,23 @@ export class ClickHouseGenerator extends Generator {
     [EuclideanDistanceExpr, renameFunc('L2Distance')],
     [
       StrPositionExpr,
-      (self: Generator, e: StrPositionExpr) =>
-        strPositionSql(self, e, {
+      function (this: Generator, e: StrPositionExpr) {
+        return strPositionSql.call(this, e, {
           funcName: 'POSITION',
           supportsPosition: true,
           useAnsiPosition: false,
-        }),
+        });
+      },
     ],
     [
       TimeToStrExpr,
-      (self: Generator, e: TimeToStrExpr) =>
-        self.func('formatDateTime', [
+      function (this: Generator, e: TimeToStrExpr) {
+        return this.func('formatDateTime', [
           e.args.this,
-          self.formatTime(e),
+          this.formatTime(e),
           e.args.zone,
-        ]),
+        ]);
+      },
     ],
     [TimeStrToTimeExpr, timeStrToTimeSql],
     [TimestampAddExpr, datetimeDeltaSql('TIMESTAMP_ADD')],
@@ -1614,18 +1656,20 @@ export class ClickHouseGenerator extends Generator {
     [VarMapExpr, mapSql],
     [
       XorExpr,
-      (self: Generator, e: XorExpr) =>
-        self.func('xor', [
+      function (this: Generator, e: XorExpr) {
+        return this.func('xor', [
           e.args.this,
           e.args.expression,
           ...e.args.expressions || [],
-        ]),
+        ]);
+      },
     ],
     [Md5DigestExpr, renameFunc('MD5')],
     [
       Md5Expr,
-      (self: Generator, e: Md5Expr) =>
-        self.func('LOWER', [self.func('HEX', [self.func('MD5', [e.args.this])])]),
+      function (this: Generator, e: Md5Expr) {
+        return this.func('LOWER', [this.func('HEX', [this.func('MD5', [e.args.this])])]);
+      },
     ],
     [ShaExpr, renameFunc('SHA1')],
     [Sha1DigestExpr, renameFunc('SHA1')],
@@ -1633,21 +1677,23 @@ export class ClickHouseGenerator extends Generator {
     [Sha2DigestExpr, sha2DigestSql],
     [
       SplitExpr,
-      (self: Generator, e: SplitExpr) =>
-        self.func('splitByString', [
+      function (this: Generator, e: SplitExpr) {
+        return this.func('splitByString', [
           e.args.expression,
           e.args.this,
           typeof e.args.limit === 'number' ? LiteralExpr.number(e.args.limit) : e.args.limit,
-        ]),
+        ]);
+      },
     ],
     [
       RegexpSplitExpr,
-      (self: Generator, e: RegexpSplitExpr) =>
-        self.func('splitByRegexp', [
+      function (this: Generator, e: RegexpSplitExpr) {
+        return this.func('splitByRegexp', [
           e.args.expression,
           e.args.this,
           typeof e.args.limit === 'number' ? LiteralExpr.number(e.args.limit) : e.args.limit,
-        ]),
+        ]);
+      },
     ],
     [UnixToTimeExpr, unixToTimeSql],
     [
@@ -1659,38 +1705,46 @@ export class ClickHouseGenerator extends Generator {
     ],
     [
       TrimExpr,
-      (self: Generator, e: TrimExpr) =>
-        trimSql(self, e, { defaultTrimType: 'BOTH' }),
+      function (this: Generator, e: TrimExpr) {
+        return trimSql.call(this, e, { defaultTrimType: 'BOTH' });
+      },
     ],
     [VarianceExpr, renameFunc('varSamp')],
-    [SchemaCommentPropertyExpr, (self: Generator, e: SchemaCommentPropertyExpr) => self.nakedProperty(e)],
+    [
+      SchemaCommentPropertyExpr,
+      function (this: Generator, e: SchemaCommentPropertyExpr) {
+        return this.nakedProperty(e);
+      },
+    ],
     [StddevExpr, renameFunc('stddevSamp')],
     [ChrExpr, renameFunc('CHAR')],
     [
       LagExpr,
-      (self: Generator, e: LagExpr) =>
-        self.func('lagInFrame', [
+      function (this: Generator, e: LagExpr) {
+        return this.func('lagInFrame', [
           e.args.this,
           e.args.offset,
           e.args.default,
-        ]),
+        ]);
+      },
     ],
     [
       LeadExpr,
-      (self: Generator, e: LeadExpr) =>
-        self.func('leadInFrame', [
+      function (this: Generator, e: LeadExpr) {
+        return this.func('leadInFrame', [
           e.args.this,
           e.args.offset,
           e.args.default,
-        ]),
+        ]);
+      },
     ],
     [JarowinklerSimilarityExpr, renameFunc('jaroWinklerSimilarity')],
     [
       LevenshteinExpr,
-      (self: Generator, e: LevenshteinExpr) =>
-        unsupportedArgs<LevenshteinExpr>('insCost', 'delCost', 'subCost', 'maxDist')(
-          (expression) => renameFunc('editDistance')(self, expression),
-        )(e),
+      function (this: Generator, e: LevenshteinExpr) {
+        unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
+        return renameFunc('editDistance').call(this, e);
+      },
     ],
     [ParseDatetimeExpr, renameFunc('parseDateTime')],
   ]);

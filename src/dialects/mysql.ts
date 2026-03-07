@@ -162,9 +162,9 @@ export function showParser (
     full?: boolean;
     global?: boolean;
   } = {},
-): (self: Parser) => ShowExpr {
-  return (self: Parser): ShowExpr => {
-    return (self as MySQLParser).parseShowMysql(thisArg, options);
+): (this: Parser) => ShowExpr {
+  return function (this: Parser): ShowExpr {
+    return (this as MySQLParser).parseShowMysql(thisArg, options);
   };
 }
 
@@ -175,8 +175,8 @@ export function showParser (
  * @param expression - The DateTruncExpr node to transpile.
  * @returns The generated SQL string.
  */
-export function dateTruncSql (self: Generator, expression: DateTruncExpr): string {
-  const expr = self.sql(expression, 'this');
+export function dateTruncSql (this: Generator, expression: DateTruncExpr): string {
+  const expr = this.sql(expression, 'this');
   const unit = expression.text('unit').toUpperCase();
 
   let concat: string;
@@ -196,12 +196,12 @@ export function dateTruncSql (self: Generator, expression: DateTruncExpr): strin
     dateFormat = '%Y %c %e';
   } else {
     if (unit !== 'DAY') {
-      self.unsupported(`Unexpected interval unit: ${unit}`);
+      this.unsupported(`Unexpected interval unit: ${unit}`);
     }
-    return self.func('DATE', [expr]);
+    return this.func('DATE', [expr]);
   }
 
-  return self.func('STR_TO_DATE', [concat, `'${dateFormat}'`]);
+  return this.func('STR_TO_DATE', [concat, `'${dateFormat}'`]);
 }
 
 /**
@@ -268,31 +268,31 @@ export function buildStrToDate (args: [Expression, ...(string | Expression | und
  * Generator for STR_TO_DATE.
  */
 export function strToDateSql (
-  self: Generator,
+  this: Generator,
   expression: StrToDateExpr | StrToTimeExpr | TsOrDsToDateExpr,
 ): string {
-  return self.func('STR_TO_DATE', [expression.args.this, self.formatTime(expression)]);
+  return this.func('STR_TO_DATE', [expression.args.this, this.formatTime(expression)]);
 }
 
 /**
  * Generator for UNIX_TO_TIME. Handles optional scale for sub-second precision.
  */
-export function unixToTimeSql (self: Generator, expression: UnixToTimeExpr): string {
+export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   const scale = expression.args.scale;
   const timestamp = expression.args.this;
 
   if (scale === undefined || scale === UnixToTimeExpr.SECONDS) {
-    return self.func('FROM_UNIXTIME', [timestamp, self.formatTime(expression)]);
+    return this.func('FROM_UNIXTIME', [timestamp, this.formatTime(expression)]);
   }
 
-  return self.func(
+  return this.func(
     'FROM_UNIXTIME',
     [
       new DivExpr({
         this: timestamp,
         expression: func('POW', '10', scale.toString()),
       }),
-      self.formatTime(expression),
+      this.formatTime(expression),
     ],
   );
 }
@@ -302,9 +302,9 @@ export function unixToTimeSql (self: Generator, expression: UnixToTimeExpr): str
  * @param kind - Either 'ADD' or 'SUB'.
  * @returns A function that generates the MySQL-specific DATE logic.
  */
-export function dateAddSql (kind: string): (self: Generator, expression: DateAddExpr) => string {
-  return (self: Generator, expression: DateAddExpr): string => {
-    return self.func(
+export function dateAddSql (kind: string): (this: Generator, expression: DateAddExpr) => string {
+  return function (this: Generator, expression: DateAddExpr): string {
+    return this.func(
       `DATE_${kind}`,
       [
         expression.args.this,
@@ -322,11 +322,11 @@ export function dateAddSql (kind: string): (self: Generator, expression: DateAdd
  * @param self - The MySQL Generator.
  * @param expression - The TsOrDsToDateExpr node.
  */
-export function tsOrDsToDateSql (self: Generator, expression: TsOrDsToDateExpr): string {
+export function tsOrDsToDateSql (this: Generator, expression: TsOrDsToDateExpr): string {
   const timeFormat = expression.args.format;
   return timeFormat
-    ? strToDateSql(self, expression)
-    : self.func('DATE', [expression.args.this]);
+    ? strToDateSql.call(this, expression)
+    : this.func('DATE', [expression.args.this]);
 }
 
 /**
@@ -334,10 +334,10 @@ export function tsOrDsToDateSql (self: Generator, expression: TsOrDsToDateExpr):
  * function can handle raw types.
  */
 export function removeTsOrDsToDate<T extends FuncExpr> (
-  toSql?: (self: Generator, expression: T) => string,
+  toSql?: (this: Generator, expression: T) => string,
   args: string[] = ['this'],
-): (self: Generator, expression: T) => string {
-  return (self: Generator, expression: T): string => {
+): (this: Generator, expression: T) => string {
+  return function (this: Generator, expression: T): string {
     for (const argKey of args) {
       const arg = expression.getArgKey(argKey);
       if (arg instanceof TsOrDsToDateExpr && !arg.args.format) {
@@ -345,7 +345,7 @@ export function removeTsOrDsToDate<T extends FuncExpr> (
       }
     }
 
-    return toSql ? toSql(self, expression) : self.functionFallbackSql(expression);
+    return toSql ? toSql.call(this, expression) : this.functionFallbackSql(expression);
   };
 }
 
@@ -517,19 +517,21 @@ class MySQLParser extends Parser {
   }
 
   @cache
-  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (this: Parser, this_: Expression) => Expression | undefined>> {
     return {
       ...Parser.RANGE_PARSERS,
-      [TokenType.SOUNDS_LIKE]: (self: Parser, thisArg: Expression): EqExpr =>
-        self.expression(EqExpr, {
-          this: self.expression(SoundexExpr, { this: thisArg }),
-          expression: self.expression(SoundexExpr, { this: self.parseTerm() }),
-        }),
-      [TokenType.MEMBER_OF]: (self: Parser, thisArg: Expression): JsonArrayContainsExpr =>
-        self.expression(JsonArrayContainsExpr, {
+      [TokenType.SOUNDS_LIKE]: function (this: Parser, thisArg: Expression): EqExpr {
+        return this.expression(EqExpr, {
+          this: this.expression(SoundexExpr, { this: thisArg }),
+          expression: this.expression(SoundexExpr, { this: this.parseTerm() }),
+        });
+      },
+      [TokenType.MEMBER_OF]: function (this: Parser, thisArg: Expression): JsonArrayContainsExpr {
+        return this.expression(JsonArrayContainsExpr, {
           this: thisArg,
-          expression: self.parseWrapped(self.parseExpression.bind(self)),
-        }),
+          expression: this.parseWrapped(this.parseExpression.bind(this)),
+        });
+      },
     };
   }
 
@@ -550,9 +552,9 @@ class MySQLParser extends Parser {
       CURDATE: CurrentDateExpr.fromArgList,
       DATE: (args: Expression[]): TsOrDsToDateExpr =>
         new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
-      DATE_ADD: (args: Expression[]) => buildDateDeltaWithInterval(DateAddExpr)(args)!,
+      DATE_ADD: (args: Expression[]) => buildDateDeltaWithInterval(DateAddExpr)(args),
       DATE_FORMAT: buildFormattedTime(TimeToStrExpr, { dialect: Dialects.MYSQL }),
-      DATE_SUB: (args: Expression[]) => buildDateDeltaWithInterval(DateSubExpr)(args)!,
+      DATE_SUB: (args: Expression[]) => buildDateDeltaWithInterval(DateSubExpr)(args),
       DAY: (args: Expression[]): DayExpr =>
         new DayExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
       DAYOFMONTH: (args: Expression[]): DayOfMonthExpr =>
@@ -611,25 +613,34 @@ class MySQLParser extends Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.FUNCTION_PARSERS,
-      GROUP_CONCAT: (self: Parser) => self.parseGroupConcat(),
-      VALUES: (self: Parser): AnonymousExpr =>
-        self.expression(AnonymousExpr, {
+      GROUP_CONCAT: function (this: Parser) {
+        return this.parseGroupConcat();
+      },
+      VALUES: function (this: Parser): AnonymousExpr {
+        return this.expression(AnonymousExpr, {
           this: 'VALUES',
-          expressions: [self.parseIdVar()],
-        }),
-      JSON_VALUE: (self: Parser): Expression => self.parseJsonValue(),
-      SUBSTR: (self: Parser): Expression => self.parseSubstring(),
+          expressions: [this.parseIdVar()],
+        });
+      },
+      JSON_VALUE: function (this: Parser): Expression {
+        return this.parseJsonValue();
+      },
+      SUBSTR: function (this: Parser): Expression {
+        return this.parseSubstring();
+      },
     };
   }
 
   @cache
-  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.STATEMENT_PARSERS,
-      [TokenType.SHOW]: (self: Parser) => self.parseShow(),
+      [TokenType.SHOW]: function (this: Parser) {
+        return this.parseShow();
+      },
     };
   }
 
@@ -692,52 +703,79 @@ class MySQLParser extends Parser {
   });
 
   @cache
-  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
+  static get PROPERTY_PARSERS (): Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return {
       ...Parser.PROPERTY_PARSERS,
-      'LOCK': (self: Parser) => self.parsePropertyAssignment(LockPropertyExpr),
-      'PARTITION BY': (self: Parser) => (self as MySQLParser).parsePartitionProperty(),
+      'LOCK': function (this: Parser) {
+        return this.parsePropertyAssignment(LockPropertyExpr);
+      },
+      'PARTITION BY': function (this: Parser) {
+        return (this as MySQLParser).parsePartitionProperty();
+      },
     };
   }
 
   @cache
-  static get SET_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+  static get SET_PARSERS (): Record<string, (this: Parser) => Expression | undefined> {
     return {
       ...Parser.SET_PARSERS,
-      'PERSIST': (self: Parser) => (self as MySQLParser).parseSetItemAssignment({ kind: SetItemExprKind.PERSIST }),
-      'PERSIST_ONLY': (self: Parser) => self.parseSetItemAssignment({ kind: 'PERSIST_ONLY' }),
-      'CHARACTER SET': (self: Parser): Expression => (self as MySQLParser).parseSetItemCharset('CHARACTER SET'),
-      'CHARSET': (self: Parser): Expression => (self as MySQLParser).parseSetItemCharset('CHARACTER SET'),
-      'NAMES': (self: Parser) => (self as MySQLParser).parseSetItemNames(),
+      'PERSIST': function (this: Parser) {
+        return (this as MySQLParser).parseSetItemAssignment({ kind: SetItemExprKind.PERSIST });
+      },
+      'PERSIST_ONLY': function (this: Parser) {
+        return this.parseSetItemAssignment({ kind: 'PERSIST_ONLY' });
+      },
+      'CHARACTER SET': function (this: Parser): Expression {
+        return (this as MySQLParser).parseSetItemCharset('CHARACTER SET');
+      },
+      'CHARSET': function (this: Parser): Expression {
+        return (this as MySQLParser).parseSetItemCharset('CHARACTER SET');
+      },
+      'NAMES': function (this: Parser) {
+        return (this as MySQLParser).parseSetItemNames();
+      },
     };
   }
 
   @cache
-  static get CONSTRAINT_PARSERS (): Partial<Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
+  static get CONSTRAINT_PARSERS (): Partial<Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.CONSTRAINT_PARSERS,
-      FULLTEXT: (self: Parser) => (self as MySQLParser).parseIndexConstraint('FULLTEXT'),
-      INDEX: (self: Parser) => (self as MySQLParser).parseIndexConstraint(),
-      KEY: (self: Parser) => (self as MySQLParser).parseIndexConstraint(),
-      SPATIAL: (self: Parser) => (self as MySQLParser).parseIndexConstraint('SPATIAL'),
-      ZEROFILL: (self: Parser) =>
-        self.expression(ZeroFillColumnConstraintExpr),
+      FULLTEXT: function (this: Parser) {
+        return (this as MySQLParser).parseIndexConstraint('FULLTEXT');
+      },
+      INDEX: function (this: Parser) {
+        return (this as MySQLParser).parseIndexConstraint();
+      },
+      KEY: function (this: Parser) {
+        return (this as MySQLParser).parseIndexConstraint();
+      },
+      SPATIAL: function (this: Parser) {
+        return (this as MySQLParser).parseIndexConstraint('SPATIAL');
+      },
+      ZEROFILL: function (this: Parser) {
+        return this.expression(ZeroFillColumnConstraintExpr);
+      },
     };
   }
 
   @cache
-  static get ALTER_PARSERS (): Partial<Record<string, (self: Parser) => Expression | Expression[] | undefined>> {
+  static get ALTER_PARSERS (): Partial<Record<string, (this: Parser) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.ALTER_PARSERS,
-      MODIFY: (self: Parser) => self.parseAlterTableAlter(),
+      MODIFY: function (this: Parser) {
+        return this.parseAlterTableAlter();
+      },
     };
   }
 
   @cache
-  static get ALTER_ALTER_PARSERS (): Partial<Record<string, (self: Parser) => Expression>> {
+  static get ALTER_ALTER_PARSERS (): Partial<Record<string, (this: Parser) => Expression>> {
     return {
       ...Parser.ALTER_ALTER_PARSERS,
-      INDEX: (self: Parser) => (self as MySQLParser).parseAlterTableAlterIndex(),
+      INDEX: function (this: Parser) {
+        return (this as MySQLParser).parseAlterTableAlterIndex();
+      },
     };
   }
 
@@ -1189,20 +1227,27 @@ class MySQLGenerator extends Generator {
   static UPDATE_STATEMENT_SUPPORTS_FROM: boolean = false;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static ORIGINAL_TRANSFORMS = new Map<typeof Expression, (self: Generator, e: any) => string>([
+  static ORIGINAL_TRANSFORMS = new Map<typeof Expression, (this: Generator, e: any) => string>([
     ...Generator.TRANSFORMS,
     [ArrayAggExpr, renameFunc('GROUP_CONCAT')],
     [BitwiseAndAggExpr, renameFunc('BIT_AND')],
     [BitwiseOrAggExpr, renameFunc('BIT_OR')],
     [BitwiseXorAggExpr, renameFunc('BIT_XOR')],
     [BitwiseCountExpr, renameFunc('BIT_COUNT')],
-    [ChrExpr, (self: Generator, e: ChrExpr): string => self.chrSql(e, { name: 'CHAR' })],
+    [
+      ChrExpr,
+      function (this: Generator, e: ChrExpr): string {
+        return this.chrSql(e, { name: 'CHAR' });
+      },
+    ],
     [CurrentDateExpr, noParenCurrentDateSql],
     [CurrentVersionExpr, renameFunc('VERSION')],
     [
       DateDiffExpr,
       removeTsOrDsToDate(
-        (self: Generator, e: DateDiffExpr): string => self.func('DATEDIFF', [e.args.this, e.args.expression]),
+        function (this: Generator, e: DateDiffExpr): string {
+          return this.func('DATEDIFF', [e.args.this, e.args.expression]);
+        },
         ['this', 'expression'],
       ),
     ],
@@ -1216,8 +1261,9 @@ class MySQLGenerator extends Generator {
     [DayOfYearExpr, removeTsOrDsToDate(renameFunc('DAYOFYEAR'))],
     [
       GroupConcatExpr,
-      (self: Generator, e: GroupConcatExpr): string =>
-        `GROUP_CONCAT(${self.sql(e, 'this')} SEPARATOR ${self.sql(e, 'separator') || '\',\''})`,
+      function (this: Generator, e: GroupConcatExpr): string {
+        return `GROUP_CONCAT(${this.sql(e, 'this')} SEPARATOR ${this.sql(e, 'separator') || '\',\''})`;
+      },
     ],
     [ILikeExpr, noIlikeSql],
     [JsonExtractScalarExpr, arrowJsonExtractSql],
@@ -1227,8 +1273,18 @@ class MySQLGenerator extends Generator {
     [MaxExpr, maxOrGreatest],
     [MinExpr, minOrLeast],
     [MonthExpr, removeTsOrDsToDate()],
-    [NullSafeEqExpr, (self: Generator, e: NullSafeEqExpr): string => self.binary(e, '<=>')],
-    [NullSafeNeqExpr, (self: Generator, e: NullSafeNeqExpr): string => `NOT ${self.binary(e, '<=>')}`],
+    [
+      NullSafeEqExpr,
+      function (this: Generator, e: NullSafeEqExpr): string {
+        return this.binary(e, '<=>');
+      },
+    ],
+    [
+      NullSafeNeqExpr,
+      function (this: Generator, e: NullSafeNeqExpr): string {
+        return `NOT ${this.binary(e, '<=>')}`;
+      },
+    ],
     [NumberToStrExpr, renameFunc('FORMAT')],
     [PivotExpr, noPivotSql],
     [
@@ -1243,11 +1299,12 @@ class MySQLGenerator extends Generator {
     ],
     [
       StrPositionExpr,
-      (self: Generator, e: StrPositionExpr): string =>
-        strPositionSql(self, e, {
+      function (this: Generator, e: StrPositionExpr): string {
+        return strPositionSql.call(this, e, {
           funcName: 'LOCATE',
           supportsPosition: true,
-        }),
+        });
+      },
     ],
     [StrToDateExpr, strToDateSql],
     [StrToTimeExpr, strToDateSql],
@@ -1258,32 +1315,45 @@ class MySQLGenerator extends Generator {
     [TimestampAddExpr, dateAddIntervalSql('DATE', 'ADD')],
     [
       TimestampDiffExpr,
-      (self: Generator, e: TimestampDiffExpr): string =>
-        self.func('TIMESTAMPDIFF', [
+      function (this: Generator, e: TimestampDiffExpr): string {
+        return this.func('TIMESTAMPDIFF', [
           unitToVar(e),
           e.args.expression,
           e.args.this,
-        ]),
+        ]);
+      },
     ],
     [TimestampSubExpr, dateAddIntervalSql('DATE', 'SUB')],
     [TimeStrToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
     [
       TimeStrToTimeExpr,
-      (self: Generator, e: TimeStrToTimeExpr): string =>
-        timeStrToTimeSql(self, e, { includePrecision: !e.args.zone }),
+      function (this: Generator, e: TimeStrToTimeExpr): string {
+        return timeStrToTimeSql.call(this, e, { includePrecision: !e.args.zone });
+      },
     ],
     [
       TimeToStrExpr,
-      removeTsOrDsToDate((self: Generator, e: TimeToStrExpr) =>
-        self.func('DATE_FORMAT', [e.args.this, self.formatTime(e)])),
+      removeTsOrDsToDate(function (this: Generator, e: TimeToStrExpr) {
+        return this.func('DATE_FORMAT', [e.args.this, this.formatTime(e)]);
+      }),
     ],
     [TrimExpr, trimSql],
     [TruncExpr, renameFunc('TRUNCATE')],
     [TryCastExpr, noTrycastSql],
     [TsOrDsAddExpr, dateAddSql('ADD')],
-    [TsOrDsDiffExpr, (self: Generator, e: TsOrDsDiffExpr): string => self.func('DATEDIFF', [e.args.this, e.args.expression])],
+    [
+      TsOrDsDiffExpr,
+      function (this: Generator, e: TsOrDsDiffExpr): string {
+        return this.func('DATEDIFF', [e.args.this, e.args.expression]);
+      },
+    ],
     [TsOrDsToDateExpr, tsOrDsToDateSql],
-    [UnicodeExpr, (self: Generator, e: UnicodeExpr): string => `ORD(CONVERT(${self.sql(e.args.this)} USING utf32))`],
+    [
+      UnicodeExpr,
+      function (this: Generator, e: UnicodeExpr): string {
+        return `ORD(CONVERT(${this.sql(e.args.this)} USING utf32))`;
+      },
+    ],
     [UnixToTimeExpr, unixToTimeSql],
     [WeekExpr, removeTsOrDsToDate()],
     [WeekOfYearExpr, removeTsOrDsToDate(renameFunc('WEEKOFYEAR'))],
@@ -1882,8 +1952,8 @@ class MySQLGenerator extends Generator {
     return this.sql(expression.args.this);
   }
 
-  @unsupportedArgs('this')
   public currentschemaSql (_expression: CurrentSchemaExpr): string {
+    unsupportedArgs.call(this, _expression, 'this');
     return this.func('SCHEMA', []);
   }
 

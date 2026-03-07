@@ -252,16 +252,20 @@ class SQLiteParser extends Parser {
   }
 
   @cache
-  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.STATEMENT_PARSERS,
-      [TokenType.ATTACH]: (self: Parser) => (self as SQLiteParser).parseAttachDetach(),
-      [TokenType.DETACH]: (self: Parser) => (self as SQLiteParser).parseAttachDetach({ isAttach: false }),
+      [TokenType.ATTACH]: function (this: Parser) {
+        return (this as SQLiteParser).parseAttachDetach();
+      },
+      [TokenType.DETACH]: function (this: Parser) {
+        return (this as SQLiteParser).parseAttachDetach({ isAttach: false });
+      },
     };
   }
 
   @cache
-  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (this: Parser, this_: Expression) => Expression | undefined>> {
     return {
       ...Parser.RANGE_PARSERS,
       [TokenType.MATCH]: binaryRangeParser(MatchExpr),
@@ -343,9 +347,9 @@ class SQLiteGenerator extends Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS.entries(),
       [AnyValueExpr, anyValueToMaxSql],
       [ChrExpr, renameFunc('CHAR')],
@@ -357,20 +361,26 @@ class SQLiteGenerator extends Generator {
       [CurrentTimestampExpr, () => 'CURRENT_TIMESTAMP'],
       [CurrentVersionExpr, () => 'SQLITE_VERSION()'],
       [ColumnDefExpr, preprocess([generatedToAutoIncrement])],
-      [DateStrToDateExpr, (self: Generator, e: DateStrToDateExpr) => self.sql(e, 'this')],
+      [
+        DateStrToDateExpr,
+        function (this: Generator, e: DateStrToDateExpr) {
+          return this.sql(e, 'this');
+        },
+      ],
       [IfExpr, renameFunc('IIF')],
       [ILikeExpr, noIlikeSql],
-      [JsonExtractScalarExpr, (self: Generator, e: JsonExtractScalarExpr) => arrowJsonExtractSql(self, e)],
+      [
+        JsonExtractScalarExpr,
+        function (this: Generator, e: JsonExtractScalarExpr) {
+          return arrowJsonExtractSql.call(this, e);
+        },
+      ],
       [
         LevenshteinExpr,
-        (self: Generator, e) => unsupportedArgs(
-          'insCost',
-          'delCost',
-          'subCost',
-          'maxDist',
-        )(
-          () => renameFunc('EDITDIST3')(self, e),
-        )(e),
+        function (this: Generator, e) {
+          unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
+          return renameFunc('EDITDIST3').call(this, e);
+        },
       ],
       [LogicalOrExpr, renameFunc('MAX')],
       [LogicalAndExpr, renameFunc('MIN')],
@@ -386,18 +396,30 @@ class SQLiteGenerator extends Generator {
       ],
       [
         StrPositionExpr,
-        (self: Generator, e: StrPositionExpr) =>
-          strPositionSql(self, e, { funcName: 'INSTR' }),
+        function (this: Generator, e: StrPositionExpr) {
+          return strPositionSql.call(this, e, { funcName: 'INSTR' });
+        },
       ],
       [TableSampleExpr, noTablesampleSql],
-      [TimeStrToTimeExpr, (self: Generator, e: TimeStrToTimeExpr) => self.sql(e, 'this')],
+      [
+        TimeStrToTimeExpr,
+        function (this: Generator, e: TimeStrToTimeExpr) {
+          return this.sql(e, 'this');
+        },
+      ],
       [
         TimeToStrExpr,
-        (self: Generator, e: TimeToStrExpr) =>
-          self.func('STRFTIME', [e.args.format, e.args.this]),
+        function (this: Generator, e: TimeToStrExpr) {
+          return this.func('STRFTIME', [e.args.format, e.args.this]);
+        },
       ],
       [TryCastExpr, noTrycastSql],
-      [TsOrDsToTimestampExpr, (self: Generator, e: TsOrDsToTimestampExpr) => self.sql(e, 'this')],
+      [
+        TsOrDsToTimestampExpr,
+        function (this: Generator, e: TsOrDsToTimestampExpr) {
+          return this.sql(e, 'this');
+        },
+      ],
     ]);
 
     return transforms;
@@ -425,7 +447,7 @@ class SQLiteGenerator extends Generator {
     if (expression.args.expressions && 0 < expression.args.expressions.length) {
       return this.functionFallbackSql(expression);
     }
-    return arrowJsonExtractSql(this, expression);
+    return arrowJsonExtractSql.call(this, expression);
   }
 
   dateAddSql (expression: DateAddExpr): string {
@@ -447,8 +469,8 @@ class SQLiteGenerator extends Generator {
     return super.castSql(expression, options);
   }
 
-  @unsupportedArgs('decimals')
   truncSql (expression: TruncExpr): string {
+    unsupportedArgs.call(this, expression, 'decimals');
     return this.func('TRUNC', [expression.args.this]);
   }
 
@@ -523,7 +545,7 @@ class SQLiteGenerator extends Generator {
 
   leastSql (expression: LeastExpr): string {
     if (expression.args.expressions && 0 < expression.args.expressions.length) {
-      return renameFunc('MIN')(this, expression);
+      return renameFunc('MIN').call(this, expression);
     }
     return this.sql(expression, 'this');
   }
@@ -538,8 +560,8 @@ class SQLiteGenerator extends Generator {
     return `(NOT ${this.sql(expression.args.this)} GLOB CAST(x'2a5b5e012d7f5d2a' AS TEXT))`;
   }
 
-  @unsupportedArgs('this')
   currentSchemaSql (_expression: CurrentSchemaExpr): string {
+    unsupportedArgs.call(this, _expression, 'this');
     return '\'main\'';
   }
 

@@ -98,9 +98,9 @@ import {
  */
 export function preprocess (
   transforms: ((e: Expression) => Expression)[],
-  generator?: (self: Generator, e: Expression) => string,
-): (self: Generator, expression: Expression) => string {
-  return (self: Generator, expression: Expression): string => {
+  generator?: (this: Generator, e: Expression) => string,
+): (this: Generator, expression: Expression) => string {
+  return function (this: Generator, expression: Expression): string {
     let currentExpr = expression;
     const originalType = currentExpr.constructor;
 
@@ -110,30 +110,30 @@ export function preprocess (
       }
     } catch (e) {
       if (e instanceof UnsupportedError) {
-        self.unsupported(e.message);
+        this.unsupported(e.message);
       } else {
         throw e;
       }
     }
 
     if (generator) {
-      return generator(self, currentExpr);
+      return generator.call(this, currentExpr);
     }
 
-    const sqlHandler = self[`${currentExpr._constructor.key}Sql` as keyof typeof self];
+    const sqlHandler = this[`${currentExpr._constructor.key}Sql` as keyof typeof this];
     if (sqlHandler instanceof Function) {
-      return (sqlHandler as (e: Expression) => string).call(self, currentExpr);
+      return (sqlHandler as (e: Expression) => string).call(this, currentExpr);
     }
 
-    const transformHandler = self._constructor.TRANSFORMS.get(currentExpr._constructor);
+    const transformHandler = this._constructor.TRANSFORMS.get(currentExpr._constructor);
     if (transformHandler) {
       if (originalType === currentExpr.constructor) {
         if (currentExpr instanceof FuncExpr) {
-          return self.functionFallbackSql(currentExpr);
+          return this.functionFallbackSql(currentExpr);
         }
         throw new Error(`Expression type ${currentExpr.constructor.name} requires a _sql method to be transformed.`);
       }
-      return transformHandler(self, currentExpr);
+      return transformHandler.call(this, currentExpr);
     }
 
     throw new Error(`Unsupported expression type ${currentExpr.constructor.name}.`);
@@ -1212,7 +1212,7 @@ export function eliminateJoinMarks (expression: Expression): Expression {
         col.setArgKey('joinMark', false);
       }
 
-      const tableName = Array.from(leftJoinTable)[0]!;
+      const tableName = Array.from(leftJoinTable)[0];
       if (!joinsOns[tableName]) joinsOns[tableName] = [];
       joinsOns[tableName].push(cond);
     }

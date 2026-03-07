@@ -83,14 +83,14 @@ import {
   renameFunc,
 } from './dialect';
 
-function trimSqlEx (self: Generator, expression: TrimExpr): string {
+function trimSqlEx (this: Generator, expression: TrimExpr): string {
   const position = expression.args.position;
 
   if (position && ['LEADING', 'TRAILING'].includes(position.toString().toUpperCase())) {
-    return self.trimSql(expression);
+    return this.trimSql(expression);
   }
 
-  return trimSql(self, expression);
+  return trimSql.call(this, expression);
 }
 
 function buildToTimestamp (args: Expression[]): StrToTimeExpr | AnonymousExpr {
@@ -174,13 +174,21 @@ export class OracleParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+  static get NO_PAREN_FUNCTION_PARSERS (): Record<string, (this: Parser) => Expression | undefined> {
     return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
-      NEXT: (self: Parser) => self.parseNextValueFor(),
-      PRIOR: (self: Parser) => self.expression(PriorExpr, { this: self.parseBitwise() }),
-      SYSDATE: (self: Parser) => self.expression(CurrentTimestampExpr, { sysdate: true }),
-      DBMS_RANDOM: (self: Parser) => (self as OracleParser).parseDbmsRandom(),
+      NEXT: function (this: Parser) {
+        return this.parseNextValueFor();
+      },
+      PRIOR: function (this: Parser) {
+        return this.expression(PriorExpr, { this: this.parseBitwise() });
+      },
+      SYSDATE: function (this: Parser) {
+        return this.expression(CurrentTimestampExpr, { sysdate: true });
+      },
+      DBMS_RANDOM: function (this: Parser) {
+        return (this as OracleParser).parseDbmsRandom();
+      },
     };
   }
 
@@ -193,52 +201,72 @@ export class OracleParser extends Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+  static get FUNCTION_PARSERS (): Record<string, (this: Parser) => Expression | undefined> {
     return {
       ...Parser.FUNCTION_PARSERS,
-      JSON_ARRAY: (self: Parser) => (self as OracleParser).parseJsonArray(
-        JsonArrayExpr,
-        { expressions: self.parseCsv(() => self.parseFormatJson(self.parseBitwise())) },
-      ),
-      JSON_ARRAYAGG: (self: Parser) => (self as OracleParser).parseJsonArray(
-        JsonArrayAggExpr,
-        {
-          this: self.parseFormatJson(self.parseBitwise()),
-          order: self.parseOrder(),
-        },
-      ),
-      JSON_EXISTS: (self: Parser) => (self as OracleParser).parseJsonExists(),
+      JSON_ARRAY: function (this: Parser) {
+        return (this as OracleParser).parseJsonArray(
+          JsonArrayExpr,
+          { expressions: this.parseCsv(() => this.parseFormatJson(this.parseBitwise())) },
+        );
+      },
+      JSON_ARRAYAGG: function (this: Parser) {
+        return (this as OracleParser).parseJsonArray(
+          JsonArrayAggExpr,
+          {
+            this: this.parseFormatJson(this.parseBitwise()),
+            order: this.parseOrder(),
+          },
+        );
+      },
+      JSON_EXISTS: function (this: Parser) {
+        return (this as OracleParser).parseJsonExists();
+      },
     };
   }
 
   @cache
-  static get PROPERTY_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+  static get PROPERTY_PARSERS (): Record<string, (this: Parser) => Expression | undefined> {
     return {
       ...Parser.PROPERTY_PARSERS,
-      GLOBAL: (self: Parser) => self.matchTextSeq('TEMPORARY')
-        && self.expression(TemporaryPropertyExpr, { this: 'GLOBAL' }),
-      PRIVATE: (self: Parser) => self.matchTextSeq('TEMPORARY')
-        && self.expression(TemporaryPropertyExpr, { this: 'PRIVATE' }),
-      FORCE: (self: Parser) => self.expression(ForcePropertyExpr, {}),
+      GLOBAL: function (this: Parser) {
+        return this.matchTextSeq('TEMPORARY')
+          && this.expression(TemporaryPropertyExpr, { this: 'GLOBAL' });
+      },
+      PRIVATE: function (this: Parser) {
+        return this.matchTextSeq('TEMPORARY')
+          && this.expression(TemporaryPropertyExpr, { this: 'PRIVATE' });
+      },
+      FORCE: function (this: Parser) {
+        return this.expression(ForcePropertyExpr, {});
+      },
     };
   }
 
   @cache
-  static get QUERY_MODIFIER_PARSERS (): Partial<Record<TokenType, (self: Parser) => [string, Expression | Expression[] | undefined]>> {
+  static get QUERY_MODIFIER_PARSERS (): Partial<Record<TokenType, (this: Parser) => [string, Expression | Expression[] | undefined]>> {
     return {
       ...Parser.QUERY_MODIFIER_PARSERS,
-      [TokenType.ORDER_SIBLINGS_BY]: (self: Parser) => ['order', self.parseOrder()],
-      [TokenType.WITH]: (self: Parser) => ['options', (self as OracleParser).parseQueryRestrictions()],
+      [TokenType.ORDER_SIBLINGS_BY]: function (this: Parser) {
+        return ['order', this.parseOrder()];
+      },
+      [TokenType.WITH]: function (this: Parser) {
+        return ['options', (this as OracleParser).parseQueryRestrictions()];
+      },
     };
   }
 
   @cache
-  static get TYPE_LITERAL_PARSERS (): Partial<Record<DataTypeExprKind, (self: Parser, thisArg?: Expression, _?: unknown) => Expression>> {
+  static get TYPE_LITERAL_PARSERS (): Partial<Record<DataTypeExprKind, (this: Parser, thisArg?: Expression, _?: unknown) => Expression>> {
     return {
-      [DataTypeExprKind.DATE]: (self: Parser, thisExpr?: Expression) => self.expression(DateStrToDateExpr, { this: thisExpr }),
-      [DataTypeExprKind.TIMESTAMP]: (self: Parser, thisExpr?: Expression) => buildToTimestamp(
-        [thisExpr ?? literal(''), literal('%Y-%m-%d %H:%M:%S.%f')],
-      ),
+      [DataTypeExprKind.DATE]: function (this: Parser, thisExpr?: Expression) {
+        return this.expression(DateStrToDateExpr, { this: thisExpr });
+      },
+      [DataTypeExprKind.TIMESTAMP]: function (this: Parser, thisExpr?: Expression) {
+        return buildToTimestamp(
+          [thisExpr ?? literal(''), literal('%Y-%m-%d %H:%M:%S.%f')],
+        );
+      },
     };
   }
 
@@ -447,11 +475,15 @@ export class OracleGenerator extends Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const m = new Map<typeof Expression, (self: Generator, e: any) => string>(Generator.TRANSFORMS);
-    m.set(DateStrToDateExpr, (self, e: DateStrToDateExpr) => self.func('TO_DATE', [e.args.this, literal('YYYY-MM-DD')]));
-    m.set(DateTruncExpr, (self, e: DateTruncExpr) => self.func('TRUNC', [e.args.this, e.args.unit]));
+    const m = new Map<typeof Expression, (this: Generator, e: any) => string>(Generator.TRANSFORMS);
+    m.set(DateStrToDateExpr, function (this: Generator, e: DateStrToDateExpr) {
+      return this.func('TO_DATE', [e.args.this, literal('YYYY-MM-DD')]);
+    });
+    m.set(DateTruncExpr, function (this: Generator, e: DateTruncExpr) {
+      return this.func('TRUNC', [e.args.this, e.args.unit]);
+    });
     m.set(EuclideanDistanceExpr, renameFunc('L2_DISTANCE'));
     m.set(ILikeExpr, noIlikeSql);
     m.set(LogicalOrExpr, renameFunc('MAX'));
@@ -459,26 +491,46 @@ export class OracleGenerator extends Generator {
     m.set(ModExpr, renameFunc('MOD'));
     m.set(RandExpr, renameFunc('DBMS_RANDOM.VALUE'));
     m.set(SelectExpr, preprocess([eliminateDistinctOn, eliminateQualify]));
-    m.set(StrPositionExpr, (self, e: StrPositionExpr) => (
-      strPositionSql(self, e, {
-        funcName: 'INSTR',
-        supportsPosition: true,
-        supportsOccurrence: true,
-      })
-    ));
-    m.set(StrToTimeExpr, (self, e: StrToTimeExpr) => self.func('TO_TIMESTAMP', [e.args.this, self.formatTime(e)]));
-    m.set(StrToDateExpr, (self, e: StrToDateExpr) => self.func('TO_DATE', [e.args.this, self.formatTime(e)]));
-    m.set(SubqueryExpr, (self, e: SubqueryExpr) => self.subquerySql(e, { sep: ' ' }));
+    m.set(StrPositionExpr, function (this: Generator, e: StrPositionExpr) {
+      return (
+        strPositionSql.call(this, e, {
+          funcName: 'INSTR',
+          supportsPosition: true,
+          supportsOccurrence: true,
+        })
+      );
+    });
+    m.set(StrToTimeExpr, function (this: Generator, e: StrToTimeExpr) {
+      return this.func('TO_TIMESTAMP', [e.args.this, this.formatTime(e)]);
+    });
+    m.set(StrToDateExpr, function (this: Generator, e: StrToDateExpr) {
+      return this.func('TO_DATE', [e.args.this, this.formatTime(e)]);
+    });
+    m.set(SubqueryExpr, function (this: Generator, e: SubqueryExpr) {
+      return this.subquerySql(e, { sep: ' ' });
+    });
     m.set(SubstringExpr, renameFunc('SUBSTR'));
-    m.set(TableExpr, (self, e: TableExpr) => self.tableSql(e, { sep: ' ' }));
-    m.set(TableSampleExpr, (self, e: TableSampleExpr) => self.tableSampleSql(e));
-    m.set(TemporaryPropertyExpr, (_, e: TemporaryPropertyExpr) => `${e.args.this || 'GLOBAL'} TEMPORARY`);
-    m.set(TimeToStrExpr, (self, e: TimeToStrExpr) => self.func('TO_CHAR', [e.args.this, self.formatTime(e)]));
-    m.set(ToCharExpr, (self, e: ToCharExpr) => self.functionFallbackSql(e));
+    m.set(TableExpr, function (this: Generator, e: TableExpr) {
+      return this.tableSql(e, { sep: ' ' });
+    });
+    m.set(TableSampleExpr, function (this: Generator, e: TableSampleExpr) {
+      return this.tableSampleSql(e);
+    });
+    m.set(TemporaryPropertyExpr, (e: TemporaryPropertyExpr) => `${e.args.this || 'GLOBAL'} TEMPORARY`);
+    m.set(TimeToStrExpr, function (this: Generator, e: TimeToStrExpr) {
+      return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+    });
+    m.set(ToCharExpr, function (this: Generator, e: ToCharExpr) {
+      return this.functionFallbackSql(e);
+    });
     m.set(ToNumberExpr, toNumberWithNlsParam);
     m.set(TrimExpr, trimSqlEx);
-    m.set(UnicodeExpr, (self, e: UnicodeExpr) => `ASCII(UNISTR(${self.sql(e.args.this)}))`);
-    m.set(UnixToTimeExpr, (self, e: UnixToTimeExpr) => `TO_DATE('1970-01-01', 'YYYY-MM-DD') + (${self.sql(e, 'this')} / 86400)`);
+    m.set(UnicodeExpr, function (this: Generator, e: UnicodeExpr) {
+      return `ASCII(UNISTR(${this.sql(e.args.this)}))`;
+    });
+    m.set(UnixToTimeExpr, function (this: Generator, e: UnixToTimeExpr) {
+      return `TO_DATE('1970-01-01', 'YYYY-MM-DD') + (${this.sql(e, 'this')} / 86400)`;
+    });
     m.set(UtcTimestampExpr, renameFunc('UTC_TIMESTAMP'));
     m.set(UtcTimeExpr, renameFunc('UTC_TIME'));
     m.set(SystimestampExpr, () => 'SYSTIMESTAMP');
@@ -519,7 +571,7 @@ export class OracleGenerator extends Generator {
 
   public coalesceSql (expression: CoalesceExpr): string {
     const funcName = expression.args.isNvl ? 'NVL' : 'COALESCE';
-    return renameFunc(funcName)(this, expression);
+    return renameFunc(funcName).call(this, expression);
   }
 
   public intoSql (expression: IntoExpr): string {

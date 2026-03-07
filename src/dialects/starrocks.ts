@@ -69,16 +69,16 @@ export function eliminateBetweenInDelete (expression: Expression): Expression {
  * StarRocks ST_Distance_Sphere expects individual coordinates rather than point objects.
  * Reference: https://docs.starrocks.io/docs/sql-reference/sql-functions/spatial-functions/st_distance_sphere/
  */
-export function stDistanceSphere (self: Generator, expression: StDistanceExpr): string {
+export function stDistanceSphere (this: Generator, expression: StDistanceExpr): string {
   const point1 = expression.args.this;
   const point2 = expression.args.expression;
 
-  const point1X = self.func('ST_X', [point1]);
-  const point1Y = self.func('ST_Y', [point1]);
-  const point2X = self.func('ST_X', [point2]);
-  const point2Y = self.func('ST_Y', [point2]);
+  const point1X = this.func('ST_X', [point1]);
+  const point1Y = this.func('ST_Y', [point1]);
+  const point2X = this.func('ST_X', [point2]);
+  const point2Y = this.func('ST_Y', [point2]);
 
-  return self.func('ST_Distance_Sphere', [
+  return this.func('ST_Distance_Sphere', [
     point1X,
     point1Y,
     point2X,
@@ -123,13 +123,21 @@ class StarRocksParser extends MySQL.Parser {
   }
 
   @cache
-  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
+  static get PROPERTY_PARSERS (): Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return {
       ...MySQL.Parser.PROPERTY_PARSERS,
-      PROPERTIES: (self: StarRocksParser): Expression[] => self.parseWrappedProperties(),
-      UNIQUE: (self: StarRocksParser): Expression => self.parseCompositeKeyProperty(UniqueKeyPropertyExpr),
-      ROLLUP: (self: StarRocksParser): RollupPropertyExpr => self.parseRollupProperty(),
-      REFRESH: (self: StarRocksParser): Expression => self.parseRefreshProperty(),
+      PROPERTIES: function (this: Parser): Expression[] {
+        return (this as StarRocksParser).parseWrappedProperties();
+      },
+      UNIQUE: function (this: Parser): Expression {
+        return (this as StarRocksParser).parseCompositeKeyProperty(UniqueKeyPropertyExpr);
+      },
+      ROLLUP: function (this: Parser): RollupPropertyExpr {
+        return (this as StarRocksParser).parseRollupProperty();
+      },
+      REFRESH: function (this: Parser): Expression {
+        return (this as StarRocksParser).parseRefreshProperty();
+      },
     };
   }
 
@@ -306,9 +314,9 @@ class StarRocksGenerator extends MySQL.Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const m = new Map<typeof Expression, (self: Generator, e: any) => string>(MySQL.Generator.TRANSFORMS);
+    const m = new Map<typeof Expression, (this: Generator, e: any) => string>(MySQL.Generator.TRANSFORMS);
     m.set(ArrayExpr, inlineArraySql);
     m.set(ArrayAggExpr, renameFunc('ARRAY_AGG'));
     m.set(ArrayFilterExpr, renameFunc('ARRAY_FILTER'));
@@ -317,12 +325,13 @@ class StarRocksGenerator extends MySQL.Generator {
     m.set(CurrentVersionExpr, (): string => 'CURRENT_VERSION()');
     m.set(
       DateDiffExpr,
-      (self: Generator, e: DateDiffExpr): string =>
-        self.func('DATE_DIFF', [
+      function (this: Generator, e: DateDiffExpr): string {
+        return this.func('DATE_DIFF', [
           unitToStr(e),
           e.args.this,
           e.args.expression,
-        ]),
+        ]);
+      },
     );
     m.set(DeleteExpr, preprocess([eliminateBetweenInDelete]));
     m.set(FlattenExpr, renameFunc('ARRAY_FLATTEN'));
@@ -330,23 +339,28 @@ class StarRocksGenerator extends MySQL.Generator {
     m.set(JsonExtractExpr, arrowJsonExtractSql);
     m.set(PropertyExpr, propertySql);
     m.set(RegexpLikeExpr, renameFunc('REGEXP'));
-    m.set(SchemaCommentPropertyExpr, (self: Generator, e: Expression): string => self.nakedProperty(e));
+    m.set(SchemaCommentPropertyExpr, function (this: Generator, e: Expression): string {
+      return this.nakedProperty(e);
+    });
     m.set(StDistanceExpr, stDistanceSphere);
     m.set(
       StrToUnixExpr,
-      (self: Generator, e: StrToUnixExpr): string =>
-        self.func('UNIX_TIMESTAMP', [e.args.this, self.formatTime(e)]),
+      function (this: Generator, e: StrToUnixExpr): string {
+        return this.func('UNIX_TIMESTAMP', [e.args.this, this.formatTime(e)]);
+      },
     );
     m.set(
       TimestampTruncExpr,
-      (self: Generator, e: TimestampTruncExpr): string =>
-        self.func('DATE_TRUNC', [unitToStr(e), e.args.this]),
+      function (this: Generator, e: TimestampTruncExpr): string {
+        return this.func('DATE_TRUNC', [unitToStr(e), e.args.this]);
+      },
     );
     m.set(TimeStrToDateExpr, renameFunc('TO_DATE'));
     m.set(
       UnixToStrExpr,
-      (self: Generator, e: UnixToStrExpr): string =>
-        self.func('FROM_UNIXTIME', [e.args.this, self.formatTime(e)]),
+      function (this: Generator, e: UnixToStrExpr): string {
+        return this.func('FROM_UNIXTIME', [e.args.this, this.formatTime(e)]);
+      },
     );
     m.set(UnixToTimeExpr, renameFunc('FROM_UNIXTIME'));
     // StarRocks uses DATE_TRUNC instead of the MySQL simulation, so we remove the MySQL transform.

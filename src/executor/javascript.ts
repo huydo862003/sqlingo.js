@@ -48,24 +48,24 @@ import {
 } from './table';
 
 /** Generates ORDERED(this, desc, nullsFirst) for use in sort key evaluation. */
-function orderedJs (self: Generator, expression: OrderedExpr): string {
-  const thisSql = self.sql(expression, 'this');
+function orderedJs (this: Generator, expression: OrderedExpr): string {
+  const thisSql = this.sql(expression, 'this');
   const desc = expression.args.desc ? 'true' : 'false';
   const nullsFirst = expression.args.nullsFirst ? 'true' : 'false';
   return `ORDERED(${thisSql}, { desc: ${desc}, undefinedFirst: ${nullsFirst} })`;
 }
 
 /** Generates a function call using the expression's key as the function name. */
-function rename (self: Generator, e: Expression): string {
+function rename (this: Generator, e: Expression): string {
   try {
     const values = Object.values(e.args);
 
     if (values.length === 1) {
       const val = values[0];
       if (!Array.isArray(val)) {
-        return self.func(e._constructor.key, [val]);
+        return this.func(e._constructor.key, [val]);
       }
-      return self.func(e._constructor.key, val);
+      return this.func(e._constructor.key, val);
     }
 
     if (e instanceof FuncExpr && (e._constructor as typeof FuncExpr).isVarLenArgs) {
@@ -77,10 +77,10 @@ function rename (self: Generator, e: Expression): string {
           args.push(v);
         }
       }
-      return self.func(e._constructor.key, args);
+      return this.func(e._constructor.key, args);
     }
 
-    return self.func(
+    return this.func(
       e._constructor.key,
       values.filter((v) => v !== undefined),
     );
@@ -90,14 +90,14 @@ function rename (self: Generator, e: Expression): string {
 }
 
 /** Generates a JS ternary chain from a CASE expression, building from the last branch inward. */
-function caseJs (self: Generator, expression: CaseExpr): string {
-  const thisStr = self.sql(expression, 'this');
-  let chain = self.sql(expression, 'default') || 'null';
+function caseJs (this: Generator, expression: CaseExpr): string {
+  const thisStr = this.sql(expression, 'this');
+  let chain = this.sql(expression, 'default') || 'null';
 
   const ifs = expression.args.ifs ?? [];
   for (const e of [...ifs].reverse()) {
-    const trueStr = self.sql(e, 'true');
-    let condition = self.sql(e, 'this');
+    const trueStr = this.sql(e, 'true');
+    let condition = this.sql(e, 'this');
     if (thisStr) {
       condition = `${thisStr} === (${condition})`;
     }
@@ -108,19 +108,19 @@ function caseJs (self: Generator, expression: CaseExpr): string {
 }
 
 /** Generates a JS arrow function from a Lambda expression. */
-function lambdaJs (self: Generator, e: LambdaExpr): string {
-  return `(${self.expressions(e, { flat: true })}) => ${self.sql(e, 'this')}`;
+function lambdaJs (this: Generator, e: LambdaExpr): string {
+  return `(${this.expressions(e, { flat: true })}) => ${this.sql(e, 'this')}`;
 }
 
 /** Generates a DIV call, appending `|| null` for safe division and wrapping in Math.trunc for integer division. */
-function divJs (self: Generator, e: DivExpr): string {
-  let denominator = self.sql(e, 'expression');
+function divJs (this: Generator, e: DivExpr): string {
+  let denominator = this.sql(e, 'expression');
 
   if (e.args.safe) {
     denominator += ' || null';
   }
 
-  let sql = `DIV(${self.sql(e, 'this')}, ${denominator})`;
+  let sql = `DIV(${this.sql(e, 'this')}, ${denominator})`;
 
   if (e.args.typed) {
     sql = `Math.trunc(${sql})`;
@@ -133,80 +133,133 @@ export class JavascriptGenerator extends Generator {
   static override get TRANSFORMS () {
     const parent = super.TRANSFORMS;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const overrides = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const overrides = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...parent.entries(),
-      [AliasExpr, (_self: Generator, e: AliasExpr) => _self.sql(e.args.this as Expression)],
-      [AndExpr, (s: Generator, e: AndExpr) => s.binary(e, '&&')],
-      [ArrayExpr, (s: Generator, e: ArrayExpr) => `[${s.expressions(e, { flat: true })}]`],
+      [
+        AliasExpr,
+        function (this: Generator, e: AliasExpr) {
+          return this.sql(e.args.this as Expression);
+        },
+      ],
+      [
+        AndExpr,
+        function (this: Generator, e: AndExpr) {
+          return this.binary(e, '&&');
+        },
+      ],
+      [
+        ArrayExpr,
+        function (this: Generator, e: ArrayExpr) {
+          return `[${this.expressions(e, { flat: true })}]`;
+        },
+      ],
       [BetweenExpr, rename],
-      [BooleanExpr, (_s: Generator, e: BooleanExpr) => (e.args.this ? 'true' : 'false')],
+      [
+        BooleanExpr,
+        function (this: Generator, e: BooleanExpr) {
+          return e.args.this ? 'true' : 'false';
+        },
+      ],
       [CaseExpr, caseJs],
       [
         CastExpr,
-        (s: Generator, e: CastExpr) =>
-          `CAST(${s.sql(e.args.this as Expression)}, '${s.sql(e.args.to as Expression)}')`,
+        function (this: Generator, e: CastExpr) {
+          return `CAST(${this.sql(e.args.this as Expression)}, '${this.sql(e.args.to as Expression)}')`;
+        },
       ],
       [
         ColumnExpr,
-        (s: Generator, e: ColumnExpr) =>
-          `scope[${s.sql(e, 'table') || null}][${s.sql(e.args.this as Expression)}]`,
+        function (this: Generator, e: ColumnExpr) {
+          return `scope[${this.sql(e, 'table') || null}][${this.sql(e.args.this as Expression)}]`;
+        },
       ],
       [
         ConcatExpr,
-        (s: Generator, e: ConcatExpr) =>
-          s.func(
+        function (this: Generator, e: ConcatExpr) {
+          return this.func(
             e.args.safe ? 'SAFECONCAT' : 'CONCAT',
             e.args.expressions ?? [],
-          ),
+          );
+        },
       ],
-      [DistinctExpr, (s: Generator, e: DistinctExpr) => `new Set([${s.sql(e, 'this')}])`],
+      [
+        DistinctExpr,
+        function (this: Generator, e: DistinctExpr) {
+          return `new Set([${this.sql(e, 'this')}])`;
+        },
+      ],
       [DivExpr, divJs],
       [
         ExtractExpr,
-        (s: Generator, e: ExtractExpr) =>
-          `EXTRACT('${e.name.toLowerCase()}', ${s.sql(e, 'expression')})`,
+        function (this: Generator, e: ExtractExpr) {
+          return `EXTRACT('${e.name.toLowerCase()}', ${this.sql(e, 'expression')})`;
+        },
       ],
       [
         InExpr,
-        (s: Generator, e: InExpr) =>
-          `[${s.expressions(e, { flat: true })}].includes(${s.sql(e, 'this')})`,
+        function (this: Generator, e: InExpr) {
+          return `[${this.expressions(e, { flat: true })}].includes(${this.sql(e, 'this')})`;
+        },
       ],
       [
         IntervalExpr,
-        (s: Generator, e: IntervalExpr) =>
-          `INTERVAL(${s.sql(e.args.this as Expression)}, '${s.sql(e.args.unit as Expression)}')`,
+        function (this: Generator, e: IntervalExpr) {
+          return `INTERVAL(${this.sql(e.args.this as Expression)}, '${this.sql(e.args.unit as Expression)}')`;
+        },
       ],
       [
         IsExpr,
-        (s: Generator, e: IsExpr) =>
-          e.args.this instanceof LiteralExpr ? s.binary(e, '===') : s.binary(e, '==='),
+        function (this: Generator, e: IsExpr) {
+          return e.args.this instanceof LiteralExpr ? this.binary(e, '===') : this.binary(e, '===');
+        },
       ],
       [
         JsonExtractExpr,
-        (s: Generator, e: JsonExtractExpr) =>
-          s.func(
+        function (this: Generator, e: JsonExtractExpr) {
+          return this.func(
             JsonExtractExpr.key,
             [
               e.args.this as Expression,
               e.args.expression as Expression,
               ...(e.args.expressions ?? []) as Expression[],
             ],
-          ),
+          );
+        },
       ],
       [
         JsonPathExpr,
-        (s: Generator, e: JsonPathExpr) => {
+        function (this: Generator, e: JsonPathExpr) {
           const parts = e.args.expressions ?? [];
-          return `[${parts.slice(1).map((p) => s.sql(p as Expression))
+          return `[${parts.slice(1).map((p) => this.sql(p as Expression))
             .join(',')}]`;
         },
       ],
-      [JsonPathKeyExpr, (s: Generator, e: JsonPathKeyExpr) => `'${s.sql(e.args.this as Expression)}'`],
-      [JsonPathSubscriptExpr, (_s: Generator, e: JsonPathSubscriptExpr) => `'${e.args.this}'`],
+      [
+        JsonPathKeyExpr,
+        function (this: Generator, e: JsonPathKeyExpr) {
+          return `'${this.sql(e.args.this as Expression)}'`;
+        },
+      ],
+      [
+        JsonPathSubscriptExpr,
+        function (this: Generator, e: JsonPathSubscriptExpr) {
+          return `'${e.args.this}'`;
+        },
+      ],
       [LambdaExpr, lambdaJs],
-      [NotExpr, (s: Generator, e: NotExpr) => `!(${s.sql(e.args.this as Expression)})`],
+      [
+        NotExpr,
+        function (this: Generator, e: NotExpr) {
+          return `!(${this.sql(e.args.this as Expression)})`;
+        },
+      ],
       [NullExpr, () => 'null'],
-      [OrExpr, (s: Generator, e: OrExpr) => s.binary(e, '||')],
+      [
+        OrExpr,
+        function (this: Generator, e: OrExpr) {
+          return this.binary(e, '||');
+        },
+      ],
       [OrderedExpr, orderedJs],
       [StarExpr, () => '1'],
     ]);

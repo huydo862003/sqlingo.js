@@ -63,15 +63,15 @@ import {
 } from './dialect';
 import { Hive } from './hive';
 
-function mapSql (self: Generator, expression: MapExpr): string {
+function mapSql (this: Generator, expression: MapExpr): string {
   const keys = expression.args.keys;
   const values = expression.args.values;
 
   if (!keys || !values) {
-    return self.func('MAP', []);
+    return this.func('MAP', []);
   }
 
-  return self.func('MAP_FROM_ARRAYS', [...keys, ...values]);
+  return this.func('MAP_FROM_ARRAYS', [...keys, ...values]);
 }
 
 export function buildAsCast (toType: string) {
@@ -83,43 +83,43 @@ export function buildAsCast (toType: string) {
   };
 }
 
-function strToDate (self: Generator, expression: StrToDateExpr): string {
-  const timeFormat = self.formatTime(expression);
+function strToDate (this: Generator, expression: StrToDateExpr): string {
+  const timeFormat = this.formatTime(expression);
   if (timeFormat === Hive.DATE_FORMAT) {
-    return self.func('TO_DATE', [expression.args.this]);
+    return this.func('TO_DATE', [expression.args.this]);
   }
-  return self.func('TO_DATE', [expression.args.this, timeFormat]);
+  return this.func('TO_DATE', [expression.args.this, timeFormat]);
 }
 
-function unixToTimeSql (self: Generator, expression: UnixToTimeExpr): string {
+function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   const scale = expression.args.scale;
   const timestamp = expression.args.this;
 
   if (scale === undefined) {
-    return self.sql(
+    return this.sql(
       new CastExpr({
-        this: self.func('from_unixtime', [timestamp]),
+        this: this.func('from_unixtime', [timestamp]),
         to: DataTypeExpr.build(DataTypeExprKind.TIMESTAMP),
       }),
     );
   }
 
   if (scale === UnixToTimeExpr.SECONDS) {
-    return self.func('TIMESTAMP_SECONDS', [timestamp]);
+    return this.func('TIMESTAMP_SECONDS', [timestamp]);
   }
   if (scale === UnixToTimeExpr.MILLIS) {
-    return self.func('TIMESTAMP_MILLIS', [timestamp]);
+    return this.func('TIMESTAMP_MILLIS', [timestamp]);
   }
   if (scale === UnixToTimeExpr.MICROS) {
-    return self.func('TIMESTAMP_MICROS', [timestamp]);
+    return this.func('TIMESTAMP_MICROS', [timestamp]);
   }
 
   const unixSeconds = new DivExpr({
     this: timestamp,
-    expression: self.func('POW', [LiteralExpr.number(10), scale]),
+    expression: this.func('POW', [LiteralExpr.number(10), scale]),
   });
 
-  return self.func('TIMESTAMP_SECONDS', [unixSeconds]);
+  return this.func('TIMESTAMP_SECONDS', [unixSeconds]);
 }
 
 /**
@@ -252,18 +252,36 @@ class Spark2Parser extends Hive.Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Hive.Parser.FUNCTION_PARSERS,
-      APPROX_PERCENTILE: (self: Parser) => (self as Spark2Parser).parseQuantileFunction(ApproxQuantileExpr),
-      BROADCAST: (self: Parser) => self.parseJoinHint('BROADCAST'),
-      BROADCASTJOIN: (self: Parser) => self.parseJoinHint('BROADCASTJOIN'),
-      MAPJOIN: (self: Parser) => self.parseJoinHint('MAPJOIN'),
-      MERGE: (self: Parser) => self.parseJoinHint('MERGE'),
-      SHUFFLEMERGE: (self: Parser) => self.parseJoinHint('SHUFFLEMERGE'),
-      MERGEJOIN: (self: Parser) => self.parseJoinHint('MERGEJOIN'),
-      SHUFFLE_HASH: (self: Parser) => self.parseJoinHint('SHUFFLE_HASH'),
-      SHUFFLE_REPLICATE_NL: (self: Parser) => self.parseJoinHint('SHUFFLE_REPLICATE_NL'),
+      APPROX_PERCENTILE: function (this: Parser) {
+        return (this as Spark2Parser).parseQuantileFunction(ApproxQuantileExpr);
+      },
+      BROADCAST: function (this: Parser) {
+        return this.parseJoinHint('BROADCAST');
+      },
+      BROADCASTJOIN: function (this: Parser) {
+        return this.parseJoinHint('BROADCASTJOIN');
+      },
+      MAPJOIN: function (this: Parser) {
+        return this.parseJoinHint('MAPJOIN');
+      },
+      MERGE: function (this: Parser) {
+        return this.parseJoinHint('MERGE');
+      },
+      SHUFFLEMERGE: function (this: Parser) {
+        return this.parseJoinHint('SHUFFLEMERGE');
+      },
+      MERGEJOIN: function (this: Parser) {
+        return this.parseJoinHint('MERGEJOIN');
+      },
+      SHUFFLE_HASH: function (this: Parser) {
+        return this.parseJoinHint('SHUFFLE_HASH');
+      },
+      SHUFFLE_REPLICATE_NL: function (this: Parser) {
+        return this.parseJoinHint('SHUFFLE_REPLICATE_NL');
+      },
     };
   }
 
@@ -316,22 +334,24 @@ class Spark2Generator extends Hive.Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Hive.Generator.TRANSFORMS.entries(),
       [ApproxDistinctExpr, renameFunc('APPROX_COUNT_DISTINCT')],
       [
         ArraySumExpr,
-        (self: Generator, e: ArraySumExpr) =>
-          `AGGREGATE(${self.sql(e, 'this')}, 0, (acc, x) -> acc + x, acc -> acc)`,
+        function (this: Generator, e: ArraySumExpr) {
+          return `AGGREGATE(${this.sql(e, 'this')}, 0, (acc, x) -> acc + x, acc -> acc)`;
+        },
       ],
       [ArrayToStringExpr, renameFunc('ARRAY_JOIN')],
       [ArraySliceExpr, renameFunc('SLICE')],
       [
         AtTimeZoneExpr,
-        (self: Generator, e: AtTimeZoneExpr) =>
-          self.func('FROM_UTC_TIMESTAMP', [e.args.this, e.args.zone]),
+        function (this: Generator, e: AtTimeZoneExpr) {
+          return this.func('FROM_UTC_TIMESTAMP', [e.args.this, e.args.zone]);
+        },
       ],
       [BitwiseLeftShiftExpr, renameFunc('SHIFTLEFT')],
       [BitwiseRightShiftExpr, renameFunc('SHIFTRIGHT')],
@@ -344,21 +364,28 @@ class Spark2Generator extends Hive.Generator {
         ]),
       ],
       [DateFromPartsExpr, renameFunc('MAKE_DATE')],
-      [DateTruncExpr, (self: Generator, e: DateTruncExpr) => self.func('TRUNC', [e.args.this, unitToStr(e)])],
+      [
+        DateTruncExpr,
+        function (this: Generator, e: DateTruncExpr) {
+          return this.func('TRUNC', [e.args.this, unitToStr(e)]);
+        },
+      ],
       [DayOfMonthExpr, renameFunc('DAYOFMONTH')],
       [DayOfWeekExpr, renameFunc('DAYOFWEEK')],
       [
         DayOfWeekIsoExpr,
-        (self: Generator, e: DayOfWeekIsoExpr) =>
-          '(( ' + self.func('DAYOFWEEK', [e.args.this]) + ' % 7) + 1)',
+        function (this: Generator, e: DayOfWeekIsoExpr) {
+          return '(( ' + this.func('DAYOFWEEK', [e.args.this]) + ' % 7) + 1)';
+        },
       ],
       [DayOfYearExpr, renameFunc('DAYOFYEAR')],
       [FormatExpr, renameFunc('FORMAT_STRING')],
       [FromExpr, preprocess([unaliasPivot])],
       [
         FromTimeZoneExpr,
-        (self: Generator, e: FromTimeZoneExpr) =>
-          self.func('TO_UTC_TIMESTAMP', [e.args.this, e.args.zone]),
+        function (this: Generator, e: FromTimeZoneExpr) {
+          return this.func('TO_UTC_TIMESTAMP', [e.args.this, e.args.zone]);
+        },
       ],
       [LogicalAndExpr, renameFunc('BOOL_AND')],
       [LogicalOrExpr, renameFunc('BOOL_OR')],
@@ -367,13 +394,14 @@ class Spark2Generator extends Hive.Generator {
       [ReduceExpr, renameFunc('AGGREGATE')],
       [
         RegexpReplaceExpr,
-        (self: Generator, e: RegexpReplaceExpr) =>
-          self.func('REGEXP_REPLACE', [
+        function (this: Generator, e: RegexpReplaceExpr) {
+          return this.func('REGEXP_REPLACE', [
             e.args.this,
             e.args.expression,
             e.args.replacement,
             e.args.position,
-          ]),
+          ]);
+        },
       ],
       [
         SelectExpr,
@@ -386,19 +414,22 @@ class Spark2Generator extends Hive.Generator {
       ],
       [
         Sha2DigestExpr,
-        (self: Generator, e: Sha2DigestExpr) =>
-          self.func('SHA2', [e.args.this, e.args.length || LiteralExpr.number(256)]),
+        function (this: Generator, e: Sha2DigestExpr) {
+          return this.func('SHA2', [e.args.this, e.args.length || LiteralExpr.number(256)]);
+        },
       ],
       [StrToDateExpr, strToDate],
       [
         StrToTimeExpr,
-        (self: Generator, e: StrToTimeExpr) =>
-          self.func('TO_TIMESTAMP', [e.args.this, self.formatTime(e)]),
+        function (this: Generator, e: StrToTimeExpr) {
+          return this.func('TO_TIMESTAMP', [e.args.this, this.formatTime(e)]);
+        },
       ],
       [
         TimestampTruncExpr,
-        (self: Generator, e: TimestampTruncExpr) =>
-          self.func('DATE_TRUNC', [unitToStr(e), e.args.this]),
+        function (this: Generator, e: TimestampTruncExpr) {
+          return this.func('DATE_TRUNC', [unitToStr(e), e.args.this]);
+        },
       ],
       [UnixToTimeExpr, unixToTimeSql],
       [VariancePopExpr, renameFunc('VAR_POP')],

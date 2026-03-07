@@ -1421,23 +1421,21 @@ Dialect.register(Dialects.DIALECT, Dialect);
 /**
  * Creates a function that renames a function call.
  */
-export function renameFunc (name: string): (self: Generator, expression: Expression) => string {
-  return function (self: Generator, expression: Expression): string {
+export function renameFunc (name: string): (this: Generator, expression: Expression) => string {
+  return function (this: Generator, expression: Expression): string {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const flatten = (arr: any[]): any[] => arr.reduce((acc, val) =>
       Array.isArray(val) ? acc.concat(flatten(val)) : acc.concat(val), []);
-    return self.func(name, flatten(Object.values(expression.args)));
+    return this.func(name, flatten(Object.values(expression.args)));
   };
 }
 
 /**
  * Generate APPROX_COUNT_DISTINCT SQL (with unsupported accuracy parameter).
  */
-export function approxCountDistinctSql (self: Generator, expression: ApproxDistinctExpr): string {
-  function res (expression: ApproxDistinctExpr): string {
-    return self.func('APPROX_COUNT_DISTINCT', [expression.args.this]);
-  }
-  return unsupportedArgs<ApproxDistinctExpr>('accuracy')(res)(expression);
+export function approxCountDistinctSql (this: Generator, expression: ApproxDistinctExpr): string {
+  unsupportedArgs.call(this, expression, 'accuracy');
+  return this.func('APPROX_COUNT_DISTINCT', [expression.args.this]);
 }
 
 /**
@@ -1446,9 +1444,9 @@ export function approxCountDistinctSql (self: Generator, expression: ApproxDisti
 export function ifSql (
   name: string = 'IF',
   falseValue?: Expression | string,
-): (self: Generator, expression: IfExpr) => string {
-  return function (self: Generator, expression: IfExpr): string {
-    return self.func(
+): (this: Generator, expression: IfExpr) => string {
+  return function (this: Generator, expression: IfExpr): string {
+    return this.func(
       name,
       [
         expression.args.this,
@@ -1462,11 +1460,11 @@ export function ifSql (
 /**
  * Generate arrow-based JSON extract (-> or ->>).
  */
-export function arrowJsonExtractSql (self: Generator, expression: JsonExtractType): string {
+export function arrowJsonExtractSql (this: Generator, expression: JsonExtractType): string {
   const thisArg = expression.args.this;
 
   if (
-    self._constructor.JSON_TYPE_REQUIRED_FOR_EXTRACTION
+    this._constructor.JSON_TYPE_REQUIRED_FOR_EXTRACTION
     && thisArg instanceof LiteralExpr
     && thisArg.isString
   ) {
@@ -1475,14 +1473,14 @@ export function arrowJsonExtractSql (self: Generator, expression: JsonExtractTyp
   }
 
   const operator = expression instanceof JsonExtractExpr ? '->' : '->>';
-  return self.binary(expression, operator);
+  return this.binary(expression, operator);
 }
 
 /**
  * Generate inline array syntax: [elem1, elem2, ...]
  */
-export function inlineArraySql (self: Generator, expression: Expression): string {
-  return `[${self.expressions(expression, {
+export function inlineArraySql (this: Generator, expression: Expression): string {
+  return `[${this.expressions(expression, {
     dynamic: true,
     newLine: true,
     skipFirst: true,
@@ -1493,95 +1491,95 @@ export function inlineArraySql (self: Generator, expression: Expression): string
 /**
  * Generate inline array unless it contains a query.
  */
-export function inlineArrayUnlessQuery (self: Generator, expression: Expression): string {
+export function inlineArrayUnlessQuery (this: Generator, expression: Expression): string {
   const elem = seqGet(expression.args.expressions ?? [], 0);
   if (elem instanceof Expression && elem?.find?.(QueryExpr)) {
-    return self.func('ARRAY', [elem]);
+    return this.func('ARRAY', [elem]);
   }
-  return inlineArraySql(self, expression);
+  return inlineArraySql.call(this, expression);
 }
 
 /**
  * Transpile ILIKE to LIKE with LOWER().
  */
-export function noIlikeSql (self: Generator, expression: ILikeExpr): string {
+export function noIlikeSql (this: Generator, expression: ILikeExpr): string {
   const likeExpr = new LikeExpr({
     this: new LowerExpr({ this: expression.args.this }),
     expression: new LowerExpr({ this: expression.args.expression }),
   });
-  return self.likeSql(likeExpr);
+  return this.likeSql(likeExpr);
 }
 
 /**
  * Generate CURRENT_DATE without parentheses.
  */
-export function noParenCurrentDateSql (self: Generator, expression: CurrentDateExpr): string {
-  const zone = self.sql(expression, 'this');
+export function noParenCurrentDateSql (this: Generator, expression: CurrentDateExpr): string {
+  const zone = this.sql(expression, 'this');
   return zone ? `CURRENT_DATE AT TIME ZONE ${zone}` : 'CURRENT_DATE';
 }
 
 /**
  * Emit unsupported warning for recursive CTEs.
  */
-export function noRecursiveCteSql (self: Generator, expression: WithExpr): string {
+export function noRecursiveCteSql (this: Generator, expression: WithExpr): string {
   if (expression.args.recursive) {
-    self.unsupported('Recursive CTEs are unsupported');
+    this.unsupported('Recursive CTEs are unsupported');
     expression.args.recursive = false;
   }
-  return self.withSql(expression);
+  return this.withSql(expression);
 }
 
 /**
  * Emit unsupported warning for TABLESAMPLE.
  */
-export function noTablesampleSql (self: Generator, expression: TableSampleExpr): string {
-  self.unsupported('TABLESAMPLE unsupported');
-  return self.sql(expression.args.this);
+export function noTablesampleSql (this: Generator, expression: TableSampleExpr): string {
+  this.unsupported('TABLESAMPLE unsupported');
+  return this.sql(expression.args.this);
 }
 
 /**
  * Emit unsupported warning for PIVOT.
  */
-export function noPivotSql (self: Generator, _expression: PivotExpr): string {
-  self.unsupported('PIVOT unsupported');
+export function noPivotSql (this: Generator, _expression: PivotExpr): string {
+  this.unsupported('PIVOT unsupported');
   return '';
 }
 
 /**
  * Transpile TRY_CAST to CAST.
  */
-export function noTrycastSql (self: Generator, expression: Expression): string {
-  return self.castSql(expression);
+export function noTrycastSql (this: Generator, expression: Expression): string {
+  return this.castSql(expression);
 }
 
 /**
  * Emit unsupported warning for comment column constraints.
  */
-export function noCommentColumnConstraintSql (self: Generator, _expression: CommentColumnConstraintExpr): string {
-  self.unsupported('CommentColumnConstraint unsupported');
+export function noCommentColumnConstraintSql (this: Generator, _expression: CommentColumnConstraintExpr): string {
+  this.unsupported('CommentColumnConstraint unsupported');
   return '';
 }
 
 /**
  * Emit unsupported warning for MAP_FROM_ENTRIES.
  */
-export function noMapFromEntriesSql (self: Generator, _expression: MapFromEntriesExpr): string {
-  self.unsupported('MAP_FROM_ENTRIES unsupported');
+export function noMapFromEntriesSql (this: Generator, _expression: MapFromEntriesExpr): string {
+  this.unsupported('MAP_FROM_ENTRIES unsupported');
   return '';
 }
 
 /**
  * Generate property SQL: key=value.
  */
-export function propertySql (self: Generator, expression: PropertyExpr): string {
-  return `${self.propertyName(expression, { stringKey: true })}=${self.sql(expression, 'value')}`;
+export function propertySql (this: Generator, expression: PropertyExpr): string {
+  return `${this.propertyName(expression, { stringKey: true })}=${this.sql(expression, 'value')}`;
 }
 
 /**
  * Generate STRPOS/POSITION SQL with optional parameters.
  */
 export function strPositionSql (
-  self: Generator,
+  this: Generator,
   expression: StrPositionExpr,
   options: {
     funcName?: string;
@@ -1640,7 +1638,7 @@ export function strPositionSql (
       if (supportsOccurrence) {
         args.push(occurrence);
       } else {
-        self.unsupported(`${funcName} does not support the occurrence parameter.`);
+        this.unsupported(`${funcName} does not support the occurrence parameter.`);
       }
     }
     func = new AnonymousExpr({
@@ -1664,17 +1662,17 @@ export function strPositionSql (
       false: funcWithOffset,
     });
 
-    return self.sql(funcWrapped);
+    return this.sql(funcWrapped);
   }
 
-  return self.sql(func);
+  return this.sql(func);
 }
 
 /**
  * Generate struct extract: struct.field.
  */
-export function structExtractSql (self: Generator, expression: StructExtractExpr): string {
-  return `${self.sql(expression, 'this')}.${self.sql(toIdentifier(expression.args.expression?.name ?? ''))}`;
+export function structExtractSql (this: Generator, expression: StructExtractExpr): string {
+  return `${this.sql(expression, 'this')}.${this.sql(toIdentifier(expression.args.expression?.name ?? ''))}`;
 }
 
 /**
@@ -1685,17 +1683,17 @@ export function arrayAppendSql (
   options: {
     swapParams?: boolean;
   } = {},
-): (self: Generator, expression: ArrayAppendExpr | ArrayPrependExpr) => string {
+): (this: Generator, expression: ArrayAppendExpr | ArrayPrependExpr) => string {
   const { swapParams = false } = options;
-  return (self: Generator, expression: ArrayAppendExpr | ArrayPrependExpr): string => {
+  return function (this: Generator, expression: ArrayAppendExpr | ArrayPrependExpr): string {
     let thisArg = expression.args.this;
     const element = expression.args.expression;
 
     let args = swapParams ? [element, thisArg] : [thisArg, element];
-    const funcSql = self.func(name, args);
+    const funcSql = this.func(name, args);
 
     const sourceNullPropagation = Boolean(expression.args.nullPropagation);
-    const targetNullPropagation = self.dialect._constructor.ARRAY_FUNCS_PROPAGATES_NULLS;
+    const targetNullPropagation = this.dialect._constructor.ARRAY_FUNCS_PROPAGATES_NULLS;
 
     // No transpilation needed when source and target have matching NULL semantics
     if (sourceNullPropagation === targetNullPropagation) {
@@ -1704,7 +1702,7 @@ export function arrayAppendSql (
 
     // Source propagates NULLs, target doesn't: wrap in conditional to return NULL explicitly
     if (sourceNullPropagation) {
-      return self.sql(
+      return this.sql(
         new IfExpr({
           this: new IsExpr({
             this: thisArg,
@@ -1723,44 +1721,44 @@ export function arrayAppendSql (
     });
 
     args = swapParams ? [element, thisArg] : [thisArg, element];
-    return self.func(name, args);
+    return this.func(name, args);
   };
 }
 
 export function arrayConcatSql (
   name: string,
-): (self: Generator, expression: ArrayConcatExpr) => string {
-  function buildFuncCall (self: Generator, funcName: string, args: Expression[]): string {
-    if (self._constructor.ARRAY_CONCAT_IS_VAR_LEN) {
-      return self.func(funcName, args);
+): (this: Generator, expression: ArrayConcatExpr) => string {
+  function buildFuncCall (this: Generator, funcName: string, args: Expression[]): string {
+    if (this._constructor.ARRAY_CONCAT_IS_VAR_LEN) {
+      return this.func(funcName, args);
     }
 
     if (args.length === 1) {
-      return self.func(funcName, [args[0], new ArrayExpr({ expressions: [] })]);
+      return this.func(funcName, [args[0], new ArrayExpr({ expressions: [] })]);
     }
 
     // Binary nesting: ARRAY_CAT(a, ARRAY_CAT(b, c))
-    let result = self.func(funcName, [args[args.length - 2], args[args.length - 1]]);
+    let result = this.func(funcName, [args[args.length - 2], args[args.length - 1]]);
     for (let i = args.length - 3; 0 <= i; i--) {
-      result = `${funcName}(${self.sql(args[i])}, ${result})`;
+      result = `${funcName}(${this.sql(args[i])}, ${result})`;
     }
     return result;
   }
 
-  return (self: Generator, expression: ArrayConcatExpr): string => {
+  return function (this: Generator, expression: ArrayConcatExpr): string {
     const thisArg = expression.args.this;
     const exprs = expression.args.expressions || [];
     const allArgs = [...(thisArg ? [thisArg] : []), ...exprs] as Expression[];
 
     const sourceNullPropagation = Boolean(expression.args.nullPropagation);
-    const targetNullPropagation = self.dialect._constructor.ARRAY_FUNCS_PROPAGATES_NULLS;
+    const targetNullPropagation = this.dialect._constructor.ARRAY_FUNCS_PROPAGATES_NULLS;
 
     if (
       sourceNullPropagation === targetNullPropagation
       || thisArg instanceof ArrayExpr
       || exprs.length === 0
     ) {
-      return buildFuncCall(self, name, allArgs);
+      return buildFuncCall.call(this, name, allArgs);
     }
 
     if (sourceNullPropagation) {
@@ -1779,11 +1777,11 @@ export function arrayConcatSql (
         }),
       );
 
-      return self.sql(
+      return this.sql(
         new IfExpr({
           this: combinedCheck,
           true: null_(),
-          false: buildFuncCall(self, name, allArgs),
+          false: buildFuncCall.call(this, name, allArgs),
         }),
       );
     }
@@ -1795,12 +1793,12 @@ export function arrayConcatSql (
       }),
     );
 
-    return buildFuncCall(self, name, wrappedArgs);
+    return buildFuncCall.call(this, name, wrappedArgs);
   };
 }
 
 export function varMapSql (
-  self: Generator,
+  this: Generator,
   expression: MapExpr | VarMapExpr,
   mapFuncName: string = 'MAP',
 ): string {
@@ -1808,8 +1806,8 @@ export function varMapSql (
   const values = expression.args.values;
 
   if (!(keys instanceof ArrayExpr) || !(values instanceof ArrayExpr)) {
-    self.unsupported('Cannot convert array columns into map.');
-    return self.func(mapFuncName, [...ensureIterable(keys), ...ensureIterable(values)] as (Expression | string | undefined)[]);
+    this.unsupported('Cannot convert array columns into map.');
+    return this.func(mapFuncName, [...ensureIterable(keys), ...ensureIterable(values)] as (Expression | string | undefined)[]);
   }
 
   const args: string[] = [];
@@ -1817,14 +1815,14 @@ export function varMapSql (
   const valueExprs = values.args.expressions;
 
   for (let i = 0; i < Math.min(keyExprs?.length || 0, valueExprs?.length || 0); i++) {
-    args.push(self.sql(keyExprs?.[i]));
-    args.push(self.sql(valueExprs?.[i]));
+    args.push(this.sql(keyExprs?.[i]));
+    args.push(this.sql(valueExprs?.[i]));
   }
 
-  return self.func(mapFuncName, args);
+  return this.func(mapFuncName, args);
 }
 
-export function monthsBetweenSql (self: Generator, expression: MonthsBetweenExpr): string {
+export function monthsBetweenSql (this: Generator, expression: MonthsBetweenExpr): string {
   const date1 = expression.args.this;
   const date2 = expression.args.expression;
 
@@ -1875,7 +1873,7 @@ export function monthsBetweenSql (self: Generator, expression: MonthsBetweenExpr
     false: fractional,
   });
 
-  return self.sql(new AddExpr({
+  return this.sql(new AddExpr({
     this: wholeMonths,
     expression: fractionalWithCheck,
   }));
@@ -1906,9 +1904,9 @@ export function buildFormattedTime<T extends Expression> (
 
 export function timeFormat (
   dialect?: string,
-): (self: Generator, expression: UnixToStrExpr | StrToUnixExpr) => string | undefined {
-  return (self: Generator, expression: UnixToStrExpr | StrToUnixExpr) => {
-    const format = self.formatTime(expression);
+): (this: Generator, expression: UnixToStrExpr | StrToUnixExpr) => string | undefined {
+  return function (this: Generator, expression: UnixToStrExpr | StrToUnixExpr) {
+    const format = this.formatTime(expression);
     return format !== Dialect.getOrRaise(dialect)?._constructor.TIME_FORMAT ? format : undefined;
   };
 }
@@ -1958,10 +1956,10 @@ export function buildDateDeltaWithInterval<T extends Expression> (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ExpClass: new (args: any) => T,
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): (args: any) => T | undefined {
+): (args: any) => T {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (args: any) => {
-    if (args.length < 2) return undefined;
+    if (args.length < 2) throw new Error(`Expected at least 2 arguments but got ${args.length}`);
     const interval = args[1];
 
     if (!(interval instanceof IntervalExpr)) {
@@ -1994,14 +1992,14 @@ export function dateTruncToTime (args: (Expression | undefined)[]): DateTruncExp
 export function dateAddIntervalSql (
   dataType: string,
   kind: string,
-): (self: Generator, expression: TimeUnitExpr) => string {
-  return (self: Generator, expression: TimeUnitExpr) => {
-    const thisArg = self.sql(expression, 'this');
+): (this: Generator, expression: TimeUnitExpr) => string {
+  return function (this: Generator, expression: TimeUnitExpr) {
+    const thisArg = this.sql(expression, 'this');
     const interval = new IntervalExpr({
       this: expression.args.expression,
       unit: unitToVar(expression),
     });
-    return `${dataType}_${kind}(${thisArg}, ${self.sql(interval)})`;
+    return `${dataType}_${kind}(${thisArg}, ${this.sql(interval)})`;
   };
 }
 
@@ -2010,39 +2008,39 @@ export function timestampTruncSql (
     func?: string;
     zone?: boolean;
   } = {},
-): (self: Generator, expression: TimestampTruncExpr) => string {
+): (this: Generator, expression: TimestampTruncExpr) => string {
   const {
     func = 'DATE_TRUNC', zone = false,
   } = options;
-  return (self: Generator, expression: TimestampTruncExpr): string => {
+  return function (this: Generator, expression: TimestampTruncExpr): string {
     const args = [unitToStr(expression), expression.args.this];
     if (zone) {
       args.push(expression.args.zone);
     }
-    return self.func(func, args);
+    return this.func(func, args);
   };
 }
 
-export function noTimestampSql (self: Generator, expression: TimestampExpr): string {
+export function noTimestampSql (this: Generator, expression: TimestampExpr): string {
   const zone = expression.args.zone;
   if (!zone) {
-    const annotated = annotateTypes(expression, { dialect: self.dialect }).type;
+    const annotated = annotateTypes(expression, { dialect: this.dialect }).type;
     const targetType: DataTypeExpr | DataTypeExprKind = isInstanceOf(annotated, DataTypeExpr) ? annotated : DataTypeExprKind.TIMESTAMP;
-    return self.sql(cast(expression.args.this || '', targetType));
+    return this.sql(cast(expression.args.this || '', targetType));
   }
 
   if (TIMEZONES.has(zone.name?.toLowerCase())) {
-    return self.sql(
+    return this.sql(
       new AtTimeZoneExpr({
         this: cast(expression.args.this || '', DataTypeExprKind.TIMESTAMP),
         zone: zone,
       }),
     );
   }
-  return self.func('TIMESTAMP', [expression.args.this, zone]);
+  return this.func('TIMESTAMP', [expression.args.this, zone]);
 }
 
-export function noTimeSql (self: Generator, expression: TimeExpr): string {
+export function noTimeSql (this: Generator, expression: TimeExpr): string {
   const thisArg = cast(expression.args.this || '', DataTypeExprKind.TIMESTAMPTZ);
   const expr = cast(
     new AtTimeZoneExpr({
@@ -2051,10 +2049,10 @@ export function noTimeSql (self: Generator, expression: TimeExpr): string {
     }),
     DataTypeExprKind.TIME,
   );
-  return self.sql(expr);
+  return this.sql(expr);
 }
 
-export function noDatetimeSql (self: Generator, expression: DatetimeExpr): string {
+export function noDatetimeSql (this: Generator, expression: DatetimeExpr): string {
   const thisArg = expression.args.this;
   const expr = expression.args.expression;
 
@@ -2064,20 +2062,20 @@ export function noDatetimeSql (self: Generator, expression: DatetimeExpr): strin
       this: tsTz,
       zone: expr,
     }), DataTypeExprKind.TIMESTAMP);
-    return self.sql(ts);
+    return this.sql(ts);
   }
 
   const date = cast(thisArg, DataTypeExprKind.DATE);
   const time = cast(expr || '', DataTypeExprKind.TIME);
 
-  return self.sql(cast(new AddExpr({
+  return this.sql(cast(new AddExpr({
     this: date,
     expression: time,
   }), DataTypeExprKind.TIMESTAMP));
 }
 
-export function leftToSubstringSql (self: Generator, expression: LeftExpr): string {
-  return self.sql(
+export function leftToSubstringSql (this: Generator, expression: LeftExpr): string {
+  return this.sql(
     new SubstringExpr({
       this: expression.args.this,
       start: LiteralExpr.number(1),
@@ -2086,8 +2084,8 @@ export function leftToSubstringSql (self: Generator, expression: LeftExpr): stri
   );
 }
 
-export function rightToSubstringSql (self: Generator, expression: RightExpr): string {
-  return self.sql(
+export function rightToSubstringSql (this: Generator, expression: RightExpr): string {
+  return this.sql(
     new SubstringExpr({
       this: expression.args.this,
       start: new SubExpr({
@@ -2104,7 +2102,7 @@ export function rightToSubstringSql (self: Generator, expression: RightExpr): st
 }
 
 export function timeStrToTimeSql (
-  self: Generator,
+  this: Generator,
   expression: TimeStrToTimeExpr,
   options: {
     includePrecision?: boolean;
@@ -2130,17 +2128,17 @@ export function timeStrToTimeSql (
     }
   }
 
-  return self.sql(cast(expression.args.this, datatype, { dialect: self.dialect }));
+  return this.sql(cast(expression.args.this, datatype, { dialect: this.dialect }));
 }
 
-export function dateStrToDateSql (self: Generator, expression: DateStrToDateExpr): string {
+export function dateStrToDateSql (this: Generator, expression: DateStrToDateExpr): string {
   const thisArg = expression.args.this;
   const castArg: string | Expression = (thisArg instanceof Expression || typeof thisArg === 'string') ? thisArg : '';
-  return self.sql(cast(castArg, DataTypeExprKind.DATE));
+  return this.sql(cast(castArg, DataTypeExprKind.DATE));
 }
 
 export function encodeDecodeSql (
-  self: Generator,
+  this: Generator,
   expression: EncodeExpr | DecodeExpr,
   name: string,
   options: { replace?: boolean } = {},
@@ -2150,31 +2148,31 @@ export function encodeDecodeSql (
   } = options;
   const charset = expression.args.charset;
   if (charset && !['utf-8', 'utf8'].includes(charset.name?.toLowerCase())) {
-    self.unsupported(`Expected utf-8 character set, got ${charset}.`);
+    this.unsupported(`Expected utf-8 character set, got ${charset}.`);
   }
 
-  return self.func(name, [expression.args.this, replace ? expression.getArgKey('replace') as Expression | undefined : undefined]);
+  return this.func(name, [expression.args.this, replace ? expression.getArgKey('replace') as Expression | undefined : undefined]);
 }
 
-export function minOrLeast (self: Generator, expression: MinExpr): string {
+export function minOrLeast (this: Generator, expression: MinExpr): string {
   const name = 0 < (expression.args.expressions?.length ?? 0) ? 'LEAST' : 'MIN';
-  return renameFunc(name)(self, expression);
+  return renameFunc(name).call(this, expression);
 }
 
-export function maxOrGreatest (self: Generator, expression: MaxExpr): string {
+export function maxOrGreatest (this: Generator, expression: MaxExpr): string {
   const name = 0 < (expression.args.expressions?.length ?? 0) ? 'GREATEST' : 'MAX';
-  return renameFunc(name)(self, expression);
+  return renameFunc(name).call(this, expression);
 }
 
-export function countIfToSum (self: Generator, expression: CountIfExpr): string {
+export function countIfToSum (this: Generator, expression: CountIfExpr): string {
   let cond: ExpressionValue | undefined = expression.args.this;
 
   if (cond instanceof DistinctExpr) {
     cond = cond.args.expressions?.[0];
-    self.unsupported('DISTINCT is not supported when converting COUNT_IF to SUM');
+    this.unsupported('DISTINCT is not supported when converting COUNT_IF to SUM');
   }
 
-  return self.func('sum', cond
+  return this.func('sum', cond
     ? [
       new IfExpr({
         this: cond,
@@ -2185,16 +2183,16 @@ export function countIfToSum (self: Generator, expression: CountIfExpr): string 
     : []);
 }
 
-export function trimSql (self: Generator, expression: TrimExpr, options: { defaultTrimType?: string } = {}): string {
+export function trimSql (this: Generator, expression: TrimExpr, options: { defaultTrimType?: string } = {}): string {
   const { defaultTrimType = '' } = options;
 
-  const target = self.sql(expression, 'this');
-  const trimType = self.sql(expression, 'position') || defaultTrimType;
-  const removeChars = self.sql(expression, 'expression');
-  const collation = self.sql(expression, 'collation');
+  const target = this.sql(expression, 'this');
+  const trimType = this.sql(expression, 'position') || defaultTrimType;
+  const removeChars = this.sql(expression, 'expression');
+  const collation = this.sql(expression, 'collation');
 
   if (!removeChars) {
-    return self.trimSql(expression);
+    return this.trimSql(expression);
   }
 
   const typePart = trimType ? `${trimType} ` : '';
@@ -2205,12 +2203,12 @@ export function trimSql (self: Generator, expression: TrimExpr, options: { defau
   return `TRIM(${typePart}${charPart}${fromPart}${target}${collPart})`;
 }
 
-export function strToTimeSql (self: Generator, expression: StrToTimeExpr): string {
-  return self.func('STRPTIME', [expression.args.this, self.formatTime(expression)!]);
+export function strToTimeSql (this: Generator, expression: StrToTimeExpr): string {
+  return this.func('STRPTIME', [expression.args.this, this.formatTime(expression)]);
 }
 
-export function concatToDPipeSql (self: Generator, expression: ConcatExpr): string {
-  return self.sql(
+export function concatToDPipeSql (this: Generator, expression: ConcatExpr): string {
+  return this.sql(
     (expression.args.expressions ?? []).reduce((acc, curr) => new DPipeExpr({
       this: acc,
       expression: curr,
@@ -2218,9 +2216,9 @@ export function concatToDPipeSql (self: Generator, expression: ConcatExpr): stri
   );
 }
 
-export function concatWsToDPipeSql (self: Generator, expression: ConcatWsExpr): string {
+export function concatWsToDPipeSql (this: Generator, expression: ConcatWsExpr): string {
   const [delim, ...rest] = expression.args.expressions ?? [];
-  return self.sql(
+  return this.sql(
     rest.reduce((acc, curr) =>
       new DPipeExpr({
         this: acc,
@@ -2233,24 +2231,24 @@ export function concatWsToDPipeSql (self: Generator, expression: ConcatWsExpr): 
 }
 
 export function regexpExtractSql (
-  self: Generator,
+  this: Generator,
   expression: RegexpExtractExpr | RegexpExtractAllExpr,
 ): string {
   let group = expression.args.group;
 
-  if (group && group.name === String(self.dialect._constructor.REGEXP_EXTRACT_DEFAULT_GROUP)) {
+  if (group && group.name === String(this.dialect._constructor.REGEXP_EXTRACT_DEFAULT_GROUP)) {
     group = undefined;
   }
 
-  return self.func((expression._constructor as typeof FuncExpr).sqlName(), [
+  return this.func((expression._constructor as typeof FuncExpr).sqlName(), [
     expression.args.this,
     expression.args.expression,
     group,
   ]);
 }
 
-export function regexpReplaceSql (self: Generator, expression: RegexpReplaceExpr): string {
-  return self.func('REGEXP_REPLACE', [
+export function regexpReplaceSql (this: Generator, expression: RegexpReplaceExpr): string {
+  return this.func('REGEXP_REPLACE', [
     expression.args.this,
     expression.args.expression,
     expression.args.replacement,
@@ -2350,13 +2348,13 @@ export function buildTrunc (
   });
 }
 
-export function anyValueToMaxSql (self: Generator, expression: AnyValueExpr): string {
-  return self.func('MAX', [expression.args.this]);
+export function anyValueToMaxSql (this: Generator, expression: AnyValueExpr): string {
+  return this.func('MAX', [expression.args.this]);
 }
 
-export function boolXorSql (self: Generator, expression: XorExpr): string {
-  const a = self.sql(expression.left);
-  const b = self.sql(expression.right);
+export function boolXorSql (this: Generator, expression: XorExpr): string {
+  const a = this.sql(expression.left);
+  const b = this.sql(expression.right);
   return `(${a} AND (NOT ${b})) OR ((NOT ${a}) AND {b})`;
 }
 
@@ -2375,17 +2373,17 @@ export function isnullToIsNull (args: any[]): Expression {
 }
 
 export function generatedAsIdentityColumnConstraintSql (
-  self: Generator,
+  this: Generator,
   expression: GeneratedAsIdentityColumnConstraintExpr,
 ): string {
-  const start = self.sql(expression, 'start') || '1';
-  const increment = self.sql(expression, 'increment') || '1';
+  const start = this.sql(expression, 'start') || '1';
+  const increment = this.sql(expression, 'increment') || '1';
   return `IDENTITY(${start}, ${increment})`;
 }
 
-export function argMaxOrMinNoCount (name: string): (self: Generator, expression: ArgMaxExpr | ArgMinExpr) => string {
-  return (self: Generator, expression: ArgMaxExpr | ArgMinExpr): string => {
-    return self.func(name, [expression.args.this, expression.args.expression]);
+export function argMaxOrMinNoCount (name: string): (this: Generator, expression: ArgMaxExpr | ArgMinExpr) => string {
+  return function (this: Generator, expression: ArgMaxExpr | ArgMinExpr): string {
+    return this.func(name, [expression.args.this, expression.args.expression]);
   };
 }
 
@@ -2408,16 +2406,16 @@ export function dateDeltaSql (
   options: {
     cast?: boolean;
   } = {},
-): (self: Generator, expression: DateAddExpr | DateDiffExpr | DateSubExpr | TsOrDsAddExpr | TsOrDsDiffExpr) => string {
+): (this: Generator, expression: DateAddExpr | DateDiffExpr | DateSubExpr | TsOrDsAddExpr | TsOrDsDiffExpr) => string {
   const { cast = false } = options;
-  return (self, expression): string => {
+  return function (this: Generator, expression): string {
     let expr = expression;
     if (cast && expression instanceof TsOrDsAddExpr) {
       expr = tsOrDsAddCast(expression);
     }
 
-    return self.func(name, [
-      unitToVar(expr)!,
+    return this.func(name, [
+      unitToVar(expr),
       expr.args.expression,
       expr.args.this,
     ]);
@@ -2428,9 +2426,9 @@ export function dateDeltaToBinaryIntervalOp (
   options: {
     cast?: boolean;
   } = {},
-): (self: Generator, expression: DatetimeAddExpr | DatetimeSubExpr) => string {
+): (this: Generator, expression: DatetimeAddExpr | DatetimeSubExpr) => string {
   const { cast: shouldCast = true } = options;
-  return (self: Generator, expression: DatetimeAddExpr | DatetimeSubExpr): string => {
+  return function (this: Generator, expression: DatetimeAddExpr | DatetimeSubExpr): string {
     let thisArg = expression.args.this;
     const unit = unitToVar(expression);
     const op = expression instanceof DatetimeAddExpr ? '+' : '-';
@@ -2457,7 +2455,7 @@ export function dateDeltaToBinaryIntervalOp (
         unit,
       });
 
-    return `${self.sql(thisArg)} ${op} ${self.sql(interval)}`;
+    return `${this.sql(thisArg)} ${op} ${this.sql(interval)}`;
   };
 }
 
@@ -2512,7 +2510,7 @@ export function mapDatePart (part: string | Expression | undefined, options: { d
   return part;
 }
 
-export function noLastDaySql (self: Generator, expression: LastDayExpr): string {
+export function noLastDaySql (this: Generator, expression: LastDayExpr): string {
   const truncCurrDate = new AnonymousExpr({
     this: 'date_trunc',
     expressions: [LiteralExpr.string('month'), ...(expression.args.this ? [expression.args.this] : [])],
@@ -2534,12 +2532,12 @@ export function noLastDaySql (self: Generator, expression: LastDayExpr): string 
     ],
   });
 
-  return self.sql(cast(minusOneDay, DataTypeExprKind.DATE));
+  return this.sql(cast(minusOneDay, DataTypeExprKind.DATE));
 }
 
-export function mergeWithoutTargetSql (self: Generator, expression: MergeExpr): string {
+export function mergeWithoutTargetSql (this: Generator, expression: MergeExpr): string {
   const alias = expression.args.this?.args.alias;
-  const normalize = (id: Expression | undefined) => id ? self.dialect.normalizeIdentifier(id).name : undefined;
+  const normalize = (id: Expression | undefined) => id ? this.dialect.normalizeIdentifier(id).name : undefined;
 
   const thisThis = expression.args.this?.args.this;
   const targets = new Set([normalize(isInstanceOf(thisThis, Expression) ? thisThis : undefined)]);
@@ -2573,7 +2571,7 @@ export function mergeWithoutTargetSql (self: Generator, expression: MergeExpr): 
     }
   }
 
-  return self.mergeSql(expression);
+  return this.mergeSql(expression);
 }
 
 export function buildJsonExtractPath<T extends JsonExtractExpr | JsonExtractScalarExpr | JsonbExtractExpr | JsonbExtractScalarExpr> (
@@ -2628,42 +2626,42 @@ export function jsonExtractSegments (
     op?: string;
   } = {},
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): (self: Generator, expression: any) => string {
+): (this: Generator, expression: any) => string {
   const {
     quotedIndex = true, op,
   } = options;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (self: Generator, expression: any): string => {
+  return function (this: Generator, expression: any): string {
     const path = expression.args.expression;
     if (!(path instanceof JsonPathExpr)) {
-      return renameFunc(name)(self, expression);
+      return renameFunc(name).call(this, expression);
     }
 
     const segments: string[] = [];
     for (const segment of path.args.expressions ?? []) {
-      let segmentSql = self.sql(segment);
+      let segmentSql = this.sql(segment);
       if (segmentSql) {
         if (segment instanceof JsonPathPartExpr && (quotedIndex || !(segment instanceof JsonPathSubscriptExpr))) {
-          if (path.args.escape) segmentSql = self.escapeStr(segmentSql);
-          segmentSql = `${self.dialect._constructor.QUOTE_START}${segmentSql}${self.dialect._constructor.QUOTE_END}`;
+          if (path.args.escape) segmentSql = this.escapeStr(segmentSql);
+          segmentSql = `${this.dialect._constructor.QUOTE_START}${segmentSql}${this.dialect._constructor.QUOTE_END}`;
         }
         segments.push(segmentSql);
       }
     }
 
-    if (op) return [self.sql(expression.args.this), ...segments].join(` ${op} `);
-    return self.func(name, [expression.args.this, ...segments]);
+    if (op) return [this.sql(expression.args.this), ...segments].join(` ${op} `);
+    return this.func(name, [expression.args.this, ...segments]);
   };
 }
 
-export function jsonPathKeyOnlyName (self: Generator, expression: JsonPathKeyExpr): string {
+export function jsonPathKeyOnlyName (this: Generator, expression: JsonPathKeyExpr): string {
   if (expression.args.this instanceof JsonPathWildcardExpr) {
-    self.unsupported('Unsupported wildcard in JsonPathKey expression');
+    this.unsupported('Unsupported wildcard in JsonPathKey expression');
   }
   return expression.name;
 }
 
-export function filterArrayUsingUnnest (self: Generator, expression: ArrayFilterExpr | ArrayRemoveExpr): string {
+export function filterArrayUsingUnnest (this: Generator, expression: ArrayFilterExpr | ArrayRemoveExpr): string {
   let cond = expression.args.expression;
   let aliasExpr: Expression = LiteralExpr.string('_u');
 
@@ -2682,10 +2680,10 @@ export function filterArrayUsingUnnest (self: Generator, expression: ArrayFilter
   const filtered = select(aliasExpr)
     .from(alias(unnest, undefined, { table: [aliasExpr as string | IdentifierExpr] }))
     .where(cond);
-  return self.sql(new ArrayExpr({ expressions: [filtered] }));
+  return this.sql(new ArrayExpr({ expressions: [filtered] }));
 }
 
-export function arrayCompactSql (self: Generator, expression: ArrayCompactExpr): string {
+export function arrayCompactSql (this: Generator, expression: ArrayCompactExpr): string {
   const lambdaId = new IdentifierExpr({
     this: '_u',
     quoted: false,
@@ -2694,7 +2692,7 @@ export function arrayCompactSql (self: Generator, expression: ArrayCompactExpr):
     this: lambdaId,
     expression: null_(),
   }).not();
-  return self.sql(new ArrayFilterExpr({
+  return this.sql(new ArrayFilterExpr({
     this: expression.args.this,
     expression: new LambdaExpr({
       this: cond,
@@ -2703,7 +2701,7 @@ export function arrayCompactSql (self: Generator, expression: ArrayCompactExpr):
   }));
 }
 
-export function removeFromArrayUsingFilter (self: Generator, expression: ArrayRemoveExpr): string {
+export function removeFromArrayUsingFilter (this: Generator, expression: ArrayRemoveExpr): string {
   const lambdaId = new IdentifierExpr({
     this: '_u',
     quoted: false,
@@ -2712,7 +2710,7 @@ export function removeFromArrayUsingFilter (self: Generator, expression: ArrayRe
     this: lambdaId,
     expression: expression.args.expression,
   });
-  const filterSql = self.sql(new ArrayFilterExpr({
+  const filterSql = this.sql(new ArrayFilterExpr({
     this: expression.args.this,
     expression: new LambdaExpr({
       this: cond,
@@ -2720,12 +2718,12 @@ export function removeFromArrayUsingFilter (self: Generator, expression: ArrayRe
     }),
   }));
 
-  if (expression.args.nullPropagation && !self.dialect._constructor.ARRAY_FUNCS_PROPAGATES_NULLS) {
+  if (expression.args.nullPropagation && !this.dialect._constructor.ARRAY_FUNCS_PROPAGATES_NULLS) {
     const val = expression.args.expression;
     if ((val instanceof LiteralExpr && !(val instanceof NullExpr)) || val instanceof ArrayExpr) {
       return filterSql;
     }
-    return self.sql(new IfExpr({
+    return this.sql(new IfExpr({
       this: new IsExpr({
         this: val,
         expression: null_(),
@@ -2737,8 +2735,8 @@ export function removeFromArrayUsingFilter (self: Generator, expression: ArrayRe
   return filterSql;
 }
 
-export function toNumberWithNlsParam (self: Generator, expression: ToNumberExpr): string {
-  return self.func(
+export function toNumberWithNlsParam (this: Generator, expression: ToNumberExpr): string {
+  return this.func(
     'TO_NUMBER',
     [
       expression.args.this,
@@ -2767,15 +2765,16 @@ export function buildTimestampFromParts (args: any[]): Expression {
   return TimestampFromPartsExpr.fromArgList(args);
 }
 
-export function sha256Sql (self: Generator, expression: Sha2Expr): string {
-  return self.func(`SHA${expression.text('length') || '256'}`, [expression.args.this]);
+export function sha256Sql (this: Generator, expression: Sha2Expr): string {
+  return this.func(`SHA${expression.text('length') || '256'}`, [expression.args.this]);
 }
 
-export function sha2DigestSql (self: Generator, expression: Sha2DigestExpr): string {
-  return self.func(`SHA${expression.text('length') || '256'}`, [expression.args.this]);
+export function sha2DigestSql (this: Generator, expression: Sha2DigestExpr): string {
+  return this.func(`SHA${expression.text('length') || '256'}`, [expression.args.this]);
 }
 
-export function sequenceSql (self: Generator, expression: GenerateSeriesExpr | GenerateDateArrayExpr): string {
+export function sequenceSql (this: Generator, e: Expression): string {
+  const expression = e as GenerateSeriesExpr | GenerateDateArrayExpr;
   let start = expression.args.start;
   let end = expression.args.end;
   const step = expression.args.step;
@@ -2831,14 +2830,14 @@ export function sequenceSql (self: Generator, expression: GenerateSeriesExpr | G
           }),
         }),
       });
-      return self.sql(new IfExpr({
+      return this.sql(new IfExpr({
         this: shouldEmpty,
         true: new ArrayExpr({ expressions: [] }),
         false: seqCall,
       }));
     }
   }
-  return self.func('SEQUENCE', [
+  return this.func('SEQUENCE', [
     start,
     end,
     step,
@@ -2886,7 +2885,7 @@ export function buildRegexpExtract<T extends Expression> (ExprType: (typeof Rege
   };
 }
 
-export function explodeToUnnestSql (self: Generator, expression: LateralExpr): string {
+export function explodeToUnnestSql (this: Generator, expression: LateralExpr): string {
   const thisArg = expression.args.this;
   const aliasExpr = expression.args.alias;
   let crossJoinExpr;
@@ -2915,24 +2914,24 @@ export function explodeToUnnestSql (self: Generator, expression: LateralExpr): s
   }
 
   if (crossJoinExpr) {
-    return self.sql(new JoinExpr({
+    return this.sql(new JoinExpr({
       this: crossJoinExpr,
       kind: JoinExprKind.CROSS,
     }));
   }
 
-  return self.lateralSql(expression);
+  return this.lateralSql(expression);
 }
 
-export function timestampDiffSql (self: Generator, expression: DatetimeDiffExpr | TimestampDiffExpr): string {
-  return self.func('TIMESTAMPDIFF', [
+export function timestampDiffSql (this: Generator, expression: DatetimeDiffExpr | TimestampDiffExpr): string {
+  return this.func('TIMESTAMPDIFF', [
     expression.unit,
     expression.args.expression,
     expression.args.this,
   ]);
 }
 
-export function noMakeIntervalSql (self: Generator, expression: MakeIntervalExpr, options: {
+export function noMakeIntervalSql (this: Generator, expression: MakeIntervalExpr, options: {
   sep?: string;
 } = {}): string {
   const { sep = ', ' } = options;
@@ -2940,11 +2939,11 @@ export function noMakeIntervalSql (self: Generator, expression: MakeIntervalExpr
   return `INTERVAL '${args.join(sep)}'`;
 }
 
-export function lengthOrCharLengthSql (self: Generator, expression: LengthExpr): string {
-  return self.func(expression.args.binary ? 'LENGTH' : 'CHAR_LENGTH', [expression.args.this]);
+export function lengthOrCharLengthSql (this: Generator, expression: LengthExpr): string {
+  return this.func(expression.args.binary ? 'LENGTH' : 'CHAR_LENGTH', [expression.args.this]);
 }
 
-export function groupConcatSql (self: Generator, expression: GroupConcatExpr, options: {
+export function groupConcatSql (this: Generator, expression: GroupConcatExpr, options: {
   funcName?: string;
   sep?: string;
   withinGroup?: boolean;
@@ -2954,8 +2953,8 @@ export function groupConcatSql (self: Generator, expression: GroupConcatExpr, op
     funcName = 'LISTAGG', sep = ',', withinGroup = true, onOverflow = false,
   } = options;
   let thisArg: Expression | undefined = expression.args.this;
-  const separator = self.sql(expression.args.separator || (sep ? LiteralExpr.string(sep) : undefined));
-  const overflow = onOverflow && self.sql(expression, 'on_overflow') ? ` ON OVERFLOW ${self.sql(expression, 'on_overflow')}` : '';
+  const separator = this.sql(expression.args.separator || (sep ? LiteralExpr.string(sep) : undefined));
+  const overflow = onOverflow && this.sql(expression, 'on_overflow') ? ` ON OVERFLOW ${this.sql(expression, 'on_overflow')}` : '';
 
   let limit = undefined;
   if (thisArg instanceof LimitExpr) {
@@ -2971,18 +2970,18 @@ export function groupConcatSql (self: Generator, expression: GroupConcatExpr, op
     this: funcName,
     expressions: [formattedArgs],
   });
-  let modifiers = self.sql(limit);
+  let modifiers = this.sql(limit);
 
   if (order) {
     if (withinGroup) listagg = new WithinGroupExpr({
       this: listagg,
       expression: order,
     });
-    else modifiers = `${self.sql(order)}${modifiers}`;
+    else modifiers = `${this.sql(order)}${modifiers}`;
   }
 
   if (modifiers) listagg.setArgKey('expressions', [`${formattedArgs}${modifiers}`]);
-  return self.sql(listagg);
+  return this.sql(listagg);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3019,7 +3018,7 @@ export function regexpReplaceGlobalModifier (expression: RegexpReplaceExpr): Exp
   return modifiers;
 }
 
-export function getBitSql (self: Generator, expression: GetbitExpr): string {
+export function getBitSql (this: Generator, expression: GetbitExpr): string {
   const value = expression.args.this;
   const pos = expression.args.expression;
 
@@ -3032,7 +3031,7 @@ export function getBitSql (self: Generator, expression: GetbitExpr): string {
       this: shifted,
       expression: LiteralExpr.number(1),
     });
-    return self.sql(masked);
+    return this.sql(masked);
   }
-  return self.func('GET_BIT', [value, pos]);
+  return this.func('GET_BIT', [value, pos]);
 }

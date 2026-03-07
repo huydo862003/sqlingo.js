@@ -474,7 +474,7 @@ function applyBase64AlphabetReplacements (
 /**
  * Transpile Snowflake BASE64_DECODE_STRING/BINARY to DuckDB.
  */
-function base64DecodeSql (self: Generator, expression: Base64EncodeExpr, options: { toString?: boolean }): string {
+function base64DecodeSql (this: Generator, expression: Base64EncodeExpr, options: { toString?: boolean }): string {
   const { toString = false } = options;
 
   let inputExpr = expression.args.this;
@@ -487,50 +487,50 @@ function base64DecodeSql (self: Generator, expression: Base64EncodeExpr, options
     inputExpr = new DecodeExpr({ this: inputExpr });
   }
 
-  return self.sql(inputExpr);
+  return this.sql(inputExpr);
 }
 
 /**
  * DuckDB's LAST_DAY only supports month. Logic handles year, quarter, week.
  */
-function lastDaySql (self: Generator, expression: LastDayExpr): string {
+function lastDaySql (this: Generator, expression: LastDayExpr): string {
   const dateExpr = expression.args.this;
   const unit = expression.text('unit').toUpperCase();
 
   if (!unit || unit === 'MONTH') {
-    return self.func('LAST_DAY', [dateExpr]);
+    return this.func('LAST_DAY', [dateExpr]);
   }
 
   if (unit === 'YEAR') {
-    const yearExpr = self.func('EXTRACT', [new VarExpr({ this: 'YEAR' }), dateExpr]);
-    const makeDateExpr = self.func('MAKE_DATE', [
+    const yearExpr = this.func('EXTRACT', [new VarExpr({ this: 'YEAR' }), dateExpr]);
+    const makeDateExpr = this.func('MAKE_DATE', [
       yearExpr,
       LiteralExpr.number(12),
       LiteralExpr.number(31),
     ]);
-    return self.sql(makeDateExpr);
+    return this.sql(makeDateExpr);
   }
 
   if (unit === 'QUARTER') {
-    const yearExpr = self.func('EXTRACT', [new VarExpr({ this: 'YEAR' }), dateExpr]);
-    const quarterExpr = self.func('EXTRACT', [new VarExpr({ this: 'QUARTER' }), dateExpr]);
+    const yearExpr = this.func('EXTRACT', [new VarExpr({ this: 'YEAR' }), dateExpr]);
+    const quarterExpr = this.func('EXTRACT', [new VarExpr({ this: 'QUARTER' }), dateExpr]);
 
     const lastMonthExpr = new MulExpr({
       this: quarterExpr,
       expression: LiteralExpr.number(3),
     });
-    const firstDayLastMonthExpr = self.func('MAKE_DATE', [
+    const firstDayLastMonthExpr = this.func('MAKE_DATE', [
       yearExpr,
       lastMonthExpr,
       LiteralExpr.number(1),
     ]);
 
-    const lastDayExpr = self.func('LAST_DAY', [firstDayLastMonthExpr]);
-    return self.sql(lastDayExpr);
+    const lastDayExpr = this.func('LAST_DAY', [firstDayLastMonthExpr]);
+    return this.sql(lastDayExpr);
   }
 
   if (unit === 'WEEK') {
-    const dow = self.func('EXTRACT', [new VarExpr({ this: 'DAYOFWEEK' }), dateExpr]);
+    const dow = this.func('EXTRACT', [new VarExpr({ this: 'DAYOFWEEK' }), dateExpr]);
     const daysToSundayExpr = new ModExpr({
       this: new ParenExpr({
         this: new SubExpr({
@@ -552,11 +552,11 @@ function lastDaySql (self: Generator, expression: LastDayExpr): string {
       this: addExpr,
       to: new DataTypeExpr({ this: DataTypeExprKind.DATE }),
     });
-    return self.sql(castExpr);
+    return this.sql(castExpr);
   }
 
-  self.unsupported(`Unsupported date part '${unit}' in LAST_DAY function`);
-  return self.functionFallbackSql(expression);
+  this.unsupported(`Unsupported date part '${unit}' in LAST_DAY function`);
+  return this.functionFallbackSql(expression);
 }
 
 function isNanosecondUnit (unit: Expression | undefined): boolean {
@@ -564,7 +564,7 @@ function isNanosecondUnit (unit: Expression | undefined): boolean {
 }
 
 /** Generate NANOSECOND diff using EPOCH_NS since DATE_DIFF doesn't support it. */
-function handleNanosecondDiff (self: Generator, endTime: Expression, startTime: Expression): string {
+function handleNanosecondDiff (this: Generator, endTime: Expression, startTime: Expression): string {
   const endNs = new CastExpr({
     this: endTime,
     to: new DataTypeExpr({ this: DataTypeExprKind.TIMESTAMP_NS }),
@@ -574,16 +574,16 @@ function handleNanosecondDiff (self: Generator, endTime: Expression, startTime: 
     to: new DataTypeExpr({ this: DataTypeExprKind.TIMESTAMP_NS }),
   });
 
-  return self.sql(
+  return this.sql(
     new SubExpr({
-      this: self.func('EPOCH_NS', [endNs]),
-      expression: self.func('EPOCH_NS', [startNs]),
+      this: this.func('EPOCH_NS', [endNs]),
+      expression: this.func('EPOCH_NS', [startNs]),
     }),
   );
 }
 
 /** Transpile TO_BOOLEAN and TRY_TO_BOOLEAN from Snowflake to DuckDB. */
-function toBooleanSql (self: Generator, expression: ToBooleanExpr): string {
+function toBooleanSql (this: Generator, expression: ToBooleanExpr): string {
   const arg = expression.args.this;
   const isSafe = expression.args.safe ?? false;
 
@@ -612,18 +612,18 @@ function toBooleanSql (self: Generator, expression: ToBooleanExpr): string {
     );
 
   if (isSafe) {
-    baseCaseExpr.else(self.func('TRY_CAST', [arg, DataTypeExpr.build('BOOLEAN')]));
+    baseCaseExpr.else(this.func('TRY_CAST', [arg, DataTypeExpr.build('BOOLEAN')]));
   } else {
-    const castToReal = self.func('TRY_CAST', [arg, DataTypeExpr.build('REAL')]);
+    const castToReal = this.func('TRY_CAST', [arg, DataTypeExpr.build('REAL')]);
     const nanInfCheck = new OrExpr({
-      this: self.func('ISNAN', [castToReal]),
-      expression: self.func('ISINF', [castToReal]),
+      this: this.func('ISNAN', [castToReal]),
+      expression: this.func('ISINF', [castToReal]),
     });
 
     baseCaseExpr
       .when(
         nanInfCheck,
-        self.func('ERROR', [LiteralExpr.string('TO_BOOLEAN: Non-numeric values NaN and INF are not supported')]),
+        this.func('ERROR', [LiteralExpr.string('TO_BOOLEAN: Non-numeric values NaN and INF are not supported')]),
       )
       .else(new CastExpr({
         this: arg,
@@ -631,13 +631,13 @@ function toBooleanSql (self: Generator, expression: ToBooleanExpr): string {
       }));
   }
 
-  return self.sql(baseCaseExpr);
+  return this.sql(baseCaseExpr);
 }
 
 /** BigQuery -> DuckDB conversion for the DATE function */
-function dateSql (self: Generator, expression: DateExpr): string {
+function dateSql (this: Generator, expression: DateExpr): string {
   let thisNode = expression.args.this;
-  const zone = self.sql(expression, 'zone');
+  const zone = this.sql(expression, 'zone');
 
   if (zone) {
     // BigQuery UTC -> specified zone -> keep DATE part
@@ -655,18 +655,18 @@ function dateSql (self: Generator, expression: DateExpr): string {
     });
   }
 
-  return self.sql(new CastExpr({
+  return this.sql(new CastExpr({
     this: thisNode,
     to: new DataTypeExpr({ this: DataTypeExprKind.DATE }),
   }));
 }
 
 /** BigQuery -> DuckDB conversion for the TIME_DIFF function */
-function timeDiffSql (self: Generator, expression: TimeDiffExpr): string {
+function timeDiffSql (this: Generator, expression: TimeDiffExpr): string {
   const unit = expression.args.unit;
 
   if (isNanosecondUnit(unit)) {
-    return handleNanosecondDiff(self, expression.args.expression ?? null_(), expression.args.this ?? null_());
+    return handleNanosecondDiff.call(this, expression.args.expression ?? null_(), expression.args.this ?? null_());
   }
 
   const thisNode = new CastExpr({
@@ -679,7 +679,7 @@ function timeDiffSql (self: Generator, expression: TimeDiffExpr): string {
   });
 
   // BQ flips operands relative to standard DATE_DIFF
-  return self.func('DATE_DIFF', [
+  return this.func('DATE_DIFF', [
     unitToStr(expression),
     exprNode,
     thisNode,
@@ -687,13 +687,13 @@ function timeDiffSql (self: Generator, expression: TimeDiffExpr): string {
 }
 
 /** Handles NANOSECOND units and float interval rounding for DuckDB */
-function dateDeltaToBinaryIntervalOp (options: { cast?: boolean } = {}): (self: Generator, expression: DatetimeAddExpr | DatetimeSubExpr) => string {
+function dateDeltaToBinaryIntervalOp (options: { cast?: boolean } = {}): (this: Generator, expression: DatetimeAddExpr | DatetimeSubExpr) => string {
   const {
     cast = true,
   } = options;
   const baseImpl = dateDeltaToBinaryIntervalOpBase({ cast });
 
-  return (self: Generator, expression: DatetimeSubExpr | DatetimeAddExpr): string => {
+  return function (this: Generator, expression: DatetimeSubExpr | DatetimeAddExpr): string {
     const unit = narrowInstanceOf(expression.getArgKey('unit'), 'string', Expression);
     let intervalValue: Expression | undefined = expression.args.expression;
 
@@ -707,10 +707,10 @@ function dateDeltaToBinaryIntervalOp (options: { cast?: boolean } = {}): (self: 
         to: new DataTypeExpr({ this: DataTypeExprKind.TIMESTAMP_NS }),
       });
 
-      return self.sql(
-        self.func('MAKE_TIMESTAMP_NS', [
+      return this.sql(
+        this.func('MAKE_TIMESTAMP_NS', [
           new AddExpr({
-            this: self.func('EPOCH_NS', [timestampNs]),
+            this: this.func('EPOCH_NS', [timestampNs]),
             expression: narrowInstanceOf(intervalValue, 'string', Expression),
           }),
         ]),
@@ -718,22 +718,22 @@ function dateDeltaToBinaryIntervalOp (options: { cast?: boolean } = {}): (self: 
     }
 
     if (!intervalValue || intervalValue instanceof IntervalExpr) {
-      return baseImpl(self, expression);
+      return baseImpl.call(this, expression);
     }
 
     if (isType(intervalValue, DataTypeExpr.REAL_TYPES)) {
       expression.setArgKey('expression', new CastExpr({
-        this: self.func('ROUND', [intervalValue]),
+        this: this.func('ROUND', [intervalValue]),
         to: new DataTypeExpr({ this: DataTypeExprKind.INT }),
       }));
     }
 
-    return baseImpl(self, expression);
+    return baseImpl.call(this, expression);
   };
 }
 
 /** Transpile ARRAY_INSERT using LIST_CONCAT and DuckDB 1-based slicing */
-function arrayInsertSql (self: Generator, expression: ArrayInsertExpr): string {
+function arrayInsertSql (this: Generator, expression: ArrayInsertExpr): string {
   const thisNode = expression.args.this;
   const position = expression.args.position;
   const element = expression.args.expression;
@@ -741,8 +741,8 @@ function arrayInsertSql (self: Generator, expression: ArrayInsertExpr): string {
   const indexOffset = expression.args.offset ?? 0;
 
   if (!(position instanceof LiteralExpr && position.isNumber)) {
-    self.unsupported('ARRAY_INSERT can only be transpiled with a literal position');
-    return self.func('ARRAY_INSERT', [
+    this.unsupported('ARRAY_INSERT can only be transpiled with a literal position');
+    return this.func('ARRAY_INSERT', [
       thisNode,
       position,
       element,
@@ -809,26 +809,26 @@ function arrayInsertSql (self: Generator, expression: ArrayInsertExpr): string {
     ];
   }
 
-  return self.sql(
+  return this.sql(
     new IfExpr({
       this: new IsExpr({
         this: thisNode,
         expression: null_(),
       }),
       true: null_(),
-      false: self.func('LIST_CONCAT', concatExprs),
+      false: this.func('LIST_CONCAT', concatExprs),
     }),
   );
 }
 
 /** Transpile ARRAY_REMOVE_AT using LIST_CONCAT and DuckDB 1-based slicing */
-function arrayRemoveAtSql (self: Generator, expression: ArrayRemoveAtExpr): string {
+function arrayRemoveAtSql (this: Generator, expression: ArrayRemoveAtExpr): string {
   const thisNode = expression.args.this;
   const position = expression.args.position;
 
   if (!(position instanceof LiteralExpr && position.isNumber)) {
-    self.unsupported('ARRAY_REMOVE_AT can only be transpiled with a literal position');
-    return self.func('ARRAY_REMOVE_AT', [thisNode, position]);
+    this.unsupported('ARRAY_REMOVE_AT can only be transpiled with a literal position');
+    return this.func('ARRAY_REMOVE_AT', [thisNode, position]);
   }
 
   const posValue = parseInt(position.args.this ?? '0');
@@ -853,7 +853,7 @@ function arrayRemoveAtSql (self: Generator, expression: ArrayRemoveAtExpr): stri
       this: thisNode,
       expressions: [new SliceExpr({ this: LiteralExpr.number(posValue + 2) })],
     });
-    resultExpr = self.func('LIST_CONCAT', [leftSlice, rightSlice]);
+    resultExpr = this.func('LIST_CONCAT', [leftSlice, rightSlice]);
   } else if (posValue === -1) {
     const arrLen = new LengthExpr({ this: thisNode });
     const sliceEnd = new AddExpr({
@@ -893,10 +893,10 @@ function arrayRemoveAtSql (self: Generator, expression: ArrayRemoveAtExpr): stri
       this: thisNode,
       expressions: [new SliceExpr({ this: sliceStartPos })],
     });
-    resultExpr = self.func('LIST_CONCAT', [leftSlice, rightSlice]);
+    resultExpr = this.func('LIST_CONCAT', [leftSlice, rightSlice]);
   }
 
-  return self.sql(
+  return this.sql(
     new IfExpr({
       this: new IsExpr({
         this: thisNode,
@@ -908,18 +908,18 @@ function arrayRemoveAtSql (self: Generator, expression: ArrayRemoveAtExpr): stri
   );
 }
 
-function arraySortSql (self: Generator, expression: ArraySortExpr): string {
+function arraySortSql (this: Generator, expression: ArraySortExpr): string {
   if (expression.args.expression) {
-    self.unsupported('DuckDB\'s ARRAY_SORT does not support a comparator.');
+    this.unsupported('DuckDB\'s ARRAY_SORT does not support a comparator.');
   }
-  return self.func('ARRAY_SORT', [expression.args.this]);
+  return this.func('ARRAY_SORT', [expression.args.this]);
 }
 
-function sortArraySql (self: Generator, expression: SortArrayExpr): string {
+function sortArraySql (this: Generator, expression: SortArrayExpr): string {
   const name = expression.args.asc instanceof BooleanExpr && !(expression.args.asc as BooleanExpr).args.this
     ? 'ARRAY_REVERSE_SORT'
     : 'ARRAY_SORT';
-  return self.func(name, [expression.args.this]);
+  return this.func(name, [expression.args.this]);
 }
 
 function buildSortArrayDesc (args: Expression[]): SortArrayExpr {
@@ -978,11 +978,13 @@ function buildMakeTimestamp (args: Expression[]): Expression {
   });
 }
 
-function showParser (...args: (Expression | string)[]): (self: Parser) => ShowExpr {
-  return (self: Parser) => (self as DuckDBParser).parseShowDuckdb(args[0] as string);
+function showParser (...args: (Expression | string)[]): (this: Parser) => ShowExpr {
+  return function (this: Parser) {
+    return (this as DuckDBParser).parseShowDuckdb(args[0] as string);
+  };
 }
 
-function structSql (self: Generator, expression: StructExpr): string {
+function structSql (this: Generator, expression: StructExpr): string {
   let ancestorCast = expression.findAncestor<CastExpr | SelectExpr>(CastExpr, SelectExpr);
   ancestorCast = ancestorCast instanceof SelectExpr ? undefined : ancestorCast;
 
@@ -1007,18 +1009,18 @@ function structSql (self: Generator, expression: StructExpr): string {
     const value = isPropertyEq ? expr.args.expression : expr;
 
     if (isBqInlineStruct) {
-      structArgs.push(self.sql(value));
+      structArgs.push(this.sql(value));
     } else {
       let key: string;
       if (thisNode instanceof IdentifierExpr) {
-        key = self.sql(LiteralExpr.string(expr.name));
+        key = this.sql(LiteralExpr.string(expr.name));
       } else if (isPropertyEq) {
-        key = self.sql((expr as PropertyEqExpr).args.this);
+        key = this.sql((expr as PropertyEqExpr).args.this);
       } else {
-        key = self.sql(LiteralExpr.string(`_${i}`));
+        key = this.sql(LiteralExpr.string(`_${i}`));
       }
 
-      structArgs.push(`${key}: ${self.sql(value)}`);
+      structArgs.push(`${key}: ${this.sql(value)}`);
     }
   });
 
@@ -1026,10 +1028,10 @@ function structSql (self: Generator, expression: StructExpr): string {
   return isBqInlineStruct ? `ROW(${csvArgs})` : `{${csvArgs}}`;
 }
 
-function dataTypeSql (self: Generator, expression: DataTypeExpr): string {
+function dataTypeSql (this: Generator, expression: DataTypeExpr): string {
   if (isType(expression, 'array')) {
-    const base = self.expressions(expression, { flat: true });
-    const values = self.expressions(expression, {
+    const base = this.expressions(expression, { flat: true });
+    const values = this.expressions(expression, {
       key: 'values',
       flat: true,
     });
@@ -1044,11 +1046,11 @@ function dataTypeSql (self: Generator, expression: DataTypeExpr): string {
     return expression.args.this instanceof Expression ? expression.args.this.name : (expression.args.this ?? '');
   }
 
-  return Generator.prototype.dataTypeSql.call(self, expression);
+  return Generator.prototype.dataTypeSql.call(this, expression);
 }
 
-function jsonFormatSql (self: Generator, expression: JsonFormatExpr): string {
-  const sql = self.func('TO_JSON', [expression.args.this, expression.args.options]);
+function jsonFormatSql (this: Generator, expression: JsonFormatExpr): string {
+  const sql = this.func('TO_JSON', [expression.args.this, expression.args.options]);
   return `CAST(${sql} AS TEXT)`;
 }
 
@@ -1056,14 +1058,14 @@ function jsonFormatSql (self: Generator, expression: JsonFormatExpr): string {
  * Transpile Snowflake SEQ1/SEQ2/SEQ4/SEQ8 to DuckDB.
  * Generates monotonically increasing integers starting from 0.
  */
-function seqSql (self: Generator, expression: FuncExpr, byteWidth: number): string {
+function seqSql (this: Generator, expression: FuncExpr, byteWidth: number): string {
   const ancestor = expression.findAncestor(...SEQ_RESTRICTED);
   if (
     ancestor
     && (!(ancestor instanceof OrderExpr || ancestor instanceof SelectExpr)
       || (ancestor instanceof OrderExpr && ancestor.parent instanceof WindowExpr))
   ) {
-    self.unsupported('SEQ in restricted context is not supported - use CTE or subquery');
+    this.unsupported('SEQ in restricted context is not supported - use CTE or subquery');
   }
 
   const bits = byteWidth * 8;
@@ -1072,19 +1074,19 @@ function seqSql (self: Generator, expression: FuncExpr, byteWidth: number): stri
   let result: Expression;
   if (expression.name === '1') {
     const half = LiteralExpr.number(Math.pow(2, bits - 1));
-    result = replacePlaceholders((self._constructor as typeof DuckDBGenerator).SEQ_SIGNED.copy(), {
+    result = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEQ_SIGNED.copy(), {
       maxVal: maxVal,
       half: half,
     });
   } else {
-    result = replacePlaceholders((self._constructor as typeof DuckDBGenerator).SEQ_UNSIGNED.copy(), { maxVal: maxVal });
+    result = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEQ_UNSIGNED.copy(), { maxVal: maxVal });
   }
 
-  return self.sql(result);
+  return this.sql(result);
 }
 
 /** Transpile UNIX timestamps to DuckDB timestamps with scale handling. */
-function unixToTimeSql (self: Generator, expression: UnixToTimeExpr): string {
+function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   const scale = expression.args.scale;
   let timestamp = expression.args.this;
   const targetType = expression.args.targetType;
@@ -1092,16 +1094,16 @@ function unixToTimeSql (self: Generator, expression: UnixToTimeExpr): string {
   const isNtz = isType(targetType, [DataTypeExprKind.TIMESTAMP, DataTypeExprKind.TIMESTAMPNTZ]);
 
   if (scale === UnixToTimeExpr.MILLIS) {
-    return self.func('EPOCH_MS', [timestamp]);
+    return this.func('EPOCH_MS', [timestamp]);
   }
   if (scale === UnixToTimeExpr.MICROS) {
-    return self.func('MAKE_TIMESTAMP', [timestamp]);
+    return this.func('MAKE_TIMESTAMP', [timestamp]);
   }
 
   if (scale !== undefined && scale !== UnixToTimeExpr.SECONDS) {
     timestamp = new DivExpr({
       this: timestamp,
-      expression: self.func('POW', [LiteralExpr.number(10), scale]),
+      expression: this.func('POW', [LiteralExpr.number(10), scale]),
     });
   }
 
@@ -1117,7 +1119,7 @@ function unixToTimeSql (self: Generator, expression: UnixToTimeExpr): string {
     });
   }
 
-  return self.sql(toTimestamp);
+  return this.sql(toTimestamp);
 }
 
 const WRAPPED_JSON_EXTRACT_EXPRESSIONS = [
@@ -1128,13 +1130,13 @@ const WRAPPED_JSON_EXTRACT_EXPRESSIONS = [
 ];
 
 /** Wraps arrow JSON extract in parens if required by parent precedence. */
-function arrowJsonExtractSqlDuckDB (self: Generator, expression: JsonExtractType): string {
-  let arrowSql = arrowJsonExtractSql(self, expression);
+function arrowJsonExtractSqlDuckDB (this: Generator, expression: JsonExtractType): string {
+  let arrowSql = arrowJsonExtractSql.call(this, expression);
   if (
     !expression.sameParent
     && WRAPPED_JSON_EXTRACT_EXPRESSIONS.some((cls) => expression.parent instanceof cls)
   ) {
-    arrowSql = self.wrap(arrowSql);
+    arrowSql = this.wrap(arrowSql);
   }
   return arrowSql;
 }
@@ -1195,11 +1197,11 @@ function buildWeekTruncExpression (dateExpr: Expression, startDow: number): Expr
 }
 
 /** Transpile DATE_DIFF with boundary-aware week logic. */
-function dateDiffSql (self: Generator, expression: DateDiffExpr): string {
+function dateDiffSql (this: Generator, expression: DateDiffExpr): string {
   const unit = expression.args.unit;
 
   if (isNanosecondUnit(unit)) {
-    return handleNanosecondDiff(self, expression.args.this ?? null_(), expression.args.expression ?? null_());
+    return handleNanosecondDiff.call(this, expression.args.this ?? null_(), expression.args.expression ?? null_());
   }
 
   let thisNode = implicitDatetimeCast(expression.args.this);
@@ -1215,7 +1217,7 @@ function dateDiffSql (self: Generator, expression: DateDiffExpr): string {
     exprNode = buildWeekTruncExpression(exprNode, weekStart);
   }
 
-  return self.func('DATE_DIFF', [
+  return this.func('DATE_DIFF', [
     unitToStr(expression),
     exprNode,
     thisNode,
@@ -1224,7 +1226,7 @@ function dateDiffSql (self: Generator, expression: DateDiffExpr): string {
 
 /** BQ's GENERATE_DATE_ARRAY & GENERATE_TIMESTAMP_ARRAY transformed to DuckDB'S GENERATE_SERIES */
 function generateDatetimeArraySql (
-  self: Generator,
+  this: Generator,
   expression: GenerateDateArrayExpr | GenerateTimestampArrayExpr,
 ): string {
   const isGenerateDateArray = expression instanceof GenerateDateArrayExpr;
@@ -1247,11 +1249,11 @@ function generateDatetimeArraySql (
     });
   }
 
-  return self.sql(genSeries);
+  return this.sql(genSeries);
 }
 
 function jsonExtractValueArraySql (
-  self: Generator,
+  this: Generator,
   expression: JsonValueArrayExpr | JsonExtractArrayExpr,
 ): string {
   const jsonExtractExpr = expression.args.expression instanceof Expression ? expression.args.expression : undefined;
@@ -1260,7 +1262,7 @@ function jsonExtractValueArraySql (
     expression: jsonExtractExpr,
   });
   const dataType = expression instanceof JsonValueArrayExpr ? 'ARRAY<STRING>' : 'ARRAY<JSON>';
-  return self.sql(new CastExpr({
+  return this.sql(new CastExpr({
     this: jsonExtract,
     to: DataTypeExpr.build(dataType),
   }));
@@ -1300,10 +1302,10 @@ function isBinary (arg: unknown): boolean {
   ]);
 }
 
-function genWithCastToBlob (self: Generator, expression: Expression, resultSql: string): string {
+function genWithCastToBlob (this: Generator, expression: Expression, resultSql: string): string {
   if (isBinary(expression)) {
     const blob = DataTypeExpr.build('BLOB', { dialect: 'duckdb' });
-    resultSql = self.sql(new CastExpr({
+    resultSql = this.sql(new CastExpr({
       this: resultSql,
       to: blob,
     }));
@@ -1335,10 +1337,10 @@ function prepareBinaryBitwiseArgs (expression: BinaryExpr): void {
 }
 
 /** Transpile Snowflake's NEXT_DAY / PREVIOUS_DAY using formulas and ISODOW */
-function dayNavigationSql (self: Generator, expression: NextDayExpr | PreviousDayExpr): string {
+function dayNavigationSql (this: Generator, expression: NextDayExpr | PreviousDayExpr): string {
   const dateExpr = expression.args.this;
   const dayNameExpr = expression.args.expression;
-  const isodowCall = self.func('ISODOW', [dateExpr]);
+  const isodowCall = this.func('ISODOW', [dateExpr]);
 
   let targetDow: Expression;
 
@@ -1350,7 +1352,7 @@ function dayNavigationSql (self: Generator, expression: NextDayExpr | PreviousDa
     if (matchingDay) {
       targetDow = LiteralExpr.number(WEEK_START_DAY_TO_DOW[matchingDay]);
     } else {
-      return self.functionFallbackSql(expression);
+      return this.functionFallbackSql(expression);
     }
   } else {
     const upperDayName = new UpperExpr({ this: dayNameExpr });
@@ -1358,7 +1360,7 @@ function dayNavigationSql (self: Generator, expression: NextDayExpr | PreviousDa
       ifs: Object.entries(WEEK_START_DAY_TO_DOW).map(
         ([day, dowNum]) =>
           new IfExpr({
-            this: self.func('STARTS_WITH', [upperDayName.copy(), LiteralExpr.string(day.substring(0, 2))]),
+            this: this.func('STARTS_WITH', [upperDayName.copy(), LiteralExpr.string(day.substring(0, 2))]),
             true: LiteralExpr.number(dowNum),
           }),
       ),
@@ -1410,24 +1412,24 @@ function dayNavigationSql (self: Generator, expression: NextDayExpr | PreviousDa
     });
   }
 
-  return self.sql(new CastExpr({
+  return this.sql(new CastExpr({
     this: dateWithOffset,
     to: new DataTypeExpr({ this: DataTypeExprKind.DATE }),
   }));
 }
 
-function anyValueSql (self: Generator, expression: AnyValueExpr): string {
+function anyValueSql (this: Generator, expression: AnyValueExpr): string {
   const having = expression.args.this;
   if (having instanceof HavingMaxExpr) {
     const funcName = having.args.max ? 'ARG_MAX_NULL' : 'ARG_MIN_NULL';
-    return self.func(funcName, [having.args.this, having.args.expression]);
+    return this.func(funcName, [having.args.this, having.args.expression]);
   }
-  return self.functionFallbackSql(expression);
+  return this.functionFallbackSql(expression);
 }
 
 /** Cast non-integer types to INT for bitwise aggregates */
 function bitwiseAggSql (
-  self: Generator,
+  this: Generator,
   expression: BitwiseOrAggExpr | BitwiseAndAggExpr | BitwiseXorAggExpr,
 ): string {
   let funcName = 'BIT_XOR';
@@ -1438,7 +1440,7 @@ function bitwiseAggSql (
 
   if (isType(arg, [...DataTypeExpr.REAL_TYPES, ...DataTypeExpr.TEXT_TYPES])) {
     if (isType(arg, DataTypeExpr.FLOAT_TYPES)) {
-      arg = self.func('ROUND', [arg]);
+      arg = this.func('ROUND', [arg]);
     }
     arg = new CastExpr({
       this: arg,
@@ -1446,17 +1448,17 @@ function bitwiseAggSql (
     });
   }
 
-  return self.func(funcName, [arg]);
+  return this.func(funcName, [arg]);
 }
 
-function literalSqlWithWsChr (self: Generator, literal: string): string {
+function literalSqlWithWsChr (this: Generator, literal: string): string {
   /**
    * DuckDB does not support \uXXXX escapes.
    * Uses CHR() for control characters in WS_CONTROL_CHARS_TO_DUCK.
    */
   const chars = literal.split('');
   if (!chars.some((ch) => ch in WS_CONTROL_CHARS_TO_DUCK)) {
-    return self.sql(LiteralExpr.string(literal));
+    return this.sql(LiteralExpr.string(literal));
   }
 
   const sqlSegments: string[] = [];
@@ -1469,9 +1471,9 @@ function literalSqlWithWsChr (self: Generator, literal: string): string {
       if (0 < currentGroup.length) {
         if (isWsGroup) {
           currentGroup.forEach((c) =>
-            sqlSegments.push(self.func('CHR', [LiteralExpr.number(WS_CONTROL_CHARS_TO_DUCK[c])])));
+            sqlSegments.push(this.func('CHR', [LiteralExpr.number(WS_CONTROL_CHARS_TO_DUCK[c])])));
         } else {
-          sqlSegments.push(self.sql(LiteralExpr.string(currentGroup.join(''))));
+          sqlSegments.push(this.sql(LiteralExpr.string(currentGroup.join(''))));
         }
       }
       currentGroup = [];
@@ -1484,9 +1486,9 @@ function literalSqlWithWsChr (self: Generator, literal: string): string {
   if (0 < currentGroup.length) {
     if (isWsGroup) {
       currentGroup.forEach((c) =>
-        sqlSegments.push(self.func('CHR', [LiteralExpr.number(WS_CONTROL_CHARS_TO_DUCK[c])])));
+        sqlSegments.push(this.func('CHR', [LiteralExpr.number(WS_CONTROL_CHARS_TO_DUCK[c])])));
     } else {
-      sqlSegments.push(self.sql(LiteralExpr.string(currentGroup.join(''))));
+      sqlSegments.push(this.sql(LiteralExpr.string(currentGroup.join(''))));
     }
   }
 
@@ -1495,7 +1497,7 @@ function literalSqlWithWsChr (self: Generator, literal: string): string {
 }
 
 function escapeRegexMetachars (
-  self: Generator,
+  this: Generator,
   delimiters: Expression | undefined,
   delimitersSql: string,
 ): string {
@@ -1508,22 +1510,22 @@ function escapeRegexMetachars (
       .split('')
       .map((ch) => REGEX_ESCAPE_REPLACEMENTS[ch] ?? ch)
       .join('');
-    return literalSqlWithWsChr(self, escapedLiteral);
+    return literalSqlWithWsChr.call(this, escapedLiteral);
   }
 
   let escapedSql = delimitersSql;
   Object.entries(REGEX_ESCAPE_REPLACEMENTS).forEach(([raw, escaped]) => {
-    escapedSql = self.func('REPLACE', [
+    escapedSql = this.func('REPLACE', [
       escapedSql,
-      self.sql(LiteralExpr.string(raw)),
-      self.sql(LiteralExpr.string(escaped)),
+      this.sql(LiteralExpr.string(raw)),
+      this.sql(LiteralExpr.string(escaped)),
     ]);
   });
 
   return escapedSql;
 }
 
-function buildCapitalizationSql (self: Generator, valueToSplit: string, delimitersSql: string): string {
+function buildCapitalizationSql (this: Generator, valueToSplit: string, delimitersSql: string): string {
   /** Implements custom INITCAP logic using REGEXP_EXTRACT_ALL and LIST_TRANSFORM. */
   if (delimitersSql === '\'\'') {
     return `UPPER(LEFT(${valueToSplit}, 1)) || LOWER(SUBSTRING(${valueToSplit}, 2))`;
@@ -1532,34 +1534,34 @@ function buildCapitalizationSql (self: Generator, valueToSplit: string, delimite
   const delimRegexSql = `CONCAT('[', ${delimitersSql}, ']')`;
   const splitRegexSql = `CONCAT('([', ${delimitersSql}, ']+|[^', ${delimitersSql}, ']+)')`;
 
-  return self.func('ARRAY_TO_STRING', [
+  return this.func('ARRAY_TO_STRING', [
     new CaseExpr({})
       .when(
         `REGEXP_MATCHES(LEFT(${valueToSplit}, 1), ${delimRegexSql})`,
-        self.func('LIST_TRANSFORM', [self.func('REGEXP_EXTRACT_ALL', [valueToSplit, splitRegexSql]), '(seg, idx) -> CASE WHEN idx % 2 = 0 THEN UPPER(LEFT(seg, 1)) || LOWER(SUBSTRING(seg, 2)) ELSE seg END']),
+        this.func('LIST_TRANSFORM', [this.func('REGEXP_EXTRACT_ALL', [valueToSplit, splitRegexSql]), '(seg, idx) -> CASE WHEN idx % 2 = 0 THEN UPPER(LEFT(seg, 1)) || LOWER(SUBSTRING(seg, 2)) ELSE seg END']),
       )
       .else(
-        self.func('LIST_TRANSFORM', [self.func('REGEXP_EXTRACT_ALL', [valueToSplit, splitRegexSql]), '(seg, idx) -> CASE WHEN idx % 2 = 1 THEN UPPER(LEFT(seg, 1)) || LOWER(SUBSTRING(seg, 2)) ELSE seg END']),
+        this.func('LIST_TRANSFORM', [this.func('REGEXP_EXTRACT_ALL', [valueToSplit, splitRegexSql]), '(seg, idx) -> CASE WHEN idx % 2 = 1 THEN UPPER(LEFT(seg, 1)) || LOWER(SUBSTRING(seg, 2)) ELSE seg END']),
       ),
     '\'\'',
   ]);
 }
 
-function initcapSql (self: Generator, expression: InitcapExpr): string {
-  const thisSql = self.sql(expression, 'this');
+function initcapSql (this: Generator, expression: InitcapExpr): string {
+  const thisSql = this.sql(expression, 'this');
   let delimiters = expression.args.expression;
   if (!delimiters) {
-    delimiters = LiteralExpr.string(self.dialect._constructor.INITCAP_DEFAULT_DELIMITER_CHARS);
+    delimiters = LiteralExpr.string(this.dialect._constructor.INITCAP_DEFAULT_DELIMITER_CHARS);
   }
-  const delimitersSql = self.sql(delimiters);
-  const escapedDelimitersSql = escapeRegexMetachars(self, delimiters, delimitersSql);
+  const delimitersSql = this.sql(delimiters);
+  const escapedDelimitersSql = escapeRegexMetachars.call(this, delimiters, delimitersSql);
 
-  return buildCapitalizationSql(self, thisSql, escapedDelimitersSql);
+  return buildCapitalizationSql.call(this, thisSql, escapedDelimitersSql);
 }
 
-function boolxorAggSql (self: Generator, expression: BoolxorAggExpr): string {
+function boolxorAggSql (this: Generator, expression: BoolxorAggExpr): string {
   /** Mimics Snowflake BOOLXOR_AGG by generating COUNT_IF(col) = 1. */
-  return self.sql(
+  return this.sql(
     new EqExpr({
       this: castToBoolean(expression.args.this as Expression) ?? expression.args.this,
       expression: LiteralExpr.number(1),
@@ -1567,7 +1569,7 @@ function boolxorAggSql (self: Generator, expression: BoolxorAggExpr): string {
   );
 }
 
-function bitshiftSql (self: Generator, expression: BitwiseLeftShiftExpr | BitwiseRightShiftExpr): string {
+function bitshiftSql (this: Generator, expression: BitwiseLeftShiftExpr | BitwiseRightShiftExpr): string {
   /** Transforms bitshift for DuckDB injecting BIT/INT128 casts and fixing precedence. */
   const operator = expression instanceof BitwiseLeftShiftExpr ? '<<' : '>>';
   let resultIsBlob = false;
@@ -1586,14 +1588,14 @@ function bitshiftSql (self: Generator, expression: BitwiseLeftShiftExpr | Bitwis
     }));
   }
 
-  let resultSql = self.binary(expression, operator);
+  let resultSql = this.binary(expression, operator);
 
   if (expression.parent instanceof BinaryExpr) {
     resultSql = `(${resultSql})`;
   }
 
   if (resultIsBlob) {
-    resultSql = self.sql(new CastExpr({
+    resultSql = this.sql(new CastExpr({
       this: resultSql,
       to: DataTypeExpr.build('BLOB', { dialect: 'duckdb' }),
     }));
@@ -1603,7 +1605,7 @@ function bitshiftSql (self: Generator, expression: BitwiseLeftShiftExpr | Bitwis
 }
 
 function scaleRoundingSql (
-  self: Generator,
+  this: Generator,
   expression: CeilExpr | FloorExpr | RoundExpr | TruncExpr,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   RoundingFuncClass: new (args: any) => Expression,
@@ -1642,7 +1644,7 @@ function scaleRoundingSql (
     expression: pow.copy(),
   });
 
-  return (self as DuckDBGenerator).roundSql(
+  return (this as DuckDBGenerator).roundSql(
     new RoundExpr({
       this: result,
       decimals,
@@ -1651,19 +1653,19 @@ function scaleRoundingSql (
   );
 }
 
-function ceilFloor (self: Generator, expression: FloorExpr | CeilExpr): string {
-  const scaledSql = scaleRoundingSql(self, expression, expression._constructor);
+function ceilFloor (this: Generator, expression: FloorExpr | CeilExpr): string {
+  const scaledSql = scaleRoundingSql.call(this, expression, expression._constructor);
   if (scaledSql !== undefined) {
     return scaledSql;
   }
-  return self.ceilFloor(expression);
+  return this.ceilFloor(expression);
 }
 
 /**
  * Transpile Snowflake's REGR_VALX/REGR_VALY to DuckDB equivalent.
  * REGR_VALX(y, x) returns NULL if y is NULL; otherwise returns x.
  */
-function regrValSql (self: Generator, expression: RegrValxExpr | RegrValyExpr): string {
+function regrValSql (this: Generator, expression: RegrValxExpr | RegrValyExpr): string {
   const y = expression.args.this ?? null_();
   const x = expression.args.expression ?? null_();
 
@@ -1686,7 +1688,7 @@ function regrValSql (self: Generator, expression: RegrValxExpr | RegrValyExpr): 
   // Infer types if unknown
   if (!resultType || typeof resultType === 'string' || resultType.args.this === DataTypeExprKind.UNKNOWN) {
     try {
-      const annotated = annotateTypes(expression.copy(), { dialect: self.dialect });
+      const annotated = annotateTypes(expression.copy(), { dialect: this.dialect });
       const annotatedArg = annotated.args[returnValueAttr as keyof typeof annotated.args];
       resultType = annotatedArg instanceof Expression ? annotatedArg.type : undefined;
     } catch {
@@ -1704,7 +1706,7 @@ function regrValSql (self: Generator, expression: RegrValxExpr | RegrValyExpr): 
     to: resultType,
   });
 
-  return self.sql(
+  return this.sql(
     new IfExpr({
       this: new IsExpr({
         this: checkForNull.copy(),
@@ -1732,7 +1734,7 @@ function maybeCorrNullToFalse (
   return expression;
 }
 
-function dateFromPartsSql (self: Generator, expression: DateFromPartsExpr): string {
+function dateFromPartsSql (this: Generator, expression: DateFromPartsExpr): string {
   /**
    * DuckDB's MAKE_DATE doesn't support overflow.
    * Formula: MAKE_DATE(year, 1, 1) + (month-1) MONTHS + (day-1) DAYS
@@ -1777,13 +1779,13 @@ function dateFromPartsSql (self: Generator, expression: DateFromPartsExpr): stri
       });
     }
 
-    return self.sql(new CastExpr({
+    return this.sql(new CastExpr({
       this: baseDate,
       to: new DataTypeExpr({ this: DataTypeExprKind.DATE }),
     }));
   }
 
-  return self.func('MAKE_DATE', [
+  return this.func('MAKE_DATE', [
     yearExpr,
     monthExpr,
     dayExpr,
@@ -1800,16 +1802,16 @@ function roundArg (arg: Expression, roundInput?: Expression | boolean): Expressi
   return arg;
 }
 
-function boolnotSql (self: Generator, expression: BoolnotExpr): string {
+function boolnotSql (this: Generator, expression: BoolnotExpr): string {
   const arg = roundArg(expression.args.this ?? null_(), expression.args.roundInput);
-  return self.sql(new NotExpr({ this: new ParenExpr({ this: arg }) }));
+  return this.sql(new NotExpr({ this: new ParenExpr({ this: arg }) }));
 }
 
-function boolandSql (self: Generator, expression: BoolandExpr): string {
+function boolandSql (this: Generator, expression: BoolandExpr): string {
   const roundInput = expression.args.roundInput;
   const left = roundArg(expression.args.this ?? null_(), roundInput);
   const right = roundArg(expression.args.expression ?? null_(), roundInput);
-  return self.sql(
+  return this.sql(
     new ParenExpr({
       this: new AndExpr({
         this: new ParenExpr({ this: left }),
@@ -1819,11 +1821,11 @@ function boolandSql (self: Generator, expression: BoolandExpr): string {
   );
 }
 
-function boolorSql (self: Generator, expression: BoolorExpr): string {
+function boolorSql (this: Generator, expression: BoolorExpr): string {
   const roundInput = expression.args.roundInput;
   const left = roundArg(expression.args.this ?? null_(), roundInput);
   const right = roundArg(expression.args.expression ?? null_(), roundInput);
-  return self.sql(
+  return this.sql(
     new ParenExpr({
       this: new OrExpr({
         this: new ParenExpr({ this: left }),
@@ -1833,7 +1835,7 @@ function boolorSql (self: Generator, expression: BoolorExpr): string {
   );
 }
 
-function xorSql (self: Generator, expression: XorExpr): string {
+function xorSql (this: Generator, expression: XorExpr): string {
   const roundInput = expression.args.roundInput;
   const left = expression.args.this && roundArg(expression.args.this, roundInput);
   const right = expression.args.expression && roundArg(expression.args.expression, roundInput);
@@ -1841,7 +1843,7 @@ function xorSql (self: Generator, expression: XorExpr): string {
   const leftNot = new NotExpr({ this: new ParenExpr({ this: left?.copy() }) });
   const rightNot = new NotExpr({ this: new ParenExpr({ this: right?.copy() }) });
 
-  return self.sql(
+  return this.sql(
     new OrExpr({
       this: new ParenExpr({
         this: new AndExpr({
@@ -1860,7 +1862,7 @@ function xorSql (self: Generator, expression: XorExpr): string {
 }
 
 function shaSql (
-  self: Generator,
+  this: Generator,
   expression: ShaExpr,
   hashFunc: string,
   options: { isBinary?: boolean } = {},
@@ -1873,7 +1875,7 @@ function shaSql (
   if (hashFunc === 'SHA256') {
     const length = expression.text('length') || '256';
     if (length !== '256') {
-      self.unsupported('DuckDB only supports SHA256 hashing algorithm.');
+      this.unsupported('DuckDB only supports SHA256 hashing algorithm.');
     }
   }
 
@@ -1890,8 +1892,8 @@ function shaSql (
     });
   }
 
-  const result = self.func(hashFunc, [arg]);
-  return _isBinary ? self.func('UNHEX', [result]) : result;
+  const result = this.func(hashFunc, [arg]);
+  return _isBinary ? this.func('UNHEX', [result]) : result;
 }
 
 class DuckDBTokenizer extends Tokenizer {
@@ -1976,7 +1978,7 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get RANGE_PARSERS (): Partial<Record<TokenType, (self: Parser, this_: Expression) => Expression | undefined>> {
+  static get RANGE_PARSERS (): Partial<Record<TokenType, (this: Parser, this_: Expression) => Expression | undefined>> {
     return {
       ...Parser.RANGE_PARSERS,
       [TokenType.DAMP]: binaryRangeParser(ArrayOverlapsExpr),
@@ -2099,7 +2101,7 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return (() => {
       const parsers = {
         ...Parser.FUNCTION_PARSERS,
@@ -2108,7 +2110,12 @@ class DuckDBParser extends Parser {
             'GROUP_CONCAT',
             'LISTAGG',
             'STRINGAGG',
-          ].map((key) => [key, (self: Parser) => (self as DuckDBParser).parseStringAgg()]),
+          ].map((key) => [
+            key,
+            function (this: Parser) {
+              return (this as DuckDBParser).parseStringAgg();
+            },
+          ]),
         ),
       };
       delete parsers['DECODE'];
@@ -2117,11 +2124,15 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
-      'MAP': (self: Parser) => (self as DuckDBParser).parseMap(),
-      '@': (self: Parser) => new AbsExpr({ this: (self as DuckDBParser).parseBitwise() }),
+      'MAP': function (this: Parser) {
+        return (this as DuckDBParser).parseMap();
+      },
+      '@': function (this: Parser) {
+        return new AbsExpr({ this: (this as DuckDBParser).parseBitwise() });
+      },
     };
   }
 
@@ -2136,14 +2147,16 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get PLACEHOLDER_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
+  static get PLACEHOLDER_PARSERS (): Partial<Record<TokenType, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.PLACEHOLDER_PARSERS,
-      [TokenType.PARAMETER]: (self: Parser) => (
-        (self as DuckDBParser).match(TokenType.NUMBER) || self.matchSet(self._constructor.ID_VAR_TOKENS)
-          ? self.expression(PlaceholderExpr, { this: (self as DuckDBParser).prev?.text })
-          : undefined
-      ),
+      [TokenType.PARAMETER]: function (this: Parser) {
+        return (
+          (this as DuckDBParser).match(TokenType.NUMBER) || this.matchSet(this._constructor.ID_VAR_TOKENS)
+            ? this.expression(PlaceholderExpr, { this: (this as DuckDBParser).prev?.text })
+            : undefined
+        );
+      },
     };
   }
 
@@ -2156,22 +2169,34 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.STATEMENT_PARSERS,
-      [TokenType.ATTACH]: (self: Parser) => (self as DuckDBParser).parseAttachDetach(),
-      [TokenType.DETACH]: (self: Parser) => (self as DuckDBParser).parseAttachDetach({ isAttach: false }),
-      [TokenType.FORCE]: (self: Parser) => (self as DuckDBParser).parseForce(),
-      [TokenType.INSTALL]: (self: Parser) => (self as DuckDBParser).parseInstall(),
-      [TokenType.SHOW]: (self: Parser) => (self as DuckDBParser).parseShow(),
+      [TokenType.ATTACH]: function (this: Parser) {
+        return (this as DuckDBParser).parseAttachDetach();
+      },
+      [TokenType.DETACH]: function (this: Parser) {
+        return (this as DuckDBParser).parseAttachDetach({ isAttach: false });
+      },
+      [TokenType.FORCE]: function (this: Parser) {
+        return (this as DuckDBParser).parseForce();
+      },
+      [TokenType.INSTALL]: function (this: Parser) {
+        return (this as DuckDBParser).parseInstall();
+      },
+      [TokenType.SHOW]: function (this: Parser) {
+        return (this as DuckDBParser).parseShow();
+      },
     };
   }
 
   @cache
-  static get SET_PARSERS (): Record<string, (self: Parser) => Expression | undefined> {
+  static get SET_PARSERS (): Record<string, (this: Parser) => Expression | undefined> {
     return {
       ...Parser.SET_PARSERS,
-      VARIABLE: (self: Parser) => (self as DuckDBParser).parseSetItemAssignment({ kind: 'VARIABLE' }),
+      VARIABLE: function (this: Parser) {
+        return (this as DuckDBParser).parseSetItemAssignment({ kind: 'VARIABLE' });
+      },
     };
   }
 
@@ -2396,9 +2421,9 @@ class DuckDBGenerator extends Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
       [AnyValueExpr, anyValueSql],
       [ApproxDistinctExpr, approxCountDistinctSql],
@@ -2414,7 +2439,12 @@ class DuckDBGenerator extends Generator {
       ],
       [ArrayAppendExpr, arrayAppendSql('LIST_APPEND')],
       [ArrayCompactExpr, arrayCompactSql],
-      [ArrayConstructCompactExpr, (self, e) => self.sql(new ArrayCompactExpr({ this: new ArrayExpr({ expressions: e.args.expressions }) }))],
+      [
+        ArrayConstructCompactExpr,
+        function (this: Generator, e) {
+          return this.sql(new ArrayCompactExpr({ this: new ArrayExpr({ expressions: e.args.expressions }) }));
+        },
+      ],
       [ArrayConcatExpr, arrayConcatSql('LIST_CONCAT')],
       [ArrayFilterExpr, renameFunc('LIST_FILTER')],
       [ArrayInsertExpr, arrayInsertSql],
@@ -2423,50 +2453,94 @@ class DuckDBGenerator extends Generator {
       [ArraySortExpr, arraySortSql],
       [ArrayPrependExpr, arrayAppendSql('LIST_PREPEND', { swapParams: true })],
       [ArraySumExpr, renameFunc('LIST_SUM')],
-      [ArrayUniqueAggExpr, (self, e) => self.func('LIST', [new DistinctExpr({ expressions: [e.args.this] })])],
-      [Base64DecodeBinaryExpr, (self, e) => base64DecodeSql(self as DuckDBGenerator, e, { toString: false })],
-      [Base64DecodeStringExpr, (self, e) => base64DecodeSql(self as DuckDBGenerator, e, { toString: true })],
-      [BitwiseAndExpr, (self, e) => (self as DuckDBGenerator).bitwiseOp(e, '&')],
+      [
+        ArrayUniqueAggExpr,
+        function (this: Generator, e) {
+          return this.func('LIST', [new DistinctExpr({ expressions: [e.args.this] })]);
+        },
+      ],
+      [
+        Base64DecodeBinaryExpr,
+        function (this: Generator, e) {
+          return base64DecodeSql.call(this as DuckDBGenerator, e, { toString: false });
+        },
+      ],
+      [
+        Base64DecodeStringExpr,
+        function (this: Generator, e) {
+          return base64DecodeSql.call(this as DuckDBGenerator, e, { toString: true });
+        },
+      ],
+      [
+        BitwiseAndExpr,
+        function (this: Generator, e) {
+          return (this as DuckDBGenerator).bitwiseOp(e, '&');
+        },
+      ],
       [BitwiseAndAggExpr, bitwiseAggSql],
       [BitwiseLeftShiftExpr, bitshiftSql],
-      [BitwiseOrExpr, (self, e) => (self as DuckDBGenerator).bitwiseOp(e, '|')],
+      [
+        BitwiseOrExpr,
+        function (this: Generator, e) {
+          return (this as DuckDBGenerator).bitwiseOp(e, '|');
+        },
+      ],
       [BitwiseOrAggExpr, bitwiseAggSql],
       [BitwiseRightShiftExpr, bitshiftSql],
       [BitwiseXorAggExpr, bitwiseAggSql],
-      [ByteLengthExpr, (self, e) => self.func('OCTET_LENGTH', [e.args.this])],
+      [
+        ByteLengthExpr,
+        function (this: Generator, e) {
+          return this.func('OCTET_LENGTH', [e.args.this]);
+        },
+      ],
       [CommentColumnConstraintExpr, noCommentColumnConstraintSql],
-      [CorrExpr, (self, e) => (self as DuckDBGenerator).corrSql(e)],
+      [
+        CorrExpr,
+        function (this: Generator, e) {
+          return (this as DuckDBGenerator).corrSql(e);
+        },
+      ],
       [CosineDistanceExpr, renameFunc('LIST_COSINE_DISTANCE')],
       [CurrentTimeExpr, () => 'CURRENT_TIME'],
       [
         CurrentTimestampExpr,
-        (self, e) =>
-          e.args.sysdate
-            ? self.sql(new AtTimeZoneExpr({
+        function (this: Generator, e) {
+          return e.args.sysdate
+            ? this.sql(new AtTimeZoneExpr({
               this: new VarExpr({ this: 'CURRENT_TIMESTAMP' }),
               zone: LiteralExpr.string('UTC'),
             }))
-            : 'CURRENT_TIMESTAMP',
+            : 'CURRENT_TIMESTAMP';
+        },
       ],
       [CurrentVersionExpr, renameFunc('version')],
-      [LocaltimeExpr, (self: Generator, e: Expression) => unsupportedArgs('this')(() => 'LOCALTIME')(e)],
+      [
+        LocaltimeExpr,
+        function (this: Generator, e: Expression) {
+          unsupportedArgs.call(this, e, 'this');
+          return 'LOCALTIME';
+        },
+      ],
       [DayOfMonthExpr, renameFunc('DAYOFMONTH')],
       [DayOfWeekExpr, renameFunc('DAYOFWEEK')],
       [DayOfWeekIsoExpr, renameFunc('ISODOW')],
       [DayOfYearExpr, renameFunc('DAYOFYEAR')],
       [
         DaynameExpr,
-        (self, e) =>
-          e.args.abbreviated
-            ? self.func('STRFTIME', [e.args.this, LiteralExpr.string('%a')])
-            : self.func('DAYNAME', [e.args.this]),
+        function (this: Generator, e) {
+          return e.args.abbreviated
+            ? this.func('STRFTIME', [e.args.this, LiteralExpr.string('%a')])
+            : this.func('DAYNAME', [e.args.this]);
+        },
       ],
       [
         MonthnameExpr,
-        (self, e) =>
-          e.args.abbreviated
-            ? self.func('STRFTIME', [e.args.this, LiteralExpr.string('%b')])
-            : self.func('MONTHNAME', [e.args.this]),
+        function (this: Generator, e) {
+          return e.args.abbreviated
+            ? this.func('STRFTIME', [e.args.this, LiteralExpr.string('%b')])
+            : this.func('MONTHNAME', [e.args.this]);
+        },
       ],
       [DataTypeExpr, dataTypeSql],
       [DateExpr, dateSql],
@@ -2479,43 +2553,75 @@ class DuckDBGenerator extends Generator {
       [DatetimeDiffExpr, dateDiffSql],
       [DatetimeSubExpr, dateDeltaToBinaryIntervalOp()],
       [DatetimeAddExpr, dateDeltaToBinaryIntervalOp()],
-      [DateToDiExpr, (self, e) => `CAST(STRFTIME(${self.sql(e, 'this')}, ${DuckDB.DATEINT_FORMAT}) AS INT)`],
-      [DecodeExpr, (self, e) => encodeDecodeSql(self, e, 'DECODE', { replace: false })],
+      [
+        DateToDiExpr,
+        function (this: Generator, e) {
+          return `CAST(STRFTIME(${this.sql(e, 'this')}, ${DuckDB.DATEINT_FORMAT}) AS INT)`;
+        },
+      ],
+      [
+        DecodeExpr,
+        function (this: Generator, e) {
+          return encodeDecodeSql.call(this, e, 'DECODE', { replace: false });
+        },
+      ],
       [
         DiToDateExpr,
-        (self, e) =>
-          `CAST(STRPTIME(CAST(${self.sql(e, 'this')} AS TEXT), ${DuckDB.DATEINT_FORMAT}) AS DATE)`,
+        function (this: Generator, e) {
+          return `CAST(STRPTIME(CAST(${this.sql(e, 'this')} AS TEXT), ${DuckDB.DATEINT_FORMAT}) AS DATE)`;
+        },
       ],
-      [EncodeExpr, (self, e) => encodeDecodeSql(self, e, 'ENCODE', { replace: false })],
+      [
+        EncodeExpr,
+        function (this: Generator, e) {
+          return encodeDecodeSql.call(this, e, 'ENCODE', { replace: false });
+        },
+      ],
       [
         EqualNullExpr,
-        (self, e) => self.sql(new NullSafeEqExpr({
-          this: e.args.this,
-          expression: e.args.expression,
-        })),
+        function (this: Generator, e) {
+          return this.sql(new NullSafeEqExpr({
+            this: e.args.this,
+            expression: e.args.expression,
+          }));
+        },
       ],
       [EuclideanDistanceExpr, renameFunc('LIST_DISTANCE')],
       [GenerateDateArrayExpr, generateDatetimeArraySql],
       [GenerateTimestampArrayExpr, generateDatetimeArraySql],
       [GetbitExpr, getBitSql],
-      [GroupConcatExpr, (self, e) => groupConcatSql(self, e, { withinGroup: false })],
+      [
+        GroupConcatExpr,
+        function (this: Generator, e) {
+          return groupConcatSql.call(this, e, { withinGroup: false });
+        },
+      ],
       [ExplodeExpr, renameFunc('UNNEST')],
-      [IntDivExpr, (self, e) => self.binary(e, '//')],
+      [
+        IntDivExpr,
+        function (this: Generator, e) {
+          return this.binary(e, '//');
+        },
+      ],
       [IsInfExpr, renameFunc('ISINF')],
       [IsNanExpr, renameFunc('ISNAN')],
       [
         IsNullValueExpr,
-        (self, e) => self.sql(new EqExpr({
-          this: self.func('JSON_TYPE', [e.args.this]),
-          expression: LiteralExpr.string('NULL'),
-        })),
+        function (this: Generator, e) {
+          return this.sql(new EqExpr({
+            this: this.func('JSON_TYPE', [e.args.this]),
+            expression: LiteralExpr.string('NULL'),
+          }));
+        },
       ],
       [
         IsArrayExpr,
-        (self, e) => self.sql(new EqExpr({
-          this: self.func('JSON_TYPE', [e.args.this]),
-          expression: LiteralExpr.string('ARRAY'),
-        })),
+        function (this: Generator, e) {
+          return this.sql(new EqExpr({
+            this: this.func('JSON_TYPE', [e.args.this]),
+            expression: LiteralExpr.string('ARRAY'),
+          }));
+        },
       ],
       [CeilExpr, ceilFloor],
       [FloorExpr, ceilFloor],
@@ -2526,20 +2632,80 @@ class DuckDBGenerator extends Generator {
       [JsonFormatExpr, jsonFormatSql],
       [JsonValueArrayExpr, jsonExtractValueArraySql],
       [LateralExpr, explodeToUnnestSql],
-      [LogicalOrExpr, (self, e) => self.func('BOOL_OR', [castToBoolean(e.args.this)])],
-      [LogicalAndExpr, (self, e) => self.func('BOOL_AND', [castToBoolean(e.args.this)])],
-      [Seq1Expr, (self, e) => seqSql(self as DuckDBGenerator, e, 1)],
-      [Seq2Expr, (self, e) => seqSql(self as DuckDBGenerator, e, 2)],
-      [Seq4Expr, (self, e) => seqSql(self as DuckDBGenerator, e, 4)],
-      [Seq8Expr, (self, e) => seqSql(self as DuckDBGenerator, e, 8)],
+      [
+        LogicalOrExpr,
+        function (this: Generator, e) {
+          return this.func('BOOL_OR', [castToBoolean(e.args.this)]);
+        },
+      ],
+      [
+        LogicalAndExpr,
+        function (this: Generator, e) {
+          return this.func('BOOL_AND', [castToBoolean(e.args.this)]);
+        },
+      ],
+      [
+        Seq1Expr,
+        function (this: Generator, e) {
+          return seqSql.call(this as DuckDBGenerator, e, 1);
+        },
+      ],
+      [
+        Seq2Expr,
+        function (this: Generator, e) {
+          return seqSql.call(this as DuckDBGenerator, e, 2);
+        },
+      ],
+      [
+        Seq4Expr,
+        function (this: Generator, e) {
+          return seqSql.call(this as DuckDBGenerator, e, 4);
+        },
+      ],
+      [
+        Seq8Expr,
+        function (this: Generator, e) {
+          return seqSql.call(this as DuckDBGenerator, e, 8);
+        },
+      ],
       [BoolxorAggExpr, boolxorAggSql],
-      [MakeIntervalExpr, (self, e) => noMakeIntervalSql(self, e, { sep: ' ' })],
+      [
+        MakeIntervalExpr,
+        function (this: Generator, e) {
+          return noMakeIntervalSql.call(this, e, { sep: ' ' });
+        },
+      ],
       [InitcapExpr, initcapSql],
-      [Md5DigestExpr, (self, e) => self.func('UNHEX', [self.func('MD5', [e.args.this])])],
-      [ShaExpr, (self, e) => shaSql(self as DuckDBGenerator, e, 'SHA1')],
-      [Sha1DigestExpr, (self, e) => shaSql(self as DuckDBGenerator, e, 'SHA1', { isBinary: true })],
-      [Sha2Expr, (self, e) => shaSql(self as DuckDBGenerator, e, 'SHA256')],
-      [Sha2DigestExpr, (self, e) => shaSql(self as DuckDBGenerator, e, 'SHA256', { isBinary: true })],
+      [
+        Md5DigestExpr,
+        function (this: Generator, e) {
+          return this.func('UNHEX', [this.func('MD5', [e.args.this])]);
+        },
+      ],
+      [
+        ShaExpr,
+        function (this: Generator, e) {
+          return shaSql.call(this as DuckDBGenerator, e, 'SHA1');
+        },
+      ],
+      [
+        Sha1DigestExpr,
+        function (this: Generator, e) {
+          return shaSql.call(this as DuckDBGenerator, e, 'SHA1', { isBinary: true });
+        },
+      ],
+      [
+        Sha2Expr,
+        function (this: Generator, e) {
+          return shaSql.call(this as DuckDBGenerator, e, 'SHA256');
+        },
+      ],
+      [
+        Sha2DigestExpr,
+        function (this: Generator, e) {
+          return shaSql.call(this as DuckDBGenerator, e, 'SHA256', { isBinary: true });
+        },
+      ],
       [MonthsBetweenExpr, monthsBetweenSql],
       [NextDayExpr, dayNavigationSql],
       [PercentileContExpr, renameFunc('QUANTILE_CONT')],
@@ -2548,33 +2714,51 @@ class DuckDBGenerator extends Generator {
       [PreviousDayExpr, dayNavigationSql],
       [
         RegexpReplaceExpr,
-        (self, e) =>
-          self.func('REGEXP_REPLACE', [
+        function (this: Generator, e) {
+          return this.func('REGEXP_REPLACE', [
             e.args.this,
             e.args.expression,
             e.args.replacement,
             regexpReplaceGlobalModifier(e),
-          ]),
+          ]);
+        },
       ],
       [RegexpLikeExpr, renameFunc('REGEXP_MATCHES')],
       [
         RegexpILikeExpr,
-        (self, e) => self.func('REGEXP_MATCHES', [
-          e.args.this,
-          e.args.expression,
-          LiteralExpr.string('i'),
-        ]),
+        function (this: Generator, e) {
+          return this.func('REGEXP_MATCHES', [
+            e.args.this,
+            e.args.expression,
+            LiteralExpr.string('i'),
+          ]);
+        },
       ],
       [RegexpSplitExpr, renameFunc('STR_SPLIT_REGEX')],
       [RegrValxExpr, regrValSql],
       [RegrValyExpr, regrValSql],
-      [ReturnExpr, (self, e) => self.sql(e, 'this')],
-      [ReturnsPropertyExpr, (self, e) => (e.args.this instanceof SchemaExpr ? 'TABLE' : '')],
+      [
+        ReturnExpr,
+        function (this: Generator, e) {
+          return this.sql(e, 'this');
+        },
+      ],
+      [
+        ReturnsPropertyExpr,
+        function (this: Generator, e) {
+          return (e.args.this instanceof SchemaExpr ? 'TABLE' : '');
+        },
+      ],
       [RandExpr, renameFunc('RANDOM')],
       [SplitExpr, renameFunc('STR_SPLIT')],
       [SortArrayExpr, sortArraySql],
       [StrPositionExpr, strPositionSql],
-      [StrToUnixExpr, (self, e) => self.func('EPOCH', [self.func('STRPTIME', [e.args.this, self.formatTime(e)])])],
+      [
+        StrToUnixExpr,
+        function (this: Generator, e) {
+          return this.func('EPOCH', [this.func('STRPTIME', [e.args.this, this.formatTime(e)])]);
+        },
+      ],
       [StructExpr, structSql],
       [TransformExpr, renameFunc('LIST_TRANSFORM')],
       [TimeAddExpr, dateDeltaToBinaryIntervalOp()],
@@ -2585,43 +2769,55 @@ class DuckDBGenerator extends Generator {
       [TimestampAddExpr, dateDeltaToBinaryIntervalOp()],
       [
         TimestampDiffExpr,
-        (self, e) => self.func('DATE_DIFF', [
-          LiteralExpr.string(e.args.unit),
-          e.args.expression,
-          e.args.this,
-        ]),
+        function (this: Generator, e) {
+          return this.func('DATE_DIFF', [
+            LiteralExpr.string(e.args.unit),
+            e.args.expression,
+            e.args.this,
+          ]);
+        },
       ],
       [TimestampSubExpr, dateDeltaToBinaryIntervalOp()],
       [
         TimeStrToDateExpr,
-        (self, e) => self.sql(new CastExpr({
-          this: e.args.this,
-          to: new DataTypeExpr({ this: DataTypeExprKind.DATE }),
-        })),
+        function (this: Generator, e) {
+          return this.sql(new CastExpr({
+            this: e.args.this,
+            to: new DataTypeExpr({ this: DataTypeExprKind.DATE }),
+          }));
+        },
       ],
       [TimeStrToTimeExpr, timeStrToTimeSql],
       [
         TimeStrToUnixExpr,
-        (self, e) => self.func('EPOCH', [
-          new CastExpr({
-            this: e.args.this,
-            to: new DataTypeExpr({ this: DataTypeExprKind.TIMESTAMP }),
-          }),
-        ]),
+        function (this: Generator, e) {
+          return this.func('EPOCH', [
+            new CastExpr({
+              this: e.args.this,
+              to: new DataTypeExpr({ this: DataTypeExprKind.TIMESTAMP }),
+            }),
+          ]);
+        },
       ],
-      [TimeToStrExpr, (self, e) => self.func('STRFTIME', [e.args.this, self.formatTime(e)])],
+      [
+        TimeToStrExpr,
+        function (this: Generator, e) {
+          return this.func('STRFTIME', [e.args.this, this.formatTime(e)]);
+        },
+      ],
       [ToBooleanExpr, toBooleanSql],
       [TimeToUnixExpr, renameFunc('EPOCH')],
       [
         TsOrDiToDiExpr,
-        (self, e) =>
-          `CAST(SUBSTR(REPLACE(CAST(${self.sql(e, 'this')} AS TEXT), '-', ''), 1, 8) AS INT)`,
+        function (this: Generator, e) {
+          return `CAST(SUBSTR(REPLACE(CAST(${this.sql(e, 'this')} AS TEXT), '-', ''), 1, 8) AS INT)`;
+        },
       ],
       [TsOrDsAddExpr, dateDeltaToBinaryIntervalOp()],
       [
         TsOrDsDiffExpr,
-        (self, e) =>
-          self.func('DATE_DIFF', [
+        function (this: Generator, e) {
+          return this.func('DATE_DIFF', [
             `'${e.args.unit || 'DAY'}'`,
             new CastExpr({
               this: e.args.expression,
@@ -2631,53 +2827,76 @@ class DuckDBGenerator extends Generator {
               this: e.args.this,
               to: new DataTypeExpr({ this: DataTypeExprKind.TIMESTAMP }),
             }),
-          ]),
+          ]);
+        },
       ],
-      [UnixMicrosExpr, (self, e) => self.func('EPOCH_US', [implicitDatetimeCast(e.args.this)])],
-      [UnixMillisExpr, (self, e) => self.func('EPOCH_MS', [implicitDatetimeCast(e.args.this)])],
+      [
+        UnixMicrosExpr,
+        function (this: Generator, e) {
+          return this.func('EPOCH_US', [implicitDatetimeCast(e.args.this)]);
+        },
+      ],
+      [
+        UnixMillisExpr,
+        function (this: Generator, e) {
+          return this.func('EPOCH_MS', [implicitDatetimeCast(e.args.this)]);
+        },
+      ],
       [
         UnixSecondsExpr,
-        (self, e) =>
-          self.sql(
+        function (this: Generator, e) {
+          return this.sql(
             new CastExpr({
-              this: self.func('EPOCH', [implicitDatetimeCast(e.args.this)]),
+              this: this.func('EPOCH', [implicitDatetimeCast(e.args.this)]),
               to: new DataTypeExpr({ this: DataTypeExprKind.BIGINT }),
             }),
-          ),
+          );
+        },
       ],
       [
         UnixToStrExpr,
-        (self, e) =>
-          self.func('STRFTIME', [self.func('TO_TIMESTAMP', [e.args.this]), self.formatTime(e)]),
+        function (this: Generator, e) {
+          return this.func('STRFTIME', [this.func('TO_TIMESTAMP', [e.args.this]), this.formatTime(e)]);
+        },
       ],
       [
         DatetimeTruncExpr,
-        (self, e) =>
-          self.func('DATE_TRUNC', [
+        function (this: Generator, e) {
+          return this.func('DATE_TRUNC', [
             unitToStr(e),
             new CastExpr({
               this: e.args.this,
               to: new DataTypeExpr({ this: DataTypeExprKind.DATETIME }),
             }),
-          ]),
+          ]);
+        },
       ],
       [UnixToTimeExpr, unixToTimeSql],
-      [UnixToTimeStrExpr, (self, e) => `CAST(TO_TIMESTAMP(${self.sql(e, 'this')}) AS TEXT)`],
+      [
+        UnixToTimeStrExpr,
+        function (this: Generator, e) {
+          return `CAST(TO_TIMESTAMP(${this.sql(e, 'this')}) AS TEXT)`;
+        },
+      ],
       [VariancePopExpr, renameFunc('VAR_POP')],
       [WeekOfYearExpr, renameFunc('WEEKOFYEAR')],
       [
         YearOfWeekExpr,
-        (self, e) => self.sql(new ExtractExpr({
-          this: new VarExpr({ this: 'ISOYEAR' }),
-          expression: e.args.this,
-        })),
+        function (this: Generator, e) {
+          return this.sql(new ExtractExpr({
+            this: new VarExpr({ this: 'ISOYEAR' }),
+            expression: e.args.this,
+          }));
+        },
       ],
       [
         YearOfWeekIsoExpr,
-        (self, e) => self.sql(new ExtractExpr({
-          this: new VarExpr({ this: 'ISOYEAR' }),
-          expression: e.args.this,
-        })),
+        function (this: Generator, e) {
+          return this.sql(new ExtractExpr({
+            this: new VarExpr({ this: 'ISOYEAR' }),
+            expression: e.args.this,
+          }));
+        },
       ],
       [XorExpr, xorSql],
       [JsonObjectAggExpr, renameFunc('JSON_GROUP_OBJECT')],
@@ -3314,7 +3533,7 @@ class DuckDBGenerator extends Generator {
       );
     }
 
-    const baseSql = strToTimeSql(this, expression);
+    const baseSql = strToTimeSql.call(this, expression);
     if (needsTz) {
       return this.sql(
         new CastExpr({
@@ -3393,8 +3612,8 @@ class DuckDBGenerator extends Generator {
     return this.func('JSON', [arg]);
   }
 
-  @unsupportedArgs('decimals')
   truncSql (expression: TruncExpr): string {
+    unsupportedArgs.call(this, expression, 'decimals');
     return this.func('TRUNC', [expression.args.this]);
   }
 
@@ -3506,7 +3725,7 @@ class DuckDBGenerator extends Generator {
         const mVal = parseInt((minute instanceof LiteralExpr ? minute.args.this : minute) ?? '0');
         const sVal = parseInt((sec instanceof Expression ? sec.args.this as string : sec) ?? '0');
         if (0 <= hVal && hVal <= 23 && 0 <= mVal && mVal <= 59 && 0 <= sVal && sVal <= 59) {
-          return renameFunc('MAKE_TIME')(this, expression);
+          return renameFunc('MAKE_TIME').call(this, expression);
         }
       }
 
@@ -3562,7 +3781,7 @@ class DuckDBGenerator extends Generator {
       );
     }
 
-    return renameFunc('MAKE_TIME')(this, expression);
+    return renameFunc('MAKE_TIME').call(this, expression);
   }
 
   /** Transpile EXTRACT with DuckDB strftime/epoch mappings. */
@@ -3650,7 +3869,7 @@ class DuckDBGenerator extends Generator {
     }
 
     let sec = expression.args.sec;
-    if (!sec) return renameFunc('MAKE_TIMESTAMP')(this, expression);
+    if (!sec) return renameFunc('MAKE_TIMESTAMP').call(this, expression);
 
     const milli = expression.args.milli;
     if (milli) {
@@ -3678,14 +3897,14 @@ class DuckDBGenerator extends Generator {
       expression.setArgKey('sec', sec);
     }
 
-    return renameFunc('MAKE_TIMESTAMP')(this, expression);
+    return renameFunc('MAKE_TIMESTAMP').call(this, expression);
   }
 
   timestampLtzFromPartsSql (expression: TimestampLtzFromPartsExpr): string {
     const nano = expression.args.nano;
     if (nano) nano.pop();
 
-    const timestamp = renameFunc('MAKE_TIMESTAMP')(this, expression);
+    const timestamp = renameFunc('MAKE_TIMESTAMP').call(this, expression);
     return `CAST(${timestamp} AS TIMESTAMPTZ)`;
   }
 
@@ -3696,7 +3915,7 @@ class DuckDBGenerator extends Generator {
     const nano = expression.args.nano;
     if (nano) nano.pop();
 
-    const timestamp = renameFunc('MAKE_TIMESTAMP')(this, expression);
+    const timestamp = renameFunc('MAKE_TIMESTAMP').call(this, expression);
 
     if (zone) {
       return `${timestamp} AT TIME ZONE ${this.sql(zone)}`;
@@ -3762,7 +3981,7 @@ class DuckDBGenerator extends Generator {
   generateSeriesSql (expression: GenerateSeriesExpr): string {
     // GENERATE_SERIES(a, b) -> [a, b], RANGE(a, b) -> [a, b)
     if (expression.args.isEndExclusive) {
-      return renameFunc('RANGE')(this, expression);
+      return renameFunc('RANGE').call(this, expression);
     }
 
     return this.functionFallbackSql(expression);
@@ -3773,7 +3992,7 @@ class DuckDBGenerator extends Generator {
       return this.functionFallbackSql(expression);
     }
 
-    return countIfToSum(this, expression);
+    return countIfToSum.call(this, expression);
   }
 
   bracketSql (expression: BracketExpr): string {
@@ -3890,8 +4109,8 @@ class DuckDBGenerator extends Generator {
     return this.sql(caseNode);
   }
 
-  @unsupportedArgs('insCost', 'delCost', 'subCost')
   levenshteinSql (expression: LevenshteinExpr): string {
+    unsupportedArgs.call(this, expression, 'insCost', 'delCost', 'subCost');
     const thisNode = expression.args.this;
     const exprNode = expression.args.expression;
     const maxDist = expression.args.maxDist;
@@ -4057,17 +4276,17 @@ class DuckDBGenerator extends Generator {
 
   lowerSql (expression: LowerExpr): string {
     const resultSql = this.func('LOWER', [castToVarchar(expression.args.this)]);
-    return genWithCastToBlob(this, expression, resultSql);
+    return genWithCastToBlob.call(this, expression, resultSql);
   }
 
   upperSql (expression: UpperExpr): string {
     const resultSql = this.func('UPPER', [castToVarchar(expression.args.this)]);
-    return genWithCastToBlob(this, expression, resultSql);
+    return genWithCastToBlob.call(this, expression, resultSql);
   }
 
   reverseSql (expression: ReverseExpr): string {
     const resultSql = this.func('REVERSE', [castToVarchar(expression.args.this)]);
-    return genWithCastToBlob(this, expression, resultSql);
+    return genWithCastToBlob.call(this, expression, resultSql);
   }
 
   /**
@@ -4122,19 +4341,19 @@ class DuckDBGenerator extends Generator {
       castToVarchar(expression.args.expression),
       castToVarchar(expression.args.replacement),
     ]);
-    return genWithCastToBlob(this, expression, resultSql);
+    return genWithCastToBlob.call(this, expression, resultSql);
   }
 
   bitwiseOp (expression: BinaryExpr, op: string): string {
     prepareBinaryBitwiseArgs(expression);
     const resultSql = this.binary(expression, op);
-    return genWithCastToBlob(this, expression, resultSql);
+    return genWithCastToBlob.call(this, expression, resultSql);
   }
 
   bitwiseXorSql (expression: BitwiseXorExpr): string {
     prepareBinaryBitwiseArgs(expression);
     const resultSql = this.func('XOR', [expression.args.this, expression.args.expression]);
-    return genWithCastToBlob(this, expression, resultSql);
+    return genWithCastToBlob.call(this, expression, resultSql);
   }
 
   objectInsertSql (expression: ObjectInsertExpr): string {
@@ -4164,7 +4383,7 @@ class DuckDBGenerator extends Generator {
   }
 
   startsWithSql (expression: StartsWithExpr): string {
-    return this.func('STARTS_WITH', [castToVarchar(expression.args.this)!, castToVarchar(expression.args.expression)!]);
+    return this.func('STARTS_WITH', [castToVarchar(expression.args.this), castToVarchar(expression.args.expression)]);
   }
 
   spaceSql (expression: SpaceExpr): string {
@@ -4556,7 +4775,7 @@ class DuckDBGenerator extends Generator {
     }
 
     const resultSql = super.trimSql(expression);
-    return genWithCastToBlob(this, expression, resultSql);
+    return genWithCastToBlob.call(this, expression, resultSql);
   }
 
   roundSql (expression: RoundExpr): string {
@@ -4652,7 +4871,7 @@ class DuckDBGenerator extends Generator {
         expression: LiteralExpr.string('$'),
       });
     }
-    return arrowJsonExtractSqlDuckDB(this, expression);
+    return arrowJsonExtractSqlDuckDB.call(this, expression);
   }
 
   bitwiseNotSql (expression: BitwiseNotExpr): string {
@@ -4668,7 +4887,7 @@ class DuckDBGenerator extends Generator {
 
     expression.setArgKey('this', arg);
     const resultSql = `~${this.sql(expression, 'this')}`;
-    return genWithCastToBlob(this, expression, resultSql);
+    return genWithCastToBlob.call(this, expression, resultSql);
   }
 
   windowSql (expression: WindowExpr): string {

@@ -41,6 +41,7 @@ import {
   Generator, unsupportedArgs,
 } from '../generator';
 import { Parser } from '../parser';
+import type { TokenType } from '../tokens';
 import { Tokenizer } from '../tokens';
 import {
   eliminateDistinctOn, eliminateSemiAndAntiJoins, moveSchemaColumnsToPartitionedBy, preprocess,
@@ -118,9 +119,9 @@ class DrillGenerator extends Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
       [CurrentTimestampExpr, () => 'CURRENT_TIMESTAMP'],
       [ArrayContainsExpr, renameFunc('REPEATED_CONTAINS')],
@@ -128,54 +129,103 @@ class DrillGenerator extends Generator {
       [DateAddExpr, dateAddSql('ADD')],
       [DateStrToDateExpr, dateStrToDateSql],
       [DateSubExpr, dateAddSql('SUB')],
-      [DateToDiExpr, (self, e) => `CAST(TO_DATE(${self.sql(e, 'this')}, ${Drill.DATEINT_FORMAT}) AS INT)`],
-      [DiToDateExpr, (self, e) => `TO_DATE(CAST(${self.sql(e, 'this')} AS VARCHAR), ${Drill.DATEINT_FORMAT})`],
+      [
+        DateToDiExpr,
+        function (this: Generator, e) {
+          return `CAST(TO_DATE(${this.sql(e, 'this')}, ${Drill.DATEINT_FORMAT}) AS INT)`;
+        },
+      ],
+      [
+        DiToDateExpr,
+        function (this: Generator, e) {
+          return `TO_DATE(CAST(${this.sql(e, 'this')} AS VARCHAR), ${Drill.DATEINT_FORMAT})`;
+        },
+      ],
       [
         IfExpr,
-        (self, e) => `\`IF\`(${self.formatArgs([
-          e.args.this,
-          e.args.true,
-          e.args.false,
-        ])})`,
+        function (this: Generator, e) {
+          return `\`IF\`(${this.formatArgs([
+            e.args.this,
+            e.args.true,
+            e.args.false,
+          ])})`;
+        },
       ],
-      [ILikeExpr, (self, e) => self.binary(e, '`ILIKE`')],
+      [
+        ILikeExpr,
+        function (this: Generator, e) {
+          return this.binary(e, '`ILIKE`');
+        },
+      ],
       [
         LevenshteinExpr,
-        (self, e) => unsupportedArgs(
-          'insCost',
-          'delCost',
-          'subCost',
-          'maxDist',
-        )((e) => renameFunc('LEVENSHTEIN_DISTANCE')(self, e))(e),
+        function (this: Generator, e) {
+          unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
+          return renameFunc('LEVENSHTEIN_DISTANCE').call(this, e);
+        },
       ],
-      [PartitionedByPropertyExpr, (self, e) => `PARTITION BY ${self.sql(e, 'this')}`],
+      [
+        PartitionedByPropertyExpr,
+        function (this: Generator, e) {
+          return `PARTITION BY ${this.sql(e, 'this')}`;
+        },
+      ],
       [RegexpLikeExpr, renameFunc('REGEXP_MATCHES')],
-      [StrToDateExpr, (self, e) => (self as DrillGenerator).strToDate(e)],
+      [
+        StrToDateExpr,
+        function (this: Generator, e) {
+          return (this as DrillGenerator).strToDate(e);
+        },
+      ],
       [PowExpr, renameFunc('POW')],
       [SelectExpr, preprocess([eliminateDistinctOn, eliminateSemiAndAntiJoins])],
       [StrPositionExpr, strPositionSql],
-      [StrToTimeExpr, (self, e) => self.func('TO_TIMESTAMP', [e.args.this, self.formatTime(e)])],
+      [
+        StrToTimeExpr,
+        function (this: Generator, e) {
+          return this.func('TO_TIMESTAMP', [e.args.this, this.formatTime(e)]);
+        },
+      ],
       [
         TimeStrToDateExpr,
-        (self, e) => self.sql(new CastExpr({
-          this: e.args.this,
-          to: new DataTypeExpr({ this: DataTypeExprKind.DATE }),
-        })),
+        function (this: Generator, e) {
+          return this.sql(new CastExpr({
+            this: e.args.this,
+            to: new DataTypeExpr({ this: DataTypeExprKind.DATE }),
+          }));
+        },
       ],
       [TimeStrToTimeExpr, timeStrToTimeSql],
       [TimeStrToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
-      [TimeToStrExpr, (self, e) => self.func('TO_CHAR', [e.args.this, self.formatTime(e)])],
+      [
+        TimeToStrExpr,
+        function (this: Generator, e) {
+          return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+        },
+      ],
       [TimeToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
-      [ToCharExpr, (self, e) => self.functionFallbackSql(e)],
+      [
+        ToCharExpr,
+        function (this: Generator, e) {
+          return this.functionFallbackSql(e);
+        },
+      ],
       [TryCastExpr, noTrycastSql],
       [
         TsOrDsAddExpr,
-        (self, e) => `DATE_ADD(CAST(${self.sql(e, 'this')} AS DATE), ${self.sql(new IntervalExpr({
-          this: e.args.expression,
-          unit: new VarExpr({ this: 'DAY' }),
-        }))})`,
+        function (this: Generator, e) {
+          return `DATE_ADD(CAST(${this.sql(e, 'this')} AS DATE), ${this.sql(new IntervalExpr({
+            this: e.args.expression,
+            unit: new VarExpr({ this: 'DAY' }),
+          }))})`;
+        },
       ],
-      [TsOrDiToDiExpr, (self, e) => `CAST(SUBSTR(REPLACE(CAST(${self.sql(e, 'this')} AS VARCHAR), '-', ''), 1, 8) AS INT)`],
+      [
+        TsOrDiToDiExpr,
+        function (this: Generator, e) {
+          return `CAST(SUBSTR(REPLACE(CAST(${this.sql(e, 'this')} AS VARCHAR), '-', ''), 1, 8) AS INT)`;
+        },
+      ],
     ]);
     return transforms;
   }

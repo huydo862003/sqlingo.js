@@ -570,14 +570,14 @@ function buildIfFromNullifzero (args: Expression[]): IfExpr {
   });
 }
 
-function regexpILikeSql (self: Generator, expression: RegexpILikeExpr): string {
+function regexpILikeSql (this: Generator, expression: RegexpILikeExpr): string {
   let flag = expression.text('flag');
 
   if (!flag.includes('i')) {
     flag += 'i';
   }
 
-  return self.func(
+  return this.func(
     'REGEXP_LIKE',
     [
       expression.args.this,
@@ -598,8 +598,8 @@ function buildRegexpReplace (args: Expression[]): RegexpReplaceExpr {
 }
 
 function showParser (str: string) {
-  return (self: Parser): ShowExpr => {
-    return (self as SnowflakeParser).parseShowSnowflake(str);
+  return function (this: Parser): ShowExpr {
+    return (this as SnowflakeParser).parseShowSnowflake(str);
   };
 }
 
@@ -776,7 +776,7 @@ function buildRegexpExtract<T extends Expression> (ExprClass: new (args: any) =>
   };
 }
 
-function regexpExtractSql (self: Generator, expression: RegexpExtractExpr | RegexpExtractAllExpr): string {
+function regexpExtractSql (this: Generator, expression: RegexpExtractExpr | RegexpExtractAllExpr): string {
   let group = expression.args.group;
 
   if (group instanceof IdentifierExpr && group.name === '0') {
@@ -787,7 +787,7 @@ function regexpExtractSql (self: Generator, expression: RegexpExtractExpr | Rege
   const occurrence = expression.args.occurrence || (parameters ? LiteralExpr.number(1) : undefined);
   const position = expression.args.position || (occurrence ? LiteralExpr.number(1) : undefined);
 
-  return self.func(
+  return this.func(
     expression instanceof RegexpExtractExpr ? 'REGEXP_SUBSTR' : 'REGEXP_EXTRACT_ALL',
     [
       expression.args.this,
@@ -801,7 +801,7 @@ function regexpExtractSql (self: Generator, expression: RegexpExtractExpr | Rege
 }
 
 function jsonExtractValueArraySql (
-  self: Generator,
+  this: Generator,
   expression: JsonValueArrayExpr | JsonExtractArrayExpr,
 ): string {
   const jsonExtract = new JsonExtractExpr({
@@ -823,7 +823,7 @@ function jsonExtractValueArraySql (
     this: thisNode,
   });
 
-  return self.func('TRANSFORM', [jsonExtract, transformLambda]);
+  return this.func('TRANSFORM', [jsonExtract, transformLambda]);
 }
 
 function qualifyUnnestedColumns (expression: Expression): Expression {
@@ -1474,15 +1474,25 @@ class SnowflakeParser extends Parser {
   }
 
   @cache
-  static get FUNCTION_PARSERS (): Partial<Record<string, (self: Parser) => Expression | undefined>> {
+  static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return (() => {
-      const parsers: Partial<Record<string, (self: Parser) => Expression | undefined>> = {
+      const parsers: Partial<Record<string, (this: Parser) => Expression | undefined>> = {
         ...Parser.FUNCTION_PARSERS,
-        DATE_PART: (self: Parser) => (self as SnowflakeParser).parseDatePart(),
-        DIRECTORY: (self: Parser) => (self as SnowflakeParser).parseDirectory(),
-        OBJECT_CONSTRUCT_KEEP_NULL: (self: Parser) => (self as SnowflakeParser).parseJsonObject(),
-        LISTAGG: (self: Parser) => self.parseStringAgg(),
-        SEMANTIC_VIEW: (self: Parser) => (self as SnowflakeParser).parseSemanticView(),
+        DATE_PART: function (this: Parser) {
+          return (this as SnowflakeParser).parseDatePart();
+        },
+        DIRECTORY: function (this: Parser) {
+          return (this as SnowflakeParser).parseDirectory();
+        },
+        OBJECT_CONSTRUCT_KEEP_NULL: function (this: Parser) {
+          return (this as SnowflakeParser).parseJsonObject();
+        },
+        LISTAGG: function (this: Parser) {
+          return this.parseStringAgg();
+        },
+        SEMANTIC_VIEW: function (this: Parser) {
+          return (this as SnowflakeParser).parseSemanticView();
+        },
       };
       delete parsers['TRIM'];
       return parsers;
@@ -1497,42 +1507,60 @@ class SnowflakeParser extends Parser {
   }
 
   @cache
-  static get ALTER_PARSERS (): Partial<Record<string, (self: Parser) => Expression | Expression[] | undefined>> {
+  static get ALTER_PARSERS (): Partial<Record<string, (this: Parser) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.ALTER_PARSERS,
-      SESSION: (self: Parser) => self.parseAlterSession(),
-      UNSET: (self: Parser) =>
-        self.expression(SetExpr, {
-          tag: self.matchTextSeq('TAG'),
-          expressions: self.parseCsv(() => self.parseIdVar()),
+      SESSION: function (this: Parser) {
+        return this.parseAlterSession();
+      },
+      UNSET: function (this: Parser) {
+        return this.expression(SetExpr, {
+          tag: this.matchTextSeq('TAG'),
+          expressions: this.parseCsv(() => this.parseIdVar()),
           unset: true,
-        }),
+        });
+      },
     };
   }
 
   @cache
-  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (self: Parser) => Expression | undefined>> {
+  static get STATEMENT_PARSERS (): Partial<Record<TokenType, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.STATEMENT_PARSERS,
-      [TokenType.GET]: (self: Parser) => (self as SnowflakeParser).parseGet(),
-      [TokenType.PUT]: (self: Parser) => (self as SnowflakeParser).parsePut(),
-      [TokenType.SHOW]: (self: Parser) => self.parseShow(),
+      [TokenType.GET]: function (this: Parser) {
+        return (this as SnowflakeParser).parseGet();
+      },
+      [TokenType.PUT]: function (this: Parser) {
+        return (this as SnowflakeParser).parsePut();
+      },
+      [TokenType.SHOW]: function (this: Parser) {
+        return this.parseShow();
+      },
     };
   }
 
   @cache
-  static get PROPERTY_PARSERS (): Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
+  static get PROPERTY_PARSERS (): Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return {
       ...Parser.PROPERTY_PARSERS,
-      CREDENTIALS: (self: Parser) => (self as SnowflakeParser).parseCredentialsProperty(),
-      FILE_FORMAT: (self: Parser) => (self as SnowflakeParser).parseFileFormatProperty(),
-      LOCATION: (self: Parser) => (self as SnowflakeParser).parseLocationProperty(),
-      TAG: (self: Parser) => (self as SnowflakeParser).parseTag(),
-      USING: (self: Parser) =>
-        self.matchTextSeq('TEMPLATE')
-        && self.expression(UsingTemplatePropertyExpr, {
-          this: self.parseStatement(),
-        }),
+      CREDENTIALS: function (this: Parser) {
+        return (this as SnowflakeParser).parseCredentialsProperty();
+      },
+      FILE_FORMAT: function (this: Parser) {
+        return (this as SnowflakeParser).parseFileFormatProperty();
+      },
+      LOCATION: function (this: Parser) {
+        return (this as SnowflakeParser).parseLocationProperty();
+      },
+      TAG: function (this: Parser) {
+        return (this as SnowflakeParser).parseTag();
+      },
+      USING: function (this: Parser) {
+        return this.matchTextSeq('TEMPLATE')
+          && this.expression(UsingTemplatePropertyExpr, {
+            this: this.parseStatement(),
+          });
+      },
     };
   }
 
@@ -1570,13 +1598,21 @@ class SnowflakeParser extends Parser {
   };
 
   @cache
-  static get CONSTRAINT_PARSERS (): Partial<Record<string, (self: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
+  static get CONSTRAINT_PARSERS (): Partial<Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.CONSTRAINT_PARSERS,
-      WITH: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
-      MASKING: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
-      PROJECTION: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
-      TAG: (self: Parser) => (self as SnowflakeParser).parseWithConstraint(),
+      WITH: function (this: Parser) {
+        return (this as SnowflakeParser).parseWithConstraint();
+      },
+      MASKING: function (this: Parser) {
+        return (this as SnowflakeParser).parseWithConstraint();
+      },
+      PROJECTION: function (this: Parser) {
+        return (this as SnowflakeParser).parseWithConstraint();
+      },
+      TAG: function (this: Parser) {
+        return (this as SnowflakeParser).parseWithConstraint();
+      },
     };
   }
 
@@ -1615,26 +1651,28 @@ class SnowflakeParser extends Parser {
   ]);
 
   @cache
-  static get LAMBDAS (): Partial<Record<TokenType, (self: Parser, expressions: Expression[]) => Expression>> {
+  static get LAMBDAS (): Partial<Record<TokenType, (this: Parser, expressions: Expression[]) => Expression>> {
     return {
       ...Parser.LAMBDAS,
-      [TokenType.ARROW]: (self: Parser, expressions: Expression[]) =>
-        self.expression(LambdaExpr, {
-          this: self.replaceLambda(self.parseAssignment(), expressions),
+      [TokenType.ARROW]: function (this: Parser, expressions: Expression[]) {
+        return this.expression(LambdaExpr, {
+          this: this.replaceLambda(this.parseAssignment(), expressions),
           expressions: expressions.map((e) => (e instanceof CastExpr ? e.args.this : e)),
-        }),
+        });
+      },
     };
   }
 
   @cache
-  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((self: Parser, this_?: Expression, to?: Expression) => Expression)>> {
+  static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((this: Parser, this_?: Expression, to?: Expression) => Expression)>> {
     return {
       ...Parser.COLUMN_OPERATORS,
-      [TokenType.EXCLAMATION]: (self: Parser, thisNode?: Expression, attr?: Expression) =>
-        self.expression(ModelAttributeExpr, {
+      [TokenType.EXCLAMATION]: function (this: Parser, thisNode?: Expression, attr?: Expression) {
+        return this.expression(ModelAttributeExpr, {
           this: thisNode,
           expression: attr,
-        }),
+        });
+      },
     };
   }
 
@@ -2148,9 +2186,9 @@ class SnowflakeGenerator extends Generator {
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (self: Generator, e: any) => string> {
+  static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transforms = new Map<typeof Expression, (self: Generator, e: any) => string>([
+    const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
       [ApproxDistinctExpr, renameFunc('APPROX_COUNT_DISTINCT')],
       [ArgMaxExpr, renameFunc('MAX_BY')],
@@ -2161,8 +2199,8 @@ class SnowflakeGenerator extends Generator {
       [ArrayPrependExpr, arrayAppendSql('ARRAY_PREPEND')],
       [
         ArrayContainsExpr,
-        (self: Generator, e: ArrayContainsExpr) =>
-          self.func('ARRAY_CONTAINS', [
+        function (this: Generator, e: ArrayContainsExpr) {
+          return this.func('ARRAY_CONTAINS', [
             e.args.ensureVariant === false
               ? e.args.expression
               : new CastExpr({
@@ -2170,13 +2208,15 @@ class SnowflakeGenerator extends Generator {
                 to: DataTypeExpr.build(DataTypeExprKind.VARIANT),
               }),
             e.args.this,
-          ]),
+          ]);
+        },
       ],
       [ArrayIntersectExpr, renameFunc('ARRAY_INTERSECTION')],
       [
         AtTimeZoneExpr,
-        (self: Generator, e: AtTimeZoneExpr) =>
-          self.func('CONVERT_TIMEZONE', [e.args.zone, e.args.this]),
+        function (this: Generator, e: AtTimeZoneExpr) {
+          return this.func('CONVERT_TIMEZONE', [e.args.zone, e.args.this]);
+        },
       ],
       [BitwiseOrExpr, renameFunc('BITOR')],
       [BitwiseXorExpr, renameFunc('BITXOR')],
@@ -2190,18 +2230,21 @@ class SnowflakeGenerator extends Generator {
       [CreateExpr, preprocess([flattenStructuredTypesUnlessIceberg])],
       [
         CurrentTimestampExpr,
-        (self: Generator, e: CurrentTimestampExpr) =>
-          e.args.sysdate ? self.func('SYSDATE', []) : self.functionFallbackSql(e),
+        function (this: Generator, e: CurrentTimestampExpr) {
+          return e.args.sysdate ? this.func('SYSDATE', []) : this.functionFallbackSql(e);
+        },
       ],
       [
         LocaltimeExpr,
-        (self: Generator, e: LocaltimeExpr) =>
-          e.args.this ? self.func('CURRENT_TIME', [e.args.this]) : 'CURRENT_TIME',
+        function (this: Generator, e: LocaltimeExpr) {
+          return e.args.this ? this.func('CURRENT_TIME', [e.args.this]) : 'CURRENT_TIME';
+        },
       ],
       [
         LocaltimestampExpr,
-        (self: Generator, e: LocaltimestampExpr) =>
-          e.args.this ? self.func('CURRENT_TIMESTAMP', [e.args.this]) : 'CURRENT_TIMESTAMP',
+        function (this: Generator, e: LocaltimestampExpr) {
+          return e.args.this ? this.func('CURRENT_TIMESTAMP', [e.args.this]) : 'CURRENT_TIMESTAMP';
+        },
       ],
       [DateAddExpr, dateDeltaSql('DATEADD')],
       [DateDiffExpr, dateDeltaSql('DATEDIFF')],
@@ -2210,25 +2253,27 @@ class SnowflakeGenerator extends Generator {
       [DateStrToDateExpr, dateStrToDateSql],
       [
         DecryptExpr,
-        (self: Generator, e: DecryptExpr) =>
-          self.func(`${e.args.safe ? 'TRY_' : ''}DECRYPT`, [
+        function (this: Generator, e: DecryptExpr) {
+          return this.func(`${e.args.safe ? 'TRY_' : ''}DECRYPT`, [
             e.args.this,
             e.args.passphrase,
             e.args.aad,
             e.args.encryptionMethod,
-          ]),
+          ]);
+        },
       ],
       [
         DecryptRawExpr,
-        (self: Generator, e: DecryptRawExpr) =>
-          self.func(`${e.args.safe ? 'TRY_' : ''}DECRYPT_RAW`, [
+        function (this: Generator, e: DecryptRawExpr) {
+          return this.func(`${e.args.safe ? 'TRY_' : ''}DECRYPT_RAW`, [
             e.args.this,
             e.args.key,
             e.args.iv,
             e.args.aad,
             e.args.encryptionMethod,
             e.args.aead as Expression | undefined,
-          ]),
+          ]);
+        },
       ],
       [DayOfMonthExpr, renameFunc('DAYOFMONTH')],
       [DayOfWeekExpr, renameFunc('DAYOFWEEK')],
@@ -2238,104 +2283,138 @@ class SnowflakeGenerator extends Generator {
       [ExplodeExpr, renameFunc('FLATTEN')],
       [
         ExtractExpr,
-        (self: Generator, e: ExtractExpr) =>
-          self.func('DATE_PART', [mapDatePart(e.args.this, { dialect: self.dialect }), e.args.expression]),
+        function (this: Generator, e: ExtractExpr) {
+          return this.func('DATE_PART', [mapDatePart(e.args.this, { dialect: this.dialect }), e.args.expression]);
+        },
       ],
       [CosineDistanceExpr, renameFunc('VECTOR_COSINE_SIMILARITY')],
       [EuclideanDistanceExpr, renameFunc('VECTOR_L2_DISTANCE')],
       [
         FileFormatPropertyExpr,
-        (self: Generator, e: FileFormatPropertyExpr) =>
-          `FILE_FORMAT=(${self.expressions(e, {
+        function (this: Generator, e: FileFormatPropertyExpr) {
+          return `FILE_FORMAT=(${this.expressions(e, {
             key: 'expressions',
             sep: ' ',
-          })})`,
+          })})`;
+        },
       ],
       [
         FromTimeZoneExpr,
-        (self: Generator, e: FromTimeZoneExpr) =>
-          self.func('CONVERT_TIMEZONE', [
+        function (this: Generator, e: FromTimeZoneExpr) {
+          return this.func('CONVERT_TIMEZONE', [
             e.args.zone,
             LiteralExpr.string('UTC'),
             e.args.this,
-          ]),
+          ]);
+        },
       ],
       [
         GenerateSeriesExpr,
-        (self: Generator, e: GenerateSeriesExpr) =>
-          self.func('ARRAY_GENERATE_RANGE', [
+        function (this: Generator, e: GenerateSeriesExpr) {
+          return this.func('ARRAY_GENERATE_RANGE', [
             e.args.start,
             e.args.end?.add(1),
             e.args.step,
-          ]),
+          ]);
+        },
       ],
       [GetExtractExpr, renameFunc('GET')],
-      [GroupConcatExpr, (self: Generator, e: GroupConcatExpr) => groupConcatSql(self, e, { sep: '' })],
+      [
+        GroupConcatExpr,
+        function (this: Generator, e: GroupConcatExpr) {
+          return groupConcatSql.call(this, e, { sep: '' });
+        },
+      ],
       [IfExpr, ifSql('IFF', 'NULL')],
       [JsonExtractArrayExpr, jsonExtractValueArraySql],
       [
         JsonExtractScalarExpr,
-        (self: Generator, e: JsonExtractScalarExpr) =>
-          self.func('JSON_EXTRACT_PATH_TEXT', [e.args.this, e.args.expression]),
+        function (this: Generator, e: JsonExtractScalarExpr) {
+          return this.func('JSON_EXTRACT_PATH_TEXT', [e.args.this, e.args.expression]);
+        },
       ],
       [JsonKeysExpr, renameFunc('OBJECT_KEYS')],
       [
         JsonObjectExpr,
-        (self: Generator, e: JsonObjectExpr) =>
-          self.func('OBJECT_CONSTRUCT_KEEP_NULL', e.args.expressions || []),
+        function (this: Generator, e: JsonObjectExpr) {
+          return this.func('OBJECT_CONSTRUCT_KEEP_NULL', e.args.expressions || []);
+        },
       ],
       [JsonPathRootExpr, () => ''],
       [JsonValueArrayExpr, jsonExtractValueArraySql],
       [
         LevenshteinExpr,
-        (self: Generator, e: LevenshteinExpr) =>
-          unsupportedArgs('insCost', 'delCost', 'subCost')(() => renameFunc('EDITDISTANCE')(self, e))(e),
+        function (this: Generator, e: LevenshteinExpr) {
+          unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost');
+          return renameFunc('EDITDISTANCE').call(this, e);
+        },
       ],
-      [LocationPropertyExpr, (self: Generator, e: LocationPropertyExpr) => `LOCATION=${self.sql(e, 'this')}`],
+      [
+        LocationPropertyExpr,
+        function (this: Generator, e: LocationPropertyExpr) {
+          return `LOCATION=${this.sql(e, 'this')}`;
+        },
+      ],
       [LogicalAndExpr, renameFunc('BOOLAND_AGG')],
       [LogicalOrExpr, renameFunc('BOOLOR_AGG')],
-      [MapExpr, (self: Generator, e: MapExpr) => varMapSql(self, e, 'OBJECT_CONSTRUCT')],
+      [
+        MapExpr,
+        function (this: Generator, e: MapExpr) {
+          return varMapSql.call(this, e, 'OBJECT_CONSTRUCT');
+        },
+      ],
       [ManhattanDistanceExpr, renameFunc('VECTOR_L1_DISTANCE')],
       [MakeIntervalExpr, noMakeIntervalSql],
       [MaxExpr, maxOrGreatest],
       [MinExpr, minOrLeast],
       [
         ParseJsonExpr,
-        (self: Generator, e: ParseJsonExpr) =>
-          self.func(`${e.args.safe ? 'TRY_' : ''}PARSE_JSON`, [e.args.this]),
+        function (this: Generator, e: ParseJsonExpr) {
+          return this.func(`${e.args.safe ? 'TRY_' : ''}PARSE_JSON`, [e.args.this]);
+        },
       ],
       [
         ToBinaryExpr,
-        (self: Generator, e: ToBinaryExpr) =>
-          self.func(`${e.args.safe ? 'TRY_' : ''}TO_BINARY`, [e.args.this, e.args.format]),
+        function (this: Generator, e: ToBinaryExpr) {
+          return this.func(`${e.args.safe ? 'TRY_' : ''}TO_BINARY`, [e.args.this, e.args.format]);
+        },
       ],
       [
         ToBooleanExpr,
-        (self: Generator, e: ToBooleanExpr) =>
-          self.func(`${e.args.safe ? 'TRY_' : ''}TO_BOOLEAN`, [e.args.this]),
+        function (this: Generator, e: ToBooleanExpr) {
+          return this.func(`${e.args.safe ? 'TRY_' : ''}TO_BOOLEAN`, [e.args.this]);
+        },
       ],
       [
         ToDoubleExpr,
-        (self: Generator, e: ToDoubleExpr) =>
-          self.func(`${e.args.safe ? 'TRY_' : ''}TO_DOUBLE`, [e.args.this, e.args.format]),
+        function (this: Generator, e: ToDoubleExpr) {
+          return this.func(`${e.args.safe ? 'TRY_' : ''}TO_DOUBLE`, [e.args.this, e.args.format]);
+        },
       ],
       [
         ToFileExpr,
-        (self: Generator, e: ToFileExpr) =>
-          self.func(`${e.args.safe ? 'TRY_' : ''}TO_FILE`, [e.args.this, e.args.path]),
+        function (this: Generator, e: ToFileExpr) {
+          return this.func(`${e.args.safe ? 'TRY_' : ''}TO_FILE`, [e.args.this, e.args.path]);
+        },
       ],
       [
         ToNumberExpr,
-        (self: Generator, e: ToNumberExpr) =>
-          self.func(`${e.args.safe ? 'TRY_' : ''}TO_NUMBER`, [
+        function (this: Generator, e: ToNumberExpr) {
+          return this.func(`${e.args.safe ? 'TRY_' : ''}TO_NUMBER`, [
             e.args.this,
             e.args.format,
             e.args.precision,
             e.args.scale,
-          ]),
+          ]);
+        },
       ],
       [JsonFormatExpr, renameFunc('TO_JSON')],
-      [PartitionedByPropertyExpr, (self: Generator, e: PartitionedByPropertyExpr) => `PARTITION BY ${self.sql(e, 'this')}`],
+      [
+        PartitionedByPropertyExpr,
+        function (this: Generator, e: PartitionedByPropertyExpr) {
+          return `PARTITION BY ${this.sql(e, 'this')}`;
+        },
+      ],
       [PercentileContExpr, preprocess([addWithinGroupForPercentiles])],
       [PercentileDiscExpr, preprocess([addWithinGroupForPercentiles])],
       [PivotExpr, preprocess([unqualifyPivotColumns])],
@@ -2368,59 +2447,89 @@ class SnowflakeGenerator extends Generator {
       [EndsWithExpr, renameFunc('ENDSWITH')],
       [
         StrPositionExpr,
-        (self: Generator, e: StrPositionExpr) =>
-          strPositionSql(self, e, {
+        function (this: Generator, e: StrPositionExpr) {
+          return strPositionSql.call(this, e, {
             funcName: 'CHARINDEX',
             supportsPosition: true,
-          }),
+          });
+        },
       ],
-      [StrToDateExpr, (self: Generator, e: StrToDateExpr) => self.func('DATE', [e.args.this, self.formatTime(e)])],
+      [
+        StrToDateExpr,
+        function (this: Generator, e: StrToDateExpr) {
+          return this.func('DATE', [e.args.this, this.formatTime(e)]);
+        },
+      ],
       [StringToArrayExpr, renameFunc('STRTOK_TO_ARRAY')],
       [StuffExpr, renameFunc('INSERT')],
       [StPointExpr, renameFunc('ST_MAKEPOINT')],
       [TimeAddExpr, dateDeltaSql('TIMEADD')],
       [
         TimeSliceExpr,
-        (self: Generator, e: TimeSliceExpr) =>
-          self.func('TIME_SLICE', [
+        function (this: Generator, e: TimeSliceExpr) {
+          return this.func('TIME_SLICE', [
             e.args.this,
             e.args.expression,
             unitToStr(e),
             e.args.kind,
-          ]),
+          ]);
+        },
       ],
       [TimestampExpr, noTimestampSql],
       [TimestampAddExpr, dateDeltaSql('TIMESTAMPADD')],
       [
         TimestampDiffExpr,
-        (self: Generator, e: TimestampDiffExpr) =>
-          self.func('TIMESTAMPDIFF', [
+        function (this: Generator, e: TimestampDiffExpr) {
+          return this.func('TIMESTAMPDIFF', [
             e.args.unit,
             e.args.expression,
             e.args.this,
-          ]),
+          ]);
+        },
       ],
       [TimestampTruncExpr, timestampTruncSql()],
       [TimeStrToTimeExpr, timeStrToTimeSql],
-      [TimeToUnixExpr, (self: Generator, e: TimeToUnixExpr) => `EXTRACT(epoch_second FROM ${self.sql(e, 'this')})`],
+      [
+        TimeToUnixExpr,
+        function (this: Generator, e: TimeToUnixExpr) {
+          return `EXTRACT(epoch_second FROM ${this.sql(e, 'this')})`;
+        },
+      ],
       [ToArrayExpr, renameFunc('TO_ARRAY')],
-      [ToCharExpr, (self: Generator, e: ToCharExpr) => self.functionFallbackSql(e)],
+      [
+        ToCharExpr,
+        function (this: Generator, e: ToCharExpr) {
+          return this.functionFallbackSql(e);
+        },
+      ],
       [TsOrDsAddExpr, dateDeltaSql('DATEADD', { cast: true })],
       [TsOrDsDiffExpr, dateDeltaSql('DATEDIFF')],
       [
         TsOrDsToDateExpr,
-        (self: Generator, e: TsOrDsToDateExpr) =>
-          self.func(`${e.args.safe ? 'TRY_' : ''}TO_DATE`, [e.args.this, self.formatTime(e)]),
+        function (this: Generator, e: TsOrDsToDateExpr) {
+          return this.func(`${e.args.safe ? 'TRY_' : ''}TO_DATE`, [e.args.this, this.formatTime(e)]);
+        },
       ],
       [
         TsOrDsToTimeExpr,
-        (self: Generator, e: TsOrDsToTimeExpr) =>
-          self.func(`${e.args.safe ? 'TRY_' : ''}TO_TIME`, [e.args.this, self.formatTime(e)]),
+        function (this: Generator, e: TsOrDsToTimeExpr) {
+          return this.func(`${e.args.safe ? 'TRY_' : ''}TO_TIME`, [e.args.this, this.formatTime(e)]);
+        },
       ],
       [UnhexExpr, renameFunc('HEX_DECODE_BINARY')],
-      [UnixToTimeExpr, (self: Generator, e: UnixToTimeExpr) => self.func('TO_TIMESTAMP', [e.args.this, e.args.scale])],
+      [
+        UnixToTimeExpr,
+        function (this: Generator, e: UnixToTimeExpr) {
+          return this.func('TO_TIMESTAMP', [e.args.this, e.args.scale]);
+        },
+      ],
       [UuidExpr, renameFunc('UUID_STRING')],
-      [VarMapExpr, (self: Generator, e: VarMapExpr) => varMapSql(self, e, 'OBJECT_CONSTRUCT')],
+      [
+        VarMapExpr,
+        function (this: Generator, e: VarMapExpr) {
+          return varMapSql.call(this, e, 'OBJECT_CONSTRUCT');
+        },
+      ],
       [BoolandExpr, renameFunc('BOOLAND')],
       [BoolorExpr, renameFunc('BOOLOR')],
       [WeekOfYearExpr, renameFunc('WEEKISO')],
@@ -2431,13 +2540,15 @@ class SnowflakeGenerator extends Generator {
       [FlattenExpr, renameFunc('ARRAY_FLATTEN')],
       [
         ArrayConcatAggExpr,
-        (self: Generator, e: ArrayConcatAggExpr) =>
-          self.func('ARRAY_FLATTEN', [new ArrayAggExpr({ this: e.args.this })]),
+        function (this: Generator, e: ArrayConcatAggExpr) {
+          return this.func('ARRAY_FLATTEN', [new ArrayAggExpr({ this: e.args.this })]);
+        },
       ],
       [
         Sha2DigestExpr,
-        (self: Generator, e: Sha2DigestExpr) =>
-          self.func('SHA2_BINARY', [e.args.this, e.args.length || LiteralExpr.number(256)]),
+        function (this: Generator, e: Sha2DigestExpr) {
+          return this.func('SHA2_BINARY', [e.args.this, e.args.length || LiteralExpr.number(256)]);
+        },
       ],
     ]);
     return transforms;
@@ -2564,7 +2675,7 @@ class SnowflakeGenerator extends Generator {
       expression.setArgKey('nano', milliToNano);
     }
 
-    return renameFunc('TIMESTAMP_FROM_PARTS')(this, expression);
+    return renameFunc('TIMESTAMP_FROM_PARTS').call(this, expression);
   }
 
   castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
@@ -2779,8 +2890,8 @@ class SnowflakeGenerator extends Generator {
     return this.func('OBJECT_CONSTRUCT', args);
   }
 
-  @unsupportedArgs('weight', 'accuracy')
   approxQuantileSql (expression: ApproxQuantileExpr): string {
+    unsupportedArgs.call(this, expression, 'weight', 'accuracy');
     return this.func('APPROX_PERCENTILE', [expression.args.this, expression.args.quantile]);
   }
 
@@ -2874,7 +2985,7 @@ class SnowflakeGenerator extends Generator {
       this.unsupported('DateSub cannot be transpiled if the subtracted count is unknown');
     }
 
-    return dateDeltaSql('DATEADD')(this, expression);
+    return dateDeltaSql('DATEADD').call(this, expression);
   }
 
   selectSql (expression: SelectExpr): string {
@@ -2951,7 +3062,7 @@ class SnowflakeGenerator extends Generator {
       }
     }
 
-    return inlineArraySql(this, expression);
+    return inlineArraySql.call(this, expression);
   }
 
   currentDateSql (expression: CurrentDateExpr): string {
@@ -3005,7 +3116,7 @@ class SnowflakeGenerator extends Generator {
       expression.setArgKey('partIndex', LiteralExpr.number(1));
     }
 
-    return renameFunc('SPLIT_PART')(this, expression);
+    return renameFunc('SPLIT_PART').call(this, expression);
   }
 
   uniformSql (expression: UniformExpr): string {
