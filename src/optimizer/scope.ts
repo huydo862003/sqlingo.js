@@ -3,7 +3,7 @@
 import type {
   ExpressionValue,
   PivotExpr,
-} from '../expressions';
+} from '../expressions/expressions';
 import {
   ColumnExpr,
   CteExpr,
@@ -38,7 +38,7 @@ import {
   WindowExpr,
   WithExpr,
   WithinGroupExpr,
-} from '../expressions';
+} from '../expressions/expressions';
 import {
   isInstanceOf,
 } from '../port_internals';

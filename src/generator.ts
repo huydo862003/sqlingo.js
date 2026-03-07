@@ -614,7 +614,7 @@ export class Generator {
   // Whether null ordering is supported in order by
   // True: Full Support, None: No support, False: No support for certain cases
   // such as window specifications, aggregate functions etc
-  static NULL_ORDERING_SUPPORTED?: boolean | null = true;
+  static NULL_ORDERING_SUPPORTED?: boolean = true;
 
   // Whether ignore nulls is inside the agg or outside.
   // FIRST(x IGNORE NULLS) OVER vs FIRST (x) IGNORE NULLS OVER

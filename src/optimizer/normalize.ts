@@ -1,6 +1,6 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/normalize.py
 
-import type { Expression } from '../expressions';
+import type { Expression } from '../expressions/expressions';
 import {
   and as andExpr,
   AndExpr,
@@ -8,7 +8,7 @@ import {
   or as orExpr,
   OrExpr,
   replaceChildren,
-} from '../expressions';
+} from '../expressions/expressions';
 import { OptimizeError } from '../errors';
 import { whileChanging } from '../helper';
 import { findAllInScope } from './scope';

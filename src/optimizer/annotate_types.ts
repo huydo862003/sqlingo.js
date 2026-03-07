@@ -10,7 +10,7 @@ import {
 } from '../expressions/types';
 import type {
   IntervalExpr,
-} from '../expressions';
+} from '../expressions/expressions';
 import {
   AddExpr,
   AnonymousExpr,

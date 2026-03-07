@@ -546,7 +546,8 @@ class PrestoTokenizer extends Tokenizer {
 
   public NESTED_COMMENTS = false;
 
-  static ORIGINAL_KEYWORDS: Record<string, TokenType> = (() => {
+  @cache
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     const keywords = {
       ...Tokenizer.KEYWORDS,
       'DEALLOCATE PREPARE': TokenType.COMMAND,
@@ -567,7 +568,7 @@ class PrestoTokenizer extends Tokenizer {
     delete keywords['QUALIFY'];
 
     return keywords;
-  })();
+  }
 }
 
 class PrestoParser extends Parser {
@@ -688,12 +689,10 @@ class PrestoParser extends Parser {
 
   @cache
   static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
-    return (() => {
-      const parsers = { ...Parser.FUNCTION_PARSERS };
-      // Presto uses its own TRIM logic, so we remove the base SQL parser
-      delete parsers['TRIM'];
-      return parsers;
-    })();
+    const parsers = { ...Parser.FUNCTION_PARSERS };
+    // Presto uses its own TRIM logic, so we remove the base SQL parser
+    delete parsers['TRIM'];
+    return parsers;
   }
 }
 
@@ -747,7 +746,6 @@ class PrestoGenerator extends Generator {
   }
 
   @cache
-
   static get ORIGINAL_TRANSFORMS () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new Map<typeof Expression, (this: Generator, e: any) => string>([
@@ -1134,9 +1132,9 @@ class PrestoGenerator extends Generator {
   }
 
   /**
-     * Presto's MD5 returns VARBINARY, so it needs to be hexed and lowercased
-     * for standard string representation.
-     */
+   * Presto's MD5 returns VARBINARY, so it needs to be hexed and lowercased
+   * for standard string representation.
+   */
   public md5Sql (expression: Md5Expr): string {
     let thisArg = expression.args.this;
 
@@ -1162,10 +1160,10 @@ class PrestoGenerator extends Generator {
   }
 
   /**
-     * Converts a string to a Unix timestamp.
-     * Uses a COALESCE(TRY(DATE_PARSE), PARSE_DATETIME) pattern to handle
-     * standard formats and those containing timezones (Hive style).
-     */
+   * Converts a string to a Unix timestamp.
+   * Uses a COALESCE(TRY(DATE_PARSE), PARSE_DATETIME) pattern to handle
+   * standard formats and those containing timezones (Hive style).
+   */
   public strToUnixSql (expression: StrToUnixExpr): string {
     const thisArg = expression.args.this;
     const valueAsText = new CastExpr({
@@ -1350,7 +1348,12 @@ class PrestoGenerator extends Generator {
 export class Presto extends Dialect {
   static INDEX_OFFSET = 1;
   static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
-  static TIME_FORMAT = MySQL.TIME_FORMAT;
+
+  @cache
+  static get TIME_FORMAT () {
+    return MySQL.TIME_FORMAT;
+  }
+
   static STRICT_STRING_CONCAT = true;
   static SUPPORTS_SEMI_ANTI_JOIN = false;
   static TYPED_DIVISION = true;
@@ -1359,12 +1362,21 @@ export class Presto extends Dialect {
   static SUPPORTS_VALUES_DEFAULT = false;
   static LEAST_GREATEST_IGNORES_NULLS = false;
 
-  static TIME_MAPPING = MySQL.TIME_MAPPING;
+  @cache
+  static get TIME_MAPPING () {
+    return MySQL.TIME_MAPPING;
+  }
 
   // Presto/Trino follow a case-insensitive strategy for identifiers
-  static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE;
+  @cache
+  static get NORMALIZATION_STRATEGY () {
+    return NormalizationStrategy.CASE_INSENSITIVE;
+  }
 
-  static SUPPORTED_SETTINGS = new Set([...Dialect.SUPPORTED_SETTINGS, 'variantExtractIsJsonExtract']);
+  @cache
+  static get SUPPORTED_SETTINGS () {
+    return new Set([...Dialect.SUPPORTED_SETTINGS, 'variantExtractIsJsonExtract']);
+  }
 
   static Tokenizer = PrestoTokenizer;
   static Parser = PrestoParser;

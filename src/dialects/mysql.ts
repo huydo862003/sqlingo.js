@@ -2038,7 +2038,10 @@ export class MySQL extends Dialect {
    * setting by specifying `dialect="mysql, normalization_strategy = lowercase"`.
    * * Reference: https://dev.mysql.com/doc/refman/8.2/en/identifier-case-sensitivity.html
    */
-  static NORMALIZATION_STRATEGY: NormalizationStrategy = NormalizationStrategy.CASE_SENSITIVE;
+  @cache
+  static get NORMALIZATION_STRATEGY (): NormalizationStrategy {
+    return NormalizationStrategy.CASE_SENSITIVE;
+  }
 
   static TIME_FORMAT: string = '\'%Y-%m-%d %T\'';
   static DPIPE_IS_STRING_CONCAT: boolean = false;

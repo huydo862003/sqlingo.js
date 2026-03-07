@@ -15,7 +15,7 @@ import type {
   TableAliasExpr,
   TableExpr,
   VarExpr,
-} from '../expressions';
+} from '../expressions/expressions';
 import {
   ColumnDefExpr,
   DivExpr,
@@ -96,7 +96,7 @@ import {
   JoinExprKind,
   null_,
   isType,
-} from '../expressions';
+} from '../expressions/expressions';
 import {
   Dialect, type DialectType,
 } from '../dialects/dialect';
