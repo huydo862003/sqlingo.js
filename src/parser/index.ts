@@ -7710,18 +7710,17 @@ export class Parser {
   }
 
   parseAssignment (): Expression | undefined {
-    let thisExpr: Expression | undefined = this.parseDisjunction();
+    let thisExpr: ExpressionValue | undefined = this.parseDisjunction();
 
     if (!thisExpr && this.next && this.next.tokenType in this._constructor.ASSIGNMENT) {
       // This allows us to parse <non-identifier token> := <expr>
-      this.advanceAny({ ignoreReserved: true });
-      thisExpr = new ColumnExpr({ this: new IdentifierExpr({ this: this.prev?.text ?? '' }) });
+      const token = this.advanceAny({ ignoreReserved: true });
+      thisExpr = column({ col: token && '' });
     }
 
     const assignmentTokens = Object.keys(this._constructor.ASSIGNMENT) as TokenType[];
     while (this.matchSet(assignmentTokens)) {
       if (thisExpr instanceof ColumnExpr && thisExpr.parts.length === 1) {
-        assertIsInstanceOf(thisExpr.args.this, Expression);
         thisExpr = thisExpr.args.this;
       }
 
@@ -7737,8 +7736,7 @@ export class Parser {
         );
       }
     }
-
-    return thisExpr;
+    return thisExpr as Expression | undefined;
   }
 
   parseDisjunction (): Expression | undefined {
@@ -9119,7 +9117,7 @@ export class Parser {
     anyToken?: boolean;
     tokens?: Set<TokenType>;
   } = {}): Expression | undefined {
-    const anyToken = options?.anyToken !== undefined ? options.anyToken : true;
+    const anyToken = options?.anyToken ?? true;
     const tokens = options?.tokens;
 
     let expression = this.parseIdentifier();
@@ -10125,7 +10123,7 @@ export class Parser {
   }
 
   parseAlias (thisExpr: Expression | undefined, options: { explicit?: boolean } = {}): Expression | undefined {
-    const explicit = options?.explicit || false;
+    const { explicit = false } = options;
 
     if (this.canParseLimitOrOffset()) {
       return thisExpr;
@@ -11279,7 +11277,7 @@ export class Parser {
     anonymousFunc?: boolean;
   } = {}): Expression | undefined {
     const {
-      anyToken, tokens, anonymousFunc,
+      anyToken = false, tokens, anonymousFunc,
     } = options || {};
 
     let field: Expression | undefined;
