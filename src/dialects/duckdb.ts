@@ -1898,10 +1898,13 @@ function shaSql (
 }
 
 class DuckDBTokenizer extends Tokenizer {
-  static BYTE_STRINGS = [['e\'', '\''], ['E\'', '\'']] as TokenPair[];
+  @cache
+  static get BYTE_STRINGS (): TokenPair[] { return [['e\'', '\''], ['E\'', '\'']] as TokenPair[]; }
 
-  static BYTE_STRING_ESCAPES = ['\'', '\\'];
-  static HEREDOC_STRINGS = ['$'];
+  @cache
+  static get BYTE_STRING_ESCAPES () { return ['\'', '\\']; }
+  @cache
+  static get HEREDOC_STRINGS () { return ['$']; }
 
   static HEREDOC_TAG_IS_IDENTIFIER = true;
   static HEREDOC_STRING_ALTERNATIVE = TokenType.PARAMETER;
@@ -2002,10 +2005,13 @@ class DuckDBParser extends Parser {
     return new Set([...Parser.FUNCTIONS_WITH_ALIASED_ARGS, 'STRUCT_PACK']);
   }
 
-  static SHOW_PARSERS = {
-    'TABLES': showParser('TABLES'),
-    'ALL TABLES': showParser('ALL TABLES'),
-  };
+  @cache
+  static get SHOW_PARSERS () {
+    return {
+      'TABLES': showParser('TABLES'),
+      'ALL TABLES': showParser('ALL TABLES'),
+    };
+  }
 
   @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
@@ -2397,7 +2403,8 @@ class DuckDBGenerator extends Generator {
   static TABLE_HINTS = false;
   static QUERY_HINTS = false;
   static LIMIT_FETCH = 'LIMIT';
-  static STRUCT_DELIMITER = ['(', ')'];
+  @cache
+  static get STRUCT_DELIMITER () { return ['(', ')']; }
   static RENAME_TABLE_WITH_DB = false;
   static NVL2_SUPPORTED = false;
   static SEMI_ANTI_JOIN_WITH_SIDE = false;
@@ -2944,7 +2951,8 @@ class DuckDBGenerator extends Generator {
     };
   }
 
-  static RESERVED_KEYWORDS = new Set([
+  @cache
+  static get RESERVED_KEYWORDS () { return new Set([
     'array',
     'analyse',
     'union',
@@ -3022,7 +3030,7 @@ class DuckDBGenerator extends Generator {
     'using',
     'order',
     'current_catalog',
-  ]);
+  ]); }
 
   @cache
   static get UNWRAPPED_INTERVAL_VALUES () {
@@ -3098,19 +3106,25 @@ class DuckDBGenerator extends Generator {
   END
 `);
 
-  static EXTRACT_STRFTIME_MAPPINGS: Record<string, [string, string]> = {
-    WEEKISO: ['%V', 'INTEGER'],
-    YEAROFWEEK: ['%G', 'INTEGER'],
-    YEAROFWEEKISO: ['%G', 'INTEGER'],
-    NANOSECOND: ['%n', 'BIGINT'],
-  };
+  @cache
+  static get EXTRACT_STRFTIME_MAPPINGS (): Record<string, [string, string]> {
+    return {
+      WEEKISO: ['%V', 'INTEGER'],
+      YEAROFWEEK: ['%G', 'INTEGER'],
+      YEAROFWEEKISO: ['%G', 'INTEGER'],
+      NANOSECOND: ['%n', 'BIGINT'],
+    };
+  }
 
-  static EXTRACT_EPOCH_MAPPINGS: Record<string, string> = {
-    EPOCH_SECOND: 'EPOCH',
-    EPOCH_MILLISECOND: 'EPOCH_MS',
-    EPOCH_MICROSECOND: 'EPOCH_US',
-    EPOCH_NANOSECOND: 'EPOCH_NS',
-  };
+  @cache
+  static get EXTRACT_EPOCH_MAPPINGS (): Record<string, string> {
+    return {
+      EPOCH_SECOND: 'EPOCH',
+      EPOCH_MILLISECOND: 'EPOCH_MS',
+      EPOCH_MICROSECOND: 'EPOCH_US',
+      EPOCH_NANOSECOND: 'EPOCH_NS',
+    };
+  }
 
   /**
  * Snowflake's BITMAP_CONSTRUCT_AGG aggregates integers into a compact binary bitmap.
@@ -4955,7 +4969,8 @@ export class DuckDB extends Dialect {
     return { ...Dialect.EXPRESSION_METADATA };
   }
 
-  static INVERSE_TIME_MAPPING = {
+  @cache
+  static get INVERSE_TIME_MAPPING () { return {
     '%e': '%-d', // BigQuery's space-padded day (%e) -> DuckDB's no-padding day (%-d)
     '%:z': '%z', // In DuckDB %z can represent ±HH:MM, ±HHMM, or ±HH.
     '%-z': '%z',
@@ -4968,7 +4983,7 @@ export class DuckDB extends Dialect {
     '%f_seven': '%n',
     '%f_eight': '%n',
     '%f_nine': '%n',
-  };
+  }; }
 
   toJsonPath (path: Expression | undefined): Expression | undefined {
     if (path instanceof LiteralExpr && path.isString) {

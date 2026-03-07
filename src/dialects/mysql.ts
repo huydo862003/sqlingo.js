@@ -793,17 +793,20 @@ class MySQLParser extends Parser {
     ]);
   }
 
-  static PROFILE_TYPES = {
-    ALL: [],
-    CPU: [],
-    IPC: [],
-    MEMORY: [],
-    SOURCE: [],
-    SWAPS: [],
-    BLOCK: ['IO'],
-    CONTEXT: ['SWITCHES'],
-    PAGE: ['FAULTS'],
-  };
+  @cache
+  static get PROFILE_TYPES () {
+    return {
+      ALL: [],
+      CPU: [],
+      IPC: [],
+      MEMORY: [],
+      SOURCE: [],
+      SWAPS: [],
+      BLOCK: ['IO'],
+      CONTEXT: ['SWITCHES'],
+      PAGE: ['FAULTS'],
+    };
+  }
 
   @cache
   static get TYPE_TOKENS (): Set<TokenType> {
@@ -818,7 +821,8 @@ class MySQLParser extends Parser {
   /**
    * Modifiers that can appear in a MySQL SELECT statement.
    */
-  static OPERATION_MODIFIERS: Set<string> = new Set([
+  @cache
+  static get OPERATION_MODIFIERS (): Set<string> { return new Set([
     'HIGH_PRIORITY',
     'STRAIGHT_JOIN',
     'SQL_SMALL_RESULT',
@@ -826,7 +830,7 @@ class MySQLParser extends Parser {
     'SQL_BUFFER_RESULT',
     'SQL_NO_CACHE',
     'SQL_CALC_FOUND_ROWS',
-  ]);
+  ]); }
 
   static LOG_DEFAULTS_TO_LN = true;
   static STRING_ALIASES = true;
@@ -1500,7 +1504,8 @@ class MySQLGenerator extends Generator {
    * Comprehensive list of MySQL reserved keywords for identifier quoting.
    * Reference: https://dev.mysql.com/doc/refman/8.0/en/keywords.html
    */
-  static RESERVED_KEYWORDS: Set<string> = new Set([
+  @cache
+  static get RESERVED_KEYWORDS (): Set<string> { return new Set([
     'accessible',
     'add',
     'all',
@@ -1763,7 +1768,7 @@ class MySQLGenerator extends Generator {
     'xor',
     'year_month',
     'zerofill',
-  ]);
+  ]); }
 
   public computedColumnConstraintSql (expression: ComputedColumnConstraintExpr): string {
     const persisted = expression.args.persisted ? 'STORED' : 'VIRTUAL';
@@ -2060,19 +2065,22 @@ export class MySQL extends Dialect {
    * MySQL-specific time format mapping.
    * Reference: https://prestodb.io/docs/current/functions/datetime.html#mysql-date-functions
    */
-  static TIME_MAPPING: Record<string, string> = {
-    '%M': '%B',
-    '%c': '%-m',
-    '%e': '%-d',
-    '%h': '%I',
-    '%i': '%M',
-    '%s': '%S',
-    '%u': '%W',
-    '%k': '%-H',
-    '%l': '%-I',
-    '%T': '%H:%M:%S',
-    '%W': '%A',
-  };
+  @cache
+  static get TIME_MAPPING (): Record<string, string> {
+    return {
+      '%M': '%B',
+      '%c': '%-m',
+      '%e': '%-d',
+      '%h': '%I',
+      '%i': '%M',
+      '%s': '%S',
+      '%u': '%W',
+      '%k': '%-H',
+      '%l': '%-I',
+      '%T': '%H:%M:%S',
+      '%W': '%A',
+    };
+  }
 
   /**
    * Valid interval units supported by MySQL.

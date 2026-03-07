@@ -172,7 +172,8 @@ function groupConcatSql (this: Generator, expression: GroupConcatExpr): string {
 class SparkTokenizer extends Spark2.Tokenizer {
   static STRING_ESCAPES_ALLOWED_IN_RAW_STRINGS = false;
 
-  static RAW_STRINGS = Spark2.Tokenizer.QUOTES.flatMap((q) => [[`r${q}`, q], [`R${q}`, q]]) as TokenPair[];
+  @cache
+  static get RAW_STRINGS (): TokenPair[] { return Spark2.Tokenizer.QUOTES.flatMap((q) => [[`r${q}`, q], [`R${q}`, q]]) as TokenPair[]; }
 }
 
 class SparkParser extends Spark2.Parser {

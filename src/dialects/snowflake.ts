@@ -1062,17 +1062,23 @@ class SnowflakeJsonPathTokenizer extends JsonPathTokenizer {
 }
 
 class SnowflakeTokenizer extends Tokenizer {
-  static STRING_ESCAPES = ['\\', '\''];
+  @cache
+  static get STRING_ESCAPES () { return ['\\', '\'']; }
 
-  static HEX_STRINGS: [string, string][] = [['x\'', '\''], ['X\'', '\'']];
+  @cache
+  static get HEX_STRINGS (): [string, string][] { return [['x\'', '\''], ['X\'', '\'']]; }
 
-  static RAW_STRINGS = ['$$'];
+  @cache
+  static get RAW_STRINGS () { return ['$$']; }
 
-  static COMMENTS: TokenPair[] = [
-    '--',
-    '//',
-    ['/*', '*/'],
-  ];
+  @cache
+  static get COMMENTS (): TokenPair[] {
+    return [
+      '--',
+      '//',
+      ['/*', '*/'],
+    ];
+  }
 
   static NESTED_COMMENTS = false;
 
@@ -1117,7 +1123,8 @@ class SnowflakeTokenizer extends Tokenizer {
     };
   }
 
-  static VAR_SINGLE_TOKENS = new Set(['$']);
+  @cache
+  static get VAR_SINGLE_TOKENS () { return new Set(['$']); }
 
   @cache
   static get COMMANDS (): Set<TokenType> {
@@ -1565,11 +1572,15 @@ class SnowflakeParser extends Parser {
     };
   }
 
-  static TYPE_CONVERTERS = {
-    [DataTypeExprKind.DECIMAL]: buildDefaultDecimalType(38, 0),
-  };
+  @cache
+  static get TYPE_CONVERTERS () {
+    return {
+      [DataTypeExprKind.DECIMAL]: buildDefaultDecimalType(38, 0),
+    };
+  }
 
-  static SHOW_PARSERS = {
+  @cache
+  static get SHOW_PARSERS () { return {
     'DATABASES': showParser('DATABASES'),
     'TERSE DATABASES': showParser('DATABASES'),
     'SCHEMAS': showParser('SCHEMAS'),
@@ -1596,7 +1607,7 @@ class SnowflakeParser extends Parser {
     'FUNCTIONS': showParser('FUNCTIONS'),
     'PROCEDURES': showParser('PROCEDURES'),
     'WAREHOUSES': showParser('WAREHOUSES'),
-  };
+  }; }
 
   @cache
   static get CONSTRAINT_PARSERS (): Partial<Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
@@ -1626,30 +1637,39 @@ class SnowflakeParser extends Parser {
     ]);
   }
 
-  static FLATTEN_COLUMNS = [
-    'SEQ',
-    'KEY',
-    'PATH',
-    'INDEX',
-    'VALUE',
-    'THIS',
-  ];
+  @cache
+  static get FLATTEN_COLUMNS () {
+    return [
+      'SEQ',
+      'KEY',
+      'PATH',
+      'INDEX',
+      'VALUE',
+      'THIS',
+    ];
+  }
 
-  static SCHEMA_KINDS = new Set([
-    'OBJECTS',
-    'TABLES',
-    'VIEWS',
-    'SEQUENCES',
-    'UNIQUE KEYS',
-    'IMPORTED KEYS',
-  ]);
+  @cache
+  static get SCHEMA_KINDS () {
+    return new Set([
+      'OBJECTS',
+      'TABLES',
+      'VIEWS',
+      'SEQUENCES',
+      'UNIQUE KEYS',
+      'IMPORTED KEYS',
+    ]);
+  }
 
-  static NON_TABLE_CREATABLES = new Set<string>([
-    'STORAGE INTEGRATION',
-    'TAG',
-    'WAREHOUSE',
-    'STREAMLIT',
-  ]);
+  @cache
+  static get NON_TABLE_CREATABLES (): Set<string> {
+    return new Set([
+      'STORAGE INTEGRATION',
+      'TAG',
+      'WAREHOUSE',
+      'STREAMLIT',
+    ]);
+  }
 
   @cache
   static get LAMBDAS (): Partial<Record<TokenType, (this: Parser, expressions: Expression[]) => Expression>> {
@@ -2171,7 +2191,8 @@ class SnowflakeGenerator extends Generator {
   static LIMIT_ONLY_LITERALS = true;
   static JSON_KEY_VALUE_PAIR_SEP = ',';
   static INSERT_OVERWRITE = ' OVERWRITE INTO';
-  static STRUCT_DELIMITER = ['(', ')'];
+  @cache
+  static get STRUCT_DELIMITER () { return ['(', ')']; }
   static COPY_PARAMS_ARE_WRAPPED = false;
   static COPY_PARAMS_EQ_REQUIRED = true;
   static STAR_EXCEPT = 'EXCLUDE';
@@ -2586,9 +2607,12 @@ class SnowflakeGenerator extends Generator {
     };
   }
 
-  static TOKEN_MAPPING: Partial<Record<TokenType, string>> = {
-    [TokenType.AUTO_INCREMENT]: 'AUTOINCREMENT',
-  };
+  @cache
+  static get TOKEN_MAPPING (): Partial<Record<TokenType, string>> {
+    return {
+      [TokenType.AUTO_INCREMENT]: 'AUTOINCREMENT',
+    };
+  }
 
   @cache
   static get PROPERTIES_LOCATION () {
@@ -3158,11 +3182,15 @@ export class Snowflake extends Dialect {
 
   static INITCAP_DEFAULT_DELIMITER_CHARS = ' \t\n\r\f\v!?@"^#$&~_,.:;+\\-*%/|\\[\\](){}<>';
 
-  static INVERSE_TIME_MAPPING = {
-    T: 'T', // Prevent 'T' from being mapped back to '"T"'
-  };
+  @cache
+  static get INVERSE_TIME_MAPPING () {
+    return {
+      T: 'T', // Prevent 'T' from being mapped back to '"T"'
+    };
+  }
 
-  static TIME_MAPPING = {
+  @cache
+  static get TIME_MAPPING () { return {
     'YYYY': '%Y',
     'yyyy': '%Y',
     'YY': '%y',
@@ -3218,7 +3246,7 @@ export class Snowflake extends Dialect {
     'am': '%p',
     'PM': '%p',
     'pm': '%p',
-  };
+  }; }
 
   @cache
   static get DATE_PART_MAPPING (): Record<string, string> {
@@ -3230,7 +3258,8 @@ export class Snowflake extends Dialect {
     };
   }
 
-  static PSEUDOCOLUMNS = new Set(['LEVEL']);
+  @cache
+  static get PSEUDOCOLUMNS () { return new Set(['LEVEL']); }
 
   canQuote (identifier: IdentifierExpr, options: { identify?: string | boolean } = {}): boolean {
     const {

@@ -386,9 +386,12 @@ function buildDateAdd (args: Expression[]): TsOrDsAddExpr {
 }
 
 class HiveTokenizer extends Tokenizer {
-  static QUOTES = ['\'', '"'];
-  static IDENTIFIERS = ['`'];
-  static STRING_ESCAPES = ['\\'];
+  @cache
+  static get QUOTES () { return ['\'', '"'] as const; }
+  @cache
+  static get IDENTIFIERS () { return ['`'] as const; }
+  @cache
+  static get STRING_ESCAPES () { return ['\\'] as const; }
 
   @cache
   static get SINGLE_TOKENS () {
@@ -417,14 +420,17 @@ class HiveTokenizer extends Tokenizer {
     };
   }
 
-  static NUMERIC_LITERALS = {
-    L: 'BIGINT',
-    S: 'SMALLINT',
-    Y: 'TINYINT',
-    D: 'DOUBLE',
-    F: 'FLOAT',
-    BD: 'DECIMAL',
-  };
+  @cache
+  static get NUMERIC_LITERALS () {
+    return {
+      L: 'BIGINT',
+      S: 'SMALLINT',
+      Y: 'TINYINT',
+      D: 'DOUBLE',
+      F: 'FLOAT',
+      BD: 'DECIMAL',
+    };
+  }
 }
 
 class HiveParser extends Parser {
@@ -719,12 +725,15 @@ class HiveGenerator extends Generator {
   static ARRAY_SIZE_NAME = 'SIZE';
   static ALTER_SET_TYPE = '';
 
-  static EXPRESSIONS_WITHOUT_NESTED_CTES = new Set([
-    InsertExpr,
-    SelectExpr,
-    SubqueryExpr,
-    SetOperationExpr,
-  ]);
+  @cache
+  static get EXPRESSIONS_WITHOUT_NESTED_CTES () {
+    return new Set([
+      InsertExpr,
+      SelectExpr,
+      SubqueryExpr,
+      SetOperationExpr,
+    ]);
+  }
 
   @cache
   static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
@@ -1316,38 +1325,41 @@ export class Hive extends Dialect {
 
   static INITCAP_DEFAULT_DELIMITER_CHARS = ' \t\n\r\f\u000b\u001c\u001d\u001e\u001f';
 
-  static TIME_MAPPING = {
-    y: '%Y',
-    Y: '%Y',
-    YYYY: '%Y',
-    yyyy: '%Y',
-    YY: '%y',
-    yy: '%y',
-    MMMM: '%B',
-    MMM: '%b',
-    MM: '%m',
-    M: '%-m',
-    dd: '%d',
-    d: '%-d',
-    HH: '%H',
-    H: '%-H',
-    hh: '%I',
-    h: '%-I',
-    mm: '%M',
-    m: '%-M',
-    ss: '%S',
-    s: '%-S',
-    SSSSSS: '%f',
-    a: '%p',
-    DD: '%j',
-    D: '%-j',
-    E: '%a',
-    EE: '%a',
-    EEE: '%a',
-    EEEE: '%A',
-    z: '%Z',
-    Z: '%z',
-  };
+  @cache
+  static get TIME_MAPPING () {
+    return {
+      y: '%Y',
+      Y: '%Y',
+      YYYY: '%Y',
+      yyyy: '%Y',
+      YY: '%y',
+      yy: '%y',
+      MMMM: '%B',
+      MMM: '%b',
+      MM: '%m',
+      M: '%-m',
+      dd: '%d',
+      d: '%-d',
+      HH: '%H',
+      H: '%-H',
+      hh: '%I',
+      h: '%-I',
+      mm: '%M',
+      m: '%-M',
+      ss: '%S',
+      s: '%-S',
+      SSSSSS: '%f',
+      a: '%p',
+      DD: '%j',
+      D: '%-j',
+      E: '%a',
+      EE: '%a',
+      EEE: '%a',
+      EEEE: '%A',
+      z: '%Z',
+      Z: '%z',
+    };
+  }
 
   static DATE_FORMAT = '\'yyyy-MM-dd\'';
   static DATEINT_FORMAT = '\'yyyyMMdd\'';

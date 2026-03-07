@@ -437,21 +437,30 @@ function roundSql (this: Generator, expression: RoundExpr): string {
 }
 
 export class PostgresTokenizer extends Tokenizer {
-  static BIT_STRINGS: TokenPair[] = [
-    ['b\'', '\''],
-    ['B\'', '\''],
-    '0b',
-  ];
+  @cache
+  static get BIT_STRINGS (): TokenPair[] {
+    return [
+      ['b\'', '\''],
+      ['B\'', '\''],
+      '0b',
+    ];
+  }
 
-  static HEX_STRINGS: TokenPair[] = [
-    ['x\'', '\''],
-    ['X\'', '\''],
-    '0x',
-  ];
+  @cache
+  static get HEX_STRINGS (): TokenPair[] {
+    return [
+      ['x\'', '\''],
+      ['X\'', '\''],
+      '0x',
+    ];
+  }
 
-  static BYTE_STRINGS: TokenPair[] = [['e\'', '\''], ['E\'', '\'']];
-  static BYTE_STRING_ESCAPES = ['\'', '\\'];
-  static HEREDOC_STRINGS: TokenPair[] = ['$'];
+  @cache
+  static get BYTE_STRINGS (): TokenPair[] { return [['e\'', '\''], ['E\'', '\'']]; }
+  @cache
+  static get BYTE_STRING_ESCAPES () { return ['\'', '\\']; }
+  @cache
+  static get HEREDOC_STRINGS (): TokenPair[] { return ['$']; }
 
   static HEREDOC_TAG_IS_IDENTIFIER = true;
   static HEREDOC_STRING_ALTERNATIVE = TokenType.PARAMETER;
@@ -510,12 +519,16 @@ export class PostgresTokenizer extends Tokenizer {
     };
   }
 
-  static SINGLE_TOKENS: Record<string, TokenType> = {
-    ...Tokenizer.SINGLE_TOKENS,
-    $: TokenType.HEREDOC_STRING,
-  };
+  @cache
+  static get SINGLE_TOKENS (): Record<string, TokenType> {
+    return {
+      ...Tokenizer.SINGLE_TOKENS,
+      $: TokenType.HEREDOC_STRING,
+    };
+  }
 
-  static VAR_SINGLE_TOKENS = new Set(['$']);
+  @cache
+  static get VAR_SINGLE_TOKENS () { return new Set(['$']); }
 }
 
 class PostgresParser extends Parser {
@@ -654,9 +667,12 @@ class PostgresParser extends Parser {
     };
   }
 
-  static EXPONENT = {
-    [TokenType.CARET]: PowExpr,
-  };
+  @cache
+  static get EXPONENT () {
+    return {
+      [TokenType.CARET]: PowExpr,
+    };
+  }
 
   @cache
   static get RANGE_PARSERS (): Partial<Record<TokenType, (this: Parser, this_: Expression) => Expression | undefined>> {
@@ -712,12 +728,15 @@ class PostgresParser extends Parser {
     };
   }
 
-  static ARG_MODE_TOKENS = new Set([
-    TokenType.IN,
-    TokenType.OUT,
-    TokenType.INOUT,
-    TokenType.VARIADIC,
-  ]);
+  @cache
+  static get ARG_MODE_TOKENS () {
+    return new Set([
+      TokenType.IN,
+      TokenType.OUT,
+      TokenType.INOUT,
+      TokenType.VARIADIC,
+    ]);
+  }
 
   parseParameterMode (): TokenType | undefined {
     if (!this.matchSet((this.constructor as typeof PostgresParser).ARG_MODE_TOKENS, { advance: false }) || !this.next) {
@@ -1341,44 +1360,48 @@ export class Postgres extends Dialect {
   static TABLESAMPLE_SIZE_IS_PERCENT = true;
   static TABLES_REFERENCEABLE_AS_COLUMNS = true;
 
-  static DEFAULT_FUNCTIONS_COLUMN_NAMES = new Map([[ExplodingGenerateSeriesExpr.name, 'generate_series']]);
+  @cache
+  static get DEFAULT_FUNCTIONS_COLUMN_NAMES () { return new Map([[ExplodingGenerateSeriesExpr.name, 'generate_series']]); }
 
-  static TIME_MAPPING = {
-    d: '%u',
-    D: '%u',
-    dd: '%d',
-    DD: '%d',
-    ddd: '%j',
-    DDD: '%j',
-    FMDD: '%-d',
-    FMDDD: '%-j',
-    FMHH12: '%-I',
-    FMHH24: '%-H',
-    FMMI: '%-M',
-    FMMM: '%-m',
-    FMSS: '%-S',
-    HH12: '%I',
-    HH24: '%H',
-    mi: '%M',
-    MI: '%M',
-    mm: '%m',
-    MM: '%m',
-    OF: '%z',
-    ss: '%S',
-    SS: '%S',
-    TMDay: '%A',
-    TMDy: '%a',
-    TMMon: '%b',
-    TMMonth: '%B',
-    TZ: '%Z',
-    US: '%f',
-    ww: '%U',
-    WW: '%U',
-    yy: '%y',
-    YY: '%y',
-    yyyy: '%Y',
-    YYYY: '%Y',
-  };
+  @cache
+  static get TIME_MAPPING () {
+    return {
+      d: '%u',
+      D: '%u',
+      dd: '%d',
+      DD: '%d',
+      ddd: '%j',
+      DDD: '%j',
+      FMDD: '%-d',
+      FMDDD: '%-j',
+      FMHH12: '%-I',
+      FMHH24: '%-H',
+      FMMI: '%-M',
+      FMMM: '%-m',
+      FMSS: '%-S',
+      HH12: '%I',
+      HH24: '%H',
+      mi: '%M',
+      MI: '%M',
+      mm: '%m',
+      MM: '%m',
+      OF: '%z',
+      ss: '%S',
+      SS: '%S',
+      TMDay: '%A',
+      TMDy: '%a',
+      TMMon: '%b',
+      TMMonth: '%B',
+      TZ: '%Z',
+      US: '%f',
+      ww: '%U',
+      WW: '%U',
+      yy: '%y',
+      YY: '%y',
+      yyyy: '%Y',
+      YYYY: '%Y',
+    };
+  }
 
   static Tokenizer = PostgresTokenizer;
   static Parser = PostgresParser;

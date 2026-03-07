@@ -60,8 +60,10 @@ import {
 import { dateAddSql } from './mysql';
 
 class DrillTokenizer extends Tokenizer {
-  static IDENTIFIERS = ['`'];
-  static STRING_ESCAPES = ['\\'];
+  @cache
+  static get IDENTIFIERS () { return ['`'] as const; }
+  @cache
+  static get STRING_ESCAPES () { return ['\\'] as const; }
   @cache
   static get KEYWORDS (): Record<string, TokenType> {
     const keywords = { ...Tokenizer.KEYWORDS };
@@ -257,7 +259,8 @@ export class Drill extends Dialect {
   static TYPED_DIVISION = true;
   static CONCAT_COALESCE = true;
 
-  static TIME_MAPPING = {
+  @cache
+  static get TIME_MAPPING () { return {
     'y': '%Y',
     'Y': '%Y',
     'YYYY': '%Y',
@@ -287,7 +290,7 @@ export class Drill extends Dialect {
     'EEE': '%a',
     'EEEE': '%A',
     '\'\'T\'\'': 'T',
-  };
+  }; }
 
   static Tokenizer = DrillTokenizer;
   static Parser = DrillParser;

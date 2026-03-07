@@ -100,11 +100,14 @@ function dateAddSqlTd (
 }
 
 export class TeradataTokenizer extends Tokenizer {
-  static HEX_STRINGS: TokenPair[] = [
-    ['X\'', '\''],
-    ['x\'', '\''],
-    ['0x', ''],
-  ];
+  @cache
+  static get HEX_STRINGS (): TokenPair[] {
+    return [
+      ['X\'', '\''],
+      ['x\'', '\''],
+      ['0x', ''],
+    ];
+  }
 
   @cache
   static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
@@ -149,7 +152,8 @@ export class TeradataParser extends Parser {
   static TABLESAMPLE_CSV = true;
   static VALUES_FOLLOWED_BY_PAREN = false;
 
-  static CHARSET_TRANSLATORS = new Set([
+  @cache
+  static get CHARSET_TRANSLATORS () { return new Set([
     'GRAPHIC_TO_KANJISJIS',
     'GRAPHIC_TO_LATIN',
     'GRAPHIC_TO_UNICODE',
@@ -182,7 +186,7 @@ export class TeradataParser extends Parser {
     'UNICODE_TO_UNICODE_NFD',
     'UNICODE_TO_UNICODE_NFKC',
     'UNICODE_TO_UNICODE_NFKD',
-  ]);
+  ]); }
 
   @cache
   static get FUNC_TOKENS (): Set<TokenType> {
@@ -552,34 +556,37 @@ export class Teradata extends Dialect {
   static NORMALIZATION_STRATEGY = NormalizationStrategy.UPPERCASE;
   static SUPPORTS_SEMI_ANTI_JOIN = false;
   static TYPED_DIVISION = true;
-  static TIME_MAPPING = {
-    YY: '%y',
-    Y4: '%Y',
-    YYYY: '%Y',
-    M4: '%B',
-    M3: '%b',
-    M: '%-M',
-    MI: '%M',
-    MM: '%m',
-    MMM: '%b',
-    MMMM: '%B',
-    D: '%-d',
-    DD: '%d',
-    D3: '%j',
-    DDD: '%j',
-    H: '%-H',
-    HH: '%H',
-    HH24: '%H',
-    S: '%-S',
-    SS: '%S',
-    SSSSSS: '%f',
-    E: '%a',
-    EE: '%a',
-    E3: '%a',
-    E4: '%A',
-    EEE: '%a',
-    EEEE: '%A',
-  };
+  @cache
+  static get TIME_MAPPING () {
+    return {
+      YY: '%y',
+      Y4: '%Y',
+      YYYY: '%Y',
+      M4: '%B',
+      M3: '%b',
+      M: '%-M',
+      MI: '%M',
+      MM: '%m',
+      MMM: '%b',
+      MMMM: '%B',
+      D: '%-d',
+      DD: '%d',
+      D3: '%j',
+      DDD: '%j',
+      H: '%-H',
+      HH: '%H',
+      HH24: '%H',
+      S: '%-S',
+      SS: '%S',
+      SSSSSS: '%f',
+      E: '%a',
+      EE: '%a',
+      E3: '%a',
+      E4: '%A',
+      EEE: '%a',
+      EEEE: '%A',
+    };
+  }
 
   static Tokenizer = TeradataTokenizer;
   static Parser = TeradataParser;

@@ -197,18 +197,24 @@ function generatedToAutoIncrement (expression: Expression): Expression {
 }
 
 class SQLiteTokenizer extends Tokenizer {
-  static IDENTIFIERS: (string | [string, string])[] = [
-    '"',
-    ['[', ']'],
-    '`',
-  ];
+  @cache
+  static get IDENTIFIERS (): (string | [string, string])[] {
+    return [
+      '"',
+      ['[', ']'],
+      '`',
+    ];
+  }
 
-  static HEX_STRINGS: [string, string][] = [
-    ['x\'', '\''],
-    ['X\'', '\''],
-    ['0x', ''],
-    ['0X', ''],
-  ];
+  @cache
+  static get HEX_STRINGS (): [string, string][] {
+    return [
+      ['x\'', '\''],
+      ['X\'', '\''],
+      ['0x', ''],
+      ['0X', ''],
+    ];
+  }
 
   static NESTED_COMMENTS = false;
 
@@ -225,7 +231,8 @@ class SQLiteTokenizer extends Tokenizer {
     return keywords;
   }
 
-  static COMMANDS = new Set([...Array.from(Tokenizer.COMMANDS), TokenType.REPLACE]);
+  @cache
+  static get COMMANDS () { return new Set([...Array.from(Tokenizer.COMMANDS), TokenType.REPLACE]); }
 }
 
 class SQLiteParser extends Parser {
@@ -341,9 +348,12 @@ class SQLiteGenerator extends Generator {
     return mapping;
   }
 
-  static TOKEN_MAPPING = {
-    [TokenType.AUTO_INCREMENT]: 'AUTOINCREMENT',
-  } as Record<TokenType, string>;
+  @cache
+  static get TOKEN_MAPPING () {
+    return {
+      [TokenType.AUTO_INCREMENT]: 'AUTOINCREMENT',
+    } as Record<TokenType, string>;
+  }
 
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

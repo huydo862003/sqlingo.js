@@ -20,8 +20,10 @@ export class SolrParser extends Parser {
 }
 
 export class SolrTokenizer extends Tokenizer {
-  static QUOTES = ['\''];
-  static IDENTIFIERS = ['`'];
+  @cache
+  static get QUOTES () { return ['\''] as const; }
+  @cache
+  static get IDENTIFIERS () { return ['`'] as const; }
 }
 
 export class Solr extends Dialect {

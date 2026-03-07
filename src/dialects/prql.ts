@@ -20,8 +20,10 @@ function selectAll (table: Expression | undefined): SelectExpr | undefined {
 }
 
 class PRQLTokenizer extends Tokenizer {
-  static IDENTIFIERS = ['`'];
-  static QUOTES = ['\'', '"'];
+  @cache
+  static get IDENTIFIERS () { return ['`'] as const; }
+  @cache
+  static get QUOTES () { return ['\'', '"'] as const; }
 
   @cache
   static get SINGLE_TOKENS () {

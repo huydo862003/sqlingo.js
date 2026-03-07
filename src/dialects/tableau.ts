@@ -25,8 +25,10 @@ import {
 } from './dialect';
 
 export class TableauTokenizer extends Tokenizer {
-  static IDENTIFIERS: TokenPair[] = [['[', ']']];
-  static QUOTES = ['\'', '"'];
+  @cache
+  static get IDENTIFIERS (): TokenPair[] { return [['[', ']']]; }
+  @cache
+  static get QUOTES () { return ['\'', '"']; }
 }
 
 export class TableauParser extends Parser {

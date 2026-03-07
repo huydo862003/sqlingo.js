@@ -61,7 +61,8 @@ function jsonExtractSql (this: Generator, expression: JsonExtractExpr | JsonExtr
 }
 
 class DatabricksJsonPathTokenizer extends JsonPathTokenizer {
-  static IDENTIFIERS = ['`', '"'];
+  @cache
+  static get IDENTIFIERS () { return ['`', '"'] as const; }
 }
 
 class DatabricksTokenizer extends Spark.Tokenizer {

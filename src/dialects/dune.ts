@@ -8,7 +8,8 @@ import {
 import { Trino } from './trino';
 
 class DuneTokenizer extends Trino.Tokenizer {
-  static HEX_STRINGS: (string | [string, string])[] = ['0x', ['X\'', '\'']];
+  @cache
+  static get HEX_STRINGS (): (string | [string, string])[] { return ['0x', ['X\'', '\'']]; }
 }
 
 class DuneGenerator extends Trino.Generator {

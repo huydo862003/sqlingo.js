@@ -714,28 +714,39 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
 }
 
 export class BigQueryTokenizer extends Tokenizer {
-  static QUOTES: TokenPair[] = [
-    '\'',
-    '"',
-    '"""',
-    '\'\'\'',
-  ];
+  @cache
+  static get QUOTES (): TokenPair[] {
+    return [
+      '\'',
+      '"',
+      '"""',
+      '\'\'\'',
+    ];
+  }
 
-  static COMMENTS: TokenPair[] = [
-    '--',
-    '#',
-    ['/*', '*/'],
-  ];
+  @cache
+  static get COMMENTS (): TokenPair[] {
+    return [
+      '--',
+      '#',
+      ['/*', '*/'],
+    ];
+  }
 
-  static IDENTIFIERS = ['`'];
-  static STRING_ESCAPES = ['\\'];
-  static HEX_STRINGS: TokenPair[] = [['0x', ''], ['0X', '']];
+  @cache
+  static get IDENTIFIERS () { return ['`']; }
+  @cache
+  static get STRING_ESCAPES () { return ['\\']; }
+  @cache
+  static get HEX_STRINGS (): TokenPair[] { return [['0x', ''], ['0X', '']]; }
 
-  static BYTE_STRINGS: TokenPair[] = (['b', 'B'] as const).flatMap((prefix) =>
-    (BigQueryTokenizer.QUOTES as string[]).map((q): TokenPair => [prefix + q, q as string]));
+  @cache
+  static get BYTE_STRINGS (): TokenPair[] { return (['b', 'B'] as const).flatMap((prefix) =>
+    (BigQueryTokenizer.QUOTES as string[]).map((q): TokenPair => [prefix + q, q as string])); }
 
-  static RAW_STRINGS: TokenPair[] = (['r', 'R'] as const).flatMap((prefix) =>
-    (BigQueryTokenizer.QUOTES as string[]).map((q): TokenPair => [prefix + q, q as string]));
+  @cache
+  static get RAW_STRINGS (): TokenPair[] { return (['r', 'R'] as const).flatMap((prefix) =>
+    (BigQueryTokenizer.QUOTES as string[]).map((q): TokenPair => [prefix + q, q as string])); }
 
   static NESTED_COMMENTS = false;
 
@@ -865,11 +876,12 @@ export class BigQueryParser extends Parser {
     })();
   }
 
-  static DASHED_TABLE_PART_FOLLOW_TOKENS: Set<TokenType> = new Set([
+  @cache
+  static get DASHED_TABLE_PART_FOLLOW_TOKENS (): Set<TokenType> { return new Set([
     TokenType.DOT,
     TokenType.L_PAREN,
     TokenType.R_PAREN,
-  ]);
+  ]); }
 
   @cache
   static get STATEMENT_PARSERS (): Partial<Record<TokenType, (this: Parser) => Expression | undefined>> {
@@ -893,12 +905,15 @@ export class BigQueryParser extends Parser {
     };
   }
 
-  static BRACKET_OFFSETS: Record<string, [number, boolean]> = {
-    OFFSET: [0, false],
-    ORDINAL: [1, false],
-    SAFE_OFFSET: [0, true],
-    SAFE_ORDINAL: [1, true],
-  };
+  @cache
+  static get BRACKET_OFFSETS (): Record<string, [number, boolean]> {
+    return {
+      OFFSET: [0, false],
+      ORDINAL: [1, false],
+      SAFE_OFFSET: [0, true],
+      SAFE_ORDINAL: [1, true],
+    };
+  }
 
   @cache
   static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
@@ -1806,12 +1821,16 @@ export class BigQueryGenerator extends Generator {
     ]);
   }
 
-  static AFTER_HAVING_MODIFIER_TRANSFORMS = {
-    qualify: Generator.AFTER_HAVING_MODIFIER_TRANSFORMS.qualify,
-    windows: Generator.AFTER_HAVING_MODIFIER_TRANSFORMS.windows,
-  };
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    return {
+      qualify: Generator.AFTER_HAVING_MODIFIER_TRANSFORMS.qualify,
+      windows: Generator.AFTER_HAVING_MODIFIER_TRANSFORMS.windows,
+    };
+  }
 
-  static RESERVED_KEYWORDS = new Set([
+  @cache
+  static get RESERVED_KEYWORDS () { return new Set([
     'all',
     'and',
     'any',
@@ -1908,7 +1927,7 @@ export class BigQueryGenerator extends Generator {
     'window',
     'with',
     'within',
-  ]);
+  ]); }
 
   dateTruncSql (expression: DateTruncExpr): string {
     const unit = expression.unit;
@@ -2117,7 +2136,8 @@ export class BigQueryGenerator extends Generator {
 }
 
 export class BigQueryJsonPathTokenizer extends JsonPathTokenizer {
-  static VAR_TOKENS = new Set([TokenType.DASH, TokenType.VAR]);
+  @cache
+  static get VAR_TOKENS () { return new Set([TokenType.DASH, TokenType.VAR]); }
 }
 
 export class BigQuery extends Dialect {
@@ -2161,15 +2181,18 @@ export class BigQuery extends Dialect {
     return NormalizeFunctions.NONE;
   }
 
-  static TIME_MAPPING = {
-    '%x': '%m/%d/%y',
-    '%D': '%m/%d/%y',
-    '%E6S': '%S.%f',
-    '%e': '%-d',
-    '%F': '%Y-%m-%d',
-    '%T': '%H:%M:%S',
-    '%c': '%a %b %e %H:%M:%S %Y',
-  };
+  @cache
+  static get TIME_MAPPING () {
+    return {
+      '%x': '%m/%d/%y',
+      '%D': '%m/%d/%y',
+      '%E6S': '%S.%f',
+      '%e': '%-d',
+      '%F': '%Y-%m-%d',
+      '%T': '%H:%M:%S',
+      '%c': '%a %b %e %H:%M:%S %Y',
+    };
+  }
 
   @cache
   static get INVERSE_TIME_MAPPING () {
@@ -2178,7 +2201,8 @@ export class BigQuery extends Dialect {
     };
   }
 
-  static FORMAT_MAPPING: Record<string, string> = {
+  @cache
+  static get FORMAT_MAPPING (): Record<string, string> { return {
     DD: '%d',
     MM: '%m',
     MON: '%b',
@@ -2192,19 +2216,22 @@ export class BigQuery extends Dialect {
     SS: '%S',
     SSSSS: '%f',
     TZH: '%z',
-  };
+  }; }
 
   // The _PARTITIONTIME and _PARTITIONDATE pseudo-columns are not returned by a SELECT * statement
   // https://cloud.google.com/bigquery/docs/querying-partitioned-tables#query_an_ingestion-time_partitioned_table
   // https://cloud.google.com/bigquery/docs/querying-wildcard-tables#scanning_a_range_of_tables_using_table_suffix
   // https://cloud.google.com/bigquery/docs/query-cloud-storage-data#query_the_file_name_pseudo-column
-  static PSEUDOCOLUMNS: Set<string> = new Set([
-    '_PARTITIONTIME',
-    '_PARTITIONDATE',
-    '_TABLE_SUFFIX',
-    '_FILE_NAME',
-    '_DBT_MAX_PARTITION',
-  ]);
+  @cache
+  static get PSEUDOCOLUMNS (): Set<string> {
+    return new Set([
+      '_PARTITIONTIME',
+      '_PARTITIONDATE',
+      '_TABLE_SUFFIX',
+      '_FILE_NAME',
+      '_DBT_MAX_PARTITION',
+    ]);
+  }
 
   // All set operations require either a DISTINCT or ALL specifier
   @cache

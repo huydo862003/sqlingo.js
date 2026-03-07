@@ -290,7 +290,8 @@ class StarRocksGenerator extends MySQL.Generator {
   // StarRocks doesn't support renaming a table with a database.
   static RENAME_TABLE_WITH_DB: boolean = false;
 
-  static CAST_MAPPING: Record<string, string> = {};
+  @cache
+  static get CAST_MAPPING (): Record<string, string> { return {}; }
 
   @cache
   static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
@@ -372,7 +373,8 @@ class StarRocksGenerator extends MySQL.Generator {
      * Comprehensive list of StarRocks reserved keywords.
      * Reference: https://docs.starrocks.io/docs/sql-reference/sql-statements/keywords/#reserved-keywords
      */
-  static RESERVED_KEYWORDS: Set<string> = new Set([
+  @cache
+  static get RESERVED_KEYWORDS (): Set<string> { return new Set([
     'add',
     'all',
     'alter',
@@ -524,7 +526,7 @@ class StarRocksGenerator extends MySQL.Generator {
     'when',
     'where',
     'with',
-  ]);
+  ]); }
 
   /**
      * Overrides table creation to move Primary Keys from the schema into properties.

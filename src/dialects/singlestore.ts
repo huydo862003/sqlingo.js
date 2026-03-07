@@ -136,7 +136,8 @@ function castToTime6 (
 }
 
 class SingleStoreTokenizer extends MySQL.Tokenizer {
-  static BYTE_STRINGS: [string, string][] = [['e\'', '\''], ['E\'', '\'']];
+  @cache
+  static get BYTE_STRINGS (): [string, string][] { return [['e\'', '\''], ['E\'', '\'']]; }
 
   @cache
   static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
@@ -327,7 +328,8 @@ class SingleStoreParser extends MySQL.Parser {
     };
   }
 
-  static CAST_COLUMN_OPERATORS = new Set([TokenType.COLON_GT, TokenType.NCOLON_GT]);
+  @cache
+  static get CAST_COLUMN_OPERATORS () { return new Set([TokenType.COLON_GT, TokenType.NCOLON_GT]); }
   @cache
   static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((this: Parser, this_?: Expression, to?: Expression) => Expression)>> {
     return (() => {
@@ -441,7 +443,8 @@ class SingleStoreGenerator extends MySQL.Generator {
   static SUPPORTS_UESCAPE = false;
   static NULL_ORDERING_SUPPORTED = true;
   static MATCH_AGAINST_TABLE_PREFIX = 'TABLE ';
-  static STRUCT_DELIMITER = ['(', ')'];
+  @cache
+  static get STRUCT_DELIMITER () { return ['(', ')']; }
 
   static UNICODE_SUBSTITUTE = (_match: string, group: string) => {
     return String.fromCharCode(parseInt(group, 16));
@@ -1018,7 +1021,8 @@ class SingleStoreGenerator extends MySQL.Generator {
     };
   }
 
-  static RESERVED_KEYWORDS = new Set([
+  @cache
+  static get RESERVED_KEYWORDS () { return new Set([
     'abs',
     'absolute',
     'access',
@@ -2067,7 +2071,7 @@ class SingleStoreGenerator extends MySQL.Generator {
     'yes',
     'zerofill',
     'zone',
-  ]);
+  ]); }
 
   jsonExtractScalarSql (expression: JsonExtractScalarExpr): string {
     const jsonType = expression.args.jsonType;
@@ -2281,32 +2285,38 @@ class SingleStoreGenerator extends MySQL.Generator {
 export class SingleStore extends MySQL {
   static SUPPORTS_ORDER_BY_ALL = true;
 
-  static TIME_MAPPING: Record<string, string> = {
-    D: '%u',
-    DD: '%d',
-    DY: '%a',
-    HH: '%I',
-    HH12: '%I',
-    HH24: '%H',
-    MI: '%M',
-    MM: '%m',
-    MON: '%b',
-    MONTH: '%B',
-    SS: '%S',
-    RR: '%y',
-    YY: '%y',
-    YYYY: '%Y',
-    FF6: '%f',
-  };
+  @cache
+  static get TIME_MAPPING (): Record<string, string> {
+    return {
+      D: '%u',
+      DD: '%d',
+      DY: '%a',
+      HH: '%I',
+      HH12: '%I',
+      HH24: '%H',
+      MI: '%M',
+      MM: '%m',
+      MON: '%b',
+      MONTH: '%B',
+      SS: '%S',
+      RR: '%y',
+      YY: '%y',
+      YYYY: '%Y',
+      FF6: '%f',
+    };
+  }
 
-  static VECTOR_TYPE_ALIASES = {
-    I8: 'TINYINT',
-    I16: 'SMALLINT',
-    I32: 'INT',
-    I64: 'BIGINT',
-    F32: 'FLOAT',
-    F64: 'DOUBLE',
-  };
+  @cache
+  static get VECTOR_TYPE_ALIASES () {
+    return {
+      I8: 'TINYINT',
+      I16: 'SMALLINT',
+      I32: 'INT',
+      I64: 'BIGINT',
+      F32: 'FLOAT',
+      F64: 'DOUBLE',
+    };
+  }
 
   @cache
   static get INVERSE_VECTOR_TYPE_ALIASES () {

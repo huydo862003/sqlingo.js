@@ -155,11 +155,14 @@ function dateTypeHandler (args: Expression[], { dialect }: { dialect: DialectTyp
 }
 
 class DremioTokenizer extends Tokenizer {
-  static COMMENTS = [
-    '--',
-    '//',
-    ['/*', '*/'] as TokenPair,
-  ];
+  @cache
+  static get COMMENTS () {
+    return [
+      '--',
+      '//',
+      ['/*', '*/'] as TokenPair,
+    ];
+  }
 };
 
 class DremioParser extends Parser {
@@ -293,7 +296,8 @@ export class Dremio extends Dialect {
   static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
   static SUPPORTS_VALUES_DEFAULT = false;
 
-  static TIME_MAPPING = {
+  @cache
+  static get TIME_MAPPING () { return {
     YYYY: '%Y',
     yyyy: '%Y',
     YY: '%y',
@@ -336,7 +340,7 @@ export class Dremio extends Dialect {
     tzd: '%Z',
     TZO: '%z',
     tzo: '%z',
-  };
+  }; }
 
   static Tokenizer = DremioTokenizer;
   static Parser = DremioParser;

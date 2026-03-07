@@ -416,19 +416,28 @@ function buildSplit<E extends Expression> (
 }
 
 class ClickHouseTokenizer extends Tokenizer {
-  static COMMENTS: (string | [string, string])[] = [
-    '--',
-    '#',
-    '#!',
-    ['/*', '*/'],
-  ];
+  @cache
+  static get COMMENTS (): (string | [string, string])[] {
+    return [
+      '--',
+      '#',
+      '#!',
+      ['/*', '*/'],
+    ];
+  }
 
-  static IDENTIFIERS = ['"', '`'];
-  static IDENTIFIER_ESCAPES = ['\\'];
-  static STRING_ESCAPES = ['\'', '\\'];
-  static BIT_STRINGS: TokenPair[] = [['0b', '']];
-  static HEX_STRINGS: TokenPair[] = [['0x', ''], ['0X', '']];
-  static HEREDOC_STRINGS = ['$'];
+  @cache
+  static get IDENTIFIERS () { return ['"', '`']; }
+  @cache
+  static get IDENTIFIER_ESCAPES () { return ['\\']; }
+  @cache
+  static get STRING_ESCAPES () { return ['\'', '\\']; }
+  @cache
+  static get BIT_STRINGS (): TokenPair[] { return [['0b', '']]; }
+  @cache
+  static get HEX_STRINGS (): TokenPair[] { return [['0x', ''], ['0X', '']]; }
+  @cache
+  static get HEREDOC_STRINGS () { return ['$']; }
 
   @cache
   static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
@@ -570,7 +579,8 @@ class ClickHouseParser extends Parser {
     delete this.FUNCTIONS['APPROX_TOP_SUM'];
   }
 
-  static AGG_FUNCTIONS = new Set([
+  @cache
+  static get AGG_FUNCTIONS () { return new Set([
     'count',
     'min',
     'max',
@@ -686,9 +696,10 @@ class ClickHouseParser extends Parser {
     'uniqUpTo',
     'sequenceNextNode',
     'exponentialTimeDecayedAvg',
-  ]);
+  ]); }
 
-  static AGG_FUNCTIONS_SUFFIXES = [
+  @cache
+  static get AGG_FUNCTIONS_SUFFIXES () { return [
     'If',
     'Array',
     'ArrayIf',
@@ -704,7 +715,7 @@ class ClickHouseParser extends Parser {
     'Resample',
     'ArgMin',
     'ArgMax',
-  ];
+  ]; }
 
   @cache
   static get FUNC_TOKENS (): Set<TokenType> {
@@ -1442,7 +1453,8 @@ class ClickHouseParser extends Parser {
 
 export class ClickHouseGenerator extends Generator {
   static QUERY_HINTS = false;
-  static STRUCT_DELIMITER = ['(', ')'];
+  @cache
+  static get STRUCT_DELIMITER () { return ['(', ')']; }
   static NVL2_SUPPORTED = false;
   static TABLESAMPLE_REQUIRES_PARENS = false;
   static TABLESAMPLE_SIZE_IS_ROWS = false;
@@ -1457,7 +1469,8 @@ export class ClickHouseGenerator extends Generator {
   static ARRAY_SIZE_NAME = 'LENGTH';
   static WRAP_DERIVED_VALUES = false;
 
-  static STRING_TYPE_MAPPING: Partial<Record<DataTypeExprKind, string>> = {
+  @cache
+  static get STRING_TYPE_MAPPING (): Partial<Record<DataTypeExprKind, string>> { return {
     [DataTypeExprKind.BLOB]: 'String',
     [DataTypeExprKind.CHAR]: 'String',
     [DataTypeExprKind.LONGBLOB]: 'String',
@@ -1469,7 +1482,7 @@ export class ClickHouseGenerator extends Generator {
     [DataTypeExprKind.TEXT]: 'String',
     [DataTypeExprKind.VARBINARY]: 'String',
     [DataTypeExprKind.VARCHAR]: 'String',
-  };
+  }; }
 
   @cache
   static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
@@ -1767,28 +1780,34 @@ export class ClickHouseGenerator extends Generator {
     ]);
   }
 
-  static ON_CLUSTER_TARGETS = new Set([
-    'SCHEMA',
-    'DATABASE',
-    'TABLE',
-    'VIEW',
-    'DICTIONARY',
-    'INDEX',
-    'FUNCTION',
-    'NAMED COLLECTION',
-  ]);
+  @cache
+  static get ON_CLUSTER_TARGETS () {
+    return new Set([
+      'SCHEMA',
+      'DATABASE',
+      'TABLE',
+      'VIEW',
+      'DICTIONARY',
+      'INDEX',
+      'FUNCTION',
+      'NAMED COLLECTION',
+    ]);
+  }
 
-  static NON_NULLABLE_TYPES = new Set([
-    DataTypeExprKind.ARRAY,
-    DataTypeExprKind.MAP,
-    DataTypeExprKind.STRUCT,
-    DataTypeExprKind.POINT,
-    DataTypeExprKind.RING,
-    DataTypeExprKind.LINESTRING,
-    DataTypeExprKind.MULTILINESTRING,
-    DataTypeExprKind.POLYGON,
-    DataTypeExprKind.MULTIPOLYGON,
-  ]);
+  @cache
+  static get NON_NULLABLE_TYPES () {
+    return new Set([
+      DataTypeExprKind.ARRAY,
+      DataTypeExprKind.MAP,
+      DataTypeExprKind.STRUCT,
+      DataTypeExprKind.POINT,
+      DataTypeExprKind.RING,
+      DataTypeExprKind.LINESTRING,
+      DataTypeExprKind.MULTILINESTRING,
+      DataTypeExprKind.POLYGON,
+      DataTypeExprKind.MULTIPOLYGON,
+    ]);
+  }
 
   offsetSql (expression: OffsetExpr): string {
     let offset = super.offsetSql(expression);
@@ -2112,7 +2131,8 @@ export class ClickHouse extends Dialect {
     };
   }
 
-  static CREATABLE_KIND_MAPPING = { DATABASE: 'SCHEMA' };
+  @cache
+  static get CREATABLE_KIND_MAPPING () { return { DATABASE: 'SCHEMA' }; }
 
   @cache
   static get SET_OP_DISTINCT_BY_DEFAULT (): Partial<Record<ExpressionKey, boolean>> {

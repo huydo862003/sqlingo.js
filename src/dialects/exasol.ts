@@ -388,7 +388,8 @@ function addDateSql (this: ExasolGenerator, expression: DateAddExpr | DateSubExp
 }
 
 class ExasolTokenizer extends Tokenizer {
-  static IDENTIFIERS: TokenPair[] = ['"', ['[', ']']];
+  @cache
+  static get IDENTIFIERS (): TokenPair[] { return ['"', ['[', ']']]; }
 
   @cache
   static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
@@ -508,10 +509,13 @@ class ExasolParser extends Parser {
     };
   }
 
-  static ODBC_DATETIME_LITERALS = {
-    d: DateExpr,
-    ts: TimestampExpr,
-  };
+  @cache
+  static get ODBC_DATETIME_LITERALS () {
+    return {
+      d: DateExpr,
+      ts: TimestampExpr,
+    };
+  }
 
   parseColumn (): Expression | undefined {
     const column = super.parseColumn();
@@ -530,17 +534,20 @@ class ExasolParser extends Parser {
 }
 
 class ExasolGenerator extends Generator {
-  static STRING_TYPE_MAPPING = {
-    [DataTypeExprKind.BLOB]: 'VARCHAR',
-    [DataTypeExprKind.LONGBLOB]: 'VARCHAR',
-    [DataTypeExprKind.LONGTEXT]: 'VARCHAR',
-    [DataTypeExprKind.MEDIUMBLOB]: 'VARCHAR',
-    [DataTypeExprKind.MEDIUMTEXT]: 'VARCHAR',
-    [DataTypeExprKind.TINYBLOB]: 'VARCHAR',
-    [DataTypeExprKind.TINYTEXT]: 'VARCHAR',
-    [DataTypeExprKind.TEXT]: 'LONG VARCHAR',
-    [DataTypeExprKind.VARBINARY]: 'VARCHAR',
-  };
+  @cache
+  static get STRING_TYPE_MAPPING () {
+    return {
+      [DataTypeExprKind.BLOB]: 'VARCHAR',
+      [DataTypeExprKind.LONGBLOB]: 'VARCHAR',
+      [DataTypeExprKind.LONGTEXT]: 'VARCHAR',
+      [DataTypeExprKind.MEDIUMBLOB]: 'VARCHAR',
+      [DataTypeExprKind.MEDIUMTEXT]: 'VARCHAR',
+      [DataTypeExprKind.TINYBLOB]: 'VARCHAR',
+      [DataTypeExprKind.TINYTEXT]: 'VARCHAR',
+      [DataTypeExprKind.TEXT]: 'LONG VARCHAR',
+      [DataTypeExprKind.VARBINARY]: 'VARCHAR',
+    };
+  }
 
   @cache
   static get TYPE_MAPPING () {
@@ -795,42 +802,45 @@ export class Exasol extends Dialect {
   static SUPPORTS_COLUMN_JOIN_MARKS = true;
   static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
   static CONCAT_COALESCE = true;
-  static TIME_MAPPING = {
-    CC: '%y',
-    D: '%u',
-    DAY: '%A',
-    DD: '%d',
-    DDD: '%j',
-    DY: '%a',
-    FF1: '%f',
-    FF2: '%f',
-    FF3: '%f',
-    FF4: '%f',
-    FF5: '%f',
-    FF6: '%f',
-    FF7: '%f',
-    FF8: '%f',
-    FF9: '%f',
-    FX: '%c',
-    HH: '%I',
-    HH12: '%I',
-    HH24: '%H',
-    IW: '%V',
-    MI: '%M',
-    MM: '%m',
-    MON: '%b',
-    MONTH: '%B',
-    Q: '',
-    RR: '%y',
-    RRRR: '%Y',
-    SS: '%S',
-    SSSSS: '%f',
-    WW: '%W',
-    W: '%W',
-    YY: '%y',
-    YYY: '%y',
-    YYYY: '%Y',
-  };
+  @cache
+  static get TIME_MAPPING () {
+    return {
+      CC: '%y',
+      D: '%u',
+      DAY: '%A',
+      DD: '%d',
+      DDD: '%j',
+      DY: '%a',
+      FF1: '%f',
+      FF2: '%f',
+      FF3: '%f',
+      FF4: '%f',
+      FF5: '%f',
+      FF6: '%f',
+      FF7: '%f',
+      FF8: '%f',
+      FF9: '%f',
+      FX: '%c',
+      HH: '%I',
+      HH12: '%I',
+      HH24: '%H',
+      IW: '%V',
+      MI: '%M',
+      MM: '%m',
+      MON: '%b',
+      MONTH: '%B',
+      Q: '',
+      RR: '%y',
+      RRRR: '%Y',
+      SS: '%S',
+      SSSSS: '%f',
+      WW: '%W',
+      W: '%W',
+      YY: '%y',
+      YYY: '%y',
+      YYYY: '%Y',
+    };
+  }
 
   static Tokenizer = ExasolTokenizer;
   static Parser = ExasolParser;

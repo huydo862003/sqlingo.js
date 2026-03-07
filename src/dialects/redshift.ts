@@ -185,9 +185,12 @@ class RedshiftParser extends Postgres.Parser {
 }
 
 class RedshiftTokenizer extends Postgres.Tokenizer {
-  static BIT_STRINGS = [];
-  static HEX_STRINGS = [];
-  static STRING_ESCAPES = ['\\', '\''];
+  @cache
+  static get BIT_STRINGS () { return []; }
+  @cache
+  static get HEX_STRINGS () { return []; }
+  @cache
+  static get STRING_ESCAPES () { return ['\\', '\'']; }
 
   @cache
   static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
@@ -356,7 +359,8 @@ class RedshiftGenerator extends Postgres.Generator {
     return transforms;
   }
 
-  static RESERVED_KEYWORDS = new Set([
+  @cache
+  static get RESERVED_KEYWORDS () { return new Set([
     'aes128',
     'aes256',
     'all',
@@ -514,7 +518,7 @@ class RedshiftGenerator extends Postgres.Generator {
     'where',
     'with',
     'without',
-  ]);
+  ]); }
 
   unnestSql (expression: UnnestExpr): string {
     const args = expression.args.expressions || [];
@@ -624,12 +628,15 @@ export class Redshift extends Postgres {
 
   static TIME_FORMAT = '\'YYYY-MM-DD HH24:MI:SS\'';
 
-  static TIME_MAPPING = {
-    ...Postgres.TIME_MAPPING,
-    MON: '%b',
-    HH24: '%H',
-    HH: '%I',
-  };
+  @cache
+  static get TIME_MAPPING () {
+    return {
+      ...Postgres.TIME_MAPPING,
+      MON: '%b',
+      HH24: '%H',
+      HH: '%I',
+    };
+  }
 
   static Tokenizer = RedshiftTokenizer;
   static Parser = RedshiftParser;

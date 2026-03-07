@@ -704,7 +704,8 @@ class PrestoGenerator extends Generator {
   static IS_BOOL_ALLOWED = false;
   static TZ_TO_WITH_TIME_ZONE = true;
   static NVL2_SUPPORTED = false;
-  static STRUCT_DELIMITER = ['(', ')'] as [string, string];
+  @cache
+  static get STRUCT_DELIMITER () { return ['(', ')'] as [string, string]; }
   static LIMIT_ONLY_LITERALS = true;
   static SUPPORTS_SINGLE_ARG_CONCAT = false;
   static LIKE_PROPERTY_INSIDE_SCHEMA = true;
@@ -1013,7 +1014,8 @@ class PrestoGenerator extends Generator {
     ]);
   }
 
-  static RESERVED_KEYWORDS = new Set([
+  @cache
+  static get RESERVED_KEYWORDS () { return new Set([
     'alter',
     'and',
     'as',
@@ -1072,7 +1074,7 @@ class PrestoGenerator extends Generator {
     'when',
     'where',
     'with',
-  ]);
+  ]); }
 
   /**
    * Handles Presto's specific EXTRACT logic for high-precision EPOCHs.

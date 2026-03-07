@@ -69,7 +69,8 @@ class TrinoParser extends Presto.Parser {
     };
   }
 
-  static JSON_QUERY_OPTIONS: Record<string, string[][]> = {
+  @cache
+  static get JSON_QUERY_OPTIONS (): Record<string, string[][]> { return {
     WITH: [
       ['WRAPPER'],
       ['ARRAY', 'WRAPPER'],
@@ -102,7 +103,7 @@ class TrinoParser extends Presto.Parser {
         'WRAPPER',
       ],
     ],
-  };
+  }; }
 
   public parseJsonQueryQuote (): JsonExtractQuoteExpr | undefined {
     if (

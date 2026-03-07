@@ -526,14 +526,18 @@ function jsonExtractSql (this: Generator, expression: JsonExtractExpr | JsonExtr
 }
 
 export class TSQLTokenizer extends Tokenizer {
-  static IDENTIFIERS: (string | [string, string])[] = [['[', ']'], '"'];
-  static QUOTES = ['\'', '"'];
-  static HEX_STRINGS: [string, string][] = [['0x', ''], ['0X', '']];
-  static VAR_SINGLE_TOKENS = new Set([
+  @cache
+  static get IDENTIFIERS (): (string | [string, string])[] { return [['[', ']'], '"']; }
+  @cache
+  static get QUOTES () { return ['\'', '"']; }
+  @cache
+  static get HEX_STRINGS (): [string, string][] { return [['0x', ''], ['0X', '']]; }
+  @cache
+  static get VAR_SINGLE_TOKENS () { return new Set([
     '@',
     '$',
     '#',
-  ]);
+  ]); }
 
   @cache
   static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
@@ -679,26 +683,31 @@ export class TSQLParser extends Parser {
     };
   }
 
-  static JOIN_HINTS = new Set([
+  @cache
+  static get JOIN_HINTS () { return new Set([
     'LOOP',
     'HASH',
     'MERGE',
     'REMOTE',
-  ]);
+  ]); }
 
-  static PROCEDURE_OPTIONS: Record<string, string[]> = {
-    ENCRYPTION: [],
-    RECOMPILE: [],
-    SCHEMABINDING: [],
-    NATIVE_COMPILATION: [],
-    EXECUTE: [],
-  };
+  @cache
+  static get PROCEDURE_OPTIONS (): Record<string, string[]> {
+    return {
+      ENCRYPTION: [],
+      RECOMPILE: [],
+      SCHEMABINDING: [],
+      NATIVE_COMPILATION: [],
+      EXECUTE: [],
+    };
+  }
 
-  static COLUMN_DEFINITION_MODES = new Set([
+  @cache
+  static get COLUMN_DEFINITION_MODES () { return new Set([
     'OUT',
     'OUTPUT',
     'READONLY',
-  ]);
+  ]); }
 
   @cache
   static get RETURNS_TABLE_TOKENS (): Set<TokenType> {
@@ -777,13 +786,17 @@ export class TSQLParser extends Parser {
     };
   }
 
-  static SET_OP_MODIFIERS = new Set(['offset']);
+  @cache
+  static get SET_OP_MODIFIERS () { return new Set(['offset']); }
 
-  static ODBC_DATETIME_LITERALS: Record<string, typeof Expression> = {
-    d: DateExpr,
-    t: TimeExpr,
-    ts: TimestampExpr,
-  };
+  @cache
+  static get ODBC_DATETIME_LITERALS (): Record<string, typeof Expression> {
+    return {
+      d: DateExpr,
+      t: TimeExpr,
+      ts: TimestampExpr,
+    };
+  }
 
   parseDatepart (): ExtractExpr {
     const thisNode = this.parseVar({ tokens: new Set([TokenType.IDENTIFIER]) });
@@ -1159,18 +1172,21 @@ export class TSQLGenerator extends Generator {
   static ALTER_SET_WRAPPED = true;
   static ALTER_SET_TYPE = '';
 
-  static EXPRESSIONS_WITHOUT_NESTED_CTES = new Set([
-    CreateExpr,
-    DeleteExpr,
-    InsertExpr,
-    IntersectExpr,
-    ExceptExpr,
-    MergeExpr,
-    SelectExpr,
-    SubqueryExpr,
-    UnionExpr,
-    UpdateExpr,
-  ]);
+  @cache
+  static get EXPRESSIONS_WITHOUT_NESTED_CTES () {
+    return new Set([
+      CreateExpr,
+      DeleteExpr,
+      InsertExpr,
+      IntersectExpr,
+      ExceptExpr,
+      MergeExpr,
+      SelectExpr,
+      SubqueryExpr,
+      UnionExpr,
+      UpdateExpr,
+    ]);
+  }
 
   @cache
   static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
@@ -1777,7 +1793,8 @@ export class TSQL extends Dialect {
     };
   }
 
-  static TIME_MAPPING = {
+  @cache
+  static get TIME_MAPPING () { return {
     year: '%Y',
     dayofyear: '%j',
     day: '%d',
@@ -1820,9 +1837,10 @@ export class TSQL extends Dialect {
     ffffff: '%f',
     yyyy: '%Y',
     yy: '%y',
-  };
+  }; }
 
-  static CONVERT_FORMAT_MAPPING = {
+  @cache
+  static get CONVERT_FORMAT_MAPPING () { return {
     0: '%b %d %Y %-I:%M%p',
     1: '%m/%d/%y',
     2: '%y.%m.%d',
@@ -1862,9 +1880,10 @@ export class TSQL extends Dialect {
     120: '%Y-%m-%d %H:%M:%S',
     121: '%Y-%m-%d %H:%M:%S.%f',
     126: '%Y-%m-%dT%H:%M:%S.%f',
-  };
+  }; }
 
-  static FORMAT_TIME_MAPPING = {
+  @cache
+  static get FORMAT_TIME_MAPPING () { return {
     y: '%B %Y',
     d: '%m/%d/%Y',
     H: '%-H',
@@ -1883,7 +1902,7 @@ export class TSQL extends Dialect {
     T: '%-I:%M:%S %p',
     t: '%-I:%M',
     Y: '%a %Y',
-  };
+  }; }
 
   static Tokenizer = TSQLTokenizer;
   static Parser = TSQLParser;

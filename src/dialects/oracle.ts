@@ -106,11 +106,12 @@ function buildToTimestamp (args: Expression[]): StrToTimeExpr | AnonymousExpr {
 }
 
 export class OracleTokenizer extends Tokenizer {
-  static VAR_SINGLE_TOKENS = new Set([
+  @cache
+  static get VAR_SINGLE_TOKENS () { return new Set([
     '@',
     '$',
     '#',
-  ]);
+  ]); }
 
   @cache
   static get UNICODE_STRINGS (): TokenPair[] {
@@ -149,7 +150,8 @@ export class OracleTokenizer extends Tokenizer {
 }
 
 export class OracleParser extends Parser {
-  static WINDOW_BEFORE_PAREN_TOKENS = new Set([TokenType.OVER, TokenType.KEEP]);
+  @cache
+  static get WINDOW_BEFORE_PAREN_TOKENS () { return new Set([TokenType.OVER, TokenType.KEEP]); }
   static VALUES_FOLLOWED_BY_PAREN = false;
 
   @cache
@@ -276,9 +278,12 @@ export class OracleParser extends Parser {
     return new Set([TokenType.DISTINCT, TokenType.UNIQUE]);
   }
 
-  static QUERY_RESTRICTIONS = {
-    WITH: [['READ', 'ONLY'], ['CHECK', 'OPTION']],
-  };
+  @cache
+  static get QUERY_RESTRICTIONS () {
+    return {
+      WITH: [['READ', 'ONLY'], ['CHECK', 'OPTION']],
+    };
+  }
 
   public parseDbmsRandom (): Expression | undefined {
     if (this.matchTextSeq(['.', 'VALUE'])) {
@@ -632,34 +637,40 @@ export class Oracle extends Dialect {
 
   static NORMALIZATION_STRATEGY = NormalizationStrategy.UPPERCASE;
 
-  static TIME_MAPPING = {
-    D: '%u',
-    DAY: '%A',
-    DD: '%d',
-    DDD: '%j',
-    DY: '%a',
-    HH: '%I',
-    HH12: '%I',
-    HH24: '%H',
-    IW: '%V',
-    MI: '%M',
-    MM: '%m',
-    MON: '%b',
-    MONTH: '%B',
-    SS: '%S',
-    WW: '%W',
-    YY: '%y',
-    YYYY: '%Y',
-    FF6: '%f',
-  };
+  @cache
+  static get TIME_MAPPING () {
+    return {
+      D: '%u',
+      DAY: '%A',
+      DD: '%d',
+      DDD: '%j',
+      DY: '%a',
+      HH: '%I',
+      HH12: '%I',
+      HH24: '%H',
+      IW: '%V',
+      MI: '%M',
+      MM: '%m',
+      MON: '%b',
+      MONTH: '%B',
+      SS: '%S',
+      WW: '%W',
+      YY: '%y',
+      YYYY: '%Y',
+      FF6: '%f',
+    };
+  }
 
-  static PSEUDOCOLUMNS = new Set([
-    'ROWNUM',
-    'ROWID',
-    'OBJECT_ID',
-    'OBJECT_VALUE',
-    'LEVEL',
-  ]);
+  @cache
+  static get PSEUDOCOLUMNS () {
+    return new Set([
+      'ROWNUM',
+      'ROWID',
+      'OBJECT_ID',
+      'OBJECT_VALUE',
+      'LEVEL',
+    ]);
+  }
 
   public canQuote (identifier: IdentifierExpr, options: { identify?: string | boolean } = {}): boolean {
     const { identify = 'safe' } = options;

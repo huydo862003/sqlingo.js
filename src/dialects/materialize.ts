@@ -21,22 +21,28 @@ import {
 import { Postgres } from './postgres';
 
 class MaterializeParser extends Postgres.Parser {
-  static NO_PAREN_FUNCTION_PARSERS = {
-    ...Postgres.Parser.NO_PAREN_FUNCTION_PARSERS,
-    MAP: function (this: Parser) {
-      return (this as MaterializeParser).parseMap();
-    },
-  };
+  @cache
+  static get NO_PAREN_FUNCTION_PARSERS () {
+    return {
+      ...Postgres.Parser.NO_PAREN_FUNCTION_PARSERS,
+      MAP: function (this: Parser) {
+        return (this as MaterializeParser).parseMap();
+      },
+    };
+  }
 
-  static LAMBDAS = {
-    ...Postgres.Parser.LAMBDAS,
-    [TokenType.FARROW]: function (this: Parser, expressions: Expression[]) {
-      return this.expression(KwargExpr, {
-        this: seqGet(expressions, 0),
-        expression: (this as MaterializeParser).parseAssignment(),
-      });
-    },
-  };
+  @cache
+  static get LAMBDAS () {
+    return {
+      ...Postgres.Parser.LAMBDAS,
+      [TokenType.FARROW]: function (this: Parser, expressions: Expression[]) {
+        return this.expression(KwargExpr, {
+          this: seqGet(expressions, 0),
+          expression: (this as MaterializeParser).parseAssignment(),
+        });
+      },
+    };
+  }
 
   parseLambdaArg (): Expression | undefined {
     return this.parseField();

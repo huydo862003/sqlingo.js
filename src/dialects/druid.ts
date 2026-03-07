@@ -15,14 +15,15 @@ import {
 } from './dialect';
 
 export class DruidGenerator extends Generator {
-  static TYPE_MAPPING: Map<DataTypeExprKind | string, string> = (() => {
+  @cache
+  static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map(Generator.TYPE_MAPPING);
     mapping.set(DataTypeExprKind.NCHAR, 'STRING');
     mapping.set(DataTypeExprKind.NVARCHAR, 'STRING');
     mapping.set(DataTypeExprKind.TEXT, 'STRING');
     mapping.set(DataTypeExprKind.UUID, 'STRING');
     return mapping;
-  })();
+  }
 
   @cache
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: Expression) => string> {

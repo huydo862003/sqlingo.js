@@ -151,7 +151,8 @@ class RisingWaveGenerator extends Postgres.Generator {
     };
   }
 
-  static EXPRESSION_PRECEDES_PROPERTIES_CREATABLES = new Set(['SINK']);
+  @cache
+  static get EXPRESSION_PRECEDES_PROPERTIES_CREATABLES () { return new Set(['SINK']); }
 
   computedColumnConstraintSql (expression: ComputedColumnConstraintExpr): string {
     return super.computedColumnConstraintSql(expression);

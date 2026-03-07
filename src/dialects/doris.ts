@@ -129,11 +129,9 @@ class DorisParser extends MySQL.Parser {
 
   @cache
   static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
-    return { ...MySQL.Parser.NO_PAREN_FUNCTIONS };
-  }
-
-  static {
-    delete DorisParser.NO_PAREN_FUNCTIONS[TokenType.CURRENT_DATE];
+    const functions: Partial<Record<TokenType, typeof Expression>> = { ...MySQL.Parser.NO_PAREN_FUNCTIONS };
+    delete functions[TokenType.CURRENT_DATE];
+    return functions;
   }
 
   @cache
@@ -400,7 +398,8 @@ class DorisGenerator extends MySQL.Generator {
     return transforms;
   }
 
-  static RESERVED_KEYWORDS = new Set([
+  @cache
+  static get RESERVED_KEYWORDS () { return new Set([
     'account_lock',
     'account_unlock',
     'add',
@@ -871,7 +870,7 @@ class DorisGenerator extends MySQL.Generator {
     'write',
     'xor',
     'year',
-  ]);
+  ]); }
 
   uniqueKeyPropertySql (expression: UniqueKeyPropertyExpr, options: { prefix?: string } = {}): string {
     let { prefix = 'UNIQUE KEY' } = options;
