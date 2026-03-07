@@ -547,6 +547,7 @@ export class Dialect {
 
   /** Whether REGEXP_EXTRACT returns NULL when the position arg exceeds the string length. */
   static REGEXP_EXTRACT_POSITION_OVERFLOW_RETURNS_NULL = true;
+
   @cache
   static get SET_OP_DISTINCT_BY_DEFAULT (): Partial<Record<ExpressionKey, boolean>> {
     return {
@@ -612,6 +613,7 @@ export class Dialect {
    * For example, in Postgres, generate_series function outputs a column named "generate_series" by default.
    */
   static DEFAULT_FUNCTIONS_COLUMN_NAMES: Map<string, string | string[]> = new Map();
+
   @cache
   static get DEFAULT_NULL_TYPE (): DataTypeExprKind {
     return DataTypeExprKind.UNKNOWN;

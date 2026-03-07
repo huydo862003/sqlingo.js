@@ -85,13 +85,15 @@ import type { Generator } from './generator';
 import {
   findNewName, nameSequence,
 } from './helper';
-import { ensureBools as canonicalizeEnsureBools } from './optimizer/canonicalize';
 import {
-  findAllInScope, normalize, Scope, traverseScope,
-} from './optimizer';
+  findAllInScope, Scope,
+  traverseScope,
+} from './optimizer/scope';
+import { ensureBools as canonicalizeEnsureBools } from './optimizer/canonicalize';
 import {
   assertIsInstanceOf, enumFromString, filterInstanceOf, isInstanceOf, narrowInstanceOf,
 } from './port_internals';
+import { normalize } from './optimizer/optimize_joins';
 
 /**
  * Creates a new transform by chaining a sequence of transformations.
