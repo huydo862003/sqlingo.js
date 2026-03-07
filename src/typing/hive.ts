@@ -1,7 +1,7 @@
-import type { Expression } from '../expressions';
+import type { Expression } from '../expressions/expressions';
+import { DataTypeExprKind } from '../expressions/types';
 import {
   DataTypeExpr,
-  DataTypeExprKind,
   EncodeExpr,
   UnhexExpr,
   CorrExpr,
@@ -21,7 +21,7 @@ import {
   IfExpr,
   RegexpSplitExpr,
   ReverseExpr,
-} from '../expressions';
+} from '../expressions/expressions';
 import type { TypeAnnotator } from '../optimizer';
 import { EXPRESSION_METADATA as BASE_EXPRESSION_METADATA } from './dialect';
 import type { ExpressionMetadata } from './dialect';

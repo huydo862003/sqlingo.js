@@ -401,7 +401,10 @@ export class Spark extends Spark2 {
   static SUPPORTS_ORDER_BY_ALL = true;
   static SUPPORTS_NULL_TYPE = true;
   static ARRAY_FUNCS_PROPAGATES_NULLS = true;
-  static EXPRESSION_METADATA = { ...EXPRESSION_METADATA };
+  @cache
+  static get EXPRESSION_METADATA () {
+    return new Map(EXPRESSION_METADATA);
+  }
 
   static Tokenizer = SparkTokenizer;
   static Parser = SparkParser;

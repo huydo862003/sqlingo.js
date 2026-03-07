@@ -1,6 +1,6 @@
-import type { Expression } from '../expressions';
+import type { Expression } from '../expressions/expressions';
+import { DataTypeExprKind } from '../expressions/types';
 import {
-  DataTypeExprKind,
   BitLengthExpr,
   DayExpr,
   DayOfMonthExpr,
@@ -21,7 +21,7 @@ import {
   TimeToUnixExpr,
   ToDaysExpr,
   TimeFromPartsExpr,
-} from '../expressions';
+} from '../expressions/expressions';
 import type { ExpressionMetadata } from './dialect';
 import { EXPRESSION_METADATA as BASE_EXPRESSION_METADATA } from './dialect';
 

@@ -1,4 +1,5 @@
-import type { ExpressionOrString } from '../expressions';
+import type { ExpressionOrString } from '../expressions/expressions';
+import { DataTypeExprKind } from '../expressions/types';
 import {
   Expression, DataTypeExprKind,
   DataTypeExpr, ReverseExpr, TimestampFromPartsExpr, DecodeCaseExpr,
@@ -44,7 +45,7 @@ import {
   ReplaceExpr, SoundexExpr, SoundexP123Expr, SplitPartExpr, TryBase64DecodeStringExpr,
   TryHexDecodeStringExpr, UuidExpr, MinhashExpr, MinhashCombineExpr, VarianceExpr,
   VariancePopExpr, ConcatWsExpr, ConvertTimezoneExpr, DateAddExpr, HashAggExpr, TimeAddExpr,
-} from '../expressions';
+} from '../expressions/expressions';
 import type { TypeAnnotator } from '../optimizer';
 import {
   isInstanceOf, filterInstanceOf,

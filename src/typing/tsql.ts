@@ -1,6 +1,6 @@
-import type { Expression } from '../expressions';
+import type { Expression } from '../expressions/expressions';
+import { DataTypeExprKind } from '../expressions/types';
 import {
-  DataTypeExprKind,
   AcosExpr,
   AsinExpr,
   AtanExpr,
@@ -13,7 +13,7 @@ import {
   StuffExpr,
   CurrentTimezoneExpr,
   RadiansExpr,
-} from '../expressions';
+} from '../expressions/expressions';
 import type { TypeAnnotator } from '../optimizer';
 import { EXPRESSION_METADATA as BASE_EXPRESSION_METADATA } from './dialect';
 import type { ExpressionMetadata } from './dialect';

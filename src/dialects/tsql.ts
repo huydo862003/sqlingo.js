@@ -1753,7 +1753,10 @@ export class TSQL extends Dialect {
 
   static TIME_FORMAT = '\'yyyy-mm-dd hh:mm:ss\'';
 
-  static EXPRESSION_METADATA = { ...EXPRESSION_METADATA };
+  @cache
+  static get EXPRESSION_METADATA () {
+    return new Map(EXPRESSION_METADATA);
+  }
 
   @cache
   static get DATE_PART_MAPPING (): Record<string, string> {

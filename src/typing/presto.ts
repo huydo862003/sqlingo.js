@@ -1,6 +1,6 @@
-import type { Expression } from '../expressions';
+import type { Expression } from '../expressions/expressions';
+import { DataTypeExprKind } from '../expressions/types';
 import {
-  DataTypeExprKind,
   BitwiseAndExpr,
   BitwiseNotExpr,
   BitwiseOrExpr,
@@ -16,7 +16,7 @@ import {
   ModExpr,
   RandExpr,
   Md5DigestExpr,
-} from '../expressions';
+} from '../expressions/expressions';
 import type { TypeAnnotator } from '../optimizer';
 import { EXPRESSION_METADATA as BASE_EXPRESSION_METADATA } from './dialect';
 import type { ExpressionMetadata } from './dialect';

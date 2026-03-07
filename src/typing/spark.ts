@@ -1,6 +1,6 @@
-import type { Expression } from '../expressions';
+import type { Expression } from '../expressions/expressions';
+import { DataTypeExprKind } from '../expressions/types';
 import {
-  DataTypeExprKind,
   SecExpr,
   CollationExpr,
   CurrentTimezoneExpr,
@@ -13,7 +13,7 @@ import {
   DateFromUnixDateExpr,
   ArraySizeExpr,
   OverlayExpr,
-} from '../expressions';
+} from '../expressions/expressions';
 import type { TypeAnnotator } from '../optimizer';
 import { EXPRESSION_METADATA as SPARK2_METADATA } from './spark2';
 import type { ExpressionMetadata } from './dialect';

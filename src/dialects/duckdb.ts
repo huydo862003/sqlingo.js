@@ -4950,7 +4950,10 @@ export class DuckDB extends Dialect {
     return mapping;
   }
 
-  static EXPRESSION_METADATA = { ...Dialect.EXPRESSION_METADATA };
+  @cache
+  static get EXPRESSION_METADATA () {
+    return { ...Dialect.EXPRESSION_METADATA };
+  }
 
   static INVERSE_TIME_MAPPING = {
     '%e': '%-d', // BigQuery's space-padded day (%e) -> DuckDB's no-padding day (%-d)

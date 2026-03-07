@@ -2214,7 +2214,10 @@ export class BigQuery extends Dialect {
     return base;
   })();
 
-  static EXPRESSION_METADATA: ExpressionMetadata = new Map(BIGQUERY_EXPRESSION_METADATA);
+  @cache
+  static get EXPRESSION_METADATA (): ExpressionMetadata {
+    return new Map(BIGQUERY_EXPRESSION_METADATA);
+  }
 
   normalizeIdentifier<E extends Expression> (expression: E): E {
     if (

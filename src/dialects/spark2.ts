@@ -502,7 +502,10 @@ class Spark2Generator extends Hive.Generator {
 
 export class Spark2 extends Hive {
   static ALTER_TABLE_SUPPORTS_CASCADE = false;
-  static EXPRESSION_METADATA = { ...EXPRESSION_METADATA };
+  @cache
+  static get EXPRESSION_METADATA () {
+    return new Map(EXPRESSION_METADATA);
+  }
   static INITCAP_DEFAULT_DELIMITER_CHARS = ' ';
 
   static Tokenizer = Spark2Tokenizer;

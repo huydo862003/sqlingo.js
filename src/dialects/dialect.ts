@@ -969,7 +969,10 @@ export class Dialect {
   static COERCES_TO: Record<string, Set<string>> = {};
 
   /** Specifies type inference & validation rules for expressions. */
-  static EXPRESSION_METADATA: ExpressionMetadata = new Map();
+  @cache
+  static get EXPRESSION_METADATA (): ExpressionMetadata {
+    return new Map();
+  }
 
   /** Determines the supported Dialect instance settings. */
   static SUPPORTED_SETTINGS: Set<string> = new Set(['normalizationStrategy', 'version']);

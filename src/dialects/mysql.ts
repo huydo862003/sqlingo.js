@@ -2024,7 +2024,10 @@ export class MySQL extends Dialect {
   static SAFE_TO_ELIMINATE_DOUBLE_NEGATION: boolean = false;
   static LEAST_GREATEST_IGNORES_NULLS: boolean = false;
 
-  static EXPRESSION_METADATA: ExpressionMetadata = { ...BASE_EXPRESSION_METADATA };
+  @cache
+  static get EXPRESSION_METADATA (): ExpressionMetadata {
+    return new Map(BASE_EXPRESSION_METADATA);
+  }
 
   /**
    * MySQL-specific time format mapping.

@@ -26,7 +26,7 @@ import {
   RegexpExtractAllExpr, SplitExpr, DateFromUnixDateExpr, GenerateTimestampArrayExpr,
   JsonFormatExpr, JsonKeysAtDepthExpr, JsonValueArrayExpr, LagExpr, ParseBignumericExpr,
   ParseNumericExpr, ToCodePointsExpr,
-} from '../expressions';
+} from '../expressions/expressions';
 import { DataTypeExprKind } from '../expressions/types';
 import { isInstanceOf } from '../port_internals';
 import type { TypeAnnotator } from '../optimizer';

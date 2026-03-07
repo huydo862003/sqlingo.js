@@ -1,7 +1,6 @@
 import {
   Expression,
   DataTypeExpr,
-  DataTypeExprKind,
   Atan2Expr,
   RandnExpr,
   FormatExpr,
@@ -9,7 +8,8 @@ import {
   ConcatExpr,
   PadExpr,
   SubstringExpr,
-} from '../expressions';
+} from '../expressions/expressions';
+import { DataTypeExprKind } from '../expressions/types';
 import type { TypeAnnotator } from '../optimizer';
 import {
   isInstanceOf, filterInstanceOf,
