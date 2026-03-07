@@ -150,7 +150,7 @@ import {
 import {
   eliminateDistinctOn, eliminateQualify, eliminateSemiAndAntiJoins, preprocess, unnestGenerateDateArrayUsingRecursiveCte,
 } from '../transforms';
-import { EXPRESSION_METADATA } from '../typing';
+import { DialectTyping } from '../typing';
 import {
   narrowInstanceOf, cache,
 } from '../port_internals';
@@ -1755,7 +1755,7 @@ export class TSQL extends Dialect {
 
   @cache
   static get EXPRESSION_METADATA () {
-    return new Map(EXPRESSION_METADATA);
+    return new Map(DialectTyping.EXPRESSION_METADATA);
   }
 
   @cache

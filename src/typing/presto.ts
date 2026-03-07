@@ -1,4 +1,5 @@
 import type { Expression } from '../expressions/expressions';
+import { cache } from '../port_internals';
 import { DataTypeExprKind } from '../expressions/types';
 import {
   BitwiseAndExpr,
@@ -18,49 +19,52 @@ import {
   Md5DigestExpr,
 } from '../expressions/expressions';
 import type { TypeAnnotator } from '../optimizer';
-import { EXPRESSION_METADATA as BASE_EXPRESSION_METADATA } from './dialect';
+import { DialectTyping } from './dialect';
 import type { ExpressionMetadata } from './dialect';
 
-export const EXPRESSION_METADATA: ExpressionMetadata = (() => {
-  // Clone the base metadata to apply dialect-specific overrides
-  const map: ExpressionMetadata = new Map(BASE_EXPRESSION_METADATA);
+export class PrestoTyping {
+  @cache
+  static get EXPRESSION_METADATA (): ExpressionMetadata {
+    // Clone the base metadata to apply dialect-specific overrides
+    const map: ExpressionMetadata = new Map(DialectTyping.EXPRESSION_METADATA);
 
-  const extend = (types: (typeof Expression)[], data: Record<string, unknown>) => {
-    for (const type of types) map.set(type, data);
-  };
+    const extend = (types: (typeof Expression)[], data: Record<string, unknown>) => {
+      for (const type of types) map.set(type, data);
+    };
 
-  extend([
-    BitwiseAndExpr,
-    BitwiseNotExpr,
-    BitwiseOrExpr,
-    BitwiseXorExpr,
-    LengthExpr,
-    LevenshteinExpr,
-    StrPositionExpr,
-    WidthBucketExpr,
-  ], { returns: DataTypeExprKind.BIGINT });
+    extend([
+      BitwiseAndExpr,
+      BitwiseNotExpr,
+      BitwiseOrExpr,
+      BitwiseXorExpr,
+      LengthExpr,
+      LevenshteinExpr,
+      StrPositionExpr,
+      WidthBucketExpr,
+    ], { returns: DataTypeExprKind.BIGINT });
 
-  extend([
-    CeilExpr,
-    FloorExpr,
-    RoundExpr,
-    SignExpr,
-  ], {
-    annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
-  });
+    extend([
+      CeilExpr,
+      FloorExpr,
+      RoundExpr,
+      SignExpr,
+    ], {
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
+    });
 
-  map.set(ModExpr, {
-    annotator: (s: TypeAnnotator, e: ModExpr) => s.annotateByArgs(e, ['this', 'expression']),
-  });
+    map.set(ModExpr, {
+      annotator: (s: TypeAnnotator, e: ModExpr) => s.annotateByArgs(e, ['this', 'expression']),
+    });
 
-  map.set(RandExpr, {
-    annotator: (s: TypeAnnotator, e: RandExpr) =>
-      e.args.this
-        ? s.annotateByArgs(e, ['this'])
-        : s.setType(e, DataTypeExprKind.DOUBLE),
-  });
+    map.set(RandExpr, {
+      annotator: (s: TypeAnnotator, e: RandExpr) =>
+        e.args.this
+          ? s.annotateByArgs(e, ['this'])
+          : s.setType(e, DataTypeExprKind.DOUBLE),
+    });
 
-  map.set(Md5DigestExpr, { returns: DataTypeExprKind.VARBINARY });
+    map.set(Md5DigestExpr, { returns: DataTypeExprKind.VARBINARY });
 
-  return map;
-})();
+    return map;
+  }
+}

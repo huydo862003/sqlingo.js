@@ -188,7 +188,7 @@ import {
   annotateTypes, TypeAnnotator,
 } from '../optimizer/annotate_types';
 import {
-  BIGQUERY_EXPRESSION_METADATA, type ExpressionMetadata,
+  BigQueryTyping, type ExpressionMetadata,
 } from '../typing';
 import {
   seqGet,
@@ -2216,7 +2216,7 @@ export class BigQuery extends Dialect {
 
   @cache
   static get EXPRESSION_METADATA (): ExpressionMetadata {
-    return new Map(BIGQUERY_EXPRESSION_METADATA);
+    return new Map(BigQueryTyping.EXPRESSION_METADATA);
   }
 
   normalizeIdentifier<E extends Expression> (expression: E): E {

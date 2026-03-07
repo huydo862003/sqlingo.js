@@ -10,11 +10,12 @@ import {
   SubstringExpr,
 } from '../expressions/expressions';
 import { DataTypeExprKind } from '../expressions/types';
-import type { TypeAnnotator } from '../optimizer';
 import {
+  cache,
   isInstanceOf, filterInstanceOf,
 } from '../port_internals';
-import { EXPRESSION_METADATA as HIVE_EXPRESSION_METADATA } from './hive';
+import type { TypeAnnotator } from '../optimizer';
+import { HiveTyping } from './hive';
 import type { ExpressionMetadata } from './dialect';
 
 /**
@@ -62,29 +63,32 @@ function annotateBySimilarArgs (
   return expression;
 }
 
-export const EXPRESSION_METADATA: ExpressionMetadata = (() => {
-  // Clone the Hive base metadata to apply Spark-specific overrides
-  const map: ExpressionMetadata = new Map(HIVE_EXPRESSION_METADATA);
+export class Spark2Typing {
+  @cache
+  static get EXPRESSION_METADATA (): ExpressionMetadata {
+    // Clone the Hive base metadata to apply Spark-specific overrides
+    const map: ExpressionMetadata = new Map(HiveTyping.EXPRESSION_METADATA);
 
-  const extend = (types: (typeof Expression)[], data: Record<string, unknown>) => {
-    for (const type of types) map.set(type, data);
-  };
+    const extend = (types: (typeof Expression)[], data: Record<string, unknown>) => {
+      for (const type of types) map.set(type, data);
+    };
 
-  extend([Atan2Expr, RandnExpr], { returns: DataTypeExprKind.DOUBLE });
+    extend([Atan2Expr, RandnExpr], { returns: DataTypeExprKind.DOUBLE });
 
-  extend([FormatExpr, RightExpr], { returns: DataTypeExprKind.VARCHAR });
+    extend([FormatExpr, RightExpr], { returns: DataTypeExprKind.VARCHAR });
 
-  map.set(ConcatExpr, {
-    annotator: (s: TypeAnnotator, e: ConcatExpr) => annotateBySimilarArgs.call(s, e, ['expressions'], DataTypeExprKind.TEXT),
-  });
+    map.set(ConcatExpr, {
+      annotator: (s: TypeAnnotator, e: ConcatExpr) => annotateBySimilarArgs.call(s, e, ['expressions'], DataTypeExprKind.TEXT),
+    });
 
-  map.set(PadExpr, {
-    annotator: (s: TypeAnnotator, e: PadExpr) => annotateBySimilarArgs.call(s, e, ['this', 'fillPattern'], DataTypeExprKind.TEXT),
-  });
+    map.set(PadExpr, {
+      annotator: (s: TypeAnnotator, e: PadExpr) => annotateBySimilarArgs.call(s, e, ['this', 'fillPattern'], DataTypeExprKind.TEXT),
+    });
 
-  map.set(SubstringExpr, {
-    annotator: (s: TypeAnnotator, e: SubstringExpr) => s.annotateByArgs(e, ['this']),
-  });
+    map.set(SubstringExpr, {
+      annotator: (s: TypeAnnotator, e: SubstringExpr) => s.annotateByArgs(e, ['this']),
+    });
 
-  return map;
-})();
+    return map;
+  }
+}

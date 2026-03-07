@@ -55,7 +55,7 @@ import {
   moveSchemaColumnsToPartitionedBy,
   preprocess, removeUniqueConstraints, removeWithinGroupForPercentiles, unnestToExplode, unqualifyColumns,
 } from '../transforms';
-import { EXPRESSION_METADATA } from '../typing';
+import { DialectTyping } from '../typing';
 import {
   binaryFromFunction, buildFormattedTime, Dialect, Dialects, isParseJson, pivotColumnNames,
   renameFunc,
@@ -504,8 +504,9 @@ export class Spark2 extends Hive {
   static ALTER_TABLE_SUPPORTS_CASCADE = false;
   @cache
   static get EXPRESSION_METADATA () {
-    return new Map(EXPRESSION_METADATA);
+    return new Map(DialectTyping.EXPRESSION_METADATA);
   }
+
   static INITCAP_DEFAULT_DELIMITER_CHARS = ' ';
 
   static Tokenizer = Spark2Tokenizer;

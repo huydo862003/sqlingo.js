@@ -59,7 +59,7 @@ import { TokenType } from '../tokens';
 import {
   ctasWithTmpTablesToCreateTmpView, movePartitionedByToSchemaColumns, preprocess, removeUniqueConstraints,
 } from '../transforms';
-import { EXPRESSION_METADATA } from '../typing';
+import { DialectTyping } from '../typing';
 import {
   arrayAppendSql,
   dateDeltaToBinaryIntervalOp,
@@ -403,7 +403,7 @@ export class Spark extends Spark2 {
   static ARRAY_FUNCS_PROPAGATES_NULLS = true;
   @cache
   static get EXPRESSION_METADATA () {
-    return new Map(EXPRESSION_METADATA);
+    return new Map(DialectTyping.EXPRESSION_METADATA);
   }
 
   static Tokenizer = SparkTokenizer;

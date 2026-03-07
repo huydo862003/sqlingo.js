@@ -1,15 +1,14 @@
 export {
-  TIMESTAMP_EXPRESSIONS,
-  EXPRESSION_METADATA,
+  TIMESTAMP_EXPRESSIONS, DialectTyping,
 } from './dialect';
 export type { ExpressionMetadata } from './dialect';
 
-export { EXPRESSION_METADATA as BIGQUERY_EXPRESSION_METADATA } from './bigquery';
-export { EXPRESSION_METADATA as DUCKDB_EXPRESSION_METADATA } from './duckdb';
-export { EXPRESSION_METADATA as HIVE_EXPRESSION_METADATA } from './hive';
-export { EXPRESSION_METADATA as MYSQL_EXPRESSION_METADATA } from './mysql';
-export { EXPRESSION_METADATA as PRESTO_EXPRESSION_METADATA } from './presto';
-export { EXPRESSION_METADATA as SNOWFLAKE_EXPRESSION_METADATA } from './snowflake';
-export { EXPRESSION_METADATA as SPARK_EXPRESSION_METADATA } from './spark';
-export { EXPRESSION_METADATA as SPARK2_EXPRESSION_METADATA } from './spark2';
-export { EXPRESSION_METADATA as TSQL_EXPRESSION_METADATA } from './tsql';
+export { BigQueryTyping } from './bigquery';
+export { DuckDbTyping } from './duckdb';
+export { HiveTyping } from './hive';
+export { MySQLTyping } from './mysql';
+export { PrestoTyping } from './presto';
+export { SnowflakeTyping } from './snowflake';
+export { SparkTyping } from './spark';
+export { Spark2Typing } from './spark2';
+export { TSQLTyping } from './tsql';

@@ -111,7 +111,7 @@ import {
   DateStrToDateExpr,
 } from '../expressions';
 import {
-  EXPRESSION_METADATA as BASE_EXPRESSION_METADATA, type ExpressionMetadata,
+  DialectTyping, type ExpressionMetadata,
 } from '../typing';
 import type { TokenPair } from '../tokens';
 import {
@@ -2026,7 +2026,7 @@ export class MySQL extends Dialect {
 
   @cache
   static get EXPRESSION_METADATA (): ExpressionMetadata {
-    return new Map(BASE_EXPRESSION_METADATA);
+    return new Map(DialectTyping.EXPRESSION_METADATA);
   }
 
   /**

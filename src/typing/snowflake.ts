@@ -1,4 +1,8 @@
 import type { ExpressionOrString } from '../expressions/expressions';
+import {
+  cache,
+  isInstanceOf, filterInstanceOf,
+} from '../port_internals';
 import { DataTypeExprKind } from '../expressions/types';
 import {
   Expression, DataTypeExprKind,
@@ -47,10 +51,7 @@ import {
   VariancePopExpr, ConcatWsExpr, ConvertTimezoneExpr, DateAddExpr, HashAggExpr, TimeAddExpr,
 } from '../expressions/expressions';
 import type { TypeAnnotator } from '../optimizer';
-import {
-  isInstanceOf, filterInstanceOf,
-} from '../port_internals';
-import { EXPRESSION_METADATA as BASE_EXPRESSION_METADATA } from './dialect';
+import { DialectTyping } from './dialect';
 import type { ExpressionMetadata } from './dialect';
 
 const DATE_PARTS = new Set([
@@ -230,267 +231,270 @@ function annotateStrToTime (this: TypeAnnotator, expression: StrToTimeExpr): Str
   return expression;
 }
 
-export const EXPRESSION_METADATA: ExpressionMetadata = (() => {
-  const map: ExpressionMetadata = new Map(BASE_EXPRESSION_METADATA);
+export class SnowflakeTyping {
+  @cache
+  static get EXPRESSION_METADATA (): ExpressionMetadata {
+    const map: ExpressionMetadata = new Map(DialectTyping.EXPRESSION_METADATA);
 
-  const extend = (types: (typeof Expression)[], data: Record<string, unknown>) => {
-    for (const type of types) map.set(type, data);
-  };
+    const extend = (types: (typeof Expression)[], data: Record<string, unknown>) => {
+      for (const type of types) map.set(type, data);
+    };
 
-  extend([
-    AddMonthsExpr,
-    CeilExpr,
-    DateTruncExpr,
-    FloorExpr,
-    LeftExpr,
-    ModeExpr,
-    PadExpr,
-    RightExpr,
-    RoundExpr,
-    StuffExpr,
-    SubstringExpr,
-    TimeSliceExpr,
-    TimestampTruncExpr,
-  ], { annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']) });
+    extend([
+      AddMonthsExpr,
+      CeilExpr,
+      DateTruncExpr,
+      FloorExpr,
+      LeftExpr,
+      ModeExpr,
+      PadExpr,
+      RightExpr,
+      RoundExpr,
+      StuffExpr,
+      SubstringExpr,
+      TimeSliceExpr,
+      TimestampTruncExpr,
+    ], { annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']) });
 
-  extend([
-    ApproxTopKExpr,
-    ApproxTopKEstimateExpr,
-    ArrayExpr,
-    ArrayAggExpr,
-    ArrayAppendExpr,
-    ArrayCompactExpr,
-    ArrayConcatExpr,
-    ArrayConstructCompactExpr,
-    ArrayPrependExpr,
-    ArrayRemoveExpr,
-    ArraysZipExpr,
-    ArrayUniqueAggExpr,
-    ArrayUnionAggExpr,
-    MapKeysExpr,
-    RegexpExtractAllExpr,
-    SplitExpr,
-    StringToArrayExpr,
-  ], { returns: DataTypeExprKind.ARRAY });
+    extend([
+      ApproxTopKExpr,
+      ApproxTopKEstimateExpr,
+      ArrayExpr,
+      ArrayAggExpr,
+      ArrayAppendExpr,
+      ArrayCompactExpr,
+      ArrayConcatExpr,
+      ArrayConstructCompactExpr,
+      ArrayPrependExpr,
+      ArrayRemoveExpr,
+      ArraysZipExpr,
+      ArrayUniqueAggExpr,
+      ArrayUnionAggExpr,
+      MapKeysExpr,
+      RegexpExtractAllExpr,
+      SplitExpr,
+      StringToArrayExpr,
+    ], { returns: DataTypeExprKind.ARRAY });
 
-  extend([
-    BitmapBitPositionExpr,
-    BitmapBucketNumberExpr,
-    BitmapCountExpr,
-    FactorialExpr,
-    GroupingIdExpr,
-    Md5NumberLower64Expr,
-    Md5NumberUpper64Expr,
-    RandExpr,
-    Seq8Expr,
-    ZipfExpr,
-  ], { returns: DataTypeExprKind.BIGINT });
+    extend([
+      BitmapBitPositionExpr,
+      BitmapBucketNumberExpr,
+      BitmapCountExpr,
+      FactorialExpr,
+      GroupingIdExpr,
+      Md5NumberLower64Expr,
+      Md5NumberUpper64Expr,
+      RandExpr,
+      Seq8Expr,
+      ZipfExpr,
+    ], { returns: DataTypeExprKind.BIGINT });
 
-  extend([
-    Base64DecodeBinaryExpr,
-    BitmapConstructAggExpr,
-    BitmapOrAggExpr,
-    CompressExpr,
-    DecompressBinaryExpr,
-    DecryptExpr,
-    DecryptRawExpr,
-    EncryptExpr,
-    EncryptRawExpr,
-    HexStringExpr,
-    Md5DigestExpr,
-    Sha1DigestExpr,
-    Sha2DigestExpr,
-    ToBinaryExpr,
-    TryBase64DecodeBinaryExpr,
-    TryHexDecodeBinaryExpr,
-    UnhexExpr,
-  ], { returns: DataTypeExprKind.BINARY });
+    extend([
+      Base64DecodeBinaryExpr,
+      BitmapConstructAggExpr,
+      BitmapOrAggExpr,
+      CompressExpr,
+      DecompressBinaryExpr,
+      DecryptExpr,
+      DecryptRawExpr,
+      EncryptExpr,
+      EncryptRawExpr,
+      HexStringExpr,
+      Md5DigestExpr,
+      Sha1DigestExpr,
+      Sha2DigestExpr,
+      ToBinaryExpr,
+      TryBase64DecodeBinaryExpr,
+      TryHexDecodeBinaryExpr,
+      UnhexExpr,
+    ], { returns: DataTypeExprKind.BINARY });
 
-  extend([
-    BoolandExpr,
-    BoolnotExpr,
-    BoolorExpr,
-    BoolxorAggExpr,
-    EqualNullExpr,
-    IsNullValueExpr,
-    MapContainsKeyExpr,
-    SearchExpr,
-    SearchIpExpr,
-    ToBooleanExpr,
-  ], { returns: DataTypeExprKind.BOOLEAN });
+    extend([
+      BoolandExpr,
+      BoolnotExpr,
+      BoolorExpr,
+      BoolxorAggExpr,
+      EqualNullExpr,
+      IsNullValueExpr,
+      MapContainsKeyExpr,
+      SearchExpr,
+      SearchIpExpr,
+      ToBooleanExpr,
+    ], { returns: DataTypeExprKind.BOOLEAN });
 
-  extend([NextDayExpr, PreviousDayExpr], { returns: DataTypeExprKind.DATE });
+    extend([NextDayExpr, PreviousDayExpr], { returns: DataTypeExprKind.DATE });
 
-  extend([
-    BitwiseAndAggExpr,
-    BitwiseOrAggExpr,
-    BitwiseXorAggExpr,
-    RegexpCountExpr,
-    RegexpInstrExpr,
-    ToNumberExpr,
-  ], { annotator: (s: TypeAnnotator, e: Expression) => s.setType(e, DataTypeExpr.build('NUMBER', { dialect: 'snowflake' })) });
+    extend([
+      BitwiseAndAggExpr,
+      BitwiseOrAggExpr,
+      BitwiseXorAggExpr,
+      RegexpCountExpr,
+      RegexpInstrExpr,
+      ToNumberExpr,
+    ], { annotator: (s: TypeAnnotator, e: Expression) => s.setType(e, DataTypeExpr.build('NUMBER', { dialect: 'snowflake' })) });
 
-  extend([
-    ApproxPercentileEstimateExpr,
-    ApproximateSimilarityExpr,
-    CosineDistanceExpr,
-    CovarPopExpr,
-    CovarSampExpr,
-    DotProductExpr,
-    EuclideanDistanceExpr,
-    ManhattanDistanceExpr,
-    MonthsBetweenExpr,
-    NormalExpr,
-  ], { returns: DataTypeExprKind.DOUBLE });
+    extend([
+      ApproxPercentileEstimateExpr,
+      ApproximateSimilarityExpr,
+      CosineDistanceExpr,
+      CovarPopExpr,
+      CovarSampExpr,
+      DotProductExpr,
+      EuclideanDistanceExpr,
+      ManhattanDistanceExpr,
+      MonthsBetweenExpr,
+      NormalExpr,
+    ], { returns: DataTypeExprKind.DOUBLE });
 
-  map.set(KurtosisExpr, { annotator: annotateKurtosis });
+    map.set(KurtosisExpr, { annotator: annotateKurtosis });
 
-  extend([ToDecfloatExpr, TryToDecfloatExpr], { returns: DataTypeExprKind.DECFLOAT });
+    extend([ToDecfloatExpr, TryToDecfloatExpr], { returns: DataTypeExprKind.DECFLOAT });
 
-  extend([
-    AcosExpr,
-    AsinExpr,
-    AtanExpr,
-    Atan2Expr,
-    CbrtExpr,
-    CosExpr,
-    CotExpr,
-    DegreesExpr,
-    ExpExpr,
-    LnExpr,
-    LogExpr,
-    PowExpr,
-    RadiansExpr,
-    RegrAvgxExpr,
-    RegrAvgyExpr,
-    RegrCountExpr,
-    RegrInterceptExpr,
-    RegrR2Expr,
-    RegrSlopeExpr,
-    RegrSxxExpr,
-    RegrSxyExpr,
-    RegrSyyExpr,
-    RegrValxExpr,
-    RegrValyExpr,
-    SinExpr,
-    SqrtExpr,
-    TanExpr,
-    TanhExpr,
-  ], { annotator: annotateMathWithFloatDecfloat });
+    extend([
+      AcosExpr,
+      AsinExpr,
+      AtanExpr,
+      Atan2Expr,
+      CbrtExpr,
+      CosExpr,
+      CotExpr,
+      DegreesExpr,
+      ExpExpr,
+      LnExpr,
+      LogExpr,
+      PowExpr,
+      RadiansExpr,
+      RegrAvgxExpr,
+      RegrAvgyExpr,
+      RegrCountExpr,
+      RegrInterceptExpr,
+      RegrR2Expr,
+      RegrSlopeExpr,
+      RegrSxxExpr,
+      RegrSxyExpr,
+      RegrSyyExpr,
+      RegrValxExpr,
+      RegrValyExpr,
+      SinExpr,
+      SqrtExpr,
+      TanExpr,
+      TanhExpr,
+    ], { annotator: annotateMathWithFloatDecfloat });
 
-  extend([
-    ByteLengthExpr,
-    GroupingExpr,
-    JarowinklerSimilarityExpr,
-    MapSizeExpr,
-    MinuteExpr,
-    RtrimmedLengthExpr,
-    SecondExpr,
-    Seq1Expr,
-    Seq2Expr,
-    Seq4Expr,
-    WidthBucketExpr,
-  ], { returns: DataTypeExprKind.INT });
+    extend([
+      ByteLengthExpr,
+      GroupingExpr,
+      JarowinklerSimilarityExpr,
+      MapSizeExpr,
+      MinuteExpr,
+      RtrimmedLengthExpr,
+      SecondExpr,
+      Seq1Expr,
+      Seq2Expr,
+      Seq4Expr,
+      WidthBucketExpr,
+    ], { returns: DataTypeExprKind.INT });
 
-  extend([
-    ApproxPercentileAccumulateExpr,
-    ApproxPercentileCombineExpr,
-    ApproxTopKAccumulateExpr,
-    ApproxTopKCombineExpr,
-    ObjectAggExpr,
-    ParseIpExpr,
-    ParseUrlExpr,
-    XmlGetExpr,
-  ], { returns: DataTypeExprKind.OBJECT });
+    extend([
+      ApproxPercentileAccumulateExpr,
+      ApproxPercentileCombineExpr,
+      ApproxTopKAccumulateExpr,
+      ApproxTopKCombineExpr,
+      ObjectAggExpr,
+      ParseIpExpr,
+      ParseUrlExpr,
+      XmlGetExpr,
+    ], { returns: DataTypeExprKind.OBJECT });
 
-  extend([
-    MapCatExpr,
-    MapDeleteExpr,
-    MapInsertExpr,
-    MapPickExpr,
-  ], { returns: DataTypeExprKind.MAP });
+    extend([
+      MapCatExpr,
+      MapDeleteExpr,
+      MapInsertExpr,
+      MapPickExpr,
+    ], { returns: DataTypeExprKind.MAP });
 
-  map.set(ToFileExpr, { returns: DataTypeExprKind.FILE });
+    map.set(ToFileExpr, { returns: DataTypeExprKind.FILE });
 
-  extend([TimeFromPartsExpr, TsOrDsToTimeExpr], { returns: DataTypeExprKind.TIME });
+    extend([TimeFromPartsExpr, TsOrDsToTimeExpr], { returns: DataTypeExprKind.TIME });
 
-  extend([CurrentTimestampExpr, LocaltimestampExpr], { returns: DataTypeExprKind.TIMESTAMPLTZ });
+    extend([CurrentTimestampExpr, LocaltimestampExpr], { returns: DataTypeExprKind.TIMESTAMPLTZ });
 
-  map.set(QuarterExpr, { returns: DataTypeExprKind.TINYINT });
+    map.set(QuarterExpr, { returns: DataTypeExprKind.TINYINT });
 
-  extend([
-    AiAggExpr,
-    AiClassifyExpr,
-    AiSummarizeAggExpr,
-    Base64DecodeStringExpr,
-    Base64EncodeExpr,
-    CheckJsonExpr,
-    CheckXmlExpr,
-    CollateExpr,
-    CollationExpr,
-    CurrentAccountExpr,
-    CurrentAccountNameExpr,
-    CurrentAvailableRolesExpr,
-    CurrentClientExpr,
-    CurrentDatabaseExpr,
-    CurrentIpAddressExpr,
-    CurrentSchemasExpr,
-    CurrentSecondaryRolesExpr,
-    CurrentSessionExpr,
-    CurrentStatementExpr,
-    CurrentVersionExpr,
-    CurrentTransactionExpr,
-    CurrentWarehouseExpr,
-    CurrentOrganizationUserExpr,
-    CurrentRegionExpr,
-    CurrentRoleExpr,
-    CurrentRoleTypeExpr,
-    CurrentOrganizationNameExpr,
-    DecompressStringExpr,
-    HexDecodeStringExpr,
-    HexEncodeExpr,
-    MonthnameExpr,
-    RandstrExpr,
-    RegexpExtractExpr,
-    RegexpReplaceExpr,
-    RepeatExpr,
-    ReplaceExpr,
-    SoundexExpr,
-    SoundexP123Expr,
-    SplitPartExpr,
-    TryBase64DecodeStringExpr,
-    TryHexDecodeStringExpr,
-    UuidExpr,
-  ], { returns: DataTypeExprKind.VARCHAR });
+    extend([
+      AiAggExpr,
+      AiClassifyExpr,
+      AiSummarizeAggExpr,
+      Base64DecodeStringExpr,
+      Base64EncodeExpr,
+      CheckJsonExpr,
+      CheckXmlExpr,
+      CollateExpr,
+      CollationExpr,
+      CurrentAccountExpr,
+      CurrentAccountNameExpr,
+      CurrentAvailableRolesExpr,
+      CurrentClientExpr,
+      CurrentDatabaseExpr,
+      CurrentIpAddressExpr,
+      CurrentSchemasExpr,
+      CurrentSecondaryRolesExpr,
+      CurrentSessionExpr,
+      CurrentStatementExpr,
+      CurrentVersionExpr,
+      CurrentTransactionExpr,
+      CurrentWarehouseExpr,
+      CurrentOrganizationUserExpr,
+      CurrentRegionExpr,
+      CurrentRoleExpr,
+      CurrentRoleTypeExpr,
+      CurrentOrganizationNameExpr,
+      DecompressStringExpr,
+      HexDecodeStringExpr,
+      HexEncodeExpr,
+      MonthnameExpr,
+      RandstrExpr,
+      RegexpExtractExpr,
+      RegexpReplaceExpr,
+      RepeatExpr,
+      ReplaceExpr,
+      SoundexExpr,
+      SoundexP123Expr,
+      SplitPartExpr,
+      TryBase64DecodeStringExpr,
+      TryHexDecodeStringExpr,
+      UuidExpr,
+    ], { returns: DataTypeExprKind.VARCHAR });
 
-  extend([MinhashExpr, MinhashCombineExpr], { returns: DataTypeExprKind.VARIANT });
+    extend([MinhashExpr, MinhashCombineExpr], { returns: DataTypeExprKind.VARIANT });
 
-  extend([VarianceExpr, VariancePopExpr], { annotator: annotateVariance });
+    extend([VarianceExpr, VariancePopExpr], { annotator: annotateVariance });
 
-  map.set(ArgMaxExpr, { annotator: annotateArgMaxMin });
-  map.set(ArgMinExpr, { annotator: annotateArgMaxMin });
-  map.set(ConcatWsExpr, { annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['expressions']) });
+    map.set(ArgMaxExpr, { annotator: annotateArgMaxMin });
+    map.set(ArgMinExpr, { annotator: annotateArgMaxMin });
+    map.set(ConcatWsExpr, { annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['expressions']) });
 
-  map.set(ConvertTimezoneExpr, {
-    annotator: (s: TypeAnnotator, e: ConvertTimezoneExpr) => s.setType(
-      e,
-      e.args.sourceTz ? DataTypeExprKind.TIMESTAMPNTZ : DataTypeExprKind.TIMESTAMPTZ,
-    ),
-  });
+    map.set(ConvertTimezoneExpr, {
+      annotator: (s: TypeAnnotator, e: ConvertTimezoneExpr) => s.setType(
+        e,
+        e.args.sourceTz ? DataTypeExprKind.TIMESTAMPNTZ : DataTypeExprKind.TIMESTAMPTZ,
+      ),
+    });
 
-  map.set(DateAddExpr, { annotator: annotateDateOrTimeAdd });
-  map.set(DecodeCaseExpr, { annotator: annotateDecodeCase });
+    map.set(DateAddExpr, { annotator: annotateDateOrTimeAdd });
+    map.set(DecodeCaseExpr, { annotator: annotateDecodeCase });
 
-  map.set(HashAggExpr, {
-    annotator: (s: TypeAnnotator, e: Expression) => s.setType(e, DataTypeExpr.build('NUMBER(19, 0)', { dialect: 'snowflake' })),
-  });
+    map.set(HashAggExpr, {
+      annotator: (s: TypeAnnotator, e: Expression) => s.setType(e, DataTypeExpr.build('NUMBER(19, 0)', { dialect: 'snowflake' })),
+    });
 
-  map.set(MedianExpr, { annotator: annotateMedian });
-  map.set(ReverseExpr, { annotator: annotateReverse });
-  map.set(StrToTimeExpr, { annotator: annotateStrToTime });
-  map.set(TimeAddExpr, { annotator: annotateDateOrTimeAdd });
-  map.set(TimestampFromPartsExpr, { annotator: annotateTimestampFromParts });
-  map.set(WithinGroupExpr, { annotator: annotateWithinGroup });
+    map.set(MedianExpr, { annotator: annotateMedian });
+    map.set(ReverseExpr, { annotator: annotateReverse });
+    map.set(StrToTimeExpr, { annotator: annotateStrToTime });
+    map.set(TimeAddExpr, { annotator: annotateDateOrTimeAdd });
+    map.set(TimestampFromPartsExpr, { annotator: annotateTimestampFromParts });
+    map.set(WithinGroupExpr, { annotator: annotateWithinGroup });
 
-  return map;
-})();
+    return map;
+  }
+}
