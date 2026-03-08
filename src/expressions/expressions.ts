@@ -25696,6 +25696,8 @@ export class StructExpr extends FuncExpr {
   static key = ExpressionKey.STRUCT;
 
   static isVarLenArgs = true;
+
+  static requiredArgs = new Set(['expressions']);
   static availableArgs = new Set(['expressions']);
 
   static argOrder = ['expressions'];
