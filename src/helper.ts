@@ -161,7 +161,7 @@ export function csv (args: Iterable<string>, options: { sep?: string } = {}): st
   const { sep = ', ' } = options;
   const filtered: string[] = [];
   for (const arg of args) if (arg) filtered.push(arg);
-  return filtered.join(sep || ', ');
+  return filtered.join(sep ?? ', ');
 }
 
 function getCloseMatches (
