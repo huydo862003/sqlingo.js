@@ -3701,7 +3701,7 @@ export class Parser {
     if (query) {
       expressions = [query];
     } else {
-      expressions = this.parseCsv(() => this.parseExpression());
+      expressions = this.parseExpressions();
     }
 
     let thisExpr = seqGet(expressions, 0);
@@ -3724,6 +3724,12 @@ export class Parser {
 
     if (thisExpr && comments) {
       thisExpr.addComments(comments);
+    }
+
+    this.matchRParen(thisExpr);
+
+    if (thisExpr instanceof ParenExpr && thisExpr.args.this instanceof AggFuncExpr) {
+      return this.parseWindow(thisExpr)
     }
 
     return thisExpr;
@@ -5972,7 +5978,7 @@ export class Parser {
   }
 
   parseLateral (): LateralExpr | undefined {
-    let crossApply: boolean | undefined = this.matchPair(TokenType.CROSS, TokenType.APPLY);
+    let crossApply = this.matchPair(TokenType.CROSS, TokenType.APPLY);
     if (!crossApply && this.matchPair(TokenType.OUTER, TokenType.APPLY)) {
       crossApply = false;
     }
@@ -5981,7 +5987,7 @@ export class Parser {
     let view: boolean | undefined;
     let outer: boolean | undefined;
 
-    if (crossApply !== undefined) {
+    if (crossApply) {
       thisExpr = this.parseSelect({ table: true });
       view = undefined;
       outer = undefined;
@@ -6002,14 +6008,10 @@ export class Parser {
 
       while (this.match(TokenType.DOT)) {
         const expression = this.parseFunction() || this.parseIdVar({ anyToken: false });
-        if (expression) {
-          thisExpr = new DotExpr({
-            this: thisExpr,
-            expression,
-          });
-        } else {
-          break;
-        }
+        thisExpr = new DotExpr({
+          this: thisExpr,
+          expression,
+        });
       }
     }
 
@@ -6030,10 +6032,9 @@ export class Parser {
       );
     } else if ((thisExpr instanceof SubqueryExpr || thisExpr instanceof UnnestExpr) && thisExpr.alias) {
       // We move the alias from the lateral's child node to the lateral itself
-      tableAlias = thisExpr.args.alias as TableAliasExpr;
-      thisExpr.args.alias = undefined;
+      tableAlias = thisExpr.args.alias?.pop() as TableAliasExpr | undefined;
     } else {
-      ordinality = this.matchPair(TokenType.WITH, TokenType.ORDINALITY);
+      ordinality = this.matchPair(TokenType.WITH, TokenType.ORDINALITY) || undefined;
       tableAlias = this.parseTableAlias();
     }
 
@@ -6126,15 +6127,15 @@ export class Parser {
       return undefined;
     }
 
-    const outerApply = this.matchPair(TokenType.OUTER, TokenType.APPLY, { advance: false });
-    const crossApply = this.matchPair(TokenType.CROSS, TokenType.APPLY, { advance: false });
+    const outerApply = this.matchPair(TokenType.OUTER, TokenType.APPLY, { advance: false }) || undefined;
+    const crossApply = this.matchPair(TokenType.CROSS, TokenType.APPLY, { advance: false }) || undefined;
 
     if (!options?.skipJoinToken && !join && !outerApply && !crossApply) {
       return undefined;
     }
 
     const kwargs: JoinExprArgs = {
-      this: this.parseTable({ parseBracket: options?.parseBracket })!,
+      this: this.parseTable({ parseBracket: options?.parseBracket }),
     };
 
     if (kind?.tokenType === TokenType.ARRAY && this.match(TokenType.COMMA)) {
@@ -11516,11 +11517,11 @@ export class Parser {
     if ((!kind && this.match(TokenType.ALIAS)) || this.matchTexts(['ALIAS', 'MATERIALIZED'])) {
       const persisted = (this.prev?.text ?? '').toUpperCase() === 'MATERIALIZED';
       const constraintKind = new ComputedColumnConstraintExpr({
-        this: this.parseDisjunction()!,
+        this: this.parseDisjunction(),
         persisted: persisted || this.matchTextSeq('PERSISTED'),
         dataType: (this.matchTextSeq('AUTO')
           ? new DataTypeExpr({ this: 'AUTO' })
-          : this.parseTypes()!) as DataTypeExpr,
+          : this.parseTypes()) as DataTypeExpr,
         notNull: this.matchPair(TokenType.NOT, TokenType.NULL),
       });
       constraints.push(this.expression(ColumnConstraintExpr, { kind: constraintKind }));
