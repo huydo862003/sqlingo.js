@@ -1899,12 +1899,19 @@ function shaSql (
 
 class DuckDBTokenizer extends Tokenizer {
   @cache
-  static get BYTE_STRINGS (): TokenPair[] { return [['e\'', '\''], ['E\'', '\'']] as TokenPair[]; }
+  static get BYTE_STRINGS (): TokenPair[] {
+    return [['e\'', '\''], ['E\'', '\'']] as TokenPair[];
+  }
 
   @cache
-  static get BYTE_STRING_ESCAPES () { return ['\'', '\\']; }
+  static get BYTE_STRING_ESCAPES () {
+    return ['\'', '\\'];
+  }
+
   @cache
-  static get HEREDOC_STRINGS () { return ['$']; }
+  static get HEREDOC_STRINGS () {
+    return ['$'];
+  }
 
   static HEREDOC_TAG_IS_IDENTIFIER = true;
   static HEREDOC_STRING_ALTERNATIVE = TokenType.PARAMETER;
@@ -2404,7 +2411,10 @@ class DuckDBGenerator extends Generator {
   static QUERY_HINTS = false;
   static LIMIT_FETCH = 'LIMIT';
   @cache
-  static get STRUCT_DELIMITER () { return ['(', ')']; }
+  static get STRUCT_DELIMITER () {
+    return ['(', ')'];
+  }
+
   static RENAME_TABLE_WITH_DB = false;
   static NVL2_SUPPORTED = false;
   static SEMI_ANTI_JOIN_WITH_SIDE = false;
@@ -2952,85 +2962,87 @@ class DuckDBGenerator extends Generator {
   }
 
   @cache
-  static get RESERVED_KEYWORDS () { return new Set([
-    'array',
-    'analyse',
-    'union',
-    'all',
-    'when',
-    'in_p',
-    'default',
-    'create_p',
-    'window',
-    'asymmetric',
-    'to',
-    'else',
-    'localtime',
-    'from',
-    'end_p',
-    'select',
-    'current_date',
-    'foreign',
-    'with',
-    'grant',
-    'session_user',
-    'or',
-    'except',
-    'references',
-    'fetch',
-    'limit',
-    'group_p',
-    'leading',
-    'into',
-    'collate',
-    'offset',
-    'do',
-    'then',
-    'localtimestamp',
-    'check_p',
-    'lateral_p',
-    'current_role',
-    'where',
-    'asc_p',
-    'placing',
-    'desc_p',
-    'user',
-    'unique',
-    'initially',
-    'column',
-    'both',
-    'some',
-    'as',
-    'any',
-    'only',
-    'deferrable',
-    'null_p',
-    'current_time',
-    'true_p',
-    'table',
-    'case',
-    'trailing',
-    'variadic',
-    'for',
-    'on',
-    'distinct',
-    'false_p',
-    'not',
-    'constraint',
-    'current_timestamp',
-    'returning',
-    'primary',
-    'intersect',
-    'having',
-    'analyze',
-    'current_user',
-    'and',
-    'cast',
-    'symmetric',
-    'using',
-    'order',
-    'current_catalog',
-  ]); }
+  static get RESERVED_KEYWORDS () {
+    return new Set([
+      'array',
+      'analyse',
+      'union',
+      'all',
+      'when',
+      'in_p',
+      'default',
+      'create_p',
+      'window',
+      'asymmetric',
+      'to',
+      'else',
+      'localtime',
+      'from',
+      'end_p',
+      'select',
+      'current_date',
+      'foreign',
+      'with',
+      'grant',
+      'session_user',
+      'or',
+      'except',
+      'references',
+      'fetch',
+      'limit',
+      'group_p',
+      'leading',
+      'into',
+      'collate',
+      'offset',
+      'do',
+      'then',
+      'localtimestamp',
+      'check_p',
+      'lateral_p',
+      'current_role',
+      'where',
+      'asc_p',
+      'placing',
+      'desc_p',
+      'user',
+      'unique',
+      'initially',
+      'column',
+      'both',
+      'some',
+      'as',
+      'any',
+      'only',
+      'deferrable',
+      'null_p',
+      'current_time',
+      'true_p',
+      'table',
+      'case',
+      'trailing',
+      'variadic',
+      'for',
+      'on',
+      'distinct',
+      'false_p',
+      'not',
+      'constraint',
+      'current_timestamp',
+      'returning',
+      'primary',
+      'intersect',
+      'having',
+      'analyze',
+      'current_user',
+      'and',
+      'cast',
+      'symmetric',
+      'using',
+      'order',
+      'current_catalog',
+    ]);
+  }
 
   @cache
   static get UNWRAPPED_INTERVAL_VALUES () {
@@ -3066,7 +3078,9 @@ class DuckDBGenerator extends Generator {
     ];
   }
 
-  static ZIPF_TEMPLATE = maybeParse(`
+  @cache
+  static get ZIPF_TEMPLATE () {
+    return maybeParse(`
   WITH rand AS (SELECT :random_expr AS r),
   weights AS (
       SELECT i, 1.0 / POWER(i, :s) AS w
@@ -3080,24 +3094,39 @@ class DuckDBGenerator extends Generator {
   FROM cdf
   WHERE p >= (SELECT r FROM rand)
 `);
+  }
 
-  static NORMAL_TEMPLATE = maybeParse(
-    ':mean + (:stddev * SQRT(-2 * LN(GREATEST(:u1, 1e-10))) * COS(2 * PI() * :u2))',
-  );
+  @cache
+  static get NORMAL_TEMPLATE () {
+    return maybeParse(
+      ':mean + (:stddev * SQRT(-2 * LN(GREATEST(:u1, 1e-10))) * COS(2 * PI() * :u2))',
+    );
+  }
 
-  static SEEDED_RANDOM_TEMPLATE = maybeParse(
-    '(ABS(HASH(:seed)) % 1000000) / 1000000.0',
-  );
+  @cache
+  static get SEEDED_RANDOM_TEMPLATE () {
+    return maybeParse(
+      '(ABS(HASH(:seed)) % 1000000) / 1000000.0',
+    );
+  }
 
-  static SEQ_UNSIGNED = maybeParse(`${SEQ_BASE} % :max_val`);
+  @cache
+  static get SEQ_UNSIGNED () {
+    return maybeParse(`${SEQ_BASE} % :max_val`);
+  }
 
-  static SEQ_SIGNED = maybeParse(`
+  @cache
+  static get SEQ_SIGNED () {
+    return maybeParse(`
   (CASE WHEN ${SEQ_BASE} % :max_val >= :half 
    THEN ${SEQ_BASE} % :max_val - :max_val 
    ELSE ${SEQ_BASE} % :max_val END)
 `);
+  }
 
-  static MAPCAT_TEMPLATE = maybeParse(`CASE
+  @cache
+  static get MAPCAT_TEMPLATE () {
+    return maybeParse(`CASE
       WHEN :map1 IS NULL OR :map2 IS NULL THEN NULL
       ELSE MAP_FROM_ENTRIES(LIST_FILTER(LIST_TRANSFORM(
           LIST_DISTINCT(LIST_CONCAT(MAP_KEYS(:map1), MAP_KEYS(:map2))),
@@ -3105,6 +3134,7 @@ class DuckDBGenerator extends Generator {
       ), __x -> __x.value IS NOT NULL))
   END
 `);
+  }
 
   @cache
   static get EXTRACT_STRFTIME_MAPPINGS (): Record<string, [string, string]> {
@@ -3127,11 +3157,13 @@ class DuckDBGenerator extends Generator {
   }
 
   /**
- * Snowflake's BITMAP_CONSTRUCT_AGG aggregates integers into a compact binary bitmap.
- * DuckDB implementation uses LIST_TRANSFORM and LIST_REDUCE to build hex strings
- * before converting to binary BLOBs.
- */
-  static BITMAP_CONSTRUCT_AGG_TEMPLATE = maybeParse(`
+   * Snowflake's BITMAP_CONSTRUCT_AGG aggregates integers into a compact binary bitmap.
+   * DuckDB implementation uses LIST_TRANSFORM and LIST_REDUCE to build hex strings
+   * before converting to binary BLOBs.
+   */
+  @cache
+  static get BITMAP_CONSTRUCT_AGG_TEMPLATE () {
+    return maybeParse(`
   SELECT CASE
       WHEN l IS NULL OR LENGTH(l) = 0 THEN NULL
       WHEN LENGTH(l) != LENGTH(LIST_FILTER(l, __v -> __v BETWEEN 0 AND 32767)) THEN NULL
@@ -3146,11 +3178,14 @@ class DuckDBGenerator extends Generator {
       FROM (SELECT LIST_SORT(LIST_DISTINCT(LIST(:arg) FILTER(NOT :arg IS NULL))) AS l)
   )
 `);
+  }
 
   /**
    * Template for RANDSTR transpilation using a character pool and seeded hash.
    */
-  static RANDSTR_TEMPLATE = maybeParse(`
+  @cache
+  static get RANDSTR_TEMPLATE () {
+    return maybeParse(`
   SELECT LISTAGG(
       SUBSTRING(
           '${RANDSTR_CHAR_POOL}',
@@ -3164,24 +3199,30 @@ class DuckDBGenerator extends Generator {
       FROM RANGE(:length) AS t(i)
   )
 `);
+  }
 
   /**
- * Template for MINHASH transpilation.
- * Returns JSON matching Snowflake format: {"state": [...], "type": "minhash", "version": 1}
- */
-  static MINHASH_TEMPLATE = maybeParse(`
+   * Template for MINHASH transpilation.
+   * Returns JSON matching Snowflake format: {"state": [...], "type": "minhash", "version": 1}
+   */
+  @cache
+  static get MINHASH_TEMPLATE () {
+    return maybeParse(`
   SELECT JSON_OBJECT('state', LIST(min_h ORDER BY seed), 'type', 'minhash', 'version', 1)
   FROM (
       SELECT seed, LIST_MIN(LIST_TRANSFORM(vals, __v -> HASH(CAST(__v AS VARCHAR) || CAST(seed AS VARCHAR)))) AS min_h
       FROM (SELECT LIST(:expr) AS vals), RANGE(0, :k) AS t(seed)
   )
 `);
+  }
 
   /**
- * Template for MINHASH_COMBINE transpilation.
- * Combines multiple minhash signatures by taking element-wise minimum.
- */
-  static MINHASH_COMBINE_TEMPLATE = maybeParse(`
+   * Template for MINHASH_COMBINE transpilation.
+   * Combines multiple minhash signatures by taking element-wise minimum.
+   */
+  @cache
+  static MINHASH_COMBINE_TEMPLATE () {
+    return maybeParse(`
   SELECT JSON_OBJECT('state', LIST(min_h ORDER BY idx), 'type', 'minhash', 'version', 1)
   FROM (
       SELECT
@@ -3193,8 +3234,10 @@ class DuckDBGenerator extends Generator {
       GROUP BY pos
   )
 `);
+  }
 
-  static APPROXIMATE_SIMILARITY_TEMPLATE = maybeParse(`
+  static get APPROXIMATE_SIMILARITY_TEMPLATE () {
+    return maybeParse(`
   SELECT CAST(SUM(CASE WHEN num_distinct = 1 THEN 1 ELSE 0 END) AS DOUBLE) / COUNT(*)
   FROM (
       SELECT pos, COUNT(DISTINCT h) AS num_distinct
@@ -3206,13 +3249,16 @@ class DuckDBGenerator extends Generator {
       GROUP BY pos
   )
 `);
+  }
 
-  static ARRAYS_ZIP_TEMPLATE = maybeParse(`
+  static get ARRAYS_ZIP_TEMPLATE () {
+    return maybeParse(`
   CASE WHEN :null_check THEN NULL
   WHEN :all_empty_check THEN [:empty_struct]
   ELSE LIST_TRANSFORM(RANGE(0, :max_len), __i -> :transform_struct)
   END
 `);
+  }
 
   /** Transform Snowflake's TIME_SLICE to DuckDB's time_bucket. */
   timeSliceSql (expression: TimeSliceExpr): string {
@@ -4970,20 +5016,22 @@ export class DuckDB extends Dialect {
   }
 
   @cache
-  static get INVERSE_TIME_MAPPING () { return {
-    '%e': '%-d', // BigQuery's space-padded day (%e) -> DuckDB's no-padding day (%-d)
-    '%:z': '%z', // In DuckDB %z can represent ±HH:MM, ±HHMM, or ±HH.
-    '%-z': '%z',
-    '%f_zero': '%n',
-    '%f_one': '%n',
-    '%f_two': '%n',
-    '%f_three': '%g',
-    '%f_four': '%n',
-    '%f_five': '%n',
-    '%f_seven': '%n',
-    '%f_eight': '%n',
-    '%f_nine': '%n',
-  }; }
+  static get INVERSE_TIME_MAPPING () {
+    return {
+      '%e': '%-d', // BigQuery's space-padded day (%e) -> DuckDB's no-padding day (%-d)
+      '%:z': '%z', // In DuckDB %z can represent ±HH:MM, ±HHMM, or ±HH.
+      '%-z': '%z',
+      '%f_zero': '%n',
+      '%f_one': '%n',
+      '%f_two': '%n',
+      '%f_three': '%g',
+      '%f_four': '%n',
+      '%f_five': '%n',
+      '%f_seven': '%n',
+      '%f_eight': '%n',
+      '%f_nine': '%n',
+    };
+  }
 
   toJsonPath (path: Expression | undefined): Expression | undefined {
     if (path instanceof LiteralExpr && path.isString) {
