@@ -5675,6 +5675,8 @@ export type TupleExprArgs = Merge<[
 export class TupleExpr extends Expression {
   static key = ExpressionKey.TUPLE;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['expressions']);
 
   declare args: TupleExprArgs;
@@ -12746,9 +12748,7 @@ export type WindowExprArgs = Merge<[
 export class WindowExpr extends ConditionExpr {
   static key = ExpressionKey.WINDOW;
 
-  static requiredArgs = new Set([
-    'this',
-  ]);
+  static requiredArgs = new Set(['this']);
 
   static availableArgs = new Set([
     'this',
@@ -24684,13 +24684,9 @@ export class RowNumberExpr extends FuncExpr {
 
   declare args: RowNumberExprArgs;
 
-  static requiredArgs = new Set([
-    'this',
-  ]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([
-    'this',
-  ]);
+  static availableArgs = new Set(['this']);
 
   constructor (args: RowNumberExprArgs = {}) {
     super(args);
@@ -24711,13 +24707,9 @@ export class Seq1Expr extends FuncExpr {
 
   static argOrder = ['this'];
 
-  static requiredArgs = new Set([
-    'this',
-  ]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([
-    'this',
-  ]);
+  static availableArgs = new Set(['this']);
 
   declare args: Seq1ExprArgs;
 
@@ -24740,13 +24732,9 @@ export class Seq2Expr extends FuncExpr {
 
   static argOrder = ['this'];
 
-  static requiredArgs = new Set([
-    'this',
-  ]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([
-    'this',
-  ]);
+  static availableArgs = new Set(['this']);
 
   declare args: Seq2ExprArgs;
 
@@ -24769,13 +24757,9 @@ export class Seq4Expr extends FuncExpr {
 
   static argOrder = ['this'];
 
-  static requiredArgs = new Set([
-    'this',
-  ]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([
-    'this',
-  ]);
+  static availableArgs = new Set(['this']);
 
   declare args: Seq4ExprArgs;
 
@@ -24798,14 +24782,9 @@ export class Seq8Expr extends FuncExpr {
 
   static argOrder = ['this'];
 
-  static requiredArgs = new Set([
-    'this',
-  ]);
+  static requiredArgs = new Set<string>();
 
-  static availableArgs = new Set([
-    'this',
-  ]);
-
+  static availableArgs = new Set(['this']);
 
   declare args: Seq8ExprArgs;
 

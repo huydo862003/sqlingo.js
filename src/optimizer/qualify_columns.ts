@@ -1268,7 +1268,7 @@ export function quoteIdentifiers (
   } = options;
   const dialect = Dialect.getOrRaise(dialectArg);
   return expression.transform(
-    Dialect.getOrRaise(dialect).quoteIdentifier,
+    dialect.quoteIdentifier.bind(dialect),
     {
       identify,
       copy: false,
