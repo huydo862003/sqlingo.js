@@ -4550,7 +4550,7 @@ export class Generator {
   }
 
   placeholderSql (expression: PlaceholderExpr): string {
-    return expression.args.this
+    return expression.args.this !== undefined
       ? `${this._constructor.NAMED_PLACEHOLDER_TOKEN}${expression.name}`
       : '?';
   }

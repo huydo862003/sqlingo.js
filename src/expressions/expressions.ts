@@ -12808,7 +12808,7 @@ export class SessionParameterExpr extends ConditionExpr {
 export type PlaceholderExprArgs = Merge<[
   ConditionExprArgs,
   {
-    this?: Expression;
+    this?: ExpressionOrString;
     kind?: PlaceholderExprKind;
     widget?: Expression;
     jdbc?: boolean;
@@ -12835,7 +12835,8 @@ export class PlaceholderExpr extends ConditionExpr {
    * Returns the name of this placeholder.
    */
   get name (): string {
-    return this.args.this?.name || '?';
+    const name = this.args.this instanceof Expression ? this.args.this.name : this.args.this;
+    return name || '?';
   }
 }
 
