@@ -275,6 +275,7 @@ import type {
   SubExpr,
   MulExpr,
   ExpressionValue,
+  ExpressionOrString,
 } from './expressions';
 import {
   DistinctExpr,
@@ -1844,9 +1845,6 @@ export class Generator {
    * Generate a segment with separator.
    */
   seg (sql: string, separator = ' '): string {
-    if (!sql) {
-      return '';
-    }
     return `${this.sep(separator)}${sql}`;
   }
 
@@ -1871,7 +1869,7 @@ export class Generator {
     return result;
   }
 
-  wrap (expression: Expression | string): string {
+  wrap (expression: ExpressionOrString): string {
     let thisSql: string;
 
     // Check if the expression is one that should not be accessed via the 'this' key
@@ -1890,7 +1888,7 @@ export class Generator {
       pad: 0,
     });
 
-    return `(${this.sep('')}${thisSql}${this.seg(')', '')})`;
+    return `(${this.sep('')}${thisSql}${this.seg(')', '')}`;
   }
 
   /**
@@ -6079,7 +6077,7 @@ export class Generator {
       prefix = '',
       dynamic = false,
       newLine = false,
-      key = 'expressions',
+      key,
       sqls,
     } = options;
 
