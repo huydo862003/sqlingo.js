@@ -11839,8 +11839,13 @@ export class Parser {
     return expression;
   }
 
-  kvToPropEq (expressions: Expression[], options: { parseMap?: boolean } = {}): Expression[] {
-    const parseMap = options?.parseMap ?? false;
+  kvToPropEq (
+    expressions: Expression[],
+    options: { parseMap?: boolean } = {},
+  ): Expression[] {
+    const {
+      parseMap = false,
+    } = options;
     const transformed: Expression[] = [];
 
     for (let index = 0; index < expressions.length; index++) {
@@ -11849,7 +11854,7 @@ export class Parser {
       if ([...this._constructor.KEY_VALUE_DEFINITIONS.keys()].some((def) => e instanceof def)) {
         if (e instanceof AliasExpr) {
           e = this.expression(PropertyEqExpr, {
-            this: e.args.alias,
+            this: e.alias,
             expression: e.args.this,
           });
         }
