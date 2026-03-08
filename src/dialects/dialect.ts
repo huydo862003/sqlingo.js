@@ -689,9 +689,9 @@ export class Dialect {
   }
 
   // --- Autofilled by metaclass in Python, set as instance properties in TypeScript ---
-  static #tokenizerClass = new WeakMap<typeof Dialect, typeof Tokenizer>();
+  static _tokenizerClassCache = new WeakMap<typeof Dialect, typeof Tokenizer>();
   static get tokenizerClass (): typeof Tokenizer {
-    const cached = this.#tokenizerClass.get(this);
+    const cached = this._tokenizerClassCache.get(this);
     if (cached) return cached;
     if (Object.prototype.hasOwnProperty.call(this, 'Tokenizer')) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -700,17 +700,17 @@ export class Dialect {
     const base = Object.getPrototypeOf(this);
     const baseTokenizer = base?.tokenizerClass as typeof Tokenizer;
     if (!baseTokenizer) {
-      this.#tokenizerClass.set(this, Tokenizer);
+      this._tokenizerClassCache.set(this, Tokenizer);
       return Tokenizer;
     }
     class DerivedTokenizer extends baseTokenizer {}
-    this.#tokenizerClass.set(this, DerivedTokenizer);
+    this._tokenizerClassCache.set(this, DerivedTokenizer);
     return DerivedTokenizer;
   }
 
-  static #jsonpathTokenizerClass = new WeakMap<typeof Dialect, typeof JsonPathTokenizer>();
+  static _jsonpathTokenizerClassCache = new WeakMap<typeof Dialect, typeof JsonPathTokenizer>();
   static get jsonpathTokenizerClass (): typeof JsonPathTokenizer {
-    const cached = this.#jsonpathTokenizerClass.get(this);
+    const cached = this._jsonpathTokenizerClassCache.get(this);
     if (cached) return cached;
     if (Object.prototype.hasOwnProperty.call(this, 'JsonPathTokenizer')) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -719,20 +719,20 @@ export class Dialect {
     const base = Object.getPrototypeOf(this);
     const baseJsonpathTokenizer = base?.JsonPathTokenizer as typeof JsonPathTokenizer;
     if (!baseJsonpathTokenizer) {
-      this.#jsonpathTokenizerClass.set(this, JsonPathTokenizer);
+      this._jsonpathTokenizerClassCache.set(this, JsonPathTokenizer);
       return JsonPathTokenizer;
     }
     class DerivedJsonPathTokenizer extends baseJsonpathTokenizer {}
-    this.#jsonpathTokenizerClass.set(this, DerivedJsonPathTokenizer);
+    this._jsonpathTokenizerClassCache.set(this, DerivedJsonPathTokenizer);
     return DerivedJsonPathTokenizer;
   }
 
-  static #parserClass = new WeakMap<typeof Dialect, typeof Parser>();
+  static _parserClassCache = new WeakMap<typeof Dialect, typeof Parser>();
 
   // NOTE: These logic should be handled in the respective dialect files:
   // - https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/dialects/dialect.py#L317-L380
   static get parserClass (): typeof Parser {
-    const cached = this.#parserClass.get(this);
+    const cached = this._parserClassCache.get(this);
     if (cached) return cached;
 
     if (Object.prototype.hasOwnProperty.call(this, 'Parser')) {
@@ -744,21 +744,21 @@ export class Dialect {
     const baseParser = base?.parserClass as typeof Parser;
 
     if (!baseParser) {
-      this.#parserClass.set(this, Parser);
+      this._parserClassCache.set(this, Parser);
       return Parser;
     }
 
     class DerivedParser extends baseParser {}
-    this.#parserClass.set(this, DerivedParser);
+    this._parserClassCache.set(this, DerivedParser);
     return DerivedParser;
   }
 
-  static #generatorClass = new WeakMap<typeof Dialect, typeof Generator>();
+  static _generatorClassCache = new WeakMap<typeof Dialect, typeof Generator>();
 
   // NOTE: These logic should be handled in the respective dialect files:
   // - https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/dialects/dialect.py#L300-L326
   static get generatorClass (): typeof Generator {
-    const cached = this.#generatorClass.get(this);
+    const cached = this._generatorClassCache.get(this);
     if (cached) return cached;
 
     if (Object.prototype.hasOwnProperty.call(this, 'Generator')) {
@@ -770,12 +770,12 @@ export class Dialect {
     const baseGenerator = base?.generatorClass as typeof Generator;
 
     if (!baseGenerator) {
-      this.#generatorClass.set(this, Generator);
+      this._generatorClassCache.set(this, Generator);
       return Generator;
     }
 
     class DerivedGenerator extends baseGenerator {}
-    this.#generatorClass.set(this, DerivedGenerator);
+    this._generatorClassCache.set(this, DerivedGenerator);
     return DerivedGenerator;
   }
 
