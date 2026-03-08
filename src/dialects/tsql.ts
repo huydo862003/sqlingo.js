@@ -527,17 +527,28 @@ function jsonExtractSql (this: Generator, expression: JsonExtractExpr | JsonExtr
 
 export class TSQLTokenizer extends Tokenizer {
   @cache
-  static get IDENTIFIERS (): (string | [string, string])[] { return [['[', ']'], '"']; }
+  static get IDENTIFIERS (): (string | [string, string])[] {
+    return [['[', ']'], '"'];
+  }
+
   @cache
-  static get QUOTES () { return ['\'', '"']; }
+  static get QUOTES () {
+    return ['\'', '"'];
+  }
+
   @cache
-  static get HEX_STRINGS (): [string, string][] { return [['0x', ''], ['0X', '']]; }
+  static get HEX_STRINGS (): [string, string][] {
+    return [['0x', ''], ['0X', '']];
+  }
+
   @cache
-  static get VAR_SINGLE_TOKENS () { return new Set([
-    '@',
-    '$',
-    '#',
-  ]); }
+  static get VAR_SINGLE_TOKENS () {
+    return new Set([
+      '@',
+      '$',
+      '#',
+    ]);
+  }
 
   @cache
   static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
@@ -684,12 +695,14 @@ export class TSQLParser extends Parser {
   }
 
   @cache
-  static get JOIN_HINTS () { return new Set([
-    'LOOP',
-    'HASH',
-    'MERGE',
-    'REMOTE',
-  ]); }
+  static get JOIN_HINTS () {
+    return new Set([
+      'LOOP',
+      'HASH',
+      'MERGE',
+      'REMOTE',
+    ]);
+  }
 
   @cache
   static get PROCEDURE_OPTIONS (): Record<string, string[]> {
@@ -703,11 +716,13 @@ export class TSQLParser extends Parser {
   }
 
   @cache
-  static get COLUMN_DEFINITION_MODES () { return new Set([
-    'OUT',
-    'OUTPUT',
-    'READONLY',
-  ]); }
+  static get COLUMN_DEFINITION_MODES () {
+    return new Set([
+      'OUT',
+      'OUTPUT',
+      'READONLY',
+    ]);
+  }
 
   @cache
   static get RETURNS_TABLE_TOKENS (): Set<TokenType> {
@@ -787,7 +802,9 @@ export class TSQLParser extends Parser {
   }
 
   @cache
-  static get SET_OP_MODIFIERS () { return new Set(['offset']); }
+  static get SET_OP_MODIFIERS () {
+    return new Set(['offset']);
+  }
 
   @cache
   static get ODBC_DATETIME_LITERALS (): Record<string, typeof Expression> {
@@ -1794,115 +1811,121 @@ export class TSQL extends Dialect {
   }
 
   @cache
-  static get TIME_MAPPING () { return {
-    year: '%Y',
-    dayofyear: '%j',
-    day: '%d',
-    dy: '%d',
-    y: '%Y',
-    week: '%W',
-    ww: '%W',
-    wk: '%W',
-    isowk: '%V',
-    isoww: '%V',
-    isoWeek: '%V',
-    hour: '%h',
-    hh: '%I',
-    minute: '%M',
-    mi: '%M',
-    n: '%M',
-    second: '%S',
-    ss: '%S',
-    s: '%-S',
-    millisecond: '%f',
-    ms: '%f',
-    weekday: '%w',
-    dw: '%w',
-    month: '%m',
-    mm: '%M',
-    m: '%-M',
-    Y: '%Y',
-    YYYY: '%Y',
-    YY: '%y',
-    MMMM: '%B',
-    MMM: '%b',
-    MM: '%m',
-    M: '%-m',
-    dddd: '%A',
-    dd: '%d',
-    d: '%-d',
-    HH: '%H',
-    H: '%-H',
-    h: '%-I',
-    ffffff: '%f',
-    yyyy: '%Y',
-    yy: '%y',
-  }; }
+  static get TIME_MAPPING () {
+    return {
+      year: '%Y',
+      dayofyear: '%j',
+      day: '%d',
+      dy: '%d',
+      y: '%Y',
+      week: '%W',
+      ww: '%W',
+      wk: '%W',
+      isowk: '%V',
+      isoww: '%V',
+      isoWeek: '%V',
+      hour: '%h',
+      hh: '%I',
+      minute: '%M',
+      mi: '%M',
+      n: '%M',
+      second: '%S',
+      ss: '%S',
+      s: '%-S',
+      millisecond: '%f',
+      ms: '%f',
+      weekday: '%w',
+      dw: '%w',
+      month: '%m',
+      mm: '%M',
+      m: '%-M',
+      Y: '%Y',
+      YYYY: '%Y',
+      YY: '%y',
+      MMMM: '%B',
+      MMM: '%b',
+      MM: '%m',
+      M: '%-m',
+      dddd: '%A',
+      dd: '%d',
+      d: '%-d',
+      HH: '%H',
+      H: '%-H',
+      h: '%-I',
+      ffffff: '%f',
+      yyyy: '%Y',
+      yy: '%y',
+    };
+  }
 
   @cache
-  static get CONVERT_FORMAT_MAPPING () { return {
-    0: '%b %d %Y %-I:%M%p',
-    1: '%m/%d/%y',
-    2: '%y.%m.%d',
-    3: '%d/%m/%y',
-    4: '%d.%m.%y',
-    5: '%d-%m-%y',
-    6: '%d %b %y',
-    7: '%b %d, %y',
-    8: '%H:%M:%S',
-    9: '%b %d %Y %-I:%M:%S:%f%p',
-    10: 'mm-dd-yy',
-    11: 'yy/mm/dd',
-    12: 'yymmdd',
-    13: '%d %b %Y %H:%M:ss:%f',
-    14: '%H:%M:%S:%f',
-    20: '%Y-%m-%d %H:%M:%S',
-    21: '%Y-%m-%d %H:%M:%S.%f',
-    22: '%m/%d/%y %-I:%M:%S %p',
-    23: '%Y-%m-%d',
-    24: '%H:%M:%S',
-    25: '%Y-%m-%d %H:%M:%S.%f',
-    100: '%b %d %Y %-I:%M%p',
-    101: '%m/%d/%Y',
-    102: '%Y.%m.%d',
-    103: '%d/%m/%Y',
-    104: '%d.%m.%Y',
-    105: '%d-%m-%Y',
-    106: '%d %b %Y',
-    107: '%b %d, %Y',
-    108: '%H:%M:%S',
-    109: '%b %d %Y %-I:%M:%S:%f%p',
-    110: '%m-%d-%Y',
-    111: '%Y/%m/%d',
-    112: '%Y%m%d',
-    113: '%d %b %Y %H:%M:%S:%f',
-    114: '%H:%M:%S:%f',
-    120: '%Y-%m-%d %H:%M:%S',
-    121: '%Y-%m-%d %H:%M:%S.%f',
-    126: '%Y-%m-%dT%H:%M:%S.%f',
-  }; }
+  static get CONVERT_FORMAT_MAPPING () {
+    return {
+      0: '%b %d %Y %-I:%M%p',
+      1: '%m/%d/%y',
+      2: '%y.%m.%d',
+      3: '%d/%m/%y',
+      4: '%d.%m.%y',
+      5: '%d-%m-%y',
+      6: '%d %b %y',
+      7: '%b %d, %y',
+      8: '%H:%M:%S',
+      9: '%b %d %Y %-I:%M:%S:%f%p',
+      10: 'mm-dd-yy',
+      11: 'yy/mm/dd',
+      12: 'yymmdd',
+      13: '%d %b %Y %H:%M:ss:%f',
+      14: '%H:%M:%S:%f',
+      20: '%Y-%m-%d %H:%M:%S',
+      21: '%Y-%m-%d %H:%M:%S.%f',
+      22: '%m/%d/%y %-I:%M:%S %p',
+      23: '%Y-%m-%d',
+      24: '%H:%M:%S',
+      25: '%Y-%m-%d %H:%M:%S.%f',
+      100: '%b %d %Y %-I:%M%p',
+      101: '%m/%d/%Y',
+      102: '%Y.%m.%d',
+      103: '%d/%m/%Y',
+      104: '%d.%m.%Y',
+      105: '%d-%m-%Y',
+      106: '%d %b %Y',
+      107: '%b %d, %Y',
+      108: '%H:%M:%S',
+      109: '%b %d %Y %-I:%M:%S:%f%p',
+      110: '%m-%d-%Y',
+      111: '%Y/%m/%d',
+      112: '%Y%m%d',
+      113: '%d %b %Y %H:%M:%S:%f',
+      114: '%H:%M:%S:%f',
+      120: '%Y-%m-%d %H:%M:%S',
+      121: '%Y-%m-%d %H:%M:%S.%f',
+      126: '%Y-%m-%dT%H:%M:%S.%f',
+    };
+  }
 
   @cache
-  static get FORMAT_TIME_MAPPING () { return {
-    y: '%B %Y',
-    d: '%m/%d/%Y',
-    H: '%-H',
-    h: '%-I',
-    s: '%Y-%m-%d %H:%M:%S',
-    D: '%A,%B,%Y',
-    f: '%A,%B,%Y %-I:%M %p',
-    F: '%A,%B,%Y %-I:%M:%S %p',
-    g: '%m/%d/%Y %-I:%M %p',
-    G: '%m/%d/%Y %-I:%M:%S %p',
-    M: '%B %-d',
-    m: '%B %-d',
-    O: '%Y-%m-%dT%H:%M:%S',
-    u: '%Y-%M-%D %H:%M:%S%z',
-    U: '%A, %B %D, %Y %H:%M:%S%z',
-    T: '%-I:%M:%S %p',
-    t: '%-I:%M',
-    Y: '%a %Y',
-  }; }
+  static get FORMAT_TIME_MAPPING () {
+    return {
+      y: '%B %Y',
+      d: '%m/%d/%Y',
+      H: '%-H',
+      h: '%-I',
+      s: '%Y-%m-%d %H:%M:%S',
+      D: '%A,%B,%Y',
+      f: '%A,%B,%Y %-I:%M %p',
+      F: '%A,%B,%Y %-I:%M:%S %p',
+      g: '%m/%d/%Y %-I:%M %p',
+      G: '%m/%d/%Y %-I:%M:%S %p',
+      M: '%B %-d',
+      m: '%B %-d',
+      O: '%Y-%m-%dT%H:%M:%S',
+      u: '%Y-%M-%D %H:%M:%S%z',
+      U: '%A, %B %D, %Y %H:%M:%S%z',
+      T: '%-I:%M:%S %p',
+      t: '%-I:%M',
+      Y: '%a %Y',
+    };
+  }
 
   static Tokenizer = TSQLTokenizer;
   static Parser = TSQLParser;

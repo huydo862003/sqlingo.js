@@ -61,9 +61,15 @@ import { dateAddSql } from './mysql';
 
 class DrillTokenizer extends Tokenizer {
   @cache
-  static get IDENTIFIERS () { return ['`'] as const; }
+  static get IDENTIFIERS () {
+    return ['`'] as const;
+  }
+
   @cache
-  static get STRING_ESCAPES () { return ['\\'] as const; }
+  static get STRING_ESCAPES () {
+    return ['\\'] as const;
+  }
+
   @cache
   static get KEYWORDS (): Record<string, TokenType> {
     const keywords = { ...Tokenizer.KEYWORDS };
@@ -260,37 +266,39 @@ export class Drill extends Dialect {
   static CONCAT_COALESCE = true;
 
   @cache
-  static get TIME_MAPPING () { return {
-    'y': '%Y',
-    'Y': '%Y',
-    'YYYY': '%Y',
-    'yyyy': '%Y',
-    'YY': '%y',
-    'yy': '%y',
-    'MMMM': '%B',
-    'MMM': '%b',
-    'MM': '%m',
-    'M': '%-m',
-    'dd': '%d',
-    'd': '%-d',
-    'HH': '%H',
-    'H': '%-H',
-    'hh': '%I',
-    'h': '%-I',
-    'mm': '%M',
-    'm': '%-M',
-    'ss': '%S',
-    's': '%-S',
-    'SSSSSS': '%f',
-    'a': '%p',
-    'DD': '%j',
-    'D': '%-j',
-    'E': '%a',
-    'EE': '%a',
-    'EEE': '%a',
-    'EEEE': '%A',
-    '\'\'T\'\'': 'T',
-  }; }
+  static get TIME_MAPPING () {
+    return {
+      'y': '%Y',
+      'Y': '%Y',
+      'YYYY': '%Y',
+      'yyyy': '%Y',
+      'YY': '%y',
+      'yy': '%y',
+      'MMMM': '%B',
+      'MMM': '%b',
+      'MM': '%m',
+      'M': '%-m',
+      'dd': '%d',
+      'd': '%-d',
+      'HH': '%H',
+      'H': '%-H',
+      'hh': '%I',
+      'h': '%-I',
+      'mm': '%M',
+      'm': '%-M',
+      'ss': '%S',
+      's': '%-S',
+      'SSSSSS': '%f',
+      'a': '%p',
+      'DD': '%j',
+      'D': '%-j',
+      'E': '%a',
+      'EE': '%a',
+      'EEE': '%a',
+      'EEEE': '%A',
+      '\'\'T\'\'': 'T',
+    };
+  }
 
   static Tokenizer = DrillTokenizer;
   static Parser = DrillParser;

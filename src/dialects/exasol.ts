@@ -389,7 +389,9 @@ function addDateSql (this: ExasolGenerator, expression: DateAddExpr | DateSubExp
 
 class ExasolTokenizer extends Tokenizer {
   @cache
-  static get IDENTIFIERS (): TokenPair[] { return ['"', ['[', ']']]; }
+  static get IDENTIFIERS (): TokenPair[] {
+    return ['"', ['[', ']']];
+  }
 
   @cache
   static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
@@ -796,12 +798,36 @@ class ExasolGenerator extends Generator {
 }
 
 export class Exasol extends Dialect {
-  static NORMALIZATION_STRATEGY = NormalizationStrategy.UPPERCASE;
-  static SUPPORTS_USER_DEFINED_TYPES = false;
-  static SUPPORTS_SEMI_ANTI_JOIN = false;
-  static SUPPORTS_COLUMN_JOIN_MARKS = true;
-  static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
-  static CONCAT_COALESCE = true;
+  @cache
+  static get NORMALIZATION_STRATEGY () {
+    return NormalizationStrategy.UPPERCASE;
+  }
+
+  @cache
+  static get SUPPORTS_USER_DEFINED_TYPES () {
+    return false;
+  }
+
+  @cache
+  static get SUPPORTS_SEMI_ANTI_JOIN () {
+    return false;
+  }
+
+  @cache
+  static get SUPPORTS_COLUMN_JOIN_MARKS () {
+    return true;
+  }
+
+  @cache
+  static get NULL_ORDERING () {
+    return NullOrdering.NULLS_ARE_LAST;
+  }
+
+  @cache
+  static get CONCAT_COALESCE () {
+    return true;
+  }
+
   @cache
   static get TIME_MAPPING () {
     return {

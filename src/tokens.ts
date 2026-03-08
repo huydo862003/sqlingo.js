@@ -1810,8 +1810,10 @@ export class Tokenizer {
   private extractString (
     delimiter: string,
     escapes: Set<string> | undefined = undefined,
-    options: { rawString?: boolean;
-      raiseUnmatched?: boolean; } = {},
+    options: {
+      rawString?: boolean;
+      raiseUnmatched?: boolean;
+    } = {},
   ): string {
     const {
       rawString = false, raiseUnmatched = true,

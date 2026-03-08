@@ -21,9 +21,14 @@ export class SolrParser extends Parser {
 
 export class SolrTokenizer extends Tokenizer {
   @cache
-  static get QUOTES () { return ['\''] as const; }
+  static get QUOTES () {
+    return ['\''] as const;
+  }
+
   @cache
-  static get IDENTIFIERS () { return ['`'] as const; }
+  static get IDENTIFIERS () {
+    return ['`'] as const;
+  }
 }
 
 export class Solr extends Dialect {

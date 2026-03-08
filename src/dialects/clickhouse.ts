@@ -427,17 +427,34 @@ class ClickHouseTokenizer extends Tokenizer {
   }
 
   @cache
-  static get IDENTIFIERS () { return ['"', '`']; }
+  static get IDENTIFIERS () {
+    return ['"', '`'];
+  }
+
   @cache
-  static get IDENTIFIER_ESCAPES () { return ['\\']; }
+  static get IDENTIFIER_ESCAPES () {
+    return ['\\'];
+  }
+
   @cache
-  static get STRING_ESCAPES () { return ['\'', '\\']; }
+  static get STRING_ESCAPES () {
+    return ['\'', '\\'];
+  }
+
   @cache
-  static get BIT_STRINGS (): TokenPair[] { return [['0b', '']]; }
+  static get BIT_STRINGS (): TokenPair[] {
+    return [['0b', '']];
+  }
+
   @cache
-  static get HEX_STRINGS (): TokenPair[] { return [['0x', ''], ['0X', '']]; }
+  static get HEX_STRINGS (): TokenPair[] {
+    return [['0x', ''], ['0X', '']];
+  }
+
   @cache
-  static get HEREDOC_STRINGS () { return ['$']; }
+  static get HEREDOC_STRINGS () {
+    return ['$'];
+  }
 
   @cache
   static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
@@ -580,142 +597,146 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get AGG_FUNCTIONS () { return new Set([
-    'count',
-    'min',
-    'max',
-    'sum',
-    'avg',
-    'any',
-    'stddevPop',
-    'stddevSamp',
-    'varPop',
-    'varSamp',
-    'corr',
-    'covarPop',
-    'covarSamp',
-    'entropy',
-    'exponentialMovingAverage',
-    'intervalLengthSum',
-    'kolmogorovSmirnovTest',
-    'mannWhitneyUTest',
-    'median',
-    'rankCorr',
-    'sumKahan',
-    'studentTTest',
-    'welchTTest',
-    'anyHeavy',
-    'anyLast',
-    'boundingRatio',
-    'first_value',
-    'last_value',
-    'argMin',
-    'argMax',
-    'avgWeighted',
-    'topK',
-    'approx_top_sum',
-    'topKWeighted',
-    'deltaSum',
-    'deltaSumTimestamp',
-    'groupArray',
-    'groupArrayLast',
-    'groupUniqArray',
-    'groupArrayInsertAt',
-    'groupArrayMovingAvg',
-    'groupArrayMovingSum',
-    'groupArraySample',
-    'groupBitAnd',
-    'groupBitOr',
-    'groupBitXor',
-    'groupBitmap',
-    'groupBitmapAnd',
-    'groupBitmapOr',
-    'groupBitmapXor',
-    'sumWithOverflow',
-    'sumMap',
-    'minMap',
-    'maxMap',
-    'skewSamp',
-    'skewPop',
-    'kurtSamp',
-    'kurtPop',
-    'uniq',
-    'uniqExact',
-    'uniqCombined',
-    'uniqCombined64',
-    'uniqHLL12',
-    'uniqTheta',
-    'quantile',
-    'quantiles',
-    'quantileExact',
-    'quantilesExact',
-    'quantilesExactExclusive',
-    'quantileExactLow',
-    'quantilesExactLow',
-    'quantileExactHigh',
-    'quantilesExactHigh',
-    'quantileExactWeighted',
-    'quantilesExactWeighted',
-    'quantileTiming',
-    'quantilesTiming',
-    'quantileTimingWeighted',
-    'quantilesTimingWeighted',
-    'quantileDeterministic',
-    'quantilesDeterministic',
-    'quantileTDigest',
-    'quantilesTDigest',
-    'quantileTDigestWeighted',
-    'quantilesTDigestWeighted',
-    'quantileBFloat16',
-    'quantilesBFloat16',
-    'quantileBFloat16Weighted',
-    'quantilesBFloat16Weighted',
-    'simpleLinearRegression',
-    'stochasticLinearRegression',
-    'stochasticLogisticRegression',
-    'categoricalInformationValue',
-    'contingency',
-    'cramersV',
-    'cramersVBiasCorrected',
-    'theilsU',
-    'maxIntersections',
-    'maxIntersectionsPosition',
-    'meanZTest',
-    'quantileInterpolatedWeighted',
-    'quantilesInterpolatedWeighted',
-    'quantileGK',
-    'quantilesGK',
-    'sparkBar',
-    'sumCount',
-    'largestTriangleThreeBuckets',
-    'histogram',
-    'sequenceMatch',
-    'sequenceCount',
-    'windowFunnel',
-    'retention',
-    'uniqUpTo',
-    'sequenceNextNode',
-    'exponentialTimeDecayedAvg',
-  ]); }
+  static get AGG_FUNCTIONS () {
+    return new Set([
+      'count',
+      'min',
+      'max',
+      'sum',
+      'avg',
+      'any',
+      'stddevPop',
+      'stddevSamp',
+      'varPop',
+      'varSamp',
+      'corr',
+      'covarPop',
+      'covarSamp',
+      'entropy',
+      'exponentialMovingAverage',
+      'intervalLengthSum',
+      'kolmogorovSmirnovTest',
+      'mannWhitneyUTest',
+      'median',
+      'rankCorr',
+      'sumKahan',
+      'studentTTest',
+      'welchTTest',
+      'anyHeavy',
+      'anyLast',
+      'boundingRatio',
+      'first_value',
+      'last_value',
+      'argMin',
+      'argMax',
+      'avgWeighted',
+      'topK',
+      'approx_top_sum',
+      'topKWeighted',
+      'deltaSum',
+      'deltaSumTimestamp',
+      'groupArray',
+      'groupArrayLast',
+      'groupUniqArray',
+      'groupArrayInsertAt',
+      'groupArrayMovingAvg',
+      'groupArrayMovingSum',
+      'groupArraySample',
+      'groupBitAnd',
+      'groupBitOr',
+      'groupBitXor',
+      'groupBitmap',
+      'groupBitmapAnd',
+      'groupBitmapOr',
+      'groupBitmapXor',
+      'sumWithOverflow',
+      'sumMap',
+      'minMap',
+      'maxMap',
+      'skewSamp',
+      'skewPop',
+      'kurtSamp',
+      'kurtPop',
+      'uniq',
+      'uniqExact',
+      'uniqCombined',
+      'uniqCombined64',
+      'uniqHLL12',
+      'uniqTheta',
+      'quantile',
+      'quantiles',
+      'quantileExact',
+      'quantilesExact',
+      'quantilesExactExclusive',
+      'quantileExactLow',
+      'quantilesExactLow',
+      'quantileExactHigh',
+      'quantilesExactHigh',
+      'quantileExactWeighted',
+      'quantilesExactWeighted',
+      'quantileTiming',
+      'quantilesTiming',
+      'quantileTimingWeighted',
+      'quantilesTimingWeighted',
+      'quantileDeterministic',
+      'quantilesDeterministic',
+      'quantileTDigest',
+      'quantilesTDigest',
+      'quantileTDigestWeighted',
+      'quantilesTDigestWeighted',
+      'quantileBFloat16',
+      'quantilesBFloat16',
+      'quantileBFloat16Weighted',
+      'quantilesBFloat16Weighted',
+      'simpleLinearRegression',
+      'stochasticLinearRegression',
+      'stochasticLogisticRegression',
+      'categoricalInformationValue',
+      'contingency',
+      'cramersV',
+      'cramersVBiasCorrected',
+      'theilsU',
+      'maxIntersections',
+      'maxIntersectionsPosition',
+      'meanZTest',
+      'quantileInterpolatedWeighted',
+      'quantilesInterpolatedWeighted',
+      'quantileGK',
+      'quantilesGK',
+      'sparkBar',
+      'sumCount',
+      'largestTriangleThreeBuckets',
+      'histogram',
+      'sequenceMatch',
+      'sequenceCount',
+      'windowFunnel',
+      'retention',
+      'uniqUpTo',
+      'sequenceNextNode',
+      'exponentialTimeDecayedAvg',
+    ]);
+  }
 
   @cache
-  static get AGG_FUNCTIONS_SUFFIXES () { return [
-    'If',
-    'Array',
-    'ArrayIf',
-    'Map',
-    'SimpleState',
-    'State',
-    'Merge',
-    'MergeState',
-    'ForEach',
-    'Distinct',
-    'OrDefault',
-    'OrNull',
-    'Resample',
-    'ArgMin',
-    'ArgMax',
-  ]; }
+  static get AGG_FUNCTIONS_SUFFIXES () {
+    return [
+      'If',
+      'Array',
+      'ArrayIf',
+      'Map',
+      'SimpleState',
+      'State',
+      'Merge',
+      'MergeState',
+      'ForEach',
+      'Distinct',
+      'OrDefault',
+      'OrNull',
+      'Resample',
+      'ArgMin',
+      'ArgMax',
+    ];
+  }
 
   @cache
   static get FUNC_TOKENS (): Set<TokenType> {
@@ -1454,7 +1475,10 @@ class ClickHouseParser extends Parser {
 export class ClickHouseGenerator extends Generator {
   static QUERY_HINTS = false;
   @cache
-  static get STRUCT_DELIMITER () { return ['(', ')']; }
+  static get STRUCT_DELIMITER () {
+    return ['(', ')'];
+  }
+
   static NVL2_SUPPORTED = false;
   static TABLESAMPLE_REQUIRES_PARENS = false;
   static TABLESAMPLE_SIZE_IS_ROWS = false;
@@ -1470,19 +1494,21 @@ export class ClickHouseGenerator extends Generator {
   static WRAP_DERIVED_VALUES = false;
 
   @cache
-  static get STRING_TYPE_MAPPING (): Partial<Record<DataTypeExprKind, string>> { return {
-    [DataTypeExprKind.BLOB]: 'String',
-    [DataTypeExprKind.CHAR]: 'String',
-    [DataTypeExprKind.LONGBLOB]: 'String',
-    [DataTypeExprKind.LONGTEXT]: 'String',
-    [DataTypeExprKind.MEDIUMBLOB]: 'String',
-    [DataTypeExprKind.MEDIUMTEXT]: 'String',
-    [DataTypeExprKind.TINYBLOB]: 'String',
-    [DataTypeExprKind.TINYTEXT]: 'String',
-    [DataTypeExprKind.TEXT]: 'String',
-    [DataTypeExprKind.VARBINARY]: 'String',
-    [DataTypeExprKind.VARCHAR]: 'String',
-  }; }
+  static get STRING_TYPE_MAPPING (): Partial<Record<DataTypeExprKind, string>> {
+    return {
+      [DataTypeExprKind.BLOB]: 'String',
+      [DataTypeExprKind.CHAR]: 'String',
+      [DataTypeExprKind.LONGBLOB]: 'String',
+      [DataTypeExprKind.LONGTEXT]: 'String',
+      [DataTypeExprKind.MEDIUMBLOB]: 'String',
+      [DataTypeExprKind.MEDIUMTEXT]: 'String',
+      [DataTypeExprKind.TINYBLOB]: 'String',
+      [DataTypeExprKind.TINYTEXT]: 'String',
+      [DataTypeExprKind.TEXT]: 'String',
+      [DataTypeExprKind.VARBINARY]: 'String',
+      [DataTypeExprKind.VARCHAR]: 'String',
+    };
+  }
 
   @cache
   static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
@@ -2132,7 +2158,9 @@ export class ClickHouse extends Dialect {
   }
 
   @cache
-  static get CREATABLE_KIND_MAPPING () { return { DATABASE: 'SCHEMA' }; }
+  static get CREATABLE_KIND_MAPPING () {
+    return { DATABASE: 'SCHEMA' };
+  }
 
   @cache
   static get SET_OP_DISTINCT_BY_DEFAULT (): Partial<Record<ExpressionKey, boolean>> {

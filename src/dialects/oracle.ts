@@ -107,11 +107,13 @@ function buildToTimestamp (args: Expression[]): StrToTimeExpr | AnonymousExpr {
 
 export class OracleTokenizer extends Tokenizer {
   @cache
-  static get VAR_SINGLE_TOKENS () { return new Set([
-    '@',
-    '$',
-    '#',
-  ]); }
+  static get VAR_SINGLE_TOKENS () {
+    return new Set([
+      '@',
+      '$',
+      '#',
+    ]);
+  }
 
   @cache
   static get UNICODE_STRINGS (): TokenPair[] {
@@ -151,7 +153,10 @@ export class OracleTokenizer extends Tokenizer {
 
 export class OracleParser extends Parser {
   @cache
-  static get WINDOW_BEFORE_PAREN_TOKENS () { return new Set([TokenType.OVER, TokenType.KEEP]); }
+  static get WINDOW_BEFORE_PAREN_TOKENS () {
+    return new Set([TokenType.OVER, TokenType.KEEP]);
+  }
+
   static VALUES_FOLLOWED_BY_PAREN = false;
 
   @cache

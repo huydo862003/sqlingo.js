@@ -70,40 +70,42 @@ class TrinoParser extends Presto.Parser {
   }
 
   @cache
-  static get JSON_QUERY_OPTIONS (): Record<string, string[][]> { return {
-    WITH: [
-      ['WRAPPER'],
-      ['ARRAY', 'WRAPPER'],
-      ['CONDITIONAL', 'WRAPPER'],
-      [
-        'CONDITIONAL',
-        'ARRAY',
-        'WRAPPED',
+  static get JSON_QUERY_OPTIONS (): Record<string, string[][]> {
+    return {
+      WITH: [
+        ['WRAPPER'],
+        ['ARRAY', 'WRAPPER'],
+        ['CONDITIONAL', 'WRAPPER'],
+        [
+          'CONDITIONAL',
+          'ARRAY',
+          'WRAPPED',
+        ],
+        ['UNCONDITIONAL', 'WRAPPER'],
+        [
+          'UNCONDITIONAL',
+          'ARRAY',
+          'WRAPPER',
+        ],
       ],
-      ['UNCONDITIONAL', 'WRAPPER'],
-      [
-        'UNCONDITIONAL',
-        'ARRAY',
-        'WRAPPER',
+      WITHOUT: [
+        ['WRAPPER'],
+        ['ARRAY', 'WRAPPER'],
+        ['CONDITIONAL', 'WRAPPER'],
+        [
+          'CONDITIONAL',
+          'ARRAY',
+          'WRAPPED',
+        ],
+        ['UNCONDITIONAL', 'WRAPPER'],
+        [
+          'UNCONDITIONAL',
+          'ARRAY',
+          'WRAPPER',
+        ],
       ],
-    ],
-    WITHOUT: [
-      ['WRAPPER'],
-      ['ARRAY', 'WRAPPER'],
-      ['CONDITIONAL', 'WRAPPER'],
-      [
-        'CONDITIONAL',
-        'ARRAY',
-        'WRAPPED',
-      ],
-      ['UNCONDITIONAL', 'WRAPPER'],
-      [
-        'UNCONDITIONAL',
-        'ARRAY',
-        'WRAPPER',
-      ],
-    ],
-  }; }
+    };
+  }
 
   public parseJsonQueryQuote (): JsonExtractQuoteExpr | undefined {
     if (

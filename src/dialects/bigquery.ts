@@ -734,19 +734,31 @@ export class BigQueryTokenizer extends Tokenizer {
   }
 
   @cache
-  static get IDENTIFIERS () { return ['`']; }
-  @cache
-  static get STRING_ESCAPES () { return ['\\']; }
-  @cache
-  static get HEX_STRINGS (): TokenPair[] { return [['0x', ''], ['0X', '']]; }
+  static get IDENTIFIERS () {
+    return ['`'];
+  }
 
   @cache
-  static get BYTE_STRINGS (): TokenPair[] { return (['b', 'B'] as const).flatMap((prefix) =>
-    (BigQueryTokenizer.QUOTES as string[]).map((q): TokenPair => [prefix + q, q as string])); }
+  static get STRING_ESCAPES () {
+    return ['\\'];
+  }
 
   @cache
-  static get RAW_STRINGS (): TokenPair[] { return (['r', 'R'] as const).flatMap((prefix) =>
-    (BigQueryTokenizer.QUOTES as string[]).map((q): TokenPair => [prefix + q, q as string])); }
+  static get HEX_STRINGS (): TokenPair[] {
+    return [['0x', ''], ['0X', '']];
+  }
+
+  @cache
+  static get BYTE_STRINGS (): TokenPair[] {
+    return (['b', 'B'] as const).flatMap((prefix) =>
+      (BigQueryTokenizer.QUOTES as string[]).map((q): TokenPair => [prefix + q, q as string]));
+  }
+
+  @cache
+  static get RAW_STRINGS (): TokenPair[] {
+    return (['r', 'R'] as const).flatMap((prefix) =>
+      (BigQueryTokenizer.QUOTES as string[]).map((q): TokenPair => [prefix + q, q as string]));
+  }
 
   static NESTED_COMMENTS = false;
 
@@ -877,11 +889,13 @@ export class BigQueryParser extends Parser {
   }
 
   @cache
-  static get DASHED_TABLE_PART_FOLLOW_TOKENS (): Set<TokenType> { return new Set([
-    TokenType.DOT,
-    TokenType.L_PAREN,
-    TokenType.R_PAREN,
-  ]); }
+  static get DASHED_TABLE_PART_FOLLOW_TOKENS (): Set<TokenType> {
+    return new Set([
+      TokenType.DOT,
+      TokenType.L_PAREN,
+      TokenType.R_PAREN,
+    ]);
+  }
 
   @cache
   static get STATEMENT_PARSERS (): Partial<Record<TokenType, (this: Parser) => Expression | undefined>> {
@@ -1830,104 +1844,106 @@ export class BigQueryGenerator extends Generator {
   }
 
   @cache
-  static get RESERVED_KEYWORDS () { return new Set([
-    'all',
-    'and',
-    'any',
-    'array',
-    'as',
-    'asc',
-    'assert_rows_modified',
-    'at',
-    'between',
-    'by',
-    'case',
-    'cast',
-    'collate',
-    'contains',
-    'create',
-    'cross',
-    'cube',
-    'current',
-    'default',
-    'define',
-    'desc',
-    'distinct',
-    'else',
-    'end',
-    'enum',
-    'escape',
-    'except',
-    'exclude',
-    'exists',
-    'extract',
-    'false',
-    'fetch',
-    'following',
-    'for',
-    'from',
-    'full',
-    'group',
-    'grouping',
-    'groups',
-    'hash',
-    'having',
-    'if',
-    'ignore',
-    'in',
-    'inner',
-    'intersect',
-    'interval',
-    'into',
-    'is',
-    'join',
-    'lateral',
-    'left',
-    'like',
-    'limit',
-    'lookup',
-    'merge',
-    'natural',
-    'new',
-    'no',
-    'not',
-    'null',
-    'nulls',
-    'of',
-    'on',
-    'or',
-    'order',
-    'outer',
-    'over',
-    'partition',
-    'preceding',
-    'proto',
-    'qualify',
-    'range',
-    'recursive',
-    'respect',
-    'right',
-    'rollup',
-    'rows',
-    'select',
-    'set',
-    'some',
-    'struct',
-    'tablesample',
-    'then',
-    'to',
-    'treat',
-    'true',
-    'unbounded',
-    'union',
-    'unnest',
-    'using',
-    'when',
-    'where',
-    'window',
-    'with',
-    'within',
-  ]); }
+  static get RESERVED_KEYWORDS () {
+    return new Set([
+      'all',
+      'and',
+      'any',
+      'array',
+      'as',
+      'asc',
+      'assert_rows_modified',
+      'at',
+      'between',
+      'by',
+      'case',
+      'cast',
+      'collate',
+      'contains',
+      'create',
+      'cross',
+      'cube',
+      'current',
+      'default',
+      'define',
+      'desc',
+      'distinct',
+      'else',
+      'end',
+      'enum',
+      'escape',
+      'except',
+      'exclude',
+      'exists',
+      'extract',
+      'false',
+      'fetch',
+      'following',
+      'for',
+      'from',
+      'full',
+      'group',
+      'grouping',
+      'groups',
+      'hash',
+      'having',
+      'if',
+      'ignore',
+      'in',
+      'inner',
+      'intersect',
+      'interval',
+      'into',
+      'is',
+      'join',
+      'lateral',
+      'left',
+      'like',
+      'limit',
+      'lookup',
+      'merge',
+      'natural',
+      'new',
+      'no',
+      'not',
+      'null',
+      'nulls',
+      'of',
+      'on',
+      'or',
+      'order',
+      'outer',
+      'over',
+      'partition',
+      'preceding',
+      'proto',
+      'qualify',
+      'range',
+      'recursive',
+      'respect',
+      'right',
+      'rollup',
+      'rows',
+      'select',
+      'set',
+      'some',
+      'struct',
+      'tablesample',
+      'then',
+      'to',
+      'treat',
+      'true',
+      'unbounded',
+      'union',
+      'unnest',
+      'using',
+      'when',
+      'where',
+      'window',
+      'with',
+      'within',
+    ]);
+  }
 
   dateTruncSql (expression: DateTruncExpr): string {
     const unit = expression.unit;
@@ -2137,7 +2153,9 @@ export class BigQueryGenerator extends Generator {
 
 export class BigQueryJsonPathTokenizer extends JsonPathTokenizer {
   @cache
-  static get VAR_TOKENS () { return new Set([TokenType.DASH, TokenType.VAR]); }
+  static get VAR_TOKENS () {
+    return new Set([TokenType.DASH, TokenType.VAR]);
+  }
 }
 
 export class BigQuery extends Dialect {
@@ -2202,21 +2220,23 @@ export class BigQuery extends Dialect {
   }
 
   @cache
-  static get FORMAT_MAPPING (): Record<string, string> { return {
-    DD: '%d',
-    MM: '%m',
-    MON: '%b',
-    MONTH: '%B',
-    YYYY: '%Y',
-    YY: '%y',
-    HH: '%I',
-    HH12: '%I',
-    HH24: '%H',
-    MI: '%M',
-    SS: '%S',
-    SSSSS: '%f',
-    TZH: '%z',
-  }; }
+  static get FORMAT_MAPPING (): Record<string, string> {
+    return {
+      DD: '%d',
+      MM: '%m',
+      MON: '%b',
+      MONTH: '%B',
+      YYYY: '%Y',
+      YY: '%y',
+      HH: '%I',
+      HH12: '%I',
+      HH24: '%H',
+      MI: '%M',
+      SS: '%S',
+      SSSSS: '%f',
+      TZH: '%z',
+    };
+  }
 
   // The _PARTITIONTIME and _PARTITIONDATE pseudo-columns are not returned by a SELECT * statement
   // https://cloud.google.com/bigquery/docs/querying-partitioned-tables#query_an_ingestion-time_partitioned_table

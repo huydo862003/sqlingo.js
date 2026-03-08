@@ -456,11 +456,19 @@ export class PostgresTokenizer extends Tokenizer {
   }
 
   @cache
-  static get BYTE_STRINGS (): TokenPair[] { return [['e\'', '\''], ['E\'', '\'']]; }
+  static get BYTE_STRINGS (): TokenPair[] {
+    return [['e\'', '\''], ['E\'', '\'']];
+  }
+
   @cache
-  static get BYTE_STRING_ESCAPES () { return ['\'', '\\']; }
+  static get BYTE_STRING_ESCAPES () {
+    return ['\'', '\\'];
+  }
+
   @cache
-  static get HEREDOC_STRINGS (): TokenPair[] { return ['$']; }
+  static get HEREDOC_STRINGS (): TokenPair[] {
+    return ['$'];
+  }
 
   static HEREDOC_TAG_IS_IDENTIFIER = true;
   static HEREDOC_STRING_ALTERNATIVE = TokenType.PARAMETER;
@@ -528,7 +536,9 @@ export class PostgresTokenizer extends Tokenizer {
   }
 
   @cache
-  static get VAR_SINGLE_TOKENS () { return new Set(['$']); }
+  static get VAR_SINGLE_TOKENS () {
+    return new Set(['$']);
+  }
 }
 
 class PostgresParser extends Parser {
@@ -1361,7 +1371,9 @@ export class Postgres extends Dialect {
   static TABLES_REFERENCEABLE_AS_COLUMNS = true;
 
   @cache
-  static get DEFAULT_FUNCTIONS_COLUMN_NAMES () { return new Map([[ExplodingGenerateSeriesExpr.name, 'generate_series']]); }
+  static get DEFAULT_FUNCTIONS_COLUMN_NAMES () {
+    return new Map([[ExplodingGenerateSeriesExpr.name, 'generate_series']]);
+  }
 
   @cache
   static get TIME_MAPPING () {

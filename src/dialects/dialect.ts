@@ -428,14 +428,20 @@ export class Dialect {
 
   /** Associates this dialect's time formats with their equivalent Python `strftime` formats. */
   @cache
-  static get TIME_MAPPING (): Record<string, string> { return {}; }
+  static get TIME_MAPPING (): Record<string, string> {
+    return {};
+  }
 
   /**
    * Helper which is used for parsing the special syntax `CAST(x AS DATE FORMAT 'yyyy')`.
    * If empty, the corresponding trie will be constructed off of `TIME_MAPPING`.
    */
   @cache
-  static get FORMAT_MAPPING (): Record<string, string> { return {}; }
+  static get FORMAT_MAPPING (): Record<string, string> {
+    return {};
+  }
+
+  static ORIGINAL_UNESCAPED_SEQUENCES: Record<string, string> = {};
 
   static #UNESCAPED_SEQUENCES = new WeakMap<typeof Dialect, Record<string, string>>();
 
@@ -445,10 +451,10 @@ export class Dialect {
       if (this.STRINGS_SUPPORT_ESCAPED_SEQUENCES || this.BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES) {
         cached = {
           ...BASE_UNESCAPED_SEQUENCES,
-          ...this.UNESCAPED_SEQUENCES,
+          ...this.ORIGINAL_UNESCAPED_SEQUENCES,
         };
       } else {
-        cached = this.UNESCAPED_SEQUENCES;
+        cached = this.ORIGINAL_UNESCAPED_SEQUENCES;
       }
       this.#UNESCAPED_SEQUENCES.set(this, cached);
     }
@@ -460,7 +466,9 @@ export class Dialect {
    * For example, such columns may be excluded from `SELECT *` queries.
    */
   @cache
-  static get PSEUDOCOLUMNS (): Set<string> { return new Set(); }
+  static get PSEUDOCOLUMNS (): Set<string> {
+    return new Set();
+  }
 
   /**
    * Some dialects allow you to reference a CTE column alias in the HAVING clause.
@@ -565,7 +573,9 @@ export class Dialect {
    * For example, the Clickhouse equivalent of CREATE SCHEMA is CREATE DATABASE.
    */
   @cache
-  static get CREATABLE_KIND_MAPPING (): Record<string, string> { return {}; }
+  static get CREATABLE_KIND_MAPPING (): Record<string, string> {
+    return {};
+  }
 
   /**
    * Hive by default does not update the schema of existing partitions when a column is changed.
@@ -617,7 +627,9 @@ export class Dialect {
    * For example, in Postgres, generate_series function outputs a column named "generate_series" by default.
    */
   @cache
-  static get DEFAULT_FUNCTIONS_COLUMN_NAMES (): Map<string, string | string[]> { return new Map(); }
+  static get DEFAULT_FUNCTIONS_COLUMN_NAMES (): Map<string, string | string[]> {
+    return new Map();
+  }
 
   @cache
   static get DEFAULT_NULL_TYPE (): DataTypeExprKind {
@@ -803,7 +815,7 @@ export class Dialect {
   @cache
   static get ESCAPED_SEQUENCES (): Record<string, string> {
     return Object.fromEntries(
-      Object.entries(this.UNESCAPED_SEQUENCES).map(([k, v]) => [v, k]),
+      Object.entries(this.ORIGINAL_UNESCAPED_SEQUENCES).map(([k, v]) => [v, k]),
     );
   }
 
@@ -876,104 +888,108 @@ export class Dialect {
 
   /** Date part mapping for normalization. */
   @cache
-  static get DATE_PART_MAPPING (): Record<string, string> { return {
-    'Y': 'YEAR',
-    'YY': 'YEAR',
-    'YYY': 'YEAR',
-    'YYYY': 'YEAR',
-    'YR': 'YEAR',
-    'YEARS': 'YEAR',
-    'YRS': 'YEAR',
-    'MM': 'MONTH',
-    'MON': 'MONTH',
-    'MONS': 'MONTH',
-    'MONTHS': 'MONTH',
-    'D': 'DAY',
-    'DD': 'DAY',
-    'DAYS': 'DAY',
-    'DAYOFMONTH': 'DAY',
-    'DAY OF WEEK': 'DAYOFWEEK',
-    'WEEKDAY': 'DAYOFWEEK',
-    'DOW': 'DAYOFWEEK',
-    'DW': 'DAYOFWEEK',
-    'WEEKDAY_ISO': 'DAYOFWEEKISO',
-    'DOW_ISO': 'DAYOFWEEKISO',
-    'DW_ISO': 'DAYOFWEEKISO',
-    'DAYOFWEEK_ISO': 'DAYOFWEEKISO',
-    'DAY OF YEAR': 'DAYOFYEAR',
-    'DOY': 'DAYOFYEAR',
-    'DY': 'DAYOFYEAR',
-    'W': 'WEEK',
-    'WK': 'WEEK',
-    'WEEKOFYEAR': 'WEEK',
-    'WOY': 'WEEK',
-    'WY': 'WEEK',
-    'WEEK_ISO': 'WEEKISO',
-    'WEEKOFYEARISO': 'WEEKISO',
-    'WEEKOFYEAR_ISO': 'WEEKISO',
-    'Q': 'QUARTER',
-    'QTR': 'QUARTER',
-    'QTRS': 'QUARTER',
-    'QUARTERS': 'QUARTER',
-    'H': 'HOUR',
-    'HH': 'HOUR',
-    'HR': 'HOUR',
-    'HOURS': 'HOUR',
-    'HRS': 'HOUR',
-    'M': 'MINUTE',
-    'MI': 'MINUTE',
-    'MIN': 'MINUTE',
-    'MINUTES': 'MINUTE',
-    'MINS': 'MINUTE',
-    'S': 'SECOND',
-    'SEC': 'SECOND',
-    'SECONDS': 'SECOND',
-    'SECS': 'SECOND',
-    'MS': 'MILLISECOND',
-    'MSEC': 'MILLISECOND',
-    'MSECS': 'MILLISECOND',
-    'MSECOND': 'MILLISECOND',
-    'MSECONDS': 'MILLISECOND',
-    'MILLISEC': 'MILLISECOND',
-    'MILLISECS': 'MILLISECOND',
-    'MILLISECON': 'MILLISECOND',
-    'MILLISECONDS': 'MILLISECOND',
-    'US': 'MICROSECOND',
-    'USEC': 'MICROSECOND',
-    'USECS': 'MICROSECOND',
-    'MICROSEC': 'MICROSECOND',
-    'MICROSECS': 'MICROSECOND',
-    'USECOND': 'MICROSECOND',
-    'USECONDS': 'MICROSECOND',
-    'MICROSECONDS': 'MICROSECOND',
-    'NS': 'NANOSECOND',
-    'NSEC': 'NANOSECOND',
-    'NANOSEC': 'NANOSECOND',
-    'NSECOND': 'NANOSECOND',
-    'NSECONDS': 'NANOSECOND',
-    'NANOSECS': 'NANOSECOND',
-    'EPOCH_SECOND': 'EPOCH',
-    'EPOCH_SECONDS': 'EPOCH',
-    'EPOCH_MILLISECONDS': 'EPOCH_MILLISECOND',
-    'EPOCH_MICROSECONDS': 'EPOCH_MICROSECOND',
-    'EPOCH_NANOSECONDS': 'EPOCH_NANOSECOND',
-    'TZH': 'TIMEZONE_HOUR',
-    'TZM': 'TIMEZONE_MINUTE',
-    'DEC': 'DECADE',
-    'DECS': 'DECADE',
-    'DECADES': 'DECADE',
-    'MIL': 'MILLENNIUM',
-    'MILS': 'MILLENNIUM',
-    'MILLENIA': 'MILLENNIUM',
-    'C': 'CENTURY',
-    'CENT': 'CENTURY',
-    'CENTS': 'CENTURY',
-    'CENTURIES': 'CENTURY',
-  }; }
+  static get DATE_PART_MAPPING (): Record<string, string> {
+    return {
+      'Y': 'YEAR',
+      'YY': 'YEAR',
+      'YYY': 'YEAR',
+      'YYYY': 'YEAR',
+      'YR': 'YEAR',
+      'YEARS': 'YEAR',
+      'YRS': 'YEAR',
+      'MM': 'MONTH',
+      'MON': 'MONTH',
+      'MONS': 'MONTH',
+      'MONTHS': 'MONTH',
+      'D': 'DAY',
+      'DD': 'DAY',
+      'DAYS': 'DAY',
+      'DAYOFMONTH': 'DAY',
+      'DAY OF WEEK': 'DAYOFWEEK',
+      'WEEKDAY': 'DAYOFWEEK',
+      'DOW': 'DAYOFWEEK',
+      'DW': 'DAYOFWEEK',
+      'WEEKDAY_ISO': 'DAYOFWEEKISO',
+      'DOW_ISO': 'DAYOFWEEKISO',
+      'DW_ISO': 'DAYOFWEEKISO',
+      'DAYOFWEEK_ISO': 'DAYOFWEEKISO',
+      'DAY OF YEAR': 'DAYOFYEAR',
+      'DOY': 'DAYOFYEAR',
+      'DY': 'DAYOFYEAR',
+      'W': 'WEEK',
+      'WK': 'WEEK',
+      'WEEKOFYEAR': 'WEEK',
+      'WOY': 'WEEK',
+      'WY': 'WEEK',
+      'WEEK_ISO': 'WEEKISO',
+      'WEEKOFYEARISO': 'WEEKISO',
+      'WEEKOFYEAR_ISO': 'WEEKISO',
+      'Q': 'QUARTER',
+      'QTR': 'QUARTER',
+      'QTRS': 'QUARTER',
+      'QUARTERS': 'QUARTER',
+      'H': 'HOUR',
+      'HH': 'HOUR',
+      'HR': 'HOUR',
+      'HOURS': 'HOUR',
+      'HRS': 'HOUR',
+      'M': 'MINUTE',
+      'MI': 'MINUTE',
+      'MIN': 'MINUTE',
+      'MINUTES': 'MINUTE',
+      'MINS': 'MINUTE',
+      'S': 'SECOND',
+      'SEC': 'SECOND',
+      'SECONDS': 'SECOND',
+      'SECS': 'SECOND',
+      'MS': 'MILLISECOND',
+      'MSEC': 'MILLISECOND',
+      'MSECS': 'MILLISECOND',
+      'MSECOND': 'MILLISECOND',
+      'MSECONDS': 'MILLISECOND',
+      'MILLISEC': 'MILLISECOND',
+      'MILLISECS': 'MILLISECOND',
+      'MILLISECON': 'MILLISECOND',
+      'MILLISECONDS': 'MILLISECOND',
+      'US': 'MICROSECOND',
+      'USEC': 'MICROSECOND',
+      'USECS': 'MICROSECOND',
+      'MICROSEC': 'MICROSECOND',
+      'MICROSECS': 'MICROSECOND',
+      'USECOND': 'MICROSECOND',
+      'USECONDS': 'MICROSECOND',
+      'MICROSECONDS': 'MICROSECOND',
+      'NS': 'NANOSECOND',
+      'NSEC': 'NANOSECOND',
+      'NANOSEC': 'NANOSECOND',
+      'NSECOND': 'NANOSECOND',
+      'NSECONDS': 'NANOSECOND',
+      'NANOSECS': 'NANOSECOND',
+      'EPOCH_SECOND': 'EPOCH',
+      'EPOCH_SECONDS': 'EPOCH',
+      'EPOCH_MILLISECONDS': 'EPOCH_MILLISECOND',
+      'EPOCH_MICROSECONDS': 'EPOCH_MICROSECOND',
+      'EPOCH_NANOSECONDS': 'EPOCH_NANOSECOND',
+      'TZH': 'TIMEZONE_HOUR',
+      'TZM': 'TIMEZONE_MINUTE',
+      'DEC': 'DECADE',
+      'DECS': 'DECADE',
+      'DECADES': 'DECADE',
+      'MIL': 'MILLENNIUM',
+      'MILS': 'MILLENNIUM',
+      'MILLENIA': 'MILLENNIUM',
+      'C': 'CENTURY',
+      'CENT': 'CENTURY',
+      'CENTS': 'CENTURY',
+      'CENTURIES': 'CENTURY',
+    };
+  }
 
   /** Specifies what types a given type can be coerced into. */
   @cache
-  static get COERCES_TO (): Record<string, Set<string>> { return {}; }
+  static get COERCES_TO (): Record<string, Set<string>> {
+    return {};
+  }
 
   /** Specifies type inference & validation rules for expressions. */
   @cache
@@ -983,7 +999,9 @@ export class Dialect {
 
   /** Determines the supported Dialect instance settings. */
   @cache
-  static get SUPPORTED_SETTINGS (): Set<string> { return new Set(['normalizationStrategy', 'version']); }
+  static get SUPPORTED_SETTINGS (): Set<string> {
+    return new Set(['normalizationStrategy', 'version']);
+  }
 
   /**
    * Extracts quote delimiters from the tokenizer class.
@@ -1005,7 +1023,9 @@ export class Dialect {
 
   /** Valid interval units. */
   @cache
-  static get BASE_VALID_INTERVAL_UNITS (): Set<string> { return new Set<string>(); } // NOTE: Corresponds to VALID_INTERVAL_UNITS in sqlglot python version
+  static get BASE_VALID_INTERVAL_UNITS (): Set<string> {
+    return new Set<string>();
+  } // NOTE: Corresponds to VALID_INTERVAL_UNITS in sqlglot python version
 
   @cache
   static get VALID_INTERVAL_UNITS (): Set<string> {

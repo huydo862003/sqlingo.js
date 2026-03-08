@@ -175,7 +175,9 @@ export function temporaryStorageProvider (expression: Expression): Expression {
 
 class Spark2Tokenizer extends Hive.Tokenizer {
   @cache
-  static get HEX_STRINGS (): TokenPair[] { return [['X\'', '\''], ['x\'', '\'']]; }
+  static get HEX_STRINGS (): TokenPair[] {
+    return [['X\'', '\''], ['x\'', '\'']];
+  }
 
   @cache
   static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {

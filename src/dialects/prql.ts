@@ -21,9 +21,14 @@ function selectAll (table: Expression | undefined): SelectExpr | undefined {
 
 class PRQLTokenizer extends Tokenizer {
   @cache
-  static get IDENTIFIERS () { return ['`'] as const; }
+  static get IDENTIFIERS () {
+    return ['`'] as const;
+  }
+
   @cache
-  static get QUOTES () { return ['\'', '"'] as const; }
+  static get QUOTES () {
+    return ['\'', '"'] as const;
+  }
 
   @cache
   static get SINGLE_TOKENS () {

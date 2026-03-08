@@ -1063,13 +1063,19 @@ class SnowflakeJsonPathTokenizer extends JsonPathTokenizer {
 
 class SnowflakeTokenizer extends Tokenizer {
   @cache
-  static get STRING_ESCAPES () { return ['\\', '\'']; }
+  static get STRING_ESCAPES () {
+    return ['\\', '\''];
+  }
 
   @cache
-  static get HEX_STRINGS (): [string, string][] { return [['x\'', '\''], ['X\'', '\'']]; }
+  static get HEX_STRINGS (): [string, string][] {
+    return [['x\'', '\''], ['X\'', '\'']];
+  }
 
   @cache
-  static get RAW_STRINGS () { return ['$$']; }
+  static get RAW_STRINGS () {
+    return ['$$'];
+  }
 
   @cache
   static get COMMENTS (): TokenPair[] {
@@ -1124,7 +1130,9 @@ class SnowflakeTokenizer extends Tokenizer {
   }
 
   @cache
-  static get VAR_SINGLE_TOKENS () { return new Set(['$']); }
+  static get VAR_SINGLE_TOKENS () {
+    return new Set(['$']);
+  }
 
   @cache
   static get COMMANDS (): Set<TokenType> {
@@ -1580,34 +1588,36 @@ class SnowflakeParser extends Parser {
   }
 
   @cache
-  static get SHOW_PARSERS () { return {
-    'DATABASES': showParser('DATABASES'),
-    'TERSE DATABASES': showParser('DATABASES'),
-    'SCHEMAS': showParser('SCHEMAS'),
-    'TERSE SCHEMAS': showParser('SCHEMAS'),
-    'OBJECTS': showParser('OBJECTS'),
-    'TERSE OBJECTS': showParser('OBJECTS'),
-    'TABLES': showParser('TABLES'),
-    'TERSE TABLES': showParser('TABLES'),
-    'VIEWS': showParser('VIEWS'),
-    'TERSE VIEWS': showParser('VIEWS'),
-    'PRIMARY KEYS': showParser('PRIMARY KEYS'),
-    'TERSE PRIMARY KEYS': showParser('PRIMARY KEYS'),
-    'IMPORTED KEYS': showParser('IMPORTED KEYS'),
-    'TERSE IMPORTED KEYS': showParser('IMPORTED KEYS'),
-    'UNIQUE KEYS': showParser('UNIQUE KEYS'),
-    'TERSE UNIQUE KEYS': showParser('UNIQUE KEYS'),
-    'SEQUENCES': showParser('SEQUENCES'),
-    'TERSE SEQUENCES': showParser('SEQUENCES'),
-    'STAGES': showParser('STAGES'),
-    'COLUMNS': showParser('COLUMNS'),
-    'USERS': showParser('USERS'),
-    'TERSE USERS': showParser('USERS'),
-    'FILE FORMATS': showParser('FILE FORMATS'),
-    'FUNCTIONS': showParser('FUNCTIONS'),
-    'PROCEDURES': showParser('PROCEDURES'),
-    'WAREHOUSES': showParser('WAREHOUSES'),
-  }; }
+  static get SHOW_PARSERS () {
+    return {
+      'DATABASES': showParser('DATABASES'),
+      'TERSE DATABASES': showParser('DATABASES'),
+      'SCHEMAS': showParser('SCHEMAS'),
+      'TERSE SCHEMAS': showParser('SCHEMAS'),
+      'OBJECTS': showParser('OBJECTS'),
+      'TERSE OBJECTS': showParser('OBJECTS'),
+      'TABLES': showParser('TABLES'),
+      'TERSE TABLES': showParser('TABLES'),
+      'VIEWS': showParser('VIEWS'),
+      'TERSE VIEWS': showParser('VIEWS'),
+      'PRIMARY KEYS': showParser('PRIMARY KEYS'),
+      'TERSE PRIMARY KEYS': showParser('PRIMARY KEYS'),
+      'IMPORTED KEYS': showParser('IMPORTED KEYS'),
+      'TERSE IMPORTED KEYS': showParser('IMPORTED KEYS'),
+      'UNIQUE KEYS': showParser('UNIQUE KEYS'),
+      'TERSE UNIQUE KEYS': showParser('UNIQUE KEYS'),
+      'SEQUENCES': showParser('SEQUENCES'),
+      'TERSE SEQUENCES': showParser('SEQUENCES'),
+      'STAGES': showParser('STAGES'),
+      'COLUMNS': showParser('COLUMNS'),
+      'USERS': showParser('USERS'),
+      'TERSE USERS': showParser('USERS'),
+      'FILE FORMATS': showParser('FILE FORMATS'),
+      'FUNCTIONS': showParser('FUNCTIONS'),
+      'PROCEDURES': showParser('PROCEDURES'),
+      'WAREHOUSES': showParser('WAREHOUSES'),
+    };
+  }
 
   @cache
   static get CONSTRAINT_PARSERS (): Partial<Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined>> {
@@ -2192,7 +2202,10 @@ class SnowflakeGenerator extends Generator {
   static JSON_KEY_VALUE_PAIR_SEP = ',';
   static INSERT_OVERWRITE = ' OVERWRITE INTO';
   @cache
-  static get STRUCT_DELIMITER () { return ['(', ')']; }
+  static get STRUCT_DELIMITER () {
+    return ['(', ')'];
+  }
+
   static COPY_PARAMS_ARE_WRAPPED = false;
   static COPY_PARAMS_EQ_REQUIRED = true;
   static STAR_EXCEPT = 'EXCLUDE';
@@ -3190,63 +3203,65 @@ export class Snowflake extends Dialect {
   }
 
   @cache
-  static get TIME_MAPPING () { return {
-    'YYYY': '%Y',
-    'yyyy': '%Y',
-    'YY': '%y',
-    'yy': '%y',
-    'MMMM': '%B',
-    'mmmm': '%B',
-    'MON': '%b',
-    'mon': '%b',
-    'MM': '%m',
-    'mm': '%m',
-    'DD': '%d',
-    'dd': '%-d',
-    'DY': '%a',
-    'dy': '%w',
-    'HH24': '%H',
-    'hh24': '%H',
-    'HH12': '%I',
-    'hh12': '%I',
-    'MI': '%M',
-    'mi': '%M',
-    'SS': '%S',
-    'ss': '%S',
-    'FF': '%f_nine',
-    'ff': '%f_nine',
-    'FF0': '%f_zero',
-    'ff0': '%f_zero',
-    'FF1': '%f_one',
-    'ff1': '%f_one',
-    'FF2': '%f_two',
-    'ff2': '%f_two',
-    'FF3': '%f_three',
-    'ff3': '%f_three',
-    'FF4': '%f_four',
-    'ff4': '%f_four',
-    'FF5': '%f_five',
-    'ff5': '%f_five',
-    'FF6': '%f',
-    'ff6': '%f',
-    'FF7': '%f_seven',
-    'ff7': '%f_seven',
-    'FF8': '%f_eight',
-    'ff8': '%f_eight',
-    'FF9': '%f_nine',
-    'ff9': '%f_nine',
-    'TZHTZM': '%z',
-    'tzhtzm': '%z',
-    'TZH:TZM': '%:z',
-    'tzh:tzm': '%:z',
-    'TZH': '%-z',
-    'tzh': '%-z',
-    '"T"': 'T',
-    'AM': '%p',
-    'am': '%p',
-    'PM': '%p',
-    'pm': '%p',
-  }; }
+  static get TIME_MAPPING () {
+    return {
+      'YYYY': '%Y',
+      'yyyy': '%Y',
+      'YY': '%y',
+      'yy': '%y',
+      'MMMM': '%B',
+      'mmmm': '%B',
+      'MON': '%b',
+      'mon': '%b',
+      'MM': '%m',
+      'mm': '%m',
+      'DD': '%d',
+      'dd': '%-d',
+      'DY': '%a',
+      'dy': '%w',
+      'HH24': '%H',
+      'hh24': '%H',
+      'HH12': '%I',
+      'hh12': '%I',
+      'MI': '%M',
+      'mi': '%M',
+      'SS': '%S',
+      'ss': '%S',
+      'FF': '%f_nine',
+      'ff': '%f_nine',
+      'FF0': '%f_zero',
+      'ff0': '%f_zero',
+      'FF1': '%f_one',
+      'ff1': '%f_one',
+      'FF2': '%f_two',
+      'ff2': '%f_two',
+      'FF3': '%f_three',
+      'ff3': '%f_three',
+      'FF4': '%f_four',
+      'ff4': '%f_four',
+      'FF5': '%f_five',
+      'ff5': '%f_five',
+      'FF6': '%f',
+      'ff6': '%f',
+      'FF7': '%f_seven',
+      'ff7': '%f_seven',
+      'FF8': '%f_eight',
+      'ff8': '%f_eight',
+      'FF9': '%f_nine',
+      'ff9': '%f_nine',
+      'TZHTZM': '%z',
+      'tzhtzm': '%z',
+      'TZH:TZM': '%:z',
+      'tzh:tzm': '%:z',
+      'TZH': '%-z',
+      'tzh': '%-z',
+      '"T"': 'T',
+      'AM': '%p',
+      'am': '%p',
+      'PM': '%p',
+      'pm': '%p',
+    };
+  }
 
   @cache
   static get DATE_PART_MAPPING (): Record<string, string> {
@@ -3259,7 +3274,9 @@ export class Snowflake extends Dialect {
   }
 
   @cache
-  static get PSEUDOCOLUMNS () { return new Set(['LEVEL']); }
+  static get PSEUDOCOLUMNS () {
+    return new Set(['LEVEL']);
+  }
 
   canQuote (identifier: IdentifierExpr, options: { identify?: string | boolean } = {}): boolean {
     const {

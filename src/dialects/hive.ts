@@ -387,11 +387,19 @@ function buildDateAdd (args: Expression[]): TsOrDsAddExpr {
 
 class HiveTokenizer extends Tokenizer {
   @cache
-  static get QUOTES () { return ['\'', '"'] as const; }
+  static get QUOTES () {
+    return ['\'', '"'] as const;
+  }
+
   @cache
-  static get IDENTIFIERS () { return ['`'] as const; }
+  static get IDENTIFIERS () {
+    return ['`'] as const;
+  }
+
   @cache
-  static get STRING_ESCAPES () { return ['\\'] as const; }
+  static get STRING_ESCAPES () {
+    return ['\\'] as const;
+  }
 
   @cache
   static get SINGLE_TOKENS () {

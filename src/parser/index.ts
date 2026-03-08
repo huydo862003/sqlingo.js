@@ -3729,7 +3729,7 @@ export class Parser {
     this.matchRParen(thisExpr);
 
     if (thisExpr instanceof ParenExpr && thisExpr.args.this instanceof AggFuncExpr) {
-      return this.parseWindow(thisExpr)
+      return this.parseWindow(thisExpr);
     }
 
     return thisExpr;

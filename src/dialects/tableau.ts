@@ -26,9 +26,14 @@ import {
 
 export class TableauTokenizer extends Tokenizer {
   @cache
-  static get IDENTIFIERS (): TokenPair[] { return [['[', ']']]; }
+  static get IDENTIFIERS (): TokenPair[] {
+    return [['[', ']']];
+  }
+
   @cache
-  static get QUOTES () { return ['\'', '"']; }
+  static get QUOTES () {
+    return ['\'', '"'];
+  }
 }
 
 export class TableauParser extends Parser {

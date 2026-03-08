@@ -232,7 +232,9 @@ class SQLiteTokenizer extends Tokenizer {
   }
 
   @cache
-  static get COMMANDS () { return new Set([...Array.from(Tokenizer.COMMANDS), TokenType.REPLACE]); }
+  static get COMMANDS () {
+    return new Set([...Array.from(Tokenizer.COMMANDS), TokenType.REPLACE]);
+  }
 }
 
 class SQLiteParser extends Parser {
