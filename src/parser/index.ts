@@ -9966,7 +9966,7 @@ export class Parser {
 
   parseStringAsIdentifier (): IdentifierExpr | undefined {
     const id = this.match(TokenType.STRING) && this.prev?.text;
-    const output = id === undefined ? undefined : toIdentifier(id, { quoted: true });
+    const output = id === false ? undefined : toIdentifier(id, { quoted: true });
     if (output && this.prev) {
       output.updatePositions(this.prev);
     }
