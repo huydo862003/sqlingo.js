@@ -5314,9 +5314,10 @@ export class Parser {
     } = options;
 
     const cte = this.parseWith();
+    let thisExpr: Expression | undefined;
 
     if (cte) {
-      let thisExpr = this.parseStatement();
+      thisExpr = this.parseStatement();
 
       if (!thisExpr) {
         this.raiseError('Failed to parse any statement following CTE');
@@ -5383,7 +5384,7 @@ export class Parser {
       const limit = this.parseLimit(undefined, { top: true });
       const projections = this.parseProjections();
 
-      let thisExpr: SelectExpr = this.expression(
+      thisExpr = this.expression(
         SelectExpr,
         {
           kind,
@@ -5410,9 +5411,8 @@ export class Parser {
       }
 
       thisExpr = this.parseQueryModifiers(thisExpr) as SelectExpr;
-      return parseSetOperation ? this.parseSetOperations(thisExpr) : thisExpr;
     } else if ((table || nested) && this.match(TokenType.L_PAREN)) {
-      const thisExpr = this.parseWrappedSelect({ table });
+      thisExpr = this.parseWrappedSelect({ table });
 
       // We return early here so that the UNION isn't attached to the subquery by the
       // following call to _parse_set_operations, but instead becomes the parent node
@@ -5424,7 +5424,7 @@ export class Parser {
       return select('*').from(from.args.this, { copy: false });
     } else if (this.match(TokenType.SUMMARIZE)) {
       const table = this.match(TokenType.TABLE);
-      const thisExpr = this.parseSelect() || this.parseString() || this.parseTable();
+      thisExpr = this.parseSelect() || this.parseString() || this.parseTable();
       return this.expression(SummarizeExpr, {
         this: thisExpr,
         table,
@@ -5433,7 +5433,7 @@ export class Parser {
       return this.parseDescribe();
     }
 
-    return parseSetOperation ? this.parseSetOperations() : undefined;
+    return parseSetOperation ? this.parseSetOperations(thisExpr) : undefined;
   }
 
   parseRecursiveWithSearch (): RecursiveWithSearchExpr | undefined {
