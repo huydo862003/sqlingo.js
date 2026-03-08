@@ -396,7 +396,7 @@ export enum ExpressionKey {
   GROUPING_SETS = 'groupingsets',
   GROUP_CONCAT = 'groupConcat',
   GT = 'gt',
-  GtE = 'gte',
+  GTE = 'gte',
   HASH_AGG = 'hashAgg',
   HAVING = 'having',
   HAVING_MAX = 'havingMax',

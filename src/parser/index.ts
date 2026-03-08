@@ -11491,11 +11491,13 @@ export class Parser {
     thisExpr: Expression | undefined,
     options: { computedColumn?: boolean } = {},
   ): Expression | undefined {
-    const computedColumn = options?.computedColumn ?? true;
-    let thisResult = thisExpr;
+    const {
+      computedColumn = true,
+    } = options;
+
+    let thisResult: ExpressionValue | undefined = thisExpr;
 
     if (thisResult instanceof ColumnExpr) {
-      assertIsInstanceOf(thisResult.args.this, Expression);
       thisResult = thisResult.args.this;
     }
 
@@ -11547,7 +11549,7 @@ export class Parser {
           ColumnConstraintExpr,
           {
             kind: new ComputedColumnConstraintExpr({
-              this: this.parseDisjunction()!,
+              this: this.parseDisjunction(),
               persisted:
                 this.matchTexts(['STORED', 'VIRTUAL'])
                 && (this.prev?.text ?? '').toUpperCase() === 'STORED',
@@ -11566,7 +11568,7 @@ export class Parser {
     }
 
     if (!kind && constraints.length === 0) {
-      return thisResult;
+      return thisResult as Expression | undefined;
     }
 
     return this.expression(ColumnDefExpr, {
@@ -11678,7 +11680,9 @@ export class Parser {
   }
 
   parseFunctionArgs (options: { alias?: boolean } = {}): Expression[] {
-    const alias = options?.alias ?? false;
+    const {
+      alias = false,
+    } = options;
     return this.parseCsv(() => this.parseLambda({ alias }));
   }
 
@@ -11854,7 +11858,7 @@ export class Parser {
       if ([...this._constructor.KEY_VALUE_DEFINITIONS.keys()].some((def) => e instanceof def)) {
         if (e instanceof AliasExpr) {
           e = this.expression(PropertyEqExpr, {
-            this: e.alias,
+            this: e.args.alias,
             expression: e.args.this,
           });
         }
@@ -11862,15 +11866,13 @@ export class Parser {
         if (!(e instanceof PropertyEqExpr)) {
           const eThis = e.args.this;
           e = this.expression(PropertyEqExpr, {
-            this: parseMap ? e.args.this : toIdentifier(typeof eThis === 'object' && 'name' in eThis ? eThis.name : ''),
+            this: parseMap ? e.args.this : toIdentifier(eThis instanceof Expression ? eThis.name : eThis?.toString()),
             expression: e.args.expression,
           });
         }
 
         if (e.args.this instanceof ColumnExpr) {
-          const eThisInner = e.args.this.args.this;
-          assertIsInstanceOf(eThisInner, Expression);
-          e.args.this.replace(eThisInner);
+          e.args.this.replace(e.args.this.args.this);
         }
       } else {
         e = this.toPropEq(e, index);

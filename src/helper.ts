@@ -2,13 +2,13 @@
 
 import { DateTime } from 'luxon';
 import type {
-  Expression,
   ExpressionValue,
   ExpressionValueList,
   ExpressionOrString,
   ExpressionOrStringList,
 } from './expressions/expressions';
 import {
+  Expression,
   DataTypeExpr, AddExpr, literal,
   DataTypeExprKind,
 } from './expressions/expressions';
@@ -860,4 +860,19 @@ export function applyIndexOffset (
   }
 
   return exprs;
+}
+
+// Added (not in sqlglot)
+
+export function mapOnExpression<I extends Expression, O extends Expression> (value: ExpressionValue<I> | undefined, expressionHandler: ((expression: I) => ExpressionValue<O>) | 'name' | 'sql'): ExpressionValue<O> | undefined {
+  if (value instanceof Expression) {
+    if (expressionHandler === 'name') {
+      return value.name;
+    }
+    if (expressionHandler === 'sql') {
+      return value.sql();
+    }
+    return expressionHandler(value);
+  }
+  return value;
 }

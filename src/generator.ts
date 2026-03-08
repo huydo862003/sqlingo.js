@@ -531,7 +531,7 @@ import {
 } from './tokens';
 import { simplify } from './optimizer/simplify';
 import {
-  applyIndexOffset, csv, nameSequence,
+  applyIndexOffset, csv, mapOnExpression, nameSequence,
   seqGet,
 } from './helper';
 import { ALL_JSON_PATH_PARTS } from './jsonpath/expressions';
@@ -1956,7 +1956,7 @@ export class Generator {
    * @param comment - Whether to include comments (default: true)
    */
   sql (
-    expression?: Expression | string | number | boolean,
+    expression?: ExpressionValue,
     key?: string,
     options: { comment?: boolean } = {},
   ): string {
@@ -5988,16 +5988,14 @@ export class Generator {
   }
 
   functionFallbackSql (expression: FuncExpr | JsonExtractExpr): string {
-    const args: (Expression | string)[] = [];
+    const args: (ExpressionValue | undefined)[] = [];
 
     for (const key of expression._constructor.availableArgs) {
       const argValue = expression.getArgKey(key);
 
       if (Array.isArray(argValue)) {
-        for (const value of argValue) {
-          if (value instanceof Expression || typeof value === 'string') args.push(value);
-        }
-      } else if ((argValue !== undefined && argValue instanceof Expression) || typeof argValue === 'string') {
+        args.push(...argValue);
+      } else {
         args.push(argValue);
       }
     }
@@ -6029,7 +6027,7 @@ export class Generator {
   }
 
   formatArgs (
-    args: (string | number | boolean | Expression | undefined)[],
+    args: (ExpressionValue | undefined)[],
     options: { sep?: string } = {},
   ): string {
     const { sep = ', ' } = options;
@@ -6700,7 +6698,12 @@ export class Generator {
       (expression.args.expressions ?? []).map((e) => {
         if (e instanceof PropertyEqExpr) {
           const thisArg = e.args.this;
-          const aliasName = (thisArg as Expression | undefined)?.isString ? e.name : isInstanceOf(thisArg, IdentifierExpr) ? thisArg : typeof thisArg === 'string' ? thisArg : undefined;
+          const aliasName = mapOnExpression(thisArg, (expr) => {
+            if (expr instanceof IdentifierExpr) {
+              return expr;
+            }
+            return expr.name;
+          });
           const exprArg = e.args.expression;
           return alias(
             (exprArg instanceof Expression || typeof exprArg === 'string') ? exprArg : '',

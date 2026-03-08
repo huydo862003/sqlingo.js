@@ -8330,6 +8330,8 @@ export type ColumnExprArgs = Merge<[
 export class ColumnExpr extends ConditionExpr {
   static key = ExpressionKey.COLUMN;
 
+  static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'table',
@@ -14121,7 +14123,7 @@ export type GteExprArgs = Merge<[
 ]>;
 
 export class GteExpr extends multiInherit(BinaryExpr, PredicateExpr) {
-  static key = ExpressionKey.GtE;
+  static key = ExpressionKey.GTE;
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -15670,7 +15672,7 @@ export type ArrayExprArgs = Merge<[
   {
     expressions?: (string | Expression)[];
     bracketNotation?: Expression;
-    structNameInheritance?: boolean | string;
+    structNameInheritance?: boolean;
   },
 ]>;
 
@@ -22278,6 +22280,8 @@ export class JsonArrayAppendExpr extends FuncExpr {
 }
 
 export type JsonArrayContainsExprArgs = Merge<[
+  FuncExprArgs,
+  PredicateExprArgs,
   BinaryExprArgs,
   {
     this?: Expression;

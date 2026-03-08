@@ -111,8 +111,8 @@ export function multiInherit<
       registeredTargets.set(BaseClass, targets);
       Object.defineProperty(BaseClass, Symbol.hasInstance, {
         value (instance: unknown) {
-          if (BaseClass.prototype.isPrototypeOf(Object(instance))) return true;
-          return registeredTargets.get(BaseClass)?.has((instance as any)?.constructor) ?? false;
+          if (this.prototype.isPrototypeOf(Object(instance))) return true;
+          return registeredTargets.get(this)?.has((instance as any)?.constructor) ?? false;
         },
         configurable: true,
       });
