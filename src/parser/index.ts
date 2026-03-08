@@ -10134,8 +10134,9 @@ export class Parser {
       value:
         (this.matchTextSeq('UNBOUNDED') && 'UNBOUNDED')
         || (this.matchTextSeq(['CURRENT', 'ROW']) && 'CURRENT ROW')
-        || this.parseBitwise(),
-      side: this.matchTexts(this._constructor.WINDOW_SIDES) && this.prev?.text,
+        || this.parseBitwise()
+        || undefined,
+      side: (this.matchTexts(this._constructor.WINDOW_SIDES) || undefined) && this.prev?.text,
     };
   }
 
