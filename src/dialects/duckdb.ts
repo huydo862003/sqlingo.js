@@ -326,6 +326,7 @@ import {
   TableExpr,
   ToBase64Expr,
   PosexplodeExpr,
+  JoinExprKind,
 } from '../expressions';
 import {
   seqGet, isDateUnit,
@@ -4014,8 +4015,8 @@ class DuckDBGenerator extends Generator {
   joinSql (expression: JoinExpr): string {
     const isInnerOuter = [
       '',
-      'INNER',
-      'OUTER',
+      JoinExprKind.INNER,
+      JoinExprKind.OUTER,
     ].includes(expression.args.kind ?? '');
 
     if (

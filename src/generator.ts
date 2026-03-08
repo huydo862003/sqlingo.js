@@ -3902,14 +3902,14 @@ export class Generator {
     if (!genClass.SEMI_ANTI_JOIN_WITH_SIDE && (expression.args.kind === JoinExprKind.SEMI || expression.args.kind === JoinExprKind.ANTI)) {
       side = undefined;
     } else {
-      side = expression.args.side;
+      side = expression.args.side?.toUpperCase();
     }
 
     const opSql = [
       expression.args.method,
       expression.args.global ? 'GLOBAL' : undefined,
       side,
-      expression.args.kind,
+      expression.args.kind?.toUpperCase(),
       (expression.args.hint && genClass.JOIN_HINTS) ? expression.args.hint : undefined,
       (expression.args.directed && genClass.DIRECTED_JOINS) ? 'DIRECTED' : undefined,
     ].filter((op) => op).join(' ');

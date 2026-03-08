@@ -5724,29 +5724,25 @@ export class Parser {
           const [key, expression] = parser?.call(this) || [];
 
           if (key !== undefined && expression !== undefined) {
-            if (key in thisExpr.args && thisExpr.args[key as keyof typeof thisExpr.args]) {
+            if (thisExpr.getArgKey(key)) {
               this.raiseError(
                 `Found multiple '${modifierToken.text.toUpperCase()}' clauses`,
                 modifierToken,
               );
             }
 
-            if (Array.isArray(expression)) {
-              this.raiseError('Unexpected array expression', this.curr);
-            }
-            const expr = expression as Expression;
-
-            thisExpr.setArgKey(key, expr);
+            thisExpr.setArgKey(key, expression);
             if (key === 'limit') {
-              const offset = (expr as LimitExpr).args.offset;
-              expr.setArgKey('offset', undefined);
+              const limitExpression = expression as LimitExpr;
+              const offset = (limitExpression as LimitExpr).args.offset;
+              limitExpression.setArgKey('offset', undefined);
 
               if (offset) {
-                const offsetExpr = new OffsetExpr({ expression: offset as number | Expression });
+                const offsetExpr = new OffsetExpr({ expression: offset });
                 thisExpr.setArgKey('offset', offsetExpr);
 
-                const limitByExpressions = (expr as LimitExpr).args.expressions;
-                expr.setArgKey('expressions', undefined);
+                const limitByExpressions = (expression as LimitExpr).args.expressions;
+                limitExpression.setArgKey('expressions', undefined);
                 offsetExpr.setArgKey('expressions', limitByExpressions);
               }
             }

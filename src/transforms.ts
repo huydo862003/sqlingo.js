@@ -256,8 +256,8 @@ export function eliminateDistinctOn (expression: Expression): Expression {
     && expression.args.distinct
     && expression.args.distinct.getArgKey('on') instanceof TupleExpr
   ) {
-    const rowNumberAlias = findNewName(expression.namedSelects, '_row_number');
-    const distinctCols = (expression.args.distinct.getArgKey('on') as TupleExpr).args.expressions;
+    const rowNumberWindowAlias = findNewName(expression.namedSelects, '_row_number');
+    const distinctCols = (expression.args.distinct.pop().getArgKey('on') as TupleExpr).args.expressions;
 
     const window = new WindowExpr({
       this: new RowNumberExpr({}),
@@ -271,14 +271,14 @@ export function eliminateDistinctOn (expression: Expression): Expression {
       window.setArgKey('order', new OrderExpr({ expressions: distinctCols?.map((c) => c instanceof Expression ? c.copy() : c) ?? [] }));
     }
 
-    expression.select(alias(window, rowNumberAlias), { copy: false });
+    expression.select(alias(window, rowNumberWindowAlias), { copy: false });
 
-    let newSelects: (ExpressionOrString | undefined)[] = [];
-    const takenNames = [rowNumberAlias];
+    let newSelects: (ExpressionValue | undefined)[] = [];
+    const takenNames = [rowNumberWindowAlias];
 
     for (const select of expression.selects.slice(0, -1)) {
       if (select.isStar) {
-        newSelects = [new StarExpr({})];
+        newSelects = [new StarExpr()];
         break;
       }
       let current: ExpressionValue | undefined = select;
@@ -292,12 +292,12 @@ export function eliminateDistinctOn (expression: Expression): Expression {
         ));
       }
       takenNames.push(current.outputName);
-      newSelects.push(current.getArgKey('alias') as Expression | string | undefined);
+      newSelects.push(current.getArgKey('alias') as ExpressionValue | undefined);
     }
 
     return select(newSelects)
       .from(expression.subquery('_t', { copy: false }))
-      .where(new ColumnExpr({ this: rowNumberAlias }).eq(1));
+      .where(new ColumnExpr({ this: rowNumberWindowAlias }).eq(1));
   }
   return expression;
 }
