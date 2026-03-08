@@ -191,7 +191,7 @@ import {
   Generator, unsupportedArgs,
 } from '../generator';
 import {
-  ensureIterable,
+  ensureList,
   isInt,
   seqGet,
   suggestClosestMatchAndFail, toBool,
@@ -443,22 +443,18 @@ export class Dialect {
 
   static ORIGINAL_UNESCAPED_SEQUENCES: Record<string, string> = {};
 
-  static #UNESCAPED_SEQUENCES = new WeakMap<typeof Dialect, Record<string, string>>();
-
+  @cache
   static get UNESCAPED_SEQUENCES (): Record<string, string> {
-    let cached = this.#UNESCAPED_SEQUENCES.get(this);
-    if (!cached) {
-      if (this.STRINGS_SUPPORT_ESCAPED_SEQUENCES || this.BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES) {
-        cached = {
-          ...BASE_UNESCAPED_SEQUENCES,
-          ...this.ORIGINAL_UNESCAPED_SEQUENCES,
-        };
-      } else {
-        cached = this.ORIGINAL_UNESCAPED_SEQUENCES;
-      }
-      this.#UNESCAPED_SEQUENCES.set(this, cached);
+    let res;
+    if (this.STRINGS_SUPPORT_ESCAPED_SEQUENCES || this.BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES) {
+      res = {
+        ...BASE_UNESCAPED_SEQUENCES,
+        ...this.ORIGINAL_UNESCAPED_SEQUENCES,
+      };
+    } else {
+      res = this.ORIGINAL_UNESCAPED_SEQUENCES;
     }
-    return cached;
+    return res;
   }
 
   /**
@@ -1848,7 +1844,7 @@ export function varMapSql (
 
   if (!(keys instanceof ArrayExpr) || !(values instanceof ArrayExpr)) {
     this.unsupported('Cannot convert array columns into map.');
-    return this.func(mapFuncName, [...ensureIterable(keys), ...ensureIterable(values)] as (Expression | string | undefined)[]);
+    return this.func(mapFuncName, [...ensureList(keys), ...ensureList(values)] as (Expression | string | undefined)[]);
   }
 
   const args: string[] = [];

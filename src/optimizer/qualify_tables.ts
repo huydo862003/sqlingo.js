@@ -20,7 +20,7 @@ import {
   Dialect, type DialectType,
 } from '../dialects/dialect';
 import {
-  ensureIterable, nameSequence, seqGet,
+  ensureList, nameSequence, seqGet,
 } from '../helper';
 import { normalizeIdentifiers } from './normalize_identifiers';
 import {
@@ -221,11 +221,11 @@ export function qualifyTables<E extends Expression> (
 
           if (!tableAlias) {
             const defaultCols = dialect._constructor.DEFAULT_FUNCTIONS_COLUMN_NAMES.get(funcTypeName);
-            functionColumns = defaultCols ? Array.from(ensureIterable(defaultCols)) : [];
+            functionColumns = defaultCols ? Array.from(ensureList(defaultCols)) : [];
           } else if (tableAlias instanceof TableAliasExpr && tableAlias.args.columns?.length) {
             functionColumns = tableAlias.columns as IdentifierExpr[];
           } else if (dialect._constructor.DEFAULT_FUNCTIONS_COLUMN_NAMES.has(funcTypeName)) {
-            functionColumns = Array.from(ensureIterable(source.aliasOrName));
+            functionColumns = Array.from(ensureList(source.aliasOrName));
             source.setArgKey('alias', undefined);
             sourceName = '';
           }

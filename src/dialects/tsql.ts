@@ -145,7 +145,7 @@ import {
   DropExprKind,
 } from '../expressions';
 import {
-  ensureIterable, seqGet,
+  ensureList, seqGet,
 } from '../helper';
 import {
   eliminateDistinctOn, eliminateQualify, eliminateSemiAndAntiJoins, preprocess, unnestGenerateDateArrayUsingRecursiveCte,
@@ -1092,7 +1092,7 @@ export class TSQLParser extends Parser {
     let thisNode: ExpressionValue | undefined;
     if (this.matchTexts(['CLUSTERED', 'NONCLUSTERED'])) {
       const parsers = this._constructor.CONSTRAINT_PARSERS;
-      thisNode = seqGet(ensureIterable(parsers[this.prev?.text.toUpperCase() ?? '']?.call(this)), 0) as ExpressionValue;
+      thisNode = seqGet(ensureList(parsers[this.prev?.text.toUpperCase() ?? '']?.call(this)), 0) as ExpressionValue;
     } else {
       thisNode = this.parseSchema({ this: this.parseIdVar({ anyToken: false }) }) ?? new VarExpr({});
     }

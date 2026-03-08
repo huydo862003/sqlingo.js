@@ -44,7 +44,7 @@ import {
 } from '../port_internals';
 import { OptimizeError } from '../errors';
 import {
-  ensureIterable, findNewName, seqGet,
+  ensureList, findNewName, seqGet,
 } from '../helper';
 
 /**
@@ -1223,7 +1223,7 @@ export function findInScope (
   const { bfs = true } = options;
 
   for (const node of walkInScope(expression, { bfs })) {
-    for (const ExprType of ensureIterable(expressionTypes)) {
+    for (const ExprType of ensureList(expressionTypes)) {
       if (node instanceof ExprType) {
         return node;
       }

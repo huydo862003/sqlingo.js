@@ -97,36 +97,23 @@ export function expressionValueListToOrStringList<E extends Expression = Express
   return values.map(expressionValueToOrString) as ExpressionOrStringList<E>;
 }
 
-/**
- * Ensures a value is iterable.
- *
- * @typeParam T - The element type
- * @param value - A single value, iterable, or undefined
- * @returns The iterable as-is, a single-element array, or an empty array if undefined
- *
- * @example
- * ```ts
- * ensureIterable(5); // [5]
- * ensureIterable([1, 2]); // [1, 2]
- * ensureIterable(new Set([1, 2])); // Set {1, 2}
- * ensureIterable(undefined); // []
- * ```
- *
- */
-export function ensureIterable<T> (value?: T | Iterable<T>): Iterable<T> {
+export function ensureList<T extends Expression> (value?: T): T[];
+export function ensureList<T> (value?: T | Iterable<T>): T[];
+export function ensureList<T> (value?: T | Iterable<T>): T[] {
   if (value === undefined) {
     return [];
   }
+  if (value instanceof Expression) {
+    return [value];
+  }
   if (typeof value !== 'string' && isIterable<T>(value)) {
-    return value;
+    return [...value];
   }
   return [value as T];
 }
 
 /**
  * Ensures a value is iterable.
- *
- * Similar to ensureIterable but doesn't handle undefined.
  *
  * @typeParam T - The element type
  * @param value - A single value or iterable
@@ -139,7 +126,11 @@ export function ensureIterable<T> (value?: T | Iterable<T>): Iterable<T> {
  * ```
  *
  */
-export function ensureCollection<T> (value: T | Iterable<T>): Iterable<T> {
+export function ensureCollection<T> (value?: T | Iterable<T>): Iterable<T> {
+  if (value === undefined) {
+    return [];
+  }
+
   if (typeof value !== 'string' && isIterable<T>(value)) {
     return value;
   }

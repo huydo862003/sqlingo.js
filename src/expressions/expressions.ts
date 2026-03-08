@@ -6,7 +6,7 @@ import {
 } from '../dialects/dialect';
 import { Token } from '../tokens';
 import {
-  ensureIterable, splitNumWords,
+  ensureList, splitNumWords,
 } from '../helper';
 import {
   assertIsInstanceOf, filterInstanceOf, isInstanceOf, narrowInstanceOf, isIterable, enumFromString,
@@ -379,7 +379,7 @@ export class Expression implements
     if (!this._type) {
       return false;
     }
-    return this._type.isType(ensureIterable(dtypes));
+    return this._type.isType(ensureList(dtypes));
   }
 
   /**
@@ -651,7 +651,7 @@ export class Expression implements
     expressionTypes: (new (args: any) => T) | Readonly<Iterable<(new (args: any) => T)>>,
     options?: { bfs?: boolean },
   ): Generator<T> {
-    const types = Array.from(ensureIterable(expressionTypes));
+    const types = Array.from(ensureList(expressionTypes));
 
     const bfs = options?.bfs ?? true;
     for (const expression of this.walk({ bfs })) {
@@ -1070,7 +1070,7 @@ export class Expression implements
     const {
       copy = true, wrap = true, ...restOptions
     } = options;
-    const expressionList = Array.from(ensureIterable(expressions));
+    const expressionList = Array.from(ensureList(expressions));
     return and([this, ...expressionList] as (string | Expression | undefined)[], {
       ...restOptions,
       copy,
@@ -1109,7 +1109,7 @@ export class Expression implements
     const {
       copy = true, wrap = true, ...restOptions
     } = options;
-    const expressionList = Array.from(ensureIterable(expressions));
+    const expressionList = Array.from(ensureList(expressions));
     return or([this, ...expressionList] as (string | Expression | undefined)[], {
       ...restOptions,
       copy,
@@ -1382,7 +1382,7 @@ export class Expression implements
       query: subquery,
       unnest: unnest
         ? new UnnestExpr({
-          expressions: Array.from(ensureIterable(unnest)).map((e) => maybeParse(e as ExpressionValue, {
+          expressions: Array.from(ensureList(unnest)).map((e) => maybeParse(e as ExpressionValue, {
             ...restOptions,
             copy,
           })),
@@ -1896,7 +1896,7 @@ export class QueryExpr extends Expression {
     const {
       append = true, copy = true, ...restOptions
     } = options;
-    const expressionList = Array.from(ensureIterable(expressions)) as (string | Expression | undefined)[];
+    const expressionList = Array.from(ensureList(expressions)) as (string | Expression | undefined)[];
     return applyChildListBuilder(expressionList, {
       instance: this,
       arg: 'order',
@@ -1995,7 +1995,7 @@ export class QueryExpr extends Expression {
     const {
       append = true, copy = true, ...restOptions
     } = options;
-    const processedExpressions = Array.from(ensureIterable(expressions))
+    const processedExpressions = Array.from(ensureList(expressions))
       .filter((expr): expr is string | Expression => typeof expr === 'string' || expr instanceof Expression)
       .map((expr): string | Expression | undefined =>
         expr instanceof WhereExpr
@@ -2083,7 +2083,7 @@ export class QueryExpr extends Expression {
       [index: string]: unknown;
     } = {},
   ): UnionExpr | undefined {
-    return union([this, ...(expressions !== undefined ? ensureIterable<ExpressionValue>(expressions) : [])], {
+    return union([this, ...(expressions !== undefined ? ensureList<ExpressionValue>(expressions) : [])], {
       ...options,
       distinct: options.distinct ?? true,
     });
@@ -2112,7 +2112,7 @@ export class QueryExpr extends Expression {
       [index: string]: unknown;
     } = {},
   ): IntersectExpr | undefined {
-    return intersect([this, ...ensureIterable<ExpressionOrString>(expressions)], {
+    return intersect([this, ...ensureList<ExpressionOrString>(expressions)], {
       ...options,
       distinct: options.distinct ?? true,
     });
@@ -2141,7 +2141,7 @@ export class QueryExpr extends Expression {
       [index: string]: unknown;
     } = {},
   ): ExceptExpr | undefined {
-    return except([this, ...(expressions !== undefined ? Array.from(ensureIterable<ExpressionValue>(expressions)) : [])], {
+    return except([this, ...(expressions !== undefined ? Array.from(ensureList<ExpressionValue>(expressions)) : [])], {
       ...options,
       distinct: options.distinct ?? true,
     });
@@ -3772,7 +3772,7 @@ export class DeleteExpr extends DmlExpr {
     const {
       append = true, copy = true, ...restOptions
     } = options;
-    return applyConjunctionBuilder(Array.from(ensureIterable(expressions)) as (string | Expression | undefined)[], {
+    return applyConjunctionBuilder(Array.from(ensureList(expressions)) as (string | Expression | undefined)[], {
       instance: this,
       arg: 'where',
       into: WhereExpr,
@@ -5033,7 +5033,7 @@ export class JoinExpr extends Expression {
     const {
       append, dialect, copy, ...restOptions
     } = options;
-    const expressionList = Array.from(ensureIterable(expressions)) as (string | Expression | undefined)[];
+    const expressionList = Array.from(ensureList(expressions)) as (string | Expression | undefined)[];
     const join = applyConjunctionBuilder(expressionList, {
       instance: this,
       arg: 'on',
@@ -5077,7 +5077,7 @@ export class JoinExpr extends Expression {
     const {
       append, dialect, copy, ...restOptions
     } = options;
-    const expressionList = Array.from(ensureIterable(expressions)) as (string | Expression | undefined)[];
+    const expressionList = Array.from(ensureList(expressions)) as (string | Expression | undefined)[];
     const join = applyListBuilder(expressionList, {
       instance: this,
       arg: 'using',
@@ -5708,7 +5708,7 @@ export class TupleExpr extends Expression {
         : undefined,
       unnest: unnest
         ? new UnnestExpr({
-          expressions: Array.from(ensureIterable(unnest)).map((e) => maybeParse(e as ExpressionValue, {
+          expressions: Array.from(ensureList(unnest)).map((e) => maybeParse(e as ExpressionValue, {
             ...restOptions,
             copy,
           })),
@@ -6674,7 +6674,7 @@ export class DataTypeExpr extends Expression {
     const checkNullable = options?.checkNullable ?? false;
     const selfIsNullable = this.args.nullable;
 
-    for (const dtype of ensureIterable(dtypes)) {
+    for (const dtype of ensureList(dtypes)) {
       const otherType = DataTypeExpr.build(dtype, {
         copy: false,
         udt: true,
@@ -11608,7 +11608,7 @@ export class SetOperationExpr extends QueryExpr {
     const {
       copy = true, ...restOptions
     } = options;
-    const expressionList = Array.from(ensureIterable(expressions)) as (string | Expression | undefined)[];
+    const expressionList = Array.from(ensureList(expressions)) as (string | Expression | undefined)[];
     const self = maybeCopy(this, copy);
     const leftSide = self.args.this;
     assertIsInstanceOf(leftSide, QueryExpr);
@@ -11784,7 +11784,7 @@ export class UpdateExpr extends DmlExpr {
     const {
       append = true, dialect, copy = true,
     } = options;
-    const expressionList = Array.from(ensureIterable(expressions)) as (string | Expression | undefined)[];
+    const expressionList = Array.from(ensureList(expressions)) as (string | Expression | undefined)[];
     return applyListBuilder(expressionList, {
       instance: this,
       arg: 'expressions',
@@ -12076,7 +12076,7 @@ export class SelectExpr extends QueryExpr {
     const {
       append = true, dialect, copy = true, ...restOptions
     } = options;
-    const expressionList = Array.from(ensureIterable(expressions)) as (string | Expression | undefined)[];
+    const expressionList = Array.from(ensureList(expressions)) as (string | Expression | undefined)[];
     if (expressionList.length === 0) {
       return copy ? (this.copy() as this) : this;
     }
@@ -12373,7 +12373,7 @@ export class SelectExpr extends QueryExpr {
 
     // Set ON condition
     if (on) {
-      const onExpr = and(Array.from(ensureIterable<ExpressionValue>(on)), {
+      const onExpr = and(Array.from(ensureList<ExpressionValue>(on)), {
         dialect,
         copy,
       });
@@ -12382,7 +12382,7 @@ export class SelectExpr extends QueryExpr {
 
     // Set USING
     if (usingOpt) {
-      join = applyListBuilder(Array.from(ensureIterable(usingOpt)) as (string | Expression | undefined)[], {
+      join = applyListBuilder(Array.from(ensureList(usingOpt)) as (string | Expression | undefined)[], {
         instance: join,
         arg: 'using',
         append,
@@ -12588,7 +12588,7 @@ export class SelectExpr extends QueryExpr {
     const {
       dialect, copy = true,
     } = options;
-    const hints = _hints !== undefined ? Array.from(ensureIterable<ExpressionValue>(_hints)) : [];
+    const hints = _hints !== undefined ? Array.from(ensureList<ExpressionValue>(_hints)) : [];
     const hintExprs = hints.map((h) =>
       maybeParse(h, {
         dialect,
@@ -30280,7 +30280,7 @@ export function union (
     [key: string]: unknown;
   } = {},
 ): UnionExpr | undefined {
-  const expressionList = Array.from(ensureIterable(expressions)).filter((e): e is string | Expression => e !== undefined);
+  const expressionList = Array.from(ensureList(expressions)).filter((e): e is string | Expression => e !== undefined);
   if (expressionList.length < 2) {
     throw new Error('At least two expressions are required by `union`.');
   }
@@ -30311,7 +30311,7 @@ export function intersect (
     [key: string]: unknown;
   } = {},
 ): IntersectExpr | undefined {
-  const expressionList = Array.from(ensureIterable(expressions)).filter((e): e is string | Expression => e !== undefined);
+  const expressionList = Array.from(ensureList(expressions)).filter((e): e is string | Expression => e !== undefined);
   if (expressionList.length < 2) {
     throw new Error('At least two expressions are required by `intersect`.');
   }
@@ -30342,7 +30342,7 @@ export function except (
     [key: string]: unknown;
   } = {},
 ): ExceptExpr | undefined {
-  const expressionList = Array.from(ensureIterable(expressions)).filter((e): e is string | Expression => e !== undefined);
+  const expressionList = Array.from(ensureList(expressions)).filter((e): e is string | Expression => e !== undefined);
   if (expressionList.length < 2) {
     throw new Error('At least two expressions are required by `except`.');
   }
@@ -30603,7 +30603,7 @@ export function merge (
     into, using: usingExpr, on, returning, dialect, copy = true, ...restOptions
   } = options;
 
-  const whenExprs = _whenExprs !== undefined ? Array.from(ensureIterable<ExpressionOrString>(_whenExprs)) : [];
+  const whenExprs = _whenExprs !== undefined ? Array.from(ensureList<ExpressionOrString>(_whenExprs)) : [];
 
   const expressions: WhenExpr[] = [];
   for (const whenExpr of whenExprs) {
@@ -31069,7 +31069,7 @@ function applyChildListBuilder<ArgT extends Expression, IntoT extends Expression
   const parsed: Expression[] = [];
   const properties: Record<string, unknown> = initialProperties || {};
 
-  const expressionList = ensureIterable(expressions);
+  const expressionList = ensureList(expressions);
   for (const expression of expressionList) {
     if (expression === undefined) {
       continue;
@@ -31147,7 +31147,7 @@ function applyListBuilder<ArgT extends Expression, RetT extends Expression> (
 
   const inst = maybeCopy(instance, copy);
 
-  const expressionList = Array.from(ensureIterable(expressions));
+  const expressionList = Array.from(ensureList(expressions));
   const parsedExpressions = expressionList
     .filter((expr) => expr !== undefined)
     .map((expr) =>
@@ -31199,7 +31199,7 @@ function applyConjunctionBuilder<E extends Expression> (
   } = options;
 
   // Filter out undefined and empty strings
-  const expressionList = Array.from(ensureIterable(expressions));
+  const expressionList = Array.from(ensureList(expressions));
   const filteredExpressions = expressionList.filter(
     (expr) => expr !== undefined && expr !== '',
   );
@@ -31329,7 +31329,7 @@ export function combine<T extends ConnectorExpr> (
     dialect, copy = true, wrap: shouldWrap = true, ...opts
   } = options;
 
-  const expressionList = Array.from(ensureIterable(expressions));
+  const expressionList = Array.from(ensureList(expressions));
   const conditions = expressionList
     .filter((expr) => expr !== undefined && expr !== '')
     .map((expr) => maybeParse(expr as ExpressionValue, {
@@ -31550,7 +31550,7 @@ export function array (
     copy = true, dialect, ...opts
   } = options;
 
-  const expressionList = Array.from(ensureIterable(expressions));
+  const expressionList = Array.from(ensureList(expressions));
   return new ArrayExpr({
     expressions: expressionList.map((expr) => maybeParse(expr as ExpressionValue, {
       copy,
@@ -31585,7 +31585,7 @@ export function tuple (
     copy = true, dialect, ...opts
   } = options;
 
-  const expressionList = Array.from(ensureIterable(expressions));
+  const expressionList = Array.from(ensureList(expressions));
   return new TupleExpr({
     expressions: expressionList.map((expr) => maybeParse(expr as ExpressionValue, {
       copy,

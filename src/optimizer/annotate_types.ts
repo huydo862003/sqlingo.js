@@ -54,7 +54,7 @@ import {
   Dialect, type DialectType,
 } from '../dialects/dialect';
 import {
-  ensureIterable, isDateUnit, isIsoDate, isIsoDatetime, seqGet,
+  ensureList, isDateUnit, isIsoDate, isIsoDatetime, seqGet,
 } from '../helper';
 import {
   ensureSchema, MappingSchema, type Schema,
@@ -839,7 +839,7 @@ export class TypeAnnotator {
 
       if (typeof arg === 'string') {
         const val = (expression.args as Record<string, unknown>)[arg];
-        expressions = ensureIterable(val as Expression | Expression[] | undefined) as Expression[];
+        expressions = ensureList(val as Expression | Expression[] | undefined) as Expression[];
       } else if (Array.isArray(arg)) {
         expressions = arg;
       } else {

@@ -466,7 +466,7 @@ import type {
 } from '../expressions';
 import { formatTime } from '../time';
 import {
-  applyIndexOffset, ensureIterable, seqGet,
+  applyIndexOffset, ensureList, seqGet,
 } from '../helper';
 import {
   Dialect, type DialectType, NullOrdering,
@@ -3562,7 +3562,7 @@ export class Parser {
     sql?: string,
   ): (Expression | undefined)[] {
     const errors: ParseError[] = [];
-    const types = ensureIterable(expressionTypes);
+    const types = ensureList(expressionTypes);
 
     for (const expressionType of types) {
       const parser = typeof expressionType === 'string' ? this._constructor.EXPRESSION_PARSERS[expressionType] : expressionType;
@@ -4229,7 +4229,7 @@ export class Parser {
       if (!prop) {
         break;
       }
-      for (const p of [...ensureIterable<Expression>(prop)]) {
+      for (const p of [...ensureList<Expression>(prop)]) {
         properties.push(p);
       }
     }
@@ -5050,7 +5050,7 @@ export class Parser {
       );
     } else {
       if (this.matchSet(new Set([TokenType.FIRST, TokenType.ALL]))) {
-        comments.push(...ensureIterable(this.prevComments));
+        comments.push(...ensureList(this.prevComments));
         return this.parseMultitableInserts(comments);
       }
 
@@ -5059,7 +5059,7 @@ export class Parser {
       }
 
       this.match(TokenType.INTO);
-      comments.push(...ensureIterable(this.prevComments));
+      comments.push(...ensureList(this.prevComments));
       this.match(TokenType.TABLE);
       isFunction = this.match(TokenType.FUNCTION);
 
@@ -6920,7 +6920,7 @@ export class Parser {
 
     if (this.match(TokenType.L_PAREN)) {
       if (this.match(TokenType.ANY)) {
-        exprs = [...ensureIterable<Expression>(new PivotAnyExpr({ this: this.parseOrder() }))];
+        exprs = [...ensureList<Expression>(new PivotAnyExpr({ this: this.parseOrder() }))];
       } else {
         exprs = this.parseCsv(parseAliasedExpression);
       }
@@ -8116,7 +8116,7 @@ export class Parser {
           CoalesceExpr,
           {
             this: thisExpr,
-            expressions: ensureIterable(this.parseTerm()),
+            expressions: ensureList(this.parseTerm()),
           },
         );
       } else if (this.matchPair(TokenType.LT, TokenType.LT)) {
@@ -9184,7 +9184,7 @@ export class Parser {
 
   matchTexts (texts: string | string[] | Set<string>, options: { advance?: boolean } = {}): boolean {
     const { advance = true } = options;
-    const textsArray = Array.from(texts instanceof Set ? texts : ensureIterable(texts));
+    const textsArray = Array.from(texts instanceof Set ? texts : ensureList(texts));
     if (
       this.curr
       && this.curr.tokenType !== TokenType.STRING
@@ -9254,7 +9254,7 @@ export class Parser {
 
   matchTextSeq (texts: string | string[], options: { advance?: boolean } = {}): boolean {
     const { advance = true } = options;
-    const textArray = ensureIterable(texts);
+    const textArray = ensureList(texts);
 
     const index = this.index;
     for (const text of textArray) {
@@ -12092,7 +12092,7 @@ export class Parser {
       ? this._constructor.ALTER_PARSERS[this.prev.text.toUpperCase()]
       : undefined;
     if (parser) {
-      const actions = ensureIterable(parser.call(this));
+      const actions = ensureList(parser.call(this));
       const notValid = this.matchTextSeq(['NOT', 'VALID']);
       const options = this.parseCsv(this.parseProperty.bind(this));
       const cascade =
@@ -12798,7 +12798,7 @@ export class Parser {
       const schema = this.parseSchema();
 
       return schema
-        ? Array.from(ensureIterable<Expression>(schema))
+        ? Array.from(ensureList<Expression>(schema))
         : this.parseCsv(this.parseColumnDefWithExists.bind(this));
     }
 
