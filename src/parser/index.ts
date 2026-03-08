@@ -5677,7 +5677,7 @@ export class Parser {
   parseQueryModifiers (thisExpr: undefined): undefined;
   parseQueryModifiers<E extends Expression> (thisExpr: E | undefined): E | undefined;
   parseQueryModifiers (thisExpr: Expression | undefined): Expression | undefined {
-    if (thisExpr && this._constructor.MODIFIABLES.includes(thisExpr._constructor)) {
+    if (thisExpr && this._constructor.MODIFIABLES.some((cls) => thisExpr instanceof cls)) {
       for (const join of this.parseJoins()) {
         thisExpr.append('joins', join);
       }
