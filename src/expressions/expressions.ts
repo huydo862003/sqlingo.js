@@ -7437,6 +7437,8 @@ export type DistinctExprArgs = Merge<[
 export class DistinctExpr extends Expression {
   static key = ExpressionKey.DISTINCT;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['expressions', 'on']);
 
   declare args: DistinctExprArgs;
