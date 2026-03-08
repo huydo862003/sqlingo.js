@@ -27,7 +27,7 @@ class TestTransforms {
     const expr = typeof sqlOrExpr === 'string'
       ? maybeParse(sqlOrExpr, { dialect })
       : sqlOrExpr;
-    expect(transform(expr).sql({ dialect })).toBe(target);
+    expect(expr.transform(transform).sql({ dialect })).toBe(target);
   }
 
   testEliminateDistinctOn () {

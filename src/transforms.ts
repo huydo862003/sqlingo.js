@@ -1325,33 +1325,32 @@ export function inheritStructFieldNames (expression: Expression): Expression {
     && expression.args.expressions?.[0] instanceof StructExpr
   ) {
     const firstItem = expression.args.expressions[0] as StructExpr;
-    if (firstItem.args.expressions?.every((f) => f instanceof PropertyEqExpr)) {
-      const fieldNames = firstItem.args.expressions.map((f) => f.args.this);
+    if (!firstItem.args.expressions?.every((f) => f instanceof PropertyEqExpr)) return expression;
+    const fieldNames = firstItem.args.expressions.map((f) => f.args.this);
 
-      for (const struct of expression.args.expressions.slice(1)) {
-        if (!(struct instanceof StructExpr) || struct.args.expressions?.length !== fieldNames.length) {
-          continue;
-        }
-
-        const newExpressions = struct.args.expressions.map((expr, i) => {
-          if (!(expr instanceof PropertyEqExpr)) {
-            const thisFieldNameRaw = fieldNames[i];
-            const thisFieldName = thisFieldNameRaw instanceof Expression ? thisFieldNameRaw.args.this : thisFieldNameRaw;
-            const propEq = new PropertyEqExpr({
-              this: new IdentifierExpr({
-                this: thisFieldName instanceof Expression ? thisFieldName.copy() : thisFieldName?.toString() || '',
-                quoted: false,
-              }),
-              expression: expr,
-            });
-            propEq.type = expr.type;
-            return propEq;
-          }
-          return expr;
-        });
-
-        struct.setArgKey('expressions', newExpressions);
+    for (const struct of expression.args.expressions.slice(1)) {
+      if (!(struct instanceof StructExpr) || struct.args.expressions?.length !== fieldNames.length) {
+        continue;
       }
+
+      const newExpressions = struct.args.expressions.map((expr, i) => {
+        if (!(expr instanceof PropertyEqExpr)) {
+          const thisFieldNameRaw = fieldNames[i];
+          const thisFieldName = thisFieldNameRaw instanceof Expression ? thisFieldNameRaw.args.this : thisFieldNameRaw;
+          const propEq = new PropertyEqExpr({
+            this: new IdentifierExpr({
+              this: thisFieldName instanceof Expression ? thisFieldName.copy() : thisFieldName?.toString() || '',
+              quoted: false,
+            }),
+            expression: expr,
+          });
+          propEq.type = expr.type;
+          return propEq;
+        }
+        return expr;
+      });
+
+      struct.setArgKey('expressions', newExpressions);
     }
   }
 
