@@ -2182,6 +2182,7 @@ export class CacheExpr extends Expression {
   static key = ExpressionKey.CACHE;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'lazy',
@@ -2208,6 +2209,7 @@ export class UncacheExpr extends Expression {
   static key = ExpressionKey.UNCACHE;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set(['this', 'exists']);
 
   declare args: UncacheExprArgs;
@@ -2450,6 +2452,8 @@ export type SequencePropertiesExprArgs = Merge<[
 export class SequencePropertiesExpr extends Expression {
   static key = ExpressionKey.SEQUENCE_PROPERTIES;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'increment',
     'minvalue',
@@ -2485,6 +2489,7 @@ export class TruncateTableExpr extends Expression {
   static key = ExpressionKey.TRUNCATE_TABLE;
 
   static requiredArgs = new Set(['expressions']);
+
   static availableArgs = new Set([
     'expressions',
     'isDatabase',
@@ -2516,6 +2521,7 @@ export class CloneExpr extends Expression {
   static key = ExpressionKey.CLONE;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'shallow',
@@ -2549,6 +2555,7 @@ export class DescribeExpr extends Expression {
   static key = ExpressionKey.DESCRIBE;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'style',
@@ -2579,6 +2586,7 @@ export class AttachExpr extends Expression {
   static key = ExpressionKey.ATTACH;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'exists',
@@ -2626,6 +2634,7 @@ export class InstallExpr extends Expression {
   static key = ExpressionKey.INSTALL;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'from',
@@ -2675,6 +2684,7 @@ export class KillExpr extends Expression {
   static key = ExpressionKey.KILL;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set(['this', 'kind']);
 
   declare args: KillExprArgs;
@@ -2737,6 +2747,7 @@ export class DeclareItemExpr extends Expression {
   static key = ExpressionKey.DECLARE_ITEM;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'kind',
@@ -2761,6 +2772,8 @@ export type SetExprArgs = Merge<[
 
 export class SetExpr extends Expression {
   static key = ExpressionKey.SET;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'expressions',
@@ -2787,6 +2800,7 @@ export class HeredocExpr extends Expression {
   static key = ExpressionKey.HEREDOC;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set(['this', 'tag']);
 
   declare args: HeredocExprArgs;
@@ -2841,6 +2855,7 @@ export class QueryBandExpr extends Expression {
   static key = ExpressionKey.QUERY_BAND;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'scope',
@@ -2892,6 +2907,7 @@ export class ShowExpr extends Expression {
   static key = ExpressionKey.SHOW;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'history',
@@ -2943,6 +2959,7 @@ export class UserDefinedFunctionExpr extends Expression {
   static key = ExpressionKey.USER_DEFINED_FUNCTION;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'expressions',
@@ -2968,6 +2985,7 @@ export class CharacterSetExpr extends Expression {
   static key = ExpressionKey.CHARACTER_SET;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set(['this', 'default']);
 
   declare args: CharacterSetExprArgs;
@@ -3027,6 +3045,7 @@ export class WithExpr extends Expression {
   static key = ExpressionKey.WITH;
 
   static requiredArgs = new Set(['expressions']);
+
   static availableArgs = new Set([
     'expressions',
     'recursive',
@@ -3055,6 +3074,7 @@ export class WithinGroupExpr extends Expression {
   static key = ExpressionKey.WITHIN_GROUP;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set(['this', 'expression']);
 
   declare args: WithinGroupExprArgs;
@@ -3096,6 +3116,8 @@ export type TableAliasExprArgs = Merge<[
 export class TableAliasExpr extends Expression {
   static key = ExpressionKey.TABLE_ALIAS;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['this', 'columns']);
 
   declare args: TableAliasExprArgs;
@@ -3121,6 +3143,7 @@ export class ColumnPositionExpr extends Expression {
   static key = ExpressionKey.COLUMN_POSITION;
 
   static requiredArgs = new Set(['position']);
+
   static availableArgs = new Set(['this', 'position']);
 
   declare args: ColumnPositionExprArgs;
@@ -3152,6 +3175,7 @@ export class ColumnDefExpr extends Expression {
   static key = ExpressionKey.COLUMN_DEF;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'kind',
@@ -3205,6 +3229,7 @@ export class AlterColumnExpr extends Expression {
   static key = ExpressionKey.ALTER_COLUMN;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'dtype',
@@ -3277,6 +3302,8 @@ export type AlterSortKeyExprArgs = Merge<[
 export class AlterSortKeyExpr extends Expression {
   static key = ExpressionKey.ALTER_SORT_KEY;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'this',
     'expressions',
@@ -3307,6 +3334,8 @@ export type AlterSetExprArgs = Merge<[
 
 export class AlterSetExpr extends Expression {
   static key = ExpressionKey.ALTER_SET;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'expressions',
@@ -3480,6 +3509,7 @@ export class MergeTreeTtlActionExpr extends Expression {
   static key = ExpressionKey.MERGE_TREE_TTL_ACTION;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'delete',
@@ -3509,6 +3539,7 @@ export class MergeTreeTtlExpr extends Expression {
   static key = ExpressionKey.MERGE_TREE_TTL;
 
   static requiredArgs = new Set(['expressions']);
+
   static availableArgs = new Set([
     'expressions',
     'where',
@@ -3538,6 +3569,8 @@ export type IndexConstraintOptionExprArgs = Merge<[
 
 export class IndexConstraintOptionExpr extends Expression {
   static key = ExpressionKey.INDEX_CONSTRAINT_OPTION;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'keyBlockSize',
@@ -3572,6 +3605,7 @@ export class ColumnConstraintExpr extends Expression {
   static key = ExpressionKey.COLUMN_CONSTRAINT;
 
   static requiredArgs = new Set(['kind']);
+
   static availableArgs = new Set(['this', 'kind']);
 
   declare args: ColumnConstraintExprArgs;
@@ -3691,6 +3725,8 @@ export type DeleteExprArgs = Merge<[
 export class DeleteExpr extends DmlExpr {
   static key = ExpressionKey.DELETE;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'with',
     'this',
@@ -3804,6 +3840,8 @@ export type DropExprArgs = Merge<[
 export class DropExpr extends Expression {
   static key = ExpressionKey.DROP;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'this',
     'kind',
@@ -3913,6 +3951,7 @@ export class ChangesExpr extends Expression {
   static key = ExpressionKey.CHANGES;
 
   static requiredArgs = new Set(['information']);
+
   static availableArgs = new Set([
     'information',
     'atBefore',
@@ -3939,6 +3978,7 @@ export class ConnectExpr extends Expression {
   static key = ExpressionKey.CONNECT;
 
   static requiredArgs = new Set(['connect']);
+
   static availableArgs = new Set([
     'start',
     'connect',
@@ -3965,6 +4005,7 @@ export class CopyParameterExpr extends Expression {
   static key = ExpressionKey.COPY_PARAMETER;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'expression',
@@ -3991,6 +4032,8 @@ export type CredentialsExprArgs = Merge<[
 
 export class CredentialsExpr extends Expression {
   static key = ExpressionKey.CREDENTIALS;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'credentials',
@@ -4038,6 +4081,7 @@ export class DirectoryExpr extends Expression {
   static key = ExpressionKey.DIRECTORY;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'local',
@@ -4082,6 +4126,8 @@ export type ForeignKeyExprArgs = Merge<[
 
 export class ForeignKeyExpr extends Expression {
   static key = ExpressionKey.FOREIGN_KEY;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'expressions',
@@ -4134,6 +4180,7 @@ export class PrimaryKeyExpr extends Expression {
   static key = ExpressionKey.PRIMARY_KEY;
 
   static requiredArgs = new Set(['expressions']);
+
   static availableArgs = new Set([
     'this',
     'expressions',
@@ -4161,6 +4208,8 @@ export type IntoExprArgs = Merge<[
 
 export class IntoExpr extends Expression {
   static key = ExpressionKey.INTO;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'this',
@@ -4287,6 +4336,7 @@ export class IdentifierExpr extends Expression {
   static key = ExpressionKey.IDENTIFIER;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'quoted',
@@ -4346,6 +4396,8 @@ export type IndexExprArgs = Merge<[
 export class IndexExpr extends Expression {
   static key = ExpressionKey.INDEX;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'this',
     'table',
@@ -4379,6 +4431,8 @@ export type IndexParametersExprArgs = Merge<[
 export class IndexParametersExpr extends Expression {
   static key = ExpressionKey.INDEX_PARAMETERS;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'using',
     'include',
@@ -4410,6 +4464,7 @@ export class ConditionalInsertExpr extends Expression {
   static key = ExpressionKey.CONDITIONAL_INSERT;
 
   static requiredArgs = new Set(['this']);
+
   static availableArgs = new Set([
     'this',
     'expression',
@@ -4474,6 +4529,8 @@ export type OnConflictExprArgs = Merge<[
 export class OnConflictExpr extends Expression {
   static key = ExpressionKey.ON_CONFLICT;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'duplicate',
     'expressions',
@@ -4502,6 +4559,8 @@ export type OnConditionExprArgs = Merge<[
 
 export class OnConditionExpr extends Expression {
   static key = ExpressionKey.ON_CONDITION;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'error',
@@ -4691,6 +4750,8 @@ export type FetchExprArgs = Merge<[
 export class FetchExpr extends Expression {
   static key = ExpressionKey.FETCH;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'direction',
     'count',
@@ -4794,6 +4855,8 @@ export type GroupExprArgs = Merge<[
 export class GroupExpr extends Expression {
   static key = ExpressionKey.GROUP;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'expressions',
     'groupingSets',
@@ -4818,6 +4881,8 @@ export type CubeExprArgs = Merge<[
 export class CubeExpr extends Expression {
   static key = ExpressionKey.CUBE;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['expressions']);
 
   declare args: CubeExprArgs;
@@ -4834,6 +4899,8 @@ export type RollupExprArgs = Merge<[
 
 export class RollupExpr extends Expression {
   static key = ExpressionKey.ROLLUP;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set(['expressions']);
 
