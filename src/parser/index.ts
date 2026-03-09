@@ -6756,7 +6756,7 @@ export class Parser {
       offset = this.parseIdVar({
         anyToken: false,
         tokens: this._constructor.UNNEST_OFFSET_ALIAS_TOKENS,
-      }) || new IdentifierExpr({ this: 'offset' });
+      }) || toIdentifier('offset');
     }
 
     return this.expression(UnnestExpr, {
@@ -7976,12 +7976,14 @@ export class Parser {
       const expressions = this.parseCsv(() => this.parseSelectOrExpression({ alias }));
 
       if (expressions.length === 1 && expressions[0] instanceof QueryExpr) {
-        const query = expressions[0] as QueryExpr;
+        const query = expressions[0];
+        const queryModifiers = this.parseQueryModifiers(query);
+        const subquery = queryModifiers.subquery(undefined, { copy: false });
         result = this.expression(
           InExpr,
           {
             this: thisExpr,
-            query: this.parseQueryModifiers(query).subquery(undefined, { copy: false }) as SubqueryExpr,
+            query: subquery,
           },
         );
       } else {

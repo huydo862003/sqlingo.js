@@ -1773,11 +1773,11 @@ export class QueryExpr extends Expression {
     let aliasExpr: TableAliasExpr | undefined;
 
     if (!(alias instanceof Expression)) {
-      aliasExpr = new TableAliasExpr({
-        this: alias
-          ? toIdentifier(alias as string)
-          : undefined,
-      });
+      aliasExpr = alias
+        ? new TableAliasExpr({
+          this: toIdentifier(alias),
+        })
+        : undefined;
     }
 
     return new SubqueryExpr({
