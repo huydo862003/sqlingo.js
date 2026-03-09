@@ -1299,6 +1299,7 @@ export function eliminateWindowClause (expression: Expression): Expression {
       ]) {
         const arg = inherited.getArgKey(key);
         if (arg instanceof Expression) window.setArgKey(key, arg.copy());
+        if (Array.isArray(arg) && 0 < arg.length) window.setArgKey(key, [...arg]);
       }
     };
 
