@@ -3740,15 +3740,15 @@ export class Parser {
   parseDrop (options: { exists?: boolean } = {}): DropExpr | CommandExpr {
     const { exists } = options;
     const start = this.prev;
-    const temporary = this.match(TokenType.TEMPORARY);
-    const materialized = this.matchTextSeq('MATERIALIZED');
+    const temporary = this.match(TokenType.TEMPORARY) || undefined;
+    const materialized = this.matchTextSeq('MATERIALIZED') || undefined;
 
-    const kind = this.matchSet(this._constructor.CREATABLES) && this.prev?.text.toUpperCase();
+    const kind = (this.matchSet(this._constructor.CREATABLES) || undefined) && this.prev?.text.toUpperCase();
     if (!kind) {
       return this.parseAsCommand(start);
     }
 
-    const concurrently = this.matchTextSeq('CONCURRENTLY');
+    const concurrently = this.matchTextSeq('CONCURRENTLY') || undefined;
     const ifExists = exists || this.parseExists();
 
     let thisExpr: Expression | undefined;
@@ -3802,9 +3802,9 @@ export class Parser {
       || this.matchPair(TokenType.OR, TokenType.REPLACE)
       || this.matchPair(TokenType.OR, TokenType.ALTER)
     );
-    const refresh = this.matchPair(TokenType.OR, TokenType.REFRESH);
+    const refresh = this.matchPair(TokenType.OR, TokenType.REFRESH) || undefined;
 
-    const unique = this.match(TokenType.UNIQUE);
+    const unique = this.match(TokenType.UNIQUE) || undefined;
 
     let clustered: boolean | undefined;
     if (this.matchTextSeq(['CLUSTERED', 'COLUMNSTORE'])) {
@@ -3821,19 +3821,19 @@ export class Parser {
     }
 
     let properties: PropertiesExpr | undefined;
-    let createToken = this.matchSet(this._constructor.CREATABLES) && this.prev;
+    let createToken = (this.matchSet(this._constructor.CREATABLES) || undefined) && this.prev;
 
     if (!createToken) {
       // exp.Properties.Location.POST_CREATE
       properties = this.parseProperties();
-      createToken = this.matchSet(this._constructor.CREATABLES) && this.prev;
+      createToken = (this.matchSet(this._constructor.CREATABLES) || undefined) && this.prev;
 
       if (!properties || !createToken) {
         return this.parseAsCommand(start);
       }
     }
 
-    const concurrently = this.matchTextSeq('CONCURRENTLY');
+    const concurrently = this.matchTextSeq('CONCURRENTLY') || undefined;
     const exists = this.parseExists({ not: true });
     let thisExpr: Expression | undefined;
     let expression: Expression | undefined;
@@ -3867,8 +3867,8 @@ export class Parser {
         if (this.match(TokenType.COMMAND)) {
           expression = this.parseAsCommand(this.prev);
         } else {
-          begin = this.match(TokenType.BEGIN);
-          const return_ = this.matchTextSeq('RETURN');
+          begin = this.match(TokenType.BEGIN) || undefined;
+          const return_ = this.matchTextSeq('RETURN') || undefined;
 
           if (this.match(TokenType.STRING, { advance: false })) {
             // Takes care of BigQuery's JavaScript UDF definitions that end in an OPTIONS property
@@ -3879,7 +3879,7 @@ export class Parser {
             expression = this.parseUserDefinedFunctionExpression();
           }
 
-          end = this.matchTextSeq('END');
+          end = this.matchTextSeq('END') || undefined;
 
           if (return_) {
             expression = this.expression(ReturnExpr, { this: expression });
@@ -3918,7 +3918,7 @@ export class Parser {
       // exp.Properties.Location.POST_SCHEMA and POST_WITH
       extendProps(this.parseProperties());
 
-      const hasAlias = this.match(TokenType.ALIAS);
+      const hasAlias = this.match(TokenType.ALIAS) || undefined;
       if (!this.matchSet(this._constructor.DDL_SELECT_TOKENS, { advance: false })) {
         // exp.Properties.Location.POST_ALIAS
         extendProps(this.parseProperties());
@@ -3995,7 +3995,7 @@ export class Parser {
         extendProps(this.parseProperties());
       }
 
-      const shallow = this.matchTextSeq('ShaLLOW');
+      const shallow = this.matchTextSeq('SHALLOW') || undefined;
 
       if (this.matchTexts(this._constructor.CLONE_KEYWORDS)) {
         const copy = this.prev?.text.toLowerCase() === 'copy';
@@ -4180,8 +4180,8 @@ export class Parser {
     }
 
     this.match(TokenType.ALIAS);
-    const inputFormat = this.matchTextSeq('INPUTFORMAT') && this.parseString();
-    const outputFormat = this.matchTextSeq('OUTPUTFORMAT') && this.parseString();
+    const inputFormat = (this.matchTextSeq('INPUTFORMAT') || undefined) && this.parseString();
+    const outputFormat = (this.matchTextSeq('OUTPUTFORMAT') || undefined) && this.parseString();
 
     return this.expression(
       FileFormatPropertyExpr,
@@ -4614,10 +4614,10 @@ export class Parser {
 
   parseBlockCompression (): BlockCompressionPropertyExpr {
     this.match(TokenType.EQ);
-    const always = this.matchTextSeq('ALWAYS');
-    const manual = this.matchTextSeq('MANUAL');
-    const never = this.matchTextSeq('NEVER');
-    const default_ = this.matchTextSeq('DEFAULT');
+    const always = this.matchTextSeq('ALWAYS') || undefined;
+    const manual = this.matchTextSeq('MANUAL') || undefined;
+    const never = this.matchTextSeq('NEVER') || undefined;
+    const default_ = this.matchTextSeq('DEFAULT') || undefined;
 
     let autotemp: Expression | undefined;
     if (this.matchTextSeq('AUTOTEMP')) {
@@ -4638,8 +4638,8 @@ export class Parser {
 
   parseWithIsolatedLoading (): IsolatedLoadingPropertyExpr | undefined {
     const index = this.index;
-    const no = this.matchTextSeq('NO');
-    const concurrent = this.matchTextSeq('CONCURRENT');
+    const no = this.matchTextSeq('NO') || undefined;
+    const concurrent = this.matchTextSeq('CONCURRENT') || undefined;
 
     if (!this.matchTextSeq(['ISOLATED', 'LOADING'])) {
       this.retreat(index);
@@ -4696,7 +4696,7 @@ export class Parser {
       lockType = 'CHECKSUM';
     }
 
-    const override = this.matchTextSeq('OVERRIDE');
+    const override = this.matchTextSeq('OVERRIDE') || undefined;
 
     return this.expression(
       LockingPropertyExpr,
@@ -4926,7 +4926,7 @@ export class Parser {
   parseReturns (): ReturnsPropertyExpr {
     let value: Expression | undefined;
     let null_: boolean | undefined;
-    const isTable = this.match(TokenType.TABLE);
+    const isTable = this.match(TokenType.TABLE) || undefined;
 
     if (isTable) {
       if (this.match(TokenType.LT)) {
@@ -4963,8 +4963,8 @@ export class Parser {
   }
 
   parseDescribe (): DescribeExpr {
-    const kind = this.matchSet(this._constructor.CREATABLES) && this.prev?.text;
-    let style = this.matchTexts(Array.from(this._constructor.DESCRIBE_STYLES)) && this.prev?.text.toUpperCase();
+    const kind = (this.matchSet(this._constructor.CREATABLES) || undefined) && this.prev?.text;
+    let style = (this.matchTexts(Array.from(this._constructor.DESCRIBE_STYLES)) || undefined) && this.prev?.text.toUpperCase();
     if (this.match(TokenType.DOT)) {
       style = undefined;
       this.retreat(this.index - 2);
@@ -5007,7 +5007,7 @@ export class Parser {
         this.match(TokenType.THEN);
       }
 
-      const else_ = this.match(TokenType.ELSE);
+      const else_ = this.match(TokenType.ELSE) || undefined;
 
       if (!this.match(TokenType.INTO)) {
         return undefined;
@@ -5049,9 +5049,9 @@ export class Parser {
   parseInsert (): InsertExpr | MultitableInsertsExpr {
     const comments: string[] = [];
     const hint = this.parseHint();
-    const overwrite = this.match(TokenType.OVERWRITE);
-    const ignore = this.match(TokenType.IGNORE);
-    const local = this.matchTextSeq('LOCAL');
+    const overwrite = this.match(TokenType.OVERWRITE) || undefined;
+    const ignore = this.match(TokenType.IGNORE) || undefined;
+    const local = this.matchTextSeq('LOCAL') || undefined;
     let alternative: string | undefined;
     let isFunction: boolean | undefined;
 
@@ -5078,7 +5078,7 @@ export class Parser {
       this.match(TokenType.INTO);
       comments.push(...ensureList(this.prevComments));
       this.match(TokenType.TABLE);
-      isFunction = this.match(TokenType.FUNCTION);
+      isFunction = this.match(TokenType.FUNCTION) || undefined;
 
       thisExpr = isFunction ? this.parseFunction() : this.parseInsertTable();
     }
@@ -5134,12 +5134,12 @@ export class Parser {
   }
 
   parseOnConflict (): OnConflictExpr | undefined {
-    const conflict = this.matchTextSeq(['ON', 'CONFLICT']);
+    const conflict = this.matchTextSeq(['ON', 'CONFLICT']) || undefined;
     const duplicate = this.matchTextSeq([
       'ON',
       'DUPLICATE',
       'KEY',
-    ]);
+    ]) || undefined;
 
     if (!conflict && !duplicate) {
       return undefined;
@@ -5378,7 +5378,7 @@ export class Parser {
       let all: boolean | undefined;
       let distinct: DistinctExpr | undefined;
       if (this.next && this.next.tokenType !== TokenType.DOT) {
-        all = this.match(TokenType.ALL);
+        all = this.match(TokenType.ALL) || undefined;
         distinct = this.matchSet(this._constructor.DISTINCT_TOKENS) ? new DistinctExpr() : undefined;
       }
 
@@ -5401,7 +5401,7 @@ export class Parser {
 
       const operationModifiers: Expression[] = [];
       while (this.curr && this.matchTexts(Array.from(this._constructor.OPERATION_MODIFIERS))) {
-        operationModifiers.push(var_(this.prev?.text ?? ''.toUpperCase()));
+        operationModifiers.push(var_((this.prev?.text ?? '').toUpperCase()));
       }
 
       const limit = this.parseLimit(undefined, { top: true });
@@ -5446,7 +5446,7 @@ export class Parser {
     } else if (from) {
       return select('*').from(from.args.this, { copy: false });
     } else if (this.match(TokenType.SUMMARIZE)) {
-      const table = this.match(TokenType.TABLE);
+      const table = this.match(TokenType.TABLE) || undefined;
       thisExpr = this.parseSelect() || this.parseString() || this.parseTable();
       return this.expression(SummarizeExpr, {
         this: thisExpr,
@@ -5454,6 +5454,8 @@ export class Parser {
       });
     } else if (this.match(TokenType.DESCRIBE)) {
       return this.parseDescribe();
+    } else {
+      thisExpr = undefined;
     }
 
     return parseSetOperation ? this.parseSetOperations(thisExpr) : undefined;
@@ -5462,7 +5464,7 @@ export class Parser {
   parseRecursiveWithSearch (): RecursiveWithSearchExpr | undefined {
     this.matchTextSeq('SEARCH');
 
-    const kind = this.matchTexts(Array.from(this._constructor.RECURSIVE_CTE_SEARCH_KIND)) && this.prev?.text.toUpperCase();
+    const kind = (this.matchTexts(Array.from(this._constructor.RECURSIVE_CTE_SEARCH_KIND)) || undefined) && this.prev?.text.toUpperCase();
 
     if (!kind) {
       return undefined;
@@ -5487,7 +5489,7 @@ export class Parser {
     }
 
     const comments = this.prevComments;
-    const recursive = this.match(TokenType.RECURSIVE);
+    const recursive = this.match(TokenType.RECURSIVE) || undefined;
 
     let lastComments: string[] | undefined;
     const expressions: CteExpr[] = [];
@@ -5575,7 +5577,7 @@ export class Parser {
     aliasTokens?: Set<TokenType>;
   } = {}): TableAliasExpr | undefined {
     const {
-      aliasTokens = this._constructor.TABLE_ALIAS_TOKENS,
+      aliasTokens,
     } = options;
     // In some dialects, LIMIT and OFFSET can act as both identifiers and keywords (clauses)
     // so this section tries to parse the clause version and if it fails, it treats the token
@@ -5588,7 +5590,7 @@ export class Parser {
     const alias = (
       this.parseIdVar({
         anyToken,
-        tokens: aliasTokens,
+        tokens: aliasTokens || this._constructor.TABLE_ALIAS_TOKENS,
       })
       || this.parseStringAsIdentifier()
     );
@@ -5599,13 +5601,14 @@ export class Parser {
       columns = this.parseCsv(() => this.parseFunctionParameter());
       if (!columns || columns.length === 0) {
         this.retreat(index);
-        columns = undefined;
       } else {
         this.matchRParen();
       }
+    } else {
+      columns = undefined;
     }
 
-    if (!alias && !columns) {
+    if (!alias && (!columns || columns.length === 0)) {
       return undefined;
     }
 
@@ -5819,8 +5822,8 @@ export class Parser {
       return undefined;
     }
 
-    const temp = this.match(TokenType.TEMPORARY);
-    const unlogged = this.matchTextSeq('UNLOGGED');
+    const temp = this.match(TokenType.TEMPORARY) || undefined;
+    const unlogged = this.matchTextSeq('UNLOGGED') || undefined;
     this.match(TokenType.TABLE);
 
     return this.expression(
@@ -6002,7 +6005,7 @@ export class Parser {
   }
 
   parseLateral (): LateralExpr | undefined {
-    let crossApply = this.matchPair(TokenType.CROSS, TokenType.APPLY);
+    let crossApply: boolean | undefined = this.matchPair(TokenType.CROSS, TokenType.APPLY) || undefined;
     if (!crossApply && this.matchPair(TokenType.OUTER, TokenType.APPLY)) {
       crossApply = false;
     }
@@ -6017,8 +6020,8 @@ export class Parser {
       outer = undefined;
     } else if (this.match(TokenType.LATERAL)) {
       thisExpr = this.parseSelect({ table: true });
-      view = this.match(TokenType.VIEW);
-      outer = this.match(TokenType.OUTER);
+      view = this.match(TokenType.VIEW) || undefined;
+      outer = this.match(TokenType.OUTER) || undefined;
     } else {
       return undefined;
     }
@@ -6145,8 +6148,8 @@ export class Parser {
       side,
       kind,
     } = this.parseJoinParts();
-    const directed = this.matchTextSeq('DIRECTED');
-    const hint = this.matchTexts(Array.from(this._constructor.JOIN_HINTS)) && this.prev?.text;
+    const directed = this.matchTextSeq('DIRECTED') || undefined;
+    const hint = (this.matchTexts(Array.from(this._constructor.JOIN_HINTS)) || undefined) && this.prev?.text;
     const join = this.match(TokenType.JOIN) || (kind?.tokenType === TokenType.STRAIGHT_JOIN);
     const joinComments = this.prevComments;
 
@@ -6268,7 +6271,7 @@ export class Parser {
       : undefined;
 
     const partitionBy = this.parsePartitionBy();
-    const withStorage = this.match(TokenType.WITH) && this.parseWrappedProperties();
+    const withStorage = (this.match(TokenType.WITH) || undefined) && this.parseWrappedProperties();
     const tablespace = this.matchTextSeq([
       'USING',
       'INDEX',
@@ -6319,9 +6322,9 @@ export class Parser {
       this.match(TokenType.TABLE); // hive
       table = this.parseTableParts({ schema: true });
     } else {
-      unique = this.match(TokenType.UNIQUE);
-      primary = this.matchTextSeq('PRIMARY');
-      amp = this.matchTextSeq('AMP');
+      unique = this.match(TokenType.UNIQUE) || undefined;
+      primary = this.matchTextSeq('PRIMARY') || undefined;
+      amp = this.matchTextSeq('AMP') || undefined;
 
       if (!this.match(TokenType.INDEX)) {
         return undefined;
@@ -6533,18 +6536,18 @@ export class Parser {
     let bracket = parseBracket && this.parseBracket(undefined);
     bracket = bracket ? this.expression(TableExpr, { this: bracket }) : undefined;
 
-    const rowsFrom = this.matchTextSeq(['ROWS', 'FROM']) && this.parseWrappedCsv(() => this.parseTable());
-    const rowsFromExpr = rowsFrom ? this.expression(TableExpr, { rowsFrom }) : undefined;
+    let rowsFrom: Expression | Expression[] | undefined = (this.matchTextSeq(['ROWS', 'FROM']) || undefined) && this.parseWrappedCsv(() => this.parseTable());
+    rowsFrom = rowsFrom ? this.expression(TableExpr, { rowsFrom }) : undefined;
 
-    const only = this.match(TokenType.ONLY);
+    const only = this.match(TokenType.ONLY) || undefined;
 
     const thisExpr = (
       bracket
-      || rowsFromExpr
+      || rowsFrom
       || this.parseBracket(
         this.parseTableParts({
-          schema: options?.schema,
-          isDbReference: options?.isDbReference,
+          schema,
+          isDbReference,
         }),
       )
     );
@@ -6597,7 +6600,7 @@ export class Parser {
 
     thisExpr?.setArgKey('hints', this.parseTableHints());
 
-    if (!('pivots' in thisExpr?.args) || !thisExpr?.args.pivots) {
+    if (!thisExpr?.args.pivots) {
       thisExpr?.setArgKey('pivots', this.parsePivots());
     }
 
@@ -6605,7 +6608,7 @@ export class Parser {
       thisExpr?.setArgKey('sample', this.parseTableSample());
     }
 
-    if (options?.joins) {
+    if (joins) {
       for (const join of this.parseJoins()) {
         thisExpr?.append('joins', join);
       }
@@ -6672,7 +6675,7 @@ export class Parser {
         && this.matchTexts(Array.from(this._constructor.HISTORICAL_DATA_KIND))
         && (this.prev?.text ?? '').toUpperCase()
       );
-      const expression = this.match(TokenType.FARROW) && this.parseBitwise();
+      const expression = (this.match(TokenType.FARROW) || undefined) && this.parseBitwise();
 
       if (expression) {
         this.matchRParen();
@@ -6727,7 +6730,7 @@ export class Parser {
     this.advance();
 
     const expressions = this.parseWrappedCsv(() => this.parseEquality());
-    let offset: Expression | boolean | undefined = this.matchPair(TokenType.WITH, TokenType.ORDINALITY);
+    let offset: Expression | boolean | undefined = this.matchPair(TokenType.WITH, TokenType.ORDINALITY) || undefined;
 
     const alias = withAlias ? this.parseTableAlias() : undefined;
 
@@ -6764,7 +6767,7 @@ export class Parser {
   }
 
   parseDerivedTableValues (): ValuesExpr | undefined {
-    const isDerived = this.matchPair(TokenType.L_PAREN, TokenType.VALUES);
+    const isDerived = this.matchPair(TokenType.L_PAREN, TokenType.VALUES) || undefined;
     if (!isDerived && !(
       // ClickHouse's `FORMAT Values` is equivalent to `VALUES`
       this.matchTextSeq('VALUES') || this.matchTextSeq(['FORMAT', 'VALUES'])
@@ -6809,7 +6812,7 @@ export class Parser {
       tokens: new Set([TokenType.ROW]),
       upper: true,
     });
-    const matchedLParen = this.match(TokenType.L_PAREN);
+    const matchedLParen = this.match(TokenType.L_PAREN) || undefined;
 
     let expressions: Expression[] | undefined;
     let num: Expression | undefined;
@@ -6924,9 +6927,9 @@ export class Parser {
     };
 
     const thisExpr = this.parseTable();
-    const expressions = this.match(TokenType.ON) && this.parseCsv(parseOn);
+    const expressions = (this.match(TokenType.ON) || undefined) && this.parseCsv(parseOn);
     const into = this.parseUnpivotColumns();
-    const using = this.match(TokenType.USING) && this.parseCsv(() =>
+    const using = (this.match(TokenType.USING) || undefined) && this.parseCsv(() =>
       this.parseAlias(this.parseColumn()));
     const group = this.parseGroup();
 
@@ -7059,11 +7062,11 @@ export class Parser {
       fields.push(field);
     }
 
-    const defaultOnNull = this.matchTextSeq([
+    const defaultOnNull = (this.matchTextSeq([
       'DEFAULT',
       'ON',
       'NULL',
-    ]) && this.parseWrapped(() =>
+    ]) || undefined) && this.parseWrapped(() =>
       this.parseBitwise());
 
     const group = this.parseGroup();
@@ -7237,7 +7240,7 @@ export class Parser {
       );
 
       const beforeWithIndex = this.index;
-      const withPrefix = this.match(TokenType.WITH);
+      const withPrefix = this.match(TokenType.WITH) || undefined;
 
       const cubeOrRollup = this.parseCubeOrRollup({ withPrefix });
       if (cubeOrRollup) {
@@ -7349,7 +7352,7 @@ export class Parser {
     }
 
     this.match(TokenType.CONNECT_BY);
-    const nocycle = this.matchTextSeq('NOCYCLE');
+    const nocycle = this.matchTextSeq('NOCYCLE') || undefined;
     const connect = this.parseConnectWithPrior();
 
     if (!start && this.match(TokenType.START_WITH)) {
@@ -7433,11 +7436,11 @@ export class Parser {
       orderedThis = var_('ALL');
     }
 
-    const asc = this.match(TokenType.ASC);
-    const desc = this.match(TokenType.DESC) || (asc && false);
+    const asc = this.match(TokenType.ASC) || undefined;
+    const desc = (this.match(TokenType.DESC) || undefined) || (asc && false);
 
-    const isNullsFirst = this.matchTextSeq(['NULLS', 'FIRST']);
-    const isNullsLast = this.matchTextSeq(['NULLS', 'LAST']);
+    const isNullsFirst = this.matchTextSeq(['NULLS', 'FIRST']) || undefined;
+    const isNullsLast = this.matchTextSeq(['NULLS', 'LAST']) || undefined;
 
     let nullsFirst = isNullsFirst || false;
     const explicitlyNullOrdered = isNullsFirst || isNullsLast;
@@ -7478,10 +7481,10 @@ export class Parser {
   }
 
   parseLimitOptions (): LimitOptionsExpr | undefined {
-    const percent = this.matchSet(new Set([TokenType.PERCENT, TokenType.MOD]));
-    const rows = this.matchSet(new Set([TokenType.ROW, TokenType.ROWS]));
+    const percent = this.matchSet(new Set([TokenType.PERCENT, TokenType.MOD])) || undefined;
+    const rows = this.matchSet(new Set([TokenType.ROW, TokenType.ROWS])) || undefined;
     this.matchTextSeq('ONLY');
-    const withTies = this.matchTextSeq(['WITH', 'TIES']);
+    const withTies = this.matchTextSeq(['WITH', 'TIES']) || undefined;
 
     if (!(percent || rows || withTies)) {
       return undefined;
@@ -7510,7 +7513,7 @@ export class Parser {
       let expression: Expression | undefined;
 
       if (top) {
-        const limitParen = this.match(TokenType.L_PAREN);
+        const limitParen = this.match(TokenType.L_PAREN) || undefined;
         expression = limitParen ? this.parseTerm() : this.parseNumber();
 
         if (limitParen) {
@@ -7560,7 +7563,7 @@ export class Parser {
     }
 
     if (this.match(TokenType.FETCH)) {
-      const direction = this.matchSet(new Set([TokenType.FIRST, TokenType.NEXT]));
+      const direction = this.matchSet(new Set([TokenType.FIRST, TokenType.NEXT])) || undefined;
       const directionText = direction ? this.prev?.text ?? ''.toUpperCase() : 'FIRST';
 
       const count = this.parseField({ tokens: this._constructor.FETCH_TOKENS });
@@ -7740,7 +7743,7 @@ export class Parser {
       }
     }
 
-    let byName = this.matchTextSeq(['BY', 'NAME']) || this.matchTextSeq(['STRICT', 'CORRESPONDING']);
+    let byName = this.matchTextSeq(['BY', 'NAME']) || this.matchTextSeq(['STRICT', 'CORRESPONDING']) || undefined;
     if (this.matchTextSeq('CORRESPONDING')) {
       byName = true;
       if (!side && !kind) {
@@ -7854,7 +7857,7 @@ export class Parser {
 
   parseRange (thisExpr?: Expression): Expression | undefined {
     let current = thisExpr || this.parseBitwise();
-    const negate = this.match(TokenType.NOT);
+    const negate = this.match(TokenType.NOT) || undefined;
 
     if (this.matchSet(Object.keys(this._constructor.RANGE_PARSERS) as TokenType[])) {
       const parser = this._constructor.RANGE_PARSERS[this.prev?.tokenType ?? TokenType.UNKNOWN];
@@ -7903,7 +7906,7 @@ export class Parser {
 
   parseIs (thisExpr?: Expression): Expression | undefined {
     const index = this.index - 1;
-    const negate = this.match(TokenType.NOT);
+    const negate = this.match(TokenType.NOT) || undefined;
 
     if (this.matchTextSeq(['DISTINCT', 'FROM'])) {
       const klass = negate ? NullSafeEqExpr : NullSafeNeqExpr;
@@ -7915,7 +7918,7 @@ export class Parser {
 
     let expression: Expression | undefined;
     if (this.match(TokenType.JSON)) {
-      const kind = this.matchTexts(Array.from(this._constructor.IS_JSON_PREDICATE_KIND)) && (this.prev?.text ?? '').toUpperCase();
+      const kind = (this.matchTexts(Array.from(this._constructor.IS_JSON_PREDICATE_KIND)) || undefined) && (this.prev?.text ?? '').toUpperCase();
 
       let with_: boolean | undefined;
       if (this.matchTextSeq('WITH')) {
@@ -7924,7 +7927,7 @@ export class Parser {
         with_ = false;
       }
 
-      const unique = this.match(TokenType.UNIQUE);
+      const unique = this.match(TokenType.UNIQUE) || undefined;
       this.matchTextSeq('KEYS');
 
       expression = this.expression(
@@ -8685,11 +8688,11 @@ export class Parser {
     const index3 = this.index;
 
     // Postgres supports the INT ARRAY[3] syntax as a synonym for INT[3]
-    let matchedArray = this.match(TokenType.ARRAY) ?? false;
+    let matchedArray = this.match(TokenType.ARRAY) || false;
 
     while (this.curr) {
       const datatypeToken = this.prev?.tokenType;
-      const matchedLBracket = this.match(TokenType.L_BRACKET);
+      const matchedLBracket = this.match(TokenType.L_BRACKET) || undefined;
 
       if ((!matchedLBracket && !matchedArray) || (
         datatypeToken === TokenType.ARRAY && this.match(TokenType.R_BRACKET)
@@ -8991,8 +8994,8 @@ export class Parser {
 
     this.match(TokenType.ON);
 
-    const materialized = this.matchTextSeq('MATERIALIZED');
-    const kind = this.matchSet(this._constructor.CREATABLES) && this.prev;
+    const materialized = this.matchTextSeq('MATERIALIZED') || undefined;
+    const kind = (this.matchSet(this._constructor.CREATABLES) || undefined) && this.prev;
     if (!kind) {
       return this.parseAsCommand(start);
     }
@@ -9250,7 +9253,7 @@ export class Parser {
   }
 
   parseGrantPrincipal (): GrantPrincipalExpr | undefined {
-    const kind = this.matchTexts(['ROLE', 'GROUP']) && this.prev?.text.toUpperCase();
+    const kind = (this.matchTexts(['ROLE', 'GROUP']) || undefined) && this.prev?.text.toUpperCase();
     const principal = this.parseIdVar();
 
     if (!principal) {
@@ -9435,7 +9438,7 @@ export class Parser {
       return this.parseFunction();
     }
 
-    const isDatabase = this.match(TokenType.DATABASE);
+    const isDatabase = this.match(TokenType.DATABASE) || undefined;
 
     this.match(TokenType.TABLE);
 
@@ -9609,7 +9612,7 @@ export class Parser {
       })
       : this.parseTable({ schema: true });
 
-    const kind = this.match(TokenType.FROM) || !this.matchTextSeq('TO');
+    const kind = this.match(TokenType.FROM) || !this.matchTextSeq('TO') || undefined;
 
     let files = this.parseCsv(() => this.parseFileLocation());
     if (this.match(TokenType.EQ, { advance: false })) {
@@ -9692,7 +9695,7 @@ export class Parser {
     const privileges = this.parseCsv(() => this.parseGrantPrivilege());
 
     this.match(TokenType.ON);
-    const kind = this.matchSet(this._constructor.CREATABLES) && this.prev?.text.toUpperCase();
+    const kind = (this.matchSet(this._constructor.CREATABLES) || undefined) && this.prev?.text.toUpperCase();
 
     const securable = this.tryParse(() => this.parseTableParts());
 
@@ -9722,7 +9725,7 @@ export class Parser {
       'WITH',
       'GRANT',
       'OPTION',
-    ]);
+    ]) || undefined;
 
     if (this.curr) {
       return this.parseAsCommand(start);
@@ -9747,7 +9750,7 @@ export class Parser {
       'GRANT',
       'OPTION',
       'FOR',
-    ]);
+    ]) || undefined;
 
     const {
       privileges,
@@ -9878,7 +9881,7 @@ export class Parser {
 
   parseWrapped<T> (parseMethod: () => T, options: { optional?: boolean } = {}): T {
     const { optional = false } = options;
-    const wrapped = this.match(TokenType.L_PAREN);
+    const wrapped = this.match(TokenType.L_PAREN) || undefined;
     if (!wrapped && !optional) {
       this.raiseError('Expecting (');
     }
@@ -10068,7 +10071,7 @@ export class Parser {
   }
 
   parseStringAsIdentifier (): IdentifierExpr | undefined {
-    const id = this.match(TokenType.STRING) && this.prev?.text;
+    const id = (this.match(TokenType.STRING) || undefined) && this.prev?.text;
     const output = id === false ? undefined : toIdentifier(id, { quoted: true });
     if (output && this.prev) {
       output.updatePositions(this.prev);
@@ -10167,13 +10170,13 @@ export class Parser {
       tokens: this._constructor.WINDOW_ALIAS_TOKENS,
     });
 
-    let first: boolean | undefined = this.match(TokenType.FIRST);
+    let first: boolean | undefined = this.match(TokenType.FIRST) || undefined;
     if (this.matchTextSeq('LAST')) {
       first = false;
     }
 
     const [partition, order] = this.parsePartitionAndOrder();
-    const kind = this.matchSet(new Set([TokenType.ROWS, TokenType.RANGE])) && this.prev?.text;
+    const kind = (this.matchSet(new Set([TokenType.ROWS, TokenType.RANGE])) || undefined) && this.prev?.text;
 
     let spec: WindowSpecExpr | undefined;
     if (kind) {
@@ -10296,13 +10299,13 @@ export class Parser {
 
   parseOpenJson (): OpenJsonExpr {
     const thisExpr = this.parseBitwise();
-    const path = this.match(TokenType.COMMA) && this.parseString();
+    const path = (this.match(TokenType.COMMA) || undefined) && this.parseString();
 
     const parseOpenJsonColumnDef = (): OpenJsonColumnDefExpr => {
       const thisCol = this.parseField({ anyToken: true });
       const kind = this.parseTypes();
       const pathCol = this.parseString();
-      const asJson = this.matchPair(TokenType.ALIAS, TokenType.JSON);
+      const asJson = this.matchPair(TokenType.ALIAS, TokenType.JSON) || undefined;
 
       return this.expression(
         OpenJsonColumnDefExpr,
@@ -10427,7 +10430,7 @@ export class Parser {
   }
 
   parseWindowClause (): Expression[] | undefined {
-    return this.match(TokenType.WINDOW) && this.parseCsv(() => this.parseNamedWindow());
+    return (this.match(TokenType.WINDOW) || undefined) && this.parseCsv(() => this.parseNamedWindow());
   }
 
   parseNamedWindow (): Expression | undefined {
@@ -10462,8 +10465,8 @@ export class Parser {
 
     this.matchTextSeq('KEYS');
 
-    const returnType = this.matchTextSeq('RETURNING') && this.parseFormatJson(this.parseType());
-    const encoding = this.matchTextSeq('ENCODING') && this.parseVar();
+    const returnType = (this.matchTextSeq('RETURNING') || undefined) && this.parseFormatJson(this.parseType());
+    const encoding = (this.matchTextSeq('ENCODING') || undefined) && this.parseVar();
 
     return this.expression(
       agg ? JsonObjectAggExpr : JsonObjectExpr,
@@ -10485,7 +10488,7 @@ export class Parser {
 
     if (!this.matchTextSeq('NESTED')) {
       thisExpr = this.parseIdVar();
-      ordinality = this.matchPair(TokenType.FOR, TokenType.ORDINALITY);
+      ordinality = this.matchPair(TokenType.FOR, TokenType.ORDINALITY) || undefined;
       kind = this.parseTypes({ allowIdentifiers: false });
       nested = undefined;
     } else {
@@ -10495,7 +10498,7 @@ export class Parser {
       nested = true;
     }
 
-    const path = this.matchTextSeq('PATH') && this.parseString();
+    const path = (this.matchTextSeq('PATH') || undefined) && this.parseString();
     const nestedSchema = nested && this.parseJsonSchema();
 
     return this.expression(
@@ -10525,7 +10528,7 @@ export class Parser {
     if (!thisExpr) {
       this.raiseError('Expected expression for JSON_TABLE');
     }
-    const path = this.match(TokenType.COMMA) && this.parseString();
+    const path = (this.match(TokenType.COMMA) || undefined) && this.parseString();
     const errorHandling = this.parseOnHandling('ERROR', ['ERROR', 'NULL']);
     const emptyHandling = this.parseOnHandling('EMPTY', ['ERROR', 'NULL']);
     const schema = this.parseJsonSchema();
@@ -10718,7 +10721,7 @@ export class Parser {
       XmlElementExpr,
       {
         this: thisExpr,
-        expressions: this.match(TokenType.COMMA) && this.parseCsv(() => this.parseBitwise()),
+        expressions: (this.match(TokenType.COMMA) || undefined) && this.parseCsv(() => this.parseBitwise()),
         evalname,
       },
     );
@@ -10746,7 +10749,7 @@ export class Parser {
       'SEQUENCE',
       'BY',
       'REF',
-    ]);
+    ]) || undefined;
 
     if (this.matchTextSeq('COLUMNS')) {
       columns = this.parseCsv(() => this.parseFieldDef());
@@ -10812,7 +10815,7 @@ export class Parser {
       ChrExpr,
       {
         expressions: this.parseCsv(() => this.parseAssignment()),
-        charset: this.match(TokenType.USING) && this.parseVar(),
+        charset: (this.match(TokenType.USING) || undefined) && this.parseVar(),
       },
     );
   }
@@ -11136,7 +11139,7 @@ export class Parser {
       NextValueForExpr,
       {
         this: this.parseColumn(),
-        order: this.match(TokenType.OVER) && this.parseWrapped(() => this.parseOrder()),
+        order: (this.match(TokenType.OVER) || undefined) && this.parseWrapped(() => this.parseOrder()),
       },
     );
   }
@@ -11259,9 +11262,9 @@ export class Parser {
           'NULLS',
           'NOT',
           'DISTINCT',
-        ]),
+        ]) || undefined,
         this: this.parseSchema({ this: this.parseUniqueKey() }),
-        indexType: this.match(TokenType.USING) && this.advanceAny() && this.prev?.text,
+        indexType: (this.match(TokenType.USING) || undefined) && this.advanceAny() && this.prev?.text,
         onConflict: this.parseOnConflict(),
         options: this.parseKeyConstraintOptions(),
       },
@@ -11428,7 +11431,7 @@ export class Parser {
     let thisExpr: GeneratedAsIdentityColumnConstraintExpr;
 
     if (this.matchTextSeq(['BY', 'DEFAULT'])) {
-      const onNull = this.matchPair(TokenType.ON, TokenType.NULL);
+      const onNull = this.matchPair(TokenType.ON, TokenType.NULL) || undefined;
       thisExpr = this.expression(
         GeneratedAsIdentityColumnConstraintExpr,
         {
@@ -11444,18 +11447,18 @@ export class Parser {
     this.match(TokenType.ALIAS);
 
     if (this.matchTextSeq('ROW')) {
-      const start = this.matchTextSeq('START');
+      const start = this.matchTextSeq('START') || undefined;
       if (!start) {
         this.match(TokenType.END);
       }
-      const hidden = this.matchTextSeq('HIDDEN');
+      const hidden = this.matchTextSeq('HIDDEN') || undefined;
       return this.expression(GeneratedAsRowColumnConstraintExpr, {
         start,
         hidden,
       });
     }
 
-    const identity = this.matchTextSeq('IDENTITY');
+    const identity = this.matchTextSeq('IDENTITY') || undefined;
 
     if (this.match(TokenType.L_PAREN)) {
       if (this.match(TokenType.START_WITH)) {
@@ -11512,10 +11515,10 @@ export class Parser {
   }
 
   parseColumnConstraint (): Expression | undefined {
-    const thisExpr = this.match(TokenType.CONSTRAINT) && this.parseIdVar();
+    const thisExpr = (this.match(TokenType.CONSTRAINT) || undefined) && this.parseIdVar();
 
     const procedureOptionFollows =
-      this.match(TokenType.WITH, { advance: false })
+      (this.match(TokenType.WITH, { advance: false }) || undefined)
       && this.next
       && this.next.text.toUpperCase() in this._constructor.PROCEDURE_OPTIONS;
 
@@ -11624,19 +11627,19 @@ export class Parser {
       const persisted = (this.prev?.text ?? '').toUpperCase() === 'MATERIALIZED';
       const constraintKind = new ComputedColumnConstraintExpr({
         this: this.parseDisjunction(),
-        persisted: persisted || this.matchTextSeq('PERSISTED'),
+        persisted: persisted || (this.matchTextSeq('PERSISTED') || undefined),
         dataType: (this.matchTextSeq('AUTO')
           ? new DataTypeExpr({ this: 'AUTO' })
           : this.parseTypes()) as DataTypeExpr,
-        notNull: this.matchPair(TokenType.NOT, TokenType.NULL),
+        notNull: this.matchPair(TokenType.NOT, TokenType.NULL) || undefined,
       });
       constraints.push(this.expression(ColumnConstraintExpr, { kind: constraintKind }));
     } else if (!kind && this.matchSet([TokenType.IN, TokenType.OUT], { advance: false })) {
       const inOutConstraint = this.expression(
         InOutColumnConstraintExpr,
         {
-          input: this.match(TokenType.IN),
-          output: this.match(TokenType.OUT),
+          input: this.match(TokenType.IN) || undefined,
+          output: this.match(TokenType.OUT) || undefined,
         },
       );
       constraints.push(inOutConstraint);
@@ -11655,7 +11658,7 @@ export class Parser {
             kind: new ComputedColumnConstraintExpr({
               this: this.parseDisjunction(),
               persisted:
-                this.matchTexts(['STORED', 'VIRTUAL'])
+                (this.matchTexts(['STORED', 'VIRTUAL']) || undefined)
                 && (this.prev?.text ?? '').toUpperCase() === 'STORED',
             }),
           },
@@ -11723,7 +11726,7 @@ export class Parser {
       CheckColumnConstraintExpr,
       {
         this: this.parseWrapped(this.parseAssignment.bind(this)),
-        enforced: this.matchTextSeq('ENFORCED'),
+        enforced: this.matchTextSeq('ENFORCED') || undefined,
       },
     );
   }
@@ -12167,13 +12170,13 @@ export class Parser {
   parseAlter (): AlterExpr | CommandExpr {
     const start = this.prev;
 
-    const alterToken = this.matchSet(this._constructor.ALTERABLES) && this.prev;
+    const alterToken = (this.matchSet(this._constructor.ALTERABLES) || undefined) && this.prev;
     if (!alterToken) {
       return this.parseAsCommand(start);
     }
 
     const exists = this.parseExists();
-    const only = this.matchTextSeq('ONLY');
+    const only = this.matchTextSeq('ONLY') || undefined;
 
     let thisExpr: Expression | undefined;
     let check: boolean | undefined;
@@ -12188,7 +12191,7 @@ export class Parser {
         schema: true,
         parsePartition: this._constructor.ALTER_TABLE_PARTITIONS,
       });
-      check = this.matchTextSeq(['WITH', 'CHECK']);
+      check = this.matchTextSeq(['WITH', 'CHECK']) || undefined;
       cluster = this.match(TokenType.ON) ? this.parseOnProperty() : undefined;
 
       if (this.next) {
@@ -12201,7 +12204,7 @@ export class Parser {
       : undefined;
     if (parser) {
       const actions = ensureList(parser.call(this));
-      const notValid = this.matchTextSeq(['NOT', 'VALID']);
+      const notValid = this.matchTextSeq(['NOT', 'VALID']) || undefined;
       const options = this.parseCsv(this.parseProperty.bind(this));
       const cascade =
         this._dialectConstructor.ALTER_TABLE_SUPPORTS_CASCADE
@@ -12468,8 +12471,8 @@ export class Parser {
     return this.expression(MergeExpr, {
       this: target,
       using,
-      on: this.match(TokenType.ON) && this.parseDisjunction(),
-      usingCond: this.match(TokenType.USING) && this.parseUsingIdentifiers(),
+      on: (this.match(TokenType.ON) || undefined) && this.parseDisjunction(),
+      usingCond: (this.match(TokenType.USING) || undefined) && this.parseUsingIdentifiers(),
       whens: this.parseWhenMatched(),
       returning: this.parseReturning(),
     });
@@ -12554,7 +12557,7 @@ export class Parser {
     const left = this.parsePrimary() || this.parseColumn();
     const assignmentDelimiter = this.matchTexts(
       this._constructor.SET_ASSIGNMENT_DELIMITERS,
-    );
+    ) || undefined;
 
     if (
       !left
@@ -12661,7 +12664,7 @@ export class Parser {
   }
 
   parseCache (): CacheExpr {
-    const lazy = this.matchTextSeq('LAZY');
+    const lazy = this.matchTextSeq('LAZY') || undefined;
     this.match(TokenType.TABLE);
     const table = this.parseTable({ schema: true });
 
@@ -13038,7 +13041,7 @@ export class Parser {
     if (this.match(TokenType.COLUMN) || !this._constructor.ALTER_RENAME_REQUIRES_COLUMN) {
       const exists = this.parseExists();
       const oldColumn = this.parseColumn();
-      const to = this.matchTextSeq('TO');
+      const to = this.matchTextSeq('TO') || undefined;
       const newColumn = this.parseColumn();
 
       if (!oldColumn || !to || !newColumn) {
@@ -13058,10 +13061,10 @@ export class Parser {
 
   parseLoad (): LoadDataExpr | CommandExpr {
     if (this.matchTextSeq('DATA')) {
-      const local = this.matchTextSeq('LOCAL');
+      const local = this.matchTextSeq('LOCAL') || undefined;
       this.matchTextSeq('INPATH');
       const inpath = this.parseString();
-      const overwrite = this.match(TokenType.OVERWRITE);
+      const overwrite = this.match(TokenType.OVERWRITE) || undefined;
       this.matchPair(TokenType.INTO, TokenType.TABLE);
 
       return this.expression(LoadDataExpr, {
@@ -13198,7 +13201,7 @@ export class Parser {
 
   parseDictRange (options: { this: string }): DictRangeExpr {
     this.matchLParen();
-    const hasMin = this.matchTextSeq('MIN');
+    const hasMin = this.matchTextSeq('MIN') || undefined;
     let min: Expression | undefined;
     let max: Expression | undefined;
 
@@ -13230,7 +13233,7 @@ export class Parser {
   parseComprehension (thisValue?: Expression): ComprehensionExpr | undefined {
     const index = this.index;
     const expression = this.parseColumn();
-    const position = this.match(TokenType.COMMA) && this.parseColumn();
+    const position = (this.match(TokenType.COMMA) || undefined) && this.parseColumn();
 
     if (!this.match(TokenType.IN)) {
       this.retreat(index - 1);
@@ -13781,7 +13784,7 @@ export class Parser {
     this.match(TokenType.COMMA);
     const path = this.parseBitwise();
 
-    const returning = this.match(TokenType.RETURNING) && this.parseType();
+    const returning = (this.match(TokenType.RETURNING) || undefined) && this.parseType();
 
     return this.expression(JsonValueExpr, {
       this: thisValue,

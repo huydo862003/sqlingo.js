@@ -1287,7 +1287,7 @@ export function eliminateWindowClause (expression: Expression): Expression {
 
     const inlineInheritedWindow = (window: Expression): void => {
       const alias = window.alias?.toLowerCase();
-      if (!alias) return;
+      if (alias === undefined) return;
       const inherited = windowMap[alias];
       if (!inherited) return;
 

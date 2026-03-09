@@ -902,7 +902,7 @@ function* traverseCtes (scope: Scope): Generator<Scope> {
  * as it doesn't introduce a new scope. If an alias is present, it shadows all names
  * under the Subquery, so that's one exception to this rule.
  */
-function isDerivedTable (expression: SubqueryExpr): boolean {
+function isDerivedTable (expression: Expression): boolean {
   return Boolean(
     expression.alias
     || UNWRAPPED_QUERIES.some((T) => expression.args.this instanceof T),
@@ -1137,8 +1137,10 @@ export function buildScope (expression: Expression): Scope | undefined {
  */
 export function* walkInScope (
   expression: Expression,
-  options: { bfs?: boolean;
-    prune?: (node: Expression) => boolean; } = {},
+  options: {
+    bfs?: boolean;
+    prune?: (node: Expression) => boolean;
+  } = {},
 ): Generator<Expression> {
   const {
     bfs = true, prune,
@@ -1161,7 +1163,6 @@ export function* walkInScope (
       node instanceof CteExpr
       || (
         (node.parent instanceof FromExpr || node.parent instanceof JoinExpr)
-        && node instanceof SubqueryExpr
         && isDerivedTable(node)
       )
       || (node.parent instanceof UdtfExpr && node instanceof QueryExpr)
