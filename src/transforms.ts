@@ -284,7 +284,7 @@ export function eliminateDistinctOn (expression: Expression): Expression {
       let current: ExpressionValue | undefined = select;
       if (!(current instanceof AliasExpr)) {
         const aliasExpr = findNewName(takenNames, current.outputName || '_col');
-        const quoted = current instanceof ColumnExpr ? !!current.getArgKey('quoted') : undefined;
+        const quoted = current instanceof ColumnExpr && current.args.this instanceof Expression ? !!current.args.this?.getArgKey('quoted') : undefined;
         current = current.replace(alias(
           current,
           aliasExpr,
