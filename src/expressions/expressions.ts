@@ -222,9 +222,7 @@ export class Expression implements
       return field;
     }
     if (field instanceof IdentifierExpr || field instanceof LiteralExpr || field instanceof VarExpr) {
-      return typeof field.args.this === 'string'
-        ? field.args.this
-        : '';
+      return field.args.this?.toString() ?? '';
     }
     if (field instanceof StarExpr || field instanceof NullExpr) {
       return field.name;
@@ -12254,13 +12252,13 @@ export class SelectExpr extends QueryExpr {
       append = true, dialect, copy = true, ...restOptions
     } = options;
     return applyListBuilder(expressions, {
-      ...restOptions,
       instance: this,
       arg: 'expressions',
       append,
       dialect,
       into: Expression,
       copy,
+      ...restOptions,
     });
   }
 
@@ -29999,7 +29997,7 @@ export function select (
     [key: string]: unknown;
   } = {},
 ): SelectExpr {
-  return new SelectExpr({}).select(expressions, options);
+  return new SelectExpr().select(expressions, options);
 }
 
 /**
@@ -31147,7 +31145,7 @@ function applyListBuilder<ArgT extends Expression, RetT extends Expression> (
 
   const inst = maybeCopy(instance, copy);
 
-  const expressionList = Array.from(ensureList(expressions));
+  const expressionList = ensureList(expressions);
   const parsedExpressions = expressionList
     .filter((expr) => expr !== undefined)
     .map((expr) =>

@@ -304,15 +304,12 @@ export function eliminateDistinctOn (expression: Expression): Expression {
 
 export function eliminateQualify (expression: Expression): Expression {
   if (expression instanceof SelectExpr && expression.args.qualify) {
-    const taken = expression.namedSelects;
+    const taken = new Set(expression.namedSelects);
     for (const select of expression.selects) {
       if (!select.aliasOrName) {
-        const alias = findNewName(taken, '_c');
-        select.replace(new AliasExpr({
-          this: select,
-          alias,
-        }));
-        taken.push(alias);
+        const aliasExpr = findNewName(taken, '_c');
+        select.replace(alias(select, aliasExpr));
+        taken.add(aliasExpr);
       }
     }
 
@@ -329,26 +326,28 @@ export function eliminateQualify (expression: Expression): Expression {
     };
 
     const outerSelects = select(expression.selects.map(selectAliasOrName));
-    let qualifyFilters = expression.args.qualify.pop().args.this;
+    let qualifyFilters = narrowInstanceOf(expression.args.qualify.pop().args.this, Expression);
 
     const expressionByAlias: Record<string, Expression | undefined> = {};
     for (const s of expression.selects) {
       if (s instanceof AliasExpr) expressionByAlias[s.alias] = s.args.this;
     }
 
-    const candidates = isInstanceOf(qualifyFilters, Expression) ? qualifyFilters.findAll<WindowExpr | ColumnExpr>(expression.isStar ? [WindowExpr] : [WindowExpr, ColumnExpr]) : [];
-    for (const candidate of candidates) {
+    const candidates = expression.isStar ? [WindowExpr] as const : [WindowExpr, ColumnExpr] as const;
+    for (const candidate of qualifyFilters?.findAll<WindowExpr | ColumnExpr>(candidates) ?? []) {
       if (candidate instanceof WindowExpr) {
-        for (const col of candidate.findAll(ColumnExpr)) {
-          const expr = expressionByAlias[col.name];
-          if (expr) col.replace(expr);
+        if (expressionByAlias) {
+          for (const col of candidate.findAll(ColumnExpr)) {
+            const expr = expressionByAlias[col.name];
+            if (expr) col.replace(expr);
+          }
         }
         const aliasExpr = findNewName(expression.namedSelects, '_w');
         expression.select(alias(
           candidate,
           aliasExpr,
         ), { copy: false });
-        const col = new ColumnExpr({ this: aliasExpr });
+        const col = column({ col: aliasExpr });
 
         if (candidate.parent instanceof QualifyExpr) {
           qualifyFilters = col;
@@ -360,8 +359,9 @@ export function eliminateQualify (expression: Expression): Expression {
       }
     }
 
-    return outerSelects.from(expression.subquery('_t', { copy: false })).where(isInstanceOf(qualifyFilters, Expression) ? qualifyFilters : typeof qualifyFilters === 'string' ? qualifyFilters : undefined);
+    return outerSelects.from(expression.subquery('_t', { copy: false }), { copy: false }).where(qualifyFilters, { copy: false });
   }
+
   return expression;
 }
 
