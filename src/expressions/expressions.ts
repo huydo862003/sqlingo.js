@@ -1991,22 +1991,17 @@ export class QueryExpr extends Expression {
     } = {},
   ): this {
     const {
-      append = true, copy = true, ...restOptions
+      append = true, copy = true, dialect, ...restOptions
     } = options;
-    const processedExpressions = Array.from(ensureList(expressions))
-      .filter((expr): expr is string | Expression => typeof expr === 'string' || expr instanceof Expression)
-      .map((expr): string | Expression | undefined =>
-        expr instanceof WhereExpr
-          ? expr.args.this
-          : expr);
 
-    return applyConjunctionBuilder(processedExpressions, {
+    return applyConjunctionBuilder(ensureList<ExpressionValue>(expressions).map((e) => e instanceof WhereExpr ? e.args.this : e), {
       instance: this,
       arg: 'where',
       into: WhereExpr,
-      ...restOptions,
       append,
       copy,
+      dialect,
+      ...restOptions,
     }) as this;
   }
 
@@ -12070,8 +12065,7 @@ export class SelectExpr extends QueryExpr {
       if (e.aliasOrName) {
         selects.push(e.outputName);
       } else if (e instanceof AliasesExpr) {
-        const aliases = e.args.expressions || [];
-        selects.push(...aliases.map((a) => a instanceof Expression ? a.name : '').filter((n) => n));
+        selects.push(...e.aliases.map((a) => a.name));
       }
     }
 
