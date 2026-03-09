@@ -5484,7 +5484,10 @@ export class Parser {
   }
 
   parseWith (options: { skipWithToken?: boolean } = {}): WithExpr | undefined {
-    if (!options?.skipWithToken && !this.match(TokenType.WITH)) {
+    const {
+      skipWithToken = false,
+    } = options;
+    if (!skipWithToken && !this.match(TokenType.WITH)) {
       return undefined;
     }
 
@@ -6127,16 +6130,11 @@ export class Parser {
       parseBracket = false,
     } = options;
     if (this.match(TokenType.COMMA)) {
-      const table = this._parse({
-        parseMethod: function (this: Parser) {
-          return this.parseTable();
-        },
-        rawTokens: this.tokens,
-      });
+      const table = this.tryParse(this.parseTable.bind(this));
       const crossJoin = table ? this.expression(JoinExpr, { this: table }) : undefined;
 
       if (crossJoin && this._constructor.JOINS_HAVE_EQUAL_PRECEDENCE) {
-        crossJoin.setArgKey('kind', 'CROSS');
+        crossJoin.setArgKey('kind', JoinExprKind.CROSS);
       }
 
       return crossJoin;
@@ -6149,7 +6147,7 @@ export class Parser {
       kind,
     } = this.parseJoinParts();
     const directed = this.matchTextSeq('DIRECTED') || undefined;
-    const hint = (this.matchTexts(Array.from(this._constructor.JOIN_HINTS)) || undefined) && this.prev?.text;
+    const hint = (this.matchTexts(this._constructor.JOIN_HINTS) || undefined) && this.prev?.text;
     const join = this.match(TokenType.JOIN) || (kind?.tokenType === TokenType.STRAIGHT_JOIN);
     const joinComments = this.prevComments;
 
@@ -8485,13 +8483,21 @@ export class Parser {
 
     // https://materialize.com/docs/sql/types/map/
     if (typeToken === TokenType.MAP && this.match(TokenType.L_BRACKET)) {
-      const keyType = this.parseTypes({ checkFunc, schema, allowIdentifiers });
+      const keyType = this.parseTypes({
+        checkFunc,
+        schema,
+        allowIdentifiers,
+      });
       if (!this.match(TokenType.FARROW)) {
         this.retreat(index);
         return undefined;
       }
 
-      const valueType = this.parseTypes({ checkFunc, schema, allowIdentifiers })!;
+      const valueType = this.parseTypes({
+        checkFunc,
+        schema,
+        allowIdentifiers,
+      });
       if (!this.match(TokenType.R_BRACKET)) {
         this.retreat(index);
         return undefined;
@@ -8515,7 +8521,11 @@ export class Parser {
       if (isStruct) {
         expressions = this.parseCsv(() => this.parseStructTypes({ typeRequired: true }));
       } else if (nested) {
-        expressions = this.parseCsv(() => this.parseTypes({ checkFunc, schema, allowIdentifiers }));
+        expressions = this.parseCsv(() => this.parseTypes({
+          checkFunc,
+          schema,
+          allowIdentifiers,
+        }));
 
         if (typeToken === TokenType.NULLABLE && expressions.length === 1) {
           thisExpr = expressions[0];
@@ -8535,7 +8545,11 @@ export class Parser {
         }
         expressions = [funcOrIdent];
         if (this.match(TokenType.COMMA)) {
-          expressions.push(...this.parseCsv(() => this.parseTypes({ checkFunc, schema, allowIdentifiers })));
+          expressions.push(...this.parseCsv(() => this.parseTypes({
+            checkFunc,
+            schema,
+            allowIdentifiers,
+          })));
         }
       } else {
         expressions = this.parseCsv(() => this.parseTypeSize());
@@ -8560,7 +8574,11 @@ export class Parser {
       if (isStruct) {
         expressions = this.parseCsv(() => this.parseStructTypes({ typeRequired: true }));
       } else {
-        expressions = this.parseCsv(() => this.parseTypes({ checkFunc, schema, allowIdentifiers }));
+        expressions = this.parseCsv(() => this.parseTypes({
+          checkFunc,
+          schema,
+          allowIdentifiers,
+        }));
       }
 
       if (!this.match(TokenType.GT)) {

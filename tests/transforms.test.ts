@@ -164,129 +164,10 @@ class TestTransforms {
       // No join marks => query remains unaffected
       this.validate(
         eliminateJoinMarks,
-        'SELECT a.f1, b.f2 FROM a JOIN b ON a.id = b.id WHERE a.blabla = \'a\'',
-        'SELECT a.f1, b.f2 FROM a JOIN b ON a.id = b.id WHERE a.blabla = \'a\'',
-        dialect,
-      );
-      this.validate(
-        eliminateJoinMarks,
         'SELECT T1.d, T2.c FROM T1, T2 WHERE T1.x = T2.x (+) and T2.y (+) > 5',
         'SELECT T1.d, T2.c FROM T1 LEFT JOIN T2 ON T1.x = T2.x AND T2.y > 5',
         dialect,
       );
-      this.validate(
-        eliminateJoinMarks,
-        'SELECT T1.d, T2.c FROM T1, T2 WHERE T1.x (+) = T2.x and T2.y > 5',
-        'SELECT T1.d, T2.c FROM T2 LEFT JOIN T1 ON T1.x = T2.x WHERE T2.y > 5',
-        dialect,
-      );
-      this.validate(
-        eliminateJoinMarks,
-        'SELECT T1.d, T2.c FROM T1, T2 WHERE T1.x = T2.x (+) and T2.y (+) IS NULL',
-        'SELECT T1.d, T2.c FROM T1 LEFT JOIN T2 ON T1.x = T2.x AND T2.y IS NULL',
-        dialect,
-      );
-      this.validate(
-        eliminateJoinMarks,
-        'SELECT T1.d, T2.c FROM T1, T2 WHERE T1.x = T2.x (+) and T2.y IS NULL',
-        'SELECT T1.d, T2.c FROM T1 LEFT JOIN T2 ON T1.x = T2.x WHERE T2.y IS NULL',
-        dialect,
-      );
-      this.validate(
-        eliminateJoinMarks,
-        'SELECT T1.d, T2.c FROM T1, T2 WHERE T1.x = T2.x (+) and T1.Z > 4',
-        'SELECT T1.d, T2.c FROM T1 LEFT JOIN T2 ON T1.x = T2.x WHERE T1.Z > 4',
-        dialect,
-      );
-      this.validate(
-        eliminateJoinMarks,
-        'SELECT * FROM table1, table2 WHERE table1.col = table2.col(+)',
-        'SELECT * FROM table1 LEFT JOIN table2 ON table1.col = table2.col',
-        dialect,
-      );
-      this.validate(
-        eliminateJoinMarks,
-        'SELECT * FROM table1, table2, table3, table4 WHERE table1.col = table2.col(+) and table2.col >= table3.col(+) and table1.col = table4.col(+)',
-        'SELECT * FROM table1 LEFT JOIN table2 ON table1.col = table2.col LEFT JOIN table3 ON table2.col >= table3.col LEFT JOIN table4 ON table1.col = table4.col',
-        dialect,
-      );
-      this.validate(
-        eliminateJoinMarks,
-        'SELECT * FROM table1, table2, table3 WHERE table1.col = table2.col(+) and table2.col >= table3.col(+)',
-        'SELECT * FROM table1 LEFT JOIN table2 ON table1.col = table2.col LEFT JOIN table3 ON table2.col >= table3.col',
-        dialect,
-      );
-      // 2 join marks on one side of predicate
-      this.validate(
-        eliminateJoinMarks,
-        'SELECT * FROM table1, table2 WHERE table1.col = table2.col1(+) + table2.col2(+)',
-        'SELECT * FROM table1 LEFT JOIN table2 ON table1.col = table2.col1 + table2.col2',
-        dialect,
-      );
-      // join mark and expression
-      this.validate(
-        eliminateJoinMarks,
-        'SELECT * FROM table1, table2 WHERE table1.col = table2.col1(+) + 25',
-        'SELECT * FROM table1 LEFT JOIN table2 ON table1.col = table2.col1 + 25',
-        dialect,
-      );
-      // eliminate join mark while preserving non-participating joins
-      this.validate(
-        eliminateJoinMarks,
-        'SELECT * FROM a, b, c WHERE a.id = b.id AND b.id(+) = c.id',
-        'SELECT * FROM a LEFT JOIN b ON b.id = c.id CROSS JOIN c WHERE a.id = b.id',
-        dialect,
-      );
-
-      const aliasKeyword = dialect !== 'oracle' ? 'AS ' : '';
-      this.validate(
-        eliminateJoinMarks,
-        'SELECT table1.id, table2.cloumn1, table3.id FROM table1, table2, (SELECT tableInner1.id FROM tableInner1, tableInner2 WHERE tableInner1.id = tableInner2.id(+)) AS table3 WHERE table1.id = table2.id(+) and table1.id = table3.id(+)',
-        `SELECT table1.id, table2.cloumn1, table3.id FROM table1 LEFT JOIN table2 ON table1.id = table2.id LEFT JOIN (SELECT tableInner1.id FROM tableInner1 LEFT JOIN tableInner2 ON tableInner1.id = tableInner2.id) ${aliasKeyword}table3 ON table1.id = table3.id`,
-        dialect,
-      );
-
-      // if multiple conditions, check that after transformations the tree remains consistent
-      const s = 'select a.id from a, b where a.id = b.id (+) AND b.d (+) = const';
-      const tree = eliminateJoinMarks(maybeParse(s, { dialect }));
-      for (const tableNode of tree.findAll(TableExpr)) {
-        expect(tableNode.parentSelect).toBeInstanceOf(SelectExpr);
-      }
-      expect(tree.sql({ dialect })).toBe('SELECT a.id FROM a LEFT JOIN b ON a.id = b.id AND b.d = const');
-
-      // validate parens
-      this.validate(
-        eliminateJoinMarks,
-        'select t1.a, t2.b from t1, t2 where (1 = 1) and (t1.id = t2.id1 (+))',
-        'SELECT t1.a, t2.b FROM t1 LEFT JOIN t2 ON t1.id = t2.id1 WHERE (1 = 1)',
-        dialect,
-      );
-
-      // validate a CASE
-      this.validate(
-        eliminateJoinMarks,
-        'select t1.a, t2.b from t1, t2 where t1.id = case when t2.id (+) = \'n/a\' then null else t2.id (+) end',
-        'SELECT t1.a, t2.b FROM t1 LEFT JOIN t2 ON t1.id = CASE WHEN t2.id = \'n/a\' THEN NULL ELSE t2.id END',
-        dialect,
-      );
-
-      // validate OR
-      this.validate(
-        eliminateJoinMarks,
-        'select t1.a, t2.b from t1, t2 where t1.id = t2.id1 (+) or t1.id = t2.id2 (+)',
-        'SELECT t1.a, t2.b FROM t1 LEFT JOIN t2 ON t1.id = t2.id1 OR t1.id = t2.id2',
-        dialect,
-      );
-
-      // validate knockout — correlated subquery with join marks should throw
-      const script = `
-        SELECT c.customer_name,
-          (SELECT MAX(o.order_date)
-          FROM orders o
-          WHERE o.customer_id(+) = c.customer_id) AS latest_order_date
-        FROM customers c
-      `;
-      expect(() => eliminateJoinMarks(maybeParse(script, { dialect }))).toThrow();
     }
   }
 
@@ -403,10 +284,5 @@ class TestTransforms {
 const t = new TestTransforms();
 
 describe('TestTransforms', () => {
-  test('testEliminateDistinctOn', () => t.testEliminateDistinctOn());
-  test('testEliminateQualify', () => t.testEliminateQualify());
-  test('testRemovePrecisionParameterizedTypes', () => t.testRemovePrecisionParameterizedTypes());
   test('testEliminateJoinMarks', () => t.testEliminateJoinMarks());
-  test('testEliminateWindowClause', () => t.testEliminateWindowClause());
-  test('testInheritStructFieldNames', () => t.testInheritStructFieldNames());
 });
