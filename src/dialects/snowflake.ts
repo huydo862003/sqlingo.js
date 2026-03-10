@@ -259,6 +259,7 @@ import {
   preprocess,
   unqualifyColumns,
 } from '../transforms';
+import { SnowflakeTyping } from '../typing/snowflake';
 import {
   arrayConcatSql,
   arrayAppendSql,
@@ -780,8 +781,13 @@ function buildRegexpExtract<T extends Expression> (ExprClass: new (args: any) =>
 function regexpExtractSql (this: Generator, expression: RegexpExtractExpr | RegexpExtractAllExpr): string {
   let group = expression.args.group;
 
-  if (group instanceof IdentifierExpr && group.name === '0') {
-    group = undefined;
+  if (group) {
+    if (
+      (group instanceof IdentifierExpr && group.name === '0')
+      || (group instanceof LiteralExpr && String(group.args.this) === '0')
+    ) {
+      group = undefined;
+    }
   }
 
   const parameters = expression.args.parameters || (group ? LiteralExpr.string('c') : undefined);
@@ -1143,26 +1149,33 @@ class SnowflakeTokenizer extends Tokenizer {
 }
 
 class SnowflakeParser extends Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.EXCEPT,
+      TokenType.MATCH_CONDITION,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
   static IDENTIFY_PIVOT_STRINGS = true;
   static DEFAULT_SAMPLING_METHOD = 'BERNOULLI' as const;
   static COLON_IS_VARIANT_EXTRACT = true;
   static JSON_EXTRACT_REQUIRES_JSON_EXPRESSION = true;
 
   @cache
-  static get ID_VAR_TOKENS (): Set<TokenType> {
-    return new Set([
-      ...Parser.ID_VAR_TOKENS,
-      TokenType.EXCEPT,
-      TokenType.MATCH_CONDITION,
-    ]);
-  }
-
-  @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
     return (() => {
-      const tokens = new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.WINDOW]);
-      tokens.delete(TokenType.MATCH_CONDITION);
-      return tokens;
+      const s = new Set([
+        ...Parser.TABLE_ALIAS_TOKENS,
+        TokenType.WINDOW,
+        TokenType.STRAIGHT_JOIN,
+      ]);
+      s.delete(TokenType.MATCH_CONDITION);
+      return s;
     })();
   }
 
@@ -1363,8 +1376,17 @@ class SnowflakeParser extends Parser {
           }),
         TABLE: (args: Expression[]) => new TableFromRowsExpr({ this: seqGet(args, 0) }),
         TIME_ADD: buildDateTimeAdd(TimeAddExpr),
+        TIMEADD: buildDateTimeAdd(TimeAddExpr),
         TIMEDIFF: buildDatediff,
         TIME_FROM_PARTS: (args: Expression[]) =>
+          new TimeFromPartsExpr({
+            hour: seqGet(args, 0),
+            min: seqGet(args, 1),
+            sec: seqGet(args, 2),
+            nano: seqGet(args, 3),
+            overflow: true,
+          }),
+        TIMEFROMPARTS: (args: Expression[]) =>
           new TimeFromPartsExpr({
             hour: seqGet(args, 0),
             min: seqGet(args, 1),
@@ -1572,7 +1594,7 @@ class SnowflakeParser extends Parser {
         return (this as SnowflakeParser).parseTag();
       },
       USING: function (this: Parser) {
-        return this.matchTextSeq('TEMPLATE')
+        return (this.matchTextSeq('TEMPLATE') || undefined)
           && this.expression(UsingTemplatePropertyExpr, {
             this: this.parseStatement(),
           });
@@ -1754,7 +1776,7 @@ class SnowflakeParser extends Parser {
 
   parseTag (): TagsExpr {
     return this.expression(TagsExpr, {
-      expressions: this.parseWrappedCsv(() => this.parseProperty()),
+      expressions: this.parseWrappedCsv(() => this.parseProperty() as Expression | undefined),
     });
   }
 
@@ -2189,6 +2211,24 @@ class SnowflakeParser extends Parser {
 }
 
 class SnowflakeGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static PARAMETER_TOKEN = '$';
   static MATCHED_BY_SOURCE = false;
   static SINGLE_STRING_INTERVAL = true;
@@ -2589,7 +2629,7 @@ class SnowflakeGenerator extends Generator {
     return transforms;
   }
 
-  nthvalueSql (expression: NthValueExpr): string {
+  nthValueSql (expression: NthValueExpr): string {
     let result = this.func('NTH_VALUE', [expression.args.this, expression.args.offset]);
     const fromFirst = expression.args.fromFirst;
 
@@ -3178,10 +3218,26 @@ class SnowflakeGenerator extends Generator {
 }
 
 export class Snowflake extends Dialect {
-  static NORMALIZATION_STRATEGY = NormalizationStrategy.UPPERCASE;
-  static NULL_ORDERING = NullOrdering.NULLS_ARE_LARGE;
+  static DIALECT_NAME = Dialects.SNOWFLAKE;
+
+  @cache
+  static get NORMALIZATION_STRATEGY () {
+    return NormalizationStrategy.UPPERCASE;
+  }
+
+  @cache
+  static get NULL_ORDERING () {
+    return NullOrdering.NULLS_ARE_LARGE;
+  }
+
   static TIME_FORMAT = '\'YYYY-MM-DD HH24:MI:SS\'';
   static SUPPORTS_USER_DEFINED_TYPES = false;
+
+  @cache
+  static get EXPRESSION_METADATA () {
+    return new Map(SnowflakeTyping.EXPRESSION_METADATA);
+  }
+
   static SUPPORTS_SEMI_ANTI_JOIN = false;
   static PREFER_CTE_ALIAS_COLUMN = true;
   static TABLESAMPLE_SIZE_IS_PERCENT = true;
@@ -3198,7 +3254,37 @@ export class Snowflake extends Dialect {
   @cache
   static get INVERSE_TIME_MAPPING () {
     return {
-      T: 'T', // Prevent 'T' from being mapped back to '"T"'
+      'T': 'T', // Prevent 'T' from being mapped back to '"T"'
+      '%Y': 'yyyy',
+      '%y': 'yy',
+      '%B': 'MMMM',
+      '%b': 'MON',
+      '%m': 'mm',
+      '%d': 'DD',
+      '%-d': 'dd',
+      '%a': 'DY',
+      '%w': 'dy',
+      '%H': 'HH24',
+      '%I': 'HH12',
+      '%M': 'MI',
+      '%S': 'SS',
+      '%f_nine': 'FF',
+      '%f_zero': 'FF0',
+      '%f_one': 'FF1',
+      '%f_two': 'FF2',
+      '%f_three': 'FF3',
+      '%f_four': 'FF4',
+      '%f_five': 'FF5',
+      '%f': 'FF6',
+      '%f_seven': 'FF7',
+      '%f_eight': 'FF8',
+      '%z': 'TZHTZM',
+      '%:z': 'TZH:TZM',
+      '%-z': 'TZH',
+      '%p': 'AM/PM',
+      '%A': 'EEEE',
+      '%j': 'DDD',
+      '%C': 'CC',
     };
   }
 

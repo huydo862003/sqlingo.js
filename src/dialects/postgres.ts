@@ -147,7 +147,11 @@ import {
   JoinExpr,
   FromExpr,
   TableExpr,
+  IntoExpr,
   isType,
+  var_,
+  CurrentCatalogExpr,
+  SessionUserExpr,
 } from '../expressions';
 import { seqGet } from '../helper';
 import {
@@ -217,7 +221,7 @@ function dateAddSql (kind: string) {
     if (e instanceof LiteralExpr) {
       e.setArgKey('isString', true);
     } else if (e && e.isNumber) {
-      e = LiteralExpr.string(e.args.this);
+      e = LiteralExpr.string(e.toValue()!);
     } else {
       this.unsupported('Cannot add non-literal');
     }
@@ -244,7 +248,7 @@ function dateDiffSql (this: Generator, expression: DateDiffExpr): string {
   let unitSql: string;
 
   if (unit === 'WEEK') {
-    unitSql = `EXTRACT(days FROM (${end} - {start})) / 7`;
+    unitSql = `EXTRACT(days FROM (${end} - ${start})) / 7`;
   } else if (unit === 'MONTH') {
     unitSql = `EXTRACT(year FROM ${age}) * 12 + EXTRACT(month FROM ${age})`;
   } else if (unit === 'QUARTER') {
@@ -347,10 +351,13 @@ function buildToTimestamp (args: Expression[]): UnixToTimeExpr | StrToTimeExpr {
 function jsonExtractSql (name: string, op: string) {
   return function (this: Generator, expression: JsonExtractExpr | JsonExtractScalarExpr): string {
     const onlyJsonTypes = expression.args.onlyJsonTypes;
-    return jsonExtractSegments(name, {
-      quotedIndex: !onlyJsonTypes,
-      op,
-    }).call(this, expression);
+    if (onlyJsonTypes) {
+      return jsonExtractSegments(name, {
+        quotedIndex: false,
+        op,
+      }).call(this, expression);
+    }
+    return jsonExtractSegments(name).call(this, expression);
   };
 }
 
@@ -378,13 +385,16 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   const scale = expression.args.scale;
   const timestamp = expression.args.this;
 
-  if (scale === undefined || scale === UnixToTimeExpr.SECONDS) {
+  if (scale === undefined || scale?.toValue() === UnixToTimeExpr.SECONDS.toValue()) {
     return this.func('TO_TIMESTAMP', [timestamp, this.formatTime(expression)]);
   }
 
   const div = new DivExpr({
-    this: timestamp,
-    expression: this.func('POW', [LiteralExpr.number(10), scale]),
+    this: timestamp?.copy(),
+    expression: new PowExpr({
+      this: LiteralExpr.number(10),
+      expression: scale?.copy(),
+    }),
   });
 
   return this.func('TO_TIMESTAMP', [div, this.formatTime(expression)]);
@@ -542,6 +552,16 @@ export class PostgresTokenizer extends Tokenizer {
 }
 
 class PostgresParser extends Parser {
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    noParenFunctions[TokenType.CURRENT_SCHEMA] = CurrentSchemaExpr;
+    noParenFunctions[TokenType.SESSION_USER] = SessionUserExpr;
+    noParenFunctions[TokenType.CURRENT_CATALOG] = CurrentCatalogExpr;
+    return noParenFunctions;
+  }
+
   static SUPPORTS_OMITTED_INTERVAL_SPAN_UNIT = true;
 
   @cache
@@ -639,14 +659,6 @@ class PostgresParser extends Parser {
       VARIADIC: function (this: Parser) {
         return this.expression(VariadicExpr, { this: (this as PostgresParser).parseBitwise() });
       },
-    };
-  }
-
-  @cache
-  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
-    return {
-      ...Parser.NO_PAREN_FUNCTIONS,
-      [TokenType.CURRENT_SCHEMA]: CurrentSchemaExpr,
     };
   }
 
@@ -838,7 +850,7 @@ class PostgresParser extends Parser {
     const value = this.parseBitwise();
 
     if (part && (part instanceof ColumnExpr || part instanceof LiteralExpr)) {
-      part = new IdentifierExpr({ this: part.name });
+      part = var_(part.name);
     }
 
     return this.expression(ExtractExpr, {
@@ -883,9 +895,40 @@ class PostgresParser extends Parser {
 
     return DataTypeExpr.build(udtType, { udt: true });
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.ID_VAR_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 class PostgresGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static SINGLE_STRING_INTERVAL = true;
   static RENAME_TABLE_WITH_DB = false;
   static LOCKING_READS_SUPPORTED = true;
@@ -946,6 +989,18 @@ class PostgresGenerator extends Generator {
     return sql;
   }
 
+  jsonbExtractSql (e: JsonbExtractExpr): string {
+    return this.binary(e, '#>');
+  }
+
+  jsonbExtractScalarSql (e: JsonbExtractScalarExpr): string {
+    return this.binary(e, '#>>');
+  }
+
+  explodeSql (e: ExplodeExpr): string {
+    return this.func('UNNEST', [e.args.this, ...e.args.expressions || []]);
+  }
+
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
@@ -993,7 +1048,7 @@ class PostgresGenerator extends Generator {
         function (this: Generator, e: JsonArrayAggExpr) {
           const thisSql = this.sql(e, 'this');
           const orderSql = this.sql(e, 'order');
-          const inner = orderSql ? `${thisSql} ${orderSql}` : thisSql;
+          const inner = orderSql ? `${thisSql}${orderSql}` : thisSql;
           return `JSON_AGG(${inner})`;
         },
       ],
@@ -1031,9 +1086,7 @@ class PostgresGenerator extends Generator {
       [
         JsonPathSubscriptExpr,
         function (this: Generator, e: JsonPathSubscriptExpr) {
-          const thisVal = e.args.this;
-          const part = typeof thisVal === 'number' || typeof thisVal === 'boolean' ? String(thisVal) : (thisVal instanceof Expression ? thisVal : (thisVal ?? ''));
-          return this.jsonPathPart(part);
+          return this.jsonPathPart(e.args.this);
         },
       ],
       [LastDayExpr, noLastDaySql],
@@ -1109,7 +1162,10 @@ class PostgresGenerator extends Generator {
       [
         TimeToStrExpr,
         function (this: Generator, e: TimeToStrExpr) {
-          return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+          if (typeof e.args.format === 'string' || e.args.format?.isString) {
+            return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+          }
+          return this.func('TO_CHAR', [e.args.this, e.args.format]);
         },
       ],
       [
@@ -1138,6 +1194,19 @@ class PostgresGenerator extends Generator {
       [JsonObjectAggExpr, renameFunc('JSON_OBJECT_AGG')],
       [JsonbObjectAggExpr, renameFunc('JSONB_OBJECT_AGG')],
       [CountIfExpr, countIfToSum],
+      [
+        IntoExpr,
+        function (this: Generator, e: IntoExpr) {
+        // PostgreSQL SELECT INTO only supports INTO <table>, not INTO with variable list (Oracle syntax)
+          if (e.args.expressions && 0 < e.args.expressions.length) {
+            this.unsupported('Oracle-style SELECT INTO with variables is not supported in PostgreSQL');
+          }
+          const temporary = e.args.temporary ? ' TEMPORARY' : '';
+          const unlogged = e.args.unlogged ? ' UNLOGGED' : '';
+          const modifier = temporary || unlogged;
+          return `${this.seg('INTO')}${modifier} ${this.sql(e, 'this')}`;
+        },
+      ],
     ]);
     transforms.delete(CommentColumnConstraintExpr);
     return transforms;
@@ -1145,12 +1214,11 @@ class PostgresGenerator extends Generator {
 
   @cache
   static get PROPERTIES_LOCATION () {
-    return {
-      ...Generator.PROPERTIES_LOCATION,
-      [PartitionedByPropertyExpr.constructor.name]: PropertiesLocation.POST_SCHEMA,
-      [TransientPropertyExpr.constructor.name]: PropertiesLocation.UNSUPPORTED,
-      [VolatilePropertyExpr.constructor.name]: PropertiesLocation.UNSUPPORTED,
-    };
+    const m = new Map(Generator.PROPERTIES_LOCATION);
+    m.set(PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA);
+    m.set(TransientPropertyExpr, PropertiesLocation.UNSUPPORTED);
+    m.set(VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED);
+    return m;
   }
 
   schemaCommentPropertySql (_expression: SchemaCommentPropertyExpr): string {
@@ -1275,7 +1343,12 @@ class PostgresGenerator extends Generator {
     const { safePrefix } = options;
     const thisNode = expression.args.this;
 
-    if (thisNode instanceof IntDivExpr && expression.args.to instanceof DataTypeExpr && expression.args.to.isType(DataTypeExprKind.DECIMAL)) {
+    if (
+      thisNode instanceof IntDivExpr
+      && expression.args.to instanceof DataTypeExpr
+      && expression.args.to.isType(DataTypeExprKind.DECIMAL)
+      && !expression.args.to.args.expressions?.length
+    ) {
       return this.sql(thisNode);
     }
 
@@ -1362,10 +1435,15 @@ class PostgresGenerator extends Generator {
 }
 
 export class Postgres extends Dialect {
+  static DIALECT_NAME = Dialects.POSTGRES;
   static INDEX_OFFSET = 1;
   static TYPED_DIVISION = true;
   static CONCAT_COALESCE = true;
-  static NULL_ORDERING = NullOrdering.NULLS_ARE_LARGE;
+
+  static get NULL_ORDERING () {
+    return NullOrdering.NULLS_ARE_LARGE;
+  }
+
   static TIME_FORMAT = '\'YYYY-MM-DD HH24:MI:SS\'';
   static TABLESAMPLE_SIZE_IS_PERCENT = true;
   static TABLES_REFERENCEABLE_AS_COLUMNS = true;

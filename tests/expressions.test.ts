@@ -132,6 +132,7 @@ import {
   JsonExtractExpr,
   JsonExtractScalarExpr,
 } from '../src/expressions';
+import { NormalizeFunctions } from '../src/dialects/dialect';
 
 class TestExpressions {
   testArgKey () {
@@ -240,7 +241,7 @@ class TestExpressions {
     const col = parseOne('select * from foo where (a + 1 > 2)').find(ColumnExpr);
     expect(col).toBeInstanceOf(ColumnExpr);
     expect((col as ColumnExpr).parentSelect).toBeInstanceOf(SelectExpr);
-    expect((col as ColumnExpr).findAncestor(JoinExpr)).toBeNull();
+    expect((col as ColumnExpr).findAncestor(JoinExpr)).toBeUndefined();
   }
 
   testToDot () {
@@ -395,6 +396,7 @@ class TestExpressions {
     expect(
       replacePlaceholders(
         parseOne('select * from :tbl1 JOIN :tbl2 ON :col1 = :str1 WHERE :col2 > :int1'),
+        [],
         {
           tbl1: toIdentifier('foo'),
           tbl2: toIdentifier('bar'),
@@ -409,7 +411,6 @@ class TestExpressions {
     expect(
       replacePlaceholders(
         parseOne('select * from ? JOIN ? ON ? = ? WHERE ? = \'bla\''),
-        {},
         [
           toIdentifier('foo'),
           toIdentifier('bar'),
@@ -423,7 +424,6 @@ class TestExpressions {
     expect(
       replacePlaceholders(
         parseOne('select * from ? WHERE ? > 100'),
-        {},
         [toIdentifier('foo')],
       ).sql(),
     ).toBe('SELECT * FROM foo WHERE ? > 100');
@@ -431,6 +431,7 @@ class TestExpressions {
     expect(
       replacePlaceholders(
         parseOne('select * from :name WHERE ? > 100'),
+        [],
         { another_name: 'bla' },
       ).sql(),
     ).toBe('SELECT * FROM :name WHERE ? > 100');
@@ -438,23 +439,22 @@ class TestExpressions {
     expect(
       replacePlaceholders(
         parseOne('select * from (SELECT :col1 FROM ?) WHERE :col2 > ?'),
-        {
-          col1: toIdentifier('a'),
-          col2: toIdentifier('b'),
-          col3: 'c',
-        },
         [
           toIdentifier('tbl1'),
           100,
           'tbl3',
         ],
+        {
+          col1: toIdentifier('a'),
+          col2: toIdentifier('b'),
+          col3: 'c',
+        },
       ).sql(),
     ).toBe('SELECT * FROM (SELECT a FROM tbl1) WHERE b > 100');
 
     expect(
       replacePlaceholders(
         parseOne('select * from foo WHERE x > ? AND y IS ?'),
-        {},
         [0, false],
       ).sql(),
     ).toBe('SELECT * FROM foo WHERE x > 0 AND y IS FALSE');
@@ -462,6 +462,7 @@ class TestExpressions {
     expect(
       replacePlaceholders(
         parseOne('select * from foo WHERE x > :int1 AND y IS :bool1'),
+        [],
         {
           int1: 0,
           bool1: false,
@@ -603,11 +604,11 @@ class TestExpressions {
 
     const actual1 = expression.transform(fun);
     expect(actual1.sql({ dialect: 'presto' })).toBe('IF(c - 2 > 0, c - 2, b)');
-    expect(actual1).not.toBe(expression);
+    expect(actual1 === expression).toBe(false);
 
     const actual2 = expression.transform(fun, { copy: false });
     expect(actual2.sql({ dialect: 'presto' })).toBe('IF(c - 2 > 0, c - 2, b)');
-    expect(actual2).toBe(expression);
+    expect(actual2 === expression).toBe(true);
   }
 
   testTransformNoInfiniteRecursion () {
@@ -929,7 +930,7 @@ class TestExpressions {
     const unit = parseOne('timestamp_trunc(current_timestamp, week(thursday))');
     expect(unit.find(CurrentTimestampExpr)).toBeTruthy();
     const week = unit.find(WeekExpr) as WeekExpr;
-    expect((week.args.this as VarExpr).sql()).toBe(var_('thursday').sql());
+    expect((week.args.this as VarExpr).sql()).toBe(var_('THURSDAY').sql());
 
     for (const [abbreviatedUnit, unabbreviatedUnit] of Object.entries(TimeUnitExpr.UNABBREVIATED_UNIT_NAME)) {
       const interval = parseOne(`interval '500 ${abbreviatedUnit}'`);
@@ -946,18 +947,18 @@ class TestExpressions {
   }
 
   testFunctionNormalizer () {
-    expect(parseOne('HELLO()').sql({ normalizeFunctions: 'lower' })).toBe('hello()');
-    expect(parseOne('hello()').sql({ normalizeFunctions: 'upper' })).toBe('HELLO()');
-    expect(parseOne('heLLO()').sql({ normalizeFunctions: false })).toBe('heLLO()');
-    expect(parseOne('SUM(x)').sql({ normalizeFunctions: 'lower' })).toBe('sum(x)');
-    expect(parseOne('sum(x)').sql({ normalizeFunctions: 'upper' })).toBe('SUM(x)');
+    expect(parseOne('HELLO()').sql({ normalizeFunctions: NormalizeFunctions.LOWER })).toBe('hello()');
+    expect(parseOne('hello()').sql({ normalizeFunctions: NormalizeFunctions.UPPER })).toBe('HELLO()');
+    expect(parseOne('heLLO()').sql({ normalizeFunctions: NormalizeFunctions.NONE })).toBe('heLLO()');
+    expect(parseOne('SUM(x)').sql({ normalizeFunctions: NormalizeFunctions.LOWER })).toBe('sum(x)');
+    expect(parseOne('sum(x)').sql({ normalizeFunctions: NormalizeFunctions.UPPER })).toBe('SUM(x)');
   }
 
   testPropertiesFromDict () {
     expect(
       PropertiesExpr.fromDict({
         FORMAT: 'parquet',
-        PARTITIONED_BY: [toIdentifier('a'), toIdentifier('b')],
+        PARTITIONED_BY: new TupleExpr({ expressions: [toIdentifier('a'), toIdentifier('b')] }),
         custom: 1,
         ENGINE: undefined,
         COLLATE: true,
@@ -979,7 +980,7 @@ class TestExpressions {
       }).sql(),
     );
 
-    expect(() => PropertiesExpr.fromDict({ FORMAT: {} })).toThrow(Error);
+    expect(() => PropertiesExpr.fromDict({ FORMAT: Symbol() as unknown })).toThrow(Error);
   }
 
   testConvert () {

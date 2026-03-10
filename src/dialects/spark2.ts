@@ -38,10 +38,11 @@ import {
   WeekOfYearExpr,
   WithinGroupExpr,
 } from '../expressions';
-import type { Generator } from '../generator';
+import { Generator } from '../generator';
 import { seqGet } from '../helper';
-import type { Parser } from '../parser';
-import { buildTrim } from '../parser';
+import {
+  Parser, buildTrim,
+} from '../parser';
 import {
   cache, narrowInstanceOf,
 } from '../port_internals';
@@ -55,7 +56,7 @@ import {
   moveSchemaColumnsToPartitionedBy,
   preprocess, removeUniqueConstraints, removeWithinGroupForPercentiles, unnestToExplode, unqualifyColumns,
 } from '../transforms';
-import { DialectTyping } from '../typing';
+import { Spark2Typing } from '../typing/spark2';
 import {
   binaryFromFunction, buildFormattedTime, Dialect, Dialects, isParseJson, pivotColumnNames,
   renameFunc,
@@ -71,7 +72,7 @@ function mapSql (this: Generator, expression: MapExpr): string {
     return this.func('MAP', []);
   }
 
-  return this.func('MAP_FROM_ARRAYS', [...keys, ...values]);
+  return this.func('MAP_FROM_ARRAYS', [keys, values]);
 }
 
 export function buildAsCast (toType: string) {
@@ -104,13 +105,14 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
     );
   }
 
-  if (scale === UnixToTimeExpr.SECONDS) {
+  const scaleValue = scale.toValue();
+  if (scaleValue === UnixToTimeExpr.SECONDS.toValue()) {
     return this.func('TIMESTAMP_SECONDS', [timestamp]);
   }
-  if (scale === UnixToTimeExpr.MILLIS) {
+  if (scaleValue === UnixToTimeExpr.MILLIS.toValue()) {
     return this.func('TIMESTAMP_MILLIS', [timestamp]);
   }
-  if (scale === UnixToTimeExpr.MICROS) {
+  if (scaleValue === UnixToTimeExpr.MICROS.toValue()) {
     return this.func('TIMESTAMP_MICROS', [timestamp]);
   }
 
@@ -135,8 +137,7 @@ function unaliasPivot (expression: Expression): Expression {
         this: expression.args.this.replace(
           select('*')
             .from(expression.args.this.copy(), { copy: false })
-            .subquery(undefined, {
-              alias: aliasNode,
+            .subquery(aliasNode, {
               copy: false,
             }),
         ),
@@ -189,6 +190,25 @@ class Spark2Tokenizer extends Hive.Tokenizer {
 }
 
 class Spark2Parser extends Hive.Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Hive.Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   static TRIM_PATTERN_FIRST = true;
   static CHANGE_COLUMN_ALTER_SYNTAX = true;
 
@@ -290,7 +310,7 @@ class Spark2Parser extends Hive.Parser {
 
   parseDropColumn (): DropExpr | CommandExpr | undefined {
     return (
-      this.matchTextSeq(['DROP', 'COLUMNS'])
+      (this.matchTextSeq(['DROP', 'COLUMNS']) || undefined)
       && this.expression(DropExpr, {
         this: this.parseSchema(),
         kind: 'COLUMNS',
@@ -304,9 +324,20 @@ class Spark2Parser extends Hive.Parser {
     }
     return pivotColumnNames(aggregations, { dialect: 'spark' });
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Hive.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 class Spark2Generator extends Hive.Generator {
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static QUERY_HINTS = true;
   static NVL2_SUPPORTED = true;
   static CAN_IMPLEMENT_ARRAY_ANY = true;
@@ -340,7 +371,7 @@ class Spark2Generator extends Hive.Generator {
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
-      ...Hive.Generator.TRANSFORMS.entries(),
+      ...Hive.Generator.TRANSFORMS,
       [ApproxDistinctExpr, renameFunc('APPROX_COUNT_DISTINCT')],
       [
         ArraySumExpr,
@@ -455,7 +486,7 @@ class Spark2Generator extends Hive.Generator {
   static CREATE_FUNCTION_RETURN_AS = false;
 
   structSql (expression: StructExpr): string {
-    return super.structSql(expression);
+    return Generator.prototype.structSql.call(this, expression);
   }
 
   castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
@@ -493,21 +524,22 @@ class Spark2Generator extends Hive.Generator {
       if (comment) {
         return `ALTER COLUMN ${thisNode} COMMENT ${comment}`;
       }
-      return super.alterColumnSql(expression);
+      return Generator.prototype.alterColumnSql.call(this, expression);
     }
     return `RENAME COLUMN ${thisNode} TO ${newName}`;
   }
 
-  renameColumnSql (): string {
-    return super.renameColumnSql();
+  renameColumnSql (expr: Expression): string {
+    return super.renameColumnSql(expr);
   }
 }
 
 export class Spark2 extends Hive {
+  static DIALECT_NAME = Dialects.SPARK2;
   static ALTER_TABLE_SUPPORTS_CASCADE = false;
   @cache
   static get EXPRESSION_METADATA () {
-    return new Map(DialectTyping.EXPRESSION_METADATA);
+    return new Map(Spark2Typing.EXPRESSION_METADATA);
   }
 
   static INITCAP_DEFAULT_DELIMITER_CHARS = ' ';

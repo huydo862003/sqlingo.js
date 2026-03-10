@@ -4,16 +4,22 @@ import {
 } from '../generator';
 import { Parser } from '../parser';
 import type { TokenPair } from '../tokens';
-import { Tokenizer } from '../tokens';
-import type { Expression } from '../expressions';
+import {
+  Tokenizer, TokenType,
+} from '../tokens';
+import type {
+  Expression,
+  DataTypeExprKind,
+} from '../expressions';
 import {
   CoalesceExpr,
   CountExpr,
-  DataTypeExprKind,
   DistinctExpr,
   IfExpr,
+  PropertiesLocation,
   SelectExpr,
   StrPositionExpr,
+  VolatilePropertyExpr,
 } from '../expressions';
 import { seqGet } from '../helper';
 import {
@@ -37,6 +43,25 @@ export class TableauTokenizer extends Tokenizer {
 }
 
 export class TableauParser extends Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   static NO_PAREN_IF_COMMANDS = false;
 
   @cache
@@ -52,26 +77,48 @@ export class TableauParser extends Parser {
       }),
     };
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 export class TableauGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static JOIN_HINTS = false;
   static TABLE_HINTS = false;
   static QUERY_HINTS = false;
 
   @cache
+  static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
+    const m = new Map(Generator.PROPERTIES_LOCATION);
+    m.set(VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED);
+    return m;
+  }
+
+  @cache
   static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
-    const mapping = new Map(Generator.TYPE_MAPPING);
-    mapping.set(DataTypeExprKind.BOOLEAN, 'BOOL');
-    mapping.set(DataTypeExprKind.TINYINT, 'INT');
-    mapping.set(DataTypeExprKind.SMALLINT, 'INT');
-    mapping.set(DataTypeExprKind.INT, 'INT');
-    mapping.set(DataTypeExprKind.BIGINT, 'INT');
-    mapping.set(DataTypeExprKind.DOUBLE, 'FLOAT');
-    mapping.set(DataTypeExprKind.FLOAT, 'FLOAT');
-    mapping.set(DataTypeExprKind.VARCHAR, 'STR');
-    mapping.set(DataTypeExprKind.TEXT, 'STR');
-    return mapping;
+    return new Map(Generator.TYPE_MAPPING);
   }
 
   @cache
@@ -106,8 +153,13 @@ export class TableauGenerator extends Generator {
 }
 
 export class Tableau extends Dialect {
+  static DIALECT_NAME = Dialects.TABLEAU;
   static LOG_BASE_FIRST = false;
-  static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE;
+
+  @cache
+  static get NORMALIZATION_STRATEGY () {
+    return NormalizationStrategy.CASE_INSENSITIVE;
+  }
 
   static Tokenizer = TableauTokenizer;
   static Parser = TableauParser;

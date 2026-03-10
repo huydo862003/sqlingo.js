@@ -1,7 +1,7 @@
 import type { Token } from '../tokens';
 import { TokenType } from '../tokens';
 import type {
-  DataTypeExprKind, ExpressionOrString, JsonPathPartExpr,
+  DataTypeExprKind, JsonPathPartExpr,
 } from '../expressions';
 import {
   JsonPathExpr,
@@ -53,9 +53,10 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
     return `${msg} at index ${i}: ${path}`;
   }
 
-  function match (tokenType: TokenType, raiseUnmatched: true): Token;
-  function match (tokenType: TokenType, raiseUnmatched?: false): Token | undefined;
-  function match (tokenType: TokenType, raiseUnmatched = false): Token | undefined {
+  function match (tokenType: TokenType, options?: { raiseUnmatched?: true }): Token;
+  function match (tokenType: TokenType, options: { raiseUnmatched: false }): Token | undefined;
+  function match (tokenType: TokenType, options: { raiseUnmatched?: boolean } = {}): Token | undefined {
+    const { raiseUnmatched = false } = options;
     if (curr() === tokenType) {
       return advance();
     }
@@ -116,17 +117,19 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
 
   function parseSlice (): string | JsonPathWildcardExpr | JsonPathScriptExpr | JsonPathFilterExpr | JsonPathSliceExpr | number | false {
     const start = parseLiteral();
-    const end = match(TokenType.COLON) ? parseLiteral() : undefined;
-    const step = match(TokenType.COLON) ? parseLiteral() : undefined;
+    const hasFirstColon = !!match(TokenType.COLON);
+    const end = hasFirstColon ? parseLiteral() : undefined;
+    const hasSecondColon = !!match(TokenType.COLON);
+    const step = hasSecondColon ? parseLiteral() : undefined;
 
-    if (end === undefined && step === undefined) {
+    if (!hasFirstColon && !hasSecondColon) {
       return start;
     }
 
     return new JsonPathSliceExpr({
-      start: start as ExpressionOrString | number | undefined,
-      end: end as ExpressionOrString | number | undefined,
-      step: step as ExpressionOrString | number | undefined,
+      start,
+      end,
+      step,
     });
   }
 
@@ -134,10 +137,11 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
     const literal = parseSlice();
 
     if (typeof literal === 'string' || literal !== false) {
-      const indexes: (string | JsonPathWildcardExpr | JsonPathScriptExpr | JsonPathFilterExpr | JsonPathSliceExpr | number)[] = [literal];
+      type JsonPathIndexValue = string | JsonPathWildcardExpr | JsonPathScriptExpr | JsonPathFilterExpr | JsonPathSliceExpr | number;
+      const indexes: JsonPathIndexValue[] = [literal as JsonPathIndexValue];
       while (match(TokenType.COMMA)) {
         const nextLiteral = parseSlice();
-        if (nextLiteral) {
+        if (nextLiteral !== false) {
           indexes.push(nextLiteral);
         }
       }
@@ -155,7 +159,7 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
         node = new JsonPathUnionExpr({ expressions: indexes });
       }
 
-      match(TokenType.R_BRACKET, true);
+      match(TokenType.R_BRACKET, { raiseUnmatched: true });
       return node;
     } else {
       throw new ParseError(error('Cannot have empty segment'));

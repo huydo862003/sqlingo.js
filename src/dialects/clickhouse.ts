@@ -157,6 +157,7 @@ import {
   paren,
   QueryExpr,
   SchemaExpr,
+  JoinExprKind,
 } from '../expressions';
 import {
   isInt,
@@ -217,18 +218,19 @@ function buildDateTimeFormat<E extends Expression> (exprType: new (args: any) =>
 
 export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   const scale = expression.args.scale;
+  const scaleValue = scale?.toValue();
   const timestamp = expression.args.this;
 
-  if (scale === undefined || scale === UnixToTimeExpr.SECONDS) {
+  if (scaleValue === undefined || scaleValue === UnixToTimeExpr.SECONDS.toValue()) {
     return this.func('fromUnixTimestamp', [cast(timestamp, DataTypeExprKind.BIGINT)]);
   }
-  if (scale === UnixToTimeExpr.MILLIS) {
+  if (scaleValue === UnixToTimeExpr.MILLIS.toValue()) {
     return this.func('fromUnixTimestamp64Milli', [cast(timestamp, DataTypeExprKind.BIGINT)]);
   }
-  if (scale === UnixToTimeExpr.MICROS) {
+  if (scaleValue === UnixToTimeExpr.MICROS.toValue()) {
     return this.func('fromUnixTimestamp64Micro', [cast(timestamp, DataTypeExprKind.BIGINT)]);
   }
-  if (scale === UnixToTimeExpr.NANOS) {
+  if (scaleValue === UnixToTimeExpr.NANOS.toValue()) {
     return this.func('fromUnixTimestamp64Nano', [cast(timestamp, DataTypeExprKind.BIGINT)]);
   }
 
@@ -511,6 +513,27 @@ class ClickHouseTokenizer extends Tokenizer {
 }
 
 class ClickHouseParser extends Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.LIKE,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.CURRENT_TIMESTAMP];
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   static MODIFIERS_ATTACHED_TO_SET_OP = false;
   static INTERVAL_SPANS = false;
   static OPTIONAL_ALIAS_TOKEN_CTE = false;
@@ -518,7 +541,7 @@ class ClickHouseParser extends Parser {
 
   @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
-    return {
+    const parsers: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
       ...Parser.FUNCTIONS,
       ...Object.fromEntries(
         [...TIMESTAMP_TRUNC_UNITS].map((unit) => [`TOSTARTOF${unit}`, buildTimestampTrunc(unit)]),
@@ -589,11 +612,10 @@ class ClickHouseParser extends Parser {
       JAROWINKLERSIMILARITY: (args: unknown[]) => JarowinklerSimilarityExpr.fromArgList(args),
       LEVENSHTEINDISTANCE: (args: unknown[]) => LevenshteinExpr.fromArgList(args),
     };
-  }
+    delete parsers['TRANSFORM'];
+    delete parsers['APPROX_TOP_SUM'];
 
-  static {
-    delete this.FUNCTIONS['TRANSFORM'];
-    delete this.FUNCTIONS['APPROX_TOP_SUM'];
+    return parsers;
   }
 
   @cache
@@ -756,11 +778,6 @@ class ClickHouseParser extends Parser {
   }
 
   @cache
-  static get ID_VAR_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.ID_VAR_TOKENS, TokenType.LIKE]);
-  }
-
-  @cache
   static get AGG_FUNC_MAPPING (): Record<string, [string, string]> {
     const mapping: Record<string, [string, string]> = {};
     const suffixes = [...ClickHouseParser.AGG_FUNCTIONS_SUFFIXES, ''];
@@ -774,7 +791,7 @@ class ClickHouseParser extends Parser {
 
   @cache
   static get FUNCTION_PARSERS (): Record<string, (this: Parser) => Expression> {
-    return {
+    const parsers: Record<string, (this: Parser) => Expression> = {
       ...Parser.FUNCTION_PARSERS,
       ARRAYJOIN: function (this: Parser) {
         return this.expression(ExplodeExpr, { this: this.parseExpression() });
@@ -806,42 +823,28 @@ class ClickHouseParser extends Parser {
         });
       },
     };
-  }
 
-  static {
-    delete ClickHouseParser.FUNCTION_PARSERS['MATCH'];
+    delete parsers['MATCH'];
+    return parsers;
   }
 
   @cache
   static get PROPERTY_PARSERS (): Record<string, (this: Parser) => Expression> {
-    return {
+    const parsers: Record<string, (this: Parser) => Expression> = {
       ...Parser.PROPERTY_PARSERS,
       ENGINE: function (this: Parser) {
         return (this as ClickHouseParser).parseEngineProperty();
       },
     };
-  }
-
-  static {
-    delete ClickHouseParser.PROPERTY_PARSERS['DYNAMIC'];
+    delete parsers['DYNAMIC'];
+    return parsers;
   }
 
   @cache
   static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
-    return { ...Parser.NO_PAREN_FUNCTION_PARSERS };
-  }
-
-  static {
-    delete ClickHouseParser.NO_PAREN_FUNCTION_PARSERS['ANY'];
-  }
-
-  @cache
-  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
-    return { ...Parser.NO_PAREN_FUNCTIONS };
-  }
-
-  static {
-    delete (ClickHouseParser.NO_PAREN_FUNCTIONS as Record<string, unknown>)[TokenType.CURRENT_TIMESTAMP];
+    const parsers = { ...Parser.NO_PAREN_FUNCTION_PARSERS };
+    delete parsers['ANY'];
+    return parsers;
   }
 
   @cache
@@ -856,11 +859,9 @@ class ClickHouseParser extends Parser {
 
   @cache
   static get COLUMN_OPERATORS (): Partial<Record<TokenType, undefined | ((this: Parser, this_?: Expression, to?: Expression) => Expression)>> {
-    return { ...Parser.COLUMN_OPERATORS };
-  }
-
-  static {
-    delete ClickHouseParser.COLUMN_OPERATORS[TokenType.PLACEHOLDER];
+    const parsers = { ...Parser.COLUMN_OPERATORS };
+    delete parsers[TokenType.PLACEHOLDER];
+    return parsers;
   }
 
   @cache
@@ -875,18 +876,15 @@ class ClickHouseParser extends Parser {
 
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set(
-      [...Parser.TABLE_ALIAS_TOKENS].filter(
-        (t) =>
-          ![
-            TokenType.ANY,
-            TokenType.ARRAY,
-            TokenType.FINAL,
-            TokenType.FORMAT,
-            TokenType.SETTINGS,
-          ].includes(t),
-      ),
-    );
+    return new Set([
+      ...Parser.TABLE_ALIAS_TOKENS,
+      TokenType.ANY,
+      TokenType.ARRAY,
+      TokenType.FINAL,
+      TokenType.FORMAT,
+      TokenType.SETTINGS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 
   @cache
@@ -1014,10 +1012,10 @@ class ClickHouseParser extends Parser {
     return thisNode;
   }
 
-  parseQueryParameter (): Expression | undefined {
   /**
    * Parse a placeholder expression like SELECT {abc: UInt32} or FROM {table: Identifier}
    */
+  parseQueryParameter (): Expression | undefined {
     const index = this.index;
 
     const thisNode = this.parseIdVar();
@@ -1192,7 +1190,7 @@ class ClickHouseParser extends Parser {
       join.setArgKey('global', method);
 
       // tbl ARRAY JOIN arr <-- this should be a `Column` reference, not a `Table`
-      if (join.kind === 'ARRAY') {
+      if (join.args.kind === JoinExprKind.ARRAY) {
         for (const table of join.findAll(TableExpr)) {
           table.replace(table.toColumn());
         }
@@ -1432,7 +1430,7 @@ class ClickHouseParser extends Parser {
       this.match(TokenType.R_PAREN);
       thisNode = new ApplyExpr({
         this: thisNode,
-        expression: this.parseVar({ anyToken: true })!,
+        expression: this.parseVar({ anyToken: true }),
       });
     }
 
@@ -1473,7 +1471,27 @@ class ClickHouseParser extends Parser {
 }
 
 export class ClickHouseGenerator extends Generator {
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static QUERY_HINTS = false;
+
   @cache
   static get STRUCT_DELIMITER () {
     return ['(', ')'];
@@ -2136,9 +2154,19 @@ export class ClickHouseGenerator extends Generator {
 }
 
 export class ClickHouse extends Dialect {
+  static DIALECT_NAME = Dialects.CLICKHOUSE;
   static INDEX_OFFSET = 1;
-  static NORMALIZE_FUNCTIONS = NormalizeFunctions.NONE;
-  static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
+
+  @cache
+  static get NORMALIZE_FUNCTIONS () {
+    return NormalizeFunctions.NONE;
+  }
+
+  @cache
+  static get NULL_ORDERING () {
+    return NullOrdering.NULLS_ARE_LAST;
+  }
+
   static SUPPORTS_USER_DEFINED_TYPES = false;
   static SAFE_DIVISION = true;
   static LOG_BASE_FIRST: boolean | undefined = undefined;
@@ -2148,7 +2176,10 @@ export class ClickHouse extends Dialect {
   static IDENTIFIERS_CAN_START_WITH_DIGIT = true;
   static HEX_STRING_IS_INTEGER_TYPE = true;
 
-  static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_SENSITIVE;
+  @cache
+  static get NORMALIZATION_STRATEGY () {
+    return NormalizationStrategy.CASE_SENSITIVE;
+  }
 
   @cache
   static get UNESCAPED_SEQUENCES () {

@@ -93,10 +93,10 @@ export function qualifyTables<E extends Expression> (
   const qualify = (table: TableExpr): void => {
     if (table.args.this instanceof IdentifierExpr) {
       if (db && !table.args.db) {
-        table.args.db = db.copy();
+        table.setArgKey('db', db.copy());
       }
       if (catalog && !table.args.catalog && table.args.db) {
-        table.args.catalog = catalog.copy();
+        table.setArgKey('catalog', catalog.copy());
       }
     }
   };
@@ -151,10 +151,10 @@ export function qualifyTables<E extends Expression> (
       return;
     }
 
-    alias.args.this = toIdentifier(newAliasName);
+    alias.setArgKey('this', toIdentifier(newAliasName));
 
     if (columns) {
-      alias.args.columns = columns.map((c) => toIdentifier(c));
+      alias.setArgKey('columns', columns.map((c) => toIdentifier(c)));
     }
 
     expr.setArgKey('alias', alias);
@@ -171,7 +171,7 @@ export function qualifyTables<E extends Expression> (
     for (const query of scope.subqueries) {
       const subquery = query.parent;
       if (subquery && subquery instanceof SubqueryExpr) {
-        subquery.unnest().replace(subquery);
+        subquery.unwrap().replace(subquery);
       }
     }
 
@@ -179,14 +179,15 @@ export function qualifyTables<E extends Expression> (
       const unnested = derivedTable.unnest();
       if (unnested instanceof TableExpr) {
         const joins = unnested.args.joins;
-        unnested.args.joins = undefined;
+        unnested.setArgKey('joins', undefined);
 
         const derivedThis = derivedTable.args.this;
         if (derivedThis instanceof Expression) {
-          derivedThis.replace(
-            select('*').from(unnested.copy(), { copy: false }),
-          );
-          derivedThis.args.joins = joins;
+          const newSelect = select('*').from(unnested.copy(), { copy: false });
+          derivedThis.replace(newSelect);
+          // After replace, set joins on the new expression (mirrors Python behavior
+          // where derivedTable.this refers to the new expression after replace)
+          newSelect.setArgKey('joins', joins);
         }
       }
 
@@ -244,7 +245,7 @@ export function qualifyTables<E extends Expression> (
         }
 
         if (pivot) {
-          const targetAlias = pivot.getArgKey('unpivot') ? undefined : source.alias;
+          const targetAlias = pivot.getArgKey('unpivot') ? source.alias : undefined;
           setAlias(pivot, canonicalAliases, {
             targetAlias,
             normalize: true,
@@ -269,9 +270,9 @@ export function qualifyTables<E extends Expression> (
         if (udtf instanceof ValuesExpr) {
           const tableAlias = udtf.getArgKey('alias');
           if (tableAlias instanceof TableAliasExpr && !tableAlias.args.columns?.length) {
-            tableAlias.args.columns = dialect
+            tableAlias.setArgKey('columns', dialect
               .generateValuesAliases(udtf)
-              .map((i: IdentifierExpr) => normalizeIdentifiers(i, { dialect }));
+              .map((i: IdentifierExpr) => normalizeIdentifiers(i, { dialect })));
           }
         }
       }
@@ -295,15 +296,15 @@ export function qualifyTables<E extends Expression> (
         const tableAlias = tableAliases.get(columnParts);
 
         if (tableAlias) {
-          column.args.table = undefined;
-          column.args.db = undefined;
-          column.args.catalog = undefined;
-          column.args.table = tableAlias.copy();
+          column.setArgKey('table', undefined);
+          column.setArgKey('db', undefined);
+          column.setArgKey('catalog', undefined);
+          column.setArgKey('table', tableAlias.copy());
         }
       } else if (0 < canonicalAliases.size && table) {
         const canonicalTable = canonicalAliases.get(table);
         if (canonicalTable && canonicalTable !== column.table) {
-          column.args.table = toIdentifier(canonicalTable);
+          column.setArgKey('table', toIdentifier(canonicalTable));
         }
       }
     }

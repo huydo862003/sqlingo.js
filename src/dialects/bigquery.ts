@@ -135,9 +135,9 @@ import {
   TimestampFromPartsExpr,
   TsOrDsToDateExpr,
   UnixToTimeExpr,
+  TimeToUnixExpr,
   LengthExpr,
   ContainsExpr,
-  JsonKeysExpr,
   JsonStripNullsExpr,
   cast,
   func,
@@ -222,7 +222,7 @@ import {
   unitToVar,
   strPositionSql,
   sha2DigestSql,
-  Dialect, NormalizationStrategy, Dialects,
+  Dialect, NormalizationStrategy, Dialects, NullOrderingSupported,
   groupConcatSql,
   renameFunc,
   binaryFromFunction,
@@ -678,8 +678,8 @@ function tsOrDsAddSql (this: Generator, expression: TsOrDsAddExpr): string {
 }
 
 function tsOrDsDiffSql (this: Generator, expression: TsOrDsDiffExpr): string {
-  expression.args.this?.replace(cast(expression.args.this, DataTypeExprKind.TIMESTAMP));
-  expression.args.expression?.replace(cast(expression.args.expression, DataTypeExprKind.TIMESTAMP));
+  expression.args.this?.replace(cast(expression.args.this, DataTypeExprKind.TIMESTAMP.toUpperCase()));
+  expression.args.expression?.replace(cast(expression.args.expression, DataTypeExprKind.TIMESTAMP.toUpperCase()));
   const unit = unitToVar(expression);
   return this.func('DATE_DIFF', [
     expression.args.this,
@@ -795,21 +795,39 @@ export class BigQueryTokenizer extends Tokenizer {
 }
 
 export class BigQueryParser extends Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return (() => {
+      const s = new Set([
+        ...Parser.ID_VAR_TOKENS,
+        TokenType.CURRENT_CATALOG,
+        TokenType.GRANT,
+        TokenType.STRAIGHT_JOIN,
+      ]);
+      s.delete(TokenType.ASC);
+      s.delete(TokenType.DESC);
+      return s;
+    })();
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = {
+      ...Parser.NO_PAREN_FUNCTIONS,
+      [TokenType.CURRENT_DATETIME]: CurrentDatetimeExpr,
+    };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   static PREFIXED_PIVOT_COLUMNS = true;
   static LOG_DEFAULTS_TO_LN = true;
   static SUPPORTS_IMPLICIT_UNNEST = true;
   static JOINS_HAVE_EQUAL_PRECEDENCE = true;
 
   // BigQuery does not allow ASC/DESC to be used as an identifier, allows GRANT as an identifier
-  @cache
-  static get ID_VAR_TOKENS (): Set<TokenType> {
-    return (() => {
-      const s = new Set([...Parser.ID_VAR_TOKENS, TokenType.GRANT]);
-      s.delete(TokenType.ASC);
-      s.delete(TokenType.DESC);
-      return s;
-    })();
-  }
 
   @cache
   static get ALIAS_TOKENS (): Set<TokenType> {
@@ -824,7 +842,11 @@ export class BigQueryParser extends Parser {
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
     return (() => {
-      const s = new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.GRANT]);
+      const s = new Set([
+        ...Parser.TABLE_ALIAS_TOKENS,
+        TokenType.GRANT,
+        TokenType.STRAIGHT_JOIN,
+      ]);
       s.delete(TokenType.ASC);
       s.delete(TokenType.DESC);
       return s;
@@ -930,14 +952,6 @@ export class BigQueryParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
-    return {
-      ...Parser.NO_PAREN_FUNCTIONS,
-      [TokenType.CURRENT_DATETIME]: CurrentDatetimeExpr,
-    };
-  }
-
-  @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return (() => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -969,7 +983,7 @@ export class BigQueryParser extends Parser {
         JSON_EXTRACT_SCALAR: buildExtractJsonWithDefaultPath(JsonExtractScalarExpr),
         JSON_EXTRACT_ARRAY: buildExtractJsonWithDefaultPath(JsonExtractArrayExpr),
         JSON_EXTRACT_STRING_ARRAY: buildExtractJsonWithDefaultPath(JsonValueArrayExpr),
-        JSON_KEYS: (args: unknown[]) => JsonKeysExpr.fromArgList(args),
+        JSON_KEYS: (args: unknown[]) => JsonKeysAtDepthExpr.fromArgList(args),
         JSON_QUERY: buildExtractJsonWithPath(JsonExtractExpr),
         JSON_QUERY_ARRAY: buildExtractJsonWithDefaultPath(JsonExtractArrayExpr),
         JSON_STRIP_NULLS: buildJsonStripNulls,
@@ -1529,8 +1543,29 @@ export class BigQueryParser extends Parser {
     return result;
   }
 }
-
 export class BigQueryGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map([
+      ['qualify', Generator.AFTER_HAVING_MODIFIER_TRANSFORMS.get('qualify')!],
+      ['windows', Generator.AFTER_HAVING_MODIFIER_TRANSFORMS.get('windows')!],
+      ...super.AFTER_HAVING_MODIFIER_TRANSFORMS,
+    ]);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static INTERVAL_ALLOWS_PLURAL_FORM = false;
   static JOIN_HINTS = false;
   static QUERY_HINTS = false;
@@ -1544,7 +1579,11 @@ export class BigQueryGenerator extends Generator {
   static SUPPORTS_TABLE_ALIAS_COLUMNS = false;
   static UNPIVOT_ALIASES_ARE_IDENTIFIERS = false;
   static JSON_KEY_VALUE_PAIR_SEP = ',';
-  static NULL_ORDERING_SUPPORTED = false;
+  @cache
+  static get NULL_ORDERING_SUPPORTED () {
+    return NullOrderingSupported.PARTIAL;
+  }
+
   static IGNORE_NULLS_IN_FUNC = true;
   static JSON_PATH_SINGLE_QUOTE_ESCAPE = true;
   static CAN_IMPLEMENT_ARRAY_ANY = true;
@@ -1667,7 +1706,7 @@ export class BigQueryGenerator extends Generator {
       ],
       [JsonKeysAtDepthExpr, renameFunc('JSON_KEYS')],
       [JsonValueArrayExpr, renameFunc('JSON_VALUE_ARRAY')],
-      [LevenshteinExpr, jsonExtractSql], // Assuming logic similarity
+      [LevenshteinExpr, levenshteinSql],
       [MaxExpr, maxOrGreatest],
       [
         Md5Expr,
@@ -1779,6 +1818,7 @@ export class BigQueryGenerator extends Generator {
       [UnhexExpr, renameFunc('FROM_HEX')],
       [UnixDateExpr, renameFunc('UNIX_DATE')],
       [UnixToTimeExpr, unixToTimeSql],
+      [TimeToUnixExpr, renameFunc('TIME_TO_UNIX')],
       [UuidExpr, () => 'GENERATE_UUID()'],
       [ValuesExpr, derivedTableValuesToUnnest],
       [VariancePopExpr, renameFunc('VAR_POP')],
@@ -1833,14 +1873,6 @@ export class BigQueryGenerator extends Generator {
       [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
       [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
     ]);
-  }
-
-  @cache
-  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
-    return {
-      qualify: Generator.AFTER_HAVING_MODIFIER_TRANSFORMS.qualify,
-      windows: Generator.AFTER_HAVING_MODIFIER_TRANSFORMS.windows,
-    };
   }
 
   @cache
@@ -2159,6 +2191,7 @@ export class BigQueryJsonPathTokenizer extends JsonPathTokenizer {
 }
 
 export class BigQuery extends Dialect {
+  static DIALECT_NAME = Dialects.BIGQUERY;
   static WEEK_OFFSET = -1;
   static UNNEST_COLUMN_ONLY = true;
   static SUPPORTS_USER_DEFINED_TYPES = false;
@@ -2215,6 +2248,7 @@ export class BigQuery extends Dialect {
   @cache
   static get INVERSE_TIME_MAPPING () {
     return {
+      ...super.INVERSE_TIME_MAPPING,
       '%H:%M:%S.%f': '%H:%M:%E6S',
     };
   }
@@ -2261,22 +2295,22 @@ export class BigQuery extends Dialect {
 
   // https://cloud.google.com/bigquery/docs/reference/standard-sql/navigation_functions#percentile_cont
   @cache
-  static get COERCES_TO (): Record<string, Set<string>> {
-    const base: Record<string, Set<string>> = {};
+  static get COERCES_TO (): Map<string, Set<string>> {
+    const base = new Map<string, Set<string>>();
     for (const [k, v] of TypeAnnotator.COERCES_TO) {
-      base[k] = new Set(v as Iterable<string>);
+      base.set(k, new Set(v as Iterable<string>));
     }
-    base[DataTypeExprKind.BIGDECIMAL] = new Set([DataTypeExprKind.DOUBLE]);
-    base[DataTypeExprKind.DECIMAL]?.add(DataTypeExprKind.BIGDECIMAL);
-    base[DataTypeExprKind.BIGINT]?.add(DataTypeExprKind.BIGDECIMAL);
-    if (!base[DataTypeExprKind.VARCHAR]) base[DataTypeExprKind.VARCHAR] = new Set();
+    base.set(DataTypeExprKind.BIGDECIMAL, new Set([DataTypeExprKind.DOUBLE]));
+    base.get(DataTypeExprKind.DECIMAL)?.add(DataTypeExprKind.BIGDECIMAL);
+    base.get(DataTypeExprKind.BIGINT)?.add(DataTypeExprKind.BIGDECIMAL);
+    if (!base.has(DataTypeExprKind.VARCHAR)) base.set(DataTypeExprKind.VARCHAR, new Set());
     for (const t of [
       DataTypeExprKind.DATE,
       DataTypeExprKind.DATETIME,
       DataTypeExprKind.TIME,
       DataTypeExprKind.TIMESTAMP,
       DataTypeExprKind.TIMESTAMPTZ,
-    ]) base[DataTypeExprKind.VARCHAR].add(t);
+    ]) base.get(DataTypeExprKind.VARCHAR)?.add(t);
     return base;
   };
 
@@ -2288,7 +2322,7 @@ export class BigQuery extends Dialect {
   normalizeIdentifier<E extends Expression> (expression: E): E {
     if (
       expression instanceof IdentifierExpr
-      && this._constructor.NORMALIZATION_STRATEGY === NormalizationStrategy.CASE_INSENSITIVE
+      && this.normalizationStrategy === NormalizationStrategy.CASE_INSENSITIVE
     ) {
       let parent = expression.parent;
       while (parent instanceof DotExpr) {

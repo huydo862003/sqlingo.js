@@ -103,7 +103,8 @@ import {
   unsupportedArgs, type Generator,
 } from '../generator';
 import { seqGet } from '../helper';
-import type { Parser } from '../parser';
+import { Parser } from '../parser';
+import type { TokenPair } from '../tokens';
 import { TokenType } from '../tokens';
 import {
   boolXorSql,
@@ -117,6 +118,7 @@ import {
   renameFunc,
   timestampDiffSql,
   timestampTruncSql,
+  NullOrderingSupported,
 } from './dialect';
 import {
   dateAddSql,
@@ -137,7 +139,7 @@ function castToTime6 (
 
 class SingleStoreTokenizer extends MySQL.Tokenizer {
   @cache
-  static get BYTE_STRINGS (): [string, string][] {
+  static get BYTE_STRINGS (): TokenPair[] {
     return [['e\'', '\''], ['E\'', '\'']];
   }
 
@@ -162,6 +164,16 @@ class SingleStoreTokenizer extends MySQL.Tokenizer {
 }
 
 class SingleStoreParser extends MySQL.Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
   @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return (() => {
@@ -442,11 +454,38 @@ class SingleStoreParser extends MySQL.Parser {
 
     return [DataTypeExpr.build(typeName, { dialect: this.dialect })!, expressions[0]];
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...MySQL.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 class SingleStoreGenerator extends MySQL.Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
   static SUPPORTS_UESCAPE = false;
-  static NULL_ORDERING_SUPPORTED = true;
+
+  @cache
+  static get NULL_ORDERING_SUPPORTED () {
+    return NullOrderingSupported.SUPPORTED;
+  }
+
   static MATCH_AGAINST_TABLE_PREFIX = 'TABLE ';
   @cache
   static get STRUCT_DELIMITER () {
@@ -2292,6 +2331,7 @@ class SingleStoreGenerator extends MySQL.Generator {
 }
 
 export class SingleStore extends MySQL {
+  static DIALECT_NAME = Dialects.SINGLESTORE;
   static SUPPORTS_ORDER_BY_ALL = true;
 
   @cache

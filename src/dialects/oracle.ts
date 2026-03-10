@@ -153,6 +153,27 @@ export class OracleTokenizer extends Tokenizer {
 
 export class OracleParser extends Parser {
   @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = {
+      [TokenType.SYSTIMESTAMP]: SystimestampExpr,
+      ...Parser.NO_PAREN_FUNCTIONS,
+    };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    return noParenFunctions;
+  }
+
+  @cache
   static get WINDOW_BEFORE_PAREN_TOKENS () {
     return new Set([TokenType.OVER, TokenType.KEEP]);
   }
@@ -201,17 +222,15 @@ export class OracleParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
-    return {
-      ...Parser.NO_PAREN_FUNCTIONS,
-      [TokenType.SYSTIMESTAMP]: SystimestampExpr,
-    };
-  }
-
-  @cache
   static get FUNCTION_PARSERS (): Record<string, (this: Parser) => Expression | undefined> {
     return {
       ...Parser.FUNCTION_PARSERS,
+      CONVERT: function (this: Parser) {
+        // Oracle CONVERT(expr, dest_charset[, source_charset]) is different from SQL CONVERT
+        // Parse as regular function arguments instead of using parseConvert
+        const args = this.parseCsv(() => this.parseBitwise());
+        return ConvertToCharsetExpr.fromArgList(args);
+      },
       JSON_ARRAY: function (this: Parser) {
         return (this as OracleParser).parseJsonArray(
           JsonArrayExpr,
@@ -238,11 +257,11 @@ export class OracleParser extends Parser {
     return {
       ...Parser.PROPERTY_PARSERS,
       GLOBAL: function (this: Parser) {
-        return this.matchTextSeq('TEMPORARY')
+        return (this.matchTextSeq('TEMPORARY') || undefined)
           && this.expression(TemporaryPropertyExpr, { this: 'GLOBAL' });
       },
       PRIVATE: function (this: Parser) {
-        return this.matchTextSeq('TEMPORARY')
+        return (this.matchTextSeq('TEMPORARY') || undefined)
           && this.expression(TemporaryPropertyExpr, { this: 'PRIVATE' });
       },
       FORCE: function (this: Parser) {
@@ -348,7 +367,7 @@ export class OracleParser extends Parser {
       {
         this: thisExpr,
         path: this.dialect.toJsonPath(this.parseBitwise()),
-        passing: this.matchTextSeq('PASSING')
+        passing: (this.matchTextSeq('PASSING') || undefined)
           && this.parseCsv(() => this.parseAlias(this.parseBitwise())),
         onCondition: this.parseOnCondition(),
       },
@@ -397,11 +416,11 @@ export class OracleParser extends Parser {
 
   public parseHintArgs (): Expression[] {
     const args: Expression[] = [];
-    let result = this.parseVar({ upper: true });
+    let result = this.parseVar();
 
     while (result) {
       args.push(result);
-      result = this.parseVar({ upper: true });
+      result = this.parseVar();
     }
 
     return args;
@@ -444,9 +463,31 @@ export class OracleParser extends Parser {
 
     return thisExpr;
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 export class OracleGenerator extends Generator {
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static LOCKING_READS_SUPPORTED = true;
   static JOIN_HINTS = false;
   static TABLE_HINTS = false;
@@ -599,7 +640,7 @@ export class OracleGenerator extends Generator {
 
     for (const e of expression.args.expressions || []) {
       if (e instanceof AnonymousExpr) {
-        const formattedArgs = this.formatArgs(e.args.expressions || []);
+        const formattedArgs = this.formatArgs(e.args.expressions || [], { sep: ' ' });
         expressions.push(`${this.sql(e, 'this')}(${formattedArgs})`);
       } else {
         expressions.push(this.sql(e));
@@ -632,15 +673,24 @@ export class OracleGenerator extends Generator {
 }
 
 export class Oracle extends Dialect {
+  static DIALECT_NAME = Dialects.ORACLE;
   static ALIAS_POST_TABLESAMPLE = true;
   static LOCKING_READS_SUPPORTED = true;
   static TABLESAMPLE_SIZE_IS_PERCENT = true;
-  static NULL_ORDERING = NullOrdering.NULLS_ARE_LARGE;
+
+  @cache
+  static get NULL_ORDERING () {
+    return NullOrdering.NULLS_ARE_LARGE;
+  }
+
   static ON_CONDITION_EMPTY_BEFORE_ERROR = false;
   static ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN = false;
   static DISABLES_ALIAS_REF_EXPANSION = true;
 
-  static NORMALIZATION_STRATEGY = NormalizationStrategy.UPPERCASE;
+  @cache
+  static get NORMALIZATION_STRATEGY () {
+    return NormalizationStrategy.UPPERCASE;
+  }
 
   @cache
   static get TIME_MAPPING () {

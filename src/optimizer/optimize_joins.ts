@@ -135,7 +135,7 @@ export function reorderJoins (expression: Expression): Expression {
       .filter((name) => name !== fromName && joinsByName.has(name))
       .map((name) => joinsByName.get(name) as JoinExpr);
 
-    parent.args.joins = reorderedJoins;
+    parent.setArgKey('joins', reorderedJoins);
   }
 
   return expression;

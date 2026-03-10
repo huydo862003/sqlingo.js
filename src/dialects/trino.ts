@@ -15,6 +15,7 @@ import {
   JsonPathKeyExpr,
   JsonPathRootExpr,
   JsonPathSubscriptExpr,
+  CurrentCatalogExpr,
 } from '../expressions';
 import type { Generator } from '../generator';
 import type { Parser } from '../parser';
@@ -39,9 +40,27 @@ class TrinoTokenizer extends Presto.Tokenizer {
       REFRESH: TokenType.REFRESH,
     };
   }
-};
+}
 
 class TrinoParser extends Presto.Parser {
+  // port from _Dialect metaclass logic
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Presto.Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Presto.Parser.NO_PAREN_FUNCTIONS };
+    noParenFunctions[TokenType.CURRENT_CATALOG] = CurrentCatalogExpr;
+    return noParenFunctions;
+  }
+
   @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
@@ -139,17 +158,34 @@ class TrinoParser extends Presto.Parser {
       onCondition: this.parseOnCondition(),
     });
   }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Presto.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
 }
 
 class TrinoGenerator extends Presto.Generator {
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
   static EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE = true;
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
 
   @cache
   static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
-    return {
-      ...Presto.Generator.PROPERTIES_LOCATION,
-      [LocationPropertyExpr.name]: PropertiesLocation.POST_WITH,
-    };
+    return new Map([...Presto.Generator.PROPERTIES_LOCATION, [LocationPropertyExpr, PropertiesLocation.POST_WITH]]);
   }
 
   @cache
@@ -236,6 +272,7 @@ class TrinoGenerator extends Presto.Generator {
 }
 
 export class Trino extends Presto {
+  static DIALECT_NAME = Dialects.TRINO;
   static SUPPORTS_USER_DEFINED_TYPES = false;
   static LOG_BASE_FIRST = true;
 

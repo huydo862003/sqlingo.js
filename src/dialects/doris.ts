@@ -54,7 +54,7 @@ import {
   MaterializedPropertyExpr,
 } from '../expressions';
 import { seqGet } from '../helper';
-import type { Parser } from '../parser';
+import { Parser } from '../parser';
 import { TokenType } from '../tokens';
 import type { Generator } from '../generator';
 import { MySQL } from './mysql';
@@ -106,6 +106,25 @@ export class DorisTokenizer extends MySQL.Tokenizer {}
 
 class DorisParser extends MySQL.Parser {
   @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...MySQL.Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.CURRENT_DATE];
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
+  @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...MySQL.Parser.FUNCTIONS,
@@ -120,18 +139,9 @@ class DorisParser extends MySQL.Parser {
 
   @cache
   static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
-    return { ...MySQL.Parser.FUNCTION_PARSERS };
-  }
-
-  static {
-    delete DorisParser.FUNCTION_PARSERS['GROUP_CONCAT'];
-  }
-
-  @cache
-  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
-    const functions: Partial<Record<TokenType, typeof Expression>> = { ...MySQL.Parser.NO_PAREN_FUNCTIONS };
-    delete functions[TokenType.CURRENT_DATE];
-    return functions;
+    const parsers: Partial<Record<string, (this: Parser) => Expression | undefined>> = { ...MySQL.Parser.FUNCTION_PARSERS };
+    delete parsers['GROUP_CONCAT'];
+    return parsers;
   }
 
   @cache
@@ -261,6 +271,24 @@ class DorisParser extends MySQL.Parser {
 }
 
 class DorisGenerator extends MySQL.Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static LAST_DAY_SUPPORTS_DATE_PART = false;
   static VARCHAR_REQUIRES_SIZE = false;
   static WITH_PROPERTIES_PREFIX = 'PROPERTIES';
@@ -948,6 +976,7 @@ class DorisGenerator extends MySQL.Generator {
 }
 
 export class Doris extends MySQL {
+  static DIALECT_NAME = Dialects.DORIS;
   static DATE_FORMAT = '\'yyyy-MM-dd\'';
   static DATEINT_FORMAT = '\'yyyyMMdd\'';
   static TIME_FORMAT = '\'yyyy-MM-dd HH:mm:ss\'';

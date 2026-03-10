@@ -1,6 +1,8 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/simplify.py
 
-import { DateTime } from 'luxon';
+import {
+  DateTime, Duration,
+} from 'luxon';
 import type {
   AliasExpr,
   AnonymousExpr,
@@ -56,6 +58,7 @@ import {
   IfExpr,
   InExpr,
   IntervalExpr,
+  IntervalOpExpr,
   IsExpr,
   JoinExpr,
   LambdaExpr,
@@ -105,7 +108,6 @@ import {
   first, whileChanging,
 } from '../helper';
 import { ensureSchema } from '../schema';
-import { MapBinaryTuple } from '../port_internals/binary_tuple_map';
 import {
   cache,
   isInstanceOf, narrowInstanceOf,
@@ -117,14 +119,6 @@ import {
 } from './scope';
 
 const FINAL = 'final';
-
-const SIMPLIFIABLE = [
-  BinaryExpr,
-  FuncExpr,
-  LambdaExpr,
-  PredicateExpr,
-  UnaryExpr,
-];
 
 /**
  * Rewrite sqlglot AST to simplify expressions.
@@ -338,7 +332,7 @@ export function propagateConstants (
     && (root || !expression.sameParent)
     && normalized(expression, { dnf: true })
   ) {
-    const constantMapping = new Map<ColumnExpr, [ColumnExpr, LiteralExpr]>();
+    const constantMapping = new Map<string, [ColumnExpr, LiteralExpr]>();
 
     for (const expr of walkInScope(expression, { prune: (node) => node instanceof IfExpr })) {
       if (expr instanceof EqExpr) {
@@ -346,7 +340,9 @@ export function propagateConstants (
         const r = expr.right;
 
         if (l instanceof ColumnExpr && r instanceof LiteralExpr) {
-          constantMapping.set(l, [l, r]);
+          constantMapping.set(l.sql(), [l, r]);
+        } else if (r instanceof ColumnExpr && l instanceof LiteralExpr) {
+          constantMapping.set(r.sql(), [r, l]);
         }
       }
     }
@@ -354,7 +350,7 @@ export function propagateConstants (
     if (0 < constantMapping.size) {
       for (const column of findAllInScope(expression, [ColumnExpr])) {
         const parent = column.parent;
-        const mapping = constantMapping.get(column);
+        const mapping = constantMapping.get(column.sql());
         const [columnObj, constant] = mapping || [undefined, undefined];
 
         if (
@@ -369,6 +365,56 @@ export function propagateConstants (
   }
 
   return expression;
+}
+
+/**
+ * Decimal division with 28 significant figures, matching Python's decimal.Decimal behavior.
+ * Uses BigInt for arbitrary precision integer arithmetic.
+ */
+function decimalDiv (aStr: string, bStr: string, prec = 28): string {
+  // Parse "2.0" → [20n, -1] meaning value = 20 * 10^-1
+  const parse = (s: string): [bigint, number] => {
+    const dot = s.indexOf('.');
+    const exp = dot === -1 ? 0 : dot - s.length + 1;
+    return [BigInt(s.replace('.', '')), exp];
+  };
+
+  const [aN, aExp] = parse(aStr);
+  const [bN, bExp] = parse(bStr);
+
+  // q ≈ (aN/bN) * 10^(prec+1); may have more than prec+1 digits if aN has extra digits
+  const q = aN * (10n ** BigInt(prec + 1)) / bN;
+
+  // Normalize q to exactly prec digits with rounding
+  const qLen = q.toString().length;
+  const toStrip = qLen - prec; // digits to strip (including rounding digit)
+  let rounded: bigint;
+  if (toStrip <= 0) {
+    rounded = q;
+  } else if (toStrip === 1) {
+    rounded = q / 10n + (5n <= q % 10n ? 1n : 0n);
+  } else {
+    const stripDivisor = 10n ** BigInt(toStrip);
+    const halfStripDivisor = 10n ** BigInt(toStrip - 1) * 5n;
+    rounded = q / stripDivisor + (halfStripDivisor <= q % stripDivisor ? 1n : 0n);
+  }
+
+  // Place decimal point: value = rounded * 10^resultExp
+  // q * 10^(aExp-bExp-prec-1) = value, rounded = q / 10^toStrip
+  // so rounded * 10^(aExp-bExp-prec-1+toStrip) = value
+  const s = rounded.toString();
+  const dotPos = s.length + (aExp - bExp - prec - 1 + toStrip);
+
+  let result: string;
+  if (dotPos <= 0) {
+    result = '0.' + '0'.repeat(-dotPos) + s;
+  } else if (s.length <= dotPos) {
+    result = s + '0'.repeat(dotPos - s.length);
+  } else {
+    result = s.slice(0, dotPos) + '.' + s.slice(dotPos);
+  }
+
+  return result.includes('.') ? result.replace(/\.?0+$/, '') || '0' : result;
 }
 
 /** Check if expression is a number */
@@ -410,7 +456,25 @@ function dateTruncRange (date: DateTime, unit: string, dialect: Dialect): DateRa
     return undefined;
   }
 
-  return [floor, DateTime.fromMillis(floor.toMillis() + interval(unit))];
+  return [floor, floor.plus(interval(unit))];
+}
+
+function mergeRanges (ranges: DateRange[]): DateRange[] {
+  if (ranges.length === 0) return [];
+
+  const sorted = [...ranges].sort((a, b) => a[0].toMillis() - b[0].toMillis());
+  const merged: DateRange[] = [sorted[0]];
+
+  for (const [start, end] of sorted.slice(1)) {
+    const last = merged[merged.length - 1];
+    if (start.toMillis() <= last[1].toMillis()) {
+      merged[merged.length - 1] = [last[0], last[1].toMillis() < end.toMillis() ? end : last[1]];
+    } else {
+      merged.push([start, end]);
+    }
+  }
+
+  return merged;
 }
 
 /**
@@ -432,7 +496,7 @@ function dateTruncEqExpression (
         this: left,
         expression: dateLiteral(drange[0], targetType),
       }),
-      new LteExpr({
+      new LtExpr({
         this: left,
         expression: dateLiteral(drange[1], targetType),
       }),
@@ -490,7 +554,7 @@ function dateTruncNeq (
 
   return and(
     [
-      new LteExpr({
+      new LtExpr({
         this: left,
         expression: dateLiteral(drange[0], targetType),
       }),
@@ -570,11 +634,16 @@ function evalBoolean (expression: Expression, a: number | string, b: number | st
  * @param value - Value to cast
  * @returns DateTime or undefined
  */
+function parseDateTime (value: string): DateTime {
+  const dt = DateTime.fromISO(value, { zone: 'utc' });
+  return dt.isValid ? dt : DateTime.fromSQL(value, { zone: 'utc' });
+}
+
 function castAsDate (value: unknown): DateTime | undefined {
   if (DateTime.isDateTime(value)) {
-    return value.startOf('day');
+    return value.toUTC().startOf('day');
   }
-  const dt = typeof value === 'string' ? DateTime.fromISO(value) : DateTime.fromMillis(value as number);
+  const dt = typeof value === 'string' ? parseDateTime(value) : DateTime.fromMillis(value as number, { zone: 'utc' });
   return dt.isValid ? dt.startOf('day') : undefined;
 }
 
@@ -586,9 +655,9 @@ function castAsDate (value: unknown): DateTime | undefined {
  */
 function castAsDatetime (value: unknown): DateTime | undefined {
   if (DateTime.isDateTime(value)) {
-    return value;
+    return value.toUTC();
   }
-  const dt = typeof value === 'string' ? DateTime.fromISO(value) : DateTime.fromMillis(value as number);
+  const dt = typeof value === 'string' ? parseDateTime(value) : DateTime.fromMillis(value as number, { zone: 'utc' });
   return dt.isValid ? dt : undefined;
 }
 
@@ -647,7 +716,7 @@ function isDateLiteral (expression: unknown): boolean {
   return extractDate(expression) !== undefined;
 }
 
-function extractInterval (expression: IntervalExpr): number | undefined {
+function extractInterval (expression: IntervalExpr): Duration | undefined {
   if (expression.args.this === undefined) {
     return undefined;
   }
@@ -656,7 +725,7 @@ function extractInterval (expression: IntervalExpr): number | undefined {
     const unit = expression.text('unit').toLowerCase();
     return interval(unit, n);
   } catch (e) {
-    if (e instanceof UnsupportedUnit) {
+    if (e instanceof UnsupportedUnit || e instanceof Error) {
       return undefined;
     }
     throw e;
@@ -693,33 +762,34 @@ function dateLiteral (date: DateTime, targetType?: DataTypeExpr | ColumnDefExpr)
     type = targetType.args.this as DataTypeExprKind;
   }
 
+  const dateStr = type === DataTypeExprKind.DATE
+    ? date.toISODate()!
+    : date.toFormat('yyyy-MM-dd HH:mm:ss');
   return new CastExpr({
-    this: LiteralExpr.string(date.toISO()),
+    this: LiteralExpr.string(dateStr),
     to: new DataTypeExpr({ this: type }),
   });
 }
 
-function interval (unit: string, n: number = 1): number {
+function interval (unit: string, n: number = 1): Duration {
   const u = unit.toLowerCase();
-  const duration = DateTime.now();
-
   switch (u) {
     case 'year':
-      return duration.plus({ years: n }).diff(duration).milliseconds;
+      return Duration.fromObject({ years: n });
     case 'quarter':
-      return duration.plus({ months: 3 * n }).diff(duration).milliseconds;
+      return Duration.fromObject({ months: 3 * n });
     case 'month':
-      return duration.plus({ months: n }).diff(duration).milliseconds;
+      return Duration.fromObject({ months: n });
     case 'week':
-      return duration.plus({ weeks: n }).diff(duration).milliseconds;
+      return Duration.fromObject({ weeks: n });
     case 'day':
-      return duration.plus({ days: n }).diff(duration).milliseconds;
+      return Duration.fromObject({ days: n });
     case 'hour':
-      return duration.plus({ hours: n }).diff(duration).milliseconds;
+      return Duration.fromObject({ hours: n });
     case 'minute':
-      return duration.plus({ minutes: n }).diff(duration).milliseconds;
+      return Duration.fromObject({ minutes: n });
     case 'second':
-      return duration.plus({ seconds: n }).diff(duration).milliseconds;
+      return Duration.fromObject({ seconds: n });
     default:
       throw new UnsupportedUnit(`Unsupported unit: ${unit}`);
   }
@@ -760,12 +830,7 @@ function dateFloor (d: DateTime, unit: string, dialect: Dialect): DateTime {
       return weekStart;
     }
     case 'day':
-      return d.set({
-        hour: 0,
-        minute: 0,
-        second: 0,
-        millisecond: 0,
-      });
+      return d;
     default:
       throw new UnsupportedUnit(`Unsupported unit: ${unit}`);
   }
@@ -778,7 +843,7 @@ function dateCeil (d: DateTime, unit: string, dialect: Dialect): DateTime {
     return d;
   }
 
-  return DateTime.fromMillis(floor.toMillis() + interval(unit));
+  return floor.plus(interval(unit));
 }
 
 function booleanLiteral (condition: boolean): BooleanExpr {
@@ -809,6 +874,17 @@ export class Simplifier {
     });
   }
 
+  @cache
+  static get SIMPLIFIABLE (): (typeof Expression)[] {
+    return [
+      BinaryExpr,
+      FuncExpr,
+      LambdaExpr,
+      PredicateExpr,
+      UnaryExpr,
+    ];
+  }
+
   static TINYINT_MIN = -128;
   static TINYINT_MAX = 127;
   static UTINYINT_MIN = 0;
@@ -834,20 +910,20 @@ export class Simplifier {
   }
 
   @cache
-  static get LT_Lte (): readonly [typeof LtExpr, typeof LteExpr] {
+  static get LT_LTE (): readonly [typeof LtExpr, typeof LteExpr] {
     return [LtExpr, LteExpr];
   }
 
   @cache
-  static get GT_GtE (): readonly [typeof GtExpr, typeof GteExpr] {
+  static get GT_GTE (): readonly [typeof GtExpr, typeof GteExpr] {
     return [GtExpr, GteExpr];
   }
 
   @cache
   static get COMPARISONS (): readonly [typeof LtExpr, typeof LteExpr, typeof GtExpr, typeof GteExpr, typeof EqExpr, typeof NeqExpr, typeof IsExpr] {
     return [
-      ...Simplifier.LT_Lte,
-      ...Simplifier.GT_GtE,
+      ...Simplifier.LT_LTE,
+      ...Simplifier.GT_GTE,
       EqExpr,
       NeqExpr,
       IsExpr,
@@ -912,7 +988,7 @@ export class Simplifier {
     return {
       [LtExpr.key]: (l, dt, u, d, t) => {
         const floor = dateFloor(dt, u, d);
-        const ceilValue = dt.toMillis() === floor.toMillis() ? dt : DateTime.fromMillis(floor.toMillis() + interval(u));
+        const ceilValue = dt.toMillis() === floor.toMillis() ? dt : floor.plus(interval(u));
         return new LtExpr({
           this: l,
           expression: dateLiteral(ceilValue, t),
@@ -922,14 +998,14 @@ export class Simplifier {
         const floor = dateFloor(dt, u, d);
         return new GteExpr({
           this: l,
-          expression: dateLiteral(DateTime.fromMillis(floor.toMillis() + interval(u)), t),
+          expression: dateLiteral(floor.plus(interval(u)), t),
         });
       },
       [LteExpr.key]: (l, dt, u, d, t) => {
         const floor = dateFloor(dt, u, d);
         return new LtExpr({
           this: l,
-          expression: dateLiteral(DateTime.fromMillis(floor.toMillis() + interval(u)), t),
+          expression: dateLiteral(floor.plus(interval(u)), t),
         });
       },
       [GteExpr.key]: (l, dt, u, d, t) => {
@@ -998,20 +1074,19 @@ export class Simplifier {
       // group by expressions cannot be simplified, for example
       // select x + 1 + 1 FROM y GROUP BY x + 1 + 1
       // the projection must exactly match the group by key
-      const nodeArgs = node.args as Record<string, unknown>;
-      const group = nodeArgs.group;
+      const group = node.getArgKey('group');
 
       if (group instanceof Expression && node instanceof SelectExpr) {
         const groupExpressions = group.args.expressions;
 
         if (groupExpressions) {
-          const groups = new Set(groupExpressions);
+          const groupHashes = new Set((groupExpressions as Expression[]).map((e) => e.hash()));
           group.meta[FINAL] = true;
 
           const selects = node.selects;
           for (const s of selects) {
             for (const n of s.walk({ prune: (node) => Boolean(node.meta[FINAL]) })) {
-              if (groups.has(n)) {
+              if (groupHashes.has(n.hash())) {
                 s.meta[FINAL] = true;
                 break;
               }
@@ -1021,7 +1096,7 @@ export class Simplifier {
           const having = node.args.having;
           if (having) {
             for (const n of having.walk()) {
-              if (groups.has(n)) {
+              if (groupHashes.has(n.hash())) {
                 having.meta[FINAL] = true;
                 break;
               }
@@ -1086,8 +1161,10 @@ export class Simplifier {
 
   _simplify (
     expression: Expression,
-    options: { constantPropagation: boolean;
-      coalesceSimplification: boolean; },
+    options: {
+      constantPropagation: boolean;
+      coalesceSimplification: boolean;
+    },
   ): Expression {
     const {
       constantPropagation, coalesceSimplification,
@@ -1100,7 +1177,7 @@ export class Simplifier {
       if (!original) continue;
       let node = original;
 
-      if (!SIMPLIFIABLE.some((cls) => node instanceof cls)) {
+      if (!Simplifier.SIMPLIFIABLE.some((cls) => node instanceof cls)) {
         if (node instanceof QueryExpr) {
           this.simplify(node, {
             constantPropagation,
@@ -1135,11 +1212,13 @@ export class Simplifier {
       postTransformationStack.push([node, parent]);
     }
 
+    let lastNode = expression;
+
     while (0 < postTransformationStack.length) {
       const [original, parent] = postTransformationStack.pop()!;
       const root = original === expression;
 
-      // Resets parent, arg_key, index pointers– this is needed because some of the
+      // Resets parent, arg_key, index pointers – this is needed because some of the
       // previous transformations mutate the AST, leading to an inconsistent state
       for (const [k, v] of Object.entries(original.args)) {
         original?.setArgKey(k, v);
@@ -1154,23 +1233,23 @@ export class Simplifier {
       if (coalesceSimplification) {
         node = this.simplifyCoalesce(node);
       }
-      if (parent) {
-        node.parent = parent;
-      }
+      node.parent = parent;
 
       node = this.simplifyLiterals(node, { root });
       node = this.simplifyEquality(node);
       node = simplifyParens(node, this.dialect);
-      node = this.simplifyDatetrunc(node);
+      node = this.simplifyDateTrunc(node);
       node = this.sortComparison(node);
-      node = this.simplifyStartswith(node);
+      node = this.simplifyStartsWith(node);
 
       if (node !== original) {
         original.replace(node);
       }
+
+      lastNode = node;
     }
 
-    return expression;
+    return lastNode;
   }
 
   /**
@@ -1193,56 +1272,55 @@ export class Simplifier {
       const kind = expression instanceof AndExpr ? OrExpr : AndExpr;
       const ops = Array.from(expression.flatten());
 
+      // Use SQL strings as keys to mirror Python's content-based equality (__hash__/__eq__)
       // Initialize lookup tables:
-      // Set of all operands, used to find complements for absorption.
-      const opSet = new Set<Expression | string | number | boolean>();
-      // Sub-operands, used to find subsets for absorption.
-      const subops = new Map<Expression | string | number | boolean, Set<Expression | string | number | boolean>[]>();
-      // Pairs of complements, used for elimination.
-      // Keyed by (plain, plain) where the first key is the content of the NOT side.
-      const pairs = new MapBinaryTuple<[Expression, Expression], [Expression, Expression][]>();
+      // Set of all operand SQL strings, used to find complements for absorption.
+      const opSet = new Set<string>();
+      // Sub-operands keyed by SQL string: maps each sql to a list of sql-string sets (subsets).
+      const subops = new Map<string, Set<string>[]>();
+      // Pairs for elimination keyed as 'sqlA|sqlB'.
+      const pairs = new Map<string, [Expression, Expression][]>();
 
       // Populate the lookup tables
       for (const op of ops) {
-        opSet.add(op);
+        const opSql = this.genSql(op);
+        opSet.add(opSql);
 
         if (!(op instanceof kind)) {
           // In cases like: A OR (A AND B)
           // Subop will be: ^
-          let subopsOp = subops.get(op);
-          if (!subopsOp) {
-            subopsOp = [];
-            subops.set(op, subopsOp);
+          let arr = subops.get(opSql);
+          if (!arr) {
+            arr = [];
+            subops.set(opSql, arr);
           }
-          subopsOp.push(new Set([op]));
+          arr.push(new Set([opSql]));
           continue;
         }
 
         // In cases like: (A AND B) OR (A AND B AND C)
         // Subops will be: ^     ^
-        const subset = new Set(op.flatten());
+        const subset = new Set(Array.from(op.flatten()).map((e) => this.genSql(e)));
         for (const i of subset) {
-          let subopsI = subops.get(i);
-          if (!subopsI) {
-            subopsI = [];
-            subops.set(i, subopsI);
+          let arr = subops.get(i);
+          if (!arr) {
+            arr = [];
+            subops.set(i, arr);
           }
-          subopsI.push(subset);
+          arr.push(subset);
         }
 
         const [a, b] = op.unnestOperands();
         if (a && b) {
           if (a instanceof NotExpr && a.args.this instanceof Expression) {
-            if (!pairs.has(a.args.this, b)) {
-              pairs.set(a.args.this, b, []);
-            }
-            pairs.get(a.args.this, b)?.push([op, b]);
+            const key = `${this.genSql(a.args.this as Expression)}|${this.genSql(b)}`;
+            if (!pairs.has(key)) pairs.set(key, []);
+            pairs.get(key)!.push([op, b]);
           }
           if (b instanceof NotExpr && b.args.this instanceof Expression) {
-            if (!pairs.has(b.args.this, a)) {
-              pairs.set(b.args.this, a, []);
-            }
-            pairs.get(b.args.this, a)?.push([op, a]);
+            const key = `${this.genSql(b.args.this as Expression)}|${this.genSql(a)}`;
+            if (!pairs.has(key)) pairs.set(key, []);
+            pairs.get(key)!.push([op, a]);
           }
         }
       }
@@ -1258,16 +1336,16 @@ export class Simplifier {
         }
 
         // Absorb
-        if (a instanceof NotExpr && opSet.has(a.args.this as Expression)) {
+        if (a instanceof NotExpr && a.args.this instanceof Expression && opSet.has(this.genSql(a.args.this))) {
           a.replace(kind === AndExpr ? true_() : false_());
           continue;
         }
-        if (b instanceof NotExpr && opSet.has(b.args.this as Expression)) {
+        if (b instanceof NotExpr && b.args.this instanceof Expression && opSet.has(this.genSql(b.args.this))) {
           b.replace(kind === AndExpr ? true_() : false_());
           continue;
         }
 
-        const superset = new Set(op.flatten());
+        const superset = new Set(Array.from(op.flatten()).map((e) => this.genSql(e)));
         // Check if any element in superset has subsets that are proper subsets of superset
         const hasProperSubset = Array.from(superset).some((i) => {
           const subsetsForI = subops.get(i);
@@ -1278,7 +1356,7 @@ export class Simplifier {
             if (superset.size <= subset.size) return false;
 
             for (const item of subset) {
-              if (!superset.has(item as Expression)) return false;
+              if (!superset.has(item)) return false;
             }
             return true;
           });
@@ -1289,8 +1367,12 @@ export class Simplifier {
           continue;
         }
 
-        // Eliminate: look up (a, b) for (NOT a AND b) pairs, and (b, a) for (NOT b AND a) pairs
-        for (const [other, complement] of [...(pairs.get(a, b) || []), ...(pairs.get(b, a) || [])]) {
+        // Eliminate: check both orderings (mirrors Python's frozenset key)
+        const aSql = this.genSql(a);
+        const bSql = this.genSql(b);
+        const pairKey = `${aSql}|${bSql}`;
+        const reversePairKey = `${bSql}|${aSql}`;
+        for (const [other, complement] of [...(pairs.get(pairKey) || []), ...(pairs.get(reversePairKey) || [])]) {
           op.replace(complement);
           other.replace(complement);
         }
@@ -1420,6 +1502,7 @@ export class Simplifier {
    * NOT (x OR y) -> NOT x AND NOT y
    * NOT (x AND y) -> NOT x OR NOT y
    */
+  @annotateTypesOnChange
   @catch_(UnsupportedUnit)
   simplifyNot (expression: Expression): Expression {
     if (expression instanceof NotExpr) {
@@ -1507,6 +1590,7 @@ export class Simplifier {
   /**
    * Simplify connector expressions (AND/OR).
    */
+  @annotateTypesOnChange
   @catch_(UnsupportedUnit)
   simplifyConnectors (expression: Expression, options: { root?: boolean } = {}): Expression {
     const { root = true } = options;
@@ -1604,18 +1688,19 @@ export class Simplifier {
         return undefined;
       }
 
-      const largs = new Set([ll, lr]);
-      const rargs = new Set([rl, rr]);
+      const largs = [ll, lr];
+      const rargs = [rl, rr];
+      const largsHashes = new Map(largs.map((x) => [narrowInstanceOf(x, Expression)?.hash(), x]));
+      const rargsHashes = new Map(rargs.map((x) => [narrowInstanceOf(x, Expression)?.hash(), x]));
 
-      const matching = new Set([...largs].filter((x) => rargs.has(x)));
-      const columns = new Set(
-        [...matching].filter((m) =>
-          m instanceof Expression && !isConstant(m) && !m.find(Simplifier.NONDETERMINISTIC)),
-      );
+      const matchingHashes = new Set([...largsHashes.keys()].filter((h) => rargsHashes.has(h)));
+      const columns = [...matchingHashes].map((h) => largsHashes.get(h)).filter((m) =>
+        !isConstant(m) && !narrowInstanceOf(m, Expression)?.find(Simplifier.NONDETERMINISTIC));
+      const columnHashes = new Set(columns.map((c) => narrowInstanceOf(c, Expression)?.hash()));
 
-      if (0 < matching.size && 0 < columns.size) {
-        const largsFiltered = [...largs].filter((x) => !columns.has(x));
-        const rargsFiltered = [...rargs].filter((x) => !columns.has(x));
+      if (0 < matchingHashes.size && 0 < columns.length) {
+        const largsFiltered = largs.filter((x) => !columnHashes.has(narrowInstanceOf(x, Expression)?.hash()));
+        const rargsFiltered = rargs.filter((x) => !columnHashes.has(narrowInstanceOf(x, Expression)?.hash()));
 
         if (largsFiltered.length === 0 || rargsFiltered.length === 0) {
           return expression;
@@ -1668,22 +1753,22 @@ export class Simplifier {
           const avNum = typeof av === 'number' ? av : (DateTime.isDateTime(av) ? av.toMillis() : String(av));
           const bvNum = typeof bv === 'number' ? bv : (DateTime.isDateTime(bv) ? bv.toMillis() : String(bv));
 
-          if (Simplifier.LT_Lte.some((cls) => a instanceof cls)
-            && Simplifier.LT_Lte.some((cls) => b instanceof cls)) {
+          if (Simplifier.LT_LTE.some((cls) => a instanceof cls)
+            && Simplifier.LT_LTE.some((cls) => b instanceof cls)) {
             return or_ ? (bvNum < avNum ? left : right) : (avNum <= bvNum ? left : right);
           }
-          if (Simplifier.GT_GtE.some((cls) => a instanceof cls)
-            && Simplifier.GT_GtE.some((cls) => b instanceof cls)) {
+          if (Simplifier.GT_GTE.some((cls) => a instanceof cls)
+            && Simplifier.GT_GTE.some((cls) => b instanceof cls)) {
             return or_ ? (avNum < bvNum ? left : right) : (bvNum <= avNum ? left : right);
           }
 
           // we can't ever shortcut to true because the column could be null
           if (!or_) {
-            if (a instanceof LtExpr && Simplifier.GT_GtE.some((cls) => b instanceof cls)) {
+            if (a instanceof LtExpr && Simplifier.GT_GTE.some((cls) => b instanceof cls)) {
               if (avNum <= bvNum) {
                 return false_();
               }
-            } else if (a instanceof GtExpr && Simplifier.LT_Lte.some((cls) => b instanceof cls)) {
+            } else if (a instanceof GtExpr && Simplifier.LT_LTE.some((cls) => b instanceof cls)) {
               if (bvNum <= avNum) {
                 return false_();
               }
@@ -1738,7 +1823,7 @@ export class Simplifier {
         const result = simplifyFunc(expression, a, b);
 
         if (result && result !== expression) {
-          queue.splice(queue.indexOf(b));
+          queue.splice(queue.indexOf(b), 1);
           queue.unshift(result);
           earlyJump = true;
           break;
@@ -1770,11 +1855,12 @@ export class Simplifier {
     const { root = true } = options;
 
     if (Simplifier.AND_OR.some((cls) => expression instanceof cls) && (root || !expression.sameParent)) {
-      const ops = new Set(expression.flatten());
+      const ops = Array.from(expression.flatten());
+      const opHashes = new Set(ops.map((o) => o.hash()));
       for (const op of ops) {
         if (op instanceof NotExpr) {
-          const opThis = op.args.this;
-          if (opThis && ops.has(opThis as Expression)) {
+          const opThis = op.args.this as Expression | undefined;
+          if (opThis && opHashes.has(opThis.hash())) {
             if (expression.meta.nonnull === true) {
               return expression instanceof AndExpr ? false_() : true_();
             }
@@ -1865,7 +1951,7 @@ export class Simplifier {
     );
   }
 
-  @catch_(UnsupportedUnit)
+  @annotateTypesOnChange
   simplifyLiterals (expression: Expression, options: { root?: boolean } = {}): Expression {
     const { root = true } = options;
 
@@ -1880,9 +1966,8 @@ export class Simplifier {
 
     if (Simplifier.INVERSE_DATE_OPS[expression._constructor.key]) {
       const thisExpr = expression.args.this;
-      const exprExpr = expression.args.expression;
-      if (thisExpr instanceof Expression && exprExpr instanceof Expression) {
-        return this.simplifyBinary(expression, thisExpr, exprExpr) || expression;
+      if (thisExpr instanceof Expression && expression instanceof IntervalOpExpr) {
+        return this.simplifyBinary(expression, thisExpr, expression.interval()) || expression;
       }
     }
 
@@ -1970,23 +2055,42 @@ export class Simplifier {
       const numA = a.toValue() as number;
       const numB = b.toValue() as number;
 
+      // Count significant decimal places to avoid float precision issues (e.g. 0.06 + 0.01 = 0.07 not 0.06999...)
+      // Returns number of effective decimal places accounting for scientific notation
+      const decimalPlaces = (s: string) => {
+        const expMatch = s.match(/[eE]([+-]?\d+)/);
+        const exp = expMatch ? parseInt(expMatch[1]) : 0;
+        const mantissaMatch = s.replace(/[eE][+-]?\d+/, '').match(/\.(\d+)/);
+        const mantissaDec = mantissaMatch ? mantissaMatch[1].length : 0;
+        return Math.max(0, mantissaDec - exp);
+      };
+      const aStr = String(a.args.this ?? '');
+      const bStr = String(b.args.this ?? '');
+      const decA = decimalPlaces(aStr);
+      const decB = decimalPlaces(bStr);
+      // Format result preserving decimal places (mirrors Python Decimal behavior)
+      const fmt = (v: number, dec: number) => 0 < dec ? v.toFixed(dec) : String(v);
+
       if (expression instanceof AddExpr) {
-        return LiteralExpr.number(numA + numB);
+        return LiteralExpr.number(fmt(numA + numB, Math.max(decA, decB)));
       }
       if (expression instanceof MulExpr) {
-        return LiteralExpr.number(numA * numB);
+        return LiteralExpr.number(fmt(numA * numB, decA + decB));
       }
 
       // We only simplify Sub, Div if a and b have the same parent because they're not associative
       if (expression instanceof SubExpr) {
-        return a.parent === b.parent ? LiteralExpr.number(numA - numB) : undefined;
+        return a.parent === b.parent ? LiteralExpr.number(fmt(numA - numB, Math.max(decA, decB))) : undefined;
       }
       if (expression instanceof DivExpr) {
         // engines have differing int div behavior so intdiv is not safe
-        if ((Number.isInteger(numA) && Number.isInteger(numB)) || a.parent !== b.parent) {
+        // Check original string to distinguish integer from float (e.g. 3.0 is not int, mirrors Python Decimal)
+        const aIsInt = !aStr.includes('.') && !aStr.toLowerCase().includes('e');
+        const bIsInt = !bStr.includes('.') && !bStr.toLowerCase().includes('e');
+        if ((aIsInt && bIsInt) || a.parent !== b.parent) {
           return undefined;
         }
-        return LiteralExpr.number(numA / numB);
+        return LiteralExpr.number(decimalDiv(aStr, bStr));
       }
 
       const boolean = evalBoolean(expression, numA, numB);
@@ -2007,10 +2111,10 @@ export class Simplifier {
       const interval = extractInterval(b);
       if (date && interval !== undefined) {
         if (expression instanceof AddExpr || expression instanceof DateAddExpr || expression instanceof DatetimeAddExpr) {
-          return dateLiteral(date.plus({ milliseconds: interval }), extractType(a));
+          return dateLiteral(date.plus(interval), extractType(a));
         }
         if (expression instanceof SubExpr || expression instanceof DateSubExpr || expression instanceof DatetimeSubExpr) {
-          return dateLiteral(date.minus({ milliseconds: interval }), extractType(a));
+          return dateLiteral(date.minus(interval), extractType(a));
         }
       }
     } else if (a instanceof IntervalExpr && isDateLiteral(b)) {
@@ -2018,7 +2122,7 @@ export class Simplifier {
       const date = extractDate(b);
       // you cannot subtract a date from an interval
       if (interval !== undefined && date && expression instanceof AddExpr) {
-        return dateLiteral(date.plus({ milliseconds: interval }), extractType(b));
+        return dateLiteral(date.plus(interval), extractType(b));
       }
     } else if (isDateLiteral(a) && isDateLiteral(b)) {
       if (expression instanceof PredicateExpr) {
@@ -2082,7 +2186,7 @@ export class Simplifier {
       if (Simplifier.INVERSE_DATE_OPS[l._constructor.key]) {
         // DateAdd, DateSub, etc.
         a = l.args.this as Expression;
-        b = l.args.expression as Expression; // interval
+        b = (l as IntervalOpExpr).interval();
       } else {
         // Binary operations
         a = l.args.this as Expression;
@@ -2121,7 +2225,7 @@ export class Simplifier {
   // Simplify expressions like `DATE_TRUNC('year', x) >= CAST('2021-01-01' AS DATE)`
   @annotateTypesOnChange
   @catch_(UnsupportedUnit)
-  simplifyDatetrunc (expression: Expression): Expression {
+  simplifyDateTrunc (expression: Expression): Expression {
     const comparison = expression._constructor;
 
     if (Simplifier.DATETRUNCS.some((cls) => expression instanceof cls)) {
@@ -2187,10 +2291,11 @@ export class Simplifier {
           return expression;
         }
 
+        const mergedRanges = mergeRanges(ranges);
         const targetType = extractType(...rs.filter((r): r is Expression => r instanceof Expression));
 
         return or(
-          ranges.map((drange) => dateTruncEqExpression(l, drange, targetType)),
+          mergedRanges.map((drange) => dateTruncEqExpression(l, drange, targetType)),
           { copy: false },
         );
       }
@@ -2242,7 +2347,7 @@ export class Simplifier {
      *     // 'TRUE'
      */
   @annotateTypesOnChange
-  simplifyStartswith (expression: Expression): Expression {
+  simplifyStartsWith (expression: Expression): Expression {
     if (
       expression instanceof StartsWithExpr
       && expression.args.this instanceof Expression
@@ -2311,6 +2416,7 @@ export class Simplifier {
    *
    * C AND A AND B AND B -> A AND B AND C
    */
+  @annotateTypesOnChange
   uniqSort (expression: Expression, options: { root?: boolean } = {}): Expression {
     const { root = true } = options;
     if (!(expression instanceof ConnectorExpr) || (!root && expression.sameParent)) {
@@ -2344,7 +2450,7 @@ export class Simplifier {
     // A AND C AND B -> A AND B AND C
     for (let i = 1; i < arr.length; i++) {
       if (arr[i][0] < arr[i - 1][0]) {
-        const sorted = arr.sort((a, b) => a[0].localeCompare(b[0]));
+        const sorted = arr.sort((a, b) => (a[0] < b[0] ? -1 : b[0] < a[0] ? 1 : 0));
         expression = resultFunc(sorted.map(([, e]) => e), { copy: false });
         return expression;
       }
@@ -2416,22 +2522,30 @@ class Gen {
           this.stack.push(this.args(node) ? `${key} ` : key);
         }
       } else if (Array.isArray(node)) {
+        let lastPushedComma = false;
         for (let i = node.length - 1; 0 <= i; i--) {
           const n = node[i];
           if (n !== undefined && n !== null) {
-            if (Array.isArray(n)) {
-              // Handle [key, value] pairs from _args
+            if (Array.isArray(n) && typeof n[0] === 'string' && n[0].startsWith(':')) {
+              // Handle [key, value] pairs from _args — push value then key (no trailing comma)
               const [k, v] = n as [string, Expression | string | number | boolean];
               this.stack.push(v as Expression);
               this.stack.push(k);
+              lastPushedComma = false;
+            } else if (Array.isArray(n)) {
+              // Handle nested arrays (e.g., function arg values that are lists)
+              this.stack.push(n);
+              this.stack.push(',');
+              lastPushedComma = true;
             } else {
               this.stack.push(n as Expression);
               this.stack.push(',');
+              lastPushedComma = true;
             }
           }
         }
-        if (0 < node.length) {
-          this.stack.pop(); // Remove trailing comma
+        if (lastPushedComma) {
+          this.stack.pop(); // Remove trailing comma (only for non-[key,value] items)
         }
       } else {
         if (node !== undefined && node !== null) {
@@ -2684,7 +2798,7 @@ class Gen {
 
   private args (node: Expression, argIndex: number = 0): boolean {
     const kvs: [string, ExpressionValue][] = [];
-    const argTypes = Object.keys(node._constructor.availableArgs || {});
+    const argTypes = Array.from(node._constructor.availableArgs || []);
     const argsToProcess = 0 < argIndex ? argTypes.slice(argIndex) : argTypes;
 
     for (const k of argsToProcess) {

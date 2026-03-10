@@ -7,7 +7,7 @@ import {
 } from '../expressions';
 import type { Generator } from '../generator';
 import { seqGet } from '../helper';
-import type { Parser } from '../parser';
+import { Parser } from '../parser';
 import {
   cache, narrowInstanceOf,
 } from '../port_internals';
@@ -21,6 +21,25 @@ import {
 import { Postgres } from './postgres';
 
 class MaterializeParser extends Postgres.Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Postgres.Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   @cache
   static get NO_PAREN_FUNCTION_PARSERS () {
     return {
@@ -59,7 +78,7 @@ class MaterializeParser extends Postgres.Parser {
       this.raiseError('Expecting [');
     }
 
-    const entries = this.parseWrappedCsv(() => (this as MaterializeParser).parseLambda()).map((e: Expression) =>
+    const entries = this.parseCsv(() => (this as MaterializeParser).parseLambda()).map((e: Expression) =>
       new PropertyEqExpr({
         this: narrowInstanceOf(e.args.this, 'string', Expression),
         expression: narrowInstanceOf(e.args.expression, 'string', Expression),
@@ -73,9 +92,32 @@ class MaterializeParser extends Postgres.Parser {
       this: this.expression(StructExpr, { expressions: entries }),
     });
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Postgres.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 class MaterializeGenerator extends Postgres.Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static SUPPORTS_CREATE_TABLE_LIKE = false;
   static SUPPORTS_BETWEEN_FLAGS = false;
 
@@ -133,6 +175,7 @@ class MaterializeGenerator extends Postgres.Generator {
 }
 
 export class Materialize extends Postgres {
+  static DIALECT_NAME = Dialects.MATERIALIZE;
   static Parser = MaterializeParser;
   static Generator = MaterializeGenerator;
 }

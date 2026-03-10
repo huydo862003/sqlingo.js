@@ -346,8 +346,6 @@ export class SnowflakeTyping {
       NormalExpr,
     ], { returns: DataTypeExprKind.DOUBLE });
 
-    map.set(KurtosisExpr, { annotator: annotateKurtosis });
-
     extend([ToDecfloatExpr, TryToDecfloatExpr], { returns: DataTypeExprKind.DECFLOAT });
 
     extend([
@@ -379,7 +377,7 @@ export class SnowflakeTyping {
       SqrtExpr,
       TanExpr,
       TanhExpr,
-    ], { annotator: annotateMathWithFloatDecfloat });
+    ], { annotator: (s: TypeAnnotator, e: Expression) => annotateMathWithFloatDecfloat.call(s, e) });
 
     extend([
       ByteLengthExpr,
@@ -468,10 +466,10 @@ export class SnowflakeTyping {
 
     extend([MinhashExpr, MinhashCombineExpr], { returns: DataTypeExprKind.VARIANT });
 
-    extend([VarianceExpr, VariancePopExpr], { annotator: annotateVariance });
+    extend([VarianceExpr, VariancePopExpr], { annotator: (s: TypeAnnotator, e: Expression) => annotateVariance.call(s, e) });
 
-    map.set(ArgMaxExpr, { annotator: annotateArgMaxMin });
-    map.set(ArgMinExpr, { annotator: annotateArgMaxMin });
+    map.set(ArgMaxExpr, { annotator: (s: TypeAnnotator, e: ArgMaxExpr) => annotateArgMaxMin.call(s, e) });
+    map.set(ArgMinExpr, { annotator: (s: TypeAnnotator, e: ArgMinExpr) => annotateArgMaxMin.call(s, e) });
     map.set(ConcatWsExpr, { annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['expressions']) });
 
     map.set(ConvertTimezoneExpr, {
@@ -481,19 +479,20 @@ export class SnowflakeTyping {
       ),
     });
 
-    map.set(DateAddExpr, { annotator: annotateDateOrTimeAdd });
-    map.set(DecodeCaseExpr, { annotator: annotateDecodeCase });
+    map.set(DateAddExpr, { annotator: (s: TypeAnnotator, e: Expression) => annotateDateOrTimeAdd.call(s, e) });
+    map.set(DecodeCaseExpr, { annotator: (s: TypeAnnotator, e: DecodeCaseExpr) => annotateDecodeCase.call(s, e) });
 
     map.set(HashAggExpr, {
       annotator: (s: TypeAnnotator, e: Expression) => s.setType(e, DataTypeExpr.build('NUMBER(19, 0)', { dialect: 'snowflake' })),
     });
 
-    map.set(MedianExpr, { annotator: annotateMedian });
-    map.set(ReverseExpr, { annotator: annotateReverse });
-    map.set(StrToTimeExpr, { annotator: annotateStrToTime });
-    map.set(TimeAddExpr, { annotator: annotateDateOrTimeAdd });
-    map.set(TimestampFromPartsExpr, { annotator: annotateTimestampFromParts });
-    map.set(WithinGroupExpr, { annotator: annotateWithinGroup });
+    map.set(KurtosisExpr, { annotator: (s: TypeAnnotator, e: KurtosisExpr) => annotateKurtosis.call(s, e) });
+    map.set(MedianExpr, { annotator: (s: TypeAnnotator, e: MedianExpr) => annotateMedian.call(s, e) });
+    map.set(ReverseExpr, { annotator: (s: TypeAnnotator, e: ReverseExpr) => annotateReverse.call(s, e) });
+    map.set(StrToTimeExpr, { annotator: (s: TypeAnnotator, e: StrToTimeExpr) => annotateStrToTime.call(s, e) });
+    map.set(TimeAddExpr, { annotator: (s: TypeAnnotator, e: Expression) => annotateDateOrTimeAdd.call(s, e) });
+    map.set(TimestampFromPartsExpr, { annotator: (s: TypeAnnotator, e: TimestampFromPartsExpr) => annotateTimestampFromParts.call(s, e) });
+    map.set(WithinGroupExpr, { annotator: (s: TypeAnnotator, e: WithinGroupExpr) => annotateWithinGroup.call(s, e) });
 
     return map;
   }

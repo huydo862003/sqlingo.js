@@ -57,49 +57,51 @@ export function isolateTableSelects<E extends Expression> (
     }
 
     for (const [, sourceEntry] of Object.entries(scope.selectedSources)) {
-      const [source] = sourceEntry;
+      // sourceEntry is [node, source] where source is TableExpr | Scope
+      // We need the actual source (second element) to check if it's a Table
+      const [node, actualSource] = sourceEntry;
 
-      if (!source || !source.parent) {
+      // Only process actual table references, not CTEs (which are Scope objects)
+      if (!(actualSource instanceof TableExpr)) {
         continue;
       }
 
-      // Check if source is a TableExpr
-      if (!(source instanceof TableExpr)) {
+      const source = node as TableExpr;
+
+      if (!source.parent) {
         continue;
       }
-
-      const table = source as TableExpr;
 
       // Skip if:
       // - No column names in schema for this table
       // - Parent is already a Subquery
       // - Parent's parent is a Table (already isolated)
-      const columnNames = schema.columnNames?.(table);
+      const columnNames = schema.columnNames?.(actualSource);
       if (!columnNames || columnNames.length === 0) {
         continue;
       }
 
-      if (table.parent instanceof SubqueryExpr) {
+      if (source.parent instanceof SubqueryExpr) {
         continue;
       }
 
-      if (table.parent?.parent instanceof TableExpr) {
+      if (source.parent?.parent instanceof TableExpr) {
         continue;
       }
 
       // Table must have an alias for isolation to work
-      const tableAlias = table.alias;
+      const tableAlias = source.alias;
       if (!tableAlias) {
         throw new OptimizeError('Tables require an alias. Run qualify_tables optimization.');
       }
 
       // Wrap table in SELECT * FROM table subquery
-      const aliasName = table.aliasOrName;
+      const aliasName = source.aliasOrName;
       const subquery = selectExpr('*')
-        .from(aliasExpr(table, aliasName, { table: true }), { copy: false })
+        .from(aliasExpr(source, aliasName, { table: true }), { copy: false })
         .subquery(aliasName, { copy: false });
 
-      table.replace(subquery);
+      source.replace(subquery);
     }
   }
 

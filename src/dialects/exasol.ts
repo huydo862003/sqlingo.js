@@ -411,6 +411,28 @@ class ExasolTokenizer extends Tokenizer {
 
 class ExasolParser extends Parser {
   @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = {
+      [TokenType.SYSTIMESTAMP]: SystimestampExpr,
+      ...Parser.NO_PAREN_FUNCTIONS,
+    };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
+  @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return (() => {
       const functions: Record<string, (args: Expression[]) => Expression> = {
@@ -458,9 +480,11 @@ class ExasolParser extends Parser {
           timestamp: args[0],
           sourceTz: seqGet(args, 1),
           targetTz: args[2],
+          options: [seqGet(args, 3)!],
         }),
         NULLIFZERO: buildNullIfZero,
         ZEROIFNULL: buildZeroIfNull,
+        WEEKOFYEAR: (args: unknown[]) => WeekOfYearExpr.fromArgList(args),
       };
 
       DATE_UNITS.forEach((unit) => {
@@ -488,14 +512,6 @@ class ExasolParser extends Parser {
   @cache
   static get FUNC_TOKENS (): Set<TokenType> {
     return new Set([...Parser.FUNC_TOKENS, TokenType.SYSTIMESTAMP]);
-  }
-
-  @cache
-  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
-    return {
-      ...Parser.NO_PAREN_FUNCTIONS,
-      [TokenType.SYSTIMESTAMP]: SystimestampExpr,
-    };
   }
 
   @cache
@@ -533,9 +549,37 @@ class ExasolParser extends Parser {
     }
     return column;
   }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
 }
 
 class ExasolGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
+  static SUPPORTS_CONVERT_TIMEZONE = true;
+
   @cache
   static get STRING_TYPE_MAPPING (): Map<DataTypeExprKind, string> {
     return new Map<DataTypeExprKind, string>([
@@ -649,12 +693,23 @@ class ExasolGenerator extends Generator {
       ],
       [
         LevenshteinExpr,
-        function (this: Generator, e: Expression) {
+        function (this: Generator, e: LevenshteinExpr) {
           unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
           return renameFunc('EDIT_DISTANCE').call(this, e);
         },
       ],
       [ModExpr, renameFunc('MOD')],
+      [
+        ConvertTimezoneExpr,
+        function (this: Generator, e: ConvertTimezoneExpr) {
+          return this.func('CONVERT_TZ', [
+            e.args.timestamp,
+            e.args.sourceTz,
+            e.args.targetTz,
+            ...e.args.options ?? [],
+          ]);
+        },
+      ],
       [
         RegexpExtractExpr,
         function (this: Generator, e: Expression) {
@@ -770,14 +825,6 @@ class ExasolGenerator extends Generator {
     return transforms;
   }
 
-  convertTimezoneSql (expression: ConvertTimezoneExpr): string {
-    return this.func('CONVERT_TZ', [
-      expression.args.timestamp,
-      expression.args.sourceTz,
-      expression.args.targetTz,
-    ]);
-  }
-
   ifSql (expression: IfExpr): string {
     const thisSql = this.sql(expression, 'this');
     const trueSql = this.sql(expression, 'true');
@@ -795,9 +842,24 @@ class ExasolGenerator extends Generator {
     }
     return this.func('RANK', []);
   }
+
+  convertTimezoneSql (expression: ConvertTimezoneExpr): string {
+    const timestamp = expression.args.timestamp;
+    const sourceTz = expression.args.sourceTz;
+    const targetTz = expression.args.targetTz;
+    const options = expression.args.options;
+    return this.func('CONVERT_TZ', [
+      timestamp,
+      sourceTz,
+      targetTz,
+      ...options ?? [],
+    ]);
+  }
 }
 
 export class Exasol extends Dialect {
+  static DIALECT_NAME = Dialects.EXASOL;
+
   @cache
   static get NORMALIZATION_STRATEGY () {
     return NormalizationStrategy.UPPERCASE;
@@ -831,40 +893,31 @@ export class Exasol extends Dialect {
   @cache
   static get TIME_MAPPING () {
     return {
-      CC: '%y',
-      D: '%u',
-      DAY: '%A',
-      DD: '%d',
-      DDD: '%j',
-      DY: '%a',
-      FF1: '%f',
-      FF2: '%f',
-      FF3: '%f',
-      FF4: '%f',
-      FF5: '%f',
-      FF6: '%f',
-      FF7: '%f',
-      FF8: '%f',
-      FF9: '%f',
-      FX: '%c',
-      HH: '%I',
-      HH12: '%I',
-      HH24: '%H',
-      IW: '%V',
-      MI: '%M',
-      MM: '%m',
-      MON: '%b',
-      MONTH: '%B',
-      Q: '',
-      RR: '%y',
-      RRRR: '%Y',
-      SS: '%S',
-      SSSSS: '%f',
-      WW: '%W',
-      W: '%W',
-      YY: '%y',
-      YYY: '%y',
+      yyyy: '%Y',
       YYYY: '%Y',
+      yy: '%y',
+      YY: '%y',
+      mm: '%m',
+      MM: '%m',
+      MONTH: '%B',
+      MON: '%b',
+      dd: '%d',
+      DD: '%d',
+      DAY: '%A',
+      DY: '%a',
+      H12: '%I',
+      H24: '%H',
+      HH: '%H',
+      ID: '%u',
+      vW: '%V',
+      IW: '%V',
+      vYYY: '%G',
+      IYYY: '%G',
+      MI: '%M',
+      SS: '%S',
+      uW: '%W',
+      UW: '%U',
+      Z: '%z',
     };
   }
 

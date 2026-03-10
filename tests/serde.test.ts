@@ -10,8 +10,8 @@ import {
 } from '../src/serde';
 import { loadSqlFixtures } from './helpers';
 
-function dumpLoad (expression: Expression): Expression | undefined {
-  return load(JSON.parse(JSON.stringify(dump(expression))));
+function dumpLoad (expression: Expression, customExpressions?: Record<string, typeof Expression>): Expression | undefined {
+  return load(JSON.parse(JSON.stringify(dump(expression))), customExpressions);
 }
 
 describe('TestSerde', () => {
@@ -26,9 +26,9 @@ describe('TestSerde', () => {
   it('test_custom_expression', () => {
     class CustomExpression extends Expression {}
     const before = new CustomExpression({});
-    const after = dumpLoad(before);
+    const after = dumpLoad(before, { CustomExpression });
     // custom expression class not in registry so load returns undefined — expect it to not crash
-    expect(after).toBeUndefined();
+    expect(after).toEqual(before);
   });
 
   it('test_type_annotations', () => {
@@ -41,7 +41,7 @@ describe('TestSerde', () => {
 
   it('test_meta', () => {
     const before = parseOne('SELECT * FROM X');
-    before.meta['x'] = 1;
+    before.meta.x = 1;
     const after = dumpLoad(before);
     expect(after).toBeDefined();
     expect(after?.meta).toEqual(before.meta);

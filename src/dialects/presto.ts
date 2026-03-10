@@ -134,6 +134,7 @@ import {
   annotateTypes, findAllInScope,
 } from '../optimizer';
 import { Parser } from '../parser';
+import type { TokenPair } from '../tokens';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
@@ -154,6 +155,7 @@ import {
 import {
   cache, narrowInstanceOf,
 } from '../port_internals';
+import { PrestoTyping } from '../typing/presto';
 import type { DateAddOrSub } from './dialect';
 import {
   binaryFromFunction,
@@ -245,8 +247,8 @@ export function schemaSql (this: Generator, expression: SchemaExpr): string {
     for (const schema of siblings) {
       if (schema === expression) continue;
 
-      const columnDefs = schema.findAll(ColumnDefExpr);
-      if (0 < [...columnDefs].length && schema.parent instanceof PropertyExpr) {
+      const columnDefs = [...schema.findAll(ColumnDefExpr)];
+      if (0 < columnDefs.length && schema.parent instanceof PropertyExpr) {
         expression.args.expressions?.push(...columnDefs);
       }
     }
@@ -283,8 +285,8 @@ export function tsOrDsToDateSql (this: Generator, expression: TsOrDsToDateExpr):
   if (timeFormat && timeFormat !== Presto.TIME_FORMAT && timeFormat !== Presto.DATE_FORMAT) {
     const parsedTime = strToTimeSql.call(this, expression); // from previous step
     return this.sql(new CastExpr({
-      this: LiteralExpr.string({ this: parsedTime }),
-      to: LiteralExpr.string({ this: DataTypeExprKind.DATE }),
+      this: parsedTime,
+      to: DataTypeExprKind.DATE.toUpperCase(),
     }));
   }
 
@@ -293,9 +295,9 @@ export function tsOrDsToDateSql (this: Generator, expression: TsOrDsToDateExpr):
     new CastExpr({
       this: new CastExpr({
         this: expression.args.this,
-        to: LiteralExpr.string({ this: DataTypeExprKind.TIMESTAMP }),
+        to: DataTypeExprKind.TIMESTAMP.toUpperCase(),
       }),
-      to: LiteralExpr.string({ this: DataTypeExprKind.DATE }),
+      to: DataTypeExprKind.DATE.toUpperCase(),
     }),
   );
 }
@@ -313,11 +315,11 @@ export function tsOrDsAddSql (this: Generator, expression: TsOrDsAddExpr): strin
 export function tsOrDsDiffSql (this: Generator, expression: TsOrDsDiffExpr): string {
   const thisTs = new CastExpr({
     this: expression.args.this,
-    to: LiteralExpr.string({ this: DataTypeExprKind.TIMESTAMP }),
+    to: DataTypeExprKind.TIMESTAMP.toUpperCase(),
   });
   const exprTs = new CastExpr({
     this: expression.args.expression,
-    to: LiteralExpr.string({ this: DataTypeExprKind.TIMESTAMP }),
+    to: DataTypeExprKind.TIMESTAMP.toUpperCase(),
   });
   const unit = unitToStr(expression);
   return this.func('DATE_DIFF', [
@@ -388,7 +390,7 @@ export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): str
   const scale = expression.args.scale;
   const timestamp = this.sql(expression, 'this');
 
-  if (!scale || scale === UnixToTimeExpr.SECONDS) {
+  if (!scale || scale.toValue() === UnixToTimeExpr.SECONDS.toValue()) {
     return renameFunc('FROM_UNIXTIME').call(this, expression);
   }
 
@@ -406,7 +408,7 @@ function toInt (this: Generator, expression: Expression): Expression {
   if (expression.type instanceof Expression && !DataTypeExpr.INTEGER_TYPES.has(expression.type.args.this as DataTypeExprKind)) {
     return new CastExpr({
       this: expression,
-      to: LiteralExpr.string(DataTypeExprKind.BIGINT),
+      to: DataTypeExprKind.BIGINT.toUpperCase(),
     });
   }
   return expression;
@@ -529,9 +531,12 @@ export function amendExplodedColumnTable (expression: Expression): Expression {
 }
 
 class PrestoTokenizer extends Tokenizer {
-  public HEX_STRINGS: [string, string][] = [['x\'', '\''], ['X\'', '\'']];
+  static get HEX_STRINGS (): TokenPair[] {
+    return [['x\'', '\''], ['X\'', '\'']];
+  }
 
-  public UNICODE_STRINGS: [string, string][] = (() => {
+  @cache
+  static get UNICODE_STRINGS (): TokenPair[] {
     const prefixes = ['U&', 'u&'];
     const quotes = Tokenizer.QUOTES as string[];
     const result: [string, string][] = [];
@@ -542,9 +547,9 @@ class PrestoTokenizer extends Tokenizer {
       }
     }
     return result;
-  })();
+  }
 
-  public NESTED_COMMENTS = false;
+  static NESTED_COMMENTS = false;
 
   @cache
   static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
@@ -572,6 +577,16 @@ class PrestoTokenizer extends Tokenizer {
 }
 
 class PrestoParser extends Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
   static VALUES_FOLLOWED_BY_PAREN = false;
   static ZONE_AWARE_TIMESTAMP_CONSTRUCTOR = true;
 
@@ -694,9 +709,30 @@ class PrestoParser extends Parser {
     delete parsers['TRIM'];
     return parsers;
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 class PrestoGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
   static INTERVAL_ALLOWS_PLURAL_FORM = false;
   static JOIN_HINTS = false;
   static TABLE_HINTS = false;
@@ -1129,10 +1165,9 @@ class PrestoGenerator extends Generator {
     }
 
     if (!(isJson || thisArg?.isType(DataTypeExprKind.JSON))) {
-      thisArg?.replace(new CastExpr({
-        this: thisArg,
-        to: LiteralExpr.string(DataTypeExprKind.JSON),
-      }));
+      const castExpr = new CastExpr({ to: DataTypeExprKind.JSON.toUpperCase() });
+      thisArg?.replace(castExpr);
+      castExpr.setArgKey('this', thisArg);
     }
 
     return this.functionFallbackSql(expression);
@@ -1175,12 +1210,12 @@ class PrestoGenerator extends Generator {
     const thisArg = expression.args.this;
     const valueAsText = new CastExpr({
       this: thisArg,
-      to: LiteralExpr.string(DataTypeExprKind.TEXT),
+      to: 'VARCHAR',
     });
     const valueAsTimestamp = thisArg?.args.isString
       ? new CastExpr({
         this: thisArg,
-        to: LiteralExpr.string(DataTypeExprKind.TIMESTAMP),
+        to: DataTypeExprKind.TIMESTAMP.toUpperCase(),
       })
       : thisArg;
 
@@ -1245,7 +1280,10 @@ class PrestoGenerator extends Generator {
         if (isType(e.type, DataTypeExprKind.UNKNOWN)) {
           unknownType = true;
         } else {
-          schema.push(`${this.sql(e, 'this')} ${this.sql(e.type)}`);
+          const eType = typeof e.type === 'string'
+            ? new DataTypeExpr({ this: e.type as DataTypeExprKind })
+            : e.type;
+          schema.push(`${this.sql(e, 'this')} ${this.sql(eType)}`);
         }
         values.push(this.sql(e, 'expression'));
       } else {
@@ -1353,8 +1391,17 @@ class PrestoGenerator extends Generator {
 }
 
 export class Presto extends Dialect {
+  static DIALECT_NAME = Dialects.PRESTO;
   static INDEX_OFFSET = 1;
-  static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
+
+  @cache
+  static get NULL_ORDERING () {
+    return NullOrdering.NULLS_ARE_LAST;
+  }
+
+  static get EXPRESSION_METADATA () {
+    return new Map(PrestoTyping.EXPRESSION_METADATA);
+  }
 
   @cache
   static get TIME_FORMAT () {

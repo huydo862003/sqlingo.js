@@ -12,6 +12,7 @@ import type {
   IdentifierExpr,
   ExpressionValue,
   StarExpr,
+  UnnestExpr,
 } from '../expressions';
 import {
   AlterColumnExpr,
@@ -139,7 +140,7 @@ import {
   UnixToStrExpr,
   UnixToTimeExpr,
   UnixToTimeStrExpr,
-  UnnestExpr,
+  VarExpr,
   VarMapExpr,
   VolatilePropertyExpr,
   WeekOfYearExpr,
@@ -147,6 +148,7 @@ import {
   WithExpr,
   YearExpr,
   toIdentifier,
+  var_,
 } from '../expressions';
 import {
   Generator, unsupportedArgs,
@@ -168,6 +170,8 @@ import {
   unnestGenerateSeries,
   unnestToExplode,
 } from '../transforms';
+import { HiveTyping } from '../typing/hive';
+import { TypeAnnotator } from '../optimizer';
 import {
   approxCountDistinctSql,
   argMaxOrMinNoCount,
@@ -310,7 +314,7 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   const timestamp = this.sql(expression, 'this');
   const scale = expression.args.scale;
 
-  if (scale === undefined || scale === UnixToTimeExpr.SECONDS) {
+  if (scale === undefined || scale.toValue() === UnixToTimeExpr.SECONDS.toValue()) {
     return renameFunc('FROM_UNIXTIME').call(this, expression);
   }
 
@@ -372,33 +376,30 @@ function buildToDate (args: Expression[]): TsOrDsToDateExpr {
 function buildDateAdd (args: Expression[]): TsOrDsAddExpr {
   let expression = seqGet(args, 1);
   if (expression) {
-    expression = new MulExpr({
-      this: expression,
-      expression: LiteralExpr.number(-1),
-    });
+    expression = expression.mul(-1);
   }
 
   return new TsOrDsAddExpr({
     this: seqGet(args, 0),
     expression: expression,
-    unit: LiteralExpr.string('DAY'),
+    unit: var_('DAY'),
   });
 }
 
 class HiveTokenizer extends Tokenizer {
   @cache
   static get QUOTES () {
-    return ['\'', '"'] as const;
+    return ['\'', '"'];
   }
 
   @cache
   static get IDENTIFIERS () {
-    return ['`'] as const;
+    return ['`'];
   }
 
   @cache
   static get STRING_ESCAPES () {
-    return ['\\'] as const;
+    return ['\\'];
   }
 
   @cache
@@ -442,6 +443,26 @@ class HiveTokenizer extends Tokenizer {
 }
 
 class HiveParser extends Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.CURRENT_TIME];
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   static LOG_DEFAULTS_TO_LN = true;
   static STRICT_CAST = false;
   static VALUES_FOLLOWED_BY_PAREN = false;
@@ -467,6 +488,11 @@ class HiveParser extends Parser {
   static get FUNCTIONS (): Record<string, (expression: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
+      ADD_MONTHS: (args: Expression[]): TsOrDsAddExpr => new TsOrDsAddExpr({
+        this: seqGet(args, 0),
+        expression: seqGet(args, 1),
+        unit: var_('MONTH'),
+      }),
       BASE64: (args: unknown[]) => ToBase64Expr.fromArgList(args),
       COLLECT_LIST: (args: Expression[]) => new ArrayAggExpr({
         this: seqGet(args, 0),
@@ -476,7 +502,7 @@ class HiveParser extends Parser {
       DATE_ADD: (args: Expression[]) => new TsOrDsAddExpr({
         this: seqGet(args, 0),
         expression: seqGet(args, 1),
-        unit: LiteralExpr.string('DAY'),
+        unit: new VarExpr({ this: 'DAY' }),
       }),
       DATE_FORMAT: (args: Expression[]) => buildFormattedTime(TimeToStrExpr, { dialect: 'hive' })([new TimeStrToTimeExpr({ this: seqGet(args, 0) }), seqGet(args, 1)]),
       DATE_SUB: buildDateAdd,
@@ -497,8 +523,24 @@ class HiveParser extends Parser {
       }),
       LAST: buildWithIgnoreNulls(LastExpr),
       LAST_VALUE: buildWithIgnoreNulls(LastValueExpr),
-      MAP: (args: unknown[]) => VarMapExpr.fromArgList(args),
-      MONTH: (args: Expression[]) => new MonthExpr({ this: TsOrDsToDateExpr.fromArgList(args) }),
+      MAP: (args: Expression[]) => {
+        if (args.length === 1 && args[0].isStar) {
+          return new StarMapExpr({
+            this: args[0],
+          });
+        }
+        const keys: Expression[] = [];
+        const values: Expression[] = [];
+        for (let i = 0; i < args.length; i += 2) {
+          keys.push(args[i]);
+          if (args[i + 1]) values.push(args[i + 1]);
+        }
+        return new VarMapExpr({
+          keys: new ArrayExpr({ expressions: keys }),
+          values: new ArrayExpr({ expressions: values }),
+        });
+      },
+      MONTH: (args: Expression[]) => new MonthExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
       REGEXP_EXTRACT: buildRegexpExtract(RegexpExtractExpr),
       REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr),
       SEQUENCE: (args: unknown[]) => GenerateSeriesExpr.fromArgList(args),
@@ -519,7 +561,7 @@ class HiveParser extends Parser {
       })(
         0 < args.length ? args : [new CurrentTimestampExpr({})],
       ),
-      YEAR: (args: Expression[]) => new YearExpr({ this: TsOrDsToDateExpr.fromArgList(args) }),
+      YEAR: (args: Expression[]) => new YearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
     };
   }
 
@@ -534,21 +576,12 @@ class HiveParser extends Parser {
   }
 
   @cache
-  static get NO_PAREN_FUNCTIONS (): Partial<Record<TokenType, typeof Expression>> {
-    return (() => {
-      const noParen = { ...Parser.NO_PAREN_FUNCTIONS };
-      delete noParen[TokenType.CURRENT_TIME];
-      return noParen;
-    })();
-  }
-
-  @cache
   static get PROPERTY_PARSERS (): Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> {
     return {
       ...Parser.PROPERTY_PARSERS,
       SERDEPROPERTIES: function (this: Parser) {
         return new SerdePropertiesExpr({
-          expressions: this.parseWrappedCsv(() => this.parseProperty()),
+          expressions: this.parseWrappedCsv(() => this.parseProperty() as Expression | undefined),
         });
       },
     };
@@ -712,9 +745,22 @@ class HiveParser extends Parser {
       expression: expression,
     });
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 class HiveGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static LIMIT_FETCH = 'LIMIT';
   static TABLESAMPLE_WITH_METHOD = false;
   static JOIN_HINTS = false;
@@ -920,9 +966,9 @@ class HiveGenerator extends Generator {
           return this.func('SPLIT', [
             e.args.this,
             this.func('CONCAT', [
-              LiteralExpr.string('\\\\Q'),
+              LiteralExpr.string('\\Q'),
               e.args.expression,
-              LiteralExpr.string('\\\\E'),
+              LiteralExpr.string('\\E'),
             ]),
           ]);
         },
@@ -1017,12 +1063,6 @@ class HiveGenerator extends Generator {
         },
       ],
       [UnixToTimeStrExpr, renameFunc('FROM_UNIXTIME')],
-      [
-        UnnestExpr,
-        function (this: Generator, e: UnnestExpr) {
-          return this.func('EXPLODE', [e.args.this]);
-        },
-      ],
       [
         PartitionedByPropertyExpr,
         function (this: Generator, e: PartitionedByPropertyExpr) {
@@ -1252,7 +1292,7 @@ class HiveGenerator extends Generator {
     return `CHANGE COLUMN ${thisSql} ${newName} ${dtype}${comment}`;
   }
 
-  renameColumnSql (): string {
+  renameColumnSql (_expr: Expression): string {
     this.unsupported('Cannot rename columns without data type defined in Hive');
     return '';
   }
@@ -1321,15 +1361,38 @@ class HiveGenerator extends Generator {
 }
 
 export class Hive extends Dialect {
+  static DIALECT_NAME = Dialects.HIVE;
   static ALIAS_POST_TABLESAMPLE = true;
   static IDENTIFIERS_CAN_START_WITH_DIGIT = true;
   static SUPPORTS_USER_DEFINED_TYPES = false;
+
+  static get EXPRESSION_METADATA () {
+    return new Map(HiveTyping.EXPRESSION_METADATA);
+  }
+
+  @cache
+  static get COERCES_TO (): Map<DataTypeExprKind, Set<DataTypeExprKind>> {
+    const coercesTo = new Map(TypeAnnotator.COERCES_TO);
+    for (const targetType of [
+      ...DataTypeExpr.NUMERIC_TYPES,
+      ...DataTypeExpr.TEMPORAL_TYPES,
+      DataTypeExprKind.INTERVAL,
+    ]) {
+      const existing = coercesTo.get(targetType as DataTypeExprKind) ?? new Set<DataTypeExprKind>();
+      coercesTo.set(targetType as DataTypeExprKind, new Set([...existing, ...DataTypeExpr.TEXT_TYPES]));
+    }
+    return coercesTo;
+  }
+
   static SAFE_DIVISION = true;
   static ARRAY_AGG_INCLUDES_NULLS = undefined;
   static REGEXP_EXTRACT_DEFAULT_GROUP = 1;
   static ALTER_TABLE_SUPPORTS_CASCADE = true;
 
-  static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE;
+  @cache
+  static get NORMALIZATION_STRATEGY () {
+    return NormalizationStrategy.CASE_INSENSITIVE;
+  }
 
   static INITCAP_DEFAULT_DELIMITER_CHARS = ' \t\n\r\f\u000b\u001c\u001d\u001e\u001f';
 

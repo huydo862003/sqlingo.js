@@ -1786,7 +1786,7 @@ WHERE
     this.validateAll('SELECT \'\'\'test\'\'\'', { write: { spark: String.raw`SELECT '\'test\''` } });
   }
 
-  testEomonth () {
+  testEoMonth () {
     this.validateAll('EOMONTH(GETDATE())', {
       read: { spark: 'LAST_DAY(CURRENT_TIMESTAMP())' },
       write: {
@@ -1823,7 +1823,7 @@ WHERE
       narrowInstanceOf(this.validateIdentity('#x').assertIs(ColumnExpr)?.args.this, IdentifierExpr)?.args['temporary'],
     ).toBeTruthy();
     expect(
-      narrowInstanceOf(this.validateIdentity('##x').assertIs(ColumnExpr)?.args.this, IdentifierExpr)?.args['global_'],
+      narrowInstanceOf(this.validateIdentity('##x').assertIs(ColumnExpr)?.args.this, IdentifierExpr)?.args['global'],
     ).toBeTruthy();
 
     narrowInstanceOf(this.validateIdentity('@x').assertIs(ParameterExpr)?.args.this, VarExpr);
@@ -2198,7 +2198,7 @@ describe('TestTSQL', () => {
   test('testTop', () => t.testTop());
   test('testFormat', () => t.testFormat());
   test('testString', () => t.testString());
-  test('testEomonth', () => t.testEomonth());
+  test('testEomonth', () => t.testEoMonth());
   test('testIdentifierPrefixes', () => t.testIdentifierPrefixes());
   test('testTemporalTable', () => t.testTemporalTable());
   test('testSystemTime', () => t.testSystemTime());

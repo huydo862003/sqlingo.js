@@ -18,7 +18,9 @@ export const enum TrieResult {
  *
  * Each node maps characters to child nodes, with a special key `0` marking complete words.
  */
-export type TrieNode = { [key: string]: TrieNode } & { 0?: true };
+/** Special sentinel key used to mark terminal nodes (avoids collision with digit characters like '0') */
+export const TRIE_END = '\x00';
+export type TrieNode = { [key: string]: TrieNode | true } & { '\x00'?: true };
 
 /**
  * A key represented as an array of characters.
@@ -50,10 +52,10 @@ export function newTrie (keywords: Iterable<Key>, trie?: TrieNode): TrieNode {
       if (!current[char]) {
         current[char] = {};
       }
-      current = current[char];
+      current = current[char] as TrieNode;
     }
 
-    current[0] = true;
+    current[TRIE_END] = true;
   }
 
   return result;
@@ -87,10 +89,10 @@ export function inTrie (trie: TrieNode, key: Key): [TrieResult, TrieNode] {
     if (!current[char]) {
       return [TrieResult.FAILED, current];
     }
-    current = current[char];
+    current = current[char] as TrieNode;
   }
 
-  if (current[0]) {
+  if (current[TRIE_END]) {
     return [TrieResult.EXISTS, current];
   }
 

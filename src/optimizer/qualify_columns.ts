@@ -54,7 +54,9 @@ import {
 import {
   ensureSchema, type Schema,
 } from '../schema';
-import { OptimizeError } from '../errors';
+import {
+  highlightSql, OptimizeError,
+} from '../errors';
 import { seqGet } from '../helper';
 import { TypeAnnotator } from './annotate_types';
 import { Resolver } from './resolver';
@@ -186,7 +188,7 @@ export function qualifyColumns<E extends Expression> (
  */
 export function validateQualifyColumns<E extends Expression> (
   expression: E,
-  _sql?: string,
+  sql?: string,
 ): E {
   const allUnqualifiedColumns: ColumnExpr[] = [];
 
@@ -203,9 +205,19 @@ export function validateQualifyColumns<E extends Expression> (
       const line = (column.args.this as Expression)?.meta?.['line'] as number | undefined;
       const col = (column.args.this as Expression)?.meta?.['col'] as number | undefined;
 
+      const start = (column.args.this as Expression)?.meta?.['start'] as number | undefined;
+      const end = (column.args.this as Expression)?.meta?.['end'] as number | undefined;
+
       let errorMsg = `Column '${column.name}' could not be resolved${forTable}.`;
       if (line && col) {
         errorMsg += ` Line: ${line}, Col: ${col}`;
+      }
+      if (sql && start !== undefined && end !== undefined) {
+        const { formattedSql } = highlightSql({
+          sql,
+          positions: [[start, end]],
+        });
+        errorMsg += `\n  ${formattedSql}`;
       }
 
       throw new OptimizeError(errorMsg);
@@ -225,9 +237,19 @@ export function validateQualifyColumns<E extends Expression> (
     const line = isInstanceOf(firstColumnThis, Expression) ? firstColumnThis.meta['line'] : undefined;
     const col = isInstanceOf(firstColumnThis, Expression) ? firstColumnThis.meta['col'] : undefined;
 
+    const start = isInstanceOf(firstColumnThis, Expression) ? firstColumnThis.meta['start'] as number | undefined : undefined;
+    const end = isInstanceOf(firstColumnThis, Expression) ? firstColumnThis.meta['end'] as number | undefined : undefined;
+
     let errorMsg = `Ambiguous column '${firstColumn.name}'`;
     if (line && col) {
       errorMsg += ` (Line: ${line}, Col: ${col})`;
+    }
+    if (sql && start !== undefined && end !== undefined) {
+      const { formattedSql } = highlightSql({
+        sql,
+        positions: [[start, end]],
+      });
+      errorMsg += `\n  ${formattedSql}`;
     }
 
     throw new OptimizeError(errorMsg);
@@ -287,7 +309,7 @@ function popTableColumnAliases (derivedTables: Iterable<Expression>): void {
     }
     const tableAlias = table.getArgKey('alias');
     if (tableAlias instanceof TableAliasExpr) {
-      tableAlias.args.columns = undefined;
+      tableAlias.setArgKey('columns', undefined);
     }
   }
 }
@@ -397,8 +419,8 @@ function expandUsing (scope: Scope, resolver: Resolver): Map<string, string[]> {
       }
     }
 
-    join.args.using = undefined;
-    join.args.on = andExpr(conditions, { copy: false });
+    join.setArgKey('using', undefined);
+    join.setArgKey('on', andExpr(conditions, { copy: false }));
   }
 
   if (0 < columnTables.size) {
@@ -498,7 +520,7 @@ function expandAliasRefs_ (
       }
 
       if (table && (!aliasExpr_ || skipReplace)) {
-        column.args.table = table as IdentifierExpr;
+        column.setArgKey('table', table);
       } else if (!column.table && aliasExpr_ && !skipReplace) {
         if ((aliasExpr_ instanceof LiteralExpr || aliasExpr_.isNumber) && (literalIndex || resolveTable)) {
           if (literalIndex) {
@@ -666,22 +688,23 @@ function qualifyColumnsInScope (
 
     if (!columnTable) {
       if (0 < scope.pivots.length && !column.findAncestor(PivotExpr)) {
-        column.args.table = toIdentifier((scope.pivots[0] as PivotExpr).alias);
+        column.setArgKey('table', toIdentifier((scope.pivots[0] as PivotExpr).alias));
         continue;
       }
 
       const table = resolver.getTable(column);
 
-      if (
-        table
-        && scope.sources.get(table.name) instanceof Scope
-        && (scope.sources.get(table.name) as Scope).columnIndex.has(Object.keys(column).length)
-      ) {
-        continue;
+      if (table) {
+        const source = scope.sources.get(table.name);
+        if (source instanceof Scope
+          && source.columnIndex.has(column)
+        ) {
+          continue;
+        }
       }
 
       if (table) {
-        column.args.table = table as IdentifierExpr;
+        column.setArgKey('table', table);
       } else if (
         dialectClass.TABLES_REFERENCEABLE_AS_COLUMNS
         && column.parts.length === 1
@@ -699,7 +722,7 @@ function qualifyColumnsInScope (
         if (!column.table && resolver.allColumns.has(column.name)) {
           const table = resolver.getTable(column.name);
           if (table) {
-            column.args.table = table as IdentifierExpr;
+            column.setArgKey('table', table);
           }
         }
       }
@@ -1065,7 +1088,7 @@ function expandStars_ (
   }
 
   if (0 < newSelections.length && scope.expression instanceof SelectExpr) {
-    scope.expression.args.expressions = newSelections;
+    scope.expression.setArgKey('expressions', newSelections);
   }
 }
 
@@ -1099,7 +1122,7 @@ export function qualifyOutputs (scopeOrExpression: Scope | Expression): void {
 
     if (selection instanceof SubqueryExpr) {
       if (!selection.outputName) {
-        selection.args.alias = new TableAliasExpr({ this: toIdentifier(`_col_${i}`) });
+        selection.setArgKey('alias', new TableAliasExpr({ this: toIdentifier(`_col_${i}`) }));
       }
     } else if (!(selection instanceof AliasExpr) && !(selection instanceof AliasesExpr) && !selection.isStar) {
       selection = aliasExpr(
@@ -1117,7 +1140,7 @@ export function qualifyOutputs (scopeOrExpression: Scope | Expression): void {
   }
 
   if (0 < newSelections.length && scopeInstance.expression instanceof SelectExpr) {
-    scopeInstance.expression.args.expressions = newSelections;
+    scopeInstance.expression.setArgKey('expressions', newSelections);
   }
 }
 
@@ -1189,8 +1212,8 @@ function expandGroupBy (scope: Scope, dialect: Dialect): void {
   if (!group) return;
 
   const groupExpressions = filterInstanceOf(group.args.expressions || [], Expression);
-  group.args.expressions = expandPositionalReferences(scope, groupExpressions, dialect);
-  (scope.expression as SelectExpr).args.group = group;
+  group.setArgKey('expressions', expandPositionalReferences(scope, groupExpressions, dialect));
+  (scope.expression as SelectExpr).setArgKey('group', group);
 }
 
 function expandOrderByAndDistinctOn (scope: Scope, resolver: Resolver): void {
@@ -1234,22 +1257,18 @@ function expandOrderByAndDistinctOn (scope: Scope, resolver: Resolver): void {
     }
 
     if (scope.expression.getArgKey('group')) {
-      const selectsMap: Array<{
-        key: Expression;
-        value: Expression;
-      }> = scope.expression.selects
-        .filter((s): s is AliasExpr => s instanceof AliasExpr)
-        .map((s) => ({
-          key: s.args.this as Expression,
-          value: columnExpr({ col: s.aliasOrName }),
-        }));
+      const selectsMap = new Map<string, Expression>(
+        scope.expression.selects
+          .filter((s): s is AliasExpr => s instanceof AliasExpr)
+          .map((s) => [(s.args.this as Expression).sql(), columnExpr({ col: s.aliasOrName })]),
+      );
 
       for (const expr of modifierExpressions) {
         if (expr.isInteger) {
           expr.replace(toIdentifier(selectByPos(scope, expr as LiteralExpr).alias));
         } else {
-          const match = selectsMap.find((entry) => entry.key === expr);
-          if (match) expr.replace(match.value);
+          const match = selectsMap.get(expr.sql());
+          if (match) expr.replace(match);
         }
       }
     }
@@ -1291,7 +1310,7 @@ export function pushdownCteAliasColumns (scope: Scope): void {
 
         let newProjection: Expression;
         if (projection instanceof AliasExpr) {
-          projection.args.alias = toIdentifier(alias_);
+          projection.setArgKey('alias', toIdentifier(alias_));
           newProjection = projection;
         } else {
           newProjection = aliasExpr(projection, alias_) as Expression;

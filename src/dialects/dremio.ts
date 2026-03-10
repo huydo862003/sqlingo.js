@@ -166,7 +166,27 @@ class DremioTokenizer extends Tokenizer {
 };
 
 class DremioParser extends Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   static LOG_DEFAULTS_TO_LN = true;
+
   @cache
   static get NO_PAREN_FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
@@ -209,9 +229,34 @@ class DremioParser extends Parser {
       to: DataTypeExpr.build('DATE'),
     });
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 class DremioGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static NVL2_SUPPORTED = false;
   static SUPPORTS_CONVERT_TIMEZONE = true;
   static INTERVAL_ALLOWS_PLURAL_FORM = false;
@@ -289,11 +334,17 @@ class DremioGenerator extends Generator {
 }
 
 export class Dremio extends Dialect {
+  static DIALECT_NAME = Dialects.DREMIO;
   static SUPPORTS_USER_DEFINED_TYPES = false;
   static CONCAT_COALESCE = true;
   static TYPED_DIVISION = true;
   static SUPPORTS_SEMI_ANTI_JOIN = false;
-  static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
+
+  @cache
+  static get NULL_ORDERING () {
+    return NullOrdering.NULLS_ARE_LAST;
+  }
+
   static SUPPORTS_VALUES_DEFAULT = false;
 
   @cache

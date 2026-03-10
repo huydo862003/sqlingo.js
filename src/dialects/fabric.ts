@@ -27,6 +27,7 @@ import {
 } from '../expressions';
 import { preprocess } from '../transforms';
 import { cache } from '../port_internals';
+import { Parser } from '../parser';
 import { TSQL } from './tsql';
 import {
   Dialect, NormalizationStrategy, Dialects,
@@ -82,6 +83,25 @@ export class FabricTokenizer extends TSQL.Tokenizer {
 }
 
 export class FabricParser extends TSQL.Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...TSQL.Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   public parseCreate (): CreateExpr | CommandExpr {
     const create = super.parseCreate();
 
@@ -104,9 +124,34 @@ export class FabricParser extends TSQL.Parser {
 
     return create;
   }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...TSQL.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
 }
 
 export class FabricGenerator extends TSQL.Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
+
   @cache
   static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map(TSQL.Generator.TYPE_MAPPING);
@@ -200,11 +245,15 @@ export class FabricGenerator extends TSQL.Generator {
     }
 
     if (!timestamp) return '';
-    const microseconds = timestamp.mul(literal(1e6));
+    const microseconds = timestamp.mul(LiteralExpr.number('1e6'));
     const rounded = func('round', microseconds, literal(0));
     const roundedMsAsBigint = cast(rounded, DataTypeExprKind.BIGINT);
 
-    const epochStart = cast('\'1970-01-01\'', 'datetime2(6)');
+    const datetime2Type = new DataTypeExpr({
+      this: DataTypeExprKind.DATETIME2,
+      expressions: [new DataTypeParamExpr({ this: literal(6) })],
+    });
+    const epochStart = cast('\'1970-01-01\'', datetime2Type);
 
     const dateadd = new DateAddExpr({
       this: epochStart,
@@ -216,7 +265,12 @@ export class FabricGenerator extends TSQL.Generator {
 }
 
 export class Fabric extends TSQL {
-  static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_SENSITIVE;
+  static DIALECT_NAME = Dialects.FABRIC;
+
+  @cache
+  static get NORMALIZATION_STRATEGY () {
+    return NormalizationStrategy.CASE_SENSITIVE;
+  }
 
   static Tokenizer = FabricTokenizer;
   static Parser = FabricParser;

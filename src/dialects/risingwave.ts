@@ -1,6 +1,4 @@
-import type {
-  Generator,
-} from '../generator';
+import { Generator } from '../generator';
 import type {
   Expression,
   DataTypeExpr,
@@ -17,7 +15,7 @@ import {
   IncludePropertyExpr,
 } from '../expressions';
 import { TokenType } from '../tokens';
-import type { Parser } from '../parser';
+import { Parser } from '../parser';
 import { cache } from '../port_internals';
 import {
   Dialect, Dialects,
@@ -36,6 +34,25 @@ class RisingWaveTokenizer extends Postgres.Tokenizer {
 }
 
 class RisingWaveParser extends Postgres.Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Postgres.Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   static WRAPPED_TRANSFORM_COLUMN_CONSTRAINT = false;
 
   @cache
@@ -121,9 +138,32 @@ class RisingWaveParser extends Postgres.Parser {
       key: key,
     });
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Postgres.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 class RisingWaveGenerator extends Postgres.Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static LOCKING_READS_SUPPORTED = false;
   static SUPPORTS_BETWEEN_FLAGS = false;
 
@@ -145,10 +185,9 @@ class RisingWaveGenerator extends Postgres.Generator {
 
   @cache
   static get PROPERTIES_LOCATION () {
-    return {
-      ...Postgres.Generator.PROPERTIES_LOCATION,
-      [FileFormatPropertyExpr.constructor.name]: PropertiesLocation.POST_EXPRESSION,
-    };
+    const m = new Map(Postgres.Generator.PROPERTIES_LOCATION);
+    m.set(FileFormatPropertyExpr, PropertiesLocation.POST_EXPRESSION);
+    return m;
   }
 
   @cache
@@ -157,7 +196,7 @@ class RisingWaveGenerator extends Postgres.Generator {
   }
 
   computedColumnConstraintSql (expression: ComputedColumnConstraintExpr): string {
-    return super.computedColumnConstraintSql(expression);
+    return Generator.prototype.computedColumnConstraintSql.call(this, expression);
   }
 
   dataTypeSql (expression: DataTypeExpr): string {
@@ -171,6 +210,7 @@ class RisingWaveGenerator extends Postgres.Generator {
 }
 
 export class RisingWave extends Postgres {
+  static DIALECT_NAME = Dialects.RISINGWAVE;
   static REQUIRES_PARENTHESIZED_STRUCT_ACCESS = true;
   static SUPPORTS_STRUCT_STAR_EXPANSION = true;
 

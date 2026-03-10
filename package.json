@@ -47,9 +47,6 @@
   "author": "Huy DNA",
   "license": "MIT",
   "packageManager": "pnpm@10.26.1",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "files": [
     "dist",
     "LICENSE",

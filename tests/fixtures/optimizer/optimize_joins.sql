@@ -1,0 +1,44 @@
+SELECT * FROM x JOIN y ON y.a = 1 JOIN z ON x.a = z.a AND y.a = z.a;
+SELECT * FROM x JOIN z ON x.a = z.a AND TRUE JOIN y ON y.a = 1 AND y.a = z.a;
+
+SELECT * FROM x JOIN y ON y.a = 1 JOIN z ON x.a = z.a;
+SELECT * FROM x JOIN y ON y.a = 1 JOIN z ON x.a = z.a;
+
+SELECT * FROM x CROSS JOIN y JOIN z ON x.a = z.a AND y.a = z.a;
+SELECT * FROM x JOIN z ON x.a = z.a AND TRUE JOIN y ON y.a = z.a;
+
+SELECT * FROM x LEFT JOIN y ON y.a = 1 JOIN z ON x.a = z.a AND y.a = z.a;
+SELECT * FROM x LEFT JOIN y ON y.a = 1 JOIN z ON x.a = z.a AND y.a = z.a;
+
+SELECT * FROM x INNER JOIN z ON x.id = z.id;
+SELECT * FROM x JOIN z ON x.id = z.id;
+
+SELECT * FROM x LEFT OUTER JOIN z;
+SELECT * FROM x LEFT JOIN z ON TRUE;
+
+SELECT * FROM x CROSS JOIN z;
+SELECT * FROM x CROSS JOIN z;
+
+SELECT * FROM x JOIN z;
+SELECT * FROM x CROSS JOIN z;
+
+SELECT * FROM x FULL JOIN z;
+SELECT * FROM x FULL JOIN z ON TRUE;
+
+SELECT * FROM x NATURAL JOIN z;
+SELECT * FROM x NATURAL JOIN z ON TRUE;
+
+SELECT * FROM x RIGHT JOIN z;
+SELECT * FROM x RIGHT JOIN z ON TRUE;
+
+SELECT * FROM x JOIN z USING (id);
+SELECT * FROM x JOIN z USING (id);
+
+SELECT * FROM x CROSS JOIN z ON TRUE;
+SELECT * FROM x CROSS JOIN z;
+
+SELECT * FROM x LEFT ANTI JOIN y ON x.a = y.a; 
+SELECT * FROM x LEFT ANTI JOIN y ON x.a = y.a;
+
+SELECT * FROM x LEFT SEMI JOIN y ON x.a = y.a; 
+SELECT * FROM x LEFT SEMI JOIN y ON x.a = y.a;

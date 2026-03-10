@@ -9,6 +9,12 @@ import type { Generator as SqlGenerator } from './generator';
  */
 export class Insert {
   constructor (public readonly expression: Expression) {}
+  toJSON () {
+    return {
+      type: 'Insert',
+      expression: this.expression.sql(),
+    };
+  }
 }
 
 /**
@@ -16,6 +22,12 @@ export class Insert {
  */
 export class Remove {
   constructor (public readonly expression: Expression) {}
+  toJSON () {
+    return {
+      type: 'Remove',
+      expression: this.expression.sql(),
+    };
+  }
 }
 
 /**
@@ -26,6 +38,14 @@ export class Move {
     public readonly source: Expression,
     public readonly target: Expression,
   ) {}
+
+  toJSON () {
+    return {
+      type: 'Move',
+      source: this.source.sql(),
+      target: this.target.sql(),
+    };
+  }
 }
 
 /**
@@ -36,6 +56,14 @@ export class Update {
     public readonly source: Expression,
     public readonly target: Expression,
   ) {}
+
+  toJSON () {
+    return {
+      type: 'Update',
+      source: this.source.sql(),
+      target: this.target.sql(),
+    };
+  }
 }
 
 /**
@@ -46,6 +74,14 @@ export class Keep {
     public readonly source: Expression,
     public readonly target: Expression,
   ) {}
+
+  toJSON () {
+    return {
+      type: 'Keep',
+      source: this.source.sql(),
+      target: this.target.sql(),
+    };
+  }
 }
 
 /**
@@ -184,7 +220,7 @@ class ChangeDistiller {
     const preMatchedNodes = new Map<Expression, Expression>(matchings);
 
     this.source = source;
-    this.target = source;
+    this.target = target;
 
     for (const n of source.bfs()) {
       if (!IGNORED_LEAF_EXPRESSION_TYPES.some((type) => n instanceof type)) {
@@ -246,7 +282,9 @@ class ChangeDistiller {
         }
 
         // Check non-expression leaves (attributes)
-        if (JSON.stringify(getNonExpressionLeaves(sourceNode)) === JSON.stringify(getNonExpressionLeaves(targetNode))) {
+        const sourceLeaves = Object.fromEntries(getNonExpressionLeaves(sourceNode));
+        const targetLeaves = Object.fromEntries(getNonExpressionLeaves(targetNode));
+        if (JSON.stringify(sourceLeaves) !== JSON.stringify(targetLeaves)) {
           editScript.push(new Update(sourceNode, targetNode));
         } else if (!deltaOnly) {
           editScript.push(new Keep(sourceNode, targetNode));
@@ -264,8 +302,8 @@ class ChangeDistiller {
     target: Expression,
     matchings: Map<Expression, Expression>,
   ): Move[] {
-    const sourceArgs = expressionOnlyArgs(source);
-    const targetArgs = expressionOnlyArgs(target);
+    const sourceArgs = [...expressionOnlyArgs(source)];
+    const targetArgs = [...expressionOnlyArgs(target)];
 
     // LCS expects a comparator that returns true if source element matches target element
     const lcsResult = lcs(
@@ -372,8 +410,8 @@ class ChangeDistiller {
       targetLeaf: Expression;
     }> = [];
 
-    const sourceExpressionLeaves = this.source ? getExpressionLeaves(this.source) : [];
-    const targetExpressionLeaves = this.target ? getExpressionLeaves(this.target) : [];
+    const sourceExpressionLeaves = this.source ? [...getExpressionLeaves(this.source)] : [];
+    const targetExpressionLeaves = this.target ? [...getExpressionLeaves(this.target)] : [];
 
     for (const sourceLeaf of sourceExpressionLeaves) {
       for (const targetLeaf of targetExpressionLeaves) {
@@ -481,7 +519,12 @@ export function isSameType (source: Expression, target: Expression): boolean {
     }
 
     if (source instanceof AnonymousExpr && target instanceof AnonymousExpr) {
-      return source.args.this === target.args.this;
+      const sThis = source.args.this;
+      const tThis = target.args.this;
+      if (sThis instanceof Expression && tThis instanceof Expression) {
+        return sThis.equals(tThis);
+      }
+      return sThis === tThis;
     }
 
     return true;

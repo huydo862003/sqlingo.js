@@ -4,7 +4,6 @@ import {
   AggFuncExpr,
   AliasExpr,
   Expression,
-  and as andExpr,
   AndExpr,
   ColumnExpr,
   FromExpr,
@@ -19,12 +18,14 @@ import {
   WhereExpr,
   WindowExpr,
   columnTableNames,
+  WithExpr,
 } from '../expressions';
 import {
   Dialect, type DialectType,
 } from '../dialects/dialect';
 import { Athena } from '../dialects/athena';
 import { Presto } from '../dialects/presto';
+import { narrowInstanceOf } from '../port_internals';
 import { normalized } from './normalize';
 import {
   buildScope, findInScope, Scope,
@@ -148,7 +149,8 @@ function pushdown (
     return;
   }
 
-  condition = condition.replace(simplify(condition, { dialect }));
+  const simplified = simplify(condition, { dialect });
+  condition = condition.replace(simplified);
   const cnfLike = normalized(condition) || !normalized(condition, { dnf: true });
 
   const predicates = (cnfLike ? condition instanceof AndExpr : condition instanceof OrExpr)
@@ -198,10 +200,7 @@ function pushdownCnf (
 
         if (findInScope(innerPredicate, AggFuncExpr)) {
           // Add to HAVING clause
-          const having = node.args.having;
-          node.setArgKey('having', having
-            ? andExpr([having, innerPredicate], { copy: false })
-            : innerPredicate);
+          node.having(innerPredicate, { copy: false });
         } else {
           node.where(innerPredicate, { copy: false });
         }
@@ -238,20 +237,21 @@ function pushdownDnf (
 
   const conditions = new Map<string, Expression>();
 
+  let nodes = {};
+
   // Pushdown all predicates to their respective nodes
   for (const table of Array.from(pushdownTables).sort()) {
     for (const predicate of predicates) {
-      const nodes = nodesForPredicate(predicate, sources, scopeRefCount);
+      nodes = nodesForPredicate(predicate, sources, scopeRefCount);
 
       if (!(table in nodes)) {
         continue;
       }
 
       const existing = conditions.get(table);
-      conditions.set(table, existing ? orExpr([existing, predicate], { copy: false }) : predicate);
+      conditions.set(table, existing ? orExpr([existing, predicate]) : predicate);
     }
 
-    const nodes = nodesForPredicate(Array.from(predicates)[0], sources, scopeRefCount);
     for (const [name, node] of Object.entries(nodes)) {
       const condition = conditions.get(name);
       if (!condition) {
@@ -265,10 +265,7 @@ function pushdownDnf (
 
         if (findInScope(innerPredicate, AggFuncExpr)) {
           // Add to HAVING clause
-          const having = node.args.having;
-          node.setArgKey('having', having
-            ? andExpr([having, innerPredicate], { copy: false })
-            : innerPredicate);
+          node.having(innerPredicate, { copy: false });
         } else {
           node.where(innerPredicate, { copy: false });
         }
@@ -292,39 +289,26 @@ function nodesForPredicate (
       continue;
     }
 
-    let [node] = sourceEntry;
+    let node = sourceEntry[0] as Expression | undefined;
     const [, source] = sourceEntry;
 
     // If the predicate is in a where statement we can try to push it down
     // We want to find the root join or from statement
     if (node && whereCondition) {
-      const parent = node.findAncestor<JoinExpr | FromExpr>(JoinExpr, FromExpr);
-      if (parent) {
-        node = parent;
-      }
+      node = node.findAncestor<JoinExpr | FromExpr>(JoinExpr, FromExpr);
     }
 
     // A node can reference a CTE which should be pushed down
     if (node instanceof FromExpr && !(source instanceof TableExpr)) {
-      if (source instanceof Scope) {
-        const sourceParent = source.expression.parent;
-        if (sourceParent) {
-          const parentExpression = sourceParent.parent?.parent;
-          if (parentExpression) {
-            const withClause = parentExpression.getArgKey('with');
-            if (withClause instanceof Expression) {
-              if (withClause.getArgKey('recursive')) {
-                return {};
-              }
-            }
-          }
-        }
-        node = source.expression;
+      const with_ = narrowInstanceOf((source instanceof Scope ? source.parent : (source as Expression).parent?.args)?.expression, Expression)?.getArgKey('with');
+      if (with_ instanceof WithExpr && with_?.recursive) {
+        return {};
       }
+      node = source instanceof Scope ? source.expression : (source as Expression).args.expression as Expression | undefined;
     }
 
     if (node instanceof JoinExpr) {
-      const side = node.args.side;
+      const side = node.side;
       if (side && side !== JoinExprKind.RIGHT) {
         return {};
       }

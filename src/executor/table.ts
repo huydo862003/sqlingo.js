@@ -138,10 +138,17 @@ export class TableIter implements Iterator<RowReader> {
   }
 }
 
-export class Tables extends MappingSchema {}
+export class Tables extends MappingSchema {
+  override depth (): number {
+    return objectDepth(this.mapping);
+  }
+}
 
 export function ensureTables (d?: Record<string, unknown>, dialect?: DialectType): Tables {
-  return new Tables(_ensureTables(d, dialect));
+  return new Tables(_ensureTables(d, dialect), {
+    normalize: false,
+    dialect,
+  });
 }
 
 function _ensureTables (d?: unknown, dialect?: DialectType): Record<string, unknown> {

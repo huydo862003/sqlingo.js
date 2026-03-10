@@ -524,7 +524,7 @@ import type { ParseOptions } from './parser';
 import { ALL_FUNCTIONS } from './parser/function_registry';
 import {
   Dialect, type DialectType, mapDatePart, unitToStr,
-  concatToDPipeSql, NullOrdering, NormalizeFunctions,
+  concatToDPipeSql, NullOrdering, NullOrderingSupported, NormalizeFunctions,
   Dialects,
 } from './dialects/dialect';
 import {
@@ -535,7 +535,7 @@ import {
 } from './tokens';
 import { simplify } from './optimizer/simplify';
 import {
-  applyIndexOffset, csv, mapOnExpression, nameSequence,
+  applyIndexOffset, camelToScreamingSnakeCase, csv, mapOnExpression, nameSequence,
   seqGet,
 } from './helper';
 import { ALL_JSON_PATH_PARTS } from './jsonpath/expressions';
@@ -551,7 +551,7 @@ export interface GeneratorOptions extends ParseOptions {
   normalize?: boolean;
   pad?: number;
   indent?: number;
-  normalizeFunctions?: string | boolean;
+  normalizeFunctions?: NormalizeFunctions;
   unsupportedLevel?: ErrorLevel;
   maxUnsupported?: number;
   leadingComma?: boolean;
@@ -616,10 +616,11 @@ export function unsupportedArgs<T extends Expression> (
 export class Generator {
   // Static feature flags
 
-  // Whether null ordering is supported in order by
-  // True: Full Support, None: No support, False: No support for certain cases
-  // such as window specifications, aggregate functions etc
-  static NULL_ORDERING_SUPPORTED?: boolean = true;
+  @cache
+  @cache
+  static get NULL_ORDERING_SUPPORTED (): NullOrderingSupported {
+    return NullOrderingSupported.SUPPORTED;
+  }
 
   // Whether ignore nulls is inside the agg or outside.
   // FIRST(x IGNORE NULLS) OVER vs FIRST (x) IGNORE NULLS OVER
@@ -912,28 +913,43 @@ export class Generator {
   // Whether SELECT *, ... EXCLUDE requires wrapping in a subquery for transpilation.
   static STAR_EXCLUDE_REQUIRES_DERIVED_TABLE = true;
 
-  static AFTER_HAVING_MODIFIER_TRANSFORMS: Record<string, (this: Generator, e: Expression) => string> = {
-    cluster: function (this: Generator, e) {
-      return this.sql(e, 'cluster');
-    },
-    distribute: function (this: Generator, e) {
-      return this.sql(e, 'distribute');
-    },
-    sort: function (this: Generator, e) {
-      return this.sql(e, 'sort');
-    },
-    windows: function (this: Generator, e) {
-      return e.getArgKey('windows')
-        ? this.seg('WINDOW ') + this.expressions(e, {
-          key: 'windows',
-          flat: true,
-        })
-        : '';
-    },
-    qualify: function (this: Generator, e) {
-      return this.sql(e, 'qualify');
-    },
-  };
+  static AFTER_HAVING_MODIFIER_TRANSFORMS: Map<string, (this: Generator, e: Expression) => string> = new Map([
+    [
+      'cluster',
+      function (this: Generator, e) {
+        return this.sql(e, 'cluster');
+      },
+    ],
+    [
+      'distribute',
+      function (this: Generator, e) {
+        return this.sql(e, 'distribute');
+      },
+    ],
+    [
+      'sort',
+      function (this: Generator, e) {
+        return this.sql(e, 'sort');
+      },
+    ],
+    [
+      'windows',
+      function (this: Generator, e) {
+        return e.getArgKey('windows')
+          ? this.seg('WINDOW ') + this.expressions(e, {
+            key: 'windows',
+            flat: true,
+          })
+          : '';
+      },
+    ],
+    [
+      'qualify',
+      function (this: Generator, e) {
+        return this.sql(e, 'qualify');
+      },
+    ],
+  ]);
 
   static SAFE_JSON_PATH_KEY_RE = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
 
@@ -1034,7 +1050,7 @@ export class Generator {
   }
 
   // Expressions that need to have all CTEs under them bubbled up to them
-  static EXPRESSIONS_WITHOUT_NESTED_CteS: Set<typeof Expression> = new Set();
+  static EXPRESSIONS_WITHOUT_NESTED_CTES: Set<typeof Expression> = new Set();
 
   // Creatables where the expression (e.g. AS SELECT ...) precedes the schema-level properties
   static EXPRESSION_PRECEDES_PROPERTIES_CREATABLES: Set<string> = new Set();
@@ -1284,10 +1300,25 @@ export class Generator {
             return this.binary(e, '#-');
           },
         ],
-        [JsonPathFilterExpr, (_: Generator, e: JsonPathFilterExpr) => `?${e.args.this}`],
-        [JsonPathRecursiveExpr, (_: Generator, e: JsonPathRecursiveExpr) => `..${e.args.this || ''}`],
+        [
+          JsonPathFilterExpr,
+          function (this: Generator, e: JsonPathFilterExpr) {
+            return `?${e.args.this}`;
+          },
+        ],
+        [
+          JsonPathRecursiveExpr,
+          function (this: Generator, e: JsonPathRecursiveExpr) {
+            return `..${e.args.this || ''}`;
+          },
+        ],
         [JsonPathRootExpr, () => '$'],
-        [JsonPathScriptExpr, (_: Generator, e: JsonPathScriptExpr) => `(${e.args.this}`],
+        [
+          JsonPathScriptExpr,
+          function (this: Generator, e: JsonPathScriptExpr) {
+            return `(${e.args.this}`;
+          },
+        ],
         [
           JsonPathSelectorExpr,
           function (this: Generator, e: JsonPathSelectorExpr) {
@@ -1302,7 +1333,7 @@ export class Generator {
               e.args.end,
               e.args.step,
             ]
-              .filter((p) => p !== undefined && p !== null)
+              .filter((p) => p !== undefined)
               .map((p) => (p === false ? '' : this.jsonPathPart(p as ExpressionValue<JsonPathPartExpr>)))
               .join(':');
           },
@@ -1310,7 +1341,8 @@ export class Generator {
         [
           JsonPathUnionExpr,
           function (this: Generator, e: JsonPathUnionExpr) {
-            return `[${this.expressions(e, { sep: ', ' })}]`;
+            const parts = (e.args.expressions ?? []).map((p) => this.jsonPathPart(p as ExpressionValue<JsonPathPartExpr>));
+            return `[${parts.join(',')}]`;
           },
         ],
         [JsonPathWildcardExpr, () => '*'],
@@ -1582,7 +1614,7 @@ export class Generator {
         [
           VarMapExpr,
           function (this: Generator, e: VarMapExpr) {
-            return this.func('MAP', e.keys.flatMap((k, i) => [k, e.values[i]]));
+            return this.func('MAP', [e.args.keys, e.args.values]);
           },
         ],
         [
@@ -1627,7 +1659,7 @@ export class Generator {
   @cache
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static get TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
-    const transforms = this.ORIGINAL_TRANSFORMS;
+    const transforms = new Map(this.ORIGINAL_TRANSFORMS);
     for (const part of Array.from(ALL_JSON_PATH_PARTS).filter((cls) => !this.SUPPORTED_JSON_PATH_PARTS.has(cls))) {
       transforms.delete(part);
     }
@@ -1743,7 +1775,7 @@ export class Generator {
   protected normalize: boolean;
   protected pad: number;
   protected indentAmount: number;
-  protected normalizeFunctions: string | boolean;
+  protected normalizeFunctions: NormalizeFunctions;
   protected unsupportedLevel: ErrorLevel;
   protected maxUnsupported: number;
   protected leadingComma: boolean;
@@ -1845,11 +1877,9 @@ export class Generator {
   protected moveCtesToTopLevel<E extends Expression> (expression: E): E {
     if (
       !expression.parent
-      && (this.constructor as typeof Generator).EXPRESSIONS_WITHOUT_NESTED_CteS.has(expression._constructor)
+      && (this.constructor as typeof Generator).EXPRESSIONS_WITHOUT_NESTED_CTES.has(expression._constructor)
       && [...expression.findAll(WithExpr)].some((node) => node.parent !== expression)
-      && isInstanceOf(expression, SelectExpr)
     ) {
-      assertIsInstanceOf(expression, SelectExpr);
       return moveCtesToTopLevel(expression) as E;
     }
     return expression;
@@ -1944,7 +1974,7 @@ export class Generator {
    * Normalize a function name based on settings.
    */
   normalizeFunc (name: string): string {
-    if (this.normalizeFunctions === NormalizeFunctions.UPPER || this.normalizeFunctions === true) {
+    if (this.normalizeFunctions === NormalizeFunctions.UPPER) {
       return name.toUpperCase();
     }
     if (this.normalizeFunctions === NormalizeFunctions.LOWER) {
@@ -1997,13 +2027,17 @@ export class Generator {
     const { comment = true } = options;
 
     // Handle undefined/null early
-    if (!expression) {
+    if (expression === undefined) {
       return '';
     }
 
     // Handle string literals
     if (typeof expression === 'number' || typeof expression === 'string' || typeof expression === 'boolean') {
       return expression.toString();
+    }
+
+    if (Array.isArray(expression)) {
+      return expression.map((e) => this.sql(e)).join(', ');
     }
 
     // Handle key extraction
@@ -2016,7 +2050,6 @@ export class Generator {
       }
       return '';
     }
-
     // Check TRANSFORMS
     const transform = this._constructor.TRANSFORMS.get(expression._constructor);
 
@@ -2721,14 +2754,15 @@ export class Generator {
       typeSql = this.sql(expression, 'kind');
     } else {
       const typeMapping = typeValue && this._constructor.TYPE_MAPPING.get(typeValue);
-      typeSql = typeMapping !== undefined ? typeMapping : typeValue?.toUpperCase();
+      const isKnownKind = typeValue !== undefined && (Object.values(DataTypeExprKind) as string[]).includes(typeValue);
+      typeSql = typeMapping !== undefined ? typeMapping : (typeValue && (isKnownKind ? camelToScreamingSnakeCase(typeValue) : typeValue));
     }
 
     if (interior) {
       if (exprNested) {
         const structDelim = this._constructor.STRUCT_DELIMITER;
         nested = `${structDelim[0]}${interior}${structDelim[1]}`;
-        if (expression.args.values !== undefined) {
+        if (expression.args.values?.length) {
           const delimiters = typeValue === DataTypeExprKind.ARRAY ? ['[', ']'] : ['(', ')'];
           const valuesStr = this.expressions(expression, {
             key: 'values',
@@ -2787,7 +2821,7 @@ export class Generator {
     let expressions = this.expressions(expression, { flat: true });
     expressions = expressions ? ` (${expressions})` : '';
     const kind = expression.args.kind?.toString();
-    const kindStr = kind ? this.dialect._constructor.INVERSE_CREATABLE_KIND_MAPPING?.[kind] || kind : kind;
+    const kindStr = kind ? (this.dialect._constructor.INVERSE_CREATABLE_KIND_MAPPING?.[kind] || kind).toUpperCase() : kind;
     const existsSql = expression.args.exists ? ' IF EXISTS ' : ' ';
     const concurrentlySql = expression.args.concurrently ? ' CONCURRENTLY' : '';
     let onCluster = this.sql(expression, 'cluster');
@@ -2829,7 +2863,8 @@ export class Generator {
       distinctOrAll = distinct ? ' DISTINCT' : ' ALL';
     }
 
-    const sideKind = [expression.args.side, expression.args.kind].filter(Boolean).join(' ');
+    const sideKind = [expression.args.side, expression.args.kind].filter(Boolean).join(' ')
+      .toUpperCase();
     const sideKindStr = sideKind ? `${sideKind} ` : '';
 
     const byName = expression.args.byName ? ' BY NAME' : '';
@@ -3255,7 +3290,7 @@ export class Generator {
 
     let prop: string;
     if (autotemp !== undefined) {
-      prop = `AUTOTEMP ${this.sql(autotemp)}`;
+      prop = `AUTOTEMP${this.sql(autotemp)}`;
     } else if (always) {
       prop = 'ALWAYS';
     } else if (defaultVal) {
@@ -3340,10 +3375,10 @@ export class Generator {
   withSystemVersioningPropertySql (expression: WithSystemVersioningPropertyExpr): string {
     let thisStr = this.sql(expression, 'this');
     thisStr = thisStr ? `HISTORY_TABLE=${thisStr}` : '';
-    let dataConsistency = this.sql(expression, 'dataConsistency');
-    dataConsistency = dataConsistency ? `DATA_CONSISTENCY_CHECK=${dataConsistency}` : '';
-    let retentionPeriod = this.sql(expression, 'retentionPeriod');
-    retentionPeriod = retentionPeriod ? `HISTORY_RETENTION_PERIOD=${retentionPeriod}` : '';
+    const dataConsistencyStr = this.sql(expression, 'dataConsistency');
+    const dataConsistency = dataConsistencyStr ? `DATA_CONSISTENCY_CHECK=${dataConsistencyStr}` : undefined;
+    const retentionPeriodStr = this.sql(expression, 'retentionPeriod');
+    const retentionPeriod = retentionPeriodStr ? `HISTORY_RETENTION_PERIOD=${retentionPeriodStr}` : undefined;
 
     let onSql: string;
     if (thisStr) {
@@ -3356,7 +3391,8 @@ export class Generator {
       onSql = expression.args.on ? 'ON' : 'OFF';
     }
 
-    return `SYSTEM_VERSIONING=${onSql}`;
+    const sql = `SYSTEM_VERSIONING=${onSql}`;
+    return expression.args.with ? `WITH(${sql})` : sql;
   }
 
   insertSql (expression: InsertExpr): string {
@@ -3494,22 +3530,14 @@ export class Generator {
   }
 
   tableParts (expression: TableExpr): string {
-    const catalog = this.sql(expression, 'catalog');
-    const db = this.sql(expression, 'db');
-    const tableExpr = this.sql(expression, 'this');
-    const tableArray: string[] = [];
-
-    if (catalog) {
-      tableArray.push(catalog);
-    }
-    if (db) {
-      tableArray.push(db);
-    }
-    if (tableExpr) {
-      tableArray.push(tableExpr);
-    }
-
-    return tableArray.join('.');
+    return [
+      expression.args.catalog,
+      expression.args.db,
+      expression.args.this,
+    ]
+      .filter((part) => part !== undefined)
+      .map((part) => this.sql(part))
+      .join('.');
   }
 
   tableSql (
@@ -4131,10 +4159,11 @@ export class Generator {
       return '';
     }
 
-    const update = expression.args.update;
+    const updateExpr = expression.args.update;
     const key = expression.args.key;
     let lockType: string;
 
+    const update = updateExpr instanceof LiteralExpr ? updateExpr.args.this !== '0' : Boolean(updateExpr);
     if (update) {
       lockType = key ? 'FOR NO KEY UPDATE' : 'FOR UPDATE';
     } else {
@@ -4297,7 +4326,7 @@ export class Generator {
     }
 
     // If the NULLS FIRST/LAST clause is unsupported, we add another sort key to simulate it
-    if (nullsSortChange && !this._constructor.NULL_ORDERING_SUPPORTED) {
+    if (nullsSortChange && this._constructor.NULL_ORDERING_SUPPORTED !== NullOrderingSupported.SUPPORTED) {
       const window = expression.findAncestor<WindowExpr | SelectExpr>(WindowExpr, SelectExpr);
 
       if (window instanceof WindowExpr && window.args.spec) {
@@ -4306,7 +4335,7 @@ export class Generator {
         );
         nullsSortChange = '';
       } else if (
-        this._constructor.NULL_ORDERING_SUPPORTED === false
+        this._constructor.NULL_ORDERING_SUPPORTED === NullOrderingSupported.PARTIAL
         && ((asc && nullsSortChange === ' NULLS LAST') || (desc && nullsSortChange === ' NULLS FIRST'))
       ) {
         // BigQuery does not allow these ordering/nulls combinations when used under
@@ -4323,7 +4352,7 @@ export class Generator {
           );
           nullsSortChange = '';
         }
-      } else if (this._constructor.NULL_ORDERING_SUPPORTED === null) {
+      } else if (this._constructor.NULL_ORDERING_SUPPORTED === NullOrderingSupported.UNSUPPORTED) {
         if (expression.args.this?.isInteger) {
           this.unsupported(
             `'${nullsSortChange.trim()}' translation not supported with positional ordering`,
@@ -4415,7 +4444,7 @@ export class Generator {
         this.sql(expression, 'connect'),
         this.sql(expression, 'group'),
         this.sql(expression, 'having'),
-        ...Object.values(this._constructor.AFTER_HAVING_MODIFIER_TRANSFORMS).map((gen) => gen.call(this, expression)),
+        ...Array.from(this._constructor.AFTER_HAVING_MODIFIER_TRANSFORMS.values()).map((gen) => gen.call(this, expression)),
         this.sql(expression, 'order'),
         ...this.offsetLimitModifiers(expression, { fetch: limit instanceof FetchExpr }, limit),
         ...this.afterLimitModifiers(expression),
@@ -4432,7 +4461,7 @@ export class Generator {
   }
 
   forModifiers (expression: Expression): string {
-    const forModifiers = this.expressions(expression, { key: 'for_' });
+    const forModifiers = this.expressions(expression, { key: 'for' });
     return forModifiers ? `${this.sep()}FOR XML${this.seg(forModifiers)}` : '';
   }
 
@@ -4626,7 +4655,7 @@ export class Generator {
         if (alias.args.columns) {
           alias.args.columns.push(offset);
         } else {
-          alias.args.columns = [offset];
+          alias.setArgKey('columns', [offset]);
         }
       }
     }
@@ -4635,7 +4664,7 @@ export class Generator {
     if (alias && this.dialect._constructor.UNNEST_COLUMN_ONLY) {
       assertIsInstanceOf(alias, TableAliasExpr);
       const columns = alias.columns;
-      aliasStr = columns && columns[0] ? this.sql(columns[0]) : '';
+      aliasStr = columns[0] ? this.sql(columns[0]) : '';
     } else {
       aliasStr = this.sql(alias);
     }
@@ -4897,7 +4926,7 @@ export class Generator {
           e = annotateTypes(e, { dialect: this.dialect });
         }
 
-        if (e.isString || (e.isType && e.isType(DataTypeExprKind.ARRAY))) {
+        if (e.isString || e.isType(DataTypeExprKind.ARRAY)) {
           return e;
         }
 
@@ -4981,6 +5010,9 @@ export class Generator {
   }
 
   ifSql (expression: IfExpr): string {
+    if (expression.parent instanceof CaseExpr) {
+      return `WHEN ${this.sql(expression, 'this')} THEN ${this.sql(expression, 'true')}`;
+    }
     return this.caseSql(new CaseExpr({
       ifs: [expression],
       default: expression.args.false,
@@ -5645,7 +5677,7 @@ export class Generator {
     const only = expression.args.only ? ' ONLY' : '';
     let options = this.expressions(expression, { key: 'options' });
     options = options ? `, ${options}` : '';
-    const kind = this.sql(expression, 'kind');
+    const kind = this.sql(expression, 'kind').toUpperCase();
     const notValid = expression.args.notValid ? ' NOT VALID' : '';
     const check = expression.args.check ? ' WITH CHECK' : '';
     const cascade = expression.args.cascade && this.dialect._constructor.ALTER_TABLE_SUPPORTS_CASCADE
@@ -5868,13 +5900,14 @@ export class Generator {
 
     // Check if we are dealing with 'LIKE ANY' or 'LIKE ALL' when the dialect doesn't support it
     if ((rhs instanceof AllExpr || rhs instanceof AnyExpr) && !this._constructor.SUPPORTS_LIKE_QUANTIFIERS) {
-      let exprs: ExpressionValue[] | undefined = rhs.args.this instanceof Expression ? [rhs.args.this.unnest()] : [];
-
-      if (exprs instanceof TupleExpr) {
-        exprs = exprs.args.expressions;
-      } else if (exprs && !Array.isArray(exprs)) {
-        // Handle cases where unnest might return a single expression
-        exprs = [exprs];
+      let exprs: ExpressionValue[] | undefined;
+      const unnested = rhs.args.this instanceof Expression ? rhs.args.this.unnest() : undefined;
+      if (unnested instanceof TupleExpr) {
+        exprs = unnested.args.expressions;
+      } else if (unnested) {
+        exprs = [unnested];
+      } else {
+        exprs = [];
       }
 
       const connective = rhs instanceof AnyExpr ? or : and;
@@ -5991,12 +6024,13 @@ export class Generator {
   binary (expression: BinaryExpr, op: string): string {
     const sqls: string[] = [];
     const stack: (string | Expression)[] = [expression];
+
     const binaryType = expression._constructor;
 
     while (0 < stack.length) {
-      const node = stack.pop()!;
+      const node = stack.pop();
 
-      if (node instanceof Expression && node._constructor === binaryType) {
+      if (node instanceof BinaryExpr && node._constructor === binaryType) {
         const opFunc = node.args.operator;
         if (opFunc) {
           op = `OPERATOR(${this.sql(opFunc)})`;
@@ -6069,7 +6103,8 @@ export class Generator {
     const { sep = ', ' } = options;
     const argSqls = args
       .filter((arg) => arg !== undefined && typeof arg !== 'boolean')
-      .map((arg) => this.sql(arg));
+      .map((arg) => this.sql(arg))
+      .filter((argSql) => argSql !== '');
 
     if (this.pretty && this.tooWide(argSqls)) {
       const joined = argSqls.join(`${sep.trim()}\n`);
@@ -6173,7 +6208,7 @@ export class Generator {
   }
 
   opExpressions (op: string, expression: Expression, options: { flat?: boolean } = {}): string {
-    const { flat = false } = options;
+    const flat = (options.flat ?? false) || expression.parent instanceof PropertiesExpr;
     const expressionsSql = this.expressions(expression, { flat });
     if (flat) {
       return `${op} ${expressionsSql}`;
@@ -6803,7 +6838,8 @@ export class Generator {
     // Check whether a conversion with format (T-SQL calls this 'style') is applicable
     if (style instanceof LiteralExpr && style.isInteger) {
       const styleValue = style.name;
-      const convertedStyle = Dialect.get(Dialects.TSQL)?.INVERSE_FORMAT_MAPPING[styleValue] ?? {};
+      const tsqlDialect = Dialect.get(Dialects.TSQL) as (typeof Dialect & { CONVERT_FORMAT_MAPPING: Record<string | number, string> }) | undefined;
+      const convertedStyle = tsqlDialect?.CONVERT_FORMAT_MAPPING?.[styleValue] ?? '';
 
       if (!convertedStyle) {
         this.unsupported(`Unsupported T-SQL 'style' value: ${styleValue}`);
@@ -6869,7 +6905,7 @@ export class Generator {
 
   jsonPathSubscriptSql (expression: JsonPathSubscriptExpr): string {
     const thisVal = expression.args.this;
-    const part = this.jsonPathPart(typeof thisVal === 'number' ? String(thisVal) : this.sql(thisVal as Expression));
+    const part = this.jsonPathPart(thisVal as ExpressionValue<JsonPathPartExpr>);
     return part ? `[${part}]` : '';
   }
 
@@ -6954,7 +6990,7 @@ export class Generator {
         flat: true,
         sep,
       });
-      return `${option}${op}${values}`;
+      return `${option}${op}(${values})`;
     }
 
     const value = this.sql(expression, 'expression');
@@ -7226,22 +7262,18 @@ export class Generator {
   onConditionSql (expression: OnConditionExpr): string {
     const empty = expression.args.empty;
     let emptyStr = '';
-    if (empty !== undefined && empty !== null) {
-      if (typeof empty === 'object' && 'key' in empty) {
-        emptyStr = `DEFAULT ${this.sql(empty)} ON EMPTY`;
-      } else {
-        emptyStr = this.sql(expression, 'empty');
-      }
+    if (empty instanceof Expression) {
+      emptyStr = `DEFAULT ${this.sql(empty)} ON EMPTY`;
+    } else {
+      emptyStr = this.sql(expression, 'empty');
     }
 
     const error = expression.args.error;
     let errorStr = '';
-    if (error !== undefined && error !== null) {
-      if (typeof error === 'object' && 'key' in error) {
-        errorStr = `DEFAULT ${this.sql(error)} ON ERROR`;
-      } else {
-        errorStr = this.sql(expression, 'error');
-      }
+    if (error instanceof Expression) {
+      errorStr = `DEFAULT ${this.sql(error)} ON ERROR`;
+    } else {
+      errorStr = this.sql(expression, 'error');
     }
 
     if (errorStr && emptyStr) {
@@ -7309,7 +7341,7 @@ export class Generator {
 
     const parent = arrayAggExpr.parent;
     if (parent instanceof FilterExpr) {
-      const parentCond = parent.args.this;
+      const parentCond = (parent.args.expression as WhereExpr | undefined)?.args.this;
       if (!parentCond) return arrayAggSql;
       parentCond.replace(
         parentCond.and(columnExpr.is(null_()).not()),
@@ -7458,7 +7490,7 @@ export class Generator {
   }
 
   stringSql (expression: StringExpr): string {
-    let thisExpr: Expression = LiteralExpr.string(expression.args.this);
+    let thisExpr: Expression = expression.args.this as Expression;
     const zone = expression.args.zone;
 
     if (zone) {
@@ -7697,13 +7729,13 @@ export class Generator {
   xmlTableSql (expression: XmlTableExpr): string {
     const thisStr = this.sql(expression, 'this');
     const namespaces = this.expressions(expression, { key: 'namespaces' });
-    const namespacesStr = namespaces ? `XmlNAMESPACES(${namespaces}), ` : '';
+    const namespacesStr = namespaces ? `XMLNAMESPACES(${namespaces}), ` : '';
     const passing = this.expressions(expression, { key: 'passing' });
     const passingStr = passing ? `${this.sep()}PASSING${this.seg(passing)}` : '';
     const columns = this.expressions(expression, { key: 'columns' });
     const columnsStr = columns ? `${this.sep()}COLUMNS${this.seg(columns)}` : '';
     const byRef = expression.args.byRef ? `${this.sep()}RETURNING SEQUENCE BY REF` : '';
-    return `XmlTABLE(${this.sep('')}${this.indent(namespacesStr + thisStr + passingStr + byRef + columnsStr)}${this.seg(')', '')})`;
+    return `XMLTABLE(${this.sep('')}${this.indent(namespacesStr + thisStr + passingStr + byRef + columnsStr)}${this.seg(')', '')}`;
   }
 
   xmlNamespaceSql (expression: XmlNamespaceExpr): string {
@@ -7975,14 +8007,14 @@ export class Generator {
     let delimiters = expression.args.expression;
 
     if (delimiters) {
-      // Do not generate delimiters arg if we are round-tripping from default delimiters
-      if (
+      if (!this.dialect._constructor.INITCAP_SUPPORTS_CUSTOM_DELIMITERS) {
+        // Dialect doesn't support custom delimiters - always omit them
+        delimiters = undefined;
+      } else if (
+        // Do not generate delimiters arg if we are round-tripping from default delimiters
         delimiters.isString
         && delimiters.args.this === this.dialect._constructor.INITCAP_DEFAULT_DELIMITER_CHARS
       ) {
-        delimiters = undefined;
-      } else if (!this.dialect._constructor.INITCAP_SUPPORTS_CUSTOM_DELIMITERS) {
-        this.unsupported('INITCAP does not support custom delimiters');
         delimiters = undefined;
       }
     }
@@ -8077,11 +8109,11 @@ export class Generator {
     inverseTimeTrie?: TrieNode,
   ): string | undefined {
     const dialectCls = this.dialect._constructor;
-    const mapping = inverseTimeMapping ?? dialectCls.INVERSE_TIME_MAPPING;
-    const trie = inverseTimeTrie ?? dialectCls.INVERSE_TIME_TRIE;
+    const mapping = inverseTimeMapping || dialectCls.INVERSE_TIME_MAPPING;
+    const trie = inverseTimeTrie || dialectCls.INVERSE_TIME_TRIE;
     return formatTime(
       this.sql(expression, 'format'),
-      mapping ?? {},
+      mapping,
       trie,
     );
   }

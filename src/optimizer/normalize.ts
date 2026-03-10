@@ -332,14 +332,14 @@ function distribute (
 
   if (a instanceof ConnectorExpr) {
     replaceChildren(a, (c) => {
-      const leftCombined = flatten(fromFunc([c, bLeft], { copy: false }));
-      const rightCombined = flatten(fromFunc([c, bRight], { copy: false }));
+      const leftCombined = flatten(fromFunc([c, bLeft]));
+      const rightCombined = flatten(fromFunc([c, bRight]));
       return toFunc([simplifier.uniqSort(leftCombined), simplifier.uniqSort(rightCombined)], { copy: false });
     });
     return a;
   }
 
-  const leftCombined = flatten(fromFunc([a, bLeft], { copy: false }));
-  const rightCombined = flatten(fromFunc([a, bRight], { copy: false }));
+  const leftCombined = flatten(fromFunc([a, bLeft]));
+  const rightCombined = flatten(fromFunc([a, bRight]));
   return toFunc([simplifier.uniqSort(leftCombined), simplifier.uniqSort(rightCombined)], { copy: false });
 }

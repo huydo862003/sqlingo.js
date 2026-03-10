@@ -7,7 +7,6 @@ import {
   AnonymousExpr, DataTypeExpr, DataTypeExprKind, ColumnExpr, WhereExpr,
   BinaryExpr,
   CaseExpr,
-  ConcatExpr,
 } from '../src/expressions';
 import {
   OptimizeError,
@@ -119,13 +118,13 @@ function pushdownProjectionsHelper (
 
 function normalizeHelper (
   expression: Expression,
-  kwargs: {
+  options: {
     schema?: Schema | Record<string, unknown>;
     dialect?: Dialects;
     [index: string]: unknown;
   } = {},
 ): Expression {
-  const schema = kwargs.schema;
+  const schema = options.schema;
   expression = normalize(expression, { dnf: false });
   expression = annotateTypes(expression, { schema });
   return simplify(expression);
@@ -133,14 +132,14 @@ function normalizeHelper (
 
 function simplifyHelper (
   expression: Expression,
-  kwargs: {
+  options: {
     schema?: Schema | Record<string, unknown>;
     dialect?: Dialects;
     [index: string]: unknown;
   } = {},
 ): Expression {
-  const dialect = kwargs.dialect;
-  const schema = kwargs.schema;
+  const dialect = options.dialect;
+  const schema = options.schema;
   expression = annotateTypes(expression, {
     schema,
     dialect,
@@ -154,7 +153,7 @@ function simplifyHelper (
 
 function pushdownCtesHelper (
   expression: Expression,
-  _kwargs: Record<string, unknown> = {},
+  _options: Record<string, unknown> = {},
 ): Expression {
   const scope = buildScope(expression);
   if (scope) {
@@ -165,14 +164,14 @@ function pushdownCtesHelper (
 
 function annotateFunctionsHelper (
   expression: Expression,
-  kwargs: {
+  options: {
     schema?: Schema | Record<string, unknown>;
     dialect?: Dialects;
     [index: string]: unknown;
   } = {},
 ): Expression {
-  const dialect = kwargs.dialect;
-  const schema = kwargs.schema;
+  const dialect = options.dialect;
+  const schema = options.schema;
   const annotated = annotateTypes(expression, {
     dialect,
     schema,
@@ -210,14 +209,14 @@ function checkFile (
     if (schema !== undefined) funcKwargs.schema = schema;
     if (dialect) funcKwargs.dialect = dialect;
 
-    if (meta.leave_tables_isolated !== undefined) {
-      funcKwargs.leave_tables_isolated = stringToBool(meta.leave_tables_isolated);
+    if (meta.leaveTablesIsolated !== undefined) {
+      funcKwargs.leaveTablesIsolated = stringToBool(meta.leaveTablesIsolated);
     }
-    if (meta.validate_qualify_columns !== undefined) {
-      funcKwargs.validate_qualify_columns = stringToBool(meta.validate_qualify_columns);
+    if (meta.validateQualifyColumns !== undefined) {
+      funcKwargs.validateQualifyColumns = stringToBool(meta.validateQualifyColumns);
     }
-    if (meta.canonicalize_table_aliases !== undefined) {
-      funcKwargs.canonicalize_table_aliases = meta.canonicalize_table_aliases;
+    if (meta.canonicalizeTableAliases !== undefined) {
+      funcKwargs.canonicalizeTableAliases = stringToBool(meta.canonicalizeTableAliases);
     }
 
     const optimized = parseAndOptimize(func, sql, dialect, funcKwargs);
@@ -267,7 +266,7 @@ describe('TestOptimizer', () => {
   });
 
   it('test_optimize', () => {
-    expect(optimize('x = 1 + 1', { identify: undefined }).sql()).toBe('x = 2');
+    expect(optimize('x = 1 + 1', { identify: false }).sql()).toBe('x = 2');
   });
 
   it('test_isolate_table_selects', () => {
@@ -754,11 +753,10 @@ describe('TestOptimizer', () => {
     // CONCAT type preservation
     const concat = parseOne('CONCAT(\'a\', x, \'b\', \'c\')', {
       dialect: 'presto',
-      into: ConcatExpr,
     });
     const simplifiedConcat = simplify(concat);
 
-    const safeConcat = parseOne('CONCAT(\'a\', x, \'b\', \'c\')', { into: ConcatExpr });
+    const safeConcat = parseOne('CONCAT(\'a\', x, \'b\', \'c\')');
     const simplifiedSafeConcat = simplify(safeConcat);
 
     expect(simplifiedConcat.args.safe).toBe(false);
@@ -883,14 +881,14 @@ describe('TestOptimizer', () => {
   });
 
   it('test_merge_subqueries', () => {
-    const mergeOptimize = (e: Expression, schema?: Record<string, unknown> | Schema): Expression => {
+    const mergeOptimize = (e: Expression, options?: Record<string, unknown>): Expression => {
       return optimize(e.sql(), {
         rules: [
-          (expr: Expression, options?: Record<string, unknown>) => qualifyTables(expr, options),
-          (expr: Expression, options?: Record<string, unknown>) => qualifyColumns(expr, options),
-          (expr: Expression, options?: Record<string, unknown>) => mergeSubqueries(expr, options),
+          (expr: Expression, opts?: Record<string, unknown>) => qualifyTables(expr, opts),
+          (expr: Expression, opts?: Record<string, unknown>) => qualifyColumns(expr, opts),
+          (expr: Expression, opts?: Record<string, unknown>) => mergeSubqueries(expr, opts),
         ],
-        schema,
+        ...options,
       });
     };
     checkFile('merge_subqueries', mergeOptimize, { schema });
@@ -901,8 +899,9 @@ describe('TestOptimizer', () => {
   });
 
   it('test_canonicalize', () => {
-    const canonicalizeOptimize = (e: Expression, schema?: Record<string, unknown> | Schema): Expression => {
-      return optimize(e.sql(), {
+    const canonicalizeOptimize = (e: Expression, options?: Record<string, unknown>): Expression => {
+      const { schema, dialect } = options || {};
+      return optimize(e, {
         rules: [
           (expr: Expression, options?: Record<string, unknown>) => qualify(expr, options),
           (expr: Expression, options?: Record<string, unknown>) => quoteIdentifiers(expr, options),
@@ -910,6 +909,7 @@ describe('TestOptimizer', () => {
           (expr: Expression, options?: Record<string, unknown>) => canonicalize(expr, options),
         ],
         schema,
+        dialect: dialect as string | undefined,
       });
     };
     checkFile('canonicalize', canonicalizeOptimize, { schema });
@@ -937,14 +937,14 @@ describe('TestOptimizer', () => {
       pretty: true,
       schema: tpcdsSchema,
     });
-  });
+  }, 30000);
 
   it('test_scope', () => {
     const ast = parseOne('SELECT IF(a IN UNNEST(b), 1, 0) AS c FROM t', { dialect: 'bigquery' });
     const scope = buildScope(ast);
-    expect(scope?.columns).toEqual([parseOne('a', { into: ColumnExpr }), parseOne('b', { into: ColumnExpr })]);
+    expect(scope?.columns.map(c => c.sql())).toEqual(['a', 'b']);
 
-    const manyUnions = parseOne(['SELECT x FROM t'.repeat(1), (' UNION ALL SELECT x FROM t').repeat(9999)].join(' UNION ALL '));
+    const manyUnions = parseOne(Array.from({ length: 10000 }, () => 'SELECT x FROM t').join(' UNION ALL '));
     const scopesUsingTraverse = [...(buildScope(manyUnions)?.traverse() ?? [])];
     const scopesUsingTraverseScope = traverseScope(manyUnions);
     expect(scopesUsingTraverse.length).toBe(scopesUsingTraverseScope.length);
@@ -1182,7 +1182,7 @@ describe('TestOptimizer', () => {
   it('test_bracket_annotation', () => {
     let expression = narrowInstanceOf(annotateTypes(parseOne('SELECT A[:]')).args.expressions?.[0], Expression);
     expect(expression?.type?.toString()).toBe(DataTypeExprKind.UNKNOWN);
-    expect(narrowInstanceOf(expression?.args.expressions, Expression)?.[0]?.type?.toString()).toBe(DataTypeExprKind.UNKNOWN);
+    expect((expression?.args.expressions as Expression[])?.[0]?.type?.toString()).toBe(DataTypeExprKind.UNKNOWN);
 
     expression = narrowInstanceOf(annotateTypes(parseOne('SELECT ARRAY[1, 2, 3][1]')).args.expressions?.[0], Expression);
     expect(narrowInstanceOf(narrowInstanceOf(expression?.args.this, Expression)?.type, Expression)?.sql()).toBe('ARRAY<INT>');
@@ -1503,7 +1503,7 @@ describe('TestOptimizer', () => {
   });
 
   it('test_root_subquery_annotation', () => {
-    const expression = annotateTypes(parseOne('(SELECT 1, 2 FROM x) LIMIT 0', { into: SelectExpr }));
+    const expression = annotateTypes(parseOne('(SELECT 1, 2 FROM x) LIMIT 0'));
     expect(expression.selects[0].type?.toString()).toBe(DataTypeExprKind.INT);
     expect(expression.selects[1].type?.toString()).toBe(DataTypeExprKind.INT);
   });

@@ -2,6 +2,7 @@ import type { ColumnExpr } from './expressions';
 import {
   AnonymousExpr,
   DataTypeExpr,
+  Expression,
   DataTypeExprKind,
   DotExpr,
   IdentifierExpr,
@@ -114,7 +115,7 @@ export function normalizeName (
   const {
     dialect, isTable = false, normalize = true,
   } = options;
-  const id = typeof identifier === 'string' ? parseIdentifier(identifier) : identifier;
+  const id = typeof identifier === 'string' ? parseIdentifier(identifier, { dialect }) : identifier.copy() as IdentifierExpr;
   if (!normalize) return id;
   id.meta['isTable'] = isTable;
   return Dialect.getOrRaise(dialect).normalizeIdentifier(id) as IdentifierExpr;
@@ -318,6 +319,14 @@ export abstract class AbstractMappingSchema extends Schema {
   }
 }
 
+export interface MappingSchemaOptions {
+  schema?: Record<string, unknown>;
+  visible?: Record<string, unknown>;
+  dialect?: DialectType;
+  normalize?: boolean;
+  udfMapping?: Record<string, unknown>;
+}
+
 /** Schema based on a nested mapping. */
 export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
   visible: Record<string, unknown>;
@@ -328,19 +337,29 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
   private _depth: number = 0;
 
   constructor (
-    schema?: Record<string, unknown>,
-    options: {
-      visible?: Record<string, unknown>;
-      dialect?: DialectType;
-      normalize?: boolean;
-      udfMapping?: Record<string, unknown>;
-    } = {},
+    schema?: Record<string, unknown> | MappingSchemaOptions,
+    options: Omit<MappingSchemaOptions, 'schema'> = {},
   ) {
-    const {
-      visible, dialect, normalize = true, udfMapping,
-    } = options;
+    let rawSchema: Record<string, unknown>;
+    let visible: Record<string, unknown> | undefined;
+    let dialect: DialectType | undefined;
+    let normalize: boolean;
+    let udfMapping: Record<string, unknown> | undefined;
+
+    if (schema && ('schema' in schema || 'udfMapping' in schema || 'visible' in schema || 'dialect' in schema || 'normalize' in schema)) {
+      const opts = schema as MappingSchemaOptions;
+      rawSchema = opts.schema || {};
+      visible = opts.visible;
+      dialect = opts.dialect;
+      normalize = opts.normalize ?? true;
+      udfMapping = opts.udfMapping;
+    } else {
+      rawSchema = (schema as Record<string, unknown> | undefined) || {};
+      ({
+        visible, dialect, normalize = true, udfMapping,
+      } = options);
+    }
     const d = dialect ? Dialect.getOrRaise(dialect) : new Dialect();
-    const rawSchema = schema || {};
     const rawUdfs = udfMapping || {};
     super(
       normalize ? MappingSchema.normalizeSchemaStatic(rawSchema, d, { normalize }) : rawSchema,
@@ -371,13 +390,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
     return this._depth;
   }
 
-  copy (overrides: {
-    schema?: Record<string, unknown>;
-    visible?: Record<string, unknown>;
-    dialect?: DialectType;
-    normalize?: boolean;
-    udfMapping?: Record<string, unknown>;
-  } = {}): MappingSchema {
+  copy (overrides: MappingSchemaOptions = {}): MappingSchema {
     return new MappingSchema(
       overrides.schema ?? { ...this.mapping },
       {
@@ -452,7 +465,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
       onlyVisible = false, dialect, normalize,
     } = options;
     const normalizedTable = this.normalizeTable(table, dialect, normalize);
-    const schema = this.find(normalizedTable, { raiseOnMissing: false });
+    const schema = this.find(normalizedTable);
     if (!schema || typeof schema !== 'object') return [];
 
     const columns = Object.keys(schema as object);
@@ -460,8 +473,9 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
       return columns;
     }
 
-    const visible = (this.nestedGet(this.tableParts(normalizedTable), this.visible, { raiseOnMissing: false }) || []) as string[];
-    return columns.filter((col) => visible.includes(col));
+    const visible = this.nestedGet(this.tableParts(normalizedTable), this.visible, { raiseOnMissing: false });
+    const visibleSet: Set<string> | string[] = visible instanceof Set ? visible : (visible || []) as string[];
+    return columns.filter((col) => visibleSet instanceof Set ? visibleSet.has(col) : visibleSet.includes(col));
   }
 
   override getColumnType (
@@ -582,7 +596,12 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
   private toDataType (schemaType: string, dialect?: DialectType): DataTypeExpr | undefined {
     if (!this._typeCache[schemaType]) {
       const d = dialect ? Dialect.getOrRaise(dialect) : this._dialect;
-      this._typeCache[schemaType] = DataTypeExpr.build(schemaType, { dialect: d });
+      const expression = DataTypeExpr.build(schemaType, {
+        dialect: d,
+        udt: d._constructor.SUPPORTS_USER_DEFINED_TYPES,
+      });
+      expression?.transform((node) => d.normalizeIdentifier(node), { copy: false });
+      this._typeCache[schemaType] = expression;
     }
     return this._typeCache[schemaType];
   }
@@ -594,10 +613,12 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
   ): TableExpr {
     const d = dialect ? Dialect.getOrRaise(dialect) : this._dialect;
     const shouldNormalize = normalize ?? this.normalize;
-    const tableExpr = maybeParse<TableExpr>(table, {
+    const tableExpr = maybeParse<typeof TableExpr>(table, {
       into: TableExpr,
       dialect: d,
+      copy: shouldNormalize,
     });
+
     if (shouldNormalize) {
       for (const part of tableExpr.parts) {
         if (part instanceof IdentifierExpr) {
@@ -657,7 +678,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
         throw new SchemaError(`Table ${keys.slice(0, -1).join('.')} must have at least one column`);
       }
       const firstVal = colEntries[0][1];
-      if (typeof firstVal === 'object' && firstVal !== undefined) {
+      if (firstVal !== null && firstVal !== undefined && typeof firstVal === 'object' && !(firstVal instanceof Expression)) {
         const deeper = flattenSchema(columns as Record<string, unknown>);
         throw new SchemaError(
           `Table ${[...keys, ...(deeper[0] || [])].join('.')} must match the schema's nesting level: ${flattened[0].length}.`,

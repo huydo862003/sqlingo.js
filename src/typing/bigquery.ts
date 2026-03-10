@@ -32,7 +32,7 @@ import {
   cache, isInstanceOf,
 } from '../port_internals';
 import type { TypeAnnotator } from '../optimizer';
-import { TIMESTAMP_EXPRESSIONS } from './dialect';
+import { DialectTyping } from './dialect';
 import type { ExpressionMetadata } from './dialect';
 
 /**
@@ -109,18 +109,18 @@ function annotateByArgsApproxTop (
   return expression;
 }
 
-function annotateConcat (this: TypeAnnotator, expression: ConcatExpr): ConcatExpr {
-  this.annotateByArgs(expression, ['expressions']);
+function annotateConcat (annotator: TypeAnnotator, expression: ConcatExpr): ConcatExpr {
+  annotator.annotateByArgs(expression, ['expressions']);
 
   // Args must be BYTES or types that can be cast to STRING, return type is either BYTES or STRING
   if (!expression.isType([DataTypeExprKind.BINARY, DataTypeExprKind.UNKNOWN])) {
-    this.setType(expression, DataTypeExprKind.VARCHAR);
+    annotator.setType(expression, DataTypeExprKind.VARCHAR);
   }
 
   return expression;
 }
 
-function annotateArray (this: TypeAnnotator, expression: ArrayExpr): ArrayExpr {
+function annotateArray (annotator: TypeAnnotator, expression: ArrayExpr): ArrayExpr {
   const arrayArgs = expression.args.expressions;
 
   if (arrayArgs && arrayArgs.length === 1) {
@@ -150,7 +150,7 @@ function annotateArray (this: TypeAnnotator, expression: ArrayExpr): ArrayExpr {
       }
     } else if (unnested instanceof SetOperationExpr) {
       // Handle ARRAY(SELECT ... UNION ALL SELECT ...) - set operations
-      const colTypes = this.getSetopColumnTypes(unnested);
+      const colTypes = annotator.getSetopColumnTypes(unnested);
       const left = unnested.left;
       if (colTypes && isInstanceOf(left, QueryExpr) && 0 < left.selects.length) {
         const firstColName = left.selects[0].aliasOrName;
@@ -177,19 +177,19 @@ function annotateArray (this: TypeAnnotator, expression: ArrayExpr): ArrayExpr {
         nested: true,
       });
 
-      this.setType(expression, arrayType);
+      annotator.setType(expression, arrayType);
       return expression;
     }
   }
 
-  this.annotateByArgs(expression, ['expressions'], { array: true });
+  annotator.annotateByArgs(expression, ['expressions'], { array: true });
   return expression;
 }
 
 export class BigQueryTyping {
   @cache
   static get EXPRESSION_METADATA (): ExpressionMetadata {
-    const map: ExpressionMetadata = new Map();
+    const map: ExpressionMetadata = new Map(DialectTyping.EXPRESSION_METADATA);
 
     const extend = (types: (typeof Expression)[], data: Record<string, unknown>) => {
       for (const type of types) map.set(type, data);
@@ -348,7 +348,7 @@ export class BigQueryTyping {
       annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this'], { array: true }),
     });
 
-    TIMESTAMP_EXPRESSIONS.forEach((type) => map.set(type, { returns: DataTypeExprKind.TIMESTAMPTZ }));
+    DialectTyping.TIMESTAMP_EXPRESSIONS.forEach((type) => map.set(type, { returns: DataTypeExprKind.TIMESTAMPTZ }));
 
     map.set(ApproxTopKExpr, { annotator: (s: TypeAnnotator, e: ApproxTopKExpr) => annotateByArgsApproxTop.call(s, e) });
     map.set(ApproxTopSumExpr, { annotator: (s: TypeAnnotator, e: ApproxTopSumExpr) => annotateByArgsApproxTop.call(s, e) });

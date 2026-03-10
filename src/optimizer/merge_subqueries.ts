@@ -131,7 +131,6 @@ function mergeCtes<E extends Expression> (
   ] of singularCteSelections) {
     // Find FromExpr or JoinExpr ancestor
     const fromOrJoin = table.findAncestor<FromExpr | JoinExpr>(FromExpr, JoinExpr);
-
     if (fromOrJoin && mergeable(outerScope, innerScope, { leaveTablesIsolated }, fromOrJoin)) {
       const alias = table.aliasOrName;
       renameInnerSources(outerScope, innerScope, alias);
@@ -343,7 +342,7 @@ function mergeable (
     return false;
   }
 
-  if (fromOrJoin instanceof JoinExpr && innerSelectExpr.args.joins) {
+  if (fromOrJoin instanceof JoinExpr && innerSelectExpr.args.joins && 0 < innerSelectExpr.args.joins.length) {
     return false;
   }
 
@@ -527,7 +526,7 @@ function mergeExpressions (outerScope: Scope, innerScope: Scope, alias: string):
     const columnsToReplace = outerColumns.get(projectionName) || [];
 
     const unaliasedExpr = expr.unalias();
-    const mustWrapExpression = !SAFE_TO_REPLACE_UNWRAPPED.some((cls) => expr instanceof cls);
+    const mustWrapExpression = !SAFE_TO_REPLACE_UNWRAPPED.some((cls) => unaliasedExpr instanceof cls);
     const isNumber = unaliasedExpr.isNumber;
 
     for (const column of columnsToReplace) {

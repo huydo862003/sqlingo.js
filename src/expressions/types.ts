@@ -2,6 +2,9 @@ import type { Expression } from './expressions';
 
 export type IntoType = string | typeof Expression | (string | typeof Expression)[];
 
+/** Branded type for an expression's SQL-based deduplication key (its SQL string). */
+export type ExpressionHash = string & { readonly __brand: 'ExpressionHash' };
+
 /** Expression key enum */
 export type PrimitiveExpressionValue = string | boolean | number;
 
@@ -1092,6 +1095,7 @@ export enum JoinExprKind {
   SEMI = 'semi',
   ANTI = 'anti',
   STRAIGHT_JOIN = 'straightJoin',
+  ARRAY = 'array',
 }
 
 export enum GrantPrincipalExprKind {
@@ -1358,6 +1362,7 @@ export enum SetOperationExprKind {
   INTERSECT = 'intersect',
   EXCEPT = 'except',
   INNER = 'inner',
+  OUTER = 'outer',
 }
 
 export enum SelectExprKind {

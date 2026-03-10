@@ -2,7 +2,6 @@ import type { Expression } from '../expressions/expressions';
 import { cache } from '../port_internals';
 import { DataTypeExprKind } from '../expressions/types';
 import {
-  DataTypeExpr,
   EncodeExpr,
   UnhexExpr,
   CorrExpr,
@@ -64,7 +63,7 @@ export class HiveTyping {
     });
 
     map.set(RegexpSplitExpr, {
-      returns: DataTypeExpr.build('ARRAY<STRING>'),
+      returns: 'ARRAY<STRING>',
     });
 
     map.set(ReverseExpr, {

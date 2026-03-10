@@ -77,7 +77,7 @@ class TestJsonpath {
     const tests = JSON.parse(fileContent).tests as Array<{
       selector: string;
       name: string;
-      invalidSelector?: boolean;
+      invalid_selector?: boolean;
     }>;
 
     const overrides: Record<string, string> = {
@@ -91,7 +91,7 @@ class TestJsonpath {
       '$[\'a\']': '$.a',
       '$[\'c\']': '$.c',
       '$[\' \']': '$[" "]',
-      '$[\'\\\'\']': '$["\\\'"]',
+      '$[\'\\\'\']': '$["\'"]',
       '$[\'\\\\\']': '$["\\\\"]',
       '$[\'\\/\']': '$["\\/"]',
       '$[\'\\b\']': '$["\\b"]',
@@ -164,7 +164,7 @@ class TestJsonpath {
 
     for (const testCase of tests) {
       const selector = testCase.selector;
-      if (testCase.invalidSelector) {
+      if (testCase.invalid_selector) {
         try {
           parse(selector);
         } catch (e) {

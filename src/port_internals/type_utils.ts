@@ -1,3 +1,5 @@
+import type { PrimitiveExpressionValue } from '../expressions';
+
 /** Type guard that checks if a value is iterable (has `Symbol.iterator`). Does NOT exclude strings. */
 export function isIterable<T = unknown> (value: unknown): value is Iterable<T> {
   return value != null && typeof (value as { [Symbol.iterator]?: unknown })[Symbol.iterator] === 'function';
@@ -19,3 +21,7 @@ export type Merge<Types extends readonly unknown[]> = Types extends readonly [
       // eslint-disable-next-line @typescript-eslint/no-empty-object-type
       ? {}
       : never;
+
+export interface Pojo {
+  [index: string]: Pojo | PrimitiveExpressionValue | undefined | (Pojo | PrimitiveExpressionValue | undefined)[];
+}

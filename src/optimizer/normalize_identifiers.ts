@@ -97,15 +97,12 @@ export function normalizeIdentifiers (
       if (storeOriginalColumnIdentifiers && node instanceof ColumnExpr) {
         // TODO: This does not handle non-column cases, e.g PARSE_JSON(...).key
         let parent: Expression = node;
-        while (parent.parent && parent.parent instanceof DotExpr) {
+        while (parent && parent.parent instanceof DotExpr) {
           parent = parent.parent;
         }
 
-        if (parent instanceof DotExpr) {
+        if ('parts' in parent && Array.isArray(parent.parts))
           node.meta.dotParts = parent.parts.map((p) => p.name);
-        } else if (node instanceof ColumnExpr) {
-          node.meta.dotParts = node.parts.map((p) => p.name);
-        }
       }
 
       dialect.normalizeIdentifier(node);

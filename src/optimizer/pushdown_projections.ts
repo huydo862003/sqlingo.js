@@ -118,6 +118,8 @@ export function pushdownProjections<E extends Expression> (
           if (scopeExpr.args.byName) {
             referencedColumns.set(right, referencedColumns.get(left) || new Set());
           } else {
+            const rightSelections = new Set<string | symbol>();
+            referencedColumns.set(right, rightSelections);
             for (let j = 0; j < left.expression.selects.length; j++) {
               const leftSelect = left.expression.selects[j];
               if (!(leftSelect instanceof Expression)) {
@@ -127,7 +129,7 @@ export function pushdownProjections<E extends Expression> (
               if (parentSelections.has(SELECT_ALL) || parentSelections.has(leftSelect.aliasOrName)) {
                 const rightSelect = right.expression.selects[j];
                 if (rightSelect instanceof Expression) {
-                  referencedColumns.get(right)!.add(rightSelect.aliasOrName);
+                  rightSelections.add(rightSelect.aliasOrName);
                 }
               }
             }
@@ -185,7 +187,7 @@ export function pushdownProjections<E extends Expression> (
 
         const columnAliases = node.aliasColumnNames;
         if (columnAliases && 0 < columnAliases.length) {
-          sourceColumnAliasCount.set(sourceScope as Scope, columnAliases.length);
+          sourceColumnAliasCount.set(sourceScope, columnAliases.length);
         }
       }
     }
@@ -271,7 +273,7 @@ function removeUnusedSelections_ (
     newSelections.push(defaultSelection({ isAgg }));
   }
 
-  select.select(...newSelections, {
+  select.select(newSelections, {
     append: false,
     copy: false,
   });

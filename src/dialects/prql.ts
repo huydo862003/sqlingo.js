@@ -11,6 +11,7 @@ import { Parser } from '../parser';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
+import { Generator } from '../generator';
 import {
   Dialect, Dialects,
 } from './dialect';
@@ -22,12 +23,12 @@ function selectAll (table: Expression | undefined): SelectExpr | undefined {
 class PRQLTokenizer extends Tokenizer {
   @cache
   static get IDENTIFIERS () {
-    return ['`'] as const;
+    return ['`'];
   }
 
   @cache
   static get QUOTES () {
-    return ['\'', '"'] as const;
+    return ['\'', '"'];
   }
 
   @cache
@@ -51,6 +52,25 @@ class PRQLTokenizer extends Tokenizer {
 }
 
 class PRQLParser extends Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   @cache
   static get CONJUNCTION (): Partial<Record<TokenType, typeof Expression>> {
     return {
@@ -217,6 +237,12 @@ class PRQLParser extends Parser {
     });
   }
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+
   parseTake (query: QueryExpr): QueryExpr | undefined {
     const num = this.parseNumber();
     return num ? query.limit(num) : undefined;
@@ -317,12 +343,38 @@ class PRQLParser extends Parser {
   }
 };
 
+export class PRQLGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
+}
+
 export class PRQL extends Dialect {
+  static DIALECT_NAME = Dialects.PRQL;
   static DPIPE_IS_STRING_CONCAT = false;
 
   static Tokenizer = PRQLTokenizer;
 
   static Parser = PRQLParser;
+
+  static Generator = PRQLGenerator;
 }
 
 Dialect.register(Dialects.PRQL, PRQL);

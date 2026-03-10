@@ -140,8 +140,12 @@ function uniqueOutputs (scope: Scope): Set<string> | undefined {
   // GROUP BY makes grouped columns unique
   const group = select.args.group;
   if (group) {
-    const groupedExpressions = new Set(group.args.expressions?.filter((e) => e instanceof Expression));
-    const groupedOutputs = new Set<Expression>();
+    const groupedSqls = new Set(
+      (group.args.expressions ?? [])
+        .filter((e): e is Expression => e instanceof Expression)
+        .map((e) => e.sql()),
+    );
+    const groupedOutputSqls = new Set<string>();
     const uniqueOutputs = new Set<string>();
 
     for (const selectExpr of select.selects) {
@@ -149,21 +153,15 @@ function uniqueOutputs (scope: Scope): Set<string> | undefined {
         continue;
       }
 
-      const output = selectExpr.unalias();
-      if (groupedExpressions.has(output)) {
-        groupedOutputs.add(output);
+      const outputSql = selectExpr.unalias().sql();
+      if (groupedSqls.has(outputSql)) {
+        groupedOutputSqls.add(outputSql);
         uniqueOutputs.add(selectExpr.aliasOrName);
       }
     }
 
     // All the grouped expressions must be in the output
-    let allGroupedInOutput = true;
-    for (const grouped of groupedExpressions) {
-      if (!groupedOutputs.has(grouped)) {
-        allGroupedInOutput = false;
-        break;
-      }
-    }
+    const allGroupedInOutput = [...groupedSqls].every((s) => groupedOutputSqls.has(s));
 
     return allGroupedInOutput ? uniqueOutputs : new Set();
   }

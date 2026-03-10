@@ -1,7 +1,6 @@
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/dialects/dialect.py
 
 import type {
-  DateSubExpr,
   JsonbExtractScalarExpr,
   JsonExtractScalarExpr,
   TimeSubExpr,
@@ -65,12 +64,10 @@ import type {
   ToNumberExpr,
   Sha2DigestExpr,
   ExpressionValue,
+  DecodeCaseExpr,
 } from '../expressions';
 import {
-  cache,
-  assertIsInstanceOf, isInstanceOf,
-} from '../port_internals';
-import {
+  TruncExpr,
   SelectExpr,
   JsonbExtractExpr,
   DatetimeSubExpr,
@@ -107,10 +104,12 @@ import {
   BitwiseAndExpr,
   BitwiseRightShiftExpr,
   CastExpr,
+  CaseExpr,
   ColumnExpr,
   DataTypeExpr,
   DataTypeExprKind,
   DateAddExpr,
+  DateSubExpr,
   DateTruncExpr,
   DatetimeAddExpr,
   DPipeExpr,
@@ -156,7 +155,6 @@ import {
   TimeToStrExpr,
   ToCharExpr,
   toIdentifier,
-  TruncExpr,
   TsOrDsAddExpr,
   UnnestExpr,
   VarExpr,
@@ -170,7 +168,14 @@ import {
   StarExpr,
   isType,
   null_,
+  and,
+  or,
 } from '../expressions';
+import {
+  cache,
+  assertIsInstanceOf, isInstanceOf,
+  enumFromString,
+} from '../port_internals';
 import { annotateTypes } from '../optimizer/annotate_types';
 import type { TokenizerOptions } from '../tokens';
 import {
@@ -199,7 +204,9 @@ import {
 import {
   formatTime, subsecondPrecision, TIMEZONES,
 } from '../time';
-import type { ExpressionMetadata } from '../typing';
+import {
+  DialectTyping, type ExpressionMetadata,
+} from '../typing';
 
 // Type aliases for common expression type unions
 export type DateAddOrDiff =
@@ -251,6 +258,12 @@ export enum NullOrdering {
   NULLS_ARE_LAST = 'nulls_are_last',
 }
 
+export enum NullOrderingSupported {
+  SUPPORTED = 'supported',
+  PARTIAL = 'partial',
+  UNSUPPORTED = 'unsupported',
+}
+
 export interface DialectOptions {
   version?: number | string;
   normalizationStrategy?: NormalizationStrategy;
@@ -300,7 +313,7 @@ export enum Dialects {
   PRQL = 'prql',
   REDSHIFT = 'redshift',
   RISINGWAVE = 'risingwave',
-  SINGLESTORE = 'SINGLESTORE',
+  SINGLESTORE = 'singlestore',
   SNOWFLAKE = 'snowflake',
   SOLR = 'solr',
   SPARK = 'spark',
@@ -404,7 +417,10 @@ export class Dialect {
    * Default `NULL` ordering method to use if not explicitly set.
    * Possible values: NullOrdering.NULLS_ARE_SMALL, NullOrdering.NULLS_ARE_LARGE, NullOrdering.NULLS_ARE_LAST
    */
-  static NULL_ORDERING: NullOrdering = NullOrdering.NULLS_ARE_SMALL;
+  @cache
+  static get NULL_ORDERING (): NullOrdering {
+    return NullOrdering.NULLS_ARE_SMALL;
+  }
 
   /**
    * Whether the behavior of `a / b` depends on the types of `a` and `b`.
@@ -445,7 +461,7 @@ export class Dialect {
 
   @cache
   static get UNESCAPED_SEQUENCES (): Record<string, string> {
-    let res;
+    let res = {};
     if (this.STRINGS_SUPPORT_ESCAPED_SEQUENCES || this.BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES) {
       res = {
         ...BASE_UNESCAPED_SEQUENCES,
@@ -811,7 +827,7 @@ export class Dialect {
   @cache
   static get ESCAPED_SEQUENCES (): Record<string, string> {
     return Object.fromEntries(
-      Object.entries(this.ORIGINAL_UNESCAPED_SEQUENCES).map(([k, v]) => [v, k]),
+      Object.entries(this.UNESCAPED_SEQUENCES).map(([k, v]) => [v, k]),
     );
   }
 
@@ -983,14 +999,14 @@ export class Dialect {
 
   /** Specifies what types a given type can be coerced into. */
   @cache
-  static get COERCES_TO (): Record<string, Set<string>> {
-    return {};
+  static get COERCES_TO (): Map<string, Set<string>> {
+    return new Map();
   }
 
   /** Specifies type inference & validation rules for expressions. */
   @cache
   static get EXPRESSION_METADATA (): ExpressionMetadata {
-    return new Map();
+    return DialectTyping.EXPRESSION_METADATA;
   }
 
   /** Determines the supported Dialect instance settings. */
@@ -1090,9 +1106,9 @@ export class Dialect {
       return new this();
     }
 
-    // Is a Dialect class
-    if (typeof dialect === 'function' && dialect.prototype instanceof Dialect) {
-      return new dialect();
+    // Is a Dialect class (including the base Dialect class itself)
+    if (typeof dialect === 'function' && (dialect === Dialect || dialect.prototype instanceof Dialect)) {
+      return new (dialect as new () => Dialect)();
     }
 
     // Is already a Dialect instance
@@ -1118,7 +1134,7 @@ export class Dialect {
             value = parts[1].trim();
           }
 
-          kwargs[key] = toBool(value) ?? false;
+          kwargs[key] = toBool(value) ?? value;
         }
       } catch {
         throw new Error(
@@ -1147,13 +1163,13 @@ export class Dialect {
           expression.slice(1, -1),
           this.TIME_MAPPING,
           this.TIME_TRIE,
-        ),
+        ) ?? '',
       );
     }
 
     if (expression instanceof Expression && expression.isString) {
       return LiteralExpr.string(
-        formatTime(expression.args.this as string, this.TIME_MAPPING, this.TIME_TRIE),
+        formatTime(expression.args.this as string, this.TIME_MAPPING, this.TIME_TRIE) ?? '',
       );
     }
 
@@ -1185,7 +1201,7 @@ export class Dialect {
       patch: parseInt(parts[2]),
     };
 
-    this.normalizationStrategy = normalizationStrategy ?? this._constructor.NORMALIZATION_STRATEGY;
+    this.normalizationStrategy = enumFromString(NormalizationStrategy, normalizationStrategy) ?? this._constructor.NORMALIZATION_STRATEGY;
 
     this.settings = options;
 
@@ -1348,7 +1364,7 @@ export class Dialect {
    * Parse SQL string into expression tree.
    */
   parse (sql: string, opts?: ParseOptions): (Expression | undefined)[] {
-    return this.parser(opts).parse(this.tokenize(sql));
+    return this.parser(opts).parse(this.tokenize(sql), sql);
   }
 
   parser (opts?: ParseOptions): Parser {
@@ -1361,9 +1377,8 @@ export class Dialect {
   /**
    * Parse SQL string into specific expression type.
    */
-  parseIntoTypes<T extends Expression> (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expressionType: string | (new (args: any) => T) | string[] | (new (args: any) => T)[],
+  parseIntoTypes<T extends typeof Expression> (
+    expressionType: string | T | (string | T)[],
     sql: string,
     opts?: ParseOptions,
   ): (Expression | undefined)[] {
@@ -1457,10 +1472,20 @@ Dialect.register(Dialects.DIALECT, Dialect);
  */
 export function renameFunc (name: string): (this: Generator, expression: Expression) => string {
   return function (this: Generator, expression: Expression): string {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const flatten = (arr: any[]): any[] => arr.reduce((acc, val) =>
-      Array.isArray(val) ? acc.concat(flatten(val)) : acc.concat(val), []);
-    return this.func(name, flatten(Object.values(expression.args)));
+    const constructor = expression._constructor as typeof FuncExpr;
+    const argOrder = constructor.argOrder;
+    if (argOrder && 0 < argOrder.length) {
+      const args = argOrder
+        .map((arg) => expression.getArgKey(arg))
+        .filter((arg) => arg !== undefined);
+      // Flatten arrays (for var len args)
+      const flattenedArgs = args.reduce((acc: (ExpressionValue | undefined)[], val) =>
+        (Array.isArray(val) ? acc.concat(val) : acc.concat([val])), []);
+      return this.func(name, flattenedArgs);
+    }
+
+    const values = Object.values(expression.args).filter((v) => v !== undefined);
+    return this.func(name, values);
   };
 }
 
@@ -1480,6 +1505,9 @@ export function ifSql (
   falseValue?: Expression | string,
 ): (this: Generator, expression: IfExpr) => string {
   return function (this: Generator, expression: IfExpr): string {
+    if (expression.parent instanceof CaseExpr) {
+      return `WHEN ${this.sql(expression, 'this')} THEN ${this.sql(expression, 'true')}`;
+    }
     return this.func(
       name,
       [
@@ -1558,7 +1586,7 @@ export function noParenCurrentDateSql (this: Generator, expression: CurrentDateE
 export function noRecursiveCteSql (this: Generator, expression: WithExpr): string {
   if (expression.args.recursive) {
     this.unsupported('Recursive CTEs are unsupported');
-    expression.args.recursive = false;
+    expression.setArgKey('recursive', false);
   }
   return this.withSql(expression);
 }
@@ -1972,6 +2000,21 @@ export function buildDateDelta<T extends Expression> (
       if (unitMapping && unitName && unitMapping[unitName]) {
         unit = var_(unitMapping[unitName]);
       }
+      if ((unit instanceof VarExpr || unit instanceof ColumnExpr || unit instanceof LiteralExpr) && !(unit instanceof ColumnExpr && unit.parts.length !== 1)) {
+        const UNABBREVIATED: Record<string, string> = {
+          D: 'DAY',
+          H: 'HOUR',
+          M: 'MINUTE',
+          MS: 'MILLISECOND',
+          NS: 'NANOSECOND',
+          Q: 'QUARTER',
+          S: 'SECOND',
+          US: 'MICROSECOND',
+          W: 'WEEK',
+          Y: 'YEAR',
+        };
+        unit = new VarExpr({ this: (UNABBREVIATED[unit.name] || unit.name).toUpperCase() });
+      }
     }
 
     const expression = new ExpClass({
@@ -2188,6 +2231,46 @@ export function encodeDecodeSql (
   return this.func(name, [expression.args.this, replace ? expression.getArgKey('replace') as Expression | undefined : undefined]);
 }
 
+export function decodeToCaseSql (this: Generator, expression: DecodeCaseExpr): string {
+  const expressions = expression.args.expressions || [];
+  const condition = expressions[0];
+  const rest = expressions.slice(1);
+
+  const caseExpr = new CaseExpr({});
+  for (let i = 0; i < rest.length - 1; i += 2) {
+    const left = condition;
+    const right = rest[i];
+    const whenCond = new OrExpr({
+      this: new EqExpr({
+        this: left,
+        expression: right,
+      }),
+      expression: new ParenExpr({
+        this: new AndExpr({
+          this: new IsExpr({
+            this: left,
+            expression: new NullExpr(),
+          }),
+          expression: new IsExpr({
+            this: right,
+            expression: new NullExpr(),
+          }),
+        }),
+      }),
+    });
+    caseExpr.append('ifs', new IfExpr({
+      this: whenCond,
+      true: rest[i + 1],
+    }));
+  }
+
+  if (rest.length % 2 === 1) {
+    caseExpr.setArgKey('default', rest[rest.length - 1]);
+  }
+
+  return this.sql(caseExpr);
+}
+
 export function minOrLeast (this: Generator, expression: MinExpr): string {
   const name = 0 < (expression.args.expressions?.length ?? 0) ? 'LEAST' : 'MIN';
   return renameFunc(name).call(this, expression);
@@ -2356,20 +2439,25 @@ export function buildTrunc (
     second = annotateTypes(second, { dialect });
   }
 
-  const isTemporal = thisArg?.isType(...DataTypeExpr.TEMPORAL_TYPES);
-  const isText = second?.isType(...DataTypeExpr.TEXT_TYPES);
+  const isThisTemporal = thisArg?.isType(DataTypeExpr.TEMPORAL_TYPES);
+  const isSecondText = second?.isType(DataTypeExpr.TEXT_TYPES);
+  const isThisNumeric = thisArg?.isType(DataTypeExpr.NUMERIC_TYPES);
+  const isSecondNumeric = second?.isType(DataTypeExpr.NUMERIC_TYPES);
 
-  if ((isTemporal && (second || defaultDateTruncUnit)) || isText) {
-    const unit = second || LiteralExpr.string(defaultDateTruncUnit);
+  if ((thisArg && isThisTemporal && (second || defaultDateTruncUnit)) || (second && isSecondText)) {
+    const unit = second || LiteralExpr.string(defaultDateTruncUnit ?? '');
     return new DateTruncExpr({
       this: thisArg,
-      unit: unit,
+      unit,
       unabbreviate: dateTruncUnabbreviate,
     });
   }
 
-  const isNumeric = thisArg?.isType(...DataTypeExpr.NUMERIC_TYPES) || second?.isType(...DataTypeExpr.NUMERIC_TYPES);
-  if (isNumeric || (!dateTruncRequiresPart && !second)) {
+  if (
+    (thisArg && isThisNumeric)
+    || (second && isSecondNumeric)
+    || (!dateTruncRequiresPart && !second)
+  ) {
     return new TruncExpr({
       this: thisArg,
       decimals: second,
@@ -2465,7 +2553,7 @@ export function dateDeltaToBinaryIntervalOp (
   return function (this: Generator, expression: DatetimeAddExpr | DatetimeSubExpr): string {
     let thisArg = expression.args.this;
     const unit = unitToVar(expression);
-    const op = expression instanceof DatetimeAddExpr ? '+' : '-';
+    const op = expression instanceof DateAddExpr || expression instanceof TimeAddExpr || expression instanceof TimestampAddExpr || expression instanceof DatetimeAddExpr || expression instanceof TsOrDsAddExpr ? '+' : '-';
 
     let toType: DataTypeExpr | DataTypeExprKind | undefined = undefined;
     if (shouldCast) {
@@ -2498,15 +2586,17 @@ export function unitToStr (expression: TsOrDsDiffExpr | DateAddOrSub | DateTrunc
 } = {}): Expression | undefined {
   const { defaultValue = 'DAY' } = options;
   const unit = expression.args.unit;
+  if (unit instanceof LiteralExpr) {
+  }
   if (!unit) {
     return defaultValue ? LiteralExpr.string(defaultValue) : undefined;
   }
 
-  if (unit instanceof PlaceholderExpr || !(unit instanceof VarExpr || unit instanceof LiteralExpr)) {
+  if (unit instanceof PlaceholderExpr || !(unit instanceof VarExpr || unit instanceof LiteralExpr || unit instanceof IdentifierExpr || unit instanceof ColumnExpr)) {
     return unit;
   }
 
-  return LiteralExpr.string(unit.name);
+  return LiteralExpr.string(unit.name.toUpperCase());
 }
 
 export function unitToVar (expression: TimeUnitExpr, options: {
@@ -2519,51 +2609,42 @@ export function unitToVar (expression: TimeUnitExpr, options: {
     return unit;
   }
 
-  const value = unit?.name || defaultValue;
+  const value = unit?.name.toUpperCase() || defaultValue;
   return value ? var_(value) : undefined;
 }
 
 export function mapDatePart (part: string | Expression | undefined, options: { dialect?: DialectType } = {}): Expression | undefined {
-  const partName = part instanceof Expression ? part.name : part || '';
-  const { dialect } = options;
-  const mapped = (part && !(part instanceof ColumnExpr && part.parts.length !== 1))
-    ? Dialect.getOrRaise(dialect)._constructor.DATE_PART_MAPPING?.[partName.toUpperCase()]
-    : undefined;
+  const { dialect = Dialect } = options;
+  if (part === undefined) return part;
 
+  const partName = part instanceof Expression ? part.name : part;
+
+  const mapped =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    part instanceof Expression && !(part instanceof ColumnExpr) && (part as any).parts?.length !== 1 ? Dialect.getOrRaise(dialect)._constructor.DATE_PART_MAPPING[partName.toUpperCase()] : undefined;
   if (mapped) {
-    if (typeof part === 'string') {
-      return LiteralExpr.string(mapped);
-    }
-
-    return part?.isString ? LiteralExpr.string(mapped) : var_(mapped);
+    if (part instanceof Expression && part.isString) return LiteralExpr.string(mapped);
+    if (typeof part === 'string') return LiteralExpr.string(part);
+    return var_(mapped);
   }
 
-  if (typeof part === 'string') {
-    return LiteralExpr.string(part);
-  }
-  return part;
+  return part instanceof Expression ? part : LiteralExpr.string(part);
 }
 
 export function noLastDaySql (this: Generator, expression: LastDayExpr): string {
-  const truncCurrDate = new AnonymousExpr({
-    this: 'date_trunc',
-    expressions: [LiteralExpr.string('month'), ...(expression.args.this ? [expression.args.this] : [])],
+  const truncCurrDate = new DateTruncExpr({
+    this: expression.args.this,
+    unit: var_('MONTH'),
   });
-  const plusOneMonth = new AnonymousExpr({
-    this: 'date_add',
-    expressions: [
-      truncCurrDate,
-      LiteralExpr.number(1),
-      LiteralExpr.string('month'),
-    ],
+  const plusOneMonth = new DateAddExpr({
+    this: truncCurrDate,
+    expression: LiteralExpr.number(1),
+    unit: var_('MONTH'),
   });
-  const minusOneDay = new AnonymousExpr({
-    this: 'date_sub',
-    expressions: [
-      plusOneMonth,
-      LiteralExpr.number(1),
-      LiteralExpr.string('day'),
-    ],
+  const minusOneDay = new DateSubExpr({
+    this: plusOneMonth,
+    expression: LiteralExpr.number(1),
+    unit: var_('DAY'),
   });
 
   return this.sql(cast(minusOneDay, DataTypeExprKind.DATE));
@@ -2814,20 +2895,21 @@ export function sequenceSql (this: Generator, e: Expression): string {
   const step = expression.args.step;
   const targetType = (start instanceof CastExpr ? start.args.to : (end instanceof CastExpr ? end.args.to : undefined));
 
-  if (start !== undefined && end !== undefined && isType(targetType, ['date', 'timestamp'])) {
-    assertIsInstanceOf(targetType, DataTypeExpr);
-    if (start instanceof CastExpr && targetType === start.to) end = cast(end, targetType);
-    else start = cast(start, targetType);
+  if (start !== undefined && end !== undefined) {
+    if (isType(targetType, ['date', 'timestamp'])) {
+      assertIsInstanceOf(targetType, DataTypeExpr);
+      if (start instanceof CastExpr && targetType === start.to) end = cast(end, targetType);
+      else start = cast(start, targetType);
+    }
 
     if (isInstanceOf(expression, GenerateSeriesExpr) && expression.args.isEndExclusive) {
       const stepVal = step || LiteralExpr.number(1);
-      end = new ParenExpr({
-        this: new SubExpr({
-          this: end,
-          expression: stepVal,
-        }),
+      const endSub = new SubExpr({
+        this: end,
+        expression: stepVal,
       });
-      const seqCall = new AnonymousExpr({
+      end = new ParenExpr({ this: endSub });
+      const sequenceCall = new AnonymousExpr({
         this: 'SEQUENCE',
         expressions: [
           start,
@@ -2836,39 +2918,38 @@ export function sequenceSql (this: Generator, e: Expression): string {
         ],
       });
       const zero = LiteralExpr.number(0);
-      const shouldEmpty = new OrExpr({
-        this: new EqExpr({
+      const shouldReturnEmpty = or([
+        new EqExpr({
           this: stepVal.copy(),
           expression: zero.copy(),
         }),
-        expression: new OrExpr({
-          this: new AndExpr({
-            this: new GtExpr({
-              this: stepVal.copy(),
-              expression: zero.copy(),
-            }),
-            expression: new GteExpr({
-              this: start.copy(),
-              expression: end.copy(),
-            }),
+        and([
+          new GtExpr({
+            this: stepVal.copy(),
+            expression: zero.copy(),
           }),
-          expression: new AndExpr({
-            this: new LtExpr({
-              this: stepVal.copy(),
-              expression: zero.copy(),
-            }),
-            expression: new LteExpr({
-              this: start.copy(),
-              expression: end.copy(),
-            }),
+          new GteExpr({
+            this: start.copy(),
+            expression: end.copy(),
           }),
-        }),
-      });
-      return this.sql(new IfExpr({
-        this: shouldEmpty,
+        ]),
+        and([
+          new LtExpr({
+            this: stepVal.copy(),
+            expression: zero.copy(),
+          }),
+          new LteExpr({
+            this: start.copy(),
+            expression: end.copy(),
+          }),
+        ]),
+      ]);
+      const emptyArrayOrSequence = new IfExpr({
+        this: shouldReturnEmpty,
         true: new ArrayExpr({ expressions: [] }),
-        false: seqCall,
-      }));
+        false: sequenceCall,
+      });
+      return this.sql(this.simplifyUnlessLiteral(emptyArrayOrSequence));
     }
   }
   return this.func('SEQUENCE', [
@@ -2924,6 +3005,7 @@ export function explodeToUnnestSql (this: Generator, expression: LateralExpr): s
   const aliasExpr = expression.args.alias;
   let crossJoinExpr;
 
+  // Handle POSEXPLODE transpilation, regardless of whether it's from Hive LATERAL VIEW or regular LATERAL
   if (thisArg instanceof PosexplodeExpr && aliasExpr) {
     assertIsInstanceOf(aliasExpr, TableAliasExpr);
     const [pos, ...cols] = aliasExpr.args.columns || [];
@@ -2939,8 +3021,7 @@ export function explodeToUnnestSql (this: Generator, expression: LateralExpr): s
         }),
       }));
     crossJoinExpr = new LateralExpr({ this: lateralSubquery.subquery() });
-  }
-  if (thisArg instanceof ExplodeExpr) {
+  } else if (thisArg instanceof ExplodeExpr) {
     crossJoinExpr = new UnnestExpr({
       expressions: [...(thisArg.args.this ? [thisArg.args.this] : [])],
       alias: aliasExpr,
@@ -3023,9 +3104,17 @@ export function buildTimeToStrOrToChar (args: any[], { dialect }: { dialect: Dia
   if (args.length === 2) {
     const thisArg = args[0];
     if (!thisArg.type) annotateTypes(thisArg, { dialect: dialect });
-    if (thisArg.isType(...DataTypeExpr.TEMPORAL_TYPES)) {
+    if (thisArg.isType(DataTypeExpr.TEMPORAL_TYPES)) {
+      let dialectName: string;
+      if (typeof dialect === 'string') {
+        dialectName = dialect;
+      } else if (typeof dialect === 'function') {
+        dialectName = dialect.name.toLowerCase();
+      } else {
+        dialectName = dialect.constructor.name.toLowerCase();
+      }
       return buildFormattedTime(TimeToStrExpr, {
-        dialect: dialect.constructor.name.toLowerCase(),
+        dialect: dialectName,
         defaultValue: true,
       })(args);
     }

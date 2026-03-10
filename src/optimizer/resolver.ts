@@ -19,6 +19,7 @@ import {
   UnnestExpr,
   ValuesExpr,
   QueryTransformExpr,
+  isType,
 } from '../expressions';
 import { Dialect } from '../dialects/dialect';
 import {
@@ -217,7 +218,7 @@ export class Resolver {
 
     const source = this.scope.sources.get(name);
     if (!source) {
-      throw new Error(`Unknown table: ${name}`);
+      throw new OptimizeError(`Unknown table: ${name}`);
     }
 
     let columns: string[] = [];
@@ -232,12 +233,12 @@ export class Resolver {
         if (this.dialect._constructor.UNNEST_COLUMN_ONLY && sourceExpr instanceof UnnestExpr) {
           const unnest = sourceExpr;
 
-          if (!unnest.type || (unnest.type instanceof Expression && unnest.type.args.this === DataTypeExprKind.UNKNOWN)) {
+          if (!unnest.type || isType(unnest.type, DataTypeExprKind.UNKNOWN)) {
             const unnestExpressions = unnest.args.expressions;
             const unnestExpr = seqGet(unnestExpressions ?? [], 0);
             if (unnestExpr instanceof ColumnExpr && this.scope.parent) {
               const colType = this.getUnnestColumnType(unnestExpr);
-              if (colType && colType.isType(DataTypeExprKind.ARRAY)) {
+              if (colType?.isType(DataTypeExprKind.ARRAY)) {
                 const elementTypes = colType.args.expressions;
                 if (elementTypes && 0 < elementTypes.length) {
                   unnest.type = elementTypes[0].copy();
@@ -306,7 +307,7 @@ export class Resolver {
       this.sourceColumns = new Map();
       const allSources = {
         ...this.scope.selectedSources,
-        ...this.scope.lateralSources,
+        ...Object.fromEntries(this.scope.lateralSources.entries()),
       };
       for (const sourceName of Object.keys(allSources)) {
         this.sourceColumns.set(sourceName, this.getSourceColumns(sourceName));

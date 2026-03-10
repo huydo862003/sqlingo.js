@@ -38,6 +38,7 @@ import {
   WindowExpr,
   WithExpr,
   WithinGroupExpr,
+  PseudocolumnExpr,
 } from '../expressions/expressions';
 import {
   isInstanceOf,
@@ -153,7 +154,7 @@ export class Scope {
   private _pivots?: PivotExpr[];
   private _references?: [string, Expression][];
   private _semiAntiJoinTables?: Set<string>;
-  private _columnIndex?: Set<number>;
+  private _columnIndex?: WeakSet<ColumnExpr>;
 
   constructor (options: {
     expression: QueryExpr;
@@ -237,6 +238,7 @@ export class Scope {
     cteSources?: Map<string, Scope>;
     lateralSources?: Map<string, TableExpr | Scope>;
     outerColumns?: string[];
+    [index: string]: unknown;
   }): Scope {
     const {
       expression,
@@ -244,7 +246,7 @@ export class Scope {
       sources,
       cteSources,
       lateralSources,
-      outerColumns,
+      ...restOptions
     } = options;
 
     const newCteSources = new Map(this.cteSources);
@@ -265,7 +267,7 @@ export class Scope {
         this.canBeCorrelated
         || scopeType === ScopeType.SUBQUERY
         || scopeType === ScopeType.UDTF,
-      outerColumns,
+      ...restOptions,
     });
   }
 
@@ -284,7 +286,7 @@ export class Scope {
     this._stars = [];
     this._joinHints = [];
     this._semiAntiJoinTables = new Set();
-    this._columnIndex = new Set();
+    this._columnIndex = new WeakSet<ColumnExpr>();
 
     for (const node of this.walk({ bfs: false })) {
       if (node === this.expression) {
@@ -293,8 +295,8 @@ export class Scope {
 
       if (node instanceof DotExpr && node.isStar) {
         this._stars.push(node);
-      } else if (node instanceof ColumnExpr) {
-        this._columnIndex.add(Object.keys(node).length);
+      } else if (node instanceof ColumnExpr && !(node instanceof PseudocolumnExpr)) {
+        this._columnIndex.add(node);
 
         if (node.args.this instanceof StarExpr) {
           this._stars.push(node);
@@ -305,7 +307,7 @@ export class Scope {
         const parent = node.parent;
         if (parent instanceof JoinExpr) {
           const join = parent as JoinExpr;
-          if (join.args.side === JoinExprKind.SEMI || join.args.side === JoinExprKind.ANTI) {
+          if (join.args.kind === JoinExprKind.SEMI || join.args.kind === JoinExprKind.ANTI) {
             this._semiAntiJoinTables.add((node as TableExpr).aliasOrName);
           }
         }
@@ -320,9 +322,9 @@ export class Scope {
         const isFromOrJoin = _isFromOrJoin(node);
         if (isDerivedTable(node) && isFromOrJoin) {
           this._derivedTables.push(node);
-        } else if (!isFromOrJoin) {
-          this._subqueries.push(node);
         }
+      } else if (UNWRAPPED_QUERIES.some((T) => node instanceof T) && !_isFromOrJoin(node)) {
+        this._subqueries.push(node as QueryExpr);
       } else if (node instanceof TableColumnExpr) {
         this._tableColumns.push(node);
       }
@@ -428,11 +430,11 @@ export class Scope {
   }
 
   /**
-   * Set of column object IDs that belong to this scope's expression
+   * Set of column objects that belong to this scope's expression (by identity)
    */
-  get columnIndex (): Set<number> {
+  get columnIndex (): WeakSet<ColumnExpr> {
     this.ensureCollected();
-    return this._columnIndex ?? new Set();
+    return this._columnIndex ?? new WeakSet<ColumnExpr>();
   }
 
   // Scope type checks
@@ -608,7 +610,7 @@ export class Scope {
       }
 
       for (const expression of [...this.derivedTables, ...this.udtfs]) {
-        const alias = expression.alias || '';
+        const alias = getSourceAlias(expression);
         const node = expression.getArgKey('pivots') ? expression : expression.unnest();
         this._references.push([alias, node]);
       }
@@ -709,7 +711,7 @@ export class Scope {
     for (const scope of this.traverse()) {
       for (const [, source] of Object.values(scope.selectedSources)) {
         if (source instanceof Scope) {
-          scopeRefCount.set(source, scopeRefCount.get(scope) || 0 + 1);
+          scopeRefCount.set(source, (scopeRefCount.get(source) || 0) + 1);
         }
       }
 
@@ -797,6 +799,8 @@ function* _traverseScope (scope: Scope): Generator<Scope> {
         );
       }
     }
+    return;
+  } else {
     return;
   }
 
@@ -904,8 +908,11 @@ function* traverseCtes (scope: Scope): Generator<Scope> {
  */
 function isDerivedTable (expression: Expression): boolean {
   return Boolean(
-    expression.alias
-    || UNWRAPPED_QUERIES.some((T) => expression.args.this instanceof T),
+    expression instanceof SubqueryExpr
+    && (
+      expression.alias
+      || UNWRAPPED_QUERIES.some((T) => expression.args.this instanceof T)
+    ),
   );
 }
 
@@ -1043,7 +1050,7 @@ function* traverseTables (scope: Scope): Generator<Scope> {
       // Tables without aliases will be set as "".
       // Until qualify_columns runs (which adds aliases on everything), only a single
       // unaliased derived table is allowed (the latest one wins).
-      sources.set(getSourceAlias(expression), childScope);
+      sources.set(getSourceAlias(expression), childScope!);
     }
 
     if (childScope) {
@@ -1103,7 +1110,7 @@ function* traverseUdtfs (scope: Scope): Generator<Scope> {
     )) {
       yield childScope;
       top = childScope;
-      sources.set(getSourceAlias(expression), childScope);
+      sources.set(getSourceAlias(expression), childScope!);
     }
 
     if (top) {

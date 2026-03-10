@@ -23,7 +23,6 @@ import {
   HavingExpr,
   IfExpr,
   IntervalExpr,
-  LiteralExpr,
   LteExpr,
   LtExpr,
   NeqExpr,
@@ -79,7 +78,7 @@ export function canonicalize (
   function _canonicalize (node: Expression): Expression {
     node = addTextToConcat(node);
     node = replaceDateFuncs(node, dialectInstance);
-    node = coerceType(node, { promoteToInferredDatetimeType: Dialect.PROMOTE_TO_INFERRED_DATETIME_TYPE });
+    node = coerceType(node, { promoteToInferredDatetimeType: dialectInstance._constructor.PROMOTE_TO_INFERRED_DATETIME_TYPE });
     node = removeRedundantCasts(node);
     node = ensureBools(node, replaceIntPredicate);
     node = removeAscendingOrder(node);
@@ -455,6 +454,11 @@ function replaceCast (node: Expression, to: DataTypeExprKind): void {
  */
 function replaceIntPredicate (expression: Expression): void {
   if (expression instanceof CoalesceExpr) {
+    // Iterate through both 'this' and 'expressions' arguments
+    const thisArg = expression.args.this;
+    if (thisArg instanceof Expression) {
+      replaceIntPredicate(thisArg);
+    }
     const expressions = expression.args.expressions;
     if (expressions) {
       for (const child of expressions) {
@@ -464,13 +468,6 @@ function replaceIntPredicate (expression: Expression): void {
       }
     }
   } else if (expression.type instanceof Expression && expression.type.args.this && DataTypeExpr.INTEGER_TYPES.has(expression.type.args.this as DataTypeExprKind)) {
-    const zero = new LiteralExpr({
-      this: '0',
-      isString: false,
-    });
-    expression.replace(new NeqExpr({
-      this: expression,
-      expression: zero,
-    }));
+    expression.replace(expression.neq(0));
   }
 }

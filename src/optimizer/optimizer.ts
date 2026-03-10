@@ -6,6 +6,7 @@ import {
 import type { DialectType } from '../dialects/dialect';
 import type { Schema } from '../schema';
 import { ensureSchema } from '../schema';
+import type { Pojo } from '../port_internals/type_utils';
 import { annotateTypes } from './annotate_types';
 import { canonicalize } from './canonicalize';
 import { eliminateCtes } from './eliminate_ctes';
@@ -76,7 +77,7 @@ export const RULES: OptimizerRule[] = [
 export function optimize (
   expression: string | Expression,
   options: {
-    schema?: Record<string, unknown> | Schema;
+    schema?: Pojo | Schema;
     db?: string;
     catalog?: string;
     dialect?: DialectType;

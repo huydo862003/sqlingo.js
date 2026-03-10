@@ -1,5 +1,5 @@
 export {
-  TIMESTAMP_EXPRESSIONS, DialectTyping,
+  DialectTyping,
 } from './dialect';
 export type { ExpressionMetadata } from './dialect';
 

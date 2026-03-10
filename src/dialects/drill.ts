@@ -41,8 +41,9 @@ import {
   Generator, unsupportedArgs,
 } from '../generator';
 import { Parser } from '../parser';
-import type { TokenType } from '../tokens';
-import { Tokenizer } from '../tokens';
+import {
+  TokenType, Tokenizer,
+} from '../tokens';
 import {
   eliminateDistinctOn, eliminateSemiAndAntiJoins, moveSchemaColumnsToPartitionedBy, preprocess,
 } from '../transforms';
@@ -62,12 +63,12 @@ import { dateAddSql } from './mysql';
 class DrillTokenizer extends Tokenizer {
   @cache
   static get IDENTIFIERS () {
-    return ['`'] as const;
+    return ['`'];
   }
 
   @cache
   static get STRING_ESCAPES () {
-    return ['\\'] as const;
+    return ['\\'];
   }
 
   @cache
@@ -79,6 +80,25 @@ class DrillTokenizer extends Tokenizer {
 }
 
 class DrillParser extends Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   static STRICT_CAST = false;
   static LOG_DEFAULTS_TO_LN = true;
   @cache
@@ -91,9 +111,34 @@ class DrillParser extends Parser {
       LEVENSHTEIN_DISTANCE: (args: unknown[]) => LevenshteinExpr.fromArgList(args),
     };
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 class DrillGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static JOIN_HINTS = false;
   static TABLE_HINTS = false;
   static QUERY_HINTS = false;
@@ -254,9 +299,20 @@ class DrillGenerator extends Generator {
 }
 
 export class Drill extends Dialect {
-  static NORMALIZE_FUNCTIONS = NormalizeFunctions.NONE;
+  static DIALECT_NAME = Dialects.DRILL;
+
+  @cache
+  static get NORMALIZE_FUNCTIONS () {
+    return NormalizeFunctions.NONE;
+  }
+
   static PRESERVE_ORIGINAL_NAMES = true;
-  static NULL_ORDERING = NullOrdering.NULLS_ARE_LAST;
+
+  @cache
+  static get NULL_ORDERING () {
+    return NullOrdering.NULLS_ARE_LAST;
+  }
+
   static DATE_FORMAT = '\'yyyy-MM-dd\'';
   static DATEINT_FORMAT = '\'yyyyMMdd\'';
   static TIME_FORMAT = '\'yyyy-MM-dd HH:mm:ss\'';

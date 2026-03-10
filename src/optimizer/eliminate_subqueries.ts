@@ -1,8 +1,7 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/eliminate_subqueries.py
 
 import type {
-  Expression,
-  JoinExpr,
+  Expression, ExpressionHash,
 } from '../expressions';
 import {
   alias,
@@ -23,7 +22,7 @@ import { findNewName } from '../helper';
 import type { Scope } from './scope';
 import { buildScope } from './scope';
 
-type ExistingCTEsMapping = Map<Expression, string>;
+type ExistingCTEsMapping = Map<ExpressionHash, string>;
 type TakenNameMapping = Map<string, Scope | TableExpr>;
 
 /**
@@ -90,7 +89,7 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
     recursive = Boolean(withClause.args.recursive);
     for (const cte of withClause.args.expressions ?? []) {
       if (isInstanceOf(cte, CteExpr) && cte.args.this) {
-        existingCtes.set(cte.args.this, cte.alias);
+        if (cte.args.this) existingCtes.set(cte.args.this.sqlKey, cte.alias);
       }
     }
   }
@@ -188,11 +187,12 @@ function eliminateDerivedTable (
   }
 
   const [name, cte] = newCte(scope, existingCtes, taken);
+
   const tableExpr = alias(table(name), toReplace.alias || name, { copy: false });
   const toReplaceArgs = toReplace.args as Record<string, unknown>;
   const joins = toReplaceArgs.joins;
   if (joins && Array.isArray(joins)) {
-    (tableExpr as TableExpr).args.joins = joins as JoinExpr[];
+    (tableExpr as TableExpr).setArgKey('joins', joins);
   }
 
   toReplace.replace(tableExpr);
@@ -253,7 +253,7 @@ function newCte (
    *     where `name` is a new name for this CTE in the root scope and `cte` is a new CTE instance.
    *     If this CTE duplicates an existing CTE, `cte` will be undefined.
    */
-  const duplicateCteAlias = existingCtes.get(scope.expression);
+  const duplicateCteAlias = existingCtes.get(scope.expression.sqlKey);
   const parent = scope.expression.parent;
   let name = parent?.alias || '';
 
@@ -271,7 +271,7 @@ function newCte (
 
   let cte: Expression | undefined;
   if (!duplicateCteAlias) {
-    existingCtes.set(scope.expression, name);
+    existingCtes.set(scope.expression.sqlKey, name);
     cte = new CteExpr({
       this: scope.expression,
       alias: new TableAliasExpr({ this: toIdentifier(name) }),

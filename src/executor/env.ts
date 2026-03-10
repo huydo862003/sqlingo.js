@@ -68,9 +68,15 @@ class ReverseKey<T> {
   }
 }
 
-function filterNulls<T, R> (func: (values: T[]) => R, emptyUndefined = true) {
-  return (values: (T | undefined)[]): R | undefined => {
-    const filtered = values.filter((v): v is T => v !== undefined);
+function filterUndefineds<T, R> (func: (values: T[]) => R, emptyUndefined = true) {
+  return (values: unknown): R | undefined => {
+    // Convert generators/iterables to arrays
+    const arr = Array.isArray(values)
+      ? values
+      : (values !== null && values !== undefined && typeof (values as Record<symbol, unknown>)[Symbol.iterator] === 'function')
+        ? [...(values as Iterable<unknown>)]
+        : [values];
+    const filtered = arr.filter((v): v is T => v !== undefined);
     if (filtered.length === 0 && emptyUndefined) return undefined;
     return func(filtered);
   };
@@ -83,12 +89,12 @@ function fmean<T> (values: T[]): number {
 export class ENV {
   // aggs
   static ARRAYAGG = <T>(values: T[]): T[] => [...values];
-  static ARRAYUNIQUEAGG = filterNulls(<T>(acc: T[]): T[] => [...new Set(acc)]);
-  static AVG = filterNulls((acc: number[]) => fmean(acc));
-  static COUNT = filterNulls((acc: unknown[]) => acc.length, false);
-  static MAX = filterNulls(<T>(acc: T[]): T => acc.reduce((a, b) => (lt(a, b) ? b : a)));
-  static MIN = filterNulls(<T>(acc: T[]): T => acc.reduce((a, b) => (lt(b, a) ? b : a)));
-  static SUM = filterNulls(<T>(acc: T[]) => acc.reduce((a: unknown, b: T) => add(a, b), 0));
+  static ARRAYUNIQUEAGG = filterUndefineds(<T>(acc: T[]): T[] => [...new Set(acc)]);
+  static AVG = filterUndefineds((acc: number[]) => fmean(acc));
+  static COUNT = filterUndefineds((acc: unknown[]) => acc.length, false);
+  static MAX = filterUndefineds(<T>(acc: T[]): T => acc.reduce((a, b) => (lt(a, b) ? b : a)));
+  static MIN = filterUndefineds(<T>(acc: T[]): T => acc.reduce((a, b) => (lt(b, a) ? b : a)));
+  static SUM = filterUndefineds(<T>(acc: T[]) => acc.reduce((a: unknown, b: T) => add(a, b), 0));
 
   // scalar functions
   @undefinedIfAny
@@ -195,6 +201,7 @@ export class ENV {
 
   @undefinedIfAny
   static DIV<E, T> (e: E, this_: T) {
+    if (this_ === 0) throw new Error('division by zero');
     return truediv(e, this_);
   }
 

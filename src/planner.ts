@@ -233,23 +233,39 @@ export class Step {
         groupExprs.map((e, i) => [`_g${i}`, e]),
       );
 
-      const intermediate = new Map<unknown, string>();
+      const intermediate = new Map<string, string>();
       Object.entries(aggregate.group).forEach(([k, v]) => {
-        intermediate.set(v, k);
+        intermediate.set(v.sql(), k);
         if (v instanceof ColumnExpr) {
           intermediate.set(v.name, k);
         }
       });
 
+      const lookupNode = (node: Expression): string | undefined =>
+        intermediate.get(node.sql()) ?? (node instanceof ColumnExpr ? intermediate.get(node.name) : undefined);
+
       // Replace projections with group references
       for (const projection of projections) {
         for (const node of projection.walk()) {
-          const name = intermediate.get(node);
+          const name = lookupNode(node);
           if (name) {
-            node.replace(new ColumnExpr({
-              this: name,
+            node.replace(column({
+              col: name,
               table: step?.name,
-            }));
+            }, { quoted: true }));
+          }
+        }
+      }
+
+      // Replace group references in the HAVING condition (non-aggregate)
+      if (aggregate.condition) {
+        for (const node of aggregate.condition.walk()) {
+          const name = lookupNode(node);
+          if (name) {
+            node.replace(column({
+              col: name,
+              table: step?.name,
+            }, { quoted: true }));
           }
         }
       }
@@ -260,6 +276,22 @@ export class Step {
 
     const order = unnested.getArgKey('order');
     if (isInstanceOf(order, Expression)) {
+      // If we have an aggregate step, extract any agg funcs in ORDER BY into operands
+      if (step instanceof Aggregate) {
+        const orderExprs = filterInstanceOf(order.args.expressions || [], Expression);
+        for (let i = 0; i < orderExprs.length; i++) {
+          const ordered = orderExprs[i];
+          const orderThis = (ordered.args as Record<string, Expression | undefined>).this;
+          if (orderThis && extractAggOperands(alias(orderThis, `_o_${i}`, { quoted: true }))) {
+            orderThis.replace(column({
+              col: `_o_${i}`,
+              table: step.name,
+            }, { quoted: true }));
+          }
+        }
+        setOpsAndAggs(step);
+      }
+
       const sort = new Sort();
       sort.name = step?.name ?? '';
       sort.key = filterInstanceOf(order.args.expressions || [], Expression);
@@ -268,6 +300,24 @@ export class Step {
     }
 
     if (step) step.projections = projections;
+
+    if (unnested instanceof SelectExpr && unnested.args.distinct) {
+      const distinct = new Aggregate();
+      distinct.source = step?.name;
+      distinct.name = step?.name ?? '';
+      distinct.group = Object.fromEntries(
+        (projections.length ? projections : filterInstanceOf(unnested.args.expressions || [], Expression))
+          .map((e) => [
+            e.aliasOrName,
+            column({
+              col: e.aliasOrName,
+              table: step?.name,
+            }, { quoted: true }),
+          ]),
+      );
+      distinct.addDependency(step);
+      step = distinct;
+    }
 
     const limit = unnested.getArgKey('limit');
     if (step && isInstanceOf(limit, Expression)) {

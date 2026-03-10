@@ -108,8 +108,8 @@ function generateAsHive (expression: Expression): boolean {
 
 function isIcebergTable (properties: PropertiesExpr): boolean {
   for (const p of properties.args.expressions || []) {
-    if (p instanceof PropertyExpr && p.args.this?.toString().toLowerCase() === 'table_type') {
-      return p.args.value?.toString().toLowerCase() === 'iceberg';
+    if (p instanceof PropertyExpr && p.text('this').toLowerCase() === 'table_type') {
+      return p.text('value').toLowerCase() === 'iceberg';
     }
   }
 
@@ -141,6 +141,8 @@ function partitionedByPropertySql (this: Generator, e: PartitionedByPropertyExpr
 }
 
 class HiveGeneratorExtension extends Hive.Generator {
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
   public alterSql (expression: AlterExpr): string {
     if (expression instanceof AlterExpr && expression.args.kind === AlterExprKind.TABLE) {
       if (expression.args.actions && expression.args.actions[0] instanceof ColumnDefExpr) {
@@ -165,6 +167,25 @@ class TrinoTokenizerExtension extends Trino.Tokenizer {
 
 class TrinoParserExtension extends Trino.Parser {
   @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
+  @cache
   static get STATEMENT_PARSERS (): Record<string, (this: Parser) => Expression | undefined> {
     return {
       ...Trino.Parser.STATEMENT_PARSERS,
@@ -173,8 +194,13 @@ class TrinoParserExtension extends Trino.Parser {
       },
     };
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 class TrinoGeneratorExtension extends Trino.Generator {
   @cache
   static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
@@ -297,16 +323,30 @@ export class AthenaParser extends Parser {
     return this.trinoParser.parse(rawTokens, sql);
   }
 
-  public parseInto (expressionTypes: string | string[], rawTokens: Token[], sql?: string): (Expression | undefined)[] {
+  public parseIntoTypes (expressionTypes: string | string[], rawTokens: Token[], sql?: string): (Expression | undefined)[] {
     if (rawTokens && rawTokens[0].tokenType === (TokenType).HIVE_TOKEN_STREAM) {
-      return this.hiveParser.parseInto(expressionTypes, rawTokens.slice(1), sql);
+      return this.hiveParser.parseIntoTypes(expressionTypes, rawTokens.slice(1), sql);
     }
 
-    return this.trinoParser.parseInto(expressionTypes, rawTokens, sql);
+    return this.trinoParser.parseIntoTypes(expressionTypes, rawTokens, sql);
   }
 }
 
 export class AthenaGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
   private hiveGenerator: InstanceType<typeof Hive.Generator>;
   private trinoGenerator: InstanceType<typeof Trino.Generator>;
 
@@ -337,6 +377,8 @@ export class AthenaGenerator extends Generator {
 }
 
 export class Athena extends Dialect {
+  static DIALECT_NAME = Dialects.ATHENA;
+
   private hive: Hive;
   private trino: Trino;
 

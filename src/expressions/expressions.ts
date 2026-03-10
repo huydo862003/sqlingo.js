@@ -4,9 +4,9 @@ import { DateTime } from 'luxon';
 import {
   Dialect, type DialectType,
 } from '../dialects/dialect';
-import { Token } from '../tokens';
+import type { Token } from '../tokens';
 import {
-  ensureList, splitNumWords,
+  ensureList, snakeToCamelCase, splitNumWords,
 } from '../helper';
 import {
   assertIsInstanceOf, filterInstanceOf, isInstanceOf, narrowInstanceOf, isIterable, enumFromString,
@@ -30,19 +30,15 @@ import {
 import {
   parseOne, type ParseOptions,
 } from '../parser';
-import { registerFunc } from '../parser/function_registry';
+import {
+  registerFunc, FUNCTION_BY_NAME,
+} from '../parser/function_registry';
 import { normalizeIdentifiers } from '../optimizer/normalize_identifiers';
 import {
   dump, load,
 } from '../serde';
-import {
-  ExpressionKey,
-  CreateExprKind,
-  JoinExprKind,
-  DataTypeExprKind,
-  AlterExprKind,
-} from './types';
 import type {
+
   RefreshExprKind,
   DescribeExprKind,
   KillExprKind,
@@ -85,6 +81,14 @@ import type {
   ExpressionOrString,
   ExpressionOrStringList,
   PrimitiveExpressionValue,
+  ExpressionHash,
+} from './types';
+import {
+  ExpressionKey,
+  CreateExprKind,
+  JoinExprKind,
+  DataTypeExprKind,
+  AlterExprKind,
 } from './types';
 
 export * from './types';
@@ -222,7 +226,7 @@ export class Expression implements
       }
       return;
     }
-    throw new Error(`'${this.constructor.name}' object is not iterable`);
+    return;
   }
 
   /**
@@ -265,7 +269,7 @@ export class Expression implements
    * Returns a JavaScript value equivalent of the SQL node
    * @throws Error if the expression cannot be converted
    */
-  toValue (): ExpressionValue | undefined {
+  toValue (): PrimitiveExpressionValue | undefined {
     if (this instanceof LiteralExpr) {
       const value = this.args.this;
       if (this.isString) {
@@ -275,6 +279,10 @@ export class Expression implements
         return Number(value);
       }
       return value;
+    }
+    if (this instanceof NegExpr) {
+      const inner = (this.args.this as Expression).toValue();
+      return typeof inner === 'number' ? -inner : inner !== undefined ? -Number(inner) : undefined;
     }
     throw new Error(`${this.constructor.name} cannot be converted to a JavaScript value.`);
   }
@@ -287,9 +295,13 @@ export class Expression implements
     if (!this.isNumber) {
       return false;
     }
+    if (this instanceof LiteralExpr) {
+      const s = String(this.args.this);
+      return !s.includes('.') && !s.toLowerCase().includes('e');
+    }
     try {
-      const value = this.toValue();
-      return Number.isInteger(value);
+      const inner = this.args.this as Expression;
+      return inner.isInteger;
     } catch {
       return false;
     }
@@ -347,6 +359,15 @@ export class Expression implements
    */
   get aliasOrName (): string {
     return this.alias || this.name;
+  }
+
+  /**
+   * A branded string derived from the SQL representation of this expression,
+   * suitable for use as a Map/Set key to test structural equality.
+   * Mirrors Python's Expression.__hash__ = lambda self: hash(self.sql()).
+   */
+  get sqlKey (): ExpressionHash {
+    return this.sql() as ExpressionHash;
   }
 
   /**
@@ -465,10 +486,17 @@ export class Expression implements
         if (0 < meta.length) {
           for (const kv of meta.join('').split(',')) {
             const [key, ...valueParts] = kv.split('=');
-            const value = 0 < valueParts.length
+            const rawValue = 0 < valueParts.length
               ? valueParts[0].trim()
-              : true;
-            this.meta[key.trim()] = toBool(value);
+              : undefined;
+            const metaKey = snakeToCamelCase(key.trim());
+            if (rawValue === undefined) {
+              this.meta[metaKey] = true;
+            } else if (/^(true|false|1|0)$/i.test(rawValue)) {
+              this.meta[metaKey] = toBool(rawValue);
+            } else {
+              this.meta[metaKey] = rawValue;
+            }
           }
         }
 
@@ -1502,7 +1530,7 @@ export class Expression implements
     } = options;
     return new OrderedExpr({
       this: this.copy(),
-      nullsFirst: convert(nullsFirst),
+      nullsFirst: nullsFirst ? convert(nullsFirst) : undefined,
     });
   }
 
@@ -1516,7 +1544,7 @@ export class Expression implements
     return new OrderedExpr({
       this: this.copy(),
       desc: convert(true),
-      nullsFirst: convert(nullsFirst),
+      nullsFirst: nullsFirst ? convert(nullsFirst) : undefined,
     });
   }
 
@@ -1690,7 +1718,7 @@ export type PredicateExprArgs = Merge<[
   BaseExpressionArgs,
 ]>;
 
-export class PredicateExpr extends Expression {
+export class PredicateExpr extends ConditionExpr {
   static key = ExpressionKey.PREDICATE;
 
   static requiredArgs = new Set(['this']);
@@ -1786,12 +1814,12 @@ export class QueryExpr extends Expression {
     const instance = maybeCopy(this, copy);
     let aliasExpr: TableAliasExpr | undefined;
 
-    if (!(alias instanceof Expression)) {
-      aliasExpr = alias
-        ? new TableAliasExpr({
-          this: toIdentifier(alias),
-        })
-        : undefined;
+    if (alias instanceof TableAliasExpr) {
+      aliasExpr = alias;
+    } else if (alias) {
+      aliasExpr = new TableAliasExpr({
+        this: toIdentifier(alias as ExpressionValue<IdentifierExpr>),
+      });
     }
 
     return new SubqueryExpr({
@@ -5571,6 +5599,8 @@ export type PartitionBoundSpecExprArgs = Merge<[
 export class PartitionBoundSpecExpr extends Expression {
   static key = ExpressionKey.PARTITION_BOUND_SPEC;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'this',
     'expression',
@@ -6110,7 +6140,7 @@ export class TableExpr extends Expression {
 
       if (part instanceof DotExpr) {
         parts.push(...part.flatten());
-      } else if (part instanceof IdentifierExpr) {
+      } else if (part instanceof Expression) {
         parts.push(part);
       }
     }
@@ -6708,22 +6738,39 @@ export class DataTypeExpr extends Expression {
         });
       }
 
-      try {
-        dataTypeExp = parseOne(dtype, {
-          read: dialect,
-          into: DataTypeExpr,
-          errorLevel: ErrorLevel.IGNORE,
+      // Check if this is a known kind value
+      const knownKinds = Object.values(DataTypeExprKind) as string[];
+      const isKnownKind = knownKinds.includes(dtype);
+
+      if (isKnownKind) {
+        return new DataTypeExpr({
+          ...kwargs,
+          this: dtype as DataTypeExprKind,
         });
+      }
+
+      try {
+        dataTypeExp = parseOne(
+          dtype,
+          {
+            read: dialect,
+            into: DataTypeExpr,
+            errorLevel: ErrorLevel.IGNORE,
+          },
+        );
       } catch (e) {
-        if (!(e instanceof ParseError)) {
+        if (e instanceof ParseError) {
+          if (udt) {
+            return new DataTypeExpr({
+              this: DataTypeExprKind.USERDEFINED,
+              kind: dtype,
+              ...kwargs,
+            });
+          } else {
+            throw e;
+          }
+        } else {
           throw e;
-        }
-        if (udt) {
-          return new DataTypeExpr({
-            ...options,
-            this: DataTypeExprKind.USERDEFINED,
-            kind: dtype,
-          });
         }
       }
     } else if ((dtype instanceof IdentifierExpr || dtype instanceof DotExpr) && udt) {
@@ -6731,11 +6778,6 @@ export class DataTypeExpr extends Expression {
         ...kwargs,
         this: DataTypeExprKind.USERDEFINED,
         kind: dtype,
-      });
-    } else if (typeof dtype === 'string' && Object.values(DataTypeExprKind).includes(dtype as DataTypeExprKind)) {
-      dataTypeExp = new DataTypeExpr({
-        ...kwargs,
-        this: dtype,
       });
     } else if (dtype instanceof DataTypeExpr) {
       return maybeCopy(dtype, copy);
@@ -6759,6 +6801,12 @@ export class DataTypeExpr extends Expression {
    *                                 If false, it means that NULLABLE<INT> is equivalent to INT.
    * @returns True, if and only if there is a type in dtypes which is equal to this DataType.
    */
+  toString (): string {
+    const t = this.args.this;
+    if (t === undefined) return super.toString();
+    return t instanceof Expression ? t.toString() : String(t);
+  }
+
   isType (
     dtypes: DataTypeExprKind | ExpressionOrString<DataTypeExpr | IdentifierExpr | DotExpr> | Iterable<DataTypeExprKind | ExpressionOrString<DataTypeExpr | IdentifierExpr | DotExpr>>,
     options?: { checkNullable?: boolean },
@@ -7616,14 +7664,9 @@ export class TimeUnitExpr extends Expression {
 
   declare args: TimeUnitExprArgs;
 
-  constructor (args: TimeUnitExprArgs = {}) {
+  static initTimeArgs<T extends { unit?: Expression }> (args: T): T {
     const unit = args.unit;
-
-    if (
-      unit
-      && TimeUnitExpr.isVarLike(unit)
-      && !(unit instanceof ColumnExpr && unit.parts.length !== 1)
-    ) {
+    if (unit && TimeUnitExpr.isVarLike(unit) && !(unit instanceof ColumnExpr && unit.parts.length !== 1)) {
       args.unit = new VarExpr({
         this: (TimeUnitExpr.UNABBREVIATED_UNIT_NAME[unit.name] || unit.name).toUpperCase(),
       });
@@ -7633,8 +7676,11 @@ export class TimeUnitExpr extends Expression {
         unit.setArgKey('this', new VarExpr({ this: thisArg.name.toUpperCase() }));
       }
     }
+    return args;
+  }
 
-    super(args);
+  constructor (args: TimeUnitExprArgs = {}) {
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   get unit (): Expression | undefined {
@@ -7792,6 +7838,8 @@ export type JsonExprArgs = Merge<[
 export class JsonExpr extends Expression {
   static key = ExpressionKey.JSON;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'this',
     'with',
@@ -7907,6 +7955,8 @@ export type JsonColumnDefExprArgs = Merge<[
 
 export class JsonColumnDefExpr extends Expression {
   static key = ExpressionKey.JSON_COLUMN_DEF;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'this',
@@ -8348,7 +8398,7 @@ export type HexStringExprArgs = Merge<[
   BaseExpressionArgs,
   {
     isInteger?: boolean;
-    this?: Expression;
+    this?: PrimitiveExpressionValue;
   },
 ]>;
 
@@ -9336,7 +9386,7 @@ export class LiteralExpr extends ConditionExpr {
    * @param string - The string value
    * @returns A literal expression
    */
-  static string (string: unknown): LiteralExpr {
+  static string (string: PrimitiveExpressionValue): LiteralExpr {
     return new LiteralExpr({
       this: String(string),
       isString: true,
@@ -9357,10 +9407,6 @@ export class LiteralExpr extends ConditionExpr {
    */
   toValue (): number | string {
     if (this.isNumber) {
-      const parsed = parseInt(this.args.this as string, 10);
-      if (!isNaN(parsed)) {
-        return parsed;
-      }
       const floatParsed = parseFloat(this.args.this as string);
       if (!isNaN(floatParsed)) {
         return floatParsed;
@@ -12019,7 +12065,7 @@ export class UpdateExpr extends DmlExpr {
       instance: this,
       arg: 'from',
       into: FromExpr,
-      prefix: undefined,
+      prefix: 'FROM',
       dialect,
       copy,
     });
@@ -12109,6 +12155,7 @@ export type SelectExprArgs = Merge<[
     offset?: number | Expression;
     locks?: Expression[];
     sample?: number | Expression;
+    for_?: Expression[];
   },
 ]>;
 
@@ -12149,6 +12196,7 @@ export class SelectExpr extends QueryExpr {
     'settings',
     'format',
     'options',
+    'for',
   ]);
 
   declare args: SelectExprArgs;
@@ -12493,15 +12541,22 @@ export class SelectExpr extends QueryExpr {
 
     let expr: Expression;
     try {
-      expr = maybeParse(expression, {
+      expr = maybeParse(expression as ExpressionOrString<JoinExpr> | undefined, {
         ...parseArgs,
         into: JoinExpr,
         prefix: 'JOIN',
       });
     } catch {
-      expr = maybeParse(expression, {
-        ...parseArgs,
-      });
+      try {
+        expr = maybeParse(expression as ExpressionOrString<JoinExpr> | undefined, {
+          ...parseArgs,
+          into: JoinExpr,
+        });
+      } catch {
+        expr = maybeParse(expression, {
+          ...parseArgs,
+        });
+      }
     }
 
     let join = expr instanceof JoinExpr ? expr : new JoinExpr({ this: expr });
@@ -12512,24 +12567,21 @@ export class SelectExpr extends QueryExpr {
     }
 
     // Set join type (method, side, kind)
+    // JoinExprKind.LEFT/RIGHT/FULL are canonical forms meaning LEFT/RIGHT/FULL OUTER JOIN
+    const JOIN_CANONICAL: Partial<Record<JoinExprKind, string>> = {
+      [JoinExprKind.LEFT]: 'left',
+      [JoinExprKind.RIGHT]: 'right',
+      [JoinExprKind.FULL]: 'full',
+    };
     if (joinType) {
-      const [
-        method,
-        side,
-        kind,
-      ] = maybeParse(joinType, {
+      const joinTypeStr = JOIN_CANONICAL[joinType as JoinExprKind] ?? joinType;
+      const joinParts = maybeParse<typeof JoinExpr>(joinTypeStr, {
         ...parseArgs,
-        into: 'JOIN_TYPE', // FIXME: What is this in sqlglot??
+        into: 'JOIN_TYPE',
       });
-      if (method instanceof Token) {
-        join.setArgKey('method', method.text);
-      }
-      if (side instanceof Token) {
-        join.setArgKey('side', side.text);
-      }
-      if (kind instanceof Token) {
-        join.setArgKey('kind', kind.text);
-      }
+      if (joinParts.args.method) join.setArgKey('method', joinParts.args.method);
+      if (joinParts.args.side) join.setArgKey('side', joinParts.args.side);
+      if (joinParts.args.kind) join.setArgKey('kind', joinParts.args.kind);
     }
 
     // Set ON condition
@@ -12645,16 +12697,18 @@ export class SelectExpr extends QueryExpr {
     } = options;
     const instance = maybeCopy(this, copy);
 
-    if (ons && 0 < ons.length) {
-      const onExprs = ons.filter((on): on is string | Expression => on !== undefined)
-        .map((on) => maybeParse(on, {
-          copy,
-          into: Expression,
-        }));
+    const hasFalseBool = ons ? ons.some((on) => on === false) : false;
+    const effectiveDistinct = hasFalseBool ? false : distinctValue;
+    const onValues = ons ? ons.filter((on): on is string | Expression => on !== undefined && on !== false && on !== true) : [];
+    if (0 < onValues.length) {
+      const onExprs = onValues.map((on) => maybeParse(on, {
+        copy,
+        into: Expression,
+      }));
       const tupleExpr = new TupleExpr({ expressions: onExprs });
-      instance.setArgKey('distinct', distinctValue ? new DistinctExpr({ on: tupleExpr }) : undefined);
+      instance.setArgKey('distinct', effectiveDistinct ? new DistinctExpr({ on: tupleExpr }) : undefined);
     } else {
-      instance.setArgKey('distinct', distinctValue ? new DistinctExpr({}) : undefined);
+      instance.setArgKey('distinct', effectiveDistinct ? new DistinctExpr({}) : undefined);
     }
 
     return instance as this;
@@ -12680,7 +12734,7 @@ export class SelectExpr extends QueryExpr {
       properties, dialect, copy = true,
     } = options;
     const instance = maybeCopy(this, copy);
-    const tableExpr = maybeParse(table, {
+    const tableExpr = maybeParse(table instanceof Expression ? table as TableExpr : table, {
       dialect,
       into: TableExpr,
     });
@@ -12813,13 +12867,12 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
   /**
    * Returns the first non-subquery expression.
    */
-  unnest (): QueryExpr {
+  unnest (): Expression {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
-    let expression: QueryExpr = this;
+    let expression: Expression = this;
     while (expression instanceof SubqueryExpr) {
       const next = expression.args.this;
       if (!next) break;
-      assertIsInstanceOf(next, QueryExpr);
       expression = next;
       if (expression === this) break;
     }
@@ -13141,7 +13194,7 @@ export type UnaryExprArgs = Merge<[
   BaseExpressionArgs,
   { this?: ExpressionOrString },
 ]>;
-export class UnaryExpr extends Expression {
+export class UnaryExpr extends ConditionExpr {
   static key = ExpressionKey.UNARY;
 
   static requiredArgs = new Set(['this']);
@@ -13186,7 +13239,7 @@ export type BracketExprArgs = Merge<[
 export class BracketExpr extends ConditionExpr {
   static key = ExpressionKey.BRACKET;
 
-  static requiredArgs = new Set(['this', 'expressions']);
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'this',
@@ -13342,7 +13395,12 @@ export class FuncExpr extends ConditionExpr {
    * Create a function instance from a list of arguments
    */
   static fromArgList<T extends typeof FuncExpr> (this: T, args: unknown[]): InstanceType<T> {
-    const allArgKeys = this.argOrder;
+    let allArgKeys = this.argOrder;
+
+    // If argOrder is empty, derive it from availableArgs
+    if (allArgKeys.length === 0) {
+      allArgKeys = Array.from(this.availableArgs);
+    }
 
     if (this.isVarLenArgs) {
       const nonVarLenArgKeys = allArgKeys.slice(0, -1);
@@ -13380,7 +13438,7 @@ export class FuncExpr extends ConditionExpr {
       const snakeCase = className
         .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
         .replace(/([a-z\d])([A-Z])/g, '$1_$2')
-        .toLowerCase();
+        .toUpperCase();
 
       this._sqlNames = [snakeCase];
     }
@@ -13534,9 +13592,9 @@ export class JsonPathScriptExpr extends JsonPathPartExpr {
 export type JsonPathSliceExprArgs = Merge<[
   JsonPathPartExprArgs,
   {
-    start?: string | ExpressionOrNumber;
-    end?: string | ExpressionOrNumber;
-    step?: string | ExpressionOrNumber;
+    start?: string | ExpressionOrNumber | false;
+    end?: string | ExpressionOrNumber | false;
+    step?: string | ExpressionOrNumber | false;
   },
 ]>;
 
@@ -14640,7 +14698,7 @@ export class NegExpr extends UnaryExpr {
     super(args);
   }
 
-  toValue (): ExpressionValue | undefined {
+  toValue (): PrimitiveExpressionValue | undefined {
     if (this.isNumber) {
       return ((this.args.this?.toValue() as number) ?? 0) * -1;
     }
@@ -15752,7 +15810,7 @@ export class TranslateExpr extends FuncExpr {
 
   static argOrder = [
     'this',
-    'fromStr',
+    'from',
     'to',
   ];
 
@@ -17182,7 +17240,7 @@ export class StDistanceExpr extends FuncExpr {
 export type StringExprArgs = Merge<[
   FuncExprArgs,
   {
-    this?: string;
+    this?: Expression | string;
     zone?: Expression;
   },
 ]>;
@@ -18411,6 +18469,7 @@ export type CurrentTimestampExprArgs = Merge<[
 
 export class CurrentTimestampExpr extends FuncExpr {
   static key = ExpressionKey.CURRENT_TIMESTAMP;
+  static _sqlNames = ['CURRENT_TIMESTAMP'];
 
   static requiredArgs = new Set<string>();
 
@@ -18762,8 +18821,8 @@ export class UtcTimestampExpr extends FuncExpr {
 }
 
 export type DateAddExprArgs = Merge<[
-  FuncExprArgs,
   IntervalOpExprArgs,
+  FuncExprArgs,
   {
     this?: Expression;
     expression?: Expression;
@@ -18775,7 +18834,11 @@ export type DateAddExprArgs = Merge<[
 export class DateAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   static key = ExpressionKey.DATE_ADD;
 
-  static argOrder = ['this', 'expression', 'unit'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -18788,7 +18851,7 @@ export class DateAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   declare args: DateAddExprArgs;
 
   constructor (args: DateAddExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -18797,8 +18860,8 @@ export class DateAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
 }
 
 export type DateBinExprArgs = Merge<[
-  FuncExprArgs,
   IntervalOpExprArgs,
+  FuncExprArgs,
   {
     this?: Expression;
     expression?: Expression;
@@ -18812,7 +18875,13 @@ export type DateBinExprArgs = Merge<[
 export class DateBinExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   static key = ExpressionKey.DATE_BIN;
 
-  static argOrder = ['this', 'expression', 'unit', 'zone', 'origin'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+    'zone',
+    'origin',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -18827,7 +18896,7 @@ export class DateBinExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   declare args: DateBinExprArgs;
 
   constructor (args: DateBinExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -18836,8 +18905,8 @@ export class DateBinExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
 }
 
 export type DateSubExprArgs = Merge<[
-  FuncExprArgs,
   IntervalOpExprArgs,
+  FuncExprArgs,
   {
     this?: Expression;
     expression?: Expression;
@@ -18849,7 +18918,11 @@ export type DateSubExprArgs = Merge<[
 export class DateSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   static key = ExpressionKey.DATE_SUB;
 
-  static argOrder = ['this', 'expression', 'unit'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -18862,7 +18935,7 @@ export class DateSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   declare args: DateSubExprArgs;
 
   constructor (args: DateSubExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -18878,7 +18951,7 @@ export type DateDiffExprArgs = Merge<[
     expression?: Expression;
     unit?: Expression;
     zone?: Expression;
-    bigInt?: Expression;
+    bigInt?: Expression | boolean;
     datePartBoundary?: boolean | Expression;
     expressions?: ExpressionOrStringList;
   },
@@ -18887,7 +18960,14 @@ export type DateDiffExprArgs = Merge<[
 export class DateDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.DATE_DIFF;
 
-  static argOrder = ['this', 'expression', 'unit', 'zone', 'bigInt', 'datePartBoundary'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+    'zone',
+    'bigInt',
+    'datePartBoundary',
+  ];
 
   static _sqlNames = ['DATEDIFF', 'DATE_DIFF'];
 
@@ -18905,7 +18985,7 @@ export class DateDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: DateDiffExprArgs;
 
   constructor (args: DateDiffExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -18926,6 +19006,7 @@ export type DateTruncExprArgs = Merge<[
 
 export class DateTruncExpr extends FuncExpr {
   static key = ExpressionKey.DATE_TRUNC;
+  static _sqlNames = ['DATE_TRUNC'];
 
   static requiredArgs = new Set(['unit', 'this']);
 
@@ -19000,8 +19081,8 @@ export class DatetimeExpr extends FuncExpr {
 }
 
 export type DatetimeAddExprArgs = Merge<[
-  FuncExprArgs,
   IntervalOpExprArgs,
+  FuncExprArgs,
   {
     this?: Expression;
     expression?: Expression;
@@ -19013,7 +19094,11 @@ export type DatetimeAddExprArgs = Merge<[
 export class DatetimeAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   static key = ExpressionKey.DATETIME_ADD;
 
-  static argOrder = ['this', 'expression', 'unit'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -19026,7 +19111,7 @@ export class DatetimeAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   declare args: DatetimeAddExprArgs;
 
   constructor (args: DatetimeAddExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -19035,8 +19120,8 @@ export class DatetimeAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
 }
 
 export type DatetimeSubExprArgs = Merge<[
-  FuncExprArgs,
   IntervalOpExprArgs,
+  FuncExprArgs,
   {
     this?: Expression;
     expression?: Expression;
@@ -19048,7 +19133,11 @@ export type DatetimeSubExprArgs = Merge<[
 export class DatetimeSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   static key = ExpressionKey.DATETIME_SUB;
 
-  static argOrder = ['this', 'expression', 'unit'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -19061,7 +19150,7 @@ export class DatetimeSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   declare args: DatetimeSubExprArgs;
 
   constructor (args: DatetimeSubExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -19083,7 +19172,11 @@ export type DatetimeDiffExprArgs = Merge<[
 export class DatetimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.DATETIME_DIFF;
 
-  static argOrder = ['this', 'expression', 'unit'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -19096,7 +19189,7 @@ export class DatetimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: DatetimeDiffExprArgs;
 
   constructor (args: DatetimeDiffExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -19118,7 +19211,11 @@ export type DatetimeTruncExprArgs = Merge<[
 export class DatetimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.DATETIME_TRUNC;
 
-  static argOrder = ['this', 'unit', 'zone'];
+  static argOrder = [
+    'this',
+    'unit',
+    'zone',
+  ];
 
   static requiredArgs = new Set(['this', 'unit']);
 
@@ -19131,7 +19228,7 @@ export class DatetimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: DatetimeTruncExprArgs;
 
   constructor (args: DatetimeTruncExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -19165,6 +19262,7 @@ export type DayOfWeekExprArgs = Merge<[
 
 export class DayOfWeekExpr extends FuncExpr {
   static key = ExpressionKey.DAY_OF_WEEK;
+  static _sqlNames = ['DAY_OF_WEEK', 'DAYOFWEEK'];
 
   static argOrder = ['this'];
 
@@ -19451,6 +19549,7 @@ export type LastDayExprArgs = Merge<[
 
 export class LastDayExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.LAST_DAY;
+  static _sqlNames = ['LAST_DAY', 'LAST_DAY_OF_MONTH'];
 
   static argOrder = ['this', 'unit'];
 
@@ -19461,7 +19560,7 @@ export class LastDayExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: LastDayExprArgs;
 
   constructor (args: LastDayExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -19710,7 +19809,11 @@ export type TimestampAddExprArgs = Merge<[
 export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIMESTAMP_ADD;
 
-  static argOrder = ['this', 'expression', 'unit'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -19723,7 +19826,7 @@ export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: TimestampAddExprArgs;
 
   constructor (args: TimestampAddExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -19743,7 +19846,11 @@ export type TimestampSubExprArgs = Merge<[
 export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIMESTAMP_SUB;
 
-  static argOrder = ['this', 'expression', 'unit'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -19756,7 +19863,7 @@ export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: TimestampSubExprArgs;
 
   constructor (args: TimestampSubExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -19776,7 +19883,11 @@ export type TimestampDiffExprArgs = Merge<[
 export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIMESTAMP_DIFF;
 
-  static argOrder = ['this', 'expression', 'unit'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -19789,7 +19900,7 @@ export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: TimestampDiffExprArgs;
 
   constructor (args: TimestampDiffExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -19812,7 +19923,12 @@ export type TimestampTruncExprArgs = Merge<[
 export class TimestampTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIMESTAMP_TRUNC;
 
-  static argOrder = ['this', 'unit', 'zone', 'inputTypePreserved'];
+  static argOrder = [
+    'this',
+    'unit',
+    'zone',
+    'inputTypePreserved',
+  ];
 
   static requiredArgs = new Set(['this', 'unit']);
 
@@ -19826,7 +19942,7 @@ export class TimestampTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: TimestampTruncExprArgs;
 
   constructor (args: TimestampTruncExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -19850,7 +19966,12 @@ export type TimeSliceExprArgs = Merge<[
 export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIME_SLICE;
 
-  static argOrder = ['this', 'expression', 'unit', 'kind'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+    'kind',
+  ];
 
   static requiredArgs = new Set([
     'this',
@@ -19868,7 +19989,7 @@ export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: TimeSliceExprArgs;
 
   constructor (args: TimeSliceExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -19888,7 +20009,11 @@ export type TimeAddExprArgs = Merge<[
 export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIME_ADD;
 
-  static argOrder = ['this', 'expression', 'unit'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -19901,7 +20026,7 @@ export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: TimeAddExprArgs;
 
   constructor (args: TimeAddExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -19921,7 +20046,11 @@ export type TimeSubExprArgs = Merge<[
 export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIME_SUB;
 
-  static argOrder = ['this', 'expression', 'unit'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -19934,7 +20063,7 @@ export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: TimeSubExprArgs;
 
   constructor (args: TimeSubExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -19954,7 +20083,11 @@ export type TimeDiffExprArgs = Merge<[
 export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIME_DIFF;
 
-  static argOrder = ['this', 'expression', 'unit'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -19967,7 +20100,7 @@ export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: TimeDiffExprArgs;
 
   constructor (args: TimeDiffExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -19989,7 +20122,11 @@ export type TimeTruncExprArgs = Merge<[
 export class TimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIME_TRUNC;
 
-  static argOrder = ['this', 'unit', 'zone'];
+  static argOrder = [
+    'this',
+    'unit',
+    'zone',
+  ];
 
   static requiredArgs = new Set(['this', 'unit']);
 
@@ -20002,7 +20139,7 @@ export class TimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: TimeTruncExprArgs;
 
   constructor (args: TimeTruncExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -20022,6 +20159,7 @@ export type DateFromPartsExprArgs = Merge<[
 
 export class DateFromPartsExpr extends FuncExpr {
   static key = ExpressionKey.DATE_FROM_PARTS;
+  static override _sqlNames = ['DATE_FROM_PARTS', 'DATEFROMPARTS'];
 
   static requiredArgs = new Set(['year']);
   static availableArgs = new Set([
@@ -20186,8 +20324,8 @@ export class DateExpr extends FuncExpr {
 
   static argOrder = [
     'this',
-    'expressions',
     'zone',
+    'expressions',
   ];
 
   declare args: DateExprArgs;
@@ -20308,6 +20446,7 @@ export class DecryptExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
     'passphrase',
     'aad',
     'encryptionMethod',
@@ -20357,6 +20496,7 @@ export class DecryptRawExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
     'key',
     'iv',
     'aad',
@@ -20647,7 +20787,12 @@ export type UnnestExprArgs = Merge<[
 export class UnnestExpr extends multiInherit(FuncExpr, UdtfExpr) {
   static key = ExpressionKey.UNNEST;
 
-  static argOrder = ['expressions', 'alias', 'offset', 'explodeArray'];
+  static argOrder = [
+    'expressions',
+    'alias',
+    'offset',
+    'explodeArray',
+  ];
 
   static requiredArgs = new Set(['expressions']);
 
@@ -22332,6 +22477,10 @@ export class JsonExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
     super(args);
   }
 
+  static {
+    this.register();
+  }
+
   get outputName (): string {
     return !this.args.expressions ? (this.args.expression as Expression | undefined)?.outputName ?? '' : '';
   }
@@ -22401,6 +22550,10 @@ export class JsonExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
     super(args);
   }
 
+  static {
+    this.register();
+  }
+
   get outputName (): string {
     return this.args.expression?.outputName ?? '';
   }
@@ -22424,6 +22577,10 @@ export class JsonbExtractExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   constructor (args: JsonbExtractExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -22455,6 +22612,10 @@ export class JsonbExtractScalarExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   constructor (args: JsonbExtractScalarExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -23116,8 +23277,8 @@ export class LowerExpr extends FuncExpr {
 export type MapExprArgs = Merge<[
   FuncExprArgs,
   {
-    keys?: Expression[];
-    values?: Expression[];
+    keys?: ArrayExpr;
+    values?: ArrayExpr;
   },
 ]>;
 
@@ -23141,12 +23302,12 @@ export class MapExpr extends FuncExpr {
 
   get keys (): ExpressionValue[] {
     const keysArg = this.args.keys;
-    return (keysArg?.[0]?.args?.expressions || []) as ExpressionValue[];
+    return (keysArg?.args?.expressions || []) as ExpressionValue[];
   }
 
   get values (): ExpressionValue[] {
     const valuesArg = this.args.values;
-    return (valuesArg?.[0]?.args?.expressions || []) as ExpressionValue[];
+    return (valuesArg?.args?.expressions || []) as ExpressionValue[];
   }
 }
 
@@ -23859,7 +24020,7 @@ export class OverlayExpr extends FuncExpr {
   static argOrder = [
     'this',
     'expression',
-    'fromPosition',
+    'from',
     'for',
   ];
 
@@ -24149,6 +24310,8 @@ export class PowExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   static _sqlNames = ['POWER', 'POW'];
 
+  static argOrder = ['this', 'expression'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set(['this', 'expression']);
@@ -24157,6 +24320,10 @@ export class PowExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   constructor (args: PowExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -24486,6 +24653,8 @@ export class RegexpExtractExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
+    'expression',
     'position',
     'occurrence',
     'parameters',
@@ -24603,6 +24772,8 @@ export type RegexpLikeExprArgs = Merge<[
 export class RegexpLikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   static key = ExpressionKey.REGEXP_LIKE;
 
+  static argOrder = ['this', 'expression'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set([
@@ -24616,6 +24787,10 @@ export class RegexpLikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   constructor (args: RegexpLikeExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -24631,6 +24806,8 @@ export type RegexpILikeExprArgs = Merge<[
 export class RegexpILikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   static key = ExpressionKey.REGEXP_ILIKE;
 
+  static argOrder = ['this', 'expression'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set([
@@ -24643,6 +24820,10 @@ export class RegexpILikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   constructor (args: RegexpILikeExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -24658,6 +24839,12 @@ export type RegexpFullMatchExprArgs = Merge<[
 export class RegexpFullMatchExpr extends multiInherit(BinaryExpr, FuncExpr) {
   static key = ExpressionKey.REGEXP_FULL_MATCH;
 
+  static argOrder = [
+    'this',
+    'expression',
+    'options',
+  ];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set([
@@ -24670,6 +24857,10 @@ export class RegexpFullMatchExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   constructor (args: RegexpFullMatchExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -24699,6 +24890,8 @@ export class RegexpInstrExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
+    'expression',
     'position',
     'occurrence',
     'option',
@@ -24773,7 +24966,12 @@ export class RegexpCountExpr extends FuncExpr {
     'parameters',
   ]);
 
-  static argOrder = ['position', 'parameters'];
+  static argOrder = [
+    'this',
+    'expression',
+    'position',
+    'parameters',
+  ];
 
   declare args: RegexpCountExprArgs;
 
@@ -24891,6 +25089,7 @@ export class RoundExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
     'decimals',
     'truncate',
     'castsNonIntegerDecimals',
@@ -25771,9 +25970,9 @@ export class StrToDateExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
     'format',
     'safe',
-    'this',
   ];
 
   declare args: StrToDateExprArgs;
@@ -25812,11 +26011,11 @@ export class StrToTimeExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
     'format',
     'zone',
     'safe',
     'targetType',
-    'this',
   ];
 
   declare args: StrToTimeExprArgs;
@@ -25899,7 +26098,7 @@ export class StrToMapExpr extends FuncExpr {
 export type NumberToStrExprArgs = Merge<[
   FuncExprArgs,
   {
-    format?: string;
+    format?: Expression;
     culture?: Expression;
     this?: Expression;
   },
@@ -25917,9 +26116,9 @@ export class NumberToStrExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
     'format',
     'culture',
-    'this',
   ];
 
   declare args: NumberToStrExprArgs;
@@ -25992,7 +26191,7 @@ export class StructExpr extends FuncExpr {
 
   static isVarLenArgs = true;
 
-  static requiredArgs = new Set(['expressions']);
+  static requiredArgs = new Set([]);
   static availableArgs = new Set(['expressions']);
 
   static argOrder = ['expressions'];
@@ -26065,9 +26264,9 @@ export class StuffExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
     'start',
     'length',
-    'this',
     'expression',
   ];
 
@@ -26153,10 +26352,10 @@ export class TimeToStrExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
     'format',
     'culture',
     'zone',
-    'this',
   ];
 
   declare args: TimeToStrExprArgs;
@@ -26327,7 +26526,12 @@ export type TsOrDsAddExprArgs = Merge<[
 export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TS_OR_DS_ADD;
 
-  static argOrder = ['this', 'expression', 'unit', 'returnType'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+    'returnType',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -26341,7 +26545,7 @@ export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: TsOrDsAddExprArgs;
 
   constructor (args: TsOrDsAddExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   get returnType (): Expression | undefined {
@@ -26369,7 +26573,11 @@ export type TsOrDsDiffExprArgs = Merge<[
 export class TsOrDsDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TS_OR_DS_DIFF;
 
-  static argOrder = ['this', 'expression', 'unit'];
+  static argOrder = [
+    'this',
+    'expression',
+    'unit',
+  ];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -26382,7 +26590,7 @@ export class TsOrDsDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   declare args: TsOrDsDiffExprArgs;
 
   constructor (args: TsOrDsDiffExprArgs = {}) {
-    super(args);
+    super(TimeUnitExpr.initTimeArgs(args));
   }
 
   static {
@@ -26429,9 +26637,9 @@ export class TsOrDsToDateExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
     'format',
     'safe',
-    'this',
   ];
 
   declare args: TsOrDsToDateExprArgs;
@@ -26943,7 +27151,15 @@ export type TimestampLtzFromPartsExprArgs = Merge<[
 export class TimestampLtzFromPartsExpr extends FuncExpr {
   static key = ExpressionKey.TIMESTAMP_LTZ_FROM_PARTS;
 
-  static argOrder = ['year', 'month', 'day', 'hour', 'min', 'sec', 'nano'];
+  static argOrder = [
+    'year',
+    'month',
+    'day',
+    'hour',
+    'min',
+    'sec',
+    'nano',
+  ];
 
   static _sqlNames = ['TIMESTAMP_LTZ_FROM_PARTS', 'TIMESTAMPLTZFROMPARTS'];
 
@@ -27054,10 +27270,20 @@ export class CorrExpr extends multiInherit(BinaryExpr, AggFuncExpr) {
     'nullOnZeroVariance',
   ]);
 
+  static argOrder = [
+    'this',
+    'expression',
+    'nullOnZeroVariance',
+  ];
+
   declare args: CorrExprArgs;
 
   constructor (args: CorrExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -27116,7 +27342,7 @@ export class WeekExpr extends FuncExpr {
   static requiredArgs = new Set<string>();
   static availableArgs = new Set(['this', 'mode']);
 
-  static argOrder = ['mode', 'this'];
+  static argOrder = ['this', 'mode'];
 
   declare args: WeekExprArgs;
 
@@ -27216,9 +27442,9 @@ export class XmlGetExpr extends FuncExpr {
   ]);
 
   static argOrder = [
-    'instance',
     'this',
     'expression',
+    'instance',
   ];
 
   declare args: XmlGetExprArgs;
@@ -27237,7 +27463,7 @@ export type XmlTableExprArgs = Merge<[
   {
     this?: Expression;
     namespaces?: Expression[];
-    passing?: Expression;
+    passing?: Expression[];
     columns?: Expression[];
     byRef?: Expression;
   },
@@ -27514,7 +27740,11 @@ export type ParameterizedAggExprArgs = Merge<[
 export class ParameterizedAggExpr extends AggFuncExpr {
   static key = ExpressionKey.PARAMETERIZED_AGG;
 
-  static argOrder = ['this', 'expressions', 'params'];
+  static argOrder = [
+    'this',
+    'expressions',
+    'params',
+  ];
 
   static requiredArgs = new Set([
     'this',
@@ -27551,7 +27781,11 @@ export type ArgMaxExprArgs = Merge<[
 export class ArgMaxExpr extends AggFuncExpr {
   static key = ExpressionKey.ARG_MAX;
 
-  static argOrder = ['this', 'expression', 'count'];
+  static argOrder = [
+    'this',
+    'expression',
+    'count',
+  ];
 
   static _sqlNames = [
     'ARG_MAX',
@@ -27590,7 +27824,11 @@ export type ArgMinExprArgs = Merge<[
 export class ArgMinExpr extends AggFuncExpr {
   static key = ExpressionKey.ARG_MIN;
 
-  static argOrder = ['this', 'expression', 'count'];
+  static argOrder = [
+    'this',
+    'expression',
+    'count',
+  ];
 
   static _sqlNames = [
     'ARG_MIN',
@@ -27629,7 +27867,11 @@ export type ApproxTopKExprArgs = Merge<[
 export class ApproxTopKExpr extends AggFuncExpr {
   static key = ExpressionKey.APPROX_TOP_K;
 
-  static argOrder = ['this', 'expression', 'counters'];
+  static argOrder = [
+    'this',
+    'expression',
+    'counters',
+  ];
 
   static availableArgs = new Set([
     'this',
@@ -27719,7 +27961,11 @@ export type ApproxTopSumExprArgs = Merge<[
 export class ApproxTopSumExpr extends AggFuncExpr {
   static key = ExpressionKey.APPROX_TOP_SUM;
 
-  static argOrder = ['this', 'expression', 'count'];
+  static argOrder = [
+    'this',
+    'expression',
+    'count',
+  ];
 
   static requiredArgs = new Set([
     'this',
@@ -27877,6 +28123,8 @@ export class GroupingExpr extends AggFuncExpr {
   static key = ExpressionKey.GROUPING;
 
   static isVarLenArgs = true;
+
+  static argOrder = ['expressions'];
 
   static requiredArgs = new Set(['expressions']);
 
@@ -28233,7 +28481,11 @@ export type LagExprArgs = Merge<[
 export class LagExpr extends AggFuncExpr {
   static key = ExpressionKey.LAG;
 
-  static argOrder = ['this', 'offset', 'default'];
+  static argOrder = [
+    'this',
+    'offset',
+    'default',
+  ];
 
   static availableArgs = new Set([
     'this',
@@ -28264,7 +28516,11 @@ export type LeadExprArgs = Merge<[
 export class LeadExpr extends AggFuncExpr {
   static key = ExpressionKey.LEAD;
 
-  static argOrder = ['this', 'offset', 'default'];
+  static argOrder = [
+    'this',
+    'offset',
+    'default',
+  ];
 
   static availableArgs = new Set([
     'this',
@@ -28383,7 +28639,11 @@ export type NthValueExprArgs = Merge<[
 export class NthValueExpr extends AggFuncExpr {
   static key = ExpressionKey.NTH_VALUE;
 
-  static argOrder = ['this', 'offset', 'fromFirst'];
+  static argOrder = [
+    'this',
+    'offset',
+    'fromFirst',
+  ];
 
   static requiredArgs = new Set(['this', 'offset']);
 
@@ -28504,7 +28764,11 @@ export type CountExprArgs = Merge<[
 export class CountExpr extends AggFuncExpr {
   static key = ExpressionKey.COUNT;
 
-  static argOrder = ['this', 'expressions', 'bigInt'];
+  static argOrder = [
+    'this',
+    'expressions',
+    'bigInt',
+  ];
 
   static requiredArgs = new Set<string>();
 
@@ -28555,6 +28819,8 @@ export type DenseRankExprArgs = Merge<[
 export class DenseRankExpr extends AggFuncExpr {
   static key = ExpressionKey.DENSE_RANK;
 
+  static argOrder: string[] = [];
+
   static requiredArgs = new Set<string>();
 
   static isVarLenArgs = true;
@@ -28596,6 +28862,10 @@ export class PosexplodeExpr extends ExplodeExpr {
   constructor (args: PosexplodeExprArgs = {}) {
     super(args);
   }
+
+  static {
+    this.register();
+  }
 }
 
 export type GroupConcatExprArgs = Merge<[
@@ -28610,7 +28880,11 @@ export type GroupConcatExprArgs = Merge<[
 export class GroupConcatExpr extends AggFuncExpr {
   static key = ExpressionKey.GROUP_CONCAT;
 
-  static argOrder = ['this', 'separator', 'onOverflow'];
+  static argOrder = [
+    'this',
+    'separator',
+    'onOverflow',
+  ];
 
   static availableArgs = new Set([
     'this',
@@ -28723,7 +28997,13 @@ export type JsonObjectAggExprArgs = Merge<[
 export class JsonObjectAggExpr extends AggFuncExpr {
   static key = ExpressionKey.JSON_OBJECT_AGG;
 
-  static argOrder = ['expressions', 'nullHandling', 'uniqueKeys', 'returnType', 'encoding'];
+  static argOrder = [
+    'expressions',
+    'nullHandling',
+    'uniqueKeys',
+    'returnType',
+    'encoding',
+  ];
 
   static availableArgs = new Set([
     'expressions',
@@ -28785,7 +29065,13 @@ export type JsonArrayAggExprArgs = Merge<[
 export class JsonArrayAggExpr extends AggFuncExpr {
   static key = ExpressionKey.JSON_ARRAY_AGG;
 
-  static argOrder = ['this', 'order', 'nullHandling', 'returnType', 'strict'];
+  static argOrder = [
+    'this',
+    'order',
+    'nullHandling',
+    'returnType',
+    'strict',
+  ];
 
   static availableArgs = new Set([
     'this',
@@ -29037,6 +29323,8 @@ export type PercentRankExprArgs = Merge<[
 export class PercentRankExpr extends AggFuncExpr {
   static key = ExpressionKey.PERCENT_RANK;
 
+  static argOrder: string[] = [];
+
   static requiredArgs = new Set<string>();
 
   static isVarLenArgs = true;
@@ -29107,6 +29395,8 @@ export type RankExprArgs = Merge<[
 
 export class RankExpr extends AggFuncExpr {
   static key = ExpressionKey.RANK;
+
+  static argOrder: string[] = [];
 
   static requiredArgs = new Set<string>();
 
@@ -29515,6 +29805,8 @@ export type CumeDistExprArgs = Merge<[
 export class CumeDistExpr extends AggFuncExpr {
   static key = ExpressionKey.CUME_DIST;
 
+  static argOrder: string[] = [];
+
   static requiredArgs = new Set<string>();
 
   static isVarLenArgs = true;
@@ -29744,6 +30036,14 @@ export type ApproxQuantileExprArgs = Merge<[
 
 export class ApproxQuantileExpr extends QuantileExpr {
   static key = ExpressionKey.APPROX_QUANTILE;
+
+  static argOrder = [
+    'this',
+    'quantile',
+    'accuracy',
+    'weight',
+    'errorTolerance',
+  ];
 
   static availableArgs = new Set([
     'this',
@@ -30303,7 +30603,7 @@ export function alias<E extends Expression> (
       }
     }
 
-    return exp;
+    return exp as E | AliasExpr;
   }
 
   // We don't set the "alias" arg for Window expressions, because that would add an IDENTIFIER node in
@@ -30313,7 +30613,7 @@ export function alias<E extends Expression> (
     if (aliasIdent) {
       exp.setArgKey('alias', aliasIdent);
     }
-    return exp;
+    return exp as E | AliasExpr;
   }
 
   return new AliasExpr({
@@ -30557,7 +30857,7 @@ export function values (
     throw new Error('Alias is required when providing columns');
   }
 
-  const expressions = valuesList.map((tup) => convert(tup));
+  const expressions = valuesList.map((tup) => new TupleExpr({ expressions: tup.map((v) => convert(v)) }));
 
   let alias: TableAliasExpr | undefined;
   if (columns) {
@@ -30582,9 +30882,14 @@ export function values (
  * @returns Function expression
  */
 export function func (name: string, ...args: ExpressionValue[]): FuncExpr {
-  return new FuncExpr({
+  const converted = args.map((a) => (typeof a === 'string' ? maybeParse(a) : convert(a)));
+  const cls = FUNCTION_BY_NAME.get(name.toUpperCase());
+  if (cls) {
+    return cls.fromArgList(converted);
+  }
+  return new AnonymousExpr({
     this: name,
-    expressions: args,
+    expressions: converted,
   });
 }
 
@@ -30917,7 +31222,7 @@ export function update (
   }
 
   if (fromExpr) {
-    updateExpr.setArgKey('from', maybeParse(fromExpr, {
+    updateExpr.setArgKey('from', maybeParse(fromExpr as ExpressionValue<FromExpr>, {
       into: FromExpr,
       dialect,
       prefix: 'FROM',
@@ -30926,11 +31231,11 @@ export function update (
   }
 
   if (where) {
-    let whereExpr = where;
+    let whereExpr: string | Expression = where;
     if (where instanceof ConditionExpr) {
       whereExpr = new WhereExpr({ this: where });
     }
-    updateExpr.setArgKey('where', maybeParse(whereExpr, {
+    updateExpr.setArgKey('where', maybeParse(whereExpr as ExpressionValue<WhereExpr>, {
       into: WhereExpr,
       dialect,
       prefix: 'WHERE',
@@ -30993,7 +31298,7 @@ export function merge (
 
   const expressions: WhenExpr[] = [];
   for (const whenExpr of whenExprs) {
-    const expr = maybeParse(whenExpr, {
+    const expr = maybeParse(whenExpr as ExpressionValue<WhensExpr>, {
       dialect,
       copy,
       into: WhensExpr,
@@ -31001,8 +31306,9 @@ export function merge (
     });
     if (expr instanceof WhenExpr) {
       expressions.push(expr);
+    } else {
+      expressions.push(...expr.args.expressions as WhenExpr[]);
     }
-    expressions.push(...expr.args.expressions as WhenExpr[]);
   }
 
   let mergeExpr = new MergeExpr({
@@ -31081,19 +31387,19 @@ export function condition (
  * @param options - Parsing options
  * @returns Expression
  */
-export function maybeParse<RetT extends Expression> (
-  sqlOrExpression?: ExpressionValue<RetT>,
-  options?: ParseOptions<RetT> & {
+export function maybeParse<T extends typeof Expression> (
+  sqlOrExpression?: ExpressionValue<InstanceType<T>>,
+  options?: ParseOptions<T> & {
     prefix?: string;
     copy?: boolean;
   },
-): RetT {
+): InstanceType<T> {
   // If it's already an Expression
   if (sqlOrExpression instanceof Expression) {
     if (options?.copy) {
-      return sqlOrExpression.copy();
+      return sqlOrExpression.copy() as InstanceType<T>;
     }
-    return sqlOrExpression;
+    return sqlOrExpression as InstanceType<T>;
   }
 
   // SQL cannot be None/null
@@ -31113,7 +31419,7 @@ export function maybeParse<RetT extends Expression> (
   } = options || {};
 
   // Parse the SQL string
-  return parseOne<RetT>(sql, {
+  return parseOne<T>(sql, {
     ...parseOptions,
     read: dialect || parseOptions.read,
   });
@@ -31409,14 +31715,14 @@ function applyBuilder<RetT extends Expression, ArgT extends Expression> (express
   }
 
   const inst = maybeCopy(instance, copy)!;
-  expression = maybeParse(expression, {
+  const parsedExpression: ArgT = maybeParse(expression as ExpressionValue<ArgT>, {
     prefix,
     into,
     dialect,
     ...opts,
-  });
+  }) as ArgT;
 
-  if (arg !== undefined) inst.setArgKey(arg, expression);
+  if (arg !== undefined) inst.setArgKey(arg, parsedExpression);
   return inst;
 }
 
@@ -31605,19 +31911,25 @@ function applyConjunctionBuilder<E extends Expression> (
   }
 
   // Create AND conjunction of all expressions
+  const wrapConnector = (e: Expression) => e instanceof ConnectorExpr ? new ParenExpr({ this: e }) : e;
   let combined: Expression | undefined;
   if (0 < allExpressions.length) {
-    combined = allExpressions
+    const parsed = allExpressions
       .map((expr) => maybeParse(expr as ExpressionValue, {
         dialect,
         copy,
         ...opts,
-      }))
-      .reduce((left, right) =>
-        new AndExpr({
-          this: left,
-          expression: right,
-        }));
+      }));
+    const [first, ...rest] = parsed;
+    let wrappedFirst = first;
+    if (0 < rest.length) {
+      wrappedFirst = wrapConnector(first);
+    }
+    combined = rest.reduce((left, right) =>
+      new AndExpr({
+        this: left,
+        expression: wrapConnector(right),
+      }), wrappedFirst);
   }
 
   const node = into && combined ? new into({ this: combined }) : combined;
@@ -31659,7 +31971,7 @@ function applyCteBuilder<E extends Expression> (options: {
     ...opts
   } = options;
 
-  const aliasExpression = maybeParse(alias, {
+  const aliasExpression = maybeParse(alias as ExpressionValue<TableAliasExpr> | undefined, {
     dialect,
     into: TableAliasExpr,
     ...opts,
@@ -31874,15 +32186,12 @@ export function convert (value: unknown, options: { copy?: boolean } = {}): Expr
     return new ArrayExpr({ expressions: value.map((v) => convert(v, { copy })) });
   }
 
-  // Handle objects as structs
+  // Handle plain objects as maps (like Python's dict -> Map)
   if (value !== null && typeof value === 'object') {
     const entries = Object.entries(value);
-    return new StructExpr({
-      expressions: entries.map(([k, v]) =>
-        new PropertyEqExpr({
-          this: toIdentifier(k),
-          expression: convert(v, { copy }),
-        })),
+    return new MapExpr({
+      keys: new ArrayExpr({ expressions: entries.map(([k]) => LiteralExpr.string(k)) }),
+      values: new ArrayExpr({ expressions: entries.map(([, v]) => convert(v, { copy })) }),
     });
   }
 
@@ -32309,31 +32618,21 @@ export function replaceTables<T extends Expression> (
  */
 export function replacePlaceholders (
   expression: Expression,
-  ...args: unknown[]
+  args: unknown[] = [],
+  options: Record<string, unknown> = {},
 ): Expression {
-  // Separate positional args from the last arg if it's an object (kwargs)
-  let positionalArgs: unknown[];
-  let kwargs: Record<string, unknown> = {};
-
-  if (0 < args.length && typeof args[args.length - 1] === 'object' && args[args.length - 1] != undefined && !Array.isArray(args[args.length - 1]) && !(args[args.length - 1] instanceof Expression)) {
-    kwargs = args[args.length - 1] as Record<string, unknown>;
-    positionalArgs = args.slice(0, -1);
-  } else {
-    positionalArgs = args;
-  }
-
   let argIndex = 0;
 
   function replacePlaceholder (node: Expression): Expression {
     if (node instanceof PlaceholderExpr) {
       if (typeof node.args.this === 'string') {
-        const newName = kwargs[node.args.this];
+        const newName = options[node.args.this];
         if (newName !== undefined) {
           return convert(newName);
         }
       } else {
-        if (argIndex < positionalArgs.length) {
-          return convert(positionalArgs[argIndex++]);
+        if (argIndex < args.length) {
+          return convert(args[argIndex++]);
         }
       }
     }
@@ -32381,7 +32680,7 @@ export function expand (
 
       if (source) {
         const parsedSource = typeof source === 'function' ? source() : source;
-        const aliasName = node.args.alias || name;
+        const aliasName = node.alias || name;
         const subqueryExpr = parsedSource.subquery(aliasName);
         subqueryExpr.comments = [`source: ${name}`];
 

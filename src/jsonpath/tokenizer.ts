@@ -24,7 +24,6 @@ export class JsonPathTokenizer extends Tokenizer {
   @cache
   static get KEYWORDS (): Record<string, TokenType> {
     return {
-      ...super.KEYWORDS,
       '..': TokenType.DOT,
     };
   }

@@ -110,9 +110,8 @@ import {
   UtcTimeExpr,
   DateStrToDateExpr,
 } from '../expressions';
-import {
-  DialectTyping, type ExpressionMetadata,
-} from '../typing';
+import { type ExpressionMetadata } from '../typing';
+import { MySQLTyping } from '../typing/mysql';
 import type { TokenPair } from '../tokens';
 import {
   Tokenizer, TokenType,
@@ -146,6 +145,7 @@ import {
   Dialects,
   buildFormattedTime,
   buildDateDelta,
+  NullOrderingSupported,
 } from './dialect';
 
 /**
@@ -280,7 +280,7 @@ export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): str
   const scale = expression.args.scale;
   const timestamp = expression.args.this;
 
-  if (scale === undefined || scale === UnixToTimeExpr.SECONDS) {
+  if (scale === undefined || scale.toValue() === UnixToTimeExpr.SECONDS.toValue()) {
     return this.func('FROM_UNIXTIME', [timestamp, this.formatTime(expression)]);
   }
 
@@ -349,27 +349,27 @@ export function removeTsOrDsToDate<T extends FuncExpr> (
 }
 
 class MySQLTokenizer extends Tokenizer {
-  public QUOTES = ['\'', '"'];
-  public COMMENTS: TokenPair[] = [
+  static QUOTES: TokenPair[] = ['\'', '"'];
+  static COMMENTS: TokenPair[] = [
     '--',
     '#',
     ['/*', '*/'],
   ];
 
-  public IDENTIFIERS = ['`'];
-  public STRING_ESCAPES = [
+  static IDENTIFIERS: TokenPair[] = ['`'];
+  static STRING_ESCAPES: string[] = [
     '\'',
     '"',
     '\\',
   ];
 
-  public BIT_STRINGS: [string, string][] = [
+  static BIT_STRINGS: TokenPair[] = [
     ['b\'', '\''],
     ['B\'', '\''],
     ['0b', ''],
   ];
 
-  public HEX_STRINGS: [string, string][] = [
+  static HEX_STRINGS: TokenPair[] = [
     ['x\'', '\''],
     ['X\'', '\''],
     ['0x', ''],
@@ -393,7 +393,7 @@ class MySQLTokenizer extends Tokenizer {
   public NESTED_COMMENTS = false;
 
   @cache
-  static get ORIGINAL_KEYWORDS () {
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     return {
       ...Tokenizer.KEYWORDS,
       'BLOB': TokenType.BLOB,
@@ -479,6 +479,12 @@ class MySQLTokenizer extends Tokenizer {
 };
 
 class MySQLParser extends Parser {
+  // port from _Dialect metaclass logic
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.ID_VAR_TOKENS, TokenType.CURRENT_CATALOG]);
+  }
+
   @cache
   static get FUNC_TOKENS (): Set<TokenType> {
     return new Set([
@@ -1214,9 +1220,34 @@ class MySQLParser extends Parser {
 }
 
 class MySQLGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static INTERVAL_ALLOWS_PLURAL_FORM: boolean = false;
   static LOCKING_READS_SUPPORTED: boolean = true;
-  static NULL_ORDERING_SUPPORTED: boolean | undefined = undefined;
+
+  @cache
+  static get NULL_ORDERING_SUPPORTED () {
+    return NullOrderingSupported.UNSUPPORTED;
+  }
+
   static JOIN_HINTS: boolean = false;
   static TABLE_HINTS: boolean = true;
   static DUPLICATE_KEY_UPDATE_WITH_SET: boolean = false;
@@ -1234,6 +1265,7 @@ class MySQLGenerator extends Generator {
   static VARCHAR_REQUIRES_SIZE: boolean = true;
   static SUPPORTS_MEDIAN: boolean = false;
   static UPDATE_STATEMENT_SUPPORTS_FROM: boolean = false;
+  static SUPPORTS_CONVERT_TIMEZONE = true;
 
   @cache
   static get ORIGINAL_TRANSFORMS () {
@@ -1828,10 +1860,10 @@ class MySQLGenerator extends Generator {
     const toExpr = expression.args.to;
     if (toExpr instanceof DataTypeExpr) {
       const toThis = toExpr.args.this as string;
-      if (MySQLGenerator.TIMESTAMP_FUNC_TYPES.has(toThis)) {
+      if ((this._constructor as typeof MySQLGenerator).TIMESTAMP_FUNC_TYPES.has(toThis)) {
         return this.func('TIMESTAMP', [expression.args.this as Expression]);
       }
-      const to = MySQLGenerator.CAST_MAPPING[toThis];
+      const to = (this._constructor as typeof MySQLGenerator).CAST_MAPPING[toThis];
       if (to) {
         toExpr.setArgKey('this', to);
       }
@@ -1959,7 +1991,7 @@ class MySQLGenerator extends Generator {
     return this.sql(dateAdd);
   }
 
-  public converttimezoneSql (expression: ConvertTimezoneExpr): string {
+  public convertTimezoneSql (expression: ConvertTimezoneExpr): string {
     const fromTz = expression.args.sourceTz;
     const toTz = expression.args.targetTz;
     const dt = expression.args.timestamp;
@@ -1980,12 +2012,12 @@ class MySQLGenerator extends Generator {
     return `REGEXP_LIKE(${this.sql(expression.args.this)}, '^[[:ascii:]]*$')`;
   }
 
-  public ignoreundefinedsSql (expression: IgnoreNullsExpr): string {
+  public ignoreNullsSql (expression: IgnoreNullsExpr): string {
     this.unsupported('MySQL does not support IGNORE NULLS.');
     return this.sql(expression.args.this);
   }
 
-  public currentschemaSql (_expression: CurrentSchemaExpr): string {
+  public currentSchemaSql (_expression: CurrentSchemaExpr): string {
     unsupportedArgs.call(this, _expression, 'this');
     return this.func('SCHEMA', []);
   }
@@ -2035,6 +2067,7 @@ class MySQLGenerator extends Generator {
 }
 
 export class MySQL extends Dialect {
+  static DIALECT_NAME = Dialects.MYSQL;
   static PROMOTE_TO_INFERRED_DATETIME_TYPE: boolean = true;
 
   // MySQL allows identifiers to start with digits if they are quoted or in specific contexts
@@ -2062,7 +2095,7 @@ export class MySQL extends Dialect {
 
   @cache
   static get EXPRESSION_METADATA (): ExpressionMetadata {
-    return new Map(DialectTyping.EXPRESSION_METADATA);
+    return new Map(MySQLTyping.EXPRESSION_METADATA);
   }
 
   /**

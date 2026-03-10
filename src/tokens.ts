@@ -736,12 +736,12 @@ export class Tokenizer {
     }
     return {
       ...nationalStrings,
-      ...this.quotesToFormat(TokenType.STRING, this.BIT_STRINGS),
-      ...this.quotesToFormat(TokenType.STRING, this.BYTE_STRINGS),
-      ...this.quotesToFormat(TokenType.STRING, this.HEX_STRINGS),
+      ...this.quotesToFormat(TokenType.BIT_STRING, this.BIT_STRINGS),
+      ...this.quotesToFormat(TokenType.BYTE_STRING, this.BYTE_STRINGS),
+      ...this.quotesToFormat(TokenType.HEX_STRING, this.HEX_STRINGS),
       ...this.quotesToFormat(TokenType.STRING, this.RAW_STRINGS),
-      ...this.quotesToFormat(TokenType.STRING, this.HEREDOC_STRINGS),
-      ...this.quotesToFormat(TokenType.STRING, this.UNICODE_STRINGS),
+      ...this.quotesToFormat(TokenType.HEREDOC_STRING, this.HEREDOC_STRINGS),
+      ...this.quotesToFormat(TokenType.UNICODE_STRING, this.UNICODE_STRINGS),
     };
   }
 
@@ -1655,6 +1655,10 @@ export class Tokenizer {
           this.add(TokenType.NUMBER, numberText);
           this.add(TokenType.DCOLON, '::');
           return this.add(tokenType, literal);
+        }
+
+        if (this.dialect._constructor.IDENTIFIERS_CAN_START_WITH_DIGIT) {
+          return this.add(TokenType.VAR);
         }
 
         this.advance({ i: -literal.length });

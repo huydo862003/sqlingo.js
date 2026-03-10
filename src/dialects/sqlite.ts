@@ -6,6 +6,7 @@ import {
 import {
   Parser, binaryRangeParser,
 } from '../parser';
+import type { TokenPair } from '../tokens';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
@@ -25,6 +26,7 @@ import type {
   RespectNullsExpr,
   WindowSpecExpr,
   JsonExtractExpr,
+  IdentifierExpr,
 } from '../expressions';
 import {
   AnonymousExpr,
@@ -71,7 +73,6 @@ import {
   DistinctExpr,
   OrderExpr,
   UniqueColumnConstraintExpr,
-  IdentifierExpr,
   LiteralExpr,
   JsonPathKeyExpr,
   JsonPathRootExpr,
@@ -138,16 +139,16 @@ function transformCreate (expression: Expression): Expression {
         column.setArgKey('constraints', []);
       }
       if (!column.args.constraints) {
-        column.args.constraints = [];
+        column.setArgKey('constraints', []);
       }
-      column.args.constraints.push(
+      column.args.constraints?.push(
         new ColumnConstraintExpr({ kind: new PrimaryKeyColumnConstraintExpr() }),
       );
 
-      schema.args.expressions = (schema.args.expressions || []).filter((e) => e !== primaryKey);
+      schema.setArgKey('expressions', (schema.args.expressions || []).filter((e) => e !== primaryKey));
     } else {
       for (const column of Object.values(defs)) {
-        let autoIncrement: ColumnConstraintExpr | undefined = undefined;
+        let autoIncrement: ColumnConstraintExpr | undefined;
 
         for (const constraint of (column.args.constraints || [])) {
           const constraintExpr = constraint as ColumnConstraintExpr;
@@ -161,7 +162,7 @@ function transformCreate (expression: Expression): Expression {
         }
 
         if (autoIncrement) {
-          column.args.constraints = (column.args.constraints || []).filter((c) => c !== autoIncrement);
+          column.setArgKey('constraints', (column.args.constraints || []).filter((c) => c !== autoIncrement));
         }
       }
     }
@@ -186,9 +187,9 @@ function generatedToAutoIncrement (expression: Expression): Expression {
     }
 
     if (!expression.args.constraints) {
-      expression.args.constraints = [];
+      expression.setArgKey('constraints', []);
     }
-    expression.args.constraints.push(
+    expression.args.constraints?.push(
       new ColumnConstraintExpr({ kind: new AutoIncrementColumnConstraintExpr() }),
     );
   }
@@ -198,7 +199,7 @@ function generatedToAutoIncrement (expression: Expression): Expression {
 
 class SQLiteTokenizer extends Tokenizer {
   @cache
-  static get IDENTIFIERS (): (string | [string, string])[] {
+  static get IDENTIFIERS (): TokenPair[] {
     return [
       '"',
       ['[', ']'],
@@ -207,7 +208,7 @@ class SQLiteTokenizer extends Tokenizer {
   }
 
   @cache
-  static get HEX_STRINGS (): [string, string][] {
+  static get HEX_STRINGS (): TokenPair[] {
     return [
       ['x\'', '\''],
       ['X\'', '\''],
@@ -238,6 +239,25 @@ class SQLiteTokenizer extends Tokenizer {
 }
 
 class SQLiteParser extends Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   static STRING_ALIASES = true;
   static ALTER_RENAME_REQUIRES_COLUMN = false;
   static JOINS_HAVE_EQUAL_PRECEDENCE = true;
@@ -299,9 +319,34 @@ class SQLiteParser extends Parser {
       ? this.expression(AttachExpr, { this: thisNode })
       : this.expression(DetachExpr, { this: thisNode });
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 class SQLiteGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static JOIN_HINTS = false;
   static TABLE_HINTS = false;
   static QUERY_HINTS = false;
@@ -506,8 +551,7 @@ class SQLiteGenerator extends Generator {
   }
 
   dateDiffSql (expression: DateDiffExpr): string {
-    const unitNode = expression.args.unit;
-    const unit = unitNode instanceof IdentifierExpr ? unitNode.name.toUpperCase() : 'DAY';
+    const unit = (expression.text('unit') || 'DAY').toUpperCase();
 
     let sql = `(JULIANDAY(${this.sql(expression, 'this')}) - JULIANDAY(${this.sql(expression, 'expression')}))`;
 
@@ -552,7 +596,7 @@ class SQLiteGenerator extends Generator {
     }
 
     const separator = expression.args.separator;
-    return `GROUP_CONCAT(${distinctSql}${this.formatArgs([thisNode], { sep: separator })})`;
+    return `GROUP_CONCAT(${distinctSql}${this.formatArgs([thisNode, separator])})`;
   }
 
   leastSql (expression: LeastExpr): string {
@@ -599,7 +643,13 @@ class SQLiteGenerator extends Generator {
 }
 
 export class SQLite extends Dialect {
-  static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE;
+  static DIALECT_NAME = Dialects.SQLITE;
+
+  @cache
+  static get NORMALIZATION_STRATEGY () {
+    return NormalizationStrategy.CASE_INSENSITIVE;
+  }
+
   static SUPPORTS_SEMI_ANTI_JOIN = false;
   static TYPED_DIVISION = true;
   static SAFE_DIVISION = true;

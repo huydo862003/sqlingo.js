@@ -210,8 +210,9 @@ function unnest (
   const group = selectToUse.args.group;
 
   if (group) {
-    // Simulate set comparison in sqlglot
-    if ([value.args.this].length !== new Set(group.args.expressions).size || value.args.this !== group.args.expressions?.[0]) {
+    // Simulate set comparison in sqlglot (Python: {value.this} != set(group.expressions))
+    const groupExprSqls = new Set((group.args.expressions ?? []).map((e) => (e instanceof Expression ? e.sql() : String(e))));
+    if (groupExprSqls.size !== 1 || !groupExprSqls.has((value.args.this as Expression).sql())) {
       selectToUse = select(
         alias(column({
           col: value.alias,
@@ -301,34 +302,47 @@ function decorrelate (
   const value = select.selects[0];
   const valueThis = value.args.this;
   if (!(valueThis instanceof Expression)) return;
-  const keyAliases = new Map<Expression, string>();
+
+  // Use SQL string as key for structural equality (mirrors Python's expression __eq__ / __hash__)
+  const keyAliasesBySql = new Map<string, string>();
+  const keyByAliasSql = new Map<string, Expression>(); // reverse: sql -> expression node
+  const groupBySqls = new Set<string>(); // SQL strings for groupBy members
   const groupBy: Expression[] = [];
+
+  const exprInGroupBy = (expr: Expression): boolean => groupBySqls.has(expr.sql());
 
   for (const [
     key, , predicate,
   ] of keys) {
+    const keySql = key.sql();
     // if we filter on the value of the subquery, it needs to be unique
-    if (key === value.args.this) {
-      keyAliases.set(key, value.alias);
-      groupBy.push(key);
+    if (keySql === valueThis.sql()) {
+      keyAliasesBySql.set(keySql, value.alias);
+      keyByAliasSql.set(keySql, key);
+      if (!groupBySqls.has(keySql)) {
+        groupBySqls.add(keySql);
+        groupBy.push(key);
+      }
     } else {
-      if (!keyAliases.has(key)) {
-        keyAliases.set(key, nextAliasName());
+      if (!keyAliasesBySql.has(keySql)) {
+        keyAliasesBySql.set(keySql, nextAliasName());
+        keyByAliasSql.set(keySql, key);
       }
       // all predicates that are equalities must also be in the unique
       // so that we don't do a many to many join
-      if (predicate instanceof EqExpr && !groupBy.includes(key)) {
+      if (predicate instanceof EqExpr && !groupBySqls.has(keySql)) {
+        groupBySqls.add(keySql);
         groupBy.push(key);
       }
     }
   }
 
-  const parentPredicate = select.findAncestor(PredicateExpr);
+  let parentPredicate = select.findAncestor(PredicateExpr);
 
   // if the value of the subquery is not an agg or a key, we need to collect it into an array
   // so that it can be grouped. For subquery projections, we use a MAX aggregation instead.
   const aggFunc = isSubqueryProjection ? MaxExpr : ArrayAggExpr;
-  if (!value.find(AggFuncExpr) && !groupBy.includes(valueThis)) {
+  if (!value.find(AggFuncExpr) && !exprInGroupBy(valueThis)) {
     select.select(
       alias(new aggFunc({ this: valueThis }), value.alias, { quoted: false }),
       {
@@ -341,14 +355,15 @@ function decorrelate (
   // exists queries should not have any selects as it only checks if there are any rows
   // all selects will be added by the optimizer and only used for join keys
   if (parentPredicate instanceof ExistsExpr) {
-    select.args.expressions = [];
+    select.setArgKey('expressions', []);
   }
 
-  for (const [key, keyAlias] of keyAliases) {
-    if (groupBy.includes(key)) {
+  for (const [keySql, keyAlias] of keyAliasesBySql) {
+    const key = keyByAliasSql.get(keySql)!;
+    if (groupBySqls.has(keySql)) {
       // add all keys to the projections of the subquery
       // so that we can use it as a join key
-      if (parentPredicate instanceof ExistsExpr || key !== value.args.this) {
+      if (parentPredicate instanceof ExistsExpr || keySql !== (value.args.this as Expression).sql()) {
         select.select(`${key} AS ${keyAlias}`, { copy: false });
       }
     } else {
@@ -365,37 +380,37 @@ function decorrelate (
 
   if (parentPredicate instanceof ExistsExpr) {
     aliasExpr = column({
-      col: Array.from(keyAliases.values())[0],
+      col: Array.from(keyAliasesBySql.values())[0],
       table: tableAlias,
     });
-    replace(parentPredicate, `NOT ${aliasExpr} IS NULL`);
+    parentPredicate = replace(parentPredicate, `NOT ${aliasExpr} IS NULL`);
   } else if (parentPredicate instanceof AllExpr) {
     if (!opType || !(opType.prototype instanceof BinaryExpr || opType === BinaryExpr)) return;
     const predicateExpr = new opType({
       this: other,
       expression: column({ col: '_x' }),
     });
-    if (parentPredicate.parent) replace(parentPredicate.parent, `ARRAY_ALL(${aliasExpr}, _x -> ${predicateExpr})`);
+    if (parentPredicate.parent) parentPredicate = replace(parentPredicate.parent, `ARRAY_ALL(${aliasExpr}, _x -> ${predicateExpr})`);
   } else if (parentPredicate instanceof AnyExpr) {
     if (!opType || !(opType.prototype instanceof BinaryExpr || opType === BinaryExpr)) return;
-    if (groupBy.includes(value.args.this as Expression)) {
+    if (exprInGroupBy(value.args.this as Expression)) {
       const predicateExpr = new opType({
         this: other,
         expression: aliasExpr,
       });
-      if (parentPredicate.parent) replace(parentPredicate.parent, predicateExpr);
+      if (parentPredicate.parent) parentPredicate = replace(parentPredicate.parent, predicateExpr);
     } else {
       const predicateExpr = new opType({
         this: other,
         expression: column({ col: '_x' }),
       });
-      replace(parentPredicate, `ARRAY_ANY(${aliasExpr}, _x -> ${predicateExpr})`);
+      parentPredicate = replace(parentPredicate, `ARRAY_ANY(${aliasExpr}, _x -> ${predicateExpr})`);
     }
   } else if (parentPredicate instanceof InExpr) {
-    if (groupBy.includes(value.args.this as Expression)) {
-      replace(parentPredicate, `${other} = ${aliasExpr}`);
+    if (exprInGroupBy(value.args.this as Expression)) {
+      parentPredicate = replace(parentPredicate, `${other} = ${aliasExpr}`);
     } else {
-      replace(parentPredicate, `ARRAY_ANY(${aliasExpr}, _x -> _x = ${parentPredicate.args.this})`);
+      parentPredicate = replace(parentPredicate, `ARRAY_ANY(${aliasExpr}, _x -> _x = ${parentPredicate.args.this})`);
     }
   } else {
     if (isSubqueryProjection && select.parent?.alias) {
@@ -429,7 +444,7 @@ function decorrelate (
     predicate,
   ] of keys) {
     predicate.replace(true_());
-    const keyAlias = keyAliases.get(key);
+    const keyAlias = keyAliasesBySql.get(key.sql());
     if (!keyAlias) continue;
     const nested = column({
       col: keyAlias,
@@ -444,18 +459,18 @@ function decorrelate (
       continue;
     }
 
-    if (groupBy.includes(key)) {
+    if (exprInGroupBy(key)) {
       key.replace(nested);
     } else if (predicate instanceof EqExpr) {
-      if (parentPredicate) replace(parentPredicate, `(${parentPredicate} AND ARRAY_CONTAINS(${nested}, ${columnExpr}))`);
+      if (parentPredicate) parentPredicate = replace(parentPredicate, `(${parentPredicate} AND ARRAY_CONTAINS(${nested}, ${columnExpr}))`);
     } else {
       key.replace(toIdentifier('_x'));
-      if (parentPredicate) replace(parentPredicate, `(${parentPredicate} AND ARRAY_ANY(${nested}, _x -> ${predicate}))`);
+      if (parentPredicate) parentPredicate = replace(parentPredicate, `(${parentPredicate} AND ARRAY_ANY(${nested}, _x -> ${predicate}))`);
     }
   }
 
   parentSelect.join(
-    select.groupBy(...groupBy, { copy: false }),
+    select.groupBy(groupBy, { copy: false }),
     {
       on: keys.filter(([
         , , predicate,

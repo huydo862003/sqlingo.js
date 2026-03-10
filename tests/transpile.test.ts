@@ -4,6 +4,7 @@ import {
 import {
   transpile, parseOne, ParseError, ErrorLevel,
 } from '../src/index';
+import { NormalizeFunctions } from '../src/dialects/dialect';
 import {
   loadSqlFixtures, loadSqlFixturePairs,
 } from './helpers';
@@ -184,7 +185,7 @@ class TestTranspile {
       read: 'presto',
       write: 'presto',
       identity: true,
-      normalizeFunctions: 'lower',
+      normalizeFunctions: NormalizeFunctions.LOWER,
     })[0]).toBe(
       'cardinality(x)',
     );
@@ -212,7 +213,7 @@ class TestTranspile {
           pretty: true,
         })[0];
         expect(generated).toBe(pretty);
-        expect(parseOne(sql)).toEqual(parseOne(pretty));
+        expect(parseOne(sql).equals(parseOne(pretty))).toBe(true);
       }
     }
   }

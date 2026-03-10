@@ -5,6 +5,7 @@ import type {
   GeneratedAsIdentityColumnConstraintExpr,
   GeneratedAsRowColumnConstraintExpr,
   ReadParquetExpr,
+  RenameColumnExpr,
 } from '../expressions';
 import {
   TryCastExpr,
@@ -50,16 +51,17 @@ import {
   JsonKeysExpr,
   CreateExpr,
   PartitionedByPropertyExpr,
+  SessionUserExpr,
 } from '../expressions';
-import type { Generator } from '../generator';
+import { Generator } from '../generator';
 import { seqGet } from '../helper';
-import type { Parser } from '../parser';
+import { Parser } from '../parser';
 import type { TokenPair } from '../tokens';
 import { TokenType } from '../tokens';
 import {
   ctasWithTmpTablesToCreateTmpView, movePartitionedByToSchemaColumns, preprocess, removeUniqueConstraints,
 } from '../transforms';
-import { DialectTyping } from '../typing';
+import { SparkTyping } from '../typing/spark';
 import {
   arrayAppendSql,
   dateDeltaToBinaryIntervalOp,
@@ -179,6 +181,25 @@ class SparkTokenizer extends Spark2.Tokenizer {
 }
 
 class SparkParser extends Spark2.Parser {
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Spark2.Parser.NO_PAREN_FUNCTIONS };
+    noParenFunctions[TokenType.SESSION_USER] = SessionUserExpr;
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
   @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
@@ -261,9 +282,19 @@ class SparkParser extends Spark2.Parser {
     const aggregateExpr = this.parseFunction() || this.parseDisjunction();
     return this.parseAlias(aggregateExpr);
   }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Spark2.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
 }
 
 class SparkGenerator extends Spark2.Generator {
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static SUPPORTS_TO_NUMBER = true;
   static PAD_FILL_PATTERN_IS_REQUIRED = false;
   static SUPPORTS_CONVERT_TIMEZONE = true;
@@ -390,6 +421,10 @@ class SparkGenerator extends Spark2.Generator {
     return `{${expression.name}}`;
   }
 
+  renameColumnSql (expression: RenameColumnExpr): string {
+    return Generator.prototype.renameColumnSql.call(this, expression);
+  }
+
   readParquetSql (expression: ReadParquetExpr): string {
     if (expression.args.expressions?.length !== 1) {
       this.unsupported('READ_PARQUET with multiple arguments is not supported');
@@ -401,12 +436,13 @@ class SparkGenerator extends Spark2.Generator {
 }
 
 export class Spark extends Spark2 {
+  static DIALECT_NAME = Dialects.SPARK;
   static SUPPORTS_ORDER_BY_ALL = true;
   static SUPPORTS_NULL_TYPE = true;
   static ARRAY_FUNCS_PROPAGATES_NULLS = true;
   @cache
   static get EXPRESSION_METADATA () {
-    return new Map(DialectTyping.EXPRESSION_METADATA);
+    return new Map(SparkTyping.EXPRESSION_METADATA);
   }
 
   static Tokenizer = SparkTokenizer;

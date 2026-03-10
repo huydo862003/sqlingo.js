@@ -397,6 +397,7 @@ export function unqualifyUnnest (expression: Expression): Expression {
         if (
           leftmostPart
           && leftmostPart.argKey !== 'this'
+          && leftmostPart.args
           && unnestAliases.has(leftmostPart.args.this as string)
         ) {
           leftmostPart.pop();
@@ -550,8 +551,8 @@ export function unnestToExplode (
   return expression;
 }
 
-export function moveCtesToTopLevel<T extends SelectExpr> (expression: T): T {
-  let topLevelWith = expression.args.with;
+export function moveCtesToTopLevel<T extends Expression> (expression: T): T {
+  let topLevelWith = expression.getArgKey('with') as WithExpr | undefined;
   for (const innerWith of expression.findAll(WithExpr)) {
     if (innerWith.parent === expression) continue;
 
@@ -655,31 +656,31 @@ export function explodeProjectionToUnnest (
       );
 
       for (const select of [...expression.selects]) {
-        const explode = select.find(ExplodeExpr);
+        let explode = select.find(ExplodeExpr);
 
         if (explode) {
-          let posAlias;
-          let explodeAlias;
+          let posAlias: string | IdentifierExpr | undefined;
+          let explodeAlias: string | IdentifierExpr | undefined;
           let aliasExpr: Expression;
 
           if (select instanceof AliasExpr) {
             explodeAlias = select.alias;
             aliasExpr = select;
           } else if (select instanceof AliasesExpr) {
-            posAlias = select.aliases[0];
-            explodeAlias = select.aliases[1];
+            posAlias = select.aliases[0] as IdentifierExpr;
+            explodeAlias = select.aliases[1] as IdentifierExpr;
             aliasExpr = select.replace(new AliasExpr({
               this: select.args.this,
               alias: '',
             }));
           } else {
-            aliasExpr = select.replace(new AliasExpr({
-              this: select,
-              alias: '',
-            }));
+            const newAlias = new AliasExpr({ alias: '' });
+            select.replace(newAlias);
+            newAlias.setArgKey('this', select);
+            aliasExpr = newAlias;
             const foundExplode = aliasExpr.find(ExplodeExpr);
             if (foundExplode) {
-              // Re-assign explode pointer to the one in the new alias tree
+              explode = foundExplode;
             }
           }
 
@@ -724,53 +725,43 @@ export function explodeProjectionToUnnest (
             quoted: false,
           }));
 
-          const seriesTableAlias = series.args.alias;
+          const seriesTableAlias = (series.args.alias as TableAliasExpr | undefined)?.args.this as IdentifierExpr | undefined;
+          const unnestSourceAliasIdent = toIdentifier(unnestSourceAlias);
+          const mkCol = (colName: string | IdentifierExpr | undefined, tableAlias: Expression | string | undefined): ColumnExpr =>
+            new ColumnExpr({
+              this: isInstanceOf(colName, IdentifierExpr) ? colName.copy() : toIdentifier(colName ?? ''),
+              table: typeof tableAlias === 'string' ? toIdentifier(tableAlias) : tableAlias?.copy(),
+            });
+
           const column = new IfExpr({
-            this: new ColumnExpr({
-              this: seriesAlias,
-              table: seriesTableAlias,
-            }).eq(
-              new ColumnExpr({
-                this: posAlias,
-                table: unnestSourceAlias,
-              }),
-            ),
-            true: new ColumnExpr({
-              this: explodeAlias,
-              table: unnestSourceAlias,
-            }),
+            this: mkCol(seriesAlias, seriesTableAlias).eq(mkCol(posAlias, unnestSourceAliasIdent)),
+            true: mkCol(explodeAlias, unnestSourceAliasIdent),
           });
 
           explode.replace(column);
 
           if (isPosexplode) {
             const exprs = expression.args.expressions;
-            const index = exprs?.indexOf(aliasExpr) || -1;
+            const index = exprs?.indexOf(aliasExpr) ?? -1;
             exprs?.splice(index + 1, 0, alias(
               new IfExpr({
-                this: new ColumnExpr({
-                  this: seriesAlias,
-                  table: seriesTableAlias,
-                }).eq(
-                  new ColumnExpr({
-                    this: posAlias,
-                    table: unnestSourceAlias,
-                  }),
-                ),
-                true: new ColumnExpr({
-                  this: posAlias,
-                  table: unnestSourceAlias,
-                }),
+                this: mkCol(seriesAlias, seriesTableAlias).eq(mkCol(posAlias, unnestSourceAliasIdent)),
+                true: mkCol(posAlias, unnestSourceAliasIdent),
               }),
               isInstanceOf(posAlias, IdentifierExpr) ? posAlias : typeof posAlias === 'string' ? posAlias : undefined,
             ));
+            // Re-set to update parent/index references on all elements after splice
+            expression.setArgKey('expressions', exprs);
           }
 
           if (arrays.length === 0) {
             if (expression.args.from) {
-              expression.join(series, { joinType: JoinExprKind.CROSS });
+              expression.join(series, {
+                joinType: JoinExprKind.CROSS,
+                copy: false,
+              });
             } else {
-              expression.from(series);
+              expression.from(series, { copy: false });
             }
           }
 
@@ -789,44 +780,38 @@ export function explodeProjectionToUnnest (
               unnestSourceAlias,
               { table: [isInstanceOf(explodeAlias, IdentifierExpr) ? explodeAlias : typeof explodeAlias === 'string' ? explodeAlias : ''] },
             ),
-            { joinType: JoinExprKind.CROSS },
+            {
+              joinType: JoinExprKind.CROSS,
+              copy: false,
+            },
           );
 
-          let limit: SubExpr | ArraySizeExpr = size;
+          let limit: SubExpr | ArraySizeExpr | ParenExpr = size;
           if (indexOffset !== 1) {
-            limit = new SubExpr({
-              this: size,
-              expression: LiteralExpr.number(1),
+            limit = new ParenExpr({
+              this: new SubExpr({
+                this: size,
+                expression: LiteralExpr.number(1),
+              }),
             });
           }
 
           expression.where(
-            new ColumnExpr({
-              this: seriesAlias,
-              table: seriesTableAlias,
-            })
-              .eq(new ColumnExpr({
-                this: posAlias,
-                table: unnestSourceAlias,
-              }))
+            mkCol(seriesAlias, seriesTableAlias)
+              .eq(mkCol(posAlias, unnestSourceAliasIdent))
               .or(
                 new AndExpr({
                   this: new GtExpr({
-                    this: new ColumnExpr({
-                      this: seriesAlias,
-                      table: seriesTableAlias,
-                    }),
+                    this: mkCol(seriesAlias, seriesTableAlias),
                     expression: limit,
                   }),
                   expression: new EqExpr({
-                    this: new ColumnExpr({
-                      this: posAlias,
-                      table: unnestSourceAlias,
-                    }),
-                    expression: limit,
+                    this: mkCol(posAlias, unnestSourceAliasIdent),
+                    expression: limit.copy(),
                   }),
                 }),
               ),
+            { copy: false },
           );
         }
       }
@@ -843,7 +828,7 @@ export function explodeProjectionToUnnest (
             expression: LiteralExpr.number(1 - indexOffset),
           });
         }
-        narrowInstanceOf(narrowInstanceOf(series.args.this, UnnestExpr)?.args.expressions?.[0], Expression)?.setArgKey('end', end);
+        narrowInstanceOf(series.args.expressions?.[0], Expression)?.setArgKey('end', end);
       }
     }
     return expression;
@@ -958,17 +943,17 @@ export function eliminateSemiAndAntiJoins (expression: Expression): Expression {
     for (const join of [...joins]) {
       assertIsInstanceOf(join, JoinExpr);
       const on = join.args.on;
-      if (on && (join.kind === JoinExprKind.SEMI || join.kind === JoinExprKind.ANTI)) {
+      if (on && (join.args.kind === JoinExprKind.SEMI || join.args.kind === JoinExprKind.ANTI)) {
         const subquery = select('1').from(join.args.this)
           .where(on);
         let exists: Expression = new ExistsExpr({ this: subquery });
 
-        if (join.kind === JoinExprKind.ANTI) {
+        if (join.args.kind === JoinExprKind.ANTI) {
           exists = (exists as ExistsExpr).not();
         }
 
         join.pop();
-        expression.where(exists);
+        expression.where(exists, { copy: false });
       }
     }
   }
@@ -989,7 +974,7 @@ export function eliminateFullOuterJoin (expression: Expression): Expression {
         index,
         join,
       }))
-      .filter(({ join }) => join.side === JoinExprKind.FULL);
+      .filter(({ join }) => join.args.side === JoinExprKind.FULL);
 
     if (fullOuterJoins.length === 1) {
       const expressionCopy = expression.copy();

@@ -1,6 +1,7 @@
 import {
   Generator,
 } from '../generator';
+import { formatTime } from '../time';
 import {
   Parser, buildExtractJsonWithPath, buildCoalesce,
 } from '../parser';
@@ -34,6 +35,7 @@ import {
   TableExpr,
   IntoExpr,
   LiteralExpr,
+  NegExpr,
   ColumnExpr,
   alias,
   var_,
@@ -143,6 +145,10 @@ import {
   InExpr,
   AddExpr,
   DropExprKind,
+  TableAliasExpr,
+  AliasesExpr,
+  StarExpr,
+  SessionUserExpr,
 } from '../expressions';
 import {
   ensureList, seqGet,
@@ -150,7 +156,7 @@ import {
 import {
   eliminateDistinctOn, eliminateQualify, eliminateSemiAndAntiJoins, preprocess, unnestGenerateDateArrayUsingRecursiveCte,
 } from '../transforms';
-import { DialectTyping } from '../typing';
+import { TSQLTyping } from '../typing/tsql';
 import {
   narrowInstanceOf, cache,
 } from '../port_internals';
@@ -168,6 +174,7 @@ import {
   mapDatePart,
   Dialect, NormalizationStrategy, Dialects,
   renameFunc,
+  NullOrderingSupported,
 } from './dialect';
 
 const FULL_FORMAT_TIME_MAPPING: Record<string, string> = {
@@ -222,7 +229,7 @@ const BIT_TYPES: Set<typeof Expression> = new Set([
   AliasExpr,
 ]);
 
-const OPTIONS: Record<string, (string | string[])[] | null> = {
+const OPTIONS: Record<string, (string | string[])[] | undefined> = {
   DISABLE_OPTIMIZED_PLAN_FORCING: [],
   FAST: [],
   IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX: [],
@@ -258,13 +265,50 @@ const OPTIONS: Record<string, (string | string[])[] | null> = {
   USE: ['PLAN'],
 };
 
-const XML_OPTIONS: Record<string, (string | string[])[] | null> = {
+const XML_OPTIONS: Record<string, (string | string[])[] | undefined> = {
   AUTO: [],
   EXPLICIT: [],
   TYPE: [],
   ELEMENTS: ['XSINIL', 'ABSENT'],
   BINARY: ['BASE64'],
 };
+
+const DEFAULT_START_DATE = new Date(Date.UTC(1900, 0, 1));
+
+function buildTsqlDateDiff (unitMapping: Record<string, string>, bigInt = false) {
+  return (args: Expression[]): DateDiffExpr => {
+    let unit = seqGet(args, 0);
+    if (unit && unitMapping) {
+      const unitName = unit.name?.toLowerCase() ?? '';
+      unit = var_((unitMapping[unitName] ?? unit.name ?? unitName).toUpperCase());
+    }
+    let startDate = seqGet(args, 1);
+    if (startDate?.isNumber) {
+      const rawStr = startDate instanceof NegExpr
+        ? '-' + String((startDate.args.this as LiteralExpr).args.this)
+        : String((startDate as LiteralExpr).args.this);
+      if (!rawStr.includes('.')) {
+        const days = Number(rawStr);
+        const adds = new Date(DEFAULT_START_DATE.getTime() + days * 86400000);
+        const str = adds.toISOString().split('T')[0];
+        startDate = LiteralExpr.string(str);
+      } else {
+        return new DateDiffExpr({
+          this: seqGet(args, 2),
+          expression: startDate,
+          unit,
+          bigInt,
+        });
+      }
+    }
+    return new DateDiffExpr({
+      this: new TimeStrToTimeExpr({ this: seqGet(args, 2) }),
+      expression: new TimeStrToTimeExpr({ this: startDate }),
+      unit,
+      bigInt,
+    });
+  };
+}
 
 function buildBuiltinFormattedTime (
   fullFormatMapping: boolean,
@@ -308,7 +352,7 @@ function buildFormat (args: Expression[]): NumberToStrExpr | TimeToStrExpr {
   if (isNumberFmt) {
     return new NumberToStrExpr({
       this: thisExpr,
-      format: fmt?.name,
+      format: fmt,
       culture,
     });
   }
@@ -330,7 +374,7 @@ function buildFormat (args: Expression[]): NumberToStrExpr | TimeToStrExpr {
   });
 }
 
-function buildEomonth (args: Expression[]): LastDayExpr {
+function buildEoMonth (args: Expression[]): LastDayExpr {
   const date = new TsOrDsToDateExpr({ this: seqGet(args, 0) });
   const monthLag = seqGet(args, 1);
 
@@ -342,7 +386,7 @@ function buildEomonth (args: Expression[]): LastDayExpr {
     thisExpr = new DateAddExpr({
       this: date,
       expression: monthLag,
-      unit: unit ? var_(unit) : undefined,
+      unit: unit ? var_(unit.toUpperCase()) : undefined,
     });
   }
 
@@ -463,6 +507,48 @@ function buildDatetrunc (args: Expression[]): TimestampTruncExpr {
 }
 
 function qualifyDerivedTableOutputs (expression: Expression): Expression {
+  const tableAlias = expression.args.alias;
+
+  if (
+    (expression instanceof CteExpr || expression instanceof SubqueryExpr)
+    && tableAlias instanceof TableAliasExpr
+    && !tableAlias.columns?.length
+  ) {
+    const query = expression.args.this;
+    if (!(query instanceof SelectExpr)) return expression;
+
+    const unaliasedColumnIndexes = (query.selects ?? [])
+      .map((c, i) => (c instanceof ColumnExpr && !c.alias ? i : -1))
+      .filter((i) => i !== -1);
+
+    const newSelections = (query.selects ?? []).map((selection, i) => {
+      if (
+        selection instanceof SubqueryExpr
+        || selection instanceof AliasExpr
+        || selection instanceof AliasesExpr
+        || selection.isStar
+      ) {
+        return selection;
+      }
+      return alias(selection, selection.outputName || `_col_${i}`, { copy: false }) as Expression;
+    });
+    query.setArgKey('expressions', newSelections);
+
+    const querySelects = query.selects ?? [];
+    for (const selectIndex of unaliasedColumnIndexes) {
+      const aliasNode = querySelects[selectIndex];
+      if (aliasNode instanceof AliasExpr) {
+        const column = aliasNode.args.this;
+        if (column instanceof ColumnExpr && column.args.this instanceof IdentifierExpr) {
+          const aliasIdent = aliasNode.args.alias;
+          if (aliasIdent instanceof IdentifierExpr) {
+            aliasIdent.setArgKey('quoted', column.args.this.quoted);
+          }
+        }
+      }
+    }
+  }
+
   return expression;
 }
 
@@ -481,8 +567,8 @@ function formatSql (this: Generator, expression: NumberToStrExpr | TimeToStrExpr
 
   if (!(expression instanceof NumberToStrExpr)) {
     if (fmt?.isString) {
-      const mappedFmt = TSQL.INVERSE_TIME_MAPPING[fmt.name] ?? fmt.name;
-      fmtSql = this.sql(LiteralExpr.string(mappedFmt));
+      const mappedFmt = formatTime(fmt.name, TSQL.INVERSE_TIME_MAPPING, TSQL.INVERSE_TIME_TRIE);
+      fmtSql = this.sql(LiteralExpr.string(mappedFmt!));
     } else {
       fmtSql = this.formatTime?.(expression) ?? (fmt ? this.sql(fmt) : '');
     }
@@ -593,6 +679,21 @@ export class TSQLTokenizer extends Tokenizer {
 }
 
 export class TSQLParser extends Parser {
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    noParenFunctions[TokenType.SESSION_USER] = SessionUserExpr;
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([...[...Parser.ID_VAR_TOKENS].filter((token) => token !== TokenType.BEGIN)]);
+  }
+
   static SET_REQUIRES_ASSIGNMENT_DELIMITER = false;
   static LOG_DEFAULTS_TO_LN = true;
   static STRING_ALIASES = true;
@@ -612,10 +713,6 @@ export class TSQLParser extends Parser {
   }
 
   // T-SQL does not allow BEGIN to be used as an identifier
-  @cache
-  static get ID_VAR_TOKENS (): Set<TokenType> {
-    return new Set([...Array.from(Parser.ID_VAR_TOKENS)].filter((t) => t !== TokenType.BEGIN));
-  }
 
   @cache
   static get ALIAS_TOKENS (): Set<TokenType> {
@@ -624,7 +721,7 @@ export class TSQLParser extends Parser {
 
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Array.from(Parser.TABLE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
+    return new Set([...[...Parser.TABLE_ALIAS_TOKENS].filter((token) => token !== TokenType.BEGIN)]);
   }
 
   @cache
@@ -658,15 +755,16 @@ export class TSQLParser extends Parser {
         bigInt: true,
       }),
       DATEADD: buildDateDelta(DateAddExpr, DATE_DELTA_INTERVAL),
-      DATEDIFF: buildDateDelta(DateDiffExpr, DATE_DELTA_INTERVAL),
-      DATEDIFF_BIG: (args: Expression[]) => {
-        const expr = buildDateDelta(DateDiffExpr, DATE_DELTA_INTERVAL)(args);
-        expr.setArgKey('bigInt', true);
-        return expr;
-      },
+      DATEDIFF: buildTsqlDateDiff(DATE_DELTA_INTERVAL),
+      DATEDIFF_BIG: buildTsqlDateDiff(DATE_DELTA_INTERVAL, true),
       DATENAME: buildBuiltinFormattedTime(true),
+      DATEFROMPARTS: (args: Expression[]) => new DateFromPartsExpr({
+        year: seqGet(args, 0),
+        month: seqGet(args, 1),
+        day: seqGet(args, 2),
+      }),
       DATETIMEFROMPARTS: buildDatetimeFromParts,
-      EOMONTH: buildEomonth,
+      EOMONTH: buildEoMonth,
       FORMAT: buildFormat,
       GETDATE: (args: unknown[]) => CurrentTimestampExpr.fromArgList(args),
       HASHBYTES: buildHashBytes,
@@ -738,6 +836,11 @@ export class TSQLParser extends Parser {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.DECLARE]: function (this: Parser) {
         return (this as TSQLParser).parseDeclare();
+      },
+      [TokenType.DCOLON]: function (this: Parser) {
+        return (this as TSQLParser).expression(ScopeResolutionExpr, {
+          expression: (this as TSQLParser).parseFunction() || (this as TSQLParser).parseVar({ anyToken: true }),
+        });
       },
     };
   }
@@ -899,11 +1002,11 @@ export class TSQLParser extends Parser {
     return this.parseCsv(parseForXml);
   }
 
+  /**
+   * T-SQL supports alias = expression in SELECT.
+   * Converts EQ projections into Aliases.
+   */
   parseProjections (): Expression[] {
-    /**
-     * T-SQL supports alias = expression in SELECT.
-     * Converts EQ projections into Aliases.
-     */
     return super.parseProjections().map((projection) => {
       if (projection instanceof EqExpr && projection.args.this instanceof ColumnExpr) {
         return alias(projection.args.expression as Expression, projection.args.this.args.this as IdentifierExpr, { copy: false });
@@ -959,15 +1062,20 @@ export class TSQLParser extends Parser {
   parseReturns (): ReturnsPropertyExpr {
     const table = this.parseIdVar({
       anyToken: false,
-      tokens: (this._constructor as unknown as typeof TSQLParser).RETURNS_TABLE_TOKENS,
+      tokens: (this._constructor as typeof TSQLParser).RETURNS_TABLE_TOKENS,
     });
     const returns = super.parseReturns();
     returns.setArgKey('table', table);
     return returns;
   }
 
-  parseConvert (strict: boolean, options: { safe?: boolean } = {}): Expression | undefined {
-    const { safe } = options;
+  parseConvert (options: {
+    strict: boolean;
+    safe?: boolean;
+  }): Expression | undefined {
+    const {
+      safe,
+    } = options;
     const thisNode = this.parseTypes();
     this.match(TokenType.COMMA);
     const args = [thisNode, ...this.parseCsv(() => this.parseAssignment())];
@@ -984,7 +1092,7 @@ export class TSQLParser extends Parser {
     if (this.match(TokenType.EQ)) {
       columnDef.setArgKey('default', this.parseDisjunction());
     }
-    if (this.matchTexts((this._constructor as unknown as typeof TSQLParser).COLUMN_DEFINITION_MODES)) {
+    if (this.matchTexts((this._constructor as typeof TSQLParser).COLUMN_DEFINITION_MODES)) {
       columnDef.setArgKey('output', this.prev?.text);
     }
     return columnDef;
@@ -1165,8 +1273,27 @@ export class TSQLParser extends Parser {
     return this.parseOrdered();
   }
 }
-
 export class TSQLGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static LIMIT_IS_TOP = true;
   static QUERY_HINTS = false;
   static RETURNING_END = false;
@@ -1176,7 +1303,11 @@ export class TSQLGenerator extends Generator {
   static COMPUTED_COLUMN_WITH_TYPE = false;
   static CTE_RECURSIVE_KEYWORD_REQUIRED = false;
   static ENSURE_BOOLS = true;
-  static NULL_ORDERING_SUPPORTED = undefined;
+  @cache
+  static get NULL_ORDERING_SUPPORTED () {
+    return NullOrderingSupported.UNSUPPORTED;
+  }
+
   static SUPPORTS_SINGLE_ARG_CONCAT = false;
   static TABLESAMPLE_SEED_KEYWORD = 'REPEATABLE';
   static SUPPORTS_SELECT_INTO = true;
@@ -1343,6 +1474,22 @@ export class TSQLGenerator extends Generator {
       ],
       [UuidExpr, () => 'NEWID()'],
       [DateFromPartsExpr, renameFunc('DATEFROMPARTS')],
+      [
+        IntoExpr,
+        function (this: Generator, e: IntoExpr) {
+        // TSQL SELECT INTO only supports INTO <table>, not INTO with variable list (Oracle syntax)
+          if (e.args.expressions && 0 < e.args.expressions.length) {
+            this.unsupported('Oracle-style SELECT INTO with variables is not supported in TSQL');
+          }
+          if (e.args.temporary) {
+            const table = e.find(TableExpr);
+            if (table && table.args.this instanceof IdentifierExpr) {
+              table.args.this.setArgKey('temporary', true);
+            }
+          }
+          return `${this.seg('INTO')} ${this.sql(e, 'this')}`;
+        },
+      ],
     ]));
 
     transforms.delete(ReturnsPropertyExpr);
@@ -1446,15 +1593,13 @@ export class TSQLGenerator extends Generator {
 
   extractSql (expression: ExtractExpr): string {
     const part = expression.args.this;
-    const partName = (part instanceof LiteralExpr || part instanceof IdentifierExpr)
-      ? part.name.toUpperCase()
-      : '';
+    const partName = typeof part === 'string' ? part.toUpperCase() : part?.name?.toUpperCase() ?? '';
     const name = DATE_PART_UNMAPPING[partName] || part;
 
     return this.func('DATEPART', [name, expression.args.expression]);
   }
 
-  timefrompartsSql (expression: TimeFromPartsExpr): string {
+  timeFromPartsSql (expression: TimeFromPartsExpr): string {
     const nano = expression.args.nano;
     if (nano !== undefined) {
       nano.pop();
@@ -1571,7 +1716,7 @@ export class TSQLGenerator extends Generator {
       const properties = expression.args.properties || new PropertiesExpr({ expressions: [] });
       const isTemp = (properties.args.expressions ?? []).some((p) => p instanceof TemporaryPropertyExpr);
 
-      const selectInto = new SelectExpr({ expressions: [LiteralExpr.string('*')] })
+      const selectInto = new SelectExpr({ expressions: [new StarExpr()] })
         .from(alias(ctasExpression, 'temp', { table: true }));
 
       selectInto.setArgKey('into', new IntoExpr({
@@ -1629,7 +1774,7 @@ export class TSQLGenerator extends Generator {
     return renameFunc(funcName).call(this, expression);
   }
 
-  datediffSql (expression: DateDiffExpr): string {
+  dateDiffSql (expression: DateDiffExpr): string {
     const funcName = expression.args.bigInt ? 'DATEDIFF_BIG' : 'DATEDIFF';
     return dateDeltaSql(funcName).call(this, expression);
   }
@@ -1777,18 +1922,24 @@ export class TSQLGenerator extends Generator {
 }
 
 export class TSQL extends Dialect {
+  static DIALECT_NAME = Dialects.TSQL;
   static SUPPORTS_SEMI_ANTI_JOIN = false;
   static LOG_BASE_FIRST = false;
   static TYPED_DIVISION = true;
   static CONCAT_COALESCE = true;
-  static NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE;
+
+  @cache
+  static get NORMALIZATION_STRATEGY () {
+    return NormalizationStrategy.CASE_INSENSITIVE;
+  }
+
   static ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN = false;
 
   static TIME_FORMAT = '\'yyyy-mm-dd hh:mm:ss\'';
 
   @cache
   static get EXPRESSION_METADATA () {
-    return new Map(DialectTyping.EXPRESSION_METADATA);
+    return new Map(TSQLTyping.EXPRESSION_METADATA);
   }
 
   @cache

@@ -46,22 +46,29 @@ import {
   ExtractExpr, HexStringExpr, GenerateSeriesExpr, GenerateDateArrayExpr,
   GenerateTimestampArrayExpr, IfExpr, LiteralExpr, NullExpr, NullifExpr,
   PropertyEqExpr, StructExpr, SumExpr, TimestampExpr, ToMapExpr, UnnestExpr,
-  SubqueryExpr,
+  SubqueryExpr, NegExpr, BitwiseNotExpr, ParenExpr, AliasExpr, NotExpr,
 } from '../expressions/expressions';
 import type { TypeAnnotator } from '../optimizer';
 
-export const TIMESTAMP_EXPRESSIONS = new Set<typeof Expression>([
-  CurrentTimestampExpr,
-  StrToTimeExpr,
-  TimeStrToTimeExpr,
-  TimestampAddExpr,
-  TimestampSubExpr,
-  UnixToTimeExpr,
-]);
-
-export type ExpressionMetadata = Map<typeof Expression, Record<string, unknown>>;
+export type ExpressionMetadata = Map<typeof Expression, {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  annotator?: (annotator: TypeAnnotator, expression: any) => void;
+  returns?: DataTypeExprKind | string;
+}>;
 
 export class DialectTyping {
+  @cache
+  static get TIMESTAMP_EXPRESSIONS (): Set<typeof Expression> {
+    return new Set([
+      CurrentTimestampExpr,
+      StrToTimeExpr,
+      TimeStrToTimeExpr,
+      TimestampAddExpr,
+      TimestampSubExpr,
+      UnixToTimeExpr,
+    ]);
+  }
+
   @cache
   static get EXPRESSION_METADATA (): ExpressionMetadata {
     const map: ExpressionMetadata = new Map();
@@ -185,7 +192,7 @@ export class DialectTyping {
     ], { returns: 'TIME' });
     map.set(TimestampLtzFromPartsExpr, { returns: 'TIMESTAMPLTZ' });
     extend([CurrentTimestampLtzExpr, TimestampTzFromPartsExpr], { returns: 'TIMESTAMPTZ' });
-    TIMESTAMP_EXPRESSIONS.forEach((type) => map.set(type, { returns: 'TIMESTAMP' }));
+    DialectTyping.TIMESTAMP_EXPRESSIONS.forEach((type) => map.set(type, { returns: 'TIMESTAMP' }));
     extend([
       DayExpr,
       DayOfMonthExpr,
@@ -295,6 +302,11 @@ export class DialectTyping {
     map.set(ToMapExpr, { annotator: (s: TypeAnnotator, e: ToMapExpr) => s.annotateToMap(e) });
     map.set(UnnestExpr, { annotator: (s: TypeAnnotator, e: UnnestExpr) => s.annotateUnnest(e) });
     map.set(SubqueryExpr, { annotator: (s: TypeAnnotator, e: SubqueryExpr) => s.annotateSubquery(e) });
+    map.set(NotExpr, { annotator: (s: TypeAnnotator, e: NotExpr) => s.annotateUnary(e) });
+    map.set(NegExpr, { annotator: (s: TypeAnnotator, e: NegExpr) => s.annotateUnary(e) });
+    map.set(BitwiseNotExpr, { annotator: (s: TypeAnnotator, e: BitwiseNotExpr) => s.annotateUnary(e) });
+    map.set(ParenExpr, { annotator: (s: TypeAnnotator, e: ParenExpr) => s.annotateUnary(e) });
+    map.set(AliasExpr, { annotator: (s: TypeAnnotator, e: AliasExpr) => s.annotateUnary(e) });
 
     return map;
   }

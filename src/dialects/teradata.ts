@@ -14,6 +14,9 @@ import type {
   TryCastExpr,
   FuncExpr,
   JsonExtractExpr,
+  TableSampleExpr,
+  SchemaExpr,
+  CreateExpr,
 } from '../expressions';
 import {
   Md5Expr,
@@ -24,7 +27,6 @@ import {
   ModExpr,
   SelectExpr,
   StrToTimeExpr,
-  TableSampleExpr,
   TimeToStrExpr,
   DataTypeExprKind,
   ArgMaxExpr,
@@ -56,13 +58,15 @@ import {
   VarExpr,
   cast,
   QueryBandExpr,
+  ArraySizeExpr,
+  FormatPhraseExpr,
+  PropertiesExpr,
 } from '../expressions';
 import { seqGet } from '../helper';
 import {
   eliminateDistinctOn, eliminateSemiAndAntiJoins, preprocess,
 } from '../transforms';
 import {
-  noTablesampleSql,
   maxOrGreatest,
   minOrLeast,
   strPositionSql,
@@ -149,6 +153,25 @@ export class TeradataTokenizer extends Tokenizer {
 }
 
 export class TeradataParser extends Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   static TABLESAMPLE_CSV = true;
   static VALUES_FOLLOWED_BY_PAREN = false;
 
@@ -246,6 +269,11 @@ export class TeradataParser extends Parser {
   static get FUNCTIONS (): Record<string, (args: Expression[]) => Expression> {
     return {
       ...Parser.FUNCTIONS,
+      CARDINALITY: (args: Expression[]) => ArraySizeExpr.fromArgList(args),
+      RANDOM: (args: Expression[]) => new RandExpr({
+        lower: seqGet(args, 0),
+        upper: seqGet(args, 1),
+      }),
       DATE: (args: Expression[]) => new CurrentDateExpr({ expressions: args }),
       HASHMD5: (args: Expression[]) => new Md5Expr({ this: seqGet(args, 0) }),
       LOG: (args: Expression[]) => new LogExpr({
@@ -309,6 +337,38 @@ export class TeradataParser extends Parser {
     });
   }
 
+  override parseFunction (options: {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    functions?: Record<string, Function>;
+    anonymous?: boolean;
+    optionalParens?: boolean;
+    anyToken?: boolean;
+  } = {}): Expression | undefined {
+    // Don't parse as function call when followed by (FORMAT - it's a format phrase
+    if (
+      this.next
+      && this.next.tokenType === TokenType.L_PAREN
+      && this.index + 2 < this.tokens.length
+      && this.tokens[this.index + 2]?.tokenType === TokenType.FORMAT
+    ) {
+      return undefined;
+    }
+    return super.parseFunction(options);
+  }
+
+  override parseColumnOps (thisExpr?: Expression): Expression | undefined {
+    const result = super.parseColumnOps(thisExpr);
+    if (this.matchPair(TokenType.L_PAREN, TokenType.FORMAT)) {
+      const fmtString = this.parseString();
+      this.matchRParen();
+      return this.expression(FormatPhraseExpr, {
+        this: result,
+        format: fmtString,
+      });
+    }
+    return result;
+  }
+
   public parseQueryBand (): Expression | undefined {
     // Parse: SET QUERY_BAND = 'key=value;key2=value2;' FOR SESSION|TRANSACTION
   // Also supports: SET QUERY_BAND = 'key=value;' UPDATE FOR SESSION|TRANSACTION
@@ -344,9 +404,34 @@ export class TeradataParser extends Parser {
       update: update,
     });
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 export class TeradataGenerator extends Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static readonly SELECT_KINDS: string[] = [];
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static LIMIT_IS_TOP = true;
   static JOIN_HINTS = false;
   static TABLE_HINTS = false;
@@ -390,7 +475,9 @@ export class TeradataGenerator extends Generator {
     m.set(ArgMinExpr, renameFunc('MIN_BY'));
     m.set(CurrentDateExpr, () => 'DATE');
     m.set(CurrentTimeExpr, () => 'TIME');
-    m.set(CurrentTimestampExpr, () => 'CURRENT_TIMESTAMP');
+    m.set(CurrentTimestampExpr, function (this: Generator, e) {
+      return (this as TeradataGenerator).currentTimestampSql(e as CurrentTimestampExpr);
+    });
     m.set(MaxExpr, function (this: Generator, e) {
       return maxOrGreatest.call(this, e as MaxExpr);
     });
@@ -421,7 +508,6 @@ export class TeradataGenerator extends Generator {
     m.set(StrToTimeExpr, function (this: Generator, e) {
       return this.castSql(e as StrToTimeExpr);
     });
-    m.set(TableSampleExpr, noTablesampleSql);
     m.set(TimeToStrExpr, function (this: Generator, e) {
       return this.func('TO_CHAR', [(e as TimeToStrExpr).args.this, this.formatTime(e as TimeToStrExpr)]);
     });
@@ -456,6 +542,24 @@ export class TeradataGenerator extends Generator {
     });
   }
 
+  public createableSql (expression: CreateExpr, locations: Map<string, Expression[]>): string {
+    const kind = this.sql(expression, 'kind').toUpperCase();
+    const postName = locations.get(PropertiesLocation.POST_NAME);
+    if (kind === 'TABLE' && postName?.length) {
+      const thisName = this.sql((expression.args.this as SchemaExpr).args.this);
+      const thisProperties = this.properties(
+        new PropertiesExpr({ expressions: postName }),
+        {
+          wrapped: false,
+          prefix: ',',
+        },
+      );
+      const thisSchema = this.schemaColumnsSql(expression.args.this as SchemaExpr);
+      return `${thisName}${thisProperties}${this.sep()}${thisSchema}`;
+    }
+    return super.createableSql(expression, locations);
+  }
+
   public castSql (expression: Expression, options: { safePrefix?: string } = {}): string {
     const { safePrefix } = options;
     const to = (expression as TryCastExpr).args.to;
@@ -479,7 +583,7 @@ export class TeradataGenerator extends Generator {
 
   public updateSql (expression: UpdateExpr): string {
     const thisSql = this.sql(expression, 'this');
-    const fromSql = this.sql(expression, 'from') ? ` ${this.sql(expression, 'from')}` : '';
+    const fromSql = this.sql(expression, 'from');
     const setSql = this.expressions(expression, { flat: true });
     const whereSql = this.sql(expression, 'where');
     const sql = `UPDATE ${thisSql}${fromSql} SET ${setSql}${whereSql}`;
@@ -543,21 +647,19 @@ export class TeradataGenerator extends Generator {
 
     return super.intervalSql(expression);
   }
-
-  public selectSql (expression: SelectExpr): string {
-    const top = expression.args.limit;
-    if (top && !expression.args.offset) {
-      expression.setArgKey('limit', undefined);
-      return `${super.selectSql(expression)} TOP ${this.sql(top)}`;
-    }
-    return super.selectSql(expression);
-  }
 }
-
 export class Teradata extends Dialect {
-  static NORMALIZATION_STRATEGY = NormalizationStrategy.UPPERCASE;
+  static DIALECT_NAME = Dialects.TERADATA;
+
+  @cache
+  static get NORMALIZATION_STRATEGY () {
+    return NormalizationStrategy.UPPERCASE;
+  }
+
   static SUPPORTS_SEMI_ANTI_JOIN = false;
+
   static TYPED_DIVISION = true;
+
   @cache
   static get TIME_MAPPING () {
     return {

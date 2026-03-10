@@ -25,6 +25,7 @@ import {
   table,
   TableExpr,
   toIdentifier,
+  TupleExpr,
   update,
   UpdateExpr,
   values,
@@ -38,7 +39,7 @@ describe('TestBuild', () => {
 
     expect(x.parent).toBeUndefined();
 
-    expect(xPlusOne.args.this).not.toBe(x);
+    expect(xPlusOne.args.this === x).toBe(false);
 
     const testCases: Array<[() => Expression | undefined, string, string?]> = [
       [() => x.add(1), 'x + 1'],
@@ -60,18 +61,18 @@ describe('TestBuild', () => {
       [() => x.or(1), 'x OR 1'],
       [() => LiteralExpr.number(1).or(x), '1 OR x'],
       [() => x.lt(1), 'x < 1'],
-      [() => LiteralExpr.number(1).lt(x), 'x > 1'],
+      [() => LiteralExpr.number(1).lt(x), '1 < x'],
       [() => x.lte(1), 'x <= 1'],
-      [() => LiteralExpr.number(1).lte(x), 'x >= 1'],
+      [() => LiteralExpr.number(1).lte(x), '1 <= x'],
       [() => x.gt(1), 'x > 1'],
-      [() => LiteralExpr.number(1).gt(x), 'x < 1'],
+      [() => LiteralExpr.number(1).gt(x), '1 > x'],
       [() => x.gte(1), 'x >= 1'],
-      [() => LiteralExpr.number(1).gte(x), 'x <= 1'],
+      [() => LiteralExpr.number(1).gte(x), '1 >= x'],
       [() => x.eq(1), 'x = 1'],
       [() => x.neq(1), 'x <> 1'],
       [() => x.is(null_()), 'x IS NULL'],
       [() => x.as('y'), 'x AS y'],
-      [() => x.in([1], '2'), 'x IN (1, \'2\')'],
+      [() => x.in([1, '2']), 'x IN (1, \'2\')'],
       [() => x.in([], 'select 1'), 'x IN (SELECT 1)'],
       [() => x.in([], undefined, { unnest: 'x' }), 'x IN (SELECT UNNEST(x))'],
       [
@@ -104,10 +105,10 @@ describe('TestBuild', () => {
       [() => x.not(), 'NOT x'],
       [() => x.getItem(1), 'x[1]'],
       [() => x.getItem(1, 2), 'x[1, 2]'],
-      [() => x.getItem('\'y\'').add(1), 'x[\'y\'] + 1'],
-      [() => x.like('\'y\''), 'x LIKE \'y\''],
-      [() => x.ilike('\'y\''), 'x ILIKE \'y\''],
-      [() => x.rlike('\'y\''), 'REGEXP_LIKE(x, \'y\')'],
+      [() => x.getItem('y').add(1), 'x[\'y\'] + 1'],
+      [() => x.like('y'), 'x LIKE \'y\''],
+      [() => x.ilike('y'), 'x ILIKE \'y\''],
+      [() => x.rlike('y'), 'REGEXP_LIKE(x, \'y\')'],
       [
         () => case_().when('x = 1', 'x')
           .else('bar'),
@@ -265,12 +266,12 @@ describe('TestBuild', () => {
       [
         () => select('x').from('tbl')
           .join('tbl2', { joinType: JoinExprKind.LEFT }),
-        'SELECT x FROM tbl LEFT OUTER JOIN tbl2',
+        'SELECT x FROM tbl LEFT JOIN tbl2',
       ],
       [
         () => select('x').from('tbl')
           .join(new TableExpr({ this: 'tbl2' }), { joinType: JoinExprKind.LEFT }),
-        'SELECT x FROM tbl LEFT OUTER JOIN tbl2',
+        'SELECT x FROM tbl LEFT JOIN tbl2',
       ],
       [
         () => select('x').from('tbl')
@@ -278,18 +279,18 @@ describe('TestBuild', () => {
             joinType: JoinExprKind.LEFT,
             joinAlias: 'foo',
           }),
-        'SELECT x FROM tbl LEFT OUTER JOIN tbl2 AS foo',
+        'SELECT x FROM tbl LEFT JOIN tbl2 AS foo',
       ],
       [
         () => select('x').from('tbl')
           .join(select('y').from('tbl2'), { joinType: JoinExprKind.LEFT }),
-        'SELECT x FROM tbl LEFT OUTER JOIN (SELECT y FROM tbl2)',
+        'SELECT x FROM tbl LEFT JOIN (SELECT y FROM tbl2)',
       ],
       [
         () => select('x').from('tbl')
           .join(select('y').from('tbl2')
             .subquery('aliased'), { joinType: JoinExprKind.LEFT }),
-        'SELECT x FROM tbl LEFT OUTER JOIN (SELECT y FROM tbl2) AS aliased',
+        'SELECT x FROM tbl LEFT JOIN (SELECT y FROM tbl2) AS aliased',
       ],
       [
         () => select('x').from('tbl')
@@ -297,7 +298,7 @@ describe('TestBuild', () => {
             joinType: JoinExprKind.LEFT,
             joinAlias: 'aliased',
           }),
-        'SELECT x FROM tbl LEFT OUTER JOIN (SELECT y FROM tbl2) AS aliased',
+        'SELECT x FROM tbl LEFT JOIN (SELECT y FROM tbl2) AS aliased',
       ],
       [
         () => select('x').from('tbl')
@@ -661,18 +662,18 @@ describe('TestBuild', () => {
         'SELECT x FROM (SELECT x FROM tbl) AS foo WHERE x > 0',
       ],
       [() => subquery('select x from tbl UNION select x from bar', 'unioned').select('x'), 'SELECT x FROM (SELECT x FROM tbl UNION SELECT x FROM bar) AS unioned'],
-      [() => parseOne('(SELECT 1)', { into: SelectExpr }).select('2'), '(SELECT 1, 2)'],
-      [() => parseOne('(SELECT 1)', { into: SelectExpr }).limit(1), '(SELECT 1) LIMIT 1'],
-      [() => parseOne('WITH t AS (SELECT 1) (SELECT 1)', { into: SelectExpr }).limit(1), 'WITH t AS (SELECT 1) SELECT 1 LIMIT 1'],
-      [() => parseOne('(SELECT 1 LIMIT 2)', { into: SelectExpr }).limit(1), '(SELECT 1 LIMIT 2) LIMIT 1'],
+      [() => parseOne('(SELECT 1)').select('2'), '(SELECT 1, 2)'],
+      [() => parseOne('(SELECT 1)').limit(1), '(SELECT 1) LIMIT 1'],
+      [() => parseOne('WITH t AS (SELECT 1) (SELECT 1)').limit(1), 'WITH t AS (SELECT 1) SELECT 1 LIMIT 1'],
+      [() => parseOne('(SELECT 1 LIMIT 2)').limit(1), '(SELECT 1 LIMIT 2) LIMIT 1'],
       [
         () => parseOne('SELECT 1 UNION SELECT 2', { into: SelectExpr }).limit(5)
           .offset(2),
         'SELECT 1 UNION SELECT 2 LIMIT 5 OFFSET 2',
       ],
-      [() => parseOne('(SELECT 1)', { into: SelectExpr }).subquery(), '((SELECT 1))'],
-      [() => parseOne('(SELECT 1)', { into: SelectExpr }).subquery('alias'), '((SELECT 1)) AS alias'],
-      [() => parseOne('(select * from foo)', { into: SelectExpr }).with('foo', 'select 1 as c'), 'WITH foo AS (SELECT 1 AS c) (SELECT * FROM foo)'],
+      [() => parseOne('(SELECT 1)').subquery(), '((SELECT 1))'],
+      [() => parseOne('(SELECT 1)').subquery('alias'), '((SELECT 1)) AS alias'],
+      [() => parseOne('(select * from foo)').with('foo', 'select 1 as c'), 'WITH foo AS (SELECT 1 AS c) (SELECT * FROM foo)'],
       [
         () => update('tbl', {
           x: undefined,
@@ -716,8 +717,8 @@ describe('TestBuild', () => {
       [() => parseOne('SELECT * FROM foo', { into: SelectExpr }).intersect('SELECT * FROM bla'), 'SELECT * FROM foo INTERSECT SELECT * FROM bla'],
       [() => except(['SELECT * FROM foo', 'SELECT * FROM bla']), 'SELECT * FROM foo EXCEPT SELECT * FROM bla'],
       [() => parseOne('SELECT * FROM foo', { into: SelectExpr }).except('SELECT * FROM bla'), 'SELECT * FROM foo EXCEPT SELECT * FROM bla'],
-      [() => parseOne('(SELECT * FROM foo)', { into: SelectExpr }).union('SELECT * FROM bla'), '(SELECT * FROM foo) UNION SELECT * FROM bla'],
-      [() => parseOne('(SELECT * FROM foo)', { into: SelectExpr }).union('SELECT * FROM bla', { distinct: false }), '(SELECT * FROM foo) UNION ALL SELECT * FROM bla'],
+      [() => parseOne('(SELECT * FROM foo)').union('SELECT * FROM bla'), '(SELECT * FROM foo) UNION SELECT * FROM bla'],
+      [() => parseOne('(SELECT * FROM foo)').union('SELECT * FROM bla', { distinct: false }), '(SELECT * FROM foo) UNION ALL SELECT * FROM bla'],
       [() => alias(parseOne('LAG(x) OVER (PARTITION BY y)'), 'a'), 'LAG(x) OVER (PARTITION BY y) AS a'],
       [() => alias(parseOne('LAG(x) OVER (ORDER BY z)'), 'a'), 'LAG(x) OVER (ORDER BY z) AS a'],
       [() => alias(parseOne('LAG(x) OVER (PARTITION BY y ORDER BY z)'), 'a'), 'LAG(x) OVER (PARTITION BY y ORDER BY z) AS a'],
@@ -804,7 +805,7 @@ describe('TestBuild', () => {
         'WITH cte AS NOT MATERIALIZED (SELECT x FROM tbl) INSERT INTO t SELECT * FROM cte',
       ],
       [
-        () => convert([column({ col: 'x' }), column({ col: 'y' })]).in([[1, 2], [3, 4]]),
+        () => new TupleExpr({ expressions: [column({ col: 'x' }), column({ col: 'y' })] }).in([new TupleExpr({ expressions: [LiteralExpr.number(1), LiteralExpr.number(2)] }), new TupleExpr({ expressions: [LiteralExpr.number(3), LiteralExpr.number(4)] })]),
         '(x, y) IN ((1, 2), (3, 4))',
         'postgres',
       ],

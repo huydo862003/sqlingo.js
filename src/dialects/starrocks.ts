@@ -1,5 +1,5 @@
 import type { Generator } from '../generator';
-import type { Parser } from '../parser';
+import { Parser } from '../parser';
 import { TokenType } from '../tokens';
 import type { UnnestExpr } from '../expressions';
 import {
@@ -97,6 +97,25 @@ class StarRocksTokenizer extends MySQL.Tokenizer {
 };
 
 class StarRocksParser extends MySQL.Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.CURRENT_CATALOG,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...MySQL.Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
@@ -274,9 +293,33 @@ class StarRocksParser extends MySQL.Parser {
       unit: unit,
     });
   }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...MySQL.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
 };
 
 class StarRocksGenerator extends MySQL.Generator {
+  // port from _Dialect metaclass logic
+  @cache
+  static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
+    const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+    [
+      'cluster',
+      'distribute',
+      'sort',
+    ].forEach((m) => modifiers.delete(m));
+    return modifiers;
+  }
+
+  // port from _Dialect metaclass logic
+  static SUPPORTS_DECODE_CASE = false;
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE: boolean = false;
   static JSON_TYPE_REQUIRED_FOR_EXTRACTION: boolean = false;
   static VARCHAR_REQUIRES_SIZE: boolean = false;
@@ -618,6 +661,7 @@ class StarRocksGenerator extends MySQL.Generator {
 }
 
 export class StarRocks extends MySQL {
+  static DIALECT_NAME = Dialects.STARROCKS;
   static STRICT_JSON_PATH_SYNTAX = false;
   static INDEX_OFFSET = 1;
 

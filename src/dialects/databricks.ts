@@ -28,6 +28,7 @@ import {
   MulExpr,
   DatetimeTruncExpr,
   SelectExpr,
+  ConvertTimezoneExpr,
   ToCharExpr,
   CastExpr,
   CurrentCatalogExpr,
@@ -63,7 +64,7 @@ function jsonExtractSql (this: Generator, expression: JsonExtractExpr | JsonExtr
 class DatabricksJsonPathTokenizer extends JsonPathTokenizer {
   @cache
   static get IDENTIFIERS () {
-    return ['`', '"'] as const;
+    return ['`', '"'];
   }
 }
 
@@ -78,6 +79,24 @@ class DatabricksTokenizer extends Spark.Tokenizer {
 }
 
 class DatabricksParser extends Spark.Parser {
+  @cache
+  static get ID_VAR_TOKENS (): Set<TokenType> {
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.SESSION_USER,
+      TokenType.STRAIGHT_JOIN,
+    ]);
+  }
+
+  // port from _Dialect metaclass logic
+  @cache
+  static get NO_PAREN_FUNCTIONS () {
+    const noParenFunctions = { ...Spark.Parser.NO_PAREN_FUNCTIONS };
+    delete noParenFunctions[TokenType.LOCALTIME];
+    delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+    return noParenFunctions;
+  }
+
   static LOG_DEFAULTS_TO_LN = true;
   static STRICT_CAST = true;
   static COLON_IS_VARIANT_EXTRACT = true;
@@ -138,9 +157,18 @@ class DatabricksParser extends Spark.Parser {
     }
     return this.expression(CurrentDateExpr);
   }
-}
 
+  // port from _Dialect metaclass logic
+  @cache
+  static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
+    return new Set([...Spark.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+  }
+}
 class DatabricksGenerator extends Spark.Generator {
+  // port from _Dialect metaclass logic
+  static TRY_SUPPORTED = false;
+  // port from _Dialect metaclass logic
+  static SUPPORTS_UESCAPE = false;
   static TABLESAMPLE_SEED_KEYWORD = 'REPEATABLE';
   static COPY_PARAMS_ARE_WRAPPED = false;
   static COPY_PARAMS_EQ_REQUIRED = true;
@@ -150,10 +178,7 @@ class DatabricksGenerator extends Spark.Generator {
 
   @cache
   static get TYPE_MAPPING () {
-    return new Map([
-      ...Spark.Generator.TYPE_MAPPING,
-      [DataTypeExprKind.NULL, 'VOID'],
-    ]);
+    return new Map([...Spark.Generator.TYPE_MAPPING, [DataTypeExprKind.NULL, 'VOID']]);
   }
 
   @cache
@@ -165,6 +190,16 @@ class DatabricksGenerator extends Spark.Generator {
       [CurrentVersionExpr, () => 'CURRENT_VERSION()'],
       [DateAddExpr, dateDeltaSql('DATEADD')],
       [DateDiffExpr, dateDeltaSql('DATEDIFF')],
+      [
+        ConvertTimezoneExpr,
+        function (this: Generator, e: ConvertTimezoneExpr) {
+          return this.func('CONVERT_TIMEZONE', [
+            e.args.sourceTz,
+            e.args.targetTz,
+            e.args.timestamp,
+          ]);
+        },
+      ],
       [
         DatetimeAddExpr,
         function (this: Generator, e) {
@@ -278,6 +313,7 @@ class DatabricksGenerator extends Spark.Generator {
 }
 
 export class Databricks extends Spark {
+  static DIALECT_NAME = Dialects.DATABRICKS;
   static SAFE_DIVISION = false;
   static COPY_PARAMS_ARE_CSV = false;
 
@@ -287,21 +323,21 @@ export class Databricks extends Spark {
   static Generator = DatabricksGenerator;
 
   @cache
-  static get COERCES_TO (): Record<string, Set<string>> {
-    const coersionMap = Object.fromEntries(Object.entries(TypeAnnotator.COERCES_TO));
+  static get COERCES_TO (): Map<DataTypeExprKind, Set<DataTypeExprKind>> {
+    const coercionMap = new Map(TypeAnnotator.COERCES_TO);
 
     for (const textType of DataTypeExpr.TEXT_TYPES) {
       const types = new Set([
-        ...(coersionMap.get(textType) || []),
+        ...(coercionMap.get(textType) || []),
         ...DataTypeExpr.NUMERIC_TYPES,
         ...DataTypeExpr.TEMPORAL_TYPES,
         DataTypeExprKind.BINARY,
         DataTypeExprKind.BOOLEAN,
         DataTypeExprKind.INTERVAL,
-      ]);
-      coersionMap.set(textType, types);
+      ] as DataTypeExprKind[]);
+      coercionMap.set(textType, types);
     }
-    return coersionMap;
+    return coercionMap;
   }
 }
 

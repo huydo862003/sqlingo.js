@@ -217,7 +217,7 @@ class TestParser {
     ).toBe('SELECT * FROM x CROSS JOIN y, z LATERAL VIEW EXPLODE(y)');
     expect(
       parseOne('create table a as (select b from c) index').find(AliasExpr),
-    ).toBeNull();
+    ).toBeUndefined();
   }
 
   testLambdaStruct () {
@@ -227,7 +227,7 @@ class TestParser {
       (lambdaExpr.getArgKey('this') as Expression).getArgKey('this'),
     ).toBeInstanceOf(DotExpr);
     expect(lambdaExpr.sql()).toBe('x -> x.id = id');
-    expect(parseOne('FILTER([], x -> x)').find(ColumnExpr)).toBeNull();
+    expect(parseOne('FILTER([], x -> x)').find(ColumnExpr)).toBeUndefined();
   }
 
   testTransactions () {
@@ -270,9 +270,9 @@ class TestParser {
     const exprs = expression.args.expressions ?? [];
     expect(exprs[0].name).toBe('a');
     expect(exprs[1].name).toBe('b');
-    expect((exprs[2] as AliasExpr).args.alias).toBe('c');
-    expect((exprs[3] as AliasExpr).args.alias).toBe('D');
-    expect((exprs[4] as AliasExpr).args.alias).toBe('y|z\'');
+    expect((exprs[2] as AliasExpr).alias).toBe('c');
+    expect((exprs[3] as AliasExpr).alias).toBe('D');
+    expect((exprs[4] as AliasExpr).alias).toBe('y|z\'');
     const fromExpr = expression.args.from as FromExpr;
     const tableExpr = fromExpr.getArgKey('this') as TableExpr;
     expect(tableExpr.name).toBe('z');
@@ -301,8 +301,8 @@ class TestParser {
     expect(ignore.expression(HintExpr, { y: '' })).toBeInstanceOf(HintExpr);
     expect(ignore.expression(HintExpr)).toBeInstanceOf(HintExpr);
 
-    // IMMEDIATE level is the TS equivalent of Python's RAISE (throws immediately on error)
-    const immediate = new TestableParser({ errorLevel: ErrorLevel.IMMEDIATE });
+    // RAISE level collects errors without throwing immediately (equivalent to Python's RAISE)
+    const immediate = new TestableParser({ errorLevel: ErrorLevel.RAISE });
     expect(immediate.expression(HintExpr, { expressions: [] })).toBeInstanceOf(HintExpr);
 
     const warn = new TestableParser({ errorLevel: ErrorLevel.WARN });

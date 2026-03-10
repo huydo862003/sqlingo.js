@@ -604,8 +604,8 @@ class TestExecutor {
     if (typeof t1 !== 'object' || t1 == undefined) {
       throw new Error('Unreachable');
     }
-    expect(t1['columns']).toEqual(['a', undefined]);
-    expect(t1['rows']).toEqual([1, undefined]);
+    expect(t1.columns).toEqual(['a']);
+    expect(t1.rows).toEqual([[1]]);
 
     const t8 = tables.find(table('t8'));
     expect(typeof t8).toBe('object');
@@ -613,8 +613,8 @@ class TestExecutor {
     if (typeof t8 !== 'object' || t8 == undefined) {
       throw new Error('Unreachable');
     }
-    expect(t8['columns']).toEqual(t1['columns']);
-    expect(t8['rows']).toEqual(t1['rows']);
+    expect(t8.columns).toEqual(t1.columns);
+    expect(t8.rows).toEqual(t1.rows);
   }
 
   testStaticQueries () {
@@ -742,7 +742,7 @@ class TestExecutor {
       ['TRIM(\' foo \')', 'foo'],
       ['TRIM(\'afoob\', \'ab\')', 'foo'],
       ['ARRAY_JOIN([\'foo\', \'bar\'], \':\')', 'foo:bar'],
-      ['STRUCT(\'foo\', \'bar\', undefined, undefined)', { foo: 'bar' }],
+      ['STRUCT(\'foo\', \'bar\', NULL, NULL)', { foo: 'bar' }],
       ['ROUND(1.5)', 2],
       ['ROUND(1.2)', 1],
       ['ROUND(1.2345, 2)', 1.23],

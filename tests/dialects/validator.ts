@@ -75,12 +75,13 @@ export class Validator {
 
     for (const [readDialect, readSql] of Object.entries(read)) {
       const parsed = parseOne(readSql, { read: readDialect || undefined });
-      expect(parsed.sql({
+      const generated = parsed.sql({
         dialect: this.dialect,
         unsupportedLevel: ErrorLevel.IGNORE,
         pretty,
         identify,
-      })).toBe(sql);
+      });
+      expect(generated).toBe(sql);
     }
 
     for (const [writeDialect, writeSql] of Object.entries(write)) {
@@ -90,12 +91,13 @@ export class Validator {
           unsupportedLevel: ErrorLevel.RAISE,
         })).toThrow(UnsupportedError);
       } else {
-        expect(expression.sql({
+        const generated = expression.sql({
           dialect: writeDialect || undefined,
           unsupportedLevel: ErrorLevel.IGNORE,
           pretty,
           identify,
-        })).toBe(writeSql);
+        });
+        expect(generated).toBe(writeSql);
       }
     }
   }

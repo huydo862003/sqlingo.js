@@ -74,5 +74,5 @@ export function execute (
 
   const plan = new Plan(expression);
 
-  return new JavascriptExecutor(undefined, tables_).execute(plan);
+  return new JavascriptExecutor(undefined, tables.mapping as Record<string, Table>).execute(plan);
 }

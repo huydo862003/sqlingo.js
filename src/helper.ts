@@ -72,14 +72,12 @@ export function suggestClosestMatchAndFail (
  */
 export function seqGet<T> (seq: Iterable<T>, index: number): T | undefined {
   if (Array.isArray(seq)) {
-    return 0 <= index && index < seq.length ? seq[index] : undefined;
+    const i = index < 0 ? seq.length + index : index;
+    return 0 <= i && i < seq.length ? seq[i] : undefined;
   }
-  let i = 0;
-  for (const item of seq) {
-    if (i === index) return item;
-    i++;
-  }
-  return undefined;
+  const arr = [...seq];
+  const i = index < 0 ? arr.length + index : index;
+  return 0 <= i && i < arr.length ? arr[i] : undefined;
 }
 
 export function expressionValueToOrString<E extends Expression = Expression> (
@@ -131,7 +129,7 @@ export function ensureCollection<T> (value?: T | Iterable<T>): Iterable<T> {
     return [];
   }
 
-  if (typeof value !== 'string' && isIterable<T>(value)) {
+  if (typeof value !== 'string' && !(value instanceof Expression) && isIterable<T>(value)) {
     return value;
   }
   return [value as T];
@@ -237,6 +235,10 @@ export function camelToSnakeCase (name: string): string {
   return name.replace(CAMEL_CASE_PATTERN, '_').toUpperCase();
 }
 
+export function snakeToCamelCase (name: string): string {
+  return name.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
+}
+
 /**
  * Repeatedly applies a function until the result stops changing.
  *
@@ -269,6 +271,9 @@ export function whileChanging<T> (expression: T, func: (expr: T) => T): T {
 }
 
 function hashObject (obj: unknown): string {
+  if (obj instanceof Expression) {
+    return obj.sql();
+  }
   return JSON.stringify(obj);
 }
 
@@ -522,7 +527,7 @@ export function flatten (values: Iterable<unknown>): unknown[] {
 // Modified: renamed from dictDepth to objectDepth
 export function objectDepth (d: unknown): number {
   try {
-    if (typeof d !== 'object' || d === null) {
+    if (typeof d !== 'object' || d === null || (d as object).constructor !== Object) {
       return 0;
     }
 
@@ -679,8 +684,7 @@ export function isIsoDate (text: string): boolean {
  *
  */
 export function isIsoDatetime (text: string): boolean {
-  const dt = DateTime.fromISO(text);
-  return dt.isValid;
+  return DateTime.fromSQL(text).isValid;
 }
 
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py#L490
@@ -866,4 +870,8 @@ export function mapOnExpression<I extends Expression, O extends Expression> (val
     return expressionHandler(value);
   }
   return value;
+}
+
+export function camelToScreamingSnakeCase (str: string): string {
+  return str.replace(/([A-Z])/g, '_$1').toUpperCase();
 }
