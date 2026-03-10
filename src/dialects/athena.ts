@@ -297,12 +297,12 @@ export class AthenaParser extends Parser {
     return this.trinoParser.parse(rawTokens, sql);
   }
 
-  public parseIntoTypes (expressionTypes: string | string[], rawTokens: Token[], sql?: string): (Expression | undefined)[] {
+  public parseInto (expressionTypes: string | string[], rawTokens: Token[], sql?: string): (Expression | undefined)[] {
     if (rawTokens && rawTokens[0].tokenType === (TokenType).HIVE_TOKEN_STREAM) {
-      return this.hiveParser.parseIntoTypes(expressionTypes, rawTokens.slice(1), sql);
+      return this.hiveParser.parseInto(expressionTypes, rawTokens.slice(1), sql);
     }
 
-    return this.trinoParser.parseIntoTypes(expressionTypes, rawTokens, sql);
+    return this.trinoParser.parseInto(expressionTypes, rawTokens, sql);
   }
 }
 
@@ -361,7 +361,7 @@ export class Athena extends Dialect {
   public parseIntoTypes (expressionType: string | string[], sql: string, options: ParseOptions = {}): (Expression | undefined)[] {
     options.hive = this.hive;
     options.trino = this.trino;
-    return super.parseInto(expressionType, sql, options);
+    return super.parseIntoTypes(expressionType, sql, options);
   }
 
   public generate (expression: Expression, options: GeneratorOptions = {}): string {

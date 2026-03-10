@@ -1361,16 +1361,13 @@ export class Dialect {
   /**
    * Parse SQL string into specific expression type.
    */
-  parseInto<T extends Expression> (
+  parseIntoTypes<T extends Expression> (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expressionType: string | (new (args: any) => T) | string[] | (new (args: any) => T)[],
     sql: string,
     opts?: ParseOptions,
   ): (Expression | undefined)[] {
-    return this.parser({
-      into: expressionType,
-      ...opts,
-    }).parse(this.tokenize(sql));
+    return this.parser(opts).parseIntoTypes(expressionType, this.tokenize(sql), sql);
   }
 
   /**

@@ -525,7 +525,7 @@ export function parseOne<IntoT extends Expression = Expression> (
   const dialect = Dialect.getOrRaise(options?.read ?? options?.dialect);
 
   const result = options?.into
-    ? dialect.parseInto(options.into, sql, options)
+    ? dialect.parseIntoTypes(options.into, sql, options)
     : dialect.parse(sql, options);
 
   for (const expression of result) {
@@ -3558,8 +3558,9 @@ export class Parser {
     return expressions;
   }
 
-  parseIntoTypes (
-    expressionTypes: string | Iterable<string>,
+  parseIntoTypes<T extends Expression> (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expressionTypes: string | (new (args: any) => T) | Iterable<string | (new (args: any) => T)>,
     rawTokens: Token[],
     sql?: string,
   ): (Expression | undefined)[] {
@@ -3567,7 +3568,7 @@ export class Parser {
     const types = ensureList(expressionTypes);
 
     for (const expressionType of types) {
-      const parser = typeof expressionType === 'string' ? this._constructor.EXPRESSION_PARSERS[expressionType] : expressionType;
+      const parser = typeof expressionType === 'string' ? this._constructor.EXPRESSION_PARSERS[expressionType] : (args?: unknown[]) => new expressionType(args);
 
       if (!parser) {
         throw new TypeError(`No parser registered for ${expressionType}`);
@@ -3581,7 +3582,7 @@ export class Parser {
         });
       } catch (e) {
         if (e instanceof ParseError) {
-          e.errors[0].intoExpression = expressionType;
+          e.errors[0].intoExpression = typeof expressionType === 'string' ? expressionType : expressionType.name;
           errors.push(e);
         } else {
           throw e;
