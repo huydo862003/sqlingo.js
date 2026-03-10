@@ -6323,6 +6323,8 @@ export type PivotExprArgs = Merge<[
 export class PivotExpr extends Expression {
   static key = ExpressionKey.PIVOT;
 
+  static requiredArgs = new Set<string>([]);
+
   static availableArgs = new Set([
     'this',
     'alias',

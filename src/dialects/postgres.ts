@@ -921,19 +921,19 @@ class PostgresGenerator extends Generator {
   }
 
   @cache
-  static get TYPE_MAPPING () {
-    return {
+  static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
+    return new Map<DataTypeExprKind | string, string>([
       ...Generator.TYPE_MAPPING,
-      [DataTypeExprKind.TINYINT]: 'SMALLINT',
-      [DataTypeExprKind.FLOAT]: 'REAL',
-      [DataTypeExprKind.DOUBLE]: 'DOUBLE PRECISION',
-      [DataTypeExprKind.BINARY]: 'BYTEA',
-      [DataTypeExprKind.VARBINARY]: 'BYTEA',
-      [DataTypeExprKind.ROWVERSION]: 'BYTEA',
-      [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
-      [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
-      [DataTypeExprKind.BLOB]: 'BYTEA',
-    };
+      [DataTypeExprKind.TINYINT, 'SMALLINT'],
+      [DataTypeExprKind.FLOAT, 'REAL'],
+      [DataTypeExprKind.DOUBLE, 'DOUBLE PRECISION'],
+      [DataTypeExprKind.BINARY, 'BYTEA'],
+      [DataTypeExprKind.VARBINARY, 'BYTEA'],
+      [DataTypeExprKind.ROWVERSION, 'BYTEA'],
+      [DataTypeExprKind.DATETIME, 'TIMESTAMP'],
+      [DataTypeExprKind.TIMESTAMPNTZ, 'TIMESTAMP'],
+      [DataTypeExprKind.BLOB, 'BYTEA'],
+    ]);
   }
 
   lateralSql (expression: LateralExpr): string {
