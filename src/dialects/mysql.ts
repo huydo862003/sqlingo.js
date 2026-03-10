@@ -1379,41 +1379,41 @@ class MySQLGenerator extends Generator {
    * MySQL adds the 'UNSIGNED' attribute during generation based on the DataTypeExpr.
    */
   @cache
-  static get UNSIGNED_TYPE_MAPPING () {
-    return {
-      [DataTypeExprKind.UBIGINT]: 'BIGINT',
-      [DataTypeExprKind.UINT]: 'INT',
-      [DataTypeExprKind.UMEDIUMINT]: 'MEDIUMINT',
-      [DataTypeExprKind.USMALLINT]: 'SMALLINT',
-      [DataTypeExprKind.UTINYINT]: 'TINYINT',
-      [DataTypeExprKind.UDECIMAL]: 'DECIMAL',
-      [DataTypeExprKind.UDOUBLE]: 'DOUBLE',
-    };
+  static get UNSIGNED_TYPE_MAPPING (): Map<DataTypeExprKind, string> {
+    return new Map<DataTypeExprKind, string>([
+      [DataTypeExprKind.UBIGINT, 'BIGINT'],
+      [DataTypeExprKind.UINT, 'INT'],
+      [DataTypeExprKind.UMEDIUMINT, 'MEDIUMINT'],
+      [DataTypeExprKind.USMALLINT, 'SMALLINT'],
+      [DataTypeExprKind.UTINYINT, 'TINYINT'],
+      [DataTypeExprKind.UDECIMAL, 'DECIMAL'],
+      [DataTypeExprKind.UDOUBLE, 'DOUBLE'],
+    ]);
   }
 
   /**
    * Standardizes various timestamp types to MySQL's DATETIME or TIMESTAMP.
    */
   @cache
-  static get TIMESTAMP_TYPE_MAPPING () {
-    return {
-      [DataTypeExprKind.DATETIME2]: 'DATETIME',
-      [DataTypeExprKind.SMALLDATETIME]: 'DATETIME',
-      [DataTypeExprKind.TIMESTAMP]: 'DATETIME',
-      [DataTypeExprKind.TIMESTAMPNTZ]: 'DATETIME',
-      [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
-      [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP',
-    };
+  static get TIMESTAMP_TYPE_MAPPING (): Map<DataTypeExprKind, string> {
+    return new Map<DataTypeExprKind, string>([
+      [DataTypeExprKind.DATETIME2, 'DATETIME'],
+      [DataTypeExprKind.SMALLDATETIME, 'DATETIME'],
+      [DataTypeExprKind.TIMESTAMP, 'DATETIME'],
+      [DataTypeExprKind.TIMESTAMPNTZ, 'DATETIME'],
+      [DataTypeExprKind.TIMESTAMPTZ, 'TIMESTAMP'],
+      [DataTypeExprKind.TIMESTAMPLTZ, 'TIMESTAMP'],
+    ]);
   }
 
   @cache
   static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map(Generator.TYPE_MAPPING);
 
-    for (const [k, v] of Object.entries(MySQLGenerator.UNSIGNED_TYPE_MAPPING)) {
+    for (const [k, v] of MySQLGenerator.UNSIGNED_TYPE_MAPPING) {
       mapping.set(k, v);
     }
-    for (const [k, v] of Object.entries(MySQLGenerator.TIMESTAMP_TYPE_MAPPING)) {
+    for (const [k, v] of MySQLGenerator.TIMESTAMP_TYPE_MAPPING) {
       mapping.set(k, v);
     }
 
@@ -1813,7 +1813,7 @@ class MySQLGenerator extends Generator {
     }
 
     let result = super.dataTypeSql(expression);
-    if (expression.args.this as string in MySQLGenerator.UNSIGNED_TYPE_MAPPING) {
+    if (MySQLGenerator.UNSIGNED_TYPE_MAPPING.has(expression.args.this as DataTypeExprKind)) {
       result = `${result} UNSIGNED`;
     }
 

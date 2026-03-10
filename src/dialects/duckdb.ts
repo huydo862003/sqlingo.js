@@ -2938,28 +2938,28 @@ class DuckDBGenerator extends Generator {
 
   @cache
   static get TYPE_MAPPING () {
-    return {
+    return new Map([
       ...Generator.TYPE_MAPPING,
-      [DataTypeExprKind.BINARY]: 'BLOB',
-      [DataTypeExprKind.BPCHAR]: 'TEXT',
-      [DataTypeExprKind.CHAR]: 'TEXT',
-      [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
-      [DataTypeExprKind.DECFLOAT]: 'DECIMAL(38, 5)',
-      [DataTypeExprKind.FLOAT]: 'REAL',
-      [DataTypeExprKind.JSONB]: 'JSON',
-      [DataTypeExprKind.NCHAR]: 'TEXT',
-      [DataTypeExprKind.NVARCHAR]: 'TEXT',
-      [DataTypeExprKind.UINT]: 'UINTEGER',
-      [DataTypeExprKind.VARBINARY]: 'BLOB',
-      [DataTypeExprKind.ROWVERSION]: 'BLOB',
-      [DataTypeExprKind.VARCHAR]: 'TEXT',
-      [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMPTZ',
-      [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
-      [DataTypeExprKind.TIMESTAMP_S]: 'TIMESTAMP_S',
-      [DataTypeExprKind.TIMESTAMP_MS]: 'TIMESTAMP_MS',
-      [DataTypeExprKind.TIMESTAMP_NS]: 'TIMESTAMP_NS',
-      [DataTypeExprKind.BIGDECIMAL]: 'DECIMAL(38, 5)',
-    };
+      [DataTypeExprKind.BINARY, 'BLOB'],
+      [DataTypeExprKind.BPCHAR, 'TEXT'],
+      [DataTypeExprKind.CHAR, 'TEXT'],
+      [DataTypeExprKind.DATETIME, 'TIMESTAMP'],
+      [DataTypeExprKind.DECFLOAT, 'DECIMAL(38, 5)'],
+      [DataTypeExprKind.FLOAT, 'REAL'],
+      [DataTypeExprKind.JSONB, 'JSON'],
+      [DataTypeExprKind.NCHAR, 'TEXT'],
+      [DataTypeExprKind.NVARCHAR, 'TEXT'],
+      [DataTypeExprKind.UINT, 'UINTEGER'],
+      [DataTypeExprKind.VARBINARY, 'BLOB'],
+      [DataTypeExprKind.ROWVERSION, 'BLOB'],
+      [DataTypeExprKind.VARCHAR, 'TEXT'],
+      [DataTypeExprKind.TIMESTAMPLTZ, 'TIMESTAMPTZ'],
+      [DataTypeExprKind.TIMESTAMPNTZ, 'TIMESTAMP'],
+      [DataTypeExprKind.TIMESTAMP_S, 'TIMESTAMP_S'],
+      [DataTypeExprKind.TIMESTAMP_MS, 'TIMESTAMP_MS'],
+      [DataTypeExprKind.TIMESTAMP_NS, 'TIMESTAMP_NS'],
+      [DataTypeExprKind.BIGDECIMAL, 'DECIMAL(38, 5)'],
+    ]);
   }
 
   @cache

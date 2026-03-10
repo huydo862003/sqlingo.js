@@ -222,19 +222,19 @@ class DremioGenerator extends Generator {
 
   @cache
   static get TYPE_MAPPING () {
-    return {
+    return new Map([
       ...Generator.TYPE_MAPPING,
-      [DataTypeExprKind.SMALLINT]: 'INT',
-      [DataTypeExprKind.TINYINT]: 'INT',
-      [DataTypeExprKind.BINARY]: 'VARBINARY',
-      [DataTypeExprKind.TEXT]: 'VARCHAR',
-      [DataTypeExprKind.NCHAR]: 'VARCHAR',
-      [DataTypeExprKind.CHAR]: 'VARCHAR',
-      [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
-      [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
-      [DataTypeExprKind.ARRAY]: 'LIST',
-      [DataTypeExprKind.BIT]: 'BOOLEAN',
-    };
+      [DataTypeExprKind.SMALLINT, 'INT'],
+      [DataTypeExprKind.TINYINT, 'INT'],
+      [DataTypeExprKind.BINARY, 'VARBINARY'],
+      [DataTypeExprKind.TEXT, 'VARCHAR'],
+      [DataTypeExprKind.NCHAR, 'VARCHAR'],
+      [DataTypeExprKind.CHAR, 'VARCHAR'],
+      [DataTypeExprKind.TIMESTAMPNTZ, 'TIMESTAMP'],
+      [DataTypeExprKind.DATETIME, 'TIMESTAMP'],
+      [DataTypeExprKind.ARRAY, 'LIST'],
+      [DataTypeExprKind.BIT, 'BOOLEAN'],
+    ]);
   }
 
   @cache

@@ -1001,31 +1001,31 @@ class SingleStoreGenerator extends MySQL.Generator {
 
   @cache
   static get TYPE_MAPPING () {
-    return {
+    return new Map([
       ...MySQL.Generator.TYPE_MAPPING,
-      [DataTypeExprKind.BIGDECIMAL]: 'DECIMAL',
-      [DataTypeExprKind.BIT]: 'BOOLEAN',
-      [DataTypeExprKind.DATE32]: 'DATE',
-      [DataTypeExprKind.DATETIME64]: 'DATETIME',
-      [DataTypeExprKind.DECIMAL32]: 'DECIMAL',
-      [DataTypeExprKind.DECIMAL64]: 'DECIMAL',
-      [DataTypeExprKind.DECIMAL128]: 'DECIMAL',
-      [DataTypeExprKind.DECIMAL256]: 'DECIMAL',
-      [DataTypeExprKind.ENUM8]: 'ENUM',
-      [DataTypeExprKind.ENUM16]: 'ENUM',
-      [DataTypeExprKind.FIXEDSTRING]: 'TEXT',
-      [DataTypeExprKind.GEOMETRY]: 'GEOGRAPHY',
-      [DataTypeExprKind.POINT]: 'GEOGRAPHYPOINT',
-      [DataTypeExprKind.RING]: 'GEOGRAPHY',
-      [DataTypeExprKind.LINESTRING]: 'GEOGRAPHY',
-      [DataTypeExprKind.POLYGON]: 'GEOGRAPHY',
-      [DataTypeExprKind.MULTIPOLYGON]: 'GEOGRAPHY',
-      [DataTypeExprKind.STRUCT]: 'RECORD',
-      [DataTypeExprKind.JSONB]: 'BSON',
-      [DataTypeExprKind.TIMESTAMP]: 'TIMESTAMP',
-      [DataTypeExprKind.TIMESTAMP_S]: 'TIMESTAMP',
-      [DataTypeExprKind.TIMESTAMP_MS]: 'TIMESTAMP(6)',
-    };
+      [DataTypeExprKind.BIGDECIMAL, 'DECIMAL'],
+      [DataTypeExprKind.BIT, 'BOOLEAN'],
+      [DataTypeExprKind.DATE32, 'DATE'],
+      [DataTypeExprKind.DATETIME64, 'DATETIME'],
+      [DataTypeExprKind.DECIMAL32, 'DECIMAL'],
+      [DataTypeExprKind.DECIMAL64, 'DECIMAL'],
+      [DataTypeExprKind.DECIMAL128, 'DECIMAL'],
+      [DataTypeExprKind.DECIMAL256, 'DECIMAL'],
+      [DataTypeExprKind.ENUM8, 'ENUM'],
+      [DataTypeExprKind.ENUM16, 'ENUM'],
+      [DataTypeExprKind.FIXEDSTRING, 'TEXT'],
+      [DataTypeExprKind.GEOMETRY, 'GEOGRAPHY'],
+      [DataTypeExprKind.POINT, 'GEOGRAPHYPOINT'],
+      [DataTypeExprKind.RING, 'GEOGRAPHY'],
+      [DataTypeExprKind.LINESTRING, 'GEOGRAPHY'],
+      [DataTypeExprKind.POLYGON, 'GEOGRAPHY'],
+      [DataTypeExprKind.MULTIPOLYGON, 'GEOGRAPHY'],
+      [DataTypeExprKind.STRUCT, 'RECORD'],
+      [DataTypeExprKind.JSONB, 'BSON'],
+      [DataTypeExprKind.TIMESTAMP, 'TIMESTAMP'],
+      [DataTypeExprKind.TIMESTAMP_S, 'TIMESTAMP'],
+      [DataTypeExprKind.TIMESTAMP_MS, 'TIMESTAMP(6)'],
+    ]);
   }
 
   @cache

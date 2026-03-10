@@ -269,12 +269,12 @@ class DorisGenerator extends MySQL.Generator {
 
   @cache
   static get TYPE_MAPPING () {
-    return {
+    return new Map([
       ...MySQL.Generator.TYPE_MAPPING,
-      [DataTypeExprKind.TEXT]: 'STRING',
-      [DataTypeExprKind.TIMESTAMP]: 'DATETIME',
-      [DataTypeExprKind.TIMESTAMPTZ]: 'DATETIME',
-    };
+      [DataTypeExprKind.TEXT, 'STRING'],
+      [DataTypeExprKind.TIMESTAMP, 'DATETIME'],
+      [DataTypeExprKind.TIMESTAMPTZ, 'DATETIME'],
+    ]);
   }
 
   @cache

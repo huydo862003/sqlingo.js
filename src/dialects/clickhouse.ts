@@ -1494,20 +1494,20 @@ export class ClickHouseGenerator extends Generator {
   static WRAP_DERIVED_VALUES = false;
 
   @cache
-  static get STRING_TYPE_MAPPING (): Partial<Record<DataTypeExprKind, string>> {
-    return {
-      [DataTypeExprKind.BLOB]: 'String',
-      [DataTypeExprKind.CHAR]: 'String',
-      [DataTypeExprKind.LONGBLOB]: 'String',
-      [DataTypeExprKind.LONGTEXT]: 'String',
-      [DataTypeExprKind.MEDIUMBLOB]: 'String',
-      [DataTypeExprKind.MEDIUMTEXT]: 'String',
-      [DataTypeExprKind.TINYBLOB]: 'String',
-      [DataTypeExprKind.TINYTEXT]: 'String',
-      [DataTypeExprKind.TEXT]: 'String',
-      [DataTypeExprKind.VARBINARY]: 'String',
-      [DataTypeExprKind.VARCHAR]: 'String',
-    };
+  static get STRING_TYPE_MAPPING (): Map<DataTypeExprKind, string> {
+    return new Map<DataTypeExprKind, string>([
+      [DataTypeExprKind.BLOB, 'String'],
+      [DataTypeExprKind.CHAR, 'String'],
+      [DataTypeExprKind.LONGBLOB, 'String'],
+      [DataTypeExprKind.LONGTEXT, 'String'],
+      [DataTypeExprKind.MEDIUMBLOB, 'String'],
+      [DataTypeExprKind.MEDIUMTEXT, 'String'],
+      [DataTypeExprKind.TINYBLOB, 'String'],
+      [DataTypeExprKind.TINYTEXT, 'String'],
+      [DataTypeExprKind.TEXT, 'String'],
+      [DataTypeExprKind.VARBINARY, 'String'],
+      [DataTypeExprKind.VARCHAR, 'String'],
+    ]);
   }
 
   @cache
@@ -1523,7 +1523,7 @@ export class ClickHouseGenerator extends Generator {
   static get TYPE_MAPPING () {
     return new Map<DataTypeExprKind | string, string>([
       ...Generator.TYPE_MAPPING,
-      ...Object.entries(ClickHouseGenerator.STRING_TYPE_MAPPING),
+      ...ClickHouseGenerator.STRING_TYPE_MAPPING,
       [DataTypeExprKind.ARRAY, 'Array'],
       [DataTypeExprKind.BOOLEAN, 'Bool'],
       [DataTypeExprKind.BIGINT, 'Int64'],
@@ -1946,7 +1946,7 @@ export class ClickHouseGenerator extends Generator {
     const Constructor = this._constructor as typeof ClickHouseGenerator;
 
     // String is the standard ClickHouse type, every other variant is just an alias.
-    if (Constructor.STRING_TYPE_MAPPING[expression.args.this as DataTypeExprKind]) {
+    if (Constructor.STRING_TYPE_MAPPING.has(expression.args.this as DataTypeExprKind)) {
       dtype = 'String';
     } else {
       dtype = super.dataTypeSql(expression);

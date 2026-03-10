@@ -755,19 +755,19 @@ class HiveGenerator extends Generator {
 
   @cache
   static get TYPE_MAPPING () {
-    return {
+    return new Map([
       ...Generator.TYPE_MAPPING,
-      [DataTypeExprKind.BIT]: 'BOOLEAN',
-      [DataTypeExprKind.BLOB]: 'BINARY',
-      [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
-      [DataTypeExprKind.ROWVERSION]: 'BINARY',
-      [DataTypeExprKind.TEXT]: 'STRING',
-      [DataTypeExprKind.TIME]: 'TIMESTAMP',
-      [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
-      [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
-      [DataTypeExprKind.UTINYINT]: 'SMALLINT',
-      [DataTypeExprKind.VARBINARY]: 'BINARY',
-    };
+      [DataTypeExprKind.BIT, 'BOOLEAN'],
+      [DataTypeExprKind.BLOB, 'BINARY'],
+      [DataTypeExprKind.DATETIME, 'TIMESTAMP'],
+      [DataTypeExprKind.ROWVERSION, 'BINARY'],
+      [DataTypeExprKind.TEXT, 'STRING'],
+      [DataTypeExprKind.TIME, 'TIMESTAMP'],
+      [DataTypeExprKind.TIMESTAMPNTZ, 'TIMESTAMP'],
+      [DataTypeExprKind.TIMESTAMPTZ, 'TIMESTAMP'],
+      [DataTypeExprKind.UTINYINT, 'SMALLINT'],
+      [DataTypeExprKind.VARBINARY, 'BINARY'],
+    ]);
   }
 
   @cache

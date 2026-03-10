@@ -274,14 +274,14 @@ class SparkGenerator extends Spark2.Generator {
 
   @cache
   static get TYPE_MAPPING () {
-    return {
+    return new Map([
       ...Spark2.Generator.TYPE_MAPPING,
-      [DataTypeExprKind.MONEY]: 'DECIMAL(15, 4)',
-      [DataTypeExprKind.SMALLMONEY]: 'DECIMAL(6, 4)',
-      [DataTypeExprKind.UUID]: 'STRING',
-      [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP_LTZ',
-      [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP_NTZ',
-    };
+      [DataTypeExprKind.MONEY, 'DECIMAL(15, 4)'],
+      [DataTypeExprKind.SMALLMONEY, 'DECIMAL(6, 4)'],
+      [DataTypeExprKind.UUID, 'STRING'],
+      [DataTypeExprKind.TIMESTAMPLTZ, 'TIMESTAMP_LTZ'],
+      [DataTypeExprKind.TIMESTAMPNTZ, 'TIMESTAMP_NTZ'],
+    ]);
   }
 
   @cache

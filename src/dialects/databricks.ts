@@ -150,10 +150,10 @@ class DatabricksGenerator extends Spark.Generator {
 
   @cache
   static get TYPE_MAPPING () {
-    return {
+    return new Map([
       ...Spark.Generator.TYPE_MAPPING,
-      [DataTypeExprKind.NULL]: 'VOID',
-    };
+      [DataTypeExprKind.NULL, 'VOID'],
+    ]);
   }
 
   @cache

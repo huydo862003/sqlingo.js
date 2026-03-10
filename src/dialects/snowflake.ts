@@ -2611,13 +2611,13 @@ class SnowflakeGenerator extends Generator {
 
   @cache
   static get TYPE_MAPPING () {
-    return {
+    return new Map([
       ...Generator.TYPE_MAPPING,
-      [DataTypeExprKind.BIGDECIMAL]: 'DOUBLE',
-      [DataTypeExprKind.NESTED]: 'OBJECT',
-      [DataTypeExprKind.STRUCT]: 'OBJECT',
-      [DataTypeExprKind.TEXT]: 'VARCHAR',
-    };
+      [DataTypeExprKind.BIGDECIMAL, 'DOUBLE'],
+      [DataTypeExprKind.NESTED, 'OBJECT'],
+      [DataTypeExprKind.STRUCT, 'OBJECT'],
+      [DataTypeExprKind.TEXT, 'VARCHAR'],
+    ]);
   }
 
   @cache

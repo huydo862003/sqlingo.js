@@ -250,16 +250,16 @@ class RedshiftGenerator extends Postgres.Generator {
 
   @cache
   static get TYPE_MAPPING () {
-    return {
+    return new Map([
       ...Postgres.Generator.TYPE_MAPPING,
-      [DataTypeExprKind.BINARY]: 'VARBYTE',
-      [DataTypeExprKind.BLOB]: 'VARBYTE',
-      [DataTypeExprKind.INT]: 'INTEGER',
-      [DataTypeExprKind.TIMETZ]: 'TIME',
-      [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
-      [DataTypeExprKind.VARBINARY]: 'VARBYTE',
-      [DataTypeExprKind.ROWVERSION]: 'VARBYTE',
-    };
+      [DataTypeExprKind.BINARY, 'VARBYTE'],
+      [DataTypeExprKind.BLOB, 'VARBYTE'],
+      [DataTypeExprKind.INT, 'INTEGER'],
+      [DataTypeExprKind.TIMETZ, 'TIME'],
+      [DataTypeExprKind.TIMESTAMPTZ, 'TIMESTAMP'],
+      [DataTypeExprKind.VARBINARY, 'VARBYTE'],
+      [DataTypeExprKind.ROWVERSION, 'VARBYTE'],
+    ]);
   }
 
   @cache

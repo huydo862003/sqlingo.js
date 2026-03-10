@@ -537,36 +537,36 @@ class ExasolParser extends Parser {
 
 class ExasolGenerator extends Generator {
   @cache
-  static get STRING_TYPE_MAPPING () {
-    return {
-      [DataTypeExprKind.BLOB]: 'VARCHAR',
-      [DataTypeExprKind.LONGBLOB]: 'VARCHAR',
-      [DataTypeExprKind.LONGTEXT]: 'VARCHAR',
-      [DataTypeExprKind.MEDIUMBLOB]: 'VARCHAR',
-      [DataTypeExprKind.MEDIUMTEXT]: 'VARCHAR',
-      [DataTypeExprKind.TINYBLOB]: 'VARCHAR',
-      [DataTypeExprKind.TINYTEXT]: 'VARCHAR',
-      [DataTypeExprKind.TEXT]: 'LONG VARCHAR',
-      [DataTypeExprKind.VARBINARY]: 'VARCHAR',
-    };
+  static get STRING_TYPE_MAPPING (): Map<DataTypeExprKind, string> {
+    return new Map<DataTypeExprKind, string>([
+      [DataTypeExprKind.BLOB, 'VARCHAR'],
+      [DataTypeExprKind.LONGBLOB, 'VARCHAR'],
+      [DataTypeExprKind.LONGTEXT, 'VARCHAR'],
+      [DataTypeExprKind.MEDIUMBLOB, 'VARCHAR'],
+      [DataTypeExprKind.MEDIUMTEXT, 'VARCHAR'],
+      [DataTypeExprKind.TINYBLOB, 'VARCHAR'],
+      [DataTypeExprKind.TINYTEXT, 'VARCHAR'],
+      [DataTypeExprKind.TEXT, 'LONG VARCHAR'],
+      [DataTypeExprKind.VARBINARY, 'VARCHAR'],
+    ]);
   }
 
   @cache
   static get TYPE_MAPPING () {
-    return {
+    return new Map([
       ...Generator.TYPE_MAPPING,
       ...ExasolGenerator.STRING_TYPE_MAPPING,
-      [DataTypeExprKind.TINYINT]: 'SMALLINT',
-      [DataTypeExprKind.MEDIUMINT]: 'INT',
-      [DataTypeExprKind.DECIMAL32]: 'DECIMAL',
-      [DataTypeExprKind.DECIMAL64]: 'DECIMAL',
-      [DataTypeExprKind.DECIMAL128]: 'DECIMAL',
-      [DataTypeExprKind.DECIMAL256]: 'DECIMAL',
-      [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
-      [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
-      [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP',
-      [DataTypeExprKind.TIMESTAMPNTZ]: 'TIMESTAMP',
-    };
+      [DataTypeExprKind.TINYINT, 'SMALLINT'],
+      [DataTypeExprKind.MEDIUMINT, 'INT'],
+      [DataTypeExprKind.DECIMAL32, 'DECIMAL'],
+      [DataTypeExprKind.DECIMAL64, 'DECIMAL'],
+      [DataTypeExprKind.DECIMAL128, 'DECIMAL'],
+      [DataTypeExprKind.DECIMAL256, 'DECIMAL'],
+      [DataTypeExprKind.DATETIME, 'TIMESTAMP'],
+      [DataTypeExprKind.TIMESTAMPTZ, 'TIMESTAMP'],
+      [DataTypeExprKind.TIMESTAMPLTZ, 'TIMESTAMP'],
+      [DataTypeExprKind.TIMESTAMPNTZ, 'TIMESTAMP'],
+    ]);
   }
 
   dataTypeSql (expression: DataTypeExpr): string {

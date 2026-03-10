@@ -104,18 +104,18 @@ class DrillGenerator extends Generator {
 
   @cache
   static get TYPE_MAPPING () {
-    return {
+    return new Map([
       ...Generator.TYPE_MAPPING,
-      [DataTypeExprKind.INT]: 'INTEGER',
-      [DataTypeExprKind.SMALLINT]: 'INTEGER',
-      [DataTypeExprKind.TINYINT]: 'INTEGER',
-      [DataTypeExprKind.BINARY]: 'VARBINARY',
-      [DataTypeExprKind.TEXT]: 'VARCHAR',
-      [DataTypeExprKind.NCHAR]: 'VARCHAR',
-      [DataTypeExprKind.TIMESTAMPLTZ]: 'TIMESTAMP',
-      [DataTypeExprKind.TIMESTAMPTZ]: 'TIMESTAMP',
-      [DataTypeExprKind.DATETIME]: 'TIMESTAMP',
-    };
+      [DataTypeExprKind.INT, 'INTEGER'],
+      [DataTypeExprKind.SMALLINT, 'INTEGER'],
+      [DataTypeExprKind.TINYINT, 'INTEGER'],
+      [DataTypeExprKind.BINARY, 'VARBINARY'],
+      [DataTypeExprKind.TEXT, 'VARCHAR'],
+      [DataTypeExprKind.NCHAR, 'VARCHAR'],
+      [DataTypeExprKind.TIMESTAMPLTZ, 'TIMESTAMP'],
+      [DataTypeExprKind.TIMESTAMPTZ, 'TIMESTAMP'],
+      [DataTypeExprKind.DATETIME, 'TIMESTAMP'],
+    ]);
   }
 
   @cache
