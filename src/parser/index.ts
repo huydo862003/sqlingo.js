@@ -8097,9 +8097,9 @@ export class Parser {
         this.retreat(this.index - 1);
       }
 
-      if (parts && parts.length === 2) {
-        finalThis = LiteralExpr.string(parts[0]);
-        unit = this.expression(VarExpr, { this: parts[1].toUpperCase() });
+      if (parts && 3 <= parts.length) {
+        finalThis = LiteralExpr.string(parts[1]);
+        unit = this.expression(VarExpr, { this: parts[2].toUpperCase() });
       }
     }
 
@@ -10306,7 +10306,7 @@ export class Parser {
       });
       const column = (thisExpr as AliasExpr).args.this;
 
-      if ((!thisExpr.comments || thisExpr.comments.length === 0) && column && column.comments && column.comments.length > 0) {
+      if ((!thisExpr.comments || thisExpr.comments.length === 0) && column && column.comments && 0 < column.comments.length) {
         thisExpr.comments = column.popComments();
       }
     }
@@ -12665,7 +12665,7 @@ export class Parser {
       }
     }
 
-    if (!matched && (continuations === undefined || continuations.length > 0)) {
+    if (!matched && (continuations === undefined || 0 < continuations.length)) {
       if (raiseUnmatched) {
         this.raiseError(`Unknown option ${option}`);
       }

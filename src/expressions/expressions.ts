@@ -8015,6 +8015,7 @@ export type SliceExprArgs = Merge<[
 export class SliceExpr extends Expression {
   static key = ExpressionKey.SLICE;
 
+  static requiredArgs = new Set<string>();
   static availableArgs = new Set([
     'this',
     'expression',
