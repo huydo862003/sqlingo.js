@@ -7050,14 +7050,8 @@ export class Parser {
 
     const fields: InExpr[] = [];
     while (true) {
-      const results = this._parse({
-        parseMethod: function (this: Parser) {
-          return this.parsePivotIn();
-        },
-        rawTokens: this.tokens,
-      });
-      const field = results[0];
-      if (!field || !(field instanceof InExpr)) {
+      const field = this.tryParse(() => this.parsePivotIn());
+      if (!field) {
         break;
       }
       fields.push(field);
