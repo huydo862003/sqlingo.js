@@ -1084,14 +1084,14 @@ class HiveGenerator extends Generator {
   }
 
   @cache
-  static get PROPERTIES_LOCATION () {
-    return {
+  static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
+    return new Map([
       ...Generator.PROPERTIES_LOCATION,
-      [FileFormatPropertyExpr.constructor.name]: PropertiesLocation.POST_SCHEMA,
-      [PartitionedByPropertyExpr.constructor.name]: PropertiesLocation.POST_SCHEMA,
-      [VolatilePropertyExpr.constructor.name]: PropertiesLocation.UNSUPPORTED,
-      [WithDataPropertyExpr.constructor.name]: PropertiesLocation.UNSUPPORTED,
-    };
+      [FileFormatPropertyExpr, PropertiesLocation.POST_SCHEMA],
+      [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
+      [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
+      [WithDataPropertyExpr, PropertiesLocation.UNSUPPORTED],
+    ] as [typeof Expression, PropertiesLocation][]);
   }
 
   @cache

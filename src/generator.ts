@@ -5579,8 +5579,8 @@ export class Generator {
     const actions = expression.args.actions || [];
 
     let actionsSql: string;
-    if (!(this.dialect._constructor.ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN
-      && actions[0] instanceof ColumnDefExpr)) {
+    if (!this.dialect._constructor.ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN
+      && actions[0] instanceof ColumnDefExpr) {
       actionsSql = this.expressions(expression, {
         key: 'actions',
         flat: true,
