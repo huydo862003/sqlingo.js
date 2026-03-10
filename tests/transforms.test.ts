@@ -5,8 +5,6 @@ import type { Expression } from '../src/expressions';
 import {
   maybeParse,
   ArrayExpr,
-  SelectExpr,
-  TableExpr,
 } from '../src/expressions';
 import {
   eliminateDistinctOn,
@@ -284,5 +282,10 @@ class TestTransforms {
 const t = new TestTransforms();
 
 describe('TestTransforms', () => {
+  test('testEliminateDistinctOn', () => t.testEliminateDistinctOn());
+  test('testEliminateQualify', () => t.testEliminateQualify());
+  test('testEliminateWindowClause', () => t.testEliminateWindowClause());
+  test('testInheritStructFieldNames', () => t.testInheritStructFieldNames());
+  test('testRemovePrecisionParameterizedTypes', () => t.testRemovePrecisionParameterizedTypes());
   test('testEliminateJoinMarks', () => t.testEliminateJoinMarks());
 });
