@@ -246,7 +246,7 @@ class SQLiteParser extends Parser {
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
-      EDITDIST3: LevenshteinExpr.fromArgList,
+      EDITDIST3: (args: unknown[]) => LevenshteinExpr.fromArgList(args),
       STRFTIME: buildStrftime,
       DATETIME: (args: Expression[]) => new AnonymousExpr({
         this: 'DATETIME',
@@ -256,7 +256,7 @@ class SQLiteParser extends Parser {
         this: 'TIME',
         expressions: args,
       }),
-      SQLITE_VERSION: CurrentVersionExpr.fromArgList,
+      SQLITE_VERSION: (args: unknown[]) => CurrentVersionExpr.fromArgList(args),
     };
   }
 

@@ -579,15 +579,15 @@ class PrestoParser extends Parser {
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
-      ARBITRARY: AnyValueExpr.fromArgList,
-      APPROX_DISTINCT: ApproxDistinctExpr.fromArgList,
+      ARBITRARY: (args: unknown[]) => AnyValueExpr.fromArgList(args),
+      APPROX_DISTINCT: (args: unknown[]) => ApproxDistinctExpr.fromArgList(args),
       APPROX_PERCENTILE: buildApproxPercentile,
       BITWISE_AND: binaryFromFunction(BitwiseAndExpr),
       BITWISE_NOT: (args: Expression[]) => new BitwiseNotExpr({ this: seqGet(args, 0) }),
       BITWISE_OR: binaryFromFunction(BitwiseOrExpr),
       BITWISE_XOR: binaryFromFunction(BitwiseXorExpr),
-      CARDINALITY: ArraySizeExpr.fromArgList,
-      CONTAINS: ArrayContainsExpr.fromArgList,
+      CARDINALITY: (args: unknown[]) => ArraySizeExpr.fromArgList(args),
+      CONTAINS: (args: unknown[]) => ArrayContainsExpr.fromArgList(args),
       // Presto/Trino: DATE_ADD(unit, value, timestamp)
       DATE_ADD: (args: Expression[]) =>
         new DateAddExpr({
@@ -604,9 +604,9 @@ class PrestoParser extends Parser {
       DATE_FORMAT: buildFormattedTime(TimeToStrExpr, { dialect: Dialects.PRESTO }),
       DATE_PARSE: buildFormattedTime(StrToTimeExpr, { dialect: Dialects.PRESTO }),
       DATE_TRUNC: dateTruncToTime,
-      DAY_OF_WEEK: DayOfWeekIsoExpr.fromArgList,
-      DOW: DayOfWeekIsoExpr.fromArgList,
-      DOY: DayOfYearExpr.fromArgList,
+      DAY_OF_WEEK: (args: unknown[]) => DayOfWeekIsoExpr.fromArgList(args),
+      DOW: (args: unknown[]) => DayOfWeekIsoExpr.fromArgList(args),
+      DOY: (args: unknown[]) => DayOfYearExpr.fromArgList(args),
       // ELEMENT_AT is 1-indexed and returns NULL instead of throwing on out-of-bounds
       ELEMENT_AT: (args: Expression[]) =>
         new BracketExpr({
@@ -615,7 +615,7 @@ class PrestoParser extends Parser {
           offset: 1,
           safe: true,
         }),
-      FROM_HEX: UnhexExpr.fromArgList,
+      FROM_HEX: (args: unknown[]) => UnhexExpr.fromArgList(args),
       FROM_UNIXTIME: buildFromUnixtime,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       FROM_UTF8: (args: any[]) =>
@@ -633,8 +633,8 @@ class PrestoParser extends Parser {
           options: seqGet(args, 1),
           isJson: true,
         }),
-      LEVENSHTEIN_DISTANCE: LevenshteinExpr.fromArgList,
-      NOW: CurrentTimestampExpr.fromArgList,
+      LEVENSHTEIN_DISTANCE: (args: unknown[]) => LevenshteinExpr.fromArgList(args),
+      NOW: (args: unknown[]) => CurrentTimestampExpr.fromArgList(args),
       REGEXP_EXTRACT: buildRegexpExtract(RegexpExtractExpr),
       REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -645,19 +645,19 @@ class PrestoParser extends Parser {
           replacement: seqGet(args, 2) ?? '',
         }),
       REPLACE: buildReplaceWithOptionalReplacement,
-      ROW: StructExpr.fromArgList,
-      SEQUENCE: GenerateSeriesExpr.fromArgList,
-      SET_AGG: ArrayUniqueAggExpr.fromArgList,
-      SPLIT_TO_MAP: StrToMapExpr.fromArgList,
+      ROW: (args: unknown[]) => StructExpr.fromArgList(args),
+      SEQUENCE: (args: unknown[]) => GenerateSeriesExpr.fromArgList(args),
+      SET_AGG: (args: unknown[]) => ArrayUniqueAggExpr.fromArgList(args),
+      SPLIT_TO_MAP: (args: unknown[]) => StrToMapExpr.fromArgList(args),
       STRPOS: (args: Expression[]) =>
         new StrPositionExpr({
           this: seqGet(args, 0),
           substr: seqGet(args, 1),
           occurrence: seqGet(args, 2),
         }),
-      SLICE: ArraySliceExpr.fromArgList,
+      SLICE: (args: unknown[]) => ArraySliceExpr.fromArgList(args),
       TO_CHAR: buildToChar,
-      TO_UNIXTIME: TimeToUnixExpr.fromArgList,
+      TO_UNIXTIME: (args: unknown[]) => TimeToUnixExpr.fromArgList(args),
       TO_UTF8: (args: Expression[]) =>
         new EncodeExpr({
           this: seqGet(args, 0),
@@ -666,7 +666,7 @@ class PrestoParser extends Parser {
             isString: true,
           }),
         }),
-      MD5: Md5DigestExpr.fromArgList,
+      MD5: (args: unknown[]) => Md5DigestExpr.fromArgList(args),
       SHA256: (args: Expression[]) =>
         new Sha2Expr({
           this: seqGet(args, 0),
@@ -683,7 +683,7 @@ class PrestoParser extends Parser {
             isString: false,
           }),
         }),
-      WEEK: WeekOfYearExpr.fromArgList,
+      WEEK: (args: unknown[]) => WeekOfYearExpr.fromArgList(args),
     };
   }
 

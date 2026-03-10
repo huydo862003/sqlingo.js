@@ -86,12 +86,12 @@ class DatabricksParser extends Spark.Parser {
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Spark.Parser.FUNCTIONS,
-      GETDATE: CurrentTimestampExpr.fromArgList,
+      GETDATE: (args: unknown[]) => CurrentTimestampExpr.fromArgList(args),
       DATEADD: buildDateDelta(DateAddExpr),
       DATE_ADD: buildDateDelta(DateAddExpr),
       DATEDIFF: buildDateDelta(DateDiffExpr),
       DATE_DIFF: buildDateDelta(DateDiffExpr),
-      NOW: CurrentTimestampExpr.fromArgList,
+      NOW: (args: unknown[]) => CurrentTimestampExpr.fromArgList(args),
       TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: Dialects.DATABRICKS }),
       UNIFORM: (args: Expression[]) => new UniformExpr({
         this: seqGet(args, 0),

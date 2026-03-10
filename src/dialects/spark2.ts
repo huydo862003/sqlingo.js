@@ -196,7 +196,7 @@ class Spark2Parser extends Hive.Parser {
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Hive.Parser.FUNCTIONS,
-      AGGREGATE: ReduceExpr.fromArgList,
+      AGGREGATE: (args: unknown[]) => ReduceExpr.fromArgList(args),
       BOOLEAN: buildAsCast('boolean'),
       DATE: buildAsCast('date'),
       DATE_TRUNC: (args: Expression[]) =>
@@ -212,7 +212,7 @@ class Spark2Parser extends Hive.Parser {
         new DayOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
       DOUBLE: buildAsCast('double'),
       FLOAT: buildAsCast('float'),
-      FORMAT_STRING: FormatExpr.fromArgList,
+      FORMAT_STRING: (args: unknown[]) => FormatExpr.fromArgList(args),
       FROM_UTC_TIMESTAMP: (args: Expression[], { dialect }: { dialect: Dialect }) =>
         new AtTimeZoneExpr({
           this: cast(seqGet(args, 0) || var_(''), DataTypeExprKind.TIMESTAMP, {
@@ -222,8 +222,8 @@ class Spark2Parser extends Hive.Parser {
         }),
       LTRIM: (args: Expression[]) => buildTrim(args, { reverseArgs: true }),
       INT: buildAsCast('int'),
-      MAP_FROM_ARRAYS: MapExpr.fromArgList,
-      RLIKE: RegexpLikeExpr.fromArgList,
+      MAP_FROM_ARRAYS: (args: unknown[]) => MapExpr.fromArgList(args),
+      RLIKE: (args: unknown[]) => RegexpLikeExpr.fromArgList(args),
       RTRIM: (args: Expression[]) => buildTrim(args, {
         isLeft: false,
         reverseArgs: true,
@@ -231,13 +231,13 @@ class Spark2Parser extends Hive.Parser {
       SHIFTLEFT: binaryFromFunction(BitwiseLeftShiftExpr),
       SHIFTRIGHT: binaryFromFunction(BitwiseRightShiftExpr),
       STRING: buildAsCast('string'),
-      SLICE: ArraySliceExpr.fromArgList,
+      SLICE: (args: unknown[]) => ArraySliceExpr.fromArgList(args),
       TIMESTAMP: buildAsCast('timestamp'),
       TO_TIMESTAMP: (args: Expression[]) =>
         args.length === 1
           ? buildAsCast('timestamp')(args)
           : buildFormattedTime(StrToTimeExpr, { dialect: 'spark' })(args),
-      TO_UNIX_TIMESTAMP: StrToUnixExpr.fromArgList,
+      TO_UNIX_TIMESTAMP: (args: unknown[]) => StrToUnixExpr.fromArgList(args),
       TO_UTC_TIMESTAMP: (args: Expression[], { dialect }: { dialect: Dialect }) =>
         new FromTimeZoneExpr({
           this: cast(seqGet(args, 0) || var_(''), DataTypeExprKind.TIMESTAMP, {

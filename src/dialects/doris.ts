@@ -109,12 +109,12 @@ class DorisParser extends MySQL.Parser {
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...MySQL.Parser.FUNCTIONS,
-      COLLECT_SET: ArrayUniqueAggExpr.fromArgList,
+      COLLECT_SET: (args: unknown[]) => ArrayUniqueAggExpr.fromArgList(args),
       DATE_TRUNC: buildDateTrunc,
-      L2_DISTANCE: EuclideanDistanceExpr.fromArgList,
-      MONTHS_ADD: AddMonthsExpr.fromArgList,
-      REGEXP: RegexpLikeExpr.fromArgList,
-      TO_DATE: TsOrDsToDateExpr.fromArgList,
+      L2_DISTANCE: (args: unknown[]) => EuclideanDistanceExpr.fromArgList(args),
+      MONTHS_ADD: (args: unknown[]) => AddMonthsExpr.fromArgList(args),
+      REGEXP: (args: unknown[]) => RegexpLikeExpr.fromArgList(args),
+      TO_DATE: (args: unknown[]) => TsOrDsToDateExpr.fromArgList(args),
     };
   }
 

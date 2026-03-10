@@ -117,7 +117,7 @@ class PRQLParser extends Parser {
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
-      AVERAGE: AvgExpr.fromArgList,
+      AVERAGE: (args: unknown[]) => AvgExpr.fromArgList(args),
       SUM: (args: Expression[]) => func('COALESCE', new SumExpr({
         this: seqGet(args, 0),
         expression: 0,

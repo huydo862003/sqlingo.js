@@ -117,8 +117,8 @@ class StarRocksParser extends MySQL.Parser {
           expression: seqGet(args, 2),
           unit: seqGet(args, 0),
         }),
-      ARRAY_FLATTEN: FlattenExpr.fromArgList,
-      REGEXP: RegexpLikeExpr.fromArgList,
+      ARRAY_FLATTEN: (args: unknown[]) => FlattenExpr.fromArgList(args),
+      REGEXP: (args: unknown[]) => RegexpLikeExpr.fromArgList(args),
     };
   }
 

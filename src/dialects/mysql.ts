@@ -542,17 +542,17 @@ class MySQLParser extends Parser {
   static get FUNCTIONS (): typeof Parser.FUNCTIONS {
     return {
       ...Parser.FUNCTIONS,
-      BIT_AND: BitwiseAndAggExpr.fromArgList,
-      BIT_OR: BitwiseOrAggExpr.fromArgList,
-      BIT_XOR: BitwiseXorAggExpr.fromArgList,
-      BIT_COUNT: BitwiseCountExpr.fromArgList,
+      BIT_AND: (args: unknown[]) => BitwiseAndAggExpr.fromArgList(args),
+      BIT_OR: (args: unknown[]) => BitwiseOrAggExpr.fromArgList(args),
+      BIT_XOR: (args: unknown[]) => BitwiseXorAggExpr.fromArgList(args),
+      BIT_COUNT: (args: unknown[]) => BitwiseCountExpr.fromArgList(args),
       CONVERT_TZ: (args: Expression[]): ConvertTimezoneExpr =>
         new ConvertTimezoneExpr({
           sourceTz: seqGet(args, 1),
           targetTz: seqGet(args, 2),
           timestamp: seqGet(args, 0),
         }),
-      CURDATE: CurrentDateExpr.fromArgList,
+      CURDATE: (args: unknown[]) => CurrentDateExpr.fromArgList(args),
       DATE: (args: Expression[]): TsOrDsToDateExpr =>
         new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
       DATE_ADD: (args: Expression[]) => buildDateDeltaWithInterval(DateAddExpr)(args),
@@ -566,7 +566,7 @@ class MySQLParser extends Parser {
         new DayOfWeekExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
       DAYOFYEAR: (args: Expression[]): DayOfYearExpr =>
         new DayOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
-      FORMAT: NumberToStrExpr.fromArgList,
+      FORMAT: (args: unknown[]) => NumberToStrExpr.fromArgList(args),
       FROM_UNIXTIME: buildFormattedTime(UnixToTimeExpr, { dialect: Dialects.MYSQL }),
       ISNULL: isnullToIsNull,
       LENGTH: (args: Expression[]): LengthExpr =>
@@ -574,7 +574,7 @@ class MySQLParser extends Parser {
           this: seqGet(args, 0),
           binary: true,
         }),
-      MAKETIME: TimeFromPartsExpr.fromArgList,
+      MAKETIME: (args: unknown[]) => TimeFromPartsExpr.fromArgList(args),
       MONTH: (args: Expression[]): MonthExpr =>
         new MonthExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
       MONTHNAME: (args: Expression[]): TimeToStrExpr =>
@@ -585,8 +585,8 @@ class MySQLParser extends Parser {
             isString: true,
           }),
         }),
-      SCHEMA: CurrentSchemaExpr.fromArgList,
-      DATABASE: CurrentSchemaExpr.fromArgList,
+      SCHEMA: (args: unknown[]) => CurrentSchemaExpr.fromArgList(args),
+      DATABASE: (args: unknown[]) => CurrentSchemaExpr.fromArgList(args),
       STR_TO_DATE: buildStrToDate as (args: Expression[]) => Expression,
       TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr),
       TO_DAYS: (args: Expression[]) => {
@@ -602,7 +602,7 @@ class MySQLParser extends Parser {
         });
         return diff.add(1); // Standardized parenthesized expression with offset
       },
-      VERSION: CurrentVersionExpr.fromArgList,
+      VERSION: (args: unknown[]) => CurrentVersionExpr.fromArgList(args),
       WEEK: (args: Expression[]): WeekExpr =>
         new WeekExpr({
           this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),

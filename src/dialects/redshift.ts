@@ -97,8 +97,8 @@ class RedshiftParser extends Postgres.Parser {
         DATE_ADD: buildDateDelta(TsOrDsAddExpr),
         DATEDIFF: buildDateDelta(TsOrDsDiffExpr),
         DATE_DIFF: buildDateDelta(TsOrDsDiffExpr),
-        GETDATE: CurrentTimestampExpr.fromArgList,
-        LISTAGG: GroupConcatExpr.fromArgList,
+        GETDATE: (args: unknown[]) => CurrentTimestampExpr.fromArgList(args),
+        LISTAGG: (args: unknown[]) => GroupConcatExpr.fromArgList(args),
         REGEXP_SUBSTR: (args: Expression[]) =>
           new RegexpExtractExpr({
             this: seqGet(args, 0),
@@ -112,7 +112,7 @@ class RedshiftParser extends Postgres.Parser {
             this: seqGet(args, 0),
             expression: seqGet(args, 1) || LiteralExpr.string(','),
           }),
-        STRTOL: FromBaseExpr.fromArgList,
+        STRTOL: (args: unknown[]) => FromBaseExpr.fromArgList(args),
       };
       delete functions['GET_BIT'];
       return functions;

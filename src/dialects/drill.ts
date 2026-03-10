@@ -85,10 +85,10 @@ class DrillParser extends Parser {
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
-      REPEATED_COUNT: ArraySizeExpr.fromArgList,
-      TO_TIMESTAMP: TimeStrToTimeExpr.fromArgList,
+      REPEATED_COUNT: (args: unknown[]) => ArraySizeExpr.fromArgList(args),
+      TO_TIMESTAMP: (args: unknown[]) => TimeStrToTimeExpr.fromArgList(args),
       TO_CHAR: buildFormattedTime(TimeToStrExpr, { dialect: 'drill' }),
-      LEVENSHTEIN_DISTANCE: LevenshteinExpr.fromArgList,
+      LEVENSHTEIN_DISTANCE: (args: unknown[]) => LevenshteinExpr.fromArgList(args),
     };
   }
 }

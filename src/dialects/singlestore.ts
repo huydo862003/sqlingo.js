@@ -219,7 +219,7 @@ class SingleStoreParser extends MySQL.Parser {
             this: (new DayOfWeekExpr({ this: seqGet(args, 0) }).add(5))
               .mod(7),
           }),
-        UNIX_TIMESTAMP: StrToUnixExpr.fromArgList,
+        UNIX_TIMESTAMP: (args: unknown[]) => StrToUnixExpr.fromArgList(args),
         FROM_UNIXTIME: buildFormattedTime(UnixToTimeExpr, { dialect: 'mysql' }),
         TIME_BUCKET: (args: Expression[]) =>
           new DateBinExpr({
@@ -258,10 +258,10 @@ class SingleStoreParser extends MySQL.Parser {
             this: seqGet(args, 0),
             expressions: args.slice(1),
           }),
-        JSON_PRETTY: JsonFormatExpr.fromArgList,
+        JSON_PRETTY: (args: unknown[]) => JsonFormatExpr.fromArgList(args),
         JSON_BUILD_ARRAY: (args: Expression[]) => new JsonArrayExpr({ expressions: args }),
         JSON_BUILD_OBJECT: (args: Expression[]) => new JsonObjectExpr({ expressions: args }),
-        DATE: DateExpr.fromArgList,
+        DATE: (args: unknown[]) => DateExpr.fromArgList(args),
         DAYNAME: (args: Expression[]) =>
           new TimeToStrExpr({
             this: seqGet(args, 0),
@@ -273,15 +273,15 @@ class SingleStoreParser extends MySQL.Parser {
             expression: seqGet(args, 1),
             unit: seqGet(args, 0),
           }),
-        APPROX_COUNT_DISTINCT: HllExpr.fromArgList,
+        APPROX_COUNT_DISTINCT: (args: unknown[]) => HllExpr.fromArgList(args),
         APPROX_PERCENTILE: (args: Expression[]) =>
           new ApproxQuantileExpr({
             this: seqGet(args, 0),
             quantile: seqGet(args, 1),
             errorTolerance: seqGet(args, 2),
           }),
-        VARIANCE: VariancePopExpr.fromArgList,
-        INSTR: ContainsExpr.fromArgList,
+        VARIANCE: (args: unknown[]) => VariancePopExpr.fromArgList(args),
+        INSTR: (args: unknown[]) => ContainsExpr.fromArgList(args),
         REGEXP_MATCH: (args: Expression[]) =>
           new RegexpExtractAllExpr({
             this: seqGet(args, 0),

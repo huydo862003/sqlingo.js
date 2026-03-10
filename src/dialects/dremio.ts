@@ -181,17 +181,17 @@ class DremioParser extends Parser {
   static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
-      ARRAY_GENERATE_RANGE: GenerateSeriesExpr.fromArgList,
-      BIT_AND: BitwiseAndAggExpr.fromArgList,
-      BIT_OR: BitwiseOrAggExpr.fromArgList,
+      ARRAY_GENERATE_RANGE: (args: unknown[]) => GenerateSeriesExpr.fromArgList(args),
+      BIT_AND: (args: unknown[]) => BitwiseAndAggExpr.fromArgList(args),
+      BIT_OR: (args: unknown[]) => BitwiseOrAggExpr.fromArgList(args),
       DATE_ADD: buildDateDeltaWithCastInterval(DateAddExpr),
       DATE_FORMAT: buildFormattedTime(TimeToStrExpr, { dialect: 'dremio' }),
       DATE_SUB: buildDateDeltaWithCastInterval(DateSubExpr),
-      REGEXP_MATCHES: RegexpLikeExpr.fromArgList,
-      REPEATSTR: RepeatExpr.fromArgList,
+      REGEXP_MATCHES: (args: unknown[]) => RegexpLikeExpr.fromArgList(args),
+      REPEATSTR: (args: unknown[]) => RepeatExpr.fromArgList(args),
       TO_CHAR: toCharIsNumericHandler,
       TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: 'dremio' }),
-      DATE_PART: ExtractExpr.fromArgList,
+      DATE_PART: (args: unknown[]) => ExtractExpr.fromArgList(args),
       DATETYPE: dateTypeHandler,
     };
   }
