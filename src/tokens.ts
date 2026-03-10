@@ -728,7 +728,7 @@ export class Tokenizer {
     const nationalStrings: Record<string, [string, TokenType]> = {};
     for (const [start, end] of Object.entries(this._QUOTES)) {
       for (const prefix of ['n', 'N']) {
-        nationalStrings[prefix + start] = [end, TokenType.STRING];
+        nationalStrings[prefix + start] = [end, TokenType.NATIONAL_STRING];
       }
     }
     return {

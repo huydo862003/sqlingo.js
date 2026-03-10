@@ -2027,7 +2027,7 @@ export class Generator {
       return sql;
     }
 
-    if (expression && this._constructor.EXCLUDE_COMMENTS.has(expression._constructor)) {
+    if (expression && [...this._constructor.EXCLUDE_COMMENTS].some((cls) => expression instanceof cls)) {
       return sql;
     }
 
@@ -2042,7 +2042,7 @@ export class Generator {
 
     const commentsSqlWithLineBreaks = this.replaceLineBreaks(commentsSql);
 
-    if (separated || (expression && this._constructor.WITH_SEPARATED_COMMENTS.has(expression._constructor))) {
+    if (separated || (expression && [...this._constructor.WITH_SEPARATED_COMMENTS].some((cls) => expression instanceof cls))) {
       return (!sql || sql[0] === ' ' || sql[0] === '\n')
         ? `${this.sep()}${commentsSqlWithLineBreaks}${sql}`
         : `${commentsSqlWithLineBreaks}${this.sep()}${sql}`;

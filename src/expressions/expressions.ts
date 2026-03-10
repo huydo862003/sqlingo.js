@@ -11133,6 +11133,7 @@ export type TemporaryPropertyExprArgs = Merge<[
 export class TemporaryPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.TEMPORARY_PROPERTY;
 
+  static requiredArgs = new Set<string>();
   static availableArgs = new Set(['this']);
 
   declare args: TemporaryPropertyExprArgs;
@@ -18151,6 +18152,8 @@ export type CurrentDateExprArgs = Merge<[
 
 export class CurrentDateExpr extends FuncExpr {
   static key = ExpressionKey.CURRENT_DATE;
+
+  static requiredArgs = new Set<string>();
 
   static argOrder = ['this'];
 
