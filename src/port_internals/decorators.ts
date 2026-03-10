@@ -14,7 +14,7 @@ export function cache<T> (
   context: ClassGetterDecoratorContext,
 ): () => T {
   const store = new WeakMap<object, T>();
-  context.addInitializer(function (this: object) {
+  context.addInitializer(function (this: unknown) {
     Object.defineProperty(this, context.name, {
       get (): T {
         if (!store.has(this)) store.set(this, target.call(this));
