@@ -2685,7 +2685,7 @@ export class Generator {
       typeSql = this.sql(expression, 'kind');
     } else {
       const typeMapping = this._constructor.TYPE_MAPPING.get(typeValue);
-      typeSql = typeMapping !== undefined ? typeMapping : typeValue;
+      typeSql = typeMapping !== undefined ? typeMapping : typeValue.toUpperCase();
     }
 
     if (interior) {

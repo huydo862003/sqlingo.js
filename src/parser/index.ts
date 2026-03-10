@@ -8676,7 +8676,7 @@ export class Parser {
 
       if (typeToken) {
         thisExpr = new DataTypeExpr({
-          this: DataTypeExprKind[typeToken.valueOf() as keyof typeof DataTypeExprKind],
+          this: DataTypeExprKind[typeToken.valueOf().toUpperCase() as keyof typeof DataTypeExprKind],
           expressions: expressions as DataTypeExpr[],
           nested,
           prefix,
@@ -11928,14 +11928,11 @@ export class Parser {
       let thisExpr: Expression;
 
       if (isKnownFunction) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-        const funcBuilder = functionBuilder as Function;
-
         let func: Expression;
-        if (1 < funcBuilder.length) {
-          func = funcBuilder(argsWithPropEq, { dialect: this.dialect });
+        if (1 < functionBuilder.length) {
+          func = functionBuilder(argsWithPropEq, { dialect: this.dialect });
         } else {
-          func = funcBuilder(argsWithPropEq);
+          func = functionBuilder(argsWithPropEq);
         }
 
         func = this.validateExpression(func, argsWithPropEq);
@@ -12671,7 +12668,7 @@ export class Parser {
       }
     }
 
-    if (!matched && (continuations || continuations === null)) {
+    if (!matched && (continuations === undefined || continuations.length > 0)) {
       if (raiseUnmatched) {
         this.raiseError(`Unknown option ${option}`);
       }

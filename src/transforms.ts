@@ -334,7 +334,7 @@ export function eliminateQualify (expression: Expression): Expression {
     }
 
     const candidates = expression.isStar ? [WindowExpr] as const : [WindowExpr, ColumnExpr] as const;
-    for (const candidate of qualifyFilters?.findAll<WindowExpr | ColumnExpr>(candidates) ?? []) {
+    for (const candidate of [...qualifyFilters?.findAll<WindowExpr | ColumnExpr>(candidates) ?? []]) {
       if (candidate instanceof WindowExpr) {
         if (expressionByAlias) {
           for (const col of candidate.findAll(ColumnExpr)) {

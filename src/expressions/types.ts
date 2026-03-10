@@ -254,7 +254,7 @@ export enum ExpressionKey {
   CURRENT_WAREHOUSE = 'currentWarehouse',
   DATA_BLOCKSIZE_PROPERTY = 'dataBlocksizeProperty',
   DATA_DELETION_PROPERTY = 'dataDeletionProperty',
-  DATA_TYPE = 'datatype',
+  DATA_TYPE = 'dataType',
   DATA_TYPE_PARAM = 'dataTypeParam',
   DATE = 'date',
   DATETIME = 'datetime',
