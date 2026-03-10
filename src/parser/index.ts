@@ -5459,7 +5459,7 @@ export class Parser {
       thisExpr = undefined;
     }
 
-    return parseSetOperation ? this.parseSetOperations(thisExpr) : undefined;
+    return parseSetOperation ? this.parseSetOperations(thisExpr) : thisExpr;
   }
 
   parseRecursiveWithSearch (): RecursiveWithSearchExpr | undefined {
