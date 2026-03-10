@@ -1564,9 +1564,6 @@ export class Tokenizer {
         }
       }
 
-      if (this._end && 0 < commentCount) {
-        throw new Error(`Unterminated comment starting at line ${commentStartLine}`);
-      }
       this.comments.push(this.text.slice(commentStartSize, -commentEndSize + 1));
       this.advance({ i: commentEndSize - 1 });
     } else {

@@ -10039,7 +10039,7 @@ export class Parser {
       || this.match(TokenType.VAR)
       || (tokens && this.matchSet(tokens))
     ) {
-      const text = upper ? this.prev?.text ?? ''.toUpperCase() : this.prev?.text ?? '';
+      const text = upper ? (this.prev?.text ?? '').toUpperCase() : this.prev?.text ?? '';
       return this.expression(VarExpr, { this: text });
     }
     return this.parsePlaceholder();
@@ -10309,7 +10309,7 @@ export class Parser {
       });
       const column = (thisExpr as AliasExpr).args.this;
 
-      if (!thisExpr.comments && column && column.comments) {
+      if ((!thisExpr.comments || thisExpr.comments.length === 0) && column && column.comments && column.comments.length > 0) {
         thisExpr.comments = column.popComments();
       }
     }
@@ -12858,7 +12858,7 @@ export class Parser {
   }
 
   parseAddColumn (): ColumnDefExpr | undefined {
-    if (this.prev?.text ?? ''.toUpperCase() !== 'ADD') {
+    if ((this.prev?.text ?? '').toUpperCase() !== 'ADD') {
       return undefined;
     }
 
@@ -12939,7 +12939,7 @@ export class Parser {
 
   parseAlterTableAlter (): Expression | undefined {
     if (this.matchTexts(Object.keys(this._constructor.ALTER_ALTER_PARSERS))) {
-      return this._constructor.ALTER_ALTER_PARSERS[this.prev?.text ?? ''.toUpperCase()]?.call(this);
+      return this._constructor.ALTER_ALTER_PARSERS[(this.prev?.text ?? '').toUpperCase()]?.call(this);
     }
 
     this.match(TokenType.COLUMN);
