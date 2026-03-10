@@ -1364,6 +1364,9 @@ export class Tokenizer {
     this._current += i;
     this._end = this.size <= this._current;
     this.char = this.sql[this._current - 1];
+    if (this.char === undefined) {
+      throw new Error('Index out of bound');
+    }
     this.peek = this._end
       ? ''
       : this.sql[this._current];
@@ -1561,6 +1564,9 @@ export class Tokenizer {
         }
       }
 
+      if (this._end && 0 < commentCount) {
+        throw new Error(`Unterminated comment starting at line ${commentStartLine}`);
+      }
       this.comments.push(this.text.slice(commentStartSize, -commentEndSize + 1));
       this.advance({ i: commentEndSize - 1 });
     } else {
