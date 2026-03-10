@@ -22937,6 +22937,7 @@ export type MapExprArgs = Merge<[
 export class MapExpr extends FuncExpr {
   static key = ExpressionKey.MAP;
 
+  static requiredArgs = new Set<string>();
   static availableArgs = new Set(['keys', 'values']);
 
   static argOrder = ['keys', 'values'];

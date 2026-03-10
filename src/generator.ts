@@ -2841,7 +2841,7 @@ export class Generator {
         stack.push(
           this.maybeComment(
             this.setOperation(node),
-            node,
+            undefined,
             node.comments,
             true,
           ),
