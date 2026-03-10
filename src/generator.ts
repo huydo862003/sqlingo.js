@@ -276,6 +276,7 @@ import type {
   MulExpr,
   ExpressionValue,
   ExpressionOrString,
+  JsonExtractScalarExpr, JsonbExtractExpr, JsonbExtractScalarExpr,
 } from './expressions';
 import {
   DistinctExpr,
@@ -308,6 +309,8 @@ import {
   GenerateSeriesExpr, UnnestExpr,
   PercentileContExpr,
   JsonPathPartExpr, JsonPathWildcardExpr,
+  JsonPathFilterExpr, JsonPathRecursiveExpr, JsonPathRootExpr,
+  JsonPathScriptExpr, JsonPathSelectorExpr, JsonPathSliceExpr, JsonPathUnionExpr,
   AliasExpr, VarExpr,
   var_,
   ComputedColumnConstraintExpr,
@@ -518,6 +521,7 @@ import {
 } from './expressions';
 import { formatTime } from './time';
 import type { ParseOptions } from './parser';
+import { ALL_FUNCTIONS } from './parser/function_registry';
 import {
   Dialect, type DialectType, mapDatePart, unitToStr,
   concatToDPipeSql, NullOrdering, NormalizeFunctions,
@@ -1005,7 +1009,7 @@ export class Generator {
   }
 
   @cache
-  static get UNSUPPORTED_TYPES (): Set<DataTypeExprKind> {
+  static get UNSUPPORTED_TYPES (): Set<DataTypeExprKind | string> {
     return new Set<DataTypeExprKind>();
   }
 
@@ -1280,6 +1284,36 @@ export class Generator {
             return this.binary(e, '#-');
           },
         ],
+        [JsonPathFilterExpr, (_: Generator, e: JsonPathFilterExpr) => `?${e.args.this}`],
+        [JsonPathRecursiveExpr, (_: Generator, e: JsonPathRecursiveExpr) => `..${e.args.this || ''}`],
+        [JsonPathRootExpr, () => '$'],
+        [JsonPathScriptExpr, (_: Generator, e: JsonPathScriptExpr) => `(${e.args.this}`],
+        [
+          JsonPathSelectorExpr,
+          function (this: Generator, e: JsonPathSelectorExpr) {
+            return `[${this.jsonPathPart(e.args.this)}]`;
+          },
+        ],
+        [
+          JsonPathSliceExpr,
+          function (this: Generator, e: JsonPathSliceExpr) {
+            return [
+              e.args.start,
+              e.args.end,
+              e.args.step,
+            ]
+              .filter((p) => p !== undefined && p !== null)
+              .map((p) => (p === false ? '' : this.jsonPathPart(p as ExpressionValue<JsonPathPartExpr>)))
+              .join(':');
+          },
+        ],
+        [
+          JsonPathUnionExpr,
+          function (this: Generator, e: JsonPathUnionExpr) {
+            return `[${this.expressions(e, { sep: ', ' })}]`;
+          },
+        ],
+        [JsonPathWildcardExpr, () => '*'],
         [
           LanguagePropertyExpr,
           function (this: Generator, e) {
@@ -1996,8 +2030,8 @@ export class Generator {
       const handler = (this as any)[expHandlerName];
       if (handler instanceof Function) {
         sql = handler.call(this, expression);
-      } else if (expression instanceof FuncExpr) {
-        sql = this.functionFallbackSql(expression);
+      } else if (expression instanceof FuncExpr || ALL_FUNCTIONS.has(expression._constructor as typeof FuncExpr)) {
+        sql = this.functionFallbackSql(expression as FuncExpr);
       } else if (expression instanceof PropertyExpr) {
         sql = this.propertySql(expression);
       } else {
@@ -2067,7 +2101,7 @@ export class Generator {
     const lazy = expression.args.lazy ? ' LAZY' : '';
     const table = this.sql(expression, 'this');
     const options = expression.args.options as Expression[] | undefined;
-    const optionsSql = options
+    const optionsSql = options?.length
       ? ` OPTIONS(${this.sql(options[0])} = ${this.sql(options[1])})`
       : '';
     let sql = this.sql(expression, 'expression');
@@ -2675,17 +2709,19 @@ export class Generator {
       })
       : this.expressions(expression, { flat: true });
 
-    const typeValue = expression.args.this as DataTypeExprKind;
-    if (this._constructor.UNSUPPORTED_TYPES.has(typeValue)) {
+    const typeValue = expression.args.this;
+    if (typeof typeValue === 'string' && this._constructor.UNSUPPORTED_TYPES.has(typeValue)) {
       this.unsupported(`Data type ${typeValue} is not supported when targeting ${this.dialect._constructor.name}`);
     }
 
-    let typeSql: string;
-    if (typeValue === DataTypeExprKind.USERDEFINED && expression.args.kind) {
+    let typeSql: string | undefined;
+    if (typeValue instanceof Expression) {
+      typeSql = this.sql(typeValue);
+    } else if (typeValue === DataTypeExprKind.USERDEFINED && expression.args.kind) {
       typeSql = this.sql(expression, 'kind');
     } else {
-      const typeMapping = this._constructor.TYPE_MAPPING.get(typeValue);
-      typeSql = typeMapping !== undefined ? typeMapping : typeValue.toUpperCase();
+      const typeMapping = typeValue && this._constructor.TYPE_MAPPING.get(typeValue);
+      typeSql = typeMapping !== undefined ? typeMapping : typeValue?.toUpperCase();
     }
 
     if (interior) {
@@ -3086,7 +3122,6 @@ export class Generator {
   withProperties (properties: PropertiesExpr): string {
     return this.properties(properties, {
       prefix: this.seg(this._constructor.WITH_PROPERTIES_PREFIX, ''),
-      sep: '',
     });
   }
 
@@ -3162,7 +3197,7 @@ export class Generator {
     return `${no}${localStr}${dual}${before}${after}JOURNAL`;
   }
 
-  freeSpacePropertySql (expression: FreespacePropertyExpr): string {
+  freespacePropertySql (expression: FreespacePropertyExpr): string {
     const freespace = this.sql(expression, 'this');
     const percent = expression.args.percent ? ' PERCENT' : '';
     return `FREESPACE=${freespace}${percent}`;
@@ -3191,7 +3226,7 @@ export class Generator {
     return `MERGEBLOCKRATIO=${this.sql(expression, 'this')}${percent}`;
   }
 
-  dataBlockSizePropertySql (expression: DataBlocksizePropertyExpr): string {
+  dataBlocksizePropertySql (expression: DataBlocksizePropertyExpr): string {
     const defaultVal = expression.args.default;
     const minimum = expression.args.minimum;
     const maximum = expression.args.maximum;
@@ -3729,7 +3764,7 @@ export class Generator {
       let values = `VALUES${this.seg('')}${args}`;
 
       const shouldWrap = this._constructor.WRAP_DERIVED_VALUES
-        && (alias || [FromExpr, TableExpr].some((cls) => expression instanceof cls));
+        && (alias || [FromExpr, TableExpr].some((cls) => expression.parent instanceof cls));
 
       if (shouldWrap) {
         values = `(${values})`;
@@ -3909,7 +3944,7 @@ export class Generator {
       expression.args.method,
       expression.args.global ? 'GLOBAL' : undefined,
       side,
-      expression.args.kind?.toUpperCase(),
+      expression.args.kind === JoinExprKind.STRAIGHT_JOIN ? 'STRAIGHT_JOIN' : expression.args.kind?.toUpperCase(),
       (expression.args.hint && genClass.JOIN_HINTS) ? expression.args.hint : undefined,
       (expression.args.directed && genClass.DIRECTED_JOINS) ? 'DIRECTED' : undefined,
     ].filter((op) => op).join(' ');
@@ -3948,7 +3983,7 @@ export class Generator {
       return `, ${thisSql}`;
     }
 
-    const finalOp = opSql !== 'STRAIGHT_JOIN' ? (opSql ? `${opSql} JOIN` : 'JOIN') : opSql;
+    const finalOp = expression.args.kind !== JoinExprKind.STRAIGHT_JOIN ? (opSql ? `${opSql} JOIN` : 'JOIN') : opSql;
 
     const pivots = this.expressions(expression, {
       key: 'pivots',
@@ -5812,6 +5847,10 @@ export class Generator {
     return this.binary(expression, 'IS');
   }
 
+  iLikeSql (expression: ILikeExpr): string {
+    return this.likeSql(expression);
+  }
+
   likeSql (expression: LikeExpr | ILikeExpr): string {
     const thisExpr = expression.args.this;
     const rhs = expression.args.expression;
@@ -5867,10 +5906,6 @@ export class Generator {
     }
 
     return this.binary(expression, op);
-  }
-
-  iLikeSql (expression: ILikeExpr): string {
-    return this.likeSql(expression);
   }
 
   matchSql (expression: MatchExpr): string {
@@ -5956,11 +5991,12 @@ export class Generator {
   binary (expression: BinaryExpr, op: string): string {
     const sqls: string[] = [];
     const stack: (string | Expression)[] = [expression];
+    const binaryType = expression._constructor;
 
     while (0 < stack.length) {
       const node = stack.pop()!;
 
-      if (node instanceof BinaryExpr) {
+      if (node instanceof Expression && node._constructor === binaryType) {
         const opFunc = node.args.operator;
         if (opFunc) {
           op = `OPERATOR(${this.sql(opFunc)})`;
@@ -6036,7 +6072,7 @@ export class Generator {
       .map((arg) => this.sql(arg));
 
     if (this.pretty && this.tooWide(argSqls)) {
-      const joined = argSqls.join(`\n${sep.trim()}\n`);
+      const joined = argSqls.join(`${sep.trim()}\n`);
       return this.indent(`\n${joined}\n`, {
         skipFirst: true,
         skipLast: true,
@@ -6148,9 +6184,9 @@ export class Generator {
   }
 
   nakedProperty (expression: PropertyExpr): string {
-    const propertyName = PropertiesExpr.PROPERTY_TO_NAME[expression._constructor.name];
+    const propertyName = PropertiesExpr.PROPERTY_TO_NAME[expression._constructor.key];
     if (!propertyName) {
-      this.unsupported(`Unsupported property ${expression._constructor.name}`);
+      this.unsupported(`Unsupported property ${expression._constructor.key}`);
     }
     return `${propertyName || ''} ${this.sql(expression, 'this')}`;
   }
@@ -6162,7 +6198,8 @@ export class Generator {
   }
 
   protected tokenSql (tokenType: TokenType): string {
-    return this._constructor.TOKEN_MAPPING[tokenType] ?? tokenType;
+    return this._constructor.TOKEN_MAPPING[tokenType]
+      ?? tokenType.replace(/([A-Z])/g, '_$1').toUpperCase();
   }
 
   userDefinedFunctionSql (expression: UserDefinedFunctionExpr): string {
@@ -7219,6 +7256,22 @@ export class Generator {
     const nullStr = this.sql(expression, 'null');
 
     return `${emptyStr}${errorStr}${nullStr}`;
+  }
+
+  jsonExtractSql (expression: JsonExtractExpr): string {
+    return this.functionFallbackSql(expression);
+  }
+
+  jsonExtractScalarSql (expression: JsonExtractScalarExpr): string {
+    return this.functionFallbackSql(expression);
+  }
+
+  jsonbExtractSql (expression: JsonbExtractExpr): string {
+    return this.functionFallbackSql(expression);
+  }
+
+  jsonbExtractScalarSql (expression: JsonbExtractScalarExpr): string {
+    return this.functionFallbackSql(expression);
   }
 
   jsonExtractQuoteSql (expression: JsonExtractQuoteExpr): string {

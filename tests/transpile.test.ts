@@ -165,7 +165,7 @@ class TestTranspile {
   }
 
   testIdentifyLambda () {
-    expect(transpile('x(y -> y)', { identity: true })[0]).toBe(
+    expect(transpile('x(y -> y)', { identify: true })[0]).toBe(
       'X("y" -> "y")',
     );
   }

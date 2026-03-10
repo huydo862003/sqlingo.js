@@ -2554,7 +2554,7 @@ export class Parser {
         return this.parseAutoIncrement();
       },
       'CASESPECIFIC': function (this: Parser) {
-        return this.expression(CaseSpecificColumnConstraintExpr, { not_: false });
+        return this.expression(CaseSpecificColumnConstraintExpr, { not: false });
       },
       'CHARACTER SET': function (this: Parser) {
         return this.expression(
@@ -3767,7 +3767,7 @@ export class Parser {
 
     let expressions: Expression[] | undefined;
     if (this.match(TokenType.L_PAREN, { advance: false })) {
-      expressions = this.parseWrappedCsv(this.parseTypes);
+      expressions = this.parseWrappedCsv(() => this.parseTypes());
     }
 
     return this.expression(DropExpr, {
@@ -4085,7 +4085,7 @@ export class Parser {
     return this.index === index ? undefined : seq;
   }
 
-  parsePropertyBefore (): Expression | undefined {
+  parsePropertyBefore (): Expression | Expression[] | undefined {
     // only used for teradata currently
     this.match(TokenType.COMMA);
 
@@ -4103,13 +4103,13 @@ export class Parser {
     };
 
     if (this.matchTexts(Object.keys(this._constructor.PROPERTY_PARSERS))) {
-      const parser = this._constructor.PROPERTY_PARSERS[this.prev?.text ?? ''.toUpperCase()];
+      const parser = this._constructor.PROPERTY_PARSERS[(this.prev?.text ?? '').toUpperCase()];
       try {
         const filteredKwargs = Object.fromEntries(
           Object.entries(kwargs).filter(([, v]) => v),
         );
         const result = parser.call(this, filteredKwargs);
-        return Array.isArray(result) ? result[0] : result;
+        return result ?? undefined;
       } catch {
         this.raiseError(`Cannot parse property '${this.prev?.text ?? ''}'`);
       }
@@ -4122,15 +4122,15 @@ export class Parser {
     return this.parseWrappedCsv(() => this.parseProperty());
   }
 
-  parseProperty (): Expression | undefined {
+  parseProperty (): Expression | Expression[] | undefined {
     if (this.matchTexts(Object.keys(this._constructor.PROPERTY_PARSERS))) {
-      const result = this._constructor.PROPERTY_PARSERS[this.prev?.text ?? ''.toUpperCase()].call(this);
-      return Array.isArray(result) ? result[0] : result;
+      const result = this._constructor.PROPERTY_PARSERS[(this.prev?.text ?? '').toUpperCase()].call(this);
+      return result ?? undefined;
     }
 
     if (this.match(TokenType.DEFAULT) && this.matchTexts(Object.keys(this._constructor.PROPERTY_PARSERS))) {
-      const result = this._constructor.PROPERTY_PARSERS[this.prev?.text ?? ''.toUpperCase()].call(this, { default: true });
-      return Array.isArray(result) ? result[0] : result;
+      const result = this._constructor.PROPERTY_PARSERS[(this.prev?.text ?? '').toUpperCase()].call(this, { default: true });
+      return result ?? undefined;
     }
 
     if (this.matchTextSeq(['COMPOUND', 'SORTKEY'])) {
@@ -4231,10 +4231,11 @@ export class Parser {
       const prop = options?.before
         ? this.parsePropertyBefore()
         : this.parseProperty();
-      if (!prop) {
+      if (prop === undefined || prop === null || (Array.isArray(prop) && prop.length === 0)) {
         break;
       }
-      for (const p of [...ensureList<Expression>(prop)]) {
+      const list = Array.isArray(prop) ? prop : [prop];
+      for (const p of list) {
         properties.push(p);
       }
     }
@@ -4875,7 +4876,7 @@ export class Parser {
 
     const options: Expression[] = [];
     while (this.matchTexts(['INCLUDING', 'EXCLUDING'])) {
-      const thisText = this.prev?.text ?? ''.toUpperCase();
+      const thisText = (this.prev?.text ?? '').toUpperCase();
 
       const idVar = this.parseIdVar();
       if (!idVar) {
@@ -5000,7 +5001,7 @@ export class Parser {
   }
 
   parseMultitableInserts (comments?: string[]): MultitableInsertsExpr {
-    const kind = this.prev?.text ?? ''.toUpperCase();
+    const kind = (this.prev?.text ?? '').toUpperCase();
     const expressions: Expression[] = [];
 
     const parseConditionalInsert = (): ConditionalInsertExpr | undefined => {
@@ -5445,7 +5446,7 @@ export class Parser {
       this.matchRParen();
       return this.parseSubquery(thisExpr, { parseAlias: parseSubqueryAlias });
     } else if (this.match(TokenType.VALUES, { advance: false })) {
-      return this.parseDerivedTableValues();
+      thisExpr = this.parseDerivedTableValues();
     } else if (from) {
       return select('*').from(from.args.this, { copy: false });
     } else if (this.match(TokenType.SUMMARIZE)) {
@@ -5814,10 +5815,10 @@ export class Parser {
       return maybeParse(
         this.prevComments[0],
         {
-          into: HintExpr,
+          into: ExpressionKey.HINT,
           dialect: this.dialect,
         },
-      );
+      ) as HintExpr;
     }
 
     return undefined;
@@ -6177,7 +6178,7 @@ export class Parser {
 
     if (method) kwargs.method = method.text.toUpperCase();
     if (side) kwargs.side = enumFromString(JoinExprKind, side.text);
-    if (kind) kwargs.kind = enumFromString(JoinExprKind, kind.text);
+    if (kind) kwargs.kind = kind.tokenType === TokenType.STRAIGHT_JOIN ? JoinExprKind.STRAIGHT_JOIN : enumFromString(JoinExprKind, kind.text);
     if (hint) kwargs.hint = hint;
 
     if (this.match(TokenType.MATCH_CONDITION)) {
@@ -6368,12 +6369,12 @@ export class Parser {
     } else {
       // https://dev.mysql.com/doc/refman/8.0/en/index-hints.html
       while (this.matchSet(this._constructor.TABLE_INDEX_HINT_TOKENS)) {
-        const hint = new IndexTableHintExpr({ this: this.prev?.text ?? ''.toUpperCase() });
+        const hint = new IndexTableHintExpr({ this: (this.prev?.text ?? '').toUpperCase() });
 
         this.matchSet(new Set([TokenType.INDEX, TokenType.KEY]));
         if (this.match(TokenType.FOR)) {
           this.advanceAny();
-          hint.setArgKey('target', this.prev?.text ?? ''.toUpperCase());
+          hint.setArgKey('target', (this.prev?.text ?? '').toUpperCase());
         }
 
         hint.setArgKey('expressions', this.parseWrappedIdVars());
@@ -6637,7 +6638,7 @@ export class Parser {
     let expression: Expression | undefined;
 
     if (this.matchSet(new Set([TokenType.FROM, TokenType.BETWEEN]))) {
-      kind = this.prev?.text ?? ''.toUpperCase();
+      kind = (this.prev?.text ?? '').toUpperCase();
       const start = this.parseBitwise();
       this.matchTexts(['TO', 'AND']);
       const end = this.parseBitwise();
@@ -6670,7 +6671,7 @@ export class Parser {
     let historicalData: HistoricalDataExpr | undefined;
 
     if (this.matchTexts(Array.from(this._constructor.HISTORICAL_DATA_PREFIX))) {
-      const thisText = this.prev?.text ?? ''.toUpperCase();
+      const thisText = (this.prev?.text ?? '').toUpperCase();
       const kind = (
         this.match(TokenType.L_PAREN)
         && this.matchTexts(Array.from(this._constructor.HISTORICAL_DATA_KIND))
@@ -7519,13 +7520,7 @@ export class Parser {
         // we try to build an exp.Mod expr. For that matter, we backtrack and instead
         // consume the factor plus parse the percentage separately
         const index = this.index;
-        const results = this._parse({
-          parseMethod: function (this: Parser) {
-            return this.parseTerm();
-          },
-          rawTokens: this.tokens,
-        });
-        expression = results[0];
+        expression = this.tryParse(() => this.parseTerm());
         if (expression instanceof ModExpr) {
           this.retreat(index);
           expression = this.parseFactor();
@@ -7559,7 +7554,7 @@ export class Parser {
 
     if (this.match(TokenType.FETCH)) {
       const direction = this.matchSet(new Set([TokenType.FIRST, TokenType.NEXT])) || undefined;
-      const directionText = direction ? this.prev?.text ?? ''.toUpperCase() : 'FIRST';
+      const directionText = direction ? (this.prev?.text ?? '').toUpperCase() : 'FIRST';
 
       const count = this.parseField({ tokens: this._constructor.FETCH_TOKENS });
 
@@ -7600,19 +7595,10 @@ export class Parser {
     }
 
     const index = this.index;
-    const limitResults = this._parse({
-      parseMethod: function (this: Parser) {
-        return this.parseLimit();
-      },
-      rawTokens: this.tokens,
-    });
-    const offsetResults = this._parse({
-      parseMethod: function (this: Parser) {
-        return this.parseOffset();
-      },
-      rawTokens: this.tokens,
-    });
-    const result = !!(limitResults[0] || offsetResults[0]);
+    const result = !!(
+      this.tryParse(() => this.parseLimit(), { retreat: true })
+      || this.tryParse(() => this.parseOffset(), { retreat: true })
+    );
     this.retreat(index);
 
     // MATCH_CONDITION (...) is a special construct that should not be consumed by limit/offset
@@ -9122,7 +9108,7 @@ export class Parser {
       // Partitioning by bucket or truncate follows the syntax:
       // PARTITION BY (BUCKET(..) | TRUNCATE(..))
       // If we don't have parenthesis after each keyword, we should instead parse this as an identifier
-      this.index = this.index - 1;
+      this.retreat(this.index - 1);
       return undefined;
     }
 
@@ -11214,7 +11200,8 @@ export class Parser {
 
     const desc =
       this.matchSet(new Set([TokenType.ASC, TokenType.DESC]))
-      && this.prev?.tokenType === TokenType.DESC;
+        ? this.prev?.tokenType === TokenType.DESC
+        : undefined;
 
     let thisExpr: Expression | undefined;
     if (
@@ -11521,7 +11508,7 @@ export class Parser {
       return this.expression(NotNullColumnConstraintExpr);
     }
     if (this.matchTextSeq('CASESPECIFIC')) {
-      return this.expression(CaseSpecificColumnConstraintExpr, { not_: true });
+      return this.expression(CaseSpecificColumnConstraintExpr, { not: true });
     }
     if (this.matchTextSeq(['FOR', 'REPLICATION'])) {
       return this.expression(NotForReplicationColumnConstraintExpr);
@@ -11540,7 +11527,7 @@ export class Parser {
       && this.next.text.toUpperCase() in this._constructor.PROCEDURE_OPTIONS;
 
     if (!procedureOptionFollows && this.matchTexts(Object.keys(this._constructor.CONSTRAINT_PARSERS))) {
-      const constraint = this._constructor.CONSTRAINT_PARSERS[this.prev?.text ?? ''.toUpperCase()]?.call(this);
+      const constraint = this._constructor.CONSTRAINT_PARSERS[(this.prev?.text ?? '').toUpperCase()]?.call(this);
       if (!constraint) {
         this.retreat(this.index - 1);
         return undefined;
@@ -11593,7 +11580,7 @@ export class Parser {
       return undefined;
     }
 
-    const constraintName = this.prev?.text ?? ''.toUpperCase();
+    const constraintName = (this.prev?.text ?? '').toUpperCase();
     if (!(constraintName in this._constructor.CONSTRAINT_PARSERS)) {
       this.raiseError(`No parser found for schema constraint ${constraintName}.`);
     }
@@ -11939,7 +11926,7 @@ export class Parser {
 
         thisExpr = func;
       } else {
-        let thisValue: Expression | string = thisText;
+        let thisValue: Expression | string = upper;
         if (tokenType === TokenType.IDENTIFIER) {
           thisValue = new IdentifierExpr({
             this: thisText,
@@ -12134,9 +12121,9 @@ export class Parser {
     } else if (this.matchTextSeq('FILESTREAM_ON', { advance: false })) {
       alterSet.setArgKey('expressions', [this.parseAssignment() as Expression]);
     } else if (this.matchTexts(['LOGGED', 'UNLOGGED'])) {
-      alterSet.setArgKey('option', var_(this.prev?.text ?? ''.toUpperCase()));
+      alterSet.setArgKey('option', var_((this.prev?.text ?? '').toUpperCase()));
     } else if (this.matchTextSeq('WITHOUT') && this.matchTexts(['CLUSTER', 'OIDS'])) {
-      alterSet.setArgKey('option', var_(`WITHOUT ${this.prev?.text ?? ''.toUpperCase()}`));
+      alterSet.setArgKey('option', var_(`WITHOUT ${(this.prev?.text ?? '').toUpperCase()}`));
     } else if (this.matchTextSeq('LOCATION')) {
       alterSet.setArgKey('location', this.parseField());
     } else if (this.matchTextSeq(['ACCESS', 'METHOD'])) {
@@ -12252,10 +12239,10 @@ export class Parser {
 
     const options: string[] = [];
     while (this.matchTexts(this._constructor.ANALYZE_STYLES)) {
-      if (this.prev?.text ?? ''.toUpperCase() === 'BUFFER_USAGE_LIMIT') {
+      if ((this.prev?.text ?? '').toUpperCase() === 'BUFFER_USAGE_LIMIT') {
         options.push(`BUFFER_USAGE_LIMIT ${this.parseNumber()}`);
       } else {
-        options.push(this.prev?.text ?? ''.toUpperCase());
+        options.push((this.prev?.text ?? '').toUpperCase());
       }
     }
 
@@ -12268,7 +12255,7 @@ export class Parser {
       thisExpr = this.parseTableParts();
     } else if (this.matchTextSeq('TABLES')) {
       if (this.matchSet([TokenType.FROM, TokenType.IN])) {
-        kind = `${kind} ${this.prev?.text ?? ''.toUpperCase()}`;
+        kind = `${kind} ${(this.prev?.text ?? '').toUpperCase()}`;
         thisExpr = this.parseTable({
           schema: true,
           isDbReference: true,
@@ -12284,7 +12271,7 @@ export class Parser {
     } else if (this.matchTexts(Object.keys(this._constructor.ANALYZE_EXPRESSION_PARSERS))) {
       kind = undefined;
       innerExpression =
-        this._constructor.ANALYZE_EXPRESSION_PARSERS[this.prev?.text ?? ''.toUpperCase()].call(this);
+        this._constructor.ANALYZE_EXPRESSION_PARSERS[(this.prev?.text ?? '').toUpperCase()].call(this);
     } else {
       kind = undefined;
       thisExpr = this.parseTableParts();
@@ -12315,7 +12302,7 @@ export class Parser {
 
     if (this.matchTexts(Object.keys(this._constructor.ANALYZE_EXPRESSION_PARSERS))) {
       innerExpression =
-        this._constructor.ANALYZE_EXPRESSION_PARSERS[this.prev?.text ?? ''.toUpperCase()].call(this);
+        this._constructor.ANALYZE_EXPRESSION_PARSERS[(this.prev?.text ?? '').toUpperCase()].call(this);
     }
 
     const properties = this.parseProperties();
@@ -12332,8 +12319,8 @@ export class Parser {
 
   parseAnalyzeStatistics (): AnalyzeStatisticsExpr {
     let thisValue: string | undefined;
-    const kind = this.prev?.text ?? ''.toUpperCase();
-    const option = this.matchTextSeq('DELTA') ? this.prev?.text ?? ''.toUpperCase() : undefined;
+    const kind = (this.prev?.text ?? '').toUpperCase();
+    const option = this.matchTextSeq('DELTA') ? (this.prev?.text ?? '').toUpperCase() : undefined;
     let expressions: Expression[] = [];
 
     if (!this.matchTextSeq('STATISTICS')) {
@@ -12355,7 +12342,7 @@ export class Parser {
       expressions = [
         this.expression(AnalyzeSampleExpr, {
           sample,
-          kind: this.match(TokenType.PERCENT) ? this.prev?.text ?? ''.toUpperCase() : undefined,
+          kind: this.match(TokenType.PERCENT) ? (this.prev?.text ?? '').toUpperCase() : undefined,
         }),
       ];
     }
@@ -12392,7 +12379,7 @@ export class Parser {
         this.matchTextSeq(['CASCADE', 'COMPLETE'])
         && this.matchTexts(['ONLINE', 'OFFLINE'])
       ) {
-        thisValue = `CASCADE COMPLETE ${this.prev?.text ?? ''.toUpperCase()}`;
+        thisValue = `CASCADE COMPLETE ${(this.prev?.text ?? '').toUpperCase()}`;
         expression = this.parseInto();
       }
     }
@@ -12405,17 +12392,17 @@ export class Parser {
   }
 
   parseAnalyzeColumns (): AnalyzeColumnsExpr | undefined {
-    const thisValue = this.prev?.text ?? ''.toUpperCase();
+    const thisValue = (this.prev?.text ?? '').toUpperCase();
     if (this.matchTextSeq('COLUMNS')) {
       return this.expression(AnalyzeColumnsExpr, {
-        this: `${thisValue} ${this.prev?.text ?? ''.toUpperCase()}`,
+        this: `${thisValue} ${(this.prev?.text ?? '').toUpperCase()}`,
       });
     }
     return undefined;
   }
 
   parseAnalyzeDelete (): AnalyzeDeleteExpr | undefined {
-    const kind = this.matchTextSeq('SYSTEM') ? this.prev?.text ?? ''.toUpperCase() : undefined;
+    const kind = this.matchTextSeq('SYSTEM') ? (this.prev?.text ?? '').toUpperCase() : undefined;
     if (this.matchTextSeq('STATISTICS')) {
       return this.expression(AnalyzeDeleteExpr, { kind });
     }
@@ -12430,7 +12417,7 @@ export class Parser {
   }
 
   parseAnalyzeHistogram (): AnalyzeHistogramExpr {
-    const thisValue = this.prev?.text ?? ''.toUpperCase();
+    const thisValue = (this.prev?.text ?? '').toUpperCase();
     let expression: Expression | undefined;
     let expressions: Expression[] = [];
     let updateOptions: string | undefined;
@@ -12441,7 +12428,7 @@ export class Parser {
       while (this.match(TokenType.WITH)) {
         if (this.matchTexts(['SYNC', 'ASYNC'])) {
           if (this.matchTextSeq('MODE', { advance: false })) {
-            withExpressions.push(`${this.prev?.text ?? ''.toUpperCase()} MODE`);
+            withExpressions.push(`${(this.prev?.text ?? '').toUpperCase()} MODE`);
             this.advance();
           }
         } else {
@@ -12456,7 +12443,7 @@ export class Parser {
       }
 
       if (this.matchTexts(['MANUAL', 'AUTO']) && this.match(TokenType.UPDATE, { advance: false })) {
-        updateOptions = this.prev?.text ?? ''.toUpperCase();
+        updateOptions = (this.prev?.text ?? '').toUpperCase();
         this.advance();
       } else if (this.matchTextSeq(['USING', 'DATA'])) {
         expression = this.expression(UsingDataExpr, { this: this.parseString() });
@@ -12713,7 +12700,7 @@ export class Parser {
     }
 
     return this.expression(PartitionExpr, {
-      subpartition: this.prev?.text ?? ''.toUpperCase() === 'SUBPARTITION',
+      subpartition: (this.prev?.text ?? '').toUpperCase() === 'SUBPARTITION',
       expressions: this.parseWrappedCsv(this.parseDisjunction.bind(this)),
     });
   }
@@ -12724,7 +12711,7 @@ export class Parser {
         this._dialectConstructor.SUPPORTS_VALUES_DEFAULT
         && this.match(TokenType.DEFAULT)
       ) {
-        return var_(this.prev?.text ?? ''.toUpperCase());
+        return var_((this.prev?.text ?? '').toUpperCase());
       }
       return this.parseExpression();
     };
@@ -13011,7 +12998,7 @@ export class Parser {
       'EVEN',
       'AUTO',
     ])) {
-      return this.expression(AlterDistStyleExpr, { this: var_(this.prev?.text ?? ''.toUpperCase()) });
+      return this.expression(AlterDistStyleExpr, { this: var_((this.prev?.text ?? '').toUpperCase()) });
     }
 
     this.matchTextSeq(['KEY', 'DISTKEY']);
@@ -13034,7 +13021,7 @@ export class Parser {
 
     this.matchTexts(['AUTO', 'NONE']);
     return this.expression(AlterSortKeyExpr, {
-      this: var_(this.prev?.text ?? ''.toUpperCase()),
+      this: var_((this.prev?.text ?? '').toUpperCase()),
       compound,
     });
   }
@@ -13278,7 +13265,7 @@ export class Parser {
 
     if (this.isConnected()) {
       this.advance();
-      tags.push(this.prev?.text ?? ''.toUpperCase());
+      tags.push((this.prev?.text ?? '').toUpperCase());
     } else {
       this.raiseError('No closing $ found');
     }

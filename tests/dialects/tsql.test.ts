@@ -881,7 +881,7 @@ FOR XML
       this.validateIdentity(`CREATE VIEW a.b WITH ${viewAttr} AS SELECT * FROM x`);
     }
     this.validateIdentity('ALTER TABLE dbo.DocExe DROP CONSTRAINT FK_Column_B').assertIs(AlterExpr)
-      .args['actions'][0].assertIs(DropExpr);
+      .args['actions']?.[0].assertIs(DropExpr);
 
     for (const clusteredKeyword of ['CLUSTERED', 'NONCLUSTERED']) {
       this.validateIdentity(
@@ -1014,7 +1014,7 @@ FOR XML
       'ALTER TABLE tbl ADD CONSTRAINT cnstr PRIMARY KEY CLUSTERED (ID), CONSTRAINT cnstr2 UNIQUE CLUSTERED (ID)',
     ).find(AddConstraintExpr);
     expect(constraint).toBeTruthy();
-    expect(constraint?.findAll(ConstraintExpr).length).toBe(2);
+    expect([...constraint!.findAll(ConstraintExpr)].length).toBe(2);
   }
 
   testTransaction () {
@@ -1148,7 +1148,7 @@ WHERE
 
     const exprs = parse(sql, { read: 'tsql' });
     for (let i = 0; i < exprs.length; i++) {
-      expect(exprs[i].sql({ dialect: 'tsql' })).toBe(expectedSqls[i]);
+      expect(exprs[i]?.sql({ dialect: 'tsql' })).toBe(expectedSqls[i]);
     }
 
     const sql2 = `
@@ -1170,7 +1170,7 @@ WHERE
 
     const exprs2 = parse(sql2, { read: 'tsql' });
     for (let i = 0; i < exprs2.length; i++) {
-      expect(exprs2[i].sql({ dialect: 'tsql' })).toBe(expectedSqls2[i]);
+      expect(exprs2[i]?.sql({ dialect: 'tsql' })).toBe(expectedSqls2[i]);
     }
   }
 
@@ -2158,7 +2158,7 @@ FROM OPENJSON(@json) WITH (
       const expr = this.parseOne(sql);
       expect(expr).toBeInstanceOf(InsertExpr);
       const insert = expr as InsertExpr;
-      const literal = insert.expression.expressions[0].expressions[0];
+      const literal = narrowInstanceOf(insert.args.expression?.args?.expressions?.[0], Expression)?.args.expressions?.[0];
       expect(literal).toBeInstanceOf(cls);
     }
   }

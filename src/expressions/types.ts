@@ -393,7 +393,7 @@ export enum ExpressionKey {
   GROUP = 'group',
   GROUPING = 'grouping',
   GROUPING_ID = 'groupingId',
-  GROUPING_SETS = 'groupingsets',
+  GROUPING_SETS = 'groupingSets',
   GROUP_CONCAT = 'groupConcat',
   GT = 'gt',
   GTE = 'gte',
@@ -414,7 +414,7 @@ export enum ExpressionKey {
   ICEBERG_PROPERTY = 'icebergProperty',
   IDENTIFIER = 'identifier',
   IF = 'if',
-  IGNORE_NULLS = 'ignorenulls',
+  IGNORE_NULLS = 'ignoreNulls',
   IN = 'in',
   INCLUDE_PROPERTY = 'includeProperty',
   INDEX = 'index',
@@ -446,7 +446,7 @@ export enum ExpressionKey {
   IS_INF = 'isInf',
   IS_NAN = 'isNan',
   IS_NULL_VALUE = 'isNullValue',
-  ILIKE = 'ilike',
+  ILIKE = 'iLike',
   JAROWINKLER_SIMILARITY = 'jarowinklerSimilarity',
   JOIN = 'join',
   JOIN_HINT = 'joinHint',
@@ -524,7 +524,7 @@ export enum ExpressionKey {
   LIKE = 'like',
   LIKE_PROPERTY = 'likeProperty',
   LIMIT = 'limit',
-  LIMIT_OPTIONS = 'limitoptions',
+  LIMIT_OPTIONS = 'limitOptions',
   LIST = 'list',
   LITERAL = 'literal',
   LN = 'ln',
@@ -1091,6 +1091,7 @@ export enum JoinExprKind {
   CROSS = 'cross',
   SEMI = 'semi',
   ANTI = 'anti',
+  STRAIGHT_JOIN = 'straightJoin',
 }
 
 export enum GrantPrincipalExprKind {

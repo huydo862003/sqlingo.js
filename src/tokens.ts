@@ -717,6 +717,9 @@ export class Tokenizer {
       }
     }
     result['{#'] = '#}';
+    if (this.HINT_START in this.KEYWORDS) {
+      result[this.HINT_START] = '*/';
+    }
     return result;
   }
 

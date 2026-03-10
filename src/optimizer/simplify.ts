@@ -2550,7 +2550,7 @@ class Gen {
     this.stack.push(e.args.quoted ? `"${str}"` : str);
   }
 
-  ilikeSql (e: ILikeExpr): void {
+  iLikeSql (e: ILikeExpr): void {
     this.binary(e, ' ILIKE ');
   }
 

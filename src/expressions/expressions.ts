@@ -196,6 +196,20 @@ export class Expression implements
     for (const [argKey, value] of Object.entries(args)) {
       this.setParent(argKey, value);
     }
+    // Make meta and comments non-enumerable so structural equality checks (e.g. toEqual) ignore
+    // token positions and comments, matching Python's AST equality behavior
+    Object.defineProperty(this, 'meta', {
+      value: {},
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
+    Object.defineProperty(this, 'comments', {
+      value: undefined,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
   }
 
   * [Symbol.iterator] (): Iterator<this['args']['expressions'] extends (infer U)[] | undefined ? U : never> {
@@ -2822,6 +2836,8 @@ export type SetItemExprArgs = Merge<[
 export class SetItemExpr extends Expression {
   static key = ExpressionKey.SET_ITEM;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'this',
     'expressions',
@@ -4994,6 +5010,8 @@ export type LimitOptionsExprArgs = Merge<[
 export class LimitOptionsExpr extends Expression {
   static key = ExpressionKey.LIMIT_OPTIONS;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'percent',
     'rows',
@@ -5217,6 +5235,8 @@ export type MatchRecognizeExprArgs = Merge<[
 export class MatchRecognizeExpr extends Expression {
   static key = ExpressionKey.MATCH_RECOGNIZE;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'partitionBy',
     'order',
@@ -5318,6 +5338,8 @@ export type WithFillExprArgs = Merge<[
 
 export class WithFillExpr extends Expression {
   static key = ExpressionKey.WITH_FILL;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'from',
@@ -5673,6 +5695,8 @@ export type InputOutputFormatExprArgs = Merge<[
 export class InputOutputFormatExpr extends Expression {
   static key = ExpressionKey.INPUT_OUTPUT_FORMAT;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['inputFormat', 'outputFormat']);
 
   declare args: InputOutputFormatExprArgs;
@@ -5996,6 +6020,8 @@ export type TableExprArgs = Merge<[
 export class TableExpr extends Expression {
   static key = ExpressionKey.TABLE;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'this',
     'alias',
@@ -6194,6 +6220,8 @@ export type SchemaExprArgs = Merge<[
 export class SchemaExpr extends Expression {
   static key = ExpressionKey.SCHEMA;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['this', 'expressions']);
 
   declare args: SchemaExprArgs;
@@ -6255,6 +6283,8 @@ export type TableSampleExprArgs = Merge<[
 
 export class TableSampleExpr extends Expression {
   static key = ExpressionKey.TABLE_SAMPLE;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'expressions',
@@ -6817,6 +6847,8 @@ export type TransactionExprArgs = Merge<[
 export class TransactionExpr extends Expression {
   static key = ExpressionKey.TRANSACTION;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'this',
     'modes',
@@ -6842,6 +6874,8 @@ export type CommitExprArgs = Merge<[
 export class CommitExpr extends Expression {
   static key = ExpressionKey.COMMIT;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'chain',
     'this',
@@ -6865,6 +6899,8 @@ export type RollbackExprArgs = Merge<[
 
 export class RollbackExpr extends Expression {
   static key = ExpressionKey.ROLLBACK;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set(['savepoint', 'this']);
 
@@ -6975,6 +7011,8 @@ export type AnalyzeExprArgs = Merge<[
 
 export class AnalyzeExpr extends Expression {
   static key = ExpressionKey.ANALYZE;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'kind',
@@ -7088,6 +7126,8 @@ export type AnalyzeListChainedRowsExprArgs = Merge<[
 export class AnalyzeListChainedRowsExpr extends Expression {
   static key = ExpressionKey.ANALYZE_LIST_CHAINED_ROWS;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['expression']);
 
   declare args: AnalyzeListChainedRowsExprArgs;
@@ -7107,6 +7147,8 @@ export type AnalyzeDeleteExprArgs = Merge<[
 
 export class AnalyzeDeleteExpr extends Expression {
   static key = ExpressionKey.ANALYZE_DELETE;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set(['kind']);
 
@@ -7355,6 +7397,8 @@ export type PivotAnyExprArgs = Merge<[
  */
 export class PivotAnyExpr extends Expression {
   static key = ExpressionKey.PIVOT_ANY;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set(['this']);
 
@@ -8137,6 +8181,8 @@ export type UseExprArgs = Merge<[
 export class UseExpr extends Expression {
   static key = ExpressionKey.USE;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'this',
     'expressions',
@@ -8647,6 +8693,8 @@ export type CompressColumnConstraintExprArgs = Merge<[
 export class CompressColumnConstraintExpr extends ColumnConstraintKindExpr {
   static key = ExpressionKey.COMPRESS_COLUMN_CONSTRAINT;
 
+  static requiredArgs = new Set<string>();
+
   declare args: CompressColumnConstraintExprArgs;
 
   constructor (args: CompressColumnConstraintExprArgs = {}) {
@@ -8719,6 +8767,8 @@ export type EphemeralColumnConstraintExprArgs = Merge<[
 export class EphemeralColumnConstraintExpr extends ColumnConstraintKindExpr {
   static key = ExpressionKey.EPHEMERAL_COLUMN_CONSTRAINT;
 
+  static requiredArgs = new Set<string>();
+
   declare args: EphemeralColumnConstraintExprArgs;
 
   constructor (args: EphemeralColumnConstraintExprArgs = {}) {
@@ -8774,6 +8824,8 @@ export type GeneratedAsRowColumnConstraintExprArgs = Merge<[
 export class GeneratedAsRowColumnConstraintExpr extends ColumnConstraintKindExpr {
   static key = ExpressionKey.GENERATED_AS_ROW_COLUMN_CONSTRAINT;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['start', 'hidden']);
 
   declare args: GeneratedAsRowColumnConstraintExprArgs;
@@ -8801,6 +8853,8 @@ export type IndexColumnConstraintExprArgs = Merge<[
 
 export class IndexColumnConstraintExpr extends ColumnConstraintKindExpr {
   static key = ExpressionKey.INDEX_COLUMN_CONSTRAINT;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'this',
@@ -8893,6 +8947,8 @@ export type NotNullColumnConstraintExprArgs = Merge<[
 export class NotNullColumnConstraintExpr extends ColumnConstraintKindExpr {
   static key = ExpressionKey.NOT_NULL_COLUMN_CONSTRAINT;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['allowNull']);
 
   declare args: NotNullColumnConstraintExprArgs;
@@ -8926,6 +8982,8 @@ export type PrimaryKeyColumnConstraintExprArgs = Merge<[
 
 export class PrimaryKeyColumnConstraintExpr extends ColumnConstraintKindExpr {
   static key = ExpressionKey.PRIMARY_KEY_COLUMN_CONSTRAINT;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set(['desc', 'options']);
 
@@ -8963,6 +9021,8 @@ export type UniqueColumnConstraintExprArgs = Merge<[
 
 export class UniqueColumnConstraintExpr extends ColumnConstraintKindExpr {
   static key = ExpressionKey.UNIQUE_COLUMN_CONSTRAINT;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'this',
@@ -9064,6 +9124,8 @@ export type InOutColumnConstraintExprArgs = Merge<[
 export class InOutColumnConstraintExpr extends ColumnConstraintKindExpr {
   static key = ExpressionKey.IN_OUT_COLUMN_CONSTRAINT;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'input',
     'output',
@@ -9141,6 +9203,8 @@ export type InsertExprArgs = Merge<[
 
 export class InsertExpr extends multiInherit(DdlExpr, DmlExpr, Expression) {
   static key = ExpressionKey.INSERT;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'hint',
@@ -9457,6 +9521,8 @@ export type BlockCompressionPropertyExprArgs = Merge<[
 export class BlockCompressionPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.BLOCK_COMPRESSION_PROPERTY;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'autotemp',
     'always',
@@ -9510,6 +9576,8 @@ export type ChecksumPropertyExprArgs = Merge<[
 
 export class ChecksumPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.CHECKSUM_PROPERTY;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set(['on', 'default']);
 
@@ -9580,6 +9648,8 @@ export type DataBlocksizePropertyExprArgs = Merge<[
 
 export class DataBlocksizePropertyExpr extends PropertyExpr {
   static key = ExpressionKey.DATA_BLOCKSIZE_PROPERTY;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'size',
@@ -9823,6 +9893,8 @@ export type ExternalPropertyExprArgs = Merge<[
 export class ExternalPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.EXTERNAL_PROPERTY;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['this']);
 
   declare args: ExternalPropertyExprArgs;
@@ -9865,6 +9937,8 @@ export type FileFormatPropertyExprArgs = Merge<[
 
 export class FileFormatPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.FILE_FORMAT_PROPERTY;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'this',
@@ -10034,6 +10108,8 @@ export type IsolatedLoadingPropertyExprArgs = Merge<[
 export class IsolatedLoadingPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.ISOLATED_LOADING_PROPERTY;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'no',
     'concurrent',
@@ -10060,6 +10136,8 @@ export type JournalPropertyExprArgs = Merge<[
 
 export class JournalPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.JOURNAL_PROPERTY;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'no',
@@ -10410,6 +10488,8 @@ export type MaterializedPropertyExprArgs = Merge<[
 export class MaterializedPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.MATERIALIZED_PROPERTY;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['this']);
 
   declare args: MaterializedPropertyExprArgs;
@@ -10432,6 +10512,8 @@ export type MergeBlockRatioPropertyExprArgs = Merge<[
 
 export class MergeBlockRatioPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.MERGE_BLOCK_RATIO_PROPERTY;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'this',
@@ -10497,6 +10579,8 @@ export type OnCommitPropertyExprArgs = Merge<[
 
 export class OnCommitPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.ON_COMMIT_PROPERTY;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set(['delete']);
 
@@ -10650,6 +10734,8 @@ export type RefreshTriggerPropertyExprArgs = Merge<[
 export class RefreshTriggerPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.REFRESH_TRIGGER_PROPERTY;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'method',
     'kind',
@@ -10763,6 +10849,8 @@ export type ReturnsPropertyExprArgs = Merge<[
 export class ReturnsPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.RETURNS_PROPERTY;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'this',
     'isTable',
@@ -10832,6 +10920,8 @@ export type RowFormatDelimitedPropertyExprArgs = Merge<[
 
 export class RowFormatDelimitedPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.ROW_FORMAT_DELIMITED_PROPERTY;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'fields',
@@ -10978,6 +11068,8 @@ export type SharingPropertyExprArgs = Merge<[
 
 export class SharingPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.SHARING_PROPERTY;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set(['this']);
 
@@ -11219,6 +11311,8 @@ export type TransientPropertyExprArgs = Merge<[
 export class TransientPropertyExpr extends PropertyExpr {
   static key = ExpressionKey.TRANSIENT_PROPERTY;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['this']);
 
   declare args: TransientPropertyExprArgs;
@@ -11297,6 +11391,8 @@ export type VolatilePropertyExprArgs = Merge<[
 
 export class VolatilePropertyExpr extends PropertyExpr {
   static key = ExpressionKey.VOLATILE_PROPERTY;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set(['this']);
 
@@ -11776,6 +11872,8 @@ export type UpdateExprArgs = Merge<[
 
 export class UpdateExpr extends DmlExpr {
   static key = ExpressionKey.UPDATE;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'with',
@@ -12893,6 +12991,8 @@ export type PlaceholderExprArgs = Merge<[
 export class PlaceholderExpr extends ConditionExpr {
   static key = ExpressionKey.PLACEHOLDER;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'this',
     'kind',
@@ -13177,6 +13277,8 @@ export type IntervalExprArgs = Merge<[
 export class IntervalExpr extends TimeUnitExpr {
   static key = ExpressionKey.INTERVAL;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['this', 'unit']);
 
   declare args: IntervalExprArgs;
@@ -13208,6 +13310,8 @@ export type FuncExprArgs = Merge<[
 
 export class FuncExpr extends ConditionExpr {
   static key = ExpressionKey.FUNC;
+
+  static requiredArgs = new Set<string>();
 
   declare args: FuncExprArgs;
 
@@ -15844,6 +15948,8 @@ export type ListExprArgs = Merge<[
 export class ListExpr extends FuncExpr {
   static key = ExpressionKey.LIST;
 
+  static requiredArgs = new Set<string>();
+
   static isVarLenArgs = true;
 
   static availableArgs = new Set(['expressions']);
@@ -16382,6 +16488,10 @@ export type GeneratorExprArgs = Merge<[
 export class GeneratorExpr extends multiInherit(FuncExpr, UdtfExpr) {
   static key = ExpressionKey.GENERATOR;
 
+  static argOrder = ['rowcount', 'timelimit'];
+
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['rowcount', 'timelimit']);
 
   declare args: GeneratorExprArgs;
@@ -16707,6 +16817,8 @@ export type ArrayConstructCompactExprArgs = Merge<[
 export class ArrayConstructCompactExpr extends FuncExpr {
   static key = ExpressionKey.ARRAY_CONSTRUCT_COMPACT;
 
+  static requiredArgs = new Set<string>();
+
   static isVarLenArgs = true;
 
   static availableArgs = new Set(['expressions']);
@@ -16739,6 +16851,7 @@ export class ArrayContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   static _sqlNames = ['ARRAY_CONTAINS', 'ARRAY_HAS'];
 
+  static argOrder = ['this', 'expression'];
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set([
@@ -17248,6 +17361,8 @@ export type ArraysZipExprArgs = Merge<[
 
 export class ArraysZipExpr extends FuncExpr {
   static key = ExpressionKey.ARRAYS_ZIP;
+
+  static requiredArgs = new Set<string>();
 
   static isVarLenArgs = true;
 
@@ -17989,6 +18104,8 @@ export type CurrentSchemasExprArgs = Merge<[
 export class CurrentSchemasExpr extends FuncExpr {
   static key = ExpressionKey.CURRENT_SCHEMAS;
 
+  static requiredArgs = new Set<string>();
+
   static argOrder = ['this'];
 
   declare args: CurrentSchemasExprArgs;
@@ -18177,6 +18294,8 @@ export type CurrentDatetimeExprArgs = Merge<[
 export class CurrentDatetimeExpr extends FuncExpr {
   static key = ExpressionKey.CURRENT_DATETIME;
 
+  static requiredArgs = new Set<string>();
+
   static argOrder = ['this'];
 
   declare args: CurrentDatetimeExprArgs;
@@ -18197,6 +18316,8 @@ export type CurrentTimeExprArgs = Merge<[
 
 export class CurrentTimeExpr extends FuncExpr {
   static key = ExpressionKey.CURRENT_TIME;
+
+  static requiredArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -18219,6 +18340,8 @@ export type LocaltimeExprArgs = Merge<[
 export class LocaltimeExpr extends FuncExpr {
   static key = ExpressionKey.LOCALTIME;
 
+  static requiredArgs = new Set<string>();
+
   static argOrder = ['this'];
 
   declare args: LocaltimeExprArgs;
@@ -18240,6 +18363,8 @@ export type LocaltimestampExprArgs = Merge<[
 export class LocaltimestampExpr extends FuncExpr {
   static key = ExpressionKey.LOCALTIMESTAMP;
 
+  static requiredArgs = new Set<string>();
+
   static argOrder = ['this'];
 
   declare args: LocaltimestampExprArgs;
@@ -18260,6 +18385,8 @@ export type SystimestampExprArgs = Merge<[
 
 export class SystimestampExpr extends FuncExpr {
   static key = ExpressionKey.SYSTIMESTAMP;
+
+  static requiredArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -18284,6 +18411,8 @@ export type CurrentTimestampExprArgs = Merge<[
 
 export class CurrentTimestampExpr extends FuncExpr {
   static key = ExpressionKey.CURRENT_TIMESTAMP;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set(['this', 'sysdate']);
 
@@ -18380,6 +18509,8 @@ export type CurrentSchemaExprArgs = Merge<[
 export class CurrentSchemaExpr extends FuncExpr {
   static key = ExpressionKey.CURRENT_SCHEMA;
 
+  static requiredArgs = new Set<string>();
+
   static argOrder = ['this'];
 
   declare args: CurrentSchemaExprArgs;
@@ -18400,6 +18531,8 @@ export type CurrentUserExprArgs = Merge<[
 
 export class CurrentUserExpr extends FuncExpr {
   static key = ExpressionKey.CURRENT_USER;
+
+  static requiredArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -18590,6 +18723,8 @@ export type UtcTimeExprArgs = Merge<[
 export class UtcTimeExpr extends FuncExpr {
   static key = ExpressionKey.UTC_TIME;
 
+  static requiredArgs = new Set<string>();
+
   static argOrder = ['this'];
 
   declare args: UtcTimeExprArgs;
@@ -18610,6 +18745,8 @@ export type UtcTimestampExprArgs = Merge<[
 
 export class UtcTimestampExpr extends FuncExpr {
   static key = ExpressionKey.UTC_TIMESTAMP;
+
+  static requiredArgs = new Set<string>();
 
   static argOrder = ['this'];
 
@@ -18637,6 +18774,8 @@ export type DateAddExprArgs = Merge<[
 
 export class DateAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   static key = ExpressionKey.DATE_ADD;
+
+  static argOrder = ['this', 'expression', 'unit'];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -18673,6 +18812,8 @@ export type DateBinExprArgs = Merge<[
 export class DateBinExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   static key = ExpressionKey.DATE_BIN;
 
+  static argOrder = ['this', 'expression', 'unit', 'zone', 'origin'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set([
@@ -18707,6 +18848,8 @@ export type DateSubExprArgs = Merge<[
 
 export class DateSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   static key = ExpressionKey.DATE_SUB;
+
+  static argOrder = ['this', 'expression', 'unit'];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -18743,6 +18886,8 @@ export type DateDiffExprArgs = Merge<[
 
 export class DateDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.DATE_DIFF;
+
+  static argOrder = ['this', 'expression', 'unit', 'zone', 'bigInt', 'datePartBoundary'];
 
   static _sqlNames = ['DATEDIFF', 'DATE_DIFF'];
 
@@ -18868,6 +19013,8 @@ export type DatetimeAddExprArgs = Merge<[
 export class DatetimeAddExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   static key = ExpressionKey.DATETIME_ADD;
 
+  static argOrder = ['this', 'expression', 'unit'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set([
@@ -18900,6 +19047,8 @@ export type DatetimeSubExprArgs = Merge<[
 
 export class DatetimeSubExpr extends multiInherit(FuncExpr, IntervalOpExpr) {
   static key = ExpressionKey.DATETIME_SUB;
+
+  static argOrder = ['this', 'expression', 'unit'];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -18934,6 +19083,8 @@ export type DatetimeDiffExprArgs = Merge<[
 export class DatetimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.DATETIME_DIFF;
 
+  static argOrder = ['this', 'expression', 'unit'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set([
@@ -18966,6 +19117,8 @@ export type DatetimeTruncExprArgs = Merge<[
 
 export class DatetimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.DATETIME_TRUNC;
+
+  static argOrder = ['this', 'unit', 'zone'];
 
   static requiredArgs = new Set(['this', 'unit']);
 
@@ -19253,6 +19406,8 @@ export type MakeIntervalExprArgs = Merge<[
 export class MakeIntervalExpr extends FuncExpr {
   static key = ExpressionKey.MAKE_INTERVAL;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'year',
     'month',
@@ -19296,6 +19451,8 @@ export type LastDayExprArgs = Merge<[
 
 export class LastDayExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.LAST_DAY;
+
+  static argOrder = ['this', 'unit'];
 
   static requiredArgs = new Set(['this']);
 
@@ -19458,6 +19615,8 @@ export type ExistsExprArgs = Merge<[
 export class ExistsExpr extends multiInherit(FuncExpr, SubqueryPredicateExpr) {
   static key = ExpressionKey.EXISTS;
 
+  static argOrder = ['this', 'expression'];
+
   static requiredArgs = new Set(['this']);
 
   static availableArgs = new Set(['this', 'expression']);
@@ -19514,6 +19673,8 @@ export type TimestampExprArgs = Merge<[
 export class TimestampExpr extends FuncExpr {
   static key = ExpressionKey.TIMESTAMP;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set([
     'this',
     'zone',
@@ -19549,6 +19710,8 @@ export type TimestampAddExprArgs = Merge<[
 export class TimestampAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIMESTAMP_ADD;
 
+  static argOrder = ['this', 'expression', 'unit'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set([
@@ -19580,6 +19743,8 @@ export type TimestampSubExprArgs = Merge<[
 export class TimestampSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIMESTAMP_SUB;
 
+  static argOrder = ['this', 'expression', 'unit'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set([
@@ -19610,6 +19775,8 @@ export type TimestampDiffExprArgs = Merge<[
 
 export class TimestampDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIMESTAMP_DIFF;
+
+  static argOrder = ['this', 'expression', 'unit'];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -19644,6 +19811,8 @@ export type TimestampTruncExprArgs = Merge<[
 
 export class TimestampTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIMESTAMP_TRUNC;
+
+  static argOrder = ['this', 'unit', 'zone', 'inputTypePreserved'];
 
   static requiredArgs = new Set(['this', 'unit']);
 
@@ -19681,6 +19850,8 @@ export type TimeSliceExprArgs = Merge<[
 export class TimeSliceExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIME_SLICE;
 
+  static argOrder = ['this', 'expression', 'unit', 'kind'];
+
   static requiredArgs = new Set([
     'this',
     'expression',
@@ -19717,6 +19888,8 @@ export type TimeAddExprArgs = Merge<[
 export class TimeAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIME_ADD;
 
+  static argOrder = ['this', 'expression', 'unit'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set([
@@ -19748,6 +19921,8 @@ export type TimeSubExprArgs = Merge<[
 export class TimeSubExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIME_SUB;
 
+  static argOrder = ['this', 'expression', 'unit'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set([
@@ -19778,6 +19953,8 @@ export type TimeDiffExprArgs = Merge<[
 
 export class TimeDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIME_DIFF;
+
+  static argOrder = ['this', 'expression', 'unit'];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -19811,6 +19988,8 @@ export type TimeTruncExprArgs = Merge<[
 
 export class TimeTruncExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TIME_TRUNC;
+
+  static argOrder = ['this', 'unit', 'zone'];
 
   static requiredArgs = new Set(['this', 'unit']);
 
@@ -19994,6 +20173,8 @@ export type DateExprArgs = Merge<[
 
 export class DateExpr extends FuncExpr {
   static key = ExpressionKey.DATE;
+
+  static requiredArgs = new Set<string>();
 
   static isVarLenArgs = true;
 
@@ -20411,6 +20592,8 @@ export type ExplodeExprArgs = Merge<[
 export class ExplodeExpr extends multiInherit(FuncExpr, UdtfExpr) {
   static key = ExpressionKey.EXPLODE;
 
+  static argOrder = ['this', 'expressions'];
+
   static isVarLenArgs = true;
 
   static requiredArgs = new Set(['this']);
@@ -20463,6 +20646,8 @@ export type UnnestExprArgs = Merge<[
 
 export class UnnestExpr extends multiInherit(FuncExpr, UdtfExpr) {
   static key = ExpressionKey.UNNEST;
+
+  static argOrder = ['expressions', 'alias', 'offset', 'explodeArray'];
 
   static requiredArgs = new Set(['expressions']);
 
@@ -22841,6 +23026,8 @@ export class LevenshteinExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
+    'expression',
     'insCost',
     'delCost',
     'subCost',
@@ -24067,6 +24254,8 @@ export type RandnExprArgs = Merge<[
 export class RandnExpr extends FuncExpr {
   static key = ExpressionKey.RANDN;
 
+  static requiredArgs = new Set<string>();
+
   static argOrder = ['this'];
 
   declare args: RandnExprArgs;
@@ -24382,6 +24571,8 @@ export class RegexpReplaceExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
+    'expression',
     'replacement',
     'position',
     'occurrence',
@@ -25650,6 +25841,8 @@ export type StrToUnixExprArgs = Merge<[
 export class StrToUnixExpr extends FuncExpr {
   static key = ExpressionKey.STR_TO_UNIX;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['this', 'format']);
 
   static argOrder = ['format', 'this'];
@@ -25920,6 +26113,8 @@ export type TimeExprArgs = Merge<[
 export class TimeExpr extends FuncExpr {
   static key = ExpressionKey.TIME;
 
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['this', 'zone']);
 
   static argOrder = ['zone', 'this'];
@@ -26132,6 +26327,8 @@ export type TsOrDsAddExprArgs = Merge<[
 export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TS_OR_DS_ADD;
 
+  static argOrder = ['this', 'expression', 'unit', 'returnType'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set([
@@ -26171,6 +26368,8 @@ export type TsOrDsDiffExprArgs = Merge<[
 
 export class TsOrDsDiffExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
   static key = ExpressionKey.TS_OR_DS_DIFF;
+
+  static argOrder = ['this', 'expression', 'unit'];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -26412,10 +26611,10 @@ export class UniformExpr extends FuncExpr {
   ]);
 
   static argOrder = [
-    'gen',
-    'seed',
     'this',
     'expression',
+    'gen',
+    'seed',
   ];
 
   declare args: UniformExprArgs;
@@ -26688,6 +26887,7 @@ export class TimestampFromPartsExpr extends FuncExpr {
   static key = ExpressionKey.TIMESTAMP_FROM_PARTS;
   static _sqlNames = ['TIMESTAMP_FROM_PARTS', 'TIMESTAMPFROMPARTS'];
 
+  static requiredArgs = new Set<string>();
   static availableArgs = new Set([
     'year',
     'month',
@@ -26703,6 +26903,13 @@ export class TimestampFromPartsExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'year',
+    'month',
+    'day',
+    'hour',
+    'min',
+    'sec',
+    'nano',
     'zone',
     'milli',
     'this',
@@ -26735,6 +26942,8 @@ export type TimestampLtzFromPartsExprArgs = Merge<[
 
 export class TimestampLtzFromPartsExpr extends FuncExpr {
   static key = ExpressionKey.TIMESTAMP_LTZ_FROM_PARTS;
+
+  static argOrder = ['year', 'month', 'day', 'hour', 'min', 'sec', 'nano'];
 
   static _sqlNames = ['TIMESTAMP_LTZ_FROM_PARTS', 'TIMESTAMPLTZFROMPARTS'];
 
@@ -26904,6 +27113,7 @@ export type WeekExprArgs = Merge<[
 export class WeekExpr extends FuncExpr {
   static key = ExpressionKey.WEEK;
 
+  static requiredArgs = new Set<string>();
   static availableArgs = new Set(['this', 'mode']);
 
   static argOrder = ['mode', 'this'];
@@ -27304,6 +27514,8 @@ export type ParameterizedAggExprArgs = Merge<[
 export class ParameterizedAggExpr extends AggFuncExpr {
   static key = ExpressionKey.PARAMETERIZED_AGG;
 
+  static argOrder = ['this', 'expressions', 'params'];
+
   static requiredArgs = new Set([
     'this',
     'expressions',
@@ -27338,6 +27550,8 @@ export type ArgMaxExprArgs = Merge<[
 
 export class ArgMaxExpr extends AggFuncExpr {
   static key = ExpressionKey.ARG_MAX;
+
+  static argOrder = ['this', 'expression', 'count'];
 
   static _sqlNames = [
     'ARG_MAX',
@@ -27376,6 +27590,8 @@ export type ArgMinExprArgs = Merge<[
 export class ArgMinExpr extends AggFuncExpr {
   static key = ExpressionKey.ARG_MIN;
 
+  static argOrder = ['this', 'expression', 'count'];
+
   static _sqlNames = [
     'ARG_MIN',
     'ARGMIN',
@@ -27413,6 +27629,8 @@ export type ApproxTopKExprArgs = Merge<[
 export class ApproxTopKExpr extends AggFuncExpr {
   static key = ExpressionKey.APPROX_TOP_K;
 
+  static argOrder = ['this', 'expression', 'counters'];
+
   static availableArgs = new Set([
     'this',
     'expression',
@@ -27445,6 +27663,8 @@ export type ApproxTopKAccumulateExprArgs = Merge<[
 export class ApproxTopKAccumulateExpr extends AggFuncExpr {
   static key = ExpressionKey.APPROX_TOP_K_ACCUMULATE;
 
+  static argOrder = ['this', 'expression'];
+
   static availableArgs = new Set(['this', 'expression']);
 
   declare args: ApproxTopKAccumulateExprArgs;
@@ -27472,6 +27692,8 @@ export type ApproxTopKCombineExprArgs = Merge<[
 export class ApproxTopKCombineExpr extends AggFuncExpr {
   static key = ExpressionKey.APPROX_TOP_K_COMBINE;
 
+  static argOrder = ['this', 'expression'];
+
   static availableArgs = new Set(['this', 'expression']);
 
   declare args: ApproxTopKCombineExprArgs;
@@ -27496,6 +27718,8 @@ export type ApproxTopSumExprArgs = Merge<[
 
 export class ApproxTopSumExpr extends AggFuncExpr {
   static key = ExpressionKey.APPROX_TOP_SUM;
+
+  static argOrder = ['this', 'expression', 'count'];
 
   static requiredArgs = new Set([
     'this',
@@ -27530,6 +27754,8 @@ export type ApproxQuantilesExprArgs = Merge<[
 
 export class ApproxQuantilesExpr extends AggFuncExpr {
   static key = ExpressionKey.APPROX_QUANTILES;
+
+  static argOrder = ['this', 'expression'];
 
   static availableArgs = new Set(['this', 'expression']);
 
@@ -27578,6 +27804,8 @@ export type MinhashExprArgs = Merge<[
 
 export class MinhashExpr extends AggFuncExpr {
   static key = ExpressionKey.MINHASH;
+
+  static argOrder = ['this', 'expressions'];
 
   static isVarLenArgs = true;
 
@@ -27673,6 +27901,8 @@ export type GroupingIdExprArgs = Merge<[
 export class GroupingIdExpr extends AggFuncExpr {
   static key = ExpressionKey.GROUPING_ID;
 
+  static requiredArgs = new Set<string>();
+
   static isVarLenArgs = true;
 
   static availableArgs = new Set(['expressions']);
@@ -27698,6 +27928,8 @@ export type AnonymousAggFuncExprArgs = Merge<[
 
 export class AnonymousAggFuncExpr extends AggFuncExpr {
   static key = ExpressionKey.ANONYMOUS_AGG_FUNC;
+
+  static argOrder = ['this', 'expressions'];
 
   static isVarLenArgs = true;
 
@@ -27727,6 +27959,8 @@ export type HashAggExprArgs = Merge<[
 
 export class HashAggExpr extends AggFuncExpr {
   static key = ExpressionKey.HASH_AGG;
+
+  static argOrder = ['this', 'expressions'];
 
   static isVarLenArgs = true;
 
@@ -27758,6 +27992,8 @@ export type HllExprArgs = Merge<[
 export class HllExpr extends AggFuncExpr {
   static key = ExpressionKey.HLL;
 
+  static argOrder = ['this', 'expressions'];
+
   static isVarLenArgs = true;
 
   static availableArgs = new Set(['this', 'expressions']);
@@ -27783,6 +28019,8 @@ export type ApproxDistinctExprArgs = Merge<[
 
 export class ApproxDistinctExpr extends AggFuncExpr {
   static key = ExpressionKey.APPROX_DISTINCT;
+
+  static argOrder = ['this', 'accuracy'];
 
   static _sqlNames = ['APPROX_DISTINCT', 'APPROX_COUNT_DISTINCT'];
 
@@ -27827,6 +28065,8 @@ export type ArrayAggExprArgs = Merge<[
 export class ArrayAggExpr extends AggFuncExpr {
   static key = ExpressionKey.ARRAY_AGG;
 
+  static argOrder = ['this', 'nullsExcluded'];
+
   static availableArgs = new Set(['this', 'nullsExcluded']);
 
   declare args: ArrayAggExprArgs;
@@ -27868,6 +28108,8 @@ export type AiAggExprArgs = Merge<[
 
 export class AiAggExpr extends AggFuncExpr {
   static key = ExpressionKey.AI_AGG;
+
+  static argOrder = ['this', 'expression'];
 
   static _sqlNames = ['AI_AGG'];
 
@@ -27991,6 +28233,8 @@ export type LagExprArgs = Merge<[
 export class LagExpr extends AggFuncExpr {
   static key = ExpressionKey.LAG;
 
+  static argOrder = ['this', 'offset', 'default'];
+
   static availableArgs = new Set([
     'this',
     'offset',
@@ -28020,6 +28264,8 @@ export type LeadExprArgs = Merge<[
 export class LeadExpr extends AggFuncExpr {
   static key = ExpressionKey.LEAD;
 
+  static argOrder = ['this', 'offset', 'default'];
+
   static availableArgs = new Set([
     'this',
     'offset',
@@ -28048,6 +28294,8 @@ export type FirstExprArgs = Merge<[
 export class FirstExpr extends AggFuncExpr {
   static key = ExpressionKey.FIRST;
 
+  static argOrder = ['this', 'expression'];
+
   static availableArgs = new Set(['this', 'expression']);
 
   declare args: FirstExprArgs;
@@ -28071,6 +28319,8 @@ export type LastExprArgs = Merge<[
 
 export class LastExpr extends AggFuncExpr {
   static key = ExpressionKey.LAST;
+
+  static argOrder = ['this', 'expression'];
 
   static availableArgs = new Set(['this', 'expression']);
 
@@ -28133,6 +28383,8 @@ export type NthValueExprArgs = Merge<[
 export class NthValueExpr extends AggFuncExpr {
   static key = ExpressionKey.NTH_VALUE;
 
+  static argOrder = ['this', 'offset', 'fromFirst'];
+
   static requiredArgs = new Set(['this', 'offset']);
 
   static availableArgs = new Set([
@@ -28163,6 +28415,8 @@ export type ObjectAggExprArgs = Merge<[
 export class ObjectAggExpr extends AggFuncExpr {
   static key = ExpressionKey.OBJECT_AGG;
 
+  static argOrder = ['this', 'expression'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set(['this', 'expression']);
@@ -28188,6 +28442,8 @@ export type TryCastExprArgs = Merge<[
 
 export class TryCastExpr extends CastExpr {
   static key = ExpressionKey.TRY_CAST;
+
+  static requiredArgs = new Set<string>();
 
   static availableArgs = new Set([
     'this',
@@ -28248,6 +28504,10 @@ export type CountExprArgs = Merge<[
 export class CountExpr extends AggFuncExpr {
   static key = ExpressionKey.COUNT;
 
+  static argOrder = ['this', 'expressions', 'bigInt'];
+
+  static requiredArgs = new Set<string>();
+
   static isVarLenArgs = true;
 
   static availableArgs = new Set([
@@ -28294,6 +28554,8 @@ export type DenseRankExprArgs = Merge<[
 
 export class DenseRankExpr extends AggFuncExpr {
   static key = ExpressionKey.DENSE_RANK;
+
+  static requiredArgs = new Set<string>();
 
   static isVarLenArgs = true;
 
@@ -28347,6 +28609,8 @@ export type GroupConcatExprArgs = Merge<[
 
 export class GroupConcatExpr extends AggFuncExpr {
   static key = ExpressionKey.GROUP_CONCAT;
+
+  static argOrder = ['this', 'separator', 'onOverflow'];
 
   static availableArgs = new Set([
     'this',
@@ -28427,6 +28691,8 @@ export type XorExprArgs = Merge<[
 export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   static key = ExpressionKey.XOR;
 
+  static requiredArgs = new Set<string>();
+
   static isVarLenArgs = true;
 
   // Note: multiInherit classes don't have direct super access, so we create new Sets
@@ -28456,6 +28722,8 @@ export type JsonObjectAggExprArgs = Merge<[
 
 export class JsonObjectAggExpr extends AggFuncExpr {
   static key = ExpressionKey.JSON_OBJECT_AGG;
+
+  static argOrder = ['expressions', 'nullHandling', 'uniqueKeys', 'returnType', 'encoding'];
 
   static availableArgs = new Set([
     'expressions',
@@ -28487,6 +28755,8 @@ export type JsonbObjectAggExprArgs = Merge<[
 export class JsonbObjectAggExpr extends AggFuncExpr {
   static key = ExpressionKey.JSONB_OBJECT_AGG;
 
+  static argOrder = ['this', 'expression'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set(['this', 'expression']);
@@ -28514,6 +28784,8 @@ export type JsonArrayAggExprArgs = Merge<[
 
 export class JsonArrayAggExpr extends AggFuncExpr {
   static key = ExpressionKey.JSON_ARRAY_AGG;
+
+  static argOrder = ['this', 'order', 'nullHandling', 'returnType', 'strict'];
 
   static availableArgs = new Set([
     'this',
@@ -28593,6 +28865,8 @@ export type MaxExprArgs = Merge<[
 export class MaxExpr extends AggFuncExpr {
   static key = ExpressionKey.MAX;
 
+  static argOrder = ['this', 'expressions'];
+
   static isVarLenArgs = true;
 
   static availableArgs = new Set(['this', 'expressions']);
@@ -28637,6 +28911,10 @@ export type ModeExprArgs = Merge<[
 export class ModeExpr extends AggFuncExpr {
   static key = ExpressionKey.MODE;
 
+  static argOrder = ['this', 'deterministic'];
+
+  static requiredArgs = new Set<string>();
+
   static availableArgs = new Set(['this', 'deterministic']);
 
   declare args: ModeExprArgs;
@@ -28661,6 +28939,8 @@ export type MinExprArgs = Merge<[
 export class MinExpr extends AggFuncExpr {
   static key = ExpressionKey.MIN;
 
+  static argOrder = ['this', 'expressions'];
+
   static isVarLenArgs = true;
 
   static availableArgs = new Set(['this', 'expressions']);
@@ -28684,6 +28964,8 @@ export type NtileExprArgs = Merge<[
 export class NtileExpr extends AggFuncExpr {
   static key = ExpressionKey.NTILE;
 
+  static requiredArgs = new Set<string>();
+
   declare args: NtileExprArgs;
 
   constructor (args: NtileExprArgs = {}) {
@@ -28705,6 +28987,8 @@ export type PercentileContExprArgs = Merge<[
 
 export class PercentileContExpr extends AggFuncExpr {
   static key = ExpressionKey.PERCENTILE_CONT;
+
+  static argOrder = ['this', 'expression'];
 
   static availableArgs = new Set(['this', 'expression']);
 
@@ -28730,6 +29014,8 @@ export type PercentileDiscExprArgs = Merge<[
 export class PercentileDiscExpr extends AggFuncExpr {
   static key = ExpressionKey.PERCENTILE_DISC;
 
+  static argOrder = ['this', 'expression'];
+
   static availableArgs = new Set(['this', 'expression']);
 
   declare args: PercentileDiscExprArgs;
@@ -28750,6 +29036,8 @@ export type PercentRankExprArgs = Merge<[
 
 export class PercentRankExpr extends AggFuncExpr {
   static key = ExpressionKey.PERCENT_RANK;
+
+  static requiredArgs = new Set<string>();
 
   static isVarLenArgs = true;
 
@@ -28776,6 +29064,8 @@ export type QuantileExprArgs = Merge<[
 
 export class QuantileExpr extends AggFuncExpr {
   static key = ExpressionKey.QUANTILE;
+
+  static argOrder = ['this', 'quantile'];
 
   static requiredArgs = new Set(['this', 'quantile']);
 
@@ -28818,6 +29108,8 @@ export type RankExprArgs = Merge<[
 export class RankExpr extends AggFuncExpr {
   static key = ExpressionKey.RANK;
 
+  static requiredArgs = new Set<string>();
+
   static isVarLenArgs = true;
 
   static availableArgs = new Set(['expressions']);
@@ -28843,6 +29135,8 @@ export type RegrValxExprArgs = Merge<[
 
 export class RegrValxExpr extends AggFuncExpr {
   static key = ExpressionKey.REGR_VALX;
+
+  static argOrder = ['this', 'expression'];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -28870,6 +29164,8 @@ export type RegrValyExprArgs = Merge<[
 export class RegrValyExpr extends AggFuncExpr {
   static key = ExpressionKey.REGR_VALY;
 
+  static argOrder = ['this', 'expression'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set(['this', 'expression']);
@@ -28895,6 +29191,8 @@ export type RegrAvgyExprArgs = Merge<[
 
 export class RegrAvgyExpr extends AggFuncExpr {
   static key = ExpressionKey.REGR_AVGY;
+
+  static argOrder = ['this', 'expression'];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -28922,6 +29220,8 @@ export type RegrAvgxExprArgs = Merge<[
 export class RegrAvgxExpr extends AggFuncExpr {
   static key = ExpressionKey.REGR_AVGX;
 
+  static argOrder = ['this', 'expression'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set(['this', 'expression']);
@@ -28947,6 +29247,8 @@ export type RegrCountExprArgs = Merge<[
 
 export class RegrCountExpr extends AggFuncExpr {
   static key = ExpressionKey.REGR_COUNT;
+
+  static argOrder = ['this', 'expression'];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -28974,6 +29276,8 @@ export type RegrInterceptExprArgs = Merge<[
 export class RegrInterceptExpr extends AggFuncExpr {
   static key = ExpressionKey.REGR_INTERCEPT;
 
+  static argOrder = ['this', 'expression'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set(['this', 'expression']);
@@ -28999,6 +29303,8 @@ export type RegrR2ExprArgs = Merge<[
 
 export class RegrR2Expr extends AggFuncExpr {
   static key = ExpressionKey.REGR_R2;
+
+  static argOrder = ['this', 'expression'];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -29026,6 +29332,8 @@ export type RegrSxxExprArgs = Merge<[
 export class RegrSxxExpr extends AggFuncExpr {
   static key = ExpressionKey.REGR_SXX;
 
+  static argOrder = ['this', 'expression'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set(['this', 'expression']);
@@ -29051,6 +29359,8 @@ export type RegrSxyExprArgs = Merge<[
 
 export class RegrSxyExpr extends AggFuncExpr {
   static key = ExpressionKey.REGR_SXY;
+
+  static argOrder = ['this', 'expression'];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -29078,6 +29388,8 @@ export type RegrSyyExprArgs = Merge<[
 export class RegrSyyExpr extends AggFuncExpr {
   static key = ExpressionKey.REGR_SYY;
 
+  static argOrder = ['this', 'expression'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set(['this', 'expression']);
@@ -29103,6 +29415,8 @@ export type RegrSlopeExprArgs = Merge<[
 
 export class RegrSlopeExpr extends AggFuncExpr {
   static key = ExpressionKey.REGR_SLOPE;
+
+  static argOrder = ['this', 'expression'];
 
   static requiredArgs = new Set(['this', 'expression']);
 
@@ -29200,6 +29514,8 @@ export type CumeDistExprArgs = Merge<[
 
 export class CumeDistExpr extends AggFuncExpr {
   static key = ExpressionKey.CUME_DIST;
+
+  static requiredArgs = new Set<string>();
 
   static isVarLenArgs = true;
   static availableArgs = new Set(['expressions']);
@@ -29306,6 +29622,8 @@ export type CovarSampExprArgs = Merge<[
 export class CovarSampExpr extends AggFuncExpr {
   static key = ExpressionKey.COVAR_SAMP;
 
+  static argOrder = ['this', 'expression'];
+
   static requiredArgs = new Set(['this', 'expression']);
 
   static availableArgs = new Set(['this', 'expression']);
@@ -29331,6 +29649,8 @@ export type CovarPopExprArgs = Merge<[
 
 export class CovarPopExpr extends AggFuncExpr {
   static key = ExpressionKey.COVAR_POP;
+
+  static argOrder = ['this', 'expression'];
 
   static requiredArgs = new Set(['this', 'expression']);
 

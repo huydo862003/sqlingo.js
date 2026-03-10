@@ -112,7 +112,14 @@ export function multiInherit<
       Object.defineProperty(BaseClass, Symbol.hasInstance, {
         value (instance: unknown) {
           if (this.prototype.isPrototypeOf(Object(instance))) return true;
-          return registeredTargets.get(this)?.has((instance as any)?.constructor) ?? false;
+          const targets = registeredTargets.get(this);
+          if (!targets) return false;
+          let ctor = (instance as any)?.constructor;
+          while (ctor && ctor !== Object) {
+            if (targets.has(ctor)) return true;
+            ctor = Object.getPrototypeOf(ctor);
+          }
+          return false;
         },
         configurable: true,
       });
