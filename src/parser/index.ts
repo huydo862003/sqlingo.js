@@ -456,6 +456,7 @@ import {
   alias,
   cast,
   maybeParse,
+  CreateExprKind,
   JoinExprKind,
   null_,
 } from '../expressions';
@@ -4016,9 +4017,10 @@ export class Parser {
     }
 
     const createKindText = createToken.text.toUpperCase();
+    const createKindRaw = this._dialectConstructor.CREATABLE_KIND_MAPPING[createKindText] || createKindText;
     return this.expression(CreateExpr, {
       this: thisExpr,
-      kind: this._dialectConstructor.CREATABLE_KIND_MAPPING[createKindText] || createKindText,
+      kind: enumFromString(CreateExprKind, createKindRaw) ?? createKindRaw,
       replace,
       refresh,
       unique,

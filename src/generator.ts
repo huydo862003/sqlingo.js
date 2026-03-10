@@ -2291,7 +2291,7 @@ export class Generator {
   }
 
   createSql (expression: CreateExpr): string {
-    let kind = this.sql(expression, 'kind');
+    let kind = this.sql(expression, 'kind').toUpperCase();
     kind = this.dialect._constructor.INVERSE_CREATABLE_KIND_MAPPING[kind] ?? kind;
 
     const properties = expression.args.properties;
