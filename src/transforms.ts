@@ -1,12 +1,12 @@
 import { UnsupportedError } from './errors';
 import type {
-  ExpressionOrString,
   ExpressionValue,
 } from './expressions/types';
 import {
   alias,
   AliasesExpr,
   AliasExpr,
+  and,
   AndExpr,
   AnonymousExpr,
   AnyExpr,
@@ -1214,7 +1214,7 @@ export function eliminateJoinMarks (expression: Expression): Expression {
         col.setArgKey('joinMark', false);
       }
 
-      const tableName = Array.from(leftJoinTable)[0];
+      const tableName = Array.from(leftJoinTable).pop()!;
       if (!joinsOns[tableName]) joinsOns[tableName] = [];
       joinsOns[tableName].push(cond);
     }
@@ -1233,7 +1233,7 @@ export function eliminateJoinMarks (expression: Expression): Expression {
       if (joinTarget?.aliasOrName) {
         newJoins[joinTarget.aliasOrName] = new JoinExpr({
           this: joinTarget,
-          on: new AndExpr({ expressions: predicates }),
+          on: and(predicates),
           kind: JoinExprKind.LEFT,
         });
       }
@@ -1246,7 +1246,7 @@ export function eliminateJoinMarks (expression: Expression): Expression {
         const parent = current.parent;
         current.pop();
         if (parent instanceof BinaryExpr) {
-          parent.replace(parent.left === undefined ? parent.args.expression : parent.args.this);
+          parent.replace(parent.left === undefined ? parent.right : parent.left);
         } else if (parent instanceof WhereExpr) {
           parent.pop();
         }
