@@ -412,10 +412,16 @@ export class ENV {
     return DateTime.fromSeconds(arg);
   }
 
+  // Make the static methods enumerable
+  // Skip non-configurable properties
+  // so that `...` spreading would work
   static {
     for (const key of Object.getOwnPropertyNames(this)) {
       const desc = Object.getOwnPropertyDescriptor(this, key);
-      if (desc && !desc.enumerable) {
+      if (!desc?.configurable) {
+        continue;
+      }
+      if (!desc.enumerable) {
         Object.defineProperty(this, key, {
           ...desc,
           enumerable: true,
