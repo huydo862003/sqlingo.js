@@ -1,13 +1,44 @@
 # sqlingo.js
 
 ![Status](https://img.shields.io/badge/status-active-brightblue)
+![Status](https://img.shields.io/badge/status-alpha)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)
-![Module](https://img.shields.io/badge/module-ESM%20%2B%20CJS-yellow)
 ![SQLGlot](https://img.shields.io/badge/SQLGlot-264e95f-orange)
-![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
 
 A JavaScript port of [SQLGlot](https://github.com/tobymao/sqlglot), a SQL parser, transpiler, optimizer, and engine.
+
+Supports Typescript & CJS/ESM.
+
+Bundled size is around 1MB minified, gzipped.
+
+Notice: There's currently an alternative [polyglot](https://github.com/tobilg/polyglot) library here. Check it out!
+
+## Goals (& Non-goals)
+
+The main goal is that sqlingo.js should be a close mirror to SQLGlot. This way, it can quickly catch up with SQLGlot bug fixes and new releases.
+
+Another goal is to stay true to Typescript convention (check [CONVENTION.md](./docs/CONVENTION.md)).
+
+Currently, these are non-goals:
+- Optimized performance.
+- Optimized bundle size.
+- Compatibility with SQLGlot (but it should be trivial to make the two compatible)
+
+## Backstory
+
+I'm currenly maintaining [@dbml/core](https://github.com/holistics/dbml), a library that supports converting between DBML and SQL. Under the hood it uses ANTLR for parsing, and honestly it's been a mess:
+- `@dbml/core` is **33MB**, which is quite insane to be honest. It actually broke our CI with OOM errors.
+- We can't add more dialects without making the bundle even larger.
+- The parser is feature-incomplete and spits out user-unfriendly error messages like `No viable alternative at...`.
+- After all that, we only support **5 dialects**.
+
+At a hackathon, I was poking around [Dagster](https://dagster.io/) and stumbled upon SQLGlot. I thought it was amazing that there was a library like this. SQLGlot seems to be trusted by a lots of tools in the Python ecosystems. 
+
+Since then, I was looking for an alternative in Javascript, because I want to run it on the browser. Sadly, at the time, there was none that I knew of.
+
+I tried running SQLGlot through [Pyodide](https://pyodide.org/) as a hack, but the runtime is way too heavy to ship anywhere that matters.
+
+Therefore, I decided to port it. At 2 weeks into my porting process, [polyglot](https://github.com/tobilg/polyglot) was announced (LOL!). However, I didn't want to waste my effort & also wanted full control - so I just continued anyways.
 
 ## Development Setup
 
@@ -16,32 +47,6 @@ A JavaScript port of [SQLGlot](https://github.com/tobymao/sqlglot), a SQL parser
 Make sure these are installed on your machine:
 - [`node`](https://nodejs.org/)@^18 - [Installation Guide](https://nodejs.org/en/download/package-manager)
 - [`pnpm`](https://pnpm.io/)@^10.26.1 - [Installation Guide](https://pnpm.io/installation)
-
-### Step 1: Installing Dependencies
-
-#### Option A: With Nix (Recommended)
-
-If you have [nix](https://nixos.org/) with flakes enabled:
-  
-```bash
-nix develop
-pnpm install
-```
-
-#### Option B: Without Nix
-
-Install `node` and `pnpm` manually, then run:
-
-```bash
-pnpm install
-```
-
-### Step 2: Verify Setup
-
-```bash
-pnpm typecheck  # Typecheck the project
-pnpm build      # Build the project
-```
 
 ### Available Scripts
 
@@ -56,6 +61,12 @@ pnpm lint          # Lint the code
 pnpm lint:fix      # Lint and auto-fix issues
 pnpm docs          # Generate documentation
 ```
+
+### Mirror Guide
+
+Check [CONVENTION.md](./docs/CONVENTION.md).
+
+I have compiled our convention and lots of pitfalls there. You can use the knowledge there to allow easier debugging.
 
 ## License
 
