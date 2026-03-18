@@ -18,7 +18,7 @@ import {
 } from '../../src/index';
 import {
   cast,
-  column, convert, delete_, func, insert, JoinExpr, JoinExprKind, LiteralExpr, merge, null_,
+  column, delete_, func, insert, JoinExpr, JoinExprKind, LiteralExpr, merge, null_,
   renameColumn,
   SelectExpr,
   subquery,
