@@ -1,6 +1,6 @@
 # sqlingo.js
 
-![Status](https://img.shields.io/badge/status-active-brightblue)
+![Version](https://img.shields.io/badge/version-0.0.1-orange)
 ![Status](https://img.shields.io/badge/status-alpha-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![SQLGlot](https://img.shields.io/badge/SQLGlot-264e95f-orange)
