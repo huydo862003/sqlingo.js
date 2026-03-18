@@ -17,7 +17,7 @@ Notice: There's currently an alternative [polyglot](https://github.com/tobilg/po
 
 The main goal is that sqlingo.js should be a close mirror to SQLGlot. This way, it can quickly catch up with SQLGlot bug fixes and new releases.
 
-Another goal is to stay true to Typescript convention (check [CONVENTION.md](./docs/CONVENTION.md)).
+Another goal is to stay true to Typescript convention (check [CONVENTION.md](./CONVENTION.md)).
 
 Currently, these are non-goals:
 - Optimized performance.
@@ -64,7 +64,7 @@ pnpm docs          # Generate documentation
 
 ### Mirror Guide
 
-Check [CONVENTION.md](./docs/CONVENTION.md).
+Check [CONVENTION.md](./CONVENTION.md).
 
 I have compiled our convention and lots of pitfalls there. You can use the knowledge there to allow easier debugging.
 

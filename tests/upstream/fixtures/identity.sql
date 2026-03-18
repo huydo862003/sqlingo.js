@@ -1,0 +1,1 @@
+../../../upstream/sqlglot/tests/fixtures/identity.sql
