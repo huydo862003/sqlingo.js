@@ -6,7 +6,7 @@
     "version": "28.10.0",
     "url": "https://github.com/tobymao/sqlglot"
   },
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "description": "A JavaScript port of SQLGlot - SQL parser, transpiler, optimizer, and engine",
   "main": "dist/index.cjs",
