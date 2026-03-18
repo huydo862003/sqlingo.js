@@ -900,7 +900,9 @@ describe('TestOptimizer', () => {
 
   it('test_canonicalize', () => {
     const canonicalizeOptimize = (e: Expression, options?: Record<string, unknown>): Expression => {
-      const { schema, dialect } = options || {};
+      const {
+        schema, dialect,
+      } = options || {};
       return optimize(e, {
         rules: [
           (expr: Expression, options?: Record<string, unknown>) => qualify(expr, options),
@@ -942,7 +944,7 @@ describe('TestOptimizer', () => {
   it('test_scope', () => {
     const ast = parseOne('SELECT IF(a IN UNNEST(b), 1, 0) AS c FROM t', { dialect: 'bigquery' });
     const scope = buildScope(ast);
-    expect(scope?.columns.map(c => c.sql())).toEqual(['a', 'b']);
+    expect(scope?.columns.map((c) => c.sql())).toEqual(['a', 'b']);
 
     const manyUnions = parseOne(Array.from({ length: 10000 }, () => 'SELECT x FROM t').join(' UNION ALL '));
     const scopesUsingTraverse = [...(buildScope(manyUnions)?.traverse() ?? [])];
