@@ -45,7 +45,7 @@ Therefore, I decided to port it. At 2 weeks into my porting process, [polyglot](
 ### Prerequisites
 
 Make sure these are installed on your machine:
-- [`node`](https://nodejs.org/)@^18 - [Installation Guide](https://nodejs.org/en/download/package-manager)
+- [`node`](https://nodejs.org/)@^20 - [Installation Guide](https://nodejs.org/en/download/package-manager)
 - [`pnpm`](https://pnpm.io/)@^10.26.1 - [Installation Guide](https://pnpm.io/installation)
 
 ### Available Scripts
