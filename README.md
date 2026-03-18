@@ -13,6 +13,16 @@ Bundled size is around 1MB minified, gzipped.
 
 Notice: There's currently an alternative [polyglot](https://github.com/tobilg/polyglot) library here. Check it out!
 
+## Installation
+
+```bash
+npm install @hdnax/sqlingo.js
+# or
+pnpm add @hdnax/sqlingo.js
+# or
+yarn add @hdnax/sqlingo.js
+```
+
 ## Goals (& Non-goals)
 
 The main goal is that sqlingo.js should be a close mirror to SQLGlot. This way, it can quickly catch up with SQLGlot bug fixes and new releases.
