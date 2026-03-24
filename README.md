@@ -23,6 +23,10 @@ pnpm add @hdnax/sqlingo.js
 yarn add @hdnax/sqlingo.js
 ```
 
+## Usage
+
+See the [Usage Guide](./README.npm.md) for API documentation and examples.
+
 ## Goals (& Non-goals)
 
 The main goal is that sqlingo.js should be a close mirror to SQLGlot. This way, it can quickly catch up with SQLGlot bug fixes and new releases.

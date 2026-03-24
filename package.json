@@ -6,7 +6,7 @@
     "version": "28.10.0",
     "url": "https://github.com/tobymao/sqlglot"
   },
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "description": "A JavaScript port of SQLGlot - SQL parser, transpiler, optimizer, and engine",
   "main": "dist/index.cjs",
@@ -33,7 +33,9 @@
     "docs:serve": "typedoc && npx http-server docs -o",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "pnpm build && changeset publish && git push --follow-tags"
+    "release": "pnpm build && changeset publish && git push --follow-tags",
+    "prepublishOnly": "cp README.md README.repo.md && cp README.npm.md README.md",
+    "postpublish": "mv README.repo.md README.md"
   },
   "keywords": [
     "sql",
@@ -46,6 +48,14 @@
   ],
   "author": "Huy DNA",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/huydo862003/sqlingo.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/huydo862003/sqlingo.js/issues"
+  },
+  "homepage": "https://github.com/huydo862003/sqlingo.js#readme",
   "packageManager": "pnpm@10.26.1",
   "files": [
     "dist",
