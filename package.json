@@ -1,81 +1,82 @@
 {
-  "$schema": "https://json.schemastore.org/package.json",
-  "name": "@hdnax/sqlingo.js",
-  "sqlglot": {
-    "commit": "264e95f04d95f2cd7bcf255ee7ae160db36882a7",
-    "version": "28.10.0",
-    "url": "https://github.com/tobymao/sqlglot"
-  },
-  "version": "0.0.2",
-  "type": "module",
-  "description": "A JavaScript port of SQLGlot - SQL parser, transpiler, optimizer, and engine",
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
-  },
-  "scripts": {
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "docs": "typedoc",
-    "docs:watch": "typedoc --watch",
-    "docs:serve": "typedoc && npx http-server docs -o",
-    "changeset": "changeset",
-    "version": "changeset version",
-    "release": "pnpm build && changeset publish && git push --follow-tags",
-    "prepublishOnly": "cp README.md README.repo.md && cp README.npm.md README.md",
-    "postpublish": "mv README.repo.md README.md"
-  },
-  "keywords": [
-    "sql",
-    "parser",
-    "transpiler",
-    "optimizer",
-    "sqlingo",
-    "sql-parser",
-    "sql-transpiler"
-  ],
-  "author": "Huy DNA",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/huydo862003/sqlingo.js.git"
-  },
-  "bugs": {
-    "url": "https://github.com/huydo862003/sqlingo.js/issues"
-  },
-  "homepage": "https://github.com/huydo862003/sqlingo.js#readme",
-  "packageManager": "pnpm@10.26.1",
-  "files": [
-    "dist",
-    "LICENSE",
-    "README.md",
-    "COPYRIGHT_NOTICE"
-  ],
-  "devDependencies": {
-    "@changesets/cli": "^2.29.8",
-    "@hdnax/nuclint": "^0.9.1",
-    "@types/luxon": "^3.7.1",
-    "@types/node": "^25.2.1",
-    "eslint": "^9.39.2",
-    "tsup": "^8.5.1",
-    "typedoc": "^0.28.16",
-    "typedoc-github-theme": "^0.4.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
-  },
-  "peerDependencies": {
-    "luxon": "^3.7.2"
-  }
+	"$schema": "https://json.schemastore.org/package.json",
+	"name": "@hdnax/sqlingo.js",
+	"sqlglot": {
+		"commit": "264e95f04d95f2cd7bcf255ee7ae160db36882a7",
+		"version": "28.10.0",
+		"url": "https://github.com/tobymao/sqlglot"
+	},
+	"version": "0.0.2",
+	"type": "module",
+	"description": "A JavaScript port of SQLGlot - SQL parser, transpiler, optimizer, and engine",
+	"main": "dist/index.cjs",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"scripts": {
+		"test": "vitest",
+		"test:ui": "vitest --ui",
+		"test:coverage": "vitest --coverage",
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"docs": "typedoc",
+		"docs:watch": "typedoc --watch",
+		"docs:serve": "typedoc && npx http-server docs -o",
+		"changeset": "changeset",
+		"version": "changeset version",
+		"release": "pnpm build && changeset publish && git push --follow-tags",
+		"prepublishOnly": "cp README.md README.repo.md && cp README.npm.md README.md",
+		"postpublish": "mv README.repo.md README.md"
+	},
+	"keywords": [
+		"sql",
+		"parser",
+		"transpiler",
+		"optimizer",
+		"sqlingo",
+		"sql-parser",
+		"sql-transpiler"
+	],
+	"author": "Huy DNA",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/huydo862003/sqlingo.js.git"
+	},
+	"bugs": {
+		"url": "https://github.com/huydo862003/sqlingo.js/issues"
+	},
+	"homepage": "https://github.com/huydo862003/sqlingo.js#readme",
+	"packageManager": "pnpm@10.26.1",
+	"files": [
+		"dist",
+		"LICENSE",
+		"README.md",
+		"COPYRIGHT_NOTICE",
+		"CHANGELOG.md"
+	],
+	"devDependencies": {
+		"@changesets/cli": "^2.29.8",
+		"@hdnax/nuclint": "^0.9.1",
+		"@types/luxon": "^3.7.1",
+		"@types/node": "^25.2.1",
+		"eslint": "^9.39.2",
+		"tsup": "^8.5.1",
+		"typedoc": "^0.28.16",
+		"typedoc-github-theme": "^0.4.0",
+		"typescript": "^5.9.3",
+		"vitest": "^4.0.18"
+	},
+	"peerDependencies": {
+		"luxon": "^3.7.2"
+	}
 }
