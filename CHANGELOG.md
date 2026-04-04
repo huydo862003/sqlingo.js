@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.0.4
+
+### Patch Changes
+
+- 4667ffe: Update README
+
 ## 0.0.3
 
 ### Patch Changes
