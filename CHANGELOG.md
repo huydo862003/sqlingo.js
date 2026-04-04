@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.0.5
+
+### Patch Changes
+
+- dc5780a: Update copywriting
+
 ## 0.0.4
 
 ### Patch Changes
