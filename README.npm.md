@@ -32,6 +32,14 @@ pnpm add @hdnax/sqlingo.js
 yarn add @hdnax/sqlingo.js
 ```
 
+or CDN:
+
+```html
+<script type="module">
+  import { transpile } from "https://esm.sh/@hdnax/sqlingo.js";
+</script>
+```
+
 Peer dependency: [`luxon`](https://www.npmjs.com/package/luxon) (^3.7.2) is required for date/time operations.
 
 ## Usage
@@ -128,13 +136,3 @@ This package tracks [SQLGlot](https://github.com/tobymao/sqlglot) v28.10.0 (comm
 MIT. See [LICENSE](https://github.com/huydo862003/sqlingo.js/blob/master/LICENSE).
 
 Based on [SQLGlot](https://github.com/tobymao/sqlglot) by Toby Mao (MIT). See [COPYRIGHT_NOTICE](https://github.com/huydo862003/sqlingo.js/blob/master/COPYRIGHT_NOTICE).
-
-## CDN Usage
-
-Use sqlingo.js directly in the browser via CDN:
-
-```html
-<script type="module">
-  import { transpile } from "https://esm.sh/@hdnax/sqlingo.js";
-</script>
-```
