@@ -1,17 +1,17 @@
 # sqlingo.js
 
-![Version](https://img.shields.io/badge/version-0.0.1-orange)
-![Status](https://img.shields.io/badge/status-alpha-orange)
-![License](https://img.shields.io/badge/license-MIT-green)
-![SQLGlot](https://img.shields.io/badge/SQLGlot-264e95f-orange)
+[![npm version](https://img.shields.io/npm/v/@hdnax/sqlingo.js)](https://www.npmjs.com/package/@hdnax/sqlingo.js)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@hdnax/sqlingo.js)](https://bundlephobia.com/package/@hdnax/sqlingo.js)
+![SQLGlot](https://img.shields.io/badge/SQLGlot-v28.10.0-blue)
 
-A JavaScript port of [SQLGlot](https://github.com/tobymao/sqlglot), a SQL parser, transpiler, optimizer, and engine.
+A JavaScript/TypeScript port of [SQLGlot](https://github.com/tobymao/sqlglot), which is a comprehensive SQL parser, transpiler, optimizer, and engine.
 
-Supports Typescript & CJS/ESM.
+This package allows you to parse, transpile, optimize, and execute SQL across **33+ dialects** in JavaScript, with no other setup.
 
-Bundled size is around 1MB minified, gzipped.
+Supports TypeScript & CJS/ESM. Works in Node.js and the browser.
 
-Notice: There's currently an alternative [polyglot](https://github.com/tobilg/polyglot) library here. Check it out!
+> There's also an alternative [polyglot](https://github.com/tobilg/polyglot) library - check it out!
 
 ## Installation
 
@@ -23,9 +23,27 @@ pnpm add @hdnax/sqlingo.js
 yarn add @hdnax/sqlingo.js
 ```
 
-## Usage
+## Quick Start
 
-See the [Usage Guide](./README.npm.md) for API documentation and examples.
+```ts
+import { parse, transpile } from "@hdnax/sqlingo.js";
+
+// Parse SQL into an AST
+const [ast] = parse("SELECT a, b FROM t WHERE a > 1");
+
+// Transpile between dialects
+const [result] = transpile("SELECT EPOCH_MS(1618088028295)", {
+  read: "duckdb",
+  write: "hive",
+});
+// => "SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))"
+```
+
+See the [Usage Guide](./README.npm.md) for full API documentation and examples.
+
+## Supported Dialects
+
+Athena, BigQuery, ClickHouse, Databricks, Doris, Dremio, Drill, Druid, DuckDB, Dune, Exasol, Fabric, Hive, Materialize, MySQL, Oracle, Postgres, Presto, PRQL, Redshift, RisingWave, SingleStore, Snowflake, Solr, Spark, Spark2, SQLite, StarRocks, Tableau, Teradata, Trino, TSQL
 
 ## Goals (& Non-goals)
 
@@ -34,6 +52,7 @@ The main goal is that sqlingo.js should be a close mirror to SQLGlot. This way, 
 Another goal is to stay true to Typescript convention (check [CONVENTION.md](./CONVENTION.md)).
 
 Currently, these are non-goals:
+
 - Optimized performance.
 - Optimized bundle size.
 - Compatibility with SQLGlot (but it should be trivial to make the two compatible)
@@ -41,12 +60,13 @@ Currently, these are non-goals:
 ## Backstory
 
 I'm currenly maintaining [@dbml/core](https://github.com/holistics/dbml), a library that supports converting between DBML and SQL. Under the hood it uses ANTLR for parsing, and honestly it's been a mess:
+
 - `@dbml/core` is **33MB**, which is quite insane to be honest. It actually broke our CI with OOM errors.
 - We can't add more dialects without making the bundle even larger.
 - The parser is feature-incomplete and spits out user-unfriendly error messages like `No viable alternative at...`.
 - After all that, we only support **5 dialects**.
 
-At a hackathon, I was poking around [Dagster](https://dagster.io/) and stumbled upon SQLGlot. I thought it was amazing that there was a library like this. SQLGlot seems to be trusted by a lots of tools in the Python ecosystems. 
+At a hackathon, I was poking around [Dagster](https://dagster.io/) and stumbled upon SQLGlot. I thought it was amazing that there was a library like this. SQLGlot seems to be trusted by a lots of tools in the Python ecosystems.
 
 Since then, I was looking for an alternative in Javascript, because I want to run it on the browser. Sadly, at the time, there was none that I knew of.
 
@@ -59,6 +79,7 @@ Therefore, I decided to port it. At 2 weeks into my porting process, [polyglot](
 ### Prerequisites
 
 Make sure these are installed on your machine:
+
 - [`node`](https://nodejs.org/)@^20 - [Installation Guide](https://nodejs.org/en/download/package-manager)
 - [`pnpm`](https://pnpm.io/)@^10.26.1 - [Installation Guide](https://pnpm.io/installation)
 

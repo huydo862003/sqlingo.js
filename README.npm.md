@@ -1,13 +1,26 @@
 # sqlingo.js
 
-![Version](https://img.shields.io/badge/version-0.0.1-orange)
-![Status](https://img.shields.io/badge/status-alpha-orange)
-![License](https://img.shields.io/badge/license-MIT-green)
-![SQLGlot](https://img.shields.io/badge/SQLGlot-264e95f-orange)
+[![npm version](https://img.shields.io/npm/v/@hdnax/sqlingo.js)](https://www.npmjs.com/package/@hdnax/sqlingo.js)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/huydo862003/sqlingo.js/blob/master/LICENSE)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@hdnax/sqlingo.js)](https://bundlephobia.com/package/@hdnax/sqlingo.js)
+![SQLGlot](https://img.shields.io/badge/SQLGlot-v28.10.0-blue)
 
-A JavaScript port of [SQLGlot](https://github.com/tobymao/sqlglot) (v28.10.0) — a SQL parser, transpiler, optimizer, and engine.
+A JavaScript/TypeScript port of [SQLGlot](https://github.com/tobymao/sqlglot), which is a comprehensive SQL parser, transpiler, optimizer, and engine.
 
-Supports TypeScript & CJS/ESM. Bundled size is around 1MB minified, gzipped.
+This package allows you to parse, transpile, optimize, and execute SQL across **33+ dialects** in JavaScript, with no other setup.
+
+Supports TypeScript & CJS/ESM. Works in Node.js and the browser.
+
+- [GitHub](https://github.com/huydo862003/sqlingo.js)
+- [Issues](https://github.com/huydo862003/sqlingo.js/issues)
+- [Changelog](https://github.com/huydo862003/sqlingo.js/blob/master/CHANGELOG.md)
+
+## Features
+
+- 33+ SQL dialects: Postgres, MySQL, BigQuery, Snowflake, DuckDB, ClickHouse, Redshift, Athena, Spark, and many more
+- Full SQLGlot feature set: parsing, transpilation, optimization, column lineage, SQL diffing, and execution
+- Pure JavaScript: no need for WASM or anything.
+- TypeScript-first: full type definitions included
 
 ## Installation
 
@@ -118,41 +131,14 @@ Based on [SQLGlot](https://github.com/tobymao/sqlglot) by Toby Mao (MIT). See [C
 
 ## Copyright Notice
 
+Check [License](./LICENSE).
+
+## CDN Usage
+
+Use sqlingo.js directly in the browser via CDN:
+
+```html
+<script type="module">
+  import { transpile } from "https://esm.sh/@hdnax/sqlingo.js";
+</script>
 ```
-This project incorporates code from the following sources:
-
-===============================================================================
-
-sqlingo.js
-Copyright (c) 2026 Huy DNA
-Licensed under the MIT License
-
-===============================================================================
-
-SQLGlot (https://github.com/tobymao/sqlglot)
-Copyright (c) 2025 Toby Mao
-Licensed under the MIT License
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
-## Links
-
-- [GitHub](https://github.com/huydo862003/sqlingo.js)
-- [Issues](https://github.com/huydo862003/sqlingo.js/issues)
