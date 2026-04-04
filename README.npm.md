@@ -129,10 +129,6 @@ MIT. See [LICENSE](https://github.com/huydo862003/sqlingo.js/blob/master/LICENSE
 
 Based on [SQLGlot](https://github.com/tobymao/sqlglot) by Toby Mao (MIT). See [COPYRIGHT_NOTICE](https://github.com/huydo862003/sqlingo.js/blob/master/COPYRIGHT_NOTICE).
 
-## Copyright Notice
-
-Check [License](./LICENSE).
-
 ## CDN Usage
 
 Use sqlingo.js directly in the browser via CDN:
