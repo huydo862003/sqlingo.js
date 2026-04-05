@@ -39,6 +39,7 @@
 	},
 	"keywords": [
 		"sql",
+		"tokenizer",
 		"parser",
 		"transpiler",
 		"optimizer",
