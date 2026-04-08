@@ -8,7 +8,7 @@ build/
 *.tsbuildinfo
 
 # Documentation
-docs/
+doc/
 README.repo.md
 
 # Environment

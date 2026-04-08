@@ -94,7 +94,7 @@ pnpm dev           # Build in watch mode
 pnpm typecheck     # Type check without emitting
 pnpm lint          # Lint the code
 pnpm lint:fix      # Lint and auto-fix issues
-pnpm run docs      # Generate documentation
+pnpm run doc       # Generate documentation
 ```
 
 ### Mirror Guide
