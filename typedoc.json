@@ -1,5 +1,6 @@
 {
   "$schema": "https://typedoc.org/schema.json",
+  "hostedBaseUrl": "https://huydo862003.github.io/sqlingo.js/",
   "entryPoints": ["src/index.ts"],
   "out": "docs",
   "plugin": ["typedoc-github-theme"],
