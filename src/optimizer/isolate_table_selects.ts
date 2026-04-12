@@ -9,12 +9,18 @@ import {
   SubqueryExpr,
   TableExpr,
 } from '../expressions';
-import { OptimizeError } from '../errors';
-import type { DialectType } from '../dialects/dialect';
+import {
+  OptimizeError,
+} from '../errors';
+import type {
+  DialectType,
+} from '../dialects/dialect';
 import {
   ensureSchema, type Schema,
 } from '../schema';
-import { traverseScope } from './scope';
+import {
+  traverseScope,
+} from './scope';
 
 /**
  * Isolate table references in queries with multiple sources.
@@ -49,17 +55,24 @@ export function isolateTableSelects<E extends Expression> (
   const {
     schema: schemaArg, dialect,
   } = options;
-  const schema = ensureSchema(schemaArg, { dialect });
+  const schema = ensureSchema(schemaArg, {
+    dialect,
+  });
 
   for (const scope of traverseScope(expression)) {
     if (Object.keys(scope.selectedSources).length === 1) {
       continue;
     }
 
-    for (const [, sourceEntry] of Object.entries(scope.selectedSources)) {
+    for (const [
+      , sourceEntry,
+    ] of Object.entries(scope.selectedSources)) {
       // sourceEntry is [node, source] where source is TableExpr | Scope
       // We need the actual source (second element) to check if it's a Table
-      const [node, actualSource] = sourceEntry;
+      const [
+        node,
+        actualSource,
+      ] = sourceEntry;
 
       // Only process actual table references, not CTEs (which are Scope objects)
       if (!(actualSource instanceof TableExpr)) {
@@ -98,8 +111,14 @@ export function isolateTableSelects<E extends Expression> (
       // Wrap table in SELECT * FROM table subquery
       const aliasName = source.aliasOrName;
       const subquery = selectExpr('*')
-        .from(aliasExpr(source, aliasName, { table: true }), { copy: false })
-        .subquery(aliasName, { copy: false });
+        .from(aliasExpr(source, aliasName, {
+          table: true,
+        }), {
+          copy: false,
+        })
+        .subquery(aliasName, {
+          copy: false,
+        });
 
       source.replace(subquery);
     }

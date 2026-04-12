@@ -14,8 +14,12 @@ import {
   SelectExpr,
   true_,
 } from '../expressions';
-import { filterInstanceOf } from '../port_internals';
-import { tsort } from '../helper';
+import {
+  filterInstanceOf,
+} from '../port_internals';
+import {
+  tsort,
+} from '../helper';
 
 const JOIN_ATTRS = [
   'on',
@@ -43,14 +47,16 @@ const JOIN_ATTRS = [
  */
 export function optimizeJoins (expression: Expression): Expression {
   for (const select of expression.findAll(SelectExpr)) {
-    const joins = filterInstanceOf(select.args.joins ?? [], JoinExpr);
+    const joins = filterInstanceOf(select.args.joins ?? [
+    ], JoinExpr);
 
     if (!isReorderable(joins)) {
       continue;
     }
 
     const references: Record<string, JoinExpr[]> = {};
-    const crossJoins: [string, JoinExpr][] = [];
+    const crossJoins: [string, JoinExpr][] = [
+    ];
 
     for (const join of joins) {
       const tables = otherTableNames(join);
@@ -58,17 +64,25 @@ export function optimizeJoins (expression: Expression): Expression {
       if (0 < tables.size) {
         for (const table of tables) {
           if (!references[table]) {
-            references[table] = [];
+            references[table] = [
+            ];
           }
           references[table].push(join);
         }
       } else {
-        crossJoins.push([join.aliasOrName, join]);
+        crossJoins.push([
+          join.aliasOrName,
+          join,
+        ]);
       }
     }
 
-    for (const [name, join] of crossJoins) {
-      for (const dep of references[name] ?? []) {
+    for (const [
+      name,
+      join,
+    ] of crossJoins) {
+      for (const dep of references[name] ?? [
+      ]) {
         const on = dep.args.on;
 
         if (on instanceof ConnectorExpr) {
@@ -82,9 +96,14 @@ export function optimizeJoins (expression: Expression): Expression {
             if (columnTableNames(predicate).has(name)) {
               predicate.replace(true_());
               const combined = combine(
-                [join.args.on, predicate],
+                [
+                  join.args.on,
+                  predicate,
+                ],
                 operator,
-                { copy: false },
+                {
+                  copy: false,
+                },
               );
               join.on(combined, {
                 append: false,
@@ -113,7 +132,8 @@ export function reorderJoins (expression: Expression): Expression {
     const parent = from.parent;
     if (!parent) continue;
 
-    const joins = filterInstanceOf(parent.args.joins ?? [], JoinExpr);
+    const joins = filterInstanceOf(parent.args.joins ?? [
+    ], JoinExpr);
 
     if (!isReorderable(joins)) {
       continue;
@@ -125,7 +145,10 @@ export function reorderJoins (expression: Expression): Expression {
     }
 
     const dag = new Map<string, Set<string>>();
-    for (const [name, join] of joinsByName) {
+    for (const [
+      name,
+      join,
+    ] of joinsByName) {
       dag.set(name, otherTableNames(join));
     }
 
@@ -182,7 +205,11 @@ export function normalize (expression: Expression): Expression {
  */
 export function otherTableNames (join: JoinExpr): Set<string> {
   const on = join.args.on;
-  return on ? columnTableNames(on, { exclude: join.aliasOrName }) : new Set();
+  return on
+    ? columnTableNames(on, {
+      exclude: join.aliasOrName,
+    })
+    : new Set();
 }
 
 /**

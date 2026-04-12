@@ -1,6 +1,12 @@
-import type { Expression } from '../expressions/expressions';
-import { cache } from '../port_internals';
-import { DataTypeExprKind } from '../expressions/types';
+import type {
+  Expression,
+} from '../expressions/expressions';
+import {
+  cache,
+} from '../port_internals';
+import {
+  DataTypeExprKind,
+} from '../expressions/types';
 import {
   AcosExpr,
   AsinExpr,
@@ -15,9 +21,15 @@ import {
   CurrentTimezoneExpr,
   RadiansExpr,
 } from '../expressions/expressions';
-import type { TypeAnnotator } from '../optimizer';
-import { DialectTyping } from './dialect';
-import type { ExpressionMetadata } from './dialect';
+import type {
+  TypeAnnotator,
+} from '../optimizer';
+import {
+  DialectTyping,
+} from './dialect';
+import type {
+  ExpressionMetadata,
+} from './dialect';
 
 export class TSQLTyping {
   @cache
@@ -38,14 +50,25 @@ export class TSQLTyping {
       CotExpr,
       SinExpr,
       TanExpr,
-    ], { returns: DataTypeExprKind.FLOAT });
+    ], {
+      returns: DataTypeExprKind.FLOAT,
+    });
 
-    extend([SoundexExpr, StuffExpr], { returns: DataTypeExprKind.VARCHAR });
+    extend([
+      SoundexExpr,
+      StuffExpr,
+    ], {
+      returns: DataTypeExprKind.VARCHAR,
+    });
 
-    map.set(CurrentTimezoneExpr, { returns: DataTypeExprKind.NVARCHAR });
+    map.set(CurrentTimezoneExpr, {
+      returns: DataTypeExprKind.NVARCHAR,
+    });
 
     map.set(RadiansExpr, {
-      annotator: (s: TypeAnnotator, e: RadiansExpr) => s.annotateByArgs(e, ['this']),
+      annotator: (s: TypeAnnotator, e: RadiansExpr) => s.annotateByArgs(e, [
+        'this',
+      ]),
     });
 
     return map;

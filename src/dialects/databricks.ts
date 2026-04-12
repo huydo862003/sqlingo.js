@@ -1,8 +1,12 @@
 import type {
   Generator,
 } from '../generator';
-import { Parser } from '../parser';
-import { TokenType } from '../tokens';
+import {
+  Parser,
+} from '../parser';
+import {
+  TokenType,
+} from '../tokens';
 import type {
   ColumnDefExpr,
   JsonPathExpr,
@@ -36,16 +40,24 @@ import {
   RegexpLikeExpr,
   LiteralExpr,
 } from '../expressions';
-import { seqGet } from '../helper';
-import { TypeAnnotator } from '../optimizer';
-import { JsonPathTokenizer } from '../jsonpath';
+import {
+  seqGet,
+} from '../helper';
+import {
+  TypeAnnotator,
+} from '../optimizer';
+import {
+  JsonPathTokenizer,
+} from '../jsonpath';
 import {
   anyToExists, eliminateDistinctOn, preprocess, unnestToExplode,
 } from '../transforms';
 import {
   cache, narrowInstanceOf,
 } from '../port_internals';
-import { Spark } from './spark';
+import {
+  Spark,
+} from './spark';
 import {
   dateDeltaSql,
   buildDateDelta,
@@ -64,7 +76,10 @@ function jsonExtractSql (this: Generator, expression: JsonExtractExpr | JsonExtr
 class DatabricksJsonPathTokenizer extends JsonPathTokenizer {
   @cache
   static get IDENTIFIERS () {
-    return ['`', '"'];
+    return [
+      '`',
+      '"',
+    ];
   }
 }
 
@@ -91,7 +106,9 @@ class DatabricksParser extends Spark.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Spark.Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Spark.Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
     return noParenFunctions;
@@ -102,7 +119,7 @@ class DatabricksParser extends Spark.Parser {
   static COLON_IS_VARIANT_EXTRACT = true;
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return {
       ...Spark.Parser.FUNCTIONS,
       GETDATE: (args: unknown[]) => CurrentTimestampExpr.fromArgList(args),
@@ -111,7 +128,9 @@ class DatabricksParser extends Spark.Parser {
       DATEDIFF: buildDateDelta(DateDiffExpr),
       DATE_DIFF: buildDateDelta(DateDiffExpr),
       NOW: (args: unknown[]) => CurrentTimestampExpr.fromArgList(args),
-      TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: Dialects.DATABRICKS }),
+      TO_DATE: buildFormattedTime(TsOrDsToDateExpr, {
+        dialect: Dialects.DATABRICKS,
+      }),
       UNIFORM: (args: Expression[]) => new UniformExpr({
         this: seqGet(args, 0),
         expression: seqGet(args, 1),
@@ -161,7 +180,10 @@ class DatabricksParser extends Spark.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Spark.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Spark.Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 class DatabricksGenerator extends Spark.Generator {
@@ -178,7 +200,13 @@ class DatabricksGenerator extends Spark.Generator {
 
   @cache
   static get TYPE_MAPPING () {
-    return new Map([...Spark.Generator.TYPE_MAPPING, [DataTypeExprKind.NULL, 'VOID']]);
+    return new Map([
+      ...Spark.Generator.TYPE_MAPPING,
+      [
+        DataTypeExprKind.NULL,
+        'VOID',
+      ],
+    ]);
   }
 
   @cache
@@ -187,9 +215,18 @@ class DatabricksGenerator extends Spark.Generator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Spark.Generator.TRANSFORMS,
-      [CurrentVersionExpr, () => 'CURRENT_VERSION()'],
-      [DateAddExpr, dateDeltaSql('DATEADD')],
-      [DateDiffExpr, dateDeltaSql('DATEDIFF')],
+      [
+        CurrentVersionExpr,
+        () => 'CURRENT_VERSION()',
+      ],
+      [
+        DateAddExpr,
+        dateDeltaSql('DATEADD'),
+      ],
+      [
+        DateDiffExpr,
+        dateDeltaSql('DATEDIFF'),
+      ],
       [
         ConvertTimezoneExpr,
         function (this: Generator, e: ConvertTimezoneExpr) {
@@ -223,8 +260,14 @@ class DatabricksGenerator extends Spark.Generator {
           ]);
         },
       ],
-      [DatetimeTruncExpr, timestampTruncSql()],
-      [GroupConcatExpr, groupConcatSql],
+      [
+        DatetimeTruncExpr,
+        timestampTruncSql(),
+      ],
+      [
+        GroupConcatExpr,
+        groupConcatSql,
+      ],
       [
         SelectExpr,
         preprocess([
@@ -245,19 +288,27 @@ class DatabricksGenerator extends Spark.Generator {
           return jsonExtractSql.call(this, e);
         },
       ],
-      [JsonPathRootExpr, () => ''],
+      [
+        JsonPathRootExpr,
+        () => '',
+      ],
       [
         ToCharExpr,
         function (this: Generator, e: ToCharExpr) {
           return e.args.isNumeric
             ? this.castSql(new CastExpr({
               this: e.args.this,
-              to: new DataTypeExpr({ this: 'STRING' }),
+              to: new DataTypeExpr({
+                this: 'STRING',
+              }),
             }))
             : this.functionFallbackSql(e);
         },
       ],
-      [CurrentCatalogExpr, () => 'CURRENT_CATALOG()'],
+      [
+        CurrentCatalogExpr,
+        () => 'CURRENT_CATALOG()',
+      ],
     ]);
 
     transforms.delete(RegexpLikeExpr);
@@ -266,7 +317,7 @@ class DatabricksGenerator extends Spark.Generator {
     return transforms;
   }
 
-  columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
+  columnDefSql (expression: ColumnDefExpr, options: {sep?: string} = {}): string {
     const {
       sep = ' ',
     } = options;
@@ -282,7 +333,9 @@ class DatabricksGenerator extends Spark.Generator {
       expression.setArgKey('kind', DataTypeExpr.build('bigint'));
     }
 
-    return super.columnDefSql(expression, { sep });
+    return super.columnDefSql(expression, {
+      sep,
+    });
   }
 
   generatedAsIdentityColumnConstraintSql (expression: GeneratedAsIdentityColumnConstraintExpr): string {
@@ -328,7 +381,8 @@ export class Databricks extends Spark {
 
     for (const textType of DataTypeExpr.TEXT_TYPES) {
       const types = new Set([
-        ...(coercionMap.get(textType) || []),
+        ...(coercionMap.get(textType) || [
+        ]),
         ...DataTypeExpr.NUMERIC_TYPES,
         ...DataTypeExpr.TEMPORAL_TYPES,
         DataTypeExprKind.BINARY,

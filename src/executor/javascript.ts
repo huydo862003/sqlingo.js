@@ -1,5 +1,9 @@
-import { Dialect } from '../dialects/dialect';
-import { ExecuteError } from '../errors';
+import {
+  Dialect,
+} from '../dialects/dialect';
+import {
+  ExecuteError,
+} from '../errors';
 import {
   AddExpr,
   AliasExpr,
@@ -43,16 +47,24 @@ import {
   JoinExprKind,
   type TableExpr,
 } from '../expressions';
-import { ALL_FUNCTIONS } from '../parser/function_registry';
-import { Generator } from '../generator';
+import {
+  ALL_FUNCTIONS,
+} from '../parser/function_registry';
+import {
+  Generator,
+} from '../generator';
 import type {
   Plan, Step,
 } from '../planner';
 import {
   Scan, Aggregate, Join, Sort, SetOperation,
 } from '../planner';
-import { Context } from './context';
-import { ENV } from './env';
+import {
+  Context,
+} from './context';
+import {
+  ENV,
+} from './env';
 import {
   Table, RowReader,
 } from './table';
@@ -73,13 +85,16 @@ function rename (this: Generator, e: Expression): string {
     if (values.length === 1) {
       const val = values[0];
       if (!Array.isArray(val)) {
-        return this.func(e._constructor.key, [val]);
+        return this.func(e._constructor.key, [
+          val,
+        ]);
       }
       return this.func(e._constructor.key, val);
     }
 
     if (e instanceof FuncExpr && (e._constructor as typeof FuncExpr).isVarLenArgs) {
-      const args = [];
+      const args = [
+      ];
       for (const v of values) {
         if (Array.isArray(v)) {
           args.push(...v);
@@ -104,8 +119,11 @@ function caseJs (this: Generator, expression: CaseExpr): string {
   const thisStr = this.sql(expression, 'this');
   let chain = this.sql(expression, 'default') || 'null';
 
-  const ifs = expression.args.ifs ?? [];
-  for (const e of [...ifs].reverse()) {
+  const ifs = expression.args.ifs ?? [
+  ];
+  for (const e of [
+    ...ifs,
+  ].reverse()) {
     const trueStr = this.sql(e, 'true');
     let condition = this.sql(e, 'this');
     if (thisStr) {
@@ -119,7 +137,9 @@ function caseJs (this: Generator, expression: CaseExpr): string {
 
 /** Generates a JS arrow function from a Lambda expression. */
 function lambdaJs (this: Generator, e: LambdaExpr): string {
-  return `(${this.expressions(e, { flat: true })}) => ${this.sql(e, 'this')}`;
+  return `(${this.expressions(e, {
+    flat: true,
+  })}) => ${this.sql(e, 'this')}`;
 }
 
 /** Generates a DIV call, appending `|| undefined` for safe division and wrapping in Math.trunc for integer division. */
@@ -154,7 +174,8 @@ export class JavascriptGenerator extends Generator {
       [
         AnonymousExpr,
         function (this: Generator, e: AnonymousExpr) {
-          return this.func(e.name, e.args.expressions ?? []);
+          return this.func(e.name, e.args.expressions ?? [
+          ]);
         },
       ],
       [
@@ -172,17 +193,25 @@ export class JavascriptGenerator extends Generator {
       [
         ArrayExpr,
         function (this: Generator, e: ArrayExpr) {
-          return `[${this.expressions(e, { flat: true })}]`;
+          return `[${this.expressions(e, {
+            flat: true,
+          })}]`;
         },
       ],
-      [BetweenExpr, rename],
+      [
+        BetweenExpr,
+        rename,
+      ],
       [
         BooleanExpr,
         function (this: Generator, e: BooleanExpr) {
           return e.args.this ? 'true' : 'false';
         },
       ],
-      [CaseExpr, caseJs],
+      [
+        CaseExpr,
+        caseJs,
+      ],
       [
         CastExpr,
         function (this: Generator, e: CastExpr) {
@@ -208,7 +237,8 @@ export class JavascriptGenerator extends Generator {
         function (this: Generator, e: ConcatExpr) {
           return this.func(
             e.args.safe ? 'SAFECONCAT' : 'CONCAT',
-            e.args.expressions ?? [],
+            e.args.expressions ?? [
+            ],
           );
         },
       ],
@@ -230,7 +260,10 @@ export class JavascriptGenerator extends Generator {
           return `${left}[${right}]`;
         },
       ],
-      [DivExpr, divJs],
+      [
+        DivExpr,
+        divJs,
+      ],
       [
         EqExpr,
         function (this: Generator, e: EqExpr) {
@@ -270,7 +303,9 @@ export class JavascriptGenerator extends Generator {
       [
         InExpr,
         function (this: Generator, e: InExpr) {
-          return `[${this.expressions(e, { flat: true })}].includes(${this.sql(e, 'this')})`;
+          return `[${this.expressions(e, {
+            flat: true,
+          })}].includes(${this.sql(e, 'this')})`;
         },
       ],
       [
@@ -293,7 +328,8 @@ export class JavascriptGenerator extends Generator {
             [
               e.args.this as Expression,
               e.args.expression as Expression,
-              ...(e.args.expressions ?? []) as Expression[],
+              ...(e.args.expressions ?? [
+              ]) as Expression[],
             ],
           );
         },
@@ -301,7 +337,8 @@ export class JavascriptGenerator extends Generator {
       [
         JsonPathExpr,
         function (this: Generator, e: JsonPathExpr) {
-          const parts = e.args.expressions ?? [];
+          const parts = e.args.expressions ?? [
+          ];
           return `[${parts.slice(1).map((p) => this.sql(p as Expression))
             .join(',')}]`;
         },
@@ -318,22 +355,34 @@ export class JavascriptGenerator extends Generator {
           return `'${e.args.this}'`;
         },
       ],
-      [LambdaExpr, lambdaJs],
+      [
+        LambdaExpr,
+        lambdaJs,
+      ],
       [
         NotExpr,
         function (this: Generator, e: NotExpr) {
           return `!(${this.sql(e.args.this as Expression)})`;
         },
       ],
-      [NullExpr, () => 'undefined'],
+      [
+        NullExpr,
+        () => 'undefined',
+      ],
       [
         OrExpr,
         function (this: Generator, e: OrExpr) {
           return this.binary(e, '||');
         },
       ],
-      [OrderedExpr, orderedJs],
-      [StarExpr, () => '1'],
+      [
+        OrderedExpr,
+        orderedJs,
+      ],
+      [
+        StarExpr,
+        () => '1',
+      ],
     ]);
 
     // Map all registered functions to rename (like Python's ALL_FUNCTIONS -> _rename)
@@ -387,7 +436,10 @@ export class JavascriptExecutor {
         for (const dep of node.dependencies) {
           const depCtx = contexts.get(dep as Scan);
           if (depCtx) {
-            for (const [name, table] of depCtx.tables) {
+            for (const [
+              name,
+              table,
+            ] of depCtx.tables) {
               contextTables.set(name, table);
             }
           }
@@ -429,8 +481,10 @@ export class JavascriptExecutor {
     }
 
     const root = plan.root;
-    if (!root) return new Table([]);
-    return contexts.get(root as Scan)?.tables.get(root.name) ?? new Table([]);
+    if (!root) return new Table([
+    ]);
+    return contexts.get(root as Scan)?.tables.get(root.name) ?? new Table([
+    ]);
   }
 
   /** Convert a SQL expression into literal JS code string. */
@@ -441,7 +495,8 @@ export class JavascriptExecutor {
 
   /** Convert an array of SQL expressions into an array of JS code strings. */
   generateTuple (expressions: Expression[]): string[] {
-    if (!expressions || expressions.length === 0) return [];
+    if (!expressions || expressions.length === 0) return [
+    ];
     return expressions.map((e) => this.generate(e) ?? '');
   }
 
@@ -474,7 +529,9 @@ export class JavascriptExecutor {
       if (!step.projections?.length && !step.condition) {
         const srcTable = context.tables.get(source);
         if (!srcTable) return context;
-        return this.context({ [step.name]: srcTable });
+        return this.context({
+          [step.name]: srcTable,
+        });
       }
       tableIter = context.tableIter(source);
     } else {
@@ -483,13 +540,16 @@ export class JavascriptExecutor {
       tableIter = scanResult[1];
     }
 
-    return this.context({ [step.name]: this.projectAndFilter(context, step, tableIter) });
+    return this.context({
+      [step.name]: this.projectAndFilter(context, step, tableIter),
+    });
   }
 
   projectAndFilter (context: Context, step: Step, tableIter: Iterable<unknown>): Table {
     const sink = this.table(step.projections?.length ? step.projections : context.columns);
     const condition = this.generate(step.condition);
-    const projections = this.generateTuple(step.projections || []);
+    const projections = this.generateTuple(step.projections || [
+    ]);
 
     // Handle self-referential projections: if projections reference scope[stepName] but stepName
     // is not in the context, add an empty table with that name so scope references can resolve.
@@ -497,7 +557,10 @@ export class JavascriptExecutor {
     if (0 < projections.length && projections[0].includes(`scope["${step.name}"]`) && !context.has(step.name)) {
       // Create empty table with sink columns to allow scope references to find it
       const contextTables: Record<string, Table> = {};
-      for (const [k, v] of context.tables) {
+      for (const [
+        k,
+        v,
+      ] of context.tables) {
         if (v) contextTables[k] = v;
       }
       contextTables[step.name] = new Table(sink.columns);
@@ -526,7 +589,13 @@ export class JavascriptExecutor {
   }
 
   static (): [Context, RowReader[]] {
-    return [this.context(new Map()), [new RowReader([])]];
+    return [
+      this.context(new Map()),
+      [
+        new RowReader([
+        ]),
+      ],
+    ];
   }
 
   scanTable (step: Scan): [Context, Iterable<unknown>] {
@@ -585,38 +654,59 @@ export class JavascriptExecutor {
       }
     }
 
-    const resultTable = table instanceof Table ? table : new Table([]);
+    const resultTable = table instanceof Table
+      ? table
+      : new Table([
+      ]);
 
     const contextMap = new Map<string, Table>();
     contextMap.set(source.aliasOrName, resultTable);
     const context = this.context(contextMap);
 
-    return [context, resultTable[Symbol.iterator]()];
+    return [
+      context,
+      resultTable[Symbol.iterator](),
+    ];
   }
 
   join (step: Join, context: Context): Context {
     const source = step.sourceName;
 
     if (!source) return context;
-    const sourceTable = context.tables.get(source) ?? new Table([]);
-    let sourceContext = this.context(new Map([[source, sourceTable]]));
+    const sourceTable = context.tables.get(source) ?? new Table([
+    ]);
+    let sourceContext = this.context(new Map([
+      [
+        source,
+        sourceTable,
+      ],
+    ]));
 
-    const columnRanges = new Map<string, { start: number;
-      stop: number; }>();
+    const columnRanges = new Map<string, {start: number;
+      stop: number;}>();
     columnRanges.set(source, {
       start: 0,
       stop: sourceTable.columns.length,
     });
 
-    for (const [name, join] of Object.entries(step.joins || {})) {
-      const table = context.tables.get(name) ?? new Table([]);
+    for (const [
+      name,
+      join,
+    ] of Object.entries(step.joins || {})) {
+      const table = context.tables.get(name) ?? new Table([
+      ]);
       const start = Math.max(...Array.from(columnRanges.values()).map((r) => r.stop));
       columnRanges.set(name, {
         start,
         stop: table.columns.length + start,
       });
 
-      const joinContext = this.context(new Map([[name, table]]));
+      const joinContext = this.context(new Map([
+        [
+          name,
+          table,
+        ],
+      ]));
       let joinedTable: Table;
 
       const joinEntry = join;
@@ -627,7 +717,10 @@ export class JavascriptExecutor {
       }
 
       const nextTables = new Map<string, Table>();
-      for (const [n, cr] of columnRanges.entries()) {
+      for (const [
+        n,
+        cr,
+      ] of columnRanges.entries()) {
         nextTables.set(n, new Table(joinedTable.columns, joinedTable.rows, cr));
       }
       sourceContext = this.context(nextTables);
@@ -650,17 +743,27 @@ export class JavascriptExecutor {
       sourceContext,
       step,
       (function* (ctx: Context) {
-        for (const [reader] of ctx) {
+        for (const [
+          reader,
+        ] of ctx) {
           yield reader;
         }
       })(sourceContext),
     );
 
     if (step.projections?.length) {
-      return this.context(new Map([[step.name ?? '', sink]]));
+      return this.context(new Map([
+        [
+          step.name ?? '',
+          sink,
+        ],
+      ]));
     } else {
       const finalTables = new Map<string, Table>();
-      for (const [name, table] of sourceContext.tables.entries()) {
+      for (const [
+        name,
+        table,
+      ] of sourceContext.tables.entries()) {
         finalTables.set(name, new Table(table.columns, sink.rows, table.columnRange));
       }
       return this.context(finalTables);
@@ -668,11 +771,21 @@ export class JavascriptExecutor {
   }
 
   nestedLoopJoin (_join: Join['joins'][string], sourceContext: Context, joinContext: Context): Table {
-    const table = new Table([...sourceContext.columns, ...joinContext.columns]);
+    const table = new Table([
+      ...sourceContext.columns,
+      ...joinContext.columns,
+    ]);
 
-    for (const [readerA] of sourceContext) {
-      for (const [readerB] of joinContext) {
-        table.append([...readerA.row, ...readerB.row]);
+    for (const [
+      readerA,
+    ] of sourceContext) {
+      for (const [
+        readerB,
+      ] of joinContext) {
+        table.append([
+          ...readerA.row,
+          ...readerB.row,
+        ]);
       }
     }
 
@@ -687,54 +800,109 @@ export class JavascriptExecutor {
     const right = sideStr === JoinExprKind.RIGHT;
 
     const results = new Map<string, [unknown[][], unknown[][]]>();
-    const leftRows: Array<[string, unknown[]]> = [];
+    const leftRows: Array<[string, unknown[]]> = [
+    ];
 
-    for (const [reader, ctx] of sourceContext) {
+    for (const [
+      reader,
+      ctx,
+    ] of sourceContext) {
       const keyStr = JSON.stringify(ctx.evalTuple(sourceKey));
-      if (!results.has(keyStr)) results.set(keyStr, [[], []]);
+      if (!results.has(keyStr)) results.set(keyStr, [
+        [
+        ],
+        [
+        ],
+      ]);
       // Copy the row to avoid shared reference issues
-      results.get(keyStr)?.[0].push([...reader.row]);
-      leftRows.push([keyStr, reader.row]);
+      results.get(keyStr)?.[0].push([
+        ...reader.row,
+      ]);
+      leftRows.push([
+        keyStr,
+        reader.row,
+      ]);
     }
 
-    for (const [reader, ctx] of joinContext) {
+    for (const [
+      reader,
+      ctx,
+    ] of joinContext) {
       const keyStr = JSON.stringify(ctx.evalTuple(joinKey));
-      if (!results.has(keyStr)) results.set(keyStr, [[], []]);
+      if (!results.has(keyStr)) results.set(keyStr, [
+        [
+        ],
+        [
+        ],
+      ]);
       // Copy the row to avoid shared reference issues
-      results.get(keyStr)?.[1].push([...reader.row]);
+      results.get(keyStr)?.[1].push([
+        ...reader.row,
+      ]);
     }
 
-    const table = new Table([...sourceContext.columns, ...joinContext.columns]);
-    const leftNulls = [new Array(joinContext.columns.length).fill(undefined)];
-    const rightNulls = [new Array(sourceContext.columns.length).fill(undefined)];
+    const table = new Table([
+      ...sourceContext.columns,
+      ...joinContext.columns,
+    ]);
+    const leftNulls = [
+      new Array(joinContext.columns.length).fill(undefined),
+    ];
+    const rightNulls = [
+      new Array(sourceContext.columns.length).fill(undefined),
+    ];
 
     if (left) {
       // For LEFT JOIN, output only keys that have left rows
-      for (const [, [aGroup, bGroup]] of results.entries()) {
+      for (const [
+        , [
+          aGroup,
+          bGroup,
+        ],
+      ] of results.entries()) {
         if (aGroup.length === 0) continue; // Skip keys without left rows
         const finalBGroup = 0 < bGroup.length ? bGroup : leftNulls;
         for (const aRow of aGroup) {
           for (const bRow of finalBGroup) {
-            table.append([...aRow, ...bRow]);
+            table.append([
+              ...aRow,
+              ...bRow,
+            ]);
           }
         }
       }
     } else if (right) {
       // For RIGHT JOIN, output all right rows (with or without matches)
-      for (const [, [aGroup, bGroup]] of results.entries()) {
+      for (const [
+        , [
+          aGroup,
+          bGroup,
+        ],
+      ] of results.entries()) {
         const finalAGroup = 0 < aGroup.length ? aGroup : rightNulls;
         for (const aRow of finalAGroup) {
           for (const bRow of bGroup) {
-            table.append([...aRow, ...bRow]);
+            table.append([
+              ...aRow,
+              ...bRow,
+            ]);
           }
         }
       }
     } else {
       // For INNER JOIN, output only matching rows
-      for (const [, [aGroup, bGroup]] of results.entries()) {
+      for (const [
+        , [
+          aGroup,
+          bGroup,
+        ],
+      ] of results.entries()) {
         for (const aRow of aGroup) {
           for (const bRow of bGroup) {
-            table.append([...aRow, ...bRow]);
+            table.append([
+              ...aRow,
+              ...bRow,
+            ]);
           }
         }
       }
@@ -745,18 +913,25 @@ export class JavascriptExecutor {
 
   aggregate (step: Aggregate, context: Context): Context {
     const groupBy = this.generateTuple(Object.values(step.group || {}));
-    const aggregations = this.generateTuple(step.aggregations || []);
-    const operands = this.generateTuple(step.operands || []);
+    const aggregations = this.generateTuple(step.aggregations || [
+    ]);
+    const operands = this.generateTuple(step.operands || [
+    ]);
 
     if (0 < operands.length) {
       const operandTable = new Table(this.table(step.operands).columns);
 
-      for (const [, ctx] of context) {
+      for (const [
+        , ctx,
+      ] of context) {
         operandTable.append(ctx.evalTuple(operands));
       }
 
       for (let i = 0; i < context.table.rows.length; i++) {
-        context.table.rows[i] = [...context.table.rows[i], ...operandTable.rows[i]];
+        context.table.rows[i] = [
+          ...context.table.rows[i],
+          ...operandTable.rows[i],
+        ];
       }
 
       const width = context.columns.length;
@@ -772,7 +947,12 @@ export class JavascriptExecutor {
       );
 
       const newTables = new Map<string | undefined, Table>(
-        [...context.tables.entries()].filter(([k, v]) => typeof k === 'string' && v instanceof Table) as [string, Table][],
+        [
+          ...context.tables.entries(),
+        ].filter(([
+          k,
+          v,
+        ]) => typeof k === 'string' && v instanceof Table) as [string, Table][],
       );
       newTables.set(undefined, scopedOperandTable);
       context = this.context(newTables as Map<string, Table>);
@@ -785,11 +965,21 @@ export class JavascriptExecutor {
     let end = 1;
     const length = context.table.length;
     const groupKeyNames = Object.keys(step.group || {});
-    const table = this.table([...groupKeyNames, ...(step.aggregations || [])]);
+    const table = this.table([
+      ...groupKeyNames,
+      ...(step.aggregations || [
+      ]),
+    ]);
 
     const addRow = () => {
-      const parsedGroup: unknown[] = group ? JSON.parse(group) : [];
-      table.append([...parsedGroup, ...context.evalTuple(aggregations)]);
+      const parsedGroup: unknown[] = group
+        ? JSON.parse(group)
+        : [
+        ];
+      table.append([
+        ...parsedGroup,
+        ...context.evalTuple(aggregations),
+      ]);
     };
 
     if (0 < length) {
@@ -822,7 +1012,9 @@ export class JavascriptExecutor {
 
     const nextTables = new Map<string, Table>();
     nextTables.set(step.name, table);
-    for (const [name] of context.tables.entries()) {
+    for (const [
+      name,
+    ] of context.tables.entries()) {
       nextTables.set(name, table);
     }
     context = this.context(nextTables);
@@ -834,16 +1026,28 @@ export class JavascriptExecutor {
   }
 
   sort (step: Sort, context: Context): Context {
-    const projections = this.generateTuple(step.projections || []);
-    const projectionColumns: string[] = (step.projections || []).map((p: Expression) => p.aliasOrName);
-    const allColumns = [...context.columns, ...projectionColumns];
+    const projections = this.generateTuple(step.projections || [
+    ]);
+    const projectionColumns: string[] = (step.projections || [
+    ]).map((p: Expression) => p.aliasOrName);
+    const allColumns = [
+      ...context.columns,
+      ...projectionColumns,
+    ];
     const sink = this.table(allColumns);
 
-    const sortKeys = this.generateTuple(step.key || []);
+    const sortKeys = this.generateTuple(step.key || [
+    ]);
 
-    for (const [reader, ctx] of context) {
+    for (const [
+      reader,
+      ctx,
+    ] of context) {
       const projVals = ctx.evalTuple(projections);
-      sink.append([...reader.row, ...projVals]);
+      sink.append([
+        ...reader.row,
+        ...projVals,
+      ]);
     }
 
     const sortTables = new Map<string | undefined, Table>();
@@ -865,33 +1069,55 @@ export class JavascriptExecutor {
       sortContext.table.rows.map((r: unknown[]) => r.slice(colStart, colEnd)),
     );
 
-    return this.context(new Map([[step.name ?? '', output]]));
+    return this.context(new Map([
+      [
+        step.name ?? '',
+        output,
+      ],
+    ]));
   }
 
   setOperation (step: SetOperation, context: Context): Context {
-    const left = context.tables.get(step.left ?? '') ?? new Table([]);
-    const right = context.tables.get(step.right ?? '') ?? new Table([]);
+    const left = context.tables.get(step.left ?? '') ?? new Table([
+    ]);
+    const right = context.tables.get(step.right ?? '') ?? new Table([
+    ]);
 
     const sink = this.table(left.columns);
 
     if (step.op && (step.op === IntersectExpr || step.op.prototype instanceof IntersectExpr)) {
       const leftSet = new Set(left.rows.map((r) => JSON.stringify(r)));
       const rightSet = new Set(right.rows.map((r) => JSON.stringify(r)));
-      sink.rows = [...leftSet].filter((r) => rightSet.has(r)).map((r) => JSON.parse(r));
+      sink.rows = [
+        ...leftSet,
+      ].filter((r) => rightSet.has(r)).map((r) => JSON.parse(r));
     } else if (step.op && (step.op === ExceptExpr || step.op.prototype instanceof ExceptExpr)) {
       const rightSet = new Set(right.rows.map((r) => JSON.stringify(r)));
       sink.rows = left.rows.filter((r) => !rightSet.has(JSON.stringify(r)));
     } else if (step.op && (step.op === UnionExpr || step.op.prototype instanceof UnionExpr) && step.distinct) {
-      const combined = new Set([...left.rows, ...right.rows].map((r) => JSON.stringify(r)));
-      sink.rows = [...combined].map((r) => JSON.parse(r));
+      const combined = new Set([
+        ...left.rows,
+        ...right.rows,
+      ].map((r) => JSON.stringify(r)));
+      sink.rows = [
+        ...combined,
+      ].map((r) => JSON.parse(r));
     } else {
-      sink.rows = [...left.rows, ...right.rows];
+      sink.rows = [
+        ...left.rows,
+        ...right.rows,
+      ];
     }
 
     if (Number.isFinite(step.limit)) {
       sink.rows = sink.rows.slice(0, step.limit);
     }
 
-    return this.context(new Map([[step.name, sink]]));
+    return this.context(new Map([
+      [
+        step.name,
+        sink,
+      ],
+    ]));
   }
 }

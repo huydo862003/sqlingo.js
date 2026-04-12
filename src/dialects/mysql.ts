@@ -1,4 +1,6 @@
-import { cache } from '../port_internals';
+import {
+  cache,
+} from '../port_internals';
 import {
   Generator, unsupportedArgs,
 } from '../generator';
@@ -110,14 +112,24 @@ import {
   UtcTimeExpr,
   DateStrToDateExpr,
 } from '../expressions';
-import { type ExpressionMetadata } from '../typing';
-import { MySQLTyping } from '../typing/mysql';
-import type { TokenPair } from '../tokens';
+import {
+  type ExpressionMetadata,
+} from '../typing';
+import {
+  MySQLTyping,
+} from '../typing/mysql';
+import type {
+  TokenPair,
+} from '../tokens';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
-import { seqGet } from '../helper';
-import { Parser } from '../parser';
+import {
+  seqGet,
+} from '../helper';
+import {
+  Parser,
+} from '../parser';
 import {
   eliminateDistinctOn, eliminateFullOuterJoin, eliminateQualify, eliminateSemiAndAntiJoins, preprocess, unnestGenerateDateArrayUsingRecursiveCte,
 } from '../transforms';
@@ -197,10 +209,15 @@ export function dateTruncSql (this: Generator, expression: DateTruncExpr): strin
     if (unit !== 'DAY') {
       this.unsupported(`Unexpected interval unit: ${unit}`);
     }
-    return this.func('DATE', [expr]);
+    return this.func('DATE', [
+      expr,
+    ]);
   }
 
-  return this.func('STR_TO_DATE', [concat, `'${dateFormat}'`]);
+  return this.func('STR_TO_DATE', [
+    concat,
+    `'${dateFormat}'`,
+  ]);
 }
 
 /**
@@ -270,7 +287,10 @@ export function strToDateSql (
   this: Generator,
   expression: StrToDateExpr | StrToTimeExpr | TsOrDsToDateExpr,
 ): string {
-  return this.func('STR_TO_DATE', [expression.args.this, this.formatTime(expression)]);
+  return this.func('STR_TO_DATE', [
+    expression.args.this,
+    this.formatTime(expression),
+  ]);
 }
 
 /**
@@ -281,7 +301,10 @@ export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): str
   const timestamp = expression.args.this;
 
   if (scale === undefined || scale.toValue() === UnixToTimeExpr.SECONDS.toValue()) {
-    return this.func('FROM_UNIXTIME', [timestamp, this.formatTime(expression)]);
+    return this.func('FROM_UNIXTIME', [
+      timestamp,
+      this.formatTime(expression),
+    ]);
   }
 
   return this.func(
@@ -325,7 +348,9 @@ export function tsOrDsToDateSql (this: Generator, expression: TsOrDsToDateExpr):
   const timeFormat = expression.args.format;
   return timeFormat
     ? strToDateSql.call(this, expression)
-    : this.func('DATE', [expression.args.this]);
+    : this.func('DATE', [
+      expression.args.this,
+    ]);
 }
 
 /**
@@ -334,7 +359,9 @@ export function tsOrDsToDateSql (this: Generator, expression: TsOrDsToDateExpr):
  */
 export function removeTsOrDsToDate<T extends FuncExpr> (
   toSql?: (this: Generator, expression: T) => string,
-  args: string[] = ['this'],
+  args: string[] = [
+    'this',
+  ],
 ): (this: Generator, expression: T) => string {
   return function (this: Generator, expression: T): string {
     for (const argKey of args) {
@@ -349,14 +376,22 @@ export function removeTsOrDsToDate<T extends FuncExpr> (
 }
 
 class MySQLTokenizer extends Tokenizer {
-  static QUOTES: TokenPair[] = ['\'', '"'];
+  static QUOTES: TokenPair[] = [
+    '\'',
+    '"',
+  ];
   static COMMENTS: TokenPair[] = [
     '--',
     '#',
-    ['/*', '*/'],
+    [
+      '/*',
+      '*/',
+    ],
   ];
 
-  static IDENTIFIERS: TokenPair[] = ['`'];
+  static IDENTIFIERS: TokenPair[] = [
+    '`',
+  ];
   static STRING_ESCAPES: string[] = [
     '\'',
     '"',
@@ -364,15 +399,33 @@ class MySQLTokenizer extends Tokenizer {
   ];
 
   static BIT_STRINGS: TokenPair[] = [
-    ['b\'', '\''],
-    ['B\'', '\''],
-    ['0b', ''],
+    [
+      'b\'',
+      '\'',
+    ],
+    [
+      'B\'',
+      '\'',
+    ],
+    [
+      '0b',
+      '',
+    ],
   ];
 
   static HEX_STRINGS: TokenPair[] = [
-    ['x\'', '\''],
-    ['X\'', '\''],
-    ['0x', ''],
+    [
+      'x\'',
+      '\'',
+    ],
+    [
+      'X\'',
+      '\'',
+    ],
+    [
+      '0x',
+      '',
+    ],
   ];
 
   /**
@@ -472,7 +525,10 @@ class MySQLTokenizer extends Tokenizer {
 
   @cache
   static get COMMANDS () {
-    const commands = new Set([...Tokenizer.COMMANDS, TokenType.REPLACE]);
+    const commands = new Set([
+      ...Tokenizer.COMMANDS,
+      TokenType.REPLACE,
+    ]);
     commands.delete(TokenType.SHOW);
     return commands;
   };
@@ -482,7 +538,10 @@ class MySQLParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get ID_VAR_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.ID_VAR_TOKENS, TokenType.CURRENT_CATALOG]);
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.CURRENT_CATALOG,
+    ]);
   }
 
   @cache
@@ -531,8 +590,12 @@ class MySQLParser extends Parser {
       ...Parser.RANGE_PARSERS,
       [TokenType.SOUNDS_LIKE]: function (this: Parser, thisArg: Expression): EqExpr {
         return this.expression(EqExpr, {
-          this: this.expression(SoundexExpr, { this: thisArg }),
-          expression: this.expression(SoundexExpr, { this: this.parseTerm() }),
+          this: this.expression(SoundexExpr, {
+            this: thisArg,
+          }),
+          expression: this.expression(SoundexExpr, {
+            this: this.parseTerm(),
+          }),
         });
       },
       [TokenType.MEMBER_OF]: function (this: Parser, thisArg: Expression): JsonArrayContainsExpr {
@@ -560,20 +623,42 @@ class MySQLParser extends Parser {
         }),
       CURDATE: (args: unknown[]) => CurrentDateExpr.fromArgList(args),
       DATE: (args: Expression[]): TsOrDsToDateExpr =>
-        new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
+        new TsOrDsToDateExpr({
+          this: seqGet(args, 0),
+        }),
       DATE_ADD: (args: Expression[]) => buildDateDeltaWithInterval(DateAddExpr)(args),
-      DATE_FORMAT: buildFormattedTime(TimeToStrExpr, { dialect: Dialects.MYSQL }),
+      DATE_FORMAT: buildFormattedTime(TimeToStrExpr, {
+        dialect: Dialects.MYSQL,
+      }),
       DATE_SUB: (args: Expression[]) => buildDateDeltaWithInterval(DateSubExpr)(args),
       DAY: (args: Expression[]): DayExpr =>
-        new DayExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+        new DayExpr({
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
+        }),
       DAYOFMONTH: (args: Expression[]): DayOfMonthExpr =>
-        new DayOfMonthExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+        new DayOfMonthExpr({
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
+        }),
       DAYOFWEEK: (args: Expression[]): DayOfWeekExpr =>
-        new DayOfWeekExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+        new DayOfWeekExpr({
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
+        }),
       DAYOFYEAR: (args: Expression[]): DayOfYearExpr =>
-        new DayOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+        new DayOfYearExpr({
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
+        }),
       FORMAT: (args: unknown[]) => NumberToStrExpr.fromArgList(args),
-      FROM_UNIXTIME: buildFormattedTime(UnixToTimeExpr, { dialect: Dialects.MYSQL }),
+      FROM_UNIXTIME: buildFormattedTime(UnixToTimeExpr, {
+        dialect: Dialects.MYSQL,
+      }),
       ISNULL: isnullToIsNull,
       LENGTH: (args: Expression[]): LengthExpr =>
         new LengthExpr({
@@ -582,10 +667,16 @@ class MySQLParser extends Parser {
         }),
       MAKETIME: (args: unknown[]) => TimeFromPartsExpr.fromArgList(args),
       MONTH: (args: Expression[]): MonthExpr =>
-        new MonthExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+        new MonthExpr({
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
+        }),
       MONTHNAME: (args: Expression[]): TimeToStrExpr =>
         new TimeToStrExpr({
-          this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
           format: new LiteralExpr({
             this: '%B',
             isString: true,
@@ -597,27 +688,41 @@ class MySQLParser extends Parser {
       TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr),
       TO_DAYS: (args: Expression[]) => {
         const diff = new DateDiffExpr({
-          this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
           expression: new TsOrDsToDateExpr({
             this: new LiteralExpr({
               this: '0000-01-01',
               isString: true,
             }),
           }),
-          unit: new VarExpr({ this: 'DAY' }),
+          unit: new VarExpr({
+            this: 'DAY',
+          }),
         });
         return diff.add(1); // Standardized parenthesized expression with offset
       },
       VERSION: (args: unknown[]) => CurrentVersionExpr.fromArgList(args),
       WEEK: (args: Expression[]): WeekExpr =>
         new WeekExpr({
-          this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }),
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
           mode: seqGet(args, 1),
         }),
       WEEKOFYEAR: (args: Expression[]): WeekOfYearExpr =>
-        new WeekOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+        new WeekOfYearExpr({
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
+        }),
       YEAR: (args: Expression[]): YearExpr =>
-        new YearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+        new YearExpr({
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
+        }),
     };
   }
 
@@ -631,7 +736,9 @@ class MySQLParser extends Parser {
       VALUES: function (this: Parser): AnonymousExpr {
         return this.expression(AnonymousExpr, {
           this: 'VALUES',
-          expressions: [this.parseIdVar()],
+          expressions: [
+            this.parseIdVar(),
+          ],
         });
       },
       JSON_VALUE: function (this: Parser): Expression {
@@ -664,32 +771,60 @@ class MySQLParser extends Parser {
       target: 'FROM',
       full: true,
     }),
-    'COLUMNS': showParser('COLUMNS', { target: 'FROM' }),
-    'CREATE DATABASE': showParser('CREATE DATABASE', { target: true }),
-    'CREATE EVENT': showParser('CREATE EVENT', { target: true }),
-    'CREATE FUNCTION': showParser('CREATE FUNCTION', { target: true }),
-    'CREATE PROCEDURE': showParser('CREATE PROCEDURE', { target: true }),
-    'CREATE TABLE': showParser('CREATE TABLE', { target: true }),
-    'CREATE TRIGGER': showParser('CREATE TRIGGER', { target: true }),
-    'CREATE VIEW': showParser('CREATE VIEW', { target: true }),
+    'COLUMNS': showParser('COLUMNS', {
+      target: 'FROM',
+    }),
+    'CREATE DATABASE': showParser('CREATE DATABASE', {
+      target: true,
+    }),
+    'CREATE EVENT': showParser('CREATE EVENT', {
+      target: true,
+    }),
+    'CREATE FUNCTION': showParser('CREATE FUNCTION', {
+      target: true,
+    }),
+    'CREATE PROCEDURE': showParser('CREATE PROCEDURE', {
+      target: true,
+    }),
+    'CREATE TABLE': showParser('CREATE TABLE', {
+      target: true,
+    }),
+    'CREATE TRIGGER': showParser('CREATE TRIGGER', {
+      target: true,
+    }),
+    'CREATE VIEW': showParser('CREATE VIEW', {
+      target: true,
+    }),
     'DATABASES': showParser('DATABASES'),
     'SCHEMAS': showParser('DATABASES'),
-    'ENGINE': showParser('ENGINE', { target: true }),
+    'ENGINE': showParser('ENGINE', {
+      target: true,
+    }),
     'STORAGE ENGINES': showParser('ENGINES'),
     'ENGINES': showParser('ENGINES'),
     'ERRORS': showParser('ERRORS'),
     'EVENTS': showParser('EVENTS'),
-    'FUNCTION CODE': showParser('FUNCTION CODE', { target: true }),
+    'FUNCTION CODE': showParser('FUNCTION CODE', {
+      target: true,
+    }),
     'FUNCTION STATUS': showParser('FUNCTION STATUS'),
-    'GRANTS': showParser('GRANTS', { target: 'FOR' }),
-    'INDEX': showParser('INDEX', { target: 'FROM' }),
+    'GRANTS': showParser('GRANTS', {
+      target: 'FOR',
+    }),
+    'INDEX': showParser('INDEX', {
+      target: 'FROM',
+    }),
     'MASTER STATUS': showParser('MASTER STATUS'),
     'OPEN TABLES': showParser('OPEN TABLES'),
     'PLUGINS': showParser('PLUGINS'),
-    'PROCEDURE CODE': showParser('PROCEDURE CODE', { target: true }),
+    'PROCEDURE CODE': showParser('PROCEDURE CODE', {
+      target: true,
+    }),
     'PROCEDURE STATUS': showParser('PROCEDURE STATUS'),
     'PRIVILEGES': showParser('PRIVILEGES'),
-    'FULL PROCESSLIST': showParser('PROCESSLIST', { full: true }),
+    'FULL PROCESSLIST': showParser('PROCESSLIST', {
+      full: true,
+    }),
     'PROCESSLIST': showParser('PROCESSLIST'),
     'PROFILE': showParser('PROFILE'),
     'PROFILES': showParser('PROFILES'),
@@ -698,14 +833,20 @@ class MySQLParser extends Parser {
     'SLAVE HOSTS': showParser('REPLICAS'),
     'REPLICA STATUS': showParser('REPLICA STATUS'),
     'SLAVE STATUS': showParser('REPLICA STATUS'),
-    'GLOBAL STATUS': showParser('STATUS', { global: true }),
+    'GLOBAL STATUS': showParser('STATUS', {
+      global: true,
+    }),
     'SESSION STATUS': showParser('STATUS'),
     'STATUS': showParser('STATUS'),
     'TABLE STATUS': showParser('TABLE STATUS'),
-    'FULL TABLES': showParser('TABLES', { full: true }),
+    'FULL TABLES': showParser('TABLES', {
+      full: true,
+    }),
     'TABLES': showParser('TABLES'),
     'TRIGGERS': showParser('TRIGGERS'),
-    'GLOBAL VARIABLES': showParser('VARIABLES', { global: true }),
+    'GLOBAL VARIABLES': showParser('VARIABLES', {
+      global: true,
+    }),
     'SESSION VARIABLES': showParser('VARIABLES'),
     'VARIABLES': showParser('VARIABLES'),
     'WARNINGS': showParser('WARNINGS'),
@@ -729,10 +870,14 @@ class MySQLParser extends Parser {
     return {
       ...Parser.SET_PARSERS,
       'PERSIST': function (this: Parser) {
-        return (this as MySQLParser).parseSetItemAssignment({ kind: SetItemExprKind.PERSIST });
+        return (this as MySQLParser).parseSetItemAssignment({
+          kind: SetItemExprKind.PERSIST,
+        });
       },
       'PERSIST_ONLY': function (this: Parser) {
-        return this.parseSetItemAssignment({ kind: 'PERSIST_ONLY' });
+        return this.parseSetItemAssignment({
+          kind: 'PERSIST_ONLY',
+        });
       },
       'CHARACTER SET': function (this: Parser): Expression {
         return (this as MySQLParser).parseSetItemCharset('CHARACTER SET');
@@ -802,26 +947,44 @@ class MySQLParser extends Parser {
   @cache
   static get PROFILE_TYPES () {
     return {
-      ALL: [],
-      CPU: [],
-      IPC: [],
-      MEMORY: [],
-      SOURCE: [],
-      SWAPS: [],
-      BLOCK: ['IO'],
-      CONTEXT: ['SWITCHES'],
-      PAGE: ['FAULTS'],
+      ALL: [
+      ],
+      CPU: [
+      ],
+      IPC: [
+      ],
+      MEMORY: [
+      ],
+      SOURCE: [
+      ],
+      SWAPS: [
+      ],
+      BLOCK: [
+        'IO',
+      ],
+      CONTEXT: [
+        'SWITCHES',
+      ],
+      PAGE: [
+        'FAULTS',
+      ],
     };
   }
 
   @cache
   static get TYPE_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.TYPE_TOKENS, TokenType.SET]);
+    return new Set([
+      ...Parser.TYPE_TOKENS,
+      TokenType.SET,
+    ]);
   }
 
   @cache
   static get ENUM_TYPE_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.ENUM_TYPE_TOKENS, TokenType.SET]);
+    return new Set([
+      ...Parser.ENUM_TYPE_TOKENS,
+      TokenType.SET,
+    ]);
   }
 
   /**
@@ -854,7 +1017,10 @@ class MySQLParser extends Parser {
     | GeneratedAsRowColumnConstraintExpr {
     let thisExpr = super.parseGeneratedAsIdentity();
 
-    if (this.matchTexts(['STORED', 'VIRTUAL'])) {
+    if (this.matchTexts([
+      'STORED',
+      'VIRTUAL',
+    ])) {
       const persisted = this.prev?.text.toUpperCase() === 'STORED';
 
       if (thisExpr instanceof ComputedColumnConstraintExpr) {
@@ -895,36 +1061,73 @@ class MySQLParser extends Parser {
    */
   protected parseIndexConstraint (kind?: string): IndexColumnConstraintExpr {
     if (kind) {
-      this.matchTexts(['INDEX', 'KEY']);
+      this.matchTexts([
+        'INDEX',
+        'KEY',
+      ]);
     }
 
-    const thisExpr = this.parseIdVar({ anyToken: false });
+    const thisExpr = this.parseIdVar({
+      anyToken: false,
+    });
     const indexType = this.match(TokenType.USING) && this.advanceAny() && this.prev?.text;
     const expressions = this.parseWrappedCsv(this.parseOrdered.bind(this));
 
-    const options: IndexConstraintOptionExpr[] = [];
+    const options: IndexConstraintOptionExpr[] = [
+    ];
     while (true) {
       let opt: IndexConstraintOptionExpr | undefined = undefined;
 
-      if (this.matchTextSeq(['KEY_BLOCK_SIZE'])) {
+      if (this.matchTextSeq([
+        'KEY_BLOCK_SIZE',
+      ])) {
         this.match(TokenType.EQ);
-        opt = new IndexConstraintOptionExpr({ keyBlockSize: this.parseNumber() });
+        opt = new IndexConstraintOptionExpr({
+          keyBlockSize: this.parseNumber(),
+        });
       } else if (this.match(TokenType.USING)) {
-        opt = new IndexConstraintOptionExpr({ using: this.advanceAny() && this.prev?.text });
-      } else if (this.matchTextSeq(['WITH', 'PARSER'])) {
-        opt = new IndexConstraintOptionExpr({ parser: this.parseVar({ anyToken: true }) });
+        opt = new IndexConstraintOptionExpr({
+          using: this.advanceAny() && this.prev?.text,
+        });
+      } else if (this.matchTextSeq([
+        'WITH',
+        'PARSER',
+      ])) {
+        opt = new IndexConstraintOptionExpr({
+          parser: this.parseVar({
+            anyToken: true,
+          }),
+        });
       } else if (this.match(TokenType.COMMENT)) {
-        opt = new IndexConstraintOptionExpr({ comment: this.parseString() });
-      } else if (this.matchTextSeq(['VISIBLE'])) {
-        opt = new IndexConstraintOptionExpr({ visible: true });
-      } else if (this.matchTextSeq(['INVISIBLE'])) {
-        opt = new IndexConstraintOptionExpr({ visible: false });
-      } else if (this.matchTextSeq(['ENGINE_ATTRIBUTE'])) {
+        opt = new IndexConstraintOptionExpr({
+          comment: this.parseString(),
+        });
+      } else if (this.matchTextSeq([
+        'VISIBLE',
+      ])) {
+        opt = new IndexConstraintOptionExpr({
+          visible: true,
+        });
+      } else if (this.matchTextSeq([
+        'INVISIBLE',
+      ])) {
+        opt = new IndexConstraintOptionExpr({
+          visible: false,
+        });
+      } else if (this.matchTextSeq([
+        'ENGINE_ATTRIBUTE',
+      ])) {
         this.match(TokenType.EQ);
-        opt = new IndexConstraintOptionExpr({ engineAttr: this.parseString() });
-      } else if (this.matchTextSeq(['SECONDARY_ENGINE_ATTRIBUTE'])) {
+        opt = new IndexConstraintOptionExpr({
+          engineAttr: this.parseString(),
+        });
+      } else if (this.matchTextSeq([
+        'SECONDARY_ENGINE_ATTRIBUTE',
+      ])) {
         this.match(TokenType.EQ);
-        opt = new IndexConstraintOptionExpr({ secondaryEngineAttr: this.parseString() });
+        opt = new IndexConstraintOptionExpr({
+          secondaryEngineAttr: this.parseString(),
+        });
       }
 
       if (!opt) break;
@@ -956,7 +1159,9 @@ class MySQLParser extends Parser {
       full,
       global,
     } = options;
-    const json = this.matchTextSeq(['JSON']);
+    const json = this.matchTextSeq([
+      'JSON',
+    ]);
     let targetId: Expression | undefined = undefined;
 
     if (target) {
@@ -966,12 +1171,20 @@ class MySQLParser extends Parser {
       targetId = this.parseIdVar();
     }
 
-    const log = this.matchTextSeq(['IN']) ? this.parseString() : undefined;
+    const log = this.matchTextSeq([
+      'IN',
+    ])
+      ? this.parseString()
+      : undefined;
     let position: Expression | undefined = undefined;
     let db: Expression | undefined = undefined;
 
     if (thisArg === 'BINLOG EVENTS' || thisArg === 'RELAYLOG EVENTS') {
-      position = this.matchTextSeq(['FROM']) ? this.parseNumber() : undefined;
+      position = this.matchTextSeq([
+        'FROM',
+      ])
+        ? this.parseNumber()
+        : undefined;
     } else {
       if (this.match(TokenType.FROM)) {
         db = this.parseIdVar();
@@ -981,8 +1194,17 @@ class MySQLParser extends Parser {
       }
     }
 
-    const channel = this.matchTextSeq(['FOR', 'CHANNEL']) ? this.parseIdVar() : undefined;
-    const like = this.matchTextSeq(['LIKE']) ? this.parseString() : undefined;
+    const channel = this.matchTextSeq([
+      'FOR',
+      'CHANNEL',
+    ])
+      ? this.parseIdVar()
+      : undefined;
+    const like = this.matchTextSeq([
+      'LIKE',
+    ])
+      ? this.parseString()
+      : undefined;
     const where = this.parseWhere();
 
     let types: Expression[] | undefined = undefined;
@@ -992,22 +1214,67 @@ class MySQLParser extends Parser {
 
     if (thisArg === 'PROFILE') {
       types = this.parseCsv(() => this.parseVarFromOptions(MySQLParser.PROFILE_TYPES));
-      query = this.matchTextSeq(['FOR', 'QUERY']) ? this.parseNumber() : undefined;
-      offset = this.matchTextSeq(['OFFSET']) ? this.parseNumber() : undefined;
-      limit = this.matchTextSeq(['LIMIT']) ? this.parseNumber() : undefined;
+      query = this.matchTextSeq([
+        'FOR',
+        'QUERY',
+      ])
+        ? this.parseNumber()
+        : undefined;
+      offset = this.matchTextSeq([
+        'OFFSET',
+      ])
+        ? this.parseNumber()
+        : undefined;
+      limit = this.matchTextSeq([
+        'LIMIT',
+      ])
+        ? this.parseNumber()
+        : undefined;
     } else {
-      [offset, limit] = this.parseOldstyleLimit();
+      [
+        offset,
+        limit,
+      ] = this.parseOldstyleLimit();
     }
 
     let mutex: boolean | undefined = undefined;
-    if (this.matchTextSeq(['MUTEX'])) mutex = true;
-    if (this.matchTextSeq(['STATUS'])) mutex = false;
+    if (this.matchTextSeq([
+      'MUTEX',
+    ])) mutex = true;
+    if (this.matchTextSeq([
+      'STATUS',
+    ])) mutex = false;
 
-    const forTable = this.matchTextSeq(['FOR', 'TABLE']) ? this.parseIdVar() : undefined;
-    const forGroup = this.matchTextSeq(['FOR', 'GROUP']) ? this.parseString() : undefined;
-    const forUser = this.matchTextSeq(['FOR', 'USER']) ? this.parseString() : undefined;
-    const forRole = this.matchTextSeq(['FOR', 'ROLE']) ? this.parseString() : undefined;
-    const intoOutfile = this.matchTextSeq(['INTO', 'OUTFILE']) ? this.parseString() : undefined;
+    const forTable = this.matchTextSeq([
+      'FOR',
+      'TABLE',
+    ])
+      ? this.parseIdVar()
+      : undefined;
+    const forGroup = this.matchTextSeq([
+      'FOR',
+      'GROUP',
+    ])
+      ? this.parseString()
+      : undefined;
+    const forUser = this.matchTextSeq([
+      'FOR',
+      'USER',
+    ])
+      ? this.parseString()
+      : undefined;
+    const forRole = this.matchTextSeq([
+      'FOR',
+      'ROLE',
+    ])
+      ? this.parseString()
+      : undefined;
+    const intoOutfile = this.matchTextSeq([
+      'INTO',
+      'OUTFILE',
+    ])
+      ? this.parseString()
+      : undefined;
 
     return this.expression(ShowExpr, {
       this: thisArg,
@@ -1038,7 +1305,9 @@ class MySQLParser extends Parser {
     let limit: Expression | undefined = undefined;
     let offset: Expression | undefined = undefined;
 
-    if (this.matchTextSeq(['LIMIT'])) {
+    if (this.matchTextSeq([
+      'LIMIT',
+    ])) {
       const parts = this.parseCsv(this.parseNumber.bind(this));
       if (parts.length === 1) {
         limit = parts[0];
@@ -1048,7 +1317,10 @@ class MySQLParser extends Parser {
       }
     }
 
-    return [offset, limit];
+    return [
+      offset,
+      limit,
+    ];
   }
 
   protected parseSetItemCharset (kind: string): Expression {
@@ -1063,7 +1335,9 @@ class MySQLParser extends Parser {
     const charset = this.parseString() || this.parseUnquotedField();
     let collate: Expression | undefined = undefined;
 
-    if (this.matchTextSeq(['COLLATE'])) {
+    if (this.matchTextSeq([
+      'COLLATE',
+    ])) {
       collate = this.parseString() || this.parseUnquotedField();
     }
 
@@ -1086,7 +1360,9 @@ class MySQLParser extends Parser {
       parseInterval = true,
       fallbackToIdentifier = false,
     } = options;
-    if (this.match(TokenType.BINARY, { advance: false })) {
+    if (this.match(TokenType.BINARY, {
+      advance: false,
+    })) {
       const dataType = this.parseTypes({
         checkFunc: true,
         allowIdentifiers: false,
@@ -1107,12 +1383,18 @@ class MySQLParser extends Parser {
   }
 
   protected parseAlterTableAlterIndex (): AlterIndexExpr {
-    const index = this.parseField({ anyToken: true });
+    const index = this.parseField({
+      anyToken: true,
+    });
     let visible: boolean | undefined = undefined;
 
-    if (this.matchTextSeq(['VISIBLE'])) {
+    if (this.matchTextSeq([
+      'VISIBLE',
+    ])) {
       visible = true;
-    } else if (this.matchTextSeq(['INVISIBLE'])) {
+    } else if (this.matchTextSeq([
+      'INVISIBLE',
+    ])) {
       visible = false;
     }
 
@@ -1129,10 +1411,14 @@ class MySQLParser extends Parser {
     let partitionCls: typeof Expression | undefined = undefined;
     let valueParser: (() => Expression | undefined) | undefined = undefined;
 
-    if (this.matchTextSeq(['RANGE'])) {
+    if (this.matchTextSeq([
+      'RANGE',
+    ])) {
       partitionCls = PartitionByRangePropertyExpr;
       valueParser = this.parsePartitionRangeValue.bind(this);
-    } else if (this.matchTextSeq(['LIST'])) {
+    } else if (this.matchTextSeq([
+      'LIST',
+    ])) {
       partitionCls = PartitionByListPropertyExpr;
       valueParser = this.parsePartitionListValue.bind(this);
     }
@@ -1144,7 +1430,12 @@ class MySQLParser extends Parser {
     const partitionExpressions = this.parseWrappedCsv(this.parseAssignment.bind(this));
 
     // For Doris and Starrocks compatibility check
-    if (!this.matchTextSeq(['(', 'PARTITION'], { advance: false })) {
+    if (!this.matchTextSeq([
+      '(',
+      'PARTITION',
+    ], {
+      advance: false,
+    })) {
       return partitionExpressions;
     }
 
@@ -1157,7 +1448,9 @@ class MySQLParser extends Parser {
   }
 
   protected parsePartitionRangeValue (): Expression | undefined {
-    this.matchTextSeq(['PARTITION']);
+    this.matchTextSeq([
+      'PARTITION',
+    ]);
     const name = this.parseIdVar();
 
     if (!this.matchTextSeq([
@@ -1175,27 +1468,44 @@ class MySQLParser extends Parser {
       && values[0] instanceof ColumnExpr
       && values[0].name.toUpperCase() === 'MAXVALUE'
     ) {
-      values = [new VarExpr({ this: 'MAXVALUE' })];
+      values = [
+        new VarExpr({
+          this: 'MAXVALUE',
+        }),
+      ];
     }
 
     const partRange = this.expression(PartitionRangeExpr, {
       this: name,
       expressions: values,
     });
-    return this.expression(PartitionExpr, { expressions: [partRange] });
+    return this.expression(PartitionExpr, {
+      expressions: [
+        partRange,
+      ],
+    });
   }
 
   protected parsePartitionListValue (): PartitionExpr {
-    this.matchTextSeq(['PARTITION']);
+    this.matchTextSeq([
+      'PARTITION',
+    ]);
     const name = this.parseIdVar();
-    this.matchTextSeq(['VALUES', 'IN']);
+    this.matchTextSeq([
+      'VALUES',
+      'IN',
+    ]);
     const values = this.parseWrappedCsv(this.parseExpression.bind(this));
 
     const partList = this.expression(PartitionListExpr, {
       this: name,
       expressions: values,
     });
-    return this.expression(PartitionExpr, { expressions: [partList] });
+    return this.expression(PartitionExpr, {
+      expressions: [
+        partList,
+      ],
+    });
   }
 
   public parsePrimaryKey (
@@ -1235,7 +1545,8 @@ class MySQLGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [];
+  static readonly SELECT_KINDS: string[] = [
+  ];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -1272,50 +1583,127 @@ class MySQLGenerator extends Generator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
-      [ArrayAggExpr, renameFunc('GROUP_CONCAT')],
-      [BitwiseAndAggExpr, renameFunc('BIT_AND')],
-      [BitwiseOrAggExpr, renameFunc('BIT_OR')],
-      [BitwiseXorAggExpr, renameFunc('BIT_XOR')],
-      [BitwiseCountExpr, renameFunc('BIT_COUNT')],
+      [
+        ArrayAggExpr,
+        renameFunc('GROUP_CONCAT'),
+      ],
+      [
+        BitwiseAndAggExpr,
+        renameFunc('BIT_AND'),
+      ],
+      [
+        BitwiseOrAggExpr,
+        renameFunc('BIT_OR'),
+      ],
+      [
+        BitwiseXorAggExpr,
+        renameFunc('BIT_XOR'),
+      ],
+      [
+        BitwiseCountExpr,
+        renameFunc('BIT_COUNT'),
+      ],
       [
         ChrExpr,
         function (this: Generator, e: ChrExpr): string {
-          return this.chrSql(e, { name: 'CHAR' });
+          return this.chrSql(e, {
+            name: 'CHAR',
+          });
         },
       ],
-      [CurrentDateExpr, noParenCurrentDateSql],
-      [CurrentVersionExpr, renameFunc('VERSION')],
+      [
+        CurrentDateExpr,
+        noParenCurrentDateSql,
+      ],
+      [
+        CurrentVersionExpr,
+        renameFunc('VERSION'),
+      ],
       [
         DateDiffExpr,
         removeTsOrDsToDate(
           function (this: Generator, e: DateDiffExpr): string {
-            return this.func('DATEDIFF', [e.args.this, e.args.expression]);
+            return this.func('DATEDIFF', [
+              e.args.this,
+              e.args.expression,
+            ]);
           },
-          ['this', 'expression'],
+          [
+            'this',
+            'expression',
+          ],
         ),
       ],
-      [DateAddExpr, removeTsOrDsToDate(dateAddSql('ADD'))],
-      [DateStrToDateExpr, dateStrToDateSql],
-      [DateSubExpr, removeTsOrDsToDate(dateAddSql('SUB'))],
-      [DateTruncExpr, dateTruncSql],
-      [DayExpr, removeTsOrDsToDate()],
-      [DayOfMonthExpr, removeTsOrDsToDate(renameFunc('DAYOFMONTH'))],
-      [DayOfWeekExpr, removeTsOrDsToDate(renameFunc('DAYOFWEEK'))],
-      [DayOfYearExpr, removeTsOrDsToDate(renameFunc('DAYOFYEAR'))],
+      [
+        DateAddExpr,
+        removeTsOrDsToDate(dateAddSql('ADD')),
+      ],
+      [
+        DateStrToDateExpr,
+        dateStrToDateSql,
+      ],
+      [
+        DateSubExpr,
+        removeTsOrDsToDate(dateAddSql('SUB')),
+      ],
+      [
+        DateTruncExpr,
+        dateTruncSql,
+      ],
+      [
+        DayExpr,
+        removeTsOrDsToDate(),
+      ],
+      [
+        DayOfMonthExpr,
+        removeTsOrDsToDate(renameFunc('DAYOFMONTH')),
+      ],
+      [
+        DayOfWeekExpr,
+        removeTsOrDsToDate(renameFunc('DAYOFWEEK')),
+      ],
+      [
+        DayOfYearExpr,
+        removeTsOrDsToDate(renameFunc('DAYOFYEAR')),
+      ],
       [
         GroupConcatExpr,
         function (this: Generator, e: GroupConcatExpr): string {
           return `GROUP_CONCAT(${this.sql(e, 'this')} SEPARATOR ${this.sql(e, 'separator') || '\',\''})`;
         },
       ],
-      [ILikeExpr, noIlikeSql],
-      [JsonExtractScalarExpr, arrowJsonExtractSql],
-      [LengthExpr, lengthOrCharLengthSql],
-      [LogicalOrExpr, renameFunc('MAX')],
-      [LogicalAndExpr, renameFunc('MIN')],
-      [MaxExpr, maxOrGreatest],
-      [MinExpr, minOrLeast],
-      [MonthExpr, removeTsOrDsToDate()],
+      [
+        ILikeExpr,
+        noIlikeSql,
+      ],
+      [
+        JsonExtractScalarExpr,
+        arrowJsonExtractSql,
+      ],
+      [
+        LengthExpr,
+        lengthOrCharLengthSql,
+      ],
+      [
+        LogicalOrExpr,
+        renameFunc('MAX'),
+      ],
+      [
+        LogicalAndExpr,
+        renameFunc('MIN'),
+      ],
+      [
+        MaxExpr,
+        maxOrGreatest,
+      ],
+      [
+        MinExpr,
+        minOrLeast,
+      ],
+      [
+        MonthExpr,
+        removeTsOrDsToDate(),
+      ],
       [
         NullSafeEqExpr,
         function (this: Generator, e: NullSafeEqExpr): string {
@@ -1328,8 +1716,14 @@ class MySQLGenerator extends Generator {
           return `NOT ${this.binary(e, '<=>')}`;
         },
       ],
-      [NumberToStrExpr, renameFunc('FORMAT')],
-      [PivotExpr, noPivotSql],
+      [
+        NumberToStrExpr,
+        renameFunc('FORMAT'),
+      ],
+      [
+        PivotExpr,
+        noPivotSql,
+      ],
       [
         SelectExpr,
         preprocess([
@@ -1349,13 +1743,34 @@ class MySQLGenerator extends Generator {
           });
         },
       ],
-      [StrToDateExpr, strToDateSql],
-      [StrToTimeExpr, strToDateSql],
-      [StuffExpr, renameFunc('INSERT')],
-      [SessionUserExpr, () => 'SESSION_USER()'],
-      [TableSampleExpr, noTablesampleSql],
-      [TimeFromPartsExpr, renameFunc('MAKETIME')],
-      [TimestampAddExpr, dateAddIntervalSql('DATE', 'ADD')],
+      [
+        StrToDateExpr,
+        strToDateSql,
+      ],
+      [
+        StrToTimeExpr,
+        strToDateSql,
+      ],
+      [
+        StuffExpr,
+        renameFunc('INSERT'),
+      ],
+      [
+        SessionUserExpr,
+        () => 'SESSION_USER()',
+      ],
+      [
+        TableSampleExpr,
+        noTablesampleSql,
+      ],
+      [
+        TimeFromPartsExpr,
+        renameFunc('MAKETIME'),
+      ],
+      [
+        TimestampAddExpr,
+        dateAddIntervalSql('DATE', 'ADD'),
+      ],
       [
         TimestampDiffExpr,
         function (this: Generator, e: TimestampDiffExpr): string {
@@ -1366,43 +1781,90 @@ class MySQLGenerator extends Generator {
           ]);
         },
       ],
-      [TimestampSubExpr, dateAddIntervalSql('DATE', 'SUB')],
-      [TimeStrToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
+      [
+        TimestampSubExpr,
+        dateAddIntervalSql('DATE', 'SUB'),
+      ],
+      [
+        TimeStrToUnixExpr,
+        renameFunc('UNIX_TIMESTAMP'),
+      ],
       [
         TimeStrToTimeExpr,
         function (this: Generator, e: TimeStrToTimeExpr): string {
-          return timeStrToTimeSql.call(this, e, { includePrecision: !e.args.zone });
+          return timeStrToTimeSql.call(this, e, {
+            includePrecision: !e.args.zone,
+          });
         },
       ],
       [
         TimeToStrExpr,
         removeTsOrDsToDate(function (this: Generator, e: TimeToStrExpr) {
-          return this.func('DATE_FORMAT', [e.args.this, this.formatTime(e)]);
+          return this.func('DATE_FORMAT', [
+            e.args.this,
+            this.formatTime(e),
+          ]);
         }),
       ],
-      [TrimExpr, trimSql],
-      [TruncExpr, renameFunc('TRUNCATE')],
-      [TryCastExpr, noTrycastSql],
-      [TsOrDsAddExpr, dateAddSql('ADD')],
+      [
+        TrimExpr,
+        trimSql,
+      ],
+      [
+        TruncExpr,
+        renameFunc('TRUNCATE'),
+      ],
+      [
+        TryCastExpr,
+        noTrycastSql,
+      ],
+      [
+        TsOrDsAddExpr,
+        dateAddSql('ADD'),
+      ],
       [
         TsOrDsDiffExpr,
         function (this: Generator, e: TsOrDsDiffExpr): string {
-          return this.func('DATEDIFF', [e.args.this, e.args.expression]);
+          return this.func('DATEDIFF', [
+            e.args.this,
+            e.args.expression,
+          ]);
         },
       ],
-      [TsOrDsToDateExpr, tsOrDsToDateSql],
+      [
+        TsOrDsToDateExpr,
+        tsOrDsToDateSql,
+      ],
       [
         UnicodeExpr,
         function (this: Generator, e: UnicodeExpr): string {
           return `ORD(CONVERT(${this.sql(e.args.this)} USING utf32))`;
         },
       ],
-      [UnixToTimeExpr, unixToTimeSql],
-      [WeekExpr, removeTsOrDsToDate()],
-      [WeekOfYearExpr, removeTsOrDsToDate(renameFunc('WEEKOFYEAR'))],
-      [YearExpr, removeTsOrDsToDate()],
-      [UtcTimestampExpr, renameFunc('UTC_TIMESTAMP')],
-      [UtcTimeExpr, renameFunc('UTC_TIME')],
+      [
+        UnixToTimeExpr,
+        unixToTimeSql,
+      ],
+      [
+        WeekExpr,
+        removeTsOrDsToDate(),
+      ],
+      [
+        WeekOfYearExpr,
+        removeTsOrDsToDate(renameFunc('WEEKOFYEAR')),
+      ],
+      [
+        YearExpr,
+        removeTsOrDsToDate(),
+      ],
+      [
+        UtcTimestampExpr,
+        renameFunc('UTC_TIMESTAMP'),
+      ],
+      [
+        UtcTimeExpr,
+        renameFunc('UTC_TIME'),
+      ],
     ]);
   }
 
@@ -1413,13 +1875,34 @@ class MySQLGenerator extends Generator {
   @cache
   static get UNSIGNED_TYPE_MAPPING (): Map<DataTypeExprKind, string> {
     return new Map<DataTypeExprKind, string>([
-      [DataTypeExprKind.UBIGINT, 'BIGINT'],
-      [DataTypeExprKind.UINT, 'INT'],
-      [DataTypeExprKind.UMEDIUMINT, 'MEDIUMINT'],
-      [DataTypeExprKind.USMALLINT, 'SMALLINT'],
-      [DataTypeExprKind.UTINYINT, 'TINYINT'],
-      [DataTypeExprKind.UDECIMAL, 'DECIMAL'],
-      [DataTypeExprKind.UDOUBLE, 'DOUBLE'],
+      [
+        DataTypeExprKind.UBIGINT,
+        'BIGINT',
+      ],
+      [
+        DataTypeExprKind.UINT,
+        'INT',
+      ],
+      [
+        DataTypeExprKind.UMEDIUMINT,
+        'MEDIUMINT',
+      ],
+      [
+        DataTypeExprKind.USMALLINT,
+        'SMALLINT',
+      ],
+      [
+        DataTypeExprKind.UTINYINT,
+        'TINYINT',
+      ],
+      [
+        DataTypeExprKind.UDECIMAL,
+        'DECIMAL',
+      ],
+      [
+        DataTypeExprKind.UDOUBLE,
+        'DOUBLE',
+      ],
     ]);
   }
 
@@ -1429,12 +1912,30 @@ class MySQLGenerator extends Generator {
   @cache
   static get TIMESTAMP_TYPE_MAPPING (): Map<DataTypeExprKind, string> {
     return new Map<DataTypeExprKind, string>([
-      [DataTypeExprKind.DATETIME2, 'DATETIME'],
-      [DataTypeExprKind.SMALLDATETIME, 'DATETIME'],
-      [DataTypeExprKind.TIMESTAMP, 'DATETIME'],
-      [DataTypeExprKind.TIMESTAMPNTZ, 'DATETIME'],
-      [DataTypeExprKind.TIMESTAMPTZ, 'TIMESTAMP'],
-      [DataTypeExprKind.TIMESTAMPLTZ, 'TIMESTAMP'],
+      [
+        DataTypeExprKind.DATETIME2,
+        'DATETIME',
+      ],
+      [
+        DataTypeExprKind.SMALLDATETIME,
+        'DATETIME',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMP,
+        'DATETIME',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPNTZ,
+        'DATETIME',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPTZ,
+        'TIMESTAMP',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPLTZ,
+        'TIMESTAMP',
+      ],
     ]);
   }
 
@@ -1442,10 +1943,16 @@ class MySQLGenerator extends Generator {
   static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map(Generator.TYPE_MAPPING);
 
-    for (const [k, v] of MySQLGenerator.UNSIGNED_TYPE_MAPPING) {
+    for (const [
+      k,
+      v,
+    ] of MySQLGenerator.UNSIGNED_TYPE_MAPPING) {
       mapping.set(k, v);
     }
-    for (const [k, v] of MySQLGenerator.TIMESTAMP_TYPE_MAPPING) {
+    for (const [
+      k,
+      v,
+    ] of MySQLGenerator.TIMESTAMP_TYPE_MAPPING) {
       mapping.set(k, v);
     }
 
@@ -1531,7 +2038,10 @@ class MySQLGenerator extends Generator {
    */
   @cache
   static get TIMESTAMP_FUNC_TYPES (): Set<string> {
-    return new Set([DataTypeExprKind.TIMESTAMPTZ, DataTypeExprKind.TIMESTAMPLTZ]);
+    return new Set([
+      DataTypeExprKind.TIMESTAMPTZ,
+      DataTypeExprKind.TIMESTAMPLTZ,
+    ]);
   }
 
   /**
@@ -1822,13 +2332,17 @@ class MySQLGenerator extends Generator {
   }
 
   public dpipeSql (expression: DPipeExpr): string {
-    return this.func('CONCAT', [...expression.flatten()]);
+    return this.func('CONCAT', [
+      ...expression.flatten(),
+    ]);
   }
 
   public extractSql (expression: ExtractExpr): string {
     const unit = expression.name;
     if (unit && unit.toLowerCase() === 'epoch') {
-      return this.func('UNIX_TIMESTAMP', [expression.args.expression as Expression]);
+      return this.func('UNIX_TIMESTAMP', [
+        expression.args.expression as Expression,
+      ]);
     }
 
     return super.extractSql(expression);
@@ -1856,12 +2370,14 @@ class MySQLGenerator extends Generator {
     return `${this.sql(expression, 'this')} MEMBER OF(${this.sql(expression, 'expression')})`;
   }
 
-  public castSql (expression: CastExpr, _options: { safePrefix?: string } = {}): string {
+  public castSql (expression: CastExpr, _options: {safePrefix?: string} = {}): string {
     const toExpr = expression.args.to;
     if (toExpr instanceof DataTypeExpr) {
       const toThis = toExpr.args.this as string;
       if ((this._constructor as typeof MySQLGenerator).TIMESTAMP_FUNC_TYPES.has(toThis)) {
-        return this.func('TIMESTAMP', [expression.args.this as Expression]);
+        return this.func('TIMESTAMP', [
+          expression.args.this as Expression,
+        ]);
       }
       const to = (this._constructor as typeof MySQLGenerator).CAST_MAPPING[toThis];
       if (to) {
@@ -1879,11 +2395,17 @@ class MySQLGenerator extends Generator {
     let target = this.sql(expression, 'target');
     target = target ? ` ${target}` : '';
 
-    if (['COLUMNS', 'INDEX'].includes(expression.name)) {
+    if ([
+      'COLUMNS',
+      'INDEX',
+    ].includes(expression.name)) {
       target = ` FROM${target}`;
     } else if (expression.name === 'GRANTS') {
       target = ` FOR${target}`;
-    } else if (['LINKS', 'PARTITIONS'].includes(expression.name)) {
+    } else if ([
+      'LINKS',
+      'PARTITIONS',
+    ].includes(expression.name)) {
       target = target ? ` ON${target}` : '';
     } else if (expression.name === 'PROJECTIONS') {
       target = target ? ` ON TABLE${target}` : '';
@@ -1893,7 +2415,9 @@ class MySQLGenerator extends Generator {
     const like = this.prefixedSql('LIKE', expression, 'like');
     const where = this.sql(expression, 'where');
 
-    let types = this.expressions(expression, { key: 'types' });
+    let types = this.expressions(expression, {
+      key: 'types',
+    });
     types = types ? ` ${types}` : types;
     const query = this.prefixedSql('FOR QUERY', expression, 'query');
 
@@ -1928,8 +2452,10 @@ class MySQLGenerator extends Generator {
   /**
    * MySQL doesn't use the TO keyword in ALTER ... RENAME.
    */
-  public alterRenameSql (expression: AlterRenameExpr, _options: { includeTo?: boolean } = {}): string {
-    return super.alterRenameSql(expression, { includeTo: false });
+  public alterRenameSql (expression: AlterRenameExpr, _options: {includeTo?: boolean} = {}): string {
+    return super.alterRenameSql(expression, {
+      includeTo: false,
+    });
   }
 
   /**
@@ -2019,13 +2545,16 @@ class MySQLGenerator extends Generator {
 
   public currentSchemaSql (_expression: CurrentSchemaExpr): string {
     unsupportedArgs.call(this, _expression, 'this');
-    return this.func('SCHEMA', []);
+    return this.func('SCHEMA', [
+    ]);
   }
 
   public partitionSql (expression: PartitionExpr): string {
     const parent = expression.parent;
     if (parent instanceof PartitionByRangePropertyExpr || parent instanceof PartitionByListPropertyExpr) {
-      return this.expressions(expression, { flat: true });
+      return this.expressions(expression, {
+        flat: true,
+      });
     }
     return super.partitionSql(expression);
   }
@@ -2055,13 +2584,17 @@ class MySQLGenerator extends Generator {
 
   public partitionListSql (expression: PartitionListExpr): string {
     const name = this.sql(expression, 'this');
-    const values = this.expressions(expression, { flat: true });
+    const values = this.expressions(expression, {
+      flat: true,
+    });
     return `PARTITION ${name} VALUES IN (${values})`;
   }
 
   public partitionRangeSql (expression: PartitionRangeExpr): string {
     const name = this.sql(expression, 'this');
-    const values = this.expressions(expression, { flat: true });
+    const values = this.expressions(expression, {
+      flat: true,
+    });
     return `PARTITION ${name} VALUES LESS THAN (${values})`;
   }
 }

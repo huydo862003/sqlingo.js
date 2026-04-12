@@ -25,10 +25,18 @@ import {
   func,
   literal,
 } from '../expressions';
-import { preprocess } from '../transforms';
-import { cache } from '../port_internals';
-import { Parser } from '../parser';
-import { TSQL } from './tsql';
+import {
+  preprocess,
+} from '../transforms';
+import {
+  cache,
+} from '../port_internals';
+import {
+  Parser,
+} from '../parser';
+import {
+  TSQL,
+} from './tsql';
 import {
   Dialect, NormalizationStrategy, Dialects,
 } from './dialect';
@@ -44,7 +52,11 @@ function capDataTypePrecision (expression: DataTypeExpr, maxPrecision: number = 
 
   return new DataTypeExpr({
     this: expression.args.this,
-    expressions: [new DataTypeParamExpr({ this: literal(targetPrecision) })],
+    expressions: [
+      new DataTypeParamExpr({
+        this: literal(targetPrecision),
+      }),
+    ],
   });
 }
 
@@ -54,15 +66,21 @@ function addDefaultPrecisionToVarchar (expression: Expression): Expression {
     && expression.args.kind === CreateExprKind.TABLE
     && expression.args.this instanceof SchemaExpr
   ) {
-    for (const columnDef of expression.args.this.args.expressions || []) {
+    for (const columnDef of expression.args.this.args.expressions || [
+    ]) {
       if (columnDef instanceof ColumnDefExpr) {
         const columnType = columnDef.args.kind;
         if (
           columnType instanceof DataTypeExpr
-          && [DataTypeExprKind.VARCHAR, DataTypeExprKind.CHAR].includes(columnType.args.this as DataTypeExprKind)
+          && [
+            DataTypeExprKind.VARCHAR,
+            DataTypeExprKind.CHAR,
+          ].includes(columnType.args.this as DataTypeExprKind)
           && (!columnType.args.expressions || columnType.args.expressions.length === 0)
         ) {
-          columnType.setArgKey('expressions', [var_('MAX')]);
+          columnType.setArgKey('expressions', [
+            var_('MAX'),
+          ]);
         }
       }
     }
@@ -96,7 +114,9 @@ export class FabricParser extends TSQL.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...TSQL.Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...TSQL.Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
     return noParenFunctions;
@@ -107,15 +127,21 @@ export class FabricParser extends TSQL.Parser {
 
     if (create instanceof CreateExpr) {
       if (create.args.kind === CreateExprKind.TABLE && create.args.this instanceof SchemaExpr) {
-        for (const columnDef of create.args.this.args.expressions || []) {
+        for (const columnDef of create.args.this.args.expressions || [
+        ]) {
           if (columnDef instanceof ColumnDefExpr) {
             const columnType = columnDef.args.kind;
             if (
               columnType instanceof DataTypeExpr
-              && [DataTypeExprKind.VARCHAR, DataTypeExprKind.CHAR].includes(columnType.args.this as DataTypeExprKind)
+              && [
+                DataTypeExprKind.VARCHAR,
+                DataTypeExprKind.CHAR,
+              ].includes(columnType.args.this as DataTypeExprKind)
               && (!columnType.args.expressions || columnType.args.expressions.length === 0)
             ) {
-              columnType.setArgKey('expressions', [literal(1)]);
+              columnType.setArgKey('expressions', [
+                literal(1),
+              ]);
             }
           }
         }
@@ -128,7 +154,10 @@ export class FabricParser extends TSQL.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...TSQL.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...TSQL.Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 
@@ -179,7 +208,9 @@ export class FabricGenerator extends TSQL.Generator {
   @cache
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: Expression) => string> {
     const m = new Map<typeof Expression, (this: Generator, e: Expression) => string>(TSQL.Generator.ORIGINAL_TRANSFORMS);
-    m.set(CreateExpr, preprocess([addDefaultPrecisionToVarchar]));
+    m.set(CreateExpr, preprocess([
+      addDefaultPrecisionToVarchar,
+    ]));
     return m;
   };
 
@@ -194,13 +225,17 @@ export class FabricGenerator extends TSQL.Generator {
     return super.dataTypeSql(expression);
   }
 
-  public castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
-    const { safePrefix } = options;
+  public castSql (expression: CastExpr, options: {safePrefix?: string} = {}): string {
+    const {
+      safePrefix,
+    } = options;
     if (expression.isType(DataTypeExprKind.TIMESTAMPTZ)) {
       const atTimeZone = expression.findAncestor<AtTimeZoneExpr | SelectExpr>(AtTimeZoneExpr, SelectExpr);
 
       if (!(atTimeZone instanceof AtTimeZoneExpr)) {
-        return super.castSql(expression, { safePrefix });
+        return super.castSql(expression, {
+          safePrefix,
+        });
       }
 
       const cappedDataType = capDataTypePrecision(expression.args.to as DataTypeExpr, 6);
@@ -214,7 +249,9 @@ export class FabricGenerator extends TSQL.Generator {
       return datetimeoffset;
     }
 
-    return super.castSql(expression, { safePrefix });
+    return super.castSql(expression, {
+      safePrefix,
+    });
   }
 
   public atTimeZoneSql (expression: AtTimeZoneExpr): string {
@@ -251,7 +288,11 @@ export class FabricGenerator extends TSQL.Generator {
 
     const datetime2Type = new DataTypeExpr({
       this: DataTypeExprKind.DATETIME2,
-      expressions: [new DataTypeParamExpr({ this: literal(6) })],
+      expressions: [
+        new DataTypeParamExpr({
+          this: literal(6),
+        }),
+      ],
     });
     const epochStart = cast('\'1970-01-01\'', datetime2Type);
 

@@ -1,7 +1,9 @@
 import {
   describe, test, expect,
 } from 'vitest';
-import { highlightSql } from '../../src/errors';
+import {
+  highlightSql,
+} from '../../src/errors';
 
 const ANSI_UNDERLINE = '\x1b[4m';
 const ANSI_RESET = '\x1b[0m';
@@ -13,7 +15,12 @@ class TestErrors {
       formattedSql, startContext, highlight, endContext,
     } = highlightSql({
       sql,
-      positions: [[7, 7]],
+      positions: [
+        [
+          7,
+          7,
+        ],
+      ],
     });
 
     expect(startContext).toBe('SELECT ');
@@ -28,7 +35,12 @@ class TestErrors {
       formattedSql, startContext, highlight, endContext,
     } = highlightSql({
       sql,
-      positions: [[7, 9]],
+      positions: [
+        [
+          7,
+          9,
+        ],
+      ],
     });
 
     expect(startContext).toBe('SELECT ');
@@ -43,7 +55,16 @@ class TestErrors {
       formattedSql, startContext, highlight, endContext,
     } = highlightSql({
       sql,
-      positions: [[7, 7], [10, 10]],
+      positions: [
+        [
+          7,
+          7,
+        ],
+        [
+          10,
+          10,
+        ],
+      ],
     });
 
     expect(startContext).toBe('SELECT ');
@@ -60,7 +81,12 @@ class TestErrors {
       formattedSql, startContext, highlight, endContext,
     } = highlightSql({
       sql,
-      positions: [[14, 14]],
+      positions: [
+        [
+          14,
+          14,
+        ],
+      ],
     });
 
     expect(startContext).toBe('SELECT a FROM ');
@@ -75,7 +101,12 @@ class TestErrors {
       formattedSql, startContext, highlight, endContext,
     } = highlightSql({
       sql,
-      positions: [[0, 7]],
+      positions: [
+        [
+          0,
+          7,
+        ],
+      ],
     });
 
     expect(startContext).toBe('');
@@ -90,7 +121,16 @@ class TestErrors {
       formattedSql, startContext, highlight, endContext,
     } = highlightSql({
       sql,
-      positions: [[7, 7], [8, 8]],
+      positions: [
+        [
+          7,
+          7,
+        ],
+        [
+          8,
+          8,
+        ],
+      ],
     });
 
     expect(startContext).toBe('SELECT ');
@@ -107,7 +147,16 @@ class TestErrors {
       formattedSql, startContext, highlight, endContext,
     } = highlightSql({
       sql,
-      positions: [[7, 7], [10, 10]],
+      positions: [
+        [
+          7,
+          7,
+        ],
+        [
+          10,
+          10,
+        ],
+      ],
       contextLength: 5,
     });
 
@@ -123,7 +172,8 @@ class TestErrors {
     const sql = 'SELECT a FROM t';
     expect(() => highlightSql({
       sql,
-      positions: [],
+      positions: [
+      ],
     })).toThrow();
   }
 
@@ -133,7 +183,16 @@ class TestErrors {
       formattedSql, startContext, highlight, endContext,
     } = highlightSql({
       sql,
-      positions: [[7, 9], [8, 10]],
+      positions: [
+        [
+          7,
+          9,
+        ],
+        [
+          8,
+          10,
+        ],
+      ],
     });
 
     expect(startContext).toBe('SELECT ');
@@ -150,7 +209,16 @@ class TestErrors {
       formattedSql, startContext, highlight, endContext,
     } = highlightSql({
       sql,
-      positions: [[7, 12], [9, 11]],
+      positions: [
+        [
+          7,
+          12,
+        ],
+        [
+          9,
+          11,
+        ],
+      ],
     });
 
     expect(startContext).toBe('SELECT ');
@@ -165,7 +233,16 @@ class TestErrors {
       formattedSql, startContext, highlight, endContext,
     } = highlightSql({
       sql,
-      positions: [[7, 7], [7, 7]],
+      positions: [
+        [
+          7,
+          7,
+        ],
+        [
+          7,
+          7,
+        ],
+      ],
     });
 
     expect(startContext).toBe('SELECT ');
@@ -180,7 +257,16 @@ class TestErrors {
       formattedSql, startContext, highlight, endContext,
     } = highlightSql({
       sql,
-      positions: [[10, 10], [7, 7]],
+      positions: [
+        [
+          10,
+          10,
+        ],
+        [
+          7,
+          7,
+        ],
+      ],
     });
 
     expect(startContext).toBe('SELECT ');
@@ -197,7 +283,12 @@ class TestErrors {
       formattedSql, startContext, highlight, endContext,
     } = highlightSql({
       sql,
-      positions: [[7, 7]],
+      positions: [
+        [
+          7,
+          7,
+        ],
+      ],
       contextLength: 0,
     });
 

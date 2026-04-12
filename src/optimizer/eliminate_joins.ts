@@ -13,8 +13,12 @@ import {
   SelectExpr,
   true_,
 } from '../expressions';
-import { assertIsInstanceOf } from '../port_internals';
-import { normalized } from './normalize';
+import {
+  assertIsInstanceOf,
+} from '../port_internals';
+import {
+  normalized,
+} from './normalize';
 import {
   Scope, traverseScope,
 } from './scope';
@@ -112,7 +116,9 @@ function isJoinedOnAllUniqueOutputs (scope: Scope, join: JoinExpr): boolean {
     return false;
   }
 
-  const { joinKeys } = joinCondition(join);
+  const {
+    joinKeys,
+  } = joinCondition(join);
   const joinKeyNames = new Set(joinKeys.map((k) => k.name));
 
   for (const output of uniqueOutputs_) {
@@ -141,7 +147,8 @@ function uniqueOutputs (scope: Scope): Set<string> | undefined {
   const group = select.args.group;
   if (group) {
     const groupedSqls = new Set(
-      (group.args.expressions ?? [])
+      (group.args.expressions ?? [
+      ])
         .filter((e): e is Expression => e instanceof Expression)
         .map((e) => e.sql()),
     );
@@ -161,7 +168,9 @@ function uniqueOutputs (scope: Scope): Set<string> | undefined {
     }
 
     // All the grouped expressions must be in the output
-    const allGroupedInOutput = [...groupedSqls].every((s) => groupedOutputSqls.has(s));
+    const allGroupedInOutput = [
+      ...groupedSqls,
+    ].every((s) => groupedOutputSqls.has(s));
 
     return allGroupedInOutput ? uniqueOutputs : new Set();
   }
@@ -233,11 +242,16 @@ export function joinCondition (
   const onClause = join.args.on;
   const on = (onClause || true_()).copy();
 
-  const sourceKeys: Expression[] = [];
-  const joinKeys: Expression[] = [];
+  const sourceKeys: Expression[] = [
+  ];
+  const joinKeys: Expression[] = [
+  ];
 
   function extractCondition (condition: Expression): void {
-    const [left, right] = condition.unnestOperands();
+    const [
+      left,
+      right,
+    ] = condition.unnestOperands();
     if (!left || !right) {
       return;
     }
@@ -258,13 +272,22 @@ export function joinCondition (
 
   if (normalized(on)) {
     // CNF form: AND of EQ conditions
-    const andOn = on instanceof AndExpr ? on : and([on, true_()], { copy: false });
+    const andOn = on instanceof AndExpr
+      ? on
+      : and([
+        on,
+        true_(),
+      ], {
+        copy: false,
+      });
     for (const condition of andOn.flatten()) {
       if (condition instanceof EqExpr) {
         extractCondition(condition);
       }
     }
-  } else if (normalized(on, { dnf: true })) {
+  } else if (normalized(on, {
+    dnf: true,
+  })) {
     // DNF form: OR of ANDs — find EQ conditions present in every OR branch
     let conditions: EqExpr[] | undefined;
 
@@ -275,7 +298,8 @@ export function joinCondition (
       if (conditions === undefined) {
         conditions = parts;
       } else {
-        const temp: EqExpr[] = [];
+        const temp: EqExpr[] = [
+        ];
         for (const p of parts) {
           const cs = conditions.filter((c) => p.sql() === c.sql());
           if (0 < cs.length) {

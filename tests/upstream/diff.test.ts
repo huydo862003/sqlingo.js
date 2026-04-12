@@ -38,7 +38,11 @@ class TestDiff {
 
   testSimple (): void {
     this.validateDeltaOnly(
-      diffDeltaOnly(parseOne('SELECT a + b', { into: SelectExpr }), parseOne('SELECT a - b', { into: SelectExpr })),
+      diffDeltaOnly(parseOne('SELECT a + b', {
+        into: SelectExpr,
+      }), parseOne('SELECT a - b', {
+        into: SelectExpr,
+      })),
       [
         new Remove(parseOne('a + b')),
         new Insert(parseOne('a - b')),
@@ -48,24 +52,44 @@ class TestDiff {
     );
 
     this.validateDeltaOnly(
-      diffDeltaOnly(parseOne('SELECT a, b, c', { into: SelectExpr }), parseOne('SELECT a, c', { into: SelectExpr })),
-      [new Remove(parseOne('b'))],
+      diffDeltaOnly(parseOne('SELECT a, b, c', {
+        into: SelectExpr,
+      }), parseOne('SELECT a, c', {
+        into: SelectExpr,
+      })),
+      [
+        new Remove(parseOne('b')),
+      ],
     );
 
     this.validateDeltaOnly(
-      diffDeltaOnly(parseOne('SELECT a, b', { into: SelectExpr }), parseOne('SELECT a, b, c', { into: SelectExpr })),
-      [new Insert(parseOne('c'))],
+      diffDeltaOnly(parseOne('SELECT a, b', {
+        into: SelectExpr,
+      }), parseOne('SELECT a, b, c', {
+        into: SelectExpr,
+      })),
+      [
+        new Insert(parseOne('c')),
+      ],
     );
 
     this.validateDeltaOnly(
       diffDeltaOnly(
-        parseOne('SELECT a FROM table_one', { into: SelectExpr }),
-        parseOne('SELECT a FROM table_two', { into: SelectExpr }),
+        parseOne('SELECT a FROM table_one', {
+          into: SelectExpr,
+        }),
+        parseOne('SELECT a FROM table_two', {
+          into: SelectExpr,
+        }),
       ),
       [
         new Update(
-          toTable('table_one', { quoted: false }),
-          toTable('table_two', { quoted: false }),
+          toTable('table_one', {
+            quoted: false,
+          }),
+          toTable('table_two', {
+            quoted: false,
+          }),
         ),
       ],
     );
@@ -74,18 +98,26 @@ class TestDiff {
   testLambda (): void {
     this.validateDeltaOnly(
       diffDeltaOnly(
-        parseOne('SELECT a, b, c, x(a -> a)', { into: SelectExpr }),
-        parseOne('SELECT a, b, c, x(b -> b)', { into: SelectExpr }),
+        parseOne('SELECT a, b, c, x(a -> a)', {
+          into: SelectExpr,
+        }),
+        parseOne('SELECT a, b, c, x(b -> b)', {
+          into: SelectExpr,
+        }),
       ),
       [
         new Update(
           new LambdaExpr({
             this: toIdentifier('a'),
-            expressions: [toIdentifier('a')],
+            expressions: [
+              toIdentifier('a'),
+            ],
           }),
           new LambdaExpr({
             this: toIdentifier('b'),
-            expressions: [toIdentifier('b')],
+            expressions: [
+              toIdentifier('b'),
+            ],
           }),
         ),
       ],
@@ -95,32 +127,60 @@ class TestDiff {
   testUdf (): void {
     this.validateDeltaOnly(
       diffDeltaOnly(
-        parseOne('SELECT a, b, "my.udf1"()', { into: SelectExpr }),
-        parseOne('SELECT a, b, "my.udf2"()', { into: SelectExpr }),
+        parseOne('SELECT a, b, "my.udf1"()', {
+          into: SelectExpr,
+        }),
+        parseOne('SELECT a, b, "my.udf2"()', {
+          into: SelectExpr,
+        }),
       ),
-      [new Insert(parseOne('"my.udf2"()')), new Remove(parseOne('"my.udf1"()'))],
+      [
+        new Insert(parseOne('"my.udf2"()')),
+        new Remove(parseOne('"my.udf1"()')),
+      ],
     );
 
     this.validateDeltaOnly(
       diffDeltaOnly(
-        parseOne('SELECT a, b, "my.udf"(x, y, z)', { into: SelectExpr }),
-        parseOne('SELECT a, b, "my.udf"(x, y, w)', { into: SelectExpr }),
+        parseOne('SELECT a, b, "my.udf"(x, y, z)', {
+          into: SelectExpr,
+        }),
+        parseOne('SELECT a, b, "my.udf"(x, y, w)', {
+          into: SelectExpr,
+        }),
       ),
-      [new Insert(column({ col: 'w' })), new Remove(column({ col: 'z' }))],
+      [
+        new Insert(column({
+          col: 'w',
+        })),
+        new Remove(column({
+          col: 'z',
+        })),
+      ],
     );
   }
 
   testNodePositionChanged (): void {
-    let exprSrc = parseOne('SELECT a, b, c', { into: SelectExpr });
-    let exprTgt = parseOne('SELECT c, a, b', { into: SelectExpr });
+    let exprSrc = parseOne('SELECT a, b, c', {
+      into: SelectExpr,
+    });
+    let exprTgt = parseOne('SELECT c, a, b', {
+      into: SelectExpr,
+    });
 
     this.validateDeltaOnly(
       diffDeltaOnly(exprSrc, exprTgt),
-      [new Move(exprSrc.selects[2], exprTgt.selects[0])],
+      [
+        new Move(exprSrc.selects[2], exprTgt.selects[0]),
+      ],
     );
 
-    exprSrc = parseOne('SELECT a + b', { into: SelectExpr });
-    exprTgt = parseOne('SELECT b + a', { into: SelectExpr });
+    exprSrc = parseOne('SELECT a + b', {
+      into: SelectExpr,
+    });
+    exprTgt = parseOne('SELECT b + a', {
+      into: SelectExpr,
+    });
 
     const srcAddLeft = exprSrc.selects[0].getArgKey('this');
     const tgtAddRight = exprTgt.selects[0].getArgKey('expression');
@@ -128,12 +188,18 @@ class TestDiff {
     if (srcAddLeft instanceof Expression && tgtAddRight instanceof Expression) {
       this.validateDeltaOnly(
         diffDeltaOnly(exprSrc, exprTgt),
-        [new Move(srcAddLeft, tgtAddRight)],
+        [
+          new Move(srcAddLeft, tgtAddRight),
+        ],
       );
     }
 
-    exprSrc = parseOne('SELECT aaaa AND bbbb', { into: SelectExpr });
-    exprTgt = parseOne('SELECT bbbb AND aaaa', { into: SelectExpr });
+    exprSrc = parseOne('SELECT aaaa AND bbbb', {
+      into: SelectExpr,
+    });
+    exprTgt = parseOne('SELECT bbbb AND aaaa', {
+      into: SelectExpr,
+    });
 
     const srcAndLeft = exprSrc.selects[0].getArgKey('this');
     const tgtAndRight = exprTgt.selects[0].getArgKey('expression');
@@ -141,12 +207,18 @@ class TestDiff {
     if (srcAndLeft instanceof Expression && tgtAndRight instanceof Expression) {
       this.validateDeltaOnly(
         diffDeltaOnly(exprSrc, exprTgt),
-        [new Move(srcAndLeft, tgtAndRight)],
+        [
+          new Move(srcAndLeft, tgtAndRight),
+        ],
       );
     }
 
-    exprSrc = parseOne('SELECT aaaa OR bbbb OR cccc', { into: SelectExpr });
-    exprTgt = parseOne('SELECT cccc OR bbbb OR aaaa', { into: SelectExpr });
+    exprSrc = parseOne('SELECT aaaa OR bbbb OR cccc', {
+      into: SelectExpr,
+    });
+    exprTgt = parseOne('SELECT cccc OR bbbb OR aaaa', {
+      into: SelectExpr,
+    });
 
     const srcOrTopLeft = exprSrc.selects[0].getArgKey('this');
     const srcOrLeftLeft = srcOrTopLeft instanceof Expression
@@ -167,12 +239,19 @@ class TestDiff {
     ) {
       this.validateDeltaOnly(
         diffDeltaOnly(exprSrc, exprTgt),
-        [new Move(srcOrLeftLeft, tgtOrRight), new Move(srcOrRight, tgtOrLeftLeft)],
+        [
+          new Move(srcOrLeftLeft, tgtOrRight),
+          new Move(srcOrRight, tgtOrLeftLeft),
+        ],
       );
     }
 
-    exprSrc = parseOne('SELECT a, b FROM t WHERE CONCAT(\'a\', \'b\') = \'ab\'', { into: SelectExpr });
-    exprTgt = parseOne('SELECT a FROM t WHERE CONCAT(\'a\', \'b\', b) = \'ab\'', { into: SelectExpr });
+    exprSrc = parseOne('SELECT a, b FROM t WHERE CONCAT(\'a\', \'b\') = \'ab\'', {
+      into: SelectExpr,
+    });
+    exprTgt = parseOne('SELECT a FROM t WHERE CONCAT(\'a\', \'b\', b) = \'ab\'', {
+      into: SelectExpr,
+    });
 
     const tgtConcat = exprTgt.find(ConcatExpr);
     if (tgtConcat) {
@@ -183,13 +262,19 @@ class TestDiff {
       if (lastTgtConcatExpr instanceof Expression) {
         this.validateDeltaOnly(
           diffDeltaOnly(exprSrc, exprTgt),
-          [new Move(exprSrc.selects[1], lastTgtConcatExpr)],
+          [
+            new Move(exprSrc.selects[1], lastTgtConcatExpr),
+          ],
         );
       }
     }
 
-    exprSrc = parseOne('SELECT a as a, b as b FROM t WHERE CONCAT(\'a\', \'b\') = \'ab\'', { into: SelectExpr });
-    exprTgt = parseOne('SELECT a as a FROM t WHERE CONCAT(\'a\', \'b\', b) = \'ab\'', { into: SelectExpr });
+    exprSrc = parseOne('SELECT a as a, b as b FROM t WHERE CONCAT(\'a\', \'b\') = \'ab\'', {
+      into: SelectExpr,
+    });
+    exprTgt = parseOne('SELECT a as a FROM t WHERE CONCAT(\'a\', \'b\', b) = \'ab\'', {
+      into: SelectExpr,
+    });
 
     const bAlias = exprSrc.selects[1];
     const tgtConcat2 = exprTgt.find(ConcatExpr);
@@ -203,7 +288,10 @@ class TestDiff {
       if (lastTgtConcatExpr2 instanceof Expression && bAliasThis instanceof Expression) {
         this.validateDeltaOnly(
           diffDeltaOnly(exprSrc, exprTgt),
-          [new Remove(bAlias), new Move(bAliasThis, lastTgtConcatExpr2)],
+          [
+            new Remove(bAlias),
+            new Move(bAliasThis, lastTgtConcatExpr2),
+          ],
         );
       }
     }
@@ -236,8 +324,12 @@ class TestDiff {
   }
 
   testJoin (): void {
-    const exprSrc = parseOne('SELECT a, b FROM t1 LEFT JOIN t2 ON t1.key = t2.key', { into: SelectExpr });
-    const exprTgt = parseOne('SELECT a, b FROM t1 RIGHT JOIN t2 ON t1.key = t2.key', { into: SelectExpr });
+    const exprSrc = parseOne('SELECT a, b FROM t1 LEFT JOIN t2 ON t1.key = t2.key', {
+      into: SelectExpr,
+    });
+    const exprTgt = parseOne('SELECT a, b FROM t1 RIGHT JOIN t2 ON t1.key = t2.key', {
+      into: SelectExpr,
+    });
 
     const srcJoin = exprSrc.find(JoinExpr);
     const tgtJoin = exprTgt.find(JoinExpr);
@@ -258,17 +350,27 @@ class TestDiff {
       }
     }
 
-    const exprSrc2 = parseOne('SELECT a.x FROM a INNER JOIN b ON a.x = b.y LEFT JOIN c ON a.p = c.q', { into: SelectExpr });
-    const exprTgt2 = parseOne('SELECT a.x FROM a inner JOIN b ON a.x = b.y left JOIN c ON a.p = c.q', { into: SelectExpr });
+    const exprSrc2 = parseOne('SELECT a.x FROM a INNER JOIN b ON a.x = b.y LEFT JOIN c ON a.p = c.q', {
+      into: SelectExpr,
+    });
+    const exprTgt2 = parseOne('SELECT a.x FROM a inner JOIN b ON a.x = b.y left JOIN c ON a.p = c.q', {
+      into: SelectExpr,
+    });
 
-    this.validateDeltaOnly(diffDeltaOnly(exprSrc2, exprTgt2), []);
+    this.validateDeltaOnly(diffDeltaOnly(exprSrc2, exprTgt2), [
+    ]);
   }
 
   testWindowFunctions (): void {
-    const exprSrc = parseOne('SELECT ROW_NUMBER() OVER (PARTITION BY a ORDER BY b)', { into: SelectExpr });
-    const exprTgt = parseOne('SELECT RANK() OVER (PARTITION BY a ORDER BY b)', { into: SelectExpr });
+    const exprSrc = parseOne('SELECT ROW_NUMBER() OVER (PARTITION BY a ORDER BY b)', {
+      into: SelectExpr,
+    });
+    const exprTgt = parseOne('SELECT RANK() OVER (PARTITION BY a ORDER BY b)', {
+      into: SelectExpr,
+    });
 
-    this.validateDeltaOnly(diffDeltaOnly(exprSrc, exprSrc), []);
+    this.validateDeltaOnly(diffDeltaOnly(exprSrc, exprSrc), [
+    ]);
 
     this.validateDeltaOnly(
       diffDeltaOnly(exprSrc, exprTgt),
@@ -290,13 +392,19 @@ class TestDiff {
 
     this.validateDeltaOnly(
       diffDeltaOnly(exprSrc2, exprTgt2),
-      [new Update(exprSrc2.selects[0], exprTgt2.selects[0])],
+      [
+        new Update(exprSrc2.selects[0], exprTgt2.selects[0]),
+      ],
     );
   }
 
   testPreMatchings (): void {
-    const exprSrc = parseOne('SELECT 1', { into: SelectExpr });
-    const exprTgt = parseOne('SELECT 1, 2, 3, 4', { into: SelectExpr });
+    const exprSrc = parseOne('SELECT 1', {
+      into: SelectExpr,
+    });
+    const exprTgt = parseOne('SELECT 1, 2, 3, 4', {
+      into: SelectExpr,
+    });
 
     this.validateDeltaOnly(
       diffDeltaOnly(exprSrc, exprTgt),
@@ -311,7 +419,14 @@ class TestDiff {
     );
 
     this.validateDeltaOnly(
-      diffDeltaOnly(exprSrc, exprTgt, { matchings: [[exprSrc, exprTgt]] }),
+      diffDeltaOnly(exprSrc, exprTgt, {
+        matchings: [
+          [
+            exprSrc,
+            exprTgt,
+          ],
+        ],
+      }),
       [
         new Insert(LiteralExpr.number(2)),
         new Insert(LiteralExpr.number(3)),
@@ -321,7 +436,16 @@ class TestDiff {
 
     this.validateDeltaOnly(
       diffDeltaOnly(exprSrc, exprTgt, {
-        matchings: [[exprSrc, exprTgt], [exprSrc, exprTgt]],
+        matchings: [
+          [
+            exprSrc,
+            exprTgt,
+          ],
+          [
+            exprSrc,
+            exprTgt,
+          ],
+        ],
       }),
       [
         new Insert(LiteralExpr.number(2)),
@@ -335,7 +459,14 @@ class TestDiff {
     firstTgtSelect.replace(srcSelect);
 
     this.validateDeltaOnly(
-      diffDeltaOnly(exprSrc, exprTgt, { matchings: [[exprSrc, exprTgt]] }),
+      diffDeltaOnly(exprSrc, exprTgt, {
+        matchings: [
+          [
+            exprSrc,
+            exprTgt,
+          ],
+        ],
+      }),
       [
         new Insert(LiteralExpr.number(2)),
         new Insert(LiteralExpr.number(3)),
@@ -345,16 +476,26 @@ class TestDiff {
   }
 
   testIdentifier (): void {
-    const exprSrc = parseOne('SELECT a FROM tbl', { into: SelectExpr });
-    const exprTgt = parseOne('SELECT a, tbl.b from tbl', { into: SelectExpr });
+    const exprSrc = parseOne('SELECT a FROM tbl', {
+      into: SelectExpr,
+    });
+    const exprTgt = parseOne('SELECT a, tbl.b from tbl', {
+      into: SelectExpr,
+    });
 
     this.validateDeltaOnly(
       diffDeltaOnly(exprSrc, exprTgt),
-      [new Insert(toColumn('tbl.b'))],
+      [
+        new Insert(toColumn('tbl.b')),
+      ],
     );
 
-    const exprSrc2 = parseOne('SELECT 1 AS c1, 2 AS c2', { into: SelectExpr });
-    const exprTgt2 = parseOne('SELECT 2 AS c1, 3 AS c2', { into: SelectExpr });
+    const exprSrc2 = parseOne('SELECT 1 AS c1, 2 AS c2', {
+      into: SelectExpr,
+    });
+    const exprTgt2 = parseOne('SELECT 2 AS c1, 3 AS c2', {
+      into: SelectExpr,
+    });
 
     this.validateDeltaOnly(
       diffDeltaOnly(exprSrc2, exprTgt2),
@@ -369,16 +510,26 @@ class TestDiff {
   }
 
   testNonExpressionLeafDelta (): void {
-    const exprSrc = parseOne('SELECT a UNION SELECT b', { into: SelectExpr });
-    const exprTgt = parseOne('SELECT a UNION ALL SELECT b', { into: SelectExpr });
+    const exprSrc = parseOne('SELECT a UNION SELECT b', {
+      into: SelectExpr,
+    });
+    const exprTgt = parseOne('SELECT a UNION ALL SELECT b', {
+      into: SelectExpr,
+    });
 
     this.validateDeltaOnly(
       diffDeltaOnly(exprSrc, exprTgt),
-      [new Update(exprSrc, exprTgt)],
+      [
+        new Update(exprSrc, exprTgt),
+      ],
     );
 
-    const exprSrc2 = parseOne('SELECT a FROM t ORDER BY b ASC', { into: SelectExpr });
-    const exprTgt2 = parseOne('SELECT a FROM t ORDER BY b DESC', { into: SelectExpr });
+    const exprSrc2 = parseOne('SELECT a FROM t ORDER BY b ASC', {
+      into: SelectExpr,
+    });
+    const exprTgt2 = parseOne('SELECT a FROM t ORDER BY b DESC', {
+      into: SelectExpr,
+    });
 
     const srcOrder = exprSrc2.find(OrderExpr);
     const tgtOrder = exprTgt2.find(OrderExpr);
@@ -392,13 +543,19 @@ class TestDiff {
       if (srcFirstExpr instanceof Expression && tgtFirstExpr instanceof Expression) {
         this.validateDeltaOnly(
           diffDeltaOnly(exprSrc2, exprTgt2),
-          [new Update(srcFirstExpr, tgtFirstExpr)],
+          [
+            new Update(srcFirstExpr, tgtFirstExpr),
+          ],
         );
       }
     }
 
-    const exprSrc3 = parseOne('SELECT a, b FROM t ORDER BY c ASC', { into: SelectExpr });
-    const exprTgt3 = parseOne('SELECT b, a FROM t ORDER BY c DESC', { into: SelectExpr });
+    const exprSrc3 = parseOne('SELECT a, b FROM t ORDER BY c ASC', {
+      into: SelectExpr,
+    });
+    const exprTgt3 = parseOne('SELECT b, a FROM t ORDER BY c DESC', {
+      into: SelectExpr,
+    });
 
     const srcOrder3 = exprSrc3.find(OrderExpr);
     const tgtOrder3 = exprTgt3.find(OrderExpr);
@@ -412,7 +569,10 @@ class TestDiff {
       if (srcFirstExpr3 instanceof Expression && tgtFirstExpr3 instanceof Expression) {
         this.validateDeltaOnly(
           diffDeltaOnly(exprSrc3, exprTgt3),
-          [new Update(srcFirstExpr3, tgtFirstExpr3), new Move(exprSrc3.selects[0], exprTgt3.selects[1])],
+          [
+            new Update(srcFirstExpr3, tgtFirstExpr3),
+            new Move(exprSrc3.selects[0], exprTgt3.selects[1]),
+          ],
         );
       }
     }
@@ -431,24 +591,35 @@ class TestDiff {
       'db',
       'catalog',
     ]));
-    expect(new Set(Object.keys(exprTgt.args))).toEqual(new Set(['this', 'table']));
+    expect(new Set(Object.keys(exprTgt.args))).toEqual(new Set([
+      'this',
+      'table',
+    ]));
 
-    this.validateDeltaOnly(diffDeltaOnly(exprSrc, exprTgt), []);
+    this.validateDeltaOnly(diffDeltaOnly(exprSrc, exprTgt), [
+    ]);
   }
 
   testCommentsDoNotAffectDiff (): void {
-    const exprSrc = parseOne('select a from tbl', { into: SelectExpr });
-    const exprTgt = parseOne('select a from tbl -- this is comment', { into: SelectExpr });
+    const exprSrc = parseOne('select a from tbl', {
+      into: SelectExpr,
+    });
+    const exprTgt = parseOne('select a from tbl -- this is comment', {
+      into: SelectExpr,
+    });
 
     const fromArg = exprTgt.getArgKey('from');
     if (fromArg instanceof Expression) {
       const fromThis = fromArg.getArgKey('this');
       if (fromThis instanceof Expression) {
-        expect(fromThis.comments).toEqual([' this is comment']);
+        expect(fromThis.comments).toEqual([
+          ' this is comment',
+        ]);
       }
     }
 
-    this.validateDeltaOnly(diffDeltaOnly(exprSrc, exprTgt), []);
+    this.validateDeltaOnly(diffDeltaOnly(exprSrc, exprTgt), [
+    ]);
   }
 }
 

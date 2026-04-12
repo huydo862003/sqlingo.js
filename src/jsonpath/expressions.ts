@@ -1,4 +1,6 @@
-import { ExpressionKey } from '../expressions/types';
+import {
+  ExpressionKey,
+} from '../expressions/types';
 import {
   JsonPathFilterExpr,
   JsonPathKeyExpr,
@@ -11,7 +13,9 @@ import {
   JsonPathUnionExpr,
   JsonPathWildcardExpr,
 } from '../expressions';
-import type { Generator } from '../generator';
+import type {
+  Generator,
+} from '../generator';
 
 export const JSON_PATH_PART_TRANSFORMS = {
   [ExpressionKey.JSON_PATH_FILTER]: (_generator: Generator, e: JsonPathFilterExpr) => `?${e.args.this}`,
@@ -34,7 +38,8 @@ export const JSON_PATH_PART_TRANSFORMS = {
   },
   [ExpressionKey.JSON_PATH_SUBSCRIPT]: (generator: Generator, e: JsonPathSubscriptExpr) => generator.jsonPathSubscriptSql(e),
   [ExpressionKey.JSON_PATH_UNION]: (generator: Generator, e: JsonPathUnionExpr) => {
-    return `[${(e.args.expressions ?? []).map((p) => generator.jsonPathPart(p)).join(',')}]`;
+    return `[${(e.args.expressions ?? [
+    ]).map((p) => generator.jsonPathPart(p)).join(',')}]`;
   },
   [ExpressionKey.JSON_PATH_WILDCARD]: (_generator: Generator, _e: JsonPathWildcardExpr) => '*',
 } as const;

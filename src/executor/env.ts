@@ -4,7 +4,9 @@ import {
 import {
   DataTypeExpr, DataTypeExprKind,
 } from '../expressions';
-import { Generator } from '../generator';
+import {
+  Generator,
+} from '../generator';
 import {
   isInt, seqGet,
 } from '../helper';
@@ -50,7 +52,8 @@ function undefinedIfAny (...args: any[]): unknown {
   };
 
   if (isDirectDecorator) {
-    return wrap(args[0] as (...a: unknown[]) => unknown, []);
+    return wrap(args[0] as (...a: unknown[]) => unknown, [
+    ]);
   }
   const indices = args as number[];
   return (value: (...a: unknown[]) => unknown) => wrap(value, indices);
@@ -74,8 +77,12 @@ function filterUndefineds<T, R> (func: (values: T[]) => R, emptyUndefined = true
     const arr = Array.isArray(values)
       ? values
       : (values !== null && values !== undefined && typeof (values as Record<symbol, unknown>)[Symbol.iterator] === 'function')
-        ? [...(values as Iterable<unknown>)]
-        : [values];
+        ? [
+          ...(values as Iterable<unknown>),
+        ]
+        : [
+          values,
+        ];
     const filtered = arr.filter((v): v is T => v !== undefined);
     if (filtered.length === 0 && emptyUndefined) return undefined;
     return func(filtered);
@@ -88,8 +95,12 @@ function fmean<T> (values: T[]): number {
 
 export class ENV {
   // aggs
-  static ARRAYAGG = <T>(values: T[]): T[] => [...values];
-  static ARRAYUNIQUEAGG = filterUndefineds(<T>(acc: T[]): T[] => [...new Set(acc)]);
+  static ARRAYAGG = <T>(values: T[]): T[] => [
+    ...values,
+  ];
+  static ARRAYUNIQUEAGG = filterUndefineds(<T>(acc: T[]): T[] => [
+    ...new Set(acc),
+  ]);
   static AVG = filterUndefineds((acc: number[]) => fmean(acc));
   static COUNT = filterUndefineds((acc: unknown[]) => acc.length, false);
   static MAX = filterUndefineds(<T>(acc: T[]): T => acc.reduce((a, b) => (lt(a, b) ? b : a)));
@@ -241,7 +252,9 @@ export class ENV {
   static INTERVAL<T> (this_: T, unit: string): number {
     const plural = unit + 'S';
     if (plural in Generator.TIME_PART_SINGULARS) unit = plural;
-    return Duration.fromObject({ [unit.toLowerCase()]: parseFloat(this_ as string) }).toMillis();
+    return Duration.fromObject({
+      [unit.toLowerCase()]: parseFloat(this_ as string),
+    }).toMillis();
   }
 
   @undefinedIfAny(0, 1)
@@ -287,7 +300,10 @@ export class ENV {
 
   static MAP<K extends PropertyKey, V> (keys: K[], values: V[]): Record<K, V> | undefined {
     if (keys === undefined || values === undefined) return undefined;
-    return Object.fromEntries(keys.map((k, i) => [k, values[i]])) as Record<K, V>;
+    return Object.fromEntries(keys.map((k, i) => [
+      k,
+      values[i],
+    ])) as Record<K, V>;
   }
 
   @undefinedIfAny
@@ -314,7 +330,9 @@ export class ENV {
     desc: boolean;
     undefinedFirst: boolean;
   }): T | ReverseKey<T> {
-    const { desc } = options;
+    const {
+      desc,
+    } = options;
     if (desc) return new ReverseKey(this_);
     return this_;
   }

@@ -38,16 +38,24 @@ import {
   WeekOfYearExpr,
   WithinGroupExpr,
 } from '../expressions';
-import { Generator } from '../generator';
-import { seqGet } from '../helper';
+import {
+  Generator,
+} from '../generator';
+import {
+  seqGet,
+} from '../helper';
 import {
   Parser, buildTrim,
 } from '../parser';
 import {
   cache, narrowInstanceOf,
 } from '../port_internals';
-import type { TokenPair } from '../tokens';
-import { TokenType } from '../tokens';
+import type {
+  TokenPair,
+} from '../tokens';
+import {
+  TokenType,
+} from '../tokens';
 import {
   anyToExists,
   ctasWithTmpTablesToCreateTmpView,
@@ -56,23 +64,31 @@ import {
   moveSchemaColumnsToPartitionedBy,
   preprocess, removeUniqueConstraints, removeWithinGroupForPercentiles, unnestToExplode, unqualifyColumns,
 } from '../transforms';
-import { Spark2Typing } from '../typing/spark2';
+import {
+  Spark2Typing,
+} from '../typing/spark2';
 import {
   binaryFromFunction, buildFormattedTime, Dialect, Dialects, isParseJson, pivotColumnNames,
   renameFunc,
   unitToStr,
 } from './dialect';
-import { Hive } from './hive';
+import {
+  Hive,
+} from './hive';
 
 function mapSql (this: Generator, expression: MapExpr): string {
   const keys = expression.args.keys;
   const values = expression.args.values;
 
   if (!keys || !values) {
-    return this.func('MAP', []);
+    return this.func('MAP', [
+    ]);
   }
 
-  return this.func('MAP_FROM_ARRAYS', [keys, values]);
+  return this.func('MAP_FROM_ARRAYS', [
+    keys,
+    values,
+  ]);
 }
 
 export function buildAsCast (toType: string) {
@@ -87,9 +103,14 @@ export function buildAsCast (toType: string) {
 function strToDate (this: Generator, expression: StrToDateExpr): string {
   const timeFormat = this.formatTime(expression);
   if (timeFormat === Hive.DATE_FORMAT) {
-    return this.func('TO_DATE', [expression.args.this]);
+    return this.func('TO_DATE', [
+      expression.args.this,
+    ]);
   }
-  return this.func('TO_DATE', [expression.args.this, timeFormat]);
+  return this.func('TO_DATE', [
+    expression.args.this,
+    timeFormat,
+  ]);
 }
 
 function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
@@ -99,7 +120,9 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   if (scale === undefined) {
     return this.sql(
       new CastExpr({
-        this: this.func('from_unixtime', [timestamp]),
+        this: this.func('from_unixtime', [
+          timestamp,
+        ]),
         to: DataTypeExpr.build(DataTypeExprKind.TIMESTAMP),
       }),
     );
@@ -107,21 +130,32 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
 
   const scaleValue = scale.toValue();
   if (scaleValue === UnixToTimeExpr.SECONDS.toValue()) {
-    return this.func('TIMESTAMP_SECONDS', [timestamp]);
+    return this.func('TIMESTAMP_SECONDS', [
+      timestamp,
+    ]);
   }
   if (scaleValue === UnixToTimeExpr.MILLIS.toValue()) {
-    return this.func('TIMESTAMP_MILLIS', [timestamp]);
+    return this.func('TIMESTAMP_MILLIS', [
+      timestamp,
+    ]);
   }
   if (scaleValue === UnixToTimeExpr.MICROS.toValue()) {
-    return this.func('TIMESTAMP_MICROS', [timestamp]);
+    return this.func('TIMESTAMP_MICROS', [
+      timestamp,
+    ]);
   }
 
   const unixSeconds = new DivExpr({
     this: timestamp,
-    expression: this.func('POW', [LiteralExpr.number(10), scale]),
+    expression: this.func('POW', [
+      LiteralExpr.number(10),
+      scale,
+    ]),
   });
 
-  return this.func('TIMESTAMP_SECONDS', [unixSeconds]);
+  return this.func('TIMESTAMP_SECONDS', [
+    unixSeconds,
+  ]);
 }
 
 /**
@@ -136,7 +170,9 @@ function unaliasPivot (expression: Expression): Expression {
       return new FromExpr({
         this: expression.args.this.replace(
           select('*')
-            .from(expression.args.this.copy(), { copy: false })
+            .from(expression.args.this.copy(), {
+              copy: false,
+            })
             .subquery(aliasNode, {
               copy: false,
             }),
@@ -164,7 +200,9 @@ function unqualifyPivotColumns (expression: Expression): Expression {
 
 export function temporaryStorageProvider (expression: Expression): Expression {
   // Spark/Databricks require a storage provider for temporary tables
-  const provider = new FileFormatPropertyExpr({ this: LiteralExpr.string('parquet') });
+  const provider = new FileFormatPropertyExpr({
+    this: LiteralExpr.string('parquet'),
+  });
 
   const properties = expression.getArgKey('properties');
   if (properties instanceof Expression) {
@@ -177,7 +215,16 @@ export function temporaryStorageProvider (expression: Expression): Expression {
 class Spark2Tokenizer extends Hive.Tokenizer {
   @cache
   static get HEX_STRINGS (): TokenPair[] {
-    return [['X\'', '\''], ['x\'', '\'']];
+    return [
+      [
+        'X\'',
+        '\'',
+      ],
+      [
+        'x\'',
+        '\'',
+      ],
+    ];
   }
 
   @cache
@@ -203,7 +250,9 @@ class Spark2Parser extends Hive.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Hive.Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Hive.Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
     return noParenFunctions;
@@ -213,7 +262,7 @@ class Spark2Parser extends Hive.Parser {
   static CHANGE_COLUMN_ALTER_SYNTAX = true;
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return {
       ...Hive.Parser.FUNCTIONS,
       AGGREGATE: (args: unknown[]) => ReduceExpr.fromArgList(args),
@@ -225,22 +274,38 @@ class Spark2Parser extends Hive.Parser {
           unit: var_(seqGet(args, 0)),
         }),
       DAYOFMONTH: (args: Expression[]) =>
-        new DayOfMonthExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+        new DayOfMonthExpr({
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
+        }),
       DAYOFWEEK: (args: Expression[]) =>
-        new DayOfWeekExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+        new DayOfWeekExpr({
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
+        }),
       DAYOFYEAR: (args: Expression[]) =>
-        new DayOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+        new DayOfYearExpr({
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
+        }),
       DOUBLE: buildAsCast('double'),
       FLOAT: buildAsCast('float'),
       FORMAT_STRING: (args: unknown[]) => FormatExpr.fromArgList(args),
-      FROM_UTC_TIMESTAMP: (args: Expression[], { dialect }: { dialect: Dialect }) =>
+      FROM_UTC_TIMESTAMP: (args: Expression[], {
+        dialect,
+      }: {dialect: Dialect}) =>
         new AtTimeZoneExpr({
           this: cast(seqGet(args, 0) || var_(''), DataTypeExprKind.TIMESTAMP, {
             dialect,
           }),
           zone: seqGet(args, 1),
         }),
-      LTRIM: (args: Expression[]) => buildTrim(args, { reverseArgs: true }),
+      LTRIM: (args: Expression[]) => buildTrim(args, {
+        reverseArgs: true,
+      }),
       INT: buildAsCast('int'),
       MAP_FROM_ARRAYS: (args: unknown[]) => MapExpr.fromArgList(args),
       RLIKE: (args: unknown[]) => RegexpLikeExpr.fromArgList(args),
@@ -256,9 +321,13 @@ class Spark2Parser extends Hive.Parser {
       TO_TIMESTAMP: (args: Expression[]) =>
         args.length === 1
           ? buildAsCast('timestamp')(args)
-          : buildFormattedTime(StrToTimeExpr, { dialect: 'spark' })(args),
+          : buildFormattedTime(StrToTimeExpr, {
+            dialect: 'spark',
+          })(args),
       TO_UNIX_TIMESTAMP: (args: unknown[]) => StrToUnixExpr.fromArgList(args),
-      TO_UTC_TIMESTAMP: (args: Expression[], { dialect }: { dialect: Dialect }) =>
+      TO_UTC_TIMESTAMP: (args: Expression[], {
+        dialect,
+      }: {dialect: Dialect}) =>
         new FromTimeZoneExpr({
           this: cast(seqGet(args, 0) || var_(''), DataTypeExprKind.TIMESTAMP, {
             dialect,
@@ -270,7 +339,11 @@ class Spark2Parser extends Hive.Parser {
         this: seqGet(args, 0),
       }),
       WEEKOFYEAR: (args: Expression[]) =>
-        new WeekOfYearExpr({ this: new TsOrDsToDateExpr({ this: seqGet(args, 0) }) }),
+        new WeekOfYearExpr({
+          this: new TsOrDsToDateExpr({
+            this: seqGet(args, 0),
+          }),
+        }),
     };
   }
 
@@ -310,7 +383,10 @@ class Spark2Parser extends Hive.Parser {
 
   parseDropColumn (): DropExpr | CommandExpr | undefined {
     return (
-      (this.matchTextSeq(['DROP', 'COLUMNS']) || undefined)
+      (this.matchTextSeq([
+        'DROP',
+        'COLUMNS',
+      ]) || undefined)
       && this.expression(DropExpr, {
         this: this.parseSchema(),
         kind: 'COLUMNS',
@@ -320,15 +396,21 @@ class Spark2Parser extends Hive.Parser {
 
   pivotColumnNames (aggregations: Expression[]): string[] {
     if (aggregations.length === 1) {
-      return [];
+      return [
+      ];
     }
-    return pivotColumnNames(aggregations, { dialect: 'spark' });
+    return pivotColumnNames(aggregations, {
+      dialect: 'spark',
+    });
   }
 
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Hive.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Hive.Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 class Spark2Generator extends Hive.Generator {
@@ -348,10 +430,22 @@ class Spark2Generator extends Hive.Generator {
   static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     return new Map([
       ...Hive.Generator.PROPERTIES_LOCATION,
-      [EnginePropertyExpr, PropertiesLocation.UNSUPPORTED],
-      [AutoIncrementPropertyExpr, PropertiesLocation.UNSUPPORTED],
-      [CharacterSetPropertyExpr, PropertiesLocation.UNSUPPORTED],
-      [CollatePropertyExpr, PropertiesLocation.UNSUPPORTED],
+      [
+        EnginePropertyExpr,
+        PropertiesLocation.UNSUPPORTED,
+      ],
+      [
+        AutoIncrementPropertyExpr,
+        PropertiesLocation.UNSUPPORTED,
+      ],
+      [
+        CharacterSetPropertyExpr,
+        PropertiesLocation.UNSUPPORTED,
+      ],
+      [
+        CollatePropertyExpr,
+        PropertiesLocation.UNSUPPORTED,
+      ],
     ]);
   }
 
@@ -372,23 +466,41 @@ class Spark2Generator extends Hive.Generator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Hive.Generator.TRANSFORMS,
-      [ApproxDistinctExpr, renameFunc('APPROX_COUNT_DISTINCT')],
+      [
+        ApproxDistinctExpr,
+        renameFunc('APPROX_COUNT_DISTINCT'),
+      ],
       [
         ArraySumExpr,
         function (this: Generator, e: ArraySumExpr) {
           return `AGGREGATE(${this.sql(e, 'this')}, 0, (acc, x) -> acc + x, acc -> acc)`;
         },
       ],
-      [ArrayToStringExpr, renameFunc('ARRAY_JOIN')],
-      [ArraySliceExpr, renameFunc('SLICE')],
+      [
+        ArrayToStringExpr,
+        renameFunc('ARRAY_JOIN'),
+      ],
+      [
+        ArraySliceExpr,
+        renameFunc('SLICE'),
+      ],
       [
         AtTimeZoneExpr,
         function (this: Generator, e: AtTimeZoneExpr) {
-          return this.func('FROM_UTC_TIMESTAMP', [e.args.this, e.args.zone]);
+          return this.func('FROM_UTC_TIMESTAMP', [
+            e.args.this,
+            e.args.zone,
+          ]);
         },
       ],
-      [BitwiseLeftShiftExpr, renameFunc('SHIFTLEFT')],
-      [BitwiseRightShiftExpr, renameFunc('SHIFTRIGHT')],
+      [
+        BitwiseLeftShiftExpr,
+        renameFunc('SHIFTLEFT'),
+      ],
+      [
+        BitwiseRightShiftExpr,
+        renameFunc('SHIFTRIGHT'),
+      ],
       [
         CreateExpr,
         preprocess([
@@ -397,35 +509,80 @@ class Spark2Generator extends Hive.Generator {
           moveSchemaColumnsToPartitionedBy,
         ]),
       ],
-      [DateFromPartsExpr, renameFunc('MAKE_DATE')],
+      [
+        DateFromPartsExpr,
+        renameFunc('MAKE_DATE'),
+      ],
       [
         DateTruncExpr,
         function (this: Generator, e: DateTruncExpr) {
-          return this.func('TRUNC', [e.args.this, unitToStr(e)]);
+          return this.func('TRUNC', [
+            e.args.this,
+            unitToStr(e),
+          ]);
         },
       ],
-      [DayOfMonthExpr, renameFunc('DAYOFMONTH')],
-      [DayOfWeekExpr, renameFunc('DAYOFWEEK')],
+      [
+        DayOfMonthExpr,
+        renameFunc('DAYOFMONTH'),
+      ],
+      [
+        DayOfWeekExpr,
+        renameFunc('DAYOFWEEK'),
+      ],
       [
         DayOfWeekIsoExpr,
         function (this: Generator, e: DayOfWeekIsoExpr) {
-          return '(( ' + this.func('DAYOFWEEK', [e.args.this]) + ' % 7) + 1)';
+          return '(( ' + this.func('DAYOFWEEK', [
+            e.args.this,
+          ]) + ' % 7) + 1)';
         },
       ],
-      [DayOfYearExpr, renameFunc('DAYOFYEAR')],
-      [FormatExpr, renameFunc('FORMAT_STRING')],
-      [FromExpr, preprocess([unaliasPivot])],
+      [
+        DayOfYearExpr,
+        renameFunc('DAYOFYEAR'),
+      ],
+      [
+        FormatExpr,
+        renameFunc('FORMAT_STRING'),
+      ],
+      [
+        FromExpr,
+        preprocess([
+          unaliasPivot,
+        ]),
+      ],
       [
         FromTimeZoneExpr,
         function (this: Generator, e: FromTimeZoneExpr) {
-          return this.func('TO_UTC_TIMESTAMP', [e.args.this, e.args.zone]);
+          return this.func('TO_UTC_TIMESTAMP', [
+            e.args.this,
+            e.args.zone,
+          ]);
         },
       ],
-      [LogicalAndExpr, renameFunc('BOOL_AND')],
-      [LogicalOrExpr, renameFunc('BOOL_OR')],
-      [MapExpr, mapSql],
-      [PivotExpr, preprocess([unqualifyPivotColumns])],
-      [ReduceExpr, renameFunc('AGGREGATE')],
+      [
+        LogicalAndExpr,
+        renameFunc('BOOL_AND'),
+      ],
+      [
+        LogicalOrExpr,
+        renameFunc('BOOL_OR'),
+      ],
+      [
+        MapExpr,
+        mapSql,
+      ],
+      [
+        PivotExpr,
+        preprocess([
+          unqualifyPivotColumns,
+        ]),
+      ],
+      [
+        ReduceExpr,
+        renameFunc('AGGREGATE'),
+      ],
       [
         RegexpReplaceExpr,
         function (this: Generator, e: RegexpReplaceExpr) {
@@ -449,26 +606,52 @@ class Spark2Generator extends Hive.Generator {
       [
         Sha2DigestExpr,
         function (this: Generator, e: Sha2DigestExpr) {
-          return this.func('SHA2', [e.args.this, e.args.length || LiteralExpr.number(256)]);
+          return this.func('SHA2', [
+            e.args.this,
+            e.args.length || LiteralExpr.number(256),
+          ]);
         },
       ],
-      [StrToDateExpr, strToDate],
+      [
+        StrToDateExpr,
+        strToDate,
+      ],
       [
         StrToTimeExpr,
         function (this: Generator, e: StrToTimeExpr) {
-          return this.func('TO_TIMESTAMP', [e.args.this, this.formatTime(e)]);
+          return this.func('TO_TIMESTAMP', [
+            e.args.this,
+            this.formatTime(e),
+          ]);
         },
       ],
       [
         TimestampTruncExpr,
         function (this: Generator, e: TimestampTruncExpr) {
-          return this.func('DATE_TRUNC', [unitToStr(e), e.args.this]);
+          return this.func('DATE_TRUNC', [
+            unitToStr(e),
+            e.args.this,
+          ]);
         },
       ],
-      [UnixToTimeExpr, unixToTimeSql],
-      [VariancePopExpr, renameFunc('VAR_POP')],
-      [WeekOfYearExpr, renameFunc('WEEKOFYEAR')],
-      [WithinGroupExpr, preprocess([removeWithinGroupForPercentiles])],
+      [
+        UnixToTimeExpr,
+        unixToTimeSql,
+      ],
+      [
+        VariancePopExpr,
+        renameFunc('VAR_POP'),
+      ],
+      [
+        WeekOfYearExpr,
+        renameFunc('WEEKOFYEAR'),
+      ],
+      [
+        WithinGroupExpr,
+        preprocess([
+          removeWithinGroupForPercentiles,
+        ]),
+      ],
     ]);
 
     [
@@ -489,7 +672,7 @@ class Spark2Generator extends Hive.Generator {
     return Generator.prototype.structSql.call(this, expression);
   }
 
-  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
+  castSql (expression: CastExpr, options: {safePrefix?: string} = {}): string {
     const arg = expression.args.this;
     const isJsonExtract =
       (arg instanceof JsonExtractExpr || arg instanceof JsonExtractScalarExpr)
@@ -497,11 +680,16 @@ class Spark2Generator extends Hive.Generator {
 
     if (narrowInstanceOf(expression.args.to, Expression)?.getArgKey('nested') && (isParseJson(arg) || isJsonExtract)) {
       const schema = `'${this.sql(expression, 'to')}'`;
-      return this.func('FROM_JSON', [isJsonExtract ? arg : (arg as Expression).args.this, schema]);
+      return this.func('FROM_JSON', [
+        isJsonExtract ? arg : (arg as Expression).args.this,
+        schema,
+      ]);
     }
 
     if (isParseJson(expression)) {
-      return this.func('TO_JSON', [arg]);
+      return this.func('TO_JSON', [
+        arg,
+      ]);
     }
 
     return super.castSql(expression, options);

@@ -107,13 +107,19 @@ import {
   expressionValueToOrString,
   first, whileChanging,
 } from '../helper';
-import { ensureSchema } from '../schema';
+import {
+  ensureSchema,
+} from '../schema';
 import {
   cache,
   isInstanceOf, narrowInstanceOf,
 } from '../port_internals';
-import { TypeAnnotator } from './annotate_types';
-import { normalized } from './normalize';
+import {
+  TypeAnnotator,
+} from './annotate_types';
+import {
+  normalized,
+} from './normalize';
 import {
   findAllInScope, walkInScope,
 } from './scope';
@@ -153,7 +159,9 @@ export function simplify<E extends Expression> (
   const {
     constantPropagation = false, coalesceSimplification = false, dialect,
   } = options;
-  return new Simplifier({ dialect }).simplify(expression, {
+  return new Simplifier({
+    dialect,
+  }).simplify(expression, {
     constantPropagation,
     coalesceSimplification,
   });
@@ -216,7 +224,9 @@ export function annotateTypesOnChange<This extends Simplifier, Args extends [Exp
     if (this.annotateNewExpressions && expression !== newExpression && newExpression instanceof Expression) {
       this._annotator.clear();
 
-      const annotated = this._annotator.annotate(newExpression, { annotateScope: false });
+      const annotated = this._annotator.annotate(newExpression, {
+        annotateScope: false,
+      });
 
       annotated.type = expression.type;
 
@@ -323,35 +333,55 @@ export function simplifyParens (expression: Expression, dialect: DialectType): E
  */
 export function propagateConstants (
   expression: Expression,
-  options: { root?: boolean } = {},
+  options: {root?: boolean} = {},
 ): Expression {
-  const { root = true } = options;
+  const {
+    root = true,
+  } = options;
 
   if (
     expression instanceof AndExpr
     && (root || !expression.sameParent)
-    && normalized(expression, { dnf: true })
+    && normalized(expression, {
+      dnf: true,
+    })
   ) {
     const constantMapping = new Map<string, [ColumnExpr, LiteralExpr]>();
 
-    for (const expr of walkInScope(expression, { prune: (node) => node instanceof IfExpr })) {
+    for (const expr of walkInScope(expression, {
+      prune: (node) => node instanceof IfExpr,
+    })) {
       if (expr instanceof EqExpr) {
         const l = expr.left;
         const r = expr.right;
 
         if (l instanceof ColumnExpr && r instanceof LiteralExpr) {
-          constantMapping.set(l.sql(), [l, r]);
+          constantMapping.set(l.sql(), [
+            l,
+            r,
+          ]);
         } else if (r instanceof ColumnExpr && l instanceof LiteralExpr) {
-          constantMapping.set(r.sql(), [r, l]);
+          constantMapping.set(r.sql(), [
+            r,
+            l,
+          ]);
         }
       }
     }
 
     if (0 < constantMapping.size) {
-      for (const column of findAllInScope(expression, [ColumnExpr])) {
+      for (const column of findAllInScope(expression, [
+        ColumnExpr,
+      ])) {
         const parent = column.parent;
         const mapping = constantMapping.get(column.sql());
-        const [columnObj, constant] = mapping || [undefined, undefined];
+        const [
+          columnObj,
+          constant,
+        ] = mapping || [
+          undefined,
+          undefined,
+        ];
 
         if (
           columnObj !== undefined
@@ -376,11 +406,20 @@ function decimalDiv (aStr: string, bStr: string, prec = 28): string {
   const parse = (s: string): [bigint, number] => {
     const dot = s.indexOf('.');
     const exp = dot === -1 ? 0 : dot - s.length + 1;
-    return [BigInt(s.replace('.', '')), exp];
+    return [
+      BigInt(s.replace('.', '')),
+      exp,
+    ];
   };
 
-  const [aN, aExp] = parse(aStr);
-  const [bN, bExp] = parse(bStr);
+  const [
+    aN,
+    aExp,
+  ] = parse(aStr);
+  const [
+    bN,
+    bExp,
+  ] = parse(bStr);
 
   // q ≈ (aN/bN) * 10^(prec+1); may have more than prec+1 digits if aN has extra digits
   const q = aN * (10n ** BigInt(prec + 1)) / bN;
@@ -456,21 +495,38 @@ function dateTruncRange (date: DateTime, unit: string, dialect: Dialect): DateRa
     return undefined;
   }
 
-  return [floor, floor.plus(interval(unit))];
+  return [
+    floor,
+    floor.plus(interval(unit)),
+  ];
 }
 
 function mergeRanges (ranges: DateRange[]): DateRange[] {
-  if (ranges.length === 0) return [];
+  if (ranges.length === 0) return [
+  ];
 
-  const sorted = [...ranges].sort((a, b) => a[0].toMillis() - b[0].toMillis());
-  const merged: DateRange[] = [sorted[0]];
+  const sorted = [
+    ...ranges,
+  ].sort((a, b) => a[0].toMillis() - b[0].toMillis());
+  const merged: DateRange[] = [
+    sorted[0],
+  ];
 
-  for (const [start, end] of sorted.slice(1)) {
+  for (const [
+    start,
+    end,
+  ] of sorted.slice(1)) {
     const last = merged[merged.length - 1];
     if (start.toMillis() <= last[1].toMillis()) {
-      merged[merged.length - 1] = [last[0], last[1].toMillis() < end.toMillis() ? end : last[1]];
+      merged[merged.length - 1] = [
+        last[0],
+        last[1].toMillis() < end.toMillis() ? end : last[1],
+      ];
     } else {
-      merged.push([start, end]);
+      merged.push([
+        start,
+        end,
+      ]);
     }
   }
 
@@ -501,7 +557,9 @@ function dateTruncEqExpression (
         expression: dateLiteral(drange[1], targetType),
       }),
     ],
-    { copy: false },
+    {
+      copy: false,
+    },
   );
 }
 
@@ -563,7 +621,9 @@ function dateTruncNeq (
         expression: dateLiteral(drange[1], targetType),
       }),
     ],
-    { copy: false },
+    {
+      copy: false,
+    },
   );
 }
 
@@ -589,7 +649,7 @@ function _isComplement (a: unknown, b: unknown): boolean {
 }
 
 /** Check if expression is false */
-function isFalse (a: unknown): a is BooleanExpr & { $this: false } {
+function isFalse (a: unknown): a is BooleanExpr & {$this: false} {
   return a instanceof BooleanExpr && !a.args.this;
 }
 
@@ -635,15 +695,25 @@ function evalBoolean (expression: Expression, a: number | string, b: number | st
  * @returns DateTime or undefined
  */
 function parseDateTime (value: string): DateTime {
-  const dt = DateTime.fromISO(value, { zone: 'utc' });
-  return dt.isValid ? dt : DateTime.fromSQL(value, { zone: 'utc' });
+  const dt = DateTime.fromISO(value, {
+    zone: 'utc',
+  });
+  return dt.isValid
+    ? dt
+    : DateTime.fromSQL(value, {
+      zone: 'utc',
+    });
 }
 
 function castAsDate (value: unknown): DateTime | undefined {
   if (DateTime.isDateTime(value)) {
     return value.toUTC().startOf('day');
   }
-  const dt = typeof value === 'string' ? parseDateTime(value) : DateTime.fromMillis(value as number, { zone: 'utc' });
+  const dt = typeof value === 'string'
+    ? parseDateTime(value)
+    : DateTime.fromMillis(value as number, {
+      zone: 'utc',
+    });
   return dt.isValid ? dt.startOf('day') : undefined;
 }
 
@@ -657,7 +727,11 @@ function castAsDatetime (value: unknown): DateTime | undefined {
   if (DateTime.isDateTime(value)) {
     return value.toUTC();
   }
-  const dt = typeof value === 'string' ? parseDateTime(value) : DateTime.fromMillis(value as number, { zone: 'utc' });
+  const dt = typeof value === 'string'
+    ? parseDateTime(value)
+    : DateTime.fromMillis(value as number, {
+      zone: 'utc',
+    });
   return dt.isValid ? dt : undefined;
 }
 
@@ -693,7 +767,9 @@ function extractDate (cast: unknown): DateTime | undefined {
   if (cast instanceof CastExpr && cast.to instanceof DataTypeExpr) {
     to = cast.to;
   } else if (cast instanceof TsOrDsToDateExpr && !cast.args.format) {
-    to = new DataTypeExpr({ this: DataTypeExprKind.DATE });
+    to = new DataTypeExpr({
+      this: DataTypeExprKind.DATE,
+    });
   } else {
     return undefined;
   }
@@ -767,7 +843,9 @@ function dateLiteral (date: DateTime, targetType?: DataTypeExpr | ColumnDefExpr)
     : date.toFormat('yyyy-MM-dd HH:mm:ss');
   return new CastExpr({
     this: LiteralExpr.string(dateStr),
-    to: new DataTypeExpr({ this: type }),
+    to: new DataTypeExpr({
+      this: type,
+    }),
   });
 }
 
@@ -775,21 +853,37 @@ function interval (unit: string, n: number = 1): Duration {
   const u = unit.toLowerCase();
   switch (u) {
     case 'year':
-      return Duration.fromObject({ years: n });
+      return Duration.fromObject({
+        years: n,
+      });
     case 'quarter':
-      return Duration.fromObject({ months: 3 * n });
+      return Duration.fromObject({
+        months: 3 * n,
+      });
     case 'month':
-      return Duration.fromObject({ months: n });
+      return Duration.fromObject({
+        months: n,
+      });
     case 'week':
-      return Duration.fromObject({ weeks: n });
+      return Duration.fromObject({
+        weeks: n,
+      });
     case 'day':
-      return Duration.fromObject({ days: n });
+      return Duration.fromObject({
+        days: n,
+      });
     case 'hour':
-      return Duration.fromObject({ hours: n });
+      return Duration.fromObject({
+        hours: n,
+      });
     case 'minute':
-      return Duration.fromObject({ minutes: n });
+      return Duration.fromObject({
+        minutes: n,
+      });
     case 'second':
-      return Duration.fromObject({ seconds: n });
+      return Duration.fromObject({
+        seconds: n,
+      });
     default:
       throw new UnsupportedUnit(`Unsupported unit: ${unit}`);
   }
@@ -826,7 +920,9 @@ function dateFloor (d: DateTime, unit: string, dialect: Dialect): DateTime {
         millisecond: 0,
       });
     case 'week': {
-      const weekStart = d.startOf('week').plus({ days: dialect._constructor.WEEK_OFFSET || 0 });
+      const weekStart = d.startOf('week').plus({
+        days: dialect._constructor.WEEK_OFFSET || 0,
+      });
       return weekStart;
     }
     case 'day':
@@ -869,7 +965,9 @@ export class Simplifier {
     this.dialect = Dialect.getOrRaise(dialect);
     this.annotateNewExpressions = annotateNewExpressions;
     this._annotator = new TypeAnnotator({
-      schema: ensureSchema(undefined, { dialect: this.dialect }),
+      schema: ensureSchema(undefined, {
+        dialect: this.dialect,
+      }),
       overwriteTypes: false,
     });
   }
@@ -911,12 +1009,18 @@ export class Simplifier {
 
   @cache
   static get LT_LTE (): readonly [typeof LtExpr, typeof LteExpr] {
-    return [LtExpr, LteExpr];
+    return [
+      LtExpr,
+      LteExpr,
+    ];
   }
 
   @cache
   static get GT_GTE (): readonly [typeof GtExpr, typeof GteExpr] {
-    return [GtExpr, GteExpr];
+    return [
+      GtExpr,
+      GteExpr,
+    ];
   }
 
   @cache
@@ -942,12 +1046,18 @@ export class Simplifier {
 
   @cache
   static get NONDETERMINISTIC (): readonly [typeof RandExpr, typeof RandnExpr] {
-    return [RandExpr, RandnExpr];
+    return [
+      RandExpr,
+      RandnExpr,
+    ];
   }
 
   @cache
   static get AND_OR (): readonly [typeof AndExpr, typeof OrExpr] {
-    return [AndExpr, OrExpr];
+    return [
+      AndExpr,
+      OrExpr,
+    ];
   }
 
   @cache
@@ -980,7 +1090,10 @@ export class Simplifier {
 
   @cache
   static get CONCATS (): readonly [typeof ConcatExpr, typeof DPipeExpr] {
-    return [ConcatExpr, DPipeExpr];
+    return [
+      ConcatExpr,
+      DPipeExpr,
+    ];
   }
 
   @cache
@@ -1022,17 +1135,26 @@ export class Simplifier {
 
   @cache
   static get DATETRUNC_COMPARISONS (): Set<string> {
-    return new Set([InExpr.key, ...Object.keys(Simplifier.DATETRUNC_BINARY_COMPARISONS)]);
+    return new Set([
+      InExpr.key,
+      ...Object.keys(Simplifier.DATETRUNC_BINARY_COMPARISONS),
+    ]);
   }
 
   @cache
   static get DATETRUNCS (): readonly [typeof DateTruncExpr, typeof TimestampTruncExpr] {
-    return [DateTruncExpr, TimestampTruncExpr];
+    return [
+      DateTruncExpr,
+      TimestampTruncExpr,
+    ];
   }
 
   @cache
   static get SAFE_CONNECTOR_ELIMINATION_RESULT (): readonly [typeof ConnectorExpr, typeof BooleanExpr] {
-    return [ConnectorExpr, BooleanExpr];
+    return [
+      ConnectorExpr,
+      BooleanExpr,
+    ];
   }
 
   // CROSS joins result in an empty table if the right table is empty.
@@ -1041,10 +1163,22 @@ export class Simplifier {
   @cache
   static get JOINS (): readonly (readonly [string, string])[] {
     return [
-      ['', ''],
-      ['', JoinExprKind.INNER],
-      [JoinExprKind.RIGHT, ''],
-      [JoinExprKind.RIGHT, JoinExprKind.OUTER],
+      [
+        '',
+        '',
+      ],
+      [
+        '',
+        JoinExprKind.INNER,
+      ],
+      [
+        JoinExprKind.RIGHT,
+        '',
+      ],
+      [
+        JoinExprKind.RIGHT,
+        JoinExprKind.OUTER,
+      ],
     ];
   }
 
@@ -1058,8 +1192,10 @@ export class Simplifier {
     const {
       constantPropagation = false, coalesceSimplification = false,
     } = options;
-    const wheres: WhereExpr[] = [];
-    const joins: JoinExpr[] = [];
+    const wheres: WhereExpr[] = [
+    ];
+    const joins: JoinExpr[] = [
+    ];
 
     for (const node of expression.walk({
       prune: (n) => {
@@ -1085,7 +1221,9 @@ export class Simplifier {
 
           const selects = node.selects;
           for (const s of selects) {
-            for (const n of s.walk({ prune: (node) => Boolean(node.meta[FINAL]) })) {
+            for (const n of s.walk({
+              prune: (node) => Boolean(node.meta[FINAL]),
+            })) {
               if (groupHashes.has(n.hash())) {
                 s.meta[FINAL] = true;
                 break;
@@ -1148,7 +1286,10 @@ export class Simplifier {
         && alwaysTrue(on as Expression)
         && !using
         && !method
-        && Simplifier.JOINS.some(([s, k]) => s === side && k === kind)
+        && Simplifier.JOINS.some(([
+          s,
+          k,
+        ]) => s === side && k === kind)
       ) {
         on.pop();
         join.setArgKey('side', undefined);
@@ -1169,8 +1310,11 @@ export class Simplifier {
     const {
       constantPropagation, coalesceSimplification,
     } = options;
-    const preTransformationStack: Expression[] = [expression];
-    const postTransformationStack: [Expression, Expression | undefined][] = [];
+    const preTransformationStack: Expression[] = [
+      expression,
+    ];
+    const postTransformationStack: [Expression, Expression | undefined][] = [
+    ];
 
     while (0 < preTransformationStack.length) {
       const original = preTransformationStack.pop();
@@ -1191,51 +1335,74 @@ export class Simplifier {
       const root = node === expression;
 
       node = this.rewriteBetween(node);
-      node = this.uniqSort(node, { root });
-      node = this.absorbAndEliminate(node, { root });
+      node = this.uniqSort(node, {
+        root,
+      });
+      node = this.absorbAndEliminate(node, {
+        root,
+      });
       node = this.simplifyConcat(node);
       node = this.simplifyConditionals(node);
 
       if (constantPropagation) {
-        node = propagateConstants(node, { root });
+        node = propagateConstants(node, {
+          root,
+        });
       }
 
       if (node !== original) {
         original?.replace(node);
       }
 
-      for (const n of node.iterExpressions({ reverse: true })) {
+      for (const n of node.iterExpressions({
+        reverse: true,
+      })) {
         if (!n.meta[FINAL]) {
           preTransformationStack.push(n);
         }
       }
-      postTransformationStack.push([node, parent]);
+      postTransformationStack.push([
+        node,
+        parent,
+      ]);
     }
 
     let lastNode = expression;
 
     while (0 < postTransformationStack.length) {
-      const [original, parent] = postTransformationStack.pop()!;
+      const [
+        original,
+        parent,
+      ] = postTransformationStack.pop()!;
       const root = original === expression;
 
       // Resets parent, arg_key, index pointers – this is needed because some of the
       // previous transformations mutate the AST, leading to an inconsistent state
-      for (const [k, v] of Object.entries(original.args)) {
+      for (const [
+        k,
+        v,
+      ] of Object.entries(original.args)) {
         original?.setArgKey(k, v);
       }
 
       // Post-order transformations
       let node = this.simplifyNot(original);
       node = flatten(node);
-      node = this.simplifyConnectors(node, { root });
-      node = this.removeComplements(node, { root });
+      node = this.simplifyConnectors(node, {
+        root,
+      });
+      node = this.removeComplements(node, {
+        root,
+      });
 
       if (coalesceSimplification) {
         node = this.simplifyCoalesce(node);
       }
       node.parent = parent;
 
-      node = this.simplifyLiterals(node, { root });
+      node = this.simplifyLiterals(node, {
+        root,
+      });
       node = this.simplifyEquality(node);
       node = simplifyParens(node, this.dialect);
       node = this.simplifyDateTrunc(node);
@@ -1265,8 +1432,10 @@ export class Simplifier {
    *     (A OR B) AND (A OR NOT B) -> A
    */
   @catch_(UnsupportedUnit)
-  absorbAndEliminate (expression: Expression, options: { root?: boolean } = {}): Expression {
-    const { root = true } = options;
+  absorbAndEliminate (expression: Expression, options: {root?: boolean} = {}): Expression {
+    const {
+      root = true,
+    } = options;
 
     if (Simplifier.AND_OR.some((cls) => expression instanceof cls) && (root || !expression.sameParent)) {
       const kind = expression instanceof AndExpr ? OrExpr : AndExpr;
@@ -1291,10 +1460,13 @@ export class Simplifier {
           // Subop will be: ^
           let arr = subops.get(opSql);
           if (!arr) {
-            arr = [];
+            arr = [
+            ];
             subops.set(opSql, arr);
           }
-          arr.push(new Set([opSql]));
+          arr.push(new Set([
+            opSql,
+          ]));
           continue;
         }
 
@@ -1304,23 +1476,35 @@ export class Simplifier {
         for (const i of subset) {
           let arr = subops.get(i);
           if (!arr) {
-            arr = [];
+            arr = [
+            ];
             subops.set(i, arr);
           }
           arr.push(subset);
         }
 
-        const [a, b] = op.unnestOperands();
+        const [
+          a,
+          b,
+        ] = op.unnestOperands();
         if (a && b) {
           if (a instanceof NotExpr && a.args.this instanceof Expression) {
             const key = `${this.genSql(a.args.this as Expression)}|${this.genSql(b)}`;
-            if (!pairs.has(key)) pairs.set(key, []);
-            pairs.get(key)!.push([op, b]);
+            if (!pairs.has(key)) pairs.set(key, [
+            ]);
+            pairs.get(key)!.push([
+              op,
+              b,
+            ]);
           }
           if (b instanceof NotExpr && b.args.this instanceof Expression) {
             const key = `${this.genSql(b.args.this as Expression)}|${this.genSql(a)}`;
-            if (!pairs.has(key)) pairs.set(key, []);
-            pairs.get(key)!.push([op, a]);
+            if (!pairs.has(key)) pairs.set(key, [
+            ]);
+            pairs.get(key)!.push([
+              op,
+              a,
+            ]);
           }
         }
       }
@@ -1330,7 +1514,10 @@ export class Simplifier {
           continue;
         }
 
-        const [a, b] = op.unnestOperands();
+        const [
+          a,
+          b,
+        ] = op.unnestOperands();
         if (!a || !b) {
           continue;
         }
@@ -1372,7 +1559,15 @@ export class Simplifier {
         const bSql = this.genSql(b);
         const pairKey = `${aSql}|${bSql}`;
         const reversePairKey = `${bSql}|${aSql}`;
-        for (const [other, complement] of [...(pairs.get(pairKey) || []), ...(pairs.get(reversePairKey) || [])]) {
+        for (const [
+          other,
+          complement,
+        ] of [
+            ...(pairs.get(pairKey) || [
+            ]),
+            ...(pairs.get(reversePairKey) || [
+            ]),
+          ]) {
           op.replace(complement);
           other.replace(complement);
         }
@@ -1391,7 +1586,10 @@ export class Simplifier {
 
     // We can't reduce a CONCAT_WS call if we don't statically know the separator
     if (expression instanceof ConcatWsExpr) {
-      const [firstExpr] = expression.args.expressions ?? [];
+      const [
+        firstExpr,
+      ] = expression.args.expressions ?? [
+      ];
       if (!(firstExpr instanceof Expression) || !firstExpr.isString) {
         return expression;
       }
@@ -1404,14 +1602,19 @@ export class Simplifier {
     let args: Record<string, unknown>;
 
     if (expression instanceof ConcatWsExpr) {
-      const [first, ...rest] = expression.args.expressions ?? [];
+      const [
+        first,
+        ...rest
+      ] = expression.args.expressions ?? [
+      ];
       sepExpr = first as Expression;
       expressions = rest;
       sep = sepExpr.name;
       concatType = ConcatWsExpr;
       args = {};
     } else {
-      expressions = expression.args.expressions ?? [];
+      expressions = expression.args.expressions ?? [
+      ];
       sep = '';
       concatType = ConcatExpr;
       args = {
@@ -1420,8 +1623,10 @@ export class Simplifier {
       };
     }
 
-    const newArgs: Expression[] = [];
-    let currentStringGroup: string[] = [];
+    const newArgs: Expression[] = [
+    ];
+    let currentStringGroup: string[] = [
+    ];
 
     for (const e of 0 < expressions.length ? expressions : Array.from(expression.flatten())) {
       if (!(e instanceof Expression)) continue;
@@ -1430,7 +1635,8 @@ export class Simplifier {
       } else {
         if (0 < currentStringGroup.length) {
           newArgs.push(LiteralExpr.string(currentStringGroup.join(sep)));
-          currentStringGroup = [];
+          currentStringGroup = [
+          ];
         }
         newArgs.push(e);
       }
@@ -1445,7 +1651,12 @@ export class Simplifier {
     }
 
     if (concatType === ConcatWsExpr && sepExpr) {
-      return new ConcatWsExpr({ expressions: [sepExpr, ...newArgs] });
+      return new ConcatWsExpr({
+        expressions: [
+          sepExpr,
+          ...newArgs,
+        ],
+      });
     } else if (expression instanceof DPipeExpr) {
       return newArgs.reduce((x, y) => new DPipeExpr({
         this: x,
@@ -1465,7 +1676,8 @@ export class Simplifier {
     if (expression instanceof CaseExpr) {
       const thisExpr = expression.args.this;
 
-      for (const caseIf of expression.args.ifs || []) {
+      for (const caseIf of expression.args.ifs || [
+      ]) {
         let cond = caseIf.args.this as Expression;
         if (thisExpr) {
           // Convert CASE x WHEN matching_value ... to CASE WHEN x = matching_value ...
@@ -1508,7 +1720,12 @@ export class Simplifier {
     if (expression instanceof NotExpr) {
       const thisExpr = expression.args.this;
       if (isNull(thisExpr)) {
-        return and([null_(), true_()], { copy: false });
+        return and([
+          null_(),
+          true_(),
+        ], {
+          copy: false,
+        });
       }
 
       if (thisExpr instanceof Expression) {
@@ -1519,7 +1736,9 @@ export class Simplifier {
           if (rightExpr instanceof Expression) {
             const complementSubqueryPredicate = Simplifier.COMPLEMENT_SUBQUERY_PREDICATES[rightExpr._constructor.key];
             if (complementSubqueryPredicate) {
-              rightExpr = new complementSubqueryPredicate({ this: rightExpr.args.this });
+              rightExpr = new complementSubqueryPredicate({
+                this: rightExpr.args.this,
+              });
             }
           }
 
@@ -1537,14 +1756,22 @@ export class Simplifier {
             or([
               not(
                 condition.args.this !== undefined ? expressionValueToOrString(condition.args.this) : undefined,
-                { copy: false },
+                {
+                  copy: false,
+                },
               ),
               not(
                 condition.args.expression !== undefined ? expressionValueToOrString(condition.args.expression) : undefined,
-                { copy: false },
+                {
+                  copy: false,
+                },
               ),
-            ], { copy: false }),
-            { copy: false },
+            ], {
+              copy: false,
+            }),
+            {
+              copy: false,
+            },
           );
         }
         if (condition instanceof OrExpr) {
@@ -1552,18 +1779,31 @@ export class Simplifier {
             and([
               not(
                 condition.args.this,
-                { copy: false },
+                {
+                  copy: false,
+                },
               ),
               not(
                 condition.args.expression !== undefined ? expressionValueToOrString(condition.args.expression) : undefined,
-                { copy: false },
+                {
+                  copy: false,
+                },
               ),
-            ], { copy: false }),
-            { copy: false },
+            ], {
+              copy: false,
+            }),
+            {
+              copy: false,
+            },
           );
         }
         if (isNull(condition)) {
-          return and([null_(), true_()], { copy: false });
+          return and([
+            null_(),
+            true_(),
+          ], {
+            copy: false,
+          });
         }
       }
 
@@ -1592,8 +1832,10 @@ export class Simplifier {
    */
   @annotateTypesOnChange
   @catch_(UnsupportedUnit)
-  simplifyConnectors (expression: Expression, options: { root?: boolean } = {}): Expression {
-    const { root = true } = options;
+  simplifyConnectors (expression: Expression, options: {root?: boolean} = {}): Expression {
+    const {
+      root = true,
+    } = options;
 
     if (expression instanceof ConnectorExpr) {
       const originalParent = expression.parent;
@@ -1621,7 +1863,9 @@ export class Simplifier {
           if (alwaysTrue(right)) {
             return left;
           }
-          return this.simplifyComparison(expr, left, right, { or: false });
+          return this.simplifyComparison(expr, left, right, {
+            or: false,
+          });
         } else if (expr instanceof OrExpr) {
           if (alwaysTrue(left) || alwaysTrue(right)) {
             return true_();
@@ -1639,10 +1883,14 @@ export class Simplifier {
           if (isFalse(right)) {
             return left;
           }
-          return this.simplifyComparison(expr, left, right, { or: true });
+          return this.simplifyComparison(expr, left, right, {
+            or: true,
+          });
         }
         return undefined;
-      }, { root });
+      }, {
+        root,
+      });
 
       // If we reduced a connector to, e.g., a column (t1 AND ... AND tn -> Tk), then we need
       // to ensure that the resulting type is boolean. We know this is true only for connectors,
@@ -1658,7 +1906,12 @@ export class Simplifier {
             break;
           }
           if (!(current instanceof ParenExpr)) {
-            expression = and([expression, true_()], { copy: false });
+            expression = and([
+              expression,
+              true_(),
+            ], {
+              copy: false,
+            });
             break;
           }
           current = current.parent;
@@ -1673,9 +1926,11 @@ export class Simplifier {
     expression: Expression,
     left: Expression,
     right: Expression,
-    options: { or: boolean },
+    options: {or: boolean},
   ): Expression | undefined {
-    const { or: or_ = false } = options;
+    const {
+      or: or_ = false,
+    } = options;
 
     if (Simplifier.COMPARISONS.some((cls) => left instanceof cls)
       && Simplifier.COMPARISONS.some((cls) => right instanceof cls)) {
@@ -1688,13 +1943,29 @@ export class Simplifier {
         return undefined;
       }
 
-      const largs = [ll, lr];
-      const rargs = [rl, rr];
-      const largsHashes = new Map(largs.map((x) => [narrowInstanceOf(x, Expression)?.hash(), x]));
-      const rargsHashes = new Map(rargs.map((x) => [narrowInstanceOf(x, Expression)?.hash(), x]));
+      const largs = [
+        ll,
+        lr,
+      ];
+      const rargs = [
+        rl,
+        rr,
+      ];
+      const largsHashes = new Map(largs.map((x) => [
+        narrowInstanceOf(x, Expression)?.hash(),
+        x,
+      ]));
+      const rargsHashes = new Map(rargs.map((x) => [
+        narrowInstanceOf(x, Expression)?.hash(),
+        x,
+      ]));
 
-      const matchingHashes = new Set([...largsHashes.keys()].filter((h) => rargsHashes.has(h)));
-      const columns = [...matchingHashes].map((h) => largsHashes.get(h)).filter((m) =>
+      const matchingHashes = new Set([
+        ...largsHashes.keys(),
+      ].filter((h) => rargsHashes.has(h)));
+      const columns = [
+        ...matchingHashes,
+      ].map((h) => largsHashes.get(h)).filter((m) =>
         !isConstant(m) && !narrowInstanceOf(m, Expression)?.find(Simplifier.NONDETERMINISTIC));
       const columnHashes = new Set(columns.map((c) => narrowInstanceOf(c, Expression)?.hash()));
 
@@ -1746,9 +2017,39 @@ export class Simplifier {
         }
 
         // Generate permutations
-        const permutations: [[Expression, unknown], [Expression, unknown]][] = [[[left, lValue], [right, rValue]], [[right, rValue], [left, lValue]]];
+        const permutations: [[Expression, unknown], [Expression, unknown]][] = [
+          [
+            [
+              left,
+              lValue,
+            ],
+            [
+              right,
+              rValue,
+            ],
+          ],
+          [
+            [
+              right,
+              rValue,
+            ],
+            [
+              left,
+              lValue,
+            ],
+          ],
+        ];
 
-        for (const [[a, av], [b, bv]] of permutations) {
+        for (const [
+          [
+            a,
+            av,
+          ],
+          [
+            b,
+            bv,
+          ],
+        ] of permutations) {
           // Convert DateTime to milliseconds for comparison, fallback to string for other types
           const avNum = typeof av === 'number' ? av : (DateTime.isDateTime(av) ? av.toMillis() : String(av));
           const bvNum = typeof bv === 'number' ? bv : (DateTime.isDateTime(bv) ? bv.toMillis() : String(bv));
@@ -1803,16 +2104,21 @@ export class Simplifier {
   flatSimplify (
     expression: Expression,
     simplifyFunc: (expr: Expression, left: Expression, right: Expression) => Expression | undefined,
-    options: { root?: boolean },
+    options: {root?: boolean},
   ): Expression {
-    const { root } = options;
+    const {
+      root,
+    } = options;
 
     if (!root && expression.sameParent) {
       return expression;
     }
 
-    const operands = [];
-    const queue = Array.from(expression.flatten({ unnest: false }));
+    const operands = [
+    ];
+    const queue = Array.from(expression.flatten({
+      unnest: false,
+    }));
     const size = queue.length;
 
     while (queue.length) {
@@ -1851,8 +2157,10 @@ export class Simplifier {
    * A OR NOT A -> TRUE (only for non-NULL A)
    */
   @catch_(UnsupportedUnit)
-  removeComplements (expression: Expression, options: { root?: boolean } = {}): Expression {
-    const { root = true } = options;
+  removeComplements (expression: Expression, options: {root?: boolean} = {}): Expression {
+    const {
+      root = true,
+    } = options;
 
     if (Simplifier.AND_OR.some((cls) => expression instanceof cls) && (root || !expression.sameParent)) {
       const ops = Array.from(expression.flatten());
@@ -1938,25 +2246,42 @@ export class Simplifier {
     // This expression is more complex than when we started, but it will get simplified further
     return paren(
       or([
-        and([not(coalesceOrThis?.is(null_()), { copy: false }), expression.copy()], { copy: false }),
+        and([
+          not(coalesceOrThis?.is(null_()), {
+            copy: false,
+          }),
+          expression.copy(),
+        ], {
+          copy: false,
+        }),
         and([
           coalesceOrThis?.is(null_()),
           new (expression._constructor)({
             this: arg.copy(),
             expression: other.copy(),
           }),
-        ], { copy: false }),
-      ], { copy: false }),
-      { copy: false },
+        ], {
+          copy: false,
+        }),
+      ], {
+        copy: false,
+      }),
+      {
+        copy: false,
+      },
     );
   }
 
   @annotateTypesOnChange
-  simplifyLiterals (expression: Expression, options: { root?: boolean } = {}): Expression {
-    const { root = true } = options;
+  simplifyLiterals (expression: Expression, options: {root?: boolean} = {}): Expression {
+    const {
+      root = true,
+    } = options;
 
     if (expression instanceof BinaryExpr && !(expression instanceof ConnectorExpr)) {
-      return this.flatSimplify(expression, (expr, left, right) => this.simplifyBinary(expr, left, right), { root });
+      return this.flatSimplify(expression, (expr, left, right) => this.simplifyBinary(expr, left, right), {
+        root,
+      });
     }
 
     if (expression instanceof NegExpr && expression.args.this instanceof NegExpr) {
@@ -2201,7 +2526,13 @@ export class Simplifier {
         // Keep as is
       } else if (!aPredicate(b) && bPredicate(a)) {
         // Swap
-        [a, b] = [b, a];
+        [
+          a,
+          b,
+        ] = [
+          b,
+          a,
+        ];
       } else {
         return expression;
       }
@@ -2275,7 +2606,8 @@ export class Simplifier {
       if (rs && rs.every((r) => this.isDatetruncPredicate(l, r))) {
         const unit = ((l.args as Record<string, unknown>).unit as Expression).name.toLowerCase();
 
-        const ranges: DateRange[] = [];
+        const ranges: DateRange[] = [
+        ];
         for (const r of rs) {
           const date = extractDate(r);
           if (!date) {
@@ -2296,7 +2628,9 @@ export class Simplifier {
 
         return or(
           mergedRanges.map((drange) => dateTruncEqExpression(l, drange, targetType)),
-          { copy: false },
+          {
+            copy: false,
+          },
         );
       }
     }
@@ -2402,10 +2736,14 @@ export class Simplifier {
         this: betweenThis.copy(),
         expression: high,
       }),
-    ], { copy: false });
+    ], {
+      copy: false,
+    });
 
     if (negate) {
-      result = paren(result, { copy: false });
+      result = paren(result, {
+        copy: false,
+      });
     }
 
     return result;
@@ -2417,8 +2755,10 @@ export class Simplifier {
    * C AND A AND B AND B -> A AND B AND C
    */
   @annotateTypesOnChange
-  uniqSort (expression: Expression, options: { root?: boolean } = {}): Expression {
-    const { root = true } = options;
+  uniqSort (expression: Expression, options: {root?: boolean} = {}): Expression {
+    const {
+      root = true,
+    } = options;
     if (!(expression instanceof ConnectorExpr) || (!root && expression.sameParent)) {
       return expression;
     }
@@ -2433,7 +2773,10 @@ export class Simplifier {
       resultFunc = xor;
       // Do not deduplicate XOR as A XOR A != A if A == True
       deduped = undefined;
-      arr = flattened.map((e) => [this.genSql(e), e] as [string, Expression]);
+      arr = flattened.map((e) => [
+        this.genSql(e),
+        e,
+      ] as [string, Expression]);
     } else {
       resultFunc = expression instanceof AndExpr ? and : or;
       deduped = new Map<string, Expression>();
@@ -2451,7 +2794,11 @@ export class Simplifier {
     for (let i = 1; i < arr.length; i++) {
       if (arr[i][0] < arr[i - 1][0]) {
         const sorted = arr.sort((a, b) => (a[0] < b[0] ? -1 : b[0] < a[0] ? 1 : 0));
-        expression = resultFunc(sorted.map(([, e]) => e), { copy: false });
+        expression = resultFunc(sorted.map(([
+          , e,
+        ]) => e), {
+          copy: false,
+        });
         return expression;
       }
     }
@@ -2461,10 +2808,17 @@ export class Simplifier {
       const uniqueOperand = flattened[0];
       if (deduped.size === 1) {
         if (uniqueOperand instanceof Expression) {
-          expression = and([uniqueOperand, true_()], { copy: false });
+          expression = and([
+            uniqueOperand,
+            true_(),
+          ], {
+            copy: false,
+          });
         }
       } else {
-        expression = resultFunc(Array.from(deduped.values()), { copy: false });
+        expression = resultFunc(Array.from(deduped.values()), {
+          copy: false,
+        });
       }
     }
 
@@ -2490,18 +2844,25 @@ export class Simplifier {
  * @param comments - whether to include the expression's comments
  * @returns SQL string
  */
-export function gen (expression: Expression, options: { comments?: boolean } = {}): string {
+export function gen (expression: Expression, options: {comments?: boolean} = {}): string {
   return new Gen().gen(expression, options);
 }
 
 class Gen {
-  private stack: unknown[] = [];
-  private sqls: string[] = [];
+  private stack: unknown[] = [
+  ];
+  private sqls: string[] = [
+  ];
 
-  gen (expression: Expression, options: { comments?: boolean } = {}): string {
-    const { comments = false } = options;
-    this.stack = [expression];
-    this.sqls = [];
+  gen (expression: Expression, options: {comments?: boolean} = {}): string {
+    const {
+      comments = false,
+    } = options;
+    this.stack = [
+      expression,
+    ];
+    this.sqls = [
+    ];
 
     while (0 < this.stack.length) {
       const node = this.stack.pop()!;
@@ -2528,7 +2889,10 @@ class Gen {
           if (n !== undefined && n !== null) {
             if (Array.isArray(n) && typeof n[0] === 'string' && n[0].startsWith(':')) {
               // Handle [key, value] pairs from _args — push value then key (no trailing comma)
-              const [k, v] = n as [string, Expression | string | number | boolean];
+              const [
+                k,
+                v,
+              ] = n as [string, Expression | string | number | boolean];
               this.stack.push(v as Expression);
               this.stack.push(k);
               lastPushedComma = false;
@@ -2590,7 +2954,8 @@ class Gen {
 
     this.stack.push(
       ')',
-      e.args.expressions || [],
+      e.args.expressions || [
+      ],
       '(',
       name,
     );
@@ -2613,7 +2978,8 @@ class Gen {
   bracketSql (e: BracketExpr): void {
     this.stack.push(
       ']',
-      e.args.expressions || [],
+      e.args.expressions || [
+      ],
       '[',
       e.args.this as Expression,
     );
@@ -2772,7 +3138,8 @@ class Gen {
       this.stack.push(')', columns, '(');
     }
 
-    this.stack.push(e.args.this || [], ' AS ');
+    this.stack.push(e.args.this || [
+    ], ' AS ');
   }
 
   varSql (e: VarExpr): void {
@@ -2797,15 +3164,20 @@ class Gen {
   }
 
   private args (node: Expression, argIndex: number = 0): boolean {
-    const kvs: [string, ExpressionValue][] = [];
-    const argTypes = Array.from(node._constructor.availableArgs || []);
+    const kvs: [string, ExpressionValue][] = [
+    ];
+    const argTypes = Array.from(node._constructor.availableArgs || [
+    ]);
     const argsToProcess = 0 < argIndex ? argTypes.slice(argIndex) : argTypes;
 
     for (const k of argsToProcess) {
       const v = node.getArgKey(k);
 
       if (v !== undefined && v !== null) {
-        kvs.push([`:${k}`, v as ExpressionValue]);
+        kvs.push([
+          `:${k}`,
+          v as ExpressionValue,
+        ]);
       }
     }
 

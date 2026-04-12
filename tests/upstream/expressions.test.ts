@@ -132,7 +132,9 @@ import {
   JsonExtractExpr,
   JsonExtractScalarExpr,
 } from '../../src/expressions';
-import { NormalizeFunctions } from '../../src/dialects/dialect';
+import {
+  NormalizeFunctions,
+} from '../../src/dialects/dialect';
 
 class TestExpressions {
   testArgKey () {
@@ -165,15 +167,24 @@ class TestExpressions {
 
     expect(parseOne('\'x\'').sql()).not.toBe(parseOne('\'X\'').sql());
     expect(parseOne('\'1\'').sql()).not.toBe(parseOne('1').sql());
-    expect(parseOne('`a`', { read: 'hive' }).sql()).toBe(parseOne('"a"').sql());
-    expect(parseOne('`a`.`b`', { read: 'hive' }).sql()).toBe(parseOne('"a"."b"').sql());
+    expect(parseOne('`a`', {
+      read: 'hive',
+    }).sql()).toBe(parseOne('"a"').sql());
+    expect(parseOne('`a`.`b`', {
+      read: 'hive',
+    }).sql()).toBe(parseOne('"a"."b"').sql());
     expect(parseOne('select a, b+1').sql()).toBe(parseOne('SELECT a, b + 1').sql());
-    expect(parseOne('a.b.c.d', { read: 'hive' }).sql()).toBe(parseOne('a.b.c.d').sql());
+    expect(parseOne('a.b.c.d', {
+      read: 'hive',
+    }).sql()).toBe(parseOne('a.b.c.d').sql());
     expect(parseOne('a + b * c - 1.0').sql()).toBe(parseOne('a+b*c-1.0').sql());
     expect(parseOne('a + b * c - 1.0').sql()).not.toBe(parseOne('a + b * c + 1.0').sql());
     expect(parseOne('a as b').sql()).toBe(parseOne('a AS b').sql());
     expect(parseOne('a as b').sql()).not.toBe(parseOne('a').sql());
-    expect(new TableExpr({ pivots: [] }).sql()).toBe(new TableExpr({}).sql());
+    expect(new TableExpr({
+      pivots: [
+      ],
+    }).sql()).toBe(new TableExpr({}).sql());
   }
 
   testFind () {
@@ -181,8 +192,13 @@ class TestExpressions {
     expect(expression.find(SelectExpr)).toBeTruthy();
     expect(expression.find(JoinExpr)).toBeFalsy();
     expect(
-      [...expression.findAll(TableExpr)].map((t) => t.name),
-    ).toEqual(['x', 'y']);
+      [
+        ...expression.findAll(TableExpr),
+      ].map((t) => t.name),
+    ).toEqual([
+      'x',
+      'y',
+    ]);
   }
 
   testFindAll () {
@@ -209,7 +225,9 @@ class TestExpressions {
     `);
 
     expect(
-      [...expression.findAll(TableExpr)].map((t) => t.name),
+      [
+        ...expression.findAll(TableExpr),
+      ].map((t) => t.name),
     ).toEqual([
       'b',
       'c',
@@ -219,7 +237,9 @@ class TestExpressions {
     const addExpr = parseOne('select a + b + c + d');
 
     expect(
-      [...addExpr.findAll(ColumnExpr)].map((c) => c.name),
+      [
+        ...addExpr.findAll(ColumnExpr),
+      ].map((c) => c.name),
     ).toEqual([
       'd',
       'c',
@@ -228,7 +248,11 @@ class TestExpressions {
     ]);
 
     expect(
-      [...addExpr.findAll(ColumnExpr, { bfs: false })].map((c) => c.name),
+      [
+        ...addExpr.findAll(ColumnExpr, {
+          bfs: false,
+        }),
+      ].map((c) => c.name),
     ).toEqual([
       'a',
       'b',
@@ -246,7 +270,9 @@ class TestExpressions {
 
   testToDot () {
     const orig = parseOne('a.b.c."d".e.f');
-    expect([...(orig as DotExpr).parts].map((p) => p.sql()).join('.')).toBe('a.b.c."d".e.f');
+    expect([
+      ...(orig as DotExpr).parts,
+    ].map((p) => p.sql()).join('.')).toBe('a.b.c."d".e.f');
 
     const dot = DotExpr.build([
       toTable('a.b.c'),
@@ -254,7 +280,9 @@ class TestExpressions {
       toIdentifier('e'),
       toIdentifier('f'),
     ]);
-    expect([...dot.parts].map((p) => p.sql()).join('.')).toBe('a.b.c.d.e.f');
+    expect([
+      ...dot.parts,
+    ].map((p) => p.sql()).join('.')).toBe('a.b.c.d.e.f');
 
     const col = orig.find(ColumnExpr);
     expect(col).toBeTruthy();
@@ -286,8 +314,13 @@ class TestExpressions {
     ]);
 
     expect(
-      new Set([...expression.findAll(TableExpr)].map((t) => t.aliasOrName)),
-    ).toEqual(new Set(['bar', 'baz']));
+      new Set([
+        ...expression.findAll(TableExpr),
+      ].map((t) => t.aliasOrName)),
+    ).toEqual(new Set([
+      'bar',
+      'baz',
+    ]));
 
     const withExpr = parseOne(`
       WITH first AS (SELECT * FROM foo),
@@ -297,12 +330,18 @@ class TestExpressions {
 
     expect(
       (withExpr.getArgKey('with') as WithExpr).args.expressions?.map((e) => (e as Expression).aliasOrName),
-    ).toEqual(['first', 'second']);
+    ).toEqual([
+      'first',
+      'second',
+    ]);
 
     expect((withExpr.getArgKey('from') as Expression).aliasOrName).toBe('first');
     expect(
       (withExpr.getArgKey('joins') as Expression[]).map((e) => e.aliasOrName),
-    ).toEqual(['second', 'third']);
+    ).toEqual([
+      'second',
+      'third',
+    ]);
 
     expect(parseOne('x.*').name).toBe('*');
     expect(parseOne('NULL').name).toBe('NULL');
@@ -310,28 +349,58 @@ class TestExpressions {
   }
 
   testTableName () {
-    const bqDashedTable = toTable('a-1.b.c', { dialect: 'bigquery' });
+    const bqDashedTable = toTable('a-1.b.c', {
+      dialect: 'bigquery',
+    });
     expect(tableName(bqDashedTable)).toBe('"a-1".b.c');
-    expect(tableName(bqDashedTable, { dialect: 'bigquery' })).toBe('`a-1`.b.c');
-    expect(tableName('a-1.b.c', { dialect: 'bigquery' })).toBe('`a-1`.b.c');
-    expect(tableName(parseOne('a', { into: TableExpr }))).toBe('a');
-    expect(tableName(parseOne('a.b', { into: TableExpr }))).toBe('a.b');
-    expect(tableName(parseOne('a.b.c', { into: TableExpr }))).toBe('a.b.c');
+    expect(tableName(bqDashedTable, {
+      dialect: 'bigquery',
+    })).toBe('`a-1`.b.c');
+    expect(tableName('a-1.b.c', {
+      dialect: 'bigquery',
+    })).toBe('`a-1`.b.c');
+    expect(tableName(parseOne('a', {
+      into: TableExpr,
+    }))).toBe('a');
+    expect(tableName(parseOne('a.b', {
+      into: TableExpr,
+    }))).toBe('a.b');
+    expect(tableName(parseOne('a.b.c', {
+      into: TableExpr,
+    }))).toBe('a.b.c');
     expect(tableName('a.b.c')).toBe('a.b.c');
-    expect(tableName(toTable('a.b.c.d.e', { dialect: 'bigquery' }))).toBe('a.b.c.d.e');
-    expect(tableName(toTable('\'@foo\'', { dialect: 'snowflake' }))).toBe('\'@foo\'');
-    expect(tableName(toTable('@foo', { dialect: 'snowflake' }))).toBe('@foo');
-    expect(tableName(bqDashedTable, { identify: true })).toBe('"a-1"."b"."c"');
+    expect(tableName(toTable('a.b.c.d.e', {
+      dialect: 'bigquery',
+    }))).toBe('a.b.c.d.e');
+    expect(tableName(toTable('\'@foo\'', {
+      dialect: 'snowflake',
+    }))).toBe('\'@foo\'');
+    expect(tableName(toTable('@foo', {
+      dialect: 'snowflake',
+    }))).toBe('@foo');
+    expect(tableName(bqDashedTable, {
+      identify: true,
+    })).toBe('"a-1"."b"."c"');
     expect(
-      tableName(parseOne('/*c*/foo.bar', { into: TableExpr }), { identify: true }),
+      tableName(parseOne('/*c*/foo.bar', {
+        into: TableExpr,
+      }), {
+        identify: true,
+      }),
     ).toBe('"foo"."bar"');
   }
 
   testTable () {
     const fromTable = parseOne('select * from a b').find(TableExpr) as TableExpr;
-    expect(table_('a', { alias: 'b' }).sql()).toBe(fromTable.sql());
-    expect(table_('a', { db: '' }).sql()).toBe('a');
-    expect(new TableExpr({ db: toIdentifier('a') }).sql()).toBe('a');
+    expect(table_('a', {
+      alias: 'b',
+    }).sql()).toBe(fromTable.sql());
+    expect(table_('a', {
+      db: '',
+    }).sql()).toBe('a');
+    expect(new TableExpr({
+      db: toIdentifier('a'),
+    }).sql()).toBe('a');
   }
 
   testReplaceTables () {
@@ -348,7 +417,9 @@ class TestExpressions {
           '`f-F`.`A`': '"F"',
           'g': 'g1.a',
         },
-        { dialect: 'bigquery' },
+        {
+          dialect: 'bigquery',
+        },
       ).sql(),
     ).toBe(
       'SELECT * FROM a1 AS a /* a */, b.a /* b */, c.a2 /* c.a */, d2 /* d.a */ CROSS JOIN e.a CROSS JOIN "F" /* f-F.A */ CROSS JOIN g1.a /* g */',
@@ -356,16 +427,24 @@ class TestExpressions {
 
     expect(
       replaceTables(
-        parseOne('select * from example.table', { dialect: 'bigquery' }),
-        { 'example.table': '`my-project.example.table`' },
-        { dialect: 'bigquery' },
+        parseOne('select * from example.table', {
+          dialect: 'bigquery',
+        }),
+        {
+          'example.table': '`my-project.example.table`',
+        },
+        {
+          dialect: 'bigquery',
+        },
       ).sql(),
     ).toBe('SELECT * FROM "my-project"."example"."table" /* example.table */');
 
     expect(
       replaceTables(
         parseOne('select * from example.table /* sqlglot.meta replace=false */'),
-        { 'example.table': 'a.b' },
+        {
+          'example.table': 'a.b',
+        },
       ).sql(),
     ).toBe('SELECT * FROM example.table /* sqlglot.meta replace=false */');
   }
@@ -377,7 +456,9 @@ class TestExpressions {
         {
           '`a-b`.c': parseOne('select 1') as QueryExpr,
         },
-        { dialect: 'spark' },
+        {
+          dialect: 'spark',
+        },
       ).sql(),
     ).toBe('SELECT * FROM (SELECT 1) AS a /* source: a-b.c */');
   }
@@ -386,8 +467,14 @@ class TestExpressions {
     expect(
       expand(
         parseOne('select * from "a-b"."C" AS a'),
-        { '`a-b`.c': () => parseOne('select 1', { dialect: 'spark' }) },
-        { dialect: 'spark' },
+        {
+          '`a-b`.c': () => parseOne('select 1', {
+            dialect: 'spark',
+          }),
+        },
+        {
+          dialect: 'spark',
+        },
       ).sql(),
     ).toBe('SELECT * FROM (SELECT 1) AS a /* source: a-b.c */');
   }
@@ -396,7 +483,8 @@ class TestExpressions {
     expect(
       replacePlaceholders(
         parseOne('select * from :tbl1 JOIN :tbl2 ON :col1 = :str1 WHERE :col2 > :int1'),
-        [],
+        [
+        ],
         {
           tbl1: toIdentifier('foo'),
           tbl2: toIdentifier('bar'),
@@ -424,15 +512,20 @@ class TestExpressions {
     expect(
       replacePlaceholders(
         parseOne('select * from ? WHERE ? > 100'),
-        [toIdentifier('foo')],
+        [
+          toIdentifier('foo'),
+        ],
       ).sql(),
     ).toBe('SELECT * FROM foo WHERE ? > 100');
 
     expect(
       replacePlaceholders(
         parseOne('select * from :name WHERE ? > 100'),
-        [],
-        { another_name: 'bla' },
+        [
+        ],
+        {
+          another_name: 'bla',
+        },
       ).sql(),
     ).toBe('SELECT * FROM :name WHERE ? > 100');
 
@@ -455,14 +548,18 @@ class TestExpressions {
     expect(
       replacePlaceholders(
         parseOne('select * from foo WHERE x > ? AND y IS ?'),
-        [0, false],
+        [
+          0,
+          false,
+        ],
       ).sql(),
     ).toBe('SELECT * FROM foo WHERE x > 0 AND y IS FALSE');
 
     expect(
       replacePlaceholders(
         parseOne('select * from foo WHERE x > :int1 AND y IS :bool1'),
-        [],
+        [
+        ],
         {
           int1: 0,
           bool1: false,
@@ -488,53 +585,81 @@ class TestExpressions {
       WITH first AS (SELECT * FROM foo)
       SELECT foo.bar, foo.baz as bazz, SUM(x) FROM first
     `);
-    expect((withExpr as SelectExpr).namedSelects).toEqual(['bar', 'bazz']);
+    expect((withExpr as SelectExpr).namedSelects).toEqual([
+      'bar',
+      'bazz',
+    ]);
 
     const unionExpr = parseOne(`
       SELECT foo, bar FROM first
       UNION SELECT "ss" as foo, bar FROM second
       UNION ALL SELECT foo, bazz FROM third
     `);
-    expect((unionExpr as UnionExpr).namedSelects).toEqual(['foo', 'bar']);
+    expect((unionExpr as UnionExpr).namedSelects).toEqual([
+      'foo',
+      'bar',
+    ]);
   }
 
   testSelects () {
-    expect((parseOne('SELECT FROM x') as SelectExpr).selects).toEqual([]);
+    expect((parseOne('SELECT FROM x') as SelectExpr).selects).toEqual([
+    ]);
 
     const a = parseOne('SELECT a FROM x') as SelectExpr;
-    expect(a.selects.map((s) => s.sql())).toEqual(['a']);
+    expect(a.selects.map((s) => s.sql())).toEqual([
+      'a',
+    ]);
 
     const ab = parseOne('SELECT a, b FROM x') as SelectExpr;
-    expect(ab.selects.map((s) => s.sql())).toEqual(['a', 'b']);
+    expect(ab.selects.map((s) => s.sql())).toEqual([
+      'a',
+      'b',
+    ]);
 
     const paren = parseOne('(SELECT a, b FROM x)') as SubqueryExpr;
-    expect(paren.selects.map((s) => s.sql())).toEqual(['a', 'b']);
+    expect(paren.selects.map((s) => s.sql())).toEqual([
+      'a',
+      'b',
+    ]);
   }
 
   testAliasColumnNames () {
     let expression = parseOne('SELECT * FROM (SELECT * FROM x) AS y');
     let subquery = expression.find(SubqueryExpr);
-    expect((subquery as SubqueryExpr).aliasColumnNames).toEqual([]);
+    expect((subquery as SubqueryExpr).aliasColumnNames).toEqual([
+    ]);
 
     expression = parseOne('SELECT * FROM (SELECT * FROM x) AS y(a)');
     subquery = expression.find(SubqueryExpr);
-    expect((subquery as SubqueryExpr).aliasColumnNames).toEqual(['a']);
+    expect((subquery as SubqueryExpr).aliasColumnNames).toEqual([
+      'a',
+    ]);
 
     expression = parseOne('SELECT * FROM (SELECT * FROM x) AS y(a, b)');
     subquery = expression.find(SubqueryExpr);
-    expect((subquery as SubqueryExpr).aliasColumnNames).toEqual(['a', 'b']);
+    expect((subquery as SubqueryExpr).aliasColumnNames).toEqual([
+      'a',
+      'b',
+    ]);
 
     expression = parseOne('WITH y AS (SELECT * FROM x) SELECT * FROM y');
     const cte = expression.find(CteExpr);
-    expect((cte as CteExpr).aliasColumnNames).toEqual([]);
+    expect((cte as CteExpr).aliasColumnNames).toEqual([
+    ]);
 
     expression = parseOne('WITH y(a, b) AS (SELECT * FROM x) SELECT * FROM y');
     const cte2 = expression.find(CteExpr);
-    expect((cte2 as CteExpr).aliasColumnNames).toEqual(['a', 'b']);
+    expect((cte2 as CteExpr).aliasColumnNames).toEqual([
+      'a',
+      'b',
+    ]);
 
     expression = parseOne('SELECT * FROM tbl AS tbl(a, b)');
     const tbl = expression.find(TableExpr);
-    expect((tbl as TableExpr).aliasColumnNames).toEqual(['a', 'b']);
+    expect((tbl as TableExpr).aliasColumnNames).toEqual([
+      'a',
+      'b',
+    ]);
   }
 
   testCast () {
@@ -542,7 +667,9 @@ class TestExpressions {
     expect(expression.type).toBe(expression.getArgKey('to'));
 
     const selectExpr = parseOne('select cast(x as DATE)');
-    const casts = [...selectExpr.findAll(CastExpr)];
+    const casts = [
+      ...selectExpr.findAll(CastExpr),
+    ];
     expect(casts.length).toBe(1);
 
     const castNode = casts[0] as CastExpr;
@@ -556,20 +683,29 @@ class TestExpressions {
     // however, recasting is fine if the types are different
     const recast2 = cast(castNode, DataTypeExprKind.VARCHAR);
     expect(recast2.sql()).not.toBe(castNode.sql());
-    expect([...recast2.findAll(CastExpr)].length).toBe(2);
+    expect([
+      ...recast2.findAll(CastExpr),
+    ].length).toBe(2);
     expect(recast2.sql()).toBe('CAST(CAST(x AS DATE) AS VARCHAR)');
 
     // check that dialect is used when casting strings
-    expect(cast('x', 'regtype', { dialect: 'postgres' }).sql()).toBe('CAST(x AS REGTYPE)');
-    expect(cast('`x`', 'date', { dialect: 'hive' }).sql()).toBe('CAST("x" AS DATE)');
+    expect(cast('x', 'regtype', {
+      dialect: 'postgres',
+    }).sql()).toBe('CAST(x AS REGTYPE)');
+    expect(cast('`x`', 'date', {
+      dialect: 'hive',
+    }).sql()).toBe('CAST("x" AS DATE)');
   }
 
   testCtes () {
     const expression = parseOne('SELECT a FROM x');
-    expect((expression as SelectExpr).ctes).toEqual([]);
+    expect((expression as SelectExpr).ctes).toEqual([
+    ]);
 
     const withExpr = parseOne('WITH x AS (SELECT a FROM y) SELECT a FROM x');
-    expect((withExpr as SelectExpr).ctes.map((s) => s.sql())).toEqual(['x AS (SELECT a FROM y)']);
+    expect((withExpr as SelectExpr).ctes.map((s) => s.sql())).toEqual([
+      'x AS (SELECT a FROM y)',
+    ]);
   }
 
   testSql () {
@@ -603,11 +739,17 @@ class TestExpressions {
     };
 
     const actual1 = expression.transform(fun);
-    expect(actual1.sql({ dialect: 'presto' })).toBe('IF(c - 2 > 0, c - 2, b)');
+    expect(actual1.sql({
+      dialect: 'presto',
+    })).toBe('IF(c - 2 > 0, c - 2, b)');
     expect(actual1 === expression).toBe(false);
 
-    const actual2 = expression.transform(fun, { copy: false });
-    expect(actual2.sql({ dialect: 'presto' })).toBe('IF(c - 2 > 0, c - 2, b)');
+    const actual2 = expression.transform(fun, {
+      copy: false,
+    });
+    expect(actual2.sql({
+      dialect: 'presto',
+    })).toBe('IF(c - 2 > 0, c - 2, b)');
     expect(actual2 === expression).toBe(true);
   }
 
@@ -631,7 +773,9 @@ class TestExpressions {
       if (node.sql() === 'COUNT(1)') {
         return new FilterExpr({
           this: node,
-          expression: new WhereExpr({ this: true_() }),
+          expression: new WhereExpr({
+            this: true_(),
+          }),
         });
       }
       return node;
@@ -646,7 +790,10 @@ class TestExpressions {
 
     const fun = (node: Expression) => {
       if (node instanceof StarExpr) {
-        return [parseOne('a'), parseOne('b')];
+        return [
+          parseOne('a'),
+          parseOne('b'),
+        ];
       }
       return node;
     };
@@ -698,7 +845,14 @@ class TestExpressions {
 
     const orderByExpr = parseOne('SELECT * FROM x ORDER BY a DESC, c');
     const ordered = orderByExpr.find(OrderedExpr) as OrderedExpr;
-    (ordered.getArgKey('this') as Expression).replace([column({ col: 'a' }).asc(), column({ col: 'b' }).desc()]);
+    (ordered.getArgKey('this') as Expression).replace([
+      column({
+        col: 'a',
+      }).asc(),
+      column({
+        col: 'b',
+      }).desc(),
+    ]);
     expect(orderByExpr.sql()).toBe('SELECT * FROM x ORDER BY a, b DESC, c');
   }
 
@@ -718,19 +872,34 @@ class TestExpressions {
     expect(expression.sql()).toBe('SELECT * FROM x');
 
     expression = parseOne('SELECT * FROM foo JOIN bar');
-    expect(((expression.args as Record<string, unknown>)['joins'] as unknown[] || []).length).toBe(1);
+    expect(((expression.args as Record<string, unknown>)['joins'] as unknown[] || [
+    ]).length).toBe(1);
 
     expression.setArgKey('joins', undefined);
     expect(expression.sql()).toBe('SELECT * FROM foo');
-    expect(((expression.args as Record<string, unknown>)['joins'] as unknown[]) ?? []).toEqual([]);
+    expect(((expression.args as Record<string, unknown>)['joins'] as unknown[]) ?? [
+    ]).toEqual([
+    ]);
   }
 
   testWalk () {
     const expression = parseOne('SELECT * FROM (SELECT * FROM x)');
-    expect([...expression.walk()].length).toBe(9);
-    expect([...expression.walk({ bfs: false })].length).toBe(9);
-    expect([...expression.walk()].every((e) => e instanceof Expression)).toBe(true);
-    expect([...expression.walk({ bfs: false })].every((e) => e instanceof Expression)).toBe(true);
+    expect([
+      ...expression.walk(),
+    ].length).toBe(9);
+    expect([
+      ...expression.walk({
+        bfs: false,
+      }),
+    ].length).toBe(9);
+    expect([
+      ...expression.walk(),
+    ].every((e) => e instanceof Expression)).toBe(true);
+    expect([
+      ...expression.walk({
+        bfs: false,
+      }),
+    ].every((e) => e instanceof Expression)).toBe(true);
   }
 
   testStrPositionOrder () {
@@ -828,10 +997,18 @@ class TestExpressions {
     expect(parseOne('DATE(foo)')).toBeInstanceOf(DateExpr);
     expect(parseOne('HEX(foo)')).toBeInstanceOf(HexExpr);
     expect(parseOne('LOWER(HEX(foo))')).toBeInstanceOf(LowerHexExpr);
-    expect(parseOne('TO_HEX(foo)', { read: 'bigquery' })).toBeInstanceOf(LowerHexExpr);
-    expect(parseOne('UPPER(TO_HEX(foo))', { read: 'bigquery' })).toBeInstanceOf(HexExpr);
-    expect(parseOne('TO_HEX(MD5(foo))', { read: 'bigquery' })).toBeInstanceOf(Md5Expr);
-    expect(parseOne('TRANSFORM(a, b)', { read: 'spark' })).toBeInstanceOf(TransformExpr);
+    expect(parseOne('TO_HEX(foo)', {
+      read: 'bigquery',
+    })).toBeInstanceOf(LowerHexExpr);
+    expect(parseOne('UPPER(TO_HEX(foo))', {
+      read: 'bigquery',
+    })).toBeInstanceOf(HexExpr);
+    expect(parseOne('TO_HEX(MD5(foo))', {
+      read: 'bigquery',
+    })).toBeInstanceOf(Md5Expr);
+    expect(parseOne('TRANSFORM(a, b)', {
+      read: 'spark',
+    })).toBeInstanceOf(TransformExpr);
     expect(parseOne('ADD_MONTHS(a, b)')).toBeInstanceOf(AddMonthsExpr);
 
     const ast = parseOne('GREATEST(a, b, c)') as GreatestExpr;
@@ -891,7 +1068,12 @@ class TestExpressions {
       table: 'c',
       db: 'b',
       catalog: 'a',
-    }, { fields: ['e', 'f'] });
+    }, {
+      fields: [
+        'e',
+        'f',
+      ],
+    });
     expect(dot).toBeInstanceOf(DotExpr);
     expect((dot as DotExpr).sql()).toBe('a.b.c.d.e.f');
 
@@ -901,7 +1083,10 @@ class TestExpressions {
       db: 'b',
       catalog: 'a',
     }, {
-      fields: ['e', 'f'],
+      fields: [
+        'e',
+        'f',
+      ],
       quoted: true,
     });
     expect((dotQuoted as DotExpr).sql()).toBe('"a"."b"."c"."d"."e"."f"');
@@ -923,7 +1108,9 @@ class TestExpressions {
     expect(alias('foo', 'bar_1').sql()).toBe('foo AS bar_1');
     expect(alias('foo * 2', '2bar').sql()).toBe('foo * 2 AS "2bar"');
     expect(alias('"foo"', '_bar').sql()).toBe('"foo" AS _bar');
-    expect(alias('foo', 'bar', { quoted: true }).sql()).toBe('foo AS "bar"');
+    expect(alias('foo', 'bar', {
+      quoted: true,
+    }).sql()).toBe('foo AS "bar"');
   }
 
   testUnit () {
@@ -932,7 +1119,10 @@ class TestExpressions {
     const week = unit.find(WeekExpr) as WeekExpr;
     expect((week.args.this as VarExpr).sql()).toBe(var_('THURSDAY').sql());
 
-    for (const [abbreviatedUnit, unabbreviatedUnit] of Object.entries(TimeUnitExpr.UNABBREVIATED_UNIT_NAME)) {
+    for (const [
+      abbreviatedUnit,
+      unabbreviatedUnit,
+    ] of Object.entries(TimeUnitExpr.UNABBREVIATED_UNIT_NAME)) {
       const interval = parseOne(`interval '500 ${abbreviatedUnit}'`);
       expect((interval as IntervalExpr).unit).toBeInstanceOf(VarExpr);
       expect(((interval as IntervalExpr).unit as VarExpr).name).toBe(unabbreviatedUnit);
@@ -947,18 +1137,33 @@ class TestExpressions {
   }
 
   testFunctionNormalizer () {
-    expect(parseOne('HELLO()').sql({ normalizeFunctions: NormalizeFunctions.LOWER })).toBe('hello()');
-    expect(parseOne('hello()').sql({ normalizeFunctions: NormalizeFunctions.UPPER })).toBe('HELLO()');
-    expect(parseOne('heLLO()').sql({ normalizeFunctions: NormalizeFunctions.NONE })).toBe('heLLO()');
-    expect(parseOne('SUM(x)').sql({ normalizeFunctions: NormalizeFunctions.LOWER })).toBe('sum(x)');
-    expect(parseOne('sum(x)').sql({ normalizeFunctions: NormalizeFunctions.UPPER })).toBe('SUM(x)');
+    expect(parseOne('HELLO()').sql({
+      normalizeFunctions: NormalizeFunctions.LOWER,
+    })).toBe('hello()');
+    expect(parseOne('hello()').sql({
+      normalizeFunctions: NormalizeFunctions.UPPER,
+    })).toBe('HELLO()');
+    expect(parseOne('heLLO()').sql({
+      normalizeFunctions: NormalizeFunctions.NONE,
+    })).toBe('heLLO()');
+    expect(parseOne('SUM(x)').sql({
+      normalizeFunctions: NormalizeFunctions.LOWER,
+    })).toBe('sum(x)');
+    expect(parseOne('sum(x)').sql({
+      normalizeFunctions: NormalizeFunctions.UPPER,
+    })).toBe('SUM(x)');
   }
 
   testPropertiesFromDict () {
     expect(
       PropertiesExpr.fromDict({
         FORMAT: 'parquet',
-        PARTITIONED_BY: new TupleExpr({ expressions: [toIdentifier('a'), toIdentifier('b')] }),
+        PARTITIONED_BY: new TupleExpr({
+          expressions: [
+            toIdentifier('a'),
+            toIdentifier('b'),
+          ],
+        }),
         custom: 1,
         ENGINE: undefined,
         COLLATE: true,
@@ -966,32 +1171,60 @@ class TestExpressions {
     ).toBe(
       new PropertiesExpr({
         expressions: [
-          new FileFormatPropertyExpr({ this: LiteralExpr.string('parquet') }),
+          new FileFormatPropertyExpr({
+            this: LiteralExpr.string('parquet'),
+          }),
           new PartitionedByPropertyExpr({
-            this: new TupleExpr({ expressions: [toIdentifier('a'), toIdentifier('b')] }),
+            this: new TupleExpr({
+              expressions: [
+                toIdentifier('a'),
+                toIdentifier('b'),
+              ],
+            }),
           }),
           new PropertyExpr({
             this: LiteralExpr.string('custom'),
             value: LiteralExpr.number(1),
           }),
-          new EnginePropertyExpr({ this: null_() }),
-          new CollatePropertyExpr({ this: true_() }),
+          new EnginePropertyExpr({
+            this: null_(),
+          }),
+          new CollatePropertyExpr({
+            this: true_(),
+          }),
         ],
       }).sql(),
     );
 
-    expect(() => PropertiesExpr.fromDict({ FORMAT: Symbol() as unknown })).toThrow(Error);
+    expect(() => PropertiesExpr.fromDict({
+      FORMAT: Symbol() as unknown,
+    })).toThrow(Error);
   }
 
   testConvert () {
     const cases: [unknown, string][] = [
-      [1, '1'],
-      ['1', '\'1\''],
-      [undefined, 'NULL'],
-      [true, 'TRUE'],
+      [
+        1,
+        '1',
+      ],
+      [
+        '1',
+        '\'1\'',
+      ],
+      [
+        undefined,
+        'NULL',
+      ],
+      [
+        true,
+        'TRUE',
+      ],
     ];
 
-    for (const [value, expected] of cases) {
+    for (const [
+      value,
+      expected,
+    ] of cases) {
       expect(convert(value).sql()).toBe(expected);
     }
   }
@@ -1036,31 +1269,72 @@ class TestExpressions {
     expect((tableAndColumn.getArgKey('table') as IdentifierExpr).sql()).toBe(toIdentifier('table_name').sql());
 
     expect(toColumn('foo bar').sql()).toBe('"foo bar"');
-    expect(toColumn('`column_name`', { dialect: 'spark' }).sql()).toBe('"column_name"');
-    expect(toColumn('column_name', { quoted: true }).sql()).toBe('"column_name"');
+    expect(toColumn('`column_name`', {
+      dialect: 'spark',
+    }).sql()).toBe('"column_name"');
+    expect(toColumn('column_name', {
+      quoted: true,
+    }).sql()).toBe('"column_name"');
     expect(
-      toColumn('column_name', { table: toIdentifier('table_name') }).sql(),
+      toColumn('column_name', {
+        table: toIdentifier('table_name'),
+      }).sql(),
     ).toBe('table_name.column_name');
   }
 
   testUnion () {
     const expression = parseOne('SELECT cola, colb UNION SELECT colx, coly') as UnionExpr;
     expect(expression).toBeInstanceOf(UnionExpr);
-    expect(expression.namedSelects).toEqual(['cola', 'colb']);
+    expect(expression.namedSelects).toEqual([
+      'cola',
+      'colb',
+    ]);
     expect(
       expression.selects.map((s) => s.sql()),
-    ).toEqual([new ColumnExpr({ this: toIdentifier('cola') }).sql(), new ColumnExpr({ this: toIdentifier('colb') }).sql()]);
+    ).toEqual([
+      new ColumnExpr({
+        this: toIdentifier('cola'),
+      }).sql(),
+      new ColumnExpr({
+        this: toIdentifier('colb'),
+      }).sql(),
+    ]);
   }
 
   testValues () {
     expect(
-      values([[1, 2], [3, 4]], {
+      values([
+        [
+          1,
+          2,
+        ],
+        [
+          3,
+          4,
+        ],
+      ], {
         alias: 't',
-        columns: ['a', 'b'],
+        columns: [
+          'a',
+          'b',
+        ],
       }).sql(),
     ).toBe('(VALUES (1, 2), (3, 4)) AS t(a, b)');
 
-    expect(() => values([[1, 2], [3, 4]], { columns: ['a'] })).toThrow(Error);
+    expect(() => values([
+      [
+        1,
+        2,
+      ],
+      [
+        3,
+        4,
+      ],
+    ], {
+      columns: [
+        'a',
+      ],
+    })).toThrow(Error);
   }
 
   testDataTypeBuilder () {
@@ -1084,7 +1358,9 @@ class TestExpressions {
     expect(DataTypeExpr.build('DECIMAL')?.sql()).toBe('DECIMAL');
     expect(DataTypeExpr.build('BOOLEAN')?.sql()).toBe('BOOLEAN');
     expect(DataTypeExpr.build('JSON')?.sql()).toBe('JSON');
-    expect(DataTypeExpr.build('JSONB', { dialect: 'postgres' })?.sql()).toBe('JSONB');
+    expect(DataTypeExpr.build('JSONB', {
+      dialect: 'postgres',
+    })?.sql()).toBe('JSONB');
     expect(DataTypeExpr.build('INTERVAL')?.sql()).toBe('INTERVAL');
     expect(DataTypeExpr.build('TIME')?.sql()).toBe('TIME');
     expect(DataTypeExpr.build('TIMESTAMP')?.sql()).toBe('TIMESTAMP');
@@ -1098,23 +1374,45 @@ class TestExpressions {
     expect(DataTypeExpr.build('GEOGRAPHY')?.sql()).toBe('GEOGRAPHY');
     expect(DataTypeExpr.build('GEOMETRY')?.sql()).toBe('GEOMETRY');
     expect(DataTypeExpr.build('STRUCT')?.sql()).toBe('STRUCT');
-    expect(DataTypeExpr.build('HLLSKETCH', { dialect: 'redshift' })?.sql()).toBe('HLLSKETCH');
-    expect(DataTypeExpr.build('HSTORE', { dialect: 'postgres' })?.sql()).toBe('HSTORE');
+    expect(DataTypeExpr.build('HLLSKETCH', {
+      dialect: 'redshift',
+    })?.sql()).toBe('HLLSKETCH');
+    expect(DataTypeExpr.build('HSTORE', {
+      dialect: 'postgres',
+    })?.sql()).toBe('HSTORE');
     expect(DataTypeExpr.build('NULL')?.sql())?.toBe('NULL');
-    expect(DataTypeExpr.build('NULL', { dialect: 'bigquery' })?.sql()).toBe('NULL');
+    expect(DataTypeExpr.build('NULL', {
+      dialect: 'bigquery',
+    })?.sql()).toBe('NULL');
     expect(DataTypeExpr.build('UNKNOWN')?.sql()).toBe('UNKNOWN');
-    expect(DataTypeExpr.build('UNKNOWN', { dialect: 'bigquery' })?.sql()).toBe('UNKNOWN');
-    expect(DataTypeExpr.build('UNKNOWN', { dialect: 'snowflake' })?.sql()).toBe('UNKNOWN');
-    expect(DataTypeExpr.build('TIMESTAMP', { dialect: 'bigquery' })?.sql()).toBe('TIMESTAMPTZ');
+    expect(DataTypeExpr.build('UNKNOWN', {
+      dialect: 'bigquery',
+    })?.sql()).toBe('UNKNOWN');
+    expect(DataTypeExpr.build('UNKNOWN', {
+      dialect: 'snowflake',
+    })?.sql()).toBe('UNKNOWN');
+    expect(DataTypeExpr.build('TIMESTAMP', {
+      dialect: 'bigquery',
+    })?.sql()).toBe('TIMESTAMPTZ');
     expect(DataTypeExpr.build('USER-DEFINED')?.sql()).toBe('USER-DEFINED');
     expect(DataTypeExpr.build('ARRAY<UNKNOWN>')?.sql()).toBe('ARRAY<UNKNOWN>');
     expect(DataTypeExpr.build('ARRAY<NULL>')?.sql()).toBe('ARRAY<NULL>');
     expect(DataTypeExpr.build('varchar(100) collate \'en-ci\'')?.sql()).toBe('VARCHAR(100)');
-    expect(DataTypeExpr.build('int[3]')?.sql({ dialect: 'duckdb' })).toBe('INT[3]');
-    expect(DataTypeExpr.build('int[3][3]')?.sql({ dialect: 'duckdb' })).toBe('INT[3][3]');
-    expect(DataTypeExpr.build('time_ns', { dialect: 'duckdb' })?.sql()).toBe('TIME_NS');
-    expect(DataTypeExpr.build('bignum', { dialect: 'duckdb' })?.sql()).toBe('BIGNUM');
-    expect(DataTypeExpr.build('struct<x int>', { dialect: 'spark' })?.sql()).toBe('STRUCT<x INT>');
+    expect(DataTypeExpr.build('int[3]')?.sql({
+      dialect: 'duckdb',
+    })).toBe('INT[3]');
+    expect(DataTypeExpr.build('int[3][3]')?.sql({
+      dialect: 'duckdb',
+    })).toBe('INT[3][3]');
+    expect(DataTypeExpr.build('time_ns', {
+      dialect: 'duckdb',
+    })?.sql()).toBe('TIME_NS');
+    expect(DataTypeExpr.build('bignum', {
+      dialect: 'duckdb',
+    })?.sql()).toBe('BIGNUM');
+    expect(DataTypeExpr.build('struct<x int>', {
+      dialect: 'spark',
+    })?.sql()).toBe('STRUCT<x INT>');
 
     expect(() => DataTypeExpr.build('varchar(')).toThrow(ParseError);
   }
@@ -1203,11 +1501,15 @@ class TestExpressions {
     expect(ast.isType('STRUCT<a INT, b FLOAT>')).toBe(true);
     expect(ast.isType('STRUCT<a VARCHAR, b INT>')).toBe(false);
 
-    const dtype = DataTypeExpr.build('foo', { udt: true });
+    const dtype = DataTypeExpr.build('foo', {
+      udt: true,
+    });
     expect(isType(dtype, 'foo')).toBe(true);
     expect(isType(dtype, 'bar')).toBe(false);
 
-    const dtype2 = DataTypeExpr.build('a.b.c', { udt: true });
+    const dtype2 = DataTypeExpr.build('a.b.c', {
+      udt: true,
+    });
     expect(isType(dtype2, 'a.b.c')).toBe(true);
 
     expect(() => DataTypeExpr.build('foo')).toThrow(ParseError);
@@ -1297,12 +1599,16 @@ class TestExpressions {
     );
 
     expect(
-      expression.sql({ comments: false }),
+      expression.sql({
+        comments: false,
+      }),
     ).toBe(
       'SELECT a, b AS B, c, d AS D, CAST(x AS INT), y AND w AS E FROM foo',
     );
 
-    expect(parseOne('max(x) as "a b" -- comment').comments).toEqual([' comment']);
+    expect(parseOne('max(x) as "a b" -- comment').comments).toEqual([
+      ' comment',
+    ]);
   }
 }
 

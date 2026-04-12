@@ -14,16 +14,28 @@ import {
   maybeParse,
   expand,
 } from './expressions';
-import { SqlglotError } from './errors';
-import { normalizeIdentifiers } from './optimizer/normalize_identifiers';
-import { qualify } from './optimizer/qualify';
+import {
+  SqlglotError,
+} from './errors';
+import {
+  normalizeIdentifiers,
+} from './optimizer/normalize_identifiers';
+import {
+  qualify,
+} from './optimizer/qualify';
 import {
   buildScope,
   Scope, ScopeType, findAllInScope,
 } from './optimizer/scope';
-import type { DialectType } from './dialects/dialect';
-import type { Schema } from './schema';
-import { id } from './port_internals';
+import type {
+  DialectType,
+} from './dialects/dialect';
+import type {
+  Schema,
+} from './schema';
+import {
+  id,
+} from './port_internals';
 
 export interface NodeOptions {
   name: string;
@@ -46,7 +58,8 @@ export class Node {
     this.name = options.name;
     this.expression = options.expression;
     this.source = options.source;
-    this.downstream = options.downstream || [];
+    this.downstream = options.downstream || [
+    ];
     this.sourceName = options.sourceName || '';
     this.referenceNodeName = options.referenceNodeName || '';
   }
@@ -60,7 +73,8 @@ export class Node {
 
   toHtml (dialect?: DialectType, opts: Record<string, unknown> = {}): GraphHTML {
     const nodes: Record<string, unknown> = {};
-    const edges: unknown[] = [];
+    const edges: unknown[] = [
+    ];
 
     for (const node of this.walk()) {
       let label: string;
@@ -85,7 +99,9 @@ export class Node {
               postfix: '</b>',
             })
             : n;
-        }, { copy: false }).sql({
+        }, {
+          copy: false,
+        }).sql({
           pretty: true,
           dialect,
         });
@@ -152,11 +168,16 @@ export function lineage (
     copy,
     dialect,
   });
-  const normalizedColumn = normalizeIdentifiers(column, { dialect }).name;
+  const normalizedColumn = normalizeIdentifiers(column, {
+    dialect,
+  }).name;
 
   if (sources) {
     const parsedSources: Record<string, QueryExpr> = {};
-    for (const [k, v] of Object.entries(sources)) {
+    for (const [
+      k,
+      v,
+    ] of Object.entries(sources)) {
       parsedSources[k] = maybeParse(v, {
         copy,
         dialect,
@@ -196,7 +217,9 @@ export function lineage (
     throw new SqlglotError(`Cannot find column '${normalizedColumn}' in query.`);
   }
 
-  return toNode(normalizedColumn, scope, dialect, { trimSelects });
+  return toNode(normalizedColumn, scope, dialect, {
+    trimSelects,
+  });
 }
 
 export interface ToNodeOptions {
@@ -285,7 +308,9 @@ export function toNode (
   if (trimSelects && scope.expression instanceof SelectExpr) {
     // For better ergonomics in our node labels, replace the full select with
     // a version that has only the column we care about.
-    source = scope.expression.select(select, { append: false }) as Expression;
+    source = scope.expression.select(select, {
+      append: false,
+    }) as Expression;
   } else {
     source = scope.expression;
   }
@@ -311,11 +336,14 @@ export function toNode (
   for (const subquery of findAllInScope<QueryExpr>(select, UNWRAPPED_QUERIES)) {
     const subqueryScope = subqueryScopes.get(subquery);
     if (!subqueryScope) {
-      console.warn(`Unknown subquery scope: ${subquery.sql({ dialect })}`);
+      console.warn(`Unknown subquery scope: ${subquery.sql({
+        dialect,
+      })}`);
       continue;
     }
 
-    for (const name of subquery.namedSelects || []) {
+    for (const name of subquery.namedSelects || [
+    ]) {
       toNode(name, subqueryScope, dialect, {
         upstream: node,
         trimSelects,
@@ -334,7 +362,9 @@ export function toNode (
       }
       node.downstream.push(
         new Node({
-          name: select.sql({ comments: false }),
+          name: select.sql({
+            comments: false,
+          }),
           source: sourceExpr,
           expression: sourceExpr,
         }),
@@ -344,7 +374,9 @@ export function toNode (
 
   // Find all columns that went into creating this one to list their lineage nodes.
   const sourceColumnsSet = new Set<ColumnExpr>(
-    findAllInScope(select, [ColumnExpr]),
+    findAllInScope(select, [
+      ColumnExpr,
+    ]),
   );
 
   let derivedTables: Expression[];
@@ -373,7 +405,8 @@ export function toNode (
   const pivotColumnMapping = new Map<string, ColumnExpr[]>();
 
   if (pivot) {
-    const pivotColumns = pivot.args.columns ?? [];
+    const pivotColumns = pivot.args.columns ?? [
+    ];
     const pivotAggsCount = pivot.args.expressions?.length ?? 0;
 
     pivot.args.expressions?.forEach((agg, i: number) => {
@@ -405,11 +438,13 @@ export function toNode (
         trimSelects,
       });
     } else if (pivot && pivot.aliasOrName === c.table) {
-      const downstreamColumns: ColumnExpr[] = [];
+      const downstreamColumns: ColumnExpr[] = [
+      ];
       const columnName = c.name;
 
       if (pivot.args.columns?.some((pc) => pc.name === columnName)) {
-        downstreamColumns.push(...(pivotColumnMapping.get(columnName) || []));
+        downstreamColumns.push(...(pivotColumnMapping.get(columnName) || [
+        ]));
       } else {
         // Adapt column to be from the implicit pivoted source
         downstreamColumns.push(new ColumnExpr({
@@ -434,7 +469,9 @@ export function toNode (
           dsSource = dsSource || new PlaceholderExpr({});
           node.downstream.push(
             new Node({
-              name: downstreamColumn.sql({ comments: false }),
+              name: downstreamColumn.sql({
+                comments: false,
+              }),
               source: dsSource,
               expression: dsSource,
             }),
@@ -445,7 +482,9 @@ export function toNode (
       sourceScopeOrExpr = sourceScopeOrExpr || new PlaceholderExpr({});
       node.downstream.push(
         new Node({
-          name: c.sql({ comments: false }),
+          name: c.sql({
+            comments: false,
+          }),
           source: sourceScopeOrExpr,
           expression: sourceScopeOrExpr,
         }),
@@ -475,7 +514,9 @@ export class GraphHTML {
       [index: string]: unknown;
     } = {},
   ) {
-    const { imports = true } = options;
+    const {
+      imports = true,
+    } = options;
 
     this.imports = imports;
     this.nodes = nodes;

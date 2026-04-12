@@ -1,4 +1,6 @@
-import { cache } from '../port_internals';
+import {
+  cache,
+} from '../port_internals';
 import type {
   Expression, TableExpr,
 } from '../expressions';
@@ -53,11 +55,21 @@ import {
   CreateExpr,
   MaterializedPropertyExpr,
 } from '../expressions';
-import { seqGet } from '../helper';
-import { Parser } from '../parser';
-import { TokenType } from '../tokens';
-import type { Generator } from '../generator';
-import { MySQL } from './mysql';
+import {
+  seqGet,
+} from '../helper';
+import {
+  Parser,
+} from '../parser';
+import {
+  TokenType,
+} from '../tokens';
+import type {
+  Generator,
+} from '../generator';
+import {
+  MySQL,
+} from './mysql';
 import {
   approxCountDistinctSql,
   Dialect, Dialects,
@@ -94,7 +106,18 @@ function buildDateTrunc (args: Expression[]): TimestampTruncExpr {
   };
 
   // Determine which argument is the unit vs the timestamp
-  const [unit, thisNode] = isUnitLike(a0) ? [a0, a1] : [a1, a0];
+  const [
+    unit,
+    thisNode,
+  ] = isUnitLike(a0)
+    ? [
+      a0,
+      a1,
+    ]
+    : [
+      a1,
+      a0,
+    ];
 
   return new TimestampTruncExpr({
     this: thisNode,
@@ -117,7 +140,9 @@ class DorisParser extends MySQL.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...MySQL.Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...MySQL.Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.CURRENT_DATE];
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
@@ -125,7 +150,7 @@ class DorisParser extends MySQL.Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return {
       ...MySQL.Parser.FUNCTIONS,
       COLLECT_SET: (args: unknown[]) => ArrayUniqueAggExpr.fromArgList(args),
@@ -139,7 +164,9 @@ class DorisParser extends MySQL.Parser {
 
   @cache
   static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
-    const parsers: Partial<Record<string, (this: Parser) => Expression | undefined>> = { ...MySQL.Parser.FUNCTION_PARSERS };
+    const parsers: Partial<Record<string, (this: Parser) => Expression | undefined>> = {
+      ...MySQL.Parser.FUNCTION_PARSERS,
+    };
     delete parsers['GROUP_CONCAT'];
     return parsers;
   }
@@ -180,7 +207,9 @@ class DorisParser extends MySQL.Parser {
     this.matchLParen();
 
     let createExpressions: Expression[] | undefined = undefined;
-    if (this.matchTextSeq('FROM', { advance: false })) {
+    if (this.matchTextSeq('FROM', {
+      advance: false,
+    })) {
       createExpressions = this.parseCsv(() => this.parsePartitioningGranularityDynamic());
     }
 
@@ -199,7 +228,9 @@ class DorisParser extends MySQL.Parser {
     const end = this.parseWrapped(() => this.parseString());
     this.matchTextSeq('INTERVAL');
     const number = this.parseNumber();
-    const unit = this.parseVar({ anyToken: true });
+    const unit = this.parseVar({
+      anyToken: true,
+    });
 
     const every = this.expression(IntervalExpr, {
       this: number,
@@ -235,17 +266,25 @@ class DorisParser extends MySQL.Parser {
       expressions: values,
     });
 
-    return this.expression(PartitionExpr, { expressions: [partRange] });
+    return this.expression(PartitionExpr, {
+      expressions: [
+        partRange,
+      ],
+    });
   }
 
   parseBuildProperty (): BuildPropertyExpr {
     return this.expression(BuildPropertyExpr, {
-      this: this.parseVar({ upper: true }),
+      this: this.parseVar({
+        upper: true,
+      }),
     });
   }
 
   parseRefreshProperty (): RefreshTriggerPropertyExpr {
-    const method = this.parseVar({ upper: true });
+    const method = this.parseVar({
+      upper: true,
+    });
 
     this.match(TokenType.ON);
 
@@ -257,7 +296,11 @@ class DorisParser extends MySQL.Parser {
       ? this.prev?.text.toUpperCase()
       : undefined;
     const every = this.matchTextSeq('EVERY') ? this.parseNumber() : undefined;
-    const unit = every ? this.parseVar({ anyToken: true }) : undefined;
+    const unit = every
+      ? this.parseVar({
+        anyToken: true,
+      })
+      : undefined;
     const starts = this.matchTextSeq('STARTS') ? this.parseString() : undefined;
 
     return this.expression(RefreshTriggerPropertyExpr, {
@@ -299,9 +342,18 @@ class DorisGenerator extends MySQL.Generator {
   static get TYPE_MAPPING () {
     return new Map([
       ...MySQL.Generator.TYPE_MAPPING,
-      [DataTypeExprKind.TEXT, 'STRING'],
-      [DataTypeExprKind.TIMESTAMP, 'DATETIME'],
-      [DataTypeExprKind.TIMESTAMPTZ, 'DATETIME'],
+      [
+        DataTypeExprKind.TEXT,
+        'STRING',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMP,
+        'DATETIME',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPTZ,
+        'DATETIME',
+      ],
     ]);
   }
 
@@ -309,9 +361,18 @@ class DorisGenerator extends MySQL.Generator {
   static get PROPERTIES_LOCATION () {
     return new Map<typeof Expression, PropertiesLocation>([
       ...MySQL.Generator.PROPERTIES_LOCATION,
-      [UniqueKeyPropertyExpr, PropertiesLocation.POST_SCHEMA],
-      [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
-      [BuildPropertyExpr, PropertiesLocation.POST_SCHEMA],
+      [
+        UniqueKeyPropertyExpr,
+        PropertiesLocation.POST_SCHEMA,
+      ],
+      [
+        PartitionedByPropertyExpr,
+        PropertiesLocation.POST_SCHEMA,
+      ],
+      [
+        BuildPropertyExpr,
+        PropertiesLocation.POST_SCHEMA,
+      ],
     ]);
   }
 
@@ -331,96 +392,175 @@ class DorisGenerator extends MySQL.Generator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...MySQL.Generator.TRANSFORMS,
-      [AddMonthsExpr, renameFunc('MONTHS_ADD')],
-      [ApproxDistinctExpr, approxCountDistinctSql],
-      [ArgMaxExpr, renameFunc('MAX_BY')],
-      [ArgMinExpr, renameFunc('MIN_BY')],
-      [ArrayAggExpr, renameFunc('COLLECT_LIST')],
-      [ArrayToStringExpr, renameFunc('ARRAY_JOIN')],
-      [ArrayUniqueAggExpr, renameFunc('COLLECT_SET')],
+      [
+        AddMonthsExpr,
+        renameFunc('MONTHS_ADD'),
+      ],
+      [
+        ApproxDistinctExpr,
+        approxCountDistinctSql,
+      ],
+      [
+        ArgMaxExpr,
+        renameFunc('MAX_BY'),
+      ],
+      [
+        ArgMinExpr,
+        renameFunc('MIN_BY'),
+      ],
+      [
+        ArrayAggExpr,
+        renameFunc('COLLECT_LIST'),
+      ],
+      [
+        ArrayToStringExpr,
+        renameFunc('ARRAY_JOIN'),
+      ],
+      [
+        ArrayUniqueAggExpr,
+        renameFunc('COLLECT_SET'),
+      ],
       [
         CurrentDateExpr,
         function (this: Generator) {
-          return this.func('CURRENT_DATE', []);
+          return this.func('CURRENT_DATE', [
+          ]);
         },
       ],
       [
         CurrentTimestampExpr,
         function (this: Generator) {
-          return this.func('NOW', []);
+          return this.func('NOW', [
+          ]);
         },
       ],
       [
         DateTruncExpr,
         function (this: Generator, e: DateTruncExpr) {
-          return this.func('DATE_TRUNC', [e.args.this, unitToStr(e)]);
+          return this.func('DATE_TRUNC', [
+            e.args.this,
+            unitToStr(e),
+          ]);
         },
       ],
-      [EuclideanDistanceExpr, renameFunc('L2_DISTANCE')],
+      [
+        EuclideanDistanceExpr,
+        renameFunc('L2_DISTANCE'),
+      ],
       [
         GroupConcatExpr,
         function (this: Generator, e: GroupConcatExpr) {
-          return this.func('GROUP_CONCAT', [e.args.this, e.args.separator ?? LiteralExpr.string(',')]);
+          return this.func('GROUP_CONCAT', [
+            e.args.this,
+            e.args.separator ?? LiteralExpr.string(','),
+          ]);
         },
       ],
       [
         JsonExtractScalarExpr,
         function (this: Generator, e: JsonExtractScalarExpr) {
-          return this.func('JSON_EXTRACT', [e.args.this, e.args.expression]);
+          return this.func('JSON_EXTRACT', [
+            e.args.this,
+            e.args.expression,
+          ]);
         },
       ],
-      [LagExpr, lagLeadSql],
-      [LeadExpr, lagLeadSql],
-      [MapExpr, renameFunc('ARRAY_MAP')],
+      [
+        LagExpr,
+        lagLeadSql,
+      ],
+      [
+        LeadExpr,
+        lagLeadSql,
+      ],
+      [
+        MapExpr,
+        renameFunc('ARRAY_MAP'),
+      ],
       [
         PropertyExpr,
         function (this: Generator, e: PropertyExpr) {
           return this.propertySql(e);
         },
       ],
-      [RegexpLikeExpr, renameFunc('REGEXP')],
-      [RegexpSplitExpr, renameFunc('SPLIT_BY_STRING')],
+      [
+        RegexpLikeExpr,
+        renameFunc('REGEXP'),
+      ],
+      [
+        RegexpSplitExpr,
+        renameFunc('SPLIT_BY_STRING'),
+      ],
       [
         SchemaCommentPropertyExpr,
         function (this: Generator, e: SchemaCommentPropertyExpr) {
           return this.nakedProperty(e);
         },
       ],
-      [SplitExpr, renameFunc('SPLIT_BY_STRING')],
-      [StringToArrayExpr, renameFunc('SPLIT_BY_STRING')],
+      [
+        SplitExpr,
+        renameFunc('SPLIT_BY_STRING'),
+      ],
+      [
+        StringToArrayExpr,
+        renameFunc('SPLIT_BY_STRING'),
+      ],
       [
         StrToUnixExpr,
         function (this: Generator, e: StrToUnixExpr) {
-          return this.func('UNIX_TIMESTAMP', [e.args.this, this.formatTime(e)]);
+          return this.func('UNIX_TIMESTAMP', [
+            e.args.this,
+            this.formatTime(e),
+          ]);
         },
       ],
-      [TimeStrToDateExpr, renameFunc('TO_DATE')],
+      [
+        TimeStrToDateExpr,
+        renameFunc('TO_DATE'),
+      ],
       [
         TsOrDsAddExpr,
         function (this: Generator, e: TsOrDsAddExpr) {
-          return this.func('DATE_ADD', [e.args.this, e.args.expression]);
+          return this.func('DATE_ADD', [
+            e.args.this,
+            e.args.expression,
+          ]);
         },
       ],
       [
         TsOrDsToDateExpr,
         function (this: Generator, e: TsOrDsToDateExpr) {
-          return this.func('TO_DATE', [e.args.this]);
+          return this.func('TO_DATE', [
+            e.args.this,
+          ]);
         },
       ],
-      [TimeToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
+      [
+        TimeToUnixExpr,
+        renameFunc('UNIX_TIMESTAMP'),
+      ],
       [
         TimestampTruncExpr,
         function (this: Generator, e: TimestampTruncExpr) {
-          return this.func('DATE_TRUNC', [e.args.this, unitToStr(e)]);
+          return this.func('DATE_TRUNC', [
+            e.args.this,
+            unitToStr(e),
+          ]);
         },
       ],
       [
         UnixToStrExpr,
         function (this: Generator, e: UnixToStrExpr) {
-          return this.func('FROM_UNIXTIME', [e.args.this, timeFormat('doris').call(this, e)]);
+          return this.func('FROM_UNIXTIME', [
+            e.args.this,
+            timeFormat('doris').call(this, e),
+          ]);
         },
       ],
-      [UnixToTimeExpr, renameFunc('FROM_UNIXTIME')],
+      [
+        UnixToTimeExpr,
+        renameFunc('FROM_UNIXTIME'),
+      ],
     ]);
 
     return transforms;
@@ -902,8 +1042,10 @@ class DorisGenerator extends MySQL.Generator {
     ]);
   }
 
-  uniqueKeyPropertySql (expression: UniqueKeyPropertyExpr, options: { prefix?: string } = {}): string {
-    let { prefix = 'UNIQUE KEY' } = options;
+  uniqueKeyPropertySql (expression: UniqueKeyPropertyExpr, options: {prefix?: string} = {}): string {
+    let {
+      prefix = 'UNIQUE KEY',
+    } = options;
     const createStmt = expression.findAncestor(CreateExpr);
 
     if (
@@ -913,12 +1055,15 @@ class DorisGenerator extends MySQL.Generator {
       prefix = 'KEY';
     }
 
-    return super.uniqueKeyPropertySql(expression, { prefix });
+    return super.uniqueKeyPropertySql(expression, {
+      prefix,
+    });
   }
 
   partitionRangeSql (expression: PartitionRangeExpr): string {
     const name = this.sql(expression, 'this');
-    const values = expression.args.expressions || [];
+    const values = expression.args.expressions || [
+    ];
 
     if (values.length !== 1) {
     // Multiple values: use VALUES [ ... )
@@ -957,21 +1102,27 @@ class DorisGenerator extends MySQL.Generator {
   partitionedByPropertySql (expression: PartitionedByPropertyExpr): string {
     const thisNode = expression.args.this;
     if (thisNode instanceof SchemaExpr) {
-      return `PARTITION BY (${this.expressions(thisNode, { flat: true })})`;
+      return `PARTITION BY (${this.expressions(thisNode, {
+        flat: true,
+      })})`;
     }
     return `PARTITION BY (${this.sql(thisNode)})`;
   }
 
-  tableSql (expression: TableExpr, options: { sep?: string } = {}): string {
+  tableSql (expression: TableExpr, options: {sep?: string} = {}): string {
   /** Override table_sql to avoid AS keyword in UPDATE and DELETE statements. */
-    let { sep = ' AS ' } = options;
+    let {
+      sep = ' AS ',
+    } = options;
     const ancestor = expression.findAncestor<UpdateExpr | DeleteExpr | SelectExpr>(UpdateExpr, DeleteExpr, SelectExpr);
 
     if (ancestor && !(ancestor instanceof SelectExpr)) {
       sep = ' ';
     }
 
-    return super.tableSql(expression, { sep });
+    return super.tableSql(expression, {
+      sep,
+    });
   }
 }
 

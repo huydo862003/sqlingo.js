@@ -1,7 +1,9 @@
 import {
   describe, test,
 } from 'vitest';
-import { Validator } from './validator';
+import {
+  Validator,
+} from './validator';
 
 class TestTableau extends Validator {
   override dialect = 'tableau' as const;

@@ -1,20 +1,28 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/qualify.py
 
-import type { Expression } from '../expressions';
+import type {
+  Expression,
+} from '../expressions';
 import {
   Dialect, type DialectType,
 } from '../dialects/dialect';
 import {
   ensureSchema, type Schema,
 } from '../schema';
-import { isolateTableSelects } from './isolate_table_selects';
-import { normalizeIdentifiers } from './normalize_identifiers';
+import {
+  isolateTableSelects,
+} from './isolate_table_selects';
+import {
+  normalizeIdentifiers,
+} from './normalize_identifiers';
 import {
   qualifyColumns,
   quoteIdentifiers,
   validateQualifyColumns,
 } from './qualify_columns';
-import { qualifyTables } from './qualify_tables';
+import {
+  qualifyTables,
+} from './qualify_tables';
 
 /**
  * Rewrite sqlglot AST to have normalized and qualified tables and columns.
@@ -92,7 +100,9 @@ export function qualify<E extends Expression> (
     sql,
   } = options;
 
-  const schema = ensureSchema(schemaArg, { dialect: dialectArg });
+  const schema = ensureSchema(schemaArg, {
+    dialect: dialectArg,
+  });
   const dialect = Dialect.getOrRaise(dialectArg);
 
   expression = normalizeIdentifiers(expression, {

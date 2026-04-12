@@ -1,6 +1,8 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/normalize.py
 
-import type { Expression } from '../expressions/expressions';
+import type {
+  Expression,
+} from '../expressions/expressions';
 import {
   and as andExpr,
   AndExpr,
@@ -9,9 +11,15 @@ import {
   OrExpr,
   replaceChildren,
 } from '../expressions/expressions';
-import { OptimizeError } from '../errors';
-import { whileChanging } from '../helper';
-import { findAllInScope } from './scope';
+import {
+  OptimizeError,
+} from '../errors';
+import {
+  whileChanging,
+} from '../helper';
+import {
+  findAllInScope,
+} from './scope';
 import {
   flatten, Simplifier,
 } from './simplify';
@@ -46,26 +54,35 @@ export function normalize (
   const {
     dnf = false, maxDistance = 128,
   } = options;
-  const simplifier = new Simplifier({ annotateNewExpressions: false });
+  const simplifier = new Simplifier({
+    annotateNewExpressions: false,
+  });
 
   // Walk only top-level connectors — prune at each connector so nested ones
   // are handled by distributiveLaw's own recursion (mirrors Python's prune).
-  const connectors: ConnectorExpr[] = [];
-  for (const node of expression.walk({ prune: (e) => e instanceof ConnectorExpr })) {
+  const connectors: ConnectorExpr[] = [
+  ];
+  for (const node of expression.walk({
+    prune: (e) => e instanceof ConnectorExpr,
+  })) {
     if (node instanceof ConnectorExpr) {
       connectors.push(node);
     }
   }
 
   for (let node of connectors) {
-    if (normalized(node, { dnf })) {
+    if (normalized(node, {
+      dnf,
+    })) {
       continue;
     }
 
     const root = node === expression;
     const original = node.copy();
 
-    node.transform((expr) => simplifier.rewriteBetween(expr), { copy: false });
+    node.transform((expr) => simplifier.rewriteBetween(expr), {
+      copy: false,
+    });
 
     const distance = normalizationDistance(node, {
       dnf,
@@ -120,13 +137,28 @@ export function normalize (
  * @param dnf - Whether to check for DNF (default: false = check for CNF)
  * @returns True if normalized
  */
-export function normalized (expression: Expression, options: { dnf?: boolean } = {}): boolean {
-  const { dnf = false } = options;
+export function normalized (expression: Expression, options: {dnf?: boolean} = {}): boolean {
+  const {
+    dnf = false,
+  } = options;
   // For DNF: check that no And has an Or ancestor
   // For CNF: check that no Or has an And ancestor
-  const [ancestor, root] = dnf ? [AndExpr, OrExpr] : [OrExpr, AndExpr];
+  const [
+    ancestor,
+    root,
+  ] = dnf
+    ? [
+      AndExpr,
+      OrExpr,
+    ]
+    : [
+      OrExpr,
+      AndExpr,
+    ];
 
-  return !findAllInScope(expression, [root]).some(
+  return !findAllInScope(expression, [
+    root,
+  ]).some(
     (connector) => connector.findAncestor(ancestor),
   );
 }
@@ -152,8 +184,8 @@ export function normalized (expression: Expression, options: { dnf?: boolean } =
  */
 export function normalizationDistance (
   expression: Expression,
-  options: { dnf?: boolean;
-    max?: number; } = {},
+  options: {dnf?: boolean;
+    max?: number;} = {},
 ): number {
   const {
     dnf = false, max = Infinity,
@@ -185,9 +217,9 @@ export function normalizationDistance (
  */
 function* predicateLengths (
   expression: Expression,
-  options: { dnf: boolean;
+  options: {dnf: boolean;
     max?: number;
-    depth?: number; },
+    depth?: number;},
 ): Generator<number> {
   const {
     dnf, max = Infinity, depth: depth0 = 0,
@@ -254,14 +286,16 @@ function* predicateLengths (
  */
 function distributiveLaw (
   expression: Expression,
-  options: { dnf: boolean;
+  options: {dnf: boolean;
     maxDistance: number;
-    simplifier?: Simplifier; },
+    simplifier?: Simplifier;},
 ): Expression {
   const {
     dnf, maxDistance, simplifier,
   } = options;
-  if (normalized(expression, { dnf })) {
+  if (normalized(expression, {
+    dnf,
+  })) {
     return expression;
   }
 
@@ -276,13 +310,27 @@ function distributiveLaw (
 
   replaceChildren(expression, (e) => distributiveLaw(e, options));
 
-  const [toExp, fromExp] = dnf ? [OrExpr, AndExpr] : [AndExpr, OrExpr];
+  const [
+    toExp,
+    fromExp,
+  ] = dnf
+    ? [
+      OrExpr,
+      AndExpr,
+    ]
+    : [
+      AndExpr,
+      OrExpr,
+    ];
 
   if (!(expression instanceof fromExp)) {
     return expression;
   }
 
-  const [a, b] = expression.unnestOperands();
+  const [
+    a,
+    b,
+  ] = expression.unnestOperands();
   if (!a || !b) {
     return expression;
   }
@@ -290,7 +338,9 @@ function distributiveLaw (
   const fromFunc = fromExp === AndExpr ? andExpr : orExpr;
   const toFunc = toExp === AndExpr ? andExpr : orExpr;
 
-  const simplifierInstance = simplifier ?? new Simplifier({ annotateNewExpressions: false });
+  const simplifierInstance = simplifier ?? new Simplifier({
+    annotateNewExpressions: false,
+  });
 
   if (a instanceof toExp && b instanceof toExp) {
     const aConnectorCount = Array.from(a.findAll(ConnectorExpr)).length;
@@ -332,14 +382,36 @@ function distribute (
 
   if (a instanceof ConnectorExpr) {
     replaceChildren(a, (c) => {
-      const leftCombined = flatten(fromFunc([c, bLeft]));
-      const rightCombined = flatten(fromFunc([c, bRight]));
-      return toFunc([simplifier.uniqSort(leftCombined), simplifier.uniqSort(rightCombined)], { copy: false });
+      const leftCombined = flatten(fromFunc([
+        c,
+        bLeft,
+      ]));
+      const rightCombined = flatten(fromFunc([
+        c,
+        bRight,
+      ]));
+      return toFunc([
+        simplifier.uniqSort(leftCombined),
+        simplifier.uniqSort(rightCombined),
+      ], {
+        copy: false,
+      });
     });
     return a;
   }
 
-  const leftCombined = flatten(fromFunc([a, bLeft]));
-  const rightCombined = flatten(fromFunc([a, bRight]));
-  return toFunc([simplifier.uniqSort(leftCombined), simplifier.uniqSort(rightCombined)], { copy: false });
+  const leftCombined = flatten(fromFunc([
+    a,
+    bLeft,
+  ]));
+  const rightCombined = flatten(fromFunc([
+    a,
+    bRight,
+  ]));
+  return toFunc([
+    simplifier.uniqSort(leftCombined),
+    simplifier.uniqSort(rightCombined),
+  ], {
+    copy: false,
+  });
 }

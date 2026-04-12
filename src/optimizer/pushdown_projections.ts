@@ -13,12 +13,18 @@ import {
   SelectExpr,
   SetOperationExpr,
 } from '../expressions';
-import { type DialectType } from '../dialects/dialect';
-import { seqGet } from '../helper';
+import {
+  type DialectType,
+} from '../dialects/dialect';
+import {
+  seqGet,
+} from '../helper';
 import {
   ensureSchema, type Schema,
 } from '../schema';
-import { Resolver } from './resolver';
+import {
+  Resolver,
+} from './resolver';
 import {
   Scope, traverseScope,
 } from './scope';
@@ -29,11 +35,15 @@ const SELECT_ALL = Symbol('SELECT_ALL');
 /**
  * Selection to use if selection list is empty
  */
-function defaultSelection (options: { isAgg: boolean }): Expression {
-  const { isAgg } = options;
+function defaultSelection (options: {isAgg: boolean}): Expression {
+  const {
+    isAgg,
+  } = options;
   return alias(
     isAgg
-      ? new MaxExpr({ this: LiteralExpr.number(1) })
+      ? new MaxExpr({
+        this: LiteralExpr.number(1),
+      })
       : '1',
     '_',
   );
@@ -75,7 +85,9 @@ export function pushdownProjections<E extends Expression> (
   } = options;
 
   // Map of Scope to all columns being selected by outer queries
-  const schema = ensureSchema(schemaArg, { dialect });
+  const schema = ensureSchema(schemaArg, {
+    dialect,
+  });
   const sourceColumnAliasCount = new Map<Expression | Scope, number>();
   const referencedColumns = new Map<Scope, Set<string | symbol>>();
 
@@ -86,13 +98,17 @@ export function pushdownProjections<E extends Expression> (
 
   for (let i = scopes.length - 1; 0 <= i; i--) {
     const scope = scopes[i];
-    let parentSelections = referencedColumns.get(scope) || new Set([SELECT_ALL]);
+    let parentSelections = referencedColumns.get(scope) || new Set([
+      SELECT_ALL,
+    ]);
     const aliasCount = sourceColumnAliasCount.get(scope) || 0;
 
     // We can't remove columns from SELECT DISTINCT nor UNION DISTINCT
     const scopeExpr = scope.expression;
     if (scopeExpr.getArgKey('distinct')) {
-      parentSelections = new Set([SELECT_ALL]);
+      parentSelections = new Set([
+        SELECT_ALL,
+      ]);
     }
 
     if (scopeExpr instanceof SetOperationExpr) {
@@ -102,11 +118,16 @@ export function pushdownProjections<E extends Expression> (
       if (!kind && !side) {
         // Do not optimize this set operation if it's using the BigQuery specific
         // kind / side syntax (e.g INNER UNION ALL BY NAME)
-        const [left, right] = scope.unionScopes;
+        const [
+          left,
+          right,
+        ] = scope.unionScopes;
 
         if (left.expression.selects.length !== right.expression.selects.length) {
           throw new Error(
-            `Invalid set operation due to column mismatch: ${scope.expression.sql({ dialect })}.`,
+            `Invalid set operation due to column mismatch: ${scope.expression.sql({
+              dialect,
+            })}.`,
           );
         }
 
@@ -162,15 +183,23 @@ export function pushdownProjections<E extends Expression> (
       }
 
       // Push the selected columns down to the next scope
-      for (const [name, source] of Object.entries(scope.selectedSources)) {
-        const [node, sourceScope] = source;
+      for (const [
+        name,
+        source,
+      ] of Object.entries(scope.selectedSources)) {
+        const [
+          node,
+          sourceScope,
+        ] = source;
 
         if (sourceScope instanceof Scope) {
           const firstSelect = seqGet(sourceScope.expression.selects, 0);
 
           let columns: Set<string | symbol>;
           if (0 < scope.pivots.length || firstSelect instanceof QueryTransformExpr) {
-            columns = new Set([SELECT_ALL]);
+            columns = new Set([
+              SELECT_ALL,
+            ]);
           } else {
             columns = selects.get(name) || new Set();
           }
@@ -215,7 +244,8 @@ function removeUnusedSelections_ (
     }
   }
 
-  const newSelections: Expression[] = [];
+  const newSelections: Expression[] = [
+  ];
   let removed = false;
   let star = false;
   let isAgg = false;
@@ -262,7 +292,9 @@ function removeUnusedSelections_ (
           alias(column({
             col: name,
             table: table?.aliasOrName,
-          }), name, { copy: false }),
+          }), name, {
+            copy: false,
+          }),
         );
       }
     }
@@ -270,7 +302,9 @@ function removeUnusedSelections_ (
 
   // If there are no remaining selections, just select a single constant
   if (newSelections.length === 0) {
-    newSelections.push(defaultSelection({ isAgg }));
+    newSelections.push(defaultSelection({
+      isAgg,
+    }));
   }
 
   select.select(newSelections, {

@@ -1,5 +1,9 @@
-import type { DialectType } from '../dialects/dialect';
-import { objectDepth } from '../helper';
+import type {
+  DialectType,
+} from '../dialects/dialect';
+import {
+  objectDepth,
+} from '../helper';
 import {
   MappingSchema, normalizeName,
 } from '../schema';
@@ -13,7 +17,8 @@ export class Table {
 
   constructor (
     columns: Iterable<string>,
-    rows: unknown[][] = [],
+    rows: unknown[][] = [
+    ],
     columnRange?: ColumnRange,
   ) {
     this.columns = Array.from(columns);
@@ -91,7 +96,9 @@ export class Table {
       widths[col] = col.length;
     });
 
-    const lines = [cols.join(' ')];
+    const lines = [
+      cols.join(' '),
+    ];
 
     for (let i = 0; i < this.length; i++) {
       if (10 < i) break;
@@ -159,7 +166,10 @@ function _ensureTables (d?: unknown, dialect?: DialectType): Record<string, unkn
   const depth = objectDepth(d);
   if (1 < depth) {
     const nestedResult: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(d)) {
+    for (const [
+      k,
+      v,
+    ] of Object.entries(d)) {
       const normalizedName = normalizeName(k, {
         dialect,
         isTable: true,
@@ -170,8 +180,13 @@ function _ensureTables (d?: unknown, dialect?: DialectType): Record<string, unkn
   }
 
   const result: Record<string, unknown> = {};
-  for (const [rawTableName, tableData] of Object.entries(d)) {
-    const tableName = normalizeName(rawTableName, { dialect }).name;
+  for (const [
+    rawTableName,
+    tableData,
+  ] of Object.entries(d)) {
+    const tableName = normalizeName(rawTableName, {
+      dialect,
+    }).name;
 
     if (tableData instanceof Table) {
       result[tableName] = tableData;
@@ -179,13 +194,21 @@ function _ensureTables (d?: unknown, dialect?: DialectType): Record<string, unkn
       // Normalize raw object arrays into Table structures
       const normalizedTableData = tableData.map((row: Record<string, unknown>) => {
         const newRow: Record<string, unknown> = {};
-        for (const [columnName, value] of Object.entries(row)) {
-          newRow[normalizeName(columnName, { dialect }).name] = value;
+        for (const [
+          columnName,
+          value,
+        ] of Object.entries(row)) {
+          newRow[normalizeName(columnName, {
+            dialect,
+          }).name] = value;
         }
         return newRow;
       });
 
-      const columnNames = 0 < normalizedTableData.length ? Object.keys(normalizedTableData[0]) : [];
+      const columnNames = 0 < normalizedTableData.length
+        ? Object.keys(normalizedTableData[0])
+        : [
+        ];
       const rows = normalizedTableData.map((row: Record<string, unknown>) => columnNames.map((name) => row[name]));
 
       result[tableName] = new Table(columnNames, rows);
@@ -207,7 +230,8 @@ export interface ColumnRange {
 export class RowReader {
   [column: string]: unknown;
   public columns: Record<string, number> = {};
-  public row: unknown[] = [];
+  public row: unknown[] = [
+  ];
 
   constructor (columns: string[], columnRange?: ColumnRange) {
     columns.forEach((column, i) => {

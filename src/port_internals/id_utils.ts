@@ -1,6 +1,6 @@
 declare const _brand: unique symbol;
 
-export type Id = string & { readonly [_brand]: 'Id' };
+export type Id = string & {readonly [_brand]: 'Id'};
 
 let _counter = 0n;
 

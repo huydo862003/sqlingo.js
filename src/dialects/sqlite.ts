@@ -1,4 +1,6 @@
-import { cache } from '../port_internals';
+import {
+  cache,
+} from '../port_internals';
 import {
   Generator,
   unsupportedArgs,
@@ -6,7 +8,9 @@ import {
 import {
   Parser, binaryRangeParser,
 } from '../parser';
-import type { TokenPair } from '../tokens';
+import type {
+  TokenPair,
+} from '../tokens';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
@@ -104,7 +108,9 @@ function buildStrftime (args: Expression[]): AnonymousExpr | TimeToStrExpr {
 
   if (args.length === 2) {
     return new TimeToStrExpr({
-      this: new TsOrDsToTimestampExpr({ this: args[1] }),
+      this: new TsOrDsToTimestampExpr({
+        this: args[1],
+      }),
       format: args[0],
     });
   }
@@ -123,7 +129,8 @@ function transformCreate (expression: Expression): Expression {
     const defs: Record<string, ColumnDefExpr> = {};
     let primaryKey: PrimaryKeyExpr | undefined = undefined;
 
-    for (const e of (schema.args.expressions || [])) {
+    for (const e of (schema.args.expressions || [
+    ])) {
       if (e instanceof ColumnDefExpr) {
         defs[e.name] = e;
       } else if (e instanceof PrimaryKeyExpr) {
@@ -131,26 +138,34 @@ function transformCreate (expression: Expression): Expression {
       }
     }
 
-    if (primaryKey && (primaryKey.args.expressions || []).length === 1) {
-      const columnName = ((primaryKey.args.expressions || [])[0] as IdentifierExpr).name;
+    if (primaryKey && (primaryKey.args.expressions || [
+    ]).length === 1) {
+      const columnName = ((primaryKey.args.expressions || [
+      ])[0] as IdentifierExpr).name;
       const column = defs[columnName];
 
       if (!column.args.constraints) {
-        column.setArgKey('constraints', []);
+        column.setArgKey('constraints', [
+        ]);
       }
       if (!column.args.constraints) {
-        column.setArgKey('constraints', []);
+        column.setArgKey('constraints', [
+        ]);
       }
       column.args.constraints?.push(
-        new ColumnConstraintExpr({ kind: new PrimaryKeyColumnConstraintExpr() }),
+        new ColumnConstraintExpr({
+          kind: new PrimaryKeyColumnConstraintExpr(),
+        }),
       );
 
-      schema.setArgKey('expressions', (schema.args.expressions || []).filter((e) => e !== primaryKey));
+      schema.setArgKey('expressions', (schema.args.expressions || [
+      ]).filter((e) => e !== primaryKey));
     } else {
       for (const column of Object.values(defs)) {
         let autoIncrement: ColumnConstraintExpr | undefined;
 
-        for (const constraint of (column.args.constraints || [])) {
+        for (const constraint of (column.args.constraints || [
+        ])) {
           const constraintExpr = constraint as ColumnConstraintExpr;
           if ((constraintExpr.args.kind as unknown) instanceof PrimaryKeyColumnConstraintExpr) {
             autoIncrement = undefined; // Reset if we hit a PK to stop processing this column
@@ -162,7 +177,8 @@ function transformCreate (expression: Expression): Expression {
         }
 
         if (autoIncrement) {
-          column.setArgKey('constraints', (column.args.constraints || []).filter((c) => c !== autoIncrement));
+          column.setArgKey('constraints', (column.args.constraints || [
+          ]).filter((c) => c !== autoIncrement));
         }
       }
     }
@@ -187,10 +203,13 @@ function generatedToAutoIncrement (expression: Expression): Expression {
     }
 
     if (!expression.args.constraints) {
-      expression.setArgKey('constraints', []);
+      expression.setArgKey('constraints', [
+      ]);
     }
     expression.args.constraints?.push(
-      new ColumnConstraintExpr({ kind: new AutoIncrementColumnConstraintExpr() }),
+      new ColumnConstraintExpr({
+        kind: new AutoIncrementColumnConstraintExpr(),
+      }),
     );
   }
 
@@ -202,7 +221,10 @@ class SQLiteTokenizer extends Tokenizer {
   static get IDENTIFIERS (): TokenPair[] {
     return [
       '"',
-      ['[', ']'],
+      [
+        '[',
+        ']',
+      ],
       '`',
     ];
   }
@@ -210,10 +232,22 @@ class SQLiteTokenizer extends Tokenizer {
   @cache
   static get HEX_STRINGS (): TokenPair[] {
     return [
-      ['x\'', '\''],
-      ['X\'', '\''],
-      ['0x', ''],
-      ['0X', ''],
+      [
+        'x\'',
+        '\'',
+      ],
+      [
+        'X\'',
+        '\'',
+      ],
+      [
+        '0x',
+        '',
+      ],
+      [
+        '0X',
+        '',
+      ],
     ];
   }
 
@@ -234,7 +268,10 @@ class SQLiteTokenizer extends Tokenizer {
 
   @cache
   static get COMMANDS () {
-    return new Set([...Array.from(Tokenizer.COMMANDS), TokenType.REPLACE]);
+    return new Set([
+      ...Array.from(Tokenizer.COMMANDS),
+      TokenType.REPLACE,
+    ]);
   }
 }
 
@@ -252,7 +289,9 @@ class SQLiteParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
     return noParenFunctions;
@@ -263,7 +302,7 @@ class SQLiteParser extends Parser {
   static JOINS_HAVE_EQUAL_PRECEDENCE = true;
   static ADD_JOIN_ON_TRUE = true;
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       EDITDIST3: (args: unknown[]) => LevenshteinExpr.fromArgList(args),
@@ -288,7 +327,9 @@ class SQLiteParser extends Parser {
         return (this as SQLiteParser).parseAttachDetach();
       },
       [TokenType.DETACH]: function (this: Parser) {
-        return (this as SQLiteParser).parseAttachDetach({ isAttach: false });
+        return (this as SQLiteParser).parseAttachDetach({
+          isAttach: false,
+        });
       },
     };
   }
@@ -310,20 +351,29 @@ class SQLiteParser extends Parser {
     return super.parseUnique();
   }
 
-  parseAttachDetach (options: { isAttach?: boolean } = {}): AttachExpr | DetachExpr {
-    const { isAttach = true } = options;
+  parseAttachDetach (options: {isAttach?: boolean} = {}): AttachExpr | DetachExpr {
+    const {
+      isAttach = true,
+    } = options;
     this.match(TokenType.DATABASE);
     const thisNode = this.parseExpression();
 
     return isAttach
-      ? this.expression(AttachExpr, { this: thisNode })
-      : this.expression(DetachExpr, { this: thisNode });
+      ? this.expression(AttachExpr, {
+        this: thisNode,
+      })
+      : this.expression(DetachExpr, {
+        this: thisNode,
+      });
   }
 
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 class SQLiteGenerator extends Generator {
@@ -342,7 +392,8 @@ class SQLiteGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [];
+  static readonly SELECT_KINDS: string[] = [
+  ];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -374,20 +425,62 @@ class SQLiteGenerator extends Generator {
   static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map<DataTypeExprKind | string, string>([
       ...Generator.TYPE_MAPPING,
-      [DataTypeExprKind.BOOLEAN, 'INTEGER'],
-      [DataTypeExprKind.TINYINT, 'INTEGER'],
-      [DataTypeExprKind.SMALLINT, 'INTEGER'],
-      [DataTypeExprKind.INT, 'INTEGER'],
-      [DataTypeExprKind.BIGINT, 'INTEGER'],
-      [DataTypeExprKind.FLOAT, 'REAL'],
-      [DataTypeExprKind.DOUBLE, 'REAL'],
-      [DataTypeExprKind.DECIMAL, 'REAL'],
-      [DataTypeExprKind.CHAR, 'TEXT'],
-      [DataTypeExprKind.NCHAR, 'TEXT'],
-      [DataTypeExprKind.VARCHAR, 'TEXT'],
-      [DataTypeExprKind.NVARCHAR, 'TEXT'],
-      [DataTypeExprKind.BINARY, 'BLOB'],
-      [DataTypeExprKind.VARBINARY, 'BLOB'],
+      [
+        DataTypeExprKind.BOOLEAN,
+        'INTEGER',
+      ],
+      [
+        DataTypeExprKind.TINYINT,
+        'INTEGER',
+      ],
+      [
+        DataTypeExprKind.SMALLINT,
+        'INTEGER',
+      ],
+      [
+        DataTypeExprKind.INT,
+        'INTEGER',
+      ],
+      [
+        DataTypeExprKind.BIGINT,
+        'INTEGER',
+      ],
+      [
+        DataTypeExprKind.FLOAT,
+        'REAL',
+      ],
+      [
+        DataTypeExprKind.DOUBLE,
+        'REAL',
+      ],
+      [
+        DataTypeExprKind.DECIMAL,
+        'REAL',
+      ],
+      [
+        DataTypeExprKind.CHAR,
+        'TEXT',
+      ],
+      [
+        DataTypeExprKind.NCHAR,
+        'TEXT',
+      ],
+      [
+        DataTypeExprKind.VARCHAR,
+        'TEXT',
+      ],
+      [
+        DataTypeExprKind.NVARCHAR,
+        'TEXT',
+      ],
+      [
+        DataTypeExprKind.BINARY,
+        'BLOB',
+      ],
+      [
+        DataTypeExprKind.VARBINARY,
+        'BLOB',
+      ],
     ]);
 
     mapping.delete(DataTypeExprKind.BLOB);
@@ -408,24 +501,64 @@ class SQLiteGenerator extends Generator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS.entries(),
-      [AnyValueExpr, anyValueToMaxSql],
-      [ChrExpr, renameFunc('CHAR')],
-      [ConcatExpr, concatToDPipeSql],
-      [CountIfExpr, countIfToSum],
-      [CreateExpr, preprocess([transformCreate])],
-      [CurrentDateExpr, () => 'CURRENT_DATE'],
-      [CurrentTimeExpr, () => 'CURRENT_TIME'],
-      [CurrentTimestampExpr, () => 'CURRENT_TIMESTAMP'],
-      [CurrentVersionExpr, () => 'SQLITE_VERSION()'],
-      [ColumnDefExpr, preprocess([generatedToAutoIncrement])],
+      [
+        AnyValueExpr,
+        anyValueToMaxSql,
+      ],
+      [
+        ChrExpr,
+        renameFunc('CHAR'),
+      ],
+      [
+        ConcatExpr,
+        concatToDPipeSql,
+      ],
+      [
+        CountIfExpr,
+        countIfToSum,
+      ],
+      [
+        CreateExpr,
+        preprocess([
+          transformCreate,
+        ]),
+      ],
+      [
+        CurrentDateExpr,
+        () => 'CURRENT_DATE',
+      ],
+      [
+        CurrentTimeExpr,
+        () => 'CURRENT_TIME',
+      ],
+      [
+        CurrentTimestampExpr,
+        () => 'CURRENT_TIMESTAMP',
+      ],
+      [
+        CurrentVersionExpr,
+        () => 'SQLITE_VERSION()',
+      ],
+      [
+        ColumnDefExpr,
+        preprocess([
+          generatedToAutoIncrement,
+        ]),
+      ],
       [
         DateStrToDateExpr,
         function (this: Generator, e: DateStrToDateExpr) {
           return this.sql(e, 'this');
         },
       ],
-      [IfExpr, renameFunc('IIF')],
-      [ILikeExpr, noIlikeSql],
+      [
+        IfExpr,
+        renameFunc('IIF'),
+      ],
+      [
+        ILikeExpr,
+        noIlikeSql,
+      ],
       [
         JsonExtractScalarExpr,
         function (this: Generator, e: JsonExtractScalarExpr) {
@@ -439,10 +572,22 @@ class SQLiteGenerator extends Generator {
           return renameFunc('EDITDIST3').call(this, e);
         },
       ],
-      [LogicalOrExpr, renameFunc('MAX')],
-      [LogicalAndExpr, renameFunc('MIN')],
-      [PivotExpr, noPivotSql],
-      [RandExpr, renameFunc('RANDOM')],
+      [
+        LogicalOrExpr,
+        renameFunc('MAX'),
+      ],
+      [
+        LogicalAndExpr,
+        renameFunc('MIN'),
+      ],
+      [
+        PivotExpr,
+        noPivotSql,
+      ],
+      [
+        RandExpr,
+        renameFunc('RANDOM'),
+      ],
       [
         SelectExpr,
         preprocess([
@@ -454,10 +599,15 @@ class SQLiteGenerator extends Generator {
       [
         StrPositionExpr,
         function (this: Generator, e: StrPositionExpr) {
-          return strPositionSql.call(this, e, { funcName: 'INSTR' });
+          return strPositionSql.call(this, e, {
+            funcName: 'INSTR',
+          });
         },
       ],
-      [TableSampleExpr, noTablesampleSql],
+      [
+        TableSampleExpr,
+        noTablesampleSql,
+      ],
       [
         TimeStrToTimeExpr,
         function (this: Generator, e: TimeStrToTimeExpr) {
@@ -467,10 +617,16 @@ class SQLiteGenerator extends Generator {
       [
         TimeToStrExpr,
         function (this: Generator, e: TimeToStrExpr) {
-          return this.func('STRFTIME', [e.args.format, e.args.this]);
+          return this.func('STRFTIME', [
+            e.args.format,
+            e.args.this,
+          ]);
         },
       ],
-      [TryCastExpr, noTrycastSql],
+      [
+        TryCastExpr,
+        noTrycastSql,
+      ],
       [
         TsOrDsToTimestampExpr,
         function (this: Generator, e: TsOrDsToTimestampExpr) {
@@ -516,19 +672,26 @@ class SQLiteGenerator extends Generator {
     const unit = expression.args.unit;
     const finalModifier = unit ? `'${modifierSql} ${unit.name}'` : `'${modifierSql}'`;
 
-    return this.func('DATE', [expression.args.this, finalModifier]);
+    return this.func('DATE', [
+      expression.args.this,
+      finalModifier,
+    ]);
   }
 
-  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
+  castSql (expression: CastExpr, options: {safePrefix?: string} = {}): string {
     if (expression.isType('date')) {
-      return this.func('DATE', [expression.args.this]);
+      return this.func('DATE', [
+        expression.args.this,
+      ]);
     }
     return super.castSql(expression, options);
   }
 
   truncSql (expression: TruncExpr): string {
     unsupportedArgs.call(this, expression, 'decimals');
-    return this.func('TRUNC', [expression.args.this]);
+    return this.func('TRUNC', [
+      expression.args.this,
+    ]);
   }
 
   generateSeriesSql (expression: GenerateSeriesExpr): string {
@@ -540,7 +703,9 @@ class SQLiteGenerator extends Generator {
       aliasExpr.setArgKey('columns', undefined);
       return this.sql(
         new SelectExpr({
-          expressions: [alias('value', columnAlias)],
+          expressions: [
+            alias('value', columnAlias),
+          ],
         })
           .from(expression)
           .subquery(),
@@ -596,7 +761,10 @@ class SQLiteGenerator extends Generator {
     }
 
     const separator = expression.args.separator;
-    return `GROUP_CONCAT(${distinctSql}${this.formatArgs([thisNode, separator])})`;
+    return `GROUP_CONCAT(${distinctSql}${this.formatArgs([
+      thisNode,
+      separator,
+    ])})`;
   }
 
   leastSql (expression: LeastExpr): string {

@@ -1,6 +1,12 @@
-import type { Expression } from '../expressions/expressions';
-import { cache } from '../port_internals';
-import { DataTypeExprKind } from '../expressions/types';
+import type {
+  Expression,
+} from '../expressions/expressions';
+import {
+  cache,
+} from '../port_internals';
+import {
+  DataTypeExprKind,
+} from '../expressions/types';
 import {
   EncodeExpr,
   UnhexExpr,
@@ -22,9 +28,15 @@ import {
   RegexpSplitExpr,
   ReverseExpr,
 } from '../expressions/expressions';
-import type { TypeAnnotator } from '../optimizer';
-import { DialectTyping } from './dialect';
-import type { ExpressionMetadata } from './dialect';
+import type {
+  TypeAnnotator,
+} from '../optimizer';
+import {
+  DialectTyping,
+} from './dialect';
+import type {
+  ExpressionMetadata,
+} from './dialect';
 
 export class HiveTyping {
   @cache
@@ -36,9 +48,19 @@ export class HiveTyping {
       for (const type of types) map.set(type, data);
     };
 
-    extend([EncodeExpr, UnhexExpr], { returns: DataTypeExprKind.BINARY });
+    extend([
+      EncodeExpr,
+      UnhexExpr,
+    ], {
+      returns: DataTypeExprKind.BINARY,
+    });
 
-    extend([CorrExpr, MonthsBetweenExpr], { returns: DataTypeExprKind.DOUBLE });
+    extend([
+      CorrExpr,
+      MonthsBetweenExpr,
+    ], {
+      returns: DataTypeExprKind.DOUBLE,
+    });
 
     extend([
       CurrentDatabaseExpr,
@@ -48,18 +70,40 @@ export class HiveTyping {
       RepeatExpr,
       ReplaceExpr,
       SoundexExpr,
-    ], { returns: DataTypeExprKind.VARCHAR });
+    ], {
+      returns: DataTypeExprKind.VARCHAR,
+    });
 
-    extend([StrToUnixExpr, FactorialExpr], { returns: DataTypeExprKind.BIGINT });
+    extend([
+      StrToUnixExpr,
+      FactorialExpr,
+    ], {
+      returns: DataTypeExprKind.BIGINT,
+    });
 
-    extend([MonthExpr, SecondExpr], { returns: DataTypeExprKind.INT });
+    extend([
+      MonthExpr,
+      SecondExpr,
+    ], {
+      returns: DataTypeExprKind.INT,
+    });
 
     map.set(CoalesceExpr, {
-      annotator: (s: TypeAnnotator, e: CoalesceExpr) => s.annotateByArgs(e, ['this', 'expressions'], { promote: true }),
+      annotator: (s: TypeAnnotator, e: CoalesceExpr) => s.annotateByArgs(e, [
+        'this',
+        'expressions',
+      ], {
+        promote: true,
+      }),
     });
 
     map.set(IfExpr, {
-      annotator: (s: TypeAnnotator, e: IfExpr) => s.annotateByArgs(e, ['true', 'false'], { promote: true }),
+      annotator: (s: TypeAnnotator, e: IfExpr) => s.annotateByArgs(e, [
+        'true',
+        'false',
+      ], {
+        promote: true,
+      }),
     });
 
     map.set(RegexpSplitExpr, {
@@ -67,7 +111,9 @@ export class HiveTyping {
     });
 
     map.set(ReverseExpr, {
-      annotator: (s: TypeAnnotator, e: ReverseExpr) => s.annotateByArgs(e, ['this']),
+      annotator: (s: TypeAnnotator, e: ReverseExpr) => s.annotateByArgs(e, [
+        'this',
+      ]),
     });
 
     return map;

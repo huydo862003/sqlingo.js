@@ -417,7 +417,11 @@ class TestOracle extends Validator {
 
     this.validateAll(
       'SELECT e1.x, e2.x FROM e e1, e e2 WHERE e1.y = e2.y (+)',
-      { write: { '': UnsupportedError } },
+      {
+        write: {
+          '': UnsupportedError,
+        },
+      },
     );
     this.validateAll(
       'SELECT e1.x, e2.x FROM e e1, e e2 WHERE e1.y = e2.y (+)',
@@ -461,7 +465,9 @@ class TestOracle extends Validator {
 FROM employees
 JOIN departments
   ON employees.department_id = departments.department_id`,
-      { pretty: true },
+      {
+        pretty: true,
+      },
     );
     this.validateIdentity(
       'SELECT /*+ USE_NL(bbbbbbbbbbbbbbbbbbbbbbbb) LEADING(aaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccc dddddddddddddddddddddddd) INDEX(cccccccccccccccccccccccc) */ * FROM aaaaaaaaaaaaaaaaaaaaaaaa JOIN bbbbbbbbbbbbbbbbbbbbbbbb ON aaaaaaaaaaaaaaaaaaaaaaaa.id = bbbbbbbbbbbbbbbbbbbbbbbb.a_id JOIN cccccccccccccccccccccccc ON bbbbbbbbbbbbbbbbbbbbbbbb.id = cccccccccccccccccccccccc.b_id JOIN dddddddddddddddddddddddd ON cccccccccccccccccccccccc.id = dddddddddddddddddddddddd.c_id',
@@ -484,7 +490,9 @@ JOIN cccccccccccccccccccccccc
   ON bbbbbbbbbbbbbbbbbbbbbbbb.id = cccccccccccccccccccccccc.b_id
 JOIN dddddddddddddddddddddddd
   ON cccccccccccccccccccccccc.id = dddddddddddddddddddddddd.c_id`,
-      { pretty: true },
+      {
+        pretty: true,
+      },
     );
     // Test that parsing error with keywords like select where etc falls back
     this.validateIdentity(
@@ -494,7 +502,9 @@ JOIN dddddddddddddddddddddddd
 FROM employees
 JOIN departments
   ON employees.department_id = departments.department_id`,
-      { pretty: true },
+      {
+        pretty: true,
+      },
     );
     // Test that parsing error with , inside hint function falls back
     this.validateIdentity(
@@ -598,7 +608,9 @@ MATCH_RECOGNIZE (
     DOWN AS DOWN.units_sold < PREV(DOWN.units_sold)
 ) MR`,
       undefined,
-      { pretty: true },
+      {
+        pretty: true,
+      },
     );
   }
 
@@ -618,7 +630,9 @@ FROM schemaname.tablename ar
 INNER JOIN JSON_TABLE(:emps, '$[*]' COLUMNS(empno NUMBER PATH '$')) jt
   ON ar.empno = jt.empno`,
       undefined,
-      { pretty: true },
+      {
+        pretty: true,
+      },
     );
     this.validateIdentity(
       `SELECT
@@ -628,7 +642,9 @@ FROM JSON_TABLE(res, '$.info[*]' COLUMNS(
   NESTED PATH '$.calid[*]' COLUMNS(last_dt PATH '$.last_dt ')
 )) src`,
       undefined,
-      { pretty: true },
+      {
+        pretty: true,
+      },
     );
     this.validateIdentity('CONVERT(\'foo\', \'dst\')');
     this.validateIdentity('CONVERT(\'foo\', \'dst\', \'src\')');
@@ -653,14 +669,25 @@ WHERE
 START WITH last_name = 'King'
 CONNECT BY PRIOR employee_id = manager_id AND LEVEL <= 4`;
 
-    for (const query of [`${body}${start}${connect}`, `${body}${connect}${start}`]) {
-      this.validateIdentity(query, pretty, { pretty: true });
+    for (const query of [
+      `${body}${start}${connect}`,
+      `${body}${connect}${start}`,
+    ]) {
+      this.validateIdentity(query, pretty, {
+        pretty: true,
+      });
     }
   }
 
   testQueryRestrictions () {
-    for (const restriction of ['READ ONLY', 'CHECK OPTION']) {
-      for (const constraintName of [' CONSTRAINT name', '']) {
+    for (const restriction of [
+      'READ ONLY',
+      'CHECK OPTION',
+    ]) {
+      for (const constraintName of [
+        ' CONSTRAINT name',
+        '',
+      ]) {
         this.validateIdentity(`SELECT * FROM tbl WITH ${restriction}${constraintName}`);
         this.validateIdentity(
           `CREATE VIEW view AS SELECT * FROM tbl WITH ${restriction}${constraintName}`,
@@ -740,14 +767,20 @@ CONNECT BY PRIOR employee_id = manager_id AND LEVEL <= 4`;
   }
 
   testJsonFunctions () {
-    for (const formatJson of ['', ' FORMAT JSON']) {
+    for (const formatJson of [
+      '',
+      ' FORMAT JSON',
+    ]) {
       for (const onCond of [
         '',
         ' TRUE ON ERROR',
         ' NULL ON EMPTY',
         ' DEFAULT 1 ON ERROR TRUE ON EMPTY',
       ]) {
-        for (const passing of ['', ' PASSING \'name1\' AS "var1", \'name2\' AS "var2"']) {
+        for (const passing of [
+          '',
+          ' PASSING \'name1\' AS "var1", \'name2\' AS "var2"',
+        ]) {
           this.validateIdentity(
             `SELECT * FROM t WHERE JSON_EXISTS(name${formatJson}, '$[1].middle'${passing}${onCond})`,
           );
@@ -764,7 +797,9 @@ CONNECT BY PRIOR employee_id = manager_id AND LEVEL <= 4`;
     ];
 
     for (const sql of grantCmds) {
-      this.validateIdentity(sql, undefined, { checkCommandWarning: true });
+      this.validateIdentity(sql, undefined, {
+        checkCommandWarning: true,
+      });
     }
 
     this.validateIdentity('GRANT SELECT ON TABLE t TO maria, harry');
@@ -783,7 +818,9 @@ CONNECT BY PRIOR employee_id = manager_id AND LEVEL <= 4`;
     ];
 
     for (const sql of revokeCmds) {
-      this.validateIdentity(sql, undefined, { checkCommandWarning: true });
+      this.validateIdentity(sql, undefined, {
+        checkCommandWarning: true,
+      });
     }
 
     this.validateIdentity('REVOKE SELECT ON TABLE t FROM maria, harry');
@@ -806,7 +843,10 @@ CONNECT BY PRIOR employee_id = manager_id AND LEVEL <= 4`;
     );
 
     // Make sure units are not normalized e.g 'Q' -> 'QUARTER' and 'W' -> 'WEEK'
-    for (const unit of ['\'Q\'', '\'W\'']) {
+    for (const unit of [
+      '\'Q\'',
+      '\'W\'',
+    ]) {
       this.validateIdentity(`TRUNC(x, ${unit})`);
     }
   }
@@ -947,7 +987,9 @@ CONNECT BY PRIOR employee_id = manager_id AND LEVEL <= 4`;
       'SELECT id, PRIOR name AS parent_name, name FROM tree CONNECT BY NOCYCLE PRIOR id = parent_id',
     );
 
-    expect(() => parseOne('PRIOR as foo', { read: 'oracle' })).toThrow(ParseError);
+    expect(() => parseOne('PRIOR as foo', {
+      read: 'oracle',
+    })).toThrow(ParseError);
   }
 
   testUtcTime () {

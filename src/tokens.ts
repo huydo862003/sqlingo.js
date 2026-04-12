@@ -1,8 +1,14 @@
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/tokens.py
 
-import { cache } from './port_internals';
-import { Dialect } from './dialects/dialect';
-import { TokenError } from './errors';
+import {
+  cache,
+} from './port_internals';
+import {
+  Dialect,
+} from './dialects/dialect';
+import {
+  TokenError,
+} from './errors';
 import {
   inTrie, newTrie, TrieResult, type TrieNode,
 } from './trie';
@@ -496,7 +502,8 @@ export class Token {
     col: number = 1,
     start: number = 0,
     end: number = 0,
-    comments: string[] = [],
+    comments: string[] = [
+    ],
   ) {
     this.tokenType = tokenType;
     this.text = text;
@@ -568,63 +575,75 @@ export class Tokenizer {
    *
    * @example [["b'", "'"], ["B'", "'"]]
    */
-  static BIT_STRINGS: TokenPair[] = [];
+  static BIT_STRINGS: TokenPair[] = [
+  ];
 
   /**
    * Byte string prefixes.
    *
    * @example [["b'", "'"], ["B'", "'"]]
    */
-  static BYTE_STRINGS: TokenPair[] = [];
+  static BYTE_STRINGS: TokenPair[] = [
+  ];
 
   /**
    * Hex string prefixes.
    *
    * @example [["x'", "'"], ["X'", "'"], ["0x", ""]]
    */
-  static HEX_STRINGS: TokenPair[] = [];
+  static HEX_STRINGS: TokenPair[] = [
+  ];
 
   /**
    * Raw string prefixes.
    *
    * @example [["r'", "'"], ["R'", "'"]]
    */
-  static RAW_STRINGS: TokenPair[] = [];
+  static RAW_STRINGS: TokenPair[] = [
+  ];
 
   /**
    * Heredoc string prefixes.
    *
    * @example [["$$", "$$"]]
    */
-  static HEREDOC_STRINGS: TokenPair[] = [];
+  static HEREDOC_STRINGS: TokenPair[] = [
+  ];
 
   /**
    * Identifier quote delimiters.
    *
    * @example ['"', '`', ['[', ']']]
    */
-  static IDENTIFIERS: TokenPair[] = ['"'];
+  static IDENTIFIERS: TokenPair[] = [
+    '"',
+  ];
 
   /**
    * String quote delimiters.
    *
    * @example ["'"]
    */
-  static QUOTES: TokenPair[] = ['\''];
+  static QUOTES: TokenPair[] = [
+    '\'',
+  ];
 
   /**
    * Unicode string prefixes.
    *
    * @example [["u'", "'"], ["U'", "'"]]
    */
-  static UNICODE_STRINGS: TokenPair[] = [];
+  static UNICODE_STRINGS: TokenPair[] = [
+  ];
 
   /**
    * Characters that can be escaped in strings.
    *
    * @example ["'", "\\"]
    */
-  static STRING_ESCAPES: string[] = ['\''];
+  static STRING_ESCAPES: string[] = [
+    '\'',
+  ];
 
   /**
    * Characters that can be escaped in byte strings.
@@ -649,14 +668,16 @@ export class Tokenizer {
    *
    * @example ["n", "t", "r", "\\"]
    */
-  static ESCAPE_FOLLOW_CHARS: string[] = [];
+  static ESCAPE_FOLLOW_CHARS: string[] = [
+  ];
 
   /**
    * Characters that can be escaped in identifiers.
    *
    * @example ['"']
    */
-  static IDENTIFIER_ESCAPES: string[] = [];
+  static IDENTIFIER_ESCAPES: string[] = [
+  ];
 
   /**
    * Whether the heredoc tags follow the same lexical rules as unquoted identifiers.
@@ -729,9 +750,18 @@ export class Tokenizer {
   @cache
   static get _FORMAT_STRINGS (): Record<string, [string, TokenType]> {
     const nationalStrings: Record<string, [string, TokenType]> = {};
-    for (const [start, end] of Object.entries(this._QUOTES)) {
-      for (const prefix of ['n', 'N']) {
-        nationalStrings[prefix + start] = [end, TokenType.NATIONAL_STRING];
+    for (const [
+      start,
+      end,
+    ] of Object.entries(this._QUOTES)) {
+      for (const prefix of [
+        'n',
+        'N',
+      ]) {
+        nationalStrings[prefix + start] = [
+          end,
+          TokenType.NATIONAL_STRING,
+        ];
       }
     }
     return {
@@ -1193,7 +1223,10 @@ export class Tokenizer {
    * Set of token types that can precede a command.
    *
    */
-  static COMMAND_PREFIX_TOKENS = new Set([TokenType.SEMICOLON, TokenType.BEGIN]);
+  static COMMAND_PREFIX_TOKENS = new Set([
+    TokenType.SEMICOLON,
+    TokenType.BEGIN,
+  ]);
 
   /**
    * Handle numeric literals like in hive (3L = BIGINT).
@@ -1204,14 +1237,21 @@ export class Tokenizer {
   /**
    * Array of comment delimiters.
    */
-  static COMMENTS: (string | [string, string])[] = ['--', ['/*', '*/']];
+  static COMMENTS: (string | [string, string])[] = [
+    '--',
+    [
+      '/*',
+      '*/',
+    ],
+  ];
 
   /** The SQL string being tokenized. */
   sql = '';
   /** The length of the SQL string. */
   size = 0;
   /** Array of tokens produced by tokenization. */
-  tokens: Token[] = [];
+  tokens: Token[] = [
+  ];
   dialect: Dialect;
   /** Starting position of the current token. */
   private _start = 0;
@@ -1222,7 +1262,8 @@ export class Tokenizer {
   /** Current column number. */
   private _col = 0;
   /** Accumulated comments for the next token. */
-  private comments: string[] = [];
+  private comments: string[] = [
+  ];
   /** Current character being processed. */
   private char = '';
   /** Whether we've reached the end of the SQL string. */
@@ -1233,7 +1274,9 @@ export class Tokenizer {
   private prevTokenLine = -1;
 
   constructor (options: TokenizerOptions = {}) {
-    const { dialect } = options;
+    const {
+      dialect,
+    } = options;
     this.dialect = Dialect.getOrRaise(dialect);
     this.reset();
   }
@@ -1244,12 +1287,14 @@ export class Tokenizer {
   reset (): void {
     this.sql = '';
     this.size = 0;
-    this.tokens = [];
+    this.tokens = [
+    ];
     this._start = 0;
     this._current = 0;
     this.line = 1;
     this._col = 0;
-    this.comments = [];
+    this.comments = [
+    ];
     this.char = '';
     this._end = false;
     this.peek = '';
@@ -1305,7 +1350,9 @@ export class Tokenizer {
         : 1;
 
       this._start = current;
-      this.advance({ i: offset });
+      this.advance({
+        i: offset,
+      });
 
       if (!this.isWhitespace(this.char)) {
         if (this.isDigit(this.char)) {
@@ -1414,7 +1461,8 @@ export class Tokenizer {
 
     if (this.comments.length && tokenType === TokenType.SEMICOLON && this.tokens.length) {
       this.tokens[this.tokens.length - 1].comments.push(...this.comments);
-      this.comments = [];
+      this.comments = [
+      ];
     }
 
     this.tokens.push(
@@ -1428,7 +1476,8 @@ export class Tokenizer {
         this.comments,
       ),
     );
-    this.comments = [];
+    this.comments = [
+    ];
 
     const constructor = this._constructor;
     // If we have either a semicolon or a begin token before the command's token, we'll parse
@@ -1465,7 +1514,10 @@ export class Tokenizer {
       if (skip) {
         result = TrieResult.PREFIX;
       } else {
-        [result, trie] = inTrie(trie, Array.from(char.toUpperCase()));
+        [
+          result,
+          trie,
+        ] = inTrie(trie, Array.from(char.toUpperCase()));
       }
 
       if (result === TrieResult.FAILED) {
@@ -1507,7 +1559,9 @@ export class Tokenizer {
         return;
       }
       if (prevSpace || singleToken || !char) {
-        this.advance({ i: size - 1 });
+        this.advance({
+          i: size - 1,
+        });
         const upper = word.toUpperCase();
         this.add(constructor.KEYWORDS[upper], upper);
         return;
@@ -1541,7 +1595,9 @@ export class Tokenizer {
 
     if (commentEnd) {
       // Skip the comment's start delimiter
-      this.advance({ i: commentStartSize });
+      this.advance({
+        i: commentStartSize,
+      });
 
       let commentCount = 1;
       const commentEndSize = commentEnd.length;
@@ -1554,7 +1610,9 @@ export class Tokenizer {
           }
         }
 
-        this.advance({ alnum: true });
+        this.advance({
+          alnum: true,
+        });
 
         // Nested comments are allowed by some dialects
         if (
@@ -1562,13 +1620,17 @@ export class Tokenizer {
           && !this._end
           && this.chars(commentStartSize) === commentStart
         ) {
-          this.advance({ i: commentStartSize });
+          this.advance({
+            i: commentStartSize,
+          });
           commentCount += 1;
         }
       }
 
       this.comments.push(this.text.slice(commentStartSize, -commentEndSize + 1));
-      this.advance({ i: commentEndSize - 1 });
+      this.advance({
+        i: commentEndSize - 1,
+      });
     } else {
       while (!this._end && constructor.WHITE_SPACE[this.peek] !== TokenType.BREAK) {
         this.advance({
@@ -1590,7 +1652,8 @@ export class Tokenizer {
     // Leading comment is attached to the succeeding token, whilst trailing comment to the preceding.
     if (commentStartLine === this.prevTokenLine) {
       this.tokens[this.tokens.length - 1].comments.push(...this.comments);
-      this.comments = [];
+      this.comments = [
+      ];
       this.prevTokenLine = this.line;
     }
 
@@ -1627,7 +1690,10 @@ export class Tokenizer {
         }
         decimal = true;
         this.advance();
-      } else if (['-', '+'].includes(this.peek) && scientific === 1) {
+      } else if ([
+        '-',
+        '+',
+      ].includes(this.peek) && scientific === 1) {
         // Only consume +/- if followed by a digit
         if (this._current + 1 < this.size && this.isDigit(this.sql[this._current + 1])) {
           scientific += 1;
@@ -1661,7 +1727,9 @@ export class Tokenizer {
           return this.add(TokenType.VAR);
         }
 
-        this.advance({ i: -literal.length });
+        this.advance({
+          i: -literal.length,
+        });
         return this.add(TokenType.NUMBER, numberText);
       } else {
         return this.add(TokenType.NUMBER);
@@ -1722,7 +1790,10 @@ export class Tokenizer {
     if (start in constructor._QUOTES) {
       end = constructor._QUOTES[start];
     } else if (start in constructor._FORMAT_STRINGS) {
-      [end, tokenType] = constructor._FORMAT_STRINGS[start];
+      [
+        end,
+        tokenType,
+      ] = constructor._FORMAT_STRINGS[start];
 
       if (tokenType === TokenType.HEX_STRING) {
         base = 16;
@@ -1747,10 +1818,14 @@ export class Tokenizer {
           && (this._end || this.isDigit(tag) || this.isWhitespace(tag))
         ) {
           if (!this._end) {
-            this.advance({ i: -1 });
+            this.advance({
+              i: -1,
+            });
           }
 
-          this.advance({ i: -tag.length });
+          this.advance({
+            i: -tag.length,
+          });
           this.add(constructor.HEREDOC_STRING_ALTERNATIVE);
           return true;
         }
@@ -1761,13 +1836,17 @@ export class Tokenizer {
       return false;
     }
 
-    this.advance({ i: start.length });
+    this.advance({
+      i: start.length,
+    });
     const text = this.extractString(
       end,
       tokenType === TokenType.BYTE_STRING
         ? constructor._BYTE_STRING_ESCAPES
         : constructor._STRING_ESCAPES,
-      { rawString: tokenType === TokenType.RAW_STRING },
+      {
+        rawString: tokenType === TokenType.RAW_STRING,
+      },
     );
 
     if (base && text && Number.isNaN(parseInt(text, base))) {
@@ -1781,7 +1860,10 @@ export class Tokenizer {
   private scanIdentifier (identifierEnd: string): void {
     this.advance();
     const constructor = this._constructor;
-    const escapes = new Set([...Array.from(constructor._IDENTIFIER_ESCAPES), identifierEnd]);
+    const escapes = new Set([
+      ...Array.from(constructor._IDENTIFIER_ESCAPES),
+      identifierEnd,
+    ]);
     const text = this.extractString(identifierEnd, escapes);
     this.add(TokenType.IDENTIFIER, text);
   }
@@ -1844,7 +1926,9 @@ export class Tokenizer {
       ) {
         const unescapedSequence = this.dialect._constructor.UNESCAPED_SEQUENCES[this.char + this.peek];
         if (unescapedSequence) {
-          this.advance({ i: 2 });
+          this.advance({
+            i: 2,
+          });
           text += unescapedSequence;
           continue;
         }
@@ -1870,14 +1954,18 @@ export class Tokenizer {
         }
 
         if (this._current + 1 < this.size) {
-          this.advance({ i: 2 });
+          this.advance({
+            i: 2,
+          });
         } else {
           throw new TokenError(`Missing ${delimiter} from ${this.line}:${this._current}`);
         }
       } else {
         if (this.chars(delimSize) === delimiter) {
           if (1 < delimSize) {
-            this.advance({ i: delimSize - 1 });
+            this.advance({
+              i: delimSize - 1,
+            });
           }
           break;
         }
@@ -1922,8 +2010,14 @@ export class Tokenizer {
   ): Record<string, [string, TokenType]> {
     const quotes = this.convertQuotes(arr);
     const result: Record<string, [string, TokenType]> = {};
-    for (const [k, v] of Object.entries(quotes)) {
-      result[k] = [v, tokenType];
+    for (const [
+      k,
+      v,
+    ] of Object.entries(quotes)) {
+      result[k] = [
+        v,
+        tokenType,
+      ];
     }
     return result;
   }

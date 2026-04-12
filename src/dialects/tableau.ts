@@ -1,9 +1,15 @@
-import { cache } from '../port_internals';
+import {
+  cache,
+} from '../port_internals';
 import {
   Generator,
 } from '../generator';
-import { Parser } from '../parser';
-import type { TokenPair } from '../tokens';
+import {
+  Parser,
+} from '../parser';
+import type {
+  TokenPair,
+} from '../tokens';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
@@ -21,7 +27,9 @@ import {
   StrPositionExpr,
   VolatilePropertyExpr,
 } from '../expressions';
-import { seqGet } from '../helper';
+import {
+  seqGet,
+} from '../helper';
 import {
   eliminateDistinctOn, preprocess,
 } from '../transforms';
@@ -33,12 +41,20 @@ import {
 export class TableauTokenizer extends Tokenizer {
   @cache
   static get IDENTIFIERS (): TokenPair[] {
-    return [['[', ']']];
+    return [
+      [
+        '[',
+        ']',
+      ],
+    ];
   }
 
   @cache
   static get QUOTES () {
-    return ['\'', '"'];
+    return [
+      '\'',
+      '"',
+    ];
   }
 }
 
@@ -56,7 +72,9 @@ export class TableauParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
     return noParenFunctions;
@@ -68,7 +86,11 @@ export class TableauParser extends Parser {
   static get FUNCTIONS (): Record<string, (args: Expression[]) => Expression> {
     return {
       ...Parser.FUNCTIONS,
-      COUNTD: (args: Expression[]) => new CountExpr({ this: new DistinctExpr({ expressions: args }) }),
+      COUNTD: (args: Expression[]) => new CountExpr({
+        this: new DistinctExpr({
+          expressions: args,
+        }),
+      }),
       FIND: (args: Expression[]) => StrPositionExpr.fromArgList(args),
       FINDNTH: (args: Expression[]) => new StrPositionExpr({
         this: seqGet(args, 0),
@@ -81,7 +103,10 @@ export class TableauParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 export class TableauGenerator extends Generator {
@@ -100,7 +125,8 @@ export class TableauGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [];
+  static readonly SELECT_KINDS: string[] = [
+  ];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -131,16 +157,21 @@ export class TableauGenerator extends Generator {
     m.set(IfExpr, function (this: Generator, e: IfExpr) {
       return `IF ${this.sql(e, 'this')} THEN ${this.sql(e, 'true')} ELSE ${this.sql(e, 'false')} END`;
     });
-    m.set(SelectExpr, preprocess([eliminateDistinctOn]));
+    m.set(SelectExpr, preprocess([
+      eliminateDistinctOn,
+    ]));
     return m;
   }
 
   public countSql (expression: CountExpr): string {
     const inner = expression.args.this;
     if (inner instanceof DistinctExpr) {
-      return this.func('COUNTD', inner.args.expressions ?? []);
+      return this.func('COUNTD', inner.args.expressions ?? [
+      ]);
     }
-    return this.func('COUNT', [inner]);
+    return this.func('COUNT', [
+      inner,
+    ]);
   }
 
   public strPositionSql (expression: StrPositionExpr): string {

@@ -10,7 +10,9 @@ import {
   AddConstraintExpr, ConstraintExpr, QueryOptionExpr, ParameterExpr, VarExpr,
   TableExpr, InsertExpr, DateExpr, TimeExpr, TimestampExpr,
 } from '../../../src/expressions';
-import { narrowInstanceOf } from '../../../src/port_internals';
+import {
+  narrowInstanceOf,
+} from '../../../src/port_internals';
 import {
   Validator, UnsupportedError,
 } from './validator';
@@ -38,7 +40,9 @@ class TestTSQL extends Validator {
     this.validateIdentity('CREATE view a.b.c', 'CREATE VIEW b.c');
     this.validateIdentity('DROP view a.b.c', 'DROP VIEW b.c');
     this.validateIdentity('ROUND(x, 1, 0)');
-    this.validateIdentity('EXEC MyProc @id=7, @name=\'Lochristi\'', undefined, { checkCommandWarning: true });
+    this.validateIdentity('EXEC MyProc @id=7, @name=\'Lochristi\'', undefined, {
+      checkCommandWarning: true,
+    });
     this.validateIdentity('SELECT TRIM(\'     test    \') AS Result');
     this.validateIdentity('SELECT TRIM(\'.,! \' FROM \'     #     test    .\') AS Result');
     this.validateIdentity('SELECT * FROM t TABLESAMPLE (10 PERCENT)');
@@ -119,7 +123,9 @@ class TestTSQL extends Validator {
       },
     });
     this.validateAll('SELECT TRIM(BOTH \'a\' FROM a)', {
-      read: { mysql: 'SELECT TRIM(BOTH \'a\' FROM a)' },
+      read: {
+        mysql: 'SELECT TRIM(BOTH \'a\' FROM a)',
+      },
       write: {
         mysql: 'SELECT TRIM(BOTH \'a\' FROM a)',
         tsql: 'SELECT TRIM(BOTH \'a\' FROM a)',
@@ -132,10 +138,14 @@ class TestTSQL extends Validator {
         postgres: 'SELECT MAKE_TIME(23, 59, 59)',
         snowflake: 'SELECT TIME_FROM_PARTS(23, 59, 59)',
       },
-      write: { tsql: 'SELECT TIMEFROMPARTS(23, 59, 59, 0, 0)' },
+      write: {
+        tsql: 'SELECT TIMEFROMPARTS(23, 59, 59, 0, 0)',
+      },
     });
     this.validateAll('SELECT DATETIMEFROMPARTS(2013, 4, 5, 12, 00, 00, 0)', {
-      read: { snowflake: 'SELECT TIMESTAMP_FROM_PARTS(2013, 4, 5, 12, 00, 00, 987654321)' },
+      read: {
+        snowflake: 'SELECT TIMESTAMP_FROM_PARTS(2013, 4, 5, 12, 00, 00, 987654321)',
+      },
       write: {
         duckdb: 'SELECT MAKE_TIMESTAMP(2013, 4, 5, 12, 00, 00 + (0 / 1000.0))',
         snowflake: 'SELECT TIMESTAMP_FROM_PARTS(2013, 4, 5, 12, 00, 00, 0 * 1000000)',
@@ -143,10 +153,14 @@ class TestTSQL extends Validator {
       },
     });
     this.validateAll('SELECT TOP 1 * FROM (SELECT x FROM t1 UNION ALL SELECT x FROM t2) AS _l_0', {
-      read: { '': 'SELECT x FROM t1 UNION ALL SELECT x FROM t2 LIMIT 1' },
+      read: {
+        '': 'SELECT x FROM t1 UNION ALL SELECT x FROM t2 LIMIT 1',
+      },
     });
     this.validateAll('WITH t(c) AS (SELECT 1) SELECT * INTO foo FROM (SELECT c AS c FROM t) AS temp', {
-      read: { duckdb: 'CREATE TABLE foo AS WITH t(c) AS (SELECT 1) SELECT c FROM t' },
+      read: {
+        duckdb: 'CREATE TABLE foo AS WITH t(c) AS (SELECT 1) SELECT c FROM t',
+      },
     });
     this.validateAll('WITH t(c) AS (SELECT 1) SELECT * INTO foo FROM (SELECT c AS c FROM t) AS temp', {
       write: {
@@ -191,10 +205,14 @@ class TestTSQL extends Validator {
       },
     });
     this.validateAll('WITH y AS (SELECT 2 AS c) INSERT INTO t SELECT * FROM y', {
-      read: { duckdb: 'WITH y AS (SELECT 2 AS c) INSERT INTO t SELECT * FROM y' },
+      read: {
+        duckdb: 'WITH y AS (SELECT 2 AS c) INSERT INTO t SELECT * FROM y',
+      },
     });
     this.validateAll('WITH t(c) AS (SELECT 1) SELECT 1 AS c UNION (SELECT c FROM t)', {
-      read: { duckdb: 'SELECT 1 AS c UNION (WITH t(c) AS (SELECT 1) SELECT c FROM t)' },
+      read: {
+        duckdb: 'SELECT 1 AS c UNION (WITH t(c) AS (SELECT 1) SELECT c FROM t)',
+      },
     });
     this.validateAll(
       'WITH t(c) AS (SELECT 1) MERGE INTO x AS z USING (SELECT c AS c FROM t) AS y ON a = b WHEN MATCHED THEN UPDATE SET a = y.b',
@@ -213,7 +231,9 @@ class TestTSQL extends Validator {
       },
     );
     this.validateAll('CREATE TABLE #mytemptable (a INTEGER)', {
-      read: { duckdb: 'CREATE TEMPORARY TABLE mytemptable (a INT)' },
+      read: {
+        duckdb: 'CREATE TEMPORARY TABLE mytemptable (a INT)',
+      },
       write: {
         tsql: 'CREATE TABLE #mytemptable (a INTEGER)',
         snowflake: 'CREATE TEMPORARY TABLE mytemptable (a INT)',
@@ -272,7 +292,9 @@ class TestTSQL extends Validator {
     );
     this.validateIdentity('CREATE TABLE x (A INTEGER NOT NULL, B INTEGER NULL)');
     this.validateAll('CREATE TABLE x ( A INTEGER NOT NULL, B INTEGER NULL )', {
-      write: { hive: 'CREATE TABLE x (A INT NOT NULL, B INT)' },
+      write: {
+        hive: 'CREATE TABLE x (A INT NOT NULL, B INT)',
+      },
     });
     this.validateIdentity(
       'CREATE TABLE tbl (a AS (x + 1) PERSISTED, b AS (y + 2), c AS (y / 3) PERSISTED NOT NULL)',
@@ -296,7 +318,9 @@ class TestTSQL extends Validator {
     this.validateIdentity(
       'MERGE INTO mytable WITH (HOLDLOCK) AS T USING mytable_merge AS S ON (T.user_id = S.user_id) WHEN NOT MATCHED THEN INSERT (c1, c2) VALUES (S.c1, S.c2)',
     );
-    this.validateIdentity('UPDATE STATISTICS x', undefined, { checkCommandWarning: true });
+    this.validateIdentity('UPDATE STATISTICS x', undefined, {
+      checkCommandWarning: true,
+    });
     this.validateIdentity('UPDATE x SET y = 1 OUTPUT x.a, x.b INTO @y FROM y');
     this.validateIdentity('UPDATE x SET y = 1 OUTPUT x.a, x.b FROM y');
     this.validateIdentity('INSERT INTO x (y) OUTPUT x.a, x.b INTO l SELECT * FROM z');
@@ -309,7 +333,9 @@ class TestTSQL extends Validator {
     this.validateIdentity('END');
     this.validateIdentity('@x');
     this.validateIdentity('#x');
-    this.validateIdentity('PRINT @TestVariable', undefined, { checkCommandWarning: true });
+    this.validateIdentity('PRINT @TestVariable', undefined, {
+      checkCommandWarning: true,
+    });
     this.validateIdentity('SELECT Employee_ID, Department_ID FROM @MyTableVar');
     this.validateIdentity('INSERT INTO @TestTable VALUES (1, \'Value1\', 12, 20)');
     this.validateIdentity('SELECT * FROM #foo');
@@ -326,7 +352,9 @@ class TestTSQL extends Validator {
     this.validateIdentity('SELECT "x"."y" FROM foo', 'SELECT [x].[y] FROM foo');
 
     this.validateAll('SELECT * FROM t ORDER BY (SELECT NULL) OFFSET 2 ROWS', {
-      read: { postgres: 'SELECT * FROM t OFFSET 2' },
+      read: {
+        postgres: 'SELECT * FROM t OFFSET 2',
+      },
       write: {
         postgres: 'SELECT * FROM t ORDER BY (SELECT NULL) NULLS FIRST OFFSET 2',
         tsql: 'SELECT * FROM t ORDER BY (SELECT NULL) OFFSET 2 ROWS',
@@ -394,21 +422,27 @@ class TestTSQL extends Validator {
       },
     });
     this.validateAll('HASHBYTES(\'SHA2_256\', x)', {
-      read: { spark: 'SHA2(x, 256)' },
+      read: {
+        spark: 'SHA2(x, 256)',
+      },
       write: {
         tsql: 'HASHBYTES(\'SHA2_256\', x)',
         spark: 'SHA2(x, 256)',
       },
     });
     this.validateAll('HASHBYTES(\'SHA2_512\', x)', {
-      read: { spark: 'SHA2(x, 512)' },
+      read: {
+        spark: 'SHA2(x, 512)',
+      },
       write: {
         tsql: 'HASHBYTES(\'SHA2_512\', x)',
         spark: 'SHA2(x, 512)',
       },
     });
     this.validateAll('HASHBYTES(\'MD5\', \'x\')', {
-      read: { spark: 'MD5(\'x\')' },
+      read: {
+        spark: 'MD5(\'x\')',
+      },
       write: {
         tsql: 'HASHBYTES(\'MD5\', \'x\')',
         spark: 'MD5(\'x\')',
@@ -418,7 +452,9 @@ class TestTSQL extends Validator {
     this.validateIdentity('LOG(n)');
     this.validateIdentity('LOG(n, b)');
     this.validateAll('STDEV(x)', {
-      read: { '': 'STDDEV(x)' },
+      read: {
+        '': 'STDDEV(x)',
+      },
       write: {
         '': 'STDDEV(x)',
         'tsql': 'STDEV(x)',
@@ -443,7 +479,9 @@ class TestTSQL extends Validator {
       },
     });
 
-    expect(() => parseOne('SELECT begin', { read: 'tsql' })).toThrow();
+    expect(() => parseOne('SELECT begin', {
+      read: 'tsql',
+    })).toThrow();
 
     this.validateIdentity('CREATE PROCEDURE test(@v1 INTEGER = 1, @v2 CHAR(1) = \'c\')');
     this.validateIdentity('DECLARE @v1 AS INTEGER = 1, @v2 AS CHAR(1) = \'c\'');
@@ -461,7 +499,10 @@ class TestTSQL extends Validator {
       'CREATE PROCEDURE test(@v1 INTEGER = 1, @v2 CHAR(1) = \'c\')',
     );
 
-    for (const orderBy of ['', ' ORDER BY c']) {
+    for (const orderBy of [
+      '',
+      ' ORDER BY c',
+    ]) {
       for (const jsonClause of [
         '',
         ' NULL ON NULL',
@@ -619,7 +660,9 @@ FOR XML
   PATH,
   BINARY BASE64,
   ELEMENTS XSINIL`,
-      { pretty: true },
+      {
+        pretty: true,
+      },
     );
   }
 
@@ -632,10 +675,14 @@ FOR XML
     this.validateIdentity('CAST(x AS SQL_VARIANT)');
     this.validateIdentity('CAST(x AS BIT)');
     this.validateAll('CAST(x AS DATETIME2(6))', {
-      write: { hive: 'CAST(x AS TIMESTAMP)' },
+      write: {
+        hive: 'CAST(x AS TIMESTAMP)',
+      },
     });
     this.validateAll('CAST(x AS ROWVERSION)', {
-      read: { tsql: 'CAST(x AS TIMESTAMP)' },
+      read: {
+        tsql: 'CAST(x AS TIMESTAMP)',
+      },
       write: {
         tsql: 'CAST(x AS ROWVERSION)',
         hive: 'CAST(x AS BINARY)',
@@ -647,7 +694,9 @@ FOR XML
       'DATETIME2',
     ]) {
       this.validateAll(`CAST(x AS ${temporalType})`, {
-        read: { '': `CAST(x AS ${temporalType})` },
+        read: {
+          '': `CAST(x AS ${temporalType})`,
+        },
         write: {
           mysql: 'CAST(x AS DATETIME)',
           duckdb: 'CAST(x AS TIMESTAMP)',
@@ -683,7 +732,9 @@ FOR XML
       },
     });
     this.validateAll('CAST(X AS TINYINT)', {
-      read: { duckdb: 'CAST(X AS UTINYINT)' },
+      read: {
+        duckdb: 'CAST(X AS UTINYINT)',
+      },
       write: {
         duckdb: 'CAST(X AS UTINYINT)',
         hive: 'CAST(X AS SMALLINT)',
@@ -828,8 +879,12 @@ FOR XML
       },
     });
     this.validateAll('CREATE TABLE t (col1 DATETIME2(2))', {
-      read: { snowflake: 'CREATE TABLE t (col1 TIMESTAMP_NTZ(2))' },
-      write: { tsql: 'CREATE TABLE t (col1 DATETIME2(2))' },
+      read: {
+        snowflake: 'CREATE TABLE t (col1 TIMESTAMP_NTZ(2))',
+      },
+      write: {
+        tsql: 'CREATE TABLE t (col1 DATETIME2(2))',
+      },
     });
   }
 
@@ -847,30 +902,67 @@ FOR XML
       },
     });
     this.validateAll('CAST(x AS BOOLEAN)', {
-      write: { tsql: 'CAST(x AS BIT)' },
+      write: {
+        tsql: 'CAST(x AS BIT)',
+      },
     });
-    this.validateAll('a = TRUE', { write: { tsql: 'a = 1' } });
-    this.validateAll('a != FALSE', { write: { tsql: 'a <> 0' } });
-    this.validateAll('a IS TRUE', { write: { tsql: 'a = 1' } });
-    this.validateAll('a IS NOT FALSE', { write: { tsql: 'NOT a = 0' } });
+    this.validateAll('a = TRUE', {
+      write: {
+        tsql: 'a = 1',
+      },
+    });
+    this.validateAll('a != FALSE', {
+      write: {
+        tsql: 'a <> 0',
+      },
+    });
+    this.validateAll('a IS TRUE', {
+      write: {
+        tsql: 'a = 1',
+      },
+    });
+    this.validateAll('a IS NOT FALSE', {
+      write: {
+        tsql: 'NOT a = 0',
+      },
+    });
     this.validateAll('CASE WHEN a IN (TRUE) THEN \'y\' ELSE \'n\' END', {
-      write: { tsql: 'CASE WHEN a IN (1) THEN \'y\' ELSE \'n\' END' },
+      write: {
+        tsql: 'CASE WHEN a IN (1) THEN \'y\' ELSE \'n\' END',
+      },
     });
     this.validateAll('CASE WHEN a NOT IN (FALSE) THEN \'y\' ELSE \'n\' END', {
-      write: { tsql: 'CASE WHEN NOT a IN (0) THEN \'y\' ELSE \'n\' END' },
+      write: {
+        tsql: 'CASE WHEN NOT a IN (0) THEN \'y\' ELSE \'n\' END',
+      },
     });
-    this.validateAll('SELECT TRUE, FALSE', { write: { tsql: 'SELECT 1, 0' } });
-    this.validateAll('SELECT TRUE AS a, FALSE AS b', { write: { tsql: 'SELECT 1 AS a, 0 AS b' } });
+    this.validateAll('SELECT TRUE, FALSE', {
+      write: {
+        tsql: 'SELECT 1, 0',
+      },
+    });
+    this.validateAll('SELECT TRUE AS a, FALSE AS b', {
+      write: {
+        tsql: 'SELECT 1 AS a, 0 AS b',
+      },
+    });
     this.validateAll('SELECT 1 FROM a WHERE TRUE', {
-      write: { tsql: 'SELECT 1 FROM a WHERE (1 = 1)' },
+      write: {
+        tsql: 'SELECT 1 FROM a WHERE (1 = 1)',
+      },
     });
     this.validateAll('CASE WHEN TRUE THEN \'y\' WHEN FALSE THEN \'n\' ELSE NULL END', {
-      write: { tsql: 'CASE WHEN (1 = 1) THEN \'y\' WHEN (1 = 0) THEN \'n\' ELSE NULL END' },
+      write: {
+        tsql: 'CASE WHEN (1 = 1) THEN \'y\' WHEN (1 = 0) THEN \'n\' ELSE NULL END',
+      },
     });
   }
 
   testDdl () {
-    for (const colstore of ['NONCLUSTERED COLUMNSTORE', 'CLUSTERED COLUMNSTORE']) {
+    for (const colstore of [
+      'NONCLUSTERED COLUMNSTORE',
+      'CLUSTERED COLUMNSTORE',
+    ]) {
       this.validateIdentity(`CREATE ${colstore} INDEX index_name ON foo.bar`);
     }
     for (const viewAttr of [
@@ -883,7 +975,10 @@ FOR XML
     this.validateIdentity('ALTER TABLE dbo.DocExe DROP CONSTRAINT FK_Column_B').assertIs(AlterExpr)
       .args['actions']?.[0].assertIs(DropExpr);
 
-    for (const clusteredKeyword of ['CLUSTERED', 'NONCLUSTERED']) {
+    for (const clusteredKeyword of [
+      'CLUSTERED',
+      'NONCLUSTERED',
+    ]) {
       this.validateIdentity(
         `CREATE TABLE "dbo"."benchmark" ("name" CHAR(7) NOT NULL, "internal_id" VARCHAR(10) NOT NULL, UNIQUE ${clusteredKeyword} ("internal_id" ASC))`,
         `CREATE TABLE [dbo].[benchmark] ([name] CHAR(7) NOT NULL, [internal_id] VARCHAR(10) NOT NULL, UNIQUE ${clusteredKeyword} ([internal_id] ASC))`,
@@ -913,17 +1008,23 @@ FOR XML
     this.validateIdentity(
       'ALTER VIEW v WITH SCHEMABINDING AS SELECT * FROM foo WHERE c > 100',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
     this.validateIdentity(
       'ALTER VIEW v WITH ENCRYPTION AS SELECT * FROM foo WHERE c > 100',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
     this.validateIdentity(
       'ALTER VIEW v WITH VIEW_METADATA AS SELECT * FROM foo WHERE c > 100',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
     this.validateIdentity(
       'CREATE COLUMNSTORE INDEX index_name ON foo.bar',
@@ -971,33 +1072,57 @@ FOR XML
     });
     this.validateAll(
       'IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = object_id(\'db.tbl\') AND name = \'idx\') EXEC(\'CREATE INDEX idx ON db.tbl\')',
-      { read: { '': 'CREATE INDEX IF NOT EXISTS idx ON db.tbl' } },
+      {
+        read: {
+          '': 'CREATE INDEX IF NOT EXISTS idx ON db.tbl',
+        },
+      },
     );
     this.validateAll(
       'IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = \'foo\') EXEC(\'CREATE SCHEMA foo\')',
-      { read: { '': 'CREATE SCHEMA IF NOT EXISTS foo' } },
+      {
+        read: {
+          '': 'CREATE SCHEMA IF NOT EXISTS foo',
+        },
+      },
     );
     this.validateAll(
       'IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = \'baz\' AND TABLE_SCHEMA = \'bar\' AND TABLE_CATALOG = \'foo\') EXEC(\'CREATE TABLE foo.bar.baz (a INTEGER)\')',
-      { read: { '': 'CREATE TABLE IF NOT EXISTS foo.bar.baz (a INTEGER)' } },
+      {
+        read: {
+          '': 'CREATE TABLE IF NOT EXISTS foo.bar.baz (a INTEGER)',
+        },
+      },
     );
     this.validateAll(
       'IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = \'baz\' AND TABLE_SCHEMA = \'bar\' AND TABLE_CATALOG = \'foo\') EXEC(\'SELECT * INTO foo.bar.baz FROM (SELECT \'\'2020\'\' AS z FROM a.b.c) AS temp\')',
-      { read: { '': 'CREATE TABLE IF NOT EXISTS foo.bar.baz AS SELECT \'2020\' AS z FROM a.b.c' } },
+      {
+        read: {
+          '': 'CREATE TABLE IF NOT EXISTS foo.bar.baz AS SELECT \'2020\' AS z FROM a.b.c',
+        },
+      },
     );
     this.validateAll('CREATE OR ALTER VIEW a.b AS SELECT 1', {
-      read: { '': 'CREATE OR REPLACE VIEW a.b AS SELECT 1' },
-      write: { tsql: 'CREATE OR ALTER VIEW a.b AS SELECT 1' },
+      read: {
+        '': 'CREATE OR REPLACE VIEW a.b AS SELECT 1',
+      },
+      write: {
+        tsql: 'CREATE OR ALTER VIEW a.b AS SELECT 1',
+      },
     });
     this.validateAll('ALTER TABLE a ADD b INTEGER, c INTEGER', {
-      read: { '': 'ALTER TABLE a ADD COLUMN b INT, ADD COLUMN c INT' },
+      read: {
+        '': 'ALTER TABLE a ADD COLUMN b INT, ADD COLUMN c INT',
+      },
       write: {
         '': 'ALTER TABLE a ADD COLUMN b INT, ADD COLUMN c INT',
         'tsql': 'ALTER TABLE a ADD b INTEGER, c INTEGER',
       },
     });
     this.validateAll('ALTER TABLE a ALTER COLUMN b INTEGER', {
-      read: { '': 'ALTER TABLE a ALTER COLUMN b INT' },
+      read: {
+        '': 'ALTER TABLE a ALTER COLUMN b INT',
+      },
       write: {
         '': 'ALTER TABLE a ALTER COLUMN b SET DATA TYPE INT',
         'tsql': 'ALTER TABLE a ALTER COLUMN b INTEGER',
@@ -1014,20 +1139,34 @@ FOR XML
       'ALTER TABLE tbl ADD CONSTRAINT cnstr PRIMARY KEY CLUSTERED (ID), CONSTRAINT cnstr2 UNIQUE CLUSTERED (ID)',
     ).find(AddConstraintExpr);
     expect(constraint).toBeTruthy();
-    expect([...constraint!.findAll(ConstraintExpr)].length).toBe(2);
+    expect([
+      ...constraint!.findAll(ConstraintExpr),
+    ].length).toBe(2);
   }
 
   testTransaction () {
     this.validateIdentity('BEGIN TRANSACTION');
-    this.validateAll('BEGIN TRAN', { write: { tsql: 'BEGIN TRANSACTION' } });
+    this.validateAll('BEGIN TRAN', {
+      write: {
+        tsql: 'BEGIN TRANSACTION',
+      },
+    });
     this.validateIdentity('BEGIN TRANSACTION transaction_name');
     this.validateIdentity('BEGIN TRANSACTION @tran_name_variable');
     this.validateIdentity('BEGIN TRANSACTION transaction_name WITH MARK \'description\'');
   }
 
   testCommit () {
-    this.validateAll('COMMIT', { write: { tsql: 'COMMIT TRANSACTION' } });
-    this.validateAll('COMMIT TRAN', { write: { tsql: 'COMMIT TRANSACTION' } });
+    this.validateAll('COMMIT', {
+      write: {
+        tsql: 'COMMIT TRANSACTION',
+      },
+    });
+    this.validateAll('COMMIT TRAN', {
+      write: {
+        tsql: 'COMMIT TRANSACTION',
+      },
+    });
     this.validateIdentity('COMMIT TRANSACTION');
     this.validateIdentity('COMMIT TRANSACTION transaction_name');
     this.validateIdentity('COMMIT TRANSACTION @tran_name_variable');
@@ -1036,8 +1175,16 @@ FOR XML
   }
 
   testRollback () {
-    this.validateAll('ROLLBACK', { write: { tsql: 'ROLLBACK TRANSACTION' } });
-    this.validateAll('ROLLBACK TRAN', { write: { tsql: 'ROLLBACK TRANSACTION' } });
+    this.validateAll('ROLLBACK', {
+      write: {
+        tsql: 'ROLLBACK TRANSACTION',
+      },
+    });
+    this.validateAll('ROLLBACK TRAN', {
+      write: {
+        tsql: 'ROLLBACK TRANSACTION',
+      },
+    });
     this.validateIdentity('ROLLBACK TRANSACTION');
     this.validateIdentity('ROLLBACK TRANSACTION transaction_name');
     this.validateIdentity('ROLLBACK TRANSACTION @tran_name_variable');
@@ -1146,9 +1293,13 @@ WHERE
       'END',
     ];
 
-    const exprs = parse(sql, { read: 'tsql' });
+    const exprs = parse(sql, {
+      read: 'tsql',
+    });
     for (let i = 0; i < exprs.length; i++) {
-      expect(exprs[i]?.sql({ dialect: 'tsql' })).toBe(expectedSqls[i]);
+      expect(exprs[i]?.sql({
+        dialect: 'tsql',
+      })).toBe(expectedSqls[i]);
     }
 
     const sql2 = `
@@ -1168,9 +1319,13 @@ WHERE
       'CREATE TABLE [target_schema].[target_table] (a INTEGER) WITH (DISTRIBUTION=REPLICATE, HEAP)',
     ];
 
-    const exprs2 = parse(sql2, { read: 'tsql' });
+    const exprs2 = parse(sql2, {
+      read: 'tsql',
+    });
     for (let i = 0; i < exprs2.length; i++) {
-      expect(exprs2[i]?.sql({ dialect: 'tsql' })).toBe(expectedSqls2[i]);
+      expect(exprs2[i]?.sql({
+        dialect: 'tsql',
+      })).toBe(expectedSqls2[i]);
     }
   }
 
@@ -1179,28 +1334,36 @@ WHERE
       'SELECT CAST(SUBSTRING(\'ABCD~1234\', CHARINDEX(\'~\', \'ABCD~1234\') + 1, LEN(\'ABCD~1234\')) AS BIGINT)',
     );
     this.validateAll('CHARINDEX(x, y, 9)', {
-      read: { spark: 'LOCATE(x, y, 9)' },
+      read: {
+        spark: 'LOCATE(x, y, 9)',
+      },
       write: {
         spark: 'LOCATE(x, y, 9)',
         tsql: 'CHARINDEX(x, y, 9)',
       },
     });
     this.validateAll('CHARINDEX(x, y)', {
-      read: { spark: 'LOCATE(x, y)' },
+      read: {
+        spark: 'LOCATE(x, y)',
+      },
       write: {
         spark: 'LOCATE(x, y)',
         tsql: 'CHARINDEX(x, y)',
       },
     });
     this.validateAll('CHARINDEX(\'sub\', \'testsubstring\', 3)', {
-      read: { spark: 'LOCATE(\'sub\', \'testsubstring\', 3)' },
+      read: {
+        spark: 'LOCATE(\'sub\', \'testsubstring\', 3)',
+      },
       write: {
         spark: 'LOCATE(\'sub\', \'testsubstring\', 3)',
         tsql: 'CHARINDEX(\'sub\', \'testsubstring\', 3)',
       },
     });
     this.validateAll('CHARINDEX(\'sub\', \'testsubstring\')', {
-      read: { spark: 'LOCATE(\'sub\', \'testsubstring\')' },
+      read: {
+        spark: 'LOCATE(\'sub\', \'testsubstring\')',
+      },
       write: {
         spark: 'LOCATE(\'sub\', \'testsubstring\')',
         tsql: 'CHARINDEX(\'sub\', \'testsubstring\')',
@@ -1210,16 +1373,28 @@ WHERE
 
   testLen () {
     this.validateAll('LEN(x)', {
-      read: { '': 'LENGTH(x)' },
-      write: { spark: 'LENGTH(CAST(x AS STRING))' },
+      read: {
+        '': 'LENGTH(x)',
+      },
+      write: {
+        spark: 'LENGTH(CAST(x AS STRING))',
+      },
     });
     this.validateAll('RIGHT(x, 1)', {
-      read: { '': 'RIGHT(CAST(x AS STRING), 1)' },
-      write: { spark: 'RIGHT(CAST(x AS STRING), 1)' },
+      read: {
+        '': 'RIGHT(CAST(x AS STRING), 1)',
+      },
+      write: {
+        spark: 'RIGHT(CAST(x AS STRING), 1)',
+      },
     });
     this.validateAll('LEFT(x, 1)', {
-      read: { '': 'LEFT(CAST(x AS STRING), 1)' },
-      write: { spark: 'LEFT(CAST(x AS STRING), 1)' },
+      read: {
+        '': 'LEFT(CAST(x AS STRING), 1)',
+      },
+      write: {
+        spark: 'LEFT(CAST(x AS STRING), 1)',
+      },
     });
     this.validateAll('LEN(1)', {
       write: {
@@ -1246,7 +1421,11 @@ WHERE
 
   testIsnull () {
     this.validateIdentity('ISNULL(x, y)');
-    this.validateAll('ISNULL(x, y)', { write: { spark: 'COALESCE(x, y)' } });
+    this.validateAll('ISNULL(x, y)', {
+      write: {
+        spark: 'COALESCE(x, y)',
+      },
+    });
   }
 
   testJson () {
@@ -1310,7 +1489,13 @@ WHERE
         ],
         'YEAR',
       ],
-      [['HOUR', 'hh'], 'HOUR'],
+      [
+        [
+          'HOUR',
+          'hh',
+        ],
+        'HOUR',
+      ],
       [
         [
           'MINUTE',
@@ -1327,11 +1512,41 @@ WHERE
         ],
         'SECOND',
       ],
-      [['MILLISECOND', 'ms'], 'MILLISECOND'],
-      [['MICROSECOND', 'mcs'], 'MICROSECOND'],
-      [['NANOSECOND', 'ns'], 'NANOSECOND'],
-      [['WEEKDAY', 'dw'], 'WEEKDAY'],
-      [['TZOFFSET', 'tz'], 'TZOFFSET'],
+      [
+        [
+          'MILLISECOND',
+          'ms',
+        ],
+        'MILLISECOND',
+      ],
+      [
+        [
+          'MICROSECOND',
+          'mcs',
+        ],
+        'MICROSECOND',
+      ],
+      [
+        [
+          'NANOSECOND',
+          'ns',
+        ],
+        'NANOSECOND',
+      ],
+      [
+        [
+          'WEEKDAY',
+          'dw',
+        ],
+        'WEEKDAY',
+      ],
+      [
+        [
+          'TZOFFSET',
+          'tz',
+        ],
+        'TZOFFSET',
+      ],
       [
         [
           'MONTH',
@@ -1358,7 +1573,10 @@ WHERE
       ],
     ];
 
-    for (const [formats, canonical] of datepartFormats) {
+    for (const [
+      formats,
+      canonical,
+    ] of datepartFormats) {
       for (const fmt of formats) {
         this.validateIdentity(`DATEPART(${fmt}, x)`, `DATEPART(${canonical}, x)`);
       }
@@ -1383,7 +1601,10 @@ WHERE
       ],
     ];
 
-    for (const [formats, canonical] of selectDatepartFormats) {
+    for (const [
+      formats,
+      canonical,
+    ] of selectDatepartFormats) {
       for (const fmt of formats) {
         this.validateIdentity(
           `SELECT DATEPART(${fmt}, '2024-11-21')`,
@@ -1399,7 +1620,9 @@ WHERE
       },
     });
     this.validateAll('SELECT DATEPART(YEAR, CAST(\'2017-01-01\' AS DATE))', {
-      read: { postgres: 'SELECT DATE_PART(\'YEAR\', \'2017-01-01\'::DATE)' },
+      read: {
+        postgres: 'SELECT DATE_PART(\'YEAR\', \'2017-01-01\'::DATE)',
+      },
       write: {
         postgres: 'SELECT EXTRACT(YEAR FROM CAST(\'2017-01-01\' AS DATE))',
         spark: 'SELECT EXTRACT(YEAR FROM CAST(\'2017-01-01\' AS DATE))',
@@ -1407,7 +1630,9 @@ WHERE
       },
     });
     this.validateAll('SELECT DATEPART(month, CAST(\'2017-03-01\' AS DATE))', {
-      read: { postgres: 'SELECT DATE_PART(\'month\', \'2017-03-01\'::DATE)' },
+      read: {
+        postgres: 'SELECT DATE_PART(\'month\', \'2017-03-01\'::DATE)',
+      },
       write: {
         postgres: 'SELECT EXTRACT(month FROM CAST(\'2017-03-01\' AS DATE))',
         spark: 'SELECT EXTRACT(month FROM CAST(\'2017-03-01\' AS DATE))',
@@ -1415,7 +1640,9 @@ WHERE
       },
     });
     this.validateAll('SELECT DATEPART(day, CAST(\'2017-01-02\' AS DATE))', {
-      read: { postgres: 'SELECT DATE_PART(\'day\', \'2017-01-02\'::DATE)' },
+      read: {
+        postgres: 'SELECT DATE_PART(\'day\', \'2017-01-02\'::DATE)',
+      },
       write: {
         postgres: 'SELECT EXTRACT(day FROM CAST(\'2017-01-02\' AS DATE))',
         spark: 'SELECT EXTRACT(day FROM CAST(\'2017-01-02\' AS DATE))',
@@ -1595,13 +1822,19 @@ WHERE
   testAddDate () {
     this.validateIdentity('SELECT DATEADD(YEAR, 1, \'2017/08/25\')');
     this.validateAll('DATEADD(year, 50, \'2006-07-31\')', {
-      write: { bigquery: 'DATE_ADD(\'2006-07-31\', INTERVAL 50 YEAR)' },
+      write: {
+        bigquery: 'DATE_ADD(\'2006-07-31\', INTERVAL 50 YEAR)',
+      },
     });
     this.validateAll('SELECT DATEADD(year, 1, \'2017/08/25\')', {
-      write: { spark: 'SELECT ADD_MONTHS(\'2017/08/25\', 12)' },
+      write: {
+        spark: 'SELECT ADD_MONTHS(\'2017/08/25\', 12)',
+      },
     });
     this.validateAll('SELECT DATEADD(qq, 1, \'2017/08/25\')', {
-      write: { spark: 'SELECT ADD_MONTHS(\'2017/08/25\', 3)' },
+      write: {
+        spark: 'SELECT ADD_MONTHS(\'2017/08/25\', 3)',
+      },
     });
     this.validateAll('SELECT DATEADD(wk, 1, \'2017/08/25\')', {
       write: {
@@ -1615,7 +1848,10 @@ WHERE
     this.validateIdentity('SELECT DATEDIFF(HOUR, 1.5, \'2021-01-01\')');
     this.validateIdentity('SELECT DATEDIFF_BIG(HOUR, 1.5, \'2021-01-01\')');
 
-    for (const fnc of ['DATEDIFF', 'DATEDIFF_BIG']) {
+    for (const fnc of [
+      'DATEDIFF',
+      'DATEDIFF_BIG',
+    ]) {
       this.validateAll(`SELECT ${fnc}(quarter, 0, '2021-01-01')`, {
         write: {
           tsql: `SELECT ${fnc}(QUARTER, CAST('1900-01-01' AS DATETIME2), CAST('2021-01-01' AS DATETIME2))`,
@@ -1718,7 +1954,9 @@ WHERE
 
   testTop () {
     this.validateAll('SELECT DISTINCT TOP 3 * FROM A', {
-      read: { spark: 'SELECT DISTINCT * FROM A LIMIT 3' },
+      read: {
+        spark: 'SELECT DISTINCT * FROM A LIMIT 3',
+      },
       write: {
         spark: 'SELECT DISTINCT * FROM A LIMIT 3',
         teradata: 'SELECT DISTINCT TOP 3 * FROM A',
@@ -1726,7 +1964,9 @@ WHERE
       },
     });
     this.validateAll('SELECT TOP (3) * FROM A', {
-      write: { spark: 'SELECT * FROM A LIMIT 3' },
+      write: {
+        spark: 'SELECT * FROM A LIMIT 3',
+      },
     });
     this.validateIdentity(
       'CREATE TABLE schema.table AS SELECT a, id FROM (SELECT a, (SELECT id FROM tb ORDER BY t DESC LIMIT 1) as id FROM tbl) AS _subquery',
@@ -1781,14 +2021,28 @@ WHERE
   }
 
   testString () {
-    this.validateAll('SELECT N\'test\'', { write: { spark: 'SELECT \'test\'' } });
-    this.validateAll('SELECT n\'test\'', { write: { spark: 'SELECT \'test\'' } });
-    this.validateAll('SELECT \'\'\'test\'\'\'', { write: { spark: String.raw`SELECT '\'test\''` } });
+    this.validateAll('SELECT N\'test\'', {
+      write: {
+        spark: 'SELECT \'test\'',
+      },
+    });
+    this.validateAll('SELECT n\'test\'', {
+      write: {
+        spark: 'SELECT \'test\'',
+      },
+    });
+    this.validateAll('SELECT \'\'\'test\'\'\'', {
+      write: {
+        spark: String.raw`SELECT '\'test\''`,
+      },
+    });
   }
 
   testEoMonth () {
     this.validateAll('EOMONTH(GETDATE())', {
-      read: { spark: 'LAST_DAY(CURRENT_TIMESTAMP())' },
+      read: {
+        spark: 'LAST_DAY(CURRENT_TIMESTAMP())',
+      },
       write: {
         bigquery: 'LAST_DAY(CAST(CURRENT_TIMESTAMP() AS DATE))',
         clickhouse: 'LAST_DAY(CAST(CURRENT_TIMESTAMP() AS Nullable(DATE)))',
@@ -1882,24 +2136,48 @@ WHERE
   }
 
   testCurrentUser () {
-    this.validateAll('SUSER_NAME()', { write: { spark: 'CURRENT_USER()' } });
-    this.validateAll('SUSER_SNAME()', { write: { spark: 'CURRENT_USER()' } });
-    this.validateAll('SYSTEM_USER()', { write: { spark: 'CURRENT_USER()' } });
-    this.validateAll('SYSTEM_USER', { write: { spark: 'CURRENT_USER()' } });
+    this.validateAll('SUSER_NAME()', {
+      write: {
+        spark: 'CURRENT_USER()',
+      },
+    });
+    this.validateAll('SUSER_SNAME()', {
+      write: {
+        spark: 'CURRENT_USER()',
+      },
+    });
+    this.validateAll('SYSTEM_USER()', {
+      write: {
+        spark: 'CURRENT_USER()',
+      },
+    });
+    this.validateAll('SYSTEM_USER', {
+      write: {
+        spark: 'CURRENT_USER()',
+      },
+    });
   }
 
   testHints () {
     this.validateAll('SELECT x FROM a INNER HASH JOIN b ON b.id = a.id', {
-      write: { spark: 'SELECT x FROM a INNER JOIN b ON b.id = a.id' },
+      write: {
+        spark: 'SELECT x FROM a INNER JOIN b ON b.id = a.id',
+      },
     });
     this.validateAll('SELECT x FROM a INNER LOOP JOIN b ON b.id = a.id', {
-      write: { spark: 'SELECT x FROM a INNER JOIN b ON b.id = a.id' },
+      write: {
+        spark: 'SELECT x FROM a INNER JOIN b ON b.id = a.id',
+      },
     });
     this.validateAll('SELECT x FROM a INNER REMOTE JOIN b ON b.id = a.id', {
-      write: { spark: 'SELECT x FROM a INNER JOIN b ON b.id = a.id' },
+      write: {
+        spark: 'SELECT x FROM a INNER JOIN b ON b.id = a.id',
+      },
     });
     this.validateAll('SELECT x FROM a INNER MERGE JOIN b ON b.id = a.id', {
-      write: { spark: 'SELECT x FROM a INNER JOIN b ON b.id = a.id' },
+      write: {
+        spark: 'SELECT x FROM a INNER JOIN b ON b.id = a.id',
+      },
     });
     this.validateAll('SELECT x FROM a WITH (NOLOCK)', {
       write: {
@@ -2007,12 +2285,16 @@ FROM OPENJSON(@json) WITH (
     this.validateIdentity(
       'DECLARE @MyTableVar TABLE (EmpID INT NOT NULL, PRIMARY KEY CLUSTERED (EmpID), UNIQUE NONCLUSTERED (EmpID), INDEX CustomNonClusteredIndex NONCLUSTERED (EmpID))',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
     this.validateIdentity(
       'DECLARE vendor_cursor CURSOR FOR SELECT VendorID, Name FROM Purchasing.Vendor WHERE PreferredVendorStatus = 1 ORDER BY VendorID',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
   }
 
@@ -2022,18 +2304,38 @@ FROM OPENJSON(@json) WITH (
     this.validateIdentity('x::varchar(MAX)', 'CAST(x AS VARCHAR(MAX))');
 
     const pairs: [string, string][] = [
-      ['', 'FOO(a, b)'],
-      ['bar', 'baZ(1, 2)'],
-      ['LOGIN', 'EricKurjan'],
-      ['GEOGRAPHY', 'Point(latitude, longitude, 4326)'],
-      ['GEOGRAPHY', 'STGeomFromText(\'POLYGON((-122.358 47.653 , -122.348 47.649, -122.348 47.658, -122.358 47.658, -122.358 47.653))\', 4326)'],
+      [
+        '',
+        'FOO(a, b)',
+      ],
+      [
+        'bar',
+        'baZ(1, 2)',
+      ],
+      [
+        'LOGIN',
+        'EricKurjan',
+      ],
+      [
+        'GEOGRAPHY',
+        'Point(latitude, longitude, 4326)',
+      ],
+      [
+        'GEOGRAPHY',
+        'STGeomFromText(\'POLYGON((-122.358 47.653 , -122.348 47.649, -122.348 47.658, -122.358 47.658, -122.358 47.653))\', 4326)',
+      ],
     ];
 
-    for (const [lhs, rhs] of pairs) {
+    for (const [
+      lhs,
+      rhs,
+    ] of pairs) {
       const expr = this.validateIdentity(`${lhs}::${rhs}`);
       const baseSql = expr.sql();
       expect(baseSql).toBe(`SCOPE_RESOLUTION(${lhs ? lhs + ', ' : ''}${rhs})`);
-      expect(parseOne(baseSql).sql({ dialect: 'tsql' })).toBe(`${lhs}::${rhs}`);
+      expect(parseOne(baseSql).sql({
+        dialect: 'tsql',
+      })).toBe(`${lhs}::${rhs}`);
     }
   }
 
@@ -2043,7 +2345,9 @@ FROM OPENJSON(@json) WITH (
     this.validateIdentity(
       'GRANT EXECUTE ON TestProc TO User2 AS TesterRole',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
   }
 
@@ -2128,7 +2432,9 @@ FROM OPENJSON(@json) WITH (
         postgres: 'TRUNC(3.14159, 2)',
         mysql: 'TRUNCATE(3.14159, 2)',
       },
-      write: { tsql: 'ROUND(3.14159, 2, 1)' },
+      write: {
+        tsql: 'ROUND(3.14159, 2, 1)',
+      },
     });
   }
 
@@ -2149,11 +2455,23 @@ FROM OPENJSON(@json) WITH (
 
   testOdbcDateLiterals () {
     const cases: [string, typeof DateExpr | typeof TimeExpr | typeof TimestampExpr][] = [
-      ['{d\'2024-01-01\'}', DateExpr],
-      ['{t\'12:00:00\'}', TimeExpr],
-      ['{ts\'2024-01-01 12:00:00\'}', TimestampExpr],
+      [
+        '{d\'2024-01-01\'}',
+        DateExpr,
+      ],
+      [
+        '{t\'12:00:00\'}',
+        TimeExpr,
+      ],
+      [
+        '{ts\'2024-01-01 12:00:00\'}',
+        TimestampExpr,
+      ],
     ];
-    for (const [value, cls] of cases) {
+    for (const [
+      value,
+      cls,
+    ] of cases) {
       const sql = `INSERT INTO tab(ds) VALUES (${value})`;
       const expr = this.parseOne(sql);
       expect(expr).toBeInstanceOf(InsertExpr);

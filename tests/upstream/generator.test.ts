@@ -7,14 +7,23 @@ import {
 import {
   DataTypeExpr, DateTruncExpr, FuncExpr, VarExpr,
 } from '../../src/expressions';
-import { Parser } from '../../src/parser';
-import { Tokenizer } from '../../src/tokens';
+import {
+  Parser,
+} from '../../src/parser';
+import {
+  Tokenizer,
+} from '../../src/tokens';
 
 describe('TestGenerator', () => {
   it('test_fallback_function_sql', () => {
     class SpecialUDF extends FuncExpr {
-      static requiredArgs = new Set(['a']);
-      static availableArgs = new Set(['a', 'b']);
+      static requiredArgs = new Set([
+        'a',
+      ]);
+      static availableArgs = new Set([
+        'a',
+        'b',
+      ]);
     }
 
     class NewParser extends Parser {
@@ -53,34 +62,61 @@ describe('TestGenerator', () => {
     expect(
       new DateTruncExpr({
         this: toColumn('event_date'),
-        unit: new VarExpr({ this: 'MONTH' }),
+        unit: new VarExpr({
+          this: 'MONTH',
+        }),
       }).sql(),
     ).toBe('DATE_TRUNC(\'MONTH\', event_date)');
   });
 
   it('test_identify', () => {
-    expect(parseOne('x').sql({ identify: true })).toBe('"x"');
-    expect(parseOne('x').sql({ identify: false })).toBe('x');
-    expect(parseOne('X').sql({ identify: true })).toBe('"X"');
-    expect(parseOne('"x"').sql({ identify: false })).toBe('"x"');
-    expect(parseOne('x').sql({ identify: 'safe' })).toBe('"x"');
-    expect(parseOne('X').sql({ identify: 'safe' })).toBe('X');
-    expect(parseOne('x as 1').sql({ identify: 'safe' })).toBe('"x" AS "1"');
-    expect(parseOne('X as 1').sql({ identify: 'safe' })).toBe('X AS "1"');
+    expect(parseOne('x').sql({
+      identify: true,
+    })).toBe('"x"');
+    expect(parseOne('x').sql({
+      identify: false,
+    })).toBe('x');
+    expect(parseOne('X').sql({
+      identify: true,
+    })).toBe('"X"');
+    expect(parseOne('"x"').sql({
+      identify: false,
+    })).toBe('"x"');
+    expect(parseOne('x').sql({
+      identify: 'safe',
+    })).toBe('"x"');
+    expect(parseOne('X').sql({
+      identify: 'safe',
+    })).toBe('X');
+    expect(parseOne('x as 1').sql({
+      identify: 'safe',
+    })).toBe('"x" AS "1"');
+    expect(parseOne('X as 1').sql({
+      identify: 'safe',
+    })).toBe('X AS "1"');
   });
 
   it('test_generate_nested_binary', () => {
     const sql = 'SELECT \'foo\'' + (' || \'foo\'').repeat(1000);
-    expect(parseOne(sql).sql({ copy: false })).toBe(sql);
+    expect(parseOne(sql).sql({
+      copy: false,
+    })).toBe(sql);
   });
 
   it('test_overlap_operator', () => {
-    for (const op of ['&<', '&>']) {
+    for (const op of [
+      '&<',
+      '&>',
+    ]) {
       const inputSql = `SELECT '[1,10]'::int4range ${op} '[5,15]'::int4range`;
       const expectedSql = `SELECT CAST('[1,10]' AS INT4RANGE) ${op} CAST('[5,15]' AS INT4RANGE)`;
-      const ast = parseOne(inputSql, { dialect: 'postgres' });
+      const ast = parseOne(inputSql, {
+        dialect: 'postgres',
+      });
       expect(ast.sql()).toBe(expectedSql);
-      expect(ast.sql({ dialect: 'postgres' })).toBe(expectedSql);
+      expect(ast.sql({
+        dialect: 'postgres',
+      })).toBe(expectedSql);
     }
   });
 
@@ -122,7 +158,9 @@ describe('TestGenerator', () => {
       typeStr,
       'STRUCT<\n  a INT\n  , b TEXT\n>',
       10,
-      { leadingComma: true },
+      {
+        leadingComma: true,
+      },
     );
 
     // ARRAY

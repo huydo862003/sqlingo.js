@@ -1,6 +1,12 @@
-import type { Expression } from '../expressions/expressions';
-import { cache } from '../port_internals';
-import { DataTypeExprKind } from '../expressions/types';
+import type {
+  Expression,
+} from '../expressions/expressions';
+import {
+  cache,
+} from '../port_internals';
+import {
+  DataTypeExprKind,
+} from '../expressions/types';
 import {
   BitLengthExpr,
   DayExpr,
@@ -23,8 +29,12 @@ import {
   ToDaysExpr,
   TimeFromPartsExpr,
 } from '../expressions/expressions';
-import type { ExpressionMetadata } from './dialect';
-import { DialectTyping } from './dialect';
+import type {
+  ExpressionMetadata,
+} from './dialect';
+import {
+  DialectTyping,
+} from './dialect';
 
 export class DuckDbTyping {
   @cache
@@ -50,19 +60,31 @@ export class DuckDbTyping {
       SecondExpr,
       WeekExpr,
       YearExpr,
-    ], { returns: DataTypeExprKind.BIGINT });
+    ], {
+      returns: DataTypeExprKind.BIGINT,
+    });
 
-    extend([FactorialExpr], { returns: DataTypeExprKind.INT128 });
+    extend([
+      FactorialExpr,
+    ], {
+      returns: DataTypeExprKind.INT128,
+    });
 
     extend([
       Atan2Expr,
       JarowinklerSimilarityExpr,
       RandExpr,
       TimeToUnixExpr,
-    ], { returns: DataTypeExprKind.DOUBLE });
+    ], {
+      returns: DataTypeExprKind.DOUBLE,
+    });
 
-    map.set(ToDaysExpr, { returns: DataTypeExprKind.INTERVAL });
-    map.set(TimeFromPartsExpr, { returns: DataTypeExprKind.TIME });
+    map.set(ToDaysExpr, {
+      returns: DataTypeExprKind.INTERVAL,
+    });
+    map.set(TimeFromPartsExpr, {
+      returns: DataTypeExprKind.TIME,
+    });
 
     return map;
   }

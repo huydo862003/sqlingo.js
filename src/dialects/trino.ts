@@ -1,5 +1,9 @@
-import { cache } from '../port_internals';
-import type { Expression } from '../expressions';
+import {
+  cache,
+} from '../port_internals';
+import type {
+  Expression,
+} from '../expressions';
 import {
   JsonExtractExpr, JsonExtractQuoteExpr,
   CurrentVersionExpr,
@@ -17,9 +21,15 @@ import {
   JsonPathSubscriptExpr,
   CurrentCatalogExpr,
 } from '../expressions';
-import type { Generator } from '../generator';
-import type { Parser } from '../parser';
-import { TokenType } from '../tokens';
+import type {
+  Generator,
+} from '../generator';
+import type {
+  Parser,
+} from '../parser';
+import {
+  TokenType,
+} from '../tokens';
 import {
   eliminateDistinctOn, eliminateQualify, eliminateSemiAndAntiJoins, explodeProjectionToUnnest, preprocess,
 } from '../transforms';
@@ -56,13 +66,15 @@ class TrinoParser extends Presto.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Presto.Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Presto.Parser.NO_PAREN_FUNCTIONS,
+    };
     noParenFunctions[TokenType.CURRENT_CATALOG] = CurrentCatalogExpr;
     return noParenFunctions;
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return {
       ...Presto.Parser.FUNCTIONS,
       VERSION: (args: Expression[]) => CurrentVersionExpr.fromArgList(args),
@@ -92,15 +104,26 @@ class TrinoParser extends Presto.Parser {
   static get JSON_QUERY_OPTIONS (): Record<string, string[][]> {
     return {
       WITH: [
-        ['WRAPPER'],
-        ['ARRAY', 'WRAPPER'],
-        ['CONDITIONAL', 'WRAPPER'],
+        [
+          'WRAPPER',
+        ],
+        [
+          'ARRAY',
+          'WRAPPER',
+        ],
+        [
+          'CONDITIONAL',
+          'WRAPPER',
+        ],
         [
           'CONDITIONAL',
           'ARRAY',
           'WRAPPED',
         ],
-        ['UNCONDITIONAL', 'WRAPPER'],
+        [
+          'UNCONDITIONAL',
+          'WRAPPER',
+        ],
         [
           'UNCONDITIONAL',
           'ARRAY',
@@ -108,15 +131,26 @@ class TrinoParser extends Presto.Parser {
         ],
       ],
       WITHOUT: [
-        ['WRAPPER'],
-        ['ARRAY', 'WRAPPER'],
-        ['CONDITIONAL', 'WRAPPER'],
+        [
+          'WRAPPER',
+        ],
+        [
+          'ARRAY',
+          'WRAPPER',
+        ],
+        [
+          'CONDITIONAL',
+          'WRAPPER',
+        ],
         [
           'CONDITIONAL',
           'ARRAY',
           'WRAPPED',
         ],
-        ['UNCONDITIONAL', 'WRAPPER'],
+        [
+          'UNCONDITIONAL',
+          'WRAPPER',
+        ],
         [
           'UNCONDITIONAL',
           'ARRAY',
@@ -128,7 +162,13 @@ class TrinoParser extends Presto.Parser {
 
   public parseJsonQueryQuote (): JsonExtractQuoteExpr | undefined {
     if (
-      !(this.matchTextSeq(['KEEP', 'QUOTES']) || this.matchTextSeq(['OMIT', 'QUOTES']))
+      !(this.matchTextSeq([
+        'KEEP',
+        'QUOTES',
+      ]) || this.matchTextSeq([
+        'OMIT',
+        'QUOTES',
+      ]))
     ) {
       return undefined;
     }
@@ -151,7 +191,9 @@ class TrinoParser extends Presto.Parser {
       expression: this.match(TokenType.COMMA) ? this.parseBitwise() : undefined,
       option: this.parseVarFromOptions(
         (this._constructor as typeof TrinoParser).JSON_QUERY_OPTIONS,
-        { raiseUnmatched: false },
+        {
+          raiseUnmatched: false,
+        },
       ),
       jsonQuery: true,
       quote: this.parseJsonQueryQuote(),
@@ -162,7 +204,10 @@ class TrinoParser extends Presto.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Presto.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Presto.Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 
@@ -185,7 +230,13 @@ class TrinoGenerator extends Presto.Generator {
 
   @cache
   static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
-    return new Map([...Presto.Generator.PROPERTIES_LOCATION, [LocationPropertyExpr, PropertiesLocation.POST_WITH]]);
+    return new Map([
+      ...Presto.Generator.PROPERTIES_LOCATION,
+      [
+        LocationPropertyExpr,
+        PropertiesLocation.POST_WITH,
+      ],
+    ]);
   }
 
   @cache
@@ -206,11 +257,16 @@ class TrinoGenerator extends Presto.Generator {
           return `ARRAY_AGG(DISTINCT ${this.sql(e, 'this')})`;
         },
       ],
-      [CurrentVersionExpr, renameFunc('VERSION')],
+      [
+        CurrentVersionExpr,
+        renameFunc('VERSION'),
+      ],
       [
         GroupConcatExpr,
         function (this: Generator, e) {
-          return groupConcatSql.call(this, e, { onOverflow: true });
+          return groupConcatSql.call(this, e, {
+            onOverflow: true,
+          });
         },
       ],
       [
@@ -219,7 +275,10 @@ class TrinoGenerator extends Presto.Generator {
           return this.propertySql(e);
         },
       ],
-      [MergeExpr, mergeWithoutTargetSql],
+      [
+        MergeExpr,
+        mergeWithoutTargetSql,
+      ],
       [
         SelectExpr,
         preprocess([
@@ -233,10 +292,15 @@ class TrinoGenerator extends Presto.Generator {
       [
         TimeStrToTimeExpr,
         function (this: Generator, e) {
-          return timeStrToTimeSql.call(this, e, { includePrecision: true });
+          return timeStrToTimeSql.call(this, e, {
+            includePrecision: true,
+          });
         },
       ],
-      [TrimExpr, trimSql],
+      [
+        TrimExpr,
+        trimSql,
+      ],
     ]);
   }
 
@@ -266,7 +330,10 @@ class TrinoGenerator extends Presto.Generator {
 
     return this.func(
       'JSON_QUERY',
-      [expression.args.this, jsonPath + optionStr + quoteStr + onConditionStr],
+      [
+        expression.args.this,
+        jsonPath + optionStr + quoteStr + onConditionStr,
+      ],
     );
   }
 }

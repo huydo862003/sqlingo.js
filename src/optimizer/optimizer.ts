@@ -3,24 +3,60 @@
 import {
   maybeParse, type Expression,
 } from '../expressions';
-import type { DialectType } from '../dialects/dialect';
-import type { Schema } from '../schema';
-import { ensureSchema } from '../schema';
-import type { Pojo } from '../port_internals/type_utils';
-import { annotateTypes } from './annotate_types';
-import { canonicalize } from './canonicalize';
-import { eliminateCtes } from './eliminate_ctes';
-import { eliminateJoins } from './eliminate_joins';
-import { eliminateSubqueries } from './eliminate_subqueries';
-import { mergeSubqueries } from './merge_subqueries';
-import { normalize } from './normalize';
-import { optimizeJoins } from './optimize_joins';
-import { pushdownPredicates } from './pushdown_predicates';
-import { pushdownProjections } from './pushdown_projections';
-import { qualify } from './qualify';
-import { quoteIdentifiers } from './qualify_columns';
-import { simplify } from './simplify';
-import { unnestSubqueries } from './unnest_subqueries';
+import type {
+  DialectType,
+} from '../dialects/dialect';
+import type {
+  Schema,
+} from '../schema';
+import {
+  ensureSchema,
+} from '../schema';
+import type {
+  Pojo,
+} from '../port_internals/type_utils';
+import {
+  annotateTypes,
+} from './annotate_types';
+import {
+  canonicalize,
+} from './canonicalize';
+import {
+  eliminateCtes,
+} from './eliminate_ctes';
+import {
+  eliminateJoins,
+} from './eliminate_joins';
+import {
+  eliminateSubqueries,
+} from './eliminate_subqueries';
+import {
+  mergeSubqueries,
+} from './merge_subqueries';
+import {
+  normalize,
+} from './normalize';
+import {
+  optimizeJoins,
+} from './optimize_joins';
+import {
+  pushdownPredicates,
+} from './pushdown_predicates';
+import {
+  pushdownProjections,
+} from './pushdown_projections';
+import {
+  qualify,
+} from './qualify';
+import {
+  quoteIdentifiers,
+} from './qualify_columns';
+import {
+  simplify,
+} from './simplify';
+import {
+  unnestSubqueries,
+} from './unnest_subqueries';
 
 /**
  * Optimizer rule function type.
@@ -100,7 +136,9 @@ export function optimize (
     ...extraOptions
   } = options;
 
-  const schema = ensureSchema(schemaArg, { dialect });
+  const schema = ensureSchema(schemaArg, {
+    dialect,
+  });
 
   // Base options passed to rules
   const possibleOptions: Record<string, unknown> = {

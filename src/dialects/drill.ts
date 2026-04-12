@@ -1,5 +1,9 @@
-import { cache } from '../port_internals';
-import type { Expression } from '../expressions';
+import {
+  cache,
+} from '../port_internals';
+import type {
+  Expression,
+} from '../expressions';
 import {
   ArrayContainsExpr,
   ArraySizeExpr,
@@ -40,7 +44,9 @@ import {
 import {
   Generator, unsupportedArgs,
 } from '../generator';
-import { Parser } from '../parser';
+import {
+  Parser,
+} from '../parser';
 import {
   TokenType, Tokenizer,
 } from '../tokens';
@@ -58,22 +64,30 @@ import {
   NullOrdering,
   NormalizeFunctions,
 } from './dialect';
-import { dateAddSql } from './mysql';
+import {
+  dateAddSql,
+} from './mysql';
 
 class DrillTokenizer extends Tokenizer {
   @cache
   static get IDENTIFIERS () {
-    return ['`'];
+    return [
+      '`',
+    ];
   }
 
   @cache
   static get STRING_ESCAPES () {
-    return ['\\'];
+    return [
+      '\\',
+    ];
   }
 
   @cache
   static get KEYWORDS (): Record<string, TokenType> {
-    const keywords = { ...Tokenizer.KEYWORDS };
+    const keywords = {
+      ...Tokenizer.KEYWORDS,
+    };
     delete keywords['/*+'];
     return keywords;
   }
@@ -93,7 +107,9 @@ class DrillParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
     return noParenFunctions;
@@ -102,12 +118,14 @@ class DrillParser extends Parser {
   static STRICT_CAST = false;
   static LOG_DEFAULTS_TO_LN = true;
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       REPEATED_COUNT: (args: unknown[]) => ArraySizeExpr.fromArgList(args),
       TO_TIMESTAMP: (args: unknown[]) => TimeStrToTimeExpr.fromArgList(args),
-      TO_CHAR: buildFormattedTime(TimeToStrExpr, { dialect: 'drill' }),
+      TO_CHAR: buildFormattedTime(TimeToStrExpr, {
+        dialect: 'drill',
+      }),
       LEVENSHTEIN_DISTANCE: (args: unknown[]) => LevenshteinExpr.fromArgList(args),
     };
   }
@@ -115,7 +133,10 @@ class DrillParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 class DrillGenerator extends Generator {
@@ -134,7 +155,8 @@ class DrillGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [];
+  static readonly SELECT_KINDS: string[] = [
+  ];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -151,15 +173,42 @@ class DrillGenerator extends Generator {
   static get TYPE_MAPPING () {
     return new Map([
       ...Generator.TYPE_MAPPING,
-      [DataTypeExprKind.INT, 'INTEGER'],
-      [DataTypeExprKind.SMALLINT, 'INTEGER'],
-      [DataTypeExprKind.TINYINT, 'INTEGER'],
-      [DataTypeExprKind.BINARY, 'VARBINARY'],
-      [DataTypeExprKind.TEXT, 'VARCHAR'],
-      [DataTypeExprKind.NCHAR, 'VARCHAR'],
-      [DataTypeExprKind.TIMESTAMPLTZ, 'TIMESTAMP'],
-      [DataTypeExprKind.TIMESTAMPTZ, 'TIMESTAMP'],
-      [DataTypeExprKind.DATETIME, 'TIMESTAMP'],
+      [
+        DataTypeExprKind.INT,
+        'INTEGER',
+      ],
+      [
+        DataTypeExprKind.SMALLINT,
+        'INTEGER',
+      ],
+      [
+        DataTypeExprKind.TINYINT,
+        'INTEGER',
+      ],
+      [
+        DataTypeExprKind.BINARY,
+        'VARBINARY',
+      ],
+      [
+        DataTypeExprKind.TEXT,
+        'VARCHAR',
+      ],
+      [
+        DataTypeExprKind.NCHAR,
+        'VARCHAR',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPLTZ,
+        'TIMESTAMP',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPTZ,
+        'TIMESTAMP',
+      ],
+      [
+        DataTypeExprKind.DATETIME,
+        'TIMESTAMP',
+      ],
     ]);
   }
 
@@ -167,8 +216,14 @@ class DrillGenerator extends Generator {
   static get PROPERTIES_LOCATION () {
     return new Map<typeof Expression, PropertiesLocation>([
       ...Generator.PROPERTIES_LOCATION,
-      [PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA],
-      [VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED],
+      [
+        PartitionedByPropertyExpr,
+        PropertiesLocation.POST_SCHEMA,
+      ],
+      [
+        VolatilePropertyExpr,
+        PropertiesLocation.UNSUPPORTED,
+      ],
     ]);
   }
 
@@ -178,12 +233,32 @@ class DrillGenerator extends Generator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
-      [CurrentTimestampExpr, () => 'CURRENT_TIMESTAMP'],
-      [ArrayContainsExpr, renameFunc('REPEATED_CONTAINS')],
-      [CreateExpr, preprocess([moveSchemaColumnsToPartitionedBy])],
-      [DateAddExpr, dateAddSql('ADD')],
-      [DateStrToDateExpr, dateStrToDateSql],
-      [DateSubExpr, dateAddSql('SUB')],
+      [
+        CurrentTimestampExpr,
+        () => 'CURRENT_TIMESTAMP',
+      ],
+      [
+        ArrayContainsExpr,
+        renameFunc('REPEATED_CONTAINS'),
+      ],
+      [
+        CreateExpr,
+        preprocess([
+          moveSchemaColumnsToPartitionedBy,
+        ]),
+      ],
+      [
+        DateAddExpr,
+        dateAddSql('ADD'),
+      ],
+      [
+        DateStrToDateExpr,
+        dateStrToDateSql,
+      ],
+      [
+        DateSubExpr,
+        dateAddSql('SUB'),
+      ],
       [
         DateToDiExpr,
         function (this: Generator, e) {
@@ -225,20 +300,38 @@ class DrillGenerator extends Generator {
           return `PARTITION BY ${this.sql(e, 'this')}`;
         },
       ],
-      [RegexpLikeExpr, renameFunc('REGEXP_MATCHES')],
+      [
+        RegexpLikeExpr,
+        renameFunc('REGEXP_MATCHES'),
+      ],
       [
         StrToDateExpr,
         function (this: Generator, e) {
           return (this as DrillGenerator).strToDate(e);
         },
       ],
-      [PowExpr, renameFunc('POW')],
-      [SelectExpr, preprocess([eliminateDistinctOn, eliminateSemiAndAntiJoins])],
-      [StrPositionExpr, strPositionSql],
+      [
+        PowExpr,
+        renameFunc('POW'),
+      ],
+      [
+        SelectExpr,
+        preprocess([
+          eliminateDistinctOn,
+          eliminateSemiAndAntiJoins,
+        ]),
+      ],
+      [
+        StrPositionExpr,
+        strPositionSql,
+      ],
       [
         StrToTimeExpr,
         function (this: Generator, e) {
-          return this.func('TO_TIMESTAMP', [e.args.this, this.formatTime(e)]);
+          return this.func('TO_TIMESTAMP', [
+            e.args.this,
+            this.formatTime(e),
+          ]);
         },
       ],
       [
@@ -246,32 +339,51 @@ class DrillGenerator extends Generator {
         function (this: Generator, e) {
           return this.sql(new CastExpr({
             this: e.args.this,
-            to: new DataTypeExpr({ this: DataTypeExprKind.DATE }),
+            to: new DataTypeExpr({
+              this: DataTypeExprKind.DATE,
+            }),
           }));
         },
       ],
-      [TimeStrToTimeExpr, timeStrToTimeSql],
-      [TimeStrToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
+      [
+        TimeStrToTimeExpr,
+        timeStrToTimeSql,
+      ],
+      [
+        TimeStrToUnixExpr,
+        renameFunc('UNIX_TIMESTAMP'),
+      ],
       [
         TimeToStrExpr,
         function (this: Generator, e) {
-          return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+          return this.func('TO_CHAR', [
+            e.args.this,
+            this.formatTime(e),
+          ]);
         },
       ],
-      [TimeToUnixExpr, renameFunc('UNIX_TIMESTAMP')],
+      [
+        TimeToUnixExpr,
+        renameFunc('UNIX_TIMESTAMP'),
+      ],
       [
         ToCharExpr,
         function (this: Generator, e) {
           return this.functionFallbackSql(e);
         },
       ],
-      [TryCastExpr, noTrycastSql],
+      [
+        TryCastExpr,
+        noTrycastSql,
+      ],
       [
         TsOrDsAddExpr,
         function (this: Generator, e) {
           return `DATE_ADD(CAST(${this.sql(e, 'this')} AS DATE), ${this.sql(new IntervalExpr({
             this: e.args.expression,
-            unit: new VarExpr({ this: 'DAY' }),
+            unit: new VarExpr({
+              this: 'DAY',
+            }),
           }))})`;
         },
       ],
@@ -291,10 +403,15 @@ class DrillGenerator extends Generator {
     if (timeFormat === Drill.DATE_FORMAT) {
       return this.sql(new CastExpr({
         this: expression.args.this,
-        to: new DataTypeExpr({ this: DataTypeExprKind.DATE }),
+        to: new DataTypeExpr({
+          this: DataTypeExprKind.DATE,
+        }),
       }));
     }
-    return this.func('TO_DATE', [thisSql, timeFormat]);
+    return this.func('TO_DATE', [
+      thisSql,
+      timeFormat,
+    ]);
   }
 }
 

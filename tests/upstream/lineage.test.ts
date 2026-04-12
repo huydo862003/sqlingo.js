@@ -1,10 +1,18 @@
 import {
   describe, test, expect,
 } from 'vitest';
-import { lineage } from '../../src/lineage';
-import { parseOne } from '../../src/parser';
-import { SqlglotError } from '../../src/errors';
-import type { SelectExpr } from '../../src/expressions';
+import {
+  lineage,
+} from '../../src/lineage';
+import {
+  parseOne,
+} from '../../src/parser';
+import {
+  SqlglotError,
+} from '../../src/errors';
+import type {
+  SelectExpr,
+} from '../../src/expressions';
 
 class TestLineage {
   testLineage () {
@@ -12,7 +20,11 @@ class TestLineage {
       'a',
       'SELECT a FROM z',
       {
-        schema: { x: { a: 'int' } },
+        schema: {
+          x: {
+            a: 'int',
+          },
+        },
         sources: {
           y: 'SELECT * FROM x',
           z: 'SELECT a FROM y',
@@ -52,7 +64,11 @@ class TestLineage {
     const ast2 = parseOne(sql);
     const sourceStr = 'SELECT a FROM y';
     const source = parseOne(sourceStr) as SelectExpr;
-    lineage('a', ast2, { sources: { x: source } });
+    lineage('a', ast2, {
+      sources: {
+        x: source,
+      },
+    });
     expect(source.sql()).toBe(sourceStr);
   }
 
@@ -61,8 +77,14 @@ class TestLineage {
       'a',
       'WITH z AS (SELECT a FROM y) SELECT a FROM z',
       {
-        schema: { x: { a: 'int' } },
-        sources: { y: 'SELECT * FROM x' },
+        schema: {
+          x: {
+            a: 'int',
+          },
+        },
+        sources: {
+          y: 'SELECT * FROM x',
+        },
       },
     );
     expect(node.source.sql()).toBe(
@@ -89,8 +111,14 @@ class TestLineage {
       'a',
       'SELECT a FROM z',
       {
-        schema: { x: { a: 'int' } },
-        sources: { z: 'WITH y AS (SELECT * FROM x) SELECT a FROM y' },
+        schema: {
+          x: {
+            a: 'int',
+          },
+        },
+        sources: {
+          z: 'WITH y AS (SELECT * FROM x) SELECT a FROM y',
+        },
       },
     );
     expect(node.source.sql()).toBe(
@@ -188,7 +216,11 @@ class TestLineage {
     const node = lineage(
       'a',
       'SELECT a FROM y',
-      { sources: { y: 'SELECT a FROM (VALUES (1), (2)) AS t (a)' } },
+      {
+        sources: {
+          y: 'SELECT a FROM (VALUES (1), (2)) AS t (a)',
+        },
+      },
     );
     expect(node.source.sql()).toBe(
       'SELECT y.a AS a FROM (SELECT t.a AS a FROM (VALUES (1), (2)) AS t(a)) AS y /* source: y */',
@@ -210,8 +242,12 @@ class TestLineage {
     const schema = {
       a: {
         b: {
-          t1: { c1: 'int' },
-          t2: { c2: 'int' },
+          t1: {
+            c1: 'int',
+          },
+          t2: {
+            c2: 'int',
+          },
         },
       },
     };
@@ -219,7 +255,9 @@ class TestLineage {
     const node = lineage(
       'c2',
       'WITH t1 AS (SELECT * FROM a.b.t2), inter AS (SELECT * FROM t1) SELECT * FROM inter',
-      { schema },
+      {
+        schema,
+      },
     );
 
     expect(node.source.sql()).toBe(
@@ -242,7 +280,8 @@ class TestLineage {
     expect(downstream.expression.sql()).toBe('a.b.t2 AS t2');
     expect(downstream.sourceName).toBe('');
 
-    expect(downstream.downstream).toEqual([]);
+    expect(downstream.downstream).toEqual([
+    ]);
   }
 
   testLineageUnion () {
@@ -263,28 +302,46 @@ class TestLineage {
     let node = lineage(
       'VALUE',
       'SELECT FLATTENED.VALUE FROM TEST_TABLE, LATERAL FLATTEN(INPUT => RESULT, OUTER => TRUE) FLATTENED',
-      { dialect: 'snowflake' },
+      {
+        dialect: 'snowflake',
+      },
     );
     expect(node.name).toBe('VALUE');
 
     let downstream = node.downstream[0];
     expect(downstream.name).toBe('FLATTENED.VALUE');
-    expect(downstream.source.sql({ dialect: 'snowflake' })).toBe(
+    expect(downstream.source.sql({
+      dialect: 'snowflake',
+    })).toBe(
       'LATERAL FLATTEN(INPUT => TEST_TABLE.RESULT, OUTER => TRUE) AS FLATTENED(SEQ, KEY, PATH, INDEX, VALUE, THIS)',
     );
-    expect(downstream.expression.sql({ dialect: 'snowflake' })).toBe('VALUE');
+    expect(downstream.expression.sql({
+      dialect: 'snowflake',
+    })).toBe('VALUE');
     expect(downstream.downstream.length).toBe(1);
 
     downstream = downstream.downstream[0];
     expect(downstream.name).toBe('TEST_TABLE.RESULT');
-    expect(downstream.source.sql({ dialect: 'snowflake' })).toBe('TEST_TABLE AS TEST_TABLE');
+    expect(downstream.source.sql({
+      dialect: 'snowflake',
+    })).toBe('TEST_TABLE AS TEST_TABLE');
 
     node = lineage(
       'FIELD',
       'SELECT FLATTENED.VALUE:field::text AS FIELD FROM SNOWFLAKE.SCHEMA.MODEL AS MODEL_ALIAS, LATERAL FLATTEN(INPUT => MODEL_ALIAS.A) AS FLATTENED',
       {
-        schema: { SNOWFLAKE: { SCHEMA: { TABLE: { A: 'integer' } } } },
-        sources: { 'SNOWFLAKE.SCHEMA.MODEL': 'SELECT A FROM SNOWFLAKE.SCHEMA.TABLE' },
+        schema: {
+          SNOWFLAKE: {
+            SCHEMA: {
+              TABLE: {
+                A: 'integer',
+              },
+            },
+          },
+        },
+        sources: {
+          'SNOWFLAKE.SCHEMA.MODEL': 'SELECT A FROM SNOWFLAKE.SCHEMA.TABLE',
+        },
         dialect: 'snowflake',
       },
     );
@@ -292,27 +349,39 @@ class TestLineage {
 
     let downstream2 = node.downstream[0];
     expect(downstream2.name).toBe('FLATTENED.VALUE');
-    expect(downstream2.source.sql({ dialect: 'snowflake' })).toBe(
+    expect(downstream2.source.sql({
+      dialect: 'snowflake',
+    })).toBe(
       'LATERAL FLATTEN(INPUT => MODEL_ALIAS.A) AS FLATTENED(SEQ, KEY, PATH, INDEX, VALUE, THIS)',
     );
-    expect(downstream2.expression.sql({ dialect: 'snowflake' })).toBe('VALUE');
+    expect(downstream2.expression.sql({
+      dialect: 'snowflake',
+    })).toBe('VALUE');
     expect(downstream2.downstream.length).toBe(1);
 
     downstream2 = downstream2.downstream[0];
     expect(downstream2.name).toBe('MODEL_ALIAS.A');
     expect(downstream2.sourceName).toBe('SNOWFLAKE.SCHEMA.MODEL');
-    expect(downstream2.source.sql({ dialect: 'snowflake' })).toBe(
+    expect(downstream2.source.sql({
+      dialect: 'snowflake',
+    })).toBe(
       'SELECT TABLE.A AS A FROM SNOWFLAKE.SCHEMA.TABLE AS TABLE',
     );
-    expect(downstream2.expression.sql({ dialect: 'snowflake' })).toBe('TABLE.A AS A');
+    expect(downstream2.expression.sql({
+      dialect: 'snowflake',
+    })).toBe('TABLE.A AS A');
     expect(downstream2.downstream.length).toBe(1);
 
     downstream2 = downstream2.downstream[0];
     expect(downstream2.name).toBe('TABLE.A');
-    expect(downstream2.source.sql({ dialect: 'snowflake' })).toBe(
+    expect(downstream2.source.sql({
+      dialect: 'snowflake',
+    })).toBe(
       'SNOWFLAKE.SCHEMA.TABLE AS TABLE',
     );
-    expect(downstream2.expression.sql({ dialect: 'snowflake' })).toBe(
+    expect(downstream2.expression.sql({
+      dialect: 'snowflake',
+    })).toBe(
       'SNOWFLAKE.SCHEMA.TABLE AS TABLE',
     );
   }
@@ -379,12 +448,18 @@ class TestLineage {
     );
     expect(node4.name).toBe('a');
     expect(node4.downstream.length).toBe(2);
-    const sorted = [...node4.downstream].sort((x, y) => x.name.localeCompare(y.name));
-    const [a, b] = sorted;
+    const sorted = [
+      ...node4.downstream,
+    ].sort((x, y) => x.name.localeCompare(y.name));
+    const [
+      a,
+      b,
+    ] = sorted;
     expect(a.name).toBe('bar.a');
     expect(a.downstream.length).toBe(1);
     expect(b.name).toBe('baz.b');
-    expect(b.downstream).toEqual([]);
+    expect(b.downstream).toEqual([
+    ]);
 
     const nodeA = a.downstream[0];
     expect(nodeA.name).toBe('foo.a');
@@ -496,10 +571,14 @@ class TestLineage {
   }
 
   testLineageNormalize () {
-    const node = lineage('a', 'WITH x AS (SELECT 1 a) SELECT a FROM x', { dialect: 'snowflake' });
+    const node = lineage('a', 'WITH x AS (SELECT 1 a) SELECT a FROM x', {
+      dialect: 'snowflake',
+    });
     expect(node.name).toBe('A');
 
-    expect(() => lineage('"a"', 'WITH x AS (SELECT 1 a) SELECT a FROM x', { dialect: 'snowflake' })).toThrow(SqlglotError);
+    expect(() => lineage('"a"', 'WITH x AS (SELECT 1 a) SELECT a FROM x', {
+      dialect: 'snowflake',
+    })).toThrow(SqlglotError);
   }
 
   testDdlLineage () {
@@ -516,14 +595,20 @@ class TestLineage {
     ) subq
     `;
 
-    const node = lineage('y', sql, { dialect: 'oracle' });
+    const node = lineage('y', sql, {
+      dialect: 'oracle',
+    });
 
     expect(node.name).toBe('Y');
-    expect(node.expression.sql({ dialect: 'oracle' })).toBe('SUBQ.Y AS Y');
+    expect(node.expression.sql({
+      dialect: 'oracle',
+    })).toBe('SUBQ.Y AS Y');
 
     const downstream = node.downstream[0];
     expect(downstream.name).toBe('SUBQ.Y');
-    expect(downstream.expression.sql({ dialect: 'oracle' })).toBe(
+    expect(downstream.expression.sql({
+      dialect: 'oracle',
+    })).toBe(
       'TO_DATE(\'2023-12-19\', \'YYYY-MM-DD\') AS Y',
     );
   }
@@ -534,7 +619,9 @@ class TestLineage {
         FROM (select a, b, c from y) z
     `;
 
-    const node = lineage('a', sql, { trimSelects: false });
+    const node = lineage('a', sql, {
+      trimSelects: false,
+    });
 
     expect(node.name).toBe('a');
     expect(node.source.sql()).toBe(
@@ -653,8 +740,12 @@ class TestLineage {
     JOIN TABLE(FLATTEN(events)) AS f
     `;
 
-    let lateralNode = lineage('external_id', lateralFlatten, { dialect: 'snowflake' });
-    let tableNode = lineage('external_id', tableFlatten, { dialect: 'snowflake' });
+    let lateralNode = lineage('external_id', lateralFlatten, {
+      dialect: 'snowflake',
+    });
+    let tableNode = lineage('external_id', tableFlatten, {
+      dialect: 'snowflake',
+    });
 
     expect(lateralNode.name).toBe('EXTERNAL_ID');
     expect(tableNode.name).toBe('EXTERNAL_ID');
@@ -663,23 +754,31 @@ class TestLineage {
     tableNode = tableNode.downstream[0];
 
     expect(lateralNode.name).toBe('F.VALUE');
-    expect(lateralNode.source.sql({ dialect: 'snowflake' })).toBe(
+    expect(lateralNode.source.sql({
+      dialect: 'snowflake',
+    })).toBe(
       'LATERAL FLATTEN(RAW.EVENTS) AS F(SEQ, KEY, PATH, INDEX, VALUE, THIS)',
     );
 
     expect(tableNode.name).toBe('F.VALUE');
-    expect(tableNode.source.sql({ dialect: 'snowflake' })).toBe('TABLE(FLATTEN(RAW.EVENTS)) AS F');
+    expect(tableNode.source.sql({
+      dialect: 'snowflake',
+    })).toBe('TABLE(FLATTEN(RAW.EVENTS)) AS F');
 
     lateralNode = lateralNode.downstream[0];
     tableNode = tableNode.downstream[0];
 
     expect(lateralNode.name).toBe('RAW.EVENTS');
-    expect(lateralNode.source.sql({ dialect: 'snowflake' })).toBe(
+    expect(lateralNode.source.sql({
+      dialect: 'snowflake',
+    })).toBe(
       'DATABASE_NAME.SCHEMA_NAME.TABLE_NAME AS RAW',
     );
 
     expect(tableNode.name).toBe('RAW.EVENTS');
-    expect(tableNode.source.sql({ dialect: 'snowflake' })).toBe(
+    expect(tableNode.source.sql({
+      dialect: 'snowflake',
+    })).toBe(
       'DATABASE_NAME.SCHEMA_NAME.TABLE_NAME AS RAW',
     );
   }
@@ -726,7 +825,11 @@ class TestLineage {
   }
 
   testCopyFlag () {
-    const schema = { x: { a: 'int' } };
+    const schema = {
+      x: {
+        a: 'int',
+      },
+    };
 
     let query = parseOne('SELECT a FROM z');
     let sources = {

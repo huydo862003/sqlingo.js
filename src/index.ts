@@ -9,11 +9,15 @@ import packageJson from '../package.json';
 import {
   ErrorLevel, SqlglotError, ParseError, TokenError, UnsupportedError,
 } from './errors';
-import type { Token } from './tokens';
+import type {
+  Token,
+} from './tokens';
 import {
   TokenType, Tokenizer,
 } from './tokens';
-import type { ParseOptions } from './parser';
+import type {
+  ParseOptions,
+} from './parser';
 import {
   Parser, parse, parseOne,
 } from './parser';
@@ -29,10 +33,18 @@ import {
 import {
   Dialect, type Dialects, type DialectType,
 } from './dialects/dialect';
-import { diff } from './diff';
-import { lineage } from './lineage';
-import { optimize } from './optimizer/optimizer';
-import { execute } from './executor';
+import {
+  diff,
+} from './diff';
+import {
+  lineage,
+} from './lineage';
+import {
+  optimize,
+} from './optimizer/optimizer';
+import {
+  execute,
+} from './executor';
 
 export {
   Expression,
@@ -71,11 +83,15 @@ export const version = packageJson.version;
 export {
   ErrorLevel, SqlglotError, ParseError, TokenError, UnsupportedError,
 };
-export type { Token };
+export type {
+  Token,
+};
 export {
   TokenType, Tokenizer,
 };
-export type { ParseOptions };
+export type {
+  ParseOptions,
+};
 export {
   Parser, parse, parseOne,
 };
@@ -91,10 +107,18 @@ export {
 export {
   Dialect, type Dialects, type DialectType,
 };
-export { diff };
-export { lineage };
-export { optimize };
-export { execute };
+export {
+  diff,
+};
+export {
+  lineage,
+};
+export {
+  optimize,
+};
+export {
+  execute,
+};
 
 export let pretty = false;
 

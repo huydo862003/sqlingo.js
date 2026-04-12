@@ -1,5 +1,9 @@
-import type { Token } from '../tokens';
-import { TokenType } from '../tokens';
+import type {
+  Token,
+} from '../tokens';
+import {
+  TokenType,
+} from '../tokens';
 import type {
   DataTypeExprKind, JsonPathPartExpr,
 } from '../expressions';
@@ -16,12 +20,16 @@ import {
   JsonPathUnionExpr,
   JsonPathWildcardExpr,
 } from '../expressions';
-import { ParseError } from '../errors';
+import {
+  ParseError,
+} from '../errors';
 import {
   Dialect,
   type DialectType,
 } from '../dialects/dialect';
-import { JsonPathTokenizer } from './tokenizer';
+import {
+  JsonPathTokenizer,
+} from './tokenizer';
 
 export interface ParseJsonPathOptions {
   into?: DataTypeExprKind;
@@ -53,10 +61,12 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
     return `${msg} at index ${i}: ${path}`;
   }
 
-  function match (tokenType: TokenType, options?: { raiseUnmatched?: true }): Token;
-  function match (tokenType: TokenType, options: { raiseUnmatched: false }): Token | undefined;
-  function match (tokenType: TokenType, options: { raiseUnmatched?: boolean } = {}): Token | undefined {
-    const { raiseUnmatched = false } = options;
+  function match (tokenType: TokenType, options?: {raiseUnmatched?: true}): Token;
+  function match (tokenType: TokenType, options: {raiseUnmatched: false}): Token | undefined;
+  function match (tokenType: TokenType, options: {raiseUnmatched?: boolean} = {}): Token | undefined {
+    const {
+      raiseUnmatched = false,
+    } = options;
     if (curr() === tokenType) {
       return advance();
     }
@@ -98,7 +108,9 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
       const ExprType = script ? JsonPathScriptExpr : JsonPathFilterExpr;
       const startPos = tokens[start].start ?? 0;
       const endPos = i < size ? tokens[i].end ?? path.length : path.length;
-      return new ExprType({ this: path.slice(startPos, endPos) });
+      return new ExprType({
+        this: path.slice(startPos, endPos),
+      });
     }
 
     let number = match(TokenType.DASH) ? '-' : '';
@@ -138,7 +150,9 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
 
     if (typeof literal === 'string' || literal !== false) {
       type JsonPathIndexValue = string | JsonPathWildcardExpr | JsonPathScriptExpr | JsonPathFilterExpr | JsonPathSliceExpr | number;
-      const indexes: JsonPathIndexValue[] = [literal as JsonPathIndexValue];
+      const indexes: JsonPathIndexValue[] = [
+        literal as JsonPathIndexValue,
+      ];
       while (match(TokenType.COMMA)) {
         const nextLiteral = parseSlice();
         if (nextLiteral !== false) {
@@ -149,17 +163,27 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
       let node: JsonPathPartExpr;
       if (indexes.length === 1) {
         if (typeof literal === 'string') {
-          node = new JsonPathKeyExpr({ this: indexes[0] });
+          node = new JsonPathKeyExpr({
+            this: indexes[0],
+          });
         } else if (literal instanceof JsonPathScriptExpr || literal instanceof JsonPathFilterExpr) {
-          node = new JsonPathSelectorExpr({ this: indexes[0] });
+          node = new JsonPathSelectorExpr({
+            this: indexes[0],
+          });
         } else {
-          node = new JsonPathSubscriptExpr({ this: indexes[0] });
+          node = new JsonPathSubscriptExpr({
+            this: indexes[0],
+          });
         }
       } else {
-        node = new JsonPathUnionExpr({ expressions: indexes });
+        node = new JsonPathUnionExpr({
+          expressions: indexes,
+        });
       }
 
-      match(TokenType.R_BRACKET, { raiseUnmatched: true });
+      match(TokenType.R_BRACKET, {
+        raiseUnmatched: true,
+      });
       return node;
     } else {
       throw new ParseError(error('Cannot have empty segment'));
@@ -186,7 +210,9 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
   // We canonicalize the JSON path AST so that it always starts with a
   // "root" element, so paths like "field" will be generated as "$.field"
   match(TokenType.DOLLAR);
-  const expressions: JsonPathPartExpr[] = [new JsonPathRootExpr({})];
+  const expressions: JsonPathPartExpr[] = [
+    new JsonPathRootExpr({}),
+  ];
 
   while (curr()) {
     if (match(TokenType.DOT) || match(TokenType.COLON)) {
@@ -204,18 +230,26 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
       }
 
       if (recursive) {
-        expressions.push(new JsonPathRecursiveExpr({ this: value }));
+        expressions.push(new JsonPathRecursiveExpr({
+          this: value,
+        }));
       } else if (value) {
-        expressions.push(new JsonPathKeyExpr({ this: value }));
+        expressions.push(new JsonPathKeyExpr({
+          this: value,
+        }));
       } else {
         throw new ParseError(error('Expected key name or * after DOT'));
       }
     } else if (match(TokenType.L_BRACKET)) {
       expressions.push(parseBracket());
     } else if (matchSet(JsonPathTokenizer.VAR_TOKENS)) {
-      expressions.push(new JsonPathKeyExpr({ this: parseVarText() }));
+      expressions.push(new JsonPathKeyExpr({
+        this: parseVarText(),
+      }));
     } else if (match(TokenType.IDENTIFIER)) {
-      expressions.push(new JsonPathKeyExpr({ this: prev().text }));
+      expressions.push(new JsonPathKeyExpr({
+        this: prev().text,
+      }));
     } else if (match(TokenType.STAR)) {
       expressions.push(new JsonPathWildcardExpr({}));
     } else {

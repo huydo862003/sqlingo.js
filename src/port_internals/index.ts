@@ -1,19 +1,33 @@
-export { multiInherit } from './inheritance';
-export { MapBinaryTuple } from './binary_tuple_map';
-export { enumFromString } from './enum_utils';
+export {
+  multiInherit,
+} from './inheritance';
+export {
+  MapBinaryTuple,
+} from './binary_tuple_map';
+export {
+  enumFromString,
+} from './enum_utils';
 export {
   isInstanceOf, assertIsInstanceOf, filterInstanceOf, narrowInstanceOf,
 } from './typecheck_utils';
-export type { TypeofMap } from './typecheck_utils';
+export type {
+  TypeofMap,
+} from './typecheck_utils';
 export {
   isIterable,
 } from './type_utils';
 export type {
   Merge, Override,
 } from './type_utils';
-export { cache } from './decorators';
-export { id } from './id_utils';
-export type { Id } from './id_utils';
+export {
+  cache,
+} from './decorators';
+export {
+  id,
+} from './id_utils';
+export type {
+  Id,
+} from './id_utils';
 export {
   add, sub, mul, truediv, floorDiv, mod, pow, neg,
   or, and, xor, lshift, rshift,

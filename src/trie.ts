@@ -20,7 +20,7 @@ export const enum TrieResult {
  */
 /** Special sentinel key used to mark terminal nodes (avoids collision with digit characters like '0') */
 export const TRIE_END = '\x00';
-export type TrieNode = { [key: string]: TrieNode | true } & { '\x00'?: true };
+export type TrieNode = {[key: string]: TrieNode | true} & {'\x00'?: true};
 
 /**
  * A key represented as an array of characters.
@@ -81,20 +81,32 @@ export function inTrie (trie: TrieNode, key: Key): [TrieResult, TrieNode] {
   const keyArray = Array.from(key);
 
   if (!keyArray.length) {
-    return [TrieResult.FAILED, trie];
+    return [
+      TrieResult.FAILED,
+      trie,
+    ];
   }
 
   let current = trie;
   for (const char of keyArray) {
     if (!current[char]) {
-      return [TrieResult.FAILED, current];
+      return [
+        TrieResult.FAILED,
+        current,
+      ];
     }
     current = current[char] as TrieNode;
   }
 
   if (current[TRIE_END]) {
-    return [TrieResult.EXISTS, current];
+    return [
+      TrieResult.EXISTS,
+      current,
+    ];
   }
 
-  return [TrieResult.PREFIX, current];
+  return [
+    TrieResult.PREFIX,
+    current,
+  ];
 }

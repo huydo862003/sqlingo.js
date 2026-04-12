@@ -1,6 +1,8 @@
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/helper.py
 
-import { DateTime } from 'luxon';
+import {
+  DateTime,
+} from 'luxon';
 import type {
   ExpressionValue,
   ExpressionValueList,
@@ -12,10 +14,18 @@ import {
   DataTypeExpr, AddExpr, literal,
   DataTypeExprKind,
 } from './expressions/expressions';
-import { isIterable } from './port_internals';
-import { annotateTypes } from './optimizer/annotate_types';
-import { simplify } from './optimizer/simplify';
-import type { Dialect } from './dialects';
+import {
+  isIterable,
+} from './port_internals';
+import {
+  annotateTypes,
+} from './optimizer/annotate_types';
+import {
+  simplify,
+} from './optimizer/simplify';
+import type {
+  Dialect,
+} from './dialects';
 
 // Not ported from Python: AutoName, classproperty, subclasses, object_to_dict, is_date_unit
 
@@ -75,7 +85,9 @@ export function seqGet<T> (seq: Iterable<T>, index: number): T | undefined {
     const i = index < 0 ? seq.length + index : index;
     return 0 <= i && i < seq.length ? seq[i] : undefined;
   }
-  const arr = [...seq];
+  const arr = [
+    ...seq,
+  ];
   const i = index < 0 ? arr.length + index : index;
   return 0 <= i && i < arr.length ? arr[i] : undefined;
 }
@@ -99,15 +111,22 @@ export function ensureList<T extends Expression> (value?: T): T[];
 export function ensureList<T> (value?: T | Iterable<T>): T[];
 export function ensureList<T> (value?: T | Iterable<T>): T[] {
   if (value === undefined) {
-    return [];
+    return [
+    ];
   }
   if (value instanceof Expression) {
-    return [value];
+    return [
+      value,
+    ];
   }
   if (typeof value !== 'string' && isIterable<T>(value)) {
-    return [...value];
+    return [
+      ...value,
+    ];
   }
-  return [value as T];
+  return [
+    value as T,
+  ];
 }
 
 /**
@@ -126,13 +145,16 @@ export function ensureList<T> (value?: T | Iterable<T>): T[] {
  */
 export function ensureCollection<T> (value?: T | Iterable<T>): Iterable<T> {
   if (value === undefined) {
-    return [];
+    return [
+    ];
   }
 
   if (typeof value !== 'string' && !(value instanceof Expression) && isIterable<T>(value)) {
     return value;
   }
-  return [value as T];
+  return [
+    value as T,
+  ];
 }
 
 /**
@@ -146,9 +168,12 @@ export function ensureCollection<T> (value?: T | Iterable<T>): Iterable<T> {
  * ```
  *
  */
-export function csv (args: Iterable<string>, options: { sep?: string } = {}): string {
-  const { sep = ', ' } = options;
-  const filtered: string[] = [];
+export function csv (args: Iterable<string>, options: {sep?: string} = {}): string {
+  const {
+    sep = ', ',
+  } = options;
+  const filtered: string[] = [
+  ];
   for (const arg of args) if (arg) filtered.push(arg);
   return filtered.join(sep ?? ', ');
 }
@@ -159,8 +184,9 @@ function getCloseMatches (
   n: number,
   cutoff: number = 0.6,
 ): string[] {
-  const results: { match: string;
-    ratio: number; }[] = [];
+  const results: {match: string;
+    ratio: number;}[] = [
+  ];
 
   for (const possibility of possibilities) {
     const ratio = similarity(word, possibility);
@@ -191,10 +217,13 @@ function similarity (a: string, b: string): number {
 }
 
 function levenshteinDistance (a: string, b: string): number {
-  const matrix: number[][] = [];
+  const matrix: number[][] = [
+  ];
 
   for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [i];
+    matrix[i] = [
+      i,
+    ];
   }
 
   for (let j = 0; j <= a.length; j++) {
@@ -300,10 +329,14 @@ function hashObject (obj: unknown): string {
  *
  */
 export function tsort<T> (dag: Map<T, Set<T>>): T[] {
-  const result: T[] = [];
+  const result: T[] = [
+  ];
   const dagCopy = new Map(dag);
 
-  for (const [_node, deps] of Array.from(dag.entries())) {
+  for (const [
+    _node,
+    deps,
+  ] of Array.from(dag.entries())) {
     for (const dep of Array.from(deps)) {
       if (!dagCopy.has(dep)) {
         dagCopy.set(dep, new Set());
@@ -313,7 +346,10 @@ export function tsort<T> (dag: Map<T, Set<T>>): T[] {
 
   while (0 < dagCopy.size) {
     const current = new Set<T>();
-    for (const [node, deps] of Array.from(dagCopy.entries())) {
+    for (const [
+      node,
+      deps,
+    ] of Array.from(dagCopy.entries())) {
       if (deps.size === 0) {
         current.add(node);
       }
@@ -468,16 +504,24 @@ export function splitNumWords (
   value: string,
   sep: string,
   minNumWords: number,
-  options: { fillFromStart?: boolean } = {},
+  options: {fillFromStart?: boolean} = {},
 ): (string | undefined)[] {
-  const { fillFromStart = true } = options;
+  const {
+    fillFromStart = true,
+  } = options;
   const words = value.split(sep);
   const padding = Math.max(0, minNumWords - words.length);
 
   if (fillFromStart) {
-    return [...Array(padding).fill(undefined), ...words];
+    return [
+      ...Array(padding).fill(undefined),
+      ...words,
+    ];
   }
-  return [...words, ...Array(padding).fill(undefined)];
+  return [
+    ...words,
+    ...Array(padding).fill(undefined),
+  ];
 }
 
 /**
@@ -495,7 +539,8 @@ export function splitNumWords (
  *
  */
 export function flatten (values: Iterable<unknown>): unknown[] {
-  const result: unknown[] = [];
+  const result: unknown[] = [
+  ];
   for (const value of values) {
     if (Array.isArray(value)) {
       result.push(...flatten(value));
@@ -618,9 +663,12 @@ export function toBool (value?: string | boolean): string | boolean | undefined 
  *
  */
 export function mergeRanges<T> (ranges: Iterable<[T, T]>): [T, T][] {
-  const arr = [...ranges];
+  const arr = [
+    ...ranges,
+  ];
   if (arr.length === 0) {
-    return [];
+    return [
+    ];
   }
 
   const sorted = arr.sort((a, b) => (a[0] < b[0]
@@ -628,11 +676,19 @@ export function mergeRanges<T> (ranges: Iterable<[T, T]>): [T, T][] {
     : b[0] < a[0]
       ? 1
       : 0));
-  const merged: [T, T][] = [sorted[0]];
+  const merged: [T, T][] = [
+    sorted[0],
+  ];
 
   for (let i = 1; i < sorted.length; i++) {
-    const [start, end] = sorted[i];
-    const [lastStart, lastEnd] = merged[merged.length - 1];
+    const [
+      start,
+      end,
+    ] = sorted[i];
+    const [
+      lastStart,
+      lastEnd,
+    ] = merged[merged.length - 1];
 
     if (start <= lastEnd) {
       merged[merged.length - 1] = [
@@ -642,7 +698,10 @@ export function mergeRanges<T> (ranges: Iterable<[T, T]>): [T, T][] {
           : lastEnd,
       ];
     } else {
-      merged.push([start, end]);
+      merged.push([
+        start,
+        end,
+      ]);
     }
   }
 
@@ -710,7 +769,7 @@ export const DATE_UNITS = new Set([
  * isDateUnit(expr); // true
  * ```
  */
-export function isDateUnit (expression: { name: string } | undefined): boolean {
+export function isDateUnit (expression: {name: string} | undefined): boolean {
   return expression !== undefined && DATE_UNITS.has(expression.name.toLowerCase());
 }
 
@@ -759,13 +818,19 @@ export class SingleValuedMapping<K, V> implements Map<K, V> {
 
   * [Symbol.iterator] (): MapIterator<[K, V]> {
     for (const key of Array.from(this._keys)) {
-      yield [key, this._value] as [K, V];
+      yield [
+        key,
+        this._value,
+      ] as [K, V];
     }
   }
 
   * entries (): MapIterator<[K, V]> {
     for (const key of Array.from(this._keys)) {
-      yield [key, this._value] as [K, V];
+      yield [
+        key,
+        this._value,
+      ] as [K, V];
     }
   }
 
@@ -815,9 +880,11 @@ export function applyIndexOffset (
   this_: Expression,
   expressions: Iterable<Expression>,
   offset: number,
-  options?: { dialect?: Dialect },
+  options?: {dialect?: Dialect},
 ): Expression[] {
-  const exprs = [...expressions];
+  const exprs = [
+    ...expressions,
+  ];
   if (!offset || exprs.length !== 1) {
     return exprs;
   }
@@ -826,7 +893,9 @@ export function applyIndexOffset (
 
   // Annotate types if not already done
   if (!this_.type) {
-    annotateTypes(this_, { dialect: options?.dialect });
+    annotateTypes(this_, {
+      dialect: options?.dialect,
+    });
   }
 
   // Check if this_ is an array type
@@ -840,7 +909,9 @@ export function applyIndexOffset (
 
   // Annotate expression type if not already done
   if (!expression.type) {
-    annotateTypes(expression, { dialect: options?.dialect });
+    annotateTypes(expression, {
+      dialect: options?.dialect,
+    });
   }
 
   // Check if expression is an integer type
@@ -851,7 +922,9 @@ export function applyIndexOffset (
       this: expression,
       expression: literal(offset),
     });
-    return [simplify(offsetExpr)];
+    return [
+      simplify(offsetExpr),
+    ];
   }
 
   return exprs;

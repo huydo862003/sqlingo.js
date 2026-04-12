@@ -1,6 +1,12 @@
-import type { Expression } from '../expressions/expressions';
-import { cache } from '../port_internals';
-import { DataTypeExprKind } from '../expressions/types';
+import type {
+  Expression,
+} from '../expressions/expressions';
+import {
+  cache,
+} from '../port_internals';
+import {
+  DataTypeExprKind,
+} from '../expressions/types';
 import {
   SecExpr,
   CollationExpr,
@@ -15,9 +21,15 @@ import {
   ArraySizeExpr,
   OverlayExpr,
 } from '../expressions/expressions';
-import type { TypeAnnotator } from '../optimizer';
-import { Spark2Typing } from './spark2';
-import type { ExpressionMetadata } from './dialect';
+import type {
+  TypeAnnotator,
+} from '../optimizer';
+import {
+  Spark2Typing,
+} from './spark2';
+import type {
+  ExpressionMetadata,
+} from './dialect';
 
 export class SparkTyping {
   @cache
@@ -29,7 +41,11 @@ export class SparkTyping {
       for (const type of types) map.set(type, data);
     };
 
-    extend([SecExpr], { returns: DataTypeExprKind.DOUBLE });
+    extend([
+      SecExpr,
+    ], {
+      returns: DataTypeExprKind.DOUBLE,
+    });
 
     extend([
       CollationExpr,
@@ -37,16 +53,30 @@ export class SparkTyping {
       MonthnameExpr,
       RandstrExpr,
       SessionUserExpr,
-    ], { returns: DataTypeExprKind.VARCHAR });
+    ], {
+      returns: DataTypeExprKind.VARCHAR,
+    });
 
-    map.set(BitmapCountExpr, { returns: DataTypeExprKind.BIGINT });
-    map.set(LocaltimestampExpr, { returns: DataTypeExprKind.TIMESTAMPNTZ });
-    map.set(ToBinaryExpr, { returns: DataTypeExprKind.BINARY });
-    map.set(DateFromUnixDateExpr, { returns: DataTypeExprKind.DATE });
-    map.set(ArraySizeExpr, { returns: DataTypeExprKind.INT });
+    map.set(BitmapCountExpr, {
+      returns: DataTypeExprKind.BIGINT,
+    });
+    map.set(LocaltimestampExpr, {
+      returns: DataTypeExprKind.TIMESTAMPNTZ,
+    });
+    map.set(ToBinaryExpr, {
+      returns: DataTypeExprKind.BINARY,
+    });
+    map.set(DateFromUnixDateExpr, {
+      returns: DataTypeExprKind.DATE,
+    });
+    map.set(ArraySizeExpr, {
+      returns: DataTypeExprKind.INT,
+    });
 
     map.set(OverlayExpr, {
-      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, [
+        'this',
+      ]),
     });
 
     return map;

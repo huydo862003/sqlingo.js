@@ -1,7 +1,9 @@
 import {
   describe, it, expect, beforeEach,
 } from 'vitest';
-import { parseOne } from '../../src/index';
+import {
+  parseOne,
+} from '../../src/index';
 import {
   Expression, SelectExpr,
   AnonymousExpr, DataTypeExpr, DataTypeExprKind, ColumnExpr, WhereExpr,
@@ -11,9 +13,15 @@ import {
 import {
   OptimizeError,
 } from '../../src/errors';
-import type { Schema } from '../../src/schema';
-import { MappingSchema } from '../../src/schema';
-import { annotateTypes } from '../../src/optimizer/annotate_types';
+import type {
+  Schema,
+} from '../../src/schema';
+import {
+  MappingSchema,
+} from '../../src/schema';
+import {
+  annotateTypes,
+} from '../../src/optimizer/annotate_types';
 import {
   normalize,
 } from '../../src/optimizer/normalize';
@@ -68,8 +76,12 @@ import {
 import {
   isolateTableSelects,
 } from '../../src/optimizer/isolate_table_selects';
-import type { Dialects } from '../../src/dialects';
-import { narrowInstanceOf } from '../../src/port_internals';
+import type {
+  Dialects,
+} from '../../src/dialects';
+import {
+  narrowInstanceOf,
+} from '../../src/port_internals';
 import {
   loadSqlFixturePairs, loadSqlFixtures, stringToBool, tpchSchema, tpcdsSchema,
 } from './helpers';
@@ -80,7 +92,9 @@ function parseAndOptimize (
   readDialect?: string,
   kwargs: Record<string, unknown> = {},
 ): Expression {
-  return func(parseOne(sql, { dialect: readDialect }), kwargs);
+  return func(parseOne(sql, {
+    dialect: readDialect,
+  }), kwargs);
 }
 
 function qualifyColumnsHelper (
@@ -125,8 +139,12 @@ function normalizeHelper (
   } = {},
 ): Expression {
   const schema = options.schema;
-  expression = normalize(expression, { dnf: false });
-  expression = annotateTypes(expression, { schema });
+  expression = normalize(expression, {
+    dnf: false,
+  });
+  expression = annotateTypes(expression, {
+    schema,
+  });
   return simplify(expression);
 }
 
@@ -204,7 +222,9 @@ function checkFile (
     expected,
   ] of loadSqlFixturePairs(`optimizer/${file}.sql`)) {
     const dialect = meta.dialect || options.dialect;
-    const funcKwargs: Record<string, unknown> = { ...restOptions };
+    const funcKwargs: Record<string, unknown> = {
+      ...restOptions,
+    };
 
     if (schema !== undefined) funcKwargs.schema = schema;
     if (dialect) funcKwargs.dialect = dialect;
@@ -266,11 +286,15 @@ describe('TestOptimizer', () => {
   });
 
   it('test_optimize', () => {
-    expect(optimize('x = 1 + 1', { identify: false }).sql()).toBe('x = 2');
+    expect(optimize('x = 1 + 1', {
+      identify: false,
+    }).sql()).toBe('x = 2');
   });
 
   it('test_isolate_table_selects', () => {
-    checkFile('isolate_table_selects', (e, opts) => isolateTableSelects(e, opts), { schema });
+    checkFile('isolate_table_selects', (e, opts) => isolateTableSelects(e, opts), {
+      schema,
+    });
   });
 
   it('test_qualify_tables', () => {
@@ -282,18 +306,25 @@ describe('TestOptimizer', () => {
         onQualify: (t) => tables.add(t.name),
       },
     );
-    expect(tables).toEqual(new Set(['bar', 'baz']));
+    expect(tables).toEqual(new Set([
+      'bar',
+      'baz',
+    ]));
 
     expect(
       qualify(
-        parseOne('WITH tesT AS (SELECT * FROM t1) SELECT * FROM test', { dialect: 'bigquery' }),
+        parseOne('WITH tesT AS (SELECT * FROM t1) SELECT * FROM test', {
+          dialect: 'bigquery',
+        }),
         {
           db: 'db',
           catalog: 'catalog',
           dialect: 'bigquery',
           quoteIdentifiers: false,
         },
-      ).sql({ dialect: 'bigquery' }),
+      ).sql({
+        dialect: 'bigquery',
+      }),
     ).toBe('WITH test AS (SELECT * FROM catalog.db.t1 AS t1) SELECT * FROM test AS test');
 
     expect(
@@ -317,11 +348,15 @@ describe('TestOptimizer', () => {
     ).toBe('WITH cte AS (SELECT * FROM catalog.db.t AS t) SELECT * FROM cte AS cte PIVOT(SUM(c) FOR v IN (\'x\', \'y\')) AS pivot_alias');
 
     expect(
-      qualifyTables(parseOne('select a from b'), { catalog: 'catalog' }).sql(),
+      qualifyTables(parseOne('select a from b'), {
+        catalog: 'catalog',
+      }).sql(),
     ).toBe('SELECT a FROM b AS b');
 
     expect(
-      qualifyTables(parseOne('select a from b'), { db: '"DB"' }).sql(),
+      qualifyTables(parseOne('select a from b'), {
+        db: '"DB"',
+      }).sql(),
     ).toBe('SELECT a FROM "DB".b AS b');
 
     checkFile('qualify_tables', (e, opts) => qualifyTables(e, opts), {
@@ -332,14 +367,18 @@ describe('TestOptimizer', () => {
 
   it('test_normalize', () => {
     expect(
-      normalize(parseOne('x AND (y OR z)'), { dnf: true }).sql(),
+      normalize(parseOne('x AND (y OR z)'), {
+        dnf: true,
+      }).sql(),
     ).toBe('(x AND y) OR (x AND z)');
 
     expect(
       normalize(parseOne('x AND (y OR z)')).sql(),
     ).toBe('x AND (y OR z)');
 
-    checkFile('normalize', normalizeHelper, { schema });
+    checkFile('normalize', normalizeHelper, {
+      schema,
+    });
   });
 
   it('test_qualify_columns', () => {
@@ -351,7 +390,9 @@ describe('TestOptimizer', () => {
           join raw.Teams
               on Teams.Id = TeamMemberships.TeamId
           GROUP BY 1
-        `, { dialect: 'bigquery' }),
+        `, {
+          dialect: 'bigquery',
+        }),
         {
           schema: {
             raw: {
@@ -368,14 +409,22 @@ describe('TestOptimizer', () => {
           },
           dialect: 'bigquery',
         },
-      ).sql({ dialect: 'bigquery' }),
+      ).sql({
+        dialect: 'bigquery',
+      }),
     ).toBe('SELECT `teams`.`name` AS `name`, count(*) AS `_col_1` FROM `raw`.`TeamMemberships` AS `teammemberships` JOIN `raw`.`Teams` AS `teams` ON `teams`.`id` = `teammemberships`.`teamid` GROUP BY `teams`.`name`');
 
     expect(
       qualify(
-        parseOne('SELECT `my_db.my_table`.`my_column` FROM `my_db.my_table`', { dialect: 'bigquery' }),
-        { dialect: 'bigquery' },
-      ).sql({ dialect: 'bigquery' }),
+        parseOne('SELECT `my_db.my_table`.`my_column` FROM `my_db.my_table`', {
+          dialect: 'bigquery',
+        }),
+        {
+          dialect: 'bigquery',
+        },
+      ).sql({
+        dialect: 'bigquery',
+      }),
     ).toBe('SELECT `my_table`.`my_column` AS `my_column` FROM `my_db.my_table` AS `my_table`');
 
     expect(
@@ -394,8 +443,12 @@ describe('TestOptimizer', () => {
         {
           schema: {
             db: {
-              x: { z: 'int' },
-              y: { a: 'int' },
+              x: {
+                z: 'int',
+              },
+              y: {
+                a: 'int',
+              },
             },
           },
           expandStars: false,
@@ -409,8 +462,12 @@ describe('TestOptimizer', () => {
         {
           schema: {
             db: {
-              x: { z: 'int' },
-              y: { a: 'int' },
+              x: {
+                z: 'int',
+              },
+              y: {
+                a: 'int',
+              },
             },
           },
           inferSchema: false,
@@ -430,30 +487,50 @@ describe('TestOptimizer', () => {
 
     expect(
       qualify(
-        parseOne('WITH X AS (SELECT Y.A FROM DB.y CROSS JOIN a.b.INFORMATION_SCHEMA.COLUMNS) SELECT `A` FROM X', { dialect: 'bigquery' }),
-        { dialect: 'bigquery' },
+        parseOne('WITH X AS (SELECT Y.A FROM DB.y CROSS JOIN a.b.INFORMATION_SCHEMA.COLUMNS) SELECT `A` FROM X', {
+          dialect: 'bigquery',
+        }),
+        {
+          dialect: 'bigquery',
+        },
       ).sql(),
     ).toBe('WITH "x" AS (SELECT "y"."a" AS "a" FROM "DB"."y" AS "y" CROSS JOIN "a"."b"."INFORMATION_SCHEMA.COLUMNS" AS "columns") SELECT "x"."a" AS "a" FROM "x" AS "x"');
 
     expect(
       qualify(
-        parseOne('CREATE FUNCTION udfs.`myTest`(`x` FLOAT64) AS (1)', { dialect: 'bigquery' }),
-        { dialect: 'bigquery' },
-      ).sql({ dialect: 'bigquery' }),
+        parseOne('CREATE FUNCTION udfs.`myTest`(`x` FLOAT64) AS (1)', {
+          dialect: 'bigquery',
+        }),
+        {
+          dialect: 'bigquery',
+        },
+      ).sql({
+        dialect: 'bigquery',
+      }),
     ).toBe('CREATE FUNCTION `udfs`.`myTest`(`x` FLOAT64) AS (1)');
 
     expect(
       qualify(
-        parseOne('SELECT `bar_bazfoo_$id` FROM test', { dialect: 'spark' }),
+        parseOne('SELECT `bar_bazfoo_$id` FROM test', {
+          dialect: 'spark',
+        }),
         {
-          schema: { test: { bar_bazFoo_$id: 'BIGINT' } },
+          schema: {
+            test: {
+              bar_bazFoo_$id: 'BIGINT',
+            },
+          },
           dialect: 'spark',
         },
-      ).sql({ dialect: 'spark' }),
+      ).sql({
+        dialect: 'spark',
+      }),
     ).toBe('SELECT `test`.`bar_bazfoo_$id` AS `bar_bazfoo_$id` FROM `test` AS `test`');
 
     const qualified = qualify(
-      parseOne('WITH t AS (SELECT 1 AS c) (SELECT c FROM t)', { into: SelectExpr }),
+      parseOne('WITH t AS (SELECT 1 AS c) (SELECT c FROM t)', {
+        into: SelectExpr,
+      }),
     );
     expect(qualified.selects[0].parent).toBe(qualified);
     expect(qualified.sql()).toBe('WITH "t" AS (SELECT 1 AS "c") SELECT "t"."c" AS "c" FROM "t" AS "t"');
@@ -463,7 +540,9 @@ describe('TestOptimizer', () => {
       qualifyColumns(
         parseOne(
           'SELECT id, dt, v FROM (SELECT t1.id, t1.dt, sum(coalesce(t2.v, 0)) AS v FROM t1 AS t1 LEFT JOIN lkp AS lkp USING (id) LEFT JOIN t2 AS t2 USING (other_id, dt, common) WHERE t1.id > 10 GROUP BY 1, 2) AS `_0`',
-          { dialect: 'bigquery' },
+          {
+            dialect: 'bigquery',
+          },
         ),
         {
           schema: new MappingSchema({
@@ -488,7 +567,9 @@ describe('TestOptimizer', () => {
             dialect: 'bigquery',
           }),
         },
-      ).sql({ dialect: 'bigquery' }),
+      ).sql({
+        dialect: 'bigquery',
+      }),
     ).toBe('SELECT `_0`.id AS id, `_0`.dt AS dt, `_0`.v AS v FROM (SELECT t1.id AS id, t1.dt AS dt, sum(coalesce(t2.v, 0)) AS v FROM t1 AS t1 LEFT JOIN lkp AS lkp ON t1.id = lkp.id LEFT JOIN t2 AS t2 ON lkp.other_id = t2.other_id AND t1.dt = t2.dt AND COALESCE(t1.common, lkp.common) = t2.common WHERE t1.id > 10 GROUP BY t1.id, t1.dt) AS `_0`');
 
     // Detection of correlation where columns are referenced in derived tables nested within subqueries
@@ -516,7 +597,9 @@ describe('TestOptimizer', () => {
     // Detection of correlation where columns are referenced in derived tables nested within lateral joins
     expect(
       qualify(
-        parseOne('SELECT u.user_id, l.log_date FROM users AS u CROSS JOIN LATERAL (SELECT l1.log_date FROM (SELECT l.log_date FROM logs AS l WHERE l.user_id = u.user_id AND l.log_date <= 100 ORDER BY l.log_date LIMIT 1) AS l1) AS l', { dialect: 'postgres' }),
+        parseOne('SELECT u.user_id, l.log_date FROM users AS u CROSS JOIN LATERAL (SELECT l1.log_date FROM (SELECT l.log_date FROM logs AS l WHERE l.user_id = u.user_id AND l.log_date <= 100 ORDER BY l.log_date LIMIT 1) AS l1) AS l', {
+          dialect: 'postgres',
+        }),
         {
           schema: {
             users: {
@@ -530,42 +613,62 @@ describe('TestOptimizer', () => {
           },
           quoteIdentifiers: false,
         },
-      ).sql({ dialect: 'postgres' }),
+      ).sql({
+        dialect: 'postgres',
+      }),
     ).toBe('SELECT u.user_id AS user_id, l.log_date AS log_date FROM users AS u CROSS JOIN LATERAL (SELECT l1.log_date AS log_date FROM (SELECT l.log_date AS log_date FROM logs AS l WHERE l.user_id = u.user_id AND l.log_date <= 100 ORDER BY l.log_date LIMIT 1) AS l1) AS l');
 
     expect(
       qualify(
-        parseOne('SELECT A.b_id FROM A JOIN B ON A.b_id=B.b_id JOIN C USING(c_id)', { dialect: 'postgres' }),
+        parseOne('SELECT A.b_id FROM A JOIN B ON A.b_id=B.b_id JOIN C USING(c_id)', {
+          dialect: 'postgres',
+        }),
         {
           schema: {
-            A: { b_id: 'int' },
+            A: {
+              b_id: 'int',
+            },
             B: {
               b_id: 'int',
               c_id: 'int',
             },
-            C: { c_id: 'int' },
+            C: {
+              c_id: 'int',
+            },
           },
           quoteIdentifiers: false,
         },
-      ).sql({ dialect: 'postgres' }),
+      ).sql({
+        dialect: 'postgres',
+      }),
     ).toBe('SELECT a.b_id AS b_id FROM a AS a JOIN b AS b ON a.b_id = b.b_id JOIN c AS c ON b.c_id = c.c_id');
 
     expect(
       qualify(
-        parseOne('SELECT A.b_id FROM A JOIN B ON A.b_id=B.b_id JOIN C ON B.b_id = C.b_id JOIN D USING(d_id)', { dialect: 'postgres' }),
+        parseOne('SELECT A.b_id FROM A JOIN B ON A.b_id=B.b_id JOIN C ON B.b_id = C.b_id JOIN D USING(d_id)', {
+          dialect: 'postgres',
+        }),
         {
           schema: {
-            A: { b_id: 'int' },
+            A: {
+              b_id: 'int',
+            },
             B: {
               b_id: 'int',
               d_id: 'int',
             },
-            C: { b_id: 'int' },
-            D: { d_id: 'int' },
+            C: {
+              b_id: 'int',
+            },
+            D: {
+              d_id: 'int',
+            },
           },
           quoteIdentifiers: false,
         },
-      ).sql({ dialect: 'postgres' }),
+      ).sql({
+        dialect: 'postgres',
+      }),
     ).toBe('SELECT a.b_id AS b_id FROM a AS a JOIN b AS b ON a.b_id = b.b_id JOIN c AS c ON b.b_id = c.b_id JOIN d AS d ON b.d_id = d.d_id');
 
     expect(
@@ -576,12 +679,20 @@ describe('TestOptimizer', () => {
              FROM UNNEST(credits) AS c
              WHERE type != 'promotion') as total
           FROM billing
-        `, { dialect: 'bigquery' }),
+        `, {
+          dialect: 'bigquery',
+        }),
         {
-          schema: { billing: { credits: 'ARRAY<STRUCT<amount FLOAT64, type STRING>>' } },
+          schema: {
+            billing: {
+              credits: 'ARRAY<STRUCT<amount FLOAT64, type STRING>>',
+            },
+          },
           dialect: 'bigquery',
         },
-      ).sql({ dialect: 'bigquery' }),
+      ).sql({
+        dialect: 'bigquery',
+      }),
     ).toBe('SELECT (SELECT SUM(`c`.`amount`) AS `_col_0` FROM UNNEST(`billing`.`credits`) AS `c` WHERE `type` <> \'promotion\') AS `total` FROM `billing` AS `billing`');
 
     expect(
@@ -593,7 +704,9 @@ describe('TestOptimizer', () => {
              FROM UNNEST(items) AS item
              WHERE category = 'electronics') as electronics_total
           FROM cte
-        `, { dialect: 'bigquery' }),
+        `, {
+          dialect: 'bigquery',
+        }),
         {
           schema: {
             base_table: {
@@ -603,11 +716,17 @@ describe('TestOptimizer', () => {
           },
           dialect: 'bigquery',
         },
-      ).sql({ dialect: 'bigquery' }),
+      ).sql({
+        dialect: 'bigquery',
+      }),
     ).toBe('WITH `cte` AS (SELECT `base_table`.`id` AS `id`, `base_table`.`items` AS `items` FROM `base_table` AS `base_table`) SELECT (SELECT SUM(`item`.`price`) AS `_col_0` FROM UNNEST(`cte`.`items`) AS `item` WHERE `category` = \'electronics\') AS `electronics_total` FROM `cte` AS `cte`');
 
-    checkFile('qualify_columns', qualifyColumnsHelper, { schema });
-    checkFile('qualify_columns_ddl', qualifyColumnsHelper, { schema });
+    checkFile('qualify_columns', qualifyColumnsHelper, {
+      schema,
+    });
+    checkFile('qualify_columns_ddl', qualifyColumnsHelper, {
+      schema,
+    });
 
     expect(
       qualify(
@@ -619,7 +738,9 @@ describe('TestOptimizer', () => {
               FROM UNNEST(col_st) AS col_st
           ) AS vcol1
           FROM t AS b
-        `, { dialect: 'bigquery' }),
+        `, {
+          dialect: 'bigquery',
+        }),
         {
           schema: {
             t: {
@@ -628,7 +749,9 @@ describe('TestOptimizer', () => {
           },
           dialect: 'bigquery',
         },
-      ).sql({ dialect: 'bigquery' }),
+      ).sql({
+        dialect: 'bigquery',
+      }),
     ).toBe('SELECT (SELECT `col_st`.`value` AS `value` FROM UNNEST(`b`.`col_st`) AS `col_st`) AS `vcol1` FROM `t` AS `b`');
   });
 
@@ -636,7 +759,13 @@ describe('TestOptimizer', () => {
     expect(() => {
       qualify(
         parseOne('select foo from x'),
-        { schema: { foo: { y: 'int' } } },
+        {
+          schema: {
+            foo: {
+              y: 'int',
+            },
+          },
+        },
       );
     }).toThrow(OptimizeError);
 
@@ -660,12 +789,20 @@ describe('TestOptimizer', () => {
     const s = new MappingSchema({
       schema: schema,
       visible: {
-        x: new Set(['a']),
-        y: new Set(['b']),
-        z: new Set(['b']),
+        x: new Set([
+          'a',
+        ]),
+        y: new Set([
+          'b',
+        ]),
+        z: new Set([
+          'b',
+        ]),
       },
     });
-    checkFile('qualify_columns__with_invisible', qualifyColumnsHelper, { schema: s });
+    checkFile('qualify_columns__with_invisible', qualifyColumnsHelper, {
+      schema: s,
+    });
   });
 
   it('test_pushdown_cte_alias_columns', () => {
@@ -677,7 +814,9 @@ describe('TestOptimizer', () => {
       expect(() => {
         const expression = qualifyColumns(
           parseOne(sql),
-          { schema },
+          {
+            schema,
+          },
         );
         validateQualifyColumns(expression);
       }).toThrow(OptimizeError);
@@ -709,7 +848,9 @@ describe('TestOptimizer', () => {
 
     // no highlighting when sql is undefined
     try {
-      optimize(sql, { schema });
+      optimize(sql, {
+        schema,
+      });
     } catch (e: unknown) {
       const msg = (e as Error).message;
       expect(msg).toContain('Column \'nonexistent\' could not be resolved');
@@ -727,11 +868,15 @@ describe('TestOptimizer', () => {
   });
 
   it('test_pushdown_projection', () => {
-    checkFile('pushdown_projections', pushdownProjectionsHelper, { schema });
+    checkFile('pushdown_projections', pushdownProjectionsHelper, {
+      schema,
+    });
   });
 
   it('test_simplify', () => {
-    checkFile('simplify', simplifyHelper, { schema });
+    checkFile('simplify', simplifyHelper, {
+      schema,
+    });
 
     // Stress test with huge union query
     const unionSql = 'SELECT 1 UNION ALL '.repeat(1000) + 'SELECT 1';
@@ -762,7 +907,9 @@ describe('TestOptimizer', () => {
     expect(simplifiedConcat.args.safe).toBe(false);
     expect(simplifiedSafeConcat.args.safe).toBe(true);
 
-    expect(simplifiedConcat.sql({ dialect: 'presto' })).toBe('CONCAT(\'a\', x, \'bc\')');
+    expect(simplifiedConcat.sql({
+      dialect: 'presto',
+    })).toBe('CONCAT(\'a\', x, \'bc\')');
     expect(simplifiedSafeConcat.sql()).toBe('CONCAT(\'a\', x, \'bc\')');
   });
 
@@ -774,7 +921,9 @@ describe('TestOptimizer', () => {
     `;
 
     expect(
-      simplify(parseOne(sql)).sql({ pretty: true }),
+      simplify(parseOne(sql)).sql({
+        pretty: true,
+      }),
     ).toBe(parseOne(`
             SELECT x, 2
             FROM foo
@@ -782,7 +931,9 @@ describe('TestOptimizer', () => {
                 select x + 1 + 1, sum(y + 2)
                 FROM bar
                 GROUP BY x + 1 + 1
-            )))`).sql({ pretty: true }));
+            )))`).sql({
+      pretty: true,
+    }));
   });
 
   it('test_unnest_subqueries', () => {
@@ -802,7 +953,11 @@ describe('TestOptimizer', () => {
       optimize('SELECT a + 1 AS d, d + 1 AS e FROM x WHERE e > 1 GROUP BY e').sql(),
     ).toBe('SELECT "x"."a" + 1 AS "d", "x"."a" + 1 + 1 AS "e" FROM "x" AS "x" WHERE ("x"."a" + 2) > 1 GROUP BY "x"."a" + 1 + 1');
 
-    const unusedSchema = { l: { c: 'int' } };
+    const unusedSchema = {
+      l: {
+        c: 'int',
+      },
+    };
     expect(
       qualifyColumns(
         parseOne('SELECT CAST(x AS INT) AS y FROM z AS z'),
@@ -817,7 +972,9 @@ describe('TestOptimizer', () => {
     const sql = 'WITH data AS (SELECT 1 AS id, 2 AS my_id, \'a\' AS name, \'b\' AS full_name) SELECT id AS my_id, CONCAT(id, name) AS full_name FROM data WHERE my_id = 1 GROUP BY my_id, full_name HAVING my_id = 1';
     expect(
       qualifyColumns(
-        parseOne(sql, { dialect: 'bigquery' }),
+        parseOne(sql, {
+          dialect: 'bigquery',
+        }),
         {
           schema: new MappingSchema({
             schema: unusedSchema,
@@ -830,7 +987,9 @@ describe('TestOptimizer', () => {
     // Clickhouse expands overlapping alias across the entire query
     expect(
       qualifyColumns(
-        parseOne(sql, { dialect: 'clickhouse' }),
+        parseOne(sql, {
+          dialect: 'clickhouse',
+        }),
         {
           schema: new MappingSchema({
             schema: unusedSchema,
@@ -844,7 +1003,9 @@ describe('TestOptimizer', () => {
     const sql2 = 'WITH data AS (SELECT 1 AS id) SELECT FUNC(id) AS id FROM data GROUP BY FUNC(id)';
     expect(
       qualifyColumns(
-        parseOne(sql2, { dialect: 'bigquery' }),
+        parseOne(sql2, {
+          dialect: 'bigquery',
+        }),
         {
           schema: new MappingSchema({
             schema: unusedSchema,
@@ -857,7 +1018,9 @@ describe('TestOptimizer', () => {
     const sql3 = 'SELECT x.a, max(x.b) as x FROM x AS x GROUP BY 1 HAVING x > 1';
     expect(
       qualifyColumns(
-        parseOne(sql3, { dialect: 'bigquery' }),
+        parseOne(sql3, {
+          dialect: 'bigquery',
+        }),
         {
           schema: new MappingSchema({
             schema: unusedSchema,
@@ -873,11 +1036,15 @@ describe('TestOptimizer', () => {
   });
 
   it('test_eliminate_joins', () => {
-    checkFile('eliminate_joins', (e) => eliminateJoins(e), { pretty: true });
+    checkFile('eliminate_joins', (e) => eliminateJoins(e), {
+      pretty: true,
+    });
   });
 
   it('test_eliminate_ctes', () => {
-    checkFile('eliminate_ctes', (e) => eliminateCtes(e), { pretty: true });
+    checkFile('eliminate_ctes', (e) => eliminateCtes(e), {
+      pretty: true,
+    });
   });
 
   it('test_merge_subqueries', () => {
@@ -891,7 +1058,9 @@ describe('TestOptimizer', () => {
         ...options,
       });
     };
-    checkFile('merge_subqueries', mergeOptimize, { schema });
+    checkFile('merge_subqueries', mergeOptimize, {
+      schema,
+    });
   });
 
   it('test_eliminate_subqueries', () => {
@@ -914,11 +1083,17 @@ describe('TestOptimizer', () => {
         dialect: dialect as string | undefined,
       });
     };
-    checkFile('canonicalize', canonicalizeOptimize, { schema });
+    checkFile('canonicalize', canonicalizeOptimize, {
+      schema,
+    });
 
     // In T-SQL and Redshift, SELECT a + b can produce a NULL
-    const ast = canonicalizeOptimize(parseOne('SELECT CAST(a AS TEXT) + CAST(b AS TEXT) FROM t', { dialect: 'tsql' }));
-    expect(ast.sql({ dialect: 'postgres' })).toBe('SELECT CAST("t"."a" AS TEXT) || CAST("t"."b" AS TEXT) AS "_col_0" FROM "t" AS "t"');
+    const ast = canonicalizeOptimize(parseOne('SELECT CAST(a AS TEXT) + CAST(b AS TEXT) FROM t', {
+      dialect: 'tsql',
+    }));
+    expect(ast.sql({
+      dialect: 'postgres',
+    })).toBe('SELECT CAST("t"."a" AS TEXT) || CAST("t"."b" AS TEXT) AS "_col_0" FROM "t" AS "t"');
   });
 
   it('test_tpch', () => {
@@ -942,12 +1117,22 @@ describe('TestOptimizer', () => {
   }, 30000);
 
   it('test_scope', () => {
-    const ast = parseOne('SELECT IF(a IN UNNEST(b), 1, 0) AS c FROM t', { dialect: 'bigquery' });
+    const ast = parseOne('SELECT IF(a IN UNNEST(b), 1, 0) AS c FROM t', {
+      dialect: 'bigquery',
+    });
     const scope = buildScope(ast);
-    expect(scope?.columns.map((c) => c.sql())).toEqual(['a', 'b']);
+    expect(scope?.columns.map((c) => c.sql())).toEqual([
+      'a',
+      'b',
+    ]);
 
-    const manyUnions = parseOne(Array.from({ length: 10000 }, () => 'SELECT x FROM t').join(' UNION ALL '));
-    const scopesUsingTraverse = [...(buildScope(manyUnions)?.traverse() ?? [])];
+    const manyUnions = parseOne(Array.from({
+      length: 10000,
+    }, () => 'SELECT x FROM t').join(' UNION ALL '));
+    const scopesUsingTraverse = [
+      ...(buildScope(manyUnions)?.traverse() ?? [
+      ]),
+    ];
     const scopesUsingTraverseScope = traverseScope(manyUnions);
     expect(scopesUsingTraverse.length).toBe(scopesUsingTraverseScope.length);
 
@@ -971,7 +1156,13 @@ describe('TestOptimizer', () => {
     `;
     const expression = parseOne(sql);
 
-    for (const scopes of [traverseScope(expression), [...(buildScope(expression)?.traverse() ?? [])]]) {
+    for (const scopes of [
+      traverseScope(expression),
+      [
+        ...(buildScope(expression)?.traverse() ?? [
+        ]),
+      ],
+    ]) {
       expect(scopes.length).toBe(7);
       expect(scopes[0].expression.sql()).toBe('SELECT x.b FROM x');
       expect(scopes[1].expression.sql()).toBe('SELECT y.b FROM y');
@@ -988,60 +1179,111 @@ describe('TestOptimizer', () => {
         's',
       ]));
       expect(scopes[6].columns.length).toBe(6);
-      expect(new Set(scopes[6].columns.map((c) => c.table))).toEqual(new Set(['r', 's']));
-      expect(scopes[6].sourceColumns('q')).toEqual([]);
+      expect(new Set(scopes[6].columns.map((c) => c.table))).toEqual(new Set([
+        'r',
+        's',
+      ]));
+      expect(scopes[6].sourceColumns('q')).toEqual([
+      ]);
       expect(scopes[6].sourceColumns('r').length).toBe(2);
-      expect(new Set(scopes[6].sourceColumns('r').map((c) => c.table))).toEqual(new Set(['r']));
+      expect(new Set(scopes[6].sourceColumns('r').map((c) => c.table))).toEqual(new Set([
+        'r',
+      ]));
 
-      expect(new Set([...scopes[scopes.length - 1].findAll(ColumnExpr)].map((c) => c.sql()))).toEqual(new Set(['r.b', 's.b']));
+      expect(new Set([
+        ...scopes[scopes.length - 1].findAll(ColumnExpr),
+      ].map((c) => c.sql()))).toEqual(new Set([
+        'r.b',
+        's.b',
+      ]));
       expect(scopes[scopes.length - 1].find(ColumnExpr)?.sql()).toBe('r.b');
-      expect(new Set([...scopes[0].findAll(ColumnExpr)].map((c) => c.sql()))).toEqual(new Set(['x.b']));
+      expect(new Set([
+        ...scopes[0].findAll(ColumnExpr),
+      ].map((c) => c.sql()))).toEqual(new Set([
+        'x.b',
+      ]));
     }
 
     // Check that we can walk in scope from an arbitrary node
     const whereNode = expression.find(WhereExpr);
     if (whereNode) {
       const colsInWhere = new Set(
-        [...walkInScope(whereNode)]
+        [
+          ...walkInScope(whereNode),
+        ]
           .filter((node): node is ColumnExpr => node instanceof ColumnExpr)
           .map((node) => node.sql()),
       );
-      expect(colsInWhere).toEqual(new Set(['s.b']));
+      expect(colsInWhere).toEqual(new Set([
+        's.b',
+      ]));
     }
 
     // Check that parentheses don't introduce a new scope unless an alias is attached
     const sql2 = 'SELECT * FROM (((SELECT * FROM (t1 JOIN t2) AS t3) JOIN (SELECT * FROM t4)))';
     const expr2 = parseOne(sql2);
-    for (const scopes of [traverseScope(expr2), [...(buildScope(expr2)?.traverse() ?? [])]]) {
+    for (const scopes of [
+      traverseScope(expr2),
+      [
+        ...(buildScope(expr2)?.traverse() ?? [
+        ]),
+      ],
+    ]) {
       expect(scopes.length).toBe(4);
 
       expect(scopes[0].expression.sql()).toBe('t1, t2');
-      expect(new Set(scopes[0].sources.keys())).toEqual(new Set(['t1', 't2']));
+      expect(new Set(scopes[0].sources.keys())).toEqual(new Set([
+        't1',
+        't2',
+      ]));
 
       expect(scopes[1].expression.sql()).toBe('SELECT * FROM (t1, t2) AS t3');
-      expect(new Set(scopes[1].sources.keys())).toEqual(new Set(['t3']));
+      expect(new Set(scopes[1].sources.keys())).toEqual(new Set([
+        't3',
+      ]));
 
       expect(scopes[2].expression.sql()).toBe('SELECT * FROM t4');
-      expect(new Set(scopes[2].sources.keys())).toEqual(new Set(['t4']));
+      expect(new Set(scopes[2].sources.keys())).toEqual(new Set([
+        't4',
+      ]));
 
       expect(scopes[3].expression.sql()).toBe('SELECT * FROM (((SELECT * FROM (t1, t2) AS t3), (SELECT * FROM t4)))');
-      expect(new Set(scopes[3].sources.keys())).toEqual(new Set(['']));
+      expect(new Set(scopes[3].sources.keys())).toEqual(new Set([
+        '',
+      ]));
     }
 
     // UNNEST and LATERAL inner query
     const innerQuery = 'SELECT bar FROM baz';
-    for (const udtf of [`UNNEST((${innerQuery}))`, `LATERAL (${innerQuery})`]) {
+    for (const udtf of [
+      `UNNEST((${innerQuery}))`,
+      `LATERAL (${innerQuery})`,
+    ]) {
       const sqlU = `SELECT a FROM foo CROSS JOIN ${udtf}`;
       const exprU = parseOne(sqlU);
 
-      for (const scopes of [traverseScope(exprU), [...(buildScope(exprU)?.traverse() ?? [])]]) {
+      for (const scopes of [
+        traverseScope(exprU),
+        [
+          ...(buildScope(exprU)?.traverse() ?? [
+          ]),
+        ],
+      ]) {
         expect(scopes.length).toBe(3);
         expect(scopes[0].expression.sql()).toBe(innerQuery);
-        expect(new Set(scopes[0].sources.keys())).toEqual(new Set(['baz']));
+        expect(new Set(scopes[0].sources.keys())).toEqual(new Set([
+          'baz',
+        ]));
         expect(scopes[1].expression.sql()).toBe(udtf);
-        expect(new Set(scopes[1].sources.keys())).toEqual(new Set(['', 'foo']));
+        expect(new Set(scopes[1].sources.keys())).toEqual(new Set([
+          '',
+          'foo',
+        ]));
         expect(scopes[2].expression.sql()).toBe(`SELECT a FROM foo CROSS JOIN ${udtf}`);
-        expect(new Set(scopes[2].sources.keys())).toEqual(new Set(['', 'foo']));
+        expect(new Set(scopes[2].sources.keys())).toEqual(new Set([
+          '',
+          'foo',
+        ]));
       }
     }
 
@@ -1058,7 +1300,9 @@ describe('TestOptimizer', () => {
       traverseScope(parseOne('UPDATE tbl1 SET col = 0')).length,
     ).toBe(0);
 
-    const scope2 = buildScope(parseOne('SELECT * FROM t LEFT JOIN UNNEST(a) AS a1 LEFT JOIN UNNEST(a1.a) AS a2', { dialect: 'bigquery' }));
+    const scope2 = buildScope(parseOne('SELECT * FROM t LEFT JOIN UNNEST(a) AS a1 LEFT JOIN UNNEST(a1.a) AS a2', {
+      dialect: 'bigquery',
+    }));
     expect(new Set(Object.keys(scope2?.selectedSources ?? {}))).toEqual(new Set([
       't',
       'a1',
@@ -1077,10 +1321,18 @@ describe('TestOptimizer', () => {
         (e, opts) => annotateTypes(e, opts),
         sql,
         dialect,
-        { dialect },
+        {
+          dialect,
+        },
       );
-      const resultTypeSql = narrowInstanceOf(result.type, Expression)?.sql({ dialect });
-      const expectedTypeSql = DataTypeExpr.build(expected, { dialect })?.sql({ dialect });
+      const resultTypeSql = narrowInstanceOf(result.type, Expression)?.sql({
+        dialect,
+      });
+      const expectedTypeSql = DataTypeExpr.build(expected, {
+        dialect,
+      })?.sql({
+        dialect,
+      });
       expect(resultTypeSql, `${sql}`).toBe(expectedTypeSql);
     }
   });
@@ -1114,7 +1366,11 @@ describe('TestOptimizer', () => {
       const dialectStr = meta.dialect || '';
       const fullSql = `SELECT ${sql} FROM tbl`;
 
-      for (const dialect of (dialectStr ? dialectStr.split(', ') : [''])) {
+      for (const dialect of (dialectStr
+        ? dialectStr.split(', ')
+        : [
+          '',
+        ])) {
         const result = parseAndOptimize(
           (e, opts) => annotateFunctionsHelper(e, opts ?? {}),
           fullSql,
@@ -1124,8 +1380,14 @@ describe('TestOptimizer', () => {
             dialect: dialect || undefined,
           },
         );
-        const resultTypeSql = narrowInstanceOf(result.type, Expression)?.sql({ dialect });
-        const expectedTypeSql = DataTypeExpr.build(expected, { dialect: dialect })?.sql({ dialect });
+        const resultTypeSql = narrowInstanceOf(result.type, Expression)?.sql({
+          dialect,
+        });
+        const expectedTypeSql = DataTypeExpr.build(expected, {
+          dialect: dialect,
+        })?.sql({
+          dialect,
+        });
         expect(resultTypeSql, `${sql}`).toBe(expectedTypeSql);
       }
     }
@@ -1141,7 +1403,9 @@ describe('TestOptimizer', () => {
     ).toBe(DataTypeExprKind.INT);
 
     expression = annotateTypes(parseOne('ARRAY(1)::ARRAY<INT>'));
-    expect(narrowInstanceOf(expression.type, Expression)?.sql()).toBe(parseOne('ARRAY<INT>', { into: DataTypeExpr }).sql());
+    expect(narrowInstanceOf(expression.type, Expression)?.sql()).toBe(parseOne('ARRAY<INT>', {
+      into: DataTypeExpr,
+    }).sql());
 
     expression = annotateTypes(parseOne('CAST(x AS INTERVAL)'));
     expect(expression.type?.toString()).toBe(DataTypeExprKind.INTERVAL);
@@ -1171,11 +1435,15 @@ describe('TestOptimizer', () => {
   });
 
   it('test_typeddiv_annotation', () => {
-    const expressions = annotateTypes(parseOne('SELECT 2 / 3, 2 / 3.0', { dialect: 'presto' })).args.expressions;
+    const expressions = annotateTypes(parseOne('SELECT 2 / 3, 2 / 3.0', {
+      dialect: 'presto',
+    })).args.expressions;
     expect(narrowInstanceOf(expressions?.[0], Expression)?.type?.toString()).toBe(DataTypeExprKind.BIGINT);
     expect(narrowInstanceOf(expressions?.[1], Expression)?.type?.toString()).toBe(DataTypeExprKind.DOUBLE);
 
-    const expressions2 = annotateTypes(parseOne('SELECT SUM(2 / 3), CAST(2 AS DECIMAL) / 3', { dialect: 'mysql' })).args.expressions;
+    const expressions2 = annotateTypes(parseOne('SELECT SUM(2 / 3), CAST(2 AS DECIMAL) / 3', {
+      dialect: 'mysql',
+    })).args.expressions;
     expect(narrowInstanceOf(expressions2?.[0], Expression)?.type?.toString()).toBe(DataTypeExprKind.DOUBLE);
     expect(narrowInstanceOf(narrowInstanceOf(expressions2?.[0], Expression)?.args.this, Expression)?.type?.toString()).toBe(DataTypeExprKind.DOUBLE);
     expect(narrowInstanceOf(expressions2?.[1], Expression)?.type?.toString()).toBe(DataTypeExprKind.DECIMAL);
@@ -1202,18 +1470,30 @@ describe('TestOptimizer', () => {
     expression = narrowInstanceOf(annotateTypes(parseOne('SELECT ARRAY[ARRAY[1], ARRAY[2], ARRAY[3]][1:2]')).args.expressions?.[0], Expression);
     expect(narrowInstanceOf(expression?.type, Expression)?.sql()).toBe('ARRAY<ARRAY<INT>>');
 
-    expression = annotateTypes(parseOne('MAP(1.0, 2, \'2\', 3.0)[\'2\']', { dialect: 'spark' }));
+    expression = annotateTypes(parseOne('MAP(1.0, 2, \'2\', 3.0)[\'2\']', {
+      dialect: 'spark',
+    }));
     expect(expression.type?.toString()).toBe(DataTypeExprKind.DOUBLE);
 
-    expression = annotateTypes(parseOne('MAP(1.0, 2, x, 3.0)[2]', { dialect: 'spark' }));
+    expression = annotateTypes(parseOne('MAP(1.0, 2, x, 3.0)[2]', {
+      dialect: 'spark',
+    }));
     expect(expression.type?.toString()).toBe(DataTypeExprKind.UNKNOWN);
 
     expression = annotateTypes(parseOne('MAP(ARRAY(1.0, x), ARRAY(2, 3.0))[x]'));
     expect(expression.type?.toString()).toBe(DataTypeExprKind.DOUBLE);
 
     expression = narrowInstanceOf(annotateTypes(
-      parseOne('SELECT MAP(1.0, 2, 2, t.y)[2] FROM t', { dialect: 'spark' }),
-      { schema: { t: { y: 'int' } } },
+      parseOne('SELECT MAP(1.0, 2, 2, t.y)[2] FROM t', {
+        dialect: 'spark',
+      }),
+      {
+        schema: {
+          t: {
+            y: 'int',
+          },
+        },
+      },
     ).args.expressions?.[0], Expression);
     expect(expression?.type?.toString()).toBe(DataTypeExprKind.INT);
   });
@@ -1227,28 +1507,87 @@ describe('TestOptimizer', () => {
     };
 
     const tests: [string, DataTypeExprKind][] = [
-      ['SELECT \'2023-01-01\' + INTERVAL \'1\' DAY', DataTypeExprKind.DATE],
-      ['SELECT \'2023-01-01\' + INTERVAL \'1\' HOUR', DataTypeExprKind.DATETIME],
-      ['SELECT \'2023-01-01 00:00:01\' + INTERVAL \'1\' HOUR', DataTypeExprKind.DATETIME],
-      ['SELECT \'nonsense\' + INTERVAL \'1\' DAY', DataTypeExprKind.UNKNOWN],
-      ['SELECT x.a + INTERVAL \'1\' DAY FROM x AS x', DataTypeExprKind.DATE],
-      ['SELECT x.a + INTERVAL \'1\' HOUR FROM x AS x', DataTypeExprKind.DATETIME],
-      ['SELECT x.b + INTERVAL \'1\' DAY FROM x AS x', DataTypeExprKind.DATETIME],
-      ['SELECT x.b + INTERVAL \'1\' HOUR FROM x AS x', DataTypeExprKind.DATETIME],
-      ['SELECT DATE_ADD(\'2023-01-01\', 1, \'DAY\')', DataTypeExprKind.DATE],
-      ['SELECT DATE_ADD(\'2023-01-01 00:00:00\', 1, \'DAY\')', DataTypeExprKind.DATETIME],
-      ['SELECT DATE_ADD(x.a, 1, \'DAY\') FROM x AS x', DataTypeExprKind.DATE],
-      ['SELECT DATE_ADD(x.a, 1, \'HOUR\') FROM x AS x', DataTypeExprKind.DATETIME],
-      ['SELECT DATE_ADD(x.b, 1, \'DAY\') FROM x AS x', DataTypeExprKind.DATETIME],
-      ['SELECT DATE_TRUNC(\'DAY\', x.a) FROM x AS x', DataTypeExprKind.DATE],
-      ['SELECT DATE_TRUNC(\'DAY\', x.b) FROM x AS x', DataTypeExprKind.DATETIME],
-      ['SELECT DATE_TRUNC(\'SECOND\', x.a) FROM x AS x', DataTypeExprKind.DATETIME],
-      ['SELECT DATE_TRUNC(\'DAY\', \'2023-01-01\') FROM x AS x', DataTypeExprKind.DATE],
-      ['SELECT DATEDIFF(\'2023-01-01\', \'2023-01-02\', DAY) FROM x AS x', DataTypeExprKind.INT],
+      [
+        'SELECT \'2023-01-01\' + INTERVAL \'1\' DAY',
+        DataTypeExprKind.DATE,
+      ],
+      [
+        'SELECT \'2023-01-01\' + INTERVAL \'1\' HOUR',
+        DataTypeExprKind.DATETIME,
+      ],
+      [
+        'SELECT \'2023-01-01 00:00:01\' + INTERVAL \'1\' HOUR',
+        DataTypeExprKind.DATETIME,
+      ],
+      [
+        'SELECT \'nonsense\' + INTERVAL \'1\' DAY',
+        DataTypeExprKind.UNKNOWN,
+      ],
+      [
+        'SELECT x.a + INTERVAL \'1\' DAY FROM x AS x',
+        DataTypeExprKind.DATE,
+      ],
+      [
+        'SELECT x.a + INTERVAL \'1\' HOUR FROM x AS x',
+        DataTypeExprKind.DATETIME,
+      ],
+      [
+        'SELECT x.b + INTERVAL \'1\' DAY FROM x AS x',
+        DataTypeExprKind.DATETIME,
+      ],
+      [
+        'SELECT x.b + INTERVAL \'1\' HOUR FROM x AS x',
+        DataTypeExprKind.DATETIME,
+      ],
+      [
+        'SELECT DATE_ADD(\'2023-01-01\', 1, \'DAY\')',
+        DataTypeExprKind.DATE,
+      ],
+      [
+        'SELECT DATE_ADD(\'2023-01-01 00:00:00\', 1, \'DAY\')',
+        DataTypeExprKind.DATETIME,
+      ],
+      [
+        'SELECT DATE_ADD(x.a, 1, \'DAY\') FROM x AS x',
+        DataTypeExprKind.DATE,
+      ],
+      [
+        'SELECT DATE_ADD(x.a, 1, \'HOUR\') FROM x AS x',
+        DataTypeExprKind.DATETIME,
+      ],
+      [
+        'SELECT DATE_ADD(x.b, 1, \'DAY\') FROM x AS x',
+        DataTypeExprKind.DATETIME,
+      ],
+      [
+        'SELECT DATE_TRUNC(\'DAY\', x.a) FROM x AS x',
+        DataTypeExprKind.DATE,
+      ],
+      [
+        'SELECT DATE_TRUNC(\'DAY\', x.b) FROM x AS x',
+        DataTypeExprKind.DATETIME,
+      ],
+      [
+        'SELECT DATE_TRUNC(\'SECOND\', x.a) FROM x AS x',
+        DataTypeExprKind.DATETIME,
+      ],
+      [
+        'SELECT DATE_TRUNC(\'DAY\', \'2023-01-01\') FROM x AS x',
+        DataTypeExprKind.DATE,
+      ],
+      [
+        'SELECT DATEDIFF(\'2023-01-01\', \'2023-01-02\', DAY) FROM x AS x',
+        DataTypeExprKind.INT,
+      ],
     ];
 
-    for (const [sql, expectedType] of tests) {
-      const expression = annotateTypes(parseOne(sql), { schema: s });
+    for (const [
+      sql,
+      expectedType,
+    ] of tests) {
+      const expression = annotateTypes(parseOne(sql), {
+        schema: s,
+      });
       expect(narrowInstanceOf(expression.args.expressions?.[0], Expression)?.type?.toString(), sql).toBe(expectedType);
       expect(expression.sql(), sql).toBe(sql);
     }
@@ -1263,8 +1602,12 @@ describe('TestOptimizer', () => {
 
   it('test_derived_tables_column_annotation', () => {
     const s = {
-      x: { cola: 'INT' },
-      y: { cola: 'FLOAT' },
+      x: {
+        cola: 'INT',
+      },
+      y: {
+        cola: 'FLOAT',
+      },
     };
     const sql = `
       SELECT a.cola AS cola
@@ -1281,7 +1624,9 @@ describe('TestOptimizer', () => {
       ) AS a
     `;
 
-    const expression = annotateTypes(parseOne(sql), { schema: s });
+    const expression = annotateTypes(parseOne(sql), {
+      schema: s,
+    });
     expect(narrowInstanceOf(expression.args.expressions?.[0], Expression)?.type?.toString()).toBe(DataTypeExprKind.FLOAT);
 
     const additionAlias = narrowInstanceOf(narrowInstanceOf(narrowInstanceOf(expression.args.from, Expression)?.args.this, Expression)?.args.this, Expression)?.args.expressions?.[0];
@@ -1295,7 +1640,9 @@ describe('TestOptimizer', () => {
 
   it('test_cte_column_annotation', () => {
     const s = {
-      x: { cola: 'CHAR' },
+      x: {
+        cola: 'CHAR',
+      },
       y: {
         colb: 'TEXT',
         colc: 'BOOLEAN',
@@ -1318,7 +1665,9 @@ describe('TestOptimizer', () => {
       WHERE tbl.colc = True
     `;
 
-    const expression = annotateTypes(parseOne(sql), { schema: s });
+    const expression = annotateTypes(parseOne(sql), {
+      schema: s,
+    });
     expect(narrowInstanceOf(expression.args.expressions?.[0], Expression)?.type?.toString()).toBe(DataTypeExprKind.TEXT);
 
     const outerAddition = narrowInstanceOf(narrowInstanceOf(expression.args.expressions?.[0], Expression)?.args.this, BinaryExpr);
@@ -1350,7 +1699,9 @@ describe('TestOptimizer', () => {
     };
     const sql = 'SELECT x.cola || TRIM(x.colb) AS col, DATE(x.colb), DATEFROMPARTS(y, m, d) FROM x AS x';
 
-    const expression = annotateTypes(parseOne(sql), { schema: s });
+    const expression = annotateTypes(parseOne(sql), {
+      schema: s,
+    });
     const concatExprAlias = narrowInstanceOf(expression.args.expressions?.[0], Expression);
     expect(concatExprAlias?.type?.toString()).toBe(DataTypeExprKind.VARCHAR);
 
@@ -1367,7 +1718,9 @@ describe('TestOptimizer', () => {
     expect(dateExpr2?.type?.toString()).toBe(DataTypeExprKind.DATE);
 
     const sql2 = 'SELECT CASE WHEN 1=1 THEN x.cola ELSE x.colb END AS col FROM x AS x';
-    const caseExprAlias = narrowInstanceOf(annotateTypes(parseOne(sql2), { schema: s }).args.expressions?.[0], Expression);
+    const caseExprAlias = narrowInstanceOf(annotateTypes(parseOne(sql2), {
+      schema: s,
+    }).args.expressions?.[0], Expression);
     expect(caseExprAlias?.type?.toString()).toBe(DataTypeExprKind.VARCHAR);
 
     const caseExpr = narrowInstanceOf(caseExprAlias?.args.this, CaseExpr);
@@ -1381,15 +1734,23 @@ describe('TestOptimizer', () => {
     const timestamp = annotateTypes(parseOne('TIMESTAMP(x)'));
     expect(timestamp.type?.toString()).toBe(DataTypeExprKind.TIMESTAMP);
 
-    const timestamptz = annotateTypes(parseOne('TIMESTAMP(x)', { dialect: 'bigquery' }));
+    const timestamptz = annotateTypes(parseOne('TIMESTAMP(x)', {
+      dialect: 'bigquery',
+    }));
     expect(timestamptz.type?.toString()).toBe(DataTypeExprKind.TIMESTAMPTZ);
   });
 
   it('test_unknown_annotation', () => {
-    const s = { x: { cola: 'VARCHAR' } };
+    const s = {
+      x: {
+        cola: 'VARCHAR',
+      },
+    };
     const sql = 'SELECT x.cola + SOME_ANONYMOUS_FUNC(x.cola) AS col FROM x AS x';
 
-    const concatExprAlias = narrowInstanceOf(annotateTypes(parseOne(sql), { schema: s }).args.expressions?.[0], Expression);
+    const concatExprAlias = narrowInstanceOf(annotateTypes(parseOne(sql), {
+      schema: s,
+    }).args.expressions?.[0], Expression);
     expect(concatExprAlias?.type?.toString()).toBe(DataTypeExprKind.UNKNOWN);
 
     const concatExpr = narrowInstanceOf(concatExprAlias?.args.this, BinaryExpr);
@@ -1410,51 +1771,125 @@ describe('TestOptimizer', () => {
   it('test_udf_annotation', () => {
     // Unqualified UDF
     let s = new MappingSchema({
-      schema: { t: { col: 'INT' } },
-      udfMapping: { my_func: 'VARCHAR' },
+      schema: {
+        t: {
+          col: 'INT',
+        },
+      },
+      udfMapping: {
+        my_func: 'VARCHAR',
+      },
     });
-    let expr = annotateTypes(parseOne('SELECT my_func(col) FROM t', { into: SelectExpr }), { schema: s });
+    let expr = annotateTypes(parseOne('SELECT my_func(col) FROM t', {
+      into: SelectExpr,
+    }), {
+      schema: s,
+    });
     expect(expr.selects[0].type?.toString()).toBe(DataTypeExprKind.VARCHAR);
 
     // Qualified UDF (2-level)
     s = new MappingSchema({
-      schema: { db: { t: { col: 'INT' } } },
-      udfMapping: { db: { my_func: 'DOUBLE' } },
+      schema: {
+        db: {
+          t: {
+            col: 'INT',
+          },
+        },
+      },
+      udfMapping: {
+        db: {
+          my_func: 'DOUBLE',
+        },
+      },
     });
-    expr = annotateTypes(parseOne('SELECT db.my_func(col) FROM db.t', { into: SelectExpr }), { schema: s });
+    expr = annotateTypes(parseOne('SELECT db.my_func(col) FROM db.t', {
+      into: SelectExpr,
+    }), {
+      schema: s,
+    });
     const anon = expr.selects[0].find(AnonymousExpr);
     expect(anon?.type?.toString()).toBe(DataTypeExprKind.DOUBLE);
     expect(expr.selects[0].type?.toString()).toBe(DataTypeExprKind.DOUBLE);
 
     // Qualified UDF (3-level)
     s = new MappingSchema({
-      schema: { cat: { db: { t: { col: 'INT' } } } },
-      udfMapping: { cat: { db: { my_func: 'BOOLEAN' } } },
+      schema: {
+        cat: {
+          db: {
+            t: {
+              col: 'INT',
+            },
+          },
+        },
+      },
+      udfMapping: {
+        cat: {
+          db: {
+            my_func: 'BOOLEAN',
+          },
+        },
+      },
     });
-    expr = annotateTypes(parseOne('SELECT cat.db.my_func(col) FROM cat.db.t', { into: SelectExpr }), { schema: s });
+    expr = annotateTypes(parseOne('SELECT cat.db.my_func(col) FROM cat.db.t', {
+      into: SelectExpr,
+    }), {
+      schema: s,
+    });
     const anon2 = expr.selects[0].find(AnonymousExpr);
     expect(anon2?.type?.toString()).toBe(DataTypeExprKind.BOOLEAN);
 
     // Unknown UDF returns UNKNOWN
     s = new MappingSchema({
-      schema: { t: { col: 'INT' } },
-      udfMapping: { known_func: 'DATE' },
+      schema: {
+        t: {
+          col: 'INT',
+        },
+      },
+      udfMapping: {
+        known_func: 'DATE',
+      },
     });
-    expr = annotateTypes(parseOne('SELECT unknown_func(col) FROM t', { into: SelectExpr }), { schema: s });
+    expr = annotateTypes(parseOne('SELECT unknown_func(col) FROM t', {
+      into: SelectExpr,
+    }), {
+      schema: s,
+    });
     expect(expr.selects[0].type?.toString()).toBe(DataTypeExprKind.UNKNOWN);
 
     // Test get_udf_type with string input
-    const s2 = new MappingSchema({ udfMapping: { my_func: 'INT' } });
+    const s2 = new MappingSchema({
+      udfMapping: {
+        my_func: 'INT',
+      },
+    });
     expect(s2.getUdfType('my_func(x)')?.toString()).toBe(DataTypeExprKind.INT);
 
-    const s3 = new MappingSchema({ udfMapping: { db: { my_func: 'FLOAT' } } });
+    const s3 = new MappingSchema({
+      udfMapping: {
+        db: {
+          my_func: 'FLOAT',
+        },
+      },
+    });
     expect(s3.getUdfType('db.my_func(x, y)')?.toString()).toBe(DataTypeExprKind.FLOAT);
 
-    const s4 = new MappingSchema({ udfMapping: { cat: { db: { my_func: 'DATE' } } } });
+    const s4 = new MappingSchema({
+      udfMapping: {
+        cat: {
+          db: {
+            my_func: 'DATE',
+          },
+        },
+      },
+    });
     expect(s4.getUdfType('cat.db.my_func(a, b, c)')?.toString()).toBe(DataTypeExprKind.DATE);
 
     // Unknown UDF string returns UNKNOWN
-    const s5 = new MappingSchema({ udfMapping: { known: 'INT' } });
+    const s5 = new MappingSchema({
+      udfMapping: {
+        known: 'INT',
+      },
+    });
     expect(s5.getUdfType('unknown(x)')?.toString()).toBe(DataTypeExprKind.UNKNOWN);
   });
 
@@ -1477,23 +1912,99 @@ describe('TestOptimizer', () => {
     };
 
     const tests: [[string, string], DataTypeExprKind][] = [
-      [['AVG', 'cola'], DataTypeExprKind.DOUBLE],
-      [['SUM', 'cola'], DataTypeExprKind.BIGINT],
-      [['SUM', 'colb'], DataTypeExprKind.DOUBLE],
-      [['MIN', 'cola'], DataTypeExprKind.SMALLINT],
-      [['MIN', 'colb'], DataTypeExprKind.FLOAT],
-      [['MAX', 'colc'], DataTypeExprKind.TEXT],
-      [['MAX', 'cold'], DataTypeExprKind.DATE],
-      [['COUNT', 'colb'], DataTypeExprKind.BIGINT],
-      [['STDDEV', 'cola'], DataTypeExprKind.DOUBLE],
-      [['ABS', 'cola'], DataTypeExprKind.SMALLINT],
-      [['ABS', 'colb'], DataTypeExprKind.FLOAT],
+      [
+        [
+          'AVG',
+          'cola',
+        ],
+        DataTypeExprKind.DOUBLE,
+      ],
+      [
+        [
+          'SUM',
+          'cola',
+        ],
+        DataTypeExprKind.BIGINT,
+      ],
+      [
+        [
+          'SUM',
+          'colb',
+        ],
+        DataTypeExprKind.DOUBLE,
+      ],
+      [
+        [
+          'MIN',
+          'cola',
+        ],
+        DataTypeExprKind.SMALLINT,
+      ],
+      [
+        [
+          'MIN',
+          'colb',
+        ],
+        DataTypeExprKind.FLOAT,
+      ],
+      [
+        [
+          'MAX',
+          'colc',
+        ],
+        DataTypeExprKind.TEXT,
+      ],
+      [
+        [
+          'MAX',
+          'cold',
+        ],
+        DataTypeExprKind.DATE,
+      ],
+      [
+        [
+          'COUNT',
+          'colb',
+        ],
+        DataTypeExprKind.BIGINT,
+      ],
+      [
+        [
+          'STDDEV',
+          'cola',
+        ],
+        DataTypeExprKind.DOUBLE,
+      ],
+      [
+        [
+          'ABS',
+          'cola',
+        ],
+        DataTypeExprKind.SMALLINT,
+      ],
+      [
+        [
+          'ABS',
+          'colb',
+        ],
+        DataTypeExprKind.FLOAT,
+      ],
     ];
 
-    for (const [[func, col], targetType] of tests) {
+    for (const [
+      [
+        func,
+        col,
+      ],
+      targetType,
+    ] of tests) {
       const expression = annotateTypes(
-        parseOne(`SELECT ${func}(x.${col}) AS _col_0 FROM x AS x`, { into: SelectExpr }),
-        { schema: s },
+        parseOne(`SELECT ${func}(x.${col}) AS _col_0 FROM x AS x`, {
+          into: SelectExpr,
+        }),
+        {
+          schema: s,
+        },
       );
       expect(narrowInstanceOf(expression.args.expressions?.[0], Expression)?.type?.toString(), `${func}(${col})`).toBe(targetType);
     }
@@ -1523,7 +2034,11 @@ describe('TestOptimizer', () => {
       FROM order AS order
       GROUP BY order.customer_id
     `;
-    const expression = annotateTypes(parseOne(sql, { into: SelectExpr }), { schema: s });
+    const expression = annotateTypes(parseOne(sql, {
+      into: SelectExpr,
+    }), {
+      schema: s,
+    });
     expect(expression.selects[0].type?.toString()).toBe(DataTypeExprKind.ARRAY);
     expect(narrowInstanceOf(expression.selects[0].type, Expression)?.sql()).toBe('ARRAY<BIGINT>');
 
@@ -1535,26 +2050,46 @@ describe('TestOptimizer', () => {
     expect(narrowInstanceOf(expr2.selects[0].type, Expression)?.sql()).toBe('ARRAY<INT>');
 
     const s2 = new MappingSchema({
-      schema: { t: { c: 'STRUCT<`f` STRING>' } },
+      schema: {
+        t: {
+          c: 'STRUCT<`f` STRING>',
+        },
+      },
       dialect: 'bigquery',
     });
-    const expr3 = annotateTypes(parseOne('SELECT t.c, [t.c] FROM t', { into: SelectExpr }), { schema: s2 });
-    expect(narrowInstanceOf(expr3.selects[0].type, Expression)?.sql({ dialect: 'bigquery' })).toBe('STRUCT<`f` STRING>');
-    expect(narrowInstanceOf(expr3.selects[1].type, Expression)?.sql({ dialect: 'bigquery' })).toBe('ARRAY<STRUCT<`f` STRING>>');
+    const expr3 = annotateTypes(parseOne('SELECT t.c, [t.c] FROM t', {
+      into: SelectExpr,
+    }), {
+      schema: s2,
+    });
+    expect(narrowInstanceOf(expr3.selects[0].type, Expression)?.sql({
+      dialect: 'bigquery',
+    })).toBe('STRUCT<`f` STRING>');
+    expect(narrowInstanceOf(expr3.selects[1].type, Expression)?.sql({
+      dialect: 'bigquery',
+    })).toBe('ARRAY<STRUCT<`f` STRING>>');
 
     const expr4 = annotateTypes(
       parseOne('SELECT unnest(t.x) FROM t AS t', {
         dialect: 'postgres',
         into: SelectExpr,
       }),
-      { schema: { t: { x: 'array<int>' } } },
+      {
+        schema: {
+          t: {
+            x: 'array<int>',
+          },
+        },
+      },
     );
     expect(expr4.selects[0].isType('int')).toBe(true);
   });
 
   it('test_type_annotation_cache', () => {
     const sql = 'SELECT 1 + 1';
-    let expression = annotateTypes(parseOne(sql, { into: SelectExpr }));
+    let expression = annotateTypes(parseOne(sql, {
+      into: SelectExpr,
+    }));
     expect(expression.selects[0].type?.toString()).toBe(DataTypeExprKind.INT);
 
     narrowInstanceOf(expression.selects[0].args.this, Expression)?.replace(parseOne('1.2'));
@@ -1564,12 +2099,22 @@ describe('TestOptimizer', () => {
 
   it('test_user_defined_type_annotation', () => {
     const s = new MappingSchema({
-      schema: { t: { x: 'int' } },
+      schema: {
+        t: {
+          x: 'int',
+        },
+      },
       dialect: 'postgres',
     });
-    const expression = annotateTypes(parseOne('SELECT CAST(x AS IPADDRESS) FROM t', { into: SelectExpr }), { schema: s });
+    const expression = annotateTypes(parseOne('SELECT CAST(x AS IPADDRESS) FROM t', {
+      into: SelectExpr,
+    }), {
+      schema: s,
+    });
     expect(expression.selects[0].type?.toString()).toBe(DataTypeExprKind.USERDEFINED);
-    expect(narrowInstanceOf(expression.selects[0].type, Expression)?.sql({ dialect: 'postgres' })).toBe('IPADDRESS');
+    expect(narrowInstanceOf(expression.selects[0].type, Expression)?.sql({
+      dialect: 'postgres',
+    })).toBe('IPADDRESS');
   });
 
   it('test_unnest_annotation', () => {
@@ -1582,7 +2127,13 @@ describe('TestOptimizer', () => {
           into: SelectExpr,
         }),
       ),
-      { schema: { x: { a: 'ARRAY<STRUCT<b STRUCT<c int>>>' } } },
+      {
+        schema: {
+          x: {
+            a: 'ARRAY<STRUCT<b STRUCT<c int>>>',
+          },
+        },
+      },
     );
     expect(narrowInstanceOf(expression.selects[0].type, Expression)?.sql()).toBe(DataTypeExpr.build('STRUCT<b STRUCT<c int>>')?.sql());
     expect(narrowInstanceOf(expression.selects[1].type, Expression)?.sql()).toBe(DataTypeExpr.build('STRUCT<c int>')?.sql());
@@ -1591,7 +2142,9 @@ describe('TestOptimizer', () => {
     expect(
       narrowInstanceOf(annotateTypes(
         qualify(
-          parseOne('SELECT x FROM UNNEST(GENERATE_DATE_ARRAY(\'2021-01-01\', current_date(), interval 1 day)) AS x', { into: SelectExpr }),
+          parseOne('SELECT x FROM UNNEST(GENERATE_DATE_ARRAY(\'2021-01-01\', current_date(), interval 1 day)) AS x', {
+            into: SelectExpr,
+          }),
         ),
       ).selects[0].type, Expression)?.sql(),
     ).toBe(DataTypeExpr.build('date')?.sql());
@@ -1599,7 +2152,9 @@ describe('TestOptimizer', () => {
     expect(
       narrowInstanceOf(annotateTypes(
         qualify(
-          parseOne('SELECT x FROM UNNEST(GENERATE_TIMESTAMP_ARRAY(\'2016-10-05 00:00:00\', \'2016-10-06 02:00:00\', interval 1 day)) AS x', { into: SelectExpr }),
+          parseOne('SELECT x FROM UNNEST(GENERATE_TIMESTAMP_ARRAY(\'2016-10-05 00:00:00\', \'2016-10-06 02:00:00\', interval 1 day)) AS x', {
+            into: SelectExpr,
+          }),
         ),
       ).selects[0].type, Expression)?.sql(),
     ).toBe(DataTypeExpr.build('timestamp')?.sql());

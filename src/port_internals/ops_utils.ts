@@ -39,7 +39,10 @@ export function add (a: unknown, b: unknown): unknown;
 export function add (a: unknown, b: unknown): unknown {
   if (isAddableObj(a)) return (a as AddableObject).add(b);
   if (isRaddableObj(b)) return (b as RaddableObject).radd(a);
-  if (Array.isArray(a) && Array.isArray(b)) return [...a, ...(b as unknown[])];
+  if (Array.isArray(a) && Array.isArray(b)) return [
+    ...a,
+    ...(b as unknown[]),
+  ];
   // @ts-expect-error "Fallback to primitive operation"
   return a + b;
 }
@@ -73,7 +76,9 @@ export function sub (a: unknown, b: unknown): unknown;
 export function sub (a: unknown, b: unknown): unknown {
   if (isSubtractableObj(a)) return (a as SubtractableObject).sub(b);
   if (isRsubtractableObj(b)) return (b as RsubtractableObject).rsub(a);
-  if (a instanceof Set && b instanceof Set) return new Set([...(a as Set<unknown>)].filter((x) => !(b as Set<unknown>).has(x)));
+  if (a instanceof Set && b instanceof Set) return new Set([
+    ...(a as Set<unknown>),
+  ].filter((x) => !(b as Set<unknown>).has(x)));
   // @ts-expect-error "Fallback to primitive operation"
   return a - b;
 }
@@ -411,7 +416,10 @@ export function or (a: unknown, b: unknown): unknown;
 export function or (a: unknown, b: unknown): unknown {
   if (isOrableObj(a)) return (a as OrableObject).or(b);
   if (isRorableObj(b)) return (b as RorableObject).ror(a);
-  if (a instanceof Set && b instanceof Set) return new Set([...(a as Set<unknown>), ...(b as Set<unknown>)]);
+  if (a instanceof Set && b instanceof Set) return new Set([
+    ...(a as Set<unknown>),
+    ...(b as Set<unknown>),
+  ]);
   // @ts-expect-error "Fallback to primitive operation"
   return a | b;
 }
@@ -445,7 +453,9 @@ export function and (a: unknown, b: unknown): unknown;
 export function and (a: unknown, b: unknown): unknown {
   if (isAndableObj(a)) return (a as AndableObject).and(b);
   if (isRandableObj(b)) return (b as RandableObject).rand(a);
-  if (a instanceof Set && b instanceof Set) return new Set([...(a as Set<unknown>)].filter((x) => (b as Set<unknown>).has(x)));
+  if (a instanceof Set && b instanceof Set) return new Set([
+    ...(a as Set<unknown>),
+  ].filter((x) => (b as Set<unknown>).has(x)));
   // @ts-expect-error "Fallback to primitive operation"
   return a & b;
 }
@@ -481,7 +491,14 @@ export function xor (a: unknown, b: unknown): unknown {
   if (isRxorableObj(b)) return (b as RxorableObject).rxor(a);
   if (a instanceof Set && b instanceof Set) {
     const sa = a as Set<unknown>, sb = b as Set<unknown>;
-    return new Set([...[...sa].filter((x) => !sb.has(x)), ...[...sb].filter((x) => !sa.has(x))]);
+    return new Set([
+      ...[
+        ...sa,
+      ].filter((x) => !sb.has(x)),
+      ...[
+        ...sb,
+      ].filter((x) => !sa.has(x)),
+    ]);
   }
   // @ts-expect-error "Fallback to primitive operation"
   return a ^ b;

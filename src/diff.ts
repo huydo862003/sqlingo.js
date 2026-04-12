@@ -1,8 +1,12 @@
-import { Dialect } from './dialects/dialect';
+import {
+  Dialect,
+} from './dialects/dialect';
 import {
   AliasExpr, AnonymousExpr, BooleanExpr, ColumnExpr, DataTypeExpr, Expression, IdentifierExpr, JoinExpr, LambdaExpr, LiteralExpr, TableExpr, WindowExpr,
 } from './expressions';
-import type { Generator as SqlGenerator } from './generator';
+import type {
+  Generator as SqlGenerator,
+} from './generator';
 
 /**
  * Indicates that a new node has been inserted
@@ -101,8 +105,12 @@ export function diff (
   } = {},
 ): Edit[] {
   let {
+    matchings = [
+    ],
     // eslint-disable-next-line prefer-const
-    matchings = [], deltaOnly = false, ...kwargs
+    deltaOnly = false,
+    // eslint-disable-next-line prefer-const
+    ...kwargs
   } = options;
 
   function computeNodeMappings (
@@ -139,9 +147,18 @@ export function diff (
     if (copy && 0 < matchings.length) {
       const sourceMapping = computeNodeMappings(sourceNodes, Array.from(sourceCopy.walk()));
       const targetMapping = computeNodeMappings(targetNodes, Array.from(targetCopy.walk()));
-      matchings = matchings.map(([s, t]) => [sourceMapping.get(s)!, targetMapping.get(t)!]);
+      matchings = matchings.map(([
+        s,
+        t,
+      ]) => [
+        sourceMapping.get(s)!,
+        targetMapping.get(t)!,
+      ]);
     } else {
-      [...sourceNodes, ...targetNodes].reverse().forEach((node) => {
+      [
+        ...sourceNodes,
+        ...targetNodes,
+      ].reverse().forEach((node) => {
         node.computeHash();
       });
     }
@@ -156,7 +173,10 @@ export function diff (
     );
   } finally {
     if (!copy) {
-      [...sourceNodes, ...targetNodes].forEach((node) => {
+      [
+        ...sourceNodes,
+        ...targetNodes,
+      ].forEach((node) => {
         node.resetHash();
       });
     }
@@ -174,7 +194,9 @@ const UPDATABLE_EXPRESSION_TYPES = [
   WindowExpr,
 ];
 
-const IGNORED_LEAF_EXPRESSION_TYPES = [IdentifierExpr];
+const IGNORED_LEAF_EXPRESSION_TYPES = [
+  IdentifierExpr,
+];
 
 class ChangeDistiller {
   private f: number;
@@ -201,7 +223,9 @@ class ChangeDistiller {
 
     this.f = f;
     this.t = t;
-    this.sqlGenerator = Dialect.getOrRaise(dialect).generator({ comments: false });
+    this.sqlGenerator = Dialect.getOrRaise(dialect).generator({
+      comments: false,
+    });
   }
 
   diff (
@@ -214,7 +238,8 @@ class ChangeDistiller {
   ): Edit[] {
     const {
       deltaOnly = false,
-      matchings = [],
+      matchings = [
+      ],
     } = options;
 
     const preMatchedNodes = new Map<Expression, Expression>(matchings);
@@ -249,15 +274,20 @@ class ChangeDistiller {
     const computedMatchings = this.computeMatchingSet();
     preMatchedNodes.forEach((v, k) => computedMatchings.set(k, v));
 
-    return this.generateEditScript(computedMatchings, { deltaOnly });
+    return this.generateEditScript(computedMatchings, {
+      deltaOnly,
+    });
   }
 
   private generateEditScript (
     matchings: Map<Expression, Expression>,
-    options: { deltaOnly: boolean },
+    options: {deltaOnly: boolean},
   ): Edit[] {
-    const { deltaOnly } = options;
-    const editScript: Edit[] = [];
+    const {
+      deltaOnly,
+    } = options;
+    const editScript: Edit[] = [
+    ];
 
     this.unmatchedSourceNodes.forEach((node) => editScript.push(new Remove(node)));
     this.unmatchedTargetNodes.forEach((node) => editScript.push(new Insert(node)));
@@ -302,8 +332,12 @@ class ChangeDistiller {
     target: Expression,
     matchings: Map<Expression, Expression>,
   ): Move[] {
-    const sourceArgs = [...expressionOnlyArgs(source)];
-    const targetArgs = [...expressionOnlyArgs(target)];
+    const sourceArgs = [
+      ...expressionOnlyArgs(source),
+    ];
+    const targetArgs = [
+      ...expressionOnlyArgs(target),
+    ];
 
     // LCS expects a comparator that returns true if source element matches target element
     const lcsResult = lcs(
@@ -313,7 +347,8 @@ class ChangeDistiller {
     );
     const argsLcs = new Set(lcsResult);
 
-    const moveEdits: Move[] = [];
+    const moveEdits: Move[] = [
+    ];
     for (const a of sourceArgs) {
       // If the node is matched but its position in the arg list changed (not in LCS), it's a Move
       if (!argsLcs.has(a) && !this.unmatchedSourceNodes.has(a)) {
@@ -330,13 +365,17 @@ class ChangeDistiller {
     const matchingSet = new Map<Expression, Expression>(leavesMatchingSet);
 
     // Maintain BFS order for unmatched nodes
-    const orderedUnmatchedSource: Expression[] = [];
-    for (const n of this.source?.bfs() ?? []) {
+    const orderedUnmatchedSource: Expression[] = [
+    ];
+    for (const n of this.source?.bfs() ?? [
+    ]) {
       if (this.unmatchedSourceNodes.has(n)) orderedUnmatchedSource.push(n);
     }
 
-    const orderedUnmatchedTarget: Expression[] = [];
-    for (const n of this.target?.bfs() ?? []) {
+    const orderedUnmatchedTarget: Expression[] = [
+    ];
+    for (const n of this.target?.bfs() ?? [
+    ]) {
       if (this.unmatchedTargetNodes.has(n)) orderedUnmatchedTarget.push(n);
     };
 
@@ -351,7 +390,10 @@ class ChangeDistiller {
 
           if (0 < maxLeavesNum) {
             let commonLeavesNum = 0;
-            for (const [sLeaf, tLeaf] of leavesMatchingSet) {
+            for (const [
+              sLeaf,
+              tLeaf,
+            ] of leavesMatchingSet) {
               if (sourceLeafIds.has(sLeaf) && targetLeafIds.has(tLeaf)) {
                 commonLeavesNum++;
               }
@@ -383,9 +425,13 @@ class ChangeDistiller {
     const targetHisto = this.getBigramHisto(target);
 
     let sourceTotal = 0;
-    sourceHisto.forEach((v) => sourceTotal += v);
+    sourceHisto.forEach((v) => {
+      sourceTotal += v;
+    });
     let targetTotal = 0;
-    targetHisto.forEach((v) => targetTotal += v);
+    targetHisto.forEach((v) => {
+      targetTotal += v;
+    });
 
     const totalGrams = sourceTotal + targetTotal;
     if (totalGrams === 0) return source.equals(target) ? 1.0 : 0.0;
@@ -408,10 +454,21 @@ class ChangeDistiller {
       index: number;
       sourceLeaf: Expression;
       targetLeaf: Expression;
-    }> = [];
+    }> = [
+    ];
 
-    const sourceExpressionLeaves = this.source ? [...getExpressionLeaves(this.source)] : [];
-    const targetExpressionLeaves = this.target ? [...getExpressionLeaves(this.target)] : [];
+    const sourceExpressionLeaves = this.source
+      ? [
+        ...getExpressionLeaves(this.source),
+      ]
+      : [
+      ];
+    const targetExpressionLeaves = this.target
+      ? [
+        ...getExpressionLeaves(this.target),
+      ]
+      : [
+      ];
 
     for (const sourceLeaf of sourceExpressionLeaves) {
       for (const targetLeaf of targetExpressionLeaves) {
@@ -495,7 +552,10 @@ export function* getExpressionLeaves (expression: Expression): Generator<Express
  * Yields non-expression attributes (metadata) of a node for Update detection.
  */
 export function* getNonExpressionLeaves (expression: Expression): Generator<[string, unknown]> {
-  for (const [arg, value] of Object.entries(expression.args)) {
+  for (const [
+    arg,
+    value,
+  ] of Object.entries(expression.args)) {
     if (
       value === null
       || value === undefined
@@ -505,7 +565,10 @@ export function* getNonExpressionLeaves (expression: Expression): Generator<[str
       continue;
     }
 
-    yield [arg, value];
+    yield [
+      arg,
+      value,
+    ];
   }
 }
 
@@ -568,20 +631,32 @@ export function lcs<T> (
   _seqB: Iterable<T>,
   equal: (a: T, b: T) => boolean,
 ): T[] {
-  const seqA = [..._seqA];
-  const seqB = [..._seqB];
+  const seqA = [
+    ..._seqA,
+  ];
+  const seqB = [
+    ..._seqB,
+  ];
   const lenA = seqA.length;
   const lenB = seqB.length;
 
   // Initialize a 2D array for DP
-  const lcsResult: T[][][] = Array.from({ length: lenA + 1 }, () =>
-    Array.from({ length: lenB + 1 }, () => []));
+  const lcsResult: T[][][] = Array.from({
+    length: lenA + 1,
+  }, () =>
+    Array.from({
+      length: lenB + 1,
+    }, () => [
+    ]));
 
   for (let i = 1; i <= lenA; i++) {
     for (let j = 1; j <= lenB; j++) {
       if (equal(seqA[i - 1], seqB[j - 1])) {
         // If equal, take the diagonal result and add current element
-        lcsResult[i][j] = [...lcsResult[i - 1][j - 1], seqA[i - 1]];
+        lcsResult[i][j] = [
+          ...lcsResult[i - 1][j - 1],
+          seqA[i - 1],
+        ];
       } else {
         // Otherwise, take the maximum of top or left
         const top = lcsResult[i - 1][j];

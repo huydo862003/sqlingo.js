@@ -22,7 +22,9 @@ import {
 import {
   ensureList, nameSequence, seqGet,
 } from '../helper';
-import { normalizeIdentifiers } from './normalize_identifiers';
+import {
+  normalizeIdentifiers,
+} from './normalize_identifiers';
 import {
   Scope, traverseScope,
 } from './scope';
@@ -78,16 +80,24 @@ export function qualifyTables<E extends Expression> (
 
   let db: IdentifierExpr | undefined;
   if (dbArg) {
-    db = parseIdentifier(dbArg, { dialect });
+    db = parseIdentifier(dbArg, {
+      dialect,
+    });
     db.meta.isTable = true;
-    db = normalizeIdentifiers(db, { dialect });
+    db = normalizeIdentifiers(db, {
+      dialect,
+    });
   }
 
   let catalog: IdentifierExpr | undefined;
   if (catalogArg) {
-    catalog = parseIdentifier(catalogArg, { dialect });
+    catalog = parseIdentifier(catalogArg, {
+      dialect,
+    });
     catalog.meta.isTable = true;
-    catalog = normalizeIdentifiers(catalog, { dialect });
+    catalog = normalizeIdentifiers(catalog, {
+      dialect,
+    });
   }
 
   const qualify = (table: TableExpr): void => {
@@ -103,9 +113,13 @@ export function qualifyTables<E extends Expression> (
 
   if ((db || catalog) && !(expression instanceof QueryExpr)) {
     const withClause = expression.getArgKey('with') as WithExpr | undefined;
-    const with_ = withClause || new WithExpr({ expressions: [] });
+    const with_ = withClause || new WithExpr({
+      expressions: [
+      ],
+    });
     const cteNames = new Set(
-      (with_.args.expressions || []).map((cte) => cte.aliasOrName),
+      (with_.args.expressions || [
+      ]).map((cte) => cte.aliasOrName),
     );
 
     for (const node of expression.walk({
@@ -145,7 +159,9 @@ export function qualifyTables<E extends Expression> (
     } else if (!alias.name) {
       newAliasName = targetAlias || nextAliasName();
       if (normalize && targetAlias) {
-        newAliasName = normalizeIdentifiers(newAliasName, { dialect }).name;
+        newAliasName = normalizeIdentifiers(newAliasName, {
+          dialect,
+        }).name;
       }
     } else {
       return;
@@ -183,7 +199,9 @@ export function qualifyTables<E extends Expression> (
 
         const derivedThis = derivedTable.args.this;
         if (derivedThis instanceof Expression) {
-          const newSelect = select('*').from(unnested.copy(), { copy: false });
+          const newSelect = select('*').from(unnested.copy(), {
+            copy: false,
+          });
           derivedThis.replace(newSelect);
           // After replace, set joins on the new expression (mirrors Python behavior
           // where derivedTable.this refers to the new expression after replace)
@@ -191,9 +209,12 @@ export function qualifyTables<E extends Expression> (
         }
       }
 
-      setAlias(derivedTable, canonicalAliases, { scope });
+      setAlias(derivedTable, canonicalAliases, {
+        scope,
+      });
 
-      const pivot = seqGet(derivedTable.getArgKey('pivots') as Expression[] || [], 0);
+      const pivot = seqGet(derivedTable.getArgKey('pivots') as Expression[] || [
+      ], 0);
       if (pivot) {
         setAlias(pivot, canonicalAliases);
       }
@@ -201,7 +222,10 @@ export function qualifyTables<E extends Expression> (
 
     const tableAliases = new Map<string, IdentifierExpr>();
 
-    for (const [name, source] of scope.sources) {
+    for (const [
+      name,
+      source,
+    ] of scope.sources) {
       if (source instanceof TableExpr) {
         const isRealTableSource = Boolean(name);
 
@@ -214,7 +238,8 @@ export function qualifyTables<E extends Expression> (
 
         const tableThis = source.args.this;
         const tableAlias = source.args.alias;
-        let functionColumns: (string | IdentifierExpr)[] = [];
+        let functionColumns: (string | IdentifierExpr)[] = [
+        ];
 
         if (tableThis && tableThis instanceof FuncExpr) {
           const func = tableThis as FuncExpr;
@@ -222,7 +247,10 @@ export function qualifyTables<E extends Expression> (
 
           if (!tableAlias) {
             const defaultCols = dialect._constructor.DEFAULT_FUNCTIONS_COLUMN_NAMES.get(funcTypeName);
-            functionColumns = defaultCols ? Array.from(ensureList(defaultCols)) : [];
+            functionColumns = defaultCols
+              ? Array.from(ensureList(defaultCols))
+              : [
+              ];
           } else if (tableAlias instanceof TableAliasExpr && tableAlias.args.columns?.length) {
             functionColumns = tableAlias.columns as IdentifierExpr[];
           } else if (dialect._constructor.DEFAULT_FUNCTIONS_COLUMN_NAMES.has(funcTypeName)) {
@@ -272,7 +300,9 @@ export function qualifyTables<E extends Expression> (
           if (tableAlias instanceof TableAliasExpr && !tableAlias.args.columns?.length) {
             tableAlias.setArgKey('columns', dialect
               .generateValuesAliases(udtf)
-              .map((i: IdentifierExpr) => normalizeIdentifiers(i, { dialect })));
+              .map((i: IdentifierExpr) => normalizeIdentifiers(i, {
+                dialect,
+              })));
           }
         }
       }
@@ -282,7 +312,9 @@ export function qualifyTables<E extends Expression> (
       if (!table.alias && table.parent) {
         const parent = table.parent;
         if (parent instanceof FromExpr || parent instanceof JoinExpr) {
-          setAlias(table, canonicalAliases, { targetAlias: table.name });
+          setAlias(table, canonicalAliases, {
+            targetAlias: table.name,
+          });
         }
       }
     }

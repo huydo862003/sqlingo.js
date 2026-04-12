@@ -27,13 +27,21 @@ import {
   JsonFormatExpr, JsonKeysAtDepthExpr, JsonValueArrayExpr, LagExpr, ParseBignumericExpr,
   ParseNumericExpr, ToCodePointsExpr,
 } from '../expressions/expressions';
-import { DataTypeExprKind } from '../expressions/types';
+import {
+  DataTypeExprKind,
+} from '../expressions/types';
 import {
   cache, isInstanceOf,
 } from '../port_internals';
-import type { TypeAnnotator } from '../optimizer';
-import { DialectTyping } from './dialect';
-import type { ExpressionMetadata } from './dialect';
+import type {
+  TypeAnnotator,
+} from '../optimizer';
+import {
+  DialectTyping,
+} from './dialect';
+import type {
+  ExpressionMetadata,
+} from './dialect';
 
 /**
  * Many BigQuery math functions such as CEIL, FLOOR etc follow this return type convention.
@@ -89,11 +97,18 @@ function annotateByArgsApproxTop (
   const thisType = isInstanceOf(thisArg, Expression) ? thisArg.type : undefined;
   const valueTypeExpr = isInstanceOf(thisType, DataTypeExpr)
     ? thisType
-    : new DataTypeExpr({ this: DataTypeExprKind.UNKNOWN });
+    : new DataTypeExpr({
+      this: DataTypeExprKind.UNKNOWN,
+    });
 
   const structType = new DataTypeExpr({
     this: DataTypeExprKind.STRUCT,
-    expressions: [valueTypeExpr, new DataTypeExpr({ this: DataTypeExprKind.BIGINT })],
+    expressions: [
+      valueTypeExpr,
+      new DataTypeExpr({
+        this: DataTypeExprKind.BIGINT,
+      }),
+    ],
     nested: true,
   });
 
@@ -101,7 +116,9 @@ function annotateByArgsApproxTop (
     expression,
     new DataTypeExpr({
       this: DataTypeExprKind.ARRAY,
-      expressions: [structType],
+      expressions: [
+        structType,
+      ],
       nested: true,
     }),
   );
@@ -110,10 +127,15 @@ function annotateByArgsApproxTop (
 }
 
 function annotateConcat (annotator: TypeAnnotator, expression: ConcatExpr): ConcatExpr {
-  annotator.annotateByArgs(expression, ['expressions']);
+  annotator.annotateByArgs(expression, [
+    'expressions',
+  ]);
 
   // Args must be BYTES or types that can be cast to STRING, return type is either BYTES or STRING
-  if (!expression.isType([DataTypeExprKind.BINARY, DataTypeExprKind.UNKNOWN])) {
+  if (!expression.isType([
+    DataTypeExprKind.BINARY,
+    DataTypeExprKind.UNKNOWN,
+  ])) {
     annotator.setType(expression, DataTypeExprKind.VARCHAR);
   }
 
@@ -169,11 +191,15 @@ function annotateArray (annotator: TypeAnnotator, expression: ArrayExpr): ArrayE
       const elementType =
         projectionType instanceof DataTypeExpr
           ? projectionType.copy()
-          : new DataTypeExpr({ this: projectionType });
+          : new DataTypeExpr({
+            this: projectionType,
+          });
 
       const arrayType = new DataTypeExpr({
         this: DataTypeExprKind.ARRAY,
-        expressions: [elementType],
+        expressions: [
+          elementType,
+        ],
         nested: true,
       });
 
@@ -182,7 +208,11 @@ function annotateArray (annotator: TypeAnnotator, expression: ArrayExpr): ArrayE
     }
   }
 
-  annotator.annotateByArgs(expression, ['expressions'], { array: true });
+  annotator.annotateByArgs(expression, [
+    'expressions',
+  ], {
+    array: true,
+  });
   return expression;
 }
 
@@ -242,7 +272,9 @@ export class BigQueryTyping {
       TrimExpr,
       UpperExpr,
     ], {
-      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, [
+        'this',
+      ]),
     });
 
     extend([
@@ -261,7 +293,9 @@ export class BigQueryTyping {
       RangeBucketExpr,
       RegexpInstrExpr,
       RowNumberExpr,
-    ], { returns: DataTypeExprKind.BIGINT });
+    ], {
+      returns: DataTypeExprKind.BIGINT,
+    });
 
     extend([
       ByteStringExpr,
@@ -272,11 +306,23 @@ export class BigQueryTyping {
       Sha1DigestExpr,
       Sha2DigestExpr,
       UnhexExpr,
-    ], { returns: DataTypeExprKind.BINARY });
+    ], {
+      returns: DataTypeExprKind.BINARY,
+    });
 
-    extend([JsonBoolExpr, LaxBoolExpr], { returns: DataTypeExprKind.BOOLEAN });
+    extend([
+      JsonBoolExpr,
+      LaxBoolExpr,
+    ], {
+      returns: DataTypeExprKind.BOOLEAN,
+    });
 
-    extend([ParseDatetimeExpr, TimestampFromPartsExpr], { returns: DataTypeExprKind.DATETIME });
+    extend([
+      ParseDatetimeExpr,
+      TimestampFromPartsExpr,
+    ], {
+      returns: DataTypeExprKind.DATETIME,
+    });
 
     extend([
       Atan2Expr,
@@ -295,7 +341,9 @@ export class BigQueryTyping {
       RandExpr,
       SecExpr,
       SechExpr,
-    ], { returns: DataTypeExprKind.DOUBLE });
+    ], {
+      returns: DataTypeExprKind.DOUBLE,
+    });
 
     extend([
       JsonArrayExpr,
@@ -305,14 +353,18 @@ export class BigQueryTyping {
       JsonRemoveExpr,
       JsonSetExpr,
       JsonStripNullsExpr,
-    ], { returns: DataTypeExprKind.JSON });
+    ], {
+      returns: DataTypeExprKind.JSON,
+    });
 
     extend([
       ParseTimeExpr,
       TimeFromPartsExpr,
       TimeTruncExpr,
       TsOrDsToTimeExpr,
-    ], { returns: DataTypeExprKind.TIME });
+    ], {
+      returns: DataTypeExprKind.TIME,
+    });
 
     extend([
       CodePointsToStringExpr,
@@ -327,7 +379,9 @@ export class BigQueryTyping {
       SafeConvertBytesToStringExpr,
       SoundexExpr,
       UuidExpr,
-    ], { returns: DataTypeExprKind.VARCHAR });
+    ], {
+      returns: DataTypeExprKind.VARCHAR,
+    });
 
     extend([
       PercentileContExpr,
@@ -345,19 +399,37 @@ export class BigQueryTyping {
       RegexpExtractAllExpr,
       SplitExpr,
     ], {
-      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this'], { array: true }),
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, [
+        'this',
+      ], {
+        array: true,
+      }),
     });
 
-    DialectTyping.TIMESTAMP_EXPRESSIONS.forEach((type) => map.set(type, { returns: DataTypeExprKind.TIMESTAMPTZ }));
+    DialectTyping.TIMESTAMP_EXPRESSIONS.forEach((type) => map.set(type, {
+      returns: DataTypeExprKind.TIMESTAMPTZ,
+    }));
 
-    map.set(ApproxTopKExpr, { annotator: (s: TypeAnnotator, e: ApproxTopKExpr) => annotateByArgsApproxTop.call(s, e) });
-    map.set(ApproxTopSumExpr, { annotator: (s: TypeAnnotator, e: ApproxTopSumExpr) => annotateByArgsApproxTop.call(s, e) });
-    map.set(ArrayExpr, { annotator: annotateArray });
-    map.set(ConcatExpr, { annotator: annotateConcat });
-    map.set(DateFromUnixDateExpr, { returns: DataTypeExprKind.DATE });
+    map.set(ApproxTopKExpr, {
+      annotator: (s: TypeAnnotator, e: ApproxTopKExpr) => annotateByArgsApproxTop.call(s, e),
+    });
+    map.set(ApproxTopSumExpr, {
+      annotator: (s: TypeAnnotator, e: ApproxTopSumExpr) => annotateByArgsApproxTop.call(s, e),
+    });
+    map.set(ArrayExpr, {
+      annotator: annotateArray,
+    });
+    map.set(ConcatExpr, {
+      annotator: annotateConcat,
+    });
+    map.set(DateFromUnixDateExpr, {
+      returns: DataTypeExprKind.DATE,
+    });
 
     map.set(GenerateTimestampArrayExpr, {
-      annotator: (s: TypeAnnotator, e: GenerateTimestampArrayExpr) => s.setType(e, DataTypeExpr.build('ARRAY<TIMESTAMP>', { dialect: 'bigquery' })),
+      annotator: (s: TypeAnnotator, e: GenerateTimestampArrayExpr) => s.setType(e, DataTypeExpr.build('ARRAY<TIMESTAMP>', {
+        dialect: 'bigquery',
+      })),
     });
 
     map.set(JsonFormatExpr, {
@@ -365,20 +437,37 @@ export class BigQueryTyping {
     });
 
     map.set(JsonKeysAtDepthExpr, {
-      annotator: (s: TypeAnnotator, e: JsonKeysAtDepthExpr) => s.setType(e, DataTypeExpr.build('ARRAY<VARCHAR>', { dialect: 'bigquery' })),
+      annotator: (s: TypeAnnotator, e: JsonKeysAtDepthExpr) => s.setType(e, DataTypeExpr.build('ARRAY<VARCHAR>', {
+        dialect: 'bigquery',
+      })),
     });
 
     map.set(JsonValueArrayExpr, {
-      annotator: (s: TypeAnnotator, e: JsonValueArrayExpr) => s.setType(e, DataTypeExpr.build('ARRAY<VARCHAR>', { dialect: 'bigquery' })),
+      annotator: (s: TypeAnnotator, e: JsonValueArrayExpr) => s.setType(e, DataTypeExpr.build('ARRAY<VARCHAR>', {
+        dialect: 'bigquery',
+      })),
     });
 
-    map.set(LagExpr, { annotator: (s: TypeAnnotator, e: LagExpr) => s.annotateByArgs(e, ['this', 'default']) });
-    map.set(ParseBignumericExpr, { returns: DataTypeExprKind.BIGDECIMAL });
-    map.set(ParseNumericExpr, { returns: DataTypeExprKind.DECIMAL });
-    map.set(SafeDivideExpr, { annotator: (s: TypeAnnotator, e: SafeDivideExpr) => annotateSafeDivide.call(s, e) });
+    map.set(LagExpr, {
+      annotator: (s: TypeAnnotator, e: LagExpr) => s.annotateByArgs(e, [
+        'this',
+        'default',
+      ]),
+    });
+    map.set(ParseBignumericExpr, {
+      returns: DataTypeExprKind.BIGDECIMAL,
+    });
+    map.set(ParseNumericExpr, {
+      returns: DataTypeExprKind.DECIMAL,
+    });
+    map.set(SafeDivideExpr, {
+      annotator: (s: TypeAnnotator, e: SafeDivideExpr) => annotateSafeDivide.call(s, e),
+    });
 
     map.set(ToCodePointsExpr, {
-      annotator: (s: TypeAnnotator, e: ToCodePointsExpr) => s.setType(e, DataTypeExpr.build('ARRAY<BIGINT>', { dialect: 'bigquery' })),
+      annotator: (s: TypeAnnotator, e: ToCodePointsExpr) => s.setType(e, DataTypeExpr.build('ARRAY<BIGINT>', {
+        dialect: 'bigquery',
+      })),
     });
 
     return map;

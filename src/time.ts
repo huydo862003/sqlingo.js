@@ -1,6 +1,8 @@
 // https://github.com/tobymao/sqlglot/blob/264e95f04d95f2cd7bcf255ee7ae160db36882a7/sqlglot/time.py
 
-import { DateTime } from 'luxon';
+import {
+  DateTime,
+} from 'luxon';
 import {
   TrieResult, inTrie, newTrie, type TrieNode,
 } from './trie';
@@ -37,12 +39,18 @@ export function formatTime (
   const size = string.length;
   const trieToUse = trie ?? newTrie(Object.keys(mapping).map((k) => Array.from(k)));
   let current = trieToUse;
-  const chunks: string[] = [];
+  const chunks: string[] = [
+  ];
   let sym: string | undefined;
 
   while (end <= size) {
     let chars = string.substring(start, end);
-    const [result, newCurrent] = inTrie(current, [chars[chars.length - 1]]);
+    const [
+      result,
+      newCurrent,
+    ] = inTrie(current, [
+      chars[chars.length - 1],
+    ]);
     current = newCurrent;
 
     if (result === TrieResult.FAILED) {

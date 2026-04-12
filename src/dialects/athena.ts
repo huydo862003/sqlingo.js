@@ -1,10 +1,18 @@
-import type { GeneratorOptions } from '../generator';
+import type {
+  GeneratorOptions,
+} from '../generator';
 import {
   Generator,
 } from '../generator';
-import type { ParseOptions } from '../parser';
-import { Parser } from '../parser';
-import type { TokenizerOptions } from '../tokens';
+import type {
+  ParseOptions,
+} from '../parser';
+import {
+  Parser,
+} from '../parser';
+import type {
+  TokenizerOptions,
+} from '../tokens';
 import {
   Tokenizer, Token, TokenType,
 } from '../tokens';
@@ -30,13 +38,21 @@ import {
   DropExprKind,
   AlterExprKind,
 } from '../expressions';
-import { cache } from '../port_internals';
-import type { DialectOptions } from './dialect';
+import {
+  cache,
+} from '../port_internals';
+import type {
+  DialectOptions,
+} from './dialect';
 import {
   Dialect, Dialects,
 } from './dialect';
-import { Hive } from './hive';
-import { Trino } from './trino';
+import {
+  Hive,
+} from './hive';
+import {
+  Trino,
+} from './trino';
 
 function tokenizeAsHive (tokensList: Token[]): boolean {
   if (tokensList.length < 2) {
@@ -54,7 +70,10 @@ function tokenizeAsHive (tokensList: Token[]): boolean {
   const secondType = second.tokenType;
   const secondText = second.text.toUpperCase();
 
-  if ([TokenType.DESCRIBE, TokenType.SHOW].includes(firstType) || firstText === 'MSCK REPAIR') {
+  if ([
+    TokenType.DESCRIBE,
+    TokenType.SHOW,
+  ].includes(firstType) || firstText === 'MSCK REPAIR') {
     return true;
   }
 
@@ -107,7 +126,8 @@ function generateAsHive (expression: Expression): boolean {
 }
 
 function isIcebergTable (properties: PropertiesExpr): boolean {
-  for (const p of properties.args.expressions || []) {
+  for (const p of properties.args.expressions || [
+  ]) {
     if (p instanceof PropertyExpr && p.text('this').toLowerCase() === 'table_type') {
       return p.text('value').toLowerCase() === 'iceberg';
     }
@@ -146,8 +166,12 @@ class HiveGeneratorExtension extends Hive.Generator {
   public alterSql (expression: AlterExpr): string {
     if (expression instanceof AlterExpr && expression.args.kind === AlterExprKind.TABLE) {
       if (expression.args.actions && expression.args.actions[0] instanceof ColumnDefExpr) {
-        const newActions = new SchemaExpr({ expressions: expression.args.actions });
-        expression.setArgKey('actions', [newActions]);
+        const newActions = new SchemaExpr({
+          expressions: expression.args.actions,
+        });
+        expression.setArgKey('actions', [
+          newActions,
+        ]);
       }
     }
 
@@ -179,7 +203,9 @@ class TrinoParserExtension extends Trino.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
     return noParenFunctions;
@@ -198,7 +224,10 @@ class TrinoParserExtension extends Trino.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 class TrinoGeneratorExtension extends Trino.Generator {
@@ -223,22 +252,34 @@ class TrinoGeneratorExtension extends Trino.Generator {
 export class AthenaTokenizer extends Tokenizer {
   @cache
   static get IDENTIFIERS () {
-    return [...Trino.Tokenizer.IDENTIFIERS, ...Hive.Tokenizer.IDENTIFIERS];
+    return [
+      ...Trino.Tokenizer.IDENTIFIERS,
+      ...Hive.Tokenizer.IDENTIFIERS,
+    ];
   }
 
   @cache
   static get STRING_ESCAPES () {
-    return [...Trino.Tokenizer.STRING_ESCAPES, ...Hive.Tokenizer.STRING_ESCAPES];
+    return [
+      ...Trino.Tokenizer.STRING_ESCAPES,
+      ...Hive.Tokenizer.STRING_ESCAPES,
+    ];
   }
 
   @cache
   static get HEX_STRINGS () {
-    return [...Trino.Tokenizer.HEX_STRINGS, ...Hive.Tokenizer.HEX_STRINGS];
+    return [
+      ...Trino.Tokenizer.HEX_STRINGS,
+      ...Hive.Tokenizer.HEX_STRINGS,
+    ];
   }
 
   @cache
   static get UNICODE_STRINGS () {
-    return [...Trino.Tokenizer.UNICODE_STRINGS, ...Hive.Tokenizer.UNICODE_STRINGS];
+    return [
+      ...Trino.Tokenizer.UNICODE_STRINGS,
+      ...Hive.Tokenizer.UNICODE_STRINGS,
+    ];
   }
 
   @cache
@@ -285,7 +326,9 @@ export class AthenaTokenizer extends Tokenizer {
     const tokensResult = super.tokenize(sql);
 
     if (tokenizeAsHive(tokensResult)) {
-      return [new Token(TokenType.HIVE_TOKEN_STREAM, '')].concat(this.hiveTokenizer.tokenize(sql));
+      return [
+        new Token(TokenType.HIVE_TOKEN_STREAM, ''),
+      ].concat(this.hiveTokenizer.tokenize(sql));
     }
 
     return this.trinoTokenizer.tokenize(sql);
@@ -346,7 +389,8 @@ export class AthenaGenerator extends Generator {
   }
 
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [];
+  static readonly SELECT_KINDS: string[] = [
+  ];
   private hiveGenerator: InstanceType<typeof Hive.Generator>;
   private trinoGenerator: InstanceType<typeof Trino.Generator>;
 
@@ -369,10 +413,14 @@ export class AthenaGenerator extends Generator {
     });
   }
 
-  public generate (expression: Expression, options: { copy?: boolean } = {}): string {
-    const { copy = true } = options;
+  public generate (expression: Expression, options: {copy?: boolean} = {}): string {
+    const {
+      copy = true,
+    } = options;
     const generatorInstance = generateAsHive(expression) ? this.hiveGenerator : this.trinoGenerator;
-    return generatorInstance.generate(expression, { copy });
+    return generatorInstance.generate(expression, {
+      copy,
+    });
   }
 }
 

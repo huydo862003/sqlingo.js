@@ -1,4 +1,6 @@
-import { Generator } from '../generator';
+import {
+  Generator,
+} from '../generator';
 import type {
   Expression,
   DataTypeExpr,
@@ -14,13 +16,21 @@ import {
   ColumnDefExpr,
   IncludePropertyExpr,
 } from '../expressions';
-import { TokenType } from '../tokens';
-import { Parser } from '../parser';
-import { cache } from '../port_internals';
+import {
+  TokenType,
+} from '../tokens';
+import {
+  Parser,
+} from '../parser';
+import {
+  cache,
+} from '../port_internals';
 import {
   Dialect, Dialects,
 } from './dialect';
-import { Postgres } from './postgres';
+import {
+  Postgres,
+} from './postgres';
 
 class RisingWaveTokenizer extends Postgres.Tokenizer {
   @cache
@@ -47,7 +57,9 @@ class RisingWaveParser extends Postgres.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Postgres.Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Postgres.Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
     return noParenFunctions;
@@ -86,7 +98,10 @@ class RisingWaveParser extends Postgres.Parser {
 
   @cache
   static get SCHEMA_UNNAMED_CONSTRAINTS () {
-    return new Set([...Postgres.Parser.SCHEMA_UNNAMED_CONSTRAINTS, 'WATERMARK']);
+    return new Set([
+      ...Postgres.Parser.SCHEMA_UNNAMED_CONSTRAINTS,
+      'WATERMARK',
+    ]);
   }
 
   parseTableHints (): Expression[] | undefined {
@@ -112,7 +127,9 @@ class RisingWaveParser extends Postgres.Parser {
     }
 
     this.match(TokenType.ALIAS);
-    const alias = this.parseIdVar({ tokens: (this.constructor as typeof RisingWaveParser).ALIAS_TOKENS });
+    const alias = this.parseIdVar({
+      tokens: (this.constructor as typeof RisingWaveParser).ALIAS_TOKENS,
+    });
 
     return this.expression(IncludePropertyExpr, {
       this: thisNode,
@@ -126,7 +143,9 @@ class RisingWaveParser extends Postgres.Parser {
     const thisNode = this.parseVarOrString();
 
     let properties: PropertiesExpr | undefined = undefined;
-    if (this.match(TokenType.L_PAREN, { advance: false })) {
+    if (this.match(TokenType.L_PAREN, {
+      advance: false,
+    })) {
       properties = this.expression(PropertiesExpr, {
         expressions: this.parseWrappedProperties(),
       });
@@ -142,7 +161,10 @@ class RisingWaveParser extends Postgres.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Postgres.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Postgres.Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 class RisingWaveGenerator extends Postgres.Generator {
@@ -192,7 +214,9 @@ class RisingWaveGenerator extends Postgres.Generator {
 
   @cache
   static get EXPRESSION_PRECEDES_PROPERTIES_CREATABLES () {
-    return new Set(['SINK']);
+    return new Set([
+      'SINK',
+    ]);
   }
 
   computedColumnConstraintSql (expression: ComputedColumnConstraintExpr): string {
@@ -201,7 +225,10 @@ class RisingWaveGenerator extends Postgres.Generator {
 
   dataTypeSql (expression: DataTypeExpr): string {
     if (expression.isType(DataTypeExprKind.MAP) && expression.args.expressions?.length === 2) {
-      const [keyType, valueType] = expression.args.expressions;
+      const [
+        keyType,
+        valueType,
+      ] = expression.args.expressions;
       return `MAP(${this.sql(keyType)}, ${this.sql(valueType)})`;
     }
 

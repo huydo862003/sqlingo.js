@@ -1,6 +1,8 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/eliminate_ctes.py
 
-import type { Expression } from '../expressions';
+import type {
+  Expression,
+} from '../expressions';
 import {
   buildScope, Scope,
 } from './scope';
@@ -29,7 +31,8 @@ export function eliminateCtes<E extends Expression> (expression: E): E {
     const refCount = root.refCount();
 
     // Traverse the scope tree in reverse so we can remove chains of unused CTEs
-    const scopes: Scope[] = [];
+    const scopes: Scope[] = [
+    ];
     for (const scope of root.traverse()) {
       scopes.push(scope);
     }
@@ -58,8 +61,12 @@ export function eliminateCtes<E extends Expression> (expression: E): E {
           }
 
           // Decrement the ref count for all sources this CTE selects from
-          for (const [, source] of Object.entries(scope.selectedSources)) {
-            const [, sourceScope] = source;
+          for (const [
+            , source,
+          ] of Object.entries(scope.selectedSources)) {
+            const [
+              , sourceScope,
+            ] = source;
             if (sourceScope instanceof Scope) {
               const currentCount = refCount.get(sourceScope) || 0;
               refCount.set(sourceScope, currentCount - 1);

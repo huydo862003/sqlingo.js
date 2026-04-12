@@ -1,11 +1,15 @@
-import { cache } from '../port_internals';
+import {
+  cache,
+} from '../port_internals';
 import {
   Generator,
 } from '../generator';
 import {
   Parser, buildCoalesce,
 } from '../parser';
-import type { TokenPair } from '../tokens';
+import type {
+  TokenPair,
+} from '../tokens';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
@@ -67,7 +71,9 @@ import {
   JsonArrayAggExpr,
   JsonArrayExpr,
 } from '../expressions';
-import { seqGet } from '../helper';
+import {
+  seqGet,
+} from '../helper';
 import {
   eliminateDistinctOn, eliminateQualify, preprocess,
 } from '../transforms';
@@ -87,7 +93,10 @@ import {
 function trimSqlEx (this: Generator, expression: TrimExpr): string {
   const position = expression.args.position;
 
-  if (position && ['LEADING', 'TRAILING'].includes(position.toString().toUpperCase())) {
+  if (position && [
+    'LEADING',
+    'TRAILING',
+  ].includes(position.toString().toUpperCase())) {
     return this.trimSql(expression);
   }
 
@@ -102,7 +111,9 @@ function buildToTimestamp (args: Expression[]): StrToTimeExpr | AnonymousExpr {
     });
   }
 
-  return buildFormattedTime(StrToTimeExpr, { dialect: Dialects.ORACLE })(args);
+  return buildFormattedTime(StrToTimeExpr, {
+    dialect: Dialects.ORACLE,
+  })(args);
 }
 
 export class OracleTokenizer extends Tokenizer {
@@ -118,10 +129,17 @@ export class OracleTokenizer extends Tokenizer {
   @cache
   static get UNICODE_STRINGS (): TokenPair[] {
     const quotes = Tokenizer.QUOTES as string[];
-    const results: [string, string][] = [];
+    const results: [string, string][] = [
+    ];
     for (const q of quotes) {
-      for (const prefix of ['U', 'u']) {
-        results.push([prefix + q, q]);
+      for (const prefix of [
+        'U',
+        'u',
+      ]) {
+        results.push([
+          prefix + q,
+          q,
+        ]);
       }
     }
     return results;
@@ -175,26 +193,35 @@ export class OracleParser extends Parser {
 
   @cache
   static get WINDOW_BEFORE_PAREN_TOKENS () {
-    return new Set([TokenType.OVER, TokenType.KEEP]);
+    return new Set([
+      TokenType.OVER,
+      TokenType.KEEP,
+    ]);
   }
 
   static VALUES_FOLLOWED_BY_PAREN = false;
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       CONVERT: (args: Expression[]) => ConvertToCharsetExpr.fromArgList(args),
       L2_DISTANCE: (args: Expression[]) => EuclideanDistanceExpr.fromArgList(args),
-      NVL: (args: Expression[]) => buildCoalesce(args, { isNvl: true }),
+      NVL: (args: Expression[]) => buildCoalesce(args, {
+        isNvl: true,
+      }),
       SQUARE: (args: Expression[]) => new PowExpr({
         this: seqGet(args, 0),
         expression: literal(2),
       }),
       TO_CHAR: buildTimeToStrOrToChar,
       TO_TIMESTAMP: buildToTimestamp,
-      TO_DATE: buildFormattedTime(StrToDateExpr, { dialect: Dialects.ORACLE }),
-      TRUNC: (args: Expression[], { dialect }: { dialect: Dialect }) => buildTrunc(args, {
+      TO_DATE: buildFormattedTime(StrToDateExpr, {
+        dialect: Dialects.ORACLE,
+      }),
+      TRUNC: (args: Expression[], {
+        dialect,
+      }: {dialect: Dialect}) => buildTrunc(args, {
         dialect,
         dateTruncUnabbreviate: false,
         defaultDateTruncUnit: 'DD',
@@ -210,10 +237,14 @@ export class OracleParser extends Parser {
         return this.parseNextValueFor();
       },
       PRIOR: function (this: Parser) {
-        return this.expression(PriorExpr, { this: this.parseBitwise() });
+        return this.expression(PriorExpr, {
+          this: this.parseBitwise(),
+        });
       },
       SYSDATE: function (this: Parser) {
-        return this.expression(CurrentTimestampExpr, { sysdate: true });
+        return this.expression(CurrentTimestampExpr, {
+          sysdate: true,
+        });
       },
       DBMS_RANDOM: function (this: Parser) {
         return (this as OracleParser).parseDbmsRandom();
@@ -234,7 +265,9 @@ export class OracleParser extends Parser {
       JSON_ARRAY: function (this: Parser) {
         return (this as OracleParser).parseJsonArray(
           JsonArrayExpr,
-          { expressions: this.parseCsv(() => this.parseFormatJson(this.parseBitwise())) },
+          {
+            expressions: this.parseCsv(() => this.parseFormatJson(this.parseBitwise())),
+          },
         );
       },
       JSON_ARRAYAGG: function (this: Parser) {
@@ -258,11 +291,15 @@ export class OracleParser extends Parser {
       ...Parser.PROPERTY_PARSERS,
       GLOBAL: function (this: Parser) {
         return (this.matchTextSeq('TEMPORARY') || undefined)
-          && this.expression(TemporaryPropertyExpr, { this: 'GLOBAL' });
+          && this.expression(TemporaryPropertyExpr, {
+            this: 'GLOBAL',
+          });
       },
       PRIVATE: function (this: Parser) {
         return (this.matchTextSeq('TEMPORARY') || undefined)
-          && this.expression(TemporaryPropertyExpr, { this: 'PRIVATE' });
+          && this.expression(TemporaryPropertyExpr, {
+            this: 'PRIVATE',
+          });
       },
       FORCE: function (this: Parser) {
         return this.expression(ForcePropertyExpr, {});
@@ -275,10 +312,16 @@ export class OracleParser extends Parser {
     return {
       ...Parser.QUERY_MODIFIER_PARSERS,
       [TokenType.ORDER_SIBLINGS_BY]: function (this: Parser) {
-        return ['order', this.parseOrder()];
+        return [
+          'order',
+          this.parseOrder(),
+        ];
       },
       [TokenType.WITH]: function (this: Parser) {
-        return ['options', (this as OracleParser).parseQueryRestrictions()];
+        return [
+          'options',
+          (this as OracleParser).parseQueryRestrictions(),
+        ];
       },
     };
   }
@@ -287,11 +330,16 @@ export class OracleParser extends Parser {
   static get TYPE_LITERAL_PARSERS (): Partial<Record<DataTypeExprKind, (this: Parser, thisArg?: Expression, _?: unknown) => Expression>> {
     return {
       [DataTypeExprKind.DATE]: function (this: Parser, thisExpr?: Expression) {
-        return this.expression(DateStrToDateExpr, { this: thisExpr });
+        return this.expression(DateStrToDateExpr, {
+          this: thisExpr,
+        });
       },
       [DataTypeExprKind.TIMESTAMP]: function (this: Parser, thisExpr?: Expression) {
         return buildToTimestamp(
-          [thisExpr ?? literal(''), literal('%Y-%m-%d %H:%M:%S.%f')],
+          [
+            thisExpr ?? literal(''),
+            literal('%Y-%m-%d %H:%M:%S.%f'),
+          ],
         );
       },
     };
@@ -299,21 +347,38 @@ export class OracleParser extends Parser {
 
   @cache
   static get DISTINCT_TOKENS () {
-    return new Set([TokenType.DISTINCT, TokenType.UNIQUE]);
+    return new Set([
+      TokenType.DISTINCT,
+      TokenType.UNIQUE,
+    ]);
   }
 
   @cache
   static get QUERY_RESTRICTIONS () {
     return {
-      WITH: [['READ', 'ONLY'], ['CHECK', 'OPTION']],
+      WITH: [
+        [
+          'READ',
+          'ONLY',
+        ],
+        [
+          'CHECK',
+          'OPTION',
+        ],
+      ],
     };
   }
 
   public parseDbmsRandom (): Expression | undefined {
-    if (this.matchTextSeq(['.', 'VALUE'])) {
+    if (this.matchTextSeq([
+      '.',
+      'VALUE',
+    ])) {
       let lower: Expression | undefined;
       let upper: Expression | undefined;
-      if (this.match(TokenType.L_PAREN, { advance: false })) {
+      if (this.match(TokenType.L_PAREN, {
+        advance: false,
+      })) {
         const lowerUpper = this.parseWrappedCsv(() => this.parseBitwise());
         if (lowerUpper.length === 2) {
           lower = lowerUpper[0];
@@ -335,7 +400,10 @@ export class OracleParser extends Parser {
     return this.expression(
       exprType,
       {
-        nullHandling: this.parseOnHandling('NULL', ['NULL', 'ABSENT']),
+        nullHandling: this.parseOnHandling('NULL', [
+          'NULL',
+          'ABSENT',
+        ]),
         returnType: this.matchTextSeq('RETURNING') && this.parseType(),
         strict: this.matchTextSeq('STRICT'),
         ...options,
@@ -344,7 +412,9 @@ export class OracleParser extends Parser {
   }
 
   public parseQueryRestrictions (): Expression | undefined {
-    const kind = this.parseVarFromOptions(OracleParser.QUERY_RESTRICTIONS, { raiseUnmatched: false });
+    const kind = this.parseVarFromOptions(OracleParser.QUERY_RESTRICTIONS, {
+      raiseUnmatched: false,
+    });
 
     if (!kind) {
       return undefined;
@@ -387,7 +457,9 @@ export class OracleParser extends Parser {
       this.retreat(index);
       this.match(TokenType.TABLE);
       return this.expression(IntoExpr, {
-        this: this.parseTable({ schema: true }),
+        this: this.parseTable({
+          schema: true,
+        }),
         bulkCollect,
       });
     }
@@ -415,7 +487,8 @@ export class OracleParser extends Parser {
   }
 
   public parseHintArgs (): Expression[] {
-    const args: Expression[] = [];
+    const args: Expression[] = [
+    ];
     let result = this.parseVar();
 
     while (result) {
@@ -448,17 +521,25 @@ export class OracleParser extends Parser {
   }
 
   public parseInsertTable (): Expression | undefined {
-    const thisExpr = this.parseTableParts({ schema: true });
+    const thisExpr = this.parseTableParts({
+      schema: true,
+    });
 
     if (thisExpr instanceof TableExpr) {
-      const aliasName = this.parseIdVar({ anyToken: false });
+      const aliasName = this.parseIdVar({
+        anyToken: false,
+      });
       if (aliasName instanceof IdentifierExpr) {
-        thisExpr.setArgKey('alias', new TableAliasExpr({ this: aliasName }));
+        thisExpr.setArgKey('alias', new TableAliasExpr({
+          this: aliasName,
+        }));
       }
 
       thisExpr.setArgKey('partition', this.parsePartition());
 
-      return this.parseSchema({ this: thisExpr });
+      return this.parseSchema({
+        this: thisExpr,
+      });
     }
 
     return thisExpr;
@@ -467,7 +548,10 @@ export class OracleParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 export class OracleGenerator extends Generator {
@@ -483,7 +567,8 @@ export class OracleGenerator extends Generator {
   }
 
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [];
+  static readonly SELECT_KINDS: string[] = [
+  ];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -531,10 +616,16 @@ export class OracleGenerator extends Generator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const m = new Map<typeof Expression, (this: Generator, e: any) => string>(Generator.TRANSFORMS);
     m.set(DateStrToDateExpr, function (this: Generator, e: DateStrToDateExpr) {
-      return this.func('TO_DATE', [e.args.this, literal('YYYY-MM-DD')]);
+      return this.func('TO_DATE', [
+        e.args.this,
+        literal('YYYY-MM-DD'),
+      ]);
     });
     m.set(DateTruncExpr, function (this: Generator, e: DateTruncExpr) {
-      return this.func('TRUNC', [e.args.this, e.args.unit]);
+      return this.func('TRUNC', [
+        e.args.this,
+        e.args.unit,
+      ]);
     });
     m.set(EuclideanDistanceExpr, renameFunc('L2_DISTANCE'));
     m.set(ILikeExpr, noIlikeSql);
@@ -542,7 +633,10 @@ export class OracleGenerator extends Generator {
     m.set(LogicalAndExpr, renameFunc('MIN'));
     m.set(ModExpr, renameFunc('MOD'));
     m.set(RandExpr, renameFunc('DBMS_RANDOM.VALUE'));
-    m.set(SelectExpr, preprocess([eliminateDistinctOn, eliminateQualify]));
+    m.set(SelectExpr, preprocess([
+      eliminateDistinctOn,
+      eliminateQualify,
+    ]));
     m.set(StrPositionExpr, function (this: Generator, e: StrPositionExpr) {
       return (
         strPositionSql.call(this, e, {
@@ -553,24 +647,37 @@ export class OracleGenerator extends Generator {
       );
     });
     m.set(StrToTimeExpr, function (this: Generator, e: StrToTimeExpr) {
-      return this.func('TO_TIMESTAMP', [e.args.this, this.formatTime(e)]);
+      return this.func('TO_TIMESTAMP', [
+        e.args.this,
+        this.formatTime(e),
+      ]);
     });
     m.set(StrToDateExpr, function (this: Generator, e: StrToDateExpr) {
-      return this.func('TO_DATE', [e.args.this, this.formatTime(e)]);
+      return this.func('TO_DATE', [
+        e.args.this,
+        this.formatTime(e),
+      ]);
     });
     m.set(SubqueryExpr, function (this: Generator, e: SubqueryExpr) {
-      return this.subquerySql(e, { sep: ' ' });
+      return this.subquerySql(e, {
+        sep: ' ',
+      });
     });
     m.set(SubstringExpr, renameFunc('SUBSTR'));
     m.set(TableExpr, function (this: Generator, e: TableExpr) {
-      return this.tableSql(e, { sep: ' ' });
+      return this.tableSql(e, {
+        sep: ' ',
+      });
     });
     m.set(TableSampleExpr, function (this: Generator, e: TableSampleExpr) {
       return this.tableSampleSql(e);
     });
     m.set(TemporaryPropertyExpr, (e: TemporaryPropertyExpr) => `${e.args.this || 'GLOBAL'} TEMPORARY`);
     m.set(TimeToStrExpr, function (this: Generator, e: TimeToStrExpr) {
-      return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+      return this.func('TO_CHAR', [
+        e.args.this,
+        this.formatTime(e),
+      ]);
     });
     m.set(ToCharExpr, function (this: Generator, e: ToCharExpr) {
       return this.functionFallbackSql(e);
@@ -602,7 +709,11 @@ export class OracleGenerator extends Generator {
     }
 
     const thisExpr = expression.args.this;
-    return thisExpr ? this.func('CURRENT_TIMESTAMP', [thisExpr]) : 'CURRENT_TIMESTAMP';
+    return thisExpr
+      ? this.func('CURRENT_TIMESTAMP', [
+        thisExpr,
+      ])
+      : 'CURRENT_TIMESTAMP';
   }
 
   public offsetSql (expression: OffsetExpr): string {
@@ -636,11 +747,16 @@ export class OracleGenerator extends Generator {
   }
 
   public hintSql (expression: HintExpr): string {
-    const expressions: string[] = [];
+    const expressions: string[] = [
+    ];
 
-    for (const e of expression.args.expressions || []) {
+    for (const e of expression.args.expressions || [
+    ]) {
       if (e instanceof AnonymousExpr) {
-        const formattedArgs = this.formatArgs(e.args.expressions || [], { sep: ' ' });
+        const formattedArgs = this.formatArgs(e.args.expressions || [
+        ], {
+          sep: ' ',
+        });
         expressions.push(`${this.sql(e, 'this')}(${formattedArgs})`);
       } else {
         expressions.push(this.sql(e));
@@ -661,14 +777,18 @@ export class OracleGenerator extends Generator {
     return `${expression.args.this instanceof LiteralExpr ? 'INTERVAL ' : ''}${this.sql(expression, 'this')} ${this.sql(expression, 'unit')}`;
   }
 
-  public columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
-    let { sep = ' ' } = options;
+  public columnDefSql (expression: ColumnDefExpr, options: {sep?: string} = {}): string {
+    let {
+      sep = ' ',
+    } = options;
     const paramConstraint = expression.find(InOutColumnConstraintExpr);
     if (paramConstraint) {
       sep = ` ${this.sql(paramConstraint)} `;
       paramConstraint.parent?.pop();
     }
-    return super.columnDefSql(expression, { sep });
+    return super.columnDefSql(expression, {
+      sep,
+    });
   }
 }
 
@@ -727,12 +847,16 @@ export class Oracle extends Dialect {
     ]);
   }
 
-  public canQuote (identifier: IdentifierExpr, options: { identify?: string | boolean } = {}): boolean {
-    const { identify = 'safe' } = options;
+  public canQuote (identifier: IdentifierExpr, options: {identify?: string | boolean} = {}): boolean {
+    const {
+      identify = 'safe',
+    } = options;
 
     return (
       identifier.args.quoted || !(identifier.parent instanceof PseudocolumnExpr)
-    ) && super.canQuote(identifier, { identify });
+    ) && super.canQuote(identifier, {
+      identify,
+    });
   }
 
   static Tokenizer = OracleTokenizer;

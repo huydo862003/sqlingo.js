@@ -72,20 +72,26 @@ export function canonicalize (
     dialect?: DialectType;
   } = {},
 ): Expression {
-  const { dialect } = options;
+  const {
+    dialect,
+  } = options;
   const dialectInstance = Dialect.getOrRaise(dialect);
 
   function _canonicalize (node: Expression): Expression {
     node = addTextToConcat(node);
     node = replaceDateFuncs(node, dialectInstance);
-    node = coerceType(node, { promoteToInferredDatetimeType: dialectInstance._constructor.PROMOTE_TO_INFERRED_DATETIME_TYPE });
+    node = coerceType(node, {
+      promoteToInferredDatetimeType: dialectInstance._constructor.PROMOTE_TO_INFERRED_DATETIME_TYPE,
+    });
     node = removeRedundantCasts(node);
     node = ensureBools(node, replaceIntPredicate);
     node = removeAscendingOrder(node);
     return node;
   }
 
-  return expression.transform(_canonicalize, { copy: false });
+  return expression.transform(_canonicalize, {
+    copy: false,
+  });
 }
 
 /**
@@ -101,7 +107,10 @@ export function addTextToConcat (node: Expression): Expression {
     }
 
     return new ConcatExpr({
-      expressions: [left as Expression, right as Expression],
+      expressions: [
+        left as Expression,
+        right as Expression,
+      ],
       // All known dialects, i.e. Redshift and T-SQL, that support
       // concatenating strings with the + operator do not coalesce NULLs.
       coalesce: false,
@@ -127,7 +136,9 @@ export function replaceDateFuncs (node: Expression, dialect: Dialect): Expressio
       if (thisExpr.isString && isIsoDate(thisExpr.name)) {
         return new CastExpr({
           this: thisArg,
-          to: new DataTypeExpr({ this: DataTypeExprKind.DATE }),
+          to: new DataTypeExpr({
+            this: DataTypeExprKind.DATE,
+          }),
         });
       }
     }
@@ -141,7 +152,9 @@ export function replaceDateFuncs (node: Expression, dialect: Dialect): Expressio
     if (!zone) {
       let nodeToUse = node;
       if (!node.type) {
-        nodeToUse = annotateTypes(node, { dialect }) as TimestampExpr;
+        nodeToUse = annotateTypes(node, {
+          dialect,
+        }) as TimestampExpr;
       }
 
       const thisArg = nodeToUse.args.this;
@@ -149,7 +162,9 @@ export function replaceDateFuncs (node: Expression, dialect: Dialect): Expressio
         return node;
       }
 
-      const targetType = nodeToUse.type || new DataTypeExpr({ this: DataTypeExprKind.TIMESTAMP });
+      const targetType = nodeToUse.type || new DataTypeExpr({
+        this: DataTypeExprKind.TIMESTAMP,
+      });
 
       if (!(targetType instanceof DataTypeExpr)) {
         return node;
@@ -184,8 +199,10 @@ const COERCIBLE_DATE_OPS = [
 /**
  * Coerce types for date operations.
  */
-export function coerceType (node: Expression, options: { promoteToInferredDatetimeType?: boolean } = {}): Expression {
-  const { promoteToInferredDatetimeType = false } = options;
+export function coerceType (node: Expression, options: {promoteToInferredDatetimeType?: boolean} = {}): Expression {
+  const {
+    promoteToInferredDatetimeType = false,
+  } = options;
   // Check if node is a coercible date op
   const isCoercibleOp = COERCIBLE_DATE_OPS.some((opClass) => node instanceof opClass);
 
@@ -194,14 +211,18 @@ export function coerceType (node: Expression, options: { promoteToInferredDateti
     const right = node.args.expression;
 
     if (left && right) {
-      coerceDate(left as Expression, right as Expression, { promoteToInferredDatetimeType });
+      coerceDate(left as Expression, right as Expression, {
+        promoteToInferredDatetimeType,
+      });
     }
   } else if (node instanceof BetweenExpr) {
     const thisArg = node.args.this;
     const low = node.args.low;
 
     if (thisArg && low) {
-      coerceDate(thisArg as Expression, low as Expression, { promoteToInferredDatetimeType });
+      coerceDate(thisArg as Expression, low as Expression, {
+        promoteToInferredDatetimeType,
+      });
     }
   } else if (node instanceof ExtractExpr) {
     const expr = node.args.expression;
@@ -322,11 +343,25 @@ export function removeAscendingOrder (expression: Expression): Expression {
 function coerceDate (
   a: Expression,
   b: Expression,
-  options: { promoteToInferredDatetimeType: boolean },
+  options: {promoteToInferredDatetimeType: boolean},
 ): void {
-  const { promoteToInferredDatetimeType } = options;
+  const {
+    promoteToInferredDatetimeType,
+  } = options;
   // Try both permutations (a, b) and (b, a)
-  for (const [left, right] of [[a, b], [b, a]]) {
+  for (const [
+    left,
+    right,
+  ] of [
+      [
+        a,
+        b,
+      ],
+      [
+        b,
+        a,
+      ],
+    ]) {
     if (right instanceof IntervalExpr) {
       const unit = right.args.unit;
       coerceTimeunitArg(left, unit as Expression | undefined);
@@ -395,7 +430,9 @@ function coerceTimeunitArg (
     if (isIsoDate_ && isDateUnit(unit)) {
       return arg.replace(new CastExpr({
         this: arg.copy(),
-        to: new DataTypeExpr({ this: DataTypeExprKind.DATE }),
+        to: new DataTypeExpr({
+          this: DataTypeExprKind.DATE,
+        }),
       }));
     }
 
@@ -403,13 +440,17 @@ function coerceTimeunitArg (
     if (isIsoDate_ || isIsoDatetime(dateText)) {
       return arg.replace(new CastExpr({
         this: arg.copy(),
-        to: new DataTypeExpr({ this: DataTypeExprKind.DATETIME }),
+        to: new DataTypeExpr({
+          this: DataTypeExprKind.DATETIME,
+        }),
       }));
     }
   } else if (arg.type instanceof Expression && arg.type.args.this === DataTypeExprKind.DATE && !isDateUnit(unit)) {
     return arg.replace(new CastExpr({
       this: arg.copy(),
-      to: new DataTypeExpr({ this: DataTypeExprKind.DATETIME }),
+      to: new DataTypeExpr({
+        this: DataTypeExprKind.DATETIME,
+      }),
     }));
   }
 
@@ -423,13 +464,18 @@ function coerceDateDiffArgs (node: DateDiffExpr): void {
   const thisArg = node.args.this;
   const exprArg = node.args.expression;
 
-  for (const arg of [thisArg, exprArg]) {
+  for (const arg of [
+    thisArg,
+    exprArg,
+  ]) {
     if (arg) {
       const argExpr = arg as Expression;
       if (argExpr.type instanceof Expression && argExpr.type.args.this && !DataTypeExpr.TEMPORAL_TYPES.has(argExpr.type.args.this as DataTypeExprKind)) {
         argExpr.replace(new CastExpr({
           this: argExpr.copy(),
-          to: new DataTypeExpr({ this: DataTypeExprKind.DATETIME }),
+          to: new DataTypeExpr({
+            this: DataTypeExprKind.DATETIME,
+          }),
         }));
       }
     }
@@ -442,7 +488,9 @@ function coerceDateDiffArgs (node: DateDiffExpr): void {
 function replaceCast (node: Expression, to: DataTypeExprKind): void {
   node.replace(new CastExpr({
     this: node.copy(),
-    to: new DataTypeExpr({ this: to }),
+    to: new DataTypeExpr({
+      this: to,
+    }),
   }));
 }
 

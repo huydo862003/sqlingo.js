@@ -1,6 +1,12 @@
-import type { Expression } from '../expressions/expressions';
-import { cache } from '../port_internals';
-import { DataTypeExprKind } from '../expressions/types';
+import type {
+  Expression,
+} from '../expressions/expressions';
+import {
+  cache,
+} from '../port_internals';
+import {
+  DataTypeExprKind,
+} from '../expressions/types';
 import {
   BitwiseAndExpr,
   BitwiseNotExpr,
@@ -18,9 +24,15 @@ import {
   RandExpr,
   Md5DigestExpr,
 } from '../expressions/expressions';
-import type { TypeAnnotator } from '../optimizer';
-import { DialectTyping } from './dialect';
-import type { ExpressionMetadata } from './dialect';
+import type {
+  TypeAnnotator,
+} from '../optimizer';
+import {
+  DialectTyping,
+} from './dialect';
+import type {
+  ExpressionMetadata,
+} from './dialect';
 
 export class PrestoTyping {
   @cache
@@ -41,7 +53,9 @@ export class PrestoTyping {
       LevenshteinExpr,
       StrPositionExpr,
       WidthBucketExpr,
-    ], { returns: DataTypeExprKind.BIGINT });
+    ], {
+      returns: DataTypeExprKind.BIGINT,
+    });
 
     extend([
       CeilExpr,
@@ -49,21 +63,30 @@ export class PrestoTyping {
       RoundExpr,
       SignExpr,
     ], {
-      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, [
+        'this',
+      ]),
     });
 
     map.set(ModExpr, {
-      annotator: (s: TypeAnnotator, e: ModExpr) => s.annotateByArgs(e, ['this', 'expression']),
+      annotator: (s: TypeAnnotator, e: ModExpr) => s.annotateByArgs(e, [
+        'this',
+        'expression',
+      ]),
     });
 
     map.set(RandExpr, {
       annotator: (s: TypeAnnotator, e: RandExpr) =>
         e.args.this
-          ? s.annotateByArgs(e, ['this'])
+          ? s.annotateByArgs(e, [
+            'this',
+          ])
           : s.setType(e, DataTypeExprKind.DOUBLE),
     });
 
-    map.set(Md5DigestExpr, { returns: DataTypeExprKind.VARBINARY });
+    map.set(Md5DigestExpr, {
+      returns: DataTypeExprKind.VARBINARY,
+    });
 
     return map;
   }

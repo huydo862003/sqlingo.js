@@ -1,6 +1,8 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/resolver.py
 
-import type { DataTypeExpr } from '../expressions';
+import type {
+  DataTypeExpr,
+} from '../expressions';
 import {
   Expression,
   IdentifierExpr,
@@ -21,15 +23,27 @@ import {
   QueryTransformExpr,
   isType,
 } from '../expressions';
-import { Dialect } from '../dialects/dialect';
+import {
+  Dialect,
+} from '../dialects/dialect';
 import {
   seqGet, SingleValuedMapping,
 } from '../helper';
-import type { Schema } from '../schema';
-import { MapBinaryTuple } from '../port_internals/binary_tuple_map';
-import { isInstanceOf } from '../port_internals';
-import { OptimizeError } from '../errors';
-import { Scope } from './scope';
+import type {
+  Schema,
+} from '../schema';
+import {
+  MapBinaryTuple,
+} from '../port_internals/binary_tuple_map';
+import {
+  isInstanceOf,
+} from '../port_internals';
+import {
+  OptimizeError,
+} from '../errors';
+import {
+  Scope,
+} from './scope';
 
 /**
  * Helper class for resolving columns to their source tables.
@@ -57,8 +71,10 @@ export class Resolver {
   private allColumnsCache?: Set<string>;
   private getSourceColumnsCache: MapBinaryTuple<[string, boolean], string[]>;
 
-  constructor (scope: Scope, schema: Schema, options: { inferSchema?: boolean } = {}) {
-    const { inferSchema = true } = options;
+  constructor (scope: Scope, schema: Schema, options: {inferSchema?: boolean} = {}) {
+    const {
+      inferSchema = true,
+    } = options;
     this.scope = scope;
     this.schema = schema;
     this.dialect = schema.dialect || new Dialect();
@@ -92,8 +108,12 @@ export class Resolver {
 
     if (!tableName && this.inferSchema) {
       const allSourceColumns = this.getAllSourceColumns();
-      const sourcesWithoutSchema: string[] = [];
-      for (const [source, columns] of allSourceColumns) {
+      const sourcesWithoutSchema: string[] = [
+      ];
+      for (const [
+        source,
+        columns,
+      ] of allSourceColumns) {
         if (!columns || columns.length === 0 || columns.includes('*')) {
           sourcesWithoutSchema.push(source);
         }
@@ -112,7 +132,9 @@ export class Resolver {
       return toIdentifier(tableName);
     }
 
-    const [node] = selectedSource;
+    const [
+      node,
+    ] = selectedSource;
 
     let currentNode: Expression | undefined = node;
     if (currentNode instanceof QueryExpr) {
@@ -182,7 +204,8 @@ export class Resolver {
       const rightExpr = setOp.args.expression;
 
       if (!leftExpr || !rightExpr) {
-        return [];
+        return [
+        ];
       }
 
       const left = this.getSourceColumnsFromSetOp(leftExpr as Expression);
@@ -191,7 +214,10 @@ export class Resolver {
       if (side === JoinExprKind.LEFT) {
         return left;
       } else if (side === JoinExprKind.FULL) {
-        const combined = [...left, ...right];
+        const combined = [
+          ...left,
+          ...right,
+        ];
         return Array.from(new Set(combined));
       } else if (kind === SetOperationExprKind.INNER) {
         const leftSet = new Set(left);
@@ -210,10 +236,13 @@ export class Resolver {
    * @param onlyVisible - Whether to only return visible columns
    * @returns List of column names
    */
-  getSourceColumns (name: string, options: { onlyVisible?: boolean } = {}): string[] {
-    const { onlyVisible = false } = options;
+  getSourceColumns (name: string, options: {onlyVisible?: boolean} = {}): string[] {
+    const {
+      onlyVisible = false,
+    } = options;
     if (this.getSourceColumnsCache.has(name, onlyVisible)) {
-      return this.getSourceColumnsCache.get(name, onlyVisible) ?? [];
+      return this.getSourceColumnsCache.get(name, onlyVisible) ?? [
+      ];
     }
 
     const source = this.scope.sources.get(name);
@@ -221,10 +250,14 @@ export class Resolver {
       throw new OptimizeError(`Unknown table: ${name}`);
     }
 
-    let columns: string[] = [];
+    let columns: string[] = [
+    ];
 
     if (source instanceof TableExpr) {
-      columns = this.schema.columnNames?.(source, { onlyVisible }) || [];
+      columns = this.schema.columnNames?.(source, {
+        onlyVisible,
+      }) || [
+      ];
     } else if (source instanceof Scope) {
       const sourceExpr = source.expression;
       if (sourceExpr instanceof ValuesExpr || sourceExpr instanceof UnnestExpr) {
@@ -235,7 +268,8 @@ export class Resolver {
 
           if (!unnest.type || isType(unnest.type, DataTypeExprKind.UNKNOWN)) {
             const unnestExpressions = unnest.args.expressions;
-            const unnestExpr = seqGet(unnestExpressions ?? [], 0);
+            const unnestExpr = seqGet(unnestExpressions ?? [
+            ], 0);
             if (unnestExpr instanceof ColumnExpr && this.scope.parent) {
               const colType = this.getUnnestColumnType(unnestExpr);
               if (colType?.isType(DataTypeExprKind.ARRAY)) {
@@ -250,7 +284,8 @@ export class Resolver {
           }
 
           if (unnest.isType(DataTypeExprKind.STRUCT)) {
-            for (const field of (unnest.type instanceof Expression ? unnest.type.args.expressions : undefined) || []) {
+            for (const field of (unnest.type instanceof Expression ? unnest.type.args.expressions : undefined) || [
+            ]) {
               if (isInstanceOf(field, Expression)) {
                 columns.push(field.name);
               }
@@ -260,7 +295,8 @@ export class Resolver {
       } else if (sourceExpr instanceof SetOperationExpr) {
         columns = this.getSourceColumnsFromSetOp(sourceExpr);
       } else {
-        const select = seqGet(sourceExpr.args.expressions ?? [], 0);
+        const select = seqGet(sourceExpr.args.expressions ?? [
+        ], 0);
         if (select instanceof QueryTransformExpr) {
           const schema = select.args.schema;
           columns = schema
@@ -269,15 +305,24 @@ export class Resolver {
                 return c.name;
               }
               return String(c);
-            }) ?? []
-            : ['key', 'value'];
+            }) ?? [
+            ]
+            : [
+              'key',
+              'value',
+            ];
         } else {
           columns = sourceExpr.namedSelects;
         }
       }
     }
 
-    const [node] = this.scope.selectedSources[name] || [undefined, undefined];
+    const [
+      node,
+    ] = this.scope.selectedSources[name] || [
+      undefined,
+      undefined,
+    ];
 
     let columnAliases: string[];
     if (node instanceof Scope) {
@@ -285,11 +330,13 @@ export class Resolver {
     } else if (node instanceof Expression) {
       columnAliases = node.aliasColumnNames;
     } else {
-      columnAliases = [];
+      columnAliases = [
+      ];
     }
 
     if (columnAliases.length) {
-      const newColumns: string[] = [];
+      const newColumns: string[] = [
+      ];
       for (let i = 0; i < Math.max(columns.length, columnAliases.length); i++) {
         const alias = seqGet(columnAliases, i);
         const colName = seqGet(columns, i);
@@ -378,7 +425,10 @@ export class Resolver {
     }
 
     const sourceColumnsPairs = Array.from(sourceColumns.entries());
-    const [firstTable, firstColumns] = sourceColumnsPairs[0];
+    const [
+      firstTable,
+      firstColumns,
+    ] = sourceColumnsPairs[0];
 
     if (sourceColumnsPairs.length === 1) {
       return new SingleValuedMapping(firstColumns, firstTable);
@@ -386,7 +436,10 @@ export class Resolver {
 
     const unnestOriginalAliases = new Map<string, string>();
     if (this.dialect._constructor.UNNEST_COLUMN_ONLY) {
-      for (const [sourceName, source] of this.scope.sources) {
+      for (const [
+        sourceName,
+        source,
+      ] of this.scope.sources) {
         if (source instanceof Scope && source.expression instanceof UnnestExpr) {
           const aliasArg = source.expression.args.alias;
           if (isInstanceOf(aliasArg, TableAliasExpr) && aliasArg.columns.length) {
@@ -403,9 +456,14 @@ export class Resolver {
 
     const allColumns = new Set(firstColumns);
 
-    for (const [table, columns] of sourceColumnsPairs.slice(1)) {
+    for (const [
+      table,
+      columns,
+    ] of sourceColumnsPairs.slice(1)) {
       const unique = new Set(columns);
-      const ambiguous = new Set([...allColumns].filter((c) => unique.has(c)));
+      const ambiguous = new Set([
+        ...allColumns,
+      ].filter((c) => unique.has(c)));
       for (const col of columns) allColumns.add(col);
 
       for (const column of ambiguous) {
@@ -437,7 +495,9 @@ export class Resolver {
     if (column.table) {
       tableName = column.table;
     } else {
-      const parentResolver = new Resolver(scope, this.schema, { inferSchema: this.inferSchema });
+      const parentResolver = new Resolver(scope, this.schema, {
+        inferSchema: this.inferSchema,
+      });
       const tableIdentifier = parentResolver.getTable(column);
       if (!tableIdentifier) {
         return undefined;
@@ -459,7 +519,9 @@ export class Resolver {
         }
       }
     } else if (source instanceof Scope) {
-      for (const [, nestedSource] of source.sources) {
+      for (const [
+        , nestedSource,
+      ] of source.sources) {
         const colType = this.getColumnTypeFromScope(nestedSource, column);
         if (colType) {
           const colTypeThis = typeof colType.args.this === 'string' ? colType.args.this as DataTypeExprKind : DataTypeExprKind.UNKNOWN;

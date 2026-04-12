@@ -1,17 +1,35 @@
-import type { Expression } from '../expressions';
-import { HexStringExpr } from '../expressions';
-import type { Generator } from '../generator';
-import { cache } from '../port_internals';
-import type { TokenPair } from '../tokens';
+import type {
+  Expression,
+} from '../expressions';
+import {
+  HexStringExpr,
+} from '../expressions';
+import type {
+  Generator,
+} from '../generator';
+import {
+  cache,
+} from '../port_internals';
+import type {
+  TokenPair,
+} from '../tokens';
 import {
   Dialect, Dialects,
 } from './dialect';
-import { Trino } from './trino';
+import {
+  Trino,
+} from './trino';
 
 class DuneTokenizer extends Trino.Tokenizer {
   @cache
   static get HEX_STRINGS (): TokenPair[] {
-    return ['0x', ['X\'', '\'']];
+    return [
+      '0x',
+      [
+        'X\'',
+        '\'',
+      ],
+    ];
   }
 }
 

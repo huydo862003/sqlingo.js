@@ -1,13 +1,21 @@
-import { cache } from '../port_internals';
+import {
+  cache,
+} from '../port_internals';
 import {
   Generator,
 } from '../generator';
-import { Parser } from '../parser';
-import type { TokenPair } from '../tokens';
+import {
+  Parser,
+} from '../parser';
+import type {
+  TokenPair,
+} from '../tokens';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
-import type { Expression } from '../expressions';
+import type {
+  Expression,
+} from '../expressions';
 import {
   DateAddExpr,
   DateSubExpr,
@@ -32,8 +40,12 @@ import {
   IntervalExpr,
   ConcatExpr,
 } from '../expressions';
-import { seqGet } from '../helper';
-import type { DialectType } from './dialect';
+import {
+  seqGet,
+} from '../helper';
+import type {
+  DialectType,
+} from './dialect';
 import {
   buildFormattedTime,
   buildDateDelta,
@@ -52,7 +64,10 @@ function dateDeltaSql (name: string): (this: Generator, expression: DateDeltaTyp
 
     // Fallback to default behavior if unit is missing or 'DAY'
     if (!unit || unit === 'DAY') {
-      return this.func(name, [expression.args.this, expression.args.expression]);
+      return this.func(name, [
+        expression.args.this,
+        expression.args.expression,
+      ]);
     }
 
     const thisSql = this.sql(expression, 'this');
@@ -63,8 +78,12 @@ function dateDeltaSql (name: string): (this: Generator, expression: DateDeltaTyp
   };
 }
 
-function toCharIsNumericHandler (args: Expression[], { dialect }: { dialect: DialectType }): TimeToStrExpr | ToCharExpr {
-  const expression = buildTimeToStrOrToChar(args, { dialect });
+function toCharIsNumericHandler (args: Expression[], {
+  dialect,
+}: {dialect: DialectType}): TimeToStrExpr | ToCharExpr {
+  const expression = buildTimeToStrOrToChar(args, {
+    dialect,
+  });
   const fmt = seqGet(args, 1);
 
   if (
@@ -89,7 +108,10 @@ function buildDateDeltaWithCastInterval (
 
   return (args: Expression[]): Expression => {
     if (args.length === 2) {
-      const [dateArg, intervalArg] = args;
+      const [
+        dateArg,
+        intervalArg,
+      ] = args;
 
       if (
         intervalArg instanceof CastExpr
@@ -114,7 +136,9 @@ function buildDateDeltaWithCastInterval (
   };
 }
 
-function dateTypeHandler (args: Expression[], { dialect }: { dialect: DialectType }): Expression {
+function dateTypeHandler (args: Expression[], {
+  dialect,
+}: {dialect: DialectType}): Expression {
   const [
     year,
     month,
@@ -134,7 +158,9 @@ function dateTypeHandler (args: Expression[], { dialect }: { dialect: DialectTyp
       .padStart(2, '0');
 
     const dateStr = `${y}-${m}-${d}`;
-    return new DateExpr({ this: LiteralExpr.string(dateStr) });
+    return new DateExpr({
+      this: LiteralExpr.string(dateStr),
+    });
   }
 
   const resolvedDialect = Dialect.getOrRaise(dialect);
@@ -160,7 +186,10 @@ class DremioTokenizer extends Tokenizer {
     return [
       '--',
       '//',
-      ['/*', '*/'] as TokenPair,
+      [
+        '/*',
+        '*/',
+      ] as TokenPair,
     ];
   }
 };
@@ -179,7 +208,9 @@ class DremioParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
     return noParenFunctions;
@@ -198,19 +229,23 @@ class DremioParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       ARRAY_GENERATE_RANGE: (args: unknown[]) => GenerateSeriesExpr.fromArgList(args),
       BIT_AND: (args: unknown[]) => BitwiseAndAggExpr.fromArgList(args),
       BIT_OR: (args: unknown[]) => BitwiseOrAggExpr.fromArgList(args),
       DATE_ADD: buildDateDeltaWithCastInterval(DateAddExpr),
-      DATE_FORMAT: buildFormattedTime(TimeToStrExpr, { dialect: 'dremio' }),
+      DATE_FORMAT: buildFormattedTime(TimeToStrExpr, {
+        dialect: 'dremio',
+      }),
       DATE_SUB: buildDateDeltaWithCastInterval(DateSubExpr),
       REGEXP_MATCHES: (args: unknown[]) => RegexpLikeExpr.fromArgList(args),
       REPEATSTR: (args: unknown[]) => RepeatExpr.fromArgList(args),
       TO_CHAR: toCharIsNumericHandler,
-      TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: 'dremio' }),
+      TO_DATE: buildFormattedTime(TsOrDsToDateExpr, {
+        dialect: 'dremio',
+      }),
       DATE_PART: (args: unknown[]) => ExtractExpr.fromArgList(args),
       DATETYPE: dateTypeHandler,
     };
@@ -233,7 +268,10 @@ class DremioParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 class DremioGenerator extends Generator {
@@ -252,7 +290,8 @@ class DremioGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [];
+  static readonly SELECT_KINDS: string[] = [
+  ];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -269,16 +308,46 @@ class DremioGenerator extends Generator {
   static get TYPE_MAPPING () {
     return new Map([
       ...Generator.TYPE_MAPPING,
-      [DataTypeExprKind.SMALLINT, 'INT'],
-      [DataTypeExprKind.TINYINT, 'INT'],
-      [DataTypeExprKind.BINARY, 'VARBINARY'],
-      [DataTypeExprKind.TEXT, 'VARCHAR'],
-      [DataTypeExprKind.NCHAR, 'VARCHAR'],
-      [DataTypeExprKind.CHAR, 'VARCHAR'],
-      [DataTypeExprKind.TIMESTAMPNTZ, 'TIMESTAMP'],
-      [DataTypeExprKind.DATETIME, 'TIMESTAMP'],
-      [DataTypeExprKind.ARRAY, 'LIST'],
-      [DataTypeExprKind.BIT, 'BOOLEAN'],
+      [
+        DataTypeExprKind.SMALLINT,
+        'INT',
+      ],
+      [
+        DataTypeExprKind.TINYINT,
+        'INT',
+      ],
+      [
+        DataTypeExprKind.BINARY,
+        'VARBINARY',
+      ],
+      [
+        DataTypeExprKind.TEXT,
+        'VARCHAR',
+      ],
+      [
+        DataTypeExprKind.NCHAR,
+        'VARCHAR',
+      ],
+      [
+        DataTypeExprKind.CHAR,
+        'VARCHAR',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPNTZ,
+        'TIMESTAMP',
+      ],
+      [
+        DataTypeExprKind.DATETIME,
+        'TIMESTAMP',
+      ],
+      [
+        DataTypeExprKind.ARRAY,
+        'LIST',
+      ],
+      [
+        DataTypeExprKind.BIT,
+        'BOOLEAN',
+      ],
     ]);
   }
 
@@ -288,32 +357,61 @@ class DremioGenerator extends Generator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
-      [BitwiseAndAggExpr, renameFunc('BIT_AND')],
-      [BitwiseOrAggExpr, renameFunc('BIT_OR')],
-      [ToCharExpr, renameFunc('TO_CHAR')],
+      [
+        BitwiseAndAggExpr,
+        renameFunc('BIT_AND'),
+      ],
+      [
+        BitwiseOrAggExpr,
+        renameFunc('BIT_OR'),
+      ],
+      [
+        ToCharExpr,
+        renameFunc('TO_CHAR'),
+      ],
       [
         TimeToStrExpr,
         function (this: Generator, e) {
-          return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+          return this.func('TO_CHAR', [
+            e.args.this,
+            this.formatTime(e),
+          ]);
         },
       ],
-      [TryCastExpr, noTrycastSql],
-      [DateAddExpr, dateDeltaSql('DATE_ADD')],
-      [DateSubExpr, dateDeltaSql('DATE_SUB')],
-      [GenerateSeriesExpr, renameFunc('ARRAY_GENERATE_RANGE')],
+      [
+        TryCastExpr,
+        noTrycastSql,
+      ],
+      [
+        DateAddExpr,
+        dateDeltaSql('DATE_ADD'),
+      ],
+      [
+        DateSubExpr,
+        dateDeltaSql('DATE_SUB'),
+      ],
+      [
+        GenerateSeriesExpr,
+        renameFunc('ARRAY_GENERATE_RANGE'),
+      ],
     ]);
     return transforms;
   }
 
   dataTypeSql (expression: DataTypeExpr): string {
-    if (expression.isType([DataTypeExprKind.TIMESTAMPTZ, DataTypeExprKind.TIMESTAMPLTZ])) {
+    if (expression.isType([
+      DataTypeExprKind.TIMESTAMPTZ,
+      DataTypeExprKind.TIMESTAMPLTZ,
+    ])) {
       this.unsupported('Dremio does not support time-zone-aware TIMESTAMP');
     }
     return super.dataTypeSql(expression);
   }
 
-  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
-    const { safePrefix } = options;
+  castSql (expression: CastExpr, options: {safePrefix?: string} = {}): string {
+    const {
+      safePrefix,
+    } = options;
 
     // Match: CAST(CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AS DATE)
     if (isType(expression.args.to, DataTypeExprKind.DATE)) {
@@ -329,7 +427,9 @@ class DremioGenerator extends Generator {
       }
     }
 
-    return super.castSql(expression, { safePrefix });
+    return super.castSql(expression, {
+      safePrefix,
+    });
   }
 }
 

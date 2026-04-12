@@ -1,11 +1,15 @@
-import { cache } from '../port_internals';
+import {
+  cache,
+} from '../port_internals';
 import {
   Generator,
 } from '../generator';
 import {
   Parser, binaryRangeParser,
 } from '../parser';
-import type { TokenPair } from '../tokens';
+import type {
+  TokenPair,
+} from '../tokens';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
@@ -153,12 +157,16 @@ import {
   CurrentCatalogExpr,
   SessionUserExpr,
 } from '../expressions';
-import { seqGet } from '../helper';
+import {
+  seqGet,
+} from '../helper';
 import {
   eliminateSemiAndAntiJoins, eliminateQualify,
   addWithinGroupForPercentiles, preprocess,
 } from '../transforms';
-import { annotateTypes } from '../optimizer';
+import {
+  annotateTypes,
+} from '../optimizer';
 import {
   anyValueToMaxSql,
   arrayConcatSql,
@@ -277,17 +285,24 @@ function autoIncrementToSerial (expression: Expression): Expression {
   const auto = expression.find(AutoIncrementColumnConstraintExpr);
 
   if (auto && expression instanceof ColumnDefExpr) {
-    const constraints = expression.args.constraints || [];
+    const constraints = expression.args.constraints || [
+    ];
     expression.setArgKey('constraints', constraints.filter((c) => c !== auto.parent));
 
     const kind = expression.args.kind;
     if (kind instanceof DataTypeExpr) {
       if (kind.isType(DataTypeExprKind.INT)) {
-        kind.replace(new DataTypeExpr({ this: DataTypeExprKind.SERIAL }));
+        kind.replace(new DataTypeExpr({
+          this: DataTypeExprKind.SERIAL,
+        }));
       } else if (kind.isType(DataTypeExprKind.SMALLINT)) {
-        kind.replace(new DataTypeExpr({ this: DataTypeExprKind.SMALLSERIAL }));
+        kind.replace(new DataTypeExpr({
+          this: DataTypeExprKind.SMALLSERIAL,
+        }));
       } else if (kind.isType(DataTypeExprKind.BIGINT)) {
-        kind.replace(new DataTypeExpr({ this: DataTypeExprKind.BIGSERIAL }));
+        kind.replace(new DataTypeExpr({
+          this: DataTypeExprKind.BIGSERIAL,
+        }));
       }
     }
   }
@@ -303,18 +318,31 @@ function serialToGenerated (expression: Expression): Expression {
 
   let dataType: DataTypeExpr | undefined;
   if (kind.isType(DataTypeExprKind.SERIAL)) {
-    dataType = new DataTypeExpr({ this: DataTypeExprKind.INT });
+    dataType = new DataTypeExpr({
+      this: DataTypeExprKind.INT,
+    });
   } else if (kind.isType(DataTypeExprKind.SMALLSERIAL)) {
-    dataType = new DataTypeExpr({ this: DataTypeExprKind.SMALLINT });
+    dataType = new DataTypeExpr({
+      this: DataTypeExprKind.SMALLINT,
+    });
   } else if (kind.isType(DataTypeExprKind.BIGSERIAL)) {
-    dataType = new DataTypeExpr({ this: DataTypeExprKind.BIGINT });
+    dataType = new DataTypeExpr({
+      this: DataTypeExprKind.BIGINT,
+    });
   }
 
   if (dataType) {
     kind.replace(dataType);
-    const constraints = expression.args.constraints || [];
-    const generated = new ColumnConstraintExpr({ kind: new GeneratedAsIdentityColumnConstraintExpr({ this: false }) });
-    const notNull = new ColumnConstraintExpr({ kind: new NotNullColumnConstraintExpr({}) });
+    const constraints = expression.args.constraints || [
+    ];
+    const generated = new ColumnConstraintExpr({
+      kind: new GeneratedAsIdentityColumnConstraintExpr({
+        this: false,
+      }),
+    });
+    const notNull = new ColumnConstraintExpr({
+      kind: new NotNullColumnConstraintExpr({}),
+    });
 
     if (!constraints.some((c) => c instanceof ColumnConstraintExpr && c.args.kind instanceof NotNullColumnConstraintExpr)) {
       constraints.unshift(notNull);
@@ -345,7 +373,9 @@ function buildToTimestamp (args: Expression[]): UnixToTimeExpr | StrToTimeExpr {
   if (args.length === 1) {
     return UnixToTimeExpr.fromArgList(args);
   }
-  return buildFormattedTime(StrToTimeExpr, { dialect: 'postgres' })(args);
+  return buildFormattedTime(StrToTimeExpr, {
+    dialect: 'postgres',
+  })(args);
 }
 
 function jsonExtractSql (name: string, op: string) {
@@ -386,7 +416,10 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   const timestamp = expression.args.this;
 
   if (scale === undefined || scale?.toValue() === UnixToTimeExpr.SECONDS.toValue()) {
-    return this.func('TO_TIMESTAMP', [timestamp, this.formatTime(expression)]);
+    return this.func('TO_TIMESTAMP', [
+      timestamp,
+      this.formatTime(expression),
+    ]);
   }
 
   const div = new DivExpr({
@@ -397,7 +430,10 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
     }),
   });
 
-  return this.func('TO_TIMESTAMP', [div, this.formatTime(expression)]);
+  return this.func('TO_TIMESTAMP', [
+    div,
+    this.formatTime(expression),
+  ]);
 }
 
 function buildLevenshteinLessEqual (args: Expression[]): LevenshteinExpr {
@@ -430,28 +466,41 @@ function roundSql (this: Generator, expression: RoundExpr): string {
   const decimals = this.sql(expression, 'decimals');
 
   if (!decimals) {
-    return this.func('ROUND', [thisSql]);
+    return this.func('ROUND', [
+      thisSql,
+    ]);
   }
 
   let currentThis = thisSql;
   // If the input is double precision, we must cast to decimal in Postgres
   if (expression.args.this instanceof Expression && expression.args.this.isType(DataTypeExprKind.DOUBLE)) {
-    const decimalType = DataTypeExpr.build(DataTypeExprKind.DECIMAL, { expressions: expression.args.expressions });
+    const decimalType = DataTypeExpr.build(DataTypeExprKind.DECIMAL, {
+      expressions: expression.args.expressions,
+    });
     currentThis = this.sql(new CastExpr({
       this: thisSql,
       to: decimalType,
     }));
   }
 
-  return this.func('ROUND', [currentThis, decimals]);
+  return this.func('ROUND', [
+    currentThis,
+    decimals,
+  ]);
 }
 
 export class PostgresTokenizer extends Tokenizer {
   @cache
   static get BIT_STRINGS (): TokenPair[] {
     return [
-      ['b\'', '\''],
-      ['B\'', '\''],
+      [
+        'b\'',
+        '\'',
+      ],
+      [
+        'B\'',
+        '\'',
+      ],
       '0b',
     ];
   }
@@ -459,25 +508,45 @@ export class PostgresTokenizer extends Tokenizer {
   @cache
   static get HEX_STRINGS (): TokenPair[] {
     return [
-      ['x\'', '\''],
-      ['X\'', '\''],
+      [
+        'x\'',
+        '\'',
+      ],
+      [
+        'X\'',
+        '\'',
+      ],
       '0x',
     ];
   }
 
   @cache
   static get BYTE_STRINGS (): TokenPair[] {
-    return [['e\'', '\''], ['E\'', '\'']];
+    return [
+      [
+        'e\'',
+        '\'',
+      ],
+      [
+        'E\'',
+        '\'',
+      ],
+    ];
   }
 
   @cache
   static get BYTE_STRING_ESCAPES () {
-    return ['\'', '\\'];
+    return [
+      '\'',
+      '\\',
+    ];
   }
 
   @cache
   static get HEREDOC_STRINGS (): TokenPair[] {
-    return ['$'];
+    return [
+      '$',
+    ];
   }
 
   static HEREDOC_TAG_IS_IDENTIFIER = true;
@@ -547,7 +616,9 @@ export class PostgresTokenizer extends Tokenizer {
 
   @cache
   static get VAR_SINGLE_TOKENS () {
-    return new Set(['$']);
+    return new Set([
+      '$',
+    ]);
   }
 }
 
@@ -555,7 +626,9 @@ class PostgresParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Parser.NO_PAREN_FUNCTIONS,
+    };
     noParenFunctions[TokenType.CURRENT_SCHEMA] = CurrentSchemaExpr;
     noParenFunctions[TokenType.SESSION_USER] = SessionUserExpr;
     noParenFunctions[TokenType.CURRENT_CATALOG] = CurrentCatalogExpr;
@@ -570,7 +643,9 @@ class PostgresParser extends Parser {
       const parsers: Record<string, (this: Parser, ...args: unknown[]) => Expression | Expression[] | undefined> = {
         ...Parser.PROPERTY_PARSERS,
         SET: function (this: Parser) {
-          return this.expression(SetConfigPropertyExpr, { this: (this as PostgresParser).parseSet() });
+          return this.expression(SetConfigPropertyExpr, {
+            this: (this as PostgresParser).parseSet(),
+          });
         },
       };
       delete parsers['INPUT'];
@@ -583,7 +658,9 @@ class PostgresParser extends Parser {
     return {
       ...Parser.PLACEHOLDER_PARSERS,
       [TokenType.PLACEHOLDER]: function (this: Parser) {
-        return this.expression(PlaceholderExpr, { jdbc: true });
+        return this.expression(PlaceholderExpr, {
+          jdbc: true,
+        });
       },
       [TokenType.MOD]: function (this: Parser) {
         return (this as PostgresParser).parseQueryParameter();
@@ -592,7 +669,7 @@ class PostgresParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       ARRAY_PREPEND: (args: Expression[]) => new ArrayPrependExpr({
@@ -624,8 +701,12 @@ class PostgresParser extends Parser {
       MAKE_TIMESTAMP: (args: unknown[]) => TimestampFromPartsExpr.fromArgList(args),
       NOW: (args: unknown[]) => CurrentTimestampExpr.fromArgList(args),
       REGEXP_REPLACE: buildRegexpReplace,
-      TO_CHAR: buildFormattedTime(TimeToStrExpr, { dialect: 'postgres' }),
-      TO_DATE: buildFormattedTime(StrToDateExpr, { dialect: 'postgres' }),
+      TO_CHAR: buildFormattedTime(TimeToStrExpr, {
+        dialect: 'postgres',
+      }),
+      TO_DATE: buildFormattedTime(StrToDateExpr, {
+        dialect: 'postgres',
+      }),
       TO_TIMESTAMP: buildToTimestamp,
       UNNEST: (args: unknown[]) => ExplodeExpr.fromArgList(args),
       SHA256: (args: Expression[]) => new Sha2Expr({
@@ -657,7 +738,9 @@ class PostgresParser extends Parser {
     return {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
       VARIADIC: function (this: Parser) {
-        return this.expression(VariadicExpr, { this: (this as PostgresParser).parseBitwise() });
+        return this.expression(VariadicExpr, {
+          this: (this as PostgresParser).parseBitwise(),
+        });
       },
     };
   }
@@ -704,7 +787,9 @@ class PostgresParser extends Parser {
       [TokenType.DAT]: function (this: Parser, thisNode: Expression) {
         return this.expression(MatchAgainstExpr, {
           this: (this as PostgresParser).parseBitwise(),
-          expressions: [thisNode],
+          expressions: [
+            thisNode,
+          ],
         });
       },
     };
@@ -739,12 +824,22 @@ class PostgresParser extends Parser {
       ...Parser.COLUMN_OPERATORS,
       [TokenType.ARROW]: function (this: Parser, thisNode?: Expression, path?: Expression) {
         return this.validateExpression(
-          buildJsonExtractPath(JsonExtractExpr, { arrowReqJsonType: (this.constructor as typeof PostgresParser).JSON_ARROWS_REQUIRE_JSON_TYPE })([thisNode, path]),
+          buildJsonExtractPath(JsonExtractExpr, {
+            arrowReqJsonType: (this.constructor as typeof PostgresParser).JSON_ARROWS_REQUIRE_JSON_TYPE,
+          })([
+            thisNode,
+            path,
+          ]),
         );
       },
       [TokenType.DARROW]: function (this: Parser, thisNode?: Expression, path?: Expression) {
         return this.validateExpression(
-          buildJsonExtractPath(JsonExtractScalarExpr, { arrowReqJsonType: (this.constructor as typeof PostgresParser).JSON_ARROWS_REQUIRE_JSON_TYPE })([thisNode, path]),
+          buildJsonExtractPath(JsonExtractScalarExpr, {
+            arrowReqJsonType: (this.constructor as typeof PostgresParser).JSON_ARROWS_REQUIRE_JSON_TYPE,
+          })([
+            thisNode,
+            path,
+          ]),
         );
       },
     };
@@ -761,7 +856,9 @@ class PostgresParser extends Parser {
   }
 
   parseParameterMode (): TokenType | undefined {
-    if (!this.matchSet((this.constructor as typeof PostgresParser).ARG_MODE_TOKENS, { advance: false }) || !this.next) {
+    if (!this.matchSet((this.constructor as typeof PostgresParser).ARG_MODE_TOKENS, {
+      advance: false,
+    }) || !this.next) {
       return undefined;
     }
 
@@ -776,7 +873,9 @@ class PostgresParser extends Parser {
           allowIdentifiers: false,
         });
       },
-      { retreat: true },
+      {
+        retreat: true,
+      },
     );
 
     if (isFollowedByBuiltinType) {
@@ -796,7 +895,9 @@ class PostgresParser extends Parser {
           allowIdentifiers: true,
         });
       },
-      { retreat: true },
+      {
+        retreat: true,
+      },
     );
 
     if (isFollowedByAnyType) {
@@ -822,26 +923,35 @@ class PostgresParser extends Parser {
     }
 
     const paramName = this.parseIdVar();
-    const columnDef = this.parseColumnDef(paramName, { computedColumn: false });
+    const columnDef = this.parseColumnDef(paramName, {
+      computedColumn: false,
+    });
 
     if (paramMode && columnDef instanceof ColumnDefExpr) {
       const constraint = this.createModeConstraint(paramMode);
       if (!columnDef.args.constraints) {
-        columnDef.setArgKey('constraints', []);
+        columnDef.setArgKey('constraints', [
+        ]);
       }
-      columnDef.args.constraints?.unshift(new ColumnConstraintExpr({ kind: constraint }));
+      columnDef.args.constraints?.unshift(new ColumnConstraintExpr({
+        kind: constraint,
+      }));
     }
 
     return columnDef;
   }
 
   parseQueryParameter (): Expression | undefined {
-    const thisNode = this.match(TokenType.L_PAREN, { advance: false })
+    const thisNode = this.match(TokenType.L_PAREN, {
+      advance: false,
+    })
       ? this.parseWrapped(() => this.parseIdVar())
       : undefined;
 
     this.matchTextSeq('S');
-    return this.expression(PlaceholderExpr, { this: thisNode });
+    return this.expression(PlaceholderExpr, {
+      this: thisNode,
+    });
   }
 
   parseDatePart (): Expression {
@@ -874,7 +984,9 @@ class PostgresParser extends Parser {
     let thisNode = super.parseGeneratedAsIdentity();
 
     if (this.matchTextSeq('STORED')) {
-      thisNode = this.expression(ComputedColumnConstraintExpr, { this: thisNode.args.expression });
+      thisNode = this.expression(ComputedColumnConstraintExpr, {
+        this: thisNode.args.expression,
+      });
     }
 
     return thisNode;
@@ -893,19 +1005,27 @@ class PostgresParser extends Parser {
       }
     }
 
-    return DataTypeExpr.build(udtType, { udt: true });
+    return DataTypeExpr.build(udtType, {
+      udt: true,
+    });
   }
 
   // port from _Dialect metaclass logic
   @cache
   static get ID_VAR_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.ID_VAR_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Parser.ID_VAR_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 class PostgresGenerator extends Generator {
@@ -924,7 +1044,8 @@ class PostgresGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [];
+  static readonly SELECT_KINDS: string[] = [
+  ];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -967,15 +1088,42 @@ class PostgresGenerator extends Generator {
   static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     return new Map<DataTypeExprKind | string, string>([
       ...Generator.TYPE_MAPPING,
-      [DataTypeExprKind.TINYINT, 'SMALLINT'],
-      [DataTypeExprKind.FLOAT, 'REAL'],
-      [DataTypeExprKind.DOUBLE, 'DOUBLE PRECISION'],
-      [DataTypeExprKind.BINARY, 'BYTEA'],
-      [DataTypeExprKind.VARBINARY, 'BYTEA'],
-      [DataTypeExprKind.ROWVERSION, 'BYTEA'],
-      [DataTypeExprKind.DATETIME, 'TIMESTAMP'],
-      [DataTypeExprKind.TIMESTAMPNTZ, 'TIMESTAMP'],
-      [DataTypeExprKind.BLOB, 'BYTEA'],
+      [
+        DataTypeExprKind.TINYINT,
+        'SMALLINT',
+      ],
+      [
+        DataTypeExprKind.FLOAT,
+        'REAL',
+      ],
+      [
+        DataTypeExprKind.DOUBLE,
+        'DOUBLE PRECISION',
+      ],
+      [
+        DataTypeExprKind.BINARY,
+        'BYTEA',
+      ],
+      [
+        DataTypeExprKind.VARBINARY,
+        'BYTEA',
+      ],
+      [
+        DataTypeExprKind.ROWVERSION,
+        'BYTEA',
+      ],
+      [
+        DataTypeExprKind.DATETIME,
+        'TIMESTAMP',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPNTZ,
+        'TIMESTAMP',
+      ],
+      [
+        DataTypeExprKind.BLOB,
+        'BYTEA',
+      ],
     ]);
   }
 
@@ -998,7 +1146,11 @@ class PostgresGenerator extends Generator {
   }
 
   explodeSql (e: ExplodeExpr): string {
-    return this.func('UNNEST', [e.args.this, ...e.args.expressions || []]);
+    return this.func('UNNEST', [
+      e.args.this,
+      ...e.args.expressions || [
+      ],
+    ]);
   }
 
   @cache
@@ -1007,32 +1159,97 @@ class PostgresGenerator extends Generator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
-      [AnyValueExpr, versionedAnyValueSql],
-      [ArrayConcatExpr, arrayConcatSql('ARRAY_CAT')],
-      [ArrayFilterExpr, filterArrayUsingUnnest],
-      [ArrayAppendExpr, arrayAppendSql('ARRAY_APPEND')],
-      [ArrayPrependExpr, arrayAppendSql('ARRAY_PREPEND', { swapParams: true })],
-      [BitwiseAndAggExpr, renameFunc('BIT_AND')],
-      [BitwiseOrAggExpr, renameFunc('BIT_OR')],
+      [
+        AnyValueExpr,
+        versionedAnyValueSql,
+      ],
+      [
+        ArrayConcatExpr,
+        arrayConcatSql('ARRAY_CAT'),
+      ],
+      [
+        ArrayFilterExpr,
+        filterArrayUsingUnnest,
+      ],
+      [
+        ArrayAppendExpr,
+        arrayAppendSql('ARRAY_APPEND'),
+      ],
+      [
+        ArrayPrependExpr,
+        arrayAppendSql('ARRAY_PREPEND', {
+          swapParams: true,
+        }),
+      ],
+      [
+        BitwiseAndAggExpr,
+        renameFunc('BIT_AND'),
+      ],
+      [
+        BitwiseOrAggExpr,
+        renameFunc('BIT_OR'),
+      ],
       [
         BitwiseXorExpr,
         function (this: Generator, e: BitwiseXorExpr) {
           return this.binary(e, '#');
         },
       ],
-      [BitwiseXorAggExpr, renameFunc('BIT_XOR')],
-      [ColumnDefExpr, preprocess([autoIncrementToSerial, serialToGenerated])],
-      [CurrentDateExpr, noParenCurrentDateSql],
-      [CurrentTimestampExpr, () => 'CURRENT_TIMESTAMP'],
-      [CurrentUserExpr, () => 'CURRENT_USER'],
-      [CurrentVersionExpr, renameFunc('VERSION')],
-      [DateAddExpr, dateAddSql('+')],
-      [DateDiffExpr, dateDiffSql],
-      [DateStrToDateExpr, dateStrToDateSql],
-      [DateSubExpr, dateAddSql('-')],
-      [ExplodeExpr, renameFunc('UNNEST')],
-      [ExplodingGenerateSeriesExpr, renameFunc('GENERATE_SERIES')],
-      [GetbitExpr, getBitSql],
+      [
+        BitwiseXorAggExpr,
+        renameFunc('BIT_XOR'),
+      ],
+      [
+        ColumnDefExpr,
+        preprocess([
+          autoIncrementToSerial,
+          serialToGenerated,
+        ]),
+      ],
+      [
+        CurrentDateExpr,
+        noParenCurrentDateSql,
+      ],
+      [
+        CurrentTimestampExpr,
+        () => 'CURRENT_TIMESTAMP',
+      ],
+      [
+        CurrentUserExpr,
+        () => 'CURRENT_USER',
+      ],
+      [
+        CurrentVersionExpr,
+        renameFunc('VERSION'),
+      ],
+      [
+        DateAddExpr,
+        dateAddSql('+'),
+      ],
+      [
+        DateDiffExpr,
+        dateDiffSql,
+      ],
+      [
+        DateStrToDateExpr,
+        dateStrToDateSql,
+      ],
+      [
+        DateSubExpr,
+        dateAddSql('-'),
+      ],
+      [
+        ExplodeExpr,
+        renameFunc('UNNEST'),
+      ],
+      [
+        ExplodingGenerateSeriesExpr,
+        renameFunc('GENERATE_SERIES'),
+      ],
+      [
+        GetbitExpr,
+        getBitSql,
+      ],
       [
         GroupConcatExpr,
         function (this: Generator, e: GroupConcatExpr) {
@@ -1042,7 +1259,10 @@ class PostgresGenerator extends Generator {
           });
         },
       ],
-      [IntDivExpr, renameFunc('DIV')],
+      [
+        IntDivExpr,
+        renameFunc('DIV'),
+      ],
       [
         JsonArrayAggExpr,
         function (this: Generator, e: JsonArrayAggExpr) {
@@ -1052,8 +1272,14 @@ class PostgresGenerator extends Generator {
           return `JSON_AGG(${inner})`;
         },
       ],
-      [JsonExtractExpr, jsonExtractSql('JSON_EXTRACT_PATH', '->')],
-      [JsonExtractScalarExpr, jsonExtractSql('JSON_EXTRACT_PATH_TEXT', '->>')],
+      [
+        JsonExtractExpr,
+        jsonExtractSql('JSON_EXTRACT_PATH', '->'),
+      ],
+      [
+        JsonExtractScalarExpr,
+        jsonExtractSql('JSON_EXTRACT_PATH_TEXT', '->>'),
+      ],
       [
         JsonbExtractExpr,
         function (this: Generator, e: JsonbExtractExpr) {
@@ -1081,31 +1307,74 @@ class PostgresGenerator extends Generator {
           }));
         },
       ],
-      [JsonPathKeyExpr, jsonPathKeyOnlyName],
-      [JsonPathRootExpr, () => ''],
+      [
+        JsonPathKeyExpr,
+        jsonPathKeyOnlyName,
+      ],
+      [
+        JsonPathRootExpr,
+        () => '',
+      ],
       [
         JsonPathSubscriptExpr,
         function (this: Generator, e: JsonPathSubscriptExpr) {
           return this.jsonPathPart(e.args.this);
         },
       ],
-      [LastDayExpr, noLastDaySql],
-      [LogicalOrExpr, renameFunc('BOOL_OR')],
-      [LogicalAndExpr, renameFunc('BOOL_AND')],
-      [MaxExpr, maxOrGreatest],
-      [MapFromEntriesExpr, noMapFromEntriesSql],
-      [MinExpr, minOrLeast],
-      [MergeExpr, mergeWithoutTargetSql],
+      [
+        LastDayExpr,
+        noLastDaySql,
+      ],
+      [
+        LogicalOrExpr,
+        renameFunc('BOOL_OR'),
+      ],
+      [
+        LogicalAndExpr,
+        renameFunc('BOOL_AND'),
+      ],
+      [
+        MaxExpr,
+        maxOrGreatest,
+      ],
+      [
+        MapFromEntriesExpr,
+        noMapFromEntriesSql,
+      ],
+      [
+        MinExpr,
+        minOrLeast,
+      ],
+      [
+        MergeExpr,
+        mergeWithoutTargetSql,
+      ],
       [
         PartitionedByPropertyExpr,
         function (this: Generator, e: PartitionedByPropertyExpr) {
           return `PARTITION BY ${this.sql(e, 'this')}`;
         },
       ],
-      [PercentileContExpr, preprocess([addWithinGroupForPercentiles])],
-      [PercentileDiscExpr, preprocess([addWithinGroupForPercentiles])],
-      [PivotExpr, noPivotSql],
-      [RandExpr, renameFunc('RANDOM')],
+      [
+        PercentileContExpr,
+        preprocess([
+          addWithinGroupForPercentiles,
+        ]),
+      ],
+      [
+        PercentileDiscExpr,
+        preprocess([
+          addWithinGroupForPercentiles,
+        ]),
+      ],
+      [
+        PivotExpr,
+        noPivotSql,
+      ],
+      [
+        RandExpr,
+        renameFunc('RANDOM'),
+      ],
       [
         RegexpLikeExpr,
         function (this: Generator, e: RegexpLikeExpr) {
@@ -1131,41 +1400,90 @@ class PostgresGenerator extends Generator {
           ]);
         },
       ],
-      [RoundExpr, roundSql],
-      [SelectExpr, preprocess([eliminateSemiAndAntiJoins, eliminateQualify])],
-      [Sha2Expr, sha256Sql],
-      [Sha2DigestExpr, sha2DigestSql],
+      [
+        RoundExpr,
+        roundSql,
+      ],
+      [
+        SelectExpr,
+        preprocess([
+          eliminateSemiAndAntiJoins,
+          eliminateQualify,
+        ]),
+      ],
+      [
+        Sha2Expr,
+        sha256Sql,
+      ],
+      [
+        Sha2DigestExpr,
+        sha2DigestSql,
+      ],
       [
         StrPositionExpr,
         function (this: Generator, e: StrPositionExpr) {
-          return strPositionSql.call(this, e, { funcName: 'POSITION' });
+          return strPositionSql.call(this, e, {
+            funcName: 'POSITION',
+          });
         },
       ],
       [
         StrToDateExpr,
         function (this: Generator, e: StrToDateExpr) {
-          return this.func('TO_DATE', [e.args.this, this.formatTime(e)]);
+          return this.func('TO_DATE', [
+            e.args.this,
+            this.formatTime(e),
+          ]);
         },
       ],
       [
         StrToTimeExpr,
         function (this: Generator, e: StrToTimeExpr) {
-          return this.func('TO_TIMESTAMP', [e.args.this, this.formatTime(e)]);
+          return this.func('TO_TIMESTAMP', [
+            e.args.this,
+            this.formatTime(e),
+          ]);
         },
       ],
-      [StructExtractExpr, structExtractSql],
-      [SubstringExpr, substringSql],
-      [TimeFromPartsExpr, renameFunc('MAKE_TIME')],
-      [TimestampFromPartsExpr, renameFunc('MAKE_TIMESTAMP')],
-      [TimestampTruncExpr, timestampTruncSql({ zone: true })],
-      [TimeStrToTimeExpr, timeStrToTimeSql],
+      [
+        StructExtractExpr,
+        structExtractSql,
+      ],
+      [
+        SubstringExpr,
+        substringSql,
+      ],
+      [
+        TimeFromPartsExpr,
+        renameFunc('MAKE_TIME'),
+      ],
+      [
+        TimestampFromPartsExpr,
+        renameFunc('MAKE_TIMESTAMP'),
+      ],
+      [
+        TimestampTruncExpr,
+        timestampTruncSql({
+          zone: true,
+        }),
+      ],
+      [
+        TimeStrToTimeExpr,
+        timeStrToTimeSql,
+      ],
       [
         TimeToStrExpr,
         function (this: Generator, e: TimeToStrExpr) {
           if (typeof e.args.format === 'string' || e.args.format?.isString) {
-            return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+            return this.func('TO_CHAR', [
+              e.args.this,
+              this.formatTime(e),
+            ]);
           }
-          return this.func('TO_CHAR', [e.args.this, e.args.format]);
+          return this.func('TO_CHAR', [
+            e.args.this,
+            e.args.format,
+          ]);
         },
       ],
       [
@@ -1174,26 +1492,71 @@ class PostgresGenerator extends Generator {
           return e.args.format ? this.functionFallbackSql(e) : (this as PostgresGenerator).toCharSql(e);
         },
       ],
-      [TrimExpr, trimSql],
-      [TryCastExpr, noTrycastSql],
-      [TsOrDsAddExpr, dateAddSql('+')],
-      [TsOrDsDiffExpr, dateDiffSql],
-      [UnixToTimeExpr, unixToTimeSql],
-      [UuidExpr, () => 'GEN_RANDOM_UUID()'],
+      [
+        TrimExpr,
+        trimSql,
+      ],
+      [
+        TryCastExpr,
+        noTrycastSql,
+      ],
+      [
+        TsOrDsAddExpr,
+        dateAddSql('+'),
+      ],
+      [
+        TsOrDsDiffExpr,
+        dateDiffSql,
+      ],
+      [
+        UnixToTimeExpr,
+        unixToTimeSql,
+      ],
+      [
+        UuidExpr,
+        () => 'GEN_RANDOM_UUID()',
+      ],
       [
         TimeToUnixExpr,
         function (this: Generator, e: TimeToUnixExpr) {
-          return this.func('DATE_PART', [LiteralExpr.string('epoch'), e.args.this]);
+          return this.func('DATE_PART', [
+            LiteralExpr.string('epoch'),
+            e.args.this,
+          ]);
         },
       ],
-      [VariancePopExpr, renameFunc('VAR_POP')],
-      [VarianceExpr, renameFunc('VAR_SAMP')],
-      [XorExpr, boolXorSql],
-      [UnicodeExpr, renameFunc('ASCII')],
-      [LevenshteinExpr, levenshteinSql],
-      [JsonObjectAggExpr, renameFunc('JSON_OBJECT_AGG')],
-      [JsonbObjectAggExpr, renameFunc('JSONB_OBJECT_AGG')],
-      [CountIfExpr, countIfToSum],
+      [
+        VariancePopExpr,
+        renameFunc('VAR_POP'),
+      ],
+      [
+        VarianceExpr,
+        renameFunc('VAR_SAMP'),
+      ],
+      [
+        XorExpr,
+        boolXorSql,
+      ],
+      [
+        UnicodeExpr,
+        renameFunc('ASCII'),
+      ],
+      [
+        LevenshteinExpr,
+        levenshteinSql,
+      ],
+      [
+        JsonObjectAggExpr,
+        renameFunc('JSON_OBJECT_AGG'),
+      ],
+      [
+        JsonbObjectAggExpr,
+        renameFunc('JSONB_OBJECT_AGG'),
+      ],
+      [
+        CountIfExpr,
+        countIfToSum,
+      ],
       [
         IntoExpr,
         function (this: Generator, e: IntoExpr) {
@@ -1231,34 +1594,52 @@ class PostgresGenerator extends Generator {
     return '';
   }
 
-  columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
-    const { sep = ' ' } = options;
+  columnDefSql (expression: ColumnDefExpr, options: {sep?: string} = {}): string {
+    const {
+      sep = ' ',
+    } = options;
     const paramConstraint = expression.find(InOutColumnConstraintExpr);
 
     if (paramConstraint) {
       const modeSql = this.sql(paramConstraint);
       paramConstraint.pop();
-      const baseSql = super.columnDefSql(expression, { sep });
+      const baseSql = super.columnDefSql(expression, {
+        sep,
+      });
       return `${modeSql} ${baseSql}`;
     }
 
-    return super.columnDefSql(expression, { sep });
+    return super.columnDefSql(expression, {
+      sep,
+    });
   }
 
   unnestSql (expression: UnnestExpr): string {
     if (expression.args.expressions?.length === 1) {
       const arg = expression.args.expressions[0];
       if (arg instanceof GenerateDateArrayExpr) {
-        let generateSeries: Expression = new GenerateSeriesExpr({ ...arg.args });
+        let generateSeries: Expression = new GenerateSeriesExpr({
+          ...arg.args,
+        });
         if (expression.parent instanceof FromExpr || expression.parent instanceof JoinExpr) {
           generateSeries = select('value::date')
-            .from(new TableExpr({ this: generateSeries }).as('_t', { table: ['value'] }))
+            .from(new TableExpr({
+              this: generateSeries,
+            }).as('_t', {
+              table: [
+                'value',
+              ],
+            }))
             .subquery(expression.args.alias instanceof Expression ? expression.args.alias : (typeof expression.args.alias === 'string' ? expression.args.alias : '_unnested_generate_series'));
         }
         return this.sql(generateSeries);
       }
 
-      const thisNode = arg instanceof Expression ? annotateTypes(arg, { dialect: this.dialect }) : arg;
+      const thisNode = arg instanceof Expression
+        ? annotateTypes(arg, {
+          dialect: this.dialect,
+        })
+        : arg;
       if (isType(thisNode, 'array<json>')) {
         let current = thisNode;
         while (current instanceof CastExpr) {
@@ -1290,7 +1671,9 @@ class PostgresGenerator extends Generator {
 
   bracketSql (expression: BracketExpr): string {
     if (expression.args.this instanceof ArrayExpr) {
-      expression.setArgKey('this', new ParenExpr({ this: expression.args.this }));
+      expression.setArgKey('this', new ParenExpr({
+        this: expression.args.this,
+      }));
     }
 
     return super.bracketSql(expression);
@@ -1298,13 +1681,16 @@ class PostgresGenerator extends Generator {
 
   matchAgainstSql (expression: MatchAgainstExpr): string {
     const thisSql = this.sql(expression, 'this');
-    const expressions = (expression.args.expressions ?? []).map((e) => `${this.sql(e)} @@ ${thisSql}`);
+    const expressions = (expression.args.expressions ?? [
+    ]).map((e) => `${this.sql(e)} @@ ${thisSql}`);
     const sql = expressions.join(' OR ');
     return 1 < expressions.length ? `(${sql})` : sql;
   }
 
   alterSetSql (expression: AlterSetExpr): string {
-    let exprs = this.expressions(expression, { flat: true });
+    let exprs = this.expressions(expression, {
+      flat: true,
+    });
     exprs = exprs ? `(${exprs})` : '';
 
     let accessMethod = this.sql(expression, 'accessMethod');
@@ -1323,24 +1709,33 @@ class PostgresGenerator extends Generator {
           key: 'values',
           flat: true,
         });
-        return `${this.expressions(expression, { flat: true })}[${values}]`;
+        return `${this.expressions(expression, {
+          flat: true,
+        })}[${values}]`;
       }
       return 'ARRAY';
     }
 
     if (
-      expression.isType([DataTypeExprKind.DOUBLE, DataTypeExprKind.FLOAT])
+      expression.isType([
+        DataTypeExprKind.DOUBLE,
+        DataTypeExprKind.FLOAT,
+      ])
       && expression.args.expressions
       && 0 < expression.args.expressions.length
     ) {
-      return `FLOAT(${this.expressions(expression, { flat: true })})`;
+      return `FLOAT(${this.expressions(expression, {
+        flat: true,
+      })})`;
     }
 
     return super.dataTypeSql(expression);
   }
 
-  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
-    const { safePrefix } = options;
+  castSql (expression: CastExpr, options: {safePrefix?: string} = {}): string {
+    const {
+      safePrefix,
+    } = options;
     const thisNode = expression.args.this;
 
     if (
@@ -1352,11 +1747,14 @@ class PostgresGenerator extends Generator {
       return this.sql(thisNode);
     }
 
-    return super.castSql(expression, { safePrefix });
+    return super.castSql(expression, {
+      safePrefix,
+    });
   }
 
   arraySql (expression: ArrayExpr): string {
-    const exprs = expression.args.expressions || [];
+    const exprs = expression.args.expressions || [
+    ];
     const funcName = this.normalizeFunc('ARRAY');
 
     if (exprs[0] instanceof SelectExpr) {
@@ -1397,7 +1795,9 @@ class PostgresGenerator extends Generator {
 
     if (unit.startsWith('quarter') && thisNode instanceof LiteralExpr) {
       thisNode.setArgKey('this', (parseInt(thisNode.args.this ?? '0') * 3).toString());
-      expression.args.unit?.replace(new IdentifierExpr({ this: 'MONTH' }));
+      expression.args.unit?.replace(new IdentifierExpr({
+        this: 'MONTH',
+      }));
     }
 
     return super.intervalSql(expression);
@@ -1419,11 +1819,22 @@ class PostgresGenerator extends Generator {
     if (!value) return '';
 
     const coalesceExpr = new CoalesceExpr({
-      this: value.eq(new AnyExpr({ this: new ParenExpr({ this: array }) })),
-      expressions: [new BooleanExpr({ this: false })],
+      this: value.eq(new AnyExpr({
+        this: new ParenExpr({
+          this: array,
+        }),
+      })),
+      expressions: [
+        new BooleanExpr({
+          this: false,
+        }),
+      ],
     });
 
-    const caseExpr = new CaseExpr({ ifs: [] })
+    const caseExpr = new CaseExpr({
+      ifs: [
+      ],
+    })
       .when(new IsExpr({
         this: value,
         expression: null_(),
@@ -1450,7 +1861,12 @@ export class Postgres extends Dialect {
 
   @cache
   static get DEFAULT_FUNCTIONS_COLUMN_NAMES () {
-    return new Map([[ExplodingGenerateSeriesExpr.name, 'generate_series']]);
+    return new Map([
+      [
+        ExplodingGenerateSeriesExpr.name,
+        'generate_series',
+      ],
+    ]);
   }
 
   @cache

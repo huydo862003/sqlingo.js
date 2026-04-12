@@ -4,10 +4,16 @@ import {
 import {
   parseOne, ErrorLevel, UnsupportedError, type Expression,
 } from '../../../src/index';
-import type { DialectType } from '../../../src/dialects/dialect';
+import type {
+  DialectType,
+} from '../../../src/dialects/dialect';
 
-export { UnsupportedError };
-export type { DialectType };
+export {
+  UnsupportedError,
+};
+export type {
+  DialectType,
+};
 
 export interface ValidateAllOptions {
   read?: Record<string, string>;
@@ -73,8 +79,13 @@ export class Validator {
   ): void {
     const expression = this.parseOne(sql);
 
-    for (const [readDialect, readSql] of Object.entries(read)) {
-      const parsed = parseOne(readSql, { read: readDialect || undefined });
+    for (const [
+      readDialect,
+      readSql,
+    ] of Object.entries(read)) {
+      const parsed = parseOne(readSql, {
+        read: readDialect || undefined,
+      });
       const generated = parsed.sql({
         dialect: this.dialect,
         unsupportedLevel: ErrorLevel.IGNORE,
@@ -84,7 +95,10 @@ export class Validator {
       expect(generated).toBe(sql);
     }
 
-    for (const [writeDialect, writeSql] of Object.entries(write)) {
+    for (const [
+      writeDialect,
+      writeSql,
+    ] of Object.entries(write)) {
       if (writeSql === UnsupportedError) {
         expect(() => expression.sql({
           dialect: writeDialect || undefined,

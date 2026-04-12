@@ -1,7 +1,15 @@
-import type { Generator } from '../generator';
-import { Parser } from '../parser';
-import { TokenType } from '../tokens';
-import type { UnnestExpr } from '../expressions';
+import type {
+  Generator,
+} from '../generator';
+import {
+  Parser,
+} from '../parser';
+import {
+  TokenType,
+} from '../tokens';
+import type {
+  UnnestExpr,
+} from '../expressions';
 import {
   Expression,
   BetweenExpr, GteExpr, LteExpr, AndExpr,
@@ -20,11 +28,15 @@ import {
   SchemaCommentPropertyExpr,
   toIdentifier,
 } from '../expressions';
-import { seqGet } from '../helper';
+import {
+  seqGet,
+} from '../helper';
 import {
   cache, narrowInstanceOf,
 } from '../port_internals';
-import { preprocess } from '../transforms';
+import {
+  preprocess,
+} from '../transforms';
 import {
   renameFunc, arrowJsonExtractSql, buildTimestampTrunc, unitToStr,
   approxCountDistinctSql, inlineArraySql, propertySql,
@@ -73,10 +85,18 @@ export function stDistanceSphere (this: Generator, expression: StDistanceExpr): 
   const point1 = expression.args.this;
   const point2 = expression.args.expression;
 
-  const point1X = this.func('ST_X', [point1]);
-  const point1Y = this.func('ST_Y', [point1]);
-  const point2X = this.func('ST_X', [point2]);
-  const point2Y = this.func('ST_Y', [point2]);
+  const point1X = this.func('ST_X', [
+    point1,
+  ]);
+  const point1Y = this.func('ST_Y', [
+    point1,
+  ]);
+  const point2X = this.func('ST_X', [
+    point2,
+  ]);
+  const point2Y = this.func('ST_Y', [
+    point2,
+  ]);
 
   return this.func('ST_Distance_Sphere', [
     point1X,
@@ -110,14 +130,16 @@ class StarRocksParser extends MySQL.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...MySQL.Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...MySQL.Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
     return noParenFunctions;
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return {
       ...MySQL.Parser.FUNCTIONS,
       DATE_TRUNC: buildTimestampTrunc,
@@ -168,9 +190,17 @@ class StarRocksParser extends MySQL.Parser {
       return this.expression(RollupIndexExpr, {
         this: this.parseIdVar(),
         expressions: this.parseWrappedIdVars(),
-        fromIndex: this.matchTextSeq(['FROM']) ? this.parseIdVar() : undefined,
-        properties: this.matchTextSeq(['PROPERTIES'])
-          ? this.expression(PropertiesExpr, { expressions: this.parseWrappedProperties() })
+        fromIndex: this.matchTextSeq([
+          'FROM',
+        ])
+          ? this.parseIdVar()
+          : undefined,
+        properties: this.matchTextSeq([
+          'PROPERTIES',
+        ])
+          ? this.expression(PropertiesExpr, {
+            expressions: this.parseWrappedProperties(),
+          })
           : undefined,
       });
     };
@@ -198,7 +228,7 @@ class StarRocksParser extends MySQL.Parser {
     return create as CreateExpr;
   }
 
-  public parseUnnest (options: { withAlias?: boolean } = {}): UnnestExpr | undefined {
+  public parseUnnest (options: {withAlias?: boolean} = {}): UnnestExpr | undefined {
     const unnest = super.parseUnnest(options);
 
     if (unnest) {
@@ -208,12 +238,16 @@ class StarRocksParser extends MySQL.Parser {
         // StarRocks defaults to naming the table alias as "unnest"
         aliasObj = new TableAliasExpr({
           this: toIdentifier('unnest'),
-          columns: [toIdentifier('unnest')],
+          columns: [
+            toIdentifier('unnest'),
+          ],
         });
         unnest.setArgKey('alias', aliasObj);
       } else if (!narrowInstanceOf(aliasObj, TableAliasExpr)?.args.columns) {
         // StarRocks defaults to naming the UNNEST column as "unnest" if unspecified
-        aliasObj.setArgKey('columns', [toIdentifier('unnest')]);
+        aliasObj.setArgKey('columns', [
+          toIdentifier('unnest'),
+        ]);
       }
     }
 
@@ -223,7 +257,9 @@ class StarRocksParser extends MySQL.Parser {
   public parsePartitionedBy (): PartitionedByPropertyExpr {
     return this.expression(PartitionedByPropertyExpr, {
       this: new SchemaExpr({
-        expressions: this.parseWrappedCsv(this.parseAssignment.bind(this), { optional: true }),
+        expressions: this.parseWrappedCsv(this.parseAssignment.bind(this), {
+          optional: true,
+        }),
       }),
     });
   }
@@ -242,7 +278,11 @@ class StarRocksParser extends MySQL.Parser {
     this.matchLParen();
 
     let createExpressions: Expression[] | undefined = undefined;
-    if (this.matchTextSeq(['START'], { advance: false })) {
+    if (this.matchTextSeq([
+      'START',
+    ], {
+      advance: false,
+    })) {
       createExpressions = this.parseCsv(this.parsePartitioningGranularityDynamic.bind(this));
     }
 
@@ -255,11 +295,17 @@ class StarRocksParser extends MySQL.Parser {
   }
 
   protected parsePartitioningGranularityDynamic (): PartitionByRangePropertyDynamicExpr {
-    this.matchTextSeq(['START']);
+    this.matchTextSeq([
+      'START',
+    ]);
     const start = this.parseWrapped(this.parseString.bind(this));
-    this.matchTextSeq(['END']);
+    this.matchTextSeq([
+      'END',
+    ]);
     const end = this.parseWrapped(this.parseString.bind(this));
-    this.matchTextSeq(['EVERY']);
+    this.matchTextSeq([
+      'EVERY',
+    ]);
     const every = this.parseWrapped(() => this.parseInterval() || this.parseNumber());
 
     return this.expression(PartitionByRangePropertyDynamicExpr, {
@@ -270,18 +316,38 @@ class StarRocksParser extends MySQL.Parser {
   }
 
   protected parseRefreshProperty (): RefreshTriggerPropertyExpr {
-    const method = this.matchTexts(['DEFERRED', 'IMMEDIATE']) ? this.prev?.text?.toUpperCase() ?? undefined : undefined;
-    const kind = this.matchTexts(['ASYNC', 'MANUAL']) ? this.prev?.text?.toUpperCase() ?? undefined : undefined;
-    const start = this.matchTextSeq(['START']) ? this.parseWrapped(this.parseString.bind(this)) : undefined;
+    const method = this.matchTexts([
+      'DEFERRED',
+      'IMMEDIATE',
+    ])
+      ? this.prev?.text?.toUpperCase() ?? undefined
+      : undefined;
+    const kind = this.matchTexts([
+      'ASYNC',
+      'MANUAL',
+    ])
+      ? this.prev?.text?.toUpperCase() ?? undefined
+      : undefined;
+    const start = this.matchTextSeq([
+      'START',
+    ])
+      ? this.parseWrapped(this.parseString.bind(this))
+      : undefined;
 
     let every: Expression | undefined = undefined;
     let unit: Expression | undefined = undefined;
 
-    if (this.matchTextSeq(['EVERY'])) {
+    if (this.matchTextSeq([
+      'EVERY',
+    ])) {
       this.matchLParen();
-      this.matchTextSeq(['INTERVAL']);
+      this.matchTextSeq([
+        'INTERVAL',
+      ]);
       every = this.parseNumber() ?? undefined;
-      unit = this.parseVar({ anyToken: true }) ?? undefined;
+      unit = this.parseVar({
+        anyToken: true,
+      }) ?? undefined;
       this.matchRParen();
     }
 
@@ -297,7 +363,10 @@ class StarRocksParser extends MySQL.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...MySQL.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...MySQL.Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 };
 
@@ -379,7 +448,9 @@ class StarRocksGenerator extends MySQL.Generator {
         ]);
       },
     );
-    m.set(DeleteExpr, preprocess([eliminateBetweenInDelete]));
+    m.set(DeleteExpr, preprocess([
+      eliminateBetweenInDelete,
+    ]));
     m.set(FlattenExpr, renameFunc('ARRAY_FLATTEN'));
     m.set(JsonExtractScalarExpr, arrowJsonExtractSql);
     m.set(JsonExtractExpr, arrowJsonExtractSql);
@@ -392,20 +463,29 @@ class StarRocksGenerator extends MySQL.Generator {
     m.set(
       StrToUnixExpr,
       function (this: Generator, e: StrToUnixExpr): string {
-        return this.func('UNIX_TIMESTAMP', [e.args.this, this.formatTime(e)]);
+        return this.func('UNIX_TIMESTAMP', [
+          e.args.this,
+          this.formatTime(e),
+        ]);
       },
     );
     m.set(
       TimestampTruncExpr,
       function (this: Generator, e: TimestampTruncExpr): string {
-        return this.func('DATE_TRUNC', [unitToStr(e), e.args.this]);
+        return this.func('DATE_TRUNC', [
+          unitToStr(e),
+          e.args.this,
+        ]);
       },
     );
     m.set(TimeStrToDateExpr, renameFunc('TO_DATE'));
     m.set(
       UnixToStrExpr,
       function (this: Generator, e: UnixToStrExpr): string {
-        return this.func('FROM_UNIXTIME', [e.args.this, this.formatTime(e)]);
+        return this.func('FROM_UNIXTIME', [
+          e.args.this,
+          this.formatTime(e),
+        ]);
       },
     );
     m.set(UnixToTimeExpr, renameFunc('FROM_UNIXTIME'));
@@ -589,7 +669,10 @@ class StarRocksGenerator extends MySQL.Generator {
         let props = expression.args.properties;
 
         if (!props) {
-          props = new PropertiesExpr({ expressions: [] });
+          props = new PropertiesExpr({
+            expressions: [
+            ],
+          });
           expression.setArgKey('properties', props);
         }
 
@@ -598,7 +681,11 @@ class StarRocksGenerator extends MySQL.Generator {
         const engineIndex = engine?.index !== undefined ? engine.index : -1;
 
         // Move the Primary Key from the schema to the properties list at the correct index
-        props.setArgKey('expressions', [primaryKey.pop()], engineIndex + 1, { overwrite: false });
+        props.setArgKey('expressions', [
+          primaryKey.pop(),
+        ], engineIndex + 1, {
+          overwrite: false,
+        });
       }
     }
 
@@ -616,7 +703,9 @@ class StarRocksGenerator extends MySQL.Generator {
       // StarRocks requires outer parentheses for MVs or simple column lists.
       const create = expression.findAncestor(CreateExpr);
 
-      let sqlResult = this.expressions(thisExpr, { flat: true });
+      let sqlResult = this.expressions(thisExpr, {
+        flat: true,
+      });
       const isSimpleColumnList = thisExpr.args.expressions?.every(
         (col) => col instanceof ColumnExpr || col instanceof IdentifierExpr,
       );
@@ -635,7 +724,9 @@ class StarRocksGenerator extends MySQL.Generator {
      * Generates StarRocks ORDER BY clause for clustering.
      */
   public clusterSql (expression: Expression): string {
-    const expressions = this.expressions(expression, { flat: true });
+    const expressions = this.expressions(expression, {
+      flat: true,
+    });
     return expressions ? `ORDER BY (${expressions})` : '';
   }
 

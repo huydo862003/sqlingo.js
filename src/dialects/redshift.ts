@@ -1,4 +1,6 @@
-import { cache } from '../port_internals';
+import {
+  cache,
+} from '../port_internals';
 import type {
   CastExpr, UnnestExpr,
   ArrayExpr,
@@ -39,12 +41,18 @@ import {
   RoundExpr, SelectExpr, Sha2DigestExpr, Sha2Expr, SortKeyPropertyExpr, StartsWithExpr, StringToArrayExpr, TableSampleExpr, TryCastExpr, TsOrDsAddExpr, TsOrDsDiffExpr, UnixToTimeExpr, var_,
   Expression, SchemaExpr, TupleExpr, VarExpr,
 } from '../expressions';
-import type { Generator } from '../generator';
-import { seqGet } from '../helper';
+import type {
+  Generator,
+} from '../generator';
+import {
+  seqGet,
+} from '../helper';
 import {
   Parser, buildConvertTimezone,
 } from '../parser';
-import { TokenType } from '../tokens';
+import {
+  TokenType,
+} from '../tokens';
 import {
   eliminateDistinctOn, eliminateSemiAndAntiJoins, eliminateWindowClause, preprocess, unnestGenerateDateArrayUsingRecursiveCte, unqualifyUnnest,
 } from '../transforms';
@@ -61,7 +69,9 @@ import {
   renameFunc,
   dateDeltaSql,
 } from './dialect';
-import { Postgres } from './postgres';
+import {
+  Postgres,
+} from './postgres';
 
 // Map for DATEADD unit normalization (lowercase variants map to normalized lowercase)
 const DATE_DELTA_INTERVAL: Record<string, string> = {
@@ -120,7 +130,9 @@ function buildDateDelta<T extends Expression> (ExprClass: new (args: any) => T) 
         unit = var_(DATE_DELTA_INTERVAL[unitName]);
       }
       if (unit instanceof VarExpr) {
-        unit = new VarExpr({ this: unit.name.toUpperCase() });
+        unit = new VarExpr({
+          this: unit.name.toUpperCase(),
+        });
       }
     }
 
@@ -150,18 +162,20 @@ class RedshiftParser extends Postgres.Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return (() => {
-      const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
+      const functions: Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> = {
         ...Postgres.Parser.FUNCTIONS,
-        ADD_MONTHS: (args: Expression[], _options: { dialect: Dialect }) =>
+        ADD_MONTHS: (args: Expression[], _options: {dialect: Dialect}) =>
           new TsOrDsAddExpr({
             this: seqGet(args, 0),
             expression: seqGet(args, 1),
             unit: var_('MONTH'),
             returnType: DataTypeExpr.build('TIMESTAMP'),
           }),
-        CONVERT_TIMEZONE: (args: Expression[]) => buildConvertTimezone(args, { defaultSourceTz: 'UTC' }),
+        CONVERT_TIMEZONE: (args: Expression[]) => buildConvertTimezone(args, {
+          defaultSourceTz: 'UTC',
+        }),
         DATEADD: buildDateDelta(TsOrDsAddExpr),
         DATE_ADD: buildDateDelta(TsOrDsAddExpr),
         DATEDIFF: buildDateDelta(TsOrDsDiffExpr),
@@ -196,7 +210,9 @@ class RedshiftParser extends Postgres.Parser {
         return (this as RedshiftParser).parseApproximateCount();
       },
       SYSDATE: function (this: Parser) {
-        return this.expression(CurrentTimestampExpr, { sysdate: true });
+        return this.expression(CurrentTimestampExpr, {
+          sysdate: true,
+        });
       },
     };
   }
@@ -246,7 +262,8 @@ class RedshiftParser extends Postgres.Parser {
 
     if (func instanceof CountExpr && func.args.this instanceof DistinctExpr) {
       return this.expression(ApproxDistinctExpr, {
-        this: seqGet(func.args.this.args.expressions || [], 0),
+        this: seqGet(func.args.this.args.expressions || [
+        ], 0),
       });
     }
     this.retreat(index);
@@ -256,23 +273,31 @@ class RedshiftParser extends Postgres.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Postgres.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Postgres.Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 class RedshiftTokenizer extends Postgres.Tokenizer {
   @cache
   static get BIT_STRINGS () {
-    return [];
+    return [
+    ];
   }
 
   @cache
   static get HEX_STRINGS () {
-    return [];
+    return [
+    ];
   }
 
   @cache
   static get STRING_ESCAPES () {
-    return ['\\', '\''];
+    return [
+      '\\',
+      '\'',
+    ];
   }
 
   @cache
@@ -294,7 +319,9 @@ class RedshiftTokenizer extends Postgres.Tokenizer {
 
   @cache
   static get SINGLE_TOKENS (): Record<string, TokenType> {
-    const singleTokens: Record<string, TokenType> = { ...Postgres.Tokenizer.SINGLE_TOKENS };
+    const singleTokens: Record<string, TokenType> = {
+      ...Postgres.Tokenizer.SINGLE_TOKENS,
+    };
     delete singleTokens['#'];
     return singleTokens;
   }
@@ -343,13 +370,34 @@ class RedshiftGenerator extends Postgres.Generator {
   static get TYPE_MAPPING () {
     return new Map([
       ...Postgres.Generator.TYPE_MAPPING,
-      [DataTypeExprKind.BINARY, 'VARBYTE'],
-      [DataTypeExprKind.BLOB, 'VARBYTE'],
-      [DataTypeExprKind.INT, 'INTEGER'],
-      [DataTypeExprKind.TIMETZ, 'TIME'],
-      [DataTypeExprKind.TIMESTAMPTZ, 'TIMESTAMP'],
-      [DataTypeExprKind.VARBINARY, 'VARBYTE'],
-      [DataTypeExprKind.ROWVERSION, 'VARBYTE'],
+      [
+        DataTypeExprKind.BINARY,
+        'VARBYTE',
+      ],
+      [
+        DataTypeExprKind.BLOB,
+        'VARBYTE',
+      ],
+      [
+        DataTypeExprKind.INT,
+        'INTEGER',
+      ],
+      [
+        DataTypeExprKind.TIMETZ,
+        'TIME',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPTZ,
+        'TIMESTAMP',
+      ],
+      [
+        DataTypeExprKind.VARBINARY,
+        'VARBYTE',
+      ],
+      [
+        DataTypeExprKind.ROWVERSION,
+        'VARBYTE',
+      ],
     ]);
   }
 
@@ -359,9 +407,18 @@ class RedshiftGenerator extends Postgres.Generator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Postgres.Generator.TRANSFORMS,
-      [ArrayConcatExpr, arrayConcatSql('ARRAY_CONCAT')],
-      [ConcatExpr, concatToDPipeSql],
-      [ConcatWsExpr, concatWsToDPipeSql],
+      [
+        ArrayConcatExpr,
+        arrayConcatSql('ARRAY_CONCAT'),
+      ],
+      [
+        ConcatExpr,
+        concatToDPipeSql,
+      ],
+      [
+        ConcatWsExpr,
+        concatWsToDPipeSql,
+      ],
       [
         ApproxDistinctExpr,
         function (this: Generator, e: ApproxDistinctExpr) {
@@ -374,12 +431,20 @@ class RedshiftGenerator extends Postgres.Generator {
           return e.args.sysdate ? 'SYSDATE' : 'GETDATE()';
         },
       ],
-      [DateAddExpr, dateDeltaSql('DATEADD')],
-      [DateDiffExpr, dateDeltaSql('DATEDIFF')],
+      [
+        DateAddExpr,
+        dateDeltaSql('DATEADD'),
+      ],
+      [
+        DateDiffExpr,
+        dateDeltaSql('DATEDIFF'),
+      ],
       [
         DistKeyPropertyExpr,
         function (this: Generator, e: DistKeyPropertyExpr) {
-          return this.func('DISTKEY', [e.args.this]);
+          return this.func('DISTKEY', [
+            e.args.this,
+          ]);
         },
       ],
       [
@@ -394,19 +459,44 @@ class RedshiftGenerator extends Postgres.Generator {
           return (this as RedshiftGenerator).explodeSql(e);
         },
       ],
-      [FarmFingerprintExpr, renameFunc('FARMFINGERPRINT64')],
-      [FromBaseExpr, renameFunc('STRTOL')],
-      [GeneratedAsIdentityColumnConstraintExpr, generatedAsIdentityColumnConstraintSql],
-      [JsonExtractExpr, jsonExtractSegments('JSON_EXTRACT_PATH_TEXT')],
-      [JsonExtractScalarExpr, jsonExtractSegments('JSON_EXTRACT_PATH_TEXT')],
-      [GroupConcatExpr, renameFunc('LISTAGG')],
+      [
+        FarmFingerprintExpr,
+        renameFunc('FARMFINGERPRINT64'),
+      ],
+      [
+        FromBaseExpr,
+        renameFunc('STRTOL'),
+      ],
+      [
+        GeneratedAsIdentityColumnConstraintExpr,
+        generatedAsIdentityColumnConstraintSql,
+      ],
+      [
+        JsonExtractExpr,
+        jsonExtractSegments('JSON_EXTRACT_PATH_TEXT'),
+      ],
+      [
+        JsonExtractScalarExpr,
+        jsonExtractSegments('JSON_EXTRACT_PATH_TEXT'),
+      ],
+      [
+        GroupConcatExpr,
+        renameFunc('LISTAGG'),
+      ],
       [
         HexExpr,
         function (this: Generator, e: HexExpr) {
-          return this.func('UPPER', [this.func('TO_HEX', [this.sql(e, 'this')])]);
+          return this.func('UPPER', [
+            this.func('TO_HEX', [
+              this.sql(e, 'this'),
+            ]),
+          ]);
         },
       ],
-      [RegexpExtractExpr, renameFunc('REGEXP_SUBSTR')],
+      [
+        RegexpExtractExpr,
+        renameFunc('REGEXP_SUBSTR'),
+      ],
       [
         SelectExpr,
         preprocess([
@@ -422,7 +512,9 @@ class RedshiftGenerator extends Postgres.Generator {
         function (this: Generator, e: SortKeyPropertyExpr) {
           const value = e.args.this;
           const sql = value instanceof Expression && (value instanceof SchemaExpr || value instanceof TupleExpr)
-            ? this.expressions(value, { flat: true })
+            ? this.expressions(value, {
+              flat: true,
+            })
             : this.sql(value);
           return `${e.args.compound ? 'COMPOUND ' : ''}SORTKEY(${sql})`;
         },
@@ -433,10 +525,22 @@ class RedshiftGenerator extends Postgres.Generator {
           return `${this.sql(e.args.this)} LIKE ${this.sql(e.args.expression)} || '%'`;
         },
       ],
-      [StringToArrayExpr, renameFunc('SPLIT_TO_ARRAY')],
-      [TableSampleExpr, noTablesampleSql],
-      [TsOrDsAddExpr, dateDeltaSql('DATEADD')],
-      [TsOrDsDiffExpr, dateDeltaSql('DATEDIFF')],
+      [
+        StringToArrayExpr,
+        renameFunc('SPLIT_TO_ARRAY'),
+      ],
+      [
+        TableSampleExpr,
+        noTablesampleSql,
+      ],
+      [
+        TsOrDsAddExpr,
+        dateDeltaSql('DATEADD'),
+      ],
+      [
+        TsOrDsDiffExpr,
+        dateDeltaSql('DATEDIFF'),
+      ],
       [
         UnixToTimeExpr,
         function (this: Generator, e: UnixToTimeExpr) {
@@ -446,7 +550,10 @@ class RedshiftGenerator extends Postgres.Generator {
       [
         Sha2DigestExpr,
         function (this: Generator, e: Sha2DigestExpr) {
-          return this.func('SHA2', [e.args.this, e.args.length || LiteralExpr.number(256)]);
+          return this.func('SHA2', [
+            e.args.this,
+            e.args.length || LiteralExpr.number(256),
+          ]);
         },
       ],
     ]);
@@ -626,7 +733,8 @@ class RedshiftGenerator extends Postgres.Generator {
   }
 
   unnestSql (expression: UnnestExpr): string {
-    const args = expression.args.expressions || [];
+    const args = expression.args.expressions || [
+    ];
     const numArgs = args.length;
 
     if (numArgs !== 1) {
@@ -648,14 +756,18 @@ class RedshiftGenerator extends Postgres.Generator {
     return alias ? `${arg} AS ${alias}` : arg;
   }
 
-  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
-    const { safePrefix } = options;
+  castSql (expression: CastExpr, options: {safePrefix?: string} = {}): string {
+    const {
+      safePrefix,
+    } = options;
     if (isType(expression.args.to, DataTypeExprKind.JSON)) {
       // Redshift doesn't support a JSON type, so casting to it is treated as a noop
       return this.sql(expression.args.this);
     }
 
-    return super.castSql(expression, { safePrefix });
+    return super.castSql(expression, {
+      safePrefix,
+    });
   }
 
   /**
@@ -678,7 +790,9 @@ class RedshiftGenerator extends Postgres.Generator {
   }
 
   alterSetSql (expression: AlterSetExpr): string {
-    let exprs = this.expressions(expression, { flat: true });
+    let exprs = this.expressions(expression, {
+      flat: true,
+    });
     exprs = exprs ? ` TABLE PROPERTIES (${exprs})` : '';
 
     let location = this.sql(expression, 'location');

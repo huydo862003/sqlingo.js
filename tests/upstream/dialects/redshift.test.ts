@@ -8,8 +8,12 @@ import {
   TableExpr, UnnestExpr, DotExpr, VarExpr,
   Expression,
 } from '../../../src/expressions';
-import { narrowInstanceOf } from '../../../src/port_internals';
-import { Validator } from './validator';
+import {
+  narrowInstanceOf,
+} from '../../../src/port_internals';
+import {
+  Validator,
+} from './validator';
 
 class TestRedshift extends Validator {
   override dialect = 'redshift' as const;
@@ -31,7 +35,9 @@ class TestRedshift extends Validator {
     this.validateAll(
       'GETDATE()',
       {
-        read: { duckdb: 'CURRENT_TIMESTAMP' },
+        read: {
+          duckdb: 'CURRENT_TIMESTAMP',
+        },
         write: {
           duckdb: 'CURRENT_TIMESTAMP',
           redshift: 'GETDATE()',
@@ -73,7 +79,9 @@ class TestRedshift extends Validator {
     this.validateAll(
       'SELECT APPROXIMATE COUNT(DISTINCT y)',
       {
-        read: { spark: 'SELECT APPROX_COUNT_DISTINCT(y)' },
+        read: {
+          spark: 'SELECT APPROX_COUNT_DISTINCT(y)',
+        },
         write: {
           redshift: 'SELECT APPROXIMATE COUNT(DISTINCT y)',
           spark: 'SELECT APPROX_COUNT_DISTINCT(y)',
@@ -92,7 +100,9 @@ class TestRedshift extends Validator {
     this.validateAll(
       'SELECT CAST(\'01:03:05.124\' AS TIME(2) WITH TIME ZONE)',
       {
-        read: { postgres: 'SELECT CAST(\'01:03:05.124\' AS TIMETZ(2))' },
+        read: {
+          postgres: 'SELECT CAST(\'01:03:05.124\' AS TIMETZ(2))',
+        },
         write: {
           postgres: 'SELECT CAST(\'01:03:05.124\' AS TIMETZ(2))',
           redshift: 'SELECT CAST(\'01:03:05.124\' AS TIME(2) WITH TIME ZONE)',
@@ -102,7 +112,9 @@ class TestRedshift extends Validator {
     this.validateAll(
       'SELECT CAST(\'2020-02-02 01:03:05.124\' AS TIMESTAMP(2) WITH TIME ZONE)',
       {
-        read: { postgres: 'SELECT CAST(\'2020-02-02 01:03:05.124\' AS TIMESTAMPTZ(2))' },
+        read: {
+          postgres: 'SELECT CAST(\'2020-02-02 01:03:05.124\' AS TIMESTAMPTZ(2))',
+        },
         write: {
           postgres: 'SELECT CAST(\'2020-02-02 01:03:05.124\' AS TIMESTAMPTZ(2))',
           redshift: 'SELECT CAST(\'2020-02-02 01:03:05.124\' AS TIMESTAMP(2) WITH TIME ZONE)',
@@ -111,7 +123,11 @@ class TestRedshift extends Validator {
     );
     this.validateAll(
       'SELECT INTERVAL \'5 DAYS\'',
-      { read: { '': 'SELECT INTERVAL \'5\' days' } },
+      {
+        read: {
+          '': 'SELECT INTERVAL \'5\' days',
+        },
+      },
     );
     this.validateAll(
       'SELECT ADD_MONTHS(\'2008-03-31\', 1)',
@@ -128,7 +144,9 @@ class TestRedshift extends Validator {
     this.validateAll(
       'SELECT STRTOL(\'abc\', 16)',
       {
-        read: { trino: 'SELECT FROM_BASE(\'abc\', 16)' },
+        read: {
+          trino: 'SELECT FROM_BASE(\'abc\', 16)',
+        },
         write: {
           redshift: 'SELECT STRTOL(\'abc\', 16)',
           trino: 'SELECT FROM_BASE(\'abc\', 16)',
@@ -183,8 +201,12 @@ class TestRedshift extends Validator {
     this.validateAll(
       'x LIKE \'abc\' || \'%\'',
       {
-        read: { duckdb: 'STARTS_WITH(x, \'abc\')' },
-        write: { redshift: 'x LIKE \'abc\' || \'%\'' },
+        read: {
+          duckdb: 'STARTS_WITH(x, \'abc\')',
+        },
+        write: {
+          redshift: 'x LIKE \'abc\' || \'%\'',
+        },
       },
     );
     this.validateAll(
@@ -254,15 +276,27 @@ class TestRedshift extends Validator {
     );
     this.validateAll(
       'SELECT \'abc\'::BINARY',
-      { write: { redshift: 'SELECT CAST(\'abc\' AS VARBYTE)' } },
+      {
+        write: {
+          redshift: 'SELECT CAST(\'abc\' AS VARBYTE)',
+        },
+      },
     );
     this.validateAll(
       'CREATE TABLE a (b BINARY VARYING(10))',
-      { write: { redshift: 'CREATE TABLE a (b VARBYTE(10))' } },
+      {
+        write: {
+          redshift: 'CREATE TABLE a (b VARBYTE(10))',
+        },
+      },
     );
     this.validateAll(
       'SELECT \'abc\'::CHARACTER',
-      { write: { redshift: 'SELECT CAST(\'abc\' AS CHAR)' } },
+      {
+        write: {
+          redshift: 'SELECT CAST(\'abc\' AS CHAR)',
+        },
+      },
     );
     this.validateAll(
       'SELECT DISTINCT ON (a) a, b FROM x ORDER BY c DESC',
@@ -466,7 +500,9 @@ class TestRedshift extends Validator {
     this.validateIdentity(
       'UNLOAD (\'select * from venue\') TO \'s3://mybucket/unload/\' IAM_ROLE \'arn:aws:iam::0123456789012:role/MyRedshiftRole\'',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
     this.validateIdentity(
       'CREATE TABLE SOUP (SOUP1 VARCHAR(50) NOT NULL ENCODE ZSTD, SOUP2 VARCHAR(70) NULL ENCODE DELTA)',
@@ -492,7 +528,9 @@ FROM customer_orders_lineitem AS c, c.c_orders AS orders AT index
 ORDER BY
   orderkey_index`,
       undefined,
-      { pretty: true },
+      {
+        pretty: true,
+      },
     );
     this.validateIdentity(
       'SELECT attr AS attr, JSON_TYPEOF(val) AS value_type FROM customer_orders_lineitem AS c, UNPIVOT c.c_orders[0] WHERE c_custkey = 9451',
@@ -510,10 +548,14 @@ ORDER BY
   }
 
   testValues () {
-    const values = Array.from({ length: 10000 }, (_, i) => String(i));
+    const values = Array.from({
+      length: 10000,
+    }, (_, i) => String(i));
     const valuesQuery = `SELECT * FROM (VALUES ${values.map((v) => `(${v})`).join(', ')})`;
     const unionQuery = `SELECT * FROM (${values.map((v) => `SELECT ${v}`).join(' UNION ALL ')})`;
-    expect(transpile(valuesQuery, { write: 'redshift' })[0]).toBe(unionQuery);
+    expect(transpile(valuesQuery, {
+      write: 'redshift',
+    })[0]).toBe(unionQuery);
 
     const valuesSql = transpile('SELECT * FROM (VALUES (1), (2))', {
       write: 'redshift',
@@ -537,7 +579,9 @@ FROM (
     this.validateAll(
       'SELECT * FROM (SELECT 1, 2) AS t',
       {
-        read: { '': 'SELECT * FROM (VALUES (1, 2)) AS t' },
+        read: {
+          '': 'SELECT * FROM (VALUES (1, 2)) AS t',
+        },
         write: {
           mysql: 'SELECT * FROM (SELECT 1, 2) AS t',
           presto: 'SELECT * FROM (SELECT 1, 2) AS t',
@@ -547,31 +591,41 @@ FROM (
     this.validateAll(
       'SELECT * FROM (SELECT 1 AS id) AS t1 CROSS JOIN (SELECT 1 AS id) AS t2',
       {
-        read: { '': 'SELECT * FROM (VALUES (1)) AS t1(id) CROSS JOIN (VALUES (1)) AS t2(id)' },
+        read: {
+          '': 'SELECT * FROM (VALUES (1)) AS t1(id) CROSS JOIN (VALUES (1)) AS t2(id)',
+        },
       },
     );
     this.validateAll(
       'SELECT a, b FROM (SELECT 1 AS a, 2 AS b) AS t',
       {
-        read: { '': 'SELECT a, b FROM (VALUES (1, 2)) AS t (a, b)' },
+        read: {
+          '': 'SELECT a, b FROM (VALUES (1, 2)) AS t (a, b)',
+        },
       },
     );
     this.validateAll(
       'SELECT a, b FROM (SELECT 1 AS a, 2 AS b UNION ALL SELECT 3, 4) AS "t"',
       {
-        read: { '': 'SELECT a, b FROM (VALUES (1, 2), (3, 4)) AS "t" (a, b)' },
+        read: {
+          '': 'SELECT a, b FROM (VALUES (1, 2), (3, 4)) AS "t" (a, b)',
+        },
       },
     );
     this.validateAll(
       'SELECT a, b FROM (SELECT 1 AS a, 2 AS b UNION ALL SELECT 3, 4 UNION ALL SELECT 5, 6 UNION ALL SELECT 7, 8) AS t',
       {
-        read: { '': 'SELECT a, b FROM (VALUES (1, 2), (3, 4), (5, 6), (7, 8)) AS t (a, b)' },
+        read: {
+          '': 'SELECT a, b FROM (VALUES (1, 2), (3, 4), (5, 6), (7, 8)) AS t (a, b)',
+        },
       },
     );
     this.validateAll(
       'INSERT INTO t (a, b) SELECT a, b FROM (SELECT 1 AS a, 2 AS b UNION ALL SELECT 3, 4) AS t',
       {
-        read: { '': 'INSERT INTO t(a, b) SELECT a, b FROM (VALUES (1, 2), (3, 4)) AS t (a, b)' },
+        read: {
+          '': 'INSERT INTO t(a, b) SELECT a, b FROM (VALUES (1, 2), (3, 4)) AS t (a, b)',
+        },
       },
     );
     this.validateIdentity('CREATE TABLE table_backup BACKUP NO AS SELECT * FROM event');
@@ -674,26 +728,38 @@ FROM (
       'SELECT c.*, o, l FROM bloo AS c, c.c_orders AS o, o.o_lineitems AS l',
     );
 
-    const ast1 = parseOne('SELECT * FROM t.t JOIN t.c1 ON c1.c2 = t.c3', { read: 'redshift' });
+    const ast1 = parseOne('SELECT * FROM t.t JOIN t.c1 ON c1.c2 = t.c3', {
+      read: 'redshift',
+    });
     narrowInstanceOf(narrowInstanceOf(ast1.args['from'], Expression)?.args.this, Expression)?.assertIs(TableExpr);
     narrowInstanceOf(narrowInstanceOf(ast1.args['joins']?.[0], Expression)?.args.this, Expression)?.assertIs(TableExpr);
-    expect(ast1.sql({ dialect: 'redshift' })).toBe('SELECT * FROM t.t JOIN t.c1 ON c1.c2 = t.c3');
+    expect(ast1.sql({
+      dialect: 'redshift',
+    })).toBe('SELECT * FROM t.t JOIN t.c1 ON c1.c2 = t.c3');
 
-    const ast2 = parseOne('SELECT * FROM t AS t CROSS JOIN t.c1', { read: 'redshift' });
+    const ast2 = parseOne('SELECT * FROM t AS t CROSS JOIN t.c1', {
+      read: 'redshift',
+    });
     narrowInstanceOf(narrowInstanceOf(ast2.args['from'], Expression)?.args.this, Expression)?.assertIs(TableExpr);
     narrowInstanceOf(narrowInstanceOf(ast2.args['joins']?.[0], Expression)?.args.this, Expression)?.assertIs(UnnestExpr);
-    expect(ast2.sql({ dialect: 'redshift' })).toBe('SELECT * FROM t AS t CROSS JOIN t.c1');
+    expect(ast2.sql({
+      dialect: 'redshift',
+    })).toBe('SELECT * FROM t AS t CROSS JOIN t.c1');
 
     const ast3 = parseOne(
       'SELECT * FROM x AS a, a.b AS c, c.d.e AS f, f.g.h.i.j.k AS l',
-      { read: 'redshift' },
+      {
+        read: 'redshift',
+      },
     );
     const joins = ast3.args['joins'];
     narrowInstanceOf(narrowInstanceOf(ast3.args['from'], Expression)?.args.this, Expression)?.assertIs(TableExpr);
     narrowInstanceOf(narrowInstanceOf(joins?.[0], Expression)?.args.this, Expression)?.assertIs(UnnestExpr);
     narrowInstanceOf(narrowInstanceOf(joins?.[1], Expression)?.args.this, Expression)?.assertIs(UnnestExpr);
     narrowInstanceOf(narrowInstanceOf(narrowInstanceOf(joins?.[2], Expression)?.args.this, Expression)?.assertIs(UnnestExpr)?.args.expressions?.[0], Expression)?.assertIs(DotExpr);
-    expect(ast3.sql({ dialect: 'redshift' })).toBe(
+    expect(ast3.sql({
+      dialect: 'redshift',
+    })).toBe(
       'SELECT * FROM x AS a, a.b AS c, c.d.e AS f, f.g.h.i.j.k AS l',
     );
   }
@@ -708,7 +774,11 @@ FROM (
   testTime () {
     this.validateAll(
       'TIME_TO_STR(a, \'%Y-%m-%d %H:%M:%S.%f\')',
-      { write: { redshift: 'TO_CHAR(a, \'YYYY-MM-DD HH24:MI:SS.US\')' } },
+      {
+        write: {
+          redshift: 'TO_CHAR(a, \'YYYY-MM-DD HH24:MI:SS.US\')',
+        },
+      },
     );
   }
 
@@ -725,7 +795,9 @@ FROM (
     ];
 
     for (const sql of grantCmds) {
-      this.validateIdentity(sql, undefined, { checkCommandWarning: true });
+      this.validateIdentity(sql, undefined, {
+        checkCommandWarning: true,
+      });
     }
 
     this.validateIdentity('GRANT SELECT ON TABLE sales TO fred');
@@ -757,7 +829,9 @@ FROM (
     ];
 
     for (const sql of revokeCmds) {
-      this.validateIdentity(sql, undefined, { checkCommandWarning: true });
+      this.validateIdentity(sql, undefined, {
+        checkCommandWarning: true,
+      });
     }
 
     this.validateIdentity('REVOKE SELECT ON TABLE sales FROM fred');
@@ -775,7 +849,9 @@ FROM (
 
   testCast () {
     this.validateIdentity('1::"int"', 'CAST(1 AS INTEGER)');
-    expect(() => parseOne('1::"udt"', { read: 'redshift' })).toThrow();
+    expect(() => parseOne('1::"udt"', {
+      read: 'redshift',
+    })).toThrow();
   }
 
   testFetchToLimit () {

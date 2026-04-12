@@ -4,7 +4,9 @@ import {
 import {
   transpile, parseOne, ParseError, ErrorLevel,
 } from '../../src/index';
-import { NormalizeFunctions } from '../../src/dialects/dialect';
+import {
+  NormalizeFunctions,
+} from '../../src/dialects/dialect';
 import {
   loadSqlFixtures, loadSqlFixturePairs,
 } from './helpers';
@@ -107,7 +109,9 @@ class TestTranspile {
     expect(transpile('VARCHAR \'x\' y')[0]).toBe('CAST(\'x\' AS VARCHAR) AS y');
     expect(transpile('x::INT')[0]).toBe('CAST(x AS INT)');
     expect(transpile('x::INT::BOOLEAN')[0]).toBe('CAST(CAST(x AS INT) AS BOOLEAN)');
-    expect(() => transpile('x::z', { dialect: 'clickhouse' })).toThrow(ParseError);
+    expect(() => transpile('x::z', {
+      dialect: 'clickhouse',
+    })).toThrow(ParseError);
   }
 
   testNotRange () {
@@ -160,13 +164,17 @@ class TestTranspile {
     expect(transpile('INTERVAL \'1 day\'')[0]).toBe('INTERVAL \'1\' DAY');
     expect(transpile('TIMESTAMP \'2020-01-01\'')[0]).toBe('CAST(\'2020-01-01\' AS TIMESTAMP)');
     expect(transpile('DATE \'2020-01-01\'')[0]).toBe('CAST(\'2020-01-01\' AS DATE)');
-    expect(transpile('CREATE TEMPORARY TABLE test AS SELECT 1', { dialect: 'spark2' })[0]).toBe(
+    expect(transpile('CREATE TEMPORARY TABLE test AS SELECT 1', {
+      dialect: 'spark2',
+    })[0]).toBe(
       'CREATE TEMPORARY VIEW test AS SELECT 1',
     );
   }
 
   testIdentifyLambda () {
-    expect(transpile('x(y -> y)', { identify: true })[0]).toBe(
+    expect(transpile('x(y -> y)', {
+      identify: true,
+    })[0]).toBe(
       'X("y" -> "y")',
     );
   }

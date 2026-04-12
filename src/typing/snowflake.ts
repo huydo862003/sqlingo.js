@@ -1,9 +1,13 @@
-import type { ExpressionOrString } from '../expressions/expressions';
+import type {
+  ExpressionOrString,
+} from '../expressions/expressions';
 import {
   cache,
   isInstanceOf, filterInstanceOf,
 } from '../port_internals';
-import { DataTypeExprKind } from '../expressions/types';
+import {
+  DataTypeExprKind,
+} from '../expressions/types';
 import {
   Expression,
   DataTypeExpr, ReverseExpr, TimestampFromPartsExpr, DecodeCaseExpr,
@@ -50,9 +54,15 @@ import {
   TryHexDecodeStringExpr, UuidExpr, MinhashExpr, MinhashCombineExpr, VarianceExpr,
   VariancePopExpr, ConcatWsExpr, ConvertTimezoneExpr, DateAddExpr, HashAggExpr, TimeAddExpr,
 } from '../expressions/expressions';
-import type { TypeAnnotator } from '../optimizer';
-import { DialectTyping } from './dialect';
-import type { ExpressionMetadata } from './dialect';
+import type {
+  TypeAnnotator,
+} from '../optimizer';
+import {
+  DialectTyping,
+} from './dialect';
+import type {
+  ExpressionMetadata,
+} from './dialect';
 
 const DATE_PARTS = new Set([
   'DAY',
@@ -65,7 +75,9 @@ const MAX_PRECISION = 38;
 const MAX_SCALE = 37;
 
 function annotateReverse (this: TypeAnnotator, expression: ReverseExpr): ReverseExpr {
-  this.annotateByArgs(expression, ['this']);
+  this.annotateByArgs(expression, [
+    'this',
+  ]);
   if (expression.isType(DataTypeExprKind.NULL)) {
     // Snowflake treats REVERSE(NULL) as a VARCHAR
     this.setType(expression, DataTypeExprKind.VARCHAR);
@@ -87,14 +99,18 @@ function annotateDateOrTimeAdd (this: TypeAnnotator, expression: Expression): Ex
   if (isInstanceOf(thisArg, Expression) && thisArg.isType(DataTypeExprKind.DATE) && !DATE_PARTS.has(expression.text('unit').toUpperCase())) {
     this.setType(expression, DataTypeExprKind.TIMESTAMPNTZ);
   } else {
-    this.annotateByArgs(expression, ['this']);
+    this.annotateByArgs(expression, [
+      'this',
+    ]);
   }
   return expression;
 }
 
 function annotateDecodeCase (this: TypeAnnotator, expression: DecodeCaseExpr): DecodeCaseExpr {
-  const expressions = expression.args.expressions ?? [];
-  const returnTypes: (ExpressionOrString | undefined)[] = [];
+  const expressions = expression.args.expressions ?? [
+  ];
+  const returnTypes: (ExpressionOrString | undefined)[] = [
+  ];
 
   for (let i = 2; i < expressions.length; i += 2) {
     returnTypes.push(expressions[i].type);
@@ -127,7 +143,11 @@ function annotateArgMaxMin (this: TypeAnnotator, expression: ArgMaxExpr | ArgMin
 function annotateWithinGroup (this: TypeAnnotator, expression: WithinGroupExpr): WithinGroupExpr {
   const inner = expression.args.this;
   const orderExpr = expression.args.expression;
-  const orderExprs = isInstanceOf(orderExpr, OrderExpr) ? (orderExpr.args.expressions ?? []) : [];
+  const orderExprs = isInstanceOf(orderExpr, OrderExpr)
+    ? (orderExpr.args.expressions ?? [
+    ])
+    : [
+    ];
 
   if (
     (isInstanceOf(inner, PercentileDiscExpr) || isInstanceOf(inner, PercentileContExpr))
@@ -144,7 +164,9 @@ function annotateWithinGroup (this: TypeAnnotator, expression: WithinGroupExpr):
 }
 
 function annotateMedian (this: TypeAnnotator, expression: MedianExpr): MedianExpr {
-  this.annotateByArgs(expression, ['this']);
+  this.annotateByArgs(expression, [
+    'this',
+  ]);
   const thisArg = expression.args.this;
   const inputType = isInstanceOf(thisArg, Expression) ? thisArg.type : undefined;
   if (!isInstanceOf(inputType, DataTypeExpr)) return expression;
@@ -152,7 +174,8 @@ function annotateMedian (this: TypeAnnotator, expression: MedianExpr): MedianExp
   if (inputType.isType(DataTypeExprKind.DOUBLE)) {
     this.setType(expression, DataTypeExprKind.DOUBLE);
   } else {
-    const exprs = filterInstanceOf(inputType.args.expressions ?? [], Expression);
+    const exprs = filterInstanceOf(inputType.args.expressions ?? [
+    ], Expression);
     // Assuming text('this') retrieves the numeric value of the AST literal node
     const precision = exprs[0] ? Number(exprs[0].text('this')) : MAX_PRECISION;
     const scale = exprs[1] ? Number(exprs[1].text('this')) : 0;
@@ -160,7 +183,9 @@ function annotateMedian (this: TypeAnnotator, expression: MedianExpr): MedianExp
     const newPrecision = Math.min(precision + 3, MAX_PRECISION);
     const newScale = Math.min(scale + 3, MAX_SCALE);
 
-    const newType = DataTypeExpr.build(`NUMBER(${newPrecision}, ${newScale})`, { dialect: 'snowflake' });
+    const newType = DataTypeExpr.build(`NUMBER(${newPrecision}, ${newScale})`, {
+      dialect: 'snowflake',
+    });
     this.setType(expression, newType);
   }
 
@@ -168,21 +193,31 @@ function annotateMedian (this: TypeAnnotator, expression: MedianExpr): MedianExp
 }
 
 function annotateVariance (this: TypeAnnotator, expression: Expression): Expression {
-  this.annotateByArgs(expression, ['this']);
+  this.annotateByArgs(expression, [
+    'this',
+  ]);
   const thisArg = expression.args.this;
   const inputType = isInstanceOf(thisArg, Expression) ? thisArg.type : undefined;
   if (!isInstanceOf(inputType, DataTypeExpr)) return expression;
 
   if (inputType.isType(DataTypeExprKind.DECFLOAT)) {
-    this.setType(expression, DataTypeExpr.build('DECFLOAT', { dialect: 'snowflake' }));
-  } else if (inputType.isType([DataTypeExprKind.FLOAT, DataTypeExprKind.DOUBLE])) {
+    this.setType(expression, DataTypeExpr.build('DECFLOAT', {
+      dialect: 'snowflake',
+    }));
+  } else if (inputType.isType([
+    DataTypeExprKind.FLOAT,
+    DataTypeExprKind.DOUBLE,
+  ])) {
     this.setType(expression, DataTypeExprKind.DOUBLE);
   } else {
-    const exprs = filterInstanceOf(inputType.args.expressions ?? [], Expression);
+    const exprs = filterInstanceOf(inputType.args.expressions ?? [
+    ], Expression);
     const scale = exprs[1] ? Number(exprs[1].text('this')) : 0;
     const newScale = scale === 0 ? 6 : Math.max(12, scale);
 
-    const newType = DataTypeExpr.build(`NUMBER(${MAX_PRECISION}, ${newScale})`, { dialect: 'snowflake' });
+    const newType = DataTypeExpr.build(`NUMBER(${MAX_PRECISION}, ${newScale})`, {
+      dialect: 'snowflake',
+    });
     this.setType(expression, newType);
   }
 
@@ -190,27 +225,40 @@ function annotateVariance (this: TypeAnnotator, expression: Expression): Express
 }
 
 function annotateKurtosis (this: TypeAnnotator, expression: KurtosisExpr): KurtosisExpr {
-  this.annotateByArgs(expression, ['this']);
+  this.annotateByArgs(expression, [
+    'this',
+  ]);
   const thisArg = expression.args.this;
   const inputType = isInstanceOf(thisArg, Expression) ? thisArg.type : undefined;
   if (!isInstanceOf(inputType, DataTypeExpr)) {
-    this.setType(expression, DataTypeExpr.build(`NUMBER(${MAX_PRECISION}, 12)`, { dialect: 'snowflake' }));
+    this.setType(expression, DataTypeExpr.build(`NUMBER(${MAX_PRECISION}, 12)`, {
+      dialect: 'snowflake',
+    }));
     return expression;
   }
 
   if (inputType.isType(DataTypeExprKind.DECFLOAT)) {
-    this.setType(expression, DataTypeExpr.build('DECFLOAT', { dialect: 'snowflake' }));
-  } else if (inputType.isType([DataTypeExprKind.FLOAT, DataTypeExprKind.DOUBLE])) {
+    this.setType(expression, DataTypeExpr.build('DECFLOAT', {
+      dialect: 'snowflake',
+    }));
+  } else if (inputType.isType([
+    DataTypeExprKind.FLOAT,
+    DataTypeExprKind.DOUBLE,
+  ])) {
     this.setType(expression, DataTypeExprKind.DOUBLE);
   } else {
-    this.setType(expression, DataTypeExpr.build(`NUMBER(${MAX_PRECISION}, 12)`, { dialect: 'snowflake' }));
+    this.setType(expression, DataTypeExpr.build(`NUMBER(${MAX_PRECISION}, 12)`, {
+      dialect: 'snowflake',
+    }));
   }
 
   return expression;
 }
 
 function annotateMathWithFloatDecfloat (this: TypeAnnotator, expression: Expression): Expression {
-  this.annotateByArgs(expression, ['this']);
+  this.annotateByArgs(expression, [
+    'this',
+  ]);
 
   const thisArg = expression.args.this;
   if (isInstanceOf(thisArg, Expression) && thisArg.isType(DataTypeExprKind.DECFLOAT)) {
@@ -254,7 +302,11 @@ export class SnowflakeTyping {
       SubstringExpr,
       TimeSliceExpr,
       TimestampTruncExpr,
-    ], { annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']) });
+    ], {
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, [
+        'this',
+      ]),
+    });
 
     extend([
       ApproxTopKExpr,
@@ -274,7 +326,9 @@ export class SnowflakeTyping {
       RegexpExtractAllExpr,
       SplitExpr,
       StringToArrayExpr,
-    ], { returns: DataTypeExprKind.ARRAY });
+    ], {
+      returns: DataTypeExprKind.ARRAY,
+    });
 
     extend([
       BitmapBitPositionExpr,
@@ -287,7 +341,9 @@ export class SnowflakeTyping {
       RandExpr,
       Seq8Expr,
       ZipfExpr,
-    ], { returns: DataTypeExprKind.BIGINT });
+    ], {
+      returns: DataTypeExprKind.BIGINT,
+    });
 
     extend([
       Base64DecodeBinaryExpr,
@@ -307,7 +363,9 @@ export class SnowflakeTyping {
       TryBase64DecodeBinaryExpr,
       TryHexDecodeBinaryExpr,
       UnhexExpr,
-    ], { returns: DataTypeExprKind.BINARY });
+    ], {
+      returns: DataTypeExprKind.BINARY,
+    });
 
     extend([
       BoolandExpr,
@@ -320,9 +378,16 @@ export class SnowflakeTyping {
       SearchExpr,
       SearchIpExpr,
       ToBooleanExpr,
-    ], { returns: DataTypeExprKind.BOOLEAN });
+    ], {
+      returns: DataTypeExprKind.BOOLEAN,
+    });
 
-    extend([NextDayExpr, PreviousDayExpr], { returns: DataTypeExprKind.DATE });
+    extend([
+      NextDayExpr,
+      PreviousDayExpr,
+    ], {
+      returns: DataTypeExprKind.DATE,
+    });
 
     extend([
       BitwiseAndAggExpr,
@@ -331,7 +396,11 @@ export class SnowflakeTyping {
       RegexpCountExpr,
       RegexpInstrExpr,
       ToNumberExpr,
-    ], { annotator: (s: TypeAnnotator, e: Expression) => s.setType(e, DataTypeExpr.build('NUMBER', { dialect: 'snowflake' })) });
+    ], {
+      annotator: (s: TypeAnnotator, e: Expression) => s.setType(e, DataTypeExpr.build('NUMBER', {
+        dialect: 'snowflake',
+      })),
+    });
 
     extend([
       ApproxPercentileEstimateExpr,
@@ -344,9 +413,16 @@ export class SnowflakeTyping {
       ManhattanDistanceExpr,
       MonthsBetweenExpr,
       NormalExpr,
-    ], { returns: DataTypeExprKind.DOUBLE });
+    ], {
+      returns: DataTypeExprKind.DOUBLE,
+    });
 
-    extend([ToDecfloatExpr, TryToDecfloatExpr], { returns: DataTypeExprKind.DECFLOAT });
+    extend([
+      ToDecfloatExpr,
+      TryToDecfloatExpr,
+    ], {
+      returns: DataTypeExprKind.DECFLOAT,
+    });
 
     extend([
       AcosExpr,
@@ -377,7 +453,9 @@ export class SnowflakeTyping {
       SqrtExpr,
       TanExpr,
       TanhExpr,
-    ], { annotator: (s: TypeAnnotator, e: Expression) => annotateMathWithFloatDecfloat.call(s, e) });
+    ], {
+      annotator: (s: TypeAnnotator, e: Expression) => annotateMathWithFloatDecfloat.call(s, e),
+    });
 
     extend([
       ByteLengthExpr,
@@ -391,7 +469,9 @@ export class SnowflakeTyping {
       Seq2Expr,
       Seq4Expr,
       WidthBucketExpr,
-    ], { returns: DataTypeExprKind.INT });
+    ], {
+      returns: DataTypeExprKind.INT,
+    });
 
     extend([
       ApproxPercentileAccumulateExpr,
@@ -402,22 +482,40 @@ export class SnowflakeTyping {
       ParseIpExpr,
       ParseUrlExpr,
       XmlGetExpr,
-    ], { returns: DataTypeExprKind.OBJECT });
+    ], {
+      returns: DataTypeExprKind.OBJECT,
+    });
 
     extend([
       MapCatExpr,
       MapDeleteExpr,
       MapInsertExpr,
       MapPickExpr,
-    ], { returns: DataTypeExprKind.MAP });
+    ], {
+      returns: DataTypeExprKind.MAP,
+    });
 
-    map.set(ToFileExpr, { returns: DataTypeExprKind.FILE });
+    map.set(ToFileExpr, {
+      returns: DataTypeExprKind.FILE,
+    });
 
-    extend([TimeFromPartsExpr, TsOrDsToTimeExpr], { returns: DataTypeExprKind.TIME });
+    extend([
+      TimeFromPartsExpr,
+      TsOrDsToTimeExpr,
+    ], {
+      returns: DataTypeExprKind.TIME,
+    });
 
-    extend([CurrentTimestampExpr, LocaltimestampExpr], { returns: DataTypeExprKind.TIMESTAMPLTZ });
+    extend([
+      CurrentTimestampExpr,
+      LocaltimestampExpr,
+    ], {
+      returns: DataTypeExprKind.TIMESTAMPLTZ,
+    });
 
-    map.set(QuarterExpr, { returns: DataTypeExprKind.TINYINT });
+    map.set(QuarterExpr, {
+      returns: DataTypeExprKind.TINYINT,
+    });
 
     extend([
       AiAggExpr,
@@ -462,15 +560,35 @@ export class SnowflakeTyping {
       TryBase64DecodeStringExpr,
       TryHexDecodeStringExpr,
       UuidExpr,
-    ], { returns: DataTypeExprKind.VARCHAR });
+    ], {
+      returns: DataTypeExprKind.VARCHAR,
+    });
 
-    extend([MinhashExpr, MinhashCombineExpr], { returns: DataTypeExprKind.VARIANT });
+    extend([
+      MinhashExpr,
+      MinhashCombineExpr,
+    ], {
+      returns: DataTypeExprKind.VARIANT,
+    });
 
-    extend([VarianceExpr, VariancePopExpr], { annotator: (s: TypeAnnotator, e: Expression) => annotateVariance.call(s, e) });
+    extend([
+      VarianceExpr,
+      VariancePopExpr,
+    ], {
+      annotator: (s: TypeAnnotator, e: Expression) => annotateVariance.call(s, e),
+    });
 
-    map.set(ArgMaxExpr, { annotator: (s: TypeAnnotator, e: ArgMaxExpr) => annotateArgMaxMin.call(s, e) });
-    map.set(ArgMinExpr, { annotator: (s: TypeAnnotator, e: ArgMinExpr) => annotateArgMaxMin.call(s, e) });
-    map.set(ConcatWsExpr, { annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['expressions']) });
+    map.set(ArgMaxExpr, {
+      annotator: (s: TypeAnnotator, e: ArgMaxExpr) => annotateArgMaxMin.call(s, e),
+    });
+    map.set(ArgMinExpr, {
+      annotator: (s: TypeAnnotator, e: ArgMinExpr) => annotateArgMaxMin.call(s, e),
+    });
+    map.set(ConcatWsExpr, {
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, [
+        'expressions',
+      ]),
+    });
 
     map.set(ConvertTimezoneExpr, {
       annotator: (s: TypeAnnotator, e: ConvertTimezoneExpr) => s.setType(
@@ -479,20 +597,40 @@ export class SnowflakeTyping {
       ),
     });
 
-    map.set(DateAddExpr, { annotator: (s: TypeAnnotator, e: Expression) => annotateDateOrTimeAdd.call(s, e) });
-    map.set(DecodeCaseExpr, { annotator: (s: TypeAnnotator, e: DecodeCaseExpr) => annotateDecodeCase.call(s, e) });
-
-    map.set(HashAggExpr, {
-      annotator: (s: TypeAnnotator, e: Expression) => s.setType(e, DataTypeExpr.build('NUMBER(19, 0)', { dialect: 'snowflake' })),
+    map.set(DateAddExpr, {
+      annotator: (s: TypeAnnotator, e: Expression) => annotateDateOrTimeAdd.call(s, e),
+    });
+    map.set(DecodeCaseExpr, {
+      annotator: (s: TypeAnnotator, e: DecodeCaseExpr) => annotateDecodeCase.call(s, e),
     });
 
-    map.set(KurtosisExpr, { annotator: (s: TypeAnnotator, e: KurtosisExpr) => annotateKurtosis.call(s, e) });
-    map.set(MedianExpr, { annotator: (s: TypeAnnotator, e: MedianExpr) => annotateMedian.call(s, e) });
-    map.set(ReverseExpr, { annotator: (s: TypeAnnotator, e: ReverseExpr) => annotateReverse.call(s, e) });
-    map.set(StrToTimeExpr, { annotator: (s: TypeAnnotator, e: StrToTimeExpr) => annotateStrToTime.call(s, e) });
-    map.set(TimeAddExpr, { annotator: (s: TypeAnnotator, e: Expression) => annotateDateOrTimeAdd.call(s, e) });
-    map.set(TimestampFromPartsExpr, { annotator: (s: TypeAnnotator, e: TimestampFromPartsExpr) => annotateTimestampFromParts.call(s, e) });
-    map.set(WithinGroupExpr, { annotator: (s: TypeAnnotator, e: WithinGroupExpr) => annotateWithinGroup.call(s, e) });
+    map.set(HashAggExpr, {
+      annotator: (s: TypeAnnotator, e: Expression) => s.setType(e, DataTypeExpr.build('NUMBER(19, 0)', {
+        dialect: 'snowflake',
+      })),
+    });
+
+    map.set(KurtosisExpr, {
+      annotator: (s: TypeAnnotator, e: KurtosisExpr) => annotateKurtosis.call(s, e),
+    });
+    map.set(MedianExpr, {
+      annotator: (s: TypeAnnotator, e: MedianExpr) => annotateMedian.call(s, e),
+    });
+    map.set(ReverseExpr, {
+      annotator: (s: TypeAnnotator, e: ReverseExpr) => annotateReverse.call(s, e),
+    });
+    map.set(StrToTimeExpr, {
+      annotator: (s: TypeAnnotator, e: StrToTimeExpr) => annotateStrToTime.call(s, e),
+    });
+    map.set(TimeAddExpr, {
+      annotator: (s: TypeAnnotator, e: Expression) => annotateDateOrTimeAdd.call(s, e),
+    });
+    map.set(TimestampFromPartsExpr, {
+      annotator: (s: TypeAnnotator, e: TimestampFromPartsExpr) => annotateTimestampFromParts.call(s, e),
+    });
+    map.set(WithinGroupExpr, {
+      annotator: (s: TypeAnnotator, e: WithinGroupExpr) => annotateWithinGroup.call(s, e),
+    });
 
     return map;
   }

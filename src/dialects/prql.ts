@@ -1,4 +1,6 @@
-import { cache } from '../port_internals';
+import {
+  cache,
+} from '../port_internals';
 import type {
   Expression, OrderedExpr, QueryExpr, SelectExpr,
 } from '../expressions';
@@ -6,29 +8,44 @@ import {
   AliasExpr,
   AndExpr, AvgExpr, ColumnExpr, EqExpr, FromExpr, func, IsExpr, NeqExpr, NotExpr, NullExpr, OrderExpr, OrExpr, select, SumExpr,
 } from '../expressions';
-import { seqGet } from '../helper';
-import { Parser } from '../parser';
+import {
+  seqGet,
+} from '../helper';
+import {
+  Parser,
+} from '../parser';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
-import { Generator } from '../generator';
+import {
+  Generator,
+} from '../generator';
 import {
   Dialect, Dialects,
 } from './dialect';
 
 function selectAll (table: Expression | undefined): SelectExpr | undefined {
-  return table ? select('*').from(table, { copy: false }) : undefined;
+  return table
+    ? select('*').from(table, {
+      copy: false,
+    })
+    : undefined;
 }
 
 class PRQLTokenizer extends Tokenizer {
   @cache
   static get IDENTIFIERS () {
-    return ['`'];
+    return [
+      '`',
+    ];
   }
 
   @cache
   static get QUOTES () {
-    return ['\'', '"'];
+    return [
+      '\'',
+      '"',
+    ];
   }
 
   @cache
@@ -65,7 +82,9 @@ class PRQLParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
     return noParenFunctions;
@@ -95,7 +114,9 @@ class PRQLParser extends Parser {
         return (this as PRQLParser).parseSelection(query);
       },
       SELECT: function (this: Parser, query) {
-        return (this as PRQLParser).parseSelection(query, { append: false });
+        return (this as PRQLParser).parseSelection(query, {
+          append: false,
+        });
       },
       TAKE: function (this: Parser, query) {
         return (this as PRQLParser).parseTake(query);
@@ -134,7 +155,7 @@ class PRQLParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       AVERAGE: (args: unknown[]) => AvgExpr.fromArgList(args),
@@ -156,14 +177,22 @@ class PRQLParser extends Parser {
         this: eq.args.this,
         expression: eq.args.expression,
       });
-      return eq instanceof EqExpr ? isExp : new NotExpr({ this: isExp });
+      return eq instanceof EqExpr
+        ? isExp
+        : new NotExpr({
+          this: isExp,
+        });
     }
     if (eq.args.this instanceof NullExpr) {
       const isExp = new IsExpr({
         this: eq.args.expression,
         expression: eq.args.this,
       });
-      return eq instanceof EqExpr ? isExp : new NotExpr({ this: isExp });
+      return eq instanceof EqExpr
+        ? isExp
+        : new NotExpr({
+          this: isExp,
+        });
     }
     return eq;
   }
@@ -180,7 +209,9 @@ class PRQLParser extends Parser {
       return undefined;
     }
 
-    let query: QueryExpr = select('*').from(from, { copy: false });
+    let query: QueryExpr = select('*').from(from, {
+      copy: false,
+    });
 
     while (this.matchTexts(Object.keys((this._constructor as typeof PRQLParser).TRANSFORM_PARSERS))) {
       const transform = (this._constructor as typeof PRQLParser).TRANSFORM_PARSERS[this.prev?.text.toUpperCase() ?? ''];
@@ -213,7 +244,12 @@ class PRQLParser extends Parser {
       }
     } else {
       const expression = parseMethod();
-      selects = expression ? [expression] : [];
+      selects = expression
+        ? [
+          expression,
+        ]
+        : [
+        ];
     }
 
     const projections: Record<string, Expression> = {};
@@ -228,7 +264,9 @@ class PRQLParser extends Parser {
           return projections[s.name].copy();
         }
         return s;
-      }, { copy: false });
+      }, {
+        copy: false,
+      });
     }) as Expression[];
 
     return select(...transformedSelects, {
@@ -240,7 +278,10 @@ class PRQLParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 
   parseTake (query: QueryExpr): QueryExpr | undefined {
@@ -265,7 +306,9 @@ class PRQLParser extends Parser {
     if (lBrace && !this.match(TokenType.R_BRACE)) {
       this.raiseError('Expecting }');
     }
-    return query.orderBy(new OrderExpr({ expressions: expressions.filter(Boolean) }), {
+    return query.orderBy(new OrderExpr({
+      expressions: expressions.filter(Boolean),
+    }), {
       copy: false,
     });
   }
@@ -273,7 +316,9 @@ class PRQLParser extends Parser {
   parseAggregate (): Expression | undefined {
     let alias: string | undefined = undefined;
     if (this.next && this.next.tokenType === TokenType.ALIAS) {
-      alias = this.parseIdVar({ anyToken: true })?.name;
+      alias = this.parseIdVar({
+        anyToken: true,
+      })?.name;
       this.match(TokenType.ALIAS);
     }
 
@@ -284,7 +329,14 @@ class PRQLParser extends Parser {
     if (funcBuilder) {
       this.advance();
       const args = this.parseColumn();
-      func = funcBuilder(args ? [args] : [], { dialect: this.dialect });
+      func = funcBuilder(args
+        ? [
+          args,
+        ]
+        : [
+        ], {
+        dialect: this.dialect,
+      });
     } else {
       this.raiseError(`Unsupported aggregation function ${name}`);
       return undefined;
@@ -301,7 +353,9 @@ class PRQLParser extends Parser {
 
   parseExpression (): Expression | undefined {
     if (this.next && this.next.tokenType === TokenType.ALIAS) {
-      const alias = this.parseIdVar({ anyToken: true })?.name;
+      const alias = this.parseIdVar({
+        anyToken: true,
+      })?.name;
       this.match(TokenType.ALIAS);
       const parsedExpr = this.parseAssignment();
       if (!parsedExpr) return undefined;
@@ -338,7 +392,9 @@ class PRQLParser extends Parser {
 
     return this.expression(FromExpr, {
       comments: this.prevComments,
-      this: this.parseTable({ joins }),
+      this: this.parseTable({
+        joins,
+      }),
     });
   }
 };
@@ -359,7 +415,8 @@ export class PRQLGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [];
+  static readonly SELECT_KINDS: string[] = [
+  ];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic

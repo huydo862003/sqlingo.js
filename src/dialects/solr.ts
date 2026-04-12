@@ -1,11 +1,21 @@
-import { Parser } from '../parser';
+import {
+  Parser,
+} from '../parser';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
-import type { Expression } from '../expressions';
-import { OrExpr } from '../expressions';
-import { cache } from '../port_internals';
-import { Generator } from '../generator';
+import type {
+  Expression,
+} from '../expressions';
+import {
+  OrExpr,
+} from '../expressions';
+import {
+  cache,
+} from '../port_internals';
+import {
+  Generator,
+} from '../generator';
 import {
   Dialect, NormalizationStrategy, Dialects,
 } from './dialect';
@@ -24,7 +34,9 @@ export class SolrParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
     return noParenFunctions;
@@ -41,18 +53,25 @@ export class SolrParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 export class SolrTokenizer extends Tokenizer {
   @cache
   static get QUOTES () {
-    return ['\''];
+    return [
+      '\'',
+    ];
   }
 
   @cache
   static get IDENTIFIERS () {
-    return ['`'];
+    return [
+      '`',
+    ];
   }
 }
 
@@ -71,7 +90,8 @@ export class SolrGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [];
+  static readonly SELECT_KINDS: string[] = [
+  ];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic

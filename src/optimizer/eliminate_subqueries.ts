@@ -18,9 +18,15 @@ import {
 import {
   assertIsInstanceOf, isInstanceOf,
 } from '../port_internals';
-import { findNewName } from '../helper';
-import type { Scope } from './scope';
-import { buildScope } from './scope';
+import {
+  findNewName,
+} from '../helper';
+import type {
+  Scope,
+} from './scope';
+import {
+  buildScope,
+} from './scope';
 
 type ExistingCTEsMapping = Map<ExpressionHash, string>;
 type TakenNameMapping = Map<string, Scope | TableExpr>;
@@ -72,7 +78,9 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
 
   // All table names are taken
   for (const scope of root.traverse()) {
-    for (const [, source] of scope.sources) {
+    for (const [
+      , source,
+    ] of scope.sources) {
       if (source instanceof TableExpr) {
         taken.set(source.name, source);
       }
@@ -87,14 +95,16 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
   if (withClause) {
     assertIsInstanceOf(withClause, WithExpr);
     recursive = Boolean(withClause.args.recursive);
-    for (const cte of withClause.args.expressions ?? []) {
+    for (const cte of withClause.args.expressions ?? [
+    ]) {
       if (isInstanceOf(cte, CteExpr) && cte.args.this) {
         if (cte.args.this) existingCtes.set(cte.args.this.sqlKey, cte.alias);
       }
     }
   }
 
-  const newCtes: Expression[] = [];
+  const newCtes: Expression[] = [
+  ];
 
   // We're adding more CTEs, but we want to maintain the DAG order.
   // Derived tables within an existing CTE need to come before the existing CTE.
@@ -186,9 +196,14 @@ function eliminateDerivedTable (
     toReplace = (toReplace as SubqueryExpr).unwrap();
   }
 
-  const [name, cte] = newCte(scope, existingCtes, taken);
+  const [
+    name,
+    cte,
+  ] = newCte(scope, existingCtes, taken);
 
-  const tableExpr = alias(table(name), toReplace.alias || name, { copy: false });
+  const tableExpr = alias(table(name), toReplace.alias || name, {
+    copy: false,
+  });
   const toReplaceArgs = toReplace.args as Record<string, unknown>;
   const joins = toReplaceArgs.joins;
   if (joins && Array.isArray(joins)) {
@@ -210,7 +225,10 @@ function eliminateCte (
     return undefined;
   }
 
-  const [name, cte] = newCte(scope, existingCtes, taken);
+  const [
+    name,
+    cte,
+  ] = newCte(scope, existingCtes, taken);
 
   const withClause = parent.parent;
   parent.pop();
@@ -225,13 +243,20 @@ function eliminateCte (
   // Rename references to this CTE
   if (scope.parent) {
     for (const childScope of scope.parent.traverse()) {
-      for (const [, source] of Object.entries(childScope.selectedSources)) {
-        const [tableExpr, sourceScope] = source;
+      for (const [
+        , source,
+      ] of Object.entries(childScope.selectedSources)) {
+        const [
+          tableExpr,
+          sourceScope,
+        ] = source;
         if (sourceScope === scope) {
           const newTable = alias(
             table(name),
             (tableExpr as Expression).aliasOrName,
-            { copy: false },
+            {
+              copy: false,
+            },
           );
           tableExpr.replace(newTable);
         }
@@ -274,9 +299,14 @@ function newCte (
     existingCtes.set(scope.expression.sqlKey, name);
     cte = new CteExpr({
       this: scope.expression,
-      alias: new TableAliasExpr({ this: toIdentifier(name) }),
+      alias: new TableAliasExpr({
+        this: toIdentifier(name),
+      }),
     });
   }
 
-  return [name, cte];
+  return [
+    name,
+    cte,
+  ];
 }

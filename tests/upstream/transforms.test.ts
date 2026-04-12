@@ -1,7 +1,9 @@
 import {
   describe, test, expect,
 } from 'vitest';
-import type { Expression } from '../../src/expressions';
+import type {
+  Expression,
+} from '../../src/expressions';
 import {
   maybeParse,
   ArrayExpr,
@@ -23,9 +25,13 @@ class TestTransforms {
     dialect?: string,
   ) {
     const expr = typeof sqlOrExpr === 'string'
-      ? maybeParse(sqlOrExpr, { dialect })
+      ? maybeParse(sqlOrExpr, {
+        dialect,
+      })
       : sqlOrExpr;
-    expect(expr.transform(transform).sql({ dialect })).toBe(target);
+    expect(expr.transform(transform).sql({
+      dialect,
+    })).toBe(target);
   }
 
   testEliminateDistinctOn () {
@@ -158,7 +164,10 @@ class TestTransforms {
   }
 
   testEliminateJoinMarks () {
-    for (const dialect of ['oracle', 'redshift']) {
+    for (const dialect of [
+      'oracle',
+      'redshift',
+    ]) {
       // No join marks => query remains unaffected
       this.validate(
         eliminateJoinMarks,

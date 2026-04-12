@@ -1,18 +1,42 @@
-import type { DialectType } from '../dialects/dialect';
-import type { Schema } from '../schema';
-import { ExecuteError } from '../errors';
-import type { Expression } from '../expressions';
-import { convert } from '../expressions';
-import { objectDepth } from '../helper';
-import { optimize } from '../optimizer/optimizer';
-import { annotateTypes } from '../optimizer/annotate_types';
-import { Plan } from '../planner';
+import type {
+  DialectType,
+} from '../dialects/dialect';
+import type {
+  Schema,
+} from '../schema';
+import {
+  ExecuteError,
+} from '../errors';
+import type {
+  Expression,
+} from '../expressions';
+import {
+  convert,
+} from '../expressions';
+import {
+  objectDepth,
+} from '../helper';
+import {
+  optimize,
+} from '../optimizer/optimizer';
+import {
+  annotateTypes,
+} from '../optimizer/annotate_types';
+import {
+  Plan,
+} from '../planner';
 import {
   ensureSchema, flattenSchema, nestedGet, nestedSet,
 } from '../schema';
-import { JavascriptExecutor } from './javascript';
-import type { Table } from './table';
-import { ensureTables } from './table';
+import {
+  JavascriptExecutor,
+} from './javascript';
+import type {
+  Table,
+} from './table';
+import {
+  ensureTables,
+} from './table';
 
 /**
  * Run a sql query against data.
@@ -42,22 +66,34 @@ export function execute (
     const flattened = flattenSchema(mapping, depth);
 
     for (const keys of flattened) {
-      const path: Array<[string, string]> = keys.map((k) => [k, k]);
-      const table = nestedGet(mapping, path, { raiseOnMissing: false }) as Table | undefined;
+      const path: Array<[string, string]> = keys.map((k) => [
+        k,
+        k,
+      ]);
+      const table = nestedGet(mapping, path, {
+        raiseOnMissing: false,
+      }) as Table | undefined;
       if (!table) continue;
 
       for (const column of table.columns) {
         const value = table.get(0)[column];
         const columnType =
-          annotateTypes(convert(value), { dialect })?.type?.toString() ?? typeof value;
-        nestedSet(schemaArg, [...keys, column], columnType);
+          annotateTypes(convert(value), {
+            dialect,
+          })?.type?.toString() ?? typeof value;
+        nestedSet(schemaArg, [
+          ...keys,
+          column,
+        ], columnType);
       }
     }
   } else {
     schemaArg = schema as Record<string, unknown>;
   }
 
-  const resolvedSchema = ensureSchema(schemaArg, { dialect });
+  const resolvedSchema = ensureSchema(schemaArg, {
+    dialect,
+  });
 
   if (
     0 < tables.supportedTableArgs.length

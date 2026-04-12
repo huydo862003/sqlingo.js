@@ -47,17 +47,35 @@ export class MapBinaryTuple<KeyT extends [unknown, unknown], ValueT> {
   }
 
   * [Symbol.iterator] (): Iterator<[KeyT, ValueT]> {
-    for (const [first, inner] of this._map) {
-      for (const [second, value] of inner) {
-        yield [[first, second] as KeyT, value];
+    for (const [
+      first,
+      inner,
+    ] of this._map) {
+      for (const [
+        second,
+        value,
+      ] of inner) {
+        yield [
+          [
+            first,
+            second,
+          ] as KeyT,
+          value,
+        ];
       }
     }
   }
 
   * keys (): Generator<KeyT> {
-    for (const [first, inner] of this._map) {
+    for (const [
+      first,
+      inner,
+    ] of this._map) {
       for (const second of inner.keys()) {
-        yield [first, second] as KeyT;
+        yield [
+          first,
+          second,
+        ] as KeyT;
       }
     }
   }

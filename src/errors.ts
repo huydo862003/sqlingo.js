@@ -43,7 +43,8 @@ export class ParseError extends SqlglotError {
   constructor (message: string, errors?: ErrorDetail[]) {
     super(message);
     this.name = 'ParseError';
-    this.errors = errors || [];
+    this.errors = errors || [
+    ];
     Error.captureStackTrace(this, this.constructor);
   }
 
@@ -108,10 +109,10 @@ export function highlightSql (options: {
   sql: string;
   positions: [number, number][];
   contextLength?: number;
-}): { formattedSql: string;
+}): {formattedSql: string;
   startContext: string;
   highlight: string;
-  endContext: string; } {
+  endContext: string;} {
   const {
     sql, positions, contextLength = ERROR_MESSAGE_CONTEXT_DEFAULT,
   } = options;
@@ -122,9 +123,12 @@ export function highlightSql (options: {
   let startContext = '';
   let endContext = '';
   let firstHighlightStart = 0;
-  const formattedParts: string[] = [];
+  const formattedParts: string[] = [
+  ];
   let previousPartEnd = 0;
-  const sortedPositions = [...positions].sort((a, b) => a[0] - b[0]);
+  const sortedPositions = [
+    ...positions,
+  ].sort((a, b) => a[0] - b[0]);
 
   if (0 < sortedPositions[0][0]) {
     firstHighlightStart = sortedPositions[0][0];
@@ -136,7 +140,10 @@ export function highlightSql (options: {
     previousPartEnd = firstHighlightStart;
   }
 
-  for (const [start, end] of sortedPositions) {
+  for (const [
+    start,
+    end,
+  ] of sortedPositions) {
     const highlightStart = Math.max(start, previousPartEnd);
     const highlightEnd = end + 1;
     if (highlightEnd <= highlightStart) {

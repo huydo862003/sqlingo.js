@@ -1,7 +1,9 @@
 import {
   describe, test, expect,
 } from 'vitest';
-import { ToCharExpr } from '../../../src/expressions';
+import {
+  ToCharExpr,
+} from '../../../src/expressions';
 import {
   transpile, ErrorLevel,
 } from '../../../src/index';
@@ -183,8 +185,12 @@ class TestDremio extends Validator {
     this.validateAll(
       'ARRAY_GENERATE_RANGE(1, 4)',
       {
-        read: { dremio: 'ARRAY_GENERATE_RANGE(1, 4)' },
-        write: { duckdb: 'GENERATE_SERIES(1, 4)' },
+        read: {
+          dremio: 'ARRAY_GENERATE_RANGE(1, 4)',
+        },
+        write: {
+          duckdb: 'GENERATE_SERIES(1, 4)',
+        },
       },
     );
   }

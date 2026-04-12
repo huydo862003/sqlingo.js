@@ -48,7 +48,9 @@ import {
   CreateExpr,
   ColumnDefExpr,
 } from '../../src/expressions';
-import { narrowInstanceOf } from '../../src/port_internals';
+import {
+  narrowInstanceOf,
+} from '../../src/port_internals';
 
 // Subclass to expose protected errors for testing
 class TestableParser extends Parser {
@@ -63,33 +65,59 @@ class TestParser {
   }
 
   testParseInto () {
-    expect(parseOne('(1)', { into: TupleExpr })).toBeInstanceOf(TupleExpr);
-    expect(parseOne('(1,)', { into: TupleExpr })).toBeInstanceOf(TupleExpr);
-    expect(parseOne('(x=1)', { into: TupleExpr })).toBeInstanceOf(TupleExpr);
+    expect(parseOne('(1)', {
+      into: TupleExpr,
+    })).toBeInstanceOf(TupleExpr);
+    expect(parseOne('(1,)', {
+      into: TupleExpr,
+    })).toBeInstanceOf(TupleExpr);
+    expect(parseOne('(x=1)', {
+      into: TupleExpr,
+    })).toBeInstanceOf(TupleExpr);
 
-    expect(parseOne('select * from t', { into: SelectExpr })).toBeInstanceOf(SelectExpr);
-    expect(parseOne('select * from t limit 5', { into: SelectExpr })).toBeInstanceOf(SelectExpr);
-    expect(parseOne('left join foo', { into: JoinExpr })).toBeInstanceOf(JoinExpr);
-    expect(parseOne('int', { into: DataTypeExpr })).toBeInstanceOf(DataTypeExpr);
-    expect(parseOne('array<int>', { into: DataTypeExpr })).toBeInstanceOf(DataTypeExpr);
-    expect(parseOne('foo', { into: TableExpr })).toBeInstanceOf(TableExpr);
+    expect(parseOne('select * from t', {
+      into: SelectExpr,
+    })).toBeInstanceOf(SelectExpr);
+    expect(parseOne('select * from t limit 5', {
+      into: SelectExpr,
+    })).toBeInstanceOf(SelectExpr);
+    expect(parseOne('left join foo', {
+      into: JoinExpr,
+    })).toBeInstanceOf(JoinExpr);
+    expect(parseOne('int', {
+      into: DataTypeExpr,
+    })).toBeInstanceOf(DataTypeExpr);
+    expect(parseOne('array<int>', {
+      into: DataTypeExpr,
+    })).toBeInstanceOf(DataTypeExpr);
+    expect(parseOne('foo', {
+      into: TableExpr,
+    })).toBeInstanceOf(TableExpr);
     expect(
       parseOne(
         'WHEN MATCHED THEN UPDATE SET target.salary = COALESCE(source.salary, target.salary)',
-        { into: WhensExpr },
+        {
+          into: WhensExpr,
+        },
       ),
     ).toBeInstanceOf(WhensExpr);
 
-    expect(() => parseOne('SELECT * FROM tbl', { into: TableExpr })).toThrow(ParseError);
+    expect(() => parseOne('SELECT * FROM tbl', {
+      into: TableExpr,
+    })).toThrow(ParseError);
 
-    expect(parseOne('foo INT NOT NULL', { into: ColumnDefExpr })).toBeInstanceOf(ColumnDefExpr);
+    expect(parseOne('foo INT NOT NULL', {
+      into: ColumnDefExpr,
+    })).toBeInstanceOf(ColumnDefExpr);
   }
 
   testParseIntoError () {
     try {
       parseOne('SELECT 1;', {
         read: 'sqlite',
-        into: [FromExpr],
+        into: [
+          FromExpr,
+        ],
       });
       expect.unreachable();
     } catch (err) {
@@ -104,7 +132,10 @@ class TestParser {
     try {
       parseOne('SELECT 1;', {
         read: 'sqlite',
-        into: [FromExpr, JoinExpr],
+        into: [
+          FromExpr,
+          JoinExpr,
+        ],
       });
       expect.unreachable();
     } catch (err) {
@@ -116,7 +147,9 @@ class TestParser {
   }
 
   testColumn () {
-    const columns = [...parseOne('select a, ARRAY[1] b, case when 1 then 1 end').findAll(ColumnExpr)];
+    const columns = [
+      ...parseOne('select a, ARRAY[1] b, case when 1 then 1 end').findAll(ColumnExpr),
+    ];
     expect(columns.length).toBe(1);
     expect(parseOne('date').find(ColumnExpr)).not.toBeNull();
   }
@@ -154,7 +187,8 @@ class TestParser {
 
   testUnnestProjection () {
     const expr = parseOne('SELECT foo IN UNNEST(bla) AS bar') as SelectExpr;
-    const selects = expr.args.expressions ?? [];
+    const selects = expr.args.expressions ?? [
+    ];
     expect(selects[0]).toBeInstanceOf(AliasExpr);
     expect((selects[0] as AliasExpr).outputName).toBe('bar');
     expect(parseOne('select unnest(x)').find(UnnestExpr)).not.toBeNull();
@@ -165,7 +199,9 @@ class TestParser {
   }
 
   testTable () {
-    const tables = [...parseOne('select * from a, b.c, .d').findAll(TableExpr)].map((t) => t.sql());
+    const tables = [
+      ...parseOne('select * from a, b.c, .d').findAll(TableExpr),
+    ].map((t) => t.sql());
     expect(new Set(tables)).toEqual(new Set([
       'a',
       'b.c',
@@ -193,9 +229,13 @@ class TestParser {
     expect(expr2.getArgKey('limit')).toBeInstanceOf(LimitExpr);
     expect(expr2.sql()).toBe(twoUnions);
 
-    const expr3 = parseOne(singleUnion, { read: 'clickhouse' }) as UnionExpr;
+    const expr3 = parseOne(singleUnion, {
+      read: 'clickhouse',
+    }) as UnionExpr;
     expect(expr3.getArgKey('limit')).toBeUndefined();
-    expect(expr3.sql({ dialect: 'clickhouse' })).toBe(singleUnion);
+    expect(expr3.sql({
+      dialect: 'clickhouse',
+    })).toBe(singleUnion);
   }
 
   testSelect () {
@@ -233,17 +273,22 @@ class TestParser {
   testTransactions () {
     const expr1 = parseOne('BEGIN TRANSACTION') as TransactionExpr;
     expect(expr1.getArgKey('this')).toBeUndefined();
-    expect(expr1.getArgKey('modes')).toEqual([]);
+    expect(expr1.getArgKey('modes')).toEqual([
+    ]);
     expect(expr1.sql()).toBe('BEGIN');
 
-    const expr2 = parseOne('START TRANSACTION', { read: 'mysql' }) as TransactionExpr;
+    const expr2 = parseOne('START TRANSACTION', {
+      read: 'mysql',
+    }) as TransactionExpr;
     expect(expr2.getArgKey('this')).toBeUndefined();
-    expect(expr2.getArgKey('modes')).toEqual([]);
+    expect(expr2.getArgKey('modes')).toEqual([
+    ]);
     expect(expr2.sql()).toBe('BEGIN');
 
     const expr3 = parseOne('BEGIN DEFERRED TRANSACTION') as TransactionExpr;
     expect(expr3.getArgKey('this')).toBe('DEFERRED');
-    expect(expr3.getArgKey('modes')).toEqual([]);
+    expect(expr3.getArgKey('modes')).toEqual([
+    ]);
     expect(expr3.sql()).toBe('BEGIN');
 
     const expr4 = parseOne('START TRANSACTION READ WRITE, ISOLATION LEVEL SERIALIZABLE', {
@@ -255,7 +300,9 @@ class TestParser {
     expect(modes4[1]).toBe('ISOLATION LEVEL SERIALIZABLE');
     expect(expr4.sql()).toBe('BEGIN READ WRITE, ISOLATION LEVEL SERIALIZABLE');
 
-    const expr5 = parseOne('BEGIN', { read: 'bigquery' });
+    const expr5 = parseOne('BEGIN', {
+      read: 'bigquery',
+    });
     expect(expr5).not.toBeInstanceOf(TransactionExpr);
     expect(expr5.getArgKey('expression')).toBeUndefined();
     expect(expr5.sql()).toBe('BEGIN');
@@ -267,7 +314,8 @@ class TestParser {
       FROM y."z"
     `) as SelectExpr;
 
-    const exprs = expression.args.expressions ?? [];
+    const exprs = expression.args.expressions ?? [
+    ];
     expect(exprs[0].name).toBe('a');
     expect(exprs[1].name).toBe('b');
     expect((exprs[2] as AliasExpr).alias).toBe('c');
@@ -296,16 +344,30 @@ class TestParser {
   }
 
   testExpression () {
-    const ignore = new TestableParser({ errorLevel: ErrorLevel.IGNORE });
-    expect(ignore.expression(HintExpr, { expressions: [] })).toBeInstanceOf(HintExpr);
-    expect(ignore.expression(HintExpr, { y: '' })).toBeInstanceOf(HintExpr);
+    const ignore = new TestableParser({
+      errorLevel: ErrorLevel.IGNORE,
+    });
+    expect(ignore.expression(HintExpr, {
+      expressions: [
+      ],
+    })).toBeInstanceOf(HintExpr);
+    expect(ignore.expression(HintExpr, {
+      y: '',
+    })).toBeInstanceOf(HintExpr);
     expect(ignore.expression(HintExpr)).toBeInstanceOf(HintExpr);
 
     // RAISE level collects errors without throwing immediately (equivalent to Python's RAISE)
-    const immediate = new TestableParser({ errorLevel: ErrorLevel.RAISE });
-    expect(immediate.expression(HintExpr, { expressions: [] })).toBeInstanceOf(HintExpr);
+    const immediate = new TestableParser({
+      errorLevel: ErrorLevel.RAISE,
+    });
+    expect(immediate.expression(HintExpr, {
+      expressions: [
+      ],
+    })).toBeInstanceOf(HintExpr);
 
-    const warn = new TestableParser({ errorLevel: ErrorLevel.WARN });
+    const warn = new TestableParser({
+      errorLevel: ErrorLevel.WARN,
+    });
     warn.expression(HintExpr);
     expect(warn.getErrors().length).toBe(1);
   }
@@ -324,12 +386,16 @@ class TestParser {
           read: 'clickhouse',
           errorLevel: ErrorLevel.RAISE,
         },
-      ).sql({ dialect: 'clickhouse' }),
+      ).sql({
+        dialect: 'clickhouse',
+      }),
     ).toBe('CREATE TABLE t (i UInt8) ENGINE=AggregatingMergeTree() ORDER BY tuple()');
 
     expect(() => parseOne('SELECT A[:')).toThrow(ParseError);
 
-    expect(parseOne('as as', { errorLevel: ErrorLevel.IGNORE }).sql()).toBe('AS as');
+    expect(parseOne('as as', {
+      errorLevel: ErrorLevel.IGNORE,
+    }).sql()).toBe('AS as');
   }
 
   testSpace () {
@@ -375,13 +441,24 @@ class TestParser {
       'comment1.2',
       'comment1.3',
     ]);
-    const exprs = expression.args.expressions ?? [];
-    expect(exprs[0].comments).toEqual(['comment2']);
-    expect(exprs[1].comments).toEqual(['comment3:testing']);
+    const exprs = expression.args.expressions ?? [
+    ];
+    expect(exprs[0].comments).toEqual([
+      'comment2',
+    ]);
+    expect(exprs[1].comments).toEqual([
+      'comment3:testing',
+    ]);
     expect(exprs[2].comments).toBeUndefined();
-    expect(exprs[3].comments).toEqual(['comment4 --foo']);
-    expect(exprs[4].comments).toEqual(['']);
-    expect(exprs[5].comments).toEqual([' space']);
+    expect(exprs[3].comments).toEqual([
+      'comment4 --foo',
+    ]);
+    expect(exprs[4].comments).toEqual([
+      '',
+    ]);
+    expect(exprs[5].comments).toEqual([
+      ' space',
+    ]);
 
     const expression2 = parseOne(`
       SELECT a.column_name --# Comment 1
@@ -391,10 +468,17 @@ class TestParser {
       JOIN table_name2 b ON a.column_name = b.column_name
     `) as SelectExpr;
 
-    const exprs2 = expression2.args.expressions ?? [];
-    expect(exprs2[0].comments).toEqual(['# Comment 1']);
-    expect(exprs2[1].comments).toEqual(['# Comment 2']);
-    expect(exprs2[2].comments).toEqual(['# Comment 3']);
+    const exprs2 = expression2.args.expressions ?? [
+    ];
+    expect(exprs2[0].comments).toEqual([
+      '# Comment 1',
+    ]);
+    expect(exprs2[1].comments).toEqual([
+      '# Comment 2',
+    ]);
+    expect(exprs2[2].comments).toEqual([
+      '# Comment 3',
+    ]);
   }
 
   testCommentsSelectCte () {
@@ -408,9 +492,16 @@ class TestParser {
           a
     `) as SelectExpr;
 
-    expect(expression.comments).toEqual(['comment2']);
-    expect((expression.args.from as FromExpr).comments).toEqual(['comment3']);
-    expect((expression.args.with as Expression).comments).toEqual(['comment1.1', 'comment1.2']);
+    expect(expression.comments).toEqual([
+      'comment2',
+    ]);
+    expect((expression.args.from as FromExpr).comments).toEqual([
+      'comment3',
+    ]);
+    expect((expression.args.with as Expression).comments).toEqual([
+      'comment1.1',
+      'comment1.2',
+    ]);
   }
 
   testCommentsInsert () {
@@ -428,7 +519,9 @@ class TestParser {
       'comment1.2',
       'comment1.3',
     ]);
-    expect((expression.getArgKey('this') as Expression).comments).toEqual(['comment2']);
+    expect((expression.getArgKey('this') as Expression).comments).toEqual([
+      'comment2',
+    ]);
   }
 
   testCommentsInsertCte () {
@@ -441,9 +534,16 @@ class TestParser {
       SELECT * FROM a
     `);
 
-    expect(expression.comments).toEqual(['comment2']);
-    expect((expression.getArgKey('this') as Expression).comments).toEqual(['comment3']);
-    expect((expression.getArgKey('with') as Expression).comments).toEqual(['comment1.1', 'comment1.2']);
+    expect(expression.comments).toEqual([
+      'comment2',
+    ]);
+    expect((expression.getArgKey('this') as Expression).comments).toEqual([
+      'comment3',
+    ]);
+    expect((expression.getArgKey('with') as Expression).comments).toEqual([
+      'comment1.1',
+      'comment1.2',
+    ]);
   }
 
   testCommentsUpdate () {
@@ -463,8 +563,12 @@ class TestParser {
       'comment1.2',
       'comment1.3',
     ]);
-    expect((expression.getArgKey('this') as Expression).comments).toEqual(['comment2']);
-    expect((expression.getArgKey('where') as Expression).comments).toEqual(['comment4']);
+    expect((expression.getArgKey('this') as Expression).comments).toEqual([
+      'comment2',
+    ]);
+    expect((expression.getArgKey('where') as Expression).comments).toEqual([
+      'comment4',
+    ]);
   }
 
   testCommentsUpdateCte () {
@@ -477,9 +581,16 @@ class TestParser {
       SET col = 1
     `);
 
-    expect(expression.comments).toEqual(['comment2']);
-    expect((expression.getArgKey('this') as Expression).comments).toEqual(['comment3']);
-    expect((expression.getArgKey('with') as Expression).comments).toEqual(['comment1.1', 'comment1.2']);
+    expect(expression.comments).toEqual([
+      'comment2',
+    ]);
+    expect((expression.getArgKey('this') as Expression).comments).toEqual([
+      'comment3',
+    ]);
+    expect((expression.getArgKey('with') as Expression).comments).toEqual([
+      'comment1.1',
+      'comment1.2',
+    ]);
   }
 
   testCommentsDelete () {
@@ -498,8 +609,12 @@ class TestParser {
       'comment1.2',
       'comment1.3',
     ]);
-    expect((expression.getArgKey('this') as Expression).comments).toEqual(['comment3']);
-    expect((expression.getArgKey('where') as Expression).comments).toEqual(['comment4']);
+    expect((expression.getArgKey('this') as Expression).comments).toEqual([
+      'comment3',
+    ]);
+    expect((expression.getArgKey('where') as Expression).comments).toEqual([
+      'comment4',
+    ]);
   }
 
   testCommentsDeleteCte () {
@@ -511,9 +626,16 @@ class TestParser {
       DELETE FROM a /*comment3*/
     `);
 
-    expect(expression.comments).toEqual(['comment2']);
-    expect((expression.getArgKey('this') as Expression).comments).toEqual(['comment3']);
-    expect((expression.getArgKey('with') as Expression).comments).toEqual(['comment1.1', 'comment1.2']);
+    expect(expression.comments).toEqual([
+      'comment2',
+    ]);
+    expect((expression.getArgKey('this') as Expression).comments).toEqual([
+      'comment3',
+    ]);
+    expect((expression.getArgKey('with') as Expression).comments).toEqual([
+      'comment1.1',
+      'comment1.2',
+    ]);
   }
 
   testTypeLiterals () {
@@ -550,7 +672,9 @@ class TestParser {
     const castCharTo = parseOne('CAST(x AS CHAR(5))').getArgKey('to') as DataTypeExpr;
     const castCharExprs = castCharTo.getArgKey('expressions') as Expression[];
     expect(castCharExprs[0]).toBeInstanceOf(DataTypeParamExpr);
-    expect(parseOne('1::int64', { dialect: 'bigquery' }).sql()).toBe(
+    expect(parseOne('1::int64', {
+      dialect: 'bigquery',
+    }).sql()).toBe(
       parseOne('CAST(1 AS BIGINT)').sql(),
     );
   }
@@ -564,7 +688,8 @@ class TestParser {
     expect(setSession.sql()).toBe('SET SESSION x = 1');
     expect(setSession).toBeInstanceOf(SetExpr);
 
-    const setExprs = setSession.args.expressions ?? [];
+    const setExprs = setSession.args.expressions ?? [
+    ];
     const setItem = setExprs[0] as SetItemExpr;
     expect(setItem).toBeInstanceOf(SetItemExpr);
     expect(setItem.getArgKey('this')).toBeInstanceOf(EqExpr);
@@ -578,7 +703,9 @@ class TestParser {
     expect(setTo.sql()).toBe('SET x = 1');
     expect(setTo).toBeInstanceOf(SetExpr);
 
-    const setAsCommand = parseOne('SET DEFAULT ROLE ALL TO USER', { errorLevel: ErrorLevel.IGNORE });
+    const setAsCommand = parseOne('SET DEFAULT ROLE ALL TO USER', {
+      errorLevel: ErrorLevel.IGNORE,
+    });
     expect(setAsCommand.sql()).toBe('SET DEFAULT ROLE ALL TO USER');
     expect(setAsCommand).toBeInstanceOf(CommandExpr);
     expect((setAsCommand as CommandExpr).getArgKey('this')).toBe('SET');
@@ -587,7 +714,9 @@ class TestParser {
 
   testPrettyConfigOverride () {
     expect(parseOne('SELECT col FROM x').sql()).toBe('SELECT col FROM x');
-    expect(parseOne('SELECT col FROM x').sql({ pretty: true })).toBe('SELECT\n  col\nFROM x');
+    expect(parseOne('SELECT col FROM x').sql({
+      pretty: true,
+    })).toBe('SELECT\n  col\nFROM x');
   }
 
   testCommentErrorN () {
@@ -597,20 +726,26 @@ class TestParser {
 (
 -- test
 )`,
-      { errorLevel: ErrorLevel.WARN },
+      {
+        errorLevel: ErrorLevel.WARN,
+      },
     );
     warnSpy.mockRestore();
   }
 
   testCommentErrorR () {
     const warnSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    parseOne('SUM(-- test\r)', { errorLevel: ErrorLevel.WARN });
+    parseOne('SUM(-- test\r)', {
+      errorLevel: ErrorLevel.WARN,
+    });
     warnSpy.mockRestore();
   }
 
   testCreateTableError () {
     const warnSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    parseOne('CREATE TABLE SELECT', { errorLevel: ErrorLevel.WARN });
+    parseOne('CREATE TABLE SELECT', {
+      errorLevel: ErrorLevel.WARN,
+    });
     warnSpy.mockRestore();
   }
 
@@ -688,38 +823,89 @@ class TestParser {
       [
         nothingAliased,
         {
-          bigquery: ['prop', 'rudder'],
-          duckdb: ['prop', 'rudder'],
-          redshift: ['prop', 'rudder'],
-          snowflake: ['"\'prop\'"', '"\'rudder\'"'],
-          spark: ['prop', 'rudder'],
+          bigquery: [
+            'prop',
+            'rudder',
+          ],
+          duckdb: [
+            'prop',
+            'rudder',
+          ],
+          redshift: [
+            'prop',
+            'rudder',
+          ],
+          snowflake: [
+            '"\'prop\'"',
+            '"\'rudder\'"',
+          ],
+          spark: [
+            'prop',
+            'rudder',
+          ],
         },
       ],
       [
         everythingAliased,
         {
-          bigquery: ['avg_price_prop1', 'avg_price_rudder1'],
-          duckdb: ['prop1_avg_price', 'rudder1_avg_price'],
-          redshift: ['prop1_avg_price', 'rudder1_avg_price'],
-          spark: ['prop1', 'rudder1'],
+          bigquery: [
+            'avg_price_prop1',
+            'avg_price_rudder1',
+          ],
+          duckdb: [
+            'prop1_avg_price',
+            'rudder1_avg_price',
+          ],
+          redshift: [
+            'prop1_avg_price',
+            'rudder1_avg_price',
+          ],
+          spark: [
+            'prop1',
+            'rudder1',
+          ],
         },
       ],
       [
         onlyPivotColumnsAliased,
         {
-          bigquery: ['prop1', 'rudder1'],
-          duckdb: ['prop1', 'rudder1'],
-          redshift: ['prop1', 'rudder1'],
-          spark: ['prop1', 'rudder1'],
+          bigquery: [
+            'prop1',
+            'rudder1',
+          ],
+          duckdb: [
+            'prop1',
+            'rudder1',
+          ],
+          redshift: [
+            'prop1',
+            'rudder1',
+          ],
+          spark: [
+            'prop1',
+            'rudder1',
+          ],
         },
       ],
       [
         columnsPartiallyAliased,
         {
-          bigquery: ['prop1', 'rudder'],
-          duckdb: ['prop1', 'rudder'],
-          redshift: ['prop1', 'rudder'],
-          spark: ['prop1', 'rudder'],
+          bigquery: [
+            'prop1',
+            'rudder',
+          ],
+          duckdb: [
+            'prop1',
+            'rudder',
+          ],
+          redshift: [
+            'prop1',
+            'rudder',
+          ],
+          spark: [
+            'prop1',
+            'rudder',
+          ],
         },
       ],
       [
@@ -824,14 +1010,24 @@ class TestParser {
       ],
     ];
 
-    for (const [query, dialectColumns] of queryToColumnNames) {
-      for (const [dialect, expectedColumns] of Object.entries(dialectColumns)) {
-        const expr = parseOne(query, { read: dialect }) as SelectExpr;
+    for (const [
+      query,
+      dialectColumns,
+    ] of queryToColumnNames) {
+      for (const [
+        dialect,
+        expectedColumns,
+      ] of Object.entries(dialectColumns)) {
+        const expr = parseOne(query, {
+          read: dialect,
+        }) as SelectExpr;
         const fromExpr = expr.args.from as FromExpr;
         const tableExpr = fromExpr.getArgKey('this') as Expression;
         const pivots = tableExpr.getArgKey('pivots') as Expression[];
         const columns = pivots[0].getArgKey('columns') as Expression[];
-        expect(columns.map((col) => col.sql({ dialect }))).toEqual(expectedColumns);
+        expect(columns.map((col) => col.sql({
+          dialect,
+        }))).toEqual(expectedColumns);
       }
     }
   }
@@ -892,7 +1088,9 @@ class TestParser {
     expect(exprs[1].sql()).toBe('\'John\'');
     expect(exprs[2].sql()).toBe('\'Doe\'');
 
-    const results = parse('CONCAT_WS()', { errorLevel: ErrorLevel.IGNORE });
+    const results = parse('CONCAT_WS()', {
+      errorLevel: ErrorLevel.IGNORE,
+    });
     expect(results[0]?.sql()).toBe('CONCAT_WS()');
   }
 
@@ -902,9 +1100,13 @@ class TestParser {
       'bigquery',
       'snowflake',
     ] as (string | undefined)[]) {
-      const ast = parseOne('DROP SCHEMA catalog.schema', { dialect });
+      const ast = parseOne('DROP SCHEMA catalog.schema', {
+        dialect,
+      });
       expect(ast).toBeInstanceOf(DropExpr);
-      expect(ast.sql({ dialect })).toBe('DROP SCHEMA catalog.schema');
+      expect(ast.sql({
+        dialect,
+      })).toBe('DROP SCHEMA catalog.schema');
     }
   }
 
@@ -914,9 +1116,13 @@ class TestParser {
       'bigquery',
       'snowflake',
     ] as (string | undefined)[]) {
-      const ast = parseOne('CREATE SCHEMA catalog.schema', { dialect });
+      const ast = parseOne('CREATE SCHEMA catalog.schema', {
+        dialect,
+      });
       expect(ast).toBeInstanceOf(CreateExpr);
-      expect(ast.sql({ dialect })).toBe('CREATE SCHEMA catalog.schema');
+      expect(ast.sql({
+        dialect,
+      })).toBe('CREATE SCHEMA catalog.schema');
     }
   }
 
@@ -930,7 +1136,11 @@ class TestParser {
       'redshift',
       'snowflake',
     ]) {
-      expect(parseOne(sql, { dialect }).sql({ dialect })).toBe(sql);
+      expect(parseOne(sql, {
+        dialect,
+      }).sql({
+        dialect,
+      })).toBe(sql);
     }
   }
 
@@ -951,7 +1161,11 @@ class TestParser {
       'databricks',
     ]) {
       for (const sql of sqls) {
-        expect(parseOne(sql, { dialect }).sql({ dialect })).toBe(sql);
+        expect(parseOne(sql, {
+          dialect,
+        }).sql({
+          dialect,
+        })).toBe(sql);
       }
     }
   }
@@ -978,13 +1192,28 @@ class TestParser {
 
   testCollate () {
     const collatePairs: [string, new (...args: never[]) => Expression][] = [
-      ['pg_catalog."default"', ColumnExpr],
-      ['"en_DE"', IdentifierExpr],
-      ['LATIN1_GENERAL_BIN', VarExpr],
-      ['\'en\'', LiteralExpr],
+      [
+        'pg_catalog."default"',
+        ColumnExpr,
+      ],
+      [
+        '"en_DE"',
+        IdentifierExpr,
+      ],
+      [
+        'LATIN1_GENERAL_BIN',
+        VarExpr,
+      ],
+      [
+        '\'en\'',
+        LiteralExpr,
+      ],
     ];
 
-    for (const [collatePart, expectedClass] of collatePairs) {
+    for (const [
+      collatePart,
+      expectedClass,
+    ] of collatePairs) {
       const collateNode = parseOne(
         `SELECT * FROM t WHERE foo LIKE '%bar%' COLLATE ${collatePart}`,
       ).find(CollateExpr) as CollateExpr;
@@ -995,8 +1224,12 @@ class TestParser {
 
   testDropColumn () {
     const ast = parseOne('ALTER TABLE tbl DROP COLUMN col');
-    expect([...ast.findAll(TableExpr)].length).toBe(1);
-    expect([...ast.findAll(ColumnExpr)].length).toBe(1);
+    expect([
+      ...ast.findAll(TableExpr),
+    ].length).toBe(1);
+    expect([
+      ...ast.findAll(ColumnExpr),
+    ].length).toBe(1);
   }
 
   testUdfMeta () {
@@ -1124,8 +1357,12 @@ class TestParser {
   testQualifiedFunction () {
     const sql = 'a.b.c.d.e.f.g.foo()';
     const ast = parseOne(sql);
-    expect([...ast.walk()].some((node) => node instanceof ColumnExpr)).toBe(false);
-    expect([...ast.findAll(DotExpr)].length).toBe(7);
+    expect([
+      ...ast.walk(),
+    ].some((node) => node instanceof ColumnExpr)).toBe(false);
+    expect([
+      ...ast.findAll(DotExpr),
+    ].length).toBe(7);
   }
 
   testPivotMissingAggFunc () {
@@ -1150,16 +1387,24 @@ class TestParser {
     }
 
     expect(
-      parseOne(sql, { errorLevel: ErrorLevel.IGNORE }).sql(),
+      parseOne(sql, {
+        errorLevel: ErrorLevel.IGNORE,
+      }).sql(),
     ).toBe('SELECT * FROM a WHERE c = \'false\'');
   }
 
   testParseIntoGrantPrincipal () {
-    expect(parseOne('ROLE blah', { into: GrantPrincipalExpr })).toBeInstanceOf(GrantPrincipalExpr);
-    expect(parseOne('GROUP blah', { into: GrantPrincipalExpr })).toBeInstanceOf(
+    expect(parseOne('ROLE blah', {
+      into: GrantPrincipalExpr,
+    })).toBeInstanceOf(GrantPrincipalExpr);
+    expect(parseOne('GROUP blah', {
+      into: GrantPrincipalExpr,
+    })).toBeInstanceOf(
       GrantPrincipalExpr,
     );
-    expect(parseOne('blah', { into: GrantPrincipalExpr })).toBeInstanceOf(GrantPrincipalExpr);
+    expect(parseOne('blah', {
+      into: GrantPrincipalExpr,
+    })).toBeInstanceOf(GrantPrincipalExpr);
     expect(
       parseOne('ROLE `blah`', {
         into: GrantPrincipalExpr,
@@ -1177,8 +1422,12 @@ class TestParser {
   }
 
   testParseIntoGrantPrivilege () {
-    expect(parseOne('SELECT', { into: GrantPrivilegeExpr })).toBeInstanceOf(GrantPrivilegeExpr);
-    expect(parseOne('ALL PRIVILEGES', { into: GrantPrivilegeExpr })).toBeInstanceOf(
+    expect(parseOne('SELECT', {
+      into: GrantPrivilegeExpr,
+    })).toBeInstanceOf(GrantPrivilegeExpr);
+    expect(parseOne('ALL PRIVILEGES', {
+      into: GrantPrivilegeExpr,
+    })).toBeInstanceOf(
       GrantPrivilegeExpr,
     );
   }

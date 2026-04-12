@@ -1,4 +1,6 @@
-import { cache } from '../port_internals';
+import {
+  cache,
+} from '../port_internals';
 import {
   Tokenizer, TokenType,
 } from '../tokens';
@@ -28,7 +30,13 @@ export class JsonPathTokenizer extends Tokenizer {
     };
   }
 
-  static IDENTIFIER_ESCAPES: string[] = ['\\'];
-  static STRING_ESCAPES: string[] = ['\\'];
-  static VAR_TOKENS = new Set([TokenType.VAR]);
+  static IDENTIFIER_ESCAPES: string[] = [
+    '\\',
+  ];
+  static STRING_ESCAPES: string[] = [
+    '\\',
+  ];
+  static VAR_TOKENS = new Set([
+    TokenType.VAR,
+  ]);
 }

@@ -1,14 +1,18 @@
 import {
   Generator,
 } from '../generator';
-import type { Expression } from '../expressions';
+import type {
+  Expression,
+} from '../expressions';
 import {
   CurrentTimestampExpr,
   ModExpr,
   ArrayExpr,
   DataTypeExprKind,
 } from '../expressions';
-import { cache } from '../port_internals';
+import {
+  cache,
+} from '../port_internals';
 import {
   Dialect, Dialects,
   renameFunc,
@@ -29,7 +33,8 @@ export class DruidGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [];
+  static readonly SELECT_KINDS: string[] = [
+  ];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic

@@ -1,8 +1,12 @@
 import {
   describe, test,
 } from 'vitest';
-import { CommandExpr } from '../../../src/expressions';
-import { Validator } from './validator';
+import {
+  CommandExpr,
+} from '../../../src/expressions';
+import {
+  Validator,
+} from './validator';
 
 class TestTeradata extends Validator {
   override dialect = 'teradata' as const;
@@ -45,7 +49,9 @@ class TestTeradata extends Validator {
     this.validateIdentity(
       'RENAME TABLE emp TO employee',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     ).assertIs(CommandExpr);
   }
 
@@ -87,14 +93,24 @@ class TestTeradata extends Validator {
   }
 
   testStatistics () {
-    this.validateIdentity('COLLECT STATISTICS ON tbl INDEX(col)', undefined, { checkCommandWarning: true });
-    this.validateIdentity('COLLECT STATS ON tbl COLUMNS(col)', undefined, { checkCommandWarning: true });
-    this.validateIdentity('COLLECT STATS COLUMNS(col) ON tbl', undefined, { checkCommandWarning: true });
-    this.validateIdentity('HELP STATISTICS personel.employee', undefined, { checkCommandWarning: true });
+    this.validateIdentity('COLLECT STATISTICS ON tbl INDEX(col)', undefined, {
+      checkCommandWarning: true,
+    });
+    this.validateIdentity('COLLECT STATS ON tbl COLUMNS(col)', undefined, {
+      checkCommandWarning: true,
+    });
+    this.validateIdentity('COLLECT STATS COLUMNS(col) ON tbl', undefined, {
+      checkCommandWarning: true,
+    });
+    this.validateIdentity('HELP STATISTICS personel.employee', undefined, {
+      checkCommandWarning: true,
+    });
     this.validateIdentity(
       'HELP STATISTICS personnel.employee FROM my_qcd',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
   }
 
@@ -159,7 +175,11 @@ class TestTeradata extends Validator {
     );
     this.validateAll(
       'REPLACE VIEW a AS (SELECT b FROM c)',
-      { write: { teradata: 'CREATE OR REPLACE VIEW a AS (SELECT b FROM c)' } },
+      {
+        write: {
+          teradata: 'CREATE OR REPLACE VIEW a AS (SELECT b FROM c)',
+        },
+      },
     );
     this.validateAll(
       'CREATE VOLATILE TABLE a',
@@ -201,7 +221,11 @@ class TestTeradata extends Validator {
   testInsert () {
     this.validateAll(
       'INS INTO x SELECT * FROM y',
-      { write: { teradata: 'INSERT INTO x SELECT * FROM y' } },
+      {
+        write: {
+          teradata: 'INSERT INTO x SELECT * FROM y',
+        },
+      },
     );
   }
 

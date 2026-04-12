@@ -4,7 +4,9 @@ import {
 import {
   PartitionedByPropertyExpr, PartitionedByBucketExpr, PartitionByTruncateExpr, SchemaExpr,
 } from '../../../src/expressions';
-import { Validator } from './validator';
+import {
+  Validator,
+} from './validator';
 
 class TestAthena extends Validator {
   override dialect = 'athena' as const;
@@ -20,7 +22,9 @@ class TestAthena extends Validator {
       + 'TO \'s3://amzn-s3-demo-bucket/ partitioned/\' '
       + 'WITH (format = \'TEXTFILE\', partitioned_by = ARRAY[\'key1\'])',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
     this.validateIdentity(
       `USING EXTERNAL FUNCTION some_function(input VARBINARY)
@@ -29,18 +33,24 @@ class TestAthena extends Validator {
             SELECT
             some_function(1)`,
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
 
     this.validateIdentity(
       '/* leading comment */CREATE SCHEMA foo',
       '/* leading comment */ CREATE SCHEMA `foo`',
-      { identify: true },
+      {
+        identify: true,
+      },
     );
     this.validateIdentity(
       '/* leading comment */SELECT * FROM foo',
       '/* leading comment */ SELECT * FROM "foo"',
-      { identify: true },
+      {
+        identify: true,
+      },
     );
   }
 
@@ -96,7 +106,9 @@ class TestAthena extends Validator {
     this.validateAll(
       'SELECT CAST(ds AS VARCHAR) AS ds FROM (VALUES (\'2022-01-01\')) AS t(ds)',
       {
-        read: { '': 'SELECT CAST(ds AS STRING) AS ds FROM (VALUES (\'2022-01-01\')) AS t(ds)' },
+        read: {
+          '': 'SELECT CAST(ds AS STRING) AS ds FROM (VALUES (\'2022-01-01\')) AS t(ds)',
+        },
         write: {
           hive: 'SELECT CAST(ds AS STRING) AS ds FROM (VALUES (\'2022-01-01\')) AS t(ds)',
           trino: 'SELECT CAST(ds AS VARCHAR) AS ds FROM (VALUES (\'2022-01-01\')) AS t(ds)',
@@ -115,7 +127,9 @@ class TestAthena extends Validator {
     this.validateIdentity(
       'CREATE EXTERNAL TABLE foo (id INT) LOCATION \'s3://foo/\'',
       'CREATE EXTERNAL TABLE `foo` (`id` INT) LOCATION \'s3://foo/\'',
-      { identify: true },
+      {
+        identify: true,
+      },
     );
 
     this.validateIdentity('CREATE TABLE foo AS SELECT * FROM a');
@@ -126,7 +140,9 @@ class TestAthena extends Validator {
     this.validateIdentity(
       'CREATE VIEW foo AS SELECT id FROM tbl',
       'CREATE VIEW "foo" AS SELECT "id" FROM "tbl"',
-      { identify: true },
+      {
+        identify: true,
+      },
     );
 
     this.validateIdentity('DROP TABLE `foo`');
@@ -134,7 +150,9 @@ class TestAthena extends Validator {
     this.validateIdentity(
       'DROP TABLE foo',
       'DROP TABLE `foo`',
-      { identify: true },
+      {
+        identify: true,
+      },
     );
 
     this.validateIdentity('CREATE VIEW "foo" AS SELECT "id" FROM "tbl"');
@@ -142,7 +160,9 @@ class TestAthena extends Validator {
     this.validateIdentity(
       'CREATE VIEW foo AS SELECT id FROM tbl',
       'CREATE VIEW "foo" AS SELECT "id" FROM "tbl"',
-      { identify: true },
+      {
+        identify: true,
+      },
     );
 
     this.validateIdentity('CREATE SCHEMA "foo"', 'CREATE SCHEMA `foo`');
@@ -150,7 +170,9 @@ class TestAthena extends Validator {
     this.validateIdentity(
       'DESCRIBE foo.bar',
       'DESCRIBE `foo`.`bar`',
-      { identify: true },
+      {
+        identify: true,
+      },
     );
     this.validateIdentity(
       'CREATE TABLE "foo" AS WITH "foo" AS (SELECT "a", "b" FROM "bar") SELECT * FROM "foo"',
@@ -174,14 +196,18 @@ class TestAthena extends Validator {
     this.validateIdentity(
       'WITH foo AS (SELECT a, b FROM bar) SELECT * FROM foo',
       'WITH "foo" AS (SELECT "a", "b" FROM "bar") SELECT * FROM "foo"',
-      { identify: true },
+      {
+        identify: true,
+      },
     );
   }
 
   testParsePartitionedByReturnsIcebergTransforms () {
     const parsed = this.parseOne(
       '(a, bucket(4, b), truncate(3, c), month(d))',
-      { into: 'PartitionedByProperty' },
+      {
+        into: 'PartitionedByProperty',
+      },
     );
 
     expect(parsed).toBeInstanceOf(PartitionedByPropertyExpr);

@@ -1,7 +1,9 @@
 import {
   describe, test, expect,
 } from 'vitest';
-import type { WidthBucketExpr } from '../../../src/expressions';
+import type {
+  WidthBucketExpr,
+} from '../../../src/expressions';
 import {
   Expression,
 
@@ -10,7 +12,9 @@ import {
   JsonbContainsAnyTopKeysExpr, JsonbContainsAllTopKeysExpr, JsonbDeleteAtPathExpr,
   TransactionExpr, BinaryExpr, CastExpr, ColumnDefExpr,
 } from '../../../src/expressions';
-import { narrowInstanceOf } from '../../../src/port_internals';
+import {
+  narrowInstanceOf,
+} from '../../../src/port_internals';
 import {
   Validator, UnsupportedError,
 } from './validator';
@@ -27,11 +31,15 @@ class TestPostgres extends Validator {
     const alterTableOnly = 'ALTER TABLE ONLY "Album" ADD CONSTRAINT "FK_AlbumArtistId" FOREIGN KEY ("ArtistId") REFERENCES "Artist" ("ArtistId") ON DELETE NO ACTION ON UPDATE NO ACTION';
     const exprAlter = this.parseOne(alterTableOnly);
     expect(exprAlter).toBeInstanceOf(AlterExpr);
-    expect(exprAlter.sql({ dialect: 'postgres' })).toBe(alterTableOnly);
+    expect(exprAlter.sql({
+      dialect: 'postgres',
+    })).toBe(alterTableOnly);
 
     const sql = 'ARRAY[x' + ',x'.repeat(27) + ']';
     const expectedSql = 'ARRAY[\n  x' + ',\n  x'.repeat(27) + '\n]';
-    this.validateIdentity(sql, expectedSql, { pretty: true });
+    this.validateIdentity(sql, expectedSql, {
+      pretty: true,
+    });
 
     this.validateIdentity('SELECT GET_BIT(CAST(44 AS BIT(10)), 6)');
     this.validateIdentity('SELECT * FROM t GROUP BY ROLLUP (a || \'^\' || b)');
@@ -87,7 +95,9 @@ class TestPostgres extends Validator {
     this.validateIdentity('x ~* \'y\'');
     this.validateIdentity('SELECT * FROM r CROSS JOIN LATERAL UNNEST(ARRAY[1]) AS s(location)');
     this.validateIdentity('CAST(1 AS DECIMAL) / CAST(2 AS DECIMAL) * -100');
-    this.validateIdentity('EXEC AS myfunc @id = 123', undefined, { checkCommandWarning: true });
+    this.validateIdentity('EXEC AS myfunc @id = 123', undefined, {
+      checkCommandWarning: true,
+    });
     this.validateIdentity('SELECT CURRENT_SCHEMA');
     this.validateIdentity('SELECT CURRENT_USER');
     this.validateIdentity('SELECT CURRENT_ROLE');
@@ -419,7 +429,9 @@ class TestPostgres extends Validator {
 SELECT
   JSON_ARRAY_ELEMENTS(JSON_EXTRACT_PATH(json_data.data, field_ids.field_id)) AS element
 FROM json_data, field_ids`,
-      { pretty: true },
+      {
+        pretty: true,
+      },
     );
 
     this.validateAll(
@@ -1199,7 +1211,9 @@ FROM json_data, field_ids`,
     const cdef = exprInterval.find(ColumnDefExpr);
     expect(cdef).toBeInstanceOf(ColumnDefExpr);
     expect((cdef as ColumnDefExpr).getArgKey('kind')).toBeInstanceOf(DataTypeExpr);
-    expect(exprInterval.sql({ dialect: 'postgres' })).toBe('CREATE TABLE t (x INTERVAL DAY)');
+    expect(exprInterval.sql({
+      dialect: 'postgres',
+    })).toBe('CREATE TABLE t (x INTERVAL DAY)');
 
     this.validateIdentity('ALTER INDEX "IX_Ratings_Column1" RENAME TO "IX_Ratings_Column2"');
     this.validateIdentity('CREATE TABLE x (a TEXT COLLATE "de_DE")');
@@ -1322,22 +1336,30 @@ FROM json_data, field_ids`,
     this.validateIdentity(
       'CREATE FUNCTION add(INT, INT) RETURNS INT SET search_path TO \'public\' AS \'select $1 + $2;\' LANGUAGE SQL IMMUTABLE',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
     this.validateIdentity(
       'CREATE FUNCTION x(INT) RETURNS INT SET foo FROM CURRENT',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
     this.validateIdentity(
       'CREATE FUNCTION add(integer, integer) RETURNS integer AS \'select $1 + $2;\' LANGUAGE SQL IMMUTABLE CALLED ON NULL INPUT',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
     this.validateIdentity(
       'CREATE CONSTRAINT TRIGGER my_trigger AFTER INSERT OR DELETE OR UPDATE OF col_a, col_b ON public.my_table DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION do_sth()',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
     this.validateIdentity(
       'CREATE UNLOGGED TABLE foo AS WITH t(c) AS (SELECT 1) SELECT * FROM (SELECT c AS c FROM t) AS temp',
@@ -1688,7 +1710,9 @@ CROSS JOIN JSON_ARRAY_ELEMENTS(CAST(boxcrate AS JSON)) AS x(tbox)
 CROSS JOIN JSON_ARRAY_ELEMENTS(CAST(JSON_EXTRACT_PATH(tbox, 'boxes') AS JSON)) AS y(boxes)`;
 
     this.validateAll(expectedPostgres, {
-      read: { trino: trinoInput },
+      read: {
+        trino: trinoInput,
+      },
       pretty: true,
     });
   }
@@ -1777,7 +1801,10 @@ CROSS JOIN JSON_ARRAY_ELEMENTS(CAST(JSON_EXTRACT_PATH(tbox, 'boxes') AS JSON)) A
   }
 
   testRecursiveCte () {
-    for (const kind of ['BREADTH', 'DEPTH']) {
+    for (const kind of [
+      'BREADTH',
+      'DEPTH',
+    ]) {
       this.validateIdentity(
         `WITH RECURSIVE search_tree(id, link, data) AS (SELECT t.id, t.link, t.data FROM tree AS t UNION ALL SELECT t.id, t.link, t.data FROM tree AS t, search_tree AS st WHERE t.id = st.link) SEARCH ${kind} FIRST BY id SET ordercol SELECT * FROM search_tree ORDER BY ordercol`,
       );
@@ -1789,7 +1816,10 @@ CROSS JOIN JSON_ARRAY_ELEMENTS(CAST(JSON_EXTRACT_PATH(tbox, 'boxes') AS JSON)) A
   }
 
   testJsonExtract () {
-    for (const arrowOp of ['->', '->>']) {
+    for (const arrowOp of [
+      '->',
+      '->>',
+    ]) {
       // Ensure arrow_op operator roundtrips int values as subscripts
       this.validateAll(
         `SELECT foo ${arrowOp} 1`,
@@ -1843,7 +1873,11 @@ CROSS JOIN JSON_ARRAY_ELEMENTS(CAST(JSON_EXTRACT_PATH(tbox, 'boxes') AS JSON)) A
         },
       },
     );
-    this.validateAll('ROUND(CAST(x AS DECIMAL(18, 3)), 4)', { read: { duckdb: 'ROUND(x::DECIMAL, 4)' } });
+    this.validateAll('ROUND(CAST(x AS DECIMAL(18, 3)), 4)', {
+      read: {
+        duckdb: 'ROUND(x::DECIMAL, 4)',
+      },
+    });
   }
 
   testDatatype () {
@@ -1894,7 +1928,9 @@ CROSS JOIN JSON_ARRAY_ELEMENTS(CAST(JSON_EXTRACT_PATH(tbox, 'boxes') AS JSON)) A
     ];
 
     for (const sql of advancedGrants) {
-      this.validateIdentity(sql, undefined, { checkCommandWarning: true });
+      this.validateIdentity(sql, undefined, {
+        checkCommandWarning: true,
+      });
     }
   }
 
@@ -1934,7 +1970,9 @@ CROSS JOIN JSON_ARRAY_ELEMENTS(CAST(JSON_EXTRACT_PATH(tbox, 'boxes') AS JSON)) A
     ];
 
     for (const sql of advancedRevokeCmds) {
-      this.validateIdentity(sql, undefined, { checkCommandWarning: true });
+      this.validateIdentity(sql, undefined, {
+        checkCommandWarning: true,
+      });
     }
   }
 
@@ -1950,7 +1988,10 @@ CROSS JOIN JSON_ARRAY_ELEMENTS(CAST(JSON_EXTRACT_PATH(tbox, 'boxes') AS JSON)) A
       },
     );
 
-    for (const keyword of ['TRANSACTION', 'WORK']) {
+    for (const keyword of [
+      'TRANSACTION',
+      'WORK',
+    ]) {
       for (const level of [
         'ISOLATION LEVEL SERIALIZABLE',
         'ISOLATION LEVEL READ COMMITTED',

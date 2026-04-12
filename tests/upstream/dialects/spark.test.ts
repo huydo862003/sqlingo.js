@@ -4,8 +4,12 @@ import {
 import {
   ApproxQuantileExpr, DistinctExpr, LiteralExpr, DateTruncExpr, RefreshExpr,
 } from '../../../src/expressions';
-import { narrowInstanceOf } from '../../../src/port_internals';
-import { parseOne } from '../../../src/index';
+import {
+  narrowInstanceOf,
+} from '../../../src/port_internals';
+import {
+  parseOne,
+} from '../../../src/index';
 import {
   Validator, UnsupportedError,
 } from './validator';
@@ -199,7 +203,9 @@ TBLPROPERTIES (
     this.validateIdentity(
       'ALTER VIEW StudentInfoView UNSET TBLPROPERTIES (\'key1\', \'key2\')',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
   }
 
@@ -327,9 +333,15 @@ TBLPROPERTIES (
 
   testSpark () {
     expect(
-      parseOne('REFRESH TABLE t', { read: 'spark' }).sql({ dialect: 'spark' }),
+      parseOne('REFRESH TABLE t', {
+        read: 'spark',
+      }).sql({
+        dialect: 'spark',
+      }),
     ).toBe('REFRESH TABLE t');
-    parseOne('REFRESH TABLE t', { read: 'spark' }).assertIs(RefreshExpr);
+    parseOne('REFRESH TABLE t', {
+      read: 'spark',
+    }).assertIs(RefreshExpr);
 
     // Spark TRUNC is date-only, should parse to DateTrunc (not numeric Trunc)
     this.validateIdentity('TRUNC(date_col, \'MM\')').assertIs(DateTruncExpr);
@@ -337,7 +349,11 @@ TBLPROPERTIES (
     // Numeric TRUNC from other dialects - Spark has no native support, uses CAST to BIGINT
     this.validateAll(
       'CAST(3.14159 AS BIGINT)',
-      { read: { postgres: 'TRUNC(3.14159, 2)' } },
+      {
+        read: {
+          postgres: 'TRUNC(3.14159, 2)',
+        },
+      },
     );
 
     this.validateIdentity('SELECT APPROX_TOP_K_ACCUMULATE(col, 10)');
@@ -704,10 +720,18 @@ TBLPROPERTIES (
         },
       },
     );
-    this.validateAll('SELECT * FROM ((VALUES 1))', { write: { spark: 'SELECT * FROM (VALUES (1))' } });
+    this.validateAll('SELECT * FROM ((VALUES 1))', {
+      write: {
+        spark: 'SELECT * FROM (VALUES (1))',
+      },
+    });
     this.validateAll(
       'SELECT CAST(STRUCT(\'fooo\') AS STRUCT<a: VARCHAR(2)>)',
-      { write: { spark: 'SELECT CAST(STRUCT(\'fooo\' AS col1) AS STRUCT<a: STRING>)' } },
+      {
+        write: {
+          spark: 'SELECT CAST(STRUCT(\'fooo\' AS col1) AS STRUCT<a: STRING>)',
+        },
+      },
     );
     this.validateAll(
       'SELECT CAST(123456 AS VARCHAR(3))',
@@ -809,7 +833,10 @@ TBLPROPERTIES (
       );
     }
 
-    for (const tsSuffix of ['NTZ', 'LTZ']) {
+    for (const tsSuffix of [
+      'NTZ',
+      'LTZ',
+    ]) {
       this.validateAll(
         `TIMESTAMP_${tsSuffix}(x)`,
         {
@@ -861,7 +888,11 @@ TBLPROPERTIES (
         },
       },
     );
-    this.validateAll('TRIM(\'SL\', \'SSparkSQLS\')', { write: { spark: 'TRIM(\'SL\' FROM \'SSparkSQLS\')' } });
+    this.validateAll('TRIM(\'SL\', \'SSparkSQLS\')', {
+      write: {
+        spark: 'TRIM(\'SL\' FROM \'SSparkSQLS\')',
+      },
+    });
     this.validateAll(
       'ARRAY_SORT(x, (left, right) -> -1)',
       {
@@ -1142,18 +1173,30 @@ TBLPROPERTIES (
   testBoolOr () {
     this.validateAll(
       'SELECT a, LOGICAL_OR(b) FROM table GROUP BY a',
-      { write: { spark: 'SELECT a, BOOL_OR(b) FROM table GROUP BY a' } },
+      {
+        write: {
+          spark: 'SELECT a, BOOL_OR(b) FROM table GROUP BY a',
+        },
+      },
     );
   }
 
   testCurrentUser () {
     this.validateAll(
       'CURRENT_USER',
-      { write: { spark: 'CURRENT_USER()' } },
+      {
+        write: {
+          spark: 'CURRENT_USER()',
+        },
+      },
     );
     this.validateAll(
       'CURRENT_USER()',
-      { write: { spark: 'CURRENT_USER()' } },
+      {
+        write: {
+          spark: 'CURRENT_USER()',
+        },
+      },
     );
   }
 
@@ -1321,9 +1364,13 @@ TBLPROPERTIES (
     ];
     for (const name of dialectNames) {
       if (dialectsWithModifiers.has(name)) {
-        expect(query.sql({ dialect: name || undefined })).toBe(withModifiers);
+        expect(query.sql({
+          dialect: name || undefined,
+        })).toBe(withModifiers);
       } else {
-        expect(query.sql({ dialect: name || undefined })).toBe(withoutModifiers);
+        expect(query.sql({
+          dialect: name || undefined,
+        })).toBe(withoutModifiers);
       }
     }
   }
@@ -1360,8 +1407,12 @@ TBLPROPERTIES (
       'spark',
       'databricks',
     ]) {
-      const query = parseOne('STRING(a)', { read: dialect });
-      expect(query.sql({ dialect })).toBe('CAST(a AS STRING)');
+      const query = parseOne('STRING(a)', {
+        read: dialect,
+      });
+      expect(query.sql({
+        dialect,
+      })).toBe('CAST(a AS STRING)');
     }
   }
 
@@ -1371,11 +1422,19 @@ TBLPROPERTIES (
       'spark',
       'databricks',
     ]) {
-      const query1 = parseOne('X\'ab\'', { read: dialect });
-      expect(query1.sql({ dialect })).toBe('X\'ab\'');
+      const query1 = parseOne('X\'ab\'', {
+        read: dialect,
+      });
+      expect(query1.sql({
+        dialect,
+      })).toBe('X\'ab\'');
 
-      const query2 = parseOne('X\'\'', { read: dialect });
-      expect(query2.sql({ dialect })).toBe('X\'\'');
+      const query2 = parseOne('X\'\'', {
+        read: dialect,
+      });
+      expect(query2.sql({
+        dialect,
+      })).toBe('X\'\'');
     }
   }
 

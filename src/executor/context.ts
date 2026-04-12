@@ -1,6 +1,12 @@
-import { lt } from '../port_internals/ops_utils';
-import type { Env } from './env';
-import { ENV } from './env';
+import {
+  lt,
+} from '../port_internals/ops_utils';
+import type {
+  Env,
+} from './env';
+import {
+  ENV,
+} from './env';
 import type {
   RangeReader,
   RowReader, Table,
@@ -31,7 +37,10 @@ export class Context {
     this.rangeReaders = {};
     this.rowReaders = {};
 
-    for (const [name, table] of this.tables) {
+    for (const [
+      name,
+      table,
+    ] of this.tables) {
       this.rangeReaders[name] = table.rangeReader;
       this.rowReaders[name] = table.reader;
     }
@@ -96,7 +105,10 @@ export class Context {
       for (const table of this.tables.values()) {
         reader = table.get(i);
       }
-      if (reader) yield [reader, this];
+      if (reader) yield [
+        reader,
+        this,
+      ];
     }
   }
 
@@ -109,9 +121,12 @@ export class Context {
   }
 
   filter (condition: string): void {
-    const rows: unknown[][] = [];
+    const rows: unknown[][] = [
+    ];
 
-    for (const [reader] of this) {
+    for (const [
+      reader,
+    ] of this) {
       if (this.eval(condition)) {
         rows.push(reader.row);
       }
@@ -125,7 +140,10 @@ export class Context {
   sort (keys: string[]): void {
     const mapped = this.table.rows.map((row) => {
       this.setRow(row);
-      const evaluatedKeys = this.evalTuple(keys).map((t) => [t === undefined, t]);
+      const evaluatedKeys = this.evalTuple(keys).map((t) => [
+        t === undefined,
+        t,
+      ]);
       return {
         row,
         evaluatedKeys,
@@ -166,7 +184,9 @@ export class Context {
   }
 
   setRange (start: number, end: number): void {
-    for (const [name] of this.tables) {
+    for (const [
+      name,
+    ] of this.tables) {
       this.rangeReaders[name].range = {
         start,
         stop: end,

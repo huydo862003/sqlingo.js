@@ -1,4 +1,6 @@
-import type { FuncExpr } from '../expressions';
+import type {
+  FuncExpr,
+} from '../expressions';
 
 export const FUNCTION_BY_NAME = new Map<string, typeof FuncExpr>();
 export const ALL_FUNCTIONS = new Set<typeof FuncExpr>();

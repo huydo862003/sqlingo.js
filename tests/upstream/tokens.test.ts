@@ -4,21 +4,46 @@ import {
 import {
   Tokenizer, TokenType,
 } from '../../src/tokens';
-import { BigQueryTokenizer } from '../../src/dialects/bigquery';
-import { TokenError } from '../../src/errors';
+import {
+  BigQueryTokenizer,
+} from '../../src/dialects/bigquery';
+import {
+  TokenError,
+} from '../../src/errors';
 
 class TestTokens {
   testSpaceKeywords () {
     const cases: [string, number][] = [
-      ['group bys', 2],
-      [' group bys', 2],
-      [' group bys ', 2],
-      ['group by)', 2],
-      ['group bys)', 3],
-      ['group \r', 1],
+      [
+        'group bys',
+        2,
+      ],
+      [
+        ' group bys',
+        2,
+      ],
+      [
+        ' group bys ',
+        2,
+      ],
+      [
+        'group by)',
+        2,
+      ],
+      [
+        'group bys)',
+        3,
+      ],
+      [
+        'group \r',
+        1,
+      ],
     ];
 
-    for (const [string, length] of cases) {
+    for (const [
+      string,
+      length,
+    ] of cases) {
       const tokens = new Tokenizer().tokenize(string);
       expect(tokens[0].text.toUpperCase()).toContain('GROUP');
       expect(tokens.length).toBe(length);
@@ -28,18 +53,68 @@ class TestTokens {
   testCommentAttachment () {
     const tokenizer = new Tokenizer();
     const sqlComment: [string, string[]][] = [
-      ['/*comment*/ foo', ['comment']],
-      ['/*comment*/ foo --test', ['comment', 'test']],
-      ['--comment\nfoo --test', ['comment', 'test']],
-      ['foo --comment', ['comment']],
-      ['foo', []],
-      ['foo /*comment 1*/ /*comment 2*/', ['comment 1', 'comment 2']],
-      ['foo\n-- comment', [' comment']],
-      ['1 /*/2 */', ['/2 ']],
-      ['1\n/*comment*/;', ['comment']],
+      [
+        '/*comment*/ foo',
+        [
+          'comment',
+        ],
+      ],
+      [
+        '/*comment*/ foo --test',
+        [
+          'comment',
+          'test',
+        ],
+      ],
+      [
+        '--comment\nfoo --test',
+        [
+          'comment',
+          'test',
+        ],
+      ],
+      [
+        'foo --comment',
+        [
+          'comment',
+        ],
+      ],
+      [
+        'foo',
+        [
+        ],
+      ],
+      [
+        'foo /*comment 1*/ /*comment 2*/',
+        [
+          'comment 1',
+          'comment 2',
+        ],
+      ],
+      [
+        'foo\n-- comment',
+        [
+          ' comment',
+        ],
+      ],
+      [
+        '1 /*/2 */',
+        [
+          '/2 ',
+        ],
+      ],
+      [
+        '1\n/*comment*/;',
+        [
+          'comment',
+        ],
+      ],
     ];
 
-    for (const [sql, comment] of sqlComment) {
+    for (const [
+      sql,
+      comment,
+    ] of sqlComment) {
       expect(tokenizer.tokenize(sql)[0].comments).toEqual(comment);
     }
   }
@@ -85,19 +160,49 @@ class TestTokens {
 
   testCrlf () {
     const tokens = new Tokenizer().tokenize('SELECT a\r\nFROM b');
-    const pairs = tokens.map((token) => [token.tokenType, token.text]);
-
-    expect(pairs).toEqual([
-      [TokenType.SELECT, 'SELECT'],
-      [TokenType.VAR, 'a'],
-      [TokenType.FROM, 'FROM'],
-      [TokenType.VAR, 'b'],
+    const pairs = tokens.map((token) => [
+      token.tokenType,
+      token.text,
     ]);
 
-    for (const simpleQuery of ['SELECT 1\r\n', '\r\nSELECT 1']) {
+    expect(pairs).toEqual([
+      [
+        TokenType.SELECT,
+        'SELECT',
+      ],
+      [
+        TokenType.VAR,
+        'a',
+      ],
+      [
+        TokenType.FROM,
+        'FROM',
+      ],
+      [
+        TokenType.VAR,
+        'b',
+      ],
+    ]);
+
+    for (const simpleQuery of [
+      'SELECT 1\r\n',
+      '\r\nSELECT 1',
+    ]) {
       const t = new Tokenizer().tokenize(simpleQuery);
-      const p = t.map((token) => [token.tokenType, token.text]);
-      expect(p).toEqual([[TokenType.SELECT, 'SELECT'], [TokenType.NUMBER, '1']]);
+      const p = t.map((token) => [
+        token.tokenType,
+        token.text,
+      ]);
+      expect(p).toEqual([
+        [
+          TokenType.SELECT,
+          'SELECT',
+        ],
+        [
+          TokenType.NUMBER,
+          '1',
+        ],
+      ]);
     }
   }
 
@@ -135,43 +240,136 @@ class TestTokens {
                {% endfor %};
         `);
 
-    const pairs = tokens.map((token) => [token.tokenType, token.text]);
+    const pairs = tokens.map((token) => [
+      token.tokenType,
+      token.text,
+    ]);
 
     expect(pairs).toEqual([
-      [TokenType.SELECT, 'SELECT'],
-      [TokenType.L_BRACE, '{'],
-      [TokenType.L_BRACE, '{'],
-      [TokenType.VAR, 'x'],
-      [TokenType.R_BRACE, '}'],
-      [TokenType.R_BRACE, '}'],
-      [TokenType.COMMA, ','],
-      [TokenType.BLOCK_START, '{{-'],
-      [TokenType.VAR, 'x'],
-      [TokenType.BLOCK_END, '-}}'],
-      [TokenType.COMMA, ','],
-      [TokenType.BLOCK_START, '{%'],
-      [TokenType.FOR, 'for'],
-      [TokenType.VAR, 'x'],
-      [TokenType.IN, 'in'],
-      [TokenType.VAR, 'y'],
-      [TokenType.BLOCK_END, '-%}'],
-      [TokenType.VAR, 'a'],
-      [TokenType.BLOCK_START, '{{+'],
-      [TokenType.VAR, 'b'],
-      [TokenType.R_BRACE, '}'],
-      [TokenType.R_BRACE, '}'],
-      [TokenType.BLOCK_START, '{%'],
-      [TokenType.VAR, 'endfor'],
-      [TokenType.BLOCK_END, '%}'],
-      [TokenType.SEMICOLON, ';'],
+      [
+        TokenType.SELECT,
+        'SELECT',
+      ],
+      [
+        TokenType.L_BRACE,
+        '{',
+      ],
+      [
+        TokenType.L_BRACE,
+        '{',
+      ],
+      [
+        TokenType.VAR,
+        'x',
+      ],
+      [
+        TokenType.R_BRACE,
+        '}',
+      ],
+      [
+        TokenType.R_BRACE,
+        '}',
+      ],
+      [
+        TokenType.COMMA,
+        ',',
+      ],
+      [
+        TokenType.BLOCK_START,
+        '{{-',
+      ],
+      [
+        TokenType.VAR,
+        'x',
+      ],
+      [
+        TokenType.BLOCK_END,
+        '-}}',
+      ],
+      [
+        TokenType.COMMA,
+        ',',
+      ],
+      [
+        TokenType.BLOCK_START,
+        '{%',
+      ],
+      [
+        TokenType.FOR,
+        'for',
+      ],
+      [
+        TokenType.VAR,
+        'x',
+      ],
+      [
+        TokenType.IN,
+        'in',
+      ],
+      [
+        TokenType.VAR,
+        'y',
+      ],
+      [
+        TokenType.BLOCK_END,
+        '-%}',
+      ],
+      [
+        TokenType.VAR,
+        'a',
+      ],
+      [
+        TokenType.BLOCK_START,
+        '{{+',
+      ],
+      [
+        TokenType.VAR,
+        'b',
+      ],
+      [
+        TokenType.R_BRACE,
+        '}',
+      ],
+      [
+        TokenType.R_BRACE,
+        '}',
+      ],
+      [
+        TokenType.BLOCK_START,
+        '{%',
+      ],
+      [
+        TokenType.VAR,
+        'endfor',
+      ],
+      [
+        TokenType.BLOCK_END,
+        '%}',
+      ],
+      [
+        TokenType.SEMICOLON,
+        ';',
+      ],
     ]);
 
     const tokens2 = tokenizer.tokenize('\'{{ var(\'x\') }}\'');
-    const pairs2 = tokens2.map((token) => [token.tokenType, token.text]);
+    const pairs2 = tokens2.map((token) => [
+      token.tokenType,
+      token.text,
+    ]);
     expect(pairs2).toEqual([
-      [TokenType.STRING, '{{ var('],
-      [TokenType.VAR, 'x'],
-      [TokenType.STRING, ') }}'],
+      [
+        TokenType.STRING,
+        '{{ var(',
+      ],
+      [
+        TokenType.VAR,
+        'x',
+      ],
+      [
+        TokenType.STRING,
+        ') }}',
+      ],
     ]);
   }
 

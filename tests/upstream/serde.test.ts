@@ -1,14 +1,24 @@
 import {
   describe, it, expect,
 } from 'vitest';
-import { parseOne } from '../../src/index';
-import { Expression } from '../../src/expressions';
-import { narrowInstanceOf } from '../../src/port_internals';
-import { annotateTypes } from '../../src/optimizer/annotate_types';
+import {
+  parseOne,
+} from '../../src/index';
+import {
+  Expression,
+} from '../../src/expressions';
+import {
+  narrowInstanceOf,
+} from '../../src/port_internals';
+import {
+  annotateTypes,
+} from '../../src/optimizer/annotate_types';
 import {
   dump, load,
 } from '../../src/serde';
-import { loadSqlFixtures } from './helpers';
+import {
+  loadSqlFixtures,
+} from './helpers';
 
 function dumpLoad (expression: Expression, customExpressions?: Record<string, typeof Expression>): Expression | undefined {
   return load(JSON.parse(JSON.stringify(dump(expression))), customExpressions);
@@ -26,7 +36,9 @@ describe('TestSerde', () => {
   it('test_custom_expression', () => {
     class CustomExpression extends Expression {}
     const before = new CustomExpression({});
-    const after = dumpLoad(before, { CustomExpression });
+    const after = dumpLoad(before, {
+      CustomExpression,
+    });
     // custom expression class not in registry so load returns undefined — expect it to not crash
     expect(after).toEqual(before);
   });

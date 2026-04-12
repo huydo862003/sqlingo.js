@@ -1,4 +1,6 @@
-import { cache } from '../port_internals';
+import {
+  cache,
+} from '../port_internals';
 import type {
   Expression,
   ExpressionValue,
@@ -53,15 +55,27 @@ import {
   PartitionedByPropertyExpr,
   SessionUserExpr,
 } from '../expressions';
-import { Generator } from '../generator';
-import { seqGet } from '../helper';
-import { Parser } from '../parser';
-import type { TokenPair } from '../tokens';
-import { TokenType } from '../tokens';
+import {
+  Generator,
+} from '../generator';
+import {
+  seqGet,
+} from '../helper';
+import {
+  Parser,
+} from '../parser';
+import type {
+  TokenPair,
+} from '../tokens';
+import {
+  TokenType,
+} from '../tokens';
 import {
   ctasWithTmpTablesToCreateTmpView, movePartitionedByToSchemaColumns, preprocess, removeUniqueConstraints,
 } from '../transforms';
-import { SparkTyping } from '../typing/spark';
+import {
+  SparkTyping,
+} from '../typing/spark';
 import {
   arrayAppendSql,
   dateDeltaToBinaryIntervalOp,
@@ -73,7 +87,9 @@ import {
   buildDateDelta,
   timestampDiffSql,
 } from './dialect';
-import { buildWithIgnoreNulls } from './hive';
+import {
+  buildWithIgnoreNulls,
+} from './hive';
 import {
   buildAsCast, Spark2,
   temporaryStorageProvider,
@@ -94,8 +110,12 @@ function buildDatediff (args: Expression[]): Expression {
   }
 
   return new DateDiffExpr({
-    this: new TsOrDsToDateExpr({ this: thisNode }),
-    expression: new TsOrDsToDateExpr({ this: expression }),
+    this: new TsOrDsToDateExpr({
+      this: thisNode,
+    }),
+    expression: new TsOrDsToDateExpr({
+      this: expression,
+    }),
     unit: unit,
   });
 }
@@ -139,7 +159,10 @@ function dateAddSql (this: Generator, expression: TsOrDsAddExpr | TimestampAddEx
     || (expression instanceof TsOrDsAddExpr && expression.text('unit').toUpperCase() === 'DAY')
   ) {
     // Coming from Hive/Spark2 DATE_ADD or roundtripping the 2-arg version of Spark3/DB
-    return this.func('DATE_ADD', [expression.args.this, expression.args.expression]);
+    return this.func('DATE_ADD', [
+      expression.args.this,
+      expression.args.expression,
+    ]);
   }
 
   let thisSql = this.func('DATE_ADD', [
@@ -151,7 +174,10 @@ function dateAddSql (this: Generator, expression: TsOrDsAddExpr | TimestampAddEx
   if (expression instanceof TsOrDsAddExpr) {
     // The 3 arg version of DATE_ADD produces a timestamp in Spark3/DB
     const returnType = expression.returnType;
-    if (!returnType?.isType([DataTypeExprKind.TIMESTAMP, DataTypeExprKind.DATETIME])) {
+    if (!returnType?.isType([
+      DataTypeExprKind.TIMESTAMP,
+      DataTypeExprKind.DATETIME,
+    ])) {
       thisSql = `CAST(${thisSql} AS ${returnType})`;
     }
   }
@@ -162,7 +188,9 @@ function dateAddSql (this: Generator, expression: TsOrDsAddExpr | TimestampAddEx
 function groupConcatSql (this: Generator, expression: GroupConcatExpr): string {
   if (this.dialect.version.major < 4) {
     const expr = new ArrayToStringExpr({
-      this: new ArrayAggExpr({ this: expression.args.this }),
+      this: new ArrayAggExpr({
+        this: expression.args.this,
+      }),
       expression: expression.args.separator || LiteralExpr.string(''),
     });
     return this.sql(expr);
@@ -176,7 +204,16 @@ class SparkTokenizer extends Spark2.Tokenizer {
 
   @cache
   static get RAW_STRINGS (): TokenPair[] {
-    return Spark2.Tokenizer.QUOTES.flatMap((q) => [[`r${q}`, q], [`R${q}`, q]]) as TokenPair[];
+    return Spark2.Tokenizer.QUOTES.flatMap((q) => [
+      [
+        `r${q}`,
+        q,
+      ],
+      [
+        `R${q}`,
+        q,
+      ],
+    ]) as TokenPair[];
   }
 }
 
@@ -184,7 +221,9 @@ class SparkParser extends Spark2.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Spark2.Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Spark2.Parser.NO_PAREN_FUNCTIONS,
+    };
     noParenFunctions[TokenType.SESSION_USER] = SessionUserExpr;
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
@@ -201,7 +240,7 @@ class SparkParser extends Spark2.Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return {
       ...Spark2.Parser.FUNCTIONS,
       ANY_VALUE: buildWithIgnoreNulls(AnyValueExpr),
@@ -232,7 +271,9 @@ class SparkParser extends Spark2.Parser {
       TRY_ELEMENT_AT: (args: Expression[]) =>
         new BracketExpr({
           this: seqGet(args, 0),
-          expressions: [args[1]],
+          expressions: [
+            args[1],
+          ],
           offset: 1,
           safe: true,
         }),
@@ -273,7 +314,9 @@ class SparkParser extends Spark2.Parser {
   parseGeneratedAsIdentity (): GeneratedAsIdentityColumnConstraintExpr | ComputedColumnConstraintExpr | GeneratedAsRowColumnConstraintExpr {
     const thisNode = super.parseGeneratedAsIdentity();
     if (thisNode.args.expression) {
-      return this.expression(ComputedColumnConstraintExpr, { this: thisNode.args.expression });
+      return this.expression(ComputedColumnConstraintExpr, {
+        this: thisNode.args.expression,
+      });
     }
     return thisNode;
   }
@@ -286,7 +329,10 @@ class SparkParser extends Spark2.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Spark2.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Spark2.Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 
@@ -307,11 +353,26 @@ class SparkGenerator extends Spark2.Generator {
   static get TYPE_MAPPING () {
     return new Map([
       ...Spark2.Generator.TYPE_MAPPING,
-      [DataTypeExprKind.MONEY, 'DECIMAL(15, 4)'],
-      [DataTypeExprKind.SMALLMONEY, 'DECIMAL(6, 4)'],
-      [DataTypeExprKind.UUID, 'STRING'],
-      [DataTypeExprKind.TIMESTAMPLTZ, 'TIMESTAMP_LTZ'],
-      [DataTypeExprKind.TIMESTAMPNTZ, 'TIMESTAMP_NTZ'],
+      [
+        DataTypeExprKind.MONEY,
+        'DECIMAL(15, 4)',
+      ],
+      [
+        DataTypeExprKind.SMALLMONEY,
+        'DECIMAL(6, 4)',
+      ],
+      [
+        DataTypeExprKind.UUID,
+        'STRING',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPLTZ,
+        'TIMESTAMP_LTZ',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPNTZ,
+        'TIMESTAMP_NTZ',
+      ],
     ]);
   }
 
@@ -324,15 +385,36 @@ class SparkGenerator extends Spark2.Generator {
       [
         ArrayConstructCompactExpr,
         function (this: Generator, e: ArrayConstructCompactExpr) {
-          return this.func('ARRAY_COMPACT', [this.func('ARRAY', e.args.expressions || [])]);
+          return this.func('ARRAY_COMPACT', [
+            this.func('ARRAY', e.args.expressions || [
+            ]),
+          ]);
         },
       ],
-      [ArrayAppendExpr, arrayAppendSql('ARRAY_APPEND')],
-      [ArrayPrependExpr, arrayAppendSql('ARRAY_PREPEND')],
-      [BitwiseAndAggExpr, renameFunc('BIT_AND')],
-      [BitwiseOrAggExpr, renameFunc('BIT_OR')],
-      [BitwiseXorAggExpr, renameFunc('BIT_XOR')],
-      [BitwiseCountExpr, renameFunc('BIT_COUNT')],
+      [
+        ArrayAppendExpr,
+        arrayAppendSql('ARRAY_APPEND'),
+      ],
+      [
+        ArrayPrependExpr,
+        arrayAppendSql('ARRAY_PREPEND'),
+      ],
+      [
+        BitwiseAndAggExpr,
+        renameFunc('BIT_AND'),
+      ],
+      [
+        BitwiseOrAggExpr,
+        renameFunc('BIT_OR'),
+      ],
+      [
+        BitwiseXorAggExpr,
+        renameFunc('BIT_XOR'),
+      ],
+      [
+        BitwiseCountExpr,
+        renameFunc('BIT_COUNT'),
+      ],
       [
         CreateExpr,
         preprocess([
@@ -341,13 +423,38 @@ class SparkGenerator extends Spark2.Generator {
           movePartitionedByToSchemaColumns,
         ]),
       ],
-      [CurrentVersionExpr, renameFunc('VERSION')],
-      [DateFromUnixDateExpr, renameFunc('DATE_FROM_UNIX_DATE')],
-      [DatetimeAddExpr, dateDeltaToBinaryIntervalOp({ cast: false })],
-      [DatetimeSubExpr, dateDeltaToBinaryIntervalOp({ cast: false })],
-      [GroupConcatExpr, groupConcatSql],
-      [EndsWithExpr, renameFunc('ENDSWITH')],
-      [JsonKeysExpr, renameFunc('JSON_OBJECT_KEYS')],
+      [
+        CurrentVersionExpr,
+        renameFunc('VERSION'),
+      ],
+      [
+        DateFromUnixDateExpr,
+        renameFunc('DATE_FROM_UNIX_DATE'),
+      ],
+      [
+        DatetimeAddExpr,
+        dateDeltaToBinaryIntervalOp({
+          cast: false,
+        }),
+      ],
+      [
+        DatetimeSubExpr,
+        dateDeltaToBinaryIntervalOp({
+          cast: false,
+        }),
+      ],
+      [
+        GroupConcatExpr,
+        groupConcatSql,
+      ],
+      [
+        EndsWithExpr,
+        renameFunc('ENDSWITH'),
+      ],
+      [
+        JsonKeysExpr,
+        renameFunc('JSON_OBJECT_KEYS'),
+      ],
       [
         PartitionedByPropertyExpr,
         function (this: Generator, e: PartitionedByPropertyExpr) {
@@ -359,17 +466,56 @@ class SparkGenerator extends Spark2.Generator {
           )}`;
         },
       ],
-      [SafeAddExpr, renameFunc('TRY_ADD')],
-      [SafeMultiplyExpr, renameFunc('TRY_MULTIPLY')],
-      [SafeSubtractExpr, renameFunc('TRY_SUBTRACT')],
-      [StartsWithExpr, renameFunc('STARTSWITH')],
-      [TimeAddExpr, dateDeltaToBinaryIntervalOp({ cast: false })],
-      [TimeSubExpr, dateDeltaToBinaryIntervalOp({ cast: false })],
-      [TsOrDsAddExpr, dateAddSql],
-      [TimestampAddExpr, dateAddSql],
-      [TimestampSubExpr, dateDeltaToBinaryIntervalOp({ cast: false })],
-      [DatetimeDiffExpr, timestampDiffSql],
-      [TimestampDiffExpr, timestampDiffSql],
+      [
+        SafeAddExpr,
+        renameFunc('TRY_ADD'),
+      ],
+      [
+        SafeMultiplyExpr,
+        renameFunc('TRY_MULTIPLY'),
+      ],
+      [
+        SafeSubtractExpr,
+        renameFunc('TRY_SUBTRACT'),
+      ],
+      [
+        StartsWithExpr,
+        renameFunc('STARTSWITH'),
+      ],
+      [
+        TimeAddExpr,
+        dateDeltaToBinaryIntervalOp({
+          cast: false,
+        }),
+      ],
+      [
+        TimeSubExpr,
+        dateDeltaToBinaryIntervalOp({
+          cast: false,
+        }),
+      ],
+      [
+        TsOrDsAddExpr,
+        dateAddSql,
+      ],
+      [
+        TimestampAddExpr,
+        dateAddSql,
+      ],
+      [
+        TimestampSubExpr,
+        dateDeltaToBinaryIntervalOp({
+          cast: false,
+        }),
+      ],
+      [
+        DatetimeDiffExpr,
+        timestampDiffSql,
+      ],
+      [
+        TimestampDiffExpr,
+        timestampDiffSql,
+      ],
       [
         TryCastExpr,
         function (this: Generator, e: TryCastExpr) {
@@ -386,8 +532,13 @@ class SparkGenerator extends Spark2.Generator {
 
   bracketSql (expression: BracketExpr): string {
     if (expression.args.safe) {
-      const key = seqGet(this.bracketOffsetExpressions(expression, { indexOffset: 1 }), 0);
-      return this.func('TRY_ELEMENT_AT', [expression.args.this, key]);
+      const key = seqGet(this.bracketOffsetExpressions(expression, {
+        indexOffset: 1,
+      }), 0);
+      return this.func('TRY_ELEMENT_AT', [
+        expression.args.this,
+        key,
+      ]);
     }
     return super.bracketSql(expression);
   }
@@ -411,7 +562,10 @@ class SparkGenerator extends Spark2.Generator {
         end,
       ]);
     }
-    return this.func('DATEDIFF', [end, start]);
+    return this.func('DATEDIFF', [
+      end,
+      start,
+    ]);
   }
 
   placeholderSql (expression: PlaceholderExpr): string {

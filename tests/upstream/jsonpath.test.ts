@@ -1,8 +1,12 @@
-import { readFileSync } from 'node:fs';
+import {
+  readFileSync,
+} from 'node:fs';
 import {
   join, dirname,
-} from 'path';
-import { fileURLToPath } from 'node:url';
+} from 'node:path';
+import {
+  fileURLToPath,
+} from 'node:url';
 import {
   describe, test, expect,
 } from 'vitest';
@@ -18,7 +22,9 @@ import {
   JsonPathUnionExpr,
   JsonPathWildcardExpr,
 } from '../../src/expressions';
-import { parse } from '../../src/jsonpath';
+import {
+  parse,
+} from '../../src/jsonpath';
 import {
   ParseError, TokenError,
 } from '../../src/errors';
@@ -30,10 +36,18 @@ class TestJsonpath {
   testJsonpath () {
     const expectedExpressions = [
       new JsonPathRootExpr({}),
-      new JsonPathKeyExpr({ this: new JsonPathWildcardExpr({}) }),
-      new JsonPathKeyExpr({ this: 'a' }),
-      new JsonPathSubscriptExpr({ this: 0 }),
-      new JsonPathKeyExpr({ this: 'x' }),
+      new JsonPathKeyExpr({
+        this: new JsonPathWildcardExpr({}),
+      }),
+      new JsonPathKeyExpr({
+        this: 'a',
+      }),
+      new JsonPathSubscriptExpr({
+        this: 0,
+      }),
+      new JsonPathKeyExpr({
+        this: 'x',
+      }),
       new JsonPathUnionExpr({
         expressions: [
           new JsonPathWildcardExpr({}),
@@ -41,8 +55,14 @@ class TestJsonpath {
           1,
         ],
       }),
-      new JsonPathKeyExpr({ this: 'z' }),
-      new JsonPathSelectorExpr({ this: new JsonPathFilterExpr({ this: '(@.a == \'b\'), 1:' }) }),
+      new JsonPathKeyExpr({
+        this: 'z',
+      }),
+      new JsonPathSelectorExpr({
+        this: new JsonPathFilterExpr({
+          this: '(@.a == \'b\'), 1:',
+        }),
+      }),
       new JsonPathSubscriptExpr({
         this: new JsonPathSliceExpr({
           start: 1,
@@ -50,23 +70,48 @@ class TestJsonpath {
           step: undefined,
         }),
       }),
-      new JsonPathUnionExpr({ expressions: [1, new JsonPathFilterExpr({ this: '@.a' })] }),
-      new JsonPathSelectorExpr({ this: new JsonPathScriptExpr({ this: '@.x)' }) }),
+      new JsonPathUnionExpr({
+        expressions: [
+          1,
+          new JsonPathFilterExpr({
+            this: '@.a',
+          }),
+        ],
+      }),
+      new JsonPathSelectorExpr({
+        this: new JsonPathScriptExpr({
+          this: '@.x)',
+        }),
+      }),
     ];
 
     expect(
       parse('$.*.a[0][\'x\'][*, \'y\', 1].z[?(@.a == \'b\'), 1:][1:5][1,?@.a][(@.x)]'),
-    ).toEqual(new JsonPathExpr({ expressions: expectedExpressions }));
+    ).toEqual(new JsonPathExpr({
+      expressions: expectedExpressions,
+    }));
   }
 
   testIdentity () {
     const cases: [string, string][] = [
-      ['$.select', '$.select'],
-      ['$[(@.length-1)]', '$[(@.length-1)]'],
-      ['$[((@.length-1))]', '$[((@.length-1))]'],
+      [
+        '$.select',
+        '$.select',
+      ],
+      [
+        '$[(@.length-1)]',
+        '$[(@.length-1)]',
+      ],
+      [
+        '$[((@.length-1))]',
+        '$[((@.length-1))]',
+      ],
     ];
 
-    for (const [selector, expected] of cases) {
+    for (const [
+      selector,
+      expected,
+    ] of cases) {
       expect(parse(selector).sql()).toBe(`'${expected}'`);
     }
   }

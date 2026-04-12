@@ -23,14 +23,24 @@ import {
 import {
   Dialect, type DialectType,
 } from '../dialects/dialect';
-import { Athena } from '../dialects/athena';
-import { Presto } from '../dialects/presto';
-import { narrowInstanceOf } from '../port_internals';
-import { normalized } from './normalize';
+import {
+  Athena,
+} from '../dialects/athena';
+import {
+  Presto,
+} from '../dialects/presto';
+import {
+  narrowInstanceOf,
+} from '../port_internals';
+import {
+  normalized,
+} from './normalize';
 import {
   buildScope, findInScope, Scope,
 } from './scope';
-import { simplify } from './simplify';
+import {
+  simplify,
+} from './simplify';
 
 /**
  * Rewrite sqlglot AST to pushdown predicates in FROMs and JOINs.
@@ -57,7 +67,9 @@ export function pushdownPredicates<E extends Expression> (
     dialect?: DialectType;
   } = {},
 ): E {
-  const { dialect: dialectArg } = options;
+  const {
+    dialect: dialectArg,
+  } = options;
   const root = buildScope(expression);
 
   const dialect = Dialect.getOrRaise(dialectArg);
@@ -88,8 +100,13 @@ export function pushdownPredicates<E extends Expression> (
         // A right join can only push down to itself and not the source FROM table
         // Presto, Trino and Athena don't support inner joins where the RHS is an UNNEST expression
         let pushdownAllowed = true;
-        for (const [k, source] of Object.entries(selectedSources)) {
-          const [node] = source;
+        for (const [
+          k,
+          source,
+        ] of Object.entries(selectedSources)) {
+          const [
+            node,
+          ] = source;
           if (!node) continue;
 
           const parent = node.findAncestor<JoinExpr | FromExpr>(JoinExpr, FromExpr);
@@ -97,7 +114,9 @@ export function pushdownPredicates<E extends Expression> (
           if (parent instanceof JoinExpr) {
             const joinParent = parent as JoinExpr;
             if (joinParent.args.side === JoinExprKind.RIGHT) {
-              selectedSources = { [k]: source };
+              selectedSources = {
+                [k]: source,
+              };
               break;
             }
             if (node instanceof UnnestExpr && unnestRequiresCrossJoin) {
@@ -125,7 +144,9 @@ export function pushdownPredicates<E extends Expression> (
             const onClause = join.args.on;
             pushdown(
               onClause,
-              { [name]: scope.selectedSources[name] },
+              {
+                [name]: scope.selectedSources[name],
+              },
               scopeRefCount,
               dialect,
             );
@@ -149,13 +170,19 @@ function pushdown (
     return;
   }
 
-  const simplified = simplify(condition, { dialect });
+  const simplified = simplify(condition, {
+    dialect,
+  });
   condition = condition.replace(simplified);
-  const cnfLike = normalized(condition) || !normalized(condition, { dnf: true });
+  const cnfLike = normalized(condition) || !normalized(condition, {
+    dnf: true,
+  });
 
   const predicates = (cnfLike ? condition instanceof AndExpr : condition instanceof OrExpr)
     ? Array.from(condition.flatten())
-    : [condition];
+    : [
+      condition,
+    ];
 
   if (cnfLike) {
     pushdownCnf(predicates, sources, scopeRefCount, joinIndex);
@@ -178,9 +205,14 @@ function pushdownCnf (
   for (const predicate of predicates) {
     const nodes = nodesForPredicate(predicate, sources, scopeRefCount);
 
-    for (const [name, node] of Object.entries(nodes)) {
+    for (const [
+      name,
+      node,
+    ] of Object.entries(nodes)) {
       if (node instanceof JoinExpr) {
-        const predicateTables = columnTableNames(predicate, { exclude: name });
+        const predicateTables = columnTableNames(predicate, {
+          exclude: name,
+        });
 
         // Don't push the predicate if it references tables that appear in later joins
         const thisIndex = joinIndexMap.get(name) ?? -1;
@@ -191,7 +223,9 @@ function pushdownCnf (
 
         if (canPush) {
           predicate.replace(trueExpr());
-          node.on(predicate, { copy: false });
+          node.on(predicate, {
+            copy: false,
+          });
           break;
         }
       } else if (node instanceof SelectExpr) {
@@ -200,9 +234,13 @@ function pushdownCnf (
 
         if (findInScope(innerPredicate, AggFuncExpr)) {
           // Add to HAVING clause
-          node.having(innerPredicate, { copy: false });
+          node.having(innerPredicate, {
+            copy: false,
+          });
         } else {
-          node.where(innerPredicate, { copy: false });
+          node.where(innerPredicate, {
+            copy: false,
+          });
         }
       }
     }
@@ -249,25 +287,39 @@ function pushdownDnf (
       }
 
       const existing = conditions.get(table);
-      conditions.set(table, existing ? orExpr([existing, predicate]) : predicate);
+      conditions.set(table, existing
+        ? orExpr([
+          existing,
+          predicate,
+        ])
+        : predicate);
     }
 
-    for (const [name, node] of Object.entries(nodes)) {
+    for (const [
+      name,
+      node,
+    ] of Object.entries(nodes)) {
       const condition = conditions.get(name);
       if (!condition) {
         continue;
       }
 
       if (node instanceof JoinExpr) {
-        node.on(condition, { copy: false });
+        node.on(condition, {
+          copy: false,
+        });
       } else if (node instanceof SelectExpr) {
         const innerPredicate = replaceAliases(node, condition);
 
         if (findInScope(innerPredicate, AggFuncExpr)) {
           // Add to HAVING clause
-          node.having(innerPredicate, { copy: false });
+          node.having(innerPredicate, {
+            copy: false,
+          });
         } else {
-          node.where(innerPredicate, { copy: false });
+          node.where(innerPredicate, {
+            copy: false,
+          });
         }
       }
     }
@@ -290,7 +342,9 @@ function nodesForPredicate (
     }
 
     let node = sourceEntry[0] as Expression | undefined;
-    const [, source] = sourceEntry;
+    const [
+      , source,
+    ] = sourceEntry;
 
     // If the predicate is in a where statement we can try to push it down
     // We want to find the root join or from statement

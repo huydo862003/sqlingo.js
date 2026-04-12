@@ -1,6 +1,12 @@
-import type { Expression } from '../expressions/expressions';
-import { cache } from '../port_internals';
-import { DataTypeExprKind } from '../expressions/types';
+import type {
+  Expression,
+} from '../expressions/expressions';
+import {
+  cache,
+} from '../port_internals';
+import {
+  DataTypeExprKind,
+} from '../expressions/types';
 import {
   Atan2Expr,
   DegreesExpr,
@@ -14,8 +20,12 @@ import {
   WeekExpr,
   LocaltimeExpr,
 } from '../expressions/expressions';
-import type { ExpressionMetadata } from './dialect';
-import { DialectTyping } from './dialect';
+import type {
+  ExpressionMetadata,
+} from './dialect';
+import {
+  DialectTyping,
+} from './dialect';
 
 export class MySQLTyping {
   @cache
@@ -27,9 +37,19 @@ export class MySQLTyping {
       for (const type of types) map.set(type, data);
     };
 
-    extend([Atan2Expr, DegreesExpr], { returns: DataTypeExprKind.DOUBLE });
+    extend([
+      Atan2Expr,
+      DegreesExpr,
+    ], {
+      returns: DataTypeExprKind.DOUBLE,
+    });
 
-    extend([CurrentVersionExpr, EltExpr], { returns: DataTypeExprKind.VARCHAR });
+    extend([
+      CurrentVersionExpr,
+      EltExpr,
+    ], {
+      returns: DataTypeExprKind.VARCHAR,
+    });
 
     extend([
       DayOfMonthExpr,
@@ -38,9 +58,13 @@ export class MySQLTyping {
       MonthExpr,
       SecondExpr,
       WeekExpr,
-    ], { returns: DataTypeExprKind.INT });
+    ], {
+      returns: DataTypeExprKind.INT,
+    });
 
-    map.set(LocaltimeExpr, { returns: DataTypeExprKind.DATETIME });
+    map.set(LocaltimeExpr, {
+      returns: DataTypeExprKind.DATETIME,
+    });
 
     return map;
   }

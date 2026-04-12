@@ -1,12 +1,18 @@
-import { readFileSync } from 'node:fs';
+import {
+  readFileSync,
+} from 'node:fs';
 import {
   join, dirname,
-} from 'path';
-import { fileURLToPath } from 'node:url';
+} from 'node:path';
+import {
+  fileURLToPath,
+} from 'node:url';
 import {
   expect,
 } from 'vitest';
-import { snakeToCamelCase } from '../../src/helper';
+import {
+  snakeToCamelCase,
+} from '../../src/helper';
 
 const filename = fileURLToPath(import.meta.url);
 const fileDir = dirname(filename);
@@ -34,14 +40,18 @@ function extractMeta (sql: string): [string, Record<string, string>] {
   }
 
   const remainingSql = sqlLines.slice(i).join('\n');
-  return [remainingSql, meta];
+  return [
+    remainingSql,
+    meta,
+  ];
 }
 
 /**
  * Asserts that a Vitest mock logger contains a specific message.
  */
 export function assertLoggerContains (message: string, logger: Console, level: string = 'error'): void {
-  const mockCalls = logger[level]?.mock?.calls || [];
+  const mockCalls = logger[level]?.mock?.calls || [
+  ];
   const output = mockCalls
     .map((args: unknown[]) => String(args[0]))
     .join('\n');
@@ -67,7 +77,10 @@ export function* loadSqlFixturePairs (filename: string): Generator<[Record<strin
   for (let i = 0; i < statements.length; i += 2) {
     if (i + 1 < statements.length) {
       const sqlRaw = statements[i].trim();
-      const [parsedSql, meta] = extractMeta(sqlRaw);
+      const [
+        parsedSql,
+        meta,
+      ] = extractMeta(sqlRaw);
       const expected = statements[i + 1].trim();
       yield [
         meta,
@@ -81,7 +94,10 @@ export function* loadSqlFixturePairs (filename: string): Generator<[Record<strin
 export function stringToBool (val: string | boolean | undefined): boolean {
   if (val === undefined) return false;
   if (typeof val === 'boolean') return val;
-  return ['true', '1'].includes(val.toLowerCase());
+  return [
+    'true',
+    '1',
+  ].includes(val.toLowerCase());
 }
 
 export const skipIntegration = stringToBool(process.env.SKIP_INTEGRATION || '0');

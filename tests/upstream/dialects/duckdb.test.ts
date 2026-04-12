@@ -1,7 +1,9 @@
 import {
   describe, test, expect,
 } from 'vitest';
-import { parseOne } from '../../../src/index';
+import {
+  parseOne,
+} from '../../../src/index';
 import {
   TruncExpr, ArrayOverlapsExpr,
   InstallExpr, ShowExpr,
@@ -17,7 +19,11 @@ class TestDuckDB extends Validator {
   testDuckdb () {
     this.validateIdentity('TRUNC(3.14)').assertIs(TruncExpr);
     this.validateIdentity('TRUNC(3.14, 2)', 'TRUNC(3.14)').assertIs(TruncExpr);
-    this.validateAll('TRUNC(3.14159)', { read: { postgres: 'TRUNC(3.14159, 2)' } });
+    this.validateAll('TRUNC(3.14159)', {
+      read: {
+        postgres: 'TRUNC(3.14159, 2)',
+      },
+    });
 
     this.validateIdentity('SELECT ([1,2,3])[:-:-1]', 'SELECT ([1, 2, 3])[:-1:-1]');
     this.validateIdentity('SELECT INTERVAL \'1 hour\'::VARCHAR', 'SELECT CAST(INTERVAL \'1\' HOUR AS TEXT)');
@@ -35,11 +41,17 @@ class TestDuckDB extends Validator {
       'SELECT e\'update table_name set a = \'\'foo\'\' where 1 = 0\' AS x FROM tab',
     );
 
-    expect(() => parseOne('1 //', { read: 'duckdb' })).toThrow();
+    expect(() => parseOne('1 //', {
+      read: 'duckdb',
+    })).toThrow();
 
     this.validateAll(
       '(c LIKE \'a\' OR c LIKE \'b\') AND other_cond',
-      { read: { databricks: 'c LIKE ANY (\'a\', \'b\') AND other_cond' } },
+      {
+        read: {
+          databricks: 'c LIKE ANY (\'a\', \'b\') AND other_cond',
+        },
+      },
     );
     this.validateAll(
       'SELECT FIRST_VALUE(c IGNORE NULLS) OVER (PARTITION BY gb ORDER BY ob) FROM t',
@@ -136,7 +148,9 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('CREATE TEMPORARY FUNCTION f1(a, b) AS (a + b)', {
-      read: { bigquery: 'CREATE TEMP FUNCTION f1(a INT64, b INT64) AS (a + b)' },
+      read: {
+        bigquery: 'CREATE TEMP FUNCTION f1(a INT64, b INT64) AS (a + b)',
+      },
     });
     this.validateIdentity('SELECT GET_BIT(CAST(\'0110010\' AS BIT), 2)');
     this.validateIdentity('SELECT 1 WHERE x > $1');
@@ -144,10 +158,14 @@ class TestDuckDB extends Validator {
     this.validateIdentity('SELECT \'{"x": 1}\' -> c FROM t');
 
     this.validateAll('{\'a\': 1, \'b\': \'2\'}', {
-      write: { presto: 'CAST(ROW(1, \'2\') AS ROW(a INTEGER, b VARCHAR))' },
+      write: {
+        presto: 'CAST(ROW(1, \'2\') AS ROW(a INTEGER, b VARCHAR))',
+      },
     });
     this.validateAll('struct_pack(a := 1, b := 2)', {
-      write: { presto: 'CAST(ROW(1, 2) AS ROW(a INTEGER, b INTEGER))' },
+      write: {
+        presto: 'CAST(ROW(1, 2) AS ROW(a INTEGER, b INTEGER))',
+      },
     });
     this.validateAll('struct_pack(a := 1, b := x)', {
       write: {
@@ -156,7 +174,10 @@ class TestDuckDB extends Validator {
       },
     });
 
-    for (const joinType of ['SEMI', 'ANTI'] as const) {
+    for (const joinType of [
+      'SEMI',
+      'ANTI',
+    ] as const) {
       const exists = joinType === 'SEMI' ? 'EXISTS' : 'NOT EXISTS';
       this.validateAll(`SELECT * FROM t1 ${joinType} JOIN t2 ON t1.x = t2.x`, {
         write: {
@@ -280,7 +301,9 @@ class TestDuckDB extends Validator {
       'INNER',
     ] as const) {
       this.validateAll(`SELECT * FROM x ${joinType} JOIN UNNEST(y) ON TRUE`, {
-        read: { bigquery: `SELECT * FROM x ${joinType} JOIN UNNEST(y)` },
+        read: {
+          bigquery: `SELECT * FROM x ${joinType} JOIN UNNEST(y)`,
+        },
         write: {
           bigquery: `SELECT * FROM x ${joinType} JOIN UNNEST(y) ON TRUE`,
           duckdb: `SELECT * FROM x ${joinType} JOIN UNNEST(y) ON TRUE`,
@@ -336,13 +359,19 @@ class TestDuckDB extends Validator {
     this.validateIdentity('JSON_EXTRACT_STRING(x, \'$.family\')', 'x ->> \'$.family\'');
     this.validateIdentity('JSON_EXTRACT_PATH_TEXT(x, \'$.family\')', 'x ->> \'$.family\'');
     this.validateAll('SELECT NOT (data -> \'$.value\')', {
-      read: { snowflake: 'SELECT NOT data:value' },
+      read: {
+        snowflake: 'SELECT NOT data:value',
+      },
     });
     this.validateAll('SELECT NOT (data -> \'$.value.nested\')', {
-      read: { snowflake: 'SELECT NOT data:value:nested' },
+      read: {
+        snowflake: 'SELECT NOT data:value:nested',
+      },
     });
     this.validateAll('SELECT (data -> \'$.value\') = 1', {
-      read: { snowflake: 'SELECT data:value = 1' },
+      read: {
+        snowflake: 'SELECT data:value = 1',
+      },
     });
     this.validateIdentity('SELECT {\'yes\': \'duck\', \'maybe\': \'goose\', \'huh\': NULL, \'no\': \'heron\'}');
     this.validateIdentity('SELECT a[\'x space\'] FROM (SELECT {\'x space\': 1, \'y\': 2, \'z\': 3} AS a)');
@@ -358,12 +387,24 @@ class TestDuckDB extends Validator {
     this.validateIdentity('DATESUB(\'YEAR\', col, \'2020-01-01\')').assertIs(AnonymousExpr);
     this.validateIdentity('SELECT SHA256(\'abc\')');
 
-    this.validateAll('0b1010', { write: { '': '0 AS b1010' } });
-    this.validateAll('0x1010', { write: { '': '0 AS x1010' } });
+    this.validateAll('0b1010', {
+      write: {
+        '': '0 AS b1010',
+      },
+    });
+    this.validateAll('0x1010', {
+      write: {
+        '': '0 AS x1010',
+      },
+    });
     this.validateIdentity('x ~ y', 'REGEXP_FULL_MATCH(x, y)');
     this.validateIdentity('x !~ y', 'NOT REGEXP_FULL_MATCH(x, y)');
     this.validateIdentity('REGEXP_FULL_MATCH(x, y, \'i\')');
-    this.validateAll('SELECT * FROM \'x.y\'', { write: { duckdb: 'SELECT * FROM "x.y"' } });
+    this.validateAll('SELECT * FROM \'x.y\'', {
+      write: {
+        duckdb: 'SELECT * FROM "x.y"',
+      },
+    });
     this.validateAll('SELECT LIST(DISTINCT sample_col) FROM sample_table', {
       read: {
         duckdb: 'SELECT LIST(DISTINCT sample_col) FROM sample_table',
@@ -469,7 +510,9 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('VAR_POP(x)', {
-      read: { '': 'VARIANCE_POP(x)' },
+      read: {
+        '': 'VARIANCE_POP(x)',
+      },
       write: {
         '': 'VARIANCE_POP(x)',
         'duckdb': 'VAR_POP(x)',
@@ -499,13 +542,19 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('PIVOT_WIDER Cities ON Year USING SUM(Population)', {
-      write: { duckdb: 'PIVOT Cities ON Year USING SUM(Population)' },
+      write: {
+        duckdb: 'PIVOT Cities ON Year USING SUM(Population)',
+      },
     });
     this.validateAll('WITH t AS (SELECT 1) FROM t', {
-      write: { duckdb: 'WITH t AS (SELECT 1) SELECT * FROM t' },
+      write: {
+        duckdb: 'WITH t AS (SELECT 1) SELECT * FROM t',
+      },
     });
     this.validateAll('WITH t AS (SELECT 1) SELECT * FROM (FROM t)', {
-      write: { duckdb: 'WITH t AS (SELECT 1) SELECT * FROM (SELECT * FROM t)' },
+      write: {
+        duckdb: 'WITH t AS (SELECT 1) SELECT * FROM (SELECT * FROM t)',
+      },
     });
     this.validateAll('SELECT DATEDIFF(\'day\', t1."A", t1."B") FROM "table" AS t1', {
       write: {
@@ -520,18 +569,30 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('WITH \'x\' AS (SELECT 1) SELECT * FROM x', {
-      write: { duckdb: 'WITH "x" AS (SELECT 1) SELECT * FROM x' },
+      write: {
+        duckdb: 'WITH "x" AS (SELECT 1) SELECT * FROM x',
+      },
     });
     this.validateAll(
       'CREATE TABLE IF NOT EXISTS t (cola INT, colb STRING) USING ICEBERG PARTITIONED BY (colb)',
-      { write: { duckdb: 'CREATE TABLE IF NOT EXISTS t (cola INT, colb TEXT)' } },
+      {
+        write: {
+          duckdb: 'CREATE TABLE IF NOT EXISTS t (cola INT, colb TEXT)',
+        },
+      },
     );
     this.validateAll(
       'CREATE TABLE IF NOT EXISTS t (cola INT COMMENT \'cola\', colb STRING) USING ICEBERG PARTITIONED BY (colb)',
-      { write: { duckdb: 'CREATE TABLE IF NOT EXISTS t (cola INT, colb TEXT)' } },
+      {
+        write: {
+          duckdb: 'CREATE TABLE IF NOT EXISTS t (cola INT, colb TEXT)',
+        },
+      },
     );
     this.validateAll('[0, 1, 2]', {
-      read: { spark: 'ARRAY(0, 1, 2)' },
+      read: {
+        spark: 'ARRAY(0, 1, 2)',
+      },
       write: {
         bigquery: '[0, 1, 2]',
         duckdb: '[0, 1, 2]',
@@ -540,7 +601,9 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('SELECT ARRAY_LENGTH([0], 1) AS x', {
-      write: { duckdb: 'SELECT ARRAY_LENGTH([0], 1) AS x' },
+      write: {
+        duckdb: 'SELECT ARRAY_LENGTH([0], 1) AS x',
+      },
     });
     this.validateIdentity('REGEXP_REPLACE(this, pattern, replacement, modifiers)');
     this.validateIdentity(
@@ -566,7 +629,9 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('STRING_TO_ARRAY(x, \'a\')', {
-      read: { snowflake: 'STRTOK_TO_ARRAY(x, \'a\')' },
+      read: {
+        snowflake: 'STRTOK_TO_ARRAY(x, \'a\')',
+      },
       write: {
         duckdb: 'STR_SPLIT(x, \'a\')',
         presto: 'SPLIT(x, \'a\')',
@@ -609,7 +674,9 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('UNNEST(x)', {
-      read: { spark: 'EXPLODE(x)' },
+      read: {
+        spark: 'EXPLODE(x)',
+      },
       write: {
         duckdb: 'UNNEST(x)',
         spark: 'EXPLODE(x)',
@@ -628,7 +695,9 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('LIST_SUM([1, 2])', {
-      read: { spark: 'ARRAY_SUM(ARRAY(1, 2))' },
+      read: {
+        spark: 'ARRAY_SUM(ARRAY(1, 2))',
+      },
     });
     this.validateAll('STRUCT_PACK(x := 1, y := \'2\')', {
       write: {
@@ -702,20 +771,28 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('SELECT CAST(TRY_CAST(x AS DATE) AS DATE) + INTERVAL 1 DAY', {
-      read: { hive: 'SELECT DATE_ADD(TO_DATE(x), 1)' },
+      read: {
+        hive: 'SELECT DATE_ADD(TO_DATE(x), 1)',
+      },
     });
     this.validateAll('SELECT CAST(\'2018-01-01 00:00:00\' AS DATE) + INTERVAL 3 DAY', {
-      read: { hive: 'SELECT DATE_ADD(\'2018-01-01 00:00:00\', 3)' },
+      read: {
+        hive: 'SELECT DATE_ADD(\'2018-01-01 00:00:00\', 3)',
+      },
       write: {
         duckdb: 'SELECT CAST(\'2018-01-01 00:00:00\' AS DATE) + INTERVAL \'3\' DAY',
         hive: 'SELECT CAST(\'2018-01-01 00:00:00\' AS DATE) + INTERVAL \'3\' DAY',
       },
     });
     this.validateAll('SELECT CAST(\'2020-05-06\' AS DATE) - INTERVAL \'5\' DAY', {
-      read: { bigquery: 'SELECT DATE_SUB(CAST(\'2020-05-06\' AS DATE), INTERVAL 5 DAY)' },
+      read: {
+        bigquery: 'SELECT DATE_SUB(CAST(\'2020-05-06\' AS DATE), INTERVAL 5 DAY)',
+      },
     });
     this.validateAll('SELECT CAST(\'2020-05-06\' AS DATE) + INTERVAL \'5\' DAY', {
-      read: { bigquery: 'SELECT DATE_ADD(CAST(\'2020-05-06\' AS DATE), INTERVAL 5 DAY)' },
+      read: {
+        bigquery: 'SELECT DATE_ADD(CAST(\'2020-05-06\' AS DATE), INTERVAL 5 DAY)',
+      },
     });
     this.validateIdentity(
       'SELECT PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY y DESC) FROM t',
@@ -752,7 +829,9 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('SELECT REGEXP_EXTRACT(a, \'pattern\', 2, \'i\') FROM t', {
-      read: { snowflake: 'SELECT REGEXP_SUBSTR(a, \'pattern\', 1, 1, \'i\', 2) FROM t' },
+      read: {
+        snowflake: 'SELECT REGEXP_SUBSTR(a, \'pattern\', 1, 1, \'i\', 2) FROM t',
+      },
       write: {
         duckdb: 'SELECT REGEXP_EXTRACT(a, \'pattern\', 2, \'i\') FROM t',
         snowflake: 'SELECT REGEXP_SUBSTR(a, \'pattern\', 1, 1, \'i\', 2) FROM t',
@@ -841,7 +920,9 @@ class TestDuckDB extends Validator {
       'SELECT COALESCE(*COLUMNS([\'a\', \'b\', \'c\'])) AS result FROM (SELECT NULL AS a, 42 AS b, TRUE AS c)',
     );
     this.validateAll('SELECT UNNEST(foo) AS x', {
-      write: { redshift: UnsupportedError },
+      write: {
+        redshift: UnsupportedError,
+      },
     });
     this.validateIdentity('a ^ b', 'POWER(a, b)');
     this.validateIdentity('a ** b', 'POWER(a, b)');
@@ -860,7 +941,9 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('SELECT REGEXP_MATCHES(\'ThOmAs\', \'thomas\', \'i\')', {
-      read: { postgres: 'SELECT \'ThOmAs\' ~* \'thomas\'' },
+      read: {
+        postgres: 'SELECT \'ThOmAs\' ~* \'thomas\'',
+      },
     });
     this.validateIdentity(
       'SELECT DATE_ADD(CAST(\'2020-01-01\' AS DATE), INTERVAL 1 DAY)',
@@ -979,23 +1062,43 @@ class TestDuckDB extends Validator {
 
     this.validateAll(
       'CASE WHEN 2500 > 0 THEN ((2500 - 1) // 32768) + 1 ELSE 2500 // 32768 END',
-      { read: { snowflake: 'BITMAP_BUCKET_NUMBER(2500)' } },
+      {
+        read: {
+          snowflake: 'BITMAP_BUCKET_NUMBER(2500)',
+        },
+      },
     );
     this.validateAll(
       'CASE WHEN 32768 > 0 THEN ((32768 - 1) // 32768) + 1 ELSE 32768 // 32768 END',
-      { read: { snowflake: 'BITMAP_BUCKET_NUMBER(32768)' } },
+      {
+        read: {
+          snowflake: 'BITMAP_BUCKET_NUMBER(32768)',
+        },
+      },
     );
     this.validateAll(
       'CASE WHEN 32769 > 0 THEN ((32769 - 1) // 32768) + 1 ELSE 32769 // 32768 END',
-      { read: { snowflake: 'BITMAP_BUCKET_NUMBER(32769)' } },
+      {
+        read: {
+          snowflake: 'BITMAP_BUCKET_NUMBER(32769)',
+        },
+      },
     );
     this.validateAll(
       'CASE WHEN -100 > 0 THEN ((-100 - 1) // 32768) + 1 ELSE -100 // 32768 END',
-      { read: { snowflake: 'BITMAP_BUCKET_NUMBER(-100)' } },
+      {
+        read: {
+          snowflake: 'BITMAP_BUCKET_NUMBER(-100)',
+        },
+      },
     );
     this.validateAll(
       'CASE WHEN NULL > 0 THEN ((NULL - 1) // 32768) + 1 ELSE NULL // 32768 END',
-      { read: { snowflake: 'BITMAP_BUCKET_NUMBER(NULL)' } },
+      {
+        read: {
+          snowflake: 'BITMAP_BUCKET_NUMBER(NULL)',
+        },
+      },
     );
 
     this.validateIdentity('SELECT [1, 2, 3][1 + 1:LENGTH([1, 2, 3]) + -1]');
@@ -1004,7 +1107,9 @@ class TestDuckDB extends Validator {
 
   testArrayIndex () {
     this.validateAll('SELECT some_arr[1] AS first FROM blah', {
-      read: { bigquery: 'SELECT some_arr[0] AS first FROM blah' },
+      read: {
+        bigquery: 'SELECT some_arr[0] AS first FROM blah',
+      },
       write: {
         bigquery: 'SELECT some_arr[0] AS first FROM blah',
         duckdb: 'SELECT some_arr[1] AS first FROM blah',
@@ -1067,45 +1172,79 @@ class TestDuckDB extends Validator {
   testArrayRemove () {
     this.validateAll(
       'CASE WHEN target IS NULL THEN NULL ELSE LIST_FILTER(the_array, _u -> _u <> target) END',
-      { read: { snowflake: 'ARRAY_REMOVE(the_array, target)' } },
+      {
+        read: {
+          snowflake: 'ARRAY_REMOVE(the_array, target)',
+        },
+      },
     );
     this.validateAll('LIST_FILTER([1, 2, 3], _u -> _u <> 2)', {
-      read: { snowflake: 'ARRAY_REMOVE([1, 2, 3], 2)' },
+      read: {
+        snowflake: 'ARRAY_REMOVE([1, 2, 3], 2)',
+      },
     });
     this.validateAll(
       'CASE WHEN NULL IS NULL THEN NULL ELSE LIST_FILTER([1, 2, 3], _u -> _u <> NULL) END',
-      { read: { snowflake: 'ARRAY_REMOVE([1, 2, 3], NULL)' } },
+      {
+        read: {
+          snowflake: 'ARRAY_REMOVE([1, 2, 3], NULL)',
+        },
+      },
     );
   }
 
   testArrayRemoveAt () {
     this.validateAll('CASE WHEN [1, 2, 3] IS NULL THEN NULL ELSE [1, 2, 3][2:] END', {
-      read: { snowflake: 'ARRAY_REMOVE_AT([1, 2, 3], 0)' },
+      read: {
+        snowflake: 'ARRAY_REMOVE_AT([1, 2, 3], 0)',
+      },
     });
     this.validateAll(
       'CASE WHEN [1, 2, 3] IS NULL THEN NULL ELSE LIST_CONCAT([1, 2, 3][1:1], [1, 2, 3][3:]) END',
-      { read: { snowflake: 'ARRAY_REMOVE_AT([1, 2, 3], 1)' } },
+      {
+        read: {
+          snowflake: 'ARRAY_REMOVE_AT([1, 2, 3], 1)',
+        },
+      },
     );
     this.validateAll(
       'CASE WHEN [1, 2, 3] IS NULL THEN NULL ELSE LIST_CONCAT([1, 2, 3][1:2], [1, 2, 3][4:]) END',
-      { read: { snowflake: 'ARRAY_REMOVE_AT([1, 2, 3], 2)' } },
+      {
+        read: {
+          snowflake: 'ARRAY_REMOVE_AT([1, 2, 3], 2)',
+        },
+      },
     );
     this.validateAll(
       'CASE WHEN [1, 2, 3] IS NULL THEN NULL ELSE [1, 2, 3][1:LENGTH([1, 2, 3]) + -1] END',
-      { read: { snowflake: 'ARRAY_REMOVE_AT([1, 2, 3], -1)' } },
+      {
+        read: {
+          snowflake: 'ARRAY_REMOVE_AT([1, 2, 3], -1)',
+        },
+      },
     );
     this.validateAll(
       'CASE WHEN [1, 2, 3] IS NULL THEN NULL ELSE LIST_CONCAT([1, 2, 3][1:LENGTH([1, 2, 3]) + -2], [1, 2, 3][LENGTH([1, 2, 3]) + -2 + 2:]) END',
-      { read: { snowflake: 'ARRAY_REMOVE_AT([1, 2, 3], -2)' } },
+      {
+        read: {
+          snowflake: 'ARRAY_REMOVE_AT([1, 2, 3], -2)',
+        },
+      },
     );
     this.validateAll('CASE WHEN [99] IS NULL THEN NULL ELSE [99][2:] END', {
-      read: { snowflake: 'ARRAY_REMOVE_AT([99], 0)' },
+      read: {
+        snowflake: 'ARRAY_REMOVE_AT([99], 0)',
+      },
     });
     this.validateAll('CASE WHEN arr IS NULL THEN NULL ELSE arr[2:] END', {
-      read: { snowflake: 'ARRAY_REMOVE_AT(arr, 0)' },
+      read: {
+        snowflake: 'ARRAY_REMOVE_AT(arr, 0)',
+      },
     });
     this.validateAll('ARRAY_REMOVE_AT([1, 2, 3], pos)', {
-      read: { snowflake: 'ARRAY_REMOVE_AT([1, 2, 3], pos)' },
+      read: {
+        snowflake: 'ARRAY_REMOVE_AT([1, 2, 3], pos)',
+      },
     });
   }
 
@@ -1119,32 +1258,52 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('SELECT MAKE_DATE(2016, 12, 25)', {
-      read: { bigquery: 'SELECT DATE(2016, 12, 25)' },
+      read: {
+        bigquery: 'SELECT DATE(2016, 12, 25)',
+      },
       write: {
         bigquery: 'SELECT DATE(2016, 12, 25)',
         duckdb: 'SELECT MAKE_DATE(2016, 12, 25)',
       },
     });
     this.validateAll('SELECT CAST(CAST(\'2016-12-25 23:59:59\' AS TIMESTAMP) AS DATE)', {
-      read: { bigquery: 'SELECT DATE(DATETIME \'2016-12-25 23:59:59\')' },
+      read: {
+        bigquery: 'SELECT DATE(DATETIME \'2016-12-25 23:59:59\')',
+      },
     });
     this.validateAll(
       'SELECT CAST(CAST(CAST(\'2016-12-25\' AS TIMESTAMPTZ) AS TIMESTAMP) AT TIME ZONE \'UTC\' AT TIME ZONE \'America/Los_Angeles\' AS DATE)',
-      { read: { bigquery: 'SELECT DATE(TIMESTAMP \'2016-12-25\', \'America/Los_Angeles\')' } },
+      {
+        read: {
+          bigquery: 'SELECT DATE(TIMESTAMP \'2016-12-25\', \'America/Los_Angeles\')',
+        },
+      },
     );
     this.validateAll(
       'SELECT CAST(CAST(\'2024-01-15 23:30:00\' AS TIMESTAMP) AT TIME ZONE \'UTC\' AT TIME ZONE \'Europe/Berlin\' AS DATE)',
-      { read: { bigquery: 'SELECT DATE(\'2024-01-15 23:30:00\', \'Europe/Berlin\')' } },
+      {
+        read: {
+          bigquery: 'SELECT DATE(\'2024-01-15 23:30:00\', \'Europe/Berlin\')',
+        },
+      },
     );
     this.validateAll(
       'SELECT CAST(CAST(STRPTIME(\'05/06/2020\', \'%m/%d/%Y\') AS DATE) AS DATE)',
-      { read: { bigquery: 'SELECT DATE(PARSE_DATE(\'%m/%d/%Y\', \'05/06/2020\'))' } },
+      {
+        read: {
+          bigquery: 'SELECT DATE(PARSE_DATE(\'%m/%d/%Y\', \'05/06/2020\'))',
+        },
+      },
     );
     this.validateAll('SELECT CAST(\'2020-01-01\' AS DATE) + INTERVAL \'-1\' DAY', {
-      read: { mysql: 'SELECT DATE \'2020-01-01\' + INTERVAL -1 DAY' },
+      read: {
+        mysql: 'SELECT DATE \'2020-01-01\' + INTERVAL -1 DAY',
+      },
     });
     this.validateAll('SELECT INTERVAL \'1 quarter\'', {
-      write: { duckdb: 'SELECT INTERVAL \'1\' QUARTER' },
+      write: {
+        duckdb: 'SELECT INTERVAL \'1\' QUARTER',
+      },
     });
     this.validateAll(
       'SELECT ((DATE_TRUNC(\'DAY\', CAST(CAST(DATE_TRUNC(\'DAY\', CURRENT_TIMESTAMP) AS DATE) AS TIMESTAMP) + INTERVAL (0 - ((ISODOW(CAST(CAST(DATE_TRUNC(\'DAY\', CURRENT_TIMESTAMP) AS DATE) AS TIMESTAMP)) % 7) - 1 + 7) % 7) DAY) + INTERVAL (-5) WEEK)) AS t1',
@@ -1155,7 +1314,9 @@ class TestDuckDB extends Validator {
       },
     );
     this.validateAll('EPOCH(x)', {
-      read: { presto: 'TO_UNIXTIME(x)' },
+      read: {
+        presto: 'TO_UNIXTIME(x)',
+      },
       write: {
         bigquery: 'TIME_TO_UNIX(x)',
         duckdb: 'EPOCH(x)',
@@ -1377,7 +1538,9 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('SELECT CAST(\'09:05:03\' AS TIME) + INTERVAL 2 HOUR', {
-      read: { snowflake: 'SELECT TIMEADD(HOUR, 2, TO_TIME(\'09:05:03\'))' },
+      read: {
+        snowflake: 'SELECT TIMEADD(HOUR, 2, TO_TIME(\'09:05:03\'))',
+      },
       write: {
         duckdb: 'SELECT CAST(\'09:05:03\' AS TIME) + INTERVAL \'2\' HOUR',
         snowflake: 'SELECT CAST(\'09:05:03\' AS TIME) + INTERVAL \'2 HOUR\'',
@@ -1411,7 +1574,9 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('CAST(x AS BIT)', {
-      read: { duckdb: 'CAST(x AS BITSTRING)' },
+      read: {
+        duckdb: 'CAST(x AS BITSTRING)',
+      },
       write: {
         duckdb: 'CAST(x AS BIT)',
         tsql: 'CAST(x AS BIT)',
@@ -1424,7 +1589,9 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('CAST(x AS DATE) + INTERVAL (7 * -1) DAY', {
-      read: { spark: 'DATE_SUB(x, 7)' },
+      read: {
+        spark: 'DATE_SUB(x, 7)',
+      },
     });
     this.validateAll('TRY_CAST(1 AS DOUBLE)', {
       read: {
@@ -1479,7 +1646,9 @@ class TestDuckDB extends Validator {
       },
     });
     this.validateAll('DECODE(x)', {
-      read: { presto: 'FROM_UTF8(x, y)' },
+      read: {
+        presto: 'FROM_UTF8(x, y)',
+      },
     });
   }
 
@@ -1517,7 +1686,9 @@ class TestDuckDB extends Validator {
 
   testIsnan () {
     this.validateAll('ISNAN(x)', {
-      read: { bigquery: 'IS_NAN(x)' },
+      read: {
+        bigquery: 'IS_NAN(x)',
+      },
       write: {
         bigquery: 'IS_NAN(x)',
         duckdb: 'ISNAN(x)',
@@ -1527,7 +1698,9 @@ class TestDuckDB extends Validator {
 
   testIsinf () {
     this.validateAll('ISINF(x)', {
-      read: { bigquery: 'IS_INF(x)' },
+      read: {
+        bigquery: 'IS_INF(x)',
+      },
       write: {
         bigquery: 'IS_INF(x)',
         duckdb: 'ISINF(x)',
@@ -1537,7 +1710,9 @@ class TestDuckDB extends Validator {
 
   testParameterToken () {
     this.validateAll('SELECT $foo', {
-      read: { bigquery: 'SELECT @foo' },
+      read: {
+        bigquery: 'SELECT @foo',
+      },
       write: {
         bigquery: 'SELECT @foo',
         duckdb: 'SELECT $foo',
@@ -1655,7 +1830,10 @@ class TestDuckDB extends Validator {
   }
 
   testExtractDateParts () {
-    for (const part of ['WEEK', 'WEEKOFYEAR']) {
+    for (const part of [
+      'WEEK',
+      'WEEKOFYEAR',
+    ]) {
       this.validateIdentity(`EXTRACT(${part} FROM foo)`, 'EXTRACT(WEEK FROM foo)');
     }
     for (const part of [
@@ -1687,13 +1865,27 @@ class TestDuckDB extends Validator {
   }
 
   testReset () {
-    this.validateIdentity('RESET threads', undefined, { checkCommandWarning: true });
-    this.validateIdentity('RESET memory_limit', undefined, { checkCommandWarning: true });
-    this.validateIdentity('RESET default_collation', undefined, { checkCommandWarning: true });
-    this.validateIdentity('RESET SESSION threads', undefined, { checkCommandWarning: true });
-    this.validateIdentity('RESET GLOBAL memory_limit', undefined, { checkCommandWarning: true });
-    this.validateIdentity('RESET LOCAL threads', undefined, { checkCommandWarning: true });
-    this.validateIdentity('RESET SESSION default_collation', undefined, { checkCommandWarning: true });
+    this.validateIdentity('RESET threads', undefined, {
+      checkCommandWarning: true,
+    });
+    this.validateIdentity('RESET memory_limit', undefined, {
+      checkCommandWarning: true,
+    });
+    this.validateIdentity('RESET default_collation', undefined, {
+      checkCommandWarning: true,
+    });
+    this.validateIdentity('RESET SESSION threads', undefined, {
+      checkCommandWarning: true,
+    });
+    this.validateIdentity('RESET GLOBAL memory_limit', undefined, {
+      checkCommandWarning: true,
+    });
+    this.validateIdentity('RESET LOCAL threads', undefined, {
+      checkCommandWarning: true,
+    });
+    this.validateIdentity('RESET SESSION default_collation', undefined, {
+      checkCommandWarning: true,
+    });
   }
 
   testMapStruct () {
@@ -1717,7 +1909,9 @@ class TestDuckDB extends Validator {
     this.validateIdentity('FORCE INSTALL httpfs').assertIs(InstallExpr);
     this.validateIdentity('FORCE INSTALL httpfs FROM community');
     this.validateIdentity('FORCE INSTALL httpfs FROM \'https://extensions.duckdb.org\'');
-    this.validateIdentity('FORCE CHECKPOINT db', undefined, { checkCommandWarning: true });
+    this.validateIdentity('FORCE CHECKPOINT db', undefined, {
+      checkCommandWarning: true,
+    });
   }
 
   testCteUsingKey () {
@@ -1730,7 +1924,10 @@ class TestDuckDB extends Validator {
   }
 
   testUdf () {
-    for (const keyword of ['FUNCTION', 'MACRO']) {
+    for (const keyword of [
+      'FUNCTION',
+      'MACRO',
+    ]) {
       this.validateIdentity(`SELECT ${keyword}`);
       this.validateIdentity(`CREATE ${keyword} add(a, b) AS a + b`);
       this.validateIdentity(`CREATE ${keyword} ifelse(a, b, c) AS CASE WHEN a THEN b ELSE c END`);
@@ -1784,7 +1981,9 @@ class TestDuckDB extends Validator {
 
   testApproxPercentile () {
     this.validateAll('SELECT APPROX_QUANTILE(a, 0.5) FROM t', {
-      read: { snowflake: 'SELECT APPROX_PERCENTILE(a, 0.5) FROM t' },
+      read: {
+        snowflake: 'SELECT APPROX_PERCENTILE(a, 0.5) FROM t',
+      },
       write: {
         duckdb: 'SELECT APPROX_QUANTILE(a, 0.5) FROM t',
         snowflake: 'SELECT APPROX_PERCENTILE(a, 0.5) FROM t',
@@ -1794,7 +1993,9 @@ class TestDuckDB extends Validator {
 
   testCurrentDatabase () {
     this.validateAll('SELECT CURRENT_DATABASE()', {
-      read: { snowflake: 'SELECT CURRENT_DATABASE()' },
+      read: {
+        snowflake: 'SELECT CURRENT_DATABASE()',
+      },
       write: {
         duckdb: 'SELECT CURRENT_DATABASE()',
         snowflake: 'SELECT CURRENT_DATABASE()',
@@ -1804,7 +2005,9 @@ class TestDuckDB extends Validator {
 
   testCurrentSchema () {
     this.validateAll('SELECT CURRENT_SCHEMA()', {
-      read: { snowflake: 'SELECT CURRENT_SCHEMA()' },
+      read: {
+        snowflake: 'SELECT CURRENT_SCHEMA()',
+      },
       write: {
         duckdb: 'SELECT CURRENT_SCHEMA()',
         snowflake: 'SELECT CURRENT_SCHEMA()',

@@ -4,7 +4,9 @@ import {
 import {
   TruncExpr,
 } from '../../../src/expressions';
-import { Validator } from './validator';
+import {
+  Validator,
+} from './validator';
 
 class TestSQLite extends Validator {
   override dialect = 'sqlite' as const;
@@ -58,11 +60,23 @@ class TestSQLite extends Validator {
       'ALTER TABLE t RENAME COLUMN a TO b',
     );
 
-    this.validateAll('SELECT LIKE(y, x)', { write: { sqlite: 'SELECT x LIKE y' } });
-    this.validateAll('SELECT GLOB(\'*y*\', \'xyz\')', { write: { sqlite: 'SELECT \'xyz\' GLOB \'*y*\'' } });
+    this.validateAll('SELECT LIKE(y, x)', {
+      write: {
+        sqlite: 'SELECT x LIKE y',
+      },
+    });
+    this.validateAll('SELECT GLOB(\'*y*\', \'xyz\')', {
+      write: {
+        sqlite: 'SELECT \'xyz\' GLOB \'*y*\'',
+      },
+    });
     this.validateAll(
       'SELECT LIKE(\'%y%\', \'xyz\', \'\')',
-      { write: { sqlite: 'SELECT \'xyz\' LIKE \'%y%\' ESCAPE \'\'' } },
+      {
+        write: {
+          sqlite: 'SELECT \'xyz\' LIKE \'%y%\' ESCAPE \'\'',
+        },
+      },
     );
     this.validateAll(
       'CURRENT_DATE',
@@ -129,16 +143,28 @@ class TestSQLite extends Validator {
         },
       },
     );
-    this.validateAll('x', { read: { snowflake: 'LEAST(x)' } });
+    this.validateAll('x', {
+      read: {
+        snowflake: 'LEAST(x)',
+      },
+    });
     this.validateAll('MIN(x)', {
-      read: { snowflake: 'MIN(x)' },
-      write: { snowflake: 'MIN(x)' },
+      read: {
+        snowflake: 'MIN(x)',
+      },
+      write: {
+        snowflake: 'MIN(x)',
+      },
     });
     this.validateAll(
       'MIN(x, y, z)',
       {
-        read: { snowflake: 'LEAST(x, y, z)' },
-        write: { snowflake: 'LEAST(x, y, z)' },
+        read: {
+          snowflake: 'LEAST(x, y, z)',
+        },
+        write: {
+          snowflake: 'LEAST(x, y, z)',
+        },
       },
     );
     this.validateAll(
@@ -163,7 +189,9 @@ class TestSQLite extends Validator {
       'CREATE TABLE "foo t" ("foo t id" TEXT NOT NULL, PRIMARY KEY ("foo t id"))',
       'CREATE TABLE "foo t" ("foo t id" TEXT NOT NULL PRIMARY KEY)',
     );
-    this.validateIdentity('REPLACE INTO foo (x, y) VALUES (1, 2)', undefined, { checkCommandWarning: true });
+    this.validateIdentity('REPLACE INTO foo (x, y) VALUES (1, 2)', undefined, {
+      checkCommandWarning: true,
+    });
     this.validateIdentity(
       'ATTACH DATABASE \'foo\' AS schema_name',
       'ATTACH \'foo\' AS schema_name',
@@ -220,15 +248,27 @@ class TestSQLite extends Validator {
   testDatediff () {
     this.validateAll(
       'DATEDIFF(a, b, \'day\')',
-      { write: { sqlite: 'CAST((JULIANDAY(a) - JULIANDAY(b)) AS INTEGER)' } },
+      {
+        write: {
+          sqlite: 'CAST((JULIANDAY(a) - JULIANDAY(b)) AS INTEGER)',
+        },
+      },
     );
     this.validateAll(
       'DATEDIFF(a, b, \'hour\')',
-      { write: { sqlite: 'CAST((JULIANDAY(a) - JULIANDAY(b)) * 24.0 AS INTEGER)' } },
+      {
+        write: {
+          sqlite: 'CAST((JULIANDAY(a) - JULIANDAY(b)) * 24.0 AS INTEGER)',
+        },
+      },
     );
     this.validateAll(
       'DATEDIFF(a, b, \'year\')',
-      { write: { sqlite: 'CAST((JULIANDAY(a) - JULIANDAY(b)) / 365.0 AS INTEGER)' } },
+      {
+        write: {
+          sqlite: 'CAST((JULIANDAY(a) - JULIANDAY(b)) / 365.0 AS INTEGER)',
+        },
+      },
     );
   }
 
@@ -258,7 +298,11 @@ class TestSQLite extends Validator {
   testLongvarcharDtype () {
     this.validateAll(
       'CREATE TABLE foo (bar LONGVARCHAR)',
-      { write: { sqlite: 'CREATE TABLE foo (bar TEXT)' } },
+      {
+        write: {
+          sqlite: 'CREATE TABLE foo (bar TEXT)',
+        },
+      },
     );
   }
 

@@ -5,20 +5,30 @@ import {
   AutoIncrementColumnConstraintExpr,
   CreateExpr, DataTypeExprKind, Expression, GeneratedAsIdentityColumnConstraintExpr, KwargExpr, OnConflictExpr, PrimaryKeyColumnConstraintExpr, PropertyEqExpr, SelectExpr, StructExpr, ToMapExpr,
 } from '../expressions';
-import type { Generator } from '../generator';
-import { seqGet } from '../helper';
-import { Parser } from '../parser';
+import type {
+  Generator,
+} from '../generator';
+import {
+  seqGet,
+} from '../helper';
+import {
+  Parser,
+} from '../parser';
 import {
   cache, narrowInstanceOf,
 } from '../port_internals';
-import { TokenType } from '../tokens';
+import {
+  TokenType,
+} from '../tokens';
 import {
   ctasWithTmpTablesToCreateTmpView, preprocess, removeUniqueConstraints,
 } from '../transforms';
 import {
   Dialect, Dialects,
 } from './dialect';
-import { Postgres } from './postgres';
+import {
+  Postgres,
+} from './postgres';
 
 class MaterializeParser extends Postgres.Parser {
   @cache
@@ -34,7 +44,9 @@ class MaterializeParser extends Postgres.Parser {
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
-    const noParenFunctions = { ...Postgres.Parser.NO_PAREN_FUNCTIONS };
+    const noParenFunctions = {
+      ...Postgres.Parser.NO_PAREN_FUNCTIONS,
+    };
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
     return noParenFunctions;
@@ -69,7 +81,9 @@ class MaterializeParser extends Postgres.Parser {
 
   parseMap (): ToMapExpr {
     if (this.match(TokenType.L_PAREN)) {
-      const toMap = this.expression(ToMapExpr, { this: this.parseSelect() });
+      const toMap = this.expression(ToMapExpr, {
+        this: this.parseSelect(),
+      });
       this.matchRParen();
       return toMap;
     }
@@ -89,14 +103,19 @@ class MaterializeParser extends Postgres.Parser {
     }
 
     return this.expression(ToMapExpr, {
-      this: this.expression(StructExpr, { expressions: entries }),
+      this: this.expression(StructExpr, {
+        expressions: entries,
+      }),
     });
   }
 
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Postgres.Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Postgres.Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 class MaterializeGenerator extends Postgres.Generator {
@@ -127,11 +146,29 @@ class MaterializeGenerator extends Postgres.Generator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Postgres.Generator.TRANSFORMS,
-      [AutoIncrementColumnConstraintExpr, () => ''],
-      [CreateExpr, preprocess([removeUniqueConstraints, ctasWithTmpTablesToCreateTmpView])],
-      [GeneratedAsIdentityColumnConstraintExpr, () => ''],
-      [OnConflictExpr, () => ''],
-      [PrimaryKeyColumnConstraintExpr, () => ''],
+      [
+        AutoIncrementColumnConstraintExpr,
+        () => '',
+      ],
+      [
+        CreateExpr,
+        preprocess([
+          removeUniqueConstraints,
+          ctasWithTmpTablesToCreateTmpView,
+        ]),
+      ],
+      [
+        GeneratedAsIdentityColumnConstraintExpr,
+        () => '',
+      ],
+      [
+        OnConflictExpr,
+        () => '',
+      ],
+      [
+        PrimaryKeyColumnConstraintExpr,
+        () => '',
+      ],
     ]);
     transforms.delete(ToMapExpr);
     return transforms;
@@ -144,13 +181,18 @@ class MaterializeGenerator extends Postgres.Generator {
   dataTypeSql (expression: DataTypeExpr): string {
     if (expression.isType(DataTypeExprKind.LIST)) {
       if (expression.args.expressions && 0 < expression.args.expressions.length) {
-        return `${this.expressions(expression, { flat: true })} LIST`;
+        return `${this.expressions(expression, {
+          flat: true,
+        })} LIST`;
       }
       return 'LIST';
     }
 
     if (expression.isType(DataTypeExprKind.MAP) && expression.args.expressions?.length === 2) {
-      const [key, value] = expression.args.expressions;
+      const [
+        key,
+        value,
+      ] = expression.args.expressions;
       return `MAP[${this.sql(key)} => ${this.sql(value)}]`;
     }
 
@@ -158,17 +200,24 @@ class MaterializeGenerator extends Postgres.Generator {
   }
 
   listSql (expression: ListExpr): string {
-    const firstExpr = seqGet(expression.args.expressions || [], 0);
+    const firstExpr = seqGet(expression.args.expressions || [
+    ], 0);
     if (firstExpr instanceof SelectExpr) {
-      return this.func('LIST', [firstExpr]);
+      return this.func('LIST', [
+        firstExpr,
+      ]);
     }
 
-    return `${this.normalizeFunc('LIST')}[${this.expressions(expression, { flat: true })}]`;
+    return `${this.normalizeFunc('LIST')}[${this.expressions(expression, {
+      flat: true,
+    })}]`;
   }
 
   toMapSql (expression: ToMapExpr): string {
     if (expression.args.this instanceof SelectExpr) {
-      return this.func('MAP', [expression.args.this]);
+      return this.func('MAP', [
+        expression.args.this,
+      ]);
     }
     return `${this.normalizeFunc('MAP')}[${expression.args.this instanceof Expression ? this.expressions(expression.args.this) : expression.args.this}]`;
   }

@@ -5,8 +5,12 @@ import {
   Expression,
   ColumnExpr, DistinctExpr, ExistsExpr, LiteralExpr, QuantileExpr, TimestampTruncExpr,
 } from '../../../src/expressions';
-import { narrowInstanceOf } from '../../../src/port_internals';
-import { Validator } from './validator';
+import {
+  narrowInstanceOf,
+} from '../../../src/port_internals';
+import {
+  Validator,
+} from './validator';
 
 class TestHive extends Validator {
   override dialect = 'hive' as const;
@@ -275,7 +279,9 @@ class TestHive extends Validator {
     this.validateIdentity(
       'ALTER VIEW v1 UNSET TBLPROPERTIES (\'tblp1\', \'tblp2\')',
       undefined,
-      { checkCommandWarning: true },
+      {
+        checkCommandWarning: true,
+      },
     );
     this.validateIdentity('CREATE TABLE foo (col STRUCT<struct_col_a: VARCHAR((50))>)');
 
@@ -559,9 +565,21 @@ class TestHive extends Validator {
         },
       },
     );
-    this.validateAll('DATE_ADD(\'2020-01-01\', -1)', { read: { '': 'DATE_SUB(\'2020-01-01\', 1)' } });
-    this.validateAll('DATE_ADD(a, b * -1)', { read: { '': 'DATE_SUB(a, b)' } });
-    this.validateAll('ADD_MONTHS(\'2020-01-01\', -2)', { read: { '': 'DATE_SUB(\'2020-01-01\', 2, month)' } });
+    this.validateAll('DATE_ADD(\'2020-01-01\', -1)', {
+      read: {
+        '': 'DATE_SUB(\'2020-01-01\', 1)',
+      },
+    });
+    this.validateAll('DATE_ADD(a, b * -1)', {
+      read: {
+        '': 'DATE_SUB(a, b)',
+      },
+    });
+    this.validateAll('ADD_MONTHS(\'2020-01-01\', -2)', {
+      read: {
+        '': 'DATE_SUB(\'2020-01-01\', 2, month)',
+      },
+    });
     this.validateAll(
       'DATEDIFF(TO_DATE(y), x)',
       {
@@ -624,7 +642,9 @@ class TestHive extends Validator {
     this.validateIdentity('TO_DATE(TO_DATE(x))');
     this.validateIdentity('DAY(TO_DATE(x))');
     this.validateIdentity('SELECT * FROM t WHERE col IN (\'stream\')');
-    this.validateIdentity('SET hiveconf:some_var = 5', undefined, { checkCommandWarning: true });
+    this.validateIdentity('SET hiveconf:some_var = 5', undefined, {
+      checkCommandWarning: true,
+    });
     this.validateIdentity('(VALUES (1 AS a, 2 AS b, 3))');
     this.validateIdentity('SELECT * FROM my_table TIMESTAMP AS OF DATE_ADD(CURRENT_DATE, -1)');
     this.validateIdentity('SELECT * FROM my_table VERSION AS OF DATE_ADD(CURRENT_DATE, -1)');
@@ -1058,7 +1078,11 @@ class TestHive extends Validator {
     // Numeric TRUNC from other dialects - Hive has no native support, uses CAST to BIGINT
     this.validateAll(
       'CAST(3.14159 AS BIGINT)',
-      { read: { postgres: 'TRUNC(3.14159, 2)' } },
+      {
+        read: {
+          postgres: 'TRUNC(3.14159, 2)',
+        },
+      },
     );
 
     this.validateAll(

@@ -1,8 +1,12 @@
-import { cache } from '../port_internals';
+import {
+  cache,
+} from '../port_internals';
 import {
   Generator, unsupportedArgs,
 } from '../generator';
-import { Parser } from '../parser';
+import {
+  Parser,
+} from '../parser';
 import {
   Tokenizer, TokenType, type TokenPair,
 } from '../tokens';
@@ -74,11 +78,15 @@ import {
   type SelectExprArgs,
   null_,
 } from '../expressions';
-import { seqGet } from '../helper';
+import {
+  seqGet,
+} from '../helper';
 import {
   preprocess,
 } from '../transforms';
-import { buildScope } from '../optimizer/scope';
+import {
+  buildScope,
+} from '../optimizer/scope';
 import {
   Dialect, Dialects, NormalizationStrategy,
   renameFunc,
@@ -107,7 +115,9 @@ const DATE_UNITS = new Set([
 function sha2Sql (this: ExasolGenerator, expression: Sha2Expr): string {
   const length = expression.text('length');
   const funcName = length === '256' ? 'HASH_SHA256' : 'HASH_SHA512';
-  return this.func(funcName, [expression.args.this]);
+  return this.func(funcName, [
+    expression.args.this,
+  ]);
 }
 
 function dateDiffSql (this: ExasolGenerator, expression: DateDiffExpr | TsOrDsDiffExpr): string {
@@ -118,7 +128,10 @@ function dateDiffSql (this: ExasolGenerator, expression: DateDiffExpr | TsOrDsDi
     return this.functionFallbackSql(expression);
   }
 
-  return this.func(`${unit}S_BETWEEN`, [expression.args.this, expression.args.expression]);
+  return this.func(`${unit}S_BETWEEN`, [
+    expression.args.this,
+    expression.args.expression,
+  ]);
 }
 
 /**
@@ -174,7 +187,9 @@ function addLocalPrefixForAliases (expression: Expression): Expression {
       && tableIdent.name.toUpperCase() === 'LOCAL'
       && !tableIdent.args.quoted
     ) {
-      tableIdent.replace(toIdentifier(tableIdent.name.toUpperCase(), { quoted: true }));
+      tableIdent.replace(toIdentifier(tableIdent.name.toUpperCase(), {
+        quoted: true,
+      }));
     }
 
     const prefixLocal = (node: Expression, visibleAliases: Record<string, boolean>): Expression => {
@@ -182,8 +197,12 @@ function addLocalPrefixForAliases (expression: Expression): Expression {
         const colName = (node.args.this as IdentifierExpr).name;
         if (colName in visibleAliases) {
           return new ColumnExpr({
-            this: toIdentifier(colName, { quoted: visibleAliases[colName] }),
-            table: toIdentifier('LOCAL', { quoted: false }),
+            this: toIdentifier(colName, {
+              quoted: visibleAliases[colName],
+            }),
+            table: toIdentifier('LOCAL', {
+              quoted: false,
+            }),
           });
         }
       }
@@ -202,7 +221,8 @@ function addLocalPrefixForAliases (expression: Expression): Expression {
     });
 
     const seenAliases: Record<string, boolean> = {};
-    const newSelects: Expression[] = [];
+    const newSelects: Expression[] = [
+    ];
     expression.args.expressions?.forEach((sel) => {
       if (sel instanceof AliasExpr) {
         const inner = sel.args.this?.transform((node) => prefixLocal(node, seenAliases));
@@ -270,24 +290,52 @@ function substringIndexSql (this: ExasolGenerator, expression: SubstringIndexExp
 
   const fromRight = num < 0;
   const direction = fromRight ? '-1' : '1';
-  const occur = fromRight ? this.func('ABS', [countSql]) : countSql;
+  const occur = fromRight
+    ? this.func('ABS', [
+      countSql,
+    ])
+    : countSql;
 
   const delimiterSql = this.sql(delimiterExpr);
 
   const position = this.func('INSTR', [
-    thisNode instanceof Expression && isCaseInsensitive(thisNode) ? this.func('LOWER', [haystackSql]) : haystackSql,
-    isCaseInsensitive(delimiterExpr) ? this.func('LOWER', [delimiterSql]) : delimiterSql,
+    thisNode instanceof Expression && isCaseInsensitive(thisNode)
+      ? this.func('LOWER', [
+        haystackSql,
+      ])
+      : haystackSql,
+    isCaseInsensitive(delimiterExpr)
+      ? this.func('LOWER', [
+        delimiterSql,
+      ])
+      : delimiterSql,
     direction,
     occur,
   ]);
-  const nullablePos = this.func('NULLIF', [position, '0']);
+  const nullablePos = this.func('NULLIF', [
+    position,
+    '0',
+  ]);
 
   if (fromRight) {
-    const start = this.func('NVL', [`${nullablePos} + ${this.func('LENGTH', [delimiterSql])}`, direction]);
-    return this.func('SUBSTR', [haystackSql, start]);
+    const start = this.func('NVL', [
+      `${nullablePos} + ${this.func('LENGTH', [
+        delimiterSql,
+      ])}`,
+      direction,
+    ]);
+    return this.func('SUBSTR', [
+      haystackSql,
+      start,
+    ]);
   }
 
-  const length = this.func('NVL', [`${nullablePos} - 1`, this.func('LENGTH', [haystackSql])]);
+  const length = this.func('NVL', [
+    `${nullablePos} - 1`,
+    this.func('LENGTH', [
+      haystackSql,
+    ]),
+  ]);
   return this.func('SUBSTR', [
     haystackSql,
     direction,
@@ -304,7 +352,8 @@ function qualifyUnscopedStar (expression: Expression): Expression {
     return expression;
   }
 
-  const selectExpressions = expression.args.expressions || [];
+  const selectExpressions = expression.args.expressions || [
+  ];
 
   const isBareStar = (expr: Expression): boolean => expr instanceof StarExpr && !expr.args.this;
 
@@ -329,9 +378,15 @@ function qualifyUnscopedStar (expression: Expression): Expression {
     return expression;
   }
 
-  const tableIdentifiers: IdentifierExpr[] = [];
-  for (const [sourceName, sourceEntries] of Object.entries(scope.selectedSources)) {
-    const [sourceExpr] = sourceEntries as Expression[];
+  const tableIdentifiers: IdentifierExpr[] = [
+  ];
+  for (const [
+    sourceName,
+    sourceEntries,
+  ] of Object.entries(scope.selectedSources)) {
+    const [
+      sourceExpr,
+    ] = sourceEntries as Expression[];
     const ident =
       sourceExpr instanceof TableExpr && sourceExpr.args.this instanceof IdentifierExpr
         ? (sourceExpr.args.this.copy() as IdentifierExpr)
@@ -348,7 +403,8 @@ function qualifyUnscopedStar (expression: Expression): Expression {
     }),
   );
 
-  const newSelectExpressions: Expression[] = [];
+  const newSelectExpressions: Expression[] = [
+  ];
   for (const selectExpr of selectExpressions) {
     if (isBareStar(selectExpr)) {
       newSelectExpressions.push(...qualifiedStarColumns);
@@ -381,16 +437,27 @@ function addDateSql (this: ExasolGenerator, expression: DateAddExpr | DateSubExp
   }
 
   if (expression instanceof DateSubExpr) {
-    offsetExpr = new NegExpr({ this: offsetExpr });
+    offsetExpr = new NegExpr({
+      this: offsetExpr,
+    });
   }
 
-  return this.func(`ADD_${unit}S`, [expression.args.this, offsetExpr]);
+  return this.func(`ADD_${unit}S`, [
+    expression.args.this,
+    offsetExpr,
+  ]);
 }
 
 class ExasolTokenizer extends Tokenizer {
   @cache
   static get IDENTIFIERS (): TokenPair[] {
-    return ['"', ['[', ']']];
+    return [
+      '"',
+      [
+        '[',
+        ']',
+      ],
+    ];
   }
 
   @cache
@@ -433,14 +500,16 @@ class ExasolParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return (() => {
       const functions: Record<string, (args: Expression[]) => Expression> = {
         ...Parser.FUNCTIONS,
         BIT_AND: binaryFromFunction(BitwiseAndExpr),
         BIT_OR: binaryFromFunction(BitwiseOrExpr),
         BIT_XOR: binaryFromFunction(BitwiseXorExpr),
-        BIT_NOT: (args: Expression[]) => new BitwiseNotExpr({ this: seqGet(args, 0) }),
+        BIT_NOT: (args: Expression[]) => new BitwiseNotExpr({
+          this: seqGet(args, 0),
+        }),
         BIT_LSHIFT: binaryFromFunction(BitwiseLeftShiftExpr),
         BIT_RSHIFT: binaryFromFunction(BitwiseRightShiftExpr),
         DATE_TRUNC: (args: Expression[]) => new TimestampTruncExpr({
@@ -448,7 +517,9 @@ class ExasolParser extends Parser {
           unit: seqGet(args, 0),
         }),
         DIV: binaryFromFunction(IntDivExpr),
-        EVERY: (args: Expression[]) => new AllExpr({ this: seqGet(args, 0) }),
+        EVERY: (args: Expression[]) => new AllExpr({
+          this: seqGet(args, 0),
+        }),
         EDIT_DISTANCE: (args: unknown[]) => LevenshteinExpr.fromArgList(args),
         HASH_SHA: (args: unknown[]) => ShaExpr.fromArgList(args),
         HASH_SHA1: (args: unknown[]) => ShaExpr.fromArgList(args),
@@ -470,17 +541,27 @@ class ExasolParser extends Parser {
           this: seqGet(args, 0),
           length: LiteralExpr.number(512),
         }),
-        TRUNC: (args: Expression[]) => buildTrunc(args, { dialect: Dialects.EXASOL }),
-        TRUNCATE: (args: Expression[]) => buildTrunc(args, { dialect: Dialects.EXASOL }),
+        TRUNC: (args: Expression[]) => buildTrunc(args, {
+          dialect: Dialects.EXASOL,
+        }),
+        TRUNCATE: (args: Expression[]) => buildTrunc(args, {
+          dialect: Dialects.EXASOL,
+        }),
         VAR_POP: (args: unknown[]) => VariancePopExpr.fromArgList(args),
         APPROXIMATE_COUNT_DISTINCT: (args: unknown[]) => ApproxDistinctExpr.fromArgList(args),
-        TO_CHAR: (args: Expression[]) => buildTimeToStrOrToChar(args, { dialect: Dialects.EXASOL }),
-        TO_DATE: buildFormattedTime(TsOrDsToDateExpr, { dialect: Dialects.EXASOL }),
+        TO_CHAR: (args: Expression[]) => buildTimeToStrOrToChar(args, {
+          dialect: Dialects.EXASOL,
+        }),
+        TO_DATE: buildFormattedTime(TsOrDsToDateExpr, {
+          dialect: Dialects.EXASOL,
+        }),
         CONVERT_TZ: (args: Expression[]) => new ConvertTimezoneExpr({
           timestamp: args[0],
           sourceTz: seqGet(args, 1),
           targetTz: args[2],
-          options: [seqGet(args, 3)!],
+          options: [
+            seqGet(args, 3)!,
+          ],
         }),
         NULLIFZERO: buildNullIfZero,
         ZEROIFNULL: buildZeroIfNull,
@@ -488,8 +569,12 @@ class ExasolParser extends Parser {
       };
 
       DATE_UNITS.forEach((unit) => {
-        functions[`ADD_${unit}S`] = buildDateDelta(DateAddExpr, undefined, { defaultUnit: unit });
-        functions[`${unit}S_BETWEEN`] = buildDateDelta(DateDiffExpr, undefined, { defaultUnit: unit });
+        functions[`ADD_${unit}S`] = buildDateDelta(DateAddExpr, undefined, {
+          defaultUnit: unit,
+        });
+        functions[`${unit}S_BETWEEN`] = buildDateDelta(DateDiffExpr, undefined, {
+          defaultUnit: unit,
+        });
       });
 
       return functions;
@@ -503,7 +588,9 @@ class ExasolParser extends Parser {
       COMMENT: function (this: Parser) {
         return this.expression(
           CommentColumnConstraintExpr,
-          { this: (this as ExasolParser).match(TokenType.IS) && this.parseString() },
+          {
+            this: (this as ExasolParser).match(TokenType.IS) && this.parseString(),
+          },
         );
       },
     };
@@ -511,14 +598,20 @@ class ExasolParser extends Parser {
 
   @cache
   static get FUNC_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.FUNC_TOKENS, TokenType.SYSTIMESTAMP]);
+    return new Set([
+      ...Parser.FUNC_TOKENS,
+      TokenType.SYSTIMESTAMP,
+    ]);
   }
 
   @cache
   static get FUNCTION_PARSERS (): Partial<Record<string, (this: Parser) => Expression | undefined>> {
     return {
       ...Parser.FUNCTION_PARSERS,
-      ...Object.fromEntries(['GROUP_CONCAT', 'LISTAGG'].map((k) => [
+      ...Object.fromEntries([
+        'GROUP_CONCAT',
+        'LISTAGG',
+      ].map((k) => [
         k,
         function (this: Parser) {
           return this.parseGroupConcat();
@@ -553,7 +646,10 @@ class ExasolParser extends Parser {
   // port from _Dialect metaclass logic
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([...Parser.TABLE_ALIAS_TOKENS, TokenType.STRAIGHT_JOIN]);
+    return new Set([
+      ...Parser.TABLE_ALIAS_TOKENS,
+      TokenType.STRAIGHT_JOIN,
+    ]);
   }
 }
 
@@ -573,7 +669,8 @@ class ExasolGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [];
+  static readonly SELECT_KINDS: string[] = [
+  ];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -583,15 +680,42 @@ class ExasolGenerator extends Generator {
   @cache
   static get STRING_TYPE_MAPPING (): Map<DataTypeExprKind, string> {
     return new Map<DataTypeExprKind, string>([
-      [DataTypeExprKind.BLOB, 'VARCHAR'],
-      [DataTypeExprKind.LONGBLOB, 'VARCHAR'],
-      [DataTypeExprKind.LONGTEXT, 'VARCHAR'],
-      [DataTypeExprKind.MEDIUMBLOB, 'VARCHAR'],
-      [DataTypeExprKind.MEDIUMTEXT, 'VARCHAR'],
-      [DataTypeExprKind.TINYBLOB, 'VARCHAR'],
-      [DataTypeExprKind.TINYTEXT, 'VARCHAR'],
-      [DataTypeExprKind.TEXT, 'LONG VARCHAR'],
-      [DataTypeExprKind.VARBINARY, 'VARCHAR'],
+      [
+        DataTypeExprKind.BLOB,
+        'VARCHAR',
+      ],
+      [
+        DataTypeExprKind.LONGBLOB,
+        'VARCHAR',
+      ],
+      [
+        DataTypeExprKind.LONGTEXT,
+        'VARCHAR',
+      ],
+      [
+        DataTypeExprKind.MEDIUMBLOB,
+        'VARCHAR',
+      ],
+      [
+        DataTypeExprKind.MEDIUMTEXT,
+        'VARCHAR',
+      ],
+      [
+        DataTypeExprKind.TINYBLOB,
+        'VARCHAR',
+      ],
+      [
+        DataTypeExprKind.TINYTEXT,
+        'VARCHAR',
+      ],
+      [
+        DataTypeExprKind.TEXT,
+        'LONG VARCHAR',
+      ],
+      [
+        DataTypeExprKind.VARBINARY,
+        'VARCHAR',
+      ],
     ]);
   }
 
@@ -600,21 +724,53 @@ class ExasolGenerator extends Generator {
     return new Map([
       ...Generator.TYPE_MAPPING,
       ...ExasolGenerator.STRING_TYPE_MAPPING,
-      [DataTypeExprKind.TINYINT, 'SMALLINT'],
-      [DataTypeExprKind.MEDIUMINT, 'INT'],
-      [DataTypeExprKind.DECIMAL32, 'DECIMAL'],
-      [DataTypeExprKind.DECIMAL64, 'DECIMAL'],
-      [DataTypeExprKind.DECIMAL128, 'DECIMAL'],
-      [DataTypeExprKind.DECIMAL256, 'DECIMAL'],
-      [DataTypeExprKind.DATETIME, 'TIMESTAMP'],
-      [DataTypeExprKind.TIMESTAMPTZ, 'TIMESTAMP'],
-      [DataTypeExprKind.TIMESTAMPLTZ, 'TIMESTAMP'],
-      [DataTypeExprKind.TIMESTAMPNTZ, 'TIMESTAMP'],
+      [
+        DataTypeExprKind.TINYINT,
+        'SMALLINT',
+      ],
+      [
+        DataTypeExprKind.MEDIUMINT,
+        'INT',
+      ],
+      [
+        DataTypeExprKind.DECIMAL32,
+        'DECIMAL',
+      ],
+      [
+        DataTypeExprKind.DECIMAL64,
+        'DECIMAL',
+      ],
+      [
+        DataTypeExprKind.DECIMAL128,
+        'DECIMAL',
+      ],
+      [
+        DataTypeExprKind.DECIMAL256,
+        'DECIMAL',
+      ],
+      [
+        DataTypeExprKind.DATETIME,
+        'TIMESTAMP',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPTZ,
+        'TIMESTAMP',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPLTZ,
+        'TIMESTAMP',
+      ],
+      [
+        DataTypeExprKind.TIMESTAMPNTZ,
+        'TIMESTAMP',
+      ],
     ]);
   }
 
   dataTypeSql (expression: DataTypeExpr): string {
-    if (expression.isType([DataTypeExprKind.TIMESTAMPLTZ])) {
+    if (expression.isType([
+      DataTypeExprKind.TIMESTAMPLTZ,
+    ])) {
       return 'TIMESTAMP WITH LOCAL TIME ZONE';
     }
     return super.dataTypeSql(expression);
@@ -626,13 +782,34 @@ class ExasolGenerator extends Generator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
-      [AllExpr, renameFunc('EVERY')],
-      [BitwiseAndExpr, renameFunc('BIT_AND')],
-      [BitwiseOrExpr, renameFunc('BIT_OR')],
-      [BitwiseNotExpr, renameFunc('BIT_NOT')],
-      [BitwiseLeftShiftExpr, renameFunc('BIT_LSHIFT')],
-      [BitwiseRightShiftExpr, renameFunc('BIT_RSHIFT')],
-      [BitwiseXorExpr, renameFunc('BIT_XOR')],
+      [
+        AllExpr,
+        renameFunc('EVERY'),
+      ],
+      [
+        BitwiseAndExpr,
+        renameFunc('BIT_AND'),
+      ],
+      [
+        BitwiseOrExpr,
+        renameFunc('BIT_OR'),
+      ],
+      [
+        BitwiseNotExpr,
+        renameFunc('BIT_NOT'),
+      ],
+      [
+        BitwiseLeftShiftExpr,
+        renameFunc('BIT_LSHIFT'),
+      ],
+      [
+        BitwiseRightShiftExpr,
+        renameFunc('BIT_RSHIFT'),
+      ],
+      [
+        BitwiseXorExpr,
+        renameFunc('BIT_XOR'),
+      ],
       [
         DateDiffExpr,
         function (this: Generator, e: DateDiffExpr) {
@@ -657,7 +834,10 @@ class ExasolGenerator extends Generator {
           return addDateSql.call(this as ExasolGenerator, e);
         },
       ],
-      [IntDivExpr, renameFunc('DIV')],
+      [
+        IntDivExpr,
+        renameFunc('DIV'),
+      ],
       [
         TsOrDsDiffExpr,
         function (this: Generator, e: TsOrDsDiffExpr) {
@@ -698,7 +878,10 @@ class ExasolGenerator extends Generator {
           return renameFunc('EDIT_DISTANCE').call(this, e);
         },
       ],
-      [ModExpr, renameFunc('MOD')],
+      [
+        ModExpr,
+        renameFunc('MOD'),
+      ],
       [
         ConvertTimezoneExpr,
         function (this: Generator, e: ConvertTimezoneExpr) {
@@ -706,7 +889,8 @@ class ExasolGenerator extends Generator {
             e.args.timestamp,
             e.args.sourceTz,
             e.args.targetTz,
-            ...e.args.options ?? [],
+            ...e.args.options ?? [
+            ],
           ]);
         },
       ],
@@ -724,7 +908,10 @@ class ExasolGenerator extends Generator {
           return renameFunc('REGEXP_REPLACE').call(this, e);
         },
       ],
-      [VariancePopExpr, renameFunc('VAR_POP')],
+      [
+        VariancePopExpr,
+        renameFunc('VAR_POP'),
+      ],
       [
         ApproxDistinctExpr,
         function (this: Generator, e: Expression) {
@@ -735,19 +922,28 @@ class ExasolGenerator extends Generator {
       [
         ToCharExpr,
         function (this: Generator, e: ToCharExpr) {
-          return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+          return this.func('TO_CHAR', [
+            e.args.this,
+            this.formatTime(e),
+          ]);
         },
       ],
       [
         TsOrDsToDateExpr,
         function (this: Generator, e: TsOrDsToDateExpr) {
-          return this.func('TO_DATE', [e.args.this, this.formatTime(e)]);
+          return this.func('TO_DATE', [
+            e.args.this,
+            this.formatTime(e),
+          ]);
         },
       ],
       [
         TimeToStrExpr,
         function (this: Generator, e: TimeToStrExpr) {
-          return this.func('TO_CHAR', [e.args.this, this.formatTime(e)]);
+          return this.func('TO_CHAR', [
+            e.args.this,
+            this.formatTime(e),
+          ]);
         },
       ],
       [
@@ -765,10 +961,16 @@ class ExasolGenerator extends Generator {
       [
         StrToTimeExpr,
         function (this: Generator, e: StrToTimeExpr) {
-          return this.func('TO_DATE', [e.args.this, this.formatTime(e)]);
+          return this.func('TO_DATE', [
+            e.args.this,
+            this.formatTime(e),
+          ]);
         },
       ],
-      [CurrentUserExpr, () => 'CURRENT_USER'],
+      [
+        CurrentUserExpr,
+        () => 'CURRENT_USER',
+      ],
       [
         AtTimeZoneExpr,
         function (this: Generator, e: AtTimeZoneExpr) {
@@ -789,38 +991,65 @@ class ExasolGenerator extends Generator {
           });
         },
       ],
-      [ShaExpr, renameFunc('HASH_SHA')],
+      [
+        ShaExpr,
+        renameFunc('HASH_SHA'),
+      ],
       [
         Sha2Expr,
         function (this: Generator, e: Sha2Expr) {
           return sha2Sql.call(this as ExasolGenerator, e);
         },
       ],
-      [Md5Expr, renameFunc('HASH_MD5')],
-      [Md5DigestExpr, renameFunc('HASHTYPE_MD5')],
+      [
+        Md5Expr,
+        renameFunc('HASH_MD5'),
+      ],
+      [
+        Md5DigestExpr,
+        renameFunc('HASHTYPE_MD5'),
+      ],
       [
         CommentColumnConstraintExpr,
         function (this: Generator, e: CommentColumnConstraintExpr) {
           return `COMMENT IS ${this.sql(e, 'this')}`;
         },
       ],
-      [SelectExpr, preprocess([qualifyUnscopedStar, addLocalPrefixForAliases])],
+      [
+        SelectExpr,
+        preprocess([
+          qualifyUnscopedStar,
+          addLocalPrefixForAliases,
+        ]),
+      ],
       [
         SubstringIndexExpr,
         function (this: Generator, e: SubstringIndexExpr) {
           return substringIndexSql.call(this as ExasolGenerator, e);
         },
       ],
-      [WeekOfYearExpr, renameFunc('WEEK')],
-      [DateExpr, renameFunc('TO_DATE')],
-      [TimestampExpr, renameFunc('TO_TIMESTAMP')],
+      [
+        WeekOfYearExpr,
+        renameFunc('WEEK'),
+      ],
+      [
+        DateExpr,
+        renameFunc('TO_DATE'),
+      ],
+      [
+        TimestampExpr,
+        renameFunc('TO_TIMESTAMP'),
+      ],
       [
         QuarterExpr,
         function (this: Generator, e: QuarterExpr) {
           return `CEIL(MONTH(TO_DATE(${this.sql(e, 'this')}))/3)`;
         },
       ],
-      [LastDayExpr, noLastDaySql],
+      [
+        LastDayExpr,
+        noLastDaySql,
+      ],
     ]);
     return transforms;
   }
@@ -840,7 +1069,8 @@ class ExasolGenerator extends Generator {
     if (expression.args.expressions && 0 < expression.args.expressions.length) {
       this.unsupported('Exasol does not support arguments in RANK');
     }
-    return this.func('RANK', []);
+    return this.func('RANK', [
+    ]);
   }
 
   convertTimezoneSql (expression: ConvertTimezoneExpr): string {
@@ -852,7 +1082,8 @@ class ExasolGenerator extends Generator {
       timestamp,
       sourceTz,
       targetTz,
-      ...options ?? [],
+      ...options ?? [
+      ],
     ]);
   }
 }

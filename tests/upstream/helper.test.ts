@@ -7,22 +7,69 @@ import {
 
 describe('TestHelper', () => {
   it('test_tsort', () => {
-    expect(tsort(new Map([['a', new Set()]]))).toEqual(['a']);
-    expect(tsort(new Map([['a', new Set(['b'])]]))).toEqual(['b', 'a']);
     expect(tsort(new Map([
-      ['a', new Set(['c'])],
-      ['b', new Set()],
-      ['c', new Set()],
+      [
+        'a',
+        new Set(),
+      ],
+    ]))).toEqual([
+      'a',
+    ]);
+    expect(tsort(new Map([
+      [
+        'a',
+        new Set([
+          'b',
+        ]),
+      ],
+    ]))).toEqual([
+      'b',
+      'a',
+    ]);
+    expect(tsort(new Map([
+      [
+        'a',
+        new Set([
+          'c',
+        ]),
+      ],
+      [
+        'b',
+        new Set(),
+      ],
+      [
+        'c',
+        new Set(),
+      ],
     ]))).toEqual([
       'b',
       'c',
       'a',
     ]);
     expect(tsort(new Map([
-      ['a', new Set(['b', 'c'])],
-      ['b', new Set(['c'])],
-      ['c', new Set()],
-      ['d', new Set(['a'])],
+      [
+        'a',
+        new Set([
+          'b',
+          'c',
+        ]),
+      ],
+      [
+        'b',
+        new Set([
+          'c',
+        ]),
+      ],
+      [
+        'c',
+        new Set(),
+      ],
+      [
+        'd',
+        new Set([
+          'a',
+        ]),
+      ],
     ]))).toEqual([
       'c',
       'b',
@@ -31,9 +78,23 @@ describe('TestHelper', () => {
     ]);
 
     expect(() => tsort(new Map([
-      ['a', new Set(['b', 'c'])],
-      ['b', new Set(['a'])],
-      ['c', new Set()],
+      [
+        'a',
+        new Set([
+          'b',
+          'c',
+        ]),
+      ],
+      [
+        'b',
+        new Set([
+          'a',
+        ]),
+      ],
+      [
+        'c',
+        new Set(),
+      ],
     ]))).toThrow();
   });
 
@@ -50,14 +111,76 @@ describe('TestHelper', () => {
   });
 
   it('test_merge_ranges', () => {
-    expect(mergeRanges([])).toEqual([]);
-    expect(mergeRanges([[0, 1]])).toEqual([[0, 1]]);
-    expect(mergeRanges([[0, 1], [2, 3]])).toEqual([[0, 1], [2, 3]]);
-    expect(mergeRanges([[0, 1], [1, 3]])).toEqual([[0, 3]]);
     expect(mergeRanges([
-      [2, 3],
-      [0, 1],
-      [3, 4],
-    ])).toEqual([[0, 1], [2, 4]]);
+    ])).toEqual([
+    ]);
+    expect(mergeRanges([
+      [
+        0,
+        1,
+      ],
+    ])).toEqual([
+      [
+        0,
+        1,
+      ],
+    ]);
+    expect(mergeRanges([
+      [
+        0,
+        1,
+      ],
+      [
+        2,
+        3,
+      ],
+    ])).toEqual([
+      [
+        0,
+        1,
+      ],
+      [
+        2,
+        3,
+      ],
+    ]);
+    expect(mergeRanges([
+      [
+        0,
+        1,
+      ],
+      [
+        1,
+        3,
+      ],
+    ])).toEqual([
+      [
+        0,
+        3,
+      ],
+    ]);
+    expect(mergeRanges([
+      [
+        2,
+        3,
+      ],
+      [
+        0,
+        1,
+      ],
+      [
+        3,
+        4,
+      ],
+    ])).toEqual([
+      [
+        0,
+        1,
+      ],
+      [
+        2,
+        4,
+      ],
+    ]);
   });
 });

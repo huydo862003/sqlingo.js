@@ -1,8 +1,12 @@
 import {
   describe, test,
 } from 'vitest';
-import { HexStringExpr } from '../../../src/expressions';
-import { Validator } from './validator';
+import {
+  HexStringExpr,
+} from '../../../src/expressions';
+import {
+  Validator,
+} from './validator';
 
 class TestDune extends Validator {
   override dialect = 'dune' as const;

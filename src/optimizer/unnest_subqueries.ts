@@ -40,8 +40,12 @@ import {
   JoinExprKind,
   ConditionExpr,
 } from '../expressions';
-import { isInstanceOf } from '../port_internals';
-import { nameSequence } from '../helper';
+import {
+  isInstanceOf,
+} from '../port_internals';
+import {
+  nameSequence,
+} from '../helper';
 import {
   findInScope, ScopeType, traverseScope,
 } from './scope';
@@ -120,7 +124,9 @@ function unnest (
 
   let selectToUse = selectExpr;
   if (selectExpr instanceof SetOperationExpr) {
-    selectToUse = select(selectExpr.selects).from(selectExpr.subquery(nextAliasName()), { copy: false });
+    selectToUse = select(selectExpr.selects).from(selectExpr.subquery(nextAliasName()), {
+      copy: false,
+    });
   }
 
   const aliasExpr = nextAliasName();
@@ -145,7 +151,9 @@ function unnest (
         )
       )
     ) {
-      columnExpr = new MaxExpr({ this: columnExpr });
+      columnExpr = new MaxExpr({
+        this: columnExpr,
+      });
     } else if (!(selectExpr.parent instanceof SubqueryExpr)) {
       return;
     }
@@ -172,7 +180,10 @@ function unnest (
     return;
   }
 
-  if (selectToUse.find([LimitExpr, OffsetExpr])) {
+  if (selectToUse.find([
+    LimitExpr,
+    OffsetExpr,
+  ])) {
     return;
   }
 
@@ -202,7 +213,9 @@ function unnest (
 
   if (clause instanceof JoinExpr) {
     replace(predicateToUse, true_());
-    parentSelect.where(joinKeyNotNull, { copy: false });
+    parentSelect.where(joinKeyNotNull, {
+      copy: false,
+    });
   } else {
     replace(predicateToUse, joinKeyNotNull);
   }
@@ -211,22 +224,33 @@ function unnest (
 
   if (group) {
     // Simulate set comparison in sqlglot (Python: {value.this} != set(group.expressions))
-    const groupExprSqls = new Set((group.args.expressions ?? []).map((e) => (e instanceof Expression ? e.sql() : String(e))));
+    const groupExprSqls = new Set((group.args.expressions ?? [
+    ]).map((e) => (e instanceof Expression ? e.sql() : String(e))));
     if (groupExprSqls.size !== 1 || !groupExprSqls.has((value.args.this as Expression).sql())) {
       selectToUse = select(
         alias(column({
           col: value.alias,
           table: '_q',
-        }), value.alias, { copy: false }),
+        }), value.alias, {
+          copy: false,
+        }),
       )
-        .from(selectToUse.subquery('_q', { copy: false }), { copy: false })
+        .from(selectToUse.subquery('_q', {
+          copy: false,
+        }), {
+          copy: false,
+        })
         .groupBy(column({
           col: value.alias,
           table: '_q',
-        }), { copy: false });
+        }), {
+          copy: false,
+        });
     }
   } else if (!findInScope(valueThis, AggFuncExpr)) {
-    selectToUse = selectToUse.groupBy(valueThis, { copy: false });
+    selectToUse = selectToUse.groupBy(valueThis, {
+      copy: false,
+    });
   }
 
   if (!columnExpr) return;
@@ -250,12 +274,16 @@ function decorrelate (
 ): void {
   const where = select.args.where;
 
-  if (!where || where.find(OrExpr) || select.find([LimitExpr, OffsetExpr])) {
+  if (!where || where.find(OrExpr) || select.find([
+    LimitExpr,
+    OffsetExpr,
+  ])) {
     return;
   }
 
   const tableAlias = nextAliasName();
-  const keys: [Expression, ColumnExpr, Expression][] = [];
+  const keys: [Expression, ColumnExpr, Expression][] = [
+  ];
 
   // for all external columns in the where statement, find the relevant predicate
   // keys to convert it into a join
@@ -273,7 +301,8 @@ function decorrelate (
     let key: Expression | undefined;
 
     if (predicate instanceof BinaryExpr) {
-      key = Array.from(predicate.left?.walk() || []).some((node) => node === column)
+      key = Array.from(predicate.left?.walk() || [
+      ]).some((node) => node === column)
         ? predicate.right
         : predicate.left;
     } else {
@@ -307,7 +336,8 @@ function decorrelate (
   const keyAliasesBySql = new Map<string, string>();
   const keyByAliasSql = new Map<string, Expression>(); // reverse: sql -> expression node
   const groupBySqls = new Set<string>(); // SQL strings for groupBy members
-  const groupBy: Expression[] = [];
+  const groupBy: Expression[] = [
+  ];
 
   const exprInGroupBy = (expr: Expression): boolean => groupBySqls.has(expr.sql());
 
@@ -344,7 +374,11 @@ function decorrelate (
   const aggFunc = isSubqueryProjection ? MaxExpr : ArrayAggExpr;
   if (!value.find(AggFuncExpr) && !exprInGroupBy(valueThis)) {
     select.select(
-      alias(new aggFunc({ this: valueThis }), value.alias, { quoted: false }),
+      alias(new aggFunc({
+        this: valueThis,
+      }), value.alias, {
+        quoted: false,
+      }),
       {
         append: false,
         copy: false,
@@ -355,19 +389,31 @@ function decorrelate (
   // exists queries should not have any selects as it only checks if there are any rows
   // all selects will be added by the optimizer and only used for join keys
   if (parentPredicate instanceof ExistsExpr) {
-    select.setArgKey('expressions', []);
+    select.setArgKey('expressions', [
+    ]);
   }
 
-  for (const [keySql, keyAlias] of keyAliasesBySql) {
+  for (const [
+    keySql,
+    keyAlias,
+  ] of keyAliasesBySql) {
     const key = keyByAliasSql.get(keySql)!;
     if (groupBySqls.has(keySql)) {
       // add all keys to the projections of the subquery
       // so that we can use it as a join key
       if (parentPredicate instanceof ExistsExpr || keySql !== (value.args.this as Expression).sql()) {
-        select.select(`${key} AS ${keyAlias}`, { copy: false });
+        select.select(`${key} AS ${keyAlias}`, {
+          copy: false,
+        });
       }
     } else {
-      select.select(alias(new aggFunc({ this: key.copy() }), keyAlias, { quoted: false }), { copy: false });
+      select.select(alias(new aggFunc({
+        this: key.copy(),
+      }), keyAlias, {
+        quoted: false,
+      }), {
+        copy: false,
+      });
     }
   }
 
@@ -388,7 +434,9 @@ function decorrelate (
     if (!opType || !(opType.prototype instanceof BinaryExpr || opType === BinaryExpr)) return;
     const predicateExpr = new opType({
       this: other,
-      expression: column({ col: '_x' }),
+      expression: column({
+        col: '_x',
+      }),
     });
     if (parentPredicate.parent) parentPredicate = replace(parentPredicate.parent, `ARRAY_ALL(${aliasExpr}, _x -> ${predicateExpr})`);
   } else if (parentPredicate instanceof AnyExpr) {
@@ -402,7 +450,9 @@ function decorrelate (
     } else {
       const predicateExpr = new opType({
         this: other,
-        expression: column({ col: '_x' }),
+        expression: column({
+          col: '_x',
+        }),
       });
       parentPredicate = replace(parentPredicate, `ARRAY_ANY(${aliasExpr}, _x -> ${predicateExpr})`);
     }
@@ -414,7 +464,9 @@ function decorrelate (
     }
   } else {
     if (isSubqueryProjection && select.parent?.alias) {
-      aliasExpr = alias(aliasExpr, select.parent.alias, { copy: false });
+      aliasExpr = alias(aliasExpr, select.parent.alias, {
+        copy: false,
+      });
     }
 
     // COUNT always returns 0 on empty datasets, so we need take that into consideration here
@@ -431,7 +483,9 @@ function decorrelate (
 
       aliasExpr = new CoalesceExpr({
         this: aliasExpr,
-        expressions: [(value.args.this as Expression).transform(removeAggs)],
+        expressions: [
+          (value.args.this as Expression).transform(removeAggs),
+        ],
       });
     }
 
@@ -454,7 +508,9 @@ function decorrelate (
     if (isSubqueryProjection) {
       key.replace(nested);
       if (!(predicate instanceof EqExpr)) {
-        parentSelect.where(predicate, { copy: false });
+        parentSelect.where(predicate, {
+          copy: false,
+        });
       }
       continue;
     }
@@ -470,7 +526,9 @@ function decorrelate (
   }
 
   parentSelect.join(
-    select.groupBy(groupBy, { copy: false }),
+    select.groupBy(groupBy, {
+      copy: false,
+    }),
     {
       on: keys.filter(([
         , , predicate,

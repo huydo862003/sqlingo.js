@@ -4,7 +4,9 @@ import {
 import {
   TruncExpr, AnonymousExpr, DateTruncExpr,
 } from '../../../src/expressions';
-import { Validator } from './validator';
+import {
+  Validator,
+} from './validator';
 
 class TestExasol extends Validator {
   override dialect = 'exasol' as const;
@@ -90,15 +92,23 @@ class TestExasol extends Validator {
     this.validateAll(
       'CAST(x AS TIMESTAMP)',
       {
-        read: { tsql: 'CAST(x AS DATETIME2)' },
-        write: { exasol: 'CAST(x AS TIMESTAMP)' },
+        read: {
+          tsql: 'CAST(x AS DATETIME2)',
+        },
+        write: {
+          exasol: 'CAST(x AS TIMESTAMP)',
+        },
       },
     );
     this.validateAll(
       'CAST(x AS TIMESTAMP)',
       {
-        read: { tsql: 'CAST(x AS SMALLDATETIME)' },
-        write: { exasol: 'CAST(x AS TIMESTAMP)' },
+        read: {
+          tsql: 'CAST(x AS SMALLDATETIME)',
+        },
+        write: {
+          exasol: 'CAST(x AS TIMESTAMP)',
+        },
       },
     );
     this.validateIdentity('CAST(x AS BOOLEAN)');
@@ -116,7 +126,9 @@ class TestExasol extends Validator {
     this.validateAll(
       'SELECT MOD(x, 10)',
       {
-        read: { exasol: 'SELECT MOD(x, 10)' },
+        read: {
+          exasol: 'SELECT MOD(x, 10)',
+        },
         write: {
           teradata: 'SELECT x MOD 10',
           mysql: 'SELECT x % 10',
@@ -462,7 +474,10 @@ class TestExasol extends Validator {
     this.validateIdentity('SELECT TO_DATE(\'31-DEC-1999\', \'DD-MON-YYYY\') AS TO_DATE');
     this.validateIdentity('SELECT WEEKOFYEAR(\'2024-05-22\')', 'SELECT WEEK(\'2024-05-22\')');
 
-    for (const [fmt, alias] of Object.entries(formats)) {
+    for (const [
+      fmt,
+      alias,
+    ] of Object.entries(formats)) {
       this.validateIdentity(
         `SELECT TO_CHAR(CAST('2024-07-08 13:45:00' AS TIMESTAMP), '${fmt}') AS ${alias}`,
       );
