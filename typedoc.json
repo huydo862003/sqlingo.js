@@ -11,6 +11,7 @@
   "excludeInternal": false,
   "readme": "README.md",
   "includeVersion": true,
+  "skipErrorChecking": true,
   "sort": ["source-order"],
   "categorizeByGroup": true,
   "defaultCategory": "Other",
