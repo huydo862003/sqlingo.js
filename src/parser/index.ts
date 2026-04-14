@@ -601,7 +601,7 @@ export function buildLike (args: Expression[]): EscapeExpr | LikeExpr {
 }
 
 export function binaryRangeParser (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   exprType: new (args: any) => Expression,
   options: {reverseArgs?: boolean} = {},
 ): (this: Parser, thisExpr: Expression | undefined) => Expression | undefined {
@@ -721,7 +721,7 @@ export function buildUpper (args: Expression[]): UpperExpr | HexExpr {
 }
 
 export function buildExtractJsonWithPath<E extends Expression> (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   exprType: new (args: any) => E,
 ): (args: Expression[], options: {dialect: Dialect}) => E {
   return function builder (args: Expression[], {
@@ -789,7 +789,7 @@ export function buildPad (args: Expression[], options: {isLeft?: boolean} = {}):
 }
 
 export function buildArrayConstructor<E extends Expression> (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   exprClass: new (args: any) => E,
   args: Expression[],
   bracketKind: TokenType,
@@ -987,7 +987,7 @@ export interface ParseOptions<IntoT extends typeof Expression = typeof Expressio
   errorLevel?: ErrorLevel;
   errorMessageContext?: number;
   maxErrors?: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   into?: string | IntoT | (string | IntoT)[] | (new (args: any) => any) | (new (args: any) => any)[];
   [key: string]: unknown;
 }
@@ -4838,7 +4838,7 @@ export class Parser {
   }
 
   parsePropertyAssignment<E extends Expression> (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     expClass: new (args: any) => E,
     kwargs?: Record<string, unknown>,
   ): E {
@@ -5044,7 +5044,6 @@ export class Parser {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parseCompositeKeyProperty<E extends Expression> (exprType: new (args: any) => E): E {
     this.matchTextSeq('KEY');
     const expressions = this.parseWrappedIdVars();
@@ -8516,7 +8515,7 @@ export class Parser {
   }
 
   parseSort<E extends Expression> (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     expClass: new (args: any) => E,
     token: TokenType,
   ): E | undefined {
@@ -10503,7 +10502,7 @@ export class Parser {
    * @returns The target expression.
    */
   expression<E extends Expression> (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     expClass: new (args: any) => E,
     options: {
       token?: Token;
@@ -11026,7 +11025,6 @@ export class Parser {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parseCeilFloor<T extends Expression> (exprType: new (args: any) => T): T {
     const args = this.parseCsv(() => this.parseLambda());
 
@@ -11196,7 +11194,6 @@ export class Parser {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parseMaxMinBy (exprType: new (args: any) => AggFuncExpr): AggFuncExpr {
     const args: Expression[] = [
     ];
@@ -13491,7 +13488,7 @@ export class Parser {
   }
 
   parseFunction (options: {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+
     functions?: Record<string, Function>;
     anonymous?: boolean;
     optionalParens?: boolean;
@@ -13540,7 +13537,7 @@ export class Parser {
   }
 
   parseFunctionCall (options: {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+
     functions?: Record<string, Function>;
     anonymous?: boolean;
     optionalParens?: boolean;
@@ -15305,10 +15302,10 @@ export class Parser {
   }
 
   findParser (
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+
     parsers: Record<string, Function>,
     trie: TrieNode,
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+
   ): Function | undefined {
     if (!this.curr) {
       return undefined;

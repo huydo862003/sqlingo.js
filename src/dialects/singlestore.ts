@@ -618,9 +618,9 @@ class SingleStoreGenerator extends MySQL.Generator {
   }
 
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...MySQL.Generator.TRANSFORMS,
       [

@@ -120,7 +120,7 @@ export function dump (expression: Expression): Array<Record<string, unknown>> {
  */
 export function load (payloads?: Record<string, unknown>[], customExpressions?: Record<string, typeof Expression>): Expression | undefined {
   const expressions = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     ...(exp as any),
     ...customExpressions,
   };

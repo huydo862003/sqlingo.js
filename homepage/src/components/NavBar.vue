@@ -1,8 +1,8 @@
 <template>
   <nav class="nav">
     <div class="inner">
-      <a
-        :href="homeHref"
+      <RouterLink
+        to="/"
         class="logo"
       >
         <img
@@ -11,7 +11,7 @@
           class="logo-icon"
         >
         <span class="logo-text">sqlingo.js</span>
-      </a>
+      </RouterLink>
       <div
         v-if="breadcrumb.length"
         class="breadcrumb"
@@ -50,11 +50,19 @@
             v-if="dropdownOpen"
             class="crumb-dropdown"
           >
+            <!-- desktop: middle crumbs only -->
             <a
-              v-for="(crumb, i) in allDropdownCrumbs"
-              :key="i"
+              v-for="(crumb, i) in collapsedCrumbs"
+              :key="'d-' + i"
               :href="crumb.href ?? '#'"
-              class="crumb-dropdown-item"
+              class="crumb-dropdown-item hidden md:flex"
+            >{{ crumb.label }}</a>
+            <!-- mobile: all except last -->
+            <a
+              v-for="(crumb, i) in breadcrumb.slice(0, -1)"
+              :key="'m-' + i"
+              :href="crumb.href ?? '#'"
+              class="crumb-dropdown-item flex md:hidden"
             >{{ crumb.label }}</a>
           </div>
         </span>
@@ -77,23 +85,30 @@
         </span>
       </div>
       <div class="links">
-        <a
-          :href="apiHref"
+        <RouterLink
+          to="/"
+          class="link"
+          data-tooltip="Home"
+        >
+          <PhHouse :size="16" />
+          <span class="link-label">Home</span>
+        </RouterLink>
+        <RouterLink
+          to="/api-reference/"
           class="link"
           data-tooltip="API reference"
         >
           <PhBookOpen :size="16" />
           <span class="link-label">API reference</span>
-        </a>
-        <a
-          href="#playground"
+        </RouterLink>
+        <RouterLink
+          to="/playground/"
           class="link"
           data-tooltip="Playground"
         >
           <PhPlayCircle :size="16" />
           <span class="link-label">Playground</span>
-          <span class="badge">Soon</span>
-        </a>
+        </RouterLink>
         <a
           href="https://github.com/huydo862003/sqlingo.js"
           class="link"
@@ -114,7 +129,7 @@ import {
   computed, ref, onMounted, onUnmounted,
 } from 'vue';
 import {
-  PhBookOpen, PhPlayCircle, PhGithubLogo,
+  PhHouse, PhBookOpen, PhPlayCircle, PhGithubLogo,
 } from '@phosphor-icons/vue';
 
 interface Crumb {label: string;
@@ -125,26 +140,14 @@ const {
   ],
 } = defineProps<{breadcrumb?: Crumb[]}>();
 
-const base = import.meta.env.BASE_URL;
-const homeHref = computed(() => `${base}`);
-const apiHref = computed(() => `${base}api-reference/`);
-
 const dropdownOpen = ref(false);
 const ellipsisBtn = ref<HTMLElement | null>(null);
-
 // middle crumbs (everything except first and last) — shown in dropdown on desktop
 const collapsedCrumbs = computed(() =>
   2 < breadcrumb.length
     ? breadcrumb.slice(1, -1)
     : [
     ]);
-
-// on mobile: show all crumbs except last in dropdown (first is hidden via CSS)
-// on desktop: show only middle crumbs (first is already visible)
-const allDropdownCrumbs = computed(() =>
-  isMobile.value && 1 < breadcrumb.length
-    ? breadcrumb.slice(0, -1)
-    : collapsedCrumbs.value);
 
 function onDocClick (e: MouseEvent) {
   if (ellipsisBtn.value && !ellipsisBtn.value.contains(e.target as Node)) {
@@ -299,7 +302,7 @@ onUnmounted(() => document.removeEventListener('click', onDocClick, true));
     left: 50%;
     transform: translateX(-50%);
     white-space: nowrap;
-    @apply text-[10px] px-2 py-1 rounded-[var(--radius-sm)] border border-border;
+    @apply text-xs px-2 py-1 rounded-[var(--radius-sm)] border border-border;
     background: #1a1a24;
     color: #c8c8d8;
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);

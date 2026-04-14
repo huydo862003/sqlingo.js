@@ -265,9 +265,22 @@
 
         <div
           v-else
-          class="content-empty"
+          class="content-landing"
         >
-          Search and select an item.
+          <h1 class="landing-name">
+            @hdnax/sqlingo.js
+            <span
+              v-if="data?.packageVersion"
+              class="landing-version"
+            >v{{ data.packageVersion }}</span>
+          </h1>
+          <p class="landing-desc">
+            SQL parser, transpiler, optimizer, and engine for JavaScript/TypeScript.
+            Port of Python SQLGlot — 33+ dialects.
+          </p>
+          <p class="landing-hint">
+            Select an item from the sidebar to view its documentation.
+          </p>
         </div>
       </main>
     </div>
@@ -304,6 +317,7 @@ interface ReflectionNode {
   id: number;
   name: string;
   kind: number;
+  packageVersion?: string;
   flags: ReflectionFlags;
   comment?: {summary: Array<{kind: string;
     text: string;}>;};
@@ -424,12 +438,9 @@ const navGroups = computed(() => {
 
 watch(navGroups, (groups) => {
   const all = groups.flatMap((g) => g.items);
+  // keep selection valid when search narrows results
   if (selected.value && !all.find((i) => i.id === selected.value?.id)) {
-    selected.value = all[0] ?? null;
-  }
-  // don't auto-select first item if there's a hash or user hasn't loaded yet
-  if (!selected.value && all.length && !window.location.hash) {
-    selected.value = all[0];
+    selected.value = null;
   }
 }, {
   immediate: true,
@@ -516,7 +527,7 @@ function memberType (node: ReflectionNode): string {
   return '';
 }
 
-const HIDE_KINDS = new Set([
+const HIDE_KINDS = new Set<number>([
   ReflectionKind.Constructor,
 ]);
 
@@ -701,6 +712,26 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
   @apply flex items-center justify-center h-full text-sm text-fg-faint;
 }
 
+.content-landing {
+  @apply px-10 py-12 max-w-2xl;
+}
+
+.landing-name {
+  @apply text-2xl font-bold mb-1 flex items-baseline gap-3;
+}
+
+.landing-version {
+  @apply text-sm font-normal text-fg-muted;
+}
+
+.landing-desc {
+  @apply text-sm text-fg-muted leading-relaxed mb-6 mt-2;
+}
+
+.landing-hint {
+  @apply text-xs text-fg-faint;
+}
+
 /* breadcrumb */
 .breadcrumb {
   @apply flex items-center gap-1.5 text-xs text-fg-faint mb-4 font-mono;
@@ -718,13 +749,13 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
 }
 
 .entry-source {
-  @apply text-xs text-fg-faint font-mono mb-4;
+  @apply text-sm text-fg-faint font-mono mb-4;
 }
 .entry-source a { @apply text-fg-faint; }
 .entry-source a:hover { @apply text-fg; }
 
 .entry-desc {
-  @apply text-sm text-fg-muted leading-relaxed mb-6 border-l-2 border-border pl-4;
+  @apply text-base text-fg-muted leading-relaxed mb-6 border-l-2 border-border pl-4;
 }
 
 /* sections */
@@ -738,7 +769,7 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
 
 /* signature */
 .sig-code {
-  @apply text-sm font-mono bg-bg-subtle border border-border rounded-[var(--radius-md)] px-4 py-3 mb-3 overflow-x-auto;
+  @apply text-base font-mono bg-bg-subtle border border-border rounded-[var(--radius-md)] px-4 py-3 mb-3 overflow-x-auto;
 }
 .kw { @apply text-fg-muted; }
 .sig-name { @apply text-fg font-bold; }
@@ -746,12 +777,12 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
 .type-ref { color: #60a5fa; }
 
 .sig-comment {
-  @apply text-sm text-fg-muted mb-3;
+  @apply text-base text-fg-muted mb-3;
 }
 
 /* param table */
 .param-table {
-  @apply w-full text-xs border border-border rounded-[var(--radius-md)];
+  @apply w-full text-sm border border-border rounded-[var(--radius-md)];
   border-collapse: collapse;
 }
 .param-table th {
@@ -775,7 +806,7 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
 }
 
 .member-name {
-  @apply text-sm font-mono text-fg;
+  @apply text-base font-mono text-fg;
 }
 
 .flag {
@@ -792,6 +823,6 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
 }
 
 .member-comment {
-  @apply text-xs text-fg-muted m-0 leading-relaxed;
+  @apply text-sm text-fg-muted m-0 leading-relaxed;
 }
 </style>

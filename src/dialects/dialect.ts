@@ -334,7 +334,6 @@ export enum Dialects {
   EXASOL = 'exasol',
 }
 
-
 /**
  * Specifies the strategy according to which identifiers should be normalized.
  */
@@ -623,7 +622,11 @@ export class Dialect {
    * Whether the INITCAP function supports custom delimiter characters as the second argument.
    */
   static get INITCAP_SUPPORTS_CUSTOM_DELIMITERS (): boolean {
-    const supported: (Dialects | string)[] = [Dialects.DIALECT, Dialects.BIGQUERY, Dialects.SNOWFLAKE];
+    const supported: (Dialects | string)[] = [
+      Dialects.DIALECT,
+      Dialects.BIGQUERY,
+      Dialects.SNOWFLAKE,
+    ];
     return supported.includes(this.DIALECT_NAME);
   }
 
@@ -720,7 +723,7 @@ export class Dialect {
     const cached = this._tokenizerClassCache.get(this);
     if (cached) return cached;
     if (Object.prototype.hasOwnProperty.call(this, 'Tokenizer')) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       return (this as any).Tokenizer;
     }
     const base = Object.getPrototypeOf(this);
@@ -739,7 +742,7 @@ export class Dialect {
     const cached = this._jsonpathTokenizerClassCache.get(this);
     if (cached) return cached;
     if (Object.prototype.hasOwnProperty.call(this, 'JsonPathTokenizer')) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       return (this as any).JsonPathTokenizer;
     }
     const base = Object.getPrototypeOf(this);
@@ -762,7 +765,7 @@ export class Dialect {
     if (cached) return cached;
 
     if (Object.prototype.hasOwnProperty.call(this, 'Parser')) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       return (this as any).Parser;
     }
 
@@ -788,7 +791,7 @@ export class Dialect {
     if (cached) return cached;
 
     if (Object.prototype.hasOwnProperty.call(this, 'Generator')) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       return (this as any).Generator;
     }
 
@@ -2117,18 +2120,18 @@ export function monthsBetweenSql (this: Generator, expression: MonthsBetweenExpr
 }
 
 export function buildFormattedTime<T extends Expression> (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   ExpClass: new (args: any) => T,
   options: {
     dialect: string;
     defaultValue?: boolean | string;
   },
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 ): (args: any) => T {
   const {
     dialect, defaultValue,
   } = options;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   return (args: any) => {
     return new ExpClass({
       this: seqGet(args, 0),
@@ -2149,20 +2152,20 @@ export function timeFormat (
 }
 
 export function buildDateDelta<T extends Expression> (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   ExpClass: new (args: any) => T,
   unitMapping?: Record<string, string>,
   options: {
     defaultUnit?: string;
     supportsTimezone?: boolean;
   } = {},
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 ): (args: any) => T {
   const {
     defaultUnit = 'DAY',
     supportsTimezone = false,
   } = options;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   return (args: any) => {
     const unitBased = 3 <= args.length;
     const hasTimezone = args.length === 4;
@@ -2207,11 +2210,11 @@ export function buildDateDelta<T extends Expression> (
 }
 
 export function buildDateDeltaWithInterval<T extends Expression> (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   ExpClass: new (args: any) => T,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 ): (args: any) => T {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   return (args: any) => {
     if (args.length < 2) throw new Error(`Expected at least 2 arguments but got ${args.length}`);
     const interval = args[1];
@@ -2609,18 +2612,17 @@ export function pivotColumnNames (aggregations: Expression[], options: {dialect:
 }
 
 export function binaryFromFunction<T extends Expression> (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   ExprType: new (args: any) => T,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 ): (args: any[]) => T {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   return (args: any[]) => new ExprType({
     this: seqGet(args, 0),
     expression: seqGet(args, 1),
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function buildTimestampTrunc (args: any[]): TimestampTruncExpr {
   return new TimestampTruncExpr({
     this: seqGet(args, 1),
@@ -2629,7 +2631,7 @@ export function buildTimestampTrunc (args: any[]): TimestampTruncExpr {
 }
 
 export function buildTrunc (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   args: any[],
   options: {
     dialect: DialectType;
@@ -2702,7 +2704,6 @@ export function isParseJson (expression: unknown): boolean {
   return expression instanceof ParseJsonExpr || (expression instanceof CastExpr && expression.isType('json'));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isnullToIsNull (args: any[]): Expression {
   return new ParenExpr({
     this: new IsExpr({
@@ -2851,7 +2852,7 @@ export function mapDatePart (part: string | Expression | undefined, options: {di
   const partName = part instanceof Expression ? part.name : part;
 
   const mapped =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     part instanceof Expression && !(part instanceof ColumnExpr) && (part as any).parts?.length !== 1 ? Dialect.getOrRaise(dialect)._constructor.DATE_PART_MAPPING[partName.toUpperCase()] : undefined;
   if (mapped) {
     if (part instanceof Expression && part.isString) return LiteralExpr.string(mapped);
@@ -2929,19 +2930,19 @@ export function mergeWithoutTargetSql (this: Generator, expression: MergeExpr): 
 }
 
 export function buildJsonExtractPath<T extends JsonExtractExpr | JsonExtractScalarExpr | JsonbExtractExpr | JsonbExtractScalarExpr> (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   ExprType: (typeof JsonExtractExpr | typeof JsonExtractScalarExpr | typeof JsonbExtractExpr | typeof JsonbExtractScalarExpr) & (new (arg: any) => T),
   options: {
     zeroBasedIndexing?: boolean;
     arrowReqJsonType?: boolean;
     jsonType?: string;
   } = {},
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 ): (args: any) => T {
   const {
     zeroBasedIndexing = true, arrowReqJsonType = false, jsonType,
   } = options;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   return (args: any) => {
     const segments: JsonPathPartExpr[] = [
       new JsonPathRootExpr({}),
@@ -2987,12 +2988,12 @@ export function jsonExtractSegments (
     quotedIndex?: boolean;
     op?: string;
   } = {},
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 ): (this: Generator, expression: any) => string {
   const {
     quotedIndex = true, op,
   } = options;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   return function (this: Generator, expression: any): string {
     const path = expression.args.expression;
     if (!(path instanceof JsonPathExpr)) {
@@ -3145,7 +3146,6 @@ export function buildDefaultDecimalType (precision?: number, scale?: number): (d
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function buildTimestampFromParts (args: any[]): Expression {
   if (args.length === 2) {
     return new AnonymousExpr({
@@ -3253,17 +3253,17 @@ export function sequenceSql (this: Generator, e: Expression): string {
 }
 
 export function buildLike<T extends Expression> (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   ExprType: new (args: any) => T,
   options: {
     notLike?: boolean;
   } = {},
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 ): (args: any[]) => Expression {
   const {
     notLike = false,
   } = options;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   return (args: any[]) => {
     let likeExpr: Expression = new ExprType({
       this: seqGet(args, 0),
@@ -3282,9 +3282,8 @@ export function buildLike<T extends Expression> (
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function buildRegexpExtract<T extends Expression> (ExprType: (typeof RegexpExtractExpr) & (new (args: any) => T)): (args: any[], options: {dialect: Dialect}) => Expression {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   return (args: any[], {
     dialect,
   }: {dialect: Dialect}) => {
@@ -3440,7 +3439,6 @@ export function groupConcatSql (this: Generator, expression: GroupConcatExpr, op
   return this.sql(listagg);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function buildTimeToStrOrToChar (args: any[], {
   dialect,
 }: {dialect: DialectType}): TimeToStrExpr | ToCharExpr {
@@ -3467,7 +3465,6 @@ export function buildTimeToStrOrToChar (args: any[], {
   return ToCharExpr.fromArgList(args);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function buildReplaceWithOptionalReplacement (args: any[]): ReplaceExpr {
   return new ReplaceExpr({
     this: seqGet(args, 0),

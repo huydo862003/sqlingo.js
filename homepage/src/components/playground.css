@@ -1,0 +1,88 @@
+.panels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-subtle);
+}
+
+.panel-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-fg-muted);
+}
+
+.code-area {
+  flex: 1;
+  font-size: 0.75rem;
+  font-family: var(--font-mono, monospace);
+  background: #0d0d14;
+  color: #e2e2ec;
+  padding: 1rem;
+  resize: none;
+  outline: none;
+  min-height: 220px;
+  line-height: 1.6;
+}
+
+textarea.code-area::placeholder {
+  color: var(--color-fg-faint);
+}
+
+.code-area-out {
+  margin: 0;
+  overflow: auto;
+}
+
+.error-area {
+  color: #f87171; /* red-400 */
+}
+
+.placeholder-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-fg-faint);
+}
+
+.panel-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.copy-btn {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--color-accent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  transition: background 0.15s;
+}
+.copy-btn:hover {
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+}
+.copy-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}

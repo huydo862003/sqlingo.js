@@ -54,6 +54,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         apiRef: resolve(__dirname, 'api-reference/index.html'),
+        playground: resolve(__dirname, 'playground/index.html'),
       },
       output: {
         manualChunks: {

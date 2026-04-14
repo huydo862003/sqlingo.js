@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 type AnyConstructor<T = object> =
   | (new (...args: any[]) => T)

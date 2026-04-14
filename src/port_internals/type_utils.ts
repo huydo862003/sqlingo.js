@@ -20,7 +20,7 @@ export type Merge<Types extends readonly unknown[]> = Types extends readonly [
   : Types extends readonly [infer Only]
     ? Only
     : Types extends readonly []
-      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+
       ? {}
       : never;
 

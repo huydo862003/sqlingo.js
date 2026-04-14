@@ -162,7 +162,7 @@ function divJs (this: Generator, e: DivExpr): string {
 export class JavascriptGenerator extends Generator {
   static override get TRANSFORMS () {
     const parent = super.TRANSFORMS;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const overrides = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...parent.entries(),
       [
@@ -458,7 +458,7 @@ export class JavascriptExecutor {
         } else if (node instanceof SetOperation) {
           contexts.set(node, this.setOperation(node, context));
         } else {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           throw new Error(`NotImplementedError: ${(node as any).constructor.name}`);
         }
 

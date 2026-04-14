@@ -9,6 +9,7 @@
   "excludePrivate": true,
   "excludeProtected": false,
   "excludeExternals": true,
+  "externalPattern": ["**/expressions/**"],
   "excludeInternal": false,
   "readme": "README.md",
   "includeVersion": true,

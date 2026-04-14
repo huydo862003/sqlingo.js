@@ -235,7 +235,7 @@ export class Expression implements
     if ((this.constructor as typeof Expression).availableArgs.has('expressions')) {
       if (Array.isArray(this.args.expressions)) {
         for (const e of this.args.expressions) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           yield e as any;
         }
       }
@@ -608,7 +608,7 @@ export class Expression implements
   ): void {
     const overwrite = options?.overwrite ?? true;
     // Clear hash cache up the tree
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
+
     let expression: Expression | undefined = this;
     while (expression && expression._hash !== undefined) {
       expression._hash = undefined;
@@ -638,7 +638,7 @@ export class Expression implements
 
       if (Array.isArray(value)) {
         expressions.splice(index, 1);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         expressions.splice(index, 0, ...(value as any[]));
       } else if (overwrite) {
         expressions[index] = value;
@@ -652,7 +652,6 @@ export class Expression implements
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     args[argKey] = value as any;
     this.setParent(argKey, value, index);
   }
@@ -723,7 +722,7 @@ export class Expression implements
    * @returns First matching expression or undefined
    */
   find<T extends Expression>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     expressionTypes: (new (args: any) => T) | Readonly<Iterable<(new (args: any) => T)>>,
     options?: {bfs?: boolean},
   ): T | undefined {
@@ -743,7 +742,7 @@ export class Expression implements
    * @returns The generator object
    */
   * findAll<T extends Expression>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     expressionTypes: (new (args: any) => T) | Readonly<Iterable<(new (args: any) => T)>>,
     options?: {bfs?: boolean},
   ): Generator<T> {
@@ -765,7 +764,7 @@ export class Expression implements
    * @returns First matching ancestor or undefined
    */
   findAncestor<T extends Expression>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     ...expressionTypes: (new (args: any) => T)[]
   ): T | undefined {
     let node: Expression | undefined = this.parent;
@@ -797,7 +796,7 @@ export class Expression implements
   }
 
   root (): Expression {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
+
     let node: Expression = this;
     while (node.parent) {
       node = node.parent;
@@ -891,7 +890,7 @@ export class Expression implements
    * Returns the first non-parenthesis child or self.
    */
   unnest (): Expression {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
+
     let expression: Expression = this;
     while (expression instanceof ParenExpr) {
       const thisArg = expression.args.this;
@@ -1092,7 +1091,7 @@ export class Expression implements
    * @param type - the class constructor to check against
    * @returns This expression, typed as the specified type
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   assertIs<T extends Expression>(type: new (args: any) => T): T {
     if (!(this instanceof type)) {
       throw new Error(`${this.constructor.name} is not ${type.name}.`);
@@ -12840,7 +12839,7 @@ export class PropertiesExpr extends Expression {
       const propertyClass = PropertiesExpr.NAME_TO_PROPERTY[key.toUpperCase() as keyof typeof PropertiesExpr.NAME_TO_PROPERTY];
       if (propertyClass) {
         expressions.push(new propertyClass({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           this: convert(value) as any,
         }));
       } else {
@@ -12978,7 +12977,7 @@ export class SetOperationExpr extends QueryExpr {
    * Walks up the SetOperation chain to find the base query.
    */
   get namedSelects (): string[] {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
+
     let expression: QueryExpr = this;
     while (expression instanceof SetOperationExpr) {
       const next = expression.args.this?.unnest();
@@ -13002,7 +13001,7 @@ export class SetOperationExpr extends QueryExpr {
    * Walks up the SetOperation chain to find the base query.
    */
   get selects (): Expression[] {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
+
     let expression: QueryExpr = this;
     while (expression instanceof SetOperationExpr) {
       const next = expression.args.this?.unnest();
@@ -14035,7 +14034,7 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
    * Returns the first non-subquery expression.
    */
   unnest (): Expression {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
+
     let expression: Expression = this;
     while (expression instanceof SubqueryExpr) {
       const next = expression.args.this;
@@ -14050,7 +14049,7 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
    * Returns the outermost wrapper subquery.
    */
   unwrap (): SubqueryExpr {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
+
     let expression: SubqueryExpr = this;
     while (expression.sameParent && expression.isWrapper) {
       const parent = expression.parent;
@@ -34220,7 +34219,7 @@ export function func (name: string, ...args: ExpressionValue[]): FuncExpr {
  */
 function applySetOperation<S extends Expression> (
   expressions: undefined | ExpressionValue[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   setOperation: new (args: any) => S,
   options: {
     distinct?: boolean;
@@ -35039,7 +35038,7 @@ function applyBuilder<RetT extends Expression, ArgT extends Expression> (express
   arg?: string;
   copy?: boolean;
   prefix?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   into?: new (args: any) => ArgT;
   dialect?: DialectType;
   intoArg?: string;
@@ -35056,7 +35055,6 @@ function applyBuilder<RetT extends Expression, ArgT extends Expression> (express
     ...opts
   } = options;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (into && isWrongExpression(expression, into as any)) {
     expression = new into({
       [intoArg]: expression,
@@ -35118,7 +35116,7 @@ function applyChildListBuilder<ArgT extends Expression, IntoT extends Expression
     }
 
     let expr: ExpressionValue<IntoT | ArgT> = expression;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     if (into && isWrongExpression(expr, into as any)) {
       expr = new into({
         expressions: [
@@ -35187,7 +35185,7 @@ function applyListBuilder<ArgT extends Expression, RetT extends Expression> (
     append?: boolean;
     copy?: boolean;
     prefix?: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     into?: new (args: any) => ArgT;
     dialect?: DialectType;
     [key: string]: unknown;
@@ -35408,7 +35406,7 @@ function applyCteBuilder<E extends Expression> (options: {
  */
 export function combine<T extends ConnectorExpr> (
   expressions: undefined | ExpressionValue | (ExpressionValue | undefined)[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   operator: new (args: any) => T,
   options: {
     dialect?: DialectType;

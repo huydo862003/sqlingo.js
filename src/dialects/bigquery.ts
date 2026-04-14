@@ -583,7 +583,7 @@ export function buildDateDiff (args: Expression[]): DateDiffExpr {
 }
 
 export function buildRegexpExtract<T extends Expression> (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   exprType: new (args: any) => T,
   defaultGroup?: Expression,
 ): (args: Expression[], options: {dialect: BigQuery}) => T {
@@ -688,7 +688,6 @@ function jsonExtractSql (this: Generator, expression: JsonExtractType): string {
   return sql;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildFormatTime (exprType: new (args: any) => Expression): (args: Expression[]) => Expression {
   return (args: Expression[]) => {
     const formatted = buildFormattedTime(TimeToStrExpr, {
@@ -732,7 +731,7 @@ function strToDatetimeSql (this: Generator, expression: StrToDateExpr | StrToTim
   const dtype = expression instanceof StrToDateExpr ? 'DATE' : 'TIMESTAMP';
 
   if (expression.args.safe) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const dialectCls = (this as any).dialect._constructor;
     const fmt = this.formatTime(
       expression,
@@ -1097,7 +1096,7 @@ export class BigQueryParser extends Parser {
   @cache
   static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
     return (() => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const fns: Record<string, (args: Expression[], dialect: any) => Expression> = {
         ...Parser.FUNCTIONS,
         APPROX_TOP_COUNT: (args: unknown[]) => ApproxTopKExpr.fromArgList(args),
@@ -1315,7 +1314,6 @@ export class BigQueryParser extends Parser {
     return expr;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parseMl<T extends Expression> (exprType: new (args: any) => T, kwargs: Record<string, unknown> = {}): T {
     this.matchTextSeq('MODEL');
     const thisExpr = this.parseTable();
@@ -1742,7 +1740,6 @@ export class BigQueryParser extends Parser {
     if (result instanceof DotExpr && result.args.expression instanceof FuncExpr) {
       const prefix = result.args.this instanceof Expression ? result.args.this.name.toUpperCase() : undefined;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let FuncClass: (new (args: any) => Expression) | undefined = undefined;
 
       if (prefix === 'NET') {
@@ -1837,7 +1834,7 @@ export class BigQueryGenerator extends Generator {
 
   @cache
   static get ORIGINAL_TRANSFORMS () {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     return new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
       [

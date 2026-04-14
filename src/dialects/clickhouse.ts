@@ -206,7 +206,6 @@ const TIMESTAMP_TRUNC_UNITS = new Set([
   'YEAR',
 ]);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildDateTimeFormat<E extends Expression> (exprType: new (args: any) => E): (args: Expression[]) => E {
   return (args: Expression[]) => {
     const expr = buildFormattedTime(exprType, {
@@ -444,7 +443,7 @@ function buildSplitByChar (args: Expression[]): SplitExpr | AnonymousExpr {
 }
 
 function buildSplit<E extends Expression> (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   expClass: new (args: any) => E,
 ): (args: Expression[]) => E {
   return (args: Expression[]): E =>
@@ -654,7 +653,7 @@ class ClickHouseParser extends Parser {
       JSONEXTRACTSTRING: buildJsonExtractPath(JsonExtractScalarExpr, {
         zeroBasedIndexing: false,
       }),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       LENGTH: (args: any[]) => new LengthExpr({
         this: seqGet(args, 0),
         binary: true,
@@ -1970,9 +1969,9 @@ export class ClickHouseGenerator extends Generator {
   }
 
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     return new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.ORIGINAL_TRANSFORMS,
       [

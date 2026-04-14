@@ -90,7 +90,6 @@ export function optimizeJoins (expression: Expression): Expression {
             continue;
           }
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const operator = on.constructor as new (args: any) => ConnectorExpr;
           for (const predicate of on.flatten()) {
             if (columnTableNames(predicate).has(name)) {

@@ -190,9 +190,9 @@ class RisingWaveGenerator extends Postgres.Generator {
   static SUPPORTS_BETWEEN_FLAGS = false;
 
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Postgres.Generator.TRANSFORMS,
       [

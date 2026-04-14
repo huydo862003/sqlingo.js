@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 
 const registeredTargets = new WeakMap<Function, Set<Function>>();
 
@@ -159,7 +157,7 @@ type MergeStatics<T extends readonly AbstractConstructor[]> = T extends readonly
   ...infer Rest extends readonly AbstractConstructor[],
 ]
   ? Omit<First, 'prototype' | 'name' | 'length'> & MergeStatics<Rest>
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+
   : {};
 
 /**

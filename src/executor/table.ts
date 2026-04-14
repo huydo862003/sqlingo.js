@@ -240,7 +240,6 @@ export class RowReader {
       }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new Proxy(this as any, {
       get (target, prop: string | symbol) {
         if (prop in target) return target[prop];
@@ -267,7 +266,6 @@ export class RangeReader {
   constructor (table: Table) {
     this.table = table;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new Proxy(this as any, {
       get (target, prop: string | symbol) {
         if (prop in target) return target[prop];

@@ -12,13 +12,9 @@
       </button>
     </div>
     <div class="code-body">
-      <pre
-        v-for="tab in tabs"
-        v-show="active === tab.id"
-        :key="tab.id"
-      ><code
+      <pre><code
         class="language-typescript"
-        v-html="tab.html"
+        v-html="currentTab.html"
       /></pre>
     </div>
   </div>
@@ -26,7 +22,7 @@
 
 <script setup lang="ts">
 import {
-  ref,
+  ref, computed,
 } from 'vue';
 import hljs from 'highlight.js/lib/core';
 import typescript from 'highlight.js/lib/languages/typescript';
@@ -46,8 +42,10 @@ const tabs = [
     label: 'Parse',
     html: highlight(`import { parse } from "@hdnax/sqlingo.js";
 
-const [ast] = parse("SELECT a, b FROM t WHERE a > 1");
-console.log(ast.toString());
+const [ast] = parse(
+  "SELECT a, b FROM t WHERE a > 1",
+  { read: "mysql" },
+);
 // => "SELECT a, b FROM t WHERE a > 1"`),
   },
   {
@@ -75,6 +73,7 @@ const result = optimize(
 ];
 
 const active = ref('parse');
+const currentTab = computed(() => tabs.find((t) => t.id === active.value) ?? tabs[0]);
 </script>
 
 <style scoped>

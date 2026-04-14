@@ -33,7 +33,7 @@ function undefinedIfAny (...indices: number[]): <This, Args extends unknown[], R
   value: (this: This, ...args: Args) => Return,
   context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
 ) => (this: This, ...args: Args) => Return;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 function undefinedIfAny (...args: any[]): unknown {
   const isDirectDecorator =
     args.length === 2 // decorator receives exactly (value, context)

@@ -107,9 +107,9 @@ export function diff (
   let {
     matchings = [
     ],
-    // eslint-disable-next-line prefer-const
+
     deltaOnly = false,
-    // eslint-disable-next-line prefer-const
+
     ...kwargs
   } = options;
 

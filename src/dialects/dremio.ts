@@ -101,7 +101,7 @@ function toCharIsNumericHandler (args: Expression[], {
 }
 
 function buildDateDeltaWithCastInterval (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   expressionClass: new (args: any) => DateDeltaType,
 ): (args: Expression[]) => Expression {
   const fallbackBuilder = buildDateDelta(expressionClass);
@@ -352,9 +352,9 @@ class DremioGenerator extends Generator {
   }
 
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
       [

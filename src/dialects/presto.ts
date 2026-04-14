@@ -696,7 +696,7 @@ class PrestoParser extends Parser {
         }),
       FROM_HEX: (args: unknown[]) => UnhexExpr.fromArgList(args),
       FROM_UNIXTIME: buildFromUnixtime,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       FROM_UTF8: (args: any[]) =>
         new DecodeExpr({
           this: seqGet(args, 0),
@@ -716,7 +716,7 @@ class PrestoParser extends Parser {
       NOW: (args: unknown[]) => CurrentTimestampExpr.fromArgList(args),
       REGEXP_EXTRACT: buildRegexpExtract(RegexpExtractExpr),
       REGEXP_EXTRACT_ALL: buildRegexpExtract(RegexpExtractAllExpr),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       REGEXP_REPLACE: (args: any[]) =>
         new RegexpReplaceExpr({
           this: seqGet(args, 0),
@@ -902,7 +902,7 @@ class PrestoGenerator extends Generator {
 
   @cache
   static get ORIGINAL_TRANSFORMS () {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     return new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
       [

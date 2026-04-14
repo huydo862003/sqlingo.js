@@ -148,9 +148,9 @@ export class TableauGenerator extends Generator {
   }
 
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const m = new Map<typeof Expression, (this: Generator, e: any) => string>(Generator.TRANSFORMS);
     m.set(CoalesceExpr, renameFunc('IFNULL'));
 

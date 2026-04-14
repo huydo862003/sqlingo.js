@@ -520,7 +520,7 @@ function buildTimeFromParts (args: Expression[]): TimeFromPartsExpr {
 }
 
 function buildWithArgAsText<T extends Expression> (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   Klass: new (args: any) => T,
 ): (args: Expression[]) => T {
   return (args: Expression[]): T => {
@@ -531,7 +531,7 @@ function buildWithArgAsText<T extends Expression> (
     }
 
     const expression = seqGet(args, 1);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const kwargs: any = {
       this: thisExpr,
     };
@@ -1629,9 +1629,9 @@ export class TSQLGenerator extends Generator {
   }
 
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>(([
       ...Generator.TRANSFORMS.entries(),
       [

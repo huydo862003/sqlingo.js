@@ -240,9 +240,9 @@ class TrinoGenerator extends Presto.Generator {
   }
 
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     return new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Presto.Generator.TRANSFORMS,
       [

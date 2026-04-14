@@ -46,33 +46,7 @@ import {
   execute,
 } from './executor';
 
-export {
-  Expression,
-  alias,
-  and,
-  case_,
-  cast,
-  column,
-  condition,
-  delete_,
-  except,
-  from,
-  func,
-  insert,
-  intersect,
-  maybeParse,
-  merge,
-  not,
-  or,
-  select,
-  subquery,
-  table,
-  toColumn,
-  toIdentifier,
-  toTable,
-  union,
-  findTables,
-} from './expressions';
+export * from './expressions';
 
 export {
   dump, load,

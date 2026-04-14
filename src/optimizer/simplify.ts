@@ -184,7 +184,7 @@ export class UnsupportedUnit extends Error {
  * @returns Method decorator
  */
 export function catch_ (...exceptions: (new (...args: never[]) => Error)[]) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   return function <This, Args extends any[], Return>(
     target: (this: This, ...args: Args) => Return,
     _context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
@@ -208,7 +208,7 @@ export function catch_ (...exceptions: (new (...args: never[]) => Error)[]) {
  *
  * @returns Method decorator
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export function annotateTypesOnChange<This extends Simplifier, Args extends [Expression, ...any[]], Return extends ExpressionValue> (
   target: (this: This, ...args: Args) => Return,
   _context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,

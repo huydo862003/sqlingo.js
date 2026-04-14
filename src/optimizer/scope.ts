@@ -383,7 +383,7 @@ export class Scope {
   /**
    * Find the first expression of the given types
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   find (...expressionTypes: (new (args: any) => Expression)[]): Expression | undefined {
     return findInScope(this.expression, expressionTypes, {
       bfs: true,
@@ -393,7 +393,7 @@ export class Scope {
   /**
    * Find all expressions of the given types
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   findAll (...expressionTypes: (new (args: any) => Expression)[]): Expression[] {
     return findAllInScope(this.expression, expressionTypes, {
       bfs: true,
@@ -1309,7 +1309,7 @@ export function* walkInScope (
  */
 export function findAllInScope<E extends Expression> (
   expression: Expression,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   expressionTypes: readonly (new (...args: any) => E)[],
   options: {bfs?: boolean} = {},
 ): E[] {
@@ -1338,7 +1338,7 @@ export function findAllInScope<E extends Expression> (
  */
 export function findInScope (
   expression: Expression,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   expressionTypes: (new (...args: any) => Expression) | (new (...args: any) => Expression)[],
   options: {bfs?: boolean} = {},
 ): Expression | undefined {

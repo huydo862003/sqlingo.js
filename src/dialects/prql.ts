@@ -107,7 +107,7 @@ class PRQLParser extends Parser {
   }
 
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get TRANSFORM_PARSERS (): Record<string, (this: Parser, query: any) => QueryExpr | undefined> {
     return {
       DERIVE: function (this: Parser, query) {

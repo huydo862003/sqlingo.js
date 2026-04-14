@@ -1,0 +1,30 @@
+{
+  "name": "@hdnax/sqlingo.js-homepage",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@dbml/core": "^7.0.0",
+    "@hdnax/sqlingo.js": "workspace:*",
+    "@phosphor-icons/vue": "^2.2.1",
+    "highlight.js": "^11.11.1",
+    "monaco-editor": "^0.55.1",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.32",
+    "vue-router": "^5.0.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/node": "^25.4.0",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.2",
+    "vue-tsc": "^2.2.12"
+  }
+}

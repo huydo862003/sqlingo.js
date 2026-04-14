@@ -1580,7 +1580,7 @@ class MySQLGenerator extends Generator {
 
   @cache
   static get ORIGINAL_TRANSFORMS () {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     return new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
       [

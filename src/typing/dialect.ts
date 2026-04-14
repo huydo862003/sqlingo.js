@@ -57,7 +57,7 @@ import type {
 } from '../optimizer';
 
 export type ExpressionMetadata = Map<typeof Expression, {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   annotator?: (annotator: TypeAnnotator, expression: any) => void;
   returns?: DataTypeExprKind | string;
 }>;

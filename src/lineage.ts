@@ -237,14 +237,14 @@ export function toNode (
   options: ToNodeOptions = {},
 ): Node {
   let {
-    // eslint-disable-next-line prefer-const
+
     scopeName = undefined,
     upstream = undefined,
-    // eslint-disable-next-line prefer-const
+
     sourceName = undefined,
-    // eslint-disable-next-line prefer-const
+
     referenceNodeName = undefined,
-    // eslint-disable-next-line prefer-const
+
     trimSelects = true,
   } = options;
 

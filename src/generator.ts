@@ -1129,9 +1129,9 @@ export class Generator {
   static EXPRESSION_PRECEDES_PROPERTIES_CREATABLES: Set<string> = new Set();
 
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     return new Map<typeof Expression, (this: Generator, e: any) => string>(
       [
         [
@@ -1847,7 +1847,7 @@ export class Generator {
    * @final Do not override this getter in subclasses; override `ORIGINAL_TRANSFORMS` instead.
    */
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
     const transforms = new Map(this.ORIGINAL_TRANSFORMS);
     for (const part of Array.from(ALL_JSON_PATH_PARTS).filter((cls) => !this.SUPPORTED_JSON_PATH_PARTS.has(cls))) {
@@ -2445,7 +2445,7 @@ export class Generator {
   /**
    * Temporarily disable identifier quoting, execute func, then restore.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   noIdentify<T extends (...args: any[]) => string> (
     func: T,
     ...args: Parameters<T>
@@ -2548,7 +2548,6 @@ export class Generator {
     } else if (expression instanceof Expression) {
       const expHandlerName = `${expression._constructor.key}Sql`;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const handler = (this as any)[expHandlerName];
       if (handler instanceof Function) {
         sql = handler.call(this, expression);

@@ -1,4 +1,5 @@
 <template>
+  <NavBar />
   <main>
     <section class="hero">
       <div class="page">
@@ -150,11 +151,12 @@
               href="https://github.com/tobilg/polyglot"
               target="_blank"
               rel="noopener"
-            >polyglot</a> was announced. I kept going anyway, I wanted full control and to stay in sync with upstream.
+            >polyglot</a> was announced. I kept going anyway — full control over the implementation
+            and staying in sync with upstream mattered more than not duplicating work.
           </p>
           <p>
             sqlingo.js is a close mirror of SQLGlot. When SQLGlot fixes a bug or adds a dialect, I port it.
-            It is not perfect, but it has been useful enough that I wanted to share it.
+            It is not a perfect translation, but it has been useful enough to share.
           </p>
         </div>
       </div>
@@ -224,6 +226,7 @@ import {
   PhTreeStructure, PhArrowsLeftRight, PhMagicWand, PhPlay,
 } from '@phosphor-icons/vue';
 import CodeTabs from '../components/CodeTabs.vue';
+import NavBar from '../components/NavBar.vue';
 
 const copied = ref(false);
 

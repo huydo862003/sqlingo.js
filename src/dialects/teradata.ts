@@ -373,7 +373,7 @@ export class TeradataParser extends Parser {
   }
 
   override parseFunction (options: {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+
     functions?: Record<string, Function>;
     anonymous?: boolean;
     optionalParens?: boolean;
@@ -514,9 +514,9 @@ export class TeradataGenerator extends Generator {
   };
 
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const m = new Map<typeof Expression, (this: Generator, e: any) => string>(Generator.TRANSFORMS);
     m.set(ArgMaxExpr, renameFunc('MAX_BY'));
     m.set(ArgMinExpr, renameFunc('MIN_BY'));

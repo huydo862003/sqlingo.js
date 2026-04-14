@@ -1865,7 +1865,7 @@ function bitshiftSql (this: Generator, expression: BitwiseLeftShiftExpr | Bitwis
 function scaleRoundingSql (
   this: Generator,
   expression: CeilExpr | FloorExpr | RoundExpr | TruncExpr,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   RoundingFuncClass: new (args: any) => Expression,
 ): string | undefined {
   /** Handle scale parameter: FUNC(x, n) -> ROUND(FUNC(x * 10^n) / 10^n, n) */
@@ -2866,9 +2866,9 @@ class DuckDBGenerator extends Generator {
   static SET_ASSIGNMENT_REQUIRES_VARIABLE_KEYWORD = true;
 
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
       [

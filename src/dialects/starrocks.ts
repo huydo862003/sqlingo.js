@@ -428,9 +428,9 @@ class StarRocksGenerator extends MySQL.Generator {
   }
 
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const m = new Map<typeof Expression, (this: Generator, e: any) => string>(MySQL.Generator.TRANSFORMS);
     m.set(ArrayExpr, inlineArraySql);
     m.set(ArrayAggExpr, renameFunc('ARRAY_AGG'));

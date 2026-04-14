@@ -261,7 +261,7 @@ function addDateSql (this: Generator, expression: DateAddExpr | DateSubExpr | Ts
   const unit = expression.text('unit').toUpperCase();
 
   let [
-    // eslint-disable-next-line prefer-const
+
     func,
     multiplier,
   ] = DATE_DELTA_INTERVAL[unit] || [
@@ -1004,9 +1004,9 @@ class HiveGenerator extends Generator {
   }
 
   @cache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const transforms = new Map<typeof Expression, (this: Generator, e: any) => string>([
       ...Generator.TRANSFORMS,
       [
