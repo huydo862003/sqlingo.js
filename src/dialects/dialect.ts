@@ -214,7 +214,7 @@ import {
 } from '../time';
 import {
   DialectTyping, type ExpressionMetadata,
-} from '../typing';
+} from '../typing/dialect';
 
 // Type aliases for common expression type unions
 export type DateAddOrDiff =
@@ -300,7 +300,6 @@ export const PLUGIN_GROUP_NAME = 'sqlglot.dialects';
  */
 export enum Dialects {
   DIALECT = '',
-
   ATHENA = 'athena',
   BIGQUERY = 'bigquery',
   CLICKHOUSE = 'clickhouse',
@@ -335,6 +334,7 @@ export enum Dialects {
   EXASOL = 'exasol',
 }
 
+
 /**
  * Specifies the strategy according to which identifiers should be normalized.
  */
@@ -359,7 +359,7 @@ export type DialectType = string | Dialect | typeof Dialect;
  * Dialect = sqlglot's _Dialect (metaclass) + Dialect
  */
 export class Dialect {
-  static DIALECT_NAME = Dialects.DIALECT;
+  static DIALECT_NAME: Dialects | string = Dialects.DIALECT;
 
   /** The base index offset for arrays. */
   static INDEX_OFFSET = 0;
@@ -623,11 +623,8 @@ export class Dialect {
    * Whether the INITCAP function supports custom delimiter characters as the second argument.
    */
   static get INITCAP_SUPPORTS_CUSTOM_DELIMITERS (): boolean {
-    return [
-      Dialects.DIALECT,
-      Dialects.BIGQUERY,
-      Dialects.SNOWFLAKE,
-    ].includes(this.DIALECT_NAME);
+    const supported: (Dialects | string)[] = [Dialects.DIALECT, Dialects.BIGQUERY, Dialects.SNOWFLAKE];
+    return supported.includes(this.DIALECT_NAME);
   }
 
   /** Default delimiter characters for INITCAP function: whitespace and non-alphanumeric characters. */
@@ -679,11 +676,19 @@ export class Dialect {
    */
   static LEAST_GREATEST_IGNORES_NULLS = true;
 
+  /**
+   * Whether UNNEST in a lateral JOIN requires the CROSS JOIN syntax.
+   * True for Presto/Trino/Athena; subclasses inherit - no need to override in Trino.
+   * Used by the pushdown_predicates optimizer to avoid pushing predicates into
+   * such joins where the CROSS JOIN form cannot be rewritten safely.
+   */
+  static UNNEST_REQUIRES_CROSS_JOIN = false;
+
   /** Whether to prioritize non-literal types over literals during type annotation. */
   static PRIORITIZE_NON_LITERAL_TYPES = false;
 
   static get TRY_SUPPORTED (): boolean {
-    const TRY_SUPPORTED_DIALECTS = [
+    const TRY_SUPPORTED_DIALECTS: (Dialects | string)[] = [
       Dialects.DIALECT,
       Dialects.ATHENA,
       Dialects.PRESTO,
@@ -699,13 +704,14 @@ export class Dialect {
    * Returns false for non-Athena/Presto/Trino/DuckDB dialects.
    */
   static get SUPPORTS_UESCAPE (): boolean {
-    return [
+    const supported: (Dialects | string)[] = [
       Dialects.DIALECT,
       Dialects.ATHENA,
       Dialects.PRESTO,
       Dialects.TRINO,
       Dialects.DUCKDB,
-    ].includes(this.DIALECT_NAME);
+    ];
+    return supported.includes(this.DIALECT_NAME);
   }
 
   // --- Autofilled by metaclass in Python, set as instance properties in TypeScript ---
@@ -1530,6 +1536,15 @@ export class Dialect {
 
   get _constructor (): typeof Dialect {
     return this.constructor as typeof Dialect;
+  }
+
+  isKind (kind: Dialects | string): boolean {
+    const knownKind = enumFromString(Dialects, kind as string);
+    if (knownKind !== undefined) {
+      return this._constructor.DIALECT_NAME === knownKind;
+    }
+    // custom dialect - compare raw DIALECT_NAME
+    return (this._constructor.DIALECT_NAME as string).toLowerCase() === (kind as string).toLowerCase();
   }
 }
 

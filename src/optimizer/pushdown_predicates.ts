@@ -24,12 +24,6 @@ import {
   Dialect, type DialectType,
 } from '../dialects/dialect';
 import {
-  Athena,
-} from '../dialects/athena';
-import {
-  Presto,
-} from '../dialects/presto';
-import {
   narrowInstanceOf,
 } from '../port_internals';
 import {
@@ -74,7 +68,7 @@ export function pushdownPredicates<E extends Expression> (
 
   const dialect = Dialect.getOrRaise(dialectArg);
 
-  const unnestRequiresCrossJoin = dialect instanceof Athena || dialect instanceof Presto;
+  const unnestRequiresCrossJoin = (dialect.constructor as typeof Dialect).UNNEST_REQUIRES_CROSS_JOIN;
 
   if (root) {
     const scopeRefCount = root.refCount();

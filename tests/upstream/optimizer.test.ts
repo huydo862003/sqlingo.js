@@ -78,7 +78,7 @@ import {
 } from '../../src/optimizer/isolate_table_selects';
 import type {
   Dialects,
-} from '../../src/dialects';
+} from '../../src/dialects/dialect';
 import {
   narrowInstanceOf,
 } from '../../src/port_internals';

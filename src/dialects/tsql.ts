@@ -2508,3 +2508,4 @@ export class TSQL extends Dialect {
 }
 
 Dialect.register(Dialects.TSQL, TSQL);
+Dialect.register('mssql', TSQL);

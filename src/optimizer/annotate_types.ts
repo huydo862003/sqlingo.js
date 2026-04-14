@@ -64,7 +64,7 @@ import {
 } from '../schema';
 import type {
   ExpressionMetadata,
-} from '../typing';
+} from '../typing/dialect';
 import {
   Scope, traverseScope,
 } from './scope';

@@ -1787,6 +1787,7 @@ class PrestoGenerator extends Generator {
 
 export class Presto extends Dialect {
   static DIALECT_NAME = Dialects.PRESTO;
+  static UNNEST_REQUIRES_CROSS_JOIN = true; // inherited by Trino
   static INDEX_OFFSET = 1;
 
   @cache

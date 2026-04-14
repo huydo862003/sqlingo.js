@@ -25,7 +25,7 @@ import {
 } from './optimizer/simplify';
 import type {
   Dialect,
-} from './dialects';
+} from './dialects/dialect';
 
 // Not ported from Python: AutoName, classproperty, subclasses, object_to_dict, is_date_unit
 

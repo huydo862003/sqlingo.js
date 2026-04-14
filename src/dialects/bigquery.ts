@@ -190,8 +190,11 @@ import {
   annotateTypes, TypeAnnotator,
 } from '../optimizer/annotate_types';
 import {
-  BigQueryTyping, type ExpressionMetadata,
-} from '../typing';
+  BigQueryTyping,
+} from '../typing/bigquery';
+import type {
+  ExpressionMetadata,
+} from '../typing/dialect';
 import {
   seqGet,
   splitNumWords,

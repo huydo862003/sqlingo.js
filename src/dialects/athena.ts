@@ -426,6 +426,7 @@ export class AthenaGenerator extends Generator {
 
 export class Athena extends Dialect {
   static DIALECT_NAME = Dialects.ATHENA;
+  static UNNEST_REQUIRES_CROSS_JOIN = true;
 
   private hive: Hive;
   private trino: Trino;

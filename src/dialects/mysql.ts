@@ -114,7 +114,7 @@ import {
 } from '../expressions';
 import {
   type ExpressionMetadata,
-} from '../typing';
+} from '../typing/dialect';
 import {
   MySQLTyping,
 } from '../typing/mysql';
