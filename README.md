@@ -2,7 +2,6 @@
 
 [![npm version](https://img.shields.io/npm/v/@hdnax/sqlingo.js)](https://www.npmjs.com/package/@hdnax/sqlingo.js)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@hdnax/sqlingo.js)](https://bundlephobia.com/package/@hdnax/sqlingo.js)
 ![SQLGlot](https://img.shields.io/badge/SQLGlot-v28.10.0-blue)
 
 A JavaScript/TypeScript port of [SQLGlot](https://github.com/tobymao/sqlglot), which is a comprehensive SQL parser, transpiler, optimizer, and engine.
