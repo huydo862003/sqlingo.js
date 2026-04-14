@@ -44,11 +44,11 @@ Class attributes must be immutable. Never mutate a cached static getter's return
 
 ### `None` to `undefined`
 
-Python's `None` maps to `undefined` in TypeScript.
+In our convention, Python's `None` is mapped to `undefined` in TypeScript.
 
 SQLGlot sometimes explicitly passes `None` to override a default parameter. In TypeScript, passing `undefined` will fall back to the default value, which is a different behavior. You must explicitly pass a falsy value (e.g., `null` or `false`) in these cases to replicate the Python behavior.
 
-> Note: Using `null` instead of `undefined` for explicit "no value" cases may be cleaner and avoids this pitfall. This is an open question.
+> Note: Using `null` instead of `undefined` for explicit "no value" cases may be cleaner and avoids this pitfall. However, this is currently just a consideration, as I hate `null`s because it can be a source of inconsitencies when no proper convention is put out.
 
 ### Metaclasses as `@cache` Static Getters
 
