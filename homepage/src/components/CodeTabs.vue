@@ -17,18 +17,16 @@
         v-show="active === tab.id"
         :key="tab.id"
       ><code
-ref="codeEls"
-             class="language-typescript"
-      >{{ tab.code }}</code></pre>
+        class="language-typescript"
+        v-html="tab.html"
+      /></pre>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import {
-  onMounted,
   ref,
-  useTemplateRef,
 } from 'vue';
 import hljs from 'highlight.js/lib/core';
 import typescript from 'highlight.js/lib/languages/typescript';
@@ -36,46 +34,47 @@ import 'highlight.js/styles/github-dark.css';
 
 hljs.registerLanguage('typescript', typescript);
 
+function highlight (code: string): string {
+  return hljs.highlight(code, {
+    language: 'typescript',
+  }).value;
+}
+
 const tabs = [
   {
     id: 'parse',
     label: 'Parse',
-    code: `import { parse } from "@hdnax/sqlingo.js";
+    html: highlight(`import { parse } from "@hdnax/sqlingo.js";
 
 const [ast] = parse("SELECT a, b FROM t WHERE a > 1");
 console.log(ast.toString());
-// => "SELECT a, b FROM t WHERE a > 1"`,
+// => "SELECT a, b FROM t WHERE a > 1"`),
   },
   {
     id: 'transpile',
     label: 'Transpile',
-    code: `import { transpile } from "@hdnax/sqlingo.js";
+    html: highlight(`import { transpile } from "@hdnax/sqlingo.js";
 
 const [result] = transpile("SELECT EPOCH_MS(1618088028295)", {
   read: "duckdb",
   write: "hive",
 });
-// => "SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))"`,
+// => "SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))"`),
   },
   {
     id: 'optimize',
     label: 'Optimize',
-    code: `import { optimize } from "@hdnax/sqlingo.js";
+    html: highlight(`import { optimize } from "@hdnax/sqlingo.js";
 
 const result = optimize(
   "SELECT a FROM (SELECT a, b FROM t) sub WHERE sub.a > 1",
   { dialect: "duckdb" },
 );
-// => "SELECT t.a FROM t WHERE t.a > 1"`,
+// => "SELECT t.a FROM t WHERE t.a > 1"`),
   },
 ];
 
 const active = ref('parse');
-const codeEls = useTemplateRef<HTMLElement[]>('codeEls');
-
-onMounted(() => {
-  codeEls.value?.forEach((el) => hljs.highlightElement(el));
-});
 </script>
 
 <style scoped>
