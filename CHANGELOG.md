@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.1.0
+
+### Minor Changes
+
+- Add lazy dialect entrypoints (`@hdnax/sqlingo.js/postgres`, `/mysql`, `/tsql`, `/mssql`, etc.). Import core without loading any dialect; register only what you need.
+
 ## 0.0.5
 
 ### Patch Changes
