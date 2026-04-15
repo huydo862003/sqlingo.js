@@ -319,14 +319,20 @@ interface ReflectionNode {
   kind: number;
   packageVersion?: string;
   flags: ReflectionFlags;
-  comment?: {summary: Array<{kind: string;
-    text: string;}>;};
+  comment?: {
+    summary: Array<{
+      kind: string;
+      text: string;
+    }>;
+  };
   children?: ReflectionNode[];
   signatures?: ReflectionNode[];
   parameters?: ReflectionNode[];
-  sources?: Array<{fileName: string;
+  sources?: Array<{
+    fileName: string;
     line: number;
-    url?: string;}>;
+    url?: string;
+  }>;
   type?: TypeInfo;
 }
 

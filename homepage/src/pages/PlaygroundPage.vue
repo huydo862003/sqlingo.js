@@ -1,5 +1,6 @@
 <template>
-  <NavBar />
+  <NavBar :breadcrumb="navBreadcrumb" />
+
   <main class="main">
     <div class="page page-wide">
       <h1 class="title">
@@ -57,6 +58,21 @@ import {
   usePlaygroundStore,
 } from '../stores/playground';
 
+const base = import.meta.env.BASE_URL;
+
+const navBreadcrumb = computed(() => {
+  const crumbs: Array<{
+    label: string;
+    href?: string;
+  }> = [
+    {
+      label: 'Playground',
+      href: `${base}playground/`,
+    },
+  ];
+  return crumbs;
+});
+
 enum Tab {
   Transpile = 'transpile',
   Dbml = 'dbml',
@@ -74,8 +90,18 @@ const tab = computed({
 <style scoped>
 @reference "../style.css";
 
+.page {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.page-wide {
+  max-width: 72rem;
+}
+
 .main {
-  @apply pt-16 pb-24 px-4;
+  @apply pt-10 pb-24 px-4;
 }
 
 .title {
