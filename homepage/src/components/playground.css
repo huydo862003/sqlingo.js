@@ -29,39 +29,6 @@
   color: var(--color-fg-muted);
 }
 
-.code-area {
-  flex: 1;
-  font-size: 0.75rem;
-  font-family: var(--font-mono, monospace);
-  background: #0d0d14;
-  color: #e2e2ec;
-  padding: 1rem;
-  resize: none;
-  outline: none;
-  min-height: 220px;
-  line-height: 1.6;
-}
-
-textarea.code-area::placeholder {
-  color: var(--color-fg-faint);
-}
-
-.code-area-out {
-  margin: 0;
-  overflow: auto;
-}
-
-.error-area {
-  color: #f87171; /* red-400 */
-}
-
-.placeholder-area {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-fg-faint);
-}
-
 .panel-header-left {
   display: flex;
   align-items: center;
