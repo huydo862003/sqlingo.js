@@ -133,6 +133,7 @@ export default [
     rules: {
       ...stylisticRules,
       ...vue.configs['flat/recommended'].reduce((acc, c) => ({ ...acc, ...c.rules }), {}),
+      'vue/comment-directive': 'off',
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-non-null-assertion': 'warn',
     },
