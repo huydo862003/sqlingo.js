@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dbml/core": "^7.0.0",
+    "@dbml/parse": "^7.0.0",
     "@hdnax/sqlingo.js": "workspace:*",
     "@phosphor-icons/vue": "^2.2.1",
     "highlight.js": "^11.11.1",

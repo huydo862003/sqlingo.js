@@ -13,7 +13,7 @@ import * as monaco from 'monaco-editor';
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import {
   dbmlMonarchTokensProvider,
-} from '@dbml/core';
+} from '@dbml/parse';
 
 self.MonacoEnvironment = {
   getWorker: () => new EditorWorker(),

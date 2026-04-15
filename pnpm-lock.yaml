@@ -57,7 +57,7 @@ importers:
 
   homepage:
     dependencies:
-      '@dbml/core':
+      '@dbml/parse':
         specifier: ^7.0.0
         version: 7.0.0
       '@hdnax/sqlingo.js':
@@ -185,10 +185,6 @@ packages:
 
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
-
-  '@dbml/core@7.0.0':
-    resolution: {integrity: sha512-5jX8if51b1VkrCa3TxiRP3DDqvj2KxGYTsoagf1iTxN2scW4VQ8LOXUBHSsoUOekH+cnHMlwWd+wtds2n1yNHA==}
-    engines: {node: '>=16'}
 
   '@dbml/parse@7.0.0':
     resolution: {integrity: sha512-AL8uqhteU505JTIcfqHzmPhrOb00yKK2taUo/IbgWJ9c6w2GL5z7Sov2iYPZwLwapiWmYWZ0w7/XDOCBVshCVQ==}
@@ -1097,10 +1093,6 @@ packages:
   ansi-styles@4.3.0:
     resolution: {integrity: sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==}
     engines: {node: '>=8'}
-
-  antlr4@4.13.2:
-    resolution: {integrity: sha512-QiVbZhyy4xAZ17UPEuG3YTOt8ZaoeOR1CvEAqrEsDBsOqINslaB147i9xqljZqoyf5S+EUlGStaj+t22LT9MOg==}
-    engines: {node: '>=16'}
 
   any-promise@1.3.0:
     resolution: {integrity: sha512-7UvmKalWRt1wgjL1RrGxoSJW/0QZFIegpeGvZG9kjp8vrRu55XTHbwnqq2GpXm9uLbcuhxm3IqX9OB4MZR1b2A==}
@@ -2076,9 +2068,6 @@ packages:
   lodash.startcase@4.4.0:
     resolution: {integrity: sha512-+WKqsK294HMSc2jEbNgpHpd0JfIBhp7rEV4aqXWqFr6AlXov+SlcgB1Fv01y2kGe3Gc8nMW7VA0SrGuSkRfIEg==}
 
-  lodash@4.18.1:
-    resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
-
   lunr@2.3.9:
     resolution: {integrity: sha512-zTU3DaZaF3Rt9rhN3uBMGQD3dD2/vFQqnvZCDv4dl5iOzq2IZQqTxu90r4E5J+nP70J3ilqVCrbho2eWaeW8Ow==}
 
@@ -2243,9 +2232,6 @@ packages:
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
-
-  parsimmon@1.18.1:
-    resolution: {integrity: sha512-u7p959wLfGAhJpSDJVYXoyMCXWYwHia78HhRBWqk7AIbxdmlrfdp5wX0l3xv/iTSH5HvhN9K7o26hwwpgS5Nmw==}
 
   path-browserify@1.0.1:
     resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
@@ -3059,16 +3045,6 @@ snapshots:
       human-id: 4.1.3
       prettier: 2.8.8
 
-  '@dbml/core@7.0.0':
-    dependencies:
-      '@dbml/parse': 7.0.0
-      antlr4: 4.13.2
-      lodash: 4.18.1
-      lodash-es: 4.18.1
-      luxon: 3.7.2
-      parsimmon: 1.18.1
-      pluralize: 8.0.0
-
   '@dbml/parse@7.0.0':
     dependencies:
       lodash-es: 4.18.1
@@ -3863,8 +3839,6 @@ snapshots:
   ansi-styles@4.3.0:
     dependencies:
       color-convert: 2.0.1
-
-  antlr4@4.13.2: {}
 
   any-promise@1.3.0: {}
 
@@ -4954,8 +4928,6 @@ snapshots:
 
   lodash.startcase@4.4.0: {}
 
-  lodash@4.18.1: {}
-
   lunr@2.3.9: {}
 
   luxon@3.7.2: {}
@@ -5125,8 +5097,6 @@ snapshots:
   parent-module@1.0.1:
     dependencies:
       callsites: 3.1.0
-
-  parsimmon@1.18.1: {}
 
   path-browserify@1.0.1: {}
 
