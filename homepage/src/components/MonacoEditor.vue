@@ -83,7 +83,6 @@ onMounted(() => {
     scrollbar: {
       verticalScrollbarSize: 4,
       horizontalScrollbarSize: 4,
-      alwaysConsumeMouseWheel: false,
     },
     renderLineHighlight: 'none',
   });
