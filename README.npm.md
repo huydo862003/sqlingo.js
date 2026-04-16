@@ -2,7 +2,6 @@
 
 [![npm version](https://img.shields.io/npm/v/@hdnax/sqlingo.js)](https://www.npmjs.com/package/@hdnax/sqlingo.js)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/huydo862003/sqlingo.js/blob/master/LICENSE)
-[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@hdnax/sqlingo.js)](https://bundlephobia.com/package/@hdnax/sqlingo.js)
 ![SQLGlot](https://img.shields.io/badge/SQLGlot-v28.10.0-blue)
 
 A JavaScript/TypeScript port of [SQLGlot](https://github.com/tobymao/sqlglot), which is a comprehensive SQL parser, transpiler, optimizer, and engine.
@@ -19,7 +18,7 @@ Supports TypeScript & CJS/ESM. Works in Node.js and the browser.
 
 - 33+ SQL dialects: Postgres, MySQL, BigQuery, Snowflake, DuckDB, ClickHouse, Redshift, Athena, Spark, and many more
 - Full SQLGlot feature set: parsing, transpilation, optimization, column lineage, SQL diffing, and execution
-- Pure JavaScript: no need for WASM or anything.
+- Pure JavaScript: no need for WASM or native dependencies
 - TypeScript-first: full type definitions included
 
 ## Installation
@@ -28,28 +27,47 @@ Supports TypeScript & CJS/ESM. Works in Node.js and the browser.
 npm install @hdnax/sqlingo.js
 # or
 pnpm add @hdnax/sqlingo.js
-# or
-yarn add @hdnax/sqlingo.js
-```
-
-or CDN:
-
-```html
-<script type="module">
-  import { transpile } from "https://esm.sh/@hdnax/sqlingo.js";
-</script>
 ```
 
 Peer dependency: [`luxon`](https://www.npmjs.com/package/luxon) (^3.7.2) is required for date/time operations.
 
-## Usage
+## Quick Start
+
+This example demonstrates transpiling a query from Spark to Postgres and then optimizing it.
+
+```ts
+import { transpile, parseOne, optimize, MappingSchema } from "@hdnax/sqlingo.js";
+// Note: You must explicitly import the dialect to register it
+import "@hdnax/sqlingo.js/postgres";
+import "@hdnax/sqlingo.js/spark";
+
+// Transpile between dialects
+const [pgSql] = transpile("SELECT APPROX_COUNT_DISTINCT(x) FROM table", {
+  read: "spark",
+  write: "postgres",
+});
+console.log(pgSql); 
+// Output: SELECT COUNT(DISTINCT x) FROM "table"
+
+// Optimize an expression
+const sql = "SELECT a, b FROM t WHERE a + 1 = 2";
+const schema = new MappingSchema({ t: { a: "int", b: "int" } });
+
+const optimized = optimize(parseOne(sql), { schema });
+console.log(optimized.sql());
+// Output: SELECT t.a AS a, t.b AS b FROM t AS t WHERE t.a = 1
+```
+
+## Core Usage
 
 ### Parsing
+
+Parse SQL strings into expression trees (AST).
 
 ```ts
 import { parse, parseOne } from "@hdnax/sqlingo.js";
 
-// Parse one or more SQL statements
+// Parse multiple statements
 const expressions = parse("SELECT 1; SELECT 2");
 
 // Parse a single statement
@@ -58,32 +76,53 @@ const expr = parseOne("SELECT a, b FROM t WHERE a > 1");
 
 ### Transpiling
 
+Convert SQL between different dialects.
+
 ```ts
 import { transpile } from "@hdnax/sqlingo.js";
+import "@hdnax/sqlingo.js/duckdb";
+import "@hdnax/sqlingo.js/hive";
 
-// Transpile between dialects
 const [result] = transpile("SELECT EPOCH_MS(1618088028295)", {
   read: "duckdb",
   write: "hive",
 });
-// => "SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))"
+// Output: "SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))"
 ```
 
-### SQL Builder
+### Tokenizing
+
+Extract tokens from a SQL string for lower-level analysis.
 
 ```ts
-import { select, column, condition, from } from "@hdnax/sqlingo.js";
+import { tokenize } from "@hdnax/sqlingo.js";
+import "@hdnax/sqlingo.js/postgres";
 
-const query = select(column("a"), column("b"))
-  .from("t")
-  .where(condition("a > 1"));
+const tokens = tokenize("SELECT 1", "postgres");
 ```
+
+## SQL Builder
+
+Build queries programmatically using a fluent API.
+
+```ts
+import { select, column, condition } from "@hdnax/sqlingo.js";
+import "@hdnax/sqlingo.js/mysql";
+
+const query = select("a", "b").from("t").where(condition("a > 1")).limit(10);
+
+console.log(query.sql("mysql"));
+// Output: SELECT a, b FROM t WHERE a > 1 LIMIT 10
+```
+
+## Optimization & Analysis
 
 ### Optimization
 
+Simplify and normalize queries based on schema information.
+
 ```ts
-import { optimize } from "@hdnax/sqlingo.js";
-import { MappingSchema } from "@hdnax/sqlingo.js";
+import { optimize, MappingSchema } from "@hdnax/sqlingo.js";
 
 const schema = new MappingSchema({
   // define your schema
@@ -92,44 +131,46 @@ const schema = new MappingSchema({
 const optimized = optimize(parseOne("SELECT * FROM t"), { schema });
 ```
 
-### Tokenizing
+### Column Lineage
+
+Trace the origin of columns through subqueries and joins.
 
 ```ts
-import { tokenize } from "@hdnax/sqlingo.js";
+import { lineage } from "@hdnax/sqlingo.js";
 
-const tokens = tokenize("SELECT 1", "postgres");
+const node = lineage("b", "SELECT a AS b FROM (SELECT x AS a FROM y)");
+console.log(node.source.name); 
+// Output: "y"
+```
+
+## Registering a Custom Dialect
+
+You can extend the library by registering custom dialects or overriding existing behavior.
+
+```ts
+import { Dialect, Generator, transpile } from "@hdnax/sqlingo.js";
+
+class MyDialect extends Dialect {
+  static DIALECT_NAME = "my_dialect";
+
+  static Generator = class extends Generator {
+    // Override how specific expressions are generated
+  };
+}
+
+// Register for use in transpile/parse
+Dialect.register("my_dialect", MyDialect);
+
+const [result] = transpile("SELECT 1", { write: "my_dialect" });
 ```
 
 ## Supported Dialects
 
 Athena, BigQuery, ClickHouse, Databricks, Doris, Dremio, Drill, Druid, DuckDB, Dune, Exasol, Fabric, Hive, Materialize, MySQL, Oracle, Postgres, Presto, PRQL, Redshift, RisingWave, SingleStore, Snowflake, Solr, Spark, Spark2, SQLite, StarRocks, Tableau, Teradata, Trino, TSQL
 
-## Public API
-
-The main exports from `@hdnax/sqlingo.js`:
-
-| Export                                                        | Description                             |
-| ------------------------------------------------------------- | --------------------------------------- |
-| `parse`, `parseOne`                                           | Parse SQL strings into expression trees |
-| `transpile`                                                   | Parse and generate SQL across dialects  |
-| `generate`                                                    | Generate SQL from an expression tree    |
-| `tokenize`                                                    | Tokenize a SQL string                   |
-| `optimize`                                                    | Optimize an expression tree             |
-| `execute`                                                     | Execute SQL against in-memory tables    |
-| `Dialect`, `Dialects`                                         | Dialect classes and enum                |
-| `Expression`                                                  | Base expression class                   |
-| `select`, `from`, `column`, `condition`, `table`, `func`, ... | Expression builder helpers              |
-| `and`, `or`, `not`                                            | Logical combinators                     |
-| `union`, `intersect`, `except`                                | Set operations                          |
-| `cast`, `alias`, `case_`, `subquery`                          | SQL clause helpers                      |
-| `Schema`, `MappingSchema`                                     | Schema definitions for optimizer        |
-| `diff`                                                        | SQL diff utility                        |
-| `lineage`                                                     | Column lineage tracing                  |
-| `dump`, `load`                                                | Serialize/deserialize expression trees  |
-
 ## SQLGlot Compatibility
 
-This package tracks [SQLGlot](https://github.com/tobymao/sqlglot) v28.10.0 (commit `264e95f`). The API surface mirrors SQLGlot's Python API, adapted to TypeScript conventions (camelCase, etc.). See [CONVENTION.md](https://github.com/huydo862003/sqlingo.js/blob/master/CONVENTION.md) for details on the mapping.
+This package tracks [SQLGlot](https://github.com/tobymao/sqlglot) v28.10.0 (commit `264e95f`). The API surface mirrors SQLGlot's Python API, adapted to TypeScript conventions. See [CONVENTION.md](https://github.com/huydo862003/sqlingo.js/blob/master/CONVENTION.md) for details.
 
 ## License
 

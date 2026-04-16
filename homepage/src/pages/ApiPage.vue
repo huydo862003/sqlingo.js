@@ -267,20 +267,181 @@
           v-else
           class="content-landing"
         >
-          <h1 class="landing-name">
-            @hdnax/sqlingo.js
-            <span
-              v-if="data?.packageVersion"
-              class="landing-version"
-            >v{{ data.packageVersion }}</span>
-          </h1>
-          <p class="landing-desc">
-            SQL parser, transpiler, optimizer, and engine for JavaScript/TypeScript.
-            Port of Python SQLGlot — 33+ dialects.
-          </p>
-          <p class="landing-hint">
-            Select an item from the sidebar to view its documentation.
-          </p>
+          <div class="landing-header">
+            <h1 class="landing-name">
+              @hdnax/sqlingo.js
+              <span
+                v-if="data?.packageVersion"
+                class="landing-version"
+              >v{{ data.packageVersion }}</span>
+            </h1>
+            <div class="landing-badges">
+              <a
+                href="https://www.npmjs.com/package/@hdnax/sqlingo.js"
+                target="_blank"
+                rel="noopener"
+              >
+                <img
+                  src="https://img.shields.io/npm/v/@hdnax/sqlingo.js"
+                  alt="npm version"
+                >
+              </a>
+              <img
+                src="https://img.shields.io/badge/license-MIT-green"
+                alt="License: MIT"
+              >
+              <img
+                src="https://img.shields.io/badge/SQLGlot-v28.10.0-blue"
+                alt="SQLGlot"
+              >
+            </div>
+          </div>
+
+          <div class="prose">
+            <p>
+              A JavaScript/TypeScript port of <a
+                href="https://github.com/tobymao/sqlglot"
+                target="_blank"
+                rel="noopener"
+              >SQLGlot</a>, which is a comprehensive SQL parser, transpiler, optimizer, and engine.
+            </p>
+            <p>
+              This package allows you to parse, transpile, optimize, and execute SQL across <strong>33+ dialects</strong> in JavaScript, with no other setup.
+            </p>
+            <p>Supports TypeScript & CJS/ESM. Works in Node.js and the browser.</p>
+
+            <ul class="links-list">
+              <li><a href="https://github.com/huydo862003/sqlingo.js">GitHub</a></li>
+              <li><a href="https://github.com/huydo862003/sqlingo.js/issues">Issues</a></li>
+              <li><a href="https://github.com/huydo862003/sqlingo.js/blob/master/CHANGELOG.md">Changelog</a></li>
+            </ul>
+
+            <h2>Features</h2>
+            <ul>
+              <li>33+ SQL dialects: Postgres, MySQL, BigQuery, Snowflake, DuckDB, ClickHouse, Redshift, Athena, Spark, and many more</li>
+              <li>Full SQLGlot feature set: parsing, transpilation, optimization, column lineage, SQL diffing, and execution</li>
+              <li>Pure JavaScript: no need for WASM or native dependencies</li>
+              <li>TypeScript-first: full type definitions included</li>
+            </ul>
+
+            <h2>Installation</h2>
+            <pre><code class="language-bash">npm install @hdnax/sqlingo.js</code></pre>
+            <p>Peer dependency: <a href="https://www.npmjs.com/package/luxon">luxon</a> (^3.7.2) is required for date/time operations.</p>
+
+            <h2>Quick Start</h2>
+            <p>This example demonstrates transpiling a query from Spark to Postgres and then optimizing it.</p>
+            <pre><code class="language-ts">import { transpile, parseOne, optimize, MappingSchema } from "@hdnax/sqlingo.js";
+// Note: You must explicitly import the dialect to register it
+import "@hdnax/sqlingo.js/postgres";
+import "@hdnax/sqlingo.js/spark";
+
+// Transpile between dialects
+const [pgSql] = transpile("SELECT APPROX_COUNT_DISTINCT(x) FROM table", {
+  read: "spark",
+  write: "postgres",
+});
+console.log(pgSql); 
+// Output: SELECT COUNT(DISTINCT x) FROM "table"
+
+// Optimize an expression
+const sql = "SELECT a, b FROM t WHERE a + 1 = 2";
+const schema = new MappingSchema({ t: { a: "int", b: "int" } });
+
+const optimized = optimize(parseOne(sql), { schema });
+console.log(optimized.sql());
+// Output: SELECT t.a AS a, t.b AS b FROM t AS t WHERE t.a = 1</code></pre>
+
+            <h2>Core Usage</h2>
+            <h3>Parsing</h3>
+            <p>Parse SQL strings into expression trees (AST).</p>
+            <pre><code class="language-ts">import { parse, parseOne } from "@hdnax/sqlingo.js";
+
+// Parse multiple statements
+const expressions = parse("SELECT 1; SELECT 2");
+
+// Parse a single statement
+const expr = parseOne("SELECT a, b FROM t WHERE a > 1");</code></pre>
+
+            <h3>Transpiling</h3>
+            <p>Convert SQL between different dialects.</p>
+            <pre><code class="language-ts">import { transpile } from "@hdnax/sqlingo.js";
+import "@hdnax/sqlingo.js/duckdb";
+import "@hdnax/sqlingo.js/hive";
+
+const [result] = transpile("SELECT EPOCH_MS(1618088028295)", {
+  read: "duckdb",
+  write: "hive",
+});
+// Output: "SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))"</code></pre>
+
+            <h3>Tokenizing</h3>
+            <p>Extract tokens from a SQL string for lower-level analysis.</p>
+            <pre><code class="language-ts">import { tokenize } from "@hdnax/sqlingo.js";
+import "@hdnax/sqlingo.js/postgres";
+
+const tokens = tokenize("SELECT 1", "postgres");</code></pre>
+
+            <h2>SQL Builder</h2>
+            <p>Build queries programmatically using a fluent API.</p>
+            <pre><code class="language-ts">import { select, column, condition } from "@hdnax/sqlingo.js";
+import "@hdnax/sqlingo.js/mysql";
+
+const query = select("a", "b")
+  .from("t")
+  .where(condition("a > 1"))
+  .limit(10);
+
+console.log(query.sql("mysql"));
+// Output: SELECT a, b FROM t WHERE a > 1 LIMIT 10</code></pre>
+
+            <h2>Optimization &amp; Analysis</h2>
+            <h3>Optimization</h3>
+            <p>Simplify and normalize queries based on schema information.</p>
+            <pre><code class="language-ts">import { optimize, MappingSchema } from "@hdnax/sqlingo.js";
+
+const schema = new MappingSchema({
+  // define your schema
+});
+
+const optimized = optimize(parseOne("SELECT * FROM t"), { schema });</code></pre>
+
+            <h3>Column Lineage</h3>
+            <p>Trace the origin of columns through subqueries and joins.</p>
+            <pre><code class="language-ts">import { lineage } from "@hdnax/sqlingo.js";
+
+const node = lineage("b", "SELECT a AS b FROM (SELECT x AS a FROM y)");
+console.log(node.source.name); 
+// Output: "y"</code></pre>
+
+            <h2>Registering a Custom Dialect</h2>
+            <p>You can extend the library by registering custom dialects or overriding existing behavior.</p>
+            <pre><code class="language-ts">import { Dialect, Generator, transpile } from "@hdnax/sqlingo.js";
+
+class MyDialect extends Dialect {
+  static DIALECT_NAME = "my_dialect";
+  
+  static Generator = class extends Generator {
+    // Override how specific expressions are generated
+  };
+}
+
+// Register for use in transpile/parse
+Dialect.register("my_dialect", MyDialect);
+
+const [result] = transpile("SELECT 1", { write: "my_dialect" });</code></pre>
+
+            <h2>Supported Dialects</h2>
+            <p class="dialects-list">
+              Athena, BigQuery, ClickHouse, Databricks, Doris, Dremio, Drill, Druid, DuckDB, Dune, Exasol, Fabric, Hive, Materialize, MySQL, Oracle, Postgres, Presto, PRQL, Redshift, RisingWave, SingleStore, Snowflake, Solr, Spark, Spark2, SQLite, StarRocks, Tableau, Teradata, Trino, TSQL
+            </p>
+
+            <h2>SQLGlot Compatibility</h2>
+            <p>This package tracks <a href="https://github.com/tobymao/sqlglot">SQLGlot</a> v28.10.0 (commit <code>264e95f</code>). The API surface mirrors SQLGlot's Python API, adapted to TypeScript conventions. See <a href="https://github.com/huydo862003/sqlingo.js/blob/master/CONVENTION.md">CONVENTION.md</a> for details.</p>
+
+            <h2>License</h2>
+            <p>MIT. See <a href="https://github.com/huydo862003/sqlingo.js/blob/master/LICENSE">LICENSE</a>.</p>
+            <p>Based on <a href="https://github.com/tobymao/sqlglot">SQLGlot</a> by Toby Mao (MIT). See <a href="https://github.com/huydo862003/sqlingo.js/blob/master/COPYRIGHT_NOTICE">COPYRIGHT_NOTICE</a>.</p>
+          </div>
         </div>
       </main>
     </div>
@@ -727,25 +888,73 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
 }
 
 .content-landing {
-  @apply px-10 py-12 max-w-2xl;
+  @apply px-10 py-12 max-w-4xl;
+}
+
+.landing-header {
+  @apply mb-10;
 }
 
 .landing-name {
-  @apply text-2xl font-bold mb-1 flex items-baseline gap-3;
+  @apply text-3xl font-black mb-2 flex items-baseline gap-3;
 }
 
 .landing-version {
-  @apply text-sm font-normal text-fg-muted;
+  @apply text-base font-normal text-fg-muted;
 }
 
-.landing-desc {
-  @apply text-sm text-fg-muted leading-relaxed mb-6 mt-2;
+.landing-badges {
+  @apply flex gap-2 flex-wrap mt-4;
 }
 
-.landing-hint {
-  @apply text-xs text-fg-faint;
+.prose h2 {
+  @apply text-base font-bold text-fg-muted mt-10 mb-4 uppercase tracking-widest;
 }
 
+.prose h3 {
+  @apply text-sm font-bold text-fg mt-6 mb-2;
+}
+
+.prose p {
+  @apply text-sm text-fg-muted leading-relaxed mb-4;
+}
+
+.prose ul {
+  @apply list-disc list-inside text-sm text-fg-muted mb-4 pl-2;
+}
+
+.prose li {
+  @apply mb-1.5;
+}
+
+.prose code {
+  @apply text-xs bg-bg-subtle px-1.5 py-0.5 rounded border border-border font-mono text-accent;
+}
+
+.prose pre {
+  @apply bg-bg-subtle border border-border rounded-[var(--radius-md)] p-4 mb-6 overflow-x-auto;
+}
+
+.prose pre code {
+  @apply p-0 bg-transparent border-0 text-fg text-xs;
+}
+
+.links-list {
+  @apply list-none! p-0!;
+}
+
+.links-list a {
+  @apply text-accent hover:underline;
+}
+
+.dialects-list {
+  @apply text-xs! text-fg-faint! leading-relaxed!;
+}
+
+.prose a {
+  @apply text-accent hover:underline;
+}
+</style>
 /* breadcrumb */
 .breadcrumb {
   @apply flex items-center gap-1.5 text-xs text-fg-faint mb-4 font-mono;

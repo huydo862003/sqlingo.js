@@ -12,30 +12,48 @@ Supports TypeScript & CJS/ESM. Works in Node.js and the browser.
 
 > There's also an alternative [polyglot](https://github.com/tobilg/polyglot) library - check it out!
 
+## Features
+
+- 33+ SQL dialects: Postgres, MySQL, BigQuery, Snowflake, DuckDB, ClickHouse, Redshift, Athena, Spark, and many more
+- Full SQLGlot feature set: parsing, transpilation, optimization, column lineage, SQL diffing, and execution
+- Pure JavaScript: no need for WASM or native dependencies
+- TypeScript-first: full type definitions included
+
 ## Installation
 
 ```bash
 npm install @hdnax/sqlingo.js
 # or
 pnpm add @hdnax/sqlingo.js
-# or
-yarn add @hdnax/sqlingo.js
 ```
+
+Peer dependency: [`luxon`](https://www.npmjs.com/package/luxon) (^3.7.2) is required for date/time operations.
 
 ## Quick Start
 
-```ts
-import { parse, transpile } from "@hdnax/sqlingo.js";
+This example demonstrates transpiling a query from Spark to Postgres and then optimizing it.
 
-// Parse SQL into an AST
-const [ast] = parse("SELECT a, b FROM t WHERE a > 1");
+```ts
+import { transpile, parseOne, optimize, MappingSchema } from "@hdnax/sqlingo.js";
+// Note: You must explicitly import the dialect to register it
+import "@hdnax/sqlingo.js/postgres";
+import "@hdnax/sqlingo.js/spark";
 
 // Transpile between dialects
-const [result] = transpile("SELECT EPOCH_MS(1618088028295)", {
-  read: "duckdb",
-  write: "hive",
+const [pgSql] = transpile("SELECT APPROX_COUNT_DISTINCT(x) FROM table", {
+  read: "spark",
+  write: "postgres",
 });
-// => "SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))"
+console.log(pgSql); 
+// Output: SELECT COUNT(DISTINCT x) FROM "table"
+
+// Optimize an expression
+const sql = "SELECT a, b FROM t WHERE a + 1 = 2";
+const schema = new MappingSchema({ t: { a: "int", b: "int" } });
+
+const optimized = optimize(parseOne(sql), { schema });
+console.log(optimized.sql());
+// Output: SELECT t.a AS a, t.b AS b FROM t AS t WHERE t.a = 1
 ```
 
 See the [Usage Guide](./README.npm.md) for full API documentation and examples.
