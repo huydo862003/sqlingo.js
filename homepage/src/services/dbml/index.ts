@@ -157,6 +157,7 @@ export function convertSqlToDbml (sql: string, dialect?: string): ConversionResu
       read: dialect,
     }
     : {});
+  // FIXME: Unsupported syntax gets falled back to CommandExpr
   const bad = parsed.find((s) => s instanceof CommandExpr);
   if (bad) throw new Error('Unsupported SQL syntax');
   const schema: DbmlSchema = {
