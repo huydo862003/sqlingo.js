@@ -7,7 +7,7 @@
       >
         <img
           src="/icon.svg"
-          alt=""
+          alt="sqlingo.js logo"
           class="logo-icon"
         >
         <span class="logo-text">sqlingo.js</span>

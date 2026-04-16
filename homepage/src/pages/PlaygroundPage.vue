@@ -4,7 +4,7 @@
   <main class="main">
     <div class="page page-wide">
       <h1 class="title">
-        Playground
+        sqlingo.js Playground
       </h1>
       <div class="tabs">
         <button
@@ -57,6 +57,14 @@ import SqlTranspile from '../components/SqlTranspile.vue';
 import {
   usePlaygroundStore,
 } from '../stores/playground';
+import {
+  useSeo,
+} from '../composables/useSeo';
+
+useSeo({
+  title: 'Playground: SQL Transpiler & SQL to DBML',
+  description: 'Try sqlingo.js in your browser. Convert between SQL dialects and DBML.',
+});
 
 const base = import.meta.env.BASE_URL;
 

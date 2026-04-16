@@ -295,6 +295,14 @@ import NavBar from '../components/NavBar.vue';
 import {
   ReflectionKind,
 } from '../types/reflectionKind';
+import { useSeo } from '../composables/useSeo';
+
+useSeo(() => ({
+  title: selected.value ? `${selected.value.name} | API Reference` : 'API Reference: JavaScript SQL Parser Documentation',
+  description: selected.value 
+    ? `Documentation for ${selected.value.name} in sqlingo.js, the SQLGlot port for JavaScript/TypeScript.`
+    : 'Full API documentation for sqlingo.js, including SQL parsing, transpiling, and optimization classes and functions.',
+}));
 
 interface TypeInfo {
   type: string;

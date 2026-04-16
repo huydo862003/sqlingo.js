@@ -5,19 +5,19 @@
       <div class="page">
         <img
           src="/icon.svg"
-          alt=""
+          alt="sqlingo.js logo"
           class="hero-icon"
         >
         <h1 class="hero-title">
-          sqlingo.js
+          sqlingo.js: The SQLGlot Port for JavaScript & TypeScript
         </h1>
         <p class="hero-sub">
-          A JavaScript port of <a
+          A JavaScript/TypeScript SQL parser, transpiler, and optimizer ported from <a
             href="https://github.com/tobymao/sqlglot"
             target="_blank"
             rel="noopener"
           >SQLGlot</a>.
-          Parse, transpile, optimize, and run SQL across 33+ dialects, in the browser or Node.
+          Parse, transpile, optimize, and run SQL across 33+ dialects in the browser or Node.js.
         </p>
         <div class="install-row">
           <div class="install-box">
@@ -43,11 +43,11 @@
           </a>
           <img
             src="https://img.shields.io/badge/license-MIT-green"
-            alt="MIT"
+            alt="Licensed under MIT"
           >
           <img
             src="https://img.shields.io/badge/SQLGlot-v28.10.0-blue"
-            alt="SQLGlot v28.10.0"
+            alt="Ported from SQLGlot v28.10.0"
           >
         </div>
       </div>
@@ -58,7 +58,7 @@
       class="section section-alt"
     >
       <div class="page">
-        <h2>Try it</h2>
+        <h2>Interactive SQL Examples</h2>
         <CodeTabs />
       </div>
     </section>
@@ -68,7 +68,7 @@
       class="section"
     >
       <div class="page">
-        <h2>What it can do</h2>
+        <h2>SQL Parser Features</h2>
         <div class="features">
           <div
             v-for="f in features"
@@ -93,7 +93,7 @@
       class="section section-alt"
     >
       <div class="page">
-        <h2>Dialects</h2>
+        <h2>33+ Supported SQL Dialects</h2>
         <div class="dialects">
           <span
             v-for="d in dialects"
@@ -189,6 +189,28 @@
       </div>
     </section>
 
+    <!-- Structured Data for SEO -->
+    <component
+      :is="'script'"
+      type="application/ld+json"
+    >
+      {{ JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "sqlingo.js",
+        "description": "sqlingo.js is a JavaScript/TypeScript port of SQLGlot, a SQL parser, transpiler, and optimizer supporting 33+ dialects.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "All",
+        "license": "https://opensource.org/licenses/MIT",
+        "softwareVersion": "0.0.0",
+        "url": "https://huydo862003.github.io/sqlingo.js/",
+        "author": {
+          "@type": "Person",
+          "name": "Huy Do"
+        }
+      }) }}
+    </component>
+
     <footer>
       <div class="page footer-inner">
         <div class="footer-attribution">
@@ -227,6 +249,14 @@ import {
 } from '@phosphor-icons/vue';
 import CodeTabs from '../components/CodeTabs.vue';
 import NavBar from '../components/NavBar.vue';
+import {
+  useSeo,
+} from '../composables/useSeo';
+
+useSeo({
+  title: 'Home',
+  description: 'sqlingo.js is the JavaScript/TypeScript port of SQLGlot. It is a SQL parser, transpiler, and optimizer supporting 33+ dialects including BigQuery, Snowflake, and Postgres.',
+});
 
 const copied = ref(false);
 
@@ -241,24 +271,24 @@ function copy () {
 
 const features = [
   {
-    title: 'Parse',
+    title: 'SQL Parser',
     icon: PhTreeStructure,
-    desc: 'Turn any SQL string into an AST. Works across dialects, gives you real error messages.',
+    desc: 'Turn any SQL string into a clean AST. A robust JavaScript SQL parser that works across 33+ dialects with real error messages.',
   },
   {
-    title: 'Transpile',
+    title: 'SQL Transpiler',
     icon: PhArrowsLeftRight,
-    desc: 'Convert SQL between dialects. DuckDB to Hive, Snowflake to BigQuery, whatever you need.',
+    desc: 'Convert SQL between dialects with our TypeScript SQL transpiler. DuckDB to Hive, Snowflake to BigQuery, and more.',
   },
   {
-    title: 'Optimize',
+    title: 'SQL Optimizer',
     icon: PhMagicWand,
-    desc: 'Predicate pushdown, subquery elimination, column qualification, the full SQLGlot optimizer.',
+    desc: 'Predicate pushdown, subquery elimination, and column qualification using the full SQLGlot optimizer ported to TypeScript.',
   },
   {
-    title: 'Execute',
+    title: 'SQL Engine',
     icon: PhPlay,
-    desc: 'Run SQL in-process. Useful for tests, sandboxes, and in-browser query engines.',
+    desc: 'Run SQL in-process. A JavaScript SQL engine useful for tests, sandboxes, and in-browser query execution.',
   },
 ];
 
