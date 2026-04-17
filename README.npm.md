@@ -36,17 +36,24 @@ Peer dependency: [`luxon`](https://www.npmjs.com/package/luxon) (^3.7.2) is requ
 This example demonstrates transpiling a query from Spark to Postgres and then optimizing it.
 
 ```ts
-import { transpile, parseOne, optimize, MappingSchema } from "@hdnax/sqlingo.js";
-// Note: You must explicitly import the dialect to register it
+import {
+  transpile,
+  parseOne,
+  optimize,
+  MappingSchema,
+  Dialects,
+} from "@hdnax/sqlingo.js";
+// Note: The dialect file must be explicitly imported
+// for the dialect to be registered to sqlingo.js
 import "@hdnax/sqlingo.js/postgres";
 import "@hdnax/sqlingo.js/spark";
 
 // Transpile between dialects
 const [pgSql] = transpile("SELECT APPROX_COUNT_DISTINCT(x) FROM table", {
-  read: "spark",
-  write: "postgres",
+  read: Dialects.Spark,
+  write: Dialects.Postgres,
 });
-console.log(pgSql); 
+console.log(pgSql);
 // Output: SELECT COUNT(DISTINCT x) FROM "table"
 
 // Optimize an expression
@@ -79,13 +86,13 @@ const expr = parseOne("SELECT a, b FROM t WHERE a > 1");
 Convert SQL between different dialects.
 
 ```ts
-import { transpile } from "@hdnax/sqlingo.js";
+import { transpile, Dialects } from "@hdnax/sqlingo.js";
 import "@hdnax/sqlingo.js/duckdb";
 import "@hdnax/sqlingo.js/hive";
 
 const [result] = transpile("SELECT EPOCH_MS(1618088028295)", {
-  read: "duckdb",
-  write: "hive",
+  read: Dialects.Duckdb,
+  write: Dialects.Hive,
 });
 // Output: "SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))"
 ```
@@ -95,10 +102,12 @@ const [result] = transpile("SELECT EPOCH_MS(1618088028295)", {
 Extract tokens from a SQL string for lower-level analysis.
 
 ```ts
-import { tokenize } from "@hdnax/sqlingo.js";
+import { tokenize, Dialects } from "@hdnax/sqlingo.js";
 import "@hdnax/sqlingo.js/postgres";
 
-const tokens = tokenize("SELECT 1", "postgres");
+const tokens = tokenize("SELECT 1", {
+  dialect: Dialects.Postgres,
+});
 ```
 
 ## SQL Builder
@@ -106,12 +115,16 @@ const tokens = tokenize("SELECT 1", "postgres");
 Build queries programmatically using a fluent API.
 
 ```ts
-import { select, column, condition } from "@hdnax/sqlingo.js";
+import { select, column, condition, Dialects } from "@hdnax/sqlingo.js";
 import "@hdnax/sqlingo.js/mysql";
 
 const query = select("a", "b").from("t").where(condition("a > 1")).limit(10);
 
-console.log(query.sql("mysql"));
+console.log(
+  query.sql({
+    dialect: Dialects.Mysql,
+  }),
+);
 // Output: SELECT a, b FROM t WHERE a > 1 LIMIT 10
 ```
 
@@ -139,7 +152,7 @@ Trace the origin of columns through subqueries and joins.
 import { lineage } from "@hdnax/sqlingo.js";
 
 const node = lineage("b", "SELECT a AS b FROM (SELECT x AS a FROM y)");
-console.log(node.source.name); 
+console.log(node.source.name);
 // Output: "y"
 ```
 

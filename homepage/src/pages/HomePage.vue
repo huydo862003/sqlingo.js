@@ -9,7 +9,7 @@
           class="hero-icon"
         >
         <h1 class="hero-title">
-          sqlingo.js: The SQLGlot Port for JavaScript & TypeScript
+          sqlingo.js: A Typescript/Javascript port of SQLGlot
         </h1>
         <p class="hero-sub">
           A JavaScript/TypeScript SQL parser, transpiler, and optimizer ported from <a

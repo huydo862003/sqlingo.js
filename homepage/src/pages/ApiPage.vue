@@ -340,7 +340,7 @@ const [pgSql] = transpile("SELECT APPROX_COUNT_DISTINCT(x) FROM table", {
   read: "spark",
   write: "postgres",
 });
-console.log(pgSql); 
+console.log(pgSql);
 // Output: SELECT COUNT(DISTINCT x) FROM "table"
 
 // Optimize an expression
@@ -364,26 +364,26 @@ const expr = parseOne("SELECT a, b FROM t WHERE a > 1");</code></pre>
 
             <h3>Transpiling</h3>
             <p>Convert SQL between different dialects.</p>
-            <pre><code class="language-ts">import { transpile } from "@hdnax/sqlingo.js";
+            <pre><code class="language-ts">import { transpile, Dialects } from "@hdnax/sqlingo.js";
 import "@hdnax/sqlingo.js/duckdb";
 import "@hdnax/sqlingo.js/hive";
 
 const [result] = transpile("SELECT EPOCH_MS(1618088028295)", {
-  read: "duckdb",
-  write: "hive",
+  read: Dialects.Duckdb,
+  write: Dialects.Hive,
 });
 // Output: "SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))"</code></pre>
 
             <h3>Tokenizing</h3>
             <p>Extract tokens from a SQL string for lower-level analysis.</p>
-            <pre><code class="language-ts">import { tokenize } from "@hdnax/sqlingo.js";
+            <pre><code class="language-ts">import { tokenize, Dialects } from "@hdnax/sqlingo.js";
 import "@hdnax/sqlingo.js/postgres";
 
-const tokens = tokenize("SELECT 1", "postgres");</code></pre>
+const tokens = tokenize("SELECT 1", { dialect: Dialects.Postgres });</code></pre>
 
             <h2>SQL Builder</h2>
             <p>Build queries programmatically using a fluent API.</p>
-            <pre><code class="language-ts">import { select, column, condition } from "@hdnax/sqlingo.js";
+            <pre><code class="language-ts">import { select, column, condition, Dialects } from "@hdnax/sqlingo.js";
 import "@hdnax/sqlingo.js/mysql";
 
 const query = select("a", "b")
@@ -391,7 +391,7 @@ const query = select("a", "b")
   .where(condition("a > 1"))
   .limit(10);
 
-console.log(query.sql("mysql"));
+console.log(query.sql({ dialect: Dialects.Mysql }));
 // Output: SELECT a, b FROM t WHERE a > 1 LIMIT 10</code></pre>
 
             <h2>Optimization &amp; Analysis</h2>
@@ -410,7 +410,7 @@ const optimized = optimize(parseOne("SELECT * FROM t"), { schema });</code></pre
             <pre><code class="language-ts">import { lineage } from "@hdnax/sqlingo.js";
 
 const node = lineage("b", "SELECT a AS b FROM (SELECT x AS a FROM y)");
-console.log(node.source.name); 
+console.log(node.source.name);
 // Output: "y"</code></pre>
 
             <h2>Registering a Custom Dialect</h2>
@@ -419,7 +419,7 @@ console.log(node.source.name);
 
 class MyDialect extends Dialect {
   static DIALECT_NAME = "my_dialect";
-  
+
   static Generator = class extends Generator {
     // Override how specific expressions are generated
   };
@@ -432,7 +432,10 @@ const [result] = transpile("SELECT 1", { write: "my_dialect" });</code></pre>
 
             <h2>Supported Dialects</h2>
             <p class="dialects-list">
-              Athena, BigQuery, ClickHouse, Databricks, Doris, Dremio, Drill, Druid, DuckDB, Dune, Exasol, Fabric, Hive, Materialize, MySQL, Oracle, Postgres, Presto, PRQL, Redshift, RisingWave, SingleStore, Snowflake, Solr, Spark, Spark2, SQLite, StarRocks, Tableau, Teradata, Trino, TSQL
+              Athena, BigQuery, ClickHouse,
+              Databricks, Doris, Dremio, Drill,
+              Druid, DuckDB, Dune, Exasol, Fabric, Hive,
+              Materialize, MySQL, Oracle, Postgres, Presto, PRQL, Redshift, RisingWave, SingleStore, Snowflake, Solr, Spark, Spark2, SQLite, StarRocks, Tableau, Teradata, Trino, TSQL
             </p>
 
             <h2>SQLGlot Compatibility</h2>
@@ -456,11 +459,13 @@ import NavBar from '../components/NavBar.vue';
 import {
   ReflectionKind,
 } from '../types/reflectionKind';
-import { useSeo } from '../composables/useSeo';
+import {
+  useSeo,
+} from '../composables/useSeo';
 
 useSeo(() => ({
   title: selected.value ? `${selected.value.name} | API Reference` : 'API Reference: JavaScript SQL Parser Documentation',
-  description: selected.value 
+  description: selected.value
     ? `Documentation for ${selected.value.name} in sqlingo.js, the SQLGlot port for JavaScript/TypeScript.`
     : 'Full API documentation for sqlingo.js, including SQL parsing, transpiling, and optimization classes and functions.',
 }));
@@ -954,7 +959,7 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
 .prose a {
   @apply text-accent hover:underline;
 }
-</style>
+
 /* breadcrumb */
 .breadcrumb {
   @apply flex items-center gap-1.5 text-xs text-fg-faint mb-4 font-mono;
