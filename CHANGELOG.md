@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.1.2
+
+### Patch Changes
+
+- a0cbe60: Add warnings to npm doc page
+
 ## 0.1.1
 
 ### Patch Changes
