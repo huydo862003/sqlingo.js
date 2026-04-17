@@ -55,6 +55,7 @@ import NavBar from '../components/NavBar.vue';
 import SqlToDbml from '../components/SqlToDbml.vue';
 import SqlTranspile from '../components/SqlTranspile.vue';
 import {
+  Tab,
   usePlaygroundStore,
 } from '../stores/playground';
 import {
@@ -81,16 +82,12 @@ const navBreadcrumb = computed(() => {
   return crumbs;
 });
 
-enum Tab {
-  Transpile = 'transpile',
-  Dbml = 'dbml',
-}
-
 const store = usePlaygroundStore();
 const tab = computed({
-  get: () => store.tab as Tab,
+  get: () => store.tab,
   set: (v) => {
-    store.tab = v; store.persist();
+    store.tab = v;
+    store.persist();
   },
 });
 </script>
