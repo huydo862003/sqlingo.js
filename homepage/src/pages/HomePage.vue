@@ -140,9 +140,7 @@
               href="https://github.com/tobymao/sqlglot"
               target="_blank"
               rel="noopener"
-            >SQLGlot</a>. It was amazing that a library like this existed.
-            33+ dialects, a clean AST, good errors. Trusted by a lot of tools in the Python ecosystem.
-            Exactly what I needed, except it is Python.
+            >SQLGlot</a>. It was amazing that a library like this existed. Too bad it was in Python.
           </p>
           <p>
             I tried running it through Pyodide as a hack, but the runtime is too heavy to ship anywhere that matters.
@@ -151,8 +149,7 @@
               href="https://github.com/tobilg/polyglot"
               target="_blank"
               rel="noopener"
-            >polyglot</a> was announced (LoL! If only it were sooner). I kept going anyway - full control over the implementation
-            and staying in sync with upstream mattered more than not duplicating work.
+            >polyglot</a> was announced (LoL! If only it were sooner). I kept doing anyways though, because I wanted full control over the implementation and staying in sync with upstream.
           </p>
           <p>
             sqlingo.js is a close mirror of SQLGlot. This way, I can easily catch up with SQLGlot updates as needed.
