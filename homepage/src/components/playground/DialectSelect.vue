@@ -51,18 +51,21 @@ import {
 } from '@phosphor-icons/vue';
 import {
   DIALECTS,
-} from '../services/dialects';
+} from '@/services/dialects';
 
 // Module-level: only one dropdown can be open at a time
+// Different instances all listen on the same events on the document to sync these
+// FIXME: Use a better approach
 const activeInstance = ref<symbol | null>(null);
 const instanceId = Symbol();
 
-const props = withDefaults(defineProps<{
+const {
+  modelValue,
+  allowAuto = false,
+} = defineProps<{
   modelValue: string;
   allowAuto?: boolean;
-}>(), {
-  allowAuto: false,
-});
+}>();
 
 const emit = defineEmits<{
   'update:modelValue': [string];
@@ -78,11 +81,11 @@ const triggerEl = ref<HTMLElement | null>(null);
 const dropdownEl = ref<HTMLElement | null>(null);
 const dropdownStyle = ref<Record<string, string>>({});
 const currentLabel = computed(() => {
-  if (props.modelValue === '') return 'auto';
-  return DIALECTS.find((d) => d.value === props.modelValue)?.label ?? props.modelValue;
+  if (modelValue === '') return 'auto';
+  return DIALECTS.find((d) => d.value === modelValue)?.label ?? modelValue;
 });
 
-function updatePos () {
+function updatePosition () {
   if (!triggerEl.value) return;
   const r = triggerEl.value.getBoundingClientRect();
   dropdownStyle.value = {
@@ -96,7 +99,7 @@ async function toggle () {
   open.value = !open.value;
   if (open.value) {
     await nextTick();
-    updatePos();
+    updatePosition();
   }
 }
 
@@ -105,7 +108,7 @@ function select (val: string) {
   open.value = false;
 }
 
-function onDocClick (e: MouseEvent) {
+function onDocumentClick (e: MouseEvent) {
   if (!open.value) return;
   const t = e.target as Node;
   if (!triggerEl.value?.contains(t) && !dropdownEl.value?.contains(t)) {
@@ -126,7 +129,7 @@ function onResize () {
 }
 
 onMounted(() => {
-  document.addEventListener('click', onDocClick);
+  document.addEventListener('click', onDocumentClick);
   document.addEventListener('keydown', onKeyDown);
   window.addEventListener('scroll', onScroll, {
     passive: true,
@@ -136,7 +139,7 @@ onMounted(() => {
   });
 });
 onUnmounted(() => {
-  document.removeEventListener('click', onDocClick);
+  document.removeEventListener('click', onDocumentClick);
   document.removeEventListener('keydown', onKeyDown);
   window.removeEventListener('scroll', onScroll);
   window.removeEventListener('resize', onResize);

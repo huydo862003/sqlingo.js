@@ -151,12 +151,11 @@
               href="https://github.com/tobilg/polyglot"
               target="_blank"
               rel="noopener"
-            >polyglot</a> was announced. I kept going anyway — full control over the implementation
+            >polyglot</a> was announced (LoL! If only it were sooner). I kept going anyway - full control over the implementation
             and staying in sync with upstream mattered more than not duplicating work.
           </p>
           <p>
-            sqlingo.js is a close mirror of SQLGlot. When SQLGlot fixes a bug or adds a dialect, I port it.
-            It is not a perfect translation, but it has been useful enough to share.
+            sqlingo.js is a close mirror of SQLGlot. This way, I can easily catch up with SQLGlot updates as needed.
           </p>
         </div>
       </div>
@@ -247,11 +246,11 @@ import {
 import {
   PhTreeStructure, PhArrowsLeftRight, PhMagicWand, PhPlay,
 } from '@phosphor-icons/vue';
-import CodeTabs from '../components/CodeTabs.vue';
-import NavBar from '../components/NavBar.vue';
+import CodeTabs from '@/components/CodeTabs.vue';
+import NavBar from '@/components/NavBar.vue';
 import {
   useSeo,
-} from '../composables/useSeo';
+} from '@/composables/useSeo';
 
 useSeo({
   title: 'Home',

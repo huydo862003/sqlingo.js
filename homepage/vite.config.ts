@@ -3,7 +3,7 @@ import {
   readFileSync,
   watch,
 } from 'node:fs';
-import {
+import path, {
   resolve,
 } from 'node:path';
 import tailwindcss from '@tailwindcss/vite';
@@ -47,6 +47,11 @@ function typedocVirtual (): Plugin {
 
 export default defineConfig({
   base: '/sqlingo.js/',
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src/'),
+    },
+  },
   build: {
     outDir: '../doc',
     emptyOutDir: false,

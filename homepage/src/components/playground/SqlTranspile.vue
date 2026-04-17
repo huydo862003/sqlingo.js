@@ -1,14 +1,11 @@
 <template>
-  <div class="sql-to-dbml">
+  <div class="sql-transpile">
     <div class="panels">
       <div class="panel">
         <div class="panel-header">
           <div class="panel-header-left">
-            <span class="panel-label">SQL</span>
-            <DialectSelect
-              v-model="dialect"
-              :allow-auto="true"
-            />
+            <span class="panel-label">Input SQL</span>
+            <DialectSelect v-model="fromDialect" />
           </div>
         </div>
         <MonacoEditor v-model="sqlInput" />
@@ -16,20 +13,22 @@
 
       <div class="panel">
         <div class="panel-header">
-          <span class="panel-label">DBML</span>
+          <div class="panel-header-left">
+            <span class="panel-label">Output SQL</span>
+            <DialectSelect v-model="toDialect" />
+          </div>
           <button
             class="copy-btn"
-            :disabled="!dbmlOutput"
-            @click="copyDbml"
+            :disabled="!sqlOutput"
+            @click="copyOutput"
           >
             {{ copied ? 'Copied!' : 'Copy' }}
           </button>
         </div>
         <div :class="{ 'output-error': error }">
           <MonacoEditor
-            :model-value="dbmlOutput || error"
+            :model-value="sqlOutput || error"
             :read-only="true"
-            :language="dbmlOutput ? 'dbml' : 'plaintext'"
           />
         </div>
       </div>
@@ -42,28 +41,35 @@ import {
   ref, computed, watch, onMounted,
 } from 'vue';
 import {
-  convertSqlToDbml,
-} from '../services/dbml';
+  transpile,
+} from '@/services/transpile';
 import MonacoEditor from './MonacoEditor.vue';
 import DialectSelect from './DialectSelect.vue';
 import {
   usePlaygroundStore,
-} from '../stores/playground';
+} from '@/stores/playground';
 
 const store = usePlaygroundStore();
+const fromDialect = computed({
+  get: () => store.transpileFrom,
+  set: (v) => {
+    store.transpileFrom = v; store.persist();
+  },
+});
+const toDialect = computed({
+  get: () => store.transpileTo,
+  set: (v) => {
+    store.transpileTo = v; store.persist();
+  },
+});
 const sqlInput = computed({
-  get: () => store.dbmlInput,
+  get: () => store.transpileInput,
   set: (v) => {
-    store.dbmlInput = v; store.persist();
+    store.transpileInput = v; store.persist();
   },
 });
-const dialect = computed({
-  get: () => store.dbmlDialect,
-  set: (v) => {
-    store.dbmlDialect = v; store.persist();
-  },
-});
-const dbmlOutput = ref('');
+
+const sqlOutput = ref('');
 const error = ref('');
 const copied = ref(false);
 
@@ -73,22 +79,26 @@ function stripAnsi (s: string): string {
 
 function convert () {
   if (!sqlInput.value.trim()) {
-    dbmlOutput.value = '';
+    sqlOutput.value = '';
     error.value = '';
     return;
   }
   try {
-    const result = convertSqlToDbml(sqlInput.value, dialect.value || undefined);
-    dbmlOutput.value = result.dbml || '';
-    error.value = result.dbml ? '' : 'No CREATE TABLE statements found.';
+    const results = transpile(sqlInput.value, {
+      read: fromDialect.value,
+      write: toDialect.value,
+      pretty: true,
+    });
+    sqlOutput.value = results.join('\n');
+    error.value = '';
   } catch (e) {
-    dbmlOutput.value = '';
+    sqlOutput.value = '';
     error.value = stripAnsi(e instanceof Error ? e.message : String(e));
   }
 }
 
-function copyDbml () {
-  navigator.clipboard.writeText(dbmlOutput.value).then(() => {
+function copyOutput () {
+  navigator.clipboard.writeText(sqlOutput.value).then(() => {
     copied.value = true;
     setTimeout(() => {
       copied.value = false;
@@ -98,21 +108,22 @@ function copyDbml () {
 
 watch([
   sqlInput,
-  dialect,
+  fromDialect,
+  toDialect,
 ], convert);
 onMounted(convert);
 </script>
 
 <style scoped>
-@reference "../style.css";
+@reference '../../style.css';
 @import './playground.css';
 
-.sql-to-dbml {
+.sql-transpile {
   @apply w-full;
 }
 
 .output-error :deep(.monaco-wrap) {
-  @apply outline outline-1 rounded;
+  @apply outline-1 rounded;
   outline-color: rgb(239 68 68 / 0.4);
 }
 </style>

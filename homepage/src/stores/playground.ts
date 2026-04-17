@@ -4,9 +4,6 @@ import {
 import {
   ref,
 } from 'vue';
-import {
-  Dialects,
-} from '@hdnax/sqlingo.js';
 
 const STORAGE_KEY = 'pg:state';
 
@@ -44,8 +41,8 @@ export enum Tab {
 
 interface PersistedState {
   tab: Tab;
-  transpileFrom: Dialects | string;
-  transpileTo: Dialects | string;
+  transpileFrom: string;
+  transpileTo: string;
   transpileInput: string;
   dbmlDialect: string;
   dbmlInput: string;
@@ -58,8 +55,8 @@ function loadState (): PersistedState {
   } catch {}
   return {
     tab: Tab.Transpile,
-    transpileFrom: Dialects.MYSQL,
-    transpileTo: Dialects.POSTGRES,
+    transpileFrom: 'mysql',
+    transpileTo: 'postgres',
     transpileInput: DEFAULT_TRANSPILE_INPUT,
     dbmlDialect: '',
     dbmlInput: DEFAULT_DBML_INPUT,

@@ -51,16 +51,16 @@ import {
 import {
   PhArrowsLeftRight, PhArrowRight, PhDatabase,
 } from '@phosphor-icons/vue';
-import NavBar from '../components/NavBar.vue';
-import SqlToDbml from '../components/SqlToDbml.vue';
-import SqlTranspile from '../components/SqlTranspile.vue';
+import NavBar from '@/components/NavBar.vue';
+import SqlToDbml from '@/components/playground/SqlToDbml.vue';
+import SqlTranspile from '@/components/playground/SqlTranspile.vue';
 import {
   Tab,
   usePlaygroundStore,
-} from '../stores/playground';
+} from '@/stores/playground';
 import {
   useSeo,
-} from '../composables/useSeo';
+} from '@/composables/useSeo';
 
 useSeo({
   title: 'Playground: SQL Transpiler & SQL to DBML',

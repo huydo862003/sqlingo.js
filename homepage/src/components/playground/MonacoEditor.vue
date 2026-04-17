@@ -37,14 +37,15 @@ monaco.editor.defineTheme('sqlingo-dark', {
   },
 });
 
-const props = withDefaults(defineProps<{
+const {
+  language = 'sql',
+  readOnly = false,
+  modelValue,
+} = defineProps<{
   modelValue: string;
   language?: string;
   readOnly?: boolean;
-}>(), {
-  language: 'sql',
-  readOnly: false,
-});
+}>();
 
 const emit = defineEmits<{
   'update:modelValue': [value: string];
@@ -56,14 +57,14 @@ let editor: monaco.editor.IStandaloneCodeEditor | null = null;
 onMounted(() => {
   if (!containerEl.value) return;
   editor = monaco.editor.create(containerEl.value, {
-    value: props.modelValue,
-    language: props.language,
+    value: modelValue,
+    language,
     theme: 'sqlingo-dark',
     minimap: {
       enabled: false,
     },
     scrollBeyondLastLine: false,
-    readOnly: props.readOnly,
+    readOnly,
     fontSize: 14,
     fontFamily: '"JetBrains Mono", monospace',
     lineNumbers: 'on',
@@ -91,11 +92,11 @@ onMounted(() => {
   });
 });
 
-watch(() => props.modelValue, (newVal) => {
+watch(() => modelValue, (newVal) => {
   if (editor && editor.getValue() !== newVal) editor.setValue(newVal);
 });
 
-watch(() => props.language, (newLang) => {
+watch(() => language, (newLang) => {
   const model = editor?.getModel();
   if (model) monaco.editor.setModelLanguage(model, newLang);
 });
@@ -106,7 +107,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-@reference "../style.css";
+@reference '../../style.css';
 
 .monaco-wrap {
   @apply h-64 w-full;
