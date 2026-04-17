@@ -4,6 +4,8 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![SQLGlot](https://img.shields.io/badge/SQLGlot-v28.10.0-blue)
 
+WARNING: This package is still in alpha. Although the SQLGlot tests have all passed, but finding contrived failures may require me to use this package extensively myself, which I planned to in the future. You can also help me report bugs in the Github issue.
+
 A JavaScript/TypeScript port of [SQLGlot](https://github.com/tobymao/sqlglot), which is a comprehensive SQL parser, transpiler, optimizer, and engine.
 
 This package allows you to parse, transpile, optimize, and execute SQL across **33+ dialects** in JavaScript, with no other setup.
