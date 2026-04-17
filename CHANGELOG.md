@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.1.1
+
+### Patch Changes
+
+- c90ac1e: Update API doc for npm package
+
 ## 0.1.0
 
 ### Minor Changes
