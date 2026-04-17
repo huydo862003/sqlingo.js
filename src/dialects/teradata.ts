@@ -365,8 +365,7 @@ export class TeradataParser extends Parser {
       ])
         ? this.expression(AnonymousExpr, {
           this: 'WITH ERROR',
-          expressions: [
-          ],
+          expressions: [],
         })
         : undefined,
     });
@@ -473,8 +472,7 @@ export class TeradataGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [
-  ];
+  static readonly SELECT_KINDS: string[] = [];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -592,9 +590,7 @@ export class TeradataGenerator extends Generator {
   public currentTimestampSql (expression: CurrentTimestampExpr): string {
     const prefix = expression.args.this ? '(' : '';
     const suffix = expression.args.this ? ')' : '';
-    return this.func('CURRENT_TIMESTAMP', [
-      expression.args.this,
-    ], {
+    return this.func('CURRENT_TIMESTAMP', [expression.args.this], {
       prefix,
       suffix,
     });

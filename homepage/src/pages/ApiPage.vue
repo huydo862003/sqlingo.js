@@ -553,45 +553,32 @@ import('virtual:typedoc').then((mod) => {
   if (hash) selectBySlug(hash);
 });
 
-const topLevel = computed<ReflectionNode[]>(() => data.value?.children ?? [
-]);
+const topLevel = computed<ReflectionNode[]>(() => data.value?.children ?? []);
 
 const GROUP_ORDER: Array<[string, number[]]> = [
   [
     'Classes',
-    [
-      ReflectionKind.Class,
-    ],
+    [ReflectionKind.Class],
   ],
   [
     'Functions',
-    [
-      ReflectionKind.Function,
-    ],
+    [ReflectionKind.Function],
   ],
   [
     'Interfaces',
-    [
-      ReflectionKind.Interface,
-    ],
+    [ReflectionKind.Interface],
   ],
   [
     'Enumerations',
-    [
-      ReflectionKind.Enum,
-    ],
+    [ReflectionKind.Enum],
   ],
   [
     'Type Aliases',
-    [
-      ReflectionKind.TypeAlias,
-    ],
+    [ReflectionKind.TypeAlias],
   ],
   [
     'Variables',
-    [
-      ReflectionKind.Variable,
-    ],
+    [ReflectionKind.Variable],
   ],
 ];
 
@@ -611,8 +598,7 @@ const navGroups = computed(() => {
           items,
         },
       ]
-      : [
-      ];
+      : [];
   });
 });
 
@@ -664,8 +650,7 @@ function kindSlug (kind: number): string {
 }
 
 function comment (node: ReflectionNode): string {
-  return (node.comment?.summary ?? [
-  ]).map((p) => p.text).join('')
+  return (node.comment?.summary ?? []).map((p) => p.text).join('')
     .trim();
 }
 
@@ -693,10 +678,8 @@ function typeStr (t: TypeInfo | undefined): string {
         : (t.name ?? '?');
     case 'literal': return JSON.stringify(t.value);
     case 'array': return `${typeStr(t.elementType)}[]`;
-    case 'union': return (t.types ?? [
-    ]).map(typeStr).join(' | ');
-    case 'intersection': return (t.types ?? [
-    ]).map(typeStr).join(' & ');
+    case 'union': return (t.types ?? []).map(typeStr).join(' | ');
+    case 'intersection': return (t.types ?? []).map(typeStr).join(' & ');
     default: return t.name ?? t.type ?? '?';
   }
 }
@@ -707,13 +690,10 @@ function memberType (node: ReflectionNode): string {
   return '';
 }
 
-const HIDE_KINDS = new Set<number>([
-  ReflectionKind.Constructor,
-]);
+const HIDE_KINDS = new Set<number>([ReflectionKind.Constructor]);
 
 function visibleMembers (node: ReflectionNode): ReflectionNode[] {
-  return (node.children ?? [
-  ]).filter(
+  return (node.children ?? []).filter(
     (m) => !m.flags.isPrivate && !m.flags.isProtected && !HIDE_KINDS.has(m.kind),
   );
 }

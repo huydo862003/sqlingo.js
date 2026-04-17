@@ -502,8 +502,7 @@ export class Token {
     col: number = 1,
     start: number = 0,
     end: number = 0,
-    comments: string[] = [
-    ],
+    comments: string[] = [],
   ) {
     this.tokenType = tokenType;
     this.text = text;
@@ -575,75 +574,63 @@ export class Tokenizer {
    *
    * @example [["b'", "'"], ["B'", "'"]]
    */
-  static BIT_STRINGS: TokenPair[] = [
-  ];
+  static BIT_STRINGS: TokenPair[] = [];
 
   /**
    * Byte string prefixes.
    *
    * @example [["b'", "'"], ["B'", "'"]]
    */
-  static BYTE_STRINGS: TokenPair[] = [
-  ];
+  static BYTE_STRINGS: TokenPair[] = [];
 
   /**
    * Hex string prefixes.
    *
    * @example [["x'", "'"], ["X'", "'"], ["0x", ""]]
    */
-  static HEX_STRINGS: TokenPair[] = [
-  ];
+  static HEX_STRINGS: TokenPair[] = [];
 
   /**
    * Raw string prefixes.
    *
    * @example [["r'", "'"], ["R'", "'"]]
    */
-  static RAW_STRINGS: TokenPair[] = [
-  ];
+  static RAW_STRINGS: TokenPair[] = [];
 
   /**
    * Heredoc string prefixes.
    *
    * @example [["$$", "$$"]]
    */
-  static HEREDOC_STRINGS: TokenPair[] = [
-  ];
+  static HEREDOC_STRINGS: TokenPair[] = [];
 
   /**
    * Identifier quote delimiters.
    *
    * @example ['"', '`', ['[', ']']]
    */
-  static IDENTIFIERS: TokenPair[] = [
-    '"',
-  ];
+  static IDENTIFIERS: TokenPair[] = ['"'];
 
   /**
    * String quote delimiters.
    *
    * @example ["'"]
    */
-  static QUOTES: TokenPair[] = [
-    '\'',
-  ];
+  static QUOTES: TokenPair[] = ['\''];
 
   /**
    * Unicode string prefixes.
    *
    * @example [["u'", "'"], ["U'", "'"]]
    */
-  static UNICODE_STRINGS: TokenPair[] = [
-  ];
+  static UNICODE_STRINGS: TokenPair[] = [];
 
   /**
    * Characters that can be escaped in strings.
    *
    * @example ["'", "\\"]
    */
-  static STRING_ESCAPES: string[] = [
-    '\'',
-  ];
+  static STRING_ESCAPES: string[] = ['\''];
 
   /**
    * Characters that can be escaped in byte strings.
@@ -668,16 +655,14 @@ export class Tokenizer {
    *
    * @example ["n", "t", "r", "\\"]
    */
-  static ESCAPE_FOLLOW_CHARS: string[] = [
-  ];
+  static ESCAPE_FOLLOW_CHARS: string[] = [];
 
   /**
    * Characters that can be escaped in identifiers.
    *
    * @example ['"']
    */
-  static IDENTIFIER_ESCAPES: string[] = [
-  ];
+  static IDENTIFIER_ESCAPES: string[] = [];
 
   /**
    * Whether the heredoc tags follow the same lexical rules as unquoted identifiers.
@@ -1250,8 +1235,7 @@ export class Tokenizer {
   /** The length of the SQL string. */
   size = 0;
   /** Array of tokens produced by tokenization. */
-  tokens: Token[] = [
-  ];
+  tokens: Token[] = [];
   dialect: Dialect;
   /** Starting position of the current token. */
   private _start = 0;
@@ -1262,8 +1246,7 @@ export class Tokenizer {
   /** Current column number. */
   private _col = 0;
   /** Accumulated comments for the next token. */
-  private comments: string[] = [
-  ];
+  private comments: string[] = [];
   /** Current character being processed. */
   private char = '';
   /** Whether we've reached the end of the SQL string. */
@@ -1287,14 +1270,12 @@ export class Tokenizer {
   reset (): void {
     this.sql = '';
     this.size = 0;
-    this.tokens = [
-    ];
+    this.tokens = [];
     this._start = 0;
     this._current = 0;
     this.line = 1;
     this._col = 0;
-    this.comments = [
-    ];
+    this.comments = [];
     this.char = '';
     this._end = false;
     this.peek = '';
@@ -1461,8 +1442,7 @@ export class Tokenizer {
 
     if (this.comments.length && tokenType === TokenType.SEMICOLON && this.tokens.length) {
       this.tokens[this.tokens.length - 1].comments.push(...this.comments);
-      this.comments = [
-      ];
+      this.comments = [];
     }
 
     this.tokens.push(
@@ -1476,8 +1456,7 @@ export class Tokenizer {
         this.comments,
       ),
     );
-    this.comments = [
-    ];
+    this.comments = [];
 
     const constructor = this._constructor;
     // If we have either a semicolon or a begin token before the command's token, we'll parse
@@ -1652,8 +1631,7 @@ export class Tokenizer {
     // Leading comment is attached to the succeeding token, whilst trailing comment to the preceding.
     if (commentStartLine === this.prevTokenLine) {
       this.tokens[this.tokens.length - 1].comments.push(...this.comments);
-      this.comments = [
-      ];
+      this.comments = [];
       this.prevTokenLine = this.line;
     }
 

@@ -647,8 +647,7 @@ export class Generator {
   // Whether ignore nulls is inside the agg or outside.
   // FIRST(x IGNORE NULLS) OVER vs FIRST (x) IGNORE NULLS OVER
   static IGNORE_NULLS_IN_FUNC = false;
-  static RESPECT_IGNORE_NULLS_UNSUPPORTED_EXPRESSIONS: (typeof Expression)[] = [
-  ];
+  static RESPECT_IGNORE_NULLS_UNSUPPORTED_EXPRESSIONS: (typeof Expression)[] = [];
 
   // Whether locking reads (i.e. SELECT ... FOR UPDATE/SHARE) are supported
   static LOCKING_READS_SUPPORTED = false;
@@ -828,9 +827,7 @@ export class Generator {
   // The JsonPathPart expressions supported by this dialect
   @cache
   static get SUPPORTED_JSON_PATH_PARTS (): Set<typeof Expression> {
-    return new Set([
-      ...ALL_JSON_PATH_PARTS,
-    ]);
+    return new Set([...ALL_JSON_PATH_PARTS]);
   }
 
   // Whether any(f(x) for x in array) can be implemented by this dialect
@@ -1453,8 +1450,7 @@ export class Generator {
         [
           JsonPathUnionExpr,
           function (this: Generator, e: JsonPathUnionExpr) {
-            const parts = (e.args.expressions ?? [
-            ]).map((p) => this.jsonPathPart(p as ExpressionValue<JsonPathPartExpr>));
+            const parts = (e.args.expressions ?? []).map((p) => this.jsonPathPart(p as ExpressionValue<JsonPathPartExpr>));
             return `[${parts.join(',')}]`;
           },
         ],
@@ -1726,8 +1722,7 @@ export class Generator {
         [
           TransformModelPropertyExpr,
           function (this: Generator, e: TransformModelPropertyExpr) {
-            return this.func('TRANSFORM', e.args.expressions || [
-            ]);
+            return this.func('TRANSFORM', e.args.expressions || []);
           },
         ],
         [
@@ -2302,8 +2297,7 @@ export class Generator {
     this.identifierStart = this.dialect._constructor.IDENTIFIER_START;
     this.identifierEnd = this.dialect._constructor.IDENTIFIER_END;
 
-    this.unsupportedMessages = [
-    ];
+    this.unsupportedMessages = [];
     this.nextName = nameSequence('_t');
     this.quoteJsonPathKeyUsingBrackets = true;
   }
@@ -2325,8 +2319,7 @@ export class Generator {
 
     expr = this.preprocess(expr);
 
-    this.unsupportedMessages = [
-    ];
+    this.unsupportedMessages = [];
 
     let sql = this.sql(expr).trim();
 
@@ -2363,9 +2356,7 @@ export class Generator {
     if (
       !expression.parent
       && (this.constructor as typeof Generator).EXPRESSIONS_WITHOUT_NESTED_CTES.has(expression._constructor)
-      && [
-        ...expression.findAll(WithExpr),
-      ].some((node) => node.parent !== expression)
+      && [...expression.findAll(WithExpr)].some((node) => node.parent !== expression)
     ) {
       return moveCtesToTopLevel(expression) as E;
     }
@@ -2582,9 +2573,7 @@ export class Generator {
       return sql;
     }
 
-    if (expression && [
-      ...this._constructor.EXCLUDE_COMMENTS,
-    ].some((cls) => expression instanceof cls)) {
+    if (expression && [...this._constructor.EXCLUDE_COMMENTS].some((cls) => expression instanceof cls)) {
       return sql;
     }
 
@@ -2599,9 +2588,7 @@ export class Generator {
 
     const commentsSqlWithLineBreaks = this.replaceLineBreaks(commentsSql);
 
-    if (separated || (expression && [
-      ...this._constructor.WITH_SEPARATED_COMMENTS,
-    ].some((cls) => expression instanceof cls))) {
+    if (separated || (expression && [...this._constructor.WITH_SEPARATED_COMMENTS].some((cls) => expression instanceof cls))) {
       return (!sql || sql[0] === ' ' || sql[0] === '\n')
         ? `${this.sep()}${commentsSqlWithLineBreaks}${sql}`
         : `${commentsSqlWithLineBreaks}${this.sep()}${sql}`;
@@ -2870,10 +2857,8 @@ export class Generator {
     if (postSchema || postWith) {
       const propsAst = new PropertiesExpr({
         expressions: [
-          ...(postSchema ?? [
-          ]),
-          ...(postWith ?? [
-          ]),
+          ...(postSchema ?? []),
+          ...(postWith ?? []),
         ],
       });
       propsAst.parent = expression;
@@ -3142,9 +3127,7 @@ export class Generator {
 
     if (!isIntegerType) {
       if (binaryFunctionRepr) {
-        return this.func(binaryFunctionRepr, [
-          literal(thisStr),
-        ]);
+        return this.func(binaryFunctionRepr, [literal(thisStr)]);
       }
       if (this.dialect._constructor.HEX_STRING_IS_INTEGER_TYPE) {
         this.unsupported('Unsupported transpilation from BINARY/BLOB hex string');
@@ -3449,11 +3432,8 @@ export class Generator {
       }
     }
 
-    const sqls: string[] = [
-    ];
-    const stack: (string | Expression)[] = [
-      expression,
-    ];
+    const sqls: string[] = [];
+    const stack: (string | Expression)[] = [expression];
 
     while (0 < stack.length) {
       const node = stack.pop();
@@ -3606,26 +3586,18 @@ export class Generator {
 
   hexSql (expression: HexExpr): string {
     const hexFunc = this._constructor.HEX_FUNC;
-    let text = this.func(hexFunc, [
-      this.sql(expression, 'this'),
-    ]);
+    let text = this.func(hexFunc, [this.sql(expression, 'this')]);
     if (this.dialect._constructor.HEX_LOWERCASE) {
-      text = this.func('LOWER', [
-        text,
-      ]);
+      text = this.func('LOWER', [text]);
     }
     return text;
   }
 
   lowerHexSql (expression: LowerHexExpr): string {
     const hexFunc = this._constructor.HEX_FUNC;
-    let text = this.func(hexFunc, [
-      this.sql(expression, 'this'),
-    ]);
+    let text = this.func(hexFunc, [this.sql(expression, 'this')]);
     if (!this.dialect._constructor.HEX_LOWERCASE) {
-      text = this.func('LOWER', [
-        text,
-      ]);
+      text = this.func('LOWER', [text]);
     }
     return text;
   }
@@ -3657,13 +3629,10 @@ export class Generator {
   }
 
   propertiesSql (expression: PropertiesExpr): string {
-    const rootProperties = [
-    ];
-    const withProperties = [
-    ];
+    const rootProperties = [];
+    const withProperties = [];
 
-    for (const p of expression.args.expressions || [
-    ]) {
+    for (const p of expression.args.expressions || []) {
       const pLoc = this._constructor.PROPERTIES_LOCATION.get(p._constructor);
 
       if (pLoc === PropertiesLocation.POST_WITH) {
@@ -3694,8 +3663,7 @@ export class Generator {
   }
 
   rootProperties (properties: PropertiesExpr): string {
-    if (0 < (properties.args.expressions || [
-    ]).length) {
+    if (0 < (properties.args.expressions || []).length) {
       return this.expressions(properties, {
         indent: false,
         sep: ' ',
@@ -3719,8 +3687,7 @@ export class Generator {
       suffix = '',
       wrapped = true,
     } = options;
-    if (0 < (properties.args.expressions || [
-    ]).length) {
+    if (0 < (properties.args.expressions || []).length) {
       const expressions = this.expressions(properties, {
         sep,
         indent: false,
@@ -3741,14 +3708,12 @@ export class Generator {
 
   locateProperties (properties: PropertiesExpr): Map<PropertiesLocation, Expression[]> {
     const propertiesLocs = new Map<PropertiesLocation, Expression[]>();
-    const expressions = properties.args.expressions || [
-    ];
+    const expressions = properties.args.expressions || [];
     for (const p of expressions) {
       const pLoc = this._constructor.PROPERTIES_LOCATION.get(p._constructor) || PropertiesLocation.UNSUPPORTED;
       if (pLoc !== PropertiesLocation.UNSUPPORTED) {
         if (!propertiesLocs.has(pLoc)) {
-          propertiesLocs.set(pLoc, [
-          ]);
+          propertiesLocs.set(pLoc, []);
         }
         propertiesLocs.get(pLoc)?.push(p);
       } else {
@@ -3790,8 +3755,7 @@ export class Generator {
 
   likePropertySql (expression: LikePropertyExpr): string {
     if (this._constructor.SUPPORTS_CREATE_TABLE_LIKE) {
-      const options = (expression.args.expressions || [
-      ])
+      const options = (expression.args.expressions || [])
         .map((e) => `${e.name} ${this.sql(e, 'value')}`)
         .join(' ');
       const optionsStr = options ? ` ${options}` : '';
@@ -4224,9 +4188,7 @@ export class Generator {
   }
 
   tableFromRowsSql (expression: TableFromRowsExpr): string {
-    const table = this.func('TABLE', [
-      expression.args.this,
-    ]);
+    const table = this.func('TABLE', [expression.args.this]);
     let alias = this.sql(expression, 'alias');
     alias = alias ? ` AS ${alias}` : '';
     const sample = this.sql(expression, 'sample');
@@ -4333,8 +4295,7 @@ export class Generator {
     const targetTable = expression.args.this;
     if (targetTable instanceof TableExpr) {
       const targetName = toIdentifier(targetTable.aliasOrName);
-      for (const eq of expression.args.expressions || [
-      ]) {
+      for (const eq of expression.args.expressions || []) {
         const col = eq.args.this;
         if (col instanceof ColumnExpr && !col.table) {
           col.setArgKey('table', targetName);
@@ -4343,8 +4304,7 @@ export class Generator {
     }
 
     const table = fromExpr.args.this;
-    const nestedJoins: Expression[] = (isInstanceOf(table, Expression) ? table.args.joins : undefined) || [
-    ];
+    const nestedJoins: Expression[] = (isInstanceOf(table, Expression) ? table.args.joins : undefined) || [];
     if (0 < nestedJoins.length && isInstanceOf(table, Expression)) {
       table.setArgKey('joins', undefined);
     }
@@ -4428,15 +4388,13 @@ export class Generator {
     const aliasNode = isInstanceOf(expression.args.alias, TableAliasExpr) ? expression.args.alias : undefined;
     const columnNames = aliasNode?.columns;
 
-    const selects: QueryExpr[] = [
-    ];
+    const selects: QueryExpr[] = [];
 
     const expressions = expression.args.expressions;
     if (expressions) {
       for (let i = 0; i < expressions.length; i++) {
         const tup = expressions[i];
-        let row = tup.args.expressions as Expression[] || [
-        ];
+        let row = tup.args.expressions as Expression[] || [];
 
         if (i === 0 && columnNames && 0 < columnNames.length) {
           row = row.map((value: Expression, idx: number) => {
@@ -4957,8 +4915,7 @@ export class Generator {
       return isAlias
         ? `${this.sql(e, 'alias')} AS ${this.sql(e, 'this')}`
         : this.sql(e, 'this');
-    }) || [
-    ];
+    }) || [];
 
     const interpolatePart = interpolatedValues.length
       ? ` INTERPOLATE (${interpolatedValues.join(', ')})`
@@ -5068,8 +5025,7 @@ export class Generator {
     const after = afterRaw ? this.seg(afterRaw) : '';
     const patternRaw = this.sql(expression, 'pattern');
     const pattern = patternRaw ? this.seg(`PATTERN (${patternRaw})`) : '';
-    const definitionSqls = (expression.args.define || [
-    ]).map((definition: Expression) =>
+    const definitionSqls = (expression.args.define || []).map((definition: Expression) =>
       `${this.sql(definition, 'alias')} AS ${this.sql(definition, 'this')}`);
     const definitions = this.expressions(undefined, {
       sqls: definitionSqls,
@@ -5116,11 +5072,9 @@ export class Generator {
     return csv(
       [
         ...sqls,
-        ...(expression.args.joins?.map((join) => this.sql(join)) ?? [
-        ]),
+        ...(expression.args.joins?.map((join) => this.sql(join)) ?? []),
         this.sql(expression, 'match'),
-        ...(expression.args.laterals?.map((lateral) => this.sql(lateral)) ?? [
-        ]),
+        ...(expression.args.laterals?.map((lateral) => this.sql(lateral)) ?? []),
         this.sql(expression, 'prewhere'),
         this.sql(expression, 'where'),
         this.sql(expression, 'connect'),
@@ -5204,8 +5158,7 @@ export class Generator {
       } else {
         if (kind === 'STRUCT') {
           // Rebuild expressions as Struct with PropertyEQ for aliases
-          const exprs = expression.args.expressions as Expression[] || [
-          ];
+          const exprs = expression.args.expressions as Expression[] || [];
           const structExprs = exprs.map((e) => {
             if (e instanceof AliasExpr) {
               return new PropertyEqExpr({
@@ -5367,9 +5320,7 @@ export class Generator {
         if (alias.args.columns) {
           alias.args.columns.push(offset);
         } else {
-          alias.setArgKey('columns', [
-            offset,
-          ]);
+          alias.setArgKey('columns', [offset]);
         }
       }
     }
@@ -5533,8 +5484,7 @@ export class Generator {
     const offset = (indexOffset !== undefined ? indexOffset : this.dialect._constructor.INDEX_OFFSET) - (expression.args.offset || 0);
     // Call apply_index_offset helper (assumed to exist)
     const bracketThis = expression.args.this instanceof Expression ? expression.args.this : new Expression({});
-    return applyIndexOffset(bracketThis, expression.args.expressions || [
-    ], offset, {
+    return applyIndexOffset(bracketThis, expression.args.expressions || [], offset, {
       dialect: this.dialect,
     });
   }
@@ -5575,9 +5525,7 @@ export class Generator {
 
   caseSql (expression: CaseExpr): string {
     const thisStr = this.sql(expression, 'this');
-    const statements: string[] = [
-      thisStr ? `CASE ${thisStr}` : 'CASE',
-    ];
+    const statements: string[] = [thisStr ? `CASE ${thisStr}` : 'CASE'];
 
     const ifs = expression.args.ifs as Expression[] | undefined;
     if (ifs) {
@@ -5659,8 +5607,7 @@ export class Generator {
   }
 
   convertConcatArgs (expression: ConcatExpr | ConcatWsExpr): Expression[] {
-    let args = expression.args.expressions || [
-    ];
+    let args = expression.args.expressions || [];
     if (expression instanceof ConcatWsExpr) {
       args = args.slice(1); // Skip the delimiter
     }
@@ -5719,8 +5666,7 @@ export class Generator {
   }
 
   concatWsSql (expression: ConcatWsExpr): string {
-    const expressions = expression.args.expressions || [
-    ];
+    const expressions = expression.args.expressions || [];
     const delimiter = expressions[0];
     const args = this.convertConcatArgs(expression);
     return this.func('CONCAT_WS', [
@@ -5775,16 +5721,13 @@ export class Generator {
       return `WHEN ${this.sql(expression, 'this')} THEN ${this.sql(expression, 'true')}`;
     }
     return this.caseSql(new CaseExpr({
-      ifs: [
-        expression,
-      ],
+      ifs: [expression],
       default: expression.args.false,
     }));
   }
 
   matchAgainstSql (expression: MatchAgainstExpr): string {
-    let exprs: (string | Expression)[] = expression.args.expressions || [
-    ];
+    let exprs: (string | Expression)[] = expression.args.expressions || [];
 
     if (this._constructor.MATCH_AGAINST_TABLE_PREFIX) {
       exprs = exprs.map((expr) => {
@@ -5794,8 +5737,7 @@ export class Generator {
         return expr;
       });
     } else {
-      exprs = expression.args.expressions || [
-      ];
+      exprs = expression.args.expressions || [];
     }
 
     const modifier = expression.args.modifier;
@@ -5877,8 +5819,7 @@ export class Generator {
     const funcName = expression instanceof JsonObjectExpr ? 'JSON_OBJECT' : 'JSON_OBJECTAGG';
     return this.func(
       funcName,
-      expression.args.expressions || [
-      ],
+      expression.args.expressions || [],
       {
         suffix: `${nullHandlingStr}${uniqueKeysStr}${returnTypeStr}${encodingStr})`,
       },
@@ -5897,8 +5838,7 @@ export class Generator {
     const strict = expression.args.strict ? ' STRICT' : '';
     return this.func(
       'JSON_ARRAY',
-      expression.args.expressions || [
-      ],
+      expression.args.expressions || [],
       {
         suffix: `${nullHandlingStr}${returnTypeStr}${strict})`,
       },
@@ -5915,9 +5855,7 @@ export class Generator {
     const strict = expression.args.strict ? ' STRICT' : '';
     return this.func(
       'JSON_ARRAYAGG',
-      [
-        thisStr,
-      ],
+      [thisStr],
       {
         suffix: `${order}${nullHandlingStr}${returnTypeStr}${strict})`,
       },
@@ -5942,8 +5880,7 @@ export class Generator {
   }
 
   jsonSchemaSql (expression: JsonSchemaExpr): string {
-    return this.func('COLUMNS', expression.args.expressions || [
-    ]);
+    return this.func('COLUMNS', expression.args.expressions || []);
   }
 
   jsonTableSql (expression: JsonTableExpr): string {
@@ -5957,9 +5894,7 @@ export class Generator {
     const schema = this.sql(expression, 'schema');
     return this.func(
       'JSON_TABLE',
-      [
-        thisStr,
-      ],
+      [thisStr],
       {
         suffix: `${pathStr}${errorHandlingStr}${emptyHandlingStr} ${schema})`,
       },
@@ -6069,8 +6004,7 @@ export class Generator {
     const isQualified = parent instanceof DotExpr && parent.args.expression === expression;
     return this.func(
       this.sql(expression, 'this'),
-      expression.args.expressions || [
-      ],
+      expression.args.expressions || [],
       {
         normalize: !isQualified,
       },
@@ -6190,11 +6124,8 @@ export class Generator {
       return op;
     }
 
-    const localStack: (string | Expression)[] = [
-      expression,
-    ];
-    const sqls: string[] = [
-    ];
+    const localStack: (string | Expression)[] = [expression];
+    const sqls: string[] = [];
     const ops = new Set<string>();
 
     while (0 < localStack.length) {
@@ -6454,8 +6385,7 @@ export class Generator {
   }
 
   alterSql (expression: AlterExpr): string {
-    const actions = expression.args.actions || [
-    ];
+    const actions = expression.args.actions || [];
 
     let actionsSql: string;
     if (!this.dialect._constructor.ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN
@@ -6466,8 +6396,7 @@ export class Generator {
       });
       actionsSql = `ADD ${actionsSql}`;
     } else {
-      const actionsList: string[] = [
-      ];
+      const actionsList: string[] = [];
       for (const action of actions) {
         const actionExpr = action as Expression;
         let actionSql: string;
@@ -6555,8 +6484,7 @@ export class Generator {
     if (!this._constructor.MULTI_ARG_DISTINCT && 1 < (expression.args.expressions?.length ?? 0)) {
       let caseAst = case_();
 
-      for (const arg of expression.args.expressions || [
-      ]) {
+      for (const arg of expression.args.expressions || []) {
         caseAst = caseAst.when(arg.is(null_()), null_());
       }
 
@@ -6731,12 +6659,9 @@ export class Generator {
       if (unnested instanceof TupleExpr) {
         exprs = unnested.args.expressions;
       } else if (unnested) {
-        exprs = [
-          unnested,
-        ];
+        exprs = [unnested];
       } else {
-        exprs = [
-        ];
+        exprs = [];
       }
 
       const connective = rhs instanceof AnyExpr ? or : and;
@@ -6827,9 +6752,7 @@ export class Generator {
       this.unsupported('Unsupported TRY function');
       return this.sql(expression, 'this');
     }
-    return this.func('TRY', [
-      expression.args.this,
-    ]);
+    return this.func('TRY', [expression.args.this]);
   }
 
   logSql (expression: LogExpr): string {
@@ -6847,9 +6770,7 @@ export class Generator {
       if (!thisExpr) return '';
       const baseName = thisExpr.name;
       if (baseName === '2' || baseName === '10') {
-        return this.func(`LOG${baseName}`, [
-          exprArg,
-        ]);
+        return this.func(`LOG${baseName}`, [exprArg]);
       }
       this.unsupported(`Unsupported logarithm with base ${this.sql(thisExpr)}`);
     }
@@ -6870,11 +6791,8 @@ export class Generator {
   }
 
   binary (expression: BinaryExpr, op: string): string {
-    const sqls: string[] = [
-    ];
-    const stack: (string | Expression)[] = [
-      expression,
-    ];
+    const sqls: string[] = [];
+    const stack: (string | Expression)[] = [expression];
 
     const binaryType = expression._constructor;
 
@@ -6909,8 +6827,7 @@ export class Generator {
   }
 
   functionFallbackSql (expression: FuncExpr | JsonExtractExpr): string {
-    const args: (ExpressionValue | undefined)[] = [
-    ];
+    const args: (ExpressionValue | undefined)[] = [];
 
     for (const key of expression._constructor.availableArgs) {
       const argValue = expression.getArgKey(key);
@@ -7012,9 +6929,7 @@ export class Generator {
 
     const exprArray = Array.isArray(exprs)
       ? exprs
-      : [
-        exprs,
-      ];
+      : [exprs];
 
     if (flat) {
       return exprArray
@@ -7024,8 +6939,7 @@ export class Generator {
     }
 
     const numSqls = exprArray.length;
-    const resultSqls: string[] = [
-    ];
+    const resultSqls: string[] = [];
 
     for (let i = 0; i < numSqls; i++) {
       const e = exprArray[i];
@@ -7161,8 +7075,7 @@ export class Generator {
     let tableAlias = '';
 
     if (isInstanceOf(table, TableExpr)) {
-      const hints: Expression[] = table.args.hints || [
-      ];
+      const hints: Expression[] = table.args.hints || [];
       if (0 < hints.length && table.alias && hints[0] instanceof WithTableHintExpr) {
         // T-SQL syntax is MERGE ... <target_table> [WITH (<merge_hint>)] [[AS] table_alias]
         const aliasRaw = table.args.alias;
@@ -7284,18 +7197,13 @@ export class Generator {
     const having = this.sql(expression, 'having');
     if (having) {
       const max = expression.args.max;
-      return this.func('ANY_VALUE', [
-        `${thisStr} HAVING ${max ? 'MAX' : 'MIN'} ${having}`,
-      ]);
+      return this.func('ANY_VALUE', [`${thisStr} HAVING ${max ? 'MAX' : 'MIN'} ${having}`]);
     }
-    return this.func('ANY_VALUE', [
-      expression.args.this,
-    ]);
+    return this.func('ANY_VALUE', [expression.args.this]);
   }
 
   queryTransformSql (expression: QueryTransformExpr): string {
-    const transform = this.func('TRANSFORM', expression.args.expressions || [
-    ]);
+    const transform = this.func('TRANSFORM', expression.args.expressions || []);
     let rowFormatBefore = this.sql(expression, 'rowFormatBefore');
     rowFormatBefore = rowFormatBefore ? ` ${rowFormatBefore}` : '';
     let recordWriter = this.sql(expression, 'recordWriter');
@@ -7466,12 +7374,8 @@ export class Generator {
       [
         thisStr,
         expression.args.time,
-        ...(expression.args.numRows || [
-          undefined,
-        ]),
-        ...(expression.args.ignoreFeatureNulls || [
-          undefined,
-        ]),
+        ...(expression.args.numRows || [undefined]),
+        ...(expression.args.ignoreFeatureNulls || [undefined]),
       ],
     );
   }
@@ -7495,9 +7399,7 @@ export class Generator {
         expression.args.queryColumnToSearch,
         expression.args.topK,
         expression.args.distanceType,
-        ...(expression.args.options || [
-          undefined,
-        ]),
+        ...(expression.args.options || [undefined]),
       ],
     );
   }
@@ -7634,9 +7536,7 @@ export class Generator {
     if (unitStr && unitStr !== 'MONTH') {
       this.unsupported('Date parts are not supported in LAST_DAY.');
     }
-    return this.func('LAST_DAY', [
-      expression.args.this,
-    ]);
+    return this.func('LAST_DAY', [expression.args.this]);
   }
 
   dateAddSql (expression: DateAddExpr): string {
@@ -7676,8 +7576,7 @@ export class Generator {
   structSql (expression: StructExpr): string {
     expression.setArgKey(
       'expressions',
-      (expression.args.expressions ?? [
-      ]).map((e) => {
+      (expression.args.expressions ?? []).map((e) => {
         if (e instanceof PropertyEqExpr) {
           const thisArg = e.args.this;
           const aliasName = mapOnExpression(thisArg, (expr) => {
@@ -7735,12 +7634,9 @@ export class Generator {
     let finalTo: DataTypeExpr = to;
 
     // Retrieve length of datatype and override to default if not specified
-    if (!seqGet(to.args.expressions ?? [
-    ], 0) && this._constructor.PARAMETERIZABLE_TEXT_TYPES.has(to.args.this as DataTypeExprKind)) {
+    if (!seqGet(to.args.expressions ?? [], 0) && this._constructor.PARAMETERIZABLE_TEXT_TYPES.has(to.args.this as DataTypeExprKind)) {
       finalTo = DataTypeExpr.build(to.args.this, {
-        expressions: [
-          LiteralExpr.number(30),
-        ],
+        expressions: [LiteralExpr.number(30)],
         nested: false,
       }) ?? finalTo;
     }
@@ -8017,9 +7913,7 @@ export class Generator {
     thisSql = `TABLE ${thisSql}`;
 
     const otherArgs = Object.entries(expression.args)
-      .filter(([
-        k,
-      ]) => k !== 'this')
+      .filter(([k]) => k !== 'this')
       .map(([
         _,
         v,
@@ -8044,8 +7938,7 @@ export class Generator {
     let expr: string;
     if (exprNode instanceof FuncExpr) {
       const exprThis = this.sql(exprNode, 'this');
-      const exprArgs = this.formatArgs(exprNode.args.expressions || [
-      ]);
+      const exprArgs = this.formatArgs(exprNode.args.expressions || []);
       expr = `${exprThis}(${exprArgs})`;
     } else {
       expr = this.sql(expression, 'expression');
@@ -8071,13 +7964,9 @@ export class Generator {
     const lower = this.sql(expression, 'lower');
     const upper = this.sql(expression, 'upper');
     if (lower && upper) {
-      return `(${upper} - ${lower}) * ${this.func('RAND', [
-        expression.args.this,
-      ])} + ${lower}`;
+      return `(${upper} - ${lower}) * ${this.func('RAND', [expression.args.this])} + ${lower}`;
     }
-    return this.func('RAND', [
-      expression.args.this,
-    ]);
+    return this.func('RAND', [expression.args.this]);
   }
 
   changesSql (expression: ChangesExpr): string {
@@ -8122,9 +8011,7 @@ export class Generator {
 
     if (this._constructor.SUPPORTS_EXPLODING_PROJECTIONS && !(parent instanceof TableExpr) && !(parent instanceof UnnestExpr)) {
       return this.sql(new UnnestExpr({
-        expressions: [
-          generateSeries,
-        ],
+        expressions: [generateSeries],
       }));
     }
 
@@ -8593,8 +8480,7 @@ export class Generator {
     const name = `${prefix} ${this.sql(expression, 'this')}`;
     return this.func('XmlELEMENT', [
       name,
-      ...(expression.args.expressions || [
-      ]),
+      ...(expression.args.expressions || []),
     ]);
   }
 
@@ -8772,14 +8658,12 @@ export class Generator {
       flat: true,
     });
     const name = expression.name || '';
-    return this.func(name, expression.args.expressions || [
-    ]) + `(${params})`;
+    return this.func(name, expression.args.expressions || []) + `(${params})`;
   }
 
   anonymousAggFuncSql (expression: AnonymousAggFuncExpr): string {
     const name = expression.name || '';
-    return this.func(name, expression.args.expressions || [
-    ]);
+    return this.func(name, expression.args.expressions || []);
   }
 
   combinedAggFuncSql (expression: CombinedAggFuncExpr): string {
@@ -8831,18 +8715,15 @@ export class Generator {
 
   decodeCaseSql (expression: DecodeCaseExpr): string {
     if (this._constructor.SUPPORTS_DECODE_CASE) {
-      return this.func('DECODE', expression.args.expressions ?? [
-      ]);
+      return this.func('DECODE', expression.args.expressions ?? []);
     }
 
     const [
       baseExpression,
       ...restExpressions
-    ] = expression.args.expressions ?? [
-    ];
+    ] = expression.args.expressions ?? [];
 
-    const ifs: IfExpr[] = [
-    ];
+    const ifs: IfExpr[] = [];
     for (let i = 0; i < restExpressions.length - 1; i += 2) {
       const search = restExpressions[i];
       const result = restExpressions[i + 1];
@@ -8949,11 +8830,8 @@ export class Generator {
       return this.sql(new BracketExpr({
         this: thisExpr,
         expressions: expr
-          ? [
-            expr,
-          ]
-          : [
-          ],
+          ? [expr]
+          : [],
       }));
     }
 
@@ -9008,14 +8886,11 @@ export class Generator {
   }
 
   directoryStageSql (expression: DirectoryStageExpr): string {
-    return this.func('DIRECTORY', [
-      expression.args.this,
-    ]);
+    return this.func('DIRECTORY', [expression.args.this]);
   }
 
   uuidSql (expression: UuidExpr): string {
-    const uuidFuncSql = this.func('UUID', [
-    ]);
+    const uuidFuncSql = this.func('UUID', []);
     const isString = expression.args.isString;
     if (isString && !this.dialect._constructor.UUID_IS_STRING_TYPE) {
       return this.sql(cast(var_(uuidFuncSql) as Expression, DataTypeExprKind.VARCHAR));
@@ -9048,18 +8923,14 @@ export class Generator {
   localtimeSql (expression: LocaltimeExpr): string {
     const thisArg = expression.args.this;
     return thisArg
-      ? this.func('LOCALTIME', [
-        thisArg,
-      ])
+      ? this.func('LOCALTIME', [thisArg])
       : 'LOCALTIME';
   }
 
   localtimestampSql (expression: LocaltimestampExpr): string {
     const thisArg = expression.args.this;
     return thisArg
-      ? this.func('LOCALTIMESTAMP', [
-        thisArg,
-      ])
+      ? this.func('LOCALTIMESTAMP', [thisArg])
       : 'LOCALTIMESTAMP';
   }
 
@@ -9069,9 +8940,7 @@ export class Generator {
     if (this.dialect._constructor.WEEK_OFFSET === -1 && thisName === 'SUNDAY') {
       return 'WEEK';
     }
-    return this.func('WEEK', [
-      thisExpr,
-    ]);
+    return this.func('WEEK', [thisExpr]);
   }
 
   chrSql (expression: Expression, options: {name?: string} = {}): string {
@@ -9081,9 +8950,7 @@ export class Generator {
     const thisStr = this.expressions(expression);
     const charset = this.sql(expression, 'charset');
     const using = charset ? ` USING ${charset}` : '';
-    return this.func(name, [
-      thisStr + using,
-    ]);
+    return this.func(name, [thisStr + using]);
   }
 
   blockSql (expression: Expression): string {

@@ -24,8 +24,7 @@ const DATA_TYPE = 'DataType.Type';
  */
 export function dump (expression: Expression): Array<Record<string, unknown>> {
   let i = 0;
-  const payloads: Array<Record<string, unknown>> = [
-  ];
+  const payloads: Array<Record<string, unknown>> = [];
   const stack: Array<[unknown, number | undefined, string | undefined, boolean]> = [
     [
       expression,
@@ -57,13 +56,9 @@ export function dump (expression: Expression): Array<Record<string, unknown>> {
 
       if (node.type) {
         if (typeof node === 'string') {
-          payload[TYPE] = [
-            node,
-          ];
+          payload[TYPE] = [node];
         } else if (typeof node.type === 'string') {
-          payload[TYPE] = [
-            node.type,
-          ];
+          payload[TYPE] = [node.type];
         } else {
           payload[TYPE] = dump(node.type);
         }
@@ -137,9 +132,7 @@ export function load (payloads?: Record<string, unknown>[], customExpressions?: 
 
   if (!(root instanceof Expression)) return undefined;
 
-  const nodes: Expression[] = [
-    root,
-  ];
+  const nodes: Expression[] = [root];
 
   for (const payload of tail) {
     const node = _load(payload, expressions);

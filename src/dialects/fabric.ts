@@ -66,8 +66,7 @@ function addDefaultPrecisionToVarchar (expression: Expression): Expression {
     && expression.args.kind === CreateExprKind.TABLE
     && expression.args.this instanceof SchemaExpr
   ) {
-    for (const columnDef of expression.args.this.args.expressions || [
-    ]) {
+    for (const columnDef of expression.args.this.args.expressions || []) {
       if (columnDef instanceof ColumnDefExpr) {
         const columnType = columnDef.args.kind;
         if (
@@ -78,9 +77,7 @@ function addDefaultPrecisionToVarchar (expression: Expression): Expression {
           ].includes(columnType.args.this as DataTypeExprKind)
           && (!columnType.args.expressions || columnType.args.expressions.length === 0)
         ) {
-          columnType.setArgKey('expressions', [
-            var_('MAX'),
-          ]);
+          columnType.setArgKey('expressions', [var_('MAX')]);
         }
       }
     }
@@ -127,8 +124,7 @@ export class FabricParser extends TSQL.Parser {
 
     if (create instanceof CreateExpr) {
       if (create.args.kind === CreateExprKind.TABLE && create.args.this instanceof SchemaExpr) {
-        for (const columnDef of create.args.this.args.expressions || [
-        ]) {
+        for (const columnDef of create.args.this.args.expressions || []) {
           if (columnDef instanceof ColumnDefExpr) {
             const columnType = columnDef.args.kind;
             if (
@@ -139,9 +135,7 @@ export class FabricParser extends TSQL.Parser {
               ].includes(columnType.args.this as DataTypeExprKind)
               && (!columnType.args.expressions || columnType.args.expressions.length === 0)
             ) {
-              columnType.setArgKey('expressions', [
-                literal(1),
-              ]);
+              columnType.setArgKey('expressions', [literal(1)]);
             }
           }
         }
@@ -208,9 +202,7 @@ export class FabricGenerator extends TSQL.Generator {
   @cache
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: Expression) => string> {
     const m = new Map<typeof Expression, (this: Generator, e: Expression) => string>(TSQL.Generator.ORIGINAL_TRANSFORMS);
-    m.set(CreateExpr, preprocess([
-      addDefaultPrecisionToVarchar,
-    ]));
+    m.set(CreateExpr, preprocess([addDefaultPrecisionToVarchar]));
     return m;
   };
 

@@ -36,7 +36,7 @@
             href="https://dbml.dbdiagram.io/docs/"
             target="_blank"
             rel="noopener"
-          >DBML</a> schema back. (Currently has a bug :))
+          >DBML</a> schema back.
         </p>
         <SqlToDbml />
       </div>

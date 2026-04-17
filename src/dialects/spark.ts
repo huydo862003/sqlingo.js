@@ -271,9 +271,7 @@ class SparkParser extends Spark2.Parser {
       TRY_ELEMENT_AT: (args: Expression[]) =>
         new BracketExpr({
           this: seqGet(args, 0),
-          expressions: [
-            args[1],
-          ],
+          expressions: [args[1]],
           offset: 1,
           safe: true,
         }),
@@ -385,10 +383,7 @@ class SparkGenerator extends Spark2.Generator {
       [
         ArrayConstructCompactExpr,
         function (this: Generator, e: ArrayConstructCompactExpr) {
-          return this.func('ARRAY_COMPACT', [
-            this.func('ARRAY', e.args.expressions || [
-            ]),
-          ]);
+          return this.func('ARRAY_COMPACT', [this.func('ARRAY', e.args.expressions || [])]);
         },
       ],
       [

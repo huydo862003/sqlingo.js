@@ -327,13 +327,9 @@ function jsonFormatSql (this: Generator, expression: JsonFormatExpr): string {
 
       const fromJson = this.func('FROM_JSON', [
         wrappedJson,
-        this.func('SCHEMA_OF_JSON', [
-          wrappedJson,
-        ]),
+        this.func('SCHEMA_OF_JSON', [wrappedJson]),
       ]);
-      const toJson = this.func('TO_JSON', [
-        fromJson,
-      ]);
+      const toJson = this.func('TO_JSON', [fromJson]);
 
       return this.func('REGEXP_EXTRACT', [
         toJson,
@@ -354,9 +350,7 @@ function arraySortSql (this: Generator, expression: ArraySortExpr): string {
   if (expression.args.expression) {
     this.unsupported('Unsupported arg \'expression\' for ArraySort');
   }
-  return this.func('SORT_ARRAY', [
-    expression.args.this,
-  ]);
+  return this.func('SORT_ARRAY', [expression.args.this]);
 }
 
 function strToUnixSql (this: Generator, expression: StrToUnixExpr): string {
@@ -422,9 +416,7 @@ function toDateSql (this: Generator, expression: TsOrDsToDateExpr): string {
     return this.sql(expression, 'this');
   }
 
-  return this.func('TO_DATE', [
-    expression.args.this,
-  ]);
+  return this.func('TO_DATE', [expression.args.this]);
 }
 
 export function buildWithIgnoreNulls (ExpClass: typeof Expression) {
@@ -473,16 +465,12 @@ class HiveTokenizer extends Tokenizer {
 
   @cache
   static get IDENTIFIERS () {
-    return [
-      '`',
-    ];
+    return ['`'];
   }
 
   @cache
   static get STRING_ESCAPES () {
-    return [
-      '\\',
-    ];
+    return ['\\'];
   }
 
   @cache
@@ -633,10 +621,8 @@ class HiveParser extends Parser {
             this: args[0],
           });
         }
-        const keys: Expression[] = [
-        ];
-        const values: Expression[] = [
-        ];
+        const keys: Expression[] = [];
+        const values: Expression[] = [];
         for (let i = 0; i < args.length; i += 2) {
           keys.push(args[i]);
           if (args[i + 1]) values.push(args[i + 1]);
@@ -675,9 +661,7 @@ class HiveParser extends Parser {
       })(
         0 < args.length
           ? args
-          : [
-            new CurrentTimestampExpr({}),
-          ],
+          : [new CurrentTimestampExpr({})],
       ),
       YEAR: (args: Expression[]) => new YearExpr({
         this: new TsOrDsToDateExpr({
@@ -769,18 +753,14 @@ class HiveParser extends Parser {
     let firstArg: Expression | undefined;
     if (this.match(TokenType.DISTINCT)) {
       firstArg = this.expression(DistinctExpr, {
-        expressions: [
-          (this as HiveParser).parseLambda(),
-        ],
+        expressions: [(this as HiveParser).parseLambda()],
       });
     } else {
       this.match(TokenType.ALL);
       firstArg = (this as HiveParser).parseLambda();
     }
 
-    const args = [
-      firstArg,
-    ];
+    const args = [firstArg];
     if (this.match(TokenType.COMMA)) {
       args.push(...this.parseFunctionArgs());
     }
@@ -860,8 +840,7 @@ class HiveParser extends Parser {
         TokenType.DISTRIBUTE_BY,
       ])
         ? this.parseCsv(() => this.parseAssignment())
-        : [
-        ],
+        : [],
       super.parseOrder({
         skipOrderToken: this.match(TokenType.SORT_BY),
       }) ?? undefined,
@@ -912,8 +891,7 @@ class HiveGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [
-  ];
+  static readonly SELECT_KINDS: string[] = [];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -1031,9 +1009,7 @@ class HiveGenerator extends Generator {
       ],
       [
         ArrayExpr,
-        preprocess([
-          inheritStructFieldNames,
-        ]),
+        preprocess([inheritStructFieldNames]),
       ],
       [
         ArrayConcatExpr,
@@ -1167,11 +1143,7 @@ class HiveGenerator extends Generator {
       [
         Md5DigestExpr,
         function (this: Generator, e: Md5DigestExpr) {
-          return this.func('UNHEX', [
-            this.func('MD5', [
-              e.args.this,
-            ]),
-          ]);
+          return this.func('UNHEX', [this.func('MD5', [e.args.this])]);
         },
       ],
       [
@@ -1310,9 +1282,7 @@ class HiveGenerator extends Generator {
       ],
       [
         TableExpr,
-        preprocess([
-          unnestGenerateSeries,
-        ]),
+        preprocess([unnestGenerateSeries]),
       ],
       [
         TimeStrToDateExpr,
@@ -1579,9 +1549,7 @@ class HiveGenerator extends Generator {
   arrayAggSql (expression: ArrayAggExpr): string {
     return this.func(
       'COLLECT_LIST',
-      [
-        expression.args.this instanceof OrderExpr ? expression.args.this.args.this : expression.args.this,
-      ],
+      [expression.args.this instanceof OrderExpr ? expression.args.this.args.this : expression.args.this],
     );
   }
 
@@ -1622,8 +1590,7 @@ class HiveGenerator extends Generator {
   }
 
   structSql (expression: StructExpr): string {
-    const values: (string | Expression)[] = [
-    ];
+    const values: (string | Expression)[] = [];
 
     expression.args.expressions?.forEach((e) => {
       if (e instanceof PropertyEqExpr) {

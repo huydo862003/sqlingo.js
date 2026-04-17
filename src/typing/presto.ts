@@ -63,9 +63,7 @@ export class PrestoTyping {
       RoundExpr,
       SignExpr,
     ], {
-      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, [
-        'this',
-      ]),
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
     });
 
     map.set(ModExpr, {
@@ -78,9 +76,7 @@ export class PrestoTyping {
     map.set(RandExpr, {
       annotator: (s: TypeAnnotator, e: RandExpr) =>
         e.args.this
-          ? s.annotateByArgs(e, [
-            'this',
-          ])
+          ? s.annotateByArgs(e, ['this'])
           : s.setType(e, DataTypeExprKind.DOUBLE),
     });
 

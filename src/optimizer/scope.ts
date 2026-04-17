@@ -198,22 +198,15 @@ export class Scope {
       this.sources.set(key, value);
     }
 
-    this.outerColumns = outerColumns || [
-    ];
+    this.outerColumns = outerColumns || [];
     this.parent = parent;
     this.scopeType = scopeType;
-    this.subqueryScopes = [
-    ];
-    this.derivedTableScopes = [
-    ];
-    this.tableScopes = [
-    ];
-    this.cteScopes = [
-    ];
-    this.unionScopes = [
-    ];
-    this.udtfScopes = [
-    ];
+    this.subqueryScopes = [];
+    this.derivedTableScopes = [];
+    this.tableScopes = [];
+    this.cteScopes = [];
+    this.unionScopes = [];
+    this.udtfScopes = [];
     this.canBeCorrelated = canBeCorrelated ?? false;
 
     this.clearCache();
@@ -294,24 +287,15 @@ export class Scope {
    * @private
    */
   private collect (): void {
-    this._tables = [
-    ];
-    this._ctes = [
-    ];
-    this._subqueries = [
-    ];
-    this._derivedTables = [
-    ];
-    this._udtfs = [
-    ];
-    this._rawColumns = [
-    ];
-    this._tableColumns = [
-    ];
-    this._stars = [
-    ];
-    this._joinHints = [
-    ];
+    this._tables = [];
+    this._ctes = [];
+    this._subqueries = [];
+    this._derivedTables = [];
+    this._udtfs = [];
+    this._rawColumns = [];
+    this._tableColumns = [];
+    this._stars = [];
+    this._joinHints = [];
     this._semiAntiJoinTables = new Set();
     this._columnIndex = new WeakSet<ColumnExpr>();
 
@@ -415,8 +399,7 @@ export class Scope {
    */
   get tables (): TableExpr[] {
     this.ensureCollected();
-    return this._tables ?? [
-    ];
+    return this._tables ?? [];
   }
 
   /**
@@ -424,8 +407,7 @@ export class Scope {
    */
   get ctes (): CteExpr[] {
     this.ensureCollected();
-    return this._ctes ?? [
-    ];
+    return this._ctes ?? [];
   }
 
   /**
@@ -435,8 +417,7 @@ export class Scope {
    */
   get derivedTables (): SubqueryExpr[] {
     this.ensureCollected();
-    return this._derivedTables ?? [
-    ];
+    return this._derivedTables ?? [];
   }
 
   /**
@@ -444,8 +425,7 @@ export class Scope {
    */
   get udtfs (): UdtfExpr[] {
     this.ensureCollected();
-    return this._udtfs ?? [
-    ];
+    return this._udtfs ?? [];
   }
 
   /**
@@ -455,8 +435,7 @@ export class Scope {
    */
   get subqueries (): QueryExpr[] {
     this.ensureCollected();
-    return this._subqueries ?? [
-    ];
+    return this._subqueries ?? [];
   }
 
   /**
@@ -464,8 +443,7 @@ export class Scope {
    */
   get stars (): (ColumnExpr | DotExpr)[] {
     this.ensureCollected();
-    return this._stars ?? [
-    ];
+    return this._stars ?? [];
   }
 
   /**
@@ -516,11 +494,9 @@ export class Scope {
   get columns (): ColumnExpr[] {
     if (this._columns === undefined) {
       this.ensureCollected();
-      const columns = this._rawColumns ?? [
-      ];
+      const columns = this._rawColumns ?? [];
 
-      const externalColumns: ColumnExpr[] = [
-      ];
+      const externalColumns: ColumnExpr[] = [];
       for (const scope of [
         ...this.subqueryScopes,
         ...this.udtfScopes,
@@ -531,8 +507,7 @@ export class Scope {
 
       const namedSelects = new Set(this.expression.namedSelects);
 
-      this._columns = [
-      ];
+      this._columns = [];
       for (const column of [
         ...columns,
         ...externalColumns,
@@ -577,8 +552,7 @@ export class Scope {
     if (this._tableColumns === undefined) {
       this.ensureCollected();
     }
-    return this._tableColumns ?? [
-    ];
+    return this._tableColumns ?? [];
   }
 
   /**
@@ -616,8 +590,7 @@ export class Scope {
    */
   get joinHints (): JoinHintExpr[] {
     if (this._joinHints === undefined) {
-      return [
-      ];
+      return [];
     }
     return this._joinHints;
   }
@@ -627,8 +600,7 @@ export class Scope {
    */
   get pivots (): PivotExpr[] {
     if (!this._pivots) {
-      this._pivots = [
-      ];
+      this._pivots = [];
       for (const [
         , node,
       ] of this.references) {
@@ -653,8 +625,7 @@ export class Scope {
    */
   get references (): [string, Expression][] {
     if (this._references === undefined) {
-      this._references = [
-      ];
+      this._references = [];
 
       for (const table of this.tables) {
         this._references.push([
@@ -748,11 +719,8 @@ export class Scope {
    * Traverse the scope tree in depth-first post-order
    */
   * traverse (): Generator<Scope> {
-    const stack: Scope[] = [
-      this,
-    ];
-    const result: Scope[] = [
-    ];
+    const stack: Scope[] = [this];
+    const result: Scope[] = [];
 
     while (0 < stack.length) {
       const scope = stack.pop()!;
@@ -817,12 +785,10 @@ export function traverseScope (expression: Expression): Scope[] {
   ] as const;
 
   if (!TRAVERSABLES.some((T) => expression instanceof T)) {
-    return [
-    ];
+    return [];
   }
 
-  const scopes: Scope[] = [
-  ];
+  const scopes: Scope[] = [];
   for (const s of _traverseScope(new Scope({
     expression: expression as QueryExpr,
   }))) {
@@ -863,9 +829,7 @@ function* _traverseScope (scope: Scope): Generator<Scope> {
     return;
   } else if (expression instanceof DmlExpr) {
     yield* traverseCtes(scope);
-    for (const query of findAllInScope(expression, [
-      QueryExpr,
-    ])) {
+    for (const query of findAllInScope(expression, [QueryExpr])) {
       const parent = query.parent;
       if (parent && !(parent instanceof CteExpr) && !(parent instanceof SubqueryExpr)) {
         yield* _traverseScope(
@@ -892,9 +856,7 @@ function* traverseSelect (scope: Scope): Generator<Scope> {
 
 function* traverseUnion (scope: Scope): Generator<Scope> {
   let prevScope: Scope | undefined;
-  const unionScopeStack: Scope[] = [
-    scope,
-  ];
+  const unionScopeStack: Scope[] = [scope];
   const setOp = scope.expression as SetOperationExpr;
 
   const expressionStack = [
@@ -966,8 +928,7 @@ function* traverseCtes (scope: Scope): Generator<Scope> {
       scope.branch({
         expression: cteThis,
         cteSources: sources,
-        outerColumns: cte.aliasColumnNames || [
-        ],
+        outerColumns: cte.aliasColumnNames || [],
         scopeType: ScopeType.CTE,
       }),
     )) {
@@ -1033,16 +994,14 @@ function* traverseTables (scope: Scope): Generator<Scope> {
   const sources = new Map<string, TableExpr | Scope>();
 
   // Traverse FROMs, JOINs, and LATERALs in the order they are defined
-  const expressions: Expression[] = [
-  ];
+  const expressions: Expression[] = [];
   const from = scope.expression.getArgKey('from') as FromExpr | undefined;
 
   if (from?.args.this) {
     expressions.push(from.args.this);
   }
 
-  for (const join of (scope.expression.getArgKey('joins') as JoinExpr[] | undefined) || [
-  ]) {
+  for (const join of (scope.expression.getArgKey('joins') as JoinExpr[] | undefined) || []) {
     if (join.args.this) {
       expressions.push(join.args.this);
     }
@@ -1052,8 +1011,7 @@ function* traverseTables (scope: Scope): Generator<Scope> {
     expressions.push(scope.expression);
   }
 
-  for (const lateral of (scope.expression.getArgKey('laterals') as Expression[] | undefined) || [
-  ]) {
+  for (const lateral of (scope.expression.getArgKey('laterals') as Expression[] | undefined) || []) {
     expressions.push(lateral);
   }
 
@@ -1086,8 +1044,7 @@ function* traverseTables (scope: Scope): Generator<Scope> {
 
       // Make sure to not include the joins twice
       if ((expression as Expression) !== scope.expression) {
-        for (const join of expression.args.joins || [
-        ]) {
+        for (const join of expression.args.joins || []) {
           if (isInstanceOf(join.args.this, Expression)) {
             expressions.push(join.args.this);
           }
@@ -1113,8 +1070,7 @@ function* traverseTables (scope: Scope): Generator<Scope> {
       lateralSources = undefined;
       scopeType = ScopeType.DERIVED_TABLE;
       scopes = scope.derivedTableScopes;
-      for (const join of (expression.getArgKey('joins') as JoinExpr[]) || [
-      ]) {
+      for (const join of (expression.getArgKey('joins') as JoinExpr[]) || []) {
         if (join.args.this) {
           expressions.push(join.args.this);
         }
@@ -1122,8 +1078,7 @@ function* traverseTables (scope: Scope): Generator<Scope> {
     } else {
       // Makes sure we check for possible sources in nested table constructs
       expressions.push(expression.getArgKey('this') as Expression);
-      for (const join of (expression.getArgKey('joins') as JoinExpr[]) || [
-      ]) {
+      for (const join of (expression.getArgKey('joins') as JoinExpr[]) || []) {
         if (join.args.this) {
           expressions.push(join.args.this);
         }
@@ -1136,8 +1091,7 @@ function* traverseTables (scope: Scope): Generator<Scope> {
       scope.branch({
         expression,
         lateralSources,
-        outerColumns: expression.aliasColumnNames || [
-        ],
+        outerColumns: expression.aliasColumnNames || [],
         scopeType,
       }),
     )) {
@@ -1185,15 +1139,11 @@ function* traverseUdtfs (scope: Scope): Generator<Scope> {
   let expressions: ExpressionValue[];
 
   if (scope.expression instanceof UnnestExpr) {
-    expressions = scope.expression.args.expressions ?? [
-    ];
+    expressions = scope.expression.args.expressions ?? [];
   } else if (scope.expression instanceof LateralExpr && scope.expression.args.this) {
-    expressions = [
-      scope.expression.args.this,
-    ];
+    expressions = [scope.expression.args.this];
   } else {
-    expressions = [
-    ];
+    expressions = [];
   }
 
   const sources = new Map<string, Scope>();
@@ -1208,8 +1158,7 @@ function* traverseUdtfs (scope: Scope): Generator<Scope> {
       scope.branch({
         expression,
         scopeType: ScopeType.SUBQUERY,
-        outerColumns: expression.aliasColumnNames || [
-        ],
+        outerColumns: expression.aliasColumnNames || [],
       }),
     )) {
       yield childScope;
@@ -1316,8 +1265,7 @@ export function findAllInScope<E extends Expression> (
   const {
     bfs = true,
   } = options;
-  const results: E[] = [
-  ];
+  const results: E[] = [];
 
   for (const node of walkInScope(expression, {
     bfs,

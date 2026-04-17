@@ -6,8 +6,7 @@ const registeredTargets = new WeakMap<Function, Set<Function>>();
  * (simulates Python's MRO - Method Resolution Order)
  */
 function getPrototypeChain (Class: AbstractConstructor): AbstractConstructor[] {
-  const chain: AbstractConstructor[] = [
-  ];
+  const chain: AbstractConstructor[] = [];
   let current: any = Class;
 
   while (current && current !== Object && current.prototype) {
@@ -65,8 +64,7 @@ export function multiInherit<
     Base,
     ...mixins,
   ];
-  const mro: AbstractConstructor[] = [
-  ];
+  const mro: AbstractConstructor[] = [];
   const seen = new Set<AbstractConstructor>();
 
   for (const BaseClass of allBases) {

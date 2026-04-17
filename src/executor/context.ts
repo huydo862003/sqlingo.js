@@ -121,12 +121,9 @@ export class Context {
   }
 
   filter (condition: string): void {
-    const rows: unknown[][] = [
-    ];
+    const rows: unknown[][] = [];
 
-    for (const [
-      reader,
-    ] of this) {
+    for (const [reader] of this) {
       if (this.eval(condition)) {
         rows.push(reader.row);
       }
@@ -184,9 +181,7 @@ export class Context {
   }
 
   setRange (start: number, end: number): void {
-    for (const [
-      name,
-    ] of this.tables) {
+    for (const [name] of this.tables) {
       this.rangeReaders[name].range = {
         start,
         stop: end,

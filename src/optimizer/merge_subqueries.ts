@@ -121,8 +121,7 @@ function mergeCtes<E extends Expression> (
       if (innerSource instanceof Scope && innerSource.isCte) {
         let scopeList = cteSelections.get(innerSource);
         if (!scopeList) {
-          scopeList = [
-          ];
+          scopeList = [];
           cteSelections.set(innerSource, scopeList);
         }
         scopeList.push([
@@ -135,8 +134,7 @@ function mergeCtes<E extends Expression> (
   }
 
   // Only merge CTEs that are selected from exactly once
-  const singularCteSelections: [Scope, Scope, Expression][] = [
-  ];
+  const singularCteSelections: [Scope, Scope, Expression][] = [];
   for (const [
     , selections,
   ] of cteSelections) {
@@ -237,8 +235,7 @@ function mergeable (
     }
 
     const innerSelectName = fromOrJoin.aliasOrName;
-    const unmergableWindowColumns: ColumnExpr[] = [
-    ];
+    const unmergableWindowColumns: ColumnExpr[] = [];
 
     for (const column of outerScope.columns) {
       // Check if column has unmergable ancestor
@@ -359,8 +356,7 @@ function mergeable (
   }
 
   // Check for AggFunc, Select, or Explode in inner expressions
-  for (const e of innerSelectExpr.args.expressions ?? [
-  ]) {
+  for (const e of innerSelectExpr.args.expressions ?? []) {
     if (!(e instanceof Expression)) {
       continue;
     }
@@ -414,8 +410,7 @@ function mergeable (
     return false;
   }
 
-  const firstExpr = seqGet(innerSelectExpr.args.expressions ?? [
-  ], 0);
+  const firstExpr = seqGet(innerSelectExpr.args.expressions ?? [], 0);
   if (firstExpr instanceof QueryTransformExpr) {
     return false;
   }
@@ -442,9 +437,7 @@ function renameInnerSources (outerScope: Scope, innerScope: Scope, alias: string
       continue;
     }
 
-    const [
-      source,
-    ] = sourceEntry;
+    const [source] = sourceEntry;
     const newAlias = toIdentifier(newName);
 
     if (source instanceof TableExpr) {
@@ -500,8 +493,7 @@ function mergeFrom (
 }
 
 function mergeJoins (outerScope: Scope, innerScope: Scope, fromOrJoin: FromOrJoin): void {
-  const newJoins: JoinExpr[] = [
-  ];
+  const newJoins: JoinExpr[] = [];
 
   const joins = innerScope.expression.getArgKey('joins') as JoinExpr[] | undefined;
 
@@ -516,8 +508,7 @@ function mergeJoins (outerScope: Scope, innerScope: Scope, fromOrJoin: FromOrJoi
   }
 
   if (0 < newJoins.length) {
-    const outerJoins = (outerScope.expression.getArgKey('joins') as JoinExpr[] | undefined) || [
-    ];
+    const outerJoins = (outerScope.expression.getArgKey('joins') as JoinExpr[] | undefined) || [];
 
     // Maintain join order
     let position: number;
@@ -541,8 +532,7 @@ function mergeExpressions (outerScope: Scope, innerScope: Scope, alias: string):
       const name = column.name;
       let columnList = outerColumns.get(name);
       if (!columnList) {
-        columnList = [
-        ];
+        columnList = [];
         outerColumns.set(name, columnList);
       }
       columnList.push(column);
@@ -556,8 +546,7 @@ function mergeExpressions (outerScope: Scope, innerScope: Scope, alias: string):
 
   const innerSelectExpr = innerScope.expression;
 
-  for (const expr of innerSelectExpr.args.expressions ?? [
-  ]) {
+  for (const expr of innerSelectExpr.args.expressions ?? []) {
     if (!(expr instanceof Expression)) {
       continue;
     }
@@ -568,8 +557,7 @@ function mergeExpressions (outerScope: Scope, innerScope: Scope, alias: string):
       continue;
     }
 
-    const columnsToReplace = outerColumns.get(projectionName) || [
-    ];
+    const columnsToReplace = outerColumns.get(projectionName) || [];
 
     const unaliasedExpr = expr.unalias();
     const mustWrapExpression = !SAFE_TO_REPLACE_UNWRAPPED.some((cls) => unaliasedExpr instanceof cls);
@@ -698,8 +686,7 @@ function mergeHints (outerScope: Scope, innerScope: Scope): void {
 
   if (outerScopeHint) {
     const innerHintExpressions = innerScopeHint.args.expressions;
-    for (const hintExpression of innerHintExpressions ?? [
-    ]) {
+    for (const hintExpression of innerHintExpressions ?? []) {
       if (hintExpression instanceof Expression) {
         outerScopeHint.append('expressions', hintExpression);
       }

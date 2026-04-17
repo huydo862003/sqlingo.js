@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "dependencies": {
     "@dbml/parse": "^7.0.0",
@@ -25,6 +26,7 @@
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
     "vite": "^6.4.2",
+    "vitest": "^4.0.18",
     "vue-tsc": "^2.2.12"
   }
 }

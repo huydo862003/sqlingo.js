@@ -98,17 +98,13 @@ export function pushdownProjections<E extends Expression> (
 
   for (let i = scopes.length - 1; 0 <= i; i--) {
     const scope = scopes[i];
-    let parentSelections = referencedColumns.get(scope) || new Set([
-      SELECT_ALL,
-    ]);
+    let parentSelections = referencedColumns.get(scope) || new Set([SELECT_ALL]);
     const aliasCount = sourceColumnAliasCount.get(scope) || 0;
 
     // We can't remove columns from SELECT DISTINCT nor UNION DISTINCT
     const scopeExpr = scope.expression;
     if (scopeExpr.getArgKey('distinct')) {
-      parentSelections = new Set([
-        SELECT_ALL,
-      ]);
+      parentSelections = new Set([SELECT_ALL]);
     }
 
     if (scopeExpr instanceof SetOperationExpr) {
@@ -197,9 +193,7 @@ export function pushdownProjections<E extends Expression> (
 
           let columns: Set<string | symbol>;
           if (0 < scope.pivots.length || firstSelect instanceof QueryTransformExpr) {
-            columns = new Set([
-              SELECT_ALL,
-            ]);
+            columns = new Set([SELECT_ALL]);
           } else {
             columns = selects.get(name) || new Set();
           }
@@ -244,8 +238,7 @@ function removeUnusedSelections_ (
     }
   }
 
-  const newSelections: Expression[] = [
-  ];
+  const newSelections: Expression[] = [];
   let removed = false;
   let star = false;
   let isAgg = false;

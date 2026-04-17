@@ -293,9 +293,7 @@ export class DialectTyping {
       SortArrayExpr,
       WindowExpr,
     ], {
-      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, [
-        'this',
-      ]),
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
     });
     extend([
       ArrayConcatExpr,
@@ -340,16 +338,12 @@ export class DialectTyping {
       annotator: (s: TypeAnnotator, e: AnonymousExpr) => s.setType(e, s.schema.getUdfType(e)),
     });
     map.set(ArrayExpr, {
-      annotator: (s: TypeAnnotator, e: ArrayExpr) => s.annotateByArgs(e, [
-        'expressions',
-      ], {
+      annotator: (s: TypeAnnotator, e: ArrayExpr) => s.annotateByArgs(e, ['expressions'], {
         array: true,
       }),
     });
     map.set(ArrayAggExpr, {
-      annotator: (s: TypeAnnotator, e: ArrayAggExpr) => s.annotateByArgs(e, [
-        'this',
-      ], {
+      annotator: (s: TypeAnnotator, e: ArrayAggExpr) => s.annotateByArgs(e, ['this'], {
         array: true,
       }),
     });
@@ -358,9 +352,7 @@ export class DialectTyping {
     });
     map.set(CaseExpr, {
       annotator: (s: TypeAnnotator, e: CaseExpr) => s.annotateByArgs(e, [
-        ...filterInstanceOf(e.args.ifs ?? [
-        ], IfExpr).flatMap((i) => i.args.true ?? [
-        ]),
+        ...filterInstanceOf(e.args.ifs ?? [], IfExpr).flatMap((i) => i.args.true ?? []),
         'default',
       ]),
     });
@@ -377,9 +369,7 @@ export class DialectTyping {
       annotator: (s: TypeAnnotator, e: DivExpr) => s.annotateDiv(e),
     });
     map.set(DistinctExpr, {
-      annotator: (s: TypeAnnotator, e: DistinctExpr) => s.annotateByArgs(e, [
-        'expressions',
-      ]),
+      annotator: (s: TypeAnnotator, e: DistinctExpr) => s.annotateByArgs(e, ['expressions']),
     });
     map.set(DotExpr, {
       annotator: (s: TypeAnnotator, e: DotExpr) => s.annotateDot(e),
@@ -427,9 +417,7 @@ export class DialectTyping {
       ]),
     });
     map.set(PropertyEqExpr, {
-      annotator: (s: TypeAnnotator, e: PropertyEqExpr) => s.annotateByArgs(e, [
-        'expression',
-      ]),
+      annotator: (s: TypeAnnotator, e: PropertyEqExpr) => s.annotateByArgs(e, ['expression']),
     });
     map.set(StructExpr, {
       annotator: (s: TypeAnnotator, e: StructExpr) => s.annotateStruct(e),

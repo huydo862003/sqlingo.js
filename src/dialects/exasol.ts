@@ -115,9 +115,7 @@ const DATE_UNITS = new Set([
 function sha2Sql (this: ExasolGenerator, expression: Sha2Expr): string {
   const length = expression.text('length');
   const funcName = length === '256' ? 'HASH_SHA256' : 'HASH_SHA512';
-  return this.func(funcName, [
-    expression.args.this,
-  ]);
+  return this.func(funcName, [expression.args.this]);
 }
 
 function dateDiffSql (this: ExasolGenerator, expression: DateDiffExpr | TsOrDsDiffExpr): string {
@@ -221,8 +219,7 @@ function addLocalPrefixForAliases (expression: Expression): Expression {
     });
 
     const seenAliases: Record<string, boolean> = {};
-    const newSelects: Expression[] = [
-    ];
+    const newSelects: Expression[] = [];
     expression.args.expressions?.forEach((sel) => {
       if (sel instanceof AliasExpr) {
         const inner = sel.args.this?.transform((node) => prefixLocal(node, seenAliases));
@@ -291,23 +288,17 @@ function substringIndexSql (this: ExasolGenerator, expression: SubstringIndexExp
   const fromRight = num < 0;
   const direction = fromRight ? '-1' : '1';
   const occur = fromRight
-    ? this.func('ABS', [
-      countSql,
-    ])
+    ? this.func('ABS', [countSql])
     : countSql;
 
   const delimiterSql = this.sql(delimiterExpr);
 
   const position = this.func('INSTR', [
     thisNode instanceof Expression && isCaseInsensitive(thisNode)
-      ? this.func('LOWER', [
-        haystackSql,
-      ])
+      ? this.func('LOWER', [haystackSql])
       : haystackSql,
     isCaseInsensitive(delimiterExpr)
-      ? this.func('LOWER', [
-        delimiterSql,
-      ])
+      ? this.func('LOWER', [delimiterSql])
       : delimiterSql,
     direction,
     occur,
@@ -319,9 +310,7 @@ function substringIndexSql (this: ExasolGenerator, expression: SubstringIndexExp
 
   if (fromRight) {
     const start = this.func('NVL', [
-      `${nullablePos} + ${this.func('LENGTH', [
-        delimiterSql,
-      ])}`,
+      `${nullablePos} + ${this.func('LENGTH', [delimiterSql])}`,
       direction,
     ]);
     return this.func('SUBSTR', [
@@ -332,9 +321,7 @@ function substringIndexSql (this: ExasolGenerator, expression: SubstringIndexExp
 
   const length = this.func('NVL', [
     `${nullablePos} - 1`,
-    this.func('LENGTH', [
-      haystackSql,
-    ]),
+    this.func('LENGTH', [haystackSql]),
   ]);
   return this.func('SUBSTR', [
     haystackSql,
@@ -352,8 +339,7 @@ function qualifyUnscopedStar (expression: Expression): Expression {
     return expression;
   }
 
-  const selectExpressions = expression.args.expressions || [
-  ];
+  const selectExpressions = expression.args.expressions || [];
 
   const isBareStar = (expr: Expression): boolean => expr instanceof StarExpr && !expr.args.this;
 
@@ -378,15 +364,12 @@ function qualifyUnscopedStar (expression: Expression): Expression {
     return expression;
   }
 
-  const tableIdentifiers: IdentifierExpr[] = [
-  ];
+  const tableIdentifiers: IdentifierExpr[] = [];
   for (const [
     sourceName,
     sourceEntries,
   ] of Object.entries(scope.selectedSources)) {
-    const [
-      sourceExpr,
-    ] = sourceEntries as Expression[];
+    const [sourceExpr] = sourceEntries as Expression[];
     const ident =
       sourceExpr instanceof TableExpr && sourceExpr.args.this instanceof IdentifierExpr
         ? (sourceExpr.args.this.copy() as IdentifierExpr)
@@ -403,8 +386,7 @@ function qualifyUnscopedStar (expression: Expression): Expression {
     }),
   );
 
-  const newSelectExpressions: Expression[] = [
-  ];
+  const newSelectExpressions: Expression[] = [];
   for (const selectExpr of selectExpressions) {
     if (isBareStar(selectExpr)) {
       newSelectExpressions.push(...qualifiedStarColumns);
@@ -559,9 +541,7 @@ class ExasolParser extends Parser {
           timestamp: args[0],
           sourceTz: seqGet(args, 1),
           targetTz: args[2],
-          options: [
-            seqGet(args, 3)!,
-          ],
+          options: [seqGet(args, 3)!],
         }),
         NULLIFZERO: buildNullIfZero,
         ZEROIFNULL: buildZeroIfNull,
@@ -669,8 +649,7 @@ class ExasolGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [
-  ];
+  static readonly SELECT_KINDS: string[] = [];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -768,9 +747,7 @@ class ExasolGenerator extends Generator {
   }
 
   dataTypeSql (expression: DataTypeExpr): string {
-    if (expression.isType([
-      DataTypeExprKind.TIMESTAMPLTZ,
-    ])) {
+    if (expression.isType([DataTypeExprKind.TIMESTAMPLTZ])) {
       return 'TIMESTAMP WITH LOCAL TIME ZONE';
     }
     return super.dataTypeSql(expression);
@@ -889,8 +866,7 @@ class ExasolGenerator extends Generator {
             e.args.timestamp,
             e.args.sourceTz,
             e.args.targetTz,
-            ...e.args.options ?? [
-            ],
+            ...e.args.options ?? [],
           ]);
         },
       ],
@@ -1069,8 +1045,7 @@ class ExasolGenerator extends Generator {
     if (expression.args.expressions && 0 < expression.args.expressions.length) {
       this.unsupported('Exasol does not support arguments in RANK');
     }
-    return this.func('RANK', [
-    ]);
+    return this.func('RANK', []);
   }
 
   convertTimezoneSql (expression: ConvertTimezoneExpr): string {
@@ -1082,8 +1057,7 @@ class ExasolGenerator extends Generator {
       timestamp,
       sourceTz,
       targetTz,
-      ...options ?? [
-      ],
+      ...options ?? [],
     ]);
   }
 }

@@ -111,9 +111,7 @@ export class HiveTyping {
     });
 
     map.set(ReverseExpr, {
-      annotator: (s: TypeAnnotator, e: ReverseExpr) => s.annotateByArgs(e, [
-        'this',
-      ]),
+      annotator: (s: TypeAnnotator, e: ReverseExpr) => s.annotateByArgs(e, ['this']),
     });
 
     return map;

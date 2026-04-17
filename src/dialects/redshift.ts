@@ -261,8 +261,7 @@ class RedshiftParser extends Postgres.Parser {
 
     if (func instanceof CountExpr && func.args.this instanceof DistinctExpr) {
       return this.expression(ApproxDistinctExpr, {
-        this: seqGet(func.args.this.args.expressions || [
-        ], 0),
+        this: seqGet(func.args.this.args.expressions || [], 0),
       });
     }
     this.retreat(index);
@@ -281,14 +280,12 @@ class RedshiftParser extends Postgres.Parser {
 class RedshiftTokenizer extends Postgres.Tokenizer {
   @cache
   static get BIT_STRINGS () {
-    return [
-    ];
+    return [];
   }
 
   @cache
   static get HEX_STRINGS () {
-    return [
-    ];
+    return [];
   }
 
   @cache
@@ -441,9 +438,7 @@ class RedshiftGenerator extends Postgres.Generator {
       [
         DistKeyPropertyExpr,
         function (this: Generator, e: DistKeyPropertyExpr) {
-          return this.func('DISTKEY', [
-            e.args.this,
-          ]);
+          return this.func('DISTKEY', [e.args.this]);
         },
       ],
       [
@@ -485,11 +480,7 @@ class RedshiftGenerator extends Postgres.Generator {
       [
         HexExpr,
         function (this: Generator, e: HexExpr) {
-          return this.func('UPPER', [
-            this.func('TO_HEX', [
-              this.sql(e, 'this'),
-            ]),
-          ]);
+          return this.func('UPPER', [this.func('TO_HEX', [this.sql(e, 'this')])]);
         },
       ],
       [
@@ -732,8 +723,7 @@ class RedshiftGenerator extends Postgres.Generator {
   }
 
   unnestSql (expression: UnnestExpr): string {
-    const args = expression.args.expressions || [
-    ];
+    const args = expression.args.expressions || [];
     const numArgs = args.length;
 
     if (numArgs !== 1) {

@@ -35,9 +35,7 @@ function selectAll (table: Expression | undefined): SelectExpr | undefined {
 class PRQLTokenizer extends Tokenizer {
   @cache
   static get IDENTIFIERS () {
-    return [
-      '`',
-    ];
+    return ['`'];
   }
 
   @cache
@@ -245,11 +243,8 @@ class PRQLParser extends Parser {
     } else {
       const expression = parseMethod();
       selects = expression
-        ? [
-          expression,
-        ]
-        : [
-        ];
+        ? [expression]
+        : [];
     }
 
     const projections: Record<string, Expression> = {};
@@ -330,11 +325,8 @@ class PRQLParser extends Parser {
       this.advance();
       const args = this.parseColumn();
       func = funcBuilder(args
-        ? [
-          args,
-        ]
-        : [
-        ], {
+        ? [args]
+        : [], {
         dialect: this.dialect,
       });
     } else {
@@ -415,8 +407,7 @@ export class PRQLGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [
-  ];
+  static readonly SELECT_KINDS: string[] = [];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic

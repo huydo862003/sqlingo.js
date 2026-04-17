@@ -17,8 +17,7 @@ export class Table {
 
   constructor (
     columns: Iterable<string>,
-    rows: unknown[][] = [
-    ],
+    rows: unknown[][] = [],
     columnRange?: ColumnRange,
   ) {
     this.columns = Array.from(columns);
@@ -96,9 +95,7 @@ export class Table {
       widths[col] = col.length;
     });
 
-    const lines = [
-      cols.join(' '),
-    ];
+    const lines = [cols.join(' ')];
 
     for (let i = 0; i < this.length; i++) {
       if (10 < i) break;
@@ -207,8 +204,7 @@ function _ensureTables (d?: unknown, dialect?: DialectType): Record<string, unkn
 
       const columnNames = 0 < normalizedTableData.length
         ? Object.keys(normalizedTableData[0])
-        : [
-        ];
+        : [];
       const rows = normalizedTableData.map((row: Record<string, unknown>) => columnNames.map((name) => row[name]));
 
       result[tableName] = new Table(columnNames, rows);
@@ -230,8 +226,7 @@ export interface ColumnRange {
 export class RowReader {
   [column: string]: unknown;
   public columns: Record<string, number> = {};
-  public row: unknown[] = [
-  ];
+  public row: unknown[] = [];
 
   constructor (columns: string[], columnRange?: ColumnRange) {
     columns.forEach((column, i) => {

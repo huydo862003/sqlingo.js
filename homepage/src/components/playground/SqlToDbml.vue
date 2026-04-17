@@ -42,7 +42,7 @@ import {
   ref, computed, watch, onMounted,
 } from 'vue';
 import {
-  convertSqlToDbml,
+  sqlToDbml,
 } from '@/services/dbml';
 import MonacoEditor from './MonacoEditor.vue';
 import DialectSelect from './DialectSelect.vue';
@@ -78,7 +78,7 @@ function convert () {
     return;
   }
   try {
-    const result = convertSqlToDbml(sqlInput.value, dialect.value || undefined);
+    const result = sqlToDbml(sqlInput.value, dialect.value || undefined);
     dbmlOutput.value = result.dbml || '';
     error.value = result.dbml ? '' : 'No CREATE TABLE statements found.';
   } catch (e) {

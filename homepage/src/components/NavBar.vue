@@ -136,18 +136,16 @@ interface Crumb {label: string;
   href?: string;}
 
 const {
-  breadcrumb = [
-  ],
+  breadcrumb = [],
 } = defineProps<{breadcrumb?: Crumb[]}>();
 
 const dropdownOpen = ref(false);
 const ellipsisBtn = ref<HTMLElement | null>(null);
-// middle crumbs (everything except first and last) — shown in dropdown on desktop
+// middle crumbs (everything except first and last), shown in dropdown on desktop
 const collapsedCrumbs = computed(() =>
   2 < breadcrumb.length
     ? breadcrumb.slice(1, -1)
-    : [
-    ]);
+    : []);
 
 function onDocClick (e: MouseEvent) {
   if (ellipsisBtn.value && !ellipsisBtn.value.contains(e.target as Node)) {

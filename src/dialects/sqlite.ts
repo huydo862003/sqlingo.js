@@ -129,8 +129,7 @@ function transformCreate (expression: Expression): Expression {
     const defs: Record<string, ColumnDefExpr> = {};
     let primaryKey: PrimaryKeyExpr | undefined = undefined;
 
-    for (const e of (schema.args.expressions || [
-    ])) {
+    for (const e of (schema.args.expressions || [])) {
       if (e instanceof ColumnDefExpr) {
         defs[e.name] = e;
       } else if (e instanceof PrimaryKeyExpr) {
@@ -138,19 +137,15 @@ function transformCreate (expression: Expression): Expression {
       }
     }
 
-    if (primaryKey && (primaryKey.args.expressions || [
-    ]).length === 1) {
-      const columnName = ((primaryKey.args.expressions || [
-      ])[0] as IdentifierExpr).name;
+    if (primaryKey && (primaryKey.args.expressions || []).length === 1) {
+      const columnName = ((primaryKey.args.expressions || [])[0] as IdentifierExpr).name;
       const column = defs[columnName];
 
       if (!column.args.constraints) {
-        column.setArgKey('constraints', [
-        ]);
+        column.setArgKey('constraints', []);
       }
       if (!column.args.constraints) {
-        column.setArgKey('constraints', [
-        ]);
+        column.setArgKey('constraints', []);
       }
       column.args.constraints?.push(
         new ColumnConstraintExpr({
@@ -158,14 +153,12 @@ function transformCreate (expression: Expression): Expression {
         }),
       );
 
-      schema.setArgKey('expressions', (schema.args.expressions || [
-      ]).filter((e) => e !== primaryKey));
+      schema.setArgKey('expressions', (schema.args.expressions || []).filter((e) => e !== primaryKey));
     } else {
       for (const column of Object.values(defs)) {
         let autoIncrement: ColumnConstraintExpr | undefined;
 
-        for (const constraint of (column.args.constraints || [
-        ])) {
+        for (const constraint of (column.args.constraints || [])) {
           const constraintExpr = constraint as ColumnConstraintExpr;
           if ((constraintExpr.args.kind as unknown) instanceof PrimaryKeyColumnConstraintExpr) {
             autoIncrement = undefined; // Reset if we hit a PK to stop processing this column
@@ -177,8 +170,7 @@ function transformCreate (expression: Expression): Expression {
         }
 
         if (autoIncrement) {
-          column.setArgKey('constraints', (column.args.constraints || [
-          ]).filter((c) => c !== autoIncrement));
+          column.setArgKey('constraints', (column.args.constraints || []).filter((c) => c !== autoIncrement));
         }
       }
     }
@@ -203,8 +195,7 @@ function generatedToAutoIncrement (expression: Expression): Expression {
     }
 
     if (!expression.args.constraints) {
-      expression.setArgKey('constraints', [
-      ]);
+      expression.setArgKey('constraints', []);
     }
     expression.args.constraints?.push(
       new ColumnConstraintExpr({
@@ -392,8 +383,7 @@ class SQLiteGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [
-  ];
+  static readonly SELECT_KINDS: string[] = [];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -519,9 +509,7 @@ class SQLiteGenerator extends Generator {
       ],
       [
         CreateExpr,
-        preprocess([
-          transformCreate,
-        ]),
+        preprocess([transformCreate]),
       ],
       [
         CurrentDateExpr,
@@ -541,9 +529,7 @@ class SQLiteGenerator extends Generator {
       ],
       [
         ColumnDefExpr,
-        preprocess([
-          generatedToAutoIncrement,
-        ]),
+        preprocess([generatedToAutoIncrement]),
       ],
       [
         DateStrToDateExpr,
@@ -680,18 +666,14 @@ class SQLiteGenerator extends Generator {
 
   castSql (expression: CastExpr, options: {safePrefix?: string} = {}): string {
     if (expression.isType('date')) {
-      return this.func('DATE', [
-        expression.args.this,
-      ]);
+      return this.func('DATE', [expression.args.this]);
     }
     return super.castSql(expression, options);
   }
 
   truncSql (expression: TruncExpr): string {
     unsupportedArgs.call(this, expression, 'decimals');
-    return this.func('TRUNC', [
-      expression.args.this,
-    ]);
+    return this.func('TRUNC', [expression.args.this]);
   }
 
   generateSeriesSql (expression: GenerateSeriesExpr): string {
@@ -703,9 +685,7 @@ class SQLiteGenerator extends Generator {
       aliasExpr.setArgKey('columns', undefined);
       return this.sql(
         new SelectExpr({
-          expressions: [
-            alias('value', columnAlias),
-          ],
+          expressions: [alias('value', columnAlias)],
         })
           .from(expression)
           .subquery(),

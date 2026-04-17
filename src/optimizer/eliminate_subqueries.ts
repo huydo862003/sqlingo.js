@@ -95,16 +95,14 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
   if (withClause) {
     assertIsInstanceOf(withClause, WithExpr);
     recursive = Boolean(withClause.args.recursive);
-    for (const cte of withClause.args.expressions ?? [
-    ]) {
+    for (const cte of withClause.args.expressions ?? []) {
       if (isInstanceOf(cte, CteExpr) && cte.args.this) {
         if (cte.args.this) existingCtes.set(cte.args.this.sqlKey, cte.alias);
       }
     }
   }
 
-  const newCtes: Expression[] = [
-  ];
+  const newCtes: Expression[] = [];
 
   // We're adding more CTEs, but we want to maintain the DAG order.
   // Derived tables within an existing CTE need to come before the existing CTE.

@@ -71,16 +71,12 @@ import {
 class DrillTokenizer extends Tokenizer {
   @cache
   static get IDENTIFIERS () {
-    return [
-      '`',
-    ];
+    return ['`'];
   }
 
   @cache
   static get STRING_ESCAPES () {
-    return [
-      '\\',
-    ];
+    return ['\\'];
   }
 
   @cache
@@ -155,8 +151,7 @@ class DrillGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [
-  ];
+  static readonly SELECT_KINDS: string[] = [];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -243,9 +238,7 @@ class DrillGenerator extends Generator {
       ],
       [
         CreateExpr,
-        preprocess([
-          moveSchemaColumnsToPartitionedBy,
-        ]),
+        preprocess([moveSchemaColumnsToPartitionedBy]),
       ],
       [
         DateAddExpr,

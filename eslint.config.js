@@ -43,7 +43,10 @@ const stylisticRules = {
   }],
   '@stylistic/object-property-newline': ['error', { allowAllPropertiesOnSameLine: false }],
   '@stylistic/array-bracket-spacing': ['error', 'never'],
-  '@stylistic/array-bracket-newline': ['error', 'always'],
+  '@stylistic/array-bracket-newline': ['error', {
+    multiline: true,
+    minItems: 2,
+  }],
   '@stylistic/array-element-newline': ['error', 'always'],
 
   // block types

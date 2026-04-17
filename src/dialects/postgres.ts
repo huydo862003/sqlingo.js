@@ -285,8 +285,7 @@ function autoIncrementToSerial (expression: Expression): Expression {
   const auto = expression.find(AutoIncrementColumnConstraintExpr);
 
   if (auto && expression instanceof ColumnDefExpr) {
-    const constraints = expression.args.constraints || [
-    ];
+    const constraints = expression.args.constraints || [];
     expression.setArgKey('constraints', constraints.filter((c) => c !== auto.parent));
 
     const kind = expression.args.kind;
@@ -333,8 +332,7 @@ function serialToGenerated (expression: Expression): Expression {
 
   if (dataType) {
     kind.replace(dataType);
-    const constraints = expression.args.constraints || [
-    ];
+    const constraints = expression.args.constraints || [];
     const generated = new ColumnConstraintExpr({
       kind: new GeneratedAsIdentityColumnConstraintExpr({
         this: false,
@@ -466,9 +464,7 @@ function roundSql (this: Generator, expression: RoundExpr): string {
   const decimals = this.sql(expression, 'decimals');
 
   if (!decimals) {
-    return this.func('ROUND', [
-      thisSql,
-    ]);
+    return this.func('ROUND', [thisSql]);
   }
 
   let currentThis = thisSql;
@@ -544,9 +540,7 @@ export class PostgresTokenizer extends Tokenizer {
 
   @cache
   static get HEREDOC_STRINGS (): TokenPair[] {
-    return [
-      '$',
-    ];
+    return ['$'];
   }
 
   static HEREDOC_TAG_IS_IDENTIFIER = true;
@@ -616,9 +610,7 @@ export class PostgresTokenizer extends Tokenizer {
 
   @cache
   static get VAR_SINGLE_TOKENS () {
-    return new Set([
-      '$',
-    ]);
+    return new Set(['$']);
   }
 }
 
@@ -787,9 +779,7 @@ class PostgresParser extends Parser {
       [TokenType.DAT]: function (this: Parser, thisNode: Expression) {
         return this.expression(MatchAgainstExpr, {
           this: (this as PostgresParser).parseBitwise(),
-          expressions: [
-            thisNode,
-          ],
+          expressions: [thisNode],
         });
       },
     };
@@ -930,8 +920,7 @@ class PostgresParser extends Parser {
     if (paramMode && columnDef instanceof ColumnDefExpr) {
       const constraint = this.createModeConstraint(paramMode);
       if (!columnDef.args.constraints) {
-        columnDef.setArgKey('constraints', [
-        ]);
+        columnDef.setArgKey('constraints', []);
       }
       columnDef.args.constraints?.unshift(new ColumnConstraintExpr({
         kind: constraint,
@@ -1044,8 +1033,7 @@ class PostgresGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [
-  ];
+  static readonly SELECT_KINDS: string[] = [];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -1148,8 +1136,7 @@ class PostgresGenerator extends Generator {
   explodeSql (e: ExplodeExpr): string {
     return this.func('UNNEST', [
       e.args.this,
-      ...e.args.expressions || [
-      ],
+      ...e.args.expressions || [],
     ]);
   }
 
@@ -1357,15 +1344,11 @@ class PostgresGenerator extends Generator {
       ],
       [
         PercentileContExpr,
-        preprocess([
-          addWithinGroupForPercentiles,
-        ]),
+        preprocess([addWithinGroupForPercentiles]),
       ],
       [
         PercentileDiscExpr,
-        preprocess([
-          addWithinGroupForPercentiles,
-        ]),
+        preprocess([addWithinGroupForPercentiles]),
       ],
       [
         PivotExpr,
@@ -1626,9 +1609,7 @@ class PostgresGenerator extends Generator {
             .from(new TableExpr({
               this: generateSeries,
             }).as('_t', {
-              table: [
-                'value',
-              ],
+              table: ['value'],
             }))
             .subquery(expression.args.alias instanceof Expression ? expression.args.alias : (typeof expression.args.alias === 'string' ? expression.args.alias : '_unnested_generate_series'));
         }
@@ -1681,8 +1662,7 @@ class PostgresGenerator extends Generator {
 
   matchAgainstSql (expression: MatchAgainstExpr): string {
     const thisSql = this.sql(expression, 'this');
-    const expressions = (expression.args.expressions ?? [
-    ]).map((e) => `${this.sql(e)} @@ ${thisSql}`);
+    const expressions = (expression.args.expressions ?? []).map((e) => `${this.sql(e)} @@ ${thisSql}`);
     const sql = expressions.join(' OR ');
     return 1 < expressions.length ? `(${sql})` : sql;
   }
@@ -1753,8 +1733,7 @@ class PostgresGenerator extends Generator {
   }
 
   arraySql (expression: ArrayExpr): string {
-    const exprs = expression.args.expressions || [
-    ];
+    const exprs = expression.args.expressions || [];
     const funcName = this.normalizeFunc('ARRAY');
 
     if (exprs[0] instanceof SelectExpr) {
@@ -1832,8 +1811,7 @@ class PostgresGenerator extends Generator {
     });
 
     const caseExpr = new CaseExpr({
-      ifs: [
-      ],
+      ifs: [],
     })
       .when(new IsExpr({
         this: value,

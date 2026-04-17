@@ -237,38 +237,23 @@ const BIT_TYPES: Set<typeof Expression> = new Set([
 ]);
 
 const OPTIONS: Record<string, (string | string[])[] | undefined> = {
-  DISABLE_OPTIMIZED_PLAN_FORCING: [
-  ],
-  FAST: [
-  ],
-  IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX: [
-  ],
-  LABEL: [
-  ],
-  MAXDOP: [
-  ],
-  MAXRECURSION: [
-  ],
-  MAX_GRANT_PERCENT: [
-  ],
-  MIN_GRANT_PERCENT: [
-  ],
-  NO_PERFORMANCE_SPOOL: [
-  ],
-  QUERYTRACEON: [
-  ],
-  RECOMPILE: [
-  ],
-  CONCAT: [
-    'UNION',
-  ],
+  DISABLE_OPTIMIZED_PLAN_FORCING: [],
+  FAST: [],
+  IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX: [],
+  LABEL: [],
+  MAXDOP: [],
+  MAXRECURSION: [],
+  MAX_GRANT_PERCENT: [],
+  MIN_GRANT_PERCENT: [],
+  NO_PERFORMANCE_SPOOL: [],
+  QUERYTRACEON: [],
+  RECOMPILE: [],
+  CONCAT: ['UNION'],
   DISABLE: [
     'EXTERNALPUSHDOWN',
     'SCALEOUTEXECUTION',
   ],
-  EXPAND: [
-    'VIEWS',
-  ],
+  EXPAND: ['VIEWS'],
   FORCE: [
     'EXTERNALPUSHDOWN',
     'ORDER',
@@ -279,15 +264,9 @@ const OPTIONS: Record<string, (string | string[])[] | undefined> = {
     'JOIN',
     'UNION',
   ],
-  KEEP: [
-    'PLAN',
-  ],
-  KEEPFIXED: [
-    'PLAN',
-  ],
-  LOOP: [
-    'JOIN',
-  ],
+  KEEP: ['PLAN'],
+  KEEPFIXED: ['PLAN'],
+  LOOP: ['JOIN'],
   MERGE: [
     'JOIN',
     'UNION',
@@ -298,35 +277,24 @@ const OPTIONS: Record<string, (string | string[])[] | undefined> = {
       'UNKNOWN',
     ],
   ],
-  ORDER: [
-    'GROUP',
-  ],
+  ORDER: ['GROUP'],
   PARAMETERIZATION: [
     'FORCED',
     'SIMPLE',
   ],
-  ROBUST: [
-    'PLAN',
-  ],
-  USE: [
-    'PLAN',
-  ],
+  ROBUST: ['PLAN'],
+  USE: ['PLAN'],
 };
 
 const XML_OPTIONS: Record<string, (string | string[])[] | undefined> = {
-  AUTO: [
-  ],
-  EXPLICIT: [
-  ],
-  TYPE: [
-  ],
+  AUTO: [],
+  EXPLICIT: [],
+  TYPE: [],
   ELEMENTS: [
     'XSINIL',
     'ABSENT',
   ],
-  BINARY: [
-    'BASE64',
-  ],
+  BINARY: ['BASE64'],
 };
 
 const DEFAULT_START_DATE = new Date(Date.UTC(1900, 0, 1));
@@ -511,9 +479,7 @@ function buildTimeFromParts (args: Expression[]): TimeFromPartsExpr {
     min: seqGet(args, 1),
     sec: seqGet(args, 2),
     fractions: fractions
-      ? [
-        fractions,
-      ]
+      ? [fractions]
       : undefined,
     precision: seqGet(args, 4),
   });
@@ -593,13 +559,11 @@ function qualifyDerivedTableOutputs (expression: Expression): Expression {
     const query = expression.args.this;
     if (!(query instanceof SelectExpr)) return expression;
 
-    const unaliasedColumnIndexes = (query.selects ?? [
-    ])
+    const unaliasedColumnIndexes = (query.selects ?? [])
       .map((c, i) => (c instanceof ColumnExpr && !c.alias ? i : -1))
       .filter((i) => i !== -1);
 
-    const newSelections = (query.selects ?? [
-    ]).map((selection, i) => {
+    const newSelections = (query.selects ?? []).map((selection, i) => {
       if (
         selection instanceof SubqueryExpr
         || selection instanceof AliasExpr
@@ -614,8 +578,7 @@ function qualifyDerivedTableOutputs (expression: Expression): Expression {
     });
     query.setArgKey('expressions', newSelections);
 
-    const querySelects = query.selects ?? [
-    ];
+    const querySelects = query.selects ?? [];
     for (const selectIndex of unaliasedColumnIndexes) {
       const aliasNode = querySelects[selectIndex];
       if (aliasNode instanceof AliasExpr) {
@@ -807,11 +770,7 @@ export class TSQLParser extends Parser {
 
   @cache
   static get ID_VAR_TOKENS (): Set<TokenType> {
-    return new Set([
-      ...[
-        ...Parser.ID_VAR_TOKENS,
-      ].filter((token) => token !== TokenType.BEGIN),
-    ]);
+    return new Set([...[...Parser.ID_VAR_TOKENS].filter((token) => token !== TokenType.BEGIN)]);
   }
 
   static SET_REQUIRES_ASSIGNMENT_DELIMITER = false;
@@ -842,32 +801,22 @@ export class TSQLParser extends Parser {
 
   @cache
   static get ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([
-      ...Array.from(Parser.ALIAS_TOKENS),
-    ].filter((t) => t !== TokenType.BEGIN));
+    return new Set([...Array.from(Parser.ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
   }
 
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([
-      ...[
-        ...Parser.TABLE_ALIAS_TOKENS,
-      ].filter((token) => token !== TokenType.BEGIN),
-    ]);
+    return new Set([...[...Parser.TABLE_ALIAS_TOKENS].filter((token) => token !== TokenType.BEGIN)]);
   }
 
   @cache
   static get COMMENT_TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([
-      ...Array.from(Parser.COMMENT_TABLE_ALIAS_TOKENS),
-    ].filter((t) => t !== TokenType.BEGIN));
+    return new Set([...Array.from(Parser.COMMENT_TABLE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
   }
 
   @cache
   static get UPDATE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([
-      ...Array.from(Parser.UPDATE_ALIAS_TOKENS),
-    ].filter((t) => t !== TokenType.BEGIN));
+    return new Set([...Array.from(Parser.UPDATE_ALIAS_TOKENS)].filter((t) => t !== TokenType.BEGIN));
   }
 
   @cache
@@ -943,16 +892,11 @@ export class TSQLParser extends Parser {
   @cache
   static get PROCEDURE_OPTIONS (): Record<string, string[]> {
     return {
-      ENCRYPTION: [
-      ],
-      RECOMPILE: [
-      ],
-      SCHEMABINDING: [
-      ],
-      NATIVE_COMPILATION: [
-      ],
-      EXECUTE: [
-      ],
+      ENCRYPTION: [],
+      RECOMPILE: [],
+      SCHEMABINDING: [],
+      NATIVE_COMPILATION: [],
+      EXECUTE: [],
     };
   }
 
@@ -968,9 +912,7 @@ export class TSQLParser extends Parser {
   @cache
   static get RETURNS_TABLE_TOKENS (): Set<TokenType> {
     return new Set(
-      [
-        ...Array.from(Parser.ID_VAR_TOKENS),
-      ].filter((t) =>
+      [...Array.from(Parser.ID_VAR_TOKENS)].filter((t) =>
         t !== TokenType.TABLE && !Parser.TYPE_TOKENS.has(t)),
     );
   }
@@ -1058,9 +1000,7 @@ export class TSQLParser extends Parser {
 
   @cache
   static get SET_OP_MODIFIERS () {
-    return new Set([
-      'offset',
-    ]);
+    return new Set(['offset']);
   }
 
   @cache
@@ -1074,9 +1014,7 @@ export class TSQLParser extends Parser {
 
   parseDatepart (): ExtractExpr {
     const thisNode = this.parseVar({
-      tokens: new Set([
-        TokenType.IDENTIFIER,
-      ]),
+      tokens: new Set([TokenType.IDENTIFIER]),
     });
     const expression = this.match(TokenType.COMMA) && this.parseBitwise();
     const name = mapDatePart(thisNode, {
@@ -1366,8 +1304,7 @@ export class TSQLParser extends Parser {
       if (table instanceof TableExpr && narrowInstanceOf(table.args.this, Expression)?.getArgKey('temporary')) {
         if (!create.args.properties) {
           create.setArgKey('properties', new PropertiesExpr({
-            expressions: [
-            ],
+            expressions: [],
           }));
         }
         (create.args.properties as PropertiesExpr).append('expressions', new TemporaryPropertyExpr());
@@ -1503,8 +1440,7 @@ export class TSQLGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [
-  ];
+  static readonly SELECT_KINDS: string[] = [];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -1664,9 +1600,7 @@ export class TSQLGenerator extends Generator {
       ],
       [
         CteExpr,
-        preprocess([
-          qualifyDerivedTableOutputs,
-        ]),
+        preprocess([qualifyDerivedTableOutputs]),
       ],
       [
         CurrentDateExpr,
@@ -1707,9 +1641,7 @@ export class TSQLGenerator extends Generator {
       [
         LastDayExpr,
         function (this: Generator, e: LastDayExpr) {
-          return this.func('EOMONTH', [
-            e.args.this,
-          ]);
+          return this.func('EOMONTH', [e.args.this]);
         },
       ],
       [
@@ -1769,9 +1701,7 @@ export class TSQLGenerator extends Generator {
       ],
       [
         SubqueryExpr,
-        preprocess([
-          qualifyDerivedTableOutputs,
-        ]),
+        preprocess([qualifyDerivedTableOutputs]),
       ],
       [
         ShaExpr,
@@ -1908,9 +1838,7 @@ export class TSQLGenerator extends Generator {
         // T-SQL OFFSET requires an ORDER BY. Use a no-op subquery if none exists.
         //
         expression.orderBy(new SelectExpr({
-          expressions: [
-            new NullExpr(),
-          ],
+          expressions: [new NullExpr()],
         }).subquery(), {
           copy: false,
         });
@@ -2113,16 +2041,12 @@ export class TSQLGenerator extends Generator {
       }
 
       const properties = expression.args.properties || new PropertiesExpr({
-        expressions: [
-        ],
+        expressions: [],
       });
-      const isTemp = (properties.args.expressions ?? [
-      ]).some((p) => p instanceof TemporaryPropertyExpr);
+      const isTemp = (properties.args.expressions ?? []).some((p) => p instanceof TemporaryPropertyExpr);
 
       const selectInto = new SelectExpr({
-        expressions: [
-          new StarExpr(),
-        ],
+        expressions: [new StarExpr()],
       })
         .from(alias(ctasExpression, 'temp', {
           table: true,
@@ -2201,8 +2125,7 @@ export class TSQLGenerator extends Generator {
     let exprSql = '';
 
     if (kind === 'FROM' || kind === 'BETWEEN') {
-      const args = expr?.args.expressions as ExpressionValue[] ?? [
-      ];
+      const args = expr?.args.expressions as ExpressionValue[] ?? [];
       const sep = kind === 'FROM' ? 'TO' : 'AND';
       exprSql = `${this.sql(seqGet(args, 0))} ${sep} ${this.sql(seqGet(args, 1))}`;
     } else {
@@ -2293,8 +2216,7 @@ export class TSQLGenerator extends Generator {
   }
 
   alterSql (expression: AlterExpr): string {
-    const action = seqGet(expression.args.actions ?? [
-    ], 0);
+    const action = seqGet(expression.args.actions ?? [], 0);
     if (action instanceof AlterRenameExpr) {
       return `EXEC sp_rename '${this.sql(expression, 'this')}', '${(action.args.this)?.name ?? ''}'`;
     }
@@ -2317,9 +2239,7 @@ export class TSQLGenerator extends Generator {
 
   dPipeSql (expression: DPipeExpr): string {
     // Converts || concatenation into + for T-SQL
-    const flattened = [
-      ...expression.flatten(),
-    ].reduce((acc: Expression, curr: Expression) =>
+    const flattened = [...expression.flatten()].reduce((acc: Expression, curr: Expression) =>
       new AddExpr({
         this: acc,
         expression: curr,

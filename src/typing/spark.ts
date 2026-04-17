@@ -41,9 +41,7 @@ export class SparkTyping {
       for (const type of types) map.set(type, data);
     };
 
-    extend([
-      SecExpr,
-    ], {
+    extend([SecExpr], {
       returns: DataTypeExprKind.DOUBLE,
     });
 
@@ -74,9 +72,7 @@ export class SparkTyping {
     });
 
     map.set(OverlayExpr, {
-      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, [
-        'this',
-      ]),
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
     });
 
     return map;

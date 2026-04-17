@@ -147,8 +147,7 @@ function uniqueOutputs (scope: Scope): Set<string> | undefined {
   const group = select.args.group;
   if (group) {
     const groupedSqls = new Set(
-      (group.args.expressions ?? [
-      ])
+      (group.args.expressions ?? [])
         .filter((e): e is Expression => e instanceof Expression)
         .map((e) => e.sql()),
     );
@@ -168,9 +167,7 @@ function uniqueOutputs (scope: Scope): Set<string> | undefined {
     }
 
     // All the grouped expressions must be in the output
-    const allGroupedInOutput = [
-      ...groupedSqls,
-    ].every((s) => groupedOutputSqls.has(s));
+    const allGroupedInOutput = [...groupedSqls].every((s) => groupedOutputSqls.has(s));
 
     return allGroupedInOutput ? uniqueOutputs : new Set();
   }
@@ -242,10 +239,8 @@ export function joinCondition (
   const onClause = join.args.on;
   const on = (onClause || true_()).copy();
 
-  const sourceKeys: Expression[] = [
-  ];
-  const joinKeys: Expression[] = [
-  ];
+  const sourceKeys: Expression[] = [];
+  const joinKeys: Expression[] = [];
 
   function extractCondition (condition: Expression): void {
     const [
@@ -298,8 +293,7 @@ export function joinCondition (
       if (conditions === undefined) {
         conditions = parts;
       } else {
-        const temp: EqExpr[] = [
-        ];
+        const temp: EqExpr[] = [];
         for (const p of parts) {
           const cs = conditions.filter((c) => p.sql() === c.sql());
           if (0 < cs.length) {

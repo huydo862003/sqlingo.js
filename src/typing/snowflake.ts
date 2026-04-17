@@ -75,9 +75,7 @@ const MAX_PRECISION = 38;
 const MAX_SCALE = 37;
 
 function annotateReverse (this: TypeAnnotator, expression: ReverseExpr): ReverseExpr {
-  this.annotateByArgs(expression, [
-    'this',
-  ]);
+  this.annotateByArgs(expression, ['this']);
   if (expression.isType(DataTypeExprKind.NULL)) {
     // Snowflake treats REVERSE(NULL) as a VARCHAR
     this.setType(expression, DataTypeExprKind.VARCHAR);
@@ -99,18 +97,14 @@ function annotateDateOrTimeAdd (this: TypeAnnotator, expression: Expression): Ex
   if (isInstanceOf(thisArg, Expression) && thisArg.isType(DataTypeExprKind.DATE) && !DATE_PARTS.has(expression.text('unit').toUpperCase())) {
     this.setType(expression, DataTypeExprKind.TIMESTAMPNTZ);
   } else {
-    this.annotateByArgs(expression, [
-      'this',
-    ]);
+    this.annotateByArgs(expression, ['this']);
   }
   return expression;
 }
 
 function annotateDecodeCase (this: TypeAnnotator, expression: DecodeCaseExpr): DecodeCaseExpr {
-  const expressions = expression.args.expressions ?? [
-  ];
-  const returnTypes: (ExpressionOrString | undefined)[] = [
-  ];
+  const expressions = expression.args.expressions ?? [];
+  const returnTypes: (ExpressionOrString | undefined)[] = [];
 
   for (let i = 2; i < expressions.length; i += 2) {
     returnTypes.push(expressions[i].type);
@@ -144,10 +138,8 @@ function annotateWithinGroup (this: TypeAnnotator, expression: WithinGroupExpr):
   const inner = expression.args.this;
   const orderExpr = expression.args.expression;
   const orderExprs = isInstanceOf(orderExpr, OrderExpr)
-    ? (orderExpr.args.expressions ?? [
-    ])
-    : [
-    ];
+    ? (orderExpr.args.expressions ?? [])
+    : [];
 
   if (
     (isInstanceOf(inner, PercentileDiscExpr) || isInstanceOf(inner, PercentileContExpr))
@@ -164,9 +156,7 @@ function annotateWithinGroup (this: TypeAnnotator, expression: WithinGroupExpr):
 }
 
 function annotateMedian (this: TypeAnnotator, expression: MedianExpr): MedianExpr {
-  this.annotateByArgs(expression, [
-    'this',
-  ]);
+  this.annotateByArgs(expression, ['this']);
   const thisArg = expression.args.this;
   const inputType = isInstanceOf(thisArg, Expression) ? thisArg.type : undefined;
   if (!isInstanceOf(inputType, DataTypeExpr)) return expression;
@@ -174,8 +164,7 @@ function annotateMedian (this: TypeAnnotator, expression: MedianExpr): MedianExp
   if (inputType.isType(DataTypeExprKind.DOUBLE)) {
     this.setType(expression, DataTypeExprKind.DOUBLE);
   } else {
-    const exprs = filterInstanceOf(inputType.args.expressions ?? [
-    ], Expression);
+    const exprs = filterInstanceOf(inputType.args.expressions ?? [], Expression);
     // Assuming text('this') retrieves the numeric value of the AST literal node
     const precision = exprs[0] ? Number(exprs[0].text('this')) : MAX_PRECISION;
     const scale = exprs[1] ? Number(exprs[1].text('this')) : 0;
@@ -193,9 +182,7 @@ function annotateMedian (this: TypeAnnotator, expression: MedianExpr): MedianExp
 }
 
 function annotateVariance (this: TypeAnnotator, expression: Expression): Expression {
-  this.annotateByArgs(expression, [
-    'this',
-  ]);
+  this.annotateByArgs(expression, ['this']);
   const thisArg = expression.args.this;
   const inputType = isInstanceOf(thisArg, Expression) ? thisArg.type : undefined;
   if (!isInstanceOf(inputType, DataTypeExpr)) return expression;
@@ -210,8 +197,7 @@ function annotateVariance (this: TypeAnnotator, expression: Expression): Express
   ])) {
     this.setType(expression, DataTypeExprKind.DOUBLE);
   } else {
-    const exprs = filterInstanceOf(inputType.args.expressions ?? [
-    ], Expression);
+    const exprs = filterInstanceOf(inputType.args.expressions ?? [], Expression);
     const scale = exprs[1] ? Number(exprs[1].text('this')) : 0;
     const newScale = scale === 0 ? 6 : Math.max(12, scale);
 
@@ -225,9 +211,7 @@ function annotateVariance (this: TypeAnnotator, expression: Expression): Express
 }
 
 function annotateKurtosis (this: TypeAnnotator, expression: KurtosisExpr): KurtosisExpr {
-  this.annotateByArgs(expression, [
-    'this',
-  ]);
+  this.annotateByArgs(expression, ['this']);
   const thisArg = expression.args.this;
   const inputType = isInstanceOf(thisArg, Expression) ? thisArg.type : undefined;
   if (!isInstanceOf(inputType, DataTypeExpr)) {
@@ -256,9 +240,7 @@ function annotateKurtosis (this: TypeAnnotator, expression: KurtosisExpr): Kurto
 }
 
 function annotateMathWithFloatDecfloat (this: TypeAnnotator, expression: Expression): Expression {
-  this.annotateByArgs(expression, [
-    'this',
-  ]);
+  this.annotateByArgs(expression, ['this']);
 
   const thisArg = expression.args.this;
   if (isInstanceOf(thisArg, Expression) && thisArg.isType(DataTypeExprKind.DECFLOAT)) {
@@ -303,9 +285,7 @@ export class SnowflakeTyping {
       TimeSliceExpr,
       TimestampTruncExpr,
     ], {
-      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, [
-        'this',
-      ]),
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
     });
 
     extend([
@@ -585,9 +565,7 @@ export class SnowflakeTyping {
       annotator: (s: TypeAnnotator, e: ArgMinExpr) => annotateArgMaxMin.call(s, e),
     });
     map.set(ConcatWsExpr, {
-      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, [
-        'expressions',
-      ]),
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['expressions']),
     });
 
     map.set(ConvertTimezoneExpr, {

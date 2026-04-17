@@ -129,8 +129,7 @@ export class OracleTokenizer extends Tokenizer {
   @cache
   static get UNICODE_STRINGS (): TokenPair[] {
     const quotes = Tokenizer.QUOTES as string[];
-    const results: [string, string][] = [
-    ];
+    const results: [string, string][] = [];
     for (const q of quotes) {
       for (const prefix of [
         'U',
@@ -487,8 +486,7 @@ export class OracleParser extends Parser {
   }
 
   public parseHintArgs (): Expression[] {
-    const args: Expression[] = [
-    ];
+    const args: Expression[] = [];
     let result = this.parseVar();
 
     while (result) {
@@ -567,8 +565,7 @@ export class OracleGenerator extends Generator {
   }
 
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [
-  ];
+  static readonly SELECT_KINDS: string[] = [];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -710,9 +707,7 @@ export class OracleGenerator extends Generator {
 
     const thisExpr = expression.args.this;
     return thisExpr
-      ? this.func('CURRENT_TIMESTAMP', [
-        thisExpr,
-      ])
+      ? this.func('CURRENT_TIMESTAMP', [thisExpr])
       : 'CURRENT_TIMESTAMP';
   }
 
@@ -747,14 +742,11 @@ export class OracleGenerator extends Generator {
   }
 
   public hintSql (expression: HintExpr): string {
-    const expressions: string[] = [
-    ];
+    const expressions: string[] = [];
 
-    for (const e of expression.args.expressions || [
-    ]) {
+    for (const e of expression.args.expressions || []) {
       if (e instanceof AnonymousExpr) {
-        const formattedArgs = this.formatArgs(e.args.expressions || [
-        ], {
+        const formattedArgs = this.formatArgs(e.args.expressions || [], {
           sep: ' ',
         });
         expressions.push(`${this.sql(e, 'this')}(${formattedArgs})`);

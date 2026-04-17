@@ -370,9 +370,7 @@ export function propagateConstants (
     }
 
     if (0 < constantMapping.size) {
-      for (const column of findAllInScope(expression, [
-        ColumnExpr,
-      ])) {
+      for (const column of findAllInScope(expression, [ColumnExpr])) {
         const parent = column.parent;
         const mapping = constantMapping.get(column.sql());
         const [
@@ -502,15 +500,10 @@ function dateTruncRange (date: DateTime, unit: string, dialect: Dialect): DateRa
 }
 
 function mergeRanges (ranges: DateRange[]): DateRange[] {
-  if (ranges.length === 0) return [
-  ];
+  if (ranges.length === 0) return [];
 
-  const sorted = [
-    ...ranges,
-  ].sort((a, b) => a[0].toMillis() - b[0].toMillis());
-  const merged: DateRange[] = [
-    sorted[0],
-  ];
+  const sorted = [...ranges].sort((a, b) => a[0].toMillis() - b[0].toMillis());
+  const merged: DateRange[] = [sorted[0]];
 
   for (const [
     start,
@@ -1192,10 +1185,8 @@ export class Simplifier {
     const {
       constantPropagation = false, coalesceSimplification = false,
     } = options;
-    const wheres: WhereExpr[] = [
-    ];
-    const joins: JoinExpr[] = [
-    ];
+    const wheres: WhereExpr[] = [];
+    const joins: JoinExpr[] = [];
 
     for (const node of expression.walk({
       prune: (n) => {
@@ -1310,11 +1301,8 @@ export class Simplifier {
     const {
       constantPropagation, coalesceSimplification,
     } = options;
-    const preTransformationStack: Expression[] = [
-      expression,
-    ];
-    const postTransformationStack: [Expression, Expression | undefined][] = [
-    ];
+    const preTransformationStack: Expression[] = [expression];
+    const postTransformationStack: [Expression, Expression | undefined][] = [];
 
     while (0 < preTransformationStack.length) {
       const original = preTransformationStack.pop();
@@ -1460,13 +1448,10 @@ export class Simplifier {
           // Subop will be: ^
           let arr = subops.get(opSql);
           if (!arr) {
-            arr = [
-            ];
+            arr = [];
             subops.set(opSql, arr);
           }
-          arr.push(new Set([
-            opSql,
-          ]));
+          arr.push(new Set([opSql]));
           continue;
         }
 
@@ -1476,8 +1461,7 @@ export class Simplifier {
         for (const i of subset) {
           let arr = subops.get(i);
           if (!arr) {
-            arr = [
-            ];
+            arr = [];
             subops.set(i, arr);
           }
           arr.push(subset);
@@ -1490,8 +1474,7 @@ export class Simplifier {
         if (a && b) {
           if (a instanceof NotExpr && a.args.this instanceof Expression) {
             const key = `${this.genSql(a.args.this as Expression)}|${this.genSql(b)}`;
-            if (!pairs.has(key)) pairs.set(key, [
-            ]);
+            if (!pairs.has(key)) pairs.set(key, []);
             pairs.get(key)!.push([
               op,
               b,
@@ -1499,8 +1482,7 @@ export class Simplifier {
           }
           if (b instanceof NotExpr && b.args.this instanceof Expression) {
             const key = `${this.genSql(b.args.this as Expression)}|${this.genSql(a)}`;
-            if (!pairs.has(key)) pairs.set(key, [
-            ]);
+            if (!pairs.has(key)) pairs.set(key, []);
             pairs.get(key)!.push([
               op,
               a,
@@ -1563,10 +1545,8 @@ export class Simplifier {
           other,
           complement,
         ] of [
-            ...(pairs.get(pairKey) || [
-            ]),
-            ...(pairs.get(reversePairKey) || [
-            ]),
+            ...(pairs.get(pairKey) || []),
+            ...(pairs.get(reversePairKey) || []),
           ]) {
           op.replace(complement);
           other.replace(complement);
@@ -1586,10 +1566,7 @@ export class Simplifier {
 
     // We can't reduce a CONCAT_WS call if we don't statically know the separator
     if (expression instanceof ConcatWsExpr) {
-      const [
-        firstExpr,
-      ] = expression.args.expressions ?? [
-      ];
+      const [firstExpr] = expression.args.expressions ?? [];
       if (!(firstExpr instanceof Expression) || !firstExpr.isString) {
         return expression;
       }
@@ -1605,16 +1582,14 @@ export class Simplifier {
       const [
         first,
         ...rest
-      ] = expression.args.expressions ?? [
-      ];
+      ] = expression.args.expressions ?? [];
       sepExpr = first as Expression;
       expressions = rest;
       sep = sepExpr.name;
       concatType = ConcatWsExpr;
       args = {};
     } else {
-      expressions = expression.args.expressions ?? [
-      ];
+      expressions = expression.args.expressions ?? [];
       sep = '';
       concatType = ConcatExpr;
       args = {
@@ -1623,10 +1598,8 @@ export class Simplifier {
       };
     }
 
-    const newArgs: Expression[] = [
-    ];
-    let currentStringGroup: string[] = [
-    ];
+    const newArgs: Expression[] = [];
+    let currentStringGroup: string[] = [];
 
     for (const e of 0 < expressions.length ? expressions : Array.from(expression.flatten())) {
       if (!(e instanceof Expression)) continue;
@@ -1635,8 +1608,7 @@ export class Simplifier {
       } else {
         if (0 < currentStringGroup.length) {
           newArgs.push(LiteralExpr.string(currentStringGroup.join(sep)));
-          currentStringGroup = [
-          ];
+          currentStringGroup = [];
         }
         newArgs.push(e);
       }
@@ -1676,8 +1648,7 @@ export class Simplifier {
     if (expression instanceof CaseExpr) {
       const thisExpr = expression.args.this;
 
-      for (const caseIf of expression.args.ifs || [
-      ]) {
+      for (const caseIf of expression.args.ifs || []) {
         let cond = caseIf.args.this as Expression;
         if (thisExpr) {
           // Convert CASE x WHEN matching_value ... to CASE WHEN x = matching_value ...
@@ -1960,12 +1931,8 @@ export class Simplifier {
         x,
       ]));
 
-      const matchingHashes = new Set([
-        ...largsHashes.keys(),
-      ].filter((h) => rargsHashes.has(h)));
-      const columns = [
-        ...matchingHashes,
-      ].map((h) => largsHashes.get(h)).filter((m) =>
+      const matchingHashes = new Set([...largsHashes.keys()].filter((h) => rargsHashes.has(h)));
+      const columns = [...matchingHashes].map((h) => largsHashes.get(h)).filter((m) =>
         !isConstant(m) && !narrowInstanceOf(m, Expression)?.find(Simplifier.NONDETERMINISTIC));
       const columnHashes = new Set(columns.map((c) => narrowInstanceOf(c, Expression)?.hash()));
 
@@ -2114,8 +2081,7 @@ export class Simplifier {
       return expression;
     }
 
-    const operands = [
-    ];
+    const operands = [];
     const queue = Array.from(expression.flatten({
       unnest: false,
     }));
@@ -2606,8 +2572,7 @@ export class Simplifier {
       if (rs && rs.every((r) => this.isDatetruncPredicate(l, r))) {
         const unit = ((l.args as Record<string, unknown>).unit as Expression).name.toLowerCase();
 
-        const ranges: DateRange[] = [
-        ];
+        const ranges: DateRange[] = [];
         for (const r of rs) {
           const date = extractDate(r);
           if (!date) {
@@ -2849,20 +2814,15 @@ export function gen (expression: Expression, options: {comments?: boolean} = {})
 }
 
 class Gen {
-  private stack: unknown[] = [
-  ];
-  private sqls: string[] = [
-  ];
+  private stack: unknown[] = [];
+  private sqls: string[] = [];
 
   gen (expression: Expression, options: {comments?: boolean} = {}): string {
     const {
       comments = false,
     } = options;
-    this.stack = [
-      expression,
-    ];
-    this.sqls = [
-    ];
+    this.stack = [expression];
+    this.sqls = [];
 
     while (0 < this.stack.length) {
       const node = this.stack.pop()!;
@@ -2954,8 +2914,7 @@ class Gen {
 
     this.stack.push(
       ')',
-      e.args.expressions || [
-      ],
+      e.args.expressions || [],
       '(',
       name,
     );
@@ -2978,8 +2937,7 @@ class Gen {
   bracketSql (e: BracketExpr): void {
     this.stack.push(
       ']',
-      e.args.expressions || [
-      ],
+      e.args.expressions || [],
       '[',
       e.args.this as Expression,
     );
@@ -3138,8 +3096,7 @@ class Gen {
       this.stack.push(')', columns, '(');
     }
 
-    this.stack.push(e.args.this || [
-    ], ' AS ');
+    this.stack.push(e.args.this || [], ' AS ');
   }
 
   varSql (e: VarExpr): void {
@@ -3164,10 +3121,8 @@ class Gen {
   }
 
   private args (node: Expression, argIndex: number = 0): boolean {
-    const kvs: [string, ExpressionValue][] = [
-    ];
-    const argTypes = Array.from(node._constructor.availableArgs || [
-    ]);
+    const kvs: [string, ExpressionValue][] = [];
+    const argTypes = Array.from(node._constructor.availableArgs || []);
     const argsToProcess = 0 < argIndex ? argTypes.slice(argIndex) : argTypes;
 
     for (const k of argsToProcess) {

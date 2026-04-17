@@ -94,8 +94,7 @@ export function filterInstanceOf<Cs extends readonly TypeChecker[]> (
   values: Iterable<unknown>,
   ...types: Cs
 ): InferUnion<Cs>[] {
-  const result: InferUnion<Cs>[] = [
-  ];
+  const result: InferUnion<Cs>[] = [];
   for (const v of values) {
     if (types.some((t) => checkOne(v, t))) result.push(v as InferUnion<Cs>);
   }

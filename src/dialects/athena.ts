@@ -126,8 +126,7 @@ function generateAsHive (expression: Expression): boolean {
 }
 
 function isIcebergTable (properties: PropertiesExpr): boolean {
-  for (const p of properties.args.expressions || [
-  ]) {
+  for (const p of properties.args.expressions || []) {
     if (p instanceof PropertyExpr && p.text('this').toLowerCase() === 'table_type') {
       return p.text('value').toLowerCase() === 'iceberg';
     }
@@ -169,9 +168,7 @@ class HiveGeneratorExtension extends Hive.Generator {
         const newActions = new SchemaExpr({
           expressions: expression.args.actions,
         });
-        expression.setArgKey('actions', [
-          newActions,
-        ]);
+        expression.setArgKey('actions', [newActions]);
       }
     }
 
@@ -326,9 +323,7 @@ export class AthenaTokenizer extends Tokenizer {
     const tokensResult = super.tokenize(sql);
 
     if (tokenizeAsHive(tokensResult)) {
-      return [
-        new Token(TokenType.HIVE_TOKEN_STREAM, ''),
-      ].concat(this.hiveTokenizer.tokenize(sql));
+      return [new Token(TokenType.HIVE_TOKEN_STREAM, '')].concat(this.hiveTokenizer.tokenize(sql));
     }
 
     return this.trinoTokenizer.tokenize(sql);
@@ -389,8 +384,7 @@ export class AthenaGenerator extends Generator {
   }
 
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [
-  ];
+  static readonly SELECT_KINDS: string[] = [];
   private hiveGenerator: InstanceType<typeof Hive.Generator>;
   private trinoGenerator: InstanceType<typeof Trino.Generator>;
 

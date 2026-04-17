@@ -246,8 +246,7 @@ export function schemaSql (this: Generator, expression: SchemaExpr): string {
       return (c instanceof FuncExpr || c instanceof PropertyExpr)
         ? this.sql(c)
         : this.sql(c, 'this');
-    }) || [
-    ];
+    }) || [];
 
     return this.sql(
       new ArrayExpr({
@@ -265,9 +264,7 @@ export function schemaSql (this: Generator, expression: SchemaExpr): string {
     for (const schema of siblings) {
       if (schema === expression) continue;
 
-      const columnDefs = [
-        ...schema.findAll(ColumnDefExpr),
-      ];
+      const columnDefs = [...schema.findAll(ColumnDefExpr)];
       if (0 < columnDefs.length && schema.parent instanceof PropertyExpr) {
         expression.args.expressions?.push(...columnDefs);
       }
@@ -505,8 +502,7 @@ export function explodeToUnnestSqlPresto (this: Generator, expression: LateralEx
       const structFields = explodedType.args.expressions[0].args.expressions;
       alias.setArgKey('columns', structFields?.flatMap((c) => c instanceof Expression && c.args.this instanceof Expression
         ? c.args.this.copy()
-        : [
-        ]));
+        : []));
     }
   } else if (explode instanceof InlineExpr) {
     // Presto doesn't have INLINE; we pivot to EXPLODE
@@ -525,8 +521,7 @@ export function explodeToUnnestSqlPresto (this: Generator, expression: LateralEx
 export function amendExplodedColumnTable (expression: Expression): Expression {
   // Types must be inferred (annotated) for this amendment to work safely
   if (expression instanceof SelectExpr && expression.type) {
-    const laterals = expression.args.laterals || [
-    ];
+    const laterals = expression.args.laterals || [];
 
     for (const lateral of laterals) {
       const alias = lateral.args.alias;
@@ -543,9 +538,7 @@ export function amendExplodedColumnTable (expression: Expression): Expression {
       const oldTable = alias.args.columns[0] instanceof Expression ? alias.args.columns[0].name.toLowerCase() : alias.args.columns[0];
 
       // Find all columns in the current scope that might be incorrectly qualified
-      for (const column of findAllInScope(expression, [
-        ColumnExpr,
-      ])) {
+      for (const column of findAllInScope(expression, [ColumnExpr])) {
         const colDb = column.args.db?.toString().toLowerCase();
         const colTable = column.args.table?.toString().toLowerCase();
         const colName = column.name.toLowerCase();
@@ -591,8 +584,7 @@ class PrestoTokenizer extends Tokenizer {
       'u&',
     ];
     const quotes = Tokenizer.QUOTES as string[];
-    const result: [string, string][] = [
-    ];
+    const result: [string, string][] = [];
 
     for (const q of quotes) {
       for (const p of prefixes) {
@@ -688,9 +680,7 @@ class PrestoParser extends Parser {
       ELEMENT_AT: (args: Expression[]) =>
         new BracketExpr({
           this: seqGet(args, 0),
-          expressions: [
-            args[1],
-          ],
+          expressions: [args[1]],
           offset: 1,
           safe: true,
         }),
@@ -801,8 +791,7 @@ class PrestoGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [
-  ];
+  static readonly SELECT_KINDS: string[] = [];
   static INTERVAL_ALLOWS_PLURAL_FORM = false;
   static JOIN_HINTS = false;
   static TABLE_HINTS = false;
@@ -934,9 +923,7 @@ class PrestoGenerator extends Generator {
       [
         ArrayExpr,
         preprocess(
-          [
-            inheritStructFieldNames,
-          ],
+          [inheritStructFieldNames],
           function (this: Generator, e) {
             return `ARRAY[${this.expressions(e, {
               flat: true,
@@ -993,9 +980,7 @@ class PrestoGenerator extends Generator {
       [
         BitwiseNotExpr,
         function (this: Generator, e: BitwiseNotExpr) {
-          return this.func('BITWISE_NOT', [
-            e.args.this,
-          ]);
+          return this.func('BITWISE_NOT', [e.args.this]);
         },
       ],
       [
@@ -1027,9 +1012,7 @@ class PrestoGenerator extends Generator {
       ],
       [
         CastExpr,
-        preprocess([
-          epochCastToTs,
-        ]),
+        preprocess([epochCastToTs]),
       ],
       [
         CurrentTimeExpr,
@@ -1076,9 +1059,7 @@ class PrestoGenerator extends Generator {
       [
         DayOfWeekExpr,
         function (this: Generator, e: DayOfWeekExpr) {
-          return `((${this.func('DAY_OF_WEEK', [
-            e.args.this,
-          ])} % 7) + 1)`;
+          return `((${this.func('DAY_OF_WEEK', [e.args.this])} % 7) + 1)`;
         },
       ],
       [
@@ -1149,9 +1130,7 @@ class PrestoGenerator extends Generator {
       [
         LastDayExpr,
         function (this: Generator, e: LastDayExpr) {
-          return this.func('LAST_DAY_OF_MONTH', [
-            e.args.this,
-          ]);
+          return this.func('LAST_DAY_OF_MONTH', [e.args.this]);
         },
       ],
       [
@@ -1250,9 +1229,7 @@ class PrestoGenerator extends Generator {
       ],
       [
         TableExpr,
-        preprocess([
-          unnestGenerateSeries,
-        ]),
+        preprocess([unnestGenerateSeries]),
       ],
       [
         TimestampExpr,
@@ -1312,9 +1289,7 @@ class PrestoGenerator extends Generator {
       ],
       [
         TryCastExpr,
-        preprocess([
-          epochCastToTs,
-        ]),
+        preprocess([epochCastToTs]),
       ],
       [
         TsOrDiToDiExpr,
@@ -1360,15 +1335,11 @@ class PrestoGenerator extends Generator {
       ],
       [
         WithExpr,
-        preprocess([
-          addRecursiveCteColumnNames,
-        ]),
+        preprocess([addRecursiveCteColumnNames]),
       ],
       [
         WithinGroupExpr,
-        preprocess([
-          removeWithinGroupForPercentiles,
-        ]),
+        preprocess([removeWithinGroupForPercentiles]),
       ],
       [
         TruncExpr,
@@ -1553,13 +1524,7 @@ class PrestoGenerator extends Generator {
 
     return this.func(
       'LOWER',
-      [
-        this.func('TO_HEX', [
-          this.func('MD5', [
-            this.sql(thisArg),
-          ]),
-        ]),
-      ],
+      [this.func('TO_HEX', [this.func('MD5', [this.sql(thisArg)])])],
     );
   }
 
@@ -1604,14 +1569,10 @@ class PrestoGenerator extends Generator {
     );
 
     const coalesced = this.func('COALESCE', [
-      this.func('TRY', [
-        parseWithoutTz,
-      ]),
+      this.func('TRY', [parseWithoutTz]),
       parseWithTz,
     ]);
-    return this.func('TO_UNIXTIME', [
-      coalesced,
-    ]);
+    return this.func('TO_UNIXTIME', [coalesced]);
   }
 
   public bracketSql (expression: BracketExpr): string {
@@ -1624,8 +1585,7 @@ class PrestoGenerator extends Generator {
             ? seqGet(
               applyIndexOffset(
                 expression.args.this,
-                expression.args.expressions ?? [
-                ],
+                expression.args.expressions ?? [],
                 1 - (expression.args.offset || 0),
                 {
                   dialect: this.dialect,
@@ -1651,14 +1611,11 @@ class PrestoGenerator extends Generator {
       });
     }
 
-    const values: string[] = [
-    ];
-    const schema: string[] = [
-    ];
+    const values: string[] = [];
+    const schema: string[] = [];
     let unknownType = false;
 
-    for (const e of expression.args.expressions || [
-    ]) {
+    for (const e of expression.args.expressions || []) {
       if (e instanceof PropertyEqExpr) {
         if (isType(e.type, DataTypeExprKind.UNKNOWN)) {
           unknownType = true;
@@ -1716,9 +1673,7 @@ class PrestoGenerator extends Generator {
    * Presto DELETE is restrictive (no aliases, single table).
    */
   public deleteSql (expression: DeleteExpr): string {
-    const tables = expression.args.tables || [
-      expression.args.this,
-    ];
+    const tables = expression.args.tables || [expression.args.this];
     if (1 < tables.length) {
       return super.deleteSql(expression);
     }
@@ -1745,18 +1700,15 @@ class PrestoGenerator extends Generator {
       return this.func('JSON_EXTRACT', [
         expression.args.this,
         expression.args.expression,
-        ...expression.args.expressions || [
-        ],
+        ...expression.args.expressions || [],
       ]);
     }
 
     const thisArg = this.sql(expression, 'this');
-    const segments: string[] = [
-    ];
+    const segments: string[] = [];
 
     // Convert JSONPath '$.x.y' to ROW access 'col.x.y'
-    for (const pathKey of narrowInstanceOf(expression.args.expression, Expression)?.args.expressions?.slice(1) || [
-    ]) {
+    for (const pathKey of narrowInstanceOf(expression.args.expression, Expression)?.args.expressions?.slice(1) || []) {
       if (!(pathKey instanceof JsonPathKeyExpr)) {
         this.unsupported(`Cannot transpile JSONPath segment '${pathKey}' to ROW access`);
         continue;
@@ -1776,9 +1728,7 @@ class PrestoGenerator extends Generator {
     return this.func(
       'ARRAY_JOIN',
       [
-        this.func('ARRAY_AGG', [
-          expression.args.this,
-        ]),
+        this.func('ARRAY_AGG', [expression.args.this]),
         expression.args.separator,
       ],
     );

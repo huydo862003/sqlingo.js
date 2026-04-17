@@ -39,8 +39,7 @@ export function formatTime (
   const size = string.length;
   const trieToUse = trie ?? newTrie(Object.keys(mapping).map((k) => Array.from(k)));
   let current = trieToUse;
-  const chunks: string[] = [
-  ];
+  const chunks: string[] = [];
   let sym: string | undefined;
 
   while (end <= size) {
@@ -48,9 +47,7 @@ export function formatTime (
     const [
       result,
       newCurrent,
-    ] = inTrie(current, [
-      chars[chars.length - 1],
-    ]);
+    ] = inTrie(current, [chars[chars.length - 1]]);
     current = newCurrent;
 
     if (result === TrieResult.FAILED) {

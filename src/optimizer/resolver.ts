@@ -108,8 +108,7 @@ export class Resolver {
 
     if (!tableName && this.inferSchema) {
       const allSourceColumns = this.getAllSourceColumns();
-      const sourcesWithoutSchema: string[] = [
-      ];
+      const sourcesWithoutSchema: string[] = [];
       for (const [
         source,
         columns,
@@ -132,9 +131,7 @@ export class Resolver {
       return toIdentifier(tableName);
     }
 
-    const [
-      node,
-    ] = selectedSource;
+    const [node] = selectedSource;
 
     let currentNode: Expression | undefined = node;
     if (currentNode instanceof QueryExpr) {
@@ -204,8 +201,7 @@ export class Resolver {
       const rightExpr = setOp.args.expression;
 
       if (!leftExpr || !rightExpr) {
-        return [
-        ];
+        return [];
       }
 
       const left = this.getSourceColumnsFromSetOp(leftExpr as Expression);
@@ -241,8 +237,7 @@ export class Resolver {
       onlyVisible = false,
     } = options;
     if (this.getSourceColumnsCache.has(name, onlyVisible)) {
-      return this.getSourceColumnsCache.get(name, onlyVisible) ?? [
-      ];
+      return this.getSourceColumnsCache.get(name, onlyVisible) ?? [];
     }
 
     const source = this.scope.sources.get(name);
@@ -250,14 +245,12 @@ export class Resolver {
       throw new OptimizeError(`Unknown table: ${name}`);
     }
 
-    let columns: string[] = [
-    ];
+    let columns: string[] = [];
 
     if (source instanceof TableExpr) {
       columns = this.schema.columnNames?.(source, {
         onlyVisible,
-      }) || [
-      ];
+      }) || [];
     } else if (source instanceof Scope) {
       const sourceExpr = source.expression;
       if (sourceExpr instanceof ValuesExpr || sourceExpr instanceof UnnestExpr) {
@@ -268,8 +261,7 @@ export class Resolver {
 
           if (!unnest.type || isType(unnest.type, DataTypeExprKind.UNKNOWN)) {
             const unnestExpressions = unnest.args.expressions;
-            const unnestExpr = seqGet(unnestExpressions ?? [
-            ], 0);
+            const unnestExpr = seqGet(unnestExpressions ?? [], 0);
             if (unnestExpr instanceof ColumnExpr && this.scope.parent) {
               const colType = this.getUnnestColumnType(unnestExpr);
               if (colType?.isType(DataTypeExprKind.ARRAY)) {
@@ -284,8 +276,7 @@ export class Resolver {
           }
 
           if (unnest.isType(DataTypeExprKind.STRUCT)) {
-            for (const field of (unnest.type instanceof Expression ? unnest.type.args.expressions : undefined) || [
-            ]) {
+            for (const field of (unnest.type instanceof Expression ? unnest.type.args.expressions : undefined) || []) {
               if (isInstanceOf(field, Expression)) {
                 columns.push(field.name);
               }
@@ -295,8 +286,7 @@ export class Resolver {
       } else if (sourceExpr instanceof SetOperationExpr) {
         columns = this.getSourceColumnsFromSetOp(sourceExpr);
       } else {
-        const select = seqGet(sourceExpr.args.expressions ?? [
-        ], 0);
+        const select = seqGet(sourceExpr.args.expressions ?? [], 0);
         if (select instanceof QueryTransformExpr) {
           const schema = select.args.schema;
           columns = schema
@@ -305,8 +295,7 @@ export class Resolver {
                 return c.name;
               }
               return String(c);
-            }) ?? [
-            ]
+            }) ?? []
             : [
               'key',
               'value',
@@ -317,9 +306,7 @@ export class Resolver {
       }
     }
 
-    const [
-      node,
-    ] = this.scope.selectedSources[name] || [
+    const [node] = this.scope.selectedSources[name] || [
       undefined,
       undefined,
     ];
@@ -330,13 +317,11 @@ export class Resolver {
     } else if (node instanceof Expression) {
       columnAliases = node.aliasColumnNames;
     } else {
-      columnAliases = [
-      ];
+      columnAliases = [];
     }
 
     if (columnAliases.length) {
-      const newColumns: string[] = [
-      ];
+      const newColumns: string[] = [];
       for (let i = 0; i < Math.max(columns.length, columnAliases.length); i++) {
         const alias = seqGet(columnAliases, i);
         const colName = seqGet(columns, i);
@@ -461,9 +446,7 @@ export class Resolver {
       columns,
     ] of sourceColumnsPairs.slice(1)) {
       const unique = new Set(columns);
-      const ambiguous = new Set([
-        ...allColumns,
-      ].filter((c) => unique.has(c)));
+      const ambiguous = new Set([...allColumns].filter((c) => unique.has(c)));
       for (const col of columns) allColumns.add(col);
 
       for (const column of ambiguous) {

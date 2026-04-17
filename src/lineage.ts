@@ -58,8 +58,7 @@ export class Node {
     this.name = options.name;
     this.expression = options.expression;
     this.source = options.source;
-    this.downstream = options.downstream || [
-    ];
+    this.downstream = options.downstream || [];
     this.sourceName = options.sourceName || '';
     this.referenceNodeName = options.referenceNodeName || '';
   }
@@ -73,8 +72,7 @@ export class Node {
 
   toHtml (dialect?: DialectType, opts: Record<string, unknown> = {}): GraphHTML {
     const nodes: Record<string, unknown> = {};
-    const edges: unknown[] = [
-    ];
+    const edges: unknown[] = [];
 
     for (const node of this.walk()) {
       let label: string;
@@ -342,8 +340,7 @@ export function toNode (
       continue;
     }
 
-    for (const name of subquery.namedSelects || [
-    ]) {
+    for (const name of subquery.namedSelects || []) {
       toNode(name, subqueryScope, dialect, {
         upstream: node,
         trimSelects,
@@ -374,9 +371,7 @@ export function toNode (
 
   // Find all columns that went into creating this one to list their lineage nodes.
   const sourceColumnsSet = new Set<ColumnExpr>(
-    findAllInScope(select, [
-      ColumnExpr,
-    ]),
+    findAllInScope(select, [ColumnExpr]),
   );
 
   let derivedTables: Expression[];
@@ -405,8 +400,7 @@ export function toNode (
   const pivotColumnMapping = new Map<string, ColumnExpr[]>();
 
   if (pivot) {
-    const pivotColumns = pivot.args.columns ?? [
-    ];
+    const pivotColumns = pivot.args.columns ?? [];
     const pivotAggsCount = pivot.args.expressions?.length ?? 0;
 
     pivot.args.expressions?.forEach((agg, i: number) => {
@@ -438,13 +432,11 @@ export function toNode (
         trimSelects,
       });
     } else if (pivot && pivot.aliasOrName === c.table) {
-      const downstreamColumns: ColumnExpr[] = [
-      ];
+      const downstreamColumns: ColumnExpr[] = [];
       const columnName = c.name;
 
       if (pivot.args.columns?.some((pc) => pc.name === columnName)) {
-        downstreamColumns.push(...(pivotColumnMapping.get(columnName) || [
-        ]));
+        downstreamColumns.push(...(pivotColumnMapping.get(columnName) || []));
       } else {
         // Adapt column to be from the implicit pivoted source
         downstreamColumns.push(new ColumnExpr({

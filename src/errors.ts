@@ -43,8 +43,7 @@ export class ParseError extends SqlglotError {
   constructor (message: string, errors?: ErrorDetail[]) {
     super(message);
     this.name = 'ParseError';
-    this.errors = errors || [
-    ];
+    this.errors = errors || [];
     Error.captureStackTrace(this, this.constructor);
   }
 
@@ -123,12 +122,9 @@ export function highlightSql (options: {
   let startContext = '';
   let endContext = '';
   let firstHighlightStart = 0;
-  const formattedParts: string[] = [
-  ];
+  const formattedParts: string[] = [];
   let previousPartEnd = 0;
-  const sortedPositions = [
-    ...positions,
-  ].sort((a, b) => a[0] - b[0]);
+  const sortedPositions = [...positions].sort((a, b) => a[0] - b[0]);
 
   if (0 < sortedPositions[0][0]) {
     firstHighlightStart = sortedPositions[0][0];

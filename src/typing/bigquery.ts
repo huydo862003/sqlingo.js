@@ -116,9 +116,7 @@ function annotateByArgsApproxTop (
     expression,
     new DataTypeExpr({
       this: DataTypeExprKind.ARRAY,
-      expressions: [
-        structType,
-      ],
+      expressions: [structType],
       nested: true,
     }),
   );
@@ -127,9 +125,7 @@ function annotateByArgsApproxTop (
 }
 
 function annotateConcat (annotator: TypeAnnotator, expression: ConcatExpr): ConcatExpr {
-  annotator.annotateByArgs(expression, [
-    'expressions',
-  ]);
+  annotator.annotateByArgs(expression, ['expressions']);
 
   // Args must be BYTES or types that can be cast to STRING, return type is either BYTES or STRING
   if (!expression.isType([
@@ -197,9 +193,7 @@ function annotateArray (annotator: TypeAnnotator, expression: ArrayExpr): ArrayE
 
       const arrayType = new DataTypeExpr({
         this: DataTypeExprKind.ARRAY,
-        expressions: [
-          elementType,
-        ],
+        expressions: [elementType],
         nested: true,
       });
 
@@ -208,9 +202,7 @@ function annotateArray (annotator: TypeAnnotator, expression: ArrayExpr): ArrayE
     }
   }
 
-  annotator.annotateByArgs(expression, [
-    'expressions',
-  ], {
+  annotator.annotateByArgs(expression, ['expressions'], {
     array: true,
   });
   return expression;
@@ -272,9 +264,7 @@ export class BigQueryTyping {
       TrimExpr,
       UpperExpr,
     ], {
-      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, [
-        'this',
-      ]),
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
     });
 
     extend([
@@ -399,9 +389,7 @@ export class BigQueryTyping {
       RegexpExtractAllExpr,
       SplitExpr,
     ], {
-      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, [
-        'this',
-      ], {
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this'], {
         array: true,
       }),
     });

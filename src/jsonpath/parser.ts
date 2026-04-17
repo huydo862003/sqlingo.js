@@ -150,9 +150,7 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
 
     if (typeof literal === 'string' || literal !== false) {
       type JsonPathIndexValue = string | JsonPathWildcardExpr | JsonPathScriptExpr | JsonPathFilterExpr | JsonPathSliceExpr | number;
-      const indexes: JsonPathIndexValue[] = [
-        literal as JsonPathIndexValue,
-      ];
+      const indexes: JsonPathIndexValue[] = [literal as JsonPathIndexValue];
       while (match(TokenType.COMMA)) {
         const nextLiteral = parseSlice();
         if (nextLiteral !== false) {
@@ -210,9 +208,7 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
   // We canonicalize the JSON path AST so that it always starts with a
   // "root" element, so paths like "field" will be generated as "$.field"
   match(TokenType.DOLLAR);
-  const expressions: JsonPathPartExpr[] = [
-    new JsonPathRootExpr({}),
-  ];
+  const expressions: JsonPathPartExpr[] = [new JsonPathRootExpr({})];
 
   while (curr()) {
     if (match(TokenType.DOT) || match(TokenType.COLON)) {

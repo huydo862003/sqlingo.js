@@ -64,9 +64,7 @@ export class DuckDbTyping {
       returns: DataTypeExprKind.BIGINT,
     });
 
-    extend([
-      FactorialExpr,
-    ], {
+    extend([FactorialExpr], {
       returns: DataTypeExprKind.INT128,
     });
 

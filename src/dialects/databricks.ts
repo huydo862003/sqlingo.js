@@ -381,8 +381,7 @@ export class Databricks extends Spark {
 
     for (const textType of DataTypeExpr.TEXT_TYPES) {
       const types = new Set([
-        ...(coercionMap.get(textType) || [
-        ]),
+        ...(coercionMap.get(textType) || []),
         ...DataTypeExpr.NUMERIC_TYPES,
         ...DataTypeExpr.TEMPORAL_TYPES,
         DataTypeExprKind.BINARY,

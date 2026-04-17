@@ -125,8 +125,7 @@ export class TableauGenerator extends Generator {
   // port from _Dialect metaclass logic
   static SUPPORTS_DECODE_CASE = false;
   // port from _Dialect metaclass logic
-  static readonly SELECT_KINDS: string[] = [
-  ];
+  static readonly SELECT_KINDS: string[] = [];
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -157,21 +156,16 @@ export class TableauGenerator extends Generator {
     m.set(IfExpr, function (this: Generator, e: IfExpr) {
       return `IF ${this.sql(e, 'this')} THEN ${this.sql(e, 'true')} ELSE ${this.sql(e, 'false')} END`;
     });
-    m.set(SelectExpr, preprocess([
-      eliminateDistinctOn,
-    ]));
+    m.set(SelectExpr, preprocess([eliminateDistinctOn]));
     return m;
   }
 
   public countSql (expression: CountExpr): string {
     const inner = expression.args.this;
     if (inner instanceof DistinctExpr) {
-      return this.func('COUNTD', inner.args.expressions ?? [
-      ]);
+      return this.func('COUNTD', inner.args.expressions ?? []);
     }
-    return this.func('COUNT', [
-      inner,
-    ]);
+    return this.func('COUNT', [inner]);
   }
 
   public strPositionSql (expression: StrPositionExpr): string {

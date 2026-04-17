@@ -85,9 +85,7 @@ export function seqGet<T> (seq: Iterable<T>, index: number): T | undefined {
     const i = index < 0 ? seq.length + index : index;
     return 0 <= i && i < seq.length ? seq[i] : undefined;
   }
-  const arr = [
-    ...seq,
-  ];
+  const arr = [...seq];
   const i = index < 0 ? arr.length + index : index;
   return 0 <= i && i < arr.length ? arr[i] : undefined;
 }
@@ -111,22 +109,15 @@ export function ensureList<T extends Expression> (value?: T): T[];
 export function ensureList<T> (value?: T | Iterable<T>): T[];
 export function ensureList<T> (value?: T | Iterable<T>): T[] {
   if (value === undefined) {
-    return [
-    ];
+    return [];
   }
   if (value instanceof Expression) {
-    return [
-      value,
-    ];
+    return [value];
   }
   if (typeof value !== 'string' && isIterable<T>(value)) {
-    return [
-      ...value,
-    ];
+    return [...value];
   }
-  return [
-    value as T,
-  ];
+  return [value as T];
 }
 
 /**
@@ -145,16 +136,13 @@ export function ensureList<T> (value?: T | Iterable<T>): T[] {
  */
 export function ensureCollection<T> (value?: T | Iterable<T>): Iterable<T> {
   if (value === undefined) {
-    return [
-    ];
+    return [];
   }
 
   if (typeof value !== 'string' && !(value instanceof Expression) && isIterable<T>(value)) {
     return value;
   }
-  return [
-    value as T,
-  ];
+  return [value as T];
 }
 
 /**
@@ -172,8 +160,7 @@ export function csv (args: Iterable<string>, options: {sep?: string} = {}): stri
   const {
     sep = ', ',
   } = options;
-  const filtered: string[] = [
-  ];
+  const filtered: string[] = [];
   for (const arg of args) if (arg) filtered.push(arg);
   return filtered.join(sep ?? ', ');
 }
@@ -185,8 +172,7 @@ function getCloseMatches (
   cutoff: number = 0.6,
 ): string[] {
   const results: {match: string;
-    ratio: number;}[] = [
-  ];
+    ratio: number;}[] = [];
 
   for (const possibility of possibilities) {
     const ratio = similarity(word, possibility);
@@ -217,13 +203,10 @@ function similarity (a: string, b: string): number {
 }
 
 function levenshteinDistance (a: string, b: string): number {
-  const matrix: number[][] = [
-  ];
+  const matrix: number[][] = [];
 
   for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [
-      i,
-    ];
+    matrix[i] = [i];
   }
 
   for (let j = 0; j <= a.length; j++) {
@@ -329,8 +312,7 @@ function hashObject (obj: unknown): string {
  *
  */
 export function tsort<T> (dag: Map<T, Set<T>>): T[] {
-  const result: T[] = [
-  ];
+  const result: T[] = [];
   const dagCopy = new Map(dag);
 
   for (const [
@@ -539,8 +521,7 @@ export function splitNumWords (
  *
  */
 export function flatten (values: Iterable<unknown>): unknown[] {
-  const result: unknown[] = [
-  ];
+  const result: unknown[] = [];
   for (const value of values) {
     if (Array.isArray(value)) {
       result.push(...flatten(value));
@@ -663,12 +644,9 @@ export function toBool (value?: string | boolean): string | boolean | undefined 
  *
  */
 export function mergeRanges<T> (ranges: Iterable<[T, T]>): [T, T][] {
-  const arr = [
-    ...ranges,
-  ];
+  const arr = [...ranges];
   if (arr.length === 0) {
-    return [
-    ];
+    return [];
   }
 
   const sorted = arr.sort((a, b) => (a[0] < b[0]
@@ -676,9 +654,7 @@ export function mergeRanges<T> (ranges: Iterable<[T, T]>): [T, T][] {
     : b[0] < a[0]
       ? 1
       : 0));
-  const merged: [T, T][] = [
-    sorted[0],
-  ];
+  const merged: [T, T][] = [sorted[0]];
 
   for (let i = 1; i < sorted.length; i++) {
     const [
@@ -882,9 +858,7 @@ export function applyIndexOffset (
   offset: number,
   options?: {dialect?: Dialect},
 ): Expression[] {
-  const exprs = [
-    ...expressions,
-  ];
+  const exprs = [...expressions];
   if (!offset || exprs.length !== 1) {
     return exprs;
   }
@@ -922,9 +896,7 @@ export function applyIndexOffset (
       this: expression,
       expression: literal(offset),
     });
-    return [
-      simplify(offsetExpr),
-    ];
+    return [simplify(offsetExpr)];
   }
 
   return exprs;

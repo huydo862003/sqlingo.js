@@ -98,9 +98,7 @@ export function pushdownPredicates<E extends Expression> (
           k,
           source,
         ] of Object.entries(selectedSources)) {
-          const [
-            node,
-          ] = source;
+          const [node] = source;
           if (!node) continue;
 
           const parent = node.findAncestor<JoinExpr | FromExpr>(JoinExpr, FromExpr);
@@ -174,9 +172,7 @@ function pushdown (
 
   const predicates = (cnfLike ? condition instanceof AndExpr : condition instanceof OrExpr)
     ? Array.from(condition.flatten())
-    : [
-      condition,
-    ];
+    : [condition];
 
   if (cnfLike) {
     pushdownCnf(predicates, sources, scopeRefCount, joinIndex);

@@ -63,9 +63,7 @@ export default defineConfig({
       },
       output: {
         manualChunks: {
-          vue: [
-            'vue',
-          ],
+          vue: ['vue'],
           hljs: [
             'highlight.js/lib/core',
             'highlight.js/lib/languages/typescript',

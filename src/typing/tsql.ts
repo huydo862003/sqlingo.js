@@ -66,9 +66,7 @@ export class TSQLTyping {
     });
 
     map.set(RadiansExpr, {
-      annotator: (s: TypeAnnotator, e: RadiansExpr) => s.annotateByArgs(e, [
-        'this',
-      ]),
+      annotator: (s: TypeAnnotator, e: RadiansExpr) => s.annotateByArgs(e, ['this']),
     });
 
     return map;

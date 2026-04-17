@@ -104,9 +104,7 @@ class TrinoParser extends Presto.Parser {
   static get JSON_QUERY_OPTIONS (): Record<string, string[][]> {
     return {
       WITH: [
-        [
-          'WRAPPER',
-        ],
+        ['WRAPPER'],
         [
           'ARRAY',
           'WRAPPER',
@@ -131,9 +129,7 @@ class TrinoParser extends Presto.Parser {
         ],
       ],
       WITHOUT: [
-        [
-          'WRAPPER',
-        ],
+        ['WRAPPER'],
         [
           'ARRAY',
           'WRAPPER',

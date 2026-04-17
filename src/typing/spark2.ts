@@ -37,17 +37,14 @@ function annotateBySimilarArgs (
   args: Iterable<string>,
   targetType: DataTypeExprKind | DataTypeExpr,
 ): Expression {
-  const expressions: Expression[] = [
-  ];
+  const expressions: Expression[] = [];
 
   for (const arg of args) {
     const argExpr = (expression.args as Record<string, unknown>)[arg];
     if (argExpr) {
       const list = Array.isArray(argExpr)
         ? argExpr
-        : [
-          argExpr,
-        ];
+        : [argExpr];
       expressions.push(...filterInstanceOf(list, Expression));
     }
   }
@@ -101,9 +98,7 @@ export class Spark2Typing {
     });
 
     map.set(ConcatExpr, {
-      annotator: (s: TypeAnnotator, e: ConcatExpr) => annotateBySimilarArgs.call(s, e, [
-        'expressions',
-      ], DataTypeExprKind.TEXT),
+      annotator: (s: TypeAnnotator, e: ConcatExpr) => annotateBySimilarArgs.call(s, e, ['expressions'], DataTypeExprKind.TEXT),
     });
 
     map.set(PadExpr, {
@@ -114,9 +109,7 @@ export class Spark2Typing {
     });
 
     map.set(SubstringExpr, {
-      annotator: (s: TypeAnnotator, e: SubstringExpr) => s.annotateByArgs(e, [
-        'this',
-      ]),
+      annotator: (s: TypeAnnotator, e: SubstringExpr) => s.annotateByArgs(e, ['this']),
     });
 
     return map;

@@ -114,12 +114,10 @@ export function qualifyTables<E extends Expression> (
   if ((db || catalog) && !(expression instanceof QueryExpr)) {
     const withClause = expression.getArgKey('with') as WithExpr | undefined;
     const with_ = withClause || new WithExpr({
-      expressions: [
-      ],
+      expressions: [],
     });
     const cteNames = new Set(
-      (with_.args.expressions || [
-      ]).map((cte) => cte.aliasOrName),
+      (with_.args.expressions || []).map((cte) => cte.aliasOrName),
     );
 
     for (const node of expression.walk({
@@ -213,8 +211,7 @@ export function qualifyTables<E extends Expression> (
         scope,
       });
 
-      const pivot = seqGet(derivedTable.getArgKey('pivots') as Expression[] || [
-      ], 0);
+      const pivot = seqGet(derivedTable.getArgKey('pivots') as Expression[] || [], 0);
       if (pivot) {
         setAlias(pivot, canonicalAliases);
       }
@@ -238,8 +235,7 @@ export function qualifyTables<E extends Expression> (
 
         const tableThis = source.args.this;
         const tableAlias = source.args.alias;
-        let functionColumns: (string | IdentifierExpr)[] = [
-        ];
+        let functionColumns: (string | IdentifierExpr)[] = [];
 
         if (tableThis && tableThis instanceof FuncExpr) {
           const func = tableThis as FuncExpr;
@@ -249,8 +245,7 @@ export function qualifyTables<E extends Expression> (
             const defaultCols = dialect._constructor.DEFAULT_FUNCTIONS_COLUMN_NAMES.get(funcTypeName);
             functionColumns = defaultCols
               ? Array.from(ensureList(defaultCols))
-              : [
-              ];
+              : [];
           } else if (tableAlias instanceof TableAliasExpr && tableAlias.args.columns?.length) {
             functionColumns = tableAlias.columns as IdentifierExpr[];
           } else if (dialect._constructor.DEFAULT_FUNCTIONS_COLUMN_NAMES.has(funcTypeName)) {

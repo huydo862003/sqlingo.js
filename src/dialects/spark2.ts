@@ -81,8 +81,7 @@ function mapSql (this: Generator, expression: MapExpr): string {
   const values = expression.args.values;
 
   if (!keys || !values) {
-    return this.func('MAP', [
-    ]);
+    return this.func('MAP', []);
   }
 
   return this.func('MAP_FROM_ARRAYS', [
@@ -103,9 +102,7 @@ export function buildAsCast (toType: string) {
 function strToDate (this: Generator, expression: StrToDateExpr): string {
   const timeFormat = this.formatTime(expression);
   if (timeFormat === Hive.DATE_FORMAT) {
-    return this.func('TO_DATE', [
-      expression.args.this,
-    ]);
+    return this.func('TO_DATE', [expression.args.this]);
   }
   return this.func('TO_DATE', [
     expression.args.this,
@@ -120,9 +117,7 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   if (scale === undefined) {
     return this.sql(
       new CastExpr({
-        this: this.func('from_unixtime', [
-          timestamp,
-        ]),
+        this: this.func('from_unixtime', [timestamp]),
         to: DataTypeExpr.build(DataTypeExprKind.TIMESTAMP),
       }),
     );
@@ -130,19 +125,13 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
 
   const scaleValue = scale.toValue();
   if (scaleValue === UnixToTimeExpr.SECONDS.toValue()) {
-    return this.func('TIMESTAMP_SECONDS', [
-      timestamp,
-    ]);
+    return this.func('TIMESTAMP_SECONDS', [timestamp]);
   }
   if (scaleValue === UnixToTimeExpr.MILLIS.toValue()) {
-    return this.func('TIMESTAMP_MILLIS', [
-      timestamp,
-    ]);
+    return this.func('TIMESTAMP_MILLIS', [timestamp]);
   }
   if (scaleValue === UnixToTimeExpr.MICROS.toValue()) {
-    return this.func('TIMESTAMP_MICROS', [
-      timestamp,
-    ]);
+    return this.func('TIMESTAMP_MICROS', [timestamp]);
   }
 
   const unixSeconds = new DivExpr({
@@ -153,9 +142,7 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
     ]),
   });
 
-  return this.func('TIMESTAMP_SECONDS', [
-    unixSeconds,
-  ]);
+  return this.func('TIMESTAMP_SECONDS', [unixSeconds]);
 }
 
 /**
@@ -396,8 +383,7 @@ class Spark2Parser extends Hive.Parser {
 
   pivotColumnNames (aggregations: Expression[]): string[] {
     if (aggregations.length === 1) {
-      return [
-      ];
+      return [];
     }
     return pivotColumnNames(aggregations, {
       dialect: 'spark',
@@ -533,9 +519,7 @@ class Spark2Generator extends Hive.Generator {
       [
         DayOfWeekIsoExpr,
         function (this: Generator, e: DayOfWeekIsoExpr) {
-          return '(( ' + this.func('DAYOFWEEK', [
-            e.args.this,
-          ]) + ' % 7) + 1)';
+          return '(( ' + this.func('DAYOFWEEK', [e.args.this]) + ' % 7) + 1)';
         },
       ],
       [
@@ -548,9 +532,7 @@ class Spark2Generator extends Hive.Generator {
       ],
       [
         FromExpr,
-        preprocess([
-          unaliasPivot,
-        ]),
+        preprocess([unaliasPivot]),
       ],
       [
         FromTimeZoneExpr,
@@ -575,9 +557,7 @@ class Spark2Generator extends Hive.Generator {
       ],
       [
         PivotExpr,
-        preprocess([
-          unqualifyPivotColumns,
-        ]),
+        preprocess([unqualifyPivotColumns]),
       ],
       [
         ReduceExpr,
@@ -648,9 +628,7 @@ class Spark2Generator extends Hive.Generator {
       ],
       [
         WithinGroupExpr,
-        preprocess([
-          removeWithinGroupForPercentiles,
-        ]),
+        preprocess([removeWithinGroupForPercentiles]),
       ],
     ]);
 
@@ -687,9 +665,7 @@ class Spark2Generator extends Hive.Generator {
     }
 
     if (isParseJson(expression)) {
-      return this.func('TO_JSON', [
-        arg,
-      ]);
+      return this.func('TO_JSON', [arg]);
     }
 
     return super.castSql(expression, options);

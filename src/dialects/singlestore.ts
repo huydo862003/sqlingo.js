@@ -631,9 +631,7 @@ class SingleStoreGenerator extends MySQL.Generator {
               e.args.this,
               this.formatTime(e),
             ])
-            : this.func('DATE', [
-              e.args.this,
-            ]);
+            : this.func('DATE', [e.args.this]);
         },
       ],
       [
@@ -917,9 +915,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         JsonArrayAggExpr,
         function (this: Generator, e: JsonArrayAggExpr) {
           unsupportedArgs.call(this, e, 'nullHandling', 'returnType', 'strict');
-          return this.func('JSON_AGG', [
-            e.args.this,
-          ], {
+          return this.func('JSON_AGG', [e.args.this], {
             suffix: `${this.sql(e.args.order)})`,
           });
         },
@@ -961,9 +957,7 @@ class SingleStoreGenerator extends MySQL.Generator {
       [
         DayOfWeekIsoExpr,
         function (this: Generator, e: DayOfWeekIsoExpr) {
-          return `((${this.func('DAYOFWEEK', [
-            e.args.this,
-          ])} % 7) + 1)`;
+          return `((${this.func('DAYOFWEEK', [e.args.this])} % 7) + 1)`;
         },
       ],
       [
@@ -1038,9 +1032,7 @@ class SingleStoreGenerator extends MySQL.Generator {
           return this.func('LPAD', [
             LiteralExpr.string(''),
             new MulExpr({
-              this: this.func('LENGTH', [
-                e.args.this,
-              ]),
+              this: this.func('LENGTH', [e.args.this]),
               expression: e.args.times?.[0],
             }),
             e.args.this,
@@ -1056,11 +1048,7 @@ class SingleStoreGenerator extends MySQL.Generator {
       [
         Md5DigestExpr,
         function (this: Generator, e: Md5DigestExpr) {
-          return this.func('UNHEX', [
-            this.func('MD5', [
-              e.args.this,
-            ]),
-          ]);
+          return this.func('UNHEX', [this.func('MD5', [e.args.this])]);
         },
       ],
       [
@@ -2459,9 +2447,7 @@ class SingleStoreGenerator extends MySQL.Generator {
 
     return this.func('JSON_ARRAY_CONTAINS_JSON', [
       expression.args.expression,
-      this.func('TO_JSON', [
-        expression.args.this,
-      ]),
+      this.func('TO_JSON', [expression.args.this]),
     ]);
   }
 
@@ -2506,8 +2492,7 @@ class SingleStoreGenerator extends MySQL.Generator {
     }
 
     if (expression.isType(DataTypeExprKind.VECTOR)) {
-      const expressions = expression.args.expressions || [
-      ];
+      const expressions = expression.args.expressions || [];
       if (expressions.length === 2) {
         let typeName = this.sql(expressions[0]);
         const inverseAliases = (this.dialect.constructor as typeof SingleStore).INVERSE_VECTOR_TYPE_ALIASES;
@@ -2532,92 +2517,70 @@ class SingleStoreGenerator extends MySQL.Generator {
     const timezone = expression.args.this;
     if (timezone) {
       if (timezone instanceof LiteralExpr && timezone.args.this?.toLowerCase() === 'utc') {
-        return this.func('UTC_DATE', [
-        ]);
+        return this.func('UTC_DATE', []);
       }
       this.unsupported('CurrentDate with timezone is not supported in SingleStore');
     }
 
-    return this.func('CURRENT_DATE', [
-    ]);
+    return this.func('CURRENT_DATE', []);
   }
 
   currentTimeSql (expression: CurrentTimeExpr): string {
     const arg = expression.args.this;
     if (arg) {
       if (arg instanceof LiteralExpr && arg.args.this?.toLowerCase() === 'utc') {
-        return this.func('UTC_TIME', [
-        ]);
+        return this.func('UTC_TIME', []);
       }
       if (arg instanceof LiteralExpr && arg.isNumber) {
-        return this.func('CURRENT_TIME', [
-          arg,
-        ]);
+        return this.func('CURRENT_TIME', [arg]);
       }
       this.unsupported('CurrentTime with timezone is not supported in SingleStore');
     }
 
-    return this.func('CURRENT_TIME', [
-    ]);
+    return this.func('CURRENT_TIME', []);
   }
 
   currentTimestampSql (expression: CurrentTimestampExpr): string {
     const arg = expression.args.this;
     if (arg) {
       if (arg instanceof LiteralExpr && arg.args.this?.toLowerCase() === 'utc') {
-        return this.func('UTC_TIMESTAMP', [
-        ]);
+        return this.func('UTC_TIMESTAMP', []);
       }
       if (arg instanceof LiteralExpr && arg.isNumber) {
-        return this.func('CURRENT_TIMESTAMP', [
-          arg,
-        ]);
+        return this.func('CURRENT_TIMESTAMP', [arg]);
       }
       this.unsupported('CurrentTimestamp with timezone is not supported in SingleStore');
     }
 
-    return this.func('CURRENT_TIMESTAMP', [
-    ]);
+    return this.func('CURRENT_TIMESTAMP', []);
   }
 
   standardHashSql (expression: StandardHashExpr): string {
     const hashFunction = expression.args.expression;
     if (hashFunction === undefined) {
-      return this.func('SHA', [
-        expression.args.this,
-      ]);
+      return this.func('SHA', [expression.args.this]);
     }
     if (hashFunction instanceof LiteralExpr) {
       const name = hashFunction.args.this?.toLowerCase();
       if (name === 'sha') {
-        return this.func('SHA', [
-          expression.args.this,
-        ]);
+        return this.func('SHA', [expression.args.this]);
       }
       if (name === 'md5') {
-        return this.func('MD5', [
-          expression.args.this,
-        ]);
+        return this.func('MD5', [expression.args.this]);
       }
 
       this.unsupported(`${hashFunction.args.this} hash method is not supported in SingleStore`);
-      return this.func('SHA', [
-        expression.args.this,
-      ]);
+      return this.func('SHA', [expression.args.this]);
     }
 
     this.unsupported('STANDARD_HASH function is not supported in SingleStore');
-    return this.func('SHA', [
-      expression.args.this,
-    ]);
+    return this.func('SHA', [expression.args.this]);
   }
 
   truncateTableSql (expression: TruncateTableExpr): string {
     unsupportedArgs.call(this, expression, 'isDatabase', 'exists', 'cluster', 'identity', 'option', 'partition');
-    const statements: string[] = [
-    ];
-    for (const expr of expression.args.expressions ?? [
-    ]) {
+    const statements: string[] = [];
+    for (const expr of expression.args.expressions ?? []) {
       statements.push(`TRUNCATE ${this.sql(expr)}`);
     }
 

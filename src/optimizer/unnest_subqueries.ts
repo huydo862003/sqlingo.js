@@ -224,8 +224,7 @@ function unnest (
 
   if (group) {
     // Simulate set comparison in sqlglot (Python: {value.this} != set(group.expressions))
-    const groupExprSqls = new Set((group.args.expressions ?? [
-    ]).map((e) => (e instanceof Expression ? e.sql() : String(e))));
+    const groupExprSqls = new Set((group.args.expressions ?? []).map((e) => (e instanceof Expression ? e.sql() : String(e))));
     if (groupExprSqls.size !== 1 || !groupExprSqls.has((value.args.this as Expression).sql())) {
       selectToUse = select(
         alias(column({
@@ -282,8 +281,7 @@ function decorrelate (
   }
 
   const tableAlias = nextAliasName();
-  const keys: [Expression, ColumnExpr, Expression][] = [
-  ];
+  const keys: [Expression, ColumnExpr, Expression][] = [];
 
   // for all external columns in the where statement, find the relevant predicate
   // keys to convert it into a join
@@ -301,8 +299,7 @@ function decorrelate (
     let key: Expression | undefined;
 
     if (predicate instanceof BinaryExpr) {
-      key = Array.from(predicate.left?.walk() || [
-      ]).some((node) => node === column)
+      key = Array.from(predicate.left?.walk() || []).some((node) => node === column)
         ? predicate.right
         : predicate.left;
     } else {
@@ -336,8 +333,7 @@ function decorrelate (
   const keyAliasesBySql = new Map<string, string>();
   const keyByAliasSql = new Map<string, Expression>(); // reverse: sql -> expression node
   const groupBySqls = new Set<string>(); // SQL strings for groupBy members
-  const groupBy: Expression[] = [
-  ];
+  const groupBy: Expression[] = [];
 
   const exprInGroupBy = (expr: Expression): boolean => groupBySqls.has(expr.sql());
 
@@ -389,8 +385,7 @@ function decorrelate (
   // exists queries should not have any selects as it only checks if there are any rows
   // all selects will be added by the optimizer and only used for join keys
   if (parentPredicate instanceof ExistsExpr) {
-    select.setArgKey('expressions', [
-    ]);
+    select.setArgKey('expressions', []);
   }
 
   for (const [
@@ -483,9 +478,7 @@ function decorrelate (
 
       aliasExpr = new CoalesceExpr({
         this: aliasExpr,
-        expressions: [
-          (value.args.this as Expression).transform(removeAggs),
-        ],
+        expressions: [(value.args.this as Expression).transform(removeAggs)],
       });
     }
 

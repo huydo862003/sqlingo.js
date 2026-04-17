@@ -267,9 +267,7 @@ class DorisParser extends MySQL.Parser {
     });
 
     return this.expression(PartitionExpr, {
-      expressions: [
-        partRange,
-      ],
+      expressions: [partRange],
     });
   }
 
@@ -423,15 +421,13 @@ class DorisGenerator extends MySQL.Generator {
       [
         CurrentDateExpr,
         function (this: Generator) {
-          return this.func('CURRENT_DATE', [
-          ]);
+          return this.func('CURRENT_DATE', []);
         },
       ],
       [
         CurrentTimestampExpr,
         function (this: Generator) {
-          return this.func('NOW', [
-          ]);
+          return this.func('NOW', []);
         },
       ],
       [
@@ -530,9 +526,7 @@ class DorisGenerator extends MySQL.Generator {
       [
         TsOrDsToDateExpr,
         function (this: Generator, e: TsOrDsToDateExpr) {
-          return this.func('TO_DATE', [
-            e.args.this,
-          ]);
+          return this.func('TO_DATE', [e.args.this]);
         },
       ],
       [
@@ -1062,8 +1056,7 @@ class DorisGenerator extends MySQL.Generator {
 
   partitionRangeSql (expression: PartitionRangeExpr): string {
     const name = this.sql(expression, 'this');
-    const values = expression.args.expressions || [
-    ];
+    const values = expression.args.expressions || [];
 
     if (values.length !== 1) {
     // Multiple values: use VALUES [ ... )

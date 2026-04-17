@@ -27,8 +27,7 @@ monaco.languages.setMonarchTokensProvider('dbml', dbmlMonarchTokensProvider as m
 monaco.editor.defineTheme('sqlingo-dark', {
   base: 'vs-dark',
   inherit: true,
-  rules: [
-  ],
+  rules: [],
   colors: {
     'editor.background': '#0d0d14',
     'editor.lineHighlightBackground': '#13131e',

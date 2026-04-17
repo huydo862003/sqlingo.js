@@ -904,9 +904,7 @@ export class Dialect {
     if (result) {
       const [
         start,
-        [
-          end,
-        ],
+        [end],
       ] = result;
       return [
         start,
@@ -1274,9 +1272,7 @@ export class Dialect {
         suggestClosestMatchAndFail(
           'setting',
           unsupportedSetting,
-          [
-            ...this._constructor.SUPPORTED_SETTINGS,
-          ],
+          [...this._constructor.SUPPORTED_SETTINGS],
         );
       }
     }
@@ -1528,13 +1524,11 @@ export class Dialect {
   generateValuesAliases (expression: Expression): IdentifierExpr[] {
     const firstRow = expression.args.expressions?.[0];
     if (!(firstRow instanceof Expression)) {
-      return [
-      ];
+      return [];
     }
 
     const firstRowExpr = firstRow as Expression;
-    return (firstRowExpr.args.expressions ?? [
-    ]).map((_: unknown, i: number) => toIdentifier(`_col_${i}`));
+    return (firstRowExpr.args.expressions ?? []).map((_: unknown, i: number) => toIdentifier(`_col_${i}`));
   }
 
   get _constructor (): typeof Dialect {
@@ -1569,10 +1563,7 @@ export function renameFunc (name: string): (this: Generator, expression: Express
       const flattenedArgs = args.reduce((acc: (ExpressionValue | undefined)[], val) =>
         (Array.isArray(val)
           ? acc.concat(val)
-          : acc.concat([
-            val,
-          ])), [
-      ]);
+          : acc.concat([val])), []);
       return this.func(name, flattenedArgs);
     }
 
@@ -1586,9 +1577,7 @@ export function renameFunc (name: string): (this: Generator, expression: Express
  */
 export function approxCountDistinctSql (this: Generator, expression: ApproxDistinctExpr): string {
   unsupportedArgs.call(this, expression, 'accuracy');
-  return this.func('APPROX_COUNT_DISTINCT', [
-    expression.args.this,
-  ]);
+  return this.func('APPROX_COUNT_DISTINCT', [expression.args.this]);
 }
 
 /**
@@ -1650,12 +1639,9 @@ export function inlineArraySql (this: Generator, expression: Expression): string
  * Generate inline array unless it contains a query.
  */
 export function inlineArrayUnlessQuery (this: Generator, expression: Expression): string {
-  const elem = seqGet(expression.args.expressions ?? [
-  ], 0);
+  const elem = seqGet(expression.args.expressions ?? [], 0);
   if (elem instanceof Expression && elem?.find?.(QueryExpr)) {
-    return this.func('ARRAY', [
-      elem,
-    ]);
+    return this.func('ARRAY', [elem]);
   }
   return inlineArraySql.call(this, expression);
 }
@@ -1899,15 +1885,13 @@ export function arrayAppendSql (
 
     // Source doesn't propagate NULLs, target does: use COALESCE to convert NULL to empty array
     const coalesceThis = thisArg ?? new ArrayExpr({
-      expressions: [
-      ],
+      expressions: [],
     });
     thisArg = new CoalesceExpr({
       expressions: [
         coalesceThis,
         new ArrayExpr({
-          expressions: [
-          ],
+          expressions: [],
         }),
       ],
     });
@@ -1937,8 +1921,7 @@ export function arrayConcatSql (
       return this.func(funcName, [
         args[0],
         new ArrayExpr({
-          expressions: [
-          ],
+          expressions: [],
         }),
       ]);
     }
@@ -1956,15 +1939,11 @@ export function arrayConcatSql (
 
   return function (this: Generator, expression: ArrayConcatExpr): string {
     const thisArg = expression.args.this;
-    const exprs = expression.args.expressions || [
-    ];
+    const exprs = expression.args.expressions || [];
     const allArgs = [
       ...(thisArg
-        ? [
-          thisArg,
-        ]
-        : [
-        ]),
+        ? [thisArg]
+        : []),
       ...exprs,
     ] as Expression[];
 
@@ -2010,8 +1989,7 @@ export function arrayConcatSql (
         expressions: [
           arg.copy(),
           new ArrayExpr({
-            expressions: [
-            ],
+            expressions: [],
           }),
         ],
       }),
@@ -2037,8 +2015,7 @@ export function varMapSql (
     ] as (Expression | string | undefined)[]);
   }
 
-  const args: string[] = [
-  ];
+  const args: string[] = [];
   const keyExprs = keys.args.expressions;
   const valueExprs = values.args.expressions;
 
@@ -2432,8 +2409,7 @@ export function encodeDecodeSql (
 }
 
 export function decodeToCaseSql (this: Generator, expression: DecodeCaseExpr): string {
-  const expressions = expression.args.expressions || [
-  ];
+  const expressions = expression.args.expressions || [];
   const condition = expressions[0];
   const rest = expressions.slice(1);
 
@@ -2498,8 +2474,7 @@ export function countIfToSum (this: Generator, expression: CountIfExpr): string 
         false: LiteralExpr.number(0),
       }),
     ]
-    : [
-    ]);
+    : []);
 }
 
 export function trimSql (this: Generator, expression: TrimExpr, options: {defaultTrimType?: string} = {}): string {
@@ -2533,8 +2508,7 @@ export function strToTimeSql (this: Generator, expression: StrToTimeExpr): strin
 
 export function concatToDPipeSql (this: Generator, expression: ConcatExpr): string {
   return this.sql(
-    (expression.args.expressions ?? [
-    ]).reduce((acc, curr) => new DPipeExpr({
+    (expression.args.expressions ?? []).reduce((acc, curr) => new DPipeExpr({
       this: acc,
       expression: curr,
     })),
@@ -2545,8 +2519,7 @@ export function concatWsToDPipeSql (this: Generator, expression: ConcatWsExpr): 
   const [
     delim,
     ...rest
-  ] = expression.args.expressions ?? [
-  ];
+  ] = expression.args.expressions ?? [];
   return this.sql(
     rest.reduce((acc, curr) =>
       new DPipeExpr({
@@ -2587,8 +2560,7 @@ export function pivotColumnNames (aggregations: Expression[], options: {dialect:
   const {
     dialect,
   } = options;
-  const names: string[] = [
-  ];
+  const names: string[] = [];
   for (const agg of aggregations) {
     if (agg instanceof AliasExpr) {
       names.push(agg.alias);
@@ -2689,9 +2661,7 @@ export function buildTrunc (
 }
 
 export function anyValueToMaxSql (this: Generator, expression: AnyValueExpr): string {
-  return this.func('MAX', [
-    expression.args.this,
-  ]);
+  return this.func('MAX', [expression.args.this]);
 }
 
 export function boolXorSql (this: Generator, expression: XorExpr): string {
@@ -2887,13 +2857,10 @@ export function mergeWithoutTargetSql (this: Generator, expression: MergeExpr): 
   const normalize = (id: Expression | undefined) => id ? this.dialect.normalizeIdentifier(id).name : undefined;
 
   const thisThis = expression.args.this?.args.this;
-  const targets = new Set([
-    normalize(isInstanceOf(thisThis, Expression) ? thisThis : undefined),
-  ]);
+  const targets = new Set([normalize(isInstanceOf(thisThis, Expression) ? thisThis : undefined)]);
   if (isInstanceOf(alias, Expression)) targets.add(typeof alias.args.this === 'string' ? alias.args.this : normalize(isInstanceOf(alias.args.this, Expression) ? alias.args.this : undefined));
 
-  for (const when of expression.args.whens?.args.expressions || [
-  ]) {
+  for (const when of expression.args.whens?.args.expressions || []) {
     if (!isInstanceOf(when, WhenExpr)) continue;
     const then = when.args.then;
     if (then instanceof UpdateExpr) {
@@ -2908,8 +2875,7 @@ export function mergeWithoutTargetSql (this: Generator, expression: MergeExpr): 
     } else if (then instanceof InsertExpr) {
       const columnList = then.args.this;
       if (columnList instanceof TupleExpr) {
-        for (const colVal of columnList.args.expressions || [
-        ]) {
+        for (const colVal of columnList.args.expressions || []) {
           if (!(colVal instanceof Expression)) continue;
           const col = colVal;
           const tableArg = col.getArgKey('table');
@@ -2944,9 +2910,7 @@ export function buildJsonExtractPath<T extends JsonExtractExpr | JsonExtractScal
   } = options;
 
   return (args: any) => {
-    const segments: JsonPathPartExpr[] = [
-      new JsonPathRootExpr({}),
-    ];
+    const segments: JsonPathPartExpr[] = [new JsonPathRootExpr({})];
     for (const arg of args.slice(1)) {
       if (!(arg instanceof LiteralExpr)) {
         return ExprType.fromArgList(args);
@@ -3000,10 +2964,8 @@ export function jsonExtractSegments (
       return renameFunc(name).call(this, expression);
     }
 
-    const segments: string[] = [
-    ];
-    for (const segment of path.args.expressions ?? [
-    ]) {
+    const segments: string[] = [];
+    for (const segment of path.args.expressions ?? []) {
       let segmentSql = this.sql(segment);
       if (segmentSql) {
         if (segment instanceof JsonPathPartExpr && (quotedIndex || !(segment instanceof JsonPathSubscriptExpr))) {
@@ -3050,24 +3012,17 @@ export function filterArrayUsingUnnest (this: Generator, expression: ArrayFilter
   const unnest = new UnnestExpr({
     expressions: [
       ...(expression.args.this
-        ? [
-          expression.args.this,
-        ]
-        : [
-        ]),
+        ? [expression.args.this]
+        : []),
     ],
   });
   const filtered = select(aliasExpr)
     .from(alias(unnest, undefined, {
-      table: [
-        aliasExpr as string | IdentifierExpr,
-      ],
+      table: [aliasExpr as string | IdentifierExpr],
     }))
     .where(cond);
   return this.sql(new ArrayExpr({
-    expressions: [
-      filtered,
-    ],
+    expressions: [filtered],
   }));
 }
 
@@ -3084,9 +3039,7 @@ export function arrayCompactSql (this: Generator, expression: ArrayCompactExpr):
     this: expression.args.this,
     expression: new LambdaExpr({
       this: cond,
-      expressions: [
-        lambdaId,
-      ],
+      expressions: [lambdaId],
     }),
   }));
 }
@@ -3104,9 +3057,7 @@ export function removeFromArrayUsingFilter (this: Generator, expression: ArrayRe
     this: expression.args.this,
     expression: new LambdaExpr({
       this: cond,
-      expressions: [
-        lambdaId,
-      ],
+      expressions: [lambdaId],
     }),
   }));
 
@@ -3157,15 +3108,11 @@ export function buildTimestampFromParts (args: any[]): Expression {
 }
 
 export function sha256Sql (this: Generator, expression: Sha2Expr): string {
-  return this.func(`SHA${expression.text('length') || '256'}`, [
-    expression.args.this,
-  ]);
+  return this.func(`SHA${expression.text('length') || '256'}`, [expression.args.this]);
 }
 
 export function sha2DigestSql (this: Generator, expression: Sha2DigestExpr): string {
-  return this.func(`SHA${expression.text('length') || '256'}`, [
-    expression.args.this,
-  ]);
+  return this.func(`SHA${expression.text('length') || '256'}`, [expression.args.this]);
 }
 
 export function sequenceSql (this: Generator, e: Expression): string {
@@ -3200,11 +3147,8 @@ export function sequenceSql (this: Generator, e: Expression): string {
           start,
           end,
           ...(step
-            ? [
-              step,
-            ]
-            : [
-            ]),
+            ? [step]
+            : []),
         ],
       });
       const zero = LiteralExpr.number(0);
@@ -3237,8 +3181,7 @@ export function sequenceSql (this: Generator, e: Expression): string {
       const emptyArrayOrSequence = new IfExpr({
         this: shouldReturnEmpty,
         true: new ArrayExpr({
-          expressions: [
-          ],
+          expressions: [],
         }),
         false: sequenceCall,
       });
@@ -3311,8 +3254,7 @@ export function explodeToUnnestSql (this: Generator, expression: LateralExpr): s
     const [
       pos,
       ...cols
-    ] = aliasExpr.args.columns || [
-    ];
+    ] = aliasExpr.args.columns || [];
     assertIsInstanceOf(pos, IdentifierExpr);
     const validCols = cols.filter((c) => c instanceof Expression) as Expression[];
     const lateralSubquery = select([
@@ -3322,11 +3264,8 @@ export function explodeToUnnestSql (this: Generator, expression: LateralExpr): s
       .from(new UnnestExpr({
         expressions: [
           ...(thisArg.args.this
-            ? [
-              thisArg.args.this,
-            ]
-            : [
-            ]),
+            ? [thisArg.args.this]
+            : []),
         ],
         offset: true,
         alias: new TableAliasExpr({
@@ -3344,11 +3283,8 @@ export function explodeToUnnestSql (this: Generator, expression: LateralExpr): s
     crossJoinExpr = new UnnestExpr({
       expressions: [
         ...(thisArg.args.this
-          ? [
-            thisArg.args.this,
-          ]
-          : [
-          ]),
+          ? [thisArg.args.this]
+          : []),
       ],
       alias: aliasExpr,
     });
@@ -3386,9 +3322,7 @@ export function noMakeIntervalSql (this: Generator, expression: MakeIntervalExpr
 }
 
 export function lengthOrCharLengthSql (this: Generator, expression: LengthExpr): string {
-  return this.func(expression.args.binary ? 'LENGTH' : 'CHAR_LENGTH', [
-    expression.args.this,
-  ]);
+  return this.func(expression.args.binary ? 'LENGTH' : 'CHAR_LENGTH', [expression.args.this]);
 }
 
 export function groupConcatSql (this: Generator, expression: GroupConcatExpr, options: {
@@ -3419,9 +3353,7 @@ export function groupConcatSql (this: Generator, expression: GroupConcatExpr, op
   ].filter(Boolean).join(', ');
   let listagg: Expression = new AnonymousExpr({
     this: funcName,
-    expressions: [
-      formattedArgs,
-    ],
+    expressions: [formattedArgs],
   });
   let modifiers = this.sql(limit);
 
@@ -3433,9 +3365,7 @@ export function groupConcatSql (this: Generator, expression: GroupConcatExpr, op
     else modifiers = `${this.sql(order)}${modifiers}`;
   }
 
-  if (modifiers) listagg.setArgKey('expressions', [
-    `${formattedArgs}${modifiers}`,
-  ]);
+  if (modifiers) listagg.setArgKey('expressions', [`${formattedArgs}${modifiers}`]);
   return this.sql(listagg);
 }
 

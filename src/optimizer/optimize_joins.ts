@@ -47,16 +47,14 @@ const JOIN_ATTRS = [
  */
 export function optimizeJoins (expression: Expression): Expression {
   for (const select of expression.findAll(SelectExpr)) {
-    const joins = filterInstanceOf(select.args.joins ?? [
-    ], JoinExpr);
+    const joins = filterInstanceOf(select.args.joins ?? [], JoinExpr);
 
     if (!isReorderable(joins)) {
       continue;
     }
 
     const references: Record<string, JoinExpr[]> = {};
-    const crossJoins: [string, JoinExpr][] = [
-    ];
+    const crossJoins: [string, JoinExpr][] = [];
 
     for (const join of joins) {
       const tables = otherTableNames(join);
@@ -64,8 +62,7 @@ export function optimizeJoins (expression: Expression): Expression {
       if (0 < tables.size) {
         for (const table of tables) {
           if (!references[table]) {
-            references[table] = [
-            ];
+            references[table] = [];
           }
           references[table].push(join);
         }
@@ -81,8 +78,7 @@ export function optimizeJoins (expression: Expression): Expression {
       name,
       join,
     ] of crossJoins) {
-      for (const dep of references[name] ?? [
-      ]) {
+      for (const dep of references[name] ?? []) {
         const on = dep.args.on;
 
         if (on instanceof ConnectorExpr) {
@@ -131,8 +127,7 @@ export function reorderJoins (expression: Expression): Expression {
     const parent = from.parent;
     if (!parent) continue;
 
-    const joins = filterInstanceOf(parent.args.joins ?? [
-    ], JoinExpr);
+    const joins = filterInstanceOf(parent.args.joins ?? [], JoinExpr);
 
     if (!isReorderable(joins)) {
       continue;

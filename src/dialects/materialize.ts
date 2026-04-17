@@ -200,12 +200,9 @@ class MaterializeGenerator extends Postgres.Generator {
   }
 
   listSql (expression: ListExpr): string {
-    const firstExpr = seqGet(expression.args.expressions || [
-    ], 0);
+    const firstExpr = seqGet(expression.args.expressions || [], 0);
     if (firstExpr instanceof SelectExpr) {
-      return this.func('LIST', [
-        firstExpr,
-      ]);
+      return this.func('LIST', [firstExpr]);
     }
 
     return `${this.normalizeFunc('LIST')}[${this.expressions(expression, {
@@ -215,9 +212,7 @@ class MaterializeGenerator extends Postgres.Generator {
 
   toMapSql (expression: ToMapExpr): string {
     if (expression.args.this instanceof SelectExpr) {
-      return this.func('MAP', [
-        expression.args.this,
-      ]);
+      return this.func('MAP', [expression.args.this]);
     }
     return `${this.normalizeFunc('MAP')}[${expression.args.this instanceof Expression ? this.expressions(expression.args.this) : expression.args.this}]`;
   }

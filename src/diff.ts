@@ -105,8 +105,7 @@ export function diff (
   } = {},
 ): Edit[] {
   let {
-    matchings = [
-    ],
+    matchings = [],
 
     deltaOnly = false,
 
@@ -194,9 +193,7 @@ const UPDATABLE_EXPRESSION_TYPES = [
   WindowExpr,
 ];
 
-const IGNORED_LEAF_EXPRESSION_TYPES = [
-  IdentifierExpr,
-];
+const IGNORED_LEAF_EXPRESSION_TYPES = [IdentifierExpr];
 
 class ChangeDistiller {
   private f: number;
@@ -238,8 +235,7 @@ class ChangeDistiller {
   ): Edit[] {
     const {
       deltaOnly = false,
-      matchings = [
-      ],
+      matchings = [],
     } = options;
 
     const preMatchedNodes = new Map<Expression, Expression>(matchings);
@@ -286,8 +282,7 @@ class ChangeDistiller {
     const {
       deltaOnly,
     } = options;
-    const editScript: Edit[] = [
-    ];
+    const editScript: Edit[] = [];
 
     this.unmatchedSourceNodes.forEach((node) => editScript.push(new Remove(node)));
     this.unmatchedTargetNodes.forEach((node) => editScript.push(new Insert(node)));
@@ -332,12 +327,8 @@ class ChangeDistiller {
     target: Expression,
     matchings: Map<Expression, Expression>,
   ): Move[] {
-    const sourceArgs = [
-      ...expressionOnlyArgs(source),
-    ];
-    const targetArgs = [
-      ...expressionOnlyArgs(target),
-    ];
+    const sourceArgs = [...expressionOnlyArgs(source)];
+    const targetArgs = [...expressionOnlyArgs(target)];
 
     // LCS expects a comparator that returns true if source element matches target element
     const lcsResult = lcs(
@@ -347,8 +338,7 @@ class ChangeDistiller {
     );
     const argsLcs = new Set(lcsResult);
 
-    const moveEdits: Move[] = [
-    ];
+    const moveEdits: Move[] = [];
     for (const a of sourceArgs) {
       // If the node is matched but its position in the arg list changed (not in LCS), it's a Move
       if (!argsLcs.has(a) && !this.unmatchedSourceNodes.has(a)) {
@@ -365,17 +355,13 @@ class ChangeDistiller {
     const matchingSet = new Map<Expression, Expression>(leavesMatchingSet);
 
     // Maintain BFS order for unmatched nodes
-    const orderedUnmatchedSource: Expression[] = [
-    ];
-    for (const n of this.source?.bfs() ?? [
-    ]) {
+    const orderedUnmatchedSource: Expression[] = [];
+    for (const n of this.source?.bfs() ?? []) {
       if (this.unmatchedSourceNodes.has(n)) orderedUnmatchedSource.push(n);
     }
 
-    const orderedUnmatchedTarget: Expression[] = [
-    ];
-    for (const n of this.target?.bfs() ?? [
-    ]) {
+    const orderedUnmatchedTarget: Expression[] = [];
+    for (const n of this.target?.bfs() ?? []) {
       if (this.unmatchedTargetNodes.has(n)) orderedUnmatchedTarget.push(n);
     };
 
@@ -454,21 +440,14 @@ class ChangeDistiller {
       index: number;
       sourceLeaf: Expression;
       targetLeaf: Expression;
-    }> = [
-    ];
+    }> = [];
 
     const sourceExpressionLeaves = this.source
-      ? [
-        ...getExpressionLeaves(this.source),
-      ]
-      : [
-      ];
+      ? [...getExpressionLeaves(this.source)]
+      : [];
     const targetExpressionLeaves = this.target
-      ? [
-        ...getExpressionLeaves(this.target),
-      ]
-      : [
-      ];
+      ? [...getExpressionLeaves(this.target)]
+      : [];
 
     for (const sourceLeaf of sourceExpressionLeaves) {
       for (const targetLeaf of targetExpressionLeaves) {
@@ -631,12 +610,8 @@ export function lcs<T> (
   _seqB: Iterable<T>,
   equal: (a: T, b: T) => boolean,
 ): T[] {
-  const seqA = [
-    ..._seqA,
-  ];
-  const seqB = [
-    ..._seqB,
-  ];
+  const seqA = [..._seqA];
+  const seqB = [..._seqB];
   const lenA = seqA.length;
   const lenB = seqB.length;
 
@@ -646,8 +621,7 @@ export function lcs<T> (
   }, () =>
     Array.from({
       length: lenB + 1,
-    }, () => [
-    ]));
+    }, () => []));
 
   for (let i = 1; i <= lenA; i++) {
     for (let j = 1; j <= lenB; j++) {

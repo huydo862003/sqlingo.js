@@ -60,8 +60,7 @@ export function normalize (
 
   // Walk only top-level connectors — prune at each connector so nested ones
   // are handled by distributiveLaw's own recursion (mirrors Python's prune).
-  const connectors: ConnectorExpr[] = [
-  ];
+  const connectors: ConnectorExpr[] = [];
   for (const node of expression.walk({
     prune: (e) => e instanceof ConnectorExpr,
   })) {
@@ -156,9 +155,7 @@ export function normalized (expression: Expression, options: {dnf?: boolean} = {
       AndExpr,
     ];
 
-  return !findAllInScope(expression, [
-    root,
-  ]).some(
+  return !findAllInScope(expression, [root]).some(
     (connector) => connector.findAncestor(ancestor),
   );
 }

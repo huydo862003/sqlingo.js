@@ -31,8 +31,7 @@ export function eliminateCtes<E extends Expression> (expression: E): E {
     const refCount = root.refCount();
 
     // Traverse the scope tree in reverse so we can remove chains of unused CTEs
-    const scopes: Scope[] = [
-    ];
+    const scopes: Scope[] = [];
     for (const scope of root.traverse()) {
       scopes.push(scope);
     }
