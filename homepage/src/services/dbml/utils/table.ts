@@ -1,6 +1,8 @@
 import {
   CheckColumnConstraintExpr,
+  CheckExpr,
   ColumnDefExpr,
+  ConstraintExpr,
   Expression,
   ForeignKeyExpr,
   IndexExpr,
@@ -79,6 +81,20 @@ export function buildTable (stmt: CreateExpr): BuiltTable | undefined {
         }));
       }
     } else if (expr instanceof CheckColumnConstraintExpr) {
+      const e = expr.args.this;
+      if (e instanceof Expression) checks.push(new DbmlCheck({
+        expression: e.sql(),
+      }));
+    } else if (expr instanceof ConstraintExpr) {
+      for (const part of expr.args.expressions ?? []) {
+        if (part instanceof CheckExpr) {
+          const e = part.args.this;
+          if (e instanceof Expression) checks.push(new DbmlCheck({
+            expression: e.sql(),
+          }));
+        }
+      }
+    } else if (expr instanceof CheckExpr) {
       const e = expr.args.this;
       if (e instanceof Expression) checks.push(new DbmlCheck({
         expression: e.sql(),
