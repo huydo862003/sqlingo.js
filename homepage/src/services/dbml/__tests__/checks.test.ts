@@ -27,6 +27,18 @@ describe('checks', () => {
     expect(schema.tables[0].checks?.[0].expression).toContain('a < b');
   });
 
+  it('parses named CONSTRAINT CHECK wrapper', () => {
+    const {
+      schema,
+    } = sqlToDbml(
+      'CREATE TABLE t (a INT, b INT, CONSTRAINT chk_ab CHECK (a < b));',
+      'postgres',
+    );
+    const c = schema.tables[0].checks?.[0];
+    expect(c?.name).toBe('chk_ab');
+    expect(c?.expression).toContain('a < b');
+  });
+
   it('emits column check and table Checks block', () => {
     const {
       dbml,

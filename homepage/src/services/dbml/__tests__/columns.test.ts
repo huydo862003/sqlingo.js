@@ -39,12 +39,17 @@ describe('columns', () => {
     expect(schema.tables[0].columns[0].type.array).toBe(true);
   });
 
-  it('parses composite primary key at table level', () => {
+  it('parses composite primary key as index pk, not per-column pk', () => {
     const {
       schema,
     } = sqlToDbml('CREATE TABLE pair (a INT, b INT, PRIMARY KEY (a, b));', 'postgres');
-    const cols = schema.tables[0].columns;
-    expect(cols.find((c) => c.name === 'a')?.pk).toBe(true);
-    expect(cols.find((c) => c.name === 'b')?.pk).toBe(true);
+    const table = schema.tables[0];
+    expect(table.columns.every((c) => !c.pk)).toBe(true);
+    const idx = table.indexes?.[0];
+    expect(idx?.pk).toBe(true);
+    expect(idx?.columns.map((c) => c.expression)).toEqual([
+      'a',
+      'b',
+    ]);
   });
 });

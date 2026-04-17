@@ -34,6 +34,27 @@ describe('refs', () => {
     });
   });
 
+  it('captures named CONSTRAINT FOREIGN KEY wrapper', () => {
+    const {
+      schema,
+    } = sqlToDbml(
+      'CREATE TABLE a (id INT, b_id INT, CONSTRAINT fk_ab FOREIGN KEY (b_id) REFERENCES b(id) ON DELETE CASCADE);',
+      'postgres',
+    );
+    expect(schema.refs).toHaveLength(1);
+    expect(schema.refs[0]).toMatchObject({
+      name: 'fk_ab',
+      source: {
+        columns: ['b_id'],
+      },
+      target: {
+        table: 'b',
+        columns: ['id'],
+      },
+      onDelete: DbmlRefAction.CASCADE,
+    });
+  });
+
   it('captures table-level FOREIGN KEY with actions', () => {
     const {
       schema,
