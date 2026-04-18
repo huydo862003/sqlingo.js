@@ -1,5 +1,13 @@
 # @hdnax/sqlingo.js-homepage
 
+## 0.0.3
+
+### Patch Changes
+
+- 6aeadaa: Add disclaimer about AI usage
+- Updated dependencies [6aeadaa]
+  - @hdnax/sqlingo.js@0.1.3
+
 ## 0.0.2
 
 ### Patch Changes
