@@ -160,7 +160,7 @@
 
             The porting convention & architecture are controlled by me (so I can catch up with SQLGlot updates as I like, and I don't want the core logic to be entrusted to AI).
 
-            Although, for repetitive tasks like porting a small function, I did copy-and-paste to Google Gemini, but they are purely mechanical works & I was the one who verified them all.
+            Although, for repetitive tasks like porting a small function, I did copy-and-paste to Google Gemini, they are purely mechanical works & I was the one who verified them all.
           </p>
         </div>
       </div>
