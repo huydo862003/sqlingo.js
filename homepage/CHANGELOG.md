@@ -1,5 +1,13 @@
 # @hdnax/sqlingo.js-homepage
 
+## 0.0.4
+
+### Patch Changes
+
+- 1ad4d3e: (fck-AI-slop) Migrating from AI slops
+- Updated dependencies [1ad4d3e]
+  - @hdnax/sqlingo.js@0.1.4
+
 ## 0.0.3
 
 ### Patch Changes
