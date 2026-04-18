@@ -154,6 +154,14 @@
           <p>
             sqlingo.js is a close mirror of SQLGlot. This way, I can easily catch up with SQLGlot updates as needed.
           </p>
+          <p class="pt-5">
+            Small disclaimer: If you ever wonder if this project is AI-generated -
+            ONLY the documentation page is purely AI-generated (that's fine, because I don't want to waste too much time on cosmetic stuff).
+
+            The porting convention & architecture are controlled by me (so I can catch up with SQLGlot updates as I like, and I don't want the core logic to be entrusted to AI).
+
+            Although, for repetitive tasks like porting a small function, I did copy-and-paste to Google Gemini, but they are purely mechanical works & I was the one who verified them all.
+          </p>
         </div>
       </div>
     </section>
