@@ -10,6 +10,7 @@
         >
         <h1 class="hero-title">
           sqlingo.js: A Typescript/Javascript port of SQLGlot
+          <a href="https://github.com/huydo862003/Fck-AI-Slop#plan"><img src="https://img.shields.io/badge/AI%20slop-FA003F"></a>
         </h1>
         <p class="hero-sub">
           A JavaScript/TypeScript SQL parser, transpiler, and optimizer ported from <a
