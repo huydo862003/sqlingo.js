@@ -50,17 +50,22 @@
             alt="Ported from SQLGlot v28.10.0"
           >
         </div>
-        <p class="text-xs text-gray-200 p-5">
-          Small disclaimer: If you ever wonder if this project is AI-generated -
-          ONLY the documentation page is AI-generated
-
-          (that WAS fine, because I didn't want to waste too much time on cosmetic stuff - however, I'm actively migrating it).
-
-          The library is managed wholly by me though (so I can catch up with SQLGlot updates as I like, and I don't want the core logic to be entrusted to AI).
-
-          Although, for repetitive tasks like porting a small function, I did copy-and-paste to Google Gemini, they are purely mechanical works & I was the one who verified them all.
-        </p>
       </div>
+    </section>
+    <section>
+      <details class="text-xs px-5 mb-5">
+        <summary class="text-gray-500 pb-2">
+          Notice about AI migration
+        </summary>
+        If you ever wonder if this project is AI-generated -
+        ONLY the documentation page is AI-generated
+
+        (that WAS fine, because I didn't want to waste too much time on cosmetic stuff - however, I'm actively migrating it).
+
+        The library is managed wholly by me though (so I can catch up with SQLGlot updates as I like, and I don't want the core logic to be entrusted to AI).
+
+        Although, for repetitive tasks like porting a small function, I did copy-and-paste to Google Gemini, they are purely mechanical works & I was the one who verified them all.
+      </details>
     </section>
 
     <section
@@ -380,7 +385,7 @@ const dialects = [
 }
 
 .hero {
-  @apply py-20 text-center border-b border-border;
+  @apply py-20 text-center border-b-0 border-border;
 }
 
 .hero-icon {
