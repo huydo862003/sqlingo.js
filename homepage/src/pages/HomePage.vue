@@ -50,7 +50,7 @@
             alt="Ported from SQLGlot v28.10.0"
           >
         </div>
-        <p>
+        <p class="text-xs text-gray-200 p-5">
           Small disclaimer: If you ever wonder if this project is AI-generated -
           ONLY the documentation page is AI-generated
 
