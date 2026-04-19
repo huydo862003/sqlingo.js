@@ -49,8 +49,17 @@
             src="https://img.shields.io/badge/SQLGlot-v28.10.0-blue"
             alt="Ported from SQLGlot v28.10.0"
           >
-          <a href="https://github.com/huydo862003/Fck-AI-Slop#plan"><img src="https://img.shields.io/badge/AI%20slop-FA003F"></a>
         </div>
+        <p>
+          Small disclaimer: If you ever wonder if this project is AI-generated -
+          ONLY the documentation page is AI-generated
+
+          (that WAS fine, because I didn't want to waste too much time on cosmetic stuff - however, I'm actively migrating it).
+
+          The library is managed wholly by me though (so I can catch up with SQLGlot updates as I like, and I don't want the core logic to be entrusted to AI).
+
+          Although, for repetitive tasks like porting a small function, I did copy-and-paste to Google Gemini, they are purely mechanical works & I was the one who verified them all.
+        </p>
       </div>
     </section>
 
@@ -154,14 +163,6 @@
           </p>
           <p>
             sqlingo.js is a close mirror of SQLGlot. This way, I can easily catch up with SQLGlot updates as needed.
-          </p>
-          <p class="pt-5">
-            Small disclaimer: If you ever wonder if this project is AI-generated -
-            ONLY the documentation page is purely AI-generated (that's fine, because I don't want to waste too much time on cosmetic stuff).
-
-            The porting convention & architecture are controlled by me (so I can catch up with SQLGlot updates as I like, and I don't want the core logic to be entrusted to AI).
-
-            Although, for repetitive tasks like porting a small function, I did copy-and-paste to Google Gemini, they are purely mechanical works & I was the one who verified them all.
           </p>
         </div>
       </div>
