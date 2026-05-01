@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.1.5
+
+### Patch Changes
+
+- Redesign homepage with genuix design system; bump to v0.1.5.
+
 ## 0.1.4
 
 ### Patch Changes

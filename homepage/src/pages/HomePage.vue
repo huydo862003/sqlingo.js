@@ -1,21 +1,25 @@
 <template>
   <NavBar />
-  <main>
-    <GHero class="hero">
+  <main
+    id="hero"
+    class="gui-neutral-bg"
+  >
+    <GHero class="p-5">
       <template #icon>
-        <img
-          src="/icon.svg"
+        <GLogo
+          src="/sqlingo.js/icon.svg"
           alt="sqlingo.js logo"
-          class="hero-icon"
-        >
+          :size="GLogoSize.Lg"
+          class="bg-white rounded-md"
+        />
       </template>
       <template #title>
-        <h1 class="hero-title">
+        <h1 class="font-extrabold text-3xl">
           sqlingo.js: A Typescript/Javascript port of SQLGlot
         </h1>
       </template>
       <template #description>
-        <p class="hero-description">
+        <p class="my-2 text-sm gui-neutral-fg-muted">
           A JavaScript/TypeScript SQL parser, transpiler, and optimizer ported from <a
             href="https://github.com/tobymao/sqlglot"
             target="_blank"
@@ -25,75 +29,81 @@
         </p>
       </template>
       <template #footer>
-        <div class="install-row">
-          <div class="install-box">
-            <code>npm install @hdnax/sqlingo.js</code>
-            <GButton
-              :prominence="ButtonProminence.Secondary"
-              :size="ButtonSize.Sm"
-              @click="copy"
-            >
-              <GIcon
-                :name="GIconName.Copy"
-                :size="12"
-              />
-              {{ copied ? 'Copied!' : 'Copy' }}
-            </GButton>
-          </div>
+        <div class="flex justify-center">
+          <GCodeBlock
+            id="installation-code-block"
+            code="npm install @hdnax/sqlingo.js"
+            class="w-96"
+            :language="GCodeLanguage.Bash"
+            :highlight-theme="GHighlightTheme.AtomOne"
+            :show-header="false"
+          />
         </div>
-        <div class="badges">
-          <a
+        <div class="mt-4 flex gap-3 justify-center">
+          <GBadge
+            label="npm"
+            :color="GPillColor.Orange"
+            :size="GBadgeSize.Md"
+            :badge-style="GBadgeStyle.Flat"
+            value="v0.1.4"
             href="https://www.npmjs.com/package/@hdnax/sqlingo.js"
-            target="_blank"
-            rel="noopener"
-          >
-            <img
-              src="https://img.shields.io/npm/v/@hdnax/sqlingo.js"
-              alt="npm version"
-            >
-          </a>
-          <img
-            src="https://img.shields.io/badge/license-MIT-green"
-            alt="Licensed under MIT"
-          >
-          <img
-            src="https://img.shields.io/badge/SQLGlot-v28.10.0-blue"
-            alt="Ported from SQLGlot v28.10.0"
-          >
+          />
+          <GBadge
+            label="license"
+            :color="GPillColor.Green"
+            :size="GBadgeSize.Md"
+            :badge-style="GBadgeStyle.Flat"
+            value="MIT"
+          />
+          <GBadge
+            label="SQLGlot"
+            :color="GPillColor.Blue"
+            :size="GBadgeSize.Md"
+            :badge-style="GBadgeStyle.Flat"
+            value="v28.10.0"
+          />
         </div>
       </template>
     </GHero>
 
     <section
       id="quickstart"
-      class="section section-alt"
+      class="gui-neutral-border border gui-neutral-bg-subtle p-5"
     >
-      <div class="page">
-        <h2>Interactive SQL Examples</h2>
+      <div>
+        <h2 class="font-medium uppercase gui-neutral-fg-muted text-sm mb-2">
+          Interactive SQL Examples
+        </h2>
         <CodeTabs />
       </div>
     </section>
 
     <section
       id="features"
-      class="section"
+      class="mt-5 p-5 gui-neutral-fg-muted"
     >
-      <div class="page">
-        <h2>SQL Parser Features</h2>
-        <div class="features">
+      <div>
+        <h2 class="font-medium uppercase text-sm mb-4">
+          SQL Parser Features
+        </h2>
+        <div class="grid gap-3 grid-cols-3 text-md">
           <div
             v-for="f in features"
             :key="f.title"
-            class="feature-card"
+            class="flex flex-col gap-2 border rounded-md gui-neutral-border p-5"
           >
-            <div class="feature-icon">
+            <div>
               <GIcon
                 :name="f.icon"
-                :size="20"
+                class="gui-neutral-bg-subtle size-5 rounded-md p-2 border gui-neutral-border"
               />
             </div>
-            <h3>{{ f.title }}</h3>
-            <p>{{ f.desc }}</p>
+            <h3 class="font-bold gui-neutral-fg">
+              {{ f.title }}
+            </h3>
+            <p class="text-sm leading-1">
+              {{ f.desc }}
+            </p>
           </div>
         </div>
       </div>
@@ -101,14 +111,18 @@
 
     <section
       id="dialects"
-      class="section section-alt"
+      class="gui-neutral-border border gui-neutral-bg-subtle p-5"
     >
-      <div class="page">
-        <h2>33+ Supported SQL Dialects</h2>
-        <div class="dialects">
+      <div>
+        <h2 class="font-medium text-md uppercase mb-4">
+          33+ Supported SQL Dialects
+        </h2>
+        <div class="flex flex-wrap gap-2">
           <GPill
             v-for="dialect in dialects"
             :key="dialect"
+            :prominence="GPillProminence.Primary"
+            :size="GPillSize.Sm"
           >
             {{ dialect }}
           </GPill>
@@ -116,16 +130,19 @@
       </div>
     </section>
 
-    <section class="api-cta">
-      <div class="page api-cta-inner">
-        <div class="api-cta-text">
-          <h2>API reference</h2>
-          <p>Full TypeScript types, all classes and functions documented.</p>
+    <section class="mt-5 p-5 gui-neutral-fg-muted">
+      <div class="flex gap-2 items-center">
+        <div>
+          <h2 class="font-medium text-md uppercase mb-4">
+            API reference
+          </h2>
+          <p class="text-md">
+            Full TypeScript types, all classes and functions documented.
+          </p>
         </div>
         <GButton
-          :prominence="ButtonProminence.Primary"
-          :size="ButtonSize.Md"
-          class="api-cta-button"
+          :prominence="GButtonProminence.Secondary"
+          class="h-10 w-48"
           @click="$router.push('/api-reference/')"
         >
           Browse the docs
@@ -135,11 +152,13 @@
 
     <section
       id="backstory"
-      class="section section-alt"
+      class="gui-neutral-border border gui-neutral-bg-subtle p-5"
     >
-      <div class="page">
-        <h2>Why this exists</h2>
-        <div class="prose">
+      <div>
+        <h2 class="font-medium text-md uppercase mb-4 gui-neutral-fg-muted">
+          Why this exists
+        </h2>
+        <div class="gui-neutral-fg text-md flex flex-col gap-2 border-l-3 gui-neutral-border pl-5">
           <p>
             I maintain <a
               href="https://github.com/holistics/dbml"
@@ -176,25 +195,29 @@
 
     <section
       id="goals"
-      class="section"
+      class="mt-5 p-5 gui-neutral-fg-muted"
     >
-      <div class="page">
-        <h2>Design goals</h2>
-        <div class="goals">
+      <div>
+        <h2 class="font-medium text-md uppercase mb-4 gui-neutral-fg-muted">
+          Design goals
+        </h2>
+        <div class="text-sm">
           <div
             v-for="g in goals"
             :key="g.title"
-            class="goal-row"
+            class="flex gap-3 my-3"
           >
             <GPill
-              :prominence="g.isNon ? Prominence.Secondary : Prominence.Primary"
-              class="goal-pill"
+              :prominence="g.isNon ? GProminence.Primary : GProminence.Secondary"
+              :size="GPillSize.Sm"
             >
               {{ g.isNon ? 'non-goal' : 'goal' }}
             </GPill>
             <div>
-              <strong>{{ g.title }}</strong>
-              <p class="goal-desc">
+              <h3 class="font-medium mb-1">
+                {{ g.title }}
+              </h3>
+              <p>
                 {{ g.desc }}
               </p>
             </div>
@@ -203,7 +226,6 @@
       </div>
     </section>
 
-    <!-- Structured Data for SEO -->
     <component
       :is="'script'"
       type="application/ld+json"
@@ -225,9 +247,9 @@
       }) }}
     </component>
 
-    <footer>
-      <div class="page footer-inner">
-        <div class="footer-attribution">
+    <footer class="mt-5 gui-neutral-bg-subtle text-sm py-5 px-3 border-t gui-neutral-border gui-neutral-fg-muted">
+      <div class="flex justify-between items-end">
+        <div class="w-96">
           <span>
             sqlingo.js is licensed under the
             <a
@@ -256,13 +278,21 @@
 
 <script setup lang="ts">
 import {
-  ref,
-} from 'vue';
-import {
-  GButton, ButtonProminence, ButtonSize,
+  GButton, GButtonProminence,
   GHero,
   GIcon, GIconName,
-  GPill, Prominence,
+  GPill, GProminence,
+  GCodeBlock,
+  GCodeLanguage,
+  GHighlightTheme,
+  GBadge,
+  GPillColor,
+  GBadgeSize,
+  GBadgeStyle,
+  GLogo,
+  GLogoSize,
+  GPillProminence,
+  GPillSize,
 } from '@hdnax/genuix';
 import CodeTabs from '@/components/CodeTabs.vue';
 import NavBar from '@/components/NavBar.vue';
@@ -274,17 +304,6 @@ useSeo({
   title: 'Home',
   description: 'sqlingo.js is the JavaScript/TypeScript port of SQLGlot. It is a SQL parser, transpiler, and optimizer supporting 33+ dialects including BigQuery, Snowflake, and Postgres.',
 });
-
-const copied = ref(false);
-
-function copy () {
-  navigator.clipboard.writeText('npm install @hdnax/sqlingo.js').then(() => {
-    copied.value = true;
-    setTimeout(() => {
-      copied.value = false;
-    }, 2000);
-  });
-}
 
 const features = [
   {
@@ -372,244 +391,3 @@ const dialects = [
   'TSQL',
 ];
 </script>
-
-<style scoped>
-@reference "../style.css";
-
-.page {
-  max-width: 52rem;
-  margin: 0 auto;
-  padding: 0 var(--spacing-lg);
-}
-
-.page-wide {
-  max-width: 72rem;
-}
-
-.section-sub {
-  font-size: var(--text-sm);
-  color: var(--gui-neutral-fg-muted);
-  margin-bottom: var(--spacing-lg);
-  margin-top: calc(-1 * var(--spacing-md));
-}
-
-.hero {
-  padding: var(--spacing-3xl) var(--spacing-lg);
-}
-
-.hero-icon {
-  width: 5rem;
-  height: 5rem;
-  border-radius: var(--radius-lg);
-  background: #fff;
-  border: 1px solid var(--gui-neutral-border);
-  box-shadow: var(--shadow-sm);
-}
-
-.hero-title {
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  color: var(--gui-neutral-fg);
-  font-size: clamp(2rem, 6vw, 3rem);
-}
-
-.hero-description {
-  font-size: var(--text-sm);
-  color: var(--gui-neutral-fg-muted);
-  max-width: 32rem;
-  line-height: 1.6;
-}
-
-.install-row {
-  display: flex;
-  justify-content: center;
-  margin-bottom: var(--spacing-lg);
-}
-
-.install-box {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid var(--gui-neutral-border);
-  border-radius: var(--radius-md);
-  background: var(--gui-neutral-bg-subtle);
-}
-
-.install-box code {
-  font-size: var(--text-xs);
-  color: var(--gui-neutral-fg);
-}
-
-.badges {
-  display: flex;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
-}
-
-.section {
-  padding-top: var(--spacing-2xl);
-  padding-bottom: var(--spacing-2xl);
-}
-
-.section-alt {
-  background: var(--gui-neutral-bg-subtle);
-  border-top: 1px solid var(--gui-neutral-border);
-  border-bottom: 1px solid var(--gui-neutral-border);
-}
-
-.section h2,
-.api-cta-text h2 {
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-bold);
-  color: var(--gui-neutral-fg-muted);
-  margin-bottom: var(--spacing-lg);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.features {
-  display: grid;
-  gap: var(--spacing-sm);
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-}
-
-.feature-card {
-  padding: var(--spacing-md);
-  border: 1px solid var(--gui-neutral-border);
-  border-radius: var(--radius-md);
-}
-
-.feature-icon {
-  width: var(--size-5);
-  height: var(--size-5);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: var(--spacing-sm);
-  color: var(--gui-primary-fg-muted);
-  background: var(--gui-primary-bg-hover);
-}
-
-.feature-card h3 {
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-bold);
-  color: var(--gui-neutral-fg);
-  margin-bottom: var(--spacing-xs);
-}
-
-.feature-card p {
-  font-size: var(--text-xs);
-  color: var(--gui-neutral-fg-muted);
-  line-height: 1.6;
-}
-
-.api-cta {
-  padding-top: var(--spacing-xl);
-  padding-bottom: var(--spacing-xl);
-  border-top: 1px solid var(--gui-neutral-border);
-  border-bottom: 1px solid var(--gui-neutral-border);
-}
-
-.api-cta-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-lg);
-  flex-wrap: wrap;
-}
-
-.api-cta-text h2 {
-  margin-bottom: var(--spacing-xs);
-}
-
-.api-cta-text p {
-  font-size: var(--text-sm);
-  color: var(--gui-neutral-fg-muted);
-  margin: 0;
-}
-
-.api-cta-button {
-  flex-shrink: 0;
-}
-
-.goals {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.goal-row {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
-  font-size: var(--text-sm);
-  color: var(--gui-neutral-fg);
-}
-
-.goal-pill {
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.goal-desc {
-  color: var(--gui-neutral-fg-muted);
-  font-size: var(--text-xs);
-  margin-top: 2px;
-  margin-bottom: 0;
-}
-
-.dialects {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
-}
-
-.prose {
-  font-size: var(--text-sm);
-  color: var(--gui-neutral-fg);
-  line-height: 1.6;
-  border-left: 2px solid var(--gui-primary-solid);
-  padding-left: var(--spacing-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.prose p {
-  margin: 0;
-}
-
-footer {
-  padding-top: var(--spacing-lg);
-  padding-bottom: var(--spacing-lg);
-  border-top: 1px solid var(--gui-neutral-border);
-  background: var(--color-neutral-1);
-}
-
-.footer-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--spacing-md);
-  font-size: var(--text-xs);
-  flex-wrap: wrap;
-  color: var(--gui-neutral-fg-muted);
-}
-
-.footer-attribution {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-footer a {
-  color: var(--gui-neutral-fg-muted);
-}
-
-footer a:hover {
-  color: var(--gui-neutral-fg);
-}
-</style>
