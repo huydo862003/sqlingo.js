@@ -2,55 +2,41 @@
   <NavBar :breadcrumb="navBreadcrumb" />
 
   <main class="main">
-    <div class="page page-wide">
+    <div>
       <h1 class="title">
         sqlingo.js Playground
       </h1>
-      <div class="tabs">
-        <GButton
-          :prominence="tab === Tab.Transpile ? ButtonProminence.Primary : ButtonProminence.Ghost"
-          :size="ButtonSize.Sm"
-          @click="tab = Tab.Transpile"
+      <GTab
+        :default="tab"
+        @select="onTabSelect"
+      >
+        <GTabPanel
+          :name="Tab.Transpile"
+          label="Transpile"
+          :icon="GIconName.ArrowsLeftRight"
+          class="p-3"
         >
-          <GIcon
-            :name="GIconName.ArrowsLeftRight"
-            :size="13"
-          />
-          Transpile
-        </GButton>
-        <GButton
-          :prominence="tab === Tab.Dbml ? ButtonProminence.Primary : ButtonProminence.Ghost"
-          :size="ButtonSize.Sm"
-          @click="tab = Tab.Dbml"
+          <p class="section-sub">
+            Transpile between SQL dialects.
+          </p>
+          <SqlTranspile />
+        </GTabPanel>
+        <GTabPanel
+          :name="Tab.Dbml"
+          label="SQL to DBML"
+          :icon="GIconName.Database"
+          class="p-3"
         >
-          <GIcon
-            :name="GIconName.Database"
-            :size="13"
-          />
-          SQL
-          <GIcon
-            :name="GIconName.ArrowRight"
-            :size="11"
-          />
-          DBML
-        </GButton>
-      </div>
-      <div v-show="tab === Tab.Transpile">
-        <p class="section-sub">
-          Transpile between SQL dialects.
-        </p>
-        <SqlTranspile />
-      </div>
-      <div v-show="tab === Tab.Dbml">
-        <p class="section-sub">
-          Paste CREATE TABLE SQL and get a <a
-            href="https://dbml.dbdiagram.io/docs/"
-            target="_blank"
-            rel="noopener"
-          >DBML</a> schema back.
-        </p>
-        <SqlToDbml />
-      </div>
+          <p class="section-sub">
+            Paste CREATE TABLE SQL and get a <a
+              href="https://dbml.dbdiagram.io/docs/"
+              target="_blank"
+              rel="noopener"
+            >DBML</a> schema back.
+          </p>
+          <SqlToDbml />
+        </GTabPanel>
+      </GTab>
     </div>
   </main>
 </template>
@@ -60,8 +46,9 @@ import {
   computed,
 } from 'vue';
 import {
-  GButton, ButtonProminence, ButtonSize,
-  GIcon, GIconName,
+  GTab,
+  GTabPanel,
+  GIconName,
 } from '@hdnax/genuix';
 import NavBar from '@/components/NavBar.vue';
 import SqlToDbml from '@/components/playground/SqlToDbml.vue';
@@ -95,53 +82,41 @@ const navBreadcrumb = computed(() => {
 });
 
 const store = usePlaygroundStore();
-const tab = computed({
-  get: () => store.tab,
-  set: (v) => {
-    store.tab = v;
-    store.persist();
-  },
-});
+const tab = store.tab;
+
+function onTabSelect (name: string) {
+  store.tab = name as Tab;
+  store.persist();
+}
 </script>
 
 <style scoped>
-@reference "../style.css";
-
-.page {
-  max-width: 52rem;
-  margin: 0 auto;
-  padding: 0 var(--spacing-lg);
-}
-
-.page-wide {
-  max-width: 72rem;
-}
+@reference '../style.css';
 
 .main {
-  padding-top: var(--spacing-xl);
-  padding-bottom: var(--spacing-3xl);
-  padding-left: var(--spacing-md);
-  padding-right: var(--spacing-md);
+  padding: var(--spacing-lg);
 }
 
 .title {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-weight-bold);
-  margin-bottom: var(--spacing-lg);
+  font-size: var(--text-xl);
+  font-weight: 700;
   color: var(--gui-neutral-fg);
+  margin-bottom: var(--spacing-sm);
 }
 
 .section-sub {
   font-size: var(--text-sm);
   color: var(--gui-neutral-fg-muted);
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  line-height: var(--leading-3);
 }
 
-.tabs {
-  display: flex;
-  gap: var(--spacing-xs);
-  margin-bottom: var(--spacing-lg);
-  border-bottom: 1px solid var(--gui-neutral-border);
-  padding-bottom: var(--spacing-sm);
+.section-sub a {
+  color: var(--gui-info-fg);
+  text-decoration: none;
+}
+
+.section-sub a:hover {
+  text-decoration: underline;
 }
 </style>

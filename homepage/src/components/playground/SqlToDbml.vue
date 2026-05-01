@@ -7,7 +7,9 @@
             <span class="panel-label">SQL</span>
             <GSelect
               v-model="dialect"
-              :size="SelectSize.Xs"
+              :size="GSelectSize.Xs"
+              :variant="GSelectVariant.Box"
+              class="w-40"
               placeholder="auto"
             >
               <GSelectOption
@@ -30,16 +32,18 @@
         <div class="panel-header">
           <span class="panel-label">DBML</span>
           <GButton
-            :prominence="ButtonProminence.Secondary"
-            :size="ButtonSize.Sm"
+            :prominence="GButtonProminence.Secondary"
+            :size="GButtonSize.Xs"
             :disabled="!dbmlOutput"
+            class="flex gap-2 p-3"
             @click="copyDbml"
           >
             <GIcon
               :name="GIconName.Copy"
-              :size="12"
             />
-            {{ copied ? 'Copied!' : 'Copy' }}
+            <span>
+              {{ copied ? 'Copied!' : 'Copy' }}
+            </span>
           </GButton>
         </div>
         <div :class="{ 'output-error': error }">
@@ -59,8 +63,8 @@ import {
   ref, computed, watch, onMounted,
 } from 'vue';
 import {
-  GSelect, GSelectOption, SelectSize,
-  GButton, ButtonProminence, ButtonSize,
+  GSelect, GSelectOption, GSelectSize, GSelectVariant,
+  GButton, GButtonProminence, GButtonSize,
   GIcon, GIconName,
 } from '@hdnax/genuix';
 import {

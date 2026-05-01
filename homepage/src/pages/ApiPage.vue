@@ -13,85 +13,59 @@
       v-else
       class="layout"
     >
-      <!-- mobile search bar (hidden on desktop) -->
-      <div class="mobile-search-bar">
-        <div class="mobile-search-wrap">
-          <input
-            v-model="query"
-            class="search"
-            type="search"
-            placeholder="Search API..."
-            autocomplete="off"
-            @focus="mobileSearchFocused = true"
-            @blur="onMobileSearchBlur"
-          >
-          <div
-            v-if="mobileSearchFocused && mobileResults.length"
-            class="mobile-results"
-          >
-            <button
-              v-for="item in mobileResults"
-              :key="item.id"
-              class="mobile-result-item"
-              @mousedown.prevent="selectMobile(item)"
-            >
-              <span
-                class="kind-dot"
-                :class="`dot-${kindSlug(item.kind)}`"
-              />
-              <span class="mobile-result-name">{{ item.name }}</span>
-              <span class="mobile-result-kind">{{ kindLabel(item.kind) }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <button
+        class="sidebar-toggle"
+        @click="sidebarOpen = !sidebarOpen"
+      >
+        <GIcon
+          :name="sidebarOpen ? GIconName.ChevronUp : GIconName.ChevronDown"
+          :size="12"
+        />
+        {{ sidebarOpen ? 'Hide API list' : 'Show API list' }}
+      </button>
 
-      <!-- sidebar -->
-      <aside class="sidebar">
+      <aside
+        class="sidebar"
+        :class="{ 'sidebar-open': sidebarOpen }"
+      >
         <div class="sidebar-inner">
           <div class="search-wrap">
-            <input
+            <GTextInput
               v-model="query"
-              class="search"
-              type="search"
               placeholder="Search..."
               autocomplete="off"
-            >
+            />
           </div>
-
-          <div class="nav-groups">
-            <div
-              v-for="group in navGroups"
-              :key="group.label"
-              class="nav-group"
-            >
-              <div class="nav-group-label">
-                {{ group.label }}
-              </div>
-              <ul class="nav-list">
-                <li
-                  v-for="item in group.items"
-                  :key="item.id"
-                >
-                  <button
-                    class="nav-item"
-                    :class="{ active: selected?.id === item.id }"
-                    @click="select(item)"
-                  >
-                    <span
-                      class="kind-dot"
-                      :class="`dot-${kindSlug(item.kind)}`"
-                    />
-                    {{ item.name }}
-                  </button>
-                </li>
-              </ul>
+          <div
+            v-for="group in navGroups"
+            :key="group.label"
+            class="nav-group"
+          >
+            <div class="nav-group-label">
+              {{ group.label }}
             </div>
+            <ul class="nav-list">
+              <li
+                v-for="item in group.items"
+                :key="item.id"
+              >
+                <button
+                  class="nav-item"
+                  :class="{ active: selected?.id === item.id }"
+                  @click="select(item)"
+                >
+                  <span
+                    class="kind-dot"
+                    :class="`dot-${kindSlug(item.kind)}`"
+                  />
+                  {{ item.name }}
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
       </aside>
 
-      <!-- main content -->
       <main
         ref="mainEl"
         class="content"
@@ -100,7 +74,6 @@
           v-if="selected"
           class="content-inner"
         >
-          <!-- title -->
           <div class="entry-title">
             <span
               class="kind-chip"
@@ -111,7 +84,6 @@
             </h1>
           </div>
 
-          <!-- source -->
           <div
             v-if="sourceUrl(selected)"
             class="entry-source"
@@ -123,7 +95,6 @@
             >{{ sourceFile(selected) }}</a>
           </div>
 
-          <!-- description -->
           <div
             v-if="comment(selected)"
             class="entry-desc"
@@ -131,7 +102,6 @@
             {{ comment(selected) }}
           </div>
 
-          <!-- function signatures -->
           <template v-if="selected.kind === ReflectionKind.Function">
             <div
               v-for="sig in (selected.signatures ?? [])"
@@ -183,7 +153,6 @@
             </div>
           </template>
 
-          <!-- class / interface members -->
           <template v-if="selected.children?.length && selected.kind !== ReflectionKind.Enum">
             <div class="section">
               <h2 class="section-title">
@@ -236,7 +205,6 @@
             </div>
           </template>
 
-          <!-- enum members -->
           <template v-if="selected.kind === ReflectionKind.Enum && selected.children?.length">
             <div class="section">
               <h2 class="section-title">
@@ -317,7 +285,7 @@
             </ul>
 
             <h2>Features</h2>
-            <ul>
+            <ul class="list-disc">
               <li>33+ SQL dialects: Postgres, MySQL, BigQuery, Snowflake, DuckDB, ClickHouse, Redshift, Athena, Spark, and many more</li>
               <li>Full SQLGlot feature set: parsing, transpilation, optimization, column lineage, SQL diffing, and execution</li>
               <li>Pure JavaScript: no need for WASM or native dependencies</li>
@@ -453,22 +421,18 @@ const [result] = transpile("SELECT 1", { write: "my_dialect" });</code></pre>
 
 <script setup lang="ts">
 import {
-  ref, computed, watch, useTemplateRef,
+  ref, computed, useTemplateRef,
 } from 'vue';
 import NavBar from '../components/NavBar.vue';
+import {
+  GTextInput, GIcon, GIconName,
+} from '@hdnax/genuix';
 import {
   ReflectionKind,
 } from '../types/reflectionKind';
 import {
   useSeo,
 } from '../composables/useSeo';
-
-useSeo(() => ({
-  title: selected.value ? `${selected.value.name} | API Reference` : 'API Reference: JavaScript SQL Parser Documentation',
-  description: selected.value
-    ? `Documentation for ${selected.value.name} in sqlingo.js, the SQLGlot port for JavaScript/TypeScript.`
-    : 'Full API documentation for sqlingo.js, including SQL parsing, transpiling, and optimization classes and functions.',
-}));
 
 interface TypeInfo {
   type: string;
@@ -531,8 +495,16 @@ const navBreadcrumb = computed(() => {
   return crumbs;
 });
 
-const query = ref('');
 const selected = ref<ReflectionNode | null>(null);
+const query = ref('');
+const sidebarOpen = ref(false);
+
+useSeo(() => ({
+  title: selected.value ? `${selected.value.name} | API Reference` : 'API Reference: JavaScript SQL Parser Documentation',
+  description: selected.value
+    ? `Documentation for ${selected.value.name} in sqlingo.js, the SQLGlot port for JavaScript/TypeScript.`
+    : 'Full API documentation for sqlingo.js, including SQL parsing, transpiling, and optimization classes and functions.',
+}));
 
 function itemSlug (item: ReflectionNode): string {
   return `${kindLabel(item.kind).toLowerCase()}-${item.name}`;
@@ -604,41 +576,10 @@ const navGroups = computed(() => {
   });
 });
 
-watch(navGroups, (groups) => {
-  const all = groups.flatMap((g) => g.items);
-  // keep selection valid when search narrows results
-  if (selected.value && !all.find((i) => i.id === selected.value?.id)) {
-    selected.value = null;
-  }
-}, {
-  immediate: true,
-});
-
 function select (item: ReflectionNode) {
   selected.value = item;
   mainEl.value?.scrollTo(0, 0);
   window.location.hash = itemSlug(item);
-}
-
-const mobileSearchFocused = ref(false);
-
-const mobileResults = computed(() => {
-  const q = query.value.toLowerCase();
-  if (!q) return topLevel.value.slice(0, 20);
-  return topLevel.value.filter((n) => n.name.toLowerCase().includes(q)).slice(0, 20);
-});
-
-function selectMobile (item: ReflectionNode) {
-  select(item);
-  query.value = '';
-  mobileSearchFocused.value = false;
-}
-
-function onMobileSearchBlur () {
-  // small delay so mousedown on result fires first
-  setTimeout(() => {
-    mobileSearchFocused.value = false;
-  }, 100);
 }
 
 function kindLabel (kind: number): string {
@@ -702,337 +643,471 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
 </script>
 
 <style scoped>
-@reference "../style.css";
+@reference '../style.css';
 
 .app {
-  height: 100vh;
-  overflow: hidden;
-  @apply flex flex-col;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 .loading {
-  @apply flex items-center justify-center h-screen text-sm text-fg-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--gui-neutral-fg-muted);
+  font-size: var(--text-md);
 }
 
 .layout {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  grid-template-rows: 1fr;
+  display: flex;
   flex: 1;
-  height: calc(100vh - 3rem);
   overflow: hidden;
 }
 
-.mobile-search-bar {
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--gui-neutral-border-subtle);
+  background: var(--gui-neutral-bg-subtle);
+  overflow-y: auto;
+  height: calc(100vh - 48px);
+  position: sticky;
+  top: 48px;
+}
+
+.sidebar-inner {
+  padding: var(--spacing-sm) 0;
+}
+
+.search-wrap {
+  padding: 0 var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.nav-group {
+  margin-bottom: var(--spacing-sm);
+}
+
+.nav-group-label {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gui-neutral-fg-muted);
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+  padding: 4px var(--spacing-sm);
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  color: var(--gui-neutral-fg);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.nav-item:hover {
+  background: var(--gui-neutral-bg-hover);
+}
+
+.nav-item.active {
+  background: var(--gui-primary-bg-hover);
+  color: var(--gui-primary-fg);
+}
+
+.kind-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-class { background: var(--gui-info-solid); }
+.dot-function { background: var(--gui-success-solid); }
+.dot-interface { background: var(--gui-warning-solid); }
+.dot-enum { background: var(--gui-notice-solid); }
+.dot-typealias { background: var(--gui-primary-solid); }
+.dot-variable { background: var(--gui-danger-solid); }
+.dot-property { background: var(--gui-neutral-solid); }
+.dot-method { background: var(--gui-success-solid); }
+.dot-constructor { background: var(--gui-neutral-solid); }
+.dot-enumvalue { background: var(--gui-notice-solid); }
+
+.content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  height: calc(100vh - 48px);
+  position: sticky;
+  top: 48px;
+}
+
+.content-inner {
+  padding: var(--spacing-lg);
+  max-width: 800px;
+}
+
+.entry-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.entry-name {
+  font-size: var(--text-xl);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--gui-neutral-fg);
+}
+
+.kind-chip {
+  display: inline-block;
+  padding: 2px var(--spacing-xs);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  text-transform: lowercase;
+}
+
+.chip-class { background: var(--gui-info-bg-hover); color: var(--gui-info-fg); }
+.chip-function { background: var(--gui-success-bg-hover); color: var(--gui-success-fg); }
+.chip-interface { background: var(--gui-warning-bg-hover); color: var(--gui-warning-fg); }
+.chip-enum { background: var(--gui-notice-bg-hover); color: var(--gui-notice-fg); }
+.chip-typealias { background: var(--gui-primary-bg-hover); color: var(--gui-primary-fg); }
+.chip-variable { background: var(--gui-danger-bg-hover); color: var(--gui-danger-fg); }
+
+.entry-source {
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--text-sm);
+  color: var(--gui-neutral-fg-muted);
+}
+
+.entry-source a {
+  color: var(--gui-info-fg);
+  text-decoration: none;
+}
+
+.entry-source a:hover {
+  text-decoration: underline;
+}
+
+.entry-desc {
+  font-size: var(--text-md);
+  color: var(--gui-neutral-fg);
+  margin-bottom: var(--spacing-md);
+  line-height: var(--leading-3);
+}
+
+.section {
+  margin-top: var(--spacing-lg);
+}
+
+.section-title {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--gui-neutral-fg);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--gui-neutral-border-subtle);
+}
+
+.sig-code {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  padding: var(--spacing-sm);
+  background: var(--gui-neutral-bg-subtle);
+  border: 1px solid var(--gui-neutral-border-subtle);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--gui-neutral-fg);
+}
+
+.kw { color: var(--gui-info-fg); }
+.sig-name { font-weight: 600; }
+.param-name { color: var(--gui-warning-fg); }
+.type-ref { color: var(--gui-success-fg); }
+
+.sig-comment {
+  font-size: var(--text-sm);
+  color: var(--gui-neutral-fg-muted);
+  margin-top: var(--spacing-xs);
+  line-height: var(--leading-3);
+}
+
+.param-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.param-table th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--gui-neutral-fg-muted);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-bottom: 1px solid var(--gui-neutral-border);
+}
+
+.param-table td {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-bottom: 1px solid var(--gui-neutral-border-subtle);
+  vertical-align: top;
+}
+
+.pname {
+  font-family: var(--font-mono);
+  color: var(--gui-warning-fg);
+}
+
+.ptype {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--gui-success-fg);
+}
+
+.pdesc {
+  color: var(--gui-neutral-fg-muted);
+  line-height: var(--leading-3);
+}
+
+.member {
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--gui-neutral-border-subtle);
+}
+
+.member:last-child {
+  border-bottom: none;
+}
+
+.member-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.member-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--gui-neutral-fg);
+}
+
+.member-src {
+  margin-left: auto;
+  font-size: var(--text-sm);
+  color: var(--gui-neutral-fg-muted);
+  text-decoration: none;
+}
+
+.member-src:hover {
+  text-decoration: underline;
+}
+
+.flag {
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: var(--radius-sm);
+  background: var(--gui-neutral-bg-hover);
+  color: var(--gui-neutral-fg-muted);
+}
+
+.member-type {
+  margin-top: 2px;
+}
+
+.member-comment {
+  font-size: var(--text-sm);
+  color: var(--gui-neutral-fg-muted);
+  margin-top: 2px;
+  line-height: var(--leading-3);
+}
+
+.content-landing {
+  padding: var(--spacing-lg);
+  max-width: 800px;
+  min-width: 0;
+}
+
+.landing-header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.landing-name {
+  font-size: var(--text-2xl);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--gui-neutral-fg);
+}
+
+.landing-version {
+  font-size: var(--text-md);
+  font-weight: 400;
+  color: var(--gui-neutral-fg-muted);
+}
+
+.landing-badges {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.landing-badges img {
+  height: 20px;
+}
+
+.prose {
+  font-size: var(--text-md);
+  color: var(--gui-neutral-fg);
+  line-height: var(--leading-3);
+}
+
+.prose h2 {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--gui-neutral-border-subtle);
+}
+
+.prose h3 {
+  font-size: var(--text-md);
+  font-weight: 700;
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-xs);
+}
+
+.prose p {
+  margin-bottom: var(--spacing-sm);
+}
+
+.prose ul {
+  margin: var(--spacing-sm) 0;
+  padding-left: var(--spacing-lg);
+}
+
+.prose li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.prose a {
+  color: var(--gui-info-fg);
+  text-decoration: none;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 2px var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  background: var(--gui-neutral-bg-hover);
+  border: 1px solid var(--gui-neutral-border-subtle);
+}
+
+.prose pre {
+  margin: var(--spacing-sm) 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gui-neutral-border-subtle);
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.prose pre code {
+  display: block;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--text-sm);
+  line-height: var(--leading-3);
+  background: var(--gui-neutral-bg-subtle);
+  border: none;
+  white-space: pre;
+  border-radius: var(--radius-md);
+}
+
+.links-list {
+  display: flex;
+  gap: var(--spacing-md);
+  list-style: none;
+  padding: 0;
+}
+
+.dialects-list {
+  color: var(--gui-neutral-fg-muted);
+}
+
+.sidebar-toggle {
   display: none;
 }
 
-/* sidebar */
-.sidebar {
-  @apply border-r border-border overflow-y-auto;
-  background: var(--color-bg-subtle);
-}
-
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-    height: calc(100vh - 3rem);
+    flex-direction: column;
+    overflow: visible;
   }
 
-  .mobile-search-bar {
+  .sidebar-toggle {
     display: flex;
-    @apply px-3 py-2 border-b border-border;
-    background: var(--color-bg-subtle);
+    align-items: center;
+    gap: var(--spacing-xs);
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--gui-neutral-fg);
+    background: var(--gui-neutral-bg-subtle);
+    border: none;
+    border-bottom: 1px solid var(--gui-neutral-border-subtle);
+    cursor: pointer;
+  }
+
+  .sidebar-toggle:hover {
+    background: var(--gui-neutral-bg-hover);
   }
 
   .sidebar {
     display: none;
+    width: 100%;
+    height: auto;
+    max-height: 50vh;
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid var(--gui-neutral-border-subtle);
+    overflow-y: auto;
+  }
+
+  .sidebar.sidebar-open {
+    display: block;
+  }
+
+  .search-wrap :deep(input) {
+    width: 100%;
+    border: 1px solid var(--gui-neutral-border);
   }
 
   .content {
-    grid-column: 1;
+    height: auto;
+    position: static;
   }
-}
-
-.mobile-search-wrap {
-  @apply relative w-full;
-}
-
-.mobile-results {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  @apply border border-border rounded-[var(--radius-md)] flex flex-col py-1 z-50;
-  background: #1a1a24;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.mobile-result-item {
-  @apply flex items-center gap-2 px-3 py-2 text-xs text-left w-full border-0 cursor-pointer;
-  background: transparent;
-  font-family: var(--font-mono);
-  color: #9090a0;
-  transition: background 0.1s, color 0.1s;
-}
-.mobile-result-item:hover {
-  background: rgba(255,255,255,0.07);
-  color: #e8e8ec;
-}
-
-.mobile-result-name {
-  @apply text-fg flex-1 truncate;
-}
-
-.mobile-result-kind {
-  @apply text-[10px] text-fg-faint shrink-0;
-}
-
-.sidebar-inner {
-  @apply py-3;
-}
-
-.search-wrap {
-  @apply px-3 pb-3;
-}
-
-.search {
-  @apply w-full px-3 py-1.5 text-xs rounded-[var(--radius-md)] border border-border bg-bg text-fg;
-  outline: none;
-}
-.search:focus { border-color: var(--color-accent); }
-
-.nav-groups {
-  @apply flex flex-col;
-}
-
-.nav-group {
-  @apply mb-2;
-}
-
-.nav-group-label {
-  @apply px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-fg-faint;
-}
-
-.nav-list {
-  @apply list-none m-0 p-0;
-}
-
-.nav-item {
-  @apply flex items-center gap-2 w-full text-left px-4 py-1 text-xs text-fg-muted cursor-pointer;
-  background: transparent;
-  border: none;
-  font-family: var(--font-mono);
-  transition: color 0.1s, background 0.1s;
-}
-.nav-item:hover { @apply text-fg bg-bg; }
-.nav-item.active {
-  @apply text-fg font-bold;
-  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-  box-shadow: inset 2px 0 0 var(--color-accent);
-}
-
-/* kind dots */
-.kind-dot {
-  @apply w-2 h-2 rounded-full shrink-0;
-}
-.dot-class      { background: #3b82f6; }
-.dot-function   { background: #f59e0b; }
-.dot-interface  { background: #10b981; }
-.dot-enum       { background: #8b5cf6; }
-.dot-typealias  { background: #6366f1; }
-.dot-variable   { background: #ef4444; }
-.dot-property   { background: #64748b; }
-.dot-method     { background: #f59e0b; }
-.dot-accessor   { background: #06b6d4; }
-
-/* kind chips */
-.kind-chip {
-  @apply text-xs font-bold px-2 py-0.5 rounded;
-  font-family: var(--font-mono);
-}
-.chip-class     { background: #1e3a5f; color: #93c5fd; }
-.chip-function  { background: #3d2600; color: #fcd34d; }
-.chip-interface { background: #063b24; color: #6ee7b7; }
-.chip-enum      { background: #2d1b5e; color: #c4b5fd; }
-.chip-typealias { background: #1e2060; color: #a5b4fc; }
-.chip-variable  { background: #3d0a0a; color: #fca5a5; }
-
-/* content */
-.content {
-  @apply overflow-y-auto;
-}
-
-.content-inner {
-  @apply px-10 py-8 max-w-4xl;
-}
-
-.content-empty {
-  @apply flex items-center justify-center h-full text-sm text-fg-faint;
-}
-
-.content-landing {
-  @apply px-10 py-12 max-w-4xl;
-}
-
-.landing-header {
-  @apply mb-10;
-}
-
-.landing-name {
-  @apply text-3xl font-black mb-2 flex items-baseline gap-3;
-}
-
-.landing-version {
-  @apply text-base font-normal text-fg-muted;
-}
-
-.landing-badges {
-  @apply flex gap-2 flex-wrap mt-4;
-}
-
-.prose h2 {
-  @apply text-base font-bold text-fg-muted mt-10 mb-4 uppercase tracking-widest;
-}
-
-.prose h3 {
-  @apply text-sm font-bold text-fg mt-6 mb-2;
-}
-
-.prose p {
-  @apply text-sm text-fg-muted leading-relaxed mb-4;
-}
-
-.prose ul {
-  @apply list-disc list-inside text-sm text-fg-muted mb-4 pl-2;
-}
-
-.prose li {
-  @apply mb-1.5;
-}
-
-.prose code {
-  @apply text-xs bg-bg-subtle px-1.5 py-0.5 rounded border border-border font-mono text-accent;
-}
-
-.prose pre {
-  @apply bg-bg-subtle border border-border rounded-[var(--radius-md)] p-4 mb-6 overflow-x-auto;
-}
-
-.prose pre code {
-  @apply p-0 bg-transparent border-0 text-fg text-xs;
-}
-
-.links-list {
-  @apply list-none! p-0!;
-}
-
-.links-list a {
-  @apply text-accent hover:underline;
-}
-
-.dialects-list {
-  @apply text-xs! text-fg-faint! leading-relaxed!;
-}
-
-.prose a {
-  @apply text-accent hover:underline;
-}
-
-/* breadcrumb */
-.breadcrumb {
-  @apply flex items-center gap-1.5 text-xs text-fg-faint mb-4 font-mono;
-}
-.breadcrumb-pkg { @apply text-fg-faint; }
-.breadcrumb-sep { @apply text-fg-faint; }
-
-/* title */
-.entry-title {
-  @apply flex items-center gap-3 mb-2;
-}
-
-.entry-name {
-  @apply text-2xl font-black text-fg font-mono m-0;
-}
-
-.entry-source {
-  @apply text-sm text-fg-faint font-mono mb-4;
-}
-.entry-source a { @apply text-fg-faint; }
-.entry-source a:hover { @apply text-fg; }
-
-.entry-desc {
-  @apply text-base text-fg-muted leading-relaxed mb-6 border-l-2 border-border pl-4;
-}
-
-/* sections */
-.section {
-  @apply mb-8 border-t border-border pt-6;
-}
-
-.section-title {
-  @apply text-sm font-bold text-fg-muted uppercase tracking-wider mb-4 m-0;
-}
-
-/* signature */
-.sig-code {
-  @apply text-base font-mono bg-bg-subtle border border-border rounded-[var(--radius-md)] px-4 py-3 mb-3 overflow-x-auto;
-}
-.kw { @apply text-fg-muted; }
-.sig-name { @apply text-fg font-bold; }
-.param-name { @apply text-fg; }
-.type-ref { color: #60a5fa; }
-
-.sig-comment {
-  @apply text-base text-fg-muted mb-3;
-}
-
-/* param table */
-.param-table {
-  @apply w-full text-sm border border-border rounded-[var(--radius-md)];
-  border-collapse: collapse;
-}
-.param-table th {
-  @apply text-left px-4 py-2 text-fg-faint font-medium border-b border-border bg-bg-subtle;
-}
-.param-table td {
-  @apply px-4 py-2 border-b border-border align-top;
-}
-.param-table tr:last-child td { @apply border-b-0; }
-.pname { @apply font-mono text-fg; }
-.ptype { @apply font-mono; color: #60a5fa; }
-.pdesc { @apply text-fg-muted; }
-
-/* members */
-.member {
-  @apply py-4 border-b border-border-muted last:border-b-0;
-}
-
-.member-title {
-  @apply flex items-center gap-2 flex-wrap mb-1;
-}
-
-.member-name {
-  @apply text-base font-mono text-fg;
-}
-
-.flag {
-  @apply text-[10px] text-fg-faint border border-border-muted rounded px-1.5 py-0.5;
-}
-
-.member-src {
-  @apply text-[10px] text-fg-faint font-mono ml-auto;
-}
-.member-src:hover { @apply text-fg; }
-
-.member-type {
-  @apply mb-1;
-}
-
-.member-comment {
-  @apply text-sm text-fg-muted m-0 leading-relaxed;
 }
 </style>

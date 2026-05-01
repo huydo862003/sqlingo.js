@@ -1,108 +1,73 @@
 <template>
-  <div class="code-tabs">
-    <div class="tab-bar">
-      <GButton
-        v-for="tab in tabs"
-        :key="tab.id"
-        :prominence="active === tab.id ? ButtonProminence.Primary : ButtonProminence.Ghost"
-        :size="ButtonSize.Sm"
-        @click="active = tab.id"
-      >
-        {{ tab.label }}
-      </GButton>
-    </div>
-    <div class="code-body">
-      <pre><code
-        class="language-typescript"
-        v-html="currentTab.html"
-      /></pre>
-    </div>
-  </div>
+  <GTab class="code-tabs">
+    <GTabPanel name="Parse">
+      <GCodeBlock
+        id="example-parse"
+        :code="`
+import { parse } from &quot;@hdnax/sqlingo.js&quot;;
+const [ast] = parse(
+  &quot;SELECT a, b FROM t WHERE a > 1&quot;,
+  { read: &quot;mysql&quot; },
+);
+// => &quot;SELECT a, b FROM t WHERE a > 1&quot;
+`"
+        :language="GCodeLanguage.Typescript"
+        :highlight-theme="GHighlightTheme.AtomOne"
+        show-line-numbers
+      />
+    </GTabPanel>
+    <GTabPanel name="Transpile">
+      <GCodeBlock
+        id="example-transpile"
+        :code="`
+import { transpile } from &quot;@hdnax/sqlingo.js&quot;;
+const [result] = transpile(&quot;SELECT EPOCH_MS(1618088028295)&quot;, {
+  read: &quot;duckdb&quot;,
+  write: &quot;hive&quot;,
+});
+// => &quot;SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))&quot;
+`"
+        :language="GCodeLanguage.Typescript"
+        :highlight-theme="GHighlightTheme.AtomOne"
+        show-line-numbers
+      />
+    </GTabPanel>
+    <GTabPanel name="Optimize">
+      <GCodeBlock
+        id="example-optimize"
+        :code="`
+import { optimize } from &quot;@hdnax/sqlingo.js&quot;;
+const result = optimize(
+  &quot;SELECT a FROM (SELECT a, b FROM t) sub WHERE sub.a > 1&quot;,
+  { dialect: &quot;duckdb&quot; },
+);
+// => &quot;SELECT t.a FROM t WHERE t.a > 1&quot;
+`"
+        :language="GCodeLanguage.Typescript"
+        :highlight-theme="GHighlightTheme.AtomOne"
+        show-line-numbers
+      />
+    </GTabPanel>
+  </GTab>
 </template>
 
 <script setup lang="ts">
 import {
-  ref, computed,
-} from 'vue';
-import {
-  GButton, ButtonProminence, ButtonSize,
+  GTab,
+  GTabPanel,
+  GCodeBlock,
+  GCodeLanguage,
+  GHighlightTheme,
 } from '@hdnax/genuix';
-import hljs from 'highlight.js/lib/core';
-import typescript from 'highlight.js/lib/languages/typescript';
-import 'highlight.js/styles/github-dark.css';
-
-hljs.registerLanguage('typescript', typescript);
-
-function highlight (code: string): string {
-  return hljs.highlight(code, {
-    language: 'typescript',
-  }).value;
-}
-
-const tabs = [
-  {
-    id: 'parse',
-    label: 'Parse',
-    html: highlight(`import { parse } from "@hdnax/sqlingo.js";
-
-const [ast] = parse(
-  "SELECT a, b FROM t WHERE a > 1",
-  { read: "mysql" },
-);
-// => "SELECT a, b FROM t WHERE a > 1"`),
-  },
-  {
-    id: 'transpile',
-    label: 'Transpile',
-    html: highlight(`import { transpile } from "@hdnax/sqlingo.js";
-
-const [result] = transpile("SELECT EPOCH_MS(1618088028295)", {
-  read: "duckdb",
-  write: "hive",
-});
-// => "SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))"`),
-  },
-  {
-    id: 'optimize',
-    label: 'Optimize',
-    html: highlight(`import { optimize } from "@hdnax/sqlingo.js";
-
-const result = optimize(
-  "SELECT a FROM (SELECT a, b FROM t) sub WHERE sub.a > 1",
-  { dialect: "duckdb" },
-);
-// => "SELECT t.a FROM t WHERE t.a > 1"`),
-  },
-];
-
-const active = ref('parse');
-const currentTab = computed(() => tabs.find((t) => t.id === active.value) ?? tabs[0]);
 </script>
 
 <style scoped>
-@reference "../style.css";
-
-.code-tabs {
-  border: 1px solid var(--gui-neutral-border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
+.code-tabs :deep(.code-block) {
+  border: none;
+  border-radius: 0;
 }
 
-.tab-bar {
-  display: flex;
-  border-bottom: 1px solid var(--gui-neutral-border);
-  background: var(--gui-neutral-bg-subtle);
-  padding: var(--spacing-xs);
-  gap: var(--spacing-xs);
-}
-
-.code-body {
-  background: var(--gui-neutral-bg-subtle);
-}
-
-pre {
-  margin: 0;
-  padding: var(--spacing-lg);
-  overflow-x: auto;
+.code-tabs :deep(.code-header) {
+  display: none;
 }
 </style>

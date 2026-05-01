@@ -5,11 +5,12 @@
         :as="RouterLink"
         to="/"
       >
-        <img
-          src="/icon.svg"
+        <GLogo
+          src="/sqlingo.js/icon.svg"
           alt="sqlingo.js logo"
-          class="logo-icon"
-        >
+          :size="GLogoSize.Xs"
+          class="bg-white rounded-sm"
+        />
         <span>sqlingo.js</span>
       </GNavBrand>
       <GBreadcrumb
@@ -56,6 +57,8 @@ import {
   GNavbar, GNavBrand, GNavLink,
   GBreadcrumb,
   GIconName,
+  GLogo,
+  GLogoSize,
 } from '@hdnax/genuix';
 
 interface Crumb {
@@ -65,28 +68,7 @@ interface Crumb {
 
 const {
   breadcrumb = [],
-} = defineProps<{ breadcrumb?: Crumb[] }>();
+} = defineProps<{
+  breadcrumb?: Crumb[];
+}>();
 </script>
-
-<style scoped>
-@reference "../style.css";
-
-.nav {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-}
-
-.logo-icon {
-  height: var(--size-5);
-  width: var(--size-5);
-  border-radius: var(--radius-md);
-  background: var(--gui-neutral-bg);
-  border: 1px solid var(--gui-neutral-border-subtle);
-  box-shadow: var(--shadow-xs);
-}
-
-.breadcrumb {
-  font-size: var(--text-xs);
-}
-</style>

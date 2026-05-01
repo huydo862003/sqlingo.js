@@ -1,7 +1,7 @@
 {
   "name": "@hdnax/sqlingo.js-homepage",
   "private": true,
-  "version": "0.0.4",
+  "version": "0.0.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@dbml/parse": "^7.0.0",
-    "@hdnax/genuix": "^0.8.0",
+    "@hdnax/genuix": "^0.9.0",
     "@hdnax/sqlingo.js": "workspace:*",
     "floating-vue": "^5.2.2",
     "highlight.js": "^11.11.1",

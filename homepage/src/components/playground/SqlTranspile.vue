@@ -7,7 +7,9 @@
             <span class="panel-label">Input SQL</span>
             <GSelect
               v-model="fromDialect"
-              :size="SelectSize.Xs"
+              :size="GSelectSize.Xs"
+              :variant="GSelectVariant.Box"
+              class="w-40"
               placeholder="Dialect"
             >
               <GSelectOption
@@ -28,7 +30,9 @@
             <span class="panel-label">Output SQL</span>
             <GSelect
               v-model="toDialect"
-              :size="SelectSize.Xs"
+              :size="GSelectSize.Xs"
+              :variant="GSelectVariant.Box"
+              class="w-40"
               placeholder="Dialect"
             >
               <GSelectOption
@@ -40,9 +44,10 @@
             </GSelect>
           </div>
           <GButton
-            :prominence="ButtonProminence.Secondary"
-            :size="ButtonSize.Sm"
+            :prominence="GButtonProminence.Secondary"
+            :size="GButtonSize.Xs"
             :disabled="!sqlOutput"
+            class="flex gap-2 p-3"
             @click="copyOutput"
           >
             <GIcon
@@ -68,8 +73,8 @@ import {
   ref, computed, watch, onMounted,
 } from 'vue';
 import {
-  GSelect, GSelectOption, SelectSize,
-  GButton, ButtonProminence, ButtonSize,
+  GSelect, GSelectOption, GSelectSize, GSelectVariant,
+  GButton, GButtonProminence, GButtonSize,
   GIcon, GIconName,
 } from '@hdnax/genuix';
 import {

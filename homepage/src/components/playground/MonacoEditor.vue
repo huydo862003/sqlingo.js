@@ -25,7 +25,8 @@ monaco.languages.register({
 monaco.languages.setMonarchTokensProvider('dbml', dbmlMonarchTokensProvider as monaco.languages.IMonarchLanguage);
 
 function resolveToken (token: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+  return getComputedStyle(document.documentElement).getPropertyValue(token)
+    .trim();
 }
 
 function registerEditorTheme () {
