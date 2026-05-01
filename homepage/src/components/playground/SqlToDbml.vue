@@ -5,10 +5,22 @@
         <div class="panel-header">
           <div class="panel-header-left">
             <span class="panel-label">SQL</span>
-            <DialectSelect
+            <GSelect
               v-model="dialect"
-              :allow-auto="true"
-            />
+              :size="SelectSize.Xs"
+              placeholder="auto"
+            >
+              <GSelectOption
+                value=""
+                label="auto"
+              />
+              <GSelectOption
+                v-for="d in DIALECTS"
+                :key="d.value"
+                :value="d.value"
+                :label="d.label"
+              />
+            </GSelect>
           </div>
         </div>
         <MonacoEditor v-model="sqlInput" />
@@ -17,13 +29,18 @@
       <div class="panel">
         <div class="panel-header">
           <span class="panel-label">DBML</span>
-          <button
-            class="copy-btn"
+          <GButton
+            :prominence="ButtonProminence.Secondary"
+            :size="ButtonSize.Sm"
             :disabled="!dbmlOutput"
             @click="copyDbml"
           >
+            <GIcon
+              :name="GIconName.Copy"
+              :size="12"
+            />
             {{ copied ? 'Copied!' : 'Copy' }}
-          </button>
+          </GButton>
         </div>
         <div :class="{ 'output-error': error }">
           <MonacoEditor
@@ -42,10 +59,17 @@ import {
   ref, computed, watch, onMounted,
 } from 'vue';
 import {
+  GSelect, GSelectOption, SelectSize,
+  GButton, ButtonProminence, ButtonSize,
+  GIcon, GIconName,
+} from '@hdnax/genuix';
+import {
   sqlToDbml,
 } from '@/services/dbml';
+import {
+  DIALECTS,
+} from '@/services/dialects';
 import MonacoEditor from './MonacoEditor.vue';
-import DialectSelect from './DialectSelect.vue';
 import {
   usePlaygroundStore,
 } from '@/stores/playground';
@@ -109,11 +133,11 @@ onMounted(convert);
 @import './playground.css';
 
 .sql-to-dbml {
-  @apply w-full;
+  width: 100%;
 }
 
 .output-error :deep(.monaco-wrap) {
-  @apply outline-1 rounded;
-  outline-color: rgb(239 68 68 / 0.4);
+  outline: 1px solid var(--gui-danger-border);
+  border-radius: var(--radius-md);
 }
 </style>

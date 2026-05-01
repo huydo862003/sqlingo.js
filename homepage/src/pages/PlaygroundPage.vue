@@ -7,22 +7,33 @@
         sqlingo.js Playground
       </h1>
       <div class="tabs">
-        <button
-          class="tab"
-          :class="{ active: tab === Tab.Transpile }"
+        <GButton
+          :prominence="tab === Tab.Transpile ? ButtonProminence.Primary : ButtonProminence.Ghost"
+          :size="ButtonSize.Sm"
           @click="tab = Tab.Transpile"
         >
-          <PhArrowsLeftRight :size="13" />
+          <GIcon
+            :name="GIconName.ArrowsLeftRight"
+            :size="13"
+          />
           Transpile
-        </button>
-        <button
-          class="tab"
-          :class="{ active: tab === Tab.Dbml }"
+        </GButton>
+        <GButton
+          :prominence="tab === Tab.Dbml ? ButtonProminence.Primary : ButtonProminence.Ghost"
+          :size="ButtonSize.Sm"
           @click="tab = Tab.Dbml"
         >
-          <PhDatabase :size="13" />
-          SQL <PhArrowRight :size="11" /> DBML
-        </button>
+          <GIcon
+            :name="GIconName.Database"
+            :size="13"
+          />
+          SQL
+          <GIcon
+            :name="GIconName.ArrowRight"
+            :size="11"
+          />
+          DBML
+        </GButton>
       </div>
       <div v-show="tab === Tab.Transpile">
         <p class="section-sub">
@@ -49,8 +60,9 @@ import {
   computed,
 } from 'vue';
 import {
-  PhArrowsLeftRight, PhArrowRight, PhDatabase,
-} from '@phosphor-icons/vue';
+  GButton, ButtonProminence, ButtonSize,
+  GIcon, GIconName,
+} from '@hdnax/genuix';
 import NavBar from '@/components/NavBar.vue';
 import SqlToDbml from '@/components/playground/SqlToDbml.vue';
 import SqlTranspile from '@/components/playground/SqlTranspile.vue';
@@ -98,7 +110,7 @@ const tab = computed({
 .page {
   max-width: 52rem;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 var(--spacing-lg);
 }
 
 .page-wide {
@@ -106,32 +118,30 @@ const tab = computed({
 }
 
 .main {
-  @apply pt-10 pb-24 px-4;
+  padding-top: var(--spacing-xl);
+  padding-bottom: var(--spacing-3xl);
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
 }
 
 .title {
-  @apply text-2xl font-bold mb-6;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-lg);
+  color: var(--gui-neutral-fg);
 }
 
 .section-sub {
-  @apply text-sm text-fg-muted mb-4;
+  font-size: var(--text-sm);
+  color: var(--gui-neutral-fg-muted);
+  margin-bottom: var(--spacing-md);
 }
 
 .tabs {
-  @apply flex gap-1 mb-5 border-b border-border;
-}
-
-.tab {
-  @apply flex items-center gap-1 px-4 py-2 text-xs font-semibold text-fg-muted cursor-pointer border-b-2 border-transparent -mb-px;
-  background: none;
-  border-top: none;
-  border-left: none;
-  border-right: none;
-  transition: color 0.15s, border-color 0.15s;
-}
-.tab:hover { @apply text-fg; }
-.tab.active {
-  @apply text-accent;
-  border-bottom-color: var(--color-accent);
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--gui-neutral-border);
+  padding-bottom: var(--spacing-sm);
 }
 </style>

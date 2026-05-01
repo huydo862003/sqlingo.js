@@ -5,7 +5,18 @@
         <div class="panel-header">
           <div class="panel-header-left">
             <span class="panel-label">Input SQL</span>
-            <DialectSelect v-model="fromDialect" />
+            <GSelect
+              v-model="fromDialect"
+              :size="SelectSize.Xs"
+              placeholder="Dialect"
+            >
+              <GSelectOption
+                v-for="d in DIALECTS"
+                :key="d.value"
+                :value="d.value"
+                :label="d.label"
+              />
+            </GSelect>
           </div>
         </div>
         <MonacoEditor v-model="sqlInput" />
@@ -15,15 +26,31 @@
         <div class="panel-header">
           <div class="panel-header-left">
             <span class="panel-label">Output SQL</span>
-            <DialectSelect v-model="toDialect" />
+            <GSelect
+              v-model="toDialect"
+              :size="SelectSize.Xs"
+              placeholder="Dialect"
+            >
+              <GSelectOption
+                v-for="d in DIALECTS"
+                :key="d.value"
+                :value="d.value"
+                :label="d.label"
+              />
+            </GSelect>
           </div>
-          <button
-            class="copy-btn"
+          <GButton
+            :prominence="ButtonProminence.Secondary"
+            :size="ButtonSize.Sm"
             :disabled="!sqlOutput"
             @click="copyOutput"
           >
+            <GIcon
+              :name="GIconName.Copy"
+              :size="12"
+            />
             {{ copied ? 'Copied!' : 'Copy' }}
-          </button>
+          </GButton>
         </div>
         <div :class="{ 'output-error': error }">
           <MonacoEditor
@@ -41,10 +68,17 @@ import {
   ref, computed, watch, onMounted,
 } from 'vue';
 import {
+  GSelect, GSelectOption, SelectSize,
+  GButton, ButtonProminence, ButtonSize,
+  GIcon, GIconName,
+} from '@hdnax/genuix';
+import {
   transpile,
 } from '@/services/transpile';
+import {
+  DIALECTS,
+} from '@/services/dialects';
 import MonacoEditor from './MonacoEditor.vue';
-import DialectSelect from './DialectSelect.vue';
 import {
   usePlaygroundStore,
 } from '@/stores/playground';
@@ -119,11 +153,11 @@ onMounted(convert);
 @import './playground.css';
 
 .sql-transpile {
-  @apply w-full;
+  width: 100%;
 }
 
 .output-error :deep(.monaco-wrap) {
-  @apply outline-1 rounded;
-  outline-color: rgb(239 68 68 / 0.4);
+  outline: 1px solid var(--gui-danger-border);
+  border-radius: var(--radius-md);
 }
 </style>

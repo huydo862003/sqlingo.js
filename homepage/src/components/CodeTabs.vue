@@ -1,15 +1,15 @@
 <template>
   <div class="code-tabs">
     <div class="tab-bar">
-      <button
+      <GButton
         v-for="tab in tabs"
         :key="tab.id"
-        class="tab-btn"
-        :class="{ active: active === tab.id }"
+        :prominence="active === tab.id ? ButtonProminence.Primary : ButtonProminence.Ghost"
+        :size="ButtonSize.Sm"
         @click="active = tab.id"
       >
         {{ tab.label }}
-      </button>
+      </GButton>
     </div>
     <div class="code-body">
       <pre><code
@@ -24,6 +24,9 @@
 import {
   ref, computed,
 } from 'vue';
+import {
+  GButton, ButtonProminence, ButtonSize,
+} from '@hdnax/genuix';
 import hljs from 'highlight.js/lib/core';
 import typescript from 'highlight.js/lib/languages/typescript';
 import 'highlight.js/styles/github-dark.css';
@@ -80,32 +83,26 @@ const currentTab = computed(() => tabs.find((t) => t.id === active.value) ?? tab
 @reference "../style.css";
 
 .code-tabs {
-  @apply border border-border rounded-[var(--radius-lg)] overflow-hidden;
+  border: 1px solid var(--gui-neutral-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 }
 
 .tab-bar {
-  @apply flex border-b border-border bg-bg-subtle;
+  display: flex;
+  border-bottom: 1px solid var(--gui-neutral-border);
+  background: var(--gui-neutral-bg-subtle);
+  padding: var(--spacing-xs);
+  gap: var(--spacing-xs);
 }
 
-.tab-btn {
-  @apply px-4 py-2.5 text-xs font-semibold text-fg-muted cursor-pointer border-b-2 border-transparent;
-  background: none;
-  border-top: none;
-  border-left: none;
-  border-right: none;
-  transition: color 0.15s, border-color 0.15s;
+.code-body {
+  background: var(--gui-neutral-bg-subtle);
 }
-.tab-btn:hover { @apply text-fg; }
-.tab-btn.active {
-  @apply text-accent;
-  border-bottom-color: var(--color-accent);
-}
-
-.code-body { @apply bg-bg-subtle; }
 
 pre {
   margin: 0;
-  padding: 1.25rem 1.5rem;
+  padding: var(--spacing-lg);
   overflow-x: auto;
 }
 </style>

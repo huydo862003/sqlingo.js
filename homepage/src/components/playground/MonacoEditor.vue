@@ -24,17 +24,25 @@ monaco.languages.register({
 });
 monaco.languages.setMonarchTokensProvider('dbml', dbmlMonarchTokensProvider as monaco.languages.IMonarchLanguage);
 
-monaco.editor.defineTheme('sqlingo-dark', {
-  base: 'vs-dark',
-  inherit: true,
-  rules: [],
-  colors: {
-    'editor.background': '#0d0d14',
-    'editor.lineHighlightBackground': '#13131e',
-    'editorLineNumber.foreground': '#4a4a6a',
-    'editorLineNumber.activeForeground': '#8080a8',
-  },
-});
+function resolveToken (token: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+}
+
+function registerEditorTheme () {
+  monaco.editor.defineTheme('sqlingo-dark', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [],
+    colors: {
+      'editor.background': resolveToken('--color-neutral-1'),
+      'editor.lineHighlightBackground': resolveToken('--color-neutral-2'),
+      'editorLineNumber.foreground': resolveToken('--color-neutral-7'),
+      'editorLineNumber.activeForeground': resolveToken('--color-neutral-9'),
+    },
+  });
+}
+
+registerEditorTheme();
 
 const {
   language = 'sql',
@@ -65,7 +73,7 @@ onMounted(() => {
     scrollBeyondLastLine: false,
     readOnly,
     fontSize: 14,
-    fontFamily: '"JetBrains Mono", monospace',
+    fontFamily: 'var(--font-mono)',
     lineNumbers: 'on',
     folding: false,
     guides: {
@@ -106,9 +114,8 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-@reference '../../style.css';
-
 .monaco-wrap {
-  @apply h-64 w-full;
+  height: 16rem;
+  width: 100%;
 }
 </style>

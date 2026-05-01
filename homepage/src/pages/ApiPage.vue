@@ -516,8 +516,10 @@ const data = ref<ReflectionNode | null>(null);
 const mainEl = useTemplateRef<HTMLElement>('mainEl');
 
 const navBreadcrumb = computed(() => {
-  const crumbs: Array<{label: string;
-    href?: string;}> = [
+  const crumbs: Array<{
+    label: string;
+    href?: string;
+  }> = [
     {
       label: 'API reference',
       href: `${base}api-reference/`,
