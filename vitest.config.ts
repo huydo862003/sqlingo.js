@@ -9,6 +9,9 @@ export default defineConfig({
     setupFiles: [
       './tests/setup.ts',
     ],
+    include: [
+      './tests/**/*.{test,spec}.?(c|m)[jt]s?(x)',
+    ],
     coverage: {
       provider: 'v8',
       reporter: [
