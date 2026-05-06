@@ -6,8 +6,6 @@
 
 WARNING: This package is still in alpha. Although the SQLGlot tests have all passed, but finding contrived failures may require me to use this package extensively myself, which I planned to in the future. You can also help me report bugs in the Github issue.
 
-Disclaimer: ONLY the documentation page is purely AI-generated (that's fine, because I don't want to waste too much time on cosmetic stuff). The porting convention & architecture are controlled by me (so I can catch up with SQLGlot updates as I like, and I don't want the core logic to be entrusted to AI). Although, for repetitive tasks like porting a small function, I did copy-and-paste to Google Gemini, they are purely mechanical works & I was the one who verified them all.
-
 A JavaScript/TypeScript port of [SQLGlot](https://github.com/tobymao/sqlglot), which is a comprehensive SQL parser, transpiler, optimizer, and engine.
 
 This package allows you to parse, transpile, optimize, and execute SQL across **33+ dialects** in JavaScript, with no other setup.
