@@ -1,5 +1,12 @@
 # @hdnax/sqlingo.js
 
+## 0.1.7
+
+### Patch Changes
+
+- 29256e1: Fix vulnerability issues
+- b4924ce: Bump flatted to 3.4.2 to fix vulnerability issue
+
 ## 0.1.6
 
 ### Patch Changes
