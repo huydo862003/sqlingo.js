@@ -16,10 +16,9 @@ Supports TypeScript & CJS/ESM. Works in Node.js and the browser.
 
 ## Features
 
-- 33+ SQL dialects: Postgres, MySQL, BigQuery, Snowflake, DuckDB, ClickHouse, Redshift, Athena, Spark, and many more
-- Full SQLGlot feature set: parsing, transpilation, optimization, column lineage, SQL diffing, and execution
-- Pure JavaScript: no need for WASM or native dependencies
-- TypeScript-first: full type definitions included
+- ~33 SQL dialects: Postgres, MySQL, BigQuery, Snowflake, DuckDB, ClickHouse, Redshift, Athena, Spark, and many more
+- Some SQLGlot feature set: parsing, transpilation, optimization, column lineage, SQL diffing, and execution
+- Written in Typescript
 
 ## Installation
 
