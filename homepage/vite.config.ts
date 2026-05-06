@@ -62,12 +62,9 @@ export default defineConfig({
         playground: resolve(__dirname, 'playground/index.html'),
       },
       output: {
-        manualChunks: {
-          vue: ['vue'],
-          hljs: [
-            'highlight.js/lib/core',
-            'highlight.js/lib/languages/typescript',
-          ],
+        manualChunks (id) {
+          if (id.includes('node_modules/vue/')) return 'vue';
+          if (id.includes('highlight.js/')) return 'hljs';
         },
       },
     },

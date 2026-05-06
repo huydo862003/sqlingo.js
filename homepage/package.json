@@ -11,9 +11,8 @@
   },
   "dependencies": {
     "@dbml/parse": "^7.1.2",
-    "@hdnax/genuix": "^0.10.5",
+    "@hdnax/genuix": "^0.11.0",
     "@hdnax/sqlingo.js": "workspace:*",
-    "floating-vue": "^5.2.2",
     "highlight.js": "^11.11.1",
     "marked": "^18.0.3",
     "monaco-editor": "^0.55.1",
@@ -22,6 +21,7 @@
     "vue-router": "^5.0.6"
   },
   "devDependencies": {
+    "@fontsource/ibm-plex-mono": "^5.2.7",
     "@tailwindcss/vite": "^4.2.4",
     "@types/node": "^25.6.0",
     "@vitejs/plugin-vue": "^6.0.6",

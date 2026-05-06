@@ -4,7 +4,6 @@ import {
 import {
   createPinia,
 } from 'pinia';
-import '@hdnax/genuix/style.css';
 import App from './App.vue';
 import {
   router,
