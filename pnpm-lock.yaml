@@ -61,8 +61,8 @@ importers:
         specifier: ^7.1.2
         version: 7.1.2
       '@hdnax/genuix':
-        specifier: ^0.11.0
-        version: 0.11.0(@fontsource/ibm-plex-mono@5.2.7)(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@10.3.0(jiti@2.7.0))(highlight.js@11.11.1)(vue@3.5.34(typescript@6.0.3))
+        specifier: ^0.12.0
+        version: 0.12.0(@fontsource/ibm-plex-mono@5.2.7)(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@10.3.0(jiti@2.7.0))(highlight.js@11.11.1)(vue@3.5.34(typescript@6.0.3))
       '@hdnax/sqlingo.js':
         specifier: workspace:*
         version: link:..
@@ -409,8 +409,8 @@ packages:
   '@gerrit0/mini-shiki@3.23.0':
     resolution: {integrity: sha512-bEMORlG0cqdjVyCEuU0cDQbORWX+kYCeo0kV1lbxF5bt4r7SID2l9bqsxJEM0zndaxpOUT7riCyIVEuqq/Ynxg==}
 
-  '@hdnax/genuix@0.11.0':
-    resolution: {integrity: sha512-mXm2RqAJ+X0YXndEI8uUgdgR5h68LezQjyYbM/vKgtvCltPwGyv/S1XDML72w4rdx7wSvF9ynabzpLyCkmDxQA==}
+  '@hdnax/genuix@0.12.0':
+    resolution: {integrity: sha512-lyqJBcWPJ6xRWMmzMqx9p6VKB2jVTci2LqxUNZt6/siVJT9bLKbXanVvEjIXC+7rADb5XVAloRvs9HVNz2+NOQ==}
     peerDependencies:
       '@fontsource/ibm-plex-mono': ^5.2.7
       '@phosphor-icons/vue': ^2.2.1
@@ -2862,7 +2862,7 @@ snapshots:
       '@shikijs/types': 3.23.0
       '@shikijs/vscode-textmate': 10.0.2
 
-  '@hdnax/genuix@0.11.0(@fontsource/ibm-plex-mono@5.2.7)(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@10.3.0(jiti@2.7.0))(highlight.js@11.11.1)(vue@3.5.34(typescript@6.0.3))':
+  '@hdnax/genuix@0.12.0(@fontsource/ibm-plex-mono@5.2.7)(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@10.3.0(jiti@2.7.0))(highlight.js@11.11.1)(vue@3.5.34(typescript@6.0.3))':
     dependencies:
       '@fontsource/ibm-plex-mono': 5.2.7
       '@hdnax/stdx': 0.3.3(eslint@10.3.0(jiti@2.7.0))
