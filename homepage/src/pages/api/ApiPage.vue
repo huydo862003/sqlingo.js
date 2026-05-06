@@ -457,7 +457,7 @@ import {
 } from '@hdnax/genuix';
 import {
   ReflectionKind,
-} from '@/types/reflectionKind';
+} from '@/types/typedoc';
 import {
   useSeo,
 } from '@/composables/useSeo';

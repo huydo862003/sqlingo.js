@@ -1,5 +1,5 @@
 <template>
-  <GTab class="code-tabs">
+  <GTab>
     <GTabPanel name="Parse">
       <GCodeBlock
         id="example-parse"
@@ -14,6 +14,8 @@ const [ast] = parse(
         :language="GCodeLanguage.Typescript"
         :highlight-theme="GHighlightTheme.AtomOne"
         show-line-numbers
+        :show-header="false"
+        class="border-none"
       />
     </GTabPanel>
     <GTabPanel name="Transpile">
@@ -30,6 +32,8 @@ const [result] = transpile(&quot;SELECT EPOCH_MS(1618088028295)&quot;, {
         :language="GCodeLanguage.Typescript"
         :highlight-theme="GHighlightTheme.AtomOne"
         show-line-numbers
+        :show-header="false"
+        class="border-none"
       />
     </GTabPanel>
     <GTabPanel name="Optimize">
@@ -46,6 +50,8 @@ const result = optimize(
         :language="GCodeLanguage.Typescript"
         :highlight-theme="GHighlightTheme.AtomOne"
         show-line-numbers
+        :show-header="false"
+        class="border-none"
       />
     </GTabPanel>
   </GTab>
@@ -60,14 +66,3 @@ import {
   GHighlightTheme,
 } from '@hdnax/genuix';
 </script>
-
-<style scoped>
-.code-tabs :deep(.code-block) {
-  border: none;
-  border-radius: 0;
-}
-
-.code-tabs :deep(.code-header) {
-  display: none;
-}
-</style>
