@@ -25,7 +25,9 @@ export class SqlglotError extends Error {
   constructor (message: string) {
     super(message);
     this.name = 'SqlglotError';
-    Error.captureStackTrace(this, this.constructor);
+    if ('captureStackTrace' in Error) {
+      (Error as any).captureStackTrace(this, this.constructor);
+    }
   }
 }
 
@@ -33,7 +35,9 @@ export class UnsupportedError extends SqlglotError {
   constructor (message: string) {
     super(message);
     this.name = 'UnsupportedError';
-    Error.captureStackTrace(this, this.constructor);
+    if ('captureStackTrace' in Error) {
+      (Error as any).captureStackTrace(this, this.constructor);
+    }
   }
 }
 
@@ -44,7 +48,9 @@ export class ParseError extends SqlglotError {
     super(message);
     this.name = 'ParseError';
     this.errors = errors || [];
-    Error.captureStackTrace(this, this.constructor);
+    if ('captureStackTrace' in Error) {
+      (Error as any).captureStackTrace(this, this.constructor);
+    }
   }
 
   static new (
@@ -75,7 +81,9 @@ export class TokenError extends SqlglotError {
   constructor (message: string) {
     super(message);
     this.name = 'TokenError';
-    Error.captureStackTrace(this, this.constructor);
+    if ('captureStackTrace' in Error) {
+      (Error as any).captureStackTrace(this, this.constructor);
+    }
   }
 }
 
@@ -83,7 +91,9 @@ export class OptimizeError extends SqlglotError {
   constructor (message: string) {
     super(message);
     this.name = 'OptimizeError';
-    Error.captureStackTrace(this, this.constructor);
+    if ('captureStackTrace' in Error) {
+      (Error as any).captureStackTrace(this, this.constructor);
+    }
   }
 }
 
@@ -91,7 +101,9 @@ export class SchemaError extends SqlglotError {
   constructor (message: string) {
     super(message);
     this.name = 'SchemaError';
-    Error.captureStackTrace(this, this.constructor);
+    if ('captureStackTrace' in Error) {
+      (Error as any).captureStackTrace(this, this.constructor);
+    }
   }
 }
 
@@ -99,7 +111,9 @@ export class ExecuteError extends SqlglotError {
   constructor (message: string) {
     super(message);
     this.name = 'ExecuteError';
-    Error.captureStackTrace(this, this.constructor);
+    if ('captureStackTrace' in Error) {
+      (Error as any).captureStackTrace(this, this.constructor);
+    }
   }
 }
 

@@ -10,25 +10,25 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@dbml/parse": "^7.0.0",
-    "@hdnax/genuix": "^0.10.2",
+    "@dbml/parse": "^7.1.2",
+    "@hdnax/genuix": "^0.10.5",
     "@hdnax/sqlingo.js": "workspace:*",
     "floating-vue": "^5.2.2",
     "highlight.js": "^11.11.1",
     "marked": "^18.0.3",
     "monaco-editor": "^0.55.1",
     "pinia": "^3.0.4",
-    "vue": "^3.5.32",
-    "vue-router": "^5.0.4"
+    "vue": "^3.5.34",
+    "vue-router": "^5.0.6"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.2.2",
-    "@types/node": "^25.4.0",
-    "@vitejs/plugin-vue": "^5.2.4",
-    "tailwindcss": "^4.2.2",
-    "typescript": "^5.9.3",
-    "vite": "^6.4.2",
-    "vitest": "^4.0.18",
-    "vue-tsc": "^2.2.12"
+    "@tailwindcss/vite": "^4.2.4",
+    "@types/node": "^25.6.0",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "tailwindcss": "^4.2.4",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.10",
+    "vitest": "^4.1.5",
+    "vue-tsc": "^3.2.8"
   }
 }
