@@ -39,7 +39,6 @@ describe('TestSerde', () => {
     const after = dumpLoad(before, {
       CustomExpression,
     });
-    // custom expression class not in registry so load returns undefined — expect it to not crash
     expect(after).toEqual(before);
   });
 

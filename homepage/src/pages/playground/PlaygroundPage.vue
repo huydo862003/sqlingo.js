@@ -1,44 +1,44 @@
 <template>
-  <NavBar :breadcrumb="navBreadcrumb" />
-
-  <main class="main">
-    <div>
-      <h1 class="title">
-        sqlingo.js Playground
-      </h1>
-      <GTab
-        :default="tab"
-        @select="onTabSelect"
-      >
-        <GTabPanel
-          :name="Tab.Transpile"
-          label="Transpile"
-          :icon="GIconName.ArrowsLeftRight"
-          class="p-3"
+  <PageLayout :breadcrumb="navBreadcrumb">
+    <main class="main">
+      <div>
+        <h1 class="title">
+          sqlingo.js Playground
+        </h1>
+        <GTab
+          :default="tab"
+          @select="onTabSelect"
         >
-          <p class="section-sub">
-            Transpile between SQL dialects.
-          </p>
-          <SqlTranspile />
-        </GTabPanel>
-        <GTabPanel
-          :name="Tab.Dbml"
-          label="SQL to DBML"
-          :icon="GIconName.Database"
-          class="p-3"
-        >
-          <p class="section-sub">
-            Paste CREATE TABLE SQL and get a <a
-              href="https://dbml.dbdiagram.io/docs/"
-              target="_blank"
-              rel="noopener"
-            >DBML</a> schema back.
-          </p>
-          <SqlToDbml />
-        </GTabPanel>
-      </GTab>
-    </div>
-  </main>
+          <GTabPanel
+            :name="Tab.Transpile"
+            label="Transpile"
+            :icon="GIconName.ArrowsLeftRight"
+            class="p-3"
+          >
+            <p class="section-sub">
+              Transpile between SQL dialects.
+            </p>
+            <SqlTranspile />
+          </GTabPanel>
+          <GTabPanel
+            :name="Tab.Dbml"
+            label="SQL to DBML"
+            :icon="GIconName.Database"
+            class="p-3"
+          >
+            <p class="section-sub">
+              Paste CREATE TABLE SQL and get a <a
+                href="https://dbml.dbdiagram.io/docs/"
+                target="_blank"
+                rel="noopener"
+              >DBML</a> schema back.
+            </p>
+            <SqlToDbml />
+          </GTabPanel>
+        </GTab>
+      </div>
+    </main>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
@@ -50,9 +50,9 @@ import {
   GTabPanel,
   GIconName,
 } from '@hdnax/genuix';
-import NavBar from '@/components/NavBar.vue';
-import SqlToDbml from '@/components/playground/SqlToDbml.vue';
-import SqlTranspile from '@/components/playground/SqlTranspile.vue';
+import PageLayout from '@/components/PageLayout.vue';
+import SqlToDbml from './SqlToDbml.vue';
+import SqlTranspile from './SqlTranspile.vue';
 import {
   Tab,
   usePlaygroundStore,
@@ -91,7 +91,7 @@ function onTabSelect (name: string) {
 </script>
 
 <style scoped>
-@reference '../style.css';
+@reference '../../style.css';
 
 .main {
   padding: var(--spacing-lg);

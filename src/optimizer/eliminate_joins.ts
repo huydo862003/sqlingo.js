@@ -283,7 +283,7 @@ export function joinCondition (
   } else if (normalized(on, {
     dnf: true,
   })) {
-    // DNF form: OR of ANDs — find EQ conditions present in every OR branch
+    // DNF form: OR of ANDs - find EQ conditions present in every OR branch
     let conditions: EqExpr[] | undefined;
 
     for (const orBranch of on.flatten()) {

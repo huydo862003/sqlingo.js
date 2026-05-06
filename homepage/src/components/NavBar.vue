@@ -15,9 +15,17 @@
       </GNavBrand>
       <GBreadcrumb
         v-if="breadcrumb.length"
-        :items="breadcrumb"
         class="breadcrumb"
-      />
+      >
+        <GBreadcrumbItem
+          v-for="crumb in breadcrumb"
+          :key="crumb.label"
+          as="a"
+          :href="crumb.href"
+        >
+          {{ crumb.label }}
+        </GBreadcrumbItem>
+      </GBreadcrumb>
     </template>
     <template #right>
       <GNavLink
@@ -55,7 +63,7 @@ import {
 } from 'vue-router';
 import {
   GNavbar, GNavBrand, GNavLink,
-  GBreadcrumb,
+  GBreadcrumb, GBreadcrumbItem,
   GIconName,
   GLogo,
   GLogoSize,

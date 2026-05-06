@@ -1,7 +1,7 @@
 import {
   createRouter, createWebHistory,
 } from 'vue-router';
-import HomePage from './pages/HomePage.vue';
+import HomePage from './pages/home/HomePage.vue';
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,11 +12,11 @@ export const router = createRouter({
     },
     {
       path: '/playground/',
-      component: () => import('./pages/PlaygroundPage.vue'),
+      component: () => import('./pages/playground/PlaygroundPage.vue'),
     },
     {
       path: '/api-reference/',
-      component: () => import('./pages/ApiPage.vue'),
+      component: () => import('./pages/api/ApiPage.vue'),
     },
     {
       path: '/:pathMatch(.*)*',

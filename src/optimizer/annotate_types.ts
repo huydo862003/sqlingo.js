@@ -756,7 +756,7 @@ export class TypeAnnotator {
       this.nullExpressions.delete(expression);
     }
 
-    // JSON dot access is case sensitive — undo normalization when type is JSON
+    // JSON dot access is case sensitive - undo normalization when type is JSON
     if (
       expression instanceof ColumnExpr
       && expression.isType(DataTypeExprKind.JSON)

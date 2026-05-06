@@ -2848,7 +2848,7 @@ class Gen {
           const n = node[i];
           if (n !== undefined && n !== null) {
             if (Array.isArray(n) && typeof n[0] === 'string' && n[0].startsWith(':')) {
-              // Handle [key, value] pairs from _args — push value then key (no trailing comma)
+              // Handle [key, value] pairs from _args - push value then key (no trailing comma)
               const [
                 k,
                 v,

@@ -488,7 +488,7 @@ export class Scope {
    * List of columns in this scope, including external columns from correlated subqueries.
    *
    * Columns are filtered by ancestor context: only columns that are actually "in scope"
-   * are included — e.g. columns inside a SELECT list, ORDER BY not referencing named
+   * are included - e.g. columns inside a SELECT list, ORDER BY not referencing named
    * selects, DISTINCT windows, etc.
    */
   get columns (): ColumnExpr[] {

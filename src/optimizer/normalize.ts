@@ -58,7 +58,7 @@ export function normalize (
     annotateNewExpressions: false,
   });
 
-  // Walk only top-level connectors — prune at each connector so nested ones
+  // Walk only top-level connectors - prune at each connector so nested ones
   // are handled by distributiveLaw's own recursion (mirrors Python's prune).
   const connectors: ConnectorExpr[] = [];
   for (const node of expression.walk({

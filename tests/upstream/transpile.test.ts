@@ -263,7 +263,5 @@ describe('TestTranspile', () => {
   test('partial', () => t.testPartial());
   test('pretty', () => t.testPretty());
   test('testPrettyLineBreaks', () => t.testPrettyLineBreaks());
-
-  // parseOne-based tests — these can run
   test('recursion', () => t.testRecursion());
 });

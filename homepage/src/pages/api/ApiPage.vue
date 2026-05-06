@@ -1,20 +1,22 @@
 <template>
-  <div class="app">
-    <NavBar :breadcrumb="navBreadcrumb" />
-
+  <PageLayout :breadcrumb="navBreadcrumb">
     <div
       v-if="!data"
-      class="loading"
+      class="flex flex-1 overflow-hidden items-center justify-center gui-neutral-fg-muted text-md"
     >
       Loading API data...
     </div>
 
     <div
       v-else
-      class="layout"
+      class="flex flex-1 overflow-hidden max-sm:flex-col max-sm:overflow-visible"
     >
       <button
-        class="sidebar-toggle"
+        class="
+          hidden max-sm:flex items-center
+          gap-xs w-full px-md py-sm
+          text-sm font-medium gui-neutral-fg gui-neutral-bg-subtle border-none border-b gui-neutral-border-subtle cursor-pointer hover:gui-neutral-bg-hover
+        "
         @click="sidebarOpen = !sidebarOpen"
       >
         <GIcon
@@ -25,11 +27,14 @@
       </button>
 
       <aside
-        class="sidebar"
-        :class="{ 'sidebar-open': sidebarOpen }"
+        class="
+          w-[260px] shrink-0 border-r
+          gui-neutral-border-subtle gui-neutral-bg-subtle overflow-y-auto max-sm:hidden max-sm:w-full max-sm:max-h-[50vh] max-sm:border-r-0 max-sm:border-b max-sm:gui-neutral-border-subtle
+        "
+        :class="{ 'max-sm:block': sidebarOpen }"
       >
-        <div class="sidebar-inner">
-          <div class="search-wrap">
+        <div class="py-sm">
+          <div class="px-sm mb-sm">
             <GTextInput
               v-model="query"
               placeholder="Search..."
@@ -39,24 +44,24 @@
           <div
             v-for="group in navGroups"
             :key="group.label"
-            class="nav-group"
+            class="mb-sm"
           >
-            <div class="nav-group-label">
+            <div class="px-sm py-xs text-sm font-semibold uppercase tracking-[0.05em] gui-neutral-fg-muted">
               {{ group.label }}
             </div>
-            <ul class="nav-list">
+            <ul class="list-none m-0 p-0">
               <li
                 v-for="item in group.items"
                 :key="item.id"
               >
                 <button
-                  class="nav-item"
-                  :class="{ active: selected?.id === item.id }"
+                  class="flex items-center gap-xs w-full px-sm py-1 text-sm font-mono bg-transparent border-none cursor-pointer text-left"
+                  :class="selected?.id === item.id ? 'gui-primary-bg-hover gui-primary-fg' : 'gui-neutral-fg hover:gui-neutral-bg-hover'"
                   @click="select(item)"
                 >
                   <span
-                    class="kind-dot"
-                    :class="`dot-${kindSlug(item.kind)}`"
+                    class="w-[6px] h-[6px] rounded-full shrink-0"
+                    :style="kindDotStyle(kindSlug(item.kind))"
                   />
                   {{ item.name }}
                 </button>
@@ -68,28 +73,29 @@
 
       <main
         ref="mainEl"
-        class="content"
+        class="flex-1 min-w-0 overflow-y-auto"
       >
         <div
           v-if="selected"
-          class="content-inner"
+          class="p-lg max-w-[800px]"
         >
-          <div class="entry-title">
+          <div class="flex items-center gap-sm mb-xs">
             <span
-              class="kind-chip"
-              :class="`chip-${kindSlug(selected.kind)}`"
+              class="inline-block px-xs py-[2px] text-sm font-semibold rounded-sm lowercase"
+              :style="kindChipStyle(kindSlug(selected.kind))"
             >{{ kindLabel(selected.kind) }}</span>
-            <h1 class="entry-name">
+            <h1 class="text-xl font-mono font-bold gui-neutral-fg">
               {{ selected.name }}
             </h1>
           </div>
 
           <div
             v-if="sourceUrl(selected)"
-            class="entry-source"
+            class="mb-sm text-sm gui-neutral-fg-muted"
           >
             <a
               :href="sourceUrl(selected)!"
+              class="gui-info-fg no-underline hover:underline"
               target="_blank"
               rel="noopener"
             >{{ sourceFile(selected) }}</a>
@@ -97,44 +103,48 @@
 
           <div
             v-if="comment(selected)"
-            class="entry-desc"
-          >
-            {{ comment(selected) }}
-          </div>
+            class="prose text-md gui-neutral-fg mb-md leading-3"
+            v-html="comment(selected)"
+          />
 
           <template v-if="selected.kind === ReflectionKind.Function">
             <div
               v-for="sig in (selected.signatures ?? [])"
               :key="sig.id"
-              class="section"
+              class="mt-lg"
             >
-              <div class="sig-code">
-                <span class="kw">function</span>
-                <span class="sig-name"> {{ selected.name }}</span>(<span
+              <div class="font-mono text-sm p-sm gui-neutral-bg-subtle border gui-neutral-border-subtle rounded-sm overflow-x-auto whitespace-pre-wrap break-words gui-neutral-fg">
+                <span class="gui-info-fg">function</span>
+                <span class="font-semibold"> {{ selected.name }}</span>(<span
                   v-for="(p, i) in (sig.parameters ?? [])"
                   :key="p.id"
-                ><span class="param-name">{{ p.name }}</span><span
+                ><span class="gui-warning-fg">{{ p.name }}</span><span
                   v-if="p.flags?.isOptional"
-                  class="kw"
-                >?</span>: <span class="type-ref">{{ typeStr(p.type) }}</span><span
+                  class="gui-info-fg"
+                >?</span>: <span class="gui-success-fg">{{ typeStr(p.type) }}</span><span
                   v-if="i < (sig.parameters?.length ?? 0) - 1"
-                >, </span></span>): <span class="type-ref">{{ typeStr(sig.type) }}</span>
+                >, </span></span>): <span class="gui-success-fg">{{ typeStr(sig.type) }}</span>
               </div>
-              <p
+              <div
                 v-if="comment(sig)"
-                class="sig-comment"
-              >
-                {{ comment(sig) }}
-              </p>
+                class="prose text-sm gui-neutral-fg-muted mt-xs leading-3"
+                v-html="comment(sig)"
+              />
               <table
                 v-if="sig.parameters?.length"
-                class="param-table"
+                class="w-full border-collapse text-sm mt-sm"
               >
                 <thead>
                   <tr>
-                    <th>Parameter</th>
-                    <th>Type</th>
-                    <th>Description</th>
+                    <th class="text-left font-semibold gui-neutral-fg-muted px-sm py-xs border-b gui-neutral-border">
+                      Parameter
+                    </th>
+                    <th class="text-left font-semibold gui-neutral-fg-muted px-sm py-xs border-b gui-neutral-border">
+                      Type
+                    </th>
+                    <th class="text-left font-semibold gui-neutral-fg-muted px-sm py-xs border-b gui-neutral-border">
+                      Description
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -142,11 +152,16 @@
                     v-for="p in sig.parameters"
                     :key="p.id"
                   >
-                    <td><code class="pname">{{ p.name }}{{ p.flags?.isOptional ? '?' : '' }}</code></td>
-                    <td><code class="ptype">{{ typeStr(p.type) }}</code></td>
-                    <td class="pdesc">
-                      {{ comment(p) }}
+                    <td class="px-sm py-xs border-b gui-neutral-border-subtle align-top">
+                      <code class="font-mono gui-warning-fg">{{ p.name }}{{ p.flags?.isOptional ? '?' : '' }}</code>
                     </td>
+                    <td class="px-sm py-xs border-b gui-neutral-border-subtle align-top">
+                      <code class="font-mono text-sm gui-success-fg">{{ typeStr(p.type) }}</code>
+                    </td>
+                    <td
+                      class="prose gui-neutral-fg-muted leading-3 px-sm py-xs border-b gui-neutral-border-subtle align-top pdesc"
+                      v-html="comment(p)"
+                    />
                   </tr>
                 </tbody>
               </table>
@@ -154,67 +169,70 @@
           </template>
 
           <template v-if="selected.children?.length && selected.kind !== ReflectionKind.Enum">
-            <div class="section">
-              <h2 class="section-title">
+            <div class="mt-lg">
+              <h2 class="text-md font-bold gui-neutral-fg mb-sm pb-xs border-b gui-neutral-border-subtle">
                 Members
               </h2>
               <div
                 v-for="member in visibleMembers(selected)"
                 :key="member.id"
-                class="member"
+                class="py-sm border-b gui-neutral-border-subtle last:border-b-0"
               >
-                <div class="member-title">
+                <div class="flex items-center gap-xs">
                   <span
-                    class="kind-dot"
-                    :class="`dot-${kindSlug(member.kind)}`"
+                    class="w-[6px] h-[6px] rounded-full shrink-0"
+                    :style="kindDotStyle(kindSlug(member.kind))"
                   />
-                  <code class="member-name">{{ member.name }}</code>
+                  <code class="font-mono text-md font-semibold gui-neutral-fg">{{ member.name }}</code>
                   <span
                     v-if="member.flags?.isStatic"
-                    class="flag"
+                    class="text-xs px-1 py-[1px] rounded-sm gui-neutral-bg-hover gui-neutral-fg-muted"
                   >static</span>
                   <span
                     v-if="member.flags?.isOptional"
-                    class="flag"
+                    class="text-xs px-1 py-[1px] rounded-sm gui-neutral-bg-hover gui-neutral-fg-muted"
                   >optional</span>
                   <span
                     v-if="member.flags?.isReadonly"
-                    class="flag"
+                    class="text-xs px-1 py-[1px] rounded-sm gui-neutral-bg-hover gui-neutral-fg-muted"
                   >readonly</span>
                   <a
                     v-if="sourceUrl(member)"
                     :href="sourceUrl(member)!"
                     target="_blank"
                     rel="noopener"
-                    class="member-src"
+                    class="ml-auto text-sm gui-neutral-fg-muted no-underline hover:underline"
                   >{{ sourceLine(member) }}</a>
                 </div>
                 <div
                   v-if="memberType(member)"
-                  class="member-type"
+                  class="mt-[2px]"
                 >
-                  <code class="ptype">{{ memberType(member) }}</code>
+                  <code class="font-mono text-sm gui-success-fg">{{ memberType(member) }}</code>
                 </div>
-                <p
+                <div
                   v-if="comment(member)"
-                  class="member-comment"
-                >
-                  {{ comment(member) }}
-                </p>
+                  class="prose text-sm gui-neutral-fg-muted mt-[2px] leading-3"
+                  v-html="comment(member)"
+                />
               </div>
             </div>
           </template>
 
           <template v-if="selected.kind === ReflectionKind.Enum && selected.children?.length">
-            <div class="section">
-              <h2 class="section-title">
+            <div class="mt-lg">
+              <h2 class="text-md font-bold gui-neutral-fg mb-sm pb-xs border-b gui-neutral-border-subtle">
                 Members
               </h2>
-              <table class="param-table">
+              <table class="w-full border-collapse text-sm mt-sm">
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Value</th>
+                    <th class="text-left font-semibold gui-neutral-fg-muted px-sm py-xs border-b gui-neutral-border">
+                      Name
+                    </th>
+                    <th class="text-left font-semibold gui-neutral-fg-muted px-sm py-xs border-b gui-neutral-border">
+                      Value
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -222,8 +240,12 @@
                     v-for="m in selected.children"
                     :key="m.id"
                   >
-                    <td><code class="pname">{{ m.name }}</code></td>
-                    <td><code class="ptype">{{ m.type?.value !== undefined ? JSON.stringify(m.type.value) : '' }}</code></td>
+                    <td class="px-sm py-xs border-b gui-neutral-border-subtle align-top">
+                      <code class="font-mono gui-warning-fg">{{ m.name }}</code>
+                    </td>
+                    <td class="px-sm py-xs border-b gui-neutral-border-subtle align-top">
+                      <code class="font-mono text-sm gui-success-fg">{{ m.type?.value !== undefined ? JSON.stringify(m.type.value) : '' }}</code>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -233,17 +255,17 @@
 
         <div
           v-else
-          class="content-landing"
+          class="p-lg max-w-[800px] min-w-0"
         >
-          <div class="landing-header">
-            <h1 class="landing-name">
+          <div class="mb-lg">
+            <h1 class="text-2xl font-mono font-bold gui-neutral-fg">
               @hdnax/sqlingo.js
               <span
                 v-if="data?.packageVersion"
-                class="landing-version"
+                class="text-md font-normal gui-neutral-fg-muted"
               >v{{ data.packageVersion }}</span>
             </h1>
-            <div class="landing-badges">
+            <div class="flex gap-sm mt-sm">
               <a
                 href="https://www.npmjs.com/package/@hdnax/sqlingo.js"
                 target="_blank"
@@ -252,20 +274,23 @@
                 <img
                   src="https://img.shields.io/npm/v/@hdnax/sqlingo.js"
                   alt="npm version"
+                  class="h-5"
                 >
               </a>
               <img
                 src="https://img.shields.io/badge/license-MIT-green"
                 alt="License: MIT"
+                class="h-5"
               >
               <img
                 src="https://img.shields.io/badge/SQLGlot-v28.10.0-blue"
                 alt="SQLGlot"
+                class="h-5"
               >
             </div>
           </div>
 
-          <div class="prose">
+          <div class="prose text-md gui-neutral-fg leading-3">
             <p>
               A JavaScript/TypeScript port of <a
                 href="https://github.com/tobymao/sqlglot"
@@ -276,9 +301,9 @@
             <p>
               This package allows you to parse, transpile, optimize, and execute SQL across <strong>33+ dialects</strong> in JavaScript, with no other setup.
             </p>
-            <p>Supports TypeScript & CJS/ESM. Works in Node.js and the browser.</p>
+            <p>Supports TypeScript &amp; CJS/ESM. Works in Node.js and the browser.</p>
 
-            <ul class="links-list">
+            <ul class="links-list flex gap-md list-none p-0">
               <li><a href="https://github.com/huydo862003/sqlingo.js">GitHub</a></li>
               <li><a href="https://github.com/huydo862003/sqlingo.js/issues">Issues</a></li>
               <li><a href="https://github.com/huydo862003/sqlingo.js/blob/master/CHANGELOG.md">Changelog</a></li>
@@ -399,7 +424,7 @@ Dialect.register("my_dialect", MyDialect);
 const [result] = transpile("SELECT 1", { write: "my_dialect" });</code></pre>
 
             <h2>Supported Dialects</h2>
-            <p class="dialects-list">
+            <p class="gui-neutral-fg-muted">
               Athena, BigQuery, ClickHouse,
               Databricks, Doris, Dremio, Drill,
               Druid, DuckDB, Dune, Exasol, Fabric, Hive,
@@ -416,23 +441,29 @@ const [result] = transpile("SELECT 1", { write: "my_dialect" });</code></pre>
         </div>
       </main>
     </div>
-  </div>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import {
   ref, computed, useTemplateRef,
 } from 'vue';
-import NavBar from '../components/NavBar.vue';
+import {
+  marked,
+} from 'marked';
+import PageLayout from '@/components/PageLayout.vue';
 import {
   GTextInput, GIcon, GIconName,
 } from '@hdnax/genuix';
 import {
   ReflectionKind,
-} from '../types/reflectionKind';
+} from '@/types/reflectionKind';
 import {
   useSeo,
-} from '../composables/useSeo';
+} from '@/composables/useSeo';
+import {
+  kindDotStyle, kindChipStyle,
+} from './kinds';
 
 interface TypeInfo {
   type: string;
@@ -593,8 +624,9 @@ function kindSlug (kind: number): string {
 }
 
 function comment (node: ReflectionNode): string {
-  return (node.comment?.summary ?? []).map((p) => p.text).join('')
+  const text = (node.comment?.summary ?? []).map((p) => p.text).join('')
     .trim();
+  return marked(text) as string;
 }
 
 function sourceUrl (node: ReflectionNode): string | null {
@@ -642,343 +674,7 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
 }
 </script>
 
-<style scoped>
-@reference '../style.css';
-
-.app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  color: var(--gui-neutral-fg-muted);
-  font-size: var(--text-md);
-}
-
-.layout {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.sidebar {
-  width: 260px;
-  flex-shrink: 0;
-  border-right: 1px solid var(--gui-neutral-border-subtle);
-  background: var(--gui-neutral-bg-subtle);
-  overflow-y: auto;
-  height: calc(100vh - 48px);
-  position: sticky;
-  top: 48px;
-}
-
-.sidebar-inner {
-  padding: var(--spacing-sm) 0;
-}
-
-.search-wrap {
-  padding: 0 var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
-}
-
-.nav-group {
-  margin-bottom: var(--spacing-sm);
-}
-
-.nav-group-label {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--gui-neutral-fg-muted);
-}
-
-.nav-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  width: 100%;
-  padding: 4px var(--spacing-sm);
-  font-size: var(--text-sm);
-  font-family: var(--font-mono);
-  color: var(--gui-neutral-fg);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-}
-
-.nav-item:hover {
-  background: var(--gui-neutral-bg-hover);
-}
-
-.nav-item.active {
-  background: var(--gui-primary-bg-hover);
-  color: var(--gui-primary-fg);
-}
-
-.kind-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.dot-class { background: var(--gui-info-solid); }
-.dot-function { background: var(--gui-success-solid); }
-.dot-interface { background: var(--gui-warning-solid); }
-.dot-enum { background: var(--gui-notice-solid); }
-.dot-typealias { background: var(--gui-primary-solid); }
-.dot-variable { background: var(--gui-danger-solid); }
-.dot-property { background: var(--gui-neutral-solid); }
-.dot-method { background: var(--gui-success-solid); }
-.dot-constructor { background: var(--gui-neutral-solid); }
-.dot-enumvalue { background: var(--gui-notice-solid); }
-
-.content {
-  flex: 1;
-  min-width: 0;
-  overflow-y: auto;
-  height: calc(100vh - 48px);
-  position: sticky;
-  top: 48px;
-}
-
-.content-inner {
-  padding: var(--spacing-lg);
-  max-width: 800px;
-}
-
-.entry-title {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-xs);
-}
-
-.entry-name {
-  font-size: var(--text-xl);
-  font-family: var(--font-mono);
-  font-weight: 700;
-  color: var(--gui-neutral-fg);
-}
-
-.kind-chip {
-  display: inline-block;
-  padding: 2px var(--spacing-xs);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  text-transform: lowercase;
-}
-
-.chip-class { background: var(--gui-info-bg-hover); color: var(--gui-info-fg); }
-.chip-function { background: var(--gui-success-bg-hover); color: var(--gui-success-fg); }
-.chip-interface { background: var(--gui-warning-bg-hover); color: var(--gui-warning-fg); }
-.chip-enum { background: var(--gui-notice-bg-hover); color: var(--gui-notice-fg); }
-.chip-typealias { background: var(--gui-primary-bg-hover); color: var(--gui-primary-fg); }
-.chip-variable { background: var(--gui-danger-bg-hover); color: var(--gui-danger-fg); }
-
-.entry-source {
-  margin-bottom: var(--spacing-sm);
-  font-size: var(--text-sm);
-  color: var(--gui-neutral-fg-muted);
-}
-
-.entry-source a {
-  color: var(--gui-info-fg);
-  text-decoration: none;
-}
-
-.entry-source a:hover {
-  text-decoration: underline;
-}
-
-.entry-desc {
-  font-size: var(--text-md);
-  color: var(--gui-neutral-fg);
-  margin-bottom: var(--spacing-md);
-  line-height: var(--leading-3);
-}
-
-.section {
-  margin-top: var(--spacing-lg);
-}
-
-.section-title {
-  font-size: var(--text-md);
-  font-weight: 700;
-  color: var(--gui-neutral-fg);
-  margin-bottom: var(--spacing-sm);
-  padding-bottom: var(--spacing-xs);
-  border-bottom: 1px solid var(--gui-neutral-border-subtle);
-}
-
-.sig-code {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  padding: var(--spacing-sm);
-  background: var(--gui-neutral-bg-subtle);
-  border: 1px solid var(--gui-neutral-border-subtle);
-  border-radius: var(--radius-sm);
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: var(--gui-neutral-fg);
-}
-
-.kw { color: var(--gui-info-fg); }
-.sig-name { font-weight: 600; }
-.param-name { color: var(--gui-warning-fg); }
-.type-ref { color: var(--gui-success-fg); }
-
-.sig-comment {
-  font-size: var(--text-sm);
-  color: var(--gui-neutral-fg-muted);
-  margin-top: var(--spacing-xs);
-  line-height: var(--leading-3);
-}
-
-.param-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-  margin-top: var(--spacing-sm);
-}
-
-.param-table th {
-  text-align: left;
-  font-weight: 600;
-  color: var(--gui-neutral-fg-muted);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-bottom: 1px solid var(--gui-neutral-border);
-}
-
-.param-table td {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-bottom: 1px solid var(--gui-neutral-border-subtle);
-  vertical-align: top;
-}
-
-.pname {
-  font-family: var(--font-mono);
-  color: var(--gui-warning-fg);
-}
-
-.ptype {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  color: var(--gui-success-fg);
-}
-
-.pdesc {
-  color: var(--gui-neutral-fg-muted);
-  line-height: var(--leading-3);
-}
-
-.member {
-  padding: var(--spacing-sm) 0;
-  border-bottom: 1px solid var(--gui-neutral-border-subtle);
-}
-
-.member:last-child {
-  border-bottom: none;
-}
-
-.member-title {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.member-name {
-  font-family: var(--font-mono);
-  font-size: var(--text-md);
-  font-weight: 600;
-  color: var(--gui-neutral-fg);
-}
-
-.member-src {
-  margin-left: auto;
-  font-size: var(--text-sm);
-  color: var(--gui-neutral-fg-muted);
-  text-decoration: none;
-}
-
-.member-src:hover {
-  text-decoration: underline;
-}
-
-.flag {
-  font-size: 10px;
-  padding: 1px 4px;
-  border-radius: var(--radius-sm);
-  background: var(--gui-neutral-bg-hover);
-  color: var(--gui-neutral-fg-muted);
-}
-
-.member-type {
-  margin-top: 2px;
-}
-
-.member-comment {
-  font-size: var(--text-sm);
-  color: var(--gui-neutral-fg-muted);
-  margin-top: 2px;
-  line-height: var(--leading-3);
-}
-
-.content-landing {
-  padding: var(--spacing-lg);
-  max-width: 800px;
-  min-width: 0;
-}
-
-.landing-header {
-  margin-bottom: var(--spacing-lg);
-}
-
-.landing-name {
-  font-size: var(--text-2xl);
-  font-family: var(--font-mono);
-  font-weight: 700;
-  color: var(--gui-neutral-fg);
-}
-
-.landing-version {
-  font-size: var(--text-md);
-  font-weight: 400;
-  color: var(--gui-neutral-fg-muted);
-}
-
-.landing-badges {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-sm);
-}
-
-.landing-badges img {
-  height: 20px;
-}
-
-.prose {
-  font-size: var(--text-md);
-  color: var(--gui-neutral-fg);
-  line-height: var(--leading-3);
-}
-
+<style>
 .prose h2 {
   font-size: var(--text-lg);
   font-weight: 700;
@@ -987,36 +683,20 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
   padding-bottom: var(--spacing-xs);
   border-bottom: 1px solid var(--gui-neutral-border-subtle);
 }
-
 .prose h3 {
   font-size: var(--text-md);
   font-weight: 700;
   margin-top: var(--spacing-md);
   margin-bottom: var(--spacing-xs);
 }
-
-.prose p {
-  margin-bottom: var(--spacing-sm);
-}
-
+.prose p { margin-bottom: var(--spacing-sm); }
 .prose ul {
   margin: var(--spacing-sm) 0;
   padding-left: var(--spacing-lg);
 }
-
-.prose li {
-  margin-bottom: var(--spacing-xs);
-}
-
-.prose a {
-  color: var(--gui-info-fg);
-  text-decoration: none;
-}
-
-.prose a:hover {
-  text-decoration: underline;
-}
-
+.prose li { margin-bottom: var(--spacing-xs); }
+.prose a { color: var(--gui-info-fg); text-decoration: none; }
+.prose a:hover { text-decoration: underline; }
 .prose code {
   font-family: var(--font-mono);
   font-size: 0.9em;
@@ -1025,7 +705,6 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
   background: var(--gui-neutral-bg-hover);
   border: 1px solid var(--gui-neutral-border-subtle);
 }
-
 .prose pre {
   margin: var(--spacing-sm) 0;
   border-radius: var(--radius-md);
@@ -1033,7 +712,6 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
   overflow-x: auto;
   max-width: 100%;
 }
-
 .prose pre code {
   display: block;
   padding: var(--spacing-sm) var(--spacing-md);
@@ -1045,69 +723,7 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
   border-radius: var(--radius-md);
 }
 
-.links-list {
-  display: flex;
-  gap: var(--spacing-md);
-  list-style: none;
-  padding: 0;
-}
-
-.dialects-list {
-  color: var(--gui-neutral-fg-muted);
-}
-
-.sidebar-toggle {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .layout {
-    flex-direction: column;
-    overflow: visible;
-  }
-
-  .sidebar-toggle {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--text-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--gui-neutral-fg);
-    background: var(--gui-neutral-bg-subtle);
-    border: none;
-    border-bottom: 1px solid var(--gui-neutral-border-subtle);
-    cursor: pointer;
-  }
-
-  .sidebar-toggle:hover {
-    background: var(--gui-neutral-bg-hover);
-  }
-
-  .sidebar {
-    display: none;
-    width: 100%;
-    height: auto;
-    max-height: 50vh;
-    position: static;
-    border-right: none;
-    border-bottom: 1px solid var(--gui-neutral-border-subtle);
-    overflow-y: auto;
-  }
-
-  .sidebar.sidebar-open {
-    display: block;
-  }
-
-  .search-wrap :deep(input) {
-    width: 100%;
-    border: 1px solid var(--gui-neutral-border);
-  }
-
-  .content {
-    height: auto;
-    position: static;
-  }
+.pdesc p {
+  margin-bottom: 0;
 }
 </style>

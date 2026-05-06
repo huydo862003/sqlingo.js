@@ -15,6 +15,7 @@
     "@hdnax/sqlingo.js": "workspace:*",
     "floating-vue": "^5.2.2",
     "highlight.js": "^11.11.1",
+    "marked": "^18.0.3",
     "monaco-editor": "^0.55.1",
     "pinia": "^3.0.4",
     "vue": "^3.5.32",
