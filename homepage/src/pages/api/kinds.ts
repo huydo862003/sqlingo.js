@@ -11,8 +11,8 @@ const DOT_COLORS: Record<string, string> = {
   enumvalue: 'var(--gui-notice-solid)',
 };
 
-const CHIP_COLORS: Record<string, {bg: string;
-  color: string;}> = {
+const CHIP_COLORS: Record<string, { bg: string;
+  color: string; }> = {
   class: {
     bg: 'var(--gui-info-bg-hover)',
     color: 'var(--gui-info-fg)',

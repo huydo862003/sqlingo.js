@@ -61,9 +61,9 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
     return `${msg} at index ${i}: ${path}`;
   }
 
-  function match (tokenType: TokenType, options?: {raiseUnmatched?: true}): Token;
-  function match (tokenType: TokenType, options: {raiseUnmatched: false}): Token | undefined;
-  function match (tokenType: TokenType, options: {raiseUnmatched?: boolean} = {}): Token | undefined {
+  function match (tokenType: TokenType, options?: { raiseUnmatched?: true }): Token;
+  function match (tokenType: TokenType, options: { raiseUnmatched: false }): Token | undefined;
+  function match (tokenType: TokenType, options: { raiseUnmatched?: boolean } = {}): Token | undefined {
     const {
       raiseUnmatched = false,
     } = options;

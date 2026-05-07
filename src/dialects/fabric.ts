@@ -217,7 +217,7 @@ export class FabricGenerator extends TSQL.Generator {
     return super.dataTypeSql(expression);
   }
 
-  public castSql (expression: CastExpr, options: {safePrefix?: string} = {}): string {
+  public castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
     const {
       safePrefix,
     } = options;

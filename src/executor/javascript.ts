@@ -663,8 +663,8 @@ export class JavascriptExecutor {
       ],
     ]));
 
-    const columnRanges = new Map<string, {start: number;
-      stop: number;}>();
+    const columnRanges = new Map<string, { start: number;
+      stop: number; }>();
     columnRanges.set(source, {
       start: 0,
       stop: sourceTable.columns.length,

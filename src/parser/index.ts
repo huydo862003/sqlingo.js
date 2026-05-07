@@ -601,7 +601,7 @@ export function buildLike (args: Expression[]): EscapeExpr | LikeExpr {
 export function binaryRangeParser (
 
   exprType: new (args: any) => Expression,
-  options: {reverseArgs?: boolean} = {},
+  options: { reverseArgs?: boolean } = {},
 ): (this: Parser, thisExpr: Expression | undefined) => Expression | undefined {
   const {
     reverseArgs = false,
@@ -635,7 +635,7 @@ export function binaryRangeParser (
 
 export function buildLogarithm (args: Expression[], {
   dialect,
-}: {dialect: Dialect}): LogExpr | LnExpr {
+}: { dialect: Dialect }): LogExpr | LnExpr {
   if (args.length < 1) {
     throw new Error('buildAlgorithm only accepts an expression list with at least one expression');
   }
@@ -674,7 +674,7 @@ export function buildLogarithm (args: Expression[], {
 
 export function buildHex (args: Expression[], {
   dialect,
-}: {dialect: Dialect}): HexExpr | LowerHexExpr {
+}: { dialect: Dialect }): HexExpr | LowerHexExpr {
   if (args.length < 1) {
     throw new Error('buildHex only accepts an expression list with at least one expression');
   }
@@ -721,10 +721,10 @@ export function buildUpper (args: Expression[]): UpperExpr | HexExpr {
 export function buildExtractJsonWithPath<E extends Expression> (
 
   exprType: new (args: any) => E,
-): (args: Expression[], options: {dialect: Dialect}) => E {
+): (args: Expression[], options: { dialect: Dialect }) => E {
   return function builder (args: Expression[], {
     dialect,
-  }: {dialect: Dialect}): E {
+  }: { dialect: Dialect }): E {
     if (args.length < 2) {
       throw new Error('buildExtractJsonWithPath only accepts an expression list with at least two expressions');
     }
@@ -770,7 +770,7 @@ export function buildMod (args: Expression[]): ModExpr {
   });
 }
 
-export function buildPad (args: Expression[], options: {isLeft?: boolean} = {}): PadExpr {
+export function buildPad (args: Expression[], options: { isLeft?: boolean } = {}): PadExpr {
   if (args.length < 2) {
     throw new Error('buildPad only accepts an expression list with at least two expressions');
   }
@@ -806,7 +806,7 @@ export function buildArrayConstructor<E extends Expression> (
 
 export function buildConvertTimezone (
   args: (Expression | string)[],
-  options: {defaultSourceTz?: string} = {},
+  options: { defaultSourceTz?: string } = {},
 ): ConvertTimezoneExpr {
   if (args.length < 2) {
     throw new Error('buildConvertTimezone only accepts an expression list with at least two expressions');
@@ -901,7 +901,7 @@ export function buildLocateStrPosition (args: Expression[]): StrPositionExpr {
 
 export function buildArrayAppend (args: Expression[], {
   dialect,
-}: {dialect: Dialect}): ArrayAppendExpr {
+}: { dialect: Dialect }): ArrayAppendExpr {
   if (args.length < 2) {
     throw new Error('buildArrayAppend only accepts an expression list with at least two expressions');
   }
@@ -921,7 +921,7 @@ export function buildArrayAppend (args: Expression[], {
 
 export function buildArrayPrepend (args: Expression[], {
   dialect,
-}: {dialect: Dialect}): ArrayPrependExpr {
+}: { dialect: Dialect }): ArrayPrependExpr {
   if (args.length < 2) {
     throw new Error('buildArrayPrepend only accepts an expression list with at least two expressions');
   }
@@ -941,7 +941,7 @@ export function buildArrayPrepend (args: Expression[], {
 
 export function buildArrayConcat (args: Expression[], {
   dialect,
-}: {dialect: Dialect}): ArrayConcatExpr {
+}: { dialect: Dialect }): ArrayConcatExpr {
   if (args.length < 1) {
     throw new Error('buildArrayConcat only accepts an expression list with at least one expression');
   }
@@ -961,7 +961,7 @@ export function buildArrayConcat (args: Expression[], {
 
 export function buildArrayRemove (args: Expression[], {
   dialect,
-}: {dialect: Dialect}): ArrayRemoveExpr {
+}: { dialect: Dialect }): ArrayRemoveExpr {
   if (args.length < 2) {
     throw new Error('buildArrayRemove only accepts an expression list with at least two expressions');
   }
@@ -1023,7 +1023,7 @@ export class Parser {
 
   // Function name to builder mapping
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       // Spread all fromArgList functions from FUNCTION_BY_NAME
       ...Object.fromEntries(
@@ -1032,7 +1032,7 @@ export class Parser {
           func,
         ]) => [
           name,
-          (args: Expression[], _options: {dialect: Dialect}) => func.fromArgList(args),
+          (args: Expression[], _options: { dialect: Dialect }) => func.fromArgList(args),
         ]),
       ),
 
@@ -1044,7 +1044,7 @@ export class Parser {
           'NVL',
         ].map((name) => [
           name,
-          (args: Expression[], _options: {dialect: Dialect}) => buildCoalesce(args),
+          (args: Expression[], _options: { dialect: Dialect }) => buildCoalesce(args),
         ]),
       ),
 
@@ -2501,10 +2501,10 @@ export class Parser {
         return this.parseBlockCompression();
       },
       'CHARSET': function (this: Parser, options?: unknown) {
-        return this.parseCharacterSet(options as {default?: boolean});
+        return this.parseCharacterSet(options as { default?: boolean });
       },
       'CHARACTER SET': function (this: Parser, options?: unknown) {
-        return this.parseCharacterSet(options as {default?: boolean});
+        return this.parseCharacterSet(options as { default?: boolean });
       },
       'CHECKSUM': function (this: Parser) {
         return this.parseChecksum();
@@ -2584,7 +2584,7 @@ export class Parser {
         return this.expression(ExternalPropertyExpr, {});
       },
       'FALLBACK': function (this: Parser, options?: unknown) {
-        return this.parseFallback(options as {no?: boolean});
+        return this.parseFallback(options as { no?: boolean });
       },
       'FORMAT': function (this: Parser) {
         return this.parsePropertyAssignment(FileFormatPropertyExpr);
@@ -2651,7 +2651,7 @@ export class Parser {
         return this.parseLocking();
       },
       'LOG': function (this: Parser, options?: unknown) {
-        return this.parseLog(options as {no?: boolean});
+        return this.parseLog(options as { no?: boolean });
       },
       'MATERIALIZED': function (this: Parser) {
         return this.expression(MaterializedPropertyExpr, {});
@@ -4153,7 +4153,7 @@ export class Parser {
 
   tryParse<T extends Expression | Expression[] | undefined> (
     parseMethod: () => T,
-    options: {retreat?: boolean} = {},
+    options: { retreat?: boolean } = {},
   ): T | undefined {
     const {
       retreat = false,
@@ -4233,7 +4233,7 @@ export class Parser {
     return thisExpr;
   }
 
-  parseDrop (options: {exists?: boolean} = {}): DropExpr | CommandExpr {
+  parseDrop (options: { exists?: boolean } = {}): DropExpr | CommandExpr {
     const {
       exists,
     } = options;
@@ -4283,7 +4283,7 @@ export class Parser {
     });
   }
 
-  parseExists (options: {not?: boolean} = {}): boolean | undefined {
+  parseExists (options: { not?: boolean } = {}): boolean | undefined {
     const {
       not: notParam,
     } = options;
@@ -4795,7 +4795,7 @@ export class Parser {
     });
   }
 
-  parseProperties (options?: {before?: boolean}): PropertiesExpr | undefined {
+  parseProperties (options?: { before?: boolean }): PropertiesExpr | undefined {
     const properties: Expression[] = [];
     while (true) {
       const prop = options?.before
@@ -4821,7 +4821,7 @@ export class Parser {
     return undefined;
   }
 
-  parseFallback (options?: {no?: boolean}): FallbackPropertyExpr {
+  parseFallback (options?: { no?: boolean }): FallbackPropertyExpr {
     return this.expression(
       FallbackPropertyExpr,
       {
@@ -4879,7 +4879,7 @@ export class Parser {
     return var_(`${numberStr}${unit}`);
   }
 
-  parseSystemVersioningProperty (options: {with?: boolean} = {}): WithSystemVersioningPropertyExpr {
+  parseSystemVersioningProperty (options: { with?: boolean } = {}): WithSystemVersioningPropertyExpr {
     const {
       with: with_ = false,
     } = options;
@@ -5113,7 +5113,7 @@ export class Parser {
     });
   }
 
-  parseLog (options: {no?: boolean} = {}): LogPropertyExpr {
+  parseLog (options: { no?: boolean } = {}): LogPropertyExpr {
     const {
       no = false,
     } = options;
@@ -5142,7 +5142,7 @@ export class Parser {
     });
   }
 
-  parseCluster (options: {wrapped?: boolean} = {}): ClusterExpr {
+  parseCluster (options: { wrapped?: boolean } = {}): ClusterExpr {
     const {
       wrapped = false,
     } = options;
@@ -5468,7 +5468,7 @@ export class Parser {
     );
   }
 
-  parseWithdata (options: {no?: boolean} = {}): WithDataPropertyExpr {
+  parseWithdata (options: { no?: boolean } = {}): WithDataPropertyExpr {
     let statistics: boolean | undefined;
     if (this.matchTextSeq([
       'AND',
@@ -5599,7 +5599,7 @@ export class Parser {
     });
   }
 
-  parseSortkey (options: {compound?: boolean} = {}): SortKeyPropertyExpr {
+  parseSortkey (options: { compound?: boolean } = {}): SortKeyPropertyExpr {
     const idVars = this.parseWrappedIdVars();
     const expr = idVars.length === 1
       ? idVars[0]
@@ -5615,7 +5615,7 @@ export class Parser {
     );
   }
 
-  parseCharacterSet (options: {default?: boolean} = {}): CharacterSetPropertyExpr {
+  parseCharacterSet (options: { default?: boolean } = {}): CharacterSetPropertyExpr {
     this.match(TokenType.EQ);
     return this.expression(
       CharacterSetPropertyExpr,
@@ -5955,7 +5955,7 @@ export class Parser {
     return this.parseRowFormat();
   }
 
-  parseSerdeProperties (options: {with?: boolean} = {}): SerdePropertiesExpr | undefined {
+  parseSerdeProperties (options: { with?: boolean } = {}): SerdePropertiesExpr | undefined {
     const index = this.index;
     const with_ = options?.with || this.matchTextSeq('WITH');
 
@@ -6271,7 +6271,7 @@ export class Parser {
     );
   }
 
-  parseWith (options: {skipWithToken?: boolean} = {}): WithExpr | undefined {
+  parseWith (options: { skipWithToken?: boolean } = {}): WithExpr | undefined {
     const {
       skipWithToken = false,
     } = options;
@@ -6428,7 +6428,7 @@ export class Parser {
 
   parseSubquery (
     thisExpr: Expression | undefined,
-    options: {parseAlias?: boolean} = {},
+    options: { parseAlias?: boolean } = {},
   ): SubqueryExpr | undefined {
     const {
       parseAlias = true,
@@ -7264,7 +7264,7 @@ export class Parser {
     return 0 < hints.length ? hints : undefined;
   }
 
-  parseTablePart (options: {schema?: boolean} = {}): Expression | undefined {
+  parseTablePart (options: { schema?: boolean } = {}): Expression | undefined {
     const {
       schema = false,
     } = options;
@@ -7654,7 +7654,7 @@ export class Parser {
     );
   }
 
-  parseUnnest (options: {withAlias?: boolean} = {}): UnnestExpr | undefined {
+  parseUnnest (options: { withAlias?: boolean } = {}): UnnestExpr | undefined {
     const {
       withAlias = true,
     } = options;
@@ -7732,7 +7732,7 @@ export class Parser {
     );
   }
 
-  parseTableSample (options: {asModifier?: boolean} = {}): TableSampleExpr | undefined {
+  parseTableSample (options: { asModifier?: boolean } = {}): TableSampleExpr | undefined {
     const {
       asModifier = false,
     } = options;
@@ -7866,7 +7866,7 @@ export class Parser {
   }
 
   // https://duckdb.org/docs/sql/statements/pivot
-  parseSimplifiedPivot (options: {isUnpivot?: boolean} = {}): PivotExpr {
+  parseSimplifiedPivot (options: { isUnpivot?: boolean } = {}): PivotExpr {
     const {
       isUnpivot,
     } = options;
@@ -8135,7 +8135,7 @@ export class Parser {
     return result;
   }
 
-  parsePrewhere (options: {skipWhereToken?: boolean} = {}): PreWhereExpr | undefined {
+  parsePrewhere (options: { skipWhereToken?: boolean } = {}): PreWhereExpr | undefined {
     const {
       skipWhereToken = false,
     } = options;
@@ -8152,7 +8152,7 @@ export class Parser {
     );
   }
 
-  parseWhere (options: {skipWhereToken?: boolean} = {}): WhereExpr | undefined {
+  parseWhere (options: { skipWhereToken?: boolean } = {}): WhereExpr | undefined {
     const {
       skipWhereToken = false,
     } = options;
@@ -8169,7 +8169,7 @@ export class Parser {
     );
   }
 
-  parseGroup (options: {skipGroupByToken?: boolean} = {}): GroupExpr | undefined {
+  parseGroup (options: { skipGroupByToken?: boolean } = {}): GroupExpr | undefined {
     const {
       skipGroupByToken = false,
     } = options;
@@ -8256,7 +8256,7 @@ export class Parser {
     });
   }
 
-  parseCubeOrRollup (options: {withPrefix?: boolean} = {}): CubeExpr | RollupExpr | undefined {
+  parseCubeOrRollup (options: { withPrefix?: boolean } = {}): CubeExpr | RollupExpr | undefined {
     const {
       withPrefix = false,
     } = options;
@@ -8296,7 +8296,7 @@ export class Parser {
     return this.parseGroupingSets() || this.parseCubeOrRollup() || this.parseBitwise();
   }
 
-  parseHaving (options: {skipHavingToken?: boolean} = {}): HavingExpr | undefined {
+  parseHaving (options: { skipHavingToken?: boolean } = {}): HavingExpr | undefined {
     const {
       skipHavingToken = false,
     } = options;
@@ -8332,7 +8332,7 @@ export class Parser {
     return connect;
   }
 
-  parseConnect (options: {skipStartToken?: boolean} = {}): ConnectExpr | undefined {
+  parseConnect (options: { skipStartToken?: boolean } = {}): ConnectExpr | undefined {
     const {
       skipStartToken = false,
     } = options;
@@ -8726,7 +8726,7 @@ export class Parser {
 
   protected parseSetOperation (
     thisExpr?: Expression,
-    options: {consumePipe?: boolean} = {},
+    options: { consumePipe?: boolean } = {},
   ): Expression | undefined {
     const {
       consumePipe = false,
@@ -9188,7 +9188,7 @@ export class Parser {
     });
   }
 
-  parseInterval (options: {matchInterval?: boolean} = {}): AddExpr | IntervalExpr | undefined {
+  parseInterval (options: { matchInterval?: boolean } = {}): AddExpr | IntervalExpr | undefined {
     const {
       matchInterval = true,
     } = options;
@@ -9892,7 +9892,7 @@ export class Parser {
     ];
   }
 
-  parseStructTypes (options: {typeRequired?: boolean} = {}): Expression | undefined {
+  parseStructTypes (options: { typeRequired?: boolean } = {}): Expression | undefined {
     const {
       typeRequired = false,
     } = options;
@@ -10145,7 +10145,7 @@ export class Parser {
       : current;
   }
 
-  parseComment (options: {allowExists?: boolean} = {}): Expression {
+  parseComment (options: { allowExists?: boolean } = {}): Expression {
     const {
       allowExists = true,
     } = options;
@@ -10483,7 +10483,7 @@ export class Parser {
     });
   }
 
-  matchTexts (texts: string | string[] | Set<string>, options: {advance?: boolean} = {}): boolean {
+  matchTexts (texts: string | string[] | Set<string>, options: { advance?: boolean } = {}): boolean {
     const {
       advance = true,
     } = options;
@@ -10501,7 +10501,7 @@ export class Parser {
     return false;
   }
 
-  matchSet (types: Set<TokenType> | TokenType[], options: {advance?: boolean} = {}): boolean {
+  matchSet (types: Set<TokenType> | TokenType[], options: { advance?: boolean } = {}): boolean {
     const {
       advance = true,
     } = options;
@@ -10523,7 +10523,7 @@ export class Parser {
     return false;
   }
 
-  matchPair (tokenTypeA: TokenType, tokenTypeB: TokenType, options: {advance?: boolean} = {}): boolean {
+  matchPair (tokenTypeA: TokenType, tokenTypeB: TokenType, options: { advance?: boolean } = {}): boolean {
     const {
       advance = true,
     } = options;
@@ -10559,7 +10559,7 @@ export class Parser {
     }
   }
 
-  matchTextSeq (texts: string | string[], options: {advance?: boolean} = {}): boolean {
+  matchTextSeq (texts: string | string[], options: { advance?: boolean } = {}): boolean {
     const {
       advance = true,
     } = options;
@@ -11088,7 +11088,7 @@ export class Parser {
     );
   }
 
-  identifierExpression (token?: Token, kwargs?: {[index: string]: unknown}): IdentifierExpr {
+  identifierExpression (token?: Token, kwargs?: { [index: string]: unknown }): IdentifierExpr {
     return this.expression(IdentifierExpr, {
       token: token || this.prev,
       ...kwargs,
@@ -11115,7 +11115,7 @@ export class Parser {
     return thisExpr;
   }
 
-  parseWrappedIdVars (options: {optional?: boolean} = {}): Expression[] {
+  parseWrappedIdVars (options: { optional?: boolean } = {}): Expression[] {
     const {
       optional = false,
     } = options;
@@ -11142,7 +11142,7 @@ export class Parser {
     );
   }
 
-  parseWrapped<T> (parseMethod: () => T, options: {optional?: boolean} = {}): T {
+  parseWrapped<T> (parseMethod: () => T, options: { optional?: boolean } = {}): T {
     const {
       optional = false,
     } = options;
@@ -11161,7 +11161,7 @@ export class Parser {
     return this.parseCsv(() => this.parseExpression());
   }
 
-  parseSelectOrExpression (options: {alias?: boolean} = {}): Expression | undefined {
+  parseSelectOrExpression (options: { alias?: boolean } = {}): Expression | undefined {
     const {
       alias = false,
     } = options;
@@ -11260,7 +11260,7 @@ export class Parser {
       : undefined;
   }
 
-  parseCsv<E extends Expression> (parseMethod: () => E | undefined, options: {sep?: TokenType} = {}): E[] {
+  parseCsv<E extends Expression> (parseMethod: () => E | undefined, options: { sep?: TokenType } = {}): E[] {
     const {
       sep = TokenType.COMMA,
     } = options;
@@ -11313,7 +11313,7 @@ export class Parser {
     return this.parsePlaceholder();
   }
 
-  advanceAny (options: {ignoreReserved?: boolean} = {}): Token | undefined {
+  advanceAny (options: { ignoreReserved?: boolean } = {}): Token | undefined {
     const {
       ignoreReserved = false,
     } = options;
@@ -11324,7 +11324,7 @@ export class Parser {
     return undefined;
   }
 
-  parseVarOrString (options: {upper?: boolean} = {}): Expression | undefined {
+  parseVarOrString (options: { upper?: boolean } = {}): Expression | undefined {
     const {
       upper = false,
     } = options;
@@ -11407,7 +11407,7 @@ export class Parser {
     return thisExpr;
   }
 
-  parseWindow (thisExpr: Expression | undefined, options: {alias?: boolean} = {}): Expression | undefined {
+  parseWindow (thisExpr: Expression | undefined, options: { alias?: boolean } = {}): Expression | undefined {
     const {
       alias = false,
     } = options;
@@ -11580,7 +11580,7 @@ export class Parser {
     };
   }
 
-  parseAlias (thisExpr: Expression | undefined, options: {explicit?: boolean} = {}): Expression | undefined {
+  parseAlias (thisExpr: Expression | undefined, options: { explicit?: boolean } = {}): Expression | undefined {
     const {
       explicit = false,
     } = options;
@@ -11671,7 +11671,7 @@ export class Parser {
     });
   }
 
-  parsePosition (options: {haystackFirst?: boolean} = {}): StrPositionExpr {
+  parsePosition (options: { haystackFirst?: boolean } = {}): StrPositionExpr {
     const {
       haystackFirst = false,
     } = options;
@@ -11810,7 +11810,7 @@ export class Parser {
     return thisExpr;
   }
 
-  parseJsonObject (options: {agg?: boolean} = {}): JsonObjectExpr | JsonObjectAggExpr {
+  parseJsonObject (options: { agg?: boolean } = {}): JsonObjectExpr | JsonObjectAggExpr {
     const {
       agg = false,
     } = options;
@@ -12710,7 +12710,7 @@ export class Parser {
     );
   }
 
-  parseBracketKeyValue (_options: {isMap?: boolean} = {}): Expression | undefined {
+  parseBracketKeyValue (_options: { isMap?: boolean } = {}): Expression | undefined {
     return this.parseSlice(this.parseAlias(this.parseDisjunction(), {
       explicit: true,
     }));
@@ -12800,7 +12800,7 @@ export class Parser {
     return options;
   }
 
-  parseReferences (options: {match?: boolean} = {}): ReferenceExpr | undefined {
+  parseReferences (options: { match?: boolean } = {}): ReferenceExpr | undefined {
     const {
       match = true,
     } = options;
@@ -13095,7 +13095,7 @@ export class Parser {
     return constraints;
   }
 
-  parseUnnamedConstraint (options: {constraints?: Set<string> | string[]} = {}): Expression | undefined {
+  parseUnnamedConstraint (options: { constraints?: Set<string> | string[] } = {}): Expression | undefined {
     const index = this.index;
     const {
       constraints,
@@ -13132,7 +13132,7 @@ export class Parser {
 
   parseColumnDef (
     thisExpr: Expression | undefined,
-    options: {computedColumn?: boolean} = {},
+    options: { computedColumn?: boolean } = {},
   ): Expression | undefined {
     const {
       computedColumn = true,
@@ -13362,7 +13362,7 @@ export class Parser {
     return func;
   }
 
-  parseFunctionArgs (options: {alias?: boolean} = {}): Expression[] {
+  parseFunctionArgs (options: { alias?: boolean } = {}): Expression[] {
     const {
       alias = false,
     } = options;
@@ -13533,7 +13533,7 @@ export class Parser {
 
   kvToPropEq (
     expressions: Expression[],
-    options: {parseMap?: boolean} = {},
+    options: { parseMap?: boolean } = {},
   ): Expression[] {
     const {
       parseMap = false,
@@ -13582,7 +13582,7 @@ export class Parser {
     });
   }
 
-  parseUserDefinedFunction (_options: {kind?: TokenType} = {}): Expression | undefined {
+  parseUserDefinedFunction (_options: { kind?: TokenType } = {}): Expression | undefined {
     const thisExpr = this.parseTableParts({
       schema: true,
     });
@@ -13631,7 +13631,7 @@ export class Parser {
     return this.parseIdVar();
   }
 
-  parseLambda (options: {alias?: boolean} = {}): Expression | undefined {
+  parseLambda (options: { alias?: boolean } = {}): Expression | undefined {
     const {
       alias = false,
     } = options;
@@ -13675,7 +13675,7 @@ export class Parser {
     );
   }
 
-  parseSchema (options: {this?: Expression} = {}): Expression | undefined {
+  parseSchema (options: { this?: Expression } = {}): Expression | undefined {
     const {
       this: thisExpr,
     } = options;
@@ -14228,7 +14228,7 @@ export class Parser {
     return this.parseAsCommand(this.prev);
   }
 
-  parseSetItemAssignment (options: {kind?: string} = {}): Expression | undefined {
+  parseSetItemAssignment (options: { kind?: string } = {}): Expression | undefined {
     const {
       kind,
     } = options;
@@ -14271,7 +14271,7 @@ export class Parser {
     });
   }
 
-  parseSetTransaction (options: {global?: boolean} = {}): Expression {
+  parseSetTransaction (options: { global?: boolean } = {}): Expression {
     const {
       global = false,
     } = options;
@@ -14322,7 +14322,7 @@ export class Parser {
 
   parseVarFromOptions (
     options: Record<string, (string | string[])[] | undefined>,
-    parseOptions: {raiseUnmatched?: boolean} = {},
+    parseOptions: { raiseUnmatched?: boolean } = {},
   ): VarExpr | undefined {
     const {
       raiseUnmatched = true,
@@ -14410,7 +14410,7 @@ export class Parser {
     });
   }
 
-  parseValue (_options?: {values?: boolean}): TupleExpr | undefined {
+  parseValue (_options?: { values?: boolean }): TupleExpr | undefined {
     const parseValueExpression = (): Expression | undefined => {
       if (
         this._dialectConstructor.SUPPORTS_VALUES_DEFAULT
@@ -14442,7 +14442,7 @@ export class Parser {
     return this.parseExpressions();
   }
 
-  parseWrappedSelect (options: {table?: boolean} = {}): Expression | undefined {
+  parseWrappedSelect (options: { table?: boolean } = {}): Expression | undefined {
     const {
       table = false,
     } = options;
@@ -14604,7 +14604,7 @@ export class Parser {
     return drop;
   }
 
-  parseDropPartition (options: {exists?: boolean} = {}): DropPartitionExpr {
+  parseDropPartition (options: { exists?: boolean } = {}): DropPartitionExpr {
     const {
       exists,
     } = options;
@@ -14770,7 +14770,7 @@ export class Parser {
     });
   }
 
-  parseAlterSortkey (options: {compound?: boolean} = {}): AlterSortKeyExpr {
+  parseAlterSortkey (options: { compound?: boolean } = {}): AlterSortKeyExpr {
     const {
       compound,
     } = options;
@@ -14978,7 +14978,7 @@ export class Parser {
     });
   }
 
-  parseDictProperty (options: {this: string}): DictPropertyExpr {
+  parseDictProperty (options: { this: string }): DictPropertyExpr {
     const settings: DictSubPropertyExpr[] = [];
 
     this.matchLParen();
@@ -15008,7 +15008,7 @@ export class Parser {
     });
   }
 
-  parseDictRange (options: {this: string}): DictRangeExpr {
+  parseDictRange (options: { this: string }): DictRangeExpr {
     this.matchLParen();
     const hasMin = this.matchTextSeq('MIN') || undefined;
     let min: Expression | undefined;
@@ -15359,7 +15359,7 @@ export class Parser {
 
   parsePipeSyntaxAggregateGroupOrderBy (
     query: SelectExpr,
-    options: {groupByExists?: boolean} = {},
+    options: { groupByExists?: boolean } = {},
   ): SelectExpr {
     const {
       groupByExists = true,

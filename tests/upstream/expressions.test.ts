@@ -182,8 +182,7 @@ class TestExpressions {
     expect(parseOne('a as b').sql()).toBe(parseOne('a AS b').sql());
     expect(parseOne('a as b').sql()).not.toBe(parseOne('a').sql());
     expect(new TableExpr({
-      pivots: [
-      ],
+      pivots: [],
     }).sql()).toBe(new TableExpr({}).sql());
   }
 
@@ -192,9 +191,7 @@ class TestExpressions {
     expect(expression.find(SelectExpr)).toBeTruthy();
     expect(expression.find(JoinExpr)).toBeFalsy();
     expect(
-      [
-        ...expression.findAll(TableExpr),
-      ].map((t) => t.name),
+      [...expression.findAll(TableExpr)].map((t) => t.name),
     ).toEqual([
       'x',
       'y',
@@ -225,9 +222,7 @@ class TestExpressions {
     `);
 
     expect(
-      [
-        ...expression.findAll(TableExpr),
-      ].map((t) => t.name),
+      [...expression.findAll(TableExpr)].map((t) => t.name),
     ).toEqual([
       'b',
       'c',
@@ -237,9 +232,7 @@ class TestExpressions {
     const addExpr = parseOne('select a + b + c + d');
 
     expect(
-      [
-        ...addExpr.findAll(ColumnExpr),
-      ].map((c) => c.name),
+      [...addExpr.findAll(ColumnExpr)].map((c) => c.name),
     ).toEqual([
       'd',
       'c',
@@ -270,9 +263,7 @@ class TestExpressions {
 
   testToDot () {
     const orig = parseOne('a.b.c."d".e.f');
-    expect([
-      ...(orig as DotExpr).parts,
-    ].map((p) => p.sql()).join('.')).toBe('a.b.c."d".e.f');
+    expect([...(orig as DotExpr).parts].map((p) => p.sql()).join('.')).toBe('a.b.c."d".e.f');
 
     const dot = DotExpr.build([
       toTable('a.b.c'),
@@ -280,9 +271,7 @@ class TestExpressions {
       toIdentifier('e'),
       toIdentifier('f'),
     ]);
-    expect([
-      ...dot.parts,
-    ].map((p) => p.sql()).join('.')).toBe('a.b.c.d.e.f');
+    expect([...dot.parts].map((p) => p.sql()).join('.')).toBe('a.b.c.d.e.f');
 
     const col = orig.find(ColumnExpr);
     expect(col).toBeTruthy();
@@ -314,9 +303,7 @@ class TestExpressions {
     ]);
 
     expect(
-      new Set([
-        ...expression.findAll(TableExpr),
-      ].map((t) => t.aliasOrName)),
+      new Set([...expression.findAll(TableExpr)].map((t) => t.aliasOrName)),
     ).toEqual(new Set([
       'bar',
       'baz',
@@ -483,8 +470,7 @@ class TestExpressions {
     expect(
       replacePlaceholders(
         parseOne('select * from :tbl1 JOIN :tbl2 ON :col1 = :str1 WHERE :col2 > :int1'),
-        [
-        ],
+        [],
         {
           tbl1: toIdentifier('foo'),
           tbl2: toIdentifier('bar'),
@@ -512,17 +498,14 @@ class TestExpressions {
     expect(
       replacePlaceholders(
         parseOne('select * from ? WHERE ? > 100'),
-        [
-          toIdentifier('foo'),
-        ],
+        [toIdentifier('foo')],
       ).sql(),
     ).toBe('SELECT * FROM foo WHERE ? > 100');
 
     expect(
       replacePlaceholders(
         parseOne('select * from :name WHERE ? > 100'),
-        [
-        ],
+        [],
         {
           another_name: 'bla',
         },
@@ -558,8 +541,7 @@ class TestExpressions {
     expect(
       replacePlaceholders(
         parseOne('select * from foo WHERE x > :int1 AND y IS :bool1'),
-        [
-        ],
+        [],
         {
           int1: 0,
           bool1: false,
@@ -602,13 +584,10 @@ class TestExpressions {
   }
 
   testSelects () {
-    expect((parseOne('SELECT FROM x') as SelectExpr).selects).toEqual([
-    ]);
+    expect((parseOne('SELECT FROM x') as SelectExpr).selects).toEqual([]);
 
     const a = parseOne('SELECT a FROM x') as SelectExpr;
-    expect(a.selects.map((s) => s.sql())).toEqual([
-      'a',
-    ]);
+    expect(a.selects.map((s) => s.sql())).toEqual(['a']);
 
     const ab = parseOne('SELECT a, b FROM x') as SelectExpr;
     expect(ab.selects.map((s) => s.sql())).toEqual([
@@ -626,14 +605,11 @@ class TestExpressions {
   testAliasColumnNames () {
     let expression = parseOne('SELECT * FROM (SELECT * FROM x) AS y');
     let subquery = expression.find(SubqueryExpr);
-    expect((subquery as SubqueryExpr).aliasColumnNames).toEqual([
-    ]);
+    expect((subquery as SubqueryExpr).aliasColumnNames).toEqual([]);
 
     expression = parseOne('SELECT * FROM (SELECT * FROM x) AS y(a)');
     subquery = expression.find(SubqueryExpr);
-    expect((subquery as SubqueryExpr).aliasColumnNames).toEqual([
-      'a',
-    ]);
+    expect((subquery as SubqueryExpr).aliasColumnNames).toEqual(['a']);
 
     expression = parseOne('SELECT * FROM (SELECT * FROM x) AS y(a, b)');
     subquery = expression.find(SubqueryExpr);
@@ -644,8 +620,7 @@ class TestExpressions {
 
     expression = parseOne('WITH y AS (SELECT * FROM x) SELECT * FROM y');
     const cte = expression.find(CteExpr);
-    expect((cte as CteExpr).aliasColumnNames).toEqual([
-    ]);
+    expect((cte as CteExpr).aliasColumnNames).toEqual([]);
 
     expression = parseOne('WITH y(a, b) AS (SELECT * FROM x) SELECT * FROM y');
     const cte2 = expression.find(CteExpr);
@@ -667,9 +642,7 @@ class TestExpressions {
     expect(expression.type).toBe(expression.getArgKey('to'));
 
     const selectExpr = parseOne('select cast(x as DATE)');
-    const casts = [
-      ...selectExpr.findAll(CastExpr),
-    ];
+    const casts = [...selectExpr.findAll(CastExpr)];
     expect(casts.length).toBe(1);
 
     const castNode = casts[0] as CastExpr;
@@ -683,9 +656,7 @@ class TestExpressions {
     // however, recasting is fine if the types are different
     const recast2 = cast(castNode, DataTypeExprKind.VARCHAR);
     expect(recast2.sql()).not.toBe(castNode.sql());
-    expect([
-      ...recast2.findAll(CastExpr),
-    ].length).toBe(2);
+    expect([...recast2.findAll(CastExpr)].length).toBe(2);
     expect(recast2.sql()).toBe('CAST(CAST(x AS DATE) AS VARCHAR)');
 
     // check that dialect is used when casting strings
@@ -699,13 +670,10 @@ class TestExpressions {
 
   testCtes () {
     const expression = parseOne('SELECT a FROM x');
-    expect((expression as SelectExpr).ctes).toEqual([
-    ]);
+    expect((expression as SelectExpr).ctes).toEqual([]);
 
     const withExpr = parseOne('WITH x AS (SELECT a FROM y) SELECT a FROM x');
-    expect((withExpr as SelectExpr).ctes.map((s) => s.sql())).toEqual([
-      'x AS (SELECT a FROM y)',
-    ]);
+    expect((withExpr as SelectExpr).ctes.map((s) => s.sql())).toEqual(['x AS (SELECT a FROM y)']);
   }
 
   testSql () {
@@ -872,29 +840,22 @@ class TestExpressions {
     expect(expression.sql()).toBe('SELECT * FROM x');
 
     expression = parseOne('SELECT * FROM foo JOIN bar');
-    expect(((expression.args as Record<string, unknown>)['joins'] as unknown[] || [
-    ]).length).toBe(1);
+    expect(((expression.args as Record<string, unknown>)['joins'] as unknown[] || []).length).toBe(1);
 
     expression.setArgKey('joins', undefined);
     expect(expression.sql()).toBe('SELECT * FROM foo');
-    expect(((expression.args as Record<string, unknown>)['joins'] as unknown[]) ?? [
-    ]).toEqual([
-    ]);
+    expect(((expression.args as Record<string, unknown>)['joins'] as unknown[]) ?? []).toEqual([]);
   }
 
   testWalk () {
     const expression = parseOne('SELECT * FROM (SELECT * FROM x)');
-    expect([
-      ...expression.walk(),
-    ].length).toBe(9);
+    expect([...expression.walk()].length).toBe(9);
     expect([
       ...expression.walk({
         bfs: false,
       }),
     ].length).toBe(9);
-    expect([
-      ...expression.walk(),
-    ].every((e) => e instanceof Expression)).toBe(true);
+    expect([...expression.walk()].every((e) => e instanceof Expression)).toBe(true);
     expect([
       ...expression.walk({
         bfs: false,
@@ -1331,9 +1292,7 @@ class TestExpressions {
         4,
       ],
     ], {
-      columns: [
-        'a',
-      ],
+      columns: ['a'],
     })).toThrow(Error);
   }
 
@@ -1606,9 +1565,7 @@ class TestExpressions {
       'SELECT a, b AS B, c, d AS D, CAST(x AS INT), y AND w AS E FROM foo',
     );
 
-    expect(parseOne('max(x) as "a b" -- comment').comments).toEqual([
-      ' comment',
-    ]);
+    expect(parseOne('max(x) as "a b" -- comment').comments).toEqual([' comment']);
   }
 }
 

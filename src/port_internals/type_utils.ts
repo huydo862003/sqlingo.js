@@ -4,7 +4,7 @@ import type {
 
 /** Type guard that checks if a value is iterable (has `Symbol.iterator`). Does NOT exclude strings. */
 export function isIterable<T = unknown> (value: unknown): value is Iterable<T> {
-  return value != null && typeof (value as {[Symbol.iterator]?: unknown})[Symbol.iterator] === 'function';
+  return value != null && typeof (value as { [Symbol.iterator]?: unknown })[Symbol.iterator] === 'function';
 }
 
 /** Merges T and U, with U overriding T. Properties set to `never` in U are removed. */

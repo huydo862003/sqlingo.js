@@ -472,7 +472,7 @@ export function unnestToExplode (
   function unnestZipExprs (
     u: UnnestExpr,
     unnestExprs: ExpressionValue[],
-    options: {hasMultiExpr: boolean},
+    options: { hasMultiExpr: boolean },
   ): ExpressionValue[] {
     const {
       hasMultiExpr,

@@ -500,7 +500,7 @@ function expandAliasRefs_ (
   scope: Scope,
   resolver: Resolver,
   dialect: Dialect,
-  options: {expandOnlyGroupby: boolean},
+  options: { expandOnlyGroupby: boolean },
 ): void {
   const {
     expandOnlyGroupby,
@@ -518,8 +518,8 @@ function expandAliasRefs_ (
 
   const replaceColumns = (
     node: Expression | undefined,
-    options: {resolveTable?: boolean;
-      literalIndex?: boolean;} = {},
+    options: { resolveTable?: boolean;
+      literalIndex?: boolean; } = {},
   ): void => {
     const {
       resolveTable = false, literalIndex = false,
@@ -729,7 +729,7 @@ function convertColumnsToDots (scope: Scope, resolver: Resolver): void {
 function qualifyColumnsInScope (
   scope: Scope,
   resolver: Resolver,
-  options: {allowPartialQualification: boolean},
+  options: { allowPartialQualification: boolean },
 ): void {
   const {
     allowPartialQualification,
@@ -1258,7 +1258,7 @@ function expandPositionalReferences (
   scope: Scope,
   expressions: Iterable<Expression>,
   dialect: Dialect,
-  options: {alias?: boolean} = {},
+  options: { alias?: boolean } = {},
 ): Expression[] {
   const {
     alias = false,

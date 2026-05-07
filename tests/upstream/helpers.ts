@@ -50,8 +50,7 @@ function extractMeta (sql: string): [string, Record<string, string>] {
  * Asserts that a Vitest mock logger contains a specific message.
  */
 export function assertLoggerContains (message: string, logger: Console, level: string = 'error'): void {
-  const mockCalls = logger[level]?.mock?.calls || [
-  ];
+  const mockCalls = logger[level]?.mock?.calls || [];
   const output = mockCalls
     .map((args: unknown[]) => String(args[0]))
     .join('\n');

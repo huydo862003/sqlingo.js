@@ -359,8 +359,8 @@ export class Scope {
   /**
    * Walk the expression tree within this scope
    */
-  walk (options: {bfs?: boolean;
-    prune?: (node: Expression) => boolean;} = {}): Generator<Expression> {
+  walk (options: { bfs?: boolean;
+    prune?: (node: Expression) => boolean; } = {}): Generator<Expression> {
     return walkInScope(this.expression, options);
   }
 
@@ -1260,7 +1260,7 @@ export function findAllInScope<E extends Expression> (
   expression: Expression,
 
   expressionTypes: readonly (new (...args: any) => E)[],
-  options: {bfs?: boolean} = {},
+  options: { bfs?: boolean } = {},
 ): E[] {
   const {
     bfs = true,
@@ -1288,7 +1288,7 @@ export function findInScope (
   expression: Expression,
 
   expressionTypes: (new (...args: any) => Expression) | (new (...args: any) => Expression)[],
-  options: {bfs?: boolean} = {},
+  options: { bfs?: boolean } = {},
 ): Expression | undefined {
   const {
     bfs = true,

@@ -172,8 +172,7 @@ class TestErrors {
     const sql = 'SELECT a FROM t';
     expect(() => highlightSql({
       sql,
-      positions: [
-      ],
+      positions: [],
     })).toThrow();
   }
 

@@ -79,13 +79,13 @@ import {
   GButton, GButtonProminence, GButtonSize,
   GIcon, GIconName,
 } from '@hdnax/genuix';
+import MonacoEditor from './MonacoEditor.vue';
 import {
   transpile,
 } from '@/services/transpile';
 import {
   DIALECTS,
 } from '@/services/dialects';
-import MonacoEditor from './MonacoEditor.vue';
 import {
   usePlaygroundStore,
 } from '@/stores/playground';

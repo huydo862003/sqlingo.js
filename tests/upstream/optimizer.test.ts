@@ -789,15 +789,9 @@ describe('TestOptimizer', () => {
     const s = new MappingSchema({
       schema: schema,
       visible: {
-        x: new Set([
-          'a',
-        ]),
-        y: new Set([
-          'b',
-        ]),
-        z: new Set([
-          'b',
-        ]),
+        x: new Set(['a']),
+        y: new Set(['b']),
+        z: new Set(['b']),
       },
     });
     checkFile('qualify_columns__with_invisible', qualifyColumnsHelper, {
@@ -1129,10 +1123,7 @@ describe('TestOptimizer', () => {
     const manyUnions = parseOne(Array.from({
       length: 10000,
     }, () => 'SELECT x FROM t').join(' UNION ALL '));
-    const scopesUsingTraverse = [
-      ...(buildScope(manyUnions)?.traverse() ?? [
-      ]),
-    ];
+    const scopesUsingTraverse = [...(buildScope(manyUnions)?.traverse() ?? [])];
     const scopesUsingTraverseScope = traverseScope(manyUnions);
     expect(scopesUsingTraverse.length).toBe(scopesUsingTraverseScope.length);
 
@@ -1158,10 +1149,7 @@ describe('TestOptimizer', () => {
 
     for (const scopes of [
       traverseScope(expression),
-      [
-        ...(buildScope(expression)?.traverse() ?? [
-        ]),
-      ],
+      [...(buildScope(expression)?.traverse() ?? [])],
     ]) {
       expect(scopes.length).toBe(7);
       expect(scopes[0].expression.sql()).toBe('SELECT x.b FROM x');
@@ -1183,40 +1171,27 @@ describe('TestOptimizer', () => {
         'r',
         's',
       ]));
-      expect(scopes[6].sourceColumns('q')).toEqual([
-      ]);
+      expect(scopes[6].sourceColumns('q')).toEqual([]);
       expect(scopes[6].sourceColumns('r').length).toBe(2);
-      expect(new Set(scopes[6].sourceColumns('r').map((c) => c.table))).toEqual(new Set([
-        'r',
-      ]));
+      expect(new Set(scopes[6].sourceColumns('r').map((c) => c.table))).toEqual(new Set(['r']));
 
-      expect(new Set([
-        ...scopes[scopes.length - 1].findAll(ColumnExpr),
-      ].map((c) => c.sql()))).toEqual(new Set([
+      expect(new Set([...scopes[scopes.length - 1].findAll(ColumnExpr)].map((c) => c.sql()))).toEqual(new Set([
         'r.b',
         's.b',
       ]));
       expect(scopes[scopes.length - 1].find(ColumnExpr)?.sql()).toBe('r.b');
-      expect(new Set([
-        ...scopes[0].findAll(ColumnExpr),
-      ].map((c) => c.sql()))).toEqual(new Set([
-        'x.b',
-      ]));
+      expect(new Set([...scopes[0].findAll(ColumnExpr)].map((c) => c.sql()))).toEqual(new Set(['x.b']));
     }
 
     // Check that we can walk in scope from an arbitrary node
     const whereNode = expression.find(WhereExpr);
     if (whereNode) {
       const colsInWhere = new Set(
-        [
-          ...walkInScope(whereNode),
-        ]
+        [...walkInScope(whereNode)]
           .filter((node): node is ColumnExpr => node instanceof ColumnExpr)
           .map((node) => node.sql()),
       );
-      expect(colsInWhere).toEqual(new Set([
-        's.b',
-      ]));
+      expect(colsInWhere).toEqual(new Set(['s.b']));
     }
 
     // Check that parentheses don't introduce a new scope unless an alias is attached
@@ -1224,10 +1199,7 @@ describe('TestOptimizer', () => {
     const expr2 = parseOne(sql2);
     for (const scopes of [
       traverseScope(expr2),
-      [
-        ...(buildScope(expr2)?.traverse() ?? [
-        ]),
-      ],
+      [...(buildScope(expr2)?.traverse() ?? [])],
     ]) {
       expect(scopes.length).toBe(4);
 
@@ -1238,19 +1210,13 @@ describe('TestOptimizer', () => {
       ]));
 
       expect(scopes[1].expression.sql()).toBe('SELECT * FROM (t1, t2) AS t3');
-      expect(new Set(scopes[1].sources.keys())).toEqual(new Set([
-        't3',
-      ]));
+      expect(new Set(scopes[1].sources.keys())).toEqual(new Set(['t3']));
 
       expect(scopes[2].expression.sql()).toBe('SELECT * FROM t4');
-      expect(new Set(scopes[2].sources.keys())).toEqual(new Set([
-        't4',
-      ]));
+      expect(new Set(scopes[2].sources.keys())).toEqual(new Set(['t4']));
 
       expect(scopes[3].expression.sql()).toBe('SELECT * FROM (((SELECT * FROM (t1, t2) AS t3), (SELECT * FROM t4)))');
-      expect(new Set(scopes[3].sources.keys())).toEqual(new Set([
-        '',
-      ]));
+      expect(new Set(scopes[3].sources.keys())).toEqual(new Set(['']));
     }
 
     // UNNEST and LATERAL inner query
@@ -1264,16 +1230,11 @@ describe('TestOptimizer', () => {
 
       for (const scopes of [
         traverseScope(exprU),
-        [
-          ...(buildScope(exprU)?.traverse() ?? [
-          ]),
-        ],
+        [...(buildScope(exprU)?.traverse() ?? [])],
       ]) {
         expect(scopes.length).toBe(3);
         expect(scopes[0].expression.sql()).toBe(innerQuery);
-        expect(new Set(scopes[0].sources.keys())).toEqual(new Set([
-          'baz',
-        ]));
+        expect(new Set(scopes[0].sources.keys())).toEqual(new Set(['baz']));
         expect(scopes[1].expression.sql()).toBe(udtf);
         expect(new Set(scopes[1].sources.keys())).toEqual(new Set([
           '',
@@ -1368,9 +1329,7 @@ describe('TestOptimizer', () => {
 
       for (const dialect of (dialectStr
         ? dialectStr.split(', ')
-        : [
-          '',
-        ])) {
+        : [''])) {
         const result = parseAndOptimize(
           (e, opts) => annotateFunctionsHelper(e, opts ?? {}),
           fullSql,

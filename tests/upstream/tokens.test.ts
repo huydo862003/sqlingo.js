@@ -55,9 +55,7 @@ class TestTokens {
     const sqlComment: [string, string[]][] = [
       [
         '/*comment*/ foo',
-        [
-          'comment',
-        ],
+        ['comment'],
       ],
       [
         '/*comment*/ foo --test',
@@ -75,14 +73,11 @@ class TestTokens {
       ],
       [
         'foo --comment',
-        [
-          'comment',
-        ],
+        ['comment'],
       ],
       [
         'foo',
-        [
-        ],
+        [],
       ],
       [
         'foo /*comment 1*/ /*comment 2*/',
@@ -93,21 +88,15 @@ class TestTokens {
       ],
       [
         'foo\n-- comment',
-        [
-          ' comment',
-        ],
+        [' comment'],
       ],
       [
         '1 /*/2 */',
-        [
-          '/2 ',
-        ],
+        ['/2 '],
       ],
       [
         '1\n/*comment*/;',
-        [
-          'comment',
-        ],
+        ['comment'],
       ],
     ];
 

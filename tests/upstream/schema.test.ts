@@ -53,8 +53,7 @@ class TestSchema {
     ...tables: string[]
   ) {
     for (const table of tables) {
-      expect(schema.columnNames(toTable(table))).toEqual([
-      ]);
+      expect(schema.columnNames(toTable(table))).toEqual([]);
     }
   }
 
@@ -73,9 +72,7 @@ class TestSchema {
       schema,
       [
         'x',
-        [
-          'a',
-        ],
+        ['a'],
       ],
       [
         'y',
@@ -86,9 +83,7 @@ class TestSchema {
       ],
       [
         'z.x',
-        [
-          'a',
-        ],
+        ['a'],
       ],
       [
         'z.x.y',
@@ -123,33 +118,23 @@ class TestSchema {
       schema,
       [
         'd1.x',
-        [
-          'a',
-        ],
+        ['a'],
       ],
       [
         'd2.x',
-        [
-          'c',
-        ],
+        ['c'],
       ],
       [
         'y',
-        [
-          'b',
-        ],
+        ['b'],
       ],
       [
         'd1.y',
-        [
-          'b',
-        ],
+        ['b'],
       ],
       [
         'z.d1.y',
-        [
-          'b',
-        ],
+        ['b'],
       ],
     );
 
@@ -194,57 +179,39 @@ class TestSchema {
       schema,
       [
         'x',
-        [
-          'a',
-        ],
+        ['a'],
       ],
       [
         'd1.x',
-        [
-          'a',
-        ],
+        ['a'],
       ],
       [
         'c1.d1.x',
-        [
-          'a',
-        ],
+        ['a'],
       ],
       [
         'c1.d1.y',
-        [
-          'b',
-        ],
+        ['b'],
       ],
       [
         'c1.d1.z',
-        [
-          'c',
-        ],
+        ['c'],
       ],
       [
         'c2.d1.y',
-        [
-          'd',
-        ],
+        ['d'],
       ],
       [
         'c2.d1.z',
-        [
-          'e',
-        ],
+        ['e'],
       ],
       [
         'd2.z',
-        [
-          'f',
-        ],
+        ['f'],
       ],
       [
         'c2.d2.z',
-        [
-          'f',
-        ],
+        ['f'],
       ],
     );
 
@@ -256,14 +223,11 @@ class TestSchema {
   testSchemaAddTableWithAndWithoutMapping () {
     const schema = new MappingSchema();
     schema.addTable('test');
-    expect(schema.columnNames('test')).toEqual([
-    ]);
+    expect(schema.columnNames('test')).toEqual([]);
     schema.addTable('test', {
       x: 'string',
     });
-    expect(schema.columnNames('test')).toEqual([
-      'x',
-    ]);
+    expect(schema.columnNames('test')).toEqual(['x']);
     schema.addTable('test', {
       x: 'string',
       y: 'int',
@@ -373,9 +337,7 @@ class TestSchema {
       'a',
       'B',
     ]);
-    expect(schema1.columnNames(tableW)).toEqual([
-      'C',
-    ]);
+    expect(schema1.columnNames(tableW)).toEqual(['C']);
 
     const schema2 = new MappingSchema({
       x: {
@@ -384,9 +346,7 @@ class TestSchema {
     }, {
       dialect: 'clickhouse',
     });
-    expect(schema2.columnNames(table_('x'))).toEqual([
-      'y',
-    ]);
+    expect(schema2.columnNames(table_('x'))).toEqual(['y']);
 
     const schema3 = new MappingSchema();
     schema3.addTable('Foo', {
@@ -419,9 +379,7 @@ class TestSchema {
       normalize: false,
       dialect: 'snowflake',
     });
-    expect(schema5.columnNames(table_('x'))).toEqual([
-      'foo',
-    ]);
+    expect(schema5.columnNames(table_('x'))).toEqual(['foo']);
 
     const schema6 = new MappingSchema({
       '[Fo]': {
@@ -441,11 +399,8 @@ class TestSchema {
     }, {
       dialect: 'bigquery',
     });
-    expect(schema7.columnNames('Foo')).toEqual([
-      'bar',
-    ]);
-    expect(schema7.columnNames('foo')).toEqual([
-    ]);
+    expect(schema7.columnNames('Foo')).toEqual(['bar']);
+    expect(schema7.columnNames('foo')).toEqual([]);
 
     const schema8 = new MappingSchema({
       X: {
@@ -457,9 +412,7 @@ class TestSchema {
     });
     expect(schema8.columnNames('x', {
       normalize: true,
-    })).toEqual([
-      'y',
-    ]);
+    })).toEqual(['y']);
 
     const schemaBqStruct = new MappingSchema({
       t: {

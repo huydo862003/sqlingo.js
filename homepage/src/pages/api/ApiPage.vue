@@ -431,20 +431,20 @@ import {
 import {
   marked,
 } from 'marked';
-import MainLayout from '@/layout/main/MainLayout.vue';
 import {
   GTextInput, GIcon, GIconName,
   GCodeBlock, GCodeLanguage, GHighlightTheme,
 } from '@hdnax/genuix';
-import {
-  ReflectionKind,
-} from '@/types/typedoc';
 import {
   useSeoMeta,
 } from '@unhead/vue';
 import {
   kindDotStyle, kindChipStyle,
 } from './kinds';
+import {
+  ReflectionKind,
+} from '@/types/typedoc';
+import MainLayout from '@/layout/main/MainLayout.vue';
 
 interface TypeInfo {
   type: string;

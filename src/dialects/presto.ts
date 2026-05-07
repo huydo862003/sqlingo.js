@@ -455,7 +455,7 @@ export function buildToChar (args: Expression[]): TimeToStrExpr {
 /**
  * Higher-order function to create SQL for date addition or subtraction.
  */
-export function dateDeltaSql (name: string, options: {negateInterval?: boolean} = {}): (this: Generator, expression: DateAddOrSub) => string {
+export function dateDeltaSql (name: string, options: { negateInterval?: boolean } = {}): (this: Generator, expression: DateAddOrSub) => string {
   const {
     negateInterval = false,
   } = options;
@@ -639,7 +639,7 @@ class PrestoParser extends Parser {
   static ZONE_AWARE_TIMESTAMP_CONSTRUCTOR = true;
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       ARBITRARY: (args: unknown[]) => AnyValueExpr.fromArgList(args),

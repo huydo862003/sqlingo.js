@@ -574,10 +574,10 @@ export function buildRegexpExtract<T extends Expression> (
 
   exprType: new (args: any) => T,
   defaultGroup?: Expression,
-): (args: Expression[], options: {dialect: BigQuery}) => T {
+): (args: Expression[], options: { dialect: BigQuery }) => T {
   return (args: Expression[], {
     dialect,
-  }: {dialect: BigQuery}): T => {
+  }: { dialect: BigQuery }): T => {
     let group = false;
     try {
       const pattern = args[1]?.name;
@@ -606,8 +606,8 @@ export function buildRegexpExtract<T extends Expression> (
 
 export function buildExtractJsonWithDefaultPath<T extends typeof Expression> (
   exprType: T,
-): (args: Expression[], options: {dialect: Dialect}) => InstanceType<T> {
-  return (args: Expression[], options: {dialect: Dialect}): InstanceType<T> => {
+): (args: Expression[], options: { dialect: Dialect }) => InstanceType<T> {
+  return (args: Expression[], options: { dialect: Dialect }): InstanceType<T> => {
     if (args.length === 1) {
       // The default value for the JSONPath is '$' i.e all of the data
       args.push(LiteralExpr.string('$'));
@@ -1070,7 +1070,7 @@ export class BigQueryParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return (() => {
 
       const fns: Record<string, (args: Expression[], dialect: any) => Expression> = {
@@ -1374,7 +1374,7 @@ export class BigQueryParser extends Parser {
     return expr;
   }
 
-  parseTablePart (options: {schema?: boolean} = {}): Expression | undefined {
+  parseTablePart (options: { schema?: boolean } = {}): Expression | undefined {
     const {
       schema = false,
     } = options;
@@ -1613,7 +1613,7 @@ export class BigQueryParser extends Parser {
     return column;
   }
 
-  parseJsonObject (options: {agg?: boolean} = {}): JsonObjectExpr | JsonObjectAggExpr {
+  parseJsonObject (options: { agg?: boolean } = {}): JsonObjectExpr | JsonObjectAggExpr {
     const {
       agg: _agg = false,
     } = options;
@@ -1672,7 +1672,7 @@ export class BigQueryParser extends Parser {
     return bracket;
   }
 
-  parseUnnest (options: {withAlias?: boolean} = {}): UnnestExpr | undefined {
+  parseUnnest (options: { withAlias?: boolean } = {}): UnnestExpr | undefined {
     const {
       withAlias = true,
     } = options;
@@ -2691,7 +2691,7 @@ export class BigQueryGenerator extends Generator {
     ]);
   }
 
-  castSql (expression: CastExpr, options: {safePrefix?: string} = {}): string {
+  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
     const {
       safePrefix,
     } = options;

@@ -293,7 +293,7 @@ class SQLiteParser extends Parser {
   static JOINS_HAVE_EQUAL_PRECEDENCE = true;
   static ADD_JOIN_ON_TRUE = true;
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       EDITDIST3: (args: unknown[]) => LevenshteinExpr.fromArgList(args),
@@ -342,7 +342,7 @@ class SQLiteParser extends Parser {
     return super.parseUnique();
   }
 
-  parseAttachDetach (options: {isAttach?: boolean} = {}): AttachExpr | DetachExpr {
+  parseAttachDetach (options: { isAttach?: boolean } = {}): AttachExpr | DetachExpr {
     const {
       isAttach = true,
     } = options;
@@ -664,7 +664,7 @@ class SQLiteGenerator extends Generator {
     ]);
   }
 
-  castSql (expression: CastExpr, options: {safePrefix?: string} = {}): string {
+  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
     if (expression.isType('date')) {
       return this.func('DATE', [expression.args.this]);
     }

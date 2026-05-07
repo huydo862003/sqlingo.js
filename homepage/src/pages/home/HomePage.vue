@@ -295,11 +295,11 @@ import {
   GPillProminence,
   GPillSize,
 } from '@hdnax/genuix';
-import SqlCodeExample from './SqlCodeExample.vue';
-import MainLayout from '@/layout/main/MainLayout.vue';
 import {
   useSeoMeta,
 } from '@unhead/vue';
+import SqlCodeExample from './SqlCodeExample.vue';
+import MainLayout from '@/layout/main/MainLayout.vue';
 
 useSeoMeta({
   title: 'Home | sqlingo.js',

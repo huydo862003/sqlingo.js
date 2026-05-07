@@ -20,7 +20,7 @@ export const enum TrieResult {
  */
 /** Special sentinel key used to mark terminal nodes (avoids collision with digit characters like '0') */
 export const TRIE_END = '\x00';
-export type TrieNode = {[key: string]: TrieNode | true} & {'\x00'?: true};
+export type TrieNode = { [key: string]: TrieNode | true } & { '\x00'?: true };
 
 /**
  * A key represented as an array of characters.

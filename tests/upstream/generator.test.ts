@@ -17,9 +17,7 @@ import {
 describe('TestGenerator', () => {
   it('test_fallback_function_sql', () => {
     class SpecialUDF extends FuncExpr {
-      static requiredArgs = new Set([
-        'a',
-      ]);
+      static requiredArgs = new Set(['a']);
       static availableArgs = new Set([
         'a',
         'b',

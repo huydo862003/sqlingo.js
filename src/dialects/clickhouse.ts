@@ -586,8 +586,8 @@ class ClickHouseParser extends Parser {
   static JOINS_HAVE_EQUAL_PRECEDENCE = true;
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
-    const parsers: Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> = {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+    const parsers: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
       ...Parser.FUNCTIONS,
       ...Object.fromEntries(
         [...TIMESTAMP_TRUNC_UNITS].map((unit) => [
@@ -1060,9 +1060,9 @@ class ClickHouseParser extends Parser {
     return this.parseLambda();
   }
 
-  parseTypes (options: {checkFunc?: boolean;
+  parseTypes (options: { checkFunc?: boolean;
     schema?: boolean;
-    allowIdentifiers?: boolean;} = {}): Expression | undefined {
+    allowIdentifiers?: boolean; } = {}): Expression | undefined {
     const {
       checkFunc = false, schema = false, allowIdentifiers = true,
     } = options;
@@ -1248,7 +1248,7 @@ class ClickHouseParser extends Parser {
     return thisNode;
   }
 
-  parsePosition (_options: {haystackFirst?: boolean} = {}): StrPositionExpr {
+  parsePosition (_options: { haystackFirst?: boolean } = {}): StrPositionExpr {
     return super.parsePosition({
       haystackFirst: true,
     });
@@ -1328,7 +1328,7 @@ class ClickHouseParser extends Parser {
   }
 
   parseFunction (options: {
-    functions?: Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression>;
+    functions?: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression>;
     anonymous?: boolean;
     optionalParens?: boolean;
     anyToken?: boolean;
@@ -1528,7 +1528,7 @@ class ClickHouseParser extends Parser {
     return super.parseConstraint() || this.parseProjectionDef();
   }
 
-  parseAlias (thisNode: Expression | undefined, options: {explicit?: boolean} = {}): Expression | undefined {
+  parseAlias (thisNode: Expression | undefined, options: { explicit?: boolean } = {}): Expression | undefined {
     const {
       explicit = false,
     } = options;
@@ -1584,7 +1584,7 @@ class ClickHouseParser extends Parser {
     return thisNode;
   }
 
-  parseValue (options: {values?: boolean} = {}): TupleExpr | undefined {
+  parseValue (options: { values?: boolean } = {}): TupleExpr | undefined {
     const {
       values = true,
     } = options;
@@ -2410,7 +2410,7 @@ export class ClickHouseGenerator extends Generator {
     return strToDateSql;
   }
 
-  castSql (expression: CastExpr, options: {safePrefix?: string} = {}): string {
+  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
     const {
       safePrefix,
     } = options;
@@ -2691,7 +2691,7 @@ export class ClickHouseGenerator extends Generator {
     return super.notSql(expression);
   }
 
-  valuesSql (expression: ValuesExpr, options: {valuesAsTable?: boolean} = {}): string {
+  valuesSql (expression: ValuesExpr, options: { valuesAsTable?: boolean } = {}): string {
     let {
       valuesAsTable = true,
     } = options;

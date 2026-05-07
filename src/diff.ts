@@ -277,7 +277,7 @@ class ChangeDistiller {
 
   private generateEditScript (
     matchings: Map<Expression, Expression>,
-    options: {deltaOnly: boolean},
+    options: { deltaOnly: boolean },
   ): Edit[] {
     const {
       deltaOnly,

@@ -62,7 +62,7 @@ export function flattenSchema (
 export function nestedGet (
   d: Record<string, unknown>,
   path: Array<[string, string]>,
-  options: {raiseOnMissing?: boolean} = {},
+  options: { raiseOnMissing?: boolean } = {},
 ): unknown {
   const {
     raiseOnMissing = true,
@@ -135,9 +135,9 @@ export function ensureColumnMapping (mapping?: ColumnMapping): Record<string, un
 
 export function normalizeName (
   identifier: string | IdentifierExpr,
-  options: {dialect?: DialectType;
+  options: { dialect?: DialectType;
     isTable?: boolean;
-    normalize?: boolean;} = {},
+    normalize?: boolean; } = {},
 ): IdentifierExpr {
   const {
     dialect, isTable = false, normalize = true,
@@ -280,7 +280,7 @@ export abstract class AbstractMappingSchema extends Schema {
   protected findInTrie (
     parts: string[],
     trie: TrieNode,
-    options: {raiseOnMissing: boolean},
+    options: { raiseOnMissing: boolean },
   ): string[] | undefined {
     const {
       raiseOnMissing,
@@ -331,7 +331,7 @@ export abstract class AbstractMappingSchema extends Schema {
     });
   }
 
-  findUdf (udf: AnonymousExpr, options: {raiseOnMissing?: boolean} = {}): unknown {
+  findUdf (udf: AnonymousExpr, options: { raiseOnMissing?: boolean } = {}): unknown {
     const {
       raiseOnMissing = false,
     } = options;
@@ -502,9 +502,9 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
   override addTable (
     table: TableExpr | string,
     columnMapping?: ColumnMapping,
-    options: {dialect?: DialectType;
+    options: { dialect?: DialectType;
       normalize?: boolean;
-      matchDepth?: boolean;} = {},
+      matchDepth?: boolean; } = {},
   ): void {
     const {
       dialect, normalize, matchDepth = true,
@@ -542,9 +542,9 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
 
   override columnNames (
     table: TableExpr | string,
-    options: {onlyVisible?: boolean;
+    options: { onlyVisible?: boolean;
       dialect?: DialectType;
-      normalize?: boolean;} = {},
+      normalize?: boolean; } = {},
   ): string[] {
     const {
       onlyVisible = false, dialect, normalize,
@@ -603,8 +603,8 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
   override hasColumn (
     table: TableExpr | string,
     column: ColumnExpr | string,
-    options?: {dialect?: DialectType;
-      normalize?: boolean;},
+    options?: { dialect?: DialectType;
+      normalize?: boolean; },
   ): boolean {
     const {
       dialect, normalize,
@@ -740,8 +740,8 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
   private normalizeName (
     name: string | IdentifierExpr,
     dialect?: DialectType,
-    options: {isTable?: boolean;
-      normalize?: boolean;} = {},
+    options: { isTable?: boolean;
+      normalize?: boolean; } = {},
   ): string {
     const {
       isTable = false, normalize,
@@ -757,7 +757,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
   private static normalizeSchemaStatic (
     schema: Record<string, unknown>,
     dialect: Dialect,
-    options: {normalize: boolean},
+    options: { normalize: boolean },
   ): Record<string, unknown> {
     const {
       normalize,
@@ -827,7 +827,7 @@ export class MappingSchema extends multiInherit(AbstractMappingSchema, Schema) {
   private static normalizeUdfsStatic (
     udfs: Record<string, unknown>,
     dialect: Dialect,
-    options: {normalize: boolean},
+    options: { normalize: boolean },
   ): Record<string, unknown> {
     const {
       normalize,

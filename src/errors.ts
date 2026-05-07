@@ -122,10 +122,10 @@ export function highlightSql (options: {
   sql: string;
   positions: [number, number][];
   contextLength?: number;
-}): {formattedSql: string;
+}): { formattedSql: string;
   startContext: string;
   highlight: string;
-  endContext: string;} {
+  endContext: string; } {
   const {
     sql, positions, contextLength = ERROR_MESSAGE_CONTEXT_DEFAULT,
   } = options;

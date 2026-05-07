@@ -35,7 +35,7 @@ const SELECT_ALL = Symbol('SELECT_ALL');
 /**
  * Selection to use if selection list is empty
  */
-function defaultSelection (options: {isAgg: boolean}): Expression {
+function defaultSelection (options: { isAgg: boolean }): Expression {
   const {
     isAgg,
   } = options;

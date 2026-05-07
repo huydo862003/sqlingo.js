@@ -201,7 +201,7 @@ export class OracleParser extends Parser {
   static VALUES_FOLLOWED_BY_PAREN = false;
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       CONVERT: (args: Expression[]) => ConvertToCharsetExpr.fromArgList(args),
@@ -220,7 +220,7 @@ export class OracleParser extends Parser {
       }),
       TRUNC: (args: Expression[], {
         dialect,
-      }: {dialect: Dialect}) => buildTrunc(args, {
+      }: { dialect: Dialect }) => buildTrunc(args, {
         dialect,
         dateTruncUnabbreviate: false,
         defaultDateTruncUnit: 'DD',
@@ -769,7 +769,7 @@ export class OracleGenerator extends Generator {
     return `${expression.args.this instanceof LiteralExpr ? 'INTERVAL ' : ''}${this.sql(expression, 'this')} ${this.sql(expression, 'unit')}`;
   }
 
-  public columnDefSql (expression: ColumnDefExpr, options: {sep?: string} = {}): string {
+  public columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
     let {
       sep = ' ',
     } = options;
@@ -839,7 +839,7 @@ export class Oracle extends Dialect {
     ]);
   }
 
-  public canQuote (identifier: IdentifierExpr, options: {identify?: string | boolean} = {}): boolean {
+  public canQuote (identifier: IdentifierExpr, options: { identify?: string | boolean } = {}): boolean {
     const {
       identify = 'safe',
     } = options;

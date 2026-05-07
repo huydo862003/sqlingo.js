@@ -1458,7 +1458,7 @@ export class Dialect {
   /**
    * Generate SQL from an expression tree.
    */
-  generate (expression: Expression, options: GeneratorOptions & {copy?: boolean} = {}): string {
+  generate (expression: Expression, options: GeneratorOptions & { copy?: boolean } = {}): string {
     const {
       copy = true, ...restOptions
     } = options;
@@ -2389,7 +2389,7 @@ export function encodeDecodeSql (
   this: Generator,
   expression: EncodeExpr | DecodeExpr,
   name: string,
-  options: {replace?: boolean} = {},
+  options: { replace?: boolean } = {},
 ): string {
   const {
     replace = true,
@@ -2477,7 +2477,7 @@ export function countIfToSum (this: Generator, expression: CountIfExpr): string 
     : []);
 }
 
-export function trimSql (this: Generator, expression: TrimExpr, options: {defaultTrimType?: string} = {}): string {
+export function trimSql (this: Generator, expression: TrimExpr, options: { defaultTrimType?: string } = {}): string {
   const {
     defaultTrimType = '',
   } = options;
@@ -2556,7 +2556,7 @@ export function regexpReplaceSql (this: Generator, expression: RegexpReplaceExpr
     expression.args.replacement,
   ]);
 }
-export function pivotColumnNames (aggregations: Expression[], options: {dialect: DialectType}): string[] {
+export function pivotColumnNames (aggregations: Expression[], options: { dialect: DialectType }): string[] {
   const {
     dialect,
   } = options;
@@ -2813,7 +2813,7 @@ export function unitToVar (expression: TimeUnitExpr, options: {
   return value ? var_(value) : undefined;
 }
 
-export function mapDatePart (part: string | Expression | undefined, options: {dialect?: DialectType} = {}): Expression | undefined {
+export function mapDatePart (part: string | Expression | undefined, options: { dialect?: DialectType } = {}): Expression | undefined {
   const {
     dialect = Dialect,
   } = options;
@@ -3225,11 +3225,11 @@ export function buildLike<T extends Expression> (
   };
 }
 
-export function buildRegexpExtract<T extends Expression> (ExprType: (typeof RegexpExtractExpr) & (new (args: any) => T)): (args: any[], options: {dialect: Dialect}) => Expression {
+export function buildRegexpExtract<T extends Expression> (ExprType: (typeof RegexpExtractExpr) & (new (args: any) => T)): (args: any[], options: { dialect: Dialect }) => Expression {
 
   return (args: any[], {
     dialect,
-  }: {dialect: Dialect}) => {
+  }: { dialect: Dialect }) => {
     const kwargs: RegexpExtractExprArgs = {
       this: seqGet(args, 0),
       expression: seqGet(args, 1),
@@ -3371,7 +3371,7 @@ export function groupConcatSql (this: Generator, expression: GroupConcatExpr, op
 
 export function buildTimeToStrOrToChar (args: any[], {
   dialect,
-}: {dialect: DialectType}): TimeToStrExpr | ToCharExpr {
+}: { dialect: DialectType }): TimeToStrExpr | ToCharExpr {
   if (args.length === 2) {
     const thisArg = args[0];
     if (!thisArg.type) annotateTypes(thisArg, {

@@ -131,7 +131,7 @@ class StarRocksParser extends MySQL.Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...MySQL.Parser.FUNCTIONS,
       DATE_TRUNC: buildTimestampTrunc,
@@ -216,7 +216,7 @@ class StarRocksParser extends MySQL.Parser {
     return create as CreateExpr;
   }
 
-  public parseUnnest (options: {withAlias?: boolean} = {}): UnnestExpr | undefined {
+  public parseUnnest (options: { withAlias?: boolean } = {}): UnnestExpr | undefined {
     const unnest = super.parseUnnest(options);
 
     if (unnest) {

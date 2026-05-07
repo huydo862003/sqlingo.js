@@ -199,7 +199,7 @@ const COERCIBLE_DATE_OPS = [
 /**
  * Coerce types for date operations.
  */
-export function coerceType (node: Expression, options: {promoteToInferredDatetimeType?: boolean} = {}): Expression {
+export function coerceType (node: Expression, options: { promoteToInferredDatetimeType?: boolean } = {}): Expression {
   const {
     promoteToInferredDatetimeType = false,
   } = options;
@@ -343,7 +343,7 @@ export function removeAscendingOrder (expression: Expression): Expression {
 function coerceDate (
   a: Expression,
   b: Expression,
-  options: {promoteToInferredDatetimeType: boolean},
+  options: { promoteToInferredDatetimeType: boolean },
 ): void {
   const {
     promoteToInferredDatetimeType,

@@ -1139,9 +1139,7 @@ FOR XML
       'ALTER TABLE tbl ADD CONSTRAINT cnstr PRIMARY KEY CLUSTERED (ID), CONSTRAINT cnstr2 UNIQUE CLUSTERED (ID)',
     ).find(AddConstraintExpr);
     expect(constraint).toBeTruthy();
-    expect([
-      ...constraint!.findAll(ConstraintExpr),
-    ].length).toBe(2);
+    expect([...constraint!.findAll(ConstraintExpr)].length).toBe(2);
   }
 
   testTransaction () {

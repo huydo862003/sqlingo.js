@@ -2296,7 +2296,7 @@ class MySQLGenerator extends Generator {
     return `${this.sql(expression, 'this')} MEMBER OF(${this.sql(expression, 'expression')})`;
   }
 
-  public castSql (expression: CastExpr, _options: {safePrefix?: string} = {}): string {
+  public castSql (expression: CastExpr, _options: { safePrefix?: string } = {}): string {
     const toExpr = expression.args.to;
     if (toExpr instanceof DataTypeExpr) {
       const toThis = toExpr.args.this as string;
@@ -2376,7 +2376,7 @@ class MySQLGenerator extends Generator {
   /**
    * MySQL doesn't use the TO keyword in ALTER ... RENAME.
    */
-  public alterRenameSql (expression: AlterRenameExpr, _options: {includeTo?: boolean} = {}): string {
+  public alterRenameSql (expression: AlterRenameExpr, _options: { includeTo?: boolean } = {}): string {
     return super.alterRenameSql(expression, {
       includeTo: false,
     });

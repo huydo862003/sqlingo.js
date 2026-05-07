@@ -2309,7 +2309,7 @@ export class Generator {
   /**
    * Main generate method - converts an expression tree to SQL string.
    */
-  generate (expression: Expression, options: {copy?: boolean} = {}): string {
+  generate (expression: Expression, options: { copy?: boolean } = {}): string {
     const {
       copy = true,
     } = options;
@@ -2500,7 +2500,7 @@ export class Generator {
   sql (
     expression?: ExpressionValue,
     key?: string,
-    options: {comment?: boolean} = {},
+    options: { comment?: boolean } = {},
   ): string {
     const {
       comment = true,
@@ -2669,7 +2669,7 @@ export class Generator {
     return `${position}${thisFormatted}`;
   }
 
-  columnDefSql (expression: ColumnDefExpr, options: {sep?: string} = {}): string {
+  columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
     const {
       sep = ' ',
     } = options;
@@ -3113,7 +3113,7 @@ export class Generator {
     return `${parseInt(thisStr, 2)}`;
   }
 
-  hexStringSql (expression: HexStringExpr, options: {binaryFunctionRepr?: string} = {}): string {
+  hexStringSql (expression: HexStringExpr, options: { binaryFunctionRepr?: string } = {}): string {
     const {
       binaryFunctionRepr,
     } = options;
@@ -3613,7 +3613,7 @@ export class Generator {
     ].join(this.sep());
   }
 
-  nationalSql (expression: NationalExpr, options: {prefix?: string} = {}): string {
+  nationalSql (expression: NationalExpr, options: { prefix?: string } = {}): string {
     const {
       prefix = 'N',
     } = options;
@@ -4096,7 +4096,7 @@ export class Generator {
 
   tableSql (
     expression: TableExpr,
-    options: {sep?: string} = {},
+    options: { sep?: string } = {},
   ): string {
     const {
       sep = ' AS ',
@@ -4357,7 +4357,7 @@ export class Generator {
 
   valuesSql (
     expression: ValuesExpr,
-    options: {valuesAsTable?: boolean} = {},
+    options: { valuesAsTable?: boolean } = {},
   ): string {
     const {
       valuesAsTable = true,
@@ -4693,7 +4693,7 @@ export class Generator {
     return `${this.lateralOp(expression)} ${thisStr}${alias}${ordinality}`;
   }
 
-  limitSql (expression: LimitExpr, options: {top?: boolean} = {}): string {
+  limitSql (expression: LimitExpr, options: { top?: boolean } = {}): string {
     const {
       top = false,
     } = options;
@@ -4889,7 +4889,7 @@ export class Generator {
     return `((${this.sql(expression, 'this')}) OR (${this.sql(expression, 'expression')}))`;
   }
 
-  orderSql (expression: OrderExpr, options: {flat?: boolean} = {}): string {
+  orderSql (expression: OrderExpr, options: { flat?: boolean } = {}): string {
     const {
       flat = false,
     } = options;
@@ -5278,7 +5278,7 @@ export class Generator {
       : '?';
   }
 
-  subquerySql (expression: SubqueryExpr, options: {sep?: string} = {}): string {
+  subquerySql (expression: SubqueryExpr, options: { sep?: string } = {}): string {
     const {
       sep = ' AS ',
     } = options;
@@ -5475,7 +5475,7 @@ export class Generator {
 
   bracketOffsetExpressions (
     expression: BracketExpr,
-    options: {indexOffset?: number} = {},
+    options: { indexOffset?: number } = {},
   ): Expression[] {
     const {
       indexOffset,
@@ -6178,7 +6178,7 @@ export class Generator {
     return this.binary(expression, '^');
   }
 
-  castSql (expression: Expression, options: {safePrefix?: string} = {}): string {
+  castSql (expression: Expression, options: { safePrefix?: string } = {}): string {
     const {
       safePrefix,
     } = options;
@@ -6346,7 +6346,7 @@ export class Generator {
     return `ALTER${compound} SORTKEY ${thisStr || expressions}`;
   }
 
-  alterRenameSql (expression: Expression, options: {includeTo?: boolean} = {}): string {
+  alterRenameSql (expression: Expression, options: { includeTo?: boolean } = {}): string {
     const {
       includeTo = true,
     } = options;
@@ -6867,7 +6867,7 @@ export class Generator {
 
   formatArgs (
     args: (ExpressionValue | undefined)[],
-    options: {sep?: string} = {},
+    options: { sep?: string } = {},
   ): string {
     const {
       sep = ', ',
@@ -6982,7 +6982,7 @@ export class Generator {
       : resultSql;
   }
 
-  opExpressions (op: string, expression: Expression, options: {flat?: boolean} = {}): string {
+  opExpressions (op: string, expression: Expression, options: { flat?: boolean } = {}): string {
     const flat = (options.flat ?? false) || expression.parent instanceof PropertiesExpr;
     const expressionsSql = this.expressions(expression, {
       flat,
@@ -7647,7 +7647,7 @@ export class Generator {
     // Check whether a conversion with format (T-SQL calls this 'style') is applicable
     if (style instanceof LiteralExpr && style.isInteger) {
       const styleValue = style.name;
-      const tsqlDialect = Dialect.get(Dialects.TSQL) as (typeof Dialect & {CONVERT_FORMAT_MAPPING: Record<string | number, string>}) | undefined;
+      const tsqlDialect = Dialect.get(Dialects.TSQL) as (typeof Dialect & { CONVERT_FORMAT_MAPPING: Record<string | number, string> }) | undefined;
       const convertedStyle = tsqlDialect?.CONVERT_FORMAT_MAPPING?.[styleValue] ?? '';
 
       if (!convertedStyle) {
@@ -8943,7 +8943,7 @@ export class Generator {
     return this.func('WEEK', [thisExpr]);
   }
 
-  chrSql (expression: Expression, options: {name?: string} = {}): string {
+  chrSql (expression: Expression, options: { name?: string } = {}): string {
     const {
       name = 'CHR',
     } = options;
@@ -8961,7 +8961,7 @@ export class Generator {
     return expressions ? `${expressions}` : '';
   }
 
-  tableSampleSql (expression: TableSampleExpr, options: {tablesampleKeyword?: string} = {}): string {
+  tableSampleSql (expression: TableSampleExpr, options: { tablesampleKeyword?: string } = {}): string {
     const {
       tablesampleKeyword,
     } = options;
@@ -9003,7 +9003,7 @@ export class Generator {
     return `MASKING POLICY ${thisStr}${expressions}`;
   }
 
-  uniqueKeyPropertySql (expression: UniqueKeyPropertyExpr, options: {prefix?: string} = {}): string {
+  uniqueKeyPropertySql (expression: UniqueKeyPropertyExpr, options: { prefix?: string } = {}): string {
     const {
       prefix = 'UNIQUE KEY',
     } = options;
@@ -9038,7 +9038,7 @@ export class Generator {
     return this.ceilFloor(expression);
   }
 
-  offsetLimitModifiers (expression: Expression, options: {fetch: boolean}, limit: Expression | undefined): string[] {
+  offsetLimitModifiers (expression: Expression, options: { fetch: boolean }, limit: Expression | undefined): string[] {
     const {
       fetch,
     } = options;

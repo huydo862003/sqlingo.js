@@ -51,16 +51,16 @@ import {
   GTabPanel,
   GIconName,
 } from '@hdnax/genuix';
-import MainLayout from '@/layout/main/MainLayout.vue';
+import {
+  useSeoMeta,
+} from '@unhead/vue';
 import SqlToDbml from './SqlToDbml.vue';
 import SqlTranspile from './SqlTranspile.vue';
+import MainLayout from '@/layout/main/MainLayout.vue';
 import {
   Tab,
   usePlaygroundStore,
 } from '@/stores/playground';
-import {
-  useSeoMeta,
-} from '@unhead/vue';
 
 useSeoMeta({
   title: 'Playground: SQL Transpiler & SQL to DBML | sqlingo.js',

@@ -19,9 +19,7 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   minify: true,
-  external: [
-    'luxon',
-  ],
+  external: ['luxon'],
   clean: true,
   splitting: true,
   outDir: 'dist',

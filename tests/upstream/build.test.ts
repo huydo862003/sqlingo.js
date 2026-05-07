@@ -172,28 +172,24 @@ describe('TestBuild', () => {
         'x IN (1, \'2\')',
       ],
       [
-        () => x.in([
-        ], 'select 1'),
+        () => x.in([], 'select 1'),
         'x IN (SELECT 1)',
       ],
       [
-        () => x.in([
-        ], undefined, {
+        () => x.in([], undefined, {
           unnest: 'x',
         }),
         'x IN (SELECT UNNEST(x))',
       ],
       [
-        () => x.in([
-        ], undefined, {
+        () => x.in([], undefined, {
           unnest: 'x',
         }),
         'x IN UNNEST(x)',
         'bigquery',
       ],
       [
-        () => x.in([
-        ], undefined, {
+        () => x.in([], undefined, {
           unnest: [
             'x',
             'y',
@@ -459,16 +455,12 @@ describe('TestBuild', () => {
         'SELECT DISTINCT ON (a, b) x FROM tbl',
       ],
       [
-        () => select('x').distinct([
-          true,
-        ])
+        () => select('x').distinct([true])
           .from('tbl'),
         'SELECT DISTINCT x FROM tbl',
       ],
       [
-        () => select('x').distinct([
-          false,
-        ])
+        () => select('x').distinct([false])
           .from('tbl'),
         'SELECT x FROM tbl',
       ],
@@ -1370,9 +1362,7 @@ describe('TestBuild', () => {
       ],
       [
         () => insert('VALUES (1), (2)', 'tbl', {
-          columns: [
-            'col a',
-          ],
+          columns: ['col a'],
         }),
         'INSERT INTO tbl ("col a") VALUES (1), (2)',
       ],

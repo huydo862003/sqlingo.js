@@ -527,7 +527,7 @@ function buildParseName (args: Expression[]): SplitPartExpr | Expression {
   return func('PARSENAME', ...args);
 }
 
-function buildJsonQuery (args: Expression[], options: {dialect: Dialect}): JsonExtractExpr {
+function buildJsonQuery (args: Expression[], options: { dialect: Dialect }): JsonExtractExpr {
   if (args.length === 1) {
     args.push(LiteralExpr.string('$'));
   }
@@ -820,7 +820,7 @@ export class TSQLParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       ATN2: (args: unknown[]) => Atan2Expr.fromArgList(args),
@@ -1031,7 +1031,7 @@ export class TSQLParser extends Parser {
     return this.parseWrapped(() => super.parseAlterTableSet());
   }
 
-  parseWrappedSelect (options: {table?: boolean} = {}): Expression | undefined {
+  parseWrappedSelect (options: { table?: boolean } = {}): Expression | undefined {
     if (this.match(TokenType.MERGE)) {
       const comments = this.prevComments;
       const merge = this.parseMerge();
@@ -1208,7 +1208,7 @@ export class TSQLParser extends Parser {
     return convert;
   }
 
-  parseColumnDef (thisNode?: Expression, options: {computedColumn?: boolean} = {}): Expression | undefined {
+  parseColumnDef (thisNode?: Expression, options: { computedColumn?: boolean } = {}): Expression | undefined {
     const {
       computedColumn = true,
     } = options;
@@ -1226,7 +1226,7 @@ export class TSQLParser extends Parser {
     return columnDef;
   }
 
-  parseUserDefinedFunction (options: {kind?: TokenType} = {}): Expression | undefined {
+  parseUserDefinedFunction (options: { kind?: TokenType } = {}): Expression | undefined {
     const {
       kind,
     } = options;
@@ -2252,7 +2252,7 @@ export class TSQLGenerator extends Generator {
     return `(PATINDEX(CONVERT(VARCHAR(MAX), 0x255b5e002d7f5d25) COLLATE Latin1_General_BIN, ${this.sql(expression.args.this)}) = 0)`;
   }
 
-  columnDefSql (expression: ColumnDefExpr, options: {sep?: string} = {}): string {
+  columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
     const thisSql = super.columnDefSql(expression, options);
     const defaultValue = expression.args.default ? ` = ${this.sql(expression, 'default')}` : '';
     const output = expression.args.output ? ` ${this.sql(expression, 'output')}` : '';

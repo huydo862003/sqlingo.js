@@ -119,7 +119,7 @@ class DatabricksParser extends Spark.Parser {
   static COLON_IS_VARIANT_EXTRACT = true;
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return {
       ...Spark.Parser.FUNCTIONS,
       GETDATE: (args: unknown[]) => CurrentTimestampExpr.fromArgList(args),
@@ -317,7 +317,7 @@ class DatabricksGenerator extends Spark.Generator {
     return transforms;
   }
 
-  columnDefSql (expression: ColumnDefExpr, options: {sep?: string} = {}): string {
+  columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
     const {
       sep = ' ',
     } = options;

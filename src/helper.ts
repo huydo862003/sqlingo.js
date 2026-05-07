@@ -156,7 +156,7 @@ export function ensureCollection<T> (value?: T | Iterable<T>): Iterable<T> {
  * ```
  *
  */
-export function csv (args: Iterable<string>, options: {sep?: string} = {}): string {
+export function csv (args: Iterable<string>, options: { sep?: string } = {}): string {
   const {
     sep = ', ',
   } = options;
@@ -171,8 +171,8 @@ function getCloseMatches (
   n: number,
   cutoff: number = 0.6,
 ): string[] {
-  const results: {match: string;
-    ratio: number;}[] = [];
+  const results: { match: string;
+    ratio: number; }[] = [];
 
   for (const possibility of possibilities) {
     const ratio = similarity(word, possibility);
@@ -486,7 +486,7 @@ export function splitNumWords (
   value: string,
   sep: string,
   minNumWords: number,
-  options: {fillFromStart?: boolean} = {},
+  options: { fillFromStart?: boolean } = {},
 ): (string | undefined)[] {
   const {
     fillFromStart = true,
@@ -745,7 +745,7 @@ export const DATE_UNITS = new Set([
  * isDateUnit(expr); // true
  * ```
  */
-export function isDateUnit (expression: {name: string} | undefined): boolean {
+export function isDateUnit (expression: { name: string } | undefined): boolean {
   return expression !== undefined && DATE_UNITS.has(expression.name.toLowerCase());
 }
 
@@ -856,7 +856,7 @@ export function applyIndexOffset (
   this_: Expression,
   expressions: Iterable<Expression>,
   offset: number,
-  options?: {dialect?: Dialect},
+  options?: { dialect?: Dialect },
 ): Expression[] {
   const exprs = [...expressions];
   if (!offset || exprs.length !== 1) {

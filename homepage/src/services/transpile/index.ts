@@ -5,9 +5,9 @@ import {
 
 export function transpile (
   sql: string,
-  opts: {read?: string;
+  opts: { read?: string;
     write?: string;
-    pretty?: boolean;},
+    pretty?: boolean; },
 ): string[] {
   const parsed = parse(sql, opts.read
     ? {

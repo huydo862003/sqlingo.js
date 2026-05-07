@@ -280,8 +280,7 @@ class TestLineage {
     expect(downstream.expression.sql()).toBe('a.b.t2 AS t2');
     expect(downstream.sourceName).toBe('');
 
-    expect(downstream.downstream).toEqual([
-    ]);
+    expect(downstream.downstream).toEqual([]);
   }
 
   testLineageUnion () {
@@ -448,9 +447,7 @@ class TestLineage {
     );
     expect(node4.name).toBe('a');
     expect(node4.downstream.length).toBe(2);
-    const sorted = [
-      ...node4.downstream,
-    ].sort((x, y) => x.name.localeCompare(y.name));
+    const sorted = [...node4.downstream].sort((x, y) => x.name.localeCompare(y.name));
     const [
       a,
       b,
@@ -458,8 +455,7 @@ class TestLineage {
     expect(a.name).toBe('bar.a');
     expect(a.downstream.length).toBe(1);
     expect(b.name).toBe('baz.b');
-    expect(b.downstream).toEqual([
-    ]);
+    expect(b.downstream).toEqual([]);
 
     const nodeA = a.downstream[0];
     expect(nodeA.name).toBe('foo.a');

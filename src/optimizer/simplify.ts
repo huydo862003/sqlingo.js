@@ -333,7 +333,7 @@ export function simplifyParens (expression: Expression, dialect: DialectType): E
  */
 export function propagateConstants (
   expression: Expression,
-  options: {root?: boolean} = {},
+  options: { root?: boolean } = {},
 ): Expression {
   const {
     root = true,
@@ -642,7 +642,7 @@ function _isComplement (a: unknown, b: unknown): boolean {
 }
 
 /** Check if expression is false */
-function isFalse (a: unknown): a is BooleanExpr & {$this: false} {
+function isFalse (a: unknown): a is BooleanExpr & { $this: false } {
   return a instanceof BooleanExpr && !a.args.this;
 }
 
@@ -1420,7 +1420,7 @@ export class Simplifier {
    *     (A OR B) AND (A OR NOT B) -> A
    */
   @catch_(UnsupportedUnit)
-  absorbAndEliminate (expression: Expression, options: {root?: boolean} = {}): Expression {
+  absorbAndEliminate (expression: Expression, options: { root?: boolean } = {}): Expression {
     const {
       root = true,
     } = options;
@@ -1803,7 +1803,7 @@ export class Simplifier {
    */
   @annotateTypesOnChange
   @catch_(UnsupportedUnit)
-  simplifyConnectors (expression: Expression, options: {root?: boolean} = {}): Expression {
+  simplifyConnectors (expression: Expression, options: { root?: boolean } = {}): Expression {
     const {
       root = true,
     } = options;
@@ -1897,7 +1897,7 @@ export class Simplifier {
     expression: Expression,
     left: Expression,
     right: Expression,
-    options: {or: boolean},
+    options: { or: boolean },
   ): Expression | undefined {
     const {
       or: or_ = false,
@@ -2071,7 +2071,7 @@ export class Simplifier {
   flatSimplify (
     expression: Expression,
     simplifyFunc: (expr: Expression, left: Expression, right: Expression) => Expression | undefined,
-    options: {root?: boolean},
+    options: { root?: boolean },
   ): Expression {
     const {
       root,
@@ -2123,7 +2123,7 @@ export class Simplifier {
    * A OR NOT A -> TRUE (only for non-NULL A)
    */
   @catch_(UnsupportedUnit)
-  removeComplements (expression: Expression, options: {root?: boolean} = {}): Expression {
+  removeComplements (expression: Expression, options: { root?: boolean } = {}): Expression {
     const {
       root = true,
     } = options;
@@ -2239,7 +2239,7 @@ export class Simplifier {
   }
 
   @annotateTypesOnChange
-  simplifyLiterals (expression: Expression, options: {root?: boolean} = {}): Expression {
+  simplifyLiterals (expression: Expression, options: { root?: boolean } = {}): Expression {
     const {
       root = true,
     } = options;
@@ -2720,7 +2720,7 @@ export class Simplifier {
    * C AND A AND B AND B -> A AND B AND C
    */
   @annotateTypesOnChange
-  uniqSort (expression: Expression, options: {root?: boolean} = {}): Expression {
+  uniqSort (expression: Expression, options: { root?: boolean } = {}): Expression {
     const {
       root = true,
     } = options;
@@ -2809,7 +2809,7 @@ export class Simplifier {
  * @param comments - whether to include the expression's comments
  * @returns SQL string
  */
-export function gen (expression: Expression, options: {comments?: boolean} = {}): string {
+export function gen (expression: Expression, options: { comments?: boolean } = {}): string {
   return new Gen().gen(expression, options);
 }
 
@@ -2817,7 +2817,7 @@ class Gen {
   private stack: unknown[] = [];
   private sqls: string[] = [];
 
-  gen (expression: Expression, options: {comments?: boolean} = {}): string {
+  gen (expression: Expression, options: { comments?: boolean } = {}): string {
     const {
       comments = false,
     } = options;

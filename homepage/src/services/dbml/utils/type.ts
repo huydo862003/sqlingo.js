@@ -67,8 +67,8 @@ function identName (e: Expression): string {
   return e.name || e.sql();
 }
 
-function qualifiedFromAst (e: Expression): {schema?: string;
-  name: string;} {
+function qualifiedFromAst (e: Expression): { schema?: string;
+  name: string; } {
   if (e instanceof DotExpr) {
     const parts: string[] = [];
     const walk = (n: Expression): void => {

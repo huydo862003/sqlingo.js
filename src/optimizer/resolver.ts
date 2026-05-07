@@ -71,7 +71,7 @@ export class Resolver {
   private allColumnsCache?: Set<string>;
   private getSourceColumnsCache: MapBinaryTuple<[string, boolean], string[]>;
 
-  constructor (scope: Scope, schema: Schema, options: {inferSchema?: boolean} = {}) {
+  constructor (scope: Scope, schema: Schema, options: { inferSchema?: boolean } = {}) {
     const {
       inferSchema = true,
     } = options;
@@ -232,7 +232,7 @@ export class Resolver {
    * @param onlyVisible - Whether to only return visible columns
    * @returns List of column names
    */
-  getSourceColumns (name: string, options: {onlyVisible?: boolean} = {}): string[] {
+  getSourceColumns (name: string, options: { onlyVisible?: boolean } = {}): string[] {
     const {
       onlyVisible = false,
     } = options;

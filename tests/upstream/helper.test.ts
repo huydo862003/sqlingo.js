@@ -12,15 +12,11 @@ describe('TestHelper', () => {
         'a',
         new Set(),
       ],
-    ]))).toEqual([
-      'a',
-    ]);
+    ]))).toEqual(['a']);
     expect(tsort(new Map([
       [
         'a',
-        new Set([
-          'b',
-        ]),
+        new Set(['b']),
       ],
     ]))).toEqual([
       'b',
@@ -29,9 +25,7 @@ describe('TestHelper', () => {
     expect(tsort(new Map([
       [
         'a',
-        new Set([
-          'c',
-        ]),
+        new Set(['c']),
       ],
       [
         'b',
@@ -56,9 +50,7 @@ describe('TestHelper', () => {
       ],
       [
         'b',
-        new Set([
-          'c',
-        ]),
+        new Set(['c']),
       ],
       [
         'c',
@@ -66,9 +58,7 @@ describe('TestHelper', () => {
       ],
       [
         'd',
-        new Set([
-          'a',
-        ]),
+        new Set(['a']),
       ],
     ]))).toEqual([
       'c',
@@ -87,9 +77,7 @@ describe('TestHelper', () => {
       ],
       [
         'b',
-        new Set([
-          'a',
-        ]),
+        new Set(['a']),
       ],
       [
         'c',
@@ -111,9 +99,7 @@ describe('TestHelper', () => {
   });
 
   it('test_merge_ranges', () => {
-    expect(mergeRanges([
-    ])).toEqual([
-    ]);
+    expect(mergeRanges([])).toEqual([]);
     expect(mergeRanges([
       [
         0,

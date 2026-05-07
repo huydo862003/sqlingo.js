@@ -407,7 +407,7 @@ export class AthenaGenerator extends Generator {
     });
   }
 
-  public generate (expression: Expression, options: {copy?: boolean} = {}): string {
+  public generate (expression: Expression, options: { copy?: boolean } = {}): string {
     const {
       copy = true,
     } = options;

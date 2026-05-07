@@ -622,7 +622,7 @@ export class SetOperation extends Step {
     op: typeof SetOperationExpr,
     left: string | undefined,
     right: string | undefined,
-    options: {distinct?: boolean} = {},
+    options: { distinct?: boolean } = {},
   ) {
     const {
       distinct = false,

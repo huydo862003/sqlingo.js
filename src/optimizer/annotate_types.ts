@@ -348,7 +348,7 @@ export class TypeAnnotator {
     this.scopeSelects.clear();
   }
 
-  annotate<E extends Expression> (expression: E, options: {annotateScope?: boolean} = {}): E {
+  annotate<E extends Expression> (expression: E, options: { annotateScope?: boolean } = {}): E {
     const {
       annotateScope = true,
     } = options;
@@ -847,8 +847,8 @@ export class TypeAnnotator {
   annotateByArgs (
     expression: Expression,
     args: (string | Expression | Expression[])[],
-    options: {promote?: boolean;
-      array?: boolean;} = {},
+    options: { promote?: boolean;
+      array?: boolean; } = {},
   ): void {
     const {
       promote = false, array = false,

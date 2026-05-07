@@ -461,7 +461,7 @@ export const SEQ_RESTRICTED = [
 function applyBase64AlphabetReplacements (
   result: Expression,
   alphabet: Expression | undefined,
-  options: {reverse?: boolean} = {},
+  options: { reverse?: boolean } = {},
 ): Expression {
   const {
     reverse = false,
@@ -501,7 +501,7 @@ function applyBase64AlphabetReplacements (
 /**
  * Transpile Snowflake BASE64_DECODE_STRING/BINARY to DuckDB.
  */
-function base64DecodeSql (this: Generator, expression: Base64EncodeExpr, options: {toString?: boolean}): string {
+function base64DecodeSql (this: Generator, expression: Base64EncodeExpr, options: { toString?: boolean }): string {
   const {
     toString = false,
   } = options;
@@ -774,7 +774,7 @@ function timeDiffSql (this: Generator, expression: TimeDiffExpr): string {
 }
 
 /** Handles NANOSECOND units and float interval rounding for DuckDB */
-function dateDeltaToBinaryIntervalOp (options: {cast?: boolean} = {}): (this: Generator, expression: DatetimeAddExpr | DatetimeSubExpr) => string {
+function dateDeltaToBinaryIntervalOp (options: { cast?: boolean } = {}): (this: Generator, expression: DatetimeAddExpr | DatetimeSubExpr) => string {
   const {
     cast = true,
   } = options;
@@ -1079,7 +1079,7 @@ function buildDateDiff (args: Expression[]): DateDiffExpr {
   });
 }
 
-function buildGenerateSeries (options: {endExclusive?: boolean} = {}): (args: Expression[]) => GenerateSeriesExpr {
+function buildGenerateSeries (options: { endExclusive?: boolean } = {}): (args: Expression[]) => GenerateSeriesExpr {
   const {
     endExclusive = false,
   } = options;
@@ -2107,7 +2107,7 @@ function shaSql (
   this: Generator,
   expression: ShaExpr,
   hashFunc: string,
-  options: {isBinary?: boolean} = {},
+  options: { isBinary?: boolean } = {},
 ): string {
   const {
     isBinary: _isBinary = false,
@@ -2294,9 +2294,9 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return (() => {
-      const functions: Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> = {
+      const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
         ...Parser.FUNCTIONS,
         ANY_VALUE: (args: Expression[]) => new IgnoreNullsExpr({
           this: AnyValueExpr.fromArgList(args),
@@ -2523,7 +2523,7 @@ class DuckDBParser extends Parser {
     };
   }
 
-  parseLambda (options: {alias?: boolean} = {}): Expression | undefined {
+  parseLambda (options: { alias?: boolean } = {}): Expression | undefined {
     const index = this.index;
     if (!this.matchTextSeq('LAMBDA')) {
       return super.parseLambda(options);
@@ -2610,7 +2610,7 @@ class DuckDBParser extends Parser {
     return table;
   }
 
-  parseTableSample (options: {asModifier?: boolean} = {}): TableSampleExpr | undefined {
+  parseTableSample (options: { asModifier?: boolean } = {}): TableSampleExpr | undefined {
     const sample = super.parseTableSample(options);
     if (sample && !sample.args.method) {
       if (sample.args.size) {
@@ -2658,7 +2658,7 @@ class DuckDBParser extends Parser {
     });
   }
 
-  parseStructTypes (_options: {typeRequired?: boolean} = {}): Expression | undefined {
+  parseStructTypes (_options: { typeRequired?: boolean } = {}): Expression | undefined {
     return this.parseFieldDef();
   }
 
@@ -2671,7 +2671,7 @@ class DuckDBParser extends Parser {
     });
   }
 
-  parseAttachDetach (options: {isAttach?: boolean} = {}): AttachExpr | DetachExpr {
+  parseAttachDetach (options: { isAttach?: boolean } = {}): AttachExpr | DetachExpr {
     const {
       isAttach = true,
     } = options;
@@ -2727,7 +2727,7 @@ class DuckDBParser extends Parser {
     });
   }
 
-  parseInstall (options: {force?: boolean} = {}): InstallExpr {
+  parseInstall (options: { force?: boolean } = {}): InstallExpr {
     return this.expression(InstallExpr, {
       this: this.parseIdVar(),
       from: this.match(TokenType.FROM) ? this.parseVarOrString() : undefined,
@@ -4336,8 +4336,8 @@ class DuckDBGenerator extends Generator {
     return this.greatestLeastSql(expression);
   }
 
-  lambdaSql (expression: LambdaExpr, options: {arrowSep?: string;
-    wrap?: boolean;} = {}): string {
+  lambdaSql (expression: LambdaExpr, options: { arrowSep?: string;
+    wrap?: boolean; } = {}): string {
     let arrowSep = options.arrowSep ?? '->';
     let wrap = options.wrap ?? true;
     let prefix = '';
@@ -4847,7 +4847,7 @@ class DuckDBGenerator extends Generator {
     return timestamp;
   }
 
-  tableSampleSql (expression: TableSampleExpr, options: {tablesampleKeyword?: string} = {}): string {
+  tableSampleSql (expression: TableSampleExpr, options: { tablesampleKeyword?: string } = {}): string {
     let keyword = options.tablesampleKeyword;
     if (!(expression.parent instanceof SelectExpr)) {
       keyword = 'TABLESAMPLE';
@@ -4870,7 +4870,7 @@ class DuckDBGenerator extends Generator {
     });
   }
 
-  columnDefSql (expression: ColumnDefExpr, options: {sep?: string} = {}): string {
+  columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
     if (expression.parent instanceof UserDefinedFunctionExpr) {
       return this.sql(expression, 'this');
     }

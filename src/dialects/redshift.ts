@@ -161,11 +161,11 @@ class RedshiftParser extends Postgres.Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
     return (() => {
-      const functions: Record<string, (args: Expression[], options: {dialect: Dialect}) => Expression> = {
+      const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
         ...Postgres.Parser.FUNCTIONS,
-        ADD_MONTHS: (args: Expression[], _options: {dialect: Dialect}) =>
+        ADD_MONTHS: (args: Expression[], _options: { dialect: Dialect }) =>
           new TsOrDsAddExpr({
             this: seqGet(args, 0),
             expression: seqGet(args, 1),
@@ -745,7 +745,7 @@ class RedshiftGenerator extends Postgres.Generator {
     return alias ? `${arg} AS ${alias}` : arg;
   }
 
-  castSql (expression: CastExpr, options: {safePrefix?: string} = {}): string {
+  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
     const {
       safePrefix,
     } = options;

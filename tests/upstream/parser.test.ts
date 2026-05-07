@@ -115,9 +115,7 @@ class TestParser {
     try {
       parseOne('SELECT 1;', {
         read: 'sqlite',
-        into: [
-          FromExpr,
-        ],
+        into: [FromExpr],
       });
       expect.unreachable();
     } catch (err) {
@@ -147,9 +145,7 @@ class TestParser {
   }
 
   testColumn () {
-    const columns = [
-      ...parseOne('select a, ARRAY[1] b, case when 1 then 1 end').findAll(ColumnExpr),
-    ];
+    const columns = [...parseOne('select a, ARRAY[1] b, case when 1 then 1 end').findAll(ColumnExpr)];
     expect(columns.length).toBe(1);
     expect(parseOne('date').find(ColumnExpr)).not.toBeNull();
   }
@@ -187,8 +183,7 @@ class TestParser {
 
   testUnnestProjection () {
     const expr = parseOne('SELECT foo IN UNNEST(bla) AS bar') as SelectExpr;
-    const selects = expr.args.expressions ?? [
-    ];
+    const selects = expr.args.expressions ?? [];
     expect(selects[0]).toBeInstanceOf(AliasExpr);
     expect((selects[0] as AliasExpr).outputName).toBe('bar');
     expect(parseOne('select unnest(x)').find(UnnestExpr)).not.toBeNull();
@@ -199,9 +194,7 @@ class TestParser {
   }
 
   testTable () {
-    const tables = [
-      ...parseOne('select * from a, b.c, .d').findAll(TableExpr),
-    ].map((t) => t.sql());
+    const tables = [...parseOne('select * from a, b.c, .d').findAll(TableExpr)].map((t) => t.sql());
     expect(new Set(tables)).toEqual(new Set([
       'a',
       'b.c',
@@ -273,22 +266,19 @@ class TestParser {
   testTransactions () {
     const expr1 = parseOne('BEGIN TRANSACTION') as TransactionExpr;
     expect(expr1.getArgKey('this')).toBeUndefined();
-    expect(expr1.getArgKey('modes')).toEqual([
-    ]);
+    expect(expr1.getArgKey('modes')).toEqual([]);
     expect(expr1.sql()).toBe('BEGIN');
 
     const expr2 = parseOne('START TRANSACTION', {
       read: 'mysql',
     }) as TransactionExpr;
     expect(expr2.getArgKey('this')).toBeUndefined();
-    expect(expr2.getArgKey('modes')).toEqual([
-    ]);
+    expect(expr2.getArgKey('modes')).toEqual([]);
     expect(expr2.sql()).toBe('BEGIN');
 
     const expr3 = parseOne('BEGIN DEFERRED TRANSACTION') as TransactionExpr;
     expect(expr3.getArgKey('this')).toBe('DEFERRED');
-    expect(expr3.getArgKey('modes')).toEqual([
-    ]);
+    expect(expr3.getArgKey('modes')).toEqual([]);
     expect(expr3.sql()).toBe('BEGIN');
 
     const expr4 = parseOne('START TRANSACTION READ WRITE, ISOLATION LEVEL SERIALIZABLE', {
@@ -314,8 +304,7 @@ class TestParser {
       FROM y."z"
     `) as SelectExpr;
 
-    const exprs = expression.args.expressions ?? [
-    ];
+    const exprs = expression.args.expressions ?? [];
     expect(exprs[0].name).toBe('a');
     expect(exprs[1].name).toBe('b');
     expect((exprs[2] as AliasExpr).alias).toBe('c');
@@ -348,8 +337,7 @@ class TestParser {
       errorLevel: ErrorLevel.IGNORE,
     });
     expect(ignore.expression(HintExpr, {
-      expressions: [
-      ],
+      expressions: [],
     })).toBeInstanceOf(HintExpr);
     expect(ignore.expression(HintExpr, {
       y: '',
@@ -361,8 +349,7 @@ class TestParser {
       errorLevel: ErrorLevel.RAISE,
     });
     expect(immediate.expression(HintExpr, {
-      expressions: [
-      ],
+      expressions: [],
     })).toBeInstanceOf(HintExpr);
 
     const warn = new TestableParser({
@@ -441,24 +428,13 @@ class TestParser {
       'comment1.2',
       'comment1.3',
     ]);
-    const exprs = expression.args.expressions ?? [
-    ];
-    expect(exprs[0].comments).toEqual([
-      'comment2',
-    ]);
-    expect(exprs[1].comments).toEqual([
-      'comment3:testing',
-    ]);
+    const exprs = expression.args.expressions ?? [];
+    expect(exprs[0].comments).toEqual(['comment2']);
+    expect(exprs[1].comments).toEqual(['comment3:testing']);
     expect(exprs[2].comments).toBeUndefined();
-    expect(exprs[3].comments).toEqual([
-      'comment4 --foo',
-    ]);
-    expect(exprs[4].comments).toEqual([
-      '',
-    ]);
-    expect(exprs[5].comments).toEqual([
-      ' space',
-    ]);
+    expect(exprs[3].comments).toEqual(['comment4 --foo']);
+    expect(exprs[4].comments).toEqual(['']);
+    expect(exprs[5].comments).toEqual([' space']);
 
     const expression2 = parseOne(`
       SELECT a.column_name --# Comment 1
@@ -468,17 +444,10 @@ class TestParser {
       JOIN table_name2 b ON a.column_name = b.column_name
     `) as SelectExpr;
 
-    const exprs2 = expression2.args.expressions ?? [
-    ];
-    expect(exprs2[0].comments).toEqual([
-      '# Comment 1',
-    ]);
-    expect(exprs2[1].comments).toEqual([
-      '# Comment 2',
-    ]);
-    expect(exprs2[2].comments).toEqual([
-      '# Comment 3',
-    ]);
+    const exprs2 = expression2.args.expressions ?? [];
+    expect(exprs2[0].comments).toEqual(['# Comment 1']);
+    expect(exprs2[1].comments).toEqual(['# Comment 2']);
+    expect(exprs2[2].comments).toEqual(['# Comment 3']);
   }
 
   testCommentsSelectCte () {
@@ -492,12 +461,8 @@ class TestParser {
           a
     `) as SelectExpr;
 
-    expect(expression.comments).toEqual([
-      'comment2',
-    ]);
-    expect((expression.args.from as FromExpr).comments).toEqual([
-      'comment3',
-    ]);
+    expect(expression.comments).toEqual(['comment2']);
+    expect((expression.args.from as FromExpr).comments).toEqual(['comment3']);
     expect((expression.args.with as Expression).comments).toEqual([
       'comment1.1',
       'comment1.2',
@@ -519,9 +484,7 @@ class TestParser {
       'comment1.2',
       'comment1.3',
     ]);
-    expect((expression.getArgKey('this') as Expression).comments).toEqual([
-      'comment2',
-    ]);
+    expect((expression.getArgKey('this') as Expression).comments).toEqual(['comment2']);
   }
 
   testCommentsInsertCte () {
@@ -534,12 +497,8 @@ class TestParser {
       SELECT * FROM a
     `);
 
-    expect(expression.comments).toEqual([
-      'comment2',
-    ]);
-    expect((expression.getArgKey('this') as Expression).comments).toEqual([
-      'comment3',
-    ]);
+    expect(expression.comments).toEqual(['comment2']);
+    expect((expression.getArgKey('this') as Expression).comments).toEqual(['comment3']);
     expect((expression.getArgKey('with') as Expression).comments).toEqual([
       'comment1.1',
       'comment1.2',
@@ -563,12 +522,8 @@ class TestParser {
       'comment1.2',
       'comment1.3',
     ]);
-    expect((expression.getArgKey('this') as Expression).comments).toEqual([
-      'comment2',
-    ]);
-    expect((expression.getArgKey('where') as Expression).comments).toEqual([
-      'comment4',
-    ]);
+    expect((expression.getArgKey('this') as Expression).comments).toEqual(['comment2']);
+    expect((expression.getArgKey('where') as Expression).comments).toEqual(['comment4']);
   }
 
   testCommentsUpdateCte () {
@@ -581,12 +536,8 @@ class TestParser {
       SET col = 1
     `);
 
-    expect(expression.comments).toEqual([
-      'comment2',
-    ]);
-    expect((expression.getArgKey('this') as Expression).comments).toEqual([
-      'comment3',
-    ]);
+    expect(expression.comments).toEqual(['comment2']);
+    expect((expression.getArgKey('this') as Expression).comments).toEqual(['comment3']);
     expect((expression.getArgKey('with') as Expression).comments).toEqual([
       'comment1.1',
       'comment1.2',
@@ -609,12 +560,8 @@ class TestParser {
       'comment1.2',
       'comment1.3',
     ]);
-    expect((expression.getArgKey('this') as Expression).comments).toEqual([
-      'comment3',
-    ]);
-    expect((expression.getArgKey('where') as Expression).comments).toEqual([
-      'comment4',
-    ]);
+    expect((expression.getArgKey('this') as Expression).comments).toEqual(['comment3']);
+    expect((expression.getArgKey('where') as Expression).comments).toEqual(['comment4']);
   }
 
   testCommentsDeleteCte () {
@@ -626,12 +573,8 @@ class TestParser {
       DELETE FROM a /*comment3*/
     `);
 
-    expect(expression.comments).toEqual([
-      'comment2',
-    ]);
-    expect((expression.getArgKey('this') as Expression).comments).toEqual([
-      'comment3',
-    ]);
+    expect(expression.comments).toEqual(['comment2']);
+    expect((expression.getArgKey('this') as Expression).comments).toEqual(['comment3']);
     expect((expression.getArgKey('with') as Expression).comments).toEqual([
       'comment1.1',
       'comment1.2',
@@ -688,8 +631,7 @@ class TestParser {
     expect(setSession.sql()).toBe('SET SESSION x = 1');
     expect(setSession).toBeInstanceOf(SetExpr);
 
-    const setExprs = setSession.args.expressions ?? [
-    ];
+    const setExprs = setSession.args.expressions ?? [];
     const setItem = setExprs[0] as SetItemExpr;
     expect(setItem).toBeInstanceOf(SetItemExpr);
     expect(setItem.getArgKey('this')).toBeInstanceOf(EqExpr);
@@ -1224,12 +1166,8 @@ class TestParser {
 
   testDropColumn () {
     const ast = parseOne('ALTER TABLE tbl DROP COLUMN col');
-    expect([
-      ...ast.findAll(TableExpr),
-    ].length).toBe(1);
-    expect([
-      ...ast.findAll(ColumnExpr),
-    ].length).toBe(1);
+    expect([...ast.findAll(TableExpr)].length).toBe(1);
+    expect([...ast.findAll(ColumnExpr)].length).toBe(1);
   }
 
   testUdfMeta () {
@@ -1357,12 +1295,8 @@ class TestParser {
   testQualifiedFunction () {
     const sql = 'a.b.c.d.e.f.g.foo()';
     const ast = parseOne(sql);
-    expect([
-      ...ast.walk(),
-    ].some((node) => node instanceof ColumnExpr)).toBe(false);
-    expect([
-      ...ast.findAll(DotExpr),
-    ].length).toBe(7);
+    expect([...ast.walk()].some((node) => node instanceof ColumnExpr)).toBe(false);
+    expect([...ast.findAll(DotExpr)].length).toBe(7);
   }
 
   testPivotMissingAggFunc () {
