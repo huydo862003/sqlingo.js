@@ -61,8 +61,8 @@ importers:
         specifier: ^7.1.2
         version: 7.1.2
       '@hdnax/genuix':
-        specifier: ^0.13.0
-        version: 0.13.0(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@9.39.4(jiti@2.6.1))(highlight.js@11.11.1)(vue@3.5.34(typescript@6.0.3))
+        specifier: ^0.13.1
+        version: 0.13.1(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@9.39.4(jiti@2.6.1))(highlight.js@11.11.1)(vue@3.5.34(typescript@6.0.3))
       '@hdnax/sqlingo.js':
         specifier: workspace:*
         version: link:..
@@ -587,8 +587,8 @@ packages:
   '@gerrit0/mini-shiki@3.23.0':
     resolution: {integrity: sha512-bEMORlG0cqdjVyCEuU0cDQbORWX+kYCeo0kV1lbxF5bt4r7SID2l9bqsxJEM0zndaxpOUT7riCyIVEuqq/Ynxg==}
 
-  '@hdnax/genuix@0.13.0':
-    resolution: {integrity: sha512-mHywbddEzVaV3Z1ZMeLNHDUmNwwa7YzD45xW4CpjDKM+qDKUYQzn7SyPhwhHnni+BiYA+60yDbce/Aa5xRIuBA==}
+  '@hdnax/genuix@0.13.1':
+    resolution: {integrity: sha512-Ga+dLeU/7Sa2yAburcg43UJ6c2V4mFxszQI6U4ixABYzVkLGAywaQ+eMi64IoUTJ5eLc7M9MYqN3OxMmEX9C2w==}
     peerDependencies:
       '@phosphor-icons/vue': ^2.2.1
       highlight.js: ^11.0.0
@@ -3880,7 +3880,7 @@ snapshots:
       '@shikijs/types': 3.23.0
       '@shikijs/vscode-textmate': 10.0.2
 
-  '@hdnax/genuix@0.13.0(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@9.39.4(jiti@2.6.1))(highlight.js@11.11.1)(vue@3.5.34(typescript@6.0.3))':
+  '@hdnax/genuix@0.13.1(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@9.39.4(jiti@2.6.1))(highlight.js@11.11.1)(vue@3.5.34(typescript@6.0.3))':
     dependencies:
       '@hdnax/stdx': 0.3.3(eslint@9.39.4(jiti@2.6.1))
       '@phosphor-icons/vue': 2.2.1(vue@3.5.34(typescript@6.0.3))
