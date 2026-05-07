@@ -1,10 +1,10 @@
 <template>
-  <div class="sql-transpile">
-    <div class="panels">
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-header-left">
-            <span class="panel-label">Input SQL</span>
+  <div class="w-full">
+    <div class="flex flex-col gap-sm">
+      <div class="flex flex-col rounded-md border gui-neutral-border overflow-hidden">
+        <div class="flex items-center justify-between p-sm border-b gui-neutral-border gui-neutral-bg-subtle">
+          <div class="flex items-center gap-sm">
+            <span class="text-sm font-medium uppercase tracking-wide gui-neutral-fg-muted">Input SQL</span>
             <GSelect
               v-model="fromDialect"
               :size="GSelectSize.Xs"
@@ -24,10 +24,10 @@
         <MonacoEditor v-model="sqlInput" />
       </div>
 
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-header-left">
-            <span class="panel-label">Output SQL</span>
+      <div class="flex flex-col rounded-md border gui-neutral-border overflow-hidden">
+        <div class="flex items-center justify-between p-sm border-b gui-neutral-border gui-neutral-bg-subtle">
+          <div class="flex items-center gap-sm">
+            <span class="text-sm font-medium uppercase tracking-wide gui-neutral-fg-muted">Output SQL</span>
             <GSelect
               v-model="toDialect"
               :size="GSelectSize.Xs"
@@ -57,7 +57,7 @@
             {{ copied ? 'Copied!' : 'Copy' }}
           </GButton>
         </div>
-        <div :class="{ 'output-error': error }">
+        <div :class="error ? 'outline-1 outline-(--gui-danger-border) rounded-md' : ''">
           <MonacoEditor
             :model-value="sqlOutput || error"
             :read-only="true"
@@ -152,17 +152,3 @@ watch([
 ], convert);
 onMounted(convert);
 </script>
-
-<style scoped>
-@reference '@/style.css';
-@import './playground.css';
-
-.sql-transpile {
-  width: 100%;
-}
-
-.output-error :deep(.monaco-wrap) {
-  outline: 1px solid var(--gui-danger-border);
-  border-radius: var(--radius-md);
-}
-</style>

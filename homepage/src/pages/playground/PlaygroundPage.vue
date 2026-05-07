@@ -1,8 +1,8 @@
 <template>
   <MainLayout :breadcrumb="navBreadcrumb">
-    <main class="main">
+    <main class="p-lg">
       <div>
-        <h1 class="title">
+        <h1 class="text-xl font-bold gui-neutral-fg mb-sm">
           sqlingo.js Playground
         </h1>
         <GTab
@@ -15,7 +15,7 @@
             :icon="GIconName.ArrowsLeftRight"
             class="p-3"
           >
-            <p class="section-sub">
+            <p class="text-sm gui-neutral-fg-muted mb-sm leading-3">
               Transpile between SQL dialects.
             </p>
             <SqlTranspile />
@@ -26,11 +26,12 @@
             :icon="GIconName.Database"
             class="p-3"
           >
-            <p class="section-sub">
+            <p class="text-sm gui-neutral-fg-muted mb-sm leading-3">
               Paste CREATE TABLE SQL and get a <a
                 href="https://dbml.dbdiagram.io/docs/"
                 target="_blank"
                 rel="noopener"
+                class="gui-info-fg no-underline hover:underline"
               >DBML</a> schema back.
             </p>
             <SqlToDbml />
@@ -91,34 +92,3 @@ function onTabSelect (name: string) {
   store.persist();
 }
 </script>
-
-<style scoped>
-@reference '@/style.css';
-
-.main {
-  padding: var(--spacing-lg);
-}
-
-.title {
-  font-size: var(--text-xl);
-  font-weight: 700;
-  color: var(--gui-neutral-fg);
-  margin-bottom: var(--spacing-sm);
-}
-
-.section-sub {
-  font-size: var(--text-sm);
-  color: var(--gui-neutral-fg-muted);
-  margin-bottom: var(--spacing-sm);
-  line-height: var(--leading-3);
-}
-
-.section-sub a {
-  color: var(--gui-info-fg);
-  text-decoration: none;
-}
-
-.section-sub a:hover {
-  text-decoration: underline;
-}
-</style>
