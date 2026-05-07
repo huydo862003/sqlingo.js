@@ -1,8 +1,8 @@
 <template>
   <div class="w-full">
     <div class="flex flex-col gap-sm">
-      <div class="flex flex-col rounded-md border border-[var(--gui-neutral-border)] overflow-hidden">
-        <div class="flex items-center justify-between p-sm border-b border-[var(--gui-neutral-border)] gui-neutral-bg-subtle">
+      <div class="flex flex-col rounded-md border gui-neutral-border overflow-hidden">
+        <div class="flex items-center justify-between p-sm border-b gui-neutral-border gui-neutral-bg-subtle">
           <div class="flex items-center gap-sm">
             <span class="text-sm font-medium uppercase tracking-wide gui-neutral-fg-muted">SQL</span>
             <GSelect
@@ -11,6 +11,7 @@
               :variant="GSelectVariant.Box"
               class="w-40"
               placeholder="auto"
+              close-on-select
             >
               <GSelectOption
                 value=""

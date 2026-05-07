@@ -11,6 +11,7 @@
               :variant="GSelectVariant.Box"
               class="w-40"
               placeholder="Dialect"
+              close-on-select
             >
               <GSelectOption
                 v-for="d in DIALECTS"
@@ -34,6 +35,7 @@
               :variant="GSelectVariant.Box"
               class="w-40"
               placeholder="Dialect"
+              close-on-select
             >
               <GSelectOption
                 v-for="d in DIALECTS"
