@@ -33,18 +33,21 @@
         to="/"
         :icon="GIconName.Home"
         label="Home"
+        class="text-sm"
       />
       <GNavLink
         :as="RouterLink"
         to="/api-reference/"
         :icon="GIconName.BookOpen"
         label="API reference"
+        class="text-sm"
       />
       <GNavLink
         :as="RouterLink"
         to="/playground/"
         :icon="GIconName.PlayCircle"
         label="Playground"
+        class="text-sm"
       />
       <GNavLink
         href="https://github.com/huydo862003/sqlingo.js"
@@ -52,6 +55,7 @@
         label="GitHub"
         target="_blank"
         rel="noopener"
+        class="text-sm"
       />
     </template>
   </GNavbar>

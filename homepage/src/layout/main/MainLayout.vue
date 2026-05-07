@@ -1,5 +1,5 @@
 <template>
-  <div class="page-layout">
+  <div class="flex flex-col min-h-screen overflow-hidden">
     <NavBar :breadcrumb="breadcrumb" />
     <slot />
   </div>
@@ -19,12 +19,3 @@ const {
   breadcrumb?: Crumb[];
 }>();
 </script>
-
-<style scoped>
-.page-layout {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  overflow: hidden;
-}
-</style>
