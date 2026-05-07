@@ -616,7 +616,9 @@ export class TeradataGenerator extends Generator {
     return super.createableSql(expression, locations);
   }
 
-  public castSql (expression: Expression, options: { safePrefix?: string } = {}): string {
+  public castSql (expression: Expression, options: {
+    safePrefix?: string;
+  } = {}): string {
     const {
       safePrefix,
     } = options;
@@ -635,7 +637,9 @@ export class TeradataGenerator extends Generator {
     });
   }
 
-  public tableSampleSql (expression: TableSampleExpr, _options: { tablesampleKeyword?: string } = {}): string {
+  public tableSampleSql (expression: TableSampleExpr, _options: {
+    tablesampleKeyword?: string;
+  } = {}): string {
     return `${this.sql(expression, 'this')} SAMPLE ${this.expressions(expression)}`;
   }
 

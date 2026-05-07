@@ -5,28 +5,28 @@ import {
   TableExpr,
 } from '@hdnax/sqlingo.js';
 
-export function nodeText (e: Expression | string | undefined): string {
-  if (e === undefined) return '';
-  if (typeof e === 'string') return e;
-  return e.name || e.sql();
+export function nodeText (node: Expression | string | undefined): string {
+  if (node === undefined) return '';
+  if (typeof node === 'string') return node;
+  return node.name || node.sql();
 }
 
-export function identName (e: Expression): string {
-  if (e instanceof IdentifierExpr) {
-    const inner = e.args.this;
-    return typeof inner === 'string' ? inner : inner instanceof Expression ? identName(inner) : e.name;
+export function identName (expr: Expression): string {
+  if (expr instanceof IdentifierExpr) {
+    const inner = expr.args.this;
+    return typeof inner === 'string' ? inner : inner instanceof Expression ? identName(inner) : expr.name;
   }
-  return e.name || e.sql();
+  return expr.name || expr.sql();
 }
 
-export function dotParts (e: Expression): string[] {
-  if (e instanceof DotExpr) {
+export function dotParts (expr: Expression): string[] {
+  if (expr instanceof DotExpr) {
     const parts: string[] = [];
-    if (e.args.this instanceof Expression) parts.push(...dotParts(e.args.this));
-    if (e.args.expression instanceof Expression) parts.push(...dotParts(e.args.expression));
+    if (expr.args.this instanceof Expression) parts.push(...dotParts(expr.args.this));
+    if (expr.args.expression instanceof Expression) parts.push(...dotParts(expr.args.expression));
     return parts;
   }
-  return [identName(e)];
+  return [identName(expr)];
 }
 
 export interface QualifiedName {
@@ -34,16 +34,16 @@ export interface QualifiedName {
   name: string;
 }
 
-export function tableParts (e: Expression | undefined): QualifiedName {
-  if (!e) return {
+export function tableParts (expr: Expression | undefined): QualifiedName {
+  if (!expr) return {
     name: '',
   };
-  if (e instanceof TableExpr) {
-    const thisArg = e.args.this;
-    const name = thisArg instanceof Expression ? identName(thisArg) : typeof thisArg === 'string' ? thisArg : '';
-    const db = e.args.db instanceof Expression ? identName(e.args.db) : undefined;
-    const catalog = e.args.catalog instanceof Expression ? identName(e.args.catalog) : undefined;
-    const schema = catalog && db ? `${catalog}.${db}` : db || catalog;
+  if (expr instanceof TableExpr) {
+    const thisArgument = expr.args.this;
+    const name = thisArgument instanceof Expression ? identName(thisArgument) : typeof thisArgument === 'string' ? thisArgument : '';
+    const database = expr.args.db instanceof Expression ? identName(expr.args.db) : undefined;
+    const catalog = expr.args.catalog instanceof Expression ? identName(expr.args.catalog) : undefined;
+    const schema = catalog && database ? `${catalog}.${database}` : database || catalog;
     return {
       ...(schema
         ? {
@@ -53,8 +53,8 @@ export function tableParts (e: Expression | undefined): QualifiedName {
       name,
     };
   }
-  if (e instanceof DotExpr) {
-    const parts = dotParts(e);
+  if (expr instanceof DotExpr) {
+    const parts = dotParts(expr);
     return {
       ...(1 < parts.length
         ? {
@@ -65,6 +65,6 @@ export function tableParts (e: Expression | undefined): QualifiedName {
     };
   }
   return {
-    name: identName(e),
+    name: identName(expr),
   };
 }

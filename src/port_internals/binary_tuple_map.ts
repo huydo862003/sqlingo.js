@@ -1,5 +1,5 @@
 /**
- * A two-level Map keyed by a binary tuple [FirstT, SecondT].
+ * A two-level Map keyed by a binary tuple [FirstT, SecondT]
  */
 export class MapBinaryTuple<KeyT extends [unknown, unknown], ValueT> {
   private readonly _map = new Map<KeyT[0], Map<KeyT[1], ValueT>>();

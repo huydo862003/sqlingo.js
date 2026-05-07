@@ -17,19 +17,19 @@ describe('columns', () => {
         active BOOLEAN DEFAULT TRUE
       );
     `, 'postgres');
-    const t = schema.tables[0];
-    expect(t.columns[0]).toMatchObject({
+    const table = schema.tables[0];
+    expect(table.columns[0]).toMatchObject({
       name: 'id',
       pk: true,
       notNull: true,
     });
-    expect(t.columns[1]).toMatchObject({
+    expect(table.columns[1]).toMatchObject({
       name: 'email',
       notNull: true,
       unique: true,
     });
-    expect(t.columns[1].type.args).toEqual(['255']);
-    expect(t.columns[3].default).toBeDefined();
+    expect(table.columns[1].type.args).toEqual(['255']);
+    expect(table.columns[3].default).toBeDefined();
   });
 
   it('maps INT[] to array=true', () => {
@@ -44,10 +44,10 @@ describe('columns', () => {
       schema,
     } = sqlToDbml('CREATE TABLE pair (a INT, b INT, PRIMARY KEY (a, b));', 'postgres');
     const table = schema.tables[0];
-    expect(table.columns.every((c) => !c.pk)).toBe(true);
-    const idx = table.indexes?.[0];
-    expect(idx?.pk).toBe(true);
-    expect(idx?.columns.map((c) => c.expression)).toEqual([
+    expect(table.columns.every((col) => !col.pk)).toBe(true);
+    const index = table.indexes?.[0];
+    expect(index?.pk).toBe(true);
+    expect(index?.columns.map((col) => col.expression)).toEqual([
       'a',
       'b',
     ]);

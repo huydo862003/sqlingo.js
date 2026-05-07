@@ -95,7 +95,7 @@ export function canonicalize (
 }
 
 /**
- * Convert Add expressions with text type to Concat.
+ * Convert Add expressions with text type to Concat
  */
 export function addTextToConcat (node: Expression): Expression {
   if (node instanceof AddExpr && node.type instanceof Expression && node.type.args.this && DataTypeExpr.TEXT_TYPES.has(node.type.args.this as DataTypeExprKind)) {
@@ -112,7 +112,7 @@ export function addTextToConcat (node: Expression): Expression {
         right as Expression,
       ],
       // All known dialects, i.e. Redshift and T-SQL, that support
-      // concatenating strings with the + operator do not coalesce NULLs.
+      // concatenating strings with the + operator do not coalesce NULLs
       coalesce: false,
     });
   }
@@ -120,7 +120,7 @@ export function addTextToConcat (node: Expression): Expression {
 }
 
 /**
- * Replace date/timestamp functions with CAST when possible.
+ * Replace date/timestamp functions with CAST when possible
  */
 export function replaceDateFuncs (node: Expression, dialect: Dialect): Expression {
   // DATE() or TsOrDsToDate() with no expressions, no zone, and string argument
@@ -181,7 +181,7 @@ export function replaceDateFuncs (node: Expression, dialect: Dialect): Expressio
 }
 
 /**
- * Coercible date operation types.
+ * Coercible date operation types
  */
 const COERCIBLE_DATE_OPS = [
   AddExpr,
@@ -197,9 +197,11 @@ const COERCIBLE_DATE_OPS = [
 ];
 
 /**
- * Coerce types for date operations.
+ * Coerce types for date operations
  */
-export function coerceType (node: Expression, options: { promoteToInferredDatetimeType?: boolean } = {}): Expression {
+export function coerceType (node: Expression, options: {
+  promoteToInferredDatetimeType?: boolean;
+} = {}): Expression {
   const {
     promoteToInferredDatetimeType = false,
   } = options;
@@ -249,7 +251,7 @@ export function coerceType (node: Expression, options: { promoteToInferredDateti
 }
 
 /**
- * Remove redundant casts.
+ * Remove redundant casts
  */
 export function removeRedundantCasts (expression: Expression): Expression {
   if (expression instanceof CastExpr) {
@@ -288,7 +290,7 @@ export function removeRedundantCasts (expression: Expression): Expression {
 }
 
 /**
- * Ensure boolean predicates in connector/filter contexts.
+ * Ensure boolean predicates in connector/filter contexts
  */
 export function ensureBools (
   expression: Expression,
@@ -321,7 +323,7 @@ export function ensureBools (
 }
 
 /**
- * Remove explicit ASC ordering (it's the default).
+ * Remove explicit ASC ordering (it's the default)
  */
 export function removeAscendingOrder (expression: Expression): Expression {
   if (expression instanceof OrderedExpr) {
@@ -338,12 +340,14 @@ export function removeAscendingOrder (expression: Expression): Expression {
 }
 
 /**
- * Coerce date types between two expressions.
+ * Coerce date types between two expressions
  */
 function coerceDate (
   a: Expression,
   b: Expression,
-  options: { promoteToInferredDatetimeType: boolean },
+  options: {
+    promoteToInferredDatetimeType: boolean;
+  },
 ): void {
   const {
     promoteToInferredDatetimeType,
@@ -413,7 +417,7 @@ function coerceDate (
 }
 
 /**
- * Coerce time unit argument to appropriate type.
+ * Coerce time unit argument to appropriate type
  */
 function coerceTimeunitArg (
   arg: Expression,
@@ -458,7 +462,7 @@ function coerceTimeunitArg (
 }
 
 /**
- * Coerce DateDiff arguments to temporal types.
+ * Coerce DateDiff arguments to temporal types
  */
 function coerceDateDiffArgs (node: DateDiffExpr): void {
   const thisArg = node.args.this;
@@ -483,7 +487,7 @@ function coerceDateDiffArgs (node: DateDiffExpr): void {
 }
 
 /**
- * Replace node with a cast to the given type.
+ * Replace node with a cast to the given type
  */
 function replaceCast (node: Expression, to: DataTypeExprKind): void {
   node.replace(new CastExpr({

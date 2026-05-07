@@ -15,7 +15,7 @@ export enum DbmlRelation {
   MANY_TO_MANY = '<>',
 }
 
-export enum DbmlRefAction {
+export enum DbmlReferenceAction {
   CASCADE = 'cascade',
   RESTRICT = 'restrict',
   SET_NULL = 'set null',
@@ -29,50 +29,50 @@ export class DbmlEndpoint extends SchemaElement {
   table: string;
   columns: string[];
 
-  constructor (args: {
+  constructor (arguments_: {
     schema?: string;
     table: string;
     columns: string[];
   }) {
     super();
-    this.schema = args.schema;
-    this.table = args.table;
-    this.columns = args.columns;
+    this.schema = arguments_.schema;
+    this.table = arguments_.table;
+    this.columns = arguments_.columns;
   }
 
   intern (): string {
-    const s = this.schema ?? DEFAULT_SCHEMA_NAME;
-    return `${this.kind}:${s}.${this.table}(${this.columns.join(',')})`;
+    const schemaName = this.schema ?? DEFAULT_SCHEMA_NAME;
+    return `${this.kind}:${schemaName}.${this.table}(${this.columns.join(',')})`;
   }
 }
 
-export class DbmlRef extends SchemaElement {
+export class DbmlReference extends SchemaElement {
   readonly kind = DbmlKind.REF;
   name?: string;
   relation: DbmlRelation;
   source: DbmlEndpoint;
   target: DbmlEndpoint;
-  onDelete?: DbmlRefAction;
-  onUpdate?: DbmlRefAction;
+  onDelete?: DbmlReferenceAction;
+  onUpdate?: DbmlReferenceAction;
   note?: string;
 
-  constructor (args: {
+  constructor (arguments_: {
     name?: string;
     relation: DbmlRelation;
     source: DbmlEndpoint;
     target: DbmlEndpoint;
-    onDelete?: DbmlRefAction;
-    onUpdate?: DbmlRefAction;
+    onDelete?: DbmlReferenceAction;
+    onUpdate?: DbmlReferenceAction;
     note?: string;
   }) {
     super();
-    this.name = args.name;
-    this.relation = args.relation;
-    this.source = args.source;
-    this.target = args.target;
-    this.onDelete = args.onDelete;
-    this.onUpdate = args.onUpdate;
-    this.note = args.note;
+    this.name = arguments_.name;
+    this.relation = arguments_.relation;
+    this.source = arguments_.source;
+    this.target = arguments_.target;
+    this.onDelete = arguments_.onDelete;
+    this.onUpdate = arguments_.onUpdate;
+    this.note = arguments_.note;
   }
 
   intern (): string {
@@ -80,24 +80,24 @@ export class DbmlRef extends SchemaElement {
   }
 }
 
-export class DbmlInlineRef extends SchemaElement {
+export class DbmlInlineReference extends SchemaElement {
   readonly kind = DbmlKind.INLINE_REF;
   relation: DbmlRelation;
   target: DbmlEndpoint;
-  onDelete?: DbmlRefAction;
-  onUpdate?: DbmlRefAction;
+  onDelete?: DbmlReferenceAction;
+  onUpdate?: DbmlReferenceAction;
 
-  constructor (args: {
+  constructor (arguments_: {
     relation: DbmlRelation;
     target: DbmlEndpoint;
-    onDelete?: DbmlRefAction;
-    onUpdate?: DbmlRefAction;
+    onDelete?: DbmlReferenceAction;
+    onUpdate?: DbmlReferenceAction;
   }) {
     super();
-    this.relation = args.relation;
-    this.target = args.target;
-    this.onDelete = args.onDelete;
-    this.onUpdate = args.onUpdate;
+    this.relation = arguments_.relation;
+    this.target = arguments_.target;
+    this.onDelete = arguments_.onDelete;
+    this.onUpdate = arguments_.onUpdate;
   }
 
   intern (): string {

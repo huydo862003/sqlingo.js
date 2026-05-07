@@ -48,7 +48,7 @@ import {
  *   3. {catalog: {db: {table: {col: type}}}}
  * @param dialect - the SQL dialect to apply during parsing.
  * @param tables_ - additional tables to register.
- * @returns Simple columnar data structure.
+ * @returns Simple columnar data structure
  */
 export function execute (
   sql: string | Expression,

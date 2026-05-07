@@ -34,9 +34,9 @@ describe('checks', () => {
       'CREATE TABLE t (a INT, b INT, CONSTRAINT chk_ab CHECK (a < b));',
       'postgres',
     );
-    const c = schema.tables[0].checks?.[0];
-    expect(c?.name).toBe('chk_ab');
-    expect(c?.expression).toContain('a < b');
+    const check = schema.tables[0].checks?.[0];
+    expect(check?.name).toBe('chk_ab');
+    expect(check?.expression).toContain('a < b');
   });
 
   it('emits column check and table Checks block', () => {

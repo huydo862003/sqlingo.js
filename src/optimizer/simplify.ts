@@ -168,7 +168,7 @@ export function simplify<E extends Expression> (
 }
 
 /**
- * Exception raised when an unsupported unit is encountered during simplification.
+ * Exception raised when an unsupported unit is encountered during simplification
  */
 export class UnsupportedUnit extends Error {
   constructor (message?: string) {
@@ -333,7 +333,9 @@ export function simplifyParens (expression: Expression, dialect: DialectType): E
  */
 export function propagateConstants (
   expression: Expression,
-  options: { root?: boolean } = {},
+  options: {
+    root?: boolean;
+  } = {},
 ): Expression {
   const {
     root = true,
@@ -397,10 +399,10 @@ export function propagateConstants (
 
 /**
  * Decimal division with 28 significant figures, matching Python's decimal.Decimal behavior.
- * Uses BigInt for arbitrary precision integer arithmetic.
+ * Uses BigInt for arbitrary precision integer arithmetic
  */
 function decimalDiv (aStr: string, bStr: string, prec = 28): string {
-  // Parse "2.0" → [20n, -1] meaning value = 20 * 10^-1
+  // Parse "2.0" -> [20n, -1] meaning value = 20 * 10^-1
   const parse = (s: string): [bigint, number] => {
     const dot = s.indexOf('.');
     const exp = dot === -1 ? 0 : dot - s.length + 1;
@@ -642,7 +644,9 @@ function _isComplement (a: unknown, b: unknown): boolean {
 }
 
 /** Check if expression is false */
-function isFalse (a: unknown): a is BooleanExpr & { $this: false } {
+function isFalse (a: unknown): a is BooleanExpr & {
+  $this: false;
+} {
   return a instanceof BooleanExpr && !a.args.this;
 }
 
@@ -940,7 +944,7 @@ function booleanLiteral (condition: boolean): BooleanExpr {
 }
 
 /**
- * Normalize/canonicalize dependencies.
+ * Normalize/canonicalize dependencies
  */
 export class Simplifier {
   readonly dialect: Dialect;
@@ -1150,8 +1154,8 @@ export class Simplifier {
     ];
   }
 
-  // CROSS joins result in an empty table if the right table is empty.
-  // So we can only simplify certain types of joins to CROSS.
+  // CROSS joins result in an empty table if the right table is empty
+  // So we can only simplify certain types of joins to CROSS
   // Or in other words, LEFT JOIN x ON TRUE != CROSS JOIN x
   @cache
   static get JOINS (): readonly (readonly [string, string])[] {
@@ -1364,7 +1368,7 @@ export class Simplifier {
       ] = postTransformationStack.pop()!;
       const root = original === expression;
 
-      // Resets parent, arg_key, index pointers – this is needed because some of the
+      // Resets parent, arg_key, index pointers - this is needed because some of the
       // previous transformations mutate the AST, leading to an inconsistent state
       for (const [
         k,
@@ -1420,7 +1424,9 @@ export class Simplifier {
    *     (A OR B) AND (A OR NOT B) -> A
    */
   @catch_(UnsupportedUnit)
-  absorbAndEliminate (expression: Expression, options: { root?: boolean } = {}): Expression {
+  absorbAndEliminate (expression: Expression, options: {
+    root?: boolean;
+  } = {}): Expression {
     const {
       root = true,
     } = options;
@@ -1431,11 +1437,11 @@ export class Simplifier {
 
       // Use SQL strings as keys to mirror Python's content-based equality (__hash__/__eq__)
       // Initialize lookup tables:
-      // Set of all operand SQL strings, used to find complements for absorption.
+      // Set of all operand SQL strings, used to find complements for absorption
       const opSet = new Set<string>();
-      // Sub-operands keyed by SQL string: maps each sql to a list of sql-string sets (subsets).
+      // Sub-operands keyed by SQL string: maps each sql to a list of sql-string sets (subsets)
       const subops = new Map<string, Set<string>[]>();
-      // Pairs for elimination keyed as 'sqlA|sqlB'.
+      // Pairs for elimination keyed as 'sqlA|sqlB'
       const pairs = new Map<string, [Expression, Expression][]>();
 
       // Populate the lookup tables
@@ -1651,7 +1657,7 @@ export class Simplifier {
       for (const caseIf of expression.args.ifs || []) {
         let cond = caseIf.args.this as Expression;
         if (thisExpr) {
-          // Convert CASE x WHEN matching_value ... to CASE WHEN x = matching_value ...
+          // Convert CASE x WHEN matching_value ... to CASE WHEN x = matching_value
           cond = cond.replace(thisExpr.pop().eq(cond));
         }
 
@@ -1799,11 +1805,13 @@ export class Simplifier {
   }
 
   /**
-   * Simplify connector expressions (AND/OR).
+   * Simplify connector expressions (AND/OR)
    */
   @annotateTypesOnChange
   @catch_(UnsupportedUnit)
-  simplifyConnectors (expression: Expression, options: { root?: boolean } = {}): Expression {
+  simplifyConnectors (expression: Expression, options: {
+    root?: boolean;
+  } = {}): Expression {
     const {
       root = true,
     } = options;
@@ -1897,7 +1905,9 @@ export class Simplifier {
     expression: Expression,
     left: Expression,
     right: Expression,
-    options: { or: boolean },
+    options: {
+      or: boolean;
+    },
   ): Expression | undefined {
     const {
       or: or_ = false,
@@ -2071,7 +2081,9 @@ export class Simplifier {
   flatSimplify (
     expression: Expression,
     simplifyFunc: (expr: Expression, left: Expression, right: Expression) => Expression | undefined,
-    options: { root?: boolean },
+    options: {
+      root?: boolean;
+    },
   ): Expression {
     const {
       root,
@@ -2123,7 +2135,9 @@ export class Simplifier {
    * A OR NOT A -> TRUE (only for non-NULL A)
    */
   @catch_(UnsupportedUnit)
-  removeComplements (expression: Expression, options: { root?: boolean } = {}): Expression {
+  removeComplements (expression: Expression, options: {
+    root?: boolean;
+  } = {}): Expression {
     const {
       root = true,
     } = options;
@@ -2183,7 +2197,7 @@ export class Simplifier {
     }
 
     // This transformation is valid for non-constants,
-    // but it really only does anything if they are both constants.
+    // but it really only does anything if they are both constants
     if (!isConstant(other)) {
       return expression;
     }
@@ -2206,7 +2220,7 @@ export class Simplifier {
     coalesce.setArgKey('expressions', coalesce.args.expressions?.slice(0, argIndex));
 
     // Remove the COALESCE function. This is an optimization, skipping a simplify iteration,
-    // since we already remove COALESCE at the top of this function.
+    // since we already remove COALESCE at the top of this function
     const coalesceOrThis = 0 < (coalesce.args.expressions?.length ?? 0) ? coalesce : coalesce.args.this;
 
     // This expression is more complex than when we started, but it will get simplified further
@@ -2239,7 +2253,9 @@ export class Simplifier {
   }
 
   @annotateTypesOnChange
-  simplifyLiterals (expression: Expression, options: { root?: boolean } = {}): Expression {
+  simplifyLiterals (expression: Expression, options: {
+    root?: boolean;
+  } = {}): Expression {
     const {
       root = true,
     } = options;
@@ -2475,7 +2491,7 @@ export class Simplifier {
       let b: Expression;
 
       if (Simplifier.INVERSE_DATE_OPS[l._constructor.key]) {
-        // DateAdd, DateSub, etc.
+        // DateAdd, DateSub, etc
         a = l.args.this as Expression;
         b = (l as IntervalOpExpr).interval();
       } else {
@@ -2664,7 +2680,7 @@ export class Simplifier {
   /**
    * Rewrite x BETWEEN y AND z to x >= y AND x <= z.
    *
-   * This is done because comparison simplification is only done on lt/lte/gt/gte.
+   * This is done because comparison simplification is only done on lt/lte/gt/gte
    */
   rewriteBetween (expression: Expression): Expression {
     if (!(expression instanceof BetweenExpr)) {
@@ -2720,7 +2736,9 @@ export class Simplifier {
    * C AND A AND B AND B -> A AND B AND C
    */
   @annotateTypesOnChange
-  uniqSort (expression: Expression, options: { root?: boolean } = {}): Expression {
+  uniqSort (expression: Expression, options: {
+    root?: boolean;
+  } = {}): Expression {
     const {
       root = true,
     } = options;
@@ -2792,7 +2810,7 @@ export class Simplifier {
 
   /**
    * Simple SQL generation for sorting and deduplication.
-   * Uses the Gen class for faster generation than the full generator.
+   * Uses the Gen class for faster generation than the full generator
    */
   private genSql (expression: Expression): string {
     return gen(expression);
@@ -2809,7 +2827,9 @@ export class Simplifier {
  * @param comments - whether to include the expression's comments
  * @returns SQL string
  */
-export function gen (expression: Expression, options: { comments?: boolean } = {}): string {
+export function gen (expression: Expression, options: {
+  comments?: boolean;
+} = {}): string {
   return new Gen().gen(expression, options);
 }
 
@@ -2817,7 +2837,9 @@ class Gen {
   private stack: unknown[] = [];
   private sqls: string[] = [];
 
-  gen (expression: Expression, options: { comments?: boolean } = {}): string {
+  gen (expression: Expression, options: {
+    comments?: boolean;
+  } = {}): string {
     const {
       comments = false,
     } = options;

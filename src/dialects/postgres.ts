@@ -661,7 +661,9 @@ class PostgresParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       ARRAY_PREPEND: (args: Expression[]) => new ArrayPrependExpr({
@@ -1577,7 +1579,9 @@ class PostgresGenerator extends Generator {
     return '';
   }
 
-  columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
+  columnDefSql (expression: ColumnDefExpr, options: {
+    sep?: string;
+  } = {}): string {
     const {
       sep = ' ',
     } = options;
@@ -1712,7 +1716,9 @@ class PostgresGenerator extends Generator {
     return super.dataTypeSql(expression);
   }
 
-  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
+  castSql (expression: CastExpr, options: {
+    safePrefix?: string;
+  } = {}): string {
     const {
       safePrefix,
     } = options;

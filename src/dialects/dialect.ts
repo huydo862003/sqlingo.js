@@ -279,7 +279,7 @@ export interface DialectOptions {
 }
 
 /**
- * Base unescaped sequences that are common across dialects.
+ * Base unescaped sequences that are common across dialects
  */
 const BASE_UNESCAPED_SEQUENCES: Record<string, string> = {
   '\\a': '\x07',
@@ -335,18 +335,18 @@ export enum Dialects {
 }
 
 /**
- * Specifies the strategy according to which identifiers should be normalized.
+ * Specifies the strategy according to which identifiers should be normalized
  */
 export enum NormalizationStrategy {
-  /** Unquoted identifiers are lowercased. */
+  /** Unquoted identifiers are lowercased */
   LOWERCASE = 'lowercase',
-  /** Unquoted identifiers are uppercased. */
+  /** Unquoted identifiers are uppercased */
   UPPERCASE = 'uppercase',
-  /** Always case-sensitive, regardless of quotes. */
+  /** Always case-sensitive, regardless of quotes */
   CASE_SENSITIVE = 'caseSensitive',
-  /** Always case-insensitive (lowercase), regardless of quotes. */
+  /** Always case-insensitive (lowercase), regardless of quotes */
   CASE_INSENSITIVE = 'caseInsensitive',
-  /** Always case-insensitive (uppercase), regardless of quotes. */
+  /** Always case-insensitive (uppercase), regardless of quotes */
   CASE_INSENSITIVE_UPPERCASE = 'caseInsensitiveUppercase',
 }
 
@@ -360,44 +360,44 @@ export type DialectType = string | Dialect | typeof Dialect;
 export class Dialect {
   static DIALECT_NAME: Dialects | string = Dialects.DIALECT;
 
-  /** The base index offset for arrays. */
+  /** The base index offset for arrays */
   static INDEX_OFFSET = 0;
 
-  /** First day of the week in DATE_TRUNC(week). Defaults to 0 (Monday). -1 would be Sunday. */
+  /** First day of the week in DATE_TRUNC(week). Defaults to 0 (Monday). -1 would be Sunday */
   static WEEK_OFFSET = 0;
 
-  /** Whether `UNNEST` table aliases are treated as column aliases. */
+  /** Whether `UNNEST` table aliases are treated as column aliases */
   static UNNEST_COLUMN_ONLY = false;
 
-  /** Whether the table alias comes after tablesample. */
+  /** Whether the table alias comes after tablesample */
   static ALIAS_POST_TABLESAMPLE = false;
 
-  /** Whether a size in the table sample clause represents percentage. */
+  /** Whether a size in the table sample clause represents percentage */
   static TABLESAMPLE_SIZE_IS_PERCENT = false;
 
   static NORMALIZATION_STRATEGY = NormalizationStrategy.LOWERCASE;
 
-  /** Whether an unquoted identifier can start with a digit. */
+  /** Whether an unquoted identifier can start with a digit */
   static IDENTIFIERS_CAN_START_WITH_DIGIT = false;
 
-  /** Whether the DPIPE token (`||`) is a string concatenation operator. */
+  /** Whether the DPIPE token (`||`) is a string concatenation operator */
   static DPIPE_IS_STRING_CONCAT = true;
 
-  /** Whether `CONCAT`'s arguments must be strings. */
+  /** Whether `CONCAT`'s arguments must be strings */
   static STRICT_STRING_CONCAT = false;
 
-  /** Whether user-defined data types are supported. */
+  /** Whether user-defined data types are supported */
   static SUPPORTS_USER_DEFINED_TYPES = true;
 
-  /** Whether `SEMI` or `ANTI` joins are supported. */
+  /** Whether `SEMI` or `ANTI` joins are supported */
   static SUPPORTS_SEMI_ANTI_JOIN = true;
 
-  /** Whether the old-style outer join (+) syntax is supported. */
+  /** Whether the old-style outer join (+) syntax is supported */
   static get SUPPORTS_COLUMN_JOIN_MARKS (): boolean {
     return !!this.tokenizerClass.KEYWORDS['(+)'];
   }
 
-  /** Separator of COPY statement parameters. */
+  /** Separator of COPY statement parameters */
   static COPY_PARAMS_ARE_CSV = true;
 
   /**
@@ -405,12 +405,12 @@ export class Dialect {
    * Possible values:
    *   NormalizeFunctions.UPPER or true: Convert names to uppercase.
    *   NormalizeFunctions.LOWER: Convert names to lowercase.
-   *   false: Disables function name normalization.
+   *   false: Disables function name normalization
    */
   static NORMALIZE_FUNCTIONS: NormalizeFunctions = NormalizeFunctions.UPPER;
 
   /**
-   * Whether the name of the function should be preserved inside the node's metadata.
+   * Whether the name of the function should be preserved inside the node's metadata
    */
   static PRESERVE_ORIGINAL_NAMES = false;
 
@@ -432,24 +432,24 @@ export class Dialect {
   /**
    * Whether the behavior of `a / b` depends on the types of `a` and `b`.
    * false means `a / b` is always float division.
-   * true means `a / b` is integer division if both `a` and `b` are integers.
+   * true means `a / b` is integer division if both `a` and `b` are integers
    */
   static TYPED_DIVISION = false;
 
-  /** Whether division by zero throws an error (false) or returns NULL (true). */
+  /** Whether division by zero throws an error (false) or returns NULL (true) */
   static SAFE_DIVISION = false;
 
-  /** A `NULL` arg in `CONCAT` yields `NULL` by default, but in some dialects it yields an empty string. */
+  /** A `NULL` arg in `CONCAT` yields `NULL` by default, but in some dialects it yields an empty string */
   static CONCAT_COALESCE = false;
 
-  /** Whether the `HEX` function returns a lowercase hexadecimal string. */
+  /** Whether the `HEX` function returns a lowercase hexadecimal string */
   static HEX_LOWERCASE = false;
 
   static DATE_FORMAT = '\'%Y-%m-%d\'';
   static DATEINT_FORMAT = '\'%Y%m%d\'';
   static TIME_FORMAT = '\'%Y-%m-%d %H:%M:%S\'';
 
-  /** Associates this dialect's time formats with their equivalent Python `strftime` formats. */
+  /** Associates this dialect's time formats with their equivalent Python `strftime` formats */
   @cache
   static get TIME_MAPPING (): Record<string, string> {
     return {};
@@ -457,7 +457,7 @@ export class Dialect {
 
   /**
    * Helper which is used for parsing the special syntax `CAST(x AS DATE FORMAT 'yyyy')`.
-   * If empty, the corresponding trie will be constructed off of `TIME_MAPPING`.
+   * If empty, the corresponding trie will be constructed off of `TIME_MAPPING`
    */
   @cache
   static get FORMAT_MAPPING (): Record<string, string> {
@@ -482,7 +482,7 @@ export class Dialect {
 
   /**
    * Columns that are auto-generated by the engine corresponding to this dialect.
-   * For example, such columns may be excluded from `SELECT *` queries.
+   * For example, such columns may be excluded from `SELECT *` queries
    */
   @cache
   static get PSEUDOCOLUMNS (): Set<string> {
@@ -490,92 +490,92 @@ export class Dialect {
   }
 
   /**
-   * Some dialects allow you to reference a CTE column alias in the HAVING clause.
+   * Some dialects allow you to reference a CTE column alias in the HAVING clause
    */
   static PREFER_CTE_ALIAS_COLUMN = false;
 
   /**
-   * Whether alias reference expansion should run before column qualification.
+   * Whether alias reference expansion should run before column qualification
    */
   static FORCE_EARLY_ALIAS_REF_EXPANSION = false;
 
-  /** Whether alias reference expansion before qualification should only happen for the GROUP BY clause. */
+  /** Whether alias reference expansion before qualification should only happen for the GROUP BY clause */
   static EXPAND_ONLY_GROUP_ALIAS_REF = false;
 
-  /** Whether to annotate all scopes during optimization. */
+  /** Whether to annotate all scopes during optimization */
   static ANNOTATE_ALL_SCOPES = false;
 
-  /** Whether alias reference expansion is disabled for this dialect. */
+  /** Whether alias reference expansion is disabled for this dialect */
   static DISABLES_ALIAS_REF_EXPANSION = false;
 
-  /** Whether alias references are allowed in JOIN ... ON clauses. */
+  /** Whether alias references are allowed in JOIN ... ON clauses */
   static SUPPORTS_ALIAS_REFS_IN_JOIN_CONDITIONS = false;
 
-  /** Whether ORDER BY ALL is supported. */
+  /** Whether ORDER BY ALL is supported */
   static SUPPORTS_ORDER_BY_ALL = false;
 
-  /** Whether projection alias names can shadow table/source names in GROUP BY and HAVING clauses. */
+  /** Whether projection alias names can shadow table/source names in GROUP BY and HAVING clauses */
   static PROJECTION_ALIASES_SHADOW_SOURCE_NAMES = false;
 
-  /** Whether table names can be referenced as columns (treated as structs). */
+  /** Whether table names can be referenced as columns (treated as structs) */
   static TABLES_REFERENCEABLE_AS_COLUMNS = false;
 
-  /** Whether the dialect supports expanding struct fields using star notation. */
+  /** Whether the dialect supports expanding struct fields using star notation */
   static SUPPORTS_STRUCT_STAR_EXPANSION = false;
 
-  /** Whether pseudocolumns should be excluded from star expansion (SELECT *). */
+  /** Whether pseudocolumns should be excluded from star expansion (SELECT *) */
   static EXCLUDES_PSEUDOCOLUMNS_FROM_STAR = false;
 
-  /** Whether query results are typed as structs in metadata for type inference. */
+  /** Whether query results are typed as structs in metadata for type inference */
   static QUERY_RESULTS_ARE_STRUCTS = false;
 
-  /** Whether struct field access requires parentheses around the expression. */
+  /** Whether struct field access requires parentheses around the expression */
   static REQUIRES_PARENTHESIZED_STRUCT_ACCESS = false;
 
-  /** Whether NULL/VOID is supported as a valid data type. */
+  /** Whether NULL/VOID is supported as a valid data type */
   static SUPPORTS_NULL_TYPE = false;
 
-  /** Whether COALESCE in comparisons has non-standard NULL semantics. */
+  /** Whether COALESCE in comparisons has non-standard NULL semantics */
   static COALESCE_COMPARISON_NON_STANDARD = false;
 
-  /** Whether the ARRAY constructor is context-sensitive. */
+  /** Whether the ARRAY constructor is context-sensitive */
   static HAS_DISTINCT_ARRAY_CONSTRUCTORS = false;
 
-  /** Whether expressions like x::INT[5] should be parsed as fixed-size array defs/casts. */
+  /** Whether expressions like x::INT[5] should be parsed as fixed-size array defs/casts */
   static SUPPORTS_FIXED_SIZE_ARRAYS = false;
 
-  /** Whether failing to parse a JSON path expression will log a warning. */
+  /** Whether failing to parse a JSON path expression will log a warning */
   static STRICT_JSON_PATH_SYNTAX = true;
 
-  /** Whether empty ON condition should error before attempting to parse. */
+  /** Whether empty ON condition should error before attempting to parse */
   static ON_CONDITION_EMPTY_BEFORE_ERROR = true;
 
-  /** Whether ArrayAgg needs to filter NULL values. */
+  /** Whether ArrayAgg needs to filter NULL values */
   static ARRAY_AGG_INCLUDES_NULLS: boolean | undefined = true;
 
-  /** Whether Array update functions return NULL when the input array is NULL. */
+  /** Whether Array update functions return NULL when the input array is NULL */
   static ARRAY_FUNCS_PROPAGATES_NULLS = false;
 
   /**
    * This flag is used in the optimizer's canonicalize rule and determines whether x will be promoted
    * to the literal's type in x::DATE < '2020-01-01 12:05:03' (i.e., DATETIME). When false, the literal
-   * is cast to x's type to match it instead.
+   * is cast to x's type to match it instead
    */
   static PROMOTE_TO_INFERRED_DATETIME_TYPE = false;
 
-  /** Whether the DEFAULT keyword is supported in the VALUES clause. */
+  /** Whether the DEFAULT keyword is supported in the VALUES clause */
   static SUPPORTS_VALUES_DEFAULT = true;
 
-  /** Whether number literals can include underscores for better readability. */
+  /** Whether number literals can include underscores for better readability */
   static NUMBERS_CAN_BE_UNDERSCORE_SEPARATED = false;
 
-  /** Whether hex strings such as x'CC' evaluate to integer or binary/blob type. */
+  /** Whether hex strings such as x'CC' evaluate to integer or binary/blob type */
   static HEX_STRING_IS_INTEGER_TYPE = false;
 
-  /** The default value for the capturing group. */
+  /** The default value for the capturing group */
   static REGEXP_EXTRACT_DEFAULT_GROUP = 0;
 
-  /** Whether REGEXP_EXTRACT returns NULL when the position arg exceeds the string length. */
+  /** Whether REGEXP_EXTRACT returns NULL when the position arg exceeds the string length */
   static REGEXP_EXTRACT_POSITION_OVERFLOW_RETURNS_NULL = true;
 
   @cache
@@ -589,7 +589,7 @@ export class Dialect {
 
   /**
    * Helper for dialects that use a different name for the same creatable kind.
-   * For example, the Clickhouse equivalent of CREATE SCHEMA is CREATE DATABASE.
+   * For example, the Clickhouse equivalent of CREATE SCHEMA is CREATE DATABASE
    */
   @cache
   static get CREATABLE_KIND_MAPPING (): Record<string, string> {
@@ -599,27 +599,27 @@ export class Dialect {
   /**
    * Hive by default does not update the schema of existing partitions when a column is changed.
    * The CASCADE clause is used to indicate that the change should be propagated to all existing partitions.
-   * The Spark dialect, while derived from Hive, does not support the CASCADE clause.
+   * The Spark dialect, while derived from Hive, does not support the CASCADE clause
    */
   static ALTER_TABLE_SUPPORTS_CASCADE = false;
 
-  /** Whether ADD is present for each column added by ALTER TABLE. */
+  /** Whether ADD is present for each column added by ALTER TABLE */
   static ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN = true;
 
   /**
    * Whether the value/LHS of the TRY_CAST(<value> AS <type>) should strictly be a
-   * STRING type (Snowflake's case) or can be of any type.
+   * STRING type (Snowflake's case) or can be of any type
    */
   static TRY_CAST_REQUIRES_STRING: boolean | undefined = undefined;
 
   /**
    * Whether the double negation can be applied.
-   * Not safe with MySQL and SQLite due to type coercion (may not return boolean).
+   * Not safe with MySQL and SQLite due to type coercion (may not return boolean)
    */
   static SAFE_TO_ELIMINATE_DOUBLE_NEGATION = true;
 
   /**
-   * Whether the INITCAP function supports custom delimiter characters as the second argument.
+   * Whether the INITCAP function supports custom delimiter characters as the second argument
    */
   static get INITCAP_SUPPORTS_CUSTOM_DELIMITERS (): boolean {
     const supported: (Dialects | string)[] = [
@@ -630,21 +630,21 @@ export class Dialect {
     return supported.includes(this.DIALECT_NAME);
   }
 
-  /** Default delimiter characters for INITCAP function: whitespace and non-alphanumeric characters. */
+  /** Default delimiter characters for INITCAP function: whitespace and non-alphanumeric characters */
   static INITCAP_DEFAULT_DELIMITER_CHARS = ' \t\n\r\f\v!"#$%&\'()*+,\\-./:;<=>?@\\[\\]^_`{|}~';
 
-  /** Whether byte string literals (ex: BigQuery's b'...') are typed as BYTES/BINARY. */
+  /** Whether byte string literals (ex: BigQuery's b'...') are typed as BYTES/BINARY */
   static BYTE_STRING_IS_BYTES_TYPE = false;
 
-  /** Whether a UUID is considered a string or a UUID type. */
+  /** Whether a UUID is considered a string or a UUID type */
   static UUID_IS_STRING_TYPE = false;
 
-  /** Whether JSON_EXTRACT_SCALAR returns undefined if a non-scalar value is selected. */
+  /** Whether JSON_EXTRACT_SCALAR returns undefined if a non-scalar value is selected */
   static JSON_EXTRACT_SCALAR_SCALAR_ONLY = false;
 
   /**
    * Maps function expressions to their default output column name(s).
-   * For example, in Postgres, generate_series function outputs a column named "generate_series" by default.
+   * For example, in Postgres, generate_series function outputs a column named "generate_series" by default
    */
   @cache
   static get DEFAULT_FUNCTIONS_COLUMN_NAMES (): Map<string, string | string[]> {
@@ -683,11 +683,11 @@ export class Dialect {
    * Whether UNNEST in a lateral JOIN requires the CROSS JOIN syntax.
    * True for Presto/Trino/Athena; subclasses inherit - no need to override in Trino.
    * Used by the pushdown_predicates optimizer to avoid pushing predicates into
-   * such joins where the CROSS JOIN form cannot be rewritten safely.
+   * such joins where the CROSS JOIN form cannot be rewritten safely
    */
   static UNNEST_REQUIRES_CROSS_JOIN = false;
 
-  /** Whether to prioritize non-literal types over literals during type annotation. */
+  /** Whether to prioritize non-literal types over literals during type annotation */
   static PRIORITIZE_NON_LITERAL_TYPES = false;
 
   static get TRY_SUPPORTED (): boolean {
@@ -704,7 +704,7 @@ export class Dialect {
 
   /**
    * Whether UESCAPE clause is supported in string literals.
-   * Returns false for non-Athena/Presto/Trino/DuckDB dialects.
+   * Returns false for non-Athena/Presto/Trino/DuckDB dialects
    */
   static get SUPPORTS_UESCAPE (): boolean {
     const supported: (Dialects | string)[] = [
@@ -872,7 +872,7 @@ export class Dialect {
     );
   }
 
-  /** Delimiters for string literals. */
+  /** Delimiters for string literals */
   static get QUOTE_START (): string {
     return Object.entries(this.tokenizerClass._QUOTES)[0]?.[0];
   }
@@ -881,7 +881,7 @@ export class Dialect {
     return Object.entries(this.tokenizerClass._QUOTES)[0]?.[1];
   }
 
-  /** Delimiters for identifiers. */
+  /** Delimiters for identifiers */
   static get IDENTIFIER_START (): string {
     return Object.entries(this.tokenizerClass._IDENTIFIERS)[0]?.[0];
   }
@@ -918,7 +918,7 @@ export class Dialect {
     ];
   }
 
-  /** Delimiters for bit literals. */
+  /** Delimiters for bit literals */
   static get BIT_START (): string | undefined {
     return this.getStartEnd(TokenType.BIT_STRING)[0];
   }
@@ -927,7 +927,7 @@ export class Dialect {
     return this.getStartEnd(TokenType.BIT_STRING)[1];
   }
 
-  /** Delimiters for hex literals. */
+  /** Delimiters for hex literals */
   static get HEX_START (): string | undefined {
     return this.getStartEnd(TokenType.HEX_STRING)[0];
   }
@@ -936,7 +936,7 @@ export class Dialect {
     return this.getStartEnd(TokenType.HEX_STRING)[1];
   }
 
-  /** Delimiters for byte literals. */
+  /** Delimiters for byte literals */
   static get BYTE_START (): string | undefined {
     return this.getStartEnd(TokenType.BYTE_STRING)[0];
   }
@@ -945,7 +945,7 @@ export class Dialect {
     return this.getStartEnd(TokenType.BYTE_STRING)[1];
   }
 
-  /** Delimiters for unicode literals. */
+  /** Delimiters for unicode literals */
   static get UNICODE_START (): string | undefined {
     return this.getStartEnd(TokenType.UNICODE_STRING)[0];
   }
@@ -954,7 +954,7 @@ export class Dialect {
     return this.getStartEnd(TokenType.UNICODE_STRING)[1];
   }
 
-  /** Date part mapping for normalization. */
+  /** Date part mapping for normalization */
   @cache
   static get DATE_PART_MAPPING (): Record<string, string> {
     return {
@@ -1053,19 +1053,19 @@ export class Dialect {
     };
   }
 
-  /** Specifies what types a given type can be coerced into. */
+  /** Specifies what types a given type can be coerced into */
   @cache
   static get COERCES_TO (): Map<string, Set<string>> {
     return new Map();
   }
 
-  /** Specifies type inference & validation rules for expressions. */
+  /** Specifies type inference & validation rules for expressions */
   @cache
   static get EXPRESSION_METADATA (): ExpressionMetadata {
     return DialectTyping.EXPRESSION_METADATA;
   }
 
-  /** Determines the supported Dialect instance settings. */
+  /** Determines the supported Dialect instance settings */
   @cache
   static get SUPPORTED_SETTINGS (): Set<string> {
     return new Set([
@@ -1076,7 +1076,7 @@ export class Dialect {
 
   /**
    * Extracts quote delimiters from the tokenizer class.
-   * Returns [start, end] delimiter pair for string literals.
+   * Returns [start, end] delimiter pair for string literals
    */
   @cache
   static get QUOTE_DELIMITERS (): [string, string] {
@@ -1085,14 +1085,14 @@ export class Dialect {
 
   /**
    * Extracts identifier delimiters from the tokenizer class.
-   * Returns [start, end] delimiter pair for identifiers.
+   * Returns [start, end] delimiter pair for identifiers
    */
   @cache
   static get IDENTIFIER_DELIMITERS (): [string, string] {
     return Object.entries(this.tokenizerClass.IDENTIFIERS)[0] as [string, string];
   }
 
-  /** Valid interval units. */
+  /** Valid interval units */
   @cache
   static get BASE_VALID_INTERVAL_UNITS (): Set<string> {
     return new Set<string>();
@@ -1108,12 +1108,12 @@ export class Dialect {
     ]);
   }
 
-  /** Whether strings support escaped sequences. */
+  /** Whether strings support escaped sequences */
   static get STRINGS_SUPPORT_ESCAPED_SEQUENCES (): boolean {
     return this.tokenizerClass.STRING_ESCAPES.includes('\\');
   }
 
-  /** Whether byte strings support escaped sequences. */
+  /** Whether byte strings support escaped sequences */
   static get BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES (): boolean {
     return this.tokenizerClass.BYTE_STRING_ESCAPES.includes('\\');
   }
@@ -1144,7 +1144,7 @@ export class Dialect {
   }
 
   /**
-   * Get a dialect class by name.
+   * Get a dialect class by name
    */
   static get (name: string, fallback?: typeof Dialect): typeof Dialect | undefined {
     return this.registry.get(name) || fallback;
@@ -1308,7 +1308,7 @@ export class Dialect {
    * like in Redshift's case, where users can explicitly set enable_case_sensitive_identifier.
    *
    * SQLGlot aims to understand and handle all of these different behaviors gracefully, so
-   * that it can analyze queries in the optimizer and successfully capture their semantics.
+   * that it can analyze queries in the optimizer and successfully capture their semantics
    */
   normalizeIdentifier<E extends Expression> (expression: E): E {
     if (
@@ -1337,7 +1337,7 @@ export class Dialect {
   }
 
   /**
-   * Checks if text contains any case sensitive characters, based on the dialect's rules.
+   * Checks if text contains any case sensitive characters, based on the dialect's rules
    */
   caseSensitive (text: string): boolean {
     if (this.normalizationStrategy === NormalizationStrategy.CASE_INSENSITIVE) {
@@ -1431,7 +1431,7 @@ export class Dialect {
   }
 
   /**
-   * Parse SQL string into expression tree.
+   * Parse SQL string into expression tree
    */
   parse (sql: string, opts?: ParseOptions): (Expression | undefined)[] {
     return this.parser(opts).parse(this.tokenize(sql), sql);
@@ -1445,7 +1445,7 @@ export class Dialect {
   }
 
   /**
-   * Parse SQL string into specific expression type.
+   * Parse SQL string into specific expression type
    */
   parseIntoTypes<T extends typeof Expression> (
     expressionType: string | T | (string | T)[],
@@ -1456,9 +1456,11 @@ export class Dialect {
   }
 
   /**
-   * Generate SQL from an expression tree.
+   * Generate SQL from an expression tree
    */
-  generate (expression: Expression, options: GeneratorOptions & { copy?: boolean } = {}): string {
+  generate (expression: Expression, options: GeneratorOptions & {
+    copy?: boolean;
+  } = {}): string {
     const {
       copy = true, ...restOptions
     } = options;
@@ -1468,7 +1470,7 @@ export class Dialect {
   }
 
   /**
-   * Get or create a generator instance for this dialect.
+   * Get or create a generator instance for this dialect
    */
   generator (options: GeneratorOptions = {}): Generator {
     return new this._constructor.generatorClass({
@@ -1478,14 +1480,14 @@ export class Dialect {
   }
 
   /**
-   * Tokenize SQL string into tokens.
+   * Tokenize SQL string into tokens
    */
   tokenize (sql: string, options: TokenizerOptions = {}): ReturnType<Tokenizer['tokenize']> {
     return this.tokenizer(options).tokenize(sql);
   }
 
   /**
-   * Get a tokenizer instance for this dialect.
+   * Get a tokenizer instance for this dialect
    */
   tokenizer (options: TokenizerOptions = {}): Tokenizer {
     return new this._constructor.tokenizerClass({
@@ -1495,7 +1497,7 @@ export class Dialect {
   }
 
   /**
-   * Get a jsonpath tokenizer instance for this dialect.
+   * Get a jsonpath tokenizer instance for this dialect
    */
   jsonpathTokenizer (options: TokenizerOptions = {}): Tokenizer {
     return new this._constructor.jsonpathTokenizerClass({
@@ -1505,7 +1507,7 @@ export class Dialect {
   }
 
   /**
-   * Parse SQL and generate it back in this dialect.
+   * Parse SQL and generate it back in this dialect
    */
   transpile (sql: string, options: TranspileOptions = {}): string[] {
     return this.parse(sql, options).map((expression) =>
@@ -1519,7 +1521,7 @@ export class Dialect {
 
   /**
    * Generate column aliases for a VALUES expression.
-   * By default, generates _col_0, _col_1, etc.
+   * By default, generates _col_0, _col_1, etc
    */
   generateValuesAliases (expression: Expression): IdentifierExpr[] {
     const firstRow = expression.args.expressions?.[0];
@@ -1549,7 +1551,7 @@ export class Dialect {
 Dialect.register(Dialects.DIALECT, Dialect);
 
 /**
- * Creates a function that renames a function call.
+ * Creates a function that renames a function call
  */
 export function renameFunc (name: string): (this: Generator, expression: Expression) => string {
   return function (this: Generator, expression: Expression): string {
@@ -1573,7 +1575,7 @@ export function renameFunc (name: string): (this: Generator, expression: Express
 }
 
 /**
- * Generate APPROX_COUNT_DISTINCT SQL (with unsupported accuracy parameter).
+ * Generate APPROX_COUNT_DISTINCT SQL (with unsupported accuracy parameter)
  */
 export function approxCountDistinctSql (this: Generator, expression: ApproxDistinctExpr): string {
   unsupportedArgs.call(this, expression, 'accuracy');
@@ -1581,7 +1583,7 @@ export function approxCountDistinctSql (this: Generator, expression: ApproxDisti
 }
 
 /**
- * Creates an IF function generator with custom name and optional false value.
+ * Creates an IF function generator with custom name and optional false value
  */
 export function ifSql (
   name: string = 'IF',
@@ -1603,7 +1605,7 @@ export function ifSql (
 }
 
 /**
- * Generate arrow-based JSON extract (-> or ->>).
+ * Generate arrow-based JSON extract (-> or ->>)
  */
 export function arrowJsonExtractSql (this: Generator, expression: JsonExtractType): string {
   const thisArg = expression.args.this;
@@ -1636,7 +1638,7 @@ export function inlineArraySql (this: Generator, expression: Expression): string
 }
 
 /**
- * Generate inline array unless it contains a query.
+ * Generate inline array unless it contains a query
  */
 export function inlineArrayUnlessQuery (this: Generator, expression: Expression): string {
   const elem = seqGet(expression.args.expressions ?? [], 0);
@@ -1647,7 +1649,7 @@ export function inlineArrayUnlessQuery (this: Generator, expression: Expression)
 }
 
 /**
- * Transpile ILIKE to LIKE with LOWER().
+ * Transpile ILIKE to LIKE with LOWER()
  */
 export function noIlikeSql (this: Generator, expression: ILikeExpr): string {
   const likeExpr = new LikeExpr({
@@ -1662,7 +1664,7 @@ export function noIlikeSql (this: Generator, expression: ILikeExpr): string {
 }
 
 /**
- * Generate CURRENT_DATE without parentheses.
+ * Generate CURRENT_DATE without parentheses
  */
 export function noParenCurrentDateSql (this: Generator, expression: CurrentDateExpr): string {
   const zone = this.sql(expression, 'this');
@@ -1670,7 +1672,7 @@ export function noParenCurrentDateSql (this: Generator, expression: CurrentDateE
 }
 
 /**
- * Emit unsupported warning for recursive CTEs.
+ * Emit unsupported warning for recursive CTEs
  */
 export function noRecursiveCteSql (this: Generator, expression: WithExpr): string {
   if (expression.args.recursive) {
@@ -1681,7 +1683,7 @@ export function noRecursiveCteSql (this: Generator, expression: WithExpr): strin
 }
 
 /**
- * Emit unsupported warning for TABLESAMPLE.
+ * Emit unsupported warning for TABLESAMPLE
  */
 export function noTablesampleSql (this: Generator, expression: TableSampleExpr): string {
   this.unsupported('TABLESAMPLE unsupported');
@@ -1689,7 +1691,7 @@ export function noTablesampleSql (this: Generator, expression: TableSampleExpr):
 }
 
 /**
- * Emit unsupported warning for PIVOT.
+ * Emit unsupported warning for PIVOT
  */
 export function noPivotSql (this: Generator, _expression: PivotExpr): string {
   this.unsupported('PIVOT unsupported');
@@ -1697,14 +1699,14 @@ export function noPivotSql (this: Generator, _expression: PivotExpr): string {
 }
 
 /**
- * Transpile TRY_CAST to CAST.
+ * Transpile TRY_CAST to CAST
  */
 export function noTrycastSql (this: Generator, expression: Expression): string {
   return this.castSql(expression);
 }
 
 /**
- * Emit unsupported warning for comment column constraints.
+ * Emit unsupported warning for comment column constraints
  */
 export function noCommentColumnConstraintSql (this: Generator, _expression: CommentColumnConstraintExpr): string {
   this.unsupported('CommentColumnConstraint unsupported');
@@ -1712,7 +1714,7 @@ export function noCommentColumnConstraintSql (this: Generator, _expression: Comm
 }
 
 /**
- * Emit unsupported warning for MAP_FROM_ENTRIES.
+ * Emit unsupported warning for MAP_FROM_ENTRIES
  */
 export function noMapFromEntriesSql (this: Generator, _expression: MapFromEntriesExpr): string {
   this.unsupported('MAP_FROM_ENTRIES unsupported');
@@ -1720,7 +1722,7 @@ export function noMapFromEntriesSql (this: Generator, _expression: MapFromEntrie
 }
 
 /**
- * Generate property SQL: key=value.
+ * Generate property SQL: key=value
  */
 export function propertySql (this: Generator, expression: PropertyExpr): string {
   return `${this.propertyName(expression, {
@@ -1729,7 +1731,7 @@ export function propertySql (this: Generator, expression: PropertyExpr): string 
 }
 
 /**
- * Generate STRPOS/POSITION SQL with optional parameters.
+ * Generate STRPOS/POSITION SQL with optional parameters
  */
 export function strPositionSql (
   this: Generator,
@@ -1828,14 +1830,14 @@ export function strPositionSql (
 }
 
 /**
- * Generate struct extract: struct.field.
+ * Generate struct extract: struct.field
  */
 export function structExtractSql (this: Generator, expression: StructExtractExpr): string {
   return `${this.sql(expression, 'this')}.${this.sql(toIdentifier(expression.args.expression?.name ?? ''))}`;
 }
 
 /**
- * Creates array append/prepend function with NULL handling.
+ * Creates array append/prepend function with NULL handling
  */
 export function arrayAppendSql (
   name: string,
@@ -2389,7 +2391,9 @@ export function encodeDecodeSql (
   this: Generator,
   expression: EncodeExpr | DecodeExpr,
   name: string,
-  options: { replace?: boolean } = {},
+  options: {
+    replace?: boolean;
+  } = {},
 ): string {
   const {
     replace = true,
@@ -2477,7 +2481,9 @@ export function countIfToSum (this: Generator, expression: CountIfExpr): string 
     : []);
 }
 
-export function trimSql (this: Generator, expression: TrimExpr, options: { defaultTrimType?: string } = {}): string {
+export function trimSql (this: Generator, expression: TrimExpr, options: {
+  defaultTrimType?: string;
+} = {}): string {
   const {
     defaultTrimType = '',
   } = options;
@@ -2556,7 +2562,9 @@ export function regexpReplaceSql (this: Generator, expression: RegexpReplaceExpr
     expression.args.replacement,
   ]);
 }
-export function pivotColumnNames (aggregations: Expression[], options: { dialect: DialectType }): string[] {
+export function pivotColumnNames (aggregations: Expression[], options: {
+  dialect: DialectType;
+}): string[] {
   const {
     dialect,
   } = options;
@@ -2813,7 +2821,9 @@ export function unitToVar (expression: TimeUnitExpr, options: {
   return value ? var_(value) : undefined;
 }
 
-export function mapDatePart (part: string | Expression | undefined, options: { dialect?: DialectType } = {}): Expression | undefined {
+export function mapDatePart (part: string | Expression | undefined, options: {
+  dialect?: DialectType;
+} = {}): Expression | undefined {
   const {
     dialect = Dialect,
   } = options;
@@ -3225,11 +3235,15 @@ export function buildLike<T extends Expression> (
   };
 }
 
-export function buildRegexpExtract<T extends Expression> (ExprType: (typeof RegexpExtractExpr) & (new (args: any) => T)): (args: any[], options: { dialect: Dialect }) => Expression {
+export function buildRegexpExtract<T extends Expression> (ExprType: (typeof RegexpExtractExpr) & (new (args: any) => T)): (args: any[], options: {
+  dialect: Dialect;
+}) => Expression {
 
   return (args: any[], {
     dialect,
-  }: { dialect: Dialect }) => {
+  }: {
+    dialect: Dialect;
+  }) => {
     const kwargs: RegexpExtractExprArgs = {
       this: seqGet(args, 0),
       expression: seqGet(args, 1),
@@ -3371,7 +3385,9 @@ export function groupConcatSql (this: Generator, expression: GroupConcatExpr, op
 
 export function buildTimeToStrOrToChar (args: any[], {
   dialect,
-}: { dialect: DialectType }): TimeToStrExpr | ToCharExpr {
+}: {
+  dialect: DialectType;
+}): TimeToStrExpr | ToCharExpr {
   if (args.length === 2) {
     const thisArg = args[0];
     if (!thisArg.type) annotateTypes(thisArg, {

@@ -8,7 +8,7 @@ import {
   DbmlKind,
 } from './kind';
 import type {
-  DbmlInlineRef,
+  DbmlInlineReference,
 } from './ref';
 
 export class DbmlColumnType extends SchemaElement {
@@ -18,26 +18,26 @@ export class DbmlColumnType extends SchemaElement {
   args?: string[];
   array?: boolean | (number | undefined)[];
 
-  constructor (args: {
+  constructor (arguments_: {
     schema?: string;
     name: string;
     args?: string[];
     array?: boolean | (number | undefined)[];
   }) {
     super();
-    this.schema = args.schema;
-    this.name = args.name;
-    this.args = args.args;
-    this.array = args.array;
+    this.schema = arguments_.schema;
+    this.name = arguments_.name;
+    this.args = arguments_.args;
+    this.array = arguments_.array;
   }
 
   intern (): string {
     const base = this.schema ? `${this.schema}.${this.name}` : this.name;
-    const a = this.args?.length ? `(${this.args.join(',')})` : '';
-    let arr = '';
-    if (this.array === true) arr = '[]';
-    else if (Array.isArray(this.array)) arr = this.array.map((n) => `[${n ?? ''}]`).join('');
-    return `${this.kind}:${base}${a}${arr}`;
+    const argumentsString = this.args?.length ? `(${this.args.join(',')})` : '';
+    let array = '';
+    if (this.array === true) array = '[]';
+    else if (Array.isArray(this.array)) array = this.array.map((n) => `[${n ?? ''}]`).join('');
+    return `${this.kind}:${base}${argumentsString}${array}`;
   }
 }
 
@@ -52,9 +52,9 @@ export class DbmlColumn extends SchemaElement {
   default?: string;
   note?: string;
   check?: DbmlCheck;
-  ref?: DbmlInlineRef[];
+  ref?: DbmlInlineReference[];
 
-  constructor (args: {
+  constructor (arguments_: {
     name: string;
     type: DbmlColumnType;
     pk?: boolean;
@@ -64,19 +64,19 @@ export class DbmlColumn extends SchemaElement {
     default?: string;
     note?: string;
     check?: DbmlCheck;
-    ref?: DbmlInlineRef[];
+    ref?: DbmlInlineReference[];
   }) {
     super();
-    this.name = args.name;
-    this.type = args.type;
-    this.pk = args.pk;
-    this.notNull = args.notNull;
-    this.unique = args.unique;
-    this.increment = args.increment;
-    this.default = args.default;
-    this.note = args.note;
-    this.check = args.check;
-    this.ref = args.ref;
+    this.name = arguments_.name;
+    this.type = arguments_.type;
+    this.pk = arguments_.pk;
+    this.notNull = arguments_.notNull;
+    this.unique = arguments_.unique;
+    this.increment = arguments_.increment;
+    this.default = arguments_.default;
+    this.note = arguments_.note;
+    this.check = arguments_.check;
+    this.ref = arguments_.ref;
   }
 
   intern (): string {

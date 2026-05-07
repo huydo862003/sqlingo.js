@@ -59,7 +59,7 @@ export function normalize (
   });
 
   // Walk only top-level connectors - prune at each connector so nested ones
-  // are handled by distributiveLaw's own recursion (mirrors Python's prune).
+  // are handled by distributiveLaw's own recursion (mirrors Python's prune)
   const connectors: ConnectorExpr[] = [];
   for (const node of expression.walk({
     prune: (e) => e instanceof ConnectorExpr,
@@ -136,7 +136,9 @@ export function normalize (
  * @param dnf - Whether to check for DNF (default: false = check for CNF)
  * @returns True if normalized
  */
-export function normalized (expression: Expression, options: { dnf?: boolean } = {}): boolean {
+export function normalized (expression: Expression, options: {
+  dnf?: boolean;
+} = {}): boolean {
   const {
     dnf = false,
   } = options;
@@ -181,8 +183,10 @@ export function normalized (expression: Expression, options: { dnf?: boolean } =
  */
 export function normalizationDistance (
   expression: Expression,
-  options: { dnf?: boolean;
-    max?: number; } = {},
+  options: {
+    dnf?: boolean;
+    max?: number;
+  } = {},
 ): number {
   const {
     dnf = false, max = Infinity,
@@ -214,9 +218,11 @@ export function normalizationDistance (
  */
 function* predicateLengths (
   expression: Expression,
-  options: { dnf: boolean;
+  options: {
+    dnf: boolean;
     max?: number;
-    depth?: number; },
+    depth?: number;
+  },
 ): Generator<number> {
   const {
     dnf, max = Infinity, depth: depth0 = 0,
@@ -283,9 +289,11 @@ function* predicateLengths (
  */
 function distributiveLaw (
   expression: Expression,
-  options: { dnf: boolean;
+  options: {
+    dnf: boolean;
     maxDistance: number;
-    simplifier?: Simplifier; },
+    simplifier?: Simplifier;
+  },
 ): Expression {
   const {
     dnf, maxDistance, simplifier,
@@ -361,7 +369,7 @@ function distributiveLaw (
 }
 
 /**
- * Distribute a over b using the distributive law.
+ * Distribute a over b using the distributive law
  */
 function distribute (
   a: Expression,

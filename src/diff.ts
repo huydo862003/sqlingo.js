@@ -89,7 +89,7 @@ export class Keep {
 }
 
 /**
- * Union type representing any possible tree edit operation.
+ * Union type representing any possible tree edit operation
  */
 export type Edit = Insert | Remove | Move | Update | Keep;
 
@@ -277,7 +277,9 @@ class ChangeDistiller {
 
   private generateEditScript (
     matchings: Map<Expression, Expression>,
-    options: { deltaOnly: boolean },
+    options: {
+      deltaOnly: boolean;
+    },
   ): Edit[] {
     const {
       deltaOnly,
@@ -510,7 +512,7 @@ class ChangeDistiller {
 }
 
 /**
- * Recursively finds all leaf nodes in an expression tree.
+ * Recursively finds all leaf nodes in an expression tree
  */
 export function* getExpressionLeaves (expression: Expression): Generator<Expression> {
   let hasChildExprs = false;
@@ -528,7 +530,7 @@ export function* getExpressionLeaves (expression: Expression): Generator<Express
 }
 
 /**
- * Yields non-expression attributes (metadata) of a node for Update detection.
+ * Yields non-expression attributes (metadata) of a node for Update detection
  */
 export function* getNonExpressionLeaves (expression: Expression): Generator<[string, unknown]> {
   for (const [
@@ -552,7 +554,7 @@ export function* getNonExpressionLeaves (expression: Expression): Generator<[str
 }
 
 /**
- * Determines if two nodes are of the same semantic type.
+ * Determines if two nodes are of the same semantic type
  */
 export function isSameType (source: Expression, target: Expression): boolean {
   if (source.constructor === target.constructor) {
@@ -576,7 +578,7 @@ export function isSameType (source: Expression, target: Expression): boolean {
 }
 
 /**
- * Calculates a similarity score based on the depth of matching parent types.
+ * Calculates a similarity score based on the depth of matching parent types
  */
 export function parentSimilarityScore (
   source: Expression | undefined,
@@ -590,7 +592,7 @@ export function parentSimilarityScore (
 }
 
 /**
- * Yields only child expressions, filtering out ignored leaf types (like Identifiers).
+ * Yields only child expressions, filtering out ignored leaf types (like Identifiers)
  */
 export function* expressionOnlyArgs (expression: Expression): Generator<Expression> {
   for (const arg of expression.iterExpressions()) {
@@ -603,7 +605,7 @@ export function* expressionOnlyArgs (expression: Expression): Generator<Expressi
 /**
  * Calculates the longest common subsequence between two sequences.
  * * This is used to detect "Move" edits by determining which nodes
- * maintained their relative order.
+ * maintained their relative order
  */
 export function lcs<T> (
   _seqA: Iterable<T>,

@@ -163,7 +163,7 @@ function unnest (
     if (predicate instanceof ExistsExpr) {
       // If a subquery returns no rows, cross-joining against it incorrectly eliminates all rows
       // from the parent query. Therefore, we use a LEFT JOIN that always matches (ON TRUE), then
-      // check for non-NULL column values to determine whether the subquery contained rows.
+      // check for non-NULL column values to determine whether the subquery contained rows
       columnExpr = columnExpr.is(null_()).not();
       joinType = JoinExprKind.LEFT;
       onClause = true_();
@@ -366,7 +366,7 @@ function decorrelate (
   let parentPredicate = select.findAncestor(PredicateExpr);
 
   // if the value of the subquery is not an agg or a key, we need to collect it into an array
-  // so that it can be grouped. For subquery projections, we use a MAX aggregation instead.
+  // so that it can be grouped. For subquery projections, we use a MAX aggregation instead
   const aggFunc = isSubqueryProjection ? MaxExpr : ArrayAggExpr;
   if (!value.find(AggFuncExpr) && !exprInGroupBy(valueThis)) {
     select.select(

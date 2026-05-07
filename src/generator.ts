@@ -644,7 +644,7 @@ export class Generator {
     return NullOrderingSupported.SUPPORTED;
   }
 
-  // Whether ignore nulls is inside the agg or outside.
+  // Whether ignore nulls is inside the agg or outside
   // FIRST(x IGNORE NULLS) OVER vs FIRST (x) IGNORE NULLS OVER
   static IGNORE_NULLS_IN_FUNC = false;
   static RESPECT_IGNORE_NULLS_UNSUPPORTED_EXPRESSIONS: (typeof Expression)[] = [];
@@ -712,7 +712,7 @@ export class Generator {
   // Whether to generate the limit as TOP <value> instead of LIMIT <value>
   static LIMIT_IS_TOP = false;
 
-  // Whether to generate INSERT INTO ... RETURNING or INSERT INTO RETURNING ...
+  // Whether to generate INSERT INTO ... RETURNING or INSERT INTO RETURNING
   static RETURNING_END = true;
 
   // Whether to generate an unquoted value for EXTRACT's date part argument
@@ -730,7 +730,7 @@ export class Generator {
     'VALUE',
   ];
 
-  // Whether VALUES statements can be used as derived tables.
+  // Whether VALUES statements can be used as derived tables
   // MySQL 5 and Redshift do not allow this, so when False, it will convert
   // SELECT * VALUES into SELECT UNION
   static VALUES_AS_TABLE = true;
@@ -839,9 +839,9 @@ export class Generator {
   // Whether EXCLUDE in window specification is supported
   static SUPPORTS_WINDOW_EXCLUDE = false;
 
-  // Whether or not set op modifiers apply to the outer set op or select.
+  // Whether or not set op modifiers apply to the outer set op or select
   // SELECT * FROM x UNION SELECT * FROM y LIMIT 1
-  // True means limit 1 happens after the set op, False means it it happens on y.
+  // True means limit 1 happens after the set op, False means it it happens on y
   static SET_OP_MODIFIERS = true;
 
   // Whether parameters from COPY statement are wrapped in parentheses
@@ -877,7 +877,7 @@ export class Generator {
   // Whether the text pattern/fill (3rd) parameter of RPAD()/LPAD() is optional (defaults to space)
   static PAD_FILL_PATTERN_IS_REQUIRED = false;
 
-  // Whether a projection can explode into multiple rows, e.g. by unnesting an array.
+  // Whether a projection can explode into multiple rows, e.g. by unnesting an array
   static SUPPORTS_EXPLODING_PROJECTIONS = true;
 
   // Whether ARRAY_CONCAT can be generated with varlen args or if it should be reduced to 2-arg version
@@ -896,7 +896,7 @@ export class Generator {
   static ALTER_SET_WRAPPED = false;
 
   // Whether to normalize the date parts in EXTRACT(<date_part> FROM <expr>) into a common representation
-  // For instance, to extract the day of week in ISO semantics, one can use IsoDOW, DAYOFWEEKISO etc depending on the dialect.
+  // For instance, to extract the day of week in ISO semantics, one can use IsoDOW, DAYOFWEEKISO etc depending on the dialect
   static NORMALIZE_EXTRACT_DATE_PARTS = false;
 
   // The name to generate for the JsonPath expression. If `None`, only `this` will be generated
@@ -935,7 +935,7 @@ export class Generator {
   // Unsupported (MySQL, SingleStore): UPDATE t1 JOIN t2 ON TRUE SET t1.a = t2.b
   static UPDATE_STATEMENT_SUPPORTS_FROM = true;
 
-  // Whether SELECT *, ... EXCLUDE requires wrapping in a subquery for transpilation.
+  // Whether SELECT *, ... EXCLUDE requires wrapping in a subquery for transpilation
   static STAR_EXCLUDE_REQUIRES_DERIVED_TABLE = true;
 
   static AFTER_HAVING_MODIFIER_TRANSFORMS: Map<string, (this: Generator, e: Expression) => string> = new Map([
@@ -1839,7 +1839,7 @@ export class Generator {
   }
 
   /**
-   * @final Do not override this getter in subclasses; override `ORIGINAL_TRANSFORMS` instead.
+   * @final Do not override this getter in subclasses; override `ORIGINAL_TRANSFORMS` instead
    */
   @cache
 
@@ -2307,9 +2307,11 @@ export class Generator {
   }
 
   /**
-   * Main generate method - converts an expression tree to SQL string.
+   * Main generate method - converts an expression tree to SQL string
    */
-  generate (expression: Expression, options: { copy?: boolean } = {}): string {
+  generate (expression: Expression, options: {
+    copy?: boolean;
+  } = {}): string {
     const {
       copy = true,
     } = options;
@@ -2364,7 +2366,7 @@ export class Generator {
   }
 
   /**
-   * Record an unsupported expression/feature.
+   * Record an unsupported expression/feature
    */
   unsupported (message: string): void {
     if (this.unsupportedLevel === ErrorLevel.IMMEDIATE) {
@@ -2374,7 +2376,7 @@ export class Generator {
   }
 
   /**
-   * Generate a separator (space or newline based on pretty mode).
+   * Generate a separator (space or newline based on pretty mode)
    */
   sep (separator = ' '): string {
     if (this.pretty) {
@@ -2384,7 +2386,7 @@ export class Generator {
   }
 
   /**
-   * Generate a segment with separator.
+   * Generate a segment with separator
    */
   seg (sql: string, separator = ' '): string {
     return `${this.sep(separator)}${sql}`;
@@ -2434,7 +2436,7 @@ export class Generator {
   }
 
   /**
-   * Temporarily disable identifier quoting, execute func, then restore.
+   * Temporarily disable identifier quoting, execute func, then restore
    */
 
   noIdentify<T extends (...args: any[]) => string> (
@@ -2449,7 +2451,7 @@ export class Generator {
   }
 
   /**
-   * Normalize a function name based on settings.
+   * Normalize a function name based on settings
    */
   normalizeFunc (name: string): string {
     if (this.normalizeFunctions === NormalizeFunctions.UPPER) {
@@ -2500,7 +2502,9 @@ export class Generator {
   sql (
     expression?: ExpressionValue,
     key?: string,
-    options: { comment?: boolean } = {},
+    options: {
+      comment?: boolean;
+    } = {},
   ): string {
     const {
       comment = true,
@@ -2557,7 +2561,7 @@ export class Generator {
   }
 
   /**
-   * Add comment to SQL if present.
+   * Add comment to SQL if present
    */
   protected maybeComment (
     sql: string,
@@ -2598,7 +2602,7 @@ export class Generator {
   }
 
   /**
-   * Generate SQL for UNCACHE TABLE.
+   * Generate SQL for UNCACHE TABLE
    */
   uncacheSql (expression: UncacheExpr): string {
     const table = this.sql(expression, 'this');
@@ -2607,7 +2611,7 @@ export class Generator {
   }
 
   /**
-   * Generate SQL for CACHE TABLE.
+   * Generate SQL for CACHE TABLE
    */
   cacheSql (expression: CacheExpr): string {
     const lazy = expression.args.lazy ? ' LAZY' : '';
@@ -2623,7 +2627,7 @@ export class Generator {
   }
 
   /**
-   * Generate SQL for CHARACTER SET.
+   * Generate SQL for CHARACTER SET
    */
   characterSetSql (expression: CharacterSetExpr): string {
     if (expression.parent instanceof CastExpr) {
@@ -2634,7 +2638,7 @@ export class Generator {
   }
 
   /**
-   * Generate parts of a column reference (catalog.db.table.column).
+   * Generate parts of a column reference (catalog.db.table.column)
    */
   protected columnParts (expression: ColumnExpr): string {
     const parts = [
@@ -2669,7 +2673,9 @@ export class Generator {
     return `${position}${thisFormatted}`;
   }
 
-  columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
+  columnDefSql (expression: ColumnDefExpr, options: {
+    sep?: string;
+  } = {}): string {
     const {
       sep = ' ',
     } = options;
@@ -3113,7 +3119,9 @@ export class Generator {
     return `${parseInt(thisStr, 2)}`;
   }
 
-  hexStringSql (expression: HexStringExpr, options: { binaryFunctionRepr?: string } = {}): string {
+  hexStringSql (expression: HexStringExpr, options: {
+    binaryFunctionRepr?: string;
+  } = {}): string {
     const {
       binaryFunctionRepr,
     } = options;
@@ -3613,7 +3621,9 @@ export class Generator {
     ].join(this.sep());
   }
 
-  nationalSql (expression: NationalExpr, options: { prefix?: string } = {}): string {
+  nationalSql (expression: NationalExpr, options: {
+    prefix?: string;
+  } = {}): string {
     const {
       prefix = 'N',
     } = options;
@@ -4096,7 +4106,9 @@ export class Generator {
 
   tableSql (
     expression: TableExpr,
-    options: { sep?: string } = {},
+    options: {
+      sep?: string;
+    } = {},
   ): string {
     const {
       sep = ' AS ',
@@ -4357,7 +4369,9 @@ export class Generator {
 
   valuesSql (
     expression: ValuesExpr,
-    options: { valuesAsTable?: boolean } = {},
+    options: {
+      valuesAsTable?: boolean;
+    } = {},
   ): string {
     const {
       valuesAsTable = true,
@@ -4384,7 +4398,7 @@ export class Generator {
       return alias ? `${values} AS ${alias}` : values;
     }
 
-    // Converts `VALUES...` expression into a series of select unions.
+    // Converts `VALUES...` expression into a series of select unions
     const aliasNode = isInstanceOf(expression.args.alias, TableAliasExpr) ? expression.args.alias : undefined;
     const columnNames = aliasNode?.columns;
 
@@ -4466,7 +4480,7 @@ export class Generator {
   }
 
   /**
-   * Generate SQL for ROLLUP.
+   * Generate SQL for ROLLUP
    */
   rollupSql (expression: RollupExpr): string {
     const expressions = this.expressions(expression, {
@@ -4693,7 +4707,9 @@ export class Generator {
     return `${this.lateralOp(expression)} ${thisStr}${alias}${ordinality}`;
   }
 
-  limitSql (expression: LimitExpr, options: { top?: boolean } = {}): string {
+  limitSql (expression: LimitExpr, options: {
+    top?: boolean;
+  } = {}): string {
     const {
       top = false,
     } = options;
@@ -4889,7 +4905,9 @@ export class Generator {
     return `((${this.sql(expression, 'this')}) OR (${this.sql(expression, 'expression')}))`;
   }
 
-  orderSql (expression: OrderExpr, options: { flat?: boolean } = {}): string {
+  orderSql (expression: OrderExpr, options: {
+    flat?: boolean;
+  } = {}): string {
     const {
       flat = false,
     } = options;
@@ -5046,7 +5064,7 @@ export class Generator {
   }
 
   /**
-   * Helper methods.
+   * Helper methods
    */
   protected queryModifiers (
     expression: Expression,
@@ -5127,7 +5145,7 @@ export class Generator {
   }
 
   /**
-   * Generate SQL for SELECT.
+   * Generate SQL for SELECT
    */
   selectSql (expression: SelectExpr): string {
     const into = expression.args.into;
@@ -5221,7 +5239,7 @@ export class Generator {
   }
 
   /**
-   * Generate SQL for schema.
+   * Generate SQL for schema
    */
   schemaSql (expression: SchemaExpr): string {
     const thisStr = this.sql(expression, 'this');
@@ -5230,7 +5248,7 @@ export class Generator {
   }
 
   /**
-   * Generate SQL for schema columns.
+   * Generate SQL for schema columns
    */
   schemaColumnsSql (expression: SchemaExpr): string {
     if (expression.args.expressions?.length) {
@@ -5278,7 +5296,9 @@ export class Generator {
       : '?';
   }
 
-  subquerySql (expression: SubqueryExpr, options: { sep?: string } = {}): string {
+  subquerySql (expression: SubqueryExpr, options: {
+    sep?: string;
+  } = {}): string {
     const {
       sep = ' AS ',
     } = options;
@@ -5475,7 +5495,9 @@ export class Generator {
 
   bracketOffsetExpressions (
     expression: BracketExpr,
-    options: { indexOffset?: number } = {},
+    options: {
+      indexOffset?: number;
+    } = {},
   ): Expression[] {
     const {
       indexOffset,
@@ -5649,9 +5671,9 @@ export class Generator {
 
   concatSql (expression: ConcatExpr): string {
     if (this.dialect._constructor.CONCAT_COALESCE && !expression.args.coalesce) {
-      // Dialect's CONCAT function coalesces NULLs to empty strings, but the expression does not.
+      // Dialect's CONCAT function coalesces NULLs to empty strings, but the expression does not
       // Transpile to double pipe operators, which typically returns NULL if any args are NULL
-      // instead of coalescing them to empty string.
+      // instead of coalescing them to empty string
       return concatToDPipeSql.call(this, expression);
     }
 
@@ -6178,7 +6200,9 @@ export class Generator {
     return this.binary(expression, '^');
   }
 
-  castSql (expression: Expression, options: { safePrefix?: string } = {}): string {
+  castSql (expression: Expression, options: {
+    safePrefix?: string;
+  } = {}): string {
     const {
       safePrefix,
     } = options;
@@ -6346,7 +6370,9 @@ export class Generator {
     return `ALTER${compound} SORTKEY ${thisStr || expressions}`;
   }
 
-  alterRenameSql (expression: Expression, options: { includeTo?: boolean } = {}): string {
+  alterRenameSql (expression: Expression, options: {
+    includeTo?: boolean;
+  } = {}): string {
     const {
       includeTo = true,
     } = options;
@@ -6867,7 +6893,9 @@ export class Generator {
 
   formatArgs (
     args: (ExpressionValue | undefined)[],
-    options: { sep?: string } = {},
+    options: {
+      sep?: string;
+    } = {},
   ): string {
     const {
       sep = ', ',
@@ -6982,7 +7010,9 @@ export class Generator {
       : resultSql;
   }
 
-  opExpressions (op: string, expression: Expression, options: { flat?: boolean } = {}): string {
+  opExpressions (op: string, expression: Expression, options: {
+    flat?: boolean;
+  } = {}): string {
     const flat = (options.flat ?? false) || expression.parent instanceof PropertiesExpr;
     const expressionsSql = this.expressions(expression, {
       flat,
@@ -7647,7 +7677,9 @@ export class Generator {
     // Check whether a conversion with format (T-SQL calls this 'style') is applicable
     if (style instanceof LiteralExpr && style.isInteger) {
       const styleValue = style.name;
-      const tsqlDialect = Dialect.get(Dialects.TSQL) as (typeof Dialect & { CONVERT_FORMAT_MAPPING: Record<string | number, string> }) | undefined;
+      const tsqlDialect = Dialect.get(Dialects.TSQL) as (typeof Dialect & {
+        CONVERT_FORMAT_MAPPING: Record<string | number, string>;
+      }) | undefined;
       const convertedStyle = tsqlDialect?.CONVERT_FORMAT_MAPPING?.[styleValue] ?? '';
 
       if (!convertedStyle) {
@@ -8943,7 +8975,9 @@ export class Generator {
     return this.func('WEEK', [thisExpr]);
   }
 
-  chrSql (expression: Expression, options: { name?: string } = {}): string {
+  chrSql (expression: Expression, options: {
+    name?: string;
+  } = {}): string {
     const {
       name = 'CHR',
     } = options;
@@ -8961,7 +8995,9 @@ export class Generator {
     return expressions ? `${expressions}` : '';
   }
 
-  tableSampleSql (expression: TableSampleExpr, options: { tablesampleKeyword?: string } = {}): string {
+  tableSampleSql (expression: TableSampleExpr, options: {
+    tablesampleKeyword?: string;
+  } = {}): string {
     const {
       tablesampleKeyword,
     } = options;
@@ -9003,7 +9039,9 @@ export class Generator {
     return `MASKING POLICY ${thisStr}${expressions}`;
   }
 
-  uniqueKeyPropertySql (expression: UniqueKeyPropertyExpr, options: { prefix?: string } = {}): string {
+  uniqueKeyPropertySql (expression: UniqueKeyPropertyExpr, options: {
+    prefix?: string;
+  } = {}): string {
     const {
       prefix = 'UNIQUE KEY',
     } = options;
@@ -9013,7 +9051,7 @@ export class Generator {
   }
 
   /**
-   * Format the time expression using the dialect's inverse time mapping.
+   * Format the time expression using the dialect's inverse time mapping
    */
   formatTime (
     expression: Expression,
@@ -9038,7 +9076,9 @@ export class Generator {
     return this.ceilFloor(expression);
   }
 
-  offsetLimitModifiers (expression: Expression, options: { fetch: boolean }, limit: Expression | undefined): string[] {
+  offsetLimitModifiers (expression: Expression, options: {
+    fetch: boolean;
+  }, limit: Expression | undefined): string[] {
     const {
       fetch,
     } = options;

@@ -131,7 +131,9 @@ class StarRocksParser extends MySQL.Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return {
       ...MySQL.Parser.FUNCTIONS,
       DATE_TRUNC: buildTimestampTrunc,
@@ -202,7 +204,7 @@ class StarRocksParser extends MySQL.Parser {
     const create = super.parseCreate();
 
     // StarRocks' primary key is defined outside of the schema in properties,
-    // so we move it into the schema expressions for standard AST representation.
+    // so we move it into the schema expressions for standard AST representation
     if (create instanceof CreateExpr && create.args.this instanceof SchemaExpr) {
       const props = create.args.properties;
       if (props) {
@@ -216,7 +218,9 @@ class StarRocksParser extends MySQL.Parser {
     return create as CreateExpr;
   }
 
-  public parseUnnest (options: { withAlias?: boolean } = {}): UnnestExpr | undefined {
+  public parseUnnest (options: {
+    withAlias?: boolean;
+  } = {}): UnnestExpr | undefined {
     const unnest = super.parseUnnest(options);
 
     if (unnest) {
@@ -367,9 +371,9 @@ class StarRocksGenerator extends MySQL.Generator {
   static UPDATE_STATEMENT_SUPPORTS_FROM: boolean = true;
   static INSERT_OVERWRITE: string = ' OVERWRITE';
 
-  // StarRocks doesn't support "IS TRUE/FALSE" syntax.
+  // StarRocks doesn't support "IS TRUE/FALSE" syntax
   static IS_BOOL_ALLOWED: boolean = false;
-  // StarRocks doesn't support renaming a table with a database.
+  // StarRocks doesn't support renaming a table with a database
   static RENAME_TABLE_WITH_DB: boolean = false;
 
   @cache
@@ -457,7 +461,7 @@ class StarRocksGenerator extends MySQL.Generator {
       },
     );
     m.set(UnixToTimeExpr, renameFunc('FROM_UNIXTIME'));
-    // StarRocks uses DATE_TRUNC instead of the MySQL simulation, so we remove the MySQL transform.
+    // StarRocks uses DATE_TRUNC instead of the MySQL simulation, so we remove the MySQL transform
     m.delete(DateTruncExpr);
     return m;
   }
@@ -625,7 +629,7 @@ class StarRocksGenerator extends MySQL.Generator {
 
   /**
      * Overrides table creation to move Primary Keys from the schema into properties.
-     * In StarRocks, PKs are defined as part of the table properties (often after the ENGINE).
+     * In StarRocks, PKs are defined as part of the table properties (often after the ENGINE)
      */
   public createSql (expression: CreateExpr): string {
     const schema = expression.args.this;
@@ -659,13 +663,13 @@ class StarRocksGenerator extends MySQL.Generator {
 
   /**
      * Generates the PARTITION BY clause.
-     * Handles specific parenthesis requirements for Materialized Views.
+     * Handles specific parenthesis requirements for Materialized Views
      */
   public partitionedByPropertySql (expression: PartitionedByPropertyExpr): string {
     const thisExpr = expression.args.this;
 
     if (thisExpr instanceof SchemaExpr) {
-      // StarRocks requires outer parentheses for MVs or simple column lists.
+      // StarRocks requires outer parentheses for MVs or simple column lists
       const create = expression.findAncestor(CreateExpr);
 
       let sqlResult = this.expressions(thisExpr, {
@@ -686,7 +690,7 @@ class StarRocksGenerator extends MySQL.Generator {
   }
 
   /**
-     * Generates StarRocks ORDER BY clause for clustering.
+     * Generates StarRocks ORDER BY clause for clustering
      */
   public clusterSql (expression: Expression): string {
     const expressions = this.expressions(expression, {
@@ -696,7 +700,7 @@ class StarRocksGenerator extends MySQL.Generator {
   }
 
   /**
-     * Generates the REFRESH clause for materialized views.
+     * Generates the REFRESH clause for materialized views
      */
   public refreshTriggerPropertySql (expression: RefreshTriggerPropertyExpr): string {
     let method = this.sql(expression, 'method');

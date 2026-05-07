@@ -44,9 +44,9 @@ import {
  */
 export function eliminateJoins<E extends Expression> (expression: E): E {
   for (const scope of traverseScope(expression)) {
-    // If any columns in this scope aren't qualified, it's hard to determine if a join isn't used.
-    // It's probably possible to infer this from the outputs of derived tables.
-    // But for now, let's just skip this rule.
+    // If any columns in this scope aren't qualified, it's hard to determine if a join isn't used
+    // It's probably possible to infer this from the outputs of derived tables
+    // But for now, let's just skip this rule
     if (0 < scope.unqualifiedColumns.length) {
       continue;
     }
@@ -95,8 +95,8 @@ function shouldEliminateJoin (scope: Scope, join: JoinExpr, alias: string): bool
 }
 
 function joinIsUsed (scope: Scope, join: JoinExpr, alias: string): boolean {
-  // We need to find all columns that reference this join.
-  // But columns in the ON clause shouldn't count.
+  // We need to find all columns that reference this join
+  // But columns in the ON clause shouldn't count
   const onClause = join.args.on;
 
   const onClauseColumns = new Set<Expression>();

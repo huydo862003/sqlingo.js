@@ -22,7 +22,7 @@ import {
 } from './optimizer';
 
 /**
- * Represents a query execution plan as a Directed Acyclic Graph (DAG) of Steps.
+ * Represents a query execution plan as a Directed Acyclic Graph (DAG) of Steps
  */
 export class Plan {
   public expression: Expression;
@@ -36,7 +36,7 @@ export class Plan {
   }
 
   /**
-   * Generates or retrieves the DAG of steps.
+   * Generates or retrieves the DAG of steps
    */
   get dag (): Map<Step, Set<Step>> {
     if (this._dag) {
@@ -68,7 +68,7 @@ export class Plan {
   }
 
   /**
-   * Returns an iterator over the leaf nodes (steps with no dependencies).
+   * Returns an iterator over the leaf nodes (steps with no dependencies)
    */
   get leaves (): IterableIterator<Step> {
     const leafNodes: Step[] = [];
@@ -89,7 +89,7 @@ export class Plan {
 }
 
 /**
- * Base class for an execution step in the query plan DAG.
+ * Base class for an execution step in the query plan DAG
  */
 export class Step {
   public name: string = '';
@@ -370,7 +370,7 @@ export class Step {
   }
 
   /**
-   * Returns a string representation of the execution step.
+   * Returns a string representation of the execution step
    */
   toString (): string {
     return this.toS();
@@ -378,7 +378,7 @@ export class Step {
 
   /**
    * Recursive helper to build the formatted string tree.
-   * @param level Indentation depth.
+   * @param level Indentation depth
    */
   toS (level: number = 0): string {
     const indent = '  '.repeat(level);
@@ -424,14 +424,14 @@ export class Step {
   }
 
   /**
-   * Property-like getter for the class name.
+   * Property-like getter for the class name
    */
   get typeName (): string {
     return this.constructor.name;
   }
 
   /**
-   * Unique identifier for the step in the output.
+   * Unique identifier for the step in the output
    */
   get id (): string {
     const nameStr = this.name ? ` ${this.name}` : '';
@@ -439,7 +439,7 @@ export class Step {
   }
 
   /**
-   * Hook for subclasses to add extra descriptive lines (like Join conditions or Source tables).
+   * Hook for subclasses to add extra descriptive lines (like Join conditions or Source tables)
    */
   _toS (_indent: string): string[] {
     return [];
@@ -447,7 +447,7 @@ export class Step {
 }
 
 /**
- * Represents a leaf-level operation that reads from a table, subquery, or CTE.
+ * Represents a leaf-level operation that reads from a table, subquery, or CTE
  */
 export class Scan extends Step {
   public source: ExpressionOrString | undefined = undefined;
@@ -486,7 +486,7 @@ export class Scan extends Step {
 }
 
 /**
- * Represents a join operation between a source step and one or more join targets.
+ * Represents a join operation between a source step and one or more join targets
  */
 export class Join extends Step {
   public sourceName: string | undefined = undefined;
@@ -546,7 +546,7 @@ export class Join extends Step {
 }
 
 /**
- * Represents an aggregation step (GROUP BY / HAVING).
+ * Represents an aggregation step (GROUP BY / HAVING)
  */
 export class Aggregate extends Step {
   public aggregations: Expression[] = [];
@@ -589,7 +589,7 @@ export class Aggregate extends Step {
 }
 
 /**
- * Represents an ordering step (ORDER BY).
+ * Represents an ordering step (ORDER BY)
  */
 export class Sort extends Step {
   public key: Expression[] = [];
@@ -610,7 +610,7 @@ export class Sort extends Step {
 }
 
 /**
- * Represents set operations like UNION, INTERSECT, and EXCEPT.
+ * Represents set operations like UNION, INTERSECT, and EXCEPT
  */
 export class SetOperation extends Step {
   public op: typeof SetOperationExpr; // Constructor for the specific SetOperation type
@@ -622,7 +622,9 @@ export class SetOperation extends Step {
     op: typeof SetOperationExpr,
     left: string | undefined,
     right: string | undefined,
-    options: { distinct?: boolean } = {},
+    options: {
+      distinct?: boolean;
+    } = {},
   ) {
     const {
       distinct = false,

@@ -10,13 +10,13 @@ export class DbmlStickyNote extends SchemaElement {
   name: string;
   content: string;
 
-  constructor (args: {
+  constructor (arguments_: {
     name: string;
     content: string;
   }) {
     super();
-    this.name = args.name;
-    this.content = args.content;
+    this.name = arguments_.name;
+    this.content = arguments_.content;
   }
 
   intern (): string {

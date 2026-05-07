@@ -10,6 +10,7 @@ import {
   onMounted, onBeforeUnmount, watch,
   useTemplateRef,
 } from 'vue';
+// eslint-disable-next-line import/no-namespace
 import * as monaco from 'monaco-editor';
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import {
@@ -93,8 +94,8 @@ onMounted(() => {
   });
 });
 
-watch(content, (newVal) => {
-  if (editor && editor.getValue() !== newVal) editor.setValue(newVal ?? '');
+watch(content, (newValue) => {
+  if (editor && editor.getValue() !== newValue) editor.setValue(newValue ?? '');
 });
 
 watch(() => language, (newLang) => {

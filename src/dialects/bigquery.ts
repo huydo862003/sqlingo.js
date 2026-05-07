@@ -359,7 +359,7 @@ function aliasOrderedGroup (expression: Expression): Expression {
 
 /**
  * BigQuery doesn't allow column names when defining a CTE (e.g. WITH x (a, b) AS...),
- * so we try to push them down into the inner SELECT statement (e.g. WITH x AS (SELECT ... AS a, ... AS b)).
+ * so we try to push them down into the inner SELECT statement (e.g. WITH x AS (SELECT ... AS a, ... AS b))
  */
 export function pushdownCteColumnNames (expression: Expression): Expression {
   if (!(expression instanceof CteExpr)) {
@@ -410,7 +410,7 @@ export function pushdownCteColumnNames (expression: Expression): Expression {
     }
 
     // Inner aliases are shadowed by the CTE column names, so we replace the
-    // entire projection with a new AliasExpr using the CTE's column name.
+    // entire projection with a new AliasExpr using the CTE's column name
     toReplace.replace(
       new AliasExpr({
         this: selectContent,
@@ -423,7 +423,7 @@ export function pushdownCteColumnNames (expression: Expression): Expression {
 }
 
 /**
- * Builds a StrToTime expression tailored for BigQuery's parsing format.
+ * Builds a StrToTime expression tailored for BigQuery's parsing format
  */
 export function buildParseTimestamp (args: Expression[]): StrToTimeExpr {
   const thisExpr = buildFormattedTime(StrToTimeExpr, {
@@ -437,7 +437,7 @@ export function buildParseTimestamp (args: Expression[]): StrToTimeExpr {
 }
 
 /**
- * Builds a Timestamp expression ensuring with_tz is set to true.
+ * Builds a Timestamp expression ensuring with_tz is set to true
  */
 export function buildTimestamp (args: Expression[]): TimestampExpr {
   const timestamp = TimestampExpr.fromArgList(args);
@@ -446,7 +446,7 @@ export function buildTimestamp (args: Expression[]): TimestampExpr {
 }
 
 /**
- * Chooses between Date and DateFromParts based on argument count.
+ * Chooses between Date and DateFromParts based on argument count
  */
 export function buildDate (args: Expression[]): DateExpr | DateFromPartsExpr {
   const exprType = args.length === 3 ? DateFromPartsExpr : DateExpr;
@@ -455,7 +455,7 @@ export function buildDate (args: Expression[]): DateExpr | DateFromPartsExpr {
 
 /**
  * Simplifies TO_HEX(MD5(..)) structures commonly found in BigQuery
- * into a single MD5Expr for easier transpilation.
+ * into a single MD5Expr for easier transpilation
  */
 export function buildToHex (args: Expression[]): HexExpr | Md5Expr | LowerHexExpr {
   const arg = seqGet(args, 0);
@@ -472,7 +472,7 @@ export function buildToHex (args: Expression[]): HexExpr | Md5Expr | LowerHexExp
 }
 
 /**
- * Builds JSONStripNulls and safely maps kwargs to their specific properties.
+ * Builds JSONStripNulls and safely maps kwargs to their specific properties
  */
 export function buildJsonStripNulls (args: Expression[]): JsonStripNullsExpr {
   const expression = new JsonStripNullsExpr({
@@ -495,7 +495,7 @@ export function buildJsonStripNulls (args: Expression[]): JsonStripNullsExpr {
 
 /**
  * Converts BigQuery's ARRAY_CONTAINS logic into a universally compatible
- * EXISTS(SELECT 1 FROM UNNEST(...) ...) subquery structure.
+ * EXISTS(SELECT 1 FROM UNNEST(...) ...) subquery structure
  */
 export function arrayContainsSql (this: Generator, expression: ArrayContainsExpr): string {
   const select = new SelectExpr({
@@ -574,10 +574,14 @@ export function buildRegexpExtract<T extends Expression> (
 
   exprType: new (args: any) => T,
   defaultGroup?: Expression,
-): (args: Expression[], options: { dialect: BigQuery }) => T {
+): (args: Expression[], options: {
+  dialect: BigQuery;
+}) => T {
   return (args: Expression[], {
     dialect,
-  }: { dialect: BigQuery }): T => {
+  }: {
+    dialect: BigQuery;
+  }): T => {
     let group = false;
     try {
       const pattern = args[1]?.name;
@@ -606,8 +610,12 @@ export function buildRegexpExtract<T extends Expression> (
 
 export function buildExtractJsonWithDefaultPath<T extends typeof Expression> (
   exprType: T,
-): (args: Expression[], options: { dialect: Dialect }) => InstanceType<T> {
-  return (args: Expression[], options: { dialect: Dialect }): InstanceType<T> => {
+): (args: Expression[], options: {
+  dialect: Dialect;
+}) => InstanceType<T> {
+  return (args: Expression[], options: {
+    dialect: Dialect;
+  }): InstanceType<T> => {
     if (args.length === 1) {
       // The default value for the JSONPath is '$' i.e all of the data
       args.push(LiteralExpr.string('$'));
@@ -618,7 +626,7 @@ export function buildExtractJsonWithDefaultPath<T extends typeof Expression> (
 
 /**
  * Maps Levenshtein distance to BigQuery's EDIT_DISTANCE function,
- * wrapping the 'max_dist' argument in a named Kwarg if present.
+ * wrapping the 'max_dist' argument in a named Kwarg if present
  */
 export const levenshteinSql = function (this: Generator, expression: LevenshteinExpr) {
   unsupportedArgs.call(this, expression, 'insCost', 'delCost', 'subCost');
@@ -645,7 +653,7 @@ export const levenshteinSql = function (this: Generator, expression: Levenshtein
 
 /**
  * Builder for Levenshtein expressions, extracting the max distance value
- * from the parsed argument list.
+ * from the parsed argument list
  */
 export function buildLevenshtein (args: Expression[]): LevenshteinExpr {
   const maxDist = seqGet(args, 2);
@@ -695,7 +703,7 @@ function buildFormatTime (exprType: new (args: any) => Expression): (args: Expre
 
 /**
  * Builds a Contains expression (typically for BigQuery's CONTAINS_SUBSTR).
- * Wraps operands in LOWER() to ensure case-insensitive transpilation to other dialects.
+ * Wraps operands in LOWER() to ensure case-insensitive transpilation to other dialects
  */
 export function buildContainsSubstring (args: Expression[]): ContainsExpr {
   // Lowercase the operands in case of transpilation, as ContainsExpr
@@ -1070,7 +1078,9 @@ export class BigQueryParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return (() => {
 
       const fns: Record<string, (args: Expression[], dialect: any) => Expression> = {
@@ -1374,7 +1384,9 @@ export class BigQueryParser extends Parser {
     return expr;
   }
 
-  parseTablePart (options: { schema?: boolean } = {}): Expression | undefined {
+  parseTablePart (options: {
+    schema?: boolean;
+  } = {}): Expression | undefined {
     const {
       schema = false,
     } = options;
@@ -1613,7 +1625,9 @@ export class BigQueryParser extends Parser {
     return column;
   }
 
-  parseJsonObject (options: { agg?: boolean } = {}): JsonObjectExpr | JsonObjectAggExpr {
+  parseJsonObject (options: {
+    agg?: boolean;
+  } = {}): JsonObjectExpr | JsonObjectAggExpr {
     const {
       agg: _agg = false,
     } = options;
@@ -1672,7 +1686,9 @@ export class BigQueryParser extends Parser {
     return bracket;
   }
 
-  parseUnnest (options: { withAlias?: boolean } = {}): UnnestExpr | undefined {
+  parseUnnest (options: {
+    withAlias?: boolean;
+  } = {}): UnnestExpr | undefined {
     const {
       withAlias = true,
     } = options;
@@ -2596,8 +2612,8 @@ export class BigQueryGenerator extends Generator {
   atTimeZoneSql (expression: AtTimeZoneExpr): string {
     const parent = expression.parent;
 
-    // BigQuery allows CAST(.. AS {STRING|TIMESTAMP} [FORMAT <fmt> [AT TIME ZONE <tz>]]).
-    // Only the TIMESTAMP one should use the below conversion.
+    // BigQuery allows CAST(.. AS {STRING|TIMESTAMP} [FORMAT <fmt> [AT TIME ZONE <tz>]])
+    // Only the TIMESTAMP one should use the below conversion
     if (
       !(parent instanceof CastExpr)
       || !isType(parent.args.to, 'text')
@@ -2691,14 +2707,16 @@ export class BigQueryGenerator extends Generator {
     ]);
   }
 
-  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
+  castSql (expression: CastExpr, options: {
+    safePrefix?: string;
+  } = {}): string {
     const {
       safePrefix,
     } = options;
     const thisNode = expression.args.this;
 
     // This ensures that inline type-annotated ARRAY literals like ARRAY<INT64>[1, 2, 3]
-    // are roundtripped unaffected. The inner check excludes ARRAY(SELECT ...) expressions.
+    // are roundtripped unaffected. The inner check excludes ARRAY(SELECT ...) expressions
     if (thisNode instanceof ArrayExpr) {
       const elem = seqGet(thisNode.args.expressions || [], 0);
       if (!(elem instanceof Expression && elem.find(QueryExpr))) {
@@ -2881,7 +2899,7 @@ export class BigQuery extends Dialect {
       // In BigQuery, CTEs are case-insensitive, but UDF and table names are case-sensitive
       // by default. The following check uses a heuristic to detect tables based on whether
       // they are qualified. This should generally be correct, because tables in BigQuery
-      // must be qualified with at least a dataset, unless @@dataset_id is set.
+      // must be qualified with at least a dataset, unless @@dataset_id is set
       const caseSensitive = (
         parent instanceof UserDefinedFunctionExpr
         || (

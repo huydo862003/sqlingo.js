@@ -104,8 +104,8 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
 
   const newCtes: Expression[] = [];
 
-  // We're adding more CTEs, but we want to maintain the DAG order.
-  // Derived tables within an existing CTE need to come before the existing CTE.
+  // We're adding more CTEs, but we want to maintain the DAG order
+  // Derived tables within an existing CTE need to come before the existing CTE
   for (const cteScope of root.cteScopes) {
     // Append all the new CTEs from this existing CTE
     for (const scope of cteScope.traverse()) {
@@ -274,7 +274,7 @@ function newCte (
    * Returns:
    *     tuple of (name, cte)
    *     where `name` is a new name for this CTE in the root scope and `cte` is a new CTE instance.
-   *     If this CTE duplicates an existing CTE, `cte` will be undefined.
+   *     If this CTE duplicates an existing CTE, `cte` will be undefined
    */
   const duplicateCteAlias = existingCtes.get(scope.expression.sqlKey);
   const parent = scope.expression.parent;

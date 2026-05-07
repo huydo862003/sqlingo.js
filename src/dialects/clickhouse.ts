@@ -586,8 +586,12 @@ class ClickHouseParser extends Parser {
   static JOINS_HAVE_EQUAL_PRECEDENCE = true;
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
-    const parsers: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
+    const parsers: Record<string, (args: Expression[], options: {
+      dialect: Dialect;
+    }) => Expression> = {
       ...Parser.FUNCTIONS,
       ...Object.fromEntries(
         [...TIMESTAMP_TRUNC_UNITS].map((unit) => [
@@ -1060,9 +1064,11 @@ class ClickHouseParser extends Parser {
     return this.parseLambda();
   }
 
-  parseTypes (options: { checkFunc?: boolean;
+  parseTypes (options: {
+    checkFunc?: boolean;
     schema?: boolean;
-    allowIdentifiers?: boolean; } = {}): Expression | undefined {
+    allowIdentifiers?: boolean;
+  } = {}): Expression | undefined {
     const {
       checkFunc = false, schema = false, allowIdentifiers = true,
     } = options;
@@ -1248,7 +1254,9 @@ class ClickHouseParser extends Parser {
     return thisNode;
   }
 
-  parsePosition (_options: { haystackFirst?: boolean } = {}): StrPositionExpr {
+  parsePosition (_options: {
+    haystackFirst?: boolean;
+  } = {}): StrPositionExpr {
     return super.parsePosition({
       haystackFirst: true,
     });
@@ -1328,7 +1336,9 @@ class ClickHouseParser extends Parser {
   }
 
   parseFunction (options: {
-    functions?: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression>;
+    functions?: Record<string, (args: Expression[], options: {
+      dialect: Dialect;
+    }) => Expression>;
     anonymous?: boolean;
     optionalParens?: boolean;
     anyToken?: boolean;
@@ -1528,12 +1538,14 @@ class ClickHouseParser extends Parser {
     return super.parseConstraint() || this.parseProjectionDef();
   }
 
-  parseAlias (thisNode: Expression | undefined, options: { explicit?: boolean } = {}): Expression | undefined {
+  parseAlias (thisNode: Expression | undefined, options: {
+    explicit?: boolean;
+  } = {}): Expression | undefined {
     const {
       explicit = false,
     } = options;
     // In clickhouse "SELECT <expr> APPLY(...)" is a query modifier,
-    // so "APPLY" shouldn't be parsed as <expr>'s alias.
+    // so "APPLY" shouldn't be parsed as <expr>'s alias
     if (this.matchPair(TokenType.APPLY, TokenType.L_PAREN, {
       advance: false,
     })) {
@@ -1584,7 +1596,9 @@ class ClickHouseParser extends Parser {
     return thisNode;
   }
 
-  parseValue (options: { values?: boolean } = {}): TupleExpr | undefined {
+  parseValue (options: {
+    values?: boolean;
+  } = {}): TupleExpr | undefined {
     const {
       values = true,
     } = options;
@@ -1596,8 +1610,8 @@ class ClickHouseParser extends Parser {
       return undefined;
     }
 
-    // In Clickhouse "SELECT * FROM VALUES (1, 2, 3)" generates a table with a single column.
-    // We canonicalize the values into a tuple-of-tuples AST if it's not already one.
+    // In Clickhouse "SELECT * FROM VALUES (1, 2, 3)" generates a table with a single column
+    // We canonicalize the values into a tuple-of-tuples AST if it's not already one
     const expressions = value.args.expressions;
     const lastExpr = expressions?.[expressions.length - 1];
 
@@ -2410,7 +2424,9 @@ export class ClickHouseGenerator extends Generator {
     return strToDateSql;
   }
 
-  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
+  castSql (expression: CastExpr, options: {
+    safePrefix?: string;
+  } = {}): string {
     const {
       safePrefix,
     } = options;
@@ -2511,7 +2527,7 @@ export class ClickHouseGenerator extends Generator {
     let dtype: string;
     const Constructor = this._constructor as typeof ClickHouseGenerator;
 
-    // String is the standard ClickHouse type, every other variant is just an alias.
+    // String is the standard ClickHouse type, every other variant is just an alias
     if (Constructor.STRING_TYPE_MAPPING.has(expression.args.this as DataTypeExprKind)) {
       dtype = 'String';
     } else {
@@ -2691,7 +2707,9 @@ export class ClickHouseGenerator extends Generator {
     return super.notSql(expression);
   }
 
-  valuesSql (expression: ValuesExpr, options: { valuesAsTable?: boolean } = {}): string {
+  valuesSql (expression: ValuesExpr, options: {
+    valuesAsTable?: boolean;
+  } = {}): string {
     let {
       valuesAsTable = true,
     } = options;
@@ -2784,7 +2802,7 @@ export class ClickHouse extends Dialect {
       columnAliases = structureColdefs.map((coldef) =>
         toIdentifier(coldef.split(' ')[0]));
     } else if (values?.[0] instanceof Expression) {
-    // Default column aliases in CH are "c1", "c2", etc.
+    // Default column aliases in CH are "c1", "c2", etc
       const rowWidth = values[0].args.expressions?.length;
       columnAliases = Array.from({
         length: rowWidth ?? 0,

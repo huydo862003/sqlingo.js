@@ -80,7 +80,9 @@ function dateDeltaSql (name: string): (this: Generator, expression: DateDeltaTyp
 
 function toCharIsNumericHandler (args: Expression[], {
   dialect,
-}: { dialect: DialectType }): TimeToStrExpr | ToCharExpr {
+}: {
+  dialect: DialectType;
+}): TimeToStrExpr | ToCharExpr {
   const expression = buildTimeToStrOrToChar(args, {
     dialect,
   });
@@ -138,7 +140,9 @@ function buildDateDeltaWithCastInterval (
 
 function dateTypeHandler (args: Expression[], {
   dialect,
-}: { dialect: DialectType }): Expression {
+}: {
+  dialect: DialectType;
+}): Expression {
   const [
     year,
     month,
@@ -229,7 +233,9 @@ class DremioParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       ARRAY_GENERATE_RANGE: (args: unknown[]) => GenerateSeriesExpr.fromArgList(args),
@@ -407,7 +413,9 @@ class DremioGenerator extends Generator {
     return super.dataTypeSql(expression);
   }
 
-  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
+  castSql (expression: CastExpr, options: {
+    safePrefix?: string;
+  } = {}): string {
     const {
       safePrefix,
     } = options;

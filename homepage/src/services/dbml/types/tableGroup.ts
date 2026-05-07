@@ -13,13 +13,13 @@ export class DbmlTableGroupField extends SchemaElement {
   schema: string;
   table: string;
 
-  constructor (args: {
+  constructor (arguments_: {
     schema?: string;
     table: string;
   }) {
     super();
-    this.schema = args.schema ?? DEFAULT_SCHEMA_NAME;
-    this.table = args.table;
+    this.schema = arguments_.schema ?? DEFAULT_SCHEMA_NAME;
+    this.table = arguments_.table;
   }
 
   intern (): string {
@@ -33,15 +33,15 @@ export class DbmlTableGroup extends SchemaElement {
   tables: DbmlTableGroupField[];
   note?: string;
 
-  constructor (args: {
+  constructor (arguments_: {
     name: string;
     tables: DbmlTableGroupField[];
     note?: string;
   }) {
     super();
-    this.name = args.name;
-    this.tables = args.tables;
-    this.note = args.note;
+    this.name = arguments_.name;
+    this.tables = arguments_.tables;
+    this.note = arguments_.note;
   }
 
   intern (): string {

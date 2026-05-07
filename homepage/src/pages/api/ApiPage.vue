@@ -122,9 +122,9 @@
                 ><span class="gui-warning-fg">{{ p.name }}</span><span
                   v-if="p.flags?.isOptional"
                   class="gui-info-fg"
-                >?</span>: <span class="gui-success-fg">{{ typeStr(p.type) }}</span><span
+                >?</span>: <span class="gui-success-fg">{{ typeString(p.type) }}</span><span
                   v-if="i < (sig.parameters?.length ?? 0) - 1"
-                >, </span></span>): <span class="gui-success-fg">{{ typeStr(sig.type) }}</span>
+                >, </span></span>): <span class="gui-success-fg">{{ typeString(sig.type) }}</span>
               </div>
               <div
                 v-if="comment(sig)"
@@ -157,7 +157,7 @@
                       <code class="font-mono gui-warning-fg">{{ p.name }}{{ p.flags?.isOptional ? '?' : '' }}</code>
                     </td>
                     <td class="px-sm py-xs border-b gui-neutral-border-subtle align-top">
-                      <code class="font-mono text-sm gui-success-fg">{{ typeStr(p.type) }}</code>
+                      <code class="font-mono text-sm gui-success-fg">{{ typeString(p.type) }}</code>
                     </td>
                     <td
                       class="prose gui-neutral-fg-muted leading-3 px-sm py-xs border-b gui-neutral-border-subtle align-top pdesc"
@@ -622,8 +622,8 @@ function selectBySlug (slug: string): boolean {
   return false;
 }
 
-import('virtual:typedoc').then((mod) => {
-  data.value = mod.default as ReflectionNode | null;
+import('virtual:typedoc').then((module_) => {
+  data.value = module_.default as ReflectionNode | null;
   // after data loads, check URL hash
   const hash = window.location.hash.slice(1);
   if (hash) selectBySlug(hash);
@@ -659,13 +659,13 @@ const GROUP_ORDER: Array<[string, number[]]> = [
 ];
 
 const navGroups = computed(() => {
-  const q = query.value.toLowerCase();
+  const search = query.value.toLowerCase();
   return GROUP_ORDER.flatMap(([
     label,
     kinds,
   ]) => {
     const items = topLevel.value.filter(
-      (n) => kinds.includes(n.kind) && (!q || n.name.toLowerCase().includes(q)),
+      (n) => kinds.includes(n.kind) && (!search || n.name.toLowerCase().includes(search)),
     );
     return items.length
       ? [
@@ -686,8 +686,8 @@ function select (item: ReflectionNode) {
 
 function kindLabel (kind: number): string {
   return Object.entries(ReflectionKind).find(([
-    , v,
-  ]) => v === kind)?.[0] ?? '?';
+    , value,
+  ]) => value === kind)?.[0] ?? '?';
 }
 
 function kindSlug (kind: number): string {
@@ -695,7 +695,7 @@ function kindSlug (kind: number): string {
 }
 
 function comment (node: ReflectionNode): string {
-  const text = (node.comment?.summary ?? []).map((p) => p.text).join('')
+  const text = (node.comment?.summary ?? []).map((part) => part.text).join('')
     .trim();
   return marked(text) as string;
 }
@@ -705,34 +705,34 @@ function sourceUrl (node: ReflectionNode): string | null {
 }
 
 function sourceFile (node: ReflectionNode): string {
-  const s = node.sources?.[0];
-  return s ? `${s.fileName}:${s.line}` : '';
+  const source = node.sources?.[0];
+  return source ? `${source.fileName}:${source.line}` : '';
 }
 
 function sourceLine (node: ReflectionNode): string {
-  const s = node.sources?.[0];
-  return s ? `L${s.line}` : '';
+  const source = node.sources?.[0];
+  return source ? `L${source.line}` : '';
 }
 
-function typeStr (t: TypeInfo | undefined): string {
-  if (!t) return '';
-  switch (t.type) {
+function typeString (typeInfo: TypeInfo | undefined): string {
+  if (!typeInfo) return '';
+  switch (typeInfo.type) {
     case 'intrinsic':
     case 'reference':
-      return t.typeArguments?.length
-        ? `${t.name}<${t.typeArguments.map(typeStr).join(', ')}>`
-        : (t.name ?? '?');
-    case 'literal': return JSON.stringify(t.value);
-    case 'array': return `${typeStr(t.elementType)}[]`;
-    case 'union': return (t.types ?? []).map(typeStr).join(' | ');
-    case 'intersection': return (t.types ?? []).map(typeStr).join(' & ');
-    default: return t.name ?? t.type ?? '?';
+      return typeInfo.typeArguments?.length
+        ? `${typeInfo.name}<${typeInfo.typeArguments.map(typeString).join(', ')}>`
+        : (typeInfo.name ?? '?');
+    case 'literal': return JSON.stringify(typeInfo.value);
+    case 'array': return `${typeString(typeInfo.elementType)}[]`;
+    case 'union': return (typeInfo.types ?? []).map(typeString).join(' | ');
+    case 'intersection': return (typeInfo.types ?? []).map(typeString).join(' & ');
+    default: return typeInfo.name ?? typeInfo.type ?? '?';
   }
 }
 
 function memberType (node: ReflectionNode): string {
-  if (node.type) return typeStr(node.type);
-  if (node.signatures?.[0]?.type) return typeStr(node.signatures[0].type);
+  if (node.type) return typeString(node.type);
+  if (node.signatures?.[0]?.type) return typeString(node.signatures[0].type);
   return '';
 }
 
@@ -740,7 +740,7 @@ const HIDE_KINDS = new Set<number>([ReflectionKind.Constructor]);
 
 function visibleMembers (node: ReflectionNode): ReflectionNode[] {
   return (node.children ?? []).filter(
-    (m) => !m.flags.isPrivate && !m.flags.isProtected && !HIDE_KINDS.has(m.kind),
+    (member) => !member.flags.isPrivate && !member.flags.isProtected && !HIDE_KINDS.has(member.kind),
   );
 }
 </script>

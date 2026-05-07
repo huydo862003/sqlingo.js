@@ -12,17 +12,17 @@ export class DbmlProject extends SchemaElement {
   note?: string;
   custom?: Record<string, string>;
 
-  constructor (args: {
+  constructor (arguments_: {
     name?: string;
     databaseType?: string;
     note?: string;
     custom?: Record<string, string>;
   }) {
     super();
-    this.name = args.name;
-    this.databaseType = args.databaseType;
-    this.note = args.note;
-    this.custom = args.custom;
+    this.name = arguments_.name;
+    this.databaseType = arguments_.databaseType;
+    this.note = arguments_.note;
+    this.custom = arguments_.custom;
   }
 
   intern (): string {

@@ -14,7 +14,7 @@ import {
 } from './trie';
 
 /**
- * Represents a syntax token's tag.
+ * Represents a syntax token's tag
  */
 export enum TokenType {
   L_PAREN = 'lParen',
@@ -457,7 +457,7 @@ export enum TokenType {
 }
 
 /**
- * Represents a single token in the SQL lexical analysis.
+ * Represents a single token in the SQL lexical analysis
  */
 export class Token {
   tokenType: TokenType;
@@ -520,7 +520,7 @@ export interface TokenizerOptions {
 }
 
 /**
- * Token pair type for denoting opening/closing delimiters.
+ * Token pair type for denoting opening/closing delimiters
  */
 export type TokenPair = string | [string, string];
 
@@ -730,7 +730,7 @@ export class Tokenizer {
   }
 
   /**
-   * Dictionary mapping format string prefixes to [closing delimiter, token type] tuples.
+   * Dictionary mapping format string prefixes to [closing delimiter, token type] tuples
    */
   @cache
   static get _FORMAT_STRINGS (): Record<string, [string, TokenType]> {
@@ -824,7 +824,7 @@ export class Tokenizer {
    * Trie structure for efficient keyword matching.
    *
    * Contains keywords that have spaces or contain single-token characters,
-   * allowing for efficient prefix-based scanning of multi-character keywords.
+   * allowing for efficient prefix-based scanning of multi-character keywords
    */
   @cache
   static get _KEYWORD_TRIE (): TrieNode {
@@ -844,7 +844,7 @@ export class Tokenizer {
 
   /**
    * Override this in subclasses to add or change keywords for a dialect.
-   * The `KEYWORDS` getter will return this value (with caching).
+   * The `KEYWORDS` getter will return this value (with caching)
    */
   static ORIGINAL_KEYWORDS: Record<string, TokenType> = {
     '{%': TokenType.BLOCK_START,
@@ -1220,7 +1220,7 @@ export class Tokenizer {
   static NUMERIC_LITERALS: Record<string, string> = {};
 
   /**
-   * Array of comment delimiters.
+   * Array of comment delimiters
    */
   static COMMENTS: (string | [string, string])[] = [
     '--',
@@ -1230,30 +1230,30 @@ export class Tokenizer {
     ],
   ];
 
-  /** The SQL string being tokenized. */
+  /** The SQL string being tokenized */
   sql = '';
-  /** The length of the SQL string. */
+  /** The length of the SQL string */
   size = 0;
-  /** Array of tokens produced by tokenization. */
+  /** Array of tokens produced by tokenization */
   tokens: Token[] = [];
   dialect: Dialect;
-  /** Starting position of the current token. */
+  /** Starting position of the current token */
   private _start = 0;
-  /** Current position in the SQL string. */
+  /** Current position in the SQL string */
   private _current = 0;
-  /** Current line number (1-indexed). */
+  /** Current line number (1-indexed) */
   private line = 1;
-  /** Current column number. */
+  /** Current column number */
   private _col = 0;
-  /** Accumulated comments for the next token. */
+  /** Accumulated comments for the next token */
   private comments: string[] = [];
-  /** Current character being processed. */
+  /** Current character being processed */
   private char = '';
-  /** Whether we've reached the end of the SQL string. */
+  /** Whether we've reached the end of the SQL string */
   private _end = false;
-  /** The next character to be processed. */
+  /** The next character to be processed */
   private peek = '';
-  /** Line number of the previously added token. */
+  /** Line number of the previously added token */
   private prevTokenLine = -1;
 
   constructor (options: TokenizerOptions = {}) {
@@ -1265,7 +1265,7 @@ export class Tokenizer {
   }
 
   /**
-   * Reset the tokenizer state.
+   * Reset the tokenizer state
    */
   reset (): void {
     this.sql = '';
@@ -1628,7 +1628,7 @@ export class Tokenizer {
       this.add(TokenType.HINT);
     }
 
-    // Leading comment is attached to the succeeding token, whilst trailing comment to the preceding.
+    // Leading comment is attached to the succeeding token, whilst trailing comment to the preceding
     if (commentStartLine === this.prevTokenLine) {
       this.tokens[this.tokens.length - 1].comments.push(...this.comments);
       this.comments = [];
@@ -1639,7 +1639,7 @@ export class Tokenizer {
   }
 
   /**
-   * Scans a numeric literal, including decimals, scientific notation, and type suffixes.
+   * Scans a numeric literal, including decimals, scientific notation, and type suffixes
    */
   private scanNumber (): void {
     const constructor = this._constructor;

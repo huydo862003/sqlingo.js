@@ -456,12 +456,14 @@ export const SEQ_RESTRICTED = [
 /**
  * Apply base64 alphabet character replacements.
  *
- * Base64 alphabet can be 1-3 chars: 1st = index 62 ('+'), 2nd = index 63 ('/'), 3rd = padding ('=').
+ * Base64 alphabet can be 1-3 chars: 1st = index 62 ('+'), 2nd = index 63 ('/'), 3rd = padding ('=')
  */
 function applyBase64AlphabetReplacements (
   result: Expression,
   alphabet: Expression | undefined,
-  options: { reverse?: boolean } = {},
+  options: {
+    reverse?: boolean;
+  } = {},
 ): Expression {
   const {
     reverse = false,
@@ -499,9 +501,11 @@ function applyBase64AlphabetReplacements (
 }
 
 /**
- * Transpile Snowflake BASE64_DECODE_STRING/BINARY to DuckDB.
+ * Transpile Snowflake BASE64_DECODE_STRING/BINARY to DuckDB
  */
-function base64DecodeSql (this: Generator, expression: Base64EncodeExpr, options: { toString?: boolean }): string {
+function base64DecodeSql (this: Generator, expression: Base64EncodeExpr, options: {
+  toString?: boolean;
+}): string {
   const {
     toString = false,
   } = options;
@@ -526,7 +530,7 @@ function base64DecodeSql (this: Generator, expression: Base64EncodeExpr, options
 }
 
 /**
- * DuckDB's LAST_DAY only supports month. Logic handles year, quarter, week.
+ * DuckDB's LAST_DAY only supports month. Logic handles year, quarter, week
  */
 function lastDaySql (this: Generator, expression: LastDayExpr): string {
   const dateExpr = expression.args.this;
@@ -622,7 +626,7 @@ function isNanosecondUnit (unit: Expression | undefined): boolean {
   return (unit instanceof VarExpr || unit instanceof LiteralExpr) && unit.name.toUpperCase() === 'NANOSECOND';
 }
 
-/** Generate NANOSECOND diff using EPOCH_NS since DATE_DIFF doesn't support it. */
+/** Generate NANOSECOND diff using EPOCH_NS since DATE_DIFF doesn't support it */
 function handleNanosecondDiff (this: Generator, endTime: Expression, startTime: Expression): string {
   const endNs = new CastExpr({
     this: endTime,
@@ -645,7 +649,7 @@ function handleNanosecondDiff (this: Generator, endTime: Expression, startTime: 
   );
 }
 
-/** Transpile TO_BOOLEAN and TRY_TO_BOOLEAN from Snowflake to DuckDB. */
+/** Transpile TO_BOOLEAN and TRY_TO_BOOLEAN from Snowflake to DuckDB */
 function toBooleanSql (this: Generator, expression: ToBooleanExpr): string {
   const arg = expression.args.this;
   const isSafe = expression.args.safe ?? false;
@@ -774,7 +778,9 @@ function timeDiffSql (this: Generator, expression: TimeDiffExpr): string {
 }
 
 /** Handles NANOSECOND units and float interval rounding for DuckDB */
-function dateDeltaToBinaryIntervalOp (options: { cast?: boolean } = {}): (this: Generator, expression: DatetimeAddExpr | DatetimeSubExpr) => string {
+function dateDeltaToBinaryIntervalOp (options: {
+  cast?: boolean;
+} = {}): (this: Generator, expression: DatetimeAddExpr | DatetimeSubExpr) => string {
   const {
     cast = true,
   } = options;
@@ -1079,7 +1085,9 @@ function buildDateDiff (args: Expression[]): DateDiffExpr {
   });
 }
 
-function buildGenerateSeries (options: { endExclusive?: boolean } = {}): (args: Expression[]) => GenerateSeriesExpr {
+function buildGenerateSeries (options: {
+  endExclusive?: boolean;
+} = {}): (args: Expression[]) => GenerateSeriesExpr {
   const {
     endExclusive = false,
   } = options;
@@ -1197,7 +1205,7 @@ function jsonFormatSql (this: Generator, expression: JsonFormatExpr): string {
 
 /**
  * Transpile Snowflake SEQ1/SEQ2/SEQ4/SEQ8 to DuckDB.
- * Generates monotonically increasing integers starting from 0.
+ * Generates monotonically increasing integers starting from 0
  */
 function seqSql (this: Generator, expression: FuncExpr, byteWidth: number): string {
   const ancestor = expression.findAncestor(...SEQ_RESTRICTED);
@@ -1226,7 +1234,7 @@ function seqSql (this: Generator, expression: FuncExpr, byteWidth: number): stri
   return this.sql(result);
 }
 
-/** Transpile UNIX timestamps to DuckDB timestamps with scale handling. */
+/** Transpile UNIX timestamps to DuckDB timestamps with scale handling */
 function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   const scale = expression.args.scale;
   const scaleValue = scale?.toValue();
@@ -1277,7 +1285,7 @@ const WRAPPED_JSON_EXTRACT_EXPRESSIONS = [
   NotExpr,
 ];
 
-/** Wraps arrow JSON extract in parens if required by parent precedence. */
+/** Wraps arrow JSON extract in parens if required by parent precedence */
 function arrowJsonExtractSqlDuckDB (this: Generator, expression: JsonExtractType): string {
   let arrowSql = arrowJsonExtractSql.call(this, expression);
   if (
@@ -1289,7 +1297,7 @@ function arrowJsonExtractSqlDuckDB (this: Generator, expression: JsonExtractType
   return arrowSql;
 }
 
-/** Infers and applies casts for string literals used in datetime functions. */
+/** Infers and applies casts for string literals used in datetime functions */
 function implicitDatetimeCast (
   arg: Expression | undefined,
   type: DataTypeExprKind = DataTypeExprKind.DATE,
@@ -1312,7 +1320,7 @@ function implicitDatetimeCast (
   return arg;
 }
 
-/** Compute Monday-based day shift for WEEK units. */
+/** Compute Monday-based day shift for WEEK units */
 function weekUnitToDow (unit: Expression | undefined): number | undefined {
   if (unit instanceof VarExpr && unit.name.toUpperCase() === 'ISOWEEK') {
     return 1;
@@ -1325,7 +1333,7 @@ function weekUnitToDow (unit: Expression | undefined): number | undefined {
   return undefined;
 }
 
-/** Custom DATE_TRUNC logic for non-Monday week starts. */
+/** Custom DATE_TRUNC logic for non-Monday week starts */
 function buildWeekTruncExpression (dateExpr: Expression, startDow: number): Expression {
   const shiftDays = startDow === 7 ? 1 : 1 - startDow;
 
@@ -1350,7 +1358,7 @@ function buildWeekTruncExpression (dateExpr: Expression, startDow: number): Expr
   });
 }
 
-/** Transpile DATE_DIFF with boundary-aware week logic. */
+/** Transpile DATE_DIFF with boundary-aware week logic */
 function dateDiffSql (this: Generator, expression: DateDiffExpr): string {
   const unit = expression.args.unit;
 
@@ -1643,7 +1651,7 @@ function bitwiseAggSql (
 function literalSqlWithWsChr (this: Generator, literal: string): string {
   /**
    * DuckDB does not support \uXXXX escapes.
-   * Uses CHR() for control characters in WS_CONTROL_CHARS_TO_DUCK.
+   * Uses CHR() for control characters in WS_CONTROL_CHARS_TO_DUCK
    */
   const chars = literal.split('');
   if (!chars.some((ch) => ch in WS_CONTROL_CHARS_TO_DUCK)) {
@@ -1690,7 +1698,7 @@ function escapeRegexMetachars (
   delimiters: Expression | undefined,
   delimitersSql: string,
 ): string {
-  /** Escapes regex metachars \ - ^ [ ] for INITCAP character classes. */
+  /** Escapes regex metachars \ - ^ [ ] for INITCAP character classes */
   if (!delimiters) return delimitersSql;
 
   if (delimiters instanceof LiteralExpr && delimiters.isString) {
@@ -1718,7 +1726,7 @@ function escapeRegexMetachars (
 }
 
 function buildCapitalizationSql (this: Generator, valueToSplit: string, delimitersSql: string): string {
-  /** Implements custom INITCAP logic using REGEXP_EXTRACT_ALL and LIST_TRANSFORM. */
+  /** Implements custom INITCAP logic using REGEXP_EXTRACT_ALL and LIST_TRANSFORM */
   if (delimitersSql === '\'\'') {
     return `UPPER(LEFT(${valueToSplit}, 1)) || LOWER(SUBSTRING(${valueToSplit}, 2))`;
   }
@@ -1764,7 +1772,7 @@ function initcapSql (this: Generator, expression: InitcapExpr): string {
 }
 
 function boolxorAggSql (this: Generator, expression: BoolxorAggExpr): string {
-  /** Mimics Snowflake BOOLXOR_AGG by generating COUNT_IF(col) = 1. */
+  /** Mimics Snowflake BOOLXOR_AGG by generating COUNT_IF(col) = 1 */
   return this.sql(
     new EqExpr({
       this: castToBoolean(expression.args.this as Expression) ?? expression.args.this,
@@ -1774,7 +1782,7 @@ function boolxorAggSql (this: Generator, expression: BoolxorAggExpr): string {
 }
 
 function bitshiftSql (this: Generator, expression: BitwiseLeftShiftExpr | BitwiseRightShiftExpr): string {
-  /** Transforms bitshift for DuckDB injecting BIT/INT128 casts and fixing precedence. */
+  /** Transforms bitshift for DuckDB injecting BIT/INT128 casts and fixing precedence */
   const operator = expression instanceof BitwiseLeftShiftExpr ? '<<' : '>>';
   let resultIsBlob = false;
   const thisNode = expression.args.this;
@@ -1877,7 +1885,7 @@ function ceilFloor (this: Generator, expression: FloorExpr | CeilExpr): string {
 
 /**
  * Transpile Snowflake's REGR_VALX/REGR_VALY to DuckDB equivalent.
- * REGR_VALX(y, x) returns NULL if y is NULL; otherwise returns x.
+ * REGR_VALX(y, x) returns NULL if y is NULL; otherwise returns x
  */
 function regrValSql (this: Generator, expression: RegrValxExpr | RegrValyExpr): string {
   const y = expression.args.this ?? null_();
@@ -2107,7 +2115,9 @@ function shaSql (
   this: Generator,
   expression: ShaExpr,
   hashFunc: string,
-  options: { isBinary?: boolean } = {},
+  options: {
+    isBinary?: boolean;
+  } = {},
 ): string {
   const {
     isBinary: _isBinary = false,
@@ -2294,9 +2304,13 @@ class DuckDBParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return (() => {
-      const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
+      const functions: Record<string, (args: Expression[], options: {
+        dialect: Dialect;
+      }) => Expression> = {
         ...Parser.FUNCTIONS,
         ANY_VALUE: (args: Expression[]) => new IgnoreNullsExpr({
           this: AnyValueExpr.fromArgList(args),
@@ -2523,7 +2537,9 @@ class DuckDBParser extends Parser {
     };
   }
 
-  parseLambda (options: { alias?: boolean } = {}): Expression | undefined {
+  parseLambda (options: {
+    alias?: boolean;
+  } = {}): Expression | undefined {
     const index = this.index;
     if (!this.matchTextSeq('LAMBDA')) {
       return super.parseLambda(options);
@@ -2610,7 +2626,9 @@ class DuckDBParser extends Parser {
     return table;
   }
 
-  parseTableSample (options: { asModifier?: boolean } = {}): TableSampleExpr | undefined {
+  parseTableSample (options: {
+    asModifier?: boolean;
+  } = {}): TableSampleExpr | undefined {
     const sample = super.parseTableSample(options);
     if (sample && !sample.args.method) {
       if (sample.args.size) {
@@ -2658,7 +2676,9 @@ class DuckDBParser extends Parser {
     });
   }
 
-  parseStructTypes (_options: { typeRequired?: boolean } = {}): Expression | undefined {
+  parseStructTypes (_options: {
+    typeRequired?: boolean;
+  } = {}): Expression | undefined {
     return this.parseFieldDef();
   }
 
@@ -2671,7 +2691,9 @@ class DuckDBParser extends Parser {
     });
   }
 
-  parseAttachDetach (options: { isAttach?: boolean } = {}): AttachExpr | DetachExpr {
+  parseAttachDetach (options: {
+    isAttach?: boolean;
+  } = {}): AttachExpr | DetachExpr {
     const {
       isAttach = true,
     } = options;
@@ -2727,7 +2749,9 @@ class DuckDBParser extends Parser {
     });
   }
 
-  parseInstall (options: { force?: boolean } = {}): InstallExpr {
+  parseInstall (options: {
+    force?: boolean;
+  } = {}): InstallExpr {
     return this.expression(InstallExpr, {
       this: this.parseIdVar(),
       from: this.match(TokenType.FROM) ? this.parseVarOrString() : undefined,
@@ -2736,7 +2760,7 @@ class DuckDBParser extends Parser {
   }
 
   /**
-   * DuckDB supports positional columns using the # syntax (e.g., #1).
+   * DuckDB supports positional columns using the # syntax (e.g., #1)
    */
   parsePrimary (): Expression | undefined {
     if (this.matchPair(TokenType.HASH, TokenType.NUMBER)) {
@@ -3950,7 +3974,7 @@ class DuckDBGenerator extends Generator {
   /**
    * Snowflake's BITMAP_CONSTRUCT_AGG aggregates integers into a compact binary bitmap.
    * DuckDB implementation uses LIST_TRANSFORM and LIST_REDUCE to build hex strings
-   * before converting to binary BLOBs.
+   * before converting to binary BLOBs
    */
   @cache
   static get BITMAP_CONSTRUCT_AGG_TEMPLATE () {
@@ -3972,7 +3996,7 @@ class DuckDBGenerator extends Generator {
   }
 
   /**
-   * Template for RANDSTR transpilation using a character pool and seeded hash.
+   * Template for RANDSTR transpilation using a character pool and seeded hash
    */
   @cache
   static get RANDSTR_TEMPLATE () {
@@ -4009,7 +4033,7 @@ class DuckDBGenerator extends Generator {
 
   /**
    * Template for MINHASH_COMBINE transpilation.
-   * Combines multiple minhash signatures by taking element-wise minimum.
+   * Combines multiple minhash signatures by taking element-wise minimum
    */
   @cache
   static get MINHASH_COMBINE_TEMPLATE () {
@@ -4053,7 +4077,7 @@ class DuckDBGenerator extends Generator {
 `);
   }
 
-  /** Transform Snowflake's TIME_SLICE to DuckDB's time_bucket. */
+  /** Transform Snowflake's TIME_SLICE to DuckDB's time_bucket */
   timeSliceSql (expression: TimeSliceExpr): string {
     const dateExpr = expression.args.this;
     const sliceLength = expression.args.expression;
@@ -4090,7 +4114,7 @@ class DuckDBGenerator extends Generator {
     return this.sql(addExpr);
   }
 
-  /** Snowflake BITMAP_BUCKET_NUMBER to DuckDB CASE expression. */
+  /** Snowflake BITMAP_BUCKET_NUMBER to DuckDB CASE expression */
   bitmapBucketNumberSql (this: DuckDBGenerator, expression: BitmapBucketNumberExpr): string {
     const value = expression.args.this as Expression;
 
@@ -4124,7 +4148,7 @@ class DuckDBGenerator extends Generator {
     );
   }
 
-  /** Snowflake BITMAP_BIT_POSITION to DuckDB modulo CASE expression. */
+  /** Snowflake BITMAP_BIT_POSITION to DuckDB modulo CASE expression */
   bitmapBitPositionSql (expression: BitmapBitPositionExpr): string {
     const thisNode = expression.args.this;
 
@@ -4150,7 +4174,7 @@ class DuckDBGenerator extends Generator {
     );
   }
 
-  /** Snowflake BITMAP_CONSTRUCT_AGG using replacePlaceholders. */
+  /** Snowflake BITMAP_CONSTRUCT_AGG using replacePlaceholders */
   bitmapConstructAggSql (expression: BitmapConstructAggExpr): string {
     const arg = expression.args.this;
     return `(${this.sql(replacePlaceholders((this._constructor as typeof DuckDBGenerator).BITMAP_CONSTRUCT_AGG_TEMPLATE, [arg]))})`;
@@ -4167,7 +4191,7 @@ class DuckDBGenerator extends Generator {
 
   /**
    * Transpile Snowflake's RANDSTR to DuckDB equivalent using deterministic hash-based random.
-   * RANDSTR(length, generator) generates a random string of specified length.
+   * RANDSTR(length, generator) generates a random string of specified length
    */
   randstrSql (expression: RandstrExpr): string {
     const length = expression.args.this;
@@ -4195,7 +4219,7 @@ class DuckDBGenerator extends Generator {
   }
 
   /**
-     * Transpile Snowflake's ZIPF to DuckDB using CDF-based inverse sampling.
+     * Transpile Snowflake's ZIPF to DuckDB using CDF-based inverse sampling
      */
   zipfSql (expression: ZipfExpr): string {
     const s = expression.args.this;
@@ -4234,7 +4258,7 @@ class DuckDBGenerator extends Generator {
 
   /**
    * TO_BINARY and TRY_TO_BINARY transpilation:
-   * Maps format (HEX, UTF-8, BASE64) to native DuckDB functions.
+   * Maps format (HEX, UTF-8, BASE64) to native DuckDB functions
    */
   toBinarySql (expression: ToBinaryExpr): string {
     const value = expression.args.this;
@@ -4269,7 +4293,7 @@ class DuckDBGenerator extends Generator {
   }
 
   /**
-   * Handle GREATEST/LEAST functions with dialect-aware NULL behavior.
+   * Handle GREATEST/LEAST functions with dialect-aware NULL behavior
    */
   greatestLeastSql (expression: GreatestExpr | LeastExpr): string {
     const allArgs = [
@@ -4336,8 +4360,10 @@ class DuckDBGenerator extends Generator {
     return this.greatestLeastSql(expression);
   }
 
-  lambdaSql (expression: LambdaExpr, options: { arrowSep?: string;
-    wrap?: boolean; } = {}): string {
+  lambdaSql (expression: LambdaExpr, options: {
+    arrowSep?: string;
+    wrap?: boolean;
+  } = {}): string {
     let arrowSep = options.arrowSep ?? '->';
     let wrap = options.wrap ?? true;
     let prefix = '';
@@ -4601,7 +4627,7 @@ class DuckDBGenerator extends Generator {
   }
 
   timeFromPartsSql (expression: TimeFromPartsExpr): string {
-    /** Snowflake's TIME_FROM_PARTS supports overflow and nanoseconds. */
+    /** Snowflake's TIME_FROM_PARTS supports overflow and nanoseconds */
     const nano = expression.args.nano;
     const overflow = expression.args.overflow;
 
@@ -4681,7 +4707,7 @@ class DuckDBGenerator extends Generator {
     return renameFunc('MAKE_TIME').call(this, expression);
   }
 
-  /** Transpile EXTRACT with DuckDB strftime/epoch mappings. */
+  /** Transpile EXTRACT with DuckDB strftime/epoch mappings */
   extractSql (expression: ExtractExpr): string {
     const datetimeExpr = expression.args.expression;
 
@@ -4847,7 +4873,9 @@ class DuckDBGenerator extends Generator {
     return timestamp;
   }
 
-  tableSampleSql (expression: TableSampleExpr, options: { tablesampleKeyword?: string } = {}): string {
+  tableSampleSql (expression: TableSampleExpr, options: {
+    tablesampleKeyword?: string;
+  } = {}): string {
     let keyword = options.tablesampleKeyword;
     if (!(expression.parent instanceof SelectExpr)) {
       keyword = 'TABLESAMPLE';
@@ -4870,7 +4898,9 @@ class DuckDBGenerator extends Generator {
     });
   }
 
-  columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
+  columnDefSql (expression: ColumnDefExpr, options: {
+    sep?: string;
+  } = {}): string {
     if (expression.parent instanceof UserDefinedFunctionExpr) {
       return this.sql(expression, 'this');
     }
@@ -4892,7 +4922,7 @@ class DuckDBGenerator extends Generator {
     ) {
       /**
        * Some dialects support `LEFT/INNER JOIN UNNEST(...)` without an explicit ON clause.
-       * DuckDB requires one, so we inject a dummy `ON TRUE`.
+       * DuckDB requires one, so we inject a dummy `ON TRUE`
        */
       if (expression.args.this instanceof UnnestExpr) {
         return super.joinSql(expression.on(new BooleanExpr({
@@ -4930,7 +4960,7 @@ class DuckDBGenerator extends Generator {
     }
 
     /** * In DuckDB < 1.2, array literals followed by brackets often need parens: ([1, 2])[1]
-     * For Maps, DuckDB returns a list of keys; we wrap to return the value.
+     * For Maps, DuckDB returns a list of keys; we wrap to return the value
      */
     const thisNode = expression.args.this;
     if (thisNode instanceof ArrayExpr) {
@@ -5178,7 +5208,7 @@ class DuckDBGenerator extends Generator {
         ignoreNulls: false,
       });
 
-    /** Snowflake pads to longest; DuckDB truncates. Logic below emulates padding. */
+    /** Snowflake pads to longest; DuckDB truncates. Logic below emulates padding */
     const emptyStruct = this.func(
       'STRUCT',
       args.map((_, i) => new PropertyEqExpr({
@@ -5265,7 +5295,7 @@ class DuckDBGenerator extends Generator {
 
   /**
    * DuckDB TO_BASE64 requires BLOB input.
-   * Snowflake BASE64_ENCODE implicitly encodes UTF-8 bytes for VARCHAR.
+   * Snowflake BASE64_ENCODE implicitly encodes UTF-8 bytes for VARCHAR
    */
   base64EncodeSql (expression: Base64EncodeExpr): string {
     let result = expression.args.this;
@@ -5349,7 +5379,7 @@ class DuckDBGenerator extends Generator {
     const kvSql = `${keySql} := ${valueSql}`;
 
     /** If input is an empty struct, use STRUCT_PACK.
-     * DuckDB's STRUCT_INSERT isn't valid on an empty {} literal.
+     * DuckDB's STRUCT_INSERT isn't valid on an empty {} literal
      */
     if (thisNode instanceof StructExpr && (!thisNode.args.expressions || thisNode.args.expressions.length === 0)) {
       return this.func('STRUCT_PACK', [kvSql]);
@@ -5377,7 +5407,7 @@ class DuckDBGenerator extends Generator {
   }
 
   spaceSql (expression: SpaceExpr): string {
-    /** DuckDB's REPEAT requires BIGINT for count. */
+    /** DuckDB's REPEAT requires BIGINT for count */
     return this.sql(
       new RepeatExpr({
         this: LiteralExpr.string(' '),
@@ -5409,7 +5439,7 @@ class DuckDBGenerator extends Generator {
   unnestSql (expression: UnnestExpr): string {
     const explodeArray = expression.args.explodeArray;
     if (explodeArray) {
-      /** Transpile BQ nested UNNEST to DuckDB subquery with max_depth => 2.
+      /** Transpile BQ nested UNNEST to DuckDB subquery with max_depth => 2
        */
       if (!expression.args.expressions) {
         expression.setArgKey('expressions', []);
@@ -5597,7 +5627,7 @@ class DuckDBGenerator extends Generator {
 
     /**
      * Translate Spark POSEXPLODE to DuckDB UNNEST + GENERATE_SUBSCRIPTS.
-     * Subtract 1 from DuckDB's 1-indexed subscripts to match Spark's 0-indexed pos.
+     * Subtract 1 from DuckDB's 1-indexed subscripts to match Spark's 0-indexed pos
      */
     const unnestSql = this.sql(new UnnestExpr({
       expressions: [thisNode],
@@ -5633,7 +5663,7 @@ class DuckDBGenerator extends Generator {
 
   /**
    * Handles Snowflake rounding behavior for float months and preserves
-   * input types (DATE/TIMESTAMPTZ) which DuckDB usually promotes to TIMESTAMP.
+   * input types (DATE/TIMESTAMPTZ) which DuckDB usually promotes to TIMESTAMP
    */
   addMonthsSql (expression: AddMonthsExpr): string {
     let thisNode = expression.args.this;
@@ -5881,7 +5911,7 @@ class DuckDBGenerator extends Generator {
 
   approxQuantilesSql (expression: ApproxQuantilesExpr): string {
     /** * BigQuery APPROX_QUANTILES(expr, n) divisions.
-     * DuckDB requires explicit array of probabilities [0.0, ..., 1.0].
+     * DuckDB requires explicit array of probabilities [0.0, ..., 1.0]
      */
     const thisNode = expression.args.this;
     let numQuantilesExpr: Expression;
@@ -6042,7 +6072,7 @@ export class DuckDB extends Dialect {
   static get INVERSE_TIME_MAPPING () {
     return {
       '%e': '%-d', // BigQuery's space-padded day (%e) -> DuckDB's no-padding day (%-d)
-      '%:z': '%z', // In DuckDB %z can represent ±HH:MM, ±HHMM, or ±HH.
+      '%:z': '%z', // In DuckDB %z can represent ±HH:MM, ±HHMM, or ±HH
       '%-z': '%z',
       '%f_zero': '%n',
       '%f_one': '%n',
@@ -6061,7 +6091,7 @@ export class DuckDB extends Dialect {
       /**
        * DuckDB supports JSON pointer syntax (starting with `/`) and
        * back-of-list access `[#-i]`. We return these as-is to avoid
-       * invalid JSON path canonicalization.
+       * invalid JSON path canonicalization
        */
       const pathText = path.name;
       if (pathText.startsWith('/') || pathText.includes('[#')) {

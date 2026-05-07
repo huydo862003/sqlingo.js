@@ -3,7 +3,7 @@ type AnyConstructor<T = object> =
   | (new (...args: any[]) => T)
   | (abstract new (...args: any[]) => T);
 
-/** Maps `typeof` tag strings to their corresponding TypeScript types. */
+/** Maps `typeof` tag strings to their corresponding TypeScript types */
 export interface TypeofMap {
   string: string;
   number: number;
@@ -17,7 +17,7 @@ export interface TypeofMap {
 
 type TypeofTag = keyof TypeofMap;
 
-/** A single type checker: either a constructor (for `instanceof`) or a `typeof` tag string. */
+/** A single type checker: either a constructor (for `instanceof`) or a `typeof` tag string */
 type TypeChecker = AnyConstructor<any> | TypeofTag;
 
 type InferType<C> =
@@ -25,7 +25,7 @@ type InferType<C> =
   : C extends TypeofTag ? TypeofMap[C]
   : never;
 
-/** Resolves the union of all types matched by a tuple of `TypeChecker`s. */
+/** Resolves the union of all types matched by a tuple of `TypeChecker`s */
 type InferUnion<Cs extends readonly TypeChecker[]> = InferType<Cs[number]>;
 
 function checkOne (value: unknown, type: TypeChecker): boolean {

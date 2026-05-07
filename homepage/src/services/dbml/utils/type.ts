@@ -54,22 +54,24 @@ const ALIAS: Partial<Record<DataTypeExprKind, string>> = {
   [DataTypeExprKind.ENUM]: 'enum',
 };
 
-function exprText (e: unknown): string {
-  if (e instanceof Expression) return e.name || e.sql();
-  return String(e);
+function exprText (node: unknown): string {
+  if (node instanceof Expression) return node.name || node.sql();
+  return String(node);
 }
 
-function identName (e: Expression): string {
-  if (e instanceof IdentifierExpr) {
-    const inner = e.args.this;
-    return typeof inner === 'string' ? inner : inner instanceof Expression ? identName(inner) : e.name;
+function identName (expr: Expression): string {
+  if (expr instanceof IdentifierExpr) {
+    const inner = expr.args.this;
+    return typeof inner === 'string' ? inner : inner instanceof Expression ? identName(inner) : expr.name;
   }
-  return e.name || e.sql();
+  return expr.name || expr.sql();
 }
 
-function qualifiedFromAst (e: Expression): { schema?: string;
-  name: string; } {
-  if (e instanceof DotExpr) {
+function qualifiedFromAst (node: Expression): {
+  schema?: string;
+  name: string;
+} {
+  if (node instanceof DotExpr) {
     const parts: string[] = [];
     const walk = (n: Expression): void => {
       if (n instanceof DotExpr) {
@@ -79,14 +81,14 @@ function qualifiedFromAst (e: Expression): { schema?: string;
         parts.push(identName(n));
       }
     };
-    walk(e);
+    walk(node);
     return {
       schema: 1 < parts.length ? parts.slice(0, -1).join('.') : undefined,
       name: parts[parts.length - 1],
     };
   }
   return {
-    name: identName(e),
+    name: identName(node),
   };
 }
 
@@ -114,18 +116,18 @@ export function mapDataType (dtype: DataTypeExpr): DbmlColumnType {
 
   if (typeof kind === 'string' && kind in ALIAS) {
     const name = ALIAS[kind as DataTypeExprKind]!;
-    const args = exprs.map(exprText);
+    const arguments_ = exprs.map(exprText);
     return new DbmlColumnType({
       name,
-      args: args.length ? args : undefined,
+      args: arguments_.length ? arguments_ : undefined,
     });
   }
 
   if (kind instanceof Expression) {
-    const q = qualifiedFromAst(kind);
+    const qualified = qualifiedFromAst(kind);
     return new DbmlColumnType({
-      schema: q.schema,
-      name: q.name,
+      schema: qualified.schema,
+      name: qualified.name,
     });
   }
 

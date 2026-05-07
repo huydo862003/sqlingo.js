@@ -14,13 +14,12 @@ import {
 } from '@hdnax/sqlingo.js';
 import type {
   DbmlColumn,
-  DbmlIndex,
 } from '../types';
 import {
   DbmlCheck,
+  DbmlIndex,
   DbmlIndexColumn,
-  DbmlIndex as DbmlIndexClass,
-  DbmlRef,
+  DbmlReference,
   DbmlRelation,
   DbmlTable,
 } from '../types';
@@ -34,57 +33,57 @@ import {
   buildColumn,
 } from './column';
 import {
-  indexFromParams,
+  indexFromParameters,
 } from './tableIndex';
 
 export interface BuiltTable {
   table: DbmlTable;
-  refs: DbmlRef[];
+  refs: DbmlReference[];
 }
 
-interface TableCtx {
+interface TableContext {
   schema?: string;
   name: string;
   columns: DbmlColumn[];
   tablePkCols: Set<string>;
-  tableRefs: DbmlRef[];
+  tableRefs: DbmlReference[];
   checks: DbmlCheck[];
   inlineIndexes: DbmlIndex[];
 }
 
-function handlePrimaryKey (expr: PrimaryKeyExpr, ctx: TableCtx, name: string | undefined): void {
-  const cols = (expr.args.expressions ?? []).filter((e): e is Expression => e instanceof Expression);
+function handlePrimaryKey (expr: PrimaryKeyExpr, context: TableContext, name: string | undefined): void {
+  const cols = (expr.args.expressions ?? []).filter((element): element is Expression => element instanceof Expression);
   const colNames = cols.map(nodeText);
   if (1 === colNames.length) {
-    ctx.tablePkCols.add(colNames[0]);
+    context.tablePkCols.add(colNames[0]);
     return;
   }
   if (colNames.length) {
-    ctx.inlineIndexes.push(new DbmlIndexClass({
+    context.inlineIndexes.push(new DbmlIndex({
       name,
-      columns: colNames.map((c) => new DbmlIndexColumn({
-        expression: c,
+      columns: colNames.map((col) => new DbmlIndexColumn({
+        expression: col,
       })),
       pk: true,
     }));
   }
 }
 
-function handleForeignKey (expr: ForeignKeyExpr, ctx: TableCtx, name: string | undefined): void {
-  const fkCols = (expr.args.expressions ?? []).filter((e): e is Expression => e instanceof Expression);
+function handleForeignKey (expr: ForeignKeyExpr, context: TableContext, name: string | undefined): void {
+  const fkCols = (expr.args.expressions ?? []).filter((element): element is Expression => element instanceof Expression);
   const ref = expr.args.reference;
   if (!(ref instanceof ReferenceExpr)) return;
   const inner = ref.args.this;
   const tableExpr = inner instanceof SchemaExpr ? inner.args.this : inner;
   const cols = inner instanceof SchemaExpr ? (inner.args.expressions ?? []) : [];
   const target = tableParts(tableExpr as Expression | undefined);
-  const refCols = cols.map((c) => c instanceof Expression ? nodeText(c) : String(c));
+  const refCols = cols.map((col) => col instanceof Expression ? nodeText(col) : String(col));
   if (target.name && fkCols.length) {
     const actions = referenceActions(ref);
-    ctx.tableRefs.push(new DbmlRef({
+    context.tableRefs.push(new DbmlReference({
       name,
       relation: DbmlRelation.MANY_TO_ONE,
-      source: endpoint(ctx.schema, ctx.name, fkCols.map(nodeText)),
+      source: endpoint(context.schema, context.name, fkCols.map(nodeText)),
       target: endpoint(target.schema, target.name, refCols.length ? refCols : fkCols.map(nodeText)),
       onDelete: actions.onDelete ?? parseActionExpr(expr.args.delete),
       onUpdate: actions.onUpdate ?? parseActionExpr(expr.args.update),
@@ -92,46 +91,46 @@ function handleForeignKey (expr: ForeignKeyExpr, ctx: TableCtx, name: string | u
   }
 }
 
-function handleUnique (expr: UniqueColumnConstraintExpr, ctx: TableCtx, name: string | undefined): void {
+function handleUnique (expr: UniqueColumnConstraintExpr, context: TableContext, name: string | undefined): void {
   const inner = expr.args.this;
   const cols = inner instanceof SchemaExpr
-    ? (inner.args.expressions ?? []).filter((e): e is Expression => e instanceof Expression)
+    ? (inner.args.expressions ?? []).filter((element): element is Expression => element instanceof Expression)
     : [];
   if (!cols.length) return;
-  ctx.inlineIndexes.push(new DbmlIndexClass({
+  context.inlineIndexes.push(new DbmlIndex({
     name,
-    columns: cols.map((c) => new DbmlIndexColumn({
-      expression: nodeText(c),
+    columns: cols.map((col) => new DbmlIndexColumn({
+      expression: nodeText(col),
     })),
     unique: true,
   }));
 }
 
-function handleCheck (inner: Expression, ctx: TableCtx, name: string | undefined): void {
-  ctx.checks.push(new DbmlCheck({
+function handleCheck (inner: Expression, context: TableContext, name: string | undefined): void {
+  context.checks.push(new DbmlCheck({
     name,
     expression: inner.sql(),
   }));
 }
 
-function dispatchConstraint (expr: Expression, ctx: TableCtx, name: string | undefined): void {
+function dispatchConstraint (expr: Expression, context: TableContext, name: string | undefined): void {
   if (expr instanceof PrimaryKeyExpr) {
-    handlePrimaryKey(expr, ctx, name);
+    handlePrimaryKey(expr, context, name);
   } else if (expr instanceof ForeignKeyExpr) {
-    handleForeignKey(expr, ctx, name);
+    handleForeignKey(expr, context, name);
   } else if (expr instanceof UniqueColumnConstraintExpr) {
-    handleUnique(expr, ctx, name);
+    handleUnique(expr, context, name);
   } else if (expr instanceof CheckColumnConstraintExpr) {
-    const e = expr.args.this;
-    if (e instanceof Expression) handleCheck(e, ctx, name);
+    const checkInner = expr.args.this;
+    if (checkInner instanceof Expression) handleCheck(checkInner, context, name);
   } else if (expr instanceof CheckExpr) {
-    const e = expr.args.this;
-    if (e instanceof Expression) handleCheck(e, ctx, name);
+    const checkInner = expr.args.this;
+    if (checkInner instanceof Expression) handleCheck(checkInner, context, name);
   } else if (expr instanceof IndexExpr) {
-    const built = indexFromParams(expr);
+    const built = indexFromParameters(expr);
     if (built) {
       if (name && !built.name) built.name = name;
-      ctx.inlineIndexes.push(built);
+      context.inlineIndexes.push(built);
     }
   }
 }
@@ -143,7 +142,7 @@ export function buildTable (stmt: CreateExpr): BuiltTable | undefined {
   const tp = tableParts(schemaNode.args.this as Expression | undefined);
   const expressions = schemaNode.args.expressions ?? [];
 
-  const ctx: TableCtx = {
+  const context: TableContext = {
     schema: tp.schema,
     name: tp.name,
     columns: [],
@@ -155,29 +154,29 @@ export function buildTable (stmt: CreateExpr): BuiltTable | undefined {
 
   for (const expr of expressions) {
     if (expr instanceof ColumnDefExpr) {
-      ctx.columns.push(buildColumn(expr));
+      context.columns.push(buildColumn(expr));
     } else if (expr instanceof ConstraintExpr) {
       const name = expr.args.this instanceof Expression ? nodeText(expr.args.this) : undefined;
       for (const part of expr.args.expressions ?? []) {
-        if (part instanceof Expression) dispatchConstraint(part, ctx, name);
+        if (part instanceof Expression) dispatchConstraint(part, context, name);
       }
     } else {
-      dispatchConstraint(expr, ctx, undefined);
+      dispatchConstraint(expr, context, undefined);
     }
   }
 
-  for (const col of ctx.columns) {
-    if (ctx.tablePkCols.has(col.name)) {
+  for (const col of context.columns) {
+    if (context.tablePkCols.has(col.name)) {
       col.pk = true;
       col.notNull = true;
     }
-    for (const r of col.ref ?? []) {
-      ctx.tableRefs.push(new DbmlRef({
-        relation: r.relation,
+    for (const inlineReference of col.ref ?? []) {
+      context.tableRefs.push(new DbmlReference({
+        relation: inlineReference.relation,
         source: endpoint(tp.schema, tp.name, [col.name]),
-        target: r.target,
-        onDelete: r.onDelete,
-        onUpdate: r.onUpdate,
+        target: inlineReference.target,
+        onDelete: inlineReference.onDelete,
+        onUpdate: inlineReference.onUpdate,
       }));
     }
   }
@@ -185,13 +184,13 @@ export function buildTable (stmt: CreateExpr): BuiltTable | undefined {
   const table = new DbmlTable({
     schema: tp.schema,
     name: tp.name,
-    columns: ctx.columns,
-    checks: ctx.checks.length ? ctx.checks : undefined,
-    indexes: ctx.inlineIndexes.length ? ctx.inlineIndexes : undefined,
+    columns: context.columns,
+    checks: context.checks.length ? context.checks : undefined,
+    indexes: context.inlineIndexes.length ? context.inlineIndexes : undefined,
   });
 
   return {
     table,
-    refs: ctx.tableRefs,
+    refs: context.tableRefs,
   };
 }

@@ -80,9 +80,9 @@ export class Scope {
    * Mapping of source name to either a Table expression or another Scope instance.
    *
    * Examples:
-   * - `SELECT * FROM x` → `{"x": Table(this="x")}`
-   * - `SELECT * FROM x AS y` → `{"y": Table(this="x")}`
-   * - `SELECT * FROM (SELECT ...) AS y` → `{"y": Scope(...)}`
+   * - `SELECT * FROM x` -> `{"x": Table(this="x")}`
+   * - `SELECT * FROM x AS y` -> `{"y": Table(this="x")}`
+   * - `SELECT * FROM (SELECT ...) AS y` -> `{"y": Scope(...)}`
    */
   sources: Map<string, TableExpr | Scope>;
 
@@ -91,7 +91,7 @@ export class Scope {
    *
    * Example:
    * - `SELECT c FROM x LATERAL VIEW EXPLODE(a) AS c`
-   *   The LATERAL VIEW EXPLODE gets x as a source.
+   *   The LATERAL VIEW EXPLODE gets x as a source
    */
   lateralSources: Map<string, TableExpr | Scope>;
 
@@ -131,7 +131,7 @@ export class Scope {
 
   /**
    * If this Scope is for a Union expression, this will be a list of
-   * the left and right child scopes.
+   * the left and right child scopes
    */
   unionScopes: Scope[];
 
@@ -359,8 +359,10 @@ export class Scope {
   /**
    * Walk the expression tree within this scope
    */
-  walk (options: { bfs?: boolean;
-    prune?: (node: Expression) => boolean; } = {}): Generator<Expression> {
+  walk (options: {
+    bfs?: boolean;
+    prune?: (node: Expression) => boolean;
+  } = {}): Generator<Expression> {
     return walkInScope(this.expression, options);
   }
 
@@ -489,7 +491,7 @@ export class Scope {
    *
    * Columns are filtered by ancestor context: only columns that are actually "in scope"
    * are included - e.g. columns inside a SELECT list, ORDER BY not referencing named
-   * selects, DISTINCT windows, etc.
+   * selects, DISTINCT windows, etc
    */
   get columns (): ColumnExpr[] {
     if (this._columns === undefined) {
@@ -954,7 +956,7 @@ function* traverseCtes (scope: Scope): Generator<Scope> {
 /**
  * We represent (tbl1 JOIN tbl2) as a Subquery, but it's not really a "derived table",
  * as it doesn't introduce a new scope. If an alias is present, it shadows all names
- * under the Subquery, so that's one exception to this rule.
+ * under the Subquery, so that's one exception to this rule
  */
 function isDerivedTable (expression: Expression): boolean {
   return Boolean(
@@ -967,7 +969,7 @@ function isDerivedTable (expression: Expression): boolean {
 }
 
 /**
- * Determine if `expression` is the FROM or JOIN clause of a SELECT statement.
+ * Determine if `expression` is the FROM or JOIN clause of a SELECT statement
  */
 function _isFromOrJoin (expression: Expression): boolean {
   let parent = expression.parent;
@@ -1029,7 +1031,7 @@ function* traverseTables (scope: Scope): Generator<Scope> {
 
       if (scope.sources.has(tableName) && !expression.db) {
         // This is a reference to a parent source (e.g. a CTE), not an actual table, unless
-        // it is pivoted, because then we get back a new table and hence a new source.
+        // it is pivoted, because then we get back a new table and hence a new source
         const pivots = expression.args.pivots;
         if (pivots && 0 < pivots.length) {
           sources.set(pivots[0].alias, expression);
@@ -1097,9 +1099,9 @@ function* traverseTables (scope: Scope): Generator<Scope> {
     )) {
       yield s;
       childScope = s;
-      // Tables without aliases will be set as "".
+      // Tables without aliases will be set as ""
       // Until qualify_columns runs (which adds aliases on everything), only a single
-      // unaliased derived table is allowed (the latest one wins).
+      // unaliased derived table is allowed (the latest one wins)
       sources.set(getSourceAlias(expression), childScope!);
     }
 
@@ -1196,7 +1198,7 @@ export function buildScope (expression: Expression): Scope | undefined {
  * inside UDTF parents, and unwrapped queries (SELECT / SET OPERATION).
  * Boundary nodes themselves are yielded; their subtrees are not traversed.
  * For Subquery / UDTF boundary nodes their joins, laterals, and pivots
- * are still visited via recursive calls.
+ * are still visited via recursive calls
  */
 export function* walkInScope (
   expression: Expression,
@@ -1260,7 +1262,9 @@ export function findAllInScope<E extends Expression> (
   expression: Expression,
 
   expressionTypes: readonly (new (...args: any) => E)[],
-  options: { bfs?: boolean } = {},
+  options: {
+    bfs?: boolean;
+  } = {},
 ): E[] {
   const {
     bfs = true,
@@ -1288,7 +1292,9 @@ export function findInScope (
   expression: Expression,
 
   expressionTypes: (new (...args: any) => Expression) | (new (...args: any) => Expression)[],
-  options: { bfs?: boolean } = {},
+  options: {
+    bfs?: boolean;
+  } = {},
 ): Expression | undefined {
   const {
     bfs = true,

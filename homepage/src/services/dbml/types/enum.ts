@@ -13,13 +13,13 @@ export class DbmlEnumValue extends SchemaElement {
   name: string;
   note?: string;
 
-  constructor (args: {
+  constructor (arguments_: {
     name: string;
     note?: string;
   }) {
     super();
-    this.name = args.name;
-    this.note = args.note;
+    this.name = arguments_.name;
+    this.note = arguments_.note;
   }
 
   intern (): string {
@@ -34,17 +34,17 @@ export class DbmlEnum extends SchemaElement {
   values: DbmlEnumValue[];
   note?: string;
 
-  constructor (args: {
+  constructor (arguments_: {
     schema?: string;
     name: string;
     values: DbmlEnumValue[];
     note?: string;
   }) {
     super();
-    this.schema = args.schema;
-    this.name = args.name;
-    this.values = args.values;
-    this.note = args.note;
+    this.schema = arguments_.schema;
+    this.name = arguments_.name;
+    this.values = arguments_.values;
+    this.note = arguments_.note;
   }
 
   intern (): string {

@@ -99,7 +99,9 @@ type FromOrJoin = FromExpr | JoinExpr;
 
 function mergeCtes<E extends Expression> (
   expression: E,
-  options: { leaveTablesIsolated: boolean },
+  options: {
+    leaveTablesIsolated: boolean;
+  },
 ): E {
   const {
     leaveTablesIsolated,
@@ -171,7 +173,9 @@ function mergeCtes<E extends Expression> (
 
 function mergeDerivedTables<E extends Expression> (
   expression: E,
-  options: { leaveTablesIsolated: boolean },
+  options: {
+    leaveTablesIsolated: boolean;
+  },
 ): E {
   const {
     leaveTablesIsolated,
@@ -209,7 +213,9 @@ function mergeDerivedTables<E extends Expression> (
 function mergeable (
   outerScope: Scope,
   innerScope: Scope,
-  options: { leaveTablesIsolated: boolean },
+  options: {
+    leaveTablesIsolated: boolean;
+  },
   fromOrJoin: FromOrJoin,
 ): boolean {
   const {

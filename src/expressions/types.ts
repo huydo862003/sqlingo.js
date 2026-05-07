@@ -4,8 +4,10 @@ import type {
 
 export type IntoType = string | typeof Expression | (string | typeof Expression)[];
 
-/** Branded type for an expression's SQL-based deduplication key (its SQL string). */
-export type ExpressionHash = string & { readonly __brand: 'ExpressionHash' };
+/** Branded type for an expression's SQL-based deduplication key (its SQL string) */
+export type ExpressionHash = string & {
+  readonly __brand: 'ExpressionHash';
+};
 
 /** Expression key enum */
 export type PrimitiveExpressionValue = string | boolean | number;

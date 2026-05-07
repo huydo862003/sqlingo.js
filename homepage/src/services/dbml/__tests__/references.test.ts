@@ -5,7 +5,7 @@ import {
   sqlToDbml,
 } from '../index';
 import {
-  DbmlRefAction, DbmlRelation,
+  DbmlReferenceAction, DbmlRelation,
 } from '../types';
 
 describe('refs', () => {
@@ -29,8 +29,8 @@ describe('refs', () => {
         table: 'users',
         columns: ['id'],
       },
-      onDelete: DbmlRefAction.CASCADE,
-      onUpdate: DbmlRefAction.SET_NULL,
+      onDelete: DbmlReferenceAction.CASCADE,
+      onUpdate: DbmlReferenceAction.SET_NULL,
     });
   });
 
@@ -51,7 +51,7 @@ describe('refs', () => {
         table: 'b',
         columns: ['id'],
       },
-      onDelete: DbmlRefAction.CASCADE,
+      onDelete: DbmlReferenceAction.CASCADE,
     });
   });
 
@@ -62,7 +62,7 @@ describe('refs', () => {
       'CREATE TABLE a (id INT, b_id INT, FOREIGN KEY (b_id) REFERENCES b(id) ON DELETE RESTRICT);',
       'postgres',
     );
-    expect(schema.refs[0].onDelete).toBe(DbmlRefAction.RESTRICT);
+    expect(schema.refs[0].onDelete).toBe(DbmlReferenceAction.RESTRICT);
     expect(schema.refs[0].source.columns).toEqual(['b_id']);
   });
 });

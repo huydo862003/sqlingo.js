@@ -348,7 +348,9 @@ function buildDateFromParts (args: Expression[]): DateFromPartsExpr {
 function buildDatetime (
   name: string,
   kind: DataTypeExprKind,
-  options: { safe?: boolean } = {},
+  options: {
+    safe?: boolean;
+  } = {},
 ) {
   const {
     safe = false,
@@ -641,7 +643,7 @@ function dateTruncToTimeWrapper (args: Expression[]): DateTruncExpr | TimestampT
 
 /**
  * Snowflake doesn't allow columns referenced in UNPIVOT to be qualified,
- * so we need to unqualify them. Same goes for ANY ORDER BY <column>.
+ * so we need to unqualify them. Same goes for ANY ORDER BY <column>
  */
 function unqualifyPivotColumns (expression: Expression): Expression {
   if (expression instanceof PivotExpr) {
@@ -791,7 +793,9 @@ function transformGenerateDateArray (expression: Expression): Expression {
 function buildRegexpExtract<T extends Expression> (ExprClass: new (args: any) => T) {
   return (args: Expression[], {
     dialect,
-  }: { dialect: Dialect }): T => {
+  }: {
+    dialect: Dialect;
+  }): T => {
     return new ExprClass({
       this: seqGet(args, 0),
       expression: seqGet(args, 1),
@@ -966,7 +970,7 @@ function qualifyUnnestedColumns (expression: Expression): Expression {
 /**
  * This transformation is used to facilitate transpilation of BigQuery `UNNEST` operations
  * to Snowflake. It should not affect roundtrip because `Unnest` nodes cannot be produced
- * by Snowflake's parser.
+ * by Snowflake's parser
  */
 function eliminateDotVariantLookup (expression: Expression): Expression {
   if (expression instanceof SelectExpr) {
@@ -1025,7 +1029,7 @@ function buildTimestampFromParts (args: Expression[]): FuncExpr {
 
 /**
  * Build Round expression, unwrapping Snowflake's named parameters.
- * Maps EXPR => this, SCALE => decimals, ROUNDING_MODE => truncate.
+ * Maps EXPR => this, SCALE => decimals, ROUNDING_MODE => truncate
  */
 function buildRound (args: Expression[]): RoundExpr {
   const kwargMap: Record<string, string> = {
@@ -1063,7 +1067,7 @@ function buildRound (args: Expression[]): RoundExpr {
 
 /**
  * Build Generator expression, unwrapping Snowflake's named parameters.
- * Maps ROWCOUNT => rowcount, TIMELIMIT => time_limit.
+ * Maps ROWCOUNT => rowcount, TIMELIMIT => time_limit
  */
 function buildGenerator (args: Expression[]): GeneratorExpr {
   const kwargMap: Record<string, string> = {
@@ -1250,9 +1254,13 @@ class SnowflakeParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return (() => {
-      const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
+      const functions: Record<string, (args: Expression[], options: {
+        dialect: Dialect;
+      }) => Expression> = {
         ...Parser.FUNCTIONS,
         ADD_MONTHS: (args: Expression[]) =>
           new AddMonthsExpr({
@@ -1367,7 +1375,9 @@ class SnowflakeParser extends Parser {
         GETDATE: (args: unknown[]) => CurrentTimestampExpr.fromArgList(args),
         GET_PATH: (args: Expression[], {
           dialect,
-        }: { dialect: Dialect }) =>
+        }: {
+          dialect: Dialect;
+        }) =>
           new JsonExtractExpr({
             this: seqGet(args, 0),
             expression: dialect.toJsonPath(seqGet(args, 1)),
@@ -1471,14 +1481,18 @@ class SnowflakeParser extends Parser {
         TIMESTAMP_NTZ_FROM_PARTS: buildTimestampFromParts,
         TRUNC: (args: Expression[], {
           dialect,
-        }: { dialect: Dialect }) =>
+        }: {
+          dialect: Dialect;
+        }) =>
           buildTrunc(args, {
             dialect,
             dateTruncRequiresPart: false,
           }),
         TRUNCATE: (args: Expression[], {
           dialect,
-        }: { dialect: Dialect }) =>
+        }: {
+          dialect: Dialect;
+        }) =>
           buildTrunc(args, {
             dialect,
             dateTruncRequiresPart: false,
@@ -1862,7 +1876,7 @@ class SnowflakeParser extends Parser {
       /**
        * Snowflake treats `value NOT IN (subquery)` as `VALUE <> ALL (subquery)`, so
        * we do this conversion here to avoid parsing it into `NOT value IN (subquery)`
-       * which can produce different results.
+       * which can produce different results
        */
       return this.expression(NeqExpr, {
         this: thisNode.args.this,
@@ -1961,7 +1975,9 @@ class SnowflakeParser extends Parser {
     });
   }
 
-  parseBracketKeyValue (options: { isMap?: boolean } = {}): Expression | undefined {
+  parseBracketKeyValue (options: {
+    isMap?: boolean;
+  } = {}): Expression | undefined {
     const {
       isMap = false,
     } = options;
@@ -1999,9 +2015,11 @@ class SnowflakeParser extends Parser {
     return lateral;
   }
 
-  parseTableParts (options: { schema?: boolean;
+  parseTableParts (options: {
+    schema?: boolean;
     isDbReference?: boolean;
-    wildcard?: boolean; } = {}): TableExpr {
+    wildcard?: boolean;
+  } = {}): TableExpr {
     const {
       schema = false, isDbReference = false,
     } = options;
@@ -2081,8 +2099,10 @@ class SnowflakeParser extends Parser {
     return table;
   }
 
-  parseIdVar (options: { anyToken?: boolean;
-    tokens?: Set<TokenType>; } = {}): Expression | undefined {
+  parseIdVar (options: {
+    anyToken?: boolean;
+    tokens?: Set<TokenType>;
+  } = {}): Expression | undefined {
     const {
       anyToken = true, tokens,
     } = options;
@@ -2355,7 +2375,9 @@ class SnowflakeParser extends Parser {
     return setNode;
   }
 
-  parseWindow (thisNode?: Expression, options: { alias?: boolean } = {}): Expression | undefined {
+  parseWindow (thisNode?: Expression, options: {
+    alias?: boolean;
+  } = {}): Expression | undefined {
     if (thisNode instanceof NthValueExpr) {
       if (this.matchTextSeq('FROM')) {
         if (this.matchTexts([
@@ -3195,7 +3217,9 @@ class SnowflakeGenerator extends Generator {
     });
   }
 
-  valuesSql (expression: ValuesExpr, options: { valuesAsTable?: boolean } = {}): string {
+  valuesSql (expression: ValuesExpr, options: {
+    valuesAsTable?: boolean;
+  } = {}): string {
     let {
       valuesAsTable = true,
     } = options;
@@ -3255,7 +3279,9 @@ class SnowflakeGenerator extends Generator {
     return renameFunc('TIMESTAMP_FROM_PARTS').call(this, expression);
   }
 
-  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
+  castSql (expression: CastExpr, options: {
+    safePrefix?: string;
+  } = {}): string {
     if (expression.isType(DataTypeExprKind.GEOGRAPHY)) {
       return this.func('TO_GEOGRAPHY', [expression.args.this]);
     }
@@ -3901,7 +3927,9 @@ export class Snowflake extends Dialect {
     return new Set(['LEVEL']);
   }
 
-  canQuote (identifier: IdentifierExpr, options: { identify?: string | boolean } = {}): boolean {
+  canQuote (identifier: IdentifierExpr, options: {
+    identify?: string | boolean;
+  } = {}): boolean {
     const {
       identify = 'safe',
     } = options;

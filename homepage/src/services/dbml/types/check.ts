@@ -10,13 +10,13 @@ export class DbmlCheck extends SchemaElement {
   name?: string;
   expression: string;
 
-  constructor (args: {
+  constructor (arguments_: {
     name?: string;
     expression: string;
   }) {
     super();
-    this.name = args.name;
-    this.expression = args.expression;
+    this.name = arguments_.name;
+    this.expression = arguments_.expression;
   }
 
   intern (): string {

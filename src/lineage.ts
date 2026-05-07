@@ -145,7 +145,7 @@ export interface LineageOptions {
  * @param column The column to build the lineage for.
  * @param sql The SQL string or expression.
  * @param options Additional options like schema, dialect, scope, etc.
- * @returns A lineage node.
+ * @returns A lineage node
  */
 export function lineage (
   column: string | ColumnExpr,
@@ -246,8 +246,8 @@ export function toNode (
     trimSelects = true,
   } = options;
 
-  // Find the specific select clause that is the source of the column we want.
-  // This can either be a specific, named select or a generic `*` clause.
+  // Find the specific select clause that is the source of the column we want
+  // This can either be a specific, named select or a generic `*` clause
   let select: Expression;
   if (typeof column === 'number') {
     select = scope.expression.selects[column];
@@ -305,7 +305,7 @@ export function toNode (
   let source: Expression;
   if (trimSelects && scope.expression instanceof SelectExpr) {
     // For better ergonomics in our node labels, replace the full select with
-    // a version that has only the column we care about.
+    // a version that has only the column we care about
     source = scope.expression.select(select, {
       append: false,
     }) as Expression;
@@ -313,7 +313,7 @@ export function toNode (
     source = scope.expression;
   }
 
-  // Create the node for this step in the lineage chain, and attach it to the previous one.
+  // Create the node for this step in the lineage chain, and attach it to the previous one
   const node = new Node({
     name: scopeName ? `${scopeName}.${column}` : String(column),
     source,
@@ -369,7 +369,7 @@ export function toNode (
     }
   }
 
-  // Find all columns that went into creating this one to list their lineage nodes.
+  // Find all columns that went into creating this one to list their lineage nodes
   const sourceColumnsSet = new Set<ColumnExpr>(
     findAllInScope(select, [ColumnExpr]),
   );

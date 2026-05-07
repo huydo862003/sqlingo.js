@@ -69,7 +69,7 @@ import {
   Table, RowReader,
 } from './table';
 
-/** Generates ORDERED(this, desc, nullsFirst) for use in sort key evaluation. */
+/** Generates ORDERED(this, desc, nullsFirst) for use in sort key evaluation */
 function orderedJs (this: Generator, expression: OrderedExpr): string {
   const thisSql = this.sql(expression, 'this');
   const desc = expression.args.desc ? 'true' : 'false';
@@ -77,7 +77,7 @@ function orderedJs (this: Generator, expression: OrderedExpr): string {
   return `ORDERED(${thisSql}, { desc: ${desc}, undefinedFirst: ${nullsFirst} })`;
 }
 
-/** Generates a function call using the expression's key as the function name. */
+/** Generates a function call using the expression's key as the function name */
 function rename (this: Generator, e: Expression): string {
   try {
     const values = Object.values(e.args);
@@ -111,7 +111,7 @@ function rename (this: Generator, e: Expression): string {
   }
 }
 
-/** Generates a JS ternary chain from a CASE expression, building from the last branch inward. */
+/** Generates a JS ternary chain from a CASE expression, building from the last branch inward */
 function caseJs (this: Generator, expression: CaseExpr): string {
   const thisStr = this.sql(expression, 'this');
   let chain = this.sql(expression, 'default') || 'null';
@@ -129,14 +129,14 @@ function caseJs (this: Generator, expression: CaseExpr): string {
   return chain;
 }
 
-/** Generates a JS arrow function from a Lambda expression. */
+/** Generates a JS arrow function from a Lambda expression */
 function lambdaJs (this: Generator, e: LambdaExpr): string {
   return `(${this.expressions(e, {
     flat: true,
   })}) => ${this.sql(e, 'this')}`;
 }
 
-/** Generates a DIV call, appending `|| undefined` for safe division and wrapping in Math.trunc for integer division. */
+/** Generates a DIV call, appending `|| undefined` for safe division and wrapping in Math.trunc for integer division */
 function divJs (this: Generator, e: DivExpr): string {
   let denominator = this.sql(e, 'expression');
 
@@ -209,7 +209,7 @@ export class JavascriptGenerator extends Generator {
         CastExpr,
         function (this: Generator, e: CastExpr) {
           // Get the DataTypeExprKind as a lowercase string
-          // DataTypeExprKind enum values are lowercase strings like 'text', 'bigint', etc.
+          // DataTypeExprKind enum values are lowercase strings like 'text', 'bigint', etc
           const toExpr = e.args.to;
           const toKind = typeof toExpr === 'string'
             ? toExpr.toLowerCase()
@@ -409,7 +409,7 @@ export class JavascriptExecutor {
 
   /**
    * Traverses the logical execution plan DAG from leaves to root,
-   * evaluating each step and passing the context upwards.
+   * evaluating each step and passing the context upwards
    */
   execute (plan: Plan): Table {
     const finished = new Set<Scan | Aggregate | Join | Sort | SetOperation>();
@@ -475,13 +475,13 @@ export class JavascriptExecutor {
     return contexts.get(root as Scan)?.tables.get(root.name) ?? new Table([]);
   }
 
-  /** Convert a SQL expression into literal JS code string. */
+  /** Convert a SQL expression into literal JS code string */
   generate (expression: Expression | undefined): string | undefined {
     if (!expression) return undefined;
     return this.generator.generate(expression);
   }
 
-  /** Convert an array of SQL expressions into an array of JS code strings. */
+  /** Convert an array of SQL expressions into an array of JS code strings */
   generateTuple (expressions: Expression[]): string[] {
     if (!expressions || expressions.length === 0) return [];
     return expressions.map((e) => this.generate(e) ?? '');
@@ -538,8 +538,8 @@ export class JavascriptExecutor {
     const projections = this.generateTuple(step.projections || []);
 
     // Handle self-referential projections: if projections reference scope[stepName] but stepName
-    // is not in the context, add an empty table with that name so scope references can resolve.
-    // This happens when a Scan step has projections like scope["_0"]["x"] and is named "_0".
+    // is not in the context, add an empty table with that name so scope references can resolve
+    // This happens when a Scan step has projections like scope["_0"]["x"] and is named "_0"
     if (0 < projections.length && projections[0].includes(`scope["${step.name}"]`) && !context.has(step.name)) {
       // Create empty table with sink columns to allow scope references to find it
       const contextTables: Record<string, Table> = {};
@@ -663,8 +663,10 @@ export class JavascriptExecutor {
       ],
     ]));
 
-    const columnRanges = new Map<string, { start: number;
-      stop: number; }>();
+    const columnRanges = new Map<string, {
+      start: number;
+      stop: number;
+    }>();
     columnRanges.set(source, {
       start: 0,
       stop: sourceTable.columns.length,

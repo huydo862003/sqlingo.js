@@ -35,8 +35,8 @@ function typedocVirtual (): Plugin {
     },
     configureServer (server: ViteDevServer) {
       watch(apiJsonPath, () => {
-        const mod = server.moduleGraph.getModuleById(RESOLVED_ID);
-        if (mod) server.moduleGraph.invalidateModule(mod);
+        const module_ = server.moduleGraph.getModuleById(RESOLVED_ID);
+        if (module_) server.moduleGraph.invalidateModule(module_);
         server.ws.send({
           type: 'full-reload',
         });

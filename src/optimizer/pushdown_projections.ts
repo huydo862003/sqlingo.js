@@ -35,7 +35,9 @@ const SELECT_ALL = Symbol('SELECT_ALL');
 /**
  * Selection to use if selection list is empty
  */
-function defaultSelection (options: { isAgg: boolean }): Expression {
+function defaultSelection (options: {
+  isAgg: boolean;
+}): Expression {
   const {
     isAgg,
   } = options;
@@ -93,7 +95,7 @@ export function pushdownProjections<E extends Expression> (
 
   // We build the scope tree (which is traversed in DFS postorder), then iterate
   // over the result in reverse order. This should ensure that the set of selected
-  // columns for a particular scope are completely built by the time we get to it.
+  // columns for a particular scope are completely built by the time we get to it
   const scopes = Array.from(traverseScope(expression));
 
   for (let i = scopes.length - 1; 0 <= i; i--) {

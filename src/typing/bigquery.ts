@@ -44,7 +44,7 @@ import type {
 } from './dialect';
 
 /**
- * Many BigQuery math functions such as CEIL, FLOOR etc follow this return type convention.
+ * Many BigQuery math functions such as CEIL, FLOOR etc follow this return type convention
  */
 function annotateMathFunctions (this: TypeAnnotator, expression: Expression): Expression {
   const thisArg = expression.args.this;

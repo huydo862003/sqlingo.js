@@ -114,7 +114,9 @@ class DrillParser extends Parser {
   static STRICT_CAST = false;
   static LOG_DEFAULTS_TO_LN = true;
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       REPEATED_COUNT: (args: unknown[]) => ArraySizeExpr.fromArgList(args),

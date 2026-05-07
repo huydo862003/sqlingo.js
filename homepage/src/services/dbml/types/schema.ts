@@ -8,7 +8,7 @@ import type {
   DbmlTable,
 } from './table';
 import type {
-  DbmlRef,
+  DbmlReference,
 } from './ref';
 import type {
   DbmlEnum,
@@ -30,29 +30,29 @@ export class DbmlSchema extends SchemaElement {
   readonly kind = DbmlKind.SCHEMA;
   project?: DbmlProject;
   tables: DbmlTable[];
-  refs: DbmlRef[];
+  refs: DbmlReference[];
   enums: DbmlEnum[];
   tableGroups: DbmlTableGroup[];
   stickyNotes: DbmlStickyNote[];
   records: DbmlRecord[];
 
-  constructor (args: {
+  constructor (arguments_: {
     project?: DbmlProject;
     tables?: DbmlTable[];
-    refs?: DbmlRef[];
+    refs?: DbmlReference[];
     enums?: DbmlEnum[];
     tableGroups?: DbmlTableGroup[];
     stickyNotes?: DbmlStickyNote[];
     records?: DbmlRecord[];
   } = {}) {
     super();
-    this.project = args.project;
-    this.tables = args.tables ?? [];
-    this.refs = args.refs ?? [];
-    this.enums = args.enums ?? [];
-    this.tableGroups = args.tableGroups ?? [];
-    this.stickyNotes = args.stickyNotes ?? [];
-    this.records = args.records ?? [];
+    this.project = arguments_.project;
+    this.tables = arguments_.tables ?? [];
+    this.refs = arguments_.refs ?? [];
+    this.enums = arguments_.enums ?? [];
+    this.tableGroups = arguments_.tableGroups ?? [];
+    this.stickyNotes = arguments_.stickyNotes ?? [];
+    this.records = arguments_.records ?? [];
   }
 
   intern (): string {

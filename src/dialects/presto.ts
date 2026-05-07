@@ -197,7 +197,7 @@ import {
 
 /**
  * Presto doesn't have a native INITCAP. We simulate it using REGEXP_REPLACE with a lambda.
- * It transforms 'hello world' into 'Hello World'.
+ * It transforms 'hello world' into 'Hello World'
  */
 export function initcapSql (this: Generator, expression: InitcapExpr): string {
   const delimiters = expression.args.expression;
@@ -213,7 +213,7 @@ export function initcapSql (this: Generator, expression: InitcapExpr): string {
 }
 
 /**
- * Presto uses ARRAY_SORT. If descending is requested, we provide a custom comparator lambda.
+ * Presto uses ARRAY_SORT. If descending is requested, we provide a custom comparator lambda
  */
 export function noSortArray (this: Generator, expression: SortArrayExpr): string {
   let comparator: string | undefined;
@@ -230,7 +230,7 @@ export function noSortArray (this: Generator, expression: SortArrayExpr): string
 
 /**
  * Handles schema generation, with special logic for PARTITIONED BY properties
- * where column names must be rendered as string literals within an array.
+ * where column names must be rendered as string literals within an array
  */
 export function schemaSql (this: Generator, expression: SchemaExpr): string {
   if (expression.parent instanceof PartitionedByPropertyExpr) {
@@ -275,7 +275,7 @@ export function schemaSql (this: Generator, expression: SchemaExpr): string {
 }
 
 /**
- * Presto lacks exact quantiles, so we pivot to the approximate version.
+ * Presto lacks exact quantiles, so we pivot to the approximate version
  */
 export function quantileSql (this: Generator, expression: QuantileExpr): string {
   this.unsupported('Presto does not support exact quantiles; using APPROX_PERCENTILE.');
@@ -286,7 +286,7 @@ export function quantileSql (this: Generator, expression: QuantileExpr): string 
 }
 
 /**
- * Maps StrToDate/Time to Presto's DATE_PARSE function.
+ * Maps StrToDate/Time to Presto's DATE_PARSE function
  */
 export function strToTimeSql (
   this: Generator,
@@ -300,7 +300,7 @@ export function strToTimeSql (
 
 /**
  * Handles converting a Timestamp or DateString to a Date.
- * If a custom format is provided, it uses DATE_PARSE; otherwise, it performs a nested cast.
+ * If a custom format is provided, it uses DATE_PARSE; otherwise, it performs a nested cast
  */
 export function tsOrDsToDateSql (this: Generator, expression: TsOrDsToDateExpr): string {
   const timeFormat = this.formatTime(expression);
@@ -353,7 +353,7 @@ export function tsOrDsDiffSql (this: Generator, expression: TsOrDsDiffExpr): str
 }
 
 /**
- * Builder for approximate percentiles which maps to ApproxQuantile AST nodes.
+ * Builder for approximate percentiles which maps to ApproxQuantile AST nodes
  */
 export function buildApproxPercentile (args: Expression[]): ApproxQuantileExpr {
   if (args.length === 4) {
@@ -375,7 +375,7 @@ export function buildApproxPercentile (args: Expression[]): ApproxQuantileExpr {
 }
 
 /**
- * Builder for FROM_UNIXTIME, supporting timezone and offset arguments.
+ * Builder for FROM_UNIXTIME, supporting timezone and offset arguments
  */
 export function buildFromUnixtime (args: Expression[]): UnixToTimeExpr {
   if (args.length === 3) {
@@ -397,7 +397,7 @@ export function buildFromUnixtime (args: Expression[]): UnixToTimeExpr {
 
 /**
  * In Trino, FIRST/LAST are navigation functions within MATCH_RECOGNIZE.
- * Everywhere else, they are treated as ARBITRARY.
+ * Everywhere else, they are treated as ARBITRARY
  */
 export function firstLastSql (this: Generator, expression: FuncExpr): string {
   if (expression.findAncestor<MatchRecognizeExpr | SelectExpr>(MatchRecognizeExpr, SelectExpr)) {
@@ -407,7 +407,7 @@ export function firstLastSql (this: Generator, expression: FuncExpr): string {
 }
 
 /**
- * Handles UNIX timestamp conversion, potentially scaling for milliseconds/microseconds.
+ * Handles UNIX timestamp conversion, potentially scaling for milliseconds/microseconds
  */
 export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   const scale = expression.args.scale;
@@ -422,7 +422,7 @@ export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): str
 }
 
 /**
- * Ensures a value is an Integer for date arithmetic. Casts to BIGINT if necessary.
+ * Ensures a value is an Integer for date arithmetic. Casts to BIGINT if necessary
  */
 function toInt (this: Generator, expression: Expression): Expression {
   if (!expression.type) {
@@ -440,7 +440,7 @@ function toInt (this: Generator, expression: Expression): Expression {
 }
 
 /**
- * Presto's TO_CHAR implementation actually follows Teradata's format conventions.
+ * Presto's TO_CHAR implementation actually follows Teradata's format conventions
  */
 export function buildToChar (args: Expression[]): TimeToStrExpr {
   const fmt = seqGet(args, 1);
@@ -453,9 +453,11 @@ export function buildToChar (args: Expression[]): TimeToStrExpr {
 }
 
 /**
- * Higher-order function to create SQL for date addition or subtraction.
+ * Higher-order function to create SQL for date addition or subtraction
  */
-export function dateDeltaSql (name: string, options: { negateInterval?: boolean } = {}): (this: Generator, expression: DateAddOrSub) => string {
+export function dateDeltaSql (name: string, options: {
+  negateInterval?: boolean;
+} = {}): (this: Generator, expression: DateAddOrSub) => string {
   const {
     negateInterval = false,
   } = options;
@@ -481,7 +483,7 @@ export function dateDeltaSql (name: string, options: { negateInterval?: boolean 
 
 /**
  * Converts Spark/Hive style EXPLODE into Presto UNNEST, with special handling for
- * Arrays of Structs which Presto flattens into multiple columns.
+ * Arrays of Structs which Presto flattens into multiple columns
  */
 export function explodeToUnnestSqlPresto (this: Generator, expression: LateralExpr): string {
   const explode = expression.args.this;
@@ -498,7 +500,7 @@ export function explodeToUnnestSqlPresto (this: Generator, expression: LateralEx
       && 0 < (explodedType.args.expressions?.length || 0)
       && explodedType.args.expressions?.[0].isType(DataTypeExprKind.STRUCT)
     ) {
-      // Presto unnesting a ROW produces N columns. We fix the alias to match the internal struct fields.
+      // Presto unnesting a ROW produces N columns. We fix the alias to match the internal struct fields
       const structFields = explodedType.args.expressions[0].args.expressions;
       alias.setArgKey('columns', structFields?.flatMap((c) => c instanceof Expression && c.args.this instanceof Expression
         ? c.args.this.copy()
@@ -516,7 +518,7 @@ export function explodeToUnnestSqlPresto (this: Generator, expression: LateralEx
 
 /**
  * Fixes column qualifications in a SELECT scope after an EXPLODE -> UNNEST transformation.
- * Useful when transpiling from Spark where fields might be qualified with the struct name.
+ * Useful when transpiling from Spark where fields might be qualified with the struct name
  */
 export function amendExplodedColumnTable (expression: Expression): Expression {
   // Types must be inferred (annotated) for this amendment to work safely
@@ -639,7 +641,9 @@ class PrestoParser extends Parser {
   static ZONE_AWARE_TIMESTAMP_CONSTRUCTOR = true;
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       ARBITRARY: (args: unknown[]) => AnyValueExpr.fromArgList(args),
@@ -1438,7 +1442,7 @@ class PrestoGenerator extends Generator {
 
   /**
    * Handles Presto's specific EXTRACT logic for high-precision EPOCHs.
-   * Converts EPOCH_MILLISECOND, etc., into Unix time math.
+   * Converts EPOCH_MILLISECOND, etc., into Unix time math
    */
   public extractSql (expression: ExtractExpr): string {
     const datePart = expression.name.toUpperCase();
@@ -1475,7 +1479,7 @@ class PrestoGenerator extends Generator {
   }
 
   /**
-     * Presto requires the input to JSON_FORMAT to be of type JSON.
+     * Presto requires the input to JSON_FORMAT to be of type JSON
      */
   public jsonFormatSql (expression: JsonFormatExpr): string {
     let thisArg = expression.args.this;
@@ -1500,7 +1504,7 @@ class PrestoGenerator extends Generator {
 
   /**
    * Presto's MD5 returns VARBINARY, so it needs to be hexed and lowercased
-   * for standard string representation.
+   * for standard string representation
    */
   public md5Sql (expression: Md5Expr): string {
     let thisArg = expression.args.this;
@@ -1531,7 +1535,7 @@ class PrestoGenerator extends Generator {
   /**
    * Converts a string to a Unix timestamp.
    * Uses a COALESCE(TRY(DATE_PARSE), PARSE_DATETIME) pattern to handle
-   * standard formats and those containing timezones (Hive style).
+   * standard formats and those containing timezones (Hive style)
    */
   public strToUnixSql (expression: StrToUnixExpr): string {
     const thisArg = expression.args.this;
@@ -1602,7 +1606,7 @@ class PrestoGenerator extends Generator {
 
   /**
    * Presto uses ROW(...) for structs. If types are known, it casts the row
-   * to a specific ROW schema to maintain field naming.
+   * to a specific ROW schema to maintain field naming
    */
   public structSql (expression: StructExpr): string {
     if (!expression.type) {
@@ -1648,7 +1652,7 @@ class PrestoGenerator extends Generator {
   public intervalSql (expression: IntervalExpr): string {
     const unit = expression.text('unit').toUpperCase();
     if (expression.args.this && unit.startsWith('WEEK')) {
-      // Presto interval doesn't support weeks directly in some versions; convert to days.
+      // Presto interval doesn't support weeks directly in some versions; convert to days
       return `(${expression.args.this.name} * INTERVAL '7' DAY)`;
     }
     return super.intervalSql(expression);
@@ -1661,7 +1665,7 @@ class PrestoGenerator extends Generator {
   }
 
   public createSql (expression: CreateExpr): string {
-    // Presto CREATE VIEW does not support explicit column lists in the header.
+    // Presto CREATE VIEW does not support explicit column lists in the header
     const createThis = expression.args.this instanceof Expression ? expression.args.this : undefined;
     if (expression.args.kind === CreateExprKind.VIEW && createThis?.args.expressions) {
       createThis.setArgKey('expressions', undefined);
@@ -1670,7 +1674,7 @@ class PrestoGenerator extends Generator {
   }
 
   /**
-   * Presto DELETE is restrictive (no aliases, single table).
+   * Presto DELETE is restrictive (no aliases, single table)
    */
   public deleteSql (expression: DeleteExpr): string {
     const tables = expression.args.tables || [expression.args.this];
@@ -1724,7 +1728,7 @@ class PrestoGenerator extends Generator {
   }
 
   public groupConcatSql (expression: GroupConcatExpr): string {
-    // Presto simulates GROUP_CONCAT by aggregating into an array and joining it.
+    // Presto simulates GROUP_CONCAT by aggregating into an array and joining it
     return this.func(
       'ARRAY_JOIN',
       [

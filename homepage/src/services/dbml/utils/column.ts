@@ -20,7 +20,7 @@ import {
   DbmlCheck,
   DbmlColumn,
   DbmlColumnType,
-  DbmlInlineRef,
+  DbmlInlineReference,
   DbmlRelation,
 } from '../types';
 import {
@@ -46,7 +46,7 @@ export function buildColumn (expr: ColumnDefExpr): DbmlColumn {
     name,
     type,
   });
-  const refs: DbmlInlineRef[] = [];
+  const references: DbmlInlineReference[] = [];
 
   for (const constraintExpr of expr.constraints) {
     if (!(constraintExpr instanceof ColumnConstraintExpr)) continue;
@@ -65,19 +65,19 @@ export function buildColumn (expr: ColumnDefExpr): DbmlColumn {
     } else if (kind instanceof GeneratedAsIdentityColumnConstraintExpr) {
       column.increment = true;
     } else if (kind instanceof DefaultColumnConstraintExpr) {
-      const t = kind.args.this;
-      if (t instanceof Expression) column.default = nodeText(t);
+      const inner = kind.args.this;
+      if (inner instanceof Expression) column.default = nodeText(inner);
     } else if (kind instanceof CommentColumnConstraintExpr) {
-      const t = kind.args.this;
-      if (t instanceof Expression) column.note = nodeText(t);
+      const inner = kind.args.this;
+      if (inner instanceof Expression) column.note = nodeText(inner);
     } else if (kind instanceof CollateColumnConstraintExpr) {
       // collation not representable in DBML
     } else if (kind instanceof ComputedColumnConstraintExpr) {
       column.note = 'VIRTUAL column';
     } else if (kind instanceof CheckColumnConstraintExpr) {
-      const t = kind.args.this;
-      if (t instanceof Expression) column.check = new DbmlCheck({
-        expression: t.sql(),
+      const checkExpr = kind.args.this;
+      if (checkExpr instanceof Expression) column.check = new DbmlCheck({
+        expression: checkExpr.sql(),
       });
     } else if (kind instanceof ReferenceExpr) {
       const inner = kind.args.this;
@@ -86,10 +86,10 @@ export function buildColumn (expr: ColumnDefExpr): DbmlColumn {
         ? (inner.args.expressions ?? [])
         : [];
       const target = tableParts(tableExpr as Expression | undefined);
-      const refCols = cols.map((c) => c instanceof Expression ? nodeText(c) : String(c));
+      const refCols = cols.map((col) => col instanceof Expression ? nodeText(col) : String(col));
       if (target.name) {
         const actions = referenceActions(kind);
-        refs.push(new DbmlInlineRef({
+        references.push(new DbmlInlineReference({
           relation: DbmlRelation.MANY_TO_ONE,
           target: endpoint(target.schema, target.name, refCols.length
             ? refCols
@@ -101,6 +101,6 @@ export function buildColumn (expr: ColumnDefExpr): DbmlColumn {
     }
   }
 
-  if (refs.length) column.ref = refs;
+  if (references.length) column.ref = references;
   return column;
 }

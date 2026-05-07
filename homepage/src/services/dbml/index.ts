@@ -22,7 +22,7 @@ import {
   buildRecord,
 } from './utils/record';
 import {
-  indexFromParams,
+  indexFromParameters,
 } from './utils/tableIndex';
 import {
   schemaToDbml,
@@ -33,10 +33,10 @@ export interface ConversionResult {
   dbml: string;
 }
 
-function recordKey (r: Pick<DbmlRecord, 'schema' | 'tableName'>): string {
+function recordKey (record: Pick<DbmlRecord, 'schema' | 'tableName'>): string {
   return new DbmlTable({
-    schema: r.schema,
-    name: r.tableName,
+    schema: record.schema,
+    name: record.tableName,
     columns: [],
   }).intern();
 }
@@ -47,7 +47,7 @@ export function sqlToDbml (sql: string, dialect?: string): ConversionResult {
       read: dialect,
     }
     : {});
-  const bad = parsed.find((s) => s instanceof CommandExpr);
+  const bad = parsed.find((stmt) => stmt instanceof CommandExpr);
   if (bad) throw new Error('Unsupported SQL syntax');
 
   const schema = new DbmlSchema();
@@ -73,11 +73,11 @@ export function sqlToDbml (sql: string, dialect?: string): ConversionResult {
     if (!(stmt instanceof CreateExpr)) continue;
 
     if (stmt.kind === CreateExprKind.INDEX) {
-      const idx = stmt.args.this;
-      if (!(idx instanceof IndexExpr)) continue;
-      const tableRef = idx.args.table;
-      if (!(tableRef instanceof Expression)) continue;
-      const tp = tableParts(tableRef);
+      const index = stmt.args.this;
+      if (!(index instanceof IndexExpr)) continue;
+      const tableReference = index.args.table;
+      if (!(tableReference instanceof Expression)) continue;
+      const tp = tableParts(tableReference);
       const lookup = new DbmlTable({
         schema: tp.schema,
         name: tp.name,
@@ -85,7 +85,7 @@ export function sqlToDbml (sql: string, dialect?: string): ConversionResult {
       }).intern();
       const target = tableByKey.get(lookup);
       if (!target) continue;
-      const built = indexFromParams(idx);
+      const built = indexFromParameters(index);
       if (!built) continue;
       if (stmt.args.unique) built.unique = true;
       target.indexes = target.indexes ?? [];

@@ -17,13 +17,13 @@ export class DbmlIndexColumn extends SchemaElement {
   expression: string;
   isExpression?: boolean;
 
-  constructor (args: {
+  constructor (arguments_: {
     expression: string;
     isExpression?: boolean;
   }) {
     super();
-    this.expression = args.expression;
-    this.isExpression = args.isExpression;
+    this.expression = arguments_.expression;
+    this.isExpression = arguments_.isExpression;
   }
 
   intern (): string {
@@ -40,7 +40,7 @@ export class DbmlIndex extends SchemaElement {
   type?: DbmlIndexType | string;
   note?: string;
 
-  constructor (args: {
+  constructor (arguments_: {
     name?: string;
     columns: DbmlIndexColumn[];
     unique?: boolean;
@@ -49,16 +49,16 @@ export class DbmlIndex extends SchemaElement {
     note?: string;
   }) {
     super();
-    this.name = args.name;
-    this.columns = args.columns;
-    this.unique = args.unique;
-    this.pk = args.pk;
-    this.type = args.type;
-    this.note = args.note;
+    this.name = arguments_.name;
+    this.columns = arguments_.columns;
+    this.unique = arguments_.unique;
+    this.pk = arguments_.pk;
+    this.type = arguments_.type;
+    this.note = arguments_.note;
   }
 
   intern (): string {
-    const cols = this.columns.map((c) => c.intern()).join('|');
+    const cols = this.columns.map((col) => col.intern()).join('|');
     return `${this.kind}:${this.name ?? ''}:${cols}`;
   }
 }

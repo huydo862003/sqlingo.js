@@ -527,7 +527,9 @@ function buildParseName (args: Expression[]): SplitPartExpr | Expression {
   return func('PARSENAME', ...args);
 }
 
-function buildJsonQuery (args: Expression[], options: { dialect: Dialect }): JsonExtractExpr {
+function buildJsonQuery (args: Expression[], options: {
+  dialect: Dialect;
+}): JsonExtractExpr {
   if (args.length === 1) {
     args.push(LiteralExpr.string('$'));
   }
@@ -820,7 +822,9 @@ export class TSQLParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       ATN2: (args: unknown[]) => Atan2Expr.fromArgList(args),
@@ -1031,7 +1035,9 @@ export class TSQLParser extends Parser {
     return this.parseWrapped(() => super.parseAlterTableSet());
   }
 
-  parseWrappedSelect (options: { table?: boolean } = {}): Expression | undefined {
+  parseWrappedSelect (options: {
+    table?: boolean;
+  } = {}): Expression | undefined {
     if (this.match(TokenType.MERGE)) {
       const comments = this.prevComments;
       const merge = this.parseMerge();
@@ -1110,7 +1116,7 @@ export class TSQLParser extends Parser {
 
   /**
    * T-SQL supports alias = expression in SELECT.
-   * Converts EQ projections into Aliases.
+   * Converts EQ projections into Aliases
    */
   parseProjections (): Expression[] {
     return super.parseProjections().map((projection) => {
@@ -1208,7 +1214,9 @@ export class TSQLParser extends Parser {
     return convert;
   }
 
-  parseColumnDef (thisNode?: Expression, options: { computedColumn?: boolean } = {}): Expression | undefined {
+  parseColumnDef (thisNode?: Expression, options: {
+    computedColumn?: boolean;
+  } = {}): Expression | undefined {
     const {
       computedColumn = true,
     } = options;
@@ -1226,7 +1234,9 @@ export class TSQLParser extends Parser {
     return columnDef;
   }
 
-  parseUserDefinedFunction (options: { kind?: TokenType } = {}): Expression | undefined {
+  parseUserDefinedFunction (options: {
+    kind?: TokenType;
+  } = {}): Expression | undefined {
     const {
       kind,
     } = options;
@@ -1835,7 +1845,7 @@ export class TSQLGenerator extends Generator {
 
     if (offset) {
       if (!expression.args.order) {
-        // T-SQL OFFSET requires an ORDER BY. Use a no-op subquery if none exists.
+        // T-SQL OFFSET requires an ORDER BY. Use a no-op subquery if none exists
         //
         expression.orderBy(new SelectExpr({
           expressions: [new NullExpr()],
@@ -1870,7 +1880,7 @@ export class TSQLGenerator extends Generator {
     const value = this.sql(expression, 'expression');
 
     if (value) {
-      // T-SQL options like MAXDOP don't use '=', but others like LABEL do.
+      // T-SQL options like MAXDOP don't use '=', but others like LABEL do
       const optionalEqualSign = OPTIONS_THAT_REQUIRE_EQUAL.has(option) ? '= ' : '';
       return `${option} ${optionalEqualSign}${value}`;
     }
@@ -1967,7 +1977,7 @@ export class TSQLGenerator extends Generator {
     const thisNode = expression.args.this;
     if (thisNode instanceof EqExpr && !(thisNode.args.this instanceof ParameterExpr)) {
       // T-SQL does not use '=' in SET command for system options (e.g., SET NOCOUNT ON),
-      // except when the LHS is a variable (@var = val).
+      // except when the LHS is a variable (@var = val)
       return `${this.sql(thisNode.args.this)} ${this.sql(thisNode.args.expression)}`;
     }
 
@@ -1978,8 +1988,8 @@ export class TSQLGenerator extends Generator {
     const parent = expression.parent;
     const valuesOrSelect = expression.findAncestor<ValuesExpr | SelectExpr>(ValuesExpr, SelectExpr);
 
-    // T-SQL does not have a native BOOLEAN type; it uses BIT (0/1).
-    // In predicates, we use (1=1) or (1=0).
+    // T-SQL does not have a native BOOLEAN type; it uses BIT (0/1)
+    // In predicates, we use (1=1) or (1=0)
     //
     if (
       (parent && BIT_TYPES.has(parent._constructor))
@@ -2002,8 +2012,8 @@ export class TSQLGenerator extends Generator {
     let sql = this.sql(expression, 'this');
     const properties = expression.args.properties;
 
-    // T-SQL temporary tables must start with #.
-    // We automatically prepend # if a TemporaryProperty is found.
+    // T-SQL temporary tables must start with #
+    // We automatically prepend # if a TemporaryProperty is found
     if (
       sql[0] !== '#'
       && properties?.args?.expressions?.some((prop) => prop instanceof TemporaryPropertyExpr)
@@ -2034,7 +2044,7 @@ export class TSQLGenerator extends Generator {
     const table = expression.find(TableExpr);
 
     let sql: string;
-    // Convert CTAS (Create Table As Select) to T-SQL's SELECT .. INTO ..
+    // Convert CTAS (Create Table As Select) to T-SQL's SELECT .. INTO
     if (kind === CreateExprKind.TABLE && ctasExpression) {
       if (ctasExpression instanceof SelectExpr) {
         ctasExpression = ctasExpression.subquery();
@@ -2252,7 +2262,9 @@ export class TSQLGenerator extends Generator {
     return `(PATINDEX(CONVERT(VARCHAR(MAX), 0x255b5e002d7f5d25) COLLATE Latin1_General_BIN, ${this.sql(expression.args.this)}) = 0)`;
   }
 
-  columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
+  columnDefSql (expression: ColumnDefExpr, options: {
+    sep?: string;
+  } = {}): string {
     const thisSql = super.columnDefSql(expression, options);
     const defaultValue = expression.args.default ? ` = ${this.sql(expression, 'default')}` : '';
     const output = expression.args.output ? ` ${this.sql(expression, 'output')}` : '';

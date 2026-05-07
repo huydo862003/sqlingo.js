@@ -147,7 +147,7 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
 
 /**
  * Spark doesn't allow PIVOT aliases, so we remove them and wrap
- * in a subquery to preserve semantics.
+ * in a subquery to preserve semantics
  */
 function unaliasPivot (expression: Expression): Expression {
   if (expression instanceof FromExpr && expression.args.this?.args.pivots?.length) {
@@ -172,7 +172,7 @@ function unaliasPivot (expression: Expression): Expression {
 }
 
 /**
- * Spark doesn't allow qualified columns in PIVOT's field.
+ * Spark doesn't allow qualified columns in PIVOT's field
  */
 function unqualifyPivotColumns (expression: Expression): Expression {
   if (expression instanceof PivotExpr) {
@@ -249,7 +249,9 @@ class Spark2Parser extends Hive.Parser {
   static CHANGE_COLUMN_ALTER_SYNTAX = true;
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return {
       ...Hive.Parser.FUNCTIONS,
       AGGREGATE: (args: unknown[]) => ReduceExpr.fromArgList(args),
@@ -283,7 +285,9 @@ class Spark2Parser extends Hive.Parser {
       FORMAT_STRING: (args: unknown[]) => FormatExpr.fromArgList(args),
       FROM_UTC_TIMESTAMP: (args: Expression[], {
         dialect,
-      }: { dialect: Dialect }) =>
+      }: {
+        dialect: Dialect;
+      }) =>
         new AtTimeZoneExpr({
           this: cast(seqGet(args, 0) || var_(''), DataTypeExprKind.TIMESTAMP, {
             dialect,
@@ -314,7 +318,9 @@ class Spark2Parser extends Hive.Parser {
       TO_UNIX_TIMESTAMP: (args: unknown[]) => StrToUnixExpr.fromArgList(args),
       TO_UTC_TIMESTAMP: (args: Expression[], {
         dialect,
-      }: { dialect: Dialect }) =>
+      }: {
+        dialect: Dialect;
+      }) =>
         new FromTimeZoneExpr({
           this: cast(seqGet(args, 0) || var_(''), DataTypeExprKind.TIMESTAMP, {
             dialect,
@@ -650,7 +656,9 @@ class Spark2Generator extends Hive.Generator {
     return Generator.prototype.structSql.call(this, expression);
   }
 
-  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
+  castSql (expression: CastExpr, options: {
+    safePrefix?: string;
+  } = {}): string {
     const arg = expression.args.this;
     const isJsonExtract =
       (arg instanceof JsonExtractExpr || arg instanceof JsonExtractScalarExpr)

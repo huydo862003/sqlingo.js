@@ -66,5 +66,5 @@ export const DIALECTS = [
 export type DialectValue = typeof DIALECTS[number]['value'];
 
 export function getDialectLabel (value: string): string {
-  return DIALECTS.find((d) => d.value === value)?.label ?? value;
+  return DIALECTS.find((dialect) => dialect.value === value)?.label ?? value;
 }

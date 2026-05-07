@@ -2,46 +2,46 @@ import {
   Expression, type ReferenceExpr,
 } from '@hdnax/sqlingo.js';
 import {
-  DbmlEndpoint, DbmlRefAction,
+  DbmlEndpoint, DbmlReferenceAction,
 } from '../types';
 
-const ACTION_BY_TOKEN: Record<string, DbmlRefAction> = {
-  CASCADE: DbmlRefAction.CASCADE,
-  RESTRICT: DbmlRefAction.RESTRICT,
-  'SET NULL': DbmlRefAction.SET_NULL,
-  'SET DEFAULT': DbmlRefAction.SET_DEFAULT,
-  'NO ACTION': DbmlRefAction.NO_ACTION,
+const ACTION_BY_TOKEN: Record<string, DbmlReferenceAction> = {
+  CASCADE: DbmlReferenceAction.CASCADE,
+  RESTRICT: DbmlReferenceAction.RESTRICT,
+  'SET NULL': DbmlReferenceAction.SET_NULL,
+  'SET DEFAULT': DbmlReferenceAction.SET_DEFAULT,
+  'NO ACTION': DbmlReferenceAction.NO_ACTION,
 };
 
-function tokenize (s: string): string[] {
-  return s.trim().toUpperCase()
+function tokenize (text: string): string[] {
+  return text.trim().toUpperCase()
     .split(/\s+/)
     .filter(Boolean);
 }
 
-function actionFromTokens (tokens: string[]): DbmlRefAction | undefined {
+function actionFromTokens (tokens: string[]): DbmlReferenceAction | undefined {
   const joined = tokens.join(' ');
   return ACTION_BY_TOKEN[joined];
 }
 
-export function parseActionExpr (e: Expression | undefined): DbmlRefAction | undefined {
-  if (!e) return undefined;
-  return actionFromTokens(tokenize(e.sql()));
+export function parseActionExpr (expr: Expression | undefined): DbmlReferenceAction | undefined {
+  if (!expr) return undefined;
+  return actionFromTokens(tokenize(expr.sql()));
 }
 
 /**
  * ReferenceExpr.options are pre-tokenized strings like "ON DELETE CASCADE" emitted by sqlingo.
- * Split into category + action tokens.
+ * Split into category + action tokens
  */
 export function referenceActions (
   ref: ReferenceExpr,
 ): {
-  onDelete?: DbmlRefAction;
-  onUpdate?: DbmlRefAction;
+  onDelete?: DbmlReferenceAction;
+  onUpdate?: DbmlReferenceAction;
 } {
   const out: {
-    onDelete?: DbmlRefAction;
-    onUpdate?: DbmlRefAction;
+    onDelete?: DbmlReferenceAction;
+    onUpdate?: DbmlReferenceAction;
   } = {};
   for (
     const opt of ref.args.options ?? []

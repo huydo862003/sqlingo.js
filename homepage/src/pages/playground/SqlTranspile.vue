@@ -93,20 +93,20 @@ import {
 const store = usePlaygroundStore();
 const fromDialect = computed({
   get: () => store.transpileFrom,
-  set: (v) => {
-    store.transpileFrom = v; store.persist();
+  set: (value) => {
+    store.transpileFrom = value; store.persist();
   },
 });
 const toDialect = computed({
   get: () => store.transpileTo,
-  set: (v) => {
-    store.transpileTo = v; store.persist();
+  set: (value) => {
+    store.transpileTo = value; store.persist();
   },
 });
 const sqlInput = computed({
   get: () => store.transpileInput,
-  set: (v) => {
-    store.transpileInput = v; store.persist();
+  set: (value) => {
+    store.transpileInput = value; store.persist();
   },
 });
 
@@ -114,8 +114,8 @@ const sqlOutput = ref('');
 const error = ref('');
 const copied = ref(false);
 
-function stripAnsi (s: string): string {
-  return s.replace(/\x1b\[[0-9;]*m/g, '');
+function stripAnsi (text: string): string {
+  return text.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
 function convert () {
@@ -132,9 +132,9 @@ function convert () {
     });
     sqlOutput.value = results.join('\n');
     error.value = '';
-  } catch (e) {
+  } catch (error_) {
     sqlOutput.value = '';
-    error.value = stripAnsi(e instanceof Error ? e.message : String(e));
+    error.value = stripAnsi(error_ instanceof Error ? error_.message : String(error_));
   }
 }
 

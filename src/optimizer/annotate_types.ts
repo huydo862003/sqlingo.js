@@ -175,7 +175,7 @@ function swapAll (coercions: BinaryCoercions): BinaryCoercions {
 
 /**
  * Type annotator for SQL expressions.
- * Walks the AST and infers types for all expressions based on schema and type rules.
+ * Walks the AST and infers types for all expressions based on schema and type rules
  */
 export class TypeAnnotator {
   @cache
@@ -244,7 +244,7 @@ export class TypeAnnotator {
     return swapAll((() => {
       const map: BinaryCoercions = new MapBinaryTuple();
 
-      // text + interval → DATE/DATETIME based on whether text is ISO date
+      // text + interval -> DATE/DATETIME based on whether text is ISO date
       for (const t of DataTypeExpr.TEXT_TYPES) {
         map.set(
           t,
@@ -254,7 +254,7 @@ export class TypeAnnotator {
         );
       }
 
-      // text + numeric → return the numeric type (match most dialect semantics)
+      // text + numeric -> return the numeric type (match most dialect semantics)
       for (const text of DataTypeExpr.TEXT_TYPES) {
         for (const numeric of DataTypeExpr.NUMERIC_TYPES) {
           map.set(
@@ -268,7 +268,7 @@ export class TypeAnnotator {
         }
       }
 
-      // date + interval → DATE/DATETIME based on interval unit
+      // date + interval -> DATE/DATETIME based on interval unit
       map.set(
         DataTypeExprKind.DATE,
         DataTypeExprKind.INTERVAL,
@@ -310,7 +310,7 @@ export class TypeAnnotator {
 
     this.expressionMetadata = expressionMetadata ?? this.dialect._constructor.EXPRESSION_METADATA;
 
-    // coercesTo priority: provided param → dialect.COERCES_TO → TypeAnnotator.COERCES_TO
+    // coercesTo priority: provided param -> dialect.COERCES_TO -> TypeAnnotator.COERCES_TO
     if (coercesTo) {
       this.coercesTo = coercesTo;
     } else {
@@ -348,7 +348,9 @@ export class TypeAnnotator {
     this.scopeSelects.clear();
   }
 
-  annotate<E extends Expression> (expression: E, options: { annotateScope?: boolean } = {}): E {
+  annotate<E extends Expression> (expression: E, options: {
+    annotateScope?: boolean;
+  } = {}): E {
     const {
       annotateScope = true,
     } = options;
@@ -595,7 +597,7 @@ export class TypeAnnotator {
 
   /**
    * Annotate a single expression (and all its children) using iterative post-order traversal.
-   * If scope is provided, resolves column types from that scope's sources.
+   * If scope is provided, resolves column types from that scope's sources
    */
   annotateExpression (expression: Expression, scope?: Scope): void {
     const stack: [Expression, boolean][] = [
@@ -702,7 +704,7 @@ export class TypeAnnotator {
   /**
    * Determine the result type when combining two operands.
    * If either type is parameterized (e.g., DECIMAL(18, 2)), returns it as-is.
-   * Propagates UNKNOWN upward. NULL coerces into the other type.
+   * Propagates UNKNOWN upward. NULL coerces into the other type
    */
   maybeCoerce (
     type1: DataTypeExpr | DataTypeExprKind | ColumnDefExpr | undefined,
@@ -842,13 +844,15 @@ export class TypeAnnotator {
 
   /**
    * Annotate by coercing types from expression arguments.
-   * Handles literal vs non-literal type priority, array wrapping, and type promotion.
+   * Handles literal vs non-literal type priority, array wrapping, and type promotion
    */
   annotateByArgs (
     expression: Expression,
     args: (string | Expression | Expression[])[],
-    options: { promote?: boolean;
-      array?: boolean; } = {},
+    options: {
+      promote?: boolean;
+      array?: boolean;
+    } = {},
   ): void {
     const {
       promote = false, array = false,

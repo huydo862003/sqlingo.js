@@ -1,4 +1,4 @@
-/** Finds a matching enum value by case-insensitive string comparison. */
+/** Finds a matching enum value by case-insensitive string comparison */
 export function enumFromString<T extends string> (
   enumObj: Record<string, T>,
   value: string | undefined,

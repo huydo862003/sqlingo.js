@@ -198,7 +198,9 @@ class SingleStoreParser extends MySQL.Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return (() => {
       const functions = {
         ...MySQL.Parser.FUNCTIONS,

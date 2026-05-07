@@ -97,7 +97,7 @@ import {
 
 /**
  * Although Spark docs don't mention the "unit" argument, Spark3 added support for
- * it at some point. Databricks also supports this variant.
+ * it at some point. Databricks also supports this variant
  */
 function buildDatediff (args: Expression[]): Expression {
   let unit: Expression | undefined = undefined;
@@ -240,7 +240,9 @@ class SparkParser extends Spark2.Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return {
       ...Spark2.Parser.FUNCTIONS,
       ANY_VALUE: buildWithIgnoreNulls(AnyValueExpr),

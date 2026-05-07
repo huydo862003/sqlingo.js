@@ -59,12 +59,12 @@ import {
 } from './unnest_subqueries';
 
 /**
- * Optimizer rule function type.
+ * Optimizer rule function type
  */
 type OptimizerRule = (expression: Expression, options?: Record<string, unknown>) => Expression;
 
 /**
- * Default sequence of optimizer rules.
+ * Default sequence of optimizer rules
  */
 export const RULES: OptimizerRule[] = [
   qualify,

@@ -19,7 +19,7 @@ import type {
  *
  * References to columns can either be scalar or vectors. When setRow is used, column references
  * evaluate to scalars while setRange evaluates to vectors. This allows convenient and efficient
- * evaluation of aggregation functions.
+ * evaluation of aggregation functions
  */
 export class Context {
   public tables: Map<string, Table>;
@@ -30,7 +30,7 @@ export class Context {
 
   /**
    * @param tables Map of tables representing the scope of the current execution context.
-   * @param env Dictionary of functions within the execution context.
+   * @param env Dictionary of functions within the execution context
    */
   constructor (tables: Map<string, Table>, env?: Env) {
     this.tables = tables;
@@ -53,7 +53,7 @@ export class Context {
   }
 
   /**
-   * Evaluates dynamic JavaScript/TypeScript code string within the execution environment.
+   * Evaluates dynamic JavaScript/TypeScript code string within the execution environment
    */
   eval (code: string): unknown {
     const keys = Object.keys(this.env);
@@ -95,7 +95,7 @@ export class Context {
   }
 
   /**
-   * Iterates through the tables row by row.
+   * Iterates through the tables row by row
    */
   * [Symbol.iterator] (): Generator<[RowReader, Context]> {
     this.env['scope'] = this.rowReaders;

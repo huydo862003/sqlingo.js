@@ -161,11 +161,17 @@ class RedshiftParser extends Postgres.Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return (() => {
-      const functions: Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> = {
+      const functions: Record<string, (args: Expression[], options: {
+        dialect: Dialect;
+      }) => Expression> = {
         ...Postgres.Parser.FUNCTIONS,
-        ADD_MONTHS: (args: Expression[], _options: { dialect: Dialect }) =>
+        ADD_MONTHS: (args: Expression[], _options: {
+          dialect: Dialect;
+        }) =>
           new TsOrDsAddExpr({
             this: seqGet(args, 0),
             expression: seqGet(args, 1),
@@ -745,7 +751,9 @@ class RedshiftGenerator extends Postgres.Generator {
     return alias ? `${arg} AS ${alias}` : arg;
   }
 
-  castSql (expression: CastExpr, options: { safePrefix?: string } = {}): string {
+  castSql (expression: CastExpr, options: {
+    safePrefix?: string;
+  } = {}): string {
     const {
       safePrefix,
     } = options;
@@ -763,7 +771,7 @@ class RedshiftGenerator extends Postgres.Generator {
    * Redshift converts the `TEXT` data type to `VARCHAR(255)` by default when people more generally mean
    * VARCHAR of max length which is `VARCHAR(max)` in Redshift. Therefore if we get a `TEXT` data type
    * without precision we convert it to `VARCHAR(max)` and if it does have precision then we just convert
-   * `TEXT` to `VARCHAR`.
+   * `TEXT` to `VARCHAR`
    */
   dataTypeSql (expression: DataTypeExpr): string {
     if (expression.isType(DataTypeExprKind.TEXT)) {

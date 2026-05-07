@@ -164,7 +164,7 @@ import {
  * A higher-order function that returns a parser for MySQL SHOW statements.
  * @param args - Arguments to pass to the internal MySQL SHOW parser.
  * @param kwargs - Keyword arguments to pass to the internal MySQL SHOW parser.
- * @returns A function that takes a MySQL Parser and returns a ShowExpr.
+ * @returns A function that takes a MySQL Parser and returns a ShowExpr
  */
 export function showParser (
   thisArg: string,
@@ -184,7 +184,7 @@ export function showParser (
  * Since MySQL lacks a native DATE_TRUNC, this uses string concatenation and conversion.
  * @param self - The MySQL Generator instance.
  * @param expression - The DateTruncExpr node to transpile.
- * @returns The generated SQL string.
+ * @returns The generated SQL string
  */
 export function dateTruncSql (this: Generator, expression: DateTruncExpr): string {
   const expr = this.sql(expression, 'this');
@@ -238,7 +238,7 @@ export const TIME_SPECIFIERS = new Set([
 ]);
 
 /**
- * Checks if a MySQL date format string contains any time-specific specifiers.
+ * Checks if a MySQL date format string contains any time-specific specifiers
  */
 function hasTimeSpecifier (dateFormat: string): boolean {
   let i = 0;
@@ -258,7 +258,7 @@ function hasTimeSpecifier (dateFormat: string): boolean {
 
 /**
  * Parser builder for STR_TO_DATE. Decides whether to return a StrToDateExpr or StrToTimeExpr
- * based on the presence of time specifiers in the format string.
+ * based on the presence of time specifiers in the format string
  */
 export function buildStrToDate (args: [Expression, ...(string | Expression | undefined)[]]): StrToDateExpr | StrToTimeExpr {
   const mysqlDateFormat = seqGet(args, 1);
@@ -279,7 +279,7 @@ export function buildStrToDate (args: [Expression, ...(string | Expression | und
 }
 
 /**
- * Generator for STR_TO_DATE.
+ * Generator for STR_TO_DATE
  */
 export function strToDateSql (
   this: Generator,
@@ -292,7 +292,7 @@ export function strToDateSql (
 }
 
 /**
- * Generator for UNIX_TO_TIME. Handles optional scale for sub-second precision.
+ * Generator for UNIX_TO_TIME. Handles optional scale for sub-second precision
  */
 export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   const scale = expression.args.scale;
@@ -320,7 +320,7 @@ export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): str
 /**
  * Higher-order function to generate MySQL DATE_ADD or DATE_SUB calls.
  * @param kind - Either 'ADD' or 'SUB'.
- * @returns A function that generates the MySQL-specific DATE logic.
+ * @returns A function that generates the MySQL-specific DATE logic
  */
 export function dateAddSql (kind: string): (this: Generator, expression: DateAddExpr) => string {
   return function (this: Generator, expression: DateAddExpr): string {
@@ -340,7 +340,7 @@ export function dateAddSql (kind: string): (this: Generator, expression: DateAdd
 /**
  * Handles converting a Timestamp or DateString to a Date in MySQL.
  * @param self - The MySQL Generator.
- * @param expression - The TsOrDsToDateExpr node.
+ * @param expression - The TsOrDsToDateExpr node
  */
 export function tsOrDsToDateSql (this: Generator, expression: TsOrDsToDateExpr): string {
   const timeFormat = expression.args.format;
@@ -351,7 +351,7 @@ export function tsOrDsToDateSql (this: Generator, expression: TsOrDsToDateExpr):
 
 /**
  * Optimization that removes redundant TsOrDsToDate wrappers when the parent
- * function can handle raw types.
+ * function can handle raw types
  */
 export function removeTsOrDsToDate<T extends FuncExpr> (
   toSql?: (this: Generator, expression: T) => string,
@@ -966,7 +966,7 @@ class MySQLParser extends Parser {
   }
 
   /**
-   * Modifiers that can appear in a MySQL SELECT statement.
+   * Modifiers that can appear in a MySQL SELECT statement
    */
   @cache
   static get OPERATION_MODIFIERS (): Set<string> {
@@ -987,7 +987,7 @@ class MySQLParser extends Parser {
   static SUPPORTS_PARTITION_SELECTION = true;
 
   /**
-   * Handles MySQL's GENERATED ALWAYS AS logic, including VIRTUAL vs STORED persistence.
+   * Handles MySQL's GENERATED ALWAYS AS logic, including VIRTUAL vs STORED persistence
    */
   public parseGeneratedAsIdentity ():
     | GeneratedAsIdentityColumnConstraintExpr
@@ -1016,7 +1016,7 @@ class MySQLParser extends Parser {
   }
 
   /**
-   * Parses MySQL-specific primary key parts which allow column prefixes (e.g. KEY(col(10))).
+   * Parses MySQL-specific primary key parts which allow column prefixes (e.g. KEY(col(10)))
    */
   public parsePrimaryKeyPart (): Expression | undefined {
     const thisExpr = this.parseIdVar();
@@ -1035,7 +1035,7 @@ class MySQLParser extends Parser {
 
   /**
    * Parses MySQL index constraints, including support for KEY_BLOCK_SIZE,
-   * custom parsers, and visibility toggles.
+   * custom parsers, and visibility toggles
    */
   protected parseIndexConstraint (kind?: string): IndexColumnConstraintExpr {
     if (kind) {
@@ -1111,7 +1111,7 @@ class MySQLParser extends Parser {
   }
 
   /**
-   * Core internal parser for the varied MySQL SHOW statement variants.
+   * Core internal parser for the varied MySQL SHOW statement variants
    */
   public parseShowMysql (
     thisArg: string,
@@ -1297,7 +1297,7 @@ class MySQLParser extends Parser {
 
   /**
    * Overrides core type parsing to handle MySQL's unique 'BINARY' modifier
-   * which can act as a cast without parentheses.
+   * which can act as a cast without parentheses
    */
   public parseType (options: {
     parseInterval?: boolean;
@@ -1348,7 +1348,7 @@ class MySQLParser extends Parser {
   }
 
   /**
-   * Parses MySQL partitioning properties for RANGE and LIST schemes.
+   * Parses MySQL partitioning properties for RANGE and LIST schemes
    */
   protected parsePartitionProperty (): Expression | Expression[] | undefined {
     let partitionCls: typeof Expression | undefined = undefined;
@@ -1800,7 +1800,7 @@ class MySQLGenerator extends Generator {
 
   /**
    * Maps unsigned types to their standard MySQL counterparts.
-   * MySQL adds the 'UNSIGNED' attribute during generation based on the DataTypeExpr.
+   * MySQL adds the 'UNSIGNED' attribute during generation based on the DataTypeExpr
    */
   @cache
   static get UNSIGNED_TYPE_MAPPING (): Map<DataTypeExprKind, string> {
@@ -1837,7 +1837,7 @@ class MySQLGenerator extends Generator {
   }
 
   /**
-   * Standardizes various timestamp types to MySQL's DATETIME or TIMESTAMP.
+   * Standardizes various timestamp types to MySQL's DATETIME or TIMESTAMP
    */
   @cache
   static get TIMESTAMP_TYPE_MAPPING (): Map<DataTypeExprKind, string> {
@@ -1913,7 +1913,7 @@ class MySQLGenerator extends Generator {
   static LIMIT_ONLY_LITERALS: boolean = true;
 
   /**
-   * MySQL CAST targets for character-based types.
+   * MySQL CAST targets for character-based types
    */
   @cache
   static get CHAR_CAST_MAPPING () {
@@ -1933,7 +1933,7 @@ class MySQLGenerator extends Generator {
   }
 
   /**
-   * MySQL CAST targets for integer-based types.
+   * MySQL CAST targets for integer-based types
    */
   @cache
   static get SIGNED_CAST_MAPPING () {
@@ -1964,7 +1964,7 @@ class MySQLGenerator extends Generator {
   }
 
   /**
-   * Types that require specific function-like syntax for timestamp manipulation.
+   * Types that require specific function-like syntax for timestamp manipulation
    */
   @cache
   static get TIMESTAMP_FUNC_TYPES (): Set<string> {
@@ -2296,7 +2296,9 @@ class MySQLGenerator extends Generator {
     return `${this.sql(expression, 'this')} MEMBER OF(${this.sql(expression, 'expression')})`;
   }
 
-  public castSql (expression: CastExpr, _options: { safePrefix?: string } = {}): string {
+  public castSql (expression: CastExpr, _options: {
+    safePrefix?: string;
+  } = {}): string {
     const toExpr = expression.args.to;
     if (toExpr instanceof DataTypeExpr) {
       const toThis = toExpr.args.this as string;
@@ -2374,16 +2376,18 @@ class MySQLGenerator extends Generator {
   }
 
   /**
-   * MySQL doesn't use the TO keyword in ALTER ... RENAME.
+   * MySQL doesn't use the TO keyword in ALTER ... RENAME
    */
-  public alterRenameSql (expression: AlterRenameExpr, _options: { includeTo?: boolean } = {}): string {
+  public alterRenameSql (expression: AlterRenameExpr, _options: {
+    includeTo?: boolean;
+  } = {}): string {
     return super.alterRenameSql(expression, {
       includeTo: false,
     });
   }
 
   /**
-   * MySQL uses MODIFY COLUMN for changing column data types.
+   * MySQL uses MODIFY COLUMN for changing column data types
    */
   public alterColumnSql (expression: AlterColumnExpr): string {
     const dtype = this.sql(expression, 'dtype');
@@ -2411,7 +2415,7 @@ class MySQLGenerator extends Generator {
   }
 
   /**
-   * Simulates TIMESTAMP_TRUNC using TIMESTAMPDIFF and DATE_ADD math.
+   * Simulates TIMESTAMP_TRUNC using TIMESTAMPDIFF and DATE_ADD math
    */
   public timestampTruncSql (expression: TimestampTruncExpr): string {
     const unit = expression.args.unit;
@@ -2577,7 +2581,7 @@ export class MySQL extends Dialect {
 
   /**
    * Valid interval units supported by MySQL.
-   * Includes standard units plus MySQL-specific compound units.
+   * Includes standard units plus MySQL-specific compound units
    */
   @cache
   static get VALID_INTERVAL_UNITS () {

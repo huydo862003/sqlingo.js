@@ -15,17 +15,17 @@ export class DbmlRecord extends SchemaElement {
   columns: string[];
   rows: string[][];
 
-  constructor (args: {
+  constructor (arguments_: {
     schema?: string;
     tableName: string;
     columns: string[];
     rows: string[][];
   }) {
     super();
-    this.schema = args.schema;
-    this.tableName = args.tableName;
-    this.columns = args.columns;
-    this.rows = args.rows;
+    this.schema = arguments_.schema;
+    this.tableName = arguments_.tableName;
+    this.columns = arguments_.columns;
+    this.rows = arguments_.rows;
   }
 
   intern (): string {

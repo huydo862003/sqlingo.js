@@ -105,8 +105,8 @@ class RisingWaveParser extends Postgres.Parser {
   }
 
   parseTableHints (): Expression[] | undefined {
-    // There is no hint in risingwave.
-    // Do nothing here to avoid WITH keywords conflict in CREATE SINK statement.
+    // There is no hint in risingwave
+    // Do nothing here to avoid WITH keywords conflict in CREATE SINK statement
     return undefined;
   }
 

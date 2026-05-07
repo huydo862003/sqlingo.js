@@ -104,7 +104,7 @@ import {
 } from './optimizer/optimize_joins';
 
 /**
- * Creates a new transform by chaining a sequence of transformations.
+ * Creates a new transform by chaining a sequence of transformations
  */
 export function preprocess (
   transforms: ((e: Expression) => Expression)[],
@@ -416,7 +416,7 @@ export function eliminateQualify (expression: Expression): Expression {
 export function removePrecisionParameterizedTypes (expression: Expression): Expression {
   /**
    * Some dialects only allow the precision for parameterized types to be defined in the DDL and not in
-   * other expressions. This transforms removes the precision from parameterized types in expressions.
+   * other expressions. This transforms removes the precision from parameterized types in expressions
    */
   for (const node of expression.findAll(DataTypeExpr)) {
     node.setArgKey(
@@ -429,7 +429,7 @@ export function removePrecisionParameterizedTypes (expression: Expression): Expr
 }
 
 /**
- * Remove references to unnest table aliases, added by the optimizer's qualify_columns step.
+ * Remove references to unnest table aliases, added by the optimizer's qualify_columns step
  */
 export function unqualifyUnnest (expression: Expression): Expression {
   if (expression instanceof SelectExpr) {
@@ -458,7 +458,7 @@ export function unqualifyUnnest (expression: Expression): Expression {
 }
 
 /**
- * Convert cross join unnest into lateral view explode.
+ * Convert cross join unnest into lateral view explode
  */
 export function unnestToExplode (
   expression: Expression,
@@ -472,7 +472,9 @@ export function unnestToExplode (
   function unnestZipExprs (
     u: UnnestExpr,
     unnestExprs: ExpressionValue[],
-    options: { hasMultiExpr: boolean },
+    options: {
+      hasMultiExpr: boolean;
+    },
   ): ExpressionValue[] {
     const {
       hasMultiExpr,
@@ -697,7 +699,7 @@ export function anyToExists (expression: Expression): Expression {
 }
 
 /**
- * Convert explode/posexplode projections into unnests.
+ * Convert explode/posexplode projections into unnests
  */
 export function explodeProjectionToUnnest (
   indexOffset: number = 0,
@@ -942,7 +944,7 @@ export function explodeProjectionToUnnest (
 }
 
 /**
- * Transforms percentiles by adding a WITHIN GROUP clause to them.
+ * Transforms percentiles by adding a WITHIN GROUP clause to them
  */
 export function addWithinGroupForPercentiles (expression: Expression): Expression {
   if (
@@ -970,7 +972,7 @@ export function addWithinGroupForPercentiles (expression: Expression): Expressio
 }
 
 /**
- * Transforms percentiles by getting rid of their corresponding WITHIN GROUP clause.
+ * Transforms percentiles by getting rid of their corresponding WITHIN GROUP clause
  */
 export function removeWithinGroupForPercentiles (expression: Expression): Expression {
   if (
@@ -991,7 +993,7 @@ export function removeWithinGroupForPercentiles (expression: Expression): Expres
 
 export function addRecursiveCteColumnNames (expression: Expression): Expression {
   /**
-   * Uses projection output names in recursive CTE definitions to define the CTEs' columns.
+   * Uses projection output names in recursive CTE definitions to define the CTEs' columns
    */
   if (expression instanceof WithExpr && expression.recursive) {
     const nextName = nameSequence('_c_');
@@ -1019,7 +1021,7 @@ export function addRecursiveCteColumnNames (expression: Expression): Expression 
 }
 
 /**
- * Replace 'epoch' in casts by the equivalent date literal.
+ * Replace 'epoch' in casts by the equivalent date literal
  */
 export function epochCastToTs (expression: Expression): Expression {
   if (
@@ -1041,7 +1043,7 @@ export function epochCastToTs (expression: Expression): Expression {
 }
 
 /**
- * Convert SEMI and ANTI joins into equivalent forms that use EXIST instead.
+ * Convert SEMI and ANTI joins into equivalent forms that use EXIST instead
  */
 export function eliminateSemiAndAntiJoins (expression: Expression): Expression {
   if (expression instanceof SelectExpr) {
@@ -1073,7 +1075,7 @@ export function eliminateSemiAndAntiJoins (expression: Expression): Expression {
 
 /**
  * Converts a query with a FULL OUTER join to a union of identical queries that
- * use LEFT/RIGHT OUTER joins instead.
+ * use LEFT/RIGHT OUTER joins instead
  */
 export function eliminateFullOuterJoin (expression: Expression): Expression {
   if (expression instanceof SelectExpr) {
@@ -1142,7 +1144,7 @@ export function eliminateFullOuterJoin (expression: Expression): Expression {
 }
 
 /**
- * Converts numeric values used in conditions into explicit boolean expressions.
+ * Converts numeric values used in conditions into explicit boolean expressions
  */
 export function ensureBools (expression: Expression): Expression {
   const _ensureBool = (node: Expression): void => {
@@ -1217,7 +1219,7 @@ export function ctasWithTmpTablesToCreateTmpView (
 }
 
 /**
- * In Hive, moves columns from the schema to PARTITIONED BY if they match.
+ * In Hive, moves columns from the schema to PARTITIONED BY if they match
  */
 export function moveSchemaColumnsToPartitionedBy (expression: Expression): Expression {
   if (!(expression instanceof CreateExpr)) return expression;
@@ -1254,7 +1256,7 @@ export function moveSchemaColumnsToPartitionedBy (expression: Expression): Expre
 }
 
 /**
- * Spark 3: Move PARTITIONED BY columns back into the schema columns.
+ * Spark 3: Move PARTITIONED BY columns back into the schema columns
  */
 export function movePartitionedByToSchemaColumns (expression: Expression): Expression {
   if (!(expression instanceof CreateExpr)) return expression;
@@ -1286,7 +1288,7 @@ export function movePartitionedByToSchemaColumns (expression: Expression): Expre
 }
 
 /**
- * Converts Oracle (+) join marks into explicit LEFT JOIN syntax.
+ * Converts Oracle (+) join marks into explicit LEFT JOIN syntax
  */
 export function eliminateJoinMarks (expression: Expression): Expression {
   for (const scope of [...traverseScope(expression)].reverse()) {
@@ -1395,7 +1397,7 @@ export function eliminateJoinMarks (expression: Expression): Expression {
 }
 
 /**
- * Eliminates the WINDOW query clause by inlining each named window.
+ * Eliminates the WINDOW query clause by inlining each named window
  */
 export function eliminateWindowClause (expression: Expression): Expression {
   if (expression instanceof SelectExpr && expression.args.windows) {
@@ -1436,7 +1438,7 @@ export function eliminateWindowClause (expression: Expression): Expression {
 }
 
 /**
- * Inherit field names from the first struct in an array for BigQuery.
+ * Inherit field names from the first struct in an array for BigQuery
  */
 export function inheritStructFieldNames (expression: Expression): Expression {
   if (

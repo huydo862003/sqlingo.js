@@ -7,18 +7,18 @@ import type {
   DbmlSchema,
 } from '../types';
 
-function emitEndpoint (e: DbmlEndpoint): string {
-  const t = e.schema ? `${e.schema}.${e.table}` : e.table;
-  return `${t}.${e.columns.length === 1 ? e.columns[0] : `(${e.columns.join(', ')})`}`;
+function emitEndpoint (ep: DbmlEndpoint): string {
+  const table = ep.schema ? `${ep.schema}.${ep.table}` : ep.table;
+  return `${table}.${ep.columns.length === 1 ? ep.columns[0] : `(${ep.columns.join(', ')})`}`;
 }
 
-function emitType (t: DbmlColumnType): string {
-  const base = t.schema ? `${t.schema}.${t.name}` : t.name;
-  const args = t.args?.length ? `(${t.args.join(', ')})` : '';
-  let arr = '';
-  if (t.array === true) arr = '[]';
-  else if (Array.isArray(t.array)) arr = t.array.map((n) => `[${n ?? ''}]`).join('');
-  return `${base}${args}${arr}`;
+function emitType (type: DbmlColumnType): string {
+  const base = type.schema ? `${type.schema}.${type.name}` : type.name;
+  const arguments_ = type.args?.length ? `(${type.args.join(', ')})` : '';
+  let array = '';
+  if (type.array === true) array = '[]';
+  else if (Array.isArray(type.array)) array = type.array.map((n) => `[${n ?? ''}]`).join('');
+  return `${base}${arguments_}${array}`;
 }
 
 export function schemaToDbml (schema: DbmlSchema): string {
@@ -29,10 +29,10 @@ export function schemaToDbml (schema: DbmlSchema): string {
     if (schema.project.databaseType) lines.push(`  database_type: '${schema.project.databaseType}'`);
     if (schema.project.note) lines.push(`  note: '${schema.project.note}'`);
     for (const [
-      k,
-      v,
+      key,
+      value,
     ] of Object.entries(schema.project.custom ?? {})) {
-      lines.push(`  ${k}: '${v}'`);
+      lines.push(`  ${key}: '${value}'`);
     }
     lines.push('}');
     lines.push('');
@@ -41,9 +41,9 @@ export function schemaToDbml (schema: DbmlSchema): string {
   for (const en of schema.enums) {
     const qname = en.schema ? `${en.schema}.${en.name}` : en.name;
     lines.push(`Enum ${qname} {`);
-    for (const v of en.values) {
-      const note = v.note ? ` [note: '${v.note}']` : '';
-      lines.push(`  ${v.name}${note}`);
+    for (const value of en.values) {
+      const note = value.note ? ` [note: '${value.note}']` : '';
+      lines.push(`  ${value.name}${note}`);
     }
     lines.push('}');
     lines.push('');
@@ -55,44 +55,44 @@ export function schemaToDbml (schema: DbmlSchema): string {
     const settings: string[] = [];
     if (table.headerColor) settings.push(`headercolor: ${table.headerColor}`);
     if (table.note) settings.push(`note: '${table.note}'`);
-    const settingsStr = settings.length ? ` [${settings.join(', ')}]` : '';
-    lines.push(`Table ${qname}${header}${settingsStr} {`);
+    const settingsString = settings.length ? ` [${settings.join(', ')}]` : '';
+    lines.push(`Table ${qname}${header}${settingsString} {`);
     for (const col of table.columns) {
-      const s: string[] = [];
-      if (col.pk) s.push('pk');
-      if (col.increment) s.push('increment');
-      if (col.notNull && !col.pk) s.push('not null');
-      if (col.unique && !col.pk) s.push('unique');
-      if (col.default !== undefined) s.push(`default: \`${col.default}\``);
-      if (col.note) s.push(`note: '${col.note}'`);
-      if (col.check) s.push(`check: \`${col.check.expression}\``);
-      for (const r of col.ref ?? []) s.push(`ref: ${r.relation} ${emitEndpoint(r.target)}`);
-      const st = s.length ? ` [${s.join(', ')}]` : '';
+      const settings: string[] = [];
+      if (col.pk) settings.push('pk');
+      if (col.increment) settings.push('increment');
+      if (col.notNull && !col.pk) settings.push('not null');
+      if (col.unique && !col.pk) settings.push('unique');
+      if (col.default !== undefined) settings.push(`default: \`${col.default}\``);
+      if (col.note) settings.push(`note: '${col.note}'`);
+      if (col.check) settings.push(`check: \`${col.check.expression}\``);
+      for (const ref of col.ref ?? []) settings.push(`ref: ${ref.relation} ${emitEndpoint(ref.target)}`);
+      const st = settings.length ? ` [${settings.join(', ')}]` : '';
       lines.push(`  ${col.name} ${emitType(col.type)}${st}`);
     }
     if (table.indexes?.length) {
       lines.push('');
       lines.push('  indexes {');
-      for (const idx of table.indexes) {
-        const cols = idx.columns.map((c) => c.isExpression ? `\`${c.expression}\`` : c.expression);
-        const colsStr = 1 < cols.length ? `(${cols.join(', ')})` : cols[0];
-        const s: string[] = [];
-        if (idx.pk) s.push('pk');
-        if (idx.unique) s.push('unique');
-        if (idx.name) s.push(`name: '${idx.name}'`);
-        if (idx.type) s.push(`type: ${idx.type}`);
-        if (idx.note) s.push(`note: '${idx.note}'`);
-        const st = s.length ? ` [${s.join(', ')}]` : '';
-        lines.push(`    ${colsStr}${st}`);
+      for (const index of table.indexes) {
+        const cols = index.columns.map((col) => col.isExpression ? `\`${col.expression}\`` : col.expression);
+        const colsString = 1 < cols.length ? `(${cols.join(', ')})` : cols[0];
+        const indexSettings: string[] = [];
+        if (index.pk) indexSettings.push('pk');
+        if (index.unique) indexSettings.push('unique');
+        if (index.name) indexSettings.push(`name: '${index.name}'`);
+        if (index.type) indexSettings.push(`type: ${index.type}`);
+        if (index.note) indexSettings.push(`note: '${index.note}'`);
+        const st = indexSettings.length ? ` [${indexSettings.join(', ')}]` : '';
+        lines.push(`    ${colsString}${st}`);
       }
       lines.push('  }');
     }
     if (table.checks?.length) {
       lines.push('');
       lines.push('  Checks {');
-      for (const c of table.checks) {
-        const s = c.name ? ` [name: '${c.name}']` : '';
-        lines.push(`    \`${c.expression}\`${s}`);
+      for (const check of table.checks) {
+        const checkSettings = check.name ? ` [name: '${check.name}']` : '';
+        lines.push(`    \`${check.expression}\`${checkSettings}`);
       }
       lines.push('  }');
     }
@@ -101,19 +101,19 @@ export function schemaToDbml (schema: DbmlSchema): string {
   }
 
   for (const ref of schema.refs) {
-    const s: string[] = [];
-    if (ref.onDelete) s.push(`delete: ${ref.onDelete}`);
-    if (ref.onUpdate) s.push(`update: ${ref.onUpdate}`);
-    const st = s.length ? ` [${s.join(', ')}]` : '';
+    const refSettings: string[] = [];
+    if (ref.onDelete) refSettings.push(`delete: ${ref.onDelete}`);
+    if (ref.onUpdate) refSettings.push(`update: ${ref.onUpdate}`);
+    const st = refSettings.length ? ` [${refSettings.join(', ')}]` : '';
     const nm = ref.name ? ` ${ref.name}` : '';
     lines.push(`Ref${nm}: ${emitEndpoint(ref.source)} ${ref.relation} ${emitEndpoint(ref.target)}${st}`);
   }
   if (schema.refs.length) lines.push('');
 
-  for (const g of schema.tableGroups) {
-    lines.push(`TableGroup ${g.name} {`);
-    for (const t of g.tables) {
-      lines.push(`  ${t.schema === DEFAULT_SCHEMA_NAME ? t.table : `${t.schema}.${t.table}`}`);
+  for (const group of schema.tableGroups) {
+    lines.push(`TableGroup ${group.name} {`);
+    for (const tg of group.tables) {
+      lines.push(`  ${tg.schema === DEFAULT_SCHEMA_NAME ? tg.table : `${tg.schema}.${tg.table}`}`);
     }
     lines.push('}');
     lines.push('');

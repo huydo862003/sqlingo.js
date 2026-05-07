@@ -82,22 +82,22 @@ import {
 const store = usePlaygroundStore();
 const sqlInput = computed({
   get: () => store.dbmlInput,
-  set: (v) => {
-    store.dbmlInput = v; store.persist();
+  set: (value) => {
+    store.dbmlInput = value; store.persist();
   },
 });
 const dialect = computed({
   get: () => store.dbmlDialect,
-  set: (v) => {
-    store.dbmlDialect = v; store.persist();
+  set: (value) => {
+    store.dbmlDialect = value; store.persist();
   },
 });
 const dbmlOutput = ref('');
 const error = ref('');
 const copied = ref(false);
 
-function stripAnsi (s: string): string {
-  return s.replace(/\x1b\[[0-9;]*m/g, '');
+function stripAnsi (text: string): string {
+  return text.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
 function convert () {
@@ -110,9 +110,9 @@ function convert () {
     const result = sqlToDbml(sqlInput.value, dialect.value || undefined);
     dbmlOutput.value = result.dbml || '';
     error.value = result.dbml ? '' : 'No CREATE TABLE statements found.';
-  } catch (e) {
+  } catch (error_) {
     dbmlOutput.value = '';
-    error.value = stripAnsi(e instanceof Error ? e.message : String(e));
+    error.value = stripAnsi(error_ instanceof Error ? error_.message : String(error_));
   }
 }
 

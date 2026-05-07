@@ -188,7 +188,7 @@ function pushdownCnf (
   joinIndex?: Map<string, number>,
 ): void {
   /**
-   * If the predicates are in CNF like form, we can simply replace each block in the parent.
+   * If the predicates are in CNF like form, we can simply replace each block in the parent
    */
   const joinIndexMap = joinIndex || new Map();
 
@@ -244,7 +244,7 @@ function pushdownDnf (
 ): void {
   /**
    * If the predicates are in DNF form, we can only push down conditions that are in all blocks.
-   * Additionally, we can't remove predicates from their original form.
+   * Additionally, we can't remove predicates from their original form
    */
   // Find all the tables that can be pushed down to
   // These are tables that are referenced in all blocks of a DNF

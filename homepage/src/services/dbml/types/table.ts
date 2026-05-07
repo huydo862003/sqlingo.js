@@ -28,7 +28,7 @@ export class DbmlTable extends SchemaElement {
   indexes?: DbmlIndex[];
   checks?: DbmlCheck[];
 
-  constructor (args: {
+  constructor (arguments_: {
     schema?: string;
     name: string;
     alias?: string;
@@ -39,14 +39,14 @@ export class DbmlTable extends SchemaElement {
     checks?: DbmlCheck[];
   }) {
     super();
-    this.schema = args.schema;
-    this.name = args.name;
-    this.alias = args.alias;
-    this.note = args.note;
-    this.headerColor = args.headerColor;
-    this.columns = args.columns;
-    this.indexes = args.indexes;
-    this.checks = args.checks;
+    this.schema = arguments_.schema;
+    this.name = arguments_.name;
+    this.alias = arguments_.alias;
+    this.note = arguments_.note;
+    this.headerColor = arguments_.headerColor;
+    this.columns = arguments_.columns;
+    this.indexes = arguments_.indexes;
+    this.checks = arguments_.checks;
   }
 
   intern (): string {

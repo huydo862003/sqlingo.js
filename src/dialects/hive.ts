@@ -558,7 +558,9 @@ class HiveParser extends Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (expression: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (expression: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return {
       ...Parser.FUNCTIONS,
       ADD_MONTHS: (args: Expression[]): TsOrDsAddExpr => new TsOrDsAddExpr({
@@ -609,7 +611,9 @@ class HiveParser extends Parser {
       }),
       GET_JSON_OBJECT: (args: Expression[], {
         dialect,
-      }: { dialect: Dialect }) => new JsonExtractScalarExpr({
+      }: {
+        dialect: Dialect;
+      }) => new JsonExtractScalarExpr({
         this: seqGet(args, 0),
         expression: dialect.toJsonPath(seqGet(args, 1)),
       }),
@@ -768,9 +772,11 @@ class HiveParser extends Parser {
     return FuncClass.fromArgList(args);
   }
 
-  parseTypes (options: { checkFunc?: boolean;
+  parseTypes (options: {
+    checkFunc?: boolean;
     schema?: boolean;
-    allowIdentifiers?: boolean; } = {}): Expression | undefined {
+    allowIdentifiers?: boolean;
+  } = {}): Expression | undefined {
     const {
       checkFunc = false, schema = false, allowIdentifiers = true,
     } = options;
@@ -1605,7 +1611,9 @@ class HiveGenerator extends Generator {
     return this.func('STRUCT', values);
   }
 
-  columnDefSql (expression: ColumnDefExpr, options: { sep?: string } = {}): string {
+  columnDefSql (expression: ColumnDefExpr, options: {
+    sep?: string;
+  } = {}): string {
     const {
       sep = ' ',
     } = options;

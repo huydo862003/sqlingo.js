@@ -150,7 +150,9 @@ class DorisParser extends MySQL.Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return {
       ...MySQL.Parser.FUNCTIONS,
       COLLECT_SET: (args: unknown[]) => ArrayUniqueAggExpr.fromArgList(args),
@@ -1036,7 +1038,9 @@ class DorisGenerator extends MySQL.Generator {
     ]);
   }
 
-  uniqueKeyPropertySql (expression: UniqueKeyPropertyExpr, options: { prefix?: string } = {}): string {
+  uniqueKeyPropertySql (expression: UniqueKeyPropertyExpr, options: {
+    prefix?: string;
+  } = {}): string {
     let {
       prefix = 'UNIQUE KEY',
     } = options;
@@ -1102,8 +1106,10 @@ class DorisGenerator extends MySQL.Generator {
     return `PARTITION BY (${this.sql(thisNode)})`;
   }
 
-  tableSql (expression: TableExpr, options: { sep?: string } = {}): string {
-  /** Override table_sql to avoid AS keyword in UPDATE and DELETE statements. */
+  tableSql (expression: TableExpr, options: {
+    sep?: string;
+  } = {}): string {
+  /** Override table_sql to avoid AS keyword in UPDATE and DELETE statements */
     let {
       sep = ' AS ',
     } = options;

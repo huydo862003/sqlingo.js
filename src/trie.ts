@@ -16,14 +16,18 @@ export const enum TrieResult {
 /**
  * A trie node for efficient prefix matching.
  *
- * Each node maps characters to child nodes, with a special key `0` marking complete words.
+ * Each node maps characters to child nodes, with a special key `0` marking complete words
  */
 /** Special sentinel key used to mark terminal nodes (avoids collision with digit characters like '0') */
 export const TRIE_END = '\x00';
-export type TrieNode = { [key: string]: TrieNode | true } & { '\x00'?: true };
+export type TrieNode = {
+  [key: string]: TrieNode | true;
+} & {
+  '\x00'?: true;
+};
 
 /**
- * A key represented as an array of characters.
+ * A key represented as an array of characters
  */
 export type Key = string[];
 

@@ -221,7 +221,7 @@ export interface ColumnRange {
 
 /**
  * Reads a specific column for the current row.
- * Wrapped in a Proxy to allow dynamic column access like `reader.column_name`.
+ * Wrapped in a Proxy to allow dynamic column access like `reader.column_name`
  */
 export class RowReader {
   [column: string]: unknown;
@@ -249,7 +249,7 @@ export class RowReader {
 
 /**
  * Reads a range of rows for a specific column, returning an iterator.
- * Wrapped in a Proxy to allow dynamic column access like `rangeReader.column_name`.
+ * Wrapped in a Proxy to allow dynamic column access like `rangeReader.column_name`
  */
 export class RangeReader {
   public table: Table;

@@ -13,13 +13,13 @@ describe('indexes', () => {
       CREATE TABLE t (a INT, b INT);
       CREATE UNIQUE INDEX idx_ab ON t USING btree (a, b);
     `, 'postgres');
-    const idx = schema.tables[0].indexes?.[0];
-    expect(idx).toMatchObject({
+    const index = schema.tables[0].indexes?.[0];
+    expect(index).toMatchObject({
       unique: true,
       type: 'btree',
       name: 'idx_ab',
     });
-    expect(idx?.columns.map((c) => c.expression)).toEqual([
+    expect(index?.columns.map((col) => col.expression)).toEqual([
       'a',
       'b',
     ]);
@@ -32,9 +32,9 @@ describe('indexes', () => {
       'CREATE TABLE t (a INT, b INT, PRIMARY KEY (a, b));',
       'postgres',
     );
-    const idx = schema.tables[0].indexes?.[0];
-    expect(idx?.pk).toBe(true);
-    expect(idx?.columns.map((c) => c.expression)).toEqual([
+    const index = schema.tables[0].indexes?.[0];
+    expect(index?.pk).toBe(true);
+    expect(index?.columns.map((col) => col.expression)).toEqual([
       'a',
       'b',
     ]);
@@ -47,8 +47,8 @@ describe('indexes', () => {
       'CREATE TABLE t (a INT, b INT, CONSTRAINT pk_ab PRIMARY KEY (a, b));',
       'postgres',
     );
-    const idx = schema.tables[0].indexes?.[0];
-    expect(idx).toMatchObject({
+    const index = schema.tables[0].indexes?.[0];
+    expect(index).toMatchObject({
       pk: true,
       name: 'pk_ab',
     });
@@ -61,9 +61,9 @@ describe('indexes', () => {
       'CREATE TABLE t (a INT, b INT, UNIQUE (a, b));',
       'postgres',
     );
-    const idx = schema.tables[0].indexes?.[0];
-    expect(idx?.unique).toBe(true);
-    expect(idx?.columns.map((c) => c.expression)).toEqual([
+    const index = schema.tables[0].indexes?.[0];
+    expect(index?.unique).toBe(true);
+    expect(index?.columns.map((col) => col.expression)).toEqual([
       'a',
       'b',
     ]);
@@ -76,8 +76,8 @@ describe('indexes', () => {
       'CREATE TABLE t (a INT, b INT, CONSTRAINT uq_ab UNIQUE (a, b));',
       'postgres',
     );
-    const idx = schema.tables[0].indexes?.[0];
-    expect(idx).toMatchObject({
+    const index = schema.tables[0].indexes?.[0];
+    expect(index).toMatchObject({
       unique: true,
       name: 'uq_ab',
     });

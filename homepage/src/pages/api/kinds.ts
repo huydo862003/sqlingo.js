@@ -11,8 +11,10 @@ const DOT_COLORS: Record<string, string> = {
   enumvalue: 'var(--gui-notice-solid)',
 };
 
-const CHIP_COLORS: Record<string, { bg: string;
-  color: string; }> = {
+const CHIP_COLORS: Record<string, {
+  bg: string;
+  color: string;
+}> = {
   class: {
     bg: 'var(--gui-info-bg-hover)',
     color: 'var(--gui-info-fg)',
@@ -46,11 +48,11 @@ export function kindDotStyle (slug: string) {
 }
 
 export function kindChipStyle (slug: string) {
-  const c = CHIP_COLORS[slug];
-  return c
+  const chip = CHIP_COLORS[slug];
+  return chip
     ? {
-      background: c.bg,
-      color: c.color,
+      background: chip.bg,
+      color: chip.color,
     }
     : {};
 }

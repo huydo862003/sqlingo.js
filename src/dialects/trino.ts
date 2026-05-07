@@ -74,7 +74,9 @@ class TrinoParser extends Presto.Parser {
   }
 
   @cache
-  static get FUNCTIONS (): Record<string, (args: Expression[], options: { dialect: Dialect }) => Expression> {
+  static get FUNCTIONS (): Record<string, (args: Expression[], options: {
+    dialect: Dialect;
+  }) => Expression> {
     return {
       ...Presto.Parser.FUNCTIONS,
       VERSION: (args: Expression[]) => CurrentVersionExpr.fromArgList(args),
@@ -169,8 +171,8 @@ class TrinoParser extends Presto.Parser {
       return undefined;
     }
 
-    // If matched, _matchTextSeq advanced the index by 2 tokens.
-    // We look back to grab the KEEP or OMIT text.
+    // If matched, _matchTextSeq advanced the index by 2 tokens
+    // We look back to grab the KEEP or OMIT text
     return this.expression(JsonExtractQuoteExpr, {
       option: this.tokens[this.index - 2].text.toUpperCase(),
       scalar: this.matchTextSeq([

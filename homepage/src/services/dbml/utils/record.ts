@@ -24,8 +24,8 @@ export function buildRecord (stmt: InsertExpr): DbmlRecord | undefined {
   const rows: string[][] = [];
   for (const tuple of valuesExpr.args.expressions ?? []) {
     if (!(tuple instanceof TupleExpr)) continue;
-    rows.push((tuple.args.expressions ?? []).map((v) =>
-      v instanceof Expression ? v.sql() : String(v)));
+    rows.push((tuple.args.expressions ?? []).map((value) =>
+      value instanceof Expression ? value.sql() : String(value)));
   }
   if (!rows.length) return undefined;
   return new DbmlRecord({
