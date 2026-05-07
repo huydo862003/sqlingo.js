@@ -45,7 +45,7 @@
               :color="GPillColor.Orange"
               :size="GBadgeSize.Md"
               :badge-style="GBadgeStyle.Flat"
-              value="v0.1.6"
+              value="v0.1.7"
               href="https://www.npmjs.com/package/@hdnax/sqlingo.js"
             />
             <GBadge
