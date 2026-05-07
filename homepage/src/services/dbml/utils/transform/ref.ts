@@ -3,7 +3,9 @@ import {
 } from '@hdnax/sqlingo.js';
 import {
   DbmlEndpoint, DbmlReferenceAction,
-} from '../types';
+} from '../../types';
+
+// Parse foreign key actions and build dbml model reference endpoints from sqlingo.js AST
 
 const ACTION_BY_TOKEN: Record<string, DbmlReferenceAction> = {
   CASCADE: DbmlReferenceAction.CASCADE,
@@ -13,27 +15,26 @@ const ACTION_BY_TOKEN: Record<string, DbmlReferenceAction> = {
   'NO ACTION': DbmlReferenceAction.NO_ACTION,
 };
 
-function tokenize (text: string): string[] {
+function resolveAction (words: string[]): DbmlReferenceAction | undefined {
+  return ACTION_BY_TOKEN[words.join(' ')];
+}
+
+function splitWords (text: string): string[] {
   return text.trim().toUpperCase()
     .split(/\s+/)
     .filter(Boolean);
 }
 
-function actionFromTokens (tokens: string[]): DbmlReferenceAction | undefined {
-  const joined = tokens.join(' ');
-  return ACTION_BY_TOKEN[joined];
-}
-
 export function parseActionExpr (expr: Expression | undefined): DbmlReferenceAction | undefined {
   if (!expr) return undefined;
-  return actionFromTokens(tokenize(expr.sql()));
+  return resolveAction(splitWords(expr.sql()));
 }
 
 /**
- * ReferenceExpr.options are pre-tokenized strings like "ON DELETE CASCADE" emitted by sqlingo.
- * Split into category + action tokens
+ * Extract ON DELETE / ON UPDATE actions from a ReferenceExpr's option list.
+ * Options are strings like "ON DELETE CASCADE" emitted by sqlingo
  */
-export function referenceActions (
+export function extractReferenceActions (
   ref: ReferenceExpr,
 ): {
   onDelete?: DbmlReferenceAction;
@@ -43,14 +44,12 @@ export function referenceActions (
     onDelete?: DbmlReferenceAction;
     onUpdate?: DbmlReferenceAction;
   } = {};
-  for (
-    const opt of ref.args.options ?? []
-  ) {
-    const raw = opt instanceof Expression ? opt.sql() : String(opt);
-    const tokens = tokenize(raw);
-    if (tokens.length < 3 || tokens[0] !== 'ON') continue;
-    const category = tokens[1];
-    const action = actionFromTokens(tokens.slice(2));
+  for (const option of ref.args.options ?? []) {
+    const raw = option instanceof Expression ? option.sql() : String(option);
+    const words = splitWords(raw);
+    if (words.length < 3 || words[0] !== 'ON') continue;
+    const category = words[1];
+    const action = resolveAction(words.slice(2));
     if (!action) continue;
     if (category === 'DELETE') out.onDelete = action;
     else if (category === 'UPDATE') out.onUpdate = action;
@@ -58,7 +57,7 @@ export function referenceActions (
   return out;
 }
 
-export function endpoint (schemaName: string | undefined, table: string, columns: string[]): DbmlEndpoint {
+export function buildEndpoint (schemaName: string | undefined, table: string, columns: string[]): DbmlEndpoint {
   return new DbmlEndpoint({
     schema: schemaName,
     table,

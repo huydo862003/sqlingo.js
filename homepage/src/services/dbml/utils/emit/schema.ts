@@ -1,25 +1,13 @@
 import {
   DEFAULT_SCHEMA_NAME,
-} from '../constants';
+} from '../../constants';
 import type {
   DbmlColumnType,
   DbmlEndpoint,
   DbmlSchema,
-} from '../types';
+} from '../../types';
 
-function emitEndpoint (ep: DbmlEndpoint): string {
-  const table = ep.schema ? `${ep.schema}.${ep.table}` : ep.table;
-  return `${table}.${ep.columns.length === 1 ? ep.columns[0] : `(${ep.columns.join(', ')})`}`;
-}
-
-function emitType (type: DbmlColumnType): string {
-  const base = type.schema ? `${type.schema}.${type.name}` : type.name;
-  const arguments_ = type.args?.length ? `(${type.args.join(', ')})` : '';
-  let array = '';
-  if (type.array === true) array = '[]';
-  else if (Array.isArray(type.array)) array = type.array.map((n) => `[${n ?? ''}]`).join('');
-  return `${base}${arguments_}${array}`;
-}
+// Serialize dbml model schema to DBML text
 
 export function schemaToDbml (schema: DbmlSchema): string {
   const lines: string[] = [];
@@ -49,14 +37,18 @@ export function schemaToDbml (schema: DbmlSchema): string {
     lines.push('');
   }
 
+  // Generate tables
   for (const table of schema.tables) {
-    const qname = table.schema ? `${table.schema}.${table.name}` : table.name;
+    const qualifiedName = table.schema ? `${table.schema}.${table.name}` : table.name;
+
     const header = table.alias ? ` as ${table.alias}` : '';
     const settings: string[] = [];
     if (table.headerColor) settings.push(`headercolor: ${table.headerColor}`);
     if (table.note) settings.push(`note: '${table.note}'`);
     const settingsString = settings.length ? ` [${settings.join(', ')}]` : '';
-    lines.push(`Table ${qname}${header}${settingsString} {`);
+    lines.push(`Table ${qualifiedName}${header}${settingsString} {`);
+
+    // Generate columns
     for (const col of table.columns) {
       const settings: string[] = [];
       if (col.pk) settings.push('pk');
@@ -70,6 +62,7 @@ export function schemaToDbml (schema: DbmlSchema): string {
       const st = settings.length ? ` [${settings.join(', ')}]` : '';
       lines.push(`  ${col.name} ${emitType(col.type)}${st}`);
     }
+    // Generate indexes
     if (table.indexes?.length) {
       lines.push('');
       lines.push('  indexes {');
@@ -87,6 +80,7 @@ export function schemaToDbml (schema: DbmlSchema): string {
       }
       lines.push('  }');
     }
+    // Generate table checks
     if (table.checks?.length) {
       lines.push('');
       lines.push('  Checks {');
@@ -100,6 +94,7 @@ export function schemaToDbml (schema: DbmlSchema): string {
     lines.push('');
   }
 
+  // Generate ref elements
   for (const ref of schema.refs) {
     const refSettings: string[] = [];
     if (ref.onDelete) refSettings.push(`delete: ${ref.onDelete}`);
@@ -110,6 +105,7 @@ export function schemaToDbml (schema: DbmlSchema): string {
   }
   if (schema.refs.length) lines.push('');
 
+  // Generate table groups
   for (const group of schema.tableGroups) {
     lines.push(`TableGroup ${group.name} {`);
     for (const tg of group.tables) {
@@ -119,18 +115,20 @@ export function schemaToDbml (schema: DbmlSchema): string {
     lines.push('');
   }
 
-  for (const sn of schema.stickyNotes) {
-    lines.push(`Note ${sn.name} {`);
-    lines.push(`  '''${sn.content}'''`);
+  // Generate sticky notes
+  for (const stickyNote of schema.stickyNotes) {
+    lines.push(`Note ${stickyNote.name} {`);
+    lines.push(`  '''${stickyNote.content}'''`);
     lines.push('}');
     lines.push('');
   }
 
-  for (const rec of schema.records) {
-    const qname = rec.schema ? `${rec.schema}.${rec.tableName}` : rec.tableName;
-    const colList = rec.columns.length ? `(${rec.columns.join(', ')})` : '';
-    lines.push(`records ${qname}${colList} {`);
-    for (const row of rec.rows) {
+  // Generate records
+  for (const records of schema.records) {
+    const qualifiedName = records.schema ? `${records.schema}.${records.tableName}` : records.tableName;
+    const colList = records.columns.length ? `(${records.columns.join(', ')})` : '';
+    lines.push(`records ${qualifiedName}${colList} {`);
+    for (const row of records.rows) {
       lines.push(`  ${row.join(', ')}`);
     }
     lines.push('}');
@@ -138,4 +136,18 @@ export function schemaToDbml (schema: DbmlSchema): string {
   }
 
   return lines.join('\n').trimEnd();
+}
+
+function emitEndpoint (endpoint: DbmlEndpoint): string {
+  const table = endpoint.schema ? `${endpoint.schema}.${endpoint.table}` : endpoint.table;
+  return `${table}.${endpoint.columns.length === 1 ? endpoint.columns[0] : `(${endpoint.columns.join(', ')})`}`;
+}
+
+function emitType (type: DbmlColumnType): string {
+  const base = type.schema ? `${type.schema}.${type.name}` : type.name;
+  const arguments_ = type.args?.length ? `(${type.args.join(', ')})` : '';
+  let array = '';
+  if (type.array === true) array = '[]';
+  else if (Array.isArray(type.array)) array = type.array.map((n) => `[${n ?? ''}]`).join('');
+  return `${base}${arguments_}${array}`;
 }

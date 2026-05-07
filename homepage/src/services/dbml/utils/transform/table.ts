@@ -14,7 +14,7 @@ import {
 } from '@hdnax/sqlingo.js';
 import type {
   DbmlColumn,
-} from '../types';
+} from '../../types';
 import {
   DbmlCheck,
   DbmlIndex,
@@ -22,23 +22,85 @@ import {
   DbmlReference,
   DbmlRelation,
   DbmlTable,
-} from '../types';
+} from '../../types';
 import {
-  nodeText, tableParts,
-} from './name';
+  extractNodeText, extractTableParts,
+} from '../parse/ast';
 import {
-  endpoint, parseActionExpr, referenceActions,
+  buildEndpoint, parseActionExpr, extractReferenceActions,
 } from './ref';
 import {
-  buildColumn,
+  buildDbmlColumn,
 } from './column';
 import {
   indexFromParameters,
-} from './tableIndex';
+} from './indexes';
+
+// Build dbml model tables from sqlingo.js AST
 
 export interface BuiltTable {
   table: DbmlTable;
   refs: DbmlReference[];
+}
+
+export function buildTable (stmt: CreateExpr): BuiltTable | undefined {
+  const schemaNode = stmt.args.this;
+  if (!(schemaNode instanceof SchemaExpr)) return undefined;
+
+  const tp = extractTableParts(schemaNode.args.this as Expression | undefined);
+  const expressions = schemaNode.args.expressions ?? [];
+
+  const context: TableContext = {
+    schema: tp.schema,
+    name: tp.name,
+    columns: [],
+    tablePkCols: new Set<string>(),
+    tableRefs: [],
+    checks: [],
+    inlineIndexes: [],
+  };
+
+  for (const expr of expressions) {
+    if (expr instanceof ColumnDefExpr) {
+      context.columns.push(buildDbmlColumn(expr));
+    } else if (expr instanceof ConstraintExpr) {
+      const name = expr.args.this instanceof Expression ? extractNodeText(expr.args.this) : undefined;
+      for (const part of expr.args.expressions ?? []) {
+        if (part instanceof Expression) dispatchConstraint(part, context, name);
+      }
+    } else {
+      dispatchConstraint(expr, context, undefined);
+    }
+  }
+
+  for (const col of context.columns) {
+    if (context.tablePkCols.has(col.name)) {
+      col.pk = true;
+      col.notNull = true;
+    }
+    for (const inlineReference of col.ref ?? []) {
+      context.tableRefs.push(new DbmlReference({
+        relation: inlineReference.relation,
+        source: buildEndpoint(tp.schema, tp.name, [col.name]),
+        target: inlineReference.target,
+        onDelete: inlineReference.onDelete,
+        onUpdate: inlineReference.onUpdate,
+      }));
+    }
+  }
+
+  const table = new DbmlTable({
+    schema: tp.schema,
+    name: tp.name,
+    columns: context.columns,
+    checks: context.checks.length ? context.checks : undefined,
+    indexes: context.inlineIndexes.length ? context.inlineIndexes : undefined,
+  });
+
+  return {
+    table,
+    refs: context.tableRefs,
+  };
 }
 
 interface TableContext {
@@ -53,7 +115,7 @@ interface TableContext {
 
 function handlePrimaryKey (expr: PrimaryKeyExpr, context: TableContext, name: string | undefined): void {
   const cols = (expr.args.expressions ?? []).filter((element): element is Expression => element instanceof Expression);
-  const colNames = cols.map(nodeText);
+  const colNames = cols.map(extractNodeText);
   if (1 === colNames.length) {
     context.tablePkCols.add(colNames[0]);
     return;
@@ -76,15 +138,15 @@ function handleForeignKey (expr: ForeignKeyExpr, context: TableContext, name: st
   const inner = ref.args.this;
   const tableExpr = inner instanceof SchemaExpr ? inner.args.this : inner;
   const cols = inner instanceof SchemaExpr ? (inner.args.expressions ?? []) : [];
-  const target = tableParts(tableExpr as Expression | undefined);
-  const refCols = cols.map((col) => col instanceof Expression ? nodeText(col) : String(col));
+  const target = extractTableParts(tableExpr as Expression | undefined);
+  const refCols = cols.map((col) => col instanceof Expression ? extractNodeText(col) : String(col));
   if (target.name && fkCols.length) {
-    const actions = referenceActions(ref);
+    const actions = extractReferenceActions(ref);
     context.tableRefs.push(new DbmlReference({
       name,
       relation: DbmlRelation.MANY_TO_ONE,
-      source: endpoint(context.schema, context.name, fkCols.map(nodeText)),
-      target: endpoint(target.schema, target.name, refCols.length ? refCols : fkCols.map(nodeText)),
+      source: buildEndpoint(context.schema, context.name, fkCols.map(extractNodeText)),
+      target: buildEndpoint(target.schema, target.name, refCols.length ? refCols : fkCols.map(extractNodeText)),
       onDelete: actions.onDelete ?? parseActionExpr(expr.args.delete),
       onUpdate: actions.onUpdate ?? parseActionExpr(expr.args.update),
     }));
@@ -100,7 +162,7 @@ function handleUnique (expr: UniqueColumnConstraintExpr, context: TableContext, 
   context.inlineIndexes.push(new DbmlIndex({
     name,
     columns: cols.map((col) => new DbmlIndexColumn({
-      expression: nodeText(col),
+      expression: extractNodeText(col),
     })),
     unique: true,
   }));
@@ -133,64 +195,4 @@ function dispatchConstraint (expr: Expression, context: TableContext, name: stri
       context.inlineIndexes.push(built);
     }
   }
-}
-
-export function buildTable (stmt: CreateExpr): BuiltTable | undefined {
-  const schemaNode = stmt.args.this;
-  if (!(schemaNode instanceof SchemaExpr)) return undefined;
-
-  const tp = tableParts(schemaNode.args.this as Expression | undefined);
-  const expressions = schemaNode.args.expressions ?? [];
-
-  const context: TableContext = {
-    schema: tp.schema,
-    name: tp.name,
-    columns: [],
-    tablePkCols: new Set<string>(),
-    tableRefs: [],
-    checks: [],
-    inlineIndexes: [],
-  };
-
-  for (const expr of expressions) {
-    if (expr instanceof ColumnDefExpr) {
-      context.columns.push(buildColumn(expr));
-    } else if (expr instanceof ConstraintExpr) {
-      const name = expr.args.this instanceof Expression ? nodeText(expr.args.this) : undefined;
-      for (const part of expr.args.expressions ?? []) {
-        if (part instanceof Expression) dispatchConstraint(part, context, name);
-      }
-    } else {
-      dispatchConstraint(expr, context, undefined);
-    }
-  }
-
-  for (const col of context.columns) {
-    if (context.tablePkCols.has(col.name)) {
-      col.pk = true;
-      col.notNull = true;
-    }
-    for (const inlineReference of col.ref ?? []) {
-      context.tableRefs.push(new DbmlReference({
-        relation: inlineReference.relation,
-        source: endpoint(tp.schema, tp.name, [col.name]),
-        target: inlineReference.target,
-        onDelete: inlineReference.onDelete,
-        onUpdate: inlineReference.onUpdate,
-      }));
-    }
-  }
-
-  const table = new DbmlTable({
-    schema: tp.schema,
-    name: tp.name,
-    columns: context.columns,
-    checks: context.checks.length ? context.checks : undefined,
-    indexes: context.inlineIndexes.length ? context.inlineIndexes : undefined,
-  });
-
-  return {
-    table,
-    refs: context.tableRefs,
-  };
 }

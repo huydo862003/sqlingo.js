@@ -13,20 +13,20 @@ import {
   type DbmlRecord,
 } from './types';
 import {
-  tableParts,
-} from './utils/name';
+  extractTableParts,
+} from './utils/parse/ast';
 import {
   buildTable,
-} from './utils/table';
+} from './utils/transform/table';
 import {
   buildRecord,
-} from './utils/record';
+} from './utils/transform/record';
 import {
   indexFromParameters,
-} from './utils/tableIndex';
+} from './utils/transform/indexes';
 import {
   schemaToDbml,
-} from './utils/emit';
+} from './utils/emit/schema';
 
 export interface ConversionResult {
   schema: DbmlSchema;
@@ -77,7 +77,7 @@ export function sqlToDbml (sql: string, dialect?: string): ConversionResult {
       if (!(index instanceof IndexExpr)) continue;
       const tableReference = index.args.table;
       if (!(tableReference instanceof Expression)) continue;
-      const tp = tableParts(tableReference);
+      const tp = extractTableParts(tableReference);
       const lookup = new DbmlTable({
         schema: tp.schema,
         name: tp.name,

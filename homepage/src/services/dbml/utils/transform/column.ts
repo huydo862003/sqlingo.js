@@ -22,19 +22,21 @@ import {
   DbmlColumnType,
   DbmlInlineReference,
   DbmlRelation,
-} from '../types';
+} from '../../types';
 import {
-  nodeText, tableParts,
-} from './name';
+  extractNodeText, extractTableParts,
+} from '../parse/ast';
 import {
-  endpoint, referenceActions,
+  buildEndpoint, extractReferenceActions,
 } from './ref';
 import {
   mapDataType,
 } from './type';
 
-export function buildColumn (expr: ColumnDefExpr): DbmlColumn {
-  const name = nodeText(expr.args.this);
+// Build dbml model columns from sqlingo.js AST
+
+export function buildDbmlColumn (expr: ColumnDefExpr): DbmlColumn {
+  const name = extractNodeText(expr.args.this);
   const typeExpr = expr.args.kind;
   const type: DbmlColumnType = typeExpr instanceof DataTypeExpr
     ? mapDataType(typeExpr)
@@ -66,10 +68,10 @@ export function buildColumn (expr: ColumnDefExpr): DbmlColumn {
       column.increment = true;
     } else if (kind instanceof DefaultColumnConstraintExpr) {
       const inner = kind.args.this;
-      if (inner instanceof Expression) column.default = nodeText(inner);
+      if (inner instanceof Expression) column.default = extractNodeText(inner);
     } else if (kind instanceof CommentColumnConstraintExpr) {
       const inner = kind.args.this;
-      if (inner instanceof Expression) column.note = nodeText(inner);
+      if (inner instanceof Expression) column.note = extractNodeText(inner);
     } else if (kind instanceof CollateColumnConstraintExpr) {
       // collation not representable in DBML
     } else if (kind instanceof ComputedColumnConstraintExpr) {
@@ -85,13 +87,13 @@ export function buildColumn (expr: ColumnDefExpr): DbmlColumn {
       const cols = inner instanceof SchemaExpr
         ? (inner.args.expressions ?? [])
         : [];
-      const target = tableParts(tableExpr as Expression | undefined);
-      const refCols = cols.map((col) => col instanceof Expression ? nodeText(col) : String(col));
+      const target = extractTableParts(tableExpr as Expression | undefined);
+      const refCols = cols.map((col) => col instanceof Expression ? extractNodeText(col) : String(col));
       if (target.name) {
-        const actions = referenceActions(kind);
+        const actions = extractReferenceActions(kind);
         references.push(new DbmlInlineReference({
           relation: DbmlRelation.MANY_TO_ONE,
-          target: endpoint(target.schema, target.name, refCols.length
+          target: buildEndpoint(target.schema, target.name, refCols.length
             ? refCols
             : [name]),
           onDelete: actions.onDelete,

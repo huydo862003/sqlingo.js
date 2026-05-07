@@ -7,7 +7,59 @@ import {
 } from '@hdnax/sqlingo.js';
 import {
   DbmlColumnType,
-} from '../types/column';
+} from '../../types/column';
+
+// Map sqlingo.js data types to dbml model column types
+
+export function mapDataType (dtype: DataTypeExpr): DbmlColumnType {
+  const kind = dtype.args.this;
+  const exprs = dtype.args.expressions ?? [];
+
+  if (kind === DataTypeExprKind.ARRAY && 0 < exprs.length && exprs[0] instanceof Expression) {
+    const inner = mapDataType(exprs[0] as DataTypeExpr);
+    const nextArray: boolean | (number | undefined)[] = inner.array
+      ? [
+        ...(Array.isArray(inner.array)
+          ? inner.array
+          : [undefined]),
+        undefined,
+      ]
+      : true;
+    return new DbmlColumnType({
+      schema: inner.schema,
+      name: inner.name,
+      args: inner.args,
+      array: nextArray,
+    });
+  }
+
+  if (typeof kind === 'string' && kind in ALIAS) {
+    const name = ALIAS[kind as DataTypeExprKind]!;
+    const arguments_ = exprs.map(extractExprText);
+    return new DbmlColumnType({
+      name,
+      args: arguments_.length ? arguments_ : undefined,
+    });
+  }
+
+  if (kind instanceof Expression) {
+    const qualified = extractQualifiedName(kind);
+    return new DbmlColumnType({
+      schema: qualified.schema,
+      name: qualified.name,
+    });
+  }
+
+  if (typeof kind === 'string') {
+    return new DbmlColumnType({
+      name: kind,
+    });
+  }
+
+  return new DbmlColumnType({
+    name: 'varchar',
+  });
+}
 
 const ALIAS: Partial<Record<DataTypeExprKind, string>> = {
   [DataTypeExprKind.INT]: 'int',
@@ -54,20 +106,20 @@ const ALIAS: Partial<Record<DataTypeExprKind, string>> = {
   [DataTypeExprKind.ENUM]: 'enum',
 };
 
-function exprText (node: unknown): string {
+function extractExprText (node: unknown): string {
   if (node instanceof Expression) return node.name || node.sql();
   return String(node);
 }
 
-function identName (expr: Expression): string {
+function extractIdentName (expr: Expression): string {
   if (expr instanceof IdentifierExpr) {
     const inner = expr.args.this;
-    return typeof inner === 'string' ? inner : inner instanceof Expression ? identName(inner) : expr.name;
+    return typeof inner === 'string' ? inner : inner instanceof Expression ? extractIdentName(inner) : expr.name;
   }
   return expr.name || expr.sql();
 }
 
-function qualifiedFromAst (node: Expression): {
+function extractQualifiedName (node: Expression): {
   schema?: string;
   name: string;
 } {
@@ -78,7 +130,7 @@ function qualifiedFromAst (node: Expression): {
         if (n.args.this instanceof Expression) walk(n.args.this);
         if (n.args.expression instanceof Expression) walk(n.args.expression);
       } else {
-        parts.push(identName(n));
+        parts.push(extractIdentName(n));
       }
     };
     walk(node);
@@ -88,56 +140,6 @@ function qualifiedFromAst (node: Expression): {
     };
   }
   return {
-    name: identName(node),
+    name: extractIdentName(node),
   };
-}
-
-export function mapDataType (dtype: DataTypeExpr): DbmlColumnType {
-  const kind = dtype.args.this;
-  const exprs = dtype.args.expressions ?? [];
-
-  if (kind === DataTypeExprKind.ARRAY && 0 < exprs.length && exprs[0] instanceof Expression) {
-    const inner = mapDataType(exprs[0] as DataTypeExpr);
-    const nextArray: boolean | (number | undefined)[] = inner.array
-      ? [
-        ...(Array.isArray(inner.array)
-          ? inner.array
-          : [undefined]),
-        undefined,
-      ]
-      : true;
-    return new DbmlColumnType({
-      schema: inner.schema,
-      name: inner.name,
-      args: inner.args,
-      array: nextArray,
-    });
-  }
-
-  if (typeof kind === 'string' && kind in ALIAS) {
-    const name = ALIAS[kind as DataTypeExprKind]!;
-    const arguments_ = exprs.map(exprText);
-    return new DbmlColumnType({
-      name,
-      args: arguments_.length ? arguments_ : undefined,
-    });
-  }
-
-  if (kind instanceof Expression) {
-    const qualified = qualifiedFromAst(kind);
-    return new DbmlColumnType({
-      schema: qualified.schema,
-      name: qualified.name,
-    });
-  }
-
-  if (typeof kind === 'string') {
-    return new DbmlColumnType({
-      name: kind,
-    });
-  }
-
-  return new DbmlColumnType({
-    name: 'varchar',
-  });
 }

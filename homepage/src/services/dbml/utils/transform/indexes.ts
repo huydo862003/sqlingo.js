@@ -8,10 +8,39 @@ import {
 } from '@hdnax/sqlingo.js';
 import {
   DbmlIndex, DbmlIndexColumn,
-} from '../types';
+} from '../../types';
 import {
-  identName, nodeText,
-} from './name';
+  extractIdentName, extractNodeText,
+} from '../parse/ast';
+
+// Build dbml model's indexes from sqlingo.js AST
+export function indexFromParameters (index: IndexExpr): DbmlIndex | undefined {
+  const parameters = index.args.params;
+  if (!(parameters instanceof IndexParametersExpr)) return undefined;
+  const cols = parameters.args.columns ?? [];
+  const usingRaw = parameters.args.using as unknown;
+  const using = usingRaw instanceof Expression
+    ? extractIdentName(usingRaw)
+    : typeof usingRaw === 'string' ? usingRaw : undefined;
+
+  const columns: DbmlIndexColumn[] = cols.map((col) => {
+    const {
+      expr, isExpression,
+    } = unwrapIndexColumn(col);
+    return new DbmlIndexColumn({
+      expression: isExpression ? expr.sql() : extractNodeText(expr),
+      isExpression: isExpression || undefined,
+    });
+  });
+  const name = index.args.this ? extractNodeText(index.args.this as Expression) : undefined;
+  return new DbmlIndex({
+    name,
+    columns,
+    unique: index.args.unique || undefined,
+    pk: index.args.primary || undefined,
+    type: using,
+  });
+}
 
 function unwrapIndexColumn (node: Expression): {
   expr: Expression;
@@ -23,32 +52,4 @@ function unwrapIndexColumn (node: Expression): {
     expr: inner,
     isExpression: isExpr,
   };
-}
-
-export function indexFromParameters (index: IndexExpr): DbmlIndex | undefined {
-  const parameters = index.args.params;
-  if (!(parameters instanceof IndexParametersExpr)) return undefined;
-  const cols = parameters.args.columns ?? [];
-  const usingRaw = parameters.args.using as unknown;
-  const using = usingRaw instanceof Expression
-    ? identName(usingRaw)
-    : typeof usingRaw === 'string' ? usingRaw : undefined;
-
-  const columns: DbmlIndexColumn[] = cols.map((col) => {
-    const {
-      expr, isExpression,
-    } = unwrapIndexColumn(col);
-    return new DbmlIndexColumn({
-      expression: isExpression ? expr.sql() : nodeText(expr),
-      isExpression: isExpression || undefined,
-    });
-  });
-  const name = index.args.this ? nodeText(index.args.this as Expression) : undefined;
-  return new DbmlIndex({
-    name,
-    columns,
-    unique: index.args.unique || undefined,
-    pk: index.args.primary || undefined,
-    type: using,
-  });
 }
