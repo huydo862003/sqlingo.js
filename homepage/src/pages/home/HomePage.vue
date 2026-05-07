@@ -238,7 +238,7 @@
           "applicationCategory": "DeveloperApplication",
           "operatingSystem": "All",
           "license": "https://opensource.org/licenses/MIT",
-          "softwareVersion": "0.0.0",
+          "softwareVersion": "0.1.7",
           "url": "https://huydo862003.github.io/sqlingo.js/",
           "author": {
             "@type": "Person",
