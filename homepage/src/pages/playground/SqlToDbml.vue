@@ -133,7 +133,7 @@ onMounted(convert);
 </script>
 
 <style scoped>
-@reference '../../style.css';
+@reference '@/style.css';
 @import './playground.css';
 
 .sql-to-dbml {

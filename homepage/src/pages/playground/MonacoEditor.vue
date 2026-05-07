@@ -1,6 +1,6 @@
 <template>
   <div
-    ref="containerEl"
+    ref="containerElement"
     class="monaco-wrap"
   />
 </template>
@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import {
   ref, onMounted, onBeforeUnmount, watch,
+  useTemplateRef,
 } from 'vue';
 import * as monaco from 'monaco-editor';
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
@@ -55,16 +56,14 @@ const {
   readOnly?: boolean;
 }>();
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string];
-}>();
+const content = defineModel<string>();
 
-const containerEl = ref<HTMLElement | null>(null);
+const containerElement = useTemplateRef('containerElement');
 let editor: monaco.editor.IStandaloneCodeEditor | null = null;
 
 onMounted(() => {
-  if (!containerEl.value) return;
-  editor = monaco.editor.create(containerEl.value, {
+  if (!containerElement.value) return;
+  editor = monaco.editor.create(containerElement.value, {
     value: modelValue,
     language,
     theme: 'sqlingo-dark',
@@ -96,7 +95,7 @@ onMounted(() => {
     renderLineHighlight: 'none',
   });
   editor.onDidChangeModelContent(() => {
-    emit('update:modelValue', editor!.getValue());
+    content.value = editor?.getValue();
   });
 });
 

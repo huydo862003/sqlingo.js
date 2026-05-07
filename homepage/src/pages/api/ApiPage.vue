@@ -73,7 +73,7 @@
       </aside>
 
       <main
-        ref="mainEl"
+        ref="mainElement"
         class="flex-1 min-w-0 overflow-y-auto"
       >
         <div
@@ -489,7 +489,7 @@ interface ReflectionNode {
 const base = import.meta.env.BASE_URL;
 
 const data = ref<ReflectionNode | null>(null);
-const mainEl = useTemplateRef<HTMLElement>('mainEl');
+const mainElement = useTemplateRef<HTMLElement>('mainEl');
 
 const navBreadcrumb = computed(() => {
   const crumbs: Array<{
@@ -616,7 +616,7 @@ function selectBySlug (slug: string): boolean {
   const item = topLevel.value.find((n) => itemSlug(n) === slug);
   if (item) {
     selected.value = item;
-    mainEl.value?.scrollTo(0, 0);
+    mainElement.value?.scrollTo(0, 0);
     return true;
   }
   return false;
@@ -680,7 +680,7 @@ const navGroups = computed(() => {
 
 function select (item: ReflectionNode) {
   selected.value = item;
-  mainEl.value?.scrollTo(0, 0);
+  mainElement.value?.scrollTo(0, 0);
   window.location.hash = itemSlug(item);
 }
 

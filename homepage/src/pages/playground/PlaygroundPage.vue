@@ -93,7 +93,7 @@ function onTabSelect (name: string) {
 </script>
 
 <style scoped>
-@reference '../../style.css';
+@reference '@/style.css';
 
 .main {
   padding: var(--spacing-lg);
