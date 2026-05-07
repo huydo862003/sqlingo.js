@@ -1,13 +1,13 @@
 <template>
   <div
     ref="containerElement"
-    class="monaco-wrap"
+    class="h-64 w-full"
   />
 </template>
 
 <script setup lang="ts">
 import {
-  ref, onMounted, onBeforeUnmount, watch,
+  onMounted, onBeforeUnmount, watch,
   useTemplateRef,
 } from 'vue';
 import * as monaco from 'monaco-editor';
@@ -30,33 +30,27 @@ function resolveToken (token: string): string {
     .trim();
 }
 
-function registerEditorTheme () {
-  monaco.editor.defineTheme('sqlingo-dark', {
-    base: 'vs-dark',
-    inherit: true,
-    rules: [],
-    colors: {
-      'editor.background': resolveToken('--color-neutral-1'),
-      'editor.lineHighlightBackground': resolveToken('--color-neutral-2'),
-      'editorLineNumber.foreground': resolveToken('--color-neutral-7'),
-      'editorLineNumber.activeForeground': resolveToken('--color-neutral-9'),
-    },
-  });
-}
+monaco.editor.defineTheme('sqlingo-dark', {
+  base: 'vs-dark',
+  inherit: true,
+  rules: [],
+  colors: {
+    'editor.background': resolveToken('--color-neutral-1'),
+    'editor.lineHighlightBackground': resolveToken('--color-neutral-2'),
+    'editorLineNumber.foreground': resolveToken('--color-neutral-7'),
+    'editorLineNumber.activeForeground': resolveToken('--color-neutral-9'),
+  },
+});
 
-registerEditorTheme();
+const content = defineModel<string | undefined>();
 
 const {
   language = 'sql',
   readOnly = false,
-  modelValue,
 } = defineProps<{
-  modelValue: string;
   language?: string;
   readOnly?: boolean;
 }>();
-
-const content = defineModel<string>();
 
 const containerElement = useTemplateRef('containerElement');
 let editor: monaco.editor.IStandaloneCodeEditor | null = null;
@@ -64,7 +58,7 @@ let editor: monaco.editor.IStandaloneCodeEditor | null = null;
 onMounted(() => {
   if (!containerElement.value) return;
   editor = monaco.editor.create(containerElement.value, {
-    value: modelValue,
+    value: content.value,
     language,
     theme: 'sqlingo-dark',
     minimap: {
@@ -99,8 +93,8 @@ onMounted(() => {
   });
 });
 
-watch(() => modelValue, (newVal) => {
-  if (editor && editor.getValue() !== newVal) editor.setValue(newVal);
+watch(content, (newVal) => {
+  if (editor && editor.getValue() !== newVal) editor.setValue(newVal ?? '');
 });
 
 watch(() => language, (newLang) => {
@@ -112,10 +106,3 @@ onBeforeUnmount(() => {
   editor?.dispose();
 });
 </script>
-
-<style scoped>
-.monaco-wrap {
-  height: 16rem;
-  width: 100%;
-}
-</style>
