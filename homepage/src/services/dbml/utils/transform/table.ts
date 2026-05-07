@@ -47,12 +47,12 @@ export function buildTable (stmt: CreateExpr): BuiltTable | undefined {
   const schemaNode = stmt.args.this;
   if (!(schemaNode instanceof SchemaExpr)) return undefined;
 
-  const tp = extractTableParts(schemaNode.args.this as Expression | undefined);
+  const tableParts = extractTableParts(schemaNode.args.this as Expression | undefined);
   const expressions = schemaNode.args.expressions ?? [];
 
   const context: TableContext = {
-    schema: tp.schema,
-    name: tp.name,
+    schema: tableParts.schema,
+    name: tableParts.name,
     columns: [],
     tablePkCols: new Set<string>(),
     tableRefs: [],
@@ -81,7 +81,7 @@ export function buildTable (stmt: CreateExpr): BuiltTable | undefined {
     for (const inlineReference of col.ref ?? []) {
       context.tableRefs.push(new DbmlReference({
         relation: inlineReference.relation,
-        source: buildEndpoint(tp.schema, tp.name, [col.name]),
+        source: buildEndpoint(tableParts.schema, tableParts.name, [col.name]),
         target: inlineReference.target,
         onDelete: inlineReference.onDelete,
         onUpdate: inlineReference.onUpdate,
@@ -90,8 +90,8 @@ export function buildTable (stmt: CreateExpr): BuiltTable | undefined {
   }
 
   const table = new DbmlTable({
-    schema: tp.schema,
-    name: tp.name,
+    schema: tableParts.schema,
+    name: tableParts.name,
     columns: context.columns,
     checks: context.checks.length ? context.checks : undefined,
     indexes: context.inlineIndexes.length ? context.inlineIndexes : undefined,
@@ -137,9 +137,9 @@ function handleForeignKey (expr: ForeignKeyExpr, context: TableContext, name: st
   if (!(ref instanceof ReferenceExpr)) return;
   const inner = ref.args.this;
   const tableExpr = inner instanceof SchemaExpr ? inner.args.this : inner;
-  const cols = inner instanceof SchemaExpr ? (inner.args.expressions ?? []) : [];
+  const columns = inner instanceof SchemaExpr ? (inner.args.expressions ?? []) : [];
   const target = extractTableParts(tableExpr as Expression | undefined);
-  const refCols = cols.map((col) => col instanceof Expression ? extractNodeText(col) : String(col));
+  const refCols = columns.map((col) => col instanceof Expression ? extractNodeText(col) : String(col));
   if (target.name && fkCols.length) {
     const actions = extractReferenceActions(ref);
     context.tableRefs.push(new DbmlReference({

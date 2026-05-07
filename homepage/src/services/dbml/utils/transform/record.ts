@@ -17,8 +17,8 @@ import {
 export function buildRecord (stmt: InsertExpr): DbmlRecord | undefined {
   const tableExpr = stmt.args.this;
   if (!(tableExpr instanceof SchemaExpr)) return undefined;
-  const tp = extractTableParts(tableExpr.args.this as Expression | undefined);
-  if (!tp.name) return undefined;
+  const tableParts = extractTableParts(tableExpr.args.this as Expression | undefined);
+  if (!tableParts.name) return undefined;
   const columns = (tableExpr.args.expressions ?? []).map(extractNodeText);
   const valuesExpr = stmt.args.expression;
   if (!valuesExpr) return undefined;
@@ -30,8 +30,8 @@ export function buildRecord (stmt: InsertExpr): DbmlRecord | undefined {
   }
   if (!rows.length) return undefined;
   return new DbmlRecord({
-    schema: tp.schema,
-    tableName: tp.name,
+    schema: tableParts.schema,
+    tableName: tableParts.name,
     columns,
     rows,
   });
