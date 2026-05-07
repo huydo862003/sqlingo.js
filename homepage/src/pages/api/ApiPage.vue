@@ -256,7 +256,7 @@
 
         <div
           v-else
-          class="p-lg max-w-[800px] min-w-0"
+          class="p-lg min-w-0"
         >
           <div class="mb-lg">
             <h1 class="text-2xl mb-5 font-mono font-bold gui-neutral-fg">

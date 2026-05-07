@@ -19,7 +19,7 @@
           </h1>
         </template>
         <template #description>
-          <p class="my-2 text-sm gui-neutral-fg-muted">
+          <p class="my-2 lg:mx-56 text-sm gui-neutral-fg-muted">
             A JavaScript/TypeScript SQL parser, transpiler, and optimizer ported from <a
               href="https://github.com/tobymao/sqlglot"
               target="_blank"
@@ -68,10 +68,10 @@
 
       <section
         id="quickstart"
-        class="gui-neutral-border border gui-neutral-bg-subtle p-5"
+        class="gui-neutral-border border-b border-t gui-neutral-bg-subtle py-10 p-10 lg:px-48"
       >
         <div>
-          <h2 class="font-medium uppercase gui-neutral-fg-muted text-sm mb-2">
+          <h2 class="font-medium uppercase gui-neutral-fg-muted text-md mb-2">
             Interactive SQL Examples
           </h2>
           <SqlCodeExample />
@@ -80,13 +80,13 @@
 
       <section
         id="features"
-        class="mt-5 p-5 gui-neutral-fg-muted"
+        class="my-10 px-10 lg:px-48 gui-neutral-fg-muted"
       >
         <div>
-          <h2 class="font-medium uppercase text-sm mb-4">
+          <h2 class="font-medium uppercase text-md mb-4">
             SQL Parser Features
           </h2>
-          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 text-md">
+          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-md">
             <div
               v-for="f in features"
               :key="f.title"
@@ -111,18 +111,18 @@
 
       <section
         id="dialects"
-        class="gui-neutral-border border gui-neutral-bg-subtle p-5"
+        class="gui-neutral-border border-b border-t gui-neutral-bg-subtle p-10 lg:px-48"
       >
         <div>
-          <h2 class="font-medium text-md uppercase mb-4">
+          <h2 class="font-medium text-md uppercase my-4">
             33+ Supported SQL Dialects
           </h2>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-3">
             <GPill
               v-for="dialect in dialects"
               :key="dialect"
               :prominence="GPillProminence.Primary"
-              :size="GPillSize.Sm"
+              :size="GPillSize.Md"
             >
               {{ dialect }}
             </GPill>
@@ -130,8 +130,8 @@
         </div>
       </section>
 
-      <section class="mt-5 p-5 gui-neutral-fg-muted">
-        <div class="flex gap-2 items-center">
+      <section class="my-10 px-10 lg:px-48 gui-neutral-fg-muted">
+        <div class="flex gap-2 justify-between items-center">
           <div>
             <h2 class="font-medium text-md uppercase mb-4">
               API reference
@@ -152,7 +152,7 @@
 
       <section
         id="backstory"
-        class="gui-neutral-border border gui-neutral-bg-subtle p-5"
+        class="gui-neutral-border border-b border-t gui-neutral-bg-subtle p-10 lg:px-48"
       >
         <div>
           <h2 class="font-medium text-md uppercase mb-4 gui-neutral-fg-muted">
@@ -195,7 +195,7 @@
 
       <section
         id="goals"
-        class="mt-5 p-5 gui-neutral-fg-muted"
+        class="my-10 px-10 lg:px-48 gui-neutral-fg-muted"
       >
         <div>
           <h2 class="font-medium text-md uppercase mb-4 gui-neutral-fg-muted">
@@ -246,33 +246,6 @@
           }
         }) }}
       </component>
-
-      <footer class="mt-5 gui-neutral-bg-subtle text-sm py-5 px-3 border-t gui-neutral-border gui-neutral-fg-muted">
-        <div class="flex justify-between items-end">
-          <div class="w-96">
-            <span>
-              sqlingo.js is licensed under the
-              <a
-                href="https://github.com/huydo862003/sqlingo.js/blob/master/COPYRIGHT_NOTICE"
-                target="_blank"
-                rel="noopener"
-              >MIT License</a>.
-            </span>
-            <span>
-              Based on <a
-                href="https://github.com/tobymao/sqlglot"
-                target="_blank"
-                rel="noopener"
-              >SQLGlot</a> by Toby Mao, also MIT.
-            </span>
-          </div>
-          <a
-            href="https://github.com/huydo862003/sqlingo.js/issues"
-            target="_blank"
-            rel="noopener"
-          >Report an issue</a>
-        </div>
-      </footer>
     </main>
   </MainLayout>
 </template>
