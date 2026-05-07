@@ -298,12 +298,14 @@ import {
 import SqlCodeExample from './SqlCodeExample.vue';
 import MainLayout from '@/layout/main/MainLayout.vue';
 import {
-  useSeo,
-} from '@/composables/useSeo';
+  useSeoMeta,
+} from '@unhead/vue';
 
-useSeo({
-  title: 'Home',
+useSeoMeta({
+  title: 'Home | sqlingo.js',
+  ogTitle: 'Home | sqlingo.js',
   description: 'sqlingo.js is the JavaScript/TypeScript port of SQLGlot. It is a SQL parser, transpiler, and optimizer supporting 33+ dialects including BigQuery, Snowflake, and Postgres.',
+  ogDescription: 'sqlingo.js is the JavaScript/TypeScript port of SQLGlot. It is a SQL parser, transpiler, and optimizer supporting 33+ dialects including BigQuery, Snowflake, and Postgres.',
 });
 
 const features = [

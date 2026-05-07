@@ -13,6 +13,7 @@
     "@dbml/parse": "^7.1.2",
     "@hdnax/genuix": "^0.13.0",
     "@hdnax/sqlingo.js": "workspace:*",
+    "@unhead/vue": "^3.1.0",
     "highlight.js": "^11.11.1",
     "marked": "^18.0.3",
     "monaco-editor": "^0.55.1",

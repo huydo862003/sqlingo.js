@@ -58,12 +58,14 @@ import {
   usePlaygroundStore,
 } from '@/stores/playground';
 import {
-  useSeo,
-} from '@/composables/useSeo';
+  useSeoMeta,
+} from '@unhead/vue';
 
-useSeo({
-  title: 'Playground: SQL Transpiler & SQL to DBML',
+useSeoMeta({
+  title: 'Playground: SQL Transpiler & SQL to DBML | sqlingo.js',
+  ogTitle: 'Playground: SQL Transpiler & SQL to DBML | sqlingo.js',
   description: 'Try sqlingo.js in your browser. Convert between SQL dialects and DBML.',
+  ogDescription: 'Try sqlingo.js in your browser. Convert between SQL dialects and DBML.',
 });
 
 const base = import.meta.env.BASE_URL;

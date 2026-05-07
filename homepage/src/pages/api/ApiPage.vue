@@ -459,8 +459,8 @@ import {
   ReflectionKind,
 } from '@/types/typedoc';
 import {
-  useSeo,
-} from '@/composables/useSeo';
+  useSeoMeta,
+} from '@unhead/vue';
 import {
   kindDotStyle, kindChipStyle,
 } from './kinds';
@@ -530,12 +530,16 @@ const selected = ref<ReflectionNode | null>(null);
 const query = ref('');
 const sidebarOpen = ref(false);
 
-useSeo(() => ({
-  title: selected.value ? `${selected.value.name} | API Reference` : 'API Reference: JavaScript SQL Parser Documentation',
-  description: selected.value
+useSeoMeta({
+  title: () => selected.value ? `${selected.value.name} | API Reference | sqlingo.js` : 'API Reference: JavaScript SQL Parser Documentation | sqlingo.js',
+  ogTitle: () => selected.value ? `${selected.value.name} | API Reference | sqlingo.js` : 'API Reference: JavaScript SQL Parser Documentation | sqlingo.js',
+  description: () => selected.value
     ? `Documentation for ${selected.value.name} in sqlingo.js, the SQLGlot port for JavaScript/TypeScript.`
     : 'Full API documentation for sqlingo.js, including SQL parsing, transpiling, and optimization classes and functions.',
-}));
+  ogDescription: () => selected.value
+    ? `Documentation for ${selected.value.name} in sqlingo.js, the SQLGlot port for JavaScript/TypeScript.`
+    : 'Full API documentation for sqlingo.js, including SQL parsing, transpiling, and optimization classes and functions.',
+});
 
 function itemSlug (item: ReflectionNode): string {
   return `${kindLabel(item.kind).toLowerCase()}-${item.name}`;
