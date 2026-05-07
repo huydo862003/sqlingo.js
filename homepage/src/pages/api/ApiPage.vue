@@ -1,5 +1,5 @@
 <template>
-  <PageLayout :breadcrumb="navBreadcrumb">
+  <MainLayout :breadcrumb="navBreadcrumb">
     <div
       v-if="!data"
       class="flex flex-1 overflow-hidden items-center justify-center gui-neutral-fg-muted text-md"
@@ -441,7 +441,7 @@ const [result] = transpile("SELECT 1", { write: "my_dialect" });</code></pre>
         </div>
       </main>
     </div>
-  </PageLayout>
+  </MainLayout>
 </template>
 
 <script setup lang="ts">
@@ -451,7 +451,7 @@ import {
 import {
   marked,
 } from 'marked';
-import PageLayout from '@/components/PageLayout.vue';
+import MainLayout from '@/layout/main/MainLayout.vue';
 import {
   GTextInput, GIcon, GIconName,
 } from '@hdnax/genuix';

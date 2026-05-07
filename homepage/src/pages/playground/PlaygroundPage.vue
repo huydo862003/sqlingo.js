@@ -1,5 +1,5 @@
 <template>
-  <PageLayout :breadcrumb="navBreadcrumb">
+  <MainLayout :breadcrumb="navBreadcrumb">
     <main class="main">
       <div>
         <h1 class="title">
@@ -38,7 +38,7 @@
         </GTab>
       </div>
     </main>
-  </PageLayout>
+  </MainLayout>
 </template>
 
 <script setup lang="ts">
@@ -50,7 +50,7 @@ import {
   GTabPanel,
   GIconName,
 } from '@hdnax/genuix';
-import PageLayout from '@/components/PageLayout.vue';
+import MainLayout from '@/layout/main/MainLayout.vue';
 import SqlToDbml from './SqlToDbml.vue';
 import SqlTranspile from './SqlTranspile.vue';
 import {

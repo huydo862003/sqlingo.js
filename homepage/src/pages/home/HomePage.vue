@@ -1,5 +1,5 @@
 <template>
-  <PageLayout>
+  <MainLayout>
     <main
       id="hero"
       class="gui-neutral-bg"
@@ -274,7 +274,7 @@
         </div>
       </footer>
     </main>
-  </PageLayout>
+  </MainLayout>
 </template>
 
 <script setup lang="ts">
@@ -296,7 +296,7 @@ import {
   GPillSize,
 } from '@hdnax/genuix';
 import SqlCodeExample from './SqlCodeExample.vue';
-import PageLayout from '@/components/PageLayout.vue';
+import MainLayout from '@/layout/main/MainLayout.vue';
 import {
   useSeo,
 } from '@/composables/useSeo';
