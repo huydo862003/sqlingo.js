@@ -1,5 +1,16 @@
 # @hdnax/sqlingo.js-homepage
 
+## 0.1.0
+
+### Minor Changes
+
+- 62626fd: Complete AI migration. Most code are human-generated now.
+
+### Patch Changes
+
+- Updated dependencies [62626fd]
+  - @hdnax/sqlingo.js@0.2.0
+
 ## 0.0.7
 
 ### Patch Changes
