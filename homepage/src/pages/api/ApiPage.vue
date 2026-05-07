@@ -37,6 +37,7 @@
           <div class="px-sm mb-sm">
             <GTextInput
               v-model="query"
+              class="w-full border gui-neutral-border"
               placeholder="Search..."
               autocomplete="off"
             />
@@ -46,7 +47,7 @@
             :key="group.label"
             class="mb-sm"
           >
-            <div class="px-sm py-xs text-sm font-semibold uppercase tracking-[0.05em] gui-neutral-fg-muted">
+            <div class="px-sm py-xs text-sm font-semibold uppercase tracking-wider gui-neutral-fg-muted">
               {{ group.label }}
             </div>
             <ul class="list-none m-0 p-0">
@@ -55,7 +56,7 @@
                 :key="item.id"
               >
                 <button
-                  class="flex items-center gap-xs w-full px-sm py-1 text-sm font-mono bg-transparent border-none cursor-pointer text-left"
+                  class="flex items-center gap-xs w-full ml-2 px-sm py-1 text-sm font-mono bg-transparent border-none cursor-pointer text-left"
                   :class="selected?.id === item.id ? 'gui-primary-bg-hover gui-primary-fg' : 'gui-neutral-fg hover:gui-neutral-bg-hover'"
                   @click="select(item)"
                 >
@@ -63,7 +64,7 @@
                     class="w-[6px] h-[6px] rounded-full shrink-0"
                     :style="kindDotStyle(kindSlug(item.kind))"
                   />
-                  {{ item.name }}
+                  <span class="pl-1">{{ item.name }}</span>
                 </button>
               </li>
             </ul>
@@ -258,14 +259,14 @@
           class="p-lg max-w-[800px] min-w-0"
         >
           <div class="mb-lg">
-            <h1 class="text-2xl font-mono font-bold gui-neutral-fg">
+            <h1 class="text-2xl mb-5 font-mono font-bold gui-neutral-fg">
               @hdnax/sqlingo.js
               <span
                 v-if="data?.packageVersion"
                 class="text-md font-normal gui-neutral-fg-muted"
               >v{{ data.packageVersion }}</span>
             </h1>
-            <div class="flex gap-sm mt-sm">
+            <div class="mb-6 flex gap-sm mt-sm">
               <a
                 href="https://www.npmjs.com/package/@hdnax/sqlingo.js"
                 target="_blank"
@@ -318,110 +319,89 @@
             </ul>
 
             <h2>Installation</h2>
-            <pre><code class="language-bash">npm install @hdnax/sqlingo.js</code></pre>
+            <GCodeBlock
+              id="install"
+              :code="CODE_INSTALL"
+              :language="GCodeLanguage.Bash"
+              :highlight-theme="GHighlightTheme.AtomOne"
+              :show-header="false"
+              class="mb-3"
+            />
             <p>Peer dependency: <a href="https://www.npmjs.com/package/luxon">luxon</a> (^3.7.2) is required for date/time operations.</p>
 
             <h2>Quick Start</h2>
             <p>This example demonstrates transpiling a query from Spark to Postgres and then optimizing it.</p>
-            <pre><code class="language-ts">import { transpile, parseOne, optimize, MappingSchema } from "@hdnax/sqlingo.js";
-// Note: You must explicitly import the dialect to register it
-import "@hdnax/sqlingo.js/postgres";
-import "@hdnax/sqlingo.js/spark";
-
-// Transpile between dialects
-const [pgSql] = transpile("SELECT APPROX_COUNT_DISTINCT(x) FROM table", {
-  read: "spark",
-  write: "postgres",
-});
-console.log(pgSql);
-// Output: SELECT COUNT(DISTINCT x) FROM "table"
-
-// Optimize an expression
-const sql = "SELECT a, b FROM t WHERE a + 1 = 2";
-const schema = new MappingSchema({ t: { a: "int", b: "int" } });
-
-const optimized = optimize(parseOne(sql), { schema });
-console.log(optimized.sql());
-// Output: SELECT t.a AS a, t.b AS b FROM t AS t WHERE t.a = 1</code></pre>
+            <GCodeBlock
+              id="quickstart"
+              :language="GCodeLanguage.Typescript"
+              :highlight-theme="GHighlightTheme.AtomOne"
+              :code="CODE_QUICKSTART"
+            />
 
             <h2>Core Usage</h2>
             <h3>Parsing</h3>
             <p>Parse SQL strings into expression trees (AST).</p>
-            <pre><code class="language-ts">import { parse, parseOne } from "@hdnax/sqlingo.js";
-
-// Parse multiple statements
-const expressions = parse("SELECT 1; SELECT 2");
-
-// Parse a single statement
-const expr = parseOne("SELECT a, b FROM t WHERE a > 1");</code></pre>
+            <GCodeBlock
+              id="parsing"
+              :language="GCodeLanguage.Typescript"
+              :highlight-theme="GHighlightTheme.AtomOne"
+              :code="CODE_PARSING"
+            />
 
             <h3>Transpiling</h3>
             <p>Convert SQL between different dialects.</p>
-            <pre><code class="language-ts">import { transpile, Dialects } from "@hdnax/sqlingo.js";
-import "@hdnax/sqlingo.js/duckdb";
-import "@hdnax/sqlingo.js/hive";
-
-const [result] = transpile("SELECT EPOCH_MS(1618088028295)", {
-  read: Dialects.Duckdb,
-  write: Dialects.Hive,
-});
-// Output: "SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))"</code></pre>
+            <GCodeBlock
+              id="transpiling"
+              :language="GCodeLanguage.Typescript"
+              :highlight-theme="GHighlightTheme.AtomOne"
+              :code="CODE_TRANSPILING"
+            />
 
             <h3>Tokenizing</h3>
             <p>Extract tokens from a SQL string for lower-level analysis.</p>
-            <pre><code class="language-ts">import { tokenize, Dialects } from "@hdnax/sqlingo.js";
-import "@hdnax/sqlingo.js/postgres";
-
-const tokens = tokenize("SELECT 1", { dialect: Dialects.Postgres });</code></pre>
+            <GCodeBlock
+              id="tokenizing"
+              :language="GCodeLanguage.Typescript"
+              :highlight-theme="GHighlightTheme.AtomOne"
+              :code="CODE_TOKENIZING"
+            />
 
             <h2>SQL Builder</h2>
             <p>Build queries programmatically using a fluent API.</p>
-            <pre><code class="language-ts">import { select, column, condition, Dialects } from "@hdnax/sqlingo.js";
-import "@hdnax/sqlingo.js/mysql";
-
-const query = select("a", "b")
-  .from("t")
-  .where(condition("a > 1"))
-  .limit(10);
-
-console.log(query.sql({ dialect: Dialects.Mysql }));
-// Output: SELECT a, b FROM t WHERE a > 1 LIMIT 10</code></pre>
+            <GCodeBlock
+              id="builder"
+              :language="GCodeLanguage.Typescript"
+              :highlight-theme="GHighlightTheme.AtomOne"
+              :code="CODE_BUILDER"
+            />
 
             <h2>Optimization &amp; Analysis</h2>
             <h3>Optimization</h3>
             <p>Simplify and normalize queries based on schema information.</p>
-            <pre><code class="language-ts">import { optimize, MappingSchema } from "@hdnax/sqlingo.js";
-
-const schema = new MappingSchema({
-  // define your schema
-});
-
-const optimized = optimize(parseOne("SELECT * FROM t"), { schema });</code></pre>
+            <GCodeBlock
+              id="optimization"
+              :language="GCodeLanguage.Typescript"
+              :highlight-theme="GHighlightTheme.AtomOne"
+              :code="CODE_OPTIMIZATION"
+            />
 
             <h3>Column Lineage</h3>
             <p>Trace the origin of columns through subqueries and joins.</p>
-            <pre><code class="language-ts">import { lineage } from "@hdnax/sqlingo.js";
-
-const node = lineage("b", "SELECT a AS b FROM (SELECT x AS a FROM y)");
-console.log(node.source.name);
-// Output: "y"</code></pre>
+            <GCodeBlock
+              id="lineage"
+              :language="GCodeLanguage.Typescript"
+              :highlight-theme="GHighlightTheme.AtomOne"
+              :code="CODE_LINEAGE"
+            />
 
             <h2>Registering a Custom Dialect</h2>
             <p>You can extend the library by registering custom dialects or overriding existing behavior.</p>
-            <pre><code class="language-ts">import { Dialect, Generator, transpile } from "@hdnax/sqlingo.js";
-
-class MyDialect extends Dialect {
-  static DIALECT_NAME = "my_dialect";
-
-  static Generator = class extends Generator {
-    // Override how specific expressions are generated
-  };
-}
-
-// Register for use in transpile/parse
-Dialect.register("my_dialect", MyDialect);
-
-const [result] = transpile("SELECT 1", { write: "my_dialect" });</code></pre>
+            <GCodeBlock
+              id="custom-dialect"
+              :language="GCodeLanguage.Typescript"
+              :highlight-theme="GHighlightTheme.AtomOne"
+              :code="CODE_CUSTOM_DIALECT"
+            />
 
             <h2>Supported Dialects</h2>
             <p class="gui-neutral-fg-muted">
@@ -454,6 +434,7 @@ import {
 import MainLayout from '@/layout/main/MainLayout.vue';
 import {
   GTextInput, GIcon, GIconName,
+  GCodeBlock, GCodeLanguage, GHighlightTheme,
 } from '@hdnax/genuix';
 import {
   ReflectionKind,
@@ -540,6 +521,92 @@ useSeoMeta({
     ? `Documentation for ${selected.value.name} in sqlingo.js, the SQLGlot port for JavaScript/TypeScript.`
     : 'Full API documentation for sqlingo.js, including SQL parsing, transpiling, and optimization classes and functions.',
 });
+
+const CODE_INSTALL = 'npm install @hdnax/sqlingo.js';
+
+const CODE_QUICKSTART = `import { transpile, parseOne, optimize, MappingSchema } from "@hdnax/sqlingo.js";
+// Note: You must explicitly import the dialect to register it
+import "@hdnax/sqlingo.js/postgres";
+import "@hdnax/sqlingo.js/spark";
+
+// Transpile between dialects
+const [pgSql] = transpile("SELECT APPROX_COUNT_DISTINCT(x) FROM table", {
+  read: "spark",
+  write: "postgres",
+});
+console.log(pgSql);
+// Output: SELECT COUNT(DISTINCT x) FROM "table"
+
+// Optimize an expression
+const sql = "SELECT a, b FROM t WHERE a + 1 = 2";
+const schema = new MappingSchema({ t: { a: "int", b: "int" } });
+
+const optimized = optimize(parseOne(sql), { schema });
+console.log(optimized.sql());
+// Output: SELECT t.a AS a, t.b AS b FROM t AS t WHERE t.a = 1`;
+
+const CODE_PARSING = `import { parse, parseOne } from "@hdnax/sqlingo.js";
+
+// Parse multiple statements
+const expressions = parse("SELECT 1; SELECT 2");
+
+// Parse a single statement
+const expr = parseOne("SELECT a, b FROM t WHERE a > 1");`;
+
+const CODE_TRANSPILING = `import { transpile, Dialects } from "@hdnax/sqlingo.js";
+import "@hdnax/sqlingo.js/duckdb";
+import "@hdnax/sqlingo.js/hive";
+
+const [result] = transpile("SELECT EPOCH_MS(1618088028295)", {
+  read: Dialects.Duckdb,
+  write: Dialects.Hive,
+});
+// Output: "SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))"`;
+
+const CODE_TOKENIZING = `import { tokenize, Dialects } from "@hdnax/sqlingo.js";
+import "@hdnax/sqlingo.js/postgres";
+
+const tokens = tokenize("SELECT 1", { dialect: Dialects.Postgres });`;
+
+const CODE_BUILDER = `import { select, column, condition, Dialects } from "@hdnax/sqlingo.js";
+import "@hdnax/sqlingo.js/mysql";
+
+const query = select("a", "b")
+  .from("t")
+  .where(condition("a > 1"))
+  .limit(10);
+
+console.log(query.sql({ dialect: Dialects.Mysql }));
+// Output: SELECT a, b FROM t WHERE a > 1 LIMIT 10`;
+
+const CODE_OPTIMIZATION = `import { optimize, MappingSchema } from "@hdnax/sqlingo.js";
+
+const schema = new MappingSchema({
+  // define your schema
+});
+
+const optimized = optimize(parseOne("SELECT * FROM t"), { schema });`;
+
+const CODE_LINEAGE = `import { lineage } from "@hdnax/sqlingo.js";
+
+const node = lineage("b", "SELECT a AS b FROM (SELECT x AS a FROM y)");
+console.log(node.source.name);
+// Output: "y"`;
+
+const CODE_CUSTOM_DIALECT = `import { Dialect, Generator, transpile } from "@hdnax/sqlingo.js";
+
+class MyDialect extends Dialect {
+  static DIALECT_NAME = "my_dialect";
+
+  static Generator = class extends Generator {
+    // Override how specific expressions are generated
+  };
+}
+
+// Register for use in transpile/parse
+Dialect.register("my_dialect", MyDialect);
+
+const [result] = transpile("SELECT 1", { write: "my_dialect" });`;
 
 function itemSlug (item: ReflectionNode): string {
   return `${kindLabel(item.kind).toLowerCase()}-${item.name}`;
@@ -708,23 +775,6 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
   border-radius: var(--radius-sm);
   background: var(--gui-neutral-bg-hover);
   border: 1px solid var(--gui-neutral-border-subtle);
-}
-.prose pre {
-  margin: var(--spacing-sm) 0;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--gui-neutral-border-subtle);
-  overflow-x: auto;
-  max-width: 100%;
-}
-.prose pre code {
-  display: block;
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-size: var(--text-sm);
-  line-height: var(--leading-3);
-  background: var(--gui-neutral-bg-subtle);
-  border: none;
-  white-space: pre;
-  border-radius: var(--radius-md);
 }
 
 .pdesc p {
