@@ -58,7 +58,8 @@ export class DbmlIndex extends SchemaElement {
   }
 
   intern (): string {
-    const cols = this.columns.map((col) => col.intern()).join('|');
-    return `${this.kind}:${this.name ?? ''}:${cols}`;
+    const columns = this.columns.map((column) => column.intern()).join('|');
+
+    return `${this.kind}:${this.name ?? ''}:${columns}`;
   }
 }

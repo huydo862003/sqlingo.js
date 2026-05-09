@@ -86,6 +86,7 @@ export function canonicalize (
     node = removeRedundantCasts(node);
     node = ensureBools(node, replaceIntPredicate);
     node = removeAscendingOrder(node);
+
     return node;
   }
 
@@ -116,6 +117,7 @@ export function addTextToConcat (node: Expression): Expression {
       coalesce: false,
     });
   }
+
   return node;
 }
 
@@ -133,6 +135,7 @@ export function replaceDateFuncs (node: Expression, dialect: Dialect): Expressio
 
     if (!hasExpressions && !zone && thisArg) {
       const thisExpr = thisArg as Expression;
+
       if (thisExpr.isString && isIsoDate(thisExpr.name)) {
         return new CastExpr({
           this: thisArg,
@@ -151,6 +154,7 @@ export function replaceDateFuncs (node: Expression, dialect: Dialect): Expressio
 
     if (!zone) {
       let nodeToUse = node;
+
       if (!node.type) {
         nodeToUse = annotateTypes(node, {
           dialect,
@@ -158,6 +162,7 @@ export function replaceDateFuncs (node: Expression, dialect: Dialect): Expressio
       }
 
       const thisArg = nodeToUse.args.this;
+
       if (!thisArg) {
         return node;
       }
@@ -232,6 +237,7 @@ export function coerceType (node: Expression, options: {
     if (expr) {
       const exprNode = expr as Expression;
       const isTemporalType = exprNode.type instanceof Expression && exprNode.type.args.this && DataTypeExpr.TEMPORAL_TYPES.has(exprNode.type.args.this as DataTypeExprKind);
+
       if (!isTemporalType) {
         replaceCast(exprNode, DataTypeExprKind.DATETIME);
       }
@@ -304,6 +310,7 @@ export function ensureBools (
     if (right) replaceFunc(right as Expression);
   } else if (expression instanceof NotExpr) {
     const thisArg = expression.args.this;
+
     if (thisArg) replaceFunc(thisArg as Expression);
   } else if (expression instanceof IfExpr) {
     // We can't replace num in CASE x WHEN num ..., because it's not the full predicate
@@ -312,10 +319,12 @@ export function ensureBools (
 
     if (!isCaseWithThis) {
       const thisArg = expression.args.this;
+
       if (thisArg) replaceFunc(thisArg as Expression);
     }
   } else if (expression instanceof WhereExpr || expression instanceof HavingExpr) {
     const thisArg = expression.args.this;
+
     if (thisArg) replaceFunc(thisArg as Expression);
   }
 
@@ -352,6 +361,7 @@ function coerceDate (
   const {
     promoteToInferredDatetimeType,
   } = options;
+
   // Try both permutations (a, b) and (b, a)
   for (const [
     left,
@@ -368,16 +378,19 @@ function coerceDate (
     ]) {
     if (right instanceof IntervalExpr) {
       const unit = right.args.unit;
+
       coerceTimeunitArg(left, unit as Expression | undefined);
     }
 
     const leftTypeRaw = left.type;
+
     if (!leftTypeRaw || !(leftTypeRaw instanceof Expression) || !leftTypeRaw.args.this || !DataTypeExpr.TEMPORAL_TYPES.has(leftTypeRaw.args.this as DataTypeExprKind)) {
       continue;
     }
     const leftType = leftTypeRaw as Expression;
 
     const rightType = right.type;
+
     if (!rightType || !(rightType instanceof Expression) || !rightType.args.this || !DataTypeExpr.TEXT_TYPES.has(rightType.args.this as DataTypeExprKind)) {
       continue;
     }
@@ -389,6 +402,7 @@ function coerceDate (
 
       if (right.isString) {
         const dateText = right.name;
+
         if (isIsoDate(dateText)) {
           bType = DataTypeExprKind.DATE;
         } else if (isIsoDatetime(dateText)) {
@@ -403,6 +417,7 @@ function coerceDate (
       }
 
       const coercesTo = TypeAnnotator.COERCES_TO.get(leftType.args.this as DataTypeExprKind);
+
       targetType = coercesTo && coercesTo.has(bType) ? bType : leftType.args.this as DataTypeExprKind;
     } else {
       targetType = leftType.args.this as DataTypeExprKind;
@@ -474,6 +489,7 @@ function coerceDateDiffArgs (node: DateDiffExpr): void {
   ]) {
     if (arg) {
       const argExpr = arg as Expression;
+
       if (argExpr.type instanceof Expression && argExpr.type.args.this && !DataTypeExpr.TEMPORAL_TYPES.has(argExpr.type.args.this as DataTypeExprKind)) {
         argExpr.replace(new CastExpr({
           this: argExpr.copy(),
@@ -508,10 +524,12 @@ function replaceIntPredicate (expression: Expression): void {
   if (expression instanceof CoalesceExpr) {
     // Iterate through both 'this' and 'expressions' arguments
     const thisArg = expression.args.this;
+
     if (thisArg instanceof Expression) {
       replaceIntPredicate(thisArg);
     }
     const expressions = expression.args.expressions;
+
     if (expressions) {
       for (const child of expressions) {
         if (child instanceof Expression) {

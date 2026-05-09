@@ -168,6 +168,7 @@ class HiveGeneratorExtension extends Hive.Generator {
         const newActions = new SchemaExpr({
           expressions: expression.args.actions,
         });
+
         expression.setArgKey('actions', [newActions]);
       }
     }
@@ -203,8 +204,10 @@ class TrinoParserExtension extends Trino.Parser {
     const noParenFunctions = {
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -231,7 +234,9 @@ class TrinoGeneratorExtension extends Trino.Generator {
   @cache
   static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     const m = new Map(Trino.Generator.PROPERTIES_LOCATION);
+
     m.set(LocationPropertyExpr, (PropertiesLocation).POST_WITH);
+
     return m;
   }
 
@@ -240,8 +245,10 @@ class TrinoGeneratorExtension extends Trino.Generator {
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
 
     const m = new Map<typeof Expression, (this: Generator, e: any) => string>(Trino.Generator.ORIGINAL_TRANSFORMS);
+
     m.set(PartitionedByPropertyExpr, partitionedByPropertySql);
     m.set(LocationPropertyExpr, locationPropertySql);
+
     return m;
   }
 }
@@ -342,6 +349,7 @@ export class AthenaParser extends Parser {
       hive = new Hive(),
       trino = new Trino(),
     } = options;
+
     super(options);
     this.hiveParser = hive.parser({
       ...options,
@@ -375,11 +383,13 @@ export class AthenaGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -396,6 +406,7 @@ export class AthenaGenerator extends Generator {
       hive = new Hive(),
       trino = new Trino(),
     } = options;
+
     super(options);
     this.hiveGenerator = new HiveGeneratorExtension({
       ...options,
@@ -414,6 +425,7 @@ export class AthenaGenerator extends Generator {
       copy = true,
     } = options;
     const generatorInstance = generateAsHive(expression) ? this.hiveGenerator : this.trinoGenerator;
+
     return generatorInstance.generate(expression, {
       copy,
     });
@@ -436,24 +448,28 @@ export class Athena extends Dialect {
   public tokenize (sql: string, options: TokenizerOptions = {}): Token[] {
     options.hive = this.hive;
     options.trino = this.trino;
+
     return super.tokenize(sql, options);
   }
 
   public parse (sql: string, options: ParseOptions = {}): (Expression | undefined)[] {
     options.hive = this.hive;
     options.trino = this.trino;
+
     return super.parse(sql, options);
   }
 
   public parseIntoTypes (expressionType: string | string[], sql: string, options: ParseOptions = {}): (Expression | undefined)[] {
     options.hive = this.hive;
     options.trino = this.trino;
+
     return super.parseIntoTypes(expressionType, sql, options);
   }
 
   public generate (expression: Expression, options: GeneratorOptions = {}): string {
     options.hive = this.hive;
     options.trino = this.trino;
+
     return super.generate(expression, options);
   }
 

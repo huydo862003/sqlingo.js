@@ -159,6 +159,7 @@ export function simplify<E extends Expression> (
   const {
     constantPropagation = false, coalesceSimplification = false, dialect,
   } = options;
+
   return new Simplifier({
     dialect,
   }).simplify(expression, {
@@ -258,6 +259,7 @@ export function flatten (expression: Expression): Expression {
     }
 
     const child = node.unnest();
+
     if (child._constructor === expression._constructor) {
       node.replace(child);
     }
@@ -406,6 +408,7 @@ function decimalDiv (aStr: string, bStr: string, prec = 28): string {
   const parse = (s: string): [bigint, number] => {
     const dot = s.indexOf('.');
     const exp = dot === -1 ? 0 : dot - s.length + 1;
+
     return [
       BigInt(s.replace('.', '')),
       exp,
@@ -428,6 +431,7 @@ function decimalDiv (aStr: string, bStr: string, prec = 28): string {
   const qLen = q.toString().length;
   const toStrip = qLen - prec; // digits to strip (including rounding digit)
   let rounded: bigint;
+
   if (toStrip <= 0) {
     rounded = q;
   } else if (toStrip === 1) {
@@ -435,6 +439,7 @@ function decimalDiv (aStr: string, bStr: string, prec = 28): string {
   } else {
     const stripDivisor = 10n ** BigInt(toStrip);
     const halfStripDivisor = 10n ** BigInt(toStrip - 1) * 5n;
+
     rounded = q / stripDivisor + (halfStripDivisor <= q % stripDivisor ? 1n : 0n);
   }
 
@@ -445,6 +450,7 @@ function decimalDiv (aStr: string, bStr: string, prec = 28): string {
   const dotPos = s.length + (aExp - bExp - prec - 1 + toStrip);
 
   let result: string;
+
   if (dotPos <= 0) {
     result = '0.' + '0'.repeat(-dotPos) + s;
   } else if (s.length <= dotPos) {
@@ -512,6 +518,7 @@ function mergeRanges (ranges: DateRange[]): DateRange[] {
     end,
   ] of sorted.slice(1)) {
     const last = merged[merged.length - 1];
+
     if (start.toMillis() <= last[1].toMillis()) {
       merged[merged.length - 1] = [
         last[0],
@@ -576,6 +583,7 @@ function dateTruncEq (
   targetType: DataTypeExpr | ColumnDefExpr | undefined,
 ): Expression | undefined {
   const drange = dateTruncRange(date, unit, dialect);
+
   if (!drange) {
     return undefined;
   }
@@ -601,6 +609,7 @@ function dateTruncNeq (
   targetType: DataTypeExpr | ColumnDefExpr | undefined,
 ): Expression | undefined {
   const drange = dateTruncRange(date, unit, dialect);
+
   if (!drange) {
     return undefined;
   }
@@ -682,6 +691,7 @@ function evalBoolean (expression: Expression, a: number | string, b: number | st
   if (expression instanceof LteExpr) {
     return booleanLiteral(a <= b);
   }
+
   return undefined;
 }
 
@@ -695,6 +705,7 @@ function parseDateTime (value: string): DateTime {
   const dt = DateTime.fromISO(value, {
     zone: 'utc',
   });
+
   return dt.isValid
     ? dt
     : DateTime.fromSQL(value, {
@@ -711,6 +722,7 @@ function castAsDate (value: unknown): DateTime | undefined {
     : DateTime.fromMillis(value as number, {
       zone: 'utc',
     });
+
   return dt.isValid ? dt.startOf('day') : undefined;
 }
 
@@ -729,6 +741,7 @@ function castAsDatetime (value: unknown): DateTime | undefined {
     : DateTime.fromMillis(value as number, {
       zone: 'utc',
     });
+
   return dt.isValid ? dt : undefined;
 }
 
@@ -749,6 +762,7 @@ function castValue (value: unknown, to: DataTypeExpr): DateTime | undefined {
   if (to.isType(Array.from(DataTypeExpr.TEMPORAL_TYPES))) {
     return castAsDatetime(value);
   }
+
   return undefined;
 }
 
@@ -796,6 +810,7 @@ function extractInterval (expression: IntervalExpr): Duration | undefined {
   try {
     const n = parseInt(String(expression.args.this.toValue()));
     const unit = expression.text('unit').toLowerCase();
+
     return interval(unit, n);
   } catch (e) {
     if (e instanceof UnsupportedUnit || e instanceof Error) {
@@ -811,9 +826,11 @@ function extractType (...expressions: Expression[]): DataTypeExpr | ColumnDefExp
   for (const expression of expressions) {
     if (expression instanceof CastExpr) {
       const castTo = expression.to;
+
       targetType = isInstanceOf(castTo, DataTypeExpr) ? castTo : isInstanceOf(castTo, ColumnDefExpr) ? castTo : undefined;
     } else {
       const exprType = expression.type;
+
       targetType = isInstanceOf(exprType, DataTypeExpr) ? exprType : isInstanceOf(exprType, ColumnDefExpr) ? exprType : undefined;
     }
     if (targetType) {
@@ -838,6 +855,7 @@ function dateLiteral (date: DateTime, targetType?: DataTypeExpr | ColumnDefExpr)
   const dateStr = type === DataTypeExprKind.DATE
     ? date.toISODate()!
     : date.toFormat('yyyy-MM-dd HH:mm:ss');
+
   return new CastExpr({
     this: LiteralExpr.string(dateStr),
     to: new DataTypeExpr({
@@ -848,6 +866,7 @@ function dateLiteral (date: DateTime, targetType?: DataTypeExpr | ColumnDefExpr)
 
 function interval (unit: string, n: number = 1): Duration {
   const u = unit.toLowerCase();
+
   switch (u) {
     case 'year':
       return Duration.fromObject({
@@ -899,6 +918,7 @@ function dateFloor (d: DateTime, unit: string, dialect: Dialect): DateTime {
       });
     case 'quarter': {
       const month = Math.floor((d.month - 1) / 3) * 3 + 1;
+
       return d.set({
         month,
         day: 1,
@@ -920,6 +940,7 @@ function dateFloor (d: DateTime, unit: string, dialect: Dialect): DateTime {
       const weekStart = d.startOf('week').plus({
         days: dialect._constructor.WEEK_OFFSET || 0,
       });
+
       return weekStart;
     }
     case 'day':
@@ -1099,6 +1120,7 @@ export class Simplifier {
       [LtExpr.key]: (l, dt, u, d, t) => {
         const floor = dateFloor(dt, u, d);
         const ceilValue = dt.toMillis() === floor.toMillis() ? dt : floor.plus(interval(u));
+
         return new LtExpr({
           this: l,
           expression: dateLiteral(ceilValue, t),
@@ -1106,6 +1128,7 @@ export class Simplifier {
       },
       [GtExpr.key]: (l, dt, u, d, t) => {
         const floor = dateFloor(dt, u, d);
+
         return new GteExpr({
           this: l,
           expression: dateLiteral(floor.plus(interval(u)), t),
@@ -1113,6 +1136,7 @@ export class Simplifier {
       },
       [LteExpr.key]: (l, dt, u, d, t) => {
         const floor = dateFloor(dt, u, d);
+
         return new LtExpr({
           this: l,
           expression: dateLiteral(floor.plus(interval(u)), t),
@@ -1120,6 +1144,7 @@ export class Simplifier {
       },
       [GteExpr.key]: (l, dt, u, d, t) => {
         const ceil = dateCeil(dt, u, d);
+
         return new GteExpr({
           this: l,
           expression: dateLiteral(ceil, t),
@@ -1195,6 +1220,7 @@ export class Simplifier {
     for (const node of expression.walk({
       prune: (n) => {
         if (n instanceof ConditionExpr) return true;
+
         return Boolean(n.meta[FINAL]);
       },
     })) {
@@ -1212,9 +1238,11 @@ export class Simplifier {
 
         if (groupExpressions) {
           const groupHashes = new Set((groupExpressions as Expression[]).map((e) => e.hash()));
+
           group.meta[FINAL] = true;
 
           const selects = node.selects;
+
           for (const s of selects) {
             for (const n of s.walk({
               prune: (node) => Boolean(node.meta[FINAL]),
@@ -1227,6 +1255,7 @@ export class Simplifier {
           }
 
           const having = node.args.having;
+
           if (having) {
             for (const n of having.walk()) {
               if (groupHashes.has(n.hash())) {
@@ -1255,6 +1284,7 @@ export class Simplifier {
       } else if (node instanceof JoinExpr) {
         // snowflake match_conditions have very strict ordering rules
         const matchCondition = node.args.matchCondition;
+
         if (matchCondition) {
           matchCondition.meta[FINAL] = true;
         }
@@ -1310,6 +1340,7 @@ export class Simplifier {
 
     while (0 < preTransformationStack.length) {
       const original = preTransformationStack.pop();
+
       if (!original) continue;
       let node = original;
 
@@ -1379,6 +1410,7 @@ export class Simplifier {
 
       // Post-order transformations
       let node = this.simplifyNot(original);
+
       node = flatten(node);
       node = this.simplifyConnectors(node, {
         root,
@@ -1447,12 +1479,14 @@ export class Simplifier {
       // Populate the lookup tables
       for (const op of ops) {
         const opSql = this.genSql(op);
+
         opSet.add(opSql);
 
         if (!(op instanceof kind)) {
           // In cases like: A OR (A AND B)
           // Subop will be: ^
           let arr = subops.get(opSql);
+
           if (!arr) {
             arr = [];
             subops.set(opSql, arr);
@@ -1464,8 +1498,10 @@ export class Simplifier {
         // In cases like: (A AND B) OR (A AND B AND C)
         // Subops will be: ^     ^
         const subset = new Set(Array.from(op.flatten()).map((e) => this.genSql(e)));
+
         for (const i of subset) {
           let arr = subops.get(i);
+
           if (!arr) {
             arr = [];
             subops.set(i, arr);
@@ -1477,9 +1513,11 @@ export class Simplifier {
           a,
           b,
         ] = op.unnestOperands();
+
         if (a && b) {
           if (a instanceof NotExpr && a.args.this instanceof Expression) {
             const key = `${this.genSql(a.args.this as Expression)}|${this.genSql(b)}`;
+
             if (!pairs.has(key)) pairs.set(key, []);
             pairs.get(key)!.push([
               op,
@@ -1488,6 +1526,7 @@ export class Simplifier {
           }
           if (b instanceof NotExpr && b.args.this instanceof Expression) {
             const key = `${this.genSql(b.args.this as Expression)}|${this.genSql(a)}`;
+
             if (!pairs.has(key)) pairs.set(key, []);
             pairs.get(key)!.push([
               op,
@@ -1506,6 +1545,7 @@ export class Simplifier {
           a,
           b,
         ] = op.unnestOperands();
+
         if (!a || !b) {
           continue;
         }
@@ -1524,6 +1564,7 @@ export class Simplifier {
         // Check if any element in superset has subsets that are proper subsets of superset
         const hasProperSubset = Array.from(superset).some((i) => {
           const subsetsForI = subops.get(i);
+
           if (!subsetsForI) return false;
 
           return subsetsForI.some((subset) => {
@@ -1533,6 +1574,7 @@ export class Simplifier {
             for (const item of subset) {
               if (!superset.has(item)) return false;
             }
+
             return true;
           });
         });
@@ -1547,6 +1589,7 @@ export class Simplifier {
         const bSql = this.genSql(b);
         const pairKey = `${aSql}|${bSql}`;
         const reversePairKey = `${bSql}|${aSql}`;
+
         for (const [
           other,
           complement,
@@ -1573,6 +1616,7 @@ export class Simplifier {
     // We can't reduce a CONCAT_WS call if we don't statically know the separator
     if (expression instanceof ConcatWsExpr) {
       const [firstExpr] = expression.args.expressions ?? [];
+
       if (!(firstExpr instanceof Expression) || !firstExpr.isString) {
         return expression;
       }
@@ -1589,6 +1633,7 @@ export class Simplifier {
         first,
         ...rest
       ] = expression.args.expressions ?? [];
+
       sepExpr = first as Expression;
       expressions = rest;
       sep = sepExpr.name;
@@ -1656,6 +1701,7 @@ export class Simplifier {
 
       for (const caseIf of expression.args.ifs || []) {
         let cond = caseIf.args.this as Expression;
+
         if (thisExpr) {
           // Convert CASE x WHEN matching_value ... to CASE WHEN x = matching_value
           cond = cond.replace(thisExpr.pop().eq(cond));
@@ -1668,6 +1714,7 @@ export class Simplifier {
         if (alwaysFalse(cond)) {
           caseIf.pop();
           const remainingIfs = expression.args.ifs;
+
           if (!remainingIfs || remainingIfs.length === 0) {
             return expression.args.default as Expression || null_();
           }
@@ -1675,6 +1722,7 @@ export class Simplifier {
       }
     } else if (expression instanceof IfExpr && !(expression.parent instanceof CaseExpr)) {
       const thisExpr = expression.args.this;
+
       if (alwaysTrue(thisExpr)) {
         return narrowInstanceOf(expression.args.true, Expression) ?? expression;
       }
@@ -1696,6 +1744,7 @@ export class Simplifier {
   simplifyNot (expression: Expression): Expression {
     if (expression instanceof NotExpr) {
       const thisExpr = expression.args.this;
+
       if (isNull(thisExpr)) {
         return and([
           null_(),
@@ -1707,11 +1756,13 @@ export class Simplifier {
 
       if (thisExpr instanceof Expression) {
         const complement = Simplifier.COMPLEMENT_COMPARISONS[thisExpr._constructor.key];
+
         if (complement) {
           let rightExpr = thisExpr.args.expression;
 
           if (rightExpr instanceof Expression) {
             const complementSubqueryPredicate = Simplifier.COMPLEMENT_SUBQUERY_PREDICATES[rightExpr._constructor.key];
+
             if (complementSubqueryPredicate) {
               rightExpr = new complementSubqueryPredicate({
                 this: rightExpr.args.this,
@@ -1728,6 +1779,7 @@ export class Simplifier {
 
       if (thisExpr instanceof ParenExpr) {
         const condition = thisExpr.unnest();
+
         if (condition instanceof AndExpr) {
           return paren(
             or([
@@ -1793,6 +1845,7 @@ export class Simplifier {
 
       if (thisExpr instanceof NotExpr && this.dialect._constructor.SAFE_TO_ELIMINATE_DOUBLE_NEGATION) {
         const inner = thisExpr.args.this;
+
         if (isType(inner, DataTypeExprKind.BOOLEAN)) {
           // double negation
           // NOT NOT x -> x, if x is BOOLEAN type
@@ -1818,6 +1871,7 @@ export class Simplifier {
 
     if (expression instanceof ConnectorExpr) {
       const originalParent = expression.parent;
+
       expression = this.flatSimplify(expression, (expr, left, right) => {
         if (expr instanceof AndExpr) {
           if (isFalse(left) || isFalse(right)) {
@@ -1842,6 +1896,7 @@ export class Simplifier {
           if (alwaysTrue(right)) {
             return left;
           }
+
           return this.simplifyComparison(expr, left, right, {
             or: false,
           });
@@ -1862,10 +1917,12 @@ export class Simplifier {
           if (isFalse(right)) {
             return left;
           }
+
           return this.simplifyComparison(expr, left, right, {
             or: true,
           });
         }
+
         return undefined;
       }, {
         root,
@@ -1880,6 +1937,7 @@ export class Simplifier {
       if (!Simplifier.SAFE_CONNECTOR_ELIMINATION_RESULT.some((cls) => expression instanceof cls)
         && !expression.isType(DataTypeExprKind.BOOLEAN)) {
         let current = originalParent;
+
         while (true) {
           if (current instanceof ConnectorExpr) {
             break;
@@ -1956,6 +2014,7 @@ export class Simplifier {
 
         let l: unknown;
         let r: unknown;
+
         try {
           l = first(largsFiltered);
           r = first(rargsFiltered);
@@ -1981,10 +2040,12 @@ export class Simplifier {
           rValue = rExpr.name;
         } else {
           const lDate = extractDate(lExpr);
+
           if (!lDate) {
             return undefined;
           }
           const rDate = extractDate(rExpr);
+
           if (!rDate) {
             return undefined;
           }
@@ -2067,6 +2128,7 @@ export class Simplifier {
                 if (avNum === bvNum) {
                   return false_();
                 }
+
                 return a;
               }
             }
@@ -2103,6 +2165,7 @@ export class Simplifier {
       const a = queue.shift()!;
 
       let earlyJump = false;
+
       for (const b of queue) {
         const result = simplifyFunc(expression, a, b);
 
@@ -2145,9 +2208,11 @@ export class Simplifier {
     if (Simplifier.AND_OR.some((cls) => expression instanceof cls) && (root || !expression.sameParent)) {
       const ops = Array.from(expression.flatten());
       const opHashes = new Set(ops.map((o) => o.hash()));
+
       for (const op of ops) {
         if (op instanceof NotExpr) {
           const opThis = op.args.this as Expression | undefined;
+
           if (opThis && opHashes.has(opThis.hash())) {
             if (expression.meta.nonnull === true) {
               return expression instanceof AndExpr ? false_() : true_();
@@ -2204,8 +2269,10 @@ export class Simplifier {
 
     // Find the first constant arg
     let argIndex = -1;
+
     for (let i = 0; i < (coalesce.args.expressions?.length ?? 0); i++) {
       const arg = coalesce.args.expressions?.[i];
+
       if (isConstant(arg)) {
         argIndex = i;
         break;
@@ -2217,6 +2284,7 @@ export class Simplifier {
     }
 
     const arg = coalesce.args.expressions?.[argIndex] as Expression;
+
     coalesce.setArgKey('expressions', coalesce.args.expressions?.slice(0, argIndex));
 
     // Remove the COALESCE function. This is an optimization, skipping a simplify iteration,
@@ -2268,11 +2336,13 @@ export class Simplifier {
 
     if (expression instanceof NegExpr && expression.args.this instanceof NegExpr) {
       const inner = expression.args.this;
+
       return inner.args.this ?? expression;
     }
 
     if (Simplifier.INVERSE_DATE_OPS[expression._constructor.key]) {
       const thisExpr = expression.args.this;
+
       if (thisExpr instanceof Expression && expression instanceof IntervalOpExpr) {
         return this.simplifyBinary(expression, thisExpr, expression.interval()) || expression;
       }
@@ -2288,6 +2358,7 @@ export class Simplifier {
 
     const exprThis = expr.args.this;
     let thisExpr: ExpressionValue | undefined;
+
     if (exprThis instanceof CastExpr) {
       thisExpr = this.simplifyIntegerCast(exprThis);
     } else {
@@ -2298,6 +2369,7 @@ export class Simplifier {
       const num = thisExpr.toValue() as number;
 
       const to = expr.args.to;
+
       if (!to) {
         return expr;
       }
@@ -2336,6 +2408,7 @@ export class Simplifier {
     if (expression instanceof IsExpr) {
       let c: Expression | undefined;
       let not_: boolean;
+
       if (b instanceof NotExpr) {
         c = b.args.this;
         not_ = true;
@@ -2369,6 +2442,7 @@ export class Simplifier {
         const exp = expMatch ? parseInt(expMatch[1]) : 0;
         const mantissaMatch = s.replace(/[eE][+-]?\d+/, '').match(/\.(\d+)/);
         const mantissaDec = mantissaMatch ? mantissaMatch[1].length : 0;
+
         return Math.max(0, mantissaDec - exp);
       };
       const aStr = String(a.args.this ?? '');
@@ -2394,9 +2468,11 @@ export class Simplifier {
         // Check original string to distinguish integer from float (e.g. 3.0 is not int, mirrors Python Decimal)
         const aIsInt = !aStr.includes('.') && !aStr.toLowerCase().includes('e');
         const bIsInt = !bStr.includes('.') && !bStr.toLowerCase().includes('e');
+
         if ((aIsInt && bIsInt) || a.parent !== b.parent) {
           return undefined;
         }
+
         return LiteralExpr.number(decimalDiv(aStr, bStr));
       }
 
@@ -2416,6 +2492,7 @@ export class Simplifier {
     } else if (isDateLiteral(a) && b instanceof IntervalExpr) {
       const date = extractDate(a);
       const interval = extractInterval(b);
+
       if (date && interval !== undefined) {
         if (expression instanceof AddExpr || expression instanceof DateAddExpr || expression instanceof DatetimeAddExpr) {
           return dateLiteral(date.plus(interval), extractType(a));
@@ -2427,6 +2504,7 @@ export class Simplifier {
     } else if (a instanceof IntervalExpr && isDateLiteral(b)) {
       const interval = extractInterval(a);
       const date = extractDate(b);
+
       // you cannot subtract a date from an interval
       if (interval !== undefined && date && expression instanceof AddExpr) {
         return dateLiteral(date.plus(interval), extractType(b));
@@ -2435,8 +2513,10 @@ export class Simplifier {
       if (expression instanceof PredicateExpr) {
         const dateA = extractDate(a);
         const dateB = extractDate(b);
+
         if (dateA && dateB) {
           const boolean = evalBoolean(expression, dateA.toMillis(), dateB.toMillis());
+
           if (boolean) {
             return boolean;
           }
@@ -2470,6 +2550,7 @@ export class Simplifier {
       }
 
       const inverseOp = Simplifier.INVERSE_OPS[l._constructor.key];
+
       if (!inverseOp) {
         return expression;
       }
@@ -2546,8 +2627,10 @@ export class Simplifier {
       const thisExpr = e.args.this;
       const truncType = thisExpr && extractType(thisExpr);
       const date = extractDate(thisExpr);
+
       if (date && e.args.unit) {
         const unit = e.args.unit.name.toLowerCase();
+
         return dateLiteral(dateFloor(date, unit, this.dialect), truncType);
       }
     } else if (!Simplifier.DATETRUNC_COMPARISONS.has(comparison.key)) {
@@ -2589,12 +2672,15 @@ export class Simplifier {
         const unit = ((l.args as Record<string, unknown>).unit as Expression).name.toLowerCase();
 
         const ranges: DateRange[] = [];
+
         for (const r of rs) {
           const date = extractDate(r);
+
           if (!date) {
             return expression;
           }
           const drange = dateTruncRange(date, unit, this.dialect);
+
           if (drange) {
             ranges.push(drange);
           }
@@ -2643,6 +2729,7 @@ export class Simplifier {
         || (gen(r as Expression) < gen(l as Expression))
       ) {
         const inverseOp = Simplifier.INVERSE_COMPARISONS[expression._constructor.key] || expression._constructor;
+
         return new inverseOp({
           this: r,
           expression: l,
@@ -2671,6 +2758,7 @@ export class Simplifier {
       && expression.args.expression.isString
     ) {
       const result = expression.args.this.name.startsWith(expression.args.expression.name);
+
       return result ? true_() : false_();
     }
 
@@ -2742,6 +2830,7 @@ export class Simplifier {
     const {
       root = true,
     } = options;
+
     if (!(expression instanceof ConnectorExpr) || (!root && expression.sameParent)) {
       return expression;
     }
@@ -2765,6 +2854,7 @@ export class Simplifier {
       deduped = new Map<string, Expression>();
       for (const e of flattened) {
         const sql = this.genSql(e);
+
         if (!deduped.has(sql)) {
           deduped.set(sql, e);
         }
@@ -2777,11 +2867,13 @@ export class Simplifier {
     for (let i = 1; i < arr.length; i++) {
       if (arr[i][0] < arr[i - 1][0]) {
         const sorted = arr.sort((a, b) => (a[0] < b[0] ? -1 : b[0] < a[0] ? 1 : 0));
+
         expression = resultFunc(sorted.map(([
           , e,
         ]) => e), {
           copy: false,
         });
+
         return expression;
       }
     }
@@ -2789,6 +2881,7 @@ export class Simplifier {
     // We didn't have to sort but maybe we need to dedup
     if (deduped && deduped.size < flattened.length) {
       const uniqueOperand = flattened[0];
+
       if (deduped.size === 1) {
         if (uniqueOperand instanceof Expression) {
           expression = and([
@@ -2843,6 +2936,7 @@ class Gen {
     const {
       comments = false,
     } = options;
+
     this.stack = [expression];
     this.sqls = [];
 
@@ -2862,12 +2956,15 @@ class Gen {
           this.function(node);
         } else {
           const key = node._constructor.key.toUpperCase();
+
           this.stack.push(this.args(node) ? `${key} ` : key);
         }
       } else if (Array.isArray(node)) {
         let lastPushedComma = false;
+
         for (let i = node.length - 1; 0 <= i; i--) {
           const n = node[i];
+
           if (n !== undefined && n !== null) {
             if (Array.isArray(n) && typeof n[0] === 'string' && n[0].startsWith(':')) {
               // Handle [key, value] pairs from _args - push value then key (no trailing comma)
@@ -2875,6 +2972,7 @@ class Gen {
                 k,
                 v,
               ] = n as [string, Expression | string | number | boolean];
+
               this.stack.push(v as Expression);
               this.stack.push(k);
               lastPushedComma = false;
@@ -2927,6 +3025,7 @@ class Gen {
       name = thisExpr.toUpperCase();
     } else if (thisExpr instanceof IdentifierExpr) {
       const idName = thisExpr.args.this;
+
       name = thisExpr.args.quoted ? `"${idName}"` : String(idName).toUpperCase();
     } else {
       throw new Error(
@@ -2967,6 +3066,7 @@ class Gen {
 
   columnSql (e: ColumnExpr): void {
     const parts = e.parts;
+
     for (let i = parts.length - 1; 0 <= i; i--) {
       this.stack.push(parts[i], '.');
     }
@@ -2977,6 +3077,7 @@ class Gen {
     this.args(e, 1);
     const thisValue = e.args.this;
     const name = typeof thisValue === 'string' ? thisValue : String(thisValue);
+
     this.stack.push(`${name} `);
   }
 
@@ -3007,6 +3108,7 @@ class Gen {
   identifierSql (e: IdentifierExpr): void {
     const thisValue = e.args.this;
     const str = String(thisValue);
+
     this.stack.push(e.args.quoted ? `"${str}"` : str);
   }
 
@@ -3038,6 +3140,7 @@ class Gen {
 
   literalSql (e: LiteralExpr): void {
     const thisValue = e.args.this;
+
     this.stack.push(e.isString ? `'${thisValue}'` : String(thisValue));
   }
 
@@ -3092,6 +3195,7 @@ class Gen {
   subquerySql (e: SubqueryExpr): void {
     this.args(e, 2);
     const alias = e.args.alias;
+
     if (alias) {
       this.stack.push(alias);
     }
@@ -3101,10 +3205,12 @@ class Gen {
   tableSql (e: TableExpr): void {
     this.args(e, 4);
     const alias = e.args.alias;
+
     if (alias) {
       this.stack.push(alias as Expression);
     }
     const parts = e.parts;
+
     for (let i = parts.length - 1; 0 <= i; i--) {
       this.stack.push(parts[i], '.');
     }
@@ -3160,8 +3266,10 @@ class Gen {
 
     if (0 < kvs.length) {
       this.stack.push(kvs);
+
       return true;
     }
+
     return false;
   }
 }

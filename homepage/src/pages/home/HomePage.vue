@@ -10,20 +10,20 @@
             src="/sqlingo.js/icon.svg"
             alt="sqlingo.js logo"
             :size="GLogoSize.Lg"
-            class="bg-white rounded-md"
+            class="rounded-md bg-white"
           />
         </template>
         <template #title>
-          <h1 class="font-extrabold text-3xl">
+          <h1 class="text-3xl font-extrabold">
             sqlingo.js: A Typescript/Javascript port of SQLGlot
           </h1>
         </template>
         <template #description>
-          <p class="my-2 lg:mx-56 text-sm gui-neutral-fg-muted">
+          <p class="gui-neutral-fg-muted my-2 text-sm lg:mx-56">
             A JavaScript/TypeScript SQL parser, transpiler, and optimizer ported from <a
               href="https://github.com/tobymao/sqlglot"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >SQLGlot</a>.
             Parse, transpile, optimize, and run SQL across 33+ dialects in the browser or Node.js.
           </p>
@@ -39,7 +39,7 @@
               :show-header="false"
             />
           </div>
-          <div class="mt-4 flex gap-3 justify-center">
+          <div class="mt-4 flex justify-center gap-3">
             <GBadge
               label="npm"
               :color="GPillColor.Orange"
@@ -68,10 +68,10 @@
 
       <section
         id="quickstart"
-        class="gui-neutral-border border-b border-t gui-neutral-bg-subtle py-10 p-10 lg:px-48"
+        class="gui-neutral-border gui-neutral-bg-subtle border-y p-10 py-10 lg:px-48"
       >
         <div>
-          <h2 class="font-medium uppercase gui-neutral-fg-muted text-md mb-2">
+          <h2 class="gui-neutral-fg-muted text-md mb-2 font-medium uppercase">
             Interactive SQL Examples
           </h2>
           <SqlCodeExample />
@@ -80,28 +80,28 @@
 
       <section
         id="features"
-        class="my-10 px-10 lg:px-48 gui-neutral-fg-muted"
+        class="gui-neutral-fg-muted my-10 px-10 lg:px-48"
       >
         <div>
-          <h2 class="font-medium uppercase text-md mb-4">
+          <h2 class="text-md mb-4 font-medium uppercase">
             SQL Parser Features
           </h2>
-          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-md">
+          <div class="text-md grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div
               v-for="f in features"
               :key="f.title"
-              class="flex flex-col gap-2 border rounded-md gui-neutral-border p-5"
+              class="gui-neutral-border flex flex-col gap-2 rounded-md border p-5"
             >
               <div>
                 <GIcon
                   :name="f.icon"
-                  class="gui-neutral-bg-subtle size-5 rounded-md p-2 border gui-neutral-border"
+                  class="gui-neutral-bg-subtle gui-neutral-border size-5 rounded-md border p-2"
                 />
               </div>
-              <h3 class="font-bold gui-neutral-fg">
+              <h3 class="gui-neutral-fg font-bold">
                 {{ f.title }}
               </h3>
-              <p class="text-sm leading-1">
+              <p class="text-sm/1">
                 {{ f.desc }}
               </p>
             </div>
@@ -111,10 +111,10 @@
 
       <section
         id="dialects"
-        class="gui-neutral-border border-b border-t gui-neutral-bg-subtle p-10 lg:px-48"
+        class="gui-neutral-border gui-neutral-bg-subtle border-y p-10 lg:px-48"
       >
         <div>
-          <h2 class="font-medium text-md uppercase my-4">
+          <h2 class="text-md my-4 font-medium uppercase">
             33+ Supported SQL Dialects
           </h2>
           <div class="flex flex-wrap gap-3">
@@ -130,10 +130,10 @@
         </div>
       </section>
 
-      <section class="my-10 px-10 lg:px-48 gui-neutral-fg-muted">
-        <div class="flex gap-2 justify-between items-center">
+      <section class="gui-neutral-fg-muted my-10 px-10 lg:px-48">
+        <div class="flex items-center justify-between gap-2">
           <div>
-            <h2 class="font-medium text-md uppercase mb-4">
+            <h2 class="text-md mb-4 font-medium uppercase">
               API reference
             </h2>
             <p class="text-md">
@@ -143,7 +143,7 @@
           <GButton
             :prominence="GButtonProminence.Secondary"
             class="h-10 w-48"
-            @click="$router.push('/api-reference/')"
+            @click="goToApiReference"
           >
             Browse the docs
           </GButton>
@@ -152,18 +152,18 @@
 
       <section
         id="backstory"
-        class="gui-neutral-border border-b border-t gui-neutral-bg-subtle p-10 lg:px-48"
+        class="gui-neutral-border gui-neutral-bg-subtle border-y p-10 lg:px-48"
       >
         <div>
-          <h2 class="font-medium text-md uppercase mb-4 gui-neutral-fg-muted">
+          <h2 class="text-md gui-neutral-fg-muted mb-4 font-medium uppercase">
             Why this exists
           </h2>
-          <div class="gui-neutral-fg text-md flex flex-col gap-2 border-l-3 gui-neutral-border pl-5">
+          <div class="gui-neutral-fg text-md gui-neutral-border flex flex-col gap-2 border-l-3 pl-5">
             <p>
               I maintain <a
                 href="https://github.com/holistics/dbml"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
               >@dbml/core</a> at work, a library that supports converting between DBML and SQL.
               Under the hood it uses ANTLR for parsing, and honestly it has been a mess:
               the bundle weighs <strong>33 MB</strong> (which actually broke our CI with OOM errors),
@@ -174,7 +174,7 @@
               At a hackathon, I stumbled upon <a
                 href="https://github.com/tobymao/sqlglot"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
               >SQLGlot</a>. It was amazing that a library like this existed. Too bad it was in Python.
             </p>
             <p>
@@ -183,7 +183,7 @@
               <a
                 href="https://github.com/tobilg/polyglot"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
               >polyglot</a> was announced (LoL! If only it were sooner). I kept doing anyways though, because I wanted full control over the implementation and staying in sync with upstream.
             </p>
             <p>
@@ -195,17 +195,17 @@
 
       <section
         id="goals"
-        class="my-10 px-10 lg:px-48 gui-neutral-fg-muted"
+        class="gui-neutral-fg-muted my-10 px-10 lg:px-48"
       >
         <div>
-          <h2 class="font-medium text-md uppercase mb-4 gui-neutral-fg-muted">
+          <h2 class="text-md gui-neutral-fg-muted mb-4 font-medium uppercase">
             Design goals
           </h2>
           <div class="text-sm">
             <div
               v-for="g in goals"
               :key="g.title"
-              class="flex gap-3 my-3"
+              class="my-3 flex gap-3"
             >
               <GPill
                 :prominence="g.isNon ? GProminence.Primary : GProminence.Secondary"
@@ -214,7 +214,7 @@
                 {{ g.isNon ? 'non-goal' : 'goal' }}
               </GPill>
               <div>
-                <h3 class="font-medium mb-1">
+                <h3 class="mb-1 font-medium">
                   {{ g.title }}
                 </h3>
                 <p>
@@ -227,7 +227,7 @@
       </section>
 
       <component
-        :is="'script'"
+        :is="scriptTag"
         type="application/ld+json"
       >
         {{ JSON.stringify({
@@ -242,8 +242,8 @@
           "url": "https://huydo862003.github.io/sqlingo.js/",
           "author": {
             "@type": "Person",
-            "name": "Huy Do"
-          }
+            "name": "Huy Do",
+          },
         }) }}
       </component>
     </main>
@@ -269,10 +269,20 @@ import {
   GPillSize,
 } from '@hdnax/genuix';
 import {
+  useRouter,
+} from 'vue-router';
+import {
   useSeoMeta,
 } from '@unhead/vue';
 import SqlCodeExample from './SqlCodeExample.vue';
 import MainLayout from '@/layout/main/MainLayout.vue';
+
+const router = useRouter();
+const scriptTag = 'script';
+
+function goToApiReference () {
+  router.push('/api-reference/');
+}
 
 useSeoMeta({
   title: 'Home | sqlingo.js',

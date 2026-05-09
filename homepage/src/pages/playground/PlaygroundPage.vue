@@ -2,20 +2,31 @@
   <MainLayout :breadcrumb="navBreadcrumb">
     <main class="p-lg">
       <div>
-        <h1 class="text-xl font-bold gui-neutral-fg mb-sm">
+        <h1 class="gui-neutral-fg mb-sm text-xl font-bold">
           sqlingo.js Playground
         </h1>
         <GTab
           :default="tab"
           @select="onTabSelect"
         >
+          <template
+            #tab-trigger="{
+              tab: panelTab,
+            }"
+          >
+            <GIcon
+              v-if="panelTab.icon"
+              :name="panelTab.icon"
+            />
+            <span class="text-sm">{{ panelTab.label }}</span>
+          </template>
           <GTabPanel
             :name="Tab.Transpile"
             label="Transpile"
             :icon="GIconName.ArrowsLeftRight"
             class="p-3"
           >
-            <p class="text-sm gui-neutral-fg-muted mb-sm leading-3">
+            <p class="gui-neutral-fg-muted mb-sm text-sm/3">
               Transpile between SQL dialects.
             </p>
             <SqlTranspile />
@@ -26,11 +37,11 @@
             :icon="GIconName.Database"
             class="p-3"
           >
-            <p class="text-sm gui-neutral-fg-muted mb-sm leading-3">
+            <p class="gui-neutral-fg-muted mb-sm text-sm/3">
               Paste CREATE TABLE SQL and get a <a
                 href="https://dbml.dbdiagram.io/docs/"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
                 class="gui-info-fg no-underline hover:underline"
               >DBML</a> schema back.
             </p>
@@ -49,6 +60,7 @@ import {
 import {
   GTab,
   GTabPanel,
+  GIcon,
   GIconName,
 } from '@hdnax/genuix';
 import {
@@ -81,6 +93,7 @@ const navBreadcrumb = computed(() => {
       href: `${base}playground/`,
     },
   ];
+
   return crumbs;
 });
 

@@ -117,13 +117,16 @@ export function diff (
     newNodes: Expression[],
   ): Map<Expression, Expression> {
     const nodeMapping = new Map<Expression, Expression>();
+
     // Zip reversed arrays
     for (let i = 0; i < oldNodes.length; i++) {
       const oldNode = oldNodes[oldNodes.length - 1 - i];
       const newNode = newNodes[newNodes.length - 1 - i];
+
       newNode.computeHash();
       nodeMapping.set(oldNode, newNode);
     }
+
     return nodeMapping;
   }
 
@@ -146,6 +149,7 @@ export function diff (
     if (copy && 0 < matchings.length) {
       const sourceMapping = computeNodeMappings(sourceNodes, Array.from(sourceCopy.walk()));
       const targetMapping = computeNodeMappings(targetNodes, Array.from(targetCopy.walk()));
+
       matchings = matchings.map(([
         s,
         t,
@@ -255,6 +259,7 @@ class ChangeDistiller {
         this.targetIndex.set(n, n);
         // Check if n is a target in preMatchedNodes
         let isPreMatched = false;
+
         for (const targetMatch of preMatchedNodes.values()) {
           if (targetMatch === n) {
             isPreMatched = true;
@@ -268,6 +273,7 @@ class ChangeDistiller {
     this.bigramHistoCache.clear();
 
     const computedMatchings = this.computeMatchingSet();
+
     preMatchedNodes.forEach((v, k) => computedMatchings.set(k, v));
 
     return this.generateEditScript(computedMatchings, {
@@ -311,6 +317,7 @@ class ChangeDistiller {
         // Check non-expression leaves (attributes)
         const sourceLeaves = Object.fromEntries(getNonExpressionLeaves(sourceNode));
         const targetLeaves = Object.fromEntries(getNonExpressionLeaves(targetNode));
+
         if (JSON.stringify(sourceLeaves) !== JSON.stringify(targetLeaves)) {
           editScript.push(new Update(sourceNode, targetNode));
         } else if (!deltaOnly) {
@@ -341,10 +348,12 @@ class ChangeDistiller {
     const argsLcs = new Set(lcsResult);
 
     const moveEdits: Move[] = [];
+
     for (const a of sourceArgs) {
       // If the node is matched but its position in the arg list changed (not in LCS), it's a Move
       if (!argsLcs.has(a) && !this.unmatchedSourceNodes.has(a)) {
         const targetNode = matchings.get(a)!;
+
         moveEdits.push(new Move(this.sourceIndex.get(a)!, this.targetIndex.get(targetNode)!));
       }
     }
@@ -358,11 +367,13 @@ class ChangeDistiller {
 
     // Maintain BFS order for unmatched nodes
     const orderedUnmatchedSource: Expression[] = [];
+
     for (const n of this.source?.bfs() ?? []) {
       if (this.unmatchedSourceNodes.has(n)) orderedUnmatchedSource.push(n);
     }
 
     const orderedUnmatchedTarget: Expression[] = [];
+
     for (const n of this.target?.bfs() ?? []) {
       if (this.unmatchedTargetNodes.has(n)) orderedUnmatchedTarget.push(n);
     };
@@ -378,6 +389,7 @@ class ChangeDistiller {
 
           if (0 < maxLeavesNum) {
             let commonLeavesNum = 0;
+
             for (const [
               sLeaf,
               tLeaf,
@@ -413,20 +425,25 @@ class ChangeDistiller {
     const targetHisto = this.getBigramHisto(target);
 
     let sourceTotal = 0;
+
     sourceHisto.forEach((v) => {
       sourceTotal += v;
     });
     let targetTotal = 0;
+
     targetHisto.forEach((v) => {
       targetTotal += v;
     });
 
     const totalGrams = sourceTotal + targetTotal;
+
     if (totalGrams === 0) return source.equals(target) ? 1.0 : 0.0;
 
     let overlapLen = 0;
+
     sourceHisto.forEach((count, gram) => {
       const gramCount = targetHisto.get(gram);
+
       if (gramCount !== undefined) {
         overlapLen += Math.min(count, gramCount);
       }
@@ -473,6 +490,7 @@ class ChangeDistiller {
     candidateMatchings.sort((a, b) => {
       if (a.similarity !== b.similarity) return a.similarity - b.similarity;
       if (a.parentSimilarity !== b.parentSimilarity) return a.parentSimilarity - b.parentSimilarity;
+
       return a.index - b.index;
     });
 
@@ -498,15 +516,19 @@ class ChangeDistiller {
 
   private getBigramHisto (expression: Expression): Map<string, number> {
     const cached = this.bigramHistoCache.get(expression);
+
     if (cached !== undefined) return cached;
 
     const str = this.sqlGenerator.generate(expression);
     const histo = new Map<string, number>();
+
     for (let i = 0; i < str.length - 1; i++) {
       const gram = str.substring(i, i + 2);
+
       histo.set(gram, (histo.get(gram) || 0) + 1);
     }
     this.bigramHistoCache.set(expression, histo);
+
     return histo;
   }
 }
@@ -565,9 +587,11 @@ export function isSameType (source: Expression, target: Expression): boolean {
     if (source instanceof AnonymousExpr && target instanceof AnonymousExpr) {
       const sThis = source.args.this;
       const tThis = target.args.this;
+
       if (sThis instanceof Expression && tThis instanceof Expression) {
         return sThis.equals(tThis);
       }
+
       return sThis === tThis;
     }
 
@@ -637,6 +661,7 @@ export function lcs<T> (
         // Otherwise, take the maximum of top or left
         const top = lcsResult[i - 1][j];
         const left = lcsResult[i][j - 1];
+
         lcsResult[i][j] = left.length < top.length ? top : left;
       }
     }

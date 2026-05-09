@@ -37,8 +37,10 @@ export class SolrParser extends Parser {
     const noParenFunctions = {
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -75,11 +77,13 @@ export class SolrGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 

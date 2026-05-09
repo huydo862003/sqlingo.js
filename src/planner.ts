@@ -50,6 +50,7 @@ export class Plan {
 
     while (0 < stack.length) {
       const node = stack.pop()!;
+
       if (seen.has(node)) continue;
 
       seen.add(node);
@@ -64,6 +65,7 @@ export class Plan {
     }
 
     this._dag = dag;
+
     return this._dag;
   }
 
@@ -72,6 +74,7 @@ export class Plan {
    */
   get leaves (): IterableIterator<Step> {
     const leafNodes: Step[] = [];
+
     for (const [
       node,
       deps,
@@ -80,6 +83,7 @@ export class Plan {
         leafNodes.push(node);
       }
     }
+
     return leafNodes[Symbol.iterator]();
   }
 
@@ -117,6 +121,7 @@ export class Step {
       for (const cte of with_.args.expressions || []) {
         assertIsInstanceOf(cte.args.this, Expression);
         const step = Step.fromExpression(cte.args.this, ctes);
+
         if (step) {
           step.name = cte.alias;
           ctes.set(step.name, step);
@@ -137,8 +142,10 @@ export class Step {
     }
 
     const joins = filterInstanceOf(unnested.args.joins || [], JoinExpr);
+
     if (joins && 0 < joins.length) {
       const joinStep = Join.fromJoins(joins, ctes);
+
       if (step) {
         joinStep.name = step.name;
         joinStep.sourceName = step.name;
@@ -154,6 +161,7 @@ export class Step {
 
     const extractAggOperands = (expr: Expression): boolean => {
       const aggFuncs = Array.from(expr.findAll(AggFuncExpr));
+
       if (0 < aggFuncs.length) {
         aggregations.set(expr, undefined);
       }
@@ -172,6 +180,7 @@ export class Step {
           }));
         }
       }
+
       return 0 < aggFuncs.length;
     };
 
@@ -207,19 +216,23 @@ export class Step {
     }
 
     const where = unnested.getArgKey('where');
+
     if (step && where instanceof Expression && where.args.this instanceof Expression) {
       step.condition = where.args.this;
     }
 
     const group = unnested.getArgKey('group');
+
     if (group || 0 < aggregations.size) {
       const aggregate = new Aggregate();
+
       if (step) {
         aggregate.source = step.name;
         aggregate.name = step.name;
       }
 
       const having = unnested.getArgKey('having');
+
       if (having instanceof Expression && isInstanceOf(having.args.this, 'string', Expression)) {
         if (extractAggOperands(alias(
           having.args.this,
@@ -247,6 +260,7 @@ export class Step {
       const groupExprs = isInstanceOf(group, Expression)
         ? filterInstanceOf(group.args.expressions ?? [], Expression)
         : [];
+
       aggregate.group = Object.fromEntries(
         groupExprs.map((e, i) => [
           `_g${i}`,
@@ -255,6 +269,7 @@ export class Step {
       );
 
       const intermediate = new Map<string, string>();
+
       Object.entries(aggregate.group).forEach(([
         k,
         v,
@@ -272,6 +287,7 @@ export class Step {
       for (const projection of projections) {
         for (const node of projection.walk()) {
           const name = lookupNode(node);
+
           if (name) {
             node.replace(column({
               col: name,
@@ -287,6 +303,7 @@ export class Step {
       if (aggregate.condition) {
         for (const node of aggregate.condition.walk()) {
           const name = lookupNode(node);
+
           if (name) {
             node.replace(column({
               col: name,
@@ -303,13 +320,16 @@ export class Step {
     }
 
     const order = unnested.getArgKey('order');
+
     if (isInstanceOf(order, Expression)) {
       // If we have an aggregate step, extract any agg funcs in ORDER BY into operands
       if (step instanceof Aggregate) {
         const orderExprs = filterInstanceOf(order.args.expressions || [], Expression);
+
         for (let i = 0; i < orderExprs.length; i++) {
           const ordered = orderExprs[i];
           const orderThis = (ordered.args as Record<string, Expression | undefined>).this;
+
           if (orderThis && extractAggOperands(alias(orderThis, `_o_${i}`, {
             quoted: true,
           }))) {
@@ -325,6 +345,7 @@ export class Step {
       }
 
       const sort = new Sort();
+
       sort.name = step?.name ?? '';
       sort.key = filterInstanceOf(order.args.expressions || [], Expression);
       sort.addDependency(step);
@@ -335,6 +356,7 @@ export class Step {
 
     if (unnested instanceof SelectExpr && unnested.args.distinct) {
       const distinct = new Aggregate();
+
       distinct.source = step?.name;
       distinct.name = step?.name ?? '';
       distinct.group = Object.fromEntries(
@@ -356,6 +378,7 @@ export class Step {
     }
 
     const limit = unnested.getArgKey('limit');
+
     if (step && isInstanceOf(limit, Expression)) {
       step.limit = parseInt(limit.text('expression'));
     }
@@ -435,6 +458,7 @@ export class Step {
    */
   get id (): string {
     const nameStr = this.name ? ` ${this.name}` : '';
+
     return `${this.typeName}:${nameStr} (${id(this)})`;
   }
 
@@ -462,16 +486,20 @@ export class Scan extends Step {
     if (expression instanceof SubqueryExpr) {
       const innerTable = expression.args.this;
       const step = innerTable !== undefined ? Step.fromExpression(innerTable, ctes) : undefined;
+
       if (step) step.name = alias;
+
       return step;
     }
 
     const step = new Scan();
+
     step.name = alias;
     step.source = expression;
 
     // If the table name matches a CTE, we add that CTE's step as a dependency
     const tableName = table.name;
+
     if (ctes.has(tableName)) {
       step.addDependency(ctes.get(tableName));
     }
@@ -481,6 +509,7 @@ export class Scan extends Step {
 
   override _toS (indent: string): string[] {
     const source = this.source instanceof Expression ? this.source.sql() : this.source ?? '-static-';
+
     return [`${indent}Source: ${source}`];
   }
 }
@@ -532,6 +561,7 @@ export class Join extends Step {
       lines.push(`${indent}${name}: ${join.side || 'INNER'}`);
 
       const joinKeyStr = join.joinKey.map((key) => String(key)).join(', ');
+
       if (joinKeyStr) {
         lines.push(`${indent}Key: ${joinKeyStr}`);
       }
@@ -629,6 +659,7 @@ export class SetOperation extends Step {
     const {
       distinct = false,
     } = options;
+
     super();
     this.op = op;
     this.left = left;
@@ -645,9 +676,11 @@ export class SetOperation extends Step {
     }
 
     const left = expression.args.this !== undefined ? Step.fromExpression(expression.args.this, ctes) : undefined;
+
     if (left) left.name = left.name || 'left';
 
     const right = expression.args.expression !== undefined ? Step.fromExpression(expression.args.expression, ctes) : undefined;
+
     if (right) right.name = right.name || 'right';
 
     const step = new SetOperation(
@@ -663,6 +696,7 @@ export class SetOperation extends Step {
     if (right) step.addDependency(right);
 
     const limit = expression.args.limit;
+
     if (isInstanceOf(limit, Expression)) {
       step.limit = parseInt(limit.text('expression'));
     }
@@ -672,9 +706,11 @@ export class SetOperation extends Step {
 
   override _toS (indent: string): string[] {
     const lines: string[] = [];
+
     if (this.distinct) {
       lines.push(`${indent}Distinct: ${this.distinct}`);
     }
+
     return lines;
   }
 

@@ -8,19 +8,19 @@ import {
   DbmlKind,
 } from './kind';
 
-export enum DbmlRelation {
-  MANY_TO_ONE = '>',
-  ONE_TO_MANY = '<',
-  ONE_TO_ONE = '-',
-  MANY_TO_MANY = '<>',
-}
-
 export enum DbmlReferenceAction {
   CASCADE = 'cascade',
   RESTRICT = 'restrict',
   SET_NULL = 'set null',
   SET_DEFAULT = 'set default',
   NO_ACTION = 'no action',
+}
+
+export enum DbmlRelation {
+  MANY_TO_ONE = '>',
+  ONE_TO_MANY = '<',
+  ONE_TO_ONE = '-',
+  MANY_TO_MANY = '<>',
 }
 
 export class DbmlEndpoint extends SchemaElement {
@@ -42,7 +42,33 @@ export class DbmlEndpoint extends SchemaElement {
 
   intern (): string {
     const schemaName = this.schema ?? DEFAULT_SCHEMA_NAME;
+
     return `${this.kind}:${schemaName}.${this.table}(${this.columns.join(',')})`;
+  }
+}
+
+export class DbmlInlineReference extends SchemaElement {
+  readonly kind = DbmlKind.INLINE_REF;
+  relation: DbmlRelation;
+  target: DbmlEndpoint;
+  onDelete?: DbmlReferenceAction;
+  onUpdate?: DbmlReferenceAction;
+
+  constructor (arguments_: {
+    relation: DbmlRelation;
+    target: DbmlEndpoint;
+    onDelete?: DbmlReferenceAction;
+    onUpdate?: DbmlReferenceAction;
+  }) {
+    super();
+    this.relation = arguments_.relation;
+    this.target = arguments_.target;
+    this.onDelete = arguments_.onDelete;
+    this.onUpdate = arguments_.onUpdate;
+  }
+
+  intern (): string {
+    return `${this.kind}:${this.relation}${this.target.intern()}`;
   }
 }
 
@@ -77,30 +103,5 @@ export class DbmlReference extends SchemaElement {
 
   intern (): string {
     return `${this.kind}:${this.source.intern()}${this.relation}${this.target.intern()}`;
-  }
-}
-
-export class DbmlInlineReference extends SchemaElement {
-  readonly kind = DbmlKind.INLINE_REF;
-  relation: DbmlRelation;
-  target: DbmlEndpoint;
-  onDelete?: DbmlReferenceAction;
-  onUpdate?: DbmlReferenceAction;
-
-  constructor (arguments_: {
-    relation: DbmlRelation;
-    target: DbmlEndpoint;
-    onDelete?: DbmlReferenceAction;
-    onUpdate?: DbmlReferenceAction;
-  }) {
-    super();
-    this.relation = arguments_.relation;
-    this.target = arguments_.target;
-    this.onDelete = arguments_.onDelete;
-    this.onUpdate = arguments_.onUpdate;
-  }
-
-  intern (): string {
-    return `${this.kind}:${this.relation}${this.target.intern()}`;
   }
 }

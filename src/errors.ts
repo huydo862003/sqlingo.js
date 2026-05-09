@@ -131,6 +131,7 @@ export function highlightSql (options: {
   const {
     sql, positions, contextLength = ERROR_MESSAGE_CONTEXT_DEFAULT,
   } = options;
+
   if (positions.length === 0) {
     throw new Error('positions must contain at least one [start, end] tuple');
   }
@@ -158,6 +159,7 @@ export function highlightSql (options: {
   ] of sortedPositions) {
     const highlightStart = Math.max(start, previousPartEnd);
     const highlightEnd = end + 1;
+
     if (highlightEnd <= highlightStart) {
       continue;
     }
@@ -190,9 +192,11 @@ export function highlightSql (options: {
 export function concatMessages (errors: unknown[], maximum: number): string {
   const msg = errors.slice(0, maximum).map((e) => String(e));
   const remaining = errors.length - maximum;
+
   if (0 < remaining) {
     msg.push(`... and ${remaining} more`);
   }
+
   return msg.join('\n\n');
 }
 

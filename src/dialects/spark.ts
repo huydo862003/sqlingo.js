@@ -148,6 +148,7 @@ function normalizePartition (e: Exclude<ExpressionValue, undefined>): Expression
   if (e instanceof LiteralExpr) {
     return toIdentifier(e.name);
   }
+
   return e;
 }
 
@@ -174,6 +175,7 @@ function dateAddSql (this: Generator, expression: TsOrDsAddExpr | TimestampAddEx
   if (expression instanceof TsOrDsAddExpr) {
     // The 3 arg version of DATE_ADD produces a timestamp in Spark3/DB
     const returnType = expression.returnType;
+
     if (!returnType?.isType([
       DataTypeExprKind.TIMESTAMP,
       DataTypeExprKind.DATETIME,
@@ -193,6 +195,7 @@ function groupConcatSql (this: Generator, expression: GroupConcatExpr): string {
       }),
       expression: expression.args.separator || LiteralExpr.string(''),
     });
+
     return this.sql(expr);
   }
 
@@ -224,9 +227,11 @@ class SparkParser extends Spark2.Parser {
     const noParenFunctions = {
       ...Spark2.Parser.NO_PAREN_FUNCTIONS,
     };
+
     noParenFunctions[TokenType.SESSION_USER] = SessionUserExpr;
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -304,7 +309,9 @@ class SparkParser extends Spark2.Parser {
 
   parseQueryParameter (): Expression | undefined {
     const thisNode = this.parseIdVar();
+
     this.match(TokenType.R_BRACE);
+
     return this.expression(PlaceholderExpr, {
       this: thisNode,
       widget: true,
@@ -313,16 +320,19 @@ class SparkParser extends Spark2.Parser {
 
   parseGeneratedAsIdentity (): GeneratedAsIdentityColumnConstraintExpr | ComputedColumnConstraintExpr | GeneratedAsRowColumnConstraintExpr {
     const thisNode = super.parseGeneratedAsIdentity();
+
     if (thisNode.args.expression) {
       return this.expression(ComputedColumnConstraintExpr, {
         this: thisNode.args.expression,
       });
     }
+
     return thisNode;
   }
 
   parsePivotAggregation (): Expression | undefined {
     const aggregateExpr = this.parseFunction() || this.parseDisjunction();
+
     return this.parseAlias(aggregateExpr);
   }
 
@@ -532,11 +542,13 @@ class SparkGenerator extends Spark2.Generator {
       const key = seqGet(this.bracketOffsetExpressions(expression, {
         indexOffset: 1,
       }), 0);
+
       return this.func('TRY_ELEMENT_AT', [
         expression.args.this,
         key,
       ]);
     }
+
     return super.bracketSql(expression);
   }
 
@@ -559,6 +571,7 @@ class SparkGenerator extends Spark2.Generator {
         end,
       ]);
     }
+
     return this.func('DATEDIFF', [
       end,
       start,
@@ -569,6 +582,7 @@ class SparkGenerator extends Spark2.Generator {
     if (!expression.args.widget) {
       return super.placeholderSql(expression);
     }
+
     return `{${expression.name}}`;
   }
 
@@ -579,9 +593,11 @@ class SparkGenerator extends Spark2.Generator {
   readParquetSql (expression: ReadParquetExpr): string {
     if (expression.args.expressions?.length !== 1) {
       this.unsupported('READ_PARQUET with multiple arguments is not supported');
+
       return '';
     }
     const parquetFile = expression.args.expressions[0];
+
     return `parquet.\`${parquetFile.name}\``;
   }
 }

@@ -370,6 +370,7 @@ class SingleStoreParser extends MySQL.Parser {
             merge: seqGet(args, 2),
           }),
       };
+
       return functions;
     })();
   }
@@ -452,11 +453,13 @@ class SingleStoreParser extends MySQL.Parser {
           });
         },
       };
+
       delete operators[TokenType.ARROW];
       delete operators[TokenType.DARROW];
       delete operators[TokenType.HASH_ARROW];
       delete operators[TokenType.DHASH_ARROW];
       delete operators[TokenType.PLACEHOLDER];
+
       return operators;
     })();
   }
@@ -551,6 +554,7 @@ class SingleStoreParser extends MySQL.Parser {
   parseVectorExpressions (expressions: Expression[]): Expression[] {
     let typeName = (expressions[1] as IdentifierExpr).name.toUpperCase();
     const aliases: Record<string, string> = (this.dialect._constructor as typeof SingleStore).VECTOR_TYPE_ALIASES;
+
     if (typeName in aliases) {
       typeName = aliases[typeName];
     }
@@ -577,11 +581,13 @@ class SingleStoreGenerator extends MySQL.Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -684,6 +690,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         DateExpr,
         function (this: Generator, e: DateExpr) {
           unsupportedArgs.call(this, e, 'zone', 'expressions');
+
           return renameFunc('DATE').call(this, e);
         },
       ],
@@ -691,6 +698,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         CastExpr,
         function (this: Generator, e: CastExpr) {
           unsupportedArgs.call(this, e, 'format', 'action', 'default');
+
           return `${this.sql(e.args.this)} :> ${this.sql(e.args.to)}`;
         },
       ],
@@ -698,6 +706,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         TryCastExpr,
         function (this: Generator, e: TryCastExpr) {
           unsupportedArgs.call(this, e, 'format', 'action', 'default');
+
           return `${this.sql(e.args.this)} !:> ${this.sql(e.args.to)}`;
         },
       ],
@@ -714,6 +723,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         StrToUnixExpr,
         function (this: Generator, e: StrToUnixExpr) {
           unsupportedArgs.call(this, e, 'format');
+
           return renameFunc('UNIX_TIMESTAMP').call(this, e);
         },
       ],
@@ -746,6 +756,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         UnixToTimeExpr,
         function (this: Generator, e: UnixToTimeExpr) {
           unsupportedArgs.call(this, e, 'scale', 'zone', 'hours', 'minutes');
+
           return this.func('FROM_UNIXTIME', [
             e.args.this,
             this.formatTime(
@@ -766,6 +777,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         DateBinExpr,
         function (this: Generator, e: DateBinExpr) {
           unsupportedArgs.call(this, e, 'unit', 'zone');
+
           return this.func('TIME_BUCKET', [
             e.args.this,
             e.args.expression,
@@ -814,6 +826,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         TimeExpr,
         function (this: Generator, e: TimeExpr) {
           unsupportedArgs.call(this, e, 'zone');
+
           return `${this.sql(e.args.this)} :> TIME`;
         },
       ],
@@ -825,6 +838,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         DatetimeTruncExpr,
         function (this: Generator, e: DatetimeTruncExpr) {
           unsupportedArgs.call(this, e, 'zone');
+
           return timestampTruncSql().call(this, e as TimestampTruncExpr);
         },
       ],
@@ -840,6 +854,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         DateTruncExpr,
         function (this: Generator, e: DateTruncExpr) {
           unsupportedArgs.call(this, e, 'zone');
+
           return timestampTruncSql().call(this, e as TimestampTruncExpr);
         },
       ],
@@ -847,6 +862,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         DateDiffExpr,
         function (this: Generator, e: DateDiffExpr) {
           unsupportedArgs.call(this, e, 'zone');
+
           return e.args.unit !== undefined
             ? timestampDiffSql.call(this, e)
             : this.func('DATEDIFF', [
@@ -870,6 +886,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         TimestampTruncExpr,
         function (this: Generator, e: TimestampTruncExpr) {
           unsupportedArgs.call(this, e, 'zone');
+
           return timestampTruncSql().call(this, e);
         },
       ],
@@ -885,6 +902,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         JsonExtractExpr,
         function (this: Generator, e: JsonExtractExpr) {
           unsupportedArgs.call(this, e, 'onlyJsonTypes', 'expressions', 'variantExtract', 'jsonQuery', 'option', 'quote', 'onCondition', 'requiresJson');
+
           return jsonExtractSegments('JSON_EXTRACT_JSON').call(this, e);
         },
       ],
@@ -910,6 +928,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         JsonFormatExpr,
         function (this: Generator, e: JsonFormatExpr) {
           unsupportedArgs.call(this, e, 'options', 'isJson');
+
           return renameFunc('JSON_PRETTY').call(this, e);
         },
       ],
@@ -917,6 +936,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         JsonArrayAggExpr,
         function (this: Generator, e: JsonArrayAggExpr) {
           unsupportedArgs.call(this, e, 'nullHandling', 'returnType', 'strict');
+
           return this.func('JSON_AGG', [e.args.this], {
             suffix: `${this.sql(e.args.order)})`,
           });
@@ -926,6 +946,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         JsonArrayExpr,
         function (this: Generator, e: JsonArrayExpr) {
           unsupportedArgs.call(this, e, 'nullHandling', 'returnType', 'strict');
+
           return renameFunc('JSON_BUILD_ARRAY').call(this, e);
         },
       ],
@@ -953,6 +974,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         JsonObjectExpr,
         function (this: Generator, e: JsonObjectExpr) {
           unsupportedArgs.call(this, e, 'nullHandling', 'uniqueKeys', 'returnType', 'encoding');
+
           return renameFunc('JSON_BUILD_OBJECT').call(this, e);
         },
       ],
@@ -994,6 +1016,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         ApproxQuantileExpr,
         function (this: Generator, e: ApproxQuantileExpr) {
           unsupportedArgs.call(this, e, 'accuracy', 'weight');
+
           return this.func('APPROX_PERCENTILE', [
             e.args.this,
             e.args.quantile,
@@ -1061,6 +1084,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         RegexpExtractAllExpr,
         function (this: Generator, e: RegexpExtractAllExpr) {
           unsupportedArgs.call(this, e, 'position', 'occurrence', 'group');
+
           return this.func('REGEXP_MATCH', [
             e.args.this,
             e.args.expression,
@@ -1072,6 +1096,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         RegexpExtractExpr,
         function (this: Generator, e: RegexpExtractExpr) {
           unsupportedArgs.call(this, e, 'group');
+
           return this.func('REGEXP_SUBSTR', [
             e.args.this,
             e.args.expression,
@@ -1148,6 +1173,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         ReduceExpr,
         function (this: Generator, e: ReduceExpr) {
           unsupportedArgs.call(this, e, 'finish');
+
           return this.func('REDUCE', [
             e.args.initial,
             e.args.this,
@@ -1159,6 +1185,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         MatchAgainstExpr,
         function (this: Generator, e: MatchAgainstExpr) {
           unsupportedArgs.call(this, e, 'modifier');
+
           return this.matchAgainstSql(e);
         },
       ],
@@ -1166,6 +1193,7 @@ class SingleStoreGenerator extends MySQL.Generator {
         ShowExpr,
         function (this: Generator, e: ShowExpr) {
           unsupportedArgs.call(this, e, 'history', 'terse', 'offset', 'startsWith', 'limit', 'from', 'scope', 'scopeKind', 'mutex', 'query', 'channel', 'log', 'types', 'privileges');
+
           return this.showSql(e);
         },
       ],
@@ -1173,12 +1201,15 @@ class SingleStoreGenerator extends MySQL.Generator {
         DescribeExpr,
         function (this: Generator, e: DescribeExpr) {
           unsupportedArgs.call(this, e, 'style', 'kind', 'expressions', 'partition', 'format');
+
           return this.describeSql(e);
         },
       ],
     ]);
+
     transforms.delete(JsonExtractScalarExpr);
     transforms.delete(CurrentDateExpr);
+
     return transforms;
   }
 
@@ -2399,17 +2430,20 @@ class SingleStoreGenerator extends MySQL.Generator {
   jsonExtractScalarSql (expression: JsonExtractScalarExpr): string {
     const jsonType = expression.args.jsonType;
     const funcName = jsonType === undefined ? 'JSON_EXTRACT_JSON' : `JSON_EXTRACT_${jsonType}`;
+
     return jsonExtractSegments(funcName).call(this, expression);
   }
 
   jsonbExtractScalarSql (expression: JsonbExtractScalarExpr): string {
     const jsonType = expression.args.jsonType;
     const funcName = jsonType === undefined ? 'BSON_EXTRACT_BSON' : `BSON_EXTRACT_${jsonType}`;
+
     return jsonExtractSegments(funcName).call(this, expression);
   }
 
   jsonExtractArraySql (expression: JsonExtractArrayExpr): string {
     this.unsupported('Arrays are not supported in SingleStore');
+
     return this.functionFallbackSql(expression);
   }
 
@@ -2422,6 +2456,7 @@ class SingleStoreGenerator extends MySQL.Generator {
     });
 
     const returning = expression.args.returning;
+
     if (returning !== undefined) {
       res = new CastExpr({
         this: res,
@@ -2434,6 +2469,7 @@ class SingleStoreGenerator extends MySQL.Generator {
 
   allSql (expression: AllExpr): string {
     this.unsupported('ALL subquery predicate is not supported in SingleStore');
+
     return super.allSql(expression);
   }
 
@@ -2495,9 +2531,11 @@ class SingleStoreGenerator extends MySQL.Generator {
 
     if (expression.isType(DataTypeExprKind.VECTOR)) {
       const expressions = expression.args.expressions || [];
+
       if (expressions.length === 2) {
         let typeName = this.sql(expressions[0]);
         const inverseAliases = (this.dialect.constructor as typeof SingleStore).INVERSE_VECTOR_TYPE_ALIASES;
+
         if (typeName in inverseAliases) {
           typeName = inverseAliases[typeName];
         }
@@ -2517,6 +2555,7 @@ class SingleStoreGenerator extends MySQL.Generator {
 
   currentDateSql (expression: CurrentDateExpr): string {
     const timezone = expression.args.this;
+
     if (timezone) {
       if (timezone instanceof LiteralExpr && timezone.args.this?.toLowerCase() === 'utc') {
         return this.func('UTC_DATE', []);
@@ -2529,6 +2568,7 @@ class SingleStoreGenerator extends MySQL.Generator {
 
   currentTimeSql (expression: CurrentTimeExpr): string {
     const arg = expression.args.this;
+
     if (arg) {
       if (arg instanceof LiteralExpr && arg.args.this?.toLowerCase() === 'utc') {
         return this.func('UTC_TIME', []);
@@ -2544,6 +2584,7 @@ class SingleStoreGenerator extends MySQL.Generator {
 
   currentTimestampSql (expression: CurrentTimestampExpr): string {
     const arg = expression.args.this;
+
     if (arg) {
       if (arg instanceof LiteralExpr && arg.args.this?.toLowerCase() === 'utc') {
         return this.func('UTC_TIMESTAMP', []);
@@ -2559,11 +2600,13 @@ class SingleStoreGenerator extends MySQL.Generator {
 
   standardHashSql (expression: StandardHashExpr): string {
     const hashFunction = expression.args.expression;
+
     if (hashFunction === undefined) {
       return this.func('SHA', [expression.args.this]);
     }
     if (hashFunction instanceof LiteralExpr) {
       const name = hashFunction.args.this?.toLowerCase();
+
       if (name === 'sha') {
         return this.func('SHA', [expression.args.this]);
       }
@@ -2572,16 +2615,19 @@ class SingleStoreGenerator extends MySQL.Generator {
       }
 
       this.unsupported(`${hashFunction.args.this} hash method is not supported in SingleStore`);
+
       return this.func('SHA', [expression.args.this]);
     }
 
     this.unsupported('STANDARD_HASH function is not supported in SingleStore');
+
     return this.func('SHA', [expression.args.this]);
   }
 
   truncateTableSql (expression: TruncateTableExpr): string {
     unsupportedArgs.call(this, expression, 'isDatabase', 'exists', 'cluster', 'identity', 'option', 'partition');
     const statements: string[] = [];
+
     for (const expr of expression.args.expressions ?? []) {
       statements.push(`TRUNCATE ${this.sql(expr)}`);
     }
@@ -2593,6 +2639,7 @@ class SingleStoreGenerator extends MySQL.Generator {
     unsupportedArgs.call(this, expression, 'exists');
     const oldColumn = this.sql(expression, 'this');
     const newColumn = this.sql(expression, 'to');
+
     return `CHANGE ${oldColumn} ${newColumn}`;
   }
 
@@ -2602,6 +2649,7 @@ class SingleStoreGenerator extends MySQL.Generator {
 
     const collate = this.sql(expression, 'collate');
     const collatePart = collate ? ` COLLATE ${collate}` : '';
+
     return `${alter}${collatePart}`;
   }
 
@@ -2609,6 +2657,7 @@ class SingleStoreGenerator extends MySQL.Generator {
     const thisSql = this.sql(expression, 'this');
     const notNull = expression.args.notNull ? ' NOT NULL' : '';
     const type = this.sql(expression, 'dataType') || 'AUTO';
+
     return `AS ${thisSql} PERSISTED ${type}${notNull}`;
   }
 }

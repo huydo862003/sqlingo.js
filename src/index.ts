@@ -113,6 +113,7 @@ export function transpile (
   } = opts;
   const writeDialect = identity ? (write ?? read ?? dialect) : write;
   const writeDial = Dialect.getOrRaise(writeDialect);
+
   return parse(sql, {
     read: read ?? dialect,
     errorLevel,

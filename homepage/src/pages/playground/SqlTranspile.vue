@@ -1,10 +1,10 @@
 <template>
   <div class="w-full">
-    <div class="flex flex-col gap-sm">
-      <div class="flex flex-col rounded-md border gui-neutral-border overflow-hidden">
-        <div class="flex items-center justify-between p-sm border-b gui-neutral-border gui-neutral-bg-subtle">
-          <div class="flex items-center gap-sm">
-            <span class="text-sm font-medium uppercase tracking-wide gui-neutral-fg-muted">Input SQL</span>
+    <div class="gap-sm flex flex-col">
+      <div class="gui-neutral-border flex flex-col overflow-hidden rounded-md border">
+        <div class="p-sm gui-neutral-border gui-neutral-bg-subtle flex items-center justify-between border-b">
+          <div class="gap-sm flex items-center">
+            <span class="gui-neutral-fg-muted text-sm font-medium tracking-wide uppercase">Input SQL</span>
             <GSelect
               v-model="fromDialect"
               :size="GSelectSize.Xs"
@@ -25,10 +25,10 @@
         <MonacoEditor v-model="sqlInput" />
       </div>
 
-      <div class="flex flex-col rounded-md border gui-neutral-border overflow-hidden">
-        <div class="flex items-center justify-between p-sm border-b gui-neutral-border gui-neutral-bg-subtle">
-          <div class="flex items-center gap-sm">
-            <span class="text-sm font-medium uppercase tracking-wide gui-neutral-fg-muted">Output SQL</span>
+      <div class="gui-neutral-border flex flex-col overflow-hidden rounded-md border">
+        <div class="p-sm gui-neutral-border gui-neutral-bg-subtle flex items-center justify-between border-b">
+          <div class="gap-sm flex items-center">
+            <span class="gui-neutral-fg-muted text-sm font-medium tracking-wide uppercase">Output SQL</span>
             <GSelect
               v-model="toDialect"
               :size="GSelectSize.Xs"
@@ -59,10 +59,10 @@
             {{ copied ? 'Copied!' : 'Copy' }}
           </GButton>
         </div>
-        <div :class="error ? 'outline-1 outline-(--gui-danger-border) rounded-md' : ''">
+        <div :class="error ? 'rounded-md outline-1 outline-(--gui-danger-border)' : ''">
           <MonacoEditor
             :model-value="sqlOutput || error"
-            :read-only="true"
+            read-only
           />
         </div>
       </div>
@@ -114,14 +114,11 @@ const sqlOutput = ref('');
 const error = ref('');
 const copied = ref(false);
 
-function stripAnsi (text: string): string {
-  return text.replace(/\x1b\[[0-9;]*m/g, '');
-}
-
 function convert () {
   if (!sqlInput.value.trim()) {
     sqlOutput.value = '';
     error.value = '';
+
     return;
   }
   try {
@@ -130,6 +127,7 @@ function convert () {
       write: toDialect.value,
       pretty: true,
     });
+
     sqlOutput.value = results.join('\n');
     error.value = '';
   } catch (error_) {
@@ -145,6 +143,10 @@ function copyOutput () {
       copied.value = false;
     }, 2000);
   });
+}
+
+function stripAnsi (text: string): string {
+  return text.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
 watch([

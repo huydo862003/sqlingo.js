@@ -25,6 +25,7 @@ export function mapDataType (dtype: DataTypeExpr): DbmlColumnType {
         undefined,
       ]
       : true;
+
     return new DbmlColumnType({
       schema: inner.schema,
       name: inner.name,
@@ -36,6 +37,7 @@ export function mapDataType (dtype: DataTypeExpr): DbmlColumnType {
   if (typeof kind === 'string' && kind in ALIAS) {
     const name = ALIAS[kind as DataTypeExprKind]!;
     const arguments_ = exprs.map(extractExprText);
+
     return new DbmlColumnType({
       name,
       args: arguments_.length ? arguments_ : undefined,
@@ -44,6 +46,7 @@ export function mapDataType (dtype: DataTypeExpr): DbmlColumnType {
 
   if (kind instanceof Expression) {
     const qualified = extractQualifiedName(kind);
+
     return new DbmlColumnType({
       schema: qualified.schema,
       name: qualified.name,
@@ -108,14 +111,17 @@ const ALIAS: Partial<Record<DataTypeExprKind, string>> = {
 
 function extractExprText (node: unknown): string {
   if (node instanceof Expression) return node.name || node.sql();
+
   return String(node);
 }
 
 function extractIdentName (expr: Expression): string {
   if (expr instanceof IdentifierExpr) {
     const inner = expr.args.this;
+
     return typeof inner === 'string' ? inner : inner instanceof Expression ? extractIdentName(inner) : expr.name;
   }
+
   return expr.name || expr.sql();
 }
 
@@ -133,12 +139,15 @@ function extractQualifiedName (node: Expression): {
         parts.push(extractIdentName(n));
       }
     };
+
     walk(node);
+
     return {
       schema: 1 < parts.length ? parts.slice(0, -1).join('.') : undefined,
       name: parts[parts.length - 1],
     };
   }
+
   return {
     name: extractIdentName(node),
   };

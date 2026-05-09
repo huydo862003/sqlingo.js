@@ -31,11 +31,13 @@ function typedocVirtual (): Plugin {
     load (id) {
       if (id !== RESOLVED_ID) return;
       if (!existsSync(apiJsonPath)) return 'export default null';
+
       return `export default ${readFileSync(apiJsonPath, 'utf-8')}`;
     },
     configureServer (server: ViteDevServer) {
       watch(apiJsonPath, () => {
         const module_ = server.moduleGraph.getModuleById(RESOLVED_ID);
+
         if (module_) server.moduleGraph.invalidateModule(module_);
         server.ws.send({
           type: 'full-reload',

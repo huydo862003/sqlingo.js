@@ -55,6 +55,7 @@ function undefinedIfAny (...args: any[]): unknown {
     return wrap(args[0] as (...a: unknown[]) => unknown, []);
   }
   const indices = args as number[];
+
   return (value: (...a: unknown[]) => unknown) => wrap(value, indices);
 }
 
@@ -79,7 +80,9 @@ function filterUndefineds<T, R> (func: (values: T[]) => R, emptyUndefined = true
         ? [...(values as Iterable<unknown>)]
         : [values];
     const filtered = arr.filter((v): v is T => v !== undefined);
+
     if (filtered.length === 0 && emptyUndefined) return undefined;
+
     return func(filtered);
   };
 }
@@ -204,11 +207,13 @@ export class ENV {
   @undefinedIfAny
   static DIV<E, T> (e: E, this_: T) {
     if (this_ === 0) throw new Error('division by zero');
+
     return truediv(e, this_);
   }
 
   static DOT<E extends Record<PropertyKey, unknown>, K extends PropertyKey> (e: E, this_: K): E[K] | undefined {
     if (e === undefined || this_ === undefined) return undefined;
+
     return e[this_];
   }
 
@@ -242,7 +247,9 @@ export class ENV {
   @undefinedIfAny
   static INTERVAL<T> (this_: T, unit: string): number {
     const plural = unit + 'S';
+
     if (plural in Generator.TIME_PART_SINGULARS) unit = plural;
+
     return Duration.fromObject({
       [unit.toLowerCase()]: parseFloat(this_ as string),
     }).toMillis();
@@ -251,6 +258,7 @@ export class ENV {
   @undefinedIfAny(0, 1)
   static JSONEXTRACT<T> (this_: T, expression: unknown[]): unknown {
     let current: unknown = this_;
+
     for (const pathSegment of expression) {
       if (current === undefined) break;
       if (typeof current === 'object' && !Array.isArray(current)) {
@@ -261,6 +269,7 @@ export class ENV {
         throw new Error(`Unable to extract value for ${current} at ${pathSegment}.`);
       }
     }
+
     return current;
   }
 
@@ -291,6 +300,7 @@ export class ENV {
 
   static MAP<K extends PropertyKey, V> (keys: K[], values: V[]): Record<K, V> | undefined {
     if (keys === undefined || values === undefined) return undefined;
+
     return Object.fromEntries(keys.map((k, i) => [
       k,
       values[i],
@@ -324,7 +334,9 @@ export class ENV {
     const {
       desc,
     } = options;
+
     if (desc) return new ReverseKey(this_);
+
     return this_;
   }
 
@@ -343,6 +355,7 @@ export class ENV {
   static STRPOSITION (this_?: string, substr?: string, position?: number): number | undefined {
     if (this_ === undefined || substr === undefined) return undefined;
     const pos = position !== undefined ? position - 1 : 0;
+
     return this_.indexOf(substr, pos) + 1;
   }
 
@@ -357,6 +370,7 @@ export class ENV {
     if (start === 0) return '';
     const s = start < 0 ? this_.length + start : start - 1;
     const end = length === undefined ? undefined : s + length;
+
     return this_.slice(s, end);
   }
 
@@ -393,6 +407,7 @@ export class ENV {
   @undefinedIfAny
   static STRFTIME (fmt: string, arg: string): string {
     const d = DateTime.fromISO(arg);
+
     return fmt
       .replace('%Y', String(d.year))
       .replace('%m', String(d.month).padStart(2, '0'))
@@ -405,6 +420,7 @@ export class ENV {
   @undefinedIfAny
   static STRTOTIME (arg: string, format: string): DateTime {
     void format;
+
     return DateTime.fromISO(arg);
   }
 
@@ -415,11 +431,13 @@ export class ENV {
 
   static STRUCT = <K extends string, V>(...args: (K | V)[]): Record<K, V> => {
     const result = {} as Record<K, V>;
+
     for (let x = 0; x < args.length; x += 2) {
       if (args[x] !== undefined && args[x + 1] !== undefined) {
         result[args[x] as K] = args[x + 1] as V;
       }
     }
+
     return result;
   };
 
@@ -434,6 +452,7 @@ export class ENV {
   static {
     for (const key of Object.getOwnPropertyNames(this)) {
       const desc = Object.getOwnPropertyDescriptor(this, key);
+
       if (!desc?.configurable) {
         continue;
       }

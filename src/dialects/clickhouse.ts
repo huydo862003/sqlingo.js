@@ -212,9 +212,11 @@ function buildDateTimeFormat<E extends Expression> (exprType: new (args: any) =>
       dialect: Dialects.CLICKHOUSE,
     })(args);
     const timezone = seqGet(args, 2);
+
     if (timezone) {
       expr.setArgKey('zone', timezone);
     }
+
     return expr;
   };
 }
@@ -253,7 +255,9 @@ export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): str
 
 function lowerFunc (sql: string): string {
   const index = sql.indexOf('(');
+
   if (index === -1) return sql.toLowerCase();
+
   return sql.slice(0, index).toLowerCase() + sql.slice(index);
 }
 
@@ -262,6 +266,7 @@ function quantileSql (this: Generator, expression: QuantileExpr): string {
   const argsSql = `(${this.sql(expression, 'this')})`;
 
   let func: string;
+
   if (quantile instanceof ArrayExpr) {
     func = this.func('quantiles', quantile.args.expressions || []);
   } else {
@@ -293,6 +298,7 @@ function buildStrToDate (args: Expression[]): CastExpr | AnonymousExpr {
   }
 
   const strToDate = StrToDateExpr.fromArgList(args);
+
   return cast(strToDate, DataTypeExpr.build(DataTypeExprKind.DATETIME));
 }
 
@@ -324,6 +330,7 @@ function timeStrToTimeSql (this: Generator, expression: TimeStrToTimeExpr): stri
 
     // separate [date and time] from [fractional seconds and UTC offset]
     const tsParts = tsString.split('.');
+
     if (tsParts.length === 2) {
       // separate fractional seconds and UTC offset
       const offsetSep = tsParts[1].includes('+') ? '+' : '-';
@@ -387,6 +394,7 @@ function mapSql (this: Generator, expression: MapExpr | VarMapExpr): string {
 
   if (!(keys instanceof ArrayExpr) || !(values instanceof ArrayExpr)) {
     this.unsupported('Cannot convert array columns into map.');
+
     return '';
   }
 
@@ -413,8 +421,10 @@ function buildTimestampTrunc (unit: string): (args: Expression[]) => TimestampTr
 
 function buildSplitByChar (args: Expression[]): SplitExpr | AnonymousExpr {
   const sep = seqGet(args, 0);
+
   if (sep instanceof LiteralExpr) {
     const sepValue = sep.toValue();
+
     if (typeof sepValue === 'string' && new TextEncoder().encode(sepValue).length === 1) {
       return buildSplit(SplitExpr)(args);
     }
@@ -543,7 +553,9 @@ class ClickHouseTokenizer extends Tokenizer {
       'SYSTEM': TokenType.COMMAND,
       'PREWHERE': TokenType.PREWHERE,
     };
+
     delete keywords['/*+'];
+
     return keywords;
   }
 
@@ -574,9 +586,11 @@ class ClickHouseParser extends Parser {
     const noParenFunctions = {
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.CURRENT_TIMESTAMP];
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -687,6 +701,7 @@ class ClickHouseParser extends Parser {
       JAROWINKLERSIMILARITY: (args: unknown[]) => JarowinklerSimilarityExpr.fromArgList(args),
       LEVENSHTEINDISTANCE: (args: unknown[]) => LevenshteinExpr.fromArgList(args),
     };
+
     delete parsers['TRANSFORM'];
     delete parsers['APPROX_TOP_SUM'];
 
@@ -859,6 +874,7 @@ class ClickHouseParser extends Parser {
       ...ClickHouseParser.AGG_FUNCTIONS_SUFFIXES,
       '',
     ];
+
     for (const sfx of suffixes) {
       for (const f of ClickHouseParser.AGG_FUNCTIONS) {
         mapping[`${f}${sfx}`] = [
@@ -867,6 +883,7 @@ class ClickHouseParser extends Parser {
         ];
       }
     }
+
     return mapping;
   }
 
@@ -897,6 +914,7 @@ class ClickHouseParser extends Parser {
         const args = this.parseFunctionArgs({
           alias: false,
         });
+
         return new AndExpr({
           this: args[0],
           expression: args[1],
@@ -906,6 +924,7 @@ class ClickHouseParser extends Parser {
         const args = this.parseFunctionArgs({
           alias: false,
         });
+
         return new OrExpr({
           this: args[0],
           expression: args[1],
@@ -914,6 +933,7 @@ class ClickHouseParser extends Parser {
     };
 
     delete parsers['MATCH'];
+
     return parsers;
   }
 
@@ -925,7 +945,9 @@ class ClickHouseParser extends Parser {
         return (this as ClickHouseParser).parseEngineProperty();
       },
     };
+
     delete parsers['DYNAMIC'];
+
     return parsers;
   }
 
@@ -934,7 +956,9 @@ class ClickHouseParser extends Parser {
     const parsers = {
       ...Parser.NO_PAREN_FUNCTION_PARSERS,
     };
+
     delete parsers['ANY'];
+
     return parsers;
   }
 
@@ -953,7 +977,9 @@ class ClickHouseParser extends Parser {
     const parsers = {
       ...Parser.COLUMN_OPERATORS,
     };
+
     delete parsers[TokenType.PLACEHOLDER];
+
     return parsers;
   }
 
@@ -1051,6 +1077,7 @@ class ClickHouseParser extends Parser {
 
   parseEngineProperty (): EnginePropertyExpr {
     this.match(TokenType.EQ);
+
     return this.expression(EnginePropertyExpr, {
       this: this.parseField({
         anyToken: true,
@@ -1092,10 +1119,12 @@ class ClickHouseParser extends Parser {
 
     if (this.match(TokenType.FROM)) {
       this.retreat(index);
+
       return super.parseExtract() as ExtractExpr;
     }
 
     this.match(TokenType.COMMA);
+
     return this.expression(AnonymousExpr, {
       this: 'extract',
       expressions: [
@@ -1126,6 +1155,7 @@ class ClickHouseParser extends Parser {
     const index = this.index;
 
     const thisNode = this.parseIdVar();
+
     this.match(TokenType.COLON);
 
     const kind =
@@ -1137,12 +1167,14 @@ class ClickHouseParser extends Parser {
 
     if (!kind) {
       this.retreat(index);
+
       return undefined;
     } else if (!this.match(TokenType.R_BRACE)) {
       this.raiseError('Expecting }');
     }
 
     let finalThis = thisNode;
+
     if (thisNode instanceof IdentifierExpr && !thisNode.quoted) {
       finalThis = var_(thisNode.name);
     }
@@ -1192,7 +1224,9 @@ class ClickHouseParser extends Parser {
       isGlobal = false,
     } = options;
     const result = super.parseIn(thisNode);
+
     result.setArgKey('isGlobal', isGlobal);
+
     return result;
   }
 
@@ -1293,6 +1327,7 @@ class ClickHouseParser extends Parser {
     if (kindPre) {
       const kind = this.matchSet(this._constructor.JOIN_KINDS) ? this.prev : undefined;
       const side = this.matchSet(this._constructor.JOIN_SIDES) ? this.prev : undefined;
+
       return {
         method: isGlobal,
         side,
@@ -1321,6 +1356,7 @@ class ClickHouseParser extends Parser {
 
     if (join) {
       const method = join.args.method;
+
       join.setArgKey('method', undefined);
       join.setArgKey('global', method);
 
@@ -1374,6 +1410,7 @@ class ClickHouseParser extends Parser {
       };
 
       let expClass: typeof Expression;
+
       if (parts[1]) {
         expClass = params ? CombinedParameterizedAggExpr : CombinedAggFuncExpr;
       } else {
@@ -1407,7 +1444,9 @@ class ClickHouseParser extends Parser {
 
     if (this.match(TokenType.L_PAREN)) {
       const params = this.parseCsv(() => this.parseLambda());
+
       this.matchRParen(thisNode);
+
       return params;
     }
 
@@ -1455,8 +1494,10 @@ class ClickHouseParser extends Parser {
 
   parseOnProperty (): Expression | undefined {
     const index = this.index;
+
     if (this.matchTextSeq('CLUSTER')) {
       const thisNode = this.parseString() || this.parseIdVar();
+
       if (thisNode) {
         return this.expression(OnClusterExpr, {
           this: thisNode,
@@ -1465,6 +1506,7 @@ class ClickHouseParser extends Parser {
         this.retreat(index);
       }
     }
+
     return undefined;
   }
 
@@ -1494,6 +1536,7 @@ class ClickHouseParser extends Parser {
     }
 
     let expressions: Expression[];
+
     if (this.matchTextSeq('ID')) {
     // Corresponds to the PARTITION ID <string_value> syntax
       expressions = [
@@ -1544,6 +1587,7 @@ class ClickHouseParser extends Parser {
     const {
       explicit = false,
     } = options;
+
     // In clickhouse "SELECT <expr> APPLY(...)" is a query modifier,
     // so "APPLY" shouldn't be parsed as <expr>'s alias
     if (this.matchPair(TokenType.APPLY, TokenType.L_PAREN, {
@@ -1641,11 +1685,13 @@ export class ClickHouseGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -2336,6 +2382,7 @@ export class ClickHouseGenerator extends Generator {
         LevenshteinExpr,
         function (this: Generator, e: LevenshteinExpr) {
           unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
+
           return renameFunc('editDistance').call(this, e);
         },
       ],
@@ -2403,6 +2450,7 @@ export class ClickHouseGenerator extends Generator {
 
     // OFFSET ... FETCH syntax requires a "ROW" or "ROWS" keyword
     const parent = expression.parent;
+
     if (
       parent instanceof SelectExpr
       && parent.args.limit instanceof FetchExpr
@@ -2465,6 +2513,7 @@ export class ClickHouseGenerator extends Generator {
 
   jsonPathSubscriptSql (expression: JsonPathSubscriptExpr): string {
     const thisNode = this.jsonPathPart(expression.args.this);
+
     return isInt(thisNode) ? (parseInt(thisNode) + 1).toString() : thisNode;
   }
 
@@ -2517,6 +2566,7 @@ export class ClickHouseGenerator extends Generator {
       '\'(?i)\'',
       expression.args.expression,
     ]);
+
     return this.func('match', [
       expression.args.this,
       regex,
@@ -2561,6 +2611,7 @@ export class ClickHouseGenerator extends Generator {
     if (expression.args.scalar) {
       const thisSql = this.sql(expression, 'this');
       const aliasSql = this.sql(expression, 'alias');
+
       return `${thisSql} AS ${aliasSql}`;
     }
 
@@ -2604,6 +2655,7 @@ export class ClickHouseGenerator extends Generator {
       const thisProperties = postNameLocation.map((prop) => this.sql(prop)).join(' ');
 
       let thisSchema = expression.args.this instanceof SchemaExpr ? this.schemaColumnsSql(expression.args.this) : undefined;
+
       thisSchema = thisSchema ? `${this.sep()}${thisSchema}` : '';
 
       return `${thisName}${this.sep()}${thisProperties}${thisSchema}`;
@@ -2632,6 +2684,7 @@ export class ClickHouseGenerator extends Generator {
 
   prewhereSql (expression: PreWhereExpr): string {
     const thisSql = this.indent(this.sql(expression, 'this'));
+
     return `${this.seg('PREWHERE')}${this.sep()}${thisSql}`;
   }
 
@@ -2718,6 +2771,7 @@ export class ClickHouseGenerator extends Generator {
 
     if (alias?.args.columns && expressions && 0 < expressions.length) {
       const rowValues = expressions[0].args.expressions;
+
       valuesAsTable = rowValues?.some((value) => value instanceof TupleExpr) ?? false;
     } else {
       valuesAsTable = true;
@@ -2799,11 +2853,13 @@ export class ClickHouse extends Dialect {
     // Split each column definition into the column name e.g:
     // 'person String, place String' -> ['person', 'place']
       const structureColdefs = structure.name.split(',').map((coldef) => coldef.trim());
+
       columnAliases = structureColdefs.map((coldef) =>
         toIdentifier(coldef.split(' ')[0]));
     } else if (values?.[0] instanceof Expression) {
     // Default column aliases in CH are "c1", "c2", etc
       const rowWidth = values[0].args.expressions?.length;
+
       columnAliases = Array.from({
         length: rowWidth ?? 0,
       }, (_, i) =>

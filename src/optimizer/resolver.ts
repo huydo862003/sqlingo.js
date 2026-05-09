@@ -77,6 +77,7 @@ export class Resolver {
     const {
       inferSchema = true,
     } = options;
+
     this.scope = scope;
     this.schema = schema;
     this.dialect = schema.dialect || new Dialect();
@@ -97,9 +98,11 @@ export class Resolver {
 
     if (!tableName && typeof column !== 'string') {
       const joinContext = this.getColumnJoinContext(column);
+
       if (joinContext) {
         try {
           const availableSources = this.getAvailableSourceColumns(joinContext);
+
           tableName = this.getTableNameFromSources(columnName, availableSources);
         } catch (e) {
           if (!(e instanceof OptimizeError)) throw e;
@@ -111,6 +114,7 @@ export class Resolver {
     if (!tableName && this.inferSchema) {
       const allSourceColumns = this.getAllSourceColumns();
       const sourcesWithoutSchema: string[] = [];
+
       for (const [
         source,
         columns,
@@ -129,6 +133,7 @@ export class Resolver {
     }
 
     const selectedSource = this.scope.selectedSources[tableName];
+
     if (!selectedSource) {
       return toIdentifier(tableName);
     }
@@ -136,6 +141,7 @@ export class Resolver {
     const [node] = selectedSource;
 
     let currentNode: Expression | undefined = node;
+
     if (currentNode instanceof QueryExpr) {
       while (currentNode && currentNode.alias !== tableName) {
         currentNode = currentNode.parent;
@@ -144,6 +150,7 @@ export class Resolver {
 
     if (currentNode) {
       const nodeAlias = currentNode.getArgKey('alias');
+
       if (nodeAlias instanceof Expression && (nodeAlias.args.this instanceof IdentifierExpr || typeof nodeAlias.args.this === 'string')) {
         return toIdentifier(nodeAlias.args.this);
       }
@@ -164,6 +171,7 @@ export class Resolver {
         }
       }
     }
+
     return this.allColumnsCache;
   }
 
@@ -180,6 +188,7 @@ export class Resolver {
 
     if (expression instanceof SubqueryExpr) {
       const subqueryThis = expression.args.this;
+
       if (subqueryThis instanceof SetOperationExpr) {
         return this.getSourceColumnsFromSetOp(subqueryThis);
       }
@@ -191,6 +200,7 @@ export class Resolver {
 
     const setOp = expression;
     const onColumnList = setOp.args.on;
+
     if (onColumnList) {
       return onColumnList.map((col) => col.name);
     }
@@ -216,10 +226,12 @@ export class Resolver {
           ...left,
           ...right,
         ];
+
         return Array.from(new Set(combined));
       } else if (kind === SetOperationExprKind.INNER) {
         const leftSet = new Set(left);
         const rightSet = new Set(right);
+
         return Array.from(leftSet).filter((col) => rightSet.has(col));
       }
     }
@@ -240,11 +252,13 @@ export class Resolver {
     const {
       onlyVisible = false,
     } = options;
+
     if (this.getSourceColumnsCache.has(name, onlyVisible)) {
       return this.getSourceColumnsCache.get(name, onlyVisible) ?? [];
     }
 
     const source = this.scope.sources.get(name);
+
     if (!source) {
       throw new OptimizeError(`Unknown table: ${name}`);
     }
@@ -257,6 +271,7 @@ export class Resolver {
       }) || [];
     } else if (source instanceof Scope) {
       const sourceExpr = source.expression;
+
       if (sourceExpr instanceof ValuesExpr || sourceExpr instanceof UnnestExpr) {
         columns = sourceExpr.namedSelects;
 
@@ -266,10 +281,13 @@ export class Resolver {
           if (!unnest.type || isType(unnest.type, DataTypeExprKind.UNKNOWN)) {
             const unnestExpressions = unnest.args.expressions;
             const unnestExpr = seqGet(unnestExpressions ?? [], 0);
+
             if (unnestExpr instanceof ColumnExpr && this.scope.parent) {
               const colType = this.getUnnestColumnType(unnestExpr);
+
               if (colType?.isType(DataTypeExprKind.ARRAY)) {
                 const elementTypes = colType.args.expressions;
+
                 if (elementTypes && 0 < elementTypes.length) {
                   unnest.type = elementTypes[0].copy();
                 } else {
@@ -291,13 +309,16 @@ export class Resolver {
         columns = this.getSourceColumnsFromSetOp(sourceExpr);
       } else {
         const select = seqGet(sourceExpr.args.expressions ?? [], 0);
+
         if (select instanceof QueryTransformExpr) {
           const schema = select.args.schema;
+
           columns = schema
             ? schema.args.expressions?.map((c) => {
               if (c instanceof Expression) {
                 return c.name;
               }
+
               return String(c);
             }) ?? []
             : [
@@ -316,6 +337,7 @@ export class Resolver {
     ];
 
     let columnAliases: string[];
+
     if (node instanceof Scope) {
       columnAliases = node.expression.aliasColumnNames;
     } else if (node instanceof Expression) {
@@ -326,15 +348,18 @@ export class Resolver {
 
     if (columnAliases.length) {
       const newColumns: string[] = [];
+
       for (let i = 0; i < Math.max(columns.length, columnAliases.length); i++) {
         const alias = seqGet(columnAliases, i);
         const colName = seqGet(columns, i);
+
         newColumns.push(alias || colName || '');
       }
       columns = newColumns;
     }
 
     this.getSourceColumnsCache.set(name, onlyVisible, columns);
+
     return columns;
   }
 
@@ -345,10 +370,12 @@ export class Resolver {
         ...this.scope.selectedSources,
         ...Object.fromEntries(this.scope.lateralSources.entries()),
       };
+
       for (const sourceName of Object.keys(allSources)) {
         this.sourceColumns.set(sourceName, this.getSourceColumns(sourceName));
       }
     }
+
     return this.sourceColumns;
   }
 
@@ -394,12 +421,14 @@ export class Resolver {
 
     const availableSources = new Map<string, string[]>();
     const fromName = from instanceof Expression ? from.aliasOrName : from;
+
     if (fromName) {
       availableSources.set(fromName, this.getSourceColumns(fromName));
     }
 
     for (const join of joins.slice(0, joins.indexOf(joinAncestor) + 1)) {
       const joinName = join.aliasOrName;
+
       if (joinName) {
         availableSources.set(joinName, this.getSourceColumns(joinName));
       }
@@ -424,6 +453,7 @@ export class Resolver {
     }
 
     const unnestOriginalAliases = new Map<string, string>();
+
     if (this.dialect._constructor.UNNEST_COLUMN_ONLY) {
       for (const [
         sourceName,
@@ -431,6 +461,7 @@ export class Resolver {
       ] of this.scope.sources) {
         if (source instanceof Scope && source.expression instanceof UnnestExpr) {
           const aliasArg = source.expression.args.alias;
+
           if (isInstanceOf(aliasArg, TableAliasExpr) && aliasArg.columns.length) {
             unnestOriginalAliases.set(aliasArg.columns[0].name, sourceName);
           }
@@ -439,6 +470,7 @@ export class Resolver {
     }
 
     const unambiguousColumns = new Map<string, string>();
+
     for (const col of firstColumns) {
       unambiguousColumns.set(col, firstTable);
     }
@@ -451,10 +483,12 @@ export class Resolver {
     ] of sourceColumnsPairs.slice(1)) {
       const unique = new Set(columns);
       const ambiguous = new Set([...allColumns].filter((c) => unique.has(c)));
+
       for (const col of columns) allColumns.add(col);
 
       for (const column of ambiguous) {
         const unnestAlias = unnestOriginalAliases.get(column);
+
         if (unnestAlias !== undefined) {
           unambiguousColumns.set(column, unnestAlias);
           continue;
@@ -474,11 +508,13 @@ export class Resolver {
 
   private getUnnestColumnType (column: ColumnExpr): DataTypeExpr | undefined {
     const scope = this.scope.parent;
+
     if (!scope) {
       return undefined;
     }
 
     let tableName: string | undefined;
+
     if (column.table) {
       tableName = column.table;
     } else {
@@ -486,6 +522,7 @@ export class Resolver {
         inferSchema: this.inferSchema,
       });
       const tableIdentifier = parentResolver.getTable(column);
+
       if (!tableIdentifier) {
         return undefined;
       }
@@ -493,14 +530,17 @@ export class Resolver {
     }
 
     const source = scope.sources.get(tableName);
+
     return source ? this.getColumnTypeFromScope(source, column) : undefined;
   }
 
   private getColumnTypeFromScope (source: Scope | TableExpr, column: ColumnExpr): DataTypeExpr | undefined {
     if (source instanceof TableExpr) {
       const colType = this.schema.getColumnType?.(source, column);
+
       if (colType) {
         const colTypeThis = typeof colType.args.this === 'string' ? colType.args.this as DataTypeExprKind : DataTypeExprKind.UNKNOWN;
+
         if (colTypeThis !== DataTypeExprKind.UNKNOWN) {
           return colType;
         }
@@ -510,8 +550,10 @@ export class Resolver {
         , nestedSource,
       ] of source.sources) {
         const colType = this.getColumnTypeFromScope(nestedSource, column);
+
         if (colType) {
           const colTypeThis = typeof colType.args.this === 'string' ? colType.args.this as DataTypeExprKind : DataTypeExprKind.UNKNOWN;
+
           if (colTypeThis !== DataTypeExprKind.UNKNOWN) {
             return colType;
           }

@@ -106,6 +106,7 @@ function unnest (
   }
 
   const predicate = selectExpr.findAncestor(ConditionExpr);
+
   if (
     !predicate
     // Do not unnest subqueries inside table-valued functions such as
@@ -123,6 +124,7 @@ function unnest (
   }
 
   let selectToUse = selectExpr;
+
   if (selectExpr instanceof SetOperationExpr) {
     selectToUse = select(selectExpr.selects).from(selectExpr.subquery(nextAliasName()), {
       copy: false,
@@ -160,6 +162,7 @@ function unnest (
 
     let joinType = JoinExprKind.CROSS;
     let onClause: Expression | undefined;
+
     if (predicate instanceof ExistsExpr) {
       // If a subquery returns no rows, cross-joining against it incorrectly eliminates all rows
       // from the parent query. Therefore, we use a LEFT JOIN that always matches (ON TRUE), then
@@ -188,6 +191,7 @@ function unnest (
   }
 
   let predicateToUse: InExpr | AnyExpr | EqExpr = predicate;
+
   if (predicate instanceof AnyExpr) {
     const eqPredicate = predicate.findAncestor(EqExpr);
 
@@ -201,6 +205,7 @@ function unnest (
   const columnExpr = otherOperand(predicateToUse);
   const value = selectToUse.selects[0];
   const valueThis = value.args.this;
+
   if (!(valueThis instanceof Expression)) {
     return;
   }
@@ -225,6 +230,7 @@ function unnest (
   if (group) {
     // Simulate set comparison in sqlglot (Python: {value.this} != set(group.expressions))
     const groupExprSqls = new Set((group.args.expressions ?? []).map((e) => (e instanceof Expression ? e.sql() : String(e))));
+
     if (groupExprSqls.size !== 1 || !groupExprSqls.has((value.args.this as Expression).sql())) {
       selectToUse = select(
         alias(column({
@@ -327,6 +333,7 @@ function decorrelate (
 
   const value = select.selects[0];
   const valueThis = value.args.this;
+
   if (!(valueThis instanceof Expression)) return;
 
   // Use SQL string as key for structural equality (mirrors Python's expression __eq__ / __hash__)
@@ -341,6 +348,7 @@ function decorrelate (
     key, , predicate,
   ] of keys) {
     const keySql = key.sql();
+
     // if we filter on the value of the subquery, it needs to be unique
     if (keySql === valueThis.sql()) {
       keyAliasesBySql.set(keySql, value.alias);
@@ -368,6 +376,7 @@ function decorrelate (
   // if the value of the subquery is not an agg or a key, we need to collect it into an array
   // so that it can be grouped. For subquery projections, we use a MAX aggregation instead
   const aggFunc = isSubqueryProjection ? MaxExpr : ArrayAggExpr;
+
   if (!value.find(AggFuncExpr) && !exprInGroupBy(valueThis)) {
     select.select(
       alias(new aggFunc({
@@ -393,6 +402,7 @@ function decorrelate (
     keyAlias,
   ] of keyAliasesBySql) {
     const key = keyByAliasSql.get(keySql)!;
+
     if (groupBySqls.has(keySql)) {
       // add all keys to the projections of the subquery
       // so that we can use it as a join key
@@ -433,6 +443,7 @@ function decorrelate (
         col: '_x',
       }),
     });
+
     if (parentPredicate.parent) parentPredicate = replace(parentPredicate.parent, `ARRAY_ALL(${aliasExpr}, _x -> ${predicateExpr})`);
   } else if (parentPredicate instanceof AnyExpr) {
     if (!opType || !(opType.prototype instanceof BinaryExpr || opType === BinaryExpr)) return;
@@ -441,6 +452,7 @@ function decorrelate (
         this: other,
         expression: aliasExpr,
       });
+
       if (parentPredicate.parent) parentPredicate = replace(parentPredicate.parent, predicateExpr);
     } else {
       const predicateExpr = new opType({
@@ -449,6 +461,7 @@ function decorrelate (
           col: '_x',
         }),
       });
+
       parentPredicate = replace(parentPredicate, `ARRAY_ANY(${aliasExpr}, _x -> ${predicateExpr})`);
     }
   } else if (parentPredicate instanceof InExpr) {
@@ -473,6 +486,7 @@ function decorrelate (
         } else if (node instanceof AggFuncExpr) {
           return null_();
         }
+
         return node;
       };
 
@@ -492,6 +506,7 @@ function decorrelate (
   ] of keys) {
     predicate.replace(true_());
     const keyAlias = keyAliasesBySql.get(key.sql());
+
     if (!keyAlias) continue;
     const nested = column({
       col: keyAlias,

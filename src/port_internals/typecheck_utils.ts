@@ -67,6 +67,7 @@ export function assertIsInstanceOf<Cs extends readonly TypeChecker[]> (
 ): asserts value is InferUnion<Cs> {
   if (!types.some((t) => checkOne(value, t))) {
     const expected = types.map(checkerName).join(' | ');
+
     throw new TypeError(`Expected ${expected}, got ${typeof value}`);
   }
 }
@@ -95,8 +96,10 @@ export function filterInstanceOf<Cs extends readonly TypeChecker[]> (
   ...types: Cs
 ): InferUnion<Cs>[] {
   const result: InferUnion<Cs>[] = [];
+
   for (const v of values) {
     if (types.some((t) => checkOne(v, t))) result.push(v as InferUnion<Cs>);
   }
+
   return result;
 }

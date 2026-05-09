@@ -209,6 +209,7 @@ export function initcapSql (this: Generator, expression: InitcapExpr): string {
 
   const regex = '(\\w)(\\w*)';
   const lambda = 'x -> UPPER(x[1]) || LOWER(x[2])';
+
   return `REGEXP_REPLACE(${this.sql(expression, 'this')}, '${regex}', ${lambda})`;
 }
 
@@ -237,6 +238,7 @@ export function schemaSql (this: Generator, expression: SchemaExpr): string {
     // Columns in the ARRAY[] string literals should not be quoted identifiers
     expression.transform((n) => {
       if (n instanceof IdentifierExpr) return n.name;
+
       return n;
     }, {
       copy: false,
@@ -261,10 +263,12 @@ export function schemaSql (this: Generator, expression: SchemaExpr): string {
   // Pre-process column definitions if they are nested in other properties
   if (expression.parent) {
     const siblings = expression.parent.findAll(SchemaExpr);
+
     for (const schema of siblings) {
       if (schema === expression) continue;
 
       const columnDefs = [...schema.findAll(ColumnDefExpr)];
+
       if (0 < columnDefs.length && schema.parent instanceof PropertyExpr) {
         expression.args.expressions?.push(...columnDefs);
       }
@@ -279,6 +283,7 @@ export function schemaSql (this: Generator, expression: SchemaExpr): string {
  */
 export function quantileSql (this: Generator, expression: QuantileExpr): string {
   this.unsupported('Presto does not support exact quantiles; using APPROX_PERCENTILE.');
+
   return this.func('APPROX_PERCENTILE', [
     expression.args.this,
     expression.args.quantile,
@@ -307,6 +312,7 @@ export function tsOrDsToDateSql (this: Generator, expression: TsOrDsToDateExpr):
 
   if (timeFormat && timeFormat !== Presto.TIME_FORMAT && timeFormat !== Presto.DATE_FORMAT) {
     const parsedTime = strToTimeSql.call(this, expression); // from previous step
+
     return this.sql(new CastExpr({
       this: parsedTime,
       to: DataTypeExprKind.DATE.toUpperCase(),
@@ -328,6 +334,7 @@ export function tsOrDsToDateSql (this: Generator, expression: TsOrDsToDateExpr):
 export function tsOrDsAddSql (this: Generator, expression: TsOrDsAddExpr): string {
   const standardized = tsOrDsAddCast(expression);
   const unit = unitToStr(standardized);
+
   return this.func('DATE_ADD', [
     unit,
     standardized.args.expression,
@@ -345,6 +352,7 @@ export function tsOrDsDiffSql (this: Generator, expression: TsOrDsDiffExpr): str
     to: DataTypeExprKind.TIMESTAMP.toUpperCase(),
   });
   const unit = unitToStr(expression);
+
   return this.func('DATE_DIFF', [
     unit,
     exprTs,
@@ -371,6 +379,7 @@ export function buildApproxPercentile (args: Expression[]): ApproxQuantileExpr {
       accuracy: seqGet(args, 2),
     });
   }
+
   return ApproxQuantileExpr.fromArgList(args);
 }
 
@@ -403,6 +412,7 @@ export function firstLastSql (this: Generator, expression: FuncExpr): string {
   if (expression.findAncestor<MatchRecognizeExpr | SelectExpr>(MatchRecognizeExpr, SelectExpr)) {
     return this.functionFallbackSql(expression);
   }
+
   return renameFunc('ARBITRARY').call(this, expression);
 }
 
@@ -436,6 +446,7 @@ function toInt (this: Generator, expression: Expression): Expression {
       to: DataTypeExprKind.BIGINT.toUpperCase(),
     });
   }
+
   return expression;
 }
 
@@ -444,9 +455,11 @@ function toInt (this: Generator, expression: Expression): Expression {
  */
 export function buildToChar (args: Expression[]): TimeToStrExpr {
   const fmt = seqGet(args, 1);
+
   if (fmt instanceof LiteralExpr) {
     fmt.setArgKey('this', (fmt.args.this ?? '').toUpperCase());
   }
+
   return buildFormattedTime(TimeToStrExpr, {
     dialect: Dialects.TERADATA,
   })(args);
@@ -461,6 +474,7 @@ export function dateDeltaSql (name: string, options: {
   const {
     negateInterval = false,
   } = options;
+
   return function (this: Generator, expression: DateAddOrSub): string {
     const interval = expression.args.expression
       ? toInt.call(this, expression.args.expression)
@@ -502,6 +516,7 @@ export function explodeToUnnestSqlPresto (this: Generator, expression: LateralEx
     ) {
       // Presto unnesting a ROW produces N columns. We fix the alias to match the internal struct fields
       const structFields = explodedType.args.expressions[0].args.expressions;
+
       alias.setArgKey('columns', structFields?.flatMap((c) => c instanceof Expression && c.args.this instanceof Expression
         ? c.args.this.copy()
         : []));
@@ -596,6 +611,7 @@ class PrestoTokenizer extends Tokenizer {
         ]);
       }
     }
+
     return result;
   }
 
@@ -765,8 +781,10 @@ class PrestoParser extends Parser {
     const parsers = {
       ...Parser.FUNCTION_PARSERS,
     };
+
     // Presto uses its own TRIM logic, so we remove the base SQL parser
     delete parsers['TRIM'];
+
     return parsers;
   }
 
@@ -784,11 +802,13 @@ class PrestoGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -1149,6 +1169,7 @@ class PrestoGenerator extends Generator {
         LevenshteinExpr,
         function (this: Generator, e: Expression) {
           unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
+
           return renameFunc('LEVENSHTEIN_DISTANCE').call(this, e);
         },
       ],
@@ -1452,6 +1473,7 @@ class PrestoGenerator extends Generator {
     }
 
     let scale: number | undefined = undefined;
+
     if (datePart === 'EPOCH_MILLISECOND') scale = 10 ** 3;
     else if (datePart === 'EPOCH_MICROSECOND') scale = 10 ** 6;
     else if (datePart === 'EPOCH_NANOSECOND') scale = 10 ** 9;
@@ -1495,6 +1517,7 @@ class PrestoGenerator extends Generator {
       const castExpr = new CastExpr({
         to: DataTypeExprKind.JSON.toUpperCase(),
       });
+
       thisArg?.replace(castExpr);
       castExpr.setArgKey('this', thisArg);
     }
@@ -1576,6 +1599,7 @@ class PrestoGenerator extends Generator {
       this.func('TRY', [parseWithoutTz]),
       parseWithTz,
     ]);
+
     return this.func('TO_UNIXTIME', [coalesced]);
   }
 
@@ -1601,6 +1625,7 @@ class PrestoGenerator extends Generator {
         ],
       );
     }
+
     return super.bracketSql(expression);
   }
 
@@ -1629,6 +1654,7 @@ class PrestoGenerator extends Generator {
               this: e.type as DataTypeExprKind,
             })
             : e.type;
+
           schema.push(`${this.sql(e, 'this')} ${this.sql(eType)}`);
         }
         values.push(this.sql(e, 'expression'));
@@ -1643,6 +1669,7 @@ class PrestoGenerator extends Generator {
       if (unknownType) {
         this.unsupported('Cannot convert untyped key-value definitions (try annotate_types).');
       }
+
       return this.func('ROW', values);
     }
 
@@ -1651,25 +1678,30 @@ class PrestoGenerator extends Generator {
 
   public intervalSql (expression: IntervalExpr): string {
     const unit = expression.text('unit').toUpperCase();
+
     if (expression.args.this && unit.startsWith('WEEK')) {
       // Presto interval doesn't support weeks directly in some versions; convert to days
       return `(${expression.args.this.name} * INTERVAL '7' DAY)`;
     }
+
     return super.intervalSql(expression);
   }
 
   public transactionSql (expression: TransactionExpr): string {
     const modes = expression.args.modes;
     const modesStr = modes ? ` ${modes.join(', ')}` : '';
+
     return `START TRANSACTION${modesStr}`;
   }
 
   public createSql (expression: CreateExpr): string {
     // Presto CREATE VIEW does not support explicit column lists in the header
     const createThis = expression.args.this instanceof Expression ? expression.args.this : undefined;
+
     if (expression.args.kind === CreateExprKind.VIEW && createThis?.args.expressions) {
       createThis.setArgKey('expressions', undefined);
     }
+
     return super.createSql(expression);
   }
 
@@ -1678,16 +1710,19 @@ class PrestoGenerator extends Generator {
    */
   public deleteSql (expression: DeleteExpr): string {
     const tables = expression.args.tables || [expression.args.this];
+
     if (1 < tables.length) {
       return super.deleteSql(expression);
     }
 
     const table = tables[0];
+
     expression.setArgKey('this', table);
     expression.setArgKey('tables', undefined);
 
     if (table instanceof TableExpr) {
       const tableAlias = table.args.alias;
+
       if (tableAlias) {
         tableAlias.pop(); // Remove alias as Presto doesn't support it in DELETE
         expression = expression.transform(unqualifyColumns) as DeleteExpr;
@@ -1718,6 +1753,7 @@ class PrestoGenerator extends Generator {
         continue;
       }
       let key = pathKey.args.this?.toString();
+
       if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key ?? '')) {
         key = `"${key}"`;
       }

@@ -1,10 +1,10 @@
 <template>
   <div class="w-full">
-    <div class="flex flex-col gap-sm">
-      <div class="flex flex-col rounded-md border gui-neutral-border overflow-hidden">
-        <div class="flex items-center justify-between p-sm border-b gui-neutral-border gui-neutral-bg-subtle">
-          <div class="flex items-center gap-sm">
-            <span class="text-sm font-medium uppercase tracking-wide gui-neutral-fg-muted">SQL</span>
+    <div class="gap-sm flex flex-col">
+      <div class="gui-neutral-border flex flex-col overflow-hidden rounded-md border">
+        <div class="p-sm gui-neutral-border gui-neutral-bg-subtle flex items-center justify-between border-b">
+          <div class="gap-sm flex items-center">
+            <span class="gui-neutral-fg-muted text-sm font-medium tracking-wide uppercase">SQL</span>
             <GSelect
               v-model="dialect"
               :size="GSelectSize.Xs"
@@ -29,9 +29,9 @@
         <MonacoEditor v-model="sqlInput" />
       </div>
 
-      <div class="flex flex-col rounded-md border gui-neutral-border overflow-hidden">
-        <div class="flex items-center justify-between p-sm border-b gui-neutral-border gui-neutral-bg-subtle">
-          <span class="text-sm font-medium uppercase tracking-wide gui-neutral-fg-muted">DBML</span>
+      <div class="gui-neutral-border flex flex-col overflow-hidden rounded-md border">
+        <div class="p-sm gui-neutral-border gui-neutral-bg-subtle flex items-center justify-between border-b">
+          <span class="gui-neutral-fg-muted text-sm font-medium tracking-wide uppercase">DBML</span>
           <GButton
             :prominence="GButtonProminence.Secondary"
             :size="GButtonSize.Xs"
@@ -47,10 +47,10 @@
             </span>
           </GButton>
         </div>
-        <div :class="error ? 'outline-1 outline-(--gui-danger-border) rounded-md' : ''">
+        <div :class="error ? 'rounded-md outline-1 outline-(--gui-danger-border)' : ''">
           <MonacoEditor
             :model-value="dbmlOutput || error"
-            :read-only="true"
+            read-only
             :language="dbmlOutput ? 'dbml' : 'plaintext'"
           />
         </div>
@@ -96,18 +96,16 @@ const dbmlOutput = ref('');
 const error = ref('');
 const copied = ref(false);
 
-function stripAnsi (text: string): string {
-  return text.replace(/\x1b\[[0-9;]*m/g, '');
-}
-
 function convert () {
   if (!sqlInput.value.trim()) {
     dbmlOutput.value = '';
     error.value = '';
+
     return;
   }
   try {
     const result = sqlToDbml(sqlInput.value, dialect.value || undefined);
+
     dbmlOutput.value = result.dbml || '';
     error.value = result.dbml ? '' : 'No CREATE TABLE statements found.';
   } catch (error_) {
@@ -123,6 +121,10 @@ function copyDbml () {
       copied.value = false;
     }, 2000);
   });
+}
+
+function stripAnsi (text: string): string {
+  return text.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
 watch([

@@ -101,6 +101,7 @@ function buildDateTrunc (args: Expression[]): TimestampTruncExpr {
       return false;
     }
     const text = e.args.this;
+
     // Doris units typically don't contain digits (e.g., 'year', 'month')
     return !/\d/.test(text ?? '');
   };
@@ -143,9 +144,11 @@ class DorisParser extends MySQL.Parser {
     const noParenFunctions = {
       ...MySQL.Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.CURRENT_DATE];
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -169,7 +172,9 @@ class DorisParser extends MySQL.Parser {
     const parsers: Partial<Record<string, (this: Parser) => Expression | undefined>> = {
       ...MySQL.Parser.FUNCTION_PARSERS,
     };
+
     delete parsers['GROUP_CONCAT'];
+
     return parsers;
   }
 
@@ -209,6 +214,7 @@ class DorisParser extends MySQL.Parser {
     this.matchLParen();
 
     let createExpressions: Expression[] | undefined = undefined;
+
     if (this.matchTextSeq('FROM', {
       advance: false,
     })) {
@@ -226,8 +232,10 @@ class DorisParser extends MySQL.Parser {
   parsePartitioningGranularityDynamic (): PartitionByRangePropertyDynamicExpr {
     this.matchTextSeq('FROM');
     const start = this.parseWrapped(() => this.parseString());
+
     this.matchTextSeq('TO');
     const end = this.parseWrapped(() => this.parseString());
+
     this.matchTextSeq('INTERVAL');
     const number = this.parseNumber();
     const unit = this.parseVar({
@@ -318,11 +326,13 @@ class DorisGenerator extends MySQL.Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -1087,9 +1097,11 @@ class DorisGenerator extends MySQL.Generator {
     const every = expression.args.every;
 
     let interval = '';
+
     if (every) {
       const number = this.sql(every, 'this');
       const unit = this.sql(every, 'unit');
+
       interval = `INTERVAL ${number} ${unit}`;
     }
 
@@ -1098,11 +1110,13 @@ class DorisGenerator extends MySQL.Generator {
 
   partitionedByPropertySql (expression: PartitionedByPropertyExpr): string {
     const thisNode = expression.args.this;
+
     if (thisNode instanceof SchemaExpr) {
       return `PARTITION BY (${this.expressions(thisNode, {
         flat: true,
       })})`;
     }
+
     return `PARTITION BY (${this.sql(thisNode)})`;
   }
 

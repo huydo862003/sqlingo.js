@@ -130,6 +130,7 @@ export class OracleTokenizer extends Tokenizer {
   static get UNICODE_STRINGS (): TokenPair[] {
     const quotes = Tokenizer.QUOTES as string[];
     const results: [string, string][] = [];
+
     for (const q of quotes) {
       for (const prefix of [
         'U',
@@ -141,6 +142,7 @@ export class OracleTokenizer extends Tokenizer {
         ]);
       }
     }
+
     return results;
   }
 
@@ -186,7 +188,9 @@ export class OracleParser extends Parser {
       [TokenType.SYSTIMESTAMP]: SystimestampExpr,
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
+
     return noParenFunctions;
   }
 
@@ -263,6 +267,7 @@ export class OracleParser extends Parser {
         // Oracle CONVERT(expr, dest_charset[, source_charset]) is different from SQL CONVERT
         // Parse as regular function arguments instead of using parseConvert
         const args = this.parseCsv(() => this.parseBitwise());
+
         return ConvertToCharsetExpr.fromArgList(args);
       },
       JSON_ARRAY: function (this: Parser) {
@@ -379,10 +384,12 @@ export class OracleParser extends Parser {
     ])) {
       let lower: Expression | undefined;
       let upper: Expression | undefined;
+
       if (this.match(TokenType.L_PAREN, {
         advance: false,
       })) {
         const lowerUpper = this.parseWrappedCsv(() => this.parseBitwise());
+
         if (lowerUpper.length === 2) {
           lower = lowerUpper[0];
           upper = lowerUpper[1];
@@ -396,6 +403,7 @@ export class OracleParser extends Parser {
     }
 
     this.retreat(this.index - 1);
+
     return undefined;
   }
 
@@ -434,7 +442,9 @@ export class OracleParser extends Parser {
 
   public parseJsonExists (): JsonExistsExpr {
     const thisExpr = this.parseFormatJson(this.parseBitwise());
+
     this.match(TokenType.COMMA);
+
     return this.expression(
       JsonExistsExpr,
       {
@@ -449,6 +459,7 @@ export class OracleParser extends Parser {
 
   public parseInto (): IntoExpr | undefined {
     const bulkCollect = this.match(TokenType.BULK_COLLECT_INTO);
+
     if (!bulkCollect && !this.match(TokenType.INTO)) {
       return undefined;
     }
@@ -456,9 +467,11 @@ export class OracleParser extends Parser {
     const index = this.index;
 
     const expressions = this.parseExpressions();
+
     if (expressions.length === 1) {
       this.retreat(index);
       this.match(TokenType.TABLE);
+
       return this.expression(IntoExpr, {
         this: this.parseTable({
           schema: true,
@@ -479,13 +492,16 @@ export class OracleParser extends Parser {
     }
 
     const thisText = this.curr.text;
+
     this.advance(2);
     const args = this.parseHintArgs();
     const expr = this.expression(AnonymousExpr, {
       this: thisText,
       expressions: args,
     });
+
     this.matchRParen(expr);
+
     return expr;
   }
 
@@ -514,11 +530,13 @@ export class OracleParser extends Parser {
 
     const index = this.index;
     const intervalSpan = this.parseIntervalSpan(result);
+
     if (intervalSpan.args.unit instanceof IntervalSpanExpr) {
       return intervalSpan;
     }
 
     this.retreat(index);
+
     return result;
   }
 
@@ -531,6 +549,7 @@ export class OracleParser extends Parser {
       const aliasName = this.parseIdVar({
         anyToken: false,
       });
+
       if (aliasName instanceof IdentifierExpr) {
         thisExpr.setArgKey('alias', new TableAliasExpr({
           this: aliasName,
@@ -560,11 +579,13 @@ export class OracleGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -591,6 +612,7 @@ export class OracleGenerator extends Generator {
   @cache
   static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map(Generator.TYPE_MAPPING);
+
     mapping.set(DataTypeExprKind.TINYINT, 'SMALLINT');
     mapping.set(DataTypeExprKind.SMALLINT, 'SMALLINT');
     mapping.set(DataTypeExprKind.INT, 'INT');
@@ -608,6 +630,7 @@ export class OracleGenerator extends Generator {
     mapping.set(DataTypeExprKind.VARBINARY, 'BLOB');
     mapping.set(DataTypeExprKind.ROWVERSION, 'BLOB');
     mapping.delete(DataTypeExprKind.BLOB);
+
     return mapping;
   }
 
@@ -616,6 +639,7 @@ export class OracleGenerator extends Generator {
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
 
     const m = new Map<typeof Expression, (this: Generator, e: any) => string>(Generator.TRANSFORMS);
+
     m.set(DateStrToDateExpr, function (this: Generator, e: DateStrToDateExpr) {
       return this.func('TO_DATE', [
         e.args.this,
@@ -694,13 +718,16 @@ export class OracleGenerator extends Generator {
     m.set(UtcTimestampExpr, renameFunc('UTC_TIMESTAMP'));
     m.set(UtcTimeExpr, renameFunc('UTC_TIME'));
     m.set(SystimestampExpr, () => 'SYSTIMESTAMP');
+
     return m;
   }
 
   @cache
   static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     const m = new Map(Generator.PROPERTIES_LOCATION);
+
     m.set(VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED);
+
     return m;
   }
 
@@ -710,6 +737,7 @@ export class OracleGenerator extends Generator {
     }
 
     const thisExpr = expression.args.this;
+
     return thisExpr
       ? this.func('CURRENT_TIMESTAMP', [thisExpr])
       : 'CURRENT_TIMESTAMP';
@@ -726,6 +754,7 @@ export class OracleGenerator extends Generator {
   public queryOptionSql (expression: QueryOptionExpr): string {
     const option = this.sql(expression, 'this');
     let value = this.sql(expression, 'expression');
+
     value = value ? ` CONSTRAINT ${value}` : '';
 
     return `${option}${value}`;
@@ -733,11 +762,13 @@ export class OracleGenerator extends Generator {
 
   public coalesceSql (expression: CoalesceExpr): string {
     const funcName = expression.args.isNvl ? 'NVL' : 'COALESCE';
+
     return renameFunc(funcName).call(this, expression);
   }
 
   public intoSql (expression: IntoExpr): string {
     const into = !expression.args.bulkCollect ? 'INTO' : 'BULK COLLECT INTO';
+
     if (expression.args.this) {
       return `${this.seg(into)} ${this.sql(expression, 'this')}`;
     }
@@ -753,6 +784,7 @@ export class OracleGenerator extends Generator {
         const formattedArgs = this.formatArgs(e.args.expressions || [], {
           sep: ' ',
         });
+
         expressions.push(`${this.sql(e, 'this')}(${formattedArgs})`);
       } else {
         expressions.push(this.sql(e));
@@ -780,10 +812,12 @@ export class OracleGenerator extends Generator {
       sep = ' ',
     } = options;
     const paramConstraint = expression.find(InOutColumnConstraintExpr);
+
     if (paramConstraint) {
       sep = ` ${this.sql(paramConstraint)} `;
       paramConstraint.parent?.pop();
     }
+
     return super.columnDefSql(expression, {
       sep,
     });

@@ -74,6 +74,7 @@ function dateDeltaSql (name: string): (this: Generator, expression: DateDeltaTyp
     const exprSql = this.sql(expression, 'expression');
 
     const intervalSql = `CAST(${exprSql} AS INTERVAL ${unit})`;
+
     return `${name}(${thisSql}, ${intervalSql})`;
   };
 }
@@ -121,6 +122,7 @@ function buildDateDeltaWithCastInterval (
         && intervalArg.args.to.args.this instanceof IntervalExpr
       ) {
         const interval = intervalArg.args.to.args.this;
+
         return new expressionClass({
           this: dateArg,
           expression: intervalArg.args.this,
@@ -162,6 +164,7 @@ function dateTypeHandler (args: Expression[], {
       .padStart(2, '0');
 
     const dateStr = `${y}-${m}-${d}`;
+
     return new DateExpr({
       this: LiteralExpr.string(dateStr),
     });
@@ -215,8 +218,10 @@ class DremioParser extends Parser {
     const noParenFunctions = {
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -285,11 +290,13 @@ class DremioGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -400,6 +407,7 @@ class DremioGenerator extends Generator {
         renameFunc('ARRAY_GENERATE_RANGE'),
       ],
     ]);
+
     return transforms;
   }
 
@@ -410,6 +418,7 @@ class DremioGenerator extends Generator {
     ])) {
       this.unsupported('Dremio does not support time-zone-aware TIMESTAMP');
     }
+
     return super.dataTypeSql(expression);
   }
 

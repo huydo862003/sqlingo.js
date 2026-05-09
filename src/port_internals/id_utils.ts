@@ -19,17 +19,21 @@ export function id (value: unknown): Id {
   if ((value !== null && typeof value === 'object') || typeof value === 'function') {
     const obj = value as object;
     let existing = _objectIds.get(obj);
+
     if (existing === undefined) {
       existing = nextId();
       _objectIds.set(obj, existing);
     }
+
     return existing;
   }
 
   let existing = _primitiveIds.get(value);
+
   if (existing === undefined) {
     existing = nextId();
     _primitiveIds.set(value, existing);
   }
+
   return existing;
 }

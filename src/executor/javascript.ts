@@ -74,6 +74,7 @@ function orderedJs (this: Generator, expression: OrderedExpr): string {
   const thisSql = this.sql(expression, 'this');
   const desc = expression.args.desc ? 'true' : 'false';
   const nullsFirst = expression.args.nullsFirst ? 'true' : 'false';
+
   return `ORDERED(${thisSql}, { desc: ${desc}, undefinedFirst: ${nullsFirst} })`;
 }
 
@@ -84,14 +85,17 @@ function rename (this: Generator, e: Expression): string {
 
     if (values.length === 1) {
       const val = values[0];
+
       if (!Array.isArray(val)) {
         return this.func(e._constructor.key, [val]);
       }
+
       return this.func(e._constructor.key, val);
     }
 
     if (e instanceof FuncExpr && (e._constructor as typeof FuncExpr).isVarLenArgs) {
       const args = [];
+
       for (const v of values) {
         if (Array.isArray(v)) {
           args.push(...v);
@@ -99,6 +103,7 @@ function rename (this: Generator, e: Expression): string {
           args.push(v);
         }
       }
+
       return this.func(e._constructor.key, args);
     }
 
@@ -117,9 +122,11 @@ function caseJs (this: Generator, expression: CaseExpr): string {
   let chain = this.sql(expression, 'default') || 'null';
 
   const ifs = expression.args.ifs ?? [];
+
   for (const e of [...ifs].reverse()) {
     const trueStr = this.sql(e, 'true');
     let condition = this.sql(e, 'this');
+
     if (thisStr) {
       condition = `${thisStr} === (${condition})`;
     }
@@ -214,6 +221,7 @@ export class JavascriptGenerator extends Generator {
           const toKind = typeof toExpr === 'string'
             ? toExpr.toLowerCase()
             : this.sql(toExpr as Expression).toLowerCase();
+
           return `CAST(${this.sql(e.args.this as Expression)}, '${toKind}')`;
         },
       ],
@@ -222,6 +230,7 @@ export class JavascriptGenerator extends Generator {
         function (this: Generator, e: ColumnExpr) {
           const table = this.sql(e, 'table') || undefined;
           const col = this.sql(e.args.this as Expression);
+
           return `scope[${table}][${col}]`;
         },
       ],
@@ -248,6 +257,7 @@ export class JavascriptGenerator extends Generator {
           // expression is the right side (the property name)
           const left = this.sql(e.args.this as Expression);
           const right = this.sql(e.args.expression as Expression);
+
           // Convert .property to ["property"] notation
           return `${left}[${right}]`;
         },
@@ -329,6 +339,7 @@ export class JavascriptGenerator extends Generator {
         JsonPathExpr,
         function (this: Generator, e: JsonPathExpr) {
           const parts = e.args.expressions ?? [];
+
           return `[${parts.slice(1).map((p) => this.sql(p as Expression))
             .join(',')}]`;
         },
@@ -418,13 +429,16 @@ export class JavascriptExecutor {
 
     while (0 < queue.size) {
       const node = Array.from(queue).pop();
+
       if (!node) break;
       queue.delete(node);
 
       try {
         const contextTables = new Map<string, Table>();
+
         for (const dep of node.dependencies) {
           const depCtx = contexts.get(dep as Scan);
+
           if (depCtx) {
             for (const [
               name,
@@ -471,29 +485,35 @@ export class JavascriptExecutor {
     }
 
     const root = plan.root;
+
     if (!root) return new Table([]);
+
     return contexts.get(root as Scan)?.tables.get(root.name) ?? new Table([]);
   }
 
   /** Convert a SQL expression into literal JS code string */
   generate (expression: Expression | undefined): string | undefined {
     if (!expression) return undefined;
+
     return this.generator.generate(expression);
   }
 
   /** Convert an array of SQL expressions into an array of JS code strings */
   generateTuple (expressions: Expression[]): string[] {
     if (!expressions || expressions.length === 0) return [];
+
     return expressions.map((e) => this.generate(e) ?? '');
   }
 
   context (tables: Map<string, Table> | Record<string, Table>): Context {
     const map = tables instanceof Map ? tables : new Map(Object.entries(tables));
+
     return new Context(map, this.env);
   }
 
   table (expressions: unknown[]): Table {
     const names = expressions.map((e) => (e instanceof Expression ? e.aliasOrName : e));
+
     return new Table(names as string[]);
   }
 
@@ -510,12 +530,15 @@ export class JavascriptExecutor {
 
     if (source === undefined) {
       const staticResult = this.static();
+
       context = staticResult[0];
       tableIter = staticResult[1];
     } else if (context.has(source)) {
       if (!step.projections?.length && !step.condition) {
         const srcTable = context.tables.get(source);
+
         if (!srcTable) return context;
+
         return this.context({
           [step.name]: srcTable,
         });
@@ -523,6 +546,7 @@ export class JavascriptExecutor {
       tableIter = context.tableIter(source);
     } else {
       const scanResult = this.scanTable(step);
+
       context = scanResult[0];
       tableIter = scanResult[1];
     }
@@ -543,6 +567,7 @@ export class JavascriptExecutor {
     if (0 < projections.length && projections[0].includes(`scope["${step.name}"]`) && !context.has(step.name)) {
       // Create empty table with sink columns to allow scope references to find it
       const contextTables: Record<string, Table> = {};
+
       for (const [
         k,
         v,
@@ -595,21 +620,25 @@ export class JavascriptExecutor {
         const catalogName = typeof source.args.catalog === 'string'
           ? source.args.catalog
           : (source.args.catalog as Expression).name;
+
         table = (table as Record<string, unknown>)[catalogName];
       }
       if (source.args.db && table !== undefined) {
         const dbName = typeof source.args.db === 'string'
           ? source.args.db
           : (source.args.db as Expression).name;
+
         table = (table as Record<string, unknown>)[dbName];
       }
       if (table !== undefined) {
         const tableName = source.name;
+
         table = (table as Record<string, unknown>)[tableName];
       }
     } else {
       // Unqualified table reference: try flat lookup first
       const tableName = source.name;
+
       table = (tables as Record<string, unknown>)[tableName];
 
       // If not found in flat structure, search in up to 2 levels deep for catalog.db.table structure
@@ -617,6 +646,7 @@ export class JavascriptExecutor {
         for (const level1 of Object.values(tables)) {
           if (level1 && typeof level1 === 'object' && !(level1 instanceof Table)) {
             const candidate = (level1 as Record<string, unknown>)[tableName];
+
             if (candidate instanceof Table) {
               table = candidate;
               break;
@@ -625,6 +655,7 @@ export class JavascriptExecutor {
             for (const level2 of Object.values(level1 as Record<string, unknown>)) {
               if (level2 && typeof level2 === 'object' && !(level2 instanceof Table)) {
                 const candidate2 = (level2 as Record<string, unknown>)[tableName];
+
                 if (candidate2 instanceof Table) {
                   table = candidate2;
                   break;
@@ -642,6 +673,7 @@ export class JavascriptExecutor {
       : new Table([]);
 
     const contextMap = new Map<string, Table>();
+
     contextMap.set(source.aliasOrName, resultTable);
     const context = this.context(contextMap);
 
@@ -667,6 +699,7 @@ export class JavascriptExecutor {
       start: number;
       stop: number;
     }>();
+
     columnRanges.set(source, {
       start: 0,
       stop: sourceTable.columns.length,
@@ -678,6 +711,7 @@ export class JavascriptExecutor {
     ] of Object.entries(step.joins || {})) {
       const table = context.tables.get(name) ?? new Table([]);
       const start = Math.max(...Array.from(columnRanges.values()).map((r) => r.stop));
+
       columnRanges.set(name, {
         start,
         stop: table.columns.length + start,
@@ -692,6 +726,7 @@ export class JavascriptExecutor {
       let joinedTable: Table;
 
       const joinEntry = join;
+
       if (joinEntry.sourceKey.length) {
         joinedTable = this.hashJoin(joinEntry, sourceContext, joinContext);
       } else {
@@ -699,6 +734,7 @@ export class JavascriptExecutor {
       }
 
       const nextTables = new Map<string, Table>();
+
       for (const [
         n,
         cr,
@@ -712,6 +748,7 @@ export class JavascriptExecutor {
       // since the condition was already used to determine which rows match during the join
       const sideStr = String(joinEntry.side).toLowerCase();
       const isLeftOrRight = sideStr === JoinExprKind.LEFT || sideStr === JoinExprKind.RIGHT;
+
       if (condition && !isLeftOrRight) {
         sourceContext.filter(condition);
       }
@@ -740,12 +777,14 @@ export class JavascriptExecutor {
       ]));
     } else {
       const finalTables = new Map<string, Table>();
+
       for (const [
         name,
         table,
       ] of sourceContext.tables.entries()) {
         finalTables.set(name, new Table(table.columns, sink.rows, table.columnRange));
       }
+
       return this.context(finalTables);
     }
   }
@@ -783,6 +822,7 @@ export class JavascriptExecutor {
       ctx,
     ] of sourceContext) {
       const keyStr = JSON.stringify(ctx.evalTuple(sourceKey));
+
       if (!results.has(keyStr)) results.set(keyStr, [
         [],
         [],
@@ -800,6 +840,7 @@ export class JavascriptExecutor {
       ctx,
     ] of joinContext) {
       const keyStr = JSON.stringify(ctx.evalTuple(joinKey));
+
       if (!results.has(keyStr)) results.set(keyStr, [
         [],
         [],
@@ -825,6 +866,7 @@ export class JavascriptExecutor {
       ] of results.entries()) {
         if (aGroup.length === 0) continue; // Skip keys without left rows
         const finalBGroup = 0 < bGroup.length ? bGroup : leftNulls;
+
         for (const aRow of aGroup) {
           for (const bRow of finalBGroup) {
             table.append([
@@ -843,6 +885,7 @@ export class JavascriptExecutor {
         ],
       ] of results.entries()) {
         const finalAGroup = 0 < aGroup.length ? aGroup : rightNulls;
+
         for (const aRow of finalAGroup) {
           for (const bRow of bGroup) {
             table.append([
@@ -896,6 +939,7 @@ export class JavascriptExecutor {
       }
 
       const width = context.columns.length;
+
       context.addColumns(...operandTable.columns);
 
       const scopedOperandTable = new Table(
@@ -913,6 +957,7 @@ export class JavascriptExecutor {
           v,
         ]) => typeof k === 'string' && v instanceof Table) as [string, Table][],
       );
+
       newTables.set(undefined, scopedOperandTable);
       context = this.context(newTables as Map<string, Table>);
     }
@@ -933,6 +978,7 @@ export class JavascriptExecutor {
       const parsedGroup: unknown[] = group
         ? JSON.parse(group)
         : [];
+
       table.append([
         ...parsedGroup,
         ...context.evalTuple(aggregations),
@@ -943,6 +989,7 @@ export class JavascriptExecutor {
       for (let i = 0; i < length; i++) {
         context.setIndex(i);
         const key = JSON.stringify(context.evalTuple(groupBy));
+
         group = group === undefined ? key : group;
         end += 1;
 
@@ -968,6 +1015,7 @@ export class JavascriptExecutor {
     }
 
     const nextTables = new Map<string, Table>();
+
     nextTables.set(step.name, table);
     for (const [name] of context.tables.entries()) {
       nextTables.set(name, table);
@@ -977,6 +1025,7 @@ export class JavascriptExecutor {
     if (step.projections?.length || step.condition) {
       return this.scan(step, context);
     }
+
     return context;
   }
 
@@ -996,6 +1045,7 @@ export class JavascriptExecutor {
       ctx,
     ] of context) {
       const projVals = ctx.evalTuple(projections);
+
       sink.append([
         ...reader.row,
         ...projVals,
@@ -1003,11 +1053,13 @@ export class JavascriptExecutor {
     }
 
     const sortTables = new Map<string | undefined, Table>();
+
     sortTables.set(undefined, sink);
     for (const name of context.tables.keys()) {
       sortTables.set(name, sink);
     }
     const sortContext = this.context(sortTables as Map<string, Table>);
+
     sortContext.sort(sortKeys);
 
     if (Number.isFinite(step.limit)) {
@@ -1038,15 +1090,18 @@ export class JavascriptExecutor {
     if (step.op && (step.op === IntersectExpr || step.op.prototype instanceof IntersectExpr)) {
       const leftSet = new Set(left.rows.map((r) => JSON.stringify(r)));
       const rightSet = new Set(right.rows.map((r) => JSON.stringify(r)));
+
       sink.rows = [...leftSet].filter((r) => rightSet.has(r)).map((r) => JSON.parse(r));
     } else if (step.op && (step.op === ExceptExpr || step.op.prototype instanceof ExceptExpr)) {
       const rightSet = new Set(right.rows.map((r) => JSON.stringify(r)));
+
       sink.rows = left.rows.filter((r) => !rightSet.has(JSON.stringify(r)));
     } else if (step.op && (step.op === UnionExpr || step.op.prototype instanceof UnionExpr) && step.distinct) {
       const combined = new Set([
         ...left.rows,
         ...right.rows,
       ].map((r) => JSON.stringify(r)));
+
       sink.rows = [...combined].map((r) => JSON.parse(r));
     } else {
       sink.rows = [

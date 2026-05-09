@@ -125,8 +125,10 @@ class StarRocksParser extends MySQL.Parser {
     const noParenFunctions = {
       ...MySQL.Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -207,8 +209,10 @@ class StarRocksParser extends MySQL.Parser {
     // so we move it into the schema expressions for standard AST representation
     if (create instanceof CreateExpr && create.args.this instanceof SchemaExpr) {
       const props = create.args.properties;
+
       if (props) {
         const primaryKey = props.find(PrimaryKeyExpr);
+
         if (primaryKey) {
           create.args.this.append('expressions', primaryKey.pop());
         }
@@ -266,6 +270,7 @@ class StarRocksParser extends MySQL.Parser {
     this.matchLParen();
 
     let createExpressions: Expression[] | undefined = undefined;
+
     if (this.matchTextSeq(['START'], {
       advance: false,
     })) {
@@ -283,8 +288,10 @@ class StarRocksParser extends MySQL.Parser {
   protected parsePartitioningGranularityDynamic (): PartitionByRangePropertyDynamicExpr {
     this.matchTextSeq(['START']);
     const start = this.parseWrapped(this.parseString.bind(this));
+
     this.matchTextSeq(['END']);
     const end = this.parseWrapped(this.parseString.bind(this));
+
     this.matchTextSeq(['EVERY']);
     const every = this.parseWrapped(() => this.parseInterval() || this.parseNumber());
 
@@ -349,11 +356,13 @@ class StarRocksGenerator extends MySQL.Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -384,20 +393,24 @@ class StarRocksGenerator extends MySQL.Generator {
   @cache
   static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const m = new Map(MySQL.Generator.TYPE_MAPPING);
+
     m.set(DataTypeExprKind.INT128, 'LARGEINT');
     m.set(DataTypeExprKind.TEXT, 'STRING');
     m.set(DataTypeExprKind.TIMESTAMP, 'DATETIME');
     m.set(DataTypeExprKind.TIMESTAMPTZ, 'DATETIME');
+
     return m;
   }
 
   @cache
   static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     const m = new Map(MySQL.Generator.PROPERTIES_LOCATION);
+
     m.set(PrimaryKeyExpr, PropertiesLocation.POST_SCHEMA);
     m.set(UniqueKeyPropertyExpr, PropertiesLocation.POST_SCHEMA);
     m.set(RollupPropertyExpr, PropertiesLocation.POST_SCHEMA);
     m.set(PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA);
+
     return m;
   }
 
@@ -406,6 +419,7 @@ class StarRocksGenerator extends MySQL.Generator {
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
 
     const m = new Map<typeof Expression, (this: Generator, e: any) => string>(MySQL.Generator.TRANSFORMS);
+
     m.set(ArrayExpr, inlineArraySql);
     m.set(ArrayAggExpr, renameFunc('ARRAY_AGG'));
     m.set(ArrayFilterExpr, renameFunc('ARRAY_FILTER'));
@@ -463,6 +477,7 @@ class StarRocksGenerator extends MySQL.Generator {
     m.set(UnixToTimeExpr, renameFunc('FROM_UNIXTIME'));
     // StarRocks uses DATE_TRUNC instead of the MySQL simulation, so we remove the MySQL transform
     m.delete(DateTruncExpr);
+
     return m;
   }
 
@@ -696,6 +711,7 @@ class StarRocksGenerator extends MySQL.Generator {
     const expressions = this.expressions(expression, {
       flat: true,
     });
+
     return expressions ? `ORDER BY (${expressions})` : '';
   }
 
@@ -704,12 +720,15 @@ class StarRocksGenerator extends MySQL.Generator {
      */
   public refreshTriggerPropertySql (expression: RefreshTriggerPropertyExpr): string {
     let method = this.sql(expression, 'method');
+
     method = method ? ` ${method}` : '';
 
     let kind = this.sql(expression, 'kind');
+
     kind = kind ? ` ${kind}` : '';
 
     let starts = this.sql(expression, 'starts');
+
     starts = starts ? ` START (${starts})` : '';
 
     const everyValue = this.sql(expression, 'every');

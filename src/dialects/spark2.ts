@@ -101,9 +101,11 @@ export function buildAsCast (toType: string) {
 
 function strToDate (this: Generator, expression: StrToDateExpr): string {
   const timeFormat = this.formatTime(expression);
+
   if (timeFormat === Hive.DATE_FORMAT) {
     return this.func('TO_DATE', [expression.args.this]);
   }
+
   return this.func('TO_DATE', [
     expression.args.this,
     timeFormat,
@@ -124,6 +126,7 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   }
 
   const scaleValue = scale.toValue();
+
   if (scaleValue === UnixToTimeExpr.SECONDS.toValue()) {
     return this.func('TIMESTAMP_SECONDS', [timestamp]);
   }
@@ -152,8 +155,10 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
 function unaliasPivot (expression: Expression): Expression {
   if (expression instanceof FromExpr && expression.args.this?.args.pivots?.length) {
     const pivot = expression.args.this.args.pivots[0];
+
     if (pivot.args.alias) {
       const aliasNode = narrowInstanceOf(pivot.args.alias, Expression)?.pop();
+
       return new FromExpr({
         this: expression.args.this.replace(
           select('*')
@@ -192,6 +197,7 @@ export function temporaryStorageProvider (expression: Expression): Expression {
   });
 
   const properties = expression.getArgKey('properties');
+
   if (properties instanceof Expression) {
     properties.append('expressions', provider);
   }
@@ -240,8 +246,10 @@ class Spark2Parser extends Hive.Parser {
     const noParenFunctions = {
       ...Hive.Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -391,6 +399,7 @@ class Spark2Parser extends Hive.Parser {
     if (aggregations.length === 1) {
       return [];
     }
+
     return pivotColumnNames(aggregations, {
       dialect: 'spark',
     });
@@ -666,6 +675,7 @@ class Spark2Generator extends Hive.Generator {
 
     if (narrowInstanceOf(expression.args.to, Expression)?.getArgKey('nested') && (isParseJson(arg) || isJsonExtract)) {
       const schema = `'${this.sql(expression, 'to')}'`;
+
       return this.func('FROM_JSON', [
         isJsonExtract ? arg : (arg as Expression).args.this,
         schema,
@@ -696,8 +706,10 @@ class Spark2Generator extends Hive.Generator {
       if (comment) {
         return `ALTER COLUMN ${thisNode} COMMENT ${comment}`;
       }
+
       return Generator.prototype.alterColumnSql.call(this, expression);
     }
+
     return `RENAME COLUMN ${thisNode} TO ${newName}`;
   }
 

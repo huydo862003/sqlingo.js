@@ -60,8 +60,10 @@ class RisingWaveParser extends Postgres.Parser {
     const noParenFunctions = {
       ...Postgres.Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -143,6 +145,7 @@ class RisingWaveParser extends Postgres.Parser {
     const thisNode = this.parseVarOrString();
 
     let properties: PropertiesExpr | undefined = undefined;
+
     if (this.match(TokenType.L_PAREN, {
       advance: false,
     })) {
@@ -172,11 +175,13 @@ class RisingWaveGenerator extends Postgres.Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -202,13 +207,16 @@ class RisingWaveGenerator extends Postgres.Generator {
         },
       ],
     ]);
+
     return transforms;
   }
 
   @cache
   static get PROPERTIES_LOCATION () {
     const m = new Map(Postgres.Generator.PROPERTIES_LOCATION);
+
     m.set(FileFormatPropertyExpr, PropertiesLocation.POST_EXPRESSION);
+
     return m;
   }
 
@@ -227,6 +235,7 @@ class RisingWaveGenerator extends Postgres.Generator {
         keyType,
         valueType,
       ] = expression.args.expressions;
+
       return `MAP(${this.sql(keyType)}, ${this.sql(valueType)})`;
     }
 

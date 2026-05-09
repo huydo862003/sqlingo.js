@@ -96,6 +96,7 @@ function dateAddSqlTd (
     }
 
     let kindToOp: string;
+
     if (value instanceof NegExpr) {
       kindToOp = kind === '+' ? '-' : '+';
       value = LiteralExpr.string((value.args.this as LiteralExpr).toValue());
@@ -157,7 +158,9 @@ export class TeradataTokenizer extends Tokenizer {
       'TOP': TokenType.TOP,
       'UPD': TokenType.UPDATE,
     };
+
     delete keywords['/*+'];
+
     return keywords;
   };
 
@@ -166,7 +169,9 @@ export class TeradataTokenizer extends Tokenizer {
     const tokens = {
       ...Tokenizer.SINGLE_TOKENS,
     };
+
     delete tokens['%'];
+
     return tokens;
   }
 }
@@ -188,8 +193,10 @@ export class TeradataParser extends Parser {
     const noParenFunctions = {
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -238,7 +245,9 @@ export class TeradataParser extends Parser {
   static get FUNC_TOKENS (): Set<TokenType> {
     return (() => {
       const tokens = new Set(Parser.FUNC_TOKENS);
+
       tokens.delete(TokenType.REPLACE);
+
       return tokens;
     })();
   }
@@ -339,6 +348,7 @@ export class TeradataParser extends Parser {
 
   public parseRangeN (): RangeNExpr {
     const thisExpr = this.parseIdVar();
+
     this.match(TokenType.BETWEEN);
 
     const expressions = this.parseCsv(() => this.parseAssignment());
@@ -353,6 +363,7 @@ export class TeradataParser extends Parser {
 
   public parseTranslate (): TranslateCharactersExpr {
     const thisExpr = this.parseAssignment();
+
     this.match(TokenType.USING);
     this.matchTexts(TeradataParser.CHARSET_TRANSLATORS);
 
@@ -387,19 +398,24 @@ export class TeradataParser extends Parser {
     ) {
       return undefined;
     }
+
     return super.parseFunction(options);
   }
 
   override parseColumnOps (thisExpr?: Expression): Expression | undefined {
     const result = super.parseColumnOps(thisExpr);
+
     if (this.matchPair(TokenType.L_PAREN, TokenType.FORMAT)) {
       const fmtString = this.parseString();
+
       this.matchRParen();
+
       return this.expression(FormatPhraseExpr, {
         this: result,
         format: fmtString,
       });
     }
+
     return result;
   }
 
@@ -421,6 +437,7 @@ export class TeradataParser extends Parser {
     }
 
     const update = this.matchTextSeq('UPDATE');
+
     this.matchTextSeq('FOR');
 
     // Handle scope - can be SESSION, TRANSACTION, VOLATILE, or SESSION VOLATILE
@@ -461,11 +478,13 @@ export class TeradataGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -494,20 +513,24 @@ export class TeradataGenerator extends Generator {
   @cache
   static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map(Generator.TYPE_MAPPING);
+
     mapping.set(DataTypeExprKind.BOOLEAN, 'BYTEINT');
     mapping.set(DataTypeExprKind.DOUBLE, 'DOUBLE PRECISION');
     mapping.set(DataTypeExprKind.TEXT, 'CLOB');
     mapping.set(DataTypeExprKind.GEOMETRY, 'ST_GEOMETRY');
     mapping.set(DataTypeExprKind.TIMESTAMPTZ, 'TIMESTAMP');
+
     return mapping;
   };
 
   @cache
   static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     const m = new Map(Generator.PROPERTIES_LOCATION);
+
     m.set(OnCommitPropertyExpr, PropertiesLocation.POST_INDEX);
     m.set(PartitionedByPropertyExpr, PropertiesLocation.POST_EXPRESSION);
     m.set(StabilityPropertyExpr, PropertiesLocation.POST_CREATE);
+
     return m;
   };
 
@@ -516,6 +539,7 @@ export class TeradataGenerator extends Generator {
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
 
     const m = new Map<typeof Expression, (this: Generator, e: any) => string>(Generator.TRANSFORMS);
+
     m.set(ArgMaxExpr, renameFunc('MAX_BY'));
     m.set(ArgMinExpr, renameFunc('MIN_BY'));
     m.set(CurrentDateExpr, () => 'DATE');
@@ -584,12 +608,14 @@ export class TeradataGenerator extends Generator {
         expression: (e as QuarterExpr).args.this,
       }));
     });
+
     return m;
   };
 
   public currentTimestampSql (expression: CurrentTimestampExpr): string {
     const prefix = expression.args.this ? '(' : '';
     const suffix = expression.args.this ? ')' : '';
+
     return this.func('CURRENT_TIMESTAMP', [expression.args.this], {
       prefix,
       suffix,
@@ -599,6 +625,7 @@ export class TeradataGenerator extends Generator {
   public createableSql (expression: CreateExpr, locations: Map<string, Expression[]>): string {
     const kind = this.sql(expression, 'kind').toUpperCase();
     const postName = locations.get(PropertiesLocation.POST_NAME);
+
     if (kind === 'TABLE' && postName?.length) {
       const thisName = this.sql((expression.args.this as SchemaExpr).args.this);
       const thisProperties = this.properties(
@@ -611,8 +638,10 @@ export class TeradataGenerator extends Generator {
         },
       );
       const thisSchema = this.schemaColumnsSql(expression.args.this as SchemaExpr);
+
       return `${thisName}${thisProperties}${this.sep()}${thisSchema}`;
     }
+
     return super.createableSql(expression, locations);
   }
 
@@ -623,9 +652,11 @@ export class TeradataGenerator extends Generator {
       safePrefix,
     } = options;
     const to = (expression as TryCastExpr).args.to;
+
     if (to && (to as DataTypeExpr).args.this === DataTypeExprKind.UNKNOWN && (expression as TryCastExpr).args.format) {
       (to as DataTypeExpr).pop();
     }
+
     return super.castSql(expression, {
       safePrefix,
     });
@@ -655,6 +686,7 @@ export class TeradataGenerator extends Generator {
     });
     const whereSql = this.sql(expression, 'where');
     const sql = `UPDATE ${thisSql}${fromSql} SET ${setSql}${whereSql}`;
+
     return this.prependCtes(expression, sql);
   }
 
@@ -665,6 +697,7 @@ export class TeradataGenerator extends Generator {
   public dataTypeSql (expression: DataTypeExpr): string {
     const typeSql = super.dataTypeSql(expression);
     const prefixSql = expression.args.prefix;
+
     return prefixSql ? `SYSUDTLIB.${typeSql}` : typeSql;
   }
 
@@ -673,17 +706,20 @@ export class TeradataGenerator extends Generator {
     const expressionsSql = this.expressions(expression);
     const eachSql = this.sql(expression, 'each');
     const eachStr = eachSql ? ` EACH ${eachSql}` : '';
+
     return `RANGE_N(${thisSql} BETWEEN ${expressionsSql}${eachStr})`;
   }
 
   public lockingStatementSql (expression: LockingStatementExpr): string {
     const lockingClause = this.sql(expression, 'this');
     const querySql = this.sql(expression, 'expression');
+
     return `${lockingClause} ${querySql}`;
   }
 
   public extractSql (expression: ExtractExpr): string {
     const thisSql = this.sql(expression, 'this');
+
     if (thisSql.toUpperCase() !== 'QUARTER') {
       return super.extractSql(expression);
     }
@@ -695,6 +731,7 @@ export class TeradataGenerator extends Generator {
         LiteralExpr.string('Q'),
       ],
     });
+
     return this.sql(cast(toChar, DataTypeExprKind.INT));
   }
 
@@ -715,6 +752,7 @@ export class TeradataGenerator extends Generator {
           this: 'DAY',
         }),
       });
+
       return `(${multiplier} * ${super.intervalSql(dayInterval)})`;
     }
 

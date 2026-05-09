@@ -10,6 +10,7 @@ describe('tables', () => {
     const {
       schema,
     } = sqlToDbml('CREATE TABLE app.users (id INT);', 'postgres');
+
     expect(schema.tables[0]).toMatchObject({
       schema: 'app',
       name: 'users',
@@ -20,6 +21,7 @@ describe('tables', () => {
     const {
       schema,
     } = sqlToDbml('CREATE TABLE db.app.users (id INT);', 'postgres');
+
     expect(schema.tables[0].schema).toBe('db.app');
     expect(schema.tables[0].name).toBe('users');
   });

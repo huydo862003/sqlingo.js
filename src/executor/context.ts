@@ -59,6 +59,7 @@ export class Context {
     const keys = Object.keys(this.env);
     const values = Object.values(this.env);
     const func = new Function(...keys, `return ${code};`);
+
     return func(...values);
   }
 
@@ -69,6 +70,7 @@ export class Context {
   get table (): Table {
     if (this._table === undefined) {
       const tablesArray = Array.from(this.tables.values());
+
       this._table = tablesArray[0];
 
       for (const other of tablesArray) {
@@ -102,6 +104,7 @@ export class Context {
 
     for (let i = 0; i < this.table.rows.length; i++) {
       let reader: RowReader | undefined;
+
       for (const table of this.tables.values()) {
         reader = table.get(i);
       }
@@ -115,6 +118,7 @@ export class Context {
   tableIter (table: string): Generator<RowReader> {
     this.env['scope'] = this.rowReaders;
     const targetTable = this.tables.get(table);
+
     if (!targetTable) throw new Error(`Table ${table} not found in context.`);
 
     return targetTable[Symbol.iterator]();
@@ -141,6 +145,7 @@ export class Context {
         t === undefined,
         t,
       ]);
+
       return {
         row,
         evaluatedKeys,
@@ -157,10 +162,12 @@ export class Context {
         if (lt(aVal[1], bVal[1])) return -1;
         if (lt(bVal[1], aVal[1])) return 1;
       }
+
       return 0;
     });
 
     const sortedRows = mapped.map((m) => m.row);
+
     for (const table of this.tables.values()) {
       table.rows = sortedRows;
     }

@@ -43,6 +43,7 @@ export function add (a: unknown, b: unknown): unknown {
     ...a,
     ...(b as unknown[]),
   ];
+
   // @ts-expect-error "Fallback to primitive operation"
   return a + b;
 }
@@ -77,6 +78,7 @@ export function sub (a: unknown, b: unknown): unknown {
   if (isSubtractableObj(a)) return (a as SubtractableObject).sub(b);
   if (isRsubtractableObj(b)) return (b as RsubtractableObject).rsub(a);
   if (a instanceof Set && b instanceof Set) return new Set([...(a as Set<unknown>)].filter((x) => !(b as Set<unknown>).has(x)));
+
   // @ts-expect-error "Fallback to primitive operation"
   return a - b;
 }
@@ -109,6 +111,7 @@ export function mul (a: unknown, b: unknown): unknown;
 export function mul (a: unknown, b: unknown): unknown {
   if (isMultipliableObj(a)) return (a as MultipliableObject).mul(b);
   if (isRmultipliableObj(b)) return (b as RmultipliableObject).rmul(a);
+
   // @ts-expect-error "Fallback to primitive operation"
   return a * b;
 }
@@ -141,6 +144,7 @@ export function truediv (a: unknown, b: unknown): unknown;
 export function truediv (a: unknown, b: unknown): unknown {
   if (isTrueDivisibleObj(a)) return (a as TrueDivisibleObject).truediv(b);
   if (isRtrueDivisibleObj(b)) return (b as RtrueDivisibleObject).rtruediv(a);
+
   // @ts-expect-error "Fallback to primitive operation"
   return a / b;
 }
@@ -173,6 +177,7 @@ export function floorDiv (a: unknown, b: unknown): unknown;
 export function floorDiv (a: unknown, b: unknown): unknown {
   if (isFloorDivisibleObj(a)) return (a as FloorDivisibleObject).floorDiv(b);
   if (isRfloorDivisibleObj(b)) return (b as RfloorDivisibleObject).rfloorDiv(a);
+
   // @ts-expect-error "Fallback to primitive operation"
   return Math.trunc(a / b);
 }
@@ -205,6 +210,7 @@ export function mod (a: unknown, b: unknown): unknown;
 export function mod (a: unknown, b: unknown): unknown {
   if (isModableObj(a)) return (a as ModableObject).mod(b);
   if (isRmodableObj(b)) return (b as RmodableObject).rmod(a);
+
   // @ts-expect-error "Fallback to primitive operation"
   return a % b;
 }
@@ -237,6 +243,7 @@ export function pow (a: unknown, b: unknown): unknown;
 export function pow (a: unknown, b: unknown): unknown {
   if (isPowableObj(a)) return (a as PowableObject).pow(b);
   if (isRpowableObj(b)) return (b as RpowableObject).rpow(a);
+
   // @ts-expect-error "Fallback to primitive operation"
   return a ** b;
 }
@@ -256,6 +263,7 @@ export function neg<A extends NegatableObject<R>, R> (a: A): R;
 export function neg (a: unknown): unknown;
 export function neg (a: unknown): unknown {
   if (isNegatableObj(a)) return (a as NegatableObject).neg();
+
   // @ts-expect-error "Fallback to primitive operation"
   return -a;
 }
@@ -274,6 +282,7 @@ export function lt (a: unknown, b: unknown): boolean;
 export function lt (a: unknown, b: unknown): boolean {
   if (isLtComparableObj(a)) return (a as LtComparableObject).lt(b);
   if (isGtComparableObj(b)) return (b as GtComparableObject).gt(a);
+
   // @ts-expect-error "Fallback to primitive operation"
   return a < b;
 }
@@ -292,6 +301,7 @@ export function lte (a: unknown, b: unknown): boolean;
 export function lte (a: unknown, b: unknown): boolean {
   if (isLteComparableObj(a)) return (a as LteComparableObject).lte(b);
   if (isGteComparableObj(b)) return (b as GteComparableObject).gte(a);
+
   // @ts-expect-error "Fallback to primitive operation"
   return a <= b;
 }
@@ -310,6 +320,7 @@ export function gt (a: unknown, b: unknown): boolean;
 export function gt (a: unknown, b: unknown): boolean {
   if (isGtComparableObj(a)) return (a as GtComparableObject).gt(b);
   if (isLtComparableObj(b)) return (b as LtComparableObject).lt(a);
+
   // @ts-expect-error "Fallback to primitive operation"
   return b < a;
 }
@@ -328,6 +339,7 @@ export function gte (a: unknown, b: unknown): boolean;
 export function gte (a: unknown, b: unknown): boolean {
   if (isGteComparableObj(a)) return (a as GteComparableObject).gte(b);
   if (isLteComparableObj(b)) return (b as LteComparableObject).lte(a);
+
   // @ts-expect-error "Fallback to primitive operation"
   return b <= a;
 }
@@ -346,6 +358,7 @@ export function eq (a: unknown, b: unknown): boolean;
 export function eq (a: unknown, b: unknown): boolean {
   if (isEqComparableObj(a)) return (a as EqComparableObject).eq(b);
   if (isEqComparableObj(b)) return (b as EqComparableObject).eq(a);
+
   return a === b;
 }
 
@@ -363,6 +376,7 @@ export function neq (a: unknown, b: unknown): boolean;
 export function neq (a: unknown, b: unknown): boolean {
   if (isNeqComparableObj(a)) return (a as NeqComparableObject).neq(b);
   if (isNeqComparableObj(b)) return (b as NeqComparableObject).neq(a);
+
   return !eq(a, b);
 }
 
@@ -381,6 +395,7 @@ export function invert<A extends InvertableObject<R>, R> (a: A): R;
 export function invert (a: unknown): unknown;
 export function invert (a: unknown): unknown {
   if (isInvertableObj(a)) return (a as InvertableObject).invert();
+
   // @ts-expect-error "Fallback to primitive operation"
   return ~a;
 }
@@ -418,6 +433,7 @@ export function or (a: unknown, b: unknown): unknown {
     ...(a as Set<unknown>),
     ...(b as Set<unknown>),
   ]);
+
   // @ts-expect-error "Fallback to primitive operation"
   return a | b;
 }
@@ -452,6 +468,7 @@ export function and (a: unknown, b: unknown): unknown {
   if (isAndableObj(a)) return (a as AndableObject).and(b);
   if (isRandableObj(b)) return (b as RandableObject).rand(a);
   if (a instanceof Set && b instanceof Set) return new Set([...(a as Set<unknown>)].filter((x) => (b as Set<unknown>).has(x)));
+
   // @ts-expect-error "Fallback to primitive operation"
   return a & b;
 }
@@ -487,11 +504,13 @@ export function xor (a: unknown, b: unknown): unknown {
   if (isRxorableObj(b)) return (b as RxorableObject).rxor(a);
   if (a instanceof Set && b instanceof Set) {
     const sa = a as Set<unknown>, sb = b as Set<unknown>;
+
     return new Set([
       ...[...sa].filter((x) => !sb.has(x)),
       ...[...sb].filter((x) => !sa.has(x)),
     ]);
   }
+
   // @ts-expect-error "Fallback to primitive operation"
   return a ^ b;
 }
@@ -524,6 +543,7 @@ export function lshift (a: unknown, b: unknown): unknown;
 export function lshift (a: unknown, b: unknown): unknown {
   if (isLshiftableObj(a)) return (a as LshiftableObject).lshift(b);
   if (isRlshiftableObj(b)) return (b as RlshiftableObject).rlshift(a);
+
   // @ts-expect-error "Fallback to primitive operation"
   return a << b;
 }
@@ -556,6 +576,7 @@ export function rshift (a: unknown, b: unknown): unknown;
 export function rshift (a: unknown, b: unknown): unknown {
   if (isRshiftableObj(a)) return (a as RshiftableObject).rshift(b);
   if (isRrshiftableObj(b)) return (b as RrshiftableObject).rrshift(a);
+
   // @ts-expect-error "Fallback to primitive operation"
   return a >> b;
 }

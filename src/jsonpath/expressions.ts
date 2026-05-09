@@ -34,6 +34,7 @@ export const JSON_PATH_PART_TRANSFORMS = {
     ]
       .filter((p) => p !== undefined)
       .map((p) => p === undefined ? '' : generator.jsonPathPart(p));
+
     return parts.join(':');
   },
   [ExpressionKey.JSON_PATH_SUBSCRIPT]: (generator: Generator, e: JsonPathSubscriptExpr) => generator.jsonPathSubscriptSql(e),

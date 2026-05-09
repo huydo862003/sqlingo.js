@@ -14,6 +14,7 @@ import {
 import './style.css';
 
 const app = createApp(App);
+
 app.use(createPinia());
 app.use(createHead());
 app.use(router);

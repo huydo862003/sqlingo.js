@@ -75,8 +75,10 @@ export class TableauParser extends Parser {
     const noParenFunctions = {
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -114,11 +116,13 @@ export class TableauGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -137,7 +141,9 @@ export class TableauGenerator extends Generator {
   @cache
   static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     const m = new Map(Generator.PROPERTIES_LOCATION);
+
     m.set(VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED);
+
     return m;
   }
 
@@ -151,25 +157,30 @@ export class TableauGenerator extends Generator {
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
 
     const m = new Map<typeof Expression, (this: Generator, e: any) => string>(Generator.TRANSFORMS);
+
     m.set(CoalesceExpr, renameFunc('IFNULL'));
 
     m.set(IfExpr, function (this: Generator, e: IfExpr) {
       return `IF ${this.sql(e, 'this')} THEN ${this.sql(e, 'true')} ELSE ${this.sql(e, 'false')} END`;
     });
     m.set(SelectExpr, preprocess([eliminateDistinctOn]));
+
     return m;
   }
 
   public countSql (expression: CountExpr): string {
     const inner = expression.args.this;
+
     if (inner instanceof DistinctExpr) {
       return this.func('COUNTD', inner.args.expressions ?? []);
     }
+
     return this.func('COUNT', [inner]);
   }
 
   public strPositionSql (expression: StrPositionExpr): string {
     const hasOccurrence = expression.args.occurrence !== undefined;
+
     return strPositionSql.call(this, expression, {
       funcName: hasOccurrence ? 'FINDNTH' : 'FIND',
       supportsOccurrence: hasOccurrence,

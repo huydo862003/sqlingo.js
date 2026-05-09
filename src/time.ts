@@ -48,6 +48,7 @@ export function formatTime (
       result,
       newCurrent,
     ] = inTrie(current, [chars[chars.length - 1]]);
+
     current = newCurrent;
 
     if (result === TrieResult.FAILED) {
@@ -698,12 +699,14 @@ export const TIMEZONES = new Set([
 export function subsecondPrecision (timestampLiteral: string): number {
   try {
     const parsed = DateTime.fromISO(timestampLiteral);
+
     if (!parsed.isValid) {
       return 0;
     }
 
     // Extract fractional seconds from the timestamp string
     const match = timestampLiteral.match(/\.(\d+)/);
+
     if (!match) {
       return 0;
     }
@@ -716,6 +719,7 @@ export function subsecondPrecision (timestampLiteral: string): number {
     } else if (0 < subsecondDigitCount) {
       return 3;
     }
+
     return 0;
   } catch {
     return 0;

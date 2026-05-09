@@ -85,6 +85,7 @@ export function pushdownPredicates<E extends Expression> (
         if (joins) {
           joins.forEach((join, i) => {
             const name = join.aliasOrName;
+
             if (name) {
               joinIndex.set(name, i);
             }
@@ -94,17 +95,20 @@ export function pushdownPredicates<E extends Expression> (
         // A right join can only push down to itself and not the source FROM table
         // Presto, Trino and Athena don't support inner joins where the RHS is an UNNEST expression
         let pushdownAllowed = true;
+
         for (const [
           k,
           source,
         ] of Object.entries(selectedSources)) {
           const [node] = source;
+
           if (!node) continue;
 
           const parent = node.findAncestor<JoinExpr | FromExpr>(JoinExpr, FromExpr);
 
           if (parent instanceof JoinExpr) {
             const joinParent = parent as JoinExpr;
+
             if (joinParent.args.side === JoinExprKind.RIGHT) {
               selectedSources = {
                 [k]: source,
@@ -120,6 +124,7 @@ export function pushdownPredicates<E extends Expression> (
 
         if (pushdownAllowed) {
           const whereThis = whereClause.args.this;
+
           if (whereThis instanceof Expression) {
             pushdown(whereThis, selectedSources, scopeRefCount, dialect, joinIndex);
           }
@@ -129,11 +134,14 @@ export function pushdownPredicates<E extends Expression> (
       // Joins should only pushdown into itself, not to other joins
       // So we limit the selected sources to only itself
       const joins = select.getArgKey('joins') as JoinExpr[] | undefined;
+
       if (joins) {
         for (const join of joins) {
           const name = join.aliasOrName;
+
           if (name && name in scope.selectedSources) {
             const onClause = join.args.on;
+
             pushdown(
               onClause,
               {
@@ -165,6 +173,7 @@ function pushdown (
   const simplified = simplify(condition, {
     dialect,
   });
+
   condition = condition.replace(simplified);
   const cnfLike = normalized(condition) || !normalized(condition, {
     dnf: true,
@@ -208,6 +217,7 @@ function pushdownCnf (
         const thisIndex = joinIndexMap.get(name) ?? -1;
         const canPush = Array.from(predicateTables).every((table) => {
           const tableIndex = joinIndexMap.get(table) ?? -1;
+
           return tableIndex < thisIndex;
         });
 
@@ -255,6 +265,7 @@ function pushdownDnf (
 
     for (const b of predicates) {
       const bTables = columnTableNames(b);
+
       aTables = new Set(Array.from(aTables).filter((t) => bTables.has(t)));
     }
 
@@ -277,6 +288,7 @@ function pushdownDnf (
       }
 
       const existing = conditions.get(table);
+
       conditions.set(table, existing
         ? orExpr([
           existing,
@@ -290,6 +302,7 @@ function pushdownDnf (
       node,
     ] of Object.entries(nodes)) {
       const condition = conditions.get(name);
+
       if (!condition) {
         continue;
       }
@@ -327,6 +340,7 @@ function nodesForPredicate (
 
   for (const table of Array.from(tables).sort()) {
     const sourceEntry = sources[table];
+
     if (!sourceEntry) {
       continue;
     }
@@ -345,6 +359,7 @@ function nodesForPredicate (
     // A node can reference a CTE which should be pushed down
     if (node instanceof FromExpr && !(source instanceof TableExpr)) {
       const with_ = narrowInstanceOf((source instanceof Scope ? source.parent : (source as Expression).parent?.args)?.expression, Expression)?.getArgKey('with');
+
       if (with_ instanceof WithExpr && with_?.recursive) {
         return {};
       }
@@ -353,6 +368,7 @@ function nodesForPredicate (
 
     if (node instanceof JoinExpr) {
       const side = node.side;
+
       if (side && side !== JoinExprKind.RIGHT) {
         return {};
       }
@@ -363,6 +379,7 @@ function nodesForPredicate (
         if (!(sel instanceof Expression)) {
           return false;
         }
+
         return sel.find(WindowExpr) !== undefined;
       });
 
@@ -390,6 +407,7 @@ function replaceAliases (source: SelectExpr, predicate: Expression): Expression 
 
     if (select instanceof AliasExpr) {
       const aliasThis = select.args.this;
+
       if (aliasThis instanceof Expression) {
         aliases.set(select.alias, aliasThis);
       }
@@ -401,10 +419,12 @@ function replaceAliases (source: SelectExpr, predicate: Expression): Expression 
   function replaceAlias (column: Expression): Expression {
     if (column instanceof ColumnExpr) {
       const replacement = aliases.get(column.name);
+
       if (replacement) {
         return replacement.copy();
       }
     }
+
     return column;
   }
 

@@ -41,10 +41,12 @@ function annotateBySimilarArgs (
 
   for (const arg of args) {
     const argExpr = (expression.args as Record<string, unknown>)[arg];
+
     if (argExpr) {
       const list = Array.isArray(argExpr)
         ? argExpr
         : [argExpr];
+
       expressions.push(...filterInstanceOf(list, Expression));
     }
   }
@@ -61,6 +63,7 @@ function annotateBySimilarArgs (
       break;
     } else {
       const exprType = expr.type;
+
       lastDatatype = isInstanceOf(exprType, DataTypeExpr) ? exprType : undefined;
     }
   }

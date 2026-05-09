@@ -1,19 +1,22 @@
 import {
-  baseConfig, vueConfig,
+  baseConfig, tailwindConfig, vueConfig,
 } from '@hdnax/nuclint';
 
 export default [
   ...baseConfig,
-  ...vueConfig,
+  ...vueConfig.map((config) => ({
+    files: ['./homepage/**/*.vue'],
+    ...config,
+  })),
+  ...tailwindConfig('./homepage/src/style.css').map((config) => ({
+    files: ['./homepage/**/*.vue'],
+    ...config,
+  })),
   {
     ignores: [
       'upstream/**',
-      'node_modules/**',
-      'dist/**',
-      'doc/**',
       'tests/**',
-      'homepage/dist/**',
-      'homepage/node_modules/**',
+      'doc/**',
     ],
   },
   {
@@ -27,16 +30,17 @@ export default [
       '@typescript-eslint/no-this-alias': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-restricted-types': 'off',
       'prefer-const': 'off',
       'import/no-cycle': 'off',
       'import/no-deprecated': 'off',
       'import/no-unused-modules': 'off',
+      'import/no-namespace': 'off',
       'n/prefer-node-protocol': 'off',
       'unicorn/prevent-abbreviations': 'off',
       'id-length': 'off',
       'custom/no-import-alias': 'off',
-      '@typescript-eslint/no-restricted-types': 'off',
-      'import/no-namespace': 'off',
+      'perfectionist/sort-modules': 'off',
     },
   },
 ];

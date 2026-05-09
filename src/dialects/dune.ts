@@ -38,11 +38,13 @@ class DuneGenerator extends Trino.Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -66,6 +68,7 @@ class DuneGenerator extends Trino.Generator {
         },
       ],
     ]);
+
     return transforms;
   }
 }

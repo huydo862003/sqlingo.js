@@ -69,6 +69,7 @@ export function multiInherit<
 
   for (const BaseClass of allBases) {
     const chain = getPrototypeChain(BaseClass);
+
     for (const cls of chain) {
       if (!seen.has(cls)) {
         seen.add(cls);
@@ -84,6 +85,7 @@ export function multiInherit<
       if (name === 'constructor') continue;
       if (!Object.getOwnPropertyDescriptor(MultiInheritClass.prototype, name)) {
         const descriptor = Object.getOwnPropertyDescriptor(BaseClass.prototype, name);
+
         if (descriptor) {
           Object.defineProperty(MultiInheritClass.prototype, name, descriptor);
         }
@@ -99,6 +101,7 @@ export function multiInherit<
       ].includes(name)) continue;
       if (!Object.getOwnPropertyDescriptor(MultiInheritClass, name)) {
         const descriptor = Object.getOwnPropertyDescriptor(BaseClass, name);
+
         if (descriptor) {
           Object.defineProperty(MultiInheritClass, name, descriptor);
         }
@@ -107,6 +110,7 @@ export function multiInherit<
 
     // Register for instanceof checks
     let targets = registeredTargets.get(BaseClass);
+
     if (!targets) {
       targets = new Set();
       registeredTargets.set(BaseClass, targets);
@@ -114,12 +118,15 @@ export function multiInherit<
         value (instance: unknown) {
           if (this.prototype.isPrototypeOf(Object(instance))) return true;
           const targets = registeredTargets.get(this);
+
           if (!targets) return false;
           let ctor = (instance as any)?.constructor;
+
           while (ctor && ctor !== Object) {
             if (targets.has(ctor)) return true;
             ctor = Object.getPrototypeOf(ctor);
           }
+
           return false;
         },
         configurable: true,

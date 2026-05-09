@@ -69,7 +69,9 @@ class TrinoParser extends Presto.Parser {
     const noParenFunctions = {
       ...Presto.Parser.NO_PAREN_FUNCTIONS,
     };
+
     noParenFunctions[TokenType.CURRENT_CATALOG] = CurrentCatalogExpr;
+
     return noParenFunctions;
   }
 
@@ -218,11 +220,13 @@ class TrinoGenerator extends Presto.Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 

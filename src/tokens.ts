@@ -715,6 +715,7 @@ export class Tokenizer {
   @cache
   static get _COMMENTS (): Record<string, string | undefined> {
     const result: Record<string, string | undefined> = {};
+
     for (const comment of this.COMMENTS) {
       if (typeof comment === 'string') {
         result[comment] = undefined;
@@ -726,6 +727,7 @@ export class Tokenizer {
     if (this.HINT_START in this.KEYWORDS) {
       result[this.HINT_START] = '*/';
     }
+
     return result;
   }
 
@@ -735,6 +737,7 @@ export class Tokenizer {
   @cache
   static get _FORMAT_STRINGS (): Record<string, [string, TokenType]> {
     const nationalStrings: Record<string, [string, TokenType]> = {};
+
     for (const [
       start,
       end,
@@ -749,6 +752,7 @@ export class Tokenizer {
         ];
       }
     }
+
     return {
       ...nationalStrings,
       ...this.quotesToFormat(TokenType.BIT_STRING, this.BIT_STRINGS),
@@ -835,6 +839,7 @@ export class Tokenizer {
       ...Object.keys(this._QUOTES),
       ...Object.keys(this._FORMAT_STRINGS),
     ];
+
     return newTrie(
       keys
         .filter((key) => key.includes(' ') || singleTokenChars.some((c) => key.includes(c)))
@@ -1260,6 +1265,7 @@ export class Tokenizer {
     const {
       dialect,
     } = options;
+
     this.dialect = Dialect.getOrRaise(dialect);
     this.reset();
   }
@@ -1300,6 +1306,7 @@ export class Tokenizer {
       const start = Math.max(this._current - 50, 0);
       const end = Math.min(this._current + 50, this.size - 1);
       const context = this.sql.slice(start, end);
+
       throw new TokenError(`Error tokenizing '${context}'`);
     }
 
@@ -1382,6 +1389,7 @@ export class Tokenizer {
       i = 1, alnum = false,
     } = opts;
     const constructor = this._constructor;
+
     if (constructor.WHITE_SPACE[this.char] === TokenType.BREAK) {
       // Ensures we don't count an extra line if we get a \r\n line break sequence
       if (!(this.char === '\r' && this.peek === '\n')) {
@@ -1459,6 +1467,7 @@ export class Tokenizer {
     this.comments = [];
 
     const constructor = this._constructor;
+
     // If we have either a semicolon or a begin token before the command's token, we'll parse
     // whatever follows the command's token as a string
     if (
@@ -1468,9 +1477,11 @@ export class Tokenizer {
     ) {
       const start = this._current;
       const tokensLength = this.tokens.length;
+
       this.scan(() => this.peek === ';');
       this.tokens = this.tokens.slice(0, tokensLength);
       const commandText = this.sql.slice(start, this._current).trim();
+
       if (commandText) {
         this.add(TokenType.STRING, commandText);
       }
@@ -1490,6 +1501,7 @@ export class Tokenizer {
 
     while (chars) {
       let result: TrieResult;
+
       if (skip) {
         result = TrieResult.PREFIX;
       } else {
@@ -1507,6 +1519,7 @@ export class Tokenizer {
       }
 
       const end = this._current + size;
+
       size += 1;
 
       if (end < this.size) {
@@ -1542,14 +1555,18 @@ export class Tokenizer {
           i: size - 1,
         });
         const upper = word.toUpperCase();
+
         this.add(constructor.KEYWORDS[upper], upper);
+
         return;
       }
     }
 
     const type = this._constructor.SINGLE_TOKENS[this.char];
+
     if (type !== undefined) {
       this.add(type, this.char);
+
       return;
     }
 
@@ -1564,6 +1581,7 @@ export class Tokenizer {
    */
   private scanComment (commentStart: string): boolean {
     const constructor = this._constructor;
+
     if (!(commentStart in constructor._COMMENTS)) {
       return false;
     }
@@ -1643,8 +1661,10 @@ export class Tokenizer {
    */
   private scanNumber (): void {
     const constructor = this._constructor;
+
     if (this.char === '0') {
       const peek = this.peek.toUpperCase();
+
       if (peek === 'B') {
         return constructor.BIT_STRINGS.length
           ? this.scanBits()
@@ -1698,6 +1718,7 @@ export class Tokenizer {
         if (tokenType) {
           this.add(TokenType.NUMBER, numberText);
           this.add(TokenType.DCOLON, '::');
+
           return this.add(tokenType, literal);
         }
 
@@ -1708,6 +1729,7 @@ export class Tokenizer {
         this.advance({
           i: -literal.length,
         });
+
         return this.add(TokenType.NUMBER, numberText);
       } else {
         return this.add(TokenType.NUMBER);
@@ -1718,6 +1740,7 @@ export class Tokenizer {
   private scanBits (): void {
     this.advance();
     const value = this.extractValue();
+
     // If `value` can't be converted to a binary, fallback to tokenizing it as an identifier
     if (!Number.isNaN(parseInt(value, 2))) {
       this.add(TokenType.BIT_STRING, value.slice(2)); // Drop the 0b
@@ -1729,6 +1752,7 @@ export class Tokenizer {
   private scanHex (): void {
     this.advance();
     const value = this.extractValue();
+
     // If `value` can't be converted to a hex, fallback to tokenizing it as an identifier
     if (!Number.isNaN(parseInt(value, 16))) {
       this.add(TokenType.HEX_STRING, value.slice(2)); // Drop the 0x
@@ -1740,6 +1764,7 @@ export class Tokenizer {
   private extractValue (): string {
     while (true) {
       const char = this.peek.trim();
+
       if (char && !this._constructor.SINGLE_TOKENS[char]) {
         this.advance({
           i: 1,
@@ -1765,6 +1790,7 @@ export class Tokenizer {
     let tokenType = TokenType.STRING;
 
     let end: string;
+
     if (start in constructor._QUOTES) {
       end = constructor._QUOTES[start];
     } else if (start in constructor._FORMAT_STRINGS) {
@@ -1781,6 +1807,7 @@ export class Tokenizer {
         this.advance();
 
         let tag: string;
+
         if (this.char === end) {
           tag = '';
         } else {
@@ -1805,6 +1832,7 @@ export class Tokenizer {
             i: -tag.length,
           });
           this.add(constructor.HEREDOC_STRING_ALTERNATIVE);
+
           return true;
         }
 
@@ -1832,6 +1860,7 @@ export class Tokenizer {
     }
 
     this.add(tokenType, text);
+
     return true;
   }
 
@@ -1843,13 +1872,16 @@ export class Tokenizer {
       identifierEnd,
     ]);
     const text = this.extractString(identifierEnd, escapes);
+
     this.add(TokenType.IDENTIFIER, text);
   }
 
   private scanVar (): void {
     const constructor = this._constructor;
+
     while (true) {
       const char = this.peek.trim();
+
       if (char && (constructor.VAR_SINGLE_TOKENS.has(char) || !this._constructor.SINGLE_TOKENS[char])) {
         this.advance({
           i: 1,
@@ -1891,6 +1923,7 @@ export class Tokenizer {
     const constructor = this._constructor;
     let text = '';
     const delimSize = delimiter.length;
+
     escapes = escapes === undefined
       ? constructor._STRING_ESCAPES
       : escapes;
@@ -1903,6 +1936,7 @@ export class Tokenizer {
         && escapes.has(this.char)
       ) {
         const unescapedSequence = this.dialect._constructor.UNESCAPED_SEQUENCES[this.char + this.peek];
+
         if (unescapedSequence) {
           this.advance({
             i: 2,
@@ -1957,6 +1991,7 @@ export class Tokenizer {
         }
 
         const current = this._current - 1;
+
         this.advance({
           i: 1,
           alnum: true,
@@ -1970,6 +2005,7 @@ export class Tokenizer {
 
   private static convertQuotes (arr: Iterable<TokenPair>): Record<string, string> {
     const res: Record<string, string> = {};
+
     for (const item of arr) {
       const key = typeof item === 'string'
         ? item
@@ -1977,8 +2013,10 @@ export class Tokenizer {
       const value = typeof item === 'string'
         ? item
         : item[1];
+
       res[key] = value;
     }
+
     return res;
   }
 
@@ -1988,6 +2026,7 @@ export class Tokenizer {
   ): Record<string, [string, TokenType]> {
     const quotes = this.convertQuotes(arr);
     const result: Record<string, [string, TokenType]> = {};
+
     for (const [
       k,
       v,
@@ -1997,6 +2036,7 @@ export class Tokenizer {
         tokenType,
       ];
     }
+
     return result;
   }
 

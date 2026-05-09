@@ -45,6 +45,7 @@ export interface BuiltTable {
 
 export function buildTable (stmt: CreateExpr): BuiltTable | undefined {
   const schemaNode = stmt.args.this;
+
   if (!(schemaNode instanceof SchemaExpr)) return undefined;
 
   const tableParts = extractTableParts(schemaNode.args.this as Expression | undefined);
@@ -65,6 +66,7 @@ export function buildTable (stmt: CreateExpr): BuiltTable | undefined {
       context.columns.push(buildDbmlColumn(expr));
     } else if (expr instanceof ConstraintExpr) {
       const name = expr.args.this instanceof Expression ? extractNodeText(expr.args.this) : undefined;
+
       for (const part of expr.args.expressions ?? []) {
         if (part instanceof Expression) dispatchConstraint(part, context, name);
       }
@@ -73,15 +75,15 @@ export function buildTable (stmt: CreateExpr): BuiltTable | undefined {
     }
   }
 
-  for (const col of context.columns) {
-    if (context.tablePkCols.has(col.name)) {
-      col.pk = true;
-      col.notNull = true;
+  for (const column of context.columns) {
+    if (context.tablePkCols.has(column.name)) {
+      column.pk = true;
+      column.notNull = true;
     }
-    for (const inlineReference of col.ref ?? []) {
+    for (const inlineReference of column.ref ?? []) {
       context.tableRefs.push(new DbmlReference({
         relation: inlineReference.relation,
-        source: buildEndpoint(tableParts.schema, tableParts.name, [col.name]),
+        source: buildEndpoint(tableParts.schema, tableParts.name, [column.name]),
         target: inlineReference.target,
         onDelete: inlineReference.onDelete,
         onUpdate: inlineReference.onUpdate,
@@ -113,68 +115,6 @@ interface TableContext {
   inlineIndexes: DbmlIndex[];
 }
 
-function handlePrimaryKey (expr: PrimaryKeyExpr, context: TableContext, name: string | undefined): void {
-  const cols = (expr.args.expressions ?? []).filter((element): element is Expression => element instanceof Expression);
-  const colNames = cols.map(extractNodeText);
-  if (1 === colNames.length) {
-    context.tablePkCols.add(colNames[0]);
-    return;
-  }
-  if (colNames.length) {
-    context.inlineIndexes.push(new DbmlIndex({
-      name,
-      columns: colNames.map((col) => new DbmlIndexColumn({
-        expression: col,
-      })),
-      pk: true,
-    }));
-  }
-}
-
-function handleForeignKey (expr: ForeignKeyExpr, context: TableContext, name: string | undefined): void {
-  const fkCols = (expr.args.expressions ?? []).filter((element): element is Expression => element instanceof Expression);
-  const ref = expr.args.reference;
-  if (!(ref instanceof ReferenceExpr)) return;
-  const inner = ref.args.this;
-  const tableExpr = inner instanceof SchemaExpr ? inner.args.this : inner;
-  const columns = inner instanceof SchemaExpr ? (inner.args.expressions ?? []) : [];
-  const target = extractTableParts(tableExpr as Expression | undefined);
-  const refCols = columns.map((col) => col instanceof Expression ? extractNodeText(col) : String(col));
-  if (target.name && fkCols.length) {
-    const actions = extractReferenceActions(ref);
-    context.tableRefs.push(new DbmlReference({
-      name,
-      relation: DbmlRelation.MANY_TO_ONE,
-      source: buildEndpoint(context.schema, context.name, fkCols.map(extractNodeText)),
-      target: buildEndpoint(target.schema, target.name, refCols.length ? refCols : fkCols.map(extractNodeText)),
-      onDelete: actions.onDelete ?? parseActionExpr(expr.args.delete),
-      onUpdate: actions.onUpdate ?? parseActionExpr(expr.args.update),
-    }));
-  }
-}
-
-function handleUnique (expr: UniqueColumnConstraintExpr, context: TableContext, name: string | undefined): void {
-  const inner = expr.args.this;
-  const cols = inner instanceof SchemaExpr
-    ? (inner.args.expressions ?? []).filter((element): element is Expression => element instanceof Expression)
-    : [];
-  if (!cols.length) return;
-  context.inlineIndexes.push(new DbmlIndex({
-    name,
-    columns: cols.map((col) => new DbmlIndexColumn({
-      expression: extractNodeText(col),
-    })),
-    unique: true,
-  }));
-}
-
-function handleCheck (inner: Expression, context: TableContext, name: string | undefined): void {
-  context.checks.push(new DbmlCheck({
-    name,
-    expression: inner.sql(),
-  }));
-}
-
 function dispatchConstraint (expr: Expression, context: TableContext, name: string | undefined): void {
   if (expr instanceof PrimaryKeyExpr) {
     handlePrimaryKey(expr, context, name);
@@ -184,15 +124,86 @@ function dispatchConstraint (expr: Expression, context: TableContext, name: stri
     handleUnique(expr, context, name);
   } else if (expr instanceof CheckColumnConstraintExpr) {
     const checkInner = expr.args.this;
+
     if (checkInner instanceof Expression) handleCheck(checkInner, context, name);
   } else if (expr instanceof CheckExpr) {
     const checkInner = expr.args.this;
+
     if (checkInner instanceof Expression) handleCheck(checkInner, context, name);
   } else if (expr instanceof IndexExpr) {
     const built = indexFromParameters(expr);
+
     if (built) {
       if (name && !built.name) built.name = name;
       context.inlineIndexes.push(built);
     }
   }
+}
+
+function handleCheck (inner: Expression, context: TableContext, name: string | undefined): void {
+  context.checks.push(new DbmlCheck({
+    name,
+    expression: inner.sql(),
+  }));
+}
+
+function handleForeignKey (expr: ForeignKeyExpr, context: TableContext, name: string | undefined): void {
+  const fkColumns = (expr.args.expressions ?? []).filter((element): element is Expression => element instanceof Expression);
+  const ref = expr.args.reference;
+
+  if (!(ref instanceof ReferenceExpr)) return;
+  const inner = ref.args.this;
+  const tableExpr = inner instanceof SchemaExpr ? inner.args.this : inner;
+  const columns = inner instanceof SchemaExpr ? (inner.args.expressions ?? []) : [];
+  const target = extractTableParts(tableExpr as Expression | undefined);
+  const refColumns = columns.map((column) => column instanceof Expression ? extractNodeText(column) : String(column));
+
+  if (target.name && fkColumns.length) {
+    const actions = extractReferenceActions(ref);
+
+    context.tableRefs.push(new DbmlReference({
+      name,
+      relation: DbmlRelation.MANY_TO_ONE,
+      source: buildEndpoint(context.schema, context.name, fkColumns.map(extractNodeText)),
+      target: buildEndpoint(target.schema, target.name, refColumns.length ? refColumns : fkColumns.map(extractNodeText)),
+      onDelete: actions.onDelete ?? parseActionExpr(expr.args.delete),
+      onUpdate: actions.onUpdate ?? parseActionExpr(expr.args.update),
+    }));
+  }
+}
+
+function handlePrimaryKey (expr: PrimaryKeyExpr, context: TableContext, name: string | undefined): void {
+  const columns = (expr.args.expressions ?? []).filter((element): element is Expression => element instanceof Expression);
+  const columnNames = columns.map(extractNodeText);
+
+  if (1 === columnNames.length) {
+    context.tablePkCols.add(columnNames[0]);
+
+    return;
+  }
+  if (columnNames.length) {
+    context.inlineIndexes.push(new DbmlIndex({
+      name,
+      columns: columnNames.map((column) => new DbmlIndexColumn({
+        expression: column,
+      })),
+      pk: true,
+    }));
+  }
+}
+
+function handleUnique (expr: UniqueColumnConstraintExpr, context: TableContext, name: string | undefined): void {
+  const inner = expr.args.this;
+  const columns = inner instanceof SchemaExpr
+    ? (inner.args.expressions ?? []).filter((element): element is Expression => element instanceof Expression)
+    : [];
+
+  if (!columns.length) return;
+  context.inlineIndexes.push(new DbmlIndex({
+    name,
+    columns: columns.map((column) => new DbmlIndexColumn({
+      expression: extractNodeText(column),
+    })),
+    unique: true,
+  }));
 }

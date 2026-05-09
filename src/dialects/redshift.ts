@@ -125,6 +125,7 @@ function buildDateDelta<T extends Expression> (ExprClass: new (args: any) => T) 
 
     if (unit) {
       const unitName = unit.name?.toLowerCase();
+
       if (unitName && DATE_DELTA_INTERVAL[unitName]) {
         unit = var_(DATE_DELTA_INTERVAL[unitName]);
       }
@@ -202,7 +203,9 @@ class RedshiftParser extends Postgres.Parser {
           }),
         STRTOL: (args: unknown[]) => FromBaseExpr.fromArgList(args),
       };
+
       delete functions['GET_BIT'];
+
       return functions;
     })();
   }
@@ -252,8 +255,10 @@ class RedshiftParser extends Postgres.Parser {
       safe,
     } = options;
     const to = this.parseTypes();
+
     this.match(TokenType.COMMA);
     const thisNode = this.parseBitwise();
+
     return this.expression(TryCastExpr, {
       this: thisNode,
       to: to,
@@ -271,6 +276,7 @@ class RedshiftParser extends Postgres.Parser {
       });
     }
     this.retreat(index);
+
     return undefined;
   }
 
@@ -315,7 +321,9 @@ class RedshiftTokenizer extends Postgres.Tokenizer {
       'VARBYTE': TokenType.VARBINARY,
       'BINARY VARYING': TokenType.VARBINARY,
     };
+
     delete keywords['VALUES'];
+
     return keywords;
   }
 
@@ -324,7 +332,9 @@ class RedshiftTokenizer extends Postgres.Tokenizer {
     const singleTokens: Record<string, TokenType> = {
       ...Postgres.Tokenizer.SINGLE_TOKENS,
     };
+
     delete singleTokens['#'];
+
     return singleTokens;
   }
 }
@@ -334,11 +344,13 @@ class RedshiftGenerator extends Postgres.Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -512,6 +524,7 @@ class RedshiftGenerator extends Postgres.Generator {
               flat: true,
             })
             : this.sql(value);
+
           return `${e.args.compound ? 'COMPOUND ' : ''}SORTKEY(${sql})`;
         },
       ],
@@ -734,11 +747,13 @@ class RedshiftGenerator extends Postgres.Generator {
 
     if (numArgs !== 1) {
       this.unsupported(`Unsupported number of arguments in UNNEST: ${numArgs}`);
+
       return '';
     }
 
     if (expression.findAncestor(SelectExpr) && !expression.findAncestor<FromExpr | JoinExpr>(FromExpr, JoinExpr)) {
       this.unsupported('Unsupported UNNEST when not used in FROM/JOIN clauses');
+
       return '';
     }
 
@@ -748,6 +763,7 @@ class RedshiftGenerator extends Postgres.Generator {
       key: 'columns',
       flat: true,
     });
+
     return alias ? `${arg} AS ${alias}` : arg;
   }
 
@@ -757,6 +773,7 @@ class RedshiftGenerator extends Postgres.Generator {
     const {
       safePrefix,
     } = options;
+
     if (isType(expression.args.to, DataTypeExprKind.JSON)) {
       // Redshift doesn't support a JSON type, so casting to it is treated as a noop
       return this.sql(expression.args.this);
@@ -790,9 +807,11 @@ class RedshiftGenerator extends Postgres.Generator {
     let exprs = this.expressions(expression, {
       flat: true,
     });
+
     exprs = exprs ? ` TABLE PROPERTIES (${exprs})` : '';
 
     let location = this.sql(expression, 'location');
+
     location = location ? ` LOCATION ${location}` : '';
 
     let fileFormat = this.expressions(expression, {
@@ -800,6 +819,7 @@ class RedshiftGenerator extends Postgres.Generator {
       flat: true,
       sep: ' ',
     });
+
     fileFormat = fileFormat ? ` FILE FORMAT ${fileFormat}` : '';
 
     return `SET${exprs}${location}${fileFormat}`;
@@ -815,6 +835,7 @@ class RedshiftGenerator extends Postgres.Generator {
 
   explodeSql (_expression: ExplodeExpr): string {
     this.unsupported('Unsupported EXPLODE() function');
+
     return '';
   }
 

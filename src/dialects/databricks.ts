@@ -70,6 +70,7 @@ import {
 function jsonExtractSql (this: Generator, expression: JsonExtractExpr | JsonExtractScalarExpr): string {
   const thisSql = this.sql(expression, 'this');
   const exprSql = this.sql(expression, 'expression');
+
   return `${thisSql}:${exprSql}`;
 }
 
@@ -109,8 +110,10 @@ class DatabricksParser extends Spark.Parser {
     const noParenFunctions = {
       ...Spark.Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -176,6 +179,7 @@ class DatabricksParser extends Spark.Parser {
     if (this.match(TokenType.L_PAREN)) {
       this.matchRParen();
     }
+
     return this.expression(CurrentDateExpr);
   }
 
@@ -344,11 +348,13 @@ class DatabricksGenerator extends Spark.Generator {
 
   generatedAsIdentityColumnConstraintSql (expression: GeneratedAsIdentityColumnConstraintExpr): string {
     expression.setArgKey('this', true); // trigger ALWAYS in super class
+
     return super.generatedAsIdentityColumnConstraintSql(expression);
   }
 
   jsonPathSql (expression: JsonPathExpr): string {
     expression.setArgKey('escape', undefined);
+
     return super.jsonPathSql(expression);
   }
 
@@ -392,8 +398,10 @@ export class Databricks extends Spark {
         DataTypeExprKind.BOOLEAN,
         DataTypeExprKind.INTERVAL,
       ] as DataTypeExprKind[]);
+
       coercionMap.set(textType, types);
     }
+
     return coercionMap;
   }
 }

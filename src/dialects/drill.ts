@@ -84,7 +84,9 @@ class DrillTokenizer extends Tokenizer {
     const keywords = {
       ...Tokenizer.KEYWORDS,
     };
+
     delete keywords['/*+'];
+
     return keywords;
   }
 }
@@ -106,8 +108,10 @@ class DrillParser extends Parser {
     const noParenFunctions = {
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -142,11 +146,13 @@ class DrillGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -286,6 +292,7 @@ class DrillGenerator extends Generator {
         LevenshteinExpr,
         function (this: Generator, e) {
           unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
+
           return renameFunc('LEVENSHTEIN_DISTANCE').call(this, e);
         },
       ],
@@ -389,12 +396,14 @@ class DrillGenerator extends Generator {
         },
       ],
     ]);
+
     return transforms;
   }
 
   strToDate (expression: StrToDateExpr): string {
     const thisSql = this.sql(expression, 'this');
     const timeFormat = this.formatTime(expression);
+
     if (timeFormat === Drill.DATE_FORMAT) {
       return this.sql(new CastExpr({
         this: expression.args.this,
@@ -403,6 +412,7 @@ class DrillGenerator extends Generator {
         }),
       }));
     }
+
     return this.func('TO_DATE', [
       thisSql,
       timeFormat,

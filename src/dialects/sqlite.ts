@@ -160,6 +160,7 @@ function transformCreate (expression: Expression): Expression {
 
         for (const constraint of (column.args.constraints || [])) {
           const constraintExpr = constraint as ColumnConstraintExpr;
+
           if ((constraintExpr.args.kind as unknown) instanceof PrimaryKeyColumnConstraintExpr) {
             autoIncrement = undefined; // Reset if we hit a PK to stop processing this column
             break;
@@ -190,6 +191,7 @@ function generatedToAutoIncrement (expression: Expression): Expression {
     (generated.parent as ColumnConstraintExpr).pop();
 
     const notNull = expression.find(NotNullColumnConstraintExpr);
+
     if (notNull) {
       (notNull.parent as ColumnConstraintExpr).pop();
     }
@@ -253,7 +255,9 @@ class SQLiteTokenizer extends Tokenizer {
       'INDEXED BY': TokenType.INDEXED_BY,
       'MATCH': TokenType.MATCH,
     };
+
     delete keywords['/*+'];
+
     return keywords;
   }
 
@@ -283,8 +287,10 @@ class SQLiteParser extends Parser {
     const noParenFunctions = {
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -350,6 +356,7 @@ class SQLiteParser extends Parser {
     const {
       isAttach = true,
     } = options;
+
     this.match(TokenType.DATABASE);
     const thisNode = this.parseExpression();
 
@@ -376,11 +383,13 @@ class SQLiteGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -559,6 +568,7 @@ class SQLiteGenerator extends Generator {
         LevenshteinExpr,
         function (this: Generator, e) {
           unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
+
           return renameFunc('EDITDIST3').call(this, e);
         },
       ],
@@ -650,6 +660,7 @@ class SQLiteGenerator extends Generator {
     if (expression.args.expressions && 0 < expression.args.expressions.length) {
       return this.functionFallbackSql(expression);
     }
+
     return arrowJsonExtractSql.call(this, expression);
   }
 
@@ -674,11 +685,13 @@ class SQLiteGenerator extends Generator {
     if (expression.isType('date')) {
       return this.func('DATE', [expression.args.this]);
     }
+
     return super.castSql(expression, options);
   }
 
   truncSql (expression: TruncExpr): string {
     unsupportedArgs.call(this, expression, 'decimals');
+
     return this.func('TRUNC', [expression.args.this]);
   }
 
@@ -688,7 +701,9 @@ class SQLiteGenerator extends Generator {
 
     if (aliasExpr instanceof TableAliasExpr && aliasExpr.args.columns?.length) {
       const columnAlias = aliasExpr.args.columns[0];
+
       aliasExpr.setArgKey('columns', undefined);
+
       return this.sql(
         new SelectExpr({
           expressions: [alias('value', columnAlias)],
@@ -719,6 +734,7 @@ class SQLiteGenerator extends Generator {
 
     if (unit !== 'DAY') {
       const adjustment = multipliers[unit];
+
       if (adjustment) {
         sql = `${sql}${adjustment}`;
       } else {
@@ -747,6 +763,7 @@ class SQLiteGenerator extends Generator {
     }
 
     const separator = expression.args.separator;
+
     return `GROUP_CONCAT(${distinctSql}${this.formatArgs([
       thisNode,
       separator,
@@ -757,12 +774,14 @@ class SQLiteGenerator extends Generator {
     if (expression.args.expressions && 0 < expression.args.expressions.length) {
       return renameFunc('MIN').call(this, expression);
     }
+
     return this.sql(expression, 'this');
   }
 
   transactionSql (expression: TransactionExpr): string {
     const thisNode = expression.args.this;
     const thisPart = thisNode ? ` ${thisNode}` : '';
+
     return `BEGIN${thisPart} TRANSACTION`;
   }
 
@@ -772,11 +791,13 @@ class SQLiteGenerator extends Generator {
 
   currentSchemaSql (_expression: CurrentSchemaExpr): string {
     unsupportedArgs.call(this, _expression, 'this');
+
     return '\'main\'';
   }
 
   ignoreNullsSql (expression: IgnoreNullsExpr): string {
     this.unsupported('SQLite does not support IGNORE NULLS.');
+
     return this.sql(expression.args.this);
   }
 

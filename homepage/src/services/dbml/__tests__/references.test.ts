@@ -18,6 +18,7 @@ describe('refs', () => {
         user_id INT REFERENCES users(id) ON DELETE CASCADE ON UPDATE SET NULL
       );
     `, 'postgres');
+
     expect(schema.refs).toHaveLength(1);
     expect(schema.refs[0]).toMatchObject({
       relation: DbmlRelation.MANY_TO_ONE,
@@ -41,6 +42,7 @@ describe('refs', () => {
       'CREATE TABLE a (id INT, b_id INT, CONSTRAINT fk_ab FOREIGN KEY (b_id) REFERENCES b(id) ON DELETE CASCADE);',
       'postgres',
     );
+
     expect(schema.refs).toHaveLength(1);
     expect(schema.refs[0]).toMatchObject({
       name: 'fk_ab',
@@ -62,6 +64,7 @@ describe('refs', () => {
       'CREATE TABLE a (id INT, b_id INT, FOREIGN KEY (b_id) REFERENCES b(id) ON DELETE RESTRICT);',
       'postgres',
     );
+
     expect(schema.refs[0].onDelete).toBe(DbmlReferenceAction.RESTRICT);
     expect(schema.refs[0].source.columns).toEqual(['b_id']);
   });

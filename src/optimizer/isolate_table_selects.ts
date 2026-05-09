@@ -90,6 +90,7 @@ export function isolateTableSelects<E extends Expression> (
       // - Parent is already a Subquery
       // - Parent's parent is a Table (already isolated)
       const columnNames = schema.columnNames?.(actualSource);
+
       if (!columnNames || columnNames.length === 0) {
         continue;
       }
@@ -104,6 +105,7 @@ export function isolateTableSelects<E extends Expression> (
 
       // Table must have an alias for isolation to work
       const tableAlias = source.alias;
+
       if (!tableAlias) {
         throw new OptimizeError('Tables require an alias. Run qualify_tables optimization.');
       }

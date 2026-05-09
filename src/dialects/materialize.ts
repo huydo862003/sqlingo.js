@@ -47,8 +47,10 @@ class MaterializeParser extends Postgres.Parser {
     const noParenFunctions = {
       ...Postgres.Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -84,7 +86,9 @@ class MaterializeParser extends Postgres.Parser {
       const toMap = this.expression(ToMapExpr, {
         this: this.parseSelect(),
       });
+
       this.matchRParen();
+
       return toMap;
     }
 
@@ -123,11 +127,13 @@ class MaterializeGenerator extends Postgres.Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -170,7 +176,9 @@ class MaterializeGenerator extends Postgres.Generator {
         () => '',
       ],
     ]);
+
     transforms.delete(ToMapExpr);
+
     return transforms;
   }
 
@@ -185,6 +193,7 @@ class MaterializeGenerator extends Postgres.Generator {
           flat: true,
         })} LIST`;
       }
+
       return 'LIST';
     }
 
@@ -193,6 +202,7 @@ class MaterializeGenerator extends Postgres.Generator {
         key,
         value,
       ] = expression.args.expressions;
+
       return `MAP[${this.sql(key)} => ${this.sql(value)}]`;
     }
 
@@ -201,6 +211,7 @@ class MaterializeGenerator extends Postgres.Generator {
 
   listSql (expression: ListExpr): string {
     const firstExpr = seqGet(expression.args.expressions || [], 0);
+
     if (firstExpr instanceof SelectExpr) {
       return this.func('LIST', [firstExpr]);
     }
@@ -214,6 +225,7 @@ class MaterializeGenerator extends Postgres.Generator {
     if (expression.args.this instanceof SelectExpr) {
       return this.func('MAP', [expression.args.this]);
     }
+
     return `${this.normalizeFunc('MAP')}[${expression.args.this instanceof Expression ? this.expressions(expression.args.this) : expression.args.this}]`;
   }
 }

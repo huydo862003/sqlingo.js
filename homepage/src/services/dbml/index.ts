@@ -33,14 +33,6 @@ export interface ConversionResult {
   dbml: string;
 }
 
-function recordKey (record: Pick<DbmlRecord, 'schema' | 'tableName'>): string {
-  return new DbmlTable({
-    schema: record.schema,
-    name: record.tableName,
-    columns: [],
-  }).intern();
-}
-
 export function sqlToDbml (sql: string, dialect?: string): ConversionResult {
   const parsed = parse(sql, dialect
     ? {
@@ -48,6 +40,7 @@ export function sqlToDbml (sql: string, dialect?: string): ConversionResult {
     }
     : {});
   const bad = parsed.find((stmt) => stmt instanceof CommandExpr);
+
   if (bad) throw new Error('Unsupported SQL syntax');
 
   const schema = new DbmlSchema();
@@ -58,9 +51,11 @@ export function sqlToDbml (sql: string, dialect?: string): ConversionResult {
   for (const stmt of parsed) {
     if (stmt instanceof InsertExpr) {
       const rec = buildRecord(stmt);
+
       if (!rec) continue;
       const key = recordKey(rec);
       const existing = recordByKey.get(key);
+
       if (existing) {
         existing.rows.push(...rec.rows);
       } else {
@@ -74,8 +69,10 @@ export function sqlToDbml (sql: string, dialect?: string): ConversionResult {
 
     if (stmt.kind === CreateExprKind.INDEX) {
       const index = stmt.args.this;
+
       if (!(index instanceof IndexExpr)) continue;
       const tableReference = index.args.table;
+
       if (!(tableReference instanceof Expression)) continue;
       const tp = extractTableParts(tableReference);
       const lookup = new DbmlTable({
@@ -84,8 +81,10 @@ export function sqlToDbml (sql: string, dialect?: string): ConversionResult {
         columns: [],
       }).intern();
       const target = tableByKey.get(lookup);
+
       if (!target) continue;
       const built = indexFromParameters(index);
+
       if (!built) continue;
       if (stmt.args.unique) built.unique = true;
       target.indexes = target.indexes ?? [];
@@ -95,6 +94,7 @@ export function sqlToDbml (sql: string, dialect?: string): ConversionResult {
 
     if (stmt.kind !== CreateExprKind.TABLE) continue;
     const built = buildTable(stmt);
+
     if (!built) continue;
     schema.tables.push(built.table);
     tableByKey.set(built.table.intern(), built.table);
@@ -105,4 +105,12 @@ export function sqlToDbml (sql: string, dialect?: string): ConversionResult {
     schema,
     dbml: schemaToDbml(schema),
   };
+}
+
+function recordKey (record: Pick<DbmlRecord, 'schema' | 'tableName'>): string {
+  return new DbmlTable({
+    schema: record.schema,
+    name: record.tableName,
+    columns: [],
+  }).intern();
 }

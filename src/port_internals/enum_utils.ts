@@ -5,5 +5,6 @@ export function enumFromString<T extends string> (
 ): T | undefined {
   const values = Object.values(enumObj);
   const lower = value?.toLowerCase();
+
   return values.find((v) => v === lower) ?? values.find((v) => v.toLowerCase() === lower);
 }

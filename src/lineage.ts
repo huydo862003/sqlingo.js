@@ -172,6 +172,7 @@ export function lineage (
 
   if (sources) {
     const parsedSources: Record<string, QueryExpr> = {};
+
     for (const [
       k,
       v,
@@ -249,12 +250,14 @@ export function toNode (
   // Find the specific select clause that is the source of the column we want
   // This can either be a specific, named select or a generic `*` clause
   let select: Expression;
+
   if (typeof column === 'number') {
     select = scope.expression.selects[column];
   } else {
     const foundSelect = scope.expression.selects.find(
       (s) => s.aliasOrName === column,
     );
+
     select = foundSelect || (scope.expression.isStar ? new StarExpr({}) : scope.expression);
   }
 
@@ -271,6 +274,7 @@ export function toNode (
 
   if (scope.expression instanceof SetOperationExpr) {
     const name = scope.expression.constructor.name.toUpperCase().replace('EXPR', '');
+
     upstream = upstream || new Node({
       name,
       source: scope.expression,
@@ -278,6 +282,7 @@ export function toNode (
     });
 
     let index: number;
+
     if (typeof column === 'number') {
       index = column;
     } else {
@@ -303,6 +308,7 @@ export function toNode (
   }
 
   let source: Expression;
+
   if (trimSelects && scope.expression instanceof SelectExpr) {
     // For better ergonomics in our node labels, replace the full select with
     // a version that has only the column we care about
@@ -327,12 +333,14 @@ export function toNode (
   }
 
   const subqueryScopes = new WeakMap<Expression, Scope>();
+
   for (const subqueryScope of scope.subqueryScopes) {
     subqueryScopes.set(subqueryScope.expression, subqueryScope);
   }
 
   for (const subquery of findAllInScope<QueryExpr>(select, UNWRAPPED_QUERIES)) {
     const subqueryScope = subqueryScopes.get(subquery);
+
     if (!subqueryScope) {
       console.warn(`Unknown subquery scope: ${subquery.sql({
         dialect,
@@ -352,6 +360,7 @@ export function toNode (
   if (select instanceof StarExpr) {
     for (const sourceVal of Array.from(scope.sources.values())) {
       let sourceExpr;
+
       if (sourceVal instanceof Scope) {
         sourceExpr = sourceVal.expression;
       } else {
@@ -375,9 +384,11 @@ export function toNode (
   );
 
   let derivedTables: Expression[];
+
   // If the source is a Udtf find columns used in the Udtf to generate the table
   if (source instanceof UdtfExpr) {
     const udtfCols = source.findAll(ColumnExpr);
+
     for (const c of udtfCols) sourceColumnsSet.add(c);
 
     derivedTables = Array.from(scope.sources.values())
@@ -389,6 +400,7 @@ export function toNode (
   }
 
   const sourceNames = new Map<string, string>();
+
   for (const dt of derivedTables) {
     if (dt.comments && dt.comments[0]?.startsWith('source: ')) {
       sourceNames.set(dt.alias, dt.comments[0].split(' ')[1]);
@@ -405,6 +417,7 @@ export function toNode (
 
     pivot.args.expressions?.forEach((agg, i: number) => {
       const aggCols = Array.from(agg.findAll(ColumnExpr)) as ColumnExpr[];
+
       for (let colIndex = i; colIndex < (pivotColumns?.length || 0); colIndex += pivotAggsCount) {
         pivotColumnMapping.set(pivotColumns[colIndex].name, aggCols);
       }
@@ -417,10 +430,12 @@ export function toNode (
 
     if (sourceScopeOrExpr instanceof Scope) {
       let refNodeName: string | undefined = undefined;
+
       if (sourceScopeOrExpr.scopeType === ScopeType.DERIVED_TABLE && !sourceNames.has(table)) {
         refNodeName = table;
       } else if (sourceScopeOrExpr.scopeType === ScopeType.CTE) {
         const selectedNode = scope.selectedSources[table]?.[0];
+
         refNodeName = selectedNode ? selectedNode.name : undefined;
       }
 

@@ -86,6 +86,7 @@ export function normalizeIdentifiers (
   const dialect = Dialect.getOrRaise(dialectArg);
 
   let expr: Expression;
+
   if (typeof expression === 'string') {
     expr = parseIdentifier(expression, {
       dialect,
@@ -101,6 +102,7 @@ export function normalizeIdentifiers (
       if (storeOriginalColumnIdentifiers && node instanceof ColumnExpr) {
         // TODO: This does not handle non-column cases, e.g PARSE_JSON(...).key
         let parent: Expression = node;
+
         while (parent && parent.parent instanceof DotExpr) {
           parent = parent.parent;
         }

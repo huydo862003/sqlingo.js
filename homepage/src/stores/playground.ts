@@ -51,8 +51,10 @@ interface PersistedState {
 function loadState (): PersistedState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
+
     if (raw) return JSON.parse(raw) as PersistedState;
   } catch {}
+
   return {
     tab: Tab.Transpile,
     transpileFrom: 'mysql',
@@ -82,6 +84,7 @@ export const usePlaygroundStore = defineStore('playground', () => {
       dbmlDialect: dbmlDialect.value,
       dbmlInput: dbmlInput.value,
     };
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 

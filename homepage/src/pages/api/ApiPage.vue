@@ -2,7 +2,7 @@
   <MainLayout :breadcrumb="navBreadcrumb">
     <div
       v-if="!data"
-      class="flex flex-1 overflow-hidden items-center justify-center gui-neutral-fg-muted text-md"
+      class="gui-neutral-fg-muted text-md flex flex-1 items-center justify-center overflow-hidden"
     >
       Loading API data...
     </div>
@@ -12,12 +12,13 @@
       class="flex flex-1 overflow-hidden max-sm:flex-col max-sm:overflow-visible"
     >
       <button
+        type="button"
         class="
-          hidden max-sm:flex items-center
-          gap-xs w-full px-md py-sm
-          text-sm font-medium gui-neutral-fg gui-neutral-bg-subtle border-none border-b gui-neutral-border-subtle cursor-pointer hover:gui-neutral-bg-hover
+          gap-xs px-md py-sm
+          gui-neutral-fg gui-neutral-bg-subtle gui-neutral-border-subtle hover:gui-neutral-bg-hover
+          hidden w-full cursor-pointer items-center border-b border-none text-sm font-medium max-sm:flex
         "
-        @click="sidebarOpen = !sidebarOpen"
+        @click="toggleSidebar"
       >
         <GIcon
           :name="sidebarOpen ? GIconName.ChevronUp : GIconName.ChevronDown"
@@ -28,16 +29,18 @@
 
       <aside
         class="
-          w-[260px] shrink-0 border-r
-          gui-neutral-border-subtle gui-neutral-bg-subtle overflow-y-auto max-sm:hidden max-sm:w-full max-sm:max-h-[50vh] max-sm:border-r-0 max-sm:border-b max-sm:gui-neutral-border-subtle
+          gui-neutral-border-subtle gui-neutral-bg-subtle max-sm:gui-neutral-border-subtle
+          w-[260px] shrink-0 overflow-y-auto border-r max-sm:hidden max-sm:max-h-[50vh] max-sm:w-full max-sm:border-r-0 max-sm:border-b
         "
-        :class="{ 'max-sm:block': sidebarOpen }"
+        :class="{
+          'max-sm:block': sidebarOpen,
+        }"
       >
         <div class="py-sm">
           <div class="px-sm mb-sm">
             <GTextInput
               v-model="query"
-              class="w-full border gui-neutral-border"
+              class="gui-neutral-border w-full border"
               placeholder="Search..."
               autocomplete="off"
             />
@@ -47,21 +50,22 @@
             :key="group.label"
             class="mb-sm"
           >
-            <div class="px-sm py-xs text-sm font-semibold uppercase tracking-wider gui-neutral-fg-muted">
+            <div class="px-sm py-xs gui-neutral-fg-muted text-sm font-semibold tracking-wider uppercase">
               {{ group.label }}
             </div>
-            <ul class="list-none m-0 p-0">
+            <ul class="m-0 list-none p-0">
               <li
                 v-for="item in group.items"
                 :key="item.id"
               >
                 <button
-                  class="flex items-center gap-xs w-full ml-2 px-sm py-1 text-sm font-mono bg-transparent border-none cursor-pointer text-left"
+                  type="button"
+                  class="gap-xs px-sm ml-2 flex w-full cursor-pointer items-center border-none bg-transparent py-1 text-left font-mono text-sm"
                   :class="selected?.id === item.id ? 'gui-primary-bg-hover gui-primary-fg' : 'gui-neutral-fg hover:gui-neutral-bg-hover'"
-                  @click="select(item)"
+                  @click="() => select(item)"
                 >
                   <span
-                    class="w-[6px] h-[6px] rounded-full shrink-0"
+                    class="size-[6px] shrink-0 rounded-full"
                     :style="kindDotStyle(kindSlug(item.kind))"
                   />
                   <span class="pl-1">{{ item.name }}</span>
@@ -74,31 +78,31 @@
 
       <main
         ref="mainElement"
-        class="flex-1 min-w-0 overflow-y-auto"
+        class="min-w-0 flex-1 overflow-y-auto"
       >
         <div
           v-if="selected"
           class="p-lg max-w-[800px]"
         >
-          <div class="flex items-center gap-sm mb-xs">
+          <div class="gap-sm mb-xs flex items-center">
             <span
-              class="inline-block px-xs py-[2px] text-sm font-semibold rounded-sm lowercase"
+              class="px-xs inline-block rounded-sm py-[2px] text-sm font-semibold lowercase"
               :style="kindChipStyle(kindSlug(selected.kind))"
             >{{ kindLabel(selected.kind) }}</span>
-            <h1 class="text-xl font-mono font-bold gui-neutral-fg">
+            <h1 class="gui-neutral-fg font-mono text-xl font-bold">
               {{ selected.name }}
             </h1>
           </div>
 
           <div
             v-if="sourceUrl(selected)"
-            class="mb-sm text-sm gui-neutral-fg-muted"
+            class="mb-sm gui-neutral-fg-muted text-sm"
           >
             <a
               :href="sourceUrl(selected)!"
               class="gui-info-fg no-underline hover:underline"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >{{ sourceFile(selected) }}</a>
           </div>
 
@@ -114,7 +118,7 @@
               :key="sig.id"
               class="mt-lg"
             >
-              <div class="font-mono text-sm p-sm gui-neutral-bg-subtle border gui-neutral-border-subtle rounded-sm overflow-x-auto whitespace-pre-wrap break-words gui-neutral-fg">
+              <div class="p-sm gui-neutral-bg-subtle gui-neutral-border-subtle gui-neutral-fg overflow-x-auto rounded-sm border font-mono text-sm wrap-break-word whitespace-pre-wrap">
                 <span class="gui-info-fg">function</span>
                 <span class="font-semibold"> {{ selected.name }}</span>(<span
                   v-for="(p, i) in (sig.parameters ?? [])"
@@ -128,22 +132,22 @@
               </div>
               <div
                 v-if="comment(sig)"
-                class="prose text-sm gui-neutral-fg-muted mt-xs leading-3"
+                class="prose gui-neutral-fg-muted mt-xs text-sm/3"
                 v-html="comment(sig)"
               />
               <table
                 v-if="sig.parameters?.length"
-                class="w-full border-collapse text-sm mt-sm"
+                class="mt-sm w-full border-collapse text-sm"
               >
                 <thead>
                   <tr>
-                    <th class="text-left font-semibold gui-neutral-fg-muted px-sm py-xs border-b gui-neutral-border">
+                    <th class="gui-neutral-fg-muted px-sm py-xs gui-neutral-border border-b text-left font-semibold">
                       Parameter
                     </th>
-                    <th class="text-left font-semibold gui-neutral-fg-muted px-sm py-xs border-b gui-neutral-border">
+                    <th class="gui-neutral-fg-muted px-sm py-xs gui-neutral-border border-b text-left font-semibold">
                       Type
                     </th>
-                    <th class="text-left font-semibold gui-neutral-fg-muted px-sm py-xs border-b gui-neutral-border">
+                    <th class="gui-neutral-fg-muted px-sm py-xs gui-neutral-border border-b text-left font-semibold">
                       Description
                     </th>
                   </tr>
@@ -153,14 +157,14 @@
                     v-for="p in sig.parameters"
                     :key="p.id"
                   >
-                    <td class="px-sm py-xs border-b gui-neutral-border-subtle align-top">
-                      <code class="font-mono gui-warning-fg">{{ p.name }}{{ p.flags?.isOptional ? '?' : '' }}</code>
+                    <td class="px-sm py-xs gui-neutral-border-subtle border-b align-top">
+                      <code class="gui-warning-fg font-mono">{{ p.name }}{{ p.flags?.isOptional ? '?' : '' }}</code>
                     </td>
-                    <td class="px-sm py-xs border-b gui-neutral-border-subtle align-top">
-                      <code class="font-mono text-sm gui-success-fg">{{ typeString(p.type) }}</code>
+                    <td class="px-sm py-xs gui-neutral-border-subtle border-b align-top">
+                      <code class="gui-success-fg font-mono text-sm">{{ typeString(p.type) }}</code>
                     </td>
                     <td
-                      class="prose gui-neutral-fg-muted leading-3 px-sm py-xs border-b gui-neutral-border-subtle align-top pdesc"
+                      class="prose gui-neutral-fg-muted px-sm py-xs gui-neutral-border-subtle pdesc border-b align-top leading-3"
                       v-html="comment(p)"
                     />
                   </tr>
@@ -171,49 +175,49 @@
 
           <template v-if="selected.children?.length && selected.kind !== ReflectionKind.Enum">
             <div class="mt-lg">
-              <h2 class="text-md font-bold gui-neutral-fg mb-sm pb-xs border-b gui-neutral-border-subtle">
+              <h2 class="text-md gui-neutral-fg mb-sm pb-xs gui-neutral-border-subtle border-b font-bold">
                 Members
               </h2>
               <div
                 v-for="member in visibleMembers(selected)"
                 :key="member.id"
-                class="py-sm border-b gui-neutral-border-subtle last:border-b-0"
+                class="py-sm gui-neutral-border-subtle border-b last:border-b-0"
               >
-                <div class="flex items-center gap-xs">
+                <div class="gap-xs flex items-center">
                   <span
-                    class="w-[6px] h-[6px] rounded-full shrink-0"
+                    class="size-[6px] shrink-0 rounded-full"
                     :style="kindDotStyle(kindSlug(member.kind))"
                   />
-                  <code class="font-mono text-md font-semibold gui-neutral-fg">{{ member.name }}</code>
+                  <code class="text-md gui-neutral-fg font-mono font-semibold">{{ member.name }}</code>
                   <span
                     v-if="member.flags?.isStatic"
-                    class="text-xs px-1 py-[1px] rounded-sm gui-neutral-bg-hover gui-neutral-fg-muted"
+                    class="gui-neutral-bg-hover gui-neutral-fg-muted rounded-sm px-1 py-px text-xs"
                   >static</span>
                   <span
                     v-if="member.flags?.isOptional"
-                    class="text-xs px-1 py-[1px] rounded-sm gui-neutral-bg-hover gui-neutral-fg-muted"
+                    class="gui-neutral-bg-hover gui-neutral-fg-muted rounded-sm px-1 py-px text-xs"
                   >optional</span>
                   <span
                     v-if="member.flags?.isReadonly"
-                    class="text-xs px-1 py-[1px] rounded-sm gui-neutral-bg-hover gui-neutral-fg-muted"
+                    class="gui-neutral-bg-hover gui-neutral-fg-muted rounded-sm px-1 py-px text-xs"
                   >readonly</span>
                   <a
                     v-if="sourceUrl(member)"
                     :href="sourceUrl(member)!"
                     target="_blank"
-                    rel="noopener"
-                    class="ml-auto text-sm gui-neutral-fg-muted no-underline hover:underline"
+                    rel="noopener noreferrer"
+                    class="gui-neutral-fg-muted ml-auto text-sm no-underline hover:underline"
                   >{{ sourceLine(member) }}</a>
                 </div>
                 <div
                   v-if="memberType(member)"
                   class="mt-[2px]"
                 >
-                  <code class="font-mono text-sm gui-success-fg">{{ memberType(member) }}</code>
+                  <code class="gui-success-fg font-mono text-sm">{{ memberType(member) }}</code>
                 </div>
                 <div
                   v-if="comment(member)"
-                  class="prose text-sm gui-neutral-fg-muted mt-[2px] leading-3"
+                  class="prose gui-neutral-fg-muted mt-[2px] text-sm/3"
                   v-html="comment(member)"
                 />
               </div>
@@ -222,16 +226,16 @@
 
           <template v-if="selected.kind === ReflectionKind.Enum && selected.children?.length">
             <div class="mt-lg">
-              <h2 class="text-md font-bold gui-neutral-fg mb-sm pb-xs border-b gui-neutral-border-subtle">
+              <h2 class="text-md gui-neutral-fg mb-sm pb-xs gui-neutral-border-subtle border-b font-bold">
                 Members
               </h2>
-              <table class="w-full border-collapse text-sm mt-sm">
+              <table class="mt-sm w-full border-collapse text-sm">
                 <thead>
                   <tr>
-                    <th class="text-left font-semibold gui-neutral-fg-muted px-sm py-xs border-b gui-neutral-border">
+                    <th class="gui-neutral-fg-muted px-sm py-xs gui-neutral-border border-b text-left font-semibold">
                       Name
                     </th>
-                    <th class="text-left font-semibold gui-neutral-fg-muted px-sm py-xs border-b gui-neutral-border">
+                    <th class="gui-neutral-fg-muted px-sm py-xs gui-neutral-border border-b text-left font-semibold">
                       Value
                     </th>
                   </tr>
@@ -241,11 +245,11 @@
                     v-for="m in selected.children"
                     :key="m.id"
                   >
-                    <td class="px-sm py-xs border-b gui-neutral-border-subtle align-top">
-                      <code class="font-mono gui-warning-fg">{{ m.name }}</code>
+                    <td class="px-sm py-xs gui-neutral-border-subtle border-b align-top">
+                      <code class="gui-warning-fg font-mono">{{ m.name }}</code>
                     </td>
-                    <td class="px-sm py-xs border-b gui-neutral-border-subtle align-top">
-                      <code class="font-mono text-sm gui-success-fg">{{ m.type?.value !== undefined ? JSON.stringify(m.type.value) : '' }}</code>
+                    <td class="px-sm py-xs gui-neutral-border-subtle border-b align-top">
+                      <code class="gui-success-fg font-mono text-sm">{{ m.type?.value === undefined ? '' : JSON.stringify(m.type.value) }}</code>
                     </td>
                   </tr>
                 </tbody>
@@ -259,18 +263,18 @@
           class="p-lg min-w-0"
         >
           <div class="mb-lg">
-            <h1 class="text-2xl mb-5 font-mono font-bold gui-neutral-fg">
+            <h1 class="gui-neutral-fg mb-5 font-mono text-2xl font-bold">
               @hdnax/sqlingo.js
               <span
                 v-if="data?.packageVersion"
-                class="text-md font-normal gui-neutral-fg-muted"
+                class="text-md gui-neutral-fg-muted font-normal"
               >v{{ data.packageVersion }}</span>
             </h1>
-            <div class="mb-6 flex gap-sm mt-sm">
+            <div class="gap-sm mt-sm mb-6 flex">
               <a
                 href="https://www.npmjs.com/package/@hdnax/sqlingo.js"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
               >
                 <img
                   src="https://img.shields.io/npm/v/@hdnax/sqlingo.js"
@@ -296,7 +300,7 @@
               A JavaScript/TypeScript port of <a
                 href="https://github.com/tobymao/sqlglot"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
               >SQLGlot</a>, which is a comprehensive SQL parser, transpiler, optimizer, and engine.
             </p>
             <p>
@@ -304,7 +308,7 @@
             </p>
             <p>Supports TypeScript &amp; CJS/ESM. Works in Node.js and the browser.</p>
 
-            <ul class="links-list flex gap-md list-none p-0">
+            <ul class="links-list gap-md flex list-none p-0">
               <li><a href="https://github.com/huydo862003/sqlingo.js">GitHub</a></li>
               <li><a href="https://github.com/huydo862003/sqlingo.js/issues">Issues</a></li>
               <li><a href="https://github.com/huydo862003/sqlingo.js/blob/master/CHANGELOG.md">Changelog</a></li>
@@ -446,15 +450,6 @@ import {
 } from '@/types/typedoc';
 import MainLayout from '@/layout/main/MainLayout.vue';
 
-interface TypeInfo {
-  type: string;
-  name?: string;
-  value?: unknown;
-  elementType?: TypeInfo;
-  typeArguments?: TypeInfo[];
-  types?: TypeInfo[];
-}
-
 interface ReflectionFlags {
   isStatic?: boolean;
   isOptional?: boolean;
@@ -486,6 +481,15 @@ interface ReflectionNode {
   type?: TypeInfo;
 }
 
+interface TypeInfo {
+  type: string;
+  name?: string;
+  value?: unknown;
+  elementType?: TypeInfo;
+  typeArguments?: TypeInfo[];
+  types?: TypeInfo[];
+}
+
 const base = import.meta.env.BASE_URL;
 
 const data = ref<ReflectionNode | null>(null);
@@ -501,15 +505,21 @@ const navBreadcrumb = computed(() => {
       href: `${base}api-reference/`,
     },
   ];
+
   if (selected.value) crumbs.push({
     label: selected.value.name,
   });
+
   return crumbs;
 });
 
 const selected = ref<ReflectionNode | null>(null);
 const query = ref('');
 const sidebarOpen = ref(false);
+
+function toggleSidebar () {
+  sidebarOpen.value = !sidebarOpen.value;
+}
 
 useSeoMeta({
   title: () => selected.value ? `${selected.value.name} | API Reference | sqlingo.js` : 'API Reference: JavaScript SQL Parser Documentation | sqlingo.js',
@@ -614,11 +624,14 @@ function itemSlug (item: ReflectionNode): string {
 
 function selectBySlug (slug: string): boolean {
   const item = topLevel.value.find((n) => itemSlug(n) === slug);
+
   if (item) {
     selected.value = item;
     mainElement.value?.scrollTo(0, 0);
+
     return true;
   }
+
   return false;
 }
 
@@ -626,6 +639,7 @@ import('virtual:typedoc').then((module_) => {
   data.value = module_.default as ReflectionNode | null;
   // after data loads, check URL hash
   const hash = window.location.hash.slice(1);
+
   if (hash) selectBySlug(hash);
 });
 
@@ -660,6 +674,7 @@ const GROUP_ORDER: Array<[string, number[]]> = [
 
 const navGroups = computed(() => {
   const search = query.value.toLowerCase();
+
   return GROUP_ORDER.flatMap(([
     label,
     kinds,
@@ -667,6 +682,7 @@ const navGroups = computed(() => {
     const items = topLevel.value.filter(
       (n) => kinds.includes(n.kind) && (!search || n.name.toLowerCase().includes(search)),
     );
+
     return items.length
       ? [
         {
@@ -678,10 +694,11 @@ const navGroups = computed(() => {
   });
 });
 
-function select (item: ReflectionNode) {
-  selected.value = item;
-  mainElement.value?.scrollTo(0, 0);
-  window.location.hash = itemSlug(item);
+function comment (node: ReflectionNode): string {
+  const text = (node.comment?.summary ?? []).map((part) => part.text).join('')
+    .trim();
+
+  return marked(text) as string;
 }
 
 function kindLabel (kind: number): string {
@@ -694,46 +711,49 @@ function kindSlug (kind: number): string {
   return kindLabel(kind).toLowerCase();
 }
 
-function comment (node: ReflectionNode): string {
-  const text = (node.comment?.summary ?? []).map((part) => part.text).join('')
-    .trim();
-  return marked(text) as string;
+function memberType (node: ReflectionNode): string {
+  if (node.type) return typeString(node.type);
+  if (node.signatures?.[0]?.type) return typeString(node.signatures[0].type);
+
+  return '';
+}
+
+function select (item: ReflectionNode) {
+  selected.value = item;
+  mainElement.value?.scrollTo(0, 0);
+  window.location.hash = itemSlug(item);
+}
+
+function sourceFile (node: ReflectionNode): string {
+  const source = node.sources?.[0];
+
+  return source ? `${source.fileName}:${source.line}` : '';
+}
+
+function sourceLine (node: ReflectionNode): string {
+  const source = node.sources?.[0];
+
+  return source ? `L${source.line}` : '';
 }
 
 function sourceUrl (node: ReflectionNode): string | null {
   return node.sources?.[0]?.url ?? null;
 }
 
-function sourceFile (node: ReflectionNode): string {
-  const source = node.sources?.[0];
-  return source ? `${source.fileName}:${source.line}` : '';
-}
-
-function sourceLine (node: ReflectionNode): string {
-  const source = node.sources?.[0];
-  return source ? `L${source.line}` : '';
-}
-
 function typeString (typeInfo: TypeInfo | undefined): string {
   if (!typeInfo) return '';
   switch (typeInfo.type) {
-    case 'intrinsic':
-    case 'reference':
-      return typeInfo.typeArguments?.length
-        ? `${typeInfo.name}<${typeInfo.typeArguments.map(typeString).join(', ')}>`
-        : (typeInfo.name ?? '?');
-    case 'literal': return JSON.stringify(typeInfo.value);
-    case 'array': return `${typeString(typeInfo.elementType)}[]`;
-    case 'union': return (typeInfo.types ?? []).map(typeString).join(' | ');
-    case 'intersection': return (typeInfo.types ?? []).map(typeString).join(' & ');
-    default: return typeInfo.name ?? typeInfo.type ?? '?';
+  case 'intrinsic':
+  case 'reference':
+    return typeInfo.typeArguments?.length
+      ? `${typeInfo.name}<${typeInfo.typeArguments.map(typeString).join(', ')}>`
+      : (typeInfo.name ?? '?');
+  case 'literal': return JSON.stringify(typeInfo.value);
+  case 'array': return `${typeString(typeInfo.elementType)}[]`;
+  case 'union': return (typeInfo.types ?? []).map(typeString).join(' | ');
+  case 'intersection': return (typeInfo.types ?? []).map(typeString).join(' & ');
+  default: return typeInfo.name ?? typeInfo.type ?? '?';
   }
-}
-
-function memberType (node: ReflectionNode): string {
-  if (node.type) return typeString(node.type);
-  if (node.signatures?.[0]?.type) return typeString(node.signatures[0].type);
-  return '';
 }
 
 const HIDE_KINDS = new Set<number>([ReflectionKind.Constructor]);
@@ -745,6 +765,7 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
 }
 </script>
 
+<!-- eslint-disable vue/enforce-style-attribute -->
 <style>
 .prose h2 {
   font-size: var(--text-lg);
@@ -781,3 +802,4 @@ function visibleMembers (node: ReflectionNode): ReflectionNode[] {
   margin-bottom: 0;
 }
 </style>
+<!-- eslint-enable vue/enforce-style-attribute -->

@@ -264,6 +264,7 @@ function derivedTableValuesToUnnest (this: Generator, expression: ValuesExpr): s
 
   const structs: StructExpr[] = [];
   const aliasExpr = expression.args.alias;
+
   for (const tup of expression.findAll(TupleExpr)) {
     const fieldAliases = filterInstanceOf(
       aliasExpr && aliasExpr.args.columns
@@ -279,6 +280,7 @@ function derivedTableValuesToUnnest (this: Generator, expression: ValuesExpr): s
         this: toIdentifier(name),
         expression: (tup.args.expressions || [])[i],
       }));
+
     structs.push(new StructExpr({
       expressions,
     }));
@@ -289,6 +291,7 @@ function derivedTableValuesToUnnest (this: Generator, expression: ValuesExpr): s
       columns: [aliasExpr.args.this],
     })
     : undefined;
+
   return this.unnestSql(
     new UnnestExpr({
       expressions: [array(...structs)],
@@ -299,16 +302,19 @@ function derivedTableValuesToUnnest (this: Generator, expression: ValuesExpr): s
 
 function returnsPropertySql (this: Generator, expression: ReturnsPropertyExpr): string {
   let thisExpr: string | Expression | undefined = expression.args.this;
+
   if (thisExpr instanceof SchemaExpr) {
     thisExpr = `${this.sql(thisExpr, 'this')} <${this.expressions(thisExpr)}>`;
   } else {
     thisExpr = this.sql(thisExpr);
   }
+
   return `RETURNS ${thisExpr}`;
 }
 
 function createSql (this: Generator, expression: CreateExpr): string {
   const returns = expression.find(ReturnsPropertyExpr);
+
   if (expression.args.kind === CreateExprKind.FUNCTION && returns && returns.args.isTable) {
     expression.setArgKey('kind', 'TABLE FUNCTION');
 
@@ -324,11 +330,13 @@ function aliasOrderedGroup (expression: Expression): Expression {
   if (expression instanceof SelectExpr) {
     const group = expression.args.group;
     const order = expression.args.order;
+
     if (group && order) {
       const aliases: Record<string, IdentifierExpr> = {};
 
       for (const select of expression.selects) {
         const selectAlias = narrowInstanceOf(select.args.alias, IdentifierExpr);
+
         if (select instanceof AliasExpr && selectAlias) {
           aliases[select.args.this?.toString() ?? ''] = selectAlias;
         }
@@ -354,6 +362,7 @@ function aliasOrderedGroup (expression: Expression): Expression {
       }
     }
   }
+
   return expression;
 }
 
@@ -367,11 +376,13 @@ export function pushdownCteColumnNames (expression: Expression): Expression {
   }
 
   const alias = expression.args.alias;
+
   if (!alias) {
     return expression;
   }
 
   const columns = alias.getArgKey('columns');
+
   if (
     !Array.isArray(columns)
     || !columns.length
@@ -389,6 +400,7 @@ export function pushdownCteColumnNames (expression: Expression): Expression {
       'Can\'t push down CTE column names for star queries. Run the query through'
       + ' the optimizer or use \'qualify\' to expand the star projections first.',
     );
+
     return expression;
   }
 
@@ -432,7 +444,9 @@ export function buildParseTimestamp (args: Expression[]): StrToTimeExpr {
     seqGet(args, 1),
     seqGet(args, 0),
   ]);
+
   thisExpr.setArgKey('zone', seqGet(args, 2));
+
   return thisExpr;
 }
 
@@ -441,7 +455,9 @@ export function buildParseTimestamp (args: Expression[]): StrToTimeExpr {
  */
 export function buildTimestamp (args: Expression[]): TimestampExpr {
   const timestamp = TimestampExpr.fromArgList(args);
+
   timestamp.setArgKey('withTz', true);
+
   return timestamp;
 }
 
@@ -450,6 +466,7 @@ export function buildTimestamp (args: Expression[]): TimestampExpr {
  */
 export function buildDate (args: Expression[]): DateExpr | DateFromPartsExpr {
   const exprType = args.length === 3 ? DateFromPartsExpr : DateExpr;
+
   return exprType.fromArgList(args) as DateExpr | DateFromPartsExpr;
 }
 
@@ -482,6 +499,7 @@ export function buildJsonStripNulls (args: Expression[]): JsonStripNullsExpr {
   for (const arg of args.slice(1)) {
     if (arg instanceof KwargExpr) {
       const kwargName = arg.args.this?.name.toLowerCase();
+
       if (kwargName !== undefined) {
         expression.setArgKey(kwargName, arg);
       }
@@ -535,6 +553,7 @@ export function buildTime (args: Expression[]): Expression {
   if (args.length === 2) {
     return TimeExpr.fromArgList(args);
   }
+
   return TimeFromPartsExpr.fromArgList(args);
 }
 
@@ -545,6 +564,7 @@ export function buildDatetime (args: Expression[]): Expression {
   if (args.length === 2) {
     return DatetimeExpr.fromArgList(args);
   }
+
   return TimestampFromPartsExpr.fromArgList(args);
 }
 
@@ -583,9 +603,11 @@ export function buildRegexpExtract<T extends Expression> (
     dialect: BigQuery;
   }): T => {
     let group = false;
+
     try {
       const pattern = args[1]?.name;
       const matches = pattern.match(/(^|[^\\])(\\\\)*\((?!\?)/g)?.length ?? 0;
+
       group = matches === 1;
     } catch {
       group = false;
@@ -620,6 +642,7 @@ export function buildExtractJsonWithDefaultPath<T extends typeof Expression> (
       // The default value for the JSONPath is '$' i.e all of the data
       args.push(LiteralExpr.string('$'));
     }
+
     return buildExtractJsonWithPath(exprType)(args, options) as InstanceType<T>;
   };
 }
@@ -696,7 +719,9 @@ function buildFormatTime (exprType: new (args: any) => Expression): (args: Expre
         args[0],
       ],
     );
+
     formatted.setArgKey('zone', args[2]);
+
     return formatted;
   };
 }
@@ -734,10 +759,12 @@ function strToDatetimeSql (this: Generator, expression: StrToDateExpr | StrToTim
       dialectCls.INVERSE_FORMAT_MAPPING,
       dialectCls.INVERSE_FORMAT_TRIE,
     );
+
     return `SAFE_CAST(${thisStr} AS ${dtype} FORMAT ${fmt})`;
   }
 
   const fmt = this.formatTime(expression);
+
   return this.func(`PARSE_${dtype}`, [
     fmt,
     thisStr,
@@ -753,6 +780,7 @@ function tsOrDsDiffSql (this: Generator, expression: TsOrDsDiffExpr): string {
   expression.args.this?.replace(cast(expression.args.this, DataTypeExprKind.TIMESTAMP.toUpperCase()));
   expression.args.expression?.replace(cast(expression.args.expression, DataTypeExprKind.TIMESTAMP.toUpperCase()));
   const unit = unitToVar(expression);
+
   return this.func('DATE_DIFF', [
     expression.args.this,
     expression.args.expression,
@@ -782,6 +810,7 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
     }),
     DataTypeExprKind.BIGINT,
   );
+
   return this.func('TIMESTAMP_SECONDS', [unixSeconds]);
 }
 
@@ -883,9 +912,11 @@ export class BigQueryTokenizer extends Tokenizer {
       'TIMESTAMP': TokenType.TIMESTAMPTZ,
       'WHILE': TokenType.COMMAND,
     };
+
     delete keywords['DIV'];
     delete keywords['VALUES'];
     delete keywords['/*+'];
+
     return keywords;
   };
 }
@@ -900,8 +931,10 @@ export class BigQueryParser extends Parser {
         TokenType.GRANT,
         TokenType.STRAIGHT_JOIN,
       ]);
+
       s.delete(TokenType.ASC);
       s.delete(TokenType.DESC);
+
       return s;
     })();
   }
@@ -913,8 +946,10 @@ export class BigQueryParser extends Parser {
       ...Parser.NO_PAREN_FUNCTIONS,
       [TokenType.CURRENT_DATETIME]: CurrentDatetimeExpr,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -932,8 +967,10 @@ export class BigQueryParser extends Parser {
         ...Parser.ALIAS_TOKENS,
         TokenType.GRANT,
       ]);
+
       s.delete(TokenType.ASC);
       s.delete(TokenType.DESC);
+
       return s;
     })();
   }
@@ -946,8 +983,10 @@ export class BigQueryParser extends Parser {
         TokenType.GRANT,
         TokenType.STRAIGHT_JOIN,
       ]);
+
       s.delete(TokenType.ASC);
       s.delete(TokenType.DESC);
+
       return s;
     })();
   }
@@ -959,8 +998,10 @@ export class BigQueryParser extends Parser {
         ...Parser.COMMENT_TABLE_ALIAS_TOKENS,
         TokenType.GRANT,
       ]);
+
       s.delete(TokenType.ASC);
       s.delete(TokenType.DESC);
+
       return s;
     })();
   }
@@ -972,8 +1013,10 @@ export class BigQueryParser extends Parser {
         ...Parser.UPDATE_ALIAS_TOKENS,
         TokenType.GRANT,
       ]);
+
       s.delete(TokenType.ASC);
       s.delete(TokenType.DESC);
+
       return s;
     })();
   }
@@ -1019,7 +1062,9 @@ export class BigQueryParser extends Parser {
       const m = {
         ...Parser.RANGE_PARSERS,
       };
+
       delete m[TokenType.OVERLAPS];
+
       return m;
     })();
   }
@@ -1204,8 +1249,10 @@ export class BigQueryParser extends Parser {
           this: var_(seqGet(args, 0)),
         }),
       };
-        // Remove SEARCH to avoid parameter routing issues - let it fall back to Anonymous function
+
+      // Remove SEARCH to avoid parameter routing issues - let it fall back to Anonymous function
       delete fns['SEARCH'];
+
       return fns;
     })();
   }
@@ -1253,7 +1300,9 @@ export class BigQueryParser extends Parser {
           return (this as BigQueryParser).parseMl(MlForecastExpr);
         },
       };
+
       delete (fps as Record<string, unknown>)['TRIM'];
+
       return fps;
     })();
   }
@@ -1261,11 +1310,14 @@ export class BigQueryParser extends Parser {
   parseForIn (): ForInExpr | CommandExpr {
     const index = this.index;
     const thisExpr = this.parseRange();
+
     this.matchTextSeq('DO');
     if (this.match(TokenType.COMMAND)) {
       this.retreat(index);
+
       return this.parseAsCommand(this.prev)!;
     }
+
     return this.expression(ForInExpr, {
       this: thisExpr,
       expression: this.parseStatement(),
@@ -1274,6 +1326,7 @@ export class BigQueryParser extends Parser {
 
   parseExportData (): ExportExpr {
     this.matchTextSeq('DATA');
+
     return this.expression(ExportExpr, {
       connection: this.matchTextSeq('WITH') && this.matchTextSeq('CONNECTION') && this.parseTableParts(),
       options: this.parseProperties(),
@@ -1283,24 +1336,29 @@ export class BigQueryParser extends Parser {
 
   parseMakeInterval (): MakeIntervalExpr {
     const expr = new MakeIntervalExpr({});
+
     for (const argKey of MAKE_INTERVAL_KWARGS) {
       const value = this.parseLambda();
+
       if (!value) break;
 
       // Non-named arguments are filled sequentially, (optionally) followed by named arguments
       // that can appear in any order e.g MAKE_INTERVAL(1, minute => 5, day => 2)
       const key = value instanceof KwargExpr ? value.args.this?.name : argKey;
+
       if (key !== undefined) {
         expr.setArgKey(key, value);
       }
       this.match(TokenType.COMMA);
     }
+
     return expr;
   }
 
   parseMl<T extends Expression> (exprType: new (args: any) => T, kwargs: Record<string, unknown> = {}): T {
     this.matchTextSeq('MODEL');
     const thisExpr = this.parseTable();
+
     this.match(TokenType.COMMA);
     this.matchTextSeq('TABLE');
 
@@ -1310,6 +1368,7 @@ export class BigQueryParser extends Parser {
     })
       ? this.parseTable()
       : undefined;
+
     this.match(TokenType.COMMA);
 
     return this.expression(exprType, {
@@ -1323,9 +1382,11 @@ export class BigQueryParser extends Parser {
   parseTranslate (): TranslateExpr | MlTranslateExpr {
     // Check if this is ML.TRANSLATE by looking at the preceding token
     const token = this.tokens[this.index - 4];
+
     if (token && token.text.toUpperCase() === 'ML') {
       return this.parseMl(MlTranslateExpr);
     }
+
     return TranslateExpr.fromArgList(this.parseFunctionArgs());
   }
 
@@ -1338,24 +1399,29 @@ export class BigQueryParser extends Parser {
 
     while (this.match(TokenType.COMMA)) {
       const arg = this.parseLambda();
+
       // Get the LHS of the Kwarg and set the arg to that value, e.g
       // "num_rows => 1" sets the expr's `num_rows` arg
       if (arg) {
         const kwargThis = (arg as KwargExpr).args.this;
+
         if (kwargThis) {
           expr.setArgKey(kwargThis.name, arg);
         }
       }
     }
+
     return expr;
   }
 
   parseVectorSearch (): VectorSearchExpr {
     this.match(TokenType.TABLE);
     const baseTable = this.parseTable();
+
     this.match(TokenType.COMMA);
 
     const columnToSearch = this.parseBitwise();
+
     this.match(TokenType.COMMA);
 
     this.match(TokenType.TABLE);
@@ -1373,14 +1439,17 @@ export class BigQueryParser extends Parser {
         advance: false,
       })) {
         const queryColumn = this.parseString();
+
         expr.setArgKey('queryColumnToSearch', queryColumn);
       } else {
         const arg = this.parseLambda();
+
         if (arg instanceof KwargExpr && arg.args.this) {
           expr.setArgKey(arg.args.this.name, arg);
         }
       }
     }
+
     return expr;
   }
 
@@ -1465,6 +1534,7 @@ export class BigQueryParser extends Parser {
       if (table.db) {
         const previousDb = table.args.db;
         const parts = table.db.split('.');
+
         if (parts.length === 2 && !narrowInstanceOf(table.args.db, IdentifierExpr)?.quoted) {
           table.setArgKey(
             'catalog',
@@ -1482,6 +1552,7 @@ export class BigQueryParser extends Parser {
       } else {
         const previousThis = table.args.this;
         const parts = table.name.split('.');
+
         if (parts.length === 2 && !narrowInstanceOf(table.args.this, IdentifierExpr)?.quoted) {
           table.setArgKey(
             'db',
@@ -1529,6 +1600,7 @@ export class BigQueryParser extends Parser {
       });
 
       let finalThis: Expression | undefined = thisNode;
+
       if (0 < rest.length && finalThis) {
         finalThis = DotExpr.build([
           finalThis,
@@ -1549,6 +1621,7 @@ export class BigQueryParser extends Parser {
 
     const tableParts = table.parts;
     const len = tableParts.length;
+
     if (1 < len && tableParts[len - 2].name.toUpperCase() === 'INFORMATION_SCHEMA') {
       alias(
         table,
@@ -1603,6 +1676,7 @@ export class BigQueryParser extends Parser {
         let finalThis: Expression = thisNode || toIdentifier('', {
           quoted: true,
         });
+
         if (0 < rest.length && finalThis) {
           finalThis = DotExpr.build([
             finalThis,
@@ -1677,6 +1751,7 @@ export class BigQueryParser extends Parser {
           offset,
           safe,
         ] = (this._constructor as typeof BigQueryParser).BRACKET_OFFSETS[name];
+
         bracket.setArgKey('offset', offset);
         bracket.setArgKey('safe', safe);
         expression.replace(narrowInstanceOf(expression.args.expressions?.[0], Expression));
@@ -1701,6 +1776,7 @@ export class BigQueryParser extends Parser {
     }
 
     let unnestExpr = seqGet(unnest.args.expressions ?? [], 0);
+
     if (unnestExpr instanceof Expression) {
       unnestExpr = annotateTypes(unnestExpr, {
         dialect: this.dialect,
@@ -1764,11 +1840,13 @@ export class BigQueryGenerator extends Generator {
       ],
       ...super.AFTER_HAVING_MODIFIER_TRANSFORMS,
     ]);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -2519,6 +2597,7 @@ export class BigQueryGenerator extends Generator {
   dateTruncSql (expression: DateTruncExpr): string {
     const unit = expression.unit;
     const unitSql = unit?.isString ? unit.name : this.sql(unit);
+
     return this.func('DATE_TRUNC', [
       expression.args.this,
       unitSql,
@@ -2549,6 +2628,7 @@ export class BigQueryGenerator extends Generator {
         this: tableParts,
         quoted: true,
       }));
+
       return `${tablePath}.${this.sql(expression, 'this')}`;
     }
 
@@ -2559,6 +2639,7 @@ export class BigQueryGenerator extends Generator {
   // Depending on the context, `x.y` may not resolve to the same data source as `x`.`y`
     if (expression.meta?.quotedTable) {
       const tableParts = expression.parts.map((p) => p.name).join('.');
+
       return this.sql(new IdentifierExpr({
         this: tableParts,
         quoted: true,
@@ -2644,6 +2725,7 @@ export class BigQueryGenerator extends Generator {
 
     if (expressions && expressions.length === 1 && thisNode instanceof Expression && thisNode.isType(DataTypeExprKind.STRUCT)) {
       let arg = expressions[0];
+
       if (!arg.type) {
         arg = annotateTypes(arg, {
           dialect: this.dialect,
@@ -2684,6 +2766,7 @@ export class BigQueryGenerator extends Generator {
     if (expression.name === 'TIMESTAMP') {
       expression.setArgKey('this', 'SYSTEM_TIME');
     }
+
     return super.versionSql(expression);
   }
 
@@ -2696,6 +2779,7 @@ export class BigQueryGenerator extends Generator {
     if (thisNode instanceof LowerExpr && expr instanceof LowerExpr) {
       const tn = thisNode.args.this;
       const ex = expr.args.this;
+
       thisNode = (tn instanceof Expression || typeof tn === 'string') ? tn : thisNode;
       expr = (ex instanceof Expression || typeof ex === 'string') ? ex : expr;
     }
@@ -2719,6 +2803,7 @@ export class BigQueryGenerator extends Generator {
     // are roundtripped unaffected. The inner check excludes ARRAY(SELECT ...) expressions
     if (thisNode instanceof ArrayExpr) {
       const elem = seqGet(thisNode.args.expressions || [], 0);
+
       if (!(elem instanceof Expression && elem.find(QueryExpr))) {
         return `${this.sql(expression, 'to')}${this.sql(thisNode)}`;
       }
@@ -2735,9 +2820,11 @@ export class BigQueryGenerator extends Generator {
     });
 
     let defaultValue = this.sql(expression, 'default');
+
     defaultValue = defaultValue ? ` DEFAULT ${defaultValue}` : '';
 
     let kind = this.sql(expression, 'kind');
+
     kind = kind ? ` ${kind}` : '';
 
     return `${variables}${kind}${defaultValue}`;
@@ -2861,6 +2948,7 @@ export class BigQuery extends Dialect {
   @cache
   static get COERCES_TO (): Map<string, Set<string>> {
     const base = new Map<string, Set<string>>();
+
     for (const [
       k,
       v,
@@ -2878,6 +2966,7 @@ export class BigQuery extends Dialect {
       DataTypeExprKind.TIMESTAMP,
       DataTypeExprKind.TIMESTAMPTZ,
     ]) base.get(DataTypeExprKind.VARCHAR)?.add(t);
+
     return base;
   };
 
@@ -2892,6 +2981,7 @@ export class BigQuery extends Dialect {
       && this.normalizationStrategy === NormalizationStrategy.CASE_INSENSITIVE
     ) {
       let parent = expression.parent;
+
       while (parent instanceof DotExpr) {
         parent = parent.parent;
       }

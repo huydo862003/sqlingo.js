@@ -83,8 +83,10 @@ class PRQLParser extends Parser {
     const noParenFunctions = {
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -168,6 +170,7 @@ class PRQLParser extends Parser {
 
   parseEquality (): Expression | undefined {
     const eq = this.parseTokens(() => this.parseComparison(), (this._constructor as typeof PRQLParser).EQUALITY);
+
     if (!(eq instanceof EqExpr || eq instanceof NeqExpr)) {
       return eq;
     }
@@ -177,6 +180,7 @@ class PRQLParser extends Parser {
         this: eq.args.this,
         expression: eq.args.expression,
       });
+
       return eq instanceof EqExpr
         ? isExp
         : new NotExpr({
@@ -188,17 +192,20 @@ class PRQLParser extends Parser {
         this: eq.args.expression,
         expression: eq.args.this,
       });
+
       return eq instanceof EqExpr
         ? isExp
         : new NotExpr({
           this: isExp,
         });
     }
+
     return eq;
   }
 
   parseStatement (): Expression | undefined {
     const expression = this.parseExpression();
+
     return expression ? expression : this.parseQuery();
   }
 
@@ -216,6 +223,7 @@ class PRQLParser extends Parser {
     while (this.matchTexts(Object.keys((this._constructor as typeof PRQLParser).TRANSFORM_PARSERS))) {
       const transform = (this._constructor as typeof PRQLParser).TRANSFORM_PARSERS[this.prev?.text.toUpperCase() ?? ''];
       const result = transform.call(this, query);
+
       if (result) {
         query = result;
       }
@@ -244,22 +252,26 @@ class PRQLParser extends Parser {
       }
     } else {
       const expression = parseMethod();
+
       selects = expression
         ? [expression]
         : [];
     }
 
     const projections: Record<string, Expression> = {};
+
     (query as SelectExpr).args.expressions?.forEach((select) => {
       projections[select.aliasOrName] = select instanceof AliasExpr ? (select.args.this ?? select) : select;
     });
 
     const transformedSelects = selects.map((select) => {
       if (!select) return select;
+
       return select.transform((s) => {
         if (s instanceof ColumnExpr && projections[s.name]) {
           return projections[s.name].copy();
         }
+
         return s;
       }, {
         copy: false,
@@ -283,6 +295,7 @@ class PRQLParser extends Parser {
 
   parseTake (query: QueryExpr): QueryExpr | undefined {
     const num = this.parseNumber();
+
     return num ? query.limit(num) : undefined;
   }
 
@@ -290,19 +303,23 @@ class PRQLParser extends Parser {
     const asc = this.match(TokenType.PLUS);
     const desc = this.match(TokenType.DASH) || (asc && false);
     const term = super.parseOrdered(parseMethod);
+
     if (term && desc) {
       term.setArgKey('desc', true);
       term.setArgKey('nullsFirst', false);
     }
+
     return term;
   }
 
   parseOrderBy (query: SelectExpr): QueryExpr {
     const lBrace = this.match(TokenType.L_BRACE);
     const expressions = this.parseCsv(() => this.parseOrdered());
+
     if (lBrace && !this.match(TokenType.R_BRACE)) {
       this.raiseError('Expecting }');
     }
+
     return query.orderBy(new OrderExpr({
       expressions: expressions.filter(Boolean),
     }), {
@@ -312,6 +329,7 @@ class PRQLParser extends Parser {
 
   parseAggregate (): Expression | undefined {
     let alias: string | undefined = undefined;
+
     if (this.next && this.next.tokenType === TokenType.ALIAS) {
       alias = this.parseIdVar({
         anyToken: true,
@@ -326,6 +344,7 @@ class PRQLParser extends Parser {
     if (funcBuilder) {
       this.advance();
       const args = this.parseColumn();
+
       func = funcBuilder(args
         ? [args]
         : [], {
@@ -333,6 +352,7 @@ class PRQLParser extends Parser {
       });
     } else {
       this.raiseError(`Unsupported aggregation function ${name}`);
+
       return undefined;
     }
 
@@ -342,6 +362,7 @@ class PRQLParser extends Parser {
         alias,
       });
     }
+
     return func;
   }
 
@@ -350,14 +371,18 @@ class PRQLParser extends Parser {
       const alias = this.parseIdVar({
         anyToken: true,
       })?.name;
+
       this.match(TokenType.ALIAS);
       const parsedExpr = this.parseAssignment();
+
       if (!parsedExpr) return undefined;
+
       return new AliasExpr({
         this: parsedExpr,
         alias,
       });
     }
+
     return this.parseAssignment();
   }
 
@@ -380,6 +405,7 @@ class PRQLParser extends Parser {
     const {
       joins = false, skipFromToken = false,
     } = options;
+
     if (!skipFromToken && !this.match(TokenType.FROM)) {
       return undefined;
     }
@@ -398,11 +424,13 @@ export class PRQLGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 

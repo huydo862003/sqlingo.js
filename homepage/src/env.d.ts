@@ -6,6 +6,7 @@ declare module '*.vue' {
   } from 'vue';
 
   const component: DefineComponent;
+
   export default component;
 }
 
@@ -16,5 +17,6 @@ interface ReflectionNode {
 
 declare module 'virtual:typedoc' {
   const data: ReflectionNode | null;
+
   export default data;
 }

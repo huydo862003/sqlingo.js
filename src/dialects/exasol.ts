@@ -115,6 +115,7 @@ const DATE_UNITS = new Set([
 function sha2Sql (this: ExasolGenerator, expression: Sha2Expr): string {
   const length = expression.text('length');
   const funcName = length === '256' ? 'HASH_SHA256' : 'HASH_SHA512';
+
   return this.func(funcName, [expression.args.this]);
 }
 
@@ -123,6 +124,7 @@ function dateDiffSql (this: ExasolGenerator, expression: DateDiffExpr | TsOrDsDi
 
   if (!DATE_UNITS.has(unit)) {
     this.unsupported(`'${unit}' is not supported in Exasol.`);
+
     return this.functionFallbackSql(expression);
   }
 
@@ -140,6 +142,7 @@ function buildZeroIfNull (args: Expression[]): IfExpr {
     this: seqGet(args, 0),
     expression: null_(),
   });
+
   return new IfExpr({
     this: cond,
     true: LiteralExpr.number(0),
@@ -155,6 +158,7 @@ function buildNullIfZero (args: Expression[]): IfExpr {
     this: seqGet(args, 0),
     expression: LiteralExpr.number(0),
   });
+
   return new IfExpr({
     this: cond,
     true: null_(),
@@ -168,9 +172,11 @@ function buildNullIfZero (args: Expression[]): IfExpr {
 function addLocalPrefixForAliases (expression: Expression): Expression {
   if (expression instanceof SelectExpr) {
     const aliases: Record<string, boolean> = {};
+
     expression.args.expressions?.forEach((sel) => {
       if (sel instanceof AliasExpr) {
         const aliasNode = sel.args.alias;
+
         if (aliasNode instanceof IdentifierExpr) {
           aliases[aliasNode.name] = aliasNode.args.quoted || false;
         }
@@ -193,6 +199,7 @@ function addLocalPrefixForAliases (expression: Expression): Expression {
     const prefixLocal = (node: Expression, visibleAliases: Record<string, boolean>): Expression => {
       if (node instanceof ColumnExpr && !node.args.table) {
         const colName = (node.args.this as IdentifierExpr).name;
+
         if (colName in visibleAliases) {
           return new ColumnExpr({
             this: toIdentifier(colName, {
@@ -204,6 +211,7 @@ function addLocalPrefixForAliases (expression: Expression): Expression {
           });
         }
       }
+
       return node;
     };
 
@@ -213,6 +221,7 @@ function addLocalPrefixForAliases (expression: Expression): Expression {
       'having',
     ].forEach((key) => {
       const arg = expression.args[key as keyof SelectExprArgs];
+
       if (arg instanceof Expression) {
         expression.setArgKey(key, arg.transform((node) => prefixLocal(node, aliases)));
       }
@@ -220,12 +229,15 @@ function addLocalPrefixForAliases (expression: Expression): Expression {
 
     const seenAliases: Record<string, boolean> = {};
     const newSelects: Expression[] = [];
+
     expression.args.expressions?.forEach((sel) => {
       if (sel instanceof AliasExpr) {
         const inner = sel.args.this?.transform((node) => prefixLocal(node, seenAliases));
+
         sel.setArgKey('this', inner);
 
         const aliasNode = sel.args.alias;
+
         if (aliasNode instanceof IdentifierExpr) {
           seenAliases[aliasNode.name] = aliasNode.args.quoted || false;
         }
@@ -253,6 +265,7 @@ function truncSql (this: ExasolGenerator, kind: string, expression: TruncableExp
         ? `${kind} '${(node.args.this ?? '').replace('T', ' ')}'`
         : `DATE '${node.args.this ?? ''}'`;
   }
+
   return `DATE_TRUNC('${unit}', ${exprSql})`;
 }
 
@@ -277,6 +290,7 @@ function substringIndexSql (this: ExasolGenerator, expression: SubstringIndexExp
   const num = countNode instanceof LiteralExpr && countNode.isNumber ? parseFloat(countNode.args.this ?? '0') : 0;
 
   const haystackSql = this.sql(thisNode);
+
   if (num === 0) {
     return this.func('SUBSTR', [
       haystackSql,
@@ -313,6 +327,7 @@ function substringIndexSql (this: ExasolGenerator, expression: SubstringIndexExp
       `${nullablePos} + ${this.func('LENGTH', [delimiterSql])}`,
       direction,
     ]);
+
     return this.func('SUBSTR', [
       haystackSql,
       start,
@@ -323,6 +338,7 @@ function substringIndexSql (this: ExasolGenerator, expression: SubstringIndexExp
     `${nullablePos} - 1`,
     this.func('LENGTH', [haystackSql]),
   ]);
+
   return this.func('SUBSTR', [
     haystackSql,
     direction,
@@ -345,8 +361,10 @@ function qualifyUnscopedStar (expression: Expression): Expression {
 
   let hasOtherExpression = false;
   let bareStarExpr: Expression | null = null;
+
   for (const expr of selectExpressions) {
     const hasBareStar = isBareStar(expr);
+
     if (hasBareStar && bareStarExpr === null) {
       bareStarExpr = expr;
     } else if (!hasBareStar) {
@@ -360,11 +378,13 @@ function qualifyUnscopedStar (expression: Expression): Expression {
   }
 
   const scope = buildScope(expression);
+
   if (!scope || !scope.selectedSources || Object.keys(scope.selectedSources).length === 0) {
     return expression;
   }
 
   const tableIdentifiers: IdentifierExpr[] = [];
+
   for (const [
     sourceName,
     sourceEntries,
@@ -374,6 +394,7 @@ function qualifyUnscopedStar (expression: Expression): Expression {
       sourceExpr instanceof TableExpr && sourceExpr.args.this instanceof IdentifierExpr
         ? (sourceExpr.args.this.copy() as IdentifierExpr)
         : toIdentifier(sourceName);
+
     tableIdentifiers.push(ident);
   }
 
@@ -387,6 +408,7 @@ function qualifyUnscopedStar (expression: Expression): Expression {
   );
 
   const newSelectExpressions: Expression[] = [];
+
   for (const selectExpr of selectExpressions) {
     if (isBareStar(selectExpr)) {
       newSelectExpressions.push(...qualifiedStarColumns);
@@ -396,6 +418,7 @@ function qualifyUnscopedStar (expression: Expression): Expression {
   }
 
   expression.setArgKey('expressions', newSelectExpressions);
+
   return expression;
 }
 
@@ -408,11 +431,13 @@ function addDateSql (this: ExasolGenerator, expression: DateAddExpr | DateSubExp
 
   if (!DATE_UNITS.has(unit)) {
     this.unsupported(`'${unit}' is not supported in Exasol.`);
+
     return this.functionFallbackSql(expression);
   }
 
   if (!expression.args.expression) return this.functionFallbackSql(expression);
   let offsetExpr: Expression = expression.args.expression;
+
   if (interval) {
     if (!interval.args.this) return this.functionFallbackSql(expression);
     offsetExpr = interval.args.this;
@@ -454,6 +479,7 @@ class ExasolTokenizer extends Tokenizer {
     };
 
     delete (keywords as any)['DIV'];
+
     return keywords;
   }
 }
@@ -476,8 +502,10 @@ class ExasolParser extends Parser {
       [TokenType.SYSTIMESTAMP]: SystimestampExpr,
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -612,9 +640,11 @@ class ExasolParser extends Parser {
 
   parseColumn (): Expression | undefined {
     const column = super.parseColumn();
+
     if (!(column instanceof ColumnExpr)) return column;
 
     const tableIdent = column.args.table;
+
     if (
       tableIdent instanceof IdentifierExpr
       && tableIdent.name.toUpperCase() === 'LOCAL'
@@ -622,6 +652,7 @@ class ExasolParser extends Parser {
     ) {
       column.setArgKey('table', undefined);
     }
+
     return column;
   }
 
@@ -640,11 +671,13 @@ class ExasolGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -752,6 +785,7 @@ class ExasolGenerator extends Generator {
     if (expression.isType([DataTypeExprKind.TIMESTAMPLTZ])) {
       return 'TIMESTAMP WITH LOCAL TIME ZONE';
     }
+
     return super.dataTypeSql(expression);
   }
 
@@ -854,6 +888,7 @@ class ExasolGenerator extends Generator {
         LevenshteinExpr,
         function (this: Generator, e: LevenshteinExpr) {
           unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
+
           return renameFunc('EDIT_DISTANCE').call(this, e);
         },
       ],
@@ -876,6 +911,7 @@ class ExasolGenerator extends Generator {
         RegexpExtractExpr,
         function (this: Generator, e: Expression) {
           unsupportedArgs.call(this, e, 'parameters', 'group');
+
           return renameFunc('REGEXP_SUBSTR').call(this, e);
         },
       ],
@@ -883,6 +919,7 @@ class ExasolGenerator extends Generator {
         RegexpReplaceExpr,
         function (this: Generator, e: Expression) {
           unsupportedArgs.call(this, e, 'modifiers');
+
           return renameFunc('REGEXP_REPLACE').call(this, e);
         },
       ],
@@ -894,6 +931,7 @@ class ExasolGenerator extends Generator {
         ApproxDistinctExpr,
         function (this: Generator, e: Expression) {
           unsupportedArgs.call(this, e, 'accuracy');
+
           return renameFunc('APPROXIMATE_COUNT_DISTINCT').call(this, e);
         },
       ],
@@ -1029,6 +1067,7 @@ class ExasolGenerator extends Generator {
         noLastDaySql,
       ],
     ]);
+
     return transforms;
   }
 
@@ -1036,6 +1075,7 @@ class ExasolGenerator extends Generator {
     const thisSql = this.sql(expression, 'this');
     const trueSql = this.sql(expression, 'true');
     const falseSql = this.sql(expression, 'false');
+
     return `IF ${thisSql} THEN ${trueSql} ELSE ${falseSql} ENDIF`;
   }
 
@@ -1047,6 +1087,7 @@ class ExasolGenerator extends Generator {
     if (expression.args.expressions && 0 < expression.args.expressions.length) {
       this.unsupported('Exasol does not support arguments in RANK');
     }
+
     return this.func('RANK', []);
   }
 
@@ -1055,6 +1096,7 @@ class ExasolGenerator extends Generator {
     const sourceTz = expression.args.sourceTz;
     const targetTz = expression.args.targetTz;
     const options = expression.args.options;
+
     return this.func('CONVERT_TZ', [
       timestamp,
       sourceTz,

@@ -16,23 +16,26 @@ import {
 // Build dbml model's indexes from sqlingo.js AST
 export function indexFromParameters (index: IndexExpr): DbmlIndex | undefined {
   const parameters = index.args.params;
+
   if (!(parameters instanceof IndexParametersExpr)) return undefined;
-  const cols = parameters.args.columns ?? [];
+  const columns_ = parameters.args.columns ?? [];
   const usingRaw = parameters.args.using as unknown;
   const using = usingRaw instanceof Expression
     ? extractIdentName(usingRaw)
     : typeof usingRaw === 'string' ? usingRaw : undefined;
 
-  const columns: DbmlIndexColumn[] = cols.map((col) => {
+  const columns: DbmlIndexColumn[] = columns_.map((column) => {
     const {
       expr, isExpression,
-    } = unwrapIndexColumn(col);
+    } = unwrapIndexColumn(column);
+
     return new DbmlIndexColumn({
       expression: isExpression ? expr.sql() : extractNodeText(expr),
       isExpression: isExpression || undefined,
     });
   });
   const name = index.args.this ? extractNodeText(index.args.this as Expression) : undefined;
+
   return new DbmlIndex({
     name,
     columns,
@@ -48,6 +51,7 @@ function unwrapIndexColumn (node: Expression): {
 } {
   const inner = node instanceof OrderedExpr && node.args.this instanceof Expression ? node.args.this : node;
   const isExpr = !(inner instanceof ColumnExpr || inner instanceof DotExpr);
+
   return {
     expr: inner,
     isExpression: isExpr,

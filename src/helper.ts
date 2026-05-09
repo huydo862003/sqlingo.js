@@ -83,10 +83,12 @@ export function suggestClosestMatchAndFail (
 export function seqGet<T> (seq: Iterable<T>, index: number): T | undefined {
   if (Array.isArray(seq)) {
     const i = index < 0 ? seq.length + index : index;
+
     return 0 <= i && i < seq.length ? seq[i] : undefined;
   }
   const arr = [...seq];
   const i = index < 0 ? arr.length + index : index;
+
   return 0 <= i && i < arr.length ? arr[i] : undefined;
 }
 
@@ -96,6 +98,7 @@ export function expressionValueToOrString<E extends Expression = Expression> (
   if (typeof value === 'boolean' || typeof value === 'number') {
     return String(value);
   }
+
   return value;
 }
 
@@ -117,6 +120,7 @@ export function ensureList<T> (value?: T | Iterable<T>): T[] {
   if (typeof value !== 'string' && isIterable<T>(value)) {
     return [...value];
   }
+
   return [value as T];
 }
 
@@ -142,6 +146,7 @@ export function ensureCollection<T> (value?: T | Iterable<T>): Iterable<T> {
   if (typeof value !== 'string' && !(value instanceof Expression) && isIterable<T>(value)) {
     return value;
   }
+
   return [value as T];
 }
 
@@ -163,7 +168,9 @@ export function csv (args: Iterable<string>, options: {
     sep = ', ',
   } = options;
   const filtered: string[] = [];
+
   for (const arg of args) if (arg) filtered.push(arg);
+
   return filtered.join(sep ?? ', ');
 }
 
@@ -180,6 +187,7 @@ function getCloseMatches (
 
   for (const possibility of possibilities) {
     const ratio = similarity(word, possibility);
+
     if (cutoff <= ratio) {
       results.push({
         match: possibility,
@@ -189,6 +197,7 @@ function getCloseMatches (
   }
 
   results.sort((a, b) => b.ratio - a.ratio);
+
   return results.slice(0, n).map((r) => r.match);
 }
 
@@ -203,6 +212,7 @@ function similarity (a: string, b: string): number {
   if (longer.length === 0) return 1.0;
 
   const editDistance = levenshteinDistance(shorter, longer);
+
   return (longer.length - editDistance) / longer.length;
 }
 
@@ -274,8 +284,10 @@ export function snakeToCamelCase (name: string): string {
  */
 export function whileChanging<T> (expression: T, func: (expr: T) => T): T {
   let current = expression;
+
   while (true) {
     const startHash = hashObject(current);
+
     current = func(current);
     const endHash = hashObject(current);
 
@@ -283,6 +295,7 @@ export function whileChanging<T> (expression: T, func: (expr: T) => T): T {
       break;
     }
   }
+
   return current;
 }
 
@@ -290,6 +303,7 @@ function hashObject (obj: unknown): string {
   if (obj instanceof Expression) {
     return obj.sql();
   }
+
   return JSON.stringify(obj);
 }
 
@@ -332,6 +346,7 @@ export function tsort<T> (dag: Map<T, Set<T>>): T[] {
 
   while (0 < dagCopy.size) {
     const current = new Set<T>();
+
     for (const [
       node,
       deps,
@@ -380,12 +395,14 @@ export function tsort<T> (dag: Map<T, Set<T>>): T[] {
  */
 export function findNewName (taken: Iterable<string>, base: string): string {
   const takenSet = new Set(taken);
+
   if (!takenSet.has(base)) {
     return base;
   }
 
   let i = 2;
   let newName = `${base}_${i}`;
+
   while (takenSet.has(newName)) {
     i++;
     newName = `${base}_${i}`;
@@ -411,6 +428,7 @@ export function findNewName (taken: Iterable<string>, base: string): string {
 export function isInt (text: string): boolean {
   return isType(text, (s) => {
     const num = Number(s);
+
     return Number.isInteger(num);
   });
 }
@@ -433,6 +451,7 @@ export function isInt (text: string): boolean {
 export function isFloat (text: string): boolean {
   return isType(text, (s) => {
     const num = Number(s);
+
     return !isNaN(num) && isFinite(num);
   });
 }
@@ -465,6 +484,7 @@ function isType (text: string, validator: (text: string) => boolean): boolean {
  */
 export function nameSequence (prefix: string): () => string {
   let counter = 0;
+
   return () => `${prefix}${counter++}`;
 }
 
@@ -506,6 +526,7 @@ export function splitNumWords (
       ...words,
     ];
   }
+
   return [
     ...words,
     ...Array(padding).fill(undefined),
@@ -528,6 +549,7 @@ export function splitNumWords (
  */
 export function flatten (values: Iterable<unknown>): unknown[] {
   const result: unknown[] = [];
+
   for (const value of values) {
     if (Array.isArray(value)) {
       result.push(...flatten(value));
@@ -535,6 +557,7 @@ export function flatten (values: Iterable<unknown>): unknown[] {
       result.push(value);
     }
   }
+
   return result;
 }
 
@@ -564,6 +587,7 @@ export function objectDepth (d: unknown): number {
     }
 
     const values = Object.values(d);
+
     if (values.length === 0) {
       return 1;
     }
@@ -622,6 +646,7 @@ export function toBool (value?: string | boolean): string | boolean | undefined 
   }
 
   const valueLower = value.toLowerCase();
+
   if (valueLower === 'true' || valueLower === '1') {
     return true;
   }
@@ -651,6 +676,7 @@ export function toBool (value?: string | boolean): string | boolean | undefined 
  */
 export function mergeRanges<T> (ranges: Iterable<[T, T]>): [T, T][] {
   const arr = [...ranges];
+
   if (arr.length === 0) {
     return [];
   }
@@ -707,6 +733,7 @@ export function mergeRanges<T> (ranges: Iterable<[T, T]>): [T, T][] {
  */
 export function isIsoDate (text: string): boolean {
   const dt = DateTime.fromISO(text);
+
   return dt.isValid && /^\d{4}-\d{2}-\d{2}$/.test(text);
 }
 
@@ -869,6 +896,7 @@ export function applyIndexOffset (
   },
 ): Expression[] {
   const exprs = [...expressions];
+
   if (!offset || exprs.length !== 1) {
     return exprs;
   }
@@ -884,6 +912,7 @@ export function applyIndexOffset (
 
   // Check if this_ is an array type
   const thisType = this_.type as DataTypeExpr | undefined;
+
   if (
     thisType?.args.this !== DataTypeExprKind.UNKNOWN
     && thisType?.args.this !== DataTypeExprKind.ARRAY
@@ -900,12 +929,14 @@ export function applyIndexOffset (
 
   // Check if expression is an integer type
   const exprType = expression.type as DataTypeExpr | undefined;
+
   if (exprType?.args.this && DataTypeExpr.INTEGER_TYPES?.has(exprType.args.this as DataTypeExprKind)) {
     // Apply offset: expression + offset
     const offsetExpr = new AddExpr({
       this: expression,
       expression: literal(offset),
     });
+
     return [simplify(offsetExpr)];
   }
 
@@ -922,8 +953,10 @@ export function mapOnExpression<I extends Expression, O extends Expression> (val
     if (expressionHandler === 'sql') {
       return value.sql();
     }
+
     return expressionHandler(value);
   }
+
   return value;
 }
 

@@ -52,6 +52,7 @@ export function newTrie (keywords: Iterable<Key>, trie?: TrieNode): TrieNode {
 
   for (const key of keywords) {
     let current: TrieNode = result;
+
     for (const char of key) {
       if (!current[char]) {
         current[char] = {};
@@ -92,6 +93,7 @@ export function inTrie (trie: TrieNode, key: Key): [TrieResult, TrieNode] {
   }
 
   let current = trie;
+
   for (const char of keyArray) {
     if (!current[char]) {
       return [

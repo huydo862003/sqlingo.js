@@ -274,8 +274,10 @@ function addDateSql (this: Generator, expression: DateAddExpr | DateSubExpr | Ts
   }
 
   let increment = expression.args.expression;
+
   if (increment instanceof LiteralExpr) {
     const value = increment.isNumber ? parseFloat(increment.args.this ?? '0') : parseInt(increment.args.this ?? '0');
+
     increment = LiteralExpr.number(value * multiplier);
   } else if (multiplier !== 1) {
     increment = new MulExpr({
@@ -294,10 +296,12 @@ function dateDiffSql (this: Generator, expression: DateDiffExpr | TsOrDsDiffExpr
   const unit = expression.text('unit').toUpperCase();
 
   const factor = TIME_DIFF_FACTOR[unit];
+
   if (factor !== undefined) {
     const left = this.sql(expression, 'this');
     const right = this.sql(expression, 'expression');
     const secDiff = `UNIX_TIMESTAMP(${left}) - UNIX_TIMESTAMP(${right})`;
+
     return factor ? `(${secDiff})${factor}` : secDiff;
   }
 
@@ -337,6 +341,7 @@ function jsonFormatSql (this: Generator, expression: JsonFormatExpr): string {
         LiteralExpr.number(1),
       ]);
     }
+
     return this.sql(thisNode);
   }
 
@@ -350,6 +355,7 @@ function arraySortSql (this: Generator, expression: ArraySortExpr): string {
   if (expression.args.expression) {
     this.unsupported('Unsupported arg \'expression\' for ArraySort');
   }
+
   return this.func('SORT_ARRAY', [expression.args.this]);
 }
 
@@ -424,11 +430,13 @@ export function buildWithIgnoreNulls (ExpClass: typeof Expression) {
     const thisNode = new ExpClass({
       this: seqGet(args, 0),
     });
+
     if (seqGet(args, 1) instanceof BooleanExpr && seqGet(args, 1)?.args.this === true) {
       return new IgnoreNullsExpr({
         this: thisNode,
       });
     }
+
     return thisNode;
   };
 }
@@ -437,12 +445,15 @@ function buildToDate (args: Expression[]): TsOrDsToDateExpr {
   const expr = buildFormattedTime(TsOrDsToDateExpr, {
     dialect: 'hive',
   })(args);
+
   expr.setArgKey('safe', true);
+
   return expr;
 }
 
 function buildDateAdd (args: Expression[]): TsOrDsAddExpr {
   let expression = seqGet(args, 1);
+
   if (expression) {
     expression = expression.mul(-1);
   }
@@ -530,9 +541,11 @@ class HiveParser extends Parser {
     const noParenFunctions = {
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.CURRENT_TIME];
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -627,10 +640,12 @@ class HiveParser extends Parser {
         }
         const keys: Expression[] = [];
         const values: Expression[] = [];
+
         for (let i = 0; i < args.length; i += 2) {
           keys.push(args[i]);
           if (args[i + 1]) values.push(args[i + 1]);
         }
+
         return new VarMapExpr({
           keys: new ArrayExpr({
             expressions: keys,
@@ -712,6 +727,7 @@ class HiveParser extends Parser {
       advance: false,
     })) {
       this.retreat(this.index - 1);
+
       return undefined;
     }
 
@@ -721,6 +737,7 @@ class HiveParser extends Parser {
     });
 
     let recordWriter: string | Expression | undefined = undefined;
+
     if (this.matchTextSeq('RECORDWRITER')) {
       recordWriter = (this as HiveParser).parseString();
     }
@@ -738,6 +755,7 @@ class HiveParser extends Parser {
       matchRow: true,
     });
     let recordReader: string | Expression | undefined = undefined;
+
     if (this.matchTextSeq('RECORDREADER')) {
       recordReader = (this as HiveParser).parseString();
     }
@@ -755,6 +773,7 @@ class HiveParser extends Parser {
 
   parseQuantileFunction (FuncClass: typeof QuantileExpr | typeof ApproxQuantileExpr): QuantileExpr | ApproxQuantileExpr {
     let firstArg: Expression | undefined;
+
     if (this.match(TokenType.DISTINCT)) {
       firstArg = this.expression(DistinctExpr, {
         expressions: [(this as HiveParser).parseLambda()],
@@ -765,6 +784,7 @@ class HiveParser extends Parser {
     }
 
     const args = [firstArg];
+
     if (this.match(TokenType.COMMA)) {
       args.push(...this.parseFunctionArgs());
     }
@@ -794,6 +814,7 @@ class HiveParser extends Parser {
         ])) {
           return node.replace(DataTypeExpr.build('text')) as Expression | undefined;
         }
+
         return node;
       }, {
         copy: false,
@@ -858,6 +879,7 @@ class HiveParser extends Parser {
     const thisNode = this.parseIdentifier() || (this as HiveParser).parsePrimaryOrVar();
     const expression =
       this.match(TokenType.COLON) && (this.parseIdentifier() || (this as HiveParser).parsePrimaryOrVar());
+
     this.match(TokenType.R_BRACE);
 
     return this.expression(ParameterExpr, {
@@ -872,6 +894,7 @@ class HiveParser extends Parser {
     }
 
     let key: ExpressionValue<IdentifierExpr | StarExpr>;
+
     if (expression instanceof ColumnExpr) {
       key = expression.args.this ?? toIdentifier(`col${index + 1}`);
     } else {
@@ -1456,10 +1479,12 @@ class HiveGenerator extends Generator {
         LevenshteinExpr,
         function (this: Generator, e: Expression) {
           unsupportedArgs.call(this, e, 'insCost', 'delCost', 'subCost', 'maxDist');
+
           return renameFunc('LEVENSHTEIN').call(this, e);
         },
       ],
     ]);
+
     return transforms;
   }
 
@@ -1503,6 +1528,7 @@ class HiveGenerator extends Generator {
   jsonPathKeySql (expression: JsonPathKeyExpr): string {
     if (expression.args.this instanceof JsonPathWildcardExpr) {
       this.unsupported('Unsupported wildcard in JSONPathKey expression');
+
       return '';
     }
 
@@ -1514,6 +1540,7 @@ class HiveGenerator extends Generator {
     const expressionSql = this.sql(expression, 'expression');
 
     const parent = expression.parent;
+
     thisSql = expressionSql ? `${thisSql}:${expressionSql}` : thisSql;
 
     if (parent instanceof EqExpr && parent.parent instanceof SetItemExpr) {
@@ -1543,12 +1570,15 @@ class HiveGenerator extends Generator {
       sep: ' ',
       flat: true,
     });
+
     return `CONSTRAINT ${thisSql} ${expressions}`;
   }
 
   rowFormatSerdePropertySql (expression: RowFormatSerdePropertyExpr): string {
     let serdeProps = this.sql(expression, 'serdeProperties');
+
     serdeProps = serdeProps ? ` ${serdeProps}` : '';
+
     return `ROW FORMAT SERDE ${this.sql(expression, 'this')}${serdeProps}`;
   }
 
@@ -1563,6 +1593,7 @@ class HiveGenerator extends Generator {
     if (expression.args.decimals) {
       this.unsupported('Unsupported arg \'decimals\' for TRUNC');
     }
+
     return this.sql(new CastExpr({
       this: expression.args.this,
       to: DataTypeExpr.build('bigint'),
@@ -1581,8 +1612,10 @@ class HiveGenerator extends Generator {
       expression = DataTypeExpr.build(expression.args.this) ?? expression;
     } else if (expression.isType('float')) {
       const sizeExpression = expression.find(DataTypeParamExpr);
+
       if (sizeExpression instanceof DataTypeParamExpr) {
         const size = parseInt(sizeExpression.args.this?.args.this?.toString() ?? '0');
+
         expression = (size <= 32 ? DataTypeExpr.build('float') : DataTypeExpr.build('double')) ?? expression;
       }
     }
@@ -1592,6 +1625,7 @@ class HiveGenerator extends Generator {
 
   versionSql (expression: VersionExpr): string {
     const sql = super.versionSql(expression);
+
     return sql.replace('FOR ', '');
   }
 
@@ -1602,6 +1636,7 @@ class HiveGenerator extends Generator {
       if (e instanceof PropertyEqExpr) {
         this.unsupported('Hive does not support named structs.');
         const exprVal = e.args.expression;
+
         values.push((exprVal instanceof Expression || typeof exprVal === 'string') ? exprVal : '');
       } else {
         values.push(e);
@@ -1617,6 +1652,7 @@ class HiveGenerator extends Generator {
     const {
       sep = ' ',
     } = options;
+
     return super.columnDefSql(expression, {
       sep:
         expression.parent instanceof DataTypeExpr && expression.parent.isType('struct')
@@ -1650,6 +1686,7 @@ class HiveGenerator extends Generator {
 
   renameColumnSql (_expr: Expression): string {
     this.unsupported('Cannot rename columns without data type defined in Hive');
+
     return '';
   }
 
@@ -1657,9 +1694,11 @@ class HiveGenerator extends Generator {
     let exprs = this.expressions(expression, {
       flat: true,
     });
+
     exprs = exprs ? ` ${exprs}` : '';
 
     let location = this.sql(expression, 'location');
+
     location = location ? ` LOCATION ${location}` : '';
 
     let fileFormat = this.expressions(expression, {
@@ -1667,9 +1706,11 @@ class HiveGenerator extends Generator {
       flat: true,
       sep: ' ',
     });
+
     fileFormat = fileFormat ? ` FILEFORMAT ${fileFormat}` : '';
 
     let serde = this.sql(expression, 'serde');
+
     serde = serde ? ` SERDE ${serde}` : '';
 
     let tags = this.expressions(expression, {
@@ -1677,6 +1718,7 @@ class HiveGenerator extends Generator {
       flat: true,
       sep: '',
     });
+
     tags = tags ? ` TAGS ${tags}` : '';
 
     return `SET${serde}${exprs}${location}${fileFormat}${tags}`;
@@ -1701,6 +1743,7 @@ class HiveGenerator extends Generator {
 
   timeToStrSql (expression: TimeToStrExpr): string {
     let thisNode = expression.args.this;
+
     if (thisNode instanceof TimeStrToTimeExpr) {
       thisNode = thisNode.args.this;
     }
@@ -1713,6 +1756,7 @@ class HiveGenerator extends Generator {
 
   fileFormatPropertySql (expression: FileFormatPropertyExpr): string {
     let thisSql: string;
+
     if (expression.args.this instanceof InputOutputFormatExpr) {
       thisSql = this.sql(expression, 'this');
     } else {
@@ -1736,17 +1780,20 @@ export class Hive extends Dialect {
   @cache
   static get COERCES_TO (): Map<DataTypeExprKind, Set<DataTypeExprKind>> {
     const coercesTo = new Map(TypeAnnotator.COERCES_TO);
+
     for (const targetType of [
       ...DataTypeExpr.NUMERIC_TYPES,
       ...DataTypeExpr.TEMPORAL_TYPES,
       DataTypeExprKind.INTERVAL,
     ]) {
       const existing = coercesTo.get(targetType as DataTypeExprKind) ?? new Set<DataTypeExprKind>();
+
       coercesTo.set(targetType as DataTypeExprKind, new Set([
         ...existing,
         ...DataTypeExpr.TEXT_TYPES,
       ]));
     }
+
     return coercesTo;
   }
 

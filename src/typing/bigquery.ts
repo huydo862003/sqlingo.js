@@ -48,20 +48,24 @@ import type {
  */
 function annotateMathFunctions (this: TypeAnnotator, expression: Expression): Expression {
   const thisArg = expression.args.this;
+
   if (!isInstanceOf(thisArg, Expression)) return expression;
   const thisType = thisArg.type;
+
   this.setType(
     expression,
     thisArg.isType(DataTypeExpr.INTEGER_TYPES)
       ? DataTypeExprKind.DOUBLE
       : isInstanceOf(thisType, DataTypeExpr) ? thisType : undefined,
   );
+
   return expression;
 }
 
 function annotateSafeDivide (this: TypeAnnotator, expression: SafeDivideExpr): Expression {
   const thisArg = expression.args.this;
   const exprArg = expression.args.expression;
+
   if (
     isInstanceOf(thisArg, Expression)
     && isInstanceOf(exprArg, Expression)
@@ -79,6 +83,7 @@ function annotateByArgsWithCoerce (this: TypeAnnotator, expression: Expression):
   const exprArg = expression.args.expression;
   const thisType = isInstanceOf(thisArg, Expression) ? thisArg.type : undefined;
   const exprType = isInstanceOf(exprArg, Expression) ? exprArg.type : undefined;
+
   this.setType(
     expression,
     this.maybeCoerce(
@@ -86,6 +91,7 @@ function annotateByArgsWithCoerce (this: TypeAnnotator, expression: Expression):
       isInstanceOf(exprType, DataTypeExpr) ? exprType : undefined,
     ),
   );
+
   return expression;
 }
 
@@ -143,6 +149,7 @@ function annotateArray (annotator: TypeAnnotator, expression: ArrayExpr): ArrayE
 
   if (arrayArgs && arrayArgs.length === 1) {
     const firstArg = arrayArgs[0];
+
     if (!isInstanceOf(firstArg, Expression)) {
       return expression;
     }
@@ -153,14 +160,17 @@ function annotateArray (annotator: TypeAnnotator, expression: ArrayExpr): ArrayE
     if (unnested instanceof SelectExpr) {
       const queryTypeRaw = unnested.meta?.queryType;
       const queryType = isInstanceOf(queryTypeRaw, DataTypeExpr) ? queryTypeRaw : undefined;
+
       if (
         queryType
         && queryType.isType(DataTypeExprKind.STRUCT)
         && queryType.args.expressions?.length === 1
       ) {
         const colDef = queryType.args.expressions[0];
+
         if (isInstanceOf(colDef, ColumnDefExpr)) {
           const colKind: unknown = colDef.args.kind;
+
           if (isInstanceOf(colKind, DataTypeExpr) && !colKind.isType(DataTypeExprKind.UNKNOWN)) {
             projectionType = colKind;
           }
@@ -170,8 +180,10 @@ function annotateArray (annotator: TypeAnnotator, expression: ArrayExpr): ArrayE
       // Handle ARRAY(SELECT ... UNION ALL SELECT ...) - set operations
       const colTypes = annotator.getSetopColumnTypes(unnested);
       const left = unnested.left;
+
       if (colTypes && isInstanceOf(left, QueryExpr) && 0 < left.selects.length) {
         const firstColName = left.selects[0].aliasOrName;
+
         projectionType = colTypes[firstColName];
       }
     }
@@ -198,6 +210,7 @@ function annotateArray (annotator: TypeAnnotator, expression: ArrayExpr): ArrayE
       });
 
       annotator.setType(expression, arrayType);
+
       return expression;
     }
   }
@@ -205,6 +218,7 @@ function annotateArray (annotator: TypeAnnotator, expression: ArrayExpr): ArrayE
   annotator.annotateByArgs(expression, ['expressions'], {
     array: true,
   });
+
   return expression;
 }
 

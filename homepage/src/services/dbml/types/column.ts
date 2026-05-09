@@ -35,8 +35,10 @@ export class DbmlColumnType extends SchemaElement {
     const base = this.schema ? `${this.schema}.${this.name}` : this.name;
     const argumentsString = this.args?.length ? `(${this.args.join(',')})` : '';
     let array = '';
+
     if (this.array === true) array = '[]';
     else if (Array.isArray(this.array)) array = this.array.map((n) => `[${n ?? ''}]`).join('');
+
     return `${this.kind}:${base}${argumentsString}${array}`;
   }
 }

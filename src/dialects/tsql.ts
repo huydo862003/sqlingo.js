@@ -302,19 +302,24 @@ const DEFAULT_START_DATE = new Date(Date.UTC(1900, 0, 1));
 function buildTsqlDateDiff (unitMapping: Record<string, string>, bigInt = false) {
   return (args: Expression[]): DateDiffExpr => {
     let unit = seqGet(args, 0);
+
     if (unit && unitMapping) {
       const unitName = unit.name?.toLowerCase() ?? '';
+
       unit = var_((unitMapping[unitName] ?? unit.name ?? unitName).toUpperCase());
     }
     let startDate = seqGet(args, 1);
+
     if (startDate?.isNumber) {
       const rawStr = startDate instanceof NegExpr
         ? '-' + String((startDate.args.this as LiteralExpr).args.this)
         : String((startDate as LiteralExpr).args.this);
+
       if (!rawStr.includes('.')) {
         const days = Number(rawStr);
         const adds = new Date(DEFAULT_START_DATE.getTime() + days * 86400000);
         const str = adds.toISOString().split('T')[0];
+
         startDate = LiteralExpr.string(str);
       } else {
         return new DateDiffExpr({
@@ -325,6 +330,7 @@ function buildTsqlDateDiff (unitMapping: Record<string, string>, bigInt = false)
         });
       }
     }
+
     return new DateDiffExpr({
       this: new TimeStrToTimeExpr({
         this: seqGet(args, 2),
@@ -343,6 +349,7 @@ function buildBuiltinFormattedTime (
 ): (args: Expression[]) => TimeToStrExpr {
   return (args: Expression[]) => {
     let fmt = seqGet(args, 0);
+
     if (fmt) {
       const fmtName = (fmt as LiteralExpr).name?.toLowerCase() ?? '';
       const mapping: Record<string, string> = fullFormatMapping
@@ -354,12 +361,14 @@ function buildBuiltinFormattedTime (
           ...TSQL.TIME_MAPPING,
         };
       const mapped = mapping[fmtName];
+
       if (mapped) {
         fmt = LiteralExpr.string(mapped);
       }
     }
 
     let thisExpr = seqGet(args, 1);
+
     if (thisExpr) {
       thisExpr = cast(thisExpr, DataTypeExprKind.DATETIME2);
     }
@@ -388,10 +397,12 @@ function buildFormat (args: Expression[]): NumberToStrExpr | TimeToStrExpr {
   }
 
   let mappedFmt: Expression | undefined = fmt;
+
   if (fmt) {
     const mapped = fmtName.length === 1
       ? (TSQL.FORMAT_TIME_MAPPING as Record<string, string>)[fmtName]
       : (TSQL.TIME_MAPPING as Record<string, string>)[fmtName];
+
     if (mapped) {
       mappedFmt = LiteralExpr.string(mapped);
     }
@@ -411,10 +422,12 @@ function buildEoMonth (args: Expression[]): LastDayExpr {
   const monthLag = seqGet(args, 1);
 
   let thisExpr: Expression;
+
   if (monthLag === undefined) {
     thisExpr = date;
   } else {
     const unit = DATE_DELTA_INTERVAL['month'];
+
     thisExpr = new DateAddExpr({
       this: date,
       expression: monthLag,
@@ -434,12 +447,14 @@ function buildHashBytes (args: Expression[]): Expression {
 
   if (kindStr === 'MD5') {
     args.splice(0, 1);
+
     return new Md5Expr({
       this: data,
     });
   }
   if (kindStr === 'SHA' || kindStr === 'SHA1') {
     args.splice(0, 1);
+
     return new ShaExpr({
       this: data,
     });
@@ -474,6 +489,7 @@ function buildDatetimeFromParts (args: Expression[]): TimestampFromPartsExpr {
 
 function buildTimeFromParts (args: Expression[]): TimeFromPartsExpr {
   const fractions = seqGet(args, 3);
+
   return new TimeFromPartsExpr({
     hour: seqGet(args, 0),
     min: seqGet(args, 1),
@@ -515,6 +531,7 @@ function buildParseName (args: Expression[]): SplitPartExpr | Expression {
     const thisExpr = args[0] as LiteralExpr;
     const partIndex = args[1] as LiteralExpr;
     const splitCount = thisExpr.name.split('.').length;
+
     if (splitCount <= 4) {
       return new SplitPartExpr({
         this: thisExpr,
@@ -533,6 +550,7 @@ function buildJsonQuery (args: Expression[], options: {
   if (args.length === 1) {
     args.push(LiteralExpr.string('$'));
   }
+
   return buildExtractJsonWithPath(JsonExtractExpr)(args, options);
 }
 
@@ -559,6 +577,7 @@ function qualifyDerivedTableOutputs (expression: Expression): Expression {
     && !tableAlias.columns?.length
   ) {
     const query = expression.args.this;
+
     if (!(query instanceof SelectExpr)) return expression;
 
     const unaliasedColumnIndexes = (query.selects ?? [])
@@ -574,19 +593,25 @@ function qualifyDerivedTableOutputs (expression: Expression): Expression {
       ) {
         return selection;
       }
+
       return alias(selection, selection.outputName || `_col_${i}`, {
         copy: false,
       }) as Expression;
     });
+
     query.setArgKey('expressions', newSelections);
 
     const querySelects = query.selects ?? [];
+
     for (const selectIndex of unaliasedColumnIndexes) {
       const aliasNode = querySelects[selectIndex];
+
       if (aliasNode instanceof AliasExpr) {
         const column = aliasNode.args.this;
+
         if (column instanceof ColumnExpr && column.args.this instanceof IdentifierExpr) {
           const aliasIdent = aliasNode.args.alias;
+
           if (aliasIdent instanceof IdentifierExpr) {
             aliasIdent.setArgKey('quoted', column.args.this.quoted);
           }
@@ -604,6 +629,7 @@ function tableName (table: TableExpr): string {
     table.db,
     table.name,
   ].filter(Boolean);
+
   return parts.join('.');
 }
 
@@ -614,6 +640,7 @@ function formatSql (this: Generator, expression: NumberToStrExpr | TimeToStrExpr
   if (!(expression instanceof NumberToStrExpr)) {
     if (fmt?.isString) {
       const mappedFmt = formatTime(fmt.name, TSQL.INVERSE_TIME_MAPPING, TSQL.INVERSE_TIME_TRIE);
+
       fmtSql = this.sql(LiteralExpr.string(mappedFmt!));
     } else {
       fmtSql = this.formatTime?.(expression) ?? (fmt ? this.sql(fmt) : '');
@@ -632,22 +659,27 @@ function formatSql (this: Generator, expression: NumberToStrExpr | TimeToStrExpr
 function stringAggSql (this: Generator, expression: GroupConcatExpr): string {
   let thisExpr = expression.args.this;
   const distinct = expression.find(DistinctExpr);
+
   if (distinct) {
     this.unsupported('T-SQL STRING_AGG doesn\'t support DISTINCT.');
     thisExpr = distinct.pop().args.expressions?.[0];
   }
 
   let order = '';
+
   if (expression.args.this instanceof OrderExpr) {
     const orderExpr = expression.args.this as OrderExpr;
+
     if (orderExpr.args.this) {
       thisExpr = orderExpr.args.this.pop();
     }
     const orderSql = this.sql(orderExpr);
+
     order = ` WITHIN GROUP (${orderSql.slice(1)})`;
   }
 
   const separator: Expression = (expression.args.separator as Expression | undefined) ?? LiteralExpr.string(',');
+
   return `STRING_AGG(${this.formatArgs([
     thisExpr,
     separator,
@@ -663,6 +695,7 @@ function jsonExtractSql (this: Generator, expression: JsonExtractExpr | JsonExtr
     expression.args.this,
     expression.args.expression,
   ]);
+
   return this.func('ISNULL', [
     jsonQuery,
     jsonValue,
@@ -744,7 +777,9 @@ export class TSQLTokenizer extends Tokenizer {
       'UPDATE STATISTICS': TokenType.COMMAND,
       'XML': TokenType.XML,
     };
+
     delete keywords['/*+'];
+
     return keywords;
   }
 
@@ -764,9 +799,11 @@ export class TSQLParser extends Parser {
     const noParenFunctions = {
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     noParenFunctions[TokenType.SESSION_USER] = SessionUserExpr;
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -969,6 +1006,7 @@ export class TSQLParser extends Parser {
       ...Parser.FUNCTION_PARSERS,
       JSON_ARRAYAGG: function (this: Parser) {
         const p = this as TSQLParser;
+
         return p.expression(JsonArrayAggExpr, {
           this: p.parseBitwise(),
           order: p.parseOrder(),
@@ -1041,9 +1079,11 @@ export class TSQLParser extends Parser {
     if (this.match(TokenType.MERGE)) {
       const comments = this.prevComments;
       const merge = this.parseMerge();
+
       merge.addComments(comments, {
         prepend: true,
       });
+
       return merge;
     }
 
@@ -1067,9 +1107,11 @@ export class TSQLParser extends Parser {
 
     const parseOption = (): Expression | undefined => {
       const option = this.parseVarFromOptions(OPTIONS);
+
       if (!option) return undefined;
 
       this.match(TokenType.EQ);
+
       return this.expression(QueryOptionExpr, {
         this: option,
         expression: this.parsePrimaryOrVar(),
@@ -1125,6 +1167,7 @@ export class TSQLParser extends Parser {
           copy: false,
         });
       }
+
       return projection;
     });
   }
@@ -1145,6 +1188,7 @@ export class TSQLParser extends Parser {
     }
 
     let durability: boolean | undefined = undefined;
+
     if (this.matchPair(TokenType.WITH, TokenType.L_PAREN)) {
       this.matchTextSeq('DELAYED_DURABILITY');
       this.match(TokenType.EQ);
@@ -1174,12 +1218,14 @@ export class TSQLParser extends Parser {
       const transaction = this.expression(TransactionExpr, {
         this: transactionName,
       });
+
       if (this.matchTextSeq([
         'WITH',
         'MARK',
       ])) {
         transaction.setArgKey('mark', this.parseString());
       }
+
       return transaction;
     }
 
@@ -1192,7 +1238,9 @@ export class TSQLParser extends Parser {
       tokens: (this._constructor as typeof TSQLParser).RETURNS_TABLE_TOKENS,
     });
     const returns = super.parseReturns();
+
     returns.setArgKey('table', table);
+
     return returns;
   }
 
@@ -1204,13 +1252,16 @@ export class TSQLParser extends Parser {
       safe,
     } = options;
     const thisNode = this.parseTypes();
+
     this.match(TokenType.COMMA);
     const args = [
       thisNode,
       ...this.parseCsv(() => this.parseAssignment()),
     ];
     const convert = ConvertExpr.fromArgList(args);
+
     convert.setArgKey('safe', safe);
+
     return convert;
   }
 
@@ -1223,6 +1274,7 @@ export class TSQLParser extends Parser {
     const columnDef = super.parseColumnDef(thisNode, {
       computedColumn,
     });
+
     if (!columnDef) return undefined;
 
     if (this.match(TokenType.EQ)) {
@@ -1231,6 +1283,7 @@ export class TSQLParser extends Parser {
     if (this.matchTexts((this._constructor as typeof TSQLParser).COLUMN_DEFINITION_MODES)) {
       columnDef.setArgKey('output', this.prev?.text);
     }
+
     return columnDef;
   }
 
@@ -1253,6 +1306,7 @@ export class TSQLParser extends Parser {
     }
 
     let expressions: Expression[] | undefined;
+
     if (!this.match(TokenType.WITH, {
       advance: false,
     })) {
@@ -1270,8 +1324,10 @@ export class TSQLParser extends Parser {
 
     if (into instanceof IntoExpr) {
       const table = into.find(TableExpr);
+
       if (table instanceof TableExpr) {
         const tableIdentifier = table.args.this;
+
         if (narrowInstanceOf(tableIdentifier, Expression)?.getArgKey('temporary')) {
           into.setArgKey('temporary', true);
         }
@@ -1295,6 +1351,7 @@ export class TSQLParser extends Parser {
       anyToken,
       tokens,
     });
+
     if (thisNode) {
       if (isGlobal) {
         thisNode.setArgKey('global', true);
@@ -1311,6 +1368,7 @@ export class TSQLParser extends Parser {
 
     if (create instanceof CreateExpr) {
       const table = create.args.this instanceof SchemaExpr ? create.args.this.args.this : create.args.this;
+
       if (table instanceof TableExpr && narrowInstanceOf(table.args.this, Expression)?.getArgKey('temporary')) {
         if (!create.args.properties) {
           create.setArgKey('properties', new PropertiesExpr({
@@ -1346,11 +1404,13 @@ export class TSQLParser extends Parser {
 
   parseUnique (): UniqueColumnConstraintExpr {
     let thisNode: ExpressionValue | undefined;
+
     if (this.matchTexts([
       'CLUSTERED',
       'NONCLUSTERED',
     ])) {
       const parsers = this._constructor.CONSTRAINT_PARSERS;
+
       thisNode = seqGet(ensureList(parsers[this.prev?.text.toUpperCase() ?? '']?.call(this)), 0) as ExpressionValue;
     } else {
       thisNode = this.parseSchema({
@@ -1367,7 +1427,9 @@ export class TSQLParser extends Parser {
 
   parseUpdate (): UpdateExpr {
     const expression = super.parseUpdate();
+
     expression.setArgKey('options', this.parseOptions());
+
     return expression;
   }
 
@@ -1404,9 +1466,11 @@ export class TSQLParser extends Parser {
 
   parseDeclareitem (): DeclareItemExpr | undefined {
     const varNode = this.parseIdVar();
+
     if (!varNode) return undefined;
 
     this.match(TokenType.ALIAS);
+
     return this.expression(DeclareItemExpr, {
       this: varNode,
       kind: this.match(TokenType.TABLE) ? this.parseSchema() : this.parseTypes(),
@@ -1419,8 +1483,10 @@ export class TSQLParser extends Parser {
 
     if (expression) {
       const collation = expression.getArgKey('collate');
+
       if (collation instanceof ColumnExpr && collation.args.this instanceof IdentifierExpr) {
         const identifier = collation.args.this;
+
         collation.setArgKey('this', new VarExpr({
           this: identifier.name,
         }));
@@ -1439,11 +1505,13 @@ export class TSQLGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -1802,10 +1870,12 @@ export class TSQLGenerator extends Generator {
           }
           if (e.args.temporary) {
             const table = e.find(TableExpr);
+
             if (table && table.args.this instanceof IdentifierExpr) {
               table.args.this.setArgKey('temporary', true);
             }
           }
+
           return `${this.seg('INTO')} ${this.sql(e, 'this')}`;
         },
       ],
@@ -1868,6 +1938,7 @@ export class TSQLGenerator extends Generator {
 
   convertSql (expression: ConvertExpr): string {
     const name = expression.args.safe ? 'TRY_CONVERT' : 'CONVERT';
+
     return this.func(name, [
       expression.args.this,
       expression.args.expression,
@@ -1882,13 +1953,16 @@ export class TSQLGenerator extends Generator {
     if (value) {
       // T-SQL options like MAXDOP don't use '=', but others like LABEL do
       const optionalEqualSign = OPTIONS_THAT_REQUIRE_EQUAL.has(option) ? '= ' : '';
+
       return `${option} ${optionalEqualSign}${value}`;
     }
+
     return option;
   }
 
   lateralOp (expression: LateralExpr): string {
     const crossApply = expression.args.crossApply;
+
     if (crossApply === true) {
       return 'CROSS APPLY';
     }
@@ -1897,6 +1971,7 @@ export class TSQLGenerator extends Generator {
     }
 
     this.unsupported('LATERAL clause is not supported.');
+
     return 'LATERAL';
   }
 
@@ -1915,10 +1990,12 @@ export class TSQLGenerator extends Generator {
       this.unsupported(
         'SPLIT_PART can be transpiled to PARSENAME only for \'.\' delimiter and literal values',
       );
+
       return '';
     }
 
     const reversedIndex = splitCount + 1 - Number(partIndex.name);
+
     return this.func('PARSENAME', [
       thisNode,
       LiteralExpr.number(reversedIndex),
@@ -1938,6 +2015,7 @@ export class TSQLGenerator extends Generator {
 
   timeFromPartsSql (expression: TimeFromPartsExpr): string {
     const nano = expression.args.nano;
+
     if (nano !== undefined) {
       nano.pop();
       this.unsupported('Specifying nanoseconds is not supported in TIMEFROMPARTS.');
@@ -1955,12 +2033,14 @@ export class TSQLGenerator extends Generator {
 
   timestampFromPartsSql (expression: TimestampFromPartsExpr): string {
     const zone = expression.args.zone;
+
     if (zone !== undefined) {
       zone.pop();
       this.unsupported('Time zone is not supported in DATETIMEFROMPARTS.');
     }
 
     const nano = expression.args.nano;
+
     if (nano !== undefined) {
       nano.pop();
       this.unsupported('Specifying nanoseconds is not supported in DATETIMEFROMPARTS.');
@@ -1975,6 +2055,7 @@ export class TSQLGenerator extends Generator {
 
   setItemSql (expression: SetItemExpr): string {
     const thisNode = expression.args.this;
+
     if (thisNode instanceof EqExpr && !(thisNode.args.this instanceof ParameterExpr)) {
       // T-SQL does not use '=' in SET command for system options (e.g., SET NOCOUNT ON),
       // except when the LHS is a variable (@var = val)
@@ -2005,6 +2086,7 @@ export class TSQLGenerator extends Generator {
     if (expression.args.expression instanceof BooleanExpr) {
       return this.binary(expression, '=');
     }
+
     return this.binary(expression, 'IS');
   }
 
@@ -2027,6 +2109,7 @@ export class TSQLGenerator extends Generator {
   createSql (expression: CreateExpr): string {
     const kind = expression.args.kind;
     const exists = expression.args.exists;
+
     expression.setArgKey('exists', undefined);
 
     const likeProperty = expression.find(LikePropertyExpr);
@@ -2035,6 +2118,7 @@ export class TSQLGenerator extends Generator {
     if (kind === CreateExprKind.VIEW) {
       expression.args.this?.setArgKey('catalog', undefined);
       const withClause = expression.args.with;
+
       if (ctasExpression && withClause) {
         // CREATE VIEW requires WITH after the query
         ctasExpression.setArgKey('with', withClause.pop());
@@ -2044,6 +2128,7 @@ export class TSQLGenerator extends Generator {
     const table = expression.find(TableExpr);
 
     let sql: string;
+
     // Convert CTAS (Create Table As Select) to T-SQL's SELECT .. INTO
     if (kind === CreateExprKind.TABLE && ctasExpression) {
       if (ctasExpression instanceof SelectExpr) {
@@ -2095,6 +2180,7 @@ export class TSQLGenerator extends Generator {
         return `IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE ${where}) EXEC(${sqlLiteral})`;
       } else if (kind === CreateExprKind.INDEX) {
         const indexName = this.sql(LiteralExpr.string(expression.args.this?.text('this') || ''));
+
         return `IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = object_id(${idLiteral}) AND name = ${indexName}) EXEC(${sqlLiteral})`;
       }
     } else if (expression.args.replace) {
@@ -2107,20 +2193,24 @@ export class TSQLGenerator extends Generator {
   intoSql (expression: IntoExpr): string {
     if (expression.args.temporary) {
       const table = expression.find(TableExpr);
+
       if (table && table.args.this instanceof IdentifierExpr) {
         table.args.this.setArgKey('temporary', true);
       }
     }
+
     return `${this.seg('INTO')} ${this.sql(expression, 'this')}`;
   }
 
   countSql (expression: CountExpr): string {
     const funcName = expression.args.bigInt ? 'COUNT_BIG' : 'COUNT';
+
     return renameFunc(funcName).call(this, expression);
   }
 
   dateDiffSql (expression: DateDiffExpr): string {
     const funcName = expression.args.bigInt ? 'DATEDIFF_BIG' : 'DATEDIFF';
+
     return dateDeltaSql(funcName).call(this, expression);
   }
 
@@ -2137,6 +2227,7 @@ export class TSQLGenerator extends Generator {
     if (kind === 'FROM' || kind === 'BETWEEN') {
       const args = expr?.args.expressions as ExpressionValue[] ?? [];
       const sep = kind === 'FROM' ? 'TO' : 'AND';
+
       exprSql = `${this.sql(seqGet(args, 0))} ${sep} ${this.sql(seqGet(args, 1))}`;
     } else {
       exprSql = this.sql(expr);
@@ -2148,12 +2239,14 @@ export class TSQLGenerator extends Generator {
   returnsPropertySql (expression: ReturnsPropertyExpr): string {
     const table = expression.args.table;
     const tablePart = table ? `${table} ` : '';
+
     return `RETURNS ${tablePart}${this.sql(expression, 'this')}`;
   }
 
   returningSql (expression: ReturningExpr): string {
     const into = this.sql(expression, 'into');
     const intoPart = into ? this.seg(`INTO ${into}`) : '';
+
     return `${this.seg('OUTPUT')} ${this.expressions(expression, {
       flat: true,
     })}${intoPart}`;
@@ -2162,6 +2255,7 @@ export class TSQLGenerator extends Generator {
   transactionSql (expression: TransactionExpr): string {
     const thisPart = expression.args.this ? ` ${this.sql(expression, 'this')}` : '';
     const mark = expression.args.mark ? ` WITH MARK ${this.sql(expression, 'mark')}` : '';
+
     return `BEGIN TRANSACTION${thisPart}${mark}`;
   }
 
@@ -2170,21 +2264,25 @@ export class TSQLGenerator extends Generator {
     const durability = expression.args.durability !== undefined
       ? ` WITH (DELAYED_DURABILITY = ${expression.args.durability ? 'ON' : 'OFF'})`
       : '';
+
     return `COMMIT TRANSACTION${thisPart}${durability}`;
   }
 
   rollbackSql (expression: RollbackExpr): string {
     const thisPart = expression.args.this ? ` ${this.sql(expression, 'this')}` : '';
+
     return `ROLLBACK TRANSACTION${thisPart}`;
   }
 
   identifierSql (expression: IdentifierExpr): string {
     let identifier = super.identifierSql(expression);
+
     if (expression.args.global) {
       identifier = `##${identifier}`;
     } else if (expression.args.temporary) {
       identifier = `#${identifier}`;
     }
+
     return identifier;
   }
 
@@ -2213,6 +2311,7 @@ export class TSQLGenerator extends Generator {
       ? this.sql(thisNode, 'this')
       : this.sql(thisNode);
     const expressionSql = this.sql(expression, 'expression');
+
     return this.func(name, [
       thisSql,
       expressionSql || undefined,
@@ -2227,9 +2326,11 @@ export class TSQLGenerator extends Generator {
 
   alterSql (expression: AlterExpr): string {
     const action = seqGet(expression.args.actions ?? [], 0);
+
     if (action instanceof AlterRenameExpr) {
       return `EXEC sp_rename '${this.sql(expression, 'this')}', '${(action.args.this)?.name ?? ''}'`;
     }
+
     return super.alterSql(expression);
   }
 
@@ -2237,6 +2338,7 @@ export class TSQLGenerator extends Generator {
     if (expression.args.kind === DropExprKind.VIEW) {
       expression.args.this?.setArgKey('catalog', undefined);
     }
+
     return super.dropSql(expression);
   }
 
@@ -2244,6 +2346,7 @@ export class TSQLGenerator extends Generator {
     const options = this.expressions(expression, {
       key: 'options',
     });
+
     return options ? ` OPTION${this.wrap(options)}` : '';
   }
 
@@ -2254,6 +2357,7 @@ export class TSQLGenerator extends Generator {
         this: acc,
         expression: curr,
       }));
+
     return this.sql(flattened);
   }
 
@@ -2268,11 +2372,13 @@ export class TSQLGenerator extends Generator {
     const thisSql = super.columnDefSql(expression, options);
     const defaultValue = expression.args.default ? ` = ${this.sql(expression, 'default')}` : '';
     const output = expression.args.output ? ` ${this.sql(expression, 'output')}` : '';
+
     return `${thisSql}${defaultValue}${output}`;
   }
 
   coalesceSql (expression: CoalesceExpr): string {
     const funcName = expression.args.isNull ? 'ISNULL' : 'COALESCE';
+
     return renameFunc(funcName).call(this, expression);
   }
 }

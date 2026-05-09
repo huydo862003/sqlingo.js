@@ -16,6 +16,8 @@ export function transpile (
       read: options.read,
     }
     : {});
+
   if (parsed.some((stmt) => stmt instanceof CommandExpr)) throw new Error('Unsupported SQL syntax');
+
   return _transpile(sql, options);
 }

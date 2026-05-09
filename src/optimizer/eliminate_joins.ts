@@ -52,6 +52,7 @@ export function eliminateJoins<E extends Expression> (expression: E): E {
     }
 
     const joins = scope.expression.args.joins;
+
     if (!joins) {
       continue;
     }
@@ -59,12 +60,14 @@ export function eliminateJoins<E extends Expression> (expression: E): E {
     // Reverse the joins so we can remove chains of unused joins
     for (let i = joins.length - 1; 0 <= i; i--) {
       const join: Expression = joins[i];
+
       assertIsInstanceOf(join, JoinExpr);
       if (join.isSemiOrAntiJoin) {
         continue;
       }
 
       const alias = join.aliasOrName;
+
       if (alias && shouldEliminateJoin(scope, join, alias)) {
         join.pop();
         scope.removeSource(alias);
@@ -77,6 +80,7 @@ export function eliminateJoins<E extends Expression> (expression: E): E {
 
 function shouldEliminateJoin (scope: Scope, join: JoinExpr, alias: string): boolean {
   const innerSource = scope.sources.get(alias);
+
   if (!(innerSource instanceof Scope)) {
     return false;
   }
@@ -100,6 +104,7 @@ function joinIsUsed (scope: Scope, join: JoinExpr, alias: string): boolean {
   const onClause = join.args.on;
 
   const onClauseColumns = new Set<Expression>();
+
   if (onClause) {
     for (const column of onClause.findAll(ColumnExpr)) {
       onClauseColumns.add(column);
@@ -107,11 +112,13 @@ function joinIsUsed (scope: Scope, join: JoinExpr, alias: string): boolean {
   }
 
   const sourceColumns = scope.sourceColumns(alias);
+
   return sourceColumns.some((column) => !onClauseColumns.has(column));
 }
 
 function isJoinedOnAllUniqueOutputs (scope: Scope, join: JoinExpr): boolean {
   const uniqueOutputs_ = uniqueOutputs(scope);
+
   if (!uniqueOutputs_ || uniqueOutputs_.size === 0) {
     return false;
   }
@@ -132,6 +139,7 @@ function isJoinedOnAllUniqueOutputs (scope: Scope, join: JoinExpr): boolean {
 
 function uniqueOutputs (scope: Scope): Set<string> | undefined {
   const expression = scope.expression;
+
   if (!(expression instanceof SelectExpr)) {
     return undefined;
   }
@@ -145,6 +153,7 @@ function uniqueOutputs (scope: Scope): Set<string> | undefined {
 
   // GROUP BY makes grouped columns unique
   const group = select.args.group;
+
   if (group) {
     const groupedSqls = new Set(
       (group.args.expressions ?? [])
@@ -160,6 +169,7 @@ function uniqueOutputs (scope: Scope): Set<string> | undefined {
       }
 
       const outputSql = selectExpr.unalias().sql();
+
       if (groupedSqls.has(outputSql)) {
         groupedOutputSqls.add(outputSql);
         uniqueOutputs.add(selectExpr.aliasOrName);
@@ -182,6 +192,7 @@ function uniqueOutputs (scope: Scope): Set<string> | undefined {
 
 function hasSingleOutputRow (scope: Scope): boolean {
   const expression = scope.expression;
+
   if (!(expression instanceof SelectExpr)) {
     return false;
   }
@@ -199,6 +210,7 @@ function hasSingleOutputRow (scope: Scope): boolean {
       return false;
     }
     const unaliased = e.unalias();
+
     return unaliased instanceof AggFuncExpr;
   });
 
@@ -216,9 +228,11 @@ function hasSingleOutputRow (scope: Scope): boolean {
 
 function isLimit1 (scope: Scope): boolean {
   const limit = scope.expression.getArgKey('limit');
+
   if (!(limit instanceof LimitExpr)) {
     return false;
   }
+
   return limit.args.expression?.args.this === '1';
 }
 
@@ -247,6 +261,7 @@ export function joinCondition (
       left,
       right,
     ] = condition.unnestOperands();
+
     if (!left || !right) {
       return;
     }
@@ -275,6 +290,7 @@ export function joinCondition (
       ], {
         copy: false,
       });
+
     for (const condition of andOn.flatten()) {
       if (condition instanceof EqExpr) {
         extractCondition(condition);
@@ -294,8 +310,10 @@ export function joinCondition (
         conditions = parts;
       } else {
         const temp: EqExpr[] = [];
+
         for (const p of parts) {
           const cs = conditions.filter((c) => p.sql() === c.sql());
+
           if (0 < cs.length) {
             temp.push(p);
             temp.push(...cs);
@@ -321,10 +339,12 @@ export function joinCondition (
 
 function columnTableNames (expression: Expression): Set<string> {
   const tables = new Set<string>();
+
   for (const column of expression.findAll(ColumnExpr)) {
     if (column.table) {
       tables.add(column.table);
     }
   }
+
   return tables;
 }

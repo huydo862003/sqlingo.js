@@ -41,18 +41,19 @@ const CHIP_COLORS: Record<string, {
   },
 };
 
-export function kindDotStyle (slug: string) {
-  return {
-    background: DOT_COLORS[slug] ?? 'var(--gui-neutral-solid)',
-  };
-}
-
 export function kindChipStyle (slug: string) {
   const chip = CHIP_COLORS[slug];
+
   return chip
     ? {
       background: chip.bg,
       color: chip.color,
     }
     : {};
+}
+
+export function kindDotStyle (slug: string) {
+  return {
+    background: DOT_COLORS[slug] ?? 'var(--gui-neutral-solid)',
+  };
 }

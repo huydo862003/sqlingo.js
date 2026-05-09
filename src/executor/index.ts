@@ -59,6 +59,7 @@ export function execute (
   const tables = ensureTables(tables_, dialect);
 
   let schemaArg: Record<string, unknown>;
+
   if (!schema) {
     schemaArg = {};
     const mapping = tables.mapping;
@@ -73,6 +74,7 @@ export function execute (
       const table = nestedGet(mapping, path, {
         raiseOnMissing: false,
       }) as Table | undefined;
+
       if (!table) continue;
 
       for (const column of table.columns) {
@@ -81,6 +83,7 @@ export function execute (
           annotateTypes(convert(value), {
             dialect,
           })?.type?.toString() ?? typeof value;
+
         nestedSet(schemaArg, [
           ...keys,
           column,

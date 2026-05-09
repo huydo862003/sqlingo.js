@@ -10,11 +10,13 @@ export class MapBinaryTuple<KeyT extends [unknown, unknown], ValueT> {
 
   set (first: KeyT[0], second: KeyT[1], value: ValueT): this {
     let inner = this._map.get(first);
+
     if (!inner) {
       inner = new Map<KeyT[1], ValueT>();
       this._map.set(first, inner);
     }
     inner.set(second, value);
+
     return this;
   }
 
@@ -24,13 +26,16 @@ export class MapBinaryTuple<KeyT extends [unknown, unknown], ValueT> {
 
   delete (first: KeyT[0], second: KeyT[1]): boolean {
     const inner = this._map.get(first);
+
     if (!inner) {
       return false;
     }
     const deleted = inner.delete(second);
+
     if (inner.size === 0) {
       this._map.delete(first);
     }
+
     return deleted;
   }
 
@@ -40,9 +45,11 @@ export class MapBinaryTuple<KeyT extends [unknown, unknown], ValueT> {
 
   get size (): number {
     let count = 0;
+
     for (const inner of this._map.values()) {
       count += inner.size;
     }
+
     return count;
   }
 

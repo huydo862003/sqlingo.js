@@ -79,6 +79,7 @@ export function qualifyTables<E extends Expression> (
   const nextAliasName = nameSequence('_');
 
   let db: IdentifierExpr | undefined;
+
   if (dbArg) {
     db = parseIdentifier(dbArg, {
       dialect,
@@ -90,6 +91,7 @@ export function qualifyTables<E extends Expression> (
   }
 
   let catalog: IdentifierExpr | undefined;
+
   if (catalogArg) {
     catalog = parseIdentifier(catalogArg, {
       dialect,
@@ -146,11 +148,13 @@ export function qualifyTables<E extends Expression> (
     } = options;
 
     let alias = expr.getArgKey('alias') as TableAliasExpr | undefined;
+
     if (!alias) {
       alias = new TableAliasExpr({});
     }
 
     let newAliasName: string;
+
     if (canonicalizeTableAliases) {
       newAliasName = nextAliasName();
       canonicalAliases.set(alias.name || targetAlias || '', newAliasName);
@@ -184,6 +188,7 @@ export function qualifyTables<E extends Expression> (
 
     for (const query of scope.subqueries) {
       const subquery = query.parent;
+
       if (subquery && subquery instanceof SubqueryExpr) {
         subquery.unwrap().replace(subquery);
       }
@@ -191,15 +196,19 @@ export function qualifyTables<E extends Expression> (
 
     for (const derivedTable of scope.derivedTables) {
       const unnested = derivedTable.unnest();
+
       if (unnested instanceof TableExpr) {
         const joins = unnested.args.joins;
+
         unnested.setArgKey('joins', undefined);
 
         const derivedThis = derivedTable.args.this;
+
         if (derivedThis instanceof Expression) {
           const newSelect = select('*').from(unnested.copy(), {
             copy: false,
           });
+
           derivedThis.replace(newSelect);
           // After replace, set joins on the new expression (mirrors Python behavior
           // where derivedTable.this refers to the new expression after replace)
@@ -212,6 +221,7 @@ export function qualifyTables<E extends Expression> (
       });
 
       const pivot = seqGet(derivedTable.getArgKey('pivots') as Expression[] || [], 0);
+
       if (pivot) {
         setAlias(pivot, canonicalAliases);
       }
@@ -229,6 +239,7 @@ export function qualifyTables<E extends Expression> (
         const pivots = source.args.pivots;
         const pivot = pivots ? seqGet(pivots, 0) : undefined;
         let sourceName = name;
+
         if (pivot) {
           sourceName = source.name;
         }
@@ -243,6 +254,7 @@ export function qualifyTables<E extends Expression> (
 
           if (!tableAlias) {
             const defaultCols = dialect._constructor.DEFAULT_FUNCTIONS_COLUMN_NAMES.get(funcTypeName);
+
             functionColumns = defaultCols
               ? Array.from(ensureList(defaultCols))
               : [];
@@ -263,12 +275,14 @@ export function qualifyTables<E extends Expression> (
 
         const sourceFqn = source.parts?.map((p) => p.name).join('.');
         const sourceAliasThis = source.args.alias?.args.this;
+
         if (sourceAliasThis instanceof IdentifierExpr) {
           tableAliases.set(sourceFqn, sourceAliasThis.copy());
         }
 
         if (pivot) {
           const targetAlias = pivot.getArgKey('unpivot') ? source.alias : undefined;
+
           setAlias(pivot, canonicalAliases, {
             targetAlias,
             normalize: true,
@@ -288,10 +302,12 @@ export function qualifyTables<E extends Expression> (
         }
       } else if (source instanceof Scope && source.isUdtf) {
         const udtf = source.expression;
+
         setAlias(udtf, canonicalAliases);
 
         if (udtf instanceof ValuesExpr) {
           const tableAlias = udtf.getArgKey('alias');
+
           if (tableAlias instanceof TableAliasExpr && !tableAlias.args.columns?.length) {
             tableAlias.setArgKey('columns', dialect
               .generateValuesAliases(udtf)
@@ -306,6 +322,7 @@ export function qualifyTables<E extends Expression> (
     for (const table of scope.tables) {
       if (!table.alias && table.parent) {
         const parent = table.parent;
+
         if (parent instanceof FromExpr || parent instanceof JoinExpr) {
           setAlias(table, canonicalAliases, {
             targetAlias: table.name,
@@ -330,6 +347,7 @@ export function qualifyTables<E extends Expression> (
         }
       } else if (0 < canonicalAliases.size && table) {
         const canonicalTable = canonicalAliases.get(table);
+
         if (canonicalTable && canonicalTable !== column.table) {
           column.setArgKey('table', toIdentifier(canonicalTable));
         }

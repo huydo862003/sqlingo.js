@@ -218,6 +218,7 @@ const DATE_DIFF_FACTOR: Record<string, string> = {
 function dateAddSql (kind: string) {
   return function (this: Generator, expression: DateAddExpr | DateSubExpr | TsOrDsAddExpr): string {
     let expr = expression;
+
     if (expr instanceof TsOrDsAddExpr) {
       expr = tsOrDsAddCast(expr);
     }
@@ -226,6 +227,7 @@ function dateAddSql (kind: string) {
     const unit = expr.args.unit;
 
     let e = expr.args.expression && this.simplifyUnlessLiteral(expr.args.expression);
+
     if (e instanceof LiteralExpr) {
       e.setArgKey('isString', true);
     } else if (e && e.isNumber) {
@@ -286,9 +288,11 @@ function autoIncrementToSerial (expression: Expression): Expression {
 
   if (auto && expression instanceof ColumnDefExpr) {
     const constraints = expression.args.constraints || [];
+
     expression.setArgKey('constraints', constraints.filter((c) => c !== auto.parent));
 
     const kind = expression.args.kind;
+
     if (kind instanceof DataTypeExpr) {
       if (kind.isType(DataTypeExprKind.INT)) {
         kind.replace(new DataTypeExpr({
@@ -313,9 +317,11 @@ function serialToGenerated (expression: Expression): Expression {
   if (!(expression instanceof ColumnDefExpr)) return expression;
 
   const kind = expression.args.kind;
+
   if (!(kind instanceof DataTypeExpr)) return expression;
 
   let dataType: DataTypeExpr | undefined;
+
   if (kind.isType(DataTypeExprKind.SERIAL)) {
     dataType = new DataTypeExpr({
       this: DataTypeExprKind.INT,
@@ -356,6 +362,7 @@ function serialToGenerated (expression: Expression): Expression {
 
 function buildGenerateSeries (args: Expression[]): ExplodingGenerateSeriesExpr {
   const step = seqGet(args, 2);
+
   if (step) {
     if (step instanceof LiteralExpr && step.isString) {
       args[2] = toInterval(step.args.this);
@@ -371,6 +378,7 @@ function buildToTimestamp (args: Expression[]): UnixToTimeExpr | StrToTimeExpr {
   if (args.length === 1) {
     return UnixToTimeExpr.fromArgList(args);
   }
+
   return buildFormattedTime(StrToTimeExpr, {
     dialect: 'postgres',
   })(args);
@@ -379,12 +387,14 @@ function buildToTimestamp (args: Expression[]): UnixToTimeExpr | StrToTimeExpr {
 function jsonExtractSql (name: string, op: string) {
   return function (this: Generator, expression: JsonExtractExpr | JsonExtractScalarExpr): string {
     const onlyJsonTypes = expression.args.onlyJsonTypes;
+
     if (onlyJsonTypes) {
       return jsonExtractSegments(name, {
         quotedIndex: false,
         op,
       }).call(this, expression);
     }
+
     return jsonExtractSegments(name).call(this, expression);
   };
 }
@@ -394,6 +404,7 @@ function buildRegexpReplace (args: Expression[]): RegexpReplaceExpr {
 
   if (3 < args.length) {
     const last = args[args.length - 1];
+
     if (!(last instanceof LiteralExpr && last.isNumber)) {
       // In TS we skip the complex type annotation check unless necessary,
       // but we assume if it's a string literal, it's the modifiers
@@ -406,6 +417,7 @@ function buildRegexpReplace (args: Expression[]): RegexpReplaceExpr {
 
   regexpReplace = regexpReplace || RegexpReplaceExpr.fromArgList(args);
   regexpReplace.setArgKey('singleReplace', true);
+
   return regexpReplace;
 }
 
@@ -449,6 +461,7 @@ function buildLevenshteinLessEqual (args: Expression[]): LevenshteinExpr {
 
 function levenshteinSql (this: Generator, expression: LevenshteinExpr): string {
   const name = expression.args.maxDist ? 'LEVENSHTEIN_LESS_EQUAL' : 'LEVENSHTEIN';
+
   return renameFunc(name).call(this, expression);
 }
 
@@ -456,6 +469,7 @@ function versionedAnyValueSql (this: Generator, expression: AnyValueExpr): strin
   if (this.dialect.version.major < 16) {
     return anyValueToMaxSql.call(this, expression);
   }
+
   return renameFunc('ANY_VALUE').call(this, expression);
 }
 
@@ -468,11 +482,13 @@ function roundSql (this: Generator, expression: RoundExpr): string {
   }
 
   let currentThis = thisSql;
+
   // If the input is double precision, we must cast to decimal in Postgres
   if (expression.args.this instanceof Expression && expression.args.this.isType(DataTypeExprKind.DOUBLE)) {
     const decimalType = DataTypeExpr.build(DataTypeExprKind.DECIMAL, {
       expressions: expression.args.expressions,
     });
+
     currentThis = this.sql(new CastExpr({
       this: thisSql,
       to: decimalType,
@@ -551,6 +567,7 @@ export class PostgresTokenizer extends Tokenizer {
     const {
       '/*+': _1, DIV: _2, ...kw
     } = Tokenizer.KEYWORDS;
+
     return {
       ...kw,
       '~': TokenType.RLIKE,
@@ -621,9 +638,11 @@ class PostgresParser extends Parser {
     const noParenFunctions = {
       ...Parser.NO_PAREN_FUNCTIONS,
     };
+
     noParenFunctions[TokenType.CURRENT_SCHEMA] = CurrentSchemaExpr;
     noParenFunctions[TokenType.SESSION_USER] = SessionUserExpr;
     noParenFunctions[TokenType.CURRENT_CATALOG] = CurrentCatalogExpr;
+
     return noParenFunctions;
   }
 
@@ -640,7 +659,9 @@ class PostgresParser extends Parser {
           });
         },
       };
+
       delete parsers['INPUT'];
+
       return parsers;
     })();
   }
@@ -860,6 +881,7 @@ class PostgresParser extends Parser {
     const isFollowedByBuiltinType = this.tryParse(
       () => {
         this.advance();
+
         return this.parseTypes({
           checkFunc: false,
           allowIdentifiers: false,
@@ -882,6 +904,7 @@ class PostgresParser extends Parser {
     const isFollowedByAnyType = this.tryParse(
       () => {
         this.advance(2);
+
         return this.parseTypes({
           checkFunc: false,
           allowIdentifiers: true,
@@ -921,6 +944,7 @@ class PostgresParser extends Parser {
 
     if (paramMode && columnDef instanceof ColumnDefExpr) {
       const constraint = this.createModeConstraint(paramMode);
+
       if (!columnDef.args.constraints) {
         columnDef.setArgKey('constraints', []);
       }
@@ -940,6 +964,7 @@ class PostgresParser extends Parser {
       : undefined;
 
     this.matchTextSeq('S');
+
     return this.expression(PlaceholderExpr, {
       this: thisNode,
     });
@@ -947,6 +972,7 @@ class PostgresParser extends Parser {
 
   parseDatePart (): Expression {
     let part = this.parseType();
+
     this.match(TokenType.COMMA);
     const value = this.parseBitwise();
 
@@ -988,6 +1014,7 @@ class PostgresParser extends Parser {
 
     while (this.match(TokenType.DOT)) {
       const part = this.parseIdVar();
+
       if (part) {
         udtType = new DotExpr({
           this: udtType,
@@ -1024,11 +1051,13 @@ class PostgresGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -1258,6 +1287,7 @@ class PostgresGenerator extends Generator {
           const thisSql = this.sql(e, 'this');
           const orderSql = this.sql(e, 'order');
           const inner = orderSql ? `${thisSql}${orderSql}` : thisSql;
+
           return `JSON_AGG(${inner})`;
         },
       ],
@@ -1465,6 +1495,7 @@ class PostgresGenerator extends Generator {
               this.formatTime(e),
             ]);
           }
+
           return this.func('TO_CHAR', [
             e.args.this,
             e.args.format,
@@ -1552,30 +1583,37 @@ class PostgresGenerator extends Generator {
           const temporary = e.args.temporary ? ' TEMPORARY' : '';
           const unlogged = e.args.unlogged ? ' UNLOGGED' : '';
           const modifier = temporary || unlogged;
+
           return `${this.seg('INTO')}${modifier} ${this.sql(e, 'this')}`;
         },
       ],
     ]);
+
     transforms.delete(CommentColumnConstraintExpr);
+
     return transforms;
   }
 
   @cache
   static get PROPERTIES_LOCATION () {
     const m = new Map(Generator.PROPERTIES_LOCATION);
+
     m.set(PartitionedByPropertyExpr, PropertiesLocation.POST_SCHEMA);
     m.set(TransientPropertyExpr, PropertiesLocation.UNSUPPORTED);
     m.set(VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED);
+
     return m;
   }
 
   schemaCommentPropertySql (_expression: SchemaCommentPropertyExpr): string {
     this.unsupported('Table comments are not supported in the CREATE statement');
+
     return '';
   }
 
   commentColumnConstraintSql (_expression: CommentColumnConstraintExpr): string {
     this.unsupported('Column comments are not supported in the CREATE statement');
+
     return '';
   }
 
@@ -1589,10 +1627,12 @@ class PostgresGenerator extends Generator {
 
     if (paramConstraint) {
       const modeSql = this.sql(paramConstraint);
+
       paramConstraint.pop();
       const baseSql = super.columnDefSql(expression, {
         sep,
       });
+
       return `${modeSql} ${baseSql}`;
     }
 
@@ -1604,10 +1644,12 @@ class PostgresGenerator extends Generator {
   unnestSql (expression: UnnestExpr): string {
     if (expression.args.expressions?.length === 1) {
       const arg = expression.args.expressions[0];
+
       if (arg instanceof GenerateDateArrayExpr) {
         let generateSeries: Expression = new GenerateSeriesExpr({
           ...arg.args,
         });
+
         if (expression.parent instanceof FromExpr || expression.parent instanceof JoinExpr) {
           generateSeries = select('value::date')
             .from(new TableExpr({
@@ -1617,6 +1659,7 @@ class PostgresGenerator extends Generator {
             }))
             .subquery(expression.args.alias instanceof Expression ? expression.args.alias : (typeof expression.args.alias === 'string' ? expression.args.alias : '_unnested_generate_series'));
         }
+
         return this.sql(generateSeries);
       }
 
@@ -1625,10 +1668,13 @@ class PostgresGenerator extends Generator {
           dialect: this.dialect,
         })
         : arg;
+
       if (isType(thisNode, 'array<json>')) {
         let current = thisNode;
+
         while (current instanceof CastExpr) {
           const inner = current.args.this;
+
           if (inner instanceof Expression) {
             current = inner;
           } else {
@@ -1641,6 +1687,7 @@ class PostgresGenerator extends Generator {
           to: DataTypeExpr.build('json'),
         }));
         let alias = this.sql(expression, 'alias');
+
         alias = alias ? ` AS ${alias}` : '';
 
         if (expression.args.offset) {
@@ -1668,6 +1715,7 @@ class PostgresGenerator extends Generator {
     const thisSql = this.sql(expression, 'this');
     const expressions = (expression.args.expressions ?? []).map((e) => `${this.sql(e)} @@ ${thisSql}`);
     const sql = expressions.join(' OR ');
+
     return 1 < expressions.length ? `(${sql})` : sql;
   }
 
@@ -1675,11 +1723,14 @@ class PostgresGenerator extends Generator {
     let exprs = this.expressions(expression, {
       flat: true,
     });
+
     exprs = exprs ? `(${exprs})` : '';
 
     let accessMethod = this.sql(expression, 'accessMethod');
+
     accessMethod = accessMethod ? `ACCESS METHOD ${accessMethod}` : '';
     let tablespace = this.sql(expression, 'tablespace');
+
     tablespace = tablespace ? `TABLESPACE ${tablespace}` : '';
     const option = this.sql(expression, 'option');
 
@@ -1693,10 +1744,12 @@ class PostgresGenerator extends Generator {
           key: 'values',
           flat: true,
         });
+
         return `${this.expressions(expression, {
           flat: true,
         })}[${values}]`;
       }
+
       return 'ARRAY';
     }
 
@@ -1759,11 +1812,13 @@ class PostgresGenerator extends Generator {
 
   ignoreNullsSql (expression: IgnoreNullsExpr): string {
     this.unsupported('PostgreSQL does not support IGNORE NULLS.');
+
     return this.sql(expression.args.this);
   }
 
   respectNullsSql (expression: RespectNullsExpr): string {
     this.unsupported('PostgreSQL does not support RESPECT NULLS.');
+
     return this.sql(expression.args.this);
   }
 
@@ -1771,6 +1826,7 @@ class PostgresGenerator extends Generator {
     if (expression.args.this) {
       this.unsupported('Unsupported arg \'this\' for CURRENT_SCHEMA');
     }
+
     return 'CURRENT_SCHEMA';
   }
 
@@ -1794,6 +1850,7 @@ class PostgresGenerator extends Generator {
     }
 
     const thisPart = expression.args.this ? `(${expression.name})` : '';
+
     return `${(this.constructor as typeof PostgresGenerator).NAMED_PLACEHOLDER_TOKEN}${thisPart}s`;
   }
 

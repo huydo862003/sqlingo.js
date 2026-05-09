@@ -72,6 +72,7 @@ export function dump (expression: Expression): Array<Record<string, unknown>> {
 
       if (node.args) {
         const entries = Object.entries(node.args).reverse();
+
         for (const [
           k,
           vs,
@@ -136,6 +137,7 @@ export function load (payloads?: Record<string, unknown>[], customExpressions?: 
 
   for (const payload of tail) {
     const node = _load(payload, expressions);
+
     nodes.push(node as Expression);
 
     const parent = nodes[payload[INDEX] as number];
@@ -166,6 +168,7 @@ function _load (payload: Record<string, unknown>, expressions: Record<string, ty
   }
 
   const ExprClass = expressions[className as keyof typeof expressions];
+
   if (!ExprClass) {
     throw new Error(`Expression class does not exist: ${className}`);
   }

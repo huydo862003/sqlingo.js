@@ -45,8 +45,10 @@ function capDataTypePrecision (expression: DataTypeExpr, maxPrecision: number = 
   const precisionParam = expression.find(DataTypeParamExpr);
 
   let targetPrecision = maxPrecision;
+
   if (precisionParam && precisionParam.args.this instanceof LiteralExpr && precisionParam.args.this.isNumber) {
     const currentPrecision = Number(precisionParam.args.this.toString());
+
     targetPrecision = Math.min(currentPrecision, maxPrecision);
   }
 
@@ -69,6 +71,7 @@ function addDefaultPrecisionToVarchar (expression: Expression): Expression {
     for (const columnDef of expression.args.this.args.expressions || []) {
       if (columnDef instanceof ColumnDefExpr) {
         const columnType = columnDef.args.kind;
+
         if (
           columnType instanceof DataTypeExpr
           && [
@@ -114,8 +117,10 @@ export class FabricParser extends TSQL.Parser {
     const noParenFunctions = {
       ...TSQL.Parser.NO_PAREN_FUNCTIONS,
     };
+
     delete noParenFunctions[TokenType.LOCALTIME];
     delete noParenFunctions[TokenType.LOCALTIMESTAMP];
+
     return noParenFunctions;
   }
 
@@ -127,6 +132,7 @@ export class FabricParser extends TSQL.Parser {
         for (const columnDef of create.args.this.args.expressions || []) {
           if (columnDef instanceof ColumnDefExpr) {
             const columnType = columnDef.args.kind;
+
             if (
               columnType instanceof DataTypeExpr
               && [
@@ -160,11 +166,13 @@ export class FabricGenerator extends TSQL.Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -178,6 +186,7 @@ export class FabricGenerator extends TSQL.Generator {
   @cache
   static get TYPE_MAPPING (): Map<DataTypeExprKind | string, string> {
     const mapping = new Map(TSQL.Generator.TYPE_MAPPING);
+
     mapping.set(DataTypeExprKind.DATETIME, 'DATETIME2');
     mapping.set(DataTypeExprKind.DECIMAL, 'DECIMAL');
     mapping.set(DataTypeExprKind.IMAGE, 'VARBINARY');
@@ -196,13 +205,16 @@ export class FabricGenerator extends TSQL.Generator {
     mapping.set(DataTypeExprKind.UTINYINT, 'SMALLINT');
     mapping.set(DataTypeExprKind.UUID, 'UNIQUEIDENTIFIER');
     mapping.set(DataTypeExprKind.XML, 'VARCHAR');
+
     return mapping;
   };
 
   @cache
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: Expression) => string> {
     const m = new Map<typeof Expression, (this: Generator, e: Expression) => string>(TSQL.Generator.ORIGINAL_TRANSFORMS);
+
     m.set(CreateExpr, preprocess([addDefaultPrecisionToVarchar]));
+
     return m;
   };
 
@@ -223,6 +235,7 @@ export class FabricGenerator extends TSQL.Generator {
     const {
       safePrefix,
     } = options;
+
     if (expression.isType(DataTypeExprKind.TIMESTAMPTZ)) {
       const atTimeZone = expression.findAncestor<AtTimeZoneExpr | SelectExpr>(AtTimeZoneExpr, SelectExpr);
 
@@ -250,6 +263,7 @@ export class FabricGenerator extends TSQL.Generator {
 
   public atTimeZoneSql (expression: AtTimeZoneExpr): string {
     const timestamptzCast = expression.find(CastExpr);
+
     if (timestamptzCast && timestamptzCast.isType(DataTypeExprKind.TIMESTAMPTZ)) {
       const dataType = timestamptzCast.args.to as DataTypeExpr;
       const cappedDataType = capDataTypePrecision(dataType, 6);
@@ -272,6 +286,7 @@ export class FabricGenerator extends TSQL.Generator {
 
     if (scale !== undefined && scale !== UnixToTimeExpr.SECONDS) {
       this.unsupported(`UnixToTime scale ${scale} is not supported by Fabric`);
+
       return '';
     }
 
@@ -295,6 +310,7 @@ export class FabricGenerator extends TSQL.Generator {
       expression: roundedMsAsBigint,
       unit: literal('MICROSECONDS'),
     });
+
     return this.sql(dateadd);
   }
 }

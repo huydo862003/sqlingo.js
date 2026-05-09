@@ -17,6 +17,18 @@ import {
   dbmlMonarchTokensProvider,
 } from '@dbml/parse';
 
+const content = defineModel<string | undefined>();
+
+const {
+  language = 'sql',
+  readOnly = false,
+} = defineProps<{
+  /** Language mode for syntax highlighting */
+  language?: string;
+  /** Whether the editor is read-only */
+  readOnly?: boolean;
+}>();
+
 self.MonacoEnvironment = {
   getWorker: () => new EditorWorker(),
 };
@@ -42,16 +54,6 @@ monaco.editor.defineTheme('sqlingo-dark', {
     'editorLineNumber.activeForeground': resolveToken('--color-neutral-9'),
   },
 });
-
-const content = defineModel<string | undefined>();
-
-const {
-  language = 'sql',
-  readOnly = false,
-} = defineProps<{
-  language?: string;
-  readOnly?: boolean;
-}>();
 
 const containerElement = useTemplateRef('containerElement');
 let editor: monaco.editor.IStandaloneCodeEditor | null = null;
@@ -98,9 +100,10 @@ watch(content, (newValue) => {
   if (editor && editor.getValue() !== newValue) editor.setValue(newValue ?? '');
 });
 
-watch(() => language, (newLang) => {
+watch(() => language, (newLanguage) => {
   const model = editor?.getModel();
-  if (model) monaco.editor.setModelLanguage(model, newLang);
+
+  if (model) monaco.editor.setModelLanguage(model, newLanguage);
 });
 
 onBeforeUnmount(() => {

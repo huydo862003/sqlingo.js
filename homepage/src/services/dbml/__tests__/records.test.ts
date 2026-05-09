@@ -14,6 +14,7 @@ describe('records', () => {
       INSERT INTO t (a, b) VALUES (1, 2), (3, 4);
       INSERT INTO t (a, b) VALUES (5, 6);
     `, 'postgres');
+
     expect(schema.records).toHaveLength(1);
     expect(schema.records[0].rows).toHaveLength(3);
     expect(schema.records[0].columns).toEqual([

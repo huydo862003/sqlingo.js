@@ -57,6 +57,7 @@ type TakenNameMapping = Map<string, Scope | TableExpr>;
 export function eliminateSubqueries<E extends Expression> (expression: E): E {
   if (expression instanceof SubqueryExpr && expression.args.this) {
     eliminateSubqueries(expression.args.this);
+
     return expression;
   }
 
@@ -71,6 +72,7 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
   // All CTE aliases in the root scope are taken
   for (const scope of root.cteScopes) {
     const parent = scope.expression.parent;
+
     if (parent) {
       taken.set(parent.alias, scope);
     }
@@ -114,6 +116,7 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
         continue;
       }
       const newCte = eliminate(scope, existingCtes, taken);
+
       if (newCte) {
         newCtes.push(newCte);
       }
@@ -121,6 +124,7 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
 
     // Append the existing CTE itself
     const cteParent = cteScope.expression.parent;
+
     if (cteParent) {
       newCtes.push(cteParent);
     }
@@ -132,9 +136,11 @@ export function eliminateSubqueries<E extends Expression> (expression: E): E {
     ...root.subqueryScopes,
     ...root.tableScopes,
   ];
+
   for (const scope of restScopes) {
     for (const childScope of scope.traverse()) {
       const newCte = eliminate(childScope, existingCtes, taken);
+
       if (newCte) {
         newCtes.push(newCte);
       }
@@ -185,6 +191,7 @@ function eliminateDerivedTable (
 
   // Get rid of redundant exp.Subquery expressions, i.e. those that are just used as wrappers
   let toReplace = scope.expression.parent;
+
   if (!toReplace) {
     return undefined;
   }
@@ -204,6 +211,7 @@ function eliminateDerivedTable (
   });
   const toReplaceArgs = toReplace.args as Record<string, unknown>;
   const joins = toReplaceArgs.joins;
+
   if (joins && Array.isArray(joins)) {
     (tableExpr as TableExpr).setArgKey('joins', joins);
   }
@@ -219,6 +227,7 @@ function eliminateCte (
   taken: TakenNameMapping,
 ): Expression | undefined {
   const parent = scope.expression.parent;
+
   if (!parent) {
     return undefined;
   }
@@ -229,10 +238,12 @@ function eliminateCte (
   ] = newCte(scope, existingCtes, taken);
 
   const withClause = parent.parent;
+
   parent.pop();
 
   if (withClause) {
     const withExpressions = withClause.args.expressions;
+
     if (!withExpressions || withExpressions.length === 0) {
       withClause.pop();
     }
@@ -248,6 +259,7 @@ function eliminateCte (
           tableExpr,
           sourceScope,
         ] = source;
+
         if (sourceScope === scope) {
           const newTable = alias(
             table(name),
@@ -256,6 +268,7 @@ function eliminateCte (
               copy: false,
             },
           );
+
           tableExpr.replace(newTable);
         }
       }
@@ -293,6 +306,7 @@ function newCte (
   taken.set(name, scope);
 
   let cte: Expression | undefined;
+
   if (!duplicateCteAlias) {
     existingCtes.set(scope.expression.sqlKey, name);
     cte = new CteExpr({

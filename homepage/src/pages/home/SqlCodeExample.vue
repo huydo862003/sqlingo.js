@@ -3,14 +3,14 @@
     <GTabPanel name="Parse">
       <GCodeBlock
         id="example-parse"
-        :code="`
+        code="
 import { parse } from &quot;@hdnax/sqlingo.js&quot;;
 const [ast] = parse(
   &quot;SELECT a, b FROM t WHERE a > 1&quot;,
   { read: &quot;mysql&quot; },
 );
 // => &quot;SELECT a, b FROM t WHERE a > 1&quot;
-`"
+"
         :language="GCodeLanguage.Typescript"
         :highlight-theme="GHighlightTheme.AtomOne"
         show-line-numbers
@@ -21,14 +21,14 @@ const [ast] = parse(
     <GTabPanel name="Transpile">
       <GCodeBlock
         id="example-transpile"
-        :code="`
+        code="
 import { transpile } from &quot;@hdnax/sqlingo.js&quot;;
 const [result] = transpile(&quot;SELECT EPOCH_MS(1618088028295)&quot;, {
   read: &quot;duckdb&quot;,
   write: &quot;hive&quot;,
 });
 // => &quot;SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))&quot;
-`"
+"
         :language="GCodeLanguage.Typescript"
         :highlight-theme="GHighlightTheme.AtomOne"
         show-line-numbers
@@ -39,14 +39,14 @@ const [result] = transpile(&quot;SELECT EPOCH_MS(1618088028295)&quot;, {
     <GTabPanel name="Optimize">
       <GCodeBlock
         id="example-optimize"
-        :code="`
+        code="
 import { optimize } from &quot;@hdnax/sqlingo.js&quot;;
 const result = optimize(
   &quot;SELECT a FROM (SELECT a, b FROM t) sub WHERE sub.a > 1&quot;,
   { dialect: &quot;duckdb&quot; },
 );
 // => &quot;SELECT t.a FROM t WHERE t.a > 1&quot;
-`"
+"
         :language="GCodeLanguage.Typescript"
         :highlight-theme="GHighlightTheme.AtomOne"
         show-line-numbers

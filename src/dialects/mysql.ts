@@ -209,6 +209,7 @@ export function dateTruncSql (this: Generator, expression: DateTruncExpr): strin
     if (unit !== 'DAY') {
       this.unsupported(`Unexpected interval unit: ${unit}`);
     }
+
     return this.func('DATE', [expr]);
   }
 
@@ -253,6 +254,7 @@ function hasTimeSpecifier (dateFormat: string): boolean {
     }
     i += 1;
   }
+
   return false;
 }
 
@@ -344,6 +346,7 @@ export function dateAddSql (kind: string): (this: Generator, expression: DateAdd
  */
 export function tsOrDsToDateSql (this: Generator, expression: TsOrDsToDateExpr): string {
   const timeFormat = expression.args.format;
+
   return timeFormat
     ? strToDateSql.call(this, expression)
     : this.func('DATE', [expression.args.this]);
@@ -360,6 +363,7 @@ export function removeTsOrDsToDate<T extends FuncExpr> (
   return function (this: Generator, expression: T): string {
     for (const argKey of args) {
       const arg = expression.getArgKey(argKey);
+
       if (arg instanceof TsOrDsToDateExpr && !arg.args.format) {
         expression.setArgKey(argKey, arg.args.this);
       }
@@ -521,7 +525,9 @@ class MySQLTokenizer extends Tokenizer {
       ...Tokenizer.COMMANDS,
       TokenType.REPLACE,
     ]);
+
     commands.delete(TokenType.SHOW);
+
     return commands;
   };
 };
@@ -569,9 +575,11 @@ class MySQLParser extends Parser {
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
     return (() => {
       const tokens = new Set(Parser.TABLE_ALIAS_TOKENS);
+
       for (const hint of Parser.TABLE_INDEX_HINT_TOKENS) {
         tokens.delete(hint);
       }
+
       return tokens;
     })();
   }
@@ -693,6 +701,7 @@ class MySQLParser extends Parser {
             this: 'DAY',
           }),
         });
+
         return diff.add(1); // Standardized parenthesized expression with offset
       },
       VERSION: (args: unknown[]) => CurrentVersionExpr.fromArgList(args),
@@ -1020,11 +1029,13 @@ class MySQLParser extends Parser {
    */
   public parsePrimaryKeyPart (): Expression | undefined {
     const thisExpr = this.parseIdVar();
+
     if (!this.match(TokenType.L_PAREN)) {
       return thisExpr;
     }
 
     const expression = this.parseNumber();
+
     this.matchRParen();
 
     return this.expression(ColumnPrefixExpr, {
@@ -1052,6 +1063,7 @@ class MySQLParser extends Parser {
     const expressions = this.parseWrappedCsv(this.parseOrdered.bind(this));
 
     const options: IndexConstraintOptionExpr[] = [];
+
     while (true) {
       let opt: IndexConstraintOptionExpr | undefined = undefined;
 
@@ -1193,6 +1205,7 @@ class MySQLParser extends Parser {
     }
 
     let mutex: boolean | undefined = undefined;
+
     if (this.matchTextSeq(['MUTEX'])) mutex = true;
     if (this.matchTextSeq(['STATUS'])) mutex = false;
 
@@ -1258,6 +1271,7 @@ class MySQLParser extends Parser {
 
     if (this.matchTextSeq(['LIMIT'])) {
       const parts = this.parseCsv(this.parseNumber.bind(this));
+
       if (parts.length === 1) {
         limit = parts[0];
       } else if (parts.length === 2) {
@@ -1274,6 +1288,7 @@ class MySQLParser extends Parser {
 
   protected parseSetItemCharset (kind: string): Expression {
     const thisExpr = this.parseString() || this.parseUnquotedField();
+
     return this.expression(SetItemExpr, {
       this: thisExpr,
       kind: kind,
@@ -1307,6 +1322,7 @@ class MySQLParser extends Parser {
       parseInterval = true,
       fallbackToIdentifier = false,
     } = options;
+
     if (this.match(TokenType.BINARY, {
       advance: false,
     })) {
@@ -1416,6 +1432,7 @@ class MySQLParser extends Parser {
       this: name,
       expressions: values,
     });
+
     return this.expression(PartitionExpr, {
       expressions: [partRange],
     });
@@ -1424,6 +1441,7 @@ class MySQLParser extends Parser {
   protected parsePartitionListValue (): PartitionExpr {
     this.matchTextSeq(['PARTITION']);
     const name = this.parseIdVar();
+
     this.matchTextSeq([
       'VALUES',
       'IN',
@@ -1434,6 +1452,7 @@ class MySQLParser extends Parser {
       this: name,
       expressions: values,
     });
+
     return this.expression(PartitionExpr, {
       expressions: [partList],
     });
@@ -1451,6 +1470,7 @@ class MySQLParser extends Parser {
       inProps = false,
       namedPrimaryKey: _namedPrimaryKey = false,
     } = options;
+
     // MySQL always supports named primary keys in this context
     return super.parsePrimaryKey({
       wrappedOptional,
@@ -1465,11 +1485,13 @@ class MySQLGenerator extends Generator {
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
+
     [
       'cluster',
       'distribute',
       'sort',
     ].forEach((m) => modifiers.delete(m));
+
     return modifiers;
   }
 
@@ -1901,11 +1923,13 @@ class MySQLGenerator extends Generator {
   @cache
   static get PROPERTIES_LOCATION (): Map<typeof Expression, PropertiesLocation> {
     const map = new Map(Generator.PROPERTIES_LOCATION);
+
     map.set(TransientPropertyExpr, PropertiesLocation.UNSUPPORTED);
     map.set(VolatilePropertyExpr, PropertiesLocation.UNSUPPORTED);
     map.set(PartitionedByPropertyExpr, PropertiesLocation.UNSUPPORTED);
     map.set(PartitionByRangePropertyExpr, PropertiesLocation.POST_SCHEMA);
     map.set(PartitionByListPropertyExpr, PropertiesLocation.POST_SCHEMA);
+
     return map;
   }
 
@@ -2248,16 +2272,19 @@ class MySQLGenerator extends Generator {
 
   public computedColumnConstraintSql (expression: ComputedColumnConstraintExpr): string {
     const persisted = expression.args.persisted ? 'STORED' : 'VIRTUAL';
+
     return `GENERATED ALWAYS AS (${this.sql(expression.args.this?.unnest())}) ${persisted}`;
   }
 
   public arraySql (expression: ArrayExpr): string {
     this.unsupported('Arrays are not supported by MySQL');
+
     return this.functionFallbackSql(expression);
   }
 
   public arrayContainsAllSql (expression: ArrayContainsAllExpr): string {
     this.unsupported('Array operations are not supported by MySQL');
+
     return this.functionFallbackSql(expression);
   }
 
@@ -2267,6 +2294,7 @@ class MySQLGenerator extends Generator {
 
   public extractSql (expression: ExtractExpr): string {
     const unit = expression.name;
+
     if (unit && unit.toLowerCase() === 'epoch') {
       return this.func('UNIX_TIMESTAMP', [expression.args.expression as Expression]);
     }
@@ -2285,6 +2313,7 @@ class MySQLGenerator extends Generator {
     }
 
     let result = super.dataTypeSql(expression);
+
     if (MySQLGenerator.UNSIGNED_TYPE_MAPPING.has(expression.args.this as DataTypeExprKind)) {
       result = `${result} UNSIGNED`;
     }
@@ -2300,16 +2329,20 @@ class MySQLGenerator extends Generator {
     safePrefix?: string;
   } = {}): string {
     const toExpr = expression.args.to;
+
     if (toExpr instanceof DataTypeExpr) {
       const toThis = toExpr.args.this as string;
+
       if ((this._constructor as typeof MySQLGenerator).TIMESTAMP_FUNC_TYPES.has(toThis)) {
         return this.func('TIMESTAMP', [expression.args.this as Expression]);
       }
       const to = (this._constructor as typeof MySQLGenerator).CAST_MAPPING[toThis];
+
       if (to) {
         toExpr.setArgKey('this', to);
       }
     }
+
     return super.castSql(expression);
   }
 
@@ -2319,6 +2352,7 @@ class MySQLGenerator extends Generator {
     const global_ = expression.args.global ? ' GLOBAL' : '';
 
     let target = this.sql(expression, 'target');
+
     target = target ? ` ${target}` : '';
 
     if ([
@@ -2344,11 +2378,13 @@ class MySQLGenerator extends Generator {
     let types = this.expressions(expression, {
       key: 'types',
     });
+
     types = types ? ` ${types}` : types;
     const query = this.prefixedSql('FOR QUERY', expression, 'query');
 
     let offset = '';
     let limit = '';
+
     if (expression.name === 'PROFILE') {
       offset = this.prefixedSql('OFFSET', expression, 'offset');
       limit = this.prefixedSql('LIMIT', expression, 'limit');
@@ -2361,6 +2397,7 @@ class MySQLGenerator extends Generator {
     const channel = this.prefixedSql('FOR CHANNEL', expression, 'channel');
 
     let mutexOrStatus = '';
+
     if (expression.name === 'ENGINE') {
       mutexOrStatus = expression.args.mutex ? ' MUTEX' : ' STATUS';
     }
@@ -2391,26 +2428,32 @@ class MySQLGenerator extends Generator {
    */
   public alterColumnSql (expression: AlterColumnExpr): string {
     const dtype = this.sql(expression, 'dtype');
+
     if (!dtype) {
       return super.alterColumnSql(expression);
     }
 
     const thisExpr = this.sql(expression, 'this');
+
     return `MODIFY COLUMN ${thisExpr} ${dtype}`;
   }
 
   protected prefixedSql (prefix: string, expression: Expression, arg: string): string {
     const sql = this.sql(expression, arg);
+
     return sql ? ` ${prefix} ${sql}` : '';
   }
 
   protected oldStyleLimitSql (expression: ShowExpr): string {
     const limit = this.sql(expression, 'limit');
     const offset = this.sql(expression, 'offset');
+
     if (limit) {
       const limitOffset = offset ? `${offset}, ${limit}` : limit;
+
       return ` LIMIT ${limitOffset}`;
     }
+
     return '';
   }
 
@@ -2459,6 +2502,7 @@ class MySQLGenerator extends Generator {
 
   public attimezoneSql (expression: AtTimeZoneExpr): string {
     this.unsupported('AT TIME ZONE is not supported by MySQL');
+
     return this.sql(expression.args.this);
   }
 
@@ -2468,21 +2512,25 @@ class MySQLGenerator extends Generator {
 
   public ignoreNullsSql (expression: IgnoreNullsExpr): string {
     this.unsupported('MySQL does not support IGNORE NULLS.');
+
     return this.sql(expression.args.this);
   }
 
   public currentSchemaSql (_expression: CurrentSchemaExpr): string {
     unsupportedArgs.call(this, _expression, 'this');
+
     return this.func('SCHEMA', []);
   }
 
   public partitionSql (expression: PartitionExpr): string {
     const parent = expression.parent;
+
     if (parent instanceof PartitionByRangePropertyExpr || parent instanceof PartitionByListPropertyExpr) {
       return this.expressions(expression, {
         flat: true,
       });
     }
+
     return super.partitionSql(expression);
   }
 
@@ -2498,6 +2546,7 @@ class MySQLGenerator extends Generator {
       key: 'createExpressions',
       flat: true,
     });
+
     return `PARTITION BY ${kind} (${partitions}) (${create})`;
   }
 
@@ -2514,6 +2563,7 @@ class MySQLGenerator extends Generator {
     const values = this.expressions(expression, {
       flat: true,
     });
+
     return `PARTITION ${name} VALUES IN (${values})`;
   }
 
@@ -2522,6 +2572,7 @@ class MySQLGenerator extends Generator {
     const values = this.expressions(expression, {
       flat: true,
     });
+
     return `PARTITION ${name} VALUES LESS THAN (${values})`;
   }
 }

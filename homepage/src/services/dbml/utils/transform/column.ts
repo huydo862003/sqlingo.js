@@ -53,6 +53,7 @@ export function buildDbmlColumn (expr: ColumnDefExpr): DbmlColumn {
   for (const constraintExpr of expr.constraints) {
     if (!(constraintExpr instanceof ColumnConstraintExpr)) continue;
     const kind = constraintExpr.args.kind;
+
     if (!kind) continue;
 
     if (kind instanceof PrimaryKeyColumnConstraintExpr) {
@@ -68,9 +69,11 @@ export function buildDbmlColumn (expr: ColumnDefExpr): DbmlColumn {
       column.increment = true;
     } else if (kind instanceof DefaultColumnConstraintExpr) {
       const inner = kind.args.this;
+
       if (inner instanceof Expression) column.default = extractNodeText(inner);
     } else if (kind instanceof CommentColumnConstraintExpr) {
       const inner = kind.args.this;
+
       if (inner instanceof Expression) column.note = extractNodeText(inner);
     } else if (kind instanceof CollateColumnConstraintExpr) {
       // collation not representable in DBML
@@ -78,23 +81,26 @@ export function buildDbmlColumn (expr: ColumnDefExpr): DbmlColumn {
       column.note = 'VIRTUAL column';
     } else if (kind instanceof CheckColumnConstraintExpr) {
       const checkExpr = kind.args.this;
+
       if (checkExpr instanceof Expression) column.check = new DbmlCheck({
         expression: checkExpr.sql(),
       });
     } else if (kind instanceof ReferenceExpr) {
       const inner = kind.args.this;
       const tableExpr = inner instanceof SchemaExpr ? inner.args.this : inner;
-      const cols = inner instanceof SchemaExpr
+      const columns = inner instanceof SchemaExpr
         ? (inner.args.expressions ?? [])
         : [];
       const target = extractTableParts(tableExpr as Expression | undefined);
-      const refCols = cols.map((col) => col instanceof Expression ? extractNodeText(col) : String(col));
+      const refColumns = columns.map((column_) => column_ instanceof Expression ? extractNodeText(column_) : String(column_));
+
       if (target.name) {
         const actions = extractReferenceActions(kind);
+
         references.push(new DbmlInlineReference({
           relation: DbmlRelation.MANY_TO_ONE,
-          target: buildEndpoint(target.schema, target.name, refCols.length
-            ? refCols
+          target: buildEndpoint(target.schema, target.name, refColumns.length
+            ? refColumns
             : [name]),
           onDelete: actions.onDelete,
           onUpdate: actions.onUpdate,
@@ -104,5 +110,6 @@ export function buildDbmlColumn (expr: ColumnDefExpr): DbmlColumn {
   }
 
   if (references.length) column.ref = references;
+
   return column;
 }

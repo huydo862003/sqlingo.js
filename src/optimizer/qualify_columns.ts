@@ -144,6 +144,7 @@ export function qualifyColumns<E extends Expression> (
     const resolver = new Resolver(scope, schema, {
       inferSchema,
     });
+
     popTableColumnAliases(scope.ctes);
     popTableColumnAliases(scope.derivedTables);
     const usingColumnTables = expandUsing(scope, resolver);
@@ -229,6 +230,7 @@ export function validateQualifyColumns<E extends Expression> (
       const end = (column.args.this as Expression)?.meta?.['end'] as number | undefined;
 
       let errorMsg = `Column '${column.name}' could not be resolved${forTable}.`;
+
       if (line && col) {
         errorMsg += ` Line: ${line}, Col: ${col}`;
       }
@@ -244,6 +246,7 @@ export function validateQualifyColumns<E extends Expression> (
             ],
           ],
         });
+
         errorMsg += `\n  ${formattedSql}`;
       }
 
@@ -252,6 +255,7 @@ export function validateQualifyColumns<E extends Expression> (
 
     if (0 < unqualifiedColumns.length && 0 < scope.pivots.length && scope.pivots[0].unpivot) {
       const unpivotColumnSet = new Set(unpivotColumns(scope.pivots[0]));
+
       unqualifiedColumns = unqualifiedColumns.filter((c) => !unpivotColumnSet.has(c));
     }
 
@@ -268,6 +272,7 @@ export function validateQualifyColumns<E extends Expression> (
     const end = isInstanceOf(firstColumnThis, Expression) ? firstColumnThis.meta['end'] as number | undefined : undefined;
 
     let errorMsg = `Ambiguous column '${firstColumn.name}'`;
+
     if (line && col) {
       errorMsg += ` (Line: ${line}, Col: ${col})`;
     }
@@ -283,6 +288,7 @@ export function validateQualifyColumns<E extends Expression> (
           ],
         ],
       });
+
       errorMsg += `\n  ${formattedSql}`;
     }
 
@@ -302,6 +308,7 @@ function separatePseudocolumns (scope: Scope, pseudocolumns: Set<string>): void 
 
   for (const column of scope.columns) {
     const name = column.name.toUpperCase();
+
     if (!pseudocolumns.has(name)) {
       continue;
     }
@@ -329,6 +336,7 @@ function unpivotColumns (unpivot: PivotExpr): ColumnExpr[] {
     .map((field) => field.args.this as ColumnExpr);
 
   const valueColumns: ColumnExpr[] = [];
+
   for (const e of unpivot.args.expressions as Expression[]) {
     for (const col of e.findAll(ColumnExpr)) {
       valueColumns.push(col);
@@ -347,6 +355,7 @@ function popTableColumnAliases (derivedTables: Iterable<Expression>): void {
       continue;
     }
     const tableAlias = table.getArgKey('alias');
+
     if (tableAlias instanceof TableAliasExpr) {
       tableAlias.setArgKey('columns', undefined);
     }
@@ -355,6 +364,7 @@ function popTableColumnAliases (derivedTables: Iterable<Expression>): void {
 
 function expandUsing (scope: Scope, resolver: Resolver): Map<string, string[]> {
   const joins = (scope.expression as SelectExpr).args.joins || [];
+
   if (joins.length === 0) {
     return new Map();
   }
@@ -386,16 +396,20 @@ function expandUsing (scope: Scope, resolver: Resolver): Map<string, string[]> {
 
   for (let i = 0; i < joins.length; i++) {
     const join = joins[i];
+
     assertIsInstanceOf(join, JoinExpr);
     const sourceTable = ordered[ordered.length - 1];
+
     if (sourceTable) {
       updateSourceColumns(sourceTable);
     }
 
     const joinTable = join.aliasOrName;
+
     ordered.push(joinTable);
 
     const using = join.args.using;
+
     if (!using) continue;
 
     const joinColumns = resolver.getSourceColumns(joinTable);
@@ -417,6 +431,7 @@ function expandUsing (scope: Scope, resolver: Resolver): Map<string, string[]> {
       table = table || sourceTable;
 
       let lhs: Expression;
+
       if (i === 0 || usingIdentifierCount === 1) {
         lhs = columnExpr({
           col: identifier,
@@ -429,6 +444,7 @@ function expandUsing (scope: Scope, resolver: Resolver): Map<string, string[]> {
             col: identifier,
             table: t,
           }));
+
         if (1 < coalesceColumns.length) {
           lhs = new CoalesceExpr({
             this: coalesceColumns[0],
@@ -449,6 +465,7 @@ function expandUsing (scope: Scope, resolver: Resolver): Map<string, string[]> {
 
       if (!isSemiOrAntiJoin) {
         let tables_ = columnTables.get(identifier);
+
         if (!tables_) {
           tables_ = [];
           columnTables.set(identifier, tables_);
@@ -467,6 +484,7 @@ function expandUsing (scope: Scope, resolver: Resolver): Map<string, string[]> {
   if (0 < columnTables.size) {
     for (const column of scope.columns) {
       const tables_ = !column.table ? columnTables.get(column.name) : undefined;
+
       if (tables_ !== undefined) {
         const coalesceArgs = tables_.map((t) => columnExpr({
           col: column.name,
@@ -530,6 +548,7 @@ function expandAliasRefs_ (
     } = options;
     const isGroupBy = node instanceof GroupExpr;
     const isHaving = node instanceof HavingExpr;
+
     if (!node || (expandOnlyGroupby && !isGroupBy)) {
       return;
     }
@@ -563,6 +582,7 @@ function expandAliasRefs_ (
         }
       } else if (dialectClass.PROJECTION_ALIASES_SHADOW_SOURCE_NAMES && (isGroupBy || isHaving)) {
         const columnTable = table ? table.name : column.table;
+
         if (columnTable && projections.has(columnTable)) {
           column.replace(toIdentifier(column.name));
           replaced = true;
@@ -582,6 +602,7 @@ function expandAliasRefs_ (
           replaced = true;
           const parenNode = column.replace(parenExpr(aliasExpr_)) as Expression;
           const simplified = simplifyParens(parenNode, dialect);
+
           if (simplified !== parenNode) {
             parenNode.replace(simplified);
           }
@@ -592,6 +613,7 @@ function expandAliasRefs_ (
 
   for (let i = 0; i < expression.selects.length; i++) {
     const projection = expression.selects[i] as Expression;
+
     replaceColumns(projection);
     if (projection instanceof AliasExpr) {
       aliasToExpression.set(projection.alias, [
@@ -604,6 +626,7 @@ function expandAliasRefs_ (
   // Handle recursive CTE alias columns
   let parentScope: Scope | undefined = scope;
   let onRightSubTree = false;
+
   while (parentScope && !parentScope.isCte) {
     if (parentScope.isUnion && parentScope.parent) {
       onRightSubTree = (parentScope.parent.expression as SetOperationExpr).args.expression === parentScope.expression;
@@ -613,8 +636,10 @@ function expandAliasRefs_ (
 
   if (parentScope && onRightSubTree) {
     const cteExpr = parentScope.expression.parent;
+
     if (cteExpr) {
       const withNode = cteExpr.findAncestor(WithExpr);
+
       if (withNode?.args.recursive) {
         const aliasArg = (cteExpr as CteExpr).args.alias;
         const aliasColumns = aliasArg instanceof TableAliasExpr
@@ -623,6 +648,7 @@ function expandAliasRefs_ (
         const columnsSource: Expression[] = 0 < aliasColumns.length
           ? aliasColumns as Expression[]
           : ((cteExpr as CteExpr).args.this as SelectExpr)?.selects || [];
+
         for (const col of columnsSource) {
           if (col instanceof Expression) {
             aliasToExpression.delete(col.outputName);
@@ -666,6 +692,7 @@ function convertColumnsToDots (scope: Scope, resolver: Resolver): void {
 
     const columnTable = column.table;
     const dotParts = (column.meta['dotParts'] as unknown[] | undefined) || [];
+
     delete column.meta['dotParts'];
 
     if (
@@ -678,10 +705,12 @@ function convertColumnsToDots (scope: Scope, resolver: Resolver): void {
       )
     ) {
       const parts = column.parts;
+
       if (parts.length < 2) continue;
 
       const firstPart = parts[0];
       const remainingParts = parts.slice(1);
+
       if (!firstPart) continue;
 
       let newRoot: IdentifierExpr;
@@ -710,6 +739,7 @@ function convertColumnsToDots (scope: Scope, resolver: Resolver): void {
           col: newRoot,
           table: newTable as IdentifierExpr,
         });
+
         if (0 < dotParts.length) {
           newColumn.meta['dotParts'] = dotParts.slice(wasQualified ? 2 : 1);
         }
@@ -748,6 +778,7 @@ function qualifyColumnsInScope (
 
     if (columnTable && scope.sources.has(columnTable)) {
       const sourceColumns = resolver.getSourceColumns(columnTable);
+
       if (
         !allowPartialQualification
         && 0 < sourceColumns.length
@@ -768,6 +799,7 @@ function qualifyColumnsInScope (
 
       if (table) {
         const source = scope.sources.get(table.name);
+
         if (source instanceof Scope
           && source.columnIndex.has(column)
         ) {
@@ -783,6 +815,7 @@ function qualifyColumnsInScope (
         && columnName in scope.selectedSources
       ) {
         const colThis = column.args.this;
+
         scope.replace(column, new TableColumnExpr({
           this: isInstanceOf(colThis, Expression) ? colThis : undefined,
         }));
@@ -795,6 +828,7 @@ function qualifyColumnsInScope (
       for (const column of pivot.findAll(ColumnExpr)) {
         if (!column.table && resolver.allColumns.has(column.name)) {
           const table = resolver.getTable(column.name);
+
           if (table) {
             column.setArgKey('table', table);
           }
@@ -810,6 +844,7 @@ function addExceptColumns (
   exceptColumns: Map<string, Set<string>>,
 ): void {
   const except_ = expression.getArgKey('except') ?? expression.getArgKey('except');
+
   if (!except_) return;
   const exceptList = Array.isArray(except_)
     ? except_
@@ -819,6 +854,7 @@ function addExceptColumns (
       .filter((e): e is Expression => e instanceof Expression)
       .map((e) => e.name),
   );
+
   for (const table of tables) {
     exceptColumns.set(table, columns);
   }
@@ -830,11 +866,14 @@ function addRenameColumns (
   renameColumns: Map<string, Record<string, string>>,
 ): void {
   const rename = expression.getArgKey('rename') as Expression[] | undefined;
+
   if (!rename || rename.length === 0) return;
   const columns: Record<string, string> = {};
+
   for (const e of rename) {
     if (e instanceof Expression) {
       const thisExpr = e.args.this as Expression | undefined;
+
       if (thisExpr instanceof Expression) {
         columns[thisExpr.name] = (e as Expression).alias;
       }
@@ -851,8 +890,10 @@ function addReplaceColumns (
   replaceColumns: Map<string, Record<string, AliasExpr>>,
 ): void {
   const replace = expression.getArgKey('replace') as Expression[] | undefined;
+
   if (!replace || replace.length === 0) return;
   const columns: Record<string, AliasExpr> = {};
+
   for (const e of replace) {
     if (e instanceof AliasExpr) {
       columns[e.alias] = e;
@@ -865,6 +906,7 @@ function addReplaceColumns (
 
 function expandStructStarsNoParens (expression: DotExpr): AliasExpr[] {
   const dotColumn = expression.find(ColumnExpr);
+
   if (!(dotColumn instanceof ColumnExpr) || !dotColumn.isType(DataTypeExprKind.STRUCT)) {
     return [];
   }
@@ -880,6 +922,7 @@ function expandStructStarsNoParens (expression: DotExpr): AliasExpr[] {
   // If we're expanding a nested struct eg. t.c.f1.f2.* find the last struct (f2 in this case)
   outer: for (const part of dotParts.slice(1)) {
     const fieldExprs = startingStruct?.args.expressions || [];
+
     for (const field of fieldExprs) {
       // Unable to expand star unless all fields are named
       if (!(field.args.this instanceof IdentifierExpr)) {
@@ -898,6 +941,7 @@ function expandStructStarsNoParens (expression: DotExpr): AliasExpr[] {
         break outer;
       }
     }
+
     // There is no matching field in the struct
     return [];
   }
@@ -950,6 +994,7 @@ function expandStructStarsWithParens (expression: DotExpr): AliasExpr[] {
   }
 
   const dotColumn = expression.find(ColumnExpr);
+
   if (!(dotColumn instanceof ColumnExpr) || !dotColumn.isType(DataTypeExprKind.STRUCT)) {
     return [];
   }
@@ -969,6 +1014,7 @@ function expandStructStarsWithParens (expression: DotExpr): AliasExpr[] {
     }
 
     const rhs = parent.right;
+
     if (rhs instanceof StarExpr) {
       break;
     }
@@ -979,6 +1025,7 @@ function expandStructStarsWithParens (expression: DotExpr): AliasExpr[] {
 
     let matched = false;
     const expressions: (DataTypeExpr | ColumnDefExpr)[] = filterInstanceOf((startingStruct as DataTypeExpr).args.expressions || [], ColumnDefExpr);
+
     for (const structFieldDef of expressions) {
       if (structFieldDef.name === rhs.name) {
         matched = true;
@@ -997,6 +1044,7 @@ function expandStructStarsWithParens (expression: DotExpr): AliasExpr[] {
   const outerParen = expression.args.this;
 
   const expressions: (DataTypeExpr | ColumnDefExpr)[] = filterInstanceOf((startingStruct as DataTypeExpr).args.expressions || [], ColumnDefExpr);
+
   for (const structFieldDef of expressions) {
     const newIdentifier = structFieldDef.args.this instanceof IdentifierExpr
       ? structFieldDef.args.this.copy()
@@ -1010,6 +1058,7 @@ function expandStructStarsWithParens (expression: DotExpr): AliasExpr[] {
     const newAlias = alias(newDot, newIdentifier, {
       copy: false,
     }) as AliasExpr;
+
     newSelections.push(newAlias);
   }
 
@@ -1034,6 +1083,7 @@ function expandStars_ (
   const pivotExcludeColumns = new Set<string>();
 
   const pivot = seqGet(scope.pivots, 0);
+
   if (pivot instanceof PivotExpr && !pivot.aliasColumnNames.length) {
     if (pivot.unpivot) {
       pivotOutputColumns = unpivotColumns(pivot).map((c) => c.outputName);
@@ -1053,6 +1103,7 @@ function expandStars_ (
       }
 
       const pivotColumns = pivot.getArgKey('columns') as Expression[] | undefined;
+
       pivotOutputColumns = (pivotColumns || []).map((c) => (c as Expression).outputName);
       if (!pivotOutputColumns.length) {
         pivotOutputColumns = (pivot.args.expressions as Expression[]).map((c) => c.aliasOrName);
@@ -1075,8 +1126,10 @@ function expandStars_ (
     } else if ((expression as Expression).isStar) {
       if (!(expression instanceof DotExpr)) {
         const tableName = expression instanceof ColumnExpr ? expression.table : '';
+
         if (tableName) tables.push(tableName);
         const exprThis = (expression as Expression).args.this;
+
         if (exprThis instanceof Expression) {
           addExceptColumns(exprThis, tables, exceptColumns);
           addReplaceColumns(exprThis, tables, replaceColumnsMap);
@@ -1084,12 +1137,14 @@ function expandStars_ (
         }
       } else if (dialectClass.SUPPORTS_STRUCT_STAR_EXPANSION && !dialectClass.REQUIRES_PARENTHESIZED_STRUCT_ACCESS) {
         const structFields = expandStructStarsNoParens(expression as DotExpr);
+
         if (0 < structFields.length) {
           newSelections.push(...structFields);
           continue;
         }
       } else if (dialectClass.REQUIRES_PARENTHESIZED_STRUCT_ACCESS) {
         const structFields = expandStructStarsWithParens(expression as DotExpr);
+
         if (0 < structFields.length) {
           newSelections.push(...structFields);
           continue;
@@ -1110,6 +1165,7 @@ function expandStars_ (
       let columns = resolver.getSourceColumns(table, {
         onlyVisible: true,
       });
+
       if (!columns.length) columns = scope.outerColumns;
 
       if (0 < pseudocolumns.size && dialectClass.EXCLUDES_PSEUDOCOLUMNS_FROM_STAR) {
@@ -1126,6 +1182,7 @@ function expandStars_ (
 
       if (pivot instanceof PivotExpr) {
         let pivotColumns: string[] | undefined;
+
         if (pivotOutputColumns && 0 < pivotExcludeColumns.size) {
           pivotColumns = columns.filter((c) => !pivotExcludeColumns.has(c));
           pivotColumns.push(...pivotOutputColumns);
@@ -1154,12 +1211,14 @@ function expandStars_ (
         if (columnsToExclude.has(name) || coalesedColumns.has(name)) continue;
 
         const tablesForCol = usingColumnTables.get(name);
+
         if (tablesForCol?.includes(table)) {
           coalesedColumns.add(name);
           const coalesceArgs = tablesForCol.map((t) => columnExpr({
             col: name,
             table: t,
           }));
+
           newSelections.push(
             aliasExpr(
               new CoalesceExpr({
@@ -1178,6 +1237,7 @@ function expandStars_ (
             col: name,
             table,
           });
+
           newSelections.push(
             alias_ !== name
               ? aliasExpr(selectionExpr, alias_, {
@@ -1202,6 +1262,7 @@ export function qualifyOutputs (scopeOrExpression: Scope | Expression): void {
     scopeInstance = scopeOrExpression;
   } else {
     const built = buildScope(scopeOrExpression);
+
     if (!(built instanceof Scope)) return;
     scopeInstance = built;
   }
@@ -1254,9 +1315,11 @@ export function qualifyOutputs (scopeOrExpression: Scope | Expression): void {
 function selectByPos (scope: Scope, node: LiteralExpr): AliasExpr {
   const index = Number(node.args.this) - 1;
   const select = scope.expression.selects[index] as Expression | undefined;
+
   if (!(select instanceof AliasExpr)) {
     throw new OptimizeError(`Unknown output column: ${node.name}`);
   }
+
   return select;
 }
 
@@ -1278,8 +1341,10 @@ function expandPositionalReferences (
   for (const node of expressions) {
     if (node.isInteger) {
       const select = selectByPos(scope, node as LiteralExpr);
+
       if (alias) {
         const selectAlias = select.alias;
+
         newNodes.push(selectAlias
           ? columnExpr({
             col: selectAlias,
@@ -1324,9 +1389,11 @@ function expandPositionalReferences (
 
 function expandGroupBy (scope: Scope, dialect: Dialect): void {
   const group = (scope.expression as SelectExpr).args.group;
+
   if (!group) return;
 
   const groupExpressions = filterInstanceOf(group.args.expressions || [], Expression);
+
   group.setArgKey('expressions', expandPositionalReferences(scope, groupExpressions, dialect));
   (scope.expression as SelectExpr).setArgKey('group', group);
 }
@@ -1366,6 +1433,7 @@ function expandOrderByAndDistinctOn (scope: Scope, resolver: Resolver): void {
         for (const col of agg.findAll(ColumnExpr)) {
           if (!col.table) {
             const table = resolver.getTable(col.name);
+
             if (table) {
               col.setArgKey('table', table);
             }
@@ -1393,6 +1461,7 @@ function expandOrderByAndDistinctOn (scope: Scope, resolver: Resolver): void {
           expr.replace(toIdentifier(selectByPos(scope, expr as LiteralExpr).alias));
         } else {
           const match = selectsMap.get(expr.sql());
+
           if (match) expr.replace(match);
         }
       }
@@ -1411,6 +1480,7 @@ export function quoteIdentifiers (
     dialect: dialectArg, identify = true,
   } = options;
   const dialect = Dialect.getOrRaise(dialectArg);
+
   return expression.transform(
     dialect.quoteIdentifier.bind(dialect),
     {
@@ -1423,6 +1493,7 @@ export function quoteIdentifiers (
 export function pushdownCteAliasColumns (scope: Scope): void {
   for (const cte of scope.ctes) {
     const aliasColumnNames = cte.aliasColumnNames;
+
     if (0 < aliasColumnNames.length && cte.args.this instanceof SelectExpr) {
       const selectExpr = cte.args.this;
       const expressions = selectExpr.args.expressions || [];
@@ -1431,9 +1502,11 @@ export function pushdownCteAliasColumns (scope: Scope): void {
       for (let i = 0; i < aliasColumnNames.length; i++) {
         const alias_ = aliasColumnNames[i];
         const projection = expressions[i];
+
         if (!projection) break;
 
         let newProjection: Expression;
+
         if (projection instanceof AliasExpr) {
           projection.setArgKey('alias', toIdentifier(alias_));
           newProjection = projection;

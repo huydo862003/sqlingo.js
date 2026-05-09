@@ -32,28 +32,33 @@ export function eliminateCtes<E extends Expression> (expression: E): E {
 
     // Traverse the scope tree in reverse so we can remove chains of unused CTEs
     const scopes: Scope[] = [];
+
     for (const scope of root.traverse()) {
       scopes.push(scope);
     }
 
     for (let i = scopes.length - 1; 0 <= i; i--) {
       const scope = scopes[i];
+
       if (scope.isCte) {
         const scopeId = scope;
         const count = refCount.get(scopeId) || 0;
 
         if (count <= 0) {
           const cteNode = scope.expression.parent;
+
           if (!cteNode) {
             continue;
           }
 
           const withNode = cteNode.parent;
+
           cteNode.pop();
 
           // Pop the entire WITH clause if this is the last CTE
           if (withNode) {
             const withExpressions = withNode.args.expressions;
+
             if (!withExpressions || withExpressions.length === 0) {
               withNode.pop();
             }
@@ -66,8 +71,10 @@ export function eliminateCtes<E extends Expression> (expression: E): E {
             const [
               , sourceScope,
             ] = source;
+
             if (sourceScope instanceof Scope) {
               const currentCount = refCount.get(sourceScope) || 0;
+
               refCount.set(sourceScope, currentCount - 1);
             }
           }

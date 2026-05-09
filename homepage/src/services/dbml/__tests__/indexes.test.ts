@@ -14,12 +14,13 @@ describe('indexes', () => {
       CREATE UNIQUE INDEX idx_ab ON t USING btree (a, b);
     `, 'postgres');
     const index = schema.tables[0].indexes?.[0];
+
     expect(index).toMatchObject({
       unique: true,
       type: 'btree',
       name: 'idx_ab',
     });
-    expect(index?.columns.map((col) => col.expression)).toEqual([
+    expect(index?.columns.map((column) => column.expression)).toEqual([
       'a',
       'b',
     ]);
@@ -33,8 +34,9 @@ describe('indexes', () => {
       'postgres',
     );
     const index = schema.tables[0].indexes?.[0];
+
     expect(index?.pk).toBe(true);
-    expect(index?.columns.map((col) => col.expression)).toEqual([
+    expect(index?.columns.map((column) => column.expression)).toEqual([
       'a',
       'b',
     ]);
@@ -48,6 +50,7 @@ describe('indexes', () => {
       'postgres',
     );
     const index = schema.tables[0].indexes?.[0];
+
     expect(index).toMatchObject({
       pk: true,
       name: 'pk_ab',
@@ -62,8 +65,9 @@ describe('indexes', () => {
       'postgres',
     );
     const index = schema.tables[0].indexes?.[0];
+
     expect(index?.unique).toBe(true);
-    expect(index?.columns.map((col) => col.expression)).toEqual([
+    expect(index?.columns.map((column) => column.expression)).toEqual([
       'a',
       'b',
     ]);
@@ -77,6 +81,7 @@ describe('indexes', () => {
       'postgres',
     );
     const index = schema.tables[0].indexes?.[0];
+
     expect(index).toMatchObject({
       unique: true,
       name: 'uq_ab',
@@ -90,7 +95,8 @@ describe('indexes', () => {
       CREATE TABLE t (a INT, b TEXT);
       CREATE INDEX idx_f ON t (lower(b));
     `, 'postgres');
-    const col = schema.tables[0].indexes?.[0].columns[0];
-    expect(col?.isExpression).toBe(true);
+    const column = schema.tables[0].indexes?.[0].columns[0];
+
+    expect(column?.isExpression).toBe(true);
   });
 });

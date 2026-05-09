@@ -59,9 +59,11 @@ export class Table {
   toJslist (): Record<string, unknown>[] {
     return this.rows.map((row) => {
       const obj: Record<string, unknown> = {};
+
       this.columns.forEach((col, i) => {
         obj[col] = row[i];
       });
+
       return obj;
     });
   }
@@ -82,6 +84,7 @@ export class Table {
 
   get (index: number): RowReader {
     this.reader.row = this.rows[index];
+
     return this.reader;
   }
 
@@ -91,6 +94,7 @@ export class Table {
     );
 
     const widths: Record<string, number> = {};
+
     cols.forEach((col) => {
       widths[col] = col.length;
     });
@@ -104,6 +108,7 @@ export class Table {
       const rowStr = cols
         .map((col) => {
           const valStr = String(reader.row[reader.columns[col]] ?? '');
+
           return valStr.padStart(widths[col], ' ').substring(0, widths[col]);
         })
         .join(' ');
@@ -135,6 +140,7 @@ export class TableIter implements Iterator<RowReader> {
         done: false,
       };
     }
+
     return {
       value: undefined,
       done: true,
@@ -161,8 +167,10 @@ function _ensureTables (d?: unknown, dialect?: DialectType): Record<string, unkn
   }
 
   const depth = objectDepth(d);
+
   if (1 < depth) {
     const nestedResult: Record<string, unknown> = {};
+
     for (const [
       k,
       v,
@@ -171,12 +179,15 @@ function _ensureTables (d?: unknown, dialect?: DialectType): Record<string, unkn
         dialect,
         isTable: true,
       }).name;
+
       nestedResult[normalizedName] = _ensureTables(v, dialect);
     }
+
     return nestedResult;
   }
 
   const result: Record<string, unknown> = {};
+
   for (const [
     rawTableName,
     tableData,
@@ -191,6 +202,7 @@ function _ensureTables (d?: unknown, dialect?: DialectType): Record<string, unkn
       // Normalize raw object arrays into Table structures
       const normalizedTableData = tableData.map((row: Record<string, unknown>) => {
         const newRow: Record<string, unknown> = {};
+
         for (const [
           columnName,
           value,
@@ -199,6 +211,7 @@ function _ensureTables (d?: unknown, dialect?: DialectType): Record<string, unkn
             dialect,
           }).name] = value;
         }
+
         return newRow;
       });
 
@@ -241,6 +254,7 @@ export class RowReader {
         if (typeof prop === 'string' && prop in target.columns && target.row) {
           return target.row[target.columns[prop]];
         }
+
         return undefined;
       },
     });
@@ -271,6 +285,7 @@ export class RangeReader {
             }
           })();
         }
+
         return undefined;
       },
     });

@@ -130,8 +130,10 @@ function toBool (value: unknown): boolean {
   if (typeof value === 'boolean') return value;
   if (typeof value === 'string') {
     const lower = value.toLowerCase().trim();
+
     return lower === 'true' || lower === '1' || lower === 'yes';
   }
+
   return Boolean(value);
 }
 
@@ -235,8 +237,10 @@ export class Expression implements
           yield e as any;
         }
       }
+
       return;
     }
+
     return;
   }
 
@@ -247,6 +251,7 @@ export class Expression implements
    */
   text (key: string): string {
     const field = this.getArgKey(key);
+
     if (typeof field === 'string') {
       return field;
     }
@@ -256,6 +261,7 @@ export class Expression implements
     if (field instanceof StarExpr || field instanceof NullExpr) {
       return field.name;
     }
+
     return '';
   }
 
@@ -283,16 +289,19 @@ export class Expression implements
   toValue (): PrimitiveExpressionValue | undefined {
     if (this instanceof LiteralExpr) {
       const value = this.args.this;
+
       if (this.isString) {
         return value;
       }
       if (typeof value === 'string') {
         return Number(value);
       }
+
       return value;
     }
     if (this instanceof NegExpr) {
       const inner = (this.args.this as Expression).toValue();
+
       return typeof inner === 'number' ? -inner : inner !== undefined ? -Number(inner) : undefined;
     }
     throw new Error(`${this.constructor.name} cannot be converted to a JavaScript value.`);
@@ -308,10 +317,12 @@ export class Expression implements
     }
     if (this instanceof LiteralExpr) {
       const s = String(this.args.this);
+
       return !s.includes('.') && !s.toLowerCase().includes('e');
     }
     try {
       const inner = this.args.this as Expression;
+
       return inner.isInteger;
     } catch {
       return false;
@@ -335,6 +346,7 @@ export class Expression implements
     if (this.args.alias instanceof TableAliasExpr) {
       return this.args.alias.name;
     }
+
     return this.text('alias');
   }
 
@@ -344,15 +356,18 @@ export class Expression implements
    */
   get aliasColumnNames (): string[] {
     const tableAlias = this.args.alias;
+
     if (!(tableAlias instanceof TableAliasExpr)) {
       return [];
     }
     const columns = tableAlias.args.columns;
+
     if (Array.isArray(columns)) {
       return columns.map((c: unknown) => (c instanceof Expression
         ? c.name
         : ''));
     }
+
     return [];
   }
 
@@ -397,6 +412,7 @@ export class Expression implements
     if (this instanceof CastExpr) {
       return this._type || this.args.to;
     }
+
     return this._type;
   }
 
@@ -425,6 +441,7 @@ export class Expression implements
     if (!this._type) {
       return false;
     }
+
     return this._type.isType(ensureList(dtypes));
   }
 
@@ -451,6 +468,7 @@ export class Expression implements
         node,
         copy,
       ] = stack.pop()!;
+
       if (node.comments) {
         copy.comments = [...node.comments];
       }
@@ -472,6 +490,7 @@ export class Expression implements
       ] of Object.entries(node.args)) {
         if (vs instanceof Expression) {
           const childCopy = new (vs.constructor as new () => Expression)();
+
           stack.push([
             vs,
             childCopy,
@@ -482,6 +501,7 @@ export class Expression implements
           for (const v of vs) {
             if (v instanceof Expression) {
               const childCopy = new (v.constructor as new () => Expression)();
+
               stack.push([
                 v,
                 childCopy,
@@ -496,6 +516,7 @@ export class Expression implements
         }
       }
     }
+
     return root;
   }
 
@@ -511,6 +532,7 @@ export class Expression implements
     const {
       prepend = false,
     } = options;
+
     if (!this.comments) {
       this.comments = [];
     }
@@ -532,6 +554,7 @@ export class Expression implements
               ? valueParts[0].trim()
               : undefined;
             const metaKey = snakeToCamelCase(key.trim());
+
             if (rawValue === undefined) {
               this.meta[metaKey] = true;
             } else if (/^(true|false|1|0)$/i.test(rawValue)) {
@@ -562,7 +585,9 @@ export class Expression implements
    */
   popComments (): string[] {
     const comments = this.comments || [];
+
     this.comments = undefined;
+
     return comments;
   }
 
@@ -573,11 +598,13 @@ export class Expression implements
    */
   append (argKey: string, value: ExpressionValue | undefined): void {
     const args = this.args as Record<string, unknown>;
+
     if (!Array.isArray(args[argKey])) {
       args[argKey] = [];
     }
     this.setParent(argKey, value);
     const values = args[argKey] as unknown[];
+
     if (value instanceof Expression) {
       value.index = values.length;
     }
@@ -604,6 +631,7 @@ export class Expression implements
     // Clear hash cache up the tree
 
     let expression: Expression | undefined = this;
+
     while (expression && expression._hash !== undefined) {
       expression._hash = undefined;
       expression = expression.parent;
@@ -622,10 +650,12 @@ export class Expression implements
         expressions.splice(index, 1);
         for (let i = index; i < expressions.length; i++) {
           const v = expressions[i];
+
           if (v instanceof Expression && v.index !== undefined) {
             v.index = v.index - 1;
           }
         }
+
         return;
       }
 
@@ -642,6 +672,7 @@ export class Expression implements
       value = expressions;
     } else if (value === undefined) {
       delete args[argKey];
+
       return;
     }
 
@@ -651,6 +682,7 @@ export class Expression implements
 
   getArgKey (argKey?: string): ExpressionValue | ExpressionValueList | undefined {
     if (argKey === undefined) return undefined;
+
     return (this.args as Record<string, ExpressionValueList | ExpressionValue>)[argKey] ?? undefined;
   }
 
@@ -677,10 +709,12 @@ export class Expression implements
   get depth (): number {
     let depth = 0;
     let node: Expression | undefined = this.parent;
+
     while (node) {
       depth++;
       node = node.parent;
     }
+
     return depth;
   }
 
@@ -691,6 +725,7 @@ export class Expression implements
     const argValues = reverse
       ? Object.values(this.args).reverse()
       : Object.values(this.args);
+
     for (const value of argValues) {
       if (value instanceof Expression) {
         yield value;
@@ -698,6 +733,7 @@ export class Expression implements
         const items = reverse
           ? [...value].reverse()
           : value;
+
         for (const item of items) {
           if (item instanceof Expression) {
             yield item;
@@ -724,6 +760,7 @@ export class Expression implements
     for (const expr of this.findAll(expressionTypes, options)) {
       return expr;
     }
+
     return undefined;
   }
 
@@ -746,6 +783,7 @@ export class Expression implements
     const types = Array.from(ensureList(expressionTypes));
 
     const bfs = options?.bfs ?? true;
+
     for (const expression of this.walk({
       bfs,
     })) {
@@ -765,12 +803,14 @@ export class Expression implements
     ...expressionTypes: (new (args: any) => T)[]
   ): T | undefined {
     let node: Expression | undefined = this.parent;
+
     while (node) {
       if (expressionTypes.some((type) => node instanceof type)) {
         return node as T;
       }
       node = node.parent;
     }
+
     return undefined;
   }
 
@@ -795,9 +835,11 @@ export class Expression implements
   root (): Expression {
 
     let node: Expression = this;
+
     while (node.parent) {
       node = node.parent;
     }
+
     return node;
   }
 
@@ -814,6 +856,7 @@ export class Expression implements
   }): Generator<Expression> {
     const bfs = options?.bfs ?? true;
     const prune = options?.prune;
+
     if (bfs) {
       yield* this.bfs({
         prune,
@@ -891,14 +934,17 @@ export class Expression implements
   unnest (): Expression {
 
     let expression: Expression = this;
+
     while (expression instanceof ParenExpr) {
       const thisArg = expression.args.this;
+
       if (thisArg instanceof Expression) {
         expression = thisArg;
       } else {
         break;
       }
     }
+
     return expression;
   }
 
@@ -908,10 +954,12 @@ export class Expression implements
   unalias (): Expression {
     if (this instanceof AliasExpr) {
       const thisArg = this.args.this;
+
       if (thisArg instanceof Expression) {
         return thisArg;
       }
     }
+
     return this;
   }
 
@@ -933,6 +981,7 @@ export class Expression implements
     unnest?: boolean;
   }): Generator<Expression> {
     const unnest = options?.unnest ?? true;
+
     for (const node of this.dfs({
       prune: (n) => n.parent !== undefined && n.constructor !== this.constructor,
     })) {
@@ -954,6 +1003,7 @@ export class Expression implements
       dialect, ...restOptions
     } = options;
     const dialectInstance = Dialect.getOrRaise(dialect);
+
     return dialectInstance.generate(this, restOptions);
   }
 
@@ -1042,6 +1092,7 @@ export class Expression implements
     }
 
     const key = this.argKey;
+
     if (!key) {
       return expression;
     }
@@ -1072,6 +1123,7 @@ export class Expression implements
    */
   pop (): this {
     this.replace(undefined);
+
     return this;
   }
 
@@ -1097,6 +1149,7 @@ export class Expression implements
     if (!(this instanceof type)) {
       throw new Error(`${this.constructor.name} is not ${type.name}.`);
     }
+
     return this as T;
   }
 
@@ -1113,8 +1166,10 @@ export class Expression implements
 
     // Check for required arguments
     const constructor = this._constructor;
+
     for (const key of constructor.requiredArgs) {
       const v = this.getArgKey(key);
+
       if (v === undefined || (Array.isArray(v) && v.length === 0)) {
         errors.push(`Required keyword: '${key}' missing for ${this.constructor.name}`);
       }
@@ -1126,6 +1181,7 @@ export class Expression implements
       // Check if this function accepts variable-length arguments
       // (e.g., CONCAT, COALESCE can take any number of arguments)
       const isVarLen = (constructor as typeof FuncExpr).isVarLenArgs || false;
+
       if (argTypeCount < args.length && !isVarLen) {
         errors.push(
           `The number of provided arguments (${args.length}) is greater than `
@@ -1183,6 +1239,7 @@ export class Expression implements
       copy = true, wrap = true, ...restOptions
     } = options;
     const expressionList = Array.from(ensureList(expressions));
+
     return and([
       this,
       ...expressionList,
@@ -1225,6 +1282,7 @@ export class Expression implements
       copy = true, wrap = true, ...restOptions
     } = options;
     const expressionList = Array.from(ensureList(expressions));
+
     return or([
       this,
       ...expressionList,
@@ -1257,6 +1315,7 @@ export class Expression implements
     const {
       copy = true, ...restOptions
     } = options;
+
     return not(this, {
       ...restOptions,
       copy,
@@ -1299,6 +1358,7 @@ export class Expression implements
       this.meta.start = other.start;
       this.meta.end = other.end;
     }
+
     return this;
   }
 
@@ -1335,6 +1395,7 @@ export class Expression implements
     const aliasName = _alias instanceof Expression
       ? _alias.name
       : _alias.toString();
+
     return alias(this, aliasName, {
       ...restOptions,
       copy,
@@ -1367,9 +1428,11 @@ export class Expression implements
     let other = convert(_other, {
       copy: true,
     });
+
     if (!(self instanceof klass) && !(_other instanceof klass)) {
       const wrappedSelf = wrap(self, BinaryExpr);
       const wrappedOther = wrap(other, BinaryExpr);
+
       if (wrappedSelf) self = wrappedSelf;
       if (wrappedOther) other = wrappedOther;
     }
@@ -1379,6 +1442,7 @@ export class Expression implements
         expression: self,
       });
     }
+
     return new klass({
       this: self,
       expression: other,
@@ -1403,6 +1467,7 @@ export class Expression implements
 
     while (0 < queue.length) {
       const node = queue.shift()!;
+
       nodes.push(node);
       for (const child of node.iterExpressions()) {
         if (child._hash === undefined) {
@@ -1417,6 +1482,7 @@ export class Expression implements
 
       if (node instanceof LiteralExpr || node instanceof IdentifierExpr) {
         const sortedEntries = Object.entries(node.args).sort();
+
         for (const [
           k,
           v,
@@ -1427,6 +1493,7 @@ export class Expression implements
         }
       } else {
         const sortedEntries = Object.entries(node.args);
+
         for (const [
           k,
           v,
@@ -1437,6 +1504,7 @@ export class Expression implements
                 const hashValue = typeof x === 'string'
                   ? x.toLowerCase()
                   : x;
+
                 hash = this.hashString(hash + k + hashValue);
               } else {
                 hash = this.hashString(hash + k);
@@ -1446,12 +1514,14 @@ export class Expression implements
             const hashValue = typeof v === 'string'
               ? v.toLowerCase()
               : v;
+
             hash = this.hashString(hash + k + hashValue);
           }
         }
       }
       node._hash = hash;
     }
+
     return this._hash || '';
   }
 
@@ -1459,6 +1529,7 @@ export class Expression implements
     if (this === other) return true;
     if (!(other instanceof Expression)) return false;
     if (this.constructor !== other.constructor) return false;
+
     return this.hash() === other.hash();
   }
 
@@ -1466,6 +1537,7 @@ export class Expression implements
     return str.split('')
       .reduce((a, b) => {
         a = ((a << 5) - a) + b.charCodeAt(0);
+
         return a & a;
       }, 0)
       .toString();
@@ -1614,8 +1686,10 @@ export class Expression implements
     safe?: boolean;
   }): DivExpr {
     const div = this.binop(DivExpr, other);
+
     div.setArgKey('typed', options?.typed ?? false);
     div.setArgKey('safe', options?.safe ?? false);
+
     return div;
   }
 
@@ -1628,6 +1702,7 @@ export class Expression implements
     const {
       nullsFirst = true,
     } = options;
+
     return new OrderedExpr({
       this: this.copy(),
       nullsFirst: nullsFirst ? convert(nullsFirst) : undefined,
@@ -1643,6 +1718,7 @@ export class Expression implements
     const {
       nullsFirst = false,
     } = options;
+
     return new OrderedExpr({
       this: this.copy(),
       desc: convert(true),
@@ -1980,6 +2056,7 @@ export class QueryExpr extends Expression {
     const {
       copy = true, ...restOptions
     } = options;
+
     return applyBuilder(expression, {
       instance: this,
       arg: 'limit',
@@ -2019,6 +2096,7 @@ export class QueryExpr extends Expression {
     const {
       copy = true, ...restOptions
     } = options;
+
     return applyBuilder(expression, {
       instance: this,
       arg: 'offset',
@@ -2061,6 +2139,7 @@ export class QueryExpr extends Expression {
       append = true, copy = true, ...restOptions
     } = options;
     const expressionList = Array.from(ensureList(expressions)) as (string | Expression | undefined)[];
+
     return applyChildListBuilder(expressionList, {
       instance: this,
       arg: 'order',
@@ -2079,6 +2158,7 @@ export class QueryExpr extends Expression {
    */
   get ctes (): Expression[] {
     const withExpr = this.args.with;
+
     return filterInstanceOf(withExpr?.args.expressions ?? [], Expression); // sqlglot uses `Expression.expressions`, but I used $expressions for type safety
   }
 
@@ -2208,6 +2288,7 @@ export class QueryExpr extends Expression {
     const {
       recursive = false, append = true, copy = true, ...restOptions
     } = options;
+
     return applyCteBuilder({
       instance: this,
       alias,
@@ -2338,6 +2419,7 @@ export class UdtfExpr extends DerivedTableExpr {
 
   get selects (): Expression[] {
     const alias = this.args.alias;
+
     return isInstanceOf(alias, TableAliasExpr)
       ? alias.columns
       : [];
@@ -2458,6 +2540,7 @@ export class DdlExpr extends Expression {
    */
   get ctes (): Expression[] {
     const withExpr = this.args.with;
+
     return filterInstanceOf(withExpr?.args.expressions ?? [], Expression); // NOTE: The original sqlglot uses `Expression.expressions`
   }
 
@@ -2468,6 +2551,7 @@ export class DdlExpr extends Expression {
    */
   get selects (): Expression[] {
     const expr = this.args.expression;
+
     return (expr instanceof QueryExpr)
       ? expr.selects
       : [];
@@ -2481,6 +2565,7 @@ export class DdlExpr extends Expression {
    */
   get namedSelects (): string[] {
     const expr = this.args.expression;
+
     return (expr instanceof QueryExpr)
       ? expr.namedSelects
       : [];
@@ -2556,6 +2641,7 @@ export class DmlExpr extends Expression {
     const {
       copy = true, ...restOptions
     } = options;
+
     return applyBuilder(expression as string | Expression | undefined, {
       instance: this,
       arg: 'returning',
@@ -4028,6 +4114,7 @@ export class DeleteExpr extends DmlExpr {
     const {
       copy = true, ...restOptions
     } = options;
+
     return applyBuilder(table as string | Expression | undefined, {
       instance: this,
       arg: 'this',
@@ -4066,6 +4153,7 @@ export class DeleteExpr extends DmlExpr {
     const {
       append = true, copy = true, ...restOptions
     } = options;
+
     return applyConjunctionBuilder(Array.from(ensureList(expressions)) as (string | Expression | undefined)[], {
       instance: this,
       arg: 'where',
@@ -6131,6 +6219,7 @@ export class TupleExpr extends Expression {
     const {
       copy = true, unnest, ...restOptions
     } = options;
+
     return new InExpr({
       this: maybeCopy(this, copy),
       expressions: expressions?.map((e) => convert(e, {
@@ -6420,12 +6509,14 @@ export class TableExpr extends Expression {
    */
   get name (): string {
     const thisArg = this.args.this;
+
     if (!thisArg || thisArg instanceof FuncExpr) {
       return '';
     }
     if (thisArg instanceof Expression) {
       return thisArg.name || '';
     }
+
     return thisArg.toString();
   }
 
@@ -6495,10 +6586,12 @@ export class TableExpr extends Expression {
     const lastPart = parts[parts.length - 1];
 
     let col: ColumnExpr | DotExpr | AliasExpr;
+
     if (lastPart instanceof IdentifierExpr) {
       // Build column from parts (reversed for catalog.db.table order)
       const columnParts = parts.slice(0, 4).reverse();
       const fields = parts.slice(4);
+
       col = column({
         col: columnParts[0] as IdentifierExpr,
         table: columnParts[1] as IdentifierExpr | undefined,
@@ -6514,9 +6607,11 @@ export class TableExpr extends Expression {
     }
 
     const aliasArg = this.args.alias;
+
     if (aliasArg) {
       const aliasThis = aliasArg.args.this;
       const aliasName = typeof aliasThis === 'string' ? aliasThis : isInstanceOf(aliasThis, IdentifierExpr) ? aliasThis : undefined;
+
       col = alias(col, aliasName, {
         copy,
       });
@@ -7154,6 +7249,7 @@ export class DataTypeExpr extends Expression {
     ] of Object.entries(kwargs)) {
       dataTypeExp?.setArgKey(k, v as ExpressionValue);
     }
+
     return dataTypeExp;
   }
 
@@ -7169,7 +7265,9 @@ export class DataTypeExpr extends Expression {
    */
   toString (): string {
     const t = this.args.this;
+
     if (t === undefined) return super.toString();
+
     return t instanceof Expression ? t.toString() : String(t);
   }
 
@@ -7385,6 +7483,7 @@ export class AlterExpr extends Expression {
    */
   get kind (): string | undefined {
     const kind = this.args.kind;
+
     return kind ? kind.toUpperCase() : undefined;
   }
 
@@ -7842,6 +7941,7 @@ export class AliasExpr extends Expression {
     if (typeof this.args.alias === 'string') {
       return this.args.alias;
     }
+
     return this.args.alias?.name ?? '';
   }
 }
@@ -8121,18 +8221,21 @@ export class TimeUnitExpr extends Expression {
     unit?: Expression;
   }> (args: T): T {
     const unit = args.unit;
+
     if (unit && TimeUnitExpr.isVarLike(unit) && !(unit instanceof ColumnExpr && unit.parts.length !== 1)) {
       args.unit = new VarExpr({
         this: (TimeUnitExpr.UNABBREVIATED_UNIT_NAME[unit.name] || unit.name).toUpperCase(),
       });
     } else if (unit instanceof WeekExpr) {
       const thisArg = unit.args.this;
+
       if (thisArg) {
         unit.setArgKey('this', new VarExpr({
           this: thisArg.name.toUpperCase(),
         }));
       }
     }
+
     return args;
   }
 
@@ -8347,6 +8450,7 @@ export class JsonPathExpr extends Expression {
   get outputName (): string {
     const lastSegment = this.args.expressions?.[this.args.expressions.length - 1];
     const thisValue = lastSegment?.args.this;
+
     return typeof thisValue === 'string' ? thisValue : '';
   }
 }
@@ -9063,6 +9167,7 @@ export class ColumnExpr extends ConditionExpr {
    */
   get parts (): [] | [...Expression[], StarExpr] {
     const result = [];
+
     for (const part of [
       'catalog',
       'db',
@@ -9070,10 +9175,12 @@ export class ColumnExpr extends ConditionExpr {
       'this',
     ] as const) {
       const value = this.args[part];
+
       if (value) {
         result.push(value);
       }
     }
+
     return result as [] | [...IdentifierExpr[], StarExpr];
   }
 
@@ -9874,6 +9981,7 @@ export class InsertExpr extends multiInherit(DdlExpr, DmlExpr, Expression) {
     const {
       recursive, materialized, append, dialect, copy, ...restOptions
     } = options;
+
     return applyCteBuilder({
       instance: this,
       alias,
@@ -9973,10 +10081,12 @@ export class LiteralExpr extends ConditionExpr {
   toValue (): number | string {
     if (this.isNumber) {
       const floatParsed = parseFloat(this.args.this as string);
+
       if (!isNaN(floatParsed)) {
         return floatParsed;
       }
     }
+
     return this.args.this as string;
   }
 }
@@ -12441,6 +12551,7 @@ export class PropertiesExpr extends Expression {
       value,
     ] of Object.entries(propertiesDict)) {
       const propertyClass = PropertiesExpr.NAME_TO_PROPERTY[key.toUpperCase() as keyof typeof PropertiesExpr.NAME_TO_PROPERTY];
+
       if (propertyClass) {
         expressions.push(new propertyClass({
 
@@ -12560,12 +12671,14 @@ export class SetOperationExpr extends QueryExpr {
     const expressionList = Array.from(ensureList(expressions)) as (string | Expression | undefined)[];
     const self = maybeCopy(this, copy);
     const leftSide = self.args.this;
+
     assertIsInstanceOf(leftSide, QueryExpr);
     narrowInstanceOf(leftSide.unnest(), QueryExpr)?.select(expressionList, {
       ...restOptions,
       copy: false,
     });
     const rightSide = self.args.expression;
+
     assertIsInstanceOf(rightSide, QueryExpr);
     narrowInstanceOf(rightSide.unnest(), QueryExpr)?.select(expressionList, {
       ...restOptions,
@@ -12583,11 +12696,14 @@ export class SetOperationExpr extends QueryExpr {
   get namedSelects (): string[] {
 
     let expression: QueryExpr = this;
+
     while (expression instanceof SetOperationExpr) {
       const next = expression.args.this?.unnest();
+
       assertIsInstanceOf(next, QueryExpr);
       expression = next;
     }
+
     return expression.namedSelects;
   }
 
@@ -12597,6 +12713,7 @@ export class SetOperationExpr extends QueryExpr {
   get isStar (): boolean {
     const leftIsStar = this.args.this?.isStar;
     const rightIsStar = this.args.expression?.isStar;
+
     return leftIsStar || rightIsStar || false;
   }
 
@@ -12607,11 +12724,14 @@ export class SetOperationExpr extends QueryExpr {
   get selects (): Expression[] {
 
     let expression: QueryExpr = this;
+
     while (expression instanceof SetOperationExpr) {
       const next = expression.args.this?.unnest();
+
       assertIsInstanceOf(next, QueryExpr);
       expression = next;
     }
+
     return expression.selects;
   }
 
@@ -12703,6 +12823,7 @@ export class UpdateExpr extends DmlExpr {
     const {
       dialect, copy = true,
     } = options;
+
     return applyBuilder(expression, {
       instance: this,
       arg: 'this',
@@ -12736,6 +12857,7 @@ export class UpdateExpr extends DmlExpr {
       append = true, dialect, copy = true,
     } = options;
     const expressionList = Array.from(ensureList(expressions)) as (string | Expression | undefined)[];
+
     return applyListBuilder(expressionList, {
       instance: this,
       arg: 'expressions',
@@ -12769,6 +12891,7 @@ export class UpdateExpr extends DmlExpr {
     const {
       append = true, dialect, copy = true,
     } = options;
+
     return applyConjunctionBuilder(expressions, {
       instance: this,
       arg: 'where',
@@ -12800,6 +12923,7 @@ export class UpdateExpr extends DmlExpr {
     const {
       dialect, copy = true,
     } = options;
+
     if (!expression) {
       return this;
     }
@@ -12841,6 +12965,7 @@ export class UpdateExpr extends DmlExpr {
     const {
       recursive = false, append = true, copy = true, ...restOptions
     } = options;
+
     return applyCteBuilder({
       instance: this,
       alias,
@@ -12998,6 +13123,7 @@ export class SelectExpr extends QueryExpr {
     const {
       dialect, copy = true, ...restOptions
     } = options;
+
     return applyBuilder(expression, {
       ...restOptions,
       instance: this,
@@ -13029,6 +13155,7 @@ export class SelectExpr extends QueryExpr {
       append = true, dialect, copy = true, ...restOptions
     } = options;
     const expressionList = Array.from(ensureList(expressions)) as (string | Expression | undefined)[];
+
     if (expressionList.length === 0) {
       return copy ? (this.copy() as this) : this;
     }
@@ -13064,6 +13191,7 @@ export class SelectExpr extends QueryExpr {
     const {
       append = true, dialect, copy = true, ...restOptions
     } = options;
+
     return applyChildListBuilder(expressions, {
       ...restOptions,
       instance: this,
@@ -13095,6 +13223,7 @@ export class SelectExpr extends QueryExpr {
     const {
       append = true, dialect, copy = true, ...restOptions
     } = options;
+
     return applyChildListBuilder(expressions, {
       ...restOptions,
       instance: this,
@@ -13205,6 +13334,7 @@ export class SelectExpr extends QueryExpr {
     const {
       append = true, dialect, copy = true, ...restOptions
     } = options;
+
     return applyListBuilder(expressions, {
       instance: this,
       arg: 'expressions',
@@ -13235,6 +13365,7 @@ export class SelectExpr extends QueryExpr {
     const {
       append = true, dialect, copy = true, ...restOptions
     } = options;
+
     return applyListBuilder(expressions, {
       ...restOptions,
       instance: this,
@@ -13283,6 +13414,7 @@ export class SelectExpr extends QueryExpr {
     };
 
     let expr: Expression;
+
     try {
       expr = maybeParse(expression as ExpressionOrString<JoinExpr> | undefined, {
         ...parseArgs,
@@ -13320,12 +13452,14 @@ export class SelectExpr extends QueryExpr {
       [JoinExprKind.RIGHT]: 'right',
       [JoinExprKind.FULL]: 'full',
     };
+
     if (joinType) {
       const joinTypeStr = JOIN_CANONICAL[joinType as JoinExprKind] ?? joinType;
       const joinParts = maybeParse<typeof JoinExpr>(joinTypeStr, {
         ...parseArgs,
         into: 'JOIN_TYPE',
       });
+
       if (joinParts.args.method) join.setArgKey('method', joinParts.args.method);
       if (joinParts.args.side) join.setArgKey('side', joinParts.args.side);
       if (joinParts.args.kind) join.setArgKey('kind', joinParts.args.kind);
@@ -13337,6 +13471,7 @@ export class SelectExpr extends QueryExpr {
         dialect,
         copy,
       });
+
       join.setArgKey('on', onExpr);
     }
 
@@ -13385,6 +13520,7 @@ export class SelectExpr extends QueryExpr {
     const {
       append = true, dialect, copy = true, ...restOptions
     } = options;
+
     return applyListBuilder(expressions, {
       ...restOptions,
       instance: this,
@@ -13415,6 +13551,7 @@ export class SelectExpr extends QueryExpr {
     const {
       append = true, dialect, copy = true, ...restOptions
     } = options;
+
     return applyConjunctionBuilder(expressions, {
       ...restOptions,
       instance: this,
@@ -13451,6 +13588,7 @@ export class SelectExpr extends QueryExpr {
     const onValues = ons
       ? ons.filter((on): on is string | Expression => on !== undefined && on !== false && on !== true)
       : [];
+
     if (0 < onValues.length) {
       const onExprs = onValues.map((on) => maybeParse(on, {
         copy,
@@ -13459,6 +13597,7 @@ export class SelectExpr extends QueryExpr {
       const tupleExpr = new TupleExpr({
         expressions: onExprs,
       });
+
       instance.setArgKey('distinct', effectiveDistinct
         ? new DistinctExpr({
           on: tupleExpr,
@@ -13497,6 +13636,7 @@ export class SelectExpr extends QueryExpr {
     });
 
     let propertiesExpr: PropertiesExpr | undefined;
+
     if (properties) {
       propertiesExpr = PropertiesExpr.fromDict(properties);
     }
@@ -13531,6 +13671,7 @@ export class SelectExpr extends QueryExpr {
       update = true, copy = true,
     } = options;
     const inst = maybeCopy(this, copy);
+
     inst.setArgKey('locks', [
       new LockExpr({
         update: new LiteralExpr({
@@ -13539,6 +13680,7 @@ export class SelectExpr extends QueryExpr {
         }),
       }),
     ]);
+
     return inst as this;
   }
 
@@ -13569,9 +13711,11 @@ export class SelectExpr extends QueryExpr {
         into: Expression,
       }));
     const inst = maybeCopy(this, copy);
+
     inst.setArgKey('hint', new HintExpr({
       expressions: hintExprs,
     }));
+
     return inst as this;
   }
 }
@@ -13631,12 +13775,15 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
   unnest (): Expression {
 
     let expression: Expression = this;
+
     while (expression instanceof SubqueryExpr) {
       const next = expression.args.this;
+
       if (!next) break;
       expression = next;
       if (expression === this) break;
     }
+
     return expression;
   }
 
@@ -13646,11 +13793,14 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
   unwrap (): SubqueryExpr {
 
     let expression: SubqueryExpr = this;
+
     while (expression.sameParent && expression.isWrapper) {
       const parent = expression.parent;
+
       if (!(parent instanceof SubqueryExpr)) break;
       expression = parent;
     }
+
     return expression;
   }
 
@@ -13703,6 +13853,7 @@ export class SubqueryExpr extends multiInherit(DerivedTableExpr, QueryExpr) {
    */
   get isStar (): boolean {
     const thisArg = this.args.this;
+
     return thisArg ? thisArg.isStar : false;
   }
 
@@ -13834,6 +13985,7 @@ export class PlaceholderExpr extends ConditionExpr {
    */
   get name (): string {
     const name = this.args.this instanceof Expression ? this.args.this.name : this.args.this;
+
     return name || '?';
   }
 }
@@ -14041,6 +14193,7 @@ export class BracketExpr extends ConditionExpr {
     if (this.args.expressions?.length === 1) {
       return this.args.expressions[0].outputName;
     }
+
     return super.outputName;
   }
 }
@@ -14201,6 +14354,7 @@ export class FuncExpr extends ConditionExpr {
       const numNonVar = nonVarLenArgKeys.length;
 
       const argsDict: Record<string, unknown> = {};
+
       for (let i = 0; i < nonVarLenArgKeys.length; i++) {
         argsDict[nonVarLenArgKeys[i]] = args[i];
       }
@@ -14209,6 +14363,7 @@ export class FuncExpr extends ConditionExpr {
       return new this(argsDict as FuncExprArgs) as InstanceType<T>;
     } else {
       const argsDict: Record<string, unknown> = {};
+
       for (let i = 0; i < allArgKeys.length; i++) {
         argsDict[allArgKeys[i]] = args[i];
       }
@@ -14246,9 +14401,11 @@ export class FuncExpr extends ConditionExpr {
    */
   static sqlName (): string {
     const sqlNames = this.sqlNames();
+
     if (!sqlNames.length) {
       throw new Error(`Expected non-empty 'sql_names' for Func: ${this.name}.`);
     }
+
     return sqlNames[0];
   }
 
@@ -14258,9 +14415,11 @@ export class FuncExpr extends ConditionExpr {
    */
   static defaultParserMappings (): Record<string, (args: Expression[]) => FuncExpr> {
     const mappings: Record<string, (args: Expression[]) => FuncExpr> = {};
+
     for (const name of this.sqlNames()) {
       mappings[name] = this.fromArgList.bind(this);
     }
+
     return mappings;
   }
 
@@ -14985,6 +15144,7 @@ export class DotExpr extends BinaryExpr {
     }
 
     parts.reverse();
+
     return parts;
   }
 }
@@ -15609,6 +15769,7 @@ export class NegExpr extends UnaryExpr {
     if (this.isNumber) {
       return ((this.args.this?.toValue() as number) ?? 0) * -1;
     }
+
     return super.toValue();
   }
 }
@@ -16861,12 +17022,14 @@ export class AnonymousExpr extends FuncExpr {
 
   get name (): string {
     const thisExpr = this.args.this;
+
     if (thisExpr === undefined) {
       return '';
     }
     if (thisExpr instanceof Expression) {
       return thisExpr.name;
     }
+
     return thisExpr.toString();
   }
 
@@ -18680,6 +18843,7 @@ export class CaseExpr extends FuncExpr {
       copy = true,
     } = options;
     const instance = maybeCopy(this, copy);
+
     instance.append(
       'ifs',
       new IfExpr({
@@ -18687,6 +18851,7 @@ export class CaseExpr extends FuncExpr {
         true: maybeParse(then, options),
       }),
     );
+
     return instance;
   }
 
@@ -18702,7 +18867,9 @@ export class CaseExpr extends FuncExpr {
       copy = true,
     } = options;
     const instance = maybeCopy(this, copy);
+
     instance.setArgKey('default', maybeParse(condition, options));
+
     return instance;
   }
 
@@ -18774,10 +18941,12 @@ export class CastExpr extends FuncExpr {
     } = {},
   ): boolean {
     const toExpr = this.args.to;
+
     if (!toExpr) return false;
     if (toExpr instanceof DataTypeExpr) {
       return toExpr.isType(dtypes);
     }
+
     return false;
   }
 
@@ -20325,6 +20494,7 @@ export class DateTruncExpr extends FuncExpr {
       && !(unit instanceof ColumnExpr && unit.parts.length !== 1)
     ) {
       let unitName = unit.name.toUpperCase();
+
       if (unabbreviate && unitName in TimeUnitExpr.UNABBREVIATED_UNIT_NAME) {
         unitName = TimeUnitExpr.UNABBREVIATED_UNIT_NAME[unitName];
       }
@@ -22248,13 +22418,16 @@ export class UnnestExpr extends multiInherit(FuncExpr, UdtfExpr) {
   get selects (): Expression[] {
     const columns = super.selects;
     const offset = this.args.offset;
+
     if (offset) {
       const offsetCol = offset === true ? toIdentifier('offset') : offset;
+
       return [
         ...columns,
         offsetCol,
       ];
     }
+
     return columns;
   }
 
@@ -25010,11 +25183,13 @@ export class MapExpr extends FuncExpr {
 
   get keys (): ExpressionValue[] {
     const keysArg = this.args.keys;
+
     return (keysArg?.args?.expressions || []) as ExpressionValue[];
   }
 
   get values (): ExpressionValue[] {
     const valuesArg = this.args.values;
+
     return (valuesArg?.args?.expressions || []) as ExpressionValue[];
   }
 }
@@ -25349,11 +25524,13 @@ export class VarMapExpr extends FuncExpr {
 
   get keys (): ExpressionValueList {
     const keysArg = this.args.keys;
+
     return keysArg?.args.expressions as ExpressionValueList ?? [];
   }
 
   get values (): ExpressionValueList {
     const valuesArg = this.args.values;
+
     return valuesArg?.args.expressions as ExpressionValueList ?? [];
   }
 
@@ -28613,9 +28790,11 @@ export class TsOrDsAddExpr extends multiInherit(FuncExpr, TimeUnitExpr) {
 
   get returnType (): Expression | undefined {
     const returnTypeArg = this.args.returnType;
+
     if (returnTypeArg instanceof DataTypeExpr) {
       return returnTypeArg;
     }
+
     return DataTypeExpr.build(DataTypeExprKind.DATE);
   }
 
@@ -32554,6 +32733,7 @@ export function column (
   } = options;
 
   let colIdent: IdentifierExpr | StarExpr | undefined;
+
   if (col instanceof StarExpr) {
     colIdent = col;
   } else {
@@ -32590,6 +32770,7 @@ export function column (
       quoted,
       copy,
     })).filter((f): f is IdentifierExpr => f !== undefined);
+
     return DotExpr.build([
       columnExpr,
       ...fieldIdents,
@@ -32676,6 +32857,7 @@ export function table (name: string, db?: string, catalog?: string): TableExpr {
       this: name,
     }),
   };
+
   if (db) {
     args.db = new IdentifierExpr({
       this: db,
@@ -32686,6 +32868,7 @@ export function table (name: string, db?: string, catalog?: string): TableExpr {
       this: catalog,
     });
   }
+
   return new TableExpr(args);
 }
 
@@ -32734,6 +32917,7 @@ export function and (
   const {
     dialect, copy = true, wrap = true, ...opts
   } = options;
+
   return combine(expressions, AndExpr, {
     dialect,
     copy,
@@ -32768,6 +32952,7 @@ export function or (
   const {
     dialect, copy = true, wrap = true, ...opts
   } = options;
+
   return combine(expressions, OrExpr, {
     dialect,
     copy,
@@ -32802,6 +32987,7 @@ export function xor (
   const {
     dialect, copy = true, wrap = true, ...opts
   } = options;
+
   return combine(expressions, XorExpr, {
     dialect,
     copy,
@@ -32832,6 +33018,7 @@ export function not (
   } = {},
 ): NotExpr {
   const thisExpr = condition(expression, options);
+
   return new NotExpr({
     this: wrap(thisExpr, ConnectorExpr) || thisExpr,
   });
@@ -32860,6 +33047,7 @@ export function paren (
   const {
     copy = true, ...opts
   } = options;
+
   return new ParenExpr({
     this: maybeParse(expression, {
       copy,
@@ -32953,6 +33141,7 @@ export function parseIdentifier (
   const {
     dialect, ...opts
   } = options;
+
   try {
     return maybeParse(name, {
       dialect,
@@ -33008,9 +33197,11 @@ export function toInterval (
   }
 
   const parsed = maybeParse(`INTERVAL ${intervalStr}`);
+
   if (!(parsed instanceof IntervalExpr)) {
     throw new Error('Failed to parse interval expression');
   }
+
   return parsed;
 }
 
@@ -33064,6 +33255,7 @@ export function alias<E extends Expression> (
     const tableAlias = new TableAliasExpr({
       this: aliasIdent,
     });
+
     exp.setArgKey('alias', tableAlias);
 
     if (Array.isArray(tableOpt)) {
@@ -33071,6 +33263,7 @@ export function alias<E extends Expression> (
         const columnIdent = toIdentifier(column, {
           quoted,
         });
+
         if (columnIdent) {
           tableAlias.append('columns', columnIdent);
         }
@@ -33087,6 +33280,7 @@ export function alias<E extends Expression> (
     if (aliasIdent) {
       exp.setArgKey('alias', aliasIdent);
     }
+
     return exp as E | AliasExpr;
   }
 
@@ -33125,10 +33319,12 @@ export function subquery (
     dialect,
     ...opts,
   });
+
   if (!(parsed instanceof QueryExpr)) {
     throw new Error('The input sql is not a QueryExpr');
   }
   const subqueryExpr = parsed.subquery(aliasName, opts);
+
   return new SelectExpr({}).from(subqueryExpr, {
     dialect,
     ...opts,
@@ -33208,9 +33404,11 @@ export function case_ (
   } = {},
 ): CaseExpr {
   let thisExpr: Expression | undefined;
+
   if (expression !== undefined) {
     thisExpr = maybeParse(expression, options);
   }
+
   return new CaseExpr({
     this: thisExpr,
     ifs: [],
@@ -33298,6 +33496,7 @@ export function cast (
     this: expr,
     to: dataType,
   });
+
   castExpr.type = dataType;
 
   return castExpr;
@@ -33336,6 +33535,7 @@ export function values (
   }));
 
   let alias: TableAliasExpr | undefined;
+
   if (columns) {
     alias = new TableAliasExpr({
       this: aliasName !== undefined ? toIdentifier(aliasName) : undefined,
@@ -33362,9 +33562,11 @@ export function values (
 export function func (name: string, ...args: ExpressionValue[]): FuncExpr {
   const converted = args.map((a) => (typeof a === 'string' ? maybeParse(a) : convert(a)));
   const cls = FUNCTION_BY_NAME.get(name.toUpperCase());
+
   if (cls) {
     return cls.fromArgList(converted);
   }
+
   return new AnonymousExpr({
     this: name,
     expressions: converted,
@@ -33450,9 +33652,11 @@ export function union (
   } = {},
 ): UnionExpr | undefined {
   const expressionList = Array.from(ensureList(expressions)).filter((e): e is string | Expression => e !== undefined);
+
   if (expressionList.length < 2) {
     throw new Error('At least two expressions are required by `union`.');
   }
+
   return applySetOperation(expressionList, UnionExpr, options);
 }
 
@@ -33481,9 +33685,11 @@ export function intersect (
   } = {},
 ): IntersectExpr | undefined {
   const expressionList = Array.from(ensureList(expressions)).filter((e): e is string | Expression => e !== undefined);
+
   if (expressionList.length < 2) {
     throw new Error('At least two expressions are required by `intersect`.');
   }
+
   return applySetOperation(expressionList, IntersectExpr, options);
 }
 
@@ -33512,9 +33718,11 @@ export function except (
   } = {},
 ): ExceptExpr | undefined {
   const expressionList = Array.from(ensureList(expressions)).filter((e): e is string | Expression => e !== undefined);
+
   if (expressionList.length < 2) {
     throw new Error('At least two expressions are required by `except`.');
   }
+
   return applySetOperation(expressionList, ExceptExpr, options);
 }
 
@@ -33715,6 +33923,7 @@ export function update (
 
   if (where) {
     let whereExpr: string | Expression = where;
+
     if (where instanceof ConditionExpr) {
       whereExpr = new WhereExpr({
         this: where,
@@ -33791,6 +34000,7 @@ export function merge (
     : [];
 
   const expressions: WhenExpr[] = [];
+
   for (const whenExpr of whenExprs) {
     const expr = maybeParse(whenExpr as ExpressionValue<WhensExpr>, {
       dialect,
@@ -33798,6 +34008,7 @@ export function merge (
       into: WhensExpr,
       ...restOptions,
     });
+
     if (expr instanceof WhenExpr) {
       expressions.push(expr);
     } else {
@@ -33835,9 +34046,11 @@ export function merge (
   }
 
   const usingClause = mergeExpr.args.using;
+
   if (usingClause instanceof AliasExpr) {
     const usingAlias = usingClause.args.alias;
     const aliasName = typeof usingAlias === 'string' ? usingAlias : isInstanceOf(usingAlias, IdentifierExpr) ? usingAlias : undefined;
+
     usingClause.replace(alias(usingClause.args.this, aliasName, {
       table: true,
     }));
@@ -33897,6 +34110,7 @@ export function maybeParse<T extends typeof Expression> (
     if (options?.copy) {
       return sqlOrExpression.copy() as InstanceType<T>;
     }
+
     return sqlOrExpression as InstanceType<T>;
   }
 
@@ -33907,6 +34121,7 @@ export function maybeParse<T extends typeof Expression> (
 
   // Convert to string and optionally add prefix
   let sql = String(sqlOrExpression);
+
   if (options?.prefix) {
     sql = `${options.prefix} ${sql}`;
   }
@@ -33973,12 +34188,14 @@ export function toTable (
       dialect,
       ...opts,
     });
+
     for (const [
       k,
       v,
     ] of Object.entries(opts)) {
       parsed.setArgKey(k, v);
     }
+
     return parsed as TableExpr;
   } catch {
     const [
@@ -33992,12 +34209,14 @@ export function toTable (
     }
 
     const tableExpr = table(name, db, catalog);
+
     for (const [
       k,
       v,
     ] of Object.entries(opts)) {
       tableExpr.setArgKey(k, v);
     }
+
     return tableExpr;
   }
 }
@@ -34049,6 +34268,7 @@ export function toColumn (
       dialect,
       ...opts,
     }) as ColumnExpr;
+
     for (const [
       k,
       v,
@@ -34074,18 +34294,21 @@ export function toColumn (
         quoted,
       }) as IdentifierExpr,
     };
+
     if (tableName) {
       args.table = toIdentifier(tableName, {
         quoted,
       }) as IdentifierExpr;
     }
     const col = new ColumnExpr(args);
+
     for (const [
       k,
       v,
     ] of Object.entries(opts)) {
       col.setArgKey(k, v);
     }
+
     return col;
   }
 }
@@ -34110,6 +34333,7 @@ export function toColumn (
  */
 export function findTables (expression: Expression): Set<TableExpr> {
   const tables = new Set<TableExpr>();
+
   for (const scope of traverseScope(expression)) {
     for (const table of scope.tables) {
       if (table.name && !scope.cteSources.has(table.name)) {
@@ -34117,6 +34341,7 @@ export function findTables (expression: Expression): Set<TableExpr> {
       }
     }
   }
+
   return tables;
 }
 
@@ -34130,6 +34355,7 @@ export function maybeCopy<E extends Expression | undefined> (instance: E, copy =
   if (copy && instance) {
     return instance.copy() as E;
   }
+
   return instance;
 }
 
@@ -34147,6 +34373,7 @@ function _toS (node: unknown, verbose = false, level = 0, reprStr = false): stri
 
   if (node instanceof Expression) {
     const args: Record<string, unknown> = {};
+
     for (const [
       k,
       v,
@@ -34186,6 +34413,7 @@ function _toS (node: unknown, verbose = false, level = 0, reprStr = false): stri
 
   if (Array.isArray(node)) {
     const items = node.map((i) => _toS(i, verbose, level + 1)).join(delim);
+
     return `[${indent}${items}]`;
   }
 
@@ -34196,6 +34424,7 @@ function _toS (node: unknown, verbose = false, level = 0, reprStr = false): stri
 
   // Indent multiline strings to match the current level
   const str = String(node).replace(/^\n+|\n+$/g, '');
+
   return str.split('\n').join(indent);
 }
 
@@ -34251,6 +34480,7 @@ function applyBuilder<RetT extends Expression, ArgT extends Expression> (express
   }) as ArgT;
 
   if (arg !== undefined) inst.setArgKey(arg, parsedExpression);
+
   return inst;
 }
 
@@ -34292,6 +34522,7 @@ function applyChildListBuilder<ArgT extends Expression, IntoT extends Expression
   const properties: Record<string, unknown> = initialProperties || {};
 
   const expressionList = ensureList(expressions);
+
   for (const expression of expressionList) {
     if (expression === undefined) {
       continue;
@@ -34326,6 +34557,7 @@ function applyChildListBuilder<ArgT extends Expression, IntoT extends Expression
 
   const existing = inst.getArgKey(arg) as Expression | undefined;
   let allExpressions = parsed;
+
   if (append && existing && existing.args.expressions) {
     allExpressions = [
       ...(existing.args.expressions as Expression[]),
@@ -34340,6 +34572,7 @@ function applyChildListBuilder<ArgT extends Expression, IntoT extends Expression
     : new Expression({
       expressions: allExpressions,
     });
+
   for (const [
     k,
     v,
@@ -34396,6 +34629,7 @@ function applyListBuilder<ArgT extends Expression, RetT extends Expression> (
       }));
 
   const existing = inst?.getArgKey(arg) as Expression[] | undefined;
+
   if (arg !== undefined) {
     if (append && existing) {
       inst?.setArgKey(arg, [
@@ -34455,6 +34689,7 @@ function applyConjunctionBuilder<E extends Expression> (
 
   if (append && existing instanceof Expression) {
     const existingExpr = into && 'this' in existing.args ? existing.args.this as Expression : existing;
+
     allExpressions = [
       existingExpr,
       ...filteredExpressions,
@@ -34468,6 +34703,7 @@ function applyConjunctionBuilder<E extends Expression> (
     })
     : e;
   let combined: Expression | undefined;
+
   if (0 < allExpressions.length) {
     const parsed = allExpressions
       .map((expr) => maybeParse(expr as ExpressionValue, {
@@ -34480,6 +34716,7 @@ function applyConjunctionBuilder<E extends Expression> (
       ...rest
     ] = parsed;
     let wrappedFirst = first;
+
     if (0 < rest.length) {
       wrappedFirst = wrapConnector(first);
     }
@@ -34610,6 +34847,7 @@ export function combine<T extends ConnectorExpr> (
   ] = conditions;
 
   let result = first;
+
   if (0 < rest.length && shouldWrap) {
     result = wrap(result, ConnectorExpr) || result;
   }
@@ -34640,6 +34878,7 @@ export function wrap (expression: Expression | undefined, kind: typeof Expressio
       this: expression,
     });
   }
+
   return expression;
 }
 
@@ -34655,6 +34894,7 @@ export function literal (value: unknown): LiteralExpr | NegExpr {
   if (typeof value === 'number') {
     return LiteralExpr.number(value);
   }
+
   return LiteralExpr.string(String(value));
 }
 
@@ -34700,9 +34940,11 @@ export function convert (value: unknown, options: {
   const {
     copy = false,
   } = options;
+
   // Handle Expression instances
   if (value instanceof Expression) {
     const result = maybeCopy(value, copy);
+
     if (result) {
       return result;
     }
@@ -34741,6 +34983,7 @@ export function convert (value: unknown, options: {
     // Extract timezone similar to Python's str(value.tzinfo)
     // This returns IANA timezone names like "America/Los_Angeles"
     let tz: LiteralExpr | undefined;
+
     if (value.zoneName && value.zoneName !== 'UTC') {
       tz = LiteralExpr.string(value.zoneName);
     }
@@ -34776,6 +35019,7 @@ export function convert (value: unknown, options: {
   // Handle plain objects as maps (like Python's dict -> Map)
   if (value !== null && typeof value === 'object') {
     const entries = Object.entries(value);
+
     return new MapExpr({
       keys: new ArrayExpr({
         expressions: entries.map(([k]) => LiteralExpr.string(k)),
@@ -34843,6 +35087,7 @@ export function array (
   } = options;
 
   const expressionList = Array.from(ensureList(expressions));
+
   return new ArrayExpr({
     expressions: expressionList.map((expr) => maybeParse(expr as ExpressionValue, {
       copy,
@@ -34878,6 +35123,7 @@ export function tuple (
   } = options;
 
   const expressionList = Array.from(ensureList(expressions));
+
   return new TupleExpr({
     expressions: expressionList.map((expr) => maybeParse(expr as ExpressionValue, {
       copy,
@@ -35004,6 +35250,7 @@ export function columnTableNames (
 
   for (const col of expression.findAll(ColumnExpr)) {
     const tableName = col.table;
+
     if (tableName && tableName !== exclude) {
       tableNames.add(tableName);
     }
@@ -35055,6 +35302,7 @@ export function tableName (
           comments: false,
         });
       }
+
       return part.name;
     })
     .join('.');
@@ -35089,6 +35337,7 @@ export function replaceChildren (
         const resultArray = Array.isArray(result)
           ? result
           : [result];
+
         newChildNodes.push(...resultArray);
       } else {
         newChildNodes.push(childNode);
@@ -35126,6 +35375,7 @@ export function replaceTree (
 
   while (0 < stack.length) {
     const node = stack.pop()!;
+
     newNode = fun(node);
 
     if (newNode !== node) {
@@ -35199,6 +35449,7 @@ export function replaceTables<T extends Expression> (
   } = options;
 
   const normalizedMapping: Record<string, string> = {};
+
   for (const [
     key,
     value,
@@ -35219,6 +35470,7 @@ export function replaceTables<T extends Expression> (
         const newTable = toTable(newName, {
           dialect,
         });
+
         // Copy over other args except table parts
         for (const [
           key,
@@ -35233,9 +35485,11 @@ export function replaceTables<T extends Expression> (
           }
         }
         newTable.addComments([original]);
+
         return newTable;
       }
     }
+
     return node;
   }
 
@@ -35269,6 +35523,7 @@ export function replacePlaceholders (
     if (node instanceof PlaceholderExpr) {
       if (typeof node.args.this === 'string') {
         const newName = options[node.args.this];
+
         if (newName !== undefined) {
           return convert(newName);
         }
@@ -35278,6 +35533,7 @@ export function replacePlaceholders (
         }
       }
     }
+
     return node;
   }
 
@@ -35311,6 +35567,7 @@ export function expand (
   } = options;
 
   const normalizedSources: Record<string, QueryExpr | (() => QueryExpr)> = {};
+
   for (const [
     key,
     value,
@@ -35331,6 +35588,7 @@ export function expand (
         const parsedSource = typeof source === 'function' ? source() : source;
         const aliasName = node.alias || name;
         const subqueryExpr = parsedSource.subquery(aliasName);
+
         subqueryExpr.comments = [`source: ${name}`];
 
         return subqueryExpr.transform(expandTransform, {
@@ -35338,6 +35596,7 @@ export function expand (
         });
       }
     }
+
     return node;
   }
 
@@ -35422,6 +35681,7 @@ export function isType (
   }
 
   const normalized = enumFromString(DataTypeExprKind, value.toString());
+
   if (normalized === undefined) {
     return false;
   }
@@ -35429,5 +35689,6 @@ export function isType (
   for (const dtype of dtypesIterable) {
     if (dtype === normalized) return true;
   }
+
   return false;
 }

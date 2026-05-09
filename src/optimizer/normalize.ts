@@ -61,6 +61,7 @@ export function normalize (
   // Walk only top-level connectors - prune at each connector so nested ones
   // are handled by distributiveLaw's own recursion (mirrors Python's prune)
   const connectors: ConnectorExpr[] = [];
+
   for (const node of expression.walk({
     prune: (e) => e instanceof ConnectorExpr,
   })) {
@@ -99,6 +100,7 @@ export function normalize (
           maxDistance,
           simplifier,
         }));
+
       node = node.replace(newNode) as ConnectorExpr;
     } catch (e) {
       if (e instanceof OptimizeError) {
@@ -106,6 +108,7 @@ export function normalize (
         if (root) {
           return original;
         }
+
         return expression;
       }
       throw e;
@@ -193,6 +196,7 @@ export function normalizationDistance (
   } = options;
   // Start with negative count of connectors
   let total = -1;
+
   for (const _ of expression.findAll(ConnectorExpr)) {
     total -= 1;
   }
@@ -227,8 +231,10 @@ function* predicateLengths (
   const {
     dnf, max = Infinity, depth: depth0 = 0,
   } = options;
+
   if (max < depth0) {
     yield depth0;
+
     return;
   }
 
@@ -236,6 +242,7 @@ function* predicateLengths (
 
   if (!(unnested instanceof ConnectorExpr)) {
     yield 1;
+
     return;
   }
 
@@ -246,6 +253,7 @@ function* predicateLengths (
 
   if (!left || !right) {
     yield 1;
+
     return;
   }
 
@@ -298,6 +306,7 @@ function distributiveLaw (
   const {
     dnf, maxDistance, simplifier,
   } = options;
+
   if (normalized(expression, {
     dnf,
   })) {
@@ -336,6 +345,7 @@ function distributiveLaw (
     a,
     b,
   ] = expression.unnestOperands();
+
   if (!a || !b) {
     return expression;
   }
@@ -354,6 +364,7 @@ function distributiveLaw (
     if (bConnectorCount < aConnectorCount) {
       return distribute(a, b, fromFunc, toFunc, simplifierInstance);
     }
+
     return distribute(b, a, fromFunc, toFunc, simplifierInstance);
   }
 
@@ -395,6 +406,7 @@ function distribute (
         c,
         bRight,
       ]));
+
       return toFunc([
         simplifier.uniqSort(leftCombined),
         simplifier.uniqSort(rightCombined),
@@ -402,6 +414,7 @@ function distribute (
         copy: false,
       });
     });
+
     return a;
   }
 
@@ -413,6 +426,7 @@ function distribute (
     a,
     bRight,
   ]));
+
   return toFunc([
     simplifier.uniqSort(leftCombined),
     simplifier.uniqSort(rightCombined),

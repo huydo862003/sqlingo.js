@@ -87,6 +87,7 @@ export function optimizeJoins (expression: Expression): Expression {
           }
 
           const operator = on.constructor as new (args: any) => ConnectorExpr;
+
           for (const predicate of on.flatten()) {
             if (columnTableNames(predicate).has(name)) {
               predicate.replace(true_());
@@ -100,6 +101,7 @@ export function optimizeJoins (expression: Expression): Expression {
                   copy: false,
                 },
               );
+
               join.on(combined, {
                 append: false,
                 copy: false,
@@ -113,6 +115,7 @@ export function optimizeJoins (expression: Expression): Expression {
 
   expression = reorderJoins(expression);
   expression = normalize(expression);
+
   return expression;
 }
 
@@ -125,6 +128,7 @@ export function optimizeJoins (expression: Expression): Expression {
 export function reorderJoins (expression: Expression): Expression {
   for (const from of expression.findAll(FromExpr)) {
     const parent = from.parent;
+
     if (!parent) continue;
 
     const joins = filterInstanceOf(parent.args.joins ?? [], JoinExpr);
@@ -134,11 +138,13 @@ export function reorderJoins (expression: Expression): Expression {
     }
 
     const joinsByName = new Map<string, JoinExpr>();
+
     for (const join of joins) {
       joinsByName.set(join.aliasOrName, join);
     }
 
     const dag = new Map<string, Set<string>>();
+
     for (const [
       name,
       join,
@@ -170,6 +176,7 @@ export function normalize (expression: Expression): Expression {
     const hasAnyAttr = JOIN_ATTRS.some((k) => join.args[k] != null);
 
     const joinArgs = join.args as JoinExprArgs;
+
     if (!hasAnyAttr) {
       joinArgs.kind = JoinExprKind.CROSS;
     }
@@ -199,6 +206,7 @@ export function normalize (expression: Expression): Expression {
  */
 export function otherTableNames (join: JoinExpr): Set<string> {
   const on = join.args.on;
+
   return on
     ? columnTableNames(on, {
       exclude: join.aliasOrName,
@@ -235,5 +243,6 @@ export function isReorderable (joins: Iterable<JoinExpr>): boolean {
   for (const join of joins) {
     if (join.args.side) return false;
   }
+
   return true;
 }

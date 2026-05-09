@@ -18,6 +18,7 @@ describe('columns', () => {
       );
     `, 'postgres');
     const table = schema.tables[0];
+
     expect(table.columns[0]).toMatchObject({
       name: 'id',
       pk: true,
@@ -36,6 +37,7 @@ describe('columns', () => {
     const {
       schema,
     } = sqlToDbml('CREATE TABLE t (tags INT[]);', 'postgres');
+
     expect(schema.tables[0].columns[0].type.array).toBe(true);
   });
 
@@ -44,10 +46,12 @@ describe('columns', () => {
       schema,
     } = sqlToDbml('CREATE TABLE pair (a INT, b INT, PRIMARY KEY (a, b));', 'postgres');
     const table = schema.tables[0];
-    expect(table.columns.every((col) => !col.pk)).toBe(true);
+
+    expect(table.columns.every((column) => !column.pk)).toBe(true);
     const index = table.indexes?.[0];
+
     expect(index?.pk).toBe(true);
-    expect(index?.columns.map((col) => col.expression)).toEqual([
+    expect(index?.columns.map((column) => column.expression)).toEqual([
       'a',
       'b',
     ]);

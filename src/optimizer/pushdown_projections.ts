@@ -41,6 +41,7 @@ function defaultSelection (options: {
   const {
     isAgg,
   } = options;
+
   return alias(
     isAgg
       ? new MaxExpr({
@@ -105,6 +106,7 @@ export function pushdownProjections<E extends Expression> (
 
     // We can't remove columns from SELECT DISTINCT nor UNION DISTINCT
     const scopeExpr = scope.expression;
+
     if (scopeExpr.getArgKey('distinct')) {
       parentSelections = new Set([SELECT_ALL]);
     }
@@ -138,15 +140,18 @@ export function pushdownProjections<E extends Expression> (
             referencedColumns.set(right, referencedColumns.get(left) || new Set());
           } else {
             const rightSelections = new Set<string | symbol>();
+
             referencedColumns.set(right, rightSelections);
             for (let j = 0; j < left.expression.selects.length; j++) {
               const leftSelect = left.expression.selects[j];
+
               if (!(leftSelect instanceof Expression)) {
                 continue;
               }
 
               if (parentSelections.has(SELECT_ALL) || parentSelections.has(leftSelect.aliasOrName)) {
                 const rightSelect = right.expression.selects[j];
+
                 if (rightSelect instanceof Expression) {
                   rightSelections.add(rightSelect.aliasOrName);
                 }
@@ -168,11 +173,13 @@ export function pushdownProjections<E extends Expression> (
 
       // Group columns by source name
       const selects = new Map<string, Set<string>>();
+
       for (const col of scope.columns) {
         const tableName = col.table || '';
         const colName = col.name;
 
         let selectsForTable = selects.get(tableName);
+
         if (!selectsForTable) {
           selectsForTable = new Set();
           selects.set(tableName, selectsForTable);
@@ -194,6 +201,7 @@ export function pushdownProjections<E extends Expression> (
           const firstSelect = seqGet(sourceScope.expression.selects, 0);
 
           let columns: Set<string | symbol>;
+
           if (0 < scope.pivots.length || firstSelect instanceof QueryTransformExpr) {
             columns = new Set([SELECT_ALL]);
           } else {
@@ -201,6 +209,7 @@ export function pushdownProjections<E extends Expression> (
           }
 
           let referencedCols = referencedColumns.get(sourceScope);
+
           if (!referencedCols) {
             referencedCols = new Set();
             referencedColumns.set(sourceScope, referencedCols);
@@ -211,6 +220,7 @@ export function pushdownProjections<E extends Expression> (
         }
 
         const columnAliases = node.aliasColumnNames;
+
         if (columnAliases && 0 < columnAliases.length) {
           sourceColumnAliasCount.set(sourceScope, columnAliases.length);
         }
@@ -231,6 +241,7 @@ function removeUnusedSelections_ (
   const order = scopeArgs.order as Expression | undefined;
 
   const orderRefs = new Set<string>();
+
   if (order) {
     // Assume columns without a qualified table are references to output columns
     for (const col of order.findAll(ColumnExpr)) {
@@ -283,6 +294,7 @@ function removeUnusedSelections_ (
     for (const name of sortedSelections) {
       if (!names.has(name)) {
         const table = resolver.getTable(name);
+
         newSelections.push(
           alias(column({
             col: name,

@@ -120,8 +120,10 @@ function mergeCtes<E extends Expression> (
         table,
         innerSource,
       ] = sourceEntry;
+
       if (innerSource instanceof Scope && innerSource.isCte) {
         let scopeList = cteSelections.get(innerSource);
+
         if (!scopeList) {
           scopeList = [];
           cteSelections.set(innerSource, scopeList);
@@ -137,6 +139,7 @@ function mergeCtes<E extends Expression> (
 
   // Only merge CTEs that are selected from exactly once
   const singularCteSelections: [Scope, Scope, Expression][] = [];
+
   for (const [
     , selections,
   ] of cteSelections) {
@@ -152,10 +155,12 @@ function mergeCtes<E extends Expression> (
   ] of singularCteSelections) {
     // Find FromExpr or JoinExpr ancestor
     const fromOrJoin = table.findAncestor<FromExpr | JoinExpr>(FromExpr, JoinExpr);
+
     if (fromOrJoin && mergeable(outerScope, innerScope, {
       leaveTablesIsolated,
     }, fromOrJoin)) {
       const alias = table.aliasOrName;
+
       renameInnerSources(outerScope, innerScope, alias);
       mergeFrom(outerScope, innerScope, table as SubqueryExpr | TableExpr, alias);
       mergeExpressions(outerScope, innerScope, alias);
@@ -180,6 +185,7 @@ function mergeDerivedTables<E extends Expression> (
   const {
     leaveTablesIsolated,
   } = options;
+
   for (const outerScope of traverseScope(expression)) {
     for (const subquery of outerScope.derivedTables) {
       // Find FromExpr or JoinExpr ancestor
@@ -226,6 +232,7 @@ function mergeable (
   // Check if window expressions are in unmergable operations
   function isWindowExpressionInUnmergableOperation (): boolean {
     const windowAliases = new Set<string>();
+
     if (!(innerSelect instanceof SelectExpr)) {
       return false;
     }
@@ -307,10 +314,12 @@ function mergeable (
 
     return selections.some((selection) => {
       const projection = innerProjections.get(selection);
+
       if (!projection) {
         return false;
       }
       const columns = Array.from(projection.findAll(ColumnExpr));
+
       return columns.some((col) => col.table !== innerFromTable);
     });
   }
@@ -326,6 +335,7 @@ function mergeable (
       }
       node = node.parent;
     }
+
     return false;
   }
 
@@ -417,6 +427,7 @@ function mergeable (
   }
 
   const firstExpr = seqGet(innerSelectExpr.args.expressions ?? [], 0);
+
   if (firstExpr instanceof QueryTransformExpr) {
     return false;
   }
@@ -428,6 +439,7 @@ function renameInnerSources (outerScope: Scope, innerScope: Scope, alias: string
   const innerTaken = new Set(Object.keys(innerScope.selectedSources));
   const outerTaken = new Set(Object.keys(outerScope.selectedSources));
   const conflicts = new Set(Array.from(innerTaken).filter((x) => outerTaken.has(x)));
+
   conflicts.delete(alias);
 
   const taken = new Set([
@@ -439,6 +451,7 @@ function renameInnerSources (outerScope: Scope, innerScope: Scope, alias: string
     const newName = findNewName(Array.from(taken), conflict);
 
     const sourceEntry = innerScope.selectedSources[conflict];
+
     if (!sourceEntry) {
       continue;
     }
@@ -484,6 +497,7 @@ function mergeFrom (
   // Update join hints
   for (const joinHint of outerScope.joinHints) {
     const tables = Array.from(joinHint.findAll(TableExpr));
+
     for (const table of tables) {
       if (table.aliasOrName === nodeToReplace.aliasOrName) {
         table.setArgKey('this', toIdentifier(newSubquery.aliasOrName));
@@ -493,6 +507,7 @@ function mergeFrom (
 
   outerScope.removeSource(alias);
   const newSubquerySource = innerScope.sources.get(newSubquery.aliasOrName);
+
   if (newSubquerySource !== undefined) {
     outerScope.addSource(newSubquery.aliasOrName, newSubquerySource);
   }
@@ -507,6 +522,7 @@ function mergeJoins (outerScope: Scope, innerScope: Scope, fromOrJoin: FromOrJoi
     for (const join of joins) {
       newJoins.push(join);
       const joinSource = innerScope.sources.get(join.aliasOrName);
+
       if (joinSource) {
         outerScope.addSource(join.aliasOrName, joinSource);
       }
@@ -518,6 +534,7 @@ function mergeJoins (outerScope: Scope, innerScope: Scope, fromOrJoin: FromOrJoi
 
     // Maintain join order
     let position: number;
+
     if (fromOrJoin instanceof FromExpr) {
       position = 0;
     } else {
@@ -537,6 +554,7 @@ function mergeExpressions (outerScope: Scope, innerScope: Scope, alias: string):
     if (column.table === alias) {
       const name = column.name;
       let columnList = outerColumns.get(name);
+
       if (!columnList) {
         columnList = [];
         outerColumns.set(name, columnList);
@@ -611,6 +629,7 @@ function mergeWhere (outerScope: Scope, innerScope: Scope, fromOrJoin: FromOrJoi
   }
 
   const whereThis = where.args.this;
+
   if (!(whereThis instanceof Expression)) {
     return;
   }
@@ -627,9 +646,11 @@ function mergeWhere (outerScope: Scope, innerScope: Scope, fromOrJoin: FromOrJoi
     }
 
     const joins = outerExpression.args.joins;
+
     if (joins) {
       for (const join of joins) {
         const source = join.aliasOrName;
+
         sources.add(source);
         if (source === fromOrJoin.aliasOrName) {
           break;
@@ -644,6 +665,7 @@ function mergeWhere (outerScope: Scope, innerScope: Scope, fromOrJoin: FromOrJoi
       fromOrJoin.on(whereThis, {
         copy: false,
       });
+
       return;
     }
   }
@@ -670,6 +692,7 @@ function mergeOrder (outerScope: Scope, innerScope: Scope): void {
     if (!(expr instanceof Expression)) {
       return false;
     }
+
     return expr.find(AggFuncExpr) !== undefined;
   });
 
@@ -692,6 +715,7 @@ function mergeHints (outerScope: Scope, innerScope: Scope): void {
 
   if (outerScopeHint) {
     const innerHintExpressions = innerScopeHint.args.expressions;
+
     for (const hintExpression of innerHintExpressions ?? []) {
       if (hintExpression instanceof Expression) {
         outerScopeHint.append('expressions', hintExpression);
@@ -704,16 +728,19 @@ function mergeHints (outerScope: Scope, innerScope: Scope): void {
 
 function popCte (innerScope: Scope): void {
   const cte = innerScope.expression.parent;
+
   if (!cte) {
     return;
   }
 
   const with_ = cte.parent;
+
   if (!with_) {
     return;
   }
 
   const withExpressions = with_.args.expressions;
+
   if (withExpressions?.length === 1) {
     with_.pop();
   } else {

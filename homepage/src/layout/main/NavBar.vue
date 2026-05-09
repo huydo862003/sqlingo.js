@@ -9,7 +9,7 @@
           src="/sqlingo.js/icon.svg"
           alt="sqlingo.js logo"
           :size="GLogoSize.Xs"
-          class="bg-white rounded-sm"
+          class="rounded-sm bg-white"
         />
         <span>sqlingo.js</span>
       </GNavBrand>
@@ -54,7 +54,7 @@
         :icon="GIconName.GithubLogo"
         label="GitHub"
         target="_blank"
-        rel="noopener"
+        rel="noopener noreferrer"
         class="text-sm"
       />
     </template>
@@ -81,6 +81,7 @@ interface Crumb {
 const {
   breadcrumb = [],
 } = defineProps<{
+  /** Navigation breadcrumb items to display */
   breadcrumb?: Crumb[];
 }>();
 </script>
