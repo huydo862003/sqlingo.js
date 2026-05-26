@@ -1354,7 +1354,9 @@ export class Expression implements
       this.meta.end = positions?.end;
     } else if (other instanceof Expression) {
       for (const key of POSITION_META_KEYS) {
-        this.meta[key] = other.meta[key];
+        if (key in other.meta) {
+          this.meta[key] = other.meta[key];
+        }
       }
     } else {
       // Copy from token-like object

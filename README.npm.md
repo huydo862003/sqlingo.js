@@ -2,12 +2,12 @@
 
 [![npm version](https://img.shields.io/npm/v/@hdnax/sqlingo.js)](https://www.npmjs.com/package/@hdnax/sqlingo.js)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/huydo862003/sqlingo.js/blob/master/LICENSE)
-![SQLGlot](https://img.shields.io/badge/SQLGlot-v28.10.0-blue)
+![SQLGlot](https://img.shields.io/badge/SQLGlot-v28.10.1-blue)
 <a href="https://github.com/huydo862003/Fck-AI-Slop#plan"><img src="https://img.shields.io/badge/human%20slop-90EE90"></a>
 
 WARNING: This package is still in alpha. Although the SQLGlot tests have all passed, but finding contrived failures may require me to use this package extensively myself, which I planned to in the future. You can also help me report bugs in the Github issue.
 
-NOTICE: Done AI slop migration. Most of the code (documentation) and 99% of the library code are filtered and rewritten by me.
+NOTICE: This package doesn't rely solely on AI to port sqlglot.
 
 A JavaScript/TypeScript port of [SQLGlot](https://github.com/tobymao/sqlglot), which is a comprehensive SQL parser, transpiler, optimizer, and engine.
 
@@ -188,7 +188,7 @@ Athena, BigQuery, ClickHouse, Databricks, Doris, Dremio, Drill, Druid, DuckDB, D
 
 ## SQLGlot Compatibility
 
-This package tracks [SQLGlot](https://github.com/tobymao/sqlglot) v28.10.0 (commit `264e95f`). The API surface mirrors SQLGlot's Python API, adapted to TypeScript conventions. See [CONVENTION.md](https://github.com/huydo862003/sqlingo.js/blob/master/CONVENTION.md) for details.
+This package tracks [SQLGlot](https://github.com/tobymao/sqlglot) v28.10.1 (commit `9b32722`). The API surface mirrors SQLGlot's Python API, adapted to TypeScript conventions. See [CONVENTION.md](https://github.com/huydo862003/sqlingo.js/blob/master/CONVENTION.md) for details.
 
 ## License
 

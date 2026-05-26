@@ -1527,6 +1527,14 @@ class TestExpressions {
       }
     }
   }
+  
+  testUpdatePositionsEmptyMeta() {
+    const expr1 = new ColumnExpr({ this: "a" })
+    const expr2 = new ColumnExpr({ this: "b" })
+    expr2.meta = {};
+    expr1.updatePositions(expr2)
+    expect(expr1.meta).toEqual({});
+  }
 
   testCommentAlias () {
     const sql = `
@@ -1627,4 +1635,5 @@ describe('TestExpressions', () => {
   test('parse_identifier', () => t.testParseIdentifier());
   test('literal_number', () => t.testLiteralNumber());
   test('comment_alias', () => t.testCommentAlias());
+  test('update positions when empty meta', () => t.testUpdatePositionsEmptyMeta());
 });

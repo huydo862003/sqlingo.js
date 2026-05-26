@@ -1,5 +1,12 @@
 # @hdnax/sqlingo.js
 
+## 0.2.3
+
+### Patch Changes
+
+- e9855e1: Sync with [sqlglot@28.10.1](https://github.com/tobymao/sqlglot/pull/7032)
+  - Support missing meta when updating position metadata for an expression ([sqglot#7032](https://github.com/tobymao/sqlglot/pull/7032))
+
 ## 0.2.2
 
 ### Patch Changes
