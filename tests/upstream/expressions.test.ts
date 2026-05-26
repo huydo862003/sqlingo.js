@@ -1528,7 +1528,7 @@ class TestExpressions {
     }
   }
   
-  test_update_positions_empty_meta() {
+  testUpdatePositionsEmptyMeta() {
     const expr1 = new ColumnExpr({ this: "a" })
     const expr2 = new ColumnExpr({ this: "b" })
     expr2.meta = {};
