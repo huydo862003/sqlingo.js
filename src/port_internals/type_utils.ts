@@ -2,7 +2,7 @@ import type {
   PrimitiveExpressionValue,
 } from '../expressions';
 
-/** Type guard that checks if a value is iterable (has `Symbol.iterator`). Does NOT exclude strings */
+/** Type guard that checks if a value is iterable */
 export function isIterable<T = unknown> (value: unknown): value is Iterable<T> {
   return value != null && typeof (value as {
     [Symbol.iterator]?: unknown;

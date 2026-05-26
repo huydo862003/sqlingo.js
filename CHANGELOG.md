@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.2.2
+
+### Patch Changes
+
+- 98abe58: Guard against prototype-polluting assignment in `Expression.setArgKey` [#2](https://github.com/huydo862003/sqlingo.js/pull/2)
+
 ## 0.2.1
 
 ### Patch Changes

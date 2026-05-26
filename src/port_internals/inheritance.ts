@@ -3,7 +3,6 @@ const registeredTargets = new WeakMap<Function, Set<Function>>();
 
 /**
  * Walks up the prototype chain and collects all classes in order
- * (simulates Python's MRO - Method Resolution Order)
  */
 function getPrototypeChain (Class: AbstractConstructor): AbstractConstructor[] {
   const chain: AbstractConstructor[] = [];
