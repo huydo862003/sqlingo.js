@@ -45,6 +45,9 @@ import {
 import {
   dump, load,
 } from '../serde';
+import { 
+  requireSafeDynamicObjectKey,
+} from '../port_internals/validate_utils';
 import type {
   RefreshExprKind,
   DescribeExprKind,
@@ -93,11 +96,9 @@ import type {
 import {
   ExpressionKey,
   CreateExprKind,
-  JoinExprKind,
-  DataTypeExprKind,
+  JoinExprKini
   AlterExprKind,
 } from './types';
-import { requireSafeDynamicObjectKey } from '../port_internals/validate_utils';
 
 export * from './types';
 
