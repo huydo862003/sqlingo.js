@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.2.3
+
+### Patch Changes
+
+- e9855e1: Sync with sqlglot@28.10.1
+
 ## 0.2.2
 
 ### Patch Changes
