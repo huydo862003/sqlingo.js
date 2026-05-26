@@ -288,7 +288,7 @@
                 class="h-5"
               >
               <img
-                src="https://img.shields.io/badge/SQLGlot-v28.10.0-blue"
+                src="https://img.shields.io/badge/SQLGlot-v28.10.1-blue"
                 alt="SQLGlot"
                 class="h-5"
               >
@@ -416,7 +416,7 @@
             </p>
 
             <h2>SQLGlot Compatibility</h2>
-            <p>This package tracks <a href="https://github.com/tobymao/sqlglot">SQLGlot</a> v28.10.0 (commit <code>264e95f</code>). The API surface mirrors SQLGlot's Python API, adapted to TypeScript conventions. See <a href="https://github.com/huydo862003/sqlingo.js/blob/master/CONVENTION.md">CONVENTION.md</a> for details.</p>
+            <p>This package tracks <a href="https://github.com/tobymao/sqlglot">SQLGlot</a> v28.10.1 (commit <code>9b32722</code>). The API surface mirrors SQLGlot's Python API, adapted to TypeScript conventions. See <a href="https://github.com/huydo862003/sqlingo.js/blob/master/CONVENTION.md">CONVENTION.md</a> for details.</p>
 
             <h2>License</h2>
             <p>MIT. See <a href="https://github.com/huydo862003/sqlingo.js/blob/master/LICENSE">LICENSE</a>.</p>

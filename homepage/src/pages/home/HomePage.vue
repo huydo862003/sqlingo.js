@@ -60,7 +60,7 @@
               :color="GPillColor.Blue"
               :size="GBadgeSize.Md"
               :badge-style="GBadgeStyle.Flat"
-              value="v28.10.0"
+              value="v28.10.1"
             />
           </div>
         </template>
