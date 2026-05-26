@@ -1,13 +1,6 @@
 /**
  * Simulates Python's arithmetic dunder methods (__add__, __sub__, __mul__, etc.)
- * and bitwise/set dunder methods (__or__, __and__, __xor__, __lshift__, __rshift__).
- * Each interface represents a single operation and can be independently implemented
- * by a class. Built-in types (number, string, Array, Set) are handled transparently
- * by the helper functions which fall back to native operators when the operand does
- * not implement the interface. Dispatch order matches Python:
- *   1. a.op(b)  (__op__)
- *   2. b.rop(a) (__rop__, reflected)
- *   3. native fallback
+ * and bitwise/set dunder methods (__or__, __and__, __xor__, __lshift__, __rshift__)
  */
 
 export interface AddableObject<TOther = unknown, TReturn = unknown> {

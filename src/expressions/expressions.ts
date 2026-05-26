@@ -46,7 +46,6 @@ import {
   dump, load,
 } from '../serde';
 import type {
-
   RefreshExprKind,
   DescribeExprKind,
   KillExprKind,
@@ -98,6 +97,7 @@ import {
   DataTypeExprKind,
   AlterExprKind,
 } from './types';
+import { requireSafeDynamicObjectKey } from '../port_internals/validate_utils';
 
 export * from './types';
 
@@ -627,9 +627,12 @@ export class Expression implements
       overwrite?: boolean;
     },
   ): void {
-    const overwrite = options?.overwrite ?? true;
-    // Clear hash cache up the tree
+    requireSafeDynamicObjectKey(argKey);
+    requireSafeDynamicObjectKey(index);
 
+    const overwrite = options?.overwrite ?? true;
+
+    // Clear hash cache up the tree
     let expression: Expression | undefined = this;
 
     while (expression && expression._hash !== undefined) {
