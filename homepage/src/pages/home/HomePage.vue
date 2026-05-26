@@ -83,10 +83,10 @@
         class="gui-neutral-fg-muted my-10 px-10 lg:px-48"
       >
         <div>
-          <h2 class="text-md mb-4 font-medium uppercase">
+          <h2 class="mb-4 font-medium uppercase">
             SQL Parser Features
           </h2>
-          <div class="text-md grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div
               v-for="f in features"
               :key="f.title"
@@ -101,7 +101,7 @@
               <h3 class="gui-neutral-fg font-bold">
                 {{ f.title }}
               </h3>
-              <p class="text-sm/1">
+              <p class="text-sm">
                 {{ f.desc }}
               </p>
             </div>
