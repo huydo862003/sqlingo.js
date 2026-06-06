@@ -45,7 +45,7 @@
               :color="GPillColor.Orange"
               :size="GBadgeSize.Md"
               :badge-style="GBadgeStyle.Flat"
-              value="v0.2.2"
+              value="v0.3.0"
               href="https://www.npmjs.com/package/@hdnax/sqlingo.js"
             />
             <GBadge
@@ -238,7 +238,7 @@
           "applicationCategory": "DeveloperApplication",
           "operatingSystem": "All",
           "license": "https://opensource.org/licenses/MIT",
-          "softwareVersion": "0.2.2",
+          "softwareVersion": "0.3.0",
           "url": "https://huydo862003.github.io/sqlingo.js/",
           "author": {
             "@type": "Person",
