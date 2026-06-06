@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.3.1
+
+### Patch Changes
+
+- Pin upstream sqlglot to 87250100 to include exp.Trunc for numeric truncation
+
 ## 0.3.0
 
 ### Minor Changes
