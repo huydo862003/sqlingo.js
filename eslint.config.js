@@ -15,12 +15,12 @@ export default [
   {
     ignores: [
       'upstream/**',
-      'tests/**',
+      'packages/sqlingo.js/tests/**',
       'doc/**',
     ],
   },
   {
-    files: ['src/**/*.ts'],
+    files: ['packages/sqlingo.js/src/**/*.ts'],
     rules: {
       '@typescript-eslint/no-extraneous-class': 'off',
       '@typescript-eslint/no-useless-constructor': 'off',
