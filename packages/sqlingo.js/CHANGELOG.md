@@ -1,5 +1,12 @@
 # @hdnax/sqlingo.js
 
+## 0.3.0
+
+### Minor Changes
+
+- cdd20a2: Bump vitest to 4.1.0 & pin vite to 7.3.5 (to support esm decorators)
+- 067de4d: Reorganize the packages to split the lockfile of playground from the sqlingo.js package
+
 ## 0.2.3
 
 ### Patch Changes
