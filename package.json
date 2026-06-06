@@ -8,7 +8,8 @@
 		"lint:fix": "eslint . --fix",
 		"changeset": "changeset",
 		"version": "changeset version",
-		"release": "pnpm --filter @hdnax/sqlingo.js run build && changeset publish && git push --follow-tags"
+		"release": "pnpm --filter @hdnax/sqlingo.js run build && changeset publish && git push --follow-tags",
+		"doc": "pnpm --filter @hdnax/sqlingo.js exec typedoc && pnpm --filter @hdnax/sqlingo.js-homepage run build"
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.29.8",
