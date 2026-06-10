@@ -40,7 +40,7 @@ import {
 class TestClickHouse extends Validator {
   override dialect = 'clickhouse' as const;
 
-  testClickHouse () {
+  testClickhouse () {
     const expr = quoteIdentifiers(this.parseOne('{start_date:String}'), {
       dialect: 'clickhouse',
     });
@@ -883,7 +883,7 @@ class TestClickHouse extends Validator {
     this.validateIdentity('SELECT or(and(3, 0), 5)', 'SELECT (3 AND 0) OR 5');
   }
 
-  testClickHouseValues () {
+  testClickhouseValues () {
     const ast = this.parseOne('SELECT * FROM VALUES (1, 2, 3)');
 
     expect(Array.from(ast.findAll(TupleExpr)).length).toBe(4);
@@ -2050,8 +2050,8 @@ LIFETIME(MIN 0 MAX 0)`,
 const t = new TestClickHouse();
 
 describe('TestClickHouse', () => {
-  test('clickhouse', () => t.testClickHouse());
-  test('clickhouseValues', () => t.testClickHouseValues());
+  test('clickhouse', () => t.testClickhouse());
+  test('clickhouseValues', () => t.testClickhouseValues());
   test('cte', () => t.testCte());
   test('ternary', () => t.testTernary());
   test('parameterization', () => t.testParameterization());

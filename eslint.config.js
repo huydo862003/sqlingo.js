@@ -15,9 +15,17 @@ export default [
   {
     ignores: [
       'upstream/**',
-      'packages/sqlingo.js/tests/**',
       'doc/**',
     ],
+  },
+  {
+    files: ['packages/sqlingo.js/tests/**/*.ts'],
+    rules: {
+      'id-length': 'off',
+      'no-restricted-imports': 'off',
+      'custom/no-import-alias': 'off',
+      'unicorn/prevent-abbreviations': 'off',
+    },
   },
   {
     files: ['packages/sqlingo.js/src/**/*.ts'],
