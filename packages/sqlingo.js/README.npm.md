@@ -5,15 +5,15 @@
 ![SQLGlot](https://img.shields.io/badge/SQLGlot-v28.10.1-blue)
 <a href="https://github.com/huydo862003/Fck-AI-Slop#plan"><img src="https://img.shields.io/badge/human%20slop-90EE90"></a>
 
-WARNING: This package is still in alpha. Although the SQLGlot tests have all passed, but finding contrived failures may require me to use this package extensively myself, which I planned to in the future. You can also help me report bugs in the Github issue.
+A JavaScript/TypeScript port of [SQLGlot](https://github.com/tobymao/sqlglot) which is compatible with browser and Node runtimes.
 
-NOTICE: This package doesn't rely solely on AI to port sqlglot.
+This package allows you to parse, transpile, optimize, and execute SQL across **33+ dialects** in JavaScript.
 
-A JavaScript/TypeScript port of [SQLGlot](https://github.com/tobymao/sqlglot), which is a comprehensive SQL parser, transpiler, optimizer, and engine.
+WARNING: This package is still in alpha.
+  - Although the SQLGlot tests have all passed, but finding contrived failures may require me to use this package extensively myself.
+  - You can also help me report bugs in the Github issue.
 
-This package allows you to parse, transpile, optimize, and execute SQL across **33+ dialects** in JavaScript, with no other setup.
-
-Supports TypeScript & CJS/ESM. Works in Node.js and the browser.
+NOTICE: AI is not the decision maker, designer or maintainer for this project. It is indeed sometimes used to port straightforward code with less effort. However, the point is to always keep its usage under control & understand what's going on, so I can maintain this project reliably along with sqlglot.
 
 - [GitHub](https://github.com/huydo862003/sqlingo.js)
 - [Issues](https://github.com/huydo862003/sqlingo.js/issues)
