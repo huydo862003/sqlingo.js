@@ -100,6 +100,7 @@ class TestFabric extends Validator {
 }
 
 const t = new TestFabric();
+
 describe('TestFabric', () => {
   test('testTypeMappings', () => t.testTypeMappings());
   test('testPrecisionCapping', () => t.testPrecisionCapping());

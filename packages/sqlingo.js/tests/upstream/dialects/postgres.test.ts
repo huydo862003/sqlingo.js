@@ -16,7 +16,10 @@ import {
   narrowInstanceOf,
 } from '../../../src/port_internals';
 import {
-  Validator, UnsupportedError,
+  UnsupportedError,
+} from '../../../src';
+import {
+  Validator,
 } from './validator';
 
 class TestPostgres extends Validator {
@@ -26,10 +29,12 @@ class TestPostgres extends Validator {
     const expr = this.parseOne('SELECT * FROM r CROSS JOIN LATERAL UNNEST(ARRAY[1]) AS s(location)');
     const firstJoin = (expr.getArgKey('joins') as Expression[])[0];
     const unnest = (firstJoin.getArgKey('this') as Expression).getArgKey('this');
+
     expect(unnest).toBeInstanceOf(UnnestExpr);
 
     const alterTableOnly = 'ALTER TABLE ONLY "Album" ADD CONSTRAINT "FK_AlbumArtistId" FOREIGN KEY ("ArtistId") REFERENCES "Artist" ("ArtistId") ON DELETE NO ACTION ON UPDATE NO ACTION';
     const exprAlter = this.parseOne(alterTableOnly);
+
     expect(exprAlter).toBeInstanceOf(AlterExpr);
     expect(exprAlter.sql({
       dialect: 'postgres',
@@ -37,6 +42,7 @@ class TestPostgres extends Validator {
 
     const sql = 'ARRAY[x' + ',x'.repeat(27) + ']';
     const expectedSql = 'ARRAY[\n  x' + ',\n  x'.repeat(27) + '\n]';
+
     this.validateIdentity(sql, expectedSql, {
       pretty: true,
     });
@@ -1166,9 +1172,11 @@ FROM json_data, field_ids`,
     );
 
     const widthBucket1 = this.validateIdentity('WIDTH_BUCKET(10, ARRAY[5, 15])');
+
     expect((widthBucket1 as WidthBucketExpr).args.threshold).not.toBeNull();
 
     const widthBucket2 = this.validateIdentity('WIDTH_BUCKET(10, 5, 15, 25)');
+
     expect((widthBucket2 as WidthBucketExpr).getArgKey('threshold')).toBeUndefined();
 
     this.validateAll(
@@ -1200,6 +1208,7 @@ FROM json_data, field_ids`,
     const createUdt = this.parseOne('CREATE TABLE t (a udt)');
     const schema = createUdt.getArgKey('this') as Expression;
     const colKind = (schema.getArgKey('expressions') as Expression[])[0].getArgKey('kind');
+
     expect(colKind).toBeInstanceOf(DataTypeExpr);
 
     // Checks that OID is parsed into a DataType (ObjectIdentifier)
@@ -1209,6 +1218,7 @@ FROM json_data, field_ids`,
 
     const exprInterval = this.parseOne('CREATE TABLE t (x INTERVAL day)');
     const cdef = exprInterval.find(ColumnDefExpr);
+
     expect(cdef).toBeInstanceOf(ColumnDefExpr);
     expect((cdef as ColumnDefExpr).getArgKey('kind')).toBeInstanceOf(DataTypeExpr);
     expect(exprInterval.sql({
@@ -2027,11 +2037,13 @@ CROSS JOIN JSON_ARRAY_ELEMENTS(CAST(JSON_EXTRACT_PATH(tbox, 'boxes') AS JSON)) A
 
     // Ensure AND is not consumed as a unit following an omitted-span interval
     const dayTimeStr = 'a > INTERVAL \'1 00:00\' AND TRUE';
+
     this.validateIdentity(dayTimeStr, 'a > INTERVAL \'1 00:00\' AND TRUE');
   }
 }
 
 const t = new TestPostgres();
+
 describe('TestPostgres', () => {
   test('testPostgres', () => t.testPostgres());
   test('testDdl', () => t.testDdl());

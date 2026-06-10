@@ -6,9 +6,10 @@ import {
 } from '../../../src/expressions';
 import {
   transpile, ErrorLevel,
+  UnsupportedError,
 } from '../../../src/index';
 import {
-  Validator, UnsupportedError,
+  Validator,
 } from './validator';
 
 class TestDremio extends Validator {
@@ -135,24 +136,31 @@ class TestDremio extends Validator {
 
   testToCharSpecial () {
     const toChar1 = this.validateIdentity('TO_CHAR(5555, \'#\')').assertIs(ToCharExpr);
+
     expect(toChar1.args['isNumeric']).toBe(true);
 
     const toChar2 = this.validateIdentity('TO_CHAR(3.14, \'#.#\')').assertIs(ToCharExpr);
+
     expect(toChar2.args['isNumeric']).toBe(true);
 
     const toChar3 = this.validateIdentity('TO_CHAR(columnname, \'#.##\')').assertIs(ToCharExpr);
+
     expect(toChar3.args['isNumeric']).toBe(true);
 
     const toChar4 = this.validateIdentity('TO_CHAR(5555)').assertIs(ToCharExpr);
+
     expect(toChar4.args['isNumeric']).toBeFalsy();
 
     const toChar5 = this.validateIdentity('TO_CHAR(3.14, columnname)').assertIs(ToCharExpr);
+
     expect(toChar5.args['isNumeric']).toBeFalsy();
 
     const toChar6 = this.validateIdentity('TO_CHAR(123, \'abcd\')').assertIs(ToCharExpr);
+
     expect(toChar6.args['isNumeric']).toBeFalsy();
 
     const toChar7 = this.validateIdentity('TO_CHAR(3.14, UPPER(\'abcd\'))').assertIs(ToCharExpr);
+
     expect(toChar7.args['isNumeric']).toBeFalsy();
   }
 
@@ -248,6 +256,7 @@ class TestDremio extends Validator {
 }
 
 const t = new TestDremio();
+
 describe('TestDremio', () => {
   test('testTypeMappings', () => t.testTypeMappings());
   test('testConcatCoalesce', () => t.testConcatCoalesce());

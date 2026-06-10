@@ -7506,7 +7506,7 @@ export type AlterSessionExprArgs = Merge<[
   BaseExpressionArgs,
   {
     expressions?: Expression[];
-    unset?: Expression;
+    unset?: ExpressionOrBoolean;
   },
 ]>;
 

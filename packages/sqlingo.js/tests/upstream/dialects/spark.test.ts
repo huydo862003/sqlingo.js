@@ -9,9 +9,10 @@ import {
 } from '../../../src/port_internals';
 import {
   parseOne,
+  UnsupportedError,
 } from '../../../src/index';
 import {
-  Validator, UnsupportedError,
+  Validator,
 } from './validator';
 
 class TestSpark extends Validator {
@@ -1362,6 +1363,7 @@ TBLPROPERTIES (
       'trino',
       'tsql',
     ];
+
     for (const name of dialectNames) {
       if (dialectsWithModifiers.has(name)) {
         expect(query.sql({
@@ -1410,6 +1412,7 @@ TBLPROPERTIES (
       const query = parseOne('STRING(a)', {
         read: dialect,
       });
+
       expect(query.sql({
         dialect,
       })).toBe('CAST(a AS STRING)');
@@ -1425,6 +1428,7 @@ TBLPROPERTIES (
       const query1 = parseOne('X\'ab\'', {
         read: dialect,
       });
+
       expect(query1.sql({
         dialect,
       })).toBe('X\'ab\'');
@@ -1432,6 +1436,7 @@ TBLPROPERTIES (
       const query2 = parseOne('X\'\'', {
         read: dialect,
       });
+
       expect(query2.sql({
         dialect,
       })).toBe('X\'\'');
@@ -1473,17 +1478,20 @@ TBLPROPERTIES (
 
     const approxQuantileExpr1 = this.validateIdentity('PERCENTILE_APPROX(DISTINCT col, 0.3)');
     const narrowed1 = approxQuantileExpr1.assertIs(ApproxQuantileExpr);
+
     narrowInstanceOf(narrowed1?.args.this, DistinctExpr);
     expect(narrowed1?.getArgKey('quantile')).toBeInstanceOf(LiteralExpr);
 
     const approxQuantileExpr2 = this.validateIdentity('PERCENTILE_APPROX(DISTINCT col, 0.3, 200)');
     const narrowed2 = approxQuantileExpr2.assertIs(ApproxQuantileExpr);
+
     narrowInstanceOf(narrowed2?.args.this, DistinctExpr);
     expect(narrowed2?.getArgKey('quantile')).toBeInstanceOf(LiteralExpr);
   }
 }
 
 const t = new TestSpark();
+
 describe('TestSpark', () => {
   test('testDdl', () => t.testDdl());
   test('testToDate', () => t.testToDate());

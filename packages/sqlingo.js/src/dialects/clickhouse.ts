@@ -1995,7 +1995,6 @@ export class ClickHouseGenerator extends Generator {
   }
 
   @cache
-
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
 
     return new Map<typeof Expression, (this: Generator, e: any) => string>([

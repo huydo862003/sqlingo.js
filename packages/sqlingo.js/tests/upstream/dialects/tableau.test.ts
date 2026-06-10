@@ -96,6 +96,7 @@ class TestTableau extends Validator {
 }
 
 const t = new TestTableau();
+
 describe('TestTableau', () => {
   test('tableau', () => t.testTableau());
 });

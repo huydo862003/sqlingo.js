@@ -3,6 +3,7 @@ import {
 } from 'vitest';
 import {
   parseOne, parse,
+  UnsupportedError,
 } from '../../../src/index';
 import {
   Expression,
@@ -14,7 +15,7 @@ import {
   narrowInstanceOf,
 } from '../../../src/port_internals';
 import {
-  Validator, UnsupportedError,
+  Validator,
 } from './validator';
 
 class TestTSQL extends Validator {
@@ -36,7 +37,7 @@ class TestTSQL extends Validator {
     this.validateIdentity('SELECT SYSDATETIMEOFFSET()');
     this.validateIdentity('SELECT COMPRESS(\'Hello World\')');
     this.validateIdentity('GO').assertIs(CommandExpr);
-    this.validateIdentity('SELECT go').selects[0].assertIs(ColumnExpr);
+    (this.validateIdentity('SELECT go') as any).selects[0].assertIs(ColumnExpr);
     this.validateIdentity('CREATE view a.b.c', 'CREATE VIEW b.c');
     this.validateIdentity('DROP view a.b.c', 'DROP VIEW b.c');
     this.validateIdentity('ROUND(x, 1, 0)');
@@ -303,7 +304,7 @@ class TestTSQL extends Validator {
       'CREATE TABLE [db].[tbl]([a] [int])',
       'CREATE TABLE [db].[tbl] ([a] INTEGER)',
     );
-    this.validateIdentity('SELECT a = 1', 'SELECT 1 AS a').selects[0].assertIs(AliasExpr)
+    (this.validateIdentity('SELECT a = 1', 'SELECT 1 AS a') as any).selects[0].assertIs(AliasExpr)
       .args['alias'].assertIs(IdentifierExpr);
 
     this.validateAll(
@@ -566,9 +567,10 @@ class TestTSQL extends Validator {
       for (const option of possibleOptions) {
         const query = `${statement} OPTION(${option})`;
         const result = this.validateIdentity(query);
-        const options = result.args['options'];
+        const options = result.getArgKey('options');
+
         expect(Array.isArray(options)).toBe(true);
-        expect(options.every((o: unknown) => o instanceof QueryOptionExpr)).toBe(true);
+        expect((options as any)?.every((o: unknown) => o instanceof QueryOptionExpr)).toBe(true);
       }
       this.validateIdentity(`${statement} OPTION(RECOMPILE, USE PLAN N'<xml_plan>', MAX_GRANT_PERCENT = 5)`);
     }
@@ -578,6 +580,7 @@ class TestTSQL extends Validator {
       'SELECT * FROM Table1 OPTION(KEEPFIXED)',
       'SELECT * FROM Table1 OPTION(HASH GROUP HASH GROUP)',
     ];
+
     for (const query of raisingQueries) {
       expect(() => this.parseOne(query)).toThrow();
     }
@@ -1138,6 +1141,7 @@ FOR XML
     const constraint = this.validateIdentity(
       'ALTER TABLE tbl ADD CONSTRAINT cnstr PRIMARY KEY CLUSTERED (ID), CONSTRAINT cnstr2 UNIQUE CLUSTERED (ID)',
     ).find(AddConstraintExpr);
+
     expect(constraint).toBeTruthy();
     expect([...constraint!.findAll(ConstraintExpr)].length).toBe(2);
   }
@@ -1294,6 +1298,7 @@ WHERE
     const exprs = parse(sql, {
       read: 'tsql',
     });
+
     for (let i = 0; i < exprs.length; i++) {
       expect(exprs[i]?.sql({
         dialect: 'tsql',
@@ -1320,6 +1325,7 @@ WHERE
     const exprs2 = parse(sql2, {
       read: 'tsql',
     });
+
     for (let i = 0; i < exprs2.length; i++) {
       expect(exprs2[i]?.sql({
         dialect: 'tsql',
@@ -2330,6 +2336,7 @@ FROM OPENJSON(@json) WITH (
     ] of pairs) {
       const expr = this.validateIdentity(`${lhs}::${rhs}`);
       const baseSql = expr.sql();
+
       expect(baseSql).toBe(`SCOPE_RESOLUTION(${lhs ? lhs + ', ' : ''}${rhs})`);
       expect(parseOne(baseSql).sql({
         dialect: 'tsql',
@@ -2444,7 +2451,7 @@ FROM OPENJSON(@json) WITH (
             .assertIs(AlterExpr)
             ?.args['actions']?.[0],
           Expression,
-        )?.args['collate'],
+        )?.getArgKey('collate'),
         Expression,
       )?.args.this,
       VarExpr,
@@ -2466,21 +2473,25 @@ FROM OPENJSON(@json) WITH (
         TimestampExpr,
       ],
     ];
+
     for (const [
       value,
       cls,
     ] of cases) {
       const sql = `INSERT INTO tab(ds) VALUES (${value})`;
       const expr = this.parseOne(sql);
+
       expect(expr).toBeInstanceOf(InsertExpr);
       const insert = expr as InsertExpr;
       const literal = narrowInstanceOf(insert.args.expression?.args?.expressions?.[0], Expression)?.args.expressions?.[0];
+
       expect(literal).toBeInstanceOf(cls);
     }
   }
 }
 
 const t = new TestTSQL();
+
 describe('TestTSQL', () => {
   test('testTsql', () => t.testTsql());
   test('testOption', () => t.testOption());

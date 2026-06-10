@@ -90,6 +90,7 @@ class TestMaterialize extends Validator {
 }
 
 const t = new TestMaterialize();
+
 describe('TestMaterialize', () => {
   test('materialize', () => t.testMaterialize());
 });

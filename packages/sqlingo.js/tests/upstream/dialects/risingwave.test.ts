@@ -43,6 +43,7 @@ class TestRisingWave extends Validator {
 }
 
 const t = new TestRisingWave();
+
 describe('TestRisingWave', () => {
   test('risingwave', () => t.testRisingwave());
   test('datatypes', () => t.testDatatypes());

@@ -392,6 +392,7 @@ class TestSQLite extends Validator {
 }
 
 const t = new TestSQLite();
+
 describe('TestSQLite', () => {
   test('sqlite', () => t.testSqlite());
   test('strftime', () => t.testStrftime());
