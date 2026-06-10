@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.3.2
+
+### Patch Changes
+
+- 92777d6: Update README.md copywriting
+
 ## 0.3.1
 
 ### Patch Changes
