@@ -13,7 +13,7 @@ WARNING: This package is still in alpha.
   - Although the SQLGlot tests have all passed, but finding contrived failures may require me to use this package extensively myself.
   - You can also help me report bugs in the Github issue.
 
-NOTICE: AI is not the decision maker, designer or maintainer for this project. It is indeed sometimes used to port straightforward code with less effort. However, the point is to always keep its usage under control & understand what's going on, so I can maintain this project reliably along with sqlglot.
+NOTICE: AI is not the decision maker, designer or maintainer for this project. It is indeed sometimes used to port straightforward code with less effort. However, the point is to always keep its usage under control & understand what's going on, so I can maintain this project reliably as sqlglot updates.
 
 - [GitHub](https://github.com/huydo862003/sqlingo.js)
 - [Issues](https://github.com/huydo862003/sqlingo.js/issues)
