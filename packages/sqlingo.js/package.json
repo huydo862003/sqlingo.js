@@ -2,8 +2,8 @@
 	"$schema": "https://json.schemastore.org/package.json",
 	"name": "@hdnax/sqlingo.js",
 	"sqlglot": {
-		"commit": "87250100eb2a1d2c206a26cce276f7babec0e409",
-		"version": "28.10.1",
+		"commit": "1418494f777358f4b6bd1e05ee5cb02591d92c74",
+		"version": "28.10.1+",
 		"url": "https://github.com/tobymao/sqlglot"
 	},
 	"version": "0.3.2",
