@@ -2907,7 +2907,7 @@ export class Generator {
     const postSchema = propertiesLocs.get(PropertiesLocation.POST_SCHEMA);
     const postWith = propertiesLocs.get(PropertiesLocation.POST_WITH);
 
-    if (postSchema || postWith) {
+    if (postSchema?.length || postWith?.length) {
       const propsAst = new PropertiesExpr({
         expressions: [
           ...(postSchema ?? []),
@@ -2918,7 +2918,7 @@ export class Generator {
       propsAst.parent = expression;
       propertiesSql = this.sql(propsAst);
 
-      if (postSchema) {
+      if (postSchema?.length) {
         propertiesSql = this.sep() + propertiesSql;
       } else if (!this.pretty) {
         propertiesSql = ` ${propertiesSql}`;
