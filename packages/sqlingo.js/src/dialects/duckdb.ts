@@ -1553,7 +1553,7 @@ function prepareBinaryBitwiseArgs (expression: BinaryExpr): void {
 function dayNavigationSql (this: Generator, expression: NextDayExpr | PreviousDayExpr): string {
   const dateExpr = expression.args.this;
   const dayNameExpr = expression.args.expression;
-  const isodowCall = this.func('ISODOW', [dateExpr]);
+  const isodowCall = new DayOfWeekIsoExpr({ this: dateExpr });
 
   let targetDow: Expression;
 
