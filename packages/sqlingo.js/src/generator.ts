@@ -5929,6 +5929,10 @@ export class Generator {
   convertConcatArgs (expression: ConcatExpr | ConcatWsExpr): Expression[] {
     let args = expression.args.expressions || [];
 
+    if (!Array.isArray(args)) {
+      args = args ? [args as unknown as Expression] : [];
+    }
+
     if (expression instanceof ConcatWsExpr) {
       args = args.slice(1); // Skip the delimiter
     }

@@ -360,7 +360,7 @@ function buildDatetime (
     const value = seqGet(args, 0);
     const scaleOrFmt = seqGet(args, 1);
 
-    const intValue = value instanceof IdentifierExpr && isInt(value.name);
+    const intValue = value !== undefined && isInt(value.name);
     const intScaleOrFmt = scaleOrFmt instanceof LiteralExpr && scaleOrFmt.isNumber;
 
     if (value instanceof LiteralExpr || value instanceof NegExpr || (value && scaleOrFmt)) {
