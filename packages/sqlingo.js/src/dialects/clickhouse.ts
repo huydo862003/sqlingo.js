@@ -2648,7 +2648,7 @@ export class ClickHouseGenerator extends Generator {
     const Constructor = this._constructor as typeof ClickHouseGenerator;
     const postNameLocation = locations.get(PropertiesLocation.POST_NAME);
 
-    if (Constructor.ON_CLUSTER_TARGETS.has(expression.kind as string) && postNameLocation) {
+    if (Constructor.ON_CLUSTER_TARGETS.has((expression.kind as string)?.toUpperCase()) && postNameLocation) {
       const thisNode = expression.args.this instanceof SchemaExpr ? expression.args.this : expression;
       const thisName = this.sql(thisNode, 'this');
       const thisProperties = postNameLocation.map((prop) => this.sql(prop)).join(' ');
