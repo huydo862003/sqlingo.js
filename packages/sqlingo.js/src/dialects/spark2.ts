@@ -534,7 +534,7 @@ class Spark2Generator extends Hive.Generator {
       [
         DayOfWeekIsoExpr,
         function (this: Generator, e: DayOfWeekIsoExpr) {
-          return '(( ' + this.func('DAYOFWEEK', [e.args.this]) + ' % 7) + 1)';
+          return '((' + this.func('DAYOFWEEK', [e.args.this]) + ' % 7) + 1)';
         },
       ],
       [
