@@ -20772,6 +20772,8 @@ export type DayOfWeekIsoExprArgs = Merge<[
 export class DayOfWeekIsoExpr extends FuncExpr {
   static key = ExpressionKey.DAY_OF_WEEK_ISO;
 
+  static _sqlNames = ['DAYOFWEEK_ISO', 'ISODOW'];
+
   static argOrder = ['this'];
 
   declare args: DayOfWeekIsoExprArgs;
