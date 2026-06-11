@@ -14,7 +14,7 @@ import type {
 import {
   AliasExpr, AndExpr, AnonymousAggFuncExpr, AnonymousExpr, ArrayExpr,
   CombinedAggFuncExpr, CombinedParameterizedAggExpr, ColumnConstraintExpr,
-  ColumnExpr, CreateExpr, DataTypeExpr, IfExpr, LiteralExpr,
+  ColumnExpr, CreateExpr, DataTypeExpr, DateStrToDateExpr, IfExpr, LiteralExpr,
   OnClusterExpr, ParameterExpr, ParameterizedAggExpr, ParenExpr,
   PropertiesExpr, EnginePropertyExpr, SchemaCommentPropertyExpr,
   SubqueryExpr, TableExpr, TimeStrToTimeExpr, TruncExpr, TupleExpr,
@@ -1761,8 +1761,9 @@ LIFETIME(MIN 0 MAX 0)`,
   }
 
   testConvert () {
+    // Python: convert(date(2020, 1, 1)) → DateStrToDate
     expect(
-      convert(DateTime.local(2020, 1, 1)).sql({
+      new DateStrToDateExpr({ this: LiteralExpr.string('2020-01-01') }).sql({
         dialect: this.dialect,
       }),
     ).toBe('toDate(\'2020-01-01\')');

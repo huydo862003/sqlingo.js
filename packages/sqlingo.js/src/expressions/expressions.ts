@@ -34983,16 +34983,16 @@ export function convert (value: unknown, options: {
   // Luxon provides proper timezone support similar to Python's datetime with tzinfo
   if (DateTime.isDateTime(value)) {
     // Format datetime similar to Python's isoformat(sep=" ")
-    // Python: "2024-01-15 10:30:45" (no milliseconds)
     const datetimeStr = value.toFormat('yyyy-MM-dd HH:mm:ss');
     const datetimeLiteral = LiteralExpr.string(datetimeStr);
 
-    // Extract timezone similar to Python's str(value.tzinfo)
-    // This returns IANA timezone names like "America/Los_Angeles"
+    // In Python, datetime.datetime(2020, 1, 1) has no tzinfo (naive datetime).
+    // Luxon's DateTime.local always has a system timezone, so we treat it as naive.
+    // Only DateTime.utc (zone.isUniversal = true) maps to Python's tz-aware datetime.
     let tz: LiteralExpr | undefined;
 
-    if (value.zoneName && value.zoneName !== 'UTC') {
-      tz = LiteralExpr.string(value.zoneName);
+    if (value.zone.isUniversal) {
+      tz = LiteralExpr.string(value.zoneName!);
     }
 
     return new TimeStrToTimeExpr({
