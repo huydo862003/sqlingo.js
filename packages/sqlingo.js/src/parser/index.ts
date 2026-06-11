@@ -8769,7 +8769,7 @@ export class Parser {
       withFill = this.expression(
         WithFillExpr,
         {
-          fromValue: this.match(TokenType.FROM) && this.parseBitwise(),
+          from: this.match(TokenType.FROM) && this.parseBitwise(),
           to: this.matchTextSeq('TO') && this.parseBitwise(),
           step: this.matchTextSeq('STEP') && this.parseBitwise(),
           interpolate: this.parseInterpolate(),
