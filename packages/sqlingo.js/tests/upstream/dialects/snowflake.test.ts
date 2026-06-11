@@ -5937,7 +5937,7 @@ SINGLE = TRUE`,
     });
 
     expect(ast).toBeInstanceOf(PutExpr);
-    expect(ast.args.this.equals(LiteralExpr.string('file://my file.txt'))).toBe(true);
+    expect((ast.args.this as Expression).equals(LiteralExpr.string('file://my file.txt'))).toBe(true);
     expect((ast.getArgKey('target') as Expression).equals(new VarExpr({
       this: '\'@s1/my folder\'',
     }))).toBe(true);
@@ -5950,7 +5950,7 @@ SINGLE = TRUE`,
       read: 'snowflake',
     });
     expect(ast).toBeInstanceOf(PutExpr);
-    expect(ast.args.this.equals(LiteralExpr.string('file:///tmp/my.txt'))).toBe(true);
+    expect((ast.args.this as Expression).equals(LiteralExpr.string('file:///tmp/my.txt'))).toBe(true);
     expect((ast.getArgKey('target') as Expression).equals(new VarExpr({
       this: '@stage1/folder',
     }))).toBe(true);
@@ -5998,7 +5998,7 @@ SINGLE = TRUE`,
     expect((ast.getArgKey('target') as Expression).equals(new VarExpr({
       this: '\'@s1/my folder\'',
     }))).toBe(true);
-    expect(ast.args.this.equals(new LiteralExpr({
+    expect((ast.args.this as Expression).equals(new LiteralExpr({
       this: 'file://my file.txt',
       isString: true,
     }))).toBe(true);
@@ -6014,7 +6014,7 @@ SINGLE = TRUE`,
     expect((ast.getArgKey('target') as Expression).equals(new VarExpr({
       this: '@stage1/folder',
     }))).toBe(true);
-    expect(ast.args.this.equals(new LiteralExpr({
+    expect((ast.args.this as Expression).equals(new LiteralExpr({
       this: 'file:///tmp/my.txt',
       isString: true,
     }))).toBe(true);

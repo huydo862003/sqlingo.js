@@ -2212,7 +2212,7 @@ export function buildDateDelta<T extends Expression> (
     let unit = undefined;
 
     if (unitBased || defaultUnit) {
-      unit = unitBased ? args[0] : LiteralExpr.string(defaultUnit);
+      unit = unitBased ? args[0] : LiteralExpr.string(defaultUnit!);
       const unitName = unit.name?.toLowerCase();
 
       if (unitMapping && unitName && unitMapping[unitName]) {
