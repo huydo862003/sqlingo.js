@@ -3931,7 +3931,7 @@ export class Snowflake extends Dialect {
       '%I': 'hh12',
       '%M': 'mi',
       '%S': 'ss',
-      '%f_nine': 'ff',
+      '%f_nine': 'ff9',
       '%f_zero': 'ff0',
       '%f_one': 'ff1',
       '%f_two': 'ff2',
@@ -3941,13 +3941,10 @@ export class Snowflake extends Dialect {
       '%f': 'ff6',
       '%f_seven': 'ff7',
       '%f_eight': 'ff8',
-      '%z': 'TZHTZM',
-      '%:z': 'TZH:TZM',
-      '%-z': 'TZH',
-      '%p': 'AM/PM',
-      '%A': 'EEEE',
-      '%j': 'DDD',
-      '%C': 'CC',
+      '%z': 'tzhtzm',
+      '%:z': 'tzh:tzm',
+      '%-z': 'tzh',
+      '%p': 'pm',
     };
   }
 
