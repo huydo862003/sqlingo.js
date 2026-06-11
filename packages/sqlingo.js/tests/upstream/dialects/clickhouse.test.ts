@@ -1932,7 +1932,7 @@ LIFETIME(MIN 0 MAX 0)`,
     }));
 
     expect(scopes.length).toBe(1);
-    expect(new Set(Object.keys(scopes[0].sources))).toEqual(new Set(['t']));
+    expect(new Set(scopes[0].sources.keys())).toEqual(new Set(['t']));
   }
 
   testWindowFunctions () {
