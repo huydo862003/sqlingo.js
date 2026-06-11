@@ -275,6 +275,7 @@ import {
   WindowExpr,
   AggFuncExpr,
   null_,
+  paren,
   PlaceholderExpr,
   AbsExpr,
   ArrayOverlapsExpr,
@@ -1592,16 +1593,9 @@ function dayNavigationSql (this: Generator, expression: NextDayExpr | PreviousDa
 
   if (expression instanceof NextDayExpr) {
     // (target_dow - current_dow + 6) % 7 + 1
+    const innerExpr = paren(targetDow.sub(isodowCall).add(6), { copy: false });
     const daysOffset = new ModExpr({
-      this: new ParenExpr({
-        this: new AddExpr({
-          this: new SubExpr({
-            this: targetDow,
-            expression: isodowCall,
-          }),
-          expression: LiteralExpr.number(6),
-        }),
-      }),
+      this: innerExpr,
       expression: LiteralExpr.number(7),
     }).add(1);
 
@@ -1616,16 +1610,9 @@ function dayNavigationSql (this: Generator, expression: NextDayExpr | PreviousDa
     });
   } else {
     // (current_dow - target_dow + 6) % 7 + 1
+    const innerExpr = paren(isodowCall.sub(targetDow).add(6), { copy: false });
     const daysOffset = new ModExpr({
-      this: new ParenExpr({
-        this: new AddExpr({
-          this: new SubExpr({
-            this: isodowCall,
-            expression: targetDow,
-          }),
-          expression: LiteralExpr.number(6),
-        }),
-      }),
+      this: innerExpr,
       expression: LiteralExpr.number(7),
     }).add(1);
 
