@@ -5739,7 +5739,7 @@ MATCH_RECOGNIZE (
   }
 
   testStorageIntegration () {
-    this.validateIdentity(
+    (this.validateIdentity(
       `CREATE STORAGE INTEGRATION s3_int
 TYPE=EXTERNAL_STAGE
 STORAGE_PROVIDER='S3'
@@ -5750,7 +5750,7 @@ STORAGE_ALLOWED_LOCATIONS=('s3://mybucket1/path1/', 's3://mybucket2/path2/')`,
       {
         pretty: true,
       },
-    ).args.this.assertIs(IdentifierExpr);
+    ).args.this as Expression).assertIs(IdentifierExpr);
 
   }
 
