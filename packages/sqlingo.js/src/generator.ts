@@ -3442,8 +3442,8 @@ export class Generator {
     });
 
     expressions = expressions ? ` (${expressions})` : '';
-    const kind = expression.args.kind?.toString();
-    const kindStr = kind ? (this.dialect._constructor.INVERSE_CREATABLE_KIND_MAPPING?.[kind] || kind).toUpperCase() : kind;
+    const kind = expression.args.kind?.toString().toUpperCase();
+    const kindStr = kind ? (this.dialect._constructor.INVERSE_CREATABLE_KIND_MAPPING?.[kind] || kind) : kind;
     const existsSql = expression.args.exists ? ' IF EXISTS ' : ' ';
     const concurrentlySql = expression.args.concurrently ? ' CONCURRENTLY' : '';
     let onCluster = this.sql(expression, 'cluster');
