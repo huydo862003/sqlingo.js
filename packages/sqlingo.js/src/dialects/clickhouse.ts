@@ -348,11 +348,9 @@ function timeStrToTimeSql (this: Generator, expression: TimeStrToTimeExpr): stri
       ].join('');
     }
 
-    // Convert to ISO format without timezone for Clickhouse
-    // We use Date parsing; replace ' ' with 'T' for standard ISO compatibility if needed
-    const date = new Date(tsString.replace(' ', 'T'));
-    const tsWithoutTz = date.toISOString().replace('T', ' ')
-      .split('.')[0];
+    // Strip timezone offset without converting to UTC, mirroring Python's
+    // datetime.fromisoformat(ts).replace(tzinfo=None).isoformat(sep=" ")
+    const tsWithoutTz = tsString.replace(/([+-]\d{2}:\d{2}|Z)$/, '').replace('T', ' ');
 
     ts = LiteralExpr.string(tsWithoutTz);
   }
