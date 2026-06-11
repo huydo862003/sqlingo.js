@@ -1153,7 +1153,7 @@ ORDER BY (
       expression: toTable('another_db.another_table'),
     });
 
-    expect(this.parseOne(ctasAlias)).toEqual(expected);
+    expect(this.parseOne(ctasAlias).equals(expected)).toBe(true);
     this.validateIdentity(ctasAlias);
   }
 
