@@ -5750,7 +5750,7 @@ STORAGE_ALLOWED_LOCATIONS=('s3://mybucket1/path1/', 's3://mybucket2/path2/')`,
       {
         pretty: true,
       },
-    ).assertIs(IdentifierExpr);
+    ).args.this.assertIs(IdentifierExpr);
 
   }
 
@@ -5959,7 +5959,7 @@ SINGLE = TRUE`,
     const propsDict: Record<string, unknown> = {};
 
     for (const prop of properties.args.expressions) {
-      propsDict[prop.args.this.args.this] = prop.getArgKey('value').arg.this;
+      propsDict[prop.args.this.args.this] = (prop.getArgKey('value') as Expression).args.this;
     }
     expect(propsDict).toEqual({
       'PARALLEL': '1',
