@@ -1714,8 +1714,8 @@ class TestPresto extends Validator {
         read: 'snowflake',
       });
 
-      const dialectJsonExtractSetting = `${dialect}, variant_extract_is_json_extract=True`;
-      const dialectRowAccessSetting = `${dialect}, variant_extract_is_json_extract=False`;
+      const dialectJsonExtractSetting = `${dialect}, variantExtractIsJsonExtract=True`;
+      const dialectRowAccessSetting = `${dialect}, variantExtractIsJsonExtract=False`;
 
       // By default, Snowflake VARIANT will generate JSON_EXTRACT() in Presto/Trino
       const jsonExtractResult = 'SELECT JSON_EXTRACT(col, \'$.x.y["special string"]\')';
