@@ -731,7 +731,7 @@ class PrestoParser extends Parser {
         new RegexpReplaceExpr({
           this: seqGet(args, 0),
           expression: seqGet(args, 1),
-          replacement: seqGet(args, 2) ?? '',
+          replacement: seqGet(args, 2) || LiteralExpr.string(''),
         }),
       REPLACE: buildReplaceWithOptionalReplacement,
       ROW: (args: unknown[]) => StructExpr.fromArgList(args),
