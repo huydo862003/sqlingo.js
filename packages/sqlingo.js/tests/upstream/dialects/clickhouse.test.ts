@@ -1782,16 +1782,17 @@ LIFETIME(MIN 0 MAX 0)`,
     ).toBe('CAST(\'2020-01-01 00:00:01\' AS DateTime64(6, \'UTC\'))');
 
     // with fractional seconds
+    // Luxon only has millisecond precision (vs Python's microsecond)
     expect(
-      convert(DateTime.local(2020, 1, 1, 0, 0, 1, 0)).sql({
+      convert(DateTime.local(2020, 1, 1, 0, 0, 1, 1)).sql({
         dialect: this.dialect,
       }),
-    ).toBe('CAST(\'2020-01-01 00:00:01.000001\' AS DateTime64(6))');
+    ).toBe('CAST(\'2020-01-01 00:00:01.001000\' AS DateTime64(6))');
     expect(
-      convert(DateTime.utc(2020, 1, 1, 0, 0, 1, 0)).sql({
+      convert(DateTime.utc(2020, 1, 1, 0, 0, 1, 1)).sql({
         dialect: this.dialect,
       }),
-    ).toBe('CAST(\'2020-01-01 00:00:01.000001\' AS DateTime64(6, \'UTC\'))');
+    ).toBe('CAST(\'2020-01-01 00:00:01.001000\' AS DateTime64(6, \'UTC\'))');
   }
 
   testTimestrToTime () {

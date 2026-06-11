@@ -34983,7 +34983,13 @@ export function convert (value: unknown, options: {
   // Luxon provides proper timezone support similar to Python's datetime with tzinfo
   if (DateTime.isDateTime(value)) {
     // Format datetime similar to Python's isoformat(sep=" ")
-    const datetimeStr = value.toFormat('yyyy-MM-dd HH:mm:ss');
+    // Include fractional seconds (microseconds) when present, matching Python behavior
+    let datetimeStr = value.toFormat('yyyy-MM-dd HH:mm:ss');
+    if (value.millisecond > 0) {
+      // Luxon only has millisecond precision; pad to microsecond precision (6 digits)
+      const microStr = (value.millisecond * 1000).toString().padStart(6, '0');
+      datetimeStr += `.${microStr}`;
+    }
     const datetimeLiteral = LiteralExpr.string(datetimeStr);
 
     // In Python, datetime.datetime(2020, 1, 1) has no tzinfo (naive datetime).
