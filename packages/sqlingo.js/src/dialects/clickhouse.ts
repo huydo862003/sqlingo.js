@@ -623,25 +623,25 @@ class ClickHouseParser extends Parser {
       COSINEDISTANCE: (args: unknown[]) => CosineDistanceExpr.fromArgList(args),
       VERSION: (args: unknown[]) => CurrentVersionExpr.fromArgList(args),
       DATE_ADD: buildDateDelta(DateAddExpr, undefined, {
-        defaultUnit: undefined,
+        defaultUnit: null,
       }),
       DATEADD: buildDateDelta(DateAddExpr, undefined, {
-        defaultUnit: undefined,
+        defaultUnit: null,
       }),
       DATE_DIFF: buildDateDelta(DateDiffExpr, undefined, {
-        defaultUnit: undefined,
+        defaultUnit: null,
         supportsTimezone: true,
       }),
       DATEDIFF: buildDateDelta(DateDiffExpr, undefined, {
-        defaultUnit: undefined,
+        defaultUnit: null,
         supportsTimezone: true,
       }),
       DATE_FORMAT: buildDateTimeFormat(TimeToStrExpr),
       DATE_SUB: buildDateDelta(DateSubExpr, undefined, {
-        defaultUnit: undefined,
+        defaultUnit: null,
       }),
       DATESUB: buildDateDelta(DateSubExpr, undefined, {
-        defaultUnit: undefined,
+        defaultUnit: null,
       }),
       FORMATDATETIME: buildDateTimeFormat(TimeToStrExpr),
       HAS: (args: unknown[]) => ArrayContainsExpr.fromArgList(args),
@@ -665,16 +665,16 @@ class ClickHouseParser extends Parser {
       RANDCANONICAL: (args: unknown[]) => RandExpr.fromArgList(args),
       STR_TO_DATE: buildStrToDate,
       TIMESTAMP_SUB: buildDateDelta(TimestampSubExpr, undefined, {
-        defaultUnit: undefined,
+        defaultUnit: null,
       }),
       TIMESTAMPSUB: buildDateDelta(TimestampSubExpr, undefined, {
-        defaultUnit: undefined,
+        defaultUnit: null,
       }),
       TIMESTAMP_ADD: buildDateDelta(TimestampAddExpr, undefined, {
-        defaultUnit: undefined,
+        defaultUnit: null,
       }),
       TIMESTAMPADD: buildDateDelta(TimestampAddExpr, undefined, {
-        defaultUnit: undefined,
+        defaultUnit: null,
       }),
       TOMONDAY: buildTimestampTrunc('WEEK'),
       UNIQ: (args: unknown[]) => ApproxDistinctExpr.fromArgList(args),

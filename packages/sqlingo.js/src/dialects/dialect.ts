@@ -2194,15 +2194,16 @@ export function buildDateDelta<T extends Expression> (
   ExpClass: new (args: any) => T,
   unitMapping?: Record<string, string>,
   options: {
-    defaultUnit?: string;
+    defaultUnit?: string | null;
     supportsTimezone?: boolean;
   } = {},
 
 ): (args: any) => T {
   const {
-    defaultUnit = 'DAY',
+    defaultUnit: defaultUnitRaw,
     supportsTimezone = false,
   } = options;
+  const defaultUnit = defaultUnitRaw === undefined ? 'DAY' : defaultUnitRaw;
 
   return (args: any) => {
     const unitBased = 3 <= args.length;
