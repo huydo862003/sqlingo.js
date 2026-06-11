@@ -995,15 +995,15 @@ class ClickHouseParser extends Parser {
 
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([
-      ...Parser.TABLE_ALIAS_TOKENS,
-      TokenType.ANY,
-      TokenType.ARRAY,
-      TokenType.FINAL,
-      TokenType.FORMAT,
-      TokenType.SETTINGS,
-      TokenType.STRAIGHT_JOIN,
-    ]);
+    return new Set(
+      [...Parser.TABLE_ALIAS_TOKENS].filter((t) =>
+        t !== TokenType.ANY &&
+        t !== TokenType.ARRAY &&
+        t !== TokenType.FINAL &&
+        t !== TokenType.FORMAT &&
+        t !== TokenType.SETTINGS
+      ),
+    );
   }
 
   @cache
