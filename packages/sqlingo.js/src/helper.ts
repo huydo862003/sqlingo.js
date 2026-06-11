@@ -931,7 +931,7 @@ export function applyIndexOffset (
   const exprType = expression.type as DataTypeExpr | undefined;
 
   if (exprType?.args.this && DataTypeExpr.INTEGER_TYPES?.has(exprType.args.this as DataTypeExprKind)) {
-    // Apply offset: expression + offset
+    console.info(`Applying array index offset (${offset})`);
     const offsetExpr = new AddExpr({
       this: expression,
       expression: literal(offset),
