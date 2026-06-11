@@ -5937,10 +5937,10 @@ SINGLE = TRUE`,
     });
 
     expect(ast).toBeInstanceOf(PutExpr);
-    expect(ast.args.this).toEqual(LiteralExpr.string('file://my file.txt'));
-    expect(ast.getArgKey('target')).toEqual(new VarExpr({
+    expect(ast.args.this.equals(LiteralExpr.string('file://my file.txt'))).toBe(true);
+    expect((ast.getArgKey('target') as Expression).equals(new VarExpr({
       this: '\'@s1/my folder\'',
-    }));
+    }))).toBe(true);
     expect(ast.sql({
       dialect: 'snowflake',
     })).toBe('PUT \'file://my file.txt\' \'@s1/my folder\'');
@@ -5950,10 +5950,10 @@ SINGLE = TRUE`,
       read: 'snowflake',
     });
     expect(ast).toBeInstanceOf(PutExpr);
-    expect(ast.args.this).toEqual(LiteralExpr.string('file:///tmp/my.txt'));
-    expect(ast.getArgKey('target')).toEqual(new VarExpr({
+    expect(ast.args.this.equals(LiteralExpr.string('file:///tmp/my.txt'))).toBe(true);
+    expect((ast.getArgKey('target') as Expression).equals(new VarExpr({
       this: '@stage1/folder',
-    }));
+    }))).toBe(true);
     const properties = ast.getArgKey('properties') as any;
 
     const propsDict: Record<string, unknown> = {};
@@ -5995,13 +5995,13 @@ SINGLE = TRUE`,
     });
 
     expect(ast).toBeInstanceOf(GetExpr);
-    expect(ast.getArgKey('target')).toEqual(new VarExpr({
+    expect((ast.getArgKey('target') as Expression).equals(new VarExpr({
       this: '\'@s1/my folder\'',
-    }));
-    expect(ast.args.this).toEqual(new LiteralExpr({
+    }))).toBe(true);
+    expect(ast.args.this.equals(new LiteralExpr({
       this: 'file://my file.txt',
       isString: true,
-    }));
+    }))).toBe(true);
     expect(ast.sql({
       dialect: 'snowflake',
     })).toBe('GET \'@s1/my folder\' \'file://my file.txt\'');
@@ -6011,13 +6011,13 @@ SINGLE = TRUE`,
       read: 'snowflake',
     });
     expect(ast).toBeInstanceOf(GetExpr);
-    expect(ast.getArgKey('target')).toEqual(new VarExpr({
+    expect((ast.getArgKey('target') as Expression).equals(new VarExpr({
       this: '@stage1/folder',
-    }));
-    expect(ast.args.this).toEqual(new LiteralExpr({
+    }))).toBe(true);
+    expect(ast.args.this.equals(new LiteralExpr({
       this: 'file:///tmp/my.txt',
       isString: true,
-    }));
+    }))).toBe(true);
     const properties = ast.getArgKey('properties') as Expression;
     const propsDict: Record<string, string> = {};
 
@@ -6087,7 +6087,7 @@ SINGLE = TRUE`,
       'ALTER SESSION SET autocommit = FALSE, QUERY_TAG = \'qtag\', JSON_INDENT = 1',
     );
 
-    expect(expr.find(AlterSessionExpr)).toEqual(new AlterSessionExpr({
+    expect(expr.find(AlterSessionExpr)!.equals(new AlterSessionExpr({
       expressions: [
         new SetItemExpr(
           {
@@ -6125,7 +6125,7 @@ SINGLE = TRUE`,
             this: new EqExpr({
               this: new ColumnExpr({
                 this: new IdentifierExpr({
-                  this: 'JSON_IDENT',
+                  this: 'JSON_INDENT',
                   quoted: false,
                 }),
               }),
@@ -6138,13 +6138,11 @@ SINGLE = TRUE`,
         ),
       ],
       unset: false,
-    }));
-    // Complex expression tree comparison - needs manual conversion
-    expect(expr.find(AlterSessionExpr)).toBeDefined();
+    }))).toBe(true);
 
     expr = this.validateIdentity('ALTER SESSION UNSET autocommit, QUERY_TAG');
 
-    expect(expr.find(AlterSessionExpr)).toEqual(new AlterSessionExpr({
+    expect(expr.find(AlterSessionExpr)!.equals(new AlterSessionExpr({
       expressions: [
         new SetItemExpr({
           this: new IdentifierExpr({
@@ -6160,8 +6158,7 @@ SINGLE = TRUE`,
         }),
       ],
       unset: true,
-    }));
-    expect(expr.find(AlterSessionExpr)).toBeDefined();
+    }))).toBe(true);
 
   }
 
@@ -6293,9 +6290,9 @@ SINGLE = TRUE`,
   testParameter () {
     const expr = this.validateIdentity('SELECT :1');
 
-    expect(expr.find(PlaceholderExpr)).toEqual(new PlaceholderExpr({
+    expect(expr.find(PlaceholderExpr)!.equals(new PlaceholderExpr({
       this: '1',
-    }));
+    }))).toBe(true);
     this.validateIdentity('SELECT :1, :2');
     this.validateIdentity('SELECT :1 + :2');
 
