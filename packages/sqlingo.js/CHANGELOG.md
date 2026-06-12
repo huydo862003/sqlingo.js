@@ -5,7 +5,6 @@
 ### Minor Changes
 
 - ec190bb: Add missing snowflake, presto, clickhouse tests and fix various bugs related to them (undiscovered before). The work is still in progress as not 100% tests are passing yet
-- 7ad6584: Add upstream dialect tests for ClickHouse, Presto, and Snowflake & enable TypeScript typechecking and ESLint linting for test files
 - 7ad6584: Annotate FORMAT_STRING(expr) for Spark ([upstream commit](https://github.com/tobymao/sqlglot/commit/1418494f777358f4b6bd1e05ee5cb02591d92c74))
 - 7ad6584: Add numeric TRUNC output for additional dialects: ClickHouse, Presto, Hive, SQLite ([upstream commit](https://github.com/tobymao/sqlglot/commit/ff1fd521147cb66acc36f2da7b1590d9e7f8140f))
 
