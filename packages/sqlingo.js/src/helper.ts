@@ -426,6 +426,8 @@ export function findNewName (taken: Iterable<string>, base: string): string {
  *
  */
 export function isInt (text: string): boolean {
+  if (!text) return false;
+
   return isType(text, (s) => {
     const num = Number(s);
 
@@ -931,7 +933,7 @@ export function applyIndexOffset (
   const exprType = expression.type as DataTypeExpr | undefined;
 
   if (exprType?.args.this && DataTypeExpr.INTEGER_TYPES?.has(exprType.args.this as DataTypeExprKind)) {
-    // Apply offset: expression + offset
+    console.info(`Applying array index offset (${offset})`);
     const offsetExpr = new AddExpr({
       this: expression,
       expression: literal(offset),

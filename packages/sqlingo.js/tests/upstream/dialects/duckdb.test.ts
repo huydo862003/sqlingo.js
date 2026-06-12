@@ -3,6 +3,7 @@ import {
 } from 'vitest';
 import {
   parseOne,
+  UnsupportedError,
 } from '../../../src/index';
 import {
   TruncExpr, ArrayOverlapsExpr,
@@ -10,7 +11,7 @@ import {
   AnonymousExpr,
 } from '../../../src/expressions';
 import {
-  Validator, UnsupportedError,
+  Validator,
 } from './validator';
 
 class TestDuckDB extends Validator {
@@ -179,6 +180,7 @@ class TestDuckDB extends Validator {
       'ANTI',
     ] as const) {
       const exists = joinType === 'SEMI' ? 'EXISTS' : 'NOT EXISTS';
+
       this.validateAll(`SELECT * FROM t1 ${joinType} JOIN t2 ON t1.x = t2.x`, {
         write: {
           bigquery: `SELECT * FROM t1 WHERE ${exists}(SELECT 1 FROM t2 WHERE t1.x = t2.x)`,
@@ -2017,6 +2019,7 @@ class TestDuckDB extends Validator {
 }
 
 const t = new TestDuckDB();
+
 describe('TestDuckDB', () => {
   test('testDuckdb', () => t.testDuckdb());
   test('testArrayIndex', () => t.testArrayIndex());

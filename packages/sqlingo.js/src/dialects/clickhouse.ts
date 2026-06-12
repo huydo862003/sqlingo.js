@@ -94,6 +94,7 @@ import {
   StrToDateExpr,
   DataTypeExpr,
   LiteralExpr,
+  PowExpr,
   DataTypeParamExpr,
   toIdentifier,
   TupleExpr,
@@ -137,8 +138,6 @@ import {
   NullifExpr,
   MedianExpr,
   JsonExtractExpr,
-  AndExpr,
-  OrExpr,
   IfExpr,
   PlaceholderExpr,
   PropertyEqExpr,
@@ -155,6 +154,8 @@ import {
   SelectExpr,
   FetchExpr,
   paren,
+  and,
+  or,
   QueryExpr,
   SchemaExpr,
   JoinExprKind,
@@ -243,10 +244,10 @@ export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): str
     cast(
       new DivExpr({
         this: timestamp,
-        expression: this.func('POW', [
-          '10',
-          scale,
-        ]),
+        expression: new PowExpr({
+          this: LiteralExpr.number(10),
+          expression: scale,
+        }),
       }),
       DataTypeExprKind.BIGINT,
     ),
@@ -348,11 +349,9 @@ function timeStrToTimeSql (this: Generator, expression: TimeStrToTimeExpr): stri
       ].join('');
     }
 
-    // Convert to ISO format without timezone for Clickhouse
-    // We use Date parsing; replace ' ' with 'T' for standard ISO compatibility if needed
-    const date = new Date(tsString.replace(' ', 'T'));
-    const tsWithoutTz = date.toISOString().replace('T', ' ')
-      .split('.')[0];
+    // Strip timezone offset without converting to UTC, mirroring Python's
+    // datetime.fromisoformat(ts).replace(tzinfo=None).isoformat(sep=" ")
+    const tsWithoutTz = tsString.replace(/([+-]\d{2}:\d{2}|Z)$/, '').replace('T', ' ');
 
     ts = LiteralExpr.string(tsWithoutTz);
   }
@@ -911,24 +910,14 @@ class ClickHouseParser extends Parser {
         }));
       },
       AND: function (this: Parser) {
-        const args = this.parseFunctionArgs({
+        return and(this.parseFunctionArgs({
           alias: false,
-        });
-
-        return new AndExpr({
-          this: args[0],
-          expression: args[1],
-        });
+        })) as Expression;
       },
       OR: function (this: Parser) {
-        const args = this.parseFunctionArgs({
+        return or(this.parseFunctionArgs({
           alias: false,
-        });
-
-        return new OrExpr({
-          this: args[0],
-          expression: args[1],
-        });
+        })) as Expression;
       },
     };
 
@@ -995,15 +984,14 @@ class ClickHouseParser extends Parser {
 
   @cache
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
-    return new Set([
-      ...Parser.TABLE_ALIAS_TOKENS,
-      TokenType.ANY,
-      TokenType.ARRAY,
-      TokenType.FINAL,
-      TokenType.FORMAT,
-      TokenType.SETTINGS,
-      TokenType.STRAIGHT_JOIN,
-    ]);
+    return new Set(
+      [...Parser.TABLE_ALIAS_TOKENS].filter((t) =>
+        t !== TokenType.ANY
+        && t !== TokenType.ARRAY
+        && t !== TokenType.FINAL
+        && t !== TokenType.FORMAT
+        && t !== TokenType.SETTINGS),
+    );
   }
 
   @cache
@@ -1995,7 +1983,6 @@ export class ClickHouseGenerator extends Generator {
   }
 
   @cache
-
   static get ORIGINAL_TRANSFORMS (): Map<typeof Expression, (this: Generator, e: any) => string> {
 
     return new Map<typeof Expression, (this: Generator, e: any) => string>([
@@ -2560,7 +2547,7 @@ export class ClickHouseGenerator extends Generator {
     });
   }
 
-  regexpILikeSql (expression: RegexpILikeExpr): string {
+  regexpIlikeSql (expression: RegexpILikeExpr): string {
   // Manually add a flag to make the search case-insensitive
     const regex = this.func('CONCAT', [
       '\'(?i)\'',
@@ -2649,7 +2636,7 @@ export class ClickHouseGenerator extends Generator {
     const Constructor = this._constructor as typeof ClickHouseGenerator;
     const postNameLocation = locations.get(PropertiesLocation.POST_NAME);
 
-    if (Constructor.ON_CLUSTER_TARGETS.has(expression.kind as string) && postNameLocation) {
+    if (Constructor.ON_CLUSTER_TARGETS.has((expression.kind as string)?.toUpperCase()) && postNameLocation) {
       const thisNode = expression.args.this instanceof SchemaExpr ? expression.args.this : expression;
       const thisName = this.sql(thisNode, 'this');
       const thisProperties = postNameLocation.map((prop) => this.sql(prop)).join(' ');
@@ -2682,7 +2669,7 @@ export class ClickHouseGenerator extends Generator {
     return `${createSql}${commentSql}`;
   }
 
-  prewhereSql (expression: PreWhereExpr): string {
+  preWhereSql (expression: PreWhereExpr): string {
     const thisSql = this.indent(this.sql(expression, 'this'));
 
     return `${this.seg('PREWHERE')}${this.sep()}${thisSql}`;
@@ -2811,12 +2798,9 @@ export class ClickHouse extends Dialect {
     return NormalizationStrategy.CASE_SENSITIVE;
   }
 
-  @cache
-  static get UNESCAPED_SEQUENCES () {
-    return {
-      '\\0': '\0',
-    };
-  }
+  static ORIGINAL_UNESCAPED_SEQUENCES = {
+    '\\0': '\0',
+  };
 
   @cache
   static get CREATABLE_KIND_MAPPING () {

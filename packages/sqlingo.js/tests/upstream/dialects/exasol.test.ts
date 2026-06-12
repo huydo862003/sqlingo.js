@@ -565,6 +565,7 @@ class TestExasol extends Validator {
       'MINUTE',
       'YEAR',
     ];
+
     for (const unit of units) {
       this.validateAll(
         `SELECT TRUNC(CAST('2006-12-31' AS DATE), '${unit}') AS TRUNC`,
@@ -609,6 +610,7 @@ class TestExasol extends Validator {
       'SECOND',
       'WEEK',
     ];
+
     for (const unit of DATE_UNITS) {
       this.validateAll(
         `SELECT ADD_${unit}S(DATE '2000-02-28', 1)`,
@@ -955,6 +957,7 @@ class TestExasol extends Validator {
 }
 
 const t = new TestExasol();
+
 describe('TestExasol', () => {
   test('testExasol', () => t.testExasol());
   test('testQualifyUnscopedStar', () => t.testQualifyUnscopedStar());

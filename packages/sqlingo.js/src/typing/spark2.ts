@@ -104,6 +104,10 @@ export class Spark2Typing {
       annotator: (s: TypeAnnotator, e: ConcatExpr) => annotateBySimilarArgs.call(s, e, ['expressions'], DataTypeExprKind.TEXT),
     });
 
+    map.set(FormatExpr, {
+      returns: DataTypeExprKind.VARCHAR,
+    });
+
     map.set(PadExpr, {
       annotator: (s: TypeAnnotator, e: PadExpr) => annotateBySimilarArgs.call(s, e, [
         'this',

@@ -67,6 +67,7 @@ import {
   DatetimeSubExpr,
   DateFromUnixDateExpr,
   GenerateSeriesExpr,
+  DivExpr,
   GroupConcatExpr,
   IfExpr,
   IntDivExpr,
@@ -142,7 +143,6 @@ import {
   ContainsExpr,
   JsonStripNullsExpr,
   cast,
-  func,
   KwargExpr,
   var_,
   LowerExpr,
@@ -185,6 +185,7 @@ import {
   NullExpr,
   UpdateExpr,
   DataTypeExpr,
+  PowExpr,
 } from '../expressions';
 import {
   annotateTypes, TypeAnnotator,
@@ -375,13 +376,13 @@ export function pushdownCteColumnNames (expression: Expression): Expression {
     return expression;
   }
 
-  const alias = expression.args.alias;
+  const cteAlias = expression.args.alias;
 
-  if (!alias) {
+  if (!cteAlias) {
     return expression;
   }
 
-  const columns = alias.getArgKey('columns');
+  const columns = cteAlias.getArgKey('columns');
 
   if (
     !Array.isArray(columns)
@@ -405,30 +406,27 @@ export function pushdownCteColumnNames (expression: Expression): Expression {
   }
 
   // Remove the columns from the CTE definition: WITH x (a, b) -> WITH x
-  alias.setArgKey('columns', undefined);
+  cteAlias.setArgKey('columns', undefined);
 
   const selects = cteQuery.selects;
 
-  // Iterate through the aliases and the inner SELECTs simultaneously
   for (let i = 0; i < columns.length; i++) {
     if (selects.length <= i) break;
 
     const name = columns[i];
     const toReplace = selects[i];
-    let selectContent = toReplace;
+    let select: Expression = toReplace;
 
-    if (toReplace instanceof AliasExpr && toReplace.args.this) {
-      selectContent = toReplace.args.this;
+    if (toReplace instanceof AliasExpr) {
+      select = toReplace.args.this as Expression;
     }
 
-    // Inner aliases are shadowed by the CTE column names, so we replace the
-    // entire projection with a new AliasExpr using the CTE's column name
-    toReplace.replace(
-      new AliasExpr({
-        this: selectContent,
-        alias: narrowInstanceOf(name, 'string', Expression),
-      }),
-    );
+    // Inner aliases are shadowed by the CTE column names
+    const newAlias = alias(select, typeof name !== 'object' ? name : name instanceof IdentifierExpr ? name : toIdentifier(name.name), {
+      copy: false,
+    });
+
+    cteQuery.setArgKey('expressions', newAlias, i);
   }
 
   return expression;
@@ -802,9 +800,12 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
     return this.func('TIMESTAMP_MICROS', [timestamp]);
   }
 
-  const powExpr = func('POW', literal('10'), scale);
+  const powExpr = new PowExpr({
+    this: LiteralExpr.number(10),
+    expression: scale,
+  });
   const unixSeconds = cast(
-    new IntDivExpr({
+    new DivExpr({
       this: timestamp,
       expression: powExpr,
     }),

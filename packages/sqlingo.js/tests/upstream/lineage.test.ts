@@ -31,12 +31,14 @@ class TestLineage {
         },
       },
     );
+
     expect(node.source.sql()).toBe(
       'SELECT z.a AS a FROM (SELECT y.a AS a FROM (SELECT x.a AS a FROM x AS x) AS y /* source: y */) AS z /* source: z */',
     );
     expect(node.sourceName).toBe('');
 
     let downstream = node.downstream[0];
+
     expect(downstream.source.sql()).toBe(
       'SELECT y.a AS a FROM (SELECT x.a AS a FROM x AS x) AS y /* source: y */',
     );
@@ -47,6 +49,7 @@ class TestLineage {
     expect(downstream.sourceName).toBe('y');
 
     const graphHtml = node.toHtml();
+
     expect(graphHtml.toHtml().length).toBeGreaterThan(1000);
 
     for (const edge of graphHtml.edges) {
@@ -57,6 +60,7 @@ class TestLineage {
     // test that sql is not modified
     const sql = 'SELECT a FROM x';
     const ast = parseOne(sql);
+
     lineage('a', ast);
     expect(ast.sql()).toBe(sql);
 
@@ -64,6 +68,7 @@ class TestLineage {
     const ast2 = parseOne(sql);
     const sourceStr = 'SELECT a FROM y';
     const source = parseOne(sourceStr) as SelectExpr;
+
     lineage('a', ast2, {
       sources: {
         x: source,
@@ -87,6 +92,7 @@ class TestLineage {
         },
       },
     );
+
     expect(node.source.sql()).toBe(
       'WITH z AS (SELECT y.a AS a FROM (SELECT x.a AS a FROM x AS x) AS y /* source: y */) SELECT z.a AS a FROM z AS z',
     );
@@ -94,6 +100,7 @@ class TestLineage {
     expect(node.referenceNodeName).toBe('');
 
     let downstream = node.downstream[0];
+
     expect(downstream.source.sql()).toBe(
       'SELECT y.a AS a FROM (SELECT x.a AS a FROM x AS x) AS y /* source: y */',
     );
@@ -121,6 +128,7 @@ class TestLineage {
         },
       },
     );
+
     expect(node.source.sql()).toBe(
       'SELECT z.a AS a FROM (WITH y AS (SELECT x.a AS a FROM x AS x) SELECT y.a AS a FROM y AS y) AS z /* source: z */',
     );
@@ -128,6 +136,7 @@ class TestLineage {
     expect(node.referenceNodeName).toBe('');
 
     let downstream = node.downstream[0];
+
     expect(downstream.source.sql()).toBe(
       'WITH y AS (SELECT x.a AS a FROM x AS x) SELECT y.a AS a FROM y AS y',
     );
@@ -145,6 +154,7 @@ class TestLineage {
       'a',
       'WITH y AS (SELECT * FROM x) SELECT a FROM y',
     );
+
     expect(node.source.sql()).toBe(
       'WITH y AS (SELECT * FROM x AS x) SELECT y.a AS a FROM y AS y',
     );
@@ -152,6 +162,7 @@ class TestLineage {
     expect(node.referenceNodeName).toBe('');
 
     const downstream = node.downstream[0];
+
     expect(downstream.source.sql()).toBe('SELECT * FROM x AS x');
     expect(downstream.sourceName).toBe('');
     expect(downstream.referenceNodeName).toBe('y');
@@ -162,6 +173,7 @@ class TestLineage {
       '*',
       'SELECT * from x JOIN y USING (uid)',
     );
+
     expect(node.source.sql()).toBe(
       'SELECT * FROM x AS x JOIN y AS y ON x.uid = y.uid',
     );
@@ -170,10 +182,12 @@ class TestLineage {
     expect(node.downstream.length).toBe(2);
 
     const downstream0 = node.downstream[0];
+
     expect(downstream0.expression.sql()).toBe('x AS x');
     expect(downstream0.name).toBe('*');
 
     const downstream1 = node.downstream[1];
+
     expect(downstream1.expression.sql()).toBe('y AS y');
     expect(downstream1.name).toBe('*');
   }
@@ -183,6 +197,7 @@ class TestLineage {
       '*',
       'SELECT x.* from x JOIN y USING (uid)',
     );
+
     expect(node.source.sql()).toBe(
       'SELECT x.* FROM x AS x JOIN y AS y ON x.uid = y.uid',
     );
@@ -191,6 +206,7 @@ class TestLineage {
     expect(node.downstream.length).toBe(1);
 
     const downstream = node.downstream[0];
+
     expect(downstream.expression.sql()).toBe('x AS x');
     expect(downstream.name).toBe('x.*');
   }
@@ -200,6 +216,7 @@ class TestLineage {
       'a',
       'WITH y AS (SELECT * FROM x) SELECT a FROM y JOIN z USING (uid)',
     );
+
     expect(node.source.sql()).toBe(
       'WITH y AS (SELECT * FROM x AS x) SELECT a AS a FROM y AS y JOIN z AS z ON y.uid = z.uid',
     );
@@ -207,6 +224,7 @@ class TestLineage {
     expect(node.referenceNodeName).toBe('');
 
     const downstream = node.downstream[0];
+
     expect(downstream.source.sql()).toBe('?');
     expect(downstream.sourceName).toBe('');
     expect(downstream.referenceNodeName).toBe('');
@@ -222,12 +240,14 @@ class TestLineage {
         },
       },
     );
+
     expect(node.source.sql()).toBe(
       'SELECT y.a AS a FROM (SELECT t.a AS a FROM (VALUES (1), (2)) AS t(a)) AS y /* source: y */',
     );
     expect(node.sourceName).toBe('');
 
     let downstream = node.downstream[0];
+
     expect(downstream.source.sql()).toBe('SELECT t.a AS a FROM (VALUES (1), (2)) AS t(a)');
     expect(downstream.expression.sql()).toBe('t.a AS a');
     expect(downstream.sourceName).toBe('y');
@@ -266,6 +286,7 @@ class TestLineage {
     expect(node.sourceName).toBe('');
 
     let downstream = node.downstream[0];
+
     expect(downstream.source.sql()).toBe('SELECT t1.c2 AS c2 FROM t1 AS t1');
     expect(downstream.expression.sql()).toBe('t1.c2 AS c2');
     expect(downstream.sourceName).toBe('');
@@ -288,6 +309,7 @@ class TestLineage {
       'x',
       'SELECT ax AS x FROM a UNION SELECT bx FROM b UNION SELECT cx FROM c',
     );
+
     expect(node.downstream.length).toBe(3);
 
     node = lineage(
@@ -305,9 +327,11 @@ class TestLineage {
         dialect: 'snowflake',
       },
     );
+
     expect(node.name).toBe('VALUE');
 
     let downstream = node.downstream[0];
+
     expect(downstream.name).toBe('FLATTENED.VALUE');
     expect(downstream.source.sql({
       dialect: 'snowflake',
@@ -347,6 +371,7 @@ class TestLineage {
     expect(node.name).toBe('FIELD');
 
     let downstream2 = node.downstream[0];
+
     expect(downstream2.name).toBe('FLATTENED.VALUE');
     expect(downstream2.source.sql({
       dialect: 'snowflake',
@@ -390,6 +415,7 @@ class TestLineage {
       'output',
       'SELECT (SELECT max(t3.my_column) my_column FROM foo t3) AS output FROM table3',
     );
+
     expect(node.name).toBe('output');
     node = node.downstream[0];
     expect(node.name).toBe('my_column');
@@ -401,6 +427,7 @@ class TestLineage {
       'y',
       'SELECT SUM((SELECT max(a) a from x) + (SELECT min(b) b from x) + c) AS y FROM x',
     );
+
     expect(node2.name).toBe('y');
     expect(node2.downstream.length).toBe(3);
     expect(node2.downstream[0].name).toBe('a');
@@ -411,6 +438,7 @@ class TestLineage {
       'x',
       'WITH cte AS (SELECT a, b FROM z) SELECT sum(SELECT a FROM cte) AS x, (SELECT b FROM cte) as y FROM cte',
     );
+
     expect(node3.name).toBe('x');
     expect(node3.downstream.length).toBe(1);
     node3 = node3.downstream[0];
@@ -445,6 +473,7 @@ class TestLineage {
       )
       `,
     );
+
     expect(node4.name).toBe('a');
     expect(node4.downstream.length).toBe(2);
     const sorted = [...node4.downstream].sort((x, y) => x.name.localeCompare(y.name));
@@ -452,12 +481,14 @@ class TestLineage {
       a,
       b,
     ] = sorted;
+
     expect(a.name).toBe('bar.a');
     expect(a.downstream.length).toBe(1);
     expect(b.name).toBe('baz.b');
     expect(b.downstream).toEqual([]);
 
     const nodeA = a.downstream[0];
+
     expect(nodeA.name).toBe('foo.a');
 
     // Select from derived table
@@ -465,6 +496,7 @@ class TestLineage {
       'a',
       'SELECT a FROM (SELECT a FROM x) subquery',
     );
+
     expect(node5.name).toBe('a');
     expect(node5.downstream.length).toBe(1);
     node5 = node5.downstream[0];
@@ -475,6 +507,7 @@ class TestLineage {
       'a',
       'SELECT a FROM (SELECT a FROM x)',
     );
+
     expect(node6.name).toBe('a');
     expect(node6.downstream.length).toBe(1);
     node6 = node6.downstream[0];
@@ -501,10 +534,12 @@ class TestLineage {
     expect(node.name).toBe('x');
 
     const downstreamA = node.downstream[0];
+
     expect(downstreamA.name).toBe('0');
     expect(downstreamA.source.sql()).toBe('SELECT * FROM catalog.db.table_a AS table_a');
     expect(downstreamA.referenceNodeName).toBe('dataset');
     const downstreamB = node.downstream[1];
+
     expect(downstreamB.name).toBe('0');
     expect(downstreamB.source.sql()).toBe('SELECT * FROM catalog.db.table_b AS table_b');
     expect(downstreamB.referenceNodeName).toBe('dataset');
@@ -533,11 +568,13 @@ class TestLineage {
     expect(node.name).toBe('x');
 
     const downstreamA = node.downstream[0];
+
     expect(downstreamA.name).toBe('0');
     expect(downstreamA.sourceName).toBe('dataset');
     expect(downstreamA.source.sql()).toBe('SELECT * FROM catalog.db.table_a AS table_a');
     expect(downstreamA.referenceNodeName).toBe('');
     const downstreamB = node.downstream[1];
+
     expect(downstreamB.name).toBe('0');
     expect(downstreamB.sourceName).toBe('dataset');
     expect(downstreamB.source.sql()).toBe('SELECT * FROM catalog.db.table_b AS table_b');
@@ -550,6 +587,7 @@ class TestLineage {
     expect(node.name).toBe('x');
 
     let downstream = node.downstream[0];
+
     expect(downstream.name).toBe('_0.x');
     expect(downstream.source.sql()).toBe('SELECT * FROM table_a AS table_a');
 
@@ -563,6 +601,7 @@ class TestLineage {
       'b',
       'with _data as (select [struct(1 as a, 2 as b)] as col) select b from _data cross join unnest(col)',
     );
+
     expect(node.name).toBe('b');
   }
 
@@ -570,6 +609,7 @@ class TestLineage {
     const node = lineage('a', 'WITH x AS (SELECT 1 a) SELECT a FROM x', {
       dialect: 'snowflake',
     });
+
     expect(node.name).toBe('A');
 
     expect(() => lineage('"a"', 'WITH x AS (SELECT 1 a) SELECT a FROM x', {
@@ -601,6 +641,7 @@ class TestLineage {
     })).toBe('SUBQ.Y AS Y');
 
     const downstream = node.downstream[0];
+
     expect(downstream.name).toBe('SUBQ.Y');
     expect(downstream.expression.sql({
       dialect: 'oracle',
@@ -625,6 +666,7 @@ class TestLineage {
     );
 
     const downstream = node.downstream[0];
+
     expect(downstream.name).toBe('z.a');
     expect(downstream.source.sql()).toBe('SELECT y.a AS a, y.b AS b, y.c AS c FROM y AS y');
   }
@@ -807,6 +849,7 @@ class TestLineage {
       dialect: 'duckdb',
       schema,
     });
+
     expect(node.downstream[0].name).toBe('cte.product_type');
     expect(node.downstream[0].downstream[0].name).toBe('_0.product_type');
     expect(node.downstream[0].downstream[0].downstream[0].name).toBe('loan_ledger.product_type');
@@ -878,6 +921,7 @@ class TestLineage {
 }
 
 const t = new TestLineage();
+
 describe('TestLineage', () => {
   test('lineage', () => t.testLineage());
   test('testLineageSqlWithCte', () => t.testLineageSqlWithCte());

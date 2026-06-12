@@ -31,7 +31,7 @@ import {
   EnginePropertyExpr,
   Expression,
   FileFormatPropertyExpr, FormatExpr, FromExpr, FromTimeZoneExpr, ILikeExpr, JsonExtractExpr, JsonExtractScalarExpr, LeftExpr, LiteralExpr, LogicalAndExpr, LogicalOrExpr, MapExpr, MonthsBetweenExpr,
-  PivotExpr, PropertiesLocation, ReduceExpr, RegexpLikeExpr, RegexpReplaceExpr, RightExpr, select, SelectExpr, Sha2DigestExpr, StrToDateExpr, StrToTimeExpr,
+  PivotExpr, PowExpr, PropertiesLocation, ReduceExpr, RegexpLikeExpr, RegexpReplaceExpr, RightExpr, select, SelectExpr, Sha2DigestExpr, StrToDateExpr, StrToTimeExpr,
   StrToUnixExpr, TimestampTruncExpr, TsOrDsToDateExpr, UnixToTimeExpr,
   var_,
   VariancePopExpr,
@@ -139,10 +139,10 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
 
   const unixSeconds = new DivExpr({
     this: timestamp,
-    expression: this.func('POW', [
-      LiteralExpr.number(10),
-      scale,
-    ]),
+    expression: new PowExpr({
+      this: LiteralExpr.number(10),
+      expression: scale,
+    }),
   });
 
   return this.func('TIMESTAMP_SECONDS', [unixSeconds]);
@@ -534,7 +534,7 @@ class Spark2Generator extends Hive.Generator {
       [
         DayOfWeekIsoExpr,
         function (this: Generator, e: DayOfWeekIsoExpr) {
-          return '(( ' + this.func('DAYOFWEEK', [e.args.this]) + ' % 7) + 1)';
+          return '((' + this.func('DAYOFWEEK', [e.args.this]) + ' % 7) + 1)';
         },
       ],
       [

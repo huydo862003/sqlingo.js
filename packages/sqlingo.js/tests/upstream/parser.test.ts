@@ -146,6 +146,7 @@ class TestParser {
 
   testColumn () {
     const columns = [...parseOne('select a, ARRAY[1] b, case when 1 then 1 end').findAll(ColumnExpr)];
+
     expect(columns.length).toBe(1);
     expect(parseOne('date').find(ColumnExpr)).not.toBeNull();
   }
@@ -158,12 +159,14 @@ class TestParser {
     const cast1 = parseOne('cast(x as struct<int>)');
     const cast1To = cast1.getArgKey('to') as DataTypeExpr;
     const cast1Exprs = cast1To.getArgKey('expressions') as Expression[];
+
     expect(cast1Exprs[0]).toBeInstanceOf(DataTypeExpr);
     expect(cast1.sql()).toBe('CAST(x AS STRUCT<INT>)');
 
     const cast2 = parseOne('cast(x as struct<varchar(10)>)');
     const cast2To = cast2.getArgKey('to') as DataTypeExpr;
     const cast2Exprs = cast2To.getArgKey('expressions') as Expression[];
+
     expect(cast2Exprs[0]).toBeInstanceOf(DataTypeExpr);
     expect(cast2.sql()).toBe('CAST(x AS STRUCT<VARCHAR(10)>)');
   }
@@ -175,8 +178,10 @@ class TestParser {
   testUnnest () {
     const unnestSql = 'UNNEST(foo)';
     const expr = parseOne(unnestSql);
+
     expect(expr).toBeInstanceOf(UnnestExpr);
     const unnest = expr as UnnestExpr;
+
     expect(Array.isArray(unnest.getArgKey('expressions'))).toBe(true);
     expect(expr.sql()).toBe(unnestSql);
   }
@@ -184,6 +189,7 @@ class TestParser {
   testUnnestProjection () {
     const expr = parseOne('SELECT foo IN UNNEST(bla) AS bar') as SelectExpr;
     const selects = expr.args.expressions ?? [];
+
     expect(selects[0]).toBeInstanceOf(AliasExpr);
     expect((selects[0] as AliasExpr).outputName).toBe('bar');
     expect(parseOne('select unnest(x)').find(UnnestExpr)).not.toBeNull();
@@ -195,6 +201,7 @@ class TestParser {
 
   testTable () {
     const tables = [...parseOne('select * from a, b.c, .d').findAll(TableExpr)].map((t) => t.sql());
+
     expect(new Set(tables)).toEqual(new Set([
       'a',
       'b.c',
@@ -210,14 +217,17 @@ class TestParser {
 
     const singleUnion = 'SELECT x FROM t1 UNION ALL SELECT x FROM t2 LIMIT 1';
     const expr = parseOne(singleUnion) as UnionExpr;
+
     expect(expr).toBeInstanceOf(UnionExpr);
     const limit = expr.getArgKey('limit');
+
     expect(limit).toBeInstanceOf(LimitExpr);
     expect(expr.sql()).toBe(singleUnion);
 
     const twoUnions =
       'SELECT x FROM t1 UNION ALL SELECT x FROM t2 UNION ALL SELECT x FROM t3 LIMIT 1';
     const expr2 = parseOne(twoUnions) as UnionExpr;
+
     expect(expr2).toBeInstanceOf(UnionExpr);
     expect(expr2.getArgKey('limit')).toBeInstanceOf(LimitExpr);
     expect(expr2.sql()).toBe(twoUnions);
@@ -225,6 +235,7 @@ class TestParser {
     const expr3 = parseOne(singleUnion, {
       read: 'clickhouse',
     }) as UnionExpr;
+
     expect(expr3.getArgKey('limit')).toBeUndefined();
     expect(expr3.sql({
       dialect: 'clickhouse',
@@ -244,6 +255,7 @@ class TestParser {
     const joins = (parseOne('select * from (select 1) x cross join y') as SelectExpr).getArgKey(
       'joins',
     ) as Expression[];
+
     expect(joins.length).toBe(1);
     expect(
       parseOne('SELECT * FROM x CROSS JOIN y, z LATERAL VIEW EXPLODE(y)').sql(),
@@ -256,6 +268,7 @@ class TestParser {
   testLambdaStruct () {
     const expression = parseOne('FILTER(a.b, x -> x.id = id)');
     const lambdaExpr = expression.getArgKey('expression') as Expression;
+
     expect(
       (lambdaExpr.getArgKey('this') as Expression).getArgKey('this'),
     ).toBeInstanceOf(DotExpr);
@@ -265,6 +278,7 @@ class TestParser {
 
   testTransactions () {
     const expr1 = parseOne('BEGIN TRANSACTION') as TransactionExpr;
+
     expect(expr1.getArgKey('this')).toBeUndefined();
     expect(expr1.getArgKey('modes')).toEqual([]);
     expect(expr1.sql()).toBe('BEGIN');
@@ -272,11 +286,13 @@ class TestParser {
     const expr2 = parseOne('START TRANSACTION', {
       read: 'mysql',
     }) as TransactionExpr;
+
     expect(expr2.getArgKey('this')).toBeUndefined();
     expect(expr2.getArgKey('modes')).toEqual([]);
     expect(expr2.sql()).toBe('BEGIN');
 
     const expr3 = parseOne('BEGIN DEFERRED TRANSACTION') as TransactionExpr;
+
     expect(expr3.getArgKey('this')).toBe('DEFERRED');
     expect(expr3.getArgKey('modes')).toEqual([]);
     expect(expr3.sql()).toBe('BEGIN');
@@ -284,8 +300,10 @@ class TestParser {
     const expr4 = parseOne('START TRANSACTION READ WRITE, ISOLATION LEVEL SERIALIZABLE', {
       read: 'presto',
     }) as TransactionExpr;
+
     expect(expr4.getArgKey('this')).toBeUndefined();
     const modes4 = expr4.getArgKey('modes') as string[];
+
     expect(modes4[0]).toBe('READ WRITE');
     expect(modes4[1]).toBe('ISOLATION LEVEL SERIALIZABLE');
     expect(expr4.sql()).toBe('BEGIN READ WRITE, ISOLATION LEVEL SERIALIZABLE');
@@ -293,6 +311,7 @@ class TestParser {
     const expr5 = parseOne('BEGIN', {
       read: 'bigquery',
     });
+
     expect(expr5).not.toBeInstanceOf(TransactionExpr);
     expect(expr5.getArgKey('expression')).toBeUndefined();
     expect(expr5.sql()).toBe('BEGIN');
@@ -305,6 +324,7 @@ class TestParser {
     `) as SelectExpr;
 
     const exprs = expression.args.expressions ?? [];
+
     expect(exprs[0].name).toBe('a');
     expect(exprs[1].name).toBe('b');
     expect((exprs[2] as AliasExpr).alias).toBe('c');
@@ -312,6 +332,7 @@ class TestParser {
     expect((exprs[4] as AliasExpr).alias).toBe('y|z\'');
     const fromExpr = expression.args.from as FromExpr;
     const tableExpr = fromExpr.getArgKey('this') as TableExpr;
+
     expect(tableExpr.name).toBe('z');
     expect((tableExpr.getArgKey('db') as IdentifierExpr).name).toBe('y');
   }
@@ -323,11 +344,14 @@ class TestParser {
 
     expect(expressions.length).toBe(2);
     const from0 = (expressions[0] as SelectExpr).args.from as FromExpr;
+
     expect(from0.name).toBe('a');
     const from1 = (expressions[1] as SelectExpr).args.from as FromExpr;
+
     expect(from1.name).toBe('b');
 
     const expressions2 = parse('SELECT 1; ; SELECT 2');
+
     expect(expressions2.length).toBe(3);
     expect(expressions2[1]).toBeUndefined();
   }
@@ -336,6 +360,7 @@ class TestParser {
     const ignore = new TestableParser({
       errorLevel: ErrorLevel.IGNORE,
     });
+
     expect(ignore.expression(HintExpr, {
       expressions: [],
     })).toBeInstanceOf(HintExpr);
@@ -348,6 +373,7 @@ class TestParser {
     const immediate = new TestableParser({
       errorLevel: ErrorLevel.RAISE,
     });
+
     expect(immediate.expression(HintExpr, {
       expressions: [],
     })).toBeInstanceOf(HintExpr);
@@ -355,6 +381,7 @@ class TestParser {
     const warn = new TestableParser({
       errorLevel: ErrorLevel.WARN,
     });
+
     warn.expression(HintExpr);
     expect(warn.getErrors().length).toBe(1);
   }
@@ -429,6 +456,7 @@ class TestParser {
       'comment1.3',
     ]);
     const exprs = expression.args.expressions ?? [];
+
     expect(exprs[0].comments).toEqual(['comment2']);
     expect(exprs[1].comments).toEqual(['comment3:testing']);
     expect(exprs[2].comments).toBeUndefined();
@@ -445,6 +473,7 @@ class TestParser {
     `) as SelectExpr;
 
     const exprs2 = expression2.args.expressions ?? [];
+
     expect(exprs2[0].comments).toEqual(['# Comment 1']);
     expect(exprs2[1].comments).toEqual(['# Comment 2']);
     expect(exprs2[2].comments).toEqual(['# Comment 3']);
@@ -614,6 +643,7 @@ class TestParser {
     expect(parseOne('map.x')).toBeInstanceOf(ColumnExpr);
     const castCharTo = parseOne('CAST(x AS CHAR(5))').getArgKey('to') as DataTypeExpr;
     const castCharExprs = castCharTo.getArgKey('expressions') as Expression[];
+
     expect(castCharExprs[0]).toBeInstanceOf(DataTypeParamExpr);
     expect(parseOne('1::int64', {
       dialect: 'bigquery',
@@ -624,15 +654,18 @@ class TestParser {
 
   testSetExpression () {
     const set_ = parseOne('SET');
+
     expect(set_.sql()).toBe('SET');
     expect(set_).toBeInstanceOf(SetExpr);
 
     const setSession = parseOne('SET SESSION x = 1') as SetExpr;
+
     expect(setSession.sql()).toBe('SET SESSION x = 1');
     expect(setSession).toBeInstanceOf(SetExpr);
 
     const setExprs = setSession.args.expressions ?? [];
     const setItem = setExprs[0] as SetItemExpr;
+
     expect(setItem).toBeInstanceOf(SetItemExpr);
     expect(setItem.getArgKey('this')).toBeInstanceOf(EqExpr);
     expect((setItem.getArgKey('this') as EqExpr).getArgKey('this')).toBeInstanceOf(ColumnExpr);
@@ -642,12 +675,14 @@ class TestParser {
     expect(setItem.getArgKey('kind')).toBe('SESSION');
 
     const setTo = parseOne('SET x TO 1');
+
     expect(setTo.sql()).toBe('SET x = 1');
     expect(setTo).toBeInstanceOf(SetExpr);
 
     const setAsCommand = parseOne('SET DEFAULT ROLE ALL TO USER', {
       errorLevel: ErrorLevel.IGNORE,
     });
+
     expect(setAsCommand.sql()).toBe('SET DEFAULT ROLE ALL TO USER');
     expect(setAsCommand).toBeInstanceOf(CommandExpr);
     expect((setAsCommand as CommandExpr).getArgKey('this')).toBe('SET');
@@ -663,6 +698,7 @@ class TestParser {
 
   testCommentErrorN () {
     const warnSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
     parseOne(
       `SUM
 (
@@ -677,6 +713,7 @@ class TestParser {
 
   testCommentErrorR () {
     const warnSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
     parseOne('SUM(-- test\r)', {
       errorLevel: ErrorLevel.WARN,
     });
@@ -685,6 +722,7 @@ class TestParser {
 
   testCreateTableError () {
     const warnSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
     parseOne('CREATE TABLE SELECT', {
       errorLevel: ErrorLevel.WARN,
     });
@@ -967,6 +1005,7 @@ class TestParser {
         const tableExpr = fromExpr.getArgKey('this') as Expression;
         const pivots = tableExpr.getArgKey('pivots') as Expression[];
         const columns = pivots[0].getArgKey('columns') as Expression[];
+
         expect(columns.map((col) => col.sql({
           dialect,
         }))).toEqual(expectedColumns);
@@ -979,6 +1018,7 @@ class TestParser {
       const now = Date.now();
       const ast = parseOne(query);
       const elapsed = (Date.now() - now) / 1000;
+
       expect(ast).not.toBeNull();
       if (maxThreshold <= elapsed) {
         console.warn(
@@ -1016,6 +1056,7 @@ class TestParser {
       'SELECT a FROM tbl WHERE a <= DATE \'1998-12-01\' - INTERVAL \'71 days\' GROUP BY b',
     );
     const interval = ast.find(IntervalExpr) as IntervalExpr;
+
     expect(interval).not.toBeNull();
     expect((interval.getArgKey('this') as Expression).sql()).toBe('\'71\'');
     expect(interval.getArgKey('unit')).toBeInstanceOf(VarExpr);
@@ -1024,8 +1065,10 @@ class TestParser {
 
   testParseConcatWs () {
     const ast = parseOne('CONCAT_WS(\' \', \'John\', \'Doe\')');
+
     expect(ast.sql()).toBe('CONCAT_WS(\' \', \'John\', \'Doe\')');
     const exprs = ast.getArgKey('expressions') as Expression[];
+
     expect(exprs[0].sql()).toBe('\' \'');
     expect(exprs[1].sql()).toBe('\'John\'');
     expect(exprs[2].sql()).toBe('\'Doe\'');
@@ -1033,6 +1076,7 @@ class TestParser {
     const results = parse('CONCAT_WS()', {
       errorLevel: ErrorLevel.IGNORE,
     });
+
     expect(results[0]?.sql()).toBe('CONCAT_WS()');
   }
 
@@ -1045,6 +1089,7 @@ class TestParser {
       const ast = parseOne('DROP SCHEMA catalog.schema', {
         dialect,
       });
+
       expect(ast).toBeInstanceOf(DropExpr);
       expect(ast.sql({
         dialect,
@@ -1061,6 +1106,7 @@ class TestParser {
       const ast = parseOne('CREATE SCHEMA catalog.schema', {
         dialect,
       });
+
       expect(ast).toBeInstanceOf(CreateExpr);
       expect(ast.sql({
         dialect,
@@ -1070,6 +1116,7 @@ class TestParser {
 
   testValuesAsIdentifier () {
     const sql = 'SELECT values FROM t WHERE values + 1 > x';
+
     for (const dialect of [
       'bigquery',
       'clickhouse',
@@ -1129,6 +1176,7 @@ class TestParser {
 
   testParsePropEq () {
     const exprs = parseOne('x(a := b and c)').getArgKey('expressions') as Expression[];
+
     expect(exprs[0]).toBeInstanceOf(PropertyEqExpr);
   }
 
@@ -1159,6 +1207,7 @@ class TestParser {
       const collateNode = parseOne(
         `SELECT * FROM t WHERE foo LIKE '%bar%' COLLATE ${collatePart}`,
       ).find(CollateExpr) as CollateExpr;
+
       expect(collateNode).toBeInstanceOf(CollateExpr);
       expect(collateNode.getArgKey('expression')).toBeInstanceOf(expectedClass);
     }
@@ -1166,18 +1215,22 @@ class TestParser {
 
   testDropColumn () {
     const ast = parseOne('ALTER TABLE tbl DROP COLUMN col');
+
     expect([...ast.findAll(TableExpr)].length).toBe(1);
     expect([...ast.findAll(ColumnExpr)].length).toBe(1);
   }
 
   testUdfMeta () {
     const ast1 = parseOne('YEAR(a) /* sqlglot.anonymous */');
+
     expect(ast1).toBeInstanceOf(AnonymousExpr);
 
     const ast2 = parseOne('YEAR(a) /* sqlglot.anONymous */');
+
     expect(ast2).toBeInstanceOf(YearExpr);
 
     const ast3 = parseOne('YEAR(a) /* sqlglot.anon */');
+
     expect(ast3).toBeInstanceOf(YearExpr);
   }
 
@@ -1200,6 +1253,7 @@ class TestParser {
     const leftSelect = ast.args.this as SelectExpr;
     const leftFrom = leftSelect.args.from as FromExpr;
     const leftTable = leftFrom.getArgKey('this') as TableExpr;
+
     expect(narrowInstanceOf(leftTable.args.this, Expression)?.meta).toEqual({
       line: 1,
       col: 41,
@@ -1216,6 +1270,7 @@ class TestParser {
     const rightSelect = ast.args.expression as SelectExpr;
     const rightFrom = rightSelect.args.from as FromExpr;
     const rightTable = rightFrom.getArgKey('this') as TableExpr;
+
     expect(narrowInstanceOf(rightTable.args.this, Expression)?.meta).toEqual({
       line: 1,
       col: 106,
@@ -1236,6 +1291,7 @@ class TestParser {
     });
 
     const ast2 = parseOne('SELECT FOO()');
+
     expect(ast2.find(AnonymousExpr)?.meta).toEqual({
       line: 1,
       col: 10,
@@ -1244,6 +1300,7 @@ class TestParser {
     });
 
     const ast3 = parseOne('SELECT * FROM t');
+
     expect(ast3.find(StarExpr)?.meta).toEqual({
       line: 1,
       col: 8,
@@ -1252,6 +1309,7 @@ class TestParser {
     });
 
     const ast4 = parseOne('SELECT t.* FROM t');
+
     expect(ast4.find(StarExpr)?.meta).toEqual({
       line: 1,
       col: 10,
@@ -1260,6 +1318,7 @@ class TestParser {
     });
 
     const ast5 = parseOne('SELECT 1');
+
     expect(ast5.find(LiteralExpr)?.meta).toEqual({
       line: 1,
       col: 8,
@@ -1282,11 +1341,13 @@ class TestParser {
     const fromExpr = ast.args.from as FromExpr;
     const tableExpr = fromExpr.getArgKey('this') as TableExpr;
     const dbMeta = (tableExpr.getArgKey('db') as IdentifierExpr).meta;
+
     expect(sql.slice(dbMeta['start'] as number, (dbMeta['end'] as number) + 1)).toBe(
       '"test_schema"',
     );
 
     const tableMeta = narrowInstanceOf(tableExpr.args.this, Expression)?.meta;
+
     expect(sql.slice(tableMeta?.['start'] as number, (tableMeta?.['end'] as number) + 1)).toBe(
       '"test_table_a"',
     );
@@ -1295,6 +1356,7 @@ class TestParser {
   testQualifiedFunction () {
     const sql = 'a.b.c.d.e.f.g.foo()';
     const ast = parseOne(sql);
+
     expect([...ast.walk()].some((node) => node instanceof ColumnExpr)).toBe(false);
     expect([...ast.findAll(DotExpr)].length).toBe(7);
   }
@@ -1368,6 +1430,7 @@ class TestParser {
 }
 
 const t = new TestParser();
+
 describe('TestParser', () => {
   test('parse_empty', () => t.testParseEmpty());
   test('parse_into', () => t.testParseInto());

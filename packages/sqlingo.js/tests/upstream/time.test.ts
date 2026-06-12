@@ -13,6 +13,7 @@ class TestTime {
       a: 'b',
       aa: 'c',
     };
+
     expect(formatTime('a', mapping)).toBe('b');
     expect(formatTime('aa', mapping)).toBe('c');
     expect(formatTime('aaada', mapping)).toBe('cbdb');
@@ -20,8 +21,8 @@ class TestTime {
   }
 
   testSubsecondPrecision () {
-    // Luxon's fromISO requires T separator, so space-separated timestamps return 0.
-    // ISO 8601 with T separator works correctly.
+    // Luxon's fromISO requires T separator, so space-separated timestamps return 0
+    // ISO 8601 with T separator works correctly
     expect(subsecondPrecision('2023-01-01T12:13:14.123456+00:00')).toBe(6);
     expect(subsecondPrecision('2023-01-01T12:13:14.123+00:00')).toBe(3);
     expect(subsecondPrecision('2023-01-01T12:13:14+00:00')).toBe(0);
@@ -31,6 +32,7 @@ class TestTime {
 }
 
 const t = new TestTime();
+
 describe('TestTime', () => {
   test('testFormatTime', () => t.testFormatTime());
   test('testSubsecondPrecision', () => t.testSubsecondPrecision());

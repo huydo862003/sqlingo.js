@@ -46,12 +46,12 @@ import {
   DataTypeExpr,
   DataTypeExprKind,
   LiteralExpr,
+  PowExpr,
   TryCastExpr,
   TableSampleExpr,
   PivotExpr,
   ILikeExpr,
   DivExpr,
-  func,
   AndExpr,
   XorExpr,
   OrExpr,
@@ -312,7 +312,10 @@ export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): str
     [
       new DivExpr({
         this: timestamp,
-        expression: func('POW', '10', scale.toString()),
+        expression: new PowExpr({
+          this: LiteralExpr.number(10),
+          expression: scale,
+        }),
       }),
       this.formatTime(expression),
     ],

@@ -758,7 +758,7 @@ export class Tokenizer {
       ...this.quotesToFormat(TokenType.BIT_STRING, this.BIT_STRINGS),
       ...this.quotesToFormat(TokenType.BYTE_STRING, this.BYTE_STRINGS),
       ...this.quotesToFormat(TokenType.HEX_STRING, this.HEX_STRINGS),
-      ...this.quotesToFormat(TokenType.STRING, this.RAW_STRINGS),
+      ...this.quotesToFormat(TokenType.RAW_STRING, this.RAW_STRINGS),
       ...this.quotesToFormat(TokenType.HEREDOC_STRING, this.HEREDOC_STRINGS),
       ...this.quotesToFormat(TokenType.UNICODE_STRING, this.UNICODE_STRINGS),
     };

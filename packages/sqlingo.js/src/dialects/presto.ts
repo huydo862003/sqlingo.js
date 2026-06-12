@@ -186,6 +186,7 @@ import {
   timeStrToTimeSql,
   tsOrDsAddCast,
   unitToStr,
+  noTimestampSql,
   NullOrdering,
 } from './dialect';
 import {
@@ -731,7 +732,7 @@ class PrestoParser extends Parser {
         new RegexpReplaceExpr({
           this: seqGet(args, 0),
           expression: seqGet(args, 1),
-          replacement: seqGet(args, 2) ?? '',
+          replacement: seqGet(args, 2) || LiteralExpr.string(''),
         }),
       REPLACE: buildReplaceWithOptionalReplacement,
       ROW: (args: unknown[]) => StructExpr.fromArgList(args),
@@ -798,7 +799,6 @@ class PrestoParser extends Parser {
   }
 }
 class PrestoGenerator extends Generator {
-  // port from _Dialect metaclass logic
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
@@ -1258,10 +1258,7 @@ class PrestoGenerator extends Generator {
       ],
       [
         TimestampExpr,
-        function (this: Generator, e: TimestampExpr) {
-          // Presto doesn't support the TIMESTAMP keyword in the same way as Postgres/Spark
-          return `CAST(${this.sql(e.args.this)} AS TIMESTAMP)`;
-        },
+        noTimestampSql,
       ],
       [
         TimestampAddExpr,
@@ -1367,6 +1364,11 @@ class PrestoGenerator extends Generator {
         preprocess([removeWithinGroupForPercentiles]),
       ],
       [
+        // Note: Presto's TRUNCATE always returns DOUBLE, even with decimals=0, whereas
+        // most dialects return INT (SQLite also returns REAL, see sqlite.py). This creates
+        // a bidirectional transpilation gap: Presto -> Other may change float division to int
+        // division, and vice versa. Modeling precisely would require exp.FloatTrunc or
+        // similar, deemed overengineering for this subtle semantic difference
         TruncExpr,
         renameFunc('TRUNCATE'),
       ],
@@ -1674,6 +1676,15 @@ class PrestoGenerator extends Generator {
     }
 
     return `CAST(ROW(${values.join(', ')}) AS ROW(${schema.join(', ')}))`;
+  }
+
+  public offsetLimitModifiers (expression: Expression, _options: {
+    fetch: boolean;
+  }, limit: Expression | undefined): string[] {
+    return [
+      this.sql(expression, 'offset'),
+      this.sql(limit),
+    ];
   }
 
   public intervalSql (expression: IntervalExpr): string {

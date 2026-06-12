@@ -689,6 +689,10 @@ class SQLiteGenerator extends Generator {
     return super.castSql(expression, options);
   }
 
+  // Note: SQLite's TRUNC always returns REAL (e.g., trunc(10.99) -> 10.0), not INTEGER
+  // This creates a transpilation gap affecting division semantics, similar to Presto
+  // Unlike Presto where this only affects decimals=0, SQLite has no decimals parameter
+  // so every use of TRUNC is affected. Modeling precisely would require exp.FloatTrunc
   truncSql (expression: TruncExpr): string {
     unsupportedArgs.call(this, expression, 'decimals');
 

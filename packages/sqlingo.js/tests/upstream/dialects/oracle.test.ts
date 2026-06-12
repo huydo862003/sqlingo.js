@@ -3,13 +3,14 @@ import {
 } from 'vitest';
 import {
   parseOne, ParseError,
+  UnsupportedError,
 } from '../../../src/index';
 import {
   AlterExpr, AnonymousExpr, DateTruncExpr, RandExpr, SystimestampExpr, TruncExpr,
   UtcTimeExpr, UtcTimestampExpr,
 } from '../../../src/expressions';
 import {
-  Validator, UnsupportedError,
+  Validator,
 } from './validator';
 
 class TestOracle extends Validator {
@@ -1006,6 +1007,7 @@ CONNECT BY PRIOR employee_id = manager_id AND LEVEL <= 4`;
 }
 
 const t = new TestOracle();
+
 describe('TestOracle', () => {
   test('oracle', () => t.testOracle());
   test('testJoinMarker', () => t.testJoinMarker());

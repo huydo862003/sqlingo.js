@@ -8,13 +8,6 @@ import type {
   DialectType,
 } from '../../../src/dialects/dialect';
 
-export {
-  UnsupportedError,
-};
-export type {
-  DialectType,
-};
-
 export interface ValidateAllOptions {
   read?: Record<string, string>;
   write?: Record<string, string | typeof UnsupportedError>;
@@ -47,16 +40,19 @@ export class Validator {
 
     if (checkCommandWarning) {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
       try {
         const expression = this.parseOne(sql);
         const warned = warnSpy.mock.calls.some(
           (args) => String(args[0]).includes('contains unsupported syntax'),
         );
+
         expect(warned).toBe(true);
         expect(expression.sql({
           dialect: this.dialect,
           ...rest,
         })).toBe(writeSql ?? sql);
+
         return expression;
       } finally {
         warnSpy.mockRestore();
@@ -64,10 +60,12 @@ export class Validator {
     }
 
     const expression = this.parseOne(sql);
+
     expect(expression.sql({
       dialect: this.dialect,
       ...rest,
     })).toBe(writeSql ?? sql);
+
     return expression;
   }
 
@@ -92,6 +90,7 @@ export class Validator {
         pretty,
         identify,
       });
+
       expect(generated).toBe(sql);
     }
 
@@ -111,6 +110,7 @@ export class Validator {
           pretty,
           identify,
         });
+
         expect(generated).toBe(writeSql);
       }
     }

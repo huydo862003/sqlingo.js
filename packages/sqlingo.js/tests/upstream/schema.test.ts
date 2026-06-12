@@ -222,6 +222,7 @@ class TestSchema {
 
   testSchemaAddTableWithAndWithoutMapping () {
     const schema = new MappingSchema();
+
     schema.addTable('test');
     expect(schema.columnNames('test')).toEqual([]);
     schema.addTable('test', {
@@ -249,6 +250,7 @@ class TestSchema {
         b: 'varchar',
       },
     });
+
     expect(schema1.getColumnType('a', 'B')?.args.this).toBe(DataTypeExprKind.VARCHAR);
     expect(schema1.getColumnType(table_('a'), column({
       col: 'b',
@@ -265,6 +267,7 @@ class TestSchema {
         },
       },
     });
+
     expect(schema2.getColumnType(table_('b', {
       db: 'a',
     }), column({
@@ -283,6 +286,7 @@ class TestSchema {
         },
       },
     });
+
     expect(schema3.getColumnType(table_('c', {
       db: 'b',
       catalog: 'a',
@@ -301,6 +305,7 @@ class TestSchema {
         }),
       },
     });
+
     expect(schema4.getColumnType('foo', 'bar')?.args.this).toBe(DataTypeExprKind.INT);
   }
 
@@ -346,9 +351,11 @@ class TestSchema {
     }, {
       dialect: 'clickhouse',
     });
+
     expect(schema2.columnNames(table_('x'))).toEqual(['y']);
 
     const schema3 = new MappingSchema();
+
     schema3.addTable('Foo', {
       'SomeColumn': 'INT',
       '"SomeColumn"': 'DOUBLE',
@@ -366,6 +373,7 @@ class TestSchema {
     }, {
       dialect: 'snowflake',
     });
+
     expect(schema4.columnNames(table_('x'))).toEqual([
       'FOO',
       'bLa',
@@ -379,6 +387,7 @@ class TestSchema {
       normalize: false,
       dialect: 'snowflake',
     });
+
     expect(schema5.columnNames(table_('x'))).toEqual(['foo']);
 
     const schema6 = new MappingSchema({
@@ -388,6 +397,7 @@ class TestSchema {
     }, {
       dialect: 'tsql',
     });
+
     expect(schema6.columnNames('[Fo]')).toEqual(schema6.columnNames('`fo`', {
       dialect: 'clickhouse',
     }));
@@ -399,6 +409,7 @@ class TestSchema {
     }, {
       dialect: 'bigquery',
     });
+
     expect(schema7.columnNames('Foo')).toEqual(['bar']);
     expect(schema7.columnNames('foo')).toEqual([]);
 
@@ -410,6 +421,7 @@ class TestSchema {
       normalize: false,
       dialect: 'snowflake',
     });
+
     expect(schema8.columnNames('x', {
       normalize: true,
     })).toEqual(['y']);
@@ -422,6 +434,7 @@ class TestSchema {
       dialect: 'bigquery',
     });
     const colTypeBq = schemaBqStruct.getColumnType('t', 'col');
+
     expect(narrowInstanceOf(colTypeBq?.args.expressions?.[0], ColumnDefExpr)?.name).toBe('foobar');
 
     const schemaSnowStruct = new MappingSchema({
@@ -432,6 +445,7 @@ class TestSchema {
       dialect: 'snowflake',
     });
     const colTypeSnow = schemaSnowStruct.getColumnType('T', 'COL');
+
     expect(narrowInstanceOf(colTypeSnow?.args.expressions?.[0], ColumnDefExpr)?.name).toBe('FOOBAR');
 
     const schemaCkStruct = new MappingSchema({
@@ -442,6 +456,7 @@ class TestSchema {
       dialect: 'clickhouse',
     });
     const colTypeCk = schemaCkStruct.getColumnType('t', 'col');
+
     expect(narrowInstanceOf(colTypeCk?.args.expressions?.[0], ColumnDefExpr)?.name).toBe('FooBar');
 
     const schemaNestedStruct = new MappingSchema(
@@ -455,6 +470,7 @@ class TestSchema {
       },
     );
     const colTypeNested = schemaNestedStruct.getColumnType('t', 'col');
+
     expect(narrowInstanceOf(colTypeNested?.args.expressions?.[0], ColumnDefExpr)?.name).toBe('outer');
     expect(narrowInstanceOf(narrowInstanceOf(narrowInstanceOf(colTypeNested?.args.expressions?.[0], ColumnDefExpr)?.kind, DataTypeExpr)?.args.expressions?.[0], ColumnDefExpr)?.name).toBe('inner');
 
@@ -470,6 +486,7 @@ class TestSchema {
     );
     const colTypeArray = schemaArrayStruct.getColumnType('t', 'col');
     const structType = narrowInstanceOf(colTypeArray?.args.expressions?.[0], DataTypeExpr);
+
     expect(narrowInstanceOf(structType?.args.expressions?.[0], ColumnDefExpr)?.name).toBe('foobar');
   }
 
@@ -481,11 +498,13 @@ class TestSchema {
         },
       },
     });
+
     expect(() => schema1.addTable('z', {
       c2: 'int',
     })).toThrow('Table z must match the schema\'s nesting level: 2.');
 
     const schema2 = new MappingSchema();
+
     schema2.addTable('x.y', {
       c1: 'int',
     });
@@ -538,6 +557,7 @@ class TestSchema {
         c: 'int',
       },
     });
+
     expect(schema.hasColumn('x', column({
       col: 'c',
     }) as ColumnExpr)).toBe(true);
@@ -553,12 +573,14 @@ class TestSchema {
       },
     });
     const found = schema.find(toTable('x') as ReturnType<typeof toTable>);
+
     expect(found).toEqual({
       c: 'int',
     });
     const foundWithTypes = schema.find(toTable('x') as ReturnType<typeof toTable>, {
       ensureDataTypes: true,
     });
+
     expect(foundWithTypes).toEqual({
       c: DataTypeExpr.build('int'),
     });

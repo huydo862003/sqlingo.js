@@ -452,6 +452,7 @@ class TestTeradata extends Validator {
 }
 
 const t = new TestTeradata();
+
 describe('TestTeradata', () => {
   test('teradata', () => t.testTeradata());
   test('translate', () => t.testTranslate());

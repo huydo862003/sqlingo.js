@@ -31,7 +31,6 @@ import type {
   TruncExpr,
   UniformExpr,
   ZipfExpr,
-  CountIfExpr,
   ColumnDefExpr,
   JoinExpr,
   TimestampLtzFromPartsExpr,
@@ -86,6 +85,7 @@ import {
   BoolxorAggExpr,
   ByteLengthExpr,
   CeilExpr,
+  CountIfExpr,
   CommentColumnConstraintExpr,
   CorrExpr,
   CurrentTimeExpr,
@@ -233,7 +233,6 @@ import {
   DateDiffExpr,
   DateTruncExpr,
   DecodeExpr,
-  DecodeCaseExpr,
   DivExpr,
   FromBase64Expr,
   GenerateDateArrayExpr,
@@ -275,6 +274,9 @@ import {
   WindowExpr,
   AggFuncExpr,
   null_,
+  and,
+  or,
+  paren,
   PlaceholderExpr,
   AbsExpr,
   ArrayOverlapsExpr,
@@ -370,7 +372,6 @@ import {
   removeFromArrayUsingFilter,
   noCommentColumnConstraintSql,
   dateStrToDateSql,
-  decodeToCaseSql,
   noDatetimeSql,
   encodeDecodeSql,
   getBitSql,
@@ -694,15 +695,17 @@ function toBooleanSql (this: Generator, expression: ToBooleanExpr): string {
     );
 
   if (isSafe) {
-    baseCaseExpr.else(this.func('TRY_CAST', [
-      arg,
-      DataTypeExpr.build('BOOLEAN'),
-    ]));
+    baseCaseExpr.else(new TryCastExpr({
+      this: arg,
+      to: DataTypeExpr.build('BOOLEAN'),
+    }), {
+      copy: false,
+    });
   } else {
-    const castToReal = this.func('TRY_CAST', [
-      arg,
-      DataTypeExpr.build('REAL'),
-    ]);
+    const castToReal = new TryCastExpr({
+      this: arg,
+      to: DataTypeExpr.build('REAL'),
+    });
     const nanInfCheck = new OrExpr({
       this: this.func('ISNAN', [castToReal]),
       expression: this.func('ISINF', [castToReal]),
@@ -712,13 +715,18 @@ function toBooleanSql (this: Generator, expression: ToBooleanExpr): string {
       .when(
         nanInfCheck,
         this.func('ERROR', [LiteralExpr.string('TO_BOOLEAN: Non-numeric values NaN and INF are not supported')]),
+        {
+          copy: false,
+        },
       )
       .else(new CastExpr({
         this: arg,
         to: new DataTypeExpr({
           this: DataTypeExprKind.BOOLEAN,
         }),
-      }));
+      }), {
+        copy: false,
+      });
   }
 
   return this.sql(baseCaseExpr);
@@ -1244,19 +1252,21 @@ function seqSql (this: Generator, expression: FuncExpr, byteWidth: number): stri
   }
 
   const bits = byteWidth * 8;
-  const maxVal = LiteralExpr.number(Math.pow(2, bits));
+  const maxVal = LiteralExpr.number((2n ** BigInt(bits)).toString());
 
   let result: Expression;
 
   if (expression.name === '1') {
-    const half = LiteralExpr.number(Math.pow(2, bits - 1));
+    const half = LiteralExpr.number((2n ** BigInt(bits - 1)).toString());
 
-    result = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEQ_SIGNED.copy(), [
+    result = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEQ_SIGNED.copy(), [], {
       maxVal,
       half,
-    ]);
+    });
   } else {
-    result = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEQ_UNSIGNED.copy(), [maxVal]);
+    result = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEQ_UNSIGNED.copy(), [], {
+      maxVal,
+    });
   }
 
   return this.sql(result);
@@ -1284,10 +1294,10 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   if (scaleValue !== undefined && scaleValue !== UnixToTimeExpr.SECONDS.toValue()) {
     timestamp = new DivExpr({
       this: timestamp,
-      expression: this.func('POW', [
-        LiteralExpr.number(10),
-        scale,
-      ]),
+      expression: new PowExpr({
+        this: LiteralExpr.number(10),
+        expression: scale,
+      }),
     });
   }
 
@@ -1353,7 +1363,7 @@ function implicitDatetimeCast (
 
 /** Compute Monday-based day shift for WEEK units */
 function weekUnitToDow (unit: Expression | undefined): number | undefined {
-  if (unit instanceof VarExpr && unit.name.toUpperCase() === 'ISOWEEK') {
+  if (unit instanceof VarExpr && 'ISOWEEK'.includes(unit.name.toUpperCase())) {
     return 1;
   }
 
@@ -1552,7 +1562,9 @@ function prepareBinaryBitwiseArgs (expression: BinaryExpr): void {
 function dayNavigationSql (this: Generator, expression: NextDayExpr | PreviousDayExpr): string {
   const dateExpr = expression.args.this;
   const dayNameExpr = expression.args.expression;
-  const isodowCall = this.func('ISODOW', [dateExpr]);
+  const isodowCall = new DayOfWeekIsoExpr({
+    this: dateExpr,
+  });
 
   let targetDow: Expression;
 
@@ -1592,16 +1604,11 @@ function dayNavigationSql (this: Generator, expression: NextDayExpr | PreviousDa
 
   if (expression instanceof NextDayExpr) {
     // (target_dow - current_dow + 6) % 7 + 1
+    const innerExpr = paren(targetDow.sub(isodowCall).add(6), {
+      copy: false,
+    });
     const daysOffset = new ModExpr({
-      this: new ParenExpr({
-        this: new AddExpr({
-          this: new SubExpr({
-            this: targetDow,
-            expression: isodowCall,
-          }),
-          expression: LiteralExpr.number(6),
-        }),
-      }),
+      this: innerExpr,
       expression: LiteralExpr.number(7),
     }).add(1);
 
@@ -1616,16 +1623,11 @@ function dayNavigationSql (this: Generator, expression: NextDayExpr | PreviousDa
     });
   } else {
     // (current_dow - target_dow + 6) % 7 + 1
+    const innerExpr = paren(isodowCall.sub(targetDow).add(6), {
+      copy: false,
+    });
     const daysOffset = new ModExpr({
-      this: new ParenExpr({
-        this: new AddExpr({
-          this: new SubExpr({
-            this: isodowCall,
-            expression: targetDow,
-          }),
-          expression: LiteralExpr.number(6),
-        }),
-      }),
+      this: innerExpr,
       expression: LiteralExpr.number(7),
     }).add(1);
 
@@ -1826,7 +1828,9 @@ function boolxorAggSql (this: Generator, expression: BoolxorAggExpr): string {
   /** Mimics Snowflake BOOLXOR_AGG by generating COUNT_IF(col) = 1 */
   return this.sql(
     new EqExpr({
-      this: castToBoolean(expression.args.this as Expression) ?? expression.args.this,
+      this: new CountIfExpr({
+        this: castToBoolean(expression.args.this as Expression) ?? expression.args.this,
+      }),
       expression: LiteralExpr.number(1),
     }),
   );
@@ -1882,7 +1886,7 @@ function scaleRoundingSql (
   /** Handle scale parameter: FUNC(x, n) -> ROUND(FUNC(x * 10^n) / 10^n, n) */
   const decimals = expression.args.decimals;
 
-  if (!decimals || expression.args.to !== undefined) {
+  if (!decimals || expression.args.to) {
     return undefined;
   }
 
@@ -1894,7 +1898,7 @@ function scaleRoundingSql (
     });
   }
 
-  const nInt = decimals instanceof LiteralExpr && (decimals.isNumber || decimals.isInteger)
+  const nInt = (decimals.isInteger || decimals.isType([...DataTypeExpr.INTEGER_TYPES]))
     ? decimals
     : new CastExpr({
       this: decimals,
@@ -2143,32 +2147,26 @@ function xorSql (this: Generator, expression: XorExpr): string {
   const left = expression.args.this && roundArg(expression.args.this, roundInput);
   const right = expression.args.expression && roundArg(expression.args.expression, roundInput);
 
-  const leftNot = new NotExpr({
-    this: new ParenExpr({
-      this: left?.copy(),
-    }),
-  });
-  const rightNot = new NotExpr({
-    this: new ParenExpr({
-      this: right?.copy(),
-    }),
-  });
-
   return this.sql(
-    new OrExpr({
-      this: new ParenExpr({
-        this: new AndExpr({
-          this: left?.copy(),
-          expression: rightNot,
-        }),
-      }),
-      expression: new ParenExpr({
-        this: new AndExpr({
-          this: leftNot,
-          expression: right?.copy(),
-        }),
-      }),
-    }),
+    or(
+      [
+        paren(and([
+          left?.copy(),
+          paren(right!.not()),
+        ], {
+          wrap: false,
+        })),
+        paren(and([
+          paren(left!.not()),
+          right?.copy(),
+        ], {
+          wrap: false,
+        })),
+      ],
+      {
+        wrap: false,
+      },
+    ),
   );
 }
 
@@ -3205,10 +3203,6 @@ class DuckDBGenerator extends Generator {
         },
       ],
       [
-        DecodeCaseExpr,
-        decodeToCaseSql,
-      ],
-      [
         DiToDateExpr,
         function (this: Generator, e) {
           return `CAST(STRPTIME(CAST(${this.sql(e, 'this')} AS TEXT), ${DuckDB.DATEINT_FORMAT}) AS DATE)`;
@@ -4006,15 +4000,15 @@ class DuckDBGenerator extends Generator {
 
   @cache
   static get SEQ_UNSIGNED () {
-    return maybeParse(`${SEQ_BASE} % :max_val`);
+    return maybeParse(`${SEQ_BASE} % :maxVal`);
   }
 
   @cache
   static get SEQ_SIGNED () {
     return maybeParse(`
-  (CASE WHEN ${SEQ_BASE} % :max_val >= :half 
-   THEN ${SEQ_BASE} % :max_val - :max_val 
-   ELSE ${SEQ_BASE} % :max_val END)
+  (CASE WHEN ${SEQ_BASE} % :maxVal >= :half
+   THEN ${SEQ_BASE} % :maxVal - :maxVal
+   ELSE ${SEQ_BASE} % :maxVal END)
 `);
   }
 
@@ -4161,9 +4155,9 @@ class DuckDBGenerator extends Generator {
   @cache
   static get ARRAYS_ZIP_TEMPLATE () {
     return maybeParse(`
-  CASE WHEN :null_check THEN NULL
-  WHEN :all_empty_check THEN [:empty_struct]
-  ELSE LIST_TRANSFORM(RANGE(0, :max_len), __i -> :transform_struct)
+  CASE WHEN :nullCheck THEN NULL
+  WHEN :allEmptyCheck THEN [:emptyStruct]
+  ELSE LIST_TRANSFORM(RANGE(0, :maxLen), __i -> :transformStruct)
   END
 `);
   }
@@ -4269,7 +4263,9 @@ class DuckDBGenerator extends Generator {
   bitmapConstructAggSql (expression: BitmapConstructAggExpr): string {
     const arg = expression.args.this;
 
-    return `(${this.sql(replacePlaceholders((this._constructor as typeof DuckDBGenerator).BITMAP_CONSTRUCT_AGG_TEMPLATE, [arg]))})`;
+    return `(${this.sql(replacePlaceholders((this._constructor as typeof DuckDBGenerator).BITMAP_CONSTRUCT_AGG_TEMPLATE.copy(), [], {
+      arg,
+    }))})`;
   }
 
   nthValueSql (expression: NthValueExpr): string {
@@ -4305,10 +4301,10 @@ class DuckDBGenerator extends Generator {
       seedValue = LiteralExpr.number(RANDSTR_SEED);
     }
 
-    return `(${this.sql(replacePlaceholders((this._constructor as typeof DuckDBGenerator).RANDSTR_TEMPLATE, [
-      seedValue,
+    return `(${this.sql(replacePlaceholders((this._constructor as typeof DuckDBGenerator).RANDSTR_TEMPLATE.copy(), [], {
+      seed: seedValue,
       length,
-    ]))})`;
+    }))})`;
   }
 
   /**
@@ -4335,18 +4331,18 @@ class DuckDBGenerator extends Generator {
             expression: LiteralExpr.number(1000000),
           }),
         }),
-        expression: LiteralExpr.number(1000000.0),
+        expression: LiteralExpr.number('1000000.0'),
       });
     } else {
       // Use RANDOM() for non-deterministic output
       randomExpr = new RandExpr({});
     }
 
-    return `(${this.sql(replacePlaceholders((this._constructor as typeof DuckDBGenerator).ZIPF_TEMPLATE, [
+    return `(${this.sql(replacePlaceholders((this._constructor as typeof DuckDBGenerator).ZIPF_TEMPLATE.copy(), [], {
       s,
       n,
-      randomExpr,
-    ]))})`;
+      random_expr: randomExpr,
+    }))})`;
   }
 
   /**
@@ -4400,27 +4396,9 @@ class DuckDBGenerator extends Generator {
       return this.sql(fallbackSql);
     }
 
-    const firstArg = allArgs[0] ?? null_();
     const caseExpr = new CaseExpr({}).when(
-      new OrExpr({
-        this: new IsExpr({
-          this: firstArg.copy(),
-          expression: null_(),
-        }),
-        expression: allArgs.slice(1).reduce(
-          (acc, arg) =>
-            new OrExpr({
-              this: acc,
-              expression: new IsExpr({
-                this: (arg ?? null_()).copy(),
-                expression: null_(),
-              }),
-            }),
-          new IsExpr({
-            this: firstArg.copy(),
-            expression: null_(),
-          }),
-        ),
+      or(allArgs.map((arg) => (arg ?? null_()).is(null_())), {
+        copy: false,
       }),
       null_(),
     );
@@ -4655,21 +4633,23 @@ class DuckDBGenerator extends Generator {
     } else {
       const seed = (gen instanceof RandExpr ? gen.args.this : gen) ?? null_();
 
-      u1 = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEEDED_RANDOM_TEMPLATE, [seed]);
-      u2 = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEEDED_RANDOM_TEMPLATE, [
-        new AddExpr({
+      u1 = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEEDED_RANDOM_TEMPLATE.copy(), [], {
+        seed,
+      });
+      u2 = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEEDED_RANDOM_TEMPLATE.copy(), [], {
+        seed: new AddExpr({
           this: seed.copy(),
           expression: LiteralExpr.number(1),
         }),
-      ]);
+      });
     }
 
-    return this.sql(replacePlaceholders((this._constructor as typeof DuckDBGenerator).NORMAL_TEMPLATE, [
+    return this.sql(replacePlaceholders((this._constructor as typeof DuckDBGenerator).NORMAL_TEMPLATE.copy(), [], {
       mean,
       stddev,
       u1,
       u2,
-    ]));
+    }));
   }
 
   uniformSql (expression: UniformExpr): string {
@@ -4695,7 +4675,7 @@ class DuckDBGenerator extends Generator {
             expression: LiteralExpr.number(1000000),
           }),
         }),
-        expression: LiteralExpr.number(1000000.0),
+        expression: LiteralExpr.number('1000000.0'),
       });
     } else {
       randomExpr = new RandExpr({});
@@ -4764,28 +4744,12 @@ class DuckDBGenerator extends Generator {
 
       // Overflow or nanoseconds: use INTERVAL arithmetic
       if (nano) {
-        sec = new AddExpr({
-          this: sec,
-          expression: new DivExpr({
-            this: nano.pop(),
-            expression: LiteralExpr.number(1000000000.0),
-          }),
-        });
+        sec = (sec as Expression).add(nano.pop().div(LiteralExpr.number('1000000000.0')));
       }
 
-      const totalSeconds = new AddExpr({
-        this: new AddExpr({
-          this: new MulExpr({
-            this: hour,
-            expression: LiteralExpr.number(3600),
-          }),
-          expression: new MulExpr({
-            this: minute,
-            expression: LiteralExpr.number(60),
-          }),
-        }),
-        expression: sec,
-      });
+      const totalSeconds = (hour as Expression).mul(LiteralExpr.number(3600))
+        .add((minute as Expression).mul(LiteralExpr.number(60)))
+        .add(sec as Expression);
 
       return this.sql(
         new AddExpr({
@@ -5300,22 +5264,26 @@ class DuckDBGenerator extends Generator {
       ]);
     }
 
-    const result = replacePlaceholders(DuckDBGenerator.MINHASH_TEMPLATE.copy(), [
-      exprs[0],
+    const result = replacePlaceholders(DuckDBGenerator.MINHASH_TEMPLATE.copy(), [], {
+      expr: exprs[0],
       k,
-    ]);
+    });
 
     return `(${this.sql(result)})`;
   }
 
   minhashCombineSql (expression: MinhashCombineExpr): string {
-    const result = replacePlaceholders(DuckDBGenerator.MINHASH_COMBINE_TEMPLATE.copy(), [expression.args.this]);
+    const result = replacePlaceholders(DuckDBGenerator.MINHASH_COMBINE_TEMPLATE.copy(), [], {
+      expr: expression.args.this,
+    });
 
     return `(${this.sql(result)})`;
   }
 
   approximateSimilaritySql (expression: ApproximateSimilarityExpr): string {
-    const result = replacePlaceholders(DuckDBGenerator.APPROXIMATE_SIMILARITY_TEMPLATE.copy(), [expression.args.this]);
+    const result = replacePlaceholders(DuckDBGenerator.APPROXIMATE_SIMILARITY_TEMPLATE.copy(), [], {
+      expr: expression.args.this,
+    });
 
     return `(${this.sql(result)})`;
   }
@@ -5347,13 +5315,12 @@ class DuckDBGenerator extends Generator {
       });
 
     /** Snowflake pads to longest; DuckDB truncates. Logic below emulates padding */
-    const emptyStruct = this.func(
-      'STRUCT',
-      args.map((_, i) => new PropertyEqExpr({
+    const emptyStruct = new StructExpr({
+      expressions: args.map((_, i) => new PropertyEqExpr({
         this: LiteralExpr.string(`$${i + 1}`),
         expression: null_(),
       })),
-    );
+    });
 
     const index = new AddExpr({
       this: new ColumnExpr({
@@ -5363,9 +5330,8 @@ class DuckDBGenerator extends Generator {
       }),
       expression: LiteralExpr.number(1),
     });
-    const transformStruct = this.func(
-      'STRUCT',
-      args.map((arg, i) => new PropertyEqExpr({
+    const transformStruct = new StructExpr({
+      expressions: args.map((arg, i) => new PropertyEqExpr({
         this: LiteralExpr.string(`$${i + 1}`),
         expression: new BracketExpr({
           this: new AnonymousExpr({
@@ -5375,43 +5341,26 @@ class DuckDBGenerator extends Generator {
               new ArrayExpr({}),
             ],
           }),
-          expressions: [index],
+          expressions: [index.copy()],
         }),
       })),
-    );
+    });
 
-    const result = replacePlaceholders(DuckDBGenerator.ARRAYS_ZIP_TEMPLATE.copy(), [
-      args.reduce(
-        (acc, arg) => new OrExpr({
-          this: acc,
-          expression: new IsExpr({
-            this: arg,
-            expression: null_(),
-          }),
-        }),
-        new IsExpr({
-          this: args[0],
-          expression: null_(),
-        }),
-      ),
-      args.reduce((acc, arg) => new AndExpr({
-        this: acc,
-        expression: new EqExpr({
-          this: new LengthExpr({
-            this: arg,
-          }),
-          expression: LiteralExpr.number(0),
-        }),
-      }), new EqExpr({
-        this: new LengthExpr({
-          this: args[0],
-        }),
-        expression: LiteralExpr.number(0),
-      })),
+    const nullCheck = or(args.map((arg) => arg.is(null_())));
+    const allEmptyCheck = and(args.map((arg) => new EqExpr({
+      this: new LengthExpr({
+        this: arg,
+      }),
+      expression: LiteralExpr.number(0),
+    })));
+
+    const result = replacePlaceholders(DuckDBGenerator.ARRAYS_ZIP_TEMPLATE.copy(), [], {
+      nullCheck,
+      allEmptyCheck,
       emptyStruct,
       maxLen,
       transformStruct,
-    ]);
+    });
 
     return this.sql(result);
   }
@@ -5537,10 +5486,10 @@ class DuckDBGenerator extends Generator {
   }
 
   mapCatSql (expression: MapCatExpr): string {
-    const result = replacePlaceholders(DuckDBGenerator.MAPCAT_TEMPLATE.copy(), [
-      expression.args.this,
-      expression.args.expression,
-    ]);
+    const result = replacePlaceholders(DuckDBGenerator.MAPCAT_TEMPLATE.copy(), [], {
+      map1: expression.args.this,
+      map2: expression.args.expression,
+    });
 
     return this.sql(result);
   }
@@ -6024,13 +5973,19 @@ class DuckDBGenerator extends Generator {
     return genWithCastToBlob.call(this, expression, resultSql);
   }
 
+  hexStringSql (expression: HexStringExpr): string {
+    return super.hexStringSql(expression, {
+      binaryFunctionRepr: 'UNHEX',
+    });
+  }
+
   roundSql (expression: RoundExpr): string {
     const thisNode = expression.args.this;
     let decimals = expression.args.decimals;
     let truncate = expression.args.truncate;
 
     if (decimals && expression.args.castsNonIntegerDecimals) {
-      if (!(decimals instanceof LiteralExpr && decimals.isInteger)) {
+      if (!(decimals.isInteger || decimals.isType([...DataTypeExpr.INTEGER_TYPES]))) {
         decimals = new CastExpr({
           this: decimals,
           to: new DataTypeExpr({

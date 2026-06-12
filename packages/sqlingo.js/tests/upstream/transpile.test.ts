@@ -220,6 +220,7 @@ class TestTranspile {
           identity: true,
           pretty: true,
         })[0];
+
         expect(generated).toBe(pretty);
         expect(parseOne(sql).equals(parseOne(pretty))).toBe(true);
       }
@@ -235,6 +236,7 @@ class TestTranspile {
 
   testRecursion () {
     const sql = ('1 AND 2 OR 3 AND ').repeat(1000) + '4';
+
     expect(parseOne(sql).sql().length).toBe(17001);
   }
 }

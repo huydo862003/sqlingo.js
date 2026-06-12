@@ -1098,6 +1098,8 @@ export enum JoinExprKind {
   CROSS = 'cross',
   SEMI = 'semi',
   ANTI = 'anti',
+  ANY = 'any',
+  ASOF = 'asof',
   STRAIGHT_JOIN = 'straightJoin',
   ARRAY = 'array',
 }

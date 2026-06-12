@@ -556,10 +556,6 @@ export type OptionsType = Record<string, (string[] | string)[]>;
 export const TIME_ZONE_RE: RegExp = /:.*?[a-zA-Z+\-]/;
 
 export function buildVarMap (args: Expression[]): StarMapExpr | VarMapExpr {
-  if (args.length < 1) {
-    throw new Error('buildVarMap only accepts an expression list with at least one expression');
-  }
-
   if (args.length === 1 && args[0].isStar) {
     return new StarMapExpr({
       this: args[0],
@@ -8769,7 +8765,7 @@ export class Parser {
       withFill = this.expression(
         WithFillExpr,
         {
-          fromValue: this.match(TokenType.FROM) && this.parseBitwise(),
+          from: this.match(TokenType.FROM) && this.parseBitwise(),
           to: this.matchTextSeq('TO') && this.parseBitwise(),
           step: this.matchTextSeq('STEP') && this.parseBitwise(),
           interpolate: this.parseInterpolate(),

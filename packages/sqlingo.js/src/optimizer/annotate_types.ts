@@ -901,8 +901,8 @@ export class TypeAnnotator {
       promote = false, array = false,
     } = options;
 
-    let literalType: DataTypeExpr | DataTypeExprKind | null = null;
-    let nonLiteralType: DataTypeExpr | DataTypeExprKind | null = null;
+    let literalType: DataTypeExpr | DataTypeExprKind | undefined;
+    let nonLiteralType: DataTypeExpr | DataTypeExprKind | undefined;
     let nestedType: ColumnDefExpr | DataTypeExpr | undefined;
 
     outer:
@@ -953,14 +953,14 @@ export class TypeAnnotator {
 
     if (nestedType) {
       resultType = nestedType;
-    } else if (literalType !== null && nonLiteralType !== null) {
+    } else if (literalType !== undefined && nonLiteralType !== undefined) {
       if (this.dialect._constructor.PRIORITIZE_NON_LITERAL_TYPES) {
         const litKind = literalType instanceof DataTypeExpr ? literalType.args.this as DataTypeExprKind : literalType;
         const nonLitKind = nonLiteralType instanceof DataTypeExpr ? nonLiteralType.args.this as DataTypeExprKind : nonLiteralType;
 
         if (
-          (DataTypeExpr.INTEGER_TYPES.has(litKind) && DataTypeExpr.INTEGER_TYPES.has(nonLitKind))
-          || (DataTypeExpr.REAL_TYPES.has(litKind) && DataTypeExpr.REAL_TYPES.has(nonLitKind))
+          (DataTypeExpr.INTEGER_TYPES.has(litKind!) && DataTypeExpr.INTEGER_TYPES.has(nonLitKind!))
+          || (DataTypeExpr.REAL_TYPES.has(litKind!) && DataTypeExpr.REAL_TYPES.has(nonLitKind!))
         ) {
           resultType = nonLiteralType;
         }
@@ -1167,7 +1167,7 @@ export class TypeAnnotator {
 
   annotateStructValue (
     expr: Expression,
-  ): ColumnDefExpr | DataTypeExpr | DataTypeExprKind | null {
+  ): ColumnDefExpr | DataTypeExpr | DataTypeExprKind | undefined {
     let nameExpr: Expression | undefined;
     const exprType0 = expr.type;
     let kind: ColumnDefExpr | DataTypeExpr | DataTypeExprKind | undefined = isInstanceOf(exprType0, DataTypeExpr) ? exprType0 : isInstanceOf(exprType0, ColumnDefExpr) ? exprType0 : undefined;
@@ -1188,7 +1188,7 @@ export class TypeAnnotator {
     }
 
     if (isInstanceOf(kind, DataTypeExpr) && kind.isType(DataTypeExprKind.UNKNOWN)) {
-      return null;
+      return undefined;
     }
 
     if (nameExpr) {
@@ -1207,7 +1207,7 @@ export class TypeAnnotator {
     for (const expr of expression.args.expressions as Expression[]) {
       const structFieldType = this.annotateStructValue(expr);
 
-      if (structFieldType === null) {
+      if (structFieldType === undefined) {
         this.setType(expression);
 
         return;

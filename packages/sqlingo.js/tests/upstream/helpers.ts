@@ -18,36 +18,8 @@ const filename = fileURLToPath(import.meta.url);
 const fileDir = dirname(filename);
 const fixturesDir = join(fileDir, 'fixtures');
 
-function filterComments (sql: string): string {
-  return sql
-    .split('\n')
-    .filter((line) => line.trim() && !line.startsWith('--'))
-    .join('\n');
-}
-
-function extractMeta (sql: string): [string, Record<string, string>] {
-  const meta: Record<string, string> = {};
-  const sqlLines = sql.split('\n');
-  let i = 0;
-
-  while (i < sqlLines.length && sqlLines[i].startsWith('#')) {
-    const parts = sqlLines[i].split(':');
-    const key = snakeToCamelCase(parts[0].replace(/^#/, '').trim());
-    const val = parts.slice(1).join(':')
-      .trim();
-    meta[key] = val;
-    i++;
-  }
-
-  const remainingSql = sqlLines.slice(i).join('\n');
-  return [
-    remainingSql,
-    meta,
-  ];
-}
-
 /**
- * Asserts that a Vitest mock logger contains a specific message.
+ * Asserts that a Vitest mock logger contains a specific message
  */
 export function assertLoggerContains (message: string, logger: Console, level: string = 'error'): void {
   const mockCalls = logger[level]?.mock?.calls || [];
@@ -56,16 +28,6 @@ export function assertLoggerContains (message: string, logger: Console, level: s
     .join('\n');
 
   expect(output).toContain(message);
-}
-
-export function* loadSqlFixtures (filename: string): Generator<string> {
-  const filePath = join(fixturesDir, filename);
-  const data = readFileSync(filePath, 'utf-8');
-  const filtered = filterComments(data);
-
-  for (const line of filtered.split('\n')) {
-    yield line;
-  }
 }
 
 export function* loadSqlFixturePairs (filename: string): Generator<[Record<string, string>, string, string]> {
@@ -81,6 +43,7 @@ export function* loadSqlFixturePairs (filename: string): Generator<[Record<strin
         meta,
       ] = extractMeta(sqlRaw);
       const expected = statements[i + 1].trim();
+
       yield [
         meta,
         parsedSql,
@@ -90,13 +53,54 @@ export function* loadSqlFixturePairs (filename: string): Generator<[Record<strin
   }
 }
 
+export function* loadSqlFixtures (filename: string): Generator<string> {
+  const filePath = join(fixturesDir, filename);
+  const data = readFileSync(filePath, 'utf-8');
+  const filtered = filterComments(data);
+
+  for (const line of filtered.split('\n')) {
+    yield line;
+  }
+}
+
 export function stringToBool (val: string | boolean | undefined): boolean {
   if (val === undefined) return false;
   if (typeof val === 'boolean') return val;
+
   return [
     'true',
     '1',
   ].includes(val.toLowerCase());
+}
+
+function extractMeta (sql: string): [string, Record<string, string>] {
+  const meta: Record<string, string> = {};
+  const sqlLines = sql.split('\n');
+  let i = 0;
+
+  while (i < sqlLines.length && sqlLines[i].startsWith('#')) {
+    const parts = sqlLines[i].split(':');
+    const key = snakeToCamelCase(parts[0].replace(/^#/, '').trim());
+    const val = parts.slice(1).join(':')
+      .trim();
+
+    meta[key] = val;
+    i++;
+  }
+
+  const remainingSql = sqlLines.slice(i).join('\n');
+
+  return [
+    remainingSql,
+    meta,
+  ];
+}
+
+function filterComments (sql: string): string {
+  return sql
+    .split('\n')
+    .filter((line) => line.trim() && !line.startsWith('--'))
+    .join('\n');
 }
 
 export const skipIntegration = stringToBool(process.env.SKIP_INTEGRATION || '0');

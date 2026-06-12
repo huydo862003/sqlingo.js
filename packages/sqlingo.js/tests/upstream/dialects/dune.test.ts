@@ -46,6 +46,7 @@ class TestDune extends Validator {
 }
 
 const t = new TestDune();
+
 describe('TestDune', () => {
   test('dune', () => t.testDune());
 });

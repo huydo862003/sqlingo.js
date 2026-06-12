@@ -337,8 +337,8 @@ function jsonFormatSql (this: Generator, expression: JsonFormatExpr): string {
 
       return this.func('REGEXP_EXTRACT', [
         toJson,
-        LiteralExpr.string('\'^.(.*).$\''),
-        LiteralExpr.number(1),
+        '\'^.(.*).$\'',
+        '1',
       ]);
     }
 
@@ -1589,10 +1589,11 @@ class HiveGenerator extends Generator {
     );
   }
 
+  // Hive/Spark lack native numeric TRUNC. CAST to BIGINT truncates toward zero (not rounds)
+  // Potential enhancement: a TRUNC_TEMPLATE using FLOOR/CEIL with scale (Spark 3.3+)
+  // could preserve decimals: CASE WHEN x >= 0 THEN FLOOR(x, d) ELSE CEIL(x, d) END
   truncSql (expression: TruncExpr): string {
-    if (expression.args.decimals) {
-      this.unsupported('Unsupported arg \'decimals\' for TRUNC');
-    }
+    unsupportedArgs.call(this, expression, 'decimals');
 
     return this.sql(new CastExpr({
       this: expression.args.this,

@@ -1258,18 +1258,21 @@ class TestHive extends Validator {
     );
 
     const quantileExpr1 = this.validateIdentity('PERCENTILE(DISTINCT x, 0.5)');
+
     quantileExpr1.assertIs(QuantileExpr);
     narrowInstanceOf(quantileExpr1.args.this, Expression)?.assertIs(DistinctExpr);
-    (quantileExpr1.args['quantile'] as Expression).assertIs(LiteralExpr);
+    (quantileExpr1.getArgKey('quantile') as Expression).assertIs(LiteralExpr);
 
     const quantileExpr2 = this.validateIdentity('PERCENTILE(ALL x, 0.5)', 'PERCENTILE(x, 0.5)');
+
     quantileExpr2.assertIs(QuantileExpr);
     narrowInstanceOf(quantileExpr2.args.this, Expression)?.assertIs(ColumnExpr);
-    (quantileExpr2.args['quantile'] as Expression).assertIs(LiteralExpr);
+    (quantileExpr2.getArgKey('quantile') as Expression).assertIs(LiteralExpr);
   }
 }
 
 const t = new TestHive();
+
 describe('TestHive', () => {
   test('bits', () => t.testBits());
   test('cast', () => t.testCast());

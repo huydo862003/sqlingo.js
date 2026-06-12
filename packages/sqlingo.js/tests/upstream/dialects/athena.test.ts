@@ -212,14 +212,17 @@ class TestAthena extends Validator {
 
     expect(parsed).toBeInstanceOf(PartitionedByPropertyExpr);
     const prop = parsed as PartitionedByPropertyExpr;
+
     expect(prop.args.this).toBeInstanceOf(SchemaExpr);
     const schema = prop.args.this as SchemaExpr;
+
     expect(schema.args.expressions?.some((n) => n instanceof PartitionedByBucketExpr)).toBe(true);
     expect(schema.args.expressions?.some((n) => n instanceof PartitionByTruncateExpr)).toBe(true);
   }
 }
 
 const t = new TestAthena();
+
 describe('TestAthena', () => {
   test('testAthena', () => t.testAthena());
   test('testDdl', () => t.testDdl());

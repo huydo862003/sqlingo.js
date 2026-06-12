@@ -441,6 +441,7 @@ class TestRedshift extends Validator {
       'DATE_PART(year, "somecol")',
       'EXTRACT(year FROM "somecol")',
     );
+
     narrowInstanceOf(expr.args.this, Expression)?.assertIs(VarExpr);
     this.validateIdentity(
       'SELECT CONCAT(\'abc\', \'def\')',
@@ -553,6 +554,7 @@ ORDER BY
     }, (_, i) => String(i));
     const valuesQuery = `SELECT * FROM (VALUES ${values.map((v) => `(${v})`).join(', ')})`;
     const unionQuery = `SELECT * FROM (${values.map((v) => `SELECT ${v}`).join(' UNION ALL ')})`;
+
     expect(transpile(valuesQuery, {
       write: 'redshift',
     })[0]).toBe(unionQuery);
@@ -561,6 +563,7 @@ ORDER BY
       write: 'redshift',
       pretty: true,
     })[0];
+
     expect(valuesSql).toBe(
       `SELECT
   *
@@ -731,6 +734,7 @@ FROM (
     const ast1 = parseOne('SELECT * FROM t.t JOIN t.c1 ON c1.c2 = t.c3', {
       read: 'redshift',
     });
+
     narrowInstanceOf(narrowInstanceOf(ast1.args['from'], Expression)?.args.this, Expression)?.assertIs(TableExpr);
     narrowInstanceOf(narrowInstanceOf(ast1.args['joins']?.[0], Expression)?.args.this, Expression)?.assertIs(TableExpr);
     expect(ast1.sql({
@@ -740,6 +744,7 @@ FROM (
     const ast2 = parseOne('SELECT * FROM t AS t CROSS JOIN t.c1', {
       read: 'redshift',
     });
+
     narrowInstanceOf(narrowInstanceOf(ast2.args['from'], Expression)?.args.this, Expression)?.assertIs(TableExpr);
     narrowInstanceOf(narrowInstanceOf(ast2.args['joins']?.[0], Expression)?.args.this, Expression)?.assertIs(UnnestExpr);
     expect(ast2.sql({
@@ -753,6 +758,7 @@ FROM (
       },
     );
     const joins = ast3.args['joins'];
+
     narrowInstanceOf(narrowInstanceOf(ast3.args['from'], Expression)?.args.this, Expression)?.assertIs(TableExpr);
     narrowInstanceOf(narrowInstanceOf(joins?.[0], Expression)?.args.this, Expression)?.assertIs(UnnestExpr);
     narrowInstanceOf(narrowInstanceOf(joins?.[1], Expression)?.args.this, Expression)?.assertIs(UnnestExpr);
@@ -880,6 +886,7 @@ FROM (
 }
 
 const t = new TestRedshift();
+
 describe('TestRedshift', () => {
   test('testRedshift', () => t.testRedshift());
   test('testIdentity', () => t.testIdentity());

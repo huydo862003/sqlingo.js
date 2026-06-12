@@ -232,7 +232,7 @@ import {
 import {
   findNewName,
   isDateUnit,
-  isInt, seqGet,
+  isInt, seqGet, snakeToCamelCase,
 } from '../helper';
 import {
   JsonPathTokenizer,
@@ -360,7 +360,7 @@ function buildDatetime (
     const value = seqGet(args, 0);
     const scaleOrFmt = seqGet(args, 1);
 
-    const intValue = value instanceof IdentifierExpr && isInt(value.name);
+    const intValue = value !== undefined && isInt(value.name);
     const intScaleOrFmt = scaleOrFmt instanceof LiteralExpr && scaleOrFmt.isNumber;
 
     if (value instanceof LiteralExpr || value instanceof NegExpr || (value && scaleOrFmt)) {
@@ -579,7 +579,7 @@ function buildSearch (args: Expression[]): SearchExpr {
 
   args.slice(2).forEach((arg) => {
     if (arg instanceof KwargExpr) {
-      (kwargs as Record<string, unknown>)[arg.name] = arg;
+      (kwargs as Record<string, unknown>)[snakeToCamelCase(arg.name.toLowerCase())] = arg;
     }
   });
 
@@ -3927,27 +3927,24 @@ export class Snowflake extends Dialect {
       '%-d': 'dd',
       '%a': 'DY',
       '%w': 'dy',
-      '%H': 'HH24',
-      '%I': 'HH12',
-      '%M': 'MI',
-      '%S': 'SS',
-      '%f_nine': 'FF',
-      '%f_zero': 'FF0',
-      '%f_one': 'FF1',
-      '%f_two': 'FF2',
-      '%f_three': 'FF3',
-      '%f_four': 'FF4',
-      '%f_five': 'FF5',
-      '%f': 'FF6',
-      '%f_seven': 'FF7',
-      '%f_eight': 'FF8',
-      '%z': 'TZHTZM',
-      '%:z': 'TZH:TZM',
-      '%-z': 'TZH',
-      '%p': 'AM/PM',
-      '%A': 'EEEE',
-      '%j': 'DDD',
-      '%C': 'CC',
+      '%H': 'hh24',
+      '%I': 'hh12',
+      '%M': 'mi',
+      '%S': 'ss',
+      '%f_nine': 'ff9',
+      '%f_zero': 'ff0',
+      '%f_one': 'ff1',
+      '%f_two': 'ff2',
+      '%f_three': 'ff3',
+      '%f_four': 'ff4',
+      '%f_five': 'ff5',
+      '%f': 'ff6',
+      '%f_seven': 'ff7',
+      '%f_eight': 'ff8',
+      '%z': 'tzhtzm',
+      '%:z': 'tzh:tzm',
+      '%-z': 'tzh',
+      '%p': 'pm',
     };
   }
 
