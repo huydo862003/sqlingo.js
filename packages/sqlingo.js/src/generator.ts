@@ -5938,7 +5938,7 @@ export class Generator {
     let args = expression.args.expressions || [];
 
     if (!Array.isArray(args)) {
-      args = args ? [args as unknown as Expression] : [];
+      args = args ? [args] : [];
     }
 
     if (expression instanceof ConcatWsExpr) {

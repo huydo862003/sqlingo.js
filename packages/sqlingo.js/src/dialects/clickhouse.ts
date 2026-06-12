@@ -138,8 +138,6 @@ import {
   NullifExpr,
   MedianExpr,
   JsonExtractExpr,
-  AndExpr,
-  OrExpr,
   IfExpr,
   PlaceholderExpr,
   PropertyEqExpr,

@@ -143,7 +143,6 @@ import {
   ContainsExpr,
   JsonStripNullsExpr,
   cast,
-  func,
   KwargExpr,
   var_,
   LowerExpr,

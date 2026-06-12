@@ -52,7 +52,6 @@ import {
   PivotExpr,
   ILikeExpr,
   DivExpr,
-  func,
   AndExpr,
   XorExpr,
   OrExpr,

@@ -14,8 +14,8 @@ export default [
   })),
   {
     ignores: [
-      'upstream/**',
-      'doc/**',
+      '**/upstream/**',
+      '**/doc/**',
     ],
   },
   {
