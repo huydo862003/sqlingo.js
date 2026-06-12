@@ -422,7 +422,7 @@ export function pushdownCteColumnNames (expression: Expression): Expression {
     }
 
     // Inner aliases are shadowed by the CTE column names
-    const newAlias = alias(select, name instanceof IdentifierExpr ? name : toIdentifier(name.name), {
+    const newAlias = alias(select, typeof name !== 'object' ? name : name instanceof IdentifierExpr ? name : toIdentifier(name.name), {
       copy: false,
     });
 
