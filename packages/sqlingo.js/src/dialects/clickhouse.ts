@@ -94,6 +94,7 @@ import {
   StrToDateExpr,
   DataTypeExpr,
   LiteralExpr,
+  PowExpr,
   DataTypeParamExpr,
   toIdentifier,
   TupleExpr,
@@ -155,6 +156,8 @@ import {
   SelectExpr,
   FetchExpr,
   paren,
+  and,
+  or,
   QueryExpr,
   SchemaExpr,
   JoinExprKind,
@@ -243,10 +246,10 @@ export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): str
     cast(
       new DivExpr({
         this: timestamp,
-        expression: this.func('POW', [
-          '10',
-          scale,
-        ]),
+        expression: new PowExpr({
+          this: LiteralExpr.number(10),
+          expression: scale,
+        }),
       }),
       DataTypeExprKind.BIGINT,
     ),
@@ -621,25 +624,25 @@ class ClickHouseParser extends Parser {
       COSINEDISTANCE: (args: unknown[]) => CosineDistanceExpr.fromArgList(args),
       VERSION: (args: unknown[]) => CurrentVersionExpr.fromArgList(args),
       DATE_ADD: buildDateDelta(DateAddExpr, undefined, {
-        defaultUnit: null,
+        defaultUnit: undefined,
       }),
       DATEADD: buildDateDelta(DateAddExpr, undefined, {
-        defaultUnit: null,
+        defaultUnit: undefined,
       }),
       DATE_DIFF: buildDateDelta(DateDiffExpr, undefined, {
-        defaultUnit: null,
+        defaultUnit: undefined,
         supportsTimezone: true,
       }),
       DATEDIFF: buildDateDelta(DateDiffExpr, undefined, {
-        defaultUnit: null,
+        defaultUnit: undefined,
         supportsTimezone: true,
       }),
       DATE_FORMAT: buildDateTimeFormat(TimeToStrExpr),
       DATE_SUB: buildDateDelta(DateSubExpr, undefined, {
-        defaultUnit: null,
+        defaultUnit: undefined,
       }),
       DATESUB: buildDateDelta(DateSubExpr, undefined, {
-        defaultUnit: null,
+        defaultUnit: undefined,
       }),
       FORMATDATETIME: buildDateTimeFormat(TimeToStrExpr),
       HAS: (args: unknown[]) => ArrayContainsExpr.fromArgList(args),
@@ -663,16 +666,16 @@ class ClickHouseParser extends Parser {
       RANDCANONICAL: (args: unknown[]) => RandExpr.fromArgList(args),
       STR_TO_DATE: buildStrToDate,
       TIMESTAMP_SUB: buildDateDelta(TimestampSubExpr, undefined, {
-        defaultUnit: null,
+        defaultUnit: undefined,
       }),
       TIMESTAMPSUB: buildDateDelta(TimestampSubExpr, undefined, {
-        defaultUnit: null,
+        defaultUnit: undefined,
       }),
       TIMESTAMP_ADD: buildDateDelta(TimestampAddExpr, undefined, {
-        defaultUnit: null,
+        defaultUnit: undefined,
       }),
       TIMESTAMPADD: buildDateDelta(TimestampAddExpr, undefined, {
-        defaultUnit: null,
+        defaultUnit: undefined,
       }),
       TOMONDAY: buildTimestampTrunc('WEEK'),
       UNIQ: (args: unknown[]) => ApproxDistinctExpr.fromArgList(args),
@@ -909,24 +912,14 @@ class ClickHouseParser extends Parser {
         }));
       },
       AND: function (this: Parser) {
-        const args = this.parseFunctionArgs({
+        return and(this.parseFunctionArgs({
           alias: false,
-        });
-
-        return new AndExpr({
-          this: args[0],
-          expression: args[1],
-        });
+        })) as Expression;
       },
       OR: function (this: Parser) {
-        const args = this.parseFunctionArgs({
+        return or(this.parseFunctionArgs({
           alias: false,
-        });
-
-        return new OrExpr({
-          this: args[0],
-          expression: args[1],
-        });
+        })) as Expression;
       },
     };
 
@@ -995,12 +988,11 @@ class ClickHouseParser extends Parser {
   static get TABLE_ALIAS_TOKENS (): Set<TokenType> {
     return new Set(
       [...Parser.TABLE_ALIAS_TOKENS].filter((t) =>
-        t !== TokenType.ANY &&
-        t !== TokenType.ARRAY &&
-        t !== TokenType.FINAL &&
-        t !== TokenType.FORMAT &&
-        t !== TokenType.SETTINGS
-      ),
+        t !== TokenType.ANY
+        && t !== TokenType.ARRAY
+        && t !== TokenType.FINAL
+        && t !== TokenType.FORMAT
+        && t !== TokenType.SETTINGS),
     );
   }
 
@@ -2557,7 +2549,7 @@ export class ClickHouseGenerator extends Generator {
     });
   }
 
-  regexpILikeSql (expression: RegexpILikeExpr): string {
+  regexpIlikeSql (expression: RegexpILikeExpr): string {
   // Manually add a flag to make the search case-insensitive
     const regex = this.func('CONCAT', [
       '\'(?i)\'',
@@ -2679,7 +2671,7 @@ export class ClickHouseGenerator extends Generator {
     return `${createSql}${commentSql}`;
   }
 
-  prewhereSql (expression: PreWhereExpr): string {
+  preWhereSql (expression: PreWhereExpr): string {
     const thisSql = this.indent(this.sql(expression, 'this'));
 
     return `${this.seg('PREWHERE')}${this.sep()}${thisSql}`;
@@ -2808,12 +2800,9 @@ export class ClickHouse extends Dialect {
     return NormalizationStrategy.CASE_SENSITIVE;
   }
 
-  @cache
-  static get UNESCAPED_SEQUENCES () {
-    return {
-      '\\0': '\0',
-    };
-  }
+  static ORIGINAL_UNESCAPED_SEQUENCES = {
+    '\\0': '\0',
+  };
 
   @cache
   static get CREATABLE_KIND_MAPPING () {

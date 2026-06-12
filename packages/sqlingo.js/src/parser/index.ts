@@ -556,10 +556,6 @@ export type OptionsType = Record<string, (string[] | string)[]>;
 export const TIME_ZONE_RE: RegExp = /:.*?[a-zA-Z+\-]/;
 
 export function buildVarMap (args: Expression[]): StarMapExpr | VarMapExpr {
-  if (args.length < 1) {
-    throw new Error('buildVarMap only accepts an expression list with at least one expression');
-  }
-
   if (args.length === 1 && args[0].isStar) {
     return new StarMapExpr({
       this: args[0],

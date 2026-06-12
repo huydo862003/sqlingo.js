@@ -232,7 +232,7 @@ import {
 import {
   findNewName,
   isDateUnit,
-  isInt, seqGet,
+  isInt, seqGet, snakeToCamelCase,
 } from '../helper';
 import {
   JsonPathTokenizer,
@@ -579,7 +579,7 @@ function buildSearch (args: Expression[]): SearchExpr {
 
   args.slice(2).forEach((arg) => {
     if (arg instanceof KwargExpr) {
-      (kwargs as Record<string, unknown>)[arg.name] = arg;
+      (kwargs as Record<string, unknown>)[snakeToCamelCase(arg.name.toLowerCase())] = arg;
     }
   });
 

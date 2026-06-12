@@ -4723,7 +4723,7 @@ class TestSnowflake extends Validator {
         this.validateAll(
           `
            ALTER TABLE a
-           ALTER COLUMN my_column {action} NOT NULL;`,
+           ALTER COLUMN my_column ${action} NOT NULL;`,
           {
             write: {
               'snowflake': `ALTER TABLE a ALTER COLUMN my_column ${action} NOT NULL`,
@@ -5245,22 +5245,22 @@ FROM persons AS p, LATERAL FLATTEN(input => p.c, path => 'contact') AS _flattene
 
     let searchAst = ast.find(SearchExpr);
 
-    expect(searchAst?.args).toBe([
+    expect(Object.keys(searchAst!.args).filter((k) => (searchAst!.args as Record<string, unknown>)[k] !== undefined)).toEqual([
       'this',
       'expression',
     ]);
 
-    expect(searchAst?.getArgKey('analyzer')).toBeNullable();
-    expect(searchAst?.getArgKey('searchMode')).toBeNullable();
+    expect(searchAst?.getArgKey('analyzer')).toBeUndefined();
+    expect(searchAst?.getArgKey('searchMode')).toBeUndefined();
 
     ast = this.validateIdentity('SELECT SEARCH(line, \'king\', ANALYZER => \'UNICODE_ANALYZER\')');
     searchAst = ast.find(SearchExpr);
     expect(searchAst?.getArgKey('analyzer')).toBeDefined();
-    expect(searchAst?.getArgKey('searchMode')).toBeNullable();
+    expect(searchAst?.getArgKey('searchMode')).toBeUndefined();
 
     ast = this.validateIdentity('SELECT SEARCH(character, \'king queen\', SEARCH_MODE => \'AND\')');
     searchAst = ast.find(SearchExpr);
-    expect(searchAst?.getArgKey('analyzer'));
+    expect(searchAst?.getArgKey('analyzer')).toBeUndefined();
     expect(searchAst?.getArgKey('searchMode')).toBeDefined();
 
     // Test with arguments in different order (searchMode first, then analyzer)
@@ -5269,7 +5269,7 @@ FROM persons AS p, LATERAL FLATTEN(input => p.c, path => 'contact') AS _flattene
       'SELECT SEARCH(line, \'king\', ANALYZER => \'PATTERN_ANALYZER\', SEARCH_MODE => \'AND\')',
     );
     searchAst = ast.find(SearchExpr);
-    expect(searchAst?.args).toBe([
+    expect(Object.keys(searchAst!.args).filter((k) => (searchAst!.args as Record<string, unknown>)[k] !== undefined)).toEqual([
       'this',
       'expression',
       'searchMode',

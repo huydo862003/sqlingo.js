@@ -33,6 +33,7 @@ describe('TestGenerator', () => {
 
     const tokens = new Tokenizer().tokenize('SELECT SPECIAL_UDF(a) FROM x');
     const expression = new NewParser().parse(tokens)[0];
+
     expect(expression?.sql()).toBe('SELECT SPECIAL_UDF(a) FROM x');
   });
 
@@ -55,6 +56,7 @@ describe('TestGenerator', () => {
 
     const tokens = new Tokenizer().tokenize('SELECT SPECIAL_UDF(a, b, c, d + 1) FROM x');
     const expression = new NewParser().parse(tokens)[0];
+
     expect(expression?.sql()).toBe('SELECT SPECIAL_UDF(a, b, c, d + 1) FROM x');
 
     expect(
@@ -96,6 +98,7 @@ describe('TestGenerator', () => {
 
   it('test_generate_nested_binary', () => {
     const sql = 'SELECT \'foo\'' + (' || \'foo\'').repeat(1000);
+
     expect(parseOne(sql).sql({
       copy: false,
     })).toBe(sql);
@@ -111,6 +114,7 @@ describe('TestGenerator', () => {
       const ast = parseOne(inputSql, {
         dialect: 'postgres',
       });
+
       expect(ast.sql()).toBe(expectedSql);
       expect(ast.sql({
         dialect: 'postgres',
@@ -136,6 +140,7 @@ describe('TestGenerator', () => {
 
     // STRUCT
     let typeStr = 'STRUCT<a INT, b TEXT>';
+
     assertPrettyNested(
       DataTypeExpr.build(typeStr),
       typeStr,

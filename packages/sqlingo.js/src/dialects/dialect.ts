@@ -2189,21 +2189,19 @@ export function timeFormat (
   };
 }
 
+// FIXME: null & undefined
 export function buildDateDelta<T extends Expression> (
-
   ExpClass: new (args: any) => T,
   unitMapping?: Record<string, string>,
   options: {
-    defaultUnit?: string | null;
+    defaultUnit?: string;
     supportsTimezone?: boolean;
   } = {},
-
 ): (args: any) => T {
   const {
-    defaultUnit: defaultUnitRaw,
+    defaultUnit = 'DAY',
     supportsTimezone = false,
   } = options;
-  const defaultUnit = defaultUnitRaw === undefined ? 'DAY' : defaultUnitRaw;
 
   return (args: any) => {
     const unitBased = 3 <= args.length;
@@ -2253,11 +2251,8 @@ export function buildDateDelta<T extends Expression> (
 }
 
 export function buildDateDeltaWithInterval<T extends Expression> (
-
   ExpClass: new (args: any) => T,
-
 ): (args: any) => T {
-
   return (args: any) => {
     if (args.length < 2) throw new Error(`Expected at least 2 arguments but got ${args.length}`);
     const interval = args[1];
@@ -2933,7 +2928,7 @@ export function mapDatePart (part: string | Expression | undefined, options: {
 
   const mapped =
 
-    part instanceof Expression && !(part instanceof ColumnExpr) && (part as any).parts?.length !== 1 ? Dialect.getOrRaise(dialect)._constructor.DATE_PART_MAPPING[partName.toUpperCase()] : undefined;
+    part instanceof Expression && !(part instanceof ColumnExpr && (part as any).parts?.length !== 1) ? Dialect.getOrRaise(dialect)._constructor.DATE_PART_MAPPING[partName.toUpperCase()] : undefined;
 
   if (mapped) {
     if (part instanceof Expression && part.isString) return LiteralExpr.string(mapped);

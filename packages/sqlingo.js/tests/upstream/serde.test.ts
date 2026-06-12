@@ -29,6 +29,7 @@ describe('TestSerde', () => {
     for (const sql of loadSqlFixtures('identity.sql')) {
       const before = parseOne(sql);
       const after = dumpLoad(before);
+
       expect(String(after)).toBe(String(before));
     }
   });
@@ -39,12 +40,14 @@ describe('TestSerde', () => {
     const after = dumpLoad(before, {
       CustomExpression,
     });
+
     expect(after).toEqual(before);
   });
 
   it('test_type_annotations', () => {
     const before = annotateTypes(parseOne('CAST(\'1\' AS STRUCT<x ARRAY<INT>>)'));
     const after = dumpLoad(before);
+
     expect(after).toBeDefined();
     expect(narrowInstanceOf(before.type, Expression)?.sql()).toBe(narrowInstanceOf(after?.type, Expression)?.sql());
     expect(narrowInstanceOf(narrowInstanceOf(before.args.this, Expression)?.type, Expression)?.sql()).toBe(narrowInstanceOf(narrowInstanceOf(after?.args.this, Expression)?.type, Expression)?.sql());
@@ -52,18 +55,22 @@ describe('TestSerde', () => {
 
   it('test_meta', () => {
     const before = parseOne('SELECT * FROM X');
+
     before.meta.x = 1;
     const after = dumpLoad(before);
+
     expect(after).toBeDefined();
     expect(after?.meta).toEqual(before.meta);
   });
 
   it('test_recursion', () => {
     let sql = 'SELECT 1';
+
     sql += ' UNION ALL SELECT 1'.repeat(5000);
     const expr = parseOne(sql);
     const before = expr.sql();
     const afterExpr = dumpLoad(expr);
+
     expect(afterExpr).toBeDefined();
     expect(afterExpr?.sql()).toBe(before);
   });

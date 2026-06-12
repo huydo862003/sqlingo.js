@@ -426,6 +426,8 @@ export function findNewName (taken: Iterable<string>, base: string): string {
  *
  */
 export function isInt (text: string): boolean {
+  if (!text) return false;
+
   return isType(text, (s) => {
     const num = Number(s);
 

@@ -170,6 +170,7 @@ class TestErrors {
 
   testHighlightSqlEmptyPositions () {
     const sql = 'SELECT a FROM t';
+
     expect(() => highlightSql({
       sql,
       positions: [],
@@ -299,6 +300,7 @@ class TestErrors {
 }
 
 const t = new TestErrors();
+
 describe('TestErrors', () => {
   test('testHighlightSqlSingleCharacter', () => t.testHighlightSqlSingleCharacter());
   test('testHighlightSqlMultiCharacter', () => t.testHighlightSqlMultiCharacter());

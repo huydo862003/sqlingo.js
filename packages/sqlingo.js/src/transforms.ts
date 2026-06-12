@@ -795,7 +795,9 @@ export function explodeProjectionToUnnest (
           let aliasExpr: Expression;
 
           if (select instanceof AliasExpr) {
-            explodeAlias = select.alias;
+            const aliasArg = select.getArgKey('alias');
+
+            explodeAlias = aliasArg instanceof IdentifierExpr ? aliasArg : select.alias;
             aliasExpr = select;
           } else if (select instanceof AliasesExpr) {
             posAlias = select.aliases[0] as IdentifierExpr;
@@ -871,10 +873,7 @@ export function explodeProjectionToUnnest (
           if (isPosexplode && !posAlias) posAlias = newName(takenSelectNames, 'pos');
           if (!posAlias) posAlias = newName(takenSelectNames, 'pos');
 
-          aliasExpr.setArgKey('alias', new IdentifierExpr({
-            this: explodeAlias,
-            quoted: false,
-          }));
+          aliasExpr.setArgKey('alias', toIdentifier(explodeAlias instanceof IdentifierExpr ? explodeAlias : (explodeAlias ?? '')));
 
           const seriesTableAlias = (series.args.alias as TableAliasExpr | undefined)?.args.this as IdentifierExpr | undefined;
           const unnestSourceAliasIdent = toIdentifier(unnestSourceAlias);

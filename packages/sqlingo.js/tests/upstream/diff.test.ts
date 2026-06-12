@@ -12,20 +12,6 @@ import {
   SelectExpr,
 } from '../../src/expressions';
 
-function diffDeltaOnly (
-  source: Expression,
-  target: Expression,
-  options: {
-    matchings?: [Expression, Expression][];
-    dialect?: string;
-  } = {},
-): ReturnType<typeof diff> {
-  return diff(source, target, {
-    ...options,
-    deltaOnly: true,
-  });
-}
-
 class TestDiff {
   private validateDeltaOnly (
     actualDelta: ReturnType<typeof diff>,
@@ -33,6 +19,7 @@ class TestDiff {
   ): void {
     const actualSet = new Set(actualDelta.map((e) => JSON.stringify(e)));
     const expectedSet = new Set(expectedDelta.map((e) => JSON.stringify(e)));
+
     expect(actualSet).toEqual(expectedSet);
   }
 
@@ -240,11 +227,13 @@ class TestDiff {
     });
 
     const tgtConcat = exprTgt.find(ConcatExpr);
+
     if (tgtConcat) {
       const tgtConcatExprs = tgtConcat.getArgKey('expressions');
       const lastTgtConcatExpr = Array.isArray(tgtConcatExprs)
         ? tgtConcatExprs[tgtConcatExprs.length - 1]
         : undefined;
+
       if (lastTgtConcatExpr instanceof Expression) {
         this.validateDeltaOnly(
           diffDeltaOnly(exprSrc, exprTgt),
@@ -269,6 +258,7 @@ class TestDiff {
         ? tgtConcatExprs2[tgtConcatExprs2.length - 1]
         : undefined;
       const bAliasThis = bAlias.getArgKey('this');
+
       if (lastTgtConcatExpr2 instanceof Expression && bAliasThis instanceof Expression) {
         this.validateDeltaOnly(
           diffDeltaOnly(exprSrc, exprTgt),
@@ -321,6 +311,7 @@ class TestDiff {
     if (srcJoin && tgtJoin) {
       const srcOn = srcJoin.getArgKey('on');
       const tgtOn = tgtJoin.getArgKey('on');
+
       if (srcOn instanceof Expression && tgtOn instanceof Expression) {
         this.validateDeltaOnly(
           diffDeltaOnly(exprSrc, exprTgt),
@@ -436,6 +427,7 @@ class TestDiff {
 
     const firstTgtSelect = exprTgt.selects[0];
     const srcSelect = exprSrc.selects[0];
+
     firstTgtSelect.replace(srcSelect);
 
     this.validateDeltaOnly(
@@ -582,8 +574,10 @@ class TestDiff {
     });
 
     const fromArg = exprTgt.getArgKey('from');
+
     if (fromArg instanceof Expression) {
       const fromThis = fromArg.getArgKey('this');
+
       if (fromThis instanceof Expression) {
         expect(fromThis.comments).toEqual([' this is comment']);
       }
@@ -593,7 +587,22 @@ class TestDiff {
   }
 }
 
+function diffDeltaOnly (
+  source: Expression,
+  target: Expression,
+  options: {
+    matchings?: [Expression, Expression][];
+    dialect?: string;
+  } = {},
+): ReturnType<typeof diff> {
+  return diff(source, target, {
+    ...options,
+    deltaOnly: true,
+  });
+}
+
 const t = new TestDiff();
+
 describe('TestDiff', () => {
   test('simple', () => t.testSimple());
   test('lambda', () => t.testLambda());

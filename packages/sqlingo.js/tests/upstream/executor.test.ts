@@ -26,11 +26,6 @@ import {
   table,
 } from '../../src/expressions';
 
-// Helper to sort rows for set comparisons
-function rowSet (rows: unknown[][]): Set<string> {
-  return new Set(rows.map((r) => JSON.stringify(r)));
-}
-
 class TestExecutor {
   testExecuteCallable () {
     const tables: Record<string, Record<string, string>[]> = {
@@ -268,6 +263,7 @@ class TestExecutor {
       rows,
     ] of cases) {
       const result = execute(sql, schema, undefined, tables);
+
       expect(result.columns).toEqual(cols);
       expect(result.rows).toEqual(rows);
     }
@@ -387,6 +383,7 @@ class TestExecutor {
       rows,
     ] of listCases) {
       const result = execute(sql, schema, undefined, tables);
+
       expect(result.columns).toEqual(cols);
       expect(rowSet(result.rows)).toEqual(rowSet(rows));
     }
@@ -399,6 +396,7 @@ class TestExecutor {
       typed: true,
     }), 'a');
     const typedResult = execute(select(typedDiv));
+
     expect(rowSet(typedResult.rows)).toEqual(rowSet([[0]]));
 
     // Test safe division (undefined on zero)
@@ -406,10 +404,12 @@ class TestExecutor {
       safe: true,
     }), 'a');
     const safeResult = execute(select(safeDiv));
+
     expect(rowSet(safeResult.rows)).toEqual(rowSet([[undefined]]));
 
     // Test LIMIT on UNION ALL
     const limitResult = execute('SELECT a FROM x UNION ALL SELECT a FROM x LIMIT 1', schema, undefined, tables);
+
     expect(limitResult.columns).toEqual(['a']);
     expect(limitResult.rows).toEqual([['a']]);
   }
@@ -443,6 +443,7 @@ class TestExecutor {
     };
     const result1 = execute('SELECT * FROM x', schema, undefined, tables);
     const result2 = execute('SELECT * FROM catalog.db.x', schema, undefined, tables);
+
     expect(result1.columns).toEqual(result2.columns);
     expect(result1.rows).toEqual(result2.rows);
   }
@@ -507,6 +508,7 @@ class TestExecutor {
       undefined,
       tables,
     );
+
     expect(result1.rows).toEqual([
       [
         1,
@@ -534,6 +536,7 @@ class TestExecutor {
       undefined,
       tables,
     );
+
     expect(result2.rows).toEqual([
       [
         1,
@@ -564,6 +567,7 @@ class TestExecutor {
       undefined,
       tables,
     );
+
     expect(result3.rows).toEqual([
       [
         1,
@@ -600,6 +604,7 @@ class TestExecutor {
       undefined,
       tables,
     );
+
     expect(result1.rows).toEqual([
       [
         2,
@@ -668,6 +673,7 @@ class TestExecutor {
       undefined,
       tables,
     );
+
     expect(result.rows).toEqual([
       [
         0,
@@ -687,6 +693,7 @@ class TestExecutor {
         },
       },
     };
+
     expect(() => execute('SELECT * FROM table', schema, undefined, tables)).toThrow(ExecuteError);
   }
 
@@ -731,6 +738,7 @@ class TestExecutor {
     });
 
     const t1 = tables.find(table('t1', 'db1', 'catalog1'));
+
     expect(typeof t1).toBe('object');
     expect(t1).toBeDefined();
     if (typeof t1 !== 'object' || t1 == undefined) {
@@ -740,6 +748,7 @@ class TestExecutor {
     expect(t1.rows).toEqual([[1]]);
 
     const t8 = tables.find(table('t8'));
+
     expect(typeof t8).toBe('object');
     expect(t8).toBeDefined();
     if (typeof t8 !== 'object' || t8 == undefined) {
@@ -810,6 +819,7 @@ class TestExecutor {
       rows,
     ] of cases) {
       const result = execute(sql);
+
       expect(result.columns).toEqual(cols);
       expect(result.rows).toEqual(rows);
     }
@@ -826,6 +836,7 @@ class TestExecutor {
         },
       ],
     });
+
     expect(result.columns).toEqual(['_col_0']);
     expect(result.rows).toEqual([[3]]);
   }
@@ -1123,6 +1134,7 @@ class TestExecutor {
       expected,
     ] of cases) {
       const result = execute(`SELECT ${sql}`);
+
       expect(result.rows).toEqual([[expected]]);
     }
 
@@ -1132,6 +1144,7 @@ class TestExecutor {
       undefined,
       'oracle',
     );
+
     expect(oracleResult.rows).toEqual([['a']]);
   }
 
@@ -1143,6 +1156,7 @@ class TestExecutor {
         },
       ],
     });
+
     expect(result1.columns).toEqual(['a']);
     expect(result1.rows).toEqual([[1]]);
 
@@ -1153,6 +1167,7 @@ class TestExecutor {
         },
       ],
     });
+
     expect(result2.columns).toEqual(['A']);
     expect(result2.rows).toEqual([[1]]);
   }
@@ -1180,6 +1195,7 @@ class TestExecutor {
     };
 
     const result = execute('SELECT * FROM some_catalog.some_schema.some_table s', undefined, undefined, tables);
+
     expect(result.columns).toEqual([
       'id',
       'price',
@@ -1397,6 +1413,7 @@ class TestExecutor {
       columns,
     ] of cases) {
       const result = execute(sql, undefined, undefined, tables);
+
       expect(result.columns).toEqual(columns);
       expect(result.rows).toEqual(expected);
     }
@@ -1419,18 +1436,22 @@ class TestExecutor {
     };
 
     const r1 = execute('SELECT raw:name AS name FROM foo', undefined, 'snowflake', fooTables);
+
     expect(r1.columns).toEqual(['NAME']);
     expect(r1.rows).toEqual([['Hello, World']]);
 
     const r2 = execute('SELECT raw:a[0].b AS b FROM foo', undefined, 'snowflake', fooTables);
+
     expect(r2.columns).toEqual(['B']);
     expect(r2.rows).toEqual([[1]]);
 
     const r3 = execute('SELECT raw:a[1].b AS b FROM foo', undefined, 'snowflake', fooTables);
+
     expect(r3.columns).toEqual(['B']);
     expect(r3.rows).toEqual([[undefined]]);
 
     const r4 = execute('SELECT raw:a[0].c AS c FROM foo', undefined, 'snowflake', fooTables);
+
     expect(r4.columns).toEqual(['C']);
     expect(r4.rows).toEqual([[undefined]]);
 
@@ -1460,6 +1481,7 @@ class TestExecutor {
       ],
     };
     const r5 = execute('SELECT i.attributes.flavor FROM `ITEM` i', undefined, 'bigquery', itemTables);
+
     expect(r5.columns).toEqual(['flavor']);
     expect(r5.rows).toEqual([
       ['cherry'],
@@ -1479,6 +1501,7 @@ class TestExecutor {
       ],
     };
     const r6 = execute('SELECT x FROM t', undefined, 'duckdb', arrayTables);
+
     expect(r6.columns).toEqual(['x']);
     expect(r6.rows).toEqual([
       [
@@ -1501,7 +1524,9 @@ class TestExecutor {
       `),
     );
 
-    expect(plan.root?.aggregations.map((agg) => (agg as { alias?: string }).alias)).toEqual([
+    expect(plan.root?.aggregations.map((agg) => (agg as {
+      alias?: string;
+    }).alias)).toEqual([
       'avg_bill_length',
       'avg_bill_depth',
     ]);
@@ -1538,11 +1563,18 @@ class TestExecutor {
         price: 60.0,
       },
     ];
+
     expect(table.toJslist()).toEqual(expected);
   }
 }
 
+// Helper to sort rows for set comparisons
+function rowSet (rows: unknown[][]): Set<string> {
+  return new Set(rows.map((r) => JSON.stringify(r)));
+}
+
 const t = new TestExecutor();
+
 describe('TestExecutor', () => {
   test('testExecuteCallable', () => t.testExecuteCallable());
   test('testSetOperations', () => t.testSetOperations());

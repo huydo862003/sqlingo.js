@@ -186,6 +186,7 @@ import {
   timeStrToTimeSql,
   tsOrDsAddCast,
   unitToStr,
+  noTimestampSql,
   NullOrdering,
 } from './dialect';
 import {
@@ -798,7 +799,6 @@ class PrestoParser extends Parser {
   }
 }
 class PrestoGenerator extends Generator {
-  // port from _Dialect metaclass logic
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);
@@ -1258,10 +1258,7 @@ class PrestoGenerator extends Generator {
       ],
       [
         TimestampExpr,
-        function (this: Generator, e: TimestampExpr) {
-          // Presto doesn't support the TIMESTAMP keyword in the same way as Postgres/Spark
-          return `CAST(${this.sql(e.args.this)} AS TIMESTAMP)`;
-        },
+        noTimestampSql,
       ],
       [
         TimestampAddExpr,
@@ -1679,6 +1676,15 @@ class PrestoGenerator extends Generator {
     }
 
     return `CAST(ROW(${values.join(', ')}) AS ROW(${schema.join(', ')}))`;
+  }
+
+  public offsetLimitModifiers (expression: Expression, _options: {
+    fetch: boolean;
+  }, limit: Expression | undefined): string[] {
+    return [
+      this.sql(expression, 'offset'),
+      this.sql(limit),
+    ];
   }
 
   public intervalSql (expression: IntervalExpr): string {

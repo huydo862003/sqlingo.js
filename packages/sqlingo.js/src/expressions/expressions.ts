@@ -8231,7 +8231,7 @@ export class TimeUnitExpr extends Expression {
 
     if (unit && TimeUnitExpr.isVarLike(unit) && !(unit instanceof ColumnExpr && unit.parts.length !== 1)) {
       args.unit = new VarExpr({
-        this: (TimeUnitExpr.UNABBREVIATED_UNIT_NAME[unit.name] || unit.name).toUpperCase(),
+        this: (TimeUnitExpr.UNABBREVIATED_UNIT_NAME[unit.name.toUpperCase()] || unit.name).toUpperCase(),
       });
     } else if (unit instanceof WeekExpr) {
       const thisArg = unit.args.this;
@@ -19333,16 +19333,25 @@ export class ConcatExpr extends FuncExpr {
     'coalesce',
   ]);
 
-  static argOrder = [
-    'expressions',
-    'safe',
-    'coalesce',
-  ];
+  static argOrder = ['expressions'];
 
   declare args: ConcatExprArgs;
 
   constructor (args: ConcatExprArgs = {}) {
     super(args);
+  }
+
+  static fromArgList<T extends typeof FuncExpr> (this: T, args: Expression[]): InstanceType<T> {
+    const result = super.fromArgList(args) as InstanceType<T>;
+
+    if (result.getArgKey('safe') === undefined) {
+      result.setArgKey('safe', true);
+    }
+    if (result.getArgKey('coalesce') === undefined) {
+      result.setArgKey('coalesce', false);
+    }
+
+    return result;
   }
 
   static {
@@ -20772,7 +20781,10 @@ export type DayOfWeekIsoExprArgs = Merge<[
 export class DayOfWeekIsoExpr extends FuncExpr {
   static key = ExpressionKey.DAY_OF_WEEK_ISO;
 
-  static _sqlNames = ['DAYOFWEEK_ISO', 'ISODOW'];
+  static _sqlNames = [
+    'DAYOFWEEK_ISO',
+    'ISODOW',
+  ];
 
   static argOrder = ['this'];
 
@@ -26809,6 +26821,7 @@ export class RegexpLikeExpr extends multiInherit(BinaryExpr, FuncExpr) {
   static argOrder = [
     'this',
     'expression',
+    'flag',
   ];
 
   static requiredArgs = new Set([
@@ -29488,6 +29501,17 @@ export class TimestampTzFromPartsExpr extends FuncExpr {
     'TIMESTAMPTZFROMPARTS',
   ];
 
+  static argOrder = [
+    'year',
+    'month',
+    'day',
+    'hour',
+    'min',
+    'sec',
+    'nano',
+    'zone',
+  ];
+
   static availableArgs = new Set([
     'year',
     'month',
@@ -29498,8 +29522,6 @@ export class TimestampTzFromPartsExpr extends FuncExpr {
     'nano',
     'zone',
   ]);
-
-  static argOrder = ['zone'];
 
   declare args: TimestampTzFromPartsExprArgs;
 
@@ -29854,9 +29876,9 @@ export class ZipfExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
     'elementcount',
     'gen',
-    'this',
   ];
 
   declare args: ZipfExprArgs;
@@ -30508,6 +30530,8 @@ export class GroupingIdExpr extends AggFuncExpr {
   static requiredArgs = new Set<string>();
 
   static isVarLenArgs = true;
+
+  static argOrder = ['expressions'];
 
   static availableArgs = new Set(['expressions']);
 
@@ -33493,8 +33517,9 @@ export function cast (
     const typeMapping = targetDialect._constructor.generatorClass.TYPE_MAPPING;
     const existingCastType = (expr.args.to as Expression | undefined)?.args.this;
     const newCastType = dataType?.args.this;
-    const typesAreEquivalent = existingCastType != null
-      && (typeMapping.get(existingCastType.toString()) || existingCastType) === (typeMapping.get(newCastType?.toString() ?? '') || newCastType);
+    const existingMapped = (typeMapping.get(existingCastType?.toString() ?? '') || existingCastType?.toString())?.toUpperCase();
+    const newMapped = (typeMapping.get(newCastType?.toString() ?? '') || newCastType?.toString())?.toUpperCase();
+    const typesAreEquivalent = existingCastType != null && existingMapped === newMapped;
 
     if ((dataType !== undefined && expr.isType([dataType])) || typesAreEquivalent) {
       return expr;
@@ -34987,16 +35012,18 @@ export function convert (value: unknown, options: {
     // Format datetime similar to Python's isoformat(sep=" ")
     // Include fractional seconds (microseconds) when present, matching Python behavior
     let datetimeStr = value.toFormat('yyyy-MM-dd HH:mm:ss');
-    if (value.millisecond > 0) {
+
+    if (0 < value.millisecond) {
       // Luxon only has millisecond precision; pad to microsecond precision (6 digits)
       const microStr = (value.millisecond * 1000).toString().padStart(6, '0');
+
       datetimeStr += `.${microStr}`;
     }
     const datetimeLiteral = LiteralExpr.string(datetimeStr);
 
-    // In Python, datetime.datetime(2020, 1, 1) has no tzinfo (naive datetime).
-    // Luxon's DateTime.local always has a system timezone, so we treat it as naive.
-    // Only DateTime.utc (zone.isUniversal = true) maps to Python's tz-aware datetime.
+    // In Python, datetime.datetime(2020, 1, 1) has no tzinfo (naive datetime)
+    // Luxon's DateTime.local always has a system timezone, so we treat it as naive
+    // Only DateTime.utc (zone.isUniversal = true) maps to Python's tz-aware datetime
     let tz: LiteralExpr | undefined;
 
     if (value.zone.isUniversal) {

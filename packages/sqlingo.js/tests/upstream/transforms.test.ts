@@ -29,6 +29,7 @@ class TestTransforms {
         dialect,
       })
       : sqlOrExpr;
+
     expect(expr.transform(transform).sql({
       dialect,
     })).toBe(target);
@@ -194,9 +195,11 @@ class TestTransforms {
   testInheritStructFieldNames () {
     function parseAndSetStructNameInheritance (sql: string): Expression {
       const ast = maybeParse(sql);
+
       for (const array of ast.findAll(ArrayExpr)) {
         array.setArgKey('structNameInheritance', true);
       }
+
       return ast;
     }
 

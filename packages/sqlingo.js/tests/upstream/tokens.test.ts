@@ -45,6 +45,7 @@ class TestTokens {
       length,
     ] of cases) {
       const tokens = new Tokenizer().tokenize(string);
+
       expect(tokens[0].text.toUpperCase()).toContain('GROUP');
       expect(tokens.length).toBe(length);
     }
@@ -123,6 +124,7 @@ class TestTokens {
     expect(tokens[3].col).toBe(1);
 
     const tokens2 = new Tokenizer().tokenize('SELECT .');
+
     expect(tokens2[1].line).toBe(1);
     expect(tokens2[1].col).toBe(8);
 
@@ -131,6 +133,7 @@ class TestTokens {
     expect(new Tokenizer().tokenize('\'abc\'')[0].start).toBe(0);
 
     const tokens3 = new Tokenizer().tokenize('SELECT\r\n  1,\r\n  2');
+
     expect(tokens3[0].line).toBe(1);
     expect(tokens3[0].col).toBe(6);
     expect(tokens3[1].line).toBe(2);
@@ -141,6 +144,7 @@ class TestTokens {
     expect(tokens3[3].col).toBe(3);
 
     const tokens4 = new Tokenizer().tokenize('  SELECT\n    100');
+
     expect(tokens4[0].line).toBe(1);
     expect(tokens4[0].col).toBe(8);
     expect(tokens4[1].line).toBe(2);
@@ -182,6 +186,7 @@ class TestTokens {
         token.tokenType,
         token.text,
       ]);
+
       expect(p).toEqual([
         [
           TokenType.SELECT,
@@ -197,14 +202,17 @@ class TestTokens {
 
   testCommand () {
     const tokens = new Tokenizer().tokenize('SHOW;');
+
     expect(tokens[0].tokenType).toBe(TokenType.SHOW);
     expect(tokens[1].tokenType).toBe(TokenType.SEMICOLON);
 
     const tokens2 = new Tokenizer().tokenize('EXECUTE');
+
     expect(tokens2[0].tokenType).toBe(TokenType.EXECUTE);
     expect(tokens2.length).toBe(1);
 
     const tokens3 = new Tokenizer().tokenize('FETCH;SHOW;');
+
     expect(tokens3[0].tokenType).toBe(TokenType.FETCH);
     expect(tokens3[1].tokenType).toBe(TokenType.SEMICOLON);
     expect(tokens3[2].tokenType).toBe(TokenType.SHOW);
@@ -346,6 +354,7 @@ class TestTokens {
       token.tokenType,
       token.text,
     ]);
+
     expect(pairs2).toEqual([
       [
         TokenType.STRING,
@@ -373,6 +382,7 @@ class TestTokens {
     }
 
     const partialTokens = tokenizer.tokens;
+
     expect(partialTokens.length).toBe(1);
     expect(partialTokens[0].tokenType).toBe(TokenType.VAR);
     expect(partialTokens[0].text).toBe('foo');
@@ -380,6 +390,7 @@ class TestTokens {
 }
 
 const t = new TestTokens();
+
 describe('TestTokens', () => {
   test('testSpaceKeywords', () => t.testSpaceKeywords());
   test('testCommentAttachment', () => t.testCommentAttachment());

@@ -209,6 +209,7 @@ class TestJsonpath {
 
     for (const testCase of tests) {
       const selector = testCase.selector;
+
       if (testCase.invalid_selector) {
         try {
           parse(selector);
@@ -220,6 +221,7 @@ class TestJsonpath {
       } else {
         const path = parse(selector);
         const expectedSql = `'${overrides[selector] ?? selector}'`;
+
         expect(path.sql()).toBe(expectedSql);
       }
     }

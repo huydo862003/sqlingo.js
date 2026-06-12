@@ -337,8 +337,8 @@ function jsonFormatSql (this: Generator, expression: JsonFormatExpr): string {
 
       return this.func('REGEXP_EXTRACT', [
         toJson,
-        LiteralExpr.string('\'^.(.*).$\''),
-        LiteralExpr.number(1),
+        '\'^.(.*).$\'',
+        '1',
       ]);
     }
 

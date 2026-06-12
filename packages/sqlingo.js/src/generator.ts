@@ -277,6 +277,8 @@ import type {
   ExpressionValue,
   ExpressionOrString,
   JsonExtractScalarExpr, JsonbExtractExpr, JsonbExtractScalarExpr,
+
+  PreWhereExpr,
 } from './expressions';
 import {
   DistinctExpr,
@@ -978,7 +980,7 @@ export class Generator {
     ],
   ]);
 
-  static SAFE_JSON_PATH_KEY_RE = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
+  static SAFE_JSON_PATH_KEY_RE = /^[_a-zA-Z]\w*$/;
 
   static SENTINEL_LINE_BREAK = '__SQLGLOT__LB__';
 
@@ -3300,6 +3302,10 @@ export class Generator {
   rawStringSql (expression: RawStringExpr): string {
     let string = expression.args.this?.toString() || '';
 
+    if (string.includes('x21')) {
+      console.log('DEBUG rawStringSql: chars=', [...string].map((c) => c.charCodeAt(0)));
+    }
+
     if (this.dialect._constructor.tokenizerClass.STRING_ESCAPES.includes('\\')) {
       string = string?.replace(/\\/g, '\\\\');
     }
@@ -3346,7 +3352,7 @@ export class Generator {
     let typeSql: string | undefined;
 
     if (typeValue instanceof Expression) {
-      typeSql = this.sql(typeValue);
+      typeSql = typeValue.sql();
     } else if (typeValue === DataTypeExprKind.USERDEFINED && expression.args.kind) {
       typeSql = this.sql(expression, 'kind');
     } else {
@@ -5651,7 +5657,7 @@ export class Generator {
     return `UNNEST(${args})${suffix}`;
   }
 
-  preWhereSql (_expression: Expression): string {
+  preWhereSql (_expression: PreWhereExpr): string {
     return '';
   }
 
@@ -5912,9 +5918,11 @@ export class Generator {
 
     let funcName: string;
 
-    if (trimType === 'LEADING') {
-      funcName = 'LtRIM';
-    } else if (trimType === 'TRAILING') {
+    const trimUpper = trimType.toUpperCase();
+
+    if (trimUpper === 'LEADING') {
+      funcName = 'LTRIM';
+    } else if (trimUpper === 'TRAILING') {
       funcName = 'RTRIM';
     } else {
       funcName = 'TRIM';
