@@ -186,6 +186,7 @@ import {
   UpdateExpr,
   DataTypeExpr,
   PowExpr,
+  func,
 } from '../expressions';
 import {
   annotateTypes, TypeAnnotator,
@@ -782,10 +783,7 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
     return this.func('TIMESTAMP_MICROS', [timestamp]);
   }
 
-  const powExpr = new PowExpr({
-    this: LiteralExpr.number(10),
-    expression: scale,
-  });
+  const powExpr = func('POW', 10, scale);
   const unixSeconds = cast(
     new DivExpr({
       this: timestamp,
