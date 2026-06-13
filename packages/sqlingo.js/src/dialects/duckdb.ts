@@ -4081,13 +4081,13 @@ class DuckDBGenerator extends Generator {
   SELECT LISTAGG(
       SUBSTRING(
           '${RANDSTR_CHAR_POOL}',
-          1 + CAST(FLOOR(randomValue * 62) AS INT),
+          1 + CAST(FLOOR(random_value * 62) AS INT),
           1
       ),
       ''
   )
   FROM (
-      SELECT (ABS(HASH(i + :seed)) % 1000) / 1000.0 AS randomValue
+      SELECT (ABS(HASH(i + :seed)) % 1000) / 1000.0 AS random_value
       FROM RANGE(:length) AS t(i)
   )
 `);
