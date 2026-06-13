@@ -159,6 +159,7 @@ import {
   QueryExpr,
   SchemaExpr,
   JoinExprKind,
+  func,
 } from '../expressions';
 import {
   isInt,
@@ -224,19 +225,18 @@ function buildDateTimeFormat<E extends Expression> (exprType: new (args: any) =>
 
 export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   const scale = expression.args.scale;
-  const scaleValue = scale?.toValue();
   const timestamp = expression.args.this;
 
-  if (scaleValue === undefined || scaleValue === UnixToTimeExpr.SECONDS.toValue()) {
+  if (scale === undefined || scale.toValue() === UnixToTimeExpr.SECONDS.toValue()) {
     return this.func('fromUnixTimestamp', [cast(timestamp, DataTypeExprKind.BIGINT)]);
   }
-  if (scaleValue === UnixToTimeExpr.MILLIS.toValue()) {
+  if (scale.toValue() === UnixToTimeExpr.MILLIS.toValue()) {
     return this.func('fromUnixTimestamp64Milli', [cast(timestamp, DataTypeExprKind.BIGINT)]);
   }
-  if (scaleValue === UnixToTimeExpr.MICROS.toValue()) {
+  if (scale.toValue() === UnixToTimeExpr.MICROS.toValue()) {
     return this.func('fromUnixTimestamp64Micro', [cast(timestamp, DataTypeExprKind.BIGINT)]);
   }
-  if (scaleValue === UnixToTimeExpr.NANOS.toValue()) {
+  if (scale.toValue() === UnixToTimeExpr.NANOS.toValue()) {
     return this.func('fromUnixTimestamp64Nano', [cast(timestamp, DataTypeExprKind.BIGINT)]);
   }
 
@@ -244,10 +244,7 @@ export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): str
     cast(
       new DivExpr({
         this: timestamp,
-        expression: new PowExpr({
-          this: LiteralExpr.number(10),
-          expression: scale,
-        }),
+        expression: func('POW', 10, scale),
       }),
       DataTypeExprKind.BIGINT,
     ),
