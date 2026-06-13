@@ -18,5 +18,10 @@
 		"eslint-plugin-vue": "^10.9.1",
 		"tailwindcss": "^4.2.4",
 		"vue-tsc": "^3.2.8"
-	}
+	},
+  "pnpm": {
+    "overrides": {
+      "esbuild": "^0.28.1"
+    }
+  }
 }
