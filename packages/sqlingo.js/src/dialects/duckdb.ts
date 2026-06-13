@@ -335,6 +335,7 @@ import {
   JoinExprKind,
   CurrentCatalogExpr,
   SessionUserExpr,
+  func,
 } from '../expressions';
 import {
   seqGet, isDateUnit, camelToScreamingSnakeCase,
@@ -1555,9 +1556,7 @@ function prepareBinaryBitwiseArgs (expression: BinaryExpr): void {
 function dayNavigationSql (this: Generator, expression: NextDayExpr | PreviousDayExpr): string {
   const dateExpr = expression.args.this;
   const dayNameExpr = expression.args.expression;
-  const isodowCall = new DayOfWeekIsoExpr({
-    this: dateExpr,
-  });
+  const isodowCall = func('ISODOW', dateExpr!);
 
   let targetDow: Expression;
 
@@ -3962,7 +3961,7 @@ class DuckDBGenerator extends Generator {
   @cache
   static get ZIPF_TEMPLATE () {
     return maybeParse(`
-  WITH rand AS (SELECT :random_expr AS r),
+  WITH rand AS (SELECT :randomExpr AS r),
   weights AS (
       SELECT i, 1.0 / POWER(i, :s) AS w
       FROM RANGE(1, :n + 1) AS t(i)
@@ -4082,13 +4081,13 @@ class DuckDBGenerator extends Generator {
   SELECT LISTAGG(
       SUBSTRING(
           '${RANDSTR_CHAR_POOL}',
-          1 + CAST(FLOOR(random_value * 62) AS INT),
+          1 + CAST(FLOOR(randomValue * 62) AS INT),
           1
       ),
       ''
   )
   FROM (
-      SELECT (ABS(HASH(i + :seed)) % 1000) / 1000.0 AS random_value
+      SELECT (ABS(HASH(i + :seed)) % 1000) / 1000.0 AS randomValue
       FROM RANGE(:length) AS t(i)
   )
 `);
@@ -4334,7 +4333,7 @@ class DuckDBGenerator extends Generator {
     return `(${this.sql(replacePlaceholders((this._constructor as typeof DuckDBGenerator).ZIPF_TEMPLATE.copy(), [], {
       s,
       n,
-      random_expr: randomExpr,
+      randomExpr,
     }))})`;
   }
 

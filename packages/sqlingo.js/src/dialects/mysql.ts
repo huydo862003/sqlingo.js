@@ -111,6 +111,7 @@ import {
   UtcTimestampExpr,
   UtcTimeExpr,
   DateStrToDateExpr,
+  func,
 } from '../expressions';
 import {
   type ExpressionMetadata,
@@ -312,10 +313,7 @@ export function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): str
     [
       new DivExpr({
         this: timestamp,
-        expression: new PowExpr({
-          this: LiteralExpr.number(10),
-          expression: scale,
-        }),
+        expression: func('POW', '10', scale.toString()),
       }),
       this.formatTime(expression),
     ],
@@ -688,7 +686,9 @@ class MySQLParser extends Parser {
       SCHEMA: (args: unknown[]) => CurrentSchemaExpr.fromArgList(args),
       DATABASE: (args: unknown[]) => CurrentSchemaExpr.fromArgList(args),
       STR_TO_DATE: buildStrToDate as (args: Expression[]) => Expression,
-      TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr, undefined, { defaultUnit: 'DAY' }),
+      TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr, undefined, {
+        defaultUnit: 'DAY',
+      }),
       TO_DAYS: (args: Expression[]) => {
         const diff = new DateDiffExpr({
           this: new TsOrDsToDateExpr({
