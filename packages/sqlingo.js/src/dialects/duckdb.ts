@@ -226,6 +226,7 @@ import {
   BinaryExpr,
   BracketExpr,
   CaseExpr,
+  cast,
   CastExpr,
   DataTypeExpr,
   DataTypeExprKind,
@@ -336,6 +337,7 @@ import {
   CurrentCatalogExpr,
   SessionUserExpr,
   func,
+  wrap,
 } from '../expressions';
 import {
   seqGet, isDateUnit, camelToScreamingSnakeCase,
@@ -546,57 +548,28 @@ function lastDaySql (this: Generator, expression: LastDayExpr): string {
   }
 
   if (unit === 'YEAR') {
-    const yearExpr = this.func('EXTRACT', [
-      new VarExpr({
-        this: 'YEAR',
-      }),
-      dateExpr,
-    ]);
-    const makeDateExpr = this.func('MAKE_DATE', [
-      yearExpr,
-      LiteralExpr.number(12),
-      LiteralExpr.number(31),
-    ]);
+    const yearExpr = func('EXTRACT', 'YEAR', dateExpr);
+    const makeDateExpr = func('MAKE_DATE', yearExpr, LiteralExpr.number(12), LiteralExpr.number(31));
 
     return this.sql(makeDateExpr);
   }
 
   if (unit === 'QUARTER') {
-    const yearExpr = this.func('EXTRACT', [
-      new VarExpr({
-        this: 'YEAR',
-      }),
-      dateExpr,
-    ]);
-    const quarterExpr = this.func('EXTRACT', [
-      new VarExpr({
-        this: 'QUARTER',
-      }),
-      dateExpr,
-    ]);
+    const yearExpr = func('EXTRACT', 'YEAR', dateExpr);
+    const quarterExpr = func('EXTRACT', 'QUARTER', dateExpr);
 
     const lastMonthExpr = new MulExpr({
       this: quarterExpr,
       expression: LiteralExpr.number(3),
     });
-    const firstDayLastMonthExpr = this.func('MAKE_DATE', [
-      yearExpr,
-      lastMonthExpr,
-      LiteralExpr.number(1),
-    ]);
-
-    const lastDayExpr = this.func('LAST_DAY', [firstDayLastMonthExpr]);
+    const firstDayLastMonthExpr = func('MAKE_DATE', yearExpr, lastMonthExpr, LiteralExpr.number(1));
+    const lastDayExpr = func('LAST_DAY', firstDayLastMonthExpr);
 
     return this.sql(lastDayExpr);
   }
 
   if (unit === 'WEEK') {
-    const dow = this.func('EXTRACT', [
-      new VarExpr({
-        this: 'DAYOFWEEK',
-      }),
-      dateExpr,
-    ]);
+    const dow = func('EXTRACT', 'DAYOFWEEK', dateExpr);
     const daysToSundayExpr = new ModExpr({
       this: new ParenExpr({
         this: new SubExpr({
@@ -616,14 +589,8 @@ function lastDaySql (this: Generator, expression: LastDayExpr): string {
       this: dateExpr,
       expression: intervalExpr,
     });
-    const castExpr = new CastExpr({
-      this: addExpr,
-      to: new DataTypeExpr({
-        this: DataTypeExprKind.DATE,
-      }),
-    });
 
-    return this.sql(castExpr);
+    return this.sql(cast(addExpr, DataTypeExprKind.DATE));
   }
 
   this.unsupported(`Unsupported date part '${unit}' in LAST_DAY function`);
@@ -695,25 +662,21 @@ function toBooleanSql (this: Generator, expression: ToBooleanExpr): string {
       }),
     );
 
+  let caseExpr: CaseExpr;
+
   if (isSafe) {
-    baseCaseExpr.else(this.func('TRY_CAST', [
-      arg,
-      DataTypeExpr.build('BOOLEAN'),
-    ]));
+    caseExpr = baseCaseExpr.else(func('TRY_CAST', arg, DataTypeExpr.build('BOOLEAN')));
   } else {
-    const castToReal = this.func('TRY_CAST', [
-      arg,
-      DataTypeExpr.build('REAL'),
-    ]);
+    const castToReal = func('TRY_CAST', arg, DataTypeExpr.build('REAL'));
     const nanInfCheck = new OrExpr({
-      this: this.func('ISNAN', [castToReal]),
-      expression: this.func('ISINF', [castToReal]),
+      this: func('ISNAN', castToReal),
+      expression: func('ISINF', castToReal),
     });
 
-    baseCaseExpr
+    caseExpr = baseCaseExpr
       .when(
         nanInfCheck,
-        this.func('ERROR', [LiteralExpr.string('TO_BOOLEAN: Non-numeric values NaN and INF are not supported')]),
+        func('ERROR', LiteralExpr.string('TO_BOOLEAN: Non-numeric values NaN and INF are not supported')),
       )
       .else(new CastExpr({
         this: arg,
@@ -723,7 +686,7 @@ function toBooleanSql (this: Generator, expression: ToBooleanExpr): string {
       }));
   }
 
-  return this.sql(baseCaseExpr);
+  return this.sql(caseExpr);
 }
 
 /** BigQuery -> DuckDB conversion for the DATE function */
@@ -1288,10 +1251,7 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   if (scaleValue !== undefined && scaleValue !== UnixToTimeExpr.SECONDS.toValue()) {
     timestamp = new DivExpr({
       this: timestamp,
-      expression: this.func('POW', [
-        LiteralExpr.number(10),
-        scale,
-      ]),
+      expression: func('POW', LiteralExpr.number(10), scale),
     });
   }
 
@@ -1836,19 +1796,9 @@ function bitshiftSql (this: Generator, expression: BitwiseLeftShiftExpr | Bitwis
 
   if (thisNode instanceof Expression && isBinary(thisNode)) {
     resultIsBlob = true;
-    expression.setArgKey('this', new CastExpr({
-      this: thisNode,
-      to: new DataTypeExpr({
-        this: DataTypeExprKind.BIT,
-      }),
-    }));
+    expression.setArgKey('this', cast(thisNode, DataTypeExprKind.BIT));
   } else if (expression.args.requiresInt128 && thisNode instanceof Expression) {
-    thisNode.replace(new CastExpr({
-      this: thisNode,
-      to: new DataTypeExpr({
-        this: DataTypeExprKind.INT128,
-      }),
-    }));
+    thisNode.replace(cast(thisNode, DataTypeExprKind.INT128));
   }
 
   let resultSql = this.binary(expression, operator);
@@ -2035,7 +1985,7 @@ function dateFromPartsSql (this: Generator, expression: DateFromPartsExpr): stri
         this: baseDate,
         expression: new IntervalExpr({
           this: new SubExpr({
-            this: monthExpr,
+            this: wrap(monthExpr, BinaryExpr),
             expression: LiteralExpr.number(1),
           }),
           unit: new VarExpr({
@@ -2050,7 +2000,7 @@ function dateFromPartsSql (this: Generator, expression: DateFromPartsExpr): stri
         this: baseDate,
         expression: new IntervalExpr({
           this: new SubExpr({
-            this: dayExpr,
+            this: wrap(dayExpr, BinaryExpr),
             expression: LiteralExpr.number(1),
           }),
           unit: new VarExpr({
@@ -5834,10 +5784,10 @@ class DuckDBGenerator extends Generator {
     if (preserveEom) {
       resultExpr = new CaseExpr({}).when(
         new EqExpr({
-          this: this.func('LAST_DAY', [thisNode]),
+          this: func('LAST_DAY', thisNode),
           expression: thisNode,
         }),
-        this.func('LAST_DAY', [dateAddExpr]),
+        func('LAST_DAY', dateAddExpr),
       )
         .else(dateAddExpr);
     }

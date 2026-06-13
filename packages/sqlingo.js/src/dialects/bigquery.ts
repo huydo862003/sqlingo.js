@@ -407,8 +407,9 @@ export function pushdownCteColumnNames (expression: Expression): Expression {
     const inner = select instanceof AliasExpr ? select.args.this : select;
 
     // Inner aliases are shadowed by the CTE column names
-    toReplace?.replace(alias(inner, name, {
-      copy: false,
+    toReplace?.replace(new AliasExpr({
+      this: inner?.copy(),
+      alias: toIdentifier(name),
     }));
   }
 

@@ -29338,9 +29338,9 @@ export class UuidExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
     'name',
     'isString',
-    'this',
   ];
 
   declare args: UuidExprArgs;
@@ -31167,6 +31167,10 @@ export class TryCastExpr extends CastExpr {
 
   constructor (args: TryCastExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
