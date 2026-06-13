@@ -713,18 +713,13 @@ function toBooleanSql (this: Generator, expression: ToBooleanExpr): string {
       .when(
         nanInfCheck,
         this.func('ERROR', [LiteralExpr.string('TO_BOOLEAN: Non-numeric values NaN and INF are not supported')]),
-        {
-          copy: false,
-        },
       )
       .else(new CastExpr({
         this: arg,
         to: new DataTypeExpr({
           this: DataTypeExprKind.BOOLEAN,
         }),
-      }), {
-        copy: false,
-      });
+      }));
   }
 
   return this.sql(baseCaseExpr);
@@ -1292,10 +1287,10 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   if (scaleValue !== undefined && scaleValue !== UnixToTimeExpr.SECONDS.toValue()) {
     timestamp = new DivExpr({
       this: timestamp,
-      expression: new PowExpr({
-        this: LiteralExpr.number(10),
-        expression: scale,
-      }),
+      expression: this.func('POW', [
+        LiteralExpr.number(10),
+        scale,
+      ]),
     });
   }
 
