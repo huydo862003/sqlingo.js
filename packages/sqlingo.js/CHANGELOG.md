@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.4.1
+
+### Patch Changes
+
+- 13e61b1: Fix various porting bugs in BigQuery, DuckDB, ClickHouse, and other dialects. All tests are now passing.
+
 ## 0.4.0
 
 ### Minor Changes
