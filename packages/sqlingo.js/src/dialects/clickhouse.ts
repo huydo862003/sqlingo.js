@@ -324,6 +324,13 @@ function timeStrToTimeSql (this: Generator, expression: TimeStrToTimeExpr): stri
   const tz = expression.args.zone;
 
   if (tz && ts instanceof LiteralExpr) {
+    // Clickhouse will not accept timestamps that include a UTC offset, so we must remove them
+    // The first step to removing is parsing the string with `datetime.datetime.fromisoformat`
+    //
+    // In python <3.11, `fromisoformat()` can only parse timestamps of millisecond (3 digit)
+    // or microsecond (6 digit) precision. It will error if passed any other number of fractional
+    // digits, so we extract the fractional seconds and pad to 6 digits before parsing
+
     let tsString = ts.name.trim();
 
     // separate [date and time] from [fractional seconds and UTC offset]

@@ -2189,7 +2189,9 @@ export function timeFormat (
   };
 }
 
-// FIXME: null & undefined
+// Python defaults defaultUnit to 'DAY', but ClickHouse explicitly passes None to bypass it.
+// To make the distinction explicit, we dropped the default here: call sites that need 'DAY'
+// must pass it explicitly, and ClickHouse can simply omit it.
 export function buildDateDelta<T extends Expression> (
   ExpClass: new (args: any) => T,
   unitMapping?: Record<string, string>,
@@ -2199,7 +2201,7 @@ export function buildDateDelta<T extends Expression> (
   } = {},
 ): (args: any) => T {
   const {
-    defaultUnit = 'DAY',
+    defaultUnit,
     supportsTimezone = false,
   } = options;
 

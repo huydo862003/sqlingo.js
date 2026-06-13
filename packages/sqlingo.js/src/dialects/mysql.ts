@@ -688,7 +688,7 @@ class MySQLParser extends Parser {
       SCHEMA: (args: unknown[]) => CurrentSchemaExpr.fromArgList(args),
       DATABASE: (args: unknown[]) => CurrentSchemaExpr.fromArgList(args),
       STR_TO_DATE: buildStrToDate as (args: Expression[]) => Expression,
-      TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr),
+      TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr, undefined, { defaultUnit: 'DAY' }),
       TO_DAYS: (args: Expression[]) => {
         const diff = new DateDiffExpr({
           this: new TsOrDsToDateExpr({

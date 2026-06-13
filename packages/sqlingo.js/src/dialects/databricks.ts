@@ -128,10 +128,10 @@ class DatabricksParser extends Spark.Parser {
     return {
       ...Spark.Parser.FUNCTIONS,
       GETDATE: (args: unknown[]) => CurrentTimestampExpr.fromArgList(args),
-      DATEADD: buildDateDelta(DateAddExpr),
-      DATE_ADD: buildDateDelta(DateAddExpr),
-      DATEDIFF: buildDateDelta(DateDiffExpr),
-      DATE_DIFF: buildDateDelta(DateDiffExpr),
+      DATEADD: buildDateDelta(DateAddExpr, undefined, { defaultUnit: 'DAY' }),
+      DATE_ADD: buildDateDelta(DateAddExpr, undefined, { defaultUnit: 'DAY' }),
+      DATEDIFF: buildDateDelta(DateDiffExpr, undefined, { defaultUnit: 'DAY' }),
+      DATE_DIFF: buildDateDelta(DateDiffExpr, undefined, { defaultUnit: 'DAY' }),
       NOW: (args: unknown[]) => CurrentTimestampExpr.fromArgList(args),
       TO_DATE: buildFormattedTime(TsOrDsToDateExpr, {
         dialect: Dialects.DATABRICKS,

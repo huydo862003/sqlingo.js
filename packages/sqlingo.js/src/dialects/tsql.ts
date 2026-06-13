@@ -880,7 +880,7 @@ export class TSQLParser extends Parser {
         expressions: args.slice(1),
         bigInt: true,
       }),
-      DATEADD: buildDateDelta(DateAddExpr, DATE_DELTA_INTERVAL),
+      DATEADD: buildDateDelta(DateAddExpr, DATE_DELTA_INTERVAL, { defaultUnit: 'DAY' }),
       DATEDIFF: buildTsqlDateDiff(DATE_DELTA_INTERVAL),
       DATEDIFF_BIG: buildTsqlDateDiff(DATE_DELTA_INTERVAL, true),
       DATENAME: buildBuiltinFormattedTime(true),

@@ -695,17 +695,15 @@ function toBooleanSql (this: Generator, expression: ToBooleanExpr): string {
     );
 
   if (isSafe) {
-    baseCaseExpr.else(new TryCastExpr({
-      this: arg,
-      to: DataTypeExpr.build('BOOLEAN'),
-    }), {
-      copy: false,
-    });
+    baseCaseExpr.else(this.func('TRY_CAST', [
+      arg,
+      DataTypeExpr.build('BOOLEAN'),
+    ]));
   } else {
-    const castToReal = new TryCastExpr({
-      this: arg,
-      to: DataTypeExpr.build('REAL'),
-    });
+    const castToReal = this.func('TRY_CAST', [
+      arg,
+      DataTypeExpr.build('REAL'),
+    ]);
     const nanInfCheck = new OrExpr({
       this: this.func('ISNAN', [castToReal]),
       expression: this.func('ISINF', [castToReal]),
