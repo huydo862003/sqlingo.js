@@ -54,7 +54,7 @@ export function execute (
   sql: string | Expression,
   schema?: Record<string, unknown> | Schema,
   dialect?: DialectType,
-  tables_?: Record<string, Table>,
+  tables_?: Record<string, unknown>,
 ): Table {
   const tables = ensureTables(tables_, dialect);
 

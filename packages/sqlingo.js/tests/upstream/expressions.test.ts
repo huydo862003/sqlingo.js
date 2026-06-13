@@ -472,7 +472,7 @@ class TestExpressions {
         {
           '`a-b`.c': () => parseOne('select 1', {
             dialect: 'spark',
-          }),
+          }) as SelectExpr,
         },
         {
           dialect: 'spark',

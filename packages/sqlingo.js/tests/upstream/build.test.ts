@@ -1033,19 +1033,19 @@ describe('TestBuild', () => {
         'SELECT x FROM (SELECT x FROM tbl UNION SELECT x FROM bar) AS unioned',
       ],
       [
-        () => parseOne('(SELECT 1)').select('2'),
+        () => (parseOne('(SELECT 1)') as SelectExpr).select('2'),
         '(SELECT 1, 2)',
       ],
       [
-        () => parseOne('(SELECT 1)').limit(1),
+        () => (parseOne('(SELECT 1)') as SelectExpr).limit(1),
         '(SELECT 1) LIMIT 1',
       ],
       [
-        () => parseOne('WITH t AS (SELECT 1) (SELECT 1)').limit(1),
+        () => (parseOne('WITH t AS (SELECT 1) (SELECT 1)') as SelectExpr).limit(1),
         'WITH t AS (SELECT 1) SELECT 1 LIMIT 1',
       ],
       [
-        () => parseOne('(SELECT 1 LIMIT 2)').limit(1),
+        () => (parseOne('(SELECT 1 LIMIT 2)') as SelectExpr).limit(1),
         '(SELECT 1 LIMIT 2) LIMIT 1',
       ],
       [
@@ -1056,15 +1056,15 @@ describe('TestBuild', () => {
         'SELECT 1 UNION SELECT 2 LIMIT 5 OFFSET 2',
       ],
       [
-        () => parseOne('(SELECT 1)').subquery(),
+        () => (parseOne('(SELECT 1)') as SelectExpr).subquery(),
         '((SELECT 1))',
       ],
       [
-        () => parseOne('(SELECT 1)').subquery('alias'),
+        () => (parseOne('(SELECT 1)') as SelectExpr).subquery('alias'),
         '((SELECT 1)) AS alias',
       ],
       [
-        () => parseOne('(select * from foo)').with('foo', 'select 1 as c'),
+        () => (parseOne('(select * from foo)') as SelectExpr).with('foo', 'select 1 as c'),
         'WITH foo AS (SELECT 1 AS c) (SELECT * FROM foo)',
       ],
       [
@@ -1181,11 +1181,11 @@ describe('TestBuild', () => {
         'SELECT * FROM foo EXCEPT SELECT * FROM bla',
       ],
       [
-        () => parseOne('(SELECT * FROM foo)').union('SELECT * FROM bla'),
+        () => (parseOne('(SELECT * FROM foo)') as SelectExpr).union('SELECT * FROM bla'),
         '(SELECT * FROM foo) UNION SELECT * FROM bla',
       ],
       [
-        () => parseOne('(SELECT * FROM foo)').union('SELECT * FROM bla', {
+        () => (parseOne('(SELECT * FROM foo)') as SelectExpr).union('SELECT * FROM bla', {
           distinct: false,
         }),
         '(SELECT * FROM foo) UNION ALL SELECT * FROM bla',

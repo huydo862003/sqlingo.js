@@ -737,7 +737,7 @@ class TestExecutor {
       },
     });
 
-    const t1 = tables.find(table('t1', 'db1', 'catalog1'));
+    const t1 = tables.find(table('t1', 'db1', 'catalog1')) as Table;
 
     expect(typeof t1).toBe('object');
     expect(t1).toBeDefined();
@@ -747,7 +747,7 @@ class TestExecutor {
     expect(t1.columns).toEqual(['a']);
     expect(t1.rows).toEqual([[1]]);
 
-    const t8 = tables.find(table('t8'));
+    const t8 = tables.find(table('t8')) as Table;
 
     expect(typeof t8).toBe('object');
     expect(t8).toBeDefined();

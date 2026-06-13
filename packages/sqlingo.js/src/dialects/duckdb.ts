@@ -548,15 +548,15 @@ function lastDaySql (this: Generator, expression: LastDayExpr): string {
   }
 
   if (unit === 'YEAR') {
-    const yearExpr = func('EXTRACT', 'YEAR', dateExpr);
+    const yearExpr = func('EXTRACT', 'YEAR', dateExpr!);
     const makeDateExpr = func('MAKE_DATE', yearExpr, LiteralExpr.number(12), LiteralExpr.number(31));
 
     return this.sql(makeDateExpr);
   }
 
   if (unit === 'QUARTER') {
-    const yearExpr = func('EXTRACT', 'YEAR', dateExpr);
-    const quarterExpr = func('EXTRACT', 'QUARTER', dateExpr);
+    const yearExpr = func('EXTRACT', 'YEAR', dateExpr!);
+    const quarterExpr = func('EXTRACT', 'QUARTER', dateExpr!);
 
     const lastMonthExpr = new MulExpr({
       this: quarterExpr,
@@ -569,7 +569,7 @@ function lastDaySql (this: Generator, expression: LastDayExpr): string {
   }
 
   if (unit === 'WEEK') {
-    const dow = func('EXTRACT', 'DAYOFWEEK', dateExpr);
+    const dow = func('EXTRACT', 'DAYOFWEEK', dateExpr!);
     const daysToSundayExpr = new ModExpr({
       this: new ParenExpr({
         this: new SubExpr({
@@ -665,9 +665,9 @@ function toBooleanSql (this: Generator, expression: ToBooleanExpr): string {
   let caseExpr: CaseExpr;
 
   if (isSafe) {
-    caseExpr = baseCaseExpr.else(func('TRY_CAST', arg, DataTypeExpr.build('BOOLEAN')));
+    caseExpr = baseCaseExpr.else(func('TRY_CAST', arg!, DataTypeExpr.build('BOOLEAN')!));
   } else {
-    const castToReal = func('TRY_CAST', arg, DataTypeExpr.build('REAL'));
+    const castToReal = func('TRY_CAST', arg!, DataTypeExpr.build('REAL')!);
     const nanInfCheck = new OrExpr({
       this: func('ISNAN', castToReal),
       expression: func('ISINF', castToReal),
@@ -1251,7 +1251,7 @@ function unixToTimeSql (this: Generator, expression: UnixToTimeExpr): string {
   if (scaleValue !== undefined && scaleValue !== UnixToTimeExpr.SECONDS.toValue()) {
     timestamp = new DivExpr({
       this: timestamp,
-      expression: func('POW', LiteralExpr.number(10), scale),
+      expression: func('POW', LiteralExpr.number(10), scale!),
     });
   }
 
@@ -5784,7 +5784,7 @@ class DuckDBGenerator extends Generator {
     if (preserveEom) {
       resultExpr = new CaseExpr({}).when(
         new EqExpr({
-          this: func('LAST_DAY', thisNode),
+          this: func('LAST_DAY', thisNode!),
           expression: thisNode,
         }),
         func('LAST_DAY', dateAddExpr),

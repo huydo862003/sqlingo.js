@@ -9,6 +9,7 @@ import {
   AnonymousExpr, DataTypeExpr, DataTypeExprKind, ColumnExpr, WhereExpr,
   BinaryExpr,
   CaseExpr,
+  ConcatExpr,
 } from '../../src/expressions';
 import {
   OptimizeError,
@@ -919,8 +920,8 @@ describe('TestOptimizer', () => {
     const safeConcat = parseOne('CONCAT(\'a\', x, \'b\', \'c\')');
     const simplifiedSafeConcat = simplify(safeConcat);
 
-    expect(simplifiedConcat.args.safe).toBe(false);
-    expect(simplifiedSafeConcat.args.safe).toBe(true);
+    expect((simplifiedConcat as ConcatExpr).args.safe).toBe(false);
+    expect((simplifiedSafeConcat as ConcatExpr).args.safe).toBe(true);
 
     expect(simplifiedConcat.sql({
       dialect: 'presto',
@@ -1100,7 +1101,7 @@ describe('TestOptimizer', () => {
           (expr: Expression, options?: Record<string, unknown>) => annotateTypes(expr, options),
           (expr: Expression, options?: Record<string, unknown>) => canonicalize(expr, options),
         ],
-        schema,
+        schema: schema as any,
         dialect: dialect as string | undefined,
       });
     };
@@ -2047,7 +2048,7 @@ describe('TestOptimizer', () => {
   });
 
   it('test_root_subquery_annotation', () => {
-    const expression = annotateTypes(parseOne('(SELECT 1, 2 FROM x) LIMIT 0'));
+    const expression = annotateTypes(parseOne('(SELECT 1, 2 FROM x) LIMIT 0') as SelectExpr);
 
     expect(expression.selects[0].type?.toString()).toBe(DataTypeExprKind.INT);
     expect(expression.selects[1].type?.toString()).toBe(DataTypeExprKind.INT);
