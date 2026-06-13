@@ -372,24 +372,10 @@ function aliasOrderedGroup (expression: Expression): Expression {
  * so we try to push them down into the inner SELECT statement (e.g. WITH x AS (SELECT ... AS a, ... AS b))
  */
 export function pushdownCteColumnNames (expression: Expression): Expression {
-  if (!(expression instanceof CteExpr)) {
+  if (!(expression instanceof CteExpr) || !expression.aliasColumnNames) {
     return expression;
   }
 
-  const cteAlias = expression.args.alias;
-
-  if (!cteAlias) {
-    return expression;
-  }
-
-  const columns = cteAlias.getArgKey('columns');
-
-  if (
-    !Array.isArray(columns)
-    || !columns.length
-  ) {
-    return expression;
-  }
   const cteQuery = expression.args.this;
 
   if (!(cteQuery instanceof QueryExpr)) {
@@ -405,28 +391,24 @@ export function pushdownCteColumnNames (expression: Expression): Expression {
     return expression;
   }
 
-  // Remove the columns from the CTE definition: WITH x (a, b) -> WITH x
-  cteAlias.setArgKey('columns', undefined);
+  const columnNames = expression.aliasColumnNames;
 
-  const selects = cteQuery.selects;
+  expression.args.alias?.setArgKey('columns', undefined);
 
-  for (let i = 0; i < columns.length; i++) {
-    if (selects.length <= i) break;
-
-    const name = columns[i];
-    const toReplace = selects[i];
-    let select: Expression = toReplace;
-
-    if (toReplace instanceof AliasExpr) {
-      select = toReplace.args.this as Expression;
-    }
+  for (const [
+    name,
+    select,
+  ] of columnNames.map((n, i) => [
+      n,
+      cteQuery.selects[i],
+    ] as const)) {
+    const toReplace = select;
+    const inner = select instanceof AliasExpr ? select.args.this : select;
 
     // Inner aliases are shadowed by the CTE column names
-    const newAlias = alias(select, typeof name !== 'object' ? name : name instanceof IdentifierExpr ? name : toIdentifier(name.name), {
+    toReplace?.replace(alias(inner, name, {
       copy: false,
-    });
-
-    cteQuery.setArgKey('expressions', newAlias, i);
+    }));
   }
 
   return expression;
