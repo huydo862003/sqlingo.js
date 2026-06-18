@@ -265,7 +265,9 @@ class SparkParser extends Spark2.Parser {
       DATE_ADD: buildDateAdd,
       DATEADD: buildDateAdd,
       TIMESTAMPADD: buildDateAdd,
-      TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr, undefined, { defaultUnit: 'DAY' }),
+      TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr, undefined, {
+        defaultUnit: 'DAY',
+      }),
       TRY_ADD: (args: unknown[]) => SafeAddExpr.fromArgList(args),
       TRY_MULTIPLY: (args: unknown[]) => SafeMultiplyExpr.fromArgList(args),
       TRY_SUBTRACT: (args: unknown[]) => SafeSubtractExpr.fromArgList(args),

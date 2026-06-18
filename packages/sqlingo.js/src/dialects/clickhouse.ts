@@ -94,7 +94,6 @@ import {
   StrToDateExpr,
   DataTypeExpr,
   LiteralExpr,
-  PowExpr,
   DataTypeParamExpr,
   toIdentifier,
   TupleExpr,
