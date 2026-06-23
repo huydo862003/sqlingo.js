@@ -15,10 +15,6 @@ export const router = createRouter({
       component: () => import('./pages/playground/PlaygroundPage.vue'),
     },
     {
-      path: '/api-reference/',
-      component: () => import('./pages/api/ApiPage.vue'),
-    },
-    {
       path: '/:pathMatch(.*)*',
       redirect: '/',
     },

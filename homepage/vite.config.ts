@@ -1,8 +1,3 @@
-import {
-  existsSync,
-  readFileSync,
-  watch,
-} from 'node:fs';
 import path, {
   resolve,
 } from 'node:path';
@@ -11,41 +6,8 @@ import vue from '@vitejs/plugin-vue';
 import {
   defineConfig,
 } from 'vite';
-import type {
-  Plugin,
-  ViteDevServer,
-} from 'vite';
 
 const __dirname = new URL('.', import.meta.url).pathname;
-const apiJsonPath = new URL('../packages/sqlingo.js/doc/api/api.json', import.meta.url).pathname;
-
-function typedocVirtual (): Plugin {
-  const VIRTUAL_ID = 'virtual:typedoc';
-  const RESOLVED_ID = '\0' + VIRTUAL_ID;
-
-  return {
-    name: 'typedoc-virtual',
-    resolveId (id) {
-      if (id === VIRTUAL_ID) return RESOLVED_ID;
-    },
-    load (id) {
-      if (id !== RESOLVED_ID) return;
-      if (!existsSync(apiJsonPath)) return 'export default null';
-
-      return `export default ${readFileSync(apiJsonPath, 'utf-8')}`;
-    },
-    configureServer (server: ViteDevServer) {
-      watch(apiJsonPath, () => {
-        const module_ = server.moduleGraph.getModuleById(RESOLVED_ID);
-
-        if (module_) server.moduleGraph.invalidateModule(module_);
-        server.ws.send({
-          type: 'full-reload',
-        });
-      });
-    },
-  };
-}
 
 export default defineConfig({
   base: '/sqlingo.js/',
@@ -74,6 +36,5 @@ export default defineConfig({
   plugins: [
     vue(),
     tailwindcss(),
-    typedocVirtual(),
   ],
 });

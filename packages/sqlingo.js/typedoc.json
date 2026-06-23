@@ -3,7 +3,6 @@
   "hostedBaseUrl": "https://huydo862003.github.io/sqlingo.js/api/",
   "entryPoints": ["src/index.ts"],
   "out": "doc/api",
-  "json": "doc/api/api.json",
   "plugin": ["typedoc-github-theme"],
   "theme": "typedoc-github-theme",
   "excludePrivate": true,
