@@ -269,19 +269,15 @@ import {
   GPillSize,
 } from '@hdnax/genuix';
 import {
-  useRouter,
-} from 'vue-router';
-import {
   useSeoMeta,
 } from '@unhead/vue';
 import SqlCodeExample from './SqlCodeExample.vue';
 import MainLayout from '@/layout/main/MainLayout.vue';
 
-const router = useRouter();
 const scriptTag = 'script';
 
 function goToApiReference () {
-  router.push('/api-reference/');
+  window.location.href = './api-reference/';
 }
 
 useSeoMeta({

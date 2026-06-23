@@ -36,8 +36,8 @@
         class="text-sm"
       />
       <GNavLink
-        :as="RouterLink"
-        to="/api-reference/"
+        as="a"
+        href="./api-reference/"
         :icon="GIconName.BookOpen"
         label="API reference"
         class="text-sm"
