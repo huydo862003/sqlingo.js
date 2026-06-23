@@ -17,7 +17,7 @@ import type {
 } from 'vite';
 
 const __dirname = new URL('.', import.meta.url).pathname;
-const apiJsonPath = new URL('../doc/api/api.json', import.meta.url).pathname;
+const apiJsonPath = new URL('../packages/sqlingo.js/doc/api/api.json', import.meta.url).pathname;
 
 function typedocVirtual (): Plugin {
   const VIRTUAL_ID = 'virtual:typedoc';
