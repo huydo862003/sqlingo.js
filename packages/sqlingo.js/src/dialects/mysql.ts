@@ -46,7 +46,6 @@ import {
   DataTypeExpr,
   DataTypeExprKind,
   LiteralExpr,
-  PowExpr,
   TryCastExpr,
   TableSampleExpr,
   PivotExpr,

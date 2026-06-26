@@ -16,6 +16,7 @@ export default [
     ignores: [
       '**/upstream/**',
       '**/doc/**',
+      './homepage/api-reference/**',
     ],
   },
   {

@@ -185,7 +185,6 @@ import {
   NullExpr,
   UpdateExpr,
   DataTypeExpr,
-  PowExpr,
   func,
 } from '../expressions';
 import {
