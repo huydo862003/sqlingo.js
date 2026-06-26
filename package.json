@@ -13,7 +13,7 @@
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.29.8",
-		"@hdnax/nuclint": "^0.17.3",
+		"@hdnax/nuclint": "^0.17.4",
 		"eslint": "^9.39.2",
 		"eslint-plugin-vue": "^10.9.1",
 		"tailwindcss": "^4.2.4",

@@ -18,8 +18,8 @@ importers:
         specifier: ^2.29.8
         version: 2.30.0(@types/node@25.6.0)
       '@hdnax/nuclint':
-        specifier: ^0.17.3
-        version: 0.17.3(@stylistic/eslint-plugin@5.10.0(eslint@9.39.4(jiti@2.7.0)))(eslint-plugin-better-tailwindcss@4.5.0(eslint@9.39.4(jiti@2.7.0))(tailwindcss@4.2.4)(typescript@6.0.3))(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.0(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.4(jiti@2.7.0)))(eslint-plugin-n@18.0.1(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint-plugin-perfectionist@5.9.0(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint-plugin-unicorn@64.0.0(eslint@9.39.4(jiti@2.7.0)))(eslint-plugin-vue@10.9.1(@stylistic/eslint-plugin@5.10.0(eslint@9.39.4(jiti@2.7.0)))(@typescript-eslint/parser@8.59.2(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.4(jiti@2.7.0))(vue-eslint-parser@10.4.0(eslint@9.39.4(jiti@2.7.0))))(eslint@9.39.4(jiti@2.7.0))(typescript-eslint@8.59.2(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(vue-eslint-parser@10.4.0(eslint@9.39.4(jiti@2.7.0)))
+        specifier: ^0.17.4
+        version: 0.17.4(@stylistic/eslint-plugin@5.10.0(eslint@9.39.4(jiti@2.7.0)))(eslint-plugin-better-tailwindcss@4.5.0(eslint@9.39.4(jiti@2.7.0))(tailwindcss@4.2.4)(typescript@6.0.3))(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.0(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.4(jiti@2.7.0)))(eslint-plugin-n@18.0.1(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint-plugin-perfectionist@5.9.0(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint-plugin-unicorn@64.0.0(eslint@9.39.4(jiti@2.7.0)))(eslint-plugin-vue@10.9.1(@stylistic/eslint-plugin@5.10.0(eslint@9.39.4(jiti@2.7.0)))(@typescript-eslint/parser@8.59.2(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.4(jiti@2.7.0))(vue-eslint-parser@10.4.0(eslint@9.39.4(jiti@2.7.0))))(eslint@9.39.4(jiti@2.7.0))(typescript-eslint@8.59.2(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(vue-eslint-parser@10.4.0(eslint@9.39.4(jiti@2.7.0)))
       eslint:
         specifier: ^9.39.2
         version: 9.39.4(jiti@2.7.0)
@@ -39,8 +39,8 @@ importers:
         specifier: ^7.1.2
         version: 7.1.2
       '@hdnax/genuix':
-        specifier: ^0.15.1
-        version: 0.15.1(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@9.39.4(jiti@2.7.0))(highlight.js@11.11.1)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.34(typescript@6.0.3)))(vue@3.5.34(typescript@6.0.3))
+        specifier: ^0.15.2
+        version: 0.15.2(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@9.39.4(jiti@2.7.0))(highlight.js@11.11.1)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.34(typescript@6.0.3)))(vue@3.5.34(typescript@6.0.3))
       '@hdnax/sqlingo.js':
         specifier: workspace:*
         version: link:../packages/sqlingo.js
@@ -457,16 +457,16 @@ packages:
   '@gerrit0/mini-shiki@3.23.0':
     resolution: {integrity: sha512-bEMORlG0cqdjVyCEuU0cDQbORWX+kYCeo0kV1lbxF5bt4r7SID2l9bqsxJEM0zndaxpOUT7riCyIVEuqq/Ynxg==}
 
-  '@hdnax/genuix@0.15.1':
-    resolution: {integrity: sha512-N7juSRGmcZjKxFrFjeA6UpgI0NsiHvg79R2Tltr+RLdUXH+lSbtA/c/8+aZaftAnUXhKeWkJs2SiuGM8Qy0slA==}
+  '@hdnax/genuix@0.15.2':
+    resolution: {integrity: sha512-RGSphUy2HvXHAh+OBVTqB/hE/EjR4il8wSSadzQCoGEYFvLZQd9bV2MjBWp07PErhPgXyiozh+lvj4pa4mHfFQ==}
     peerDependencies:
       '@phosphor-icons/vue': ^2.2.1
       highlight.js: ^11.0.0
       pinia: ^3.0.4
       vue: ^3.5.26
 
-  '@hdnax/nuclint@0.17.3':
-    resolution: {integrity: sha512-DLPb16vBPuaEU2B6w1gwINsofbfUseJqxofFvshM6zOMM92+T2/n5R0cXngnK/2eTHbfZ9NkEN1Dl7wpUYGbQg==}
+  '@hdnax/nuclint@0.17.4':
+    resolution: {integrity: sha512-NDN0rTfpZv02Tvh6JhhBTXII9OAORpbTO39tT5ckJ81GCT4iiK8V8Gc+/IGkyi5hxkZjwmDB3BjtzETm8ydrDA==}
     peerDependencies:
       '@stylistic/eslint-plugin': ^5.10.0
       eslint: ^9.39.2
@@ -479,8 +479,8 @@ packages:
       typescript-eslint: ^8.59.2
       vue-eslint-parser: ^10.4.0
 
-  '@hdnax/stdx@0.3.6':
-    resolution: {integrity: sha512-jmrnA/8z94nSscXVIcfPxSpmMjwappfCmK5nW3o1bDB8jquhjcGhupckaeZ/j2y/2/cJ77Gh1RVdm8ijvYJ4SA==}
+  '@hdnax/stdx@0.3.7':
+    resolution: {integrity: sha512-HpwN8ptF4FLnFmS9QnnFgNuJjAawY999MndGH5bgUsxmPwPicYzG2j0SQefX8Rvmff/2H5ZwN9usgFs4vhw31Q==}
     peerDependencies:
       eslint: ^9.39.2
 
@@ -3610,9 +3610,9 @@ snapshots:
       '@shikijs/types': 3.23.0
       '@shikijs/vscode-textmate': 10.0.2
 
-  '@hdnax/genuix@0.15.1(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@9.39.4(jiti@2.7.0))(highlight.js@11.11.1)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.34(typescript@6.0.3)))(vue@3.5.34(typescript@6.0.3))':
+  '@hdnax/genuix@0.15.2(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@9.39.4(jiti@2.7.0))(highlight.js@11.11.1)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.34(typescript@6.0.3)))(vue@3.5.34(typescript@6.0.3))':
     dependencies:
-      '@hdnax/stdx': 0.3.6(eslint@9.39.4(jiti@2.7.0))
+      '@hdnax/stdx': 0.3.7(eslint@9.39.4(jiti@2.7.0))
       '@phosphor-icons/vue': 2.2.1(vue@3.5.34(typescript@6.0.3))
       dompurify: 3.4.11
       floating-vue: 5.2.2(vue@3.5.34(typescript@6.0.3))
@@ -3625,7 +3625,7 @@ snapshots:
       - '@nuxt/kit'
       - eslint
 
-  '@hdnax/nuclint@0.17.3(@stylistic/eslint-plugin@5.10.0(eslint@9.39.4(jiti@2.7.0)))(eslint-plugin-better-tailwindcss@4.5.0(eslint@9.39.4(jiti@2.7.0))(tailwindcss@4.2.4)(typescript@6.0.3))(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.0(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.4(jiti@2.7.0)))(eslint-plugin-n@18.0.1(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint-plugin-perfectionist@5.9.0(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint-plugin-unicorn@64.0.0(eslint@9.39.4(jiti@2.7.0)))(eslint-plugin-vue@10.9.1(@stylistic/eslint-plugin@5.10.0(eslint@9.39.4(jiti@2.7.0)))(@typescript-eslint/parser@8.59.2(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.4(jiti@2.7.0))(vue-eslint-parser@10.4.0(eslint@9.39.4(jiti@2.7.0))))(eslint@9.39.4(jiti@2.7.0))(typescript-eslint@8.59.2(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(vue-eslint-parser@10.4.0(eslint@9.39.4(jiti@2.7.0)))':
+  '@hdnax/nuclint@0.17.4(@stylistic/eslint-plugin@5.10.0(eslint@9.39.4(jiti@2.7.0)))(eslint-plugin-better-tailwindcss@4.5.0(eslint@9.39.4(jiti@2.7.0))(tailwindcss@4.2.4)(typescript@6.0.3))(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.0(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.4(jiti@2.7.0)))(eslint-plugin-n@18.0.1(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint-plugin-perfectionist@5.9.0(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint-plugin-unicorn@64.0.0(eslint@9.39.4(jiti@2.7.0)))(eslint-plugin-vue@10.9.1(@stylistic/eslint-plugin@5.10.0(eslint@9.39.4(jiti@2.7.0)))(@typescript-eslint/parser@8.59.2(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.4(jiti@2.7.0))(vue-eslint-parser@10.4.0(eslint@9.39.4(jiti@2.7.0))))(eslint@9.39.4(jiti@2.7.0))(typescript-eslint@8.59.2(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(vue-eslint-parser@10.4.0(eslint@9.39.4(jiti@2.7.0)))':
     dependencies:
       '@stylistic/eslint-plugin': 5.10.0(eslint@9.39.4(jiti@2.7.0))
       eslint: 9.39.4(jiti@2.7.0)
@@ -3638,7 +3638,7 @@ snapshots:
       typescript-eslint: 8.59.2(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3)
       vue-eslint-parser: 10.4.0(eslint@9.39.4(jiti@2.7.0))
 
-  '@hdnax/stdx@0.3.6(eslint@9.39.4(jiti@2.7.0))':
+  '@hdnax/stdx@0.3.7(eslint@9.39.4(jiti@2.7.0))':
     dependencies:
       eslint: 9.39.4(jiti@2.7.0)
 
