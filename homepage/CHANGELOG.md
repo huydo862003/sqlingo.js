@@ -1,5 +1,12 @@
 # @hdnax/sqlingo.js-homepage
 
+## 0.1.9
+
+### Patch Changes
+
+- 4b88cb0: Bump @hdnax/genuix to ^0.15.2
+- e0253fe: Bump esbuild to ^0.28.1 to resolve vulnerability issues'
+
 ## 0.1.8
 
 ### Patch Changes
