@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.4.2
+
+### Patch Changes
+
+- df9c215: Fix some security issues
+
 ## 0.4.1
 
 ### Patch Changes
