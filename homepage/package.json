@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@dbml/parse": "^7.1.2",
-    "@hdnax/genuix": "^0.15.1",
+    "@hdnax/genuix": "^0.15.2",
     "@hdnax/sqlingo.js": "workspace:*",
     "@unhead/vue": "^3.1.0",
     "highlight.js": "^11.11.1",
