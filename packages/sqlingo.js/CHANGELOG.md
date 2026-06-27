@@ -4,7 +4,8 @@
 
 ### Patch Changes
 
-- df9c215: Fix some security issues
+- cd3a34c: Bump deps to resolve dependabot security alerts: `vite` ^8.0.10 to ^8.1.0, `dompurify` override to ^3.4.11, add `ws` ^8.21.0 and `js-yaml` ^4.2.0 overrides
+- f0d9075: Override read-yaml-file to fix changeset js-yaml compatibility
 
 ## 0.4.1
 

@@ -4,8 +4,10 @@
 
 ### Patch Changes
 
-- df9c215: Fix some security issues
-- Updated dependencies [df9c215]
+- cd3a34c: Bump deps to resolve dependabot security alerts: `vite` ^8.0.10 to ^8.1.0, `dompurify` override to ^3.4.11, add `ws` ^8.21.0 and `js-yaml` ^4.2.0 overrides
+- 88cef5c: Bump `@hdnax/genuix` ^0.15.1 to ^0.15.2, `@hdnax/nuclint` ^0.17.3 to ^0.17.4
+- f0d9075: Override read-yaml-file to fix changeset js-yaml compatibility
+- Updated dependencies [cd3a34c]
   - @hdnax/sqlingo.js@0.4.2
 
 ## 0.1.9
