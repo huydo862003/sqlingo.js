@@ -5,6 +5,7 @@ import {
   RandnExpr,
   FormatExpr,
   RightExpr,
+  ArrayFilterExpr,
   ConcatExpr,
   PadExpr,
   SubstringExpr,
@@ -115,8 +116,11 @@ export class Spark2Typing {
       ], DataTypeExprKind.TEXT),
     });
 
-    map.set(SubstringExpr, {
-      annotator: (s: TypeAnnotator, e: SubstringExpr) => s.annotateByArgs(e, ['this']),
+    extend([
+      ArrayFilterExpr,
+      SubstringExpr,
+    ], {
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
     });
 
     return map;
