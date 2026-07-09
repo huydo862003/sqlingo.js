@@ -26,6 +26,7 @@ import {
   BitwiseXorAggExpr,
   ConvertTimezoneExpr,
   CurrentDateExpr,
+  CurrentTimeExpr,
   DateTruncExpr,
   EqExpr,
   JsonArrayContainsExpr,
@@ -622,6 +623,7 @@ class MySQLParser extends Parser {
           timestamp: seqGet(args, 0),
         }),
       CURDATE: (args: unknown[]) => CurrentDateExpr.fromArgList(args),
+      CURTIME: (args: unknown[]) => CurrentTimeExpr.fromArgList(args),
       DATE: (args: Expression[]): TsOrDsToDateExpr =>
         new TsOrDsToDateExpr({
           this: seqGet(args, 0),
