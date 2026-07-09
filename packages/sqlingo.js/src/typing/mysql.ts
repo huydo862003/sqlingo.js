@@ -9,6 +9,7 @@ import {
 } from '../expressions/types';
 import {
   Atan2Expr,
+  CurrentTimestampExpr,
   DegreesExpr,
   CurrentVersionExpr,
   EltExpr,
@@ -45,6 +46,13 @@ export class MySQLTyping {
     });
 
     extend([
+      CurrentTimestampExpr,
+      LocaltimeExpr,
+    ], {
+      returns: DataTypeExprKind.DATETIME,
+    });
+
+    extend([
       CurrentVersionExpr,
       EltExpr,
     ], {
@@ -60,10 +68,6 @@ export class MySQLTyping {
       WeekExpr,
     ], {
       returns: DataTypeExprKind.INT,
-    });
-
-    map.set(LocaltimeExpr, {
-      returns: DataTypeExprKind.DATETIME,
     });
 
     return map;
