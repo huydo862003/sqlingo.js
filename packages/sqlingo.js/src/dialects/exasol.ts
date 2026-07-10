@@ -635,6 +635,9 @@ class ExasolParser extends Parser {
           return this.parseGroupConcat();
         },
       ])),
+      JSON_VALUE: function (this: Parser) {
+        return this.parseJsonValue();
+      },
     };
   }
 
