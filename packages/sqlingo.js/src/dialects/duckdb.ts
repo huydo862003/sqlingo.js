@@ -78,6 +78,7 @@ import {
   Base64DecodeBinaryExpr,
   Base64DecodeStringExpr,
   BitwiseAndExpr,
+  BitwiseCountExpr,
   BitwiseLeftShiftExpr,
   BitwiseOrExpr,
   BitwiseRightShiftExpr,
@@ -126,6 +127,7 @@ import {
   LastDayExpr,
   LateralExpr,
   LocaltimeExpr,
+  LocaltimestampExpr,
   LogicalAndExpr,
   LogicalOrExpr,
   MakeIntervalExpr,
@@ -2417,6 +2419,7 @@ class DuckDBParser extends Parser {
         STR_SPLIT: (args: unknown[]) => SplitExpr.fromArgList(args),
         STR_SPLIT_REGEX: (args: unknown[]) => RegexpSplitExpr.fromArgList(args),
         TIME_BUCKET: (args: unknown[]) => DateBinExpr.fromArgList(args),
+        CURRENT_LOCALTIMESTAMP: (args: unknown[]) => LocaltimestampExpr.fromArgList(args),
         TODAY: (args: unknown[]) => CurrentDateExpr.fromArgList(args),
         TO_TIMESTAMP: (args: unknown[]) => UnixToTimeExpr.fromArgList(args),
         UNNEST: (args: unknown[]) => ExplodeExpr.fromArgList(args),
@@ -2999,6 +3002,10 @@ class DuckDBGenerator extends Generator {
       [
         BitwiseXorAggExpr,
         bitwiseAggSql,
+      ],
+      [
+        BitwiseCountExpr,
+        renameFunc('BIT_COUNT'),
       ],
       [
         ByteLengthExpr,
