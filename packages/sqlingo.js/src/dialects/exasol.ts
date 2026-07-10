@@ -75,6 +75,7 @@ import {
   SubstringIndexExpr,
   SystimestampExpr,
   ConvertTimezoneExpr,
+  type DenseRankExpr,
   type RankExpr,
   type DataTypeExpr,
   DataTypeExprKind,
@@ -565,6 +566,7 @@ class ExasolParser extends Parser {
         TRUNCATE: (args: Expression[]) => buildTrunc(args, {
           dialect: Dialects.EXASOL,
         }),
+        USER: (args: unknown[]) => CurrentUserExpr.fromArgList(args),
         VAR_POP: (args: unknown[]) => VariancePopExpr.fromArgList(args),
         APPROXIMATE_COUNT_DISTINCT: (args: unknown[]) => ApproxDistinctExpr.fromArgList(args),
         TO_CHAR: (args: Expression[]) => buildTimeToStrOrToChar(args, {
@@ -1093,12 +1095,20 @@ class ExasolGenerator extends Generator {
     return this.sql(expression.args.this);
   }
 
-  rankSql (expression: RankExpr): string {
-    if (expression.args.expressions && 0 < expression.args.expressions.length) {
-      this.unsupported('Exasol does not support arguments in RANK');
+  private noArgWindowFunc (expression: Expression, name: string): string {
+    if (expression.args.expressions && 0 < (expression.args.expressions as Expression[]).length) {
+      this.unsupported(`Exasol does not support arguments in ${name}`);
     }
 
-    return this.func('RANK', []);
+    return this.func(name, []);
+  }
+
+  rankSql (expression: RankExpr): string {
+    return this.noArgWindowFunc(expression, 'RANK');
+  }
+
+  denserankSql (expression: DenseRankExpr): string {
+    return this.noArgWindowFunc(expression, 'DENSE_RANK');
   }
 
   convertTimezoneSql (expression: ConvertTimezoneExpr): string {
