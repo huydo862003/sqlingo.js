@@ -3433,7 +3433,9 @@ class DuckDBGenerator extends Generator {
       ],
       [
         RegexpLikeExpr,
-        renameFunc('REGEXP_MATCHES'),
+        function (this: DuckDBGenerator, e: RegexpLikeExpr) {
+          return (this as DuckDBGenerator).regexplikeSql(e);
+        },
       ],
       [
         RegexpILikeExpr,
@@ -4568,6 +4570,53 @@ class DuckDBGenerator extends Generator {
       this: thisNode,
       to: timeType,
     }));
+  }
+
+  private validateRegexpFlags (flags: Expression | undefined): string | undefined {
+    if (!(flags instanceof Expression)) {
+      return undefined;
+    }
+
+    if (!flags.isString) {
+      this.unsupported('Non-literal regexp flags are not fully supported in DuckDB');
+
+      return undefined;
+    }
+
+    let flagStr = flags.name ?? '';
+
+    if (flagStr.includes('e')) {
+      this.unsupported("'e' (extract) flag is not supported in DuckDB");
+      flagStr = flagStr.replace(/e/g, '');
+    }
+
+    return flagStr;
+  }
+
+  regexplikeSql (expression: RegexpLikeExpr): string {
+    const thisExpr = expression.args.this;
+    const pattern = expression.args.expression;
+    let flag = expression.args.flag;
+
+    if (!expression.args.fullMatch) {
+      return this.func('REGEXP_MATCHES', [thisExpr, pattern, flag] as Expression[]);
+    }
+
+    const validatedFlags = this.validateRegexpFlags(flag);
+
+    const anchoredPattern = new ConcatExpr({
+      expressions: [
+        LiteralExpr.string('^('),
+        new ParenExpr({ this: pattern }),
+        LiteralExpr.string(')$'),
+      ],
+    });
+
+    if (validatedFlags) {
+      flag = LiteralExpr.string(validatedFlags);
+    }
+
+    return this.func('REGEXP_MATCHES', [thisExpr, anchoredPattern, flag] as Expression[]);
   }
 
   static ARRAY_EXCEPT_TEMPLATE = maybeParse(

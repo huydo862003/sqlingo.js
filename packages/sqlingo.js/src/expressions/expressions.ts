@@ -26895,6 +26895,7 @@ export type RegexpLikeExprArgs = Merge<[
     this?: Expression;
     expression?: Expression;
     flag?: Expression;
+    fullMatch?: boolean;
   },
 ]>;
 
