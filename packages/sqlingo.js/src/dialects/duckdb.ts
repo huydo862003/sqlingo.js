@@ -78,8 +78,12 @@ import {
   Base64DecodeBinaryExpr,
   Base64DecodeStringExpr,
   BitwiseAndExpr,
+  ArrayDistinctExpr,
   ArrayExceptExpr,
   ArrayMaxExpr,
+  ArraySizeExpr,
+  NullExpr,
+  NeqExpr,
   ArrayMinExpr,
   maybeParse,
   replacePlaceholders,
@@ -3338,6 +3342,12 @@ class DuckDBGenerator extends Generator {
         },
       ],
       [
+        ArrayDistinctExpr,
+        function (this: DuckDBGenerator, e: ArrayDistinctExpr) {
+          return (this as DuckDBGenerator).arraydistinctSql(e);
+        },
+      ],
+      [
         ArrayExceptExpr,
         function (this: DuckDBGenerator, e: ArrayExceptExpr) {
           return this.arrayexceptSql(e);
@@ -4622,6 +4632,32 @@ class DuckDBGenerator extends Generator {
     }
 
     return this.func('REGEXP_MATCHES', [thisExpr, anchoredPattern, flag] as Expression[]);
+  }
+
+  arraydistinctSql (expression: ArrayDistinctExpr): string {
+    const arr = expression.args.this;
+    const func = this.func('LIST_DISTINCT', [arr] as Expression[]);
+
+    if (expression.args.checkNull) {
+      const addNullToArray = new AnonymousExpr({
+        this: 'LIST_APPEND',
+        expressions: [
+          new AnonymousExpr({ this: 'LIST_DISTINCT', expressions: [new ArrayCompactExpr({ this: arr })] }),
+          new NullExpr({}),
+        ],
+      });
+
+      return this.sql(new IfExpr({
+        this: new NeqExpr({
+          this: new ArraySizeExpr({ this: arr }),
+          expression: new AnonymousExpr({ this: 'LIST_COUNT', expressions: [arr] }),
+        }),
+        true: addNullToArray,
+        false: maybeParse(func),
+      }));
+    }
+
+    return func;
   }
 
   regexpreplaceSql (expression: RegexpReplaceExpr): string {

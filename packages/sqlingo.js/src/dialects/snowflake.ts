@@ -108,6 +108,7 @@ import {
   AddMonthsExpr,
   ApproxQuantileExpr,
   ArrayContainsExpr,
+  ArrayDistinctExpr,
   CurrentSchemasExpr,
   GenerateSeriesExpr,
   JarowinklerSimilarityExpr,
@@ -1324,6 +1325,10 @@ class SnowflakeParser extends Parser {
           this: seqGet(args, 0),
           expression: seqGet(args, 1),
           caseInsensitive: true,
+        }),
+        ARRAY_DISTINCT: (args: Expression[]) => new ArrayDistinctExpr({
+          this: seqGet(args, 0),
+          checkNull: true,
         }),
         ARRAY_CONTAINS: (args: Expression[]) =>
           new ArrayContainsExpr({
