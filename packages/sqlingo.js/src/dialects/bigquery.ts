@@ -1807,6 +1807,7 @@ export class BigQueryParser extends Parser {
   }
 }
 export class BigQueryGenerator extends Generator {
+  static DECLARE_DEFAULT_ASSIGNMENT = 'DEFAULT';
   // port from _Dialect metaclass logic
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
@@ -2795,21 +2796,6 @@ export class BigQueryGenerator extends Generator {
     });
   }
 
-  declareItemSql (expression: DeclareItemExpr): string {
-    const variables = this.expressions(expression, {
-      key: 'this',
-    });
-
-    let defaultValue = this.sql(expression, 'default');
-
-    defaultValue = defaultValue ? ` DEFAULT ${defaultValue}` : '';
-
-    let kind = this.sql(expression, 'kind');
-
-    kind = kind ? ` ${kind}` : '';
-
-    return `${variables}${kind}${defaultValue}`;
-  }
 }
 
 export class BigQueryJsonPathTokenizer extends JsonPathTokenizer {

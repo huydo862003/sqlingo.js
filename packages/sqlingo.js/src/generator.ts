@@ -9269,10 +9269,13 @@ export class Generator {
     })}`;
   }
 
+  static DECLARE_DEFAULT_ASSIGNMENT = '=';
+
   declareItemSql (expression: DeclareItemExpr): string {
-    const variable = this.sql(expression, 'this');
+    const variables = this.expressions(expression, { key: 'this' });
     const defaultVal = this.sql(expression, 'default');
-    const defaultStr = defaultVal ? ` = ${defaultVal}` : '';
+    const defaultAssignment = (this._constructor as typeof Generator).DECLARE_DEFAULT_ASSIGNMENT;
+    const defaultStr = defaultVal ? ` ${defaultAssignment} ${defaultVal}` : '';
 
     let kind = this.sql(expression, 'kind');
 
@@ -9280,7 +9283,9 @@ export class Generator {
       kind = `TABLE ${kind}`;
     }
 
-    return `${variable} AS ${kind}${defaultStr}`;
+    kind = kind ? ` ${kind}` : '';
+
+    return `${variables}${kind}${defaultStr}`;
   }
 
   recursiveWithSearchSql (expression: RecursiveWithSearchExpr): string {

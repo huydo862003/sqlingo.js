@@ -1466,20 +1466,6 @@ export class TSQLParser extends Parser {
     return partition;
   }
 
-  parseDeclareitem (): DeclareItemExpr | undefined {
-    const varNode = this.parseIdVar();
-
-    if (!varNode) return undefined;
-
-    this.match(TokenType.ALIAS);
-
-    return this.expression(DeclareItemExpr, {
-      this: varNode,
-      kind: this.match(TokenType.TABLE) ? this.parseSchema() : this.parseTypes(),
-      default: this.match(TokenType.EQ) ? this.parseBitwise() : undefined,
-    });
-  }
-
   parseAlterTableAlter (): Expression | undefined {
     const expression = super.parseAlterTableAlter();
 

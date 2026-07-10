@@ -209,6 +209,14 @@ class SparkTokenizer extends Spark2.Tokenizer {
   static STRING_ESCAPES_ALLOWED_IN_RAW_STRINGS = false;
 
   @cache
+  static get KEYWORDS () {
+    return {
+      ...Spark2.Tokenizer.KEYWORDS,
+      DECLARE: TokenType.DECLARE,
+    };
+  }
+
+  @cache
   static get RAW_STRINGS (): TokenPair[] {
     return Spark2.Tokenizer.QUOTES.flatMap((q) => [
       [
@@ -224,6 +232,16 @@ class SparkTokenizer extends Spark2.Tokenizer {
 }
 
 class SparkParser extends Spark2.Parser {
+  @cache
+  static get STATEMENT_PARSERS (): Record<string, (this: Parser) => Expression> {
+    return {
+      ...Spark2.Parser.STATEMENT_PARSERS,
+      [TokenType.DECLARE]: function (this: Parser) {
+        return this.parseDeclare();
+      },
+    };
+  }
+
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
@@ -355,6 +373,7 @@ class SparkParser extends Spark2.Parser {
 }
 
 class SparkGenerator extends Spark2.Generator {
+  static DECLARE_DEFAULT_ASSIGNMENT = 'DEFAULT';
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic

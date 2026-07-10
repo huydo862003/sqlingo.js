@@ -16335,16 +16335,22 @@ export class Parser {
   }
 
   parseDeclareitem (): DeclareItemExpr | undefined {
+    this.matchTexts(['VAR', 'VARIABLE']);
+
     const vars = this.parseCsv(this.parseIdVar.bind(this));
 
     if (!vars) {
       return undefined;
     }
 
+    this.match(TokenType.ALIAS);
+    const kind = this.match(TokenType.TABLE) ? this.parseSchema() : this.parseTypes();
+    const defaultVal = (this.match(TokenType.DEFAULT) || this.match(TokenType.EQ)) && this.parseBitwise();
+
     return this.expression(DeclareItemExpr, {
       this: vars,
-      kind: this.parseTypes(),
-      default: this.match(TokenType.DEFAULT) && this.parseBitwise(),
+      kind,
+      default: defaultVal,
     });
   }
 
