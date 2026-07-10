@@ -15,7 +15,7 @@ import {
   Sha1DigestExpr, Sha2DigestExpr, UnhexExpr, JsonBoolExpr, LaxBoolExpr,
   ParseDatetimeExpr, TimestampFromPartsExpr, Atan2Expr, CorrExpr, CosineDistanceExpr,
   CothExpr, CovarPopExpr, CovarSampExpr, CscExpr, CschExpr, CumeDistExpr,
-  EuclideanDistanceExpr, Float64Expr, LaxFloat64Expr, PercentRankExpr, RandExpr,
+  EuclideanDistanceExpr, Float64Expr, LaxFloat64Expr, PercentRankExpr,
   SecExpr, SechExpr, JsonArrayExpr, JsonArrayAppendExpr, JsonArrayInsertExpr,
   JsonObjectExpr, JsonRemoveExpr, JsonSetExpr, JsonStripNullsExpr, ParseTimeExpr,
   TimeFromPartsExpr, TimeTruncExpr, TsOrDsToTimeExpr, CodePointsToStringExpr,
@@ -25,7 +25,7 @@ import {
   SafeMultiplyExpr, SafeSubtractExpr, ApproxQuantilesExpr, JsonExtractArrayExpr,
   RegexpExtractAllExpr, SplitExpr, DateFromUnixDateExpr, GenerateTimestampArrayExpr,
   JsonFormatExpr, JsonKeysAtDepthExpr, JsonValueArrayExpr, LagExpr, ParseBignumericExpr,
-  ParseNumericExpr, ToCodePointsExpr,
+  ParseNumericExpr, ToCodePointsExpr, UnixDateExpr,
 } from '../expressions/expressions';
 import {
   DataTypeExprKind,
@@ -297,6 +297,7 @@ export class BigQueryTyping {
       RangeBucketExpr,
       RegexpInstrExpr,
       RowNumberExpr,
+      UnixDateExpr,
     ], {
       returns: DataTypeExprKind.BIGINT,
     });
@@ -342,7 +343,6 @@ export class BigQueryTyping {
       Float64Expr,
       LaxFloat64Expr,
       PercentRankExpr,
-      RandExpr,
       SecExpr,
       SechExpr,
     ], {
