@@ -9474,7 +9474,7 @@ export class Parser {
       : (
         this.parseFunction()
         || (
-          !this.match(TokenType.ALIAS, {
+          !this.matchSet([TokenType.ALIAS, TokenType.DCOLON], {
             advance: false,
           })
           && this.parseVar({
