@@ -10,12 +10,8 @@ import {
 import {
   Atan2Expr,
   CurrentTimestampExpr,
-  DegreesExpr,
   CurrentVersionExpr,
   EltExpr,
-  DayOfMonthExpr,
-  DayOfWeekExpr,
-  DayOfYearExpr,
   MonthExpr,
   SecondExpr,
   WeekExpr,
@@ -40,7 +36,6 @@ export class MySQLTyping {
 
     extend([
       Atan2Expr,
-      DegreesExpr,
     ], {
       returns: DataTypeExprKind.DOUBLE,
     });
@@ -60,9 +55,6 @@ export class MySQLTyping {
     });
 
     extend([
-      DayOfMonthExpr,
-      DayOfWeekExpr,
-      DayOfYearExpr,
       MonthExpr,
       SecondExpr,
       WeekExpr,
