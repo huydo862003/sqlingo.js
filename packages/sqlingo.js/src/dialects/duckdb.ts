@@ -215,8 +215,11 @@ import {
   ParseJsonExpr,
   PercentileContExpr,
   PercentileDiscExpr,
+  CoalesceExpr,
+  LtExpr,
   RegexpCountExpr,
   RegexpExtractAllExpr,
+  RegexpInstrExpr,
   RegexpExtractExpr,
   RegexpLikeExpr,
   RegexpReplaceExpr,
@@ -3517,6 +3520,12 @@ class DuckDBGenerator extends Generator {
         },
       ],
       [
+        RegexpInstrExpr,
+        function (this: DuckDBGenerator, e: RegexpInstrExpr) {
+          return (this as DuckDBGenerator).regexpinstrSql(e);
+        },
+      ],
+      [
         RegexpLikeExpr,
         function (this: DuckDBGenerator, e: RegexpLikeExpr) {
           return (this as DuckDBGenerator).regexplikeSql(e);
@@ -4756,6 +4765,101 @@ class DuckDBGenerator extends Generator {
     }
 
     return func;
+  }
+
+  regexpinstrSql (expression: RegexpInstrExpr): string {
+    let thisExpr = expression.args.this;
+    let pattern = expression.args.expression;
+    const position = expression.args.position;
+    const origOcc = expression.args.occurrence;
+    const occurrence = origOcc ?? LiteralExpr.number(1);
+    const option = expression.args.option;
+    const parameters = expression.args.parameters;
+
+    const validatedFlags = this.validateRegexpFlags(parameters, 'ims');
+
+    if (validatedFlags) {
+      pattern = new ConcatExpr({
+        expressions: [LiteralExpr.string(`(?${validatedFlags})`), pattern],
+      });
+    }
+
+    let posOffset: Expression = LiteralExpr.number(0);
+
+    if (position && (!position.isNumber || 1 < Number(position.toValue()))) {
+      thisExpr = new SubstringExpr({ this: thisExpr, start: position });
+      posOffset = new SubExpr({ this: position, expression: LiteralExpr.number(1) });
+    }
+
+    const sumLengths = (funcName: string, end: Expression): Expression => {
+      const lst = new BracketExpr({
+        this: new AnonymousExpr({ this: funcName, expressions: [thisExpr, pattern] }),
+        expressions: [new SliceExpr({ this: LiteralExpr.number(1), expression: end })],
+        offset: 1,
+      });
+      const transform = new AnonymousExpr({
+        this: 'LIST_TRANSFORM',
+        expressions: [
+          lst,
+          new LambdaExpr({
+            this: new LengthExpr({ this: toIdentifier('x') }),
+            expressions: [toIdentifier('x')],
+          }),
+        ],
+      });
+
+      return new CoalesceExpr({
+        this: new AnonymousExpr({ this: 'LIST_SUM', expressions: [transform] }),
+        expressions: [LiteralExpr.number(0)],
+      });
+    };
+
+    let basePos: Expression = new AddExpr({
+      this: new AddExpr({
+        this: new AddExpr({
+          this: LiteralExpr.number(1),
+          expression: sumLengths('STRING_SPLIT_REGEX', occurrence),
+        }),
+        expression: sumLengths('REGEXP_EXTRACT_ALL', new SubExpr({ this: occurrence, expression: LiteralExpr.number(1) })),
+      }),
+      expression: posOffset,
+    });
+
+    if (option && option.isNumber && Number(option.toValue()) === 1) {
+      const matchAtOcc = new BracketExpr({
+        this: new AnonymousExpr({ this: 'REGEXP_EXTRACT_ALL', expressions: [thisExpr, pattern] }),
+        expressions: [occurrence],
+        offset: 1,
+      });
+      basePos = new AddExpr({
+        this: basePos,
+        expression: new CoalesceExpr({
+          this: new LengthExpr({ this: matchAtOcc }),
+          expressions: [LiteralExpr.number(0)],
+        }),
+      });
+    }
+
+    const nullArgs = [
+      expression.args.this,
+      expression.args.expression,
+      position,
+      origOcc,
+      option,
+      parameters,
+    ].filter(Boolean) as Expression[];
+
+    const nullChecks = nullArgs.map((arg) => new IsExpr({ this: arg.copy(), expression: new NullExpr({}) }));
+
+    const matches = new AnonymousExpr({ this: 'REGEXP_EXTRACT_ALL', expressions: [thisExpr, pattern] });
+
+    const caseExpr = case_()
+      .when(nullChecks.reduce((acc, check) => acc ? new OrExpr({ this: acc, expression: check }) : check), new NullExpr({}))
+      .when(new EqExpr({ this: pattern!.copy(), expression: LiteralExpr.string('') }), LiteralExpr.number(0))
+      .when(new LtExpr({ this: new LengthExpr({ this: matches }), expression: occurrence }), LiteralExpr.number(0))
+      .else_(basePos);
+
+    return this.sql(caseExpr);
   }
 
   regexpreplaceSql (expression: RegexpReplaceExpr): string {
