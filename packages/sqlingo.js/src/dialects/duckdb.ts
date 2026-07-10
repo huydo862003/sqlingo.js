@@ -78,8 +78,11 @@ import {
   Base64DecodeBinaryExpr,
   Base64DecodeStringExpr,
   BitwiseAndExpr,
+  ArrayExceptExpr,
   ArrayMaxExpr,
   ArrayMinExpr,
+  maybeParse,
+  replacePlaceholders,
   BitwiseCountExpr,
   BitwiseLeftShiftExpr,
   BitwiseOrExpr,
@@ -3334,6 +3337,12 @@ class DuckDBGenerator extends Generator {
         },
       ],
       [
+        ArrayExceptExpr,
+        function (this: DuckDBGenerator, e: ArrayExceptExpr) {
+          return this.arrayexceptSql(e);
+        },
+      ],
+      [
         ArrayMaxExpr,
         renameFunc('LIST_MAX'),
       ],
@@ -4559,6 +4568,32 @@ class DuckDBGenerator extends Generator {
       this: thisNode,
       to: timeType,
     }));
+  }
+
+  static ARRAY_EXCEPT_TEMPLATE = maybeParse(
+    `CASE
+      WHEN :source IS NULL OR :exclude IS NULL THEN NULL
+      ELSE LIST_TRANSFORM(
+        LIST_FILTER(
+          LIST_ZIP(:source, GENERATE_SERIES(1, LEN(:source))),
+          pair -> (
+            LEN(LIST_FILTER(:source[1:pair[1]], e -> e IS NOT DISTINCT FROM pair[0]))
+            > LEN(LIST_FILTER(:exclude, e -> e IS NOT DISTINCT FROM pair[0]))
+          )
+        ),
+        pair -> pair[0]
+      )
+    END`,
+  );
+
+  arrayexceptSql (expression: ArrayExceptExpr): string {
+    const source = expression.args.this;
+    const exclude = expression.args.expression;
+
+    return this.sql(replacePlaceholders(
+      (this._constructor as typeof DuckDBGenerator).ARRAY_EXCEPT_TEMPLATE.copy(),
+      { source, exclude },
+    ));
   }
 
   currentDateSql (expression: CurrentDateExpr): string {
