@@ -6383,9 +6383,15 @@ export class Parser {
 
       thisExpr = this.parseQueryModifiers(thisExpr) as SelectExpr;
     } else if ((table || nested) && this.match(TokenType.L_PAREN)) {
+      const comments = this.prevComments;
+
       thisExpr = this.parseWrappedSelect({
         table,
       });
+
+      if (thisExpr) {
+        thisExpr.addComments(comments, { prepend: true });
+      }
 
       // We return early here so that the UNION isn't attached to the subquery by the
       // following call to _parse_set_operations, but instead becomes the parent node
