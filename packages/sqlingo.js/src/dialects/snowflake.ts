@@ -854,7 +854,7 @@ function regexpExtractSql (this: Generator, expression: RegexpExtractExpr | Rege
   const position = expression.args.position || (occurrence ? LiteralExpr.number(1) : undefined);
 
   return this.func(
-    expression instanceof RegexpExtractExpr ? 'REGEXP_SUBSTR' : 'REGEXP_EXTRACT_ALL',
+    expression instanceof RegexpExtractExpr ? 'REGEXP_SUBSTR' : 'REGEXP_SUBSTR_ALL',
     [
       expression.args.this,
       expression.args.expression,

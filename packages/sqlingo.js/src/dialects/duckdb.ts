@@ -6024,14 +6024,37 @@ class DuckDBGenerator extends Generator {
     ]);
   }
 
-  regexpExtractSql (expression: RegexpExtractExpr): string {
+  private regexpExtractCommon (expression: RegexpExtractExpr | RegexpExtractAllExpr): string {
     let thisNode: Expression = expression.args.this as Expression;
     const group = expression.args.group;
-    const params = expression.args.parameters;
+    let params = expression.args.parameters;
     const position = expression.args.position;
     const occurrence = expression.args.occurrence;
     const nullIfPosOverflow = expression.args.nullIfPosOverflow;
 
+    // Handle 'e' flag: enables capture group extraction (Snowflake-specific)
+    if (params && params.isString && (params.name ?? '').includes('e')) {
+      params = LiteralExpr.string((params.name ?? '').replace(/e/g, ''));
+    }
+
+    const validatedFlags = this.validateRegexpFlags(params, 'cims');
+
+    // Strip default group when no following params
+    let groupArg = group;
+    const defaultGroup = String(this.dialect._constructor.REGEXP_EXTRACT_DEFAULT_GROUP);
+
+    if (!validatedFlags && group) {
+      if (
+        (group instanceof IdentifierExpr && group.name === defaultGroup)
+        || (group instanceof LiteralExpr && String(group.args.this) === defaultGroup)
+      ) {
+        groupArg = undefined;
+      }
+    }
+
+    const flagsExpr = validatedFlags ? LiteralExpr.string(validatedFlags) : undefined;
+
+    // Handle position argument
     if (position && (!(position instanceof LiteralExpr && position.isInteger) || 1 < parseInt(position.args.this ?? '0'))) {
       thisNode = new SubstringExpr({
         this: thisNode,
@@ -6046,36 +6069,31 @@ class DuckDBGenerator extends Generator {
       }
     }
 
-    let groupArg = group;
-    const defaultGroup = String(this.dialect._constructor.REGEXP_EXTRACT_DEFAULT_GROUP);
+    const isExtractAll = expression instanceof RegexpExtractAllExpr;
+    const nonSingleOccurrence = occurrence && (!(occurrence instanceof LiteralExpr && occurrence.isInteger) || 1 < parseInt((occurrence as LiteralExpr).args.this ?? '0'));
 
-    if (!params && group) {
-      if (
-        (group instanceof IdentifierExpr && group.name === defaultGroup)
-        || (group instanceof LiteralExpr && String(group.args.this) === defaultGroup)
-      ) {
-        groupArg = undefined;
-      }
+    const funcName = (isExtractAll || nonSingleOccurrence) ? 'REGEXP_EXTRACT_ALL' : 'REGEXP_EXTRACT';
+
+    let result: Expression = new AnonymousExpr({
+      this: funcName,
+      expressions: [thisNode, expression.args.expression, groupArg, flagsExpr].filter(Boolean),
+    });
+
+    if (isExtractAll && nonSingleOccurrence) {
+      result = new BracketExpr({ this: result, expressions: [new SliceExpr({ this: occurrence })] });
+    } else if (nonSingleOccurrence) {
+      result = new AnonymousExpr({ this: 'ARRAY_EXTRACT', expressions: [result, occurrence] });
     }
 
-    if (occurrence && (!(occurrence instanceof LiteralExpr && occurrence.isInteger) || 1 < parseInt((occurrence as LiteralExpr).args.this ?? '0'))) {
-      return this.func('ARRAY_EXTRACT', [
-        this.func('REGEXP_EXTRACT_ALL', [
-          thisNode,
-          expression.args.expression,
-          groupArg,
-          params,
-        ]),
-        LiteralExpr.number(parseInt((occurrence as LiteralExpr).args.this ?? '0')),
-      ]);
-    }
+    return this.sql(result);
+  }
 
-    return this.func('REGEXP_EXTRACT', [
-      thisNode,
-      expression.args.expression,
-      groupArg,
-      params,
-    ]);
+  regexpExtractSql (expression: RegexpExtractExpr): string {
+    return this.regexpExtractCommon(expression);
+  }
+
+  regexpextractallSql (expression: RegexpExtractAllExpr): string {
+    return this.regexpExtractCommon(expression);
   }
 
   numberToStrSql (expression: NumberToStrExpr): string {

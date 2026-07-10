@@ -5230,7 +5230,7 @@ FROM persons AS p, LATERAL FLATTEN(input => p.c, path => 'contact') AS _flattene
 
     this.validateIdentity(
       'REGEXP_SUBSTR_ALL(subject, pattern, pos, occ, param, group)',
-      'REGEXP_EXTRACT_ALL(subject, pattern, pos, occ, param, group)',
+      'REGEXP_SUBSTR_ALL(subject, pattern, pos, occ, param, group)',
     );
 
     this.validateIdentity('SELECT SEARCH((play, line), \'dream\')');
