@@ -167,6 +167,9 @@ import {
 import {
   cache, narrowInstanceOf,
 } from '../port_internals';
+import {
+  ClickHouseTyping,
+} from '../typing';
 import type {
   DatetimeDelta,
 } from './dialect';
@@ -2854,6 +2857,11 @@ export class ClickHouse extends Dialect {
     }
 
     return columnAliases;
+  }
+
+  @cache
+  static get EXPRESSION_METADATA () {
+    return new Map(ClickHouseTyping.EXPRESSION_METADATA);
   }
 
   static Tokenizer = ClickHouseTokenizer;
