@@ -12,10 +12,12 @@ import {
   UnhexExpr,
   CorrExpr,
   MonthsBetweenExpr,
+  AddMonthsExpr,
   CurrentDatabaseExpr,
   CurrentSchemaExpr,
   CurrentUserExpr,
   HexExpr,
+  NextDayExpr,
   RepeatExpr,
   ReplaceExpr,
   SoundexExpr,
@@ -23,8 +25,13 @@ import {
   FactorialExpr,
   MonthExpr,
   SecondExpr,
+  ArrayDistinctExpr,
+  ArrayExceptExpr,
+  ArrayIntersectExpr,
+  ApproxQuantileExpr,
   CoalesceExpr,
   IfExpr,
+  QuantileExpr,
   RegexpSplitExpr,
   ReverseExpr,
 } from '../expressions/expressions';
@@ -63,10 +70,12 @@ export class HiveTyping {
     });
 
     extend([
+      AddMonthsExpr,
       CurrentDatabaseExpr,
-      CurrentSchemaExpr,
       CurrentUserExpr,
+      CurrentSchemaExpr,
       HexExpr,
+      NextDayExpr,
       RepeatExpr,
       ReplaceExpr,
       SoundexExpr,
@@ -88,6 +97,20 @@ export class HiveTyping {
       returns: DataTypeExprKind.INT,
     });
 
+    extend([
+      ArrayDistinctExpr,
+      ArrayExceptExpr,
+      ReverseExpr,
+    ], {
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
+    });
+
+    map.set(ApproxQuantileExpr, {
+      annotator: (s: TypeAnnotator, e: ApproxQuantileExpr) => s.annotateByArgs(e, ['quantile']),
+    });
+    map.set(ArrayIntersectExpr, {
+      annotator: (s: TypeAnnotator, e: ArrayIntersectExpr) => s.annotateByArgs(e, ['expressions']),
+    });
     map.set(CoalesceExpr, {
       annotator: (s: TypeAnnotator, e: CoalesceExpr) => s.annotateByArgs(e, [
         'this',
@@ -106,12 +129,11 @@ export class HiveTyping {
       }),
     });
 
+    map.set(QuantileExpr, {
+      annotator: (s: TypeAnnotator, e: QuantileExpr) => s.annotateByArgs(e, ['quantile']),
+    });
     map.set(RegexpSplitExpr, {
       returns: 'ARRAY<STRING>',
-    });
-
-    map.set(ReverseExpr, {
-      annotator: (s: TypeAnnotator, e: ReverseExpr) => s.annotateByArgs(e, ['this']),
     });
 
     return map;
