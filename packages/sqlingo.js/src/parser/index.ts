@@ -6352,7 +6352,7 @@ export class Parser {
       const limit = this.parseLimit(undefined, {
         top: true,
       });
-      const projections = this.parseProjections();
+      const [projections, exclude] = this.parseProjections();
 
       thisExpr = this.expression(
         SelectExpr,
@@ -6362,6 +6362,7 @@ export class Parser {
           distinct,
           expressions: projections,
           limit,
+          exclude,
           operationModifiers: 0 < operationModifiers.length ? operationModifiers : undefined,
         },
       );
@@ -15099,8 +15100,8 @@ export class Parser {
     return undefined;
   }
 
-  parseProjections (): Expression[] {
-    return this.parseExpressions();
+  parseProjections (): [Expression[], Expression[] | undefined] {
+    return [this.parseExpressions(), undefined];
   }
 
   parseWrappedSelect (options: {

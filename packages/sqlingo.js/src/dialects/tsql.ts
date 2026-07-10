@@ -1162,8 +1162,10 @@ export class TSQLParser extends Parser {
    * T-SQL supports alias = expression in SELECT.
    * Converts EQ projections into Aliases
    */
-  parseProjections (): Expression[] {
-    return super.parseProjections().map((projection) => {
+  parseProjections (): [Expression[], Expression[] | undefined] {
+    const [projections] = super.parseProjections();
+
+    return [projections.map((projection) => {
       if (projection instanceof EqExpr && projection.args.this instanceof ColumnExpr) {
         return alias(projection.args.expression as Expression, projection.args.this.args.this as IdentifierExpr, {
           copy: false,
@@ -1171,7 +1173,7 @@ export class TSQLParser extends Parser {
       }
 
       return projection;
-    });
+    }), undefined];
   }
 
   parseCommitOrRollback (): CommitExpr | RollbackExpr {

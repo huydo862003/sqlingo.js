@@ -13011,6 +13011,7 @@ export type SelectExprArgs = Merge<[
     into?: Expression;
     from?: Expression;
     operationModifiers?: Expression[];
+    exclude?: Expression[];
     match?: Expression;
     laterals?: Expression[];
     joins?: Expression[];

@@ -314,6 +314,7 @@ import {
   JsonPathFilterExpr, JsonPathRecursiveExpr, JsonPathRootExpr,
   JsonPathScriptExpr, JsonPathSelectorExpr, JsonPathSliceExpr, JsonPathUnionExpr,
   AliasExpr, VarExpr,
+  select,
   var_,
   ComputedColumnConstraintExpr,
   NullifExpr,
@@ -5483,6 +5484,14 @@ export class Generator {
 
     const topDistinct = genClass.LIMIT_IS_TOP ? `${distinct}${hint}${top}` : `${top}${hint}${distinct}`;
 
+    const exclude = expression.args.exclude;
+
+    if (!genClass.STAR_EXCLUDE_REQUIRES_DERIVED_TABLE && exclude) {
+      const excludeSql = this.expressions({ sqls: exclude, flat: true });
+
+      expressions = `${expressions}${this.seg('EXCLUDE')} (${excludeSql})`;
+    }
+
     expressions = expressions ? `${this.sep()}${expressions}` : expressions;
 
     let sql = this.queryModifiers(
@@ -5497,6 +5506,14 @@ export class Generator {
     );
 
     sql = this.prependCtes(expression, sql);
+
+    if (genClass.STAR_EXCLUDE_REQUIRES_DERIVED_TABLE && exclude) {
+      expression.setArgKey('exclude', undefined);
+      const subquery = expression.subquery({ copy: false });
+      const star = new StarExpr({ except: exclude });
+
+      sql = this.sql(select(star).from(subquery, { copy: false }));
+    }
 
     if (!genClass.SUPPORTS_SELECT_INTO && into) {
       assertIsInstanceOf(into, IntoExpr);
