@@ -90,6 +90,8 @@ export enum ExpressionKey {
   ARRAY_CONSTRUCT_COMPACT = 'arrayConstructCompact',
   ARRAY_DISTINCT = 'arrayDistinct',
   ARRAY_EXCEPT = 'arrayExcept',
+  ARRAY_MAX = 'arrayMax',
+  ARRAY_MIN = 'arrayMin',
   ARRAY_CONTAINS = 'arrayContains',
   ARRAY_CONTAINS_ALL = 'arrayContainsAll',
   ARRAY_FILTER = 'arrayFilter',

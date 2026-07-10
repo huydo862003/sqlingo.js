@@ -71,6 +71,8 @@ import {
   ArrayCompactExpr,
   ArrayConcatExpr,
   ArrayDistinctExpr,
+  ArrayMaxExpr,
+  ArrayMinExpr,
   ArraySumExpr,
   CountIfExpr,
   ColumnsExpr,
@@ -628,6 +630,8 @@ class ClickHouseParser extends Parser {
       ARRAYCOMPACT: (args: unknown[]) => ArrayCompactExpr.fromArgList(args),
       ARRAYCONCAT: (args: unknown[]) => ArrayConcatExpr.fromArgList(args),
       ARRAYDISTINCT: (args: unknown[]) => ArrayDistinctExpr.fromArgList(args),
+      ARRAYMAX: (args: unknown[]) => ArrayMaxExpr.fromArgList(args),
+      ARRAYMIN: (args: unknown[]) => ArrayMinExpr.fromArgList(args),
       ARRAYSLICE: (args: unknown[]) => ArraySliceExpr.fromArgList(args),
       CURRENTDATABASE: (args: unknown[]) => CurrentDatabaseExpr.fromArgList(args),
       CURRENTSCHEMAS: (args: unknown[]) => CurrentSchemasExpr.fromArgList(args),
@@ -2374,6 +2378,14 @@ export class ClickHouseGenerator extends Generator {
             e.args.default,
           ]);
         },
+      ],
+      [
+        ArrayMaxExpr,
+        renameFunc('arrayMax'),
+      ],
+      [
+        ArrayMinExpr,
+        renameFunc('arrayMin'),
       ],
       [
         JarowinklerSimilarityExpr,

@@ -78,6 +78,8 @@ import {
   Base64DecodeBinaryExpr,
   Base64DecodeStringExpr,
   BitwiseAndExpr,
+  ArrayMaxExpr,
+  ArrayMinExpr,
   BitwiseCountExpr,
   BitwiseLeftShiftExpr,
   BitwiseOrExpr,
@@ -2423,6 +2425,8 @@ class DuckDBParser extends Parser {
         STR_SPLIT: (args: unknown[]) => SplitExpr.fromArgList(args),
         STR_SPLIT_REGEX: (args: unknown[]) => RegexpSplitExpr.fromArgList(args),
         TIME_BUCKET: (args: unknown[]) => DateBinExpr.fromArgList(args),
+        LIST_MAX: (args: unknown[]) => ArrayMaxExpr.fromArgList(args),
+        LIST_MIN: (args: unknown[]) => ArrayMinExpr.fromArgList(args),
         CURRENT_LOCALTIMESTAMP: (args: unknown[]) => LocaltimestampExpr.fromArgList(args),
         TODAY: (args: unknown[]) => CurrentDateExpr.fromArgList(args),
         TO_TIMESTAMP: (args: unknown[]) => UnixToTimeExpr.fromArgList(args),
@@ -3328,6 +3332,14 @@ class DuckDBGenerator extends Generator {
             sep: ' ',
           });
         },
+      ],
+      [
+        ArrayMaxExpr,
+        renameFunc('LIST_MAX'),
+      ],
+      [
+        ArrayMinExpr,
+        renameFunc('LIST_MIN'),
       ],
       [
         MapContainsKeyExpr,

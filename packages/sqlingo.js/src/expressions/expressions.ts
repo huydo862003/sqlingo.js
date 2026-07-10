@@ -18118,6 +18118,34 @@ export class ArrayExceptExpr extends FuncExpr {
   }
 }
 
+export class ArrayMaxExpr extends FuncExpr {
+  static key = ExpressionKey.ARRAY_MAX;
+
+  static argOrder = ['this'];
+
+  constructor (args: FuncExprArgs = {}) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export class ArrayMinExpr extends FuncExpr {
+  static key = ExpressionKey.ARRAY_MIN;
+
+  static argOrder = ['this'];
+
+  constructor (args: FuncExprArgs = {}) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
 export type ArrayInsertExprArgs = Merge<[
   FuncExprArgs,
   {
