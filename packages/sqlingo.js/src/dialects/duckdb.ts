@@ -48,7 +48,6 @@ import type {
   MinhashCombineExpr,
   NumberToStrExpr,
   SpaceExpr,
-  TableFromRowsExpr,
   MapCatExpr,
   ObjectInsertExpr,
   ArrayToStringExpr,
@@ -125,6 +124,8 @@ import {
   GenerateTimestampArrayExpr,
   GroupConcatExpr,
   InlineExpr,
+  toIdentifier,
+  TableFromRowsExpr,
   InitcapExpr,
   IntDivExpr,
   IsArrayExpr,
@@ -465,7 +466,14 @@ export const MAX_BIT_POSITION = LiteralExpr.number(32768);
 /**
  * SEQ function constants
  */
-export const SEQ_BASE = '(ROW_NUMBER() OVER (ORDER BY 1) - 1)';
+export const SEQ_BASE: Expression = maybeParse('(ROW_NUMBER() OVER (ORDER BY 1) - 1)');
+
+const SEQ_BYTE_WIDTH = new Map<typeof Expression, number>([
+  [Seq1Expr, 1],
+  [Seq2Expr, 2],
+  [Seq4Expr, 4],
+  [Seq8Expr, 8],
+]);
 export const SEQ_RESTRICTED = [
   WhereExpr,
   HavingExpr,
@@ -1214,6 +1222,52 @@ function jsonFormatSql (this: Generator, expression: JsonFormatExpr): string {
  * Transpile Snowflake SEQ1/SEQ2/SEQ4/SEQ8 to DuckDB.
  * Generates monotonically increasing integers starting from 0
  */
+function buildSeqExpression (base: Expression, byteWidth: number, signed: boolean): Expression {
+  const bits = byteWidth * 8;
+  const maxVal = LiteralExpr.number((2n ** BigInt(bits)).toString());
+
+  if (signed) {
+    const half = LiteralExpr.number((2n ** BigInt(bits - 1)).toString());
+
+    return replacePlaceholders(DuckDBGenerator.SEQ_SIGNED.copy(), [], {
+      base,
+      maxVal,
+      half,
+    });
+  }
+
+  return replacePlaceholders(DuckDBGenerator.SEQ_UNSIGNED.copy(), [], {
+    base,
+    maxVal,
+  });
+}
+
+function seqToRangeInGenerator (expression: Expression): Expression {
+  if (!(expression instanceof SelectExpr)) {
+    return expression;
+  }
+
+  const from = expression.args.from;
+
+  if (
+    !from
+    || !(from.args.this instanceof TableFromRowsExpr)
+    || !(from.args.this.args.this instanceof GeneratorExpr)
+  ) {
+    return expression;
+  }
+
+  return expression.transform((node: Expression) => {
+    const byteWidth = SEQ_BYTE_WIDTH.get(node._constructor as typeof Expression);
+
+    if (byteWidth !== undefined) {
+      return buildSeqExpression(new ColumnExpr({ this: toIdentifier('range') }), byteWidth, node.name === '1');
+    }
+
+    return node;
+  }, { copy: false });
+}
+
 function seqSql (this: Generator, expression: FuncExpr, byteWidth: number): string {
   const ancestor = expression.findAncestor(...SEQ_RESTRICTED);
 
@@ -1225,23 +1279,7 @@ function seqSql (this: Generator, expression: FuncExpr, byteWidth: number): stri
     this.unsupported('SEQ in restricted context is not supported - use CTE or subquery');
   }
 
-  const bits = byteWidth * 8;
-  const maxVal = LiteralExpr.number((2n ** BigInt(bits)).toString());
-
-  let result: Expression;
-
-  if (expression.name === '1') {
-    const half = LiteralExpr.number((2n ** BigInt(bits - 1)).toString());
-
-    result = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEQ_SIGNED.copy(), [], {
-      maxVal,
-      half,
-    });
-  } else {
-    result = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEQ_UNSIGNED.copy(), [], {
-      maxVal,
-    });
-  }
+  const result = buildSeqExpression(SEQ_BASE.copy(), byteWidth, expression.name === '1');
 
   return this.sql(result);
 }
@@ -3463,6 +3501,10 @@ class DuckDBGenerator extends Generator {
         dayNavigationSql,
       ],
       [
+        SelectExpr,
+        preprocess([seqToRangeInGenerator]),
+      ],
+      [
         RegexpReplaceExpr,
         function (this: DuckDBGenerator, e: RegexpReplaceExpr) {
           return (this as DuckDBGenerator).regexpreplaceSql(e);
@@ -4034,15 +4076,15 @@ class DuckDBGenerator extends Generator {
 
   @cache
   static get SEQ_UNSIGNED () {
-    return maybeParse(`${SEQ_BASE} % :maxVal`);
+    return maybeParse(':base % :maxVal');
   }
 
   @cache
   static get SEQ_SIGNED () {
     return maybeParse(`
-  (CASE WHEN ${SEQ_BASE} % :maxVal >= :half
-   THEN ${SEQ_BASE} % :maxVal - :maxVal
-   ELSE ${SEQ_BASE} % :maxVal END)
+  (CASE WHEN :base % :maxVal >= :half
+   THEN :base % :maxVal - :maxVal
+   ELSE :base % :maxVal END)
 `);
   }
 
