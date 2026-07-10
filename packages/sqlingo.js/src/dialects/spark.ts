@@ -431,6 +431,12 @@ class SparkGenerator extends Spark2.Generator {
         renameFunc('BIT_COUNT'),
       ],
       [
+        ArrayInsertExpr,
+        function (this: Generator, e: ArrayInsertExpr) {
+          return this.func('ARRAY_INSERT', [e.args.this, e.args.position, e.args.expression]);
+        },
+      ],
+      [
         CreateExpr,
         preprocess([
           removeUniqueConstraints,
