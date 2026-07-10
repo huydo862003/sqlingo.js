@@ -37,6 +37,7 @@ import {
   TimeSubExpr,
   TimestampAddExpr,
   TimestampDiffExpr,
+  TimestampFromPartsExpr,
   TimestampSubExpr,
   TsOrDsToDateExpr,
   DataTypeExprKind,
@@ -264,6 +265,7 @@ class SparkParser extends Spark2.Parser {
       BIT_COUNT: (args: unknown[]) => BitwiseCountExpr.fromArgList(args),
       DATE_ADD: buildDateAdd,
       DATEADD: buildDateAdd,
+      MAKE_TIMESTAMP: (args: unknown[]) => TimestampFromPartsExpr.fromArgList(args),
       TIMESTAMPADD: buildDateAdd,
       TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr, undefined, {
         defaultUnit: 'DAY',
@@ -510,6 +512,10 @@ class SparkGenerator extends Spark2.Generator {
       [
         TimestampAddExpr,
         dateAddSql,
+      ],
+      [
+        TimestampFromPartsExpr,
+        renameFunc('MAKE_TIMESTAMP'),
       ],
       [
         TimestampSubExpr,
