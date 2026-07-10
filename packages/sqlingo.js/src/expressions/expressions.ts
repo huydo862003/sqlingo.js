@@ -18263,6 +18263,7 @@ export type ArrayContainsExprArgs = Merge<[
     this?: Expression;
     expression?: Expression;
     ensureVariant?: boolean | Expression;
+    checkNull?: boolean;
   },
 ]>;
 

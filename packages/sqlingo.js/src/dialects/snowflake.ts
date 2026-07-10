@@ -1335,6 +1335,7 @@ class SnowflakeParser extends Parser {
             this: seqGet(args, 1),
             expression: seqGet(args, 0),
             ensureVariant: false,
+            checkNull: true,
           }),
         ARRAY_GENERATE_RANGE: (args: Expression[]) =>
           new GenerateSeriesExpr({

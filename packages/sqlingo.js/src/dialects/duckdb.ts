@@ -3342,6 +3342,12 @@ class DuckDBGenerator extends Generator {
         },
       ],
       [
+        ArrayContainsExpr,
+        function (this: DuckDBGenerator, e: ArrayContainsExpr) {
+          return (this as DuckDBGenerator).arraycontainsSql(e);
+        },
+      ],
+      [
         ArrayDistinctExpr,
         function (this: DuckDBGenerator, e: ArrayDistinctExpr) {
           return (this as DuckDBGenerator).arraydistinctSql(e);
@@ -4632,6 +4638,31 @@ class DuckDBGenerator extends Generator {
     }
 
     return this.func('REGEXP_MATCHES', [thisExpr, anchoredPattern, flag] as Expression[]);
+  }
+
+  arraycontainsSql (expression: ArrayContainsExpr): string {
+    const thisExpr = expression.args.this;
+    const expr = expression.args.expression;
+
+    const func = this.func('ARRAY_CONTAINS', [thisExpr, expr] as Expression[]);
+
+    if (expression.args.checkNull) {
+      const checkNullInArray = new NullifExpr({
+        this: new NeqExpr({
+          this: new ArraySizeExpr({ this: thisExpr }),
+          expression: new AnonymousExpr({ this: 'LIST_COUNT', expressions: [thisExpr] }),
+        }),
+        expression: new BooleanExpr({ this: false }),
+      });
+
+      return this.sql(new IfExpr({
+        this: new IsExpr({ this: expr, expression: new NullExpr({}) }),
+        true: checkNullInArray,
+        false: maybeParse(func),
+      }));
+    }
+
+    return func;
   }
 
   arraydistinctSql (expression: ArrayDistinctExpr): string {
