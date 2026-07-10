@@ -182,6 +182,7 @@ import {
   noPivotSql,
   Dialect, NormalizationStrategy, Dialects,
   unitToVar,
+  jarowinklerSimilarity,
   renameFunc,
   varMapSql,
   buildLike,
@@ -2376,7 +2377,7 @@ export class ClickHouseGenerator extends Generator {
       ],
       [
         JarowinklerSimilarityExpr,
-        renameFunc('jaroWinklerSimilarity'),
+        jarowinklerSimilarity('jaroWinklerSimilarity'),
       ],
       [
         LevenshteinExpr,

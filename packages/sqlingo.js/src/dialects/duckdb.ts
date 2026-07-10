@@ -373,6 +373,7 @@ import {
   arrayAppendSql,
   arrayCompactSql,
   arrayConcatSql,
+  jarowinklerSimilarity,
   renameFunc,
   removeFromArrayUsingFilter,
   noCommentColumnConstraintSql,
@@ -3245,7 +3246,7 @@ class DuckDBGenerator extends Generator {
       ],
       [
         JarowinklerSimilarityExpr,
-        renameFunc('JARO_WINKLER_SIMILARITY'),
+        jarowinklerSimilarity('JARO_WINKLER_SIMILARITY'),
       ],
       [
         JsonbExistsExpr,

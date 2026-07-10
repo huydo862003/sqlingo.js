@@ -109,6 +109,7 @@ import {
   ApproxQuantileExpr,
   ArrayContainsExpr,
   GenerateSeriesExpr,
+  JarowinklerSimilarityExpr,
   SubExpr,
   SortArrayExpr,
   FlattenExpr,
@@ -1317,6 +1318,11 @@ class SnowflakeParser extends Parser {
         APPROX_TOP_K: buildApproxTopK,
         ARRAY_CONSTRUCT: (args: Expression[]) => new ArrayExpr({
           expressions: args,
+        }),
+        JAROWINKLER_SIMILARITY: (args: Expression[]) => new JarowinklerSimilarityExpr({
+          this: seqGet(args, 0),
+          expression: seqGet(args, 1),
+          caseInsensitive: true,
         }),
         ARRAY_CONTAINS: (args: Expression[]) =>
           new ArrayContainsExpr({

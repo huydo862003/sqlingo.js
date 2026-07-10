@@ -16471,6 +16471,7 @@ export type JarowinklerSimilarityExprArgs = Merge<[
   {
     this?: Expression;
     expression?: Expression;
+    caseInsensitive?: boolean;
   },
 ]>;
 

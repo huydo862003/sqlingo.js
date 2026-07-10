@@ -122,6 +122,7 @@ import {
   IfExpr,
   IntervalExpr,
   IsExpr,
+  JarowinklerSimilarityExpr,
   JoinExpr,
   JsonExtractExpr,
   JsonPathExpr,
@@ -157,6 +158,7 @@ import {
   toIdentifier,
   TsOrDsAddExpr,
   UnnestExpr,
+  UpperExpr,
   VarExpr,
   WithinGroupExpr,
   cast,
@@ -1587,6 +1589,20 @@ Dialect.register(Dialects.DIALECT, Dialect);
 /**
  * Creates a function that renames a function call
  */
+export function jarowinklerSimilarity (funcName: string): (this: Generator, expression: JarowinklerSimilarityExpr) => string {
+  return function (this: Generator, expression: JarowinklerSimilarityExpr): string {
+    let thisExpr = expression.args.this;
+    let expr = expression.args.expression;
+
+    if (expression.args.caseInsensitive) {
+      thisExpr = thisExpr ? new UpperExpr({ this: thisExpr }) : undefined;
+      expr = expr ? new UpperExpr({ this: expr }) : undefined;
+    }
+
+    return this.func(funcName, [thisExpr, expr]);
+  };
+}
+
 export function renameFunc (name: string): (this: Generator, expression: Expression) => string {
   return function (this: Generator, expression: Expression): string {
     const constructor = expression._constructor as typeof FuncExpr;
