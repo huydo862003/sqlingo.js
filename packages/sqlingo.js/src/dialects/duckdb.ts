@@ -124,6 +124,7 @@ import {
   FloorExpr,
   GenerateTimestampArrayExpr,
   GroupConcatExpr,
+  InlineExpr,
   InitcapExpr,
   IntDivExpr,
   IsArrayExpr,
@@ -3291,7 +3292,31 @@ class DuckDBGenerator extends Generator {
       ],
       [
         LateralExpr,
-        explodeToUnnestSql,
+        function (this: Generator, expression: LateralExpr) {
+          const explode = expression.args.this;
+
+          if (explode instanceof InlineExpr) {
+            const unnestExpr = new UnnestExpr({
+              expressions: [
+                explode.args.this,
+                new KwargExpr({ this: var_('max_depth'), expression: LiteralExpr.number(2) }),
+              ],
+            });
+            const selectExpr = new SelectExpr({ expressions: [unnestExpr] }).subquery();
+            const aliasExpr = expression.args.alias;
+
+            if (aliasExpr && !aliasExpr.args.this) {
+              aliasExpr.setArgKey('this', toIdentifier(`_u_${expression.index}`));
+            }
+
+            const transformedLateral = new LateralExpr({ this: selectExpr, alias: aliasExpr });
+            const crossJoinLateral = new JoinExpr({ this: transformedLateral, kind: 'CROSS' });
+
+            return this.sql(crossJoinLateral);
+          }
+
+          return explodeToUnnestSql.call(this, expression);
+        },
       ],
       [
         LogicalOrExpr,
