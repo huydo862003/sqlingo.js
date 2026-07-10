@@ -154,7 +154,7 @@ import {
   epochCastToTs, explodeProjectionToUnnest, inheritStructFieldNames, preprocess, removeWithinGroupForPercentiles, unnestGenerateSeries, unqualifyColumns,
 } from '../transforms';
 import {
-  applyIndexOffset, seqGet,
+  seqGet,
 } from '../helper';
 import {
   cache, narrowInstanceOf,
@@ -172,6 +172,7 @@ import {
   buildRegexpExtract,
   buildReplaceWithOptionalReplacement,
   dateStrToDateSql,
+  bracketToElementAtSql,
   dateTruncToTime,
   Dialect, Dialects, encodeDecodeSql, explodeToUnnestSql, ifSql, leftToSubstringSql, noIlikeSql, noPivotSql, NormalizationStrategy,
   regexpExtractSql,
@@ -1607,25 +1608,7 @@ class PrestoGenerator extends Generator {
 
   public bracketSql (expression: BracketExpr): string {
     if (expression.args.safe) {
-      return this.func(
-        'ELEMENT_AT',
-        [
-          expression.args.this,
-          expression.args.this instanceof Expression
-            ? seqGet(
-              applyIndexOffset(
-                expression.args.this,
-                expression.args.expressions ?? [],
-                1 - (expression.args.offset || 0),
-                {
-                  dialect: this.dialect,
-                },
-              ),
-              0,
-            )
-            : undefined,
-        ],
-      );
+      return bracketToElementAtSql.call(this, expression);
     }
 
     return super.bracketSql(expression);
