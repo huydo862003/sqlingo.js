@@ -1693,6 +1693,9 @@ class SnowflakeParser extends Parser {
   static get ALTER_PARSERS (): Partial<Record<string, (this: Parser) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.ALTER_PARSERS,
+      MODIFY: function (this: Parser) {
+        return this.parseAlterTableAlter();
+      },
       SESSION: function (this: Parser) {
         return this.parseAlterSession();
       },
@@ -2402,7 +2405,9 @@ class SnowflakeParser extends Parser {
       ])) {
         const keyword = this.prev?.text.toLowerCase() ?? '';
 
-        kwargs[keyword] = this.parseCsv(() => this.parseDisjunction());
+        kwargs[keyword] = this.parseCsv(
+          () => this.parseAlias(this.parseDisjunction(), { explicit: true }),
+        );
       } else if (this.matchTextSeq('WHERE')) {
         kwargs['where'] = this.parseExpression();
       } else {
