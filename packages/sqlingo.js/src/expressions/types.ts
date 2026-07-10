@@ -88,6 +88,8 @@ export enum ExpressionKey {
   ARRAY_CONCAT = 'arrayConcat',
   ARRAY_CONCAT_AGG = 'arrayConcatAgg',
   ARRAY_CONSTRUCT_COMPACT = 'arrayConstructCompact',
+  ARRAY_DISTINCT = 'arrayDistinct',
+  ARRAY_EXCEPT = 'arrayExcept',
   ARRAY_CONTAINS = 'arrayContains',
   ARRAY_CONTAINS_ALL = 'arrayContainsAll',
   ARRAY_FILTER = 'arrayFilter',

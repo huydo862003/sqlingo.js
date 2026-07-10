@@ -18063,6 +18063,60 @@ export class ArrayCompactExpr extends FuncExpr {
   }
 }
 
+export type ArrayDistinctExprArgs = Merge<[
+  FuncExprArgs,
+  {
+    this?: Expression;
+    checkNull?: Expression;
+  },
+]>;
+
+export class ArrayDistinctExpr extends FuncExpr {
+  static key = ExpressionKey.ARRAY_DISTINCT;
+
+  static argOrder = [
+    'this',
+    'checkNull',
+  ];
+
+  declare args: ArrayDistinctExprArgs;
+
+  constructor (args: ArrayDistinctExprArgs = {}) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type ArrayExceptExprArgs = Merge<[
+  FuncExprArgs,
+  {
+    this?: Expression;
+    expression?: Expression;
+  },
+]>;
+
+export class ArrayExceptExpr extends FuncExpr {
+  static key = ExpressionKey.ARRAY_EXCEPT;
+
+  static argOrder = [
+    'this',
+    'expression',
+  ];
+
+  declare args: ArrayExceptExprArgs;
+
+  constructor (args: ArrayExceptExprArgs = {}) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
 export type ArrayInsertExprArgs = Merge<[
   FuncExprArgs,
   {
