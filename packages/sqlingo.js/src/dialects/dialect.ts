@@ -373,6 +373,7 @@ export class Dialect {
 
   /** Whether the table alias comes after tablesample */
   static ALIAS_POST_TABLESAMPLE = false;
+  static ALIAS_POST_VERSION = true;
 
   /** Whether a size in the table sample clause represents percentage */
   static TABLESAMPLE_SIZE_IS_PERCENT = false;

@@ -2825,6 +2825,7 @@ export class BigQueryJsonPathTokenizer extends JsonPathTokenizer {
 export class BigQuery extends Dialect {
   static DIALECT_NAME = Dialects.BIGQUERY;
   static WEEK_OFFSET = -1;
+  static ALIAS_POST_VERSION = false;
   static UNNEST_COLUMN_ONLY = true;
   static SUPPORTS_USER_DEFINED_TYPES = false;
   static SUPPORTS_SEMI_ANTI_JOIN = false;

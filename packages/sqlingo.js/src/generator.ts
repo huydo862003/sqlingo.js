@@ -4304,15 +4304,19 @@ export class Generator {
     alias = alias ? `${sep}${alias}` : '';
 
     const sample = this.sql(expression, 'sample');
-    let samplePreAlias: string;
-    let samplePostAlias: string;
+    let preAlias = '';
+    let postAlias = '';
 
     if (this.dialect._constructor.ALIAS_POST_TABLESAMPLE) {
-      samplePreAlias = sample;
-      samplePostAlias = '';
+      preAlias = sample;
     } else {
-      samplePreAlias = '';
-      samplePostAlias = sample;
+      postAlias = sample;
+    }
+
+    if (this.dialect._constructor.ALIAS_POST_VERSION) {
+      preAlias = `${preAlias}${version}`;
+    } else {
+      postAlias = `${postAlias}${version}`;
     }
 
     let hints = this.expressions(expression, {
@@ -4385,7 +4389,7 @@ export class Generator {
       indexedStr = '';
     }
 
-    return `${only}${tableStr}${changes}${partition}${version}${fileFormat}${samplePreAlias}${alias}${indexedStr}${hints}${pivots}${samplePostAlias}${joins}${laterals}${ordinality}`;
+    return `${only}${tableStr}${changes}${partition}${fileFormat}${preAlias}${alias}${indexedStr}${hints}${pivots}${postAlias}${joins}${laterals}${ordinality}`;
   }
 
   tableFromRowsSql (expression: TableFromRowsExpr): string {

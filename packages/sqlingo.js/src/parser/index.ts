@@ -7717,10 +7717,8 @@ export class Parser {
       });
     }
 
-    const version = this.parseVersion();
-
-    if (version) {
-      thisExpr?.setArgKey('version', version);
+    if (this._dialectConstructor.ALIAS_POST_VERSION) {
+      thisExpr?.setArgKey('version', this.parseVersion());
     }
 
     if (this._dialectConstructor.ALIAS_POST_TABLESAMPLE) {
@@ -7764,6 +7762,10 @@ export class Parser {
 
     if (!this._dialectConstructor.ALIAS_POST_TABLESAMPLE) {
       thisExpr?.setArgKey('sample', this.parseTableSample());
+    }
+
+    if (!this._dialectConstructor.ALIAS_POST_VERSION) {
+      thisExpr?.setArgKey('version', this.parseVersion());
     }
 
     if (joins) {
