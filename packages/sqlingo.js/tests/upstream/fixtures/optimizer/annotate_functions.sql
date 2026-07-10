@@ -92,7 +92,7 @@ TO_BASE64(tbl.bytes_col);
 VARCHAR;
 
 UNIX_DATE(tbl.date_col);
-BIGINT;
+INT;
 
 UNIX_SECONDS(tbl.timestamp_col);
 BIGINT;
