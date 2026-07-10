@@ -108,6 +108,7 @@ import {
   AddMonthsExpr,
   ApproxQuantileExpr,
   ArrayContainsExpr,
+  CurrentSchemasExpr,
   GenerateSeriesExpr,
   JarowinklerSimilarityExpr,
   SubExpr,
@@ -2539,6 +2540,12 @@ class SnowflakeGenerator extends Generator {
       [
         ArgMinExpr,
         renameFunc('MIN_BY'),
+      ],
+      [
+        CurrentSchemasExpr,
+        function (this: Generator) {
+          return this.func('CURRENT_SCHEMAS', []);
+        },
       ],
       [
         ArrayExpr,

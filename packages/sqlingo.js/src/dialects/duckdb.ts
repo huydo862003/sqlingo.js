@@ -90,7 +90,9 @@ import {
   CorrExpr,
   CurrentTimeExpr,
   CurrentDateExpr,
+  CurrentSchemasExpr,
   CurrentTimestampExpr,
+  true_,
   DateExpr,
   DateStrToDateExpr,
   DateSubExpr,
@@ -131,6 +133,7 @@ import {
   LogicalAndExpr,
   LogicalOrExpr,
   MakeIntervalExpr,
+  MapContainsKeyExpr,
   Md5DigestExpr,
   MonthnameExpr,
   MonthsBetweenExpr,
@@ -3046,6 +3049,12 @@ class DuckDBGenerator extends Generator {
         },
       ],
       [
+        CurrentSchemasExpr,
+        function (this: Generator, e: CurrentSchemasExpr) {
+          return this.func('current_schemas', [e.args.this ?? true_()] as Expression[]);
+        },
+      ],
+      [
         CurrentVersionExpr,
         renameFunc('version'),
       ],
@@ -3318,6 +3327,14 @@ class DuckDBGenerator extends Generator {
           return noMakeIntervalSql.call(this, e, {
             sep: ' ',
           });
+        },
+      ],
+      [
+        MapContainsKeyExpr,
+        function (this: Generator, e: MapContainsKeyExpr) {
+          const mapKeys = new AnonymousExpr({ this: 'MAP_KEYS', expressions: [e.args.key] });
+
+          return this.func('ARRAY_CONTAINS', [mapKeys, e.args.this] as Expression[]);
         },
       ],
       [
