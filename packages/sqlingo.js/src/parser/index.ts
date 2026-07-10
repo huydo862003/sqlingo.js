@@ -9818,9 +9818,16 @@ export class Parser {
       return this.parseIdVar();
     }
 
-    const thisExpr = this.parseColumn();
+    let thisExpr: Expression | undefined = this.parseColumn();
 
-    return thisExpr && this.parseColumnOps(thisExpr);
+    if (thisExpr) {
+      thisExpr = this.parseColumnOps(thisExpr);
+    }
+    if (thisExpr && this._constructor.COLON_IS_VARIANT_EXTRACT) {
+      thisExpr = this.parseColonAsVariantExtract(thisExpr);
+    }
+
+    return thisExpr;
   }
 
   parseTypeSize (): DataTypeParamExpr | undefined {
@@ -10525,9 +10532,7 @@ export class Parser {
       current = this.parseBracket(current);
     }
 
-    return this._constructor.COLON_IS_VARIANT_EXTRACT
-      ? this.parseColonAsVariantExtract(current)
-      : current;
+    return current;
   }
 
   parseComment (options: {
