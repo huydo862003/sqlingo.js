@@ -209,6 +209,7 @@ import {
   ParseJsonExpr,
   PercentileContExpr,
   PercentileDiscExpr,
+  RegexpCountExpr,
   RegexpExtractAllExpr,
   RegexpExtractExpr,
   RegexpLikeExpr,
@@ -3432,6 +3433,12 @@ class DuckDBGenerator extends Generator {
         },
       ],
       [
+        RegexpCountExpr,
+        function (this: DuckDBGenerator, e: RegexpCountExpr) {
+          return (this as DuckDBGenerator).regexpcountSql(e);
+        },
+      ],
+      [
         RegexpLikeExpr,
         function (this: DuckDBGenerator, e: RegexpLikeExpr) {
           return (this as DuckDBGenerator).regexplikeSql(e);
@@ -4572,7 +4579,7 @@ class DuckDBGenerator extends Generator {
     }));
   }
 
-  private validateRegexpFlags (flags: Expression | undefined): string | undefined {
+  private validateRegexpFlags (flags: Expression | undefined, supportedFlags: string): string | undefined {
     if (!(flags instanceof Expression)) {
       return undefined;
     }
@@ -4583,14 +4590,17 @@ class DuckDBGenerator extends Generator {
       return undefined;
     }
 
-    let flagStr = flags.name ?? '';
+    const flagStr = flags.name ?? '';
+    const supported = new Set(supportedFlags);
+    const unsupported = [...new Set(flagStr)].filter((f) => !supported.has(f));
 
-    if (flagStr.includes('e')) {
-      this.unsupported("'e' (extract) flag is not supported in DuckDB");
-      flagStr = flagStr.replace(/e/g, '');
+    if (0 < unsupported.length) {
+      this.unsupported(`Regexp flags ${JSON.stringify(unsupported.sort())} are not supported in this context`);
     }
 
-    return flagStr;
+    const result = [...flagStr].filter((f) => supported.has(f)).join('');
+
+    return result || undefined;
   }
 
   regexplikeSql (expression: RegexpLikeExpr): string {
@@ -4602,7 +4612,7 @@ class DuckDBGenerator extends Generator {
       return this.func('REGEXP_MATCHES', [thisExpr, pattern, flag] as Expression[]);
     }
 
-    const validatedFlags = this.validateRegexpFlags(flag);
+    const validatedFlags = this.validateRegexpFlags(flag, 'cims');
 
     const anchoredPattern = new ConcatExpr({
       expressions: [
@@ -4617,6 +4627,39 @@ class DuckDBGenerator extends Generator {
     }
 
     return this.func('REGEXP_MATCHES', [thisExpr, anchoredPattern, flag] as Expression[]);
+  }
+
+  regexpcountSql (expression: RegexpCountExpr): string {
+    let thisExpr = expression.args.this;
+    let pattern = expression.args.expression;
+    const position = expression.args.position;
+    const parameters = expression.args.parameters;
+
+    const validatedFlags = this.validateRegexpFlags(parameters, 'ims');
+
+    if (position) {
+      thisExpr = new SubstringExpr({ this: thisExpr, start: position });
+    }
+
+    if (validatedFlags) {
+      pattern = new ConcatExpr({
+        expressions: [LiteralExpr.string(`(?${validatedFlags})`), pattern],
+      });
+    }
+
+    const result = new CaseExpr({
+      ifs: [
+        new IfExpr({
+          this: new EqExpr({ this: pattern, expression: LiteralExpr.string('') }),
+          true: LiteralExpr.number(0),
+        }),
+      ],
+      default: new LengthExpr({
+        this: new AnonymousExpr({ this: 'REGEXP_EXTRACT_ALL', expressions: [thisExpr, pattern] }),
+      }),
+    });
+
+    return this.sql(result);
   }
 
   static ARRAY_EXCEPT_TEMPLATE = maybeParse(
