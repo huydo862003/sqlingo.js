@@ -529,10 +529,15 @@ export class OracleParser extends Parser {
     }
 
     const index = this.index;
-    const intervalSpan = this.parseIntervalSpan(result);
 
-    if (intervalSpan.args.unit instanceof IntervalSpanExpr) {
-      return intervalSpan;
+    try {
+      const intervalSpan = this.parseIntervalSpan(result);
+
+      if (intervalSpan.args.unit instanceof IntervalSpanExpr) {
+        return intervalSpan;
+      }
+    } catch {
+      // Ignore parse errors; fall through to return result
     }
 
     this.retreat(index);
