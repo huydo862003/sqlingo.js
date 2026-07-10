@@ -12747,7 +12747,7 @@ export class Parser {
     const {
       safe, strict,
     } = options;
-    let thisExpr = this.parseDisjunction();
+    let thisExpr = this.parseAssignment();
 
     if (!this.match(TokenType.ALIAS)) {
       if (this.match(TokenType.COMMA)) {
