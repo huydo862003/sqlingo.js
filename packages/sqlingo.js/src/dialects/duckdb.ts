@@ -3423,13 +3423,8 @@ class DuckDBGenerator extends Generator {
       ],
       [
         RegexpReplaceExpr,
-        function (this: Generator, e) {
-          return this.func('REGEXP_REPLACE', [
-            e.args.this,
-            e.args.expression,
-            e.args.replacement,
-            regexpReplaceGlobalModifier(e),
-          ]);
+        function (this: DuckDBGenerator, e: RegexpReplaceExpr) {
+          return (this as DuckDBGenerator).regexpreplaceSql(e);
         },
       ],
       [
@@ -4627,6 +4622,74 @@ class DuckDBGenerator extends Generator {
     }
 
     return this.func('REGEXP_MATCHES', [thisExpr, anchoredPattern, flag] as Expression[]);
+  }
+
+  regexpreplaceSql (expression: RegexpReplaceExpr): string {
+    let subject = expression.args.this;
+    const pattern = expression.args.expression;
+    const replacement = expression.args.replacement ?? LiteralExpr.string('');
+    const position = expression.args.position;
+    let occurrence = expression.args.occurrence;
+    const modifiers = expression.args.modifiers;
+
+    let flagsExpr: Expression | undefined = modifiers;
+    let validatedFlags = '';
+
+    if (modifiers && modifiers.isString) {
+      validatedFlags = this.validateRegexpFlags(modifiers, 'cimsg') ?? '';
+      flagsExpr = undefined;
+    }
+
+    if (occurrence && !occurrence.isNumber) {
+      this.unsupported('REGEXP_REPLACE with non-literal occurrence');
+    } else {
+      const occVal = (occurrence && occurrence.isNumber) ? Number(occurrence.toValue()) : 0;
+
+      if (1 < occVal) {
+        this.unsupported(`REGEXP_REPLACE occurrence=${occVal} not supported`);
+      } else if (
+        occVal === 0
+        && !validatedFlags.includes('g')
+        && !expression.args.singleReplace
+      ) {
+        validatedFlags += 'g';
+      }
+    }
+
+    let prefix: Expression | undefined;
+
+    if (position && !position.isNumber) {
+      this.unsupported('REGEXP_REPLACE with non-literal position');
+    } else if (position && position.isNumber && 1 < Number(position.toValue())) {
+      const pos = Number(position.toValue());
+
+      prefix = new SubstringExpr({
+        this: subject,
+        start: LiteralExpr.number(1),
+        length: LiteralExpr.number(pos - 1),
+      });
+      subject = new SubstringExpr({ this: subject, start: LiteralExpr.number(pos) });
+    }
+
+    const flagArg = validatedFlags
+      ? LiteralExpr.string(validatedFlags)
+      : flagsExpr;
+
+    let result: Expression = new AnonymousExpr({
+      this: 'REGEXP_REPLACE',
+      expressions: [
+        subject,
+        pattern,
+        replacement,
+        ...(flagArg ? [flagArg] : []),
+      ].filter(Boolean),
+    });
+
+    if (prefix) {
+      result = new ConcatExpr({ expressions: [prefix, result] });
+    }
+
+    return this.sql(result);
   }
 
   regexpcountSql (expression: RegexpCountExpr): string {
