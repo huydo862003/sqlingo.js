@@ -51,6 +51,7 @@ import {
   TimestampTruncExpr,
   StrToTimeExpr,
   CurrentDateExpr,
+  CurrentSchemaExpr,
   CurrentTimestampExpr,
   CurrentUserExpr,
   AtTimeZoneExpr,
@@ -502,6 +503,7 @@ class ExasolParser extends Parser {
   static get NO_PAREN_FUNCTIONS () {
     const noParenFunctions = {
       [TokenType.SYSTIMESTAMP]: SystimestampExpr,
+      [TokenType.CURRENT_SCHEMA]: CurrentSchemaExpr,
       ...Parser.NO_PAREN_FUNCTIONS,
     };
 
@@ -986,6 +988,10 @@ class ExasolGenerator extends Generator {
             this.formatTime(e),
           ]);
         },
+      ],
+      [
+        CurrentSchemaExpr,
+        () => 'CURRENT_SCHEMA',
       ],
       [
         CurrentUserExpr,
