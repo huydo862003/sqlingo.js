@@ -9,6 +9,9 @@ export {
   BigQueryTyping,
 } from './bigquery';
 export {
+  ClickHouseTyping,
+} from './clickhouse';
+export {
   DuckDbTyping,
 } from './duckdb';
 export {

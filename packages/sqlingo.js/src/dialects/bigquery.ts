@@ -21,7 +21,6 @@ import type {
   EqExpr,
   AtTimeZoneExpr,
   TryCastExpr,
-  DeclareItemExpr,
 } from '../expressions';
 import {
   ValuesExpr,
@@ -1807,6 +1806,7 @@ export class BigQueryParser extends Parser {
   }
 }
 export class BigQueryGenerator extends Generator {
+  static DECLARE_DEFAULT_ASSIGNMENT = 'DEFAULT';
   // port from _Dialect metaclass logic
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
@@ -2795,21 +2795,6 @@ export class BigQueryGenerator extends Generator {
     });
   }
 
-  declareItemSql (expression: DeclareItemExpr): string {
-    const variables = this.expressions(expression, {
-      key: 'this',
-    });
-
-    let defaultValue = this.sql(expression, 'default');
-
-    defaultValue = defaultValue ? ` DEFAULT ${defaultValue}` : '';
-
-    let kind = this.sql(expression, 'kind');
-
-    kind = kind ? ` ${kind}` : '';
-
-    return `${variables}${kind}${defaultValue}`;
-  }
 }
 
 export class BigQueryJsonPathTokenizer extends JsonPathTokenizer {
@@ -2825,6 +2810,7 @@ export class BigQueryJsonPathTokenizer extends JsonPathTokenizer {
 export class BigQuery extends Dialect {
   static DIALECT_NAME = Dialects.BIGQUERY;
   static WEEK_OFFSET = -1;
+  static ALIAS_POST_VERSION = false;
   static UNNEST_COLUMN_ONLY = true;
   static SUPPORTS_USER_DEFINED_TYPES = false;
   static SUPPORTS_SEMI_ANTI_JOIN = false;

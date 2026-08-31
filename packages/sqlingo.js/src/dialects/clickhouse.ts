@@ -68,7 +68,11 @@ import {
   StructExpr,
   AnyValueExpr,
   ApproxDistinctExpr,
+  ArrayCompactExpr,
   ArrayConcatExpr,
+  ArrayDistinctExpr,
+  ArrayMaxExpr,
+  ArrayMinExpr,
   ArraySumExpr,
   CountIfExpr,
   ColumnsExpr,
@@ -98,6 +102,7 @@ import {
   toIdentifier,
   TupleExpr,
   CurrentVersionExpr,
+  UtcTimestampExpr,
   DateSubExpr,
   ILikeExpr,
   JsonExtractScalarExpr,
@@ -167,6 +172,9 @@ import {
 import {
   cache, narrowInstanceOf,
 } from '../port_internals';
+import {
+  ClickHouseTyping,
+} from '../typing';
 import type {
   DatetimeDelta,
 } from './dialect';
@@ -176,6 +184,7 @@ import {
   noPivotSql,
   Dialect, NormalizationStrategy, Dialects,
   unitToVar,
+  jarowinklerSimilarity,
   renameFunc,
   varMapSql,
   buildLike,
@@ -618,6 +627,11 @@ class ClickHouseParser extends Parser {
       ANY: (args: unknown[]) => AnyValueExpr.fromArgList(args),
       ARRAYSUM: (args: unknown[]) => ArraySumExpr.fromArgList(args),
       ARRAYREVERSE: (args: unknown[]) => ArrayReverseExpr.fromArgList(args),
+      ARRAYCOMPACT: (args: unknown[]) => ArrayCompactExpr.fromArgList(args),
+      ARRAYCONCAT: (args: unknown[]) => ArrayConcatExpr.fromArgList(args),
+      ARRAYDISTINCT: (args: unknown[]) => ArrayDistinctExpr.fromArgList(args),
+      ARRAYMAX: (args: unknown[]) => ArrayMaxExpr.fromArgList(args),
+      ARRAYMIN: (args: unknown[]) => ArrayMinExpr.fromArgList(args),
       ARRAYSLICE: (args: unknown[]) => ArraySliceExpr.fromArgList(args),
       CURRENTDATABASE: (args: unknown[]) => CurrentDatabaseExpr.fromArgList(args),
       CURRENTSCHEMAS: (args: unknown[]) => CurrentSchemasExpr.fromArgList(args),
@@ -701,6 +715,7 @@ class ClickHouseParser extends Parser {
       TOTYPENAME: (args: unknown[]) => TypeofExpr.fromArgList(args),
       EDITDISTANCE: (args: unknown[]) => LevenshteinExpr.fromArgList(args),
       JAROWINKLERSIMILARITY: (args: unknown[]) => JarowinklerSimilarityExpr.fromArgList(args),
+      UTCTIMESTAMP: (args: unknown[]) => UtcTimestampExpr.fromArgList(args),
       LEVENSHTEINDISTANCE: (args: unknown[]) => LevenshteinExpr.fromArgList(args),
     };
 
@@ -2365,8 +2380,16 @@ export class ClickHouseGenerator extends Generator {
         },
       ],
       [
+        ArrayMaxExpr,
+        renameFunc('arrayMax'),
+      ],
+      [
+        ArrayMinExpr,
+        renameFunc('arrayMin'),
+      ],
+      [
         JarowinklerSimilarityExpr,
-        renameFunc('jaroWinklerSimilarity'),
+        jarowinklerSimilarity('jaroWinklerSimilarity'),
       ],
       [
         LevenshteinExpr,
@@ -2854,6 +2877,11 @@ export class ClickHouse extends Dialect {
     }
 
     return columnAliases;
+  }
+
+  @cache
+  static get EXPRESSION_METADATA () {
+    return new Map(ClickHouseTyping.EXPRESSION_METADATA);
   }
 
   static Tokenizer = ClickHouseTokenizer;

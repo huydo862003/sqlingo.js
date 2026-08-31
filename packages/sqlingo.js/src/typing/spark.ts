@@ -9,11 +9,14 @@ import {
 } from '../expressions/types';
 import {
   SecExpr,
+  ArrayCompactExpr,
+  ArrayInsertExpr,
+  BitwiseAndAggExpr,
+  BitwiseOrAggExpr,
+  BitwiseXorAggExpr,
   CollationExpr,
   CurrentTimezoneExpr,
-  MonthnameExpr,
   RandstrExpr,
-  SessionUserExpr,
   BitmapCountExpr,
   LocaltimestampExpr,
   ToBinaryExpr,
@@ -48,11 +51,20 @@ export class SparkTyping {
     extend([
       CollationExpr,
       CurrentTimezoneExpr,
-      MonthnameExpr,
       RandstrExpr,
-      SessionUserExpr,
     ], {
       returns: DataTypeExprKind.VARCHAR,
+    });
+
+    extend([
+      ArrayCompactExpr,
+      ArrayInsertExpr,
+      BitwiseAndAggExpr,
+      BitwiseOrAggExpr,
+      BitwiseXorAggExpr,
+      OverlayExpr,
+    ], {
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
     });
 
     map.set(BitmapCountExpr, {
@@ -69,10 +81,6 @@ export class SparkTyping {
     });
     map.set(ArraySizeExpr, {
       returns: DataTypeExprKind.INT,
-    });
-
-    map.set(OverlayExpr, {
-      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
     });
 
     return map;

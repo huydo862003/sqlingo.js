@@ -5230,7 +5230,7 @@ FROM persons AS p, LATERAL FLATTEN(input => p.c, path => 'contact') AS _flattene
 
     this.validateIdentity(
       'REGEXP_SUBSTR_ALL(subject, pattern, pos, occ, param, group)',
-      'REGEXP_EXTRACT_ALL(subject, pattern, pos, occ, param, group)',
+      'REGEXP_SUBSTR_ALL(subject, pattern, pos, occ, param, group)',
     );
 
     this.validateIdentity('SELECT SEARCH((play, line), \'dream\')');
@@ -7182,7 +7182,7 @@ FROM SEMANTIC_VIEW(
       'SELECT SEQ8() FROM TABLE(GENERATOR(ROWCOUNT => 5))',
       {
         write: {
-          'duckdb': 'SELECT (ROW_NUMBER() OVER (ORDER BY 1 NULLS FIRST) - 1) % 18446744073709551616 FROM RANGE(5)',
+          'duckdb': 'SELECT range % 18446744073709551616 FROM RANGE(5)',
           'snowflake': 'SELECT SEQ8() FROM TABLE(GENERATOR(ROWCOUNT => 5))',
         },
       },

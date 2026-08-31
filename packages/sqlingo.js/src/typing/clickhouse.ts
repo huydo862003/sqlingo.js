@@ -8,14 +8,7 @@ import {
   DataTypeExprKind,
 } from '../expressions/types';
 import {
-  Atan2Expr,
-  CurrentTimestampExpr,
-  CurrentVersionExpr,
-  EltExpr,
-  MonthExpr,
-  SecondExpr,
-  WeekExpr,
-  LocaltimeExpr,
+  CountIfExpr,
 } from '../expressions/expressions';
 import type {
   ExpressionMetadata,
@@ -24,40 +17,17 @@ import {
   DialectTyping,
 } from './dialect';
 
-export class MySQLTyping {
+export class ClickHouseTyping {
   @cache
   static get EXPRESSION_METADATA (): ExpressionMetadata {
-    // Clone the base metadata to apply dialect-specific overrides
     const map: ExpressionMetadata = new Map(DialectTyping.EXPRESSION_METADATA);
 
     const extend = (types: (typeof Expression)[], data: Record<string, unknown>) => {
       for (const type of types) map.set(type, data);
     };
 
-    extend([Atan2Expr], {
-      returns: DataTypeExprKind.DOUBLE,
-    });
-
-    extend([
-      CurrentTimestampExpr,
-      LocaltimeExpr,
-    ], {
-      returns: DataTypeExprKind.DATETIME,
-    });
-
-    extend([
-      CurrentVersionExpr,
-      EltExpr,
-    ], {
-      returns: DataTypeExprKind.VARCHAR,
-    });
-
-    extend([
-      MonthExpr,
-      SecondExpr,
-      WeekExpr,
-    ], {
-      returns: DataTypeExprKind.INT,
+    extend([CountIfExpr], {
+      returns: DataTypeExprKind.UBIGINT,
     });
 
     return map;

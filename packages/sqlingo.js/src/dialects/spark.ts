@@ -6,11 +6,18 @@ import type {
   ExpressionValue,
   GeneratedAsIdentityColumnConstraintExpr,
   GeneratedAsRowColumnConstraintExpr,
+  IfBlockExpr,
   ReadParquetExpr,
   RenameColumnExpr,
 } from '../expressions';
 import {
   TryCastExpr,
+  NotExpr,
+  IsExpr,
+  NullExpr,
+  ObjectIdExpr,
+  BlockExpr,
+  DropExpr,
   GroupConcatExpr,
   ComputedColumnConstraintExpr,
   PlaceholderExpr,
@@ -22,6 +29,7 @@ import {
   BitwiseCountExpr,
   BitwiseOrAggExpr,
   BitwiseXorAggExpr,
+  CurrentDateExpr,
   CurrentVersionExpr,
   DateDiffExpr,
   DateFromUnixDateExpr,
@@ -29,6 +37,7 @@ import {
   DatetimeDiffExpr,
   DatetimeSubExpr,
   EndsWithExpr,
+  GetbitExpr,
   SafeAddExpr,
   SafeMultiplyExpr,
   SafeSubtractExpr,
@@ -37,6 +46,7 @@ import {
   TimeSubExpr,
   TimestampAddExpr,
   TimestampDiffExpr,
+  TimestampFromPartsExpr,
   TimestampSubExpr,
   TsOrDsToDateExpr,
   DataTypeExprKind,
@@ -206,6 +216,14 @@ class SparkTokenizer extends Spark2.Tokenizer {
   static STRING_ESCAPES_ALLOWED_IN_RAW_STRINGS = false;
 
   @cache
+  static get KEYWORDS () {
+    return {
+      ...Spark2.Tokenizer.KEYWORDS,
+      DECLARE: TokenType.DECLARE,
+    };
+  }
+
+  @cache
   static get RAW_STRINGS (): TokenPair[] {
     return Spark2.Tokenizer.QUOTES.flatMap((q) => [
       [
@@ -221,6 +239,16 @@ class SparkTokenizer extends Spark2.Tokenizer {
 }
 
 class SparkParser extends Spark2.Parser {
+  @cache
+  static get STATEMENT_PARSERS (): Record<string, (this: Parser) => Expression | undefined> {
+    return {
+      ...Spark2.Parser.STATEMENT_PARSERS,
+      [TokenType.DECLARE]: function (this: Parser) {
+        return this.parseDeclare();
+      },
+    };
+  }
+
   // port from _Dialect metaclass logic
   @cache
   static get NO_PAREN_FUNCTIONS () {
@@ -262,8 +290,11 @@ class SparkParser extends Spark2.Parser {
       BIT_OR: (args: unknown[]) => BitwiseOrAggExpr.fromArgList(args),
       BIT_XOR: (args: unknown[]) => BitwiseXorAggExpr.fromArgList(args),
       BIT_COUNT: (args: unknown[]) => BitwiseCountExpr.fromArgList(args),
+      BIT_GET: (args: unknown[]) => GetbitExpr.fromArgList(args),
+      CURDATE: (args: unknown[]) => CurrentDateExpr.fromArgList(args),
       DATE_ADD: buildDateAdd,
       DATEADD: buildDateAdd,
+      MAKE_TIMESTAMP: (args: unknown[]) => TimestampFromPartsExpr.fromArgList(args),
       TIMESTAMPADD: buildDateAdd,
       TIMESTAMPDIFF: buildDateDelta(TimestampDiffExpr, undefined, {
         defaultUnit: 'DAY',
@@ -349,6 +380,7 @@ class SparkParser extends Spark2.Parser {
 }
 
 class SparkGenerator extends Spark2.Generator {
+  static DECLARE_DEFAULT_ASSIGNMENT = 'DEFAULT';
   // port from _Dialect metaclass logic
   static TRY_SUPPORTED = false;
   // port from _Dialect metaclass logic
@@ -423,6 +455,16 @@ class SparkGenerator extends Spark2.Generator {
       [
         BitwiseCountExpr,
         renameFunc('BIT_COUNT'),
+      ],
+      [
+        ArrayInsertExpr,
+        function (this: Generator, e: ArrayInsertExpr) {
+          return this.func('ARRAY_INSERT', [
+            e.args.this,
+            e.args.position,
+            e.args.expression,
+          ]);
+        },
       ],
       [
         CreateExpr,
@@ -510,6 +552,10 @@ class SparkGenerator extends Spark2.Generator {
       [
         TimestampAddExpr,
         dateAddSql,
+      ],
+      [
+        TimestampFromPartsExpr,
+        renameFunc('MAKE_TIMESTAMP'),
       ],
       [
         TimestampSubExpr,
@@ -601,6 +647,39 @@ class SparkGenerator extends Spark2.Generator {
     const parquetFile = expression.args.expressions[0];
 
     return `parquet.\`${parquetFile.name}\``;
+  }
+
+  ifBlockSql (expression: IfBlockExpr): string {
+    const condition = expression.args.this;
+    const trueBlock = expression.args.true;
+
+    let conditionExpr: Expression | undefined;
+
+    if (condition instanceof NotExpr) {
+      const inner = condition.args.this;
+
+      if (inner instanceof IsExpr && inner.args.expression instanceof NullExpr) {
+        conditionExpr = inner.args.this as Expression;
+      }
+    }
+
+    if (conditionExpr instanceof ObjectIdExpr) {
+      const objectType = conditionExpr.args.expression;
+
+      if (
+        (objectType === undefined || (objectType as Expression).name?.toUpperCase() === 'U')
+        && trueBlock instanceof BlockExpr
+        && trueBlock.args.expressions?.[0] instanceof DropExpr
+      ) {
+        const drop = trueBlock.args.expressions[0] as DropExpr;
+
+        drop.setArgKey('exists', true);
+
+        return this.sql(drop);
+      }
+    }
+
+    return super.ifBlockSql(expression);
   }
 }
 

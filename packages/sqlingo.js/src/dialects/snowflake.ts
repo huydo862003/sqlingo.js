@@ -108,7 +108,10 @@ import {
   AddMonthsExpr,
   ApproxQuantileExpr,
   ArrayContainsExpr,
+  ArrayDistinctExpr,
+  CurrentSchemasExpr,
   GenerateSeriesExpr,
+  JarowinklerSimilarityExpr,
   SubExpr,
   SortArrayExpr,
   FlattenExpr,
@@ -225,6 +228,7 @@ import {
   WithinGroupExpr,
   AliasExpr,
   ConvertTimezoneExpr,
+  true_,
 } from '../expressions';
 import {
   Generator, unsupportedArgs,
@@ -851,7 +855,7 @@ function regexpExtractSql (this: Generator, expression: RegexpExtractExpr | Rege
   const position = expression.args.position || (occurrence ? LiteralExpr.number(1) : undefined);
 
   return this.func(
-    expression instanceof RegexpExtractExpr ? 'REGEXP_SUBSTR' : 'REGEXP_EXTRACT_ALL',
+    expression instanceof RegexpExtractExpr ? 'REGEXP_SUBSTR' : 'REGEXP_SUBSTR_ALL',
     [
       expression.args.this,
       expression.args.expression,
@@ -1318,11 +1322,21 @@ class SnowflakeParser extends Parser {
         ARRAY_CONSTRUCT: (args: Expression[]) => new ArrayExpr({
           expressions: args,
         }),
+        JAROWINKLER_SIMILARITY: (args: Expression[]) => new JarowinklerSimilarityExpr({
+          this: seqGet(args, 0),
+          expression: seqGet(args, 1),
+          caseInsensitive: true,
+        }),
+        ARRAY_DISTINCT: (args: Expression[]) => new ArrayDistinctExpr({
+          this: seqGet(args, 0),
+          checkNull: true_(),
+        }),
         ARRAY_CONTAINS: (args: Expression[]) =>
           new ArrayContainsExpr({
             this: seqGet(args, 1),
             expression: seqGet(args, 0),
             ensureVariant: false,
+            checkNull: true,
           }),
         ARRAY_GENERATE_RANGE: (args: Expression[]) =>
           new GenerateSeriesExpr({
@@ -1475,7 +1489,18 @@ class SnowflakeParser extends Parser {
         REGEXP_SUBSTR: buildRegexpExtract(RegexpExtractExpr),
         REGEXP_SUBSTR_ALL: buildRegexpExtract(RegexpExtractAllExpr),
         REPLACE: buildReplaceWithOptionalReplacement,
-        RLIKE: (args: unknown[]) => RegexpLikeExpr.fromArgList(args),
+        REGEXP_LIKE: (args: Expression[]) => new RegexpLikeExpr({
+          this: seqGet(args, 0),
+          expression: seqGet(args, 1),
+          flag: seqGet(args, 2),
+          fullMatch: true,
+        }),
+        RLIKE: (args: Expression[]) => new RegexpLikeExpr({
+          this: seqGet(args, 0),
+          expression: seqGet(args, 1),
+          flag: seqGet(args, 2),
+          fullMatch: true,
+        }),
         ROUND: buildRound,
         SHA1_BINARY: (args: unknown[]) => Sha1DigestExpr.fromArgList(args),
         SHA1_HEX: (args: unknown[]) => ShaExpr.fromArgList(args),
@@ -1693,6 +1718,9 @@ class SnowflakeParser extends Parser {
   static get ALTER_PARSERS (): Partial<Record<string, (this: Parser) => Expression | Expression[] | undefined>> {
     return {
       ...Parser.ALTER_PARSERS,
+      MODIFY: function (this: Parser) {
+        return this.parseAlterTableAlter();
+      },
       SESSION: function (this: Parser) {
         return this.parseAlterSession();
       },
@@ -2402,7 +2430,11 @@ class SnowflakeParser extends Parser {
       ])) {
         const keyword = this.prev?.text.toLowerCase() ?? '';
 
-        kwargs[keyword] = this.parseCsv(() => this.parseDisjunction());
+        kwargs[keyword] = this.parseCsv(
+          () => this.parseAlias(this.parseDisjunction(), {
+            explicit: true,
+          }),
+        );
       } else if (this.matchTextSeq('WHERE')) {
         kwargs['where'] = this.parseExpression();
       } else {
@@ -2528,6 +2560,12 @@ class SnowflakeGenerator extends Generator {
       [
         ArgMinExpr,
         renameFunc('MIN_BY'),
+      ],
+      [
+        CurrentSchemasExpr,
+        function (this: Generator) {
+          return this.func('CURRENT_SCHEMAS', []);
+        },
       ],
       [
         ArrayExpr,

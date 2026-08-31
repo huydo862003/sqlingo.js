@@ -65,6 +65,9 @@ import type {
   Sha2DigestExpr,
   ExpressionValue,
   DecodeCaseExpr,
+
+  BracketExpr,
+  JarowinklerSimilarityExpr,
 } from '../expressions';
 import {
   TruncExpr,
@@ -157,6 +160,7 @@ import {
   toIdentifier,
   TsOrDsAddExpr,
   UnnestExpr,
+  UpperExpr,
   VarExpr,
   WithinGroupExpr,
   cast,
@@ -204,6 +208,7 @@ import {
   Generator, unsupportedArgs,
 } from '../generator';
 import {
+  applyIndexOffset,
   ensureList,
   isInt,
   seqGet,
@@ -371,6 +376,7 @@ export class Dialect {
 
   /** Whether the table alias comes after tablesample */
   static ALIAS_POST_TABLESAMPLE = false;
+  static ALIAS_POST_VERSION = true;
 
   /** Whether a size in the table sample clause represents percentage */
   static TABLESAMPLE_SIZE_IS_PERCENT = false;
@@ -1587,6 +1593,50 @@ Dialect.register(Dialects.DIALECT, Dialect);
 /**
  * Creates a function that renames a function call
  */
+export function bracketToElementAtSql (this: Generator, expression: BracketExpr): string {
+  const index = seqGet(
+    applyIndexOffset(
+      expression.args.this as Expression,
+      expression.args.expressions ?? [],
+      1 - (expression.args.offset ?? 0),
+      {
+        dialect: this.dialect,
+      },
+    ),
+    0,
+  );
+
+  return this.func('ELEMENT_AT', [
+    expression.args.this,
+    index,
+  ] as Expression[]);
+}
+
+export function jarowinklerSimilarity (funcName: string): (this: Generator, expression: JarowinklerSimilarityExpr) => string {
+  return function (this: Generator, expression: JarowinklerSimilarityExpr): string {
+    let thisExpr = expression.args.this;
+    let expr = expression.args.expression;
+
+    if (expression.args.caseInsensitive) {
+      thisExpr = thisExpr
+        ? new UpperExpr({
+          this: thisExpr,
+        })
+        : undefined;
+      expr = expr
+        ? new UpperExpr({
+          this: expr,
+        })
+        : undefined;
+    }
+
+    return this.func(funcName, [
+      thisExpr,
+      expr,
+    ]);
+  };
+}
+
 export function renameFunc (name: string): (this: Generator, expression: Expression) => string {
   return function (this: Generator, expression: Expression): string {
     const constructor = expression._constructor as typeof FuncExpr;

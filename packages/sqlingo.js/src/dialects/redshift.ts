@@ -7,6 +7,7 @@ import type {
   AlterSetExpr,
 } from '../expressions';
 import {
+  AliasExpr,
   AnyValueExpr,
   ApproxDistinctExpr,
   ArrayConcatExpr,
@@ -159,6 +160,35 @@ class RedshiftParser extends Postgres.Parser {
       TokenType.CURRENT_CATALOG,
       TokenType.STRAIGHT_JOIN,
     ]);
+  }
+
+  parseProjections (): [Expression[], Expression[] | undefined] {
+    const [projections] = super.parseProjections();
+
+    if (this.prev && this.prev.text.toUpperCase() === 'EXCLUDE' && this.curr) {
+      this.retreat(this.index - 1);
+    }
+
+    const exclude = this.matchTextSeq('EXCLUDE') && this.parseWrappedCsv(
+      this.parseExpression.bind(this),
+      {
+        optional: true,
+      },
+    );
+
+    if (
+      exclude
+      && 0 < projections.length
+      && projections[projections.length - 1] instanceof AliasExpr
+      && (projections[projections.length - 1] as AliasExpr).alias?.toUpperCase() === 'EXCLUDE'
+    ) {
+      projections[projections.length - 1] = (projections[projections.length - 1] as AliasExpr).args.this!.pop()!;
+    }
+
+    return [
+      projections,
+      exclude || undefined,
+    ];
   }
 
   @cache
@@ -340,6 +370,8 @@ class RedshiftTokenizer extends Postgres.Tokenizer {
 }
 
 class RedshiftGenerator extends Postgres.Generator {
+  static STAR_EXCEPT = 'EXCLUDE';
+  static STAR_EXCLUDE_REQUIRES_DERIVED_TABLE = false;
   // port from _Dialect metaclass logic
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
