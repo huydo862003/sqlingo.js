@@ -19,7 +19,6 @@ import type {
   BitmapBucketNumberExpr,
   BitmapConstructAggExpr,
   CommandExpr,
-  CurrentDateExpr,
   FromIso8601TimestampExpr,
   FuncExpr,
   NormalExpr,
@@ -32,7 +31,6 @@ import type {
   UniformExpr,
   ZipfExpr,
   ColumnDefExpr,
-  JoinExpr,
   TimestampLtzFromPartsExpr,
   TimestampTzFromPartsExpr,
   AddMonthsExpr,
@@ -49,7 +47,6 @@ import type {
   MinhashCombineExpr,
   NumberToStrExpr,
   SpaceExpr,
-  TableFromRowsExpr,
   MapCatExpr,
   ObjectInsertExpr,
   ArrayToStringExpr,
@@ -79,6 +76,16 @@ import {
   Base64DecodeBinaryExpr,
   Base64DecodeStringExpr,
   BitwiseAndExpr,
+  ArrayDistinctExpr,
+  ArrayExceptExpr,
+  ArrayMaxExpr,
+  ArraySizeExpr,
+  NullExpr,
+  NeqExpr,
+  ArrayMinExpr,
+  maybeParse,
+  replacePlaceholders,
+  BitwiseCountExpr,
   BitwiseLeftShiftExpr,
   BitwiseOrExpr,
   BitwiseRightShiftExpr,
@@ -89,7 +96,10 @@ import {
   CommentColumnConstraintExpr,
   CorrExpr,
   CurrentTimeExpr,
+  CurrentDateExpr,
+  CurrentSchemasExpr,
   CurrentTimestampExpr,
+  true_,
   DateExpr,
   DateStrToDateExpr,
   DateSubExpr,
@@ -112,6 +122,9 @@ import {
   FloorExpr,
   GenerateTimestampArrayExpr,
   GroupConcatExpr,
+  InlineExpr,
+  toIdentifier,
+  TableFromRowsExpr,
   InitcapExpr,
   IntDivExpr,
   IsArrayExpr,
@@ -126,9 +139,11 @@ import {
   LastDayExpr,
   LateralExpr,
   LocaltimeExpr,
+  LocaltimestampExpr,
   LogicalAndExpr,
   LogicalOrExpr,
   MakeIntervalExpr,
+  MapContainsKeyExpr,
   Md5DigestExpr,
   MonthnameExpr,
   MonthsBetweenExpr,
@@ -199,7 +214,11 @@ import {
   ParseJsonExpr,
   PercentileContExpr,
   PercentileDiscExpr,
+  CoalesceExpr,
+  LtExpr,
+  RegexpCountExpr,
   RegexpExtractAllExpr,
+  RegexpInstrExpr,
   RegexpExtractExpr,
   RegexpLikeExpr,
   RegexpReplaceExpr,
@@ -260,7 +279,6 @@ import {
   ParenExpr,
   PropertyEqExpr,
   ReplaceExpr,
-  replacePlaceholders,
   SelectExpr,
   SliceExpr,
   SortArrayExpr,
@@ -300,7 +318,6 @@ import {
   TsOrDsAddExpr,
   VariancePopExpr,
   WeekOfYearExpr,
-  maybeParse,
   GtExpr,
   TsOrDsToTimeExpr,
   TryCastExpr,
@@ -338,6 +355,9 @@ import {
   SessionUserExpr,
   func,
   wrap,
+  var_,
+  case_,
+  JoinExpr,
 } from '../expressions';
 import {
   seqGet, isDateUnit, camelToScreamingSnakeCase,
@@ -371,6 +391,7 @@ import {
   arrayAppendSql,
   arrayCompactSql,
   arrayConcatSql,
+  jarowinklerSimilarity,
   renameFunc,
   removeFromArrayUsingFilter,
   noCommentColumnConstraintSql,
@@ -382,7 +403,6 @@ import {
   explodeToUnnestSql,
   noMakeIntervalSql,
   monthsBetweenSql,
-  regexpReplaceGlobalModifier,
   strPositionSql,
   noTimeSql,
   noTimestampSql,
@@ -448,7 +468,27 @@ export const MAX_BIT_POSITION = LiteralExpr.number(32768);
 /**
  * SEQ function constants
  */
-export const SEQ_BASE = '(ROW_NUMBER() OVER (ORDER BY 1) - 1)';
+export const SEQ_BASE: Expression = maybeParse('(ROW_NUMBER() OVER (ORDER BY 1) - 1)');
+
+const SEQ_BYTE_WIDTH = new Map<typeof Expression, number>([
+  [
+    Seq1Expr,
+    1,
+  ],
+  [
+    Seq2Expr,
+    2,
+  ],
+  [
+    Seq4Expr,
+    4,
+  ],
+  [
+    Seq8Expr,
+    8,
+  ],
+]);
+
 export const SEQ_RESTRICTED = [
   WhereExpr,
   HavingExpr,
@@ -1197,6 +1237,56 @@ function jsonFormatSql (this: Generator, expression: JsonFormatExpr): string {
  * Transpile Snowflake SEQ1/SEQ2/SEQ4/SEQ8 to DuckDB.
  * Generates monotonically increasing integers starting from 0
  */
+function buildSeqExpression (base: Expression, byteWidth: number, signed: boolean): Expression {
+  const bits = byteWidth * 8;
+  const maxVal = LiteralExpr.number((2n ** BigInt(bits)).toString());
+
+  if (signed) {
+    const half = LiteralExpr.number((2n ** BigInt(bits - 1)).toString());
+
+    return replacePlaceholders(DuckDBGenerator.SEQ_SIGNED.copy(), [], {
+      base,
+      maxVal,
+      half,
+    });
+  }
+
+  return replacePlaceholders(DuckDBGenerator.SEQ_UNSIGNED.copy(), [], {
+    base,
+    maxVal,
+  });
+}
+
+function seqToRangeInGenerator (expression: Expression): Expression {
+  if (!(expression instanceof SelectExpr)) {
+    return expression;
+  }
+
+  const from = expression.args.from;
+
+  if (
+    !from
+    || !(from.args.this instanceof TableFromRowsExpr)
+    || !(from.args.this.args.this instanceof GeneratorExpr)
+  ) {
+    return expression;
+  }
+
+  return expression.transform((node: Expression) => {
+    const byteWidth = SEQ_BYTE_WIDTH.get(node._constructor as typeof Expression);
+
+    if (byteWidth !== undefined) {
+      return buildSeqExpression(new ColumnExpr({
+        this: toIdentifier('range'),
+      }), byteWidth, node.name === '1');
+    }
+
+    return node;
+  }, {
+    copy: false,
+  });
+}
+
 function seqSql (this: Generator, expression: FuncExpr, byteWidth: number): string {
   const ancestor = expression.findAncestor(...SEQ_RESTRICTED);
 
@@ -1208,23 +1298,7 @@ function seqSql (this: Generator, expression: FuncExpr, byteWidth: number): stri
     this.unsupported('SEQ in restricted context is not supported - use CTE or subquery');
   }
 
-  const bits = byteWidth * 8;
-  const maxVal = LiteralExpr.number((2n ** BigInt(bits)).toString());
-
-  let result: Expression;
-
-  if (expression.name === '1') {
-    const half = LiteralExpr.number((2n ** BigInt(bits - 1)).toString());
-
-    result = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEQ_SIGNED.copy(), [], {
-      maxVal,
-      half,
-    });
-  } else {
-    result = replacePlaceholders((this._constructor as typeof DuckDBGenerator).SEQ_UNSIGNED.copy(), [], {
-      maxVal,
-    });
-  }
+  const result = buildSeqExpression(SEQ_BASE.copy(), byteWidth, expression.name === '1');
 
   return this.sql(result);
 }
@@ -2417,6 +2491,10 @@ class DuckDBParser extends Parser {
         STR_SPLIT: (args: unknown[]) => SplitExpr.fromArgList(args),
         STR_SPLIT_REGEX: (args: unknown[]) => RegexpSplitExpr.fromArgList(args),
         TIME_BUCKET: (args: unknown[]) => DateBinExpr.fromArgList(args),
+        LIST_MAX: (args: unknown[]) => ArrayMaxExpr.fromArgList(args),
+        LIST_MIN: (args: unknown[]) => ArrayMinExpr.fromArgList(args),
+        CURRENT_LOCALTIMESTAMP: (args: unknown[]) => LocaltimestampExpr.fromArgList(args),
+        TODAY: (args: unknown[]) => CurrentDateExpr.fromArgList(args),
         TO_TIMESTAMP: (args: unknown[]) => UnixToTimeExpr.fromArgList(args),
         UNNEST: (args: unknown[]) => ExplodeExpr.fromArgList(args),
         VERSION: (args: unknown[]) => CurrentVersionExpr.fromArgList(args),
@@ -3000,6 +3078,10 @@ class DuckDBGenerator extends Generator {
         bitwiseAggSql,
       ],
       [
+        BitwiseCountExpr,
+        renameFunc('BIT_COUNT'),
+      ],
+      [
         ByteLengthExpr,
         function (this: Generator, e) {
           return this.func('OCTET_LENGTH', [e.args.this]);
@@ -3034,6 +3116,12 @@ class DuckDBGenerator extends Generator {
               zone: LiteralExpr.string('UTC'),
             }))
             : 'CURRENT_TIMESTAMP';
+        },
+      ],
+      [
+        CurrentSchemasExpr,
+        function (this: Generator, e: CurrentSchemasExpr) {
+          return this.func('current_schemas', [e.args.this ?? true_()] as Expression[]);
         },
       ],
       [
@@ -3237,7 +3325,7 @@ class DuckDBGenerator extends Generator {
       ],
       [
         JarowinklerSimilarityExpr,
-        renameFunc('JARO_WINKLER_SIMILARITY'),
+        jarowinklerSimilarity('JARO_WINKLER_SIMILARITY'),
       ],
       [
         JsonbExistsExpr,
@@ -3261,7 +3349,42 @@ class DuckDBGenerator extends Generator {
       ],
       [
         LateralExpr,
-        explodeToUnnestSql,
+        function (this: Generator, expression: LateralExpr) {
+          const explode = expression.args.this;
+
+          if (explode instanceof InlineExpr) {
+            const unnestExpr = new UnnestExpr({
+              expressions: [
+                explode.args.this as Expression,
+                new KwargExpr({
+                  this: var_('max_depth'),
+                  expression: LiteralExpr.number(2),
+                }),
+              ],
+            });
+            const selectExpr = new SelectExpr({
+              expressions: [unnestExpr],
+            }).subquery();
+            const aliasExpr = expression.args.alias;
+
+            if (aliasExpr && !aliasExpr.args.this) {
+              aliasExpr.setArgKey('this', toIdentifier(`_u_${expression.index}`));
+            }
+
+            const transformedLateral = new LateralExpr({
+              this: selectExpr,
+              alias: aliasExpr,
+            });
+            const crossJoinLateral = new JoinExpr({
+              this: transformedLateral,
+              kind: JoinExprKind.CROSS,
+            });
+
+            return this.sql(crossJoinLateral);
+          }
+
+          return explodeToUnnestSql.call(this, expression);
+        },
       ],
       [
         LogicalOrExpr,
@@ -3309,6 +3432,46 @@ class DuckDBGenerator extends Generator {
           return noMakeIntervalSql.call(this, e, {
             sep: ' ',
           });
+        },
+      ],
+      [
+        ArrayContainsExpr,
+        function (this: Generator, e: ArrayContainsExpr) {
+          return (this as DuckDBGenerator).arraycontainsSql(e);
+        },
+      ],
+      [
+        ArrayDistinctExpr,
+        function (this: Generator, e: ArrayDistinctExpr) {
+          return (this as DuckDBGenerator).arraydistinctSql(e);
+        },
+      ],
+      [
+        ArrayExceptExpr,
+        function (this: Generator, e: ArrayExceptExpr) {
+          return (this as DuckDBGenerator).arrayexceptSql(e);
+        },
+      ],
+      [
+        ArrayMaxExpr,
+        renameFunc('LIST_MAX'),
+      ],
+      [
+        ArrayMinExpr,
+        renameFunc('LIST_MIN'),
+      ],
+      [
+        MapContainsKeyExpr,
+        function (this: Generator, e: MapContainsKeyExpr) {
+          const mapKeys = new AnonymousExpr({
+            this: 'MAP_KEYS',
+            expressions: [e.args.key as Expression],
+          });
+
+          return this.func('ARRAY_CONTAINS', [
+            mapKeys,
+            e.args.this,
+          ] as Expression[]);
         },
       ],
       [
@@ -3374,19 +3537,32 @@ class DuckDBGenerator extends Generator {
         dayNavigationSql,
       ],
       [
+        SelectExpr,
+        preprocess([seqToRangeInGenerator]),
+      ],
+      [
         RegexpReplaceExpr,
-        function (this: Generator, e) {
-          return this.func('REGEXP_REPLACE', [
-            e.args.this,
-            e.args.expression,
-            e.args.replacement,
-            regexpReplaceGlobalModifier(e),
-          ]);
+        function (this: Generator, e: RegexpReplaceExpr) {
+          return (this as DuckDBGenerator).regexpreplaceSql(e);
+        },
+      ],
+      [
+        RegexpCountExpr,
+        function (this: Generator, e: RegexpCountExpr) {
+          return (this as DuckDBGenerator).regexpcountSql(e);
+        },
+      ],
+      [
+        RegexpInstrExpr,
+        function (this: Generator, e: RegexpInstrExpr) {
+          return (this as DuckDBGenerator).regexpinstrSql(e);
         },
       ],
       [
         RegexpLikeExpr,
-        renameFunc('REGEXP_MATCHES'),
+        function (this: Generator, e: RegexpLikeExpr) {
+          return (this as DuckDBGenerator).regexplikeSql(e);
+        },
       ],
       [
         RegexpILikeExpr,
@@ -3942,15 +4118,15 @@ class DuckDBGenerator extends Generator {
 
   @cache
   static get SEQ_UNSIGNED () {
-    return maybeParse(`${SEQ_BASE} % :maxVal`);
+    return maybeParse(':base % :maxVal');
   }
 
   @cache
   static get SEQ_SIGNED () {
     return maybeParse(`
-  (CASE WHEN ${SEQ_BASE} % :maxVal >= :half
-   THEN ${SEQ_BASE} % :maxVal - :maxVal
-   ELSE ${SEQ_BASE} % :maxVal END)
+  (CASE WHEN :base % :maxVal >= :half
+   THEN :base % :maxVal - :maxVal
+   ELSE :base % :maxVal END)
 `);
   }
 
@@ -4521,6 +4697,450 @@ class DuckDBGenerator extends Generator {
       this: thisNode,
       to: timeType,
     }));
+  }
+
+  private validateRegexpFlags (flags: Expression | undefined, supportedFlags: string): string | undefined {
+    if (!(flags instanceof Expression)) {
+      return undefined;
+    }
+
+    if (!flags.isString) {
+      this.unsupported('Non-literal regexp flags are not fully supported in DuckDB');
+
+      return undefined;
+    }
+
+    const flagStr = flags.name ?? '';
+    const supported = new Set(supportedFlags);
+    const unsupported = [...new Set(flagStr)].filter((f) => !supported.has(f));
+
+    if (0 < unsupported.length) {
+      this.unsupported(`Regexp flags ${JSON.stringify(unsupported.sort())} are not supported in this context`);
+    }
+
+    const result = [...flagStr].filter((f) => supported.has(f)).join('');
+
+    return result || undefined;
+  }
+
+  regexplikeSql (expression: RegexpLikeExpr): string {
+    const thisExpr = expression.args.this;
+    const pattern = expression.args.expression;
+    let flag = expression.args.flag;
+
+    if (!expression.args.fullMatch) {
+      return this.func('REGEXP_MATCHES', [
+        thisExpr,
+        pattern,
+        flag,
+      ] as Expression[]);
+    }
+
+    const validatedFlags = this.validateRegexpFlags(flag, 'cims');
+
+    const anchoredPattern = new ConcatExpr({
+      expressions: [
+        LiteralExpr.string('^('),
+        new ParenExpr({
+          this: pattern,
+        }),
+        LiteralExpr.string(')$'),
+      ],
+    });
+
+    if (validatedFlags) {
+      flag = LiteralExpr.string(validatedFlags);
+    }
+
+    return this.func('REGEXP_MATCHES', [
+      thisExpr,
+      anchoredPattern,
+      flag,
+    ] as Expression[]);
+  }
+
+  arraycontainsSql (expression: ArrayContainsExpr): string {
+    const thisExpr = expression.args.this;
+    const expr = expression.args.expression;
+
+    const func = this.func('ARRAY_CONTAINS', [
+      thisExpr,
+      expr,
+    ] as Expression[]);
+
+    if (expression.args.checkNull) {
+      const checkNullInArray = new NullifExpr({
+        this: new NeqExpr({
+          this: new ArraySizeExpr({
+            this: thisExpr,
+          }),
+          expression: new AnonymousExpr({
+            this: 'LIST_COUNT',
+            expressions: [thisExpr as Expression],
+          }),
+        }),
+        expression: new BooleanExpr({
+          this: false,
+        }),
+      });
+
+      return this.sql(new IfExpr({
+        this: new IsExpr({
+          this: expr,
+          expression: new NullExpr({}),
+        }),
+        true: checkNullInArray,
+        false: maybeParse(func),
+      }));
+    }
+
+    return func;
+  }
+
+  arraydistinctSql (expression: ArrayDistinctExpr): string {
+    const arr = expression.args.this;
+    const func = this.func('LIST_DISTINCT', [arr] as Expression[]);
+
+    if (expression.args.checkNull) {
+      const addNullToArray = new AnonymousExpr({
+        this: 'LIST_APPEND',
+        expressions: [
+          new AnonymousExpr({
+            this: 'LIST_DISTINCT',
+            expressions: [
+              new ArrayCompactExpr({
+                this: arr,
+              }),
+            ],
+          }),
+          new NullExpr({}),
+        ],
+      });
+
+      return this.sql(new IfExpr({
+        this: new NeqExpr({
+          this: new ArraySizeExpr({
+            this: arr,
+          }),
+          expression: new AnonymousExpr({
+            this: 'LIST_COUNT',
+            expressions: [arr as Expression],
+          }),
+        }),
+        true: addNullToArray,
+        false: maybeParse(func),
+      }));
+    }
+
+    return func;
+  }
+
+  regexpinstrSql (expression: RegexpInstrExpr): string {
+    let thisExpr = expression.args.this;
+    let pattern = expression.args.expression;
+    const position = expression.args.position;
+    const origOcc = expression.args.occurrence;
+    const occurrence = origOcc ?? LiteralExpr.number(1);
+    const option = expression.args.option;
+    const parameters = expression.args.parameters;
+
+    const validatedFlags = this.validateRegexpFlags(parameters?.[0], 'ims');
+
+    if (validatedFlags) {
+      pattern = new ConcatExpr({
+        expressions: [
+          LiteralExpr.string(`(?${validatedFlags})`),
+          pattern as Expression,
+        ],
+      });
+    }
+
+    let posOffset: Expression = LiteralExpr.number(0);
+
+    if (position && (!position.isNumber || 1 < Number(position.toValue()))) {
+      thisExpr = new SubstringExpr({
+        this: thisExpr as Expression,
+        start: position,
+      });
+      posOffset = new SubExpr({
+        this: position,
+        expression: LiteralExpr.number(1),
+      });
+    }
+
+    const sumLengths = (funcName: string, end: Expression): Expression => {
+      const lst = new BracketExpr({
+        this: new AnonymousExpr({
+          this: funcName,
+          expressions: [
+            thisExpr as Expression,
+            pattern as Expression,
+          ],
+        }),
+        expressions: [
+          new SliceExpr({
+            this: LiteralExpr.number(1),
+            expression: end,
+          }),
+        ],
+        offset: 1,
+      });
+      const transform = new AnonymousExpr({
+        this: 'LIST_TRANSFORM',
+        expressions: [
+          lst,
+          new LambdaExpr({
+            this: new LengthExpr({
+              this: toIdentifier('x'),
+            }),
+            expressions: [toIdentifier('x')],
+          }),
+        ],
+      });
+
+      return new CoalesceExpr({
+        this: new AnonymousExpr({
+          this: 'LIST_SUM',
+          expressions: [transform],
+        }),
+        expressions: [LiteralExpr.number(0)],
+      });
+    };
+
+    let basePos: Expression = new AddExpr({
+      this: new AddExpr({
+        this: new AddExpr({
+          this: LiteralExpr.number(1),
+          expression: sumLengths('STRING_SPLIT_REGEX', occurrence),
+        }),
+        expression: sumLengths('REGEXP_EXTRACT_ALL', new SubExpr({
+          this: occurrence,
+          expression: LiteralExpr.number(1),
+        })),
+      }),
+      expression: posOffset,
+    });
+
+    if (option && option.isNumber && Number(option.toValue()) === 1) {
+      const matchAtOcc = new BracketExpr({
+        this: new AnonymousExpr({
+          this: 'REGEXP_EXTRACT_ALL',
+          expressions: [
+            thisExpr as Expression,
+            pattern as Expression,
+          ],
+        }),
+        expressions: [occurrence],
+        offset: 1,
+      });
+
+      basePos = new AddExpr({
+        this: basePos,
+        expression: new CoalesceExpr({
+          this: new LengthExpr({
+            this: matchAtOcc,
+          }),
+          expressions: [LiteralExpr.number(0)],
+        }),
+      });
+    }
+
+    const nullArgs = [
+      expression.args.this,
+      expression.args.expression,
+      position,
+      origOcc,
+      option,
+      parameters,
+    ].filter(Boolean) as Expression[];
+
+    const nullChecks = nullArgs.map((arg) => new IsExpr({
+      this: arg.copy(),
+      expression: new NullExpr({}),
+    }));
+
+    const matches = new AnonymousExpr({
+      this: 'REGEXP_EXTRACT_ALL',
+      expressions: [
+        thisExpr as Expression,
+        pattern as Expression,
+      ],
+    });
+
+    const caseExpr = case_()
+      .when(nullChecks.reduce((acc, check) => acc
+        ? new OrExpr({
+          this: acc,
+          expression: check,
+        })
+        : check), new NullExpr({}))
+      .when(new EqExpr({
+        this: (pattern as Expression).copy(),
+        expression: LiteralExpr.string(''),
+      }), LiteralExpr.number(0))
+      .when(new LtExpr({
+        this: new LengthExpr({
+          this: matches,
+        }),
+        expression: occurrence,
+      }), LiteralExpr.number(0))
+      .else(basePos);
+
+    return this.sql(caseExpr);
+  }
+
+  regexpreplaceSql (expression: RegexpReplaceExpr): string {
+    let subject = expression.args.this;
+    const pattern = expression.args.expression;
+    const replacement = expression.args.replacement ?? LiteralExpr.string('');
+    const position = expression.args.position;
+    let occurrence = expression.args.occurrence;
+    const modifiers = expression.args.modifiers;
+
+    let flagsExpr: Expression | undefined = modifiers;
+    let validatedFlags = '';
+
+    if (modifiers && modifiers.isString) {
+      validatedFlags = this.validateRegexpFlags(modifiers, 'cimsg') ?? '';
+      flagsExpr = undefined;
+    }
+
+    if (occurrence && !occurrence.isNumber) {
+      this.unsupported('REGEXP_REPLACE with non-literal occurrence');
+    } else {
+      const occVal = (occurrence && occurrence.isNumber) ? Number(occurrence.toValue()) : 0;
+
+      if (1 < occVal) {
+        this.unsupported(`REGEXP_REPLACE occurrence=${occVal} not supported`);
+      } else if (
+        occVal === 0
+        && !validatedFlags.includes('g')
+        && !expression.args.singleReplace
+      ) {
+        validatedFlags += 'g';
+      }
+    }
+
+    let prefix: Expression | undefined;
+
+    if (position && !position.isNumber) {
+      this.unsupported('REGEXP_REPLACE with non-literal position');
+    } else if (position && position.isNumber && 1 < Number(position.toValue())) {
+      const pos = Number(position.toValue());
+
+      prefix = new SubstringExpr({
+        this: subject as Expression,
+        start: LiteralExpr.number(1),
+        length: LiteralExpr.number(pos - 1),
+      });
+      subject = new SubstringExpr({
+        this: subject as Expression,
+        start: LiteralExpr.number(pos),
+      });
+    }
+
+    const flagArg = validatedFlags
+      ? LiteralExpr.string(validatedFlags)
+      : flagsExpr;
+
+    let result: Expression = new AnonymousExpr({
+      this: 'REGEXP_REPLACE',
+      expressions: [
+        subject,
+        pattern,
+        replacement,
+        ...(flagArg ? [flagArg] : []),
+      ].filter(Boolean) as Expression[],
+    });
+
+    if (prefix) {
+      result = new ConcatExpr({
+        expressions: [
+          prefix,
+          result,
+        ],
+      });
+    }
+
+    return this.sql(result);
+  }
+
+  regexpcountSql (expression: RegexpCountExpr): string {
+    let thisExpr = expression.args.this;
+    let pattern = expression.args.expression;
+    const position = expression.args.position;
+    const parameters = expression.args.parameters;
+
+    const validatedFlags = this.validateRegexpFlags(parameters?.[0], 'ims');
+
+    if (position) {
+      thisExpr = new SubstringExpr({
+        this: thisExpr as Expression,
+        start: position,
+      });
+    }
+
+    if (validatedFlags) {
+      pattern = new ConcatExpr({
+        expressions: [
+          LiteralExpr.string(`(?${validatedFlags})`),
+          pattern as Expression,
+        ],
+      });
+    }
+
+    const result = new CaseExpr({
+      ifs: [
+        new IfExpr({
+          this: new EqExpr({
+            this: pattern,
+            expression: LiteralExpr.string(''),
+          }),
+          true: LiteralExpr.number(0),
+        }),
+      ],
+      default: new LengthExpr({
+        this: new AnonymousExpr({
+          this: 'REGEXP_EXTRACT_ALL',
+          expressions: [
+            thisExpr as Expression,
+            pattern as Expression,
+          ],
+        }),
+      }),
+    });
+
+    return this.sql(result);
+  }
+
+  static ARRAY_EXCEPT_TEMPLATE = maybeParse(
+    `CASE
+      WHEN :source IS NULL OR :exclude IS NULL THEN NULL
+      ELSE LIST_TRANSFORM(
+        LIST_FILTER(
+          LIST_ZIP(:source, GENERATE_SERIES(1, LEN(:source))),
+          pair -> (
+            LEN(LIST_FILTER(:source[1:pair[1]], e -> e IS NOT DISTINCT FROM pair[0]))
+            > LEN(LIST_FILTER(:exclude, e -> e IS NOT DISTINCT FROM pair[0]))
+          )
+        ),
+        pair -> pair[0]
+      )
+    END`,
+  );
+
+  arrayexceptSql (expression: ArrayExceptExpr): string {
+    const source = expression.args.this;
+    const exclude = expression.args.expression;
+
+    return this.sql(replacePlaceholders(
+      (this._constructor as typeof DuckDBGenerator).ARRAY_EXCEPT_TEMPLATE.copy(),
+      [],
+      {
+        source,
+        exclude,
+      },
+    ));
   }
 
   currentDateSql (expression: CurrentDateExpr): string {
@@ -5558,14 +6178,37 @@ class DuckDBGenerator extends Generator {
     ]);
   }
 
-  regexpExtractSql (expression: RegexpExtractExpr): string {
+  private regexpExtractCommon (expression: RegexpExtractExpr | RegexpExtractAllExpr): string {
     let thisNode: Expression = expression.args.this as Expression;
     const group = expression.args.group;
-    const params = expression.args.parameters;
+    let params = expression.args.parameters;
     const position = expression.args.position;
     const occurrence = expression.args.occurrence;
-    const nullIfPosOverflow = expression.args.nullIfPosOverflow;
+    const nullIfPosOverflow = 'nullIfPosOverflow' in expression.args ? expression.args.nullIfPosOverflow : undefined;
 
+    // Handle 'e' flag: enables capture group extraction (Snowflake-specific)
+    if (params && params.isString && (params.name ?? '').includes('e')) {
+      params = LiteralExpr.string((params.name ?? '').replace(/e/g, ''));
+    }
+
+    const validatedFlags = this.validateRegexpFlags(params, 'cims');
+
+    // Strip default group when no following params
+    let groupArg = group;
+    const defaultGroup = String(this.dialect._constructor.REGEXP_EXTRACT_DEFAULT_GROUP);
+
+    if (!validatedFlags && group) {
+      if (
+        (group instanceof IdentifierExpr && group.name === defaultGroup)
+        || (group instanceof LiteralExpr && String(group.args.this) === defaultGroup)
+      ) {
+        groupArg = undefined;
+      }
+    }
+
+    const flagsExpr = validatedFlags ? LiteralExpr.string(validatedFlags) : undefined;
+
+    // Handle position argument
     if (position && (!(position instanceof LiteralExpr && position.isInteger) || 1 < parseInt(position.args.this ?? '0'))) {
       thisNode = new SubstringExpr({
         this: thisNode,
@@ -5580,36 +6223,49 @@ class DuckDBGenerator extends Generator {
       }
     }
 
-    let groupArg = group;
-    const defaultGroup = String(this.dialect._constructor.REGEXP_EXTRACT_DEFAULT_GROUP);
+    const isExtractAll = expression instanceof RegexpExtractAllExpr;
+    const nonSingleOccurrence = occurrence && (!(occurrence instanceof LiteralExpr && occurrence.isInteger) || 1 < parseInt((occurrence as LiteralExpr).args.this ?? '0'));
 
-    if (!params && group) {
-      if (
-        (group instanceof IdentifierExpr && group.name === defaultGroup)
-        || (group instanceof LiteralExpr && String(group.args.this) === defaultGroup)
-      ) {
-        groupArg = undefined;
-      }
+    const funcName = (isExtractAll || nonSingleOccurrence) ? 'REGEXP_EXTRACT_ALL' : 'REGEXP_EXTRACT';
+
+    let result: Expression = new AnonymousExpr({
+      this: funcName,
+      expressions: [
+        thisNode,
+        expression.args.expression,
+        groupArg,
+        flagsExpr,
+      ].filter(Boolean) as Expression[],
+    });
+
+    if (isExtractAll && nonSingleOccurrence) {
+      result = new BracketExpr({
+        this: result,
+        expressions: [
+          new SliceExpr({
+            this: occurrence,
+          }),
+        ],
+      });
+    } else if (nonSingleOccurrence) {
+      result = new AnonymousExpr({
+        this: 'ARRAY_EXTRACT',
+        expressions: [
+          result,
+          occurrence,
+        ],
+      });
     }
 
-    if (occurrence && (!(occurrence instanceof LiteralExpr && occurrence.isInteger) || 1 < parseInt((occurrence as LiteralExpr).args.this ?? '0'))) {
-      return this.func('ARRAY_EXTRACT', [
-        this.func('REGEXP_EXTRACT_ALL', [
-          thisNode,
-          expression.args.expression,
-          groupArg,
-          params,
-        ]),
-        LiteralExpr.number(parseInt((occurrence as LiteralExpr).args.this ?? '0')),
-      ]);
-    }
+    return this.sql(result);
+  }
 
-    return this.func('REGEXP_EXTRACT', [
-      thisNode,
-      expression.args.expression,
-      groupArg,
-      params,
-    ]);
+  regexpExtractSql (expression: RegexpExtractExpr): string {
+    return this.regexpExtractCommon(expression);
+  }
+
+  regexpextractallSql (expression: RegexpExtractAllExpr): string {
+    return this.regexpExtractCommon(expression);
   }
 
   numberToStrSql (expression: NumberToStrExpr): string {

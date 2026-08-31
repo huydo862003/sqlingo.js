@@ -58,6 +58,7 @@ import {
   BitwiseOrExpr,
   BitwiseRightShiftExpr,
   BitwiseXorExpr,
+  BlockExpr,
   BlockCompressionPropertyExpr,
   BooleanExpr,
   BracketExpr,
@@ -151,6 +152,7 @@ import {
   DynamicPropertyExpr,
   EqExpr,
   EmptyPropertyExpr,
+  EndStatementExpr,
   EncodeColumnConstraintExpr,
   EnginePropertyExpr,
   EnviromentPropertyExpr,
@@ -404,6 +406,10 @@ import {
   TransactionExpr,
   TransformModelPropertyExpr,
   TransientPropertyExpr,
+  TriggerEventExpr,
+  TriggerExecuteExpr,
+  TriggerPropertiesExpr,
+  TriggerReferencingExpr,
   TrimExpr,
   TrimPosition,
   TruncateTableExpr,
@@ -431,6 +437,7 @@ import {
   VolatilePropertyExpr,
   WhenExpr,
   WhensExpr,
+  WhileBlockExpr,
   WhereExpr,
   WindowExpr,
   WindowSpecExpr,
@@ -539,15 +546,17 @@ export function parseOne<IntoT extends typeof Expression = typeof Expression> (
     ? dialect.parseIntoTypes(options.into as string | typeof Expression | (string | typeof Expression)[], sql, options)
     : dialect.parse(sql, options);
 
-  for (const expression of result) {
-    if (!expression) {
-      throw new ParseError(`No expression was parsed from '${sql}'`);
-    }
-
-    return expression as InstanceType<IntoT>;
+  if (!result.length || result[0] === undefined) {
+    throw new ParseError(`No expression was parsed from '${sql}'`);
   }
 
-  throw new ParseError(`No expression was parsed from '${sql}'`);
+  if (1 < result.length) {
+    return new BlockExpr({
+      expressions: result as Expression[],
+    }) as InstanceType<IntoT>;
+  }
+
+  return result[0] as InstanceType<IntoT>;
 }
 
 export type OptionsType = Record<string, (string[] | string)[]>;
@@ -1573,7 +1582,17 @@ export class Parser {
       TokenType.FUNCTION,
       TokenType.INDEX,
       TokenType.PROCEDURE,
+      TokenType.TRIGGER,
       ...Parser.DB_CREATABLES,
+    ]);
+  }
+
+  static get TRIGGER_EVENTS (): Set<TokenType> {
+    return new Set([
+      TokenType.INSERT,
+      TokenType.UPDATE,
+      TokenType.DELETE,
+      TokenType.TRUNCATE,
     ]);
   }
 
@@ -3528,6 +3547,27 @@ export class Parser {
     ],
   };
 
+  static TRIGGER_TIMING: OptionsType = {
+    INSTEAD: [['OF']],
+    BEFORE: [],
+    AFTER: [],
+  };
+
+  static TRIGGER_FOR_EACH: OptionsType = {
+    ROW: [],
+    STATEMENT: [],
+  };
+
+  static TRIGGER_DEFERRABLE: OptionsType = {
+    NOT: [['DEFERRABLE']],
+    DEFERRABLE: [],
+  };
+
+  static TRIGGER_INITIALLY_VALUE: OptionsType = {
+    IMMEDIATE: [],
+    DEFERRED: [],
+  };
+
   static CREATE_SEQUENCE: OptionsType = {
     SCALE: [
       'EXTEND',
@@ -3993,6 +4033,8 @@ export class Parser {
   protected prev: Token | undefined;
   protected prevComments: string[] | undefined;
   protected pipeCteCounter: number;
+  protected _chunks: Token[][];
+  protected _chunkIndex: number;
 
   constructor (options: ParseOptions = {}) {
     const {
@@ -4014,6 +4056,8 @@ export class Parser {
     this.prev = undefined;
     this.prevComments = undefined;
     this.pipeCteCounter = 0;
+    this._chunks = [];
+    this._chunkIndex = 0;
     this.reset();
   }
 
@@ -4027,6 +4071,8 @@ export class Parser {
     this.prev = undefined;
     this.prevComments = undefined;
     this.pipeCteCounter = 0;
+    this._chunks = [];
+    this._chunkIndex = 0;
   }
 
   /**
@@ -4078,21 +4124,15 @@ export class Parser {
       }
     }
 
-    const expressions: (Expression | undefined)[] = [];
+    this._chunks = chunks;
+    this._chunkIndex = 0;
 
-    for (const tokens of chunks) {
-      this.index = -1;
-      this.tokens = tokens;
-      this.advance();
-
-      expressions.push(parseMethod.call(this));
-
-      if (this.index < this.tokens.length) {
-        this.raiseError('Invalid expression / Unexpected token');
-      }
-
-      this.checkErrors();
-    }
+    const expressions = this.parseBatchStatements(
+      (self: Parser) => parseMethod.call(self),
+      {
+        sepFirstStatement: false,
+      },
+    );
 
     return expressions;
   }
@@ -4423,7 +4463,7 @@ export class Parser {
     let indexes: Expression[] | undefined;
     let noSchemaBinding: boolean | undefined;
     let begin: boolean | undefined;
-    let end: boolean | undefined;
+    // end was removed - END tokens are now parsed as EndStatement in blocks
     let clone: Expression | undefined;
 
     const extendProps = (tempProps: PropertiesExpr | undefined): void => {
@@ -4463,10 +4503,10 @@ export class Parser {
             expression = this.parseString();
             extendProps(this.parseProperties());
           } else {
-            expression = this.parseUserDefinedFunctionExpression();
+            expression = createToken.tokenType === TokenType.FUNCTION
+              ? this.parseUserDefinedFunctionExpression()
+              : this.parseBlock();
           }
-
-          end = this.matchTextSeq('END') || undefined;
 
           if (return_) {
             expression = this.expression(ReturnExpr, {
@@ -4475,6 +4515,77 @@ export class Parser {
           }
         }
       }
+    } else if (
+      (createToken.tokenType === TokenType.CONSTRAINT && this.match(TokenType.TRIGGER))
+      || createToken.tokenType === TokenType.TRIGGER
+    ) {
+      const isConstraint = createToken.tokenType === TokenType.CONSTRAINT;
+
+      if (isConstraint) {
+        createToken = this.prev!;
+      }
+
+      const triggerName = this.parseIdVar();
+
+      if (!triggerName) {
+        return this.parseAsCommand(start);
+      }
+
+      const timingVar = this.parseVarFromOptions(this._constructor.TRIGGER_TIMING, {
+        raiseUnmatched: false,
+      });
+      const timing = timingVar?.args.this;
+
+      if (!timing) {
+        return this.parseAsCommand(start);
+      }
+
+      const events = this.parseTriggerEvents();
+
+      if (!this.match(TokenType.ON)) {
+        this.raiseError('Expected ON in trigger definition');
+      }
+
+      const table = this.parseTableParts();
+      const referencedTable = this.match(TokenType.FROM) ? this.parseTableParts() : undefined;
+      const [
+        deferrable,
+        initially,
+      ] = this.parseTriggerDeferrable();
+      const referencing = this.parseTriggerReferencing();
+      const forEach = this.parseTriggerForEach();
+      const when = this.matchTextSeq('WHEN') && this.parseWrapped(
+        () => this.parseDisjunction(),
+        {
+          optional: true,
+        },
+      );
+      const execute = this.parseTriggerExecute();
+
+      if (execute === undefined) {
+        return this.parseAsCommand(start);
+      }
+
+      const triggerProps = this.expression(TriggerPropertiesExpr, {
+        table,
+        timing,
+        events,
+        execute,
+        constraint: isConstraint,
+        referencedTable,
+        deferrable,
+        initially,
+        referencing,
+        forEach,
+        when: when || undefined,
+      });
+
+      thisExpr = triggerName;
+      const triggerProperties = new PropertiesExpr({
+        expressions: triggerProps ? [triggerProps] : [],
+      });
+
+      extendProps(triggerProperties);
     } else if (createToken.tokenType === TokenType.INDEX) {
       // Postgres allows anonymous indexes, eg. CREATE INDEX IF NOT EXISTS ON t(c)
       let index: Expression | undefined;
@@ -4636,7 +4747,6 @@ export class Parser {
       indexes,
       noSchemaBinding,
       begin,
-      end,
       clone,
       concurrently,
       clustered,
@@ -4697,6 +4807,168 @@ export class Parser {
     seq.setArgKey('options', 0 < options.length ? options : undefined);
 
     return this.index === index ? undefined : seq;
+  }
+
+  parseTriggerEvents (): TriggerEventExpr[] {
+    const events: TriggerEventExpr[] = [];
+
+    while (true) {
+      const eventType = this.matchSet(this._constructor.TRIGGER_EVENTS) && this.prev?.text.toUpperCase();
+
+      if (!eventType) {
+        this.raiseError('Expected trigger event (INSERT, UPDATE, DELETE, TRUNCATE)');
+      }
+
+      const columns = (
+        eventType === 'UPDATE' && this.matchTextSeq('OF')
+      )
+        ? this.parseCsv(() => this.parseColumn())
+        : undefined;
+
+      events.push(this.expression(TriggerEventExpr, {
+        this: eventType,
+        columns,
+      }));
+
+      if (!this.match(TokenType.OR)) {
+        break;
+      }
+    }
+
+    return events;
+  }
+
+  parseTriggerDeferrable (): [string | undefined, string | undefined] {
+    const deferrableVar = this.parseVarFromOptions(
+      this._constructor.TRIGGER_DEFERRABLE,
+      {
+        raiseUnmatched: false,
+      },
+    );
+    const deferrable = deferrableVar?.args.this as string | undefined;
+
+    let initially: string | undefined;
+
+    if (deferrable && this.matchTextSeq('INITIALLY')) {
+      const initiallyVar = this.parseVarFromOptions(
+        this._constructor.TRIGGER_INITIALLY_VALUE,
+        {
+          raiseUnmatched: false,
+        },
+      );
+
+      initially = initiallyVar?.args.this as string | undefined;
+
+      if (!initially) {
+        this.raiseError('Expected IMMEDIATE or DEFERRED after INITIALLY');
+      }
+    }
+
+    return [
+      deferrable,
+      initially,
+    ];
+  }
+
+  protected parseTriggerReferencingClause (keyword: string): Expression | undefined {
+    if (!this.matchTextSeq(keyword)) {
+      return undefined;
+    }
+
+    if (!this.matchTextSeq('TABLE')) {
+      this.raiseError(`Expected TABLE after ${keyword} in REFERENCING clause`);
+    }
+
+    this.matchTextSeq('AS');
+
+    return this.parseIdVar();
+  }
+
+  parseTriggerReferencing (): TriggerReferencingExpr | undefined {
+    if (!this.matchTextSeq('REFERENCING')) {
+      return undefined;
+    }
+
+    let oldAlias: Expression | undefined;
+    let newAlias: Expression | undefined;
+
+    while (true) {
+      const alias = this.parseTriggerReferencingClause('OLD');
+
+      if (alias) {
+        if (oldAlias !== undefined) {
+          this.raiseError('Duplicate OLD clause in REFERENCING');
+        }
+
+        oldAlias = alias;
+      } else {
+        const newAliasResult = this.parseTriggerReferencingClause('NEW');
+
+        if (newAliasResult) {
+          if (newAlias !== undefined) {
+            this.raiseError('Duplicate NEW clause in REFERENCING');
+          }
+
+          newAlias = newAliasResult;
+        } else {
+          break;
+        }
+      }
+    }
+
+    if (oldAlias === undefined && newAlias === undefined) {
+      this.raiseError('REFERENCING clause requires at least OLD TABLE or NEW TABLE');
+    }
+
+    return this.expression(TriggerReferencingExpr, {
+      old: oldAlias,
+      new: newAlias,
+    });
+  }
+
+  parseTriggerForEach (): string | undefined {
+    if (!this.match(TokenType.FOR)) {
+      return undefined;
+    }
+
+    this.matchTextSeq('EACH');
+
+    const forEach = this.parseVarFromOptions(
+      this._constructor.TRIGGER_FOR_EACH,
+      {
+        raiseUnmatched: false,
+      },
+    );
+
+    if (forEach) {
+      return forEach.args.this as string;
+    }
+
+    this.raiseError('Expected ROW or STATEMENT after FOR');
+
+    return undefined;
+  }
+
+  parseTriggerExecute (): TriggerExecuteExpr | undefined {
+    if (!this.match(TokenType.EXECUTE)) {
+      return undefined;
+    }
+
+    if (!this.matchSet(new Set([
+      TokenType.FUNCTION,
+      TokenType.PROCEDURE,
+    ]))) {
+      this.raiseError('Expected FUNCTION or PROCEDURE after EXECUTE');
+    }
+
+    const funcCall = this.parseFunction({
+      anonymous: true,
+      optionalParens: false,
+    });
+
+    return this.expression(TriggerExecuteExpr, {
+      this: funcCall,
+    });
   }
 
   parsePropertyBefore (): Expression | Expression[] | undefined {
@@ -6352,7 +6624,10 @@ export class Parser {
       const limit = this.parseLimit(undefined, {
         top: true,
       });
-      const projections = this.parseProjections();
+      const [
+        projections,
+        exclude,
+      ] = this.parseProjections();
 
       thisExpr = this.expression(
         SelectExpr,
@@ -6362,6 +6637,7 @@ export class Parser {
           distinct,
           expressions: projections,
           limit,
+          exclude,
           operationModifiers: 0 < operationModifiers.length ? operationModifiers : undefined,
         },
       );
@@ -6383,9 +6659,17 @@ export class Parser {
 
       thisExpr = this.parseQueryModifiers(thisExpr) as SelectExpr;
     } else if ((table || nested) && this.match(TokenType.L_PAREN)) {
+      const comments = this.prevComments;
+
       thisExpr = this.parseWrappedSelect({
         table,
       });
+
+      if (thisExpr) {
+        thisExpr.addComments(comments, {
+          prepend: true,
+        });
+      }
 
       // We return early here so that the UNION isn't attached to the subquery by the
       // following call to _parse_set_operations, but instead becomes the parent node
@@ -7711,10 +7995,8 @@ export class Parser {
       });
     }
 
-    const version = this.parseVersion();
-
-    if (version) {
-      thisExpr?.setArgKey('version', version);
+    if (this._dialectConstructor.ALIAS_POST_VERSION) {
+      thisExpr?.setArgKey('version', this.parseVersion());
     }
 
     if (this._dialectConstructor.ALIAS_POST_TABLESAMPLE) {
@@ -7758,6 +8040,10 @@ export class Parser {
 
     if (!this._dialectConstructor.ALIAS_POST_TABLESAMPLE) {
       thisExpr?.setArgKey('sample', this.parseTableSample());
+    }
+
+    if (!this._dialectConstructor.ALIAS_POST_VERSION) {
+      thisExpr?.setArgKey('version', this.parseVersion());
     }
 
     if (joins) {
@@ -9468,7 +9754,10 @@ export class Parser {
       : (
         this.parseFunction()
         || (
-          !this.match(TokenType.ALIAS, {
+          !this.matchSet([
+            TokenType.ALIAS,
+            TokenType.DCOLON,
+          ], {
             advance: false,
           })
           && this.parseVar({
@@ -9812,9 +10101,16 @@ export class Parser {
       return this.parseIdVar();
     }
 
-    const thisExpr = this.parseColumn();
+    let thisExpr: Expression | undefined = this.parseColumn();
 
-    return thisExpr && this.parseColumnOps(thisExpr);
+    if (thisExpr) {
+      thisExpr = this.parseColumnOps(thisExpr);
+    }
+    if (thisExpr && this._constructor.COLON_IS_VARIANT_EXTRACT) {
+      thisExpr = this.parseColonAsVariantExtract(thisExpr);
+    }
+
+    return thisExpr;
   }
 
   parseTypeSize (): DataTypeParamExpr | undefined {
@@ -10519,9 +10815,7 @@ export class Parser {
       current = this.parseBracket(current);
     }
 
-    return this._constructor.COLON_IS_VARIANT_EXTRACT
-      ? this.parseColonAsVariantExtract(current)
-      : current;
+    return current;
   }
 
   parseComment (options: {
@@ -10636,6 +10930,81 @@ export class Parser {
     });
   }
 
+  parseCondition (): Expression | undefined {
+    return this.parseWrapped(
+      () => this.parseExpression(),
+      {
+        optional: true,
+      },
+    );
+  }
+
+  parseBlock (): BlockExpr {
+    return this.expression(BlockExpr, {
+      expressions: this.parseBatchStatements(
+        (self: Parser) => self.parseStatement(),
+      ),
+    });
+  }
+
+  parseWhileBlock (): WhileBlockExpr {
+    return this.expression(WhileBlockExpr, {
+      this: this.parseCondition(),
+      body: this.parseBlock(),
+    });
+  }
+
+  parseBatchStatements (
+    parseMethod: (self: Parser) => Expression | undefined,
+    options: {
+      sepFirstStatement?: boolean;
+    } = {},
+  ): (Expression | undefined)[] {
+    const {
+      sepFirstStatement = true,
+    } = options;
+    const expressions: (Expression | undefined)[] = [];
+
+    if (sepFirstStatement) {
+      this.match(TokenType.BEGIN);
+      expressions.push(parseMethod(this));
+    }
+
+    const chunksLength = this._chunks.length;
+
+    while (this._chunkIndex < chunksLength) {
+      this.advanceChunk();
+
+      if (this.match(TokenType.ELSE, {
+        advance: false,
+      })) {
+        return expressions;
+      }
+
+      if (!this.next && this.match(TokenType.END)) {
+        expressions.push(new EndStatementExpr());
+        continue;
+      }
+
+      expressions.push(parseMethod(this));
+
+      if (this.index < this.tokens.length) {
+        this.raiseError('Invalid expression / Unexpected token');
+      }
+
+      this.checkErrors();
+    }
+
+    return expressions;
+  }
+
+  advanceChunk (): void {
+    this.index = -1;
+    this.tokens = this._chunks[this._chunkIndex];
+    this._chunkIndex += 1;
+    this.advance();
+  }
+
   parseStatement (): Expression | undefined {
     if (this.curr === undefined) {
       return undefined;
@@ -10656,6 +11025,10 @@ export class Parser {
 
     if (this.matchSet(this._dialectConstructor.tokenizerClass.COMMANDS)) {
       return this.parseCommand();
+    }
+
+    if (this.matchTextSeq('WHILE')) {
+      return this.parseWhileBlock();
     }
 
     let expression = this.parseExpression();
@@ -12741,7 +13114,7 @@ export class Parser {
     const {
       safe, strict,
     } = options;
-    let thisExpr = this.parseDisjunction();
+    let thisExpr = this.parseAssignment();
 
     if (!this.match(TokenType.ALIAS)) {
       if (this.match(TokenType.COMMA)) {
@@ -15086,8 +15459,11 @@ export class Parser {
     return undefined;
   }
 
-  parseProjections (): Expression[] {
-    return this.parseExpressions();
+  parseProjections (): [Expression[], Expression[] | undefined] {
+    return [
+      this.parseExpressions(),
+      undefined,
+    ];
   }
 
   parseWrappedSelect (options: {
@@ -16322,16 +16698,25 @@ export class Parser {
   }
 
   parseDeclareitem (): DeclareItemExpr | undefined {
+    this.matchTexts([
+      'VAR',
+      'VARIABLE',
+    ]);
+
     const vars = this.parseCsv(this.parseIdVar.bind(this));
 
     if (!vars) {
       return undefined;
     }
 
+    this.match(TokenType.ALIAS);
+    const kind = this.match(TokenType.TABLE) ? this.parseSchema() : this.parseTypes();
+    const defaultVal = (this.match(TokenType.DEFAULT) || this.match(TokenType.EQ)) && this.parseBitwise();
+
     return this.expression(DeclareItemExpr, {
       this: vars,
-      kind: this.parseTypes(),
-      default: this.match(TokenType.DEFAULT) && this.parseBitwise(),
+      kind,
+      default: defaultVal,
     });
   }
 

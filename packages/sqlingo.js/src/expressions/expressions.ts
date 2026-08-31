@@ -2677,7 +2677,6 @@ export type CreateExprArgs = Merge<[
     indexes?: Expression[];
     noSchemaBinding?: Expression;
     begin?: Expression;
-    end?: Expression;
     clone?: Expression;
     concurrently?: Expression;
     clustered?: Expression;
@@ -2754,6 +2753,120 @@ export class SequencePropertiesExpr extends Expression {
   declare args: SequencePropertiesExprArgs;
 
   constructor (args: SequencePropertiesExprArgs = {}) {
+    super(args);
+  }
+}
+
+// https://www.postgresql.org/docs/current/sql-createtrigger.html
+export type TriggerPropertiesExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    table?: Expression;
+    timing?: string;
+    events?: Expression[];
+    execute?: Expression;
+    constraint?: boolean;
+    referencedTable?: Expression;
+    deferrable?: string;
+    initially?: string;
+    referencing?: Expression;
+    forEach?: string;
+    when?: Expression;
+  },
+]>;
+
+export class TriggerPropertiesExpr extends Expression {
+  static key = ExpressionKey.TRIGGER_PROPERTIES;
+
+  static requiredArgs = new Set([
+    'table',
+    'timing',
+    'events',
+    'execute',
+  ]);
+
+  static availableArgs = new Set([
+    'table',
+    'timing',
+    'events',
+    'execute',
+    'constraint',
+    'referencedTable',
+    'deferrable',
+    'initially',
+    'referencing',
+    'forEach',
+    'when',
+  ]);
+
+  declare args: TriggerPropertiesExprArgs;
+
+  constructor (args: TriggerPropertiesExprArgs = {}) {
+    super(args);
+  }
+}
+
+export type TriggerExecuteExprArgs = Merge<[
+  BaseExpressionArgs,
+  Record<string, never>,
+]>;
+
+export class TriggerExecuteExpr extends Expression {
+  static key = ExpressionKey.TRIGGER_EXECUTE;
+
+  declare args: TriggerExecuteExprArgs;
+
+  constructor (args: TriggerExecuteExprArgs = {}) {
+    super(args);
+  }
+}
+
+export type TriggerEventExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    this?: string;
+    columns?: Expression[];
+  },
+]>;
+
+export class TriggerEventExpr extends Expression {
+  static key = ExpressionKey.TRIGGER_EVENT;
+
+  static requiredArgs = new Set(['this']);
+
+  static availableArgs = new Set([
+    'this',
+    'columns',
+  ]);
+
+  declare args: TriggerEventExprArgs;
+
+  constructor (args: TriggerEventExprArgs = {}) {
+    super(args);
+  }
+}
+
+export type TriggerReferencingExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    old?: Expression;
+    new?: Expression;
+  },
+]>;
+
+export class TriggerReferencingExpr extends Expression {
+  static key = ExpressionKey.TRIGGER_REFERENCING;
+
+  static requiredArgs = new Set<string>();
+
+  static availableArgs = new Set([
+    'old',
+    'new',
+  ]);
+
+  declare args: TriggerReferencingExprArgs;
+
+  constructor (args: TriggerReferencingExprArgs = {}) {
     super(args);
   }
 }
@@ -8968,6 +9081,154 @@ export class VariadicExpr extends Expression {
   }
 }
 
+export type StoredProcedureExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    expressions?: Expression[];
+    wrapped?: boolean;
+  },
+]>;
+
+export class StoredProcedureExpr extends Expression {
+  static key = ExpressionKey.STORED_PROCEDURE;
+
+  static requiredArgs = new Set(['this']);
+
+  static availableArgs = new Set([
+    'this',
+    'expressions',
+    'wrapped',
+  ]);
+
+  declare args: StoredProcedureExprArgs;
+
+  constructor (args: StoredProcedureExprArgs = {}) {
+    super(args);
+  }
+}
+
+export type BlockExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    expressions?: Expression[];
+  },
+]>;
+
+export class BlockExpr extends Expression {
+  static key = ExpressionKey.BLOCK;
+
+  static requiredArgs = new Set(['expressions']);
+
+  static availableArgs = new Set(['expressions']);
+
+  declare args: BlockExprArgs;
+
+  constructor (args: BlockExprArgs = {}) {
+    super(args);
+  }
+}
+
+export type IfBlockExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    true?: Expression;
+    false?: Expression;
+  },
+]>;
+
+export class IfBlockExpr extends Expression {
+  static key = ExpressionKey.IF_BLOCK;
+
+  static requiredArgs = new Set([
+    'this',
+    'true',
+  ]);
+
+  static availableArgs = new Set([
+    'this',
+    'true',
+    'false',
+  ]);
+
+  declare args: IfBlockExprArgs;
+
+  constructor (args: IfBlockExprArgs = {}) {
+    super(args);
+  }
+}
+
+export type WhileBlockExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    body?: Expression;
+  },
+]>;
+
+export class WhileBlockExpr extends Expression {
+  static key = ExpressionKey.WHILE_BLOCK;
+
+  static requiredArgs = new Set([
+    'this',
+    'body',
+  ]);
+
+  static availableArgs = new Set([
+    'this',
+    'body',
+  ]);
+
+  declare args: WhileBlockExprArgs;
+
+  constructor (args: WhileBlockExprArgs = {}) {
+    super(args);
+  }
+}
+
+export class EndStatementExpr extends Expression {
+  static key = ExpressionKey.END_STATEMENT;
+
+  static requiredArgs = new Set<string>();
+  static availableArgs = new Set<string>();
+
+  declare args: BaseExpressionArgs;
+
+  constructor (args: BaseExpressionArgs = {}) {
+    super(args);
+  }
+}
+
+export type ExecuteExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    expressions?: Expression[];
+  },
+]>;
+
+export class ExecuteExpr extends Expression {
+  static key = ExpressionKey.EXECUTE;
+
+  static requiredArgs = new Set(['this']);
+
+  static availableArgs = new Set([
+    'this',
+    'expressions',
+  ]);
+
+  declare args: ExecuteExprArgs;
+
+  constructor (args: ExecuteExprArgs = {}) {
+    super(args);
+  }
+
+  get name (): string {
+    return (this.args.this as Expression)?.args.this?.toString?.() ?? '';
+  }
+}
+
+export class ExecuteSqlExpr extends ExecuteExpr {
+  static key = ExpressionKey.EXECUTE_SQL;
+}
+
 export type CteExprArgs = Merge<[
   BaseExpressionArgs,
   {
@@ -13011,6 +13272,7 @@ export type SelectExprArgs = Merge<[
     into?: Expression;
     from?: Expression;
     operationModifiers?: Expression[];
+    exclude?: Expression[];
     match?: Expression;
     laterals?: Expression[];
     joins?: Expression[];
@@ -16471,6 +16733,7 @@ export type JarowinklerSimilarityExprArgs = Merge<[
   {
     this?: Expression;
     expression?: Expression;
+    caseInsensitive?: boolean;
   },
 ]>;
 
@@ -18063,6 +18326,88 @@ export class ArrayCompactExpr extends FuncExpr {
   }
 }
 
+export type ArrayDistinctExprArgs = Merge<[
+  FuncExprArgs,
+  {
+    this?: Expression;
+    checkNull?: Expression;
+  },
+]>;
+
+export class ArrayDistinctExpr extends FuncExpr {
+  static key = ExpressionKey.ARRAY_DISTINCT;
+
+  static argOrder = [
+    'this',
+    'checkNull',
+  ];
+
+  declare args: ArrayDistinctExprArgs;
+
+  constructor (args: ArrayDistinctExprArgs = {}) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export type ArrayExceptExprArgs = Merge<[
+  FuncExprArgs,
+  {
+    this?: Expression;
+    expression?: Expression;
+  },
+]>;
+
+export class ArrayExceptExpr extends FuncExpr {
+  static key = ExpressionKey.ARRAY_EXCEPT;
+
+  static argOrder = [
+    'this',
+    'expression',
+  ];
+
+  declare args: ArrayExceptExprArgs;
+
+  constructor (args: ArrayExceptExprArgs = {}) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export class ArrayMaxExpr extends FuncExpr {
+  static key = ExpressionKey.ARRAY_MAX;
+
+  static argOrder = ['this'];
+
+  constructor (args: FuncExprArgs = {}) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
+export class ArrayMinExpr extends FuncExpr {
+  static key = ExpressionKey.ARRAY_MIN;
+
+  static argOrder = ['this'];
+
+  constructor (args: FuncExprArgs = {}) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
 export type ArrayInsertExprArgs = Merge<[
   FuncExprArgs,
   {
@@ -18180,6 +18525,7 @@ export type ArrayContainsExprArgs = Merge<[
     this?: Expression;
     expression?: Expression;
     ensureVariant?: boolean | Expression;
+    checkNull?: boolean;
   },
 ]>;
 
@@ -24068,6 +24414,37 @@ export class ObjectInsertExpr extends FuncExpr {
   }
 }
 
+export type ObjectIdExprArgs = Merge<[
+  FuncExprArgs,
+  {
+    expression?: Expression;
+  },
+]>;
+
+export class ObjectIdExpr extends FuncExpr {
+  static key = ExpressionKey.OBJECT_ID;
+
+  static availableArgs = new Set([
+    'this',
+    'expression',
+  ]);
+
+  static argOrder = [
+    'this',
+    'expression',
+  ];
+
+  declare args: ObjectIdExprArgs;
+
+  constructor (args: ObjectIdExprArgs = {}) {
+    super(args);
+  }
+
+  static {
+    this.register();
+  }
+}
+
 export type OpenJsonExprArgs = Merge<[
   FuncExprArgs,
   {
@@ -26812,6 +27189,7 @@ export type RegexpLikeExprArgs = Merge<[
     this?: Expression;
     expression?: Expression;
     flag?: Expression;
+    fullMatch?: boolean;
   },
 ]>;
 

@@ -9,9 +9,11 @@ import {
 } from '../expressions/types';
 import {
   BitLengthExpr,
+  DateDiffExpr,
   DayExpr,
   DayOfMonthExpr,
   DayOfWeekExpr,
+  DayOfWeekIsoExpr,
   DayOfYearExpr,
   HourExpr,
   LengthExpr,
@@ -21,14 +23,21 @@ import {
   SecondExpr,
   WeekExpr,
   YearExpr,
+  CountIfExpr,
   FactorialExpr,
   Atan2Expr,
   JarowinklerSimilarityExpr,
-  RandExpr,
   TimeToUnixExpr,
+  FormatExpr,
+  ReverseExpr,
+  DateBinExpr,
+  LocaltimestampExpr,
   ToDaysExpr,
   TimeFromPartsExpr,
 } from '../expressions/expressions';
+import type {
+  TypeAnnotator,
+} from '../optimizer';
 import type {
   ExpressionMetadata,
 } from './dialect';
@@ -48,9 +57,11 @@ export class DuckDbTyping {
 
     extend([
       BitLengthExpr,
+      DateDiffExpr,
       DayExpr,
       DayOfMonthExpr,
       DayOfWeekExpr,
+      DayOfWeekIsoExpr,
       DayOfYearExpr,
       HourExpr,
       LengthExpr,
@@ -64,19 +75,34 @@ export class DuckDbTyping {
       returns: DataTypeExprKind.BIGINT,
     });
 
-    extend([FactorialExpr], {
+    extend([
+      CountIfExpr,
+      FactorialExpr,
+    ], {
       returns: DataTypeExprKind.INT128,
     });
 
     extend([
       Atan2Expr,
       JarowinklerSimilarityExpr,
-      RandExpr,
       TimeToUnixExpr,
     ], {
       returns: DataTypeExprKind.DOUBLE,
     });
 
+    extend([
+      FormatExpr,
+      ReverseExpr,
+    ], {
+      returns: DataTypeExprKind.VARCHAR,
+    });
+
+    map.set(DateBinExpr, {
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['expression']),
+    });
+    map.set(LocaltimestampExpr, {
+      returns: DataTypeExprKind.TIMESTAMP,
+    });
     map.set(ToDaysExpr, {
       returns: DataTypeExprKind.INTERVAL,
     });

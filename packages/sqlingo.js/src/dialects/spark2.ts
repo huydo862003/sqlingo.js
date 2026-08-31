@@ -13,6 +13,7 @@ import {
   AutoIncrementPropertyExpr,
   BitwiseLeftShiftExpr,
   BitwiseRightShiftExpr,
+  BracketExpr,
   cast,
   CastExpr,
   CharacterSetPropertyExpr,
@@ -42,7 +43,7 @@ import {
   Generator,
 } from '../generator';
 import {
-  seqGet,
+  ensureList, seqGet,
 } from '../helper';
 import {
   Parser, buildTrim,
@@ -68,7 +69,7 @@ import {
   Spark2Typing,
 } from '../typing/spark2';
 import {
-  binaryFromFunction, buildFormattedTime, Dialect, Dialects, isParseJson, pivotColumnNames,
+  binaryFromFunction, bracketToElementAtSql, buildFormattedTime, Dialect, Dialects, isParseJson, pivotColumnNames,
   renameFunc,
   unitToStr,
 } from './dialect';
@@ -263,6 +264,12 @@ class Spark2Parser extends Hive.Parser {
     return {
       ...Hive.Parser.FUNCTIONS,
       AGGREGATE: (args: unknown[]) => ReduceExpr.fromArgList(args),
+      ELEMENT_AT: (args: Expression[]) => new BracketExpr({
+        this: seqGet(args, 0),
+        expressions: ensureList(seqGet(args, 1)),
+        offset: 1,
+        safe: false,
+      }),
       BOOLEAN: buildAsCast('boolean'),
       DATE: buildAsCast('date'),
       DATE_TRUNC: (args: Expression[]) =>
@@ -660,6 +667,14 @@ class Spark2Generator extends Hive.Generator {
 
   static WRAP_DERIVED_VALUES = false;
   static CREATE_FUNCTION_RETURN_AS = false;
+
+  bracketSql (expression: BracketExpr): string {
+    if (expression.args.safe === false) {
+      return bracketToElementAtSql.call(this, expression);
+    }
+
+    return super.bracketSql(expression);
+  }
 
   structSql (expression: StructExpr): string {
     return Generator.prototype.structSql.call(this, expression);

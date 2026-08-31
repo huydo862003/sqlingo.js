@@ -581,7 +581,6 @@ export class PostgresTokenizer extends Tokenizer {
       '||/': TokenType.DPIPE_SLASH,
       'BEGIN': TokenType.BEGIN,
       'BIGSERIAL': TokenType.BIGSERIAL,
-      'CONSTRAINT TRIGGER': TokenType.COMMAND,
       'CSTRING': TokenType.PSEUDO_TYPE,
       'DECLARE': TokenType.COMMAND,
       'DO': TokenType.COMMAND,

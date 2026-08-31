@@ -1,10 +1,15 @@
 import {
   Expression,
   DataTypeExpr,
+  AddMonthsExpr,
+  ApproxQuantileExpr,
   Atan2Expr,
+  AtTimeZoneExpr,
+  NextDayExpr,
   RandnExpr,
   FormatExpr,
   RightExpr,
+  ArrayFilterExpr,
   ConcatExpr,
   PadExpr,
   SubstringExpr,
@@ -100,6 +105,17 @@ export class Spark2Typing {
       returns: DataTypeExprKind.VARCHAR,
     });
 
+    map.set(AddMonthsExpr, {
+      returns: DataTypeExprKind.DATE,
+    });
+    map.set(ApproxQuantileExpr, {
+      annotator: (s: TypeAnnotator, e: ApproxQuantileExpr) => s.annotateByArgs(e, ['this'], {
+        array: (e.args.quantile as Expression)?.isType?.(DataTypeExprKind.ARRAY) ?? false,
+      }),
+    });
+    map.set(AtTimeZoneExpr, {
+      returns: DataTypeExprKind.TIMESTAMP,
+    });
     map.set(ConcatExpr, {
       annotator: (s: TypeAnnotator, e: ConcatExpr) => annotateBySimilarArgs.call(s, e, ['expressions'], DataTypeExprKind.TEXT),
     });
@@ -108,6 +124,9 @@ export class Spark2Typing {
       returns: DataTypeExprKind.VARCHAR,
     });
 
+    map.set(NextDayExpr, {
+      returns: DataTypeExprKind.DATE,
+    });
     map.set(PadExpr, {
       annotator: (s: TypeAnnotator, e: PadExpr) => annotateBySimilarArgs.call(s, e, [
         'this',
@@ -115,8 +134,11 @@ export class Spark2Typing {
       ], DataTypeExprKind.TEXT),
     });
 
-    map.set(SubstringExpr, {
-      annotator: (s: TypeAnnotator, e: SubstringExpr) => s.annotateByArgs(e, ['this']),
+    extend([
+      ArrayFilterExpr,
+      SubstringExpr,
+    ], {
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
     });
 
     return map;

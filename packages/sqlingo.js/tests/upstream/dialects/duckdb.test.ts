@@ -1057,7 +1057,8 @@ class TestDuckDB extends Validator {
     this.validateIdentity('SELECT GREATEST(1.0, 2.5, NULL, 3.7)');
     this.validateIdentity('FROM t1, t2 SELECT *', 'SELECT * FROM t1, t2');
     this.validateIdentity('ROUND(2.256, 1)');
-    this.validateIdentity('SELECT MAKE_DATE(DATE_PART([\'year\', \'month\', \'day\'], TODAY()))');
+    this.validateIdentity('SELECT MAKE_DATE(DATE_PART([\'year\', \'month\', \'day\'], CURRENT_DATE))');
+    this.validateIdentity('SELECT TODAY()', 'SELECT CURRENT_DATE');
     this.validateIdentity('SELECT * FROM t PIVOT(SUM(y) FOR foo IN y_enum)');
     this.validateIdentity('SELECT 20_000 AS literal');
     this.validateIdentity('SELECT 1_2E+1_0::FLOAT', 'SELECT CAST(1_2E+1_0 AS REAL)');

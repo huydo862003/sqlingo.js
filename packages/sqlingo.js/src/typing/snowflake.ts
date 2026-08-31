@@ -41,15 +41,16 @@ import {
   ApproxPercentileCombineExpr, ApproxTopKAccumulateExpr, ApproxTopKCombineExpr,
   ObjectAggExpr, ParseIpExpr, ParseUrlExpr, XmlGetExpr, MapCatExpr, MapDeleteExpr,
   MapInsertExpr, MapPickExpr, ToFileExpr, TimeFromPartsExpr, TsOrDsToTimeExpr,
-  CurrentTimestampExpr, LocaltimestampExpr, QuarterExpr, AiAggExpr, AiClassifyExpr,
+  CurrentTimestampExpr, DayOfMonthExpr, DayOfWeekExpr, DayOfYearExpr,
+  LocaltimestampExpr, QuarterExpr, AiAggExpr, AiClassifyExpr,
   AiSummarizeAggExpr, Base64DecodeStringExpr, Base64EncodeExpr, CheckJsonExpr,
   CheckXmlExpr, CollateExpr, CollationExpr, CurrentAccountExpr, CurrentAccountNameExpr,
   CurrentAvailableRolesExpr, CurrentClientExpr, CurrentDatabaseExpr, CurrentIpAddressExpr,
   CurrentSchemasExpr, CurrentSecondaryRolesExpr, CurrentSessionExpr, CurrentStatementExpr,
-  CurrentVersionExpr, CurrentTransactionExpr, CurrentWarehouseExpr,
+  CurrentTransactionExpr, CurrentWarehouseExpr,
   CurrentOrganizationUserExpr, CurrentRegionExpr, CurrentRoleExpr, CurrentRoleTypeExpr,
   CurrentOrganizationNameExpr, DecompressStringExpr, HexDecodeStringExpr, HexEncodeExpr,
-  MonthnameExpr, RandstrExpr, RegexpExtractExpr, RegexpReplaceExpr, RepeatExpr,
+  RandstrExpr, RegexpExtractExpr, RegexpReplaceExpr, RepeatExpr,
   ReplaceExpr, SoundexExpr, SoundexP123Expr, SplitPartExpr, TryBase64DecodeStringExpr,
   TryHexDecodeStringExpr, UuidExpr, MinhashExpr, MinhashCombineExpr, VarianceExpr,
   VariancePopExpr, ConcatWsExpr, ConvertTimezoneExpr, DateAddExpr, HashAggExpr, TimeAddExpr,
@@ -512,7 +513,12 @@ export class SnowflakeTyping {
       returns: DataTypeExprKind.TIMESTAMPLTZ,
     });
 
-    map.set(QuarterExpr, {
+    extend([
+      DayOfMonthExpr,
+      DayOfWeekExpr,
+      DayOfYearExpr,
+      QuarterExpr,
+    ], {
       returns: DataTypeExprKind.TINYINT,
     });
 
@@ -536,7 +542,6 @@ export class SnowflakeTyping {
       CurrentSecondaryRolesExpr,
       CurrentSessionExpr,
       CurrentStatementExpr,
-      CurrentVersionExpr,
       CurrentTransactionExpr,
       CurrentWarehouseExpr,
       CurrentOrganizationUserExpr,
@@ -547,7 +552,6 @@ export class SnowflakeTyping {
       DecompressStringExpr,
       HexDecodeStringExpr,
       HexEncodeExpr,
-      MonthnameExpr,
       RandstrExpr,
       RegexpExtractExpr,
       RegexpReplaceExpr,

@@ -14,6 +14,7 @@ import {
   Atan2Expr,
   CosExpr,
   CotExpr,
+  DegreesExpr,
   SinExpr,
   TanExpr,
   SoundexExpr,
@@ -61,12 +62,15 @@ export class TSQLTyping {
       returns: DataTypeExprKind.VARCHAR,
     });
 
-    map.set(CurrentTimezoneExpr, {
-      returns: DataTypeExprKind.NVARCHAR,
+    extend([
+      DegreesExpr,
+      RadiansExpr,
+    ], {
+      annotator: (s: TypeAnnotator, e: Expression) => s.annotateByArgs(e, ['this']),
     });
 
-    map.set(RadiansExpr, {
-      annotator: (s: TypeAnnotator, e: RadiansExpr) => s.annotateByArgs(e, ['this']),
+    map.set(CurrentTimezoneExpr, {
+      returns: DataTypeExprKind.NVARCHAR,
     });
 
     return map;

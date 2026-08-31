@@ -85,6 +85,7 @@ import type {
   DropPartitionExpr,
   EscapeExpr,
   ExistsExpr,
+  ExecuteSqlExpr,
   ExplodingGenerateSeriesExpr,
   ExportExpr,
   ExtractExpr,
@@ -110,6 +111,7 @@ import type {
   HexExpr,
   HexStringExpr,
   HintExpr,
+  IfBlockExpr,
   IgnoreNullsExpr,
   InExpr,
   InOutColumnConstraintExpr,
@@ -232,6 +234,9 @@ import type {
   ToNumberExpr,
   TransactionExpr,
   TranslateCharactersExpr,
+  TriggerEventExpr,
+  TriggerExecuteExpr,
+  TriggerReferencingExpr,
   TrimExpr,
   TruncateTableExpr,
   TryExpr,
@@ -251,6 +256,7 @@ import type {
   WeekStartExpr,
   WhenExpr,
   WhensExpr,
+  WhileBlockExpr,
   WindowSpecExpr,
   WithFillExpr,
   WithinGroupExpr,
@@ -279,6 +285,8 @@ import type {
   JsonExtractScalarExpr, JsonbExtractExpr, JsonbExtractScalarExpr,
 
   PreWhereExpr,
+  StoredProcedureExpr,
+  ExecuteExpr,
 } from './expressions';
 import {
   DistinctExpr,
@@ -314,6 +322,7 @@ import {
   JsonPathFilterExpr, JsonPathRecursiveExpr, JsonPathRootExpr,
   JsonPathScriptExpr, JsonPathSelectorExpr, JsonPathSliceExpr, JsonPathUnionExpr,
   AliasExpr, VarExpr,
+  select,
   var_,
   ComputedColumnConstraintExpr,
   NullifExpr,
@@ -363,6 +372,7 @@ import {
   DefaultColumnConstraintExpr,
   DynamicPropertyExpr,
   EmptyPropertyExpr,
+  EndStatementExpr,
   EncodeColumnConstraintExpr,
   EnviromentPropertyExpr,
   EphemeralColumnConstraintExpr,
@@ -487,6 +497,7 @@ import {
   SerdePropertiesExpr,
   SetExpr,
   SequencePropertiesExpr,
+  TriggerPropertiesExpr,
   SortKeyPropertyExpr,
   StorageHandlerPropertyExpr,
   WithSystemVersioningPropertyExpr,
@@ -1287,6 +1298,10 @@ export class Generator {
         [
           EmptyPropertyExpr,
           () => 'EMPTY',
+        ],
+        [
+          EndStatementExpr,
+          () => 'END',
         ],
         [
           EncodeColumnConstraintExpr,
@@ -2158,6 +2173,10 @@ export class Generator {
         PropertiesLocation.POST_EXPRESSION,
       ],
       [
+        TriggerPropertiesExpr,
+        PropertiesLocation.POST_EXPRESSION,
+      ],
+      [
         SortKeyPropertyExpr,
         PropertiesLocation.POST_SCHEMA,
       ],
@@ -2898,6 +2917,17 @@ export class Generator {
 
     const properties = expression.args.properties;
 
+    if (
+      kind === 'TRIGGER'
+      && properties
+      && properties instanceof PropertiesExpr
+      && properties.args.expressions?.length
+      && properties.args.expressions[0] instanceof TriggerPropertiesExpr
+      && properties.args.expressions[0].args.constraint
+    ) {
+      kind = `CONSTRAINT ${kind}`;
+    }
+
     if (properties) {
       assertIsInstanceOf(properties, PropertiesExpr);
     }
@@ -2928,12 +2958,11 @@ export class Generator {
     }
 
     const begin = expression.args.begin ? ' BEGIN' : '';
-    const end = expression.args.end ? ' END' : '';
 
     let expressionSql = this.sql(expression, 'expression');
 
     if (expressionSql) {
-      expressionSql = `${begin}${this.sep()}${expressionSql}${end}`;
+      expressionSql = `${begin}${this.sep()}${expressionSql}`;
 
       if (this._constructor.CREATE_FUNCTION_RETURN_AS || !(expression.args.expression instanceof ReturnExpr)) {
         let postaliasPropsSql = '';
@@ -3084,6 +3113,93 @@ export class Generator {
     const optionsPart = options ? ` ${options}` : '';
 
     return `${start}${increment}${minvalue}${maxvalue}${cacheStr}${optionsPart}${owned}`.trimStart();
+  }
+
+  triggerPropertiesSql (expression: TriggerPropertiesExpr): string {
+    const timing = expression.args.timing ?? '';
+    const events = (expression.args.events ?? []).map((e) => this.sql(e)).join(' OR ');
+    const timingEvents = (timing || events) ? `${timing} ${events}`.trim() : '';
+
+    const parts: string[] = [
+      timingEvents,
+      'ON',
+      this.sql(expression, 'table'),
+    ];
+
+    const referencedTable = expression.args.referencedTable;
+
+    if (referencedTable) {
+      parts.push('FROM', this.sql(referencedTable));
+    }
+
+    const deferrable = expression.args.deferrable;
+
+    if (deferrable) {
+      parts.push(deferrable);
+    }
+
+    const initially = expression.args.initially;
+
+    if (initially) {
+      parts.push(`INITIALLY ${initially}`);
+    }
+
+    const referencing = expression.args.referencing;
+
+    if (referencing) {
+      parts.push(this.sql(referencing));
+    }
+
+    const forEach = expression.args.forEach;
+
+    if (forEach) {
+      parts.push(`FOR EACH ${forEach}`);
+    }
+
+    const when = expression.args.when;
+
+    if (when) {
+      parts.push(`WHEN (${this.sql(when)})`);
+    }
+
+    parts.push(this.sql(expression, 'execute'));
+
+    return parts.join(this.sep());
+  }
+
+  triggerExecuteSql (expression: TriggerExecuteExpr): string {
+    return `EXECUTE FUNCTION ${this.sql(expression as Expression, 'this')}`;
+  }
+
+  triggerReferencingSql (expression: TriggerReferencingExpr): string {
+    const parts: string[] = [];
+
+    const oldAlias = expression.args.old;
+
+    if (oldAlias) {
+      parts.push(`OLD TABLE AS ${this.sql(oldAlias)}`);
+    }
+
+    const newAlias = expression.args.new;
+
+    if (newAlias) {
+      parts.push(`NEW TABLE AS ${this.sql(newAlias)}`);
+    }
+
+    return `REFERENCING ${parts.join(' ')}`;
+  }
+
+  triggerEventSql (expression: TriggerEventExpr): string {
+    const columns = expression.args.columns;
+
+    if (columns) {
+      return `${expression.args.this} OF ${this.expressions(expression, {
+        key: 'columns',
+        flat: true,
+      })}`;
+    }
+
+    return String(expression.args.this ?? '');
   }
 
   cloneSql (expression: CloneExpr): string {
@@ -4304,15 +4420,19 @@ export class Generator {
     alias = alias ? `${sep}${alias}` : '';
 
     const sample = this.sql(expression, 'sample');
-    let samplePreAlias: string;
-    let samplePostAlias: string;
+    let preAlias = '';
+    let postAlias = '';
 
     if (this.dialect._constructor.ALIAS_POST_TABLESAMPLE) {
-      samplePreAlias = sample;
-      samplePostAlias = '';
+      preAlias = sample;
     } else {
-      samplePreAlias = '';
-      samplePostAlias = sample;
+      postAlias = sample;
+    }
+
+    if (this.dialect._constructor.ALIAS_POST_VERSION) {
+      preAlias = `${preAlias}${version}`;
+    } else {
+      postAlias = `${postAlias}${version}`;
     }
 
     let hints = this.expressions(expression, {
@@ -4385,7 +4505,7 @@ export class Generator {
       indexedStr = '';
     }
 
-    return `${only}${tableStr}${changes}${partition}${version}${fileFormat}${samplePreAlias}${alias}${indexedStr}${hints}${pivots}${samplePostAlias}${joins}${laterals}${ordinality}`;
+    return `${only}${tableStr}${changes}${partition}${fileFormat}${preAlias}${alias}${indexedStr}${hints}${pivots}${postAlias}${joins}${laterals}${ordinality}`;
   }
 
   tableFromRowsSql (expression: TableFromRowsExpr): string {
@@ -5479,6 +5599,17 @@ export class Generator {
 
     const topDistinct = genClass.LIMIT_IS_TOP ? `${distinct}${hint}${top}` : `${top}${hint}${distinct}`;
 
+    const exclude = expression.args.exclude;
+
+    if (!genClass.STAR_EXCLUDE_REQUIRES_DERIVED_TABLE && exclude) {
+      const excludeSql = this.expressions({
+        sqls: exclude,
+        flat: true,
+      } as any);
+
+      expressions = `${expressions}${this.seg('EXCLUDE')} (${excludeSql})`;
+    }
+
     expressions = expressions ? `${this.sep()}${expressions}` : expressions;
 
     let sql = this.queryModifiers(
@@ -5493,6 +5624,20 @@ export class Generator {
     );
 
     sql = this.prependCtes(expression, sql);
+
+    if (genClass.STAR_EXCLUDE_REQUIRES_DERIVED_TABLE && exclude) {
+      expression.setArgKey('exclude', undefined);
+      const subquery = expression.subquery({
+        copy: false,
+      } as any);
+      const star = new StarExpr({
+        except: exclude as any,
+      });
+
+      sql = this.sql(select(star).from(subquery, {
+        copy: false,
+      }));
+    }
 
     if (!genClass.SUPPORTS_SELECT_INTO && into) {
       assertIsInstanceOf(into, IntoExpr);
@@ -9265,10 +9410,15 @@ export class Generator {
     })}`;
   }
 
+  static DECLARE_DEFAULT_ASSIGNMENT = '=';
+
   declareItemSql (expression: DeclareItemExpr): string {
-    const variable = this.sql(expression, 'this');
+    const variables = this.expressions(expression, {
+      key: 'this',
+    });
     const defaultVal = this.sql(expression, 'default');
-    const defaultStr = defaultVal ? ` = ${defaultVal}` : '';
+    const defaultAssignment = (this._constructor as typeof Generator).DECLARE_DEFAULT_ASSIGNMENT;
+    const defaultStr = defaultVal ? ` ${defaultAssignment} ${defaultVal}` : '';
 
     let kind = this.sql(expression, 'kind');
 
@@ -9276,7 +9426,9 @@ export class Generator {
       kind = `TABLE ${kind}`;
     }
 
-    return `${variable} AS ${kind}${defaultStr}`;
+    kind = kind ? ` ${kind}` : '';
+
+    return `${variables}${kind}${defaultStr}`;
   }
 
   recursiveWithSearchSql (expression: RecursiveWithSearchExpr): string {
@@ -9725,6 +9877,36 @@ export class Generator {
       fetch ? this.sql(expression, 'offset') : this.sql(limit),
       fetch ? this.sql(limit) : this.sql(expression, 'offset'),
     ];
+  }
+
+  storedProcedureSql (_expression: StoredProcedureExpr): string {
+    this.unsupported('Unsupported Stored Procedure syntax');
+
+    return '';
+  }
+
+  ifBlockSql (_expression: IfBlockExpr): string {
+    this.unsupported('Unsupported If block syntax');
+
+    return '';
+  }
+
+  whileBlockSql (_expression: WhileBlockExpr): string {
+    this.unsupported('Unsupported While block syntax');
+
+    return '';
+  }
+
+  executeSql (_expression: ExecuteExpr): string {
+    this.unsupported('Unsupported Execute syntax');
+
+    return '';
+  }
+
+  executeSqlSql (_expression: ExecuteSqlExpr): string {
+    this.unsupported('Unsupported Execute syntax');
+
+    return '';
   }
 }
 
