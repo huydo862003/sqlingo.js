@@ -488,6 +488,10 @@ import {
   SerdePropertiesExpr,
   SetExpr,
   SequencePropertiesExpr,
+  TriggerPropertiesExpr,
+  TriggerExecuteExpr,
+  TriggerEventExpr,
+  TriggerReferencingExpr,
   SortKeyPropertyExpr,
   StorageHandlerPropertyExpr,
   WithSystemVersioningPropertyExpr,
@@ -2159,6 +2163,10 @@ export class Generator {
         PropertiesLocation.POST_EXPRESSION,
       ],
       [
+        TriggerPropertiesExpr,
+        PropertiesLocation.POST_EXPRESSION,
+      ],
+      [
         SortKeyPropertyExpr,
         PropertiesLocation.POST_SCHEMA,
       ],
@@ -2899,6 +2907,17 @@ export class Generator {
 
     const properties = expression.args.properties;
 
+    if (
+      kind === 'TRIGGER'
+      && properties
+      && properties instanceof PropertiesExpr
+      && properties.args.expressions?.length
+      && properties.args.expressions[0] instanceof TriggerPropertiesExpr
+      && properties.args.expressions[0].args.constraint
+    ) {
+      kind = `CONSTRAINT ${kind}`;
+    }
+
     if (properties) {
       assertIsInstanceOf(properties, PropertiesExpr);
     }
@@ -3085,6 +3104,90 @@ export class Generator {
     const optionsPart = options ? ` ${options}` : '';
 
     return `${start}${increment}${minvalue}${maxvalue}${cacheStr}${optionsPart}${owned}`.trimStart();
+  }
+
+  triggerPropertiesSql (expression: TriggerPropertiesExpr): string {
+    const timing = expression.args.timing ?? '';
+    const events = (expression.args.events ?? []).map((e) => this.sql(e)).join(' OR ');
+    const timingEvents = (timing || events) ? `${timing} ${events}`.trim() : '';
+
+    const parts: string[] = [
+      timingEvents,
+      'ON',
+      this.sql(expression, 'table'),
+    ];
+
+    const referencedTable = expression.args.referencedTable;
+
+    if (referencedTable) {
+      parts.push('FROM', this.sql(referencedTable));
+    }
+
+    const deferrable = expression.args.deferrable;
+
+    if (deferrable) {
+      parts.push(deferrable);
+    }
+
+    const initially = expression.args.initially;
+
+    if (initially) {
+      parts.push(`INITIALLY ${initially}`);
+    }
+
+    const referencing = expression.args.referencing;
+
+    if (referencing) {
+      parts.push(this.sql(referencing));
+    }
+
+    const forEach = expression.args.forEach;
+
+    if (forEach) {
+      parts.push(`FOR EACH ${forEach}`);
+    }
+
+    const when = expression.args.when;
+
+    if (when) {
+      parts.push(`WHEN (${this.sql(when)})`);
+    }
+
+    parts.push(this.sql(expression, 'execute'));
+
+    return parts.join(this.sep());
+  }
+
+  triggerExecuteSql (expression: TriggerExecuteExpr): string {
+    return `EXECUTE FUNCTION ${this.sql(expression, 'this')}`;
+  }
+
+  triggerReferencingSql (expression: TriggerReferencingExpr): string {
+    const parts: string[] = [];
+
+    const oldAlias = expression.args.old;
+
+    if (oldAlias) {
+      parts.push(`OLD TABLE AS ${this.sql(oldAlias)}`);
+    }
+
+    const newAlias = expression.args.new;
+
+    if (newAlias) {
+      parts.push(`NEW TABLE AS ${this.sql(newAlias)}`);
+    }
+
+    return `REFERENCING ${parts.join(' ')}`;
+  }
+
+  triggerEventSql (expression: TriggerEventExpr): string {
+    const columns = expression.args.columns;
+
+    if (columns) {
+      return `${expression.args.this} OF ${this.expressions(expression, { key: 'columns', flat: true })}`;
+    }
+
+    return String(expression.args.this ?? '');
   }
 
   cloneSql (expression: CloneExpr): string {

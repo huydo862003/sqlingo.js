@@ -2758,6 +2758,119 @@ export class SequencePropertiesExpr extends Expression {
   }
 }
 
+// https://www.postgresql.org/docs/current/sql-createtrigger.html
+export type TriggerPropertiesExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    table?: Expression;
+    timing?: string;
+    events?: Expression[];
+    execute?: Expression;
+    constraint?: boolean;
+    referencedTable?: Expression;
+    deferrable?: string;
+    initially?: string;
+    referencing?: Expression;
+    forEach?: string;
+    when?: Expression;
+  },
+]>;
+
+export class TriggerPropertiesExpr extends Expression {
+  static key = ExpressionKey.TRIGGER_PROPERTIES;
+
+  static requiredArgs = new Set([
+    'table',
+    'timing',
+    'events',
+    'execute',
+  ]);
+
+  static availableArgs = new Set([
+    'table',
+    'timing',
+    'events',
+    'execute',
+    'constraint',
+    'referencedTable',
+    'deferrable',
+    'initially',
+    'referencing',
+    'forEach',
+    'when',
+  ]);
+
+  declare args: TriggerPropertiesExprArgs;
+
+  constructor (args: TriggerPropertiesExprArgs = {}) {
+    super(args);
+  }
+}
+
+export type TriggerExecuteExprArgs = Merge<[
+  BaseExpressionArgs,
+  Record<string, never>,
+]>;
+
+export class TriggerExecuteExpr extends Expression {
+  static key = ExpressionKey.TRIGGER_EXECUTE;
+
+  declare args: TriggerExecuteExprArgs;
+
+  constructor (args: TriggerExecuteExprArgs = {}) {
+    super(args);
+  }
+}
+
+export type TriggerEventExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    columns?: Expression[];
+  },
+]>;
+
+export class TriggerEventExpr extends Expression {
+  static key = ExpressionKey.TRIGGER_EVENT;
+
+  static requiredArgs = new Set(['this']);
+
+  static availableArgs = new Set([
+    'this',
+    'columns',
+  ]);
+
+  declare args: TriggerEventExprArgs;
+
+  constructor (args: TriggerEventExprArgs = {}) {
+    super(args);
+  }
+}
+
+export type TriggerReferencingExprArgs = Merge<[
+  BaseExpressionArgs,
+  {
+    old?: Expression;
+    new?: Expression;
+  },
+]>;
+
+export class TriggerReferencingExpr extends Expression {
+  static key = ExpressionKey.TRIGGER_REFERENCING;
+
+  static requiredArgs = new Set<string>();
+
+  static availableArgs = new Set([
+    'old',
+    'new',
+  ]);
+
+  declare args: TriggerReferencingExprArgs;
+
+  constructor (args: TriggerReferencingExprArgs = {}) {
+    super(args);
+  }
+}
+
 export type TruncateTableExprArgs = Merge<[
   BaseExpressionArgs,
   {

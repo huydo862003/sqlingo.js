@@ -1037,6 +1037,7 @@ export class Tokenizer {
     'TEMPORARY': TokenType.TEMPORARY,
     'THEN': TokenType.THEN,
     'TRUE': TokenType.TRUE,
+    'TRIGGER': TokenType.TRIGGER,
     'TRUNCATE': TokenType.TRUNCATE,
     'UNION': TokenType.UNION,
     'UNKNOWN': TokenType.UNKNOWN,

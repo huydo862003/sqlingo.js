@@ -404,6 +404,10 @@ import {
   TransactionExpr,
   TransformModelPropertyExpr,
   TransientPropertyExpr,
+  TriggerEventExpr,
+  TriggerExecuteExpr,
+  TriggerPropertiesExpr,
+  TriggerReferencingExpr,
   TrimExpr,
   TrimPosition,
   TruncateTableExpr,
@@ -1573,8 +1577,13 @@ export class Parser {
       TokenType.FUNCTION,
       TokenType.INDEX,
       TokenType.PROCEDURE,
+      TokenType.TRIGGER,
       ...Parser.DB_CREATABLES,
     ]);
+  }
+
+  static get TRIGGER_EVENTS (): Set<TokenType> {
+    return new Set([TokenType.INSERT, TokenType.UPDATE, TokenType.DELETE, TokenType.TRUNCATE]);
   }
 
   @cache
@@ -3528,6 +3537,27 @@ export class Parser {
     ],
   };
 
+  static TRIGGER_TIMING: OptionsType = {
+    INSTEAD: [['OF']],
+    BEFORE: [],
+    AFTER: [],
+  };
+
+  static TRIGGER_FOR_EACH: OptionsType = {
+    ROW: [],
+    STATEMENT: [],
+  };
+
+  static TRIGGER_DEFERRABLE: OptionsType = {
+    NOT: [['DEFERRABLE']],
+    DEFERRABLE: [],
+  };
+
+  static TRIGGER_INITIALLY_VALUE: OptionsType = {
+    IMMEDIATE: [],
+    DEFERRED: [],
+  };
+
   static CREATE_SEQUENCE: OptionsType = {
     SCALE: [
       'EXTEND',
@@ -4475,6 +4505,70 @@ export class Parser {
           }
         }
       }
+    } else if (
+      (createToken.tokenType === TokenType.CONSTRAINT && this.match(TokenType.TRIGGER))
+      || createToken.tokenType === TokenType.TRIGGER
+    ) {
+      const isConstraint = createToken.tokenType === TokenType.CONSTRAINT;
+
+      if (isConstraint) {
+        createToken = this.prev!;
+      }
+
+      const triggerName = this.parseIdVar();
+
+      if (!triggerName) {
+        return this.parseAsCommand(start);
+      }
+
+      const timingVar = this.parseVarFromOptions(this._constructor.TRIGGER_TIMING, { raiseUnmatched: false });
+      const timing = timingVar?.args.this;
+
+      if (!timing) {
+        return this.parseAsCommand(start);
+      }
+
+      const events = this.parseTriggerEvents();
+
+      if (!this.match(TokenType.ON)) {
+        this.raiseError('Expected ON in trigger definition');
+      }
+
+      const table = this.parseTableParts();
+      const referencedTable = this.match(TokenType.FROM) ? this.parseTableParts() : undefined;
+      const [deferrable, initially] = this.parseTriggerDeferrable();
+      const referencing = this.parseTriggerReferencing();
+      const forEach = this.parseTriggerForEach();
+      const when = this.matchTextSeq('WHEN') && this.parseWrapped(
+        () => this.parseDisjunction(),
+        { optional: true },
+      );
+      const execute = this.parseTriggerExecute();
+
+      if (execute === undefined) {
+        return this.parseAsCommand(start);
+      }
+
+      const triggerProps = this.expression(TriggerPropertiesExpr, {
+        table,
+        timing,
+        events,
+        execute,
+        constraint: isConstraint,
+        referencedTable,
+        deferrable,
+        initially,
+        referencing,
+        forEach,
+        when: when || undefined,
+      });
+
+      thisExpr = triggerName;
+      const triggerProperties = new PropertiesExpr({
+        expressions: triggerProps ? [triggerProps] : [],
+      });
+
+      extendProps(triggerProperties);
     } else if (createToken.tokenType === TokenType.INDEX) {
       // Postgres allows anonymous indexes, eg. CREATE INDEX IF NOT EXISTS ON t(c)
       let index: Expression | undefined;
@@ -4697,6 +4791,154 @@ export class Parser {
     seq.setArgKey('options', 0 < options.length ? options : undefined);
 
     return this.index === index ? undefined : seq;
+  }
+
+  parseTriggerEvents (): TriggerEventExpr[] {
+    const events: TriggerEventExpr[] = [];
+
+    while (true) {
+      const eventType = this.matchSet(this._constructor.TRIGGER_EVENTS) && this.prev?.text.toUpperCase();
+
+      if (!eventType) {
+        this.raiseError('Expected trigger event (INSERT, UPDATE, DELETE, TRUNCATE)');
+      }
+
+      const columns = (
+        eventType === 'UPDATE' && this.matchTextSeq('OF')
+      )
+        ? this.parseCsv(() => this.parseColumn())
+        : undefined;
+
+      events.push(this.expression(TriggerEventExpr, {
+        this: eventType,
+        columns,
+      }));
+
+      if (!this.match(TokenType.OR)) {
+        break;
+      }
+    }
+
+    return events;
+  }
+
+  parseTriggerDeferrable (): [string | undefined, string | undefined] {
+    const deferrableVar = this.parseVarFromOptions(
+      this._constructor.TRIGGER_DEFERRABLE,
+      { raiseUnmatched: false },
+    );
+    const deferrable = deferrableVar?.args.this as string | undefined;
+
+    let initially: string | undefined;
+
+    if (deferrable && this.matchTextSeq('INITIALLY')) {
+      const initiallyVar = this.parseVarFromOptions(
+        this._constructor.TRIGGER_INITIALLY_VALUE,
+        { raiseUnmatched: false },
+      );
+
+      initially = initiallyVar?.args.this as string | undefined;
+
+      if (!initially) {
+        this.raiseError('Expected IMMEDIATE or DEFERRED after INITIALLY');
+      }
+    }
+
+    return [deferrable, initially];
+  }
+
+  private parseTriggerReferencingClause (keyword: string): Expression | undefined {
+    if (!this.matchTextSeq(keyword)) {
+      return undefined;
+    }
+
+    if (!this.matchTextSeq('TABLE')) {
+      this.raiseError(`Expected TABLE after ${keyword} in REFERENCING clause`);
+    }
+
+    this.matchTextSeq('AS');
+
+    return this.parseIdVar();
+  }
+
+  parseTriggerReferencing (): TriggerReferencingExpr | undefined {
+    if (!this.matchTextSeq('REFERENCING')) {
+      return undefined;
+    }
+
+    let oldAlias: Expression | undefined;
+    let newAlias: Expression | undefined;
+
+    while (true) {
+      const alias = this.parseTriggerReferencingClause('OLD');
+
+      if (alias) {
+        if (oldAlias !== undefined) {
+          this.raiseError('Duplicate OLD clause in REFERENCING');
+        }
+
+        oldAlias = alias;
+      } else {
+        const newAliasResult = this.parseTriggerReferencingClause('NEW');
+
+        if (newAliasResult) {
+          if (newAlias !== undefined) {
+            this.raiseError('Duplicate NEW clause in REFERENCING');
+          }
+
+          newAlias = newAliasResult;
+        } else {
+          break;
+        }
+      }
+    }
+
+    if (oldAlias === undefined && newAlias === undefined) {
+      this.raiseError('REFERENCING clause requires at least OLD TABLE or NEW TABLE');
+    }
+
+    return this.expression(TriggerReferencingExpr, {
+      old: oldAlias,
+      new: newAlias,
+    });
+  }
+
+  parseTriggerForEach (): string | undefined {
+    if (!this.match(TokenType.FOR)) {
+      return undefined;
+    }
+
+    this.matchTextSeq('EACH');
+
+    const forEach = this.parseVarFromOptions(
+      this._constructor.TRIGGER_FOR_EACH,
+      { raiseUnmatched: false },
+    );
+
+    if (forEach) {
+      return forEach.args.this as string;
+    }
+
+    this.raiseError('Expected ROW or STATEMENT after FOR');
+
+    return undefined;
+  }
+
+  parseTriggerExecute (): TriggerExecuteExpr | undefined {
+    if (!this.match(TokenType.EXECUTE)) {
+      return undefined;
+    }
+
+    if (!this.matchSet(new Set([TokenType.FUNCTION, TokenType.PROCEDURE]))) {
+      this.raiseError('Expected FUNCTION or PROCEDURE after EXECUTE');
+    }
+
+    const funcCall = this.parseFunction({
+      anonymous: true,
+      optionalParens: false,
+    });
+
+    return this.expression(TriggerExecuteExpr, { this: funcCall });
   }
 
   parsePropertyBefore (): Expression | Expression[] | undefined {
