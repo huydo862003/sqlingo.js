@@ -18,6 +18,7 @@ import type {
   LateralExpr,
   ConstraintExpr,
   VersionExpr,
+  WhileBlockExpr,
   AlterExpr,
   CommandExpr,
   ReturningExpr,
@@ -111,6 +112,10 @@ import {
   LengthExpr,
   PowExpr,
   UserDefinedFunctionExpr,
+  StoredProcedureExpr,
+  ExecuteExpr,
+  ExecuteSqlExpr,
+  IfBlockExpr,
   IdentifierExpr,
   VarExpr,
   NullExpr,
@@ -752,7 +757,7 @@ export class TSQLTokenizer extends Tokenizer {
       'DATETIME2': TokenType.DATETIME2,
       'DATETIMEOFFSET': TokenType.TIMESTAMPTZ,
       'DECLARE': TokenType.DECLARE,
-      'EXEC': TokenType.COMMAND,
+      'EXEC': TokenType.EXECUTE,
       'FOR SYSTEM_TIME': TokenType.TIMESTAMP_SNAPSHOT,
       'GO': TokenType.COMMAND,
       'IMAGE': TokenType.IMAGE,
@@ -784,10 +789,14 @@ export class TSQLTokenizer extends Tokenizer {
 
   @cache
   static get COMMANDS (): Set<TokenType> {
-    return new Set([
+    const commands = new Set([
       ...Array.from(Tokenizer.COMMANDS),
       TokenType.END,
     ]);
+
+    commands.delete(TokenType.EXECUTE);
+
+    return commands;
   };
 }
 
@@ -965,6 +974,9 @@ export class TSQLParser extends Parser {
       ...Parser.STATEMENT_PARSERS,
       [TokenType.DECLARE]: function (this: Parser) {
         return (this as TSQLParser).parseDeclare();
+      },
+      [TokenType.EXECUTE]: function (this: Parser) {
+        return (this as TSQLParser).parseExecute();
       },
       [TokenType.DCOLON]: function (this: Parser) {
         return (this as TSQLParser).expression(ScopeResolutionExpr, {
@@ -1301,28 +1313,57 @@ export class TSQLParser extends Parser {
     } = options;
     const thisNode = super.parseUserDefinedFunction(options);
 
-    if (
-      kind === TokenType.FUNCTION
-      || thisNode instanceof UserDefinedFunctionExpr
-      || this.match(TokenType.ALIAS, {
-        advance: false,
-      })
-    ) {
+    if (kind === TokenType.FUNCTION || thisNode instanceof UserDefinedFunctionExpr) {
       return thisNode;
     }
 
-    let expressions: Expression[] | undefined;
+    if (kind === TokenType.PROCEDURE && thisNode) {
+      const expressions = thisNode instanceof Expression ? thisNode.args.expressions as Expression[] | undefined : undefined;
 
-    if (!this.match(TokenType.WITH, {
-      advance: false,
-    })) {
-      expressions = this.parseCsv(() => this.parseFunctionParameter());
+      if (
+        !(expressions || this.matchSet(new Set([
+          TokenType.ALIAS,
+          TokenType.WITH,
+        ]), {
+          advance: false,
+        }))
+      ) {
+        const parsedExpressions = this.parseCsv(() => this.parseFunctionParameter());
+
+        return this.expression(StoredProcedureExpr, {
+          this: thisNode instanceof TableExpr ? thisNode : (thisNode as Expression)?.args.this,
+          expressions: parsedExpressions,
+          wrapped: (thisNode as Expression)?.args.wrapped,
+        });
+      }
+
+      return this.expression(StoredProcedureExpr, {
+        this: thisNode instanceof TableExpr ? thisNode : (thisNode as Expression)?.args.this,
+        expressions,
+        wrapped: (thisNode as Expression)?.args.wrapped,
+      });
     }
 
     return this.expression(UserDefinedFunctionExpr, {
       this: thisNode,
-      expressions,
     });
+  }
+
+  parseExecute (): ExecuteExpr {
+    const execute = this.expression(ExecuteExpr, {
+      this: this.parseTable({
+        schema: true,
+      }),
+      expressions: this.parseCsv(() => this.parseExpression()),
+    });
+
+    if (execute.name.toLowerCase() === 'sp_executesql') {
+      return this.expression(ExecuteSqlExpr, {
+        ...execute.args,
+      });
+    }
+
+    return execute;
   }
 
   parseInto (): IntoExpr | undefined {
@@ -1389,23 +1430,16 @@ export class TSQLParser extends Parser {
   }
 
   parseIf (): Expression | undefined {
-    const index = this.index;
+    const thisExpr = this.parseCondition();
+    const trueBlock = this.parseBlock();
 
-    if (this.matchTextSeq('OBJECT_ID')) {
-      this.parseWrappedCsv(() => this.parseString());
-      if (this.matchTextSeq([
-        'IS',
-        'NOT',
-        'NULL',
-      ]) && this.match(TokenType.DROP)) {
-        return this.parseDrop({
-          exists: true,
-        });
-      }
-      this.retreat(index);
-    }
+    const falseBlock = this.match(TokenType.ELSE) ? this.parseBlock() : undefined;
 
-    return super.parseIf();
+    return this.expression(IfBlockExpr, {
+      this: thisExpr,
+      true: trueBlock,
+      false: falseBlock || undefined,
+    });
   }
 
   parseUnique (): UniqueColumnConstraintExpr {
@@ -2372,6 +2406,46 @@ export class TSQLGenerator extends Generator {
     const funcName = expression.args.isNull ? 'ISNULL' : 'COALESCE';
 
     return renameFunc(funcName).call(this, expression);
+  }
+
+  storedProcedureSql (expression: StoredProcedureExpr): string {
+    const thisStr = this.sql(expression, 'this');
+    const expressions = this.expressions(expression);
+    const expressionsPart = expression.args.wrapped
+      ? this.wrap(expressions)
+      : (expressions ? ` ${expressions}` : '');
+
+    return expressionsPart.trim() !== '' ? `${thisStr}${expressionsPart}` : thisStr;
+  }
+
+  ifBlockSql (expression: IfBlockExpr): string {
+    const thisStr = this.sql(expression, 'this');
+    const trueStr = this.sql(expression, 'true');
+    const truePart = trueStr ? ` ${trueStr}` : ' ';
+    const falseStr = this.sql(expression, 'false');
+    const falsePart = falseStr ? `; ELSE BEGIN ${falseStr}` : '';
+
+    return `IF ${thisStr} BEGIN${truePart}${falsePart}`;
+  }
+
+  whileBlockSql (expression: WhileBlockExpr): string {
+    const thisStr = this.sql(expression, 'this');
+    const body = this.sql(expression, 'body');
+    const bodyPart = body ? ` ${body}` : ' ';
+
+    return `WHILE ${thisStr} BEGIN${bodyPart}`;
+  }
+
+  executeSql (expression: ExecuteExpr): string {
+    const thisStr = this.sql(expression, 'this');
+    const expressions = this.expressions(expression);
+    const expressionsPart = expressions ? ` ${expressions}` : '';
+
+    return `EXECUTE ${thisStr}${expressionsPart}`;
+  }
+
+  executeSqlSql (expression: ExecuteSqlExpr): string {
+    return this.executeSql(expression);
   }
 }
 

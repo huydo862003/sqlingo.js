@@ -85,6 +85,7 @@ import type {
   DropPartitionExpr,
   EscapeExpr,
   ExistsExpr,
+  ExecuteSqlExpr,
   ExplodingGenerateSeriesExpr,
   ExportExpr,
   ExtractExpr,
@@ -110,6 +111,7 @@ import type {
   HexExpr,
   HexStringExpr,
   HintExpr,
+  IfBlockExpr,
   IgnoreNullsExpr,
   InExpr,
   InOutColumnConstraintExpr,
@@ -232,6 +234,9 @@ import type {
   ToNumberExpr,
   TransactionExpr,
   TranslateCharactersExpr,
+  TriggerEventExpr,
+  TriggerExecuteExpr,
+  TriggerReferencingExpr,
   TrimExpr,
   TruncateTableExpr,
   TryExpr,
@@ -251,6 +256,7 @@ import type {
   WeekStartExpr,
   WhenExpr,
   WhensExpr,
+  WhileBlockExpr,
   WindowSpecExpr,
   WithFillExpr,
   WithinGroupExpr,
@@ -279,6 +285,8 @@ import type {
   JsonExtractScalarExpr, JsonbExtractExpr, JsonbExtractScalarExpr,
 
   PreWhereExpr,
+  StoredProcedureExpr,
+  ExecuteExpr,
 } from './expressions';
 import {
   DistinctExpr,
@@ -364,6 +372,7 @@ import {
   DefaultColumnConstraintExpr,
   DynamicPropertyExpr,
   EmptyPropertyExpr,
+  EndStatementExpr,
   EncodeColumnConstraintExpr,
   EnviromentPropertyExpr,
   EphemeralColumnConstraintExpr,
@@ -489,9 +498,6 @@ import {
   SetExpr,
   SequencePropertiesExpr,
   TriggerPropertiesExpr,
-  TriggerExecuteExpr,
-  TriggerEventExpr,
-  TriggerReferencingExpr,
   SortKeyPropertyExpr,
   StorageHandlerPropertyExpr,
   WithSystemVersioningPropertyExpr,
@@ -1292,6 +1298,10 @@ export class Generator {
         [
           EmptyPropertyExpr,
           () => 'EMPTY',
+        ],
+        [
+          EndStatementExpr,
+          () => 'END',
         ],
         [
           EncodeColumnConstraintExpr,
@@ -2948,12 +2958,11 @@ export class Generator {
     }
 
     const begin = expression.args.begin ? ' BEGIN' : '';
-    const end = expression.args.end ? ' END' : '';
 
     let expressionSql = this.sql(expression, 'expression');
 
     if (expressionSql) {
-      expressionSql = `${begin}${this.sep()}${expressionSql}${end}`;
+      expressionSql = `${begin}${this.sep()}${expressionSql}`;
 
       if (this._constructor.CREATE_FUNCTION_RETURN_AS || !(expression.args.expression instanceof ReturnExpr)) {
         let postaliasPropsSql = '';
@@ -3184,7 +3193,10 @@ export class Generator {
     const columns = expression.args.columns;
 
     if (columns) {
-      return `${expression.args.this} OF ${this.expressions(expression, { key: 'columns', flat: true })}`;
+      return `${expression.args.this} OF ${this.expressions(expression, {
+        key: 'columns',
+        flat: true,
+      })}`;
     }
 
     return String(expression.args.this ?? '');
@@ -9865,6 +9877,36 @@ export class Generator {
       fetch ? this.sql(expression, 'offset') : this.sql(limit),
       fetch ? this.sql(limit) : this.sql(expression, 'offset'),
     ];
+  }
+
+  storedProcedureSql (_expression: StoredProcedureExpr): string {
+    this.unsupported('Unsupported Stored Procedure syntax');
+
+    return '';
+  }
+
+  ifBlockSql (_expression: IfBlockExpr): string {
+    this.unsupported('Unsupported If block syntax');
+
+    return '';
+  }
+
+  whileBlockSql (_expression: WhileBlockExpr): string {
+    this.unsupported('Unsupported While block syntax');
+
+    return '';
+  }
+
+  executeSql (_expression: ExecuteExpr): string {
+    this.unsupported('Unsupported Execute syntax');
+
+    return '';
+  }
+
+  executeSqlSql (_expression: ExecuteSqlExpr): string {
+    this.unsupported('Unsupported Execute syntax');
+
+    return '';
   }
 }
 

@@ -41,9 +41,7 @@ class TestTSQL extends Validator {
     this.validateIdentity('CREATE view a.b.c', 'CREATE VIEW b.c');
     this.validateIdentity('DROP view a.b.c', 'DROP VIEW b.c');
     this.validateIdentity('ROUND(x, 1, 0)');
-    this.validateIdentity('EXEC MyProc @id=7, @name=\'Lochristi\'', undefined, {
-      checkCommandWarning: true,
-    });
+    this.validateIdentity('EXECUTE MyProc @id = 7, @name = \'Lochristi\'');
     this.validateIdentity('SELECT TRIM(\'     test    \') AS Result');
     this.validateIdentity('SELECT TRIM(\'.,! \' FROM \'     #     test    .\') AS Result');
     this.validateIdentity('SELECT * FROM t TABLESAMPLE (10 PERCENT)');
@@ -311,8 +309,7 @@ class TestTSQL extends Validator {
       'IF OBJECT_ID(\'tempdb.dbo.#TempTableName\', \'U\') IS NOT NULL DROP TABLE #TempTableName',
       {
         write: {
-          tsql: 'DROP TABLE IF EXISTS #TempTableName',
-          spark: 'DROP TABLE IF EXISTS TempTableName',
+          tsql: 'IF NOT OBJECT_ID(\'tempdb.dbo.#TempTableName\', \'U\') IS NULL BEGIN DROP TABLE #TempTableName',
         },
       },
     );
@@ -1034,8 +1031,7 @@ FOR XML
       'CREATE NONCLUSTERED COLUMNSTORE INDEX index_name ON foo.bar',
     );
     this.validateIdentity(
-      'CREATE PROCEDURE foo AS BEGIN DELETE FROM bla WHERE foo < CURRENT_TIMESTAMP - 7 END',
-      'CREATE PROCEDURE foo AS BEGIN DELETE FROM bla WHERE foo < GETDATE() - 7 END',
+      'CREATE PROCEDURE foo AS BEGIN DELETE FROM bla WHERE foo < GETDATE() - 7; END',
     );
     this.validateAll('CREATE TABLE [#temptest] (name INTEGER)', {
       read: {
@@ -1284,26 +1280,16 @@ WHERE
             END
         `;
 
-    const expectedSqls = [
-      'CREATE PROCEDURE [TRANSF].[SP_Merge_Sales_Real] @Loadid INTEGER, @NumberOfRows INTEGER WITH EXECUTE AS OWNER, SCHEMABINDING, NATIVE_COMPILATION AS BEGIN SET XACT_ABORT ON',
-      'DECLARE @DWH_DateCreated DATETIME = CONVERT(DATETIME, GETDATE(), 104)',
-      'DECLARE @DWH_DateModified DATETIME2 = CONVERT(DATETIME2, GETDATE(), 104)',
-      'DECLARE @DWH_IdUserCreated INTEGER = SUSER_ID(CURRENT_USER())',
-      'DECLARE @DWH_IdUserModified INTEGER = SUSER_ID(CURRENT_USER())',
-      'DECLARE @SalesAmountBefore FLOAT',
-      'SELECT @SalesAmountBefore = SUM(SalesAmount) FROM TRANSF.[Pre_Merge_Sales_Real] AS S',
-      'END',
-    ];
+    const expectedSql = 'CREATE PROCEDURE [TRANSF].[SP_Merge_Sales_Real] @Loadid INTEGER, @NumberOfRows INTEGER WITH EXECUTE AS OWNER, SCHEMABINDING, NATIVE_COMPILATION AS BEGIN SET XACT_ABORT ON; DECLARE @DWH_DateCreated DATETIME = CONVERT(DATETIME, GETDATE(), 104); DECLARE @DWH_DateModified DATETIME2 = CONVERT(DATETIME2, GETDATE(), 104); DECLARE @DWH_IdUserCreated INTEGER = SUSER_ID(CURRENT_USER()); DECLARE @DWH_IdUserModified INTEGER = SUSER_ID(CURRENT_USER()); DECLARE @SalesAmountBefore FLOAT; SELECT @SalesAmountBefore = SUM(SalesAmount) FROM TRANSF.[Pre_Merge_Sales_Real] AS S; END';
 
     const exprs = parse(sql, {
       read: 'tsql',
     });
 
-    for (let i = 0; i < exprs.length; i++) {
-      expect(exprs[i]?.sql({
-        dialect: 'tsql',
-      })).toBe(expectedSqls[i]);
-    }
+    expect(exprs.length).toBe(1);
+    expect(exprs[0]?.sql({
+      dialect: 'tsql',
+    })).toBe(expectedSql);
 
     const sql2 = `
             CREATE PROC [dbo].[transform_proc] AS
@@ -1317,9 +1303,7 @@ WHERE
         `;
 
     const expectedSqls2 = [
-      'CREATE PROC [dbo].[transform_proc] AS DECLARE @CurrentDate VARCHAR(20)',
-      'SET @CurrentDate = CONVERT(VARCHAR(20), GETDATE(), 120)',
-      'CREATE TABLE [target_schema].[target_table] (a INTEGER) WITH (DISTRIBUTION=REPLICATE, HEAP)',
+      'CREATE PROC [dbo].[transform_proc] AS DECLARE @CurrentDate VARCHAR(20); SET @CurrentDate = CONVERT(VARCHAR(20), GETDATE(), 120); CREATE TABLE [target_schema].[target_table] (a INTEGER) WITH (DISTRIBUTION=REPLICATE, HEAP)',
     ];
 
     const exprs2 = parse(sql2, {

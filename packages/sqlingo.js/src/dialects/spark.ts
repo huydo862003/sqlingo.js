@@ -6,11 +6,18 @@ import type {
   ExpressionValue,
   GeneratedAsIdentityColumnConstraintExpr,
   GeneratedAsRowColumnConstraintExpr,
+  IfBlockExpr,
   ReadParquetExpr,
   RenameColumnExpr,
 } from '../expressions';
 import {
   TryCastExpr,
+  NotExpr,
+  IsExpr,
+  NullExpr,
+  ObjectIdExpr,
+  BlockExpr,
+  DropExpr,
   GroupConcatExpr,
   ComputedColumnConstraintExpr,
   PlaceholderExpr,
@@ -640,6 +647,39 @@ class SparkGenerator extends Spark2.Generator {
     const parquetFile = expression.args.expressions[0];
 
     return `parquet.\`${parquetFile.name}\``;
+  }
+
+  ifBlockSql (expression: IfBlockExpr): string {
+    const condition = expression.args.this;
+    const trueBlock = expression.args.true;
+
+    let conditionExpr: Expression | undefined;
+
+    if (condition instanceof NotExpr) {
+      const inner = condition.args.this;
+
+      if (inner instanceof IsExpr && inner.args.expression instanceof NullExpr) {
+        conditionExpr = inner.args.this as Expression;
+      }
+    }
+
+    if (conditionExpr instanceof ObjectIdExpr) {
+      const objectType = conditionExpr.args.expression;
+
+      if (
+        (objectType === undefined || (objectType as Expression).name?.toUpperCase() === 'U')
+        && trueBlock instanceof BlockExpr
+        && trueBlock.args.expressions?.[0] instanceof DropExpr
+      ) {
+        const drop = trueBlock.args.expressions[0] as DropExpr;
+
+        drop.setArgKey('exists', true);
+
+        return this.sql(drop);
+      }
+    }
+
+    return super.ifBlockSql(expression);
   }
 }
 

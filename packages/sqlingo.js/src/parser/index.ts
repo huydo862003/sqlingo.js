@@ -58,6 +58,7 @@ import {
   BitwiseOrExpr,
   BitwiseRightShiftExpr,
   BitwiseXorExpr,
+  BlockExpr,
   BlockCompressionPropertyExpr,
   BooleanExpr,
   BracketExpr,
@@ -151,6 +152,7 @@ import {
   DynamicPropertyExpr,
   EqExpr,
   EmptyPropertyExpr,
+  EndStatementExpr,
   EncodeColumnConstraintExpr,
   EnginePropertyExpr,
   EnviromentPropertyExpr,
@@ -435,6 +437,7 @@ import {
   VolatilePropertyExpr,
   WhenExpr,
   WhensExpr,
+  WhileBlockExpr,
   WhereExpr,
   WindowExpr,
   WindowSpecExpr,
@@ -543,15 +546,17 @@ export function parseOne<IntoT extends typeof Expression = typeof Expression> (
     ? dialect.parseIntoTypes(options.into as string | typeof Expression | (string | typeof Expression)[], sql, options)
     : dialect.parse(sql, options);
 
-  for (const expression of result) {
-    if (!expression) {
-      throw new ParseError(`No expression was parsed from '${sql}'`);
-    }
-
-    return expression as InstanceType<IntoT>;
+  if (!result.length || result[0] === undefined) {
+    throw new ParseError(`No expression was parsed from '${sql}'`);
   }
 
-  throw new ParseError(`No expression was parsed from '${sql}'`);
+  if (1 < result.length) {
+    return new BlockExpr({
+      expressions: result as Expression[],
+    }) as InstanceType<IntoT>;
+  }
+
+  return result[0] as InstanceType<IntoT>;
 }
 
 export type OptionsType = Record<string, (string[] | string)[]>;
@@ -1583,7 +1588,12 @@ export class Parser {
   }
 
   static get TRIGGER_EVENTS (): Set<TokenType> {
-    return new Set([TokenType.INSERT, TokenType.UPDATE, TokenType.DELETE, TokenType.TRUNCATE]);
+    return new Set([
+      TokenType.INSERT,
+      TokenType.UPDATE,
+      TokenType.DELETE,
+      TokenType.TRUNCATE,
+    ]);
   }
 
   @cache
@@ -4023,6 +4033,8 @@ export class Parser {
   protected prev: Token | undefined;
   protected prevComments: string[] | undefined;
   protected pipeCteCounter: number;
+  protected _chunks: Token[][];
+  protected _chunkIndex: number;
 
   constructor (options: ParseOptions = {}) {
     const {
@@ -4044,6 +4056,8 @@ export class Parser {
     this.prev = undefined;
     this.prevComments = undefined;
     this.pipeCteCounter = 0;
+    this._chunks = [];
+    this._chunkIndex = 0;
     this.reset();
   }
 
@@ -4057,6 +4071,8 @@ export class Parser {
     this.prev = undefined;
     this.prevComments = undefined;
     this.pipeCteCounter = 0;
+    this._chunks = [];
+    this._chunkIndex = 0;
   }
 
   /**
@@ -4108,21 +4124,15 @@ export class Parser {
       }
     }
 
-    const expressions: (Expression | undefined)[] = [];
+    this._chunks = chunks;
+    this._chunkIndex = 0;
 
-    for (const tokens of chunks) {
-      this.index = -1;
-      this.tokens = tokens;
-      this.advance();
-
-      expressions.push(parseMethod.call(this));
-
-      if (this.index < this.tokens.length) {
-        this.raiseError('Invalid expression / Unexpected token');
-      }
-
-      this.checkErrors();
-    }
+    const expressions = this.parseBatchStatements(
+      (self: Parser) => parseMethod.call(self),
+      {
+        sepFirstStatement: false,
+      },
+    );
 
     return expressions;
   }
@@ -4453,7 +4463,7 @@ export class Parser {
     let indexes: Expression[] | undefined;
     let noSchemaBinding: boolean | undefined;
     let begin: boolean | undefined;
-    let end: boolean | undefined;
+    // end was removed - END tokens are now parsed as EndStatement in blocks
     let clone: Expression | undefined;
 
     const extendProps = (tempProps: PropertiesExpr | undefined): void => {
@@ -4493,10 +4503,10 @@ export class Parser {
             expression = this.parseString();
             extendProps(this.parseProperties());
           } else {
-            expression = this.parseUserDefinedFunctionExpression();
+            expression = createToken.tokenType === TokenType.FUNCTION
+              ? this.parseUserDefinedFunctionExpression()
+              : this.parseBlock();
           }
-
-          end = this.matchTextSeq('END') || undefined;
 
           if (return_) {
             expression = this.expression(ReturnExpr, {
@@ -4521,7 +4531,9 @@ export class Parser {
         return this.parseAsCommand(start);
       }
 
-      const timingVar = this.parseVarFromOptions(this._constructor.TRIGGER_TIMING, { raiseUnmatched: false });
+      const timingVar = this.parseVarFromOptions(this._constructor.TRIGGER_TIMING, {
+        raiseUnmatched: false,
+      });
       const timing = timingVar?.args.this;
 
       if (!timing) {
@@ -4536,12 +4548,17 @@ export class Parser {
 
       const table = this.parseTableParts();
       const referencedTable = this.match(TokenType.FROM) ? this.parseTableParts() : undefined;
-      const [deferrable, initially] = this.parseTriggerDeferrable();
+      const [
+        deferrable,
+        initially,
+      ] = this.parseTriggerDeferrable();
       const referencing = this.parseTriggerReferencing();
       const forEach = this.parseTriggerForEach();
       const when = this.matchTextSeq('WHEN') && this.parseWrapped(
         () => this.parseDisjunction(),
-        { optional: true },
+        {
+          optional: true,
+        },
       );
       const execute = this.parseTriggerExecute();
 
@@ -4730,7 +4747,6 @@ export class Parser {
       indexes,
       noSchemaBinding,
       begin,
-      end,
       clone,
       concurrently,
       clustered,
@@ -4825,7 +4841,9 @@ export class Parser {
   parseTriggerDeferrable (): [string | undefined, string | undefined] {
     const deferrableVar = this.parseVarFromOptions(
       this._constructor.TRIGGER_DEFERRABLE,
-      { raiseUnmatched: false },
+      {
+        raiseUnmatched: false,
+      },
     );
     const deferrable = deferrableVar?.args.this as string | undefined;
 
@@ -4834,7 +4852,9 @@ export class Parser {
     if (deferrable && this.matchTextSeq('INITIALLY')) {
       const initiallyVar = this.parseVarFromOptions(
         this._constructor.TRIGGER_INITIALLY_VALUE,
-        { raiseUnmatched: false },
+        {
+          raiseUnmatched: false,
+        },
       );
 
       initially = initiallyVar?.args.this as string | undefined;
@@ -4844,7 +4864,10 @@ export class Parser {
       }
     }
 
-    return [deferrable, initially];
+    return [
+      deferrable,
+      initially,
+    ];
   }
 
   private parseTriggerReferencingClause (keyword: string): Expression | undefined {
@@ -4912,7 +4935,9 @@ export class Parser {
 
     const forEach = this.parseVarFromOptions(
       this._constructor.TRIGGER_FOR_EACH,
-      { raiseUnmatched: false },
+      {
+        raiseUnmatched: false,
+      },
     );
 
     if (forEach) {
@@ -4929,7 +4954,10 @@ export class Parser {
       return undefined;
     }
 
-    if (!this.matchSet(new Set([TokenType.FUNCTION, TokenType.PROCEDURE]))) {
+    if (!this.matchSet(new Set([
+      TokenType.FUNCTION,
+      TokenType.PROCEDURE,
+    ]))) {
       this.raiseError('Expected FUNCTION or PROCEDURE after EXECUTE');
     }
 
@@ -4938,7 +4966,9 @@ export class Parser {
       optionalParens: false,
     });
 
-    return this.expression(TriggerExecuteExpr, { this: funcCall });
+    return this.expression(TriggerExecuteExpr, {
+      this: funcCall,
+    });
   }
 
   parsePropertyBefore (): Expression | Expression[] | undefined {
@@ -10900,6 +10930,81 @@ export class Parser {
     });
   }
 
+  parseCondition (): Expression | undefined {
+    return this.parseWrapped(
+      () => this.parseExpression(),
+      {
+        optional: true,
+      },
+    );
+  }
+
+  parseBlock (): BlockExpr {
+    return this.expression(BlockExpr, {
+      expressions: this.parseBatchStatements(
+        (self: Parser) => self.parseStatement(),
+      ),
+    });
+  }
+
+  parseWhileBlock (): WhileBlockExpr {
+    return this.expression(WhileBlockExpr, {
+      this: this.parseCondition(),
+      body: this.parseBlock(),
+    });
+  }
+
+  parseBatchStatements (
+    parseMethod: (self: Parser) => Expression | undefined,
+    options: {
+      sepFirstStatement?: boolean;
+    } = {},
+  ): (Expression | undefined)[] {
+    const {
+      sepFirstStatement = true,
+    } = options;
+    const expressions: (Expression | undefined)[] = [];
+
+    if (sepFirstStatement) {
+      this.match(TokenType.BEGIN);
+      expressions.push(parseMethod(this));
+    }
+
+    const chunksLength = this._chunks.length;
+
+    while (this._chunkIndex < chunksLength) {
+      this.advanceChunk();
+
+      if (this.match(TokenType.ELSE, {
+        advance: false,
+      })) {
+        return expressions;
+      }
+
+      if (!this.next && this.match(TokenType.END)) {
+        expressions.push(new EndStatementExpr());
+        continue;
+      }
+
+      expressions.push(parseMethod(this));
+
+      if (this.index < this.tokens.length) {
+        this.raiseError('Invalid expression / Unexpected token');
+      }
+
+      this.checkErrors();
+    }
+
+    return expressions;
+  }
+
+  advanceChunk (): void {
+    this.index = -1;
+    this.tokens = this._chunks[this._chunkIndex];
+    this._chunkIndex += 1;
+    this.advance();
+  }
+
   parseStatement (): Expression | undefined {
     if (this.curr === undefined) {
       return undefined;
@@ -10920,6 +11025,10 @@ export class Parser {
 
     if (this.matchSet(this._dialectConstructor.tokenizerClass.COMMANDS)) {
       return this.parseCommand();
+    }
+
+    if (this.matchTextSeq('WHILE')) {
+      return this.parseWhileBlock();
     }
 
     let expression = this.parseExpression();
