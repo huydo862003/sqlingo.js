@@ -1,2 +1,12 @@
 @import "tailwindcss";
+@import "@fontsource-variable/archivo";
+@import "@fontsource-variable/jetbrains-mono";
 @import "@hdnax/genuix/style.css";
+
+@variant dark (&:where(.dark, .dark *));
+
+body {
+  background: var(--gui-primary-bg-subtle);
+  color: var(--gui-neutral-fg);
+  -webkit-font-smoothing: antialiased;
+}

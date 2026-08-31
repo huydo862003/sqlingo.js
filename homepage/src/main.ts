@@ -20,3 +20,6 @@ app.use(createHead());
 app.use(router);
 
 app.mount('#app');
+
+// Force light theme
+document.documentElement.classList.remove('dark');

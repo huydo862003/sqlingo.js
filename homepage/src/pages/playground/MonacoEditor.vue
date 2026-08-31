@@ -1,7 +1,7 @@
 <template>
   <div
     ref="containerElement"
-    class="h-64 w-full"
+    class="h-112 w-full"
   />
 </template>
 
@@ -43,15 +43,17 @@ function resolveToken (token: string): string {
     .trim();
 }
 
-monaco.editor.defineTheme('sqlingo-dark', {
-  base: 'vs-dark',
+monaco.editor.defineTheme('sqlingo-light', {
+  base: 'vs',
   inherit: true,
   rules: [],
   colors: {
-    'editor.background': resolveToken('--color-neutral-1'),
-    'editor.lineHighlightBackground': resolveToken('--color-neutral-2'),
-    'editorLineNumber.foreground': resolveToken('--color-neutral-7'),
-    'editorLineNumber.activeForeground': resolveToken('--color-neutral-9'),
+    'editor.background': '#FFFFFF',
+    'editor.lineHighlightBackground': resolveToken('--color-primary-2'),
+    'editorLineNumber.foreground': resolveToken('--color-primary-7'),
+    'editorLineNumber.activeForeground': resolveToken('--color-primary-9'),
+    'editorGutter.background': '#FFFFFF',
+    'editor.lineHighlightBorder': '#00000000',
   },
 });
 
@@ -63,7 +65,7 @@ onMounted(() => {
   editor = monaco.editor.create(containerElement.value, {
     value: content.value,
     language,
-    theme: 'sqlingo-dark',
+    theme: 'sqlingo-light',
     minimap: {
       enabled: false,
     },

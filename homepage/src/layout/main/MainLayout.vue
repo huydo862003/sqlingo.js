@@ -2,29 +2,30 @@
   <div class="flex min-h-screen flex-col overflow-hidden">
     <NavBar :breadcrumb="breadcrumb" />
     <slot />
-    <footer class="gui-neutral-bg-subtle gui-neutral-border gui-neutral-fg-muted border-t p-5 text-sm">
-      <div class="flex items-end justify-between">
-        <div class="w-96">
-          <span>
-            sqlingo.js is licensed under the
-            <a
-              href="https://github.com/huydo862003/sqlingo.js/blob/master/COPYRIGHT_NOTICE"
-              target="_blank"
-              rel="noopener noreferrer"
-            >MIT License</a>.
-          </span>
-          <span>
-            Based on <a
-              href="https://github.com/tobymao/sqlglot"
-              target="_blank"
-              rel="noopener noreferrer"
-            >SQLGlot</a> by Toby Mao, also MIT.
-          </span>
-        </div>
+    <footer class="gui-primary-border-subtle gui-primary-bg-subtle border-t">
+      <div class="mx-auto flex max-w-[1080px] flex-wrap items-center gap-3 px-7 py-6">
+        <span class="gui-neutral-fg-muted text-sm">
+          sqlingo.js is
+          <a
+            href="https://github.com/huydo862003/sqlingo.js/blob/master/COPYRIGHT_NOTICE"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="gui-primary-fg"
+          >MIT licensed</a>.
+          Based on
+          <a
+            href="https://github.com/tobymao/sqlglot"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="gui-primary-fg"
+          >SQLGlot</a> by Toby Mao, also MIT.
+        </span>
+        <div class="flex-1" />
         <a
           href="https://github.com/huydo862003/sqlingo.js/issues"
           target="_blank"
           rel="noopener noreferrer"
+          class="gui-primary-fg text-sm"
         >Report an issue</a>
       </div>
     </footer>
@@ -42,7 +43,7 @@ interface Crumb {
 const {
   breadcrumb = [],
 } = defineProps<{
-  /** Navigation breadcrumb items to display */
+  /** Navigation breadcrumb items */
   breadcrumb?: Crumb[];
 }>();
 </script>

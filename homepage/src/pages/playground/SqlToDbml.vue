@@ -1,15 +1,15 @@
 <template>
   <div class="w-full">
-    <div class="gap-sm flex flex-col">
-      <div class="gui-neutral-border flex flex-col overflow-hidden rounded-md border">
-        <div class="p-sm gui-neutral-border gui-neutral-bg-subtle flex items-center justify-between border-b">
+    <div class="flex flex-col gap-4 md:flex-row">
+      <div class="gui-primary-border-subtle flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-xs">
+        <div class="gui-primary-border-subtle gui-primary-bg-subtle flex items-center justify-between border-b px-4 py-3">
           <div class="gap-sm flex items-center">
-            <span class="gui-neutral-fg-muted text-sm font-medium tracking-wide uppercase">SQL</span>
+            <span class="gui-primary-fg text-2xs font-mono font-semibold tracking-widest uppercase">SQL</span>
             <GSelect
               v-model="dialect"
               :size="GSelectSize.Xs"
               :variant="GSelectVariant.Box"
-              class="w-40"
+              class="w-40 border-(--gui-primary-border-strong)"
               placeholder="auto"
               close-on-select
             >
@@ -29,14 +29,14 @@
         <MonacoEditor v-model="sqlInput" />
       </div>
 
-      <div class="gui-neutral-border flex flex-col overflow-hidden rounded-md border">
-        <div class="p-sm gui-neutral-border gui-neutral-bg-subtle flex items-center justify-between border-b">
-          <span class="gui-neutral-fg-muted text-sm font-medium tracking-wide uppercase">DBML</span>
+      <div class="gui-primary-border-subtle flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-xs">
+        <div class="gui-primary-border-subtle gui-primary-bg-subtle flex items-center justify-between border-b px-4 py-3">
+          <span class="gui-primary-fg text-2xs font-mono font-semibold tracking-widest uppercase">DBML</span>
           <GButton
             :prominence="GButtonProminence.Secondary"
             :size="GButtonSize.Xs"
             :disabled="!dbmlOutput"
-            class="flex gap-2 p-3"
+            class="flex gap-2 border-(--gui-primary-border-strong) bg-(--gui-primary-bg-subtle) p-3"
             @click="copyDbml"
           >
             <GIcon
