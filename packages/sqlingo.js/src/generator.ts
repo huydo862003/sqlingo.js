@@ -3168,7 +3168,7 @@ export class Generator {
   }
 
   triggerExecuteSql (expression: TriggerExecuteExpr): string {
-    return `EXECUTE FUNCTION ${this.sql(expression, 'this')}`;
+    return `EXECUTE FUNCTION ${this.sql(expression as Expression, 'this')}`;
   }
 
   triggerReferencingSql (expression: TriggerReferencingExpr): string {
@@ -5605,7 +5605,7 @@ export class Generator {
       const excludeSql = this.expressions({
         sqls: exclude,
         flat: true,
-      });
+      } as any);
 
       expressions = `${expressions}${this.seg('EXCLUDE')} (${excludeSql})`;
     }
@@ -5629,9 +5629,9 @@ export class Generator {
       expression.setArgKey('exclude', undefined);
       const subquery = expression.subquery({
         copy: false,
-      });
+      } as any);
       const star = new StarExpr({
-        except: exclude,
+        except: exclude as any,
       });
 
       sql = this.sql(select(star).from(subquery, {

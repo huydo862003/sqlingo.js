@@ -422,6 +422,7 @@ export enum TokenType {
   TOP = 'top',
   THEN = 'then',
   TRUE = 'true',
+  TRIGGER = 'trigger',
   TRUNCATE = 'truncate',
   UNCACHE = 'uncache',
   UNION = 'union',

@@ -240,7 +240,7 @@ class SparkTokenizer extends Spark2.Tokenizer {
 
 class SparkParser extends Spark2.Parser {
   @cache
-  static get STATEMENT_PARSERS (): Record<string, (this: Parser) => Expression> {
+  static get STATEMENT_PARSERS (): Record<string, (this: Parser) => Expression | undefined> {
     return {
       ...Spark2.Parser.STATEMENT_PARSERS,
       [TokenType.DECLARE]: function (this: Parser) {

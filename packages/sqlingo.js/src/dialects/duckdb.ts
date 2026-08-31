@@ -31,7 +31,6 @@ import type {
   UniformExpr,
   ZipfExpr,
   ColumnDefExpr,
-  JoinExpr,
   TimestampLtzFromPartsExpr,
   TimestampTzFromPartsExpr,
   AddMonthsExpr,
@@ -280,7 +279,6 @@ import {
   ParenExpr,
   PropertyEqExpr,
   ReplaceExpr,
-  replacePlaceholders,
   SelectExpr,
   SliceExpr,
   SortArrayExpr,
@@ -320,7 +318,6 @@ import {
   TsOrDsAddExpr,
   VariancePopExpr,
   WeekOfYearExpr,
-  maybeParse,
   GtExpr,
   TsOrDsToTimeExpr,
   TryCastExpr,
@@ -358,6 +355,9 @@ import {
   SessionUserExpr,
   func,
   wrap,
+  var_,
+  case_,
+  JoinExpr,
 } from '../expressions';
 import {
   seqGet, isDateUnit, camelToScreamingSnakeCase,
@@ -3355,7 +3355,7 @@ class DuckDBGenerator extends Generator {
           if (explode instanceof InlineExpr) {
             const unnestExpr = new UnnestExpr({
               expressions: [
-                explode.args.this,
+                explode.args.this as Expression,
                 new KwargExpr({
                   this: var_('max_depth'),
                   expression: LiteralExpr.number(2),
@@ -3377,7 +3377,7 @@ class DuckDBGenerator extends Generator {
             });
             const crossJoinLateral = new JoinExpr({
               this: transformedLateral,
-              kind: 'CROSS',
+              kind: JoinExprKind.CROSS,
             });
 
             return this.sql(crossJoinLateral);
@@ -3436,20 +3436,20 @@ class DuckDBGenerator extends Generator {
       ],
       [
         ArrayContainsExpr,
-        function (this: DuckDBGenerator, e: ArrayContainsExpr) {
+        function (this: Generator, e: ArrayContainsExpr) {
           return (this as DuckDBGenerator).arraycontainsSql(e);
         },
       ],
       [
         ArrayDistinctExpr,
-        function (this: DuckDBGenerator, e: ArrayDistinctExpr) {
+        function (this: Generator, e: ArrayDistinctExpr) {
           return (this as DuckDBGenerator).arraydistinctSql(e);
         },
       ],
       [
         ArrayExceptExpr,
-        function (this: DuckDBGenerator, e: ArrayExceptExpr) {
-          return this.arrayexceptSql(e);
+        function (this: Generator, e: ArrayExceptExpr) {
+          return (this as DuckDBGenerator).arrayexceptSql(e);
         },
       ],
       [
@@ -3465,7 +3465,7 @@ class DuckDBGenerator extends Generator {
         function (this: Generator, e: MapContainsKeyExpr) {
           const mapKeys = new AnonymousExpr({
             this: 'MAP_KEYS',
-            expressions: [e.args.key],
+            expressions: [e.args.key as Expression],
           });
 
           return this.func('ARRAY_CONTAINS', [
@@ -3542,25 +3542,25 @@ class DuckDBGenerator extends Generator {
       ],
       [
         RegexpReplaceExpr,
-        function (this: DuckDBGenerator, e: RegexpReplaceExpr) {
+        function (this: Generator, e: RegexpReplaceExpr) {
           return (this as DuckDBGenerator).regexpreplaceSql(e);
         },
       ],
       [
         RegexpCountExpr,
-        function (this: DuckDBGenerator, e: RegexpCountExpr) {
+        function (this: Generator, e: RegexpCountExpr) {
           return (this as DuckDBGenerator).regexpcountSql(e);
         },
       ],
       [
         RegexpInstrExpr,
-        function (this: DuckDBGenerator, e: RegexpInstrExpr) {
+        function (this: Generator, e: RegexpInstrExpr) {
           return (this as DuckDBGenerator).regexpinstrSql(e);
         },
       ],
       [
         RegexpLikeExpr,
-        function (this: DuckDBGenerator, e: RegexpLikeExpr) {
+        function (this: Generator, e: RegexpLikeExpr) {
           return (this as DuckDBGenerator).regexplikeSql(e);
         },
       ],
@@ -4776,7 +4776,7 @@ class DuckDBGenerator extends Generator {
           }),
           expression: new AnonymousExpr({
             this: 'LIST_COUNT',
-            expressions: [thisExpr],
+            expressions: [thisExpr as Expression],
           }),
         }),
         expression: new BooleanExpr({
@@ -4824,7 +4824,7 @@ class DuckDBGenerator extends Generator {
           }),
           expression: new AnonymousExpr({
             this: 'LIST_COUNT',
-            expressions: [arr],
+            expressions: [arr as Expression],
           }),
         }),
         true: addNullToArray,
@@ -4844,13 +4844,13 @@ class DuckDBGenerator extends Generator {
     const option = expression.args.option;
     const parameters = expression.args.parameters;
 
-    const validatedFlags = this.validateRegexpFlags(parameters, 'ims');
+    const validatedFlags = this.validateRegexpFlags(parameters?.[0], 'ims');
 
     if (validatedFlags) {
       pattern = new ConcatExpr({
         expressions: [
           LiteralExpr.string(`(?${validatedFlags})`),
-          pattern,
+          pattern as Expression,
         ],
       });
     }
@@ -4859,7 +4859,7 @@ class DuckDBGenerator extends Generator {
 
     if (position && (!position.isNumber || 1 < Number(position.toValue()))) {
       thisExpr = new SubstringExpr({
-        this: thisExpr,
+        this: thisExpr as Expression,
         start: position,
       });
       posOffset = new SubExpr({
@@ -4873,8 +4873,8 @@ class DuckDBGenerator extends Generator {
         this: new AnonymousExpr({
           this: funcName,
           expressions: [
-            thisExpr,
-            pattern,
+            thisExpr as Expression,
+            pattern as Expression,
           ],
         }),
         expressions: [
@@ -4926,8 +4926,8 @@ class DuckDBGenerator extends Generator {
         this: new AnonymousExpr({
           this: 'REGEXP_EXTRACT_ALL',
           expressions: [
-            thisExpr,
-            pattern,
+            thisExpr as Expression,
+            pattern as Expression,
           ],
         }),
         expressions: [occurrence],
@@ -4962,8 +4962,8 @@ class DuckDBGenerator extends Generator {
     const matches = new AnonymousExpr({
       this: 'REGEXP_EXTRACT_ALL',
       expressions: [
-        thisExpr,
-        pattern,
+        thisExpr as Expression,
+        pattern as Expression,
       ],
     });
 
@@ -4975,7 +4975,7 @@ class DuckDBGenerator extends Generator {
         })
         : check), new NullExpr({}))
       .when(new EqExpr({
-        this: pattern!.copy(),
+        this: (pattern as Expression).copy(),
         expression: LiteralExpr.string(''),
       }), LiteralExpr.number(0))
       .when(new LtExpr({
@@ -4984,7 +4984,7 @@ class DuckDBGenerator extends Generator {
         }),
         expression: occurrence,
       }), LiteralExpr.number(0))
-      .else_(basePos);
+      .else(basePos);
 
     return this.sql(caseExpr);
   }
@@ -5029,12 +5029,12 @@ class DuckDBGenerator extends Generator {
       const pos = Number(position.toValue());
 
       prefix = new SubstringExpr({
-        this: subject,
+        this: subject as Expression,
         start: LiteralExpr.number(1),
         length: LiteralExpr.number(pos - 1),
       });
       subject = new SubstringExpr({
-        this: subject,
+        this: subject as Expression,
         start: LiteralExpr.number(pos),
       });
     }
@@ -5050,7 +5050,7 @@ class DuckDBGenerator extends Generator {
         pattern,
         replacement,
         ...(flagArg ? [flagArg] : []),
-      ].filter(Boolean),
+      ].filter(Boolean) as Expression[],
     });
 
     if (prefix) {
@@ -5071,11 +5071,11 @@ class DuckDBGenerator extends Generator {
     const position = expression.args.position;
     const parameters = expression.args.parameters;
 
-    const validatedFlags = this.validateRegexpFlags(parameters, 'ims');
+    const validatedFlags = this.validateRegexpFlags(parameters?.[0], 'ims');
 
     if (position) {
       thisExpr = new SubstringExpr({
-        this: thisExpr,
+        this: thisExpr as Expression,
         start: position,
       });
     }
@@ -5084,7 +5084,7 @@ class DuckDBGenerator extends Generator {
       pattern = new ConcatExpr({
         expressions: [
           LiteralExpr.string(`(?${validatedFlags})`),
-          pattern,
+          pattern as Expression,
         ],
       });
     }
@@ -5103,8 +5103,8 @@ class DuckDBGenerator extends Generator {
         this: new AnonymousExpr({
           this: 'REGEXP_EXTRACT_ALL',
           expressions: [
-            thisExpr,
-            pattern,
+            thisExpr as Expression,
+            pattern as Expression,
           ],
         }),
       }),
@@ -5135,6 +5135,7 @@ class DuckDBGenerator extends Generator {
 
     return this.sql(replacePlaceholders(
       (this._constructor as typeof DuckDBGenerator).ARRAY_EXCEPT_TEMPLATE.copy(),
+      [],
       {
         source,
         exclude,
@@ -6183,7 +6184,7 @@ class DuckDBGenerator extends Generator {
     let params = expression.args.parameters;
     const position = expression.args.position;
     const occurrence = expression.args.occurrence;
-    const nullIfPosOverflow = expression.args.nullIfPosOverflow;
+    const nullIfPosOverflow = 'nullIfPosOverflow' in expression.args ? expression.args.nullIfPosOverflow : undefined;
 
     // Handle 'e' flag: enables capture group extraction (Snowflake-specific)
     if (params && params.isString && (params.name ?? '').includes('e')) {
@@ -6234,7 +6235,7 @@ class DuckDBGenerator extends Generator {
         expression.args.expression,
         groupArg,
         flagsExpr,
-      ].filter(Boolean),
+      ].filter(Boolean) as Expression[],
     });
 
     if (isExtractAll && nonSingleOccurrence) {

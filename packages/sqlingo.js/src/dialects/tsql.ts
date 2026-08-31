@@ -1336,7 +1336,7 @@ export class TSQLParser extends Parser {
       return this.expression(StoredProcedureExpr, {
         this: thisNode instanceof TableExpr ? thisNode : (thisNode as Expression)?.args.this,
         expressions,
-        wrapped: (thisNode as Expression)?.args.wrapped,
+        wrapped: (thisNode as any)?.args?.wrapped,
       });
     }
 

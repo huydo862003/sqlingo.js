@@ -228,6 +228,7 @@ import {
   WithinGroupExpr,
   AliasExpr,
   ConvertTimezoneExpr,
+  true_,
 } from '../expressions';
 import {
   Generator, unsupportedArgs,
@@ -1328,7 +1329,7 @@ class SnowflakeParser extends Parser {
         }),
         ARRAY_DISTINCT: (args: Expression[]) => new ArrayDistinctExpr({
           this: seqGet(args, 0),
-          checkNull: true,
+          checkNull: true_(),
         }),
         ARRAY_CONTAINS: (args: Expression[]) =>
           new ArrayContainsExpr({
