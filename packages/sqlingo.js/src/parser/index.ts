@@ -4870,7 +4870,7 @@ export class Parser {
     ];
   }
 
-  private parseTriggerReferencingClause (keyword: string): Expression | undefined {
+  protected parseTriggerReferencingClause (keyword: string): Expression | undefined {
     if (!this.matchTextSeq(keyword)) {
       return undefined;
     }

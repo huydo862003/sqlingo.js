@@ -1318,7 +1318,9 @@ export class TSQLParser extends Parser {
     }
 
     if (kind === TokenType.PROCEDURE && thisNode) {
-      const expressions = thisNode instanceof Expression ? thisNode.args.expressions as Expression[] | undefined : undefined;
+      let expressions = thisNode instanceof Expression
+        ? thisNode.args.expressions as Expression[] | undefined
+        : undefined;
 
       if (
         !(expressions || this.matchSet(new Set([
@@ -1328,13 +1330,7 @@ export class TSQLParser extends Parser {
           advance: false,
         }))
       ) {
-        const parsedExpressions = this.parseCsv(() => this.parseFunctionParameter());
-
-        return this.expression(StoredProcedureExpr, {
-          this: thisNode instanceof TableExpr ? thisNode : (thisNode as Expression)?.args.this,
-          expressions: parsedExpressions,
-          wrapped: (thisNode as Expression)?.args.wrapped,
-        });
+        expressions = this.parseCsv(() => this.parseFunctionParameter());
       }
 
       return this.expression(StoredProcedureExpr, {

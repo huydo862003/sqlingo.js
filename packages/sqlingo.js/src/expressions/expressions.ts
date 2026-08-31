@@ -2824,6 +2824,7 @@ export class TriggerExecuteExpr extends Expression {
 export type TriggerEventExprArgs = Merge<[
   BaseExpressionArgs,
   {
+    this?: string;
     columns?: Expression[];
   },
 ]>;
