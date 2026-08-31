@@ -34,9 +34,7 @@ export class MySQLTyping {
       for (const type of types) map.set(type, data);
     };
 
-    extend([
-      Atan2Expr,
-    ], {
+    extend([Atan2Expr], {
       returns: DataTypeExprKind.DOUBLE,
     });
 

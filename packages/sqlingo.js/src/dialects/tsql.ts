@@ -139,7 +139,6 @@ import {
   AlterRenameExpr,
   PartitionExpr,
   PartitionRangeExpr,
-  DeclareItemExpr,
   UniqueColumnConstraintExpr,
   OrderExpr,
   DistinctExpr,
@@ -1165,15 +1164,18 @@ export class TSQLParser extends Parser {
   parseProjections (): [Expression[], Expression[] | undefined] {
     const [projections] = super.parseProjections();
 
-    return [projections.map((projection) => {
-      if (projection instanceof EqExpr && projection.args.this instanceof ColumnExpr) {
-        return alias(projection.args.expression as Expression, projection.args.this.args.this as IdentifierExpr, {
-          copy: false,
-        });
-      }
+    return [
+      projections.map((projection) => {
+        if (projection instanceof EqExpr && projection.args.this instanceof ColumnExpr) {
+          return alias(projection.args.expression as Expression, projection.args.this.args.this as IdentifierExpr, {
+            copy: false,
+          });
+        }
 
-      return projection;
-    }), undefined];
+        return projection;
+      }),
+      undefined,
+    ];
   }
 
   parseCommitOrRollback (): CommitExpr | RollbackExpr {

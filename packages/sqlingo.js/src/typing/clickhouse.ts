@@ -26,9 +26,7 @@ export class ClickHouseTyping {
       for (const type of types) map.set(type, data);
     };
 
-    extend([
-      CountIfExpr,
-    ], {
+    extend([CountIfExpr], {
       returns: DataTypeExprKind.UBIGINT,
     });
 

@@ -21,7 +21,6 @@ import type {
   EqExpr,
   AtTimeZoneExpr,
   TryCastExpr,
-  DeclareItemExpr,
 } from '../expressions';
 import {
   ValuesExpr,

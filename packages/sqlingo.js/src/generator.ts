@@ -5487,7 +5487,10 @@ export class Generator {
     const exclude = expression.args.exclude;
 
     if (!genClass.STAR_EXCLUDE_REQUIRES_DERIVED_TABLE && exclude) {
-      const excludeSql = this.expressions({ sqls: exclude, flat: true });
+      const excludeSql = this.expressions({
+        sqls: exclude,
+        flat: true,
+      });
 
       expressions = `${expressions}${this.seg('EXCLUDE')} (${excludeSql})`;
     }
@@ -5509,10 +5512,16 @@ export class Generator {
 
     if (genClass.STAR_EXCLUDE_REQUIRES_DERIVED_TABLE && exclude) {
       expression.setArgKey('exclude', undefined);
-      const subquery = expression.subquery({ copy: false });
-      const star = new StarExpr({ except: exclude });
+      const subquery = expression.subquery({
+        copy: false,
+      });
+      const star = new StarExpr({
+        except: exclude,
+      });
 
-      sql = this.sql(select(star).from(subquery, { copy: false }));
+      sql = this.sql(select(star).from(subquery, {
+        copy: false,
+      }));
     }
 
     if (!genClass.SUPPORTS_SELECT_INTO && into) {
@@ -9289,7 +9298,9 @@ export class Generator {
   static DECLARE_DEFAULT_ASSIGNMENT = '=';
 
   declareItemSql (expression: DeclareItemExpr): string {
-    const variables = this.expressions(expression, { key: 'this' });
+    const variables = this.expressions(expression, {
+      key: 'this',
+    });
     const defaultVal = this.sql(expression, 'default');
     const defaultAssignment = (this._constructor as typeof Generator).DECLARE_DEFAULT_ASSIGNMENT;
     const defaultStr = defaultVal ? ` ${defaultAssignment} ${defaultVal}` : '';

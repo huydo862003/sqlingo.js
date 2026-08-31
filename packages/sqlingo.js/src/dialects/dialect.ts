@@ -65,6 +65,9 @@ import type {
   Sha2DigestExpr,
   ExpressionValue,
   DecodeCaseExpr,
+
+  BracketExpr,
+  JarowinklerSimilarityExpr,
 } from '../expressions';
 import {
   TruncExpr,
@@ -103,7 +106,6 @@ import {
   AtTimeZoneExpr,
   BitwiseAndExpr,
   BitwiseRightShiftExpr,
-  BracketExpr,
   CastExpr,
   CaseExpr,
   ColumnExpr,
@@ -123,7 +125,6 @@ import {
   IfExpr,
   IntervalExpr,
   IsExpr,
-  JarowinklerSimilarityExpr,
   JoinExpr,
   JsonExtractExpr,
   JsonPathExpr,
@@ -1598,12 +1599,17 @@ export function bracketToElementAtSql (this: Generator, expression: BracketExpr)
       expression.args.this as Expression,
       expression.args.expressions ?? [],
       1 - (expression.args.offset ?? 0),
-      { dialect: this.dialect },
+      {
+        dialect: this.dialect,
+      },
     ),
     0,
   );
 
-  return this.func('ELEMENT_AT', [expression.args.this, index] as Expression[]);
+  return this.func('ELEMENT_AT', [
+    expression.args.this,
+    index,
+  ] as Expression[]);
 }
 
 export function jarowinklerSimilarity (funcName: string): (this: Generator, expression: JarowinklerSimilarityExpr) => string {
@@ -1612,11 +1618,22 @@ export function jarowinklerSimilarity (funcName: string): (this: Generator, expr
     let expr = expression.args.expression;
 
     if (expression.args.caseInsensitive) {
-      thisExpr = thisExpr ? new UpperExpr({ this: thisExpr }) : undefined;
-      expr = expr ? new UpperExpr({ this: expr }) : undefined;
+      thisExpr = thisExpr
+        ? new UpperExpr({
+          this: thisExpr,
+        })
+        : undefined;
+      expr = expr
+        ? new UpperExpr({
+          this: expr,
+        })
+        : undefined;
     }
 
-    return this.func(funcName, [thisExpr, expr]);
+    return this.func(funcName, [
+      thisExpr,
+      expr,
+    ]);
   };
 }
 

@@ -2430,7 +2430,9 @@ class SnowflakeParser extends Parser {
         const keyword = this.prev?.text.toLowerCase() ?? '';
 
         kwargs[keyword] = this.parseCsv(
-          () => this.parseAlias(this.parseDisjunction(), { explicit: true }),
+          () => this.parseAlias(this.parseDisjunction(), {
+            explicit: true,
+          }),
         );
       } else if (this.matchTextSeq('WHERE')) {
         kwargs['where'] = this.parseExpression();

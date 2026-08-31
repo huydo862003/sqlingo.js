@@ -403,7 +403,6 @@ import {
   explodeToUnnestSql,
   noMakeIntervalSql,
   monthsBetweenSql,
-  regexpReplaceGlobalModifier,
   strPositionSql,
   noTimeSql,
   noTimestampSql,
@@ -472,11 +471,24 @@ export const MAX_BIT_POSITION = LiteralExpr.number(32768);
 export const SEQ_BASE: Expression = maybeParse('(ROW_NUMBER() OVER (ORDER BY 1) - 1)');
 
 const SEQ_BYTE_WIDTH = new Map<typeof Expression, number>([
-  [Seq1Expr, 1],
-  [Seq2Expr, 2],
-  [Seq4Expr, 4],
-  [Seq8Expr, 8],
+  [
+    Seq1Expr,
+    1,
+  ],
+  [
+    Seq2Expr,
+    2,
+  ],
+  [
+    Seq4Expr,
+    4,
+  ],
+  [
+    Seq8Expr,
+    8,
+  ],
 ]);
+
 export const SEQ_RESTRICTED = [
   WhereExpr,
   HavingExpr,
@@ -1264,11 +1276,15 @@ function seqToRangeInGenerator (expression: Expression): Expression {
     const byteWidth = SEQ_BYTE_WIDTH.get(node._constructor as typeof Expression);
 
     if (byteWidth !== undefined) {
-      return buildSeqExpression(new ColumnExpr({ this: toIdentifier('range') }), byteWidth, node.name === '1');
+      return buildSeqExpression(new ColumnExpr({
+        this: toIdentifier('range'),
+      }), byteWidth, node.name === '1');
     }
 
     return node;
-  }, { copy: false });
+  }, {
+    copy: false,
+  });
 }
 
 function seqSql (this: Generator, expression: FuncExpr, byteWidth: number): string {
@@ -3340,18 +3356,29 @@ class DuckDBGenerator extends Generator {
             const unnestExpr = new UnnestExpr({
               expressions: [
                 explode.args.this,
-                new KwargExpr({ this: var_('max_depth'), expression: LiteralExpr.number(2) }),
+                new KwargExpr({
+                  this: var_('max_depth'),
+                  expression: LiteralExpr.number(2),
+                }),
               ],
             });
-            const selectExpr = new SelectExpr({ expressions: [unnestExpr] }).subquery();
+            const selectExpr = new SelectExpr({
+              expressions: [unnestExpr],
+            }).subquery();
             const aliasExpr = expression.args.alias;
 
             if (aliasExpr && !aliasExpr.args.this) {
               aliasExpr.setArgKey('this', toIdentifier(`_u_${expression.index}`));
             }
 
-            const transformedLateral = new LateralExpr({ this: selectExpr, alias: aliasExpr });
-            const crossJoinLateral = new JoinExpr({ this: transformedLateral, kind: 'CROSS' });
+            const transformedLateral = new LateralExpr({
+              this: selectExpr,
+              alias: aliasExpr,
+            });
+            const crossJoinLateral = new JoinExpr({
+              this: transformedLateral,
+              kind: 'CROSS',
+            });
 
             return this.sql(crossJoinLateral);
           }
@@ -3436,9 +3463,15 @@ class DuckDBGenerator extends Generator {
       [
         MapContainsKeyExpr,
         function (this: Generator, e: MapContainsKeyExpr) {
-          const mapKeys = new AnonymousExpr({ this: 'MAP_KEYS', expressions: [e.args.key] });
+          const mapKeys = new AnonymousExpr({
+            this: 'MAP_KEYS',
+            expressions: [e.args.key],
+          });
 
-          return this.func('ARRAY_CONTAINS', [mapKeys, e.args.this] as Expression[]);
+          return this.func('ARRAY_CONTAINS', [
+            mapKeys,
+            e.args.this,
+          ] as Expression[]);
         },
       ],
       [
@@ -4696,7 +4729,11 @@ class DuckDBGenerator extends Generator {
     let flag = expression.args.flag;
 
     if (!expression.args.fullMatch) {
-      return this.func('REGEXP_MATCHES', [thisExpr, pattern, flag] as Expression[]);
+      return this.func('REGEXP_MATCHES', [
+        thisExpr,
+        pattern,
+        flag,
+      ] as Expression[]);
     }
 
     const validatedFlags = this.validateRegexpFlags(flag, 'cims');
@@ -4704,7 +4741,9 @@ class DuckDBGenerator extends Generator {
     const anchoredPattern = new ConcatExpr({
       expressions: [
         LiteralExpr.string('^('),
-        new ParenExpr({ this: pattern }),
+        new ParenExpr({
+          this: pattern,
+        }),
         LiteralExpr.string(')$'),
       ],
     });
@@ -4713,26 +4752,43 @@ class DuckDBGenerator extends Generator {
       flag = LiteralExpr.string(validatedFlags);
     }
 
-    return this.func('REGEXP_MATCHES', [thisExpr, anchoredPattern, flag] as Expression[]);
+    return this.func('REGEXP_MATCHES', [
+      thisExpr,
+      anchoredPattern,
+      flag,
+    ] as Expression[]);
   }
 
   arraycontainsSql (expression: ArrayContainsExpr): string {
     const thisExpr = expression.args.this;
     const expr = expression.args.expression;
 
-    const func = this.func('ARRAY_CONTAINS', [thisExpr, expr] as Expression[]);
+    const func = this.func('ARRAY_CONTAINS', [
+      thisExpr,
+      expr,
+    ] as Expression[]);
 
     if (expression.args.checkNull) {
       const checkNullInArray = new NullifExpr({
         this: new NeqExpr({
-          this: new ArraySizeExpr({ this: thisExpr }),
-          expression: new AnonymousExpr({ this: 'LIST_COUNT', expressions: [thisExpr] }),
+          this: new ArraySizeExpr({
+            this: thisExpr,
+          }),
+          expression: new AnonymousExpr({
+            this: 'LIST_COUNT',
+            expressions: [thisExpr],
+          }),
         }),
-        expression: new BooleanExpr({ this: false }),
+        expression: new BooleanExpr({
+          this: false,
+        }),
       });
 
       return this.sql(new IfExpr({
-        this: new IsExpr({ this: expr, expression: new NullExpr({}) }),
+        this: new IsExpr({
+          this: expr,
+          expression: new NullExpr({}),
+        }),
         true: checkNullInArray,
         false: maybeParse(func),
       }));
@@ -4749,15 +4805,27 @@ class DuckDBGenerator extends Generator {
       const addNullToArray = new AnonymousExpr({
         this: 'LIST_APPEND',
         expressions: [
-          new AnonymousExpr({ this: 'LIST_DISTINCT', expressions: [new ArrayCompactExpr({ this: arr })] }),
+          new AnonymousExpr({
+            this: 'LIST_DISTINCT',
+            expressions: [
+              new ArrayCompactExpr({
+                this: arr,
+              }),
+            ],
+          }),
           new NullExpr({}),
         ],
       });
 
       return this.sql(new IfExpr({
         this: new NeqExpr({
-          this: new ArraySizeExpr({ this: arr }),
-          expression: new AnonymousExpr({ this: 'LIST_COUNT', expressions: [arr] }),
+          this: new ArraySizeExpr({
+            this: arr,
+          }),
+          expression: new AnonymousExpr({
+            this: 'LIST_COUNT',
+            expressions: [arr],
+          }),
         }),
         true: addNullToArray,
         false: maybeParse(func),
@@ -4780,21 +4848,41 @@ class DuckDBGenerator extends Generator {
 
     if (validatedFlags) {
       pattern = new ConcatExpr({
-        expressions: [LiteralExpr.string(`(?${validatedFlags})`), pattern],
+        expressions: [
+          LiteralExpr.string(`(?${validatedFlags})`),
+          pattern,
+        ],
       });
     }
 
     let posOffset: Expression = LiteralExpr.number(0);
 
     if (position && (!position.isNumber || 1 < Number(position.toValue()))) {
-      thisExpr = new SubstringExpr({ this: thisExpr, start: position });
-      posOffset = new SubExpr({ this: position, expression: LiteralExpr.number(1) });
+      thisExpr = new SubstringExpr({
+        this: thisExpr,
+        start: position,
+      });
+      posOffset = new SubExpr({
+        this: position,
+        expression: LiteralExpr.number(1),
+      });
     }
 
     const sumLengths = (funcName: string, end: Expression): Expression => {
       const lst = new BracketExpr({
-        this: new AnonymousExpr({ this: funcName, expressions: [thisExpr, pattern] }),
-        expressions: [new SliceExpr({ this: LiteralExpr.number(1), expression: end })],
+        this: new AnonymousExpr({
+          this: funcName,
+          expressions: [
+            thisExpr,
+            pattern,
+          ],
+        }),
+        expressions: [
+          new SliceExpr({
+            this: LiteralExpr.number(1),
+            expression: end,
+          }),
+        ],
         offset: 1,
       });
       const transform = new AnonymousExpr({
@@ -4802,14 +4890,19 @@ class DuckDBGenerator extends Generator {
         expressions: [
           lst,
           new LambdaExpr({
-            this: new LengthExpr({ this: toIdentifier('x') }),
+            this: new LengthExpr({
+              this: toIdentifier('x'),
+            }),
             expressions: [toIdentifier('x')],
           }),
         ],
       });
 
       return new CoalesceExpr({
-        this: new AnonymousExpr({ this: 'LIST_SUM', expressions: [transform] }),
+        this: new AnonymousExpr({
+          this: 'LIST_SUM',
+          expressions: [transform],
+        }),
         expressions: [LiteralExpr.number(0)],
       });
     };
@@ -4820,21 +4913,33 @@ class DuckDBGenerator extends Generator {
           this: LiteralExpr.number(1),
           expression: sumLengths('STRING_SPLIT_REGEX', occurrence),
         }),
-        expression: sumLengths('REGEXP_EXTRACT_ALL', new SubExpr({ this: occurrence, expression: LiteralExpr.number(1) })),
+        expression: sumLengths('REGEXP_EXTRACT_ALL', new SubExpr({
+          this: occurrence,
+          expression: LiteralExpr.number(1),
+        })),
       }),
       expression: posOffset,
     });
 
     if (option && option.isNumber && Number(option.toValue()) === 1) {
       const matchAtOcc = new BracketExpr({
-        this: new AnonymousExpr({ this: 'REGEXP_EXTRACT_ALL', expressions: [thisExpr, pattern] }),
+        this: new AnonymousExpr({
+          this: 'REGEXP_EXTRACT_ALL',
+          expressions: [
+            thisExpr,
+            pattern,
+          ],
+        }),
         expressions: [occurrence],
         offset: 1,
       });
+
       basePos = new AddExpr({
         this: basePos,
         expression: new CoalesceExpr({
-          this: new LengthExpr({ this: matchAtOcc }),
+          this: new LengthExpr({
+            this: matchAtOcc,
+          }),
           expressions: [LiteralExpr.number(0)],
         }),
       });
@@ -4849,14 +4954,36 @@ class DuckDBGenerator extends Generator {
       parameters,
     ].filter(Boolean) as Expression[];
 
-    const nullChecks = nullArgs.map((arg) => new IsExpr({ this: arg.copy(), expression: new NullExpr({}) }));
+    const nullChecks = nullArgs.map((arg) => new IsExpr({
+      this: arg.copy(),
+      expression: new NullExpr({}),
+    }));
 
-    const matches = new AnonymousExpr({ this: 'REGEXP_EXTRACT_ALL', expressions: [thisExpr, pattern] });
+    const matches = new AnonymousExpr({
+      this: 'REGEXP_EXTRACT_ALL',
+      expressions: [
+        thisExpr,
+        pattern,
+      ],
+    });
 
     const caseExpr = case_()
-      .when(nullChecks.reduce((acc, check) => acc ? new OrExpr({ this: acc, expression: check }) : check), new NullExpr({}))
-      .when(new EqExpr({ this: pattern!.copy(), expression: LiteralExpr.string('') }), LiteralExpr.number(0))
-      .when(new LtExpr({ this: new LengthExpr({ this: matches }), expression: occurrence }), LiteralExpr.number(0))
+      .when(nullChecks.reduce((acc, check) => acc
+        ? new OrExpr({
+          this: acc,
+          expression: check,
+        })
+        : check), new NullExpr({}))
+      .when(new EqExpr({
+        this: pattern!.copy(),
+        expression: LiteralExpr.string(''),
+      }), LiteralExpr.number(0))
+      .when(new LtExpr({
+        this: new LengthExpr({
+          this: matches,
+        }),
+        expression: occurrence,
+      }), LiteralExpr.number(0))
       .else_(basePos);
 
     return this.sql(caseExpr);
@@ -4906,7 +5033,10 @@ class DuckDBGenerator extends Generator {
         start: LiteralExpr.number(1),
         length: LiteralExpr.number(pos - 1),
       });
-      subject = new SubstringExpr({ this: subject, start: LiteralExpr.number(pos) });
+      subject = new SubstringExpr({
+        this: subject,
+        start: LiteralExpr.number(pos),
+      });
     }
 
     const flagArg = validatedFlags
@@ -4924,7 +5054,12 @@ class DuckDBGenerator extends Generator {
     });
 
     if (prefix) {
-      result = new ConcatExpr({ expressions: [prefix, result] });
+      result = new ConcatExpr({
+        expressions: [
+          prefix,
+          result,
+        ],
+      });
     }
 
     return this.sql(result);
@@ -4939,24 +5074,39 @@ class DuckDBGenerator extends Generator {
     const validatedFlags = this.validateRegexpFlags(parameters, 'ims');
 
     if (position) {
-      thisExpr = new SubstringExpr({ this: thisExpr, start: position });
+      thisExpr = new SubstringExpr({
+        this: thisExpr,
+        start: position,
+      });
     }
 
     if (validatedFlags) {
       pattern = new ConcatExpr({
-        expressions: [LiteralExpr.string(`(?${validatedFlags})`), pattern],
+        expressions: [
+          LiteralExpr.string(`(?${validatedFlags})`),
+          pattern,
+        ],
       });
     }
 
     const result = new CaseExpr({
       ifs: [
         new IfExpr({
-          this: new EqExpr({ this: pattern, expression: LiteralExpr.string('') }),
+          this: new EqExpr({
+            this: pattern,
+            expression: LiteralExpr.string(''),
+          }),
           true: LiteralExpr.number(0),
         }),
       ],
       default: new LengthExpr({
-        this: new AnonymousExpr({ this: 'REGEXP_EXTRACT_ALL', expressions: [thisExpr, pattern] }),
+        this: new AnonymousExpr({
+          this: 'REGEXP_EXTRACT_ALL',
+          expressions: [
+            thisExpr,
+            pattern,
+          ],
+        }),
       }),
     });
 
@@ -4985,7 +5135,10 @@ class DuckDBGenerator extends Generator {
 
     return this.sql(replacePlaceholders(
       (this._constructor as typeof DuckDBGenerator).ARRAY_EXCEPT_TEMPLATE.copy(),
-      { source, exclude },
+      {
+        source,
+        exclude,
+      },
     ));
   }
 
@@ -6076,13 +6229,31 @@ class DuckDBGenerator extends Generator {
 
     let result: Expression = new AnonymousExpr({
       this: funcName,
-      expressions: [thisNode, expression.args.expression, groupArg, flagsExpr].filter(Boolean),
+      expressions: [
+        thisNode,
+        expression.args.expression,
+        groupArg,
+        flagsExpr,
+      ].filter(Boolean),
     });
 
     if (isExtractAll && nonSingleOccurrence) {
-      result = new BracketExpr({ this: result, expressions: [new SliceExpr({ this: occurrence })] });
+      result = new BracketExpr({
+        this: result,
+        expressions: [
+          new SliceExpr({
+            this: occurrence,
+          }),
+        ],
+      });
     } else if (nonSingleOccurrence) {
-      result = new AnonymousExpr({ this: 'ARRAY_EXTRACT', expressions: [result, occurrence] });
+      result = new AnonymousExpr({
+        this: 'ARRAY_EXTRACT',
+        expressions: [
+          result,
+          occurrence,
+        ],
+      });
     }
 
     return this.sql(result);

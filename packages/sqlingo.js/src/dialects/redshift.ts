@@ -171,19 +171,24 @@ class RedshiftParser extends Postgres.Parser {
 
     const exclude = this.matchTextSeq('EXCLUDE') && this.parseWrappedCsv(
       this.parseExpression.bind(this),
-      { optional: true },
+      {
+        optional: true,
+      },
     );
 
     if (
       exclude
-      && projections.length > 0
+      && 0 < projections.length
       && projections[projections.length - 1] instanceof AliasExpr
       && (projections[projections.length - 1] as AliasExpr).alias?.toUpperCase() === 'EXCLUDE'
     ) {
       projections[projections.length - 1] = (projections[projections.length - 1] as AliasExpr).args.this!.pop()!;
     }
 
-    return [projections, exclude || undefined];
+    return [
+      projections,
+      exclude || undefined,
+    ];
   }
 
   @cache

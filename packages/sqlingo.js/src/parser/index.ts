@@ -6352,7 +6352,10 @@ export class Parser {
       const limit = this.parseLimit(undefined, {
         top: true,
       });
-      const [projections, exclude] = this.parseProjections();
+      const [
+        projections,
+        exclude,
+      ] = this.parseProjections();
 
       thisExpr = this.expression(
         SelectExpr,
@@ -6391,7 +6394,9 @@ export class Parser {
       });
 
       if (thisExpr) {
-        thisExpr.addComments(comments, { prepend: true });
+        thisExpr.addComments(comments, {
+          prepend: true,
+        });
       }
 
       // We return early here so that the UNION isn't attached to the subquery by the
@@ -9477,7 +9482,10 @@ export class Parser {
       : (
         this.parseFunction()
         || (
-          !this.matchSet([TokenType.ALIAS, TokenType.DCOLON], {
+          !this.matchSet([
+            TokenType.ALIAS,
+            TokenType.DCOLON,
+          ], {
             advance: false,
           })
           && this.parseVar({
@@ -15101,7 +15109,10 @@ export class Parser {
   }
 
   parseProjections (): [Expression[], Expression[] | undefined] {
-    return [this.parseExpressions(), undefined];
+    return [
+      this.parseExpressions(),
+      undefined,
+    ];
   }
 
   parseWrappedSelect (options: {
@@ -16336,7 +16347,10 @@ export class Parser {
   }
 
   parseDeclareitem (): DeclareItemExpr | undefined {
-    this.matchTexts(['VAR', 'VARIABLE']);
+    this.matchTexts([
+      'VAR',
+      'VARIABLE',
+    ]);
 
     const vars = this.parseCsv(this.parseIdVar.bind(this));
 
